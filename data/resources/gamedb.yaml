@@ -56476,8 +56476,8 @@ SCES-00867:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56508,8 +56508,8 @@ SCES-10867:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56540,8 +56540,8 @@ SCES-20867:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56572,8 +56572,8 @@ SCES-00868:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56604,8 +56604,8 @@ SCES-10868:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56636,8 +56636,8 @@ SCES-20868:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56668,8 +56668,8 @@ SCES-00869:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56700,8 +56700,8 @@ SCES-10869:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56732,8 +56732,8 @@ SCES-20869:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56764,8 +56764,8 @@ SLPS-00700:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56794,8 +56794,8 @@ SLPS-00701:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56824,8 +56824,8 @@ SLPS-00702:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56854,8 +56854,8 @@ SCES-00900:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56886,8 +56886,8 @@ SCES-10900:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56918,8 +56918,8 @@ SCES-20900:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   settings:
     displayActiveStartOffset: -44
   metadata:
@@ -56950,8 +56950,8 @@ SCUS-94163:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -56980,8 +56980,8 @@ SCUS-94164:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -57010,8 +57010,8 @@ SCUS-94165:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony / Squaresoft"
     developer: "Squaresoft"
@@ -57029,20 +57029,20 @@ SCUS-94165:
 SCUS-94961:
   name: "Final Fantasy VII (USA) (Interactive Sampler CD)"
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SCUS-94179:
   name: "Final Fantasy VII (USA) (Square Soft on PlayStation Previews)"
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SCPS-45007:
   name: "Final Fantasy VII (aka Final Fantasy 7 or FF7)"
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   codes:
     - SCPS-45007
     - SCPS-45008
@@ -57073,8 +57073,8 @@ SLPM-84020:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   codes:
     - SLPM-84020
     - SLPM-87380
@@ -57106,8 +57106,8 @@ SLPM-84021:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   codes:
     - SLPM-84021
     - SLPM-87381
@@ -57139,8 +57139,8 @@ SLPM-84022:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   codes:
     - SLPM-84022
     - SLPM-87382
@@ -57172,8 +57172,8 @@ SLPM-87383:
   controllers:
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   codes:
     - SLPM-87383
     - SLPS-01060
@@ -89066,8 +89066,8 @@ SCES-03043:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89095,8 +89095,8 @@ SCES-13043:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89124,8 +89124,8 @@ SCES-23043:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89153,8 +89153,8 @@ SCES-33043:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89182,8 +89182,8 @@ SCES-03044:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89211,8 +89211,8 @@ SCES-13044:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89240,8 +89240,8 @@ SCES-23044:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89269,8 +89269,8 @@ SCES-33044:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89298,8 +89298,8 @@ SCES-03045:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89327,8 +89327,8 @@ SCES-13045:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89356,8 +89356,8 @@ SCES-23045:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89385,8 +89385,8 @@ SCES-33045:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89414,8 +89414,8 @@ SCES-03046:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89443,8 +89443,8 @@ SCES-13046:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89472,8 +89472,8 @@ SCES-23046:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89501,8 +89501,8 @@ SCES-33046:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89520,13 +89520,13 @@ SCES-33046:
 PAPX-90091:
   name: "Legend of Dragoon, The (Japan) (Demo 1)"
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 PAPX-90103:
   name: "Legend of Dragoon, The (Japan) (Demo 2)"
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SCPS-10119:
   name: "Legend of Dragoon, The (Japan) (Disc 1)"
   discSet:
@@ -89540,8 +89540,8 @@ SCPS-10119:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89566,8 +89566,8 @@ SCPS-10120:
       - SCPS-10121
       - SCPS-10122
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SCPS-10121:
   name: "Legend of Dragoon, The (Japan) (Disc 3)"
   discSet:
@@ -89578,8 +89578,8 @@ SCPS-10121:
       - SCPS-10121
       - SCPS-10122
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SCPS-10122:
   name: "Legend of Dragoon, The (Japan) (Disc 4)"
   discSet:
@@ -89590,8 +89590,8 @@ SCPS-10122:
       - SCPS-10121
       - SCPS-10122
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SCES-03047:
   name: "Legend of Dragoon, The (Spain) (Disc 1)"
   discSet:
@@ -89608,8 +89608,8 @@ SCES-03047:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89640,8 +89640,8 @@ SCES-13047:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89672,8 +89672,8 @@ SCES-23047:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89704,8 +89704,8 @@ SCES-33047:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89736,8 +89736,8 @@ SCUS-94491:
     - AnalogController
     - DigitalController
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
   metadata:
     publisher: "Sony"
     developer: "Sony"
@@ -89765,8 +89765,8 @@ SCUS-94584:
     rating: NoIssues
     versionTested: "0.1-2663-gfd39f09a"
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SCUS-94585:
   name: "Legend of Dragoon, The (USA) (Disc 3)"
   discSet:
@@ -89780,8 +89780,8 @@ SCUS-94585:
     rating: NoIssues
     versionTested: "0.1-2663-gfd39f09a"
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SCUS-94586:
   name: "Legend of Dragoon, The (USA) (Disc 4)"
   discSet:
@@ -89795,8 +89795,8 @@ SCUS-94586:
     rating: NoIssues
     versionTested: "0.1-2663-gfd39f09a"
   traits:
-    - DisableWidescreen
-    - DisableTextureFiltering
+    - DisableWidescreen # Breaks background rendering.
+    - DisableSpriteTextureFiltering # Breaks background rendering.
 SLES-01273:
   name: "Legend of Foresia - La Contree Interdite (France)"
   controllers:
