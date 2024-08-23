@@ -213,8 +213,8 @@ void Justifier::UpdatePosition()
   }
 
   float display_x, display_y;
-  const auto [window_x, window_y] =
-    (m_has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() : InputManager::GetPointerAbsolutePosition(0);
+  const auto [window_x, window_y] = (m_has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() :
+                                                             InputManager::GetPointerAbsolutePosition(m_cursor_index);
   g_gpu->ConvertScreenCoordinatesToDisplayCoordinates(window_x, window_y, &display_x, &display_y);
 
   // are we within the active display area?
@@ -308,7 +308,7 @@ bool Justifier::CanUseSoftwareCursor() const
 
 u32 Justifier::GetSoftwarePointerIndex() const
 {
-  return m_has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + m_index) : 0;
+  return m_has_relative_binds ? (InputManager::MAX_POINTER_DEVICES + m_index) : m_cursor_index;
 }
 
 void Justifier::UpdateSoftwarePointerPosition()
@@ -336,6 +336,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   }
 
   // clang-format off
+  {"Pointer", TRANSLATE_NOOP("Justifier", "Pointer/Aiming"), ICON_PF_MOUSE, static_cast<u32>(Justifier::Binding::ButtonCount), InputBindingInfo::Type::AbsolutePointer, GenericInputBinding::Unknown},
   BUTTON("Trigger", TRANSLATE_NOOP("Justifier", "Trigger"), ICON_PF_CROSS, Justifier::Binding::Trigger, GenericInputBinding::R2),
   BUTTON("ShootOffscreen", TRANSLATE_NOOP("Justifier", "Shoot Offscreen"), nullptr, Justifier::Binding::ShootOffscreen, GenericInputBinding::L2),
   BUTTON("Start", TRANSLATE_NOOP("Justifier", "Start"), ICON_PF_START, Justifier::Binding::Start, GenericInputBinding::Cross),
@@ -395,9 +396,9 @@ const Controller::ControllerInfo Justifier::INFO = {ControllerType::Justifier,
                                                     s_settings,
                                                     Controller::VibrationCapabilities::NoVibration};
 
-void Justifier::LoadSettings(SettingsInterface& si, const char* section)
+void Justifier::LoadSettings(SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section);
+  Controller::LoadSettings(si, section, initial);
 
   m_x_scale = si.GetFloatValue(section, "XScale", 1.0f);
 
@@ -423,13 +424,15 @@ void Justifier::LoadSettings(SettingsInterface& si, const char* section)
 
   m_has_relative_binds = (si.ContainsValue(section, "RelativeLeft") || si.ContainsValue(section, "RelativeRight") ||
                           si.ContainsValue(section, "RelativeUp") || si.ContainsValue(section, "RelativeDown"));
+  m_cursor_index =
+    static_cast<u8>(InputManager::GetIndexFromPointerBinding(si.GetStringValue(section, "Pointer")).value_or(0));
 
   const s32 new_pointer_index = GetSoftwarePointerIndex();
 
   if (prev_pointer_index != new_pointer_index || m_cursor_path != cursor_path || m_cursor_scale != cursor_scale ||
       m_cursor_color != cursor_color)
   {
-    if (prev_pointer_index != new_pointer_index &&
+    if (!initial && prev_pointer_index != new_pointer_index &&
         static_cast<u32>(prev_pointer_index) < InputManager::MAX_SOFTWARE_CURSORS)
     {
       ImGuiManager::ClearSoftwareCursor(prev_pointer_index);

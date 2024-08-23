@@ -176,7 +176,6 @@ static void UpdateRunningGame(const std::string_view path, CDImage* image, bool 
 static bool CheckForSBIFile(CDImage* image, Error* error);
 
 static void UpdateControllers();
-static void UpdateControllerSettings();
 static void ResetControllers();
 static void UpdatePerGameMemoryCards();
 static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
@@ -1459,6 +1458,7 @@ void System::PauseSystem(bool paused)
     FullscreenUI::OnSystemPaused();
 
     InputManager::PauseVibration();
+    InputManager::UpdateHostMouseMode();
 
     Achievements::OnSystemPaused(true);
 
@@ -1477,6 +1477,8 @@ void System::PauseSystem(bool paused)
   else
   {
     FullscreenUI::OnSystemResumed();
+
+    InputManager::UpdateHostMouseMode();
 
     Achievements::OnSystemPaused(false);
 
@@ -1732,6 +1734,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   FullscreenUI::OnSystemStarted();
 
+  InputManager::UpdateHostMouseMode();
+
   if (g_settings.inhibit_screensaver)
     PlatformMisc::SuspendScreensaver();
 
@@ -1891,6 +1895,7 @@ void System::DestroySystem()
   FullscreenUI::OnSystemDestroyed();
 
   InputManager::PauseVibration();
+  InputManager::UpdateHostMouseMode();
 
   if (g_settings.inhibit_screensaver)
     PlatformMisc::ResumeScreensaver();
@@ -3548,7 +3553,7 @@ void System::UpdateControllers()
       std::unique_ptr<Controller> controller = Controller::Create(type, i);
       if (controller)
       {
-        controller->LoadSettings(*Host::GetSettingsInterface(), Controller::GetSettingsSection(i).c_str());
+        controller->LoadSettings(*Host::GetSettingsInterface(), Controller::GetSettingsSection(i).c_str(), true);
         Pad::SetController(i, std::move(controller));
       }
     }
@@ -3563,7 +3568,7 @@ void System::UpdateControllerSettings()
   {
     Controller* controller = Pad::GetController(i);
     if (controller)
-      controller->LoadSettings(*Host::GetSettingsInterface(), Controller::GetSettingsSection(i).c_str());
+      controller->LoadSettings(*Host::GetSettingsInterface(), Controller::GetSettingsSection(i).c_str(), false);
   }
 }
 

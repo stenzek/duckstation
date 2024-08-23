@@ -93,7 +93,7 @@ public:
   virtual u32 GetInputOverlayIconColor() const;
 
   /// Loads/refreshes any per-controller settings.
-  virtual void LoadSettings(SettingsInterface& si, const char* section);
+  virtual void LoadSettings(SettingsInterface& si, const char* section, bool initial);
 
   /// Creates a new controller of the specified type.
   static std::unique_ptr<Controller> Create(ControllerType type, u32 index);

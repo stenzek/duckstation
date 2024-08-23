@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #pragma once
 #include "common/windows_headers.h"
@@ -46,6 +46,8 @@ private:
   static bool RegisterDummyClass();
   static LRESULT CALLBACK DummyWindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
+  static std::string GetMouseDeviceName(u32 index);
+
   bool CreateDummyWindow();
   void DestroyDummyWindow();
   bool OpenDevices();
@@ -54,7 +56,6 @@ private:
   bool ProcessRawInputEvent(const RAWINPUT* event);
 
   HWND m_dummy_window = {};
-  u32 m_num_keyboards = 0;
 
   std::vector<MouseState> m_mice;
 };

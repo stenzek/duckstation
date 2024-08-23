@@ -345,9 +345,9 @@ const Controller::ControllerInfo NeGcon::INFO = {
   ControllerType::NeGcon, "NeGcon",   TRANSLATE_NOOP("ControllerType", "NeGcon"),    ICON_PF_GAMEPAD,
   s_binding_info,         s_settings, Controller::VibrationCapabilities::NoVibration};
 
-void NeGcon::LoadSettings(SettingsInterface& si, const char* section)
+void NeGcon::LoadSettings(SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section);
+  Controller::LoadSettings(si, section, initial);
   m_steering_modifier = {
     .deadzone = si.GetFloatValue(section, "SteeringDeadzone", DEFAULT_STEERING_MODIFIER.deadzone),
     .saturation = si.GetFloatValue(section, "SteeringSaturation", DEFAULT_STEERING_MODIFIER.saturation),

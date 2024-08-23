@@ -753,6 +753,20 @@ void EmuThread::updateEmuFolders()
   EmuFolders::Update();
 }
 
+void EmuThread::updateControllerSettings()
+{
+  if (!isOnThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::updateControllerSettings, Qt::QueuedConnection);
+    return;
+  }
+
+  if (!System::IsValid())
+    return;
+
+  System::UpdateControllerSettings();
+}
+
 void EmuThread::startFullscreenUI()
 {
   if (!isOnThread())

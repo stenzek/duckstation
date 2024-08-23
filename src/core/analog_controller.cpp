@@ -885,9 +885,9 @@ const Controller::ControllerInfo AnalogController::INFO = {ControllerType::Analo
                                                            s_settings,
                                                            Controller::VibrationCapabilities::LargeSmallMotors};
 
-void AnalogController::LoadSettings(SettingsInterface& si, const char* section)
+void AnalogController::LoadSettings(SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section);
+  Controller::LoadSettings(si, section, initial);
   m_force_analog_on_reset = si.GetBoolValue(section, "ForceAnalogOnReset", true);
   m_analog_dpad_in_digital_mode = si.GetBoolValue(section, "AnalogDPadInDigitalMode", true);
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);

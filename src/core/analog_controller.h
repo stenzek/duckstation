@@ -80,7 +80,7 @@ public:
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
 
-  void LoadSettings(SettingsInterface& si, const char* section) override;
+  void LoadSettings(SettingsInterface& si, const char* section, bool initial) override;
 
 private:
   using MotorState = std::array<u8, NUM_MOTORS>;

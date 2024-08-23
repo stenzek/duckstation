@@ -15,7 +15,8 @@ struct InputBindingInfo
     Axis,
     HalfAxis,
     Motor,
-    Pointer,  // Receive relative mouse movement events, bind_index is offset by the axis.
+    Pointer,         // Receive relative mouse movement events, bind_index is offset by the axis.
+    AbsolutePointer, // Allows selection of specific pointers, but defaults to the first.
     Macro,
   };
 
@@ -68,4 +69,3 @@ enum class GenericInputBinding : u8
 
   Count,
 };
-

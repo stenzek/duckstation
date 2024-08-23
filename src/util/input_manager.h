@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #pragma once
 
@@ -27,10 +27,10 @@ enum class InputSourceType : u32
 #ifdef _WIN32
   DInput,
   XInput,
-  RawInput,
 #endif
 #ifndef __ANDROID__
   SDL,
+  RawInput,
 #else
   Android,
 #endif
@@ -174,12 +174,12 @@ namespace InputManager {
 static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
 
 /// Maximum number of host mouse devices.
-static constexpr u32 MAX_POINTER_DEVICES = 1;
+static constexpr u32 MAX_POINTER_DEVICES = 8;
 static constexpr u32 MAX_POINTER_BUTTONS = 3;
 
 /// Maximum number of software cursors. We allocate an extra two for controllers with
 /// positioning data from the controller instead of a mouse.
-static constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_BUTTONS + 2;
+static constexpr u32 MAX_SOFTWARE_CURSORS = MAX_POINTER_DEVICES + 2;
 
 /// Number of macro buttons per controller.
 static constexpr u32 NUM_MACRO_BUTTONS_PER_CONTROLLER = 4;
@@ -311,6 +311,9 @@ void SetPadVibrationIntensity(u32 pad_index, float large_or_single_motor_intensi
 /// The pad vibration state will internally remain, so that when emulation is unpaused, the effect resumes.
 void PauseVibration();
 
+/// Returns the number of currently-connected pointer devices.
+u32 GetPointerCount();
+
 /// Reads absolute pointer position.
 std::pair<float, float> GetPointerAbsolutePosition(u32 index);
 
@@ -322,6 +325,7 @@ void UpdatePointerAbsolutePosition(u32 index, float x, float y);
 void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
 
 /// Updates host mouse mode (relative/cursor hiding).
+void UpdateRelativeMouseMode();
 void UpdateHostMouseMode();
 
 /// Sets the state of the specified macro button.
@@ -329,6 +333,9 @@ void SetMacroButtonState(u32 pad, u32 index, bool state);
 
 /// Returns true if the raw input source is being used.
 bool IsUsingRawInput();
+
+/// Updates InputManager's view of the window size, used for clamping raw input coordinates.
+void SetDisplayWindowSize(float width, float height);
 
 /// Restores default configuration.
 void SetDefaultSourceConfig(SettingsInterface& si);
