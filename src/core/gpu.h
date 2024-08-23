@@ -201,6 +201,10 @@ public:
   ALWAYS_INLINE s32 GetCRTCDisplayWidth() const { return m_crtc_state.display_width; }
   ALWAYS_INLINE s32 GetCRTCDisplayHeight() const { return m_crtc_state.display_height; }
 
+  // Ticks for hblank/vblank.
+  void CRTCTickEvent(TickCount ticks);
+  void CommandTickEvent(TickCount ticks);
+
   // Dumps raw VRAM to a file.
   bool DumpVRAMToFile(const char* filename);
 
@@ -274,10 +278,6 @@ protected:
   // Updates dynamic bits in GPUSTAT (ready to send VRAM/ready to receive DMA)
   void UpdateDMARequest();
   void UpdateGPUIdle();
-
-  // Ticks for hblank/vblank.
-  void CRTCTickEvent(TickCount ticks);
-  void CommandTickEvent(TickCount ticks);
 
   /// Returns 0 if the currently-displayed field is on odd lines (1,3,5,...) or 1 if even (2,4,6,...).
   ALWAYS_INLINE u32 GetInterlacedDisplayField() const { return ZeroExtend32(m_crtc_state.interlaced_field); }
@@ -410,9 +410,6 @@ protected:
 
     AddCommandTicks(std::max(drawn_width, drawn_height));
   }
-
-  TimingEvent m_crtc_tick_event;
-  TimingEvent m_command_tick_event;
 
   union GPUSTAT
   {

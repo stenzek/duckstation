@@ -43,11 +43,12 @@ u16 g_gpu_clut[GPU_CLUT_SIZE];
 
 const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
-static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
-                                          u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
-                                          u32 texture_data_stride, GPUTexture::Format texture_format,
-                                          bool display_osd_message, bool use_thread);
-static void JoinScreenshotThreads();
+static TimingEvent s_crtc_tick_event(
+  "GPU CRTC Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu->CRTCTickEvent(ticks); },
+  nullptr);
+static TimingEvent s_command_tick_event(
+  "GPU Command Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu->CommandTickEvent(ticks); },
+  nullptr);
 
 static std::deque<std::thread> s_screenshot_threads;
 static std::mutex s_screenshot_threads_mutex;
@@ -60,22 +61,21 @@ static u32 s_active_gpu_cycles_frames = 0;
 
 static constexpr GPUTexture::Format DISPLAY_INTERNAL_POSTFX_FORMAT = GPUTexture::Format::RGBA8;
 
+static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
+                                          u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
+                                          u32 texture_data_stride, GPUTexture::Format texture_format,
+                                          bool display_osd_message, bool use_thread);
+static void JoinScreenshotThreads();
+
 GPU::GPU()
-  : m_crtc_tick_event(
-      "GPU CRTC Tick", 1, 1,
-      [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<GPU*>(param)->CRTCTickEvent(ticks); }, this),
-    m_command_tick_event(
-      "GPU Command Tick", 1, 1,
-      [](void* param, TickCount ticks, TickCount ticks_late) { static_cast<GPU*>(param)->CommandTickEvent(ticks); },
-      this)
 {
   ResetStatistics();
 }
 
 GPU::~GPU()
 {
-  m_command_tick_event.Deactivate();
-  m_crtc_tick_event.Deactivate();
+  s_command_tick_event.Deactivate();
+  s_crtc_tick_event.Deactivate();
 
   JoinScreenshotThreads();
   DestroyDeinterlaceTextures();
@@ -89,7 +89,7 @@ bool GPU::Initialize()
 {
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
   m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
-  m_crtc_tick_event.Activate();
+  s_crtc_tick_event.Activate();
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
   m_console_is_pal = System::IsPALRegion();
@@ -192,8 +192,8 @@ void GPU::Reset(bool clear_vram)
   m_blitter_state = BlitterState::Idle;
 
   // Force event to reschedule itself.
-  m_crtc_tick_event.Deactivate();
-  m_command_tick_event.Deactivate();
+  s_crtc_tick_event.Deactivate();
+  s_command_tick_event.Deactivate();
 
   SoftReset();
   UpdateDisplay();
@@ -460,7 +460,7 @@ u32 GPU::ReadRegister(u32 offset)
       if (IsCRTCScanlinePending())
         SynchronizeCRTC();
       if (IsCommandCompletionPending())
-        m_command_tick_event.InvokeEarly();
+        s_command_tick_event.InvokeEarly();
 
       return m_GPUSTAT.bits;
     }
@@ -552,7 +552,7 @@ void GPU::AddCommandTicks(TickCount ticks)
 
 void GPU::SynchronizeCRTC()
 {
-  m_crtc_tick_event.InvokeEarly();
+  s_crtc_tick_event.InvokeEarly();
 }
 
 float GPU::ComputeHorizontalFrequency() const
@@ -838,17 +838,17 @@ void GPU::UpdateCRTCDisplayParameters()
 
 TickCount GPU::GetPendingCRTCTicks() const
 {
-  const TickCount pending_sysclk_ticks = m_crtc_tick_event.GetTicksSinceLastExecution();
+  const TickCount pending_sysclk_ticks = s_crtc_tick_event.GetTicksSinceLastExecution();
   TickCount fractional_ticks = m_crtc_state.fractional_ticks;
   return SystemTicksToCRTCTicks(pending_sysclk_ticks, &fractional_ticks);
 }
 
 TickCount GPU::GetPendingCommandTicks() const
 {
-  if (!m_command_tick_event.IsActive())
+  if (!s_command_tick_event.IsActive())
     return 0;
 
-  return SystemTicksToGPUTicks(m_command_tick_event.GetTicksSinceLastExecution());
+  return SystemTicksToGPUTicks(s_command_tick_event.GetTicksSinceLastExecution());
 }
 
 void GPU::UpdateCRTCTickEvent()
@@ -905,7 +905,7 @@ void GPU::UpdateCRTCTickEvent()
     ticks_until_event = std::min(ticks_until_event, ticks_until_hblank_start_or_end);
   }
 
-  m_crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, m_crtc_state.fractional_ticks));
+  s_crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, m_crtc_state.fractional_ticks));
 }
 
 bool GPU::IsCRTCScanlinePending() const
@@ -1089,11 +1089,11 @@ void GPU::UpdateCommandTickEvent()
   if (m_pending_command_ticks <= 0)
   {
     m_pending_command_ticks = 0;
-    m_command_tick_event.Deactivate();
+    s_command_tick_event.Deactivate();
   }
   else
   {
-    m_command_tick_event.SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
+    s_command_tick_event.SetIntervalAndSchedule(GPUTicksToSystemTicks(m_pending_command_ticks));
   }
 }
 
@@ -1223,7 +1223,7 @@ void GPU::WriteGP1(u32 value)
     case 0x00: // Reset GPU
     {
       DEBUG_LOG("GP1 reset GPU");
-      m_command_tick_event.InvokeEarly();
+      s_command_tick_event.InvokeEarly();
       SynchronizeCRTC();
       SoftReset();
     }
@@ -1232,7 +1232,7 @@ void GPU::WriteGP1(u32 value)
     case 0x01: // Clear FIFO
     {
       DEBUG_LOG("GP1 clear FIFO");
-      m_command_tick_event.InvokeEarly();
+      s_command_tick_event.InvokeEarly();
       SynchronizeCRTC();
 
       // flush partial writes
@@ -1246,7 +1246,7 @@ void GPU::WriteGP1(u32 value)
       m_blit_buffer.clear();
       m_blit_remaining_words = 0;
       m_pending_command_ticks = 0;
-      m_command_tick_event.Deactivate();
+      s_command_tick_event.Deactivate();
       UpdateDMARequest();
       UpdateGPUIdle();
     }
@@ -1364,7 +1364,7 @@ void GPU::WriteGP1(u32 value)
       {
         // Have to be careful when setting this because Synchronize() can modify GPUSTAT.
         static constexpr u32 SET_MASK = UINT32_C(0b00000000011111110100000000000000);
-        m_command_tick_event.InvokeEarly();
+        s_command_tick_event.InvokeEarly();
         SynchronizeCRTC();
         m_GPUSTAT.bits = (m_GPUSTAT.bits & ~SET_MASK) | (new_GPUSTAT.bits & SET_MASK);
         UpdateCRTCConfig();
