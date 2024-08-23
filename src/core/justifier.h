@@ -40,7 +40,7 @@ public:
   void Reset() override;
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 
-  void LoadSettings(SettingsInterface& si, const char* section) override;
+  void LoadSettings(SettingsInterface& si, const char* section, bool initial) override;
 
   float GetBindState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
@@ -100,6 +100,7 @@ private:
   TimingEvent m_irq_event;
 
   bool m_has_relative_binds = false;
+  u8 m_cursor_index = 0;
   float m_relative_pos[4] = {};
 
   std::string m_cursor_path;

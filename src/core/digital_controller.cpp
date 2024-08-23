@@ -187,9 +187,9 @@ const Controller::ControllerInfo DigitalController::INFO = {ControllerType::Digi
                                                             s_settings,
                                                             Controller::VibrationCapabilities::NoVibration};
 
-void DigitalController::LoadSettings(SettingsInterface& si, const char* section)
+void DigitalController::LoadSettings(SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section);
+  Controller::LoadSettings(si, section, initial);
   m_popn_controller_mode = si.GetBoolValue(section, "ForcePopnControllerMode", false);
 }
 

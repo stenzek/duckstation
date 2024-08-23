@@ -12,6 +12,7 @@
 
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
+#include "util/input_manager.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -308,6 +309,8 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
     return false;
   }
 
+  InputManager::SetDisplayWindowSize(static_cast<float>(g_gpu_device->GetWindowWidth()),
+                                     static_cast<float>(g_gpu_device->GetWindowHeight()));
   return true;
 }
 
@@ -322,7 +325,10 @@ void Host::UpdateDisplayWindow()
     return;
   }
 
-  ImGuiManager::WindowResized();
+  const float f_width = static_cast<float>(g_gpu_device->GetWindowWidth());
+  const float f_height = static_cast<float>(g_gpu_device->GetWindowHeight());
+  ImGuiManager::WindowResized(f_width, f_height);
+  InputManager::SetDisplayWindowSize(f_width, f_height);
 
   if (System::IsValid())
   {
@@ -343,7 +349,11 @@ void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
   DEV_LOG("Display window resized to {}x{}", width, height);
 
   g_gpu_device->ResizeWindow(width, height, scale);
-  ImGuiManager::WindowResized();
+
+  const float f_width = static_cast<float>(g_gpu_device->GetWindowWidth());
+  const float f_height = static_cast<float>(g_gpu_device->GetWindowHeight());
+  ImGuiManager::WindowResized(f_width, f_height);
+  InputManager::SetDisplayWindowSize(f_width, f_height);
 
   // If we're paused, re-present the current frame at the new window size.
   if (System::IsValid())

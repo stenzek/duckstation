@@ -181,9 +181,9 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
   }
 }
 
-void PlayStationMouse::LoadSettings(SettingsInterface& si, const char* section)
+void PlayStationMouse::LoadSettings(SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section);
+  Controller::LoadSettings(si, section, initial);
 
   m_sensitivity_x = si.GetFloatValue(section, "SensitivityX", 1.0f);
   m_sensitivity_y = si.GetFloatValue(section, "SensitivityY", 1.0f);
@@ -219,7 +219,7 @@ static const SettingInfo s_settings[] = {
 
 const Controller::ControllerInfo PlayStationMouse::INFO = {ControllerType::PlayStationMouse,
                                                            "PlayStationMouse",
-                                                           TRANSLATE_NOOP("ControllerType", "PlayStation Mouse"),
+                                                           TRANSLATE_NOOP("ControllerType", "Mouse"),
                                                            ICON_PF_MOUSE,
                                                            s_binding_info,
                                                            s_settings,

@@ -91,7 +91,7 @@ u32 Controller::GetInputOverlayIconColor() const
   return 0xFFFFFFFFu;
 }
 
-void Controller::LoadSettings(SettingsInterface& si, const char* section)
+void Controller::LoadSettings(SettingsInterface& si, const char* section, bool initial)
 {
 }
 

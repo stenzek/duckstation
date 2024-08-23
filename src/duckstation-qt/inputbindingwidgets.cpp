@@ -44,8 +44,9 @@ InputBindingWidget::~InputBindingWidget()
 
 bool InputBindingWidget::isMouseMappingEnabled(SettingsInterface* sif)
 {
-  return sif ? sif->GetBoolValue("UI", "EnableMouseMapping", false) :
-               Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false);
+  return (sif ? sif->GetBoolValue("UI", "EnableMouseMapping", false) :
+                Host::GetBaseBoolSettingValue("UI", "EnableMouseMapping", false)) &&
+         !InputManager::IsUsingRawInput();
 }
 
 void InputBindingWidget::initialize(SettingsInterface* sif, InputBindingInfo::Type bind_type, std::string section_name,
@@ -100,7 +101,7 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
   const QEvent::Type event_type = event->type();
 
   // if the key is being released, set the input
-  if (event_type == QEvent::KeyRelease || event_type == QEvent::MouseButtonRelease)
+  if (event_type == QEvent::KeyRelease || (event_type == QEvent::MouseButtonRelease && m_mouse_mapping_enabled))
   {
     setNewBinding();
     stopListeningForInput();
@@ -112,7 +113,8 @@ bool InputBindingWidget::eventFilter(QObject* watched, QEvent* event)
     m_new_bindings.push_back(InputManager::MakeHostKeyboardKey(QtUtils::KeyEventToCode(key_event)));
     return true;
   }
-  else if (event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick)
+  else if ((event_type == QEvent::MouseButtonPress || event_type == QEvent::MouseButtonDblClick) &&
+           m_mouse_mapping_enabled)
   {
     // double clicks get triggered if we click bind, then click again quickly.
     const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
@@ -225,6 +227,8 @@ void InputBindingWidget::setNewBinding()
     {
       Host::SetBaseStringSettingValue(m_section_name.c_str(), m_key_name.c_str(), new_binding.c_str());
       Host::CommitBaseSettingChanges();
+      if (m_bind_type == InputBindingInfo::Type::Pointer || m_bind_type == InputBindingInfo::Type::AbsolutePointer)
+        g_emu_thread->updateControllerSettings();
       g_emu_thread->reloadInputBindings();
     }
   }
@@ -246,6 +250,8 @@ void InputBindingWidget::clearBinding()
   {
     Host::DeleteBaseSettingValue(m_section_name.c_str(), m_key_name.c_str());
     Host::CommitBaseSettingChanges();
+    if (m_bind_type == InputBindingInfo::Type::Pointer || m_bind_type == InputBindingInfo::Type::AbsolutePointer)
+      g_emu_thread->updateControllerSettings();
     g_emu_thread->reloadInputBindings();
   }
   reloadBinding();

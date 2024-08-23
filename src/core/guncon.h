@@ -37,7 +37,7 @@ public:
   void Reset() override;
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 
-  void LoadSettings(SettingsInterface& si, const char* section) override;
+  void LoadSettings(SettingsInterface& si, const char* section, bool initial) override;
 
   float GetBindState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
@@ -80,6 +80,7 @@ private:
   u16 m_position_y = 0;
   bool m_shoot_offscreen = false;
   bool m_has_relative_binds = false;
+  u8 m_cursor_index = 0;
 
   TransferState m_transfer_state = TransferState::Idle;
 };

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "win32_raw_input_source.h"
@@ -8,7 +8,9 @@
 #include "core/host.h"
 #include "core/system.h"
 #include "input_manager.h"
+
 #include <cmath>
+#include <hidsdi.h>
 #include <hidusage.h>
 #include <malloc.h>
 
@@ -71,7 +73,11 @@ void Win32RawInputSource::PollEvents()
 
 std::vector<std::pair<std::string, std::string>> Win32RawInputSource::EnumerateDevices()
 {
-  return {};
+  std::vector<std::pair<std::string, std::string>> ret;
+  for (u32 pointer_index = 0; pointer_index < static_cast<u32>(m_mice.size()); pointer_index++)
+    ret.emplace_back(InputManager::GetPointerDeviceName(pointer_index), GetMouseDeviceName(pointer_index));
+
+  return ret;
 }
 
 void Win32RawInputSource::UpdateMotorState(InputBindingKey key, float intensity)
@@ -117,7 +123,8 @@ bool Win32RawInputSource::RegisterDummyClass()
   wc.hInstance = GetModuleHandleW(nullptr);
   wc.lpfnWndProc = DummyWindowProc;
   wc.lpszClassName = WINDOW_CLASS_NAME;
-  return (RegisterClassW(&wc) != 0);
+  s_window_class_registered = (RegisterClassW(&wc) != 0);
+  return s_window_class_registered;
 }
 
 bool Win32RawInputSource::CreateDummyWindow()
@@ -160,12 +167,58 @@ LRESULT CALLBACK Win32RawInputSource::DummyWindowProc(HWND hwnd, UINT msg, WPARA
   return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
 
+std::string Win32RawInputSource::GetMouseDeviceName(u32 index)
+{
+#if 0
+  // Doesn't work for mice :(
+  const HANDLE device = m_mice[index].device;
+  std::wstring wdevice_name;
+
+  UINT size = 0;
+  if (GetRawInputDeviceInfoW(device, RIDI_DEVICENAME, nullptr, &size) == static_cast<UINT>(-1))
+    goto error;
+
+  wdevice_name.resize(size);
+
+  UINT written_size = GetRawInputDeviceInfoW(device, RIDI_DEVICENAME, wdevice_name.data(), &size);
+  if (written_size == static_cast<UINT>(-1))
+    goto error;
+
+  wdevice_name.resize(written_size);
+  if (wdevice_name.empty())
+    goto error;
+
+  const HANDLE hFile = CreateFileW(wdevice_name.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                                   OPEN_EXISTING, 0, NULL);
+  if (hFile == INVALID_HANDLE_VALUE)
+    goto error;
+
+  wchar_t product_string[256];
+  if (!HidD_GetProductString(hFile, product_string, sizeof(product_string)))
+  {
+    CloseHandle(hFile);
+    goto error;
+  }
+
+  CloseHandle(hFile);
+
+  return StringUtil::WideStringToUTF8String(product_string);
+
+error:
+  return "Unknown Device";
+#else
+  return fmt::format("Raw Input Pointer {}", index);
+#endif
+}
+
 bool Win32RawInputSource::OpenDevices()
 {
   UINT num_devices = 0;
   if (GetRawInputDeviceList(nullptr, &num_devices, sizeof(RAWINPUTDEVICELIST)) == static_cast<UINT>(-1) ||
       num_devices == 0)
+  {
     return false;
+  }
 
   std::vector<RAWINPUTDEVICELIST> devices(num_devices);
   if (GetRawInputDeviceList(devices.data(), &num_devices, sizeof(RAWINPUTDEVICELIST)) == static_cast<UINT>(-1))
@@ -174,28 +227,37 @@ bool Win32RawInputSource::OpenDevices()
 
   for (const RAWINPUTDEVICELIST& rid : devices)
   {
-#if 0
-    if (rid.dwType == RIM_TYPEKEYBOARD)
-      m_num_keyboards++;
-#endif
     if (rid.dwType == RIM_TYPEMOUSE)
-      m_mice.push_back({rid.hDevice, 0u, 0, 0});
+    {
+      // Make sure it's a real mouse with buttons.
+      // My goal with this was to stop my silly Corsair keyboard from showing up as a mouse... but it reports 32
+      // buttons.
+      RID_DEVICE_INFO devinfo = {
+        .cbSize = sizeof(devinfo),
+        .dwType = RIM_TYPEMOUSE,
+      };
+      UINT devinfo_size = sizeof(devinfo);
+      if (GetRawInputDeviceInfoW(rid.hDevice, RIDI_DEVICEINFO, &devinfo, &devinfo_size) <= 0 ||
+          devinfo.mouse.dwNumberOfButtons == 0)
+      {
+        continue;
+      }
+
+      m_mice.push_back({.device = rid.hDevice, .button_state = 0, .last_x = 0, .last_y = 0});
+    }
   }
 
-  DEV_LOG("Found {} keyboards and {} mice", m_num_keyboards, m_mice.size());
+  DEV_LOG("Found {} mice", m_mice.size());
 
-  // Grab all keyboard/mouse input.
-  if (m_num_keyboards > 0)
-  {
-    const RAWINPUTDEVICE rrid = {HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_KEYBOARD, 0, m_dummy_window};
-    if (!RegisterRawInputDevices(&rrid, 1, sizeof(rrid)))
-      return false;
-  }
+  // Grab all mouse input.
   if (!m_mice.empty())
   {
     const RAWINPUTDEVICE rrid = {HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_MOUSE, 0, m_dummy_window};
     if (!RegisterRawInputDevices(&rrid, 1, sizeof(rrid)))
       return false;
+
+    for (u32 i = 0; i < static_cast<u32>(m_mice.size()); i++)
+      InputManager::OnInputDeviceConnected(InputManager::GetPointerDeviceName(i), GetMouseDeviceName(i));
   }
 
   return true;
@@ -203,17 +265,16 @@ bool Win32RawInputSource::OpenDevices()
 
 void Win32RawInputSource::CloseDevices()
 {
-  if (m_num_keyboards > 0)
-  {
-    const RAWINPUTDEVICE rrid = {HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_MOUSE, RIDEV_REMOVE, m_dummy_window};
-    RegisterRawInputDevices(&rrid, 1, sizeof(rrid));
-    m_num_keyboards = 0;
-  }
-
   if (!m_mice.empty())
   {
     const RAWINPUTDEVICE rrid = {HID_USAGE_PAGE_GENERIC, HID_USAGE_GENERIC_KEYBOARD, RIDEV_REMOVE, m_dummy_window};
     RegisterRawInputDevices(&rrid, 1, sizeof(rrid));
+
+    for (u32 i = 0; i < static_cast<u32>(m_mice.size()); i++)
+    {
+      InputManager::OnInputDeviceDisconnected(InputManager::MakePointerAxisKey(i, InputPointerAxis::X),
+                                              InputManager::GetPointerDeviceName(i));
+    }
     m_mice.clear();
   }
 }
@@ -222,9 +283,9 @@ bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
 {
   if (event->header.dwType == RIM_TYPEMOUSE)
   {
-    const u32 mouse_index = 0;
-    for (MouseState& state : m_mice)
+    for (u32 pointer_index = 0; pointer_index < static_cast<u32>(m_mice.size()); pointer_index++)
     {
+      MouseState& state = m_mice[pointer_index];
       if (state.device != event->header.hDevice)
         continue;
 
@@ -244,10 +305,6 @@ bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
         (rm.usButtonFlags & (rm.usButtonFlags ^ std::exchange(state.button_state, rm.usButtonFlags))) &
         ALL_BUTTON_MASKS;
 
-      // when the VM isn't running, allow events to run as normal (so we don't break the UI)
-      if (System::GetState() != System::State::Running)
-        return false;
-
       while (button_mask != 0)
       {
         unsigned long bit_index;
@@ -255,17 +312,17 @@ bool Win32RawInputSource::ProcessRawInputEvent(const RAWINPUT* event)
 
         // these are ordered down..up for each button
         const u32 button_number = bit_index >> 1;
-        const bool button_pressed = (bit_index & 1u) != 0;
-        InputManager::InvokeEvents(InputManager::MakePointerButtonKey(mouse_index, button_number),
+        const bool button_pressed = (bit_index & 1u) == 0;
+        InputManager::InvokeEvents(InputManager::MakePointerButtonKey(pointer_index, button_number),
                                    static_cast<float>(button_pressed), GenericInputBinding::Unknown);
 
         button_mask &= ~(1u << bit_index);
       }
 
       if (dx != 0)
-        InputManager::UpdatePointerRelativeDelta(mouse_index, InputPointerAxis::X, static_cast<float>(dx), true);
+        InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::X, static_cast<float>(dx), true);
       if (dy != 0)
-        InputManager::UpdatePointerRelativeDelta(mouse_index, InputPointerAxis::Y, static_cast<float>(dy), true);
+        InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::Y, static_cast<float>(dy), true);
 
       return true;
     }

@@ -100,7 +100,7 @@ public:
   u32 GetButtonStateBits() const override;
   std::optional<u32> GetAnalogInputBytes() const override;
 
-  void LoadSettings(SettingsInterface& si, const char* section) override;
+  void LoadSettings(SettingsInterface& si, const char* section, bool initial) override;
 
 private:
   enum class TransferState : u8

@@ -766,9 +766,9 @@ const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRum
                                                        s_settings,
                                                        Controller::VibrationCapabilities::LargeSmallMotors};
 
-void NeGconRumble::LoadSettings(SettingsInterface& si, const char* section)
+void NeGconRumble::LoadSettings(SettingsInterface& si, const char* section, bool initial)
 {
-  Controller::LoadSettings(si, section);
+  Controller::LoadSettings(si, section, initial);
   m_steering_deadzone = si.GetFloatValue(section, "SteeringDeadzone", 0.10f);
   m_steering_sensitivity = si.GetFloatValue(section, "SteeringSensitivity", 1.00f);
   m_rumble_bias = static_cast<u8>(std::min<u32>(si.GetIntValue(section, "VibrationBias", 8), 255));

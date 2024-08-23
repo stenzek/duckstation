@@ -233,14 +233,11 @@ float ImGuiManager::GetWindowHeight()
   return s_window_height;
 }
 
-void ImGuiManager::WindowResized()
+void ImGuiManager::WindowResized(float width, float height)
 {
-  const u32 new_width = g_gpu_device ? g_gpu_device->GetWindowWidth() : 0;
-  const u32 new_height = g_gpu_device ? g_gpu_device->GetWindowHeight() : 0;
-
-  s_window_width = static_cast<float>(new_width);
-  s_window_height = static_cast<float>(new_height);
-  ImGui::GetIO().DisplaySize = ImVec2(s_window_width, s_window_height);
+  s_window_width = width;
+  s_window_height = height;
+  ImGui::GetIO().DisplaySize = ImVec2(width, height);
 
   // Scale might have changed as a result of window resize.
   RequestScaleUpdate();
@@ -1053,7 +1050,7 @@ void ImGuiManager::DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<
 void ImGuiManager::RenderSoftwareCursors()
 {
   // This one's okay to race, worst that happens is we render the wrong number of cursors for a frame.
-  const u32 pointer_count = InputManager::MAX_POINTER_DEVICES;
+  const u32 pointer_count = InputManager::GetPointerCount();
   for (u32 i = 0; i < pointer_count; i++)
     DrawSoftwareCursor(s_software_cursors[i], InputManager::GetPointerAbsolutePosition(i));
 
@@ -1076,8 +1073,8 @@ void ImGuiManager::SetSoftwareCursor(u32 index, std::string image_path, float im
     UpdateSoftwareCursorTexture(index);
 
   // Hide the system cursor when we activate a software cursor.
-  if (is_hiding_or_showing && index == 0)
-    InputManager::UpdateHostMouseMode();
+  if (is_hiding_or_showing && index <= InputManager::MAX_POINTER_DEVICES)
+    InputManager::UpdateRelativeMouseMode();
 }
 
 bool ImGuiManager::HasSoftwareCursor(u32 index)

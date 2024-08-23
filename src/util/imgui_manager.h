@@ -35,7 +35,7 @@ float GetWindowWidth();
 float GetWindowHeight();
 
 /// Updates internal state when the window is size.
-void WindowResized();
+void WindowResized(float width, float height);
 
 /// Updates scaling of the on-screen elements.
 void RequestScaleUpdate();
