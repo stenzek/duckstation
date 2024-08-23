@@ -72,6 +72,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "DisableTrueColor",
   "DisableUpscaling",
   "DisableTextureFiltering",
+  "DisableSpriteTextureFiltering",
   "DisableScaledDithering",
   "DisableForceNTSCTimings",
   "DisableWidescreen",
@@ -101,6 +102,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_NOOP("GameDatabase", "Disable True Color"),
   TRANSLATE_NOOP("GameDatabase", "Disable Upscaling"),
   TRANSLATE_NOOP("GameDatabase", "Disable Texture Filtering"),
+  TRANSLATE_NOOP("GameDatabase", "Disable Sprite Texture Filtering"),
   TRANSLATE_NOOP("GameDatabase", "Disable Scaled Dithering"),
   TRANSLATE_NOOP("GameDatabase", "Disable Force NTSC Timings"),
   TRANSLATE_NOOP("GameDatabase", "Disable Widescreen"),
@@ -558,6 +560,16 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.gpu_texture_filter = GPUTextureFilter::Nearest;
+    settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
+  }
+
+  if (HasTrait(Trait::DisableSpriteTextureFiltering))
+  {
+    if (display_osd_messages && g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
+    {
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Sprite texture filtering disabled."));
+    }
+
     settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
   }
 
