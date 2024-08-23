@@ -82,7 +82,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
 
   populateLanguageDropdown(m_ui.language);
   SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.language, "Main", "Language", QtHost::GetDefaultLanguage());
-  connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &InterfaceSettingsWidget::onLanguageChanged);
+  connect(m_ui.language, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &InterfaceSettingsWidget::onLanguageChanged);
 
   onRenderToSeparateWindowChanged();
 
@@ -118,24 +119,27 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   dialog->registerWidgetHelp(m_ui.enableDiscordPresence, tr("Enable Discord Presence"), tr("Unchecked"),
                              tr("Shows the game you are currently playing as part of your profile in Discord."));
 
+  dialog->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
+                             tr("Automatically checks for updates to the program on startup. Updates can be deferred "
+                                "until later or skipped entirely."));
+
+  m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_tag_str).arg(g_scm_date_str));
+
   if (!m_dialog->isPerGameSettings() && AutoUpdaterDialog::isSupported())
   {
     SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.autoUpdateEnabled, "AutoUpdater", "CheckAtStartup", true);
-    dialog->registerWidgetHelp(m_ui.autoUpdateEnabled, tr("Enable Automatic Update Check"), tr("Checked"),
-                               tr("Automatically checks for updates to the program on startup. Updates can be deferred "
-                                  "until later or skipped entirely."));
-
     m_ui.autoUpdateTag->addItems(AutoUpdaterDialog::getTagList());
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.autoUpdateTag, "AutoUpdater", "UpdateTag",
                                                    AutoUpdaterDialog::getDefaultTag());
-
-    m_ui.autoUpdateCurrentVersion->setText(tr("%1 (%2)").arg(g_scm_tag_str).arg(g_scm_date_str));
-    connect(m_ui.checkForUpdates, &QPushButton::clicked, []() { g_main_window->checkForUpdates(true); });
+    connect(m_ui.checkForUpdates, &QPushButton::clicked, this, []() { g_main_window->checkForUpdates(true); });
   }
   else
   {
-    m_ui.verticalLayout->removeWidget(m_ui.updatesGroup);
-    m_ui.updatesGroup->hide();
+    m_ui.autoUpdateTag->addItem(tr("Unavailable"));
+    m_ui.autoUpdateEnabled->setEnabled(false);
+    m_ui.autoUpdateTag->setEnabled(false);
+    m_ui.checkForUpdates->setEnabled(false);
+    m_ui.updatesGroup->setEnabled(false);
   }
 }
 
