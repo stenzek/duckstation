@@ -103,6 +103,15 @@ bool AutoUpdaterDialog::isSupported()
 #endif
 }
 
+bool AutoUpdaterDialog::isOfficialBuild()
+{
+#if !__has_include("scmversion/tag.h")
+  return false;
+#else
+  return true;
+#endif
+}
+
 bool AutoUpdaterDialog::warnAboutUnofficialBuild()
 {
   //
@@ -746,7 +755,8 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   }
   if (info.suffix() != QStringLiteral("app"))
   {
-    reportError(fmt::format("Unexpected application suffix {} on {}.", info.suffix().toStdString(), bundle_path.value()));
+    reportError(
+      fmt::format("Unexpected application suffix {} on {}.", info.suffix().toStdString(), bundle_path.value()));
     return false;
   }
 
