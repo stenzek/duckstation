@@ -38,10 +38,7 @@
 #include <mfreadwrite.h>
 #include <wrl/client.h>
 
-#pragma comment(lib, "mfreadwrite")
-#pragma comment(lib, "mfplat")
 #pragma comment(lib, "mfuuid")
-#pragma comment(lib, "Mf")
 #endif
 
 #ifndef __ANDROID__
@@ -179,6 +176,9 @@ protected:
   std::atomic<u32> m_audio_buffer_size{0};
   u32 m_audio_buffer_write_pos = 0;
   ALIGN_TO_CACHE_LINE u32 m_audio_buffer_read_pos = 0;
+
+  // Shared across all backends.
+  [[maybe_unused]] static inline std::mutex s_load_mutex;
 };
 
 MediaCaptureBase::~MediaCaptureBase() = default;
@@ -615,6 +615,19 @@ void MediaCaptureBase::DeleteOutputFile()
 
 #ifdef _WIN32
 
+#define VISIT_MFPLAT_IMPORTS(X)                                                                                        \
+  X(MFCreateMediaType)                                                                                                 \
+  X(MFCreateMemoryBuffer)                                                                                              \
+  X(MFCreateSample)                                                                                                    \
+  X(MFHeapFree)                                                                                                        \
+  X(MFShutdown)                                                                                                        \
+  X(MFStartup)                                                                                                         \
+  X(MFTEnumEx)
+
+#define VISIT_MFREADWRITE_IMPORTS(X) X(MFCreateSinkWriterFromURL)
+
+#define VISIT_MF_IMPORTS(X) X(MFTranscodeGetAudioOutputAvailableTypes)
+
 class MediaCaptureMF final : public MediaCaptureBase
 {
   template<class T>
@@ -680,10 +693,21 @@ private:
   ComPtr<IMFSample> m_video_output_sample;
   u32 m_wanted_video_samples = 0;
   DWORD m_video_sample_size = 0;
-};
 
-static std::once_flag s_media_foundation_initialized_flag;
-static HRESULT s_media_foundation_initialized = S_OK;
+#define DECLARE_IMPORT(X) static inline decltype(X)* wrap_##X;
+  VISIT_MFPLAT_IMPORTS(DECLARE_IMPORT);
+  VISIT_MFREADWRITE_IMPORTS(DECLARE_IMPORT);
+  VISIT_MF_IMPORTS(DECLARE_IMPORT);
+#undef DECLARE_IMPORT
+
+  static bool LoadMediaFoundation(Error* error);
+  static void UnloadMediaFoundation();
+
+  static inline DynamicLibrary s_mfplat_library;
+  static inline DynamicLibrary s_mfreadwrite_library;
+  static inline DynamicLibrary s_mf_library;
+  static inline bool s_library_loaded = false;
+};
 
 struct MediaFoundationVideoCodec
 {
@@ -718,27 +742,71 @@ static constexpr const MediaFoundationAudioCodec s_media_foundation_audio_codecs
   {"pcm", "Uncompressed PCM", MFAudioFormat_PCM, 0, std::numeric_limits<u32>::max()},
 };
 
-static bool InitializeMediaFoundation(Error* error)
+bool MediaCaptureMF::LoadMediaFoundation(Error* error)
 {
-  std::call_once(s_media_foundation_initialized_flag, []() {
-    s_media_foundation_initialized = MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET);
-    if (SUCCEEDED(s_media_foundation_initialized))
-      std::atexit([]() { MFShutdown(); });
-  });
-  if (FAILED(s_media_foundation_initialized)) [[unlikely]]
+  std::unique_lock lock(s_load_mutex);
+  if (s_library_loaded)
+    return true;
+
+  bool result = s_mfplat_library.Open("mfplat.dll", error);
+  result = result && s_mfreadwrite_library.Open("mfreadwrite.dll", error);
+  result = result && s_mf_library.Open("mf.dll", error);
+
+#define RESOLVE_IMPORT(X) result = result && s_mfplat_library.GetSymbol(#X, &wrap_##X);
+  VISIT_MFPLAT_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_mfreadwrite_library.GetSymbol(#X, &wrap_##X);
+  VISIT_MFREADWRITE_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+#define RESOLVE_IMPORT(X) result = result && s_mf_library.GetSymbol(#X, &wrap_##X);
+  VISIT_MF_IMPORTS(RESOLVE_IMPORT);
+#undef RESOLVE_IMPORT
+
+  HRESULT hr;
+  if (result && FAILED(hr = wrap_MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET))) [[unlikely]]
   {
-    Error::SetHResult(error, "MFStartup() failed: ", s_media_foundation_initialized);
-    return false;
+    Error::SetHResult(error, "MFStartup() failed: ", hr);
+    result = false;
   }
 
-  return true;
+  if (result) [[likely]]
+  {
+    s_library_loaded = true;
+    std::atexit(&MediaCaptureMF::UnloadMediaFoundation);
+    return true;
+  }
+
+  UnloadMediaFoundation();
+
+  Error::AddPrefix(error, TRANSLATE_SV("MediaCapture", "Failed to load Media Foundation libraries: "));
+  return false;
 }
+
+void MediaCaptureMF::UnloadMediaFoundation()
+{
+#define CLEAR_IMPORT(X) wrap_##X = nullptr;
+  VISIT_MF_IMPORTS(CLEAR_IMPORT);
+  VISIT_MFREADWRITE_IMPORTS(CLEAR_IMPORT);
+  VISIT_MFPLAT_IMPORTS(CLEAR_IMPORT);
+#undef CLEAR_IMPORT
+
+  s_mf_library.Close();
+  s_mfreadwrite_library.Close();
+  s_mfplat_library.Close();
+  s_library_loaded = false;
+}
+
+#undef VISIT_MF_IMPORTS
+#undef VISIT_MFREADWRITE_IMPORTS
+#undef VISIT_MFPLAT_IMPORTS
 
 MediaCaptureMF::~MediaCaptureMF() = default;
 
 std::unique_ptr<MediaCapture> MediaCaptureMF::Create(Error* error)
 {
-  if (!InitializeMediaFoundation(error))
+  if (!LoadMediaFoundation(error))
     return nullptr;
 
   return std::make_unique<MediaCaptureMF>();
@@ -828,8 +896,8 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
       static_cast<LONGLONG>(static_cast<double>(TEN_NANOSECONDS) / static_cast<double>(sample_rate));
   }
 
-  if (FAILED(hr = MFCreateSinkWriterFromURL(StringUtil::UTF8StringToWideString(m_path).c_str(), nullptr, nullptr,
-                                            m_sink_writer.GetAddressOf())))
+  if (FAILED(hr = wrap_MFCreateSinkWriterFromURL(StringUtil::UTF8StringToWideString(m_path).c_str(), nullptr, nullptr,
+                                                 m_sink_writer.GetAddressOf())))
   {
     Error::SetHResult(error, "MFCreateSinkWriterFromURL() failed: ", hr);
     return false;
@@ -927,8 +995,8 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(Com
 
   IMFActivate** transforms = nullptr;
   UINT32 num_transforms = 0;
-  HRESULT hr = MFTEnumEx(MFT_CATEGORY_VIDEO_PROCESSOR, MFT_ENUM_FLAG_SORTANDFILTER, &input_type_info, &output_type_info,
-                         &transforms, &num_transforms);
+  HRESULT hr = wrap_MFTEnumEx(MFT_CATEGORY_VIDEO_PROCESSOR, MFT_ENUM_FLAG_SORTANDFILTER, &input_type_info,
+                              &output_type_info, &transforms, &num_transforms);
   if (FAILED(hr)) [[unlikely]]
   {
     Error::SetHResult(error, "YUV MFTEnumEx() failed: ", hr);
@@ -943,7 +1011,7 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(Com
   ComPtr<IMFTransform> transform;
   hr = transforms[0]->ActivateObject(IID_PPV_ARGS(transform.GetAddressOf()));
   if (transforms)
-    MFHeapFree(transforms);
+    wrap_MFHeapFree(transforms);
   if (FAILED(hr)) [[unlikely]]
   {
     Error::SetHResult(error, "YUV ActivateObject() failed: ", hr);
@@ -951,8 +1019,8 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(Com
   }
 
   ComPtr<IMFMediaType> input_type;
-  if (FAILED(hr = MFCreateMediaType(input_type.GetAddressOf())) ||
-      FAILED(hr = MFCreateMediaType(output_type->GetAddressOf()))) [[unlikely]]
+  if (FAILED(hr = wrap_MFCreateMediaType(input_type.GetAddressOf())) ||
+      FAILED(hr = wrap_MFCreateMediaType(output_type->GetAddressOf()))) [[unlikely]]
   {
     Error::SetHResult(error, "YUV MFCreateMediaType() failed: ", hr);
     return nullptr;
@@ -1020,8 +1088,8 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(
   IMFActivate** transforms = nullptr;
   UINT32 num_transforms = 0;
   HRESULT hr =
-    MFTEnumEx(MFT_CATEGORY_VIDEO_ENCODER, (hardware ? MFT_ENUM_FLAG_HARDWARE : 0) | MFT_ENUM_FLAG_SORTANDFILTER,
-              &input_type_info, &output_type_info, &transforms, &num_transforms);
+    wrap_MFTEnumEx(MFT_CATEGORY_VIDEO_ENCODER, (hardware ? MFT_ENUM_FLAG_HARDWARE : 0) | MFT_ENUM_FLAG_SORTANDFILTER,
+                   &input_type_info, &output_type_info, &transforms, &num_transforms);
   if (FAILED(hr)) [[unlikely]]
   {
     Error::SetHResult(error, "Encoder MFTEnumEx() failed: ", hr);
@@ -1036,7 +1104,7 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(
   ComPtr<IMFTransform> transform;
   hr = transforms[0]->ActivateObject(IID_PPV_ARGS(transform.GetAddressOf()));
   if (transforms)
-    MFHeapFree(transforms);
+    wrap_MFHeapFree(transforms);
   if (FAILED(hr)) [[unlikely]]
   {
     Error::SetHResult(error, "Encoder ActivateObject() failed: ", hr);
@@ -1060,7 +1128,7 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(
       INFO_LOG("Using async video transform.");
   }
 
-  if (FAILED(hr = MFCreateMediaType(output_type->GetAddressOf()))) [[unlikely]]
+  if (FAILED(hr = wrap_MFCreateMediaType(output_type->GetAddressOf()))) [[unlikely]]
   {
     Error::SetHResult(error, "Encoder MFCreateMediaType() failed: ", hr);
     return nullptr;
@@ -1220,7 +1288,7 @@ bool MediaCaptureMF::SendFrame(const PendingFrame& pf, Error* error)
 
   HRESULT hr;
   ComPtr<IMFMediaBuffer> buffer;
-  if (FAILED(hr = MFCreateMemoryBuffer(buffer_size, buffer.GetAddressOf()))) [[unlikely]]
+  if (FAILED(hr = wrap_MFCreateMemoryBuffer(buffer_size, buffer.GetAddressOf()))) [[unlikely]]
   {
     Error::SetHResult(error, "MFCreateMemoryBuffer() failed: ", hr);
     return false;
@@ -1244,7 +1312,7 @@ bool MediaCaptureMF::SendFrame(const PendingFrame& pf, Error* error)
   }
 
   ComPtr<IMFSample> sample;
-  if (FAILED(hr = MFCreateSample(sample.GetAddressOf()))) [[unlikely]]
+  if (FAILED(hr = wrap_MFCreateSample(sample.GetAddressOf()))) [[unlikely]]
   {
     Error::SetHResult(error, "MFCreateSample() failed: ", hr);
     return false;
@@ -1284,13 +1352,13 @@ bool MediaCaptureMF::SendFrame(const PendingFrame& pf, Error* error)
     if (!m_video_yuv_sample)
     {
       ComPtr<IMFMediaBuffer> yuv_membuf;
-      if (FAILED(hr = MFCreateMemoryBuffer(buffer_size, yuv_membuf.GetAddressOf()))) [[unlikely]]
+      if (FAILED(hr = wrap_MFCreateMemoryBuffer(buffer_size, yuv_membuf.GetAddressOf()))) [[unlikely]]
       {
         Error::SetHResult(error, "YUV MFCreateMemoryBuffer() failed: ", hr);
         return false;
       }
 
-      if (FAILED(hr = MFCreateSample(m_video_yuv_sample.GetAddressOf()))) [[unlikely]]
+      if (FAILED(hr = wrap_MFCreateSample(m_video_yuv_sample.GetAddressOf()))) [[unlikely]]
       {
         Error::SetHResult(error, "YUV MFCreateSample() failed: ", hr);
         return false;
@@ -1352,13 +1420,13 @@ bool MediaCaptureMF::ProcessVideoOutputSamples(Error* error)
     if (m_video_sample_size > 0 && !m_video_output_sample)
     {
       ComPtr<IMFMediaBuffer> video_membuf;
-      if (FAILED(hr = MFCreateMemoryBuffer(m_video_sample_size, video_membuf.GetAddressOf()))) [[unlikely]]
+      if (FAILED(hr = wrap_MFCreateMemoryBuffer(m_video_sample_size, video_membuf.GetAddressOf()))) [[unlikely]]
       {
         Error::SetHResult(error, "YUV MFCreateMemoryBuffer() failed: ", hr);
         return false;
       }
 
-      if (FAILED(hr = MFCreateSample(m_video_output_sample.GetAddressOf()))) [[unlikely]]
+      if (FAILED(hr = wrap_MFCreateSample(m_video_output_sample.GetAddressOf()))) [[unlikely]]
       {
         Error::SetHResult(error, "YUV MFCreateSample() failed: ", hr);
         return false;
@@ -1469,13 +1537,13 @@ bool MediaCaptureMF::ProcessVideoEvents(Error* error)
         if (m_video_sample_size > 0 && !m_video_output_sample)
         {
           ComPtr<IMFMediaBuffer> video_membuf;
-          if (FAILED(hr = MFCreateMemoryBuffer(m_video_sample_size, video_membuf.GetAddressOf()))) [[unlikely]]
+          if (FAILED(hr = wrap_MFCreateMemoryBuffer(m_video_sample_size, video_membuf.GetAddressOf()))) [[unlikely]]
           {
             Error::SetHResult(error, "YUV MFCreateMemoryBuffer() failed: ", hr);
             return false;
           }
 
-          if (FAILED(hr = MFCreateSample(m_video_output_sample.GetAddressOf()))) [[unlikely]]
+          if (FAILED(hr = wrap_MFCreateSample(m_video_output_sample.GetAddressOf()))) [[unlikely]]
           {
             Error::SetHResult(error, "YUV MFCreateSample() failed: ", hr);
             return false;
@@ -1544,7 +1612,7 @@ bool MediaCaptureMF::GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>*
   }
 
   HRESULT hr;
-  if (FAILED(hr = MFCreateMediaType(input_type->GetAddressOf()))) [[unlikely]]
+  if (FAILED(hr = wrap_MFCreateMediaType(input_type->GetAddressOf()))) [[unlikely]]
   {
     Error::SetHResult(error, "Audio MFCreateMediaType() failed: ", hr);
     return false;
@@ -1575,7 +1643,7 @@ bool MediaCaptureMF::GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>*
 
   ComPtr<IMFCollection> output_types_collection;
   DWORD output_types_collection_size = 0;
-  hr = MFTranscodeGetAudioOutputAvailableTypes(output_subtype, 0, nullptr, output_types_collection.GetAddressOf());
+  hr = wrap_MFTranscodeGetAudioOutputAvailableTypes(output_subtype, 0, nullptr, output_types_collection.GetAddressOf());
   if (FAILED(hr) || FAILED(hr = output_types_collection->GetElementCount(&output_types_collection_size))) [[unlikely]]
   {
     Error::SetHResult(error, "MFTranscodeGetAudioOutputAvailableTypes() failed: ", hr);
@@ -1642,7 +1710,7 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
 
     const u32 buffer_size = contig_frames * sizeof(s16) * AUDIO_CHANNELS;
     ComPtr<IMFMediaBuffer> buffer;
-    if (FAILED(hr = MFCreateMemoryBuffer(buffer_size, buffer.GetAddressOf()))) [[unlikely]]
+    if (FAILED(hr = wrap_MFCreateMemoryBuffer(buffer_size, buffer.GetAddressOf()))) [[unlikely]]
     {
       Error::SetHResult(error, "Audio MFCreateMemoryBuffer() failed: ", hr);
       return false;
@@ -1665,7 +1733,7 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
     }
 
     ComPtr<IMFSample> sample;
-    if (FAILED(hr = MFCreateSample(sample.GetAddressOf()))) [[unlikely]]
+    if (FAILED(hr = wrap_MFCreateSample(sample.GetAddressOf()))) [[unlikely]]
     {
       Error::SetHResult(error, "Audio MFCreateSample() failed: ", hr);
       return false;
@@ -1876,7 +1944,6 @@ private:
   static inline DynamicLibrary s_swscale_library;
   static inline DynamicLibrary s_swresample_library;
   static inline bool s_library_loaded = false;
-  static inline std::mutex s_load_mutex;
 };
 
 bool MediaCaptureFFmpeg::LoadFFmpeg(Error* error)
