@@ -926,7 +926,7 @@ bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 
 bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 {
-  if (!ImGui::GetCurrentContext() || value == 0.0f || key.data < static_cast<u32>(InputPointerAxis::WheelX))
+  if (!ImGui::GetCurrentContext() || key.data < static_cast<u32>(InputPointerAxis::WheelX))
     return false;
 
   // still update state anyway

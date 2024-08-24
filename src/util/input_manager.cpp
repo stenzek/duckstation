@@ -1187,6 +1187,9 @@ void InputManager::GenerateRelativeMouseEvents()
     {
       PointerAxisState& state = s_pointer_state[device][axis];
       const float delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
+      if (delta == 0.0f)
+        continue;
+
       const float unclamped_value = delta * s_pointer_axis_scale[axis];
 
       const InputBindingKey key(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)));
@@ -1276,7 +1279,7 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
 
 void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input)
 {
-  if (index >= MAX_POINTER_DEVICES || !s_relative_mouse_mode_active)
+  if (index >= MAX_POINTER_DEVICES || (axis < InputPointerAxis::WheelX && !s_relative_mouse_mode_active))
     return;
 
   s_host_pointer_positions[index][static_cast<u8>(axis)] += d;
