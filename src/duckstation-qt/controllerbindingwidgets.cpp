@@ -478,8 +478,7 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
   for (const Controller::ControllerBindingInfo& bi : m_controller_info->bindings)
   {
     if (bi.type == InputBindingInfo::Type::Axis || bi.type == InputBindingInfo::Type::HalfAxis ||
-        bi.type == InputBindingInfo::Type::Button || bi.type == InputBindingInfo::Type::Pointer ||
-        bi.type == InputBindingInfo::Type::AbsolutePointer)
+        bi.type == InputBindingInfo::Type::Button || bi.type == InputBindingInfo::Type::Pointer)
     {
       InputBindingWidget* widget = parent->findChild<InputBindingWidget*>(QString::fromUtf8(bi.name));
       if (!widget)
