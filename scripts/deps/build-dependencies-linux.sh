@@ -15,7 +15,7 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 fi
 
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
-LIBJPEG=9f
+LIBJPEGTURBO=3.0.3
 LIBPNG=1.6.43
 LIBWEBP=1.4.0
 SDL2=2.30.6
@@ -33,7 +33,7 @@ cd deps-build
 
 cat > SHASUMS <<EOF
 fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
-04705c110cb2469caa79fb71fba3d7bf834914706e9641a4589485c1f832565b  jpegsrc.v$LIBJPEG.tar.gz
+343e789069fc7afbcdfe44dbba7dbbf45afa98a15150e079a38e60e44578865d  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
 c6ef64ca18a19d13df6eb22df9aff19fb0db65610a74cc81dae33a82235cacd4  SDL2-$SDL2.tar.gz
@@ -52,7 +52,7 @@ EOF
 
 curl -C - -L \
 	-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.zip" \
-	-O "https://ijg.org/files/jpegsrc.v$LIBJPEG.tar.gz" \
+	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
 	-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL2/SDL2-$SDL2.tar.gz" \
@@ -88,21 +88,19 @@ echo "Building libpng..."
 rm -fr "libpng-$LIBPNG"
 tar xf "libpng-$LIBPNG.tar.xz"
 cd "libpng-$LIBPNG"
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DPNG_TESTS=OFF -DPNG_STATIC=OFF -DPNG_SHARED=ON -DPNG_TOOLS=OFF -B build -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
 
 echo "Building libjpeg..."
-rm -fr "jpeg-$LIBJPEG"
-tar xf "jpegsrc.v$LIBJPEG.tar.gz"
-cd "jpeg-$LIBJPEG"
-mkdir build
-cd build
-../configure --prefix="$INSTALLDIR" --disable-static --enable-shared
-make "-j$NPROCS"
-make install
-cd ../..
+rm -fr "libjpeg-turbo-$LIBJPEGTURBO"
+tar xf "libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
+cd "libjpeg-turbo-$LIBJPEGTURBO"
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja
+cmake --build build --parallel
+ninja -C build install
+cd ..
 
 echo "Building Zstandard..."
 rm -fr "zstd-$ZSTD"
