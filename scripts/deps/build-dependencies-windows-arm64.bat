@@ -56,7 +56,7 @@ set ZSTD=1.5.6
 
 set CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
 set DISCORD_RPC=144f3a3f1209994d8d9e8a87964a989cb9911c1e
-set SHADERC=feb2460bf3a504d67011246edeb810c45ea58826
+set SHADERC=f60bb80e255144e71776e2ad570d89b78ea2ab4f
 set SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 set SPIRV_CROSS=vulkan-sdk-1.3.290.0
 
@@ -77,7 +77,7 @@ call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https:/
 
 call :downloadfile "cpuinfo-%CPUINFO%.zip" "https://github.com/pytorch/cpuinfo/archive/%CPUINFO%.zip" 13146ae7983d767a678dd01b0d6af591e77cec82babd41264b9164ab808d7d41 || goto error
 call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.zip" 61e185e75d37b360c314125bcdf4697192d15e2d5209db3306ed6cd736d508b3 || goto error
-call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" a50687a3903328976c3a49f6ba6326196f7713660048957eb033408630af70b1 || goto error
+call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" d24760f3c20a0ca39dfa85b84b6cf65eee077cd168e7aa08502e60c168ef05f6 || goto error
 call :downloadfile "soundtouch-%SOUNDTOUCH%.zip" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.zip" 107a1941181a69abe28018b9ad26fc0218625758ac193bc979abc9e26b7c0c3a || goto error
 
 if not exist SPIRV-Cross\ (
