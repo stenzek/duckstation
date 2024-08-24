@@ -60,17 +60,17 @@
    </item>
    <item row="6" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout_6">
-      <item>
-        <widget class="QComboBox" name="region">
-        <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-          </sizepolicy>
-        </property>
-        </widget>
-      </item>
-      <item>
+     <item>
+      <widget class="QComboBox" name="region">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="restoreRegion">
        <property name="enabled">
         <bool>false</bool>
@@ -79,7 +79,7 @@
         <string>Restore</string>
        </property>
       </widget>
-	 </item>
+     </item>
     </layout>
    </item>
    <item row="0" column="0">
@@ -106,7 +106,7 @@
    <item row="18" column="0" colspan="2">
     <widget class="QTableWidget" name="tracks">
      <property name="editTriggers">
-      <set>QAbstractItemView::NoEditTriggers</set>
+      <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
      </property>
      <property name="cornerButtonEnabled">
       <bool>false</bool>
@@ -216,15 +216,12 @@
      </property>
     </widget>
    </item>
-   <item row="13" column="1">
-    <widget class="QComboBox" name="inputProfile"/>
-   </item>
    <item row="16" column="1">
     <layout class="QHBoxLayout" name="verifyLayout" stretch="0,1,0">
      <item>
       <spacer name="verifySpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -306,8 +303,21 @@
         <string>Comments</string>
        </property>
        <property name="icon">
-        <iconset theme="information-line">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="information-line"/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="13" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+     <item>
+      <widget class="QComboBox" name="inputProfile"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="editInputProfile">
+       <property name="text">
+        <string>Edit...</string>
        </property>
       </widget>
      </item>

@@ -27,6 +27,7 @@ public:
 private Q_SLOTS:
   void onCompatibilityCommentsClicked();
   void onInputProfileChanged(int index);
+  void onEditInputProfileClicked();
   void onComputeHashClicked();
 
 private:
@@ -36,6 +37,7 @@ private:
   void updateWindowTitle();
   void setCustomTitle(const std::string& text);
   void setCustomRegion(int region);
+  void setRevisionText(const QString& text);
 
   void populateTracksInfo();
 

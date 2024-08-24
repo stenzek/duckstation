@@ -2394,6 +2394,13 @@ void MainWindow::doControllerSettings(
     dlg->setCategory(category);
 }
 
+void MainWindow::openInputProfileEditor(const std::string_view name)
+{
+  ControllerSettingsWindow* dlg = getControllerSettingsWindow();
+  QtUtils::ShowOrRaiseWindow(dlg);
+  dlg->switchProfile(name);
+}
+
 void MainWindow::updateDebugMenuCPUExecutionMode()
 {
   std::optional<CPUExecutionMode> current_mode =

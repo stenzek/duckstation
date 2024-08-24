@@ -2798,7 +2798,7 @@ void FullscreenUI::DoCopyGameSettings()
     return;
 
   Settings temp_settings;
-  temp_settings.Load(*GetEditingSettingsInterface(false));
+  temp_settings.Load(*GetEditingSettingsInterface(false), *GetEditingSettingsInterface(false));
   temp_settings.Save(*s_game_settings_interface, true);
   SetSettingsChanged(s_game_settings_interface.get());
 
@@ -3652,20 +3652,20 @@ void FullscreenUI::DrawControllerSettingsPage()
   if (IsEditingGameSettings(bsi))
   {
     if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COG, "Per-Game Configuration"),
-                          FSUI_CSTR("Uses game-specific settings for controllers for this game."), "Pad",
+                          FSUI_CSTR("Uses game-specific settings for controllers for this game."), "ControllerPorts",
                           "UseGameSettingsForController", false, IsEditingGameSettings(bsi), false))
     {
       // did we just enable per-game for the first time?
-      if (bsi->GetBoolValue("Pad", "UseGameSettingsForController", false) &&
-          !bsi->GetBoolValue("Pad", "GameSettingsInitialized", false))
+      if (bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false) &&
+          !bsi->GetBoolValue("ControllerPorts", "GameSettingsInitialized", false))
       {
-        bsi->SetBoolValue("Pad", "GameSettingsInitialized", true);
+        bsi->SetBoolValue("ControllerPorts", "GameSettingsInitialized", true);
         CopyGlobalControllerSettingsToGame();
       }
     }
   }
 
-  if (IsEditingGameSettings(bsi) && !bsi->GetBoolValue("Pad", "UseGameSettingsForController", false))
+  if (IsEditingGameSettings(bsi) && !bsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
   {
     // nothing to edit..
     EndMenuButtons();

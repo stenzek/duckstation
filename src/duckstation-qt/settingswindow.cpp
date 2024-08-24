@@ -296,7 +296,7 @@ void SettingsWindow::onCopyGlobalSettingsClicked()
   {
     auto lock = Host::GetSettingsLock();
     Settings temp;
-    temp.Load(*Host::Internal::GetBaseSettingsLayer());
+    temp.Load(*Host::Internal::GetBaseSettingsLayer(), *Host::Internal::GetBaseSettingsLayer());
     temp.Save(*m_sif.get(), true);
   }
   saveAndReloadGameSettings();

@@ -354,7 +354,7 @@ struct Settings
     DEFAULT_VRAM_WRITE_DUMP_HEIGHT_THRESHOLD = 128,
   };
 
-  void Load(SettingsInterface& si);
+  void Load(SettingsInterface& si, SettingsInterface& controller_si);
   void Save(SettingsInterface& si, bool ignore_base) const;
   static void Clear(SettingsInterface& si);
 

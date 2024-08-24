@@ -247,7 +247,7 @@ void ControllerBindingWidget::onTypeChanged()
   m_controller_info = Controller::GetControllerInfo(static_cast<ControllerType>(index));
   DebugAssert(m_controller_info);
 
-  SettingsInterface* sif = m_dialog->getProfileSettingsInterface();
+  SettingsInterface* sif = m_dialog->getEditingSettingsInterface();
   if (sif)
   {
     sif->SetStringValue(m_config_section.c_str(), "Type", m_controller_info->name);
@@ -307,7 +307,7 @@ void ControllerBindingWidget::onClearBindingsClicked()
   }
   else
   {
-    InputManager::ClearPortBindings(*m_dialog->getProfileSettingsInterface(), m_port_number);
+    InputManager::ClearPortBindings(*m_dialog->getEditingSettingsInterface(), m_port_number);
   }
 
   saveAndRefresh();
@@ -358,8 +358,8 @@ void ControllerBindingWidget::doDeviceAutomaticBinding(const QString& device)
   }
   else
   {
-    result = InputManager::MapController(*m_dialog->getProfileSettingsInterface(), m_port_number, mapping);
-    QtHost::SaveGameSettings(m_dialog->getProfileSettingsInterface(), false);
+    result = InputManager::MapController(*m_dialog->getEditingSettingsInterface(), m_port_number, mapping);
+    QtHost::SaveGameSettings(m_dialog->getEditingSettingsInterface(), false);
     g_emu_thread->reloadInputBindings();
   }
 
@@ -377,7 +377,7 @@ void ControllerBindingWidget::saveAndRefresh()
 
 void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
 {
-  SettingsInterface* sif = getDialog()->getProfileSettingsInterface();
+  SettingsInterface* sif = getDialog()->getEditingSettingsInterface();
   DebugAssert(m_controller_info);
 
   QGroupBox* axis_gbox = nullptr;
@@ -471,7 +471,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
 
 void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
 {
-  SettingsInterface* sif = getDialog()->getProfileSettingsInterface();
+  SettingsInterface* sif = getDialog()->getEditingSettingsInterface();
   DebugAssert(m_controller_info);
 
   const std::string& config_section = getConfigSection();
@@ -601,12 +601,12 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
   }
 
   m_frequency = dialog->getIntValue(section.c_str(), TinyString::from_format("Macro{}Frequency", index + 1u), 0);
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(dialog->getProfileSettingsInterface(), m_ui.triggerToggle,
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(dialog->getEditingSettingsInterface(), m_ui.triggerToggle,
                                                               section.c_str(), fmt::format("Macro{}Toggle", index + 1u),
                                                               false);
   updateFrequencyText();
 
-  m_ui.trigger->initialize(dialog->getProfileSettingsInterface(), InputBindingInfo::Type::Macro, section,
+  m_ui.trigger->initialize(dialog->getEditingSettingsInterface(), InputBindingInfo::Type::Macro, section,
                            fmt::format("Macro{}", index + 1u));
 
   connect(m_ui.increaseFrequency, &QAbstractButton::clicked, this, [this]() { modFrequency(1); });
@@ -747,7 +747,7 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
                                                           QGridLayout* layout, const Controller::ControllerInfo* cinfo)
 {
   const std::string& section = parent->getConfigSection();
-  SettingsInterface* sif = parent->getDialog()->getProfileSettingsInterface();
+  SettingsInterface* sif = parent->getDialog()->getEditingSettingsInterface();
   int current_row = 0;
 
   for (const SettingInfo& si : cinfo->settings)

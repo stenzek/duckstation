@@ -18,7 +18,7 @@ public:
 
   const std::string& GetFileName() const { return m_filename; }
 
-  bool Load();
+  bool Load(Error* error = nullptr);
   bool Save(Error* error = nullptr) override;
 
   void Clear() override;

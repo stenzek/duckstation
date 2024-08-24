@@ -54,6 +54,7 @@
 #include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/file_system.h"
+#include "common/layered_settings_interface.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -136,7 +137,8 @@ struct MemorySaveState
 static void CheckCacheLineSize();
 static void LogStartupInformation();
 
-static void LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+static LayeredSettingsInterface GetControllerSettingsLayers(std::unique_lock<std::mutex>& lock);
+static LayeredSettingsInterface GetHotkeySettingsLayer(std::unique_lock<std::mutex>& lock);
 
 static std::string GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories);
 static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_name,
@@ -1202,12 +1204,14 @@ void System::LoadSettings(bool display_osd_messages)
 {
   std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
   SettingsInterface& si = *Host::GetSettingsInterface();
-  g_settings.Load(si);
+  LayeredSettingsInterface controller_si = GetControllerSettingsLayers(lock);
+  LayeredSettingsInterface hotkey_si = GetHotkeySettingsLayer(lock);
+  g_settings.Load(si, controller_si);
   g_settings.UpdateLogSettings();
 
   Host::LoadSettings(si, lock);
-  InputManager::ReloadSources(si, lock);
-  LoadInputBindings(si, lock);
+  InputManager::ReloadSources(controller_si, lock);
+  InputManager::ReloadBindings(controller_si, hotkey_si);
   WarnAboutUnsafeSettings();
 
   // apply compatibility settings
@@ -1224,12 +1228,15 @@ void System::LoadSettings(bool display_osd_messages)
 void System::ReloadInputSources()
 {
   std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
-  SettingsInterface* si = Host::GetSettingsInterface();
-  InputManager::ReloadSources(*si, lock);
+  LayeredSettingsInterface controller_si = GetControllerSettingsLayers(lock);
+  InputManager::ReloadSources(controller_si, lock);
 
   // skip loading bindings if we're not running, since it'll get done on startup anyway
   if (IsValid())
-    LoadInputBindings(*si, lock);
+  {
+    LayeredSettingsInterface hotkey_si = GetHotkeySettingsLayer(lock);
+    InputManager::ReloadBindings(controller_si, hotkey_si);
+  }
 }
 
 void System::ReloadInputBindings()
@@ -1239,37 +1246,43 @@ void System::ReloadInputBindings()
     return;
 
   std::unique_lock<std::mutex> lock = Host::GetSettingsLock();
-  SettingsInterface* si = Host::GetSettingsInterface();
-  LoadInputBindings(*si, lock);
+  LayeredSettingsInterface controller_si = GetControllerSettingsLayers(lock);
+  LayeredSettingsInterface hotkey_si = GetHotkeySettingsLayer(lock);
+  InputManager::ReloadBindings(controller_si, hotkey_si);
 }
 
-void System::LoadInputBindings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
+LayeredSettingsInterface System::GetControllerSettingsLayers(std::unique_lock<std::mutex>& lock)
 {
-  // Hotkeys use the base configuration, except if the custom hotkeys option is enabled.
+  LayeredSettingsInterface ret;
+  ret.SetLayer(LayeredSettingsInterface::Layer::LAYER_BASE, Host::Internal::GetBaseSettingsLayer());
+
+  // Select input profile _or_ game settings, not both.
   if (SettingsInterface* isi = Host::Internal::GetInputSettingsLayer())
   {
-    const bool use_profile_hotkeys = isi->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
-    if (use_profile_hotkeys)
-    {
-      InputManager::ReloadBindings(si, *isi, *isi);
-    }
-    else
-    {
-      // Temporarily disable the input profile layer, so it doesn't take precedence.
-      Host::Internal::SetInputSettingsLayer(nullptr, lock);
-      InputManager::ReloadBindings(si, *isi, si);
-      Host::Internal::SetInputSettingsLayer(s_input_settings_interface.get(), lock);
-    }
+    ret.SetLayer(LayeredSettingsInterface::Layer::LAYER_INPUT, Host::Internal::GetInputSettingsLayer());
   }
   else if (SettingsInterface* gsi = Host::Internal::GetGameSettingsLayer();
            gsi && gsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
   {
-    InputManager::ReloadBindings(si, *gsi, si);
+    ret.SetLayer(LayeredSettingsInterface::Layer::LAYER_GAME, gsi);
   }
-  else
+
+  return ret;
+}
+
+LayeredSettingsInterface System::GetHotkeySettingsLayer(std::unique_lock<std::mutex>& lock)
+{
+  LayeredSettingsInterface ret;
+  ret.SetLayer(LayeredSettingsInterface::Layer::LAYER_BASE, Host::Internal::GetBaseSettingsLayer());
+
+  // Only add input profile layer if the option is enabled.
+  if (SettingsInterface* isi = Host::Internal::GetInputSettingsLayer();
+      isi && isi->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false))
   {
-    InputManager::ReloadBindings(si, si, si);
+    ret.SetLayer(LayeredSettingsInterface::Layer::LAYER_INPUT, Host::Internal::GetInputSettingsLayer());
   }
+
+  return ret;
 }
 
 void System::SetDefaultSettings(SettingsInterface& si)

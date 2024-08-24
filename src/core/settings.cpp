@@ -134,7 +134,7 @@ void Settings::UpdateOverclockActive()
   cpu_overclock_active = (cpu_overclock_enable && (cpu_overclock_numerator != 1 || cpu_overclock_denominator != 1));
 }
 
-void Settings::Load(SettingsInterface& si)
+void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
 {
   region =
     ParseConsoleRegionName(
@@ -364,7 +364,8 @@ void Settings::Load(SettingsInterface& si)
 
   multitap_mode =
     ParseMultitapModeName(
-      si.GetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(DEFAULT_MULTITAP_MODE)).c_str())
+      controller_si.GetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(DEFAULT_MULTITAP_MODE))
+        .c_str())
       .value_or(DEFAULT_MULTITAP_MODE);
 
   const std::array<bool, 2> mtap_enabled = {{IsPort1MultitapEnabled(), IsPort2MultitapEnabled()}};
@@ -379,7 +380,7 @@ void Settings::Load(SettingsInterface& si)
     }
 
     const ControllerType default_type = (i == 0) ? DEFAULT_CONTROLLER_1_TYPE : DEFAULT_CONTROLLER_2_TYPE;
-    const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(si.GetTinyStringValue(
+    const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_si.GetTinyStringValue(
       Controller::GetSettingsSection(i).c_str(), "Type", Controller::GetControllerInfo(default_type)->name));
     controller_types[i] = cinfo ? cinfo->type : default_type;
   }
