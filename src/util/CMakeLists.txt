@@ -169,6 +169,7 @@ endif()
 
 if(ENABLE_VULKAN OR APPLE)
   # shaderc is loaded dynamically to reduce module loads on startup.
+  get_target_property(SHADERC_INCLUDE_DIR Shaderc::shaderc_shared INTERFACE_INCLUDE_DIRECTORIES)
   target_include_directories(util PUBLIC ${SHADERC_INCLUDE_DIR})
 endif()
 
@@ -292,8 +293,9 @@ function(add_util_resources target)
       message(WARNING "MoltenVK not found in path, it will depend on the target system having it.")
     endif()
 
-    # Copy shaderc into the bundle
+    # Copy shaderc/spirv-cross into the bundle
     get_target_property(SPIRV_CROSS_LIBRARY spirv-cross-c-shared IMPORTED_SONAME_RELEASE)
+    get_target_property(SHADERC_LIBRARY Shaderc::shaderc_shared IMPORTED_LOCATION_RELEASE)
     target_sources(${target} PRIVATE "${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}")
     set_source_files_properties("${SHADERC_LIBRARY}" "${SPIRV_CROSS_LIBRARY}" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
 
