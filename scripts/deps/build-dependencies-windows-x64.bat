@@ -42,7 +42,7 @@ cd "%BUILDDIR%"
 
 set FREETYPE=2.13.2
 set HARFBUZZ=8.3.1
-set LIBJPEG=9f
+set LIBJPEGTURBO=3.0.3
 set LIBPNG=1643
 set QT=6.7.2
 set QTMINOR=6.7
@@ -61,7 +61,7 @@ set SPIRV_CROSS=vulkan-sdk-1.3.290.0
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz 1ac27e16c134a7f2ccea177faba19801131116fd682efc1f5737037c5db224b5 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip b2bc56184ae37324bc4829fde7d3f9e6916866ad711ee85792e457547c9fd127 || goto error
 call :downloadfile "lpng%LIBPNG%.zip" https://download.sourceforge.net/libpng/lpng1643.zip fc466a1e638e635d6c66363bdf3f38555b81b0141d0b06ba45b49ccca327436d || goto error
-call :downloadfile "jpegsr%LIBJPEG%.zip" https://ijg.org/files/jpegsr%LIBJPEG%.zip 6255da8c89e09d694e6800688c76145eb6870a76ac0d36c74fccd61b3940aafa || goto error
+call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 343e789069fc7afbcdfe44dbba7dbbf45afa98a15150e079a38e60e44578865d || goto error
 call :downloadfile "SDL2-%SDL2%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL2%/SDL2-%SDL2%.zip" 6d4e00fcbee9fd8985cc2869edeb0b1a751912b87506cf2fb6471e73d981e1f4 || goto error
 call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 488119aad60719a085a1e45c31641ac2406ef86fc088a3c99885c18e9d6b4bb9 || goto error
 call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 8e736b02db7dd67dbe834d56503b242344ce85d3532da692f1812b30ccf80997 || goto error
@@ -109,11 +109,10 @@ ninja -C build install || goto error
 cd .. || goto error
 
 echo Building libjpeg...
-rmdir /S /Q "jpeg-%LIBJPEG%"
-%SEVENZIP% x "jpegsr%LIBJPEG%.zip" || goto error
-cd "jpeg-%LIBJPEG%" || goto error
-%PATCH% -p1 < "%SCRIPTDIR%\libjpeg-cmake.patch" || goto error
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DBUILD_STATIC_LIBS=OFF -B build -G Ninja || goto error
+rmdir /S /Q "libjpeg-turbo-%LIBJPEGTURBO%"
+tar -xf "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" || goto error
+cd "libjpeg-turbo-%LIBJPEGTURBO%" || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DENABLE_STATIC=OFF -DENABLE_SHARED=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
