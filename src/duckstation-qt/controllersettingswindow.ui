@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1279</width>
+    <width>1284</width>
     <height>672</height>
    </rect>
   </property>
@@ -20,7 +20,7 @@
    <string>DuckStation Controller Settings</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/resources.qrc">
+   <iconset resource="resources/duckstation-qt.qrc">
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
@@ -65,9 +65,9 @@
    <item row="1" column="0" colspan="2">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
+      <layout class="QHBoxLayout" name="editProfileLayout">
        <item>
-        <widget class="QLabel" name="label">
+        <widget class="QLabel" name="editProfileLabel">
          <property name="text">
           <string>Editing Profile:</string>
          </property>
@@ -107,6 +107,16 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="copyGlobalSettings">
+         <property name="text">
+          <string>Copy Global Settings</string>
+         </property>
+         <property name="icon">
+          <iconset theme="folder-open-line"/>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="restoreDefaults">
          <property name="text">
           <string>Restore Defaults</string>
@@ -130,7 +140,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

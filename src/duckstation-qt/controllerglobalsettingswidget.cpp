@@ -14,7 +14,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 {
   m_ui.setupUi(this);
 
-  SettingsInterface* sif = dialog->getProfileSettingsInterface();
+  SettingsInterface* sif = dialog->getEditingSettingsInterface();
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources",
@@ -28,10 +28,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLMFIDriver, "InputSources", "SDLMFIDriver", true);
 #else
   m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLIOKitDriver);
-  m_ui.enableSDLIOKitDriver->deleteLater();
+  delete m_ui.enableSDLIOKitDriver;
   m_ui.enableSDLIOKitDriver = nullptr;
   m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLMFIDriver);
-  m_ui.enableSDLMFIDriver->deleteLater();
+  delete m_ui.enableSDLMFIDriver;
   m_ui.enableSDLMFIDriver = nullptr;
 #endif
 
@@ -41,10 +41,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableRawInput, "InputSources", "RawInput", false);
 #else
   m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
-  m_ui.xinputGroup->deleteLater();
+  delete m_ui.xinputGroup;
   m_ui.xinputGroup = nullptr;
   m_ui.mainLayout->removeWidget(m_ui.dinputGroup);
-  m_ui.dinputGroup->deleteLater();
+  delete m_ui.dinputGroup;
   m_ui.dinputGroup = nullptr;
 #endif
 
@@ -71,9 +71,12 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   {
     // remove profile options from the UI.
     m_ui.mainLayout->removeWidget(m_ui.profileSettings);
-    m_ui.profileSettings->deleteLater();
+    delete m_ui.profileSettings;
     m_ui.profileSettings = nullptr;
   }
+
+  if (dialog->isEditingGameSettings())
+    m_ui.deviceListGroup->setEnabled(false);
 
   connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() { emit bindingSetupChanged(); });
 
@@ -134,9 +137,10 @@ ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, Contro
   linkButton(m_ui.SDL2LED, 2);
   linkButton(m_ui.SDL3LED, 3);
 
-  SettingsInterface* sif = dialog->getProfileSettingsInterface();
+  SettingsInterface* sif = dialog->getEditingSettingsInterface();
 
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources", "SDLPS5PlayerLED", false);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources",
+                                                              "SDLPS5PlayerLED", false);
   connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
 }
 

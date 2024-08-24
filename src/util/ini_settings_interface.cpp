@@ -74,16 +74,23 @@ INISettingsInterface::~INISettingsInterface()
     Save();
 }
 
-bool INISettingsInterface::Load()
+bool INISettingsInterface::Load(Error* error /* = nullptr */)
 {
   if (m_filename.empty())
+  {
+    Error::SetStringView(error, "Filename is not set.");
     return false;
+  }
 
   std::unique_lock lock(s_ini_load_save_mutex);
   SI_Error err = SI_FAIL;
-  auto fp = FileSystem::OpenManagedCFile(m_filename.c_str(), "rb");
+  auto fp = FileSystem::OpenManagedCFile(m_filename.c_str(), "rb", error);
   if (fp)
+  {
     err = m_ini.LoadFile(fp.get());
+    if (err != SI_OK)
+      Error::SetStringFmt(error, "INI LoadFile() failed: {}", static_cast<int>(err));
+  }
 
   return (err == SI_OK);
 }

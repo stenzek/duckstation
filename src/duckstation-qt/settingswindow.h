@@ -93,6 +93,7 @@ public:
   bool containsSettingValue(const char* section, const char* key) const;
   void removeSettingValue(const char* section, const char* key);
   void saveAndReloadGameSettings();
+  void reloadGameSettingsFromIni();
 
   bool hasGameTrait(GameDatabase::Trait trait);
 

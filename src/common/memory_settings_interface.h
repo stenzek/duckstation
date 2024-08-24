@@ -10,7 +10,7 @@ class MemorySettingsInterface final : public SettingsInterface
 {
 public:
   MemorySettingsInterface();
-  ~MemorySettingsInterface();
+  ~MemorySettingsInterface() override;
 
   bool Save(Error* error = nullptr) override;
 

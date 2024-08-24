@@ -11,6 +11,7 @@
 #include "core/game_database.h"
 #include "core/game_list.h"
 
+#include "common/error.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -54,6 +55,7 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
 
   connect(m_ui.compatibilityComments, &QToolButton::clicked, this, &GameSummaryWidget::onCompatibilityCommentsClicked);
   connect(m_ui.inputProfile, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onInputProfileChanged);
+  connect(m_ui.editInputProfile, &QAbstractButton::clicked, this, &GameSummaryWidget::onEditInputProfileClicked);
   connect(m_ui.computeHashes, &QAbstractButton::clicked, this, &GameSummaryWidget::onComputeHashClicked);
 
   connect(m_ui.title, &QLineEdit::editingFinished, this, [this]() {
@@ -159,15 +161,27 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
 
   m_ui.compatibilityComments->setVisible(!m_compatibility_comments.isEmpty());
 
-  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("controller-digital-line")), tr("Use Global Settings"));
+  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("global-line")), tr("Use Global Settings"));
+  m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("controller-digital-line")),
+                             tr("Game Specific Configuration"));
   for (const std::string& name : InputManager::GetInputProfileNames())
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 
-  std::optional<std::string> profile(m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt));
-  if (profile.has_value())
-    m_ui.inputProfile->setCurrentIndex(m_ui.inputProfile->findText(QString::fromStdString(profile.value())));
+  if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
+  {
+    m_ui.inputProfile->setCurrentIndex(1);
+  }
+  else if (const std::optional<std::string> profile_name =
+             m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt);
+           profile_name.has_value() && !profile_name->empty())
+  {
+    m_ui.inputProfile->setCurrentIndex(m_ui.inputProfile->findText(QString::fromStdString(profile_name.value())));
+  }
   else
+  {
     m_ui.inputProfile->setCurrentIndex(0);
+  }
+  m_ui.editInputProfile->setEnabled(m_ui.inputProfile->currentIndex() >= 1);
 
   populateCustomAttributes();
   populateTracksInfo();
@@ -221,6 +235,21 @@ void GameSummaryWidget::setCustomRegion(int region)
   g_main_window->refreshGameListModel();
 }
 
+void GameSummaryWidget::setRevisionText(const QString& text)
+{
+  if (text.isEmpty())
+    return;
+
+  if (m_ui.verifySpacer)
+  {
+    m_ui.verifyLayout->removeItem(m_ui.verifySpacer);
+    delete m_ui.verifySpacer;
+    m_ui.verifySpacer = nullptr;
+  }
+  m_ui.revision->setText(text);
+  m_ui.revision->setVisible(true);
+}
+
 static QString MSFTotString(const CDImage::Position& position)
 {
   return QStringLiteral("%1:%2:%3 (LBA %4)")
@@ -241,6 +270,11 @@ void GameSummaryWidget::populateTracksInfo()
   std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
   if (!image)
     return;
+
+  setRevisionText(tr("%1 tracks covering %2 MB (%3 MB on disk)")
+                    .arg(image->GetTrackCount())
+                    .arg(((image->GetLBACount() * CDImage::RAW_SECTOR_SIZE) + 1048575) / 1048576)
+                    .arg((image->GetSizeOnDisk() + 1048575) / 1048576));
 
   const u32 num_tracks = image->GetTrackCount();
   for (u32 track = 1; track <= num_tracks; track++)
@@ -288,10 +322,61 @@ void GameSummaryWidget::onCompatibilityCommentsClicked()
 
 void GameSummaryWidget::onInputProfileChanged(int index)
 {
+
+  SettingsInterface* sif = m_dialog->getSettingsInterface();
   if (index == 0)
-    m_dialog->setStringSettingValue("ControllerPorts", "InputProfileName", std::nullopt);
+  {
+    // Use global settings.
+    sif->DeleteValue("ControllerPorts", "InputProfileName");
+    sif->DeleteValue("ControllerPorts", "UseGameSettingsForController");
+  }
+  else if (index == 1)
+  {
+    // Per-game configuration.
+    sif->DeleteValue("ControllerPorts", "InputProfileName");
+    sif->SetBoolValue("ControllerPorts", "UseGameSettingsForController", true);
+
+    if (!sif->GetBoolValue("ControllerPorts", "GameSettingsInitialized", false))
+    {
+      sif->SetBoolValue("ControllerPorts", "GameSettingsInitialized", true);
+
+      {
+        const auto lock = Host::GetSettingsLock();
+        SettingsInterface* base_sif = Host::Internal::GetBaseSettingsLayer();
+        InputManager::CopyConfiguration(sif, *base_sif, true, true, false);
+
+        QWidget* dlg_parent = QtUtils::GetRootWidget(this);
+        QMessageBox::information(dlg_parent, dlg_parent->windowTitle(),
+                                 tr("Per-game controller configuration initialized with global settings."));
+      }
+    }
+  }
   else
-    m_dialog->setStringSettingValue("ControllerPorts", "InputProfileName", m_ui.inputProfile->itemText(index).toUtf8());
+  {
+    // Input profile.
+    sif->SetStringValue("ControllerPorts", "InputProfileName", m_ui.inputProfile->itemText(index).toUtf8());
+    sif->DeleteValue("ControllerPorts", "UseGameSettingsForController");
+  }
+
+  m_dialog->saveAndReloadGameSettings();
+  m_ui.editInputProfile->setEnabled(index > 0);
+}
+
+void GameSummaryWidget::onEditInputProfileClicked()
+{
+  if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
+  {
+    // Edit game configuration.
+    ControllerSettingsWindow::editControllerSettingsForGame(QtUtils::GetRootWidget(this),
+                                                            m_dialog->getSettingsInterface());
+  }
+  else if (const std::optional<std::string> profile_name =
+             m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt);
+           profile_name.has_value() && !profile_name->empty())
+  {
+    // Edit input profile.
+    g_main_window->openInputProfileEditor(profile_name.value());
+  }
 }
 
 void GameSummaryWidget::onComputeHashClicked()
@@ -417,17 +502,7 @@ void GameSummaryWidget::onComputeHashClicked()
         text = mismatch_str;
     }
 
-    if (!text.isEmpty())
-    {
-      if (m_ui.verifySpacer)
-      {
-        m_ui.verifyLayout->removeItem(m_ui.verifySpacer);
-        delete m_ui.verifySpacer;
-        m_ui.verifySpacer = nullptr;
-      }
-      m_ui.revision->setText(text);
-      m_ui.revision->setVisible(true);
-    }
+    setRevisionText(text);
   }
 
   for (u8 track = 0; track < image->GetTrackCount(); track++)

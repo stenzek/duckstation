@@ -99,6 +99,9 @@ public:
   /// Accessors for child windows.
   CheatManagerWindow* getCheatManagerWindow() const { return m_cheat_manager_window; }
 
+  /// Opens the editor for a specific input profile.
+  void openInputProfileEditor(const std::string_view name);
+
 public Q_SLOTS:
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();
