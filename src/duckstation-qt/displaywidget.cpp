@@ -44,13 +44,7 @@ DisplayWidget::DisplayWidget(QWidget* parent) : QWidget(parent)
   setMouseTracking(true);
 }
 
-DisplayWidget::~DisplayWidget()
-{
-#ifdef _WIN32
-  if (m_clip_mouse_enabled)
-    ClipCursor(nullptr);
-#endif
-}
+DisplayWidget::~DisplayWidget() = default;
 
 int DisplayWidget::scaledWindowWidth() const
 {
@@ -156,6 +150,11 @@ void DisplayWidget::handleCloseEvent(QCloseEvent* event)
 void DisplayWidget::destroy()
 {
   m_destroying = true;
+
+#ifdef _WIN32
+  if (m_clip_mouse_enabled)
+    ClipCursor(nullptr);
+#endif
 
 #ifdef __APPLE__
   // See Qt documentation, entire application is in full screen state, and the main
