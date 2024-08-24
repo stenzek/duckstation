@@ -34,6 +34,13 @@ detect_cache_line_size()
 # Build options. Depends on system attributes.
 include(DuckStationBuildOptions)
 
+# Enable PIC on Linux, otherwise the builds do not support ASLR.
+if(LINUX OR BSD)
+  include(CheckPIESupported)
+  check_pie_supported()
+  set(CMAKE_POSITION_INDEPENDENT_CODE TRUE)
+endif()
+
 # Set _DEBUG macro for Debug builds.
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
