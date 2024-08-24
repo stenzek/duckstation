@@ -309,6 +309,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 
   updateDisplayWidgetCursor();
   updateDisplayRelatedActions(true, render_to_main, fullscreen);
+  QtUtils::ShowOrRaiseWindow(QtUtils::GetRootWidget(m_display_widget));
   m_display_widget->setFocus();
 
   return wi;
