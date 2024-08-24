@@ -302,7 +302,7 @@ bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindi
 
 std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
-  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::AbsolutePointer)
+  if (binding_type == InputBindingInfo::Type::Pointer)
   {
     // pointer and device bindings don't have a data part
     if (key.source_type == InputSourceType::Pointer)
@@ -355,7 +355,7 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
                                                           const InputBindingKey* keys, size_t num_keys)
 {
   // can't have a chord of devices/pointers
-  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::AbsolutePointer)
+  if (binding_type == InputBindingInfo::Type::Pointer)
   {
     // so only take the first
     if (num_keys > 0)
@@ -853,7 +853,6 @@ void InputManager::AddPadBindings(SettingsInterface& si, const std::string& sect
       break;
 
       case InputBindingInfo::Type::Pointer:
-      case InputBindingInfo::Type::AbsolutePointer:
       {
         auto cb = [pad_index, base = bi.bind_index](InputBindingKey key, float value) {
           if (!System::IsValid())
