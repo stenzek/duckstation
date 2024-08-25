@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "system.h"
-#include "IconsFontAwesome5.h"
 #include "achievements.h"
 #include "bios.h"
 #include "bus.h"
@@ -59,6 +58,9 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/threading.h"
+
+#include "IconsEmoji.h"
+#include "IconsFontAwesome5.h"
 
 #include "cpuinfo.h"
 #include "fmt/chrono.h"
@@ -2589,7 +2591,7 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
   INFO_LOG("Loading state from '{}'...", path);
 
   Host::AddIconOSDMessage(
-    "load_state", ICON_FA_FOLDER_OPEN,
+    "load_state", ICON_EMOJI_OPEN_THE_FOLDER,
     fmt::format(TRANSLATE_FS("OSDMessage", "Loading state from '{}'..."), Path::GetFileName(path)),
     Host::OSD_INFO_DURATION);
 
@@ -2923,7 +2925,7 @@ bool System::SaveState(const char* path, Error* error, bool backup_existing_save
     return false;
   }
 
-  Host::AddIconOSDMessage("save_state", ICON_FA_SAVE,
+  Host::AddIconOSDMessage("save_state", ICON_EMOJI_FLOPPY_DISK,
                           fmt::format(TRANSLATE_FS("OSDMessage", "State saved to '{}'."), Path::GetFileName(path)),
                           5.0f);
 
@@ -4508,7 +4510,7 @@ void System::WarnAboutUnsafeSettings()
   {
     if (g_settings.cpu_overclock_active)
     {
-      append(ICON_FA_MICROCHIP,
+      append(ICON_EMOJI_WARNING,
              SmallString::from_format(
                TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
                g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
@@ -4516,14 +4518,14 @@ void System::WarnAboutUnsafeSettings()
     }
     if (g_settings.cdrom_read_speedup > 1)
     {
-      append(ICON_FA_COMPACT_DISC,
+      append(ICON_EMOJI_WARNING,
              SmallString::from_format(
                TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
                g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2));
     }
     if (g_settings.cdrom_seek_speedup != 1)
     {
-      append(ICON_FA_COMPACT_DISC,
+      append(ICON_EMOJI_WARNING,
              SmallString::from_format(TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
                                       (g_settings.cdrom_seek_speedup == 0) ?
                                         TinyString(TRANSLATE_SV("System", "Instant")) :
@@ -4537,19 +4539,21 @@ void System::WarnAboutUnsafeSettings()
     {
       if (g_settings.gpu_multisamples != 1)
       {
-        append(ICON_FA_MAGIC,
+        append(ICON_EMOJI_WARNING,
                TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
       }
       if (g_settings.gpu_resolution_scale > 1 && g_settings.gpu_force_round_texcoords)
       {
         append(
-          ICON_FA_MAGIC,
+          ICON_EMOJI_WARNING,
           TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
       }
     }
     if (g_settings.enable_8mb_ram)
-      append(ICON_FA_MICROCHIP,
-             TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+    {
+      append(ICON_EMOJI_WARNING,
+        TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+    }
   }
   else
   {
@@ -4558,7 +4562,7 @@ void System::WarnAboutUnsafeSettings()
 
   if (!g_settings.apply_compatibility_settings)
   {
-    append(ICON_FA_GAMEPAD,
+    append(ICON_EMOJI_WARNING,
            TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."));
   }
 

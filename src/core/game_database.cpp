@@ -27,6 +27,7 @@
 #include <sstream>
 #include <type_traits>
 
+#include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
 
 Log_SetChannel(GameDatabase);
@@ -458,13 +459,13 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 #define APPEND_MESSAGE(msg)                                                                                            \
   do                                                                                                                   \
   {                                                                                                                    \
-    messages.append("\n  \u2022    ");                                                                                 \
+    messages.append("\n        \u2022 ");                                                                              \
     messages.append(msg);                                                                                              \
   } while (0)
 #define APPEND_MESSAGE_FMT(...)                                                                                        \
   do                                                                                                                   \
   {                                                                                                                    \
-    messages.append("\n  \u2022    ");                                                                                 \
+    messages.append("\n        \u2022 ");                                                                              \
     messages.append_format(__VA_ARGS__);                                                                               \
   } while (0)
 
@@ -650,7 +651,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   else if (settings.gpu_pgxp_enable && settings.gpu_pgxp_vertex_cache)
   {
     Host::AddIconOSDMessage(
-      "gamedb_force_pgxp_vertex_cache", ICON_FA_EXCLAMATION_TRIANGLE,
+      "gamedb_force_pgxp_vertex_cache", ICON_EMOJI_WARNING,
       TRANSLATE_STR(
         "GameDatabase",
         "PGXP Vertex Cache is enabled, but it is not required for this game. This may cause rendering errors."),
@@ -664,11 +665,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 #ifndef __ANDROID__
       APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "PGXP CPU mode enabled."));
 #else
-      Host::AddIconOSDMessage(
-        "gamedb_force_pgxp_cpu", ICON_FA_MICROCHIP,
-        "This game requires PGXP CPU mode, which increases system requirements.\n" ICON_FA_EXCLAMATION_TRIANGLE
-        "  If the game runs too slow, disable PGXP for this game.",
-        Host::OSD_WARNING_DURATION);
+      Host::AddIconOSDMessage("gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
+                              "This game requires PGXP CPU mode, which increases system requirements.\n"
+                              "      If the game runs too slow, disable PGXP for this game.",
+                              Host::OSD_WARNING_DURATION);
 #endif
     }
 
@@ -677,7 +677,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   else if (settings.UsingPGXPCPUMode())
   {
     Host::AddIconOSDMessage(
-      "gamedb_force_pgxp_cpu", ICON_FA_MICROCHIP,
+      "gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
       TRANSLATE_STR("GameDatabase",
                     "PGXP CPU mode is enabled, but it is not required for this game. This may cause rendering errors."),
       Host::OSD_WARNING_DURATION);
@@ -720,8 +720,8 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (!messages.empty())
   {
     Host::AddIconOSDMessage(
-      "GameDBCompatibility", ICON_FA_MICROCHIP,
-      fmt::format("{}{}", TRANSLATE_SV("GameDatabase", "Compatibility settings for this game have been applied:"),
+      "GameDBCompatibility", ICON_EMOJI_INFORMATION,
+      fmt::format("{}{}", TRANSLATE_SV("GameDatabase", "Compatibility settings for this game have been applied."),
                   messages.view()),
       Host::OSD_WARNING_DURATION);
   }

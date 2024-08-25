@@ -537,7 +537,7 @@ bool ImGuiManager::LoadFontData()
     s_icon_pf_font_data = std::move(font_data.value());
   }
 
-  if (s_emoji_font_data.empty() && false)
+  if (s_emoji_font_data.empty())
   {
     std::optional<DynamicHeapArray<u8>> font_data =
       Host::ReadCompressedResourceFile("fonts/TwitterColorEmoji-SVGinOT.ttf.zst", true);
@@ -600,7 +600,6 @@ bool ImGuiManager::AddIconFonts(float size)
     }
   }
 
-  if constexpr (false) // Not yet used
   {
     ImFontConfig cfg;
     cfg.MergeMode = true;
