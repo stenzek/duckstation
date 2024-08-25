@@ -42,9 +42,6 @@
     <ClCompile Include="src\rcheevos\operand.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
-    <ClCompile Include="src\rcheevos\rc_validate.c">
-      <Filter>rcheevos</Filter>
-    </ClCompile>
     <ClCompile Include="src\rcheevos\richpresence.c">
       <Filter>rcheevos</Filter>
     </ClCompile>
@@ -132,9 +129,6 @@
       <Filter>include</Filter>
     </ClInclude>
     <ClInclude Include="src\rcheevos\rc_internal.h">
-      <Filter>rcheevos</Filter>
-    </ClInclude>
-    <ClInclude Include="src\rcheevos\rc_validate.h">
       <Filter>rcheevos</Filter>
     </ClInclude>
     <ClInclude Include="src\rc_compat.h" />
