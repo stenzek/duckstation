@@ -28,7 +28,7 @@
 #include "common/small_string.h"
 #include "common/string_util.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsEmoji.h"
 #include "fmt/format.h"
 
 #include <cmath>
@@ -2526,7 +2526,7 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
   {
     // Use a 60 second timeout to give it plenty of time to actually save.
     osd_key = fmt::format("ScreenshotSaver_{}", filename);
-    Host::AddIconOSDMessage(osd_key, ICON_FA_CAMERA,
+    Host::AddIconOSDMessage(osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
                             fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(filename)),
                             60.0f);
   }
@@ -2577,7 +2577,7 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
 
     if (!osd_key.empty())
     {
-      Host::AddIconOSDMessage(std::move(osd_key), ICON_FA_CAMERA,
+      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_CAMERA,
                               fmt::format(result ? TRANSLATE_FS("GPU", "Saved screenshot to '{}'.") :
                                                    TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
                                           Path::GetFileName(filename),

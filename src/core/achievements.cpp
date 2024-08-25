@@ -33,6 +33,7 @@
 #include "util/platform_misc.h"
 #include "util/state_wrapper.h"
 
+#include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
@@ -2486,7 +2487,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
       // Just use the lock for standard achievements.
     case RC_CLIENT_ACHIEVEMENT_TYPE_STANDARD:
     default:
-      right_icon_text = is_unlocked ? ICON_FA_LOCK_OPEN : ICON_FA_LOCK;
+      right_icon_text = is_unlocked ? ICON_EMOJI_UNLOCKED : ICON_FA_LOCK;
       break;
   }
 

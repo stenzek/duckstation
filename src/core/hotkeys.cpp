@@ -23,6 +23,7 @@
 #include "common/timer.h"
 
 #include "IconsFontAwesome5.h"
+#include "IconsEmoji.h"
 
 #include <cmath>
 
@@ -536,12 +537,12 @@ DEFINE_HOTKEY("AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("H
                   SPU::GetOutputStream()->SetOutputVolume(volume);
                   if (g_settings.audio_output_muted)
                   {
-                    Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_MUTE,
+                    Host::AddIconOSDMessage("AudioControlHotkey", ICON_EMOJI_MUTED_SPEAKER,
                                             TRANSLATE_STR("OSDMessage", "Volume: Muted"), 5.0f);
                   }
                   else
                   {
-                    Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
+                    Host::AddIconOSDMessage("AudioControlHotkey", ICON_EMOJI_MEDIUM_VOLUME_SPEAKER,
                                             fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume), 5.0f);
                   }
                 }
@@ -552,7 +553,7 @@ DEFINE_HOTKEY("AudioCDAudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_
                 {
                   g_settings.cdrom_mute_cd_audio = !g_settings.cdrom_mute_cd_audio;
                   Host::AddIconOSDMessage(
-                    "AudioControlHotkey", g_settings.cdrom_mute_cd_audio ? ICON_FA_VOLUME_MUTE : ICON_FA_VOLUME_UP,
+                    "AudioControlHotkey", g_settings.cdrom_mute_cd_audio ? ICON_EMOJI_MUTED_SPEAKER : ICON_EMOJI_MEDIUM_VOLUME_SPEAKER,
                     g_settings.cdrom_mute_cd_audio ? TRANSLATE_STR("OSDMessage", "CD Audio Muted.") :
                                                      TRANSLATE_STR("OSDMessage", "CD Audio Unmuted."),
                     2.0f);
@@ -568,7 +569,7 @@ DEFINE_HOTKEY("AudioVolumeUp", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOO
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
                   SPU::GetOutputStream()->SetOutputVolume(volume);
-                  Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_UP,
+                  Host::AddIconOSDMessage("AudioControlHotkey", ICON_EMOJI_HIGH_VOLUME_SPEAKER,
                                           fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume), 5.0f);
                 }
               })
@@ -582,7 +583,7 @@ DEFINE_HOTKEY("AudioVolumeDown", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_N
                   g_settings.audio_output_volume = volume;
                   g_settings.audio_fast_forward_volume = volume;
                   SPU::GetOutputStream()->SetOutputVolume(volume);
-                  Host::AddIconOSDMessage("AudioControlHotkey", ICON_FA_VOLUME_DOWN,
+                  Host::AddIconOSDMessage("AudioControlHotkey", ICON_EMOJI_MEDIUM_VOLUME_SPEAKER,
                                           fmt::format(TRANSLATE_FS("OSDMessage", "Volume: {}%"), volume), 5.0f);
                 }
               })

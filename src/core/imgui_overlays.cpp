@@ -31,7 +31,7 @@
 #include "common/thirdparty/SmallVector.h"
 #include "common/timer.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsEmoji.h"
 #include "fmt/chrono.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -389,7 +389,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
       const bool rewinding = System::IsRewinding();
       if (rewinding || System::IsFastForwardEnabled() || System::IsTurboEnabled())
       {
-        text.assign(rewinding ? ICON_FA_FAST_BACKWARD : ICON_FA_FAST_FORWARD);
+        text.assign(rewinding ? ICON_EMOJI_FAST_REVERSE : ICON_EMOJI_FAST_FORWARD);
         DRAW_LINE(standard_font, text, IM_COL32(255, 255, 255, 255));
       }
     }
@@ -397,7 +397,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
   else if (g_settings.display_show_status_indicators && state == System::State::Paused &&
            !FullscreenUI::HasActiveWindow())
   {
-    text.assign(ICON_FA_PAUSE);
+    text.assign(ICON_EMOJI_PAUSE);
     DRAW_LINE(standard_font, text, IM_COL32(255, 255, 255, 255));
   }
 
@@ -508,7 +508,7 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
   ImFont* const standard_font = ImGuiManager::GetStandardFont();
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-  static constexpr const char* ICON = ICON_FA_VIDEO;
+  static constexpr const char* ICON = ICON_EMOJI_MOVIE_CAMERA;
   const time_t elapsed_time = cap->GetElapsedTime();
   const TinyString text_msg = TinyString::from_format(" {:02d}:{:02d}:{:02d}", elapsed_time / 3600,
                                                       (elapsed_time % 3600) / 60, (elapsed_time % 3600) % 60);
@@ -1155,7 +1155,7 @@ void SaveStateSelectorUI::LoadCurrentSlot()
     else
     {
       Host::AddIconOSDMessage(
-        "LoadState", ICON_FA_SD_CARD,
+        "LoadState", ICON_EMOJI_FLOPPY_DISK,
         IsCurrentSlotGlobal() ?
           fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "No save state found in Global Slot {}."), GetCurrentSlot()) :
           fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "No save state found in Slot {}."), GetCurrentSlot()),
@@ -1173,7 +1173,7 @@ void SaveStateSelectorUI::SaveCurrentSlot()
     Error error;
     if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups))
     {
-      Host::AddIconOSDMessage("SaveState", ICON_FA_EXCLAMATION_TRIANGLE,
+      Host::AddIconOSDMessage("SaveState", ICON_EMOJI_WARNING,
                               fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),
                                           GetCurrentSlot(), error.GetDescription()),
                               Host::OSD_ERROR_DURATION);
@@ -1194,7 +1194,7 @@ void SaveStateSelectorUI::ShowSlotOSDMessage()
     date = TRANSLATE_STR("SaveStateSelectorUI", "no save yet");
 
   Host::AddIconOSDMessage(
-    "ShowSlotOSDMessage", ICON_FA_SEARCH,
+    "ShowSlotOSDMessage", ICON_EMOJI_MAGNIFIYING_GLASS_TILTED_LEFT,
     IsCurrentSlotGlobal() ?
       fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Global Save Slot {0} selected ({1})."), GetCurrentSlot(), date) :
       fmt::format(TRANSLATE_FS("SaveStateSelectorUI", "Save Slot {0} selected ({1})."), GetCurrentSlot(), date),
