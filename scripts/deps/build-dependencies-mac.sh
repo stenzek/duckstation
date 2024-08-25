@@ -34,8 +34,8 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
-FREETYPE=2.13.2
-HARFBUZZ=8.3.1
+FREETYPE=2.13.3
+HARFBUZZ=9.0.0
 SDL2=2.30.6
 ZSTD=1.5.6
 LIBPNG=1.6.43
@@ -70,8 +70,8 @@ CMAKE_ARCH_ARM64=-DCMAKE_OSX_ARCHITECTURES="arm64"
 CMAKE_ARCH_UNIVERSAL=-DCMAKE_OSX_ARCHITECTURES="x86_64;arm64"
 
 cat > SHASUMS <<EOF
-12991c4e55c506dd7f9b765933e62fd2be2e06d421505d7950a132e4f1bb484d  freetype-$FREETYPE.tar.xz
-19a54fe9596f7a47c502549fce8e8a10978c697203774008cc173f8360b19a9a  harfbuzz-$HARFBUZZ.tar.gz
+0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289  freetype-$FREETYPE.tar.xz
+b7e481b109d19aefdba31e9f5888aa0cdfbe7608fed9a43494c060ce1f8a34d2  harfbuzz-$HARFBUZZ.tar.gz
 6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
 343e789069fc7afbcdfe44dbba7dbbf45afa98a15150e079a38e60e44578865d  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
@@ -117,27 +117,6 @@ if [ ! -d "SPIRV-Cross" ]; then
   git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS --depth 1
 fi
 
-echo "Installing SDL2..."
-rm -fr "SDL2-$SDL2"
-tar xf "SDL2-$SDL2.tar.gz"
-cd "SDL2-$SDL2"
-cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
-make -C build "-j$NPROCS"
-make -C build install
-cd ..
-
-echo "Installing Zstd..."
-rm -fr "zstd-$ZSTD"
-tar xf "zstd-$ZSTD.tar.gz"
-cd "zstd-$ZSTD"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_PROGRAMS=OFF -B build-dir build/cmake
-make -C build-dir "-j$NPROCS"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_PROGRAMS=OFF -B build-dir-arm64 build/cmake
-make -C build-dir-arm64 "-j$NPROCS"
-merge_binaries $(realpath build-dir) $(realpath build-dir-arm64)
-make -C build-dir install
-cd ..
-
 echo "Installing libpng..."
 rm -fr "libpng-$LIBPNG"
 tar xf "libpng-$LIBPNG.tar.xz"
@@ -160,6 +139,18 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -DENABLE_STATIC=OFF -DENABLE_SHAR
 make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
 make -C build install
+cd ..
+
+echo "Installing Zstd..."
+rm -fr "zstd-$ZSTD"
+tar xf "zstd-$ZSTD.tar.gz"
+cd "zstd-$ZSTD"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_PROGRAMS=OFF -B build-dir build/cmake
+make -C build-dir "-j$NPROCS"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_PROGRAMS=OFF -B build-dir-arm64 build/cmake
+make -C build-dir-arm64 "-j$NPROCS"
+merge_binaries $(realpath build-dir) $(realpath build-dir-arm64)
+make -C build-dir install
 cd ..
 
 echo "Building FreeType without HarfBuzz..."
@@ -202,6 +193,15 @@ cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -B build-arm64 \
 	-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
 make -C build-arm64 "-j$NPROCS"
 merge_binaries $(realpath build) $(realpath build-arm64)
+make -C build install
+cd ..
+
+echo "Installing SDL2..."
+rm -fr "SDL2-$SDL2"
+tar xf "SDL2-$SDL2.tar.gz"
+cd "SDL2-$SDL2"
+cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
+make -C build "-j$NPROCS"
 make -C build install
 cd ..
 

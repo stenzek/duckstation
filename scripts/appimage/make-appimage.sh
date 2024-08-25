@@ -57,6 +57,7 @@ STRIP=strip
 
 declare -a MANUAL_LIBS=(
 	"libdiscord-rpc.so"
+	"libfreetype.so.6"
 	"libshaderc_shared.so"
 	"libspirv-cross-c-shared.so.0"
 )

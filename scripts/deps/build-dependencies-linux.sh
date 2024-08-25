@@ -3,12 +3,20 @@
 set -e
 
 if [ "$#" -lt 1 ]; then
-    echo "Syntax: $0 [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-zstd] [-system-qt] [-skip-download] <output directory>"
+    echo "Syntax: $0 [-system-freetype] [-system-harfbuzz] [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-zstd] [-system-qt] [-skip-download] [-skip-cleanup] <output directory>"
     exit 1
 fi
 
 for arg in "$@"; do
-	if [ "$arg" == "-system-libjpeg" ]; then
+	if [ "$arg" == "-system-freetype" ]; then
+		echo "Skipping building FreeType."
+		SKIP_FREETYPE=true
+		shift
+	elif [ "$arg" == "-system-harfbuzz" ]; then
+		echo "Skipping building HarfBuzz."
+		SKIP_HARFBUZZ=true
+		shift
+	elif [ "$arg" == "-system-libjpeg" ]; then
 		echo "Skipping building libjpeg."
 		SKIP_LIBJPEG=true
 		shift
@@ -32,6 +40,10 @@ for arg in "$@"; do
 		echo "Not downloading sources."
 		SKIP_DOWNLOAD=true
 		shift
+	elif [ "$arg" == "-skip-cleanup" ]; then
+		echo "Not removing build directory."
+		SKIP_CLEANUP=true
+		shift
 	fi
 done
 
@@ -42,6 +54,8 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 	INSTALLDIR="$PWD/$INSTALLDIR"
 fi
 
+FREETYPE=2.13.3
+HARFBUZZ=9.0.0
 LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
 LIBJPEGTURBO=3.0.3
 LIBPNG=1.6.43
@@ -78,6 +92,22 @@ e1351218d270db49c3dddcba04fb2153b09731ea3fa6830e423f5952f44585be  cpuinfo-$CPUIN
 fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
 
+if [ "$SKIP_FREETYPE" != true ]; then
+	if [ "$SKIP_DOWNLOAD" != true ]; then
+		curl -C - -L -o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download"
+	fi
+	cat >> SHASUMS <<EOF
+0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289  freetype-$FREETYPE.tar.xz
+EOF
+fi
+if [ "$SKIP_HARFBUZZ" != true ]; then
+	if [ "$SKIP_DOWNLOAD" != true ]; then
+		curl -C - -L -o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
+	fi
+	cat >> SHASUMS <<EOF
+b7e481b109d19aefdba31e9f5888aa0cdfbe7608fed9a43494c060ce1f8a34d2  harfbuzz-$HARFBUZZ.tar.gz
+EOF
+fi
 if [ "$SKIP_LIBJPEG" != true ]; then
 	if [ "$SKIP_DOWNLOAD" != true ]; then
 		curl -C - -L -O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
@@ -189,6 +219,37 @@ if [ "$SKIP_LIBWEBP" != true ]; then
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -B build -G Ninja \
 		-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
 		-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
+	cmake --build build --parallel
+	ninja -C build install
+	cd ..
+fi
+
+if [ "$SKIP_FREETYPE" != true ]; then
+	if [ "$SKIP_HARFBUZZ" != true ]; then
+		echo "Building FreeType without HarfBuzz..."
+		rm -fr "freetype-$FREETYPE"
+		tar xf "freetype-$FREETYPE.tar.xz"
+		cd "freetype-$FREETYPE"
+		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_DISABLE_HARFBUZZ=TRUE -B build -G Ninja
+		cmake --build build --parallel
+		ninja -C build install
+		cd ..
+
+		echo "Building HarfBuzz..."
+		rm -fr "harfbuzz-$HARFBUZZ"
+		tar xf "harfbuzz-$HARFBUZZ.tar.gz"
+		cd "harfbuzz-$HARFBUZZ"
+		cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DHB_BUILD_UTILS=OFF -B build -G Ninja
+		cmake --build build --parallel
+		ninja -C build install
+		cd ..
+	fi
+
+	echo "Building FreeType with HarfBuzz..."
+	rm -fr "freetype-$FREETYPE"
+	tar xf "freetype-$FREETYPE.tar.xz"
+	cd "freetype-$FREETYPE"
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build -G Ninja
 	cmake --build build --parallel
 	ninja -C build install
 	cd ..
@@ -345,6 +406,8 @@ cmake --build build --parallel
 ninja -C build install
 cd ..
 
-echo "Cleaning up..."
-cd ..
-rm -fr deps-build
+if [ "$SKIP_CLEANUP" != true ]; then
+	echo "Cleaning up..."
+	cd ..
+	rm -fr deps-build
+fi
