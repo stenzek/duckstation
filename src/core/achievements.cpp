@@ -49,6 +49,7 @@
 #include <ctime>
 #include <functional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 Log_SetChannel(Achievements);
@@ -138,6 +139,7 @@ static void BeginChangeDisc();
 static void UpdateGameSummary();
 static std::string GetLocalImagePath(const std::string_view image_name, int type);
 static void DownloadImage(std::string url, std::string cache_filename);
+static void UpdateGlyphRanges();
 
 static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
 static void DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
@@ -354,6 +356,101 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
   };
 
   s_http_downloader->CreateRequest(std::move(url), std::move(callback));
+}
+
+void Achievements::UpdateGlyphRanges()
+{
+  // To avoid rasterizing all emoji fonts, we get the set of used glyphs in the emoji range for all strings in the
+  // current game's achievement data.
+  using CodepointSet = std::unordered_set<ImGuiManager::WCharType>;
+  CodepointSet codepoints;
+
+  static constexpr auto add_string = [](const std::string_view str, CodepointSet& codepoints) {
+    char32_t codepoint;
+    for (size_t offset = 0; offset < str.length();)
+    {
+      offset += StringUtil::DecodeUTF8(str, offset, &codepoint);
+
+      // Basic Latin + Latin Supplement always included.
+      if (codepoint != StringUtil::UNICODE_REPLACEMENT_CHARACTER && codepoint >= 0x2000)
+        codepoints.insert(static_cast<ImGuiManager::WCharType>(codepoint));
+    }
+  };
+
+  if (rc_client_has_rich_presence(s_client))
+  {
+    std::vector<const char*> rp_strings;
+    for (;;)
+    {
+      rp_strings.resize(std::max<size_t>(rp_strings.size() * 2, 512));
+
+      size_t count;
+      const int err = rc_client_get_rich_presence_strings(s_client, rp_strings.data(), rp_strings.size(), &count);
+      if (err == RC_INSUFFICIENT_BUFFER)
+        continue;
+      else if (err != RC_OK)
+        rp_strings.clear();
+      else
+        rp_strings.resize(count);
+
+      break;
+    }
+
+    for (const char* str : rp_strings)
+      add_string(str, codepoints);
+  }
+
+  if (rc_client_has_achievements(s_client))
+  {
+    rc_client_achievement_list_t* const achievements =
+      rc_client_create_achievement_list(s_client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL, 0);
+    if (achievements)
+    {
+      for (u32 i = 0; i < achievements->num_buckets; i++)
+      {
+        const rc_client_achievement_bucket_t& bucket = achievements->buckets[i];
+        for (u32 j = 0; j < bucket.num_achievements; j++)
+        {
+          const rc_client_achievement_t* achievement = bucket.achievements[j];
+          if (achievement->title)
+            add_string(achievement->title, codepoints);
+          if (achievement->description)
+            add_string(achievement->description, codepoints);
+        }
+      }
+      rc_client_destroy_achievement_list(achievements);
+    }
+  }
+
+  if (rc_client_has_leaderboards(s_client))
+  {
+    rc_client_leaderboard_list_t* const leaderboards =
+      rc_client_create_leaderboard_list(s_client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
+    if (leaderboards)
+    {
+      for (u32 i = 0; i < leaderboards->num_buckets; i++)
+      {
+        const rc_client_leaderboard_bucket_t& bucket = leaderboards->buckets[i];
+        for (u32 j = 0; j < bucket.num_leaderboards; j++)
+        {
+          const rc_client_leaderboard_t* leaderboard = bucket.leaderboards[j];
+          if (leaderboard->title)
+            add_string(leaderboard->title, codepoints);
+          if (leaderboard->description)
+            add_string(leaderboard->description, codepoints);
+        }
+      }
+      rc_client_destroy_leaderboard_list(leaderboards);
+    }
+  }
+
+  std::vector<ImGuiManager::WCharType> sorted_codepoints;
+  sorted_codepoints.reserve(codepoints.size());
+  sorted_codepoints.insert(sorted_codepoints.begin(), codepoints.begin(), codepoints.end());
+  std::sort(sorted_codepoints.begin(), sorted_codepoints.end());
+
+  // Compact codepoints to ranges.
+  ImGuiManager::SetEmojiFontRange(ImGuiManager::CompactFontRange(sorted_codepoints));
 }
 
 bool Achievements::IsActive()
@@ -583,6 +680,7 @@ bool Achievements::Shutdown(bool allow_cancel)
   ClearGameInfo();
   ClearGameHash();
   DisableHardcoreMode();
+  UpdateGlyphRanges();
 
   if (s_load_game_request)
   {
@@ -906,6 +1004,7 @@ void Achievements::BeginLoadGame()
     }
 
     DisableHardcoreMode();
+    UpdateGlyphRanges();
     return;
   }
 
@@ -934,6 +1033,7 @@ void Achievements::BeginChangeDisc()
 
     ClearGameInfo();
     DisableHardcoreMode();
+    UpdateGlyphRanges();
     return;
   }
 
@@ -953,7 +1053,10 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     // Unknown game.
     INFO_LOG("Unknown game '{}', disabling achievements.", s_game_hash);
     if (was_disc_change)
+    {
       ClearGameInfo();
+      UpdateGlyphRanges();
+    }
 
     DisableHardcoreMode();
     return;
@@ -968,7 +1071,10 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   {
     ReportFmtError("Loading game failed: {}", error_message);
     if (was_disc_change)
+    {
       ClearGameInfo();
+      UpdateGlyphRanges();
+    }
 
     DisableHardcoreMode();
     return;
@@ -986,7 +1092,10 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   {
     ReportError("rc_client_get_game_info() returned NULL");
     if (was_disc_change)
+    {
       ClearGameInfo();
+      UpdateGlyphRanges();
+    }
 
     DisableHardcoreMode();
     return;
@@ -1011,6 +1120,9 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   s_has_achievements = has_achievements;
   s_has_leaderboards = has_leaderboards;
   s_has_rich_presence = rc_client_has_rich_presence(client);
+
+  // update ranges before initializing fsui
+  UpdateGlyphRanges();
 
   // ensure fullscreen UI is ready for notifications
   if (display_summary)
@@ -1850,7 +1962,10 @@ void Achievements::Logout()
     const auto lock = GetLock();
 
     if (HasActiveGame())
+    {
       ClearGameInfo();
+      UpdateGlyphRanges();
+    }
 
     INFO_LOG("Logging out...");
     rc_client_logout(s_client);

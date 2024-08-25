@@ -159,6 +159,38 @@ void ImGuiManager::SetEmojiFontRange(std::vector<WCharType> range)
   ReloadFontDataIfActive();
 }
 
+std::vector<ImGuiManager::WCharType> ImGuiManager::CompactFontRange(std::span<const WCharType> range)
+{
+  std::vector<ImWchar> ret;
+
+  for (auto it = range.begin(); it != range.end();)
+  {
+    auto next_it = it;
+    ++next_it;
+
+    // Combine sequential ranges.
+    const ImWchar start_codepoint = *it;
+    ImWchar end_codepoint = start_codepoint;
+    while (next_it != range.end())
+    {
+      const ImWchar next_codepoint = *next_it;
+      if (next_codepoint != (end_codepoint + 1))
+        break;
+
+      // Yep, include it.
+      end_codepoint = next_codepoint;
+      ++next_it;
+    }
+
+    ret.push_back(start_codepoint);
+    ret.push_back(end_codepoint);
+
+    it = next_it;
+  }
+
+  return ret;
+}
+
 void ImGuiManager::SetGlobalScale(float global_scale)
 {
   if (s_global_prescale == global_scale)
