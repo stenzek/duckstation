@@ -26,6 +26,9 @@ void SetFontPathAndRange(std::string path, std::vector<WCharType> range);
 /// Should NOT be terminated with zeros, unlike the font range above.
 void SetEmojiFontRange(std::vector<WCharType> range);
 
+/// Returns a compacted font range, with adjacent glyphs merged into one pair.
+std::vector<WCharType> CompactFontRange(std::span<const WCharType> range);
+
 /// Changes the global scale.
 void SetGlobalScale(float global_scale);
 
