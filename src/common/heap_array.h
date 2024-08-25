@@ -1,9 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #pragma once
-
-#include "common/assert.h"
 
 #include <algorithm>
 #include <cassert>
@@ -117,18 +115,20 @@ private:
     {
 #ifdef _MSC_VER
       m_data = static_cast<T*>(_aligned_malloc(SIZE * sizeof(T), ALIGNMENT));
-      if (!m_data)
-        Panic("Memory allocation failed.");
+      assert(m_data);
+      if (!m_data) [[unlikely]]
+        std::abort();
 #else
-      if (posix_memalign(reinterpret_cast<void**>(&m_data), ALIGNMENT, SIZE * sizeof(T)) != 0)
-        Panic("Memory allocation failed.");
+      if (posix_memalign(reinterpret_cast<void**>(&m_data), ALIGNMENT, SIZE * sizeof(T)) != 0) [[unlikely]]
+        std::abort();
 #endif
     }
     else
     {
       m_data = static_cast<T*>(std::malloc(SIZE * sizeof(T)));
-      if (!m_data)
-        Panic("Memory allocation failed.");
+      assert(m_data);
+      if (!m_data) [[unlikely]]
+        std::abort();
     }
   }
   void deallocate()
@@ -377,11 +377,12 @@ private:
     {
 #ifdef _MSC_VER
       m_data = static_cast<T*>(_aligned_realloc(prev_ptr, size * sizeof(T), alignment));
+      assert(m_data);
       if (!m_data) [[unlikely]]
-        Panic("Memory allocation failed.");
+        std::abort();
 #else
       if (posix_memalign(reinterpret_cast<void**>(&m_data), alignment, size * sizeof(T)) != 0) [[unlikely]]
-        Panic("Memory allocation failed.");
+        std::abort();
 
       if (prev_ptr)
       {
@@ -393,8 +394,9 @@ private:
     else
     {
       m_data = static_cast<T*>(std::realloc(prev_ptr, size * sizeof(T)));
+      assert(m_data);
       if (!m_data) [[unlikely]]
-        Panic("Memory allocation failed.");
+        std::abort();
     }
 
     m_size = size;

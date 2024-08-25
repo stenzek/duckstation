@@ -11,6 +11,7 @@
 
 #include "util/http_downloader.h"
 
+#include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"

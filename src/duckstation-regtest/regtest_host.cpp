@@ -212,10 +212,10 @@ bool Host::ResourceFileExists(std::string_view filename, bool allow_override)
   return FileSystem::FileExists(path.c_str());
 }
 
-std::optional<std::vector<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override)
+std::optional<DynamicHeapArray<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override)
 {
   const std::string path(Path::Combine(EmuFolders::Resources, filename));
-  std::optional<std::vector<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
+  std::optional<DynamicHeapArray<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
   if (!ret.has_value())
     ERROR_LOG("Failed to read resource file '{}'", filename);
   return ret;

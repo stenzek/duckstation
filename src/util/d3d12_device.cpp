@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #include "d3d12_device.h"
 #include "d3d12_builders.h"
@@ -60,7 +60,7 @@ static std::mutex s_instance_mutex;
 static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RGBA8;
 
 // We just need to keep this alive, never reference it.
-static std::vector<u8> s_pipeline_cache_data;
+static DynamicHeapArray<u8> s_pipeline_cache_data;
 
 #ifdef _DEBUG
 #include "WinPixEventRuntime/pix3.h"
@@ -268,7 +268,7 @@ void D3D12Device::DestroyDevice()
   DestroyCommandLists();
 
   m_pipeline_library.Reset();
-  std::vector<u8>().swap(s_pipeline_cache_data);
+  s_pipeline_cache_data.deallocate();
   m_fence.Reset();
   if (m_fence_event != NULL)
   {
@@ -285,7 +285,7 @@ void D3D12Device::DestroyDevice()
 
 bool D3D12Device::ReadPipelineCache(const std::string& filename)
 {
-  std::optional<std::vector<u8>> data = FileSystem::ReadBinaryFile(filename.c_str());
+  std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(filename.c_str());
 
   HRESULT hr =
     m_device->CreatePipelineLibrary(data.has_value() ? data->data() : nullptr, data.has_value() ? data->size() : 0,

@@ -7,6 +7,7 @@
 
 #include "core/system.h"
 
+#include "common/assert.h"
 #include "common/file_system.h"
 #include "common/path.h"
 #include "common/string_util.h"

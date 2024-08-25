@@ -1034,15 +1034,15 @@ bool Bus::SideloadEXE(const std::string& path, Error* error)
   if (const std::string libps_path = Path::BuildRelativePath(path, "libps.exe");
       FileSystem::FileExists(libps_path.c_str()))
   {
-    const std::optional<std::vector<u8>> exe_data = FileSystem::ReadBinaryFile(libps_path.c_str(), error);
-    okay = (exe_data.has_value() && InjectExecutable(exe_data.value(), false, error));
+    const std::optional<DynamicHeapArray<u8>> exe_data = FileSystem::ReadBinaryFile(libps_path.c_str(), error);
+    okay = (exe_data.has_value() && InjectExecutable(exe_data->cspan(), false, error));
     if (!okay)
       Error::AddPrefix(error, "Failed to load libps.exe: ");
   }
   if (okay)
   {
-    const std::optional<std::vector<u8>> exe_data = FileSystem::ReadBinaryFile(System::GetExeOverride().c_str(), error);
-    okay = (exe_data.has_value() && InjectExecutable(exe_data.value(), true, error));
+    const std::optional<DynamicHeapArray<u8>> exe_data = FileSystem::ReadBinaryFile(System::GetExeOverride().c_str(), error);
+    okay = (exe_data.has_value() && InjectExecutable(exe_data->cspan(), true, error));
     if (!okay)
       Error::AddPrefixFmt(error, "Failed to load {}: ", Path::GetFileName(path));
   }

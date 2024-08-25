@@ -1401,9 +1401,9 @@ s64 FileSystem::GetPathFileSize(const char* Path)
   return sd.Size;
 }
 
-std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename, Error* error)
+std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(const char* filename, Error* error)
 {
-  std::optional<std::vector<u8>> ret;
+  std::optional<DynamicHeapArray<u8>> ret;
 
   ManagedCFilePtr fp = OpenManagedCFile(filename, "rb", error);
   if (!fp)
@@ -1413,9 +1413,9 @@ std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(const char* filename, 
   return ret;
 }
 
-std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp, Error* error)
+std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(std::FILE* fp, Error* error)
 {
-  std::optional<std::vector<u8>> ret;
+  std::optional<DynamicHeapArray<u8>> ret;
 
   if (FSeek64(fp, 0, SEEK_END) != 0) [[unlikely]]
   {
@@ -1445,7 +1445,7 @@ std::optional<std::vector<u8>> FileSystem::ReadBinaryFile(std::FILE* fp, Error* 
     return ret;
   }
 
-  ret = std::vector<u8>(static_cast<size_t>(size));
+  ret = DynamicHeapArray<u8>(static_cast<size_t>(size));
   if (size > 0 && std::fread(ret->data(), 1u, static_cast<size_t>(size), fp) != static_cast<size_t>(size)) [[unlikely]]
   {
     Error::SetErrno(error, "fread() failed: ", errno);

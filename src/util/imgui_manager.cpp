@@ -86,10 +86,10 @@ static ImFont* s_fixed_font;
 static ImFont* s_medium_font;
 static ImFont* s_large_font;
 
-static std::vector<u8> s_standard_font_data;
-static std::vector<u8> s_fixed_font_data;
-static std::vector<u8> s_icon_fa_font_data;
-static std::vector<u8> s_icon_pf_font_data;
+static DynamicHeapArray<u8> s_standard_font_data;
+static DynamicHeapArray<u8> s_fixed_font_data;
+static DynamicHeapArray<u8> s_icon_fa_font_data;
+static DynamicHeapArray<u8> s_icon_pf_font_data;
 
 static float s_window_width;
 static float s_window_height;
@@ -482,9 +482,9 @@ bool ImGuiManager::LoadFontData()
 {
   if (s_standard_font_data.empty())
   {
-    std::optional<std::vector<u8>> font_data = s_font_path.empty() ?
-                                                 Host::ReadResourceFile("fonts/Roboto-Regular.ttf", true) :
-                                                 FileSystem::ReadBinaryFile(s_font_path.c_str());
+    std::optional<DynamicHeapArray<u8>> font_data = s_font_path.empty() ?
+                                                      Host::ReadResourceFile("fonts/Roboto-Regular.ttf", true) :
+                                                      FileSystem::ReadBinaryFile(s_font_path.c_str());
     if (!font_data.has_value())
       return false;
 
@@ -493,7 +493,7 @@ bool ImGuiManager::LoadFontData()
 
   if (s_fixed_font_data.empty())
   {
-    std::optional<std::vector<u8>> font_data = Host::ReadResourceFile("fonts/RobotoMono-Medium.ttf", true);
+    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/RobotoMono-Medium.ttf", true);
     if (!font_data.has_value())
       return false;
 
@@ -502,7 +502,7 @@ bool ImGuiManager::LoadFontData()
 
   if (s_icon_fa_font_data.empty())
   {
-    std::optional<std::vector<u8>> font_data = Host::ReadResourceFile("fonts/fa-solid-900.ttf", true);
+    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/fa-solid-900.ttf", true);
     if (!font_data.has_value())
       return false;
 
@@ -511,7 +511,7 @@ bool ImGuiManager::LoadFontData()
 
   if (s_icon_pf_font_data.empty())
   {
-    std::optional<std::vector<u8>> font_data = Host::ReadResourceFile("fonts/promptfont.otf", true);
+    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/promptfont.otf", true);
     if (!font_data.has_value())
       return false;
 

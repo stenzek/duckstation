@@ -7,6 +7,7 @@
 #include "cpu_core_private.h"
 #include "system.h"
 
+#include "common/assert.h"
 #include "common/log.h"
 #include "common/small_string.h"
 #include "common/string_util.h"

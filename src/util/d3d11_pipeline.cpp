@@ -1,10 +1,11 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #include "d3d11_pipeline.h"
 #include "d3d11_device.h"
 #include "d3d_common.h"
 
+#include "common/assert.h"
 #include "common/error.h"
 #include "common/hash_combine.h"
 

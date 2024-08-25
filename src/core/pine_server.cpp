@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2002-2024 PCSX2 Dev Team, Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
+// NOTE: File has been rewritten completely compared to the original, only the enums remain.
 
 #include "pine_server.h"
 #include "cpu_core.h"
@@ -11,6 +12,7 @@
 
 #include "util/sockets.h"
 
+#include "common/assert.h"
 #include "common/binary_reader_writer.h"
 #include "common/error.h"
 #include "common/file_system.h"

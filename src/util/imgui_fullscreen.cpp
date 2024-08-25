@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #include "imgui_fullscreen.h"
 #include "gpu_device.h"
@@ -315,7 +315,7 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
   }
   else
   {
-    std::optional<std::vector<u8>> data = Host::ReadResourceFile(path, true);
+    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(path, true);
     if (data.has_value())
     {
       image = RGBA8Image();

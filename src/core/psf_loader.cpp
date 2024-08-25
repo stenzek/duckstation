@@ -69,7 +69,7 @@ float PSFLoader::File::GetTagFloat(const char* tag_name, float default_value) co
 
 bool PSFLoader::File::Load(const char* path, Error* error)
 {
-  std::optional<std::vector<u8>> file_data(FileSystem::ReadBinaryFile(path, error));
+  std::optional<DynamicHeapArray<u8>> file_data(FileSystem::ReadBinaryFile(path, error));
   if (!file_data.has_value() || file_data->empty())
     return false;
 

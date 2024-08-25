@@ -2244,7 +2244,7 @@ void VulkanDevice::FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header)
 
 bool VulkanDevice::ReadPipelineCache(const std::string& filename)
 {
-  std::optional<std::vector<u8>> data;
+  std::optional<DynamicHeapArray<u8>> data;
 
   auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "rb");
   if (fp)

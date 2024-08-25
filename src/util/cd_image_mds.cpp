@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #include "assert.h"
 #include "cd_image.h"
@@ -78,7 +78,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
     return false;
   }
 
-  std::optional<std::vector<u8>> mds_data_opt(FileSystem::ReadBinaryFile(mds_fp));
+  std::optional<DynamicHeapArray<u8>> mds_data_opt(FileSystem::ReadBinaryFile(mds_fp));
   std::fclose(mds_fp);
   if (!mds_data_opt.has_value() || mds_data_opt->size() < 0x54)
   {
@@ -95,7 +95,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
     return false;
   }
 
-  const std::vector<u8>& mds = mds_data_opt.value();
+  const DynamicHeapArray<u8>& mds = mds_data_opt.value();
   static constexpr char expected_signature[] = "MEDIA DESCRIPTOR";
   if (std::memcmp(&mds[0], expected_signature, sizeof(expected_signature) - 1) != 0)
   {

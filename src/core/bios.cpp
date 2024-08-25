@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #include "bios.h"
 #include "cpu_disasm.h"
@@ -190,7 +190,7 @@ std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename, Error* 
   }
 
   // We want to hash the whole file. That means reading the whole thing in, if it's a larger BIOS (PS2).
-  std::optional<std::vector<u8>> data = FileSystem::ReadBinaryFile(fp.get(), error);
+  std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(fp.get(), error);
   if (!data.has_value() || data->size() < BIOS_SIZE)
     return ret;
 
