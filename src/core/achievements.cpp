@@ -312,6 +312,7 @@ std::string Achievements::GetGameHash(CDImage* image)
 std::string Achievements::GetLocalImagePath(const std::string_view image_name, int type)
 {
   std::string_view prefix;
+  std::string_view suffix;
   switch (type)
   {
     case RC_IMAGE_TYPE_GAME:
@@ -323,7 +324,14 @@ std::string Achievements::GetLocalImagePath(const std::string_view image_name, i
       break;
 
     case RC_IMAGE_TYPE_ACHIEVEMENT: // https://media.retroachievements.org/Badge/{}.png
+      prefix = "badge";
+      break;
+
     case RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED:
+      prefix = "badge";
+      suffix = "_lock";
+      break;
+
     default:
       prefix = "badge";
       break;
@@ -332,8 +340,8 @@ std::string Achievements::GetLocalImagePath(const std::string_view image_name, i
   std::string ret;
   if (!image_name.empty())
   {
-    ret = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}" FS_OSPATH_SEPARATOR_STR "{}_{}.png", EmuFolders::Cache,
-                      CACHE_SUBDIRECTORY_NAME, prefix, Path::SanitizeFileName(image_name));
+    ret = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}" FS_OSPATH_SEPARATOR_STR "{}_{}{}.png", EmuFolders::Cache,
+                      CACHE_SUBDIRECTORY_NAME, prefix, Path::SanitizeFileName(image_name), suffix);
   }
 
   return ret;
