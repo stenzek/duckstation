@@ -48,7 +48,8 @@
 #ifdef IMGUI_ENABLE_FREETYPE_LUNASVG
 #include FT_OTSVG_H             // <freetype/otsvg.h>
 #include FT_BBOX_H              // <freetype/ftbbox.h>
-#include <lunasvg.h>
+#include <algorithm>
+#include <lunasvg_c.h>
 #if !((FREETYPE_MAJOR >= 2) && (FREETYPE_MINOR >= 12))
 #error IMGUI_ENABLE_FREETYPE_LUNASVG requires FreeType version >= 2.12
 #endif
@@ -835,10 +836,25 @@ void ImGuiFreeType::SetAllocatorFunctions(void* (*alloc_func)(size_t sz, void* u
 // The original code from the demo is licensed under CeCILL-C Free Software License Agreement (https://gitlab.freedesktop.org/freetype/freetype/-/blob/master/LICENSE.TXT)
 struct LunasvgPortState
 {
-    FT_Error            err = FT_Err_Ok;
-    lunasvg::Matrix     matrix;
-    std::unique_ptr<lunasvg::Document> svg = nullptr;
+    LunasvgPortState();
+    ~LunasvgPortState();
+
+    FT_Error err = FT_Err_Ok;
+    lunasvg_matrix* matrix = nullptr;
+    lunasvg_document* svg = nullptr;
 };
+
+LunasvgPortState::LunasvgPortState()
+{
+  matrix = lunasvg_matrix_create();
+}
+
+LunasvgPortState::~LunasvgPortState()
+{
+  lunasvg_matrix_destroy(matrix);
+  if (svg)
+    lunasvg_document_destroy(svg);
+}
 
 static FT_Error ImGuiLunasvgPortInit(FT_Pointer* _state)
 {
@@ -860,9 +876,10 @@ static FT_Error ImGuiLunasvgPortRender(FT_GlyphSlot slot, FT_Pointer* _state)
         return state->err;
 
     // rows is height, pitch (or stride) equals to width * sizeof(int32)
-    lunasvg::Bitmap bitmap((uint8_t*)slot->bitmap.buffer, slot->bitmap.width, slot->bitmap.rows, slot->bitmap.pitch);
-    state->svg->setMatrix(state->svg->matrix().identity()); // Reset the svg matrix to the default value
-    state->svg->render(bitmap, state->matrix);              // state->matrix is already scaled and translated
+    lunasvg_bitmap* bitmap = lunasvg_bitmap_create_with_data((uint8_t*)slot->bitmap.buffer, slot->bitmap.width, slot->bitmap.rows, slot->bitmap.pitch);
+    lunasvg_document_set_identity_matrix(state->svg); // Reset the svg matrix to the default value
+    lunasvg_document_render(state->svg, bitmap, state->matrix);              // state->matrix is already scaled and translated
+    lunasvg_bitmap_destroy(bitmap);
     state->err = FT_Err_Ok;
     return state->err;
 }
@@ -878,47 +895,55 @@ static FT_Error ImGuiLunasvgPortPresetSlot(FT_GlyphSlot slot, FT_Bool cache, FT_
     if (cache)
         return state->err;
 
-    state->svg = lunasvg::Document::loadFromData((const char*)document->svg_document, document->svg_document_length);
+    if (state->svg)
+      lunasvg_document_destroy(state->svg);
+    state->svg = lunasvg_document_load_from_data(document->svg_document, document->svg_document_length);
     if (state->svg == nullptr)
     {
         state->err = FT_Err_Invalid_SVG_Document;
         return state->err;
     }
 
-    lunasvg::Box box = state->svg->box();
-    double scale = std::min(metrics.x_ppem / box.w, metrics.y_ppem / box.h);
+    lunasvg_box* box = lunasvg_box_create();
+    double box_x, box_y, box_w, box_h;
+    lunasvg_document_get_box(state->svg, box);
+    lunasvg_box_get_values(box, &box_x, &box_y, &box_w, &box_h);
+
+    double scale = std::min(metrics.x_ppem / box_w, metrics.y_ppem / box_h);
     double xx = (double)document->transform.xx / (1 << 16);
     double xy = -(double)document->transform.xy / (1 << 16);
     double yx = -(double)document->transform.yx / (1 << 16);
     double yy = (double)document->transform.yy / (1 << 16);
-    double x0 = (double)document->delta.x / 64 * box.w / metrics.x_ppem;
-    double y0 = -(double)document->delta.y / 64 * box.h / metrics.y_ppem;
+    double x0 = (double)document->delta.x / 64 * box_w / metrics.x_ppem;
+    double y0 = -(double)document->delta.y / 64 * box_h / metrics.y_ppem;
 
     // Scale and transform, we don't translate the svg yet
-    state->matrix.identity();
-    state->matrix.scale(scale, scale);
-    state->matrix.transform(xx, xy, yx, yy, x0, y0);
-    state->svg->setMatrix(state->matrix);
+    lunasvg_matrix_identity(state->matrix);
+    lunasvg_matrix_scale(state->matrix, scale, scale);
+    lunasvg_matrix_transform(state->matrix, xx, xy, yx, yy, x0, y0);
+    lunasvg_document_set_matrix(state->svg, state->matrix);
 
     // Pre-translate the matrix for the rendering step
-    state->matrix.translate(-box.x, -box.y);
+    lunasvg_matrix_translate(state->matrix, -box_x, -box_y);
 
     // Get the box again after the transformation
-    box = state->svg->box();
+    lunasvg_document_get_box(state->svg, box);
+    lunasvg_box_get_values(box, &box_x, &box_y, &box_w, &box_h);
+    lunasvg_box_destroy(box);
 
     // Calculate the bitmap size
-    slot->bitmap_left = FT_Int(box.x);
-    slot->bitmap_top = FT_Int(-box.y);
-    slot->bitmap.rows = (unsigned int)(ImCeil((float)box.h));
-    slot->bitmap.width = (unsigned int)(ImCeil((float)box.w));
+    slot->bitmap_left = FT_Int(box_x);
+    slot->bitmap_top = FT_Int(-box_y);
+    slot->bitmap.rows = (unsigned int)(ImCeil((float)box_h));
+    slot->bitmap.width = (unsigned int)(ImCeil((float)box_w));
     slot->bitmap.pitch = slot->bitmap.width * 4;
     slot->bitmap.pixel_mode = FT_PIXEL_MODE_BGRA;
 
     // Compute all the bearings and set them correctly. The outline is scaled already, we just need to use the bounding box.
-    double metrics_width = box.w;
-    double metrics_height = box.h;
-    double horiBearingX = box.x;
-    double horiBearingY = -box.y;
+    double metrics_width = box_w;
+    double metrics_height = box_h;
+    double horiBearingX = box_x;
+    double horiBearingY = -box_y;
     double vertBearingX = slot->metrics.horiBearingX / 64.0 - slot->metrics.horiAdvance / 64.0 / 2.0;
     double vertBearingY = (slot->metrics.vertAdvance / 64.0 - slot->metrics.height / 64.0) / 2.0;
     slot->metrics.width = FT_Pos(IM_ROUND(metrics_width * 64.0));   // Using IM_ROUND() assume width and height are positive
