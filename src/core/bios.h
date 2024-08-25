@@ -5,6 +5,7 @@
 
 #include "types.h"
 
+#include "common/heap_array.h"
 #include "common/small_string.h"
 
 #include <array>
@@ -52,7 +53,7 @@ struct Image
 {
   const ImageInfo* info;
   ImageInfo::Hash hash;
-  std::vector<u8> data;
+  DynamicHeapArray<u8> data;
 };
 
 #pragma pack(push, 1)

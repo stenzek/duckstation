@@ -6,6 +6,7 @@
 #include "host.h"
 
 #include "common/align.h"
+#include "common/assert.h"
 #include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/file_system.h"

@@ -4,12 +4,12 @@
 #pragma once
 
 #include "common/types.h"
+#include "common/heap_array.h"
 
 #include <ctime>
 #include <optional>
 #include <string>
 #include <string_view>
-#include <vector>
 
 namespace Host {
 /// Returns true if the specified resource file exists.
@@ -17,7 +17,7 @@ bool ResourceFileExists(std::string_view filename, bool allow_override);
 
 /// Reads a file from the resources directory of the application.
 /// This may be outside of the "normal" filesystem on platforms such as Mac.
-std::optional<std::vector<u8>> ReadResourceFile(std::string_view filename, bool allow_override);
+std::optional<DynamicHeapArray<u8>> ReadResourceFile(std::string_view filename, bool allow_override);
 
 /// Reads a resource file file from the resources directory as a string.
 std::optional<std::string> ReadResourceFileToString(std::string_view filename, bool allow_override);

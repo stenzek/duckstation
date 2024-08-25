@@ -87,10 +87,10 @@ const T* GetFramePtr(const DataArray& data, u32 block, u32 frame)
 }
 
 static std::optional<u32> GetNextFreeBlock(const DataArray& data);
-static bool ImportCardMCD(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error);
-static bool ImportCardGME(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error);
-static bool ImportCardVGS(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error);
-static bool ImportCardPSX(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error);
+static bool ImportCardMCD(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error);
+static bool ImportCardGME(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error);
+static bool ImportCardVGS(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error);
+static bool ImportCardPSX(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error);
 static bool ImportSaveWithDirectoryFrame(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd,
                                          Error* error);
 static bool ImportRawSave(DataArray* data, const char* filename, const FILESYSTEM_STAT_DATA& sd, Error* error);
@@ -324,7 +324,7 @@ bool MemoryCardImage::ReadFile(const DataArray& data, const FileInfo& fi, std::v
   return true;
 }
 
-bool MemoryCardImage::WriteFile(DataArray* data, std::string_view filename, const std::vector<u8>& buffer, Error* error)
+bool MemoryCardImage::WriteFile(DataArray* data, std::string_view filename, const std::span<const u8> buffer, Error* error)
 {
   if (buffer.empty())
   {
@@ -481,7 +481,7 @@ bool MemoryCardImage::UndeleteFile(DataArray* data, const FileInfo& fi)
   return true;
 }
 
-bool MemoryCardImage::ImportCardMCD(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error)
+bool MemoryCardImage::ImportCardMCD(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error)
 {
   if (file_data.size() != DATA_SIZE)
   {
@@ -494,7 +494,7 @@ bool MemoryCardImage::ImportCardMCD(DataArray* data, const char* filename, std::
   return true;
 }
 
-bool MemoryCardImage::ImportCardGME(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error)
+bool MemoryCardImage::ImportCardGME(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error)
 {
 #pragma pack(push, 1)
   struct GMEHeader
@@ -529,15 +529,27 @@ bool MemoryCardImage::ImportCardGME(DataArray* data, const char* filename, std::
   {
     WARNING_LOG("GME memory card '{}' is too small (got {} expected {}), padding with zeroes", filename,
                 file_data.size(), expected_size);
-    file_data.resize(expected_size);
+    if (file_data.size() > sizeof(GMEHeader))
+    {
+      const size_t present = file_data.size() - sizeof(GMEHeader);
+      std::memcpy(data->data(), file_data.data() + sizeof(GMEHeader), present);
+      std::memset(data->data() + present, 0, DATA_SIZE - present);
+    }
+    else
+    {
+      std::memset(data->data(), 0, DATA_SIZE);
+    }
+  }
+  else
+  {
+    // we don't actually care about the header, just skip over it
+    std::memcpy(data->data(), file_data.data() + sizeof(GMEHeader), DATA_SIZE);
   }
 
-  // we don't actually care about the header, just skip over it
-  std::memcpy(data->data(), file_data.data() + sizeof(GMEHeader), DATA_SIZE);
   return true;
 }
 
-bool MemoryCardImage::ImportCardVGS(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error)
+bool MemoryCardImage::ImportCardVGS(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error)
 {
   constexpr u32 HEADER_SIZE = 64;
   constexpr u32 EXPECTED_SIZE = HEADER_SIZE + DATA_SIZE;
@@ -560,7 +572,7 @@ bool MemoryCardImage::ImportCardVGS(DataArray* data, const char* filename, std::
   return true;
 }
 
-bool MemoryCardImage::ImportCardPSX(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error)
+bool MemoryCardImage::ImportCardPSX(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error)
 {
   constexpr u32 HEADER_SIZE = 256;
   constexpr u32 EXPECTED_SIZE = HEADER_SIZE + DATA_SIZE;
@@ -583,7 +595,7 @@ bool MemoryCardImage::ImportCardPSX(DataArray* data, const char* filename, std::
   return true;
 }
 
-bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, std::vector<u8> file_data, Error* error)
+bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error)
 {
   const std::string_view extension = Path::GetExtension(filename);
   if (extension.empty())
@@ -597,19 +609,19 @@ bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, std::vec
       StringUtil::EqualNoCase(extension, "psm") || StringUtil::EqualNoCase(extension, "ps") ||
       StringUtil::EqualNoCase(extension, "ddf"))
   {
-    return ImportCardMCD(data, filename, std::move(file_data), error);
+    return ImportCardMCD(data, filename, file_data, error);
   }
   else if (StringUtil::EqualNoCase(extension, "gme"))
   {
-    return ImportCardGME(data, filename, std::move(file_data), error);
+    return ImportCardGME(data, filename, file_data, error);
   }
   else if (StringUtil::EqualNoCase(extension, "mem") || StringUtil::EqualNoCase(extension, "vgs"))
   {
-    return ImportCardVGS(data, filename, std::move(file_data), error);
+    return ImportCardVGS(data, filename, file_data, error);
   }
   else if (StringUtil::EqualNoCase(extension, "psx"))
   {
-    return ImportCardPSX(data, filename, std::move(file_data), error);
+    return ImportCardPSX(data, filename, file_data, error);
   }
   else
   {
@@ -620,11 +632,11 @@ bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, std::vec
 
 bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, Error* error)
 {
-  std::optional<std::vector<u8>> file_data = FileSystem::ReadBinaryFile(filename, error);
+  std::optional<DynamicHeapArray<u8>> file_data = FileSystem::ReadBinaryFile(filename, error);
   if (!file_data.has_value())
     return false;
 
-  return ImportCard(data, filename, std::move(file_data.value()), error);
+  return ImportCard(data, filename, file_data->cspan(), error);
 }
 
 bool MemoryCardImage::ExportSave(DataArray* data, const FileInfo& fi, const char* filename, Error* error)
@@ -724,7 +736,7 @@ bool MemoryCardImage::ImportRawSave(DataArray* data, const char* filename, const
   if (save_name.length() > DirectoryFrame::FILE_NAME_LENGTH)
     save_name.erase(DirectoryFrame::FILE_NAME_LENGTH);
 
-  std::optional<std::vector<u8>> blocks = FileSystem::ReadBinaryFile(filename, error);
+  std::optional<DynamicHeapArray<u8>> blocks = FileSystem::ReadBinaryFile(filename, error);
   if (!blocks.has_value())
     return false;
 

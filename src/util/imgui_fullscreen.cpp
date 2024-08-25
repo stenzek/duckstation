@@ -315,7 +315,7 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
   }
   else
   {
-    std::optional<std::vector<u8>> data = Host::ReadResourceFile(path, true);
+    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(path, true);
     if (data.has_value())
     {
       image = RGBA8Image();

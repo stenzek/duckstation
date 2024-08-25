@@ -5,6 +5,7 @@
 #include "gpu_device.h"
 
 #include "common/align.h"
+#include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
 #include "common/string_util.h"

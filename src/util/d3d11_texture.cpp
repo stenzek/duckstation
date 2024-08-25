@@ -5,6 +5,7 @@
 #include "d3d11_device.h"
 #include "d3d_common.h"
 
+#include "common/assert.h"
 #include "common/log.h"
 #include "common/string_util.h"
 

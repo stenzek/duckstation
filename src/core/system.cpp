@@ -900,12 +900,12 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
 
 System::GameHash System::GetGameHashFromFile(const char* path)
 {
-  const std::optional<std::vector<u8>> data = FileSystem::ReadBinaryFile(path);
+  const std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(path);
   if (!data)
     return 0;
 
   const std::string display_name = FileSystem::GetDisplayNameFromPath(path);
-  return GetGameHashFromBuffer(display_name, data.value(), IsoReader::ISOPrimaryVolumeDescriptor{}, 0);
+  return GetGameHashFromBuffer(display_name, data->cspan(), IsoReader::ISOPrimaryVolumeDescriptor{}, 0);
 }
 
 std::string System::GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories)

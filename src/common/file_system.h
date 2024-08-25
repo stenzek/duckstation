@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "heap_array.h"
 #include "types.h"
 
 #include <cstdio>
@@ -171,8 +172,8 @@ private:
 };
 #endif
 
-std::optional<std::vector<u8>> ReadBinaryFile(const char* filename, Error* error = nullptr);
-std::optional<std::vector<u8>> ReadBinaryFile(std::FILE* fp, Error* error = nullptr);
+std::optional<DynamicHeapArray<u8>> ReadBinaryFile(const char* filename, Error* error = nullptr);
+std::optional<DynamicHeapArray<u8>> ReadBinaryFile(std::FILE* fp, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(const char* filename, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(std::FILE* fp, Error* error = nullptr);
 bool WriteBinaryFile(const char* filename, const void* data, size_t data_length, Error* error = nullptr);

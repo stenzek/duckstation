@@ -3,6 +3,7 @@
 
 #include "image.h"
 
+#include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/fastjmp.h"
 #include "common/file_system.h"
@@ -518,7 +519,7 @@ static bool WrapJPEGDecompress(RGBA8Image* image, T setup_func)
 bool JPEGBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size)
 {
   return WrapJPEGDecompress(image, [buffer, buffer_size](jpeg_decompress_struct& info) {
-    jpeg_mem_src(&info, static_cast<const unsigned char*>(buffer), buffer_size);
+    jpeg_mem_src(&info, static_cast<const unsigned char*>(buffer), static_cast<unsigned long>(buffer_size));
   });
 }
 
@@ -763,7 +764,7 @@ bool WebPBufferSaver(const RGBA8Image& image, std::vector<u8>* buffer, u8 qualit
 
 bool WebPFileLoader(RGBA8Image* image, std::string_view filename, std::FILE* fp)
 {
-  std::optional<std::vector<u8>> data = FileSystem::ReadBinaryFile(fp);
+  std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(fp);
   if (!data.has_value())
     return false;
 
