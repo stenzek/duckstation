@@ -34,6 +34,7 @@ modules:
   - "modules/24-cpuinfo.yaml"
   - "modules/25-discord-rpc.yaml"
   - "modules/26-soundtouch.yaml"
+  - "modules/27-lunasvg.yaml"
 
   # Main module.
   - name: duckstation

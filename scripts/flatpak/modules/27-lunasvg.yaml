@@ -1,0 +1,21 @@
+name: lunasvg
+buildsystem: cmake-ninja
+builddir: true
+config-opts:
+  - "-DCMAKE_BUILD_TYPE=Release"
+  - "-DBUILD_SHARED_LIBS=ON"
+  - "-DLUNASVG_BUILD_EXAMPLES=OFF"
+build-options:
+  strip: true
+sources:
+  - type: git
+    url: "https://github.com/stenzek/lunasvg.git"
+    commit: "9af1ac7b90658a279b372add52d6f77a4ebb482c"
+cleanup:
+  - /bin
+  - /include
+  - /lib/*.a
+  - /lib/*.la
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share
