@@ -4694,6 +4694,18 @@ size_t rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], s
   return result;
 }
 
+int rc_client_get_rich_presence_strings(rc_client_t* client, const char** buffer, size_t buffer_size, size_t* count) {
+  int result;
+
+  if (!client || !buffer)
+    return RC_INVALID_STATE;
+
+  rc_mutex_lock(&client->state.mutex);
+  result = rc_runtime_get_richpresence_strings(&client->game->runtime, buffer, buffer_size, count);
+  rc_mutex_unlock(&client->state.mutex);
+  return result;
+}
+
 /* ===== Processing ===== */
 
 void rc_client_set_event_handler(rc_client_t* client, rc_client_event_handler_t handler)

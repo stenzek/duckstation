@@ -432,6 +432,7 @@ RC_EXPORT int RC_CCONV rc_evaluate_richpresence(rc_richpresence_t* richpresence,
 RC_EXPORT void RC_CCONV rc_update_richpresence(rc_richpresence_t* richpresence, rc_peek_t peek, void* peek_ud, lua_State* L);
 RC_EXPORT int RC_CCONV rc_get_richpresence_display_string(rc_richpresence_t* richpresence, char* buffer, size_t buffersize, rc_peek_t peek, void* peek_ud, lua_State* L);
 RC_EXPORT void RC_CCONV rc_reset_richpresence(rc_richpresence_t* self);
+RC_EXPORT int RC_CCONV rc_get_richpresence_strings(rc_richpresence_t* richpresence, const char** buffer, size_t buffersize, size_t* count);
 
 RC_END_C_DECLS
 

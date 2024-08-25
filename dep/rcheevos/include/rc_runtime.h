@@ -110,6 +110,7 @@ RC_EXPORT int RC_CCONV rc_runtime_format_lboard_value(char* buffer, int size, in
 
 RC_EXPORT int RC_CCONV rc_runtime_activate_richpresence(rc_runtime_t* runtime, const char* script, lua_State* L, int funcs_idx);
 RC_EXPORT int RC_CCONV rc_runtime_get_richpresence(const rc_runtime_t* runtime, char* buffer, size_t buffersize, rc_runtime_peek_t peek, void* peek_ud, lua_State* L);
+RC_EXPORT int RC_CCONV rc_runtime_get_richpresence_strings(const rc_runtime_t* runtime, const char** buffer, size_t buffersize, size_t* count);
 
 enum {
   RC_RUNTIME_EVENT_ACHIEVEMENT_ACTIVATED, /* from WAITING, PAUSED, or PRIMED to ACTIVE */
