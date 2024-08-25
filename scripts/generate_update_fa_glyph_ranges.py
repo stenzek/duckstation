@@ -55,11 +55,11 @@ def get_pairs(tokens):
     for token in tokens:
         u8_bytes = u8_encodings[token]
         u8 = str(u8_bytes, "utf-8")
-        u16 = u8.encode("utf-16le")
-        if len(u16) > 2:
+        u32 = u8.encode("utf-32le")
+        if len(u32) > 4:
             raise ValueError("{} {} too long".format(u8_bytes, token))
 
-        codepoint = int.from_bytes(u16, byteorder="little", signed=False)
+        codepoint = int.from_bytes(u32, byteorder="little", signed=False)
         codepoints.append(codepoint)
     codepoints.sort()
     codepoints.append(0) # null terminator

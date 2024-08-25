@@ -3,8 +3,6 @@
 
 // TODO: Don't poll when booting the game, e.g. Crash Warped freaks out.
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-
 #include "achievements.h"
 #include "achievements_private.h"
 #include "bios.h"

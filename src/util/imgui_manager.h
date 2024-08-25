@@ -15,8 +15,11 @@ union InputBindingKey;
 enum class GenericInputBinding : u8;
 
 namespace ImGuiManager {
+
+using WCharType = u32;
+
 /// Sets the path to the font to use. Empty string means to use the default.
-void SetFontPathAndRange(std::string path, std::vector<u16> range);
+void SetFontPathAndRange(std::string path, std::vector<WCharType> range);
 
 /// Changes the global scale.
 void SetGlobalScale(float global_scale);
