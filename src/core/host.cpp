@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #include "host.h"
 #include "fullscreen_ui.h"
@@ -18,11 +18,15 @@
 #include "common/error.h"
 #include "common/layered_settings_interface.h"
 #include "common/log.h"
+#include "common/path.h"
 #include "common/string_util.h"
 
 #include "imgui.h"
 
 #include <cstdarg>
+#include <limits>
+#include <zstd.h>
+#include <zstd_errors.h>
 
 Log_SetChannel(Host);
 
@@ -39,6 +43,50 @@ std::unique_lock<std::mutex> Host::GetSettingsLock()
 SettingsInterface* Host::GetSettingsInterface()
 {
   return &s_layered_settings_interface;
+}
+
+std::optional<DynamicHeapArray<u8>> Host::ReadCompressedResourceFile(std::string_view filename, bool allow_override)
+{
+  std::optional<DynamicHeapArray<u8>> ret = Host::ReadResourceFile(filename, allow_override);
+  if (ret.has_value())
+  {
+    const std::string_view extension = Path::GetExtension(filename);
+    if (StringUtil::EqualNoCase(extension, "zst"))
+    {
+      // Need to zstd decompress.
+      const unsigned long long decompressed_size = ZSTD_getFrameContentSize(ret->data(), ret->size());
+      if (decompressed_size == ZSTD_CONTENTSIZE_UNKNOWN || decompressed_size == ZSTD_CONTENTSIZE_ERROR ||
+          decompressed_size >= std::numeric_limits<size_t>::max()) [[unlikely]]
+      {
+        ERROR_LOG("Failed to get size of {}.", filename);
+        ret.reset();
+        return ret;
+      }
+
+      DEV_LOG("Decompressing resource {}: {} => {} bytes", filename, ret->size(), decompressed_size);
+
+      DynamicHeapArray<u8> decompressed_data(decompressed_size);
+      const size_t result =
+        ZSTD_decompress(decompressed_data.data(), decompressed_data.size(), ret->data(), ret->size());
+      if (ZSTD_isError(result)) [[unlikely]]
+      {
+        const char* errstr = ZSTD_getErrorString(ZSTD_getErrorCode(result));
+        ERROR_LOG("ZSTD_decompress() for {} failed: {}", filename, errstr ? errstr : "<unknown>");
+        ret.reset();
+        return ret;
+      }
+      if (result < decompressed_size) [[unlikely]]
+      {
+        ERROR_LOG("ZSTD_decompress() for {} only returned {} of {} bytes.", filename, result, decompressed_size);
+        ret.reset();
+        return ret;
+      }
+
+      ret = std::move(decompressed_data);
+    }
+  }
+
+  return ret;
 }
 
 std::string Host::GetBaseStringSettingValue(const char* section, const char* key, const char* default_value /*= ""*/)

@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "common/types.h"
 #include "common/heap_array.h"
+#include "common/types.h"
 
 #include <ctime>
 #include <optional>
@@ -24,6 +24,9 @@ std::optional<std::string> ReadResourceFileToString(std::string_view filename, b
 
 /// Returns the modified time of a resource.
 std::optional<std::time_t> GetResourceFileTimestamp(std::string_view filename, bool allow_override);
+
+/// Reads a potentially-compressed file from the resources directory of the application.
+std::optional<DynamicHeapArray<u8>> ReadCompressedResourceFile(std::string_view filename, bool allow_override);
 
 /// Reports a fatal error on the main thread. This does not assume that the main window exists,
 /// unlike ReportErrorAsync(), and will exit the application after the popup is closed.
