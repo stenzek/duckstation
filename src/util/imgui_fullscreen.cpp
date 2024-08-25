@@ -622,6 +622,8 @@ void ImGuiFullscreen::ForceKeyNavEnabled()
 
 bool ImGuiFullscreen::WantsToCloseMenu()
 {
+  ImGuiContext& g = *GImGui;
+
   // Wait for the Close button to be released, THEN pressed
   if (s_close_button_state == 0)
   {
