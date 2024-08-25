@@ -596,6 +596,12 @@ RC_EXPORT int RC_CCONV rc_client_has_rich_presence(rc_client_t* client);
  */
 RC_EXPORT size_t RC_CCONV rc_client_get_rich_presence_message(rc_client_t* client, char buffer[], size_t buffer_size);
 
+/**
+ * Returns a list of all possible rich presence strings.
+ * The list is terminated by NULL.
+ */
+RC_EXPORT int RC_CCONV rc_client_get_rich_presence_strings(rc_client_t* client, const char** buffer, size_t buffer_size, size_t* count);
+
 /*****************************************************************************\
 | Processing                                                                  |
 \*****************************************************************************/

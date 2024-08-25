@@ -537,6 +537,17 @@ int rc_runtime_get_richpresence(const rc_runtime_t* self, char* buffer, size_t b
   return 0;
 }
 
+int rc_runtime_get_richpresence_strings(const rc_runtime_t* self, const char** buffer, size_t buffersize, size_t* count) {
+  int err = RC_INVALID_STATE;
+  if (self->richpresence && self->richpresence->richpresence)
+    err = rc_get_richpresence_strings(self->richpresence->richpresence, buffer, buffersize, count);
+
+  if (err != RC_OK)
+    *buffer = '\0';
+
+  return err;
+}
+
 void rc_runtime_do_frame(rc_runtime_t* self, rc_runtime_event_handler_t event_handler, rc_runtime_peek_t peek, void* ud, lua_State* L) {
   rc_runtime_event_t runtime_event;
   int i;

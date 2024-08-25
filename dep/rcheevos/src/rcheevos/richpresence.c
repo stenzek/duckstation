@@ -827,3 +827,78 @@ void rc_reset_richpresence(rc_richpresence_t* self) {
   for (variable = self->variables; variable; variable = variable->next)
     rc_reset_value(variable);
 }
+
+static int rc_get_richpresence_strings_has_string(const char** buffer, size_t written, const char* search) {
+  for (size_t i = 0; i < written; i++) {
+    if (buffer[i] == search)
+      return 1;
+  }
+
+  return 0;
+}
+
+static int rc_get_richpresence_strings_recurse(const rc_richpresence_lookup_item_t* item, const char** buffer, size_t buffersize, size_t* written) {
+  size_t len;
+  int err;
+
+  if (!rc_get_richpresence_strings_has_string(buffer, *written, item->label)) {
+    if (*written == buffersize)
+      return RC_INSUFFICIENT_BUFFER;
+
+    buffer[(*written)++] = item->label;
+  }
+
+  if (item->left && (err = rc_get_richpresence_strings_recurse(item->left, buffer, buffersize, written)) != RC_OK)
+    return err;
+  if (item->right && (err = rc_get_richpresence_strings_recurse(item->right, buffer, buffersize, written)) != RC_OK)
+    return err;
+
+  return RC_OK;
+}
+
+int rc_get_richpresence_strings(rc_richpresence_t* richpresence, const char** buffer, size_t buffersize, size_t* count) {
+  const rc_richpresence_display_t* display;
+  const rc_richpresence_display_part_t* part;
+  size_t written;
+  size_t len;
+  int err;
+
+  written = 0;
+  for (display = richpresence->first_display; display; display = display->next) {
+    for (part = display->display; part; part = part->next) {
+      switch (part->display_type) {
+        case RC_FORMAT_STRING:
+          if (!rc_get_richpresence_strings_has_string(buffer, written, part->text)) {
+            if (written == buffersize)
+              return RC_INSUFFICIENT_BUFFER;
+
+            buffer[written++] = part->text;
+          }
+          break;
+
+        case RC_FORMAT_LOOKUP:
+          if (part->lookup->default_label && !rc_get_richpresence_strings_has_string(buffer, written, part->lookup->default_label)) {
+            if (written == buffersize)
+              return RC_INSUFFICIENT_BUFFER;
+
+            buffer[written++] = part->lookup->default_label;
+          }
+
+          if ((err = rc_get_richpresence_strings_recurse(part->lookup->root, buffer, buffersize, &written)) != RC_OK)
+            return err;
+
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  if (written == buffersize)
+    return RC_INSUFFICIENT_BUFFER;
+
+  *count = written;
+  buffer[written++] = NULL; /* terminate list */
+  return RC_OK;
+}
