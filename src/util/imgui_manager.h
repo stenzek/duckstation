@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #pragma once
 
@@ -15,8 +15,11 @@ union InputBindingKey;
 enum class GenericInputBinding : u8;
 
 namespace ImGuiManager {
+
+using WCharType = u32;
+
 /// Sets the path to the font to use. Empty string means to use the default.
-void SetFontPathAndRange(std::string path, std::vector<u16> range);
+void SetFontPathAndRange(std::string path, std::vector<WCharType> range);
 
 /// Changes the global scale.
 void SetGlobalScale(float global_scale);

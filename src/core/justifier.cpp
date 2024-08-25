@@ -391,7 +391,7 @@ static const SettingInfo s_settings[] = {
 const Controller::ControllerInfo Justifier::INFO = {ControllerType::Justifier,
                                                     "Justifier",
                                                     TRANSLATE_NOOP("ControllerType", "Justifier"),
-                                                    nullptr,
+                                                    ICON_PF_LIGHT_GUN,
                                                     s_binding_info,
                                                     s_settings,
                                                     Controller::VibrationCapabilities::NoVibration};
