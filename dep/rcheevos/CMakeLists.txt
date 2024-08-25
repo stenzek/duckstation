@@ -28,8 +28,6 @@ add_library(rcheevos
   src/rcheevos/memref.c
   src/rcheevos/operand.c
   src/rcheevos/rc_internal.h
-  src/rcheevos/rc_validate.c
-  src/rcheevos/rc_validate.h
   src/rcheevos/richpresence.c
   src/rcheevos/runtime.c
   src/rcheevos/runtime_progress.c
