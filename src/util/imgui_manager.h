@@ -4,6 +4,7 @@
 #pragma once
 
 #include "common/types.h"
+#include <span>
 #include <string>
 #include <vector>
 
@@ -20,6 +21,10 @@ using WCharType = u32;
 
 /// Sets the path to the font to use. Empty string means to use the default.
 void SetFontPathAndRange(std::string path, std::vector<WCharType> range);
+
+/// Sets the emoji font range to use. Empty means no glyphs will be rasterized.
+/// Should NOT be terminated with zeros, unlike the font range above.
+void SetEmojiFontRange(std::vector<WCharType> range);
 
 /// Changes the global scale.
 void SetGlobalScale(float global_scale);
