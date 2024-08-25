@@ -388,7 +388,7 @@ size_t StringUtil::DecodeUTF8(const void* bytes, size_t length, char32_t* ch)
   }
 
 invalid:
-  *ch = 0xFFFFFFFFu;
+  *ch = UNICODE_REPLACEMENT_CHARACTER; // unicode replacement character
   return 1;
 }
 

@@ -263,6 +263,9 @@ void ReplaceAll(std::string* subject, const char search, const char replacement)
 /// Parses an assignment string (Key = Value) into its two components.
 bool ParseAssignmentString(const std::string_view str, std::string_view* key, std::string_view* value);
 
+/// Unicode replacement character.
+static constexpr char32_t UNICODE_REPLACEMENT_CHARACTER = 0xFFFD;
+
 /// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
 void EncodeAndAppendUTF8(std::string& s, char32_t ch);
 
