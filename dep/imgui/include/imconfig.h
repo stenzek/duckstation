@@ -87,7 +87,7 @@
 // Requires lunasvg headers to be available in the include path + program to be linked with the lunasvg library (not provided).
 // Only works in combination with IMGUI_ENABLE_FREETYPE.
 // (implementation is based on Freetype's rsvg-port.c which is licensed under CeCILL-C Free Software License Agreement)
-//#define IMGUI_ENABLE_FREETYPE_LUNASVG
+#define IMGUI_ENABLE_FREETYPE_LUNASVG
 
 //---- Use stb_truetype to build and rasterize the font atlas (default)
 // The only purpose of this define is if you want force compilation of the stb_truetype backend ALONG with the FreeType backend.
