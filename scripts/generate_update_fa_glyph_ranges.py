@@ -10,7 +10,8 @@ import re
 src_dir = os.path.join(os.path.dirname(__file__), "..", "src")
 fa_file = os.path.join(os.path.dirname(__file__), "..", "dep", "imgui", "include", "IconsFontAwesome5.h")
 pf_file = os.path.join(os.path.dirname(__file__), "..", "dep", "imgui", "include", "IconsPromptFont.h")
-dst_file = os.path.join(os.path.dirname(__file__), "..", "src", "util", "imgui_manager.cpp")
+emoji_file = os.path.join(os.path.dirname(__file__), "..", "dep", "imgui", "include", "IconsEmoji.h")
+dst_file = os.path.join(os.path.dirname(__file__), "..", "src", "util", "imgui_glyph_ranges.inl")
 
 all_source_files = glob.glob(os.path.join(src_dir, "**", "*.cpp"), recursive=True) + \
     glob.glob(os.path.join(src_dir, "**", "*.h"), recursive=True) + \
@@ -18,6 +19,7 @@ all_source_files = glob.glob(os.path.join(src_dir, "**", "*.cpp"), recursive=Tru
 
 tokens = set()
 pf_tokens = set()
+emoji_tokens = set()
 for filename in all_source_files:
     data = None
     with open(filename, "r") as f:
@@ -28,8 +30,9 @@ for filename in all_source_files:
     
     tokens = tokens.union(set(re.findall("(ICON_FA_[a-zA-Z0-9_]+)", data)))
     pf_tokens = pf_tokens.union(set(re.findall("(ICON_PF_[a-zA-Z0-9_]+)", data)))
+    emoji_tokens = emoji_tokens.union(set(re.findall("(ICON_EMOJI_[a-zA-Z0-9_]+)", data)))
 
-print("{}/{} tokens found.".format(len(tokens), len(pf_tokens)))
+print("{}/{}/{} tokens found.".format(len(tokens), len(pf_tokens), len(emoji_tokens)))
 if len(tokens) == 0 and len(pf_tokens) == 0:
     sys.exit(0)
 
@@ -46,9 +49,16 @@ with open(pf_file, "r") as f:
         if match is None:
             continue
         u8_encodings[match[1]] = bytes.fromhex(match[2].replace("\\x", ""))
+with open(emoji_file, "r") as f:
+    for line in f.readlines():
+        match = re.match("#define (ICON_EMOJI_[^ ]+) \"([^\"]+)\"", line)
+        if match is None:
+            continue
+        u8_encodings[match[1]] = bytes.fromhex(match[2].replace("\\x", ""))
 
-out_pattern = "(static constexpr ImWchar range_fa\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
-out_pf_pattern = "(static constexpr ImWchar range_pf\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
+out_pattern = "(static constexpr ImWchar FA_ICON_RANGE\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
+out_pf_pattern = "(static constexpr ImWchar PF_ICON_RANGE\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
+out_emoji_pattern = "(static constexpr ImWchar EMOJI_ICON_RANGE\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
 
 def get_pairs(tokens):
     codepoints = list()
@@ -84,6 +94,7 @@ with open(dst_file, "r") as f:
     original = f.read()
     updated = re.sub(out_pattern, "\\1 " + get_pairs(tokens) + " \\2", original)
     updated = re.sub(out_pf_pattern, "\\1 " + get_pairs(pf_tokens) + " \\2", updated)
+    updated = re.sub(out_emoji_pattern, "\\1 " + get_pairs(emoji_tokens) + " \\2", updated)
     if original != updated:
         with open(dst_file, "w") as f:
             f.write(updated)

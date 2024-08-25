@@ -6,6 +6,7 @@
 #include "host.h"
 #include "image.h"
 #include "imgui_fullscreen.h"
+#include "imgui_glyph_ranges.inl"
 #include "input_manager.h"
 
 #include "common/assert.h"
@@ -19,6 +20,7 @@
 #include "IconsFontAwesome5.h"
 #include "fmt/format.h"
 #include "imgui.h"
+#include "imgui_freetype.h"
 #include "imgui_internal.h"
 
 #include <atomic>
@@ -64,6 +66,7 @@ static void UpdateScale();
 static void SetStyle();
 static void SetKeyMap();
 static bool LoadFontData();
+static void ReloadFontDataIfActive();
 static bool AddImGuiFonts(bool fullscreen_fonts);
 static ImFont* AddTextFont(float size);
 static ImFont* AddFixedFont(float size);
@@ -80,6 +83,7 @@ static float s_global_scale = 1.0f;
 
 static std::string s_font_path;
 static std::vector<WCharType> s_font_range;
+static std::vector<WCharType> s_emoji_range;
 
 static ImFont* s_standard_font;
 static ImFont* s_fixed_font;
@@ -90,6 +94,7 @@ static DynamicHeapArray<u8> s_standard_font_data;
 static DynamicHeapArray<u8> s_fixed_font_data;
 static DynamicHeapArray<u8> s_icon_fa_font_data;
 static DynamicHeapArray<u8> s_icon_pf_font_data;
+static DynamicHeapArray<u8> s_emoji_font_data;
 
 static float s_window_width;
 static float s_window_height;
@@ -122,22 +127,36 @@ void ImGuiManager::SetFontPathAndRange(std::string path, std::vector<WCharType> 
   s_font_path = std::move(path);
   s_font_range = std::move(range);
   s_standard_font_data = {};
+  ReloadFontDataIfActive();
+}
 
-  if (ImGui::GetCurrentContext())
+void ImGuiManager::SetEmojiFontRange(std::vector<WCharType> range)
+{
+  static constexpr size_t builtin_size = std::size(EMOJI_ICON_RANGE);
+  const size_t runtime_size = range.size();
+
+  if (runtime_size == 0)
   {
-    ImGui::EndFrame();
+    if (s_emoji_range.empty())
+      return;
 
-    if (!LoadFontData())
-      Panic("Failed to load font data");
-
-    if (!AddImGuiFonts(HasFullscreenFonts()))
-      Panic("Failed to create ImGui font text");
-
-    if (!g_gpu_device->UpdateImGuiFontTexture())
-      Panic("Failed to recreate font texture after scale+resize");
-
-    NewFrame();
+    s_emoji_range = {};
   }
+  else
+  {
+    if (!s_emoji_range.empty() && (s_emoji_range.size() - builtin_size) == range.size() &&
+        std::memcmp(s_emoji_range.data(), range.data(), range.size() * sizeof(ImWchar)) == 0)
+    {
+      // no change
+      return;
+    }
+
+    s_emoji_range = std::move(range);
+    s_emoji_range.resize(s_emoji_range.size() + builtin_size);
+    std::memcpy(&s_emoji_range[runtime_size], EMOJI_ICON_RANGE, sizeof(EMOJI_ICON_RANGE));
+  }
+
+  ReloadFontDataIfActive();
 }
 
 void ImGuiManager::SetGlobalScale(float global_scale)
@@ -518,6 +537,16 @@ bool ImGuiManager::LoadFontData()
     s_icon_pf_font_data = std::move(font_data.value());
   }
 
+  if (s_emoji_font_data.empty() && false)
+  {
+    std::optional<DynamicHeapArray<u8>> font_data =
+      Host::ReadCompressedResourceFile("fonts/TwitterColorEmoji-SVGinOT.ttf.zst", true);
+    if (!font_data.has_value())
+      return false;
+
+    s_emoji_font_data = std::move(font_data.value());
+  }
+
   return true;
 }
 
@@ -539,28 +568,6 @@ ImFont* ImGuiManager::AddFixedFont(float size)
 
 bool ImGuiManager::AddIconFonts(float size)
 {
-  static constexpr ImWchar range_fa[] = {
-    0xe06f, 0xe06f, 0xe086, 0xe086, 0xf002, 0xf002, 0xf005, 0xf005, 0xf007, 0xf007, 0xf00c, 0xf00e, 0xf011, 0xf011,
-    0xf013, 0xf013, 0xf017, 0xf017, 0xf019, 0xf019, 0xf01c, 0xf01c, 0xf021, 0xf021, 0xf023, 0xf023, 0xf025, 0xf025,
-    0xf027, 0xf028, 0xf02e, 0xf02e, 0xf030, 0xf030, 0xf03a, 0xf03a, 0xf03d, 0xf03d, 0xf049, 0xf04c, 0xf050, 0xf050,
-    0xf05e, 0xf05e, 0xf062, 0xf063, 0xf067, 0xf067, 0xf071, 0xf071, 0xf075, 0xf075, 0xf077, 0xf078, 0xf07b, 0xf07c,
-    0xf084, 0xf085, 0xf091, 0xf091, 0xf0a0, 0xf0a0, 0xf0ac, 0xf0ad, 0xf0c5, 0xf0c5, 0xf0c7, 0xf0c9, 0xf0cb, 0xf0cb,
-    0xf0d0, 0xf0d0, 0xf0dc, 0xf0dc, 0xf0e2, 0xf0e2, 0xf0e7, 0xf0e7, 0xf0eb, 0xf0eb, 0xf0f1, 0xf0f1, 0xf0f3, 0xf0f3,
-    0xf0fe, 0xf0fe, 0xf110, 0xf110, 0xf119, 0xf119, 0xf11b, 0xf11c, 0xf140, 0xf140, 0xf14a, 0xf14a, 0xf15b, 0xf15b,
-    0xf15d, 0xf15d, 0xf191, 0xf192, 0xf1ab, 0xf1ab, 0xf1dd, 0xf1de, 0xf1e6, 0xf1e6, 0xf1eb, 0xf1eb, 0xf1f8, 0xf1f8,
-    0xf1fc, 0xf1fc, 0xf240, 0xf240, 0xf242, 0xf242, 0xf245, 0xf245, 0xf26c, 0xf26c, 0xf279, 0xf279, 0xf2d0, 0xf2d0,
-    0xf2db, 0xf2db, 0xf2f2, 0xf2f2, 0xf3c1, 0xf3c1, 0xf3fd, 0xf3fd, 0xf410, 0xf410, 0xf466, 0xf466, 0xf4ce, 0xf4ce,
-    0xf500, 0xf500, 0xf51f, 0xf51f, 0xf538, 0xf538, 0xf545, 0xf545, 0xf547, 0xf548, 0xf57a, 0xf57a, 0xf5a2, 0xf5a2,
-    0xf5aa, 0xf5aa, 0xf5e7, 0xf5e7, 0xf65d, 0xf65e, 0xf6a9, 0xf6a9, 0xf6cf, 0xf6cf, 0xf70c, 0xf70c, 0xf794, 0xf794,
-    0xf7a0, 0xf7a0, 0xf7c2, 0xf7c2, 0xf807, 0xf807, 0xf815, 0xf815, 0xf818, 0xf818, 0xf84c, 0xf84c, 0xf8cc, 0xf8cc,
-    0x0,    0x0};
-  static constexpr ImWchar range_pf[] = {
-    0x2196, 0x2199, 0x219e, 0x21a1, 0x21b0, 0x21b3, 0x21ba,  0x21c3,  0x21c7, 0x21ca, 0x21d0, 0x21d4, 0x21dc,
-    0x21dd, 0x21e0, 0x21e3, 0x21ed, 0x21ee, 0x21f7, 0x21f8,  0x21fa,  0x21fb, 0x227a, 0x227f, 0x2284, 0x2284,
-    0x235e, 0x235e, 0x2360, 0x2361, 0x2364, 0x2366, 0x23b2,  0x23b4,  0x23ce, 0x23ce, 0x23f4, 0x23f7, 0x2427,
-    0x243a, 0x243c, 0x243e, 0x2460, 0x246b, 0x24f5, 0x24fd,  0x24ff,  0x24ff, 0x2717, 0x2717, 0x278a, 0x278e,
-    0x27fc, 0x27fc, 0xe001, 0xe001, 0xff21, 0xff3a, 0x1f52b, 0x1f52b, 0x0,    0x0};
-
   {
     ImFontConfig cfg;
     cfg.MergeMode = true;
@@ -570,7 +577,8 @@ bool ImGuiManager::AddIconFonts(float size)
     cfg.FontDataOwnedByAtlas = false;
 
     if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-          s_icon_fa_font_data.data(), static_cast<int>(s_icon_fa_font_data.size()), size * 0.75f, &cfg, range_fa))
+          s_icon_fa_font_data.data(), static_cast<int>(s_icon_fa_font_data.size()), size * 0.75f, &cfg, FA_ICON_RANGE))
+      [[unlikely]]
     {
       return false;
     }
@@ -585,7 +593,26 @@ bool ImGuiManager::AddIconFonts(float size)
     cfg.FontDataOwnedByAtlas = false;
 
     if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-          s_icon_pf_font_data.data(), static_cast<int>(s_icon_pf_font_data.size()), size * 1.2f, &cfg, range_pf))
+          s_icon_pf_font_data.data(), static_cast<int>(s_icon_pf_font_data.size()), size * 1.2f, &cfg, PF_ICON_RANGE))
+      [[unlikely]]
+    {
+      return false;
+    }
+  }
+
+  if constexpr (false) // Not yet used
+  {
+    ImFontConfig cfg;
+    cfg.MergeMode = true;
+    cfg.PixelSnapH = true;
+    cfg.GlyphMinAdvanceX = size;
+    cfg.GlyphMaxAdvanceX = size;
+    cfg.FontDataOwnedByAtlas = false;
+    cfg.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_LoadColor | ImGuiFreeTypeBuilderFlags_Bitmap;
+
+    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+          s_emoji_font_data.data(), static_cast<int>(s_emoji_font_data.size()), size * 0.9f, &cfg,
+          s_emoji_range.empty() ? EMOJI_ICON_RANGE : s_emoji_range.data())) [[unlikely]]
     {
       return false;
     }
@@ -630,6 +657,25 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
   ImGuiFullscreen::SetFonts(s_standard_font, s_medium_font, s_large_font);
 
   return io.Fonts->Build();
+}
+
+void ImGuiManager::ReloadFontDataIfActive()
+{
+  if (!ImGui::GetCurrentContext())
+    return;
+
+  ImGui::EndFrame();
+
+  if (!LoadFontData())
+    Panic("Failed to load font data");
+
+  if (!AddImGuiFonts(HasFullscreenFonts()))
+    Panic("Failed to create ImGui font text");
+
+  if (!g_gpu_device->UpdateImGuiFontTexture())
+    Panic("Failed to recreate font texture after scale+resize");
+
+  NewFrame();
 }
 
 bool ImGuiManager::AddFullscreenFontsIfMissing()
