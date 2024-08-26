@@ -1441,7 +1441,7 @@ TickCount CDROM::GetTicksForRead()
 
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 {
-  static constexpr TickCount MIN_TICKS = 20000;
+  static constexpr TickCount MIN_TICKS = 30000;
 
   if (g_settings.cdrom_seek_speedup == 0)
     return MIN_TICKS;
@@ -1520,7 +1520,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
-    ticks = std::min<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_TICKS);
+    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_TICKS);
 
   return System::ScaleTicksToOverclock(static_cast<TickCount>(ticks));
 }
