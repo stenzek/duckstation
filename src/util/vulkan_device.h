@@ -239,7 +239,7 @@ protected:
                     Error* error) override;
   void DestroyDevice() override;
 
-  bool ReadPipelineCache(const std::string& filename) override;
+  bool ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data) override;
   bool GetPipelineCacheData(DynamicHeapArray<u8>* data) override;
 
 private:

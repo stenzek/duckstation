@@ -533,6 +533,7 @@ public:
   static constexpr u32 MAX_RENDER_TARGETS = 4;
   static constexpr u32 MAX_IMAGE_RENDER_TARGETS = 2;
   static constexpr u32 DEFAULT_CLEAR_COLOR = 0xFF000000u;
+  static constexpr u32 PIPELINE_CACHE_HASH_SIZE = 20;
   static_assert(sizeof(GPUPipeline::GraphicsConfig::color_formats) == sizeof(GPUTexture::Format) * MAX_RENDER_TARGETS);
 
   GPUDevice();
@@ -741,7 +742,8 @@ protected:
   virtual void DestroyDevice() = 0;
 
   std::string GetShaderCacheBaseName(std::string_view type) const;
-  virtual bool ReadPipelineCache(const std::string& filename);
+  virtual bool OpenPipelineCache(const std::string& filename);
+  virtual bool ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data);
   virtual bool GetPipelineCacheData(DynamicHeapArray<u8>* data);
 
   virtual std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,

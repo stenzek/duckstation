@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #include "opengl_pipeline.h"
+#include "compress_helpers.h"
 #include "opengl_device.h"
 #include "opengl_stream_buffer.h"
 #include "shadergen.h"
@@ -17,8 +18,6 @@
 #include "common/string_util.h"
 
 #include "fmt/format.h"
-#include "zstd.h"
-#include "zstd_errors.h"
 
 #include <cerrno>
 
@@ -754,7 +753,7 @@ void OpenGLDevice::SetPipeline(GPUPipeline* pipeline)
   }
 }
 
-bool OpenGLDevice::ReadPipelineCache(const std::string& filename)
+bool OpenGLDevice::OpenPipelineCache(const std::string& filename)
 {
   DebugAssert(!m_pipeline_disk_cache_file);
 
@@ -863,7 +862,6 @@ bool OpenGLDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data)
 GLuint OpenGLDevice::CreateProgramFromPipelineCache(const OpenGLPipeline::ProgramCacheItem& it,
                                                     const GPUPipeline::GraphicsConfig& plconfig)
 {
-  DynamicHeapArray<u8> data(it.file_uncompressed_size);
   DynamicHeapArray<u8> compressed_data(it.file_compressed_size);
 
   if (FileSystem::FSeek64(m_pipeline_disk_cache_file, it.file_offset, SEEK_SET) != 0 ||
@@ -873,14 +871,15 @@ GLuint OpenGLDevice::CreateProgramFromPipelineCache(const OpenGLPipeline::Progra
     return 0;
   }
 
-  const size_t decompress_result =
-    ZSTD_decompress(data.data(), data.size(), compressed_data.data(), compressed_data.size());
-  if (ZSTD_isError(decompress_result)) [[unlikely]]
+  Error error;
+  CompressHelpers::OptionalByteBuffer data = CompressHelpers::DecompressBuffer(
+    CompressHelpers::CompressType::Zstandard, CompressHelpers::OptionalByteBuffer(std::move(compressed_data)),
+    it.file_uncompressed_size, &error);
+  if (!data.has_value())
   {
-    ERROR_LOG("Failed to decompress program from disk cache: {}", ZSTD_getErrorName(decompress_result));
+    ERROR_LOG("Failed to decompress program from disk cache: {}", error.GetDescription());
     return 0;
   }
-  compressed_data.deallocate();
 
   glGetError();
   GLuint prog = glCreateProgram();
@@ -890,7 +889,7 @@ GLuint OpenGLDevice::CreateProgramFromPipelineCache(const OpenGLPipeline::Progra
     return 0;
   }
 
-  glProgramBinary(prog, it.file_format, data.data(), it.file_uncompressed_size);
+  glProgramBinary(prog, it.file_format, data->data(), it.file_uncompressed_size);
 
   GLint link_status;
   glGetProgramiv(prog, GL_LINK_STATUS, &link_status);
@@ -932,19 +931,21 @@ void OpenGLDevice::AddToPipelineCache(OpenGLPipeline::ProgramCacheItem* it)
     WARNING_LOG("Size changed from {} to {} after glGetProgramBinary()", uncompressed_data.size(), binary_size);
   }
 
-  DynamicHeapArray<u8> compressed_data(ZSTD_compressBound(binary_size));
-  const size_t compress_result =
-    ZSTD_compress(compressed_data.data(), compressed_data.size(), uncompressed_data.data(), binary_size, 0);
-  if (ZSTD_isError(compress_result)) [[unlikely]]
+  Error error;
+  CompressHelpers::OptionalByteBuffer compressed_data =
+    CompressHelpers::CompressToBuffer(CompressHelpers::CompressType::Zstandard,
+                                      CompressHelpers::OptionalByteBuffer(std::move(uncompressed_data)), -1, &error);
+  if (!compressed_data.has_value()) [[unlikely]]
   {
-    ERROR_LOG("Failed to compress program: {}", ZSTD_getErrorName(compress_result));
+    ERROR_LOG("Failed to compress program: {}", error.GetDescription());
     return;
   }
 
-  DEV_LOG("Program binary retrieved and compressed, {} -> {} bytes, format {}", binary_size, compress_result, format);
+  DEV_LOG("Program binary retrieved and compressed, {} -> {} bytes, format {}", binary_size, compressed_data->size(),
+          format);
 
   if (FileSystem::FSeek64(m_pipeline_disk_cache_file, m_pipeline_disk_cache_data_end, SEEK_SET) != 0 ||
-      std::fwrite(compressed_data.data(), compress_result, 1, m_pipeline_disk_cache_file) != 1)
+      std::fwrite(compressed_data->data(), compressed_data->size(), 1, m_pipeline_disk_cache_file) != 1)
   {
     ERROR_LOG("Failed to write binary to disk cache.");
   }
@@ -952,8 +953,8 @@ void OpenGLDevice::AddToPipelineCache(OpenGLPipeline::ProgramCacheItem* it)
   it->file_format = format;
   it->file_offset = m_pipeline_disk_cache_data_end;
   it->file_uncompressed_size = static_cast<u32>(binary_size);
-  it->file_compressed_size = static_cast<u32>(compress_result);
-  m_pipeline_disk_cache_data_end += static_cast<u32>(compress_result);
+  it->file_compressed_size = static_cast<u32>(compressed_data->size());
+  m_pipeline_disk_cache_data_end += static_cast<u32>(compressed_data->size());
   m_pipeline_disk_cache_changed = true;
 }
 

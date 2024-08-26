@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "gpu_device.h"
+#include "compress_helpers.h"
 #include "core/host.h"     // TODO: Remove, needed for getting fullscreen mode.
 #include "core/settings.h" // TODO: Remove, needed for dump directory.
 #include "gpu_framebuffer_manager.h"
@@ -14,6 +15,7 @@
 #include "common/log.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
+#include "common/sha1_digest.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 
@@ -43,6 +45,8 @@ Log_SetChannel(GPUDevice);
 std::unique_ptr<GPUDevice> g_gpu_device;
 
 static std::string s_pipeline_cache_path;
+static size_t s_pipeline_cache_size;
+static std::array<u8, SHA1Digest::DIGEST_SIZE> s_pipeline_cache_hash;
 size_t GPUDevice::s_total_vram_usage = 0;
 GPUDevice::Statistics GPUDevice::s_stats = {};
 
@@ -427,7 +431,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
   {
     const std::string basename = GetShaderCacheBaseName("pipelines");
     std::string filename = Path::Combine(base_path, TinyString::from_format("{}.bin", basename));
-    if (ReadPipelineCache(filename))
+    if (OpenPipelineCache(filename))
       s_pipeline_cache_path = std::move(filename);
     else
       WARNING_LOG("Failed to read pipeline cache.");
@@ -444,12 +448,17 @@ void GPUDevice::CloseShaderCache()
     if (GetPipelineCacheData(&data))
     {
       // Save disk writes if it hasn't changed, think of the poor SSDs.
-      FILESYSTEM_STAT_DATA sd;
-      if (!FileSystem::StatFile(s_pipeline_cache_path.c_str(), &sd) || sd.Size != static_cast<s64>(data.size()))
+      if (s_pipeline_cache_size != static_cast<s64>(data.size()) ||
+          s_pipeline_cache_hash != SHA1Digest::GetDigest(data.cspan()))
       {
-        INFO_LOG("Writing {} bytes to '{}'", data.size(), Path::GetFileName(s_pipeline_cache_path));
-        if (!FileSystem::WriteBinaryFile(s_pipeline_cache_path.c_str(), data.data(), data.size()))
-          ERROR_LOG("Failed to write pipeline cache to '{}'", Path::GetFileName(s_pipeline_cache_path));
+        Error error;
+        INFO_LOG("Compressing and writing {} bytes to '{}'", data.size(), Path::GetFileName(s_pipeline_cache_path));
+        if (!CompressHelpers::CompressToFile(CompressHelpers::CompressType::Zstandard, s_pipeline_cache_path.c_str(),
+                                             data.cspan(), -1, true, &error))
+        {
+          ERROR_LOG("Failed to write pipeline cache to '{}': {}", Path::GetFileName(s_pipeline_cache_path),
+                    error.GetDescription());
+        }
       }
       else
       {
@@ -505,7 +514,43 @@ std::string GPUDevice::GetShaderCacheBaseName(std::string_view type) const
   return ret;
 }
 
-bool GPUDevice::ReadPipelineCache(const std::string& filename)
+bool GPUDevice::OpenPipelineCache(const std::string& filename)
+{
+  if (FileSystem::GetPathFileSize(filename.c_str()) <= 0)
+    return false;
+
+  Error error;
+  CompressHelpers::OptionalByteBuffer data =
+    CompressHelpers::DecompressFile(CompressHelpers::CompressType::Zstandard, filename.c_str(), std::nullopt, &error);
+  if (!data.has_value())
+  {
+    ERROR_LOG("Failed to load pipeline cache from '{}': {}", Path::GetFileName(filename), error.GetDescription());
+    data.reset();
+  }
+
+  if (data.has_value())
+  {
+    s_pipeline_cache_size = data->size();
+    s_pipeline_cache_hash = SHA1Digest::GetDigest(data->cspan());
+  }
+  else
+  {
+    s_pipeline_cache_size = 0;
+    s_pipeline_cache_hash = {};
+  }
+
+  if (!ReadPipelineCache(std::move(data)))
+  {
+    s_pipeline_cache_size = 0;
+    s_pipeline_cache_hash = {};
+    return false;
+  }
+
+  INFO_LOG("Pipeline cache hash: {}", SHA1Digest::DigestToString(s_pipeline_cache_hash));
+  return true;
+}
+
+bool GPUDevice::ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data)
 {
   return false;
 }
@@ -744,25 +789,27 @@ std::unique_ptr<GPUShader> GPUDevice::CreateShader(GPUShaderStage stage, GPUShad
   }
 
   const GPUShaderCache::CacheIndexKey key = m_shader_cache.GetCacheKey(stage, language, source, entry_point);
-  DynamicHeapArray<u8> binary;
-  if (m_shader_cache.Lookup(key, &binary))
+  std::optional<GPUShaderCache::ShaderBinary> binary = m_shader_cache.Lookup(key);
+  if (binary.has_value())
   {
-    shader = CreateShaderFromBinary(stage, binary, error);
+    shader = CreateShaderFromBinary(stage, binary->cspan(), error);
     if (shader)
       return shader;
 
     ERROR_LOG("Failed to create shader from binary (driver changed?). Clearing cache.");
     m_shader_cache.Clear();
+    binary.reset();
   }
 
-  shader = CreateShaderFromSource(stage, language, source, entry_point, &binary, error);
+  GPUShaderCache::ShaderBinary new_binary;
+  shader = CreateShaderFromSource(stage, language, source, entry_point, &new_binary, error);
   if (!shader)
     return shader;
 
   // Don't insert empty shaders into the cache...
-  if (!binary.empty())
+  if (!new_binary.empty())
   {
-    if (!m_shader_cache.Insert(key, binary.data(), static_cast<u32>(binary.size())))
+    if (!m_shader_cache.Insert(key, new_binary.data(), static_cast<u32>(new_binary.size())))
       m_shader_cache.Close();
   }
 

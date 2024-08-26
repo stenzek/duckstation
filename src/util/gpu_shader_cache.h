@@ -7,6 +7,7 @@
 #include "common/heap_array.h"
 #include "common/types.h"
 
+#include <optional>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -56,7 +57,7 @@ public:
   static CacheIndexKey GetCacheKey(GPUShaderStage stage, GPUShaderLanguage language, std::string_view shader_code,
                                    std::string_view entry_point);
 
-  bool Lookup(const CacheIndexKey& key, ShaderBinary* binary);
+  std::optional<ShaderBinary> Lookup(const CacheIndexKey& key);
   bool Insert(const CacheIndexKey& key, const void* data, u32 data_size);
   void Clear();
 
