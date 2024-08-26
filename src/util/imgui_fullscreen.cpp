@@ -211,7 +211,7 @@ void ImGuiFullscreen::SetFonts(ImFont* standard_font, ImFont* medium_font, ImFon
 
 bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
 {
-  s_focus_reset_queued = FocusResetType::WindowChanged;
+  s_focus_reset_queued = FocusResetType::ViewChanged;
   s_close_button_state = 0;
 
   s_placeholder_texture = LoadTexture(placeholder_image_path);
@@ -589,11 +589,18 @@ bool ImGuiFullscreen::ResetFocusHere()
     return false;
 
   // don't take focus from dialogs
-  if (ImGui::FindBlockingModal(ImGui::GetCurrentWindow()))
+  ImGuiWindow* window = ImGui::GetCurrentWindow();
+  if (ImGui::FindBlockingModal(window))
     return false;
 
+  // Only fully reset the window on window change, that way setting page changes don't spend a frame without focus.
+  if (s_focus_reset_queued == FocusResetType::ViewChanged)
+    window->LastFrameActive = 0;
+
   s_focus_reset_queued = FocusResetType::None;
+
   ImGui::SetWindowFocus();
+  ImGui::NavInitWindow(window, true);
 
   // only do the active selection magic when we're using keyboard/gamepad
   return (GImGui->NavInputSource == ImGuiInputSource_Keyboard || GImGui->NavInputSource == ImGuiInputSource_Gamepad);
@@ -1128,6 +1135,15 @@ bool ImGuiFullscreen::MenuHeadingButton(const char* title, const char* value /*=
 bool ImGuiFullscreen::ActiveButton(const char* title, bool is_active, bool enabled, float height, ImFont* font)
 {
   return ActiveButtonWithRightText(title, nullptr, is_active, enabled, height, font);
+}
+
+bool ImGuiFullscreen::DefaultActiveButton(const char* title, bool is_active, bool enabled /* = true */,
+                                          float height /* = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY */,
+                                          ImFont* font /* = g_large_font */)
+{
+  const bool result = ActiveButtonWithRightText(title, nullptr, is_active, enabled, height, font);
+  ImGui::SetItemDefaultFocus();
+  return result;
 }
 
 bool ImGuiFullscreen::ActiveButtonWithRightText(const char* title, const char* right_title, bool is_active,
