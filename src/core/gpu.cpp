@@ -5,7 +5,6 @@
 #include "dma.h"
 #include "gpu_shadergen.h"
 #include "host.h"
-#include "imgui.h"
 #include "interrupt_controller.h"
 #include "settings.h"
 #include "system.h"
@@ -30,6 +29,7 @@
 
 #include "IconsEmoji.h"
 #include "fmt/format.h"
+#include "imgui.h"
 
 #include <cmath>
 #include <numbers>
@@ -2875,7 +2875,7 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
 
 void GPU::DrawDebugStateWindow()
 {
-  const float framebuffer_scale = Host::GetOSDScale();
+  const float framebuffer_scale = ImGuiManager::GetGlobalScale();
 
   ImGui::SetNextWindowSize(ImVec2(450.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("GPU", nullptr))

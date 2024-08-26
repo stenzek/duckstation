@@ -4,7 +4,6 @@
 #include "mdec.h"
 #include "cpu_core.h"
 #include "dma.h"
-#include "host.h"
 #include "system.h"
 #include "timing_event.h"
 
@@ -1058,7 +1057,7 @@ void MDEC::SetScaleMatrix(const u16* values)
 
 void MDEC::DrawDebugStateWindow()
 {
-  const float framebuffer_scale = Host::GetOSDScale();
+  const float framebuffer_scale = ImGuiManager::GetGlobalScale();
 
   ImGui::SetNextWindowSize(ImVec2(300.0f * framebuffer_scale, 350.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
   if (!ImGui::Begin("MDEC State", nullptr))
