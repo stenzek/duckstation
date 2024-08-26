@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #pragma once
 #include "types.h"
@@ -144,6 +144,9 @@ public:
   // returns the number of instances of the specified character
   u32 count(char ch) const;
 
+  // replaces search string with replacement, returns the number of replacements made
+  u32 replace(const char* search, const char* replacement);
+
   // removes characters from string
   void erase(s32 offset, s32 count = std::numeric_limits<s32>::max());
 
@@ -188,6 +191,12 @@ public:
 
   // returns a substring view for this string
   std::string_view substr(s32 offset, s32 count) const;
+
+#ifdef _WIN32
+  // wide string adapters, win32 only
+  void assign(const std::wstring_view wstr);
+  std::wstring wstring() const;
+#endif
 
   // accessor operators
   ALWAYS_INLINE operator const char*() const { return c_str(); }
