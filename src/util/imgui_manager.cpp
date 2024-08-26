@@ -937,11 +937,6 @@ float ImGuiManager::GetGlobalScale()
   return s_global_scale;
 }
 
-float Host::GetOSDScale()
-{
-  return ImGuiManager::s_global_scale;
-}
-
 ImFont* ImGuiManager::GetStandardFont()
 {
   return s_standard_font;

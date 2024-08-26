@@ -130,9 +130,6 @@ static constexpr float OSD_WARNING_DURATION = 10.0f;
 static constexpr float OSD_INFO_DURATION = 5.0f;
 static constexpr float OSD_QUICK_DURATION = 2.5f;
 
-/// Returns the scale of OSD elements.
-float GetOSDScale();
-
 /// Adds OSD messages, duration is in seconds.
 void AddOSDMessage(std::string message, float duration = 2.0f);
 void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f);

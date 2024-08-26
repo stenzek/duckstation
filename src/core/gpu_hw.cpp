@@ -3961,7 +3961,7 @@ void GPU_HW::DrawRendererStats()
     static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
 
     ImGui::Columns(2);
-    ImGui::SetColumnWidth(0, 200.0f * Host::GetOSDScale());
+    ImGui::SetColumnWidth(0, 200.0f * ImGuiManager::GetGlobalScale());
 
     ImGui::TextUnformatted("Resolution Scale:");
     ImGui::NextColumn();
