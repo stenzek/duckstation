@@ -2,6 +2,7 @@
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
   <ItemGroup>
+    <ClInclude Include="compress_helpers.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="imgui_animated.h" />
     <ClInclude Include="audio_stream.h" />
@@ -115,6 +116,7 @@
     <ClCompile Include="cd_image_mds.cpp" />
     <ClCompile Include="cd_image_memory.cpp" />
     <ClCompile Include="cd_image_pbp.cpp" />
+    <ClCompile Include="compress_helpers.cpp" />
     <ClCompile Include="cubeb_audio_stream.cpp" />
     <ClCompile Include="cue_parser.cpp" />
     <ClCompile Include="cd_image_ppf.cpp" />

@@ -72,6 +72,7 @@
     <ClInclude Include="image.h" />
     <ClInclude Include="sockets.h" />
     <ClInclude Include="media_capture.h" />
+    <ClInclude Include="compress_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -152,6 +153,7 @@
     <ClCompile Include="sdl_audio_stream.cpp" />
     <ClCompile Include="sockets.cpp" />
     <ClCompile Include="media_capture.cpp" />
+    <ClCompile Include="compress_helpers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

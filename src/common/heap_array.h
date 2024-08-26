@@ -195,6 +195,19 @@ public:
       m_size = 0;
     }
   }
+  DynamicHeapArray(const std::span<const T> data)
+  {
+    if (!data.empty())
+    {
+      internal_resize(data.size(), nullptr, 0);
+      std::memcpy(m_data, data.data(), sizeof(T) * data.size());
+    }
+    else
+    {
+      m_data = nullptr;
+      m_size = 0;
+    }
+  }
 
   DynamicHeapArray(const this_type& copy)
   {

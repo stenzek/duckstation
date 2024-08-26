@@ -17,6 +17,8 @@ add_library(util
   cd_image_ppf.cpp
   cd_subchannel_replacement.cpp
   cd_subchannel_replacement.h
+  compress_helpers.cpp
+  compress_helpers.h
   cue_parser.cpp
   cue_parser.h
   gpu_device.cpp
