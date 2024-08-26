@@ -338,3 +338,4 @@
 #define ICON_PF_MEMORY_CARD "\xE2\x8D\xA4"
 #define ICON_PF_SOUND "\xE2\x8D\xA5"
 #define ICON_PF_PICTURE "\xE2\x8D\xA6"
+#define ICON_PF_CIRCLE "\xE2\x8D\x89"

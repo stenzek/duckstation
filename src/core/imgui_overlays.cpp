@@ -32,6 +32,7 @@
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
+#include "IconsPromptFont.h"
 #include "fmt/chrono.h"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -508,7 +509,7 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
   ImFont* const standard_font = ImGuiManager::GetStandardFont();
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-  static constexpr const char* ICON = ICON_EMOJI_MOVIE_CAMERA;
+  static constexpr const char* ICON = ICON_PF_CIRCLE;
   const time_t elapsed_time = cap->GetElapsedTime();
   const TinyString text_msg = TinyString::from_format(" {:02d}:{:02d}:{:02d}", elapsed_time / 3600,
                                                       (elapsed_time % 3600) / 60, (elapsed_time % 3600) % 60);
@@ -517,7 +518,7 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
   const ImVec2 text_size = standard_font->CalcTextSizeA(standard_font->FontSize, std::numeric_limits<float>::max(),
                                                         -1.0f, text_msg.c_str(), text_msg.end_ptr(), nullptr);
 
-  const float box_margin = 2.0f * scale;
+  const float box_margin = 5.0f * scale;
   const ImVec2 box_size = ImVec2(icon_size.x + shadow_offset + text_size.x + box_margin * 2.0f,
                                  std::max(icon_size.x, text_size.y) + box_margin * 2.0f);
   const ImVec2 box_pos = ImVec2(ImGui::GetIO().DisplaySize.x - margin - box_size.x, position_y);
