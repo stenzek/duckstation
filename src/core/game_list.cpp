@@ -104,7 +104,7 @@ static bool ScanFile(std::string path, std::time_t timestamp, std::unique_lock<s
 static bool LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache);
 static bool LoadEntriesFromCache(BinaryFileReader& reader);
 static bool WriteEntryToCache(const Entry* entry, BinaryFileWriter& writer);
-static void CreateDiscSetEntries(const PlayedTimeMap& played_time_map);
+static void CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map);
 
 static std::string GetPlayedTimeFile();
 static bool ParsePlayedTimeLine(char* line, std::string& serial, PlayedTimeEntry& entry);
@@ -819,7 +819,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
   s_cache_map.clear();
 
   // merge multi-disc games
-  CreateDiscSetEntries(played_time);
+  CreateDiscSetEntries(excluded_paths, played_time);
 }
 
 GameList::EntryList GameList::TakeEntryList()
@@ -829,7 +829,7 @@ GameList::EntryList GameList::TakeEntryList()
   return ret;
 }
 
-void GameList::CreateDiscSetEntries(const PlayedTimeMap& played_time_map)
+void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map)
 {
   std::unique_lock lock(s_mutex);
 
@@ -927,8 +927,9 @@ void GameList::CreateDiscSetEntries(const PlayedTimeMap& played_time_map)
 
     DEV_LOG("Created disc set {} from {} entries", disc_set_name, num_parts);
 
-    // entry is done :)
-    s_entries.push_back(std::move(set_entry));
+    // we have to do the exclusion check at the end, because otherwise the individual discs get added
+    if (!IsPathExcluded(excluded_paths, disc_set_name))
+      s_entries.push_back(std::move(set_entry));
   }
 }
 

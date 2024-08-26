@@ -1584,6 +1584,11 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
       menu.addSeparator();
 
       connect(menu.addAction(tr("Select Disc")), &QAction::triggered, this, &MainWindow::onGameListEntryActivated);
+
+      menu.addSeparator();
+
+      connect(menu.addAction(tr("Exclude From List")), &QAction::triggered,
+              [this, entry]() { getSettingsWindow()->getGameListSettingsWidget()->addExcludedPath(entry->path); });
     }
   }
 
