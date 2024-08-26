@@ -178,6 +178,24 @@ std::string Host::TranslatePluralToString(const char* context, const char* msg, 
   return qApp->translate(context, msg, disambiguation, count).toStdString();
 }
 
+SmallString Host::TranslatePluralToSmallString(const char* context, const char* msg, const char* disambiguation,
+                                               int count)
+{
+  const QString qstr = qApp->translate(context, msg, disambiguation, count);
+  SmallString ret;
+
+#ifdef _WIN32
+  // Cheeky way to avoid heap allocations.
+  static_assert(sizeof(*qstr.utf16()) == sizeof(wchar_t));
+  ret.assign(std::wstring_view(reinterpret_cast<const wchar_t*>(qstr.utf16()), qstr.length()));
+#else
+  const QByteArray utf8 = qstr.toUtf8();
+  ret.assign(utf8.constData(), utf8.length());
+#endif
+
+  return ret;
+}
+
 std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageList()
 {
   static constexpr const std::pair<const char*, const char*> languages[] = {{"English", "en"},

@@ -193,6 +193,14 @@ std::string Host::TranslatePluralToString(const char* context, const char* msg, 
   return ret;
 }
 
+SmallString Host::TranslatePluralToSmallString(const char* context, const char* msg, const char* disambiguation,
+                                               int count)
+{
+  SmallString ret(msg);
+  ret.replace("%n", TinyString::from_format("{}", count));
+  return ret;
+}
+
 void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
 }
