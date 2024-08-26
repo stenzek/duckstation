@@ -448,8 +448,7 @@ void GPUDevice::CloseShaderCache()
     if (GetPipelineCacheData(&data))
     {
       // Save disk writes if it hasn't changed, think of the poor SSDs.
-      if (s_pipeline_cache_size != static_cast<s64>(data.size()) ||
-          s_pipeline_cache_hash != SHA1Digest::GetDigest(data.cspan()))
+      if (s_pipeline_cache_size != data.size() || s_pipeline_cache_hash != SHA1Digest::GetDigest(data.cspan()))
       {
         Error error;
         INFO_LOG("Compressing and writing {} bytes to '{}'", data.size(), Path::GetFileName(s_pipeline_cache_path));
