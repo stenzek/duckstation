@@ -2358,6 +2358,7 @@ void Achievements::DrawAchievementsWindow()
   const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIBackgroundColor, heading_alpha);
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
   const float heading_height = ImGuiFullscreen::LayoutScale(heading_height_unscaled);
+  bool close_window = false;
 
   if (ImGuiFullscreen::BeginFullscreenWindow(
         ImVec2(), ImVec2(display_size.x, heading_height), "achievements_heading", heading_background, 0.0f, ImVec2(),
@@ -2393,12 +2394,9 @@ void Achievements::DrawAchievementsWindow()
       SmallString text;
       ImVec2 text_size;
 
-      if (ImGuiFullscreen::FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f, true,
-                                          g_large_font) ||
-          ImGuiFullscreen::WantsToCloseMenu())
-      {
-        FullscreenUI::ReturnToPreviousWindow();
-      }
+      close_window = (ImGuiFullscreen::FloatingButton(ICON_FA_WINDOW_CLOSE, 10.0f, 10.0f, -1.0f, -1.0f, 1.0f, 0.0f,
+                                                      true, g_large_font) ||
+                      ImGuiFullscreen::WantsToCloseMenu());
 
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
       text.assign(s_game_title);
@@ -2518,6 +2516,9 @@ void Achievements::DrawAchievementsWindow()
   ImGuiFullscreen::EndFullscreenWindow();
 
   FullscreenUI::SetStandardSelectionFooterText(true);
+
+  if (close_window)
+    FullscreenUI::ReturnToPreviousWindow();
 }
 
 void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
@@ -2854,8 +2855,10 @@ void Achievements::DrawLeaderboardsWindow()
         const float tab_width = (ImGui::GetWindowWidth() / ImGuiFullscreen::g_layout_scale) * 0.5f;
         ImGui::SetCursorPos(ImVec2(0.0f, top + spacing_small));
 
-        if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) ||
-            ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false))
+        if (ImGui::IsKeyPressed(ImGuiKey_GamepadDpadLeft, false) ||
+            ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakSlow, false) ||
+            ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
+            ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false))
         {
           s_is_showing_all_leaderboard_entries = !s_is_showing_all_leaderboard_entries;
           ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);

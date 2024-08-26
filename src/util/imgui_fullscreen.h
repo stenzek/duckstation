@@ -147,7 +147,7 @@ enum class FocusResetType : u8
   None,
   PopupOpened,
   PopupClosed,
-  WindowChanged,
+  ViewChanged,
   Other,
 };
 void QueueResetFocus(FocusResetType type);
@@ -201,6 +201,8 @@ void MenuHeading(const char* title, bool draw_line = true);
 bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
 bool ActiveButton(const char* title, bool is_active, bool enabled = true,
                   float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+bool DefaultActiveButton(const char* title, bool is_active, bool enabled = true,
+                         float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
 bool ActiveButtonWithRightText(const char* title, const char* right_title, bool is_active, bool enabled = true,
                                float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
 bool MenuButton(const char* title, const char* summary, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
