@@ -654,7 +654,8 @@ bool ImGuiManager::AddIconFonts(float size)
 
 bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 {
-  const float standard_font_size = std::ceil(15.0f * s_global_scale);
+  const float standard_font_size = std::ceil(18.0f * s_global_scale);
+  const float fixed_font_size = std::ceil(15.0f * s_global_scale);
 
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
@@ -663,7 +664,7 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
   if (!s_standard_font || !AddIconFonts(standard_font_size))
     return false;
 
-  s_fixed_font = AddFixedFont(standard_font_size);
+  s_fixed_font = AddFixedFont(fixed_font_size);
   if (!s_fixed_font)
     return false;
 
@@ -838,10 +839,10 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 
   ImFont* const font = ImGui::GetFont();
   const float scale = s_global_scale;
-  const float spacing = std::ceil(5.0f * scale);
-  const float margin = std::ceil(10.0f * scale);
-  const float padding = std::ceil(8.0f * scale);
-  const float rounding = std::ceil(5.0f * scale);
+  const float spacing = std::ceil(6.0f * scale);
+  const float margin = std::ceil(12.0f * scale);
+  const float padding = std::ceil(10.0f * scale);
+  const float rounding = std::ceil(6.0f * scale);
   const float max_width = s_window_width - (margin + padding) * 2.0f;
   float position_x = margin;
   float position_y = margin;

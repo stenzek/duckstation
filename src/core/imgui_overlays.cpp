@@ -116,10 +116,10 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
   }
   ImGui::End();
 
-  const float padding_and_rounding = 15.0f * scale;
+  const float padding_and_rounding = 18.0f * scale;
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
-  ImGui::SetNextWindowSize(ImVec2(width, (has_progress ? 80.0f : 50.0f) * scale), ImGuiCond_Always);
+  ImGui::SetNextWindowSize(ImVec2(width, (has_progress ? 90.0f : 55.0f) * scale), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
                           ImGuiCond_Always, ImVec2(0.5f, 0.0f));
   if (ImGui::Begin("LoadingScreen", nullptr,
@@ -976,10 +976,10 @@ void SaveStateSelectorUI::Draw()
 
   const auto& io = ImGui::GetIO();
   const float scale = ImGuiManager::GetGlobalScale();
-  const float width = (600.0f * scale);
-  const float height = (420.0f * scale);
+  const float width = (640.0f * scale);
+  const float height = (450.0f * scale);
 
-  const float padding_and_rounding = 15.0f * scale;
+  const float padding_and_rounding = 18.0f * scale;
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
   ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.15f, 0.17f, 0.8f));
@@ -993,7 +993,7 @@ void SaveStateSelectorUI::Draw()
   {
     // Leave 2 lines for the legend
     const float legend_margin = ImGui::GetFontSize() * 2.0f + ImGui::GetStyle().ItemSpacing.y * 3.0f;
-    const float padding = 10.0f * scale;
+    const float padding = 12.0f * scale;
 
     ImGui::BeginChild("##item_list", ImVec2(0, -legend_margin), false,
                       ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoTitleBar |
