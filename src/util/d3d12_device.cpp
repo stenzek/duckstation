@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
+// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #include "d3d12_device.h"
 #include "d3d12_builders.h"
@@ -283,10 +283,8 @@ void D3D12Device::DestroyDevice()
   m_dxgi_factory.Reset();
 }
 
-bool D3D12Device::ReadPipelineCache(const std::string& filename)
+bool D3D12Device::ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data)
 {
-  std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(filename.c_str());
-
   HRESULT hr =
     m_device->CreatePipelineLibrary(data.has_value() ? data->data() : nullptr, data.has_value() ? data->size() : 0,
                                     IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
@@ -306,11 +304,7 @@ bool D3D12Device::ReadPipelineCache(const std::string& filename)
 
     hr = m_device->CreatePipelineLibrary(nullptr, 0, IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
     if (SUCCEEDED(hr))
-    {
-      // Delete cache file, it's no longer relevant.
-      INFO_LOG("Deleting pipeline cache file {}", filename);
-      FileSystem::DeleteFile(filename.c_str());
-    }
+      return true;
   }
 
   if (FAILED(hr))
@@ -332,7 +326,7 @@ bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   if (size == 0)
   {
     WARNING_LOG("Empty serialized pipeline state returned.");
-    return false;
+    return true;
   }
 
   data->resize(size);

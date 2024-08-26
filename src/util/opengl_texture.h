@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
 #pragma once
+
 #include "gpu_device.h"
 #include "gpu_texture.h"
 #include "opengl_loader.h"
+
 #include <tuple>
 
 class OpenGLDevice;
