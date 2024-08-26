@@ -153,6 +153,7 @@ enum class FocusResetType : u8
 void QueueResetFocus(FocusResetType type);
 bool ResetFocusHere();
 bool IsFocusResetQueued();
+bool IsFocusResetFromWindowChange();
 FocusResetType GetQueuedFocusResetType();
 void ForceKeyNavEnabled();
 

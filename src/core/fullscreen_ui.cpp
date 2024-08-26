@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #include "fullscreen_ui.h"
 #include "achievements.h"
@@ -124,9 +124,9 @@ using ImGuiFullscreen::ForceKeyNavEnabled;
 using ImGuiFullscreen::GetCachedTexture;
 using ImGuiFullscreen::GetCachedTextureAsync;
 using ImGuiFullscreen::GetPlaceholderTexture;
-using ImGuiFullscreen::GetQueuedFocusResetType;
 using ImGuiFullscreen::HorizontalMenuItem;
 using ImGuiFullscreen::IsFocusResetQueued;
+using ImGuiFullscreen::IsFocusResetFromWindowChange;
 using ImGuiFullscreen::IsGamepadInputSource;
 using ImGuiFullscreen::LayoutScale;
 using ImGuiFullscreen::LoadTexture;
@@ -2917,12 +2917,8 @@ void FullscreenUI::DrawSettingsWindow()
 
   // we have to do this here, because otherwise it uses target, and jumps a frame later.
   // don't do it for popups opening/closing, otherwise we lose our position
-  if (FocusResetType focus_reset = GetQueuedFocusResetType(); focus_reset != FocusResetType::None &&
-                                                              focus_reset != FocusResetType::PopupOpened &&
-                                                              focus_reset != FocusResetType::PopupClosed)
-  {
+  if (IsFocusResetFromWindowChange())
     ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
-  }
 
   if (BeginFullscreenWindow(
         ImVec2(0.0f, heading_size.y),
