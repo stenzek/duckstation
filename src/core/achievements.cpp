@@ -1281,11 +1281,11 @@ void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
   if (g_settings.achievements_notifications && FullscreenUI::Initialize())
   {
     std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), s_game_title);
-    std::string message =
-      fmt::format(TRANSLATE_FS("Achievements", "{0}, {1}"),
-                  TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
-                                       s_game_summary.num_unlocked_achievements),
-                  TRANSLATE_PLURAL_STR("Achievements", "%n points", "Mastery popup", s_game_summary.points_unlocked));
+    std::string message = fmt::format(
+      TRANSLATE_FS("Achievements", "{0}, {1}"),
+      TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
+                           s_game_summary.num_unlocked_achievements),
+      TRANSLATE_PLURAL_STR("Achievements", "%n points", "Achievement points", s_game_summary.points_unlocked));
 
     ImGuiFullscreen::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
                                      std::move(message), s_game_icon);
@@ -2418,8 +2418,8 @@ void Achievements::DrawAchievementsWindow()
       {
         if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
         {
-          text.format(TRANSLATE_FS("Achievements", "You have unlocked all achievements and earned {} points!"),
-                      s_game_summary.points_unlocked);
+          text = TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned {} points!",
+                                       "Point count", s_game_summary.points_unlocked);
         }
         else
         {
@@ -2584,9 +2584,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   SmallString text;
 
   const float midpoint = bb.Min.y + g_large_font->FontSize + spacing;
-  text.format((cheevo->points != 1) ? TRANSLATE_FS("Achievements", "{} points") :
-                                      TRANSLATE_FS("Achievements", "{} point"),
-              cheevo->points);
+  text = TRANSLATE_PLURAL_SSTR("Achievements", "%n points", "Achievement points", cheevo->points);
   const ImVec2 points_size(
     g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr()));
   const float points_template_start = bb.Max.x - points_template_size.x;
@@ -2822,7 +2820,7 @@ void Achievements::DrawLeaderboardsWindow()
         u32 count = 0;
         for (u32 i = 0; i < s_leaderboard_list->num_buckets; i++)
           count += s_leaderboard_list->buckets[i].num_leaderboards;
-        text.format(TRANSLATE_FS("Achievements", "This game has {} leaderboards."), count);
+        text = TRANSLATE_PLURAL_SSTR("Achievements", "This game has %n leaderboards.", "Leaderboard count", count);
       }
 
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
