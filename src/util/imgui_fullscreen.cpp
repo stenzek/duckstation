@@ -604,6 +604,12 @@ bool ImGuiFullscreen::IsFocusResetQueued()
   return (s_focus_reset_queued != FocusResetType::None);
 }
 
+bool ImGuiFullscreen::IsFocusResetFromWindowChange()
+{
+  return (s_focus_reset_queued != FocusResetType::None && s_focus_reset_queued != FocusResetType::PopupOpened &&
+          s_focus_reset_queued != FocusResetType::PopupClosed);
+}
+
 ImGuiFullscreen::FocusResetType ImGuiFullscreen::GetQueuedFocusResetType()
 {
   return s_focus_reset_queued;
@@ -1940,7 +1946,8 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
     hovered ? ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f) :
               ImGui::GetColorU32(is_active ? background : ImVec4(background.x, background.y, background.z, 0.5f));
 
-  DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+  if (hovered)
+    DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
 
   if (is_active)
   {
