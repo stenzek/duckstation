@@ -1032,7 +1032,8 @@ bool InputManager::ProcessEvent(InputBindingKey key, float value, bool skip_butt
       else if (binding->num_keys >= min_num_keys)
       {
         // update state based on whether the whole chord was activated
-        const u8 new_mask = (new_state ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
+        const u8 new_mask =
+          ((new_state && !skip_button_handlers) ? (binding->current_mask | bit) : (binding->current_mask & ~bit));
         const bool prev_full_state = (binding->current_mask == binding->full_mask);
         const bool new_full_state = (new_mask == binding->full_mask);
         binding->current_mask = new_mask;
