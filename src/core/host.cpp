@@ -10,6 +10,7 @@
 
 #include "scmversion/scmversion.h"
 
+#include "util/compress_helpers.h"
 #include "util/gpu_device.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
@@ -25,8 +26,6 @@
 
 #include <cstdarg>
 #include <limits>
-#include <zstd.h>
-#include <zstd_errors.h>
 
 Log_SetChannel(Host);
 
@@ -50,40 +49,10 @@ std::optional<DynamicHeapArray<u8>> Host::ReadCompressedResourceFile(std::string
   std::optional<DynamicHeapArray<u8>> ret = Host::ReadResourceFile(filename, allow_override);
   if (ret.has_value())
   {
-    const std::string_view extension = Path::GetExtension(filename);
-    if (StringUtil::EqualNoCase(extension, "zst"))
-    {
-      // Need to zstd decompress.
-      const unsigned long long decompressed_size = ZSTD_getFrameContentSize(ret->data(), ret->size());
-      if (decompressed_size == ZSTD_CONTENTSIZE_UNKNOWN || decompressed_size == ZSTD_CONTENTSIZE_ERROR ||
-          decompressed_size >= std::numeric_limits<size_t>::max()) [[unlikely]]
-      {
-        ERROR_LOG("Failed to get size of {}.", filename);
-        ret.reset();
-        return ret;
-      }
-
-      DEV_LOG("Decompressing resource {}: {} => {} bytes", filename, ret->size(), decompressed_size);
-
-      DynamicHeapArray<u8> decompressed_data(decompressed_size);
-      const size_t result =
-        ZSTD_decompress(decompressed_data.data(), decompressed_data.size(), ret->data(), ret->size());
-      if (ZSTD_isError(result)) [[unlikely]]
-      {
-        const char* errstr = ZSTD_getErrorString(ZSTD_getErrorCode(result));
-        ERROR_LOG("ZSTD_decompress() for {} failed: {}", filename, errstr ? errstr : "<unknown>");
-        ret.reset();
-        return ret;
-      }
-      if (result < decompressed_size) [[unlikely]]
-      {
-        ERROR_LOG("ZSTD_decompress() for {} only returned {} of {} bytes.", filename, result, decompressed_size);
-        ret.reset();
-        return ret;
-      }
-
-      ret = std::move(decompressed_data);
-    }
+    Error error;
+    ret = CompressHelpers::DecompressFile(filename, std::move(ret), std::nullopt, &error);
+    if (!ret.has_value())
+      ERROR_LOG("Failed to decompress '{}': {}", Path::GetFileName(filename), error.GetDescription());
   }
 
   return ret;
