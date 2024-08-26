@@ -1,9 +1,13 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
 
 #pragma once
+
 #include "types.h"
+
+#include <array>
 #include <string>
+#include <span>
 
 class SHA1Digest
 {
@@ -15,11 +19,15 @@ public:
 
   SHA1Digest();
 
-  void Update(const void* data, u32 len);
+  void Update(const void* data, size_t len);
+  void Update(std::span<const u8> data);
   void Final(u8 digest[DIGEST_SIZE]);
   void Reset();
 
-  static std::string DigestToString(const u8 digest[DIGEST_SIZE]);
+  static std::string DigestToString(const std::span<u8, DIGEST_SIZE> digest);
+
+  static std::array<u8, DIGEST_SIZE> GetDigest(const void* data, size_t len);
+  static std::array<u8, DIGEST_SIZE> GetDigest(std::span<const u8> data);
 
 private:
   u32 state[5];
