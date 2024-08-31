@@ -978,8 +978,8 @@ void MDEC::YUVToRGB_New(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const 
   const GSVector4i addval = s_state.status.data_output_signed ? GSVector4i::cxpr(0) : GSVector4i::cxpr(0x80808080);
   for (u32 y = 0; y < 8; y++)
   {
-    const GSVector4i Cr = GSVector4i::loadl(&Crblk[(xx / 2) + ((y + yy) / 2) * 8]).i16to32();
-    const GSVector4i Cb = GSVector4i::loadl(&Cbblk[(xx / 2) + ((y + yy) / 2) * 8]).i16to32();
+    const GSVector4i Cr = GSVector4i::loadl(&Crblk[(xx / 2) + ((y + yy) / 2) * 8]).s16to32();
+    const GSVector4i Cb = GSVector4i::loadl(&Cbblk[(xx / 2) + ((y + yy) / 2) * 8]).s16to32();
     const GSVector4i Y = GSVector4i::load<true>(&Yblk[y * 8]);
 
     // BT.601 YUV->RGB coefficients, rounding formula from Mednafen.

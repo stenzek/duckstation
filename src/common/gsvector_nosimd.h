@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team, 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: LGPL-3.0+
 
 // Implementation of GSVector4/GSVector4i when the host does not support any form of SIMD.
@@ -47,12 +47,12 @@ class alignas(16) GSVector2i
   };
   static constexpr cxpr_init_tag cxpr_init{};
 
-  constexpr GSVector2i(cxpr_init_tag, s32 x, s32 y) : I32{x, y} {}
+  constexpr GSVector2i(cxpr_init_tag, s32 x, s32 y) : S32{x, y} {}
 
-  constexpr GSVector2i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3) : I16{s0, s1, s2, s3} {}
+  constexpr GSVector2i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3) : S16{s0, s1, s2, s3} {}
 
   constexpr GSVector2i(cxpr_init_tag, s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7}
   {
   }
 
@@ -68,10 +68,10 @@ public:
       s32 r, g;
     };
     float F32[2];
-    s8 I8[8];
-    s16 I16[4];
-    s32 I32[2];
-    s64 I64[1];
+    s8 S8[8];
+    s16 S16[4];
+    s32 S32[2];
+    s64 S64[1];
     u8 U8[8];
     u16 U16[4];
     u32 U32[2];
@@ -104,18 +104,18 @@ public:
 
   ALWAYS_INLINE GSVector2i(s16 s0, s16 s1, s16 s2, s16 s3)
   {
-    I16[0] = s0;
-    I16[1] = s1;
-    I16[2] = s2;
-    I16[3] = s3;
+    S16[0] = s0;
+    S16[1] = s1;
+    S16[2] = s2;
+    S16[3] = s3;
   }
 
   ALWAYS_INLINE constexpr GSVector2i(s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7}
   {
   }
 
-  ALWAYS_INLINE GSVector2i(const GSVector2i& v) { std::memcpy(I32, v.I32, sizeof(I32)); }
+  ALWAYS_INLINE GSVector2i(const GSVector2i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
 
   // MSVC has bad codegen for the constexpr version when applied to non-constexpr things (https://godbolt.org/z/h8qbn7),
   // so leave the non-constexpr version default
@@ -125,7 +125,7 @@ public:
 
   ALWAYS_INLINE static GSVector2i cast(const GSVector2& v);
 
-  ALWAYS_INLINE void operator=(const GSVector2i& v) { std::memcpy(I32, v.I32, sizeof(I32)); }
+  ALWAYS_INLINE void operator=(const GSVector2i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
   ALWAYS_INLINE void operator=(s32 i)
   {
     x = i;
@@ -158,12 +158,12 @@ public:
     return max_u32(min).min_u32(max);
   }
 
-  GSVector2i min_i8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = std::min(I8[i], v.I8[i])); }
-  GSVector2i max_i8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = std::max(I8[i], v.I8[i])); }
-  GSVector2i min_i16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = std::min(I16[i], v.I16[i])); }
-  GSVector2i max_i16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = std::max(I16[i], v.I16[i])); }
-  GSVector2i min_i32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = std::min(I32[i], v.I32[i])); }
-  GSVector2i max_i32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = std::max(I32[i], v.I32[i])); }
+  GSVector2i min_i8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = std::min(S8[i], v.S8[i])); }
+  GSVector2i max_i8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = std::max(S8[i], v.S8[i])); }
+  GSVector2i min_i16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = std::min(S16[i], v.S16[i])); }
+  GSVector2i max_i16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = std::max(S16[i], v.S16[i])); }
+  GSVector2i min_i32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = std::min(S32[i], v.S32[i])); }
+  GSVector2i max_i32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = std::max(S32[i], v.S32[i])); }
 
   GSVector2i min_u8(const GSVector2i& v) const { ALL_LANES_8(ret.U8[i] = std::min(U8[i], v.U8[i])); }
   GSVector2i max_u8(const GSVector2i& v) const { ALL_LANES_8(ret.U8[i] = std::max(U8[i], v.U8[i])); }
@@ -171,6 +171,8 @@ public:
   GSVector2i max_u16(const GSVector2i& v) const { ALL_LANES_16(ret.U16[i] = std::max(U16[i], v.U16[i])); }
   GSVector2i min_u32(const GSVector2i& v) const { ALL_LANES_32(ret.U32[i] = std::min(U32[i], v.U32[i])); }
   GSVector2i max_u32(const GSVector2i& v) const { ALL_LANES_32(ret.U32[i] = std::max(U32[i], v.U32[i])); }
+
+  s32 addv_s32() const { return (S32[0] + S32[1]); }
 
   u8 minv_u8() const
   {
@@ -237,21 +239,21 @@ public:
 
   GSVector2i shuffle8(const GSVector2i& mask) const
   {
-    ALL_LANES_8(ret.I8[i] = (mask.I8[i] & 0x80) ? 0 : (I8[mask.I8[i] & 0xf]));
+    ALL_LANES_8(ret.S8[i] = (mask.S8[i] & 0x80) ? 0 : (S8[mask.S8[i] & 0xf]));
   }
 
-  GSVector2i ps16() const { ALL_LANES_8(ret.I8[i] = SSATURATE8(I16[(i < 4) ? i : (i - 4)])); }
+  GSVector2i ps16() const { ALL_LANES_8(ret.S8[i] = SSATURATE8(S16[(i < 4) ? i : (i - 4)])); }
   GSVector2i pu16() const { ALL_LANES_8(ret.U8[i] = USATURATE8(U16[(i < 4) ? i : (i - 4)])); }
-  GSVector2i ps32() const { ALL_LANES_16(ret.I16[i] = SSATURATE16(I32[(i < 2) ? i : (i - 2)])); }
+  GSVector2i ps32() const { ALL_LANES_16(ret.S16[i] = SSATURATE16(S32[(i < 2) ? i : (i - 2)])); }
   GSVector2i pu32() const { ALL_LANES_16(ret.U16[i] = USATURATE16(U32[(i < 2) ? i : (i - 2)])); }
 
-  GSVector2i upl8() const { return GSVector2i(I8[0], 0, I8[1], 0, I8[2], 0, I8[3], 0); }
+  GSVector2i upl8() const { return GSVector2i(S8[0], 0, S8[1], 0, S8[2], 0, S8[3], 0); }
 
-  GSVector2i upl16() const { return GSVector2i(I16[0], 0, I16[1], 0); }
+  GSVector2i upl16() const { return GSVector2i(S16[0], 0, S16[1], 0); }
 
-  GSVector2i upl32() const { return GSVector2i(I32[0], 0); }
+  GSVector2i upl32() const { return GSVector2i(S32[0], 0); }
 
-  GSVector2i i8to16() const { ALL_LANES_16(ret.I16[i] = I8[i]); }
+  GSVector2i i8to16() const { ALL_LANES_16(ret.S16[i] = S8[i]); }
 
   template<s32 v>
   GSVector2i srl() const
@@ -300,12 +302,12 @@ public:
   template<s32 v>
   GSVector2i sra16() const
   {
-    ALL_LANES_16(ret.I16[i] = I16[i] >> v);
+    ALL_LANES_16(ret.S16[i] = S16[i] >> v);
   }
 
-  GSVector2i sra16(s32 v) const { ALL_LANES_16(ret.I16[i] = I16[i] >> v); }
+  GSVector2i sra16(s32 v) const { ALL_LANES_16(ret.S16[i] = S16[i] >> v); }
 
-  GSVector2i srav16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = I16[i] >> v.I16[i]); }
+  GSVector2i srav16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] >> v.S16[i]); }
 
   template<s32 v>
   GSVector2i sll32() const
@@ -330,36 +332,36 @@ public:
   template<s32 v>
   GSVector2i sra32() const
   {
-    ALL_LANES_32(ret.I32[i] = I32[i] >> v);
+    ALL_LANES_32(ret.S32[i] = S32[i] >> v);
   }
 
-  GSVector2i sra32(s32 v) const { ALL_LANES_32(ret.I32[i] = I32[i] >> v); }
+  GSVector2i sra32(s32 v) const { ALL_LANES_32(ret.S32[i] = S32[i] >> v); }
 
-  GSVector2i srav32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = I32[i] >> v.I32[i]); }
+  GSVector2i srav32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] >> v.S32[i]); }
 
-  GSVector2i add8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = I8[i] + v.I8[i]); }
+  GSVector2i add8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = S8[i] + v.S8[i]); }
 
-  GSVector2i add16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = I16[i] + v.I16[i]); }
+  GSVector2i add16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] + v.S16[i]); }
 
-  GSVector2i add32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = I32[i] + v.I32[i]); }
+  GSVector2i add32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] + v.S32[i]); }
 
-  GSVector2i adds8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = SSATURATE8(I8[i] + v.I8[i])); }
+  GSVector2i adds8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = SSATURATE8(S8[i] + v.S8[i])); }
 
-  GSVector2i adds16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = SSATURATE16(I16[i] + v.I16[i])); }
+  GSVector2i adds16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = SSATURATE16(S16[i] + v.S16[i])); }
 
   GSVector2i addus8(const GSVector2i& v) const { ALL_LANES_8(ret.U8[i] = USATURATE8(U8[i] + v.U8[i])); }
 
   GSVector2i addus16(const GSVector2i& v) const { ALL_LANES_16(ret.U16[i] = USATURATE16(U16[i] + v.U16[i])); }
 
-  GSVector2i sub8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = I8[i] - v.I8[i]); }
+  GSVector2i sub8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = S8[i] - v.S8[i]); }
 
-  GSVector2i sub16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = I16[i] - v.I16[i]); }
+  GSVector2i sub16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] - v.S16[i]); }
 
-  GSVector2i sub32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = I32[i] - v.I32[i]); }
+  GSVector2i sub32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] - v.S32[i]); }
 
-  GSVector2i subs8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = SSATURATE8(I8[i] - v.I8[i])); }
+  GSVector2i subs8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = SSATURATE8(S8[i] - v.S8[i])); }
 
-  GSVector2i subs16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = SSATURATE16(I16[i] - v.I16[i])); }
+  GSVector2i subs16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = SSATURATE16(S16[i] - v.S16[i])); }
 
   GSVector2i subus8(const GSVector2i& v) const { ALL_LANES_8(ret.U8[i] = USATURATE8(U8[i] - v.U8[i])); }
 
@@ -369,35 +371,35 @@ public:
 
   GSVector2i avg16(const GSVector2i& v) const { ALL_LANES_16(ret.U16[i] = (U16[i] + v.U16[i]) >> 1); }
 
-  GSVector2i mul16l(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = I16[i] * v.I16[i]); }
+  GSVector2i mul16l(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] * v.S16[i]); }
 
-  GSVector2i mul32l(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = I32[i] * v.I32[i]); }
+  GSVector2i mul32l(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] * v.S32[i]); }
 
-  ALWAYS_INLINE bool eq(const GSVector2i& v) const { return (std::memcmp(I32, v.I32, sizeof(I32))) == 0; }
+  ALWAYS_INLINE bool eq(const GSVector2i& v) const { return (std::memcmp(S32, v.S32, sizeof(S32))) == 0; }
 
-  GSVector2i eq8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] == v.I8[i]) ? -1 : 0); }
-  GSVector2i eq16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] == v.I16[i]) ? -1 : 0); }
-  GSVector2i eq32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] == v.I32[i]) ? -1 : 0); }
+  GSVector2i eq8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] == v.S8[i]) ? -1 : 0); }
+  GSVector2i eq16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] == v.S16[i]) ? -1 : 0); }
+  GSVector2i eq32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] == v.S32[i]) ? -1 : 0); }
 
-  GSVector2i neq8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] != v.I8[i]) ? -1 : 0); }
-  GSVector2i neq16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] != v.I16[i]) ? -1 : 0); }
-  GSVector2i neq32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] != v.I32[i]) ? -1 : 0); }
+  GSVector2i neq8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] != v.S8[i]) ? -1 : 0); }
+  GSVector2i neq16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] != v.S16[i]) ? -1 : 0); }
+  GSVector2i neq32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] != v.S32[i]) ? -1 : 0); }
 
-  GSVector2i gt8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] > v.I8[i]) ? -1 : 0); }
-  GSVector2i gt16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] > v.I16[i]) ? -1 : 0); }
-  GSVector2i gt32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] > v.I32[i]) ? -1 : 0); }
+  GSVector2i gt8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] > v.S8[i]) ? -1 : 0); }
+  GSVector2i gt16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] > v.S16[i]) ? -1 : 0); }
+  GSVector2i gt32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] > v.S32[i]) ? -1 : 0); }
 
-  GSVector2i ge8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] >= v.I8[i]) ? -1 : 0); }
-  GSVector2i ge16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] >= v.I16[i]) ? -1 : 0); }
-  GSVector2i ge32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] >= v.I32[i]) ? -1 : 0); }
+  GSVector2i ge8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] >= v.S8[i]) ? -1 : 0); }
+  GSVector2i ge16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] >= v.S16[i]) ? -1 : 0); }
+  GSVector2i ge32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] >= v.S32[i]) ? -1 : 0); }
 
-  GSVector2i lt8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] < v.I8[i]) ? -1 : 0); }
-  GSVector2i lt16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] < v.I16[i]) ? -1 : 0); }
-  GSVector2i lt32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] < v.I32[i]) ? -1 : 0); }
+  GSVector2i lt8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] < v.S8[i]) ? -1 : 0); }
+  GSVector2i lt16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] < v.S16[i]) ? -1 : 0); }
+  GSVector2i lt32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] < v.S32[i]) ? -1 : 0); }
 
-  GSVector2i le8(const GSVector2i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] <= v.I8[i]) ? -1 : 0); }
-  GSVector2i le16(const GSVector2i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] <= v.I16[i]) ? -1 : 0); }
-  GSVector2i le32(const GSVector2i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] <= v.I32[i]) ? -1 : 0); }
+  GSVector2i le8(const GSVector2i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] <= v.S8[i]) ? -1 : 0); }
+  GSVector2i le16(const GSVector2i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] <= v.S16[i]) ? -1 : 0); }
+  GSVector2i le32(const GSVector2i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] <= v.S32[i]) ? -1 : 0); }
 
   ALWAYS_INLINE GSVector2i andnot(const GSVector2i& v) const
   {
@@ -422,42 +424,42 @@ public:
   ALWAYS_INLINE GSVector2i insert8(s32 a) const
   {
     GSVector2i ret = *this;
-    ret.I8[i] = static_cast<s8>(a);
+    ret.S8[i] = static_cast<s8>(a);
     return ret;
   }
 
   template<s32 i>
   ALWAYS_INLINE s32 extract8() const
   {
-    return I8[i];
+    return S8[i];
   }
 
   template<s32 i>
   ALWAYS_INLINE GSVector2i insert16(s32 a) const
   {
     GSVector2i ret = *this;
-    ret.I16[i] = static_cast<s16>(a);
+    ret.S16[i] = static_cast<s16>(a);
     return ret;
   }
 
   template<s32 i>
   ALWAYS_INLINE s32 extract16() const
   {
-    return I16[i];
+    return S16[i];
   }
 
   template<s32 i>
   ALWAYS_INLINE GSVector2i insert32(s32 a) const
   {
     GSVector2i ret = *this;
-    ret.I32[i] = a;
+    ret.S32[i] = a;
     return ret;
   }
 
   template<s32 i>
   ALWAYS_INLINE s32 extract32() const
   {
-    return I32[i];
+    return S32[i];
   }
 
   ALWAYS_INLINE static GSVector2i load32(const void* p)
@@ -471,7 +473,7 @@ public:
   ALWAYS_INLINE static GSVector2i load(const void* p)
   {
     GSVector2i ret;
-    std::memcpy(ret.I32, p, sizeof(ret.I32));
+    std::memcpy(ret.S32, p, sizeof(ret.S32));
     return ret;
   }
 
@@ -482,7 +484,7 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE static void store(void* p, const GSVector2i& v) { std::memcpy(p, v.I32, sizeof(I32)); }
+  ALWAYS_INLINE static void store(void* p, const GSVector2i& v) { std::memcpy(p, v.S32, sizeof(S32)); }
 
   ALWAYS_INLINE static void store32(void* p, const GSVector2i& v) { std::memcpy(p, &v.x, sizeof(s32)); }
 
@@ -859,16 +861,16 @@ class alignas(16) GSVector4i
   };
   static constexpr cxpr_init_tag cxpr_init{};
 
-  constexpr GSVector4i(cxpr_init_tag, s32 x, s32 y, s32 z, s32 w) : I32{x, y, z, w} {}
+  constexpr GSVector4i(cxpr_init_tag, s32 x, s32 y, s32 z, s32 w) : S32{x, y, z, w} {}
 
   constexpr GSVector4i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3, s16 s4, s16 s5, s16 s6, s16 s7)
-    : I16{s0, s1, s2, s3, s4, s5, s6, s7}
+    : S16{s0, s1, s2, s3, s4, s5, s6, s7}
   {
   }
 
   constexpr GSVector4i(cxpr_init_tag, s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7, s8 b8, s8 b9, s8 b10,
                        s8 b11, s8 b12, s8 b13, s8 b14, s8 b15)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
   {
   }
 
@@ -888,10 +890,10 @@ public:
       s32 left, top, right, bottom;
     };
     float F32[4];
-    s8 I8[16];
-    s16 I16[8];
-    s32 I32[4];
-    s64 I64[2];
+    s8 S8[16];
+    s16 S16[8];
+    s32 S32[4];
+    s64 S64[2];
     u8 U8[16];
     u16 U16[8];
     u32 U32[4];
@@ -932,24 +934,24 @@ public:
 
   ALWAYS_INLINE GSVector4i(s16 s0, s16 s1, s16 s2, s16 s3, s16 s4, s16 s5, s16 s6, s16 s7)
   {
-    I16[0] = s0;
-    I16[1] = s1;
-    I16[2] = s2;
-    I16[3] = s3;
-    I16[4] = s4;
-    I16[5] = s5;
-    I16[6] = s6;
-    I16[7] = s7;
+    S16[0] = s0;
+    S16[1] = s1;
+    S16[2] = s2;
+    S16[3] = s3;
+    S16[4] = s4;
+    S16[5] = s5;
+    S16[6] = s6;
+    S16[7] = s7;
   }
 
   ALWAYS_INLINE constexpr GSVector4i(s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7, s8 b8, s8 b9, s8 b10,
                                      s8 b11, s8 b12, s8 b13, s8 b14, s8 b15)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
   {
   }
 
-  ALWAYS_INLINE GSVector4i(const GSVector4i& v) { std::memcpy(I32, v.I32, sizeof(I32)); }
-  ALWAYS_INLINE explicit GSVector4i(const GSVector2i& v) : I32{v.I32[0], v.I32[1], 0, 0} {}
+  ALWAYS_INLINE GSVector4i(const GSVector4i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
+  ALWAYS_INLINE explicit GSVector4i(const GSVector2i& v) : S32{v.S32[0], v.S32[1], 0, 0} {}
 
   // MSVC has bad codegen for the constexpr version when applied to non-constexpr things (https://godbolt.org/z/h8qbn7),
   // so leave the non-constexpr version default
@@ -959,7 +961,7 @@ public:
 
   ALWAYS_INLINE static GSVector4i cast(const GSVector4& v);
 
-  ALWAYS_INLINE void operator=(const GSVector4i& v) { std::memcpy(I32, v.I32, sizeof(I32)); }
+  ALWAYS_INLINE void operator=(const GSVector4i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
   ALWAYS_INLINE void operator=(s32 i)
   {
     x = i;
@@ -1050,12 +1052,12 @@ public:
     return max_u32(minmax.xyxy()).min_u32(minmax.zwzw());
   }
 
-  GSVector4i min_i8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = std::min(I8[i], v.I8[i])); }
-  GSVector4i max_i8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = std::max(I8[i], v.I8[i])); }
-  GSVector4i min_i16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = std::min(I16[i], v.I16[i])); }
-  GSVector4i max_i16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = std::max(I16[i], v.I16[i])); }
-  GSVector4i min_i32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = std::min(I32[i], v.I32[i])); }
-  GSVector4i max_i32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = std::max(I32[i], v.I32[i])); }
+  GSVector4i min_i8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = std::min(S8[i], v.S8[i])); }
+  GSVector4i max_i8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = std::max(S8[i], v.S8[i])); }
+  GSVector4i min_i16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = std::min(S16[i], v.S16[i])); }
+  GSVector4i max_i16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = std::max(S16[i], v.S16[i])); }
+  GSVector4i min_i32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = std::min(S32[i], v.S32[i])); }
+  GSVector4i max_i32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = std::max(S32[i], v.S32[i])); }
 
   GSVector4i min_u8(const GSVector4i& v) const { ALL_LANES_8(ret.U8[i] = std::min(U8[i], v.U8[i])); }
   GSVector4i max_u8(const GSVector4i& v) const { ALL_LANES_8(ret.U8[i] = std::max(U8[i], v.U8[i])); }
@@ -1066,10 +1068,12 @@ public:
 
   GSVector4i madd_s16(const GSVector4i& v) const
   {
-    ALL_LANES_32(ret.I32[i] = (I16[i * 2] * v.I16[i * 2]) + (I16[i * 2 + 1] * v.I16[i * 2 + 1]));
+    ALL_LANES_32(ret.S32[i] = (S16[i * 2] * v.S16[i * 2]) + (S16[i * 2 + 1] * v.S16[i * 2 + 1]));
   }
 
   GSVector4i addp_s32() const { return GSVector4i(x + y, z + w, 0, 0); }
+
+  s32 addv_s32() const { return (S32[0] + S32[1] + S32[2] + S32[3]); }
 
   u8 minv_u8() const
   {
@@ -1185,18 +1189,18 @@ public:
 
   GSVector4i shuffle8(const GSVector4i& mask) const
   {
-    ALL_LANES_8(ret.I8[i] = (mask.I8[i] & 0x80) ? 0 : (I8[mask.I8[i] & 0xf]));
+    ALL_LANES_8(ret.S8[i] = (mask.S8[i] & 0x80) ? 0 : (S8[mask.S8[i] & 0xf]));
   }
 
-  GSVector4i ps16(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = SSATURATE8((i < 8) ? I16[i] : v.I16[i - 8])); }
-  GSVector4i ps16() const { ALL_LANES_8(ret.I8[i] = SSATURATE8(I16[(i < 8) ? i : (i - 8)])); }
+  GSVector4i ps16(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = SSATURATE8((i < 8) ? S16[i] : v.S16[i - 8])); }
+  GSVector4i ps16() const { ALL_LANES_8(ret.S8[i] = SSATURATE8(S16[(i < 8) ? i : (i - 8)])); }
   GSVector4i pu16(const GSVector4i& v) const { ALL_LANES_8(ret.U8[i] = USATURATE8((i < 8) ? U16[i] : v.U16[i - 8])); }
   GSVector4i pu16() const { ALL_LANES_8(ret.U8[i] = USATURATE8(U16[(i < 8) ? i : (i - 8)])); }
   GSVector4i ps32(const GSVector4i& v) const
   {
-    ALL_LANES_16(ret.U16[i] = SSATURATE16((i < 4) ? I32[i] : v.I32[i - 4]));
+    ALL_LANES_16(ret.U16[i] = SSATURATE16((i < 4) ? S32[i] : v.S32[i - 4]));
   }
-  GSVector4i ps32() const { ALL_LANES_16(ret.I16[i] = SSATURATE16(I32[(i < 4) ? i : (i - 4)])); }
+  GSVector4i ps32() const { ALL_LANES_16(ret.S16[i] = SSATURATE16(S32[(i < 4) ? i : (i - 4)])); }
   GSVector4i pu32(const GSVector4i& v) const
   {
     ALL_LANES_16(ret.U16[i] = USATURATE16((i < 4) ? U32[i] : v.U32[i - 4]));
@@ -1205,75 +1209,75 @@ public:
 
   GSVector4i upl8(const GSVector4i& v) const
   {
-    return GSVector4i(I8[0], v.I8[0], I8[1], v.I8[1], I8[2], v.I8[2], I8[3], v.I8[3], I8[4], v.I8[4], I8[5], v.I8[5],
-                      I8[6], v.I8[6], I8[7], v.I8[7]);
+    return GSVector4i(S8[0], v.S8[0], S8[1], v.S8[1], S8[2], v.S8[2], S8[3], v.S8[3], S8[4], v.S8[4], S8[5], v.S8[5],
+                      S8[6], v.S8[6], S8[7], v.S8[7]);
   }
   GSVector4i uph8(const GSVector4i& v) const
   {
-    return GSVector4i(I8[8], v.I8[8], I8[9], v.I8[9], I8[10], v.I8[10], I8[11], v.I8[11], I8[12], v.I8[12], I8[13],
-                      v.I8[13], I8[14], v.I8[14], I8[15], v.I8[15]);
+    return GSVector4i(S8[8], v.S8[8], S8[9], v.S8[9], S8[10], v.S8[10], S8[11], v.S8[11], S8[12], v.S8[12], S8[13],
+                      v.S8[13], S8[14], v.S8[14], S8[15], v.S8[15]);
   }
   GSVector4i upl16(const GSVector4i& v) const
   {
-    return GSVector4i(I16[0], v.I16[0], I16[1], v.I16[1], I16[2], v.I16[2], I16[3], v.I16[3]);
+    return GSVector4i(S16[0], v.S16[0], S16[1], v.S16[1], S16[2], v.S16[2], S16[3], v.S16[3]);
   }
   GSVector4i uph16(const GSVector4i& v) const
   {
-    return GSVector4i(I16[4], v.I16[4], I16[5], v.I16[5], I16[6], v.I16[6], I16[7], v.I16[7]);
+    return GSVector4i(S16[4], v.S16[4], S16[5], v.S16[5], S16[6], v.S16[6], S16[7], v.S16[7]);
   }
-  GSVector4i upl32(const GSVector4i& v) const { return GSVector4i(I32[0], v.I32[0], I32[1], v.I32[1]); }
-  GSVector4i uph32(const GSVector4i& v) const { return GSVector4i(I32[2], v.I32[2], I32[3], v.I32[3]); }
+  GSVector4i upl32(const GSVector4i& v) const { return GSVector4i(S32[0], v.S32[0], S32[1], v.S32[1]); }
+  GSVector4i uph32(const GSVector4i& v) const { return GSVector4i(S32[2], v.S32[2], S32[3], v.S32[3]); }
   GSVector4i upl64(const GSVector4i& v) const
   {
     GSVector4i ret;
-    ret.I64[0] = I64[0];
-    ret.I64[1] = v.I64[0];
+    ret.S64[0] = S64[0];
+    ret.S64[1] = v.S64[0];
     return ret;
   }
   GSVector4i uph64(const GSVector4i& v) const
   {
     GSVector4i ret;
-    ret.I64[0] = I64[1];
-    ret.I64[1] = v.I64[1];
+    ret.S64[0] = S64[1];
+    ret.S64[1] = v.S64[1];
     return ret;
   }
 
   GSVector4i upl8() const
   {
-    return GSVector4i(I8[0], 0, I8[1], 0, I8[2], 0, I8[3], 0, I8[4], 0, I8[5], 0, I8[6], 0, I8[7], 0);
+    return GSVector4i(S8[0], 0, S8[1], 0, S8[2], 0, S8[3], 0, S8[4], 0, S8[5], 0, S8[6], 0, S8[7], 0);
   }
   GSVector4i uph8() const
   {
-    return GSVector4i(I8[8], 0, I8[9], 0, I8[10], 0, I8[11], 0, I8[12], 0, I8[13], 0, I8[14], 0, I8[15], 0);
+    return GSVector4i(S8[8], 0, S8[9], 0, S8[10], 0, S8[11], 0, S8[12], 0, S8[13], 0, S8[14], 0, S8[15], 0);
   }
 
-  GSVector4i upl16() const { return GSVector4i(I16[0], 0, I16[1], 0, I16[2], 0, I16[3], 0); }
-  GSVector4i uph16() const { return GSVector4i(I16[4], 0, I16[5], 0, I16[6], 0, I16[7], 0); }
+  GSVector4i upl16() const { return GSVector4i(S16[0], 0, S16[1], 0, S16[2], 0, S16[3], 0); }
+  GSVector4i uph16() const { return GSVector4i(S16[4], 0, S16[5], 0, S16[6], 0, S16[7], 0); }
 
-  GSVector4i upl32() const { return GSVector4i(I32[0], 0, I32[1], 0); }
-  GSVector4i uph32() const { return GSVector4i(I32[2], 0, I32[3], 0); }
+  GSVector4i upl32() const { return GSVector4i(S32[0], 0, S32[1], 0); }
+  GSVector4i uph32() const { return GSVector4i(S32[2], 0, S32[3], 0); }
   GSVector4i upl64() const
   {
     GSVector4i ret;
-    ret.I64[0] = I64[0];
-    ret.I64[1] = 0;
+    ret.S64[0] = S64[0];
+    ret.S64[1] = 0;
     return ret;
   }
   GSVector4i uph64() const
   {
     GSVector4i ret;
-    ret.I64[0] = I64[1];
-    ret.I64[1] = 0;
+    ret.S64[0] = S64[1];
+    ret.S64[1] = 0;
     return ret;
   }
 
-  GSVector4i i8to16() const { ALL_LANES_16(ret.I16[i] = I8[i]); }
-  GSVector4i i8to32() const { ALL_LANES_32(ret.I32[i] = I8[i]); }
-  GSVector4i i8to64() const { ALL_LANES_64(ret.I64[i] = I8[i]); }
+  GSVector4i s8to16() const { ALL_LANES_16(ret.S16[i] = S8[i]); }
+  GSVector4i s8to32() const { ALL_LANES_32(ret.S32[i] = S8[i]); }
+  GSVector4i s8to64() const { ALL_LANES_64(ret.S64[i] = S8[i]); }
 
-  GSVector4i i16to32() const { ALL_LANES_32(ret.I32[i] = I16[i]); }
-  GSVector4i i16to64() const { ALL_LANES_64(ret.I64[i] = I16[i]); }
-  GSVector4i i32to64() const { ALL_LANES_64(ret.I64[i] = I32[i]); }
+  GSVector4i s16to32() const { ALL_LANES_32(ret.S32[i] = S16[i]); }
+  GSVector4i s16to64() const { ALL_LANES_64(ret.S64[i] = S16[i]); }
+  GSVector4i s32to64() const { ALL_LANES_64(ret.S64[i] = S32[i]); }
   GSVector4i u8to16() const { ALL_LANES_64(ret.U16[i] = U8[i]); }
   GSVector4i u8to32() const { ALL_LANES_32(ret.U32[i] = U8[i]); }
   GSVector4i u8to64() const { ALL_LANES_64(ret.U64[i] = U8[i]); }
@@ -1341,12 +1345,12 @@ public:
   template<s32 v>
   GSVector4i sra16() const
   {
-    ALL_LANES_16(ret.I16[i] = I16[i] >> v);
+    ALL_LANES_16(ret.S16[i] = S16[i] >> v);
   }
 
-  GSVector4i sra16(s32 v) const { ALL_LANES_16(ret.I16[i] = I16[i] >> v); }
+  GSVector4i sra16(s32 v) const { ALL_LANES_16(ret.S16[i] = S16[i] >> v); }
 
-  GSVector4i srav16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = I16[i] >> v.I16[i]); }
+  GSVector4i srav16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] >> v.S16[i]); }
 
   template<s32 v>
   GSVector4i sll32() const
@@ -1371,12 +1375,12 @@ public:
   template<s32 v>
   GSVector4i sra32() const
   {
-    ALL_LANES_32(ret.I32[i] = I32[i] >> v);
+    ALL_LANES_32(ret.S32[i] = S32[i] >> v);
   }
 
-  GSVector4i sra32(s32 v) const { ALL_LANES_32(ret.I32[i] = I32[i] >> v); }
+  GSVector4i sra32(s32 v) const { ALL_LANES_32(ret.S32[i] = S32[i] >> v); }
 
-  GSVector4i srav32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = I32[i] >> v.I32[i]); }
+  GSVector4i srav32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] >> v.S32[i]); }
 
   template<s64 v>
   GSVector4i sll64() const
@@ -1401,43 +1405,43 @@ public:
   template<s64 v>
   GSVector4i sra64() const
   {
-    ALL_LANES_64(ret.I64[i] = I64[i] >> v);
+    ALL_LANES_64(ret.S64[i] = S64[i] >> v);
   }
 
-  GSVector4i sra64(s32 v) const { ALL_LANES_64(ret.I64[i] = I64[i] >> v); }
+  GSVector4i sra64(s32 v) const { ALL_LANES_64(ret.S64[i] = S64[i] >> v); }
 
-  GSVector4i srav64(const GSVector4i& v) const { ALL_LANES_64(ret.I64[i] = I64[i] >> v.I64[i]); }
+  GSVector4i srav64(const GSVector4i& v) const { ALL_LANES_64(ret.S64[i] = S64[i] >> v.S64[i]); }
 
-  GSVector4i add8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = I8[i] + v.I8[i]); }
+  GSVector4i add8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = S8[i] + v.S8[i]); }
 
-  GSVector4i add16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = I16[i] + v.I16[i]); }
+  GSVector4i add16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] + v.S16[i]); }
 
-  GSVector4i add32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = I32[i] + v.I32[i]); }
+  GSVector4i add32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] + v.S32[i]); }
 
-  GSVector4i adds8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = SSATURATE8(I8[i] + v.I8[i])); }
+  GSVector4i adds8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = SSATURATE8(S8[i] + v.S8[i])); }
 
-  GSVector4i adds16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = SSATURATE16(I16[i] + v.I16[i])); }
+  GSVector4i adds16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = SSATURATE16(S16[i] + v.S16[i])); }
 
   GSVector4i hadds16(const GSVector4i& v) const
   {
-    return GSVector4i(SSATURATE16(I16[0] + I16[1]), SSATURATE16(I16[2] + I16[3]), SSATURATE16(I16[4] + I16[5]),
-                      SSATURATE16(I16[6] + I16[7]), SSATURATE16(v.I16[0] + v.I16[1]), SSATURATE16(v.I16[2] + v.I16[3]),
-                      SSATURATE16(v.I16[4] + v.I16[5]), SSATURATE16(v.I16[6] + v.I16[7]));
+    return GSVector4i(SSATURATE16(S16[0] + S16[1]), SSATURATE16(S16[2] + S16[3]), SSATURATE16(S16[4] + S16[5]),
+                      SSATURATE16(S16[6] + S16[7]), SSATURATE16(v.S16[0] + v.S16[1]), SSATURATE16(v.S16[2] + v.S16[3]),
+                      SSATURATE16(v.S16[4] + v.S16[5]), SSATURATE16(v.S16[6] + v.S16[7]));
   }
 
   GSVector4i addus8(const GSVector4i& v) const { ALL_LANES_8(ret.U8[i] = USATURATE8(U8[i] + v.U8[i])); }
 
   GSVector4i addus16(const GSVector4i& v) const { ALL_LANES_16(ret.U16[i] = USATURATE16(U16[i] + v.U16[i])); }
 
-  GSVector4i sub8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = I8[i] - v.I8[i]); }
+  GSVector4i sub8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = S8[i] - v.S8[i]); }
 
-  GSVector4i sub16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = I16[i] - v.I16[i]); }
+  GSVector4i sub16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] - v.S16[i]); }
 
-  GSVector4i sub32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = I32[i] - v.I32[i]); }
+  GSVector4i sub32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] - v.S32[i]); }
 
-  GSVector4i subs8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = SSATURATE8(I8[i] - v.I8[i])); }
+  GSVector4i subs8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = SSATURATE8(S8[i] - v.S8[i])); }
 
-  GSVector4i subs16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = SSATURATE16(I16[i] - v.I16[i])); }
+  GSVector4i subs16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = SSATURATE16(S16[i] - v.S16[i])); }
 
   GSVector4i subus8(const GSVector4i& v) const { ALL_LANES_8(ret.U8[i] = USATURATE8(U8[i] - v.U8[i])); }
 
@@ -1447,15 +1451,15 @@ public:
 
   GSVector4i avg16(const GSVector4i& v) const { ALL_LANES_16(ret.U16[i] = (U16[i] + v.U16[i]) >> 1); }
 
-  GSVector4i mul16hs(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] * v.I16[i]) >> 16); }
+  GSVector4i mul16hs(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] * v.S16[i]) >> 16); }
 
   GSVector4i mul16hu(const GSVector4i& v) const { ALL_LANES_16(ret.U16[i] = (U16[i] * v.U16[i]) >> 16); }
 
-  GSVector4i mul16l(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = I16[i] * v.I16[i]); }
+  GSVector4i mul16l(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] * v.S16[i]); }
 
-  GSVector4i mul16hrs(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = ((I16[i] * v.I16[i]) >> 14) + 1); }
+  GSVector4i mul16hrs(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = ((S16[i] * v.S16[i]) >> 14) + 1); }
 
-  GSVector4i mul32l(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = I32[i] * v.I32[i]); }
+  GSVector4i mul32l(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] * v.S32[i]); }
 
   template<s32 shift>
   ALWAYS_INLINE GSVector4i lerp16(const GSVector4i& a, const GSVector4i& f) const
@@ -1501,32 +1505,32 @@ public:
     return sll16<shift + 1>().mul16hs(f);
   }
 
-  ALWAYS_INLINE bool eq(const GSVector4i& v) const { return (std::memcmp(I32, v.I32, sizeof(I32))) == 0; }
+  ALWAYS_INLINE bool eq(const GSVector4i& v) const { return (std::memcmp(S32, v.S32, sizeof(S32))) == 0; }
 
-  GSVector4i eq8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] == v.I8[i]) ? -1 : 0); }
-  GSVector4i eq16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] == v.I16[i]) ? -1 : 0); }
-  GSVector4i eq32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] == v.I32[i]) ? -1 : 0); }
-  GSVector4i eq64(const GSVector4i& v) const { ALL_LANES_64(ret.I64[i] = (I64[i] == v.I64[i]) ? -1 : 0); }
+  GSVector4i eq8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] == v.S8[i]) ? -1 : 0); }
+  GSVector4i eq16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] == v.S16[i]) ? -1 : 0); }
+  GSVector4i eq32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] == v.S32[i]) ? -1 : 0); }
+  GSVector4i eq64(const GSVector4i& v) const { ALL_LANES_64(ret.S64[i] = (S64[i] == v.S64[i]) ? -1 : 0); }
 
-  GSVector4i neq8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] != v.I8[i]) ? -1 : 0); }
-  GSVector4i neq16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] != v.I16[i]) ? -1 : 0); }
-  GSVector4i neq32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] != v.I32[i]) ? -1 : 0); }
+  GSVector4i neq8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] != v.S8[i]) ? -1 : 0); }
+  GSVector4i neq16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] != v.S16[i]) ? -1 : 0); }
+  GSVector4i neq32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] != v.S32[i]) ? -1 : 0); }
 
-  GSVector4i gt8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] > v.I8[i]) ? -1 : 0); }
-  GSVector4i gt16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] > v.I16[i]) ? -1 : 0); }
-  GSVector4i gt32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] > v.I32[i]) ? -1 : 0); }
+  GSVector4i gt8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] > v.S8[i]) ? -1 : 0); }
+  GSVector4i gt16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] > v.S16[i]) ? -1 : 0); }
+  GSVector4i gt32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] > v.S32[i]) ? -1 : 0); }
 
-  GSVector4i ge8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] >= v.I8[i]) ? -1 : 0); }
-  GSVector4i ge16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] >= v.I16[i]) ? -1 : 0); }
-  GSVector4i ge32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] >= v.I32[i]) ? -1 : 0); }
+  GSVector4i ge8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] >= v.S8[i]) ? -1 : 0); }
+  GSVector4i ge16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] >= v.S16[i]) ? -1 : 0); }
+  GSVector4i ge32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] >= v.S32[i]) ? -1 : 0); }
 
-  GSVector4i lt8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] < v.I8[i]) ? -1 : 0); }
-  GSVector4i lt16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] < v.I16[i]) ? -1 : 0); }
-  GSVector4i lt32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] < v.I32[i]) ? -1 : 0); }
+  GSVector4i lt8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] < v.S8[i]) ? -1 : 0); }
+  GSVector4i lt16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] < v.S16[i]) ? -1 : 0); }
+  GSVector4i lt32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] < v.S32[i]) ? -1 : 0); }
 
-  GSVector4i le8(const GSVector4i& v) const { ALL_LANES_8(ret.I8[i] = (I8[i] <= v.I8[i]) ? -1 : 0); }
-  GSVector4i le16(const GSVector4i& v) const { ALL_LANES_16(ret.I16[i] = (I16[i] <= v.I16[i]) ? -1 : 0); }
-  GSVector4i le32(const GSVector4i& v) const { ALL_LANES_32(ret.I32[i] = (I32[i] <= v.I32[i]) ? -1 : 0); }
+  GSVector4i le8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] <= v.S8[i]) ? -1 : 0); }
+  GSVector4i le16(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] <= v.S16[i]) ? -1 : 0); }
+  GSVector4i le32(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = (S32[i] <= v.S32[i]) ? -1 : 0); }
 
   ALWAYS_INLINE GSVector4i andnot(const GSVector4i& v) const { ALL_LANES_64(ret.U64[i] = (~v.U64[i]) & U64[i]); }
 
@@ -1550,62 +1554,62 @@ public:
   ALWAYS_INLINE GSVector4i insert8(s32 a) const
   {
     GSVector4i ret = *this;
-    ret.I8[i] = static_cast<s8>(a);
+    ret.S8[i] = static_cast<s8>(a);
     return ret;
   }
 
   template<s32 i>
   ALWAYS_INLINE s32 extract8() const
   {
-    return I8[i];
+    return S8[i];
   }
 
   template<s32 i>
   ALWAYS_INLINE GSVector4i insert16(s32 a) const
   {
     GSVector4i ret = *this;
-    ret.I16[i] = static_cast<s16>(a);
+    ret.S16[i] = static_cast<s16>(a);
     return ret;
   }
 
   template<s32 i>
   ALWAYS_INLINE s32 extract16() const
   {
-    return I16[i];
+    return S16[i];
   }
 
   template<s32 i>
   ALWAYS_INLINE GSVector4i insert32(s32 a) const
   {
     GSVector4i ret = *this;
-    ret.I32[i] = a;
+    ret.S32[i] = a;
     return ret;
   }
 
   template<s32 i>
   ALWAYS_INLINE s32 extract32() const
   {
-    return I32[i];
+    return S32[i];
   }
 
   template<s32 i>
   ALWAYS_INLINE GSVector4i insert64(s64 a) const
   {
     GSVector4i ret = *this;
-    ret.I64[i] = a;
+    ret.S64[i] = a;
     return ret;
   }
 
   template<s32 i>
   ALWAYS_INLINE s64 extract64() const
   {
-    return I64[i];
+    return S64[i];
   }
 
   ALWAYS_INLINE static GSVector4i loadnt(const void* p)
   {
     GSVector4i ret;
-    std::memcpy(&ret, p, sizeof(ret.I32));
+    std::memcpy(&ret, p, sizeof(ret.S32));
     return ret;
   }
 
@@ -1641,7 +1645,7 @@ public:
   ALWAYS_INLINE static GSVector4i load(const void* p)
   {
     GSVector4i ret;
-    std::memcpy(ret.I32, p, sizeof(ret.I32));
+    std::memcpy(ret.S32, p, sizeof(ret.S32));
     return ret;
   }
 
@@ -1658,16 +1662,16 @@ public:
   ALWAYS_INLINE static GSVector4i loadq(s64 i)
   {
     GSVector4i ret;
-    ret.I64[0] = i;
-    ret.I64[1] = 0;
+    ret.S64[0] = i;
+    ret.S64[1] = 0;
     return ret;
   }
 
-  ALWAYS_INLINE static void storent(void* p, const GSVector4i& v) { std::memcpy(p, v.I32, sizeof(v.I32)); }
+  ALWAYS_INLINE static void storent(void* p, const GSVector4i& v) { std::memcpy(p, v.S32, sizeof(v.S32)); }
 
-  ALWAYS_INLINE static void storel(void* p, const GSVector4i& v) { std::memcpy(p, &v.I32[0], sizeof(s32) * 2); }
+  ALWAYS_INLINE static void storel(void* p, const GSVector4i& v) { std::memcpy(p, &v.S32[0], sizeof(s32) * 2); }
 
-  ALWAYS_INLINE static void storeh(void* p, const GSVector4i& v) { std::memcpy(p, &v.I32[2], sizeof(s32) * 2); }
+  ALWAYS_INLINE static void storeh(void* p, const GSVector4i& v) { std::memcpy(p, &v.S32[2], sizeof(s32) * 2); }
 
   ALWAYS_INLINE static void store(void* pl, void* ph, const GSVector4i& v)
   {
@@ -1678,14 +1682,14 @@ public:
   template<bool aligned>
   ALWAYS_INLINE static void store(void* p, const GSVector4i& v)
   {
-    std::memcpy(p, v.I32, sizeof(I32));
+    std::memcpy(p, v.S32, sizeof(S32));
   }
 
   ALWAYS_INLINE static void store32(void* p, const GSVector4i& v) { std::memcpy(p, &v.x, sizeof(s32)); }
 
   ALWAYS_INLINE static s32 store(const GSVector4i& v) { return v.x; }
 
-  ALWAYS_INLINE static s64 storeq(const GSVector4i& v) { return v.I64[0]; }
+  ALWAYS_INLINE static s64 storeq(const GSVector4i& v) { return v.S64[0]; }
 
   ALWAYS_INLINE void operator&=(const GSVector4i& v)
   {
@@ -1746,7 +1750,7 @@ public:
   // l/h/lh not implemented until needed
 
 #define VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn) \
-    ALWAYS_INLINE GSVector4i xs##ys##zs##ws() const {return GSVector4i(I32[xn], I32[yn], I32[zn], I32[wn]);}
+    ALWAYS_INLINE GSVector4i xs##ys##zs##ws() const {return GSVector4i(S32[xn], S32[yn], S32[zn], S32[wn]);}
 
 #define VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, zs, zn) \
     VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, x, 0) \
