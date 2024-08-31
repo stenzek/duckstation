@@ -343,7 +343,7 @@ static void UpdateNoise();
 static u32 ReverbMemoryAddress(u32 address);
 static s16 ReverbRead(u32 address, s32 offset = 0);
 static void ReverbWrite(u32 address, s16 data);
-static void ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out);
+static void ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out);
 
 static void InternalGeneratePendingSamples();
 static void Execute(void* param, TickCount ticks, TickCount ticks_late);
@@ -413,6 +413,9 @@ struct SPUState
 
   std::unique_ptr<AudioStream> audio_stream;
   std::unique_ptr<AudioStream> null_audio_stream;
+
+  s16 last_reverb_input[2];
+  s32 last_reverb_output[2];
   bool audio_output_muted = false;
 
 #ifdef SPU_DUMP_ALL_VOICES
@@ -2136,10 +2139,6 @@ void SPU::UpdateNoise()
   s_state.noise_level = (s_state.noise_level << 1) | noise_wave_add[(s_state.noise_level >> 10) & 63u];
 }
 
-/************************************************************************/
-/* Reverb algorithm from Mednafen-PSX                                   */
-/************************************************************************/
-
 u32 SPU::ReverbMemoryAddress(u32 address)
 {
   // Ensures address does not leave the reverb work area.
@@ -2168,166 +2167,159 @@ void SPU::ReverbWrite(u32 address, s16 data)
   std::memcpy(&s_ram[real_address], &data, sizeof(data));
 }
 
-// Zeroes optimized out; middle removed too(it's 16384)
-static constexpr std::array<s16, 20> s_reverb_resample_coefficients = {
-  -1, 2, -10, 35, -103, 266, -616, 1332, -2960, 10246, 10246, -2960, 1332, -616, 266, -103, 35, -10, 2, -1,
-};
-static s16 s_last_reverb_input[2];
-static s32 s_last_reverb_output[2];
-
-ALWAYS_INLINE static s32 Reverb4422(const s16* src)
+void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out)
 {
-  s32 out = 0; // 32-bits is adequate(it won't overflow)
-  for (u32 i = 0; i < 20; i++)
-    out += s_reverb_resample_coefficients[i] * src[i * 2];
+  // From PSX-SPX:
+  // Input and output to/from the reverb unit is resampled using a 39-tap FIR filter with the following coefficients.
+  //  -0001h,  0000h,  0002h,  0000h, -000Ah,  0000h,  0023h,  0000h,
+  //  -0067h,  0000h,  010Ah,  0000h, -0268h,  0000h,  0534h,  0000h,
+  //  -0B90h,  0000h,  2806h,  4000h,  2806h,  0000h, -0B90h,  0000h,
+  //   0534h,  0000h, -0268h,  0000h,  010Ah,  0000h, -0067h,  0000h,
+  //   0023h,  0000h, -000Ah,  0000h,  0002h,  0000h, -0001h
+  //
+  // Zeros have been removed since the result is always zero, therefore the multiply is redundant.
 
-  // Middle non-zero
-  out += 0x4000 * src[19];
-  out >>= 15;
-  return std::clamp<s32>(out, -32768, 32767);
-}
+  alignas(VECTOR_ALIGNMENT) static constexpr std::array<s32, 20> resample_coeff = {
+    -0x0001, 0x0002,  -0x000A, 0x0023,  -0x0067, 0x010A,  -0x0268, 0x0534,  -0x0B90, 0x2806,
+    0x2806,  -0x0B90, 0x0534,  -0x0268, 0x010A,  -0x0067, 0x0023,  -0x000A, 0x0002,  -0x0001};
 
-template<bool phase>
-ALWAYS_INLINE static s32 Reverb2244(const s16* src)
-{
-  s32 out; // 32-bits is adequate(it won't overflow)
-  if (phase)
-  {
-    // Middle non-zero
-    out = src[9];
-  }
-  else
-  {
-    out = 0;
-    for (u32 i = 0; i < 20; i++)
-      out += s_reverb_resample_coefficients[i] * src[i];
-
-    out >>= 14;
-    out = std::clamp<s32>(out, -32768, 32767);
-  }
-
-  return out;
-}
-
-ALWAYS_INLINE static s16 ReverbSat(s32 val)
-{
-  return static_cast<s16>(std::clamp<s32>(val, -0x8000, 0x7FFF));
-}
-
-ALWAYS_INLINE static s16 ReverbNeg(s16 samp)
-{
-  if (samp == -32768)
-    return 0x7FFF;
-
-  return -samp;
-}
-
-ALWAYS_INLINE static s32 IIASM(const s16 IIR_ALPHA, const s16 insamp)
-{
-  if (IIR_ALPHA == -32768)
-  {
-    if (insamp == -32768)
-      return 0;
+  static constexpr auto iiasm = [](const s16 insamp) {
+    if (s_state.reverb_registers.IIR_ALPHA == -32768) [[unlikely]]
+      return (insamp == -32768) ? 0 : (insamp * -65536);
     else
-      return insamp * -65536;
-  }
-  else
-    return insamp * (32768 - IIR_ALPHA);
-}
+      return insamp * (32768 - s_state.reverb_registers.IIR_ALPHA);
+  };
 
-void SPU::ProcessReverb(s16 left_in, s16 right_in, s32* left_out, s32* right_out)
-{
-  s_last_reverb_input[0] = left_in;
-  s_last_reverb_input[1] = right_in;
-  s_state.reverb_downsample_buffer[0][s_state.reverb_resample_buffer_position | 0x00] = left_in;
-  s_state.reverb_downsample_buffer[0][s_state.reverb_resample_buffer_position | 0x40] = left_in;
-  s_state.reverb_downsample_buffer[1][s_state.reverb_resample_buffer_position | 0x00] = right_in;
-  s_state.reverb_downsample_buffer[1][s_state.reverb_resample_buffer_position | 0x40] = right_in;
+  static constexpr auto neg = [](s32 samp) { return (samp == -32768) ? 0x7FFF : -samp; };
 
+  s_state.last_reverb_input[0] = Truncate16(left_in);
+  s_state.last_reverb_input[1] = Truncate16(right_in);
+
+  // Resampling buffer is duplicated to avoid having to manually wrap the index.
+  s_state.reverb_downsample_buffer[0][s_state.reverb_resample_buffer_position | 0x00] =
+    s_state.reverb_downsample_buffer[0][s_state.reverb_resample_buffer_position | 0x40] = Truncate16(left_in);
+  s_state.reverb_downsample_buffer[1][s_state.reverb_resample_buffer_position | 0x00] =
+    s_state.reverb_downsample_buffer[1][s_state.reverb_resample_buffer_position | 0x40] = Truncate16(right_in);
+
+  // Reverb algorithm from Mednafen-PSX, rewritten/vectorized.
   s32 out[2];
   if (s_state.reverb_resample_buffer_position & 1u)
   {
     std::array<s32, 2> downsampled;
-    for (unsigned lr = 0; lr < 2; lr++)
-      downsampled[lr] =
-        Reverb4422(&s_state.reverb_downsample_buffer[lr][(s_state.reverb_resample_buffer_position - 38) & 0x3F]);
+    for (size_t channel = 0; channel < 2; channel++)
+    {
+      const s16* src =
+        &s_state.reverb_downsample_buffer[channel][(s_state.reverb_resample_buffer_position - 38) & 0x3F];
+      GSVector4i acc =
+        GSVector4i::load<true>(&resample_coeff[0]).mul32l(GSVector4i::load<false>(&src[0]).sll32(16).sra32(16));
+      acc = acc.add32(
+        GSVector4i::load<true>(&resample_coeff[4]).mul32l(GSVector4i::load<false>(&src[8]).sll32(16).sra32(16)));
+      acc = acc.add32(
+        GSVector4i::load<true>(&resample_coeff[8]).mul32l(GSVector4i::load<false>(&src[16]).sll32(16).sra32(16)));
+      acc = acc.add32(
+        GSVector4i::load<true>(&resample_coeff[12]).mul32l(GSVector4i::load<false>(&src[24]).sll32(16).sra32(16)));
+      acc = acc.add32(
+        GSVector4i::load<true>(&resample_coeff[16]).mul32l(GSVector4i::load<false>(&src[32]).sll32(16).sra32(16)));
 
-    for (unsigned lr = 0; lr < 2; lr++)
+      // Horizontal reduction, middle 0x4000. Moved here so we don't need another 4 elements above.
+      downsampled[channel] = Clamp16((acc.addv_s32() + (0x4000 * src[19])) >> 15);
+    }
+
+    for (size_t channel = 0; channel < 2; channel++)
     {
       if (s_state.SPUCNT.reverb_master_enable)
       {
-        const s16 IIR_INPUT_A = ReverbSat(
-          (((ReverbRead(s_state.reverb_registers.IIR_SRC_A[lr ^ 0]) * s_state.reverb_registers.IIR_COEF) >> 14) +
-           ((downsampled[lr] * s_state.reverb_registers.IN_COEF[lr]) >> 14)) >>
+        // Input from Mixer (Input volume multiplied with incoming data).
+        const s32 IIR_INPUT_A = Clamp16(
+          (((ReverbRead(s_state.reverb_registers.IIR_SRC_A[channel ^ 0]) * s_state.reverb_registers.IIR_COEF) >> 14) +
+           ((downsampled[channel] * s_state.reverb_registers.IN_COEF[channel]) >> 14)) >>
           1);
-        const s16 IIR_INPUT_B = ReverbSat(
-          (((ReverbRead(s_state.reverb_registers.IIR_SRC_B[lr ^ 1]) * s_state.reverb_registers.IIR_COEF) >> 14) +
-           ((downsampled[lr] * s_state.reverb_registers.IN_COEF[lr]) >> 14)) >>
-          1);
-        const s16 IIR_A = ReverbSat(
-          (((IIR_INPUT_A * s_state.reverb_registers.IIR_ALPHA) >> 14) +
-           (IIASM(s_state.reverb_registers.IIR_ALPHA, ReverbRead(s_state.reverb_registers.IIR_DEST_A[lr], -1)) >>
-            14)) >>
-          1);
-        const s16 IIR_B = ReverbSat(
-          (((IIR_INPUT_B * s_state.reverb_registers.IIR_ALPHA) >> 14) +
-           (IIASM(s_state.reverb_registers.IIR_ALPHA, ReverbRead(s_state.reverb_registers.IIR_DEST_B[lr], -1)) >>
-            14)) >>
+        const s32 IIR_INPUT_B = Clamp16(
+          (((ReverbRead(s_state.reverb_registers.IIR_SRC_B[channel ^ 1]) * s_state.reverb_registers.IIR_COEF) >> 14) +
+           ((downsampled[channel] * s_state.reverb_registers.IN_COEF[channel]) >> 14)) >>
           1);
 
-        ReverbWrite(s_state.reverb_registers.IIR_DEST_A[lr], IIR_A);
-        ReverbWrite(s_state.reverb_registers.IIR_DEST_B[lr], IIR_B);
+        // Same Side Reflection (left-to-left and right-to-right).
+        const s32 IIR_A = Clamp16((((IIR_INPUT_A * s_state.reverb_registers.IIR_ALPHA) >> 14) +
+                                   (iiasm(ReverbRead(s_state.reverb_registers.IIR_DEST_A[channel], -1)) >> 14)) >>
+                                  1);
+
+        // Different Side Reflection (left-to-right and right-to-left).
+        const s32 IIR_B = Clamp16((((IIR_INPUT_B * s_state.reverb_registers.IIR_ALPHA) >> 14) +
+                                   (iiasm(ReverbRead(s_state.reverb_registers.IIR_DEST_B[channel], -1)) >> 14)) >>
+                                  1);
+
+        ReverbWrite(s_state.reverb_registers.IIR_DEST_A[channel], Truncate16(IIR_A));
+        ReverbWrite(s_state.reverb_registers.IIR_DEST_B[channel], Truncate16(IIR_B));
       }
 
+      // Early Echo (Comb Filter, with input from buffer).
       const s32 ACC =
-        ((ReverbRead(s_state.reverb_registers.ACC_SRC_A[lr]) * s_state.reverb_registers.ACC_COEF_A) >> 14) +
-        ((ReverbRead(s_state.reverb_registers.ACC_SRC_B[lr]) * s_state.reverb_registers.ACC_COEF_B) >> 14) +
-        ((ReverbRead(s_state.reverb_registers.ACC_SRC_C[lr]) * s_state.reverb_registers.ACC_COEF_C) >> 14) +
-        ((ReverbRead(s_state.reverb_registers.ACC_SRC_D[lr]) * s_state.reverb_registers.ACC_COEF_D) >> 14);
+        ((ReverbRead(s_state.reverb_registers.ACC_SRC_A[channel]) * s_state.reverb_registers.ACC_COEF_A) >> 14) +
+        ((ReverbRead(s_state.reverb_registers.ACC_SRC_B[channel]) * s_state.reverb_registers.ACC_COEF_B) >> 14) +
+        ((ReverbRead(s_state.reverb_registers.ACC_SRC_C[channel]) * s_state.reverb_registers.ACC_COEF_C) >> 14) +
+        ((ReverbRead(s_state.reverb_registers.ACC_SRC_D[channel]) * s_state.reverb_registers.ACC_COEF_D) >> 14);
 
-      const s16 FB_A = ReverbRead(s_state.reverb_registers.MIX_DEST_A[lr] - s_state.reverb_registers.FB_SRC_A);
-      const s16 FB_B = ReverbRead(s_state.reverb_registers.MIX_DEST_B[lr] - s_state.reverb_registers.FB_SRC_B);
-      const s16 MDA = ReverbSat((ACC + ((FB_A * ReverbNeg(s_state.reverb_registers.FB_ALPHA)) >> 14)) >> 1);
-      const s16 MDB = ReverbSat(FB_A + ((((MDA * s_state.reverb_registers.FB_ALPHA) >> 14) +
-                                         ((FB_B * ReverbNeg(s_state.reverb_registers.FB_X)) >> 14)) >>
-                                        1));
-      const s16 IVB = ReverbSat(FB_B + ((MDB * s_state.reverb_registers.FB_X) >> 15));
+      // Late Reverb APF1 (All Pass Filter 1, with input from COMB).
+      const s32 FB_A = ReverbRead(s_state.reverb_registers.MIX_DEST_A[channel] - s_state.reverb_registers.FB_SRC_A);
+      const s32 FB_B = ReverbRead(s_state.reverb_registers.MIX_DEST_B[channel] - s_state.reverb_registers.FB_SRC_B);
+      const s32 MDA = Clamp16((ACC + ((FB_A * neg(s_state.reverb_registers.FB_ALPHA)) >> 14)) >> 1);
+
+      // Late Reverb APF2 (All Pass Filter 2, with input from APF1).
+      const s32 MDB = Clamp16(FB_A + ((((MDA * s_state.reverb_registers.FB_ALPHA) >> 14) +
+                                       ((FB_B * neg(s_state.reverb_registers.FB_X)) >> 14)) >>
+                                      1));
+
+      // 22050hz sample output.
+      s_state.reverb_upsample_buffer[channel][(s_state.reverb_resample_buffer_position >> 1) | 0x20] =
+        s_state.reverb_upsample_buffer[channel][s_state.reverb_resample_buffer_position >> 1] =
+          Truncate16(Clamp16(FB_B + ((MDB * s_state.reverb_registers.FB_X) >> 15)));
 
       if (s_state.SPUCNT.reverb_master_enable)
       {
-        ReverbWrite(s_state.reverb_registers.MIX_DEST_A[lr], MDA);
-        ReverbWrite(s_state.reverb_registers.MIX_DEST_B[lr], MDB);
+        ReverbWrite(s_state.reverb_registers.MIX_DEST_A[channel], Truncate16(MDA));
+        ReverbWrite(s_state.reverb_registers.MIX_DEST_B[channel], Truncate16(MDB));
       }
-
-      s_state.reverb_upsample_buffer[lr][(s_state.reverb_resample_buffer_position >> 1) | 0x20] =
-        s_state.reverb_upsample_buffer[lr][s_state.reverb_resample_buffer_position >> 1] = IVB;
     }
 
     s_state.reverb_current_address = (s_state.reverb_current_address + 1) & 0x3FFFFu;
-    if (s_state.reverb_current_address == 0)
-      s_state.reverb_current_address = s_state.reverb_base_address;
+    s_state.reverb_current_address =
+      (s_state.reverb_current_address == 0) ? s_state.reverb_base_address : s_state.reverb_current_address;
 
-    for (unsigned lr = 0; lr < 2; lr++)
-      out[lr] = Reverb2244<false>(
-        &s_state.reverb_upsample_buffer[lr][((s_state.reverb_resample_buffer_position >> 1) - 19) & 0x1F]);
+    for (size_t channel = 0; channel < 2; channel++)
+    {
+      const s16* src =
+        &s_state.reverb_upsample_buffer[channel][((s_state.reverb_resample_buffer_position >> 1) - 19) & 0x1F];
+
+      GSVector4i srcs = GSVector4i::load<false>(&src[0]);
+      GSVector4i acc = GSVector4i::load<true>(&resample_coeff[0]).mul32l(srcs.s16to32());
+      acc = acc.add32(GSVector4i::load<true>(&resample_coeff[4]).mul32l(srcs.uph64().s16to32()));
+      srcs = GSVector4i::load<false>(&src[8]);
+      acc = acc.add32(GSVector4i::load<true>(&resample_coeff[8]).mul32l(srcs.s16to32()));
+      acc = acc.add32(GSVector4i::load<true>(&resample_coeff[12]).mul32l(srcs.uph64().s16to32()));
+      srcs = GSVector4i::loadl(&src[16]);
+      acc = acc.add32(GSVector4i::load<true>(&resample_coeff[16]).mul32l(srcs.s16to32()));
+
+      out[channel] = std::clamp<s32>(acc.addv_s32() >> 14, -32768, 32767);
+    }
   }
   else
   {
+    const size_t idx = (((s_state.reverb_resample_buffer_position >> 1) - 19) & 0x1F) + 9;
     for (unsigned lr = 0; lr < 2; lr++)
-      out[lr] = Reverb2244<true>(
-        &s_state.reverb_upsample_buffer[lr][((s_state.reverb_resample_buffer_position >> 1) - 19) & 0x1F]);
+      out[lr] = s_state.reverb_upsample_buffer[lr][idx];
   }
 
   s_state.reverb_resample_buffer_position = (s_state.reverb_resample_buffer_position + 1) & 0x3F;
 
-  s_last_reverb_output[0] = *left_out = ApplyVolume(out[0], s_state.reverb_registers.vLOUT);
-  s_last_reverb_output[1] = *right_out = ApplyVolume(out[1], s_state.reverb_registers.vROUT);
+  s_state.last_reverb_output[0] = *left_out = ApplyVolume(out[0], s_state.reverb_registers.vLOUT);
+  s_state.last_reverb_output[1] = *right_out = ApplyVolume(out[1], s_state.reverb_registers.vROUT);
 
 #ifdef SPU_DUMP_ALL_VOICES
   if (s_state.s_voice_dump_writers[NUM_VOICES])
   {
-    const s16 dump_samples[2] = {static_cast<s16>(Clamp16(s_last_reverb_output[0])),
-                                 static_cast<s16>(Clamp16(s_last_reverb_output[1]))};
+    const s16 dump_samples[2] = {static_cast<s16>(Clamp16(s_state.last_reverb_output[0])),
+                                 static_cast<s16>(Clamp16(s_state.last_reverb_output[1]))};
     s_state.s_voice_dump_writers[NUM_VOICES]->WriteFrames(dump_samples, 1);
   }
 #endif
@@ -2414,8 +2406,7 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
 
       // Compute reverb.
       s32 reverb_out_left, reverb_out_right;
-      ProcessReverb(static_cast<s16>(Clamp16(reverb_in_left)), static_cast<s16>(Clamp16(reverb_in_right)),
-                    &reverb_out_left, &reverb_out_right);
+      ProcessReverb(Clamp16(reverb_in_left), Clamp16(reverb_in_right), &reverb_out_left, &reverb_out_right);
 
       // Mix in reverb.
       left_sum += reverb_out_left;
@@ -2651,8 +2642,8 @@ void SPU::DrawDebugStateWindow()
 
     ImGui::Text("Base Address: 0x%08X (%04X)", s_state.reverb_base_address, s_state.reverb_registers.mBASE);
     ImGui::Text("Current Address: 0x%08X", s_state.reverb_current_address);
-    ImGui::Text("Current Amplitude: Input (%d, %d) Output (%d, %d)", s_last_reverb_input[0], s_last_reverb_input[1],
-                s_last_reverb_output[0], s_last_reverb_output[1]);
+    ImGui::Text("Current Amplitude: Input (%d, %d) Output (%d, %d)", s_state.last_reverb_input[0],
+                s_state.last_reverb_input[1], s_state.last_reverb_output[0], s_state.last_reverb_output[1]);
     ImGui::Text("Output Volume: Left %d%% Right %d%%", ApplyVolume(100, s_state.reverb_registers.vLOUT),
                 ApplyVolume(100, s_state.reverb_registers.vROUT));
 
