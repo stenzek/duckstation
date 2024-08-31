@@ -10723,6 +10723,8 @@ SLPS-91180:
     linkCable: false
 SLPM-80413:
   name: "Athena - Awakening from the Ordinary Life (Japan) (Demo)"
+  traits:
+    - DisableWidescreen # Pre-rendered backgrounds.
 SLPM-86185:
   name: "Athena - Awakening from the Ordinary Life (Japan) (Disc 1)"
   discSet:
@@ -10737,6 +10739,8 @@ SLPM-86185:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen # Pre-rendered backgrounds.
   metadata:
     publisher: "SNK"
     developer: "Yumekobo Co., Ltd"
@@ -10762,6 +10766,8 @@ SLPM-86186:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen # Pre-rendered backgrounds.
   metadata:
     publisher: "SNK"
     developer: "Yumekobo Co., Ltd"
@@ -10787,6 +10793,8 @@ SLPM-86187:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableWidescreen # Pre-rendered backgrounds.
   metadata:
     publisher: "SNK"
     developer: "Yumekobo Co., Ltd"
