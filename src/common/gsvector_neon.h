@@ -22,12 +22,12 @@ class alignas(16) GSVector2i
   };
   static constexpr cxpr_init_tag cxpr_init{};
 
-  constexpr GSVector2i(cxpr_init_tag, s32 x, s32 y) : I32{x, y} {}
+  constexpr GSVector2i(cxpr_init_tag, s32 x, s32 y) : S32{x, y} {}
 
-  constexpr GSVector2i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3) : I16{s0, s1, s2, s3} {}
+  constexpr GSVector2i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3) : S16{s0, s1, s2, s3} {}
 
   constexpr GSVector2i(cxpr_init_tag, s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7}
   {
   }
 
@@ -43,10 +43,10 @@ public:
       s32 r, g;
     };
     float F32[2];
-    s8 I8[8];
-    s16 I16[4];
-    s32 I32[2];
-    s64 I64[1];
+    s8 S8[8];
+    s16 S16[4];
+    s32 S32[2];
+    s64 S64[1];
     u8 U8[8];
     u16 U16[4];
     u32 U32[2];
@@ -74,10 +74,10 @@ public:
 
   ALWAYS_INLINE GSVector2i(s32 x, s32 y) { v2s = vset_lane_s32(y, vdup_n_s32(x), 1); }
 
-  ALWAYS_INLINE GSVector2i(s16 s0, s16 s1, s16 s2, s16 s3) : I16{s0, s1, s2, s3} {}
+  ALWAYS_INLINE GSVector2i(s16 s0, s16 s1, s16 s2, s16 s3) : S16{s0, s1, s2, s3} {}
 
   ALWAYS_INLINE constexpr GSVector2i(s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7}
   {
   }
 
@@ -173,6 +173,15 @@ public:
   ALWAYS_INLINE GSVector2i max_u32(const GSVector2i& v) const
   {
     return GSVector2i(vreinterpret_s32_u32(vmax_u32(vreinterpret_u32_s32(v2s), vreinterpret_u32_s32(v.v2s))));
+  }
+
+  ALWAYS_INLINE s32 addv_s32() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return vaddv_s32(v2s);
+#else
+    return vget_lane_s32(v2s, 0) + vget_lane_s32(v2s, 1);
+#endif
   }
 
 #ifdef CPU_ARCH_ARM64
@@ -1050,16 +1059,16 @@ class alignas(16) GSVector4i
   };
   static constexpr cxpr_init_tag cxpr_init{};
 
-  constexpr GSVector4i(cxpr_init_tag, s32 x, s32 y, s32 z, s32 w) : I32{x, y, z, w} {}
+  constexpr GSVector4i(cxpr_init_tag, s32 x, s32 y, s32 z, s32 w) : S32{x, y, z, w} {}
 
   constexpr GSVector4i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3, s16 s4, s16 s5, s16 s6, s16 s7)
-    : I16{s0, s1, s2, s3, s4, s5, s6, s7}
+    : S16{s0, s1, s2, s3, s4, s5, s6, s7}
   {
   }
 
   constexpr GSVector4i(cxpr_init_tag, s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7, s8 b8, s8 b9, s8 b10,
                        s8 b11, s8 b12, s8 b13, s8 b14, s8 b15)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
   {
   }
 
@@ -1079,10 +1088,10 @@ public:
       int left, top, right, bottom;
     };
     float F32[4];
-    s8 I8[16];
-    s16 I16[8];
-    s32 I32[4];
-    s64 I64[2];
+    s8 S8[16];
+    s16 S16[8];
+    s32 S32[4];
+    s64 S64[2];
     u8 U8[16];
     u16 U16[8];
     u32 U32[4];
@@ -1123,13 +1132,13 @@ public:
   ALWAYS_INLINE GSVector4i(s32 x, s32 y) { *this = load(x).upl32(load(y)); }
 
   ALWAYS_INLINE GSVector4i(s16 s0, s16 s1, s16 s2, s16 s3, s16 s4, s16 s5, s16 s6, s16 s7)
-    : I16{s0, s1, s2, s3, s4, s5, s6, s7}
+    : S16{s0, s1, s2, s3, s4, s5, s6, s7}
   {
   }
 
   constexpr GSVector4i(s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7, s8 b8, s8 b9, s8 b10, s8 b11, s8 b12,
                        s8 b13, s8 b14, s8 b15)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
   {
   }
 
@@ -1315,6 +1324,16 @@ public:
 #else
     const int32x2_t res = vpadd_s32(vget_low_s32(v4s), vget_high_s32(v4s));
     return GSVector4i(vcombine_s32(res, res));
+#endif
+  }
+
+  ALWAYS_INLINE s32 addv_s32() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return vaddvq_s32(v4s);
+#else
+    const int32x2_t res = vpadd_s32(vget_low_s32(v4s), vget_high_s32(v4s));
+    return vget_lane_s32(res, 0) + vget_lane_s32(res, 1);
 #endif
   }
 
@@ -1641,7 +1660,7 @@ public:
   }
 #endif
 
-  ALWAYS_INLINE GSVector4i i8to16() const
+  ALWAYS_INLINE GSVector4i s8to16() const
   {
     return GSVector4i(vreinterpretq_s32_s16(vmovl_s8(vget_low_s8(vreinterpretq_s8_s32(v4s)))));
   }
@@ -1651,7 +1670,7 @@ public:
     return GSVector4i(vreinterpretq_s32_u16(vmovl_u8(vget_low_u8(vreinterpretq_u8_s32(v4s)))));
   }
 
-  ALWAYS_INLINE GSVector4i i8to32() const
+  ALWAYS_INLINE GSVector4i s8to32() const
   {
     return GSVector4i(vmovl_s16(vget_low_s16(vmovl_s8(vget_low_s8(vreinterpretq_s8_s32(v4s))))));
   }
@@ -1661,7 +1680,7 @@ public:
     return GSVector4i(vreinterpretq_s32_u32(vmovl_u16(vget_low_u16(vmovl_u8(vget_low_u8(vreinterpretq_u8_s32(v4s)))))));
   }
 
-  ALWAYS_INLINE GSVector4i i8to64() const
+  ALWAYS_INLINE GSVector4i s8to64() const
   {
     return GSVector4i(vreinterpretq_s32_s64(
       vmovl_s32(vget_low_s32(vmovl_s16(vget_low_s16(vmovl_s8(vget_low_s8(vreinterpretq_s8_s32(v4s)))))))));
@@ -1673,14 +1692,14 @@ public:
       vmovl_u32(vget_low_u32(vmovl_u16(vget_low_u16(vmovl_u8(vget_low_u8(vreinterpretq_u8_s32(v4s)))))))));
   }
 
-  ALWAYS_INLINE GSVector4i i16to32() const { return GSVector4i(vmovl_s16(vget_low_s16(vreinterpretq_s16_s32(v4s)))); }
+  ALWAYS_INLINE GSVector4i s16to32() const { return GSVector4i(vmovl_s16(vget_low_s16(vreinterpretq_s16_s32(v4s)))); }
 
   ALWAYS_INLINE GSVector4i u16to32() const
   {
     return GSVector4i(vreinterpretq_s32_u32(vmovl_u16(vget_low_u16(vreinterpretq_u16_s32(v4s)))));
   }
 
-  ALWAYS_INLINE GSVector4i i16to64() const
+  ALWAYS_INLINE GSVector4i s16to64() const
   {
     return GSVector4i(
       vreinterpretq_s32_s64(vmovl_s32(vget_low_s32(vmovl_s16(vget_low_s16(vreinterpretq_s16_s32(v4s)))))));
@@ -1692,7 +1711,7 @@ public:
       vreinterpretq_s32_u64(vmovl_u32(vget_low_u32(vmovl_u16(vget_low_u16(vreinterpretq_u16_s32(v4s)))))));
   }
 
-  ALWAYS_INLINE GSVector4i i32to64() const { return GSVector4i(vreinterpretq_s32_s64(vmovl_s32(vget_low_s32(v4s)))); }
+  ALWAYS_INLINE GSVector4i s32to64() const { return GSVector4i(vreinterpretq_s32_s64(vmovl_s32(vget_low_s32(v4s)))); }
 
   ALWAYS_INLINE GSVector4i u32to64() const
   {

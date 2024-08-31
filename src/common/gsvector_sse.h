@@ -1,5 +1,8 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team, 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: LGPL-3.0+
+//
+// Rewritten and NEON+No-SIMD variants added for DuckStation.
+//
 
 #pragma once
 
@@ -25,12 +28,12 @@ class alignas(16) GSVector2i
   };
   static constexpr cxpr_init_tag cxpr_init{};
 
-  constexpr GSVector2i(cxpr_init_tag, s32 x, s32 y) : I32{x, y, 0, 0} {}
+  constexpr GSVector2i(cxpr_init_tag, s32 x, s32 y) : S32{x, y, 0, 0} {}
 
-  constexpr GSVector2i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3) : I16{s0, s1, s2, s3, 0, 0, 0, 0} {}
+  constexpr GSVector2i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3) : S16{s0, s1, s2, s3, 0, 0, 0, 0} {}
 
   constexpr GSVector2i(cxpr_init_tag, s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7, 0, 0, 0, 0, 0, 0, 0, 0}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7, 0, 0, 0, 0, 0, 0, 0, 0}
   {
   }
 
@@ -46,10 +49,10 @@ public:
       s32 r, g;
     };
     float F32[4];
-    s8 I8[16];
-    s16 I16[8];
-    s32 I32[4];
-    s64 I64[2];
+    s8 S8[16];
+    s16 S16[8];
+    s32 S32[4];
+    s64 S64[2];
     u8 U8[16];
     u16 U16[8];
     u32 U32[4];
@@ -80,7 +83,7 @@ public:
   ALWAYS_INLINE GSVector2i(s16 s0, s16 s1, s16 s2, s16 s3) { m = _mm_set_epi16(0, 0, 0, 0, s3, s2, s1, s0); }
 
   ALWAYS_INLINE constexpr GSVector2i(s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7, 0, 0, 0, 0, 0, 0, 0, 0}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7, 0, 0, 0, 0, 0, 0, 0, 0}
   {
   }
 
@@ -138,6 +141,11 @@ public:
   ALWAYS_INLINE GSVector2i max_u16(const GSVector2i& v) const { return GSVector2i(_mm_max_epu16(m, v)); }
   ALWAYS_INLINE GSVector2i min_u32(const GSVector2i& v) const { return GSVector2i(_mm_min_epu32(m, v)); }
   ALWAYS_INLINE GSVector2i max_u32(const GSVector2i& v) const { return GSVector2i(_mm_max_epu32(m, v)); }
+
+  ALWAYS_INLINE s32 addv_s32() const
+  {
+    return _mm_cvtsi128_si32(_mm_hadd_epi32(m, m));
+  }
 
   ALWAYS_INLINE u8 minv_u8() const
   {
@@ -757,16 +765,16 @@ class alignas(16) GSVector4i
   };
   static constexpr cxpr_init_tag cxpr_init{};
 
-  constexpr GSVector4i(cxpr_init_tag, s32 x, s32 y, s32 z, s32 w) : I32{x, y, z, w} {}
+  constexpr GSVector4i(cxpr_init_tag, s32 x, s32 y, s32 z, s32 w) : S32{x, y, z, w} {}
 
   constexpr GSVector4i(cxpr_init_tag, s16 s0, s16 s1, s16 s2, s16 s3, s16 s4, s16 s5, s16 s6, s16 s7)
-    : I16{s0, s1, s2, s3, s4, s5, s6, s7}
+    : S16{s0, s1, s2, s3, s4, s5, s6, s7}
   {
   }
 
   constexpr GSVector4i(cxpr_init_tag, s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7, s8 b8, s8 b9, s8 b10,
                        s8 b11, s8 b12, s8 b13, s8 b14, s8 b15)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
   {
   }
 
@@ -786,10 +794,10 @@ public:
       s32 left, top, right, bottom;
     };
     float F32[4];
-    s8 I8[16];
-    s16 I16[8];
-    s32 I32[4];
-    s64 I64[2];
+    s8 S8[16];
+    s16 S16[8];
+    s32 S32[4];
+    s64 S64[2];
     u8 U8[16];
     u16 U16[8];
     u32 U32[4];
@@ -830,7 +838,7 @@ public:
 
   ALWAYS_INLINE constexpr GSVector4i(s8 b0, s8 b1, s8 b2, s8 b3, s8 b4, s8 b5, s8 b6, s8 b7, s8 b8, s8 b9, s8 b10,
                                      s8 b11, s8 b12, s8 b13, s8 b14, s8 b15)
-    : I8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
+    : S8{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15}
   {
   }
 
@@ -953,6 +961,12 @@ public:
   ALWAYS_INLINE GSVector4i madd_s16(const GSVector4i& v) const { return GSVector4i(_mm_madd_epi16(m, v.m)); }
 
   ALWAYS_INLINE GSVector4i addp_s32() const { return GSVector4i(_mm_hadd_epi32(m, m)); }
+
+  ALWAYS_INLINE s32 addv_s32() const
+  {
+    const __m128i pairs = _mm_hadd_epi32(m, m);
+    return _mm_cvtsi128_si32(_mm_hadd_epi32(pairs, pairs));
+  }
 
   ALWAYS_INLINE u8 minv_u8() const
   {
@@ -1080,14 +1094,14 @@ public:
   ALWAYS_INLINE GSVector4i upl64() const { return GSVector4i(_mm_unpacklo_epi64(m, _mm_setzero_si128())); }
   ALWAYS_INLINE GSVector4i uph64() const { return GSVector4i(_mm_unpackhi_epi64(m, _mm_setzero_si128())); }
 
-  ALWAYS_INLINE GSVector4i i8to16() const { return GSVector4i(_mm_cvtepi8_epi16(m)); }
-  ALWAYS_INLINE GSVector4i i8to32() const { return GSVector4i(_mm_cvtepi8_epi32(m)); }
-  ALWAYS_INLINE GSVector4i i8to64() const { return GSVector4i(_mm_cvtepi8_epi64(m)); }
+  ALWAYS_INLINE GSVector4i s8to16() const { return GSVector4i(_mm_cvtepi8_epi16(m)); }
+  ALWAYS_INLINE GSVector4i s8to32() const { return GSVector4i(_mm_cvtepi8_epi32(m)); }
+  ALWAYS_INLINE GSVector4i s8to64() const { return GSVector4i(_mm_cvtepi8_epi64(m)); }
 
 #ifdef CPU_ARCH_SSE41
-  ALWAYS_INLINE GSVector4i i16to32() const { return GSVector4i(_mm_cvtepi16_epi32(m)); }
-  ALWAYS_INLINE GSVector4i i16to64() const { return GSVector4i(_mm_cvtepi16_epi64(m)); }
-  ALWAYS_INLINE GSVector4i i32to64() const { return GSVector4i(_mm_cvtepi32_epi64(m)); }
+  ALWAYS_INLINE GSVector4i s16to32() const { return GSVector4i(_mm_cvtepi16_epi32(m)); }
+  ALWAYS_INLINE GSVector4i s16to64() const { return GSVector4i(_mm_cvtepi16_epi64(m)); }
+  ALWAYS_INLINE GSVector4i s32to64() const { return GSVector4i(_mm_cvtepi32_epi64(m)); }
   ALWAYS_INLINE GSVector4i u8to16() const { return GSVector4i(_mm_cvtepu8_epi16(m)); }
   ALWAYS_INLINE GSVector4i u8to32() const { return GSVector4i(_mm_cvtepu8_epi32(m)); }
   ALWAYS_INLINE GSVector4i u8to64() const { return GSVector4i(_mm_cvtepu16_epi64(m)); }
@@ -1952,10 +1966,7 @@ public:
     return GSVector4(_mm_cvtps_pd(_mm_castpd_ps(_mm_load_sd(static_cast<const double*>(p)))));
   }
 
-  ALWAYS_INLINE GSVector4i f64toi32() const
-  {
-    return GSVector4i(_mm_cvttpd_epi32(_mm_castps_pd(m)));
-  }
+  ALWAYS_INLINE GSVector4i f64toi32() const { return GSVector4i(_mm_cvttpd_epi32(_mm_castps_pd(m))); }
 
   // clang-format off
 
