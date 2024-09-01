@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: PolyForm-Strict-1.0.0
 
 #include "settingswindow.h"
 #include "advancedsettingswidget.h"
@@ -122,7 +122,9 @@ void SettingsWindow::addPages()
     m_post_processing_settings = new PostProcessingSettingsWidget(this, m_ui.settingsContainer), tr("Post-Processing"),
     QStringLiteral("sun-fill"),
     tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
-       "displayed on the screen with various filters. Shaders will be executed in sequence."));
+       "displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be "
+       "downloaded from <a href=\"%1\">%1</a>.")
+      .arg("https://github.com/duckstation/shaders"));
   addWidget(
     m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"),
     QStringLiteral("volume-up-line"),
@@ -209,6 +211,7 @@ void SettingsWindow::connectUi()
   m_ui.settingsCategory->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
   m_ui.settingsCategory->setCurrentRow(0);
   m_ui.settingsContainer->setCurrentIndex(0);
+  m_ui.helpText->setOpenExternalLinks(true);
   m_ui.helpText->setText(m_category_help_text[0]);
   connect(m_ui.settingsCategory, &QListWidget::currentRowChanged, this, &SettingsWindow::onCategoryCurrentRowChanged);
   connect(m_ui.close, &QPushButton::clicked, this, &SettingsWindow::close);
