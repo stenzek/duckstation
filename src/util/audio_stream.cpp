@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "audio_stream.h"
 #include "host.h"
@@ -15,10 +15,6 @@
 #include "soundtouch/SoundTouch.h"
 #include "soundtouch/SoundTouchDLL.h"
 
-#ifndef __ANDROID__
-#include "freesurround_decoder.h"
-#endif
-
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -28,16 +24,6 @@ Log_SetChannel(AudioStream);
 
 static constexpr bool LOG_TIMESTRETCH_STATS = false;
 
-static constexpr const std::array<std::pair<u8, u8>, static_cast<size_t>(AudioExpansionMode::Count)>
-  s_expansion_channel_count = {{
-    {u8(2), u8(2)}, // Disabled
-    {u8(3), u8(3)}, // StereoLFE
-    {u8(5), u8(4)}, // Quadraphonic
-    {u8(5), u8(5)}, // QuadraphonicLFE
-    {u8(6), u8(6)}, // Surround51
-    {u8(8), u8(8)}, // Surround71
-  }};
-
 AudioStream::DeviceInfo::DeviceInfo(std::string name_, std::string display_name_, u32 minimum_latency_)
   : name(std::move(name_)), display_name(std::move(display_name_)), minimum_latency_frames(minimum_latency_)
 {
@@ -45,10 +31,70 @@ AudioStream::DeviceInfo::DeviceInfo(std::string name_, std::string display_name_
 
 AudioStream::DeviceInfo::~DeviceInfo() = default;
 
+void AudioStreamParameters::Load(SettingsInterface& si, const char* section)
+{
+  stretch_mode =
+    AudioStream::ParseStretchMode(
+      si.GetStringValue(section, "StretchMode", AudioStream::GetStretchModeName(DEFAULT_STRETCH_MODE)).c_str())
+      .value_or(DEFAULT_STRETCH_MODE);
+  output_latency_ms = static_cast<u16>(std::min<u32>(
+    si.GetUIntValue(section, "OutputLatencyMS", DEFAULT_OUTPUT_LATENCY_MS), std::numeric_limits<u16>::max()));
+  output_latency_minimal = si.GetBoolValue(section, "OutputLatencyMinimal", DEFAULT_OUTPUT_LATENCY_MINIMAL);
+  buffer_ms = static_cast<u16>(
+    std::min<u32>(si.GetUIntValue(section, "BufferMS", DEFAULT_BUFFER_MS), std::numeric_limits<u16>::max()));
+
+  stretch_sequence_length_ms =
+    static_cast<u16>(std::min<u32>(si.GetUIntValue(section, "StretchSequenceLengthMS", DEFAULT_STRETCH_SEQUENCE_LENGTH),
+                                   std::numeric_limits<u16>::max()));
+  stretch_seekwindow_ms = static_cast<u16>(std::min<u32>(
+    si.GetUIntValue(section, "StretchSeekWindowMS", DEFAULT_STRETCH_SEEKWINDOW), std::numeric_limits<u16>::max()));
+  stretch_overlap_ms = static_cast<u16>(std::min<u32>(
+    si.GetUIntValue(section, "StretchOverlapMS", DEFAULT_STRETCH_OVERLAP), std::numeric_limits<u16>::max()));
+  stretch_use_quickseek = si.GetBoolValue(section, "StretchUseQuickSeek", DEFAULT_STRETCH_USE_QUICKSEEK);
+  stretch_use_aa_filter = si.GetBoolValue(section, "StretchUseAAFilter", DEFAULT_STRETCH_USE_AA_FILTER);
+}
+
+void AudioStreamParameters::Save(SettingsInterface& si, const char* section) const
+{
+  si.SetStringValue(section, "StretchMode", AudioStream::GetStretchModeName(stretch_mode));
+  si.SetUIntValue(section, "BufferMS", buffer_ms);
+  si.SetUIntValue(section, "OutputLatencyMS", output_latency_ms);
+  si.SetBoolValue(section, "OutputLatencyMinimal", output_latency_minimal);
+
+  si.SetUIntValue(section, "StretchSequenceLengthMS", stretch_sequence_length_ms);
+  si.SetUIntValue(section, "StretchSeekWindowMS", stretch_seekwindow_ms);
+  si.SetUIntValue(section, "StretchOverlapMS", stretch_overlap_ms);
+  si.SetBoolValue(section, "StretchUseQuickSeek", stretch_use_quickseek);
+  si.SetBoolValue(section, "StretchUseAAFilter", stretch_use_aa_filter);
+}
+
+void AudioStreamParameters::Clear(SettingsInterface& si, const char* section)
+{
+  si.DeleteValue(section, "StretchMode");
+  si.DeleteValue(section, "ExpansionMode");
+  si.DeleteValue(section, "BufferMS");
+  si.DeleteValue(section, "OutputLatencyMS");
+  si.DeleteValue(section, "OutputLatencyMinimal");
+
+  si.DeleteValue(section, "StretchSequenceLengthMS");
+  si.DeleteValue(section, "StretchSeekWindowMS");
+  si.DeleteValue(section, "StretchOverlapMS");
+  si.DeleteValue(section, "StretchUseQuickSeek");
+  si.DeleteValue(section, "StretchUseAAFilter");
+}
+
+bool AudioStreamParameters::operator!=(const AudioStreamParameters& rhs) const
+{
+  return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
+}
+
+bool AudioStreamParameters::operator==(const AudioStreamParameters& rhs) const
+{
+  return (std::memcmp(this, &rhs, sizeof(*this)) == 0);
+}
+
 AudioStream::AudioStream(u32 sample_rate, const AudioStreamParameters& parameters)
-  : m_sample_rate(sample_rate), m_parameters(parameters),
-    m_internal_channels(s_expansion_channel_count[static_cast<size_t>(parameters.expansion_mode)].first),
-    m_output_channels(s_expansion_channel_count[static_cast<size_t>(parameters.expansion_mode)].second)
+  : m_sample_rate(sample_rate), m_parameters(parameters)
 {
 }
 
@@ -62,12 +108,11 @@ std::unique_ptr<AudioStream> AudioStream::CreateNullStream(u32 sample_rate, u32 
 {
   // no point stretching with no output
   AudioStreamParameters params;
-  params.expansion_mode = AudioExpansionMode::Disabled;
   params.stretch_mode = AudioStretchMode::Off;
   params.buffer_ms = static_cast<u16>(buffer_ms);
 
   std::unique_ptr<AudioStream> stream(new AudioStream(sample_rate, params));
-  stream->BaseInitialize(&StereoSampleReaderImpl);
+  stream->BaseInitialize();
   return stream;
 }
 
@@ -199,38 +244,6 @@ const char* AudioStream::GetBackendDisplayName(AudioBackend backend)
   return Host::TranslateToCString("AudioStream", s_backend_display_names[static_cast<int>(backend)]);
 }
 
-static constexpr const std::array s_expansion_mode_names = {
-  "Disabled", "StereoLFE", "Quadraphonic", "QuadraphonicLFE", "Surround51", "Surround71",
-};
-static constexpr const std::array s_expansion_mode_display_names = {
-  TRANSLATE_NOOP("AudioStream", "Disabled (Stereo)"), TRANSLATE_NOOP("AudioStream", "Stereo with LFE"),
-  TRANSLATE_NOOP("AudioStream", "Quadraphonic"),      TRANSLATE_NOOP("AudioStream", "Quadraphonic with LFE"),
-  TRANSLATE_NOOP("AudioStream", "5.1 Surround"),      TRANSLATE_NOOP("AudioStream", "7.1 Surround"),
-};
-
-const char* AudioStream::GetExpansionModeName(AudioExpansionMode mode)
-{
-  return (static_cast<u32>(mode) < s_expansion_mode_names.size()) ? s_expansion_mode_names[static_cast<u32>(mode)] : "";
-}
-
-const char* AudioStream::GetExpansionModeDisplayName(AudioExpansionMode mode)
-{
-  return (static_cast<u32>(mode) < s_expansion_mode_display_names.size()) ?
-           Host::TranslateToCString("AudioStream", s_expansion_mode_display_names[static_cast<u32>(mode)]) :
-           "";
-}
-
-std::optional<AudioExpansionMode> AudioStream::ParseExpansionMode(const char* name)
-{
-  for (u8 i = 0; i < static_cast<u8>(AudioExpansionMode::Count); i++)
-  {
-    if (std::strcmp(name, s_expansion_mode_names[i]) == 0)
-      return static_cast<AudioExpansionMode>(i);
-  }
-
-  return std::nullopt;
-}
-
 static constexpr const std::array s_stretch_mode_names = {
   "None",
   "Resample",
@@ -316,7 +329,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     // towards the end of the buffer
     if (end > 0)
     {
-      m_sample_reader(samples, &m_buffer[rpos * m_internal_channels], end);
+      std::memcpy(samples, &m_buffer[rpos * NUM_CHANNELS], end * NUM_CHANNELS * sizeof(SampleType));
       rpos += end;
       rpos = (rpos == m_buffer_size) ? 0 : rpos;
     }
@@ -325,7 +338,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     const u32 start = frames_to_read - end;
     if (start > 0)
     {
-      m_sample_reader(&samples[end * m_output_channels], &m_buffer[0], start);
+      std::memcpy(&samples[end * NUM_CHANNELS], &m_buffer[0], start * NUM_CHANNELS * sizeof(SampleType));
       rpos = start;
     }
 
@@ -342,19 +355,19 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
         static_cast<u32>(65536.0f * (static_cast<float>(frames_to_read) / static_cast<float>(num_frames)));
 
       SampleType* resample_ptr =
-        static_cast<SampleType*>(alloca(frames_to_read * m_output_channels * sizeof(SampleType)));
-      std::memcpy(resample_ptr, samples, frames_to_read * m_output_channels * sizeof(SampleType));
+        static_cast<SampleType*>(alloca(frames_to_read * NUM_CHANNELS * sizeof(SampleType)));
+      std::memcpy(resample_ptr, samples, frames_to_read * NUM_CHANNELS * sizeof(SampleType));
 
       SampleType* out_ptr = samples;
-      const u32 copy_stride = sizeof(SampleType) * m_output_channels;
+      const u32 copy_stride = sizeof(SampleType) * NUM_CHANNELS;
       u32 resample_subpos = 0;
       for (u32 i = 0; i < num_frames; i++)
       {
         std::memcpy(out_ptr, resample_ptr, copy_stride);
-        out_ptr += m_output_channels;
+        out_ptr += NUM_CHANNELS;
 
         resample_subpos += increment;
-        resample_ptr += (resample_subpos >> 16) * m_output_channels;
+        resample_ptr += (resample_subpos >> 16) * NUM_CHANNELS;
         resample_subpos %= 65536u;
       }
 
@@ -363,13 +376,13 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     else
     {
       // no data, fall back to silence
-      std::memset(samples + (frames_to_read * m_output_channels), 0, silence_frames * m_output_channels * sizeof(s16));
+      std::memset(samples + (frames_to_read * NUM_CHANNELS), 0, silence_frames * NUM_CHANNELS * sizeof(s16));
     }
   }
 
   if (m_volume != 100)
   {
-    u32 num_samples = num_frames * m_output_channels;
+    u32 num_samples = num_frames * NUM_CHANNELS;
 
     const u32 aligned_samples = Common::AlignDownPow2(num_samples, 8);
     num_samples -= aligned_samples;
@@ -403,11 +416,6 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
   }
 }
 
-void AudioStream::StereoSampleReaderImpl(SampleType* dest, const SampleType* src, u32 num_frames)
-{
-  std::memcpy(dest, src, num_frames * 2 * sizeof(SampleType));
-}
-
 void AudioStream::InternalWriteFrames(s16* data, u32 num_frames)
 {
   const u32 free = m_buffer_size - GetBufferedFramesRelaxed();
@@ -434,28 +442,25 @@ void AudioStream::InternalWriteFrames(s16* data, u32 num_frames)
     const u32 start = num_frames - end;
 
     // start is zero when this chunk reaches exactly the end
-    std::memcpy(&m_buffer[wpos * m_internal_channels], data, end * m_internal_channels * sizeof(SampleType));
+    std::memcpy(&m_buffer[wpos * NUM_CHANNELS], data, end * NUM_CHANNELS * sizeof(SampleType));
     if (start > 0)
-      std::memcpy(&m_buffer[0], data + end * m_internal_channels, start * m_internal_channels * sizeof(SampleType));
+      std::memcpy(&m_buffer[0], data + end * NUM_CHANNELS, start * NUM_CHANNELS * sizeof(SampleType));
 
     wpos = start;
   }
   else
   {
     // no split
-    std::memcpy(&m_buffer[wpos * m_internal_channels], data, num_frames * m_internal_channels * sizeof(SampleType));
+    std::memcpy(&m_buffer[wpos * NUM_CHANNELS], data, num_frames * NUM_CHANNELS * sizeof(SampleType));
     wpos += num_frames;
   }
 
   m_wpos.store(wpos, std::memory_order_release);
 }
 
-void AudioStream::BaseInitialize(SampleReader sample_reader)
+void AudioStream::BaseInitialize()
 {
-  m_sample_reader = sample_reader;
-
   AllocateBuffer();
-  ExpandAllocate();
   StretchAllocate();
 }
 
@@ -469,22 +474,16 @@ void AudioStream::AllocateBuffer()
   m_buffer_size = GetAlignedBufferSize(((m_parameters.buffer_ms * multiplier) * m_sample_rate) / 1000);
   m_target_buffer_size = GetAlignedBufferSize((m_sample_rate * m_parameters.buffer_ms) / 1000u);
 
-  m_buffer = std::make_unique<s16[]>(m_buffer_size * m_internal_channels);
-  m_staging_buffer = std::make_unique<s16[]>(CHUNK_SIZE * m_internal_channels);
-  m_float_buffer = std::make_unique<float[]>(CHUNK_SIZE * m_internal_channels);
+  m_buffer = Common::make_unique_aligned_for_overwrite<s16[]>(VECTOR_ALIGNMENT, m_buffer_size * NUM_CHANNELS);
+  m_staging_buffer = Common::make_unique_aligned_for_overwrite<s16[]>(VECTOR_ALIGNMENT, CHUNK_SIZE * NUM_CHANNELS);
+  m_float_buffer = Common::make_unique_aligned_for_overwrite<float[]>(VECTOR_ALIGNMENT, CHUNK_SIZE * NUM_CHANNELS);
 
-  if (IsExpansionEnabled())
-    m_expand_buffer = std::make_unique<float[]>(m_parameters.expand_block_size * NUM_INPUT_CHANNELS);
-
-  DEV_LOG(
-    "Allocated buffer of {} frames for buffer of {} ms [expansion {} (block size {}), stretch {}, target size {}].",
-    m_buffer_size, m_parameters.buffer_ms, GetExpansionModeName(m_parameters.expansion_mode),
-    m_parameters.expand_block_size, GetStretchModeName(m_parameters.stretch_mode), m_target_buffer_size);
+  DEV_LOG("Allocated buffer of {} frames for buffer of {} ms [stretch {}, target size {}].", m_buffer_size,
+          m_parameters.buffer_ms, GetStretchModeName(m_parameters.stretch_mode), m_target_buffer_size);
 }
 
 void AudioStream::DestroyBuffer()
 {
-  m_expand_buffer.reset();
   m_staging_buffer.reset();
   m_float_buffer.reset();
   m_buffer.reset();
@@ -495,15 +494,6 @@ void AudioStream::DestroyBuffer()
 
 void AudioStream::EmptyBuffer()
 {
-#ifndef __ANDROID__
-  if (IsExpansionEnabled())
-  {
-    m_expander->Flush();
-    m_expand_output_buffer = nullptr;
-    m_expand_buffer_pos = 0;
-  }
-#endif
-
   if (IsStretchEnabled())
   {
     soundtouch_clear(m_soundtouch);
@@ -559,7 +549,7 @@ void AudioStream::BeginWrite(SampleType** buffer_ptr, u32* num_frames)
 {
   // TODO: Write directly to buffer when not using stretching.
   *buffer_ptr = &m_staging_buffer[m_staging_buffer_pos];
-  *num_frames = CHUNK_SIZE - (m_staging_buffer_pos / NUM_INPUT_CHANNELS);
+  *num_frames = CHUNK_SIZE - (m_staging_buffer_pos / NUM_CHANNELS);
 }
 
 static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
@@ -569,7 +559,7 @@ static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
   const u32 iterations = (num_samples + 7) / 8;
   for (u32 i = 0; i < iterations; i++)
   {
-    const GSVector4i sv = GSVector4i::load<false>(src);
+    const GSVector4i sv = GSVector4i::load<true>(src);
     src += 8;
 
     GSVector4i iv1 = sv.upl16(sv);  // [0, 0, 1, 1, 2, 2, 3, 3]
@@ -581,8 +571,8 @@ static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
     fv1 = fv1 * S16_TO_FLOAT_V;
     fv2 = fv2 * S16_TO_FLOAT_V;
 
-    GSVector4::store<false>(dst + 0, fv1);
-    GSVector4::store<false>(dst + 4, fv2);
+    GSVector4::store<true>(dst + 0, fv1);
+    GSVector4::store<true>(dst + 4, fv2);
     dst += 8;
   }
 }
@@ -594,8 +584,8 @@ static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
   const u32 iterations = (num_samples + 7) / 8;
   for (u32 i = 0; i < iterations; i++)
   {
-    GSVector4 fv1 = GSVector4::load<false>(src + 0);
-    GSVector4 fv2 = GSVector4::load<false>(src + 4);
+    GSVector4 fv1 = GSVector4::load<true>(src + 0);
+    GSVector4 fv2 = GSVector4::load<true>(src + 4);
     src += 8;
 
     fv1 = fv1 * FLOAT_TO_S16_V;
@@ -604,45 +594,9 @@ static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
     GSVector4i iv2 = GSVector4i(fv2);
 
     const GSVector4i iv = iv1.ps32(iv2);
-    GSVector4i::store<false>(dst, iv);
+    GSVector4i::store<true>(dst, iv);
     dst += 8;
   }
-}
-
-void AudioStream::ExpandAllocate()
-{
-  DebugAssert(!m_expander);
-  if (m_parameters.expansion_mode == AudioExpansionMode::Disabled)
-    return;
-
-#ifndef __ANDROID__
-  static constexpr std::array<std::pair<FreeSurroundDecoder::ChannelSetup, bool>,
-                              static_cast<size_t>(AudioExpansionMode::Count)>
-    channel_setup_mapping = {{
-      {FreeSurroundDecoder::ChannelSetup::Stereo, false},     // Disabled
-      {FreeSurroundDecoder::ChannelSetup::Stereo, true},      // StereoLFE
-      {FreeSurroundDecoder::ChannelSetup::Surround41, false}, // Quadraphonic
-      {FreeSurroundDecoder::ChannelSetup::Surround41, true},  // QuadraphonicLFE
-      {FreeSurroundDecoder::ChannelSetup::Surround51, true},  // Surround51
-      {FreeSurroundDecoder::ChannelSetup::Surround71, true},  // Surround71
-    }};
-
-  const auto [fs_setup, fs_lfe] = channel_setup_mapping[static_cast<size_t>(m_parameters.expansion_mode)];
-
-  m_expander = std::make_unique<FreeSurroundDecoder>(fs_setup, m_parameters.expand_block_size);
-  m_expander->SetBassRedirection(fs_lfe);
-  m_expander->SetCircularWrap(m_parameters.expand_circular_wrap);
-  m_expander->SetShift(m_parameters.expand_shift);
-  m_expander->SetDepth(m_parameters.expand_depth);
-  m_expander->SetFocus(m_parameters.expand_focus);
-  m_expander->SetCenterImage(m_parameters.expand_center_image);
-  m_expander->SetFrontSeparation(m_parameters.expand_front_separation);
-  m_expander->SetRearSeparation(m_parameters.expand_rear_separation);
-  m_expander->SetLowCutoff(static_cast<float>(m_parameters.expand_low_cutoff) / m_sample_rate * 2);
-  m_expander->SetHighCutoff(static_cast<float>(m_parameters.expand_high_cutoff) / m_sample_rate * 2);
-#else
-  Panic("Attempting to use expansion on Android.");
-#endif
 }
 
 void AudioStream::EndWrite(u32 num_frames)
@@ -651,44 +605,21 @@ void AudioStream::EndWrite(u32 num_frames)
   if (m_volume == 0)
     return;
 
-  m_staging_buffer_pos += num_frames * NUM_INPUT_CHANNELS;
-  DebugAssert(m_staging_buffer_pos <= (CHUNK_SIZE * NUM_INPUT_CHANNELS));
-  if ((m_staging_buffer_pos / NUM_INPUT_CHANNELS) < CHUNK_SIZE)
+  m_staging_buffer_pos += num_frames * NUM_CHANNELS;
+  DebugAssert(m_staging_buffer_pos <= (CHUNK_SIZE * NUM_CHANNELS));
+  if ((m_staging_buffer_pos / NUM_CHANNELS) < CHUNK_SIZE)
     return;
 
   m_staging_buffer_pos = 0;
 
-  if (!IsExpansionEnabled() && !IsStretchEnabled())
+  if (!IsStretchEnabled())
   {
     InternalWriteFrames(m_staging_buffer.get(), CHUNK_SIZE);
     return;
   }
 
-#ifndef __ANDROID__
-  if (IsExpansionEnabled())
-  {
-    // StretchWriteBlock() overwrites the staging buffer on output, so we need to copy into the expand buffer first.
-    S16ChunkToFloat(m_staging_buffer.get(), m_expand_buffer.get() + m_expand_buffer_pos * NUM_INPUT_CHANNELS,
-                    CHUNK_SIZE * NUM_INPUT_CHANNELS);
-
-    // Output the corresponding block.
-    if (m_expand_output_buffer)
-      StretchWriteBlock(m_expand_output_buffer + m_expand_buffer_pos * m_internal_channels);
-
-    // Decode the next block if we buffered enough.
-    m_expand_buffer_pos += CHUNK_SIZE;
-    if (m_expand_buffer_pos == m_parameters.expand_block_size)
-    {
-      m_expand_buffer_pos = 0;
-      m_expand_output_buffer = m_expander->Decode(m_expand_buffer.get());
-    }
-  }
-  else
-#endif
-  {
-    S16ChunkToFloat(m_staging_buffer.get(), m_float_buffer.get(), CHUNK_SIZE * NUM_INPUT_CHANNELS);
-    StretchWriteBlock(m_float_buffer.get());
-  }
+  S16ChunkToFloat(m_staging_buffer.get(), m_float_buffer.get(), CHUNK_SIZE * NUM_CHANNELS);
+  StretchWriteBlock(m_float_buffer.get());
 }
 
 // Time stretching algorithm based on PCSX2 implementation.
@@ -706,7 +637,7 @@ void AudioStream::StretchAllocate()
 
   m_soundtouch = soundtouch_createInstance();
   soundtouch_setSampleRate(m_soundtouch, m_sample_rate);
-  soundtouch_setChannels(m_soundtouch, m_internal_channels);
+  soundtouch_setChannels(m_soundtouch, NUM_CHANNELS);
 
   soundtouch_setSetting(m_soundtouch, SETTING_USE_QUICKSEEK, m_parameters.stretch_use_quickseek);
   soundtouch_setSetting(m_soundtouch, SETTING_USE_AA_FILTER, m_parameters.stretch_use_aa_filter);
@@ -748,7 +679,7 @@ void AudioStream::StretchWriteBlock(const float* block)
     u32 tempProgress;
     while (tempProgress = soundtouch_receiveSamples(m_soundtouch, m_float_buffer.get(), CHUNK_SIZE), tempProgress != 0)
     {
-      FloatChunkToS16(m_staging_buffer.get(), m_float_buffer.get(), tempProgress * m_internal_channels);
+      FloatChunkToS16(m_staging_buffer.get(), m_float_buffer.get(), tempProgress * NUM_CHANNELS);
       InternalWriteFrames(m_staging_buffer.get(), tempProgress);
     }
 
@@ -757,7 +688,7 @@ void AudioStream::StretchWriteBlock(const float* block)
   }
   else
   {
-    FloatChunkToS16(m_staging_buffer.get(), block, CHUNK_SIZE * m_internal_channels);
+    FloatChunkToS16(m_staging_buffer.get(), block, CHUNK_SIZE * NUM_CHANNELS);
     InternalWriteFrames(m_staging_buffer.get(), CHUNK_SIZE);
   }
 }
@@ -890,117 +821,4 @@ void AudioStream::StretchOverrun()
   // Drop two packets to give the time stretcher a bit more time to slow things down.
   const u32 discard = CHUNK_SIZE * 2;
   m_rpos.store((m_rpos.load(std::memory_order_acquire) + discard) % m_buffer_size, std::memory_order_release);
-}
-
-void AudioStreamParameters::Load(SettingsInterface& si, const char* section)
-{
-  stretch_mode =
-    AudioStream::ParseStretchMode(
-      si.GetStringValue(section, "StretchMode", AudioStream::GetStretchModeName(DEFAULT_STRETCH_MODE)).c_str())
-      .value_or(DEFAULT_STRETCH_MODE);
-#ifndef __ANDROID__
-  expansion_mode =
-    AudioStream::ParseExpansionMode(
-      si.GetStringValue(section, "ExpansionMode", AudioStream::GetExpansionModeName(DEFAULT_EXPANSION_MODE)).c_str())
-      .value_or(DEFAULT_EXPANSION_MODE);
-#else
-  expansion_mode = AudioExpansionMode::Disabled;
-#endif
-  output_latency_ms = static_cast<u16>(std::min<u32>(
-    si.GetUIntValue(section, "OutputLatencyMS", DEFAULT_OUTPUT_LATENCY_MS), std::numeric_limits<u16>::max()));
-  output_latency_minimal = si.GetBoolValue(section, "OutputLatencyMinimal", DEFAULT_OUTPUT_LATENCY_MINIMAL);
-  buffer_ms = static_cast<u16>(
-    std::min<u32>(si.GetUIntValue(section, "BufferMS", DEFAULT_BUFFER_MS), std::numeric_limits<u16>::max()));
-
-  stretch_sequence_length_ms =
-    static_cast<u16>(std::min<u32>(si.GetUIntValue(section, "StretchSequenceLengthMS", DEFAULT_STRETCH_SEQUENCE_LENGTH),
-                                   std::numeric_limits<u16>::max()));
-  stretch_seekwindow_ms = static_cast<u16>(std::min<u32>(
-    si.GetUIntValue(section, "StretchSeekWindowMS", DEFAULT_STRETCH_SEEKWINDOW), std::numeric_limits<u16>::max()));
-  stretch_overlap_ms = static_cast<u16>(std::min<u32>(
-    si.GetUIntValue(section, "StretchOverlapMS", DEFAULT_STRETCH_OVERLAP), std::numeric_limits<u16>::max()));
-  stretch_use_quickseek = si.GetBoolValue(section, "StretchUseQuickSeek", DEFAULT_STRETCH_USE_QUICKSEEK);
-  stretch_use_aa_filter = si.GetBoolValue(section, "StretchUseAAFilter", DEFAULT_STRETCH_USE_AA_FILTER);
-
-  expand_block_size = static_cast<u16>(std::min<u32>(
-    si.GetUIntValue(section, "ExpandBlockSize", DEFAULT_EXPAND_BLOCK_SIZE), std::numeric_limits<u16>::max()));
-  expand_block_size = std::clamp<u16>(
-    Common::IsPow2(expand_block_size) ? expand_block_size : Common::NextPow2(expand_block_size), 128, 8192);
-  expand_circular_wrap =
-    std::clamp(si.GetFloatValue(section, "ExpandCircularWrap", DEFAULT_EXPAND_CIRCULAR_WRAP), 0.0f, 360.0f);
-  expand_shift = std::clamp(si.GetFloatValue(section, "ExpandShift", DEFAULT_EXPAND_SHIFT), -1.0f, 1.0f);
-  expand_depth = std::clamp(si.GetFloatValue(section, "ExpandDepth", DEFAULT_EXPAND_DEPTH), 0.0f, 5.0f);
-  expand_focus = std::clamp(si.GetFloatValue(section, "ExpandFocus", DEFAULT_EXPAND_FOCUS), -1.0f, 1.0f);
-  expand_center_image =
-    std::clamp(si.GetFloatValue(section, "ExpandCenterImage", DEFAULT_EXPAND_CENTER_IMAGE), 0.0f, 1.0f);
-  expand_front_separation =
-    std::clamp(si.GetFloatValue(section, "ExpandFrontSeparation", DEFAULT_EXPAND_FRONT_SEPARATION), 0.0f, 10.0f);
-  expand_rear_separation =
-    std::clamp(si.GetFloatValue(section, "ExpandRearSeparation", DEFAULT_EXPAND_REAR_SEPARATION), 0.0f, 10.0f);
-  expand_low_cutoff =
-    static_cast<u8>(std::min<u32>(si.GetUIntValue(section, "ExpandLowCutoff", DEFAULT_EXPAND_LOW_CUTOFF), 100));
-  expand_high_cutoff =
-    static_cast<u8>(std::min<u32>(si.GetUIntValue(section, "ExpandHighCutoff", DEFAULT_EXPAND_HIGH_CUTOFF), 100));
-}
-
-void AudioStreamParameters::Save(SettingsInterface& si, const char* section) const
-{
-  si.SetStringValue(section, "StretchMode", AudioStream::GetStretchModeName(stretch_mode));
-  si.SetStringValue(section, "ExpansionMode", AudioStream::GetExpansionModeName(expansion_mode));
-  si.SetUIntValue(section, "BufferMS", buffer_ms);
-  si.SetUIntValue(section, "OutputLatencyMS", output_latency_ms);
-  si.SetBoolValue(section, "OutputLatencyMinimal", output_latency_minimal);
-
-  si.SetUIntValue(section, "StretchSequenceLengthMS", stretch_sequence_length_ms);
-  si.SetUIntValue(section, "StretchSeekWindowMS", stretch_seekwindow_ms);
-  si.SetUIntValue(section, "StretchOverlapMS", stretch_overlap_ms);
-  si.SetBoolValue(section, "StretchUseQuickSeek", stretch_use_quickseek);
-  si.SetBoolValue(section, "StretchUseAAFilter", stretch_use_aa_filter);
-
-  si.SetUIntValue(section, "ExpandBlockSize", expand_block_size);
-  si.SetFloatValue(section, "ExpandCircularWrap", expand_circular_wrap);
-  si.SetFloatValue(section, "ExpandShift", expand_shift);
-  si.SetFloatValue(section, "ExpandDepth", expand_depth);
-  si.SetFloatValue(section, "ExpandFocus", expand_focus);
-  si.SetFloatValue(section, "ExpandCenterImage", expand_center_image);
-  si.SetFloatValue(section, "ExpandFrontSeparation", expand_front_separation);
-  si.SetFloatValue(section, "ExpandRearSeparation", expand_rear_separation);
-  si.SetUIntValue(section, "ExpandLowCutoff", expand_low_cutoff);
-  si.SetUIntValue(section, "ExpandHighCutoff", expand_high_cutoff);
-}
-
-void AudioStreamParameters::Clear(SettingsInterface& si, const char* section)
-{
-  si.DeleteValue(section, "StretchMode");
-  si.DeleteValue(section, "ExpansionMode");
-  si.DeleteValue(section, "BufferMS");
-  si.DeleteValue(section, "OutputLatencyMS");
-  si.DeleteValue(section, "OutputLatencyMinimal");
-
-  si.DeleteValue(section, "StretchSequenceLengthMS");
-  si.DeleteValue(section, "StretchSeekWindowMS");
-  si.DeleteValue(section, "StretchOverlapMS");
-  si.DeleteValue(section, "StretchUseQuickSeek");
-  si.DeleteValue(section, "StretchUseAAFilter");
-
-  si.DeleteValue(section, "ExpandBlockSize");
-  si.DeleteValue(section, "ExpandCircularWrap");
-  si.DeleteValue(section, "ExpandShift");
-  si.DeleteValue(section, "ExpandDepth");
-  si.DeleteValue(section, "ExpandFocus");
-  si.DeleteValue(section, "ExpandCenterImage");
-  si.DeleteValue(section, "ExpandFrontSeparation");
-  si.DeleteValue(section, "ExpandRearSeparation");
-  si.DeleteValue(section, "ExpandLowCutoff");
-  si.DeleteValue(section, "ExpandHighCutoff");
-}
-
-bool AudioStreamParameters::operator!=(const AudioStreamParameters& rhs) const
-{
-  return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
-}
-
-bool AudioStreamParameters::operator==(const AudioStreamParameters& rhs) const
-{
-  return (std::memcmp(this, &rhs, sizeof(*this)) == 0);
 }

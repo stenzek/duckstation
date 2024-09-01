@@ -211,9 +211,6 @@
     <ProjectReference Include="..\..\dep\d3d12ma\d3d12ma.vcxproj">
       <Project>{f351c4d8-594a-4850-b77b-3c1249812cce}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\freesurround\freesurround.vcxproj">
-      <Project>{1b0366e5-6f82-47b4-9fdd-d699c86aa077}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>

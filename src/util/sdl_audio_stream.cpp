@@ -79,30 +79,9 @@ bool SDLAudioStream::OpenDevice(Error* error)
 {
   DebugAssert(!IsOpen());
 
-  static constexpr const std::array<SampleReader, static_cast<size_t>(AudioExpansionMode::Count)> sample_readers = {{
-    // Disabled
-    &StereoSampleReaderImpl,
-    // StereoLFE
-    &SampleReaderImpl<AudioExpansionMode::StereoLFE, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
-                      READ_CHANNEL_LFE>,
-    // Quadraphonic
-    &SampleReaderImpl<AudioExpansionMode::Quadraphonic, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
-                      READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
-    // QuadraphonicLFE
-    &SampleReaderImpl<AudioExpansionMode::QuadraphonicLFE, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
-                      READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
-    // Surround51
-    &SampleReaderImpl<AudioExpansionMode::Surround51, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
-                      READ_CHANNEL_FRONT_CENTER, READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
-    // Surround71
-    &SampleReaderImpl<AudioExpansionMode::Surround71, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
-                      READ_CHANNEL_FRONT_CENTER, READ_CHANNEL_LFE, READ_CHANNEL_SIDE_LEFT, READ_CHANNEL_SIDE_RIGHT,
-                      READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>,
-  }};
-
   SDL_AudioSpec spec = {};
   spec.freq = m_sample_rate;
-  spec.channels = m_output_channels;
+  spec.channels = NUM_CHANNELS;
   spec.format = AUDIO_S16;
   spec.samples = static_cast<Uint16>(GetBufferSizeForMS(
     m_sample_rate, (m_parameters.output_latency_ms == 0) ? m_parameters.buffer_ms : m_parameters.output_latency_ms));
@@ -119,7 +98,7 @@ bool SDLAudioStream::OpenDevice(Error* error)
 
   DEV_LOG("Requested {} frame buffer, got {} frame buffer", spec.samples, obtained_spec.samples);
 
-  BaseInitialize(sample_readers[static_cast<size_t>(m_parameters.expansion_mode)]);
+  BaseInitialize();
   SDL_PauseAudioDevice(m_device_id, 0);
 
   return true;
@@ -143,7 +122,7 @@ void SDLAudioStream::CloseDevice()
 void SDLAudioStream::AudioCallback(void* userdata, uint8_t* stream, int len)
 {
   SDLAudioStream* const this_ptr = static_cast<SDLAudioStream*>(userdata);
-  const u32 num_frames = len / sizeof(SampleType) / this_ptr->m_output_channels;
+  const u32 num_frames = len / sizeof(SampleType) / NUM_CHANNELS;
 
   this_ptr->ReadFrames(reinterpret_cast<SampleType*>(stream), num_frames);
 }

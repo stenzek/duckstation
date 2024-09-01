@@ -184,7 +184,6 @@ if(NOT ANDROID)
   )
   target_link_libraries(util PUBLIC
     cubeb
-    freesurround
     SDL2::SDL2
   )
   # FFmpeg loaded dynamically on demand.

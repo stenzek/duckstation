@@ -4987,11 +4987,6 @@ void FullscreenUI::DrawAudioSettingsPage()
     FSUI_CSTR("The audio backend determines how frames produced by the emulator are submitted to the host."), "Audio",
     "Backend", AudioStream::DEFAULT_BACKEND, &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
     &AudioStream::GetBackendDisplayName, AudioBackend::Count);
-  DrawEnumSetting(bsi, FSUI_CSTR("Expansion Mode"),
-                  FSUI_CSTR("Determines how audio is expanded from stereo to surround for supported games."), "Audio",
-                  "ExpansionMode", AudioStreamParameters::DEFAULT_EXPANSION_MODE, &AudioStream::ParseExpansionMode,
-                  &AudioStream::GetExpansionModeName, &AudioStream::GetExpansionModeDisplayName,
-                  AudioExpansionMode::Count);
   DrawEnumSetting(bsi, FSUI_CSTR("Stretch Mode"),
                   FSUI_CSTR("Determines quality of audio when not running at 100% speed."), "Audio", "StretchMode",
                   AudioStreamParameters::DEFAULT_STRETCH_MODE, &AudioStream::ParseStretchMode,
@@ -7341,7 +7336,6 @@ TRANSLATE_NOOP("FullscreenUI", "Depth Clear Threshold");
 TRANSLATE_NOOP("FullscreenUI", "Desktop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Details");
 TRANSLATE_NOOP("FullscreenUI", "Details unavailable for game not scanned in game list.");
-TRANSLATE_NOOP("FullscreenUI", "Determines how audio is expanded from stereo to surround for supported games.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how large the on-screen messages and monitor are.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much latency there is between the audio being picked up by the host API, and played through speakers.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much of the area typically not visible on a consumer TV set to crop/hide.");
@@ -7419,7 +7413,6 @@ TRANSLATE_NOOP("FullscreenUI", "Exit And Save State");
 TRANSLATE_NOOP("FullscreenUI", "Exit DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Exit Without Saving");
 TRANSLATE_NOOP("FullscreenUI", "Exits Big Picture mode, returning to the desktop interface.");
-TRANSLATE_NOOP("FullscreenUI", "Expansion Mode");
 TRANSLATE_NOOP("FullscreenUI", "FMV Chroma Smoothing");
 TRANSLATE_NOOP("FullscreenUI", "Failed to copy text to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete save state.");

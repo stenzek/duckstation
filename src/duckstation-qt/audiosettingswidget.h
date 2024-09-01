@@ -10,7 +10,6 @@
 #include <QtWidgets/QWidget>
 
 enum class AudioBackend : u8;
-enum class AudioExpansionMode : u8;
 
 class SettingsWindow;
 
@@ -23,7 +22,6 @@ public:
   ~AudioSettingsWidget();
 
 private Q_SLOTS:
-  void onExpansionModeChanged();
   void onStretchModeChanged();
 
   void updateDriverNames();
@@ -35,13 +33,10 @@ private Q_SLOTS:
   void onFastForwardVolumeChanged(int new_value);
   void onOutputMutedChanged(int new_state);
 
-  void onExpansionSettingsClicked();
   void onStretchSettingsClicked();
 
 private:
   AudioBackend getEffectiveBackend() const;
-  AudioExpansionMode getEffectiveExpansionMode() const;
-  u32 getEffectiveExpansionBlockSize() const;
   void resetVolume(bool fast_forward);
 
   Ui::AudioSettingsWidget m_ui;

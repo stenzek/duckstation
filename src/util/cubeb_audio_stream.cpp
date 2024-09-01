@@ -116,37 +116,11 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
     return false;
   }
 
-  static constexpr const std::array<std::pair<cubeb_channel_layout, SampleReader>,
-                                    static_cast<size_t>(AudioExpansionMode::Count)>
-    channel_setups = {{
-      // Disabled
-      {CUBEB_LAYOUT_STEREO, StereoSampleReaderImpl},
-      // StereoLFE
-      {CUBEB_LAYOUT_STEREO_LFE, &SampleReaderImpl<AudioExpansionMode::StereoLFE, READ_CHANNEL_FRONT_LEFT,
-                                                  READ_CHANNEL_FRONT_RIGHT, READ_CHANNEL_LFE>},
-      // Quadraphonic
-      {CUBEB_LAYOUT_QUAD, &SampleReaderImpl<AudioExpansionMode::Quadraphonic, READ_CHANNEL_FRONT_LEFT,
-                                            READ_CHANNEL_FRONT_RIGHT, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>},
-      // QuadraphonicLFE
-      {CUBEB_LAYOUT_QUAD_LFE,
-       &SampleReaderImpl<AudioExpansionMode::QuadraphonicLFE, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
-                         READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>},
-      // Surround51
-      {CUBEB_LAYOUT_3F2_LFE_BACK,
-       &SampleReaderImpl<AudioExpansionMode::Surround51, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
-                         READ_CHANNEL_FRONT_CENTER, READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT>},
-      // Surround71
-      {CUBEB_LAYOUT_3F4_LFE,
-       &SampleReaderImpl<AudioExpansionMode::Surround71, READ_CHANNEL_FRONT_LEFT, READ_CHANNEL_FRONT_RIGHT,
-                         READ_CHANNEL_FRONT_CENTER, READ_CHANNEL_LFE, READ_CHANNEL_REAR_LEFT, READ_CHANNEL_REAR_RIGHT,
-                         READ_CHANNEL_SIDE_LEFT, READ_CHANNEL_SIDE_RIGHT>},
-    }};
-
   cubeb_stream_params params = {};
   params.format = CUBEB_SAMPLE_S16LE;
   params.rate = m_sample_rate;
-  params.channels = m_output_channels;
-  params.layout = channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].first;
+  params.channels = NUM_CHANNELS;
+  params.layout = CUBEB_LAYOUT_STEREO;
   params.prefs = CUBEB_STREAM_PREF_NONE;
 
   u32 latency_frames = GetBufferSizeForMS(
@@ -215,7 +189,7 @@ bool CubebAudioStream::Initialize(const char* driver_name, const char* device_na
     }
   }
 
-  BaseInitialize(channel_setups[static_cast<size_t>(m_parameters.expansion_mode)].second);
+  BaseInitialize();
 
   char stream_name[32];
   std::snprintf(stream_name, sizeof(stream_name), "%p", this);

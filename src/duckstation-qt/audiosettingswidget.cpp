@@ -24,12 +24,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   for (u32 i = 0; i < static_cast<u32>(AudioBackend::Count); i++)
     m_ui.audioBackend->addItem(QString::fromUtf8(AudioStream::GetBackendDisplayName(static_cast<AudioBackend>(i))));
 
-  for (u32 i = 0; i < static_cast<u32>(AudioExpansionMode::Count); i++)
-  {
-    m_ui.expansionMode->addItem(
-      QString::fromUtf8(AudioStream::GetExpansionModeDisplayName(static_cast<AudioExpansionMode>(i))));
-  }
-
   for (u32 i = 0; i < static_cast<u32>(AudioStretchMode::Count); i++)
   {
     m_ui.stretchMode->addItem(
@@ -39,9 +33,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.audioBackend, "Audio", "Backend",
                                                &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
                                                AudioStream::DEFAULT_BACKEND);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.expansionMode, "Audio", "ExpansionMode",
-                                               &AudioStream::ParseExpansionMode, &AudioStream::GetExpansionModeName,
-                                               AudioStreamParameters::DEFAULT_EXPANSION_MODE);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.stretchMode, "Audio", "StretchMode",
                                                &AudioStream::ParseStretchMode, &AudioStream::GetStretchModeName,
                                                AudioStreamParameters::DEFAULT_STRETCH_MODE);
@@ -53,11 +44,8 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
                                                AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muteCDAudio, "CDROM", "MuteCDAudio", false);
   connect(m_ui.audioBackend, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::updateDriverNames);
-  connect(m_ui.expansionMode, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onExpansionModeChanged);
-  connect(m_ui.expansionSettings, &QToolButton::clicked, this, &AudioSettingsWidget::onExpansionSettingsClicked);
   connect(m_ui.stretchMode, &QComboBox::currentIndexChanged, this, &AudioSettingsWidget::onStretchModeChanged);
   connect(m_ui.stretchSettings, &QToolButton::clicked, this, &AudioSettingsWidget::onStretchSettingsClicked);
-  onExpansionModeChanged();
   onStretchModeChanged();
   updateDriverNames();
 
@@ -109,11 +97,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
   dialog->registerWidgetHelp(m_ui.muteCDAudio, tr("Mute CD Audio"), tr("Unchecked"),
                              tr("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable "
                                 "background music in some games."));
-  dialog->registerWidgetHelp(m_ui.expansionMode, tr("Expansion Mode"), tr("Disabled (Stereo)"),
-                             tr("Determines how audio is expanded from stereo to surround for supported games. This "
-                                "includes games that support Dolby Pro Logic/Pro Logic II."));
-  dialog->registerWidgetHelp(m_ui.expansionSettings, tr("Expansion Settings"), tr("N/A"),
-                             tr("These settings fine-tune the behavior of the FreeSurround-based channel expander."));
   dialog->registerWidgetHelp(
     m_ui.stretchMode, tr("Stretch Mode"), tr("Time Stretching"),
     tr("When running outside of 100% speed, adjusts the tempo on audio instead of dropping frames. Produces "
@@ -130,34 +113,6 @@ AudioSettingsWidget::AudioSettingsWidget(SettingsWindow* dialog, QWidget* parent
 }
 
 AudioSettingsWidget::~AudioSettingsWidget() = default;
-
-AudioExpansionMode AudioSettingsWidget::getEffectiveExpansionMode() const
-{
-  return AudioStream::ParseExpansionMode(
-           m_dialog
-             ->getEffectiveStringValue("Audio", "ExpansionMode",
-                                       AudioStream::GetExpansionModeName(AudioStreamParameters::DEFAULT_EXPANSION_MODE))
-             .c_str())
-    .value_or(AudioStreamParameters::DEFAULT_EXPANSION_MODE);
-}
-
-u32 AudioSettingsWidget::getEffectiveExpansionBlockSize() const
-{
-  const AudioExpansionMode expansion_mode = getEffectiveExpansionMode();
-  if (expansion_mode == AudioExpansionMode::Disabled)
-    return 0;
-
-  const u32 config_block_size =
-    m_dialog->getEffectiveIntValue("Audio", "ExpandBlockSize", AudioStreamParameters::DEFAULT_EXPAND_BLOCK_SIZE);
-  return std::has_single_bit(config_block_size) ? config_block_size : std::bit_ceil(config_block_size);
-}
-
-void AudioSettingsWidget::onExpansionModeChanged()
-{
-  const AudioExpansionMode expansion_mode = getEffectiveExpansionMode();
-  m_ui.expansionSettings->setEnabled(expansion_mode != AudioExpansionMode::Disabled);
-  updateLatencyLabel();
-}
 
 void AudioSettingsWidget::onStretchModeChanged()
 {
@@ -253,7 +208,6 @@ void AudioSettingsWidget::updateDeviceNames()
 
 void AudioSettingsWidget::updateLatencyLabel()
 {
-  const u32 expand_buffer_ms = AudioStream::GetMSForBufferSize(SPU::SAMPLE_RATE, getEffectiveExpansionBlockSize());
   const u32 config_buffer_ms =
     m_dialog->getEffectiveIntValue("Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS);
   const u32 config_output_latency_ms =
@@ -270,34 +224,14 @@ void AudioSettingsWidget::updateLatencyLabel()
                                   config_output_latency_ms;
   if (output_latency_ms > 0)
   {
-    if (expand_buffer_ms > 0)
-    {
-      m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms expand + %4 ms output)")
-                                     .arg(config_buffer_ms + expand_buffer_ms + output_latency_ms)
-                                     .arg(config_buffer_ms)
-                                     .arg(expand_buffer_ms)
-                                     .arg(output_latency_ms));
-    }
-    else
-    {
-      m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)")
-                                     .arg(config_buffer_ms + output_latency_ms)
-                                     .arg(config_buffer_ms)
-                                     .arg(output_latency_ms));
-    }
+    m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms buffer + %3 ms output)")
+                                   .arg(config_buffer_ms + output_latency_ms)
+                                   .arg(config_buffer_ms)
+                                   .arg(output_latency_ms));
   }
   else
   {
-    if (expand_buffer_ms > 0)
-    {
-      m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (%2 ms expand, minimum output latency unknown)")
-                                     .arg(expand_buffer_ms + config_buffer_ms)
-                                     .arg(expand_buffer_ms));
-    }
-    else
-    {
-      m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (minimum output latency unknown)").arg(config_buffer_ms));
-    }
+    m_ui.bufferingLabel->setText(tr("Maximum Latency: %1 ms (minimum output latency unknown)").arg(config_buffer_ms));
   }
 }
 
@@ -345,95 +279,6 @@ void AudioSettingsWidget::onOutputMutedChanged(int new_state)
   Host::SetBaseBoolSettingValue("Audio", "OutputMuted", muted);
   Host::CommitBaseSettingChanges();
   g_emu_thread->setAudioOutputMuted(muted);
-}
-
-void AudioSettingsWidget::onExpansionSettingsClicked()
-{
-  QDialog dlg(QtUtils::GetRootWidget(this));
-  Ui::AudioExpansionSettingsDialog dlgui;
-  dlgui.setupUi(&dlg);
-  dlgui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("volume-up-line")).pixmap(32, 32));
-
-  SettingsInterface* sif = m_dialog->getSettingsInterface();
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.blockSize, "Audio", "ExpandBlockSize",
-                                              AudioStreamParameters::DEFAULT_EXPAND_BLOCK_SIZE, 0);
-  QtUtils::BindLabelToSlider(dlgui.blockSize, dlgui.blockSizeLabel);
-  SettingWidgetBinder::BindWidgetToFloatSetting(sif, dlgui.circularWrap, "Audio", "ExpandCircularWrap",
-                                                AudioStreamParameters::DEFAULT_EXPAND_CIRCULAR_WRAP);
-  QtUtils::BindLabelToSlider(dlgui.circularWrap, dlgui.circularWrapLabel);
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.shift, "Audio", "ExpandShift", 100.0f,
-                                                     AudioStreamParameters::DEFAULT_EXPAND_SHIFT);
-  QtUtils::BindLabelToSlider(dlgui.shift, dlgui.shiftLabel, 100.0f);
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.depth, "Audio", "ExpandDepth", 10.0f,
-                                                     AudioStreamParameters::DEFAULT_EXPAND_DEPTH);
-  QtUtils::BindLabelToSlider(dlgui.depth, dlgui.depthLabel, 10.0f);
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.focus, "Audio", "ExpandFocus", 100.0f,
-                                                     AudioStreamParameters::DEFAULT_EXPAND_FOCUS);
-  QtUtils::BindLabelToSlider(dlgui.focus, dlgui.focusLabel, 100.0f);
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.centerImage, "Audio", "ExpandCenterImage", 100.0f,
-                                                     AudioStreamParameters::DEFAULT_EXPAND_CENTER_IMAGE);
-  QtUtils::BindLabelToSlider(dlgui.centerImage, dlgui.centerImageLabel, 100.0f);
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.frontSeparation, "Audio", "ExpandFrontSeparation",
-                                                     10.0f, AudioStreamParameters::DEFAULT_EXPAND_FRONT_SEPARATION);
-  QtUtils::BindLabelToSlider(dlgui.frontSeparation, dlgui.frontSeparationLabel, 10.0f);
-  SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, dlgui.rearSeparation, "Audio", "ExpandRearSeparation", 10.0f,
-                                                     AudioStreamParameters::DEFAULT_EXPAND_REAR_SEPARATION);
-  QtUtils::BindLabelToSlider(dlgui.rearSeparation, dlgui.rearSeparationLabel, 10.0f);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.lowCutoff, "Audio", "ExpandLowCutoff",
-                                              AudioStreamParameters::DEFAULT_EXPAND_LOW_CUTOFF);
-  QtUtils::BindLabelToSlider(dlgui.lowCutoff, dlgui.lowCutoffLabel);
-  SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.highCutoff, "Audio", "ExpandHighCutoff",
-                                              AudioStreamParameters::DEFAULT_EXPAND_HIGH_CUTOFF);
-  QtUtils::BindLabelToSlider(dlgui.highCutoff, dlgui.highCutoffLabel);
-
-  connect(dlgui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, &dlg, &QDialog::accept);
-  connect(dlgui.buttonBox->button(QDialogButtonBox::RestoreDefaults), &QPushButton::clicked, this, [this, &dlg]() {
-    m_dialog->setIntSettingValue("Audio", "ExpandBlockSize",
-                                 m_dialog->isPerGameSettings() ?
-                                   std::nullopt :
-                                   std::optional<int>(AudioStreamParameters::DEFAULT_EXPAND_BLOCK_SIZE));
-
-    m_dialog->setFloatSettingValue("Audio", "ExpandCircularWrap",
-                                   m_dialog->isPerGameSettings() ?
-                                     std::nullopt :
-                                     std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_CIRCULAR_WRAP));
-    m_dialog->setFloatSettingValue(
-      "Audio", "ExpandShift",
-      m_dialog->isPerGameSettings() ? std::nullopt : std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_SHIFT));
-    m_dialog->setFloatSettingValue(
-      "Audio", "ExpandDepth",
-      m_dialog->isPerGameSettings() ? std::nullopt : std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_DEPTH));
-    m_dialog->setFloatSettingValue(
-      "Audio", "ExpandFocus",
-      m_dialog->isPerGameSettings() ? std::nullopt : std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_FOCUS));
-    m_dialog->setFloatSettingValue("Audio", "ExpandCenterImage",
-                                   m_dialog->isPerGameSettings() ?
-                                     std::nullopt :
-                                     std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_CENTER_IMAGE));
-    m_dialog->setFloatSettingValue("Audio", "ExpandFrontSeparation",
-                                   m_dialog->isPerGameSettings() ?
-                                     std::nullopt :
-                                     std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_FRONT_SEPARATION));
-    m_dialog->setFloatSettingValue("Audio", "ExpandRearSeparation",
-                                   m_dialog->isPerGameSettings() ?
-                                     std::nullopt :
-                                     std::optional<float>(AudioStreamParameters::DEFAULT_EXPAND_REAR_SEPARATION));
-    m_dialog->setIntSettingValue("Audio", "ExpandLowCutoff",
-                                 m_dialog->isPerGameSettings() ?
-                                   std::nullopt :
-                                   std::optional<int>(AudioStreamParameters::DEFAULT_EXPAND_LOW_CUTOFF));
-    m_dialog->setIntSettingValue("Audio", "ExpandHighCutoff",
-                                 m_dialog->isPerGameSettings() ?
-                                   std::nullopt :
-                                   std::optional<int>(AudioStreamParameters::DEFAULT_EXPAND_HIGH_CUTOFF));
-
-    dlg.done(0);
-
-    QMetaObject::invokeMethod(this, &AudioSettingsWidget::onExpansionSettingsClicked, Qt::QueuedConnection);
-  });
-
-  dlg.exec();
-  updateLatencyLabel();
 }
 
 void AudioSettingsWidget::onStretchSettingsClicked()
