@@ -86,6 +86,7 @@ static std::vector<WCharType> s_font_range;
 static std::vector<WCharType> s_emoji_range;
 
 static ImFont* s_standard_font;
+static ImFont* s_osd_font;
 static ImFont* s_fixed_font;
 static ImFont* s_medium_font;
 static ImFont* s_large_font;
@@ -274,7 +275,7 @@ void ImGuiManager::Shutdown()
   s_fixed_font = nullptr;
   s_medium_font = nullptr;
   s_large_font = nullptr;
-  ImGuiFullscreen::SetFonts(nullptr, nullptr, nullptr);
+  ImGuiFullscreen::SetFonts(nullptr, nullptr);
 }
 
 float ImGuiManager::GetWindowWidth()
@@ -654,18 +655,22 @@ bool ImGuiManager::AddIconFonts(float size)
 
 bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 {
-  const float standard_font_size = std::ceil(18.0f * s_global_scale);
-  const float fixed_font_size = std::ceil(15.0f * s_global_scale);
+  const float standard_font_size = std::ceil(15.0f * s_global_scale);
+  const float osd_font_size = std::ceil(17.0f * s_global_scale);
 
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
 
   s_standard_font = AddTextFont(standard_font_size);
-  if (!s_standard_font || !AddIconFonts(standard_font_size))
+  if (!s_standard_font)
     return false;
 
-  s_fixed_font = AddFixedFont(fixed_font_size);
+  s_fixed_font = AddFixedFont(standard_font_size);
   if (!s_fixed_font)
+    return false;
+
+  s_osd_font = AddTextFont(osd_font_size);
+  if (!s_osd_font || !AddIconFonts(osd_font_size))
     return false;
 
   if (fullscreen_fonts)
@@ -686,7 +691,7 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
     s_large_font = nullptr;
   }
 
-  ImGuiFullscreen::SetFonts(s_standard_font, s_medium_font, s_large_font);
+  ImGuiFullscreen::SetFonts(s_medium_font, s_large_font);
 
   return io.Fonts->Build();
 }
@@ -837,11 +842,11 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 {
   static constexpr float MOVE_DURATION = 0.5f;
 
-  ImFont* const font = ImGui::GetFont();
+  ImFont* const font = s_osd_font;
   const float scale = s_global_scale;
   const float spacing = std::ceil(6.0f * scale);
-  const float margin = std::ceil(12.0f * scale);
-  const float padding = std::ceil(10.0f * scale);
+  const float margin = std::ceil(11.0f * scale);
+  const float padding = std::ceil(9.0f * scale);
   const float rounding = std::ceil(6.0f * scale);
   const float max_width = s_window_width - (margin + padding) * 2.0f;
   float position_x = margin;
@@ -940,6 +945,11 @@ float ImGuiManager::GetGlobalScale()
 ImFont* ImGuiManager::GetStandardFont()
 {
   return s_standard_font;
+}
+
+ImFont* ImGuiManager::GetOSDFont()
+{
+  return s_osd_font;
 }
 
 ImFont* ImGuiManager::GetFixedFont()
