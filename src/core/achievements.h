@@ -115,6 +115,9 @@ bool HasRichPresence();
 /// Should be called with the lock held.
 const std::string& GetRichPresenceString();
 
+/// Returns the URL for the current icon of the game
+const std::string& GetGameIconURL();
+
 /// Returns the RetroAchievements title for the current game.
 /// Should be called with the lock held.
 const std::string& GetGameTitle();
