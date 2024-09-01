@@ -1,12 +1,14 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: PolyForm-Strict-1.0.0
 
 #pragma once
 
+#include "common/align.h"
 #include "common/types.h"
 
 #include <array>
 #include <atomic>
+#include <complex>
 #include <memory>
 #include <optional>
 #include <string>
@@ -15,10 +17,11 @@
 class Error;
 class SettingsInterface;
 
-class FreeSurroundDecoder;
 namespace soundtouch {
 class SoundTouch;
 }
+
+struct kiss_fftr_state;
 
 enum class AudioBackend : u8
 {
@@ -67,13 +70,14 @@ struct AudioStreamParameters
   bool stretch_use_quickseek = DEFAULT_STRETCH_USE_QUICKSEEK;
   bool stretch_use_aa_filter = DEFAULT_STRETCH_USE_AA_FILTER;
 
-  float expand_circular_wrap = DEFAULT_EXPAND_CIRCULAR_WRAP;
-  float expand_shift = DEFAULT_EXPAND_SHIFT;
-  float expand_depth = DEFAULT_EXPAND_DEPTH;
-  float expand_focus = DEFAULT_EXPAND_FOCUS;
-  float expand_center_image = DEFAULT_EXPAND_CENTER_IMAGE;
-  float expand_front_separation = DEFAULT_EXPAND_FRONT_SEPARATION;
-  float expand_rear_separation = DEFAULT_EXPAND_REAR_SEPARATION;
+  float expand_circular_wrap =
+    DEFAULT_EXPAND_CIRCULAR_WRAP;            // Angle of the front soundstage around the listener (90=default).
+  float expand_shift = DEFAULT_EXPAND_SHIFT; // Forward/backward offset of the soundstage.
+  float expand_depth = DEFAULT_EXPAND_DEPTH; // Backward extension of the soundstage.
+  float expand_focus = DEFAULT_EXPAND_FOCUS; // Localization of the sound events.
+  float expand_center_image = DEFAULT_EXPAND_CENTER_IMAGE;         // Presence of the center speaker.
+  float expand_front_separation = DEFAULT_EXPAND_FRONT_SEPARATION; // Front stereo separation.
+  float expand_rear_separation = DEFAULT_EXPAND_REAR_SEPARATION;   // Rear stereo separation.
   u16 expand_block_size = DEFAULT_EXPAND_BLOCK_SIZE;
   u8 expand_low_cutoff = DEFAULT_EXPAND_LOW_CUTOFF;
   u8 expand_high_cutoff = DEFAULT_EXPAND_HIGH_CUTOFF;
@@ -161,8 +165,8 @@ public:
   static std::optional<AudioStretchMode> ParseStretchMode(const char* name);
 
   ALWAYS_INLINE u32 GetSampleRate() const { return m_sample_rate; }
-  ALWAYS_INLINE u32 GetInternalChannels() const { return m_internal_channels; }
-  ALWAYS_INLINE u32 GetOutputChannels() const { return m_internal_channels; }
+  ALWAYS_INLINE u32 GetInternalChannels() const { return m_output_channels; }
+  ALWAYS_INLINE u32 GetOutputChannels() const { return m_output_channels; }
   ALWAYS_INLINE u32 GetBufferSize() const { return m_buffer_size; }
   ALWAYS_INLINE u32 GetTargetBufferSize() const { return m_target_buffer_size; }
   ALWAYS_INLINE u32 GetOutputVolume() const { return m_volume; }
@@ -224,7 +228,6 @@ protected:
   u32 m_sample_rate = 0;
   u32 m_volume = 100;
   AudioStreamParameters m_parameters;
-  u8 m_internal_channels = 0;
   u8 m_output_channels = 0;
   bool m_stretch_inactive = false;
   bool m_filling = false;
@@ -259,9 +262,10 @@ private:
 
   void InternalWriteFrames(SampleType* samples, u32 num_frames);
 
-#ifndef __ANDROID__
   void ExpandAllocate();
-#endif
+  void ExpandDestroy();
+  void ExpandDecode();
+  void ExpandFlush();
 
   void StretchAllocate();
   void StretchDestroy();
@@ -273,7 +277,7 @@ private:
   void UpdateStretchTempo();
 
   u32 m_buffer_size = 0;
-  std::unique_ptr<s16[]> m_buffer;
+  Common::unique_aligned_ptr<s16[]> m_buffer;
   SampleReader m_sample_reader = nullptr;
 
   std::atomic<u32> m_rpos{0};
@@ -295,19 +299,25 @@ private:
   std::array<float, AVERAGING_BUFFER_SIZE> m_average_fullness = {};
 
   // temporary staging buffer, used for timestretching
-  std::unique_ptr<s16[]> m_staging_buffer;
+  Common::unique_aligned_ptr<s16[]> m_staging_buffer;
 
   // float buffer, soundtouch only accepts float samples as input
-  std::unique_ptr<float[]> m_float_buffer;
+  Common::unique_aligned_ptr<float[]> m_float_buffer;
 
-#ifndef __ANDROID__
-  std::unique_ptr<FreeSurroundDecoder> m_expander;
-
-  // block buffer for expansion
-  std::unique_ptr<float[]> m_expand_buffer;
-  float* m_expand_output_buffer = nullptr;
+  // expansion data
   u32 m_expand_buffer_pos = 0;
-#endif
+  bool m_expand_has_block = false;
+  float m_expand_lfe_low_cutoff = 0.0f;
+  float m_expand_lfe_high_cutoff = 0.0f;
+  Common::unique_aligned_ptr<double[]> m_expand_convbuffer;
+  Common::unique_aligned_ptr<std::complex<double>[]> m_expand_freqdomain;
+  Common::unique_aligned_ptr<std::complex<double>[]> m_expand_right_fd;
+  kiss_fftr_state* m_expand_fft = nullptr;
+  kiss_fftr_state* m_expand_ifft = nullptr;
+  Common::unique_aligned_ptr<float[]> m_expand_inbuf;
+  Common::unique_aligned_ptr<float[]> m_expand_outbuf;
+  Common::unique_aligned_ptr<double[]> m_expand_window;
+  Common::unique_aligned_ptr<std::complex<double>[]> m_expand_signal;
 };
 
 template<AudioExpansionMode mode, AudioStream::ReadChannel c0, AudioStream::ReadChannel c1, AudioStream::ReadChannel c2,
@@ -322,7 +332,7 @@ void AudioStream::SampleReaderImpl(SampleType* dest, const SampleType* src, u32 
       // FL FC FR SL SR RL RR LFE
       {{0, -1, 1, -1, -1, -1, -1, -1}, 2}, // Disabled
       {{0, -1, 1, -1, -1, -1, -1, 2}, 3},  // StereoLFE
-      {{0, -1, 1, -1, -1, 2, 3, -1}, 5},   // Quadraphonic
+      {{0, -1, 1, -1, -1, 2, 3, -1}, 4},   // Quadraphonic
       {{0, -1, 2, -1, -1, 2, 3, 4}, 5},    // QuadraphonicLFE
       {{0, 1, 2, -1, -1, 3, 4, 5}, 6},     // Surround51
       {{0, 1, 2, 3, 4, 5, 6, 7}, 8},       // Surround71
@@ -374,4 +384,3 @@ void AudioStream::SampleReaderImpl(SampleType* dest, const SampleType* src, u32 
     src += luts[static_cast<size_t>(mode)].second;
   }
 }
-

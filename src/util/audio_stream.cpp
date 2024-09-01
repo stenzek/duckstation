@@ -1,7 +1,8 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: PolyForm-Strict-1.0.0
 
 #include "audio_stream.h"
+#include "audio_stream_channel_maps.inl"
 #include "host.h"
 
 #include "common/align.h"
@@ -12,12 +13,9 @@
 #include "common/settings_interface.h"
 #include "common/timer.h"
 
+#include "kiss_fftr.h"
 #include "soundtouch/SoundTouch.h"
 #include "soundtouch/SoundTouchDLL.h"
-
-#ifndef __ANDROID__
-#include "freesurround_decoder.h"
-#endif
 
 #include <algorithm>
 #include <cmath>
@@ -28,15 +26,25 @@ Log_SetChannel(AudioStream);
 
 static constexpr bool LOG_TIMESTRETCH_STATS = false;
 
-static constexpr const std::array<std::pair<u8, u8>, static_cast<size_t>(AudioExpansionMode::Count)>
+namespace {
+struct ExpansionChannelSetup
+{
+  const ExpandLUT* channel_lut;
+  const s8* channel_xsf;
+  u8 output_channels;
+  bool has_lfe;
+};
+
+static constexpr const std::array<ExpansionChannelSetup, static_cast<size_t>(AudioExpansionMode::Count)>
   s_expansion_channel_count = {{
-    {u8(2), u8(2)}, // Disabled
-    {u8(3), u8(3)}, // StereoLFE
-    {u8(5), u8(4)}, // Quadraphonic
-    {u8(5), u8(5)}, // QuadraphonicLFE
-    {u8(6), u8(6)}, // Surround51
-    {u8(8), u8(8)}, // Surround71
+    {CHANNEL_LUT_STEREO, CHANNEL_LUT_STEREO_XSF, static_cast<u8>(2), false},   // Disabled
+    {CHANNEL_LUT_STEREO, CHANNEL_LUT_STEREO_XSF, static_cast<u8>(3), true},    // StereoLFE
+    {CHANNEL_LUT_4POINT1, CHANNEL_LUT_4POINT1_XSF, static_cast<u8>(4), false}, // Quadraphonic
+    {CHANNEL_LUT_4POINT1, CHANNEL_LUT_4POINT1_XSF, static_cast<u8>(5), true},  // QuadraphonicLFE
+    {CHANNEL_LUT_5POINT1, CHANNEL_LUT_5POINT1_XSF, static_cast<u8>(6), true},  // Surround51
+    {CHANNEL_LUT_7POINT1, CHANNEL_LUT_7POINT1_XSF, static_cast<u8>(8), true},  // Surround71
   }};
+} // namespace
 
 AudioStream::DeviceInfo::DeviceInfo(std::string name_, std::string display_name_, u32 minimum_latency_)
   : name(std::move(name_)), display_name(std::move(display_name_)), minimum_latency_frames(minimum_latency_)
@@ -45,10 +53,118 @@ AudioStream::DeviceInfo::DeviceInfo(std::string name_, std::string display_name_
 
 AudioStream::DeviceInfo::~DeviceInfo() = default;
 
+void AudioStreamParameters::Load(SettingsInterface& si, const char* section)
+{
+  stretch_mode =
+    AudioStream::ParseStretchMode(
+      si.GetStringValue(section, "StretchMode", AudioStream::GetStretchModeName(DEFAULT_STRETCH_MODE)).c_str())
+      .value_or(DEFAULT_STRETCH_MODE);
+  expansion_mode =
+    AudioStream::ParseExpansionMode(
+      si.GetStringValue(section, "ExpansionMode", AudioStream::GetExpansionModeName(DEFAULT_EXPANSION_MODE)).c_str())
+      .value_or(DEFAULT_EXPANSION_MODE);
+  output_latency_ms = static_cast<u16>(std::min<u32>(
+    si.GetUIntValue(section, "OutputLatencyMS", DEFAULT_OUTPUT_LATENCY_MS), std::numeric_limits<u16>::max()));
+  output_latency_minimal = si.GetBoolValue(section, "OutputLatencyMinimal", DEFAULT_OUTPUT_LATENCY_MINIMAL);
+  buffer_ms = static_cast<u16>(
+    std::min<u32>(si.GetUIntValue(section, "BufferMS", DEFAULT_BUFFER_MS), std::numeric_limits<u16>::max()));
+
+  stretch_sequence_length_ms =
+    static_cast<u16>(std::min<u32>(si.GetUIntValue(section, "StretchSequenceLengthMS", DEFAULT_STRETCH_SEQUENCE_LENGTH),
+                                   std::numeric_limits<u16>::max()));
+  stretch_seekwindow_ms = static_cast<u16>(std::min<u32>(
+    si.GetUIntValue(section, "StretchSeekWindowMS", DEFAULT_STRETCH_SEEKWINDOW), std::numeric_limits<u16>::max()));
+  stretch_overlap_ms = static_cast<u16>(std::min<u32>(
+    si.GetUIntValue(section, "StretchOverlapMS", DEFAULT_STRETCH_OVERLAP), std::numeric_limits<u16>::max()));
+  stretch_use_quickseek = si.GetBoolValue(section, "StretchUseQuickSeek", DEFAULT_STRETCH_USE_QUICKSEEK);
+  stretch_use_aa_filter = si.GetBoolValue(section, "StretchUseAAFilter", DEFAULT_STRETCH_USE_AA_FILTER);
+
+  expand_block_size = static_cast<u16>(std::min<u32>(
+    si.GetUIntValue(section, "ExpandBlockSize", DEFAULT_EXPAND_BLOCK_SIZE), std::numeric_limits<u16>::max()));
+  expand_block_size = std::clamp<u16>(
+    Common::IsPow2(expand_block_size) ? expand_block_size : Common::NextPow2(expand_block_size), 128, 8192);
+  expand_circular_wrap =
+    std::clamp(si.GetFloatValue(section, "ExpandCircularWrap", DEFAULT_EXPAND_CIRCULAR_WRAP), 0.0f, 360.0f);
+  expand_shift = std::clamp(si.GetFloatValue(section, "ExpandShift", DEFAULT_EXPAND_SHIFT), -1.0f, 1.0f);
+  expand_depth = std::clamp(si.GetFloatValue(section, "ExpandDepth", DEFAULT_EXPAND_DEPTH), 0.0f, 5.0f);
+  expand_focus = std::clamp(si.GetFloatValue(section, "ExpandFocus", DEFAULT_EXPAND_FOCUS), -1.0f, 1.0f);
+  expand_center_image =
+    std::clamp(si.GetFloatValue(section, "ExpandCenterImage", DEFAULT_EXPAND_CENTER_IMAGE), 0.0f, 1.0f);
+  expand_front_separation =
+    std::clamp(si.GetFloatValue(section, "ExpandFrontSeparation", DEFAULT_EXPAND_FRONT_SEPARATION), 0.0f, 10.0f);
+  expand_rear_separation =
+    std::clamp(si.GetFloatValue(section, "ExpandRearSeparation", DEFAULT_EXPAND_REAR_SEPARATION), 0.0f, 10.0f);
+  expand_low_cutoff =
+    static_cast<u8>(std::min<u32>(si.GetUIntValue(section, "ExpandLowCutoff", DEFAULT_EXPAND_LOW_CUTOFF), 100));
+  expand_high_cutoff =
+    static_cast<u8>(std::min<u32>(si.GetUIntValue(section, "ExpandHighCutoff", DEFAULT_EXPAND_HIGH_CUTOFF), 100));
+}
+
+void AudioStreamParameters::Save(SettingsInterface& si, const char* section) const
+{
+  si.SetStringValue(section, "StretchMode", AudioStream::GetStretchModeName(stretch_mode));
+  si.SetStringValue(section, "ExpansionMode", AudioStream::GetExpansionModeName(expansion_mode));
+  si.SetUIntValue(section, "BufferMS", buffer_ms);
+  si.SetUIntValue(section, "OutputLatencyMS", output_latency_ms);
+  si.SetBoolValue(section, "OutputLatencyMinimal", output_latency_minimal);
+
+  si.SetUIntValue(section, "StretchSequenceLengthMS", stretch_sequence_length_ms);
+  si.SetUIntValue(section, "StretchSeekWindowMS", stretch_seekwindow_ms);
+  si.SetUIntValue(section, "StretchOverlapMS", stretch_overlap_ms);
+  si.SetBoolValue(section, "StretchUseQuickSeek", stretch_use_quickseek);
+  si.SetBoolValue(section, "StretchUseAAFilter", stretch_use_aa_filter);
+
+  si.SetUIntValue(section, "ExpandBlockSize", expand_block_size);
+  si.SetFloatValue(section, "ExpandCircularWrap", expand_circular_wrap);
+  si.SetFloatValue(section, "ExpandShift", expand_shift);
+  si.SetFloatValue(section, "ExpandDepth", expand_depth);
+  si.SetFloatValue(section, "ExpandFocus", expand_focus);
+  si.SetFloatValue(section, "ExpandCenterImage", expand_center_image);
+  si.SetFloatValue(section, "ExpandFrontSeparation", expand_front_separation);
+  si.SetFloatValue(section, "ExpandRearSeparation", expand_rear_separation);
+  si.SetUIntValue(section, "ExpandLowCutoff", expand_low_cutoff);
+  si.SetUIntValue(section, "ExpandHighCutoff", expand_high_cutoff);
+}
+
+void AudioStreamParameters::Clear(SettingsInterface& si, const char* section)
+{
+  si.DeleteValue(section, "StretchMode");
+  si.DeleteValue(section, "ExpansionMode");
+  si.DeleteValue(section, "BufferMS");
+  si.DeleteValue(section, "OutputLatencyMS");
+  si.DeleteValue(section, "OutputLatencyMinimal");
+
+  si.DeleteValue(section, "StretchSequenceLengthMS");
+  si.DeleteValue(section, "StretchSeekWindowMS");
+  si.DeleteValue(section, "StretchOverlapMS");
+  si.DeleteValue(section, "StretchUseQuickSeek");
+  si.DeleteValue(section, "StretchUseAAFilter");
+
+  si.DeleteValue(section, "ExpandBlockSize");
+  si.DeleteValue(section, "ExpandCircularWrap");
+  si.DeleteValue(section, "ExpandShift");
+  si.DeleteValue(section, "ExpandDepth");
+  si.DeleteValue(section, "ExpandFocus");
+  si.DeleteValue(section, "ExpandCenterImage");
+  si.DeleteValue(section, "ExpandFrontSeparation");
+  si.DeleteValue(section, "ExpandRearSeparation");
+  si.DeleteValue(section, "ExpandLowCutoff");
+  si.DeleteValue(section, "ExpandHighCutoff");
+}
+
+bool AudioStreamParameters::operator!=(const AudioStreamParameters& rhs) const
+{
+  return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
+}
+
+bool AudioStreamParameters::operator==(const AudioStreamParameters& rhs) const
+{
+  return (std::memcmp(this, &rhs, sizeof(*this)) == 0);
+}
+
 AudioStream::AudioStream(u32 sample_rate, const AudioStreamParameters& parameters)
   : m_sample_rate(sample_rate), m_parameters(parameters),
-    m_internal_channels(s_expansion_channel_count[static_cast<size_t>(parameters.expansion_mode)].first),
-    m_output_channels(s_expansion_channel_count[static_cast<size_t>(parameters.expansion_mode)].second)
+    m_output_channels(s_expansion_channel_count[static_cast<size_t>(parameters.expansion_mode)].output_channels)
 {
 }
 
@@ -316,7 +432,7 @@ void AudioStream::ReadFrames(SampleType* samples, u32 num_frames)
     // towards the end of the buffer
     if (end > 0)
     {
-      m_sample_reader(samples, &m_buffer[rpos * m_internal_channels], end);
+      m_sample_reader(samples, &m_buffer[rpos * m_output_channels], end);
       rpos += end;
       rpos = (rpos == m_buffer_size) ? 0 : rpos;
     }
@@ -434,16 +550,16 @@ void AudioStream::InternalWriteFrames(s16* data, u32 num_frames)
     const u32 start = num_frames - end;
 
     // start is zero when this chunk reaches exactly the end
-    std::memcpy(&m_buffer[wpos * m_internal_channels], data, end * m_internal_channels * sizeof(SampleType));
+    std::memcpy(&m_buffer[wpos * m_output_channels], data, end * m_output_channels * sizeof(SampleType));
     if (start > 0)
-      std::memcpy(&m_buffer[0], data + end * m_internal_channels, start * m_internal_channels * sizeof(SampleType));
+      std::memcpy(&m_buffer[0], data + end * m_output_channels, start * m_output_channels * sizeof(SampleType));
 
     wpos = start;
   }
   else
   {
     // no split
-    std::memcpy(&m_buffer[wpos * m_internal_channels], data, num_frames * m_internal_channels * sizeof(SampleType));
+    std::memcpy(&m_buffer[wpos * m_output_channels], data, num_frames * m_output_channels * sizeof(SampleType));
     wpos += num_frames;
   }
 
@@ -469,12 +585,9 @@ void AudioStream::AllocateBuffer()
   m_buffer_size = GetAlignedBufferSize(((m_parameters.buffer_ms * multiplier) * m_sample_rate) / 1000);
   m_target_buffer_size = GetAlignedBufferSize((m_sample_rate * m_parameters.buffer_ms) / 1000u);
 
-  m_buffer = std::make_unique<s16[]>(m_buffer_size * m_internal_channels);
-  m_staging_buffer = std::make_unique<s16[]>(CHUNK_SIZE * m_internal_channels);
-  m_float_buffer = std::make_unique<float[]>(CHUNK_SIZE * m_internal_channels);
-
-  if (IsExpansionEnabled())
-    m_expand_buffer = std::make_unique<float[]>(m_parameters.expand_block_size * NUM_INPUT_CHANNELS);
+  m_buffer = Common::make_unique_aligned_for_overwrite<s16[]>(VECTOR_ALIGNMENT, m_buffer_size * m_output_channels);
+  m_staging_buffer = Common::make_unique_aligned_for_overwrite<s16[]>(VECTOR_ALIGNMENT, CHUNK_SIZE * m_output_channels);
+  m_float_buffer = Common::make_unique_aligned_for_overwrite<float[]>(VECTOR_ALIGNMENT, CHUNK_SIZE * m_output_channels);
 
   DEV_LOG(
     "Allocated buffer of {} frames for buffer of {} ms [expansion {} (block size {}), stretch {}, target size {}].",
@@ -484,7 +597,6 @@ void AudioStream::AllocateBuffer()
 
 void AudioStream::DestroyBuffer()
 {
-  m_expand_buffer.reset();
   m_staging_buffer.reset();
   m_float_buffer.reset();
   m_buffer.reset();
@@ -495,14 +607,8 @@ void AudioStream::DestroyBuffer()
 
 void AudioStream::EmptyBuffer()
 {
-#ifndef __ANDROID__
   if (IsExpansionEnabled())
-  {
-    m_expander->Flush();
-    m_expand_output_buffer = nullptr;
-    m_expand_buffer_pos = 0;
-  }
-#endif
+    ExpandFlush();
 
   if (IsStretchEnabled())
   {
@@ -569,7 +675,7 @@ static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
   const u32 iterations = (num_samples + 7) / 8;
   for (u32 i = 0; i < iterations; i++)
   {
-    const GSVector4i sv = GSVector4i::load<false>(src);
+    const GSVector4i sv = GSVector4i::load<true>(src);
     src += 8;
 
     GSVector4i iv1 = sv.upl16(sv);  // [0, 0, 1, 1, 2, 2, 3, 3]
@@ -581,8 +687,8 @@ static void S16ChunkToFloat(const s16* src, float* dst, u32 num_samples)
     fv1 = fv1 * S16_TO_FLOAT_V;
     fv2 = fv2 * S16_TO_FLOAT_V;
 
-    GSVector4::store<false>(dst + 0, fv1);
-    GSVector4::store<false>(dst + 4, fv2);
+    GSVector4::store<true>(dst + 0, fv1);
+    GSVector4::store<true>(dst + 4, fv2);
     dst += 8;
   }
 }
@@ -594,8 +700,8 @@ static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
   const u32 iterations = (num_samples + 7) / 8;
   for (u32 i = 0; i < iterations; i++)
   {
-    GSVector4 fv1 = GSVector4::load<false>(src + 0);
-    GSVector4 fv2 = GSVector4::load<false>(src + 4);
+    GSVector4 fv1 = GSVector4::load<true>(src + 0);
+    GSVector4 fv2 = GSVector4::load<true>(src + 4);
     src += 8;
 
     fv1 = fv1 * FLOAT_TO_S16_V;
@@ -604,45 +710,9 @@ static void FloatChunkToS16(s16* dst, const float* src, u32 num_samples)
     GSVector4i iv2 = GSVector4i(fv2);
 
     const GSVector4i iv = iv1.ps32(iv2);
-    GSVector4i::store<false>(dst, iv);
+    GSVector4i::store<true>(dst, iv);
     dst += 8;
   }
-}
-
-void AudioStream::ExpandAllocate()
-{
-  DebugAssert(!m_expander);
-  if (m_parameters.expansion_mode == AudioExpansionMode::Disabled)
-    return;
-
-#ifndef __ANDROID__
-  static constexpr std::array<std::pair<FreeSurroundDecoder::ChannelSetup, bool>,
-                              static_cast<size_t>(AudioExpansionMode::Count)>
-    channel_setup_mapping = {{
-      {FreeSurroundDecoder::ChannelSetup::Stereo, false},     // Disabled
-      {FreeSurroundDecoder::ChannelSetup::Stereo, true},      // StereoLFE
-      {FreeSurroundDecoder::ChannelSetup::Surround41, false}, // Quadraphonic
-      {FreeSurroundDecoder::ChannelSetup::Surround41, true},  // QuadraphonicLFE
-      {FreeSurroundDecoder::ChannelSetup::Surround51, true},  // Surround51
-      {FreeSurroundDecoder::ChannelSetup::Surround71, true},  // Surround71
-    }};
-
-  const auto [fs_setup, fs_lfe] = channel_setup_mapping[static_cast<size_t>(m_parameters.expansion_mode)];
-
-  m_expander = std::make_unique<FreeSurroundDecoder>(fs_setup, m_parameters.expand_block_size);
-  m_expander->SetBassRedirection(fs_lfe);
-  m_expander->SetCircularWrap(m_parameters.expand_circular_wrap);
-  m_expander->SetShift(m_parameters.expand_shift);
-  m_expander->SetDepth(m_parameters.expand_depth);
-  m_expander->SetFocus(m_parameters.expand_focus);
-  m_expander->SetCenterImage(m_parameters.expand_center_image);
-  m_expander->SetFrontSeparation(m_parameters.expand_front_separation);
-  m_expander->SetRearSeparation(m_parameters.expand_rear_separation);
-  m_expander->SetLowCutoff(static_cast<float>(m_parameters.expand_low_cutoff) / m_sample_rate * 2);
-  m_expander->SetHighCutoff(static_cast<float>(m_parameters.expand_high_cutoff) / m_sample_rate * 2);
-#else
-  Panic("Attempting to use expansion on Android.");
-#endif
 }
 
 void AudioStream::EndWrite(u32 num_frames)
@@ -664,27 +734,27 @@ void AudioStream::EndWrite(u32 num_frames)
     return;
   }
 
-#ifndef __ANDROID__
   if (IsExpansionEnabled())
   {
     // StretchWriteBlock() overwrites the staging buffer on output, so we need to copy into the expand buffer first.
-    S16ChunkToFloat(m_staging_buffer.get(), m_expand_buffer.get() + m_expand_buffer_pos * NUM_INPUT_CHANNELS,
+    S16ChunkToFloat(m_staging_buffer.get(),
+                    &m_expand_inbuf[m_parameters.expand_block_size + (m_expand_buffer_pos * NUM_INPUT_CHANNELS)],
                     CHUNK_SIZE * NUM_INPUT_CHANNELS);
 
     // Output the corresponding block.
-    if (m_expand_output_buffer)
-      StretchWriteBlock(m_expand_output_buffer + m_expand_buffer_pos * m_internal_channels);
+    if (m_expand_has_block)
+      StretchWriteBlock(&m_expand_outbuf[m_expand_buffer_pos * m_output_channels]);
 
     // Decode the next block if we buffered enough.
     m_expand_buffer_pos += CHUNK_SIZE;
     if (m_expand_buffer_pos == m_parameters.expand_block_size)
     {
       m_expand_buffer_pos = 0;
-      m_expand_output_buffer = m_expander->Decode(m_expand_buffer.get());
+      m_expand_has_block = true;
+      ExpandDecode();
     }
   }
   else
-#endif
   {
     S16ChunkToFloat(m_staging_buffer.get(), m_float_buffer.get(), CHUNK_SIZE * NUM_INPUT_CHANNELS);
     StretchWriteBlock(m_float_buffer.get());
@@ -706,7 +776,7 @@ void AudioStream::StretchAllocate()
 
   m_soundtouch = soundtouch_createInstance();
   soundtouch_setSampleRate(m_soundtouch, m_sample_rate);
-  soundtouch_setChannels(m_soundtouch, m_internal_channels);
+  soundtouch_setChannels(m_soundtouch, m_output_channels);
 
   soundtouch_setSetting(m_soundtouch, SETTING_USE_QUICKSEEK, m_parameters.stretch_use_quickseek);
   soundtouch_setSetting(m_soundtouch, SETTING_USE_AA_FILTER, m_parameters.stretch_use_aa_filter);
@@ -748,7 +818,7 @@ void AudioStream::StretchWriteBlock(const float* block)
     u32 tempProgress;
     while (tempProgress = soundtouch_receiveSamples(m_soundtouch, m_float_buffer.get(), CHUNK_SIZE), tempProgress != 0)
     {
-      FloatChunkToS16(m_staging_buffer.get(), m_float_buffer.get(), tempProgress * m_internal_channels);
+      FloatChunkToS16(m_staging_buffer.get(), m_float_buffer.get(), tempProgress * m_output_channels);
       InternalWriteFrames(m_staging_buffer.get(), tempProgress);
     }
 
@@ -757,7 +827,7 @@ void AudioStream::StretchWriteBlock(const float* block)
   }
   else
   {
-    FloatChunkToS16(m_staging_buffer.get(), block, CHUNK_SIZE * m_internal_channels);
+    FloatChunkToS16(m_staging_buffer.get(), block, CHUNK_SIZE * m_output_channels);
     InternalWriteFrames(m_staging_buffer.get(), CHUNK_SIZE);
   }
 }
@@ -892,115 +962,383 @@ void AudioStream::StretchOverrun()
   m_rpos.store((m_rpos.load(std::memory_order_acquire) + discard) % m_buffer_size, std::memory_order_release);
 }
 
-void AudioStreamParameters::Load(SettingsInterface& si, const char* section)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Channel expander based on FreeSurround: https://hydrogenaud.io/index.php/topic,52235.0.html
+// Rewritten with vectorization, performance improvements and integration for DuckStation.
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static constexpr float EXPAND_PI = 3.141592654f;
+static constexpr float EXPAND_EPSILON = 0.000001f;
+static constexpr GSVector4 EXPAND_VPI = GSVector4::cxpr64(EXPAND_PI);
+
+ALWAYS_INLINE static GSVector4 vsqr(GSVector4 v)
 {
-  stretch_mode =
-    AudioStream::ParseStretchMode(
-      si.GetStringValue(section, "StretchMode", AudioStream::GetStretchModeName(DEFAULT_STRETCH_MODE)).c_str())
-      .value_or(DEFAULT_STRETCH_MODE);
-#ifndef __ANDROID__
-  expansion_mode =
-    AudioStream::ParseExpansionMode(
-      si.GetStringValue(section, "ExpansionMode", AudioStream::GetExpansionModeName(DEFAULT_EXPANSION_MODE)).c_str())
-      .value_or(DEFAULT_EXPANSION_MODE);
+  return v.mul64(v);
+}
+
+ALWAYS_INLINE static GSVector4 vsqrt(GSVector4 v)
+{
+#if 0
+  // for diff purposes
+  return GSVector4::f64(std::sqrt(v.extract64<0>()), std::sqrt(v.extract64<1>()));
 #else
-  expansion_mode = AudioExpansionMode::Disabled;
+  return v.sqrt64();
 #endif
-  output_latency_ms = static_cast<u16>(std::min<u32>(
-    si.GetUIntValue(section, "OutputLatencyMS", DEFAULT_OUTPUT_LATENCY_MS), std::numeric_limits<u16>::max()));
-  output_latency_minimal = si.GetBoolValue(section, "OutputLatencyMinimal", DEFAULT_OUTPUT_LATENCY_MINIMAL);
-  buffer_ms = static_cast<u16>(
-    std::min<u32>(si.GetUIntValue(section, "BufferMS", DEFAULT_BUFFER_MS), std::numeric_limits<u16>::max()));
-
-  stretch_sequence_length_ms =
-    static_cast<u16>(std::min<u32>(si.GetUIntValue(section, "StretchSequenceLengthMS", DEFAULT_STRETCH_SEQUENCE_LENGTH),
-                                   std::numeric_limits<u16>::max()));
-  stretch_seekwindow_ms = static_cast<u16>(std::min<u32>(
-    si.GetUIntValue(section, "StretchSeekWindowMS", DEFAULT_STRETCH_SEEKWINDOW), std::numeric_limits<u16>::max()));
-  stretch_overlap_ms = static_cast<u16>(std::min<u32>(
-    si.GetUIntValue(section, "StretchOverlapMS", DEFAULT_STRETCH_OVERLAP), std::numeric_limits<u16>::max()));
-  stretch_use_quickseek = si.GetBoolValue(section, "StretchUseQuickSeek", DEFAULT_STRETCH_USE_QUICKSEEK);
-  stretch_use_aa_filter = si.GetBoolValue(section, "StretchUseAAFilter", DEFAULT_STRETCH_USE_AA_FILTER);
-
-  expand_block_size = static_cast<u16>(std::min<u32>(
-    si.GetUIntValue(section, "ExpandBlockSize", DEFAULT_EXPAND_BLOCK_SIZE), std::numeric_limits<u16>::max()));
-  expand_block_size = std::clamp<u16>(
-    Common::IsPow2(expand_block_size) ? expand_block_size : Common::NextPow2(expand_block_size), 128, 8192);
-  expand_circular_wrap =
-    std::clamp(si.GetFloatValue(section, "ExpandCircularWrap", DEFAULT_EXPAND_CIRCULAR_WRAP), 0.0f, 360.0f);
-  expand_shift = std::clamp(si.GetFloatValue(section, "ExpandShift", DEFAULT_EXPAND_SHIFT), -1.0f, 1.0f);
-  expand_depth = std::clamp(si.GetFloatValue(section, "ExpandDepth", DEFAULT_EXPAND_DEPTH), 0.0f, 5.0f);
-  expand_focus = std::clamp(si.GetFloatValue(section, "ExpandFocus", DEFAULT_EXPAND_FOCUS), -1.0f, 1.0f);
-  expand_center_image =
-    std::clamp(si.GetFloatValue(section, "ExpandCenterImage", DEFAULT_EXPAND_CENTER_IMAGE), 0.0f, 1.0f);
-  expand_front_separation =
-    std::clamp(si.GetFloatValue(section, "ExpandFrontSeparation", DEFAULT_EXPAND_FRONT_SEPARATION), 0.0f, 10.0f);
-  expand_rear_separation =
-    std::clamp(si.GetFloatValue(section, "ExpandRearSeparation", DEFAULT_EXPAND_REAR_SEPARATION), 0.0f, 10.0f);
-  expand_low_cutoff =
-    static_cast<u8>(std::min<u32>(si.GetUIntValue(section, "ExpandLowCutoff", DEFAULT_EXPAND_LOW_CUTOFF), 100));
-  expand_high_cutoff =
-    static_cast<u8>(std::min<u32>(si.GetUIntValue(section, "ExpandHighCutoff", DEFAULT_EXPAND_HIGH_CUTOFF), 100));
 }
 
-void AudioStreamParameters::Save(SettingsInterface& si, const char* section) const
+ALWAYS_INLINE static GSVector4 vatan2(GSVector4 x, GSVector4 y)
 {
-  si.SetStringValue(section, "StretchMode", AudioStream::GetStretchModeName(stretch_mode));
-  si.SetStringValue(section, "ExpansionMode", AudioStream::GetExpansionModeName(expansion_mode));
-  si.SetUIntValue(section, "BufferMS", buffer_ms);
-  si.SetUIntValue(section, "OutputLatencyMS", output_latency_ms);
-  si.SetBoolValue(section, "OutputLatencyMinimal", output_latency_minimal);
-
-  si.SetUIntValue(section, "StretchSequenceLengthMS", stretch_sequence_length_ms);
-  si.SetUIntValue(section, "StretchSeekWindowMS", stretch_seekwindow_ms);
-  si.SetUIntValue(section, "StretchOverlapMS", stretch_overlap_ms);
-  si.SetBoolValue(section, "StretchUseQuickSeek", stretch_use_quickseek);
-  si.SetBoolValue(section, "StretchUseAAFilter", stretch_use_aa_filter);
-
-  si.SetUIntValue(section, "ExpandBlockSize", expand_block_size);
-  si.SetFloatValue(section, "ExpandCircularWrap", expand_circular_wrap);
-  si.SetFloatValue(section, "ExpandShift", expand_shift);
-  si.SetFloatValue(section, "ExpandDepth", expand_depth);
-  si.SetFloatValue(section, "ExpandFocus", expand_focus);
-  si.SetFloatValue(section, "ExpandCenterImage", expand_center_image);
-  si.SetFloatValue(section, "ExpandFrontSeparation", expand_front_separation);
-  si.SetFloatValue(section, "ExpandRearSeparation", expand_rear_separation);
-  si.SetUIntValue(section, "ExpandLowCutoff", expand_low_cutoff);
-  si.SetUIntValue(section, "ExpandHighCutoff", expand_high_cutoff);
+  return GSVector4::f64(std::atan2(x.extract64<0>(), y.extract64<0>()), std::atan2(x.extract64<1>(), y.extract64<1>()));
 }
 
-void AudioStreamParameters::Clear(SettingsInterface& si, const char* section)
+ALWAYS_INLINE static GSVector4 vlen(GSVector4 x, GSVector4 y)
 {
-  si.DeleteValue(section, "StretchMode");
-  si.DeleteValue(section, "ExpansionMode");
-  si.DeleteValue(section, "BufferMS");
-  si.DeleteValue(section, "OutputLatencyMS");
-  si.DeleteValue(section, "OutputLatencyMinimal");
-
-  si.DeleteValue(section, "StretchSequenceLengthMS");
-  si.DeleteValue(section, "StretchSeekWindowMS");
-  si.DeleteValue(section, "StretchOverlapMS");
-  si.DeleteValue(section, "StretchUseQuickSeek");
-  si.DeleteValue(section, "StretchUseAAFilter");
-
-  si.DeleteValue(section, "ExpandBlockSize");
-  si.DeleteValue(section, "ExpandCircularWrap");
-  si.DeleteValue(section, "ExpandShift");
-  si.DeleteValue(section, "ExpandDepth");
-  si.DeleteValue(section, "ExpandFocus");
-  si.DeleteValue(section, "ExpandCenterImage");
-  si.DeleteValue(section, "ExpandFrontSeparation");
-  si.DeleteValue(section, "ExpandRearSeparation");
-  si.DeleteValue(section, "ExpandLowCutoff");
-  si.DeleteValue(section, "ExpandHighCutoff");
+  // TODO: Replace with dot product
+  return vsqrt(x.sqr64().add64(y.sqr64()));
 }
 
-bool AudioStreamParameters::operator!=(const AudioStreamParameters& rhs) const
+ALWAYS_INLINE static GSVector4 vsin(GSVector4 v)
 {
-  return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
+  return GSVector4::f64(std::sin(v.extract64<0>()), std::sin(v.extract64<1>()));
 }
 
-bool AudioStreamParameters::operator==(const AudioStreamParameters& rhs) const
+ALWAYS_INLINE static GSVector4 vcos(GSVector4 v)
 {
-  return (std::memcmp(this, &rhs, sizeof(*this)) == 0);
+  return GSVector4::f64(std::cos(v.extract64<0>()), std::cos(v.extract64<1>()));
+}
+
+ALWAYS_INLINE static GSVector4 vsign(GSVector4 x)
+{
+  const GSVector4 zero = GSVector4::zero();
+  const GSVector4 zeromask = x.eq64(zero);
+  const GSVector4 signbit = GSVector4::cxpr64(1.0) | (x & GSVector4::cxpr64(static_cast<u64>(0x8000000000000000ULL)));
+  return signbit.blend32(zero, zeromask);
+}
+
+ALWAYS_INLINE static GSVector4 vpow(GSVector4 x, double y)
+{
+  return GSVector4::f64(std::pow(x.extract64<0>(), y), std::pow(x.extract64<1>(), y));
+}
+
+ALWAYS_INLINE_RELEASE static GSVector4 vclamp1(GSVector4 v)
+{
+  return v.max64(GSVector4::cxpr64(-1.0)).min64(GSVector4::cxpr64(1.0));
+}
+
+ALWAYS_INLINE_RELEASE static std::pair<GSVector4, GSVector4> GetPolar(GSVector4 a, GSVector4 p)
+{
+  return {a.mul64(vcos(p)), a.mul64(vsin(p))};
+}
+
+ALWAYS_INLINE_RELEASE static GSVector4 EdgeDistance(const GSVector4& a)
+{
+  // TODO: Replace with rcp (but probably not on arm, due to precision...)
+  const GSVector4 tan_a = GSVector4::f64(std::tan(a.extract64<0>()), std::tan(a.extract64<1>()));
+  const GSVector4 v0 = vsqrt(GSVector4::cxpr64(1.0).add64(vsqr(tan_a)));
+  const GSVector4 v1 = vsqrt(GSVector4::cxpr64(1.0).add64(vsqr(GSVector4::cxpr64(1.0).div64(tan_a))));
+  return v0.min64(v1);
+}
+
+ALWAYS_INLINE_RELEASE static void TransformDecode(GSVector4 a, GSVector4 p, GSVector4& x, GSVector4& y)
+{
+  // TODO: pow() instead?
+  // clang-format off
+  x = vclamp1(GSVector4::cxpr64(1.0047).mul64(a).add64(GSVector4::cxpr64(0.46804).mul64(a).mul64(p).mul64(p).mul64(p)).sub64(GSVector4::cxpr64(0.2042).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p)).add64(
+    GSVector4::cxpr64(0.0080586).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).sub64(GSVector4::cxpr64(0.0001526).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).sub64(
+    GSVector4::cxpr64(0.073512).mul64(a).mul64(a).mul64(a).mul64(p)).sub64(GSVector4::cxpr64(0.2499).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p)).add64(
+    GSVector4::cxpr64(0.016932).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).sub64(
+    GSVector4::cxpr64(0.00027707).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).add64(
+    GSVector4::cxpr64(0.048105).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).sub64(
+    GSVector4::cxpr64(0.0065947).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).add64(
+    GSVector4::cxpr64(0.0016006).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).sub64(
+    GSVector4::cxpr64(0.0071132).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).add64(
+    GSVector4::cxpr64(0.0022336).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).sub64(
+    GSVector4::cxpr64(0.0004804).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)));
+  y = vclamp1(GSVector4::cxpr64(0.98592).sub64(GSVector4::cxpr64(0.62237).mul64(p)).add64(GSVector4::cxpr64(0.077875).mul64(p).mul64(p)).sub64(GSVector4::cxpr64(0.0026929).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).add64(GSVector4::cxpr64(0.4971).mul64(a).mul64(a).mul64(p)).sub64(
+    GSVector4::cxpr64(0.00032124).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).add64(
+    GSVector4::cxpr64(9.2491e-006).mul64(a).mul64(a).mul64(a).mul64(a).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p).mul64(p)).add64(
+    GSVector4::cxpr64(0.051549).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a)).add64(GSVector4::cxpr64(1.0727e-014).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a).mul64(a)));
+  // clang-format on
+}
+
+ALWAYS_INLINE_RELEASE static void TransformCircularWrap(GSVector4& x, GSVector4& y, double refangle)
+{
+  // TODO: Make angle int instead? Precompute the below.
+  if (refangle == 90.0)
+    return;
+
+  refangle = refangle * EXPAND_PI / 180;
+  const double baseangle = 90 * EXPAND_PI / 180;
+
+  // TODO: Move to caller. This one doesn't have clamp.
+  GSVector4 ang = vatan2(x, y);
+  GSVector4 len = vlen(x, y).div64(EdgeDistance(ang));
+
+  const GSVector4 front = ang.mul64(GSVector4::f64(refangle / baseangle));
+
+  // TODO: Replace div -> mul
+  const GSVector4 back = EXPAND_VPI.sub64(GSVector4::f64(refangle - 2.0 * EXPAND_PI)
+                                            .mul64(EXPAND_VPI.sub64(ang.abs64()))
+                                            .mul64(vsign(ang))
+                                            .div64(GSVector4::f64(2.0 * EXPAND_PI - baseangle))
+                                            .neg64());
+  const GSVector4 cwmask = ang.abs64().lt64(GSVector4::f64(baseangle / 2.0));
+  ang = back.blend32(front, cwmask);
+  len = len.mul64(EdgeDistance(ang));
+  x = vclamp1(vsin(ang).mul64(len));
+  y = vclamp1(vcos(ang).mul64(len));
+}
+
+ALWAYS_INLINE_RELEASE static void TransformFocus(GSVector4& x, GSVector4& y, double focus)
+{
+  if (focus == 0.0)
+    return;
+
+  const GSVector4 ang = vatan2(x, y);
+  GSVector4 len = vclamp1(vlen(x, y).div64(EdgeDistance(ang)));
+  if (focus > 0.0)
+    len = GSVector4::cxpr64(1.0).sub64(vpow(GSVector4::cxpr64(1.0).sub64(len), 1.0 + focus * 20.0));
+  else
+    len = vpow(len, 1.0 - focus * 20.0);
+
+  len = len.mul64(EdgeDistance(ang));
+  x = vclamp1(vsin(ang).mul64(len));
+  y = vclamp1(vcos(ang).mul64(len));
+}
+
+ALWAYS_INLINE_RELEASE static std::pair<int, int> MapToGrid(GSVector4& x)
+{
+  const GSVector4 gp = x.add64(GSVector4::cxpr64(1.0))
+                         .mul64(GSVector4::cxpr64(0.5))
+                         .mul64(GSVector4::cxpr64(static_cast<double>(EXPAND_GRID_RES - 1)));
+  const GSVector4 i = GSVector4::cxpr64(static_cast<double>(EXPAND_GRID_RES - 2)).min64(gp.floor64());
+  x = gp.sub64(i);
+
+  const GSVector4i ii = i.f64toi32();
+  return {ii.extract32<0>(), ii.extract32<1>()};
+}
+
+void AudioStream::ExpandAllocate()
+{
+  if (m_parameters.expansion_mode == AudioExpansionMode::Disabled)
+    return;
+
+  m_expand_buffer_pos = 0;
+  m_expand_has_block = false;
+
+  const u32 freqdomain_size = (m_parameters.expand_block_size / 2 + 1);
+  m_expand_convbuffer =
+    Common::make_unique_aligned_for_overwrite<double[]>(VECTOR_ALIGNMENT, m_parameters.expand_block_size * 2);
+  m_expand_freqdomain =
+    Common::make_unique_aligned_for_overwrite<std::complex<double>[]>(VECTOR_ALIGNMENT, freqdomain_size * 2);
+
+  m_expand_fft = kiss_fftr_alloc(m_parameters.expand_block_size, 0, 0, 0);
+  m_expand_ifft = kiss_fftr_alloc(m_parameters.expand_block_size, 1, 0, 0);
+
+  m_expand_inbuf = Common::make_unique_aligned<float[]>(VECTOR_ALIGNMENT, 3 * m_parameters.expand_block_size);
+  m_expand_outbuf = Common::make_unique_aligned<float[]>(
+    VECTOR_ALIGNMENT, (m_parameters.expand_block_size + m_parameters.expand_block_size / 2) * m_output_channels);
+  m_expand_signal =
+    Common::make_unique_aligned<std::complex<double>[]>(VECTOR_ALIGNMENT, freqdomain_size * m_output_channels);
+
+  m_expand_window =
+    Common::make_unique_aligned_for_overwrite<double[]>(VECTOR_ALIGNMENT, m_parameters.expand_block_size);
+  for (unsigned k = 0; k < m_parameters.expand_block_size; k++)
+  {
+    m_expand_window[k] = std::sqrt(0.5 * (1 - std::cos(2 * EXPAND_PI * k / m_parameters.expand_block_size)) /
+                                   m_parameters.expand_block_size);
+  }
+
+  m_expand_lfe_low_cutoff =
+    (static_cast<float>(m_parameters.expand_low_cutoff) / m_sample_rate * 2.0f) * (m_parameters.expand_block_size / 2);
+  m_expand_lfe_high_cutoff =
+    (static_cast<float>(m_parameters.expand_high_cutoff) / m_sample_rate * 2.0f) * (m_parameters.expand_block_size / 2);
+}
+
+void AudioStream::ExpandFlush()
+{
+  std::memset(m_expand_inbuf.get(), 0, sizeof(float) * 3 * m_parameters.expand_block_size);
+  std::memset(m_expand_outbuf.get(), 0,
+              sizeof(float) * (m_parameters.expand_block_size + m_parameters.expand_block_size / 2) *
+                m_output_channels);
+
+  m_expand_buffer_pos = 0;
+  m_expand_has_block = false;
+}
+
+void AudioStream::ExpandDestroy()
+{
+  if (m_expand_ifft)
+  {
+    kiss_fftr_free(m_expand_ifft);
+    m_expand_ifft = nullptr;
+  }
+
+  if (m_expand_fft)
+  {
+    kiss_fftr_free(m_expand_fft);
+    m_expand_fft = nullptr;
+  }
+
+  m_expand_window.reset();
+  m_expand_signal = {};
+  m_expand_outbuf.reset();
+  m_expand_inbuf.reset();
+
+  m_expand_right_fd.reset();
+  m_expand_freqdomain.reset();
+  m_expand_convbuffer.reset();
+}
+
+ALWAYS_INLINE static void StoreCplxVec(std::complex<double>* dst, const GSVector4& real, const GSVector4& imag)
+{
+  const GSVector4 slow = real.upld(imag);
+  const GSVector4 shigh = real.uphd(imag);
+  GSVector4::store<true>(&dst[0], slow);
+  GSVector4::store<true>(&dst[1], shigh);
+}
+
+void AudioStream::ExpandDecode()
+{
+  for (u32 half = 0; half < 2; half++)
+  {
+    const float* input = &m_expand_inbuf[half ? m_parameters.expand_block_size : 0];
+    const u32 block_size = m_parameters.expand_block_size;
+    const u32 freqdomain_size = block_size / 2 + 1;
+    DebugAssert((block_size % 4) == 0);
+    for (unsigned k = 0; k < block_size; k += 2)
+    {
+      const GSVector4 ivec = GSVector4::load<true>(&input[k * 2]); // L,R,L,R
+      const GSVector4 vwnd = GSVector4::load<true>(&m_expand_window[k]);
+      GSVector4::store<true>(&m_expand_convbuffer[k], GSVector4::f32to64(ivec.xzzw()).mul64(vwnd));
+      GSVector4::store<true>(&m_expand_convbuffer[block_size + k], GSVector4::f32to64(ivec.ywzw()).mul64(vwnd));
+    }
+    kiss_fftr(m_expand_fft, &m_expand_convbuffer[0], reinterpret_cast<kiss_fft_cpx*>(&m_expand_freqdomain[0]));
+    kiss_fftr(m_expand_fft, &m_expand_convbuffer[block_size],
+              reinterpret_cast<kiss_fft_cpx*>(&m_expand_freqdomain[freqdomain_size]));
+
+    // TODO: This should all actually be +1, because otherwise the last element isn't computed.
+    const ExpansionChannelSetup& csetup = s_expansion_channel_count[static_cast<size_t>(m_parameters.expansion_mode)];
+    const u32 non_lfe_channels = csetup.output_channels - static_cast<u8>(csetup.has_lfe);
+    const u32 iterations = m_parameters.expand_block_size / 2u;
+    for (u32 f = 0; f < iterations; f += 2)
+    {
+      GSVector4 lf_real, lf_imag, rf_real, rf_imag;
+      {
+        GSVector4 lf_low = GSVector4::load<true>(&m_expand_freqdomain[f]);
+        GSVector4 lf_high = GSVector4::load<true>(&m_expand_freqdomain[f + 1]);
+        lf_real = lf_low.upld(lf_high);
+        lf_imag = lf_low.uphd(lf_high);
+        GSVector4 rf_low = GSVector4::load<true>(&m_expand_freqdomain[freqdomain_size + f]);
+        GSVector4 rf_high = GSVector4::load<true>(&m_expand_freqdomain[freqdomain_size + f + 1]);
+        rf_real = rf_low.upld(rf_high);
+        rf_imag = rf_low.uphd(rf_high);
+      }
+
+      const GSVector4 vampL = vlen(lf_real, lf_imag);
+      const GSVector4 vampR = vlen(rf_real, rf_imag);
+      const GSVector4 vphaseL = vatan2(lf_imag, lf_real);
+      const GSVector4 vphaseR = vatan2(rf_imag, rf_real);
+      const GSVector4 vampDiff =
+        vclamp1(vampR.sub64(vampL)
+                  .div64(vampR.add64(vampL))
+                  .blend32(GSVector4::zero(), vampL.add64(vampR).lt64(GSVector4::cxpr64(EXPAND_EPSILON))));
+      GSVector4 vphaseDiff = vphaseL.sub64(vphaseR).abs64();
+      vphaseDiff = vphaseDiff.blend32(GSVector4::cxpr64(2 * EXPAND_PI).sub64(vphaseDiff), vphaseDiff.gt64(EXPAND_VPI));
+
+      // Decode into soundfield position.
+      GSVector4 vx, vy;
+      TransformDecode(vampDiff, vphaseDiff, vx, vy);
+      TransformCircularWrap(vx, vy, m_parameters.expand_circular_wrap);
+      vy = vclamp1(vy.sub64(GSVector4::f64(m_parameters.expand_shift)));
+      vy = vclamp1(GSVector4::cxpr64(1.0).sub64(
+        GSVector4::cxpr64(1.0).sub64(vy).mul64(GSVector4::f64(m_parameters.expand_depth))));
+      TransformFocus(vx, vy, m_parameters.expand_focus);
+
+      // TODO: Replace with * 0.5
+      vx = vclamp1(vx.mul64(GSVector4::f64(m_parameters.expand_front_separation)
+                              .mul64(GSVector4::cxpr64(1.0).add64(vy))
+                              .div64(GSVector4::cxpr64(2.0))
+                              .add64(GSVector4::cxpr64(m_parameters.expand_rear_separation)
+                                       .mul64(GSVector4::cxpr64(1.0).sub64(vy))
+                                       .div64(GSVector4::cxpr64(2.0)))));
+
+      // TODO: Move earlier.
+      const GSVector4 vamp_total = vlen(vampL, vampR);
+      const GSVector4 vphase_of[] = {vphaseL, vatan2(lf_imag.add64(rf_imag), lf_real.add64(rf_real)), vphaseR};
+      const auto [p0, p1] = MapToGrid(vx);
+      const auto [q0, q1] = MapToGrid(vy);
+
+      GSVector4 vinv_lfe_level = GSVector4::cxpr64(1.0);
+      if (csetup.has_lfe && f < m_expand_lfe_high_cutoff)
+      {
+        const GSVector4 vlfe_level =
+          GSVector4::f64((f < m_expand_lfe_high_cutoff) ?
+                           ((f < m_expand_lfe_low_cutoff) ?
+                              1 :
+                              0.5 * (1 + std::cos(EXPAND_PI * (f - m_expand_lfe_low_cutoff) /
+                                                  (m_expand_lfe_high_cutoff - m_expand_lfe_low_cutoff)))) :
+                           0.0,
+                         ((f + 1) < m_expand_lfe_high_cutoff) ?
+                           (((f + 1) < m_expand_lfe_low_cutoff) ?
+                              1 :
+                              0.5 * (1 + std::cos(EXPAND_PI * ((f + 1) - m_expand_lfe_low_cutoff) /
+                                                  (m_expand_lfe_high_cutoff - m_expand_lfe_low_cutoff)))) :
+                           0.0);
+        vinv_lfe_level = GSVector4::cxpr64(1.0).sub64(vlfe_level);
+
+        const auto& [lfereal, lfeimag] = GetPolar(vamp_total, vphase_of[1]);
+        StoreCplxVec(&m_expand_signal[non_lfe_channels * freqdomain_size + f], lfereal.mul64(vlfe_level),
+                     lfeimag.mul64(vlfe_level));
+      }
+
+      for (u32 c = 0; c < non_lfe_channels; c++)
+      {
+        const ExpandLUT& a = csetup.channel_lut[c];
+        const GSVector4 inv_x = GSVector4::cxpr64(1.0).sub64(vx);
+        const GSVector4 inv_y = GSVector4::cxpr64(1.0).sub64(vy);
+        const GSVector4 w0 = GSVector4::f32to64(GSVector4(a[q0][p0], a[q1][p1]));
+        const GSVector4 w1 = GSVector4::f32to64(GSVector4(a[q0][p0 + 1], a[q1][p1 + 1]));
+        const GSVector4 w2 = GSVector4::f32to64(GSVector4(a[q0 + 1][p0], a[q1 + 1][p1]));
+        const GSVector4 w3 = GSVector4::f32to64(GSVector4(a[q0 + 1][p0 + 1], a[q1 + 1][p1 + 1]));
+        const auto& [sreal, simag] = GetPolar(vamp_total.mul64(inv_x.mul64(inv_y)
+                                                                 .mul64(w0)
+                                                                 .add64(vx.mul64(inv_y).mul64(w1))
+                                                                 .add64(inv_x.mul64(vy).mul64(w2))
+                                                                 .add64(vx.mul64(vy).mul64(w3))),
+                                              vphase_of[1 + csetup.channel_xsf[c]]);
+
+        // Subtract LFE from other channels.
+        StoreCplxVec(&m_expand_signal[c * freqdomain_size + f], sreal.mul64(vinv_lfe_level),
+                     simag.mul64(vinv_lfe_level));
+      }
+    }
+
+    std::memmove(&m_expand_outbuf[0], &m_expand_outbuf[m_output_channels * m_parameters.expand_block_size / 2],
+                 m_parameters.expand_block_size * m_output_channels * 4);
+    std::memset(&m_expand_outbuf[m_output_channels * m_parameters.expand_block_size], 0,
+                m_output_channels * 4 * m_parameters.expand_block_size / 2);
+
+    for (u32 c = 0; c < m_output_channels; c++)
+    {
+      // We computed the DC value to avoid masking stores, so zero it out.
+      std::complex<double>* freqdomain = &m_expand_signal[c * freqdomain_size];
+      freqdomain[0] = 0;
+      kiss_fftri(m_expand_ifft, reinterpret_cast<kiss_fft_cpx*>(freqdomain), &m_expand_convbuffer[0]);
+
+      // TODO: align, vectorize second half.
+      for (u32 k = 0; k < m_parameters.expand_block_size; k += 2)
+      {
+        const GSVector4 add =
+          GSVector4::load<true>(&m_expand_window[k]).mul64(GSVector4::load<true>(&m_expand_convbuffer[k]));
+        const size_t idx1 = (m_output_channels * (k + m_parameters.expand_block_size / 2) + c);
+        const size_t idx2 = (m_output_channels * ((k + 1) + m_parameters.expand_block_size / 2) + c);
+        m_expand_outbuf[idx1] = static_cast<float>(m_expand_outbuf[idx1] + add.extract64<0>());
+        m_expand_outbuf[idx2] = static_cast<float>(m_expand_outbuf[idx2] + add.extract64<1>());
+      }
+    }
+  }
+
+  std::memcpy(&m_expand_inbuf[0], &m_expand_inbuf[2 * m_parameters.expand_block_size],
+              4 * m_parameters.expand_block_size);
 }

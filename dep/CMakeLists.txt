@@ -27,8 +27,6 @@ disable_compiler_warnings_for_target(cubeb)
 disable_compiler_warnings_for_target(speex)
 add_subdirectory(kissfft EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(kissfft)
-add_subdirectory(freesurround EXCLUDE_FROM_ALL)
-disable_compiler_warnings_for_target(freesurround)
 
 if(ENABLE_OPENGL)
   add_subdirectory(glad EXCLUDE_FROM_ALL)

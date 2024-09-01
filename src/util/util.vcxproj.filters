@@ -158,5 +158,6 @@
   <ItemGroup>
     <None Include="metal_shaders.metal" />
     <None Include="opengl_context_agl.mm" />
+    <None Include="audio_stream_channel_maps.inl" />
   </ItemGroup>
 </Project>

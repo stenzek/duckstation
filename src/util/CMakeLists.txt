@@ -1,6 +1,7 @@
 add_library(util
   audio_stream.cpp
   audio_stream.h
+  audio_stream_channel_maps.inl
   cd_image.cpp
   cd_image.h
   cd_image_bin.cpp
@@ -77,7 +78,7 @@ target_precompile_headers(util PRIVATE "pch.h")
 target_include_directories(util PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(util PUBLIC common simpleini imgui)
-target_link_libraries(util PRIVATE libchdr JPEG::JPEG PNG::PNG WebP::libwebp ZLIB::ZLIB SoundTouch::SoundTouchDLL xxhash Zstd::Zstd reshadefx)
+target_link_libraries(util PRIVATE libchdr JPEG::JPEG PNG::PNG WebP::libwebp ZLIB::ZLIB SoundTouch::SoundTouchDLL xxhash Zstd::Zstd reshadefx kissfft)
 
 if(ENABLE_X11)
   target_compile_definitions(util PRIVATE "-DENABLE_X11=1")
@@ -184,7 +185,6 @@ if(NOT ANDROID)
   )
   target_link_libraries(util PUBLIC
     cubeb
-    freesurround
     SDL2::SDL2
   )
   # FFmpeg loaded dynamically on demand.
