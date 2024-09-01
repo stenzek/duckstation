@@ -69,6 +69,8 @@ static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit
 static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroachievements.org/achievement/{}";
 static constexpr const char* CACHE_SUBDIRECTORY_NAME = "achievement_images";
 
+static constexpr size_t URL_BUFFER_SIZE = 256;
+
 static constexpr u32 LEADERBOARD_NEARBY_ENTRIES_TO_FETCH = 10;
 static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
 
@@ -203,6 +205,7 @@ static std::string s_game_path;
 static std::string s_game_hash;
 static std::string s_game_title;
 static std::string s_game_icon;
+static std::string s_game_icon_url;
 static rc_client_user_game_summary_t s_game_summary;
 static u32 s_game_id = 0;
 static DynamicHeapArray<u8> s_state_buffer;
@@ -1136,19 +1139,15 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (display_summary)
     FullscreenUI::Initialize();
 
+  char url_buf[URL_BUFFER_SIZE];
+  if (int err = rc_client_game_get_image_url(info, url_buf, std::size(url_buf)); err == RC_OK)
+    s_game_icon_url = url_buf;
+  else
+    ReportRCError(err, "rc_client_game_get_image_url() failed: ");
+
   s_game_icon = GetLocalImagePath(info->badge_name, RC_IMAGE_TYPE_GAME);
-  if (!s_game_icon.empty() && !FileSystem::FileExists(s_game_icon.c_str()))
-  {
-    char buf[512];
-    if (int err = rc_client_game_get_image_url(info, buf, std::size(buf)); err == RC_OK)
-    {
-      DownloadImage(buf, s_game_icon);
-    }
-    else
-    {
-      ReportRCError(err, "rc_client_game_get_image_url() failed: ");
-    }
-  }
+  if (!s_game_icon.empty() && !s_game_icon_url.empty() && !FileSystem::FileExists(s_game_icon.c_str()))
+    DownloadImage(s_game_icon_url, s_game_icon);
 
   UpdateGameSummary();
   if (display_summary)
@@ -1174,6 +1173,7 @@ void Achievements::ClearGameInfo()
   s_game_id = 0;
   s_game_title = {};
   s_game_icon = {};
+  s_game_icon_url = {};
   s_state_buffer.deallocate();
   s_has_achievements = false;
   s_has_leaderboards = false;
@@ -1753,7 +1753,7 @@ std::string Achievements::GetAchievementBadgePath(const rc_client_achievement_t*
                                                                         RC_IMAGE_TYPE_ACHIEVEMENT_LOCKED);
   if (download_if_missing && !path.empty() && !FileSystem::FileExists(path.c_str()))
   {
-    char buf[512];
+    char buf[URL_BUFFER_SIZE];
     const int res = rc_client_achievement_get_image_url(achievement, state, buf, std::size(buf));
     if (res == RC_OK)
       DownloadImage(buf, path);
@@ -1771,7 +1771,7 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
 
   if (!FileSystem::FileExists(path.c_str()))
   {
-    char buf[512];
+    char buf[URL_BUFFER_SIZE];
     const int res = rc_client_leaderboard_entry_get_user_image_url(entry, buf, std::size(buf));
     if (res == RC_OK)
       DownloadImage(buf, path);
@@ -1952,7 +1952,7 @@ std::string Achievements::GetLoggedInUserBadgePath()
   badge_path = GetLocalImagePath(user->username, RC_IMAGE_TYPE_USER);
   if (!badge_path.empty() && !FileSystem::FileExists(badge_path.c_str())) [[unlikely]]
   {
-    char url[512];
+    char url[URL_BUFFER_SIZE];
     const int res = rc_client_user_get_image_url(user, url, std::size(url));
     if (res == RC_OK)
       DownloadImage(url, badge_path);
