@@ -10,156 +10,12 @@
 #include "common/log.h"
 #include "common/path.h"
 
+#include "libchdr/cdrom.h"
+
 #include <array>
 #include <map>
 
 Log_SetChannel(CDImageEcm);
-
-// unecm.c by Neill Corlett (c) 2002, GPL licensed
-
-/* LUTs used for computing ECC/EDC */
-
-static constexpr std::array<u8, 256> ComputeECCFLUT()
-{
-  std::array<u8, 256> ecc_lut{};
-  for (u32 i = 0; i < 256; i++)
-  {
-    u32 j = (i << 1) ^ (i & 0x80 ? 0x11D : 0);
-    ecc_lut[i] = static_cast<u8>(j);
-  }
-  return ecc_lut;
-}
-
-static constexpr std::array<u8, 256> ComputeECCBLUT()
-{
-  std::array<u8, 256> ecc_lut{};
-  for (u32 i = 0; i < 256; i++)
-  {
-    u32 j = (i << 1) ^ (i & 0x80 ? 0x11D : 0);
-    ecc_lut[i ^ j] = static_cast<u8>(i);
-  }
-  return ecc_lut;
-}
-
-static constexpr std::array<u32, 256> ComputeEDCLUT()
-{
-  std::array<u32, 256> edc_lut{};
-  for (u32 i = 0; i < 256; i++)
-  {
-    u32 edc = i;
-    for (u32 k = 0; k < 8; k++)
-      edc = (edc >> 1) ^ (edc & 1 ? 0xD8018001 : 0);
-    edc_lut[i] = edc;
-  }
-  return edc_lut;
-}
-
-static constexpr std::array<u8, 256> ecc_f_lut = ComputeECCFLUT();
-static constexpr std::array<u8, 256> ecc_b_lut = ComputeECCBLUT();
-static constexpr std::array<u32, 256> edc_lut = ComputeEDCLUT();
-
-/***************************************************************************/
-/*
-** Compute EDC for a block
-*/
-static u32 edc_partial_computeblock(u32 edc, const u8* src, u16 size)
-{
-  while (size--)
-    edc = (edc >> 8) ^ edc_lut[(edc ^ (*src++)) & 0xFF];
-  return edc;
-}
-
-static void edc_computeblock(const u8* src, u16 size, u8* dest)
-{
-  u32 edc = edc_partial_computeblock(0, src, size);
-  dest[0] = (edc >> 0) & 0xFF;
-  dest[1] = (edc >> 8) & 0xFF;
-  dest[2] = (edc >> 16) & 0xFF;
-  dest[3] = (edc >> 24) & 0xFF;
-}
-
-/***************************************************************************/
-/*
-** Compute ECC for a block (can do either P or Q)
-*/
-static void ecc_computeblock(u8* src, u32 major_count, u32 minor_count, u32 major_mult, u32 minor_inc, u8* dest)
-{
-  u32 size = major_count * minor_count;
-  u32 major, minor;
-  for (major = 0; major < major_count; major++)
-  {
-    u32 index = (major >> 1) * major_mult + (major & 1);
-    u8 ecc_a = 0;
-    u8 ecc_b = 0;
-    for (minor = 0; minor < minor_count; minor++)
-    {
-      u8 temp = src[index];
-      index += minor_inc;
-      if (index >= size)
-        index -= size;
-      ecc_a ^= temp;
-      ecc_b ^= temp;
-      ecc_a = ecc_f_lut[ecc_a];
-    }
-    ecc_a = ecc_b_lut[ecc_f_lut[ecc_a] ^ ecc_b];
-    dest[major] = ecc_a;
-    dest[major + major_count] = ecc_a ^ ecc_b;
-  }
-}
-
-/*
-** Generate ECC P and Q codes for a block
-*/
-static void ecc_generate(u8* sector, int zeroaddress)
-{
-  u8 address[4], i;
-  /* Save the address and zero it out */
-  if (zeroaddress)
-    for (i = 0; i < 4; i++)
-    {
-      address[i] = sector[12 + i];
-      sector[12 + i] = 0;
-    }
-  /* Compute ECC P code */
-  ecc_computeblock(sector + 0xC, 86, 24, 2, 86, sector + 0x81C);
-  /* Compute ECC Q code */
-  ecc_computeblock(sector + 0xC, 52, 43, 86, 88, sector + 0x8C8);
-  /* Restore the address */
-  if (zeroaddress)
-    for (i = 0; i < 4; i++)
-      sector[12 + i] = address[i];
-}
-
-/***************************************************************************/
-/*
-** Generate ECC/EDC information for a sector (must be 2352 = 0x930 bytes)
-** Returns 0 on success
-*/
-static void eccedc_generate(u8* sector, int type)
-{
-  switch (type)
-  {
-    case 1: /* Mode 1 */
-      /* Compute EDC */
-      edc_computeblock(sector + 0x00, 0x810, sector + 0x810);
-      /* Write out zero bytes */
-      for (u32 i = 0; i < 8; i++)
-        sector[0x814 + i] = 0;
-      /* Generate ECC P/Q codes */
-      ecc_generate(sector, 0);
-      break;
-    case 2: /* Mode 2 form 1 */
-      /* Compute EDC */
-      edc_computeblock(sector + 0x10, 0x808, sector + 0x818);
-      /* Generate ECC P/Q codes */
-      ecc_generate(sector, 1);
-      break;
-    case 3: /* Mode 2 form 2 */
-      /* Compute EDC */
-      edc_computeblock(sector + 0x10, 0x91C, sector + 0x92C);
-      break;
-  }
-}
 
 namespace {
 
@@ -459,7 +315,8 @@ bool CDImageEcm::ReadChunks(u32 disc_offset, u32 size)
           if (std::fread(sector + 0x00C, 0x003, 1, m_fp) != 1 || std::fread(sector + 0x010, 0x800, 1, m_fp) != 1)
             return false;
 
-          eccedc_generate(sector, 1);
+          edc_set(&sector[2064], edc_compute(sector, 2064));
+          ecc_generate(sector);
           skip = 0;
         }
         break;
@@ -475,7 +332,8 @@ bool CDImageEcm::ReadChunks(u32 disc_offset, u32 size)
           sector[0x12] = sector[0x16];
           sector[0x13] = sector[0x17];
 
-          eccedc_generate(sector, 2);
+          edc_set(&sector[2072], edc_compute(&sector[16], 2056));
+          ecc_generate(sector);
           skip = 0x10;
         }
         break;
@@ -491,7 +349,7 @@ bool CDImageEcm::ReadChunks(u32 disc_offset, u32 size)
           sector[0x12] = sector[0x16];
           sector[0x13] = sector[0x17];
 
-          eccedc_generate(sector, 3);
+          edc_set(&sector[2348], edc_compute(&sector[16], 2332));
           skip = 0x10;
         }
         break;
