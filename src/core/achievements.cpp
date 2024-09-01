@@ -523,6 +523,11 @@ const std::string& Achievements::GetGameIconPath()
   return s_game_icon;
 }
 
+const std::string& Achievements::GetGameIconURL()
+{
+  return s_game_icon_url;
+}
+
 const std::string& Achievements::GetRichPresenceString()
 {
   return s_rich_presence_string;

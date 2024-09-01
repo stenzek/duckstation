@@ -5892,6 +5892,8 @@ void System::UpdateRichPresence(bool update_session_time)
     const auto lock = Achievements::GetLock();
     state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128);
     rp.state = state_string.c_str();
+    if (const std::string& icon_url = Achievements::GetGameIconURL(); !icon_url.empty())
+        rp.largeImageKey = icon_url.c_str();
   }
 
   dyn_libs::Discord_UpdatePresence(&rp);
