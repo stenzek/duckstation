@@ -70,6 +70,8 @@ bool cdrom_parse_subtype_string(const char* typestring, uint32_t* subtype, uint3
 int ecc_verify(const uint8_t *sector);
 void ecc_generate(uint8_t *sector);
 void ecc_clear(uint8_t *sector);
+uint32_t edc_compute(const uint8_t* data, uint32_t length);
+void edc_set(uint8_t* dst, uint32_t edc);
 #endif
 
 
