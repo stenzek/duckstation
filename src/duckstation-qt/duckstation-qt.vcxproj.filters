@@ -31,7 +31,6 @@
     <ClCompile Include="emulationsettingswidget.cpp" />
     <ClCompile Include="achievementsettingswidget.cpp" />
     <ClCompile Include="achievementlogindialog.cpp" />
-    <ClCompile Include="collapsiblewidget.cpp" />
     <ClCompile Include="qtkeycodes.cpp" />
     <ClCompile Include="controllerglobalsettingswidget.cpp" />
     <ClCompile Include="controllersettingswindow.cpp" />
@@ -70,9 +69,6 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_cheatmanagerwindow.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_collapsiblewidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp">
@@ -228,7 +224,6 @@
     <QtMoc Include="emulationsettingswidget.h" />
     <QtMoc Include="achievementsettingswidget.h" />
     <QtMoc Include="achievementlogindialog.h" />
-    <QtMoc Include="collapsiblewidget.h" />
     <QtMoc Include="controllerbindingwidgets.h" />
     <QtMoc Include="controllerglobalsettingswidget.h" />
     <QtMoc Include="controllersettingswindow.h" />

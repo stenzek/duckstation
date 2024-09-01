@@ -25,8 +25,6 @@ disable_compiler_warnings_for_target(rapidyaml)
 add_subdirectory(cubeb EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(cubeb)
 disable_compiler_warnings_for_target(speex)
-add_subdirectory(kissfft EXCLUDE_FROM_ALL)
-disable_compiler_warnings_for_target(kissfft)
 
 if(ENABLE_OPENGL)
   add_subdirectory(glad EXCLUDE_FROM_ALL)

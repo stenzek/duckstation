@@ -11,7 +11,6 @@
     <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="cheatmanagerwindow.cpp" />
     <ClCompile Include="cheatcodeeditordialog.cpp" />
-    <ClCompile Include="collapsiblewidget.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="controllerbindingwidgets.cpp" />
@@ -77,7 +76,6 @@
     <QtMoc Include="debuggerwindow.h" />
     <QtMoc Include="achievementsettingswidget.h" />
     <QtMoc Include="achievementlogindialog.h" />
-    <QtMoc Include="collapsiblewidget.h" />
     <QtMoc Include="controllerbindingwidgets.h" />
     <QtMoc Include="controllerglobalsettingswidget.h" />
     <QtMoc Include="controllersettingswindow.h" />
@@ -226,7 +224,6 @@
     <ClCompile Include="$(IntDir)moc_biossettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatmanagerwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
-    <ClCompile Include="$(IntDir)moc_collapsiblewidget.cpp" />
     <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllerbindingwidgets.cpp" />

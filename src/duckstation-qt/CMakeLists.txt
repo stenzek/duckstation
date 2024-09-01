@@ -35,8 +35,6 @@ set(SRCS
   cheatmanagerwindow.cpp
   cheatmanagerwindow.h
   cheatmanagerwindow.ui
-  collapsiblewidget.cpp
-  collapsiblewidget.h
   colorpickerbutton.cpp
   colorpickerbutton.h
   consolesettingswidget.cpp
