@@ -1,6 +1,10 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
 
+//
+// Lightweight wrapper over native SIMD types for cross-platform vector code.
+//
+
 #pragma once
 
 #include "common/intrin.h"

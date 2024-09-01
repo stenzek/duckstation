@@ -235,8 +235,6 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE GSVector2i mix16(const GSVector2i& v) const { return blend16<0xa>(v); }
-
   GSVector2i shuffle8(const GSVector2i& mask) const
   {
     ALL_LANES_8(ret.S8[i] = (mask.S8[i] & 0x80) ? 0 : (S8[mask.S8[i] & 0xf]));
@@ -601,15 +599,6 @@ public:
 
   GSVector2 neg() const { return GSVector2(-x, -y); }
 
-  GSVector2 rcp() const { return GSVector2(1.0f / x, 1.0f / y); }
-
-  GSVector2 rcpnr() const
-  {
-    GSVector2 v_ = rcp();
-
-    return (v_ + v_) - (v_ * v_) * *this;
-  }
-
   GSVector2 floor() const { return GSVector2(std::floor(x), std::floor(y)); }
 
   GSVector2 ceil() const { return GSVector2(std::ceil(x), std::ceil(y)); }
@@ -973,15 +962,7 @@ public:
   // rect
 
   ALWAYS_INLINE s32 width() const { return right - left; }
-
   ALWAYS_INLINE s32 height() const { return bottom - top; }
-
-  ALWAYS_INLINE GSVector4i rsize() const
-  {
-    return sub32(xyxy()); // same as GSVector4i(0, 0, width(), height());
-  }
-
-  ALWAYS_INLINE s32 rarea() const { return width() * height(); }
 
   ALWAYS_INLINE bool rempty() const { return lt32(zwzw()).mask() != 0x00ff; }
 
@@ -1184,8 +1165,6 @@ public:
       ret.U64[i] = (v.U64[i] & mask.U64[i]) | (U64[i] & ~mask.U64[i]);
     return ret;
   }
-
-  ALWAYS_INLINE GSVector4i mix16(const GSVector4i& v) const { return blend16<0xaa>(v); }
 
   GSVector4i shuffle8(const GSVector4i& mask) const
   {
@@ -1447,63 +1426,13 @@ public:
 
   GSVector4i subus16(const GSVector4i& v) const { ALL_LANES_16(ret.U16[i] = USATURATE16(U16[i] - v.U16[i])); }
 
-  GSVector4i avg8(const GSVector4i& v) const { ALL_LANES_8(ret.U8[i] = (U8[i] + v.U8[i]) >> 1); }
-
-  GSVector4i avg16(const GSVector4i& v) const { ALL_LANES_16(ret.U16[i] = (U16[i] + v.U16[i]) >> 1); }
-
   GSVector4i mul16hs(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = (S16[i] * v.S16[i]) >> 16); }
-
-  GSVector4i mul16hu(const GSVector4i& v) const { ALL_LANES_16(ret.U16[i] = (U16[i] * v.U16[i]) >> 16); }
 
   GSVector4i mul16l(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = S16[i] * v.S16[i]); }
 
   GSVector4i mul16hrs(const GSVector4i& v) const { ALL_LANES_16(ret.S16[i] = ((S16[i] * v.S16[i]) >> 14) + 1); }
 
   GSVector4i mul32l(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] * v.S32[i]); }
-
-  template<s32 shift>
-  ALWAYS_INLINE GSVector4i lerp16(const GSVector4i& a, const GSVector4i& f) const
-  {
-    // (a - this) * f << shift + this
-
-    return add16(a.sub16(*this).modulate16<shift>(f));
-  }
-
-  template<s32 shift>
-  ALWAYS_INLINE static GSVector4i lerp16(const GSVector4i& a, const GSVector4i& b, const GSVector4i& c)
-  {
-    // (a - b) * c << shift
-
-    return a.sub16(b).modulate16<shift>(c);
-  }
-
-  template<s32 shift>
-  ALWAYS_INLINE static GSVector4i lerp16(const GSVector4i& a, const GSVector4i& b, const GSVector4i& c,
-                                         const GSVector4i& d)
-  {
-    // (a - b) * c << shift + d
-
-    return d.add16(a.sub16(b).modulate16<shift>(c));
-  }
-
-  ALWAYS_INLINE GSVector4i lerp16_4(const GSVector4i& a_, const GSVector4i& f) const
-  {
-    // (a - this) * f >> 4 + this (a, this: 8-bit, f: 4-bit)
-
-    return add16(a_.sub16(*this).mul16l(f).sra16<4>());
-  }
-
-  template<s32 shift>
-  ALWAYS_INLINE GSVector4i modulate16(const GSVector4i& f) const
-  {
-    // a * f << shift
-    if constexpr (shift == 0)
-    {
-      return mul16hrs(f);
-    }
-
-    return sll16<shift + 1>().mul16hs(f);
-  }
 
   ALWAYS_INLINE bool eq(const GSVector4i& v) const { return (std::memcmp(S32, v.S32, sizeof(S32))) == 0; }
 
@@ -1746,36 +1675,36 @@ public:
   ALWAYS_INLINE GSVector2i xy() const { return GSVector2i(x, y); }
   ALWAYS_INLINE GSVector2i zw() const { return GSVector2i(z, w); }
 
-  // clang-format off
-  // l/h/lh not implemented until needed
+#define VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                             \
+  ALWAYS_INLINE GSVector4i xs##ys##zs##ws() const { return GSVector4i(S32[xn], S32[yn], S32[zn], S32[wn]); }
 
-#define VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn) \
-    ALWAYS_INLINE GSVector4i xs##ys##zs##ws() const {return GSVector4i(S32[xn], S32[yn], S32[zn], S32[wn]);}
+#define VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, zs, zn)                                                                     \
+  VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, x, 0);                                                                    \
+  VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, y, 1);                                                                    \
+  VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, z, 2);                                                                    \
+  VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, w, 3);
 
-#define VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, zs, zn) \
-    VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, x, 0) \
-    VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, y, 1) \
-    VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, z, 2) \
-    VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, w, 3) \
+#define VECTOR4i_SHUFFLE_2(xs, xn, ys, yn)                                                                             \
+  VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, x, 0);                                                                            \
+  VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, y, 1);                                                                            \
+  VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, z, 2);                                                                            \
+  VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, w, 3);
 
-#define VECTOR4i_SHUFFLE_2(xs, xn, ys, yn) \
-    VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, x, 0) \
-    VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, y, 1) \
-    VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, z, 2) \
-    VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, w, 3) \
+#define VECTOR4i_SHUFFLE_1(xs, xn)                                                                                     \
+  VECTOR4i_SHUFFLE_2(xs, xn, x, 0);                                                                                    \
+  VECTOR4i_SHUFFLE_2(xs, xn, y, 1);                                                                                    \
+  VECTOR4i_SHUFFLE_2(xs, xn, z, 2);                                                                                    \
+  VECTOR4i_SHUFFLE_2(xs, xn, w, 3);
 
-#define VECTOR4i_SHUFFLE_1(xs, xn) \
-    VECTOR4i_SHUFFLE_2(xs, xn, x, 0) \
-    VECTOR4i_SHUFFLE_2(xs, xn, y, 1) \
-    VECTOR4i_SHUFFLE_2(xs, xn, z, 2) \
-    VECTOR4i_SHUFFLE_2(xs, xn, w, 3) \
+  VECTOR4i_SHUFFLE_1(x, 0);
+  VECTOR4i_SHUFFLE_1(y, 1);
+  VECTOR4i_SHUFFLE_1(z, 2);
+  VECTOR4i_SHUFFLE_1(w, 3);
 
-  VECTOR4i_SHUFFLE_1(x, 0)
-    VECTOR4i_SHUFFLE_1(y, 1)
-    VECTOR4i_SHUFFLE_1(z, 2)
-    VECTOR4i_SHUFFLE_1(w, 3)
-
-  // clang-format on
+#undef VECTOR4i_SHUFFLE_1
+#undef VECTOR4i_SHUFFLE_2
+#undef VECTOR4i_SHUFFLE_3
+#undef VECTOR4i_SHUFFLE_4
 };
 
 class alignas(16) GSVector4
@@ -1790,6 +1719,8 @@ class alignas(16) GSVector4
   constexpr GSVector4(cxpr_init_tag, int x, int y, int z, int w) : I32{x, y, z, w} {}
 
   constexpr GSVector4(cxpr_init_tag, u64 x, u64 y) : U64{x, y} {}
+
+  constexpr GSVector4(cxpr_init_tag, double x, double y) : F64{x, y} {}
 
 public:
   union
@@ -1831,6 +1762,10 @@ public:
   constexpr static GSVector4 cxpr64(u64 x, u64 y) { return GSVector4(cxpr_init, x, y); }
 
   constexpr static GSVector4 cxpr64(u64 x) { return GSVector4(cxpr_init, x, x); }
+
+  constexpr static GSVector4 cxpr64(double x, double y) { return GSVector4(cxpr_init, x, y); }
+
+  constexpr static GSVector4 cxpr64(double x) { return GSVector4(cxpr_init, x, x); }
 
   ALWAYS_INLINE GSVector4(float x, float y, float z, float w)
   {
@@ -1881,6 +1816,13 @@ public:
     return ret;
   }
 
+  ALWAYS_INLINE static GSVector4 f64(double x)
+  {
+    GSVector4 ret;
+    ret.F64[0] = ret.F64[1] = x;
+    return ret;
+  }
+
   ALWAYS_INLINE void operator=(float f) { x = y = z = w = f; }
 
   u32 rgba32() const { return GSVector4i(*this).rgba32(); }
@@ -1893,36 +1835,9 @@ public:
 
   GSVector4 neg() const { return GSVector4(-x, -y, -z, -w); }
 
-  GSVector4 rcp() const { return GSVector4(1.0f / x, 1.0f / y, 1.0f / z, 1.0f / w); }
-
-  GSVector4 rcpnr() const
-  {
-    GSVector4 v_ = rcp();
-
-    return (v_ + v_) - (v_ * v_) * *this;
-  }
-
   GSVector4 floor() const { return GSVector4(std::floor(x), std::floor(y), std::floor(z), std::floor(w)); }
 
   GSVector4 ceil() const { return GSVector4(std::ceil(x), std::ceil(y), std::ceil(z), std::ceil(w)); }
-
-  GSVector4 madd(const GSVector4& a_, const GSVector4& b_) const { return *this * a_ + b_; }
-
-  GSVector4 msub(const GSVector4& a_, const GSVector4& b_) const { return *this * a_ - b_; }
-
-  GSVector4 nmadd(const GSVector4& a_, const GSVector4& b_) const { return b_ - *this * a_; }
-
-  GSVector4 nmsub(const GSVector4& a_, const GSVector4& b_) const { return -b_ - *this * a_; }
-
-  GSVector4 addm(const GSVector4& a_, const GSVector4& b_) const
-  {
-    return a_.madd(b_, *this); // *this + a * b
-  }
-
-  GSVector4 subm(const GSVector4& a_, const GSVector4& b_) const
-  {
-    return a_.nmadd(b_, *this); // *this - a * b
-  }
 
   GSVector4 hadd() const { return GSVector4(x + y, z + w, x + y, z + w); }
 
@@ -2043,6 +1958,20 @@ public:
   ALWAYS_INLINE int extract32() const
   {
     return I32[i];
+  }
+
+  template<int dst>
+  ALWAYS_INLINE GSVector4 insert64(double v) const
+  {
+    GSVector4 ret;
+    ret.F64[dst] = v;
+    return ret;
+  }
+
+  template<int src>
+  ALWAYS_INLINE double extract64() const
+  {
+    return F64[src];
   }
 
   ALWAYS_INLINE static constexpr GSVector4 zero() { return GSVector4::cxpr(0.0f, 0.0f, 0.0f, 0.0f); }
@@ -2300,6 +2229,71 @@ public:
     return ret;
   }
 
+  ALWAYS_INLINE GSVector4 div64(const GSVector4& v) const
+  {
+    return GSVector4::f64(F64[0] / v.F64[0], F64[1] / v.F64[1]);
+  }
+
+  ALWAYS_INLINE GSVector4 gt64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] > v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] > v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 eq64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] == v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] == v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 lt64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] < v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] < v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 ge64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] >= v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] >= v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 le64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] <= v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] <= v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 min64(const GSVector4& v) const
+  {
+    return GSVector4::f64(std::min(F64[0], v.F64[0]), std::min(F64[1], v.F64[1]));
+  }
+
+  ALWAYS_INLINE GSVector4 max64(const GSVector4& v) const
+  {
+    return GSVector4::f64(std::max(F64[0], v.F64[0]), std::max(F64[1], v.F64[1]));
+  }
+
+  ALWAYS_INLINE GSVector4 abs64() const { return *this & GSVector4::cxpr64(static_cast<u64>(0x7FFFFFFFFFFFFFFFULL)); }
+
+  ALWAYS_INLINE GSVector4 neg64() const {return *this ^ GSVector4::cxpr64(static_cast<u64>(0x8000000000000000ULL(); }
+
+  ALWAYS_INLINE GSVector4 sqrt64() const { return GSVector4::f64(std::sqrt(F64[0]), std::sqrt(F64[1])); }
+
+  ALWAYS_INLINE GSVector4 sqr64() const { return GSVector4::f64(F64[0] * F64[0], F64[1] * F64[1]); }
+
+  ALWAYS_INLINE GSVector4 floor64() const { return GSVector4::f64(std::floor(F64[0]), std::floor(F64[1])); }
+
   ALWAYS_INLINE static GSVector4 f32to64(const GSVector4& v_)
   {
     GSVector4 ret;
@@ -2323,36 +2317,40 @@ public:
     return GSVector4i(static_cast<s32>(F64[0]), static_cast<s32>(F64[1]), 0, 0);
   }
 
-  // clang-format off
+#define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
+  ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const { return GSVector4(F32[xn], F32[yn], F32[zn], F32[wn]); }             \
+  ALWAYS_INLINE GSVector4 xs##ys##zs##ws(const GSVector4& v_) const                                                    \
+  {                                                                                                                    \
+    return GSVector4(F32[xn], F32[yn], v_.F32[zn], v_.F32[wn]);                                                        \
+  }
 
-#define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn) \
-    ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const { return GSVector4(F32[xn], F32[yn], F32[zn], F32[wn]); } \
-    ALWAYS_INLINE GSVector4 xs##ys##zs##ws(const GSVector4& v_) const { return GSVector4(F32[xn], F32[yn], v_.F32[zn], v_.F32[wn]); }
+#define VECTOR4_SHUFFLE_3(xs, xn, ys, yn, zs, zn)                                                                      \
+  VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, x, 0);                                                                     \
+  VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, y, 1);                                                                     \
+  VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, z, 2);                                                                     \
+  VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, w, 3);
 
-#define VECTOR4_SHUFFLE_3(xs, xn, ys, yn, zs, zn) \
-    VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, x, 0) \
-    VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, y, 1) \
-    VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, z, 2) \
-    VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, w, 3) \
+#define VECTOR4_SHUFFLE_2(xs, xn, ys, yn)                                                                              \
+  VECTOR4_SHUFFLE_3(xs, xn, ys, yn, x, 0);                                                                             \
+  VECTOR4_SHUFFLE_3(xs, xn, ys, yn, y, 1);                                                                             \
+  VECTOR4_SHUFFLE_3(xs, xn, ys, yn, z, 2);                                                                             \
+  VECTOR4_SHUFFLE_3(xs, xn, ys, yn, w, 3);
 
-#define VECTOR4_SHUFFLE_2(xs, xn, ys, yn) \
-    VECTOR4_SHUFFLE_3(xs, xn, ys, yn, x, 0) \
-    VECTOR4_SHUFFLE_3(xs, xn, ys, yn, y, 1) \
-    VECTOR4_SHUFFLE_3(xs, xn, ys, yn, z, 2) \
-    VECTOR4_SHUFFLE_3(xs, xn, ys, yn, w, 3) \
+#define VECTOR4_SHUFFLE_1(xs, xn)                                                                                      \
+  VECTOR4_SHUFFLE_2(xs, xn, x, 0);                                                                                     \
+  VECTOR4_SHUFFLE_2(xs, xn, y, 1);                                                                                     \
+  VECTOR4_SHUFFLE_2(xs, xn, z, 2);                                                                                     \
+  VECTOR4_SHUFFLE_2(xs, xn, w, 3);
 
-#define VECTOR4_SHUFFLE_1(xs, xn) \
-    VECTOR4_SHUFFLE_2(xs, xn, x, 0) \
-    VECTOR4_SHUFFLE_2(xs, xn, y, 1) \
-    VECTOR4_SHUFFLE_2(xs, xn, z, 2) \
-    VECTOR4_SHUFFLE_2(xs, xn, w, 3) \
+  VECTOR4_SHUFFLE_1(x, 0);
+  VECTOR4_SHUFFLE_1(y, 1);
+  VECTOR4_SHUFFLE_1(z, 2);
+  VECTOR4_SHUFFLE_1(w, 3);
 
-  VECTOR4_SHUFFLE_1(x, 0)
-    VECTOR4_SHUFFLE_1(y, 1)
-    VECTOR4_SHUFFLE_1(z, 2)
-    VECTOR4_SHUFFLE_1(w, 3)
-
-  // clang-format on
+#undef VECTOR4_SHUFFLE_1
+#undef VECTOR4_SHUFFLE_2
+#undef VECTOR4_SHUFFLE_3
+#undef VECTOR4_SHUFFLE_4
 
   ALWAYS_INLINE GSVector4 broadcast32() const { return GSVector4(x, x, x, x); }
 
