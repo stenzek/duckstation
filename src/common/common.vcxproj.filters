@@ -33,7 +33,6 @@
     <ClInclude Include="memory_settings_interface.h" />
     <ClInclude Include="threading.h" />
     <ClInclude Include="scoped_guard.h" />
-    <ClInclude Include="build_timestamp.h" />
     <ClInclude Include="sha1_digest.h" />
     <ClInclude Include="fastjmp.h" />
     <ClInclude Include="memmap.h" />

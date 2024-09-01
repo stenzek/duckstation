@@ -6,7 +6,6 @@
     <ClInclude Include="assert.h" />
     <ClInclude Include="bitfield.h" />
     <ClInclude Include="bitutils.h" />
-    <ClInclude Include="build_timestamp.h" />
     <ClInclude Include="crash_handler.h" />
     <ClInclude Include="dimensional_array.h" />
     <ClInclude Include="dynamic_library.h" />

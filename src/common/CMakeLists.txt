@@ -6,7 +6,6 @@ add_library(common
   binary_reader_writer.h
   bitfield.h
   bitutils.h
-  build_timestamp.h
   crash_handler.cpp
   crash_handler.h
   dimensional_array.h
