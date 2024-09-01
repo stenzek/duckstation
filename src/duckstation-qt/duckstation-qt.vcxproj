@@ -262,9 +262,6 @@
     <ClCompile Include="$(IntDir)moc_setupwizarddialog.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Natvis Include="qt5.natvis" />
-  </ItemGroup>
-  <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />
   </ItemGroup>
   <ItemGroup>
