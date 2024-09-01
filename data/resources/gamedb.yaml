@@ -152645,6 +152645,7 @@ SCPS-45395:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
+    - DisablePGXPCulling # Fixes geometry corruption when looking at portals.
   metadata:
     publisher: "Sony Computer Entertaiment Japan"
     developer: "Insomniac Games"
@@ -152668,6 +152669,7 @@ SCES-01438:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
+    - DisablePGXPCulling # Fixes geometry corruption when looking at portals.
   metadata:
     publisher: "Sony Computer Entertainment Europe"
     developer: "Insomniac Games"
@@ -152696,6 +152698,7 @@ SCPS-10085:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
+    - DisablePGXPCulling # Fixes geometry corruption when looking at portals.
   metadata:
     publisher: "Sony Computer Entertaiment Japan"
     developer: "Insomniac Games"
@@ -152714,6 +152717,7 @@ PAPX-90078:
   name: "Spyro the Dragon (Japan) (Demo)"
   traits:
     - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
+    - DisablePGXPCulling # Fixes geometry corruption when looking at portals.
 SCPS-10083:
   name: "Spyro the Dragon (Japan) (Shokai Genteiban)"
   controllers:
@@ -152721,6 +152725,7 @@ SCPS-10083:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
+    - DisablePGXPCulling # Fixes geometry corruption when looking at portals.
   metadata:
     publisher: "Sony Computer Entertaiment Japan"
     developer: "Insomniac Games"
@@ -152745,6 +152750,7 @@ SCUS-94228:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
+    - DisablePGXPCulling # Fixes geometry corruption when looking at portals.
   metadata:
     publisher: "Sony Computer Entertaiment America"
     developer: "Insomniac Games"
@@ -152763,10 +152769,12 @@ SCUS-94290:
   name: "Spyro the Dragon (USA) (Demo 1)"
   traits:
     - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
+    - DisablePGXPCulling # Fixes geometry corruption when looking at portals.
 SCUS-94439:
   name: "Spyro the Dragon (USA) (Demo 2)"
   traits:
     - ForcePGXPCPUMode # Required, but not perfect. Game messes with geometry.
+    - DisablePGXPCulling # Fixes geometry corruption when looking at portals.
 SCED-01637:
   name: "Spyro the Dragon Speciale (France)"
   traits:
