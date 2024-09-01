@@ -202,9 +202,8 @@ static std::vector<BackgroundProgressDialogData> s_background_progress_dialogs;
 static std::mutex s_background_progress_lock;
 } // namespace ImGuiFullscreen
 
-void ImGuiFullscreen::SetFonts(ImFont* standard_font, ImFont* medium_font, ImFont* large_font)
+void ImGuiFullscreen::SetFonts(ImFont* medium_font, ImFont* large_font)
 {
-  g_standard_font = standard_font;
   g_medium_font = medium_font;
   g_large_font = large_font;
 }

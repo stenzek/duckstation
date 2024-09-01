@@ -69,6 +69,9 @@ bool AddFullscreenFontsIfMissing();
 /// Returns the standard font for external drawing.
 ImFont* GetStandardFont();
 
+/// Returns the standard font for on-screen display drawing.
+ImFont* GetOSDFont();
+
 /// Returns the fixed-width font for external drawing.
 ImFont* GetFixedFont();
 

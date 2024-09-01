@@ -232,7 +232,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
 
   const float shadow_offset = std::ceil(1.0f * scale);
   ImFont* fixed_font = ImGuiManager::GetFixedFont();
-  ImFont* standard_font = ImGuiManager::GetStandardFont();
+  ImFont* standard_font = ImGuiManager::GetOSDFont();
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   SmallString text;
   ImVec2 text_size;
@@ -506,7 +506,7 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
     return;
 
   const float shadow_offset = std::ceil(scale);
-  ImFont* const standard_font = ImGuiManager::GetStandardFont();
+  ImFont* const standard_font = ImGuiManager::GetOSDFont();
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
   static constexpr const char* ICON = ICON_PF_CIRCLE;
@@ -614,7 +614,7 @@ void ImGuiManager::DrawInputsOverlay()
   const float shadow_offset = 1.0f * scale;
   const float margin = 10.0f * scale;
   const float spacing = 5.0f * scale;
-  ImFont* font = ImGuiManager::GetStandardFont();
+  ImFont* font = ImGuiManager::GetOSDFont();
 
   static constexpr u32 text_color = IM_COL32(0xff, 0xff, 0xff, 255);
   static constexpr u32 shadow_color = IM_COL32(0x00, 0x00, 0x00, 100);
@@ -984,6 +984,7 @@ void SaveStateSelectorUI::Draw()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
   ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.15f, 0.17f, 0.8f));
+  ImGui::PushFont(ImGuiManager::GetOSDFont());
   ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
                           ImVec2(0.5f, 0.5f));
@@ -1103,6 +1104,7 @@ void SaveStateSelectorUI::Draw()
   }
   ImGui::End();
 
+  ImGui::PopFont();
   ImGui::PopStyleVar(2);
   ImGui::PopStyleColor();
 

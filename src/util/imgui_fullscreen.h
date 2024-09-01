@@ -43,7 +43,6 @@ static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
 
-extern ImFont* g_standard_font;
 extern ImFont* g_medium_font;
 extern ImFont* g_large_font;
 
@@ -121,7 +120,7 @@ ImRect CenterImage(const ImRect& fit_rect, const ImVec2& image_size);
 bool Initialize(const char* placeholder_image_path);
 
 void SetTheme(bool light);
-void SetFonts(ImFont* standard_font, ImFont* medium_font, ImFont* large_font);
+void SetFonts(ImFont* medium_font, ImFont* large_font);
 bool UpdateLayoutScale();
 
 /// Shuts down, clearing all state.
