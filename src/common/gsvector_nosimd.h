@@ -603,13 +603,6 @@ public:
 
   GSVector2 rcp() const { return GSVector2(1.0f / x, 1.0f / y); }
 
-  GSVector2 rcpnr() const
-  {
-    GSVector2 v_ = rcp();
-
-    return (v_ + v_) - (v_ * v_) * *this;
-  }
-
   GSVector2 floor() const { return GSVector2(std::floor(x), std::floor(y)); }
 
   GSVector2 ceil() const { return GSVector2(std::ceil(x), std::ceil(y)); }
@@ -1461,50 +1454,6 @@ public:
 
   GSVector4i mul32l(const GSVector4i& v) const { ALL_LANES_32(ret.S32[i] = S32[i] * v.S32[i]); }
 
-  template<s32 shift>
-  ALWAYS_INLINE GSVector4i lerp16(const GSVector4i& a, const GSVector4i& f) const
-  {
-    // (a - this) * f << shift + this
-
-    return add16(a.sub16(*this).modulate16<shift>(f));
-  }
-
-  template<s32 shift>
-  ALWAYS_INLINE static GSVector4i lerp16(const GSVector4i& a, const GSVector4i& b, const GSVector4i& c)
-  {
-    // (a - b) * c << shift
-
-    return a.sub16(b).modulate16<shift>(c);
-  }
-
-  template<s32 shift>
-  ALWAYS_INLINE static GSVector4i lerp16(const GSVector4i& a, const GSVector4i& b, const GSVector4i& c,
-                                         const GSVector4i& d)
-  {
-    // (a - b) * c << shift + d
-
-    return d.add16(a.sub16(b).modulate16<shift>(c));
-  }
-
-  ALWAYS_INLINE GSVector4i lerp16_4(const GSVector4i& a_, const GSVector4i& f) const
-  {
-    // (a - this) * f >> 4 + this (a, this: 8-bit, f: 4-bit)
-
-    return add16(a_.sub16(*this).mul16l(f).sra16<4>());
-  }
-
-  template<s32 shift>
-  ALWAYS_INLINE GSVector4i modulate16(const GSVector4i& f) const
-  {
-    // a * f << shift
-    if constexpr (shift == 0)
-    {
-      return mul16hrs(f);
-    }
-
-    return sll16<shift + 1>().mul16hs(f);
-  }
-
   ALWAYS_INLINE bool eq(const GSVector4i& v) const { return (std::memcmp(S32, v.S32, sizeof(S32))) == 0; }
 
   GSVector4i eq8(const GSVector4i& v) const { ALL_LANES_8(ret.S8[i] = (S8[i] == v.S8[i]) ? -1 : 0); }
@@ -1791,6 +1740,8 @@ class alignas(16) GSVector4
 
   constexpr GSVector4(cxpr_init_tag, u64 x, u64 y) : U64{x, y} {}
 
+  constexpr GSVector4(cxpr_init_tag, double x, double y) : F64{x, y} {}
+
 public:
   union
   {
@@ -1831,6 +1782,10 @@ public:
   constexpr static GSVector4 cxpr64(u64 x, u64 y) { return GSVector4(cxpr_init, x, y); }
 
   constexpr static GSVector4 cxpr64(u64 x) { return GSVector4(cxpr_init, x, x); }
+
+  constexpr static GSVector4 cxpr64(double x, double y) { return GSVector4(cxpr_init, x, y); }
+
+  constexpr static GSVector4 cxpr64(double x) { return GSVector4(cxpr_init, x, x); }
 
   ALWAYS_INLINE GSVector4(float x, float y, float z, float w)
   {
@@ -1878,6 +1833,13 @@ public:
     GSVector4 ret;
     ret.F64[0] = x;
     ret.F64[1] = y;
+    return ret;
+  }
+
+  ALWAYS_INLINE static GSVector4 f64(double x)
+  {
+    GSVector4 ret;
+    ret.F64[0] = ret.F64[1] = x;
     return ret;
   }
 
@@ -2043,6 +2005,20 @@ public:
   ALWAYS_INLINE int extract32() const
   {
     return I32[i];
+  }
+
+  template<int dst>
+  ALWAYS_INLINE GSVector4 insert64(double v) const
+  {
+    GSVector4 ret;
+    ret.F64[dst] = v;
+    return ret;
+  }
+
+  template<int src>
+  ALWAYS_INLINE double extract64() const
+  {
+    return F64[src];
   }
 
   ALWAYS_INLINE static constexpr GSVector4 zero() { return GSVector4::cxpr(0.0f, 0.0f, 0.0f, 0.0f); }
@@ -2299,6 +2275,71 @@ public:
     ret.F64[1] = F64[1] - v_.F64[1];
     return ret;
   }
+
+  ALWAYS_INLINE GSVector4 div64(const GSVector4& v) const
+  {
+    return GSVector4::f64(F64[0] / v.F64[0], F64[1] / v.F64[1]);
+  }
+
+  ALWAYS_INLINE GSVector4 gt64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] > v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] > v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 eq64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] == v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] == v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 lt64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] < v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] < v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 ge64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] >= v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] >= v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 le64(const GSVector4& v) const
+  {
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] <= v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] <= v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+  }
+
+  ALWAYS_INLINE GSVector4 min64(const GSVector4& v) const
+  {
+    return GSVector4::f64(std::min(F64[0], v.F64[0]), std::min(F64[1], v.F64[1]));
+  }
+
+  ALWAYS_INLINE GSVector4 max64(const GSVector4& v) const
+  {
+    return GSVector4::f64(std::max(F64[0], v.F64[0]), std::max(F64[1], v.F64[1]));
+  }
+
+  ALWAYS_INLINE GSVector4 abs64() const { return *this & GSVector4::cxpr64(static_cast<u64>(0x7FFFFFFFFFFFFFFFULL)); }
+
+  ALWAYS_INLINE GSVector4 neg64() const { return *this ^ GSVector4::cxpr64(static_cast<u64>(0x8000000000000000ULL(); }
+
+  ALWAYS_INLINE GSVector4 sqrt64() const { return GSVector4::f64(std::sqrt(F64[0]), std::sqrt(F64[1])); }
+
+  ALWAYS_INLINE GSVector4 sqr64() const { return GSVector4::f64(F64[0] * F64[0], F64[1] * F64[1]); }
+
+  ALWAYS_INLINE GSVector4 floor64() const { return GSVector4::f64(std::floor(F64[0]), std::floor(F64[1])); }
 
   ALWAYS_INLINE static GSVector4 f32to64(const GSVector4& v_)
   {

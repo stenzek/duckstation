@@ -828,12 +828,8 @@ public:
   ALWAYS_INLINE operator float32x2_t() const { return v2s; }
 
   ALWAYS_INLINE GSVector2 abs() const { return GSVector2(vabs_f32(v2s)); }
-
   ALWAYS_INLINE GSVector2 neg() const { return GSVector2(vneg_f32(v2s)); }
-
-  ALWAYS_INLINE GSVector2 rcp() const { return GSVector2(vrecpe_f32(v2s)); }
-
-  ALWAYS_INLINE GSVector2 rcpnr() const
+  ALWAYS_INLINE GSVector2 rcp() const
   {
     float32x2_t recip = vrecpe_f32(v2s);
     recip = vmul_f32(recip, vrecps_f32(recip, v2s));
@@ -843,7 +839,6 @@ public:
 #ifdef CPU_ARCH_ARM64
 
   ALWAYS_INLINE GSVector2 floor() const { return GSVector2(vrndm_f32(v2s)); }
-
   ALWAYS_INLINE GSVector2 ceil() const { return GSVector2(vrndp_f32(v2s)); }
 
 #else
@@ -2004,50 +1999,6 @@ public:
 
   ALWAYS_INLINE GSVector4i mul32l(const GSVector4i& v) const { return GSVector4i(vmulq_s32(v4s, v.v4s)); }
 
-  template<int shift>
-  ALWAYS_INLINE GSVector4i lerp16(const GSVector4i& a, const GSVector4i& f) const
-  {
-    // (a - this) * f << shift + this
-
-    return add16(a.sub16(*this).modulate16<shift>(f));
-  }
-
-  template<int shift>
-  ALWAYS_INLINE static GSVector4i lerp16(const GSVector4i& a, const GSVector4i& b, const GSVector4i& c)
-  {
-    // (a - b) * c << shift
-
-    return a.sub16(b).modulate16<shift>(c);
-  }
-
-  template<int shift>
-  ALWAYS_INLINE static GSVector4i lerp16(const GSVector4i& a, const GSVector4i& b, const GSVector4i& c,
-                                         const GSVector4i& d)
-  {
-    // (a - b) * c << shift + d
-
-    return d.add16(a.sub16(b).modulate16<shift>(c));
-  }
-
-  ALWAYS_INLINE GSVector4i lerp16_4(const GSVector4i& a, const GSVector4i& f) const
-  {
-    // (a - this) * f >> 4 + this (a, this: 8-bit, f: 4-bit)
-
-    return add16(a.sub16(*this).mul16l(f).sra16<4>());
-  }
-
-  template<int shift>
-  ALWAYS_INLINE GSVector4i modulate16(const GSVector4i& f) const
-  {
-    // a * f << shift
-    if (shift == 0)
-    {
-      return mul16hrs(f);
-    }
-
-    return sll16<shift + 1>().mul16hs(f);
-  }
-
   ALWAYS_INLINE bool eq(const GSVector4i& v) const
   {
     const int32x4_t res = veorq_s32(v4s, v.v4s);
@@ -2400,6 +2351,8 @@ class alignas(16) GSVector4
 
   constexpr GSVector4(cxpr_init_tag, u64 x, u64 y) : U64{x, y} {}
 
+  constexpr GSVector4(cxpr_init_tag, double x, double y) : F64{x, y} {}
+
 public:
   union
   {
@@ -2442,6 +2395,10 @@ public:
 
   constexpr static GSVector4 cxpr64(u64 x) { return GSVector4(cxpr_init, x, x); }
 
+  constexpr static GSVector4 cxpr64(double x, double y) { return GSVector4(cxpr_init, x, y); }
+
+  constexpr static GSVector4 cxpr64(double x) { return GSVector4(cxpr_init, x, x); }
+
   ALWAYS_INLINE GSVector4(float x, float y, float z, float w)
   {
     const float arr[4] = {x, y, z, w};
@@ -2475,12 +2432,28 @@ public:
 
   ALWAYS_INLINE static GSVector4 cast(const GSVector4i& v);
 
-#ifdef CPU_ARCH_ARM64
   ALWAYS_INLINE static GSVector4 f64(double x, double y)
   {
+#ifdef CPU_ARCH_ARM64
     return GSVector4(vreinterpretq_f32_f64(vsetq_lane_f64(y, vdupq_n_f64(x), 1)));
-  }
+#else
+    GSVector4 ret;
+    ret.F64[0] = x;
+    ret.F64[1] = y;
+    return ret;
 #endif
+  }
+
+  ALWAYS_INLINE static GSVector4 f64(double x)
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vdupq_n_f64(x)));
+#else
+    GSVector4 ret;
+    ret.F64[0] = ret.F64[1] = x;
+    return ret;
+#endif
+  }
 
   ALWAYS_INLINE void operator=(float f) { v4s = vdupq_n_f32(f); }
 
@@ -2729,6 +2702,28 @@ public:
     return vgetq_lane_s32(vreinterpretq_s32_f32(v4s), i);
   }
 
+  template<int dst>
+  ALWAYS_INLINE GSVector4 insert64(double v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vsetq_lane_f64(v, vreinterpretq_f64_f32(v4s), dst)));
+#else
+    GSVector4 ret;
+    ret.F64[dst] = v;
+    return ret;
+#endif
+  }
+
+  template<int src>
+  ALWAYS_INLINE double extract64() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return vgetq_lane_f64(vreinterpretq_f64_f32(v4s), src);
+#else
+    return F64[src];
+#endif
+  }
+
   ALWAYS_INLINE static GSVector4 zero() { return GSVector4(vdupq_n_f32(0.0f)); }
 
   ALWAYS_INLINE static GSVector4 xffffffff() { return GSVector4(vreinterpretq_f32_u32(vdupq_n_u32(0xFFFFFFFFu))); }
@@ -2903,42 +2898,181 @@ public:
     return GSVector4(vreinterpretq_f32_u32(vcleq_f32(v1.v4s, v2.v4s)));
   }
 
-#ifdef CPU_ARCH_ARM64
-  // Not in ARM32
-
   ALWAYS_INLINE GSVector4 mul64(const GSVector4& v) const
   {
-    return GSVector4(vmulq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s)));
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vmulq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    return GSVector4::f64(F64[0] * v.F64[0], F64[1] * v.F64[1]);
+#endif
   }
 
   ALWAYS_INLINE GSVector4 add64(const GSVector4& v) const
   {
-    return GSVector4(vaddq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s)));
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vaddq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    return GSVector4::f64(F64[0] + v.F64[0], F64[1] + v.F64[1]);
+#endif
   }
 
   ALWAYS_INLINE GSVector4 sub64(const GSVector4& v) const
   {
-    return GSVector4(vsubq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s)));
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vsubq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    return GSVector4::f64(F64[0] - v.F64[0], F64[1] - v.F64[1]);
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 div64(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vdivq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    return GSVector4::f64(F64[0] / v.F64[0], F64[1] / v.F64[1]);
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 gt64(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vcgtq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] > v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] > v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 eq64(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vceqq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] == v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] == v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 lt64(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vcgtq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] < v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] < v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 ge64(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vcgeq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] >= v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] >= v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 le64(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vcleq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    GSVector4 ret;
+    ret.U64[0] = (F64[0] <= v.F64[0]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    ret.U64[1] = (F64[1] <= v.F64[1]) ? 0xFFFFFFFFFFFFFFFFULL : 0;
+    return ret;
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 min64(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vminq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    return GSVector4::f64(std::min(F64[0], v.F64[0]), std::min(F64[1], v.F64[1]));
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 max64(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vmaxq_f64(vreinterpretq_f64_f32(v4s), vreinterpretq_f64_f32(v.v4s))));
+#else
+    return GSVector4::f64(std::max(F64[0], v.F64[0]), std::max(F64[1], v.F64[1]));
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 abs64() const { return *this & GSVector4::cxpr64(static_cast<u64>(0x7FFFFFFFFFFFFFFFULL)); }
+
+  ALWAYS_INLINE GSVector4 neg64() const { return *this ^ GSVector4::cxpr64(static_cast<u64>(0x8000000000000000ULL)); }
+
+  ALWAYS_INLINE GSVector4 sqrt64() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vsqrtq_f64(vreinterpretq_f64_f32(v4s))));
+#else
+    return GSVector4::f64(std::sqrt(F64[0]), std::sqrt(F64[1]));
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 sqr64() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vsqrtq_f64(vreinterpretq_f64_f32(v4s))));
+#else
+    return GSVector4::f64(F64[0] * F64[0], F64[1] * F64[1]);
+#endif
+  }
+
+  ALWAYS_INLINE GSVector4 floor64() const
+  {
+#ifdef CPU_ARCH_ARM64
+    return GSVector4(vreinterpretq_f32_f64(vrndmq_f64(vreinterpretq_f64_f32(v4s))));
+#else
+    return GSVector4::f64(std::floor(F64[0]), std::floor(F64[1]));
+#endif
   }
 
   ALWAYS_INLINE static GSVector4 f32to64(const GSVector4& v)
   {
+#ifdef CPU_ARCH_ARM64
     return GSVector4(vreinterpretq_f32_f64(vcvt_f64_f32(vget_low_f32(v.v4s))));
+#else
+    return GSVector4::f64(static_cast<double>(vgetq_lane_f32(v.v4s, 0)), static_cast<double>(vgetq_lane_f32(v.v4s, 1)));
+#endif
   }
 
   ALWAYS_INLINE static GSVector4 f32to64(const void* p)
   {
+#ifdef CPU_ARCH_ARM64
     return GSVector4(vreinterpretq_f32_f64(vcvt_f64_f32(vld1_f32(static_cast<const float*>(p)))));
+#else
+    const float* fp = static_cast<const float*>(p);
+    return GSVector4::f64(static_cast<double>(fp[0]), static_cast<double>(fp[1]));
+#endif
   }
 
   ALWAYS_INLINE GSVector4i f64toi32() const
   {
+#ifdef CPU_ARCH_ARM64
     const s32 low = static_cast<s32>(vgetq_lane_f64(vreinterpretq_f64_f32(v4s), 0));
     const s32 high = static_cast<s32>(vgetq_lane_f64(vreinterpretq_f64_f32(v4s), 1));
+#else
+    const s32 low = static_cast<s32>(F64[0]);
+    const s32 high = static_cast<s32>(F64[1]);
+#endif
     return GSVector4i(vsetq_lane_s32(high, vsetq_lane_s32(low, vdupq_n_s32(0), 0), 1));
   }
-
-#endif
 
   // clang-format off
 
