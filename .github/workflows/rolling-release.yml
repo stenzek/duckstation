@@ -346,7 +346,7 @@ jobs:
     - name: Install packages
       shell: bash
       run: |
-        brew install curl ninja
+        brew install ninja
 
     - name: Cache Dependencies
       id: cache-deps-mac

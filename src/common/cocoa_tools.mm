@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: GPL-3.0
+// SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team, 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cocoa_tools.h"
 #include "small_string.h"
@@ -49,16 +49,12 @@ bool CocoaTools::MoveFile(const char *source, const char *destination, Error *er
 }
 
 
-// From https://github.com/PCSX2/pcsx2/blob/8d27c324187140df0c5a42f3a501b5d76b1215f5/common/CocoaTools.mm
-
-@interface PCSX2KVOHelper : NSObject
-
+@interface CommonKVOHelper : NSObject
 - (void)addCallback:(void*)ctx run:(void(*)(void*))callback;
 - (void)removeCallback:(void*)ctx;
-
 @end
 
-@implementation PCSX2KVOHelper
+@implementation CommonKVOHelper
 {
   std::vector<std::pair<void*, void(*)(void*)>> _callbacks;
 }
@@ -84,14 +80,14 @@ bool CocoaTools::MoveFile(const char *source, const char *destination, Error *er
 
 @end
 
-static PCSX2KVOHelper* s_themeChangeHandler;
+static CommonKVOHelper* s_themeChangeHandler;
 
 void CocoaTools::AddThemeChangeHandler(void* ctx, void(handler)(void* ctx))
 {
   assert([NSThread isMainThread]);
   if (!s_themeChangeHandler)
   {
-    s_themeChangeHandler = [[PCSX2KVOHelper alloc] init];
+    s_themeChangeHandler = [[CommonKVOHelper alloc] init];
     NSApplication* app = [NSApplication sharedApplication];
     [app addObserver:s_themeChangeHandler
           forKeyPath:@"effectiveAppearance"

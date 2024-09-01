@@ -387,6 +387,16 @@
           <string>Rendering Options</string>
          </property>
          <layout class="QFormLayout" name="formLayout_6">
+          <item row="0" column="0">
+           <widget class="QLabel" name="msaaModeLabel">
+            <property name="text">
+             <string>Multi-Sampling:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="msaaMode"/>
+          </item>
           <item row="1" column="0">
            <widget class="QLabel" name="gpuLineDetectModeLabel">
             <property name="text">
@@ -399,6 +409,13 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="gpuThread">
+              <property name="text">
+               <string>Threaded Rendering</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="1">
              <widget class="QCheckBox" name="scaledDithering">
               <property name="text">
@@ -406,52 +423,28 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="debanding">
-              <property name="text">
-               <string>True Color Debanding</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
-              <property name="text">
-               <string>Software Renderer Readbacks</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
+            <item row="1" column="0">
              <widget class="QCheckBox" name="forceRoundedTexcoords">
               <property name="text">
                <string>Round Upscaled Texture Coordinates</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="gpuThread">
-              <property name="text">
-               <string>Threaded Rendering</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
+            <item row="0" column="0">
              <widget class="QCheckBox" name="accurateBlending">
               <property name="text">
                <string>Accurate Blending</string>
               </property>
              </widget>
             </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+              <property name="text">
+               <string>Software Renderer Readbacks</string>
+              </property>
+             </widget>
+            </item>
            </layout>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="msaaModeLabel">
-            <property name="text">
-             <string>Multi-Sampling:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="msaaMode"/>
           </item>
          </layout>
         </widget>

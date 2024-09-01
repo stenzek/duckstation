@@ -1,5 +1,8 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
+//
+// NOTE: Some parts of this file have more permissive licenses. They are marked appropriately.
+//
 
 #include "gpu_hw_shadergen.h"
 
@@ -8,11 +11,11 @@
 GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples,
                                    bool per_sample_shading, bool true_color, bool scaled_dithering,
                                    bool write_mask_as_depth, bool disable_color_perspective,
-                                   bool supports_dual_source_blend, bool supports_framebuffer_fetch, bool debanding)
+                                   bool supports_dual_source_blend, bool supports_framebuffer_fetch)
   : ShaderGen(render_api, GetShaderLanguageForAPI(render_api), supports_dual_source_blend, supports_framebuffer_fetch),
     m_resolution_scale(resolution_scale), m_multisamples(multisamples), m_per_sample_shading(per_sample_shading),
     m_true_color(true_color), m_scaled_dithering(scaled_dithering), m_write_mask_as_depth(write_mask_as_depth),
-    m_disable_color_perspective(disable_color_perspective), m_debanding(debanding)
+    m_disable_color_perspective(disable_color_perspective)
 {
 }
 
@@ -727,8 +730,6 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   DefineMacro(ss, "PALETTE_8_BIT", texture_mode == GPU_HW::BatchTextureMode::Palette8Bit);
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "DITHERING_SCALED", m_scaled_dithering);
-  // Debanding requires true color to work correctly.
-  DefineMacro(ss, "DEBANDING", m_true_color && m_debanding);
   DefineMacro(ss, "INTERLACING", interlacing);
   DefineMacro(ss, "TRUE_COLOR", m_true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", texture_filtering != GPUTextureFilter::Nearest);
@@ -861,24 +862,6 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 }
 
 #endif
-
-// From https://alex.vlachos.com/graphics/Alex_Vlachos_Advanced_VR_Rendering_GDC2015.pdf
-// and https://www.shadertoy.com/view/MslGR8 (5th one starting from the bottom)
-// NOTE: `frag_coord` is in pixels (i.e. not normalized UV).
-float3 ApplyDebanding(float2 frag_coord)
-{
-#if DEBANDING
-  // Iestyn's RGB dither (7 asm instructions) from Portal 2 X360, slightly modified for VR.
-  float ditherc = dot(vec2(171.0, 231.0), frag_coord);
-  float3 dither = float3(ditherc, ditherc, ditherc);
-  dither = fract(dither / float3(103.0, 71.0, 97.0));
-
-  // Subtract 0.5 to avoid slightly brightening the whole viewport.
-  return (dither - 0.5) / 255.0;
-#else
-  return float3(0.0, 0.0, 0.0);
-#endif
-}
 )";
 
   const u32 num_fragment_outputs = use_rov ? 0 : (use_dual_source ? 2 : 1);
@@ -913,7 +896,7 @@ float3 ApplyDebanding(float2 frag_coord)
 
   ss << R"(
 {
-  uint3 vertcol = uint3(v_col0.rgb * float3(255.0, 255.0, 255.0) + ApplyDebanding(v_pos.xy));
+  uint3 vertcol = uint3(v_col0.rgb * float3(255.0, 255.0, 255.0));
   uint2 fragpos = uint2(v_pos.xy);
 
   bool semitransparent;
@@ -956,7 +939,7 @@ float3 ApplyDebanding(float2 frag_coord)
         icolor = min(icolor >> 3, uint3(31u, 31u, 31u));
       #endif
     #else
-      icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0) + ApplyDebanding(v_pos.xy));
+      icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0));
       icolor = (icolor * vertcol) >> 7;
       #if DITHERING
         icolor = ApplyDithering(fragpos, icolor);

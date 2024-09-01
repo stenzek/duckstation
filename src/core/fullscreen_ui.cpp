@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR PolyForm-Strict-1.0.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreen_ui.h"
 #include "achievements.h"
@@ -3171,9 +3171,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Show Latency Statistics"),
     FSUI_CSTR("Shows information about input and audio latency in the top-right corner of the display."), "Display",
     "ShowLatencyStatistics", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BATTERY_HALF, "Show CPU Usage"),
-                    FSUI_CSTR("Shows the host's CPU usage based on threads in the top-right corner of the display."),
-                    "Display", "ShowCPU", false);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_BATTERY_HALF, "Show CPU Usage"),
+    FSUI_CSTR("Shows the host's CPU usage of each system thread in the top-right corner of the display."), "Display",
+    "ShowCPU", false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SPINNER, "Show GPU Usage"),
                     FSUI_CSTR("Shows the host's GPU usage in the top-right corner of the display."), "Display",
                     "ShowGPU", false);
@@ -4399,11 +4400,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
                     "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
                     &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
                     resolution_scale > 1);
-
-    DrawToggleSetting(
-      bsi, FSUI_CSTR("True Color Debanding"),
-      FSUI_CSTR("Applies modern dithering techniques to further smooth out gradients when true color is enabled."),
-      "GPU", "Debanding", false, true_color_enabled);
 
     DrawToggleSetting(
       bsi, FSUI_CSTR("Scaled Dithering"),
@@ -7237,7 +7233,6 @@ TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
 TRANSLATE_NOOP("FullscreenUI", "Allows loading protected games without subchannel information.");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
-TRANSLATE_NOOP("FullscreenUI", "Applies modern dithering techniques to further smooth out gradients when true color is enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-processing chain? All configuration will be lost.");
 TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
@@ -7716,7 +7711,7 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the current controller state of the system
 TRANSLATE_NOOP("FullscreenUI", "Shows the current emulation speed of the system in the top-right corner of the display as a percentage.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the current rendering resolution of the system in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the game you are currently playing as part of your profile in Discord.");
-TRANSLATE_NOOP("FullscreenUI", "Shows the host's CPU usage based on threads in the top-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows the host's CPU usage of each system thread in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's GPU usage in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the CPU's instruction cache in the recompiler. Can help with games running too fast.");
@@ -7774,7 +7769,6 @@ TRANSLATE_NOOP("FullscreenUI", "Toggle Analog");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Fast Forward");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
-TRANSLATE_NOOP("FullscreenUI", "True Color Debanding");
 TRANSLATE_NOOP("FullscreenUI", "True Color Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");
@@ -7803,6 +7797,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for color
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.");
 TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum: {}");
+TRANSLATE_NOOP("FullscreenUI", "Version: %s");
 TRANSLATE_NOOP("FullscreenUI", "Vertex Cache");
 TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");
 TRANSLATE_NOOP("FullscreenUI", "WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.\n\nDo you want to {0} anyway?");
@@ -7829,6 +7824,5 @@ TRANSLATE_NOOP("FullscreenUI", "{} Frames");
 TRANSLATE_NOOP("FullscreenUI", "{} deleted.");
 TRANSLATE_NOOP("FullscreenUI", "{} does not exist.");
 TRANSLATE_NOOP("FullscreenUI", "{} is not a valid disc image.");
-TRANSLATE_NOOP("FullscreenUI", "Version: %s");
 // TRANSLATION-STRING-AREA-END
 #endif

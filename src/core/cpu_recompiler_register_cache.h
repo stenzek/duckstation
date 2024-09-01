@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "common/assert.h"
+
 #include "cpu_recompiler_types.h"
 #include "cpu_types.h"
+
+#include "common/assert.h"
 
 #if defined(CPU_ARCH_ARM32)
 #include "vixl/aarch32/macro-assembler-aarch32.h"

@@ -1,14 +1,16 @@
-// SPDX-FileCopyrightText: 2019-2023 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cpu_recompiler_code_generator.h"
-#include "common/log.h"
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "cpu_pgxp.h"
 #include "gte.h"
 #include "settings.h"
+
+#include "common/log.h"
+
 Log_SetChannel(CPU::Recompiler);
 
 // TODO: Turn load+sext/zext into a single signed/unsigned load

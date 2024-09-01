@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2016 iCatButler, 2019-2023 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: GPL-2.0+
+// SPDX-FileCopyrightText: 2016 iCatButler, 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 //
 // This file has been completely rewritten over the years compared to the original PCSXR-PGXP release.
 // No original code remains. The original copyright notice is included above for historical purposes.

@@ -1,12 +1,15 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_backend.h"
+#include "settings.h"
+
+#include "util/state_wrapper.h"
+
 #include "common/align.h"
 #include "common/log.h"
 #include "common/timer.h"
-#include "settings.h"
-#include "util/state_wrapper.h"
+
 Log_SetChannel(GPUBackend);
 
 std::unique_ptr<GPUBackend> g_gpu_backend;

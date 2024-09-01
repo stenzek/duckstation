@@ -1,10 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
-
-#include "common/align.h"
-#include "common/assert.h"
-#include "common/log.h"
-#include "common/memmap.h"
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cpu_code_cache_private.h"
 #include "cpu_core.h"
@@ -13,6 +8,11 @@
 #include "cpu_recompiler_thunks.h"
 #include "settings.h"
 #include "timing_event.h"
+
+#include "common/align.h"
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/memmap.h"
 
 #ifdef CPU_ARCH_ARM64
 

@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
@@ -12,7 +12,7 @@ class GPU_HW_ShaderGen : public ShaderGen
 public:
   GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples, bool per_sample_shading,
                    bool true_color, bool scaled_dithering, bool write_mask_as_depth, bool disable_color_perspective,
-                   bool supports_dual_source_blend, bool supports_framebuffer_fetch, bool debanding);
+                   bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~GPU_HW_ShaderGen();
 
   std::string GenerateBatchVertexShader(bool textured, bool palette, bool uv_limits, bool force_round_texcoords,
@@ -52,5 +52,4 @@ private:
   bool m_scaled_dithering;
   bool m_write_mask_as_depth;
   bool m_disable_color_perspective;
-  bool m_debanding;
 };

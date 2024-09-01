@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "system.h"
 #include "achievements.h"
@@ -4296,7 +4296,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
         g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
         g_settings.gpu_true_color != old_settings.gpu_true_color ||
-        g_settings.gpu_debanding != old_settings.gpu_debanding ||
         g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
         g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords ||
         g_settings.gpu_accurate_blending != old_settings.gpu_accurate_blending ||

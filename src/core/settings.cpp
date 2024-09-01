@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "settings.h"
 #include "achievements.h"
@@ -203,7 +203,6 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   gpu_threaded_presentation = si.GetBoolValue("GPU", "ThreadedPresentation", DEFAULT_THREADED_PRESENTATION);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
-  gpu_debanding = si.GetBoolValue("GPU", "Debanding", false);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", true);
   gpu_force_round_texcoords = si.GetBoolValue("GPU", "ForceRoundTextureCoordinates", false);
   gpu_accurate_blending = si.GetBoolValue("GPU", "AccurateBlending", false);
@@ -522,7 +521,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "ThreadedPresentation", gpu_threaded_presentation);
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
-  si.SetBoolValue("GPU", "Debanding", gpu_debanding);
   si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
   si.SetBoolValue("GPU", "AccurateBlending", gpu_accurate_blending);
@@ -737,7 +735,6 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_multisamples = 1;
     g_settings.gpu_per_sample_shading = false;
     g_settings.gpu_true_color = false;
-    g_settings.gpu_debanding = false;
     g_settings.gpu_scaled_dithering = false;
     g_settings.gpu_force_round_texcoords = false;
     g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;

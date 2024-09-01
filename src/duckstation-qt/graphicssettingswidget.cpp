@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "graphicssettingswidget.h"
 #include "qtutils.h"
@@ -137,7 +137,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuWireframeMode, "GPU", "WireframeMode",
                                                Settings::ParseGPUWireframeMode, Settings::GetGPUWireframeModeName,
                                                Settings::DEFAULT_GPU_WIREFRAME_MODE);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.debanding, "GPU", "Debanding", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
@@ -309,8 +308,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.textureFiltering, tr("Texture Filtering"),
     QString::fromUtf8(Settings::GetTextureFilterDisplayName(Settings::DEFAULT_GPU_TEXTURE_FILTER)),
     tr("Smooths out the blockiness of magnified textures on 3D objects by using filtering. <br>Will have a "
-       "greater effect on higher resolution scales. <br>The JINC2 and especially xBR filtering modes are very "
-       "demanding, and may not be worth the speed penalty."));
+       "greater effect on higher resolution scales."));
   dialog->registerWidgetHelp(
     m_ui.spriteTextureFiltering, tr("Sprite Texture Filtering"),
     QString::fromUtf8(Settings::GetTextureFilterDisplayName(Settings::DEFAULT_GPU_TEXTURE_FILTER)),
@@ -411,12 +409,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     tr("Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance "
        "requirement compared to upscaling, <strong>but often introduces rendering errors.</strong>"));
   dialog->registerWidgetHelp(
-    m_ui.debanding, tr("True Color Debanding"), tr("Unchecked"),
-    tr("Applies modern dithering techniques to further smooth out gradients when true color is enabled. "
-       "This debanding is performed during rendering (as opposed to a post-processing step), which allows it to be "
-       "fast while preserving detail. "
-       "Debanding increases the file size of screenshots due to the subtle dithering pattern present in screenshots."));
-  dialog->registerWidgetHelp(
     m_ui.scaledDithering, tr("Scaled Dithering"), tr("Checked"),
     tr("Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less "
        "obvious at higher resolutions. Usually safe to enable."));
@@ -485,9 +477,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Shows the internal frame rate of the game in the top-right corner of the display."));
   dialog->registerWidgetHelp(
     m_ui.showCPU, tr("Show CPU Usage"), tr("Unchecked"),
-    tr("Shows the host's CPU usage based on threads in the top-right corner of the display. This does not display the "
-       "emulated system CPU's usage. If a value close to 100% is being displayed, this means your host's CPU is likely "
-       "the bottleneck. In this case, you should reduce enhancement-related settings such as overclocking."));
+    tr("Shows the host's CPU usage of each system thread in the top-right corner of the display."));
   dialog->registerWidgetHelp(m_ui.showGPU, tr("Show GPU Usage"), tr("Unchecked"),
                              tr("Shows the host's GPU usage in the top-right corner of the display."));
   dialog->registerWidgetHelp(m_ui.showGPUStatistics, tr("Show GPU Statistics"), tr("Unchecked"),
@@ -762,7 +752,6 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
   m_ui.gpuLineDetectModeLabel->setEnabled(is_hardware);
   m_ui.gpuWireframeMode->setEnabled(is_hardware);
   m_ui.gpuWireframeModeLabel->setEnabled(is_hardware);
-  m_ui.debanding->setEnabled(is_hardware);
   m_ui.scaledDithering->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
   m_ui.useSoftwareRendererForReadbacks->setEnabled(is_hardware);
   m_ui.forceRoundedTexcoords->setEnabled(is_hardware);
@@ -980,7 +969,6 @@ void GraphicsSettingsWidget::onTrueColorChanged()
   const bool allow_scaled_dithering =
     (resolution_scale != 1 && !true_color && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
   m_ui.scaledDithering->setEnabled(allow_scaled_dithering);
-  m_ui.debanding->setEnabled(true_color);
   m_ui.accurateBlending->setEnabled(!true_color);
 }
 

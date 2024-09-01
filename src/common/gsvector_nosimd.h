@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 // Implementation of GSVector4/GSVector4i when the host does not support any form of SIMD.
 

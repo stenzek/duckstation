@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_hw.h"
 #include "cpu_core.h"
@@ -23,8 +23,8 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 
-#include "IconsFontAwesome5.h"
 #include "IconsEmoji.h"
+#include "IconsFontAwesome5.h"
 #include "imgui.h"
 
 #include <cmath>
@@ -398,7 +398,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
                                     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer());
   const bool shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
-     m_true_color != g_settings.gpu_true_color || g_settings.gpu_debanding != old_settings.gpu_debanding ||
+     m_true_color != g_settings.gpu_true_color ||
      (multisamples > 0 && g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
      (resolution_scale > 1 && g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering) ||
      (resolution_scale > 1 && g_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
@@ -643,20 +643,8 @@ u32 GPU_HW::CalculateResolutionScale() const
                          static_cast<s32>(m_crtc_state.display_height) :
                          (m_console_is_pal ? (PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START) :
                                              (NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START));
-
-    float widescreen_multiplier = 1.0f;
-    if (g_settings.gpu_widescreen_hack)
-    {
-      // Multiply scale factor by aspect ratio relative to 4:3, so that widescreen resolution is as close as possible to
-      // native screen resolution. Otherwise, anamorphic stretching would result in increasingly less horizontal
-      // resolution (relative to native screen resolution) as the aspect ratio gets wider.
-      widescreen_multiplier = std::max(1.0f, (static_cast<float>(g_gpu_device->GetWindowWidth()) /
-                                              static_cast<float>(g_gpu_device->GetWindowHeight())) /
-                                               (4.0f / 3.0f));
-    }
-
     const s32 preferred_scale =
-      static_cast<s32>(std::ceil(static_cast<float>(g_gpu_device->GetWindowHeight() * widescreen_multiplier) / height));
+      static_cast<s32>(std::ceil(static_cast<float>(g_gpu_device->GetWindowHeight()) / height));
     VERBOSE_LOG("Height = {}, preferred scale = {}", height, preferred_scale);
 
     scale = static_cast<u32>(std::clamp<s32>(preferred_scale, 1, max_resolution_scale));
@@ -771,10 +759,7 @@ void GPU_HW::PrintSettingsToLog()
            (g_settings.gpu_per_sample_shading && g_gpu_device->GetFeatures().per_sample_shading) ?
              " (per sample shading)" :
              "");
-  INFO_LOG("Dithering: {}{}", m_true_color ? "Disabled" : "Enabled",
-           (!m_true_color && g_settings.gpu_scaled_dithering) ?
-             " (Scaled)" :
-             ((m_true_color && g_settings.gpu_debanding) ? " (Debanding)" : ""));
+  INFO_LOG("Dithering: {}", m_true_color ? "Disabled" : "Enabled", (!m_true_color && g_settings.gpu_scaled_dithering));
   INFO_LOG("Force round texture coordinates: {}",
            (m_resolution_scale > 1 && g_settings.gpu_force_round_texcoords) ? "Enabled" : "Disabled");
   INFO_LOG("Texture Filtering: {}/{}", Settings::GetTextureFilterDisplayName(m_texture_filtering),
@@ -984,7 +969,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, per_sample_shading,
                              m_true_color, (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering),
                              m_write_mask_as_depth, ShouldDisableColorPerspective(), m_supports_dual_source_blend,
-                             m_supports_framebuffer_fetch, g_settings.gpu_true_color && g_settings.gpu_debanding);
+                             m_supports_framebuffer_fetch);
 
   const u32 active_texture_modes =
     m_allow_sprite_mode ? NUM_TEXTURE_MODES :
@@ -3979,12 +3964,6 @@ void GPU_HW::DrawRendererStats()
     ImGui::TextUnformatted("True Color:");
     ImGui::NextColumn();
     ImGui::TextColored(m_true_color ? active_color : inactive_color, m_true_color ? "Enabled" : "Disabled");
-    ImGui::NextColumn();
-
-    const bool debanding = (g_settings.gpu_true_color && g_settings.gpu_debanding);
-    ImGui::TextUnformatted("Debanding:");
-    ImGui::NextColumn();
-    ImGui::TextColored(debanding ? active_color : inactive_color, debanding ? "Enabled" : "Disabled");
     ImGui::NextColumn();
 
     const bool scaled_dithering = (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering);

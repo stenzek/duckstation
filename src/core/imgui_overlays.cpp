@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "imgui_overlays.h"
 #include "cdrom.h"
@@ -432,16 +432,7 @@ void ImGuiManager::DrawEnhancementsOverlay()
     text.append_format(" {}x{}", g_settings.gpu_multisamples, g_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
   }
   if (g_settings.gpu_true_color)
-  {
-    if (g_settings.gpu_debanding)
-    {
-      text.append(" TrueColDeband");
-    }
-    else
-    {
-      text.append(" TrueCol");
-    }
-  }
+    text.append(" TrueCol");
   if (g_settings.gpu_disable_interlacing)
     text.append(" ForceProg");
   if (g_settings.gpu_force_ntsc_timings && System::GetRegion() == ConsoleRegion::PAL)

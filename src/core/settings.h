@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
@@ -117,7 +117,6 @@ struct Settings
   bool gpu_disable_raster_order_views : 1 = false;
   bool gpu_per_sample_shading : 1 = false;
   bool gpu_true_color : 1 = true;
-  bool gpu_debanding : 1 = false;
   bool gpu_scaled_dithering : 1 = true;
   bool gpu_force_round_texcoords : 1 = false;
   bool gpu_accurate_blending : 1 = false;

@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team, 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: LGPL-3.0+
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 //
 // Lightweight wrapper over native SIMD types for cross-platform vector code.
 // Rewritten and NEON+No-SIMD variants added for DuckStation.

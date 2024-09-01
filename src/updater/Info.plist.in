@@ -13,7 +13,7 @@
     <key>CFBundlePackageType</key>
     <string>APPL</string>
     <key>NSHumanReadableCopyright</key>
-    <string>Licensed under GPL version 3</string>
+    <string>2019-2024 Connor McLaughlin &lt;stenzek@gmail.com&gt;</string>
     <key>LSMinimumSystemVersion</key>
     <string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
     <key>NSHighResolutionCapable</key>

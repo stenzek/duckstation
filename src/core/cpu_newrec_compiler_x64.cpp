@@ -1,11 +1,7 @@
-// SPDX-FileCopyrightText: 2023 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: (GPL-3.0 OR CC-BY-NC-ND-4.0)
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cpu_newrec_compiler_x64.h"
-#include "common/align.h"
-#include "common/assert.h"
-#include "common/log.h"
-#include "common/string_util.h"
 #include "cpu_code_cache_private.h"
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
@@ -14,6 +10,12 @@
 #include "gte.h"
 #include "settings.h"
 #include "timing_event.h"
+
+#include "common/align.h"
+#include "common/assert.h"
+#include "common/log.h"
+#include "common/string_util.h"
+
 #include <limits>
 
 #ifdef CPU_ARCH_X64
