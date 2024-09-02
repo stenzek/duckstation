@@ -56,6 +56,11 @@ APPDIRNAME=DuckStation.AppDir
 STRIP=strip
 
 declare -a MANUAL_LIBS=(
+	"libavcodec.so.61"
+	"libavformat.so.61"
+	"libavutil.so.59"
+	"libswscale.so.8"
+	"libswresample.so.5"
 	"libdiscord-rpc.so"
 	"libfreetype.so.6"
 	"libshaderc_shared.so"
