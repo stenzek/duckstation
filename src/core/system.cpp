@@ -4552,7 +4552,7 @@ void System::WarnAboutUnsafeSettings()
     if (g_settings.enable_8mb_ram)
     {
       append(ICON_EMOJI_WARNING,
-        TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+             TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
     }
   }
   else
@@ -5886,15 +5886,14 @@ void System::UpdateRichPresence(bool update_session_time)
     }
   }
 
+  const auto lock = Achievements::GetLock();
+
   std::string state_string;
   if (Achievements::HasRichPresence())
-  {
-    const auto lock = Achievements::GetLock();
-    state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128);
-    rp.state = state_string.c_str();
-    if (const std::string& icon_url = Achievements::GetGameIconURL(); !icon_url.empty())
-        rp.largeImageKey = icon_url.c_str();
-  }
+    rp.state = (state_string = StringUtil::Ellipsise(Achievements::GetRichPresenceString(), 128)).c_str();
+
+  if (const std::string& icon_url = Achievements::GetGameIconURL(); !icon_url.empty())
+    rp.largeImageKey = icon_url.c_str();
 
   dyn_libs::Discord_UpdatePresence(&rp);
 }
