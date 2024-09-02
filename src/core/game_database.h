@@ -40,7 +40,7 @@ enum class Trait : u32
   DisableTextureFiltering,
   DisableSpriteTextureFiltering,
   DisableScaledDithering,
-  DisableForceNTSCTimings,
+  DisableForceFrameTimings,
   DisableWidescreen,
   DisablePGXP,
   DisablePGXPCulling,

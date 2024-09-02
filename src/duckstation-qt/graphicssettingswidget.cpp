@@ -74,6 +74,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling, "Display", "Scaling",
                                                &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
                                                Settings::DEFAULT_DISPLAY_SCALING);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.forceFrameTimings, "GPU", "ForceFrameTimings",
+                                               &Settings::ParseForceFrameTimings, &Settings::GetForceFrameTimingsName,
+                                               Settings::DEFAULT_FORCE_FRAME_TIMINGS_MODE);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableInterlacing, "GPU", "DisableInterlacing", true);
@@ -81,8 +84,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDepthBuffer, "GPU", "PGXPDepthBuffer", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.force43For24Bit, "Display", "Force4_3For24Bit", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.chromaSmoothingFor24Bit, "GPU", "ChromaSmoothing24Bit", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceNTSCTimings, "GPU", "ForceNTSCTimings", false);
-
+  
   connect(m_ui.renderer, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::updateRendererDependentOptions);
   connect(m_ui.textureFiltering, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -106,8 +108,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterlacing));
   SettingWidgetBinder::SetAvailability(m_ui.widescreenHack,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableWidescreen));
-  SettingWidgetBinder::SetAvailability(m_ui.forceNTSCTimings,
-                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableForceNTSCTimings));
+  SettingWidgetBinder::SetAvailability(m_ui.forceFrameTimings,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableForceFrameTimings));
 
   // Advanced Tab
 
@@ -337,6 +339,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.displayScaling, tr("Scaling"), tr("Bilinear (Smooth)"),
     tr("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."));
   dialog->registerWidgetHelp(
+    m_ui.forceFrameTimings, tr("Force Frame Timings"), tr("Disabled"),
+    tr("Utilizes the chosen frame timing regardless of the active region. "
+       "This feature can be used to force PAL games to run at 60Hz and NTSC games to run at 50Hz. "
+       "For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster or slower. "
+       "For variable frame rate games, it may not affect the speed."));
+  dialog->registerWidgetHelp(
     m_ui.trueColor, tr("True Color Rendering"), tr("Checked"),
     tr("Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per "
        "channel. This produces nicer looking gradients at the cost of making some colours look slightly different. "
@@ -366,11 +374,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
       "Forces the rendering and display of frames to progressive mode. <br>This removes the \"combing\" effect seen in "
       "480i games by rendering them in 480p. Usually safe to enable.<br><b><u>May not be compatible with all "
       "games.</u></b>"));
-  dialog->registerWidgetHelp(
-    m_ui.forceNTSCTimings, tr("Force NTSC Timings"), tr("Unchecked"),
-    tr("Uses NTSC frame timings when the console is in PAL mode, forcing PAL games to run at 60hz. <br>For most games "
-       "which have a speed tied to the framerate, this will result in the game running approximately 17% faster. "
-       "<br>For variable frame rate games, it may not affect the speed."));
 
   // Advanced Tab
 
@@ -654,6 +657,13 @@ void GraphicsSettingsWidget::setupAdditionalUi()
     m_ui.displayScaling->addItem(
       QString::fromUtf8(Settings::GetDisplayScalingDisplayName(static_cast<DisplayScalingMode>(i))));
   }
+
+  for (u32 i = 0; i < static_cast<u32>(ForceFrameTimingsMode::Count); i++)
+  {
+    m_ui.forceFrameTimings->addItem(
+      QString::fromUtf8(Settings::GetForceFrameTimingsName(static_cast<ForceFrameTimingsMode>(i))));
+  }
+
 
   // Advanced Tab
 
