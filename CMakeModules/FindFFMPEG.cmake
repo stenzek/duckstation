@@ -35,6 +35,7 @@ function (_ffmpeg_find component headername)
       "lib${component}/${headername}"
     PATHS
       "${FFMPEG_ROOT}/include"
+      "${CMAKE_PREFIX_PATH}/include"
       ~/Library/Frameworks
       /Library/Frameworks
       /usr/local/include
@@ -60,6 +61,8 @@ function (_ffmpeg_find component headername)
       "${component}"
     PATHS
       "${FFMPEG_ROOT}/lib"
+      "${CMAKE_PREFIX_PATH}/lib"
+      "${CMAKE_PREFIX_PATH}/lib64"
       ~/Library/Frameworks
       /Library/Frameworks
       /usr/local/lib
