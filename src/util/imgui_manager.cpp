@@ -68,7 +68,7 @@ static void SetKeyMap();
 static bool LoadFontData();
 static void ReloadFontDataIfActive();
 static bool AddImGuiFonts(bool fullscreen_fonts);
-static ImFont* AddTextFont(float size);
+static ImFont* AddTextFont(float size, bool full_glyph_range);
 static ImFont* AddFixedFont(float size);
 static bool AddIconFonts(float size);
 static void AcquirePendingOSDMessages(Common::Timer::Value current_time);
@@ -80,6 +80,8 @@ static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, 
 
 static float s_global_prescale = 1.0f; // before window scale
 static float s_global_scale = 1.0f;
+
+static constexpr std::array<ImWchar, 4> s_ascii_font_range = {{0x20, 0x7F, 0x00, 0x00}};
 
 static std::string s_font_path;
 static std::vector<WCharType> s_font_range;
@@ -583,20 +585,21 @@ bool ImGuiManager::LoadFontData()
   return true;
 }
 
-ImFont* ImGuiManager::AddTextFont(float size)
+ImFont* ImGuiManager::AddTextFont(float size, bool full_glyph_range)
 {
   ImFontConfig cfg;
   cfg.FontDataOwnedByAtlas = false;
-  return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-    s_standard_font_data.data(), static_cast<int>(s_standard_font_data.size()), size, &cfg, s_font_range.data());
+  return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_standard_font_data.data(),
+                                                    static_cast<int>(s_standard_font_data.size()), size, &cfg,
+                                                    full_glyph_range ? s_font_range.data() : s_ascii_font_range.data());
 }
 
 ImFont* ImGuiManager::AddFixedFont(float size)
 {
   ImFontConfig cfg;
   cfg.FontDataOwnedByAtlas = false;
-  return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_fixed_font_data.data(),
-                                                    static_cast<int>(s_fixed_font_data.size()), size, &cfg, nullptr);
+  return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
+    s_fixed_font_data.data(), static_cast<int>(s_fixed_font_data.size()), size, &cfg, s_ascii_font_range.data());
 }
 
 bool ImGuiManager::AddIconFonts(float size)
@@ -661,7 +664,7 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
 
-  s_standard_font = AddTextFont(standard_font_size);
+  s_standard_font = AddTextFont(standard_font_size, false);
   if (!s_standard_font)
     return false;
 
@@ -669,19 +672,19 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
   if (!s_fixed_font)
     return false;
 
-  s_osd_font = AddTextFont(osd_font_size);
+  s_osd_font = AddTextFont(osd_font_size, true);
   if (!s_osd_font || !AddIconFonts(osd_font_size))
     return false;
 
   if (fullscreen_fonts)
   {
     const float medium_font_size = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE);
-    s_medium_font = AddTextFont(medium_font_size);
+    s_medium_font = AddTextFont(medium_font_size, true);
     if (!s_medium_font || !AddIconFonts(medium_font_size))
       return false;
 
     const float large_font_size = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE);
-    s_large_font = AddTextFont(large_font_size);
+    s_large_font = AddTextFont(large_font_size, true);
     if (!s_large_font || !AddIconFonts(large_font_size))
       return false;
   }
