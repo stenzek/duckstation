@@ -149,7 +149,7 @@ struct MDECState
   u32 current_coefficient = 64; // k (in block)
   u16 current_q_scale = 0;
 
-  alignas(16) std::array<u32, 256> block_rgb{};
+  alignas(VECTOR_ALIGNMENT) std::array<u32, 256> block_rgb{};
   TimingEvent block_copy_out_event{"MDEC Block Copy Out", 1, 1, &MDEC::CopyOutBlock, nullptr};
 
   u32 total_blocks_decoded = 0;
@@ -624,6 +624,7 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
   switch (s_state.status.data_output_depth)
   {
+    // Not worth vectorizing these, they're basically never used.
     case DataOutputDepth_4Bit:
     {
       const u32* in_ptr = s_state.block_rgb.data();
@@ -658,6 +659,7 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
     case DataOutputDepth_24Bit:
     {
+#ifndef CPU_ARCH_SIMD
       // pack tightly
       u32 index = 0;
       u32 state = 0;
@@ -692,6 +694,36 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
             break;
         }
       }
+#else
+      static constexpr GSVector4i mask00 = GSVector4i::cxpr8(0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, -1, -1, -1, -1);
+      static constexpr GSVector4i mask01 =
+        GSVector4i::cxpr8(-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 4);
+      static constexpr GSVector4i mask11 =
+        GSVector4i::cxpr8(5, 6, 8, 9, 10, 12, 13, 14, -1, -1, -1, -1, -1, -1, -1, -1);
+      static constexpr GSVector4i mask12 = GSVector4i::cxpr8(-1, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 4, 5, 6, 8, 9);
+      static constexpr GSVector4i mask22 =
+        GSVector4i::cxpr8(10, 12, 13, 14, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1);
+      static constexpr GSVector4i mask23 = GSVector4i::cxpr8(-1, -1, -1, -1, 0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14);
+
+      // This is really awful, but the FIFO sucks...
+      alignas(VECTOR_ALIGNMENT) u32 rgb[256 * 3 / 4];
+      u32* rgbp = rgb;
+
+      for (u32 index = 0; index < s_state.block_rgb.size(); index += 16)
+      {
+        const GSVector4i rgbx0 = GSVector4i::load<false>(&s_state.block_rgb[index]);
+        const GSVector4i rgbx1 = GSVector4i::load<false>(&s_state.block_rgb[index + 4]);
+        const GSVector4i rgbx2 = GSVector4i::load<false>(&s_state.block_rgb[index + 8]);
+        const GSVector4i rgbx3 = GSVector4i::load<false>(&s_state.block_rgb[index + 12]);
+
+        GSVector4i::store<true>(&rgbp[0], rgbx0.shuffle8(mask00) | rgbx1.shuffle8(mask01));
+        GSVector4i::store<true>(&rgbp[4], rgbx1.shuffle8(mask11) | rgbx2.shuffle8(mask12));
+        GSVector4i::store<true>(&rgbp[8], rgbx2.shuffle8(mask22) | rgbx3.shuffle8(mask23));
+        rgbp += 12;
+      }
+
+      s_state.data_out_fifo.PushRange(rgb, std::size(rgb));
+#endif
       break;
     }
 
@@ -719,6 +751,7 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
       }
       else
       {
+#ifndef CPU_ARCH_SIMD
         const u32 a = ZeroExtend32(s_state.status.data_output_bit15.GetValue()) << 15;
         for (u32 i = 0; i < static_cast<u32>(s_state.block_rgb.size());)
         {
@@ -738,6 +771,43 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
           s_state.data_out_fifo.Push(color15a | (color15b << 16));
         }
+#else
+        // This is really awful, but the FIFO sucks...
+        alignas(VECTOR_ALIGNMENT) u32 rgb[256 / 2];
+        u32* rgbp = rgb;
+
+        const GSVector4i a = s_state.status.data_output_bit15 ? GSVector4i::cxpr(0x8000u) : GSVector4i::cxpr(0);
+        for (u32 i = 0; i < static_cast<u32>(s_state.block_rgb.size()); i += 8)
+        {
+          GSVector4i rgb0 = GSVector4i::load<true>(&s_state.block_rgb[i]);
+          GSVector4i rgb1 = GSVector4i::load<true>(&s_state.block_rgb[i + 4]);
+
+          static constexpr auto rgb32_to_rgba5551 = [](const GSVector4i& rgb32, const GSVector4i& a) {
+            const GSVector4i r =
+              (rgb32 & GSVector4i::cxpr(0xff)).add32(GSVector4i::cxpr(4)).srl32(3).min_u32(GSVector4i::cxpr(0x1F));
+            const GSVector4i g = (rgb32.srl32<8>() & GSVector4i::cxpr(0xff))
+                                   .add32(GSVector4i::cxpr(4))
+                                   .srl32(3)
+                                   .min_u32(GSVector4i::cxpr(0x1F))
+                                   .sll32<5>();
+            const GSVector4i b = (rgb32.srl32<16>() & GSVector4i::cxpr(0xff))
+                                   .add32(GSVector4i::cxpr(4))
+                                   .srl32(3)
+                                   .min_u32(GSVector4i::cxpr(0x1F))
+                                   .sll32<10>();
+            return (r | g | b | a);
+          };
+
+          rgb0 = rgb32_to_rgba5551(rgb0, a);
+          rgb1 = rgb32_to_rgba5551(rgb1, a);
+
+          const GSVector4i packed_rgb0_rb1 = rgb0.pu32(rgb1);
+          GSVector4i::store<true>(rgbp, packed_rgb0_rb1);
+          rgbp += sizeof(GSVector4i) / sizeof(u32);
+        }
+
+        s_state.data_out_fifo.PushRange(rgb, std::size(rgb));
+#endif
       }
     }
     break;
