@@ -281,10 +281,10 @@ static constexpr const std::array s_backend_names = {
 #endif
 };
 static constexpr const std::array s_backend_display_names = {
-  TRANSLATE_NOOP("AudioStream", "Null (No Output)"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Null (No Output)", "AudioBackend"),
 #ifndef __ANDROID__
-  TRANSLATE_NOOP("AudioStream", "Cubeb"),
-  TRANSLATE_NOOP("AudioStream", "SDL"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Cubeb", "AudioBackend"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "SDL", "AudioBackend"),
 #else
   "AAudio",
   "OpenSL ES",
@@ -319,20 +319,26 @@ static constexpr const std::array s_expansion_mode_names = {
   "Disabled", "StereoLFE", "Quadraphonic", "QuadraphonicLFE", "Surround51", "Surround71",
 };
 static constexpr const std::array s_expansion_mode_display_names = {
-  TRANSLATE_NOOP("AudioStream", "Disabled (Stereo)"), TRANSLATE_NOOP("AudioStream", "Stereo with LFE"),
-  TRANSLATE_NOOP("AudioStream", "Quadraphonic"),      TRANSLATE_NOOP("AudioStream", "Quadraphonic with LFE"),
-  TRANSLATE_NOOP("AudioStream", "5.1 Surround"),      TRANSLATE_NOOP("AudioStream", "7.1 Surround"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled (Stereo)", "AudioExpansionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Stereo with LFE", "AudioExpansionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Quadraphonic", "AudioExpansionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Quadraphonic with LFE", "AudioExpansionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "5.1 Surround", "AudioExpansionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "7.1 Surround", "AudioExpansionMode"),
 };
 
 const char* AudioStream::GetExpansionModeName(AudioExpansionMode mode)
 {
-  return (static_cast<u32>(mode) < s_expansion_mode_names.size()) ? s_expansion_mode_names[static_cast<u32>(mode)] : "";
+  return (static_cast<size_t>(mode) < s_expansion_mode_names.size()) ?
+           s_expansion_mode_names[static_cast<size_t>(mode)] :
+           "";
 }
 
 const char* AudioStream::GetExpansionModeDisplayName(AudioExpansionMode mode)
 {
-  return (static_cast<u32>(mode) < s_expansion_mode_display_names.size()) ?
-           Host::TranslateToCString("AudioStream", s_expansion_mode_display_names[static_cast<u32>(mode)]) :
+  return (static_cast<size_t>(mode) < s_expansion_mode_display_names.size()) ?
+           Host::TranslateToCString("Settings", s_expansion_mode_display_names[static_cast<size_t>(mode)],
+                                    "AudioExpansionMode") :
            "";
 }
 
@@ -353,26 +359,28 @@ static constexpr const std::array s_stretch_mode_names = {
   "TimeStretch",
 };
 static constexpr const std::array s_stretch_mode_display_names = {
-  TRANSLATE_NOOP("AudioStream", "Off (Noisy)"),
-  TRANSLATE_NOOP("AudioStream", "Resampling (Pitch Shift)"),
-  TRANSLATE_NOOP("AudioStream", "Time Stretch (Tempo Change, Best Sound)"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Off (Noisy)", "AudioStretchMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Resampling (Pitch Shift)", "AudioStretchMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Time Stretch (Tempo Change, Best Sound)", "AudioStretchMode"),
 };
 
 const char* AudioStream::GetStretchModeName(AudioStretchMode mode)
 {
-  return (static_cast<u32>(mode) < s_stretch_mode_names.size()) ? s_stretch_mode_names[static_cast<u32>(mode)] : "";
+  return (static_cast<size_t>(mode) < s_stretch_mode_names.size()) ? s_stretch_mode_names[static_cast<size_t>(mode)] :
+                                                                     "";
 }
 
 const char* AudioStream::GetStretchModeDisplayName(AudioStretchMode mode)
 {
-  return (static_cast<u32>(mode) < s_stretch_mode_display_names.size()) ?
-           Host::TranslateToCString("AudioStream", s_stretch_mode_display_names[static_cast<u32>(mode)]) :
+  return (static_cast<size_t>(mode) < s_stretch_mode_display_names.size()) ?
+           Host::TranslateToCString("Settings", s_stretch_mode_display_names[static_cast<size_t>(mode)],
+                                    "AudioStretchMode") :
            "";
 }
 
 std::optional<AudioStretchMode> AudioStream::ParseStretchMode(const char* name)
 {
-  for (u8 i = 0; i < static_cast<u8>(AudioStretchMode::Count); i++)
+  for (size_t i = 0; i < static_cast<u8>(AudioStretchMode::Count); i++)
   {
     if (std::strcmp(name, s_stretch_mode_names[i]) == 0)
       return static_cast<AudioStretchMode>(i);

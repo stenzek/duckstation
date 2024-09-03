@@ -131,17 +131,26 @@ static bool s_game_list_loaded = false;
 
 const char* GameList::GetEntryTypeName(EntryType type)
 {
-  static std::array<const char*, static_cast<int>(EntryType::Count)> names = {
-    {"Disc", "DiscSet", "PSExe", "Playlist", "PSF"}};
-  return names[static_cast<int>(type)];
+  static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{
+    "Disc",
+    "DiscSet",
+    "PSExe",
+    "Playlist",
+    "PSF",
+  }};
+  return names[static_cast<size_t>(type)];
 }
 
 const char* GameList::GetEntryTypeDisplayName(EntryType type)
 {
-  static std::array<const char*, static_cast<int>(EntryType::Count)> names = {
-    {TRANSLATE_NOOP("GameList", "Disc"), TRANSLATE_NOOP("GameList", "Disc Set"), TRANSLATE_NOOP("GameList", "PS-EXE"),
-     TRANSLATE_NOOP("GameList", "Playlist"), TRANSLATE_NOOP("GameList", "PSF")}};
-  return Host::TranslateToCString("GameList", names[static_cast<int>(type)]);
+  static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{
+    TRANSLATE_DISAMBIG_NOOP("GameList", "Disc", "EntryType"),
+    TRANSLATE_DISAMBIG_NOOP("GameList", "Disc Set", "EntryType"),
+    TRANSLATE_DISAMBIG_NOOP("GameList", "PS-EXE", "EntryType"),
+    TRANSLATE_DISAMBIG_NOOP("GameList", "Playlist", "EntryType"),
+    TRANSLATE_DISAMBIG_NOOP("GameList", "PSF", "EntryType"),
+  }};
+  return Host::TranslateToCString("GameList", names[static_cast<size_t>(type)], "EntryType");
 }
 
 bool GameList::IsGameListLoaded()
@@ -831,7 +840,8 @@ GameList::EntryList GameList::TakeEntryList()
   return ret;
 }
 
-void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_paths, const PlayedTimeMap& played_time_map)
+void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_paths,
+                                    const PlayedTimeMap& played_time_map)
 {
   std::unique_lock lock(s_mutex);
 

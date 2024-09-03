@@ -649,7 +649,7 @@ void GraphicsSettingsWidget::setupAdditionalUi()
   for (u32 i = 0; i < static_cast<u32>(ForceVideoTimingMode::Count); i++)
   {
     m_ui.forceVideoTiming->addItem(
-      QString::fromUtf8(Settings::GetForceVideoTimingName(static_cast<ForceVideoTimingMode>(i))));
+      QString::fromUtf8(Settings::GetForceVideoTimingDisplayName(static_cast<ForceVideoTimingMode>(i))));
   }
 
   // Advanced Tab

@@ -50,16 +50,17 @@ bool CopyTextToClipboard(std::string_view text);
 
 /// Returns a localized version of the specified string within the specified context.
 /// The pointer is guaranteed to be valid until the next language change.
-const char* TranslateToCString(std::string_view context, std::string_view msg);
+const char* TranslateToCString(std::string_view context, std::string_view msg, std::string_view disambiguation = {});
 
 /// Returns a localized version of the specified string within the specified context.
 /// The view is guaranteed to be valid until the next language change.
 /// NOTE: When passing this to fmt, positional arguments should be used in the base string, as
 /// not all locales follow the same word ordering.
-std::string_view TranslateToStringView(std::string_view context, std::string_view msg);
+std::string_view TranslateToStringView(std::string_view context, std::string_view msg,
+                                       std::string_view disambiguation = {});
 
 /// Returns a localized version of the specified string within the specified context.
-std::string TranslateToString(std::string_view context, std::string_view msg);
+std::string TranslateToString(std::string_view context, std::string_view msg, std::string_view disambiguation = {});
 
 /// Returns a localized version of the specified string within the specified context, adjusting for plurals using %n.
 std::string TranslatePluralToString(const char* context, const char* msg, const char* disambiguation, int count);
@@ -70,7 +71,8 @@ void ClearTranslationCache();
 
 namespace Internal {
 /// Implementation to retrieve a translated string.
-s32 GetTranslatedStringImpl(std::string_view context, std::string_view msg, char* tbuf, size_t tbuf_space);
+s32 GetTranslatedStringImpl(std::string_view context, std::string_view msg, std::string_view disambiguation, char* tbuf,
+                            size_t tbuf_space);
 } // namespace Internal
 } // namespace Host
 
@@ -79,6 +81,11 @@ s32 GetTranslatedStringImpl(std::string_view context, std::string_view msg, char
 #define TRANSLATE_SV(context, msg) Host::TranslateToStringView(context, msg)
 #define TRANSLATE_STR(context, msg) Host::TranslateToString(context, msg)
 #define TRANSLATE_FS(context, msg) fmt::runtime(Host::TranslateToStringView(context, msg))
+#define TRANSLATE_DISAMBIG(context, msg, disambiguation) Host::TranslateToCString(context, msg, disambiguation)
+#define TRANSLATE_DISAMBIG_SV(context, msg, disambiguation) Host::TranslateToStringView(context, msg, disambiguation)
+#define TRANSLATE_DISAMBIG_STR(context, msg, disambiguation) Host::TranslateToString(context, msg, disambiguation)
+#define TRANSLATE_DISAMBIG_FS(context, msg, disambiguation)                                                            \
+  fmt::runtime(Host::TranslateToStringView(context, msg, disambiguation))
 #define TRANSLATE_PLURAL_STR(context, msg, disambiguation, count)                                                      \
   Host::TranslatePluralToString(context, msg, disambiguation, count)
 #define TRANSLATE_PLURAL_SSTR(context, msg, disambiguation, count)                                                     \
@@ -88,3 +95,4 @@ s32 GetTranslatedStringImpl(std::string_view context, std::string_view msg, char
 
 // Does not translate the string at runtime, but allows the UI to in its own way.
 #define TRANSLATE_NOOP(context, msg) msg
+#define TRANSLATE_DISAMBIG_NOOP(context, msg, disambiguation) msg

@@ -54,14 +54,24 @@ static bool ParseYamlCodes(u32 index, const ryml::ConstNodeRef& value, std::stri
 static bool LoadTrackHashes();
 
 static constexpr const std::array<const char*, static_cast<int>(CompatibilityRating::Count)>
-  s_compatibility_rating_names = {
-    {"Unknown", "DoesntBoot", "CrashesInIntro", "CrashesInGame", "GraphicalAudioIssues", "NoIssues"}};
+  s_compatibility_rating_names = {{
+    "Unknown",
+    "DoesntBoot",
+    "CrashesInIntro",
+    "CrashesInGame",
+    "GraphicalAudioIssues",
+    "NoIssues",
+  }};
 
 static constexpr const std::array<const char*, static_cast<size_t>(CompatibilityRating::Count)>
-  s_compatibility_rating_display_names = {
-    {TRANSLATE_NOOP("GameDatabase", "Unknown"), TRANSLATE_NOOP("GameDatabase", "Doesn't Boot"),
-     TRANSLATE_NOOP("GameDatabase", "Crashes In Intro"), TRANSLATE_NOOP("GameDatabase", "Crashes In-Game"),
-     TRANSLATE_NOOP("GameDatabase", "Graphical/Audio Issues"), TRANSLATE_NOOP("GameDatabase", "No Issues")}};
+  s_compatibility_rating_display_names = {{
+    TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Unknown", "CompatibilityRating"),
+    TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Doesn't Boot", "CompatibilityRating"),
+    TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Crashes In Intro", "CompatibilityRating"),
+    TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Crashes In-Game", "CompatibilityRating"),
+    TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Graphical/Audio Issues", "CompatibilityRating"),
+    TRANSLATE_DISAMBIG_NOOP("GameDatabase", "No Issues", "CompatibilityRating"),
+  }};
 
 static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
   "ForceInterpreter",
@@ -93,32 +103,32 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
 }};
 
 static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_display_names = {{
-  TRANSLATE_NOOP("GameDatabase", "Force Interpreter"),
-  TRANSLATE_NOOP("GameDatabase", "Force Software Renderer"),
-  TRANSLATE_NOOP("GameDatabase", "Force Software Renderer For Readbacks"),
-  TRANSLATE_NOOP("GameDatabase", "Force Round Texture Coordinates"),
-  TRANSLATE_NOOP("GameDatabase", "Force Accurate Blending"),
-  TRANSLATE_NOOP("GameDatabase", "Force Interlacing"),
-  TRANSLATE_NOOP("GameDatabase", "Disable Automatic Analog Mode"),
-  TRANSLATE_NOOP("GameDatabase", "Disable True Color"),
-  TRANSLATE_NOOP("GameDatabase", "Disable Upscaling"),
-  TRANSLATE_NOOP("GameDatabase", "Disable Texture Filtering"),
-  TRANSLATE_NOOP("GameDatabase", "Disable Sprite Texture Filtering"),
-  TRANSLATE_NOOP("GameDatabase", "Disable Scaled Dithering"),
-  TRANSLATE_NOOP("GameDatabase", "Disable Widescreen"),
-  TRANSLATE_NOOP("GameDatabase", "Disable PGXP"),
-  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Culling"),
-  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Texture Correction"),
-  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Color Correction"),
-  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Depth Buffer"),
-  TRANSLATE_NOOP("GameDatabase", "Disable PGXP Preserve Projection Floating Point"),
-  TRANSLATE_NOOP("GameDatabase", "Disable PGXP on 2D Polygons"),
-  TRANSLATE_NOOP("GameDatabase", "Force PGXP Vertex Cache"),
-  TRANSLATE_NOOP("GameDatabase", "Force PGXP CPU Mode"),
-  TRANSLATE_NOOP("GameDatabase", "Force Recompiler Memory Exceptions"),
-  TRANSLATE_NOOP("GameDatabase", "Force Recompiler ICache"),
-  TRANSLATE_NOOP("GameDatabase", "Force Recompiler LUT Fastmem"),
-  TRANSLATE_NOOP("GameDatabase", "Is LibCrypt Protected"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Interpreter", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer For Readbacks", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Round Texture Coordinates", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Accurate Blending", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Interlacing", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable True Color", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaling", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Texture Filtering", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Sprite Texture Filtering", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Scaled Dithering", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Widescreen", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP Culling", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP Texture Correction", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP Color Correction", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP Depth Buffer", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP Preserve Projection Floating Point", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP on 2D Polygons", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force PGXP Vertex Cache", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force PGXP CPU Mode", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler Memory Exceptions", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler ICache", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler LUT Fastmem", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
 }};
 
 static constexpr const char* GAMEDB_YAML_FILENAME = "gamedb.yaml";

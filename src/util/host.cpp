@@ -14,7 +14,8 @@
 Log_SetChannel(Host);
 
 namespace Host {
-static std::pair<const char*, u32> LookupTranslationString(std::string_view context, std::string_view msg);
+static std::pair<const char*, u32> LookupTranslationString(std::string_view context, std::string_view msg,
+                                                           std::string_view disambiguation);
 
 static constexpr u32 TRANSLATION_STRING_CACHE_SIZE = 4 * 1024 * 1024;
 using TranslationStringMap = PreferUnorderedStringMap<std::pair<u32, u32>>;
@@ -25,13 +26,15 @@ static std::vector<char> s_translation_string_cache;
 static u32 s_translation_string_cache_pos;
 } // namespace Host
 
-std::pair<const char*, u32> Host::LookupTranslationString(std::string_view context, std::string_view msg)
+std::pair<const char*, u32> Host::LookupTranslationString(std::string_view context, std::string_view msg,
+                                                          std::string_view disambiguation)
 {
   // TODO: TranslatableString, compile-time hashing.
 
   TranslationStringContextMap::iterator ctx_it;
   TranslationStringMap::iterator msg_it;
   std::pair<const char*, u32> ret;
+  SmallString disambiguation_key;
   s32 len;
 
   // Shouldn't happen, but just in case someone tries to translate an empty string.
@@ -42,13 +45,19 @@ std::pair<const char*, u32> Host::LookupTranslationString(std::string_view conte
     return ret;
   }
 
+  if (!disambiguation.empty())
+  {
+    disambiguation_key.append(disambiguation);
+    disambiguation_key.append(msg);
+  }
+
   s_translation_string_mutex.lock_shared();
   ctx_it = s_translation_string_map.find(context);
 
   if (ctx_it == s_translation_string_map.end()) [[unlikely]]
     goto add_string;
 
-  msg_it = ctx_it->second.find(msg);
+  msg_it = ctx_it->second.find(disambiguation.empty() ? msg : disambiguation_key.view());
   if (msg_it == ctx_it->second.end()) [[unlikely]]
     goto add_string;
 
@@ -69,15 +78,15 @@ add_string:
     s_translation_string_cache_pos = 0;
   }
 
-  if ((len =
-         Internal::GetTranslatedStringImpl(context, msg, &s_translation_string_cache[s_translation_string_cache_pos],
-                                           TRANSLATION_STRING_CACHE_SIZE - 1 - s_translation_string_cache_pos)) < 0)
+  if ((len = Internal::GetTranslatedStringImpl(context, msg, disambiguation,
+                                               &s_translation_string_cache[s_translation_string_cache_pos],
+                                               TRANSLATION_STRING_CACHE_SIZE - 1 - s_translation_string_cache_pos)) < 0)
   {
     ERROR_LOG("WARNING: Clearing translation string cache, it might need to be larger.");
     s_translation_string_cache_pos = 0;
-    if ((len =
-           Internal::GetTranslatedStringImpl(context, msg, &s_translation_string_cache[s_translation_string_cache_pos],
-                                             TRANSLATION_STRING_CACHE_SIZE - 1 - s_translation_string_cache_pos)) < 0)
+    if ((len = Internal::GetTranslatedStringImpl(
+           context, msg, disambiguation, &s_translation_string_cache[s_translation_string_cache_pos],
+           TRANSLATION_STRING_CACHE_SIZE - 1 - s_translation_string_cache_pos)) < 0)
     {
       Panic("Failed to get translated string after clearing cache.");
       len = 0;
@@ -93,7 +102,8 @@ add_string:
   const u32 insert_pos = s_translation_string_cache_pos;
   s_translation_string_cache[insert_pos + static_cast<u32>(len)] = 0;
 
-  ctx_it->second.emplace(msg, std::pair<u32, u32>(insert_pos, static_cast<u32>(len)));
+  ctx_it->second.emplace(disambiguation.empty() ? msg : disambiguation_key.view(),
+                         std::pair<u32, u32>(insert_pos, static_cast<u32>(len)));
   s_translation_string_cache_pos = insert_pos + static_cast<u32>(len) + 1;
 
   ret.first = &s_translation_string_cache[insert_pos];
@@ -102,20 +112,21 @@ add_string:
   return ret;
 }
 
-const char* Host::TranslateToCString(std::string_view context, std::string_view msg)
+const char* Host::TranslateToCString(std::string_view context, std::string_view msg, std::string_view disambiguation)
 {
-  return LookupTranslationString(context, msg).first;
+  return LookupTranslationString(context, msg, disambiguation).first;
 }
 
-std::string_view Host::TranslateToStringView(std::string_view context, std::string_view msg)
+std::string_view Host::TranslateToStringView(std::string_view context, std::string_view msg,
+                                             std::string_view disambiguation)
 {
-  const auto mp = LookupTranslationString(context, msg);
+  const auto mp = LookupTranslationString(context, msg, disambiguation);
   return std::string_view(mp.first, mp.second);
 }
 
-std::string Host::TranslateToString(std::string_view context, std::string_view msg)
+std::string Host::TranslateToString(std::string_view context, std::string_view msg, std::string_view disambiguation)
 {
-  return std::string(TranslateToStringView(context, msg));
+  return std::string(TranslateToStringView(context, msg, disambiguation));
 }
 
 void Host::ClearTranslationCache()
