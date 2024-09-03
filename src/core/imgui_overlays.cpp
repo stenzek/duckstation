@@ -433,8 +433,7 @@ void ImGuiManager::DrawEnhancementsOverlay()
   }
   if (g_settings.gpu_true_color)
     text.append(" TrueCol");
-  if (g_settings.gpu_disable_interlacing)
-    text.append(" ForceProg");
+  text.append_format(" DI={}", Settings::GetDisplayDeinterlacingModeName(g_settings.display_deinterlacing_mode));
   if (g_settings.gpu_force_video_timing == ForceVideoTimingMode::NTSC && System::GetRegion() == ConsoleRegion::PAL)
     text.append(" PAL60");
   if (g_settings.gpu_force_video_timing == ForceVideoTimingMode::PAL && System::GetRegion() != ConsoleRegion::PAL)

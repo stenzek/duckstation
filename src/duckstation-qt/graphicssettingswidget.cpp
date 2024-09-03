@@ -66,7 +66,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                               "CustomAspectRatioDenominator", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
   SettingWidgetBinder::BindWidgetToEnumSetting(
-    sif, m_ui.displayDeinterlacing, "Display", "DeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode,
+    sif, m_ui.displayDeinterlacing, "GPU", "DeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode,
     &Settings::GetDisplayDeinterlacingModeName, Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayCropMode, "Display", "CropMode",
                                                &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
@@ -79,7 +79,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableInterlacing, "GPU", "DisableInterlacing", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDepthBuffer, "GPU", "PGXPDepthBuffer", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.force43For24Bit, "Display", "Force4_3For24Bit", false);
@@ -104,8 +103,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   SettingWidgetBinder::SetAvailability(m_ui.trueColor, !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTrueColor));
   SettingWidgetBinder::SetAvailability(m_ui.pgxpEnable, !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
-  SettingWidgetBinder::SetAvailability(m_ui.disableInterlacing,
-                                       !m_dialog->hasGameTrait(GameDatabase::Trait::ForceInterlacing));
   SettingWidgetBinder::SetAvailability(m_ui.widescreenHack,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableWidescreen));
 
@@ -323,8 +320,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.displayDeinterlacing, tr("Deinterlacing"),
     QString::fromUtf8(Settings::GetDisplayDeinterlacingModeName(Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE)),
     tr("Determines which algorithm is used to convert interlaced frames to progressive for display on your system. "
-       "Generally, the \"Disable Interlacing\" enhancement provides better quality output, but some games require "
-       "interlaced rendering."));
+       "Using progressive rendering provides the best quality output, but some games require interlaced rendering."));
   dialog->registerWidgetHelp(
     m_ui.displayCropMode, tr("Crop"),
     QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(Settings::DEFAULT_DISPLAY_CROP_MODE)),
@@ -364,12 +360,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     tr("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."));
   dialog->registerWidgetHelp(m_ui.chromaSmoothingFor24Bit, tr("FMV Chroma Smoothing"), tr("Unchecked"),
                              tr("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs."));
-  dialog->registerWidgetHelp(
-    m_ui.disableInterlacing, tr("Disable Interlacing"), tr("Checked"),
-    tr(
-      "Forces the rendering and display of frames to progressive mode. <br>This removes the \"combing\" effect seen in "
-      "480i games by rendering them in 480p. Usually safe to enable.<br><b><u>May not be compatible with all "
-      "games.</u></b>"));
 
   // Advanced Tab
 

@@ -87,7 +87,7 @@ GPU::~GPU()
 
 bool GPU::Initialize()
 {
-  m_force_progressive_scan = g_settings.gpu_disable_interlacing;
+  m_force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
   m_force_frame_timings = g_settings.gpu_force_video_timing;
   s_crtc_tick_event.Activate();
   m_fifo_size = g_settings.gpu_fifo_size;
@@ -115,7 +115,7 @@ void GPU::UpdateSettings(const Settings& old_settings)
 {
   FlushRender();
 
-  m_force_progressive_scan = g_settings.gpu_disable_interlacing;
+  m_force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
 
@@ -1876,6 +1876,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
     switch (g_settings.display_deinterlacing_mode)
     {
       case DisplayDeinterlacingMode::Disabled:
+      case DisplayDeinterlacingMode::Progressive:
         break;
 
       case DisplayDeinterlacingMode::Weave:

@@ -4302,7 +4302,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
         g_settings.gpu_sprite_texture_filter != old_settings.gpu_sprite_texture_filter ||
         g_settings.gpu_line_detect_mode != old_settings.gpu_line_detect_mode ||
-        g_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
         g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing ||
         g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
         g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale ||
@@ -4583,8 +4582,8 @@ void System::WarnAboutUnsafeSettings()
     {
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
     }
-    if (g_settings.gpu_disable_interlacing)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering and display enabled."));
+    if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
     if (g_settings.gpu_widescreen_hack)
