@@ -1002,7 +1002,7 @@ bool GameDatabase::SaveToCache()
   const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.yaml", false).value_or(0);
 
   Error error;
-  FileSystem::AtomicRenamedFile file = FileSystem::CreateAtomicRenamedFile(GetCacheFile(), "wb", &error);
+  FileSystem::AtomicRenamedFile file = FileSystem::CreateAtomicRenamedFile(GetCacheFile(), &error);
   if (!file)
   {
     ERROR_LOG("Failed to open cache file for writing: {}", error.GetDescription());
