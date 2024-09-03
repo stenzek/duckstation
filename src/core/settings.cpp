@@ -229,7 +229,10 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
       si.GetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(DEFAULT_GPU_WIREFRAME_MODE)).c_str())
       .value_or(DEFAULT_GPU_WIREFRAME_MODE);
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
-  gpu_force_ntsc_timings = si.GetBoolValue("GPU", "ForceNTSCTimings", false);
+  gpu_force_frame_timings =
+    ParseForceFrameTimings(
+      si.GetStringValue("GPU", "ForceFrameTimings", GetForceFrameTimingsName(DEFAULT_FORCE_FRAME_TIMINGS_MODE)).c_str())
+      .value_or(DEFAULT_FORCE_FRAME_TIMINGS_MODE);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
   display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
@@ -535,7 +538,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
   si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
   si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
-  si.SetBoolValue("GPU", "ForceNTSCTimings", gpu_force_ntsc_timings);
+  si.SetStringValue("GPU", "ForceFrameTimings", GetForceFrameTimingsName(gpu_force_frame_timings));
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
   si.SetBoolValue("GPU", "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
   si.SetBoolValue("GPU", "PGXPEnable", gpu_pgxp_enable);
@@ -744,7 +747,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
     g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
     g_settings.gpu_disable_interlacing = false;
-    g_settings.gpu_force_ntsc_timings = false;
+    g_settings.gpu_force_frame_timings = ForceFrameTimingsMode::Disabled;
     g_settings.gpu_widescreen_hack = false;
     g_settings.gpu_pgxp_enable = false;
     g_settings.display_24bit_chroma_smoothing = false;
@@ -1507,7 +1510,22 @@ const char* Settings::GetDisplayRotationDisplayName(DisplayRotation rotation)
 {
   return Host::TranslateToCString("Settings", s_display_rotation_display_names[static_cast<size_t>(rotation)]);
 }
+static constexpr const std::array s_display_force_frame_timings_names = {
+  "Disabled", "NTSC", "PAL"
+};
+std::optional<ForceFrameTimingsMode> Settings::ParseForceFrameTimings(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_display_force_frame_timings_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<ForceFrameTimingsMode>(index);
 
+    index++;
+  }
+
+  return std::nullopt;
+}
 static constexpr const std::array s_display_scaling_names = {
   "Nearest", "NearestInteger", "BilinearSmooth", "BilinearSharp", "BilinearInteger",
 };
@@ -1541,6 +1559,16 @@ const char* Settings::GetDisplayScalingName(DisplayScalingMode mode)
 const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
 {
   return Host::TranslateToCString("DisplayScalingMode", s_display_scaling_display_names[static_cast<int>(mode)]);
+}
+
+const char* Settings::GetForceFrameTimingsName(ForceFrameTimingsMode mode)
+{
+  return s_display_force_frame_timings_names[static_cast<int>(mode)];
+}
+
+const char* Settings::GetForceFrameTimingsDisplayName(ForceFrameTimingsMode mode)
+{
+  return Host::TranslateToCString("ForceFrameTimingsMode", s_display_force_frame_timings_names[static_cast<int>(mode)]);
 }
 
 static constexpr const std::array s_display_exclusive_fullscreen_mode_names = {
