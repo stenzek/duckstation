@@ -11,6 +11,7 @@
 #include "setupwizarddialog.h"
 
 #include "core/achievements.h"
+#include "core/bus.h"
 #include "core/cheats.h"
 #include "core/controller.h"
 #include "core/fullscreen_ui.h"
@@ -45,8 +46,7 @@
 
 #include "scmversion/scmversion.h"
 
-#include "core/bus.h"
-#include "imgui.h"
+#include "fmt/format.h"
 
 #include <QtCore/QCoreApplication>
 #include <QtCore/QDateTime>
@@ -1495,7 +1495,7 @@ void EmuThread::startDumpingAudio()
     return;
   }
 
-  //System::StartDumpingAudio();
+  // System::StartDumpingAudio();
 }
 
 void EmuThread::stopDumpingAudio()
@@ -1506,7 +1506,7 @@ void EmuThread::stopDumpingAudio()
     return;
   }
 
-  //System::StopDumpingAudio();
+  // System::StopDumpingAudio();
 }
 
 void EmuThread::singleStepCPU()

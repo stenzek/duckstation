@@ -2,12 +2,13 @@
 // SPDX-License-Identifier: PolyForm-Strict-1.0.0
 
 #include "win32_raw_input_source.h"
+#include "input_manager.h"
+
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/string_util.h"
-#include "core/host.h"
-#include "core/system.h"
-#include "input_manager.h"
+
+#include "fmt/format.h"
 
 #include <cmath>
 #include <hidsdi.h>

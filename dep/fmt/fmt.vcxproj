@@ -10,6 +10,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\fmt\args.h" />
+    <ClInclude Include="include\fmt\base.h" />
     <ClInclude Include="include\fmt\chrono.h" />
     <ClInclude Include="include\fmt\color.h" />
     <ClInclude Include="include\fmt\compile.h" />

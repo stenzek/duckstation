@@ -15,6 +15,8 @@
 
 #include "common/file_system.h"
 
+#include "fmt/format.h"
+
 #include <QtWidgets/QMessageBox>
 
 SetupWizardDialog::SetupWizardDialog()

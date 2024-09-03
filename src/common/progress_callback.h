@@ -6,8 +6,9 @@
 #include "small_string.h"
 #include "types.h"
 
-#include "fmt/core.h"
+#include "fmt/base.h"
 
+#include <memory>
 #include <string>
 
 class ProgressCallback

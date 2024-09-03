@@ -80,7 +80,7 @@ void CueParser::File::SetError(u32 line_number, Error* error, const char* format
   va_end(ap);
 
   ERROR_LOG("Cue parse error at line {}: {}", line_number, str.c_str());
-  Error::SetString(error, fmt::format("Cue parse error at line {}: {}", line_number, str));
+  Error::SetStringFmt(error, "Cue parse error at line {}: {}", line_number, str);
 }
 
 std::string_view CueParser::File::GetToken(const char*& line)

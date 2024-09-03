@@ -26,6 +26,8 @@
 #include "common/log.h"
 #include "common/string_util.h"
 
+#include "fmt/format.h"
+
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDoubleSpinBox>
 #include <QtWidgets/QInputDialog>

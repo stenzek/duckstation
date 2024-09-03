@@ -22,7 +22,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
-#include "imgui.h"
+#include "fmt/format.h"
 
 #include <cstdarg>
 #include <limits>

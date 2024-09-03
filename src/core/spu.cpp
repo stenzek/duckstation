@@ -23,6 +23,8 @@
 #include "common/log.h"
 #include "common/path.h"
 
+#include "fmt/format.h"
+
 #include <memory>
 
 Log_SetChannel(SPU);

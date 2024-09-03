@@ -130,7 +130,7 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches,
     {
       image = CDImage::OverlayPPFPatch(ppf_filename.c_str(), std::move(image));
       if (!image)
-        Error::SetString(error, fmt::format("Failed to apply ppf patch from '{}'.", ppf_filename));
+        Error::SetStringFmt(error, "Failed to apply ppf patch from '{}'.", ppf_filename);
     }
   }
 

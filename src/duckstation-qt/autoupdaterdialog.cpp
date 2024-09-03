@@ -19,6 +19,8 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
+#include "fmt/format.h"
+
 #include <QtCore/QCoreApplication>
 #include <QtCore/QFile>
 #include <QtCore/QJsonArray>

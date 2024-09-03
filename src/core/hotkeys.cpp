@@ -24,6 +24,7 @@
 
 #include "IconsFontAwesome5.h"
 #include "IconsEmoji.h"
+#include "fmt/format.h"
 
 #include <cmath>
 

@@ -14,6 +14,8 @@
 #include "common/small_string.h"
 #include "common/string_util.h"
 
+#include "fmt/format.h"
+
 #include <algorithm>
 #include <cerrno>
 #include <cinttypes>
@@ -383,7 +385,7 @@ bool CDImageDeviceWin32::Open(const char* filename, Error* error)
   if (m_tracks.empty())
   {
     ERROR_LOG("File '{}' contains no tracks", filename);
-    Error::SetString(error, fmt::format("File '{}' contains no tracks", filename));
+    Error::SetStringFmt(error, "File '{}' contains no tracks", filename);
     return false;
   }
 

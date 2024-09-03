@@ -14,6 +14,7 @@
 
 #include "IconsFontAwesome5.h"
 #include "IconsPromptFont.h"
+#include "fmt/format.h"
 
 Log_SetChannel(AnalogJoystick);
 

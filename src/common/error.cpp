@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: PolyForm-Strict-1.0.0
 
 #include "error.h"
+#include "small_string.h"
 #include "string_util.h"
 
 #include <cstdlib>
@@ -253,6 +254,26 @@ void Error::AddPrefix(std::string_view prefix)
 void Error::AddSuffix(std::string_view suffix)
 {
   m_description.append(suffix);
+}
+
+void Error::SetStringFmtArgs(fmt::string_view fmt, fmt::format_args args)
+{
+  m_type = Type::User;
+  m_description = fmt::vformat(fmt, std::move(args));
+}
+
+void Error::AddPrefixFmtArgs(fmt::string_view fmt, fmt::format_args args)
+{
+  SmallString str;
+  str.vformat(fmt, std::move(args));
+  AddPrefix(str.view());
+}
+
+void Error::AddSuffixFmtArgs(fmt::string_view fmt, fmt::format_args args)
+{
+  SmallString str;
+  str.vformat(fmt, std::move(args));
+  AddSuffix(str.view());
 }
 
 void Error::AddPrefix(Error* errptr, std::string_view prefix)

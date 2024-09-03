@@ -25,6 +25,7 @@
 #include "common/heap_array.h"
 #include "common/log.h"
 
+#include "fmt/format.h"
 #include "imgui.h"
 
 #include <cmath>

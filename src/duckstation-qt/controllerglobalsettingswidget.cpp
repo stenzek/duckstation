@@ -7,6 +7,8 @@
 #include "qtutils.h"
 #include "settingwidgetbinder.h"
 
+#include "fmt/format.h"
+
 #include "util/sdl_input_source.h"
 
 ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, ControllerSettingsWindow* dialog)
@@ -148,7 +150,7 @@ ControllerLEDSettingsDialog::~ControllerLEDSettingsDialog() = default;
 
 void ControllerLEDSettingsDialog::linkButton(ColorPickerButton* button, u32 player_id)
 {
-  std::string key(fmt::format("Player{}LED", player_id));
+  std::string key = fmt::format("Player{}LED", player_id);
   const u32 current_value =
     SDLInputSource::ParseRGBForPlayerId(m_dialog->getStringValue("SDLExtra", key.c_str(), ""), player_id);
   button->setColor(current_value);

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: PolyForm-Strict-1.0.0
 
 #include "negcon_rumble.h"
@@ -19,6 +19,7 @@
 
 #include "IconsFontAwesome5.h"
 #include "IconsPromptFont.h"
+#include "fmt/format.h"
 
 #include <cmath>
 

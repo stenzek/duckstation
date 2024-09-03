@@ -18,6 +18,8 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
+#include "fmt/format.h"
+
 #include <algorithm>
 #include <array>
 #include <cctype>
