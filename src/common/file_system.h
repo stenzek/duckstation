@@ -147,6 +147,7 @@ public:
   ~AtomicRenamedFileDeleter();
 
   void operator()(std::FILE* fp);
+  bool commit(std::FILE* fp, Error* error); // closes file
   void discard();
 
 private:
@@ -154,8 +155,9 @@ private:
   std::string m_final_filename;
 };
 using AtomicRenamedFile = std::unique_ptr<std::FILE, AtomicRenamedFileDeleter>;
-AtomicRenamedFile CreateAtomicRenamedFile(std::string filename, const char* mode, Error* error = nullptr);
+AtomicRenamedFile CreateAtomicRenamedFile(std::string filename, Error* error = nullptr);
 bool WriteAtomicRenamedFile(std::string filename, const void* data, size_t data_length, Error* error = nullptr);
+bool CommitAtomicRenamedFile(AtomicRenamedFile& file, Error* error);
 void DiscardAtomicRenamedFile(AtomicRenamedFile& file);
 
 /// Abstracts a POSIX file lock.

@@ -646,7 +646,7 @@ bool MemoryCardImage::ExportSave(DataArray* data, const FileInfo& fi, const char
   if (!ReadFile(*data, fi, &file_data, error))
     return false;
 
-  auto fp = FileSystem::CreateAtomicRenamedFile(filename, "wb", error);
+  auto fp = FileSystem::CreateAtomicRenamedFile(filename, error);
   if (!fp)
     return false;
 

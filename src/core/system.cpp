@@ -2910,7 +2910,7 @@ bool System::SaveState(const char* path, Error* error, bool backup_existing_save
     }
   }
 
-  auto fp = FileSystem::CreateAtomicRenamedFile(path, "wb", error);
+  auto fp = FileSystem::CreateAtomicRenamedFile(path, error);
   if (!fp)
   {
     Error::AddPrefixFmt(error, "Cannot open '{}': ", Path::GetFileName(path));
@@ -2930,7 +2930,7 @@ bool System::SaveState(const char* path, Error* error, bool backup_existing_save
                           5.0f);
 
   VERBOSE_LOG("Saving state took {:.2f} msec", save_timer.GetTimeMilliseconds());
-  return true;
+  return FileSystem::CommitAtomicRenamedFile(fp, error);
 }
 
 bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size /* = 256 */)
