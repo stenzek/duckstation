@@ -1448,10 +1448,10 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
         return false;
       }
 
-      pass.pipeline = g_gpu_device->CreatePipeline(plconfig);
+      pass.pipeline = g_gpu_device->CreatePipeline(plconfig, &error);
       if (!pass.pipeline)
       {
-        ERROR_LOG("Failed to create pipeline for pass '{}'", info.name);
+        ERROR_LOG("Failed to create pipeline for pass '{}': {}", info.name, error.GetDescription());
         progress->PopState();
         return false;
       }
