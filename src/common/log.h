@@ -5,7 +5,7 @@
 
 #include "types.h"
 
-#include "fmt/core.h"
+#include "fmt/base.h"
 
 #include <cinttypes>
 #include <cstdarg>

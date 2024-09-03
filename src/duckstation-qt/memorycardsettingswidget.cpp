@@ -15,6 +15,8 @@
 #include "common/small_string.h"
 #include "common/string_util.h"
 
+#include "fmt/format.h"
+
 #include <QtCore/QUrl>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QLabel>

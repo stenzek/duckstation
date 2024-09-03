@@ -29,6 +29,7 @@
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
+#include "fmt/format.h"
 
 Log_SetChannel(GameDatabase);
 

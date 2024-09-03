@@ -5,8 +5,7 @@
 
 #include "common/types.h"
 
-#include "fmt/core.h"
-#include "fmt/format.h"
+#include "fmt/base.h"
 
 #include <array>
 #include <atomic>

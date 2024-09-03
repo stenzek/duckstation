@@ -22,6 +22,8 @@
 #include "common/file_system.h"
 #include "common/log.h"
 
+#include "fmt/format.h"
+
 #include <cstdio>
 
 Log_SetChannel(CPU::Core);

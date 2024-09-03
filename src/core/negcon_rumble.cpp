@@ -19,6 +19,7 @@
 
 #include "IconsFontAwesome5.h"
 #include "IconsPromptFont.h"
+#include "fmt/format.h"
 
 #include <cmath>
 

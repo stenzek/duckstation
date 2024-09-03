@@ -9,6 +9,8 @@
 #include "string_util.h"
 #include "timer.h"
 
+#include "fmt/format.h"
+
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>

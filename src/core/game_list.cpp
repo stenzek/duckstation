@@ -25,6 +25,8 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 
+#include "fmt/format.h"
+
 #include <algorithm>
 #include <array>
 #include <ctime>

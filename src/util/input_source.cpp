@@ -2,7 +2,10 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "input_source.h"
+
 #include "common/string_util.h"
+
+#include "fmt/format.h"
 
 InputSource::InputSource() = default;
 

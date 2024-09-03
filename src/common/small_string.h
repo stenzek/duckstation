@@ -5,11 +5,12 @@
 
 #include "types.h"
 
-#include "fmt/core.h"
+#include "fmt/base.h"
 
 #include <algorithm>
 #include <cstdarg>
 #include <cstring>
+#include <iterator>
 #include <limits>
 #include <string>
 #include <string_view>
@@ -184,7 +185,7 @@ public:
   ALWAYS_INLINE const char& front() const { return m_buffer[0]; }
   ALWAYS_INLINE char& back() { return m_buffer[m_length - 1]; }
   ALWAYS_INLINE const char& back() const { return m_buffer[m_length - 1]; }
-  ALWAYS_INLINE void push_back(value_type&& val) { append(val); }
+  ALWAYS_INLINE void push_back(value_type val) { append(val); }
   ALWAYS_INLINE void pop_back() { erase(-1); }
 
   // returns a string view for this string
@@ -422,13 +423,13 @@ ALWAYS_INLINE void SmallStringBase::format(fmt::format_string<T...> fmt, T&&... 
   struct fmt::formatter<type>                                                                                          \
   {                                                                                                                    \
     template<typename ParseContext>                                                                                    \
-    constexpr auto parse(ParseContext& ctx)                                                                            \
+    constexpr auto parse(ParseContext& ctx) const                                                                      \
     {                                                                                                                  \
       return ctx.begin();                                                                                              \
     }                                                                                                                  \
                                                                                                                        \
     template<typename FormatContext>                                                                                   \
-    auto format(const type& str, FormatContext& ctx)                                                                   \
+    auto format(const type& str, FormatContext& ctx) const                                                             \
     {                                                                                                                  \
       return fmt::format_to(ctx.out(), "{}", str.view());                                                              \
     }                                                                                                                  \

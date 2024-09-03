@@ -14,6 +14,8 @@
 #include "common/assert.h"
 #include "common/string_util.h"
 
+#include "fmt/format.h"
+
 #include <QtCore/QFileInfo>
 #include <QtGui/QColor>
 #include <QtWidgets/QFileDialog>

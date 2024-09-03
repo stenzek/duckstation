@@ -3,11 +3,12 @@
 
 #include "cd_image_hasher.h"
 #include "cd_image.h"
-
-#include "util/host.h"
+#include "host.h"
 
 #include "common/md5_digest.h"
 #include "common/string_util.h"
+
+#include "fmt/format.h"
 
 namespace CDImageHasher {
 

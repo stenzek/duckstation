@@ -28,6 +28,8 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 
+#include "fmt/format.h"
+
 #include <csignal>
 #include <cstdio>
 

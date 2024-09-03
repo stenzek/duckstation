@@ -9,6 +9,7 @@
 #include "common/string_util.h"
 
 #include "IconsPromptFont.h"
+#include "fmt/format.h"
 
 #include <cmath>
 
