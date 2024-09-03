@@ -515,8 +515,9 @@ std::string GPUDevice::GetShaderCacheBaseName(std::string_view type) const
 
 bool GPUDevice::OpenPipelineCache(const std::string& filename)
 {
-  if (FileSystem::GetPathFileSize(filename.c_str()) <= 0)
-    return false;
+  // Let it create if it does not exist.
+  if (!FileSystem::FileExists(filename.c_str()))
+    return true;
 
   Error error;
   CompressHelpers::OptionalByteBuffer data =
