@@ -15,54 +15,9 @@
 
 Log_SetChannel(INISettingsInterface);
 
-#ifdef _WIN32
-#include <io.h> // _mktemp_s
-#else
-#include <stdlib.h> // mktemp
-#include <unistd.h>
-#endif
-
 // To prevent races between saving and loading settings, particularly with game settings,
 // we only allow one ini to be parsed at any point in time.
 static std::mutex s_ini_load_save_mutex;
-
-static std::FILE* GetTemporaryFile(std::string* temporary_filename, const std::string& original_filename,
-                                   const char* mode, Error* error)
-{
-  temporary_filename->clear();
-  temporary_filename->reserve(original_filename.length() + 8);
-  temporary_filename->append(original_filename);
-
-#ifdef _WIN32
-  temporary_filename->append(".XXXXXXX");
-  const errno_t err = _mktemp_s(temporary_filename->data(), temporary_filename->length() + 1);
-  if (err != 0)
-  {
-    Error::SetErrno(error, "_mktemp_s() failed: ", err);
-    return nullptr;
-  }
-
-  return FileSystem::OpenCFile(temporary_filename->c_str(), mode, error);
-#else
-  temporary_filename->append(".XXXXXX");
-  const int fd = mkstemp(temporary_filename->data());
-  if (fd < 0)
-  {
-    Error::SetErrno(error, "mkstemp() failed: ", errno);
-    return nullptr;
-  }
-
-  std::FILE* fp = fdopen(fd, mode);
-  if (!fp)
-  {
-    Error::SetErrno(error, "mkstemp() failed: ", errno);
-    close(fd);
-    return nullptr;
-  }
-
-  return fp;
-#endif
-}
 
 INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true)
 {
@@ -104,26 +59,20 @@ bool INISettingsInterface::Save(Error* error /* = nullptr */)
   }
 
   std::unique_lock lock(s_ini_load_save_mutex);
-  std::string temp_filename;
-  std::FILE* fp = GetTemporaryFile(&temp_filename, m_filename, "wb", error);
+  FileSystem::AtomicRenamedFile fp = FileSystem::CreateAtomicRenamedFile(m_filename, error);
   SI_Error err = SI_FAIL;
   if (fp)
   {
-    err = m_ini.SaveFile(fp, false);
-    std::fclose(fp);
-
+    err = m_ini.SaveFile(fp.get(), false);
     if (err != SI_OK)
     {
-      Error::SetStringFmt(error, "INI SaveFile() failed: {}", static_cast<int>(err));
-
       // remove temporary file
-      FileSystem::DeleteFile(temp_filename.c_str());
+      Error::SetStringFmt(error, "INI SaveFile() failed: {}", static_cast<int>(err));
+      FileSystem::DiscardAtomicRenamedFile(fp);
     }
-    else if (!FileSystem::RenamePath(temp_filename.c_str(), m_filename.c_str(), error))
+    else
     {
-      Error::AddPrefixFmt(error, "Failed to rename '{}' to '{}': ", temp_filename, m_filename);
-      FileSystem::DeleteFile(temp_filename.c_str());
-      return false;
+      err = FileSystem::CommitAtomicRenamedFile(fp, error) ? SI_OK : SI_FAIL;
     }
   }
 
