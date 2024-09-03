@@ -156,13 +156,15 @@ QString QtHost::FixLanguageName(const QString& language)
     return language;
 }
 
-s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg, char* tbuf,
-                                            size_t tbuf_space)
+s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg,
+                                            std::string_view disambiguation, char* tbuf, size_t tbuf_space)
 {
   // This is really awful. Thankfully we're caching the results...
   const std::string temp_context(context);
   const std::string temp_msg(msg);
-  const QString translated_msg = qApp->translate(temp_context.c_str(), temp_msg.c_str());
+  const std::string temp_disambiguation(disambiguation);
+  const QString translated_msg = qApp->translate(temp_context.c_str(), temp_msg.c_str(),
+                                                 disambiguation.empty() ? nullptr : temp_disambiguation.c_str());
   const QByteArray translated_utf8 = translated_msg.toUtf8();
   const size_t translated_size = translated_utf8.size();
   if (translated_size > tbuf_space)

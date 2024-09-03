@@ -2871,10 +2871,10 @@ static constexpr const std::array s_backend_names = {
 };
 static constexpr const std::array s_backend_display_names = {
 #ifdef _WIN32
-  TRANSLATE_NOOP("MediaCapture", "Media Foundation"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Media Foundation", "MediaCaptureBackend"),
 #endif
 #ifndef __ANDROID__
-  TRANSLATE_NOOP("MediaCapture", "FFmpeg"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "FFmpeg", "MediaCaptureBackend"),
 #endif
 };
 static_assert(s_backend_names.size() == static_cast<size_t>(MediaCaptureBackend::MaxCount));
@@ -2903,7 +2903,8 @@ const char* MediaCapture::GetBackendName(MediaCaptureBackend backend)
 
 const char* MediaCapture::GetBackendDisplayName(MediaCaptureBackend backend)
 {
-  return Host::TranslateToCString("MediaCapture", s_backend_display_names[static_cast<size_t>(backend)]);
+  return Host::TranslateToCString("Settings", s_backend_display_names[static_cast<size_t>(backend)],
+                                  "MediaCaptureBackend");
 }
 
 void MediaCapture::AdjustVideoSize(u32* width, u32* height)
