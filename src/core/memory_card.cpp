@@ -301,10 +301,6 @@ std::unique_ptr<MemoryCard> MemoryCard::Open(std::string_view filename)
   Error error;
   if (!FileSystem::FileExists(mc->m_filename.c_str())) [[unlikely]]
   {
-    Host::AddIconOSDMessage(fmt::format("memory_card_{}", filename), ICON_FA_SD_CARD,
-                            fmt::format(TRANSLATE_FS("MemoryCard", "{} does not exist, using empty memory card."),
-                                        Path::GetFileName(filename)),
-                            Host::OSD_INFO_DURATION);
     mc->Format();
     mc->m_changed = false;
   }
