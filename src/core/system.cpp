@@ -4556,7 +4556,57 @@ void System::WarnAboutUnsafeSettings()
   }
   else
   {
-    append(ICON_FA_COGS, TRANSLATE_SV("System", "All enhancements are currently disabled."));
+    append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "All enhancements are currently disabled."));
+
+#define APPEND_SUBMESSAGE(msg)                                                                                         \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    messages.append("        \u2022 ");                                                                                \
+    messages.append(msg);                                                                                              \
+    messages.append('\n');                                                                                             \
+  } while (0)
+
+    if (g_settings.cpu_overclock_active)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
+    if (g_settings.enable_8mb_ram)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
+    if (g_settings.enable_cheats)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
+    if (g_settings.gpu_resolution_scale != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
+    if (g_settings.gpu_multisamples != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
+    if (g_settings.gpu_true_color)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "True color disabled."));
+    if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
+        g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
+    {
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
+    }
+    if (g_settings.gpu_disable_interlacing)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering and display enabled."));
+    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
+    if (g_settings.gpu_widescreen_hack)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
+    if (g_settings.display_24bit_chroma_smoothing)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
+    if (g_settings.cdrom_read_speedup != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
+    if (g_settings.cdrom_seek_speedup != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
+    if (g_settings.cdrom_mute_cd_audio)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
+    if (g_settings.texture_replacements.enable_vram_write_replacements)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
+    if (g_settings.use_old_mdec_routines)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
+    if (g_settings.pcdrv_enable)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
+    if (g_settings.bios_patch_fast_boot)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
+
+#undef APPEND_SUBMESSAGE
   }
 
   if (!g_settings.apply_compatibility_settings)
