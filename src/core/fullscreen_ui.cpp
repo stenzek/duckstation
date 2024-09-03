@@ -4271,6 +4271,12 @@ void FullscreenUI::DrawDisplaySettingsPage()
     "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
     &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
 
+  DrawEnumSetting(
+    bsi, FSUI_CSTR("Force Frame Timings"),
+    FSUI_CSTR("Utilizes the chosen frame timing regardless of the active region."),
+    "GPU", "ForceFrameTimings", Settings::DEFAULT_FORCE_FRAME_TIMINGS_MODE, &Settings::ParseForceFrameTimings,
+    &Settings::GetForceFrameTimingsName, &Settings::GetForceFrameTimingsDisplayName, ForceFrameTimingsMode::Count);
+
   if (is_hardware)
   {
     DrawToggleSetting(bsi, FSUI_CSTR("True Color Rendering"),
@@ -4309,12 +4315,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
     FSUI_CSTR("Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, "
               "but others will break."),
     "GPU", "DisableInterlacing", true);
-
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Force NTSC Timings"),
-    FSUI_CSTR("Forces PAL games to run at NTSC timings, i.e. 60hz. Some PAL games will run at their \"normal\" "
-              "speeds, while others will break."),
-    "GPU", "ForceNTSCTimings", false);
 
   MenuHeading(FSUI_CSTR("Advanced"));
 

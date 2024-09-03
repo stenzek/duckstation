@@ -75,7 +75,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "DisableTextureFiltering",
   "DisableSpriteTextureFiltering",
   "DisableScaledDithering",
-  "DisableForceNTSCTimings",
+  "DisableForceFrameTimings",
   "DisableWidescreen",
   "DisablePGXP",
   "DisablePGXPCulling",
@@ -105,7 +105,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_NOOP("GameDatabase", "Disable Texture Filtering"),
   TRANSLATE_NOOP("GameDatabase", "Disable Sprite Texture Filtering"),
   TRANSLATE_NOOP("GameDatabase", "Disable Scaled Dithering"),
-  TRANSLATE_NOOP("GameDatabase", "Disable Force NTSC Timings"),
+  TRANSLATE_NOOP("GameDatabase", "Disable Force Frame Timings"),
   TRANSLATE_NOOP("GameDatabase", "Disable Widescreen"),
   TRANSLATE_NOOP("GameDatabase", "Disable PGXP"),
   TRANSLATE_NOOP("GameDatabase", "Disable PGXP Culling"),
@@ -590,12 +590,12 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.gpu_widescreen_hack = false;
   }
 
-  if (HasTrait(Trait::DisableForceNTSCTimings))
+  if (HasTrait(Trait::DisableForceFrameTimings))
   {
-    if (display_osd_messages && settings.gpu_force_ntsc_timings)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Force NTSC timings disabled."));
+    if (display_osd_messages && settings.gpu_force_frame_timings != ForceFrameTimingsMode::Disabled)
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Force frame timings disabled."));
 
-    settings.gpu_force_ntsc_timings = false;
+    settings.gpu_force_frame_timings = ForceFrameTimingsMode::Disabled;
   }
 
   if (HasTrait(Trait::DisablePGXP))

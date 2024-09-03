@@ -121,7 +121,6 @@ struct Settings
   bool gpu_force_round_texcoords : 1 = false;
   bool gpu_accurate_blending : 1 = false;
   bool gpu_disable_interlacing : 1 = true;
-  bool gpu_force_ntsc_timings : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
   bool gpu_pgxp_enable : 1 = false;
   bool gpu_pgxp_culling : 1 = true;
@@ -132,6 +131,7 @@ struct Settings
   bool gpu_pgxp_preserve_proj_fp : 1 = false;
   bool gpu_pgxp_depth_buffer : 1 = false;
   bool gpu_pgxp_disable_2d : 1 = false;
+  ForceFrameTimingsMode gpu_force_frame_timings = DEFAULT_FORCE_FRAME_TIMINGS_MODE;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPUTextureFilter gpu_sprite_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPULineDetectMode gpu_line_detect_mode = DEFAULT_GPU_LINE_DETECT_MODE;
@@ -433,6 +433,10 @@ struct Settings
   static const char* GetDisplayScalingName(DisplayScalingMode mode);
   static const char* GetDisplayScalingDisplayName(DisplayScalingMode mode);
 
+  static std::optional<ForceFrameTimingsMode> ParseForceFrameTimings(const char* str);
+  static const char* GetForceFrameTimingsName(ForceFrameTimingsMode mode);
+  static const char* GetForceFrameTimingsDisplayName(ForceFrameTimingsMode mode);
+
   static std::optional<DisplayExclusiveFullscreenControl> ParseDisplayExclusiveFullscreenControl(const char* str);
   static const char* GetDisplayExclusiveFullscreenControlName(DisplayExclusiveFullscreenControl mode);
   static const char* GetDisplayExclusiveFullscreenControlDisplayName(DisplayExclusiveFullscreenControl mode);
@@ -491,6 +495,7 @@ struct Settings
   static constexpr DisplayAlignment DEFAULT_DISPLAY_ALIGNMENT = DisplayAlignment::Center;
   static constexpr DisplayRotation DEFAULT_DISPLAY_ROTATION = DisplayRotation::Normal;
   static constexpr DisplayScalingMode DEFAULT_DISPLAY_SCALING = DisplayScalingMode::BilinearSmooth;
+  static constexpr ForceFrameTimingsMode DEFAULT_FORCE_FRAME_TIMINGS_MODE = ForceFrameTimingsMode::Disabled;
   static constexpr DisplayExclusiveFullscreenControl DEFAULT_DISPLAY_EXCLUSIVE_FULLSCREEN_CONTROL =
     DisplayExclusiveFullscreenControl::Automatic;
   static constexpr DisplayScreenshotMode DEFAULT_DISPLAY_SCREENSHOT_MODE = DisplayScreenshotMode::ScreenResolution;

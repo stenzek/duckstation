@@ -4303,7 +4303,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.gpu_sprite_texture_filter != old_settings.gpu_sprite_texture_filter ||
         g_settings.gpu_line_detect_mode != old_settings.gpu_line_detect_mode ||
         g_settings.gpu_disable_interlacing != old_settings.gpu_disable_interlacing ||
-        g_settings.gpu_force_ntsc_timings != old_settings.gpu_force_ntsc_timings ||
+        g_settings.gpu_force_frame_timings != old_settings.gpu_force_frame_timings ||
         g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
         g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale ||
         g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode ||
@@ -4530,9 +4530,9 @@ void System::WarnAboutUnsafeSettings()
                                         TinyString(TRANSLATE_SV("System", "Instant")) :
                                         TinyString::from_format("{}x", g_settings.cdrom_seek_speedup)));
     }
-    if (g_settings.gpu_force_ntsc_timings)
+    if (g_settings.gpu_force_frame_timings != ForceFrameTimingsMode::Disabled)
     {
-      append(ICON_FA_TV, TRANSLATE_SV("System", "Force NTSC timings is enabled. Games may run at incorrect speeds."));
+      append(ICON_FA_TV, TRANSLATE_SV("System", "Force frame timings is enabled. Games may run at incorrect speeds."));
     }
     if (!g_settings.IsUsingSoftwareRenderer())
     {

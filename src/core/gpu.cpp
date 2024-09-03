@@ -88,7 +88,7 @@ GPU::~GPU()
 bool GPU::Initialize()
 {
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
-  m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
+  m_force_frame_timings = g_settings.gpu_force_frame_timings;
   s_crtc_tick_event.Activate();
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
@@ -119,9 +119,9 @@ void GPU::UpdateSettings(const Settings& old_settings)
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
 
-  if (m_force_ntsc_timings != g_settings.gpu_force_ntsc_timings || m_console_is_pal != System::IsPALRegion())
+  if (m_force_frame_timings != g_settings.gpu_force_frame_timings)
   {
-    m_force_ntsc_timings = g_settings.gpu_force_ntsc_timings;
+    m_force_frame_timings = g_settings.gpu_force_frame_timings;
     m_console_is_pal = System::IsPALRegion();
     UpdateCRTCConfig();
   }
@@ -637,7 +637,7 @@ void GPU::UpdateCRTCConfig()
   cs.vertical_display_start = std::min<u16>(cs.regs.Y1, cs.vertical_total);
   cs.vertical_display_end = std::min<u16>(cs.regs.Y2, cs.vertical_total);
 
-  if (m_GPUSTAT.pal_mode && m_force_ntsc_timings)
+  if (m_GPUSTAT.pal_mode && m_force_frame_timings == ForceFrameTimingsMode::NTSC)
   {
     // scale to NTSC parameters
     cs.horizontal_display_start =
@@ -654,6 +654,24 @@ void GPU::UpdateCRTCConfig()
     cs.current_scanline %= NTSC_TOTAL_LINES;
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
+  }
+  else if (!m_GPUSTAT.pal_mode && m_force_frame_timings == ForceFrameTimingsMode::PAL)
+  {
+    // scale to PAL parameters
+    cs.horizontal_display_start =
+      static_cast<u16>((static_cast<u32>(cs.horizontal_display_start) * PAL_TICKS_PER_LINE) / NTSC_TICKS_PER_LINE);
+    cs.horizontal_display_end = static_cast<u16>(
+      ((static_cast<u32>(cs.horizontal_display_end) * PAL_TICKS_PER_LINE) + (NTSC_TICKS_PER_LINE - 1)) /
+      NTSC_TICKS_PER_LINE);
+    cs.vertical_display_start =
+      static_cast<u16>((static_cast<u32>(cs.vertical_display_start) * PAL_TOTAL_LINES) / NTSC_TOTAL_LINES);
+    cs.vertical_display_end = static_cast<u16>(
+      ((static_cast<u32>(cs.vertical_display_end) * PAL_TOTAL_LINES) + (NTSC_TOTAL_LINES - 1)) / NTSC_TOTAL_LINES);
+
+    cs.vertical_total = PAL_TOTAL_LINES;
+    cs.current_scanline %= PAL_TOTAL_LINES;
+    cs.horizontal_total = PAL_TICKS_PER_LINE;
+    cs.current_tick_in_scanline %= PAL_TICKS_PER_LINE;
   }
 
   cs.horizontal_display_start =
