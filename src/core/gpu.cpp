@@ -88,7 +88,7 @@ GPU::~GPU()
 bool GPU::Initialize()
 {
   m_force_progressive_scan = g_settings.gpu_disable_interlacing;
-  m_force_frame_timings = g_settings.gpu_force_frame_timings;
+  m_force_frame_timings = g_settings.gpu_force_video_timing;
   s_crtc_tick_event.Activate();
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
@@ -119,9 +119,9 @@ void GPU::UpdateSettings(const Settings& old_settings)
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
 
-  if (m_force_frame_timings != g_settings.gpu_force_frame_timings)
+  if (m_force_frame_timings != g_settings.gpu_force_video_timing)
   {
-    m_force_frame_timings = g_settings.gpu_force_frame_timings;
+    m_force_frame_timings = g_settings.gpu_force_video_timing;
     m_console_is_pal = System::IsPALRegion();
     UpdateCRTCConfig();
   }
@@ -637,7 +637,7 @@ void GPU::UpdateCRTCConfig()
   cs.vertical_display_start = std::min<u16>(cs.regs.Y1, cs.vertical_total);
   cs.vertical_display_end = std::min<u16>(cs.regs.Y2, cs.vertical_total);
 
-  if (m_GPUSTAT.pal_mode && m_force_frame_timings == ForceFrameTimingsMode::NTSC)
+  if (m_GPUSTAT.pal_mode && m_force_frame_timings == ForceVideoTimingMode::NTSC)
   {
     // scale to NTSC parameters
     cs.horizontal_display_start =
@@ -655,7 +655,7 @@ void GPU::UpdateCRTCConfig()
     cs.horizontal_total = NTSC_TICKS_PER_LINE;
     cs.current_tick_in_scanline %= NTSC_TICKS_PER_LINE;
   }
-  else if (!m_GPUSTAT.pal_mode && m_force_frame_timings == ForceFrameTimingsMode::PAL)
+  else if (!m_GPUSTAT.pal_mode && m_force_frame_timings == ForceVideoTimingMode::PAL)
   {
     // scale to PAL parameters
     cs.horizontal_display_start =

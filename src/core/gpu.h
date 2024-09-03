@@ -505,7 +505,7 @@ protected:
   bool m_set_texture_disable_mask = false;
   bool m_drawing_area_changed = false;
   bool m_force_progressive_scan = false;
-  ForceFrameTimingsMode m_force_frame_timings = ForceFrameTimingsMode::Disabled;
+  ForceVideoTimingMode m_force_frame_timings = ForceVideoTimingMode::Disabled;
 
   struct CRTCState
   {

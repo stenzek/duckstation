@@ -435,9 +435,9 @@ void ImGuiManager::DrawEnhancementsOverlay()
     text.append(" TrueCol");
   if (g_settings.gpu_disable_interlacing)
     text.append(" ForceProg");
-  if (g_settings.gpu_force_frame_timings == ForceFrameTimingsMode::NTSC && System::GetRegion() == ConsoleRegion::PAL)
+  if (g_settings.gpu_force_video_timing == ForceVideoTimingMode::NTSC && System::GetRegion() == ConsoleRegion::PAL)
     text.append(" PAL60");
-  if (g_settings.gpu_force_frame_timings == ForceFrameTimingsMode::PAL && System::GetRegion() != ConsoleRegion::PAL)
+  if (g_settings.gpu_force_video_timing == ForceVideoTimingMode::PAL && System::GetRegion() != ConsoleRegion::PAL)
     text.append(" NTSC50");
   if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest)
   {

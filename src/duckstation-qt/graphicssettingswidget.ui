@@ -268,14 +268,14 @@
            <widget class="QComboBox" name="spriteTextureFiltering"/>
           </item>
           <item row="8" column="0">
-           <widget class="QLabel" name="forceFrameTimingsLabel">
+           <widget class="QLabel" name="forceVideoTimingLabel">
             <property name="text">
-             <string>Force Frame Timings:</string>
+             <string>Force Video Timing:</string>
             </property>
            </widget>
           </item>
           <item row="8" column="1">
-           <widget class="QComboBox" name="forceFrameTimings"/>
+           <widget class="QComboBox" name="forceVideoTiming"/>
           </item>
          </layout>
         </widget>

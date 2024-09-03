@@ -230,10 +230,10 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
       si.GetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(DEFAULT_GPU_WIREFRAME_MODE)).c_str())
       .value_or(DEFAULT_GPU_WIREFRAME_MODE);
   gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
-  gpu_force_frame_timings =
-    ParseForceFrameTimings(
-      si.GetStringValue("GPU", "ForceFrameTimings", GetForceFrameTimingsName(DEFAULT_FORCE_FRAME_TIMINGS_MODE)).c_str())
-      .value_or(DEFAULT_FORCE_FRAME_TIMINGS_MODE);
+  gpu_force_video_timing =
+    ParseForceVideoTimingName(
+      si.GetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)).c_str())
+      .value_or(DEFAULT_FORCE_VIDEO_TIMING_MODE);
   gpu_widescreen_hack = si.GetBoolValue("GPU", "WidescreenHack", false);
   display_24bit_chroma_smoothing = si.GetBoolValue("GPU", "ChromaSmoothing24Bit", false);
   gpu_pgxp_enable = si.GetBoolValue("GPU", "PGXPEnable", false);
@@ -538,7 +538,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
   si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
   si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
-  si.SetStringValue("GPU", "ForceFrameTimings", GetForceFrameTimingsName(gpu_force_frame_timings));
+  si.SetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(gpu_force_video_timing));
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
   si.SetBoolValue("GPU", "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
   si.SetBoolValue("GPU", "PGXPEnable", gpu_pgxp_enable);
@@ -746,7 +746,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
     g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
     g_settings.gpu_disable_interlacing = false;
-    g_settings.gpu_force_frame_timings = ForceFrameTimingsMode::Disabled;
+    g_settings.gpu_force_video_timing = ForceVideoTimingMode::Disabled;
     g_settings.gpu_widescreen_hack = false;
     g_settings.gpu_pgxp_enable = false;
     g_settings.display_24bit_chroma_smoothing = false;
@@ -930,12 +930,12 @@ std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
 
 const char* Settings::GetLogLevelName(LOGLEVEL level)
 {
-  return s_log_level_names[static_cast<int>(level)];
+  return s_log_level_names[static_cast<size_t>(level)];
 }
 
 const char* Settings::GetLogLevelDisplayName(LOGLEVEL level)
 {
-  return Host::TranslateToCString("LogLevel", s_log_level_display_names[static_cast<int>(level)]);
+  return Host::TranslateToCString("LogLevel", s_log_level_display_names[static_cast<size_t>(level)]);
 }
 
 static constexpr const std::array s_console_region_names = {"Auto", "NTSC-J", "NTSC-U", "PAL"};
@@ -959,12 +959,12 @@ std::optional<ConsoleRegion> Settings::ParseConsoleRegionName(const char* str)
 
 const char* Settings::GetConsoleRegionName(ConsoleRegion region)
 {
-  return s_console_region_names[static_cast<int>(region)];
+  return s_console_region_names[static_cast<size_t>(region)];
 }
 
 const char* Settings::GetConsoleRegionDisplayName(ConsoleRegion region)
 {
-  return Host::TranslateToCString("ConsoleRegion", s_console_region_display_names[static_cast<int>(region)]);
+  return Host::TranslateToCString("ConsoleRegion", s_console_region_display_names[static_cast<size_t>(region)]);
 }
 
 static constexpr const std::array s_disc_region_names = {"NTSC-J", "NTSC-U", "PAL", "Other", "Non-PS1"};
@@ -989,12 +989,12 @@ std::optional<DiscRegion> Settings::ParseDiscRegionName(const char* str)
 
 const char* Settings::GetDiscRegionName(DiscRegion region)
 {
-  return s_disc_region_names[static_cast<int>(region)];
+  return s_disc_region_names[static_cast<size_t>(region)];
 }
 
 const char* Settings::GetDiscRegionDisplayName(DiscRegion region)
 {
-  return Host::TranslateToCString("DiscRegion", s_disc_region_display_names[static_cast<int>(region)]);
+  return Host::TranslateToCString("DiscRegion", s_disc_region_display_names[static_cast<size_t>(region)]);
 }
 
 static constexpr const std::array s_cpu_execution_mode_names = {"Interpreter", "CachedInterpreter", "Recompiler",
@@ -1108,12 +1108,12 @@ std::optional<GPURenderer> Settings::ParseRendererName(const char* str)
 
 const char* Settings::GetRendererName(GPURenderer renderer)
 {
-  return s_gpu_renderer_names[static_cast<int>(renderer)];
+  return s_gpu_renderer_names[static_cast<size_t>(renderer)];
 }
 
 const char* Settings::GetRendererDisplayName(GPURenderer renderer)
 {
-  return Host::TranslateToCString("GPURenderer", s_gpu_renderer_display_names[static_cast<int>(renderer)]);
+  return Host::TranslateToCString("GPURenderer", s_gpu_renderer_display_names[static_cast<size_t>(renderer)]);
 }
 
 RenderAPI Settings::GetRenderAPIForRenderer(GPURenderer renderer)
@@ -1216,7 +1216,7 @@ const char* Settings::GetTextureFilterName(GPUTextureFilter filter)
 
 const char* Settings::GetTextureFilterDisplayName(GPUTextureFilter filter)
 {
-  return Host::TranslateToCString("GPUTextureFilter", s_texture_filter_display_names[static_cast<int>(filter)]);
+  return Host::TranslateToCString("GPUTextureFilter", s_texture_filter_display_names[static_cast<size_t>(filter)]);
 }
 
 static constexpr const std::array s_line_detect_mode_names = {
@@ -1278,12 +1278,12 @@ std::optional<GPUDownsampleMode> Settings::ParseDownsampleModeName(const char* s
 
 const char* Settings::GetDownsampleModeName(GPUDownsampleMode mode)
 {
-  return s_downsample_mode_names[static_cast<int>(mode)];
+  return s_downsample_mode_names[static_cast<size_t>(mode)];
 }
 
 const char* Settings::GetDownsampleModeDisplayName(GPUDownsampleMode mode)
 {
-  return Host::TranslateToCString("GPUDownsampleMode", s_downsample_mode_display_names[static_cast<int>(mode)]);
+  return Host::TranslateToCString("GPUDownsampleMode", s_downsample_mode_display_names[static_cast<size_t>(mode)]);
 }
 
 static constexpr const std::array s_wireframe_mode_names = {"Disabled", "OverlayWireframe", "OnlyWireframe"};
@@ -1307,12 +1307,12 @@ std::optional<GPUWireframeMode> Settings::ParseGPUWireframeMode(const char* str)
 
 const char* Settings::GetGPUWireframeModeName(GPUWireframeMode mode)
 {
-  return s_wireframe_mode_names[static_cast<int>(mode)];
+  return s_wireframe_mode_names[static_cast<size_t>(mode)];
 }
 
 const char* Settings::GetGPUWireframeModeDisplayName(GPUWireframeMode mode)
 {
-  return Host::TranslateToCString("GPUWireframeMode", s_wireframe_mode_display_names[static_cast<int>(mode)]);
+  return Host::TranslateToCString("GPUWireframeMode", s_wireframe_mode_display_names[static_cast<size_t>(mode)]);
 }
 
 static constexpr const std::array s_display_deinterlacing_mode_names = {
@@ -1344,13 +1344,13 @@ std::optional<DisplayDeinterlacingMode> Settings::ParseDisplayDeinterlacingMode(
 
 const char* Settings::GetDisplayDeinterlacingModeName(DisplayDeinterlacingMode mode)
 {
-  return s_display_deinterlacing_mode_names[static_cast<int>(mode)];
+  return s_display_deinterlacing_mode_names[static_cast<size_t>(mode)];
 }
 
 const char* Settings::GetDisplayDeinterlacingModeDisplayName(DisplayDeinterlacingMode mode)
 {
   return Host::TranslateToCString("DisplayDeinterlacingMode",
-                                  s_display_deinterlacing_mode_display_names[static_cast<int>(mode)]);
+                                  s_display_deinterlacing_mode_display_names[static_cast<size_t>(mode)]);
 }
 
 static constexpr const std::array s_display_crop_mode_names = {"None", "Overscan", "Borders"};
@@ -1374,12 +1374,12 @@ std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(const char* str)
 
 const char* Settings::GetDisplayCropModeName(DisplayCropMode crop_mode)
 {
-  return s_display_crop_mode_names[static_cast<int>(crop_mode)];
+  return s_display_crop_mode_names[static_cast<size_t>(crop_mode)];
 }
 
 const char* Settings::GetDisplayCropModeDisplayName(DisplayCropMode crop_mode)
 {
-  return Host::TranslateToCString("DisplayCropMode", s_display_crop_mode_display_names[static_cast<int>(crop_mode)]);
+  return Host::TranslateToCString("DisplayCropMode", s_display_crop_mode_display_names[static_cast<size_t>(crop_mode)]);
 }
 
 static constexpr const std::array s_display_aspect_ratio_names = {
@@ -1416,12 +1416,12 @@ std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* 
 
 const char* Settings::GetDisplayAspectRatioName(DisplayAspectRatio ar)
 {
-  return s_display_aspect_ratio_names[static_cast<int>(ar)];
+  return s_display_aspect_ratio_names[static_cast<size_t>(ar)];
 }
 
 const char* Settings::GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar)
 {
-  return Host::TranslateToCString("DisplayAspectRatio", s_display_aspect_ratio_names[static_cast<int>(ar)]);
+  return Host::TranslateToCString("DisplayAspectRatio", s_display_aspect_ratio_names[static_cast<size_t>(ar)]);
 }
 
 float Settings::GetDisplayAspectRatioValue() const
@@ -1431,7 +1431,7 @@ float Settings::GetDisplayAspectRatioValue() const
     case DisplayAspectRatio::MatchWindow:
     {
       if (!g_gpu_device)
-        return s_display_aspect_ratio_values[static_cast<int>(DEFAULT_DISPLAY_ASPECT_RATIO)];
+        return s_display_aspect_ratio_values[static_cast<size_t>(DEFAULT_DISPLAY_ASPECT_RATIO)];
 
       return static_cast<float>(g_gpu_device->GetWindowWidth()) / static_cast<float>(g_gpu_device->GetWindowHeight());
     }
@@ -1444,7 +1444,7 @@ float Settings::GetDisplayAspectRatioValue() const
 
     default:
     {
-      return s_display_aspect_ratio_values[static_cast<int>(display_aspect_ratio)];
+      return s_display_aspect_ratio_values[static_cast<size_t>(display_aspect_ratio)];
     }
   }
 }
@@ -1470,12 +1470,13 @@ std::optional<DisplayAlignment> Settings::ParseDisplayAlignment(const char* str)
 
 const char* Settings::GetDisplayAlignmentName(DisplayAlignment alignment)
 {
-  return s_display_alignment_names[static_cast<int>(alignment)];
+  return s_display_alignment_names[static_cast<size_t>(alignment)];
 }
 
 const char* Settings::GetDisplayAlignmentDisplayName(DisplayAlignment alignment)
 {
-  return Host::TranslateToCString("DisplayAlignment", s_display_alignment_display_names[static_cast<int>(alignment)]);
+  return Host::TranslateToCString("DisplayAlignment",
+                                  s_display_alignment_display_names[static_cast<size_t>(alignment)]);
 }
 
 static constexpr const std::array s_display_rotation_names = {"Normal", "Rotate90", "Rotate180", "Rotate270"};
@@ -1502,29 +1503,44 @@ std::optional<DisplayRotation> Settings::ParseDisplayRotation(const char* str)
 
 const char* Settings::GetDisplayRotationName(DisplayRotation rotation)
 {
-  return s_display_rotation_names[static_cast<int>(rotation)];
+  return s_display_rotation_names[static_cast<size_t>(rotation)];
 }
 
 const char* Settings::GetDisplayRotationDisplayName(DisplayRotation rotation)
 {
   return Host::TranslateToCString("Settings", s_display_rotation_display_names[static_cast<size_t>(rotation)]);
 }
-static constexpr const std::array s_display_force_frame_timings_names = {
-  "Disabled", "NTSC", "PAL"
+
+static constexpr const std::array s_display_force_video_timings_names = {
+  TRANSLATE_NOOP("Settings", "Disabled"),
+  "NTSC",
+  "PAL",
 };
-std::optional<ForceFrameTimingsMode> Settings::ParseForceFrameTimings(const char* str)
+
+std::optional<ForceVideoTimingMode> Settings::ParseForceVideoTimingName(const char* str)
 {
   int index = 0;
-  for (const char* name : s_display_force_frame_timings_names)
+  for (const char* name : s_display_force_video_timings_names)
   {
     if (StringUtil::Strcasecmp(name, str) == 0)
-      return static_cast<ForceFrameTimingsMode>(index);
+      return static_cast<ForceVideoTimingMode>(index);
 
     index++;
   }
 
   return std::nullopt;
 }
+
+const char* Settings::GetForceVideoTimingName(ForceVideoTimingMode mode)
+{
+  return s_display_force_video_timings_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetForceVideoTimingDisplayName(ForceVideoTimingMode mode)
+{
+  return Host::TranslateToCString("Settings", s_display_force_video_timings_names[static_cast<size_t>(mode)]);
+}
+
 static constexpr const std::array s_display_scaling_names = {
   "Nearest", "NearestInteger", "BilinearSmooth", "BilinearSharp", "BilinearInteger",
 };
@@ -1552,22 +1568,12 @@ std::optional<DisplayScalingMode> Settings::ParseDisplayScaling(const char* str)
 
 const char* Settings::GetDisplayScalingName(DisplayScalingMode mode)
 {
-  return s_display_scaling_names[static_cast<int>(mode)];
+  return s_display_scaling_names[static_cast<size_t>(mode)];
 }
 
 const char* Settings::GetDisplayScalingDisplayName(DisplayScalingMode mode)
 {
-  return Host::TranslateToCString("DisplayScalingMode", s_display_scaling_display_names[static_cast<int>(mode)]);
-}
-
-const char* Settings::GetForceFrameTimingsName(ForceFrameTimingsMode mode)
-{
-  return s_display_force_frame_timings_names[static_cast<int>(mode)];
-}
-
-const char* Settings::GetForceFrameTimingsDisplayName(ForceFrameTimingsMode mode)
-{
-  return Host::TranslateToCString("ForceFrameTimingsMode", s_display_force_frame_timings_names[static_cast<int>(mode)]);
+  return Host::TranslateToCString("DisplayScalingMode", s_display_scaling_display_names[static_cast<size_t>(mode)]);
 }
 
 static constexpr const std::array s_display_exclusive_fullscreen_mode_names = {
@@ -1597,13 +1603,13 @@ std::optional<DisplayExclusiveFullscreenControl> Settings::ParseDisplayExclusive
 
 const char* Settings::GetDisplayExclusiveFullscreenControlName(DisplayExclusiveFullscreenControl mode)
 {
-  return s_display_exclusive_fullscreen_mode_names[static_cast<int>(mode)];
+  return s_display_exclusive_fullscreen_mode_names[static_cast<size_t>(mode)];
 }
 
 const char* Settings::GetDisplayExclusiveFullscreenControlDisplayName(DisplayExclusiveFullscreenControl mode)
 {
   return Host::TranslateToCString("Settings",
-                                  s_display_exclusive_fullscreen_mode_display_names[static_cast<int>(mode)]);
+                                  s_display_exclusive_fullscreen_mode_display_names[static_cast<size_t>(mode)]);
 }
 
 static constexpr const std::array s_display_screenshot_mode_names = {
@@ -1712,12 +1718,12 @@ std::optional<MemoryCardType> Settings::ParseMemoryCardTypeName(const char* str)
 
 const char* Settings::GetMemoryCardTypeName(MemoryCardType type)
 {
-  return s_memory_card_type_names[static_cast<int>(type)];
+  return s_memory_card_type_names[static_cast<size_t>(type)];
 }
 
 const char* Settings::GetMemoryCardTypeDisplayName(MemoryCardType type)
 {
-  return Host::TranslateToCString("MemoryCardType", s_memory_card_type_display_names[static_cast<int>(type)]);
+  return Host::TranslateToCString("MemoryCardType", s_memory_card_type_display_names[static_cast<size_t>(type)]);
 }
 
 std::string Settings::GetDefaultSharedMemoryCardName(u32 slot)
