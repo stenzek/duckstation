@@ -84,6 +84,7 @@ enum class DisplayDeinterlacingMode : u8
   Weave,
   Blend,
   Adaptive,
+  Progressive,
   Count
 };
 

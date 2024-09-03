@@ -94207,7 +94207,7 @@ SLES-00211:
   controllers:
     - DigitalController
   settings:
-    displayDeinterlacingMode: Disabled # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
+    displayDeinterlacingMode: Progressive # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
   metadata:
     publisher: "Electronic Arts"
     developer: "Bullfrog Productions / Krisalis"
@@ -94231,7 +94231,7 @@ SLPS-00587:
   controllers:
     - DigitalController
   settings:
-    displayDeinterlacingMode: Disabled # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
+    displayDeinterlacingMode: Progressive # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
   metadata:
     publisher: "Electronic Arts"
     developer: "Bullfrog Productions / Krisalis"
@@ -94251,7 +94251,7 @@ SLUS-00029:
   controllers:
     - DigitalController
   settings:
-    displayDeinterlacingMode: Disabled # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
+    displayDeinterlacingMode: Progressive # Isn't actually interlaced, uses 240p buffers, they just left 480i enabled...
   metadata:
     publisher: "Electronic Arts"
     developer: "Bullfrog Productions / Krisalis"
@@ -116452,6 +116452,8 @@ SLPS-02587:
     - AnalogController
     - DigitalController
     - NeGcon
+  settings:
+    displayDeinterlacingMode: Progressive # Only used in menus, MAD flickers with fading.
   metadata:
     publisher: "MTO"
     developer: "MTO"
@@ -116493,7 +116495,7 @@ SLPS-02951:
     - DigitalController
     - NeGcon
   settings:
-    displayDeinterlacingMode: Blend # Only used in menus, MAD flickers with fading.
+    displayDeinterlacingMode: Progressive # Only used in menus, MAD flickers with fading.
   metadata:
     publisher: "MTO"
     developer: "MTO"

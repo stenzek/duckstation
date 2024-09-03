@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>584</width>
-    <height>450</height>
+    <height>477</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -203,17 +203,10 @@
           </item>
           <item row="9" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="pgxpDepthBuffer">
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="widescreenHack">
               <property name="text">
-               <string>PGXP Depth Buffer (Low Compatibility)</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QCheckBox" name="disableInterlacing">
-              <property name="text">
-               <string>Disable Interlacing</string>
+               <string>Widescreen Rendering</string>
               </property>
              </widget>
             </item>
@@ -224,13 +217,6 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="trueColor">
-              <property name="text">
-               <string>True Color Rendering</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
              <widget class="QCheckBox" name="chromaSmoothingFor24Bit">
               <property name="text">
@@ -238,10 +224,10 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="widescreenHack">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="trueColor">
               <property name="text">
-               <string>Widescreen Rendering</string>
+               <string>True Color Rendering</string>
               </property>
              </widget>
             </item>
@@ -249,6 +235,13 @@
              <widget class="QCheckBox" name="pgxpEnable">
               <property name="text">
                <string>PGXP Geometry Correction</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="pgxpDepthBuffer">
+              <property name="text">
+               <string>PGXP Depth Buffer (Low Compatibility)</string>
               </property>
              </widget>
             </item>

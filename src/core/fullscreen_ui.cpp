@@ -4309,12 +4309,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
                     FSUI_CSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs."),
                     "GPU", "ChromaSmoothing24Bit", false);
 
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Disable Interlacing"),
-    FSUI_CSTR("Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, "
-              "but others will break."),
-    "GPU", "DisableInterlacing", true);
-
   MenuHeading(FSUI_CSTR("Advanced"));
 
   std::optional<SmallString> strvalue = bsi->GetOptionalSmallStringValue(
@@ -7358,13 +7352,11 @@ TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to
 TRANSLATE_NOOP("FullscreenUI", "Determines which algorithm is used to convert interlaced frames to progressive for display on your system.");
 TRANSLATE_NOOP("FullscreenUI", "Device Settings");
 TRANSLATE_NOOP("FullscreenUI", "Disable All Enhancements");
-TRANSLATE_NOOP("FullscreenUI", "Disable Interlacing");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Disable on 2D Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Disables dithering and uses the full 8 bits per channel of color information.");
-TRANSLATE_NOOP("FullscreenUI", "Disables interlaced rendering and display in the GPU. Some games can render in 480p this way, but others will break.");
 TRANSLATE_NOOP("FullscreenUI", "Disc {} | {}");
 TRANSLATE_NOOP("FullscreenUI", "Discord Server");
 TRANSLATE_NOOP("FullscreenUI", "Display Settings");

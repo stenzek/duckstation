@@ -230,7 +230,6 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
     ParseGPUWireframeMode(
       si.GetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(DEFAULT_GPU_WIREFRAME_MODE)).c_str())
       .value_or(DEFAULT_GPU_WIREFRAME_MODE);
-  gpu_disable_interlacing = si.GetBoolValue("GPU", "DisableInterlacing", true);
   gpu_force_video_timing =
     ParseForceVideoTimingName(
       si.GetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(DEFAULT_FORCE_VIDEO_TIMING_MODE)).c_str())
@@ -250,9 +249,9 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthClearThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
 
   display_deinterlacing_mode =
-    ParseDisplayDeinterlacingMode(si.GetStringValue("Display", "DeinterlacingMode",
-                                                    GetDisplayDeinterlacingModeName(DEFAULT_DISPLAY_DEINTERLACING_MODE))
-                                    .c_str())
+    ParseDisplayDeinterlacingMode(
+      si.GetStringValue("GPU", "DeinterlacingMode", GetDisplayDeinterlacingModeName(DEFAULT_DISPLAY_DEINTERLACING_MODE))
+        .c_str())
       .value_or(DEFAULT_DISPLAY_DEINTERLACING_MODE);
   display_crop_mode =
     ParseDisplayCropMode(
@@ -539,7 +538,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
   si.SetStringValue("GPU", "WireframeMode", GetGPUWireframeModeName(gpu_wireframe_mode));
-  si.SetBoolValue("GPU", "DisableInterlacing", gpu_disable_interlacing);
   si.SetStringValue("GPU", "ForceVideoTiming", GetForceVideoTimingName(gpu_force_video_timing));
   si.SetBoolValue("GPU", "WidescreenHack", gpu_widescreen_hack);
   si.SetBoolValue("GPU", "ChromaSmoothing24Bit", display_24bit_chroma_smoothing);
@@ -555,7 +553,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
   si.SetFloatValue("GPU", "PGXPDepthClearThreshold", GetPGXPDepthClearThreshold());
 
-  si.SetStringValue("Display", "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
+  si.SetStringValue("GPU", "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
   si.SetIntValue("Display", "ActiveStartOffset", display_active_start_offset);
   si.SetIntValue("Display", "ActiveEndOffset", display_active_end_offset);
@@ -748,10 +746,10 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
     g_settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
     g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
-    g_settings.gpu_disable_interlacing = false;
     g_settings.gpu_force_video_timing = ForceVideoTimingMode::Disabled;
     g_settings.gpu_widescreen_hack = false;
     g_settings.gpu_pgxp_enable = false;
+    g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Adaptive;
     g_settings.display_24bit_chroma_smoothing = false;
     g_settings.cdrom_read_speedup = 1;
     g_settings.cdrom_seek_speedup = 1;
@@ -1323,12 +1321,14 @@ static constexpr const std::array s_display_deinterlacing_mode_names = {
   "Weave",
   "Blend",
   "Adaptive",
+  "Progressive",
 };
 static constexpr const std::array s_display_deinterlacing_mode_display_names = {
   TRANSLATE_NOOP("DisplayDeinterlacingMode", "Disabled (Flickering)"),
   TRANSLATE_NOOP("DisplayDeinterlacingMode", "Weave (Combing)"),
   TRANSLATE_NOOP("DisplayDeinterlacingMode", "Blend (Blur)"),
   TRANSLATE_NOOP("DisplayDeinterlacingMode", "Adaptive (FastMAD)"),
+  TRANSLATE_NOOP("DisplayDeinterlacingMode", "Progressive (Optimal)"),
 };
 
 std::optional<DisplayDeinterlacingMode> Settings::ParseDisplayDeinterlacingMode(const char* str)

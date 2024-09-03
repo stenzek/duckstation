@@ -479,7 +479,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.display_crop_mode = display_crop_mode.value();
   }
 
-  if (display_deinterlacing_mode.has_value())
+  // Don't set to optimal if disable-all-enhancements is enabled.
+  if (display_deinterlacing_mode.has_value() &&
+      (display_deinterlacing_mode.value() != DisplayDeinterlacingMode::Progressive ||
+       !g_settings.disable_all_enhancements))
   {
     if (display_osd_messages && settings.display_deinterlacing_mode != display_deinterlacing_mode.value())
     {
@@ -527,12 +530,12 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.gpu_accurate_blending = true;
   }
 
-  if (HasTrait(Trait::ForceInterlacing))
+  if (HasTrait(Trait::ForceInterlacing) && settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
   {
-    if (display_osd_messages && settings.gpu_disable_interlacing)
+    if (display_osd_messages)
       APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Interlaced rendering enabled."));
 
-    settings.gpu_disable_interlacing = false;
+    settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Adaptive;
   }
 
   if (HasTrait(Trait::DisableTrueColor))
