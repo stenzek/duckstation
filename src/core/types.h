@@ -276,7 +276,7 @@ enum class SaveStateCompressionMode : u8
   Count,
 };
 
-enum class ForceFrameTimingsMode : u8
+enum class ForceVideoTimingMode : u8
 {
   Disabled,
   NTSC,

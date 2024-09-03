@@ -38,7 +38,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 14,
+  GAME_DATABASE_CACHE_VERSION = 15,
 };
 
 static Entry* GetMutableEntry(std::string_view serial);
@@ -76,7 +76,6 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "DisableTextureFiltering",
   "DisableSpriteTextureFiltering",
   "DisableScaledDithering",
-  "DisableForceFrameTimings",
   "DisableWidescreen",
   "DisablePGXP",
   "DisablePGXPCulling",
@@ -106,7 +105,6 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_NOOP("GameDatabase", "Disable Texture Filtering"),
   TRANSLATE_NOOP("GameDatabase", "Disable Sprite Texture Filtering"),
   TRANSLATE_NOOP("GameDatabase", "Disable Scaled Dithering"),
-  TRANSLATE_NOOP("GameDatabase", "Disable Force Frame Timings"),
   TRANSLATE_NOOP("GameDatabase", "Disable Widescreen"),
   TRANSLATE_NOOP("GameDatabase", "Disable PGXP"),
   TRANSLATE_NOOP("GameDatabase", "Disable PGXP Culling"),
@@ -589,14 +587,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
       APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Widescreen rendering disabled."));
 
     settings.gpu_widescreen_hack = false;
-  }
-
-  if (HasTrait(Trait::DisableForceFrameTimings))
-  {
-    if (display_osd_messages && settings.gpu_force_frame_timings != ForceFrameTimingsMode::Disabled)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Force frame timings disabled."));
-
-    settings.gpu_force_frame_timings = ForceFrameTimingsMode::Disabled;
   }
 
   if (HasTrait(Trait::DisablePGXP))
