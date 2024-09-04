@@ -99027,9 +99027,9 @@ PAPX-90044:
   traits:
     - ForcePGXPCPUMode
 SCPS-45317:
-  name: "Metal Gear Solid (Asia) (Disc 1)"
+  name: "Metal Gear Solid (Japan, Asia) (Disc 1) (Ichi) (Premium Package)"
   discSet:
-    name: "Metal Gear Solid (Asia)"
+    name: "Metal Gear Solid (Japan, Asia) (Premium Package)"
     serials:
       - SCPS-45317
       - SCPS-45318
@@ -99038,6 +99038,9 @@ SCPS-45317:
     - DigitalController
   traits:
     - ForcePGXPCPUMode
+  codes:
+    - SCPS-45317
+    - SLPM-86111
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -99053,9 +99056,9 @@ SCPS-45317:
     multitap: false
     linkCable: false
 SCPS-45318:
-  name: "Metal Gear Solid (Asia) (Disc 2)"
+  name: "Metal Gear Solid (Japan, Asia) (Disc 2) (Ni) (Premium Package)"
   discSet:
-    name: "Metal Gear Solid (Asia)"
+    name: "Metal Gear Solid (Japan, Asia) (Premium Package)"
     serials:
       - SCPS-45317
       - SCPS-45318
@@ -99064,6 +99067,9 @@ SCPS-45318:
     - DigitalController
   traits:
     - ForcePGXPCPUMode
+  codes:
+    - SCPS-45318
+    - SLPM-86112
   metadata:
     publisher: "Konami"
     developer: "KCE Japan"
@@ -99704,34 +99710,6 @@ SLPM-87030:
     publisher: "Konami"
     developer: "KCE Japan"
     releaseDate: "2002-01-24"
-    genre: "Action / Adventure / Strategy / Shooter"
-    languages:
-      - Japanese
-    minPlayers: 1
-    maxPlayers: 1
-    minBlocks: 1
-    maxBlocks: 1
-    vibration: true
-    multitap: false
-    linkCable: false
-SLPM-86111:
-  name: "Metal Gear Solid [Premium Package Sai Hakkou Kinen]"
-  compatibility:
-    rating: NoIssues
-    versionTested: "0.1-905-g237f469"
-  controllers:
-    - AnalogController
-    - DigitalController
-  traits:
-    - ForcePGXPCPUMode
-  codes:
-    - SLPM-86111
-    - SLPM-86112
-    - SLPM-86113
-  metadata:
-    publisher: "Konami"
-    developer: "KCE Japan"
-    releaseDate: "1998-09-03"
     genre: "Action / Adventure / Strategy / Shooter"
     languages:
       - Japanese
