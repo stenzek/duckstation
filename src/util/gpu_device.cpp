@@ -515,18 +515,9 @@ std::string GPUDevice::GetShaderCacheBaseName(std::string_view type) const
 
 bool GPUDevice::OpenPipelineCache(const std::string& filename)
 {
-  // Let it create if it does not exist.
-  if (!FileSystem::FileExists(filename.c_str()))
-    return true;
-
   Error error;
   CompressHelpers::OptionalByteBuffer data =
     CompressHelpers::DecompressFile(CompressHelpers::CompressType::Zstandard, filename.c_str(), std::nullopt, &error);
-  if (!data.has_value())
-  {
-    ERROR_LOG("Failed to load pipeline cache from '{}': {}", Path::GetFileName(filename), error.GetDescription());
-    data.reset();
-  }
 
   if (data.has_value())
   {
@@ -535,6 +526,7 @@ bool GPUDevice::OpenPipelineCache(const std::string& filename)
   }
   else
   {
+    ERROR_LOG("Failed to load pipeline cache from '{}': {}", Path::GetFileName(filename), error.GetDescription());
     s_pipeline_cache_size = 0;
     s_pipeline_cache_hash = {};
   }
@@ -546,7 +538,8 @@ bool GPUDevice::OpenPipelineCache(const std::string& filename)
     return false;
   }
 
-  INFO_LOG("Pipeline cache hash: {}", SHA1Digest::DigestToString(s_pipeline_cache_hash));
+  INFO_LOG("Loaded pipeline cache: {} bytes with hash: {}", s_pipeline_cache_size,
+           SHA1Digest::DigestToString(s_pipeline_cache_hash));
   return true;
 }
 
