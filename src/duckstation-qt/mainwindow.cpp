@@ -1536,7 +1536,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         if (m_ui.menuDebug->menuAction()->isVisible() && !Achievements::IsHardcoreModeActive())
         {
           connect(menu.addAction(tr("Boot and Debug")), &QAction::triggered, [this, entry]() {
-            m_open_debugger_on_start = true;
+            openCPUDebugger();
 
             std::shared_ptr<SystemBootParameters> boot_params = getSystemBootParameters(entry->path);
             boot_params->override_start_paused = true;
@@ -1856,11 +1856,6 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
 
     m_ui.actionViewGameProperties->setEnabled(false);
   }
-
-  if (m_open_debugger_on_start && running)
-    openCPUDebugger();
-  if ((!starting && !running) || running)
-    m_open_debugger_on_start = false;
 
   m_ui.statusBar->clearMessage();
 }
@@ -2855,6 +2850,11 @@ void MainWindow::openCPUDebugger()
       m_debugger_window->deleteLater();
       m_debugger_window = nullptr;
     });
+
+    // Position the debugger window to the right of the main/display window.
+    const QWidget* next_to_widget =
+      m_display_container ? static_cast<const QWidget*>(m_display_container) : static_cast<const QWidget*>(this);
+    m_debugger_window->move(next_to_widget->pos() + QPoint(next_to_widget->width() + 16, 0));
   }
 
   QtUtils::ShowOrRaiseWindow(m_debugger_window);
