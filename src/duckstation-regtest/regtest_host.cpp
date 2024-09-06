@@ -166,8 +166,8 @@ bool Host::ChangeLanguage(const char* new_language)
   return false;
 }
 
-s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg, char* tbuf,
-                                            size_t tbuf_space)
+s32 Host::Internal::GetTranslatedStringImpl(std::string_view context, std::string_view msg,
+                                            std::string_view disambiguation, char* tbuf, size_t tbuf_space)
 {
   if (msg.size() > tbuf_space)
     return -1;
