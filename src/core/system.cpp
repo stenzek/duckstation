@@ -776,7 +776,7 @@ u32 System::GetFrameTimeHistoryPos()
 bool System::IsExeFileName(std::string_view path)
 {
   return (StringUtil::EndsWithNoCase(path, ".exe") || StringUtil::EndsWithNoCase(path, ".psexe") ||
-          StringUtil::EndsWithNoCase(path, ".ps-exe"));
+          StringUtil::EndsWithNoCase(path, ".ps-exe") || StringUtil::EndsWithNoCase(path, ".psx"));
 }
 
 bool System::IsPsfFileName(std::string_view path)
@@ -788,7 +788,7 @@ bool System::IsLoadableFilename(std::string_view path)
 {
   static constexpr const std::array extensions = {
     ".bin", ".cue",     ".img",    ".iso", ".chd", ".ecm", ".mds", // discs
-    ".exe", ".psexe",   ".ps-exe",                                 // exes
+    ".exe", ".psexe",   ".ps-exe", ".psx",                         // exes
     ".psf", ".minipsf",                                            // psf
     ".m3u",                                                        // playlists
     ".pbp",
