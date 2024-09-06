@@ -304,7 +304,6 @@ private:
   MemoryScannerWindow* m_memory_scanner_window = nullptr;
 
   bool m_was_paused_by_focus_loss = false;
-  bool m_open_debugger_on_start = false;
   bool m_relative_mouse_mode = false;
   bool m_hide_mouse_cursor = false;
 
