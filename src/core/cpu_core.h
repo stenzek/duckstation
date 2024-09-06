@@ -132,9 +132,9 @@ void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
 void ClearICache();
+CPUExecutionMode GetCurrentExecutionMode();
 bool UpdateDebugDispatcherFlag();
 void UpdateMemoryPointers();
-void ExecutionModeChanged();
 
 /// Executes interpreter loop.
 void Execute();

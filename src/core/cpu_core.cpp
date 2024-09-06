@@ -29,7 +29,14 @@
 Log_SetChannel(CPU::Core);
 
 namespace CPU {
-static bool ShouldUseInterpreter();
+enum class ExecutionBreakType
+{
+  None,
+  ExecuteOneInstruction,
+  SingleStep,
+  Breakpoint,
+};
+
 static void UpdateLoadDelay();
 static void Branch(u32 target);
 static void FlushLoadDelay();
@@ -68,6 +75,8 @@ static void LogInstruction(u32 bits, u32 pc, bool regs);
 static void HandleWriteSyscall();
 static void HandlePutcSyscall();
 static void HandlePutsSyscall();
+
+static void CheckForExecutionModeChange();
 [[noreturn]] static void ExecuteInterpreter();
 
 template<PGXPMode pgxp_mode, bool debug>
@@ -104,8 +113,8 @@ static constexpr u32 INVALID_BREAKPOINT_PC = UINT32_C(0xFFFFFFFF);
 static std::array<std::vector<Breakpoint>, static_cast<u32>(BreakpointType::Count)> s_breakpoints;
 static u32 s_breakpoint_counter = 1;
 static u32 s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
-static bool s_single_step = false;
-static bool s_break_after_instruction = false;
+static CPUExecutionMode s_current_execution_mode = CPUExecutionMode::Interpreter;
+static ExecutionBreakType s_break_type = ExecutionBreakType::None;
 } // namespace CPU
 
 bool CPU::IsTraceEnabled()
@@ -163,14 +172,14 @@ void CPU::Initialize()
   // From nocash spec.
   g_state.cop0_regs.PRID = UINT32_C(0x00000002);
 
+  s_current_execution_mode = g_settings.cpu_execution_mode;
   g_state.using_debug_dispatcher = false;
-  g_state.using_interpreter = ShouldUseInterpreter();
+  g_state.using_interpreter = (s_current_execution_mode == CPUExecutionMode::Interpreter);
   for (BreakpointList& bps : s_breakpoints)
     bps.clear();
   s_breakpoint_counter = 1;
   s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
-  s_single_step = false;
-  s_break_after_instruction = false;
+  s_break_type = ExecutionBreakType::None;
 
   UpdateMemoryPointers();
   UpdateDebugDispatcherFlag();
@@ -280,31 +289,21 @@ bool CPU::DoState(StateWrapper& sw)
     sw.Do(&g_state.icache_data);
   }
 
-  bool using_interpreter = g_state.using_interpreter;
-  sw.DoEx(&using_interpreter, 67, g_state.using_interpreter);
+  sw.DoEx(&g_state.using_interpreter, 67, g_state.using_interpreter);
 
   if (sw.IsReading())
   {
-    // Since the recompilers do not use npc/next_instruction, and the icache emulation doesn't actually fill the data,
-    // only the tags, if we save state with the recompiler, then load state with the interpreter, we're most likely
-    // going to crash. Clear both in the case that we are switching.
-    if (using_interpreter != g_state.using_interpreter)
-    {
-      WARNING_LOG("Current execution mode does not match save state. Resetting icache state.");
-      ExecutionModeChanged();
-    }
-
-    UpdateMemoryPointers();
+    // Trigger an execution mode change if the state was/wasn't using the interpreter.
+    s_current_execution_mode =
+      g_state.using_interpreter ?
+        CPUExecutionMode::Interpreter :
+        ((g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter) ? CPUExecutionMode::CachedInterpreter :
+                                                                            g_settings.cpu_execution_mode);
     g_state.gte_completion_tick = 0;
+    UpdateMemoryPointers();
   }
 
   return !sw.HasError();
-}
-
-ALWAYS_INLINE_RELEASE bool CPU::ShouldUseInterpreter()
-{
-  // Currently, any breakpoints require the interpreter.
-  return (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter || g_state.using_debug_dispatcher);
 }
 
 void CPU::SetPC(u32 new_pc)
@@ -1994,9 +1993,14 @@ void CPU::DispatchInterrupt()
   TimingEvents::UpdateCPUDowncount();
 }
 
+CPUExecutionMode CPU::GetCurrentExecutionMode()
+{
+  return s_current_execution_mode;
+}
+
 bool CPU::UpdateDebugDispatcherFlag()
 {
-  const bool has_any_breakpoints = HasAnyBreakpoints() || s_single_step;
+  const bool has_any_breakpoints = (HasAnyBreakpoints() || s_break_type == ExecutionBreakType::SingleStep);
 
   const auto& dcic = g_state.cop0_regs.dcic;
   const bool has_cop0_breakpoints = dcic.super_master_enable_1 && dcic.super_master_enable_2 &&
@@ -2010,12 +2014,73 @@ bool CPU::UpdateDebugDispatcherFlag()
 
   DEV_LOG("{} debug dispatcher", use_debug_dispatcher ? "Now using" : "No longer using");
   g_state.using_debug_dispatcher = use_debug_dispatcher;
-
-  // Switching to interpreter?
-  if (g_state.using_interpreter != ShouldUseInterpreter())
-    ExecutionModeChanged();
-
   return true;
+}
+
+void CPU::CheckForExecutionModeChange()
+{
+  // Currently, any breakpoints require the interpreter.
+  const CPUExecutionMode new_execution_mode =
+    (g_state.using_debug_dispatcher ? CPUExecutionMode::Interpreter : g_settings.cpu_execution_mode);
+  if (s_current_execution_mode == new_execution_mode) [[likely]]
+  {
+    DebugAssert(g_state.using_interpreter == (s_current_execution_mode == CPUExecutionMode::Interpreter));
+    return;
+  }
+
+  WARNING_LOG("Execution mode changed from {} to {}", Settings::GetCPUExecutionModeName(s_current_execution_mode),
+              Settings::GetCPUExecutionModeName(new_execution_mode));
+
+  const bool new_interpreter = (new_execution_mode == CPUExecutionMode::Interpreter);
+  if (g_state.using_interpreter != new_interpreter)
+  {
+    // Have to clear out the icache too, only the tags are valid in the recs.
+    ClearICache();
+    g_state.bus_error = false;
+
+    if (new_interpreter)
+    {
+      // Switching to interpreter. Set up the pipeline.
+      // We'll also need to fetch the next instruction to execute.
+      if (!SafeReadInstruction(g_state.pc, &g_state.next_instruction.bits)) [[unlikely]]
+      {
+        g_state.next_instruction.bits = 0;
+        ERROR_LOG("Failed to read current instruction from 0x{:08X}", g_state.pc);
+      }
+
+      g_state.npc = g_state.pc + sizeof(Instruction);
+    }
+    else
+    {
+      // Switching to recompiler. We can't start a rec block in a branch delay slot, so we need to execute the
+      // instruction if we're currently in one.
+      if (g_state.next_instruction_is_branch_delay_slot) [[unlikely]]
+      {
+        while (g_state.next_instruction_is_branch_delay_slot)
+        {
+          WARNING_LOG("EXECMODE: Executing instruction at 0x{:08X} because it is in a branch delay slot.", g_state.pc);
+          if (fastjmp_set(&s_jmp_buf) == 0)
+          {
+            s_break_type = ExecutionBreakType::ExecuteOneInstruction;
+            g_state.using_debug_dispatcher = true;
+            ExecuteInterpreter();
+          }
+        }
+
+        // Need to restart the whole process again, because the branch slot could change the debug flag.
+        UpdateDebugDispatcherFlag();
+        CheckForExecutionModeChange();
+        return;
+      }
+    }
+  }
+
+  s_current_execution_mode = new_execution_mode;
+  g_state.using_interpreter = new_interpreter;
+
+  // Wipe out code cache when switching modes.
+  if (!new_interpreter)
+    CPU::CodeCache::Reset();
 }
 
 [[noreturn]] void CPU::ExitExecution()
@@ -2269,20 +2334,11 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
 
 ALWAYS_INLINE_RELEASE void CPU::ExecutionBreakpointCheck()
 {
-  if (s_single_step) [[unlikely]]
-  {
-    // single step ignores breakpoints, since it stops anyway
-    s_single_step = false;
-    s_break_after_instruction = true;
-    Host::ReportDebuggerMessage(fmt::format("Stepped to 0x{:08X}.", g_state.npc));
-    return;
-  }
-
   if (s_breakpoints[static_cast<u32>(BreakpointType::Execute)].empty()) [[likely]]
     return;
 
   const u32 pc = g_state.pc;
-  if (pc == s_last_breakpoint_check_pc) [[unlikely]]
+  if (pc == s_last_breakpoint_check_pc || s_break_type == ExecutionBreakType::ExecuteOneInstruction) [[unlikely]]
   {
     // we don't want to trigger the same breakpoint which just paused us repeatedly.
     return;
@@ -2292,7 +2348,7 @@ ALWAYS_INLINE_RELEASE void CPU::ExecutionBreakpointCheck()
 
   if (CheckBreakpointList(BreakpointType::Execute, pc)) [[unlikely]]
   {
-    s_single_step = false;
+    s_break_type = ExecutionBreakType::None;
     ExitExecution();
   }
 }
@@ -2301,8 +2357,8 @@ template<MemoryAccessType type>
 ALWAYS_INLINE_RELEASE void CPU::MemoryBreakpointCheck(VirtualMemoryAddress address)
 {
   const BreakpointType bptype = (type == MemoryAccessType::Read) ? BreakpointType::Read : BreakpointType::Write;
-  if (CheckBreakpointList(bptype, address))
-    s_break_after_instruction = true;
+  if (CheckBreakpointList(bptype, address)) [[unlikely]]
+    s_break_type = ExecutionBreakType::Breakpoint;
 }
 
 template<PGXPMode pgxp_mode, bool debug>
@@ -2364,10 +2420,12 @@ template<PGXPMode pgxp_mode, bool debug>
 
       if constexpr (debug)
       {
-        if (s_break_after_instruction)
+        if (s_break_type != ExecutionBreakType::None) [[unlikely]]
         {
-          s_break_after_instruction = false;
-          System::PauseSystem(true);
+          const ExecutionBreakType break_type = std::exchange(s_break_type, ExecutionBreakType::None);
+          if (break_type >= ExecutionBreakType::SingleStep)
+            System::PauseSystem(true);
+
           UpdateDebugDispatcherFlag();
           ExitExecution();
         }
@@ -2412,6 +2470,8 @@ void CPU::ExecuteInterpreter()
 
 void CPU::Execute()
 {
+  CheckForExecutionModeChange();
+
   if (fastjmp_set(&s_jmp_buf) != 0)
     return;
 
@@ -2423,7 +2483,7 @@ void CPU::Execute()
 
 void CPU::SetSingleStepFlag()
 {
-  s_single_step = true;
+  s_break_type = ExecutionBreakType::SingleStep;
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 }
@@ -2569,41 +2629,6 @@ void CPU::UpdateMemoryPointers()
 {
   g_state.memory_handlers = Bus::GetMemoryHandlers(g_state.cop0_regs.sr.Isc, g_state.cop0_regs.sr.Swc);
   g_state.fastmem_base = Bus::GetFastmemBase(g_state.cop0_regs.sr.Isc);
-}
-
-void CPU::ExecutionModeChanged()
-{
-  const bool prev_interpreter = g_state.using_interpreter;
-
-  UpdateDebugDispatcherFlag();
-
-  // Clear out bus errors in case only memory exceptions are toggled on.
-  g_state.bus_error = false;
-
-  // Have to clear out the icache too, only the tags are valid in the recs.
-  ClearICache();
-
-  // Switching to interpreter?
-  g_state.using_interpreter = ShouldUseInterpreter();
-  if (g_state.using_interpreter != prev_interpreter && !prev_interpreter)
-  {
-    // Before we return, set npc to pc so that we can switch from recs to int.
-    // We'll also need to fetch the next instruction to execute.
-    if (!SafeReadInstruction(g_state.pc, &g_state.next_instruction.bits)) [[unlikely]]
-    {
-      g_state.next_instruction.bits = 0;
-      ERROR_LOG("Failed to read current instruction from 0x{:08X}", g_state.pc);
-    }
-
-    g_state.npc = g_state.pc + sizeof(Instruction);
-  }
-
-  // Wipe out code cache when switching back to recompiler.
-  if (!g_state.using_interpreter && prev_interpreter)
-    CPU::CodeCache::Reset();
-
-  UpdateDebugDispatcherFlag();
-  System::InterruptExecution();
 }
 
 template<bool add_ticks, bool icache_read, u32 word_count, bool raise_exceptions>

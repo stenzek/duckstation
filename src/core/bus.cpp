@@ -143,8 +143,6 @@ static RAM_SIZE_REG s_RAM_SIZE = {};
 
 static std::string s_tty_line_buffer;
 
-static CPUFastmemMode s_fastmem_mode = CPUFastmemMode::Disabled;
-
 #ifdef ENABLE_MMAP_FASTMEM
 static SharedMemoryMappingArea s_fastmem_arena;
 static std::vector<std::pair<u8*, size_t>> s_fastmem_ram_views;
@@ -161,6 +159,8 @@ static void SetRAMSize(bool enable_8mb_ram);
 static std::tuple<TickCount, TickCount, TickCount> CalculateMemoryTiming(MEMDELAY mem_delay, COMDELAY common_delay);
 static void RecalculateMemoryTimings();
 
+static void MapFastmemViews();
+static void UnmapFastmemViews();
 static u8* GetLUTFastmemPointer(u32 address, u8* ram_ptr);
 
 static void SetRAMPageWritable(u32 page_index, bool writable);
@@ -252,6 +252,7 @@ bool Bus::AllocateMemoryMap(bool export_shared_memory, Error* error)
 
   VERBOSE_LOG("LUTs are mapped at {}.", static_cast<void*>(g_memory_handlers));
   g_memory_handlers_isc = g_memory_handlers + MEMORY_LUT_SLOTS;
+  g_ram_mapped_size = RAM_8MB_SIZE;
   SetHandlers();
 
 #ifndef __ANDROID__
@@ -348,7 +349,7 @@ bool Bus::ReallocateMemoryMap(bool export_shared_memory, Error* error)
   if (System::IsValid())
   {
     CPU::CodeCache::InvalidateAllRAMBlocks();
-    UpdateFastmemViews(CPUFastmemMode::Disabled);
+    UnmapFastmemViews();
 
     ram_backup.resize(RAM_8MB_SIZE);
     std::memcpy(ram_backup.data(), g_unprotected_ram, RAM_8MB_SIZE);
@@ -365,7 +366,7 @@ bool Bus::ReallocateMemoryMap(bool export_shared_memory, Error* error)
     UpdateMappedRAMSize();
     std::memcpy(g_unprotected_ram, ram_backup.data(), RAM_8MB_SIZE);
     std::memcpy(g_bios, bios_backup.data(), BIOS_SIZE);
-    UpdateFastmemViews(g_settings.cpu_fastmem_mode);
+    MapFastmemViews();
   }
 
   return true;
@@ -380,11 +381,10 @@ void Bus::CleanupMemoryMap()
 #endif
 }
 
-bool Bus::Initialize()
+void Bus::Initialize()
 {
   SetRAMSize(g_settings.enable_8mb_ram);
-  Reset();
-  return true;
+  MapFastmemViews();
 }
 
 void Bus::SetRAMSize(bool enable_8mb_ram)
@@ -400,7 +400,7 @@ void Bus::SetRAMSize(bool enable_8mb_ram)
 
 void Bus::Shutdown()
 {
-  UpdateFastmemViews(CPUFastmemMode::Disabled);
+  UnmapFastmemViews();
   CPU::g_state.fastmem_base = nullptr;
 
   g_ram_mask = 0;
@@ -439,8 +439,7 @@ bool Bus::DoState(StateWrapper& sw)
   {
     const bool using_8mb_ram = (ram_size == RAM_8MB_SIZE);
     SetRAMSize(using_8mb_ram);
-    UpdateFastmemViews(s_fastmem_mode);
-    CPU::UpdateMemoryPointers();
+    RemapFastmemViews();
   }
 
   sw.Do(&g_exp1_access_time);
@@ -526,18 +525,13 @@ void Bus::RecalculateMemoryTimings()
             g_spu_access_time[2] + 1);
 }
 
-CPUFastmemMode Bus::GetFastmemMode()
-{
-  return s_fastmem_mode;
-}
-
 void* Bus::GetFastmemBase(bool isc)
 {
 #ifdef ENABLE_MMAP_FASTMEM
-  if (s_fastmem_mode == CPUFastmemMode::MMap)
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
     return isc ? nullptr : s_fastmem_arena.BasePointer();
 #endif
-  if (s_fastmem_mode == CPUFastmemMode::LUT)
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::LUT)
     return reinterpret_cast<u8*>(s_fastmem_lut + (isc ? (FASTMEM_LUT_SIZE * sizeof(void*)) : 0));
 
   return nullptr;
@@ -548,24 +542,16 @@ u8* Bus::GetLUTFastmemPointer(u32 address, u8* ram_ptr)
   return ram_ptr - address;
 }
 
-void Bus::UpdateFastmemViews(CPUFastmemMode mode)
+void Bus::MapFastmemViews()
 {
-#ifndef ENABLE_MMAP_FASTMEM
-  Assert(mode != CPUFastmemMode::MMap);
-#else
-  for (const auto& it : s_fastmem_ram_views)
-    s_fastmem_arena.Unmap(it.first, it.second);
-  s_fastmem_ram_views.clear();
-#endif
+  Assert(s_fastmem_ram_views.empty());
 
-  s_fastmem_mode = mode;
-  if (mode == CPUFastmemMode::Disabled)
-    return;
-
-#ifdef ENABLE_MMAP_FASTMEM
+  const CPUFastmemMode mode = g_settings.cpu_fastmem_mode;
   if (mode == CPUFastmemMode::MMap)
   {
+#ifdef ENABLE_MMAP_FASTMEM
     auto MapRAM = [](u32 base_address) {
+      // No need to check mapped RAM range here, we only ever fastmem map the first 2MB.
       u8* map_address = s_fastmem_arena.BasePointer() + base_address;
       if (!s_fastmem_arena.Map(s_shmem_handle, 0, map_address, g_ram_size, PageProtect::ReadWrite)) [[unlikely]]
       {
@@ -600,57 +586,80 @@ void Bus::UpdateFastmemViews(CPUFastmemMode mode)
 
     // KSEG1 - uncached
     MapRAM(0xA0000000);
-
-    return;
-  }
+#else
+    Panic("MMap fastmem should not be selected on this platform.");
 #endif
-
-  if (!s_fastmem_lut)
+  }
+  else if (mode == CPUFastmemMode::LUT)
   {
-    s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_SLOTS));
-    Assert(s_fastmem_lut);
+    if (!s_fastmem_lut)
+    {
+      s_fastmem_lut = static_cast<u8**>(std::malloc(sizeof(u8*) * FASTMEM_LUT_SLOTS));
+      Assert(s_fastmem_lut);
 
-    INFO_LOG("Fastmem base (software): {}", static_cast<void*>(s_fastmem_lut));
+      INFO_LOG("Fastmem base (software): {}", static_cast<void*>(s_fastmem_lut));
+    }
+
+    // This assumes the top 4KB of address space is not mapped. It shouldn't be on any sane OSes.
+    for (u32 i = 0; i < FASTMEM_LUT_SLOTS; i++)
+      s_fastmem_lut[i] = GetLUTFastmemPointer(i << FASTMEM_LUT_PAGE_SHIFT, nullptr);
+
+    auto MapRAM = [](u32 base_address) {
+      // Don't map RAM that isn't accessible.
+      if ((base_address & CPU::PHYSICAL_MEMORY_ADDRESS_MASK) >= g_ram_mapped_size)
+        return;
+
+      u8* ram_ptr = g_ram + (base_address & g_ram_mask);
+      for (u32 address = 0; address < g_ram_size; address += FASTMEM_LUT_PAGE_SIZE)
+      {
+        const u32 lut_index = (base_address + address) >> FASTMEM_LUT_PAGE_SHIFT;
+        s_fastmem_lut[lut_index] = GetLUTFastmemPointer(base_address + address, ram_ptr);
+        ram_ptr += FASTMEM_LUT_PAGE_SIZE;
+      }
+    };
+
+    // KUSEG - cached
+    MapRAM(0x00000000);
+    MapRAM(0x00200000);
+    MapRAM(0x00400000);
+    MapRAM(0x00600000);
+
+    // KSEG0 - cached
+    MapRAM(0x80000000);
+    MapRAM(0x80200000);
+    MapRAM(0x80400000);
+    MapRAM(0x80600000);
+
+    // KSEG1 - uncached
+    MapRAM(0xA0000000);
+    MapRAM(0xA0200000);
+    MapRAM(0xA0400000);
+    MapRAM(0xA0600000);
   }
 
-  // This assumes the top 4KB of address space is not mapped. It shouldn't be on any sane OSes.
-  for (u32 i = 0; i < FASTMEM_LUT_SLOTS; i++)
-    s_fastmem_lut[i] = GetLUTFastmemPointer(i << FASTMEM_LUT_PAGE_SHIFT, nullptr);
+  CPU::UpdateMemoryPointers();
+}
 
-  auto MapRAM = [](u32 base_address) {
-    u8* ram_ptr = g_ram + (base_address & g_ram_mask);
-    for (u32 address = 0; address < g_ram_size; address += FASTMEM_LUT_PAGE_SIZE)
-    {
-      const u32 lut_index = (base_address + address) >> FASTMEM_LUT_PAGE_SHIFT;
-      s_fastmem_lut[lut_index] = GetLUTFastmemPointer(base_address + address, ram_ptr);
-      ram_ptr += FASTMEM_LUT_PAGE_SIZE;
-    }
-  };
+void Bus::UnmapFastmemViews()
+{
+#ifdef ENABLE_MMAP_FASTMEM
+  for (const auto& it : s_fastmem_ram_views)
+    s_fastmem_arena.Unmap(it.first, it.second);
+  s_fastmem_ram_views.clear();
+#endif
+}
 
-  // KUSEG - cached
-  MapRAM(0x00000000);
-  MapRAM(0x00200000);
-  MapRAM(0x00400000);
-  MapRAM(0x00600000);
-
-  // KSEG0 - cached
-  MapRAM(0x80000000);
-  MapRAM(0x80200000);
-  MapRAM(0x80400000);
-  MapRAM(0x80600000);
-
-  // KSEG1 - uncached
-  MapRAM(0xA0000000);
-  MapRAM(0xA0200000);
-  MapRAM(0xA0400000);
-  MapRAM(0xA0600000);
+void Bus::RemapFastmemViews()
+{
+  UnmapFastmemViews();
+  MapFastmemViews();
 }
 
 bool Bus::CanUseFastmemForAddress(VirtualMemoryAddress address)
 {
   const PhysicalMemoryAddress paddr = address & CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
 
-  switch (s_fastmem_mode)
+  switch (g_settings.cpu_fastmem_mode)
   {
 #ifdef ENABLE_MMAP_FASTMEM
     case CPUFastmemMode::MMap:
@@ -706,7 +715,7 @@ void Bus::SetRAMPageWritable(u32 page_index, bool writable)
   }
 
 #ifdef ENABLE_MMAP_FASTMEM
-  if (s_fastmem_mode == CPUFastmemMode::MMap)
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
     const PageProtect protect = writable ? PageProtect::ReadWrite : PageProtect::ReadOnly;
 
@@ -734,7 +743,7 @@ void Bus::ClearRAMCodePageFlags()
     ERROR_LOG("Failed to restore RAM protection to read-write.");
 
 #ifdef ENABLE_MMAP_FASTMEM
-  if (s_fastmem_mode == CPUFastmemMode::MMap)
+  if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
     // unprotect fastmem pages
     for (const auto& it : s_fastmem_ram_views)
@@ -1041,7 +1050,8 @@ bool Bus::SideloadEXE(const std::string& path, Error* error)
   }
   if (okay)
   {
-    const std::optional<DynamicHeapArray<u8>> exe_data = FileSystem::ReadBinaryFile(System::GetExeOverride().c_str(), error);
+    const std::optional<DynamicHeapArray<u8>> exe_data =
+      FileSystem::ReadBinaryFile(System::GetExeOverride().c_str(), error);
     okay = (exe_data.has_value() && InjectExecutable(exe_data->cspan(), true, error));
     if (!okay)
       Error::AddPrefixFmt(error, "Failed to load {}: ", Path::GetFileName(path));
@@ -1961,6 +1971,8 @@ void Bus::SetHandlers()
 
 void Bus::UpdateMappedRAMSize()
 {
+  const u32 prev_mapped_size = g_ram_mapped_size;
+
   switch (s_RAM_SIZE.memory_window)
   {
     case 4: // 2MB memory + 6MB unmapped
@@ -2003,6 +2015,10 @@ void Bus::UpdateMappedRAMSize()
     }
     break;
   }
+
+  // Fastmem needs to be remapped.
+  if (prev_mapped_size != g_ram_mapped_size)
+    RemapFastmemViews();
 }
 
 #undef SET

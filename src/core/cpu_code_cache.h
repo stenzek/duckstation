@@ -22,12 +22,6 @@ bool ProcessStartup(Error* error);
 /// Frees resources, call once at shutdown.
 void ProcessShutdown();
 
-/// Initializes resources for the system.
-void Initialize();
-
-/// Frees resources used by the system.
-void Shutdown();
-
 /// Runs the system.
 [[noreturn]] void Execute();
 
