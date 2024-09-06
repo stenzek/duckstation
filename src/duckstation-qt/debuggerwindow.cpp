@@ -410,6 +410,7 @@ void DebuggerWindow::onMemorySearchStringChanged(const QString&)
 
 void DebuggerWindow::closeEvent(QCloseEvent* event)
 {
+  QtUtils::SaveWindowGeometry("DebuggerWindow", this);
   g_emu_thread->disconnect(this);
   Host::RunOnCPUThread(&CPU::ClearBreakpoints);
   QMainWindow::closeEvent(event);
@@ -439,6 +440,8 @@ void DebuggerWindow::setupAdditionalUi()
 
   setCentralWidget(nullptr);
   delete m_ui.centralwidget;
+
+  QtUtils::RestoreWindowGeometry("DebuggerWindow", this);
 }
 
 void DebuggerWindow::connectSignals()

@@ -115,4 +115,10 @@ qreal GetDevicePixelRatioForWidget(const QWidget* widget);
 /// Returns the common window info structure for a Qt widget.
 std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget);
 
+/// Saves a window's geometry to configuration. Returns false if the configuration was changed.
+bool SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto_commit_changes = true);
+
+/// Restores a window's geometry from configuration. Returns false if it was not found in the configuration.
+bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
+
 } // namespace QtUtils
