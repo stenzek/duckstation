@@ -711,6 +711,7 @@ public:
 
   ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
   ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode == GPUVSyncMode::FIFO); }
+  ALWAYS_INLINE bool IsPresentThrottleAllowed() const { return m_allow_present_throttle; }
   virtual void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) = 0;
 
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }

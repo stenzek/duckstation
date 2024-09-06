@@ -127,7 +127,7 @@ bool ReallocateMemoryMap(bool export_shared_memory, Error* error);
 /// Should be called when the process crashes, to avoid leaking.
 void CleanupMemoryMap();
 
-bool Initialize();
+void Initialize();
 void Shutdown();
 void Reset();
 bool DoState(StateWrapper& sw);
@@ -144,9 +144,8 @@ ALWAYS_INLINE_RELEASE static FP* OffsetHandlerArray(void** handlers, MemoryAcces
                                (((static_cast<size_t>(size) * 2) + static_cast<size_t>(type)) * MEMORY_LUT_SIZE));
 }
 
-CPUFastmemMode GetFastmemMode();
 void* GetFastmemBase(bool isc);
-void UpdateFastmemViews(CPUFastmemMode mode);
+void RemapFastmemViews();
 bool CanUseFastmemForAddress(VirtualMemoryAddress address);
 
 void SetExpansionROM(std::vector<u8> data);

@@ -1832,20 +1832,13 @@ bool System::Initialize(bool force_software_renderer, Error* error)
 
   TimingEvents::Initialize();
 
+  Bus::Initialize();
   CPU::Initialize();
-
-  if (!Bus::Initialize())
-  {
-    CPU::Shutdown();
-    return false;
-  }
-
-  CPU::CodeCache::Initialize();
 
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, error))
   {
-    Bus::Shutdown();
     CPU::Shutdown();
+    Bus::Shutdown();
     return false;
   }
 
@@ -1933,9 +1926,8 @@ void System::DestroySystem()
   g_gpu.reset();
   DMA::Shutdown();
   CPU::PGXP::Shutdown();
-  CPU::CodeCache::Shutdown();
-  Bus::Shutdown();
   CPU::Shutdown();
+  Bus::Shutdown();
   TimingEvents::Shutdown();
   ClearRunningGame();
 
@@ -3383,6 +3375,9 @@ void System::UpdateDisplayVSync()
   // Avoid flipping vsync on and off by manually throttling when vsync is on.
   const GPUVSyncMode vsync_mode = GetEffectiveVSyncMode();
   const bool allow_present_throttle = ShouldAllowPresentThrottle();
+  if (g_gpu_device->GetVSyncMode() == vsync_mode && g_gpu_device->IsPresentThrottleAllowed() == allow_present_throttle)
+    return;
+
   VERBOSE_LOG("VSync: {}{}{}", vsync_modes[static_cast<size_t>(vsync_mode)],
               s_syncing_to_host_with_vsync ? " (for throttling)" : "",
               allow_present_throttle ? " (present throttle allowed)" : "");
@@ -4246,22 +4241,18 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.emulation_speed != old_settings.emulation_speed)
       UpdateThrottlePeriod();
 
-    if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode ||
-        g_settings.cpu_fastmem_mode != old_settings.cpu_fastmem_mode)
+    if (g_settings.cpu_execution_mode != old_settings.cpu_execution_mode)
     {
       Host::AddIconOSDMessage("CPUExecutionModeSwitch", ICON_FA_MICROCHIP,
                               fmt::format(TRANSLATE_FS("OSDMessage", "Switching to {} CPU execution mode."),
                                           TRANSLATE_SV("CPUExecutionMode", Settings::GetCPUExecutionModeDisplayName(
                                                                              g_settings.cpu_execution_mode))),
                               Host::OSD_INFO_DURATION);
-      CPU::ExecutionModeChanged();
-      if (old_settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
-        CPU::CodeCache::Shutdown();
-      if (g_settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
-        CPU::CodeCache::Initialize();
+      CPU::UpdateDebugDispatcherFlag();
+      InterruptExecution();
     }
 
-    if (CPU::CodeCache::IsUsingAnyRecompiler() &&
+    if (CPU::GetCurrentExecutionMode() != CPUExecutionMode::Interpreter &&
         (g_settings.cpu_recompiler_memory_exceptions != old_settings.cpu_recompiler_memory_exceptions ||
          g_settings.cpu_recompiler_block_linking != old_settings.cpu_recompiler_block_linking ||
          g_settings.cpu_recompiler_icache != old_settings.cpu_recompiler_icache ||
@@ -4270,12 +4261,21 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       Host::AddIconOSDMessage("CPUFlushAllBlocks", ICON_FA_MICROCHIP,
                               TRANSLATE_STR("OSDMessage", "Recompiler options changed, flushing all blocks."),
                               Host::OSD_INFO_DURATION);
-      CPU::ExecutionModeChanged();
+      CPU::CodeCache::Reset();
+      CPU::g_state.bus_error = false;
     }
     else if (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter &&
              g_settings.bios_tty_logging != old_settings.bios_tty_logging)
     {
-      CPU::UpdateDebugDispatcherFlag();
+      // TTY interception requires debug dispatcher.
+      if (CPU::UpdateDebugDispatcherFlag())
+        InterruptExecution();
+    }
+
+    if (g_settings.cpu_fastmem_mode != old_settings.cpu_fastmem_mode)
+    {
+      // Reallocate fastmem area, even if it's not being used.
+      Bus::RemapFastmemViews();
     }
 
     if (g_settings.enable_cheats != old_settings.enable_cheats)

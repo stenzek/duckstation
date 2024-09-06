@@ -102,7 +102,6 @@ static void BacklinkBlocks(u32 pc, const void* dst);
 static void UnlinkBlockExits(Block* block);
 static void ResetCodeBuffer();
 
-static void ClearASMFunctions();
 static void CompileASMFunctions();
 static bool CompileBlock(Block* block);
 static PageFaultHandler::HandlerResult HandleFastmemException(void* exception_pc, void* fault_address, bool is_write);
@@ -174,7 +173,7 @@ bool CPU::CodeCache::IsUsingAnyRecompiler()
 
 bool CPU::CodeCache::IsUsingFastmem()
 {
-  return IsUsingAnyRecompiler() && g_settings.cpu_fastmem_mode != CPUFastmemMode::Disabled;
+  return g_settings.cpu_fastmem_mode != CPUFastmemMode::Disabled;
 }
 
 bool CPU::CodeCache::ProcessStartup(Error* error)
@@ -214,37 +213,12 @@ void CPU::CodeCache::ProcessShutdown()
 #endif
 }
 
-void CPU::CodeCache::Initialize()
-{
-  Assert(s_blocks.empty());
-
-  if (IsUsingAnyRecompiler())
-  {
-    ResetCodeBuffer();
-    CompileASMFunctions();
-    ResetCodeLUT();
-  }
-
-  Bus::UpdateFastmemViews(IsUsingAnyRecompiler() ? g_settings.cpu_fastmem_mode : CPUFastmemMode::Disabled);
-  CPU::UpdateMemoryPointers();
-}
-
-void CPU::CodeCache::Shutdown()
-{
-  ClearBlocks();
-  ClearASMFunctions();
-
-  Bus::UpdateFastmemViews(CPUFastmemMode::Disabled);
-  CPU::UpdateMemoryPointers();
-}
-
 void CPU::CodeCache::Reset()
 {
   ClearBlocks();
 
   if (IsUsingAnyRecompiler())
   {
-    ClearASMFunctions();
     ResetCodeBuffer();
     CompileASMFunctions();
     ResetCodeLUT();
@@ -1560,25 +1534,14 @@ const void* CPU::CodeCache::GetInterpretUncachedBlockFunction()
   }
 }
 
-void CPU::CodeCache::ClearASMFunctions()
+void CPU::CodeCache::CompileASMFunctions()
 {
-  g_enter_recompiler = nullptr;
-  g_compile_or_revalidate_block = nullptr;
-  g_check_events_and_dispatch = nullptr;
-  g_run_events_and_dispatch = nullptr;
-  g_dispatcher = nullptr;
-  g_interpret_block = nullptr;
-  g_discard_and_recompile_block = nullptr;
+  MemMap::BeginCodeWrite();
 
 #ifdef _DEBUG
   s_total_instructions_compiled = 0;
   s_total_host_instructions_emitted = 0;
 #endif
-}
-
-void CPU::CodeCache::CompileASMFunctions()
-{
-  MemMap::BeginCodeWrite();
 
   const u32 asm_size = EmitASMFunctions(GetFreeCodePointer(), GetFreeCodeSpace());
 
