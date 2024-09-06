@@ -547,7 +547,8 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
   const PhysicalMemoryAddress start = Bus::GetMemoryRegionStart(region);
   const PhysicalMemoryAddress end = Bus::GetMemoryRegionEnd(region);
-  m_ui.memoryView->setData(start, Bus::GetMemoryRegionPointer(region), end - start);
+  m_ui.memoryView->setData(start, Bus::GetMemoryRegionPointer(region), end - start,
+                           Bus::IsMemoryRegionWritable(region));
 
 #define SET_REGION_RADIO_BUTTON(name, rb_region)                                                                       \
   do                                                                                                                   \

@@ -805,26 +805,31 @@ std::optional<Bus::MemoryRegion> Bus::GetMemoryRegionForAddress(PhysicalMemoryAd
   return std::nullopt;
 }
 
-static constexpr std::array<std::pair<PhysicalMemoryAddress, PhysicalMemoryAddress>,
+static constexpr std::array<std::tuple<PhysicalMemoryAddress, PhysicalMemoryAddress, bool>,
                             static_cast<u32>(Bus::MemoryRegion::Count)>
   s_code_region_ranges = {{
-    {0, Bus::RAM_2MB_SIZE},
-    {Bus::RAM_2MB_SIZE, Bus::RAM_2MB_SIZE * 2},
-    {Bus::RAM_2MB_SIZE * 2, Bus::RAM_2MB_SIZE * 3},
-    {Bus::RAM_2MB_SIZE * 3, Bus::RAM_MIRROR_END},
-    {Bus::EXP1_BASE, Bus::EXP1_BASE + Bus::EXP1_SIZE},
-    {CPU::SCRATCHPAD_ADDR, CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE},
-    {Bus::BIOS_BASE, Bus::BIOS_BASE + Bus::BIOS_SIZE},
+    {0, Bus::RAM_2MB_SIZE, true},
+    {Bus::RAM_2MB_SIZE, Bus::RAM_2MB_SIZE * 2, true},
+    {Bus::RAM_2MB_SIZE * 2, Bus::RAM_2MB_SIZE * 3, true},
+    {Bus::RAM_2MB_SIZE * 3, Bus::RAM_MIRROR_END, true},
+    {Bus::EXP1_BASE, Bus::EXP1_BASE + Bus::EXP1_SIZE, false},
+    {CPU::SCRATCHPAD_ADDR, CPU::SCRATCHPAD_ADDR + CPU::SCRATCHPAD_SIZE, true},
+    {Bus::BIOS_BASE, Bus::BIOS_BASE + Bus::BIOS_SIZE, false},
   }};
 
 PhysicalMemoryAddress Bus::GetMemoryRegionStart(MemoryRegion region)
 {
-  return s_code_region_ranges[static_cast<u32>(region)].first;
+  return std::get<0>(s_code_region_ranges[static_cast<u32>(region)]);
 }
 
 PhysicalMemoryAddress Bus::GetMemoryRegionEnd(MemoryRegion region)
 {
-  return s_code_region_ranges[static_cast<u32>(region)].second;
+  return std::get<1>(s_code_region_ranges[static_cast<u32>(region)]);
+}
+
+bool Bus::IsMemoryRegionWritable(MemoryRegion region)
+{
+  return std::get<2>(s_code_region_ranges[static_cast<u32>(region)]);
 }
 
 u8* Bus::GetMemoryRegionPointer(MemoryRegion region)
