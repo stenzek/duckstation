@@ -94,6 +94,7 @@ static QString formatValue(u32 value, bool is_signed)
 MemoryScannerWindow::MemoryScannerWindow() : QWidget()
 {
   m_ui.setupUi(this);
+  QtUtils::RestoreWindowGeometry("MemoryScannerWindow", this);
   connectUi();
 
   m_ui.cheatEngineAddress->setText(tr("Address of RAM for HxD Usage: 0x%1")
@@ -217,6 +218,7 @@ void MemoryScannerWindow::showEvent(QShowEvent* event)
 
 void MemoryScannerWindow::closeEvent(QCloseEvent* event)
 {
+  QtUtils::SaveWindowGeometry("MemoryScannerWindow", this);
   QWidget::closeEvent(event);
   emit closed();
 }

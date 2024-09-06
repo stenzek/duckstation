@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: PolyForm-Strict-1.0.0
 
 #include "qtutils.h"
+#include "qthost.h"
 
 #include "core/game_list.h"
 #include "core/system.h"
@@ -40,9 +41,7 @@
 
 Log_SetChannel(QtUtils);
 
-namespace QtUtils {
-
-QFrame* CreateHorizontalLine(QWidget* parent)
+QFrame* QtUtils::CreateHorizontalLine(QWidget* parent)
 {
   QFrame* line = new QFrame(parent);
   line->setFrameShape(QFrame::HLine);
@@ -50,7 +49,7 @@ QFrame* CreateHorizontalLine(QWidget* parent)
   return line;
 }
 
-QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
+QWidget* QtUtils::GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
 {
   QWidget* next_parent = widget->parentWidget();
   while (next_parent)
@@ -68,7 +67,7 @@ QWidget* GetRootWidget(QWidget* widget, bool stop_at_window_or_dialog)
   return widget;
 }
 
-void ShowOrRaiseWindow(QWidget* window)
+void QtUtils::ShowOrRaiseWindow(QWidget* window)
 {
   if (!window)
     return;
@@ -135,17 +134,17 @@ ALWAYS_INLINE_RELEASE static void ResizeColumnsForView(T* view, const std::initi
   }
 }
 
-void ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
+void QtUtils::ResizeColumnsForTableView(QTableView* view, const std::initializer_list<int>& widths)
 {
   ResizeColumnsForView(view, widths);
 }
 
-void ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
+void QtUtils::ResizeColumnsForTreeView(QTreeView* view, const std::initializer_list<int>& widths)
 {
   ResizeColumnsForView(view, widths);
 }
 
-void OpenURL(QWidget* parent, const QUrl& qurl)
+void QtUtils::OpenURL(QWidget* parent, const QUrl& qurl)
 {
   if (!QDesktopServices::openUrl(qurl))
   {
@@ -154,12 +153,13 @@ void OpenURL(QWidget* parent, const QUrl& qurl)
   }
 }
 
-void OpenURL(QWidget* parent, const char* url)
+void QtUtils::OpenURL(QWidget* parent, const char* url)
 {
   return OpenURL(parent, QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
 }
 
-std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code)
+std::optional<unsigned> QtUtils::PromptForAddress(QWidget* parent, const QString& title, const QString& label,
+                                                  bool code)
 {
   const QString address_str(
     QInputDialog::getText(parent, title, qApp->translate("DebuggerWindow", "Enter memory address:")));
@@ -186,12 +186,12 @@ std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, 
   return address;
 }
 
-QString StringViewToQString(std::string_view str)
+QString QtUtils::StringViewToQString(std::string_view str)
 {
   return str.empty() ? QString() : QString::fromUtf8(str.data(), str.size());
 }
 
-void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
+void QtUtils::SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
 {
   if (widget->font().italic() != inherited)
   {
@@ -201,7 +201,7 @@ void SetWidgetFontForInheritedSetting(QWidget* widget, bool inherited)
   }
 }
 
-void BindLabelToSlider(QSlider* slider, QLabel* label, float range /*= 1.0f*/)
+void QtUtils::BindLabelToSlider(QSlider* slider, QLabel* label, float range /*= 1.0f*/)
 {
   auto update_label = [label, range](int new_value) {
     label->setText(QString::number(static_cast<int>(new_value) / range));
@@ -210,7 +210,7 @@ void BindLabelToSlider(QSlider* slider, QLabel* label, float range /*= 1.0f*/)
   QObject::connect(slider, &QSlider::valueChanged, label, std::move(update_label));
 }
 
-void SetWindowResizeable(QWidget* widget, bool resizeable)
+void QtUtils::SetWindowResizeable(QWidget* widget, bool resizeable)
 {
   if (QMainWindow* window = qobject_cast<QMainWindow*>(widget); window)
   {
@@ -236,7 +236,7 @@ void SetWindowResizeable(QWidget* widget, bool resizeable)
   }
 }
 
-void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height)
+void QtUtils::ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height)
 {
   width = std::max(width, 1);
   height = std::max(height, 1);
@@ -246,7 +246,7 @@ void ResizePotentiallyFixedSizeWindow(QWidget* widget, int width, int height)
   widget->resize(width, height);
 }
 
-QIcon GetIconForRegion(ConsoleRegion region)
+QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
 {
   switch (region)
   {
@@ -261,7 +261,7 @@ QIcon GetIconForRegion(ConsoleRegion region)
   }
 }
 
-QIcon GetIconForRegion(DiscRegion region)
+QIcon QtUtils::GetIconForRegion(DiscRegion region)
 {
   switch (region)
   {
@@ -278,7 +278,7 @@ QIcon GetIconForRegion(DiscRegion region)
   }
 }
 
-QIcon GetIconForEntryType(GameList::EntryType type)
+QIcon QtUtils::GetIconForEntryType(GameList::EntryType type)
 {
   switch (type)
   {
@@ -295,12 +295,12 @@ QIcon GetIconForEntryType(GameList::EntryType type)
   }
 }
 
-QIcon GetIconForCompatibility(GameDatabase::CompatibilityRating rating)
+QIcon QtUtils::GetIconForCompatibility(GameDatabase::CompatibilityRating rating)
 {
   return QIcon(QStringLiteral(":/icons/star-%1.png").arg(static_cast<u32>(rating)));
 }
 
-qreal GetDevicePixelRatioForWidget(const QWidget* widget)
+qreal QtUtils::GetDevicePixelRatioForWidget(const QWidget* widget)
 {
   const QScreen* screen_for_ratio = widget->screen();
   if (!screen_for_ratio)
@@ -309,7 +309,7 @@ qreal GetDevicePixelRatioForWidget(const QWidget* widget)
   return screen_for_ratio ? screen_for_ratio->devicePixelRatio() : static_cast<qreal>(1);
 }
 
-std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
+std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget)
 {
   WindowInfo wi;
 
@@ -364,4 +364,34 @@ std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget)
   return wi;
 }
 
-} // namespace QtUtils
+bool QtUtils::SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto_commit_changes)
+{
+  const TinyString config_key = TinyString::from_format("{}Geometry", window_name);
+
+  const QByteArray geometry = widget->saveGeometry();
+  const QByteArray geometry_b64 = geometry.toBase64();
+  const std::string old_geometry_b64 = Host::GetBaseStringSettingValue("UI", config_key);
+  if (old_geometry_b64 == geometry_b64.constData())
+    return false;
+
+  Host::SetBaseStringSettingValue("UI", config_key, geometry_b64.constData());
+  if (auto_commit_changes)
+    Host::CommitBaseSettingChanges();
+
+  return true;
+}
+
+bool QtUtils::RestoreWindowGeometry(std::string_view window_name, QWidget* widget)
+{
+  const TinyString config_key = TinyString::from_format("{}Geometry", window_name);
+  const std::string geometry_b64 = Host::GetBaseStringSettingValue("UI", config_key);
+  if (geometry_b64.empty())
+    return false;
+
+  const QByteArray geometry = QByteArray::fromBase64(QByteArray::fromStdString(geometry_b64));
+  widget->restoreGeometry(geometry);
+
+  // make sure we're not loading a dodgy config which had fullscreen set...
+  widget->setWindowState(widget->windowState() & ~(Qt::WindowFullScreen | Qt::WindowActive));
+  return true;
+}

@@ -29,6 +29,8 @@ CheatManagerWindow::CheatManagerWindow() : QWidget()
 {
   m_ui.setupUi(this);
 
+  QtUtils::RestoreWindowGeometry("CheatManagerWindow", this);
+
   connectUi();
 
   updateCheatList();
@@ -63,6 +65,7 @@ void CheatManagerWindow::showEvent(QShowEvent* event)
 
 void CheatManagerWindow::closeEvent(QCloseEvent* event)
 {
+  QtUtils::SaveWindowGeometry("CheatManagerWindow", this);
   QWidget::closeEvent(event);
   emit closed();
 }
