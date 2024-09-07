@@ -4431,6 +4431,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
     FSUI_CSTR("Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally."),
     "Display", "StretchVertically", false);
 
+  DrawToggleSetting(bsi, FSUI_CSTR("Automatically Resize Window"),
+                    FSUI_CSTR("Automatically resizes the window to match the internal resolution."), "Display",
+                    "AutoResizeWindow", false);
+
   DrawToggleSetting(
     bsi, FSUI_CSTR("Disable Mailbox Presentation"),
     FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
@@ -7229,8 +7233,10 @@ TRANSLATE_NOOP("FullscreenUI", "Automatic based on window size");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping completed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed, no devices are available.");
+TRANSLATE_NOOP("FullscreenUI", "Automatically Resize Window");
 TRANSLATE_NOOP("FullscreenUI", "Automatically applies patches to disc images when they are present, currently only PPF is supported.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically loads and applies cheats on game start. Cheats can break games and saves.");
+TRANSLATE_NOOP("FullscreenUI", "Automatically resizes the window to match the internal resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically switches to fullscreen mode when the program is started.");
 TRANSLATE_NOOP("FullscreenUI", "Avoids calls to C++ code, significantly speeding up the recompiler.");
