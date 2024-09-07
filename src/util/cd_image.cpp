@@ -267,9 +267,26 @@ u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
     switch (read_mode)
     {
       case ReadMode::DataOnly:
-        std::memcpy(buffer_ptr, raw_sector + 24, DATA_SECTOR_SIZE);
+      {
+        const SectorHeader* header = reinterpret_cast<const SectorHeader*>(raw_sector + SECTOR_SYNC_SIZE);
+        if (header->sector_mode == 1)
+        {
+          std::memcpy(buffer_ptr, raw_sector + SECTOR_SYNC_SIZE + MODE1_HEADER_SIZE, DATA_SECTOR_SIZE);
+        }
+        else if (header->sector_mode == 2)
+        {
+          std::memcpy(buffer_ptr, raw_sector + SECTOR_SYNC_SIZE + MODE2_HEADER_SIZE, DATA_SECTOR_SIZE);
+        }
+        else
+        {
+          ERROR_LOG("Invalid sector mode {} at LBA {}", header->sector_mode,
+                    m_current_index->start_lba_on_disc + m_position_in_track);
+          break;
+        }
+
         buffer_ptr += DATA_SECTOR_SIZE;
-        break;
+      }
+      break;
 
       case ReadMode::RawNoSync:
         std::memcpy(buffer_ptr, raw_sector + SECTOR_SYNC_SIZE, RAW_SECTOR_SIZE - SECTOR_SYNC_SIZE);
