@@ -95,7 +95,7 @@ void DebuggerWindow::onPauseActionToggled(bool paused)
 {
   if (!paused)
   {
-    m_registers_model->saveCurrentValues();
+    saveCurrentState();
     setUIEnabled(false, true);
   }
 
@@ -203,7 +203,7 @@ void DebuggerWindow::onBreakpointListContextMenuRequested()
 void DebuggerWindow::onStepIntoActionTriggered()
 {
   Assert(System::IsPaused());
-  m_registers_model->saveCurrentValues();
+  saveCurrentState();
   g_emu_thread->singleStepCPU();
 }
 
@@ -217,7 +217,7 @@ void DebuggerWindow::onStepOverActionTriggered()
   }
 
   // unpause to let it run to the breakpoint
-  m_registers_model->saveCurrentValues();
+  saveCurrentState();
   g_emu_thread->setSystemPaused(false);
 }
 
@@ -231,7 +231,7 @@ void DebuggerWindow::onStepOutActionTriggered()
   }
 
   // unpause to let it run to the breakpoint
-  m_registers_model->saveCurrentValues();
+  saveCurrentState();
   g_emu_thread->setSystemPaused(false);
 }
 
@@ -536,6 +536,12 @@ void DebuggerWindow::setUIEnabled(bool enabled, bool allow_pause)
   m_ui.memoryRegionEXP1->setEnabled(enabled);
   m_ui.memoryRegionScratchpad->setEnabled(enabled);
   m_ui.memoryRegionBIOS->setEnabled(enabled);
+}
+
+void DebuggerWindow::saveCurrentState()
+{
+  m_registers_model->saveCurrentValues();
+  m_ui.memoryView->saveCurrentData();
 }
 
 void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)

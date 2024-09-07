@@ -1,5 +1,9 @@
 #pragma once
+
+#include "common/types.h"
+
 #include <QtWidgets/QAbstractScrollArea>
+#include <vector>
 
 // Based on https://stackoverflow.com/questions/46375673/how-can-realize-my-own-memory-viewer-by-qt
 
@@ -28,6 +32,9 @@ protected:
   void mouseMoveEvent(QMouseEvent* event);
   void keyPressEvent(QKeyEvent* event);
 
+public Q_SLOTS:
+  void saveCurrentData();
+
 private Q_SLOTS:
   void adjustContent();
 
@@ -39,6 +46,7 @@ private:
   int asciiWidth() const;
   void updateMetrics();
   void updateSelectedByte(const QPoint& pos);
+  void expandCurrentDataToInclude(size_t offset);
 
   void* m_data;
   size_t m_data_size;
@@ -51,14 +59,17 @@ private:
   size_t m_highlight_end = 0;
 
   size_t m_selected_address = INVALID_SELECTED_ADDRESS;
-  int m_editing_nibble = -1;
+  s32 m_editing_nibble = -1;
   bool m_selection_was_ascii = false;
   bool m_data_editable = false;
 
-  unsigned m_bytes_per_line;
+  u32 m_bytes_per_line;
 
   int m_char_width;
   int m_char_height;
 
   int m_rows_visible;
+
+  std::vector<u8> m_last_data;
+  size_t m_last_data_start_offset = 0;
 };

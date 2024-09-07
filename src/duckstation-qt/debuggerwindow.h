@@ -70,6 +70,7 @@ private:
   void disconnectSignals();
   void createModels();
   void setUIEnabled(bool enabled, bool allow_pause);
+  void saveCurrentState();
   void setMemoryViewRegion(Bus::MemoryRegion region);
   void toggleBreakpoint(VirtualMemoryAddress address);
   void clearBreakpoints();
