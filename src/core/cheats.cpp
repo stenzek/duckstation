@@ -661,10 +661,8 @@ bool CheatList::LoadFromString(const std::string& str, Format format)
     return LoadFromPCSXRString(str);
   else if (format == Format::Libretro)
     return LoadFromLibretroString(str);
-  else if (format == Format::EPSXe)
-    return LoadFromEPSXeString(str);
-  else
-    return false;
+  format = Format::EPSXe;
+  return LoadFromEPSXeString(str);
 }
 
 bool CheatList::SaveToPCSXRFile(const char* filename)
