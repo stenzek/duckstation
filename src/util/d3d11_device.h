@@ -104,7 +104,7 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  bool BeginPresent(bool skip_present, u32 clear_color) override;
+  PresentResult BeginPresent(bool skip_present, u32 clear_color) override;
   void EndPresent(bool explicit_present) override;
   void SubmitPresent() override;
 

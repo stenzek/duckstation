@@ -1491,9 +1491,10 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
-                                            GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
-                                            s32 native_height, u32 target_width, u32 target_height)
+GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture* input_depth,
+                                                                GPUTexture* final_target, GSVector4i final_rect,
+                                                                s32 orig_width, s32 orig_height, s32 native_width,
+                                                                s32 native_height, u32 target_width, u32 target_height)
 {
   GL_PUSH_FMT("PostProcessingShaderFX {}", m_name);
 
@@ -1783,10 +1784,10 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture*
     if (pass.render_targets.size() == 1 && pass.render_targets[0] == OUTPUT_COLOR_TEXTURE && !final_target)
     {
       // Special case: drawing to final buffer.
-      if (!g_gpu_device->BeginPresent(false))
+      if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(false); pres != GPUDevice::PresentResult::OK)
       {
         GL_POP();
-        return false;
+        return pres;
       }
     }
     else
@@ -1842,5 +1843,5 @@ bool PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture*
 
   GL_POP();
   m_frame_timer.Reset();
-  return true;
+  return GPUDevice::PresentResult::OK;
 }

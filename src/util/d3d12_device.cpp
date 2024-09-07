@@ -532,6 +532,9 @@ ID3D12GraphicsCommandList4* D3D12Device::GetInitCommandList()
 
 void D3D12Device::SubmitCommandList(bool wait_for_completion)
 {
+  if (m_device_was_lost) [[unlikely]]
+    return;
+
   CommandList& res = m_command_lists[m_current_command_list];
   HRESULT hr;
 
@@ -553,7 +556,8 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion)
     if (FAILED(hr)) [[unlikely]]
     {
       ERROR_LOG("Closing init command list failed with HRESULT {:08X}", static_cast<unsigned>(hr));
-      Panic("TODO cannot continue");
+      m_device_was_lost = true;
+      return;
     }
   }
 
@@ -562,7 +566,8 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion)
   if (FAILED(hr)) [[unlikely]]
   {
     ERROR_LOG("Closing main command list failed with HRESULT {:08X}", static_cast<unsigned>(hr));
-    Panic("TODO cannot continue");
+    m_device_was_lost = true;
+    return;
   }
 
   if (res.init_list_used)
@@ -578,7 +583,12 @@ void D3D12Device::SubmitCommandList(bool wait_for_completion)
 
   // Update fence when GPU has completed.
   hr = m_command_queue->Signal(m_fence.Get(), res.fence_counter);
-  DebugAssertMsg(SUCCEEDED(hr), "Signal fence");
+  if (FAILED(hr))
+  {
+    ERROR_LOG("Signal command queue fence failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+    m_device_was_lost = true;
+    return;
+  }
 
   MoveToNextCommandList();
 
@@ -606,6 +616,9 @@ void D3D12Device::SubmitCommandListAndRestartRenderPass(const std::string_view r
 
 void D3D12Device::WaitForFence(u64 fence)
 {
+  if (m_device_was_lost) [[unlikely]]
+    return;
+
   if (m_completed_fence_value >= fence)
     return;
 
@@ -1110,20 +1123,23 @@ void D3D12Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   }
 }
 
-bool D3D12Device::BeginPresent(bool frame_skip, u32 clear_color)
+GPUDevice::PresentResult D3D12Device::BeginPresent(bool frame_skip, u32 clear_color)
 {
   if (InRenderPass())
     EndRenderPass();
 
+  if (m_device_was_lost) [[unlikely]]
+    return PresentResult::DeviceLost;
+
   if (frame_skip)
-    return false;
+    return PresentResult::SkipPresent;
 
   // If we're running surfaceless, kick the command buffer so we don't run out of descriptors.
   if (!m_swap_chain)
   {
     SubmitCommandList(false);
     TrimTexturePool();
-    return false;
+    return PresentResult::SkipPresent;
   }
 
   // TODO: Check if the device was lost.
@@ -1136,11 +1152,11 @@ bool D3D12Device::BeginPresent(bool frame_skip, u32 clear_color)
   {
     Host::RunOnCPUThread([]() { Host::SetFullscreen(false); });
     TrimTexturePool();
-    return false;
+    return PresentResult::SkipPresent;
   }
 
   BeginSwapChainRenderPass(clear_color);
-  return true;
+  return PresentResult::OK;
 }
 
 void D3D12Device::EndPresent(bool explicit_present)
@@ -1165,6 +1181,8 @@ void D3D12Device::EndPresent(bool explicit_present)
 void D3D12Device::SubmitPresent()
 {
   DebugAssert(m_swap_chain);
+  if (m_device_was_lost) [[unlikely]]
+    return;
 
   const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GPUVSyncMode::FIFO);
   const UINT flags = (m_vsync_mode == GPUVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;

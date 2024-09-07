@@ -481,6 +481,13 @@ public:
     Full
   };
 
+  enum class PresentResult : u32
+  {
+    OK,
+    SkipPresent,
+    DeviceLost,
+  };
+
   struct Features
   {
     bool dual_source_blend : 1;
@@ -702,7 +709,7 @@ public:
   virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
 
   /// Returns false if the window was completely occluded.
-  virtual bool BeginPresent(bool skip_present, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
+  virtual PresentResult BeginPresent(bool skip_present, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
   virtual void EndPresent(bool explicit_submit) = 0;
   virtual void SubmitPresent() = 0;
 
