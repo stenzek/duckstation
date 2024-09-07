@@ -218,8 +218,8 @@ bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 heig
   INFO_LOG("Initializing capture:");
   if (capture_video)
   {
-    INFO_LOG("  Video: FPS={}, Aspect={}, Codec={}, Bitrate={}, Args={}", fps, aspect, video_codec, video_bitrate,
-             video_codec_args);
+    INFO_LOG("  Video: {}x{} FPS={}, Aspect={}, Codec={}, Bitrate={}, Args={}", width, height, fps, aspect, video_codec,
+             video_bitrate, video_codec_args);
   }
   if (capture_audio)
   {

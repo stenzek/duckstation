@@ -1985,6 +1985,13 @@ void GPU::SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buffer, s32 v
                             s32 view_height)
 {
   DebugAssert(texture);
+
+  if (g_settings.display_auto_resize_window &&
+      (view_width != m_display_texture_view_width || view_height != m_display_texture_view_height))
+  {
+    System::RequestDisplaySize();
+  }
+
   m_display_texture = texture;
   m_display_depth_buffer = depth_buffer;
   m_display_texture_view_x = view_x;
@@ -2772,8 +2779,8 @@ void GPU::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* h
   {
     if (mode == DisplayScreenshotMode::InternalResolution)
     {
-      const u32 draw_width = static_cast<u32>(draw_rect->width());
-      const u32 draw_height = static_cast<u32>(draw_rect->height());
+      const u32 draw_width = static_cast<u32>(display_rect->width());
+      const u32 draw_height = static_cast<u32>(display_rect->height());
 
       // If internal res, scale the computed draw rectangle to the internal res.
       // We re-use the draw rect because it's already been AR corrected.
