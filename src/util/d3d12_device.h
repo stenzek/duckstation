@@ -185,9 +185,8 @@ public:
   void UnbindTextureBuffer(D3D12TextureBuffer* buf);
 
 protected:
-  bool CreateDevice(std::string_view adapter, bool threaded_presentation,
-                    std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
-                    Error* error) override;
+  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
+                    FeatureMask disabled_features, Error* error) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data) override;

@@ -161,9 +161,8 @@ void MetalDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
     [m_layer setDisplaySyncEnabled:m_vsync_mode == GPUVSyncMode::FIFO];
 }
 
-bool MetalDevice::CreateDevice(std::string_view adapter, bool threaded_presentation,
-                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
-                               Error* error)
+bool MetalDevice::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
+                               FeatureMask disabled_features, Error* error)
 {
   @autoreleasepool
   {

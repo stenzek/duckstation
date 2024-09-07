@@ -924,8 +924,8 @@ void FullscreenUI::DestroyResources()
 
 ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
 {
-  return {"*.bin",   "*.cue",    "*.iso", "*.img", "*.chd",     "*.ecm", "*.mds",
-          "*.psexe", "*.ps-exe", "*.exe", "*.psx", "*.psf", "*.minipsf", "*.m3u", "*.pbp"};
+  return {"*.bin",    "*.cue", "*.iso", "*.img", "*.chd",     "*.ecm", "*.mds", "*.psexe",
+          "*.ps-exe", "*.exe", "*.psx", "*.psf", "*.minipsf", "*.m3u", "*.pbp"};
 }
 
 void FullscreenUI::DoStartPath(std::string path, std::string state, std::optional<bool> fast_boot)
@@ -4450,16 +4450,6 @@ void FullscreenUI::DrawDisplaySettingsPage()
     break;
 #endif
 
-#ifdef ENABLE_VULKAN
-    case GPURenderer::HardwareVulkan:
-    {
-      DrawToggleSetting(bsi, FSUI_CSTR("Threaded Presentation"),
-                        FSUI_CSTR("Presents frames on a background thread when fast forwarding or vsync is disabled."),
-                        "GPU", "ThreadedPresentation", true);
-    }
-    break;
-#endif
-
     case GPURenderer::Software:
     {
       DrawToggleSetting(bsi, FSUI_CSTR("Threaded Rendering"),
@@ -7015,9 +7005,8 @@ void FullscreenUI::DrawAboutWindow()
   if (ImGui::BeginPopupModal(FSUI_CSTR("About DuckStation"), &s_about_window_open,
                              ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
-    ImGui::TextWrapped("%s",
-                       FSUI_CSTR("DuckStation is a free simulator/emulator of the Sony PlayStation(TM) "
-                                 "console, focusing on playability, speed, and long-term maintainability."));
+    ImGui::TextWrapped("%s", FSUI_CSTR("DuckStation is a free simulator/emulator of the Sony PlayStation(TM) "
+                                       "console, focusing on playability, speed, and long-term maintainability."));
     ImGui::NewLine();
     ImGui::TextWrapped(FSUI_CSTR("Version: %s"), g_scm_tag_str);
     ImGui::NewLine();
@@ -7571,7 +7560,6 @@ TRANSLATE_NOOP("FullscreenUI", "Post-processing chain cleared.");
 TRANSLATE_NOOP("FullscreenUI", "Post-processing shaders reloaded.");
 TRANSLATE_NOOP("FullscreenUI", "Preload Images to RAM");
 TRANSLATE_NOOP("FullscreenUI", "Preload Replacement Textures");
-TRANSLATE_NOOP("FullscreenUI", "Presents frames on a background thread when fast forwarding or vsync is disabled.");
 TRANSLATE_NOOP("FullscreenUI", "Preserve Projection Precision");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the emulator from producing any audible sound.");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the screen saver from activating and the host from sleeping while emulation is running.");
@@ -7749,7 +7737,6 @@ TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced
 TRANSLATE_NOOP("FullscreenUI", "The selected memory card image will be used in shared mode for this slot.");
 TRANSLATE_NOOP("FullscreenUI", "This game has no achievements.");
 TRANSLATE_NOOP("FullscreenUI", "This game has no leaderboards.");
-TRANSLATE_NOOP("FullscreenUI", "Threaded Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Time Played");
 TRANSLATE_NOOP("FullscreenUI", "Time Played: %s");

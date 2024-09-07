@@ -347,7 +347,7 @@ GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
 }
 
 bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version,
-                       bool debug_device, GPUVSyncMode vsync, bool allow_present_throttle, bool threaded_presentation,
+                       bool debug_device, GPUVSyncMode vsync, bool allow_present_throttle,
                        std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
 {
   m_vsync_mode = vsync;
@@ -360,7 +360,7 @@ bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_p
     return false;
   }
 
-  if (!CreateDevice(adapter, threaded_presentation, exclusive_fullscreen_control, disabled_features, error))
+  if (!CreateDevice(adapter, exclusive_fullscreen_control, disabled_features, error))
   {
     if (error && !error->IsValid())
       error->SetStringView("Failed to create device.");

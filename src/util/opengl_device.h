@@ -115,12 +115,14 @@ public:
   void CommitRTClearInFB(OpenGLTexture* tex, u32 idx);
   void CommitDSClearInFB(OpenGLTexture* tex);
 
-  GLuint LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key, const GPUPipeline::GraphicsConfig& plconfig, Error* error);
+  GLuint LookupProgramCache(const OpenGLPipeline::ProgramCacheKey& key, const GPUPipeline::GraphicsConfig& plconfig,
+                            Error* error);
   GLuint CompileProgram(const GPUPipeline::GraphicsConfig& plconfig, Error* error);
   void PostLinkProgram(const GPUPipeline::GraphicsConfig& plconfig, GLuint program_id);
   void UnrefProgram(const OpenGLPipeline::ProgramCacheKey& key);
 
-  OpenGLPipeline::VertexArrayCache::const_iterator LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key, Error* error);
+  OpenGLPipeline::VertexArrayCache::const_iterator LookupVAOCache(const OpenGLPipeline::VertexArrayCacheKey& key,
+                                                                  Error* error);
   GLuint CreateVAO(std::span<const GPUPipeline::VertexAttribute> attributes, u32 stride, Error* error);
   void UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key);
 
@@ -132,9 +134,8 @@ public:
   void UnbindPipeline(const OpenGLPipeline* pl);
 
 protected:
-  bool CreateDevice(std::string_view adapter, bool threaded_presentation,
-                    std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
-                    Error* error) override;
+  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
+                    FeatureMask disabled_features, Error* error) override;
   void DestroyDevice() override;
 
   bool OpenPipelineCache(const std::string& filename) override;

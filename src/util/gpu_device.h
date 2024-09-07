@@ -604,8 +604,8 @@ public:
   virtual RenderAPI GetRenderAPI() const = 0;
 
   bool Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
-              GPUVSyncMode vsync, bool allow_present_throttle, bool threaded_presentation,
-              std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error);
+              GPUVSyncMode vsync, bool allow_present_throttle, std::optional<bool> exclusive_fullscreen_control,
+              FeatureMask disabled_features, Error* error);
   void Destroy();
 
   virtual bool HasSurface() const = 0;
@@ -737,9 +737,8 @@ public:
   static void ResetStatistics();
 
 protected:
-  virtual bool CreateDevice(std::string_view adapter, bool threaded_presentation,
-                            std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
-                            Error* error) = 0;
+  virtual bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
+                            FeatureMask disabled_features, Error* error) = 0;
   virtual void DestroyDevice() = 0;
 
   std::string GetShaderCacheBaseName(std::string_view type) const;
