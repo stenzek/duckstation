@@ -43,8 +43,8 @@ enum : u32
   DATA_SECTOR_OUTPUT_SIZE = CDImage::DATA_SECTOR_SIZE,
   SECTOR_SYNC_SIZE = CDImage::SECTOR_SYNC_SIZE,
   SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
-
-  XA_SUBHEADER_SIZE = 4,
+  MODE1_HEADER_SIZE = CDImage::MODE1_HEADER_SIZE,
+  MODE2_HEADER_SIZE = CDImage::MODE2_HEADER_SIZE,
   XA_ADPCM_SAMPLES_PER_SECTOR_4BIT = 4032, // 28 words * 8 nibbles per word * 18 chunks
   XA_ADPCM_SAMPLES_PER_SECTOR_8BIT = 2016, // 28 words * 4 bytes per word * 18 chunks
   XA_RESAMPLE_RING_BUFFER_SIZE = 32,
@@ -1505,6 +1505,9 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   constexpr u32 ticks_per_second = static_cast<u32>(System::MASTER_CLOCK);
   ticks += static_cast<u32>(seconds * static_cast<float>(ticks_per_second));
 
+  if (g_settings.cdrom_seek_speedup > 1)
+    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_TICKS);
+
   if (s_drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
     // we're still reading the TOC, so add that time in
@@ -1519,9 +1522,6 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     DEV_LOG("Seek time for {} LBAs: {} ({:.3f} ms)", lba_diff, ticks,
             (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f);
   }
-
-  if (g_settings.cdrom_seek_speedup > 1)
-    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_TICKS);
 
   return System::ScaleTicksToOverclock(static_cast<TickCount>(ticks));
 }
@@ -1857,7 +1857,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
-      else if ((!IsMediaPS1Disc() || !DoesMediaRegionMatchConsole()) && !s_mode.cdda)
+      else if ((IsMediaAudioCD() || !DoesMediaRegionMatchConsole()) && !s_mode.cdda)
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
       }
@@ -3128,19 +3128,32 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
 
   if (s_mode.read_raw_sector)
   {
-    std::memcpy(sb->data.data(), raw_sector + SECTOR_SYNC_SIZE, RAW_SECTOR_OUTPUT_SIZE);
-    sb->size = RAW_SECTOR_OUTPUT_SIZE;
+    if (s_last_sector_header.sector_mode == 1)
+    {
+      // Raw reads in MODE1 appear to fill in a MODE2 header...
+      std::memcpy(&sb->data[0], raw_sector + SECTOR_SYNC_SIZE, MODE1_HEADER_SIZE);
+      std::memset(&sb->data[MODE1_HEADER_SIZE], 0, MODE2_HEADER_SIZE - MODE1_HEADER_SIZE);
+      std::memcpy(&sb->data[MODE2_HEADER_SIZE], raw_sector + SECTOR_SYNC_SIZE + MODE1_HEADER_SIZE,
+                  DATA_SECTOR_OUTPUT_SIZE);
+      sb->size = MODE2_HEADER_SIZE + DATA_SECTOR_OUTPUT_SIZE;
+    }
+    else
+    {
+      std::memcpy(sb->data.data(), raw_sector + SECTOR_SYNC_SIZE, RAW_SECTOR_OUTPUT_SIZE);
+      sb->size = RAW_SECTOR_OUTPUT_SIZE;
+    }
   }
   else
   {
-    // TODO: This should actually depend on the mode...
-    if (s_last_sector_header.sector_mode != 2)
+    if (s_last_sector_header.sector_mode != 1 && s_last_sector_header.sector_mode != 2)
     {
-      WARNING_LOG("Ignoring non-mode2 sector at {}", s_current_lba);
+      WARNING_LOG("Ignoring non-MODE1/MODE2 sector at {}", s_current_lba);
       return;
     }
 
-    std::memcpy(sb->data.data(), raw_sector + CDImage::SECTOR_SYNC_SIZE + 12, DATA_SECTOR_OUTPUT_SIZE);
+    const u32 offset = (s_last_sector_header.sector_mode == 1) ? (SECTOR_SYNC_SIZE + MODE1_HEADER_SIZE) :
+                                                                 (SECTOR_SYNC_SIZE + MODE2_HEADER_SIZE);
+    std::memcpy(sb->data.data(), raw_sector + offset, DATA_SECTOR_OUTPUT_SIZE);
     sb->size = DATA_SECTOR_OUTPUT_SIZE;
   }
 
