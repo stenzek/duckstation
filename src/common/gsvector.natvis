@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
-	<Type Name="GSVector2T&lt;*&gt;">
-		<DisplayString>{{ {x}, {y} }}</DisplayString>
+	<Type Name="GSVector2">
+		<DisplayString>{{ {F32[0]}, {F32[1]} }}</DisplayString>
 	</Type>
-
+	<Type Name="GSVector2i">
+		<DisplayString>{{ {S32[0]}, {S32[1]} }}</DisplayString>
+	</Type>
+	<Type Name="GSVector4">
+		<DisplayString>{{ {F32[2]-F32[0]}x{F32[3]-F32[1]} {F32[0]}, {F32[1]}, {F32[2]}, {F32[3]} }}</DisplayString>
+	</Type>
 	<Type Name="GSVector4i">
-		<DisplayString>{{ {I32[0]}, {I32[1]}, {I32[2]}, {I32[3]} }}</DisplayString>
+		<DisplayString>{{ {S32[2]-S32[0]}x{S32[3]-S32[1]} {S32[0]}, {S32[1]}, {S32[2]}, {S32[3]} }}</DisplayString>
 	</Type>
 </AutoVisualizer>
