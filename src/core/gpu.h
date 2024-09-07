@@ -8,6 +8,7 @@
 #include "timing_event.h"
 #include "types.h"
 
+#include "util/gpu_device.h"
 #include "util/gpu_texture.h"
 
 #include "common/bitfield.h"
@@ -233,7 +234,7 @@ public:
                               bool show_osd_message);
 
   /// Draws the current display texture, with any post-processing.
-  bool PresentDisplay();
+  GPUDevice::PresentResult PresentDisplay();
 
   /// Sends the current frame to media capture.
   bool SendDisplayToMediaCapture(MediaCapture* cap);
@@ -630,7 +631,8 @@ protected:
   void SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_texture, s32 view_x, s32 view_y, s32 view_width,
                          s32 view_height);
 
-  bool RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const GSVector4i draw_rect, bool postfx);
+  GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const GSVector4i draw_rect,
+                                         bool postfx);
 
   bool Deinterlace(u32 field, u32 line_skip);
   bool DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 line_skip);

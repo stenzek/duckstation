@@ -3,15 +3,14 @@
 
 #pragma once
 
-#include "postprocessing.h"
-
+#include "gpu_device.h"
 #include "gpu_texture.h"
+#include "postprocessing.h"
 
 #include "common/gsvector.h"
 #include "common/settings_interface.h"
 #include "common/timer.h"
 #include "common/types.h"
-#include "gpu_device.h"
 
 #include <array>
 #include <string>
@@ -49,9 +48,9 @@ public:
 
   virtual bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, ProgressCallback* progress) = 0;
 
-  virtual bool Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target, GSVector4i final_rect,
-                     s32 orig_width, s32 orig_height, s32 native_width, s32 native_height, u32 target_width,
-                     u32 target_height) = 0;
+  virtual GPUDevice::PresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
+                                         GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
+                                         s32 native_height, u32 target_width, u32 target_height) = 0;
 
 protected:
   using OptionList = std::vector<ShaderOption>;

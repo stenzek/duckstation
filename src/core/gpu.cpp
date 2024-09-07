@@ -1993,7 +1993,7 @@ void GPU::SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buffer, s32 v
   m_display_texture_view_height = view_height;
 }
 
-bool GPU::PresentDisplay()
+GPUDevice::PresentResult GPU::PresentDisplay()
 {
   FlushRender();
 
@@ -2004,7 +2004,8 @@ bool GPU::PresentDisplay()
   return RenderDisplay(nullptr, display_rect, draw_rect, !g_settings.debugging.show_vram);
 }
 
-bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const GSVector4i draw_rect, bool postfx)
+GPUDevice::PresentResult GPU::RenderDisplay(GPUTexture* target, const GSVector4i display_rect,
+                                            const GSVector4i draw_rect, bool postfx)
 {
   GL_SCOPE_FMT("RenderDisplay: {}", draw_rect);
 
@@ -2027,10 +2028,15 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const
 
     // Now we can apply the post chain.
     GPUTexture* post_output_texture = PostProcessing::InternalChain.GetOutputTexture();
-    if (PostProcessing::InternalChain.Apply(display_texture, m_display_depth_buffer, post_output_texture,
-                                            GSVector4i(0, 0, display_texture_view_width, display_texture_view_height),
-                                            display_texture_view_width, display_texture_view_height,
-                                            m_crtc_state.display_width, m_crtc_state.display_height))
+    if (const GPUDevice::PresentResult pres = PostProcessing::InternalChain.Apply(
+          display_texture, m_display_depth_buffer, post_output_texture,
+          GSVector4i(0, 0, display_texture_view_width, display_texture_view_height), display_texture_view_width,
+          display_texture_view_height, m_crtc_state.display_width, m_crtc_state.display_height);
+        pres != GPUDevice::PresentResult::OK)
+    {
+      return pres;
+    }
+    else
     {
       display_texture_view_x = 0;
       display_texture_view_y = 0;
@@ -2057,8 +2063,9 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const
   {
     if (target)
       g_gpu_device->SetRenderTarget(target);
-    else if (!g_gpu_device->BeginPresent(false))
-      return false;
+    else if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(false);
+             pres != GPUDevice::PresentResult::OK)
+      return pres;
   }
 
   if (display_texture)
@@ -2167,7 +2174,9 @@ bool GPU::RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const
                                               m_crtc_state.display_height);
   }
   else
-    return true;
+  {
+    return GPUDevice::PresentResult::OK;
+  }
 }
 
 bool GPU::SendDisplayToMediaCapture(MediaCapture* cap)
@@ -2186,7 +2195,7 @@ bool GPU::SendDisplayToMediaCapture(MediaCapture* cap)
   // Not cleared by RenderDisplay().
   g_gpu_device->ClearRenderTarget(target, GPUDevice::DEFAULT_CLEAR_COLOR);
 
-  if (!RenderDisplay(target, display_rect, draw_rect, postfx)) [[unlikely]]
+  if (RenderDisplay(target, display_rect, draw_rect, postfx) != GPUDevice::PresentResult::OK) [[unlikely]]
     return false;
 
   return cap->DeliverVideoFrame(target);

@@ -2312,17 +2312,17 @@ id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
   }
 }
 
-bool MetalDevice::BeginPresent(bool skip_present, u32 clear_color)
+GPUDevice::PresentResult MetalDevice::BeginPresent(bool skip_present, u32 clear_color)
 {
   @autoreleasepool
   {
     if (skip_present)
-      return false;
+      return PresentResult::SkipPresent;
 
     if (m_layer == nil)
     {
       TrimTexturePool();
-      return false;
+      return PresentResult::SkipPresent;
     }
 
     EndAnyEncoding();
@@ -2331,7 +2331,7 @@ bool MetalDevice::BeginPresent(bool skip_present, u32 clear_color)
     if (m_layer_drawable == nil)
     {
       TrimTexturePool();
-      return false;
+      return PresentResult::SkipPresent;
     }
 
     SetViewportAndScissor(0, 0, m_window_info.surface_width, m_window_info.surface_height);
@@ -2351,7 +2351,7 @@ bool MetalDevice::BeginPresent(bool skip_present, u32 clear_color)
     m_current_pipeline = nullptr;
     m_current_depth_state = nil;
     SetInitialEncoderState();
-    return true;
+    return PresentResult::OK;
   }
 }
 

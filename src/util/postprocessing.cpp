@@ -619,9 +619,9 @@ void PostProcessing::Chain::DestroyTextures()
   g_gpu_device->RecycleTexture(std::move(m_input_texture));
 }
 
-bool PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
-                                  GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
-                                  s32 native_height)
+GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth,
+                                                      GPUTexture* final_target, GSVector4i final_rect, s32 orig_width,
+                                                      s32 orig_height, s32 native_width, s32 native_height)
 {
   GL_SCOPE_FMT("{} Apply", m_section);
 
@@ -634,10 +634,12 @@ bool PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_dep
   {
     const bool is_final = (stage.get() == m_stages.back().get());
 
-    if (!stage->Apply(input_color, input_depth, is_final ? final_target : output, final_rect, orig_width, orig_height,
-                      native_width, native_height, m_target_width, m_target_height))
+    if (const GPUDevice::PresentResult pres =
+          stage->Apply(input_color, input_depth, is_final ? final_target : output, final_rect, orig_width, orig_height,
+                       native_width, native_height, m_target_width, m_target_height);
+        pres != GPUDevice::PresentResult::OK)
     {
-      return false;
+      return pres;
     }
 
     if (!is_final)
@@ -648,7 +650,7 @@ bool PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_dep
     }
   }
 
-  return true;
+  return GPUDevice::PresentResult::OK;
 }
 
 void PostProcessing::Initialize()

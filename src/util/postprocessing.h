@@ -134,8 +134,9 @@ public:
   bool CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
                     ProgressCallback* progress = nullptr);
 
-  bool Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target, const GSVector4i final_rect,
-             s32 orig_width, s32 orig_height, s32 native_width, s32 native_height);
+  GPUDevice::PresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
+                                 const GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,
+                                 s32 native_height);
 
 private:
   void ClearStagesWithError(const Error& error);

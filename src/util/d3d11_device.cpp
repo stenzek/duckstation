@@ -639,17 +639,17 @@ void D3D11Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   }
 }
 
-bool D3D11Device::BeginPresent(bool skip_present, u32 clear_color)
+GPUDevice::PresentResult D3D11Device::BeginPresent(bool skip_present, u32 clear_color)
 {
   if (skip_present)
-    return false;
+    return PresentResult::SkipPresent;
 
   if (!m_swap_chain)
   {
     // Note: Really slow on Intel...
     m_context->Flush();
     TrimTexturePool();
-    return false;
+    return PresentResult::SkipPresent;
   }
 
   // Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
@@ -660,7 +660,7 @@ bool D3D11Device::BeginPresent(bool skip_present, u32 clear_color)
   {
     Host::SetFullscreen(false);
     TrimTexturePool();
-    return false;
+    return PresentResult::SkipPresent;
   }
 
   // When using vsync, the time here seems to include the time for the buffer to become available.
@@ -677,7 +677,7 @@ bool D3D11Device::BeginPresent(bool skip_present, u32 clear_color)
   m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_current_depth_target = nullptr;
-  return true;
+  return PresentResult::OK;
 }
 
 void D3D11Device::EndPresent(bool explicit_present)

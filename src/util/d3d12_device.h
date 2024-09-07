@@ -126,7 +126,7 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  bool BeginPresent(bool skip_present, u32 clear_color) override;
+  PresentResult BeginPresent(bool skip_present, u32 clear_color) override;
   void EndPresent(bool explicit_present) override;
   void SubmitPresent() override;
 
@@ -300,6 +300,7 @@ private:
   bool m_allow_tearing_supported = false;
   bool m_using_allow_tearing = false;
   bool m_is_exclusive_fullscreen = false;
+  bool m_device_was_lost = false;
 
   D3D12DescriptorHeapManager m_descriptor_heap_manager;
   D3D12DescriptorHeapManager m_rtv_heap_manager;

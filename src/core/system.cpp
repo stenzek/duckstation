@@ -162,6 +162,7 @@ static void DestroySystem();
 
 static bool CreateGPU(GPURenderer renderer, bool is_switching, Error* error);
 static bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
+static void HandleHostGPUDeviceLost();
 
 /// Updates the throttle period, call when target emulation speed changes.
 static void UpdateThrottlePeriod();
@@ -1200,6 +1201,45 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   // fix up vsync etc
   UpdateSpeedLimiterState();
   return true;
+}
+
+void System::HandleHostGPUDeviceLost()
+{
+  static Common::Timer::Value s_last_gpu_reset_time = 0;
+  static constexpr float MIN_TIME_BETWEEN_RESETS = 15.0f;
+
+  // If we're constantly crashing on something in particular, we don't want to end up in an
+  // endless reset loop.. that'd probably end up leaking memory and/or crashing us for other
+  // reasons. So just abort in such case.
+  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  if (s_last_gpu_reset_time != 0 &&
+      Common::Timer::ConvertValueToSeconds(current_time - s_last_gpu_reset_time) < MIN_TIME_BETWEEN_RESETS)
+  {
+    Panic("Host GPU lost too many times, device is probably completely wedged.");
+  }
+  s_last_gpu_reset_time = current_time;
+
+  // Little bit janky, but because the device is lost, the VRAM readback is going to give us garbage.
+  // So back up what we have, it's probably missing bits, but whatever...
+  DynamicHeapArray<u8> vram_backup(VRAM_SIZE);
+  std::memcpy(vram_backup.data(), g_vram, VRAM_SIZE);
+
+  // Device lost, something went really bad.
+  // Let's just toss out everything, and try to hobble on.
+  if (!RecreateGPU(g_gpu->IsHardwareRenderer() ? g_settings.gpu_renderer : GPURenderer::Software, true, false))
+  {
+    Panic("Failed to recreate GS device after loss.");
+    return;
+  }
+
+  // Restore backed-up VRAM.
+  std::memcpy(g_vram, vram_backup.data(), VRAM_SIZE);
+
+  // First frame after reopening is definitely going to be trash, so skip it.
+  Host::AddIconOSDMessage(
+    "HostGPUDeviceLost", ICON_EMOJI_WARNING,
+    TRANSLATE_STR("System", "Host GPU device encountered an error and has recovered. This may cause broken rendering."),
+    Host::OSD_CRITICAL_ERROR_DURATION);
 }
 
 void System::LoadSettings(bool display_osd_messages)
@@ -5710,13 +5750,13 @@ bool System::PresentDisplay(bool skip_present, bool explicit_present)
   ImGuiManager::RenderOverlayWindows();
   ImGuiManager::RenderDebugWindows();
 
-  bool do_present;
+  GPUDevice::PresentResult pres;
   if (g_gpu && !skip_present)
-    do_present = g_gpu->PresentDisplay();
+    pres = g_gpu->PresentDisplay();
   else
-    do_present = g_gpu_device->BeginPresent(skip_present);
+    pres = g_gpu_device->BeginPresent(skip_present);
 
-  if (do_present)
+  if (pres == GPUDevice::PresentResult::OK)
   {
     g_gpu_device->RenderImGui();
     g_gpu_device->EndPresent(explicit_present);
@@ -5729,13 +5769,16 @@ bool System::PresentDisplay(bool skip_present, bool explicit_present)
   }
   else
   {
+    if (pres == GPUDevice::PresentResult::DeviceLost) [[unlikely]]
+      HandleHostGPUDeviceLost();
+
     // Still need to kick ImGui or it gets cranky.
     ImGui::Render();
   }
 
   ImGuiManager::NewFrame();
 
-  return do_present;
+  return (pres == GPUDevice::PresentResult::OK);
 }
 
 void System::InvalidateDisplay()

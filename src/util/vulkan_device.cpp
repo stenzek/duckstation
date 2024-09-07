@@ -1286,6 +1286,9 @@ bool VulkanDevice::SetGPUTimingEnabled(bool enabled)
 
 void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
 {
+  if (m_device_was_lost)
+    return;
+
   // Wait for this command buffer to be completed.
   static constexpr u32 MAX_TIMEOUTS = 10;
   u32 timeouts = 0;
@@ -1303,7 +1306,7 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
     else if (res != VK_SUCCESS)
     {
       LOG_VULKAN_ERROR(res, TinyString::from_format("vkWaitForFences() for cmdbuffer {} failed: ", index));
-      m_device_is_lost = true;
+      m_device_was_lost = true;
       return;
     }
   }
@@ -1357,7 +1360,7 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
 
 void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present)
 {
-  if (m_device_is_lost)
+  if (m_device_was_lost) [[unlikely]]
     return;
 
   CommandBuffer& resources = m_frame_resources[m_current_frame];
@@ -1416,7 +1419,7 @@ void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
-    m_device_is_lost = true;
+    m_device_was_lost = true;
     return;
   }
 
@@ -2339,28 +2342,23 @@ void VulkanDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   }
 }
 
-bool VulkanDevice::BeginPresent(bool frame_skip, u32 clear_color)
+GPUDevice::PresentResult VulkanDevice::BeginPresent(bool frame_skip, u32 clear_color)
 {
   if (InRenderPass())
     EndRenderPass();
 
+  if (m_device_was_lost) [[unlikely]]
+    return PresentResult::DeviceLost;
+
   if (frame_skip)
-    return false;
+    return PresentResult::SkipPresent;
 
   // If we're running surfaceless, kick the command buffer so we don't run out of descriptors.
   if (!m_swap_chain)
   {
     SubmitCommandBuffer(false);
     TrimTexturePool();
-    return false;
-  }
-
-  // Check if the device was lost.
-  if (m_device_is_lost)
-  {
-    Panic("Fixme"); // TODO
-    TrimTexturePool();
-    return false;
+    return PresentResult::SkipPresent;
   }
 
   VkResult res = m_swap_chain->AcquireNextImage();
@@ -2382,7 +2380,7 @@ bool VulkanDevice::BeginPresent(bool frame_skip, u32 clear_color)
         ERROR_LOG("Failed to recreate surface after loss");
         SubmitCommandBuffer(false);
         TrimTexturePool();
-        return false;
+        return PresentResult::SkipPresent;
       }
 
       res = m_swap_chain->AcquireNextImage();
@@ -2395,12 +2393,12 @@ bool VulkanDevice::BeginPresent(bool frame_skip, u32 clear_color)
       // Still submit the command buffer, otherwise we'll end up with several frames waiting.
       SubmitCommandBuffer(false);
       TrimTexturePool();
-      return false;
+      return PresentResult::SkipPresent;
     }
   }
 
   BeginSwapChainRenderPass(clear_color);
-  return true;
+  return PresentResult::OK;
 }
 
 void VulkanDevice::EndPresent(bool explicit_present)
@@ -2421,6 +2419,9 @@ void VulkanDevice::EndPresent(bool explicit_present)
 void VulkanDevice::SubmitPresent()
 {
   DebugAssert(m_swap_chain);
+  if (m_device_was_lost) [[unlikely]]
+    return;
+
   QueuePresent(m_swap_chain.get());
 }
 

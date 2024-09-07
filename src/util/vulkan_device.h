@@ -142,7 +142,7 @@ public:
 
   void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
 
-  bool BeginPresent(bool skip_present, u32 clear_color) override;
+  PresentResult BeginPresent(bool skip_present, u32 clear_color) override;
   void EndPresent(bool explicit_present) override;
   void SubmitPresent() override;
 
@@ -414,7 +414,7 @@ private:
   u64 m_completed_fence_counter = 0;
   u32 m_current_frame = 0;
 
-  bool m_device_is_lost = false;
+  bool m_device_was_lost = false;
 
   std::unordered_map<RenderPassCacheKey, VkRenderPass, RenderPassCacheKeyHash> m_render_pass_cache;
   GPUFramebufferManager<VkFramebuffer, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;
