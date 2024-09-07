@@ -15,6 +15,8 @@
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
+static constexpr int TIMER_REFRESH_INTERVAL_MS = 100;
+
 DebuggerWindow::DebuggerWindow(QWidget* parent /* = nullptr */)
   : QMainWindow(parent), m_active_memory_region(Bus::MemoryRegion::Count)
 {
@@ -64,11 +66,16 @@ void DebuggerWindow::onDebuggerMessageReported(const QString& message)
   m_ui.statusbar->showMessage(message, 0);
 }
 
+void DebuggerWindow::timerRefresh()
+{
+  m_ui.memoryView->forceRefresh();
+}
+
 void DebuggerWindow::refreshAll()
 {
   m_registers_model->updateValues();
   m_stack_model->invalidateView();
-  m_ui.memoryView->repaint();
+  m_ui.memoryView->forceRefresh();
 
   m_code_model->setPC(CPU::g_state.pc);
   scrollToPC();
@@ -478,6 +485,9 @@ void DebuggerWindow::connectSignals()
 
   connect(m_ui.memorySearch, &QPushButton::clicked, this, &DebuggerWindow::onMemorySearchTriggered);
   connect(m_ui.memorySearchString, &QLineEdit::textChanged, this, &DebuggerWindow::onMemorySearchStringChanged);
+
+  connect(&m_refresh_timer, &QTimer::timeout, this, &DebuggerWindow::timerRefresh);
+  m_refresh_timer.setInterval(TIMER_REFRESH_INTERVAL_MS);
 }
 
 void DebuggerWindow::disconnectSignals()
@@ -514,28 +524,35 @@ void DebuggerWindow::createModels()
 
 void DebuggerWindow::setUIEnabled(bool enabled, bool allow_pause)
 {
+  const bool memory_view_enabled = (enabled || allow_pause);
+
   m_ui.actionPause->setEnabled(allow_pause);
 
   // Disable all UI elements that depend on execution state
   m_ui.codeView->setEnabled(enabled);
   m_ui.registerView->setEnabled(enabled);
   m_ui.stackView->setEnabled(enabled);
-  m_ui.memoryView->setEnabled(enabled);
+  m_ui.memoryView->setEnabled(memory_view_enabled);
   m_ui.actionRunToCursor->setEnabled(enabled);
   m_ui.actionAddBreakpoint->setEnabled(enabled);
   m_ui.actionToggleBreakpoint->setEnabled(enabled);
   m_ui.actionClearBreakpoints->setEnabled(enabled);
-  m_ui.actionDumpAddress->setEnabled(enabled);
+  m_ui.actionDumpAddress->setEnabled(memory_view_enabled);
   m_ui.actionStepInto->setEnabled(enabled);
   m_ui.actionStepOver->setEnabled(enabled);
   m_ui.actionStepOut->setEnabled(enabled);
   m_ui.actionGoToAddress->setEnabled(enabled);
   m_ui.actionGoToPC->setEnabled(enabled);
   m_ui.actionTrace->setEnabled(enabled);
-  m_ui.memoryRegionRAM->setEnabled(enabled);
-  m_ui.memoryRegionEXP1->setEnabled(enabled);
-  m_ui.memoryRegionScratchpad->setEnabled(enabled);
-  m_ui.memoryRegionBIOS->setEnabled(enabled);
+  m_ui.memoryRegionRAM->setEnabled(memory_view_enabled);
+  m_ui.memoryRegionEXP1->setEnabled(memory_view_enabled);
+  m_ui.memoryRegionScratchpad->setEnabled(memory_view_enabled);
+  m_ui.memoryRegionBIOS->setEnabled(memory_view_enabled);
+
+  // Partial/timer refreshes only active when not paused.
+  const bool timer_active = (!enabled && allow_pause);
+  if (m_refresh_timer.isActive() != timer_active)
+    timer_active ? m_refresh_timer.start() : m_refresh_timer.stop();
 }
 
 void DebuggerWindow::saveCurrentState()

@@ -125,7 +125,7 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
       {
         m_selected_address--;
         m_editing_nibble = -1;
-        viewport()->update();
+        forceRefresh();
       }
     }
     else
@@ -139,7 +139,7 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
           expandCurrentDataToInclude(m_selected_address);
           std::memcpy(static_cast<unsigned char*>(m_data) + m_selected_address, &ch, sizeof(unsigned char));
           m_selected_address = std::min(m_selected_address + 1, m_data_size - 1);
-          viewport()->update();
+          forceRefresh();
         }
         else
         {
@@ -165,7 +165,7 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
               m_selected_address = std::min(m_selected_address + 1, m_data_size - 1);
             }
 
-            viewport()->update();
+            forceRefresh();
           }
         }
       }
@@ -381,7 +381,7 @@ void MemoryViewWidget::updateSelectedByte(const QPoint& pos)
     m_selected_address = new_selection;
     m_selection_was_ascii = new_ascii;
     m_editing_nibble = -1;
-    viewport()->update();
+    forceRefresh();
   }
 }
 
@@ -419,6 +419,11 @@ void MemoryViewWidget::saveCurrentData()
   m_last_data_start_offset = m_start_offset;
   m_last_data.resize(size);
   std::memcpy(m_last_data.data(), static_cast<const u8*>(m_data) + m_start_offset, size);
+  forceRefresh();
+}
+
+void MemoryViewWidget::forceRefresh()
+{
   viewport()->update();
 }
 
@@ -447,5 +452,8 @@ void MemoryViewWidget::adjustContent()
   verticalScrollBar()->setRange(0, lineCount - m_rows_visible);
   verticalScrollBar()->setPageStep(m_rows_visible);
 
-  viewport()->update();
+  expandCurrentDataToInclude(m_start_offset);
+  expandCurrentDataToInclude(m_end_offset);
+
+  forceRefresh();
 }
