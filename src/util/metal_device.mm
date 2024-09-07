@@ -2312,13 +2312,10 @@ id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
   }
 }
 
-GPUDevice::PresentResult MetalDevice::BeginPresent(bool skip_present, u32 clear_color)
+GPUDevice::PresentResult MetalDevice::BeginPresent(u32 clear_color)
 {
   @autoreleasepool
   {
-    if (skip_present)
-      return PresentResult::SkipPresent;
-
     if (m_layer == nil)
     {
       TrimTexturePool();

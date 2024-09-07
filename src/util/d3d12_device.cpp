@@ -1123,16 +1123,13 @@ void D3D12Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   }
 }
 
-GPUDevice::PresentResult D3D12Device::BeginPresent(bool frame_skip, u32 clear_color)
+GPUDevice::PresentResult D3D12Device::BeginPresent(u32 clear_color)
 {
   if (InRenderPass())
     EndRenderPass();
 
   if (m_device_was_lost) [[unlikely]]
     return PresentResult::DeviceLost;
-
-  if (frame_skip)
-    return PresentResult::SkipPresent;
 
   // If we're running surfaceless, kick the command buffer so we don't run out of descriptors.
   if (!m_swap_chain)

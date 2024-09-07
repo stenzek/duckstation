@@ -2166,7 +2166,7 @@ void System::FrameDone()
     const bool explicit_present = (throttle_before_present && g_gpu_device->GetFeatures().explicit_present);
     if (explicit_present)
     {
-      const bool do_present = PresentDisplay(false, true);
+      const bool do_present = PresentDisplay(true);
       Throttle(current_time);
       if (do_present)
         g_gpu_device->SubmitPresent();
@@ -2176,7 +2176,7 @@ void System::FrameDone()
       if (throttle_before_present)
         Throttle(current_time);
 
-      PresentDisplay(false, false);
+      PresentDisplay(false);
 
       if (!throttle_before_present && s_throttler_enabled && !IsExecutionInterrupted())
         Throttle(current_time);
@@ -5734,31 +5734,23 @@ void System::HostDisplayResized()
   g_gpu->UpdateResolutionScale();
 }
 
-bool System::PresentDisplay(bool skip_present, bool explicit_present)
+bool System::PresentDisplay(bool explicit_present)
 {
   // acquire for IO.MousePos.
   std::atomic_thread_fence(std::memory_order_acquire);
 
-  if (!skip_present)
-  {
-    FullscreenUI::Render();
-    ImGuiManager::RenderTextOverlays();
-    ImGuiManager::RenderOSDMessages();
+  FullscreenUI::Render();
+  ImGuiManager::RenderTextOverlays();
+  ImGuiManager::RenderOSDMessages();
 
-    if (s_state == State::Running)
-      ImGuiManager::RenderSoftwareCursors();
-  }
+  if (s_state == State::Running)
+    ImGuiManager::RenderSoftwareCursors();
 
   // Debug windows are always rendered, otherwise mouse input breaks on skip.
   ImGuiManager::RenderOverlayWindows();
   ImGuiManager::RenderDebugWindows();
 
-  GPUDevice::PresentResult pres;
-  if (g_gpu && !skip_present)
-    pres = g_gpu->PresentDisplay();
-  else
-    pres = g_gpu_device->BeginPresent(skip_present);
-
+  const GPUDevice::PresentResult pres = g_gpu ? g_gpu->PresentDisplay() : g_gpu_device->BeginPresent();
   if (pres == GPUDevice::PresentResult::OK)
   {
     g_gpu_device->RenderImGui();
@@ -5786,7 +5778,7 @@ bool System::PresentDisplay(bool skip_present, bool explicit_present)
 
 void System::InvalidateDisplay()
 {
-  PresentDisplay(false, false);
+  PresentDisplay(false);
 
   if (g_gpu)
     g_gpu->RestoreDeviceContext();
