@@ -53,7 +53,10 @@ void MemoryViewWidget::setData(size_t address_offset, void* data_ptr, size_t dat
   m_data_editable = data_editable;
   m_address_offset = address_offset;
   m_selected_address = INVALID_SELECTED_ADDRESS;
+  m_last_data_start_offset = 0;
+  m_last_data.clear();
   adjustContent();
+  saveCurrentData();
 }
 
 void MemoryViewWidget::setHighlightRange(size_t start, size_t end)
@@ -133,6 +136,7 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
         const char ch = key_text[0].toLatin1();
         if (m_selection_was_ascii)
         {
+          expandCurrentDataToInclude(m_selected_address);
           std::memcpy(static_cast<unsigned char*>(m_data) + m_selected_address, &ch, sizeof(unsigned char));
           m_selected_address = std::min(m_selected_address + 1, m_data_size - 1);
           viewport()->update();
@@ -149,6 +153,8 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
           if (nibble >= 0)
           {
             m_editing_nibble++;
+
+            expandCurrentDataToInclude(m_selected_address);
 
             unsigned char* pdata = static_cast<unsigned char*>(m_data) + m_selected_address;
             *pdata = (*pdata & ~(0xf0 >> (m_editing_nibble * 4))) | (nibble << ((1 - m_editing_nibble) * 4));
@@ -185,7 +191,7 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
   const QColor highlight_color(100, 100, 0);
   const QColor selected_color = viewport()->palette().color(QPalette::Highlight);
   const QColor text_color = viewport()->palette().color(QPalette::WindowText);
-  const QColor edited_color(255, 0, 0);
+  const QColor edited_color(240, 30, 30);
   const int offsetX = horizontalScrollBar()->value();
 
   int y = m_char_height;
@@ -252,7 +258,18 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
 
       if (m_selected_address != offset || m_editing_nibble != 0 || m_selection_was_ascii) [[likely]]
       {
-        painter.drawText(x, y, QString::asprintf("%02X", value));
+        const QString text = QString::asprintf("%02X", value);
+        const size_t view_offset = offset - m_last_data_start_offset; // may underflow, but unsigned so it's okay
+        if (view_offset < m_last_data.size() && value != m_last_data[view_offset])
+        {
+          painter.setPen(edited_color);
+          painter.drawText(x, y, text);
+          painter.setPen(text_color);
+        }
+        else
+        {
+          painter.drawText(x, y, text);
+        }
       }
       else
       {
@@ -298,9 +315,18 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
       else if (offset >= m_highlight_start && offset < m_highlight_end)
         painter.fillRect(x, y - m_char_height + 4, 2 * m_char_width, m_char_height, highlight_color);
 
-      if (!std::isprint(value))
-        value = '.';
-      painter.drawText(x, y, static_cast<QChar>(value));
+      const QChar print_char = std::isprint(value) ? static_cast<QChar>(value) : static_cast<QChar>('.');
+      const size_t view_offset = offset - m_last_data_start_offset; // may underflow, but unsigned so it's okay
+      if (view_offset < m_last_data.size() && value != m_last_data[view_offset])
+      {
+        painter.setPen(edited_color);
+        painter.drawText(x, y, print_char);
+        painter.setPen(text_color);
+      }
+      else
+      {
+        painter.drawText(x, y, print_char);
+      }
       x += 2 * m_char_width;
     }
     y += m_char_height;
@@ -354,8 +380,46 @@ void MemoryViewWidget::updateSelectedByte(const QPoint& pos)
   {
     m_selected_address = new_selection;
     m_selection_was_ascii = new_ascii;
+    m_editing_nibble = -1;
     viewport()->update();
   }
+}
+
+void MemoryViewWidget::expandCurrentDataToInclude(size_t offset)
+{
+  offset = std::min(offset, m_data_size - 1);
+  if (offset < m_last_data_start_offset)
+  {
+    const size_t add_bytes = m_last_data_start_offset - offset;
+    const size_t old_size = m_last_data.size();
+    m_last_data.resize(old_size + add_bytes);
+    std::memmove(&m_last_data[add_bytes], &m_last_data[0], old_size);
+    std::memcpy(&m_last_data[0], static_cast<const u8*>(m_data) + offset, add_bytes);
+    m_last_data_start_offset = offset;
+  }
+  else if (offset >= (m_last_data_start_offset + m_last_data.size()))
+  {
+    const size_t new_size = m_last_data_start_offset + offset + 1;
+    const size_t old_size = m_last_data.size();
+    m_last_data.resize(new_size);
+    std::memcpy(&m_last_data[old_size], static_cast<const u8*>(m_data) + m_last_data_start_offset + old_size,
+                new_size - old_size);
+  }
+}
+
+void MemoryViewWidget::saveCurrentData()
+{
+  if (!m_data)
+  {
+    m_last_data.clear();
+    return;
+  }
+
+  const size_t size = m_end_offset - m_start_offset;
+  m_last_data_start_offset = m_start_offset;
+  m_last_data.resize(size);
+  std::memcpy(m_last_data.data(), static_cast<const u8*>(m_data) + m_start_offset, size);
+  viewport()->update();
 }
 
 void MemoryViewWidget::adjustContent()
