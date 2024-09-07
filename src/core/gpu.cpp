@@ -2772,8 +2772,8 @@ void GPU::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* h
   {
     if (mode == DisplayScreenshotMode::InternalResolution)
     {
-      const u32 draw_width = static_cast<u32>(draw_rect->width());
-      const u32 draw_height = static_cast<u32>(draw_rect->height());
+      const u32 draw_width = static_cast<u32>(display_rect->width());
+      const u32 draw_height = static_cast<u32>(display_rect->height());
 
       // If internal res, scale the computed draw rectangle to the internal res.
       // We re-use the draw rect because it's already been AR corrected.
