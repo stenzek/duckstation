@@ -106,7 +106,6 @@ struct Settings
   u8 gpu_multisamples = 1;
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
-  bool gpu_threaded_presentation : 1 = DEFAULT_THREADED_PRESENTATION;
   bool gpu_use_debug_device : 1 = false;
   bool gpu_disable_shader_cache : 1 = false;
   bool gpu_disable_dual_source_blend : 1 = false;
@@ -540,11 +539,9 @@ struct Settings
 #ifndef __ANDROID__
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = true;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
-  static constexpr bool DEFAULT_THREADED_PRESENTATION = false;
 #else
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
-  static constexpr bool DEFAULT_THREADED_PRESENTATION = true;
 #endif
 
   // PINE uses a concept of "slot" to be able to communicate with multiple

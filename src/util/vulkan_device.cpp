@@ -1268,7 +1268,6 @@ void VulkanDevice::WaitForFenceCounter(u64 fence_counter)
 
 void VulkanDevice::WaitForGPUIdle()
 {
-  WaitForPresentComplete();
   vkDeviceWaitIdle(m_device);
 }
 
@@ -1287,13 +1286,6 @@ bool VulkanDevice::SetGPUTimingEnabled(bool enabled)
 
 void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
 {
-  // We might be waiting for the buffer we just submitted to the worker thread.
-  if (m_queued_present.command_buffer_index == index && !m_present_done.load(std::memory_order_acquire))
-  {
-    WARNING_LOG("Waiting for threaded submission of cmdbuffer {}", index);
-    WaitForPresentComplete();
-  }
-
   // Wait for this command buffer to be completed.
   static constexpr u32 MAX_TIMEOUTS = 10;
   u32 timeouts = 0;
@@ -1311,7 +1303,7 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
     else if (res != VK_SUCCESS)
     {
       LOG_VULKAN_ERROR(res, TinyString::from_format("vkWaitForFences() for cmdbuffer {} failed: ", index));
-      m_last_submit_failed.store(true, std::memory_order_release);
+      m_device_is_lost = true;
       return;
     }
   }
@@ -1363,10 +1355,9 @@ void VulkanDevice::WaitForCommandBufferCompletion(u32 index)
   }
 }
 
-void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present,
-                                             bool submit_on_thread)
+void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present)
 {
-  if (m_last_submit_failed.load(std::memory_order_acquire))
+  if (m_device_is_lost)
     return;
 
   CommandBuffer& resources = m_frame_resources[m_current_frame];
@@ -1399,27 +1390,6 @@ void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain
   // This command buffer now has commands, so can't be re-used without waiting.
   resources.needs_fence_wait = true;
 
-  std::unique_lock<std::mutex> lock(m_present_mutex);
-  WaitForPresentComplete(lock);
-
-  if (!submit_on_thread || explicit_present || !m_present_thread.joinable())
-  {
-    DoSubmitCommandBuffer(m_current_frame, present_swap_chain);
-    if (present_swap_chain && !explicit_present)
-      DoPresent(present_swap_chain);
-    return;
-  }
-
-  m_queued_present.command_buffer_index = m_current_frame;
-  m_queued_present.swap_chain = present_swap_chain;
-  m_present_done.store(false, std::memory_order_release);
-  m_present_queued_cv.notify_one();
-}
-
-void VulkanDevice::DoSubmitCommandBuffer(u32 index, VulkanSwapChain* present_swap_chain)
-{
-  CommandBuffer& resources = m_frame_resources[index];
-
   uint32_t wait_bits = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO,
                               nullptr,
@@ -1442,16 +1412,19 @@ void VulkanDevice::DoSubmitCommandBuffer(u32 index, VulkanSwapChain* present_swa
     submit_info.signalSemaphoreCount = 1;
   }
 
-  const VkResult res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
+  res = vkQueueSubmit(m_graphics_queue, 1, &submit_info, resources.fence);
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkQueueSubmit failed: ");
-    m_last_submit_failed.store(true, std::memory_order_release);
+    m_device_is_lost = true;
     return;
   }
+
+  if (present_swap_chain && !explicit_present)
+    QueuePresent(present_swap_chain);
 }
 
-void VulkanDevice::DoPresent(VulkanSwapChain* present_swap_chain)
+void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
 {
   const VkPresentInfoKHR present_info = {VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
                                          nullptr,
@@ -1480,65 +1453,6 @@ void VulkanDevice::DoPresent(VulkanSwapChain* present_swap_chain)
   // submission. Don't care if it fails, we'll deal with that at the presentation call site.
   // Credit to dxvk for the idea.
   present_swap_chain->AcquireNextImage();
-}
-
-void VulkanDevice::WaitForPresentComplete()
-{
-  if (m_present_done.load(std::memory_order_acquire))
-    return;
-
-  std::unique_lock<std::mutex> lock(m_present_mutex);
-  WaitForPresentComplete(lock);
-}
-
-void VulkanDevice::WaitForPresentComplete(std::unique_lock<std::mutex>& lock)
-{
-  if (m_present_done.load(std::memory_order_acquire))
-    return;
-
-  m_present_done_cv.wait(lock, [this]() { return m_present_done.load(std::memory_order_acquire); });
-}
-
-void VulkanDevice::PresentThread()
-{
-  std::unique_lock<std::mutex> lock(m_present_mutex);
-  while (!m_present_thread_done.load(std::memory_order_acquire))
-  {
-    m_present_queued_cv.wait(lock, [this]() {
-      return !m_present_done.load(std::memory_order_acquire) || m_present_thread_done.load(std::memory_order_acquire);
-    });
-
-    if (m_present_done.load(std::memory_order_acquire))
-      continue;
-
-    DoSubmitCommandBuffer(m_queued_present.command_buffer_index, m_queued_present.swap_chain);
-    if (m_queued_present.swap_chain)
-      DoPresent(m_queued_present.swap_chain);
-    m_present_done.store(true, std::memory_order_release);
-    m_present_done_cv.notify_one();
-  }
-}
-
-void VulkanDevice::StartPresentThread()
-{
-  DebugAssert(!m_present_thread.joinable());
-  m_present_thread_done.store(false, std::memory_order_release);
-  m_present_thread = std::thread(&VulkanDevice::PresentThread, this);
-}
-
-void VulkanDevice::StopPresentThread()
-{
-  if (!m_present_thread.joinable())
-    return;
-
-  {
-    std::unique_lock<std::mutex> lock(m_present_mutex);
-    WaitForPresentComplete(lock);
-    m_present_thread_done.store(true, std::memory_order_release);
-    m_present_queued_cv.notify_one();
-  }
-
-  m_present_thread.join();
 }
 
 void VulkanDevice::MoveToNextCommandBuffer()
@@ -1602,7 +1516,7 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion)
   DebugAssert(!InRenderPass());
 
   const u32 current_frame = m_current_frame;
-  EndAndSubmitCommandBuffer(nullptr, false, false);
+  EndAndSubmitCommandBuffer(nullptr, false);
   MoveToNextCommandBuffer();
 
   if (wait_for_completion)
@@ -1627,11 +1541,6 @@ void VulkanDevice::SubmitCommandBufferAndRestartRenderPass(const std::string_vie
 
   SetPipeline(pl);
   BeginRenderPass();
-}
-
-bool VulkanDevice::CheckLastSubmitFail()
-{
-  return m_last_submit_failed.load(std::memory_order_acquire);
 }
 
 void VulkanDevice::DeferBufferDestruction(VkBuffer object, VmaAllocation allocation)
@@ -1987,9 +1896,8 @@ bool VulkanDevice::HasSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
-bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presentation,
-                                std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
-                                Error* error)
+bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
+                                FeatureMask disabled_features, Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
   bool enable_debug_utils = m_debug_device;
@@ -2097,9 +2005,6 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, bool threaded_presenta
   if (!CreateAllocator() || !CreatePersistentDescriptorPool() || !CreateCommandBuffers() || !CreatePipelineLayouts())
     return false;
 
-  if (threaded_presentation)
-    StartPresentThread();
-
   m_exclusive_fullscreen_control = exclusive_fullscreen_control;
 
   if (surface != VK_NULL_HANDLE)
@@ -2148,7 +2053,6 @@ void VulkanDevice::DestroyDevice()
   if (m_device != VK_NULL_HANDLE)
     WaitForGPUIdle();
 
-  StopPresentThread();
   m_swap_chain.reset();
 
   if (m_null_texture)
@@ -2451,11 +2355,8 @@ bool VulkanDevice::BeginPresent(bool frame_skip, u32 clear_color)
     return false;
   }
 
-  // Previous frame needs to be presented before we can acquire the swap chain.
-  WaitForPresentComplete();
-
   // Check if the device was lost.
-  if (CheckLastSubmitFail())
+  if (m_device_is_lost)
   {
     Panic("Fixme"); // TODO
     TrimTexturePool();
@@ -2511,7 +2412,7 @@ void VulkanDevice::EndPresent(bool explicit_present)
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, m_swap_chain->GetCurrentImage(), GPUTexture::Type::RenderTarget,
                                                 0, 1, 0, 1, VulkanTexture::Layout::ColorAttachment,
                                                 VulkanTexture::Layout::PresentSrc);
-  EndAndSubmitCommandBuffer(m_swap_chain.get(), explicit_present, !m_swap_chain->IsPresentModeSynchronizing());
+  EndAndSubmitCommandBuffer(m_swap_chain.get(), explicit_present);
   MoveToNextCommandBuffer();
   InvalidateCachedState();
   TrimTexturePool();
@@ -2520,7 +2421,7 @@ void VulkanDevice::EndPresent(bool explicit_present)
 void VulkanDevice::SubmitPresent()
 {
   DebugAssert(m_swap_chain);
-  DoPresent(m_swap_chain.get());
+  QueuePresent(m_swap_chain.get());
 }
 
 #ifdef _DEBUG
@@ -3185,7 +3086,7 @@ void VulkanDevice::RenderBlankFrame()
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
                                                 VulkanTexture::Layout::TransferDst, VulkanTexture::Layout::PresentSrc);
 
-  EndAndSubmitCommandBuffer(m_swap_chain.get(), false, !m_swap_chain->IsPresentModeSynchronizing());
+  EndAndSubmitCommandBuffer(m_swap_chain.get(), false);
   MoveToNextCommandBuffer();
 
   InvalidateCachedState();

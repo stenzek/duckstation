@@ -63,9 +63,8 @@ bool D3D11Device::HasSurface() const
   return static_cast<bool>(m_swap_chain);
 }
 
-bool D3D11Device::CreateDevice(std::string_view adapter, bool threaded_presentation,
-                               std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
-                               Error* error)
+bool D3D11Device::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
+                               FeatureMask disabled_features, Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
 

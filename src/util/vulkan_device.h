@@ -17,9 +17,7 @@
 #include <deque>
 #include <functional>
 #include <memory>
-#include <mutex>
 #include <string>
-#include <thread>
 #include <unordered_map>
 #include <vector>
 
@@ -234,9 +232,8 @@ public:
   void UnbindTextureBuffer(VulkanTextureBuffer* buf);
 
 protected:
-  bool CreateDevice(std::string_view adapter, bool threaded_presentation,
-                    std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features,
-                    Error* error) override;
+  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
+                    FeatureMask disabled_features, Error* error) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data) override;
@@ -329,11 +326,6 @@ private:
   bool IsDeviceImgTec() const;
   bool IsBrokenMobileDriver() const;
 
-  void EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present, bool submit_on_thread);
-  void MoveToNextCommandBuffer();
-  void WaitForPresentComplete();
-  bool CheckLastSubmitFail();
-
   using ExtensionList = std::vector<const char*>;
   static bool SelectInstanceExtensions(ExtensionList* extension_list, const WindowInfo& wi, OptionalExtensions* oe,
                                        bool enable_debug_utils);
@@ -395,13 +387,9 @@ private:
 
   void BeginCommandBuffer(u32 index);
   void WaitForCommandBufferCompletion(u32 index);
-
-  void DoSubmitCommandBuffer(u32 index, VulkanSwapChain* present_swap_chain);
-  void DoPresent(VulkanSwapChain* present_swap_chain);
-  void WaitForPresentComplete(std::unique_lock<std::mutex>& lock);
-  void PresentThread();
-  void StartPresentThread();
-  void StopPresentThread();
+  void EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain, bool explicit_present);
+  void MoveToNextCommandBuffer();
+  void QueuePresent(VulkanSwapChain* present_swap_chain);
 
   VkInstance m_instance = VK_NULL_HANDLE;
   VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
@@ -426,21 +414,7 @@ private:
   u64 m_completed_fence_counter = 0;
   u32 m_current_frame = 0;
 
-  std::atomic_bool m_last_submit_failed{false};
-  std::atomic_bool m_present_done{true};
-  std::mutex m_present_mutex;
-  std::condition_variable m_present_queued_cv;
-  std::condition_variable m_present_done_cv;
-  std::thread m_present_thread;
-  std::atomic_bool m_present_thread_done{false};
-
-  struct QueuedPresent
-  {
-    VulkanSwapChain* swap_chain;
-    u32 command_buffer_index;
-  };
-
-  QueuedPresent m_queued_present = {nullptr, 0xFFFFFFFFu};
+  bool m_device_is_lost = false;
 
   std::unordered_map<RenderPassCacheKey, VkRenderPass, RenderPassCacheKeyHash> m_render_pass_cache;
   GPUFramebufferManager<VkFramebuffer, CreateFramebuffer, DestroyFramebuffer> m_framebuffer_manager;

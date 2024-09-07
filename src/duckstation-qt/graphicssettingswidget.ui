@@ -341,24 +341,17 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="threadedPresentation">
-              <property name="text">
-               <string>Threaded Presentation</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="blitSwapChain">
-              <property name="text">
-               <string>Use Blit Swap Chain</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="0">
              <widget class="QCheckBox" name="stretchDisplayVertically">
               <property name="text">
                <string>Stretch Vertically</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="blitSwapChain">
+              <property name="text">
+               <string>Use Blit Swap Chain</string>
               </property>
              </widget>
             </item>

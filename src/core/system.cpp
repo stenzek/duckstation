@@ -4173,7 +4173,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   if (IsValid() &&
       (g_settings.gpu_renderer != old_settings.gpu_renderer ||
        g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
-       g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation ||
        g_settings.gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
        g_settings.gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
        g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
@@ -4186,7 +4185,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     // if debug device/threaded presentation change, we need to recreate the whole display
     const bool recreate_device =
       (g_settings.gpu_use_debug_device != old_settings.gpu_use_debug_device ||
-       g_settings.gpu_threaded_presentation != old_settings.gpu_threaded_presentation ||
        g_settings.gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
        g_settings.gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
        g_settings.gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||

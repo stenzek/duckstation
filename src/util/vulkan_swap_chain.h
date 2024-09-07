@@ -69,10 +69,6 @@ public:
     return &m_semaphores[m_current_semaphore].rendering_finished_semaphore;
   }
 
-  // Returns true if the current present mode is synchronizing (adaptive or hard).
-  ALWAYS_INLINE bool IsPresentModeSynchronizing() const { return (m_present_mode == VK_PRESENT_MODE_FIFO_KHR); }
-  ALWAYS_INLINE VkPresentModeKHR GetPresentMode() const { return m_present_mode; }
-
   VkResult AcquireNextImage();
   void ReleaseCurrentImage();
   void ResetImageAcquireResult();

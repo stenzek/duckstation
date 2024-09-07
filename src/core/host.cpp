@@ -295,13 +295,12 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
     disabled_features |= GPUDevice::FEATURE_MASK_RASTER_ORDER_VIEWS;
 
   Error create_error;
-  if (!g_gpu_device || !g_gpu_device->Create(g_settings.gpu_adapter,
-                                             g_settings.gpu_disable_shader_cache ? std::string_view() :
-                                                                                   std::string_view(EmuFolders::Cache),
-                                             SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device,
-                                             System::GetEffectiveVSyncMode(), System::ShouldAllowPresentThrottle(),
-                                             g_settings.gpu_threaded_presentation, exclusive_fullscreen_control,
-                                             static_cast<GPUDevice::FeatureMask>(disabled_features), &create_error))
+  if (!g_gpu_device || !g_gpu_device->Create(
+                         g_settings.gpu_adapter,
+                         g_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
+                         SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, System::GetEffectiveVSyncMode(),
+                         System::ShouldAllowPresentThrottle(), exclusive_fullscreen_control,
+                         static_cast<GPUDevice::FeatureMask>(disabled_features), &create_error))
   {
     ERROR_LOG("Failed to create GPU device: {}", create_error.GetDescription());
     if (g_gpu_device)
