@@ -2063,8 +2063,7 @@ GPUDevice::PresentResult GPU::RenderDisplay(GPUTexture* target, const GSVector4i
   {
     if (target)
       g_gpu_device->SetRenderTarget(target);
-    else if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(false);
-             pres != GPUDevice::PresentResult::OK)
+    else if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(); pres != GPUDevice::PresentResult::OK)
       return pres;
   }
 

@@ -740,16 +740,12 @@ void OpenGLDevice::DestroyBuffers()
   m_vertex_buffer.reset();
 }
 
-GPUDevice::PresentResult OpenGLDevice::BeginPresent(bool skip_present, u32 clear_color)
+GPUDevice::PresentResult OpenGLDevice::BeginPresent(u32 clear_color)
 {
-  if (skip_present || m_window_info.type == WindowInfo::Type::Surfaceless)
+  if (m_window_info.type == WindowInfo::Type::Surfaceless)
   {
-    if (!skip_present)
-    {
-      glFlush();
-      TrimTexturePool();
-    }
-
+    glFlush();
+    TrimTexturePool();
     return PresentResult::SkipPresent;
   }
 

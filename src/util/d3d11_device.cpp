@@ -639,11 +639,8 @@ void D3D11Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
   }
 }
 
-GPUDevice::PresentResult D3D11Device::BeginPresent(bool skip_present, u32 clear_color)
+GPUDevice::PresentResult D3D11Device::BeginPresent(u32 clear_color)
 {
-  if (skip_present)
-    return PresentResult::SkipPresent;
-
   if (!m_swap_chain)
   {
     // Note: Really slow on Intel...

@@ -177,7 +177,7 @@ GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* input_col
   // Assumes final stage has been cleared already.
   if (!final_target)
   {
-    if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(false); pres != GPUDevice::PresentResult::OK)
+    if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(); pres != GPUDevice::PresentResult::OK)
       return pres;
   }
   else

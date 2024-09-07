@@ -160,7 +160,7 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
 
   // TODO: Glass effect or something.
 
-  if (g_gpu_device->BeginPresent(false) == GPUDevice::PresentResult::OK)
+  if (g_gpu_device->BeginPresent() == GPUDevice::PresentResult::OK)
   {
     g_gpu_device->RenderImGui();
     g_gpu_device->EndPresent(false);
