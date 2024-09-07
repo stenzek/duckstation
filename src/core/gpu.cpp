@@ -1985,6 +1985,13 @@ void GPU::SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buffer, s32 v
                             s32 view_height)
 {
   DebugAssert(texture);
+
+  if (g_settings.display_auto_resize_window &&
+      (view_width != m_display_texture_view_width || view_height != m_display_texture_view_height))
+  {
+    System::RequestDisplaySize();
+  }
+
   m_display_texture = texture;
   m_display_depth_buffer = depth_buffer;
   m_display_texture_view_x = view_x;

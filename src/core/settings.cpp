@@ -318,6 +318,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
   display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
+  display_auto_resize_window = si.GetBoolValue("Display", "AutoResizeWindow", false);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
 
   save_state_compression = ParseSaveStateCompressionModeName(
@@ -593,6 +594,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   }
 
   si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);
+  si.SetBoolValue("Display", "AutoResizeWindow", display_auto_resize_window);
 
   si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
   si.SetStringValue("CDROM", "MechaconVersion", GetCDROMMechVersionName(cdrom_mechacon_version));
