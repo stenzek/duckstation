@@ -34,6 +34,7 @@ protected:
 
 public Q_SLOTS:
   void saveCurrentData();
+  void forceRefresh();
 
 private Q_SLOTS:
   void adjustContent();

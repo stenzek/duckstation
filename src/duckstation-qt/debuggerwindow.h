@@ -8,6 +8,7 @@
 #include "core/cpu_core.h"
 #include "core/types.h"
 
+#include <QtCore/QTimer>
 #include <QtWidgets/QMainWindow>
 #include <memory>
 #include <optional>
@@ -41,6 +42,7 @@ private Q_SLOTS:
   void onSystemResumed();
   void onDebuggerMessageReported(const QString& message);
 
+  void timerRefresh();
   void refreshAll();
 
   void scrollToPC();
@@ -88,6 +90,8 @@ private:
   std::unique_ptr<DebuggerCodeModel> m_code_model;
   std::unique_ptr<DebuggerRegistersModel> m_registers_model;
   std::unique_ptr<DebuggerStackModel> m_stack_model;
+
+  QTimer m_refresh_timer;
 
   Bus::MemoryRegion m_active_memory_region;
 
