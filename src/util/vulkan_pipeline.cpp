@@ -5,8 +5,10 @@
 #include "vulkan_builders.h"
 #include "vulkan_device.h"
 
+#include "common/align.h"
 #include "common/assert.h"
 #include "common/error.h"
+#include "common/heap_array.h"
 #include "common/log.h"
 
 Log_SetChannel(VulkanDevice);
@@ -29,6 +31,15 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage s
                                                                 Error* error)
 {
   VkShaderModule mod;
+
+  // In the very rare event that the pointer isn't word-aligned...
+  DynamicHeapArray<u32> data_copy;
+  if (Common::IsAlignedPow2(reinterpret_cast<uintptr_t>(data.data()), 4)) [[unlikely]]
+  {
+    data_copy.resize((data.size() + (sizeof(u32) - 1)) / sizeof(u32));
+    std::memcpy(data_copy.data(), data.data(), data.size());
+    data = std::span<const u8>(reinterpret_cast<const u8*>(data_copy.data()), data.size());
+  }
 
   const VkShaderModuleCreateInfo ci = {VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO, nullptr, 0, data.size(),
                                        reinterpret_cast<const u32*>(data.data())};
