@@ -3,16 +3,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#include "effect_lexer.hpp"
-#include "effect_codegen.hpp"
-#include <cmath> // fmod
+#include "effect_expression.hpp"
+#include <cmath> // std::fmod
 #include <cassert>
-#include <cstring> // memcpy, memset
-#include <algorithm> // std::min, std::max
+#include <cstring> // std::memcpy, std::memset
+#include <algorithm> // std::max, std::min
 
 reshadefx::type reshadefx::type::merge(const type &lhs, const type &rhs)
 {
-	type result = { std::max(lhs.base, rhs.base) };
+	type result;
+	result.base = std::max(lhs.base, rhs.base);
 
 	// Non-numeric types cannot be vectors or matrices
 	if (!result.is_numeric())
@@ -35,10 +35,13 @@ reshadefx::type reshadefx::type::merge(const type &lhs, const type &rhs)
 	// Some qualifiers propagate to the result
 	result.qualifiers = (lhs.qualifiers & type::q_precise) | (rhs.qualifiers & type::q_precise);
 
-	// In case this is a structure, assume they are the same
-	result.definition = rhs.definition;
-	assert(lhs.definition == rhs.definition || lhs.definition == 0);
+	// Cannot merge array types, assume no arrays
+	result.array_length = 0;
 	assert(lhs.array_length == 0 && rhs.array_length == 0);
+
+	// In case this is a structure, assume they are the same
+	result.struct_definition = rhs.struct_definition;
+	assert(lhs.struct_definition == rhs.struct_definition || lhs.struct_definition == 0);
 
 	return result;
 }
@@ -48,101 +51,101 @@ std::string reshadefx::type::description() const
 	std::string result;
 	switch (base)
 	{
-	case reshadefx::type::t_void:
+	case t_void:
 		result = "void";
 		break;
-	case reshadefx::type::t_bool:
+	case t_bool:
 		result = "bool";
 		break;
-	case reshadefx::type::t_min16int:
+	case t_min16int:
 		result = "min16int";
 		break;
-	case reshadefx::type::t_int:
+	case t_int:
 		result = "int";
 		break;
-	case reshadefx::type::t_min16uint:
+	case t_min16uint:
 		result = "min16uint";
 		break;
-	case reshadefx::type::t_uint:
+	case t_uint:
 		result = "uint";
 		break;
-	case reshadefx::type::t_min16float:
+	case t_min16float:
 		result = "min16float";
 		break;
-	case reshadefx::type::t_float:
+	case t_float:
 		result = "float";
 		break;
-	case reshadefx::type::t_string:
+	case t_string:
 		result = "string";
 		break;
-	case reshadefx::type::t_struct:
+	case t_struct:
 		result = "struct";
 		break;
-	case reshadefx::type::t_texture1d:
+	case t_texture1d:
 		result = "texture1D";
 		break;
-	case reshadefx::type::t_texture2d:
+	case t_texture2d:
 		result = "texture2D";
 		break;
-	case reshadefx::type::t_texture3d:
+	case t_texture3d:
 		result = "texture3D";
 		break;
-	case reshadefx::type::t_sampler1d_int:
+	case t_sampler1d_int:
 		result = "sampler1D<int" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_sampler2d_int:
+	case t_sampler2d_int:
 		result = "sampler2D<int" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_sampler3d_int:
+	case t_sampler3d_int:
 		result = "sampler3D<int" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_sampler1d_uint:
+	case t_sampler1d_uint:
 		result = "sampler1D<uint" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_sampler2d_uint:
+	case t_sampler2d_uint:
 		result = "sampler2D<uint" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_sampler3d_uint:
+	case t_sampler3d_uint:
 		result = "sampler3D<uint" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_sampler1d_float:
+	case t_sampler1d_float:
 		result = "sampler1D<float" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_sampler2d_float:
+	case t_sampler2d_float:
 		result = "sampler2D<float" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_sampler3d_float:
+	case t_sampler3d_float:
 		result = "sampler3D<float" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage1d_int:
+	case t_storage1d_int:
 		result = "storage1D<int" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage2d_int:
+	case t_storage2d_int:
 		result = "storage2D<int" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage3d_int:
+	case t_storage3d_int:
 		result = "storage3D<int" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage1d_uint:
+	case t_storage1d_uint:
 		result = "storage1D<uint" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage2d_uint:
+	case t_storage2d_uint:
 		result = "storage2D<uint" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage3d_uint:
+	case t_storage3d_uint:
 		result = "storage3D<uint" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage1d_float:
+	case t_storage1d_float:
 		result = "storage1D<float" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage2d_float:
+	case t_storage2d_float:
 		result = "storage2D<float" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_storage3d_float:
+	case t_storage3d_float:
 		result = "storage3D<float" + std::to_string(rows) + '>';
 		break;
-	case reshadefx::type::t_function:
-		result = "function";
+	case t_function:
+		assert(false);
 		break;
 	}
 
@@ -157,7 +160,7 @@ std::string reshadefx::type::description() const
 	if (is_array())
 	{
 		result += '[';
-		if (array_length > 0)
+		if (is_bounded_array())
 			result += std::to_string(array_length);
 		result += ']';
 	}
@@ -179,7 +182,7 @@ void reshadefx::expression::reset_to_lvalue(const reshadefx::location &loc, uint
 		type.qualifiers |= type::q_const;
 
 	// Strip away global variable qualifiers
-	type.qualifiers &= ~(reshadefx::type::q_extern | reshadefx::type::q_static | reshadefx::type::q_uniform | reshadefx::type::q_groupshared);
+	type.qualifiers &= ~(type::q_extern | type::q_static | type::q_uniform | type::q_groupshared);
 }
 void reshadefx::expression::reset_to_rvalue(const reshadefx::location &loc, uint32_t in_base, const reshadefx::type &in_type)
 {
@@ -192,7 +195,7 @@ void reshadefx::expression::reset_to_rvalue(const reshadefx::location &loc, uint
 	chain.clear();
 
 	// Strip away global variable qualifiers
-	type.qualifiers &= ~(reshadefx::type::q_extern | reshadefx::type::q_static | reshadefx::type::q_uniform | reshadefx::type::q_groupshared);
+	type.qualifiers &= ~(type::q_extern | type::q_static | type::q_uniform | type::q_groupshared);
 }
 
 void reshadefx::expression::reset_to_rvalue_constant(const reshadefx::location &loc, bool data)
@@ -290,7 +293,7 @@ void reshadefx::expression::add_cast_operation(const reshadefx::type &cast_type)
 					constant.as_float[i] = static_cast<float>(constant.as_int[i]);
 		};
 
-		for (auto &element : constant.array_data)
+		for (struct constant &element : constant.array_data)
 			cast_constant(element, type, cast_type);
 
 		cast_constant(constant, type, cast_type);
@@ -320,7 +323,7 @@ void reshadefx::expression::add_dynamic_index_access(uint32_t index_expression)
 	assert(!is_constant); // Cannot have dynamic indexing into constant in SPIR-V
 	assert(type.is_array() || (type.is_numeric() && !type.is_scalar()));
 
-	auto prev_type = type;
+	struct type prev_type = type;
 
 	if (type.is_array())
 	{
@@ -342,11 +345,11 @@ void reshadefx::expression::add_constant_index_access(unsigned int index)
 {
 	assert(type.is_array() || (type.is_numeric() && !type.is_scalar()));
 
-	auto prev_type = type;
+	struct type prev_type = type;
 
 	if (type.is_array())
 	{
-		assert(type.array_length < 0 || index < static_cast<unsigned int>(type.array_length));
+		assert(index < type.array_length);
 
 		type.array_length = 0;
 	}
@@ -389,7 +392,7 @@ void reshadefx::expression::add_swizzle_access(const signed char swizzle[4], uns
 {
 	assert(type.is_numeric() && !type.is_array());
 
-	const auto prev_type = type;
+	const struct type prev_type = type;
 
 	type.rows = length;
 	type.cols = 1;

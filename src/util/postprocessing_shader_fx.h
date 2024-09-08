@@ -13,6 +13,10 @@
 
 #include <random>
 
+namespace reshadefx {
+class codegen;
+}
+
 class Error;
 
 namespace PostProcessing {
@@ -94,10 +98,10 @@ private:
     ShaderOption::ValueVector value;
   };
 
-  bool CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::module* mod, std::string code, Error* error);
-  bool CreateOptions(const reshadefx::module& mod, Error* error);
-  bool GetSourceOption(const reshadefx::uniform_info& ui, SourceOptionType* si, Error* error);
-  bool CreatePasses(GPUTexture::Format backbuffer_format, reshadefx::module& mod, Error* error);
+  bool CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::codegen* cg, std::string code, Error* error);
+  bool CreateOptions(const reshadefx::effect_module& mod, Error* error);
+  bool GetSourceOption(const reshadefx::uniform& ui, SourceOptionType* si, Error* error);
+  bool CreatePasses(GPUTexture::Format backbuffer_format, const reshadefx::effect_module& mod, Error* error);
 
   const char* GetTextureNameForID(TextureID id) const;
   GPUTexture* GetTextureByID(TextureID id, GPUTexture* input_color, GPUTexture* input_depth,

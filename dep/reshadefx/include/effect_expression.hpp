@@ -15,7 +15,7 @@ namespace reshadefx
 	/// </summary>
 	struct type
 	{
-		enum datatype : uint8_t
+		enum datatype : uint32_t
 		{
 			t_void,
 			t_bool,
@@ -101,6 +101,8 @@ namespace reshadefx
 		bool is_function() const { return base == t_function; }
 
 		bool is_array() const { return array_length != 0; }
+		bool is_bounded_array() const { return is_array() && array_length != 0xFFFFFFFF; }
+		bool is_unbounded_array() const { return array_length == 0xFFFFFFFF; }
 		bool is_scalar() const { return is_numeric() && !is_matrix() && !is_vector() && !is_array(); }
 		bool is_vector() const { return is_numeric() && rows > 1 && cols == 1; }
 		bool is_matrix() const { return is_numeric() && rows >= 1 && cols > 1; }
@@ -109,27 +111,27 @@ namespace reshadefx
 		unsigned int components() const { return rows * cols; }
 		unsigned int texture_dimension() const { return base >= t_texture1d && base <= t_storage3d_float ? ((base - t_texture1d) % 3) + 1 : 0; }
 
-		friend inline bool operator==(const type &lhs, const type &rhs)
+		friend bool operator==(const type &lhs, const type &rhs)
 		{
-			return lhs.base == rhs.base && lhs.rows == rhs.rows && lhs.cols == rhs.cols && lhs.array_length == rhs.array_length && lhs.definition == rhs.definition;
+			return lhs.base == rhs.base && lhs.rows == rhs.rows && lhs.cols == rhs.cols && lhs.array_length == rhs.array_length && lhs.struct_definition == rhs.struct_definition;
 		}
-		friend inline bool operator!=(const type &lhs, const type &rhs)
+		friend bool operator!=(const type &lhs, const type &rhs)
 		{
 			return !operator==(lhs, rhs);
 		}
 
 		// Underlying base type ('int', 'float', ...)
-		datatype base = t_void;
+		datatype base : 8;
 		// Number of rows if this is a vector type
-		unsigned int rows = 0;
+		uint32_t rows : 4;
 		// Number of columns if this is a matrix type
-		unsigned int cols = 0;
+		uint32_t cols : 4;
 		// Bit mask of all the qualifiers decorating the type
-		unsigned int qualifiers = 0;
-		// Negative if an unsized array, otherwise the number of elements if this is an array type
-		int array_length = 0;
+		uint32_t qualifiers : 16;
+		// Number of elements if this is an array type, 0xFFFFFFFF if it is an unsized array
+		uint32_t array_length;
 		// ID of the matching struct if this is a struct type
-		uint32_t definition = 0;
+		uint32_t struct_definition;
 	};
 
 	/// <summary>
@@ -168,8 +170,8 @@ namespace reshadefx
 
 			op_type op;
 			reshadefx::type from, to;
-			uint32_t index = 0;
-			signed char swizzle[4] = {};
+			uint32_t index;
+			signed char swizzle[4];
 		};
 
 		uint32_t base = 0;

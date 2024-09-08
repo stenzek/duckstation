@@ -42,7 +42,7 @@ namespace reshadefx
 		uint32_t id = 0;
 		reshadefx::type type = {};
 		reshadefx::constant constant = {};
-		const reshadefx::function_info *function = nullptr;
+		const reshadefx::function *function = nullptr;
 	};
 	struct scoped_symbol : symbol
 	{

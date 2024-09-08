@@ -98,9 +98,9 @@ void ShaderGen::DefineMacro(std::stringstream& ss, const char* name, s32 value)
   ss << "#define " << name << " " << value << "\n";
 }
 
-#ifdef ENABLE_OPENGL
 u32 ShaderGen::GetGLSLVersion(RenderAPI render_api)
 {
+#ifdef ENABLE_OPENGL
   const char* glsl_version = reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION));
   const bool glsl_es = (render_api == RenderAPI::OpenGLES);
   Assert(glsl_version != nullptr);
@@ -136,6 +136,9 @@ u32 ShaderGen::GetGLSLVersion(RenderAPI render_api)
   }
 
   return (static_cast<u32>(major_version) * 100) + static_cast<u32>(minor_version);
+#else
+  return 460;
+#endif
 }
 
 TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api, u32 version)
@@ -147,7 +150,6 @@ TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api, u32 version)
   return TinyString::from_format("#version {}{:02d}{}", major_version, minor_version,
                                  (glsl_es && major_version >= 3) ? " es" : "");
 }
-#endif
 
 void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */)
 {

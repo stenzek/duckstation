@@ -154,17 +154,16 @@ namespace reshadefx
 		void expand_macro(const std::string &name, const macro &macro, const std::vector<std::string> &arguments);
 		void create_macro_replacement_list(macro &macro);
 
-		bool _success = true;
 		include_file_exists_callback _file_exists_cb;
 		include_read_file_callback _read_file_cb;
 		std::string _output, _errors;
 
-		std::string _current_token_raw_data;
-		reshadefx::token _token;
-		location _output_location;
 		std::vector<input_level> _input_stack;
 		size_t _next_input_index = 0;
 		size_t _current_input_index = 0;
+		reshadefx::token _token;
+		std::string _current_token_raw_data;
+		reshadefx::location _output_location;
 
 		std::vector<if_level> _if_stack;
 

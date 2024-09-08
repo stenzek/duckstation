@@ -20,10 +20,8 @@ public:
   static GPUShaderLanguage GetShaderLanguageForAPI(RenderAPI api);
   static bool UseGLSLBindingLayout();
 
-#ifdef ENABLE_OPENGL
   static u32 GetGLSLVersion(RenderAPI render_api);
   static TinyString GetGLSLVersionString(RenderAPI render_api, u32 version);
-#endif
 
   ALWAYS_INLINE GPUShaderLanguage GetLanguage() const { return m_shader_language; }
 
