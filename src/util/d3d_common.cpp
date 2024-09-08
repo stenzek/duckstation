@@ -19,47 +19,65 @@
 
 Log_SetChannel(D3DCommon);
 
-const char* D3DCommon::GetFeatureLevelString(D3D_FEATURE_LEVEL feature_level)
+namespace D3DCommon {
+namespace {
+struct FeatureLevelTableEntry
 {
-  static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 11> feature_level_names = {{
-    {D3D_FEATURE_LEVEL_1_0_CORE, "D3D_FEATURE_LEVEL_1_0_CORE"},
-    {D3D_FEATURE_LEVEL_9_1, "D3D_FEATURE_LEVEL_9_1"},
-    {D3D_FEATURE_LEVEL_9_2, "D3D_FEATURE_LEVEL_9_2"},
-    {D3D_FEATURE_LEVEL_9_3, "D3D_FEATURE_LEVEL_9_3"},
-    {D3D_FEATURE_LEVEL_10_0, "D3D_FEATURE_LEVEL_10_0"},
-    {D3D_FEATURE_LEVEL_10_1, "D3D_FEATURE_LEVEL_10_1"},
-    {D3D_FEATURE_LEVEL_11_0, "D3D_FEATURE_LEVEL_11_0"},
-    {D3D_FEATURE_LEVEL_11_1, "D3D_FEATURE_LEVEL_11_1"},
-    {D3D_FEATURE_LEVEL_12_0, "D3D_FEATURE_LEVEL_12_0"},
-    {D3D_FEATURE_LEVEL_12_1, "D3D_FEATURE_LEVEL_12_1"},
-    {D3D_FEATURE_LEVEL_12_2, "D3D_FEATURE_LEVEL_12_2"},
-  }};
+  D3D_FEATURE_LEVEL d3d_feature_level;
+  u16 render_api_version;
+  u16 shader_model_number;
+  const char* feature_level_str;
+};
+} // namespace
 
-  for (const auto& [fl, name] : feature_level_names)
-  {
-    if (fl == feature_level)
-      return name;
-  }
+static constexpr std::array<FeatureLevelTableEntry, 11> s_feature_levels = {{
+  {D3D_FEATURE_LEVEL_1_0_CORE, 100, 40, "D3D_FEATURE_LEVEL_1_0_CORE"},
+  {D3D_FEATURE_LEVEL_9_1, 910, 40, "D3D_FEATURE_LEVEL_9_1"},
+  {D3D_FEATURE_LEVEL_9_2, 920, 40, "D3D_FEATURE_LEVEL_9_2"},
+  {D3D_FEATURE_LEVEL_9_3, 930, 40, "D3D_FEATURE_LEVEL_9_3"},
+  {D3D_FEATURE_LEVEL_10_0, 1000, 40, "D3D_FEATURE_LEVEL_10_0"},
+  {D3D_FEATURE_LEVEL_10_1, 1010, 41, "D3D_FEATURE_LEVEL_10_1"},
+  {D3D_FEATURE_LEVEL_11_0, 1100, 50, "D3D_FEATURE_LEVEL_11_0"},
+  {D3D_FEATURE_LEVEL_11_1, 1110, 50, "D3D_FEATURE_LEVEL_11_1"},
+  {D3D_FEATURE_LEVEL_12_0, 1200, 50, "D3D_FEATURE_LEVEL_12_0"},
+  {D3D_FEATURE_LEVEL_12_1, 1210, 50, "D3D_FEATURE_LEVEL_12_1"},
+  {D3D_FEATURE_LEVEL_12_2, 1220, 50, "D3D_FEATURE_LEVEL_12_2"},
+}};
+} // namespace D3DCommon
 
-  return "D3D_FEATURE_LEVEL_UNKNOWN";
+const char* D3DCommon::GetFeatureLevelString(u32 render_api_version)
+{
+  const auto iter =
+    std::find_if(s_feature_levels.begin(), s_feature_levels.end(),
+                 [&render_api_version](const auto& it) { return it.render_api_version == render_api_version; });
+  return (iter != s_feature_levels.end()) ? iter->feature_level_str : "D3D_FEATURE_LEVEL_UNKNOWN";
 }
 
-const char* D3DCommon::GetFeatureLevelShaderModelString(D3D_FEATURE_LEVEL feature_level)
+u32 D3DCommon::GetRenderAPIVersionForFeatureLevel(D3D_FEATURE_LEVEL feature_level)
 {
-  static constexpr std::array<std::tuple<D3D_FEATURE_LEVEL, const char*>, 4> feature_level_names = {{
-    {D3D_FEATURE_LEVEL_10_0, "sm40"},
-    {D3D_FEATURE_LEVEL_10_1, "sm41"},
-    {D3D_FEATURE_LEVEL_11_0, "sm50"},
-    {D3D_FEATURE_LEVEL_11_1, "sm50"},
-  }};
-
-  for (const auto& [fl, name] : feature_level_names)
+  const FeatureLevelTableEntry* highest_entry = nullptr;
+  for (const FeatureLevelTableEntry& entry : s_feature_levels)
   {
-    if (fl == feature_level)
-      return name;
+    if (feature_level >= entry.d3d_feature_level)
+      highest_entry = &entry;
   }
+  return highest_entry ? highest_entry->render_api_version : 0;
+}
 
-  return "unk";
+D3D_FEATURE_LEVEL D3DCommon::GetFeatureLevelForNumber(u32 render_api_version)
+{
+  const auto iter =
+    std::find_if(s_feature_levels.begin(), s_feature_levels.end(),
+                 [&render_api_version](const auto& it) { return it.render_api_version == render_api_version; });
+  return (iter != s_feature_levels.end()) ? iter->d3d_feature_level : D3D_FEATURE_LEVEL_1_0_CORE;
+}
+
+u32 D3DCommon::GetShaderModelForFeatureLevelNumber(u32 render_api_version)
+{
+  const auto iter =
+    std::find_if(s_feature_levels.begin(), s_feature_levels.end(),
+                 [&render_api_version](const auto& it) { return it.render_api_version == render_api_version; });
+  return (iter != s_feature_levels.end()) ? iter->shader_model_number : 40;
 }
 
 D3D_FEATURE_LEVEL D3DCommon::GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter)
@@ -377,23 +395,6 @@ std::string D3DCommon::GetDriverVersionFromLUID(const LUID& luid)
   }
 
   return ret;
-}
-
-u32 D3DCommon::GetShaderModelForFeatureLevel(D3D_FEATURE_LEVEL feature_level)
-{
-  switch (feature_level)
-  {
-    case D3D_FEATURE_LEVEL_10_0:
-      return 40;
-
-    case D3D_FEATURE_LEVEL_10_1:
-      return 41;
-
-    case D3D_FEATURE_LEVEL_11_0:
-    case D3D_FEATURE_LEVEL_11_1:
-    default:
-      return 50;
-  }
 }
 
 std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShader(u32 shader_model, bool debug_device, GPUShaderStage stage,

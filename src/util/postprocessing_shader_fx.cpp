@@ -30,6 +30,7 @@
 #include <cmath>
 #include <cstring>
 #include <sstream>
+#include <tuple>
 
 Log_SetChannel(ReShadeFXShader);
 
@@ -38,7 +39,12 @@ static constexpr s32 DEFAULT_BUFFER_HEIGHT = 2160;
 
 static RenderAPI GetRenderAPI()
 {
-  return g_gpu_device ? g_gpu_device->GetRenderAPI() : RenderAPI::D3D11;
+#ifdef _WIN32
+  static constexpr RenderAPI DEFAULT_RENDER_API = RenderAPI::D3D11;
+#else
+  static constexpr RenderAPI DEFAULT_RENDER_API = RenderAPI::D3D12;
+#endif
+  return g_gpu_device ? g_gpu_device->GetRenderAPI() : DEFAULT_RENDER_API;
 }
 
 static bool PreprocessorFileExistsCallback(const std::string& path)
@@ -63,37 +69,44 @@ static bool PreprocessorReadFileCallback(const std::string& path, std::string& d
   return true;
 }
 
-static std::unique_ptr<reshadefx::codegen> CreateRFXCodegen()
+static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> CreateRFXCodegen()
 {
   const bool debug_info = g_gpu_device ? g_gpu_device->IsDebugDevice() : false;
   const bool uniforms_to_spec_constants = false;
   const RenderAPI rapi = GetRenderAPI();
+  [[maybe_unused]] const u32 rapi_version = g_gpu_device ? g_gpu_device->GetRenderAPIVersion() : 0;
 
   switch (rapi)
   {
-    case RenderAPI::None:
+#ifdef _WIN32
     case RenderAPI::D3D11:
     case RenderAPI::D3D12:
     {
-      return std::unique_ptr<reshadefx::codegen>(
-        reshadefx::create_codegen_hlsl(50, debug_info, uniforms_to_spec_constants));
+      return std::make_tuple(std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_hlsl(
+                               (rapi_version < 1100) ? 40 : 50, debug_info, uniforms_to_spec_constants)),
+                             GPUShaderLanguage::HLSL);
     }
+    break;
+#endif
 
     case RenderAPI::Vulkan:
     case RenderAPI::Metal:
     {
-      return std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_spirv(
-        true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan)));
+      return std::make_tuple(std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_spirv(
+                               true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan))),
+                             GPUShaderLanguage::SPV);
     }
 
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
     default:
     {
-      return std::unique_ptr<reshadefx::codegen>(
-        reshadefx::create_codegen_glsl(ShaderGen::GetGLSLVersion(rapi), (rapi == RenderAPI::OpenGLES), false,
-                                       debug_info, uniforms_to_spec_constants, false, true));
+      return std::make_tuple(std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_glsl(
+                               g_gpu_device ? ShaderGen::GetGLSLVersion(rapi) : 460, (rapi == RenderAPI::OpenGLES),
+                               false, debug_info, uniforms_to_spec_constants, false, true)),
+                             (rapi == RenderAPI::OpenGLES) ? GPUShaderLanguage::GLSLES : GPUShaderLanguage::GLSL);
     }
+    break;
   }
 }
 
@@ -308,9 +321,7 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
     code.push_back('\n');
 
   // TODO: This could use spv, it's probably fastest.
-  std::unique_ptr<reshadefx::codegen> cg = CreateRFXCodegen();
-  if (!cg)
-    return false;
+  const auto& [cg, cg_language] = CreateRFXCodegen();
 
   if (!CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetWindowWidth(),
                     only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetWindowHeight(), cg.get(), std::move(code),
@@ -1319,9 +1330,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   if (fxcode.empty() || fxcode.back() != '\n')
     fxcode.push_back('\n');
 
-  std::unique_ptr<reshadefx::codegen> cg = CreateRFXCodegen();
-  if (!cg)
-    return false;
+  const auto& [cg, cg_language] = CreateRFXCodegen();
 
   Error error;
   if (!CreateModule(width, height, cg.get(), std::move(fxcode), &error))
@@ -1339,16 +1348,13 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
     return false;
   }
 
-  const RenderAPI api = g_gpu_device->GetRenderAPI();
-  auto get_shader = [api, &cg](const std::string& name, const std::span<Sampler> samplers, GPUShaderStage stage) {
+  auto get_shader = [cg_language, &cg](const std::string& name, const std::span<Sampler> samplers,
+                                       GPUShaderStage stage) {
     const std::string real_code = cg->finalize_code_for_entry_point(name);
-    const GPUShaderLanguage lang = (api == RenderAPI::Vulkan || api == RenderAPI::Metal) ?
-                                     GPUShaderLanguage::SPV :
-                                     ShaderGen::GetShaderLanguageForAPI(api);
-    const char* entry_point = (lang == GPUShaderLanguage::HLSL) ? name.c_str() : "main";
+    const char* entry_point = (cg_language == GPUShaderLanguage::HLSL) ? name.c_str() : "main";
 
     Error error;
-    std::unique_ptr<GPUShader> sshader = g_gpu_device->CreateShader(stage, lang, real_code, &error, entry_point);
+    std::unique_ptr<GPUShader> sshader = g_gpu_device->CreateShader(stage, cg_language, real_code, &error, entry_point);
     if (!sshader)
       ERROR_LOG("Failed to compile function '{}': {}", name, error.GetDescription());
 

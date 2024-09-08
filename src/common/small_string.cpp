@@ -111,6 +111,18 @@ void SmallStringBase::shrink_to_fit()
   m_buffer_size = buffer_size;
 }
 
+void SmallStringBase::convert_to_lower_case()
+{
+  for (u32 i = 0; i < m_length; i++)
+    m_buffer[i] = static_cast<char>(std::tolower(m_buffer[i]));
+}
+
+void SmallStringBase::convert_to_upper_case()
+{
+  for (u32 i = 0; i < m_length; i++)
+    m_buffer[i] = static_cast<char>(std::toupper(m_buffer[i]));
+}
+
 std::string_view SmallStringBase::view() const
 {
   return (m_length == 0) ? std::string_view() : std::string_view(m_buffer, m_length);

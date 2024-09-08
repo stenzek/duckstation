@@ -367,6 +367,7 @@ bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_p
     return false;
   }
 
+  INFO_LOG("Render API: {} Version {}", RenderAPIToString(m_render_api), m_render_api_version);
   INFO_LOG("Graphics Driver Info:\n{}", GetDriverInfo());
 
   OpenShaderCache(shader_cache_path, shader_cache_version);
@@ -401,7 +402,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
   {
     const std::string basename = GetShaderCacheBaseName("shaders");
     const std::string filename = Path::Combine(base_path, basename);
-    if (!m_shader_cache.Open(filename.c_str(), version))
+    if (!m_shader_cache.Open(filename.c_str(), m_render_api_version, version))
     {
       WARNING_LOG("Failed to open shader cache. Creating new cache.");
       if (!m_shader_cache.Create())
@@ -423,7 +424,7 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
   else
   {
     // Still need to set the version - GL needs it.
-    m_shader_cache.Open(std::string_view(), version);
+    m_shader_cache.Open(std::string_view(), m_render_api_version, version);
   }
 
   s_pipeline_cache_path = {};
@@ -473,74 +474,47 @@ std::string GPUDevice::GetShaderCacheBaseName(std::string_view type) const
 {
   const std::string_view debug_suffix = m_debug_device ? "_debug" : "";
 
-  std::string ret;
-  switch (GetRenderAPI())
-  {
-#ifdef _WIN32
-    case RenderAPI::D3D11:
-      ret = fmt::format(
-        "d3d11_{}_{}{}", type,
-        D3DCommon::GetFeatureLevelShaderModelString(D3D11Device::GetInstance().GetD3DDevice()->GetFeatureLevel()),
-        debug_suffix);
-      break;
-    case RenderAPI::D3D12:
-      ret = fmt::format("d3d12_{}{}", type, debug_suffix);
-      break;
-#endif
-#ifdef ENABLE_VULKAN
-    case RenderAPI::Vulkan:
-      ret = fmt::format("vulkan_{}{}", type, debug_suffix);
-      break;
-#endif
-#ifdef ENABLE_OPENGL
-    case RenderAPI::OpenGL:
-      ret = fmt::format("opengl_{}{}", type, debug_suffix);
-      break;
-    case RenderAPI::OpenGLES:
-      ret = fmt::format("opengles_{}{}", type, debug_suffix);
-      break;
-#endif
-#ifdef __APPLE__
-    case RenderAPI::Metal:
-      ret = fmt::format("metal_{}{}", type, debug_suffix);
-      break;
-#endif
-    default:
-      UnreachableCode();
-      break;
-  }
+  TinyString lower_api_name(RenderAPIToString(m_render_api));
+  lower_api_name.convert_to_lower_case();
 
-  return ret;
+  return fmt::format("{}_{}{}", lower_api_name, type, debug_suffix);
 }
 
 bool GPUDevice::OpenPipelineCache(const std::string& filename)
 {
-  Error error;
-  CompressHelpers::OptionalByteBuffer data =
-    CompressHelpers::DecompressFile(CompressHelpers::CompressType::Zstandard, filename.c_str(), std::nullopt, &error);
+  s_pipeline_cache_size = 0;
+  s_pipeline_cache_hash = {};
 
-  if (data.has_value())
+  Error error;
+  CompressHelpers::OptionalByteBuffer data;
+  if (FileSystem::FileExists(filename.c_str()))
   {
-    s_pipeline_cache_size = data->size();
-    s_pipeline_cache_hash = SHA1Digest::GetDigest(data->cspan());
+    data =
+      CompressHelpers::DecompressFile(CompressHelpers::CompressType::Zstandard, filename.c_str(), std::nullopt, &error);
+    if (data.has_value())
+    {
+      s_pipeline_cache_size = data->size();
+      s_pipeline_cache_hash = SHA1Digest::GetDigest(data->cspan());
+    }
+    else
+    {
+      ERROR_LOG("Failed to load pipeline cache from '{}': {}", Path::GetFileName(filename), error.GetDescription());
+    }
+  }
+
+  INFO_LOG("Loading {} byte pipeline cache with hash {}", s_pipeline_cache_size,
+           SHA1Digest::DigestToString(s_pipeline_cache_hash));
+
+  if (ReadPipelineCache(std::move(data)))
+  {
+    return true;
   }
   else
-  {
-    ERROR_LOG("Failed to load pipeline cache from '{}': {}", Path::GetFileName(filename), error.GetDescription());
-    s_pipeline_cache_size = 0;
-    s_pipeline_cache_hash = {};
-  }
-
-  if (!ReadPipelineCache(std::move(data)))
   {
     s_pipeline_cache_size = 0;
     s_pipeline_cache_hash = {};
     return false;
   }
-
-  INFO_LOG("Loaded pipeline cache: {} bytes with hash: {}", s_pipeline_cache_size,
-           SHA1Digest::DigestToString(s_pipeline_cache_hash));
-  return true;
 }
 
 bool GPUDevice::ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data)

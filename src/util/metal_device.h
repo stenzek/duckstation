@@ -198,8 +198,6 @@ public:
   MetalDevice();
   ~MetalDevice();
 
-  RenderAPI GetRenderAPI() const override;
-
   bool HasSurface() const override;
 
   bool UpdateWindow() override;

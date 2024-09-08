@@ -40,8 +40,6 @@ public:
   static bool ShouldUsePBOsForDownloads();
   static void SetErrorObject(Error* errptr, std::string_view prefix, GLenum glerr);
 
-  RenderAPI GetRenderAPI() const override;
-
   bool HasSurface() const override;
   void DestroySurface() override;
 

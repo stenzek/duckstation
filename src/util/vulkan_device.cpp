@@ -1889,11 +1889,6 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
 #endif
 }
 
-RenderAPI VulkanDevice::GetRenderAPI() const
-{
-  return RenderAPI::Vulkan;
-}
-
 bool VulkanDevice::HasSurface() const
 {
   return static_cast<bool>(m_swap_chain);
@@ -2507,6 +2502,10 @@ u32 VulkanDevice::GetMaxMultisamples(VkPhysicalDevice physical_device, const VkP
 
 void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDeviceFeatures& vk_features)
 {
+  const u32 store_api_version = std::min(m_device_properties.apiVersion, VK_API_VERSION_1_1);
+  m_render_api = RenderAPI::Vulkan;
+  m_render_api_version = (VK_API_VERSION_MAJOR(store_api_version) * 100u) +
+                         (VK_API_VERSION_MINOR(store_api_version) * 10u) + (VK_API_VERSION_PATCH(store_api_version));
   m_max_texture_size =
     std::min(m_device_properties.limits.maxImageDimension2D, m_device_properties.limits.maxFramebufferWidth);
   m_max_multisamples = GetMaxMultisamples(m_physical_device, m_device_properties);

@@ -18,6 +18,12 @@
 Log_SetChannel(GPUShaderCache);
 
 #pragma pack(push, 1)
+struct CacheFileHeader
+{
+  u32 signature;
+  u32 render_api_version;
+  u32 cache_version;
+};
 struct CacheIndexEntry
 {
   u8 shader_type;
@@ -33,6 +39,8 @@ struct CacheIndexEntry
   u32 uncompressed_size;
 };
 #pragma pack(pop)
+
+static constexpr u32 EXPECTED_SIGNATURE = 0x434B5544; // DUKC
 
 GPUShaderCache::GPUShaderCache() = default;
 
@@ -59,10 +67,11 @@ std::size_t GPUShaderCache::CacheIndexEntryHash::operator()(const CacheIndexKey&
   return h;
 }
 
-bool GPUShaderCache::Open(std::string_view base_filename, u32 version)
+bool GPUShaderCache::Open(std::string_view base_filename, u32 render_api_version, u32 cache_version)
 {
   m_base_filename = base_filename;
-  m_version = version;
+  m_render_api_version = render_api_version;
+  m_version = cache_version;
 
   if (base_filename.empty())
     return true;
@@ -127,7 +136,9 @@ bool GPUShaderCache::CreateNew(const std::string& index_filename, const std::str
     return false;
   }
 
-  if (std::fwrite(&m_version, sizeof(m_version), 1, m_index_file) != 1) [[unlikely]]
+  const CacheFileHeader file_header = {
+    .signature = EXPECTED_SIGNATURE, .render_api_version = m_render_api_version, .cache_version = m_version};
+  if (std::fwrite(&file_header, sizeof(file_header), 1, m_index_file) != 1) [[unlikely]]
   {
     ERROR_LOG("Failed to write version to index file '{}'", Path::GetFileName(index_filename));
     std::fclose(m_index_file);
@@ -165,8 +176,10 @@ bool GPUShaderCache::ReadExisting(const std::string& index_filename, const std::
     return false;
   }
 
-  u32 file_version = 0;
-  if (std::fread(&file_version, sizeof(file_version), 1, m_index_file) != 1 || file_version != m_version) [[unlikely]]
+  CacheFileHeader file_header;
+  if (std::fread(&file_header, sizeof(file_header), 1, m_index_file) != 1 ||
+      file_header.signature != EXPECTED_SIGNATURE || file_header.render_api_version != m_render_api_version ||
+      file_header.cache_version != m_version) [[unlikely]]
   {
     ERROR_LOG("Bad file/data version in '{}'", Path::GetFileName(index_filename));
     std::fclose(m_index_file);

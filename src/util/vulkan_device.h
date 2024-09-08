@@ -75,8 +75,6 @@ public:
   static GPUList EnumerateGPUs();
   static AdapterInfoList GetAdapterList();
 
-  RenderAPI GetRenderAPI() const override;
-
   bool HasSurface() const override;
 
   bool UpdateWindow() override;

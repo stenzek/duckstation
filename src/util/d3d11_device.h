@@ -36,8 +36,6 @@ public:
   ALWAYS_INLINE static ID3D11DeviceContext1* GetD3DContext() { return GetInstance().m_context.Get(); }
   ALWAYS_INLINE static D3D_FEATURE_LEVEL GetMaxFeatureLevel() { return GetInstance().m_max_feature_level; }
 
-  RenderAPI GetRenderAPI() const override;
-
   bool HasSurface() const override;
 
   bool UpdateWindow() override;

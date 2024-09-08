@@ -25,7 +25,7 @@
 
 class Error;
 
-enum class RenderAPI : u32
+enum class RenderAPI : u8
 {
   None,
   D3D11,
@@ -594,6 +594,8 @@ public:
   }
 
   ALWAYS_INLINE const Features& GetFeatures() const { return m_features; }
+  ALWAYS_INLINE RenderAPI GetRenderAPI() const { return m_render_api; }
+  ALWAYS_INLINE u32 GetRenderAPIVersion() const { return m_render_api_version; }
   ALWAYS_INLINE u32 GetMaxTextureSize() const { return m_max_texture_size; }
   ALWAYS_INLINE u32 GetMaxMultisamples() const { return m_max_multisamples; }
 
@@ -607,8 +609,6 @@ public:
   ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler.get(); }
 
   ALWAYS_INLINE bool IsGPUTimingEnabled() const { return m_gpu_timing_enabled; }
-
-  virtual RenderAPI GetRenderAPI() const = 0;
 
   bool Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
               GPUVSyncMode vsync, bool allow_present_throttle, std::optional<bool> exclusive_fullscreen_control,
@@ -776,6 +776,8 @@ protected:
   static std::optional<DynamicHeapArray<u8>> OptimizeVulkanSpv(const std::span<const u8> spirv, Error* error);
 
   Features m_features = {};
+  RenderAPI m_render_api = RenderAPI::None;
+  u32 m_render_api_version = 0;
   u32 m_max_texture_size = 0;
   u32 m_max_multisamples = 0;
 
