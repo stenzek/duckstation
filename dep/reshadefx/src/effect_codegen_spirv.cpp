@@ -390,6 +390,25 @@ private:
 			return {};
 		const function &entry_point = *entry_point_it->get();
 
+		const auto write_entry_point = [this](const spirv_instruction& oins, std::basic_string<char>& spirv) {
+			assert(oins.operands.size() > 2);
+			spirv_instruction nins(oins.op, oins.type, oins.result);
+			nins.add(oins.operands[0]);
+			nins.add(oins.operands[1]);
+			nins.add_string("main");
+
+			size_t param_start_index = 2;
+			while (param_start_index < oins.operands.size() && (oins.operands[param_start_index] & 0xFF000000) != 0)
+				param_start_index++;
+
+			// skip zero
+			param_start_index++;
+
+			for (size_t i = param_start_index; i < oins.operands.size(); i++)
+				nins.add(oins.operands[i]);
+			nins.write(spirv);
+		};
+
 		// Build list of IDs to remove
 		std::vector<spv::Id> variables_to_remove;
 #if 1
@@ -414,7 +433,7 @@ private:
 			// Only add the matching entry point
 			if (inst.operands[1] == entry_point.id)
 			{
-				inst.write(spirv);
+				write_entry_point(inst, spirv);
 			}
 			else
 			{
@@ -482,8 +501,9 @@ private:
 			if (func.definition.instructions.empty())
 				continue;
 
-			assert(func.declaration.instructions[_debug_info ? 1 : 0].op == spv::OpFunction);
-			const spv::Id definition = func.declaration.instructions[_debug_info ? 1 : 0].result;
+			const bool has_line = (_debug_info && func.declaration.instructions[0].op == spv::OpLine);
+			assert(func.declaration.instructions[has_line ? 1 : 0].op == spv::OpFunction);
+			const spv::Id definition = func.declaration.instructions[has_line ? 1 : 0].result;
 
 #if 1
 			if (std::find(functions_to_remove.begin(), functions_to_remove.end(), definition) != functions_to_remove.end())

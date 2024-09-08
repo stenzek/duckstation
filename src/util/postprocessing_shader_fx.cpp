@@ -82,8 +82,8 @@ static std::unique_ptr<reshadefx::codegen> CreateRFXCodegen()
     case RenderAPI::Vulkan:
     case RenderAPI::Metal:
     {
-      return std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_glsl(
-        460, false, true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan)));
+      return std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_spirv(
+        true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan)));
     }
 
     case RenderAPI::OpenGL:
@@ -1303,9 +1303,6 @@ GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTex
 bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height,
                                                       ProgressCallback* progress)
 {
-  const RenderAPI api = g_gpu_device->GetRenderAPI();
-  const bool needs_main_defn = (api != RenderAPI::D3D11 && api != RenderAPI::D3D12);
-
   m_valid = false;
   m_textures.clear();
   m_passes.clear();
@@ -1342,20 +1339,16 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
     return false;
   }
 
-  // TODO: If using spv, this will be populated.
-  // const std::string effect_code = cg->finalize_code();
-
-  auto get_shader = [api, needs_main_defn, &cg](const std::string& name, const std::span<Sampler> samplers,
-                                                GPUShaderStage stage) {
+  const RenderAPI api = g_gpu_device->GetRenderAPI();
+  auto get_shader = [api, &cg](const std::string& name, const std::span<Sampler> samplers, GPUShaderStage stage) {
     const std::string real_code = cg->finalize_code_for_entry_point(name);
-
-#if 0
-    FileSystem::WriteStringToFile(fmt::format("D:\\reshade_{}.txt", Path::SanitizeFileName(name)).c_str(), real_code);
-#endif
+    const GPUShaderLanguage lang = (api == RenderAPI::Vulkan || api == RenderAPI::Metal) ?
+                                     GPUShaderLanguage::SPV :
+                                     ShaderGen::GetShaderLanguageForAPI(api);
+    const char* entry_point = (lang == GPUShaderLanguage::HLSL) ? name.c_str() : "main";
 
     Error error;
-    std::unique_ptr<GPUShader> sshader = g_gpu_device->CreateShader(
-      stage, ShaderGen::GetShaderLanguageForAPI(api), real_code, &error, needs_main_defn ? "main" : name.c_str());
+    std::unique_ptr<GPUShader> sshader = g_gpu_device->CreateShader(stage, lang, real_code, &error, entry_point);
     if (!sshader)
       ERROR_LOG("Failed to compile function '{}': {}", name, error.GetDescription());
 
