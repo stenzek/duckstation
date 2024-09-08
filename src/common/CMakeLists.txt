@@ -44,6 +44,7 @@ add_library(common
   perf_scope.h
   progress_callback.cpp
   progress_callback.h
+  ryml_helpers.h
   scoped_guard.h
   settings_interface.h
   sha1_digest.cpp

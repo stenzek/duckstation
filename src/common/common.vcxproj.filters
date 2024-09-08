@@ -48,6 +48,7 @@
     <ClInclude Include="gsvector.h" />
     <ClInclude Include="gsvector_formatter.h" />
     <ClInclude Include="gsvector_nosimd.h" />
+    <ClInclude Include="ryml_helpers.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
