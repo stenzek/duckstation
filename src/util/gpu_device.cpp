@@ -1244,7 +1244,8 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
   X(shaderc_result_get_num_warnings)                                                                                   \
   X(shaderc_result_get_bytes)                                                                                          \
   X(shaderc_result_get_compilation_status)                                                                             \
-  X(shaderc_result_get_error_message)
+  X(shaderc_result_get_error_message)                                                                                  \
+  X(shaderc_optimize_spv)
 
 #define SPIRV_CROSS_FUNCTIONS(X)                                                                                       \
   X(spvc_context_create)                                                                                               \
@@ -1413,6 +1414,63 @@ void dyn_libs::CloseAll()
 #undef SPIRV_CROSS_FUNCTIONS
 #undef SHADERC_FUNCTIONS
 
+std::optional<DynamicHeapArray<u8>> GPUDevice::OptimizeVulkanSpv(const std::span<const u8> spirv, Error* error)
+{
+  std::optional<DynamicHeapArray<u8>> ret;
+
+  if (spirv.size() < sizeof(u32) * 2)
+  {
+    Error::SetStringView(error, "Invalid SPIR-V input size.");
+    return ret;
+  }
+
+  // Need to set environment based on version.
+  u32 magic_word, spirv_version;
+  shaderc_target_env target_env = shaderc_target_env_vulkan;
+  shaderc_env_version target_version = shaderc_env_version_vulkan_1_0;
+  std::memcpy(&magic_word, spirv.data(), sizeof(magic_word));
+  std::memcpy(&spirv_version, spirv.data() + sizeof(magic_word), sizeof(spirv_version));
+  if (magic_word != 0x07230203u)
+  {
+    Error::SetStringView(error, "Invalid SPIR-V magic word.");
+    return ret;
+  }
+  if (spirv_version < 0x10300)
+    target_version = shaderc_env_version_vulkan_1_0;
+  else
+    target_version = shaderc_env_version_vulkan_1_1;
+
+  if (!dyn_libs::OpenShaderc(error))
+    return ret;
+
+  const shaderc_compile_options_t options = dyn_libs::shaderc_compile_options_initialize();
+  AssertMsg(options, "shaderc_compile_options_initialize() failed");
+  dyn_libs::shaderc_compile_options_set_target_env(options, target_env, target_version);
+  dyn_libs::shaderc_compile_options_set_optimization_level(options, shaderc_optimization_level_performance);
+
+  const shaderc_compilation_result_t result =
+    dyn_libs::shaderc_optimize_spv(dyn_libs::s_shaderc_compiler, spirv.data(), spirv.size(), options);
+  const shaderc_compilation_status status =
+    result ? dyn_libs::shaderc_result_get_compilation_status(result) : shaderc_compilation_status_internal_error;
+  if (status != shaderc_compilation_status_success)
+  {
+    const std::string_view errors(result ? dyn_libs::shaderc_result_get_error_message(result) : "null result object");
+    Error::SetStringFmt(error, "Failed to optimize SPIR-V: {}\n{}",
+                        dyn_libs::shaderc_compilation_status_to_string(status), errors);
+  }
+  else
+  {
+    const size_t spirv_size = dyn_libs::shaderc_result_get_length(result);
+    DebugAssert(spirv_size > 0);
+    ret = DynamicHeapArray<u8>(spirv_size);
+    std::memcpy(ret->data(), dyn_libs::shaderc_result_get_bytes(result), spirv_size);
+  }
+
+  dyn_libs::shaderc_result_release(result);
+  dyn_libs::shaderc_compile_options_release(options);
+  return ret;
+}
+
 bool GPUDevice::CompileGLSLShaderToVulkanSpv(GPUShaderStage stage, GPUShaderLanguage source_language,
                                              std::string_view source, const char* entry_point, bool optimization,
                                              bool nonsemantic_debug_info, DynamicHeapArray<u8>* out_binary,
@@ -1548,6 +1606,8 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
   }
 
   [[maybe_unused]] const SpvExecutionModel execmodel = dyn_libs::spvc_compiler_get_execution_model(scompiler);
+  [[maybe_unused]] static constexpr u32 UBO_DESCRIPTOR_SET = 0;
+  [[maybe_unused]] static constexpr u32 TEXTURE_DESCRIPTOR_SET = 1;
 
   switch (target_language)
   {
@@ -1572,11 +1632,19 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
         return {};
       }
 
-      u32 start_set = 0;
+      if ((sres = dyn_libs::spvc_compiler_options_set_bool(soptions, SPVC_COMPILER_OPTION_HLSL_POINT_SIZE_COMPAT,
+                                                           true)) != SPVC_SUCCESS)
+      {
+        Error::SetStringFmt(error,
+                            "spvc_compiler_options_set_bool(SPVC_COMPILER_OPTION_HLSL_POINT_SIZE_COMPAT) failed: {}",
+                            static_cast<int>(sres));
+        return {};
+      }
+
       if (ubos_count > 0)
       {
         const spvc_hlsl_resource_binding rb = {.stage = execmodel,
-                                               .desc_set = start_set++,
+                                               .desc_set = UBO_DESCRIPTOR_SET,
                                                .binding = 0,
                                                .cbv = {.register_space = 0, .register_binding = 0}};
         if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
@@ -1588,10 +1656,10 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
 
       if (textures_count > 0)
       {
-        for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
+        for (u32 i = 0; i < textures_count; i++)
         {
           const spvc_hlsl_resource_binding rb = {.stage = execmodel,
-                                                 .desc_set = start_set++,
+                                                 .desc_set = TEXTURE_DESCRIPTOR_SET,
                                                  .binding = i,
                                                  .srv = {.register_space = 0, .register_binding = i},
                                                  .sampler = {.register_space = 0, .register_binding = i}};
@@ -1740,13 +1808,49 @@ std::unique_ptr<GPUShader> GPUDevice::TranspileAndCreateShaderFromSource(
 {
   // Disable optimization when targeting OpenGL GLSL, otherwise, the name-based linking will fail.
   const bool optimization =
-    (target_language != GPUShaderLanguage::GLSL && target_language != GPUShaderLanguage::GLSLES);
-  DynamicHeapArray<u8> spv;
-  if (!CompileGLSLShaderToVulkanSpv(stage, source_language, source, entry_point, optimization, false, &spv, error))
+    (!m_debug_device && target_language != GPUShaderLanguage::GLSL && target_language != GPUShaderLanguage::GLSLES);
+
+  std::span<const u8> spv;
+  DynamicHeapArray<u8> intermediate_spv;
+  if (source_language == GPUShaderLanguage::GLSLVK)
+  {
+    if (!CompileGLSLShaderToVulkanSpv(stage, source_language, source, entry_point, optimization, false,
+                                      &intermediate_spv, error))
+    {
+      return {};
+    }
+
+    spv = intermediate_spv.cspan();
+  }
+  else if (source_language == GPUShaderLanguage::SPV)
+  {
+    spv = std::span<const u8>(reinterpret_cast<const u8*>(source.data()), source.size());
+
+    if (optimization)
+    {
+      Error optimize_error;
+      std::optional<DynamicHeapArray<u8>> optimized_spv = GPUDevice::OptimizeVulkanSpv(spv, &optimize_error);
+      if (!optimized_spv.has_value())
+      {
+        WARNING_LOG("Failed to optimize SPIR-V: {}", optimize_error.GetDescription());
+      }
+      else
+      {
+        DEV_LOG("SPIR-V optimized from {} bytes to {} bytes", source.length(), optimized_spv->size());
+        intermediate_spv = std::move(optimized_spv.value());
+        spv = intermediate_spv.cspan();
+      }
+    }
+  }
+  else
+  {
+    Error::SetStringFmt(error, "Unsupported source language for transpile: {}",
+                        ShaderLanguageToString(source_language));
     return {};
+  }
 
   std::string dest_source;
-  if (!TranslateVulkanSpvToLanguage(spv.cspan(), stage, target_language, target_version, &dest_source, error))
+  if (!TranslateVulkanSpvToLanguage(spv, stage, target_language, target_version, &dest_source, error))
     return {};
 
   // TODO: MSL needs entry point suffixed.
