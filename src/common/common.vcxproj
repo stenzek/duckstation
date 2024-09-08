@@ -31,6 +31,7 @@
     <ClInclude Include="path.h" />
     <ClInclude Include="perf_scope.h" />
     <ClInclude Include="progress_callback.h" />
+    <ClInclude Include="ryml_helpers.h" />
     <ClInclude Include="scoped_guard.h" />
     <ClInclude Include="settings_interface.h" />
     <ClInclude Include="sha1_digest.h" />
