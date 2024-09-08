@@ -529,10 +529,10 @@ Mensagens não lidas: {}</translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/achievements.cpp" line="2424"/>
-        <source>You have unlocked all achievements and earned {} points!</source>
+        <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
-            <numerusform>Você desbloqueou todas as conquistas e ganhou {} pontos!</numerusform>
+            <numerusform>Você desbloqueou todas as conquistas e ganhou %n pontos!</numerusform>
             <numerusform></numerusform>
         </translation>
     </message>

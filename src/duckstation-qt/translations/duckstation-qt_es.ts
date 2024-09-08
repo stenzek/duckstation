@@ -534,8 +534,8 @@ Mensajes sin leer: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2315"/>
-        <source>You have unlocked all achievements and earned {} points!</source>
-        <translation>Desbloqueaste todos los logros y conseguiste {} puntos!</translation>
+        <source>You have unlocked all achievements and earned %n points!</source>
+        <translation>Desbloqueaste todos los logros y conseguiste %n puntos!</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2320"/>

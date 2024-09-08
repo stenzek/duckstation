@@ -538,8 +538,8 @@ Unread messages: {}</source>
         <translation> (硬核模式)</translation>
     </message>
     <message>
-        <source>You have unlocked all achievements and earned {} points!</source>
-        <translation type="vanished">您已经解锁了全部成就并获得了{}点数！</translation>
+        <source>You have unlocked all achievements and earned %n points!</source>
+        <translation type="vanished">您已经解锁了全部成就并获得了%n点数！</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2479"/>

@@ -2421,7 +2421,7 @@ void Achievements::DrawAchievementsWindow()
       {
         if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
         {
-          text = TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned {} points!",
+          text = TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned %n points!",
                                        "Point count", s_game_summary.points_unlocked);
         }
         else

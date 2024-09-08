@@ -16,25 +16,25 @@
 <context>
     <name>Achievements</name>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1208"/>
+        <location filename="../../core/achievements.cpp" line="1213"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
-            <numerusform>You have unlocked {} of %n achievements</numerusform>
+            <numerusform>You have unlocked the %n achievement</numerusform>
             <numerusform>You have unlocked {} of %n achievements</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1211"/>
+        <location filename="../../core/achievements.cpp" line="1216"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
-            <numerusform>and earned {} of %n points</numerusform>
+            <numerusform>and earned %n point</numerusform>
             <numerusform>and earned {} of %n points</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1286"/>
+        <location filename="../../core/achievements.cpp" line="1291"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -43,8 +43,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1288"/>
-        <location filename="../../core/achievements.cpp" line="2587"/>
+        <location filename="../../core/achievements.cpp" line="1293"/>
+        <location filename="../../core/achievements.cpp" line="2598"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -53,16 +53,16 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2421"/>
-        <source>You have unlocked all achievements and earned {} points!</source>
+        <location filename="../../core/achievements.cpp" line="2424"/>
+        <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
-            <numerusform>You have unlocked all achievements and earned {} point!</numerusform>
-            <numerusform>You have unlocked all achievements and earned {} points!</numerusform>
+            <numerusform>You have unlocked all achievements and earned %n point!</numerusform>
+            <numerusform>You have unlocked all achievements and earned %n points!</numerusform>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2823"/>
+        <location filename="../../core/achievements.cpp" line="2834"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -86,7 +86,7 @@
     <name>GameList</name>
     <message numerus="yes">
         <location filename="../gamelistmodel.cpp" line="258"/>
-        <location filename="../../core/game_list.cpp" line="1314"/>
+        <location filename="../../core/game_list.cpp" line="1327"/>
         <source>%n hours</source>
         <translation>
             <numerusform>%n hour</numerusform>
@@ -95,7 +95,7 @@
     </message>
     <message numerus="yes">
         <location filename="../gamelistmodel.cpp" line="260"/>
-        <location filename="../../core/game_list.cpp" line="1316"/>
+        <location filename="../../core/game_list.cpp" line="1329"/>
         <source>%n minutes</source>
         <translation>
             <numerusform>%n minute</numerusform>
@@ -128,7 +128,7 @@
 <context>
     <name>System</name>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3514"/>
+        <location filename="../../core/system.cpp" line="3549"/>
         <source>%n cheat(s) are now active.</source>
         <translation>
             <numerusform>%n cheat is now active.</numerusform>
@@ -136,7 +136,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3515"/>
+        <location filename="../../core/system.cpp" line="3550"/>
         <source>%n cheat(s) are now inactive.</source>
         <translation>
             <numerusform>%n cheat is now inactive.</numerusform>
@@ -144,7 +144,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="4166"/>
+        <location filename="../../core/system.cpp" line="4201"/>
         <source>%n cheat(s) are enabled. This may crash games.</source>
         <translation>
             <numerusform>%n cheat is enabled. This may crash games.</numerusform>
