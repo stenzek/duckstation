@@ -210,8 +210,8 @@ std::string EncodeHex(const u8* data, int length);
 template<typename T>
 ALWAYS_INLINE static bool IsHexDigit(T ch)
 {
-  return ((ch >= static_cast<T>('a') && ch <= static_cast<T>('a')) ||
-          (ch >= static_cast<T>('A') && ch <= static_cast<T>('Z')) ||
+  return ((ch >= static_cast<T>('a') && ch <= static_cast<T>('f')) ||
+          (ch >= static_cast<T>('A') && ch <= static_cast<T>('F')) ||
           (ch >= static_cast<T>('0') && ch <= static_cast<T>('9')));
 }
 
