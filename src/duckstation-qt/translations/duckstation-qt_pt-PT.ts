@@ -529,7 +529,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2199"/>
-        <source>You have unlocked all achievements and earned {} points!</source>
+        <source>You have unlocked all achievements and earned %n points!</source>
         <translation type="unfinished"></translation>
     </message>
     <message>

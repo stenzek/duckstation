@@ -554,8 +554,8 @@ Unread messages: {}</source>
         <translation> (Хардкорный режим)</translation>
     </message>
     <message>
-        <source>You have unlocked all achievements and earned {} points!</source>
-        <translation type="obsolete">Вы открыли все достижения и заработали {} баллов!</translation>
+        <source>You have unlocked all achievements and earned %n points!</source>
+        <translation type="obsolete">Вы открыли все достижения и заработали %n баллов!</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2484"/>

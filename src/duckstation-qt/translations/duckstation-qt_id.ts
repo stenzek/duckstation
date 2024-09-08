@@ -547,8 +547,8 @@ Leaderboard Position: {} of {}</source>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2247"/>
-        <source>You have unlocked all achievements and earned {} points!</source>
-        <translation>Anda telah membuka semua prestasi dan mendapatkan {} poin!</translation>
+        <source>You have unlocked all achievements and earned %n points!</source>
+        <translation>Anda telah membuka semua prestasi dan mendapatkan %n poin!</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1879"/>

@@ -541,8 +541,8 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2199"/>
-        <source>You have unlocked all achievements and earned {} points!</source>
-        <translation>모든 도전 과제를 봉인 해제하고 {}점을 획득했습니다!</translation>
+        <source>You have unlocked all achievements and earned %n points!</source>
+        <translation>모든 도전 과제를 봉인 해제하고 %n점을 획득했습니다!</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2204"/>

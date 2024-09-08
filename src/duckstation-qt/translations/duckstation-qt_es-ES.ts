@@ -612,11 +612,11 @@ Mensajes sin leer: {}</translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/achievements.cpp" line="2419"/>
-        <source>You have unlocked all achievements and earned {} points!</source>
+        <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
-            <numerusform>¡Has desbloqueado todos los logros y has ganado {} punto!</numerusform>
-            <numerusform>¡Has desbloqueado todos los logros y has ganado {} puntos!</numerusform>
+            <numerusform>¡Has desbloqueado todos los logros y has ganado %n punto!</numerusform>
+            <numerusform>¡Has desbloqueado todos los logros y has ganado %n puntos!</numerusform>
         </translation>
     </message>
     <message>

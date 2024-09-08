@@ -530,8 +530,8 @@ Nieprzeczytane wiadomości: {}</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2245"/>
-        <source>You have unlocked all achievements and earned {} points!</source>
-        <translation>Udało ci się odblokować wszystkie osiągnięcia i zebrać {} punktów!</translation>
+        <source>You have unlocked all achievements and earned %n points!</source>
+        <translation>Udało ci się odblokować wszystkie osiągnięcia i zebrać %n punktów!</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="2250"/>
