@@ -82,9 +82,19 @@ static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> Create
     case RenderAPI::D3D11:
     case RenderAPI::D3D12:
     {
-      return std::make_tuple(std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_hlsl(
-                               (rapi_version < 1100) ? 40 : 50, debug_info, uniforms_to_spec_constants)),
-                             GPUShaderLanguage::HLSL);
+      // Use SPIR-V -> HLSL -> DXIL for D3D12. DXC can't handle texture parameters, which reshade generates.
+      if (rapi == RenderAPI::D3D12 && rapi_version >= 1200)
+      {
+        return std::make_tuple(std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_spirv(
+                                 true, debug_info, uniforms_to_spec_constants, false, false)),
+                               GPUShaderLanguage::SPV);
+      }
+      else
+      {
+        return std::make_tuple(std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_hlsl(
+                                 (rapi_version < 1100) ? 40 : 50, debug_info, uniforms_to_spec_constants)),
+                               GPUShaderLanguage::HLSL);
+      }
     }
     break;
 #endif
