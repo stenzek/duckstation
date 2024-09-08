@@ -773,6 +773,7 @@ protected:
                                                                 std::string_view source, const char* entry_point,
                                                                 GPUShaderLanguage target_language, u32 target_version,
                                                                 DynamicHeapArray<u8>* out_binary, Error* error);
+  static std::optional<DynamicHeapArray<u8>> OptimizeVulkanSpv(const std::span<const u8> spirv, Error* error);
 
   Features m_features = {};
   u32 m_max_texture_size = 0;

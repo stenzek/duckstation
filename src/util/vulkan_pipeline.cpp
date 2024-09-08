@@ -60,6 +60,19 @@ std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromSource(GPUShaderStage s
 {
   if (language == GPUShaderLanguage::SPV)
   {
+    // Optimize the SPIR-V if we're not using a debug device.
+    std::optional<DynamicHeapArray<u8>> optimized_spv;
+    if (!m_debug_device)
+    {
+      Error optimize_error;
+      optimized_spv = GPUDevice::OptimizeVulkanSpv(
+        std::span<const u8>(reinterpret_cast<const u8*>(source.data()), source.size()), &optimize_error);
+      if (!optimized_spv.has_value())
+        WARNING_LOG("Failed to optimize SPIR-V: {}", optimize_error.GetDescription());
+      else
+        source = std::string_view(reinterpret_cast<const char*>(optimized_spv->data()), optimized_spv->size());
+    }
+
     if (out_binary)
       out_binary->assign(reinterpret_cast<const u8*>(source.data()), source.length());
 
