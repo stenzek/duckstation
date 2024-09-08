@@ -148,7 +148,7 @@ bool D3D12Device::CreateDevice(std::string_view adapter, std::optional<bool> exc
 
   // Create the actual device.
   D3D_FEATURE_LEVEL feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
-  for (D3D_FEATURE_LEVEL try_feature_level : {D3D_FEATURE_LEVEL_11_0})
+  for (D3D_FEATURE_LEVEL try_feature_level : {D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_0})
   {
     hr = D3D12CreateDevice(m_adapter.Get(), try_feature_level, IID_PPV_ARGS(&m_device));
     if (SUCCEEDED(hr))

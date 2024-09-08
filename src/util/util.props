@@ -32,6 +32,8 @@
   <ItemGroup>
     <DepsDLLs Include="$(DepsBinDir)cpuinfo.dll" />
     <DepsDLLs Include="$(DepsBinDir)discord-rpc.dll" />
+    <DepsDLLs Include="$(DepsBinDir)dxcompiler.dll" />
+    <DepsDLLs Include="$(DepsBinDir)dxil.dll" />
     <DepsDLLs Include="$(DepsBinDir)freetype.dll" />
     <DepsDLLs Include="$(DepsBinDir)harfbuzz.dll" />
     <DepsDLLs Include="$(DepsBinDir)jpeg62.dll" />
