@@ -206,6 +206,15 @@ inline std::string ToChars(bool value, int base)
 std::optional<std::vector<u8>> DecodeHex(const std::string_view str);
 std::string EncodeHex(const u8* data, int length);
 
+/// Returns true if the character is a hexadecimal digit.
+template<typename T>
+ALWAYS_INLINE static bool IsHexDigit(T ch)
+{
+  return ((ch >= static_cast<T>('a') && ch <= static_cast<T>('a')) ||
+          (ch >= static_cast<T>('A') && ch <= static_cast<T>('Z')) ||
+          (ch >= static_cast<T>('0') && ch <= static_cast<T>('9')));
+}
+
 /// StartsWith/EndsWith variants which aren't case sensitive.
 ALWAYS_INLINE static bool StartsWithNoCase(const std::string_view str, const std::string_view prefix)
 {

@@ -171,11 +171,6 @@ CheatList::CheatList() = default;
 
 CheatList::~CheatList() = default;
 
-static bool IsHexCharacter(char c)
-{
-  return (c >= 'A' && c <= 'F') || (c >= 'a' && c <= 'f') || (c >= '0' && c <= '9');
-}
-
 static int SignedCharToInt(char ch)
 {
   return static_cast<int>(static_cast<unsigned char>(ch));
@@ -285,7 +280,7 @@ bool CheatList::LoadFromPCSXRString(const std::string& str)
       continue;
     }
 
-    while (!IsHexCharacter(*start) && start != end)
+    while (!StringUtil::IsHexDigit(*start) && start != end)
       start++;
     if (start == end)
       continue;
@@ -296,7 +291,7 @@ bool CheatList::LoadFromPCSXRString(const std::string& str)
     inst.second = 0;
     if (end_ptr)
     {
-      while (!IsHexCharacter(*end_ptr) && end_ptr != end)
+      while (!StringUtil::IsHexDigit(*end_ptr) && end_ptr != end)
         end_ptr++;
       if (end_ptr != end)
         inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
@@ -480,7 +475,7 @@ bool CheatList::LoadFromEPSXeString(const std::string& str)
       continue;
     }
 
-    while (!IsHexCharacter(*start) && start != end)
+    while (!StringUtil::IsHexDigit(*start) && start != end)
       start++;
     if (start == end)
       continue;
@@ -491,7 +486,7 @@ bool CheatList::LoadFromEPSXeString(const std::string& str)
     inst.second = 0;
     if (end_ptr)
     {
-      while (!IsHexCharacter(*end_ptr) && end_ptr != end)
+      while (!StringUtil::IsHexDigit(*end_ptr) && end_ptr != end)
         end_ptr++;
       if (end_ptr != end)
         inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
@@ -622,7 +617,7 @@ CheatList::Format CheatList::DetectFileFormat(const std::string& str)
     if (start[0] == '#' || start[0] == ';')
       continue;
 
-    if (std::strncmp(line.data(), "cheats", 6) == 0)
+    if (line.starts_with("cheats"))
       return Format::Libretro;
 
     // pcsxr if we see brackets
@@ -630,7 +625,7 @@ CheatList::Format CheatList::DetectFileFormat(const std::string& str)
       return Format::PCSXR;
 
     // otherwise if it's a code, it's probably epsxe
-    if (std::isdigit(start[0]))
+    if (StringUtil::IsHexDigit(start[0]))
       return Format::EPSXe;
   }
 
@@ -772,7 +767,7 @@ bool CheatList::LoadFromPackage(const std::string& serial)
         continue;
       }
 
-      while (!IsHexCharacter(*start) && start != end)
+      while (!StringUtil::IsHexDigit(*start) && start != end)
         start++;
       if (start == end)
         continue;
@@ -783,7 +778,7 @@ bool CheatList::LoadFromPackage(const std::string& serial)
       inst.second = 0;
       if (end_ptr)
       {
-        while (!IsHexCharacter(*end_ptr) && end_ptr != end)
+        while (!StringUtil::IsHexDigit(*end_ptr) && end_ptr != end)
           end_ptr++;
         if (end_ptr != end)
           inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
@@ -928,7 +923,7 @@ bool CheatCode::SetInstructionsFromString(const std::string& str)
     if (*start == '#' || *start == ';' || *start == '/' || *start == '\"')
       continue;
 
-    while (!IsHexCharacter(*start) && start != end)
+    while (!StringUtil::IsHexDigit(*start) && start != end)
       start++;
     if (start == end)
       continue;
@@ -939,7 +934,7 @@ bool CheatCode::SetInstructionsFromString(const std::string& str)
     inst.second = 0;
     if (end_ptr)
     {
-      while (!IsHexCharacter(*end_ptr) && end_ptr != end)
+      while (!StringUtil::IsHexDigit(*end_ptr) && end_ptr != end)
         end_ptr++;
       if (end_ptr != end)
         inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
