@@ -83,15 +83,16 @@ static std::unique_ptr<reshadefx::codegen> CreateRFXCodegen()
     case RenderAPI::Metal:
     {
       return std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_glsl(
-        false, true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan)));
+        460, false, true, debug_info, uniforms_to_spec_constants, false, (rapi == RenderAPI::Vulkan)));
     }
 
     case RenderAPI::OpenGL:
     case RenderAPI::OpenGLES:
     default:
     {
-      return std::unique_ptr<reshadefx::codegen>(reshadefx::create_codegen_glsl(
-        (rapi == RenderAPI::OpenGLES), false, debug_info, uniforms_to_spec_constants, false, true));
+      return std::unique_ptr<reshadefx::codegen>(
+        reshadefx::create_codegen_glsl(ShaderGen::GetGLSLVersion(rapi), (rapi == RenderAPI::OpenGLES), false,
+                                       debug_info, uniforms_to_spec_constants, false, true));
     }
   }
 }
@@ -120,7 +121,7 @@ static GPUTexture::Format MapTextureFormat(reshadefx::texture_format format)
   return s_mapping[static_cast<u32>(format)];
 }
 
-static GPUSampler::Config MapSampler(const reshadefx::sampler_info& si)
+static GPUSampler::Config MapSampler(const reshadefx::sampler_desc& si)
 {
   GPUSampler::Config config = GPUSampler::GetNearestConfig();
 
@@ -200,44 +201,44 @@ static GPUSampler::Config MapSampler(const reshadefx::sampler_info& si)
   return config;
 }
 
-static GPUPipeline::BlendState MapBlendState(const reshadefx::pass_info& pi)
+static GPUPipeline::BlendState MapBlendState(const reshadefx::pass& pi)
 {
-  static constexpr auto map_blend_op = [](const reshadefx::pass_blend_op o) {
+  static constexpr auto map_blend_op = [](const reshadefx::blend_op o) {
     switch (o)
     {
-      case reshadefx::pass_blend_op::add:
+      case reshadefx::blend_op::add:
         return GPUPipeline::BlendOp::Add;
-      case reshadefx::pass_blend_op::subtract:
+      case reshadefx::blend_op::subtract:
         return GPUPipeline::BlendOp::Subtract;
-      case reshadefx::pass_blend_op::reverse_subtract:
+      case reshadefx::blend_op::reverse_subtract:
         return GPUPipeline::BlendOp::ReverseSubtract;
-      case reshadefx::pass_blend_op::min:
+      case reshadefx::blend_op::min:
         return GPUPipeline::BlendOp::Min;
-      case reshadefx::pass_blend_op::max:
+      case reshadefx::blend_op::max:
       default:
         return GPUPipeline::BlendOp::Max;
     }
   };
-  static constexpr auto map_blend_factor = [](const reshadefx::pass_blend_factor f) {
+  static constexpr auto map_blend_factor = [](const reshadefx::blend_factor f) {
     switch (f)
     {
-      case reshadefx::pass_blend_factor::zero:
+      case reshadefx::blend_factor::zero:
         return GPUPipeline::BlendFunc::Zero;
-      case reshadefx::pass_blend_factor::one:
+      case reshadefx::blend_factor::one:
         return GPUPipeline::BlendFunc::One;
-      case reshadefx::pass_blend_factor::source_color:
+      case reshadefx::blend_factor::source_color:
         return GPUPipeline::BlendFunc::SrcColor;
-      case reshadefx::pass_blend_factor::one_minus_source_color:
+      case reshadefx::blend_factor::one_minus_source_color:
         return GPUPipeline::BlendFunc::InvSrcColor;
-      case reshadefx::pass_blend_factor::dest_color:
+      case reshadefx::blend_factor::dest_color:
         return GPUPipeline::BlendFunc::DstColor;
-      case reshadefx::pass_blend_factor::one_minus_dest_color:
+      case reshadefx::blend_factor::one_minus_dest_color:
         return GPUPipeline::BlendFunc::InvDstColor;
-      case reshadefx::pass_blend_factor::source_alpha:
+      case reshadefx::blend_factor::source_alpha:
         return GPUPipeline::BlendFunc::SrcAlpha;
-      case reshadefx::pass_blend_factor::one_minus_source_alpha:
+      case reshadefx::blend_factor::one_minus_source_alpha:
         return GPUPipeline::BlendFunc::InvSrcAlpha;
-      case reshadefx::pass_blend_factor::dest_alpha:
+      case reshadefx::blend_factor::dest_alpha:
       default:
         return GPUPipeline::BlendFunc::DstAlpha;
     }
@@ -245,13 +246,13 @@ static GPUPipeline::BlendState MapBlendState(const reshadefx::pass_info& pi)
 
   GPUPipeline::BlendState bs = GPUPipeline::BlendState::GetNoBlendingState();
   bs.enable = (pi.blend_enable[0] != 0);
-  bs.blend_op = map_blend_op(pi.blend_op[0]);
-  bs.src_blend = map_blend_factor(pi.src_blend[0]);
-  bs.dst_blend = map_blend_factor(pi.dest_blend[0]);
-  bs.alpha_blend_op = map_blend_op(pi.blend_op_alpha[0]);
-  bs.src_alpha_blend = map_blend_factor(pi.src_blend_alpha[0]);
-  bs.dst_alpha_blend = map_blend_factor(pi.dest_blend_alpha[0]);
-  bs.write_mask = pi.color_write_mask[0];
+  bs.blend_op = map_blend_op(pi.color_blend_op[0]);
+  bs.src_blend = map_blend_factor(pi.source_color_blend_factor[0]);
+  bs.dst_blend = map_blend_factor(pi.dest_color_blend_factor[0]);
+  bs.alpha_blend_op = map_blend_op(pi.alpha_blend_op[0]);
+  bs.src_alpha_blend = map_blend_factor(pi.source_alpha_blend_factor[0]);
+  bs.dst_alpha_blend = map_blend_factor(pi.dest_alpha_blend_factor[0]);
+  bs.write_mask = pi.render_target_write_mask[0];
   return bs;
 }
 
@@ -306,14 +307,19 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
   if (code.empty() || code.back() != '\n')
     code.push_back('\n');
 
-  reshadefx::module temp_module;
+  // TODO: This could use spv, it's probably fastest.
+  std::unique_ptr<reshadefx::codegen> cg = CreateRFXCodegen();
+  if (!cg)
+    return false;
+
   if (!CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetWindowWidth(),
-                    only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetWindowHeight(), &temp_module,
-                    std::move(code), error))
+                    only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetWindowHeight(), cg.get(), std::move(code),
+                    error))
   {
     return false;
   }
 
+  const reshadefx::effect_module& temp_module = cg->module();
   if (!CreateOptions(temp_module, error))
     return false;
 
@@ -321,9 +327,9 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
   if (!temp_module.techniques.empty())
   {
     bool has_passes = false;
-    for (const reshadefx::technique_info& tech : temp_module.techniques)
+    for (const reshadefx::technique& tech : temp_module.techniques)
     {
-      for (const reshadefx::pass_info& pi : tech.passes)
+      for (const reshadefx::pass& pi : tech.passes)
       {
         has_passes = true;
 
@@ -338,15 +344,15 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
 
         if (max_rt > GPUDevice::MAX_RENDER_TARGETS)
         {
-          Error::SetString(error, fmt::format("Too many render targets ({}) in pass {}, only {} are supported.", max_rt,
-                                              pi.name, GPUDevice::MAX_RENDER_TARGETS));
+          Error::SetStringFmt(error, "Too many render targets ({}) in pass {}, only {} are supported.", max_rt, pi.name,
+                              GPUDevice::MAX_RENDER_TARGETS);
           return false;
         }
 
-        if (pi.samplers.size() > GPUDevice::MAX_TEXTURE_SAMPLERS)
+        if (pi.sampler_bindings.size() > GPUDevice::MAX_TEXTURE_SAMPLERS)
         {
-          Error::SetString(error, fmt::format("Too many samplers ({}) in pass {}, only {} are supported.",
-                                              pi.samplers.size(), pi.name, GPUDevice::MAX_TEXTURE_SAMPLERS));
+          Error::SetStringFmt(error, "Too many samplers ({}) in pass {}, only {} are supported.",
+                              pi.sampler_bindings.size(), pi.name, GPUDevice::MAX_TEXTURE_SAMPLERS);
           return false;
         }
       }
@@ -373,7 +379,7 @@ bool PostProcessing::ReShadeFXShader::WantsDepthBuffer() const
   return m_wants_depth_buffer;
 }
 
-bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::module* mod,
+bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::codegen* cg,
                                                    std::string code, Error* error)
 {
   reshadefx::preprocessor pp;
@@ -427,26 +433,21 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
 
   if (!pp.append_string(std::move(code), m_filename))
   {
-    Error::SetString(error, fmt::format("Failed to preprocess:\n{}", pp.errors()));
+    Error::SetStringFmt(error, "Failed to preprocess:\n{}", pp.errors());
     return false;
   }
-
-  std::unique_ptr<reshadefx::codegen> cg = CreateRFXCodegen();
-  if (!cg)
-    return false;
 
   reshadefx::parser parser;
-  if (!parser.parse(pp.output(), cg.get()))
+  if (!parser.parse(pp.output(), cg))
   {
-    Error::SetString(error, fmt::format("Failed to parse:\n{}", parser.errors()));
+    Error::SetStringFmt(error, "Failed to parse:\n{}", parser.errors());
     return false;
   }
 
-  cg->write_result(*mod);
   return true;
 }
 
-static bool HasAnnotationWithName(const reshadefx::uniform_info& uniform, const std::string_view annotation_name)
+static bool HasAnnotationWithName(const reshadefx::uniform& uniform, const std::string_view annotation_name)
 {
   for (const reshadefx::annotation& an : uniform.annotations)
   {
@@ -493,7 +494,7 @@ static bool GetBooleanAnnotationValue(const std::vector<reshadefx::annotation>& 
 }
 
 static PostProcessing::ShaderOption::ValueVector
-GetVectorAnnotationValue(const reshadefx::uniform_info& uniform, const std::string_view annotation_name,
+GetVectorAnnotationValue(const reshadefx::uniform& uniform, const std::string_view annotation_name,
                          const PostProcessing::ShaderOption::ValueVector& default_value)
 {
   PostProcessing::ShaderOption::ValueVector vv = default_value;
@@ -575,9 +576,9 @@ GetVectorAnnotationValue(const reshadefx::uniform_info& uniform, const std::stri
   return vv;
 }
 
-bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod, Error* error)
+bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::effect_module& mod, Error* error)
 {
-  for (const reshadefx::uniform_info& ui : mod.uniforms)
+  for (const reshadefx::uniform& ui : mod.uniforms)
   {
     SourceOptionType so;
     if (!GetSourceOption(ui, &so, error))
@@ -639,7 +640,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
         break;
 
       default:
-        Error::SetString(error, fmt::format("Unhandled uniform type {} ({})", static_cast<u32>(ui.type.base), ui.name));
+        Error::SetStringFmt(error, "Unhandled uniform type {} ({})", static_cast<u32>(ui.type.base), ui.name);
         return false;
     }
 
@@ -648,8 +649,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
     opt.vector_size = ui.type.components();
     if (opt.vector_size == 0 || opt.vector_size > ShaderOption::MAX_VECTOR_COMPONENTS)
     {
-      Error::SetString(error,
-                       fmt::format("Unhandled vector size {} ({})", static_cast<u32>(ui.type.components()), ui.name));
+      Error::SetStringFmt(error, "Unhandled vector size {} ({})", static_cast<u32>(ui.type.components()), ui.name);
       return false;
     }
 
@@ -762,8 +762,7 @@ bool PostProcessing::ReShadeFXShader::CreateOptions(const reshadefx::module& mod
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_info& ui, SourceOptionType* si,
-                                                      Error* error)
+bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform& ui, SourceOptionType* si, Error* error)
 {
   // TODO: Rewrite these to a lookup table instead, this if chain is terrible.
   const std::string_view source = GetStringAnnotationValue(ui.annotations, "source", {});
@@ -773,8 +772,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (ui.type.base != reshadefx::type::t_float || ui.type.components() > 1)
       {
-        Error::SetString(
-          error, fmt::format("Unexpected type '{}' for timer source in uniform '{}'", ui.type.description(), ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for timer source in uniform '{}'", ui.type.description(),
+                            ui.name);
         return false;
       }
 
@@ -785,8 +784,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if ((!ui.type.is_integral() && !ui.type.is_floating_point()) || ui.type.components() > 1)
       {
-        Error::SetString(
-          error, fmt::format("Unexpected type '{}' for timer source in uniform '{}'", ui.type.description(), ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for timer source in uniform '{}'", ui.type.description(),
+                            ui.name);
         return false;
       }
 
@@ -797,8 +796,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (ui.type.base != reshadefx::type::t_float || ui.type.components() > 1)
       {
-        Error::SetString(
-          error, fmt::format("Unexpected type '{}' for timer source in uniform '{}'", ui.type.description(), ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for timer source in uniform '{}'", ui.type.description(),
+                            ui.name);
         return false;
       }
 
@@ -809,8 +808,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() < 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for pingpong source in uniform '{}'",
-                                            ui.type.description(), ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for pingpong source in uniform '{}'", ui.type.description(),
+                            ui.name);
         return false;
       }
 
@@ -821,8 +820,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() < 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for mousepoint source in uniform '{}'",
-                                            ui.type.description(), ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for mousepoint source in uniform '{}'", ui.type.description(),
+                            ui.name);
         return false;
       }
 
@@ -839,8 +838,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if ((!ui.type.is_floating_point() && !ui.type.is_integral()) || ui.type.components() != 1)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' ({} components) for random source in uniform '{}'",
-                                            ui.type.description(), ui.type.components(), ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' ({} components) for random source in uniform '{}'",
+                            ui.type.description(), ui.type.components(), ui.name);
         return false;
       }
 
@@ -896,8 +895,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 1)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -908,8 +907,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 1)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -920,8 +919,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 1)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -932,8 +931,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 1)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -944,8 +943,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 1)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -956,8 +955,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -968,8 +967,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -980,8 +979,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -992,8 +991,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -1004,8 +1003,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -1016,8 +1015,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -1028,8 +1027,8 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     {
       if (!ui.type.is_floating_point() || ui.type.components() != 2)
       {
-        Error::SetString(error, fmt::format("Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(),
-                                            source, ui.name));
+        Error::SetStringFmt(error, "Unexpected type '{}' for {} source in uniform '{}'", ui.type.description(), source,
+                            ui.name);
         return false;
       }
 
@@ -1038,7 +1037,7 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
     }
     else
     {
-      Error::SetString(error, fmt::format("Unknown source '{}' in uniform '{}'", source, ui.name));
+      Error::SetStringFmt(error, "Unknown source '{}' in uniform '{}'", source, ui.name);
       return false;
     }
   }
@@ -1062,11 +1061,11 @@ bool PostProcessing::ReShadeFXShader::GetSourceOption(const reshadefx::uniform_i
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer_format, reshadefx::module& mod,
-                                                   Error* error)
+bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer_format,
+                                                   const reshadefx::effect_module& mod, Error* error)
 {
   u32 total_passes = 0;
-  for (const reshadefx::technique_info& tech : mod.techniques)
+  for (const reshadefx::technique& tech : mod.techniques)
     total_passes += static_cast<u32>(tech.passes.size());
   if (total_passes == 0)
   {
@@ -1077,7 +1076,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
   m_passes.reserve(total_passes);
 
   // Named render targets.
-  for (const reshadefx::texture_info& ti : mod.textures)
+  for (const reshadefx::texture& ti : mod.textures)
   {
     Texture tex;
 
@@ -1097,7 +1096,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
       const std::string_view source = GetStringAnnotationValue(ti.annotations, "source", {});
       if (source.empty())
       {
-        Error::SetString(error, fmt::format("Non-render target texture '{}' is missing source.", ti.unique_name));
+        Error::SetStringFmt(error, "Non-render target texture '{}' is missing source.", ti.unique_name);
         return false;
       }
 
@@ -1111,7 +1110,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         if (std::optional<DynamicHeapArray<u8>> resdata = Host::ReadResourceFile(resource_name.c_str(), true);
             !resdata.has_value() || !image.LoadFromBuffer(resource_name.c_str(), resdata->data(), resdata->size()))
         {
-          Error::SetString(error, fmt::format("Failed to load image '{}' (from '{}')", source, image_path).c_str());
+          Error::SetStringFmt(error, "Failed to load image '{}' (from '{}')", source, image_path);
           return false;
         }
       }
@@ -1121,8 +1120,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
                                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
       if (!tex.texture)
       {
-        Error::SetString(
-          error, fmt::format("Failed to create {}x{} texture ({})", image.GetWidth(), image.GetHeight(), source));
+        Error::SetStringFmt(error, "Failed to create {}x{} texture ({})", image.GetWidth(), image.GetHeight(), source);
         return false;
       }
 
@@ -1133,9 +1131,9 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
     m_textures.push_back(std::move(tex));
   }
 
-  for (reshadefx::technique_info& tech : mod.techniques)
+  for (const reshadefx::technique& tech : mod.techniques)
   {
-    for (reshadefx::pass_info& pi : tech.passes)
+    for (const reshadefx::pass& pi : tech.passes)
     {
       const bool is_final = (&tech == &mod.techniques.back() && &pi == &tech.passes.back());
 
@@ -1164,8 +1162,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
           }
           if (rt == static_cast<TextureID>(m_textures.size()))
           {
-            Error::SetString(error,
-                             fmt::format("Unknown texture '{}' used as render target in pass '{}'", rtname, pi.name));
+            Error::SetStringFmt(error, "Unknown texture '{}' used as render target in pass '{}'", rtname, pi.name);
             return false;
           }
 
@@ -1182,17 +1179,22 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
       }
 
       u32 texture_slot = 0;
-      for (const reshadefx::sampler_info& si : pi.samplers)
+      Assert(pi.texture_bindings.size() == pi.sampler_bindings.size());
+      for (size_t tb_index = 0; tb_index < pi.texture_bindings.size(); tb_index++)
       {
+        const reshadefx::texture_binding& tb = pi.texture_bindings[tb_index];
+        const reshadefx::sampler_binding& sb = pi.sampler_bindings[tb_index];
+
         Sampler sampler;
         sampler.slot = texture_slot++;
-        sampler.reshade_name = si.unique_name;
 
         sampler.texture_id = static_cast<TextureID>(m_textures.size());
-        for (const reshadefx::texture_info& ti : mod.textures)
+        for (const reshadefx::texture& ti : mod.textures)
         {
-          if (ti.unique_name == si.texture_name)
+          if (ti.unique_name == tb.texture_name)
           {
+            sampler.reshade_name = ti.unique_name; // TODO: REMOVE THIS
+
             // found the texture, now look for our side of it
             if (ti.semantic == "COLOR")
             {
@@ -1207,14 +1209,14 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
             }
             else if (!ti.semantic.empty())
             {
-              Error::SetString(error, fmt::format("Unknown semantic {} in texture {}", ti.semantic, ti.name));
+              Error::SetStringFmt(error, "Unknown semantic {} in texture {}", ti.semantic, ti.name);
               return false;
             }
 
             // must be a render target, or another texture
             for (u32 i = 0; i < static_cast<u32>(m_textures.size()); i++)
             {
-              if (m_textures[i].reshade_name == si.texture_name)
+              if (m_textures[i].reshade_name == ti.unique_name)
               {
                 // hook it up
                 sampler.texture_id = static_cast<TextureID>(i);
@@ -1225,16 +1227,16 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
             break;
           }
         }
+
         if (sampler.texture_id == static_cast<TextureID>(m_textures.size()))
         {
-          Error::SetString(
-            error, fmt::format("Unknown texture {} (sampler {}) in pass {}", si.texture_name, si.name, pi.name));
+          Error::SetStringFmt(error, "Unknown texture {} in pass {}", tb.texture_name, pi.name);
           return false;
         }
 
-        DEV_LOG("Pass {} Texture {} => {}", pi.name, si.texture_name, sampler.texture_id);
+        DEV_LOG("Pass {} Texture {} => {}", pi.name, tb.texture_name, sampler.texture_id);
 
-        sampler.sampler = GetSampler(MapSampler(si));
+        sampler.sampler = GetSampler(MapSampler(sb));
         if (!sampler.sampler)
         {
           Error::SetString(error, "Failed to create sampler.");
@@ -1320,14 +1322,18 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   if (fxcode.empty() || fxcode.back() != '\n')
     fxcode.push_back('\n');
 
+  std::unique_ptr<reshadefx::codegen> cg = CreateRFXCodegen();
+  if (!cg)
+    return false;
+
   Error error;
-  reshadefx::module mod;
-  if (!CreateModule(width, height, &mod, std::move(fxcode), &error))
+  if (!CreateModule(width, height, cg.get(), std::move(fxcode), &error))
   {
     ERROR_LOG("Failed to create module for '{}': {}", m_name, error.GetDescription());
     return false;
   }
 
+  const reshadefx::effect_module& mod = cg->module();
   DebugAssert(!mod.techniques.empty());
 
   if (!CreatePasses(format, mod, &error))
@@ -1336,53 +1342,16 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
     return false;
   }
 
-  const std::string_view code(mod.code.data(), mod.code.size());
+  // TODO: If using spv, this will be populated.
+  // const std::string effect_code = cg->finalize_code();
 
-  auto get_shader = [api, needs_main_defn, &code](const std::string& name, const std::span<Sampler> samplers,
-                                                  GPUShaderStage stage) {
-    std::string real_code;
-    if (needs_main_defn)
-    {
-      // dFdx/dFdy are not defined in the vertex shader.
-      const char* defns =
-        (stage == GPUShaderStage::Vertex) ? "#define dFdx(x) x\n#define dFdy(x) x\n#define discard\n" : "";
-      const char* precision = (api == RenderAPI::OpenGLES) ?
-                                "precision highp float;\nprecision highp int;\nprecision highp sampler2D;\n" :
-                                "";
+  auto get_shader = [api, needs_main_defn, &cg](const std::string& name, const std::span<Sampler> samplers,
+                                                GPUShaderStage stage) {
+    const std::string real_code = cg->finalize_code_for_entry_point(name);
 
-      TinyString version_string = "#version 460 core\n";
-#ifdef ENABLE_OPENGL
-      if (api == RenderAPI::OpenGL || api == RenderAPI::OpenGLES)
-        version_string = ShaderGen::GetGLSLVersionString(api, ShaderGen::GetGLSLVersion(api));
+#if 0
+    FileSystem::WriteStringToFile(fmt::format("D:\\reshade_{}.txt", Path::SanitizeFileName(name)).c_str(), real_code);
 #endif
-      real_code = fmt::format("{}\n#define ENTRY_POINT_{}\n{}\n{}\n{}", version_string, name, defns, precision, code);
-
-      for (const Sampler& sampler : samplers)
-      {
-        std::string decl = fmt::format("binding = /*SAMPLER:{}*/0", sampler.reshade_name);
-        std::string replacement = fmt::format("binding = {}", sampler.slot);
-        StringUtil::ReplaceAll(&real_code, decl, replacement);
-      }
-    }
-    else
-    {
-      real_code = std::string(code);
-
-      for (const Sampler& sampler : samplers)
-      {
-        std::string decl = fmt::format("__{}_t : register( t0);", sampler.reshade_name);
-        std::string replacement =
-          fmt::format("__{}_t : register({}t{});", sampler.reshade_name, (sampler.slot < 10) ? " " : "", sampler.slot);
-        StringUtil::ReplaceAll(&real_code, decl, replacement);
-
-        decl = fmt::format("__{}_s : register( s0);", sampler.reshade_name);
-        replacement =
-          fmt::format("__{}_s : register({}s{});", sampler.reshade_name, (sampler.slot < 10) ? " " : "", sampler.slot);
-        StringUtil::ReplaceAll(&real_code, decl, replacement);
-      }
-    }
-
-    // FileSystem::WriteStringToFile("D:\\foo.txt", real_code);
 
     Error error;
     std::unique_ptr<GPUShader> sshader = g_gpu_device->CreateShader(
@@ -1407,15 +1376,15 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   progress->PushState();
 
   size_t total_passes = 0;
-  for (const reshadefx::technique_info& tech : mod.techniques)
+  for (const reshadefx::technique& tech : mod.techniques)
     total_passes += tech.passes.size();
   progress->SetProgressRange(static_cast<u32>(total_passes));
   progress->SetProgressValue(0);
 
   u32 passnum = 0;
-  for (const reshadefx::technique_info& tech : mod.techniques)
+  for (const reshadefx::technique& tech : mod.techniques)
   {
-    for (const reshadefx::pass_info& info : tech.passes)
+    for (const reshadefx::pass& info : tech.passes)
     {
       DebugAssert(passnum < m_passes.size());
       Pass& pass = m_passes[passnum++];

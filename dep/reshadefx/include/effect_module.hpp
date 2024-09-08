@@ -7,14 +7,48 @@
 
 #include "effect_expression.hpp"
 #include <cstdint>
-#include <unordered_set>
 
 namespace reshadefx
 {
 	/// <summary>
-	/// A list of supported texture types.
+	/// Describes an annotation attached to a variable.
 	/// </summary>
-	enum class texture_type
+	struct annotation
+	{
+		reshadefx::type type = {};
+		std::string name;
+		reshadefx::constant value = {};
+	};
+
+	/// <summary>
+	/// Describes a struct member or parameter.
+	/// </summary>
+	struct member_type
+	{
+		reshadefx::type type = {};
+		uint32_t id = 0;
+		std::string name;
+		std::string semantic;
+		reshadefx::location location;
+		bool has_default_value = false;
+		reshadefx::constant default_value = {};
+	};
+
+	/// <summary>
+	/// Describes a struct type defined in effect code.
+	/// </summary>
+	struct struct_type
+	{
+		uint32_t id = 0;
+		std::string name;
+		std::string unique_name;
+		std::vector<member_type> member_list;
+	};
+
+	/// <summary>
+	/// Available texture types.
+	/// </summary>
+	enum class texture_type : uint8_t
 	{
 		texture_1d = 1,
 		texture_2d = 2,
@@ -22,9 +56,9 @@ namespace reshadefx
 	};
 
 	/// <summary>
-	/// A list of supported texture formats.
+	/// Available texture formats.
 	/// </summary>
-	enum class texture_format
+	enum class texture_format : uint8_t
 	{
 		unknown,
 
@@ -46,9 +80,46 @@ namespace reshadefx
 	};
 
 	/// <summary>
-	/// A filtering type used for texture lookups.
+	/// Describes the properties of a <see cref="texture"/> object.
 	/// </summary>
-	enum class filter_mode
+	struct texture_desc
+	{
+		uint32_t width = 1;
+		uint32_t height = 1;
+		uint16_t depth = 1;
+		uint16_t levels = 1;
+		texture_type type = texture_type::texture_2d;
+		texture_format format = texture_format::rgba8;
+	};
+
+	/// <summary>
+	/// Describes a texture object defined in effect code.
+	/// </summary>
+	struct texture : texture_desc
+	{
+		uint32_t id = 0;
+		std::string name;
+		std::string unique_name;
+		std::string semantic;
+		std::vector<annotation> annotations;
+		bool render_target = false;
+		bool storage_access = false;
+	};
+
+	/// <summary>
+	/// Describes the binding of a <see cref="texture"/> object.
+	/// </summary>
+	struct texture_binding
+	{
+		uint32_t binding = 0;
+		std::string texture_name;
+		bool srgb = false;
+	};
+
+	/// <summary>
+	/// Texture filtering modes available for texture sampling operations.
+	/// </summary>
+	enum class filter_mode : uint8_t
 	{
 		min_mag_mip_point = 0,
 		min_mag_point_mip_linear = 0x1,
@@ -57,13 +128,14 @@ namespace reshadefx
 		min_linear_mag_mip_point = 0x10,
 		min_linear_mag_point_mip_linear = 0x11,
 		min_mag_linear_mip_point = 0x14,
-		min_mag_mip_linear = 0x15
+		min_mag_mip_linear = 0x15,
+		anisotropic = 0x55
 	};
 
 	/// <summary>
-	/// Specifies behavior of sampling with texture coordinates outside an image.
+	/// Sampling behavior at texture coordinates outside the bounds of a texture resource.
 	/// </summary>
-	enum class texture_address_mode
+	enum class texture_address_mode : uint8_t
 	{
 		wrap = 1,
 		mirror = 2,
@@ -72,9 +144,117 @@ namespace reshadefx
 	};
 
 	/// <summary>
-	/// Specifies RGB or alpha blending operations.
+	/// Describes the properties of a <see cref="sampler"/> object.
 	/// </summary>
-	enum class pass_blend_op : uint8_t
+	struct sampler_desc
+	{
+		filter_mode filter = filter_mode::min_mag_mip_linear;
+		texture_address_mode address_u = texture_address_mode::clamp;
+		texture_address_mode address_v = texture_address_mode::clamp;
+		texture_address_mode address_w = texture_address_mode::clamp;
+		float min_lod = -3.402823466e+38f;
+		float max_lod = +3.402823466e+38f; // FLT_MAX
+		float lod_bias = 0.0f;
+	};
+
+	/// <summary>
+	/// Describes a texture sampler object defined in effect code.
+	/// </summary>
+	struct sampler : sampler_desc
+	{
+		reshadefx::type type = {};
+		uint32_t id = 0;
+		std::string name;
+		std::string unique_name;
+		std::string texture_name;
+		std::vector<annotation> annotations;
+		bool srgb = false;
+	};
+
+	/// <summary>
+	/// Describes the binding of a <see cref="sampler"/> object.
+	/// </summary>
+	struct sampler_binding : sampler_desc
+	{
+		uint32_t binding = 0;
+	};
+
+	/// <summary>
+	/// Describes the properties of a <see cref="storage"/> object.
+	/// </summary>
+	struct storage_desc
+	{
+		uint16_t level = 0;
+	};
+
+	/// <summary>
+	/// Describes a texture storage object defined in effect code.
+	/// </summary>
+	struct storage : storage_desc
+	{
+		reshadefx::type type = {};
+		uint32_t id = 0;
+		std::string name;
+		std::string unique_name;
+		std::string texture_name;
+	};
+
+	/// <summary>
+	/// Describes the binding of a <see cref="storage"/> object.
+	/// </summary>
+	struct storage_binding : storage_desc
+	{
+		uint32_t binding = 0;
+		std::string texture_name;
+	};
+
+	/// <summary>
+	/// Describes a uniform variable defined in effect code.
+	/// </summary>
+	struct uniform
+	{
+		reshadefx::type type = {};
+		std::string name;
+		uint32_t size = 0;
+		uint32_t offset = 0;
+		std::vector<annotation> annotations;
+		bool has_initializer_value = false;
+		reshadefx::constant initializer_value = {};
+	};
+
+	/// <summary>
+	/// Type of a shader entry point.
+	/// </summary>
+	enum class shader_type
+	{
+		unknown,
+		vertex,
+		pixel,
+		compute
+	};
+
+	/// <summary>
+	/// Describes a function defined in effect code.
+	/// </summary>
+	struct function
+	{
+		reshadefx::type return_type = {};
+		uint32_t id = 0;
+		std::string name;
+		std::string unique_name;
+		std::string return_semantic;
+		std::vector<member_type> parameter_list;
+		shader_type type = shader_type::unknown;
+		int num_threads[3] = {};
+		std::vector<uint32_t> referenced_samplers;
+		std::vector<uint32_t> referenced_storages;
+		std::vector<uint32_t> referenced_functions;
+	};
+
+	/// <summary>
+	/// Color or alpha blending operations.
+	/// </summary>
+	enum class blend_op : uint8_t
 	{
 		add = 1,
 		subtract,
@@ -84,9 +264,9 @@ namespace reshadefx
 	};
 
 	/// <summary>
-	/// Specifies blend factors, which modulate values between the pixel shader output and render target.
+	/// Blend factors in color or alpha blending operations, which modulate values between the pixel shader output and render target.
 	/// </summary>
-	enum class pass_blend_factor : uint8_t
+	enum class blend_factor : uint8_t
 	{
 		zero = 0,
 		one = 1,
@@ -101,9 +281,9 @@ namespace reshadefx
 	};
 
 	/// <summary>
-	/// Specifies the stencil operations that can be performed during depth-stencil testing.
+	/// Stencil operations that can be performed during depth-stencil testing.
 	/// </summary>
-	enum class pass_stencil_op : uint8_t
+	enum class stencil_op : uint8_t
 	{
 		zero = 0,
 		keep,
@@ -116,9 +296,9 @@ namespace reshadefx
 	};
 
 	/// <summary>
-	/// Specifies comparison options for depth-stencil testing.
+	/// Comparison operations for depth-stencil testing.
 	/// </summary>
-	enum class pass_stencil_func : uint8_t
+	enum class stencil_func : uint8_t
 	{
 		never,
 		less,
@@ -143,205 +323,70 @@ namespace reshadefx
 	};
 
 	/// <summary>
-	/// A struct type defined in the effect code.
+	/// Describes a render pass with all its state info.
 	/// </summary>
-	struct struct_info
-	{
-		std::string name;
-		std::string unique_name;
-		std::vector<struct struct_member_info> member_list;
-		uint32_t definition = 0;
-	};
-
-	/// <summary>
-	/// A struct field defined in the effect code.
-	/// </summary>
-	struct struct_member_info
-	{
-		reshadefx::type type;
-		std::string name;
-		std::string semantic;
-		reshadefx::location location;
-		uint32_t definition = 0;
-	};
-
-	/// <summary>
-	/// An annotation attached to a variable.
-	/// </summary>
-	struct annotation
-	{
-		reshadefx::type type;
-		std::string name;
-		reshadefx::constant value;
-	};
-
-	/// <summary>
-	/// A texture defined in the effect code.
-	/// </summary>
-	struct texture_info
-	{
-		uint32_t id = 0;
-		uint32_t binding = 0;
-		std::string name;
-		std::string semantic;
-		std::string unique_name;
-		std::vector<annotation> annotations;
-		texture_type type = texture_type::texture_2d;
-		uint32_t width = 1;
-		uint32_t height = 1;
-		uint16_t depth = 1;
-		uint16_t levels = 1;
-		texture_format format = texture_format::rgba8;
-		bool render_target = false;
-		bool storage_access = false;
-	};
-
-	/// <summary>
-	/// A texture sampler defined in the effect code.
-	/// </summary>
-	struct sampler_info
-	{
-		uint32_t id = 0;
-		uint32_t binding = 0;
-		uint32_t texture_binding = 0;
-		std::string name;
-		reshadefx::type type;
-		std::string unique_name;
-		std::string texture_name;
-		std::vector<annotation> annotations;
-		filter_mode filter = filter_mode::min_mag_mip_linear;
-		texture_address_mode address_u = texture_address_mode::clamp;
-		texture_address_mode address_v = texture_address_mode::clamp;
-		texture_address_mode address_w = texture_address_mode::clamp;
-		float min_lod = -3.402823466e+38f;
-		float max_lod = +3.402823466e+38f; // FLT_MAX
-		float lod_bias = 0.0f;
-		uint8_t srgb = false;
-	};
-
-	/// <summary>
-	/// A texture storage object defined in the effect code.
-	/// </summary>
-	struct storage_info
-	{
-		uint32_t id = 0;
-		uint32_t binding = 0;
-		std::string name;
-		reshadefx::type type;
-		std::string unique_name;
-		std::string texture_name;
-		uint16_t level = 0;
-	};
-
-	/// <summary>
-	/// An uniform variable defined in the effect code.
-	/// </summary>
-	struct uniform_info
-	{
-		std::string name;
-		reshadefx::type type;
-		uint32_t size = 0;
-		uint32_t offset = 0;
-		std::vector<annotation> annotations;
-		bool has_initializer_value = false;
-		reshadefx::constant initializer_value;
-	};
-
-	/// <summary>
-	/// Type of a shader entry point.
-	/// </summary>
-	enum class shader_type
-	{
-		vs,
-		ps,
-		cs,
-	};
-
-	/// <summary>
-	/// A shader entry point function.
-	/// </summary>
-	struct entry_point
-	{
-		std::string name;
-		shader_type type;
-	};
-
-	/// <summary>
-	/// A function defined in the effect code.
-	/// </summary>
-	struct function_info
-	{
-		uint32_t definition;
-		std::string name;
-		std::string unique_name;
-		reshadefx::type return_type;
-		std::string return_semantic;
-		std::vector<struct_member_info> parameter_list;
-		std::unordered_set<uint32_t> referenced_samplers;
-		std::unordered_set<uint32_t> referenced_storages;
-	};
-
-	/// <summary>
-	/// A render pass with all its state info.
-	/// </summary>
-	struct pass_info
+	struct pass
 	{
 		std::string name;
 		std::string render_target_names[8] = {};
 		std::string vs_entry_point;
 		std::string ps_entry_point;
 		std::string cs_entry_point;
-		uint8_t generate_mipmaps = true;
-		uint8_t clear_render_targets = false;
-		uint8_t srgb_write_enable = false;
-		uint8_t blend_enable[8] = { false, false, false, false, false, false, false, false };
-		uint8_t stencil_enable = false;
-		uint8_t color_write_mask[8] = { 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF };
+		bool generate_mipmaps = true;
+		bool clear_render_targets = false;
+		bool blend_enable[8] = { false, false, false, false, false, false, false, false };
+		blend_factor source_color_blend_factor[8] = { blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one };
+		blend_factor dest_color_blend_factor[8] = { blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero };
+		blend_op color_blend_op[8] = { blend_op::add, blend_op::add, blend_op::add, blend_op::add, blend_op::add, blend_op::add, blend_op::add, blend_op::add };
+		blend_factor source_alpha_blend_factor[8] = { blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one, blend_factor::one };
+		blend_factor dest_alpha_blend_factor[8] = { blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero, blend_factor::zero };
+		blend_op alpha_blend_op[8] = { blend_op::add, blend_op::add, blend_op::add, blend_op::add, blend_op::add, blend_op::add, blend_op::add, blend_op::add };
+		bool srgb_write_enable = false;
+		uint8_t render_target_write_mask[8] = { 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF, 0xF };
+		bool stencil_enable = false;
 		uint8_t stencil_read_mask = 0xFF;
 		uint8_t stencil_write_mask = 0xFF;
-		pass_blend_op blend_op[8] = { pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add };
-		pass_blend_op blend_op_alpha[8] = { pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add, pass_blend_op::add };
-		pass_blend_factor src_blend[8] = { pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one };
-		pass_blend_factor dest_blend[8] = { pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero };
-		pass_blend_factor src_blend_alpha[8] = { pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one, pass_blend_factor::one };
-		pass_blend_factor dest_blend_alpha[8] = { pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero, pass_blend_factor::zero };
-		pass_stencil_func stencil_comparison_func = pass_stencil_func::always;
-		uint32_t stencil_reference_value = 0;
-		pass_stencil_op stencil_op_pass = pass_stencil_op::keep;
-		pass_stencil_op stencil_op_fail = pass_stencil_op::keep;
-		pass_stencil_op stencil_op_depth_fail = pass_stencil_op::keep;
-		uint32_t num_vertices = 3;
+		stencil_func stencil_comparison_func = stencil_func::always;
+		stencil_op stencil_pass_op = stencil_op::keep;
+		stencil_op stencil_fail_op = stencil_op::keep;
+		stencil_op stencil_depth_fail_op = stencil_op::keep;
 		primitive_topology topology = primitive_topology::triangle_list;
+		uint32_t stencil_reference_value = 0;
+		uint32_t num_vertices = 3;
 		uint32_t viewport_width = 0;
 		uint32_t viewport_height = 0;
 		uint32_t viewport_dispatch_z = 1;
-		std::vector<sampler_info> samplers;
-		std::vector<storage_info> storages;
+
+		// Bindings specific for the code generation target (in case of combined texture and sampler, 'texture_bindings' and 'sampler_bindings' will be the same size and point to the same bindings, otherwise they are independent)
+		std::vector<texture_binding> texture_bindings;
+		std::vector<sampler_binding> sampler_bindings;
+		std::vector<storage_binding> storage_bindings;
 	};
 
 	/// <summary>
 	/// A collection of passes that make up an effect.
 	/// </summary>
-	struct technique_info
+	struct technique
 	{
 		std::string name;
-		std::vector<pass_info> passes;
+		std::vector<pass> passes;
 		std::vector<annotation> annotations;
 	};
 
 	/// <summary>
 	/// In-memory representation of an effect file.
 	/// </summary>
-	struct module
+	struct effect_module
 	{
-		std::vector<char> code;
+		std::vector<std::pair<std::string, shader_type>> entry_points;
 
-		std::vector<entry_point> entry_points;
-		std::vector<texture_info> textures;
-		std::vector<sampler_info> samplers;
-		std::vector<storage_info> storages;
-		std::vector<uniform_info> uniforms, spec_constants;
-		std::vector<technique_info> techniques;
+		std::vector<texture> textures;
+		std::vector<sampler> samplers;
+		std::vector<storage> storages;
+
+		std::vector<uniform> uniforms;
+		std::vector<uniform> spec_constants;
+		std::vector<technique> techniques;
 
 		uint32_t total_uniform_size = 0;
 		uint32_t num_texture_bindings = 0;

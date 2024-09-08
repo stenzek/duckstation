@@ -1,3 +1,7 @@
+/*
+ * SPDX-License-Identifier: CC0-1.0
+ */
+
 #pragma once
 
 #if !defined(__RESHADE__) || __RESHADE__ < 30000
@@ -105,6 +109,7 @@ namespace ReShade
 }
 
 // Vertex shader generating a triangle covering the entire screen
+// See also https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/
 void PostProcessVS(in uint id : SV_VertexID, out float4 position : SV_Position, out float2 texcoord : TEXCOORD)
 {
 	texcoord.x = (id == 2) ? 2.0 : 0.0;
