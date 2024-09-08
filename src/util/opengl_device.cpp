@@ -55,11 +55,6 @@ void OpenGLDevice::SetErrorObject(Error* errptr, std::string_view prefix, GLenum
   Error::SetStringFmt(errptr, "{}GL Error 0x{:04X}", prefix, static_cast<unsigned>(glerr));
 }
 
-RenderAPI OpenGLDevice::GetRenderAPI() const
-{
-  return m_gl_context->IsGLES() ? RenderAPI::OpenGLES : RenderAPI::OpenGL;
-}
-
 std::unique_ptr<GPUTexture> OpenGLDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                         GPUTexture::Type type, GPUTexture::Format format,
                                                         const void* data, u32 data_stride)
@@ -346,6 +341,13 @@ bool OpenGLDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
 bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
 {
   const bool is_gles = m_gl_context->IsGLES();
+
+  m_render_api = is_gles ? RenderAPI::OpenGLES : RenderAPI::OpenGL;
+
+  GLint major_version = 0, minor_version = 0;
+  glGetIntegerv(GL_MAJOR_VERSION, &major_version);
+  glGetIntegerv(GL_MINOR_VERSION, &minor_version);
+  m_render_api_version = (static_cast<u32>(major_version) * 100u) + (static_cast<u32>(minor_version) * 10u);
 
   bool vendor_id_amd = false;
   // bool vendor_id_nvidia = false;

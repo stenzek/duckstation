@@ -188,6 +188,10 @@ public:
   ALWAYS_INLINE void push_back(value_type val) { append(val); }
   ALWAYS_INLINE void pop_back() { erase(-1); }
 
+  // case conversion
+  void convert_to_lower_case();
+  void convert_to_upper_case();
+
   // returns a string view for this string
   std::string_view view() const;
 

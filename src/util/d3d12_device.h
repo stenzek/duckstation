@@ -58,8 +58,6 @@ public:
   D3D12Device();
   ~D3D12Device() override;
 
-  RenderAPI GetRenderAPI() const override;
-
   bool HasSurface() const override;
 
   bool UpdateWindow() override;
@@ -220,9 +218,18 @@ private:
     bool has_timestamp_query = false;
   };
 
+  struct PIPELINE_CACHE_HEADER
+  {
+    u64 adapter_luid;
+    u32 render_api_version;
+    u32 unused;
+  };
+  static_assert(sizeof(PIPELINE_CACHE_HEADER) == 16);
+
   using SamplerMap = std::unordered_map<u64, D3D12DescriptorHandle>;
 
-  void SetFeatures(FeatureMask disabled_features);
+  void GetPipelineCacheHeader(PIPELINE_CACHE_HEADER* hdr);
+  void SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disabled_features);
 
   u32 GetSwapChainBufferCount() const;
   bool CreateSwapChain(Error* error);
@@ -291,7 +298,6 @@ private:
 
   std::array<CommandList, NUM_COMMAND_LISTS> m_command_lists;
   u32 m_current_command_list = NUM_COMMAND_LISTS - 1;
-  D3D_FEATURE_LEVEL m_feature_level = D3D_FEATURE_LEVEL_11_0;
 
   ComPtr<IDXGIFactory5> m_dxgi_factory;
   ComPtr<IDXGISwapChain1> m_swap_chain;

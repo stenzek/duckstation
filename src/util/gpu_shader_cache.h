@@ -50,7 +50,7 @@ public:
 
   bool IsOpen() const { return (m_index_file != nullptr); }
 
-  bool Open(std::string_view base_filename, u32 version);
+  bool Open(std::string_view base_filename, u32 render_api_version, u32 cache_version);
   bool Create();
   void Close();
 
@@ -77,6 +77,7 @@ private:
   CacheIndex m_index;
 
   std::string m_base_filename;
+  u32 m_render_api_version = 0;
   u32 m_version = 0;
 
   std::FILE* m_index_file = nullptr;

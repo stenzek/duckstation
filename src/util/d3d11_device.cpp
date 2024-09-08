@@ -53,11 +53,6 @@ D3D11Device::~D3D11Device()
   Assert(!m_device);
 }
 
-RenderAPI D3D11Device::GetRenderAPI() const
-{
-  return RenderAPI::D3D11;
-}
-
 bool D3D11Device::HasSurface() const
 {
   return static_cast<bool>(m_swap_chain);
@@ -127,7 +122,8 @@ bool D3D11Device::CreateDevice(std::string_view adapter, std::optional<bool> exc
     INFO_LOG("D3D Adapter: {}", D3DCommon::GetAdapterName(dxgi_adapter.Get()));
   else
     ERROR_LOG("Failed to obtain D3D adapter name.");
-  INFO_LOG("Max device feature level: {}", D3DCommon::GetFeatureLevelString(m_max_feature_level));
+  INFO_LOG("Max device feature level: {}",
+           D3DCommon::GetFeatureLevelString(D3DCommon::GetRenderAPIVersionForFeatureLevel(m_max_feature_level)));
 
   BOOL allow_tearing_supported = false;
   hr = m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
@@ -164,6 +160,8 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
 {
   const D3D_FEATURE_LEVEL feature_level = m_device->GetFeatureLevel();
 
+  m_render_api = RenderAPI::D3D11;
+  m_render_api_version = D3DCommon::GetRenderAPIVersionForFeatureLevel(feature_level);
   m_max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
   m_max_multisamples = 1;
   for (u32 multisamples = 2; multisamples < D3D11_MAX_MULTISAMPLE_SAMPLE_COUNT; multisamples++)
@@ -443,12 +441,11 @@ bool D3D11Device::SupportsExclusiveFullscreen() const
 
 std::string D3D11Device::GetDriverInfo() const
 {
-  const D3D_FEATURE_LEVEL fl = m_device->GetFeatureLevel();
-  std::string ret =
-    fmt::format("{} ({})\n", D3DCommon::GetFeatureLevelString(fl), D3DCommon::GetFeatureLevelShaderModelString(fl));
+  std::string ret = fmt::format("{} (Shader Model {})\n", D3DCommon::GetFeatureLevelString(m_render_api_version),
+                                D3DCommon::GetShaderModelForFeatureLevelNumber(m_render_api_version));
 
   ComPtr<IDXGIDevice> dxgi_dev;
-  if (m_device.As(&dxgi_dev))
+  if (SUCCEEDED(m_device.As(&dxgi_dev)))
   {
     ComPtr<IDXGIAdapter> dxgi_adapter;
     if (SUCCEEDED(dxgi_dev->GetAdapter(dxgi_adapter.GetAddressOf())))

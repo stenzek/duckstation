@@ -137,11 +137,6 @@ MetalDevice::~MetalDevice()
   Assert(m_device == nil);
 }
 
-RenderAPI MetalDevice::GetRenderAPI() const
-{
-  return RenderAPI::Metal;
-}
-
 bool MetalDevice::HasSurface() const
 {
   return (m_layer != nil);
@@ -234,6 +229,8 @@ bool MetalDevice::CreateDevice(std::string_view adapter, std::optional<bool> exc
 
 void MetalDevice::SetFeatures(FeatureMask disabled_features)
 {
+  m_render_api = RenderAPI::Metal;
+  m_render_api_version = 100; // TODO: Make this more meaningful.
   m_max_texture_size = GetMetalMaxTextureSize(m_device);
   m_max_multisamples = GetMetalMaxMultisamples(m_device);
 

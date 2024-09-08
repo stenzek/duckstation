@@ -18,7 +18,7 @@
 #include <string_view>
 #include <vector>
 
-enum class RenderAPI : u32;
+enum class RenderAPI : u8;
 enum class MediaCaptureBackend : u8;
 
 struct SettingInfo

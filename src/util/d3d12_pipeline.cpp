@@ -38,7 +38,7 @@ std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromSource(GPUShaderStage st
                                                                std::string_view source, const char* entry_point,
                                                                DynamicHeapArray<u8>* out_binary, Error* error)
 {
-  const u32 shader_model = D3DCommon::GetShaderModelForFeatureLevel(m_feature_level);
+  const u32 shader_model = D3DCommon::GetShaderModelForFeatureLevelNumber(m_render_api_version);
   if (language != GPUShaderLanguage::HLSL)
   {
     return TranspileAndCreateShaderFromSource(stage, language, source, entry_point, GPUShaderLanguage::HLSL,

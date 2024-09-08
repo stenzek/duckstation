@@ -21,7 +21,7 @@ struct WindowInfo;
 enum class AudioBackend : u8;
 enum class AudioExpansionMode : u8;
 enum class AudioStretchMode : u8;
-enum class RenderAPI : u32;
+enum class RenderAPI : u8;
 class AudioStream;
 class CDImage;
 

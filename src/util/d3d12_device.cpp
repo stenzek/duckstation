@@ -147,12 +147,13 @@ bool D3D12Device::CreateDevice(std::string_view adapter, std::optional<bool> exc
   }
 
   // Create the actual device.
+  D3D_FEATURE_LEVEL feature_level = D3D_FEATURE_LEVEL_1_0_CORE;
   for (D3D_FEATURE_LEVEL try_feature_level : {D3D_FEATURE_LEVEL_11_0})
   {
     hr = D3D12CreateDevice(m_adapter.Get(), try_feature_level, IID_PPV_ARGS(&m_device));
     if (SUCCEEDED(hr))
     {
-      m_feature_level = try_feature_level;
+      feature_level = try_feature_level;
       break;
     }
   }
@@ -232,7 +233,7 @@ bool D3D12Device::CreateDevice(std::string_view adapter, std::optional<bool> exc
     return false;
   }
 
-  SetFeatures(disabled_features);
+  SetFeatures(feature_level, disabled_features);
 
   if (!CreateCommandLists(error) || !CreateDescriptorHeaps(error))
     return false;
@@ -282,10 +283,28 @@ void D3D12Device::DestroyDevice()
   m_dxgi_factory.Reset();
 }
 
+void D3D12Device::GetPipelineCacheHeader(PIPELINE_CACHE_HEADER* hdr)
+{
+  const LUID adapter_luid = m_device->GetAdapterLuid();
+  std::memcpy(&hdr->adapter_luid, &adapter_luid, sizeof(hdr->adapter_luid));
+  hdr->render_api_version = m_render_api_version;
+  hdr->unused = 0;
+}
+
 bool D3D12Device::ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data)
 {
+  PIPELINE_CACHE_HEADER expected_header;
+  GetPipelineCacheHeader(&expected_header);
+  if (data.has_value() && (data->size() < sizeof(PIPELINE_CACHE_HEADER) ||
+                           std::memcmp(data->data(), &expected_header, sizeof(PIPELINE_CACHE_HEADER)) != 0))
+  {
+    WARNING_LOG("Pipeline cache header does not match current device, ignoring.");
+    data.reset();
+  }
+
   HRESULT hr =
-    m_device->CreatePipelineLibrary(data.has_value() ? data->data() : nullptr, data.has_value() ? data->size() : 0,
+    m_device->CreatePipelineLibrary(data.has_value() ? (data->data() + sizeof(PIPELINE_CACHE_HEADER)) : nullptr,
+                                    data.has_value() ? (data->size() - sizeof(PIPELINE_CACHE_HEADER)) : 0,
                                     IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
   if (SUCCEEDED(hr))
   {
@@ -328,8 +347,13 @@ bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
     return true;
   }
 
-  data->resize(size);
-  const HRESULT hr = m_pipeline_library->Serialize(data->data(), data->size());
+  PIPELINE_CACHE_HEADER header;
+  GetPipelineCacheHeader(&header);
+
+  data->resize(sizeof(PIPELINE_CACHE_HEADER) + size);
+  std::memcpy(data->data(), &header, sizeof(PIPELINE_CACHE_HEADER));
+
+  const HRESULT hr = m_pipeline_library->Serialize(data->data() + sizeof(PIPELINE_CACHE_HEADER), size);
   if (FAILED(hr))
   {
     ERROR_LOG("Serialize() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
@@ -771,11 +795,6 @@ void D3D12Device::DestroyDeferredObjects(u64 fence_value)
   }
 }
 
-RenderAPI D3D12Device::GetRenderAPI() const
-{
-  return RenderAPI::D3D12;
-}
-
 bool D3D12Device::HasSurface() const
 {
   return static_cast<bool>(m_swap_chain);
@@ -1070,8 +1089,8 @@ bool D3D12Device::SupportsTextureFormat(GPUTexture::Format format) const
 
 std::string D3D12Device::GetDriverInfo() const
 {
-  std::string ret = fmt::format("{} ({})\n", D3DCommon::GetFeatureLevelString(m_feature_level),
-                                D3DCommon::GetFeatureLevelShaderModelString(m_feature_level));
+  std::string ret = fmt::format("{} (Shader Model {})\n", D3DCommon::GetFeatureLevelString(m_render_api_version),
+                                D3DCommon::GetShaderModelForFeatureLevelNumber(m_render_api_version));
 
   DXGI_ADAPTER_DESC desc;
   if (m_adapter && SUCCEEDED(m_adapter->GetDesc(&desc)))
@@ -1234,8 +1253,10 @@ void D3D12Device::InsertDebugMessage(const char* msg)
 #endif
 }
 
-void D3D12Device::SetFeatures(FeatureMask disabled_features)
+void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disabled_features)
 {
+  m_render_api = RenderAPI::D3D12;
+  m_render_api_version = D3DCommon::GetRenderAPIVersionForFeatureLevel(feature_level);
   m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
   m_max_multisamples = 1;
   for (u32 multisamples = 2; multisamples < D3D12_MAX_MULTISAMPLE_SAMPLE_COUNT; multisamples++)
