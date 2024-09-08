@@ -60,6 +60,8 @@ set LUNASVG=9af1ac7b90658a279b372add52d6f77a4ebb482c
 set SHADERC=3a655d0f8d3c946efd690edea31e138d4efef417
 set SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 set SPIRV_CROSS=vulkan-sdk-1.3.290.0
+set DXCOMPILER=1.8.2407.12
+set DXAGILITY=1.614.1
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz 5c3a8e78f7b24c20b25b54ee575d6daa40007a5f4eea2845861c3409b3021747 || goto error
 call :downloadfile "harfbuzz-%HARFBUZZ%.zip" https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip 314acd13d88c24826b88799439da8cd3dbcefd17a08dde9bdfd5ca4c3db62047 || goto error
@@ -81,6 +83,8 @@ call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/d
 call :downloadfile "lunasvg-%LUNASVG%.zip" "https://github.com/stenzek/lunasvg/archive/%LUNASVG%.zip" 1425ec2bda0228b73ffdc70b0dc666fc7d2b69c33eec75a35c4421157c0e220c || goto error
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" 1fe2da5a003a1954005ab88b668b0d7b0ce1f6a049ae3f0a8b1beb8bac8824e3 || goto error
 call :downloadfile "soundtouch-%SOUNDTOUCH%.zip" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.zip" 107a1941181a69abe28018b9ad26fc0218625758ac193bc979abc9e26b7c0c3a || goto error
+call :downloadfile "dxcompiler-%DXCOMPILER%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.DXC/%DXCOMPILER%" eb4f6a3bb6b08aaa62f435b3dbf26b180702ca52398d3650d0dd538f56742cdc || goto error
+call :downloadfile "dxagility-%DXAGILITY%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%DXAGILITY%" 9880aa91602dd51dd6cf7911a2bca7a2323513b15338573cde014b3356eeaff2 || goto error
 
 if not exist SPIRV-Cross\ (
   git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b %SPIRV_CROSS% --depth 1 || goto error
@@ -293,6 +297,30 @@ cd "soundtouch-%SOUNDTOUCH%" || goto error
 cmake %ARM64TOOLCHAIN% -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -B build -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
+cd .. || goto error
+
+rem These should already exist, but just in case.
+mkdir "%INSTALLDIR%\bin"
+mkdir "%INSTALLDIR%\include"
+mkdir "%INSTALLDIR%\lib"
+
+echo Extracting DXCompiler...
+rmdir /S /Q "dxcompiler-%DXCOMPILER%"
+mkdir "dxcompiler-%DXCOMPILER%"
+cd "dxcompiler-%DXCOMPILER%" || goto error
+%SEVENZIP% x "..\dxcompiler-%DXCOMPILER%.zip" || goto error
+copy build\native\include\* "%INSTALLDIR%\include" || goto error
+copy build\native\bin\arm64\*.dll "%INSTALLDIR%\bin" || goto error
+copy build\native\lib\arm64\*.lib "%INSTALLDIR%\lib" || goto error
+cd .. || goto error
+
+echo Extracting DXAgility...
+rmdir /S /Q "dxagility-%DXAGILITY%"
+mkdir "dxagility-%DXAGILITY%"
+cd "dxagility-%DXAGILITY%" || goto error
+%SEVENZIP% x "..\dxagility-%DXAGILITY%.zip" || goto error
+xcopy /S /Y build\native\include\* "%INSTALLDIR%\include" || goto error
+copy build\native\bin\arm64\*.dll "%INSTALLDIR%\bin" || goto error
 cd .. || goto error
 
 echo Cleaning up...
