@@ -75,11 +75,13 @@ void MemoryViewWidget::clearHighlightRange()
   viewport()->update();
 }
 
-void MemoryViewWidget::scrolltoOffset(size_t offset)
+void MemoryViewWidget::scrollToOffset(size_t offset, bool select /* = true */)
 {
   const unsigned row = static_cast<unsigned>(offset / m_bytes_per_line);
   verticalScrollBar()->setSliderPosition(static_cast<int>(row));
   horizontalScrollBar()->setSliderPosition(0);
+  if (select)
+    setSelection(offset, false);
 }
 
 void MemoryViewWidget::scrollToAddress(size_t address)
@@ -205,6 +207,7 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
   if (!m_data)
     return;
 
+  const QColor alt_fill_color(40, 40, 40);
   const QColor highlight_color(100, 100, 0);
   const QColor selected_color = viewport()->palette().color(QPalette::Highlight);
   const QColor text_color = viewport()->palette().color(QPalette::WindowText);
@@ -224,7 +227,9 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
     const size_t data_offset = m_start_offset + (row * m_bytes_per_line);
     const unsigned row_address = static_cast<unsigned>(m_address_offset + data_offset);
     const int draw_x = m_char_width / 2 - offsetX;
-    if (RangesOverlap(data_offset, data_offset + m_bytes_per_line, m_highlight_start, m_highlight_end))
+    if (RangesOverlap(data_offset, data_offset + m_bytes_per_line, m_selected_address, m_selected_address + 1))
+      painter.fillRect(0, y - m_char_height + 3, addressWidth(), m_char_height, selected_color);
+    else if (RangesOverlap(data_offset, data_offset + m_bytes_per_line, m_highlight_start, m_highlight_end))
       painter.fillRect(0, y - m_char_height + 3, addressWidth(), m_char_height, highlight_color);
 
     const QString address_text(QString::asprintf("%08X", row_address));
@@ -244,7 +249,7 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
   for (unsigned col = 0; col < m_bytes_per_line; col++)
   {
     if ((col % 2) != 0)
-      painter.fillRect(x, 0, HEX_CHAR_WIDTH, height(), viewport()->palette().color(QPalette::AlternateBase));
+      painter.fillRect(x, 0, HEX_CHAR_WIDTH, height(), alt_fill_color);
 
     x += HEX_CHAR_WIDTH;
   }
@@ -393,6 +398,11 @@ void MemoryViewWidget::updateSelectedByte(const QPoint& pos)
     }
   }
 
+  setSelection(new_selection, new_ascii);
+}
+
+void MemoryViewWidget::setSelection(size_t new_selection, bool new_ascii)
+{
   if (new_selection != m_selected_address || new_ascii != m_selection_was_ascii)
   {
     m_selected_address = new_selection;

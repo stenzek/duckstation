@@ -672,7 +672,7 @@ bool DebuggerWindow::scrollToMemoryAddress(VirtualMemoryAddress address)
   setMemoryViewRegion(region.value());
 
   const PhysicalMemoryAddress offset = phys_address - Bus::GetMemoryRegionStart(region.value());
-  m_ui.memoryView->scrolltoOffset(offset);
+  m_ui.memoryView->scrollToOffset(offset);
   return true;
 }
 
