@@ -18,6 +18,8 @@
 #elif defined(__ANDROID__)
 #include <android/log.h>
 #else
+#include <sys/ioctl.h>
+#include <termios.h>
 #include <unistd.h>
 #endif
 
@@ -126,6 +128,20 @@ void Log::UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserP
 float Log::GetCurrentMessageTime()
 {
   return static_cast<float>(Common::Timer::ConvertValueToSeconds(Common::Timer::GetCurrentValue() - s_start_timestamp));
+}
+
+bool Log::IsConsoleOutputCurrentlyAvailable()
+{
+#ifdef _WIN32
+  const HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+  return (h != NULL && h != INVALID_HANDLE_VALUE);
+#elif defined(__ANDROID__)
+  return false;
+#else
+  // standard output isn't really reliable because it could be redirected to a file. check standard input for tty.
+  struct termios attr;
+  return (tcgetattr(STDIN_FILENO, &attr) == 0);
+#endif
 }
 
 bool Log::IsConsoleOutputEnabled()

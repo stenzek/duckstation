@@ -1347,6 +1347,11 @@ void System::SetDefaultSettings(SettingsInterface& si)
 
   temp.Save(si, false);
 
+#if !defined(_WIN32) && !defined(__ANDROID__)
+  // On Linux, default the console to whether standard input is currently available.
+  si.SetBoolValue("Logging", "LogToConsole", Log::IsConsoleOutputCurrentlyAvailable());
+#endif
+
 #ifndef __ANDROID__
   si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));
   si.SetStringValue("MediaCapture", "Container", Settings::DEFAULT_MEDIA_CAPTURE_CONTAINER);

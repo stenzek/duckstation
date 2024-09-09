@@ -41,6 +41,7 @@ void UnregisterCallback(CallbackFunctionType callbackFunction, void* pUserParam)
 float GetCurrentMessageTime();
 
 // adds a standard console output
+bool IsConsoleOutputCurrentlyAvailable();
 bool IsConsoleOutputEnabled();
 void SetConsoleOutputParams(bool enabled, bool timestamps = true);
 

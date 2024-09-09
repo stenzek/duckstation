@@ -420,7 +420,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
                 .value_or(DEFAULT_LOG_LEVEL);
   log_filter = si.GetStringValue("Logging", "LogFilter", "");
   log_timestamps = si.GetBoolValue("Logging", "LogTimestamps", true);
-  log_to_console = si.GetBoolValue("Logging", "LogToConsole", DEFAULT_LOG_TO_CONSOLE);
+  log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
   log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
   log_to_window = si.GetBoolValue("Logging", "LogToWindow", false);
   log_to_file = si.GetBoolValue("Logging", "LogToFile", false);
@@ -449,9 +449,6 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
     si.GetIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
 
 #ifdef __ANDROID__
-  // No expansion due to license incompatibility.
-  audio_expansion_mode = AudioExpansionMode::Disabled;
-
   // Android users are incredibly silly and don't understand that stretch is in the aspect ratio list...
   if (si.GetBoolValue("Display", "Stretch", false))
     display_aspect_ratio = DisplayAspectRatio::MatchWindow;
