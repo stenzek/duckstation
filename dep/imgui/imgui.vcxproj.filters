@@ -3,12 +3,12 @@
   <ItemGroup>
     <ClInclude Include="include\imconfig.h" />
     <ClInclude Include="include\imgui.h" />
-    <ClInclude Include="src\imgui_internal.h" />
     <ClInclude Include="src\imstb_rectpack.h" />
     <ClInclude Include="src\imstb_textedit.h" />
     <ClInclude Include="src\imstb_truetype.h" />
     <ClInclude Include="include\imgui_stdlib.h" />
     <ClInclude Include="include\imgui_freetype.h" />
+    <ClInclude Include="include\imgui_internal.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\imgui_widgets.cpp" />
