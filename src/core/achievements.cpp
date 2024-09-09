@@ -67,6 +67,7 @@ static constexpr const char* INFO_SOUND_NAME = "sounds/achievements/message.wav"
 static constexpr const char* UNLOCK_SOUND_NAME = "sounds/achievements/unlock.wav";
 static constexpr const char* LBSUBMIT_SOUND_NAME = "sounds/achievements/lbsubmit.wav";
 static constexpr const char* ACHEIVEMENT_DETAILS_URL_TEMPLATE = "https://retroachievements.org/achievement/{}";
+static constexpr const char* PROFILE_DETAILS_URL_TEMPLATE = "https://retroachievements.org/user/{}";
 static constexpr const char* CACHE_SUBDIRECTORY_NAME = "achievement_images";
 
 static constexpr size_t URL_BUFFER_SIZE = 256;
@@ -2520,7 +2521,14 @@ void Achievements::DrawAchievementsWindow()
   }
   ImGuiFullscreen::EndFullscreenWindow();
 
-  FullscreenUI::SetStandardSelectionFooterText(true);
+  ImGuiFullscreen::SetFullscreenFooterText(
+    std::array{std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_UP_DOWN :
+                                                                        ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
+                              TRANSLATE_SV("Achievements", "Change Selection")),
+               std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
+                              TRANSLATE_SV("Achievements", "View Details")),
+               std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
+                              TRANSLATE_SV("Achievements", "Back"))});
 
   if (close_window)
     FullscreenUI::ReturnToPreviousWindow();
@@ -2940,7 +2948,6 @@ void Achievements::DrawLeaderboardsWindow()
     }
   }
   ImGuiFullscreen::EndFullscreenWindow();
-  FullscreenUI::SetStandardSelectionFooterText(true);
 
   // See note in FullscreenUI::DrawSettingsWindow().
   if (ImGuiFullscreen::IsFocusResetFromWindowChange())
@@ -2966,6 +2973,15 @@ void Achievements::DrawLeaderboardsWindow()
       ImGuiFullscreen::EndMenuButtons();
     }
     ImGuiFullscreen::EndFullscreenWindow();
+
+    ImGuiFullscreen::SetFullscreenFooterText(
+      std::array{std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_UP_DOWN :
+                                                                          ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
+                                TRANSLATE_SV("Achievements", "Change Selection")),
+                 std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
+                                TRANSLATE_SV("Achievements", "Open Leaderboard")),
+                 std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
+                                TRANSLATE_SV("Achievements", "Back"))});
   }
   else
   {
@@ -3041,6 +3057,18 @@ void Achievements::DrawLeaderboardsWindow()
       ImGuiFullscreen::EndMenuButtons();
     }
     ImGuiFullscreen::EndFullscreenWindow();
+
+    ImGuiFullscreen::SetFullscreenFooterText(
+      std::array{std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_LEFT_RIGHT :
+                                                                          ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
+                                TRANSLATE_SV("Achievements", "Change Page")),
+                 std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_UP_DOWN :
+                                                                          ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
+                                TRANSLATE_SV("Achievements", "Change Selection")),
+                 std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
+                                TRANSLATE_SV("Achievements", "View Profile")),
+                 std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
+                                TRANSLATE_SV("Achievements", "Back"))});
   }
 
   if (close_leaderboard_on_exit)
@@ -3126,7 +3154,9 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   if (pressed)
   {
-    // Anything?
+    const SmallString url = SmallString::from_format(fmt::runtime(PROFILE_DETAILS_URL_TEMPLATE), entry.user);
+    INFO_LOG("Opening profile details: {}", url);
+    Host::OpenURL(url);
   }
 }
 void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboard)
