@@ -44,7 +44,7 @@ static bool IsValidScanAddress(PhysicalMemoryAddress address)
 }
 
 template<typename T>
-static T DoMemoryRead(VirtualMemoryAddress address)
+NEVER_INLINE static T DoMemoryRead(VirtualMemoryAddress address)
 {
   using UnsignedType = typename std::make_unsigned_t<T>;
   static_assert(std::is_same_v<UnsignedType, u8> || std::is_same_v<UnsignedType, u16> ||
@@ -60,7 +60,7 @@ static T DoMemoryRead(VirtualMemoryAddress address)
 }
 
 template<typename T>
-static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
+NEVER_INLINE static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
 {
   using UnsignedType = typename std::make_unsigned_t<T>;
   static_assert(std::is_same_v<UnsignedType, u8> || std::is_same_v<UnsignedType, u16> ||
@@ -74,7 +74,7 @@ static void DoMemoryWrite(PhysicalMemoryAddress address, T value)
     CPU::SafeWriteMemoryWord(address, value);
 }
 
-static u32 GetControllerButtonBits()
+NEVER_INLINE static u32 GetControllerButtonBits()
 {
   static constexpr std::array<u16, 16> button_mapping = {{
     0x0100, // Select
@@ -115,7 +115,7 @@ static u32 GetControllerButtonBits()
   return translated_bits;
 }
 
-static u32 GetControllerAnalogBits()
+NEVER_INLINE static u32 GetControllerAnalogBits()
 {
   // 0x010000 - Right Thumb Up
   // 0x020000 - Right Thumb Right
