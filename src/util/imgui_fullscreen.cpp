@@ -41,6 +41,7 @@ namespace ImGuiFullscreen {
 using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback>;
 
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
+static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 
 static std::optional<RGBA8Image> LoadTextureImage(std::string_view path);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const RGBA8Image& image);
@@ -90,6 +91,7 @@ static u32 s_menu_button_index = 0;
 static u32 s_close_button_state = 0;
 static FocusResetType s_focus_reset_queued = FocusResetType::None;
 static bool s_light_theme = false;
+static bool s_smooth_scrolling = false;
 
 static LRUCache<std::string, std::shared_ptr<GPUTexture>> s_texture_cache(128, true);
 static std::shared_ptr<GPUTexture> s_placeholder_texture;
@@ -273,6 +275,11 @@ void ImGuiFullscreen::Shutdown()
   s_message_dialog_message = {};
   s_message_dialog_buttons = {};
   s_message_dialog_callback = {};
+}
+
+void ImGuiFullscreen::SetSmoothScrolling(bool enabled)
+{
+  s_smooth_scrolling = enabled;
 }
 
 const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
@@ -763,6 +770,7 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(padding));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(rounding));
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
 
   return ImGui::Begin(name, nullptr,
                       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
@@ -772,7 +780,7 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
 void ImGuiFullscreen::EndFullscreenWindow()
 {
   ImGui::End();
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopStyleColor();
 }
 

@@ -120,6 +120,7 @@ ImRect CenterImage(const ImRect& fit_rect, const ImVec2& image_size);
 bool Initialize(const char* placeholder_image_path);
 
 void SetTheme(bool light);
+void SetSmoothScrolling(bool enabled);
 void SetFonts(ImFont* medium_font, ImFont* large_font);
 bool UpdateLayoutScale();
 

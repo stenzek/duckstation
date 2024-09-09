@@ -571,6 +571,7 @@ bool FullscreenUI::Initialize()
     return false;
 
   ImGuiFullscreen::SetTheme(Host::GetBaseBoolSettingValue("Main", "UseLightFullscreenUITheme", false));
+  ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
   ImGuiFullscreen::UpdateLayoutScale();
 
   if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("images/placeholder.png") ||
@@ -3112,6 +3113,13 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                         "UseLightFullscreenUITheme", false))
   {
     ImGuiFullscreen::SetTheme(bsi->GetBoolValue("Main", "UseLightFullscreenUITheme", false));
+  }
+
+  if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Smooth Scrolling"),
+                        FSUI_CSTR("Enables smooth scrolling of menus in Big Picture UI."), "Main",
+                        "FullscreenUISmoothScrolling", true))
+  {
+    ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", false));
   }
 
   {
@@ -7392,6 +7400,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enables alignment and bus exceptions. Not needed
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables more precise frame pacing at the cost of battery life.");
+TRANSLATE_NOOP("FullscreenUI", "Enables smooth scrolling of menus in Big Picture UI.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
 TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
@@ -7716,6 +7725,7 @@ TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls bac
 TRANSLATE_NOOP("FullscreenUI", "Skip Duplicate Frame Display");
 TRANSLATE_NOOP("FullscreenUI", "Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Slow Boot");
+TRANSLATE_NOOP("FullscreenUI", "Smooth Scrolling");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 2D objects.");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 3D objects.");
