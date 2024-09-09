@@ -23,7 +23,7 @@ public:
   void setData(size_t address_offset, void* data_ptr, size_t data_size, bool data_editable, EditCallback edit_callback);
   void setHighlightRange(size_t start, size_t end);
   void clearHighlightRange();
-  void scrolltoOffset(size_t offset);
+  void scrollToOffset(size_t offset, bool select = true);
   void scrollToAddress(size_t address);
   void setFont(const QFont& font);
 
@@ -49,6 +49,7 @@ private:
   int asciiWidth() const;
   void updateMetrics();
   void updateSelectedByte(const QPoint& pos);
+  void setSelection(size_t new_selection, bool new_ascii);
   void expandCurrentDataToInclude(size_t offset);
 
   void* m_data;
