@@ -6,8 +6,11 @@
 #include "qthost.h"
 #include "qtutils.h"
 
-#include "common/assert.h"
+#include "core/bus.h"
+#include "core/cpu_code_cache.h"
 #include "core/cpu_core_private.h"
+
+#include "common/assert.h"
 
 #include <QtCore/QSignalBlocker>
 #include <QtGui/QCursor>
@@ -568,10 +571,27 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
 
   m_active_memory_region = region;
 
+  static constexpr auto edit_ram_callback = [](size_t offset, size_t count) {
+    // shouldn't happen
+    if (offset > Bus::g_ram_size)
+      return;
+
+    const u32 start_page = static_cast<u32>(offset) / HOST_PAGE_SIZE;
+    const u32 end_page = static_cast<u32>(offset + count - 1) / HOST_PAGE_SIZE;
+    for (u32 i = start_page; i <= end_page; i++)
+    {
+      if (Bus::g_ram_code_bits[i])
+        CPU::CodeCache::InvalidateBlocksWithPageIndex(i);
+    }
+  };
+
   const PhysicalMemoryAddress start = Bus::GetMemoryRegionStart(region);
   const PhysicalMemoryAddress end = Bus::GetMemoryRegionEnd(region);
-  m_ui.memoryView->setData(start, Bus::GetMemoryRegionPointer(region), end - start,
-                           Bus::IsMemoryRegionWritable(region));
+  void* const mem_ptr = Bus::GetMemoryRegionPointer(region);
+  const bool mem_writable = Bus::IsMemoryRegionWritable(region);
+  const MemoryViewWidget::EditCallback edit_callback =
+    ((region == Bus::MemoryRegion::RAM) ? edit_ram_callback : nullptr);
+  m_ui.memoryView->setData(start, mem_ptr, end - start, mem_writable, edit_callback);
 
 #define SET_REGION_RADIO_BUTTON(name, rb_region)                                                                       \
   do                                                                                                                   \

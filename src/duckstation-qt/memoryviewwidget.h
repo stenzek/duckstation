@@ -9,16 +9,18 @@
 
 class MemoryViewWidget : public QAbstractScrollArea
 {
-public:
   Q_OBJECT
+
 public:
+  using EditCallback = void (*)(size_t offset, size_t bytes);
+
   MemoryViewWidget(QWidget* parent = nullptr, size_t address_offset = 0, void* data_ptr = nullptr, size_t data_size = 0,
-                   bool data_editable = false);
+                   bool data_editable = false, EditCallback edit_callback = nullptr);
   ~MemoryViewWidget();
 
   size_t addressOffset() const { return m_address_offset; }
 
-  void setData(size_t address_offset, void* data_ptr, size_t data_size, bool data_editable);
+  void setData(size_t address_offset, void* data_ptr, size_t data_size, bool data_editable, EditCallback edit_callback);
   void setHighlightRange(size_t start, size_t end);
   void clearHighlightRange();
   void scrolltoOffset(size_t offset);
@@ -71,6 +73,7 @@ private:
 
   int m_rows_visible;
 
+  EditCallback m_edit_callback = nullptr;
   std::vector<u8> m_last_data;
   size_t m_last_data_start_offset = 0;
 };
