@@ -5146,7 +5146,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                   "LogLevel", Settings::DEFAULT_LOG_LEVEL, &Settings::ParseLogLevelName, &Settings::GetLogLevelName,
                   &Settings::GetLogLevelDisplayName, LOGLEVEL_COUNT);
   DrawToggleSetting(bsi, FSUI_CSTR("Log To System Console"), FSUI_CSTR("Logs messages to the console window."),
-                    FSUI_CSTR("Logging"), "LogToConsole", Settings::DEFAULT_LOG_TO_CONSOLE);
+                    FSUI_CSTR("Logging"), "LogToConsole", false);
   DrawToggleSetting(bsi, FSUI_CSTR("Log To Debug Console"),
                     FSUI_CSTR("Logs messages to the debug console where supported."), "Logging", "LogToDebug", false);
   DrawToggleSetting(bsi, FSUI_CSTR("Log To File"), FSUI_CSTR("Logs messages to duckstation.log in the user directory."),

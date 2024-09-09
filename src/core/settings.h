@@ -277,7 +277,7 @@ struct Settings
   LOGLEVEL log_level = DEFAULT_LOG_LEVEL;
   std::string log_filter;
   bool log_timestamps : 1 = true;
-  bool log_to_console : 1 = DEFAULT_LOG_TO_CONSOLE;
+  bool log_to_console : 1 = false;
   bool log_to_debug : 1 = false;
   bool log_to_window : 1 = false;
   bool log_to_file : 1 = false;
@@ -527,13 +527,6 @@ struct Settings
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT = 480;
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE = 6000;
   static constexpr u32 DEFAULT_MEDIA_CAPTURE_AUDIO_BITRATE = 128;
-#endif
-
-  // Enable console logging by default on Linux platforms.
-#if defined(__linux__) && !defined(__ANDROID__)
-  static constexpr bool DEFAULT_LOG_TO_CONSOLE = true;
-#else
-  static constexpr bool DEFAULT_LOG_TO_CONSOLE = false;
 #endif
 
   // Android doesn't create settings until they're first opened, so we have to override the defaults here.

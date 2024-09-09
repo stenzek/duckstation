@@ -472,11 +472,8 @@ bool QtHost::InitializeConfig(std::string settings_filename)
   MigrateSettings();
 
   // We need to create the console window early, otherwise it appears in front of the main window.
-  if (!Log::IsConsoleOutputEnabled() &&
-      s_base_settings_interface->GetBoolValue("Logging", "LogToConsole", Settings::DEFAULT_LOG_TO_CONSOLE))
-  {
+  if (!Log::IsConsoleOutputEnabled() && s_base_settings_interface->GetBoolValue("Logging", "LogToConsole", false))
     Log::SetConsoleOutputParams(true, s_base_settings_interface->GetBoolValue("Logging", "LogTimestamps", true));
-  }
 
   UpdateApplicationLanguage(nullptr);
   return true;
