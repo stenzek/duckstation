@@ -1098,6 +1098,22 @@ void SPU::WriteRegister(u32 offset, u16 value)
     }
     break;
 
+    case 0x1F801DB8 - SPU_BASE:
+    {
+      DEBUG_LOG("SPU main left volume register <- 0x{:04X}", value);
+      GeneratePendingSamples();
+      s_state.main_volume_left.current_level = value;
+    }
+    break;
+
+    case 0x1F801DBA - SPU_BASE:
+    {
+      DEBUG_LOG("SPU main right volume register <- 0x{:04X}", value);
+      GeneratePendingSamples();
+      s_state.main_volume_right.current_level = value;
+    }
+    break;
+
       // read-only registers
     case 0x1F801DAE - SPU_BASE:
     {
