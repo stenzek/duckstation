@@ -93,11 +93,15 @@ void DebuggerWindow::scrollToCodeAddress(VirtualMemoryAddress address)
 {
   m_code_model->ensureAddressVisible(address);
 
-  int row = m_code_model->getRowForAddress(address);
+  const int row = m_code_model->getRowForAddress(address);
   if (row >= 0)
   {
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
-    m_ui.codeView->scrollTo(m_code_model->index(row, 0));
+
+    const QModelIndex index = m_code_model->index(row, 0);
+    m_ui.codeView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+    m_ui.codeView->selectionModel()->setCurrentIndex(index,
+                                                     QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
   }
 }
 
