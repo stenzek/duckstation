@@ -634,7 +634,7 @@ class MediaCaptureMF final : public MediaCaptureBase
   template<class T>
   using ComPtr = Microsoft::WRL::ComPtr<T>;
 
-  static constexpr u32 TEN_NANOSECONDS = 10 * 1000 * 1000;
+  static constexpr u32 FRAME_RATE_NUMERATOR = 10 * 1000 * 1000;
   static constexpr DWORD INVALID_STREAM_INDEX = std::numeric_limits<DWORD>::max();
   static constexpr u32 AUDIO_BITS_PER_SAMPLE = sizeof(s16) * 8;
 
@@ -665,10 +665,26 @@ protected:
   bool InternalEndCapture(std::unique_lock<std::mutex>& lock, Error* error) override;
 
 private:
-  ComPtr<IMFTransform> CreateVideoYUVTransform(ComPtr<IMFMediaType>* output_type, Error* error);
-  ComPtr<IMFTransform> CreateVideoEncodeTransform(std::string_view codec, u32 bitrate, IMFMediaType* input_type,
-                                                  ComPtr<IMFMediaType>* output_type, bool* use_async_transform,
-                                                  Error* error);
+  // Media foundation works in units of 100 nanoseconds.
+  static constexpr double ConvertFrequencyToMFDurationUnits(double frequency) { return ((1e+9 / frequency) / 100.0); }
+  static constexpr LONGLONG ConvertPTSToTimestamp(s64 pts, double duration)
+  {
+    // Both of these use truncation, not rounding, so that the next sample lines up.
+    return static_cast<LONGLONG>(static_cast<double>(pts) * duration);
+  }
+  static constexpr LONGLONG ConvertFramesToDuration(u32 frames, double duration)
+  {
+    return static_cast<LONGLONG>(static_cast<double>(frames) * duration);
+  }
+  static constexpr time_t ConvertPTSToSeconds(s64 pts, double duration)
+  {
+    return static_cast<time_t>((static_cast<double>(pts) * duration) / 1e+7);
+  }
+
+  ComPtr<IMFTransform> CreateVideoYUVTransform(ComPtr<IMFMediaType>* output_type, float fps, Error* error);
+  ComPtr<IMFTransform> CreateVideoEncodeTransform(std::string_view codec, float fps, u32 bitrate,
+                                                  IMFMediaType* input_type, ComPtr<IMFMediaType>* output_type,
+                                                  bool* use_async_transform, Error* error);
   bool GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>* input_type, ComPtr<IMFMediaType>* output_type,
                      u32 sample_rate, u32 bitrate, Error* error);
   void ConvertVideoFrame(u8* dst, size_t dst_stride, const u8* src, size_t src_stride, u32 width, u32 height) const;
@@ -681,10 +697,8 @@ private:
   DWORD m_video_stream_index = INVALID_STREAM_INDEX;
   DWORD m_audio_stream_index = INVALID_STREAM_INDEX;
 
-  LONGLONG m_video_sample_duration = 0;
-  LONGLONG m_audio_sample_duration = 0;
-
-  u32 m_frame_rate_numerator = 0;
+  double m_video_sample_duration = 0;
+  double m_audio_sample_duration = 0;
 
   ComPtr<IMFTransform> m_video_yuv_transform;
   ComPtr<IMFSample> m_video_yuv_sample;
@@ -854,9 +868,9 @@ bool MediaCaptureMF::IsCapturingAudio() const
 time_t MediaCaptureMF::GetElapsedTime() const
 {
   if (IsCapturingVideo())
-    return static_cast<time_t>(static_cast<LONGLONG>(m_next_video_pts * m_video_sample_duration) / TEN_NANOSECONDS);
+    return ConvertPTSToSeconds(m_next_video_pts, m_video_sample_duration);
   else
-    return static_cast<time_t>(static_cast<LONGLONG>(m_next_audio_pts * m_audio_sample_duration) / TEN_NANOSECONDS);
+    return ConvertPTSToSeconds(m_next_audio_pts, m_audio_sample_duration);
 }
 
 bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_rate, bool capture_video,
@@ -872,12 +886,11 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
 
   if (capture_video)
   {
-    m_frame_rate_numerator = static_cast<u32>(fps * TEN_NANOSECONDS);
-    m_video_sample_duration = static_cast<LONGLONG>(static_cast<double>(TEN_NANOSECONDS) / static_cast<double>(fps));
+    m_video_sample_duration = ConvertFrequencyToMFDurationUnits(fps);
 
     ComPtr<IMFMediaType> yuv_media_type;
-    if (!(m_video_yuv_transform = CreateVideoYUVTransform(&yuv_media_type, error)) ||
-        !(m_video_encode_transform = CreateVideoEncodeTransform(video_codec, video_bitrate, yuv_media_type.Get(),
+    if (!(m_video_yuv_transform = CreateVideoYUVTransform(&yuv_media_type, fps, error)) ||
+        !(m_video_encode_transform = CreateVideoEncodeTransform(video_codec, fps, video_bitrate, yuv_media_type.Get(),
                                                                 &video_media_type, &use_async_video_transform, error)))
     {
       return false;
@@ -892,9 +905,7 @@ bool MediaCaptureMF::InternalBeginCapture(float fps, float aspect, u32 sample_ra
 
     // only used when not capturing video
     m_audio_frame_size = static_cast<u32>(static_cast<float>(sample_rate) / fps);
-
-    m_audio_sample_duration =
-      static_cast<LONGLONG>(static_cast<double>(TEN_NANOSECONDS) / static_cast<double>(sample_rate));
+    m_audio_sample_duration = ConvertFrequencyToMFDurationUnits(sample_rate);
   }
 
   if (FAILED(hr = wrap_MFCreateSinkWriterFromURL(StringUtil::UTF8StringToWideString(m_path).c_str(), nullptr, nullptr,
@@ -987,7 +998,7 @@ bool MediaCaptureMF::InternalEndCapture(std::unique_lock<std::mutex>& lock, Erro
 }
 
 MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(ComPtr<IMFMediaType>* output_type,
-                                                                             Error* error)
+                                                                             float fps, Error* error)
 {
   const MFT_REGISTER_TYPE_INFO input_type_info = {.guidMajorType = MFMediaType_Video,
                                                   .guidSubtype = VIDEO_RGB_MEDIA_FORMAT};
@@ -1035,8 +1046,10 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(Com
       FAILED(hr = (*output_type)->SetGUID(MF_MT_SUBTYPE, VIDEO_YUV_MEDIA_FORMAT)) ||
       FAILED(hr = (*output_type)->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive)) ||
       FAILED(hr = MFSetAttributeSize(output_type->Get(), MF_MT_FRAME_SIZE, m_video_width, m_video_height)) ||
-      FAILED(hr = MFSetAttributeRatio(output_type->Get(), MF_MT_FRAME_RATE, m_frame_rate_numerator, TEN_NANOSECONDS)))
-    [[unlikely]]
+      FAILED(hr = MFSetAttributeRatio(
+               output_type->Get(), MF_MT_FRAME_RATE,
+               static_cast<UINT32>(static_cast<double>(fps) * static_cast<double>(FRAME_RATE_NUMERATOR)),
+               FRAME_RATE_NUMERATOR))) [[unlikely]]
   {
     Error::SetHResult(error, "YUV setting attributes failed: ", hr);
     return nullptr;
@@ -1057,8 +1070,8 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoYUVTransform(Com
   return transform;
 }
 
-MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(std::string_view codec, u32 bitrate,
-                                                                                IMFMediaType* input_type,
+MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(std::string_view codec, float fps,
+                                                                                u32 bitrate, IMFMediaType* input_type,
                                                                                 ComPtr<IMFMediaType>* output_type,
                                                                                 bool* use_async_transform, Error* error)
 {
@@ -1152,7 +1165,10 @@ MediaCaptureMF::ComPtr<IMFTransform> MediaCaptureMF::CreateVideoEncodeTransform(
       FAILED(hr = (*output_type)->SetUINT32(MF_MT_INTERLACE_MODE, MFVideoInterlace_Progressive)) ||
       FAILED(hr = (*output_type)->SetUINT32(MF_MT_MPEG2_PROFILE, profile)) ||
       FAILED(hr = MFSetAttributeSize(output_type->Get(), MF_MT_FRAME_SIZE, m_video_width, m_video_height)) ||
-      FAILED(hr = MFSetAttributeRatio(output_type->Get(), MF_MT_FRAME_RATE, m_frame_rate_numerator, TEN_NANOSECONDS)) ||
+      FAILED(hr = MFSetAttributeRatio(
+               output_type->Get(), MF_MT_FRAME_RATE,
+               static_cast<UINT32>(static_cast<double>(fps) * static_cast<double>(FRAME_RATE_NUMERATOR)),
+               FRAME_RATE_NUMERATOR)) ||
       FAILED(hr = MFSetAttributeRatio(output_type->Get(), MF_MT_PIXEL_ASPECT_RATIO, par_numerator, par_denominator)))
     [[unlikely]]
   {
@@ -1270,7 +1286,6 @@ void MediaCaptureMF::ClearState()
 
   m_video_sample_duration = 0;
   m_audio_sample_duration = 0;
-  m_frame_rate_numerator = 0;
 
   m_video_yuv_transform.Reset();
   m_video_yuv_sample.Reset();
@@ -1325,14 +1340,13 @@ bool MediaCaptureMF::SendFrame(const PendingFrame& pf, Error* error)
     return false;
   }
 
-  const LONGLONG timestamp = static_cast<LONGLONG>(pf.pts) * m_video_sample_duration;
-  if (FAILED(hr = sample->SetSampleTime(timestamp))) [[unlikely]]
+  if (FAILED(hr = sample->SetSampleTime(ConvertPTSToTimestamp(pf.pts, m_video_sample_duration)))) [[unlikely]]
   {
     Error::SetHResult(error, "SetSampleTime() failed: ", hr);
     return false;
   }
 
-  if (FAILED(hr = sample->SetSampleDuration(m_video_sample_duration))) [[unlikely]]
+  if (FAILED(hr = sample->SetSampleDuration(static_cast<LONGLONG>(m_video_sample_duration)))) [[unlikely]]
   {
     Error::SetHResult(error, "SetSampleDuration() failed: ", hr);
     return false;
@@ -1746,15 +1760,15 @@ bool MediaCaptureMF::ProcessAudioPackets(s64 video_pts, Error* error)
       return false;
     }
 
-    const LONGLONG timestamp = static_cast<LONGLONG>(m_next_audio_pts) * m_audio_sample_duration;
-    if (FAILED(hr = sample->SetSampleTime(timestamp))) [[unlikely]]
+    if (FAILED(hr = sample->SetSampleTime(ConvertPTSToTimestamp(m_next_audio_pts, m_audio_sample_duration))))
+      [[unlikely]]
     {
       Error::SetHResult(error, "Audio SetSampleTime() failed: ", hr);
       return false;
     }
 
-    const LONGLONG duration = static_cast<LONGLONG>(contig_frames) * m_audio_sample_duration;
-    if (FAILED(hr = sample->SetSampleDuration(duration))) [[unlikely]]
+    if (FAILED(hr = sample->SetSampleDuration(ConvertFramesToDuration(contig_frames, m_audio_sample_duration))))
+      [[unlikely]]
     {
       Error::SetHResult(error, "Audio SetSampleDuration() failed: ", hr);
       return false;
