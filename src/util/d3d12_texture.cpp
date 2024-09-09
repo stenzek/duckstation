@@ -996,9 +996,15 @@ void D3D12DownloadTexture::Flush()
 
   // Need to execute command buffer.
   if (dev.GetCurrentFenceValue() == m_copy_fence_value)
+  {
+    if (dev.InRenderPass())
+      dev.EndRenderPass();
     dev.SubmitCommandList(true);
+  }
   else
+  {
     dev.WaitForFence(m_copy_fence_value);
+  }
 }
 
 void D3D12DownloadTexture::SetDebugName(std::string_view name)
