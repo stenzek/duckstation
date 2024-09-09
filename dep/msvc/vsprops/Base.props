@@ -35,6 +35,8 @@
       <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))"> -flto=thin %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings Condition="!$(Configuration.Contains(Clang))">4324;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <ExceptionHandling>false</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang))">/clang:-fno-rtti %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
