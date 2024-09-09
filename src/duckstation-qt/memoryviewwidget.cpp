@@ -8,7 +8,7 @@
 
 MemoryViewWidget::MemoryViewWidget(QWidget* parent /* = nullptr */, size_t address_offset /* = 0 */,
                                    void* data_ptr /* = nullptr */, size_t data_size /* = 0 */,
-                                   bool data_editable /* = false */)
+                                   bool data_editable /* = false */, EditCallback edit_callback /* = nullptr */)
   : QAbstractScrollArea(parent)
 {
   m_bytes_per_line = 16;
@@ -19,7 +19,7 @@ MemoryViewWidget::MemoryViewWidget(QWidget* parent /* = nullptr */, size_t addre
   connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, &MemoryViewWidget::adjustContent);
 
   if (data_ptr)
-    setData(address_offset, data_ptr, data_size, data_editable);
+    setData(address_offset, data_ptr, data_size, data_editable, edit_callback);
 }
 
 MemoryViewWidget::~MemoryViewWidget() = default;
@@ -46,13 +46,15 @@ void MemoryViewWidget::updateMetrics()
   m_char_height = fm.height();
 }
 
-void MemoryViewWidget::setData(size_t address_offset, void* data_ptr, size_t data_size, bool data_editable)
+void MemoryViewWidget::setData(size_t address_offset, void* data_ptr, size_t data_size, bool data_editable,
+                               EditCallback edit_callback)
 {
   m_data = data_ptr;
   m_data_size = data_size;
   m_data_editable = data_editable;
   m_address_offset = address_offset;
   m_selected_address = INVALID_SELECTED_ADDRESS;
+  m_edit_callback = edit_callback;
   m_last_data_start_offset = 0;
   m_last_data.clear();
   adjustContent();
@@ -137,7 +139,15 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
         if (m_selection_was_ascii)
         {
           expandCurrentDataToInclude(m_selected_address);
-          std::memcpy(static_cast<unsigned char*>(m_data) + m_selected_address, &ch, sizeof(unsigned char));
+
+          unsigned char* pdata = static_cast<unsigned char*>(m_data) + m_selected_address;
+          if (static_cast<unsigned char>(ch) != *pdata)
+          {
+            *pdata = static_cast<unsigned char>(ch);
+            if (m_edit_callback)
+              m_edit_callback(m_selected_address, 1);
+          }
+
           m_selected_address = std::min(m_selected_address + 1, m_data_size - 1);
           forceRefresh();
         }
@@ -157,7 +167,14 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
             expandCurrentDataToInclude(m_selected_address);
 
             unsigned char* pdata = static_cast<unsigned char*>(m_data) + m_selected_address;
-            *pdata = (*pdata & ~(0xf0 >> (m_editing_nibble * 4))) | (nibble << ((1 - m_editing_nibble) * 4));
+            const unsigned char new_value =
+              (*pdata & ~(0xf0 >> (m_editing_nibble * 4))) | (nibble << ((1 - m_editing_nibble) * 4));
+            if (*pdata != new_value)
+            {
+              *pdata = new_value;
+              if (m_edit_callback)
+                m_edit_callback(m_selected_address, 1);
+            }
 
             if (m_editing_nibble == 1)
             {
