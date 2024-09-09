@@ -89,6 +89,7 @@ ImVec4 UISecondaryTextColor;
 
 static u32 s_menu_button_index = 0;
 static u32 s_close_button_state = 0;
+static ImGuiDir s_has_pending_nav_move = ImGuiDir_None;
 static FocusResetType s_focus_reset_queued = FocusResetType::None;
 static bool s_light_theme = false;
 static bool s_smooth_scrolling = false;
@@ -897,6 +898,30 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items, float y_align, float x_pad
                                        float item_height)
 {
   s_menu_button_index = 0;
+
+  // If we're scrolling up and down, it's possible that the first menu item won't be enabled.
+  // If so, track when the scroll happens, and if we moved to a new ID. If not, scroll the parent window.
+  if (GImGui->NavMoveDir != ImGuiDir_None)
+  {
+    s_has_pending_nav_move = GImGui->NavMoveDir;
+  }
+  else if (s_has_pending_nav_move != ImGuiDir_None)
+  {
+    if (GImGui->NavJustMovedToId == 0)
+    {
+      switch (s_has_pending_nav_move)
+      {
+        case ImGuiDir_Up:
+          ImGui::SetScrollY(std::max(ImGui::GetScrollY() - item_height, 0.0f));
+          break;
+        case ImGuiDir_Down:
+          ImGui::SetScrollY(std::min(ImGui::GetScrollY() + item_height, ImGui::GetScrollMaxY()));
+          break;
+      }
+    }
+
+    s_has_pending_nav_move = ImGuiDir_None;
+  }
 
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(x_padding, y_padding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
