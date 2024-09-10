@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1284</width>
-    <height>672</height>
+    <height>674</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -63,7 +63,7 @@
     </widget>
    </item>
    <item row="1" column="0" colspan="2">
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="controllerProfileLayout">
      <item>
       <layout class="QHBoxLayout" name="editProfileLayout">
        <item>
@@ -74,7 +74,14 @@
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="currentProfile"/>
+        <widget class="QComboBox" name="currentProfile">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>0</height>
+          </size>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="newProfile">
