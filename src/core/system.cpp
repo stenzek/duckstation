@@ -1236,7 +1236,7 @@ void System::HandleHostGPUDeviceLost()
   std::memcpy(g_vram, vram_backup.data(), VRAM_SIZE);
 
   // First frame after reopening is definitely going to be trash, so skip it.
-  Host::AddIconOSDMessage(
+  Host::AddIconOSDWarning(
     "HostGPUDeviceLost", ICON_EMOJI_WARNING,
     TRANSLATE_STR("System", "Host GPU device encountered an error and has recovered. This may cause broken rendering."),
     Host::OSD_CRITICAL_ERROR_DURATION);
@@ -1301,7 +1301,7 @@ LayeredSettingsInterface System::GetControllerSettingsLayers(std::unique_lock<st
   // Select input profile _or_ game settings, not both.
   if (SettingsInterface* isi = Host::Internal::GetInputSettingsLayer())
   {
-    ret.SetLayer(LayeredSettingsInterface::Layer::LAYER_INPUT, Host::Internal::GetInputSettingsLayer());
+    ret.SetLayer(LayeredSettingsInterface::Layer::LAYER_INPUT, isi);
   }
   else if (SettingsInterface* gsi = Host::Internal::GetGameSettingsLayer();
            gsi && gsi->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
@@ -1332,7 +1332,6 @@ void System::SetDefaultSettings(SettingsInterface& si)
   Settings temp;
 
   // we don't want to reset some things (e.g. OSD)
-  temp.display_show_osd_messages = g_settings.display_show_osd_messages;
   temp.display_show_fps = g_settings.display_show_fps;
   temp.display_show_speed = g_settings.display_show_speed;
   temp.display_show_gpu_stats = g_settings.display_show_gpu_stats;
@@ -1940,7 +1939,8 @@ void System::DestroySystem()
   GDBServer::Shutdown();
 #endif
 
-  Host::ClearOSDMessages();
+  // TODO-GPU-THREAD: Needs to be called on GPU thread.
+  Host::ClearOSDMessages(true);
 
   PostProcessing::Shutdown();
 
@@ -2398,7 +2398,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
     {
       WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", BIOS::ImageInfo::GetHashString(s_bios_hash),
                   BIOS::ImageInfo::GetHashString(bios_hash));
-      Host::AddIconOSDMessage(
+      Host::AddIconOSDWarning(
         "StateBIOSMismatch", ICON_FA_EXCLAMATION_TRIANGLE,
         TRANSLATE_STR("System", "This save state was created with a different BIOS. This may cause stability issues."),
         Host::OSD_WARNING_DURATION);
@@ -3934,7 +3934,7 @@ bool System::InsertMedia(const char* path)
   std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
   if (!image)
   {
-    Host::AddIconOSDMessage(
+    Host::AddIconOSDWarning(
       "DiscInserted", ICON_FA_COMPACT_DISC,
       fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open disc image '{}': {}."), path, error.GetDescription()),
       Host::OSD_ERROR_DURATION);
@@ -4473,8 +4473,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   {
     if (g_settings.display_osd_scale != old_settings.display_osd_scale)
       ImGuiManager::SetGlobalScale(g_settings.display_osd_scale / 100.0f);
-    if (g_settings.display_show_osd_messages != old_settings.display_show_osd_messages)
-      ImGuiManager::SetShowOSDMessages(g_settings.display_show_osd_messages);
   }
 
   bool controllers_updated = false;
@@ -4600,6 +4598,8 @@ void System::WarnAboutUnsafeSettings()
   {
     append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "All enhancements are currently disabled."));
 
+    if (ImGuiManager::IsShowingOSDMessages())
+    {
 #define APPEND_SUBMESSAGE(msg)                                                                                         \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -4608,47 +4608,48 @@ void System::WarnAboutUnsafeSettings()
     messages.append('\n');                                                                                             \
   } while (0)
 
-    if (g_settings.cpu_overclock_active)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
-    if (g_settings.enable_8mb_ram)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
-    if (g_settings.enable_cheats)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
-    if (g_settings.gpu_resolution_scale != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
-    if (g_settings.gpu_multisamples != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
-    if (g_settings.gpu_true_color)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "True color disabled."));
-    if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
-        g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
-    {
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
-    }
-    if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
-    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
-    if (g_settings.gpu_widescreen_hack)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
-    if (g_settings.display_24bit_chroma_smoothing)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
-    if (g_settings.cdrom_read_speedup != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
-    if (g_settings.cdrom_seek_speedup != 1)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
-    if (g_settings.cdrom_mute_cd_audio)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
-    if (g_settings.texture_replacements.enable_vram_write_replacements)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
-    if (g_settings.use_old_mdec_routines)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
-    if (g_settings.pcdrv_enable)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
-    if (g_settings.bios_patch_fast_boot)
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
+      if (g_settings.cpu_overclock_active)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
+      if (g_settings.enable_8mb_ram)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
+      if (g_settings.enable_cheats)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
+      if (g_settings.gpu_resolution_scale != 1)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
+      if (g_settings.gpu_multisamples != 1)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
+      if (g_settings.gpu_true_color)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "True color disabled."));
+      if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
+          g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
+      {
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
+      }
+      if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
+      if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
+      if (g_settings.gpu_widescreen_hack)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
+      if (g_settings.display_24bit_chroma_smoothing)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
+      if (g_settings.cdrom_read_speedup != 1)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
+      if (g_settings.cdrom_seek_speedup != 1)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
+      if (g_settings.cdrom_mute_cd_audio)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
+      if (g_settings.texture_replacements.enable_vram_write_replacements)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
+      if (g_settings.use_old_mdec_routines)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
+      if (g_settings.pcdrv_enable)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
+      if (g_settings.bios_patch_fast_boot)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
 
 #undef APPEND_SUBMESSAGE
+    }
   }
 
   if (!g_settings.apply_compatibility_settings)
@@ -4663,11 +4664,11 @@ void System::WarnAboutUnsafeSettings()
       messages.pop_back();
 
     LogUnsafeSettingsToConsole(messages);
-    Host::AddKeyedOSDMessage("performance_settings_warning", std::string(messages.view()), Host::OSD_WARNING_DURATION);
+    Host::AddKeyedOSDWarning("performance_settings_warning", std::string(messages.view()), Host::OSD_WARNING_DURATION);
   }
   else
   {
-    Host::RemoveKeyedOSDMessage("performance_settings_warning");
+    Host::RemoveKeyedOSDWarning("performance_settings_warning");
   }
 }
 
@@ -5214,7 +5215,7 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
           std::string(),
         &error))
   {
-    Host::AddIconOSDMessage(
+    Host::AddIconOSDWarning(
       "MediaCapture", ICON_FA_EXCLAMATION_TRIANGLE,
       fmt::format(TRANSLATE_FS("System", "Failed to create media capture: {0}"), error.GetDescription()),
       Host::OSD_ERROR_DURATION);
@@ -5253,7 +5254,7 @@ void System::StopMediaCapture()
   }
   else
   {
-    Host::AddIconOSDMessage(
+    Host::AddIconOSDWarning(
       "MediaCapture", ICON_FA_EXCLAMATION_TRIANGLE,
       fmt::format(TRANSLATE_FS("System", "Stopped {0}: {1}."),
                   GetCaptureTypeForMessage(s_media_capture->IsCapturingVideo(), s_media_capture->IsCapturingAudio()),

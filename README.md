@@ -120,6 +120,7 @@ To download:
 You will need a device with armv7 (32-bit ARM), AArch64 (64-bit ARM), or x86_64 (64-bit x86). 64-bit is preferred, the requirements are higher for 32-bit, you'll probably want at least a 1.5GHz CPU.
 
 Download from Google Play: https://play.google.com/store/apps/details?id=com.github.stenzek.duckstation
+
 APK and Beta Downloads: https://www.duckstation.org/android/
 
 **No support is provided for the Android app**, it is free and your expectations should be in line with that. Please **do not** email me about issues about it, or ask for help, you will be ignored.
@@ -206,9 +207,9 @@ If you wish to use a "portable" build, where the user directory is the same as w
 in the same directory as the DuckStation executable.
 
 ## Bindings for Qt frontend
-Your keyboard or game controller can be used to simulate a variety of PlayStation controllers. Controller input is supported through DInput, XInput, and SDL backends and can be changed through `Settings -> General Settings`.
+Your keyboard or game controller can be used to simulate a variety of PlayStation controllers. Controller input is supported through DInput, XInput, and SDL backends and can be changed through `Settings -> Controllers`.
 
-To bind your input device, go to `Settings -> Controllers`. Each of the buttons/axes for the simulated controller will be listed, alongside the corresponding key/button on your device that it is currently bound to. To rebind, click the box next to the button/axis name, and press the key or button on your input device that you wish to bind to. When binding rumble, simply press any button on the controller you wish to send rumble to.
+To bind your input device, go to `Settings -> Controllers`, and select the virtual controller you want to map. Automatic mapping handles the majority of ocntrollers. However, if you need to manually bind a controller, click the box below the button/axis name, and press the key or button on your input device that you wish to bind to.
 
 ## SDL Game Controller Database
 DuckStation releases ship with a database of game controller mappings for the SDL controller backend, courtesy of https://github.com/mdqinc/SDL_GameControllerDB. The included `gamecontrollerdb.txt` file can be found in the `resources` subdirectory of the DuckStation program directory.
@@ -216,6 +217,9 @@ DuckStation releases ship with a database of game controller mappings for the SD
 If you are experiencing issues binding your controller with the SDL controller backend, you may need to add a custom mapping to the database file. Make a copy of `gamecontrollerdb.txt` and place it in your [user directory](#user-directories) (or directly in the program directory, if running in portable mode) and then follow the instructions in the [SDL_GameControllerDB repository](https://github.com/mdqinc/SDL_GameControllerDB) for creating a new mapping. Add this mapping to the new copy of `gamecontrollerdb.txt` and your controller should then be recognized properly.
 
 ## Default bindings
+
+Bindings for controllers and hotkeys can be changed in `Settings -> Controllers`.
+
 Controller 1:
  - **Left Stick:** W/A/S/D
  - **Right Stick:** T/F/G/H
@@ -229,6 +233,11 @@ Controller 1:
 
 Hotkeys:
  - **Escape:** Open Pause Menu
+ - **F1:** Load State
+ - **F2:** Save State
+ - **F3:** Select Previous Save State
+ - **F4:** Select Next Save State
+ - **F10:** Save Screenshot
  - **F11:** Toggle Fullscreen
  - **Tab:** Temporarily Disable Speed Limiter
  - **Space:** Pause/Resume Emulation
