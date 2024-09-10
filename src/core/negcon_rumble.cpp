@@ -761,7 +761,7 @@ static const SettingInfo s_settings[] = {
 
 const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRumble,
                                                        "NeGconRumble",
-                                                       TRANSLATE_NOOP("ControllerType", "NeGcon with Rumble"),
+                                                       TRANSLATE_NOOP("ControllerType", "NeGcon (Rumble)"),
                                                        ICON_PF_GAMEPAD,
                                                        s_binding_info,
                                                        s_settings,
