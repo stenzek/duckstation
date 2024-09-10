@@ -186,7 +186,7 @@ void QtHost::SetStyleFromSettings()
     darkPalette.setColor(QPalette::Button, lighterGray);
     darkPalette.setColor(QPalette::ButtonText, Qt::white);
     darkPalette.setColor(QPalette::Link, blue);
-    darkPalette.setColor(QPalette::Highlight, lighterGray.darker());
+    darkPalette.setColor(QPalette::Highlight, lighterGray.lighter());
     darkPalette.setColor(QPalette::HighlightedText, Qt::white);
     darkPalette.setColor(QPalette::PlaceholderText, QColor(Qt::white).darker());
 
