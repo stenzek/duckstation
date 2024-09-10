@@ -917,6 +917,8 @@ void ImGuiFullscreen::BeginMenuButtons(u32 num_items, float y_align, float x_pad
         case ImGuiDir_Down:
           ImGui::SetScrollY(std::min(ImGui::GetScrollY() + item_height, ImGui::GetScrollMaxY()));
           break;
+        default:
+          break;
       }
     }
 
