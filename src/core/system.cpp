@@ -4546,7 +4546,7 @@ void System::WarnAboutUnsafeSettings()
   LargeString messages;
   auto append = [&messages](const char* icon, std::string_view msg) { messages.append_format("{} {}\n", icon, msg); };
 
-  if (!g_settings.disable_all_enhancements)
+  if (!g_settings.disable_all_enhancements && ImGuiManager::IsShowingOSDMessages())
   {
     if (g_settings.cpu_overclock_active)
     {
@@ -4595,7 +4595,8 @@ void System::WarnAboutUnsafeSettings()
              TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
     }
   }
-  else
+
+  if (g_settings.disable_all_enhancements)
   {
     append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "All enhancements are currently disabled."));
 
