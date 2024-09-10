@@ -383,7 +383,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.stretchDisplayVertically, tr("Stretch Vertically"), tr("Unchecked"),
     tr("Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio."));
-  dialog->registerWidgetHelp(m_ui.stretchDisplayVertically, tr("Automatically Resize Window"), tr("Unchecked"),
+  dialog->registerWidgetHelp(m_ui.automaticallyResizeWindow, tr("Automatically Resize Window"), tr("Unchecked"),
                              tr("Automatically resizes the window to match the internal resolution. <strong>For high "
                                 "internal resolutions, this will create very large windows.</strong>"));
 #ifdef _WIN32

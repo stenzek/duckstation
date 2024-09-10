@@ -33,10 +33,11 @@ std::vector<WCharType> CompactFontRange(std::span<const WCharType> range);
 void SetGlobalScale(float global_scale);
 
 /// Changes whether OSD messages are silently dropped.
+bool IsShowingOSDMessages();
 void SetShowOSDMessages(bool enable);
 
 /// Initializes ImGui, creates fonts, etc.
-bool Initialize(float global_scale, bool show_osd_messages, Error* error);
+bool Initialize(float global_scale, Error* error);
 
 /// Frees all ImGui resources.
 void Shutdown();
@@ -137,6 +138,9 @@ static constexpr float OSD_QUICK_DURATION = 2.5f;
 void AddOSDMessage(std::string message, float duration = 2.0f);
 void AddKeyedOSDMessage(std::string key, std::string message, float duration = 2.0f);
 void AddIconOSDMessage(std::string key, const char* icon, std::string message, float duration = 2.0f);
+void AddKeyedOSDWarning(std::string key, std::string message, float duration = 2.0f);
+void AddIconOSDWarning(std::string key, const char* icon, std::string message, float duration = 2.0f);
 void RemoveKeyedOSDMessage(std::string key);
-void ClearOSDMessages();
+void RemoveKeyedOSDWarning(std::string key);
+void ClearOSDMessages(bool clear_warnings);
 } // namespace Host

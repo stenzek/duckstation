@@ -305,7 +305,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   display_active_end_offset = static_cast<s16>(si.GetIntValue("Display", "ActiveEndOffset", 0));
   display_line_start_offset = static_cast<s8>(si.GetIntValue("Display", "LineStartOffset", 0));
   display_line_end_offset = static_cast<s8>(si.GetIntValue("Display", "LineEndOffset", 0));
-  display_show_osd_messages = si.GetBoolValue("Display", "ShowOSDMessages", true);
+  ImGuiManager::SetShowOSDMessages(si.GetBoolValue("Display", "ShowOSDMessages", true));
   display_show_fps = si.GetBoolValue("Display", "ShowFPS", false);
   display_show_speed = si.GetBoolValue("Display", "ShowSpeed", false);
   display_show_gpu_stats = si.GetBoolValue("Display", "ShowGPUStatistics", false);
@@ -575,7 +575,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.GetIntValue("Display", "CustomAspectRatioDenominator", display_aspect_ratio_custom_denominator);
   if (!ignore_base)
   {
-    si.SetBoolValue("Display", "ShowOSDMessages", display_show_osd_messages);
+    si.SetBoolValue("Display", "ShowOSDMessages", ImGuiManager::IsShowingOSDMessages());
     si.SetBoolValue("Display", "ShowFPS", display_show_fps);
     si.SetBoolValue("Display", "ShowSpeed", display_show_speed);
     si.SetBoolValue("Display", "ShowResolution", display_show_resolution);
