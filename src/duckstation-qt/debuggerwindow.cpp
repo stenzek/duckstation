@@ -594,7 +594,7 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
   void* const mem_ptr = Bus::GetMemoryRegionPointer(region);
   const bool mem_writable = Bus::IsMemoryRegionWritable(region);
   const MemoryViewWidget::EditCallback edit_callback =
-    ((region == Bus::MemoryRegion::RAM) ? edit_ram_callback : nullptr);
+    ((region == Bus::MemoryRegion::RAM) ? static_cast<MemoryViewWidget::EditCallback>(edit_ram_callback) : nullptr);
   m_ui.memoryView->setData(start, mem_ptr, end - start, mem_writable, edit_callback);
 
 #define SET_REGION_RADIO_BUTTON(name, rb_region)                                                                       \

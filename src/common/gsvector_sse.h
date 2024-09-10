@@ -892,7 +892,7 @@ public:
 
   ALWAYS_INLINE bool rempty() const { return lt32(zwzw()).mask() != 0x00ff; }
 
-  ALWAYS_INLINE GSVector4i runion(const GSVector4i& v) const { return min_i32(v).upl64(max_i32(v).srl<8>()); }
+  ALWAYS_INLINE GSVector4i runion(const GSVector4i& v) const { return min_i32(v).blend32<0xc>(max_i32(v)); }
 
   ALWAYS_INLINE GSVector4i rintersect(const GSVector4i& v) const { return sat_i32(v); }
   ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return !rintersect(v).rempty(); }
@@ -1371,7 +1371,8 @@ public:
 
   ALWAYS_INLINE static GSVector4i loadnt(const void* p)
   {
-    return GSVector4i(_mm_stream_load_si128(static_cast<const __m128i*>(p)));
+    // Should be const, but isn't...
+    return GSVector4i(_mm_stream_load_si128(const_cast<__m128i*>(static_cast<const __m128i*>(p))));
   }
 
   ALWAYS_INLINE static GSVector4i load32(const void* p) { return GSVector4i(_mm_loadu_si32(p)); }
