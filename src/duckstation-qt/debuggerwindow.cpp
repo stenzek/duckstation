@@ -15,6 +15,7 @@
 #include <QtCore/QSignalBlocker>
 #include <QtGui/QCursor>
 #include <QtGui/QFontDatabase>
+#include <QtWidgets/QAbstractScrollArea>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 
@@ -81,15 +82,15 @@ void DebuggerWindow::refreshAll()
   m_ui.memoryView->forceRefresh();
 
   m_code_model->setPC(CPU::g_state.pc);
-  scrollToPC();
+  scrollToPC(false);
 }
 
-void DebuggerWindow::scrollToPC()
+void DebuggerWindow::scrollToPC(bool center)
 {
-  return scrollToCodeAddress(CPU::g_state.pc);
+  return scrollToCodeAddress(CPU::g_state.pc, center);
 }
 
-void DebuggerWindow::scrollToCodeAddress(VirtualMemoryAddress address)
+void DebuggerWindow::scrollToCodeAddress(VirtualMemoryAddress address, bool center)
 {
   m_code_model->ensureAddressVisible(address);
 
@@ -99,7 +100,14 @@ void DebuggerWindow::scrollToCodeAddress(VirtualMemoryAddress address)
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
     const QModelIndex index = m_code_model->index(row, 0);
-    m_ui.codeView->scrollTo(index, QAbstractItemView::PositionAtCenter);
+    const QRect rect = m_ui.codeView->visualRect(index);
+    if (rect.left() < 0 || rect.top() < 0 || rect.right() > m_ui.codeView->viewport()->width() ||
+        rect.bottom() > m_ui.codeView->viewport()->height())
+    {
+      center = true;
+    }
+
+    m_ui.codeView->scrollTo(index, center ? QAbstractItemView::PositionAtCenter : QAbstractItemView::EnsureVisible);
     m_ui.codeView->selectionModel()->setCurrentIndex(index,
                                                      QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
   }
@@ -131,7 +139,7 @@ void DebuggerWindow::onRunToCursorTriggered()
 
 void DebuggerWindow::onGoToPCTriggered()
 {
-  scrollToPC();
+  scrollToPC(true);
 }
 
 void DebuggerWindow::onGoToAddressTriggered()
@@ -141,7 +149,7 @@ void DebuggerWindow::onGoToAddressTriggered()
   if (!address.has_value())
     return;
 
-  scrollToCodeAddress(address.value());
+  scrollToCodeAddress(address.value(), true);
 }
 
 void DebuggerWindow::onDumpAddressTriggered()

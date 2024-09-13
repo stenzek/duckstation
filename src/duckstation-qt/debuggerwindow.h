@@ -45,8 +45,6 @@ private Q_SLOTS:
   void timerRefresh();
   void refreshAll();
 
-  void scrollToPC();
-
   void onPauseActionToggled(bool paused);
   void onRunToCursorTriggered();
   void onGoToPCTriggered();
@@ -78,7 +76,8 @@ private:
   void clearBreakpoints();
   std::optional<VirtualMemoryAddress> getSelectedCodeAddress();
   bool tryFollowLoadStore(VirtualMemoryAddress address);
-  void scrollToCodeAddress(VirtualMemoryAddress address);
+  void scrollToPC(bool center);
+  void scrollToCodeAddress(VirtualMemoryAddress address, bool center);
   bool scrollToMemoryAddress(VirtualMemoryAddress address);
   void refreshBreakpointList();
   void refreshBreakpointList(const CPU::BreakpointList& bps);
