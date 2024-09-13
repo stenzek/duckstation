@@ -1210,6 +1210,13 @@ std::unique_ptr<GPUDevice> GPUDevice::CreateDeviceForAPI(RenderAPI api)
   }
 }
 
+#ifndef _WIN32
+// Use a duckstation-suffixed shaderc name to avoid conflicts and loading another shaderc, e.g. from the Vulkan SDK.
+#define SHADERC_LIB_NAME "shaderc_ds"
+#else
+#define SHADERC_LIB_NAME "shaderc_shared"
+#endif
+
 #define SHADERC_FUNCTIONS(X)                                                                                           \
   X(shaderc_compiler_initialize)                                                                                       \
   X(shaderc_compiler_release)                                                                                          \
@@ -1285,7 +1292,7 @@ bool dyn_libs::OpenShaderc(Error* error)
   if (s_shaderc_library.IsOpen())
     return true;
 
-  const std::string libname = DynamicLibrary::GetVersionedFilename("shaderc_shared");
+  const std::string libname = DynamicLibrary::GetVersionedFilename(SHADERC_LIB_NAME);
   if (!s_shaderc_library.Open(libname.c_str(), error))
   {
     Error::AddPrefix(error, "Failed to load shaderc: ");
