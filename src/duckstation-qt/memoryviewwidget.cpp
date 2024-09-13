@@ -207,10 +207,13 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
   if (!m_data)
     return;
 
-  const QColor alt_fill_color(40, 40, 40);
+  const QPalette palette = viewport()->palette();
+  const bool dark = palette.windowText().color().value() > palette.window().color().value();
+  const QColor alt_fill_color =
+    dark ? palette.color(QPalette::AlternateBase).darker(130) : palette.color(QPalette::AlternateBase).lighter(100);
+  const QColor selected_color = dark ? palette.color(QPalette::Highlight) : QColor(190, 190, 190);
+  const QColor text_color = palette.color(QPalette::WindowText);
   const QColor highlight_color(100, 100, 0);
-  const QColor selected_color = viewport()->palette().color(QPalette::Highlight);
-  const QColor text_color = viewport()->palette().color(QPalette::WindowText);
   const QColor edited_color(240, 30, 30);
   const int offsetX = horizontalScrollBar()->value();
 
