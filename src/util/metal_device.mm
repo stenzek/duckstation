@@ -5,6 +5,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/cocoa_tools.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
@@ -44,14 +45,6 @@ static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
 // We need 32 here for AVX2, so 64 is also fine.
 static constexpr u32 TEXTURE_UPLOAD_PITCH_ALIGNMENT = 64;
 
-// Used for present timing.
-static const struct mach_timebase_info s_timebase_info = []() {
-  struct mach_timebase_info val;
-  const kern_return_t res = mach_timebase_info(&val);
-  Assert(res == KERN_SUCCESS);
-  return val;
-}();
-
 static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> s_pixel_format_mapping = {
   MTLPixelFormatInvalid,               // Unknown
   MTLPixelFormatRGBA8Unorm,            // RGBA8
@@ -80,27 +73,11 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatBGR10A2Unorm,          // RGB10A2
 };
 
-static NSString* StringViewToNSString(std::string_view str)
-{
-  if (str.empty())
-    return nil;
-
-  return [[[NSString alloc] autorelease] initWithBytes:str.data()
-                                                length:static_cast<NSUInteger>(str.length())
-                                              encoding:NSUTF8StringEncoding];
-}
-
 static void LogNSError(NSError* error, std::string_view message)
 {
   Log::FastWrite("MetalDevice", LOGLEVEL_ERROR, message);
   Log::FastWrite("MetalDevice", LOGLEVEL_ERROR, "  NSError Code: {}", static_cast<u32>(error.code));
   Log::FastWrite("MetalDevice", LOGLEVEL_ERROR, "  NSError Description: {}", [error.description UTF8String]);
-}
-
-static void NSErrorToErrorObject(Error* errptr, std::string_view message, NSError* error)
-{
-  Error::SetStringFmt(errptr, "{}NSError Code {}: {}", message, static_cast<u32>(error.code),
-                      [error.description UTF8String]);
 }
 
 static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
@@ -325,13 +302,13 @@ bool MetalDevice::OpenPipelineCache(const std::string& path, Error* error)
   @autoreleasepool
   {
     MTLBinaryArchiveDescriptor* archiveDescriptor = [[[MTLBinaryArchiveDescriptor alloc] init] autorelease];
-    archiveDescriptor.url = [NSURL fileURLWithPath:StringViewToNSString(path)];
+    archiveDescriptor.url = [NSURL fileURLWithPath:CocoaTools::StringViewToNSString(path)];
 
     NSError* nserror = nil;
     m_pipeline_archive = [m_device newBinaryArchiveWithDescriptor:archiveDescriptor error:&nserror];
     if (m_pipeline_archive == nil)
     {
-      NSErrorToErrorObject(error, "newBinaryArchiveWithDescriptor failed: ", nserror);
+      CocoaTools::NSErrorToErrorObject(error, "newBinaryArchiveWithDescriptor failed: ", nserror);
       return false;
     }
 
@@ -351,7 +328,7 @@ bool MetalDevice::CreatePipelineCache(const std::string& path, Error* error)
     m_pipeline_archive = [m_device newBinaryArchiveWithDescriptor:archiveDescriptor error:&nserror];
     if (m_pipeline_archive == nil)
     {
-      NSErrorToErrorObject(error, "newBinaryArchiveWithDescriptor failed: ", nserror);
+      CocoaTools::NSErrorToErrorObject(error, "newBinaryArchiveWithDescriptor failed: ", nserror);
       return false;
     }
 
@@ -378,11 +355,11 @@ bool MetalDevice::ClosePipelineCache(const std::string& path, Error* error)
 
   @autoreleasepool
   {
-    NSURL* url = [NSURL fileURLWithPath:StringViewToNSString(path)];
+    NSURL* url = [NSURL fileURLWithPath:CocoaTools::StringViewToNSString(path)];
     NSError* nserror = nil;
     if (![m_pipeline_archive serializeToURL:url error:&nserror])
     {
-      NSErrorToErrorObject(error, "serializeToURL failed: ", nserror);
+      CocoaTools::NSErrorToErrorObject(error, "serializeToURL failed: ", nserror);
       return false;
     }
 
@@ -682,7 +659,7 @@ void MetalShader::SetDebugName(std::string_view name)
 {
   @autoreleasepool
   {
-    [m_function setLabel:StringViewToNSString(name)];
+    [m_function setLabel:CocoaTools::StringViewToNSString(name)];
   }
 }
 
@@ -691,7 +668,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
 {
   @autoreleasepool
   {
-    NSString* const ns_source = StringViewToNSString(source);
+    NSString* const ns_source = CocoaTools::StringViewToNSString(source);
     NSError* nserror = nil;
     id<MTLLibrary> library = [m_device newLibraryWithSource:ns_source options:nil error:&nserror];
     if (!library)
@@ -705,7 +682,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
       return {};
     }
 
-    id<MTLFunction> function = [library newFunctionWithName:StringViewToNSString(entry_point)];
+    id<MTLFunction> function = [library newFunctionWithName:CocoaTools::StringViewToNSString(entry_point)];
     if (!function)
     {
       ERROR_LOG("Failed to get main function in compiled library");
@@ -989,7 +966,7 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
       if (pipeline == nil)
       {
         LogNSError(nserror, "Failed to create render pipeline state");
-        NSErrorToErrorObject(error, "newRenderPipelineStateWithDescriptor failed: ", nserror);
+        CocoaTools::NSErrorToErrorObject(error, "newRenderPipelineStateWithDescriptor failed: ", nserror);
         return {};
       }
     }
@@ -1164,7 +1141,7 @@ void MetalTexture::SetDebugName(std::string_view name)
 {
   @autoreleasepool
   {
-    [m_texture setLabel:StringViewToNSString(name)];
+    [m_texture setLabel:CocoaTools::StringViewToNSString(name)];
   }
 }
 
@@ -1383,7 +1360,7 @@ void MetalDownloadTexture::SetDebugName(std::string_view name)
 {
   @autoreleasepool
   {
-    [m_buffer setLabel:StringViewToNSString(name)];
+    [m_buffer setLabel:CocoaTools::StringViewToNSString(name)];
   }
 }
 
@@ -1806,7 +1783,7 @@ void MetalTextureBuffer::SetDebugName(std::string_view name)
 {
   @autoreleasepool
   {
-    [m_buffer.GetBuffer() setLabel:StringViewToNSString(name)];
+    [m_buffer.GetBuffer() setLabel:CocoaTools::StringViewToNSString(name)];
   }
 }
 
@@ -2487,7 +2464,7 @@ void MetalDevice::EndPresent(bool explicit_present, u64 present_time)
   if (present_time != 0 && (current_time = Common::Timer::GetCurrentValue()) < present_time)
   {
     // Need to convert to mach absolute time. Time values should already be in nanoseconds.
-    const u64 mach_time_nanoseconds = ((mach_absolute_time() * s_timebase_info.numer) / s_timebase_info.denom);
+    const u64 mach_time_nanoseconds = CocoaTools::ConvertMachTimeBaseToNanoseconds(mach_absolute_time());
     const double mach_present_time = static_cast<double>(mach_time_nanoseconds + (present_time - current_time)) / 1e+9;
     [m_render_cmdbuf presentDrawable:m_layer_drawable atTime:mach_present_time];
   }

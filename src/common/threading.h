@@ -53,6 +53,11 @@ public:
   /// Obviously, only works up to 64 processors.
   bool SetAffinity(u64 processor_mask) const;
 
+#ifdef __APPLE__
+  /// Only available on MacOS, sets a period/maximum time for the scheduler.
+  bool SetTimeConstraints(bool enabled, u64 period, u64 typical_time, u64 maximum_time);
+#endif
+
 protected:
   void* m_native_handle = nullptr;
 
