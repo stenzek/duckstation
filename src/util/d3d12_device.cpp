@@ -291,51 +291,45 @@ void D3D12Device::GetPipelineCacheHeader(PIPELINE_CACHE_HEADER* hdr)
   hdr->unused = 0;
 }
 
-bool D3D12Device::ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data)
+bool D3D12Device::ReadPipelineCache(DynamicHeapArray<u8> data, Error* error)
 {
   PIPELINE_CACHE_HEADER expected_header;
   GetPipelineCacheHeader(&expected_header);
-  if (data.has_value() && (data->size() < sizeof(PIPELINE_CACHE_HEADER) ||
-                           std::memcmp(data->data(), &expected_header, sizeof(PIPELINE_CACHE_HEADER)) != 0))
+  if ((data.size() < sizeof(PIPELINE_CACHE_HEADER) ||
+       std::memcmp(data.data(), &expected_header, sizeof(PIPELINE_CACHE_HEADER)) != 0))
   {
-    WARNING_LOG("Pipeline cache header does not match current device, ignoring.");
-    data.reset();
+    Error::SetStringView(error, "Pipeline cache header does not match current device.");
+    return false;
   }
 
-  HRESULT hr =
-    m_device->CreatePipelineLibrary(data.has_value() ? (data->data() + sizeof(PIPELINE_CACHE_HEADER)) : nullptr,
-                                    data.has_value() ? (data->size() - sizeof(PIPELINE_CACHE_HEADER)) : 0,
+  const HRESULT hr =
+    m_device->CreatePipelineLibrary(&data[sizeof(PIPELINE_CACHE_HEADER)], data.size() - sizeof(PIPELINE_CACHE_HEADER),
                                     IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
-  if (SUCCEEDED(hr))
-  {
-    if (data.has_value())
-      s_pipeline_cache_data = std::move(data.value());
-
-    return true;
-  }
-
-  // Try without the cache data.
-  if (data.has_value())
-  {
-    WARNING_LOG("CreatePipelineLibrary() failed, trying without cache data. Error: {}",
-                Error::CreateHResult(hr).GetDescription());
-
-    hr = m_device->CreatePipelineLibrary(nullptr, 0, IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
-    if (SUCCEEDED(hr))
-      return true;
-  }
-
   if (FAILED(hr))
   {
-    WARNING_LOG("CreatePipelineLibrary() failed, pipeline caching will not be available. Error: {}",
-                Error::CreateHResult(hr).GetDescription());
+    Error::SetHResult(error, "CreatePipelineLibrary() failed: ", hr);
+    return false;
+  }
+
+  // Have to keep the buffer around, DX doesn't take a copy.
+  s_pipeline_cache_data = std::move(data);
+  return true;
+}
+
+bool D3D12Device::CreatePipelineCache(const std::string& path, Error* error)
+{
+  const HRESULT hr =
+    m_device->CreatePipelineLibrary(nullptr, 0, IID_PPV_ARGS(m_pipeline_library.ReleaseAndGetAddressOf()));
+  if (FAILED(hr))
+  {
+    Error::SetHResult(error, "CreatePipelineLibrary() failed: ", hr);
     return false;
   }
 
   return true;
 }
 
-bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
+bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 {
   if (!m_pipeline_library)
     return false;
@@ -356,7 +350,7 @@ bool D3D12Device::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   const HRESULT hr = m_pipeline_library->Serialize(data->data() + sizeof(PIPELINE_CACHE_HEADER), size);
   if (FAILED(hr))
   {
-    ERROR_LOG("Serialize() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "Serialize() failed: ", hr);
     data->deallocate();
     return false;
   }

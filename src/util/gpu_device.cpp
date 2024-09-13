@@ -428,14 +428,29 @@ void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
   }
 
   s_pipeline_cache_path = {};
+  s_pipeline_cache_size = 0;
+  s_pipeline_cache_hash = {};
+
   if (m_features.pipeline_cache && !base_path.empty())
   {
-    const std::string basename = GetShaderCacheBaseName("pipelines");
-    std::string filename = Path::Combine(base_path, TinyString::from_format("{}.bin", basename));
-    if (OpenPipelineCache(filename))
-      s_pipeline_cache_path = std::move(filename);
-    else
-      WARNING_LOG("Failed to read pipeline cache.");
+    Error error;
+    s_pipeline_cache_path =
+      Path::Combine(base_path, TinyString::from_format("{}.bin", GetShaderCacheBaseName("pipelines")));
+    if (FileSystem::FileExists(s_pipeline_cache_path.c_str()))
+    {
+      if (OpenPipelineCache(s_pipeline_cache_path, &error))
+        return;
+
+      WARNING_LOG("Failed to read pipeline cache '{}': {}", Path::GetFileName(s_pipeline_cache_path),
+                  error.GetDescription());
+    }
+
+    if (!CreatePipelineCache(s_pipeline_cache_path, &error))
+    {
+      WARNING_LOG("Failed to create pipeline cache '{}': {}", Path::GetFileName(s_pipeline_cache_path),
+                  error.GetDescription());
+      s_pipeline_cache_path = {};
+    }
   }
 }
 
@@ -445,25 +460,11 @@ void GPUDevice::CloseShaderCache()
 
   if (!s_pipeline_cache_path.empty())
   {
-    DynamicHeapArray<u8> data;
-    if (GetPipelineCacheData(&data))
+    Error error;
+    if (!ClosePipelineCache(s_pipeline_cache_path, &error))
     {
-      // Save disk writes if it hasn't changed, think of the poor SSDs.
-      if (s_pipeline_cache_size != data.size() || s_pipeline_cache_hash != SHA1Digest::GetDigest(data.cspan()))
-      {
-        Error error;
-        INFO_LOG("Compressing and writing {} bytes to '{}'", data.size(), Path::GetFileName(s_pipeline_cache_path));
-        if (!CompressHelpers::CompressToFile(CompressHelpers::CompressType::Zstandard, s_pipeline_cache_path.c_str(),
-                                             data.cspan(), -1, true, &error))
-        {
-          ERROR_LOG("Failed to write pipeline cache to '{}': {}", Path::GetFileName(s_pipeline_cache_path),
-                    error.GetDescription());
-        }
-      }
-      else
-      {
-        INFO_LOG("Skipping updating pipeline cache '{}' due to no changes.", Path::GetFileName(s_pipeline_cache_path));
-      }
+      WARNING_LOG("Failed to close pipeline cache '{}': {}", Path::GetFileName(s_pipeline_cache_path),
+                  error.GetDescription());
     }
 
     s_pipeline_cache_path = {};
@@ -480,49 +481,56 @@ std::string GPUDevice::GetShaderCacheBaseName(std::string_view type) const
   return fmt::format("{}_{}{}", lower_api_name, type, debug_suffix);
 }
 
-bool GPUDevice::OpenPipelineCache(const std::string& filename)
+bool GPUDevice::OpenPipelineCache(const std::string& path, Error* error)
 {
-  s_pipeline_cache_size = 0;
-  s_pipeline_cache_hash = {};
+  CompressHelpers::OptionalByteBuffer data =
+    CompressHelpers::DecompressFile(CompressHelpers::CompressType::Zstandard, path.c_str(), std::nullopt, error);
+  if (!data.has_value())
+    return false;
 
-  Error error;
-  CompressHelpers::OptionalByteBuffer data;
-  if (FileSystem::FileExists(filename.c_str()))
-  {
-    data =
-      CompressHelpers::DecompressFile(CompressHelpers::CompressType::Zstandard, filename.c_str(), std::nullopt, &error);
-    if (data.has_value())
-    {
-      s_pipeline_cache_size = data->size();
-      s_pipeline_cache_hash = SHA1Digest::GetDigest(data->cspan());
-    }
-    else
-    {
-      ERROR_LOG("Failed to load pipeline cache from '{}': {}", Path::GetFileName(filename), error.GetDescription());
-    }
-  }
+  const size_t cache_size = data->size();
+  const std::array<u8, SHA1Digest::DIGEST_SIZE> cache_hash = SHA1Digest::GetDigest(data->cspan());
 
   INFO_LOG("Loading {} byte pipeline cache with hash {}", s_pipeline_cache_size,
            SHA1Digest::DigestToString(s_pipeline_cache_hash));
 
-  if (ReadPipelineCache(std::move(data)))
-  {
-    return true;
-  }
-  else
-  {
-    s_pipeline_cache_size = 0;
-    s_pipeline_cache_hash = {};
+  if (!ReadPipelineCache(std::move(data.value()), error))
     return false;
-  }
+
+  s_pipeline_cache_size = cache_size;
+  s_pipeline_cache_hash = cache_hash;
+  return true;
 }
 
-bool GPUDevice::ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data)
+bool GPUDevice::CreatePipelineCache(const std::string& path, Error* error)
 {
   return false;
 }
 
-bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data)
+bool GPUDevice::ClosePipelineCache(const std::string& path, Error* error)
+{
+  DynamicHeapArray<u8> data;
+  if (!GetPipelineCacheData(&data, error))
+    return false;
+
+  // Save disk writes if it hasn't changed, think of the poor SSDs.
+  if (s_pipeline_cache_size == data.size() && s_pipeline_cache_hash == SHA1Digest::GetDigest(data.cspan()))
+  {
+    INFO_LOG("Skipping updating pipeline cache '{}' due to no changes.", Path::GetFileName(path));
+    return true;
+  }
+
+  INFO_LOG("Compressing and writing {} bytes to '{}'", data.size(), Path::GetFileName(path));
+  return CompressHelpers::CompressToFile(CompressHelpers::CompressType::Zstandard, path.c_str(), data.cspan(), -1, true,
+                                         error);
+}
+
+bool GPUDevice::ReadPipelineCache(DynamicHeapArray<u8> data, Error* error)
+{
+  return false;
+}
+
+bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 {
   return false;
 }
@@ -1705,7 +1713,7 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
 
       if (m_features.framebuffer_fetch &&
           ((sres = dyn_libs::spvc_compiler_options_set_uint(soptions, SPVC_COMPILER_OPTION_MSL_VERSION,
-                                                            SPVC_MAKE_MSL_VERSION(2, 3, 0))) != SPVC_SUCCESS))
+                                                            target_version)) != SPVC_SUCCESS))
       {
         Error::SetStringFmt(error, "spvc_compiler_options_set_uint(SPVC_COMPILER_OPTION_MSL_VERSION) failed: {}",
                             static_cast<int>(sres));

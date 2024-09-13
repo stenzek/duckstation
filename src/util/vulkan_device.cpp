@@ -2098,37 +2098,37 @@ void VulkanDevice::DestroyDevice()
   Vulkan::UnloadVulkanLibrary();
 }
 
-bool VulkanDevice::ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header)
+bool VulkanDevice::ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header, Error* error)
 {
   if (header.header_length < sizeof(VK_PIPELINE_CACHE_HEADER))
   {
-    ERROR_LOG("Pipeline cache failed validation: Invalid header length");
+    Error::SetStringView(error, "Invalid header length");
     return false;
   }
 
   if (header.header_version != VK_PIPELINE_CACHE_HEADER_VERSION_ONE)
   {
-    ERROR_LOG("Pipeline cache failed validation: Invalid header version");
+    Error::SetStringView(error, "Invalid header version");
     return false;
   }
 
   if (header.vendor_id != m_device_properties.vendorID)
   {
-    ERROR_LOG("Pipeline cache failed validation: Incorrect vendor ID (file: 0x{:X}, device: 0x{:X})", header.vendor_id,
-              m_device_properties.vendorID);
+    Error::SetStringFmt(error, "Incorrect vendor ID (file: 0x{:X}, device: 0x{:X})", header.vendor_id,
+                        m_device_properties.vendorID);
     return false;
   }
 
   if (header.device_id != m_device_properties.deviceID)
   {
-    ERROR_LOG("Pipeline cache failed validation: Incorrect device ID (file: 0x{:X}, device: 0x{:X})", header.device_id,
-              m_device_properties.deviceID);
+    Error::SetStringFmt(error, "Incorrect device ID (file: 0x{:X}, device: 0x{:X})", header.device_id,
+                        m_device_properties.deviceID);
     return false;
   }
 
   if (std::memcmp(header.uuid, m_device_properties.pipelineCacheUUID, VK_UUID_SIZE) != 0)
   {
-    ERROR_LOG("Pipeline cache failed validation: Incorrect UUID");
+    Error::SetStringView(error, "Incorrect UUID");
     return false;
   }
 
@@ -2144,35 +2144,46 @@ void VulkanDevice::FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header)
   std::memcpy(header->uuid, m_device_properties.pipelineCacheUUID, VK_UUID_SIZE);
 }
 
-bool VulkanDevice::ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data)
+bool VulkanDevice::ReadPipelineCache(DynamicHeapArray<u8> data, Error* error)
 {
-  if (data.has_value())
+  if (data.size() < sizeof(VK_PIPELINE_CACHE_HEADER))
   {
-    if (data->size() < sizeof(VK_PIPELINE_CACHE_HEADER))
-    {
-      ERROR_LOG("Pipeline cache is too small, ignoring.");
-      data.reset();
-    }
-
-    VK_PIPELINE_CACHE_HEADER header;
-    std::memcpy(&header, data->data(), sizeof(header));
-    if (!ValidatePipelineCacheHeader(header))
-      data.reset();
+    Error::SetStringView(error, "Pipeline cache is too small.");
+    return false;
   }
 
-  const VkPipelineCacheCreateInfo ci{VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO, nullptr, 0,
-                                     data.has_value() ? data->size() : 0, data.has_value() ? data->data() : nullptr};
+  // alignment reasons...
+  VK_PIPELINE_CACHE_HEADER header;
+  std::memcpy(&header, data.data(), sizeof(header));
+  if (!ValidatePipelineCacheHeader(header, error))
+    return false;
+
+  const VkPipelineCacheCreateInfo ci{VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO, nullptr, 0, data.size(),
+                                     data.data()};
   VkResult res = vkCreatePipelineCache(m_device, &ci, nullptr, &m_pipeline_cache);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkCreatePipelineCache() failed: ");
+    Vulkan::SetErrorObject(error, "vkCreatePipelineCache() failed: ", res);
     return false;
   }
 
   return true;
 }
 
-bool VulkanDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data)
+bool VulkanDevice::CreatePipelineCache(const std::string& path, Error* error)
+{
+  const VkPipelineCacheCreateInfo ci{VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO, nullptr, 0, 0, nullptr};
+  VkResult res = vkCreatePipelineCache(m_device, &ci, nullptr, &m_pipeline_cache);
+  if (res != VK_SUCCESS)
+  {
+    Vulkan::SetErrorObject(error, "vkCreatePipelineCache() failed: ", res);
+    return false;
+  }
+
+  return true;
+}
+
+bool VulkanDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 {
   if (m_pipeline_cache == VK_NULL_HANDLE)
     return false;
@@ -2181,7 +2192,7 @@ bool VulkanDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   VkResult res = vkGetPipelineCacheData(m_device, m_pipeline_cache, &data_size, nullptr);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkGetPipelineCacheData() failed: ");
+    Vulkan::SetErrorObject(error, "vkGetPipelineCacheData() failed: ", res);
     return false;
   }
 
@@ -2189,7 +2200,7 @@ bool VulkanDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data)
   res = vkGetPipelineCacheData(m_device, m_pipeline_cache, &data_size, data->data());
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkGetPipelineCacheData() (2) failed: ");
+    Vulkan::SetErrorObject(error, "vkGetPipelineCacheData() (2) failed: ", res);
     return false;
   }
 

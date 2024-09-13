@@ -750,9 +750,11 @@ protected:
   virtual void DestroyDevice() = 0;
 
   std::string GetShaderCacheBaseName(std::string_view type) const;
-  virtual bool OpenPipelineCache(const std::string& filename);
-  virtual bool ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data);
-  virtual bool GetPipelineCacheData(DynamicHeapArray<u8>* data);
+  virtual bool OpenPipelineCache(const std::string& path, Error* error);
+  virtual bool CreatePipelineCache(const std::string& path, Error* error);
+  virtual bool ReadPipelineCache(DynamicHeapArray<u8> data, Error* error);
+  virtual bool GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error);
+  virtual bool ClosePipelineCache(const std::string& path, Error* error);
 
   virtual std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
                                                             Error* error) = 0;

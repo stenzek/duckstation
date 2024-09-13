@@ -136,8 +136,9 @@ protected:
                     FeatureMask disabled_features, Error* error) override;
   void DestroyDevice() override;
 
-  bool OpenPipelineCache(const std::string& filename) override;
-  bool GetPipelineCacheData(DynamicHeapArray<u8>* data) override;
+  bool OpenPipelineCache(const std::string& path, Error* error) override;
+  bool CreatePipelineCache(const std::string& path, Error* error) override;
+  bool ClosePipelineCache(const std::string& path, Error* error) override;
 
 private:
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
@@ -172,7 +173,6 @@ private:
                                         const GPUPipeline::GraphicsConfig& plconfig);
   void AddToPipelineCache(OpenGLPipeline::ProgramCacheItem* it);
   bool DiscardPipelineCache();
-  void ClosePipelineCache();
 
   void ApplyRasterizationState(GPUPipeline::RasterizationState rs);
   void ApplyDepthState(GPUPipeline::DepthState ds);
@@ -224,7 +224,6 @@ private:
   bool m_timestamp_query_started = false;
 
   std::FILE* m_pipeline_disk_cache_file = nullptr;
-  std::string m_pipeline_disk_cache_filename;
   u32 m_pipeline_disk_cache_data_end = 0;
   bool m_pipeline_disk_cache_changed = false;
 
