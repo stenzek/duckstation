@@ -1052,7 +1052,7 @@ void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_m
   ImVec2 frame_max = p_max;
 
   const ImGuiIO& io = ImGui::GetIO();
-  if (io.NavVisible)
+  if (s_smooth_scrolling && io.NavVisible)
   {
     if (!s_had_hovered_menu_item || io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f)
     {
