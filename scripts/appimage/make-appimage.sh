@@ -63,7 +63,7 @@ declare -a MANUAL_LIBS=(
 	"libswresample.so.5"
 	"libdiscord-rpc.so"
 	"libfreetype.so.6"
-	"libshaderc_shared.so"
+	"libshaderc_ds.so"
 	"libspirv-cross-c-shared.so.0"
 )
 
