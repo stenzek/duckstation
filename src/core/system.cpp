@@ -3412,6 +3412,19 @@ void System::UpdateSpeedLimiterState()
 
   if (g_settings.increase_timer_resolution)
     SetTimerResolutionIncreased(s_throttler_enabled);
+
+#ifdef __APPLE__
+  // To get any resemblence of consistent frame times on MacOS, we need to tell the scheduler how often we need to run.
+  // Assume a maximum of 7ms for running a frame. It'll be much lower than that, Apple Silicon is fast.
+  constexpr u64 MAX_FRAME_TIME_NS = 7000000;
+  static u64 last_scheduler_period = 0;
+  const u64 new_scheduler_period = s_optimal_frame_pacing ? s_frame_period : 0;
+  if (s_cpu_thread_handle && new_scheduler_period != last_scheduler_period)
+  {
+    s_cpu_thread_handle.SetTimeConstraints(s_optimal_frame_pacing, new_scheduler_period, MAX_FRAME_TIME_NS,
+                                           new_scheduler_period);
+  }
+#endif
 }
 
 void System::UpdateDisplayVSync()
