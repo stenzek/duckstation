@@ -24,6 +24,18 @@ Log_SetChannel(MetalDevice);
 
 // TODO: Disable hazard tracking and issue barriers explicitly.
 
+// Used for shader "binaries".
+namespace {
+struct MetalShaderBinaryHeader
+{
+  u32 entry_point_offset;
+  u32 entry_point_length;
+  u32 source_offset;
+  u32 source_length;
+};
+static_assert(sizeof(MetalShaderBinaryHeader) == 16);
+} // namespace
+
 // Looking across a range of GPUs, the optimal copy alignment for Vulkan drivers seems
 // to be between 1 (AMD/NV) and 64 (Intel). So, we'll go with 64 here.
 static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
@@ -648,39 +660,55 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage
 std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
                                                                Error* error)
 {
-  const std::string_view str_data(reinterpret_cast<const char*>(data.data()), data.size());
-  return CreateShaderFromMSL(stage, str_data, "main0", error);
+  if (data.size() < sizeof(MetalShaderBinaryHeader))
+  {
+    Error::SetStringView(error, "Invalid header.");
+    return {};
+  }
+
+  // Need to copy for alignment reasons.
+  MetalShaderBinaryHeader hdr;
+  std::memcpy(&hdr, data.data(), sizeof(hdr));
+  if (static_cast<size_t>(hdr.entry_point_offset) + static_cast<size_t>(hdr.entry_point_length) > data.size() ||
+      static_cast<size_t>(hdr.source_offset) + static_cast<size_t>(hdr.source_length) > data.size())
+  {
+    Error::SetStringView(error, "Out of range fields in header.");
+    return {};
+  }
+
+  const std::string_view entry_point(reinterpret_cast<const char*>(data.data() + hdr.entry_point_offset),
+                                     hdr.entry_point_length);
+  const std::string source(reinterpret_cast<const char*>(data.data() + hdr.source_offset), hdr.source_length);
+  return CreateShaderFromMSL(stage, source, entry_point, error);
 }
 
 std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
                                                                std::string_view source, const char* entry_point,
                                                                DynamicHeapArray<u8>* out_binary, Error* error)
 {
-  static constexpr bool dump_shaders = false;
-
-  DynamicHeapArray<u8> spv;
-  if (!CompileGLSLShaderToVulkanSpv(stage, language, source, entry_point, !m_debug_device, false, &spv, error))
-    return {};
-
-  std::string msl;
-  if (!TranslateVulkanSpvToLanguage(spv.cspan(), stage, GPUShaderLanguage::MSL, 230, &msl, error))
-    return {};
-
-  if constexpr (dump_shaders)
+  if (language != GPUShaderLanguage::MSL)
   {
-    static unsigned s_next_id = 0;
-    ++s_next_id;
-    DumpShader(s_next_id, "_input", source);
-    DumpShader(s_next_id, "_msl", msl);
+    return TranspileAndCreateShaderFromSource(stage, language, source, entry_point, GPUShaderLanguage::MSL,
+                                              m_render_api_version, out_binary, error);
   }
 
+  // Source is the "binary" here, since Metal doesn't allow us to access the bytecode :(
+  const std::span<const u8> msl(reinterpret_cast<const u8*>(source.data()), source.size());
   if (out_binary)
   {
-    out_binary->resize(msl.size());
-    std::memcpy(out_binary->data(), msl.data(), msl.size());
+    MetalShaderBinaryHeader hdr;
+    hdr.entry_point_offset = sizeof(MetalShaderBinaryHeader);
+    hdr.entry_point_length = static_cast<u32>(std::strlen(entry_point));
+    hdr.source_offset = hdr.entry_point_offset + hdr.entry_point_length;
+    hdr.source_length = static_cast<u32>(source.size());
+
+    out_binary->resize(sizeof(hdr) + hdr.entry_point_length + hdr.source_length);
+    std::memcpy(out_binary->data(), &hdr, sizeof(hdr));
+    std::memcpy(&out_binary->data()[hdr.entry_point_offset], entry_point, hdr.entry_point_length);
+    std::memcpy(&out_binary->data()[hdr.source_offset], source.data(), hdr.source_length);
   }
 
-  return CreateShaderFromMSL(stage, msl, "main0", error);
+  return CreateShaderFromMSL(stage, source, entry_point, error);
 }
 
 MetalPipeline::MetalPipeline(id<MTLRenderPipelineState> pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,

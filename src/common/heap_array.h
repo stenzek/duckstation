@@ -279,6 +279,8 @@ public:
     m_size = 0;
   }
 
+  void assign(const std::span<const T> data) { assign(data.data(), data.size()); }
+
   void assign(const T* begin, const T* end)
   {
     const size_t size = reinterpret_cast<const char*>(end) - reinterpret_cast<const char*>(begin);
