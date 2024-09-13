@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: PolyForm-Strict-1.0.0
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 /**
  * Provides a map template which doesn't require heap allocations for lookups.

@@ -3,7 +3,7 @@
   <id>org.duckstation.DuckStation</id>
   <launchable type="desktop-id">org.duckstation.DuckStation.desktop</launchable>
   <metadata_license>CC0-1.0</metadata_license>
-  <project_license>GPL-3.0</project_license>
+  <project_license>CC-BY-NC-ND-4.0</project_license>
   <name>DuckStation</name>
   <developer_name>Stenzek</developer_name>
   <summary>PlayStation Emulator</summary>

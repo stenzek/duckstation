@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: PolyForm-Strict-1.0.0
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 #include "http_downloader.h"

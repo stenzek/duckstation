@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2015-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: PolyForm-Strict-1.0.0
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "sockets.h"
 #include "platform_misc.h"

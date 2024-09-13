@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: PolyForm-Strict-1.0.0
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 // Implementation of GSVector4/GSVector4i when the host does not support any form of SIMD.
 

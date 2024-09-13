@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: PolyForm-Strict-1.0.0
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "autoupdaterdialog.h"
 #include "mainwindow.h"
@@ -120,15 +120,15 @@ bool AutoUpdaterDialog::warnAboutUnofficialBuild()
   //
   // To those distributing their own builds or packages of DuckStation, and seeing this message:
   //
-  // DuckStation is licensed under the PolyForm Strict License 1.0.0.
+  // DuckStation is licensed under the CC-BY-NC-ND-4.0 license.
   //
-  // This means that you do NOT have permission to re-distribute your own builds of DuckStation. Modifying DuckStation
-  // for personal use is fine, but you cannot distribute builds with your changes. I give permission to re-distribute
-  // the official builds from https://www.duckstation.org/ and https://github.com/stenzek/duckstation, so long as they
-  // are left intact, without modification. I welcome and appreciate any pull requests made to the official repository
-  // at https://github.com/stenzek/duckstation.
+  // This means that you do NOT have permission to re-distribute your own modified builds of DuckStation.
+  // Modifying DuckStation for personal use is fine, but you cannot distribute builds with your changes.
+  // As per the CC-BY-NC-ND conditions, you can re-distribute the official builds from https://www.duckstation.org/ and
+  // https://github.com/stenzek/duckstation, so long as they are left intact, without modification. I welcome and
+  // appreciate any pull requests made to the official repository at https://github.com/stenzek/duckstation.
   //
-  // I made the decision to switch to the PolyForm license because of numerous "forks" that were created purely for
+  // I made the decision to switch to a no-derivatives license because of numerous "forks" that were created purely for
   // generating money for the person who knocked it off, and always died, leaving the community with multiple builds to
   // choose from, most of which were out of date and broken, and endless confusion. Other forks copy/pasted upstream
   // changes without attribution, violating copyright.
@@ -145,8 +145,8 @@ bool AutoUpdaterDialog::warnAboutUnofficialBuild()
   constexpr int DELAY_SECONDS = 5;
 
   const QString message =
-    QStringLiteral("<h1>You are not using an official release!</h1><h3>DuckStation is licensed under the PolyForm "
-                   "Strict License 1.0.0, which does not allow unofficial builds to be distributed.</h3>"
+    QStringLiteral("<h1>You are not using an official release!</h1><h3>DuckStation is licensed under the terms of "
+                   "CC-BY-NC-ND-4.0, which does not allow modified builds to be distributed.</h3>"
                    "<p>If you are a developer and using a local build, you can check the box below and continue.</p>"
                    "<p>Otherwise, you should delete this build and download an official release from "
                    "<a href=\"https://www.duckstation.org/\">duckstation.org</a>.</p><p>Do you want to exit and "
