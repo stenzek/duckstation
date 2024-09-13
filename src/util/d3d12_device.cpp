@@ -1176,8 +1176,9 @@ GPUDevice::PresentResult D3D12Device::BeginPresent(u32 clear_color)
   return PresentResult::OK;
 }
 
-void D3D12Device::EndPresent(bool explicit_present)
+void D3D12Device::EndPresent(bool explicit_present, u64 present_time)
 {
+  DebugAssert(present_time == 0);
   DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
   EndRenderPass();
 
@@ -1285,6 +1286,7 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = false;
   m_features.explicit_present = true;
+  m_features.timed_present = false;
   m_features.gpu_timing = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;

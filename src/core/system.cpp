@@ -2167,23 +2167,28 @@ void System::FrameDone()
   {
     s_skipped_frame_count = 0;
 
-    const bool throttle_before_present = (s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted());
-    const bool explicit_present = (throttle_before_present && g_gpu_device->GetFeatures().explicit_present);
-    if (explicit_present)
+    const bool scheduled_present = (s_optimal_frame_pacing && s_throttler_enabled && !IsExecutionInterrupted());
+    const GPUDevice::Features features = g_gpu_device->GetFeatures();
+    if (scheduled_present && features.timed_present)
     {
-      const bool do_present = PresentDisplay(true);
+      PresentDisplay(false, s_next_frame_time);
+      Throttle(current_time);
+    }
+    else if (scheduled_present && features.explicit_present)
+    {
+      const bool do_present = PresentDisplay(true, 0);
       Throttle(current_time);
       if (do_present)
         g_gpu_device->SubmitPresent();
     }
     else
     {
-      if (throttle_before_present)
+      if (scheduled_present)
         Throttle(current_time);
 
-      PresentDisplay(false);
+      PresentDisplay(false, 0);
 
-      if (!throttle_before_present && s_throttler_enabled && !IsExecutionInterrupted())
+      if (!scheduled_present && s_throttler_enabled && !IsExecutionInterrupted())
         Throttle(current_time);
     }
   }
@@ -5738,7 +5743,7 @@ void System::HostDisplayResized()
   g_gpu->UpdateResolutionScale();
 }
 
-bool System::PresentDisplay(bool explicit_present)
+bool System::PresentDisplay(bool explicit_present, u64 present_time)
 {
   // acquire for IO.MousePos.
   std::atomic_thread_fence(std::memory_order_acquire);
@@ -5758,7 +5763,7 @@ bool System::PresentDisplay(bool explicit_present)
   if (pres == GPUDevice::PresentResult::OK)
   {
     g_gpu_device->RenderImGui();
-    g_gpu_device->EndPresent(explicit_present);
+    g_gpu_device->EndPresent(explicit_present, present_time);
 
     if (g_gpu_device->IsGPUTimingEnabled())
     {
@@ -5782,7 +5787,7 @@ bool System::PresentDisplay(bool explicit_present)
 
 void System::InvalidateDisplay()
 {
-  PresentDisplay(false);
+  PresentDisplay(false, 0);
 
   if (g_gpu)
     g_gpu->RestoreDeviceContext();

@@ -103,7 +103,7 @@ public:
   float GetAndResetAccumulatedGPUTime() override;
 
   PresentResult BeginPresent(u32 clear_color) override;
-  void EndPresent(bool explicit_present) override;
+  void EndPresent(bool explicit_present, u64 present_time) override;
   void SubmitPresent() override;
 
   void UnbindPipeline(D3D11Pipeline* pl);

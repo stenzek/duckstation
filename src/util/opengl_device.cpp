@@ -491,6 +491,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = true;
   m_features.explicit_present = false;
+  m_features.timed_present = false;
 
   m_features.shader_cache = false;
 
@@ -772,9 +773,9 @@ GPUDevice::PresentResult OpenGLDevice::BeginPresent(u32 clear_color)
   return PresentResult::OK;
 }
 
-void OpenGLDevice::EndPresent(bool explicit_present)
+void OpenGLDevice::EndPresent(bool explicit_present, u64 present_time)
 {
-  DebugAssert(!explicit_present);
+  DebugAssert(!explicit_present && present_time == 0);
   DebugAssert(m_current_fbo == 0);
 
   if (m_gpu_timing_enabled)
