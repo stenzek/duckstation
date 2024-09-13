@@ -1,5 +1,5 @@
 // SPDX-FileCopyrightText: 2002-2023 PCSX2 Dev Team, 2019-2024 Connor McLaughlin <stenzek@gmail.com>
-// SPDX-License-Identifier: PolyForm-Strict-1.0.0
+// SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cocoa_tools.h"
 #include "assert.h"
