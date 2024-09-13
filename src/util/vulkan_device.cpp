@@ -2393,8 +2393,9 @@ GPUDevice::PresentResult VulkanDevice::BeginPresent(u32 clear_color)
   return PresentResult::OK;
 }
 
-void VulkanDevice::EndPresent(bool explicit_present)
+void VulkanDevice::EndPresent(bool explicit_present, u64 present_time)
 {
+  DebugAssert(present_time == 0);
   DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
   EndRenderPass();
 
@@ -2544,6 +2545,7 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDe
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = m_optional_extensions.vk_ext_external_memory_host;
   m_features.explicit_present = true;
+  m_features.timed_present = false;
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;

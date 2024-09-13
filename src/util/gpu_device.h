@@ -502,6 +502,7 @@ public:
     bool partial_msaa_resolve : 1;
     bool memory_import : 1;
     bool explicit_present : 1;
+    bool timed_present : 1;
     bool gpu_timing : 1;
     bool shader_cache : 1;
     bool pipeline_cache : 1;
@@ -710,7 +711,7 @@ public:
 
   /// Returns false if the window was completely occluded.
   virtual PresentResult BeginPresent(u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
-  virtual void EndPresent(bool explicit_submit) = 0;
+  virtual void EndPresent(bool explicit_submit, u64 submit_time = 0) = 0;
   virtual void SubmitPresent() = 0;
 
   /// Renders ImGui screen elements. Call before EndPresent().

@@ -17,6 +17,7 @@
 #include "fmt/format.h"
 
 #include <array>
+#include <mach/mach_time.h>
 #include <pthread.h>
 
 Log_SetChannel(MetalDevice);
@@ -31,32 +32,40 @@ static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
 // We need 32 here for AVX2, so 64 is also fine.
 static constexpr u32 TEXTURE_UPLOAD_PITCH_ALIGNMENT = 64;
 
+// Used for present timing.
+static const struct mach_timebase_info s_timebase_info = []() {
+  struct mach_timebase_info val;
+  const kern_return_t res = mach_timebase_info(&val);
+  Assert(res == KERN_SUCCESS);
+  return val;
+}();
+
 static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> s_pixel_format_mapping = {
-  MTLPixelFormatInvalid,      // Unknown
-  MTLPixelFormatRGBA8Unorm,   // RGBA8
-  MTLPixelFormatBGRA8Unorm,   // BGRA8
-  MTLPixelFormatB5G6R5Unorm,  // RGB565
-  MTLPixelFormatA1BGR5Unorm,  // RGBA5551
-  MTLPixelFormatR8Unorm,      // R8
-  MTLPixelFormatDepth16Unorm, // D16
+  MTLPixelFormatInvalid,               // Unknown
+  MTLPixelFormatRGBA8Unorm,            // RGBA8
+  MTLPixelFormatBGRA8Unorm,            // BGRA8
+  MTLPixelFormatB5G6R5Unorm,           // RGB565
+  MTLPixelFormatA1BGR5Unorm,           // RGBA5551
+  MTLPixelFormatR8Unorm,               // R8
+  MTLPixelFormatDepth16Unorm,          // D16
   MTLPixelFormatDepth24Unorm_Stencil8, // D24S8
-  MTLPixelFormatDepth32Float, // D32F
+  MTLPixelFormatDepth32Float,          // D32F
   MTLPixelFormatDepth32Float_Stencil8, // D32FS8
-  MTLPixelFormatR16Unorm,     // R16
-  MTLPixelFormatR16Sint,      // R16I
-  MTLPixelFormatR16Uint,      // R16U
-  MTLPixelFormatR16Float,     // R16F
-  MTLPixelFormatR32Sint,      // R32I
-  MTLPixelFormatR32Uint,      // R32U
-  MTLPixelFormatR32Float,     // R32F
-  MTLPixelFormatRG8Unorm,     // RG8
-  MTLPixelFormatRG16Unorm,    // RG16
-  MTLPixelFormatRG16Float,    // RG16F
-  MTLPixelFormatRG32Float,    // RG32F
-  MTLPixelFormatRGBA16Unorm,  // RGBA16
-  MTLPixelFormatRGBA16Float,  // RGBA16F
-  MTLPixelFormatRGBA32Float,  // RGBA32F
-  MTLPixelFormatBGR10A2Unorm, // RGB10A2
+  MTLPixelFormatR16Unorm,              // R16
+  MTLPixelFormatR16Sint,               // R16I
+  MTLPixelFormatR16Uint,               // R16U
+  MTLPixelFormatR16Float,              // R16F
+  MTLPixelFormatR32Sint,               // R32I
+  MTLPixelFormatR32Uint,               // R32U
+  MTLPixelFormatR32Float,              // R32F
+  MTLPixelFormatRG8Unorm,              // RG8
+  MTLPixelFormatRG16Unorm,             // RG16
+  MTLPixelFormatRG16Float,             // RG16F
+  MTLPixelFormatRG32Float,             // RG32F
+  MTLPixelFormatRGBA16Unorm,           // RGBA16
+  MTLPixelFormatRGBA16Float,           // RGBA16F
+  MTLPixelFormatRGBA32Float,           // RGBA32F
+  MTLPixelFormatBGR10A2Unorm,          // RGB10A2
 };
 
 static NSString* StringViewToNSString(std::string_view str)
@@ -78,7 +87,8 @@ static void LogNSError(NSError* error, std::string_view message)
 
 static void NSErrorToErrorObject(Error* errptr, std::string_view message, NSError* error)
 {
-  Error::SetStringFmt(errptr, "{}NSError Code {}: {}", message, static_cast<u32>(error.code), [error.description UTF8String]);
+  Error::SetStringFmt(errptr, "{}NSError Code {}: {}", message, static_cast<u32>(error.code),
+                      [error.description UTF8String]);
 }
 
 static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
@@ -253,6 +263,7 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = true;
   m_features.explicit_present = false;
+  m_features.timed_present = true;
   m_features.shader_cache = true;
   m_features.pipeline_cache = false;
   m_features.prefer_unused_textures = true;
@@ -2335,7 +2346,8 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(u32 clear_color)
     id<MTLTexture> layer_texture = [m_layer_drawable texture];
     m_layer_pass_desc.colorAttachments[0].texture = layer_texture;
     m_layer_pass_desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-    m_layer_pass_desc.colorAttachments[0].clearColor = MTLClearColorMake(clear_color_v.r, clear_color_v.g, clear_color_v.g, clear_color_v.a);
+    m_layer_pass_desc.colorAttachments[0].clearColor =
+      MTLClearColorMake(clear_color_v.r, clear_color_v.g, clear_color_v.g, clear_color_v.a);
     m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:m_layer_pass_desc] retain];
     s_stats.num_render_passes++;
     std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
@@ -2349,17 +2361,28 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(u32 clear_color)
   }
 }
 
-void MetalDevice::EndPresent(bool explicit_present)
+void MetalDevice::EndPresent(bool explicit_present, u64 present_time)
 {
   DebugAssert(!explicit_present);
-
-  // TODO: Explicit present
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
   EndAnyEncoding();
 
-  [m_render_cmdbuf presentDrawable:m_layer_drawable];
+  Common::Timer::Value current_time;
+  if (present_time != 0 && (current_time = Common::Timer::GetCurrentValue()) < present_time)
+  {
+    // Need to convert to mach absolute time. Time values should already be in nanoseconds.
+    const u64 mach_time_nanoseconds = ((mach_absolute_time() * s_timebase_info.numer) / s_timebase_info.denom);
+    const double mach_present_time = static_cast<double>(mach_time_nanoseconds + (present_time - current_time)) / 1e+9;
+    [m_render_cmdbuf presentDrawable:m_layer_drawable atTime:mach_present_time];
+  }
+  else
+  {
+    [m_render_cmdbuf presentDrawable:m_layer_drawable];
+  }
+
   DeferRelease(m_layer_drawable);
   m_layer_drawable = nil;
+
   SubmitCommandBuffer();
   TrimTexturePool();
 }

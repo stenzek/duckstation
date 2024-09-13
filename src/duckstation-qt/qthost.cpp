@@ -497,7 +497,7 @@ bool QtHost::SetCriticalFolders()
   // the resources directory should exist, bail out if not
   const std::string rcc_path = Path::Combine(EmuFolders::Resources, "duckstation-qt.rcc");
   if (!FileSystem::FileExists(rcc_path.c_str()) || !QResource::registerResource(QString::fromStdString(rcc_path)) ||
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
       !FileSystem::DirectoryExists(EmuFolders::Resources.c_str())
 #else
       !FileSystem::IsRealDirectory(EmuFolders::Resources.c_str())
@@ -1795,7 +1795,7 @@ void EmuThread::run()
       System::Internal::IdlePollUpdate();
       if (g_gpu_device)
       {
-        System::PresentDisplay(false);
+        System::PresentDisplay(false, 0);
         if (!g_gpu_device->IsVSyncModeBlocking())
           g_gpu_device->ThrottlePresentation();
       }

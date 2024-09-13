@@ -264,7 +264,7 @@ public:
   void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
 
   PresentResult BeginPresent(u32 clear_color) override;
-  void EndPresent(bool explicit_submit) override;
+  void EndPresent(bool explicit_submit, u64 present_time) override;
   void SubmitPresent() override;
 
   void WaitForFenceCounter(u64 counter);

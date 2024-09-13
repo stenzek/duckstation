@@ -448,7 +448,7 @@ void RequestDisplaySize(float scale = 0.0f);
 void HostDisplayResized();
 
 /// Renders the display.
-bool PresentDisplay(bool explicit_present);
+bool PresentDisplay(bool explicit_present, u64 present_time);
 void InvalidateDisplay();
 
 //////////////////////////////////////////////////////////////////////////
