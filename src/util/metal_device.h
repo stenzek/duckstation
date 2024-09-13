@@ -317,14 +317,12 @@ private:
   void SetFeatures(FeatureMask disabled_features);
   bool LoadShaders();
 
+  std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
+                                                 std::string_view entry_point, Error* error);
   id<MTLFunction> GetFunctionFromLibrary(id<MTLLibrary> library, NSString* name);
   id<MTLComputePipelineState> CreateComputePipeline(id<MTLFunction> function, NSString* name);
   ClearPipelineConfig GetCurrentClearPipelineConfig() const;
   id<MTLRenderPipelineState> GetClearDepthPipeline(const ClearPipelineConfig& config);
-
-  std::unique_ptr<GPUShader> CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
-                                                 std::string_view entry_point, Error* error);
-
   id<MTLDepthStencilState> GetDepthState(const GPUPipeline::DepthState& ds);
 
   void CreateCommandBuffer();

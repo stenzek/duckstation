@@ -1780,6 +1780,13 @@ std::unique_ptr<GPUShader> GPUDevice::TranspileAndCreateShaderFromSource(
   GPUShaderStage stage, GPUShaderLanguage source_language, std::string_view source, const char* entry_point,
   GPUShaderLanguage target_language, u32 target_version, DynamicHeapArray<u8>* out_binary, Error* error)
 {
+  // Currently, entry points must be "main". TODO: rename the entry point in the SPIR-V.
+  if (std::strcmp(entry_point, "main") != 0)
+  {
+    Error::SetStringView(error, "Entry point must be main.");
+    return {};
+  }
+
   // Disable optimization when targeting OpenGL GLSL, otherwise, the name-based linking will fail.
   const bool optimization =
     (!m_debug_device && target_language != GPUShaderLanguage::GLSL && target_language != GPUShaderLanguage::GLSLES);
@@ -1827,7 +1834,14 @@ std::unique_ptr<GPUShader> GPUDevice::TranspileAndCreateShaderFromSource(
   if (!TranslateVulkanSpvToLanguage(spv, stage, target_language, target_version, &dest_source, error))
     return {};
 
-  // TODO: MSL needs entry point suffixed.
+#ifdef __APPLE__
+  // MSL converter suffixes 0.
+  if (target_language == GPUShaderLanguage::MSL)
+  {
+    return CreateShaderFromSource(stage, target_language, dest_source,
+                                  TinyString::from_format("{}0", entry_point).c_str(), out_binary, error);
+  }
+#endif
 
   return CreateShaderFromSource(stage, target_language, dest_source, entry_point, out_binary, error);
 }
