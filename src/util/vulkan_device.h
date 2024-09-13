@@ -234,8 +234,9 @@ protected:
                     FeatureMask disabled_features, Error* error) override;
   void DestroyDevice() override;
 
-  bool ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data) override;
-  bool GetPipelineCacheData(DynamicHeapArray<u8>* data) override;
+  bool ReadPipelineCache(DynamicHeapArray<u8> data, Error* error) override;
+  bool CreatePipelineCache(const std::string& path, Error* error) override;
+  bool GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error) override;
 
 private:
   enum DIRTY_FLAG : u32
@@ -305,7 +306,7 @@ private:
   static VkInstance CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
                                          bool enable_validation_layer);
 
-  bool ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header);
+  bool ValidatePipelineCacheHeader(const VK_PIPELINE_CACHE_HEADER& header, Error* error);
   void FillPipelineCacheHeader(VK_PIPELINE_CACHE_HEADER* header);
 
   // Enable/disable debug message runtime.

@@ -187,8 +187,9 @@ protected:
                     FeatureMask disabled_features, Error* error) override;
   void DestroyDevice() override;
 
-  bool ReadPipelineCache(std::optional<DynamicHeapArray<u8>> data) override;
-  bool GetPipelineCacheData(DynamicHeapArray<u8>* data) override;
+  bool ReadPipelineCache(DynamicHeapArray<u8> data, Error* error) override;
+  bool CreatePipelineCache(const std::string& path, Error* error) override;
+  bool GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error) override;
 
 private:
   enum DIRTY_FLAG : u32

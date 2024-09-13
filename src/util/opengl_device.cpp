@@ -529,7 +529,6 @@ void OpenGLDevice::DestroyDevice()
   if (!m_gl_context)
     return;
 
-  ClosePipelineCache();
   DestroyBuffers();
 
   m_gl_context->DoneCurrent();

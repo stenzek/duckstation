@@ -155,8 +155,7 @@ MetalDevice::MetalDevice() : m_current_viewport(0, 0, 1, 1), m_current_scissor(0
 
 MetalDevice::~MetalDevice()
 {
-  Assert(m_layer == nil);
-  Assert(m_device == nil);
+  Assert(m_pipeline_archive == nil && m_layer == nil && m_device == nil);
 }
 
 bool MetalDevice::HasSurface() const
@@ -251,8 +250,9 @@ bool MetalDevice::CreateDevice(std::string_view adapter, std::optional<bool> exc
 
 void MetalDevice::SetFeatures(FeatureMask disabled_features)
 {
+  // Set version to Metal 2.3, that's all we're using. Use SPIRV-Cross version encoding.
   m_render_api = RenderAPI::Metal;
-  m_render_api_version = 100; // TODO: Make this more meaningful.
+  m_render_api_version = 20300;
   m_max_texture_size = GetMetalMaxTextureSize(m_device);
   m_max_multisamples = GetMetalMaxMultisamples(m_device);
 
@@ -277,8 +277,15 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.explicit_present = false;
   m_features.timed_present = true;
   m_features.shader_cache = true;
-  m_features.pipeline_cache = false;
+  m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;
+
+  // Disable pipeline cache on Intel, apparently it's buggy.
+  if ([[m_device name] containsString:@"Intel"])
+  {
+    WARNING_LOG("Disabling Metal pipeline cache on Intel GPU.");
+    m_features.pipeline_cache = false;
+  }
 }
 
 bool MetalDevice::LoadShaders()
@@ -306,6 +313,76 @@ bool MetalDevice::LoadShaders()
     if (!(m_shaders = try_lib(@"Metal23")) && !(m_shaders = try_lib(@"Metal22")) &&
         !(m_shaders = try_lib(@"Metal21")) && !(m_shaders = try_lib(@"default")))
     {
+      return false;
+    }
+
+    return true;
+  }
+}
+
+bool MetalDevice::OpenPipelineCache(const std::string& path, Error* error)
+{
+  @autoreleasepool
+  {
+    MTLBinaryArchiveDescriptor* archiveDescriptor = [[[MTLBinaryArchiveDescriptor alloc] init] autorelease];
+    archiveDescriptor.url = [NSURL fileURLWithPath:StringViewToNSString(path)];
+
+    NSError* nserror = nil;
+    m_pipeline_archive = [m_device newBinaryArchiveWithDescriptor:archiveDescriptor error:&nserror];
+    if (m_pipeline_archive == nil)
+    {
+      NSErrorToErrorObject(error, "newBinaryArchiveWithDescriptor failed: ", nserror);
+      return false;
+    }
+
+    m_pipeline_cache_modified = false;
+    return true;
+  }
+}
+
+bool MetalDevice::CreatePipelineCache(const std::string& path, Error* error)
+{
+  @autoreleasepool
+  {
+    MTLBinaryArchiveDescriptor* archiveDescriptor = [[[MTLBinaryArchiveDescriptor alloc] init] autorelease];
+    archiveDescriptor.url = nil;
+
+    NSError* nserror = nil;
+    m_pipeline_archive = [m_device newBinaryArchiveWithDescriptor:archiveDescriptor error:&nserror];
+    if (m_pipeline_archive == nil)
+    {
+      NSErrorToErrorObject(error, "newBinaryArchiveWithDescriptor failed: ", nserror);
+      return false;
+    }
+
+    m_pipeline_cache_modified = false;
+    return true;
+  }
+}
+
+bool MetalDevice::ClosePipelineCache(const std::string& path, Error* error)
+{
+  if (!m_pipeline_archive)
+    return false;
+
+  const ScopedGuard closer = [this]() {
+    [m_pipeline_archive release];
+    m_pipeline_archive = nil;
+  };
+
+  if (!m_pipeline_cache_modified)
+  {
+    INFO_LOG("Not saving pipeline cache, it has not been modified.");
+    return true;
+  }
+
+  @autoreleasepool
+  {
+    NSURL* url = [NSURL fileURLWithPath:StringViewToNSString(path)];
+    NSError* nserror = nil;
+    if (![m_pipeline_archive serializeToURL:url error:&nserror])
+    {
+      NSErrorToErrorObject(error, "serializeToURL failed: ", nserror);
       return false;
     }
 
@@ -609,30 +686,13 @@ void MetalShader::SetDebugName(std::string_view name)
   }
 }
 
-// TODO: Clean this up, somehow..
-namespace EmuFolders {
-extern std::string DataRoot;
-}
-static void DumpShader(u32 n, std::string_view suffix, std::string_view data)
-{
-  if (data.empty())
-    return;
-
-  auto fp = FileSystem::OpenManagedCFile(
-    Path::Combine(EmuFolders::DataRoot, fmt::format("shader{}_{}.txt", suffix, n)).c_str(), "wb");
-  if (!fp)
-    return;
-
-  std::fwrite(data.data(), data.length(), 1, fp.get());
-}
-
 std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
                                                             std::string_view entry_point, Error* error)
 {
   @autoreleasepool
   {
     NSString* const ns_source = StringViewToNSString(source);
-    NSError* nserror = nullptr;
+    NSError* nserror = nil;
     id<MTLLibrary> library = [m_device newLibraryWithSource:ns_source options:nil error:&nserror];
     if (!library)
     {
@@ -897,13 +957,41 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     if (config.layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
       desc.fragmentBuffers[1].mutability = MTLMutabilityImmutable;
 
-    NSError* nserror = nullptr;
-    id<MTLRenderPipelineState> pipeline = [m_device newRenderPipelineStateWithDescriptor:desc error:&nserror];
+    NSError* nserror = nil;
+
+    // Try cached first.
+    id<MTLRenderPipelineState> pipeline = nil;
+    if (m_pipeline_archive != nil)
+    {
+      desc.binaryArchives = [NSArray arrayWithObjects:m_pipeline_archive, nil];
+      pipeline = [m_device newRenderPipelineStateWithDescriptor:desc
+                                                        options:MTLPipelineOptionFailOnBinaryArchiveMiss
+                                                     reflection:nil
+                                                          error:&nserror];
+      if (pipeline == nil)
+      {
+        // Add it to the cache.
+        if (![m_pipeline_archive addRenderPipelineFunctionsWithDescriptor:desc error:&nserror])
+        {
+          LogNSError(nserror, "Failed to add render pipeline to binary archive");
+          desc.binaryArchives = nil;
+        }
+        else
+        {
+          m_pipeline_cache_modified = true;
+        }
+      }
+    }
+
     if (pipeline == nil)
     {
-      LogNSError(nserror, "Failed to create render pipeline state");
-      NSErrorToErrorObject(error, "newRenderPipelineStateWithDescriptor failed: ", nserror);
-      return {};
+      pipeline = [m_device newRenderPipelineStateWithDescriptor:desc error:&nserror];
+      if (pipeline == nil)
+      {
+        LogNSError(nserror, "Failed to create render pipeline state");
+        NSErrorToErrorObject(error, "newRenderPipelineStateWithDescriptor failed: ", nserror);
+        return {};
+      }
     }
 
     return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, depth, cull_mode, primitive));
