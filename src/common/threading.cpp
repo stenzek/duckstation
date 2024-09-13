@@ -3,6 +3,9 @@
 
 #include "threading.h"
 #include "assert.h"
+#include "cocoa_tools.h"
+#include "log.h"
+
 #include <memory>
 
 #if !defined(_WIN32) && !defined(__APPLE__)
@@ -37,6 +40,8 @@
 #include <pthread_np.h>
 #endif
 #endif
+
+Log_SetChannel(Threading);
 
 #ifdef _WIN32
 union FileTimeU64Union
@@ -269,6 +274,46 @@ bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
   return false;
 #endif
 }
+
+#ifdef __APPLE__
+
+bool Threading::ThreadHandle::SetTimeConstraints(bool enabled, u64 period, u64 typical_time, u64 maximum_time)
+{
+  const mach_port_t mach_thread_id = pthread_mach_thread_np((pthread_t)m_native_handle);
+  if (!enabled)
+  {
+    thread_standard_policy policy = {};
+    const kern_return_t res = thread_policy_set(
+      mach_thread_id, THREAD_STANDARD_POLICY, reinterpret_cast<thread_policy_t>(&policy), THREAD_STANDARD_POLICY_COUNT);
+    if (res != KERN_SUCCESS)
+    {
+      ERROR_LOG("thread_policy_set(THREAD_STANDARD_POLICY) failed: {}", static_cast<int>(res));
+      return false;
+    }
+
+    return true;
+  }
+
+  thread_time_constraint_policy_data_t constraints;
+  constraints.period = CocoaTools::ConvertNanosecondsToMachTimeBase(period);
+  constraints.computation = CocoaTools::ConvertNanosecondsToMachTimeBase(typical_time);
+  constraints.constraint = CocoaTools::ConvertNanosecondsToMachTimeBase(maximum_time);
+  constraints.preemptible = false;
+
+  const kern_return_t res =
+    thread_policy_set(mach_thread_id, THREAD_TIME_CONSTRAINT_POLICY, reinterpret_cast<thread_policy_t>(&constraints),
+                      THREAD_TIME_CONSTRAINT_POLICY_COUNT);
+  if (res != KERN_SUCCESS)
+  {
+    ERROR_LOG("thread_policy_set(THREAD_TIME_CONSTRAINT_POLICY) failed: {}, args {}, {}, {}", static_cast<int>(res),
+              period, typical_time, maximum_time);
+    return false;
+  }
+
+  return true;
+}
+
+#endif
 
 Threading::Thread::Thread() = default;
 
