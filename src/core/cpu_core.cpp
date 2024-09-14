@@ -2113,10 +2113,13 @@ const char* CPU::GetBreakpointTypeName(BreakpointType type)
 
 bool CPU::HasBreakpointAtAddress(BreakpointType type, VirtualMemoryAddress address)
 {
-  for (const Breakpoint& bp : GetBreakpointList(type))
+  for (Breakpoint& bp : GetBreakpointList(type))
   {
-    if (bp.address == address)
+    if (bp.enabled && (bp.address & 0x0FFFFFFFu) == (address & 0x0FFFFFFFu))
+    {
+      bp.hit_count++;
       return true;
+    }
   }
 
   return false;
@@ -2283,7 +2286,7 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
   for (size_t i = 0; i < count;)
   {
     Breakpoint& bp = bplist[i];
-    if (!bp.enabled || bp.address != address)
+    if (!bp.enabled || (bp.address & 0x0FFFFFFFu) != (address & 0x0FFFFFFFu))
     {
       i++;
       continue;
@@ -2321,7 +2324,7 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
       else
       {
         Host::ReportDebuggerMessage(
-          fmt::format("Hit {} breakpoint {} at 0x{:08X}.", GetBreakpointTypeName(type), bp.number, address));
+          fmt::format("Hit {} breakpoint {} at 0x{:08X}, Hit Count {}.", GetBreakpointTypeName(type), bp.number, address, bp.hit_count));
         i++;
       }
 
