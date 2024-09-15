@@ -67,10 +67,10 @@ static const std::array<const char*, 64> s_base_table = {{
   "addiu $rt, $rs, $imm",   // 9
   "slti $rt, $rs, $imm",    // 10
   "sltiu $rt, $rs, $immu",  // 11
-  "andi $rt, $rs, $immu",   // 12
-  "ori $rt, $rs, $immu",    // 13
-  "xori $rt, $rs, $immu",   // 14
-  "lui $rt, $imm",          // 15
+  "andi $rt, $rs, $immx",   // 12
+  "ori $rt, $rs, $immx",    // 13
+  "xori $rt, $rs, $immx",   // 14
+  "lui $rt, $immx",         // 15
   "UNKNOWN",                // 16
   "UNKNOWN",                // 17
   "UNKNOWN",                // 18
@@ -316,28 +316,33 @@ void CPU::FormatInstruction(SmallStringBase* dest, const Instruction inst, u32 p
       dest->append_format("{}", inst.i.imm_zext32());
       str += 4;
     }
+    else if (std::strncmp(str, "immx", 4) == 0)
+    {
+      dest->append_format("0x{:04x}", inst.i.imm_zext32());
+      str += 4;
+    }
     else if (std::strncmp(str, "imm", 3) == 0)
     {
-      // dest->AppendFormattedString("%d", static_cast<int>(inst.i.imm_sext32()));
-      dest->append_format("{:04x}", inst.i.imm_zext32());
+      dest->append_format("{}", static_cast<s32>(inst.i.imm_sext32()));
       str += 3;
     }
     else if (std::strncmp(str, "rel", 3) == 0)
     {
       const u32 target = (pc + UINT32_C(4)) + (inst.i.imm_sext32() << 2);
-      dest->append_format("{:08x}", target);
+      dest->append_format("0x{:08x}", target);
       str += 3;
     }
     else if (std::strncmp(str, "offsetrs", 8) == 0)
     {
       const s32 offset = static_cast<s32>(inst.i.imm_sext32());
-      dest->append_format("{}({})", offset, GetRegName(inst.i.rs));
+      dest->append_format("{}0x{:x}({})", (offset < 0) ? "-" : "", (offset < 0) ? -offset : offset,
+                          GetRegName(inst.i.rs));
       str += 8;
     }
     else if (std::strncmp(str, "jt", 2) == 0)
     {
       const u32 target = ((pc + UINT32_C(4)) & UINT32_C(0xF0000000)) | (inst.j.target << 2);
-      dest->append_format("{:08x}", target);
+      dest->append_format("0x{:08x}", target);
       str += 2;
     }
     else if (std::strncmp(str, "copcc", 5) == 0)
@@ -394,7 +399,7 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
 
     if (std::strncmp(str, "rs", 2) == 0)
     {
-      dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ", GetRegName(inst.r.rs),
+      dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ", GetRegName(inst.r.rs),
                           regs->r[static_cast<u8>(inst.r.rs.GetValue())]);
 
       str += 2;
@@ -405,13 +410,13 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
     }
     else if (std::strncmp(str, "rt", 2) == 0)
     {
-      dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ", GetRegName(inst.r.rt),
+      dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ", GetRegName(inst.r.rt),
                           regs->r[static_cast<u8>(inst.r.rt.GetValue())]);
       str += 2;
     }
     else if (std::strncmp(str, "rd", 2) == 0)
     {
-      dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ", GetRegName(inst.r.rd),
+      dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ", GetRegName(inst.r.rd),
                           regs->r[static_cast<u8>(inst.r.rd.GetValue())]);
       str += 2;
     }
@@ -443,24 +448,24 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
       {
         u8 data = 0;
         CPU::SafeReadMemoryByte(address, &data);
-        dest->append_format("addr={:08X}[{:02X}]", address, data);
+        dest->append_format("addr=0x{:08x}[0x{:02x}]", address, data);
       }
       else if (inst.op == InstructionOp::lh || inst.op == InstructionOp::lhu)
       {
         u16 data = 0;
         CPU::SafeReadMemoryHalfWord(address, &data);
-        dest->append_format("addr={:08X}[{:04X}]", address, data);
+        dest->append_format("addr=0x{:08x}[0x{:04x}]", address, data);
       }
       else if (inst.op == InstructionOp::lw || (inst.op >= InstructionOp::lwc0 && inst.op <= InstructionOp::lwc3) ||
                inst.op == InstructionOp::lwl || inst.op == InstructionOp::lwr)
       {
         u32 data = 0;
         CPU::SafeReadMemoryWord(address, &data);
-        dest->append_format("addr={:08X}[{:08X}]", address, data);
+        dest->append_format("addr=0x{:08x}[0x{:08x}]", address, data);
       }
       else
       {
-        dest->append_format("addr={:08X}", address);
+        dest->append_format("addr=0x{:08x}", address);
       }
 
       str += 8;
@@ -477,7 +482,7 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
     {
       if (inst.IsCop2Instruction())
       {
-        dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ",
+        dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ",
                             GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue()) + 32),
                             g_state.gte_regs.cr32[static_cast<u8>(inst.r.rd.GetValue())]);
       }
@@ -487,7 +492,7 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
     {
       if (inst.IsCop2Instruction())
       {
-        dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ",
+        dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ",
                             GetGTERegisterName(static_cast<u8>(inst.r.rd.GetValue())),
                             g_state.gte_regs.dr32[static_cast<u8>(inst.r.rd.GetValue())]);
       }
@@ -498,7 +503,7 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
     {
       if (inst.IsCop2Instruction())
       {
-        dest->append_format("{}{}=0x{:08X}", dest->empty() ? "" : ", ",
+        dest->append_format("{}{}=0x{:08x}", dest->empty() ? "" : ", ",
                             GetGTERegisterName(static_cast<u8>(inst.r.rt.GetValue())),
                             g_state.gte_regs.dr32[static_cast<u8>(inst.r.rt.GetValue())]);
       }
@@ -529,7 +534,7 @@ void CPU::FormatCopInstruction(SmallStringBase* dest, u32 pc, const Instruction 
     }
   }
 
-  dest->format("<cop{} 0x{:08X}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+  dest->format("<cop{} 0x{:08x}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
 }
 
 template<typename T>
@@ -603,7 +608,7 @@ void CPU::DisassembleInstruction(SmallStringBase* dest, u32 pc, u32 bits)
           case InstructionOp::cop3:
           default:
           {
-            dest->format("<cop{} 0x{:08X}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+            dest->format("<cop{} 0x{:08x}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
           }
           break;
         }
@@ -666,7 +671,7 @@ void CPU::DisassembleInstructionComment(SmallStringBase* dest, u32 pc, u32 bits)
           case InstructionOp::cop3:
           default:
           {
-            dest->format("<cop{} 0x{:08X}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
+            dest->format("<cop{} 0x{:08x}>", ZeroExtend32(inst.cop.cop_n.GetValue()), inst.cop.imm25.GetValue());
           }
           break;
         }
