@@ -56,6 +56,7 @@ private Q_SLOTS:
   void onToggleBreakpointTriggered();
   void onClearBreakpointsTriggered();
   void onBreakpointListContextMenuRequested();
+  void onBreakpointListItemChanged(QTreeWidgetItem* item, int column);
   void onStepIntoActionTriggered();
   void onStepOverActionTriggered();
   void onStepOutActionTriggered();

@@ -222,6 +222,23 @@ void DebuggerWindow::onBreakpointListContextMenuRequested()
   menu.exec(QCursor::pos());
 }
 
+void DebuggerWindow::onBreakpointListItemChanged(QTreeWidgetItem* item, int column)
+{
+  // checkbox
+  if (column != 0)
+    return;
+
+  bool ok;
+  const uint bp_addr = item->data(1, Qt::UserRole).toUInt(&ok);
+  if (!ok)
+    return;
+
+  const bool enabled = (item->checkState(0) == Qt::Checked);
+
+  Host::RunOnCPUThread(
+    [bp_addr, enabled]() { CPU::SetBreakpointEnabled(CPU::BreakpointType::Execute, bp_addr, enabled); });
+}
+
 void DebuggerWindow::onStepIntoActionTriggered()
 {
   Assert(System::IsPaused());
@@ -491,6 +508,7 @@ void DebuggerWindow::connectSignals()
   connect(m_ui.codeView, &QTreeView::customContextMenuRequested, this, &DebuggerWindow::onCodeViewContextMenuRequested);
   connect(m_ui.breakpointsWidget, &QTreeWidget::customContextMenuRequested, this,
           &DebuggerWindow::onBreakpointListContextMenuRequested);
+  connect(m_ui.breakpointsWidget, &QTreeWidget::itemChanged, this, &DebuggerWindow::onBreakpointListItemChanged);
 
   connect(m_ui.memoryRegionRAM, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::RAM); });
   connect(m_ui.memoryRegionEXP1, &QRadioButton::clicked, [this]() { setMemoryViewRegion(Bus::MemoryRegion::EXP1); });
@@ -709,7 +727,7 @@ void DebuggerWindow::refreshBreakpointList(const CPU::BreakpointList& bps)
     item->setText(2, QString::fromUtf8(CPU::GetBreakpointTypeName(bp.type)));
     item->setText(3, QString::asprintf("%u", bp.hit_count));
     item->setData(0, Qt::UserRole, bp.number);
-    item->setData(1, Qt::UserRole, bp.address);
+    item->setData(1, Qt::UserRole, QVariant(static_cast<uint>(bp.address)));
     item->setData(2, Qt::UserRole, static_cast<u32>(bp.type));
     m_ui.breakpointsWidget->addTopLevelItem(item);
   }
