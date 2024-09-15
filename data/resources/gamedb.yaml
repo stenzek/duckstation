@@ -150477,7 +150477,6 @@ SLUS-00936:
 SLES-01972:
   name: "South Park - Chef's Luv Shack (Europe)"
   controllers:
-    - AnalogController
     - DigitalController
   metadata:
     publisher: "Acclaim Entertainment"
@@ -150498,7 +150497,6 @@ SLED-02576:
 SLUS-00997:
   name: "South Park - Chef's Luv Shack (USA)"
   controllers:
-    - AnalogController
     - DigitalController
   metadata:
     publisher: "Acclaim Entertainment"
