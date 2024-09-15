@@ -2184,6 +2184,27 @@ bool CPU::AddBreakpointWithCallback(BreakpointType type, VirtualMemoryAddress ad
   return true;
 }
 
+bool CPU::SetBreakpointEnabled(BreakpointType type, VirtualMemoryAddress address, bool enabled)
+{
+  BreakpointList& bplist = GetBreakpointList(type);
+  auto it =
+    std::find_if(bplist.begin(), bplist.end(), [address](const Breakpoint& bp) { return bp.address == address; });
+  if (it == bplist.end())
+    return false;
+
+  Host::ReportDebuggerMessage(fmt::format("{} {} breakpoint at 0x{:08X}.", enabled ? "Enabled" : "Disabled",
+                                          GetBreakpointTypeName(type), address));
+  it->enabled = enabled;
+
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
+
+  if (address == s_last_breakpoint_check_pc && !enabled)
+    s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+
+  return true;
+}
+
 bool CPU::RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address)
 {
   BreakpointList& bplist = GetBreakpointList(type);
@@ -2323,8 +2344,8 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
       }
       else
       {
-        Host::ReportDebuggerMessage(
-          fmt::format("Hit {} breakpoint {} at 0x{:08X}, Hit Count {}.", GetBreakpointTypeName(type), bp.number, address, bp.hit_count));
+        Host::ReportDebuggerMessage(fmt::format("Hit {} breakpoint {} at 0x{:08X}, Hit Count {}.",
+                                                GetBreakpointTypeName(type), bp.number, address, bp.hit_count));
         i++;
       }
 

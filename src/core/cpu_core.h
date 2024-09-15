@@ -232,6 +232,7 @@ bool HasBreakpointAtAddress(BreakpointType type, VirtualMemoryAddress address);
 BreakpointList CopyBreakpointList(bool include_auto_clear = false, bool include_callbacks = false);
 bool AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool auto_clear = false, bool enabled = true);
 bool AddBreakpointWithCallback(BreakpointType type, VirtualMemoryAddress address, BreakpointCallback callback);
+bool SetBreakpointEnabled(BreakpointType type, VirtualMemoryAddress address, bool enabled);
 bool RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address);
 void ClearBreakpoints();
 bool AddStepOverBreakpoint();
