@@ -60,7 +60,7 @@ public:
   void append(const SmallStringBase& str);
 
   // append formatted string to this string
-  void append_sprintf(const char* format, ...) printflike(2, 3);
+  void append_sprintf(const char* format, ...) PRINTFLIKE(2, 3);
   void append_vsprintf(const char* format, va_list ap);
 
   template<typename... T>
@@ -80,7 +80,7 @@ public:
   void prepend(const SmallStringBase& str);
 
   // append formatted string to this string
-  void prepend_sprintf(const char* format, ...) printflike(2, 3);
+  void prepend_sprintf(const char* format, ...) PRINTFLIKE(2, 3);
   void prepend_vsprintf(const char* format, va_list ap);
 
   template<typename... T>
@@ -94,7 +94,7 @@ public:
   void insert(s32 offset, const SmallStringBase& str);
 
   // set to formatted string
-  void sprintf(const char* format, ...) printflike(2, 3);
+  void sprintf(const char* format, ...) PRINTFLIKE(2, 3);
   void vsprintf(const char* format, va_list ap);
 
   template<typename... T>
@@ -333,7 +333,7 @@ public:
   }
 
   // Override the fromstring method
-  static SmallStackString from_sprintf(const char* format, ...) printflike(1, 2);
+  static SmallStackString from_sprintf(const char* format, ...) PRINTFLIKE(1, 2);
 
   template<typename... T>
   static SmallStackString from_format(fmt::format_string<T...> fmt, T&&... args);

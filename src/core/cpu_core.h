@@ -193,7 +193,7 @@ void DisassembleAndLog(u32 addr);
 void DisassembleAndPrint(u32 addr, u32 instructions_before, u32 instructions_after);
 
 // Write to CPU execution log file.
-void WriteToExecutionLog(const char* format, ...) printflike(1, 2);
+void WriteToExecutionLog(const char* format, ...) PRINTFLIKE(1, 2);
 
 // Trace Routines
 bool IsTraceEnabled();

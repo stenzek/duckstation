@@ -56,19 +56,21 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 
 // offsetof macro. Need to use __builtin_offsetof(), otherwise it doesn't work in constant expressions.
 #if defined(__clang__) || defined(__GNUC__)
+
 #define OFFSETOF(st, m) __builtin_offsetof(st, m)
+
+#define PRINTFLIKE(n, m) __attribute__((format(printf, n, m)))
+
 #else
+
 #ifdef offsetof
 #define OFFSETOF(st, m) offsetof(st, m)
 #else
 #define OFFSETOF(st, m) ((size_t)((char*)&((st*)(0))->m - (char*)0))
 #endif
-#endif
 
-#ifdef __GNUC__
-#define printflike(n, m) __attribute__((format(printf, n, m)))
-#else
-#define printflike(n, m)
+#define PRINTFLIKE(n, m)
+
 #endif
 
 // [[noreturn]] which can be used on function pointers.
