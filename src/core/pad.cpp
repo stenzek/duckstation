@@ -19,6 +19,7 @@
 #include "common/fifo_queue.h"
 #include "common/log.h"
 
+#include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
 #include "fmt/format.h"
 
@@ -188,70 +189,43 @@ u32 Pad::GetMaximumRollbackFrames()
 bool Pad::DoStateController(StateWrapper& sw, u32 i)
 {
   const ControllerType controller_type = s_controllers[i] ? s_controllers[i]->GetType() : ControllerType::None;
-  ControllerType state_controller_type = controller_type;
+  ControllerType controller_type_in_state = controller_type;
 
   // Data type change...
-  u32 state_controller_type_value = static_cast<u32>(state_controller_type);
+  u32 state_controller_type_value = static_cast<u32>(controller_type_in_state);
   sw.Do(&state_controller_type_value);
-  state_controller_type = static_cast<ControllerType>(state_controller_type_value);
+  controller_type_in_state = static_cast<ControllerType>(state_controller_type_value);
 
-  if (controller_type != state_controller_type)
+  if (controller_type != controller_type_in_state)
   {
-    const Controller::ControllerInfo* state_cinfo = Controller::GetControllerInfo(state_controller_type);
+    const Controller::ControllerInfo* state_cinfo = Controller::GetControllerInfo(controller_type_in_state);
     Assert(sw.IsReading());
 
-    // UI notification portion is separated from emulation portion (intentional condition check redundancy)
-    if (g_settings.load_devices_from_save_states)
-    {
-      Host::AddOSDMessage(
-        fmt::format(TRANSLATE_FS("OSDMessage",
-                                 "Save state contains controller type {0} in port {1}, but {2} is used. Switching."),
-                    state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u,
-                    Controller::GetControllerInfo(controller_type)->GetDisplayName()),
-        Host::OSD_WARNING_DURATION);
-    }
-    else
-    {
-      Host::AddOSDMessage(
-        fmt::format(TRANSLATE_FS("OSDMessage", "Ignoring mismatched controller type {0} in port {1}."),
-                    state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u, Host::OSD_WARNING_DURATION));
-    }
+    DEV_LOG("Controller type mismatch in slot {}: state={}({}) ui={}({})", i + 1u, state_cinfo ? state_cinfo->name : "",
+            static_cast<unsigned>(controller_type_in_state), Controller::GetControllerInfo(controller_type)->name,
+            static_cast<unsigned>(controller_type));
 
-    DEV_LOG("Controller type mismatch in slot {}: state={}({}) ui={}({}) load_from_state={}", i + 1u,
-            state_cinfo ? state_cinfo->name : "", static_cast<unsigned>(state_controller_type),
-            Controller::GetControllerInfo(controller_type)->name, static_cast<unsigned>(controller_type),
-            g_settings.load_devices_from_save_states ? "yes" : "no");
+    Host::AddIconOSDWarning(
+      fmt::format("PadTypeMismatch{}", i), ICON_EMOJI_WARNING,
+      fmt::format(TRANSLATE_FS("OSDMessage",
+                               "Save state contains controller type {0} in port {1}.\n       Leaving {2} connected."),
+                  state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u,
+                  Controller::GetControllerInfo(controller_type)->GetDisplayName()),
+      Host::OSD_WARNING_DURATION);
 
-    if (g_settings.load_devices_from_save_states)
-    {
-      s_controllers[i].reset();
-      if (state_controller_type != ControllerType::None)
-        s_controllers[i] = Controller::Create(state_controller_type, i);
-    }
-    else
-    {
-      // mismatched controller states prevents us from loading the state into the user's preferred controller.
-      // just doing a reset here is a little dodgy. If there's an active xfer on the state-saved controller
-      // then who knows what might happen as the rest of the packet streams in. (possibly the SIO xfer will
-      // timeout and the controller will just correct itself on the next frame's read attempt -- after all on
-      // physical HW removing a controller is allowed and could happen in the middle of SIO comms)
-
-      if (s_controllers[i])
-        s_controllers[i]->Reset();
-    }
+    if (s_controllers[i])
+      s_controllers[i]->Reset();
   }
 
-  // we still need to read/write the save state controller state even if the controller does not exist.
-  // the marker is only expected for valid controller types.
-  if (state_controller_type == ControllerType::None)
+  // Still need to consume the state. If we saved the size, this would be better, since we could just skip over it.
+  if (controller_type_in_state == ControllerType::None)
     return true;
 
   if (!sw.DoMarker("Controller"))
     return false;
-
-  if (auto& controller = s_controllers[i]; controller && controller->GetType() == state_controller_type)
+  if (const auto& controller = s_controllers[i]; controller && controller->GetType() == controller_type_in_state)
     return controller->DoState(sw, g_settings.load_devices_from_save_states);
-  else if (auto dummy = Controller::Create(state_controller_type, i); dummy)
+  else if (const auto dummy = Controller::Create(controller_type_in_state, i); dummy)
     return dummy->DoState(sw, g_settings.load_devices_from_save_states);
 
   return true;
@@ -266,7 +240,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   if (card_present_in_state && !s_memory_cards[i] && g_settings.load_devices_from_save_states)
   {
     Host::AddIconOSDMessage(
-      fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+      fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
       fmt::format(
         TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Creating temporary card."),
         i + 1u),
@@ -304,7 +278,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
       else
       {
         Host::AddIconOSDMessage(
-          fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+          fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
           fmt::format(
             TRANSLATE_FS("OSDMessage",
                          "Memory card {} from save state does not match current card data. Simulating replugging."),
@@ -318,7 +292,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     else
     {
       Host::AddIconOSDMessage(
-        fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+        fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
         fmt::format(
           TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Ignoring card."), i + 1u),
         Host::OSD_ERROR_DURATION);
@@ -332,7 +306,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     if (g_settings.load_devices_from_save_states)
     {
       Host::AddIconOSDMessage(
-        fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+        fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
         fmt::format(
           TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Removing card."), i + 1u),
         Host::OSD_ERROR_DURATION);
@@ -341,7 +315,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     else
     {
       Host::AddIconOSDMessage(
-        fmt::format("card_load_warning_{}", i), ICON_FA_SD_CARD,
+        fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
         fmt::format(
           TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Replugging card."),
           i + 1u),
