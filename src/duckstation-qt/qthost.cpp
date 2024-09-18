@@ -1903,7 +1903,7 @@ void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view 
 
   if (System::IsValid() || g_emu_thread->isRunningFullscreenUI())
   {
-    Host::AddIconOSDMessage(fmt::format("controller_connected_{}", identifier), ICON_FA_GAMEPAD,
+    Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("QtHost", "Controller {} connected."), identifier),
                             Host::OSD_INFO_DURATION);
   }
@@ -1924,12 +1924,12 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
       // has to be done after pause, otherwise pause message takes precedence
       emit g_emu_thread->statusMessage(message);
     });
-    Host::AddIconOSDMessage(fmt::format("controller_connected_{}", identifier), ICON_FA_GAMEPAD, std::move(message),
+    Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD, std::move(message),
                             Host::OSD_WARNING_DURATION);
   }
   else if (System::IsValid() || g_emu_thread->isRunningFullscreenUI())
   {
-    Host::AddIconOSDMessage(fmt::format("controller_connected_{}", identifier), ICON_FA_GAMEPAD,
+    Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier),
                             Host::OSD_INFO_DURATION);
   }

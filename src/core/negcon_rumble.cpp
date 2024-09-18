@@ -244,7 +244,7 @@ void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
   if (show_message)
   {
     Host::AddIconOSDMessage(
-      fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
+      fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
       enabled ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
                 fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
   }

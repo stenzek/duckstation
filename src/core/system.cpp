@@ -1495,7 +1495,7 @@ void System::ResetSystem()
 
   ResetPerformanceCounters();
   ResetThrottler();
-  Host::AddIconOSDMessage("system_reset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
+  Host::AddIconOSDMessage("SystemReset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
                           Host::OSD_QUICK_DURATION);
 
   InterruptExecution();
@@ -2475,7 +2475,7 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
                                                    g_settings.cpu_overclock_denominator != cpu_overclock_denominator))))
   {
     Host::AddIconOSDMessage(
-      "state_overclock_difference", ICON_FA_EXCLAMATION_TRIANGLE,
+      "StateOverclockDifference", ICON_FA_EXCLAMATION_TRIANGLE,
       fmt::format(TRANSLATE_FS("System", "WARNING: CPU overclock ({}%) was different in save state ({}%)."),
                   g_settings.cpu_overclock_enable ? g_settings.GetCPUOverclockPercent() : 100u,
                   cpu_overclock_active ?
@@ -2633,7 +2633,7 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
   INFO_LOG("Loading state from '{}'...", path);
 
   Host::AddIconOSDMessage(
-    "load_state", ICON_EMOJI_OPEN_THE_FOLDER,
+    "LoadState", ICON_EMOJI_OPEN_THE_FOLDER,
     fmt::format(TRANSLATE_FS("OSDMessage", "Loading state from '{}'..."), Path::GetFileName(path)),
     Host::OSD_INFO_DURATION);
 
@@ -4175,7 +4175,7 @@ bool System::SwitchMediaSubImage(u32 index)
   Error error;
   if (!image->SwitchSubImage(index, &error))
   {
-    Host::AddIconOSDMessage("media_switch_subimage", ICON_FA_COMPACT_DISC,
+    Host::AddIconOSDMessage("MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
                             fmt::format(TRANSLATE_FS("System", "Failed to switch to subimage {} in '{}': {}."),
                                         index + 1u, Path::GetFileName(image->GetFileName()), error.GetDescription()),
                             Host::OSD_INFO_DURATION);
@@ -4185,7 +4185,7 @@ bool System::SwitchMediaSubImage(u32 index)
     return false;
   }
 
-  Host::AddIconOSDMessage("media_switch_subimage", ICON_FA_COMPACT_DISC,
+  Host::AddIconOSDMessage("MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
                           fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."),
                                       image->GetSubImageMetadata(index, "title"), index + 1u,
                                       image->GetMetadata("title")),
@@ -5566,7 +5566,7 @@ bool System::SaveCheatList()
   if (!System::GetCheatList()->SaveToPCSXRFile(filename.c_str()))
   {
     Host::AddIconOSDMessage(
-      "cheat_save_error", ICON_FA_EXCLAMATION_TRIANGLE,
+      "CheatSaveError", ICON_FA_EXCLAMATION_TRIANGLE,
       fmt::format(TRANSLATE_FS("System", "Failed to save cheat list to '{}'."), Path::GetFileName(filename)),
       Host::OSD_ERROR_DURATION);
   }
@@ -5586,7 +5586,7 @@ bool System::DeleteCheatList()
       return false;
 
     Host::AddIconOSDMessage(
-      "cheat_delete", ICON_FA_EXCLAMATION_TRIANGLE,
+      "CheatDelete", ICON_FA_EXCLAMATION_TRIANGLE,
       fmt::format(TRANSLATE_FS("System", "Deleted cheat list '{}'."), Path::GetFileName(filename)),
       Host::OSD_INFO_DURATION);
   }
@@ -5630,13 +5630,13 @@ void System::SetCheatCodeState(u32 index, bool enabled)
 
   if (enabled)
   {
-    Host::AddIconOSDMessage(fmt::format("cheat_{}_state", index), ICON_FA_EXCLAMATION_TRIANGLE,
+    Host::AddIconOSDMessage(fmt::format("Cheat{}State", index), ICON_FA_EXCLAMATION_TRIANGLE,
                             fmt::format(TRANSLATE_FS("System", "Cheat '{}' enabled."), cc.description),
                             Host::OSD_INFO_DURATION);
   }
   else
   {
-    Host::AddIconOSDMessage(fmt::format("cheat_{}_state", index), ICON_FA_EXCLAMATION_TRIANGLE,
+    Host::AddIconOSDMessage(fmt::format("Cheat{}State", index), ICON_FA_EXCLAMATION_TRIANGLE,
                             fmt::format(TRANSLATE_FS("System", "Cheat '{}' disabled."), cc.description),
                             Host::OSD_INFO_DURATION);
   }
@@ -5653,13 +5653,13 @@ void System::ApplyCheatCode(u32 index)
   if (!cc.enabled)
   {
     cc.Apply();
-    Host::AddIconOSDMessage(fmt::format("cheat_{}_state", index), ICON_FA_EXCLAMATION_TRIANGLE,
+    Host::AddIconOSDMessage(fmt::format("Cheat{}State", index), ICON_FA_EXCLAMATION_TRIANGLE,
                             fmt::format(TRANSLATE_FS("System", "Applied cheat '{}'."), cc.description),
                             Host::OSD_INFO_DURATION);
   }
   else
   {
-    Host::AddIconOSDMessage(fmt::format("cheat_{}_state", index), ICON_FA_EXCLAMATION_TRIANGLE,
+    Host::AddIconOSDMessage(fmt::format("Cheat{}State", index), ICON_FA_EXCLAMATION_TRIANGLE,
                             fmt::format(TRANSLATE_FS("System", "Cheat '{}' is already enabled."), cc.description),
                             Host::OSD_INFO_DURATION);
   }
