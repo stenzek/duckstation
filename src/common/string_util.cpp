@@ -169,13 +169,20 @@ std::optional<std::vector<u8>> StringUtil::DecodeHex(const std::string_view in)
   return {data};
 }
 
-std::string StringUtil::EncodeHex(const u8* data, int length)
+std::string StringUtil::EncodeHex(const void* data, size_t length)
 {
-  std::stringstream ss;
-  for (int i = 0; i < length; i++)
-    ss << std::hex << std::setfill('0') << std::setw(2) << static_cast<int>(data[i]);
+  static constexpr auto hex_char = [](char x) { return (x >= 0xA) ? ((x - 0xA) + 'a') : (x + '0'); };
 
-  return ss.str();
+  const u8* bytes = static_cast<const u8*>(data);
+
+  std::string ret;
+  ret.reserve(length * 2);
+  for (size_t i = 0; i < length; i++)
+  {
+    ret.push_back(hex_char(bytes[i] >> 4));
+    ret.push_back(hex_char(bytes[i] & 0xF));
+  }
+  return ret;
 }
 
 std::string_view StringUtil::StripWhitespace(const std::string_view str)

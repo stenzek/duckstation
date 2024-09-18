@@ -204,7 +204,12 @@ inline std::string ToChars(bool value, int base)
 
 /// Encode/decode hexadecimal byte buffers
 std::optional<std::vector<u8>> DecodeHex(const std::string_view str);
-std::string EncodeHex(const u8* data, int length);
+std::string EncodeHex(const void* data, size_t length);
+template<typename T>
+ALWAYS_INLINE static std::string EncodeHex(const std::span<const T> data)
+{
+  return EncodeHex(data.data(), data.size_bytes());
+}
 
 /// Returns true if the character is a hexadecimal digit.
 template<typename T>

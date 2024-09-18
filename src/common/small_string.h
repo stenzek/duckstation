@@ -67,7 +67,7 @@ public:
   void append_format(fmt::format_string<T...> fmt, T&&... args);
 
   // append hex string
-  void append_hex(const void* data, size_t len);
+  void append_hex(const void* data, size_t len, bool comma_separate = false);
 
   // append a single character to this string
   void prepend(char c);

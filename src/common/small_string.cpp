@@ -181,16 +181,40 @@ void SmallStringBase::append(const char* str, u32 length)
   m_buffer[m_length] = 0;
 }
 
-void SmallStringBase::append_hex(const void* data, size_t len)
+void SmallStringBase::append_hex(const void* data, size_t len, bool comma_separate)
 {
   if (len == 0)
     return;
 
-  make_room_for(static_cast<u32>(len) * 4);
+  static constexpr auto hex_char = [](char x) { return (x >= 0xA) ? ((x - 0xA) + 'a') : (x + '0'); };
   const u8* bytes = static_cast<const u8*>(data);
-  append_format("{:02X}", bytes[0]);
-  for (size_t i = 1; i < len; i++)
-    append_format(", {:02X}", bytes[i]);
+
+  if (!comma_separate)
+  {
+    make_room_for(static_cast<u32>(len) * 2);
+    for (size_t i = 0; i < len; i++)
+    {
+      m_buffer[m_length++] = hex_char(bytes[i] >> 4);
+      m_buffer[m_length++] = hex_char(bytes[i] & 0xF);
+    }
+  }
+  else
+  {
+    make_room_for(4 + static_cast<u32>(len - 1) * 6);
+    m_buffer[m_length++] = '0';
+    m_buffer[m_length++] = 'x';
+    m_buffer[m_length++] = hex_char(bytes[0] >> 4);
+    m_buffer[m_length++] = hex_char(bytes[0] & 0xF);
+    for (size_t i = 1; i < len; i++)
+    {
+      m_buffer[m_length++] = ',';
+      m_buffer[m_length++] = ' ';
+      m_buffer[m_length++] = '0';
+      m_buffer[m_length++] = 'x';
+      m_buffer[m_length++] = hex_char(bytes[i] >> 4);
+      m_buffer[m_length++] = hex_char(bytes[i] & 0xF);
+    }
+  }
 }
 
 void SmallStringBase::prepend(const char* str, u32 length)
