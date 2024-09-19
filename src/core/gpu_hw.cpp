@@ -156,6 +156,11 @@ public:
   }
   ~ShaderCompileProgressTracker() = default;
 
+  double GetElapsedMilliseconds() const
+  {
+    return Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - m_start_time);
+  }
+
   void Increment(u32 progress = 1)
   {
     m_progress += progress;
@@ -170,10 +175,10 @@ public:
 
 private:
   std::string m_title;
-  u64 m_min_time;
-  u64 m_update_interval;
-  u64 m_start_time;
-  u64 m_last_update_time;
+  Common::Timer::Value m_min_time;
+  Common::Timer::Value m_update_interval;
+  Common::Timer::Value m_start_time;
+  Common::Timer::Value m_last_update_time;
   u32 m_progress;
   u32 m_total;
 };
@@ -386,6 +391,8 @@ void GPU_HW::RestoreDeviceContext()
 
 void GPU_HW::UpdateSettings(const Settings& old_settings)
 {
+  const bool prev_force_progressive_scan = m_force_progressive_scan;
+
   GPU::UpdateSettings(old_settings);
 
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
@@ -398,7 +405,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
                                     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer());
   const bool shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
-     m_true_color != g_settings.gpu_true_color ||
+     m_true_color != g_settings.gpu_true_color || prev_force_progressive_scan != m_force_progressive_scan ||
      (multisamples > 0 && g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
      (resolution_scale > 1 && g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering) ||
      (resolution_scale > 1 && g_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
@@ -411,8 +418,8 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
                                 g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale))) ||
      (features.geometry_shaders && g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode) ||
      m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
-     (features.noperspective_interpolation &&
-      ShouldDisableColorPerspective() != old_settings.gpu_pgxp_color_correction) ||
+     (features.noperspective_interpolation && g_settings.gpu_pgxp_enable &&
+      g_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction) ||
      m_allow_sprite_mode !=
        ShouldAllowSpriteMode(m_resolution_scale, g_settings.gpu_texture_filter, g_settings.gpu_sprite_texture_filter));
 
@@ -928,6 +935,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   const bool per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
   const bool force_round_texcoords = (m_resolution_scale > 1 && m_texture_filtering == GPUTextureFilter::Nearest &&
                                       g_settings.gpu_force_round_texcoords);
+  const bool true_color = g_settings.gpu_true_color;
 
   // Determine when to use shader blending.
   // FBFetch is free, we need it for filtering without DSB, or when accurate blending is forced.
@@ -974,22 +982,29 @@ bool GPU_HW::CompilePipelines(Error* error)
   const u32 active_texture_modes =
     m_allow_sprite_mode ? NUM_TEXTURE_MODES :
                           (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart)));
-  const u32 total_pipelines =
-    (m_allow_sprite_mode ? 5 : 3) +                                                    // vertex shaders
-    (active_texture_modes * 5 * 9 * 2 * 2 * 2 * (1 + BoolToUInt32(needs_rov_depth))) + // fragment shaders
-    ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * 2 * 2) +       // batch pipelines
-    ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) +                       // wireframe
-    1 +                                                                                // fullscreen quad VS
-    (2 * 2) +                                                                          // vram fill
-    (1 + BoolToUInt32(m_write_mask_as_depth)) +                                        // vram copy
-    (1 + BoolToUInt32(m_write_mask_as_depth)) +                                        // vram write
-    1 +                                                                                // vram write replacement
-    (m_write_mask_as_depth ? 1 : 0) +                                                  // mask -> depth
-    1 +                                                                                // vram read
-    2 +                                                                                // extract/display
-    ((m_downsample_mode != GPUDownsampleMode::Disabled) ? 1 : 0);                      // downsample
+  const u32 total_vertex_shaders = (m_allow_sprite_mode ? 5 : 3);
+  const u32 total_fragment_shaders =
+    (active_texture_modes * 5 * 9 * 2 * (1 + BoolToUInt32(!true_color)) *
+     (1 + BoolToUInt32(!m_force_progressive_scan)) * (1 + BoolToUInt32(needs_rov_depth)));
+  const u32 total_items =
+    total_vertex_shaders + total_fragment_shaders +
+    ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
+     (1 + BoolToUInt32(!m_force_progressive_scan))) +             // batch pipelines
+    ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) +  // wireframe
+    1 +                                                           // fullscreen quad VS
+    (2 * 2) +                                                     // vram fill
+    (1 + BoolToUInt32(m_write_mask_as_depth)) +                   // vram copy
+    (1 + BoolToUInt32(m_write_mask_as_depth)) +                   // vram write
+    1 +                                                           // vram write replacement
+    (m_write_mask_as_depth ? 1 : 0) +                             // mask -> depth
+    1 +                                                           // vram read
+    2 +                                                           // extract/display
+    ((m_downsample_mode != GPUDownsampleMode::Disabled) ? 1 : 0); // downsample
 
-  ShaderCompileProgressTracker progress("Compiling Pipelines", total_pipelines);
+  INFO_LOG("Compiling {} vertex shaders, {} fragment shaders, and {} pipelines.", total_vertex_shaders,
+           total_fragment_shaders, total_items);
+
+  ShaderCompileProgressTracker progress("Compiling Pipelines", total_items);
 
   // vertex shaders - [textured/palette/sprite]
   // fragment shaders - [depth_test][render_mode][transparency_mode][texture_mode][check_mask][dithering][interlacing]
@@ -1062,8 +1077,16 @@ bool GPU_HW::CompilePipelines(Error* error)
 
             for (u8 dithering = 0; dithering < 2; dithering++)
             {
+              // Never going to draw with dithering on in true color.
+              if (dithering && true_color)
+                continue;
+
               for (u8 interlacing = 0; interlacing < 2; interlacing++)
               {
+                // Never going to draw with line skipping in force progressive.
+                if (interlacing && m_force_progressive_scan)
+                  continue;
+
                 const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
                 const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
                 const BatchTextureMode shader_texmode = static_cast<BatchTextureMode>(
@@ -1150,8 +1173,16 @@ bool GPU_HW::CompilePipelines(Error* error)
         {
           for (u8 dithering = 0; dithering < 2; dithering++)
           {
+            // Never going to draw with dithering on in true color.
+            if (dithering && true_color)
+              continue;
+
             for (u8 interlacing = 0; interlacing < 2; interlacing++)
             {
+              // Never going to draw with line skipping in force progressive.
+              if (interlacing && m_force_progressive_scan)
+                continue;
+
               for (u8 check_mask = 0; check_mask < 2; check_mask++)
               {
                 const bool textured = (static_cast<BatchTextureMode>(texture_mode) != BatchTextureMode::Disabled);
@@ -1605,6 +1636,7 @@ bool GPU_HW::CompilePipelines(Error* error)
 
 #undef UPDATE_PROGRESS
 
+  INFO_LOG("Pipeline creation took {:.2f} ms.", progress.GetElapsedMilliseconds());
   return true;
 }
 
