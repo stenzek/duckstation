@@ -171,7 +171,7 @@ std::optional<std::vector<u8>> StringUtil::DecodeHex(const std::string_view in)
 
 std::string StringUtil::EncodeHex(const void* data, size_t length)
 {
-  static constexpr auto hex_char = [](char x) { return (x >= 0xA) ? ((x - 0xA) + 'a') : (x + '0'); };
+  static constexpr auto hex_char = [](char x) { return static_cast<char>((x >= 0xA) ? ((x - 0xA) + 'a') : (x + '0')); };
 
   const u8* bytes = static_cast<const u8*>(data);
 

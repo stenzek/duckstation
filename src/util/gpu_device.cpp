@@ -491,9 +491,7 @@ bool GPUDevice::OpenPipelineCache(const std::string& path, Error* error)
   const size_t cache_size = data->size();
   const std::array<u8, SHA1Digest::DIGEST_SIZE> cache_hash = SHA1Digest::GetDigest(data->cspan());
 
-  INFO_LOG("Loading {} byte pipeline cache with hash {}", s_pipeline_cache_size,
-           SHA1Digest::DigestToString(s_pipeline_cache_hash));
-
+  INFO_LOG("Loading {} byte pipeline cache with hash {}", cache_size, SHA1Digest::DigestToString(cache_hash));
   if (!ReadPipelineCache(std::move(data.value()), error))
     return false;
 

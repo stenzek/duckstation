@@ -160,7 +160,7 @@ void SHA1Digest::Reset()
   count[0] = count[1] = 0;
 }
 
-std::string SHA1Digest::DigestToString(const std::span<u8, DIGEST_SIZE> digest)
+std::string SHA1Digest::DigestToString(const std::span<const u8, DIGEST_SIZE> digest)
 {
   std::string ret;
   ret.reserve(DIGEST_SIZE * 2);

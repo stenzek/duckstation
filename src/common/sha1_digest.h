@@ -6,8 +6,8 @@
 #include "types.h"
 
 #include <array>
-#include <string>
 #include <span>
+#include <string>
 
 class SHA1Digest
 {
@@ -24,7 +24,7 @@ public:
   void Final(u8 digest[DIGEST_SIZE]);
   void Reset();
 
-  static std::string DigestToString(const std::span<u8, DIGEST_SIZE> digest);
+  static std::string DigestToString(const std::span<const u8, DIGEST_SIZE> digest);
 
   static std::array<u8, DIGEST_SIZE> GetDigest(const void* data, size_t len);
   static std::array<u8, DIGEST_SIZE> GetDigest(std::span<const u8> data);
