@@ -44,7 +44,9 @@ namespace GPU_SW_Rasterizer {
 // Default vector implementation definitions.
 #if defined(CPU_ARCH_SSE) || defined(CPU_ARCH_NEON)
 namespace GPU_SW_Rasterizer::SIMD {
+#define USE_VECTOR 1
 #include "gpu_sw_rasterizer.inl"
+#undef USE_VECTOR
 }
 #endif
 
