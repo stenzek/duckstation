@@ -984,7 +984,7 @@ bool GPU_HW::CompilePipelines(Error* error)
                           (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart)));
   const u32 total_vertex_shaders = (m_allow_sprite_mode ? 5 : 3);
   const u32 total_fragment_shaders =
-    (active_texture_modes * 5 * 9 * 2 * (1 + BoolToUInt32(!true_color)) *
+    ((needs_rov_depth ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
      (1 + BoolToUInt32(!m_force_progressive_scan)) * (1 + BoolToUInt32(needs_rov_depth)));
   const u32 total_items =
     total_vertex_shaders + total_fragment_shaders +
@@ -1018,10 +1018,16 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   for (u8 textured = 0; textured < 2; textured++)
   {
-    for (u8 palette = 0; palette < (textured ? 2 : 1); palette++)
+    for (u8 palette = 0; palette < 2; palette++)
     {
-      for (u8 sprite = 0; sprite < (textured ? 2 : 1); sprite++)
+      if (palette && !textured)
+        continue;
+
+      for (u8 sprite = 0; sprite < 2; sprite++)
       {
+        if (sprite && (!textured || !m_allow_sprite_mode))
+          continue;
+
         const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
         const std::string vs = shadergen.GenerateBatchVertexShader(
           textured != 0, palette != 0, uv_limits, !sprite && force_round_texcoords, m_pgxp_depth_buffer);
@@ -1060,7 +1066,8 @@ bool GPU_HW::CompilePipelines(Error* error)
           // If using ROV depth, we only draw with shader blending.
           (needs_rov_depth && render_mode != static_cast<u8>(BatchRenderMode::ShaderBlend)))
         {
-          progress.Increment(active_texture_modes * 2 * 2 * 2);
+          progress.Increment(active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
+                             (1 + BoolToUInt32(!m_force_progressive_scan)));
           continue;
         }
 
@@ -1071,7 +1078,7 @@ bool GPU_HW::CompilePipelines(Error* error)
             if (check_mask && render_mode != static_cast<u8>(BatchRenderMode::ShaderBlend))
             {
               // mask bit testing is only valid with shader blending.
-              progress.Increment(2 * 2);
+              progress.Increment((1 + BoolToUInt32(!true_color)) * (1 + BoolToUInt32(!m_force_progressive_scan)));
               continue;
             }
 
@@ -1165,7 +1172,8 @@ bool GPU_HW::CompilePipelines(Error* error)
           // If using ROV depth, we only draw with shader blending.
           (needs_rov_depth && render_mode != static_cast<u8>(BatchRenderMode::ShaderBlend)))
         {
-          progress.Increment(9 * 2 * 2 * 2);
+          progress.Increment(active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
+                             (1 + BoolToUInt32(!m_force_progressive_scan)));
           continue;
         }
 
