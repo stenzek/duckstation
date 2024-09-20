@@ -311,11 +311,13 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
     &progress);
 
   // Block until completion.
-  while (http->HasAnyRequests())
-  {
-    QApplication::processEvents(QEventLoop::AllEvents, HTTP_POLL_INTERVAL);
-    http->PollRequests();
-  }
+  QtUtils::ProcessEventsWithSleep(
+    QEventLoop::AllEvents,
+    [http = http.get()]() {
+      http->PollRequests();
+      return http->HasAnyRequests();
+    },
+    HTTP_POLL_INTERVAL);
 
   return download_result;
 }
@@ -806,9 +808,8 @@ void EmuThread::stopFullscreenUI()
     QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
     // wait until the host display is gone
-    while (!QtHost::IsSystemValid() && g_gpu_device)
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
+                                    []() { return (!QtHost::IsSystemValid() && g_gpu_device); });
     return;
   }
 
@@ -1742,8 +1743,7 @@ void EmuThread::stop()
   AssertMsg(!g_emu_thread->isOnThread(), "Not called on the emu thread");
 
   QMetaObject::invokeMethod(g_emu_thread, &EmuThread::stopInThread, Qt::QueuedConnection);
-  while (g_emu_thread->isRunning())
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+  QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return (g_emu_thread->isRunning()); });
 }
 
 void EmuThread::stopInThread()

@@ -8,8 +8,11 @@
 #include "common/types.h"
 
 #include <QtCore/QByteArray>
+#include <QtCore/QCoreApplication>
+#include <QtCore/QEventLoop>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
+#include <QtCore/QTimer>
 #include <QtGui/QIcon>
 #include <QtWidgets/QWidget>
 #include <functional>
@@ -120,5 +123,31 @@ bool SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto
 
 /// Restores a window's geometry from configuration. Returns false if it was not found in the configuration.
 bool RestoreWindowGeometry(std::string_view window_name, QWidget* widget);
+
+/// CPU-friendly way of blocking the UI thread while some predicate holds true.
+template<typename Predicate>
+[[maybe_unused]] static void ProcessEventsWithSleep(QEventLoop::ProcessEventsFlags flags, const Predicate& pred,
+                                                    int sleep_time_ms = 10)
+{
+  if (sleep_time_ms == 0)
+  {
+    while (pred())
+      QCoreApplication::processEvents(flags);
+  }
+
+  if (!pred())
+    return;
+
+  QEventLoop loop;
+  QTimer timer;
+  QObject::connect(&timer, &QTimer::timeout, &timer, [&loop, &pred]() {
+    if (pred())
+      return;
+
+    loop.exit();
+  });
+  timer.start(sleep_time_ms);
+  loop.exec(flags);
+}
 
 } // namespace QtUtils

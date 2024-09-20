@@ -544,11 +544,13 @@ void AutoUpdaterDialog::downloadUpdateClicked()
   m_http_poll_timer->stop();
 
   // Block until completion.
-  while (m_http->HasAnyRequests())
-  {
-    QApplication::processEvents(QEventLoop::AllEvents, HTTP_POLL_INTERVAL);
-    m_http->PollRequests();
-  }
+  QtUtils::ProcessEventsWithSleep(
+    QEventLoop::AllEvents,
+    [this]() {
+      m_http->PollRequests();
+      return m_http->HasAnyRequests();
+    },
+    HTTP_POLL_INTERVAL);
 
   if (download_result.value_or(false))
   {

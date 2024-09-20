@@ -281,7 +281,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
     m_display_widget->setFocus();
     updateWindowState();
 
-    QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
     return m_display_widget->getWindowInfo();
   }
 
@@ -710,8 +710,7 @@ void MainWindow::quit()
   if (s_system_valid)
   {
     g_emu_thread->shutdownSystem(false, true);
-    while (s_system_valid)
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return s_system_valid; });
   }
 
   // Big picture might still be active.
@@ -749,9 +748,8 @@ void MainWindow::recreate()
   if (was_display_created)
   {
     g_emu_thread->setSurfaceless(true);
-    while (m_display_widget || !g_emu_thread->isSurfaceless())
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
-
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
+                                    [this]() { return (m_display_widget || !g_emu_thread->isSurfaceless()); });
     m_display_created = false;
   }
 
@@ -2005,8 +2003,8 @@ void MainWindow::switchToGameListView()
 
       // switch to surfaceless. we have to wait until the display widget is gone before we swap over.
       g_emu_thread->setSurfaceless(true);
-      while (m_display_widget)
-        QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+      QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
+                                      [this]() { return static_cast<bool>(m_display_widget); });
     }
   }
 
@@ -2915,12 +2913,11 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
     g_emu_thread->setFullscreen(false, false);
 
     // Container could change... thanks Wayland.
-    QWidget* container;
-    while (s_system_valid &&
-           (g_emu_thread->isFullscreen() || !(container = getDisplayContainer()) || container->isFullScreen()))
-    {
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    }
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, [this]() {
+      QWidget* container;
+      return (s_system_valid &&
+              (g_emu_thread->isFullscreen() || !(container = getDisplayContainer()) || container->isFullScreen()));
+    });
   }
 
   if (!was_paused)
@@ -2928,8 +2925,7 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
     g_emu_thread->setSystemPaused(true);
 
     // Need to wait for the pause to go through, and make the main window visible if needed.
-    while (!s_system_paused)
-      QApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 1);
+    QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return !s_system_paused; });
 
     // Ensure it's visible before we try to create any dialogs parented to us.
     QApplication::sync();
