@@ -5718,6 +5718,7 @@ void System::ToggleSoftwareRendering()
                                       Settings::GetRendererDisplayName(new_renderer)),
                           Host::OSD_QUICK_DURATION);
   RecreateGPU(new_renderer);
+  g_gpu->UpdateResolutionScale();
   ResetPerformanceCounters();
 }
 
@@ -5753,6 +5754,7 @@ void System::HostDisplayResized()
   if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
     GTE::UpdateAspectRatio();
 
+  g_gpu->RestoreDeviceContext();
   g_gpu->UpdateResolutionScale();
 }
 

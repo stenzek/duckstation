@@ -125,9 +125,11 @@ void GPU::UpdateSettings(const Settings& old_settings)
     m_console_is_pal = System::IsPALRegion();
     UpdateCRTCConfig();
   }
-
-  // Crop mode calls this, so recalculate the display area
-  UpdateCRTCDisplayParameters();
+  else if (g_settings.display_crop_mode != old_settings.display_crop_mode)
+  {
+    // Crop mode calls this, so recalculate the display area
+    UpdateCRTCDisplayParameters();
+  }
 
   if (g_settings.display_scaling != old_settings.display_scaling ||
       g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
@@ -154,16 +156,16 @@ void GPU::CPUClockChanged()
   UpdateCRTCConfig();
 }
 
+u32 GPU::GetResolutionScale() const
+{
+  return 1u;
+}
+
 void GPU::UpdateResolutionScale()
 {
 }
 
-std::tuple<u32, u32> GPU::GetEffectiveDisplayResolution(bool scaled /* = true */)
-{
-  return std::tie(m_crtc_state.display_vram_width, m_crtc_state.display_vram_height);
-}
-
-std::tuple<u32, u32> GPU::GetFullDisplayResolution(bool scaled /* = true */)
+std::tuple<u32, u32> GPU::GetFullDisplayResolution() const
 {
   return std::tie(m_crtc_state.display_width, m_crtc_state.display_height);
 }
@@ -789,6 +791,8 @@ void GPU::UpdateCRTCDisplayParameters()
   // won't be broken when displayed.
   const u8 y_shift = BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.vertical_resolution);
   const u8 height_shift = m_force_progressive_scan ? y_shift : BoolToUInt8(m_GPUSTAT.vertical_interlace);
+  const u16 old_vram_width = m_crtc_state.display_vram_width;
+  const u16 old_vram_height = m_crtc_state.display_vram_height;
 
   // Determine screen size.
   cs.display_width = (cs.horizontal_visible_end - cs.horizontal_visible_start) / cs.dot_clock_divider;
@@ -852,6 +856,9 @@ void GPU::UpdateCRTCDisplayParameters()
        std::min(cs.vertical_visible_end, std::max(vertical_display_start, cs.vertical_visible_start)))
       << height_shift;
   }
+
+  if (cs.display_vram_width != old_vram_width || cs.display_vram_height != old_vram_height)
+    UpdateResolutionScale();
 }
 
 TickCount GPU::GetPendingCRTCTicks() const

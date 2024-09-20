@@ -344,6 +344,7 @@ void Host::UpdateDisplayWindow()
   const float f_height = static_cast<float>(g_gpu_device->GetWindowHeight());
   ImGuiManager::WindowResized(f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
+  System::HostDisplayResized();
 
   if (System::IsValid())
   {

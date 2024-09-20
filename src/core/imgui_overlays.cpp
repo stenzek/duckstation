@@ -291,12 +291,12 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
 
     if (g_settings.display_show_resolution)
     {
-      // TODO: this seems wrong?
-      const auto [effective_width, effective_height] = g_gpu->GetEffectiveDisplayResolution();
+      const u32 resolution_scale = g_gpu->GetResolutionScale();
+      const auto [display_width, display_height] = g_gpu->GetFullDisplayResolution();
       const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
       const bool pal = g_gpu->IsInPALMode();
-      text.format("{}x{} {} {}", effective_width, effective_height, pal ? "PAL" : "NTSC",
-                  interlaced ? "Interlaced" : "Progressive");
+      text.format("{}x{} {} {} [{}x]", display_width * resolution_scale, display_height * resolution_scale,
+                  pal ? "PAL" : "NTSC", interlaced ? "Interlaced" : "Progressive", resolution_scale);
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 

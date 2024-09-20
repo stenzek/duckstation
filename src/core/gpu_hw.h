@@ -65,9 +65,9 @@ public:
   void RestoreDeviceContext() override;
 
   void UpdateSettings(const Settings& old_settings) override;
-  void UpdateResolutionScale() override final;
-  std::tuple<u32, u32> GetEffectiveDisplayResolution(bool scaled = true) override;
-  std::tuple<u32, u32> GetFullDisplayResolution(bool scaled = true) override;
+
+  u32 GetResolutionScale() const override;
+  void UpdateResolutionScale() override;
 
   void UpdateDisplay() override;
 

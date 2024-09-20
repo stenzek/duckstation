@@ -2005,7 +2005,12 @@ void EmuThread::updatePerformanceCounters()
   u32 render_height = 0;
 
   if (g_gpu)
-    std::tie(render_width, render_height) = g_gpu->GetEffectiveDisplayResolution();
+  {
+    const u32 render_scale = g_gpu->GetResolutionScale();
+    std::tie(render_width, render_height) = g_gpu->GetFullDisplayResolution();
+    render_width *= render_scale;
+    render_height *= render_scale;
+  }
 
   if (render_api != m_last_render_api || hardware_renderer != m_last_hardware_renderer)
   {

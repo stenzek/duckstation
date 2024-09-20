@@ -165,14 +165,14 @@ public:
   /// Recompile shaders/recreate framebuffers when needed.
   virtual void UpdateSettings(const Settings& old_settings);
 
+  /// Returns the current resolution scale.
+  virtual u32 GetResolutionScale() const;
+
   /// Updates the resolution scale when it's set to automatic.
   virtual void UpdateResolutionScale();
 
-  /// Returns the effective display resolution of the GPU.
-  virtual std::tuple<u32, u32> GetEffectiveDisplayResolution(bool scaled = true);
-
   /// Returns the full display resolution of the GPU, including padding.
-  virtual std::tuple<u32, u32> GetFullDisplayResolution(bool scaled = true);
+  std::tuple<u32, u32> GetFullDisplayResolution() const;
 
   float ComputeHorizontalFrequency() const;
   float ComputeVerticalFrequency() const;

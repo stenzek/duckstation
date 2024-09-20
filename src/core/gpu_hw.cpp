@@ -425,13 +425,11 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   if (m_resolution_scale != resolution_scale)
   {
-    Host::AddIconOSDMessage(
-      "ResolutionScaleChanged", ICON_FA_PAINT_BRUSH,
-      fmt::format(TRANSLATE_FS("GPU_HW", "Resolution scale set to {0}x (display {1}x{2}, VRAM {3}x{4})"),
-                  resolution_scale, m_crtc_state.display_vram_width * resolution_scale,
-                  resolution_scale * m_crtc_state.display_vram_height, VRAM_WIDTH * resolution_scale,
-                  VRAM_HEIGHT * resolution_scale),
-      Host::OSD_INFO_DURATION);
+    Host::AddIconOSDMessage("ResolutionScaleChanged", ICON_FA_PAINT_BRUSH,
+                            fmt::format(TRANSLATE_FS("GPU_HW", "Internal resolution set to {0}x ({1}x{2})."),
+                                        resolution_scale, m_crtc_state.display_width * resolution_scale,
+                                        resolution_scale * m_crtc_state.display_height),
+                            Host::OSD_INFO_DURATION);
   }
 
   if (m_multisamples != multisamples || g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading)
@@ -635,26 +633,37 @@ void GPU_HW::CheckSettings()
 
 u32 GPU_HW::CalculateResolutionScale() const
 {
-  const u32 max_resolution_scale = GetMaxResolutionScale();
-
   u32 scale;
   if (g_settings.gpu_resolution_scale != 0)
   {
-    scale = std::clamp<u32>(g_settings.gpu_resolution_scale, 1, max_resolution_scale);
+    scale = g_settings.gpu_resolution_scale;
   }
   else
   {
-    // Auto scaling. When the system is starting and all borders crop is enabled, the registers are zero, and
-    // display_height therefore is also zero. Use the default size from the region in this case.
-    const s32 height = (m_crtc_state.display_height != 0) ?
-                         static_cast<s32>(m_crtc_state.display_height) :
-                         (m_console_is_pal ? (PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START) :
-                                             (NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START));
-    const s32 preferred_scale =
-      static_cast<s32>(std::ceil(static_cast<float>(g_gpu_device->GetWindowHeight()) / height));
-    VERBOSE_LOG("Height = {}, preferred scale = {}", height, preferred_scale);
+    // Auto scaling.
+    if (m_crtc_state.display_width == 0 || m_crtc_state.display_height == 0 || m_crtc_state.display_vram_width == 0 ||
+        m_crtc_state.display_vram_height == 0 || m_GPUSTAT.display_disable)
+    {
+      // When the system is starting and all borders crop is enabled, the registers are zero, and
+      // display_height therefore is also zero. Keep the existing resolution until it updates.
+      scale = m_resolution_scale;
+    }
+    else
+    {
+      GSVector4i display_rect, draw_rect;
+      CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), true, true, &display_rect,
+                        &draw_rect);
 
-    scale = static_cast<u32>(std::clamp<s32>(preferred_scale, 1, max_resolution_scale));
+      // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
+      // anamorphic aspect ratio.
+      const s32 draw_width = draw_rect.width();
+      const s32 draw_height = draw_rect.height();
+      scale = static_cast<u32>(
+        std::ceil(std::max(static_cast<float>(draw_width) / static_cast<float>(m_crtc_state.display_vram_width),
+                           static_cast<float>(draw_height) / static_cast<float>(m_crtc_state.display_vram_height))));
+      VERBOSE_LOG("Draw Size = {}x{}, VRAM Size = {}x{}, Preferred Scale = {}", draw_width, draw_height,
+                  m_crtc_state.display_vram_width, m_crtc_state.display_vram_height, scale);
+    }
   }
 
   if (g_settings.gpu_downsample_mode == GPUDownsampleMode::Adaptive && scale > 1 && !Common::IsPow2(scale))
@@ -675,13 +684,16 @@ u32 GPU_HW::CalculateResolutionScale() const
     scale = new_scale;
   }
 
-  return scale;
+  return std::clamp<u32>(scale, 1, GetMaxResolutionScale());
+}
+
+u32 GPU_HW::GetResolutionScale() const
+{
+  return m_resolution_scale;
 }
 
 void GPU_HW::UpdateResolutionScale()
 {
-  GPU::UpdateResolutionScale();
-
   if (CalculateResolutionScale() != m_resolution_scale)
     UpdateSettings(g_settings);
 }
@@ -744,18 +756,6 @@ void GPU_HW::SetTexPageChangedOnOverlap(const GSVector4i update_rect)
   {
     m_draw_mode.SetTexturePageChanged();
   }
-}
-
-std::tuple<u32, u32> GPU_HW::GetEffectiveDisplayResolution(bool scaled /* = true */)
-{
-  const u32 scale = scaled ? m_resolution_scale : 1u;
-  return std::make_tuple(m_crtc_state.display_vram_width * scale, m_crtc_state.display_vram_height * scale);
-}
-
-std::tuple<u32, u32> GPU_HW::GetFullDisplayResolution(bool scaled /* = true */)
-{
-  const u32 scale = scaled ? m_resolution_scale : 1u;
-  return std::make_tuple(m_crtc_state.display_width * scale, m_crtc_state.display_height * scale);
 }
 
 void GPU_HW::PrintSettingsToLog()
