@@ -4732,6 +4732,9 @@ void System::UpdateMemorySaveStateSettings()
   s_runahead_replay_pending = false;
   if (s_runahead_frames > 0)
     INFO_LOG("Runahead is active with {} frames", s_runahead_frames);
+
+  // reenter execution loop, don't want to try to save a state now if runahead was turned off
+  InterruptExecution();
 }
 
 bool System::LoadMemoryState(const MemorySaveState& mss)
