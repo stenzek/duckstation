@@ -273,7 +273,7 @@ ALWAYS_INLINE_RELEASE static GSVector4i GatherVector(GSVector4i coord_x, GSVecto
   std::memcpy(&p1, reinterpret_cast<const u8*>(g_vram) + o1, sizeof(p1));
   std::memcpy(&p2, reinterpret_cast<const u8*>(g_vram) + o2, sizeof(p2));
   std::memcpy(&p3, reinterpret_cast<const u8*>(g_vram) + o3, sizeof(p3));
-  GSVector4i pixels = GSVector4i::load(p0);
+  GSVector4i pixels = GSVector4i::zext32(p0);
   pixels = pixels.insert16<2>(p1);
   pixels = pixels.insert16<4>(p2);
   pixels = pixels.insert16<6>(p3);
@@ -295,7 +295,7 @@ ALWAYS_INLINE_RELEASE static GSVector4i GatherCLUTVector(GSVector4i indices)
   std::memcpy(&p1, reinterpret_cast<const u8*>(g_gpu_clut) + o1, sizeof(p1));
   std::memcpy(&p2, reinterpret_cast<const u8*>(g_gpu_clut) + o2, sizeof(p2));
   std::memcpy(&p3, reinterpret_cast<const u8*>(g_gpu_clut) + o3, sizeof(p3));
-  GSVector4i pixels = GSVector4i::load(p0);
+  GSVector4i pixels = GSVector4i::zext32(p0);
   pixels = pixels.insert16<2>(p1);
   pixels = pixels.insert16<4>(p2);
   pixels = pixels.insert16<6>(p3);

@@ -117,8 +117,6 @@ public:
 
   ALWAYS_INLINE GSVector2i(const GSVector2i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
 
-  // MSVC has bad codegen for the constexpr version when applied to non-constexpr things (https://godbolt.org/z/h8qbn7),
-  // so leave the non-constexpr version default
   ALWAYS_INLINE explicit GSVector2i(s32 i) { *this = i; }
 
   ALWAYS_INLINE explicit GSVector2i(const GSVector2& v);
@@ -468,6 +466,8 @@ public:
     return ret;
   }
 
+  ALWAYS_INLINE static GSVector2i set32(s32 v) { return GSVector2i(v, 0); }
+
   ALWAYS_INLINE static GSVector2i load(const void* p)
   {
     GSVector2i ret;
@@ -475,18 +475,9 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE static GSVector2i load(s32 i)
-  {
-    GSVector2i ret;
-    ret.x = i;
-    return ret;
-  }
-
   ALWAYS_INLINE static void store(void* p, const GSVector2i& v) { std::memcpy(p, v.S32, sizeof(S32)); }
 
   ALWAYS_INLINE static void store32(void* p, const GSVector2i& v) { std::memcpy(p, &v.x, sizeof(s32)); }
-
-  ALWAYS_INLINE static s32 store(const GSVector2i& v) { return v.x; }
 
   ALWAYS_INLINE void operator&=(const GSVector2i& v) { U64[0] &= v.U64[0]; }
   ALWAYS_INLINE void operator|=(const GSVector2i& v) { U64[0] |= v.U64[0]; }
@@ -667,8 +658,6 @@ public:
     ret.U64[0] = ~ret.U64[0];
     return ret;
   }
-
-  ALWAYS_INLINE static GSVector2 load(float f) { return GSVector2(f, f); }
 
   ALWAYS_INLINE static GSVector2 load(const void* p)
   {
@@ -919,8 +908,6 @@ public:
     this->w = w;
   }
 
-  ALWAYS_INLINE GSVector4i(s32 x, s32 y) { *this = load(x).upl32(load(y)); }
-
   ALWAYS_INLINE GSVector4i(s16 s0, s16 s1, s16 s2, s16 s3, s16 s4, s16 s5, s16 s6, s16 s7)
   {
     S16[0] = s0;
@@ -942,8 +929,6 @@ public:
   ALWAYS_INLINE GSVector4i(const GSVector4i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
   ALWAYS_INLINE explicit GSVector4i(const GSVector2i& v) : S32{v.S32[0], v.S32[1], 0, 0} {}
 
-  // MSVC has bad codegen for the constexpr version when applied to non-constexpr things (https://godbolt.org/z/h8qbn7),
-  // so leave the non-constexpr version default
   ALWAYS_INLINE explicit GSVector4i(s32 i) { *this = i; }
 
   ALWAYS_INLINE explicit GSVector4i(const GSVector4& v);
@@ -973,15 +958,7 @@ public:
   ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return !rintersect(v).rempty(); }
   ALWAYS_INLINE bool rcontains(const GSVector4i& v) const { return rintersect(v).eq(v); }
 
-  ALWAYS_INLINE u32 rgba32() const
-  {
-    GSVector4i v = *this;
-
-    v = v.ps32(v);
-    v = v.pu16(v);
-
-    return (u32)store(v);
-  }
+  ALWAYS_INLINE u32 rgba32() const { return static_cast<u32>(ps32().pu16().extract32<0>()); }
 
   ALWAYS_INLINE GSVector4i sat_i8(const GSVector4i& min, const GSVector4i& max) const
   {
@@ -1127,8 +1104,6 @@ public:
   s32 maxv_s32() const { return std::max(x, std::max(y, std::max(z, w))); }
 
   u32 maxv_u32() const { return std::max(U32[0], std::max(U32[1], std::max(U32[2], U32[3]))); }
-
-  static s32 min_i16(s32 a, s32 b) { return store(load(a).min_i16(load(b))); }
 
   ALWAYS_INLINE GSVector4i clamp8() const { return pu16().upl8(); }
 
@@ -1552,6 +1527,8 @@ public:
     return ret;
   }
 
+  ALWAYS_INLINE static GSVector4i zext32(s32 v) { return GSVector4i(v, 0, 0, 0); }
+
   ALWAYS_INLINE static GSVector4i loadl(const void* p)
   {
     GSVector4i ret;
@@ -1578,35 +1555,11 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE static GSVector4i load(s32 i)
-  {
-    GSVector4i ret;
-    ret.x = i;
-    ret.y = 0;
-    ret.z = 0;
-    ret.w = 0;
-    return ret;
-  }
-
-  ALWAYS_INLINE static GSVector4i loadq(s64 i)
-  {
-    GSVector4i ret;
-    ret.S64[0] = i;
-    ret.S64[1] = 0;
-    return ret;
-  }
-
   ALWAYS_INLINE static void storent(void* p, const GSVector4i& v) { std::memcpy(p, v.S32, sizeof(v.S32)); }
 
   ALWAYS_INLINE static void storel(void* p, const GSVector4i& v) { std::memcpy(p, &v.S32[0], sizeof(s32) * 2); }
 
   ALWAYS_INLINE static void storeh(void* p, const GSVector4i& v) { std::memcpy(p, &v.S32[2], sizeof(s32) * 2); }
-
-  ALWAYS_INLINE static void store(void* pl, void* ph, const GSVector4i& v)
-  {
-    GSVector4i::storel(pl, v);
-    GSVector4i::storeh(ph, v);
-  }
 
   template<bool aligned>
   ALWAYS_INLINE static void store(void* p, const GSVector4i& v)
@@ -1616,9 +1569,13 @@ public:
 
   ALWAYS_INLINE static void store32(void* p, const GSVector4i& v) { std::memcpy(p, &v.x, sizeof(s32)); }
 
-  ALWAYS_INLINE static s32 store(const GSVector4i& v) { return v.x; }
+  ALWAYS_INLINE static GSVector4i broadcast128(const GSVector4i& v) { return v; }
 
-  ALWAYS_INLINE static s64 storeq(const GSVector4i& v) { return v.S64[0]; }
+  template<bool aligned>
+  ALWAYS_INLINE static GSVector4i broadcast128(const void* v)
+  {
+    return load<aligned>(v);
+  }
 
   ALWAYS_INLINE void operator&=(const GSVector4i& v)
   {
@@ -1672,11 +1629,24 @@ public:
 
   ALWAYS_INLINE GSVector4i xyxy(const GSVector4i& v) const { return upl64(v); }
 
+  ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xy, const GSVector2i& zw)
+  {
+    return GSVector4i(xy.x, xy.y, zw.x, zw.y);
+  }
+
   ALWAYS_INLINE GSVector2i xy() const { return GSVector2i(x, y); }
   ALWAYS_INLINE GSVector2i zw() const { return GSVector2i(z, w); }
 
 #define VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                             \
-  ALWAYS_INLINE GSVector4i xs##ys##zs##ws() const { return GSVector4i(S32[xn], S32[yn], S32[zn], S32[wn]); }
+  ALWAYS_INLINE GSVector4i xs##ys##zs##ws() const { return GSVector4i(S32[xn], S32[yn], S32[zn], S32[wn]); }           \
+  ALWAYS_INLINE GSVector4i xs##ys##zs##ws##l() const                                                                   \
+  {                                                                                                                    \
+    return GSVector4i(S16[xn], S16[yn], S16[zn], S16[wn], S16[4], S16[5], S16[6], S16[7]);                             \
+  }                                                                                                                    \
+  ALWAYS_INLINE GSVector4i xs##ys##zs##ws##h() const                                                                   \
+  {                                                                                                                    \
+    return GSVector4i(S16[0], S16[1], S16[2], S16[3], S16[4 + xn], S16[4 + yn], S16[4 + zn], S16[4 + wn]);             \
+  }
 
 #define VECTOR4i_SHUFFLE_3(xs, xn, ys, yn, zs, zn)                                                                     \
   VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, x, 0);                                                                    \
@@ -1827,7 +1797,10 @@ public:
 
   u32 rgba32() const { return GSVector4i(*this).rgba32(); }
 
-  ALWAYS_INLINE static GSVector4 rgba32(u32 rgba) { return GSVector4(GSVector4i::load((int)rgba).u8to32()); }
+  ALWAYS_INLINE static GSVector4 rgba32(u32 rgba)
+  {
+    return GSVector4(GSVector4i::zext32(static_cast<s32>(rgba)).u8to32());
+  }
 
   ALWAYS_INLINE static GSVector4 unorm8(u32 rgba) { return rgba32(rgba) * GSVector4::cxpr(1.0f / 255.0f); }
 
@@ -1992,8 +1965,6 @@ public:
     ret.w = 0.0f;
     return ret;
   }
-
-  ALWAYS_INLINE static GSVector4 load(float f) { return GSVector4(f, f, f, f); }
 
   template<bool aligned>
   ALWAYS_INLINE static GSVector4 load(const void* p)
@@ -2286,7 +2257,7 @@ public:
 
   ALWAYS_INLINE GSVector4 abs64() const { return *this & GSVector4::cxpr64(static_cast<u64>(0x7FFFFFFFFFFFFFFFULL)); }
 
-  ALWAYS_INLINE GSVector4 neg64() const {return *this ^ GSVector4::cxpr64(static_cast<u64>(0x8000000000000000ULL(); }
+  ALWAYS_INLINE GSVector4 neg64() const { return *this ^ GSVector4::cxpr64(static_cast<u64>(0x8000000000000000ULL)); }
 
   ALWAYS_INLINE GSVector4 sqrt64() const { return GSVector4::f64(std::sqrt(F64[0]), std::sqrt(F64[1])); }
 
@@ -2318,11 +2289,7 @@ public:
   }
 
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
-  ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const { return GSVector4(F32[xn], F32[yn], F32[zn], F32[wn]); }             \
-  ALWAYS_INLINE GSVector4 xs##ys##zs##ws(const GSVector4& v_) const                                                    \
-  {                                                                                                                    \
-    return GSVector4(F32[xn], F32[yn], v_.F32[zn], v_.F32[wn]);                                                        \
-  }
+  ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const { return GSVector4(F32[xn], F32[yn], F32[zn], F32[wn]); }
 
 #define VECTOR4_SHUFFLE_3(xs, xn, ys, yn, zs, zn)                                                                      \
   VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, x, 0);                                                                     \

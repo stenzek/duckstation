@@ -2707,11 +2707,11 @@ void GPU_HW::LoadVertices()
           end_pos.bits = FifoPop();
         }
 
-        const GSVector4i vstart_pos = GSVector4i(start_pos.x + m_drawing_offset.x, start_pos.y + m_drawing_offset.y);
-        const GSVector4i vend_pos = GSVector4i(end_pos.x + m_drawing_offset.x, end_pos.y + m_drawing_offset.y);
-        const GSVector4i bounds = vstart_pos.xyxy(vend_pos);
-        const GSVector4i rect =
-          vstart_pos.min_i32(vend_pos).xyxy(vstart_pos.max_i32(vend_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        const GSVector2i vstart_pos = GSVector2i(start_pos.x + m_drawing_offset.x, start_pos.y + m_drawing_offset.y);
+        const GSVector2i vend_pos = GSVector2i(end_pos.x + m_drawing_offset.x, end_pos.y + m_drawing_offset.y);
+        const GSVector4i bounds = GSVector4i::xyxy(vstart_pos, vend_pos);
+        const GSVector4i rect = GSVector4i::xyxy(vstart_pos.min_i32(vend_pos), vstart_pos.max_i32(vend_pos))
+                                  .add32(GSVector4i::cxpr(0, 0, 1, 1));
         const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
 
         if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
@@ -2747,7 +2747,7 @@ void GPU_HW::LoadVertices()
 
         u32 buffer_pos = 0;
         const GPUVertexPosition start_vp{m_blit_buffer[buffer_pos++]};
-        GSVector4i start_pos = GSVector4i(start_vp.x + m_drawing_offset.x, start_vp.y + m_drawing_offset.y);
+        GSVector2i start_pos = GSVector2i(start_vp.x + m_drawing_offset.x, start_vp.y + m_drawing_offset.y);
         u32 start_color = rc.color_for_first_vertex;
 
         GPUBackendDrawLineCommand* cmd;
@@ -2755,7 +2755,7 @@ void GPU_HW::LoadVertices()
         {
           cmd = m_sw_renderer->NewDrawLineCommand(num_vertices);
           FillDrawCommand(cmd, rc);
-          GSVector4i::storel(&cmd->vertices[0].x, start_pos);
+          GSVector2i::store(&cmd->vertices[0].x, start_pos);
           cmd->vertices[0].color = start_color;
         }
         else
@@ -2767,10 +2767,10 @@ void GPU_HW::LoadVertices()
         {
           const u32 end_color = shaded ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : start_color;
           const GPUVertexPosition vp{m_blit_buffer[buffer_pos++]};
-          const GSVector4i end_pos = GSVector4i(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y);
-          const GSVector4i bounds = start_pos.xyxy(end_pos);
+          const GSVector2i end_pos = GSVector2i(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y);
+          const GSVector4i bounds = GSVector4i::xyxy(start_pos, end_pos);
           const GSVector4i rect =
-            start_pos.min_i32(end_pos).xyxy(start_pos.max_i32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+            GSVector4i::xyxy(start_pos.min_i32(end_pos), start_pos.max_i32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
           const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
           if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
           {
@@ -2790,7 +2790,7 @@ void GPU_HW::LoadVertices()
 
           if (cmd)
           {
-            GSVector4i::storel(&cmd->vertices[i], end_pos);
+            GSVector2i::store(&cmd->vertices[i], end_pos);
             cmd->vertices[i].color = end_color;
           }
         }
