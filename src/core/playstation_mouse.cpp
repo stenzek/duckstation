@@ -14,6 +14,7 @@
 #include "IconsPromptFont.h"
 
 #include <array>
+#include <cmath>
 
 Log_SetChannel(PlayStationMouse);
 
