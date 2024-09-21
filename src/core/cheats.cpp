@@ -1360,7 +1360,7 @@ void CheatCode::Apply() const
               DoMemoryWrite<u8>(address + 14, r15);
             if (r16 != wildcard)
               DoMemoryWrite<u8>(address + 15, r16);
-            address = address + 15;
+            address = address + 16;
           }
         }
         index += 5;
