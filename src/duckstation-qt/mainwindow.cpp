@@ -58,10 +58,6 @@
 #include <VersionHelpers.h>
 #endif
 
-#ifdef __APPLE__
-#include "common/cocoa_tools.h"
-#endif
-
 Log_SetChannel(MainWindow);
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
@@ -142,9 +138,6 @@ MainWindow::~MainWindow()
 #ifdef _WIN32
   unregisterForDeviceNotifications();
 #endif
-#ifdef __APPLE__
-  CocoaTools::RemoveThemeChangeHandler(this);
-#endif
 }
 
 void MainWindow::initialize()
@@ -164,11 +157,6 @@ void MainWindow::initialize()
 
 #ifdef _WIN32
   registerForDeviceNotifications();
-#endif
-
-#ifdef __APPLE__
-  CocoaTools::AddThemeChangeHandler(this,
-                                    [](void* ctx) { QtHost::RunOnUIThread([] { g_main_window->updateTheme(); }); });
 #endif
 }
 

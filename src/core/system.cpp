@@ -91,11 +91,9 @@ Log_SetChannel(System);
 
 #ifndef __ANDROID__
 #define ENABLE_DISCORD_PRESENCE 1
-#define ENABLE_PINE_SERVER 1
 #define ENABLE_GDB_SERVER 1
 #define ENABLE_SOCKET_MULTIPLEXER 1
 #include "gdb_server.h"
-#include "pine_server.h"
 #endif
 
 // #define PROFILE_MEMORY_SAVE_STATES 1
@@ -498,20 +496,11 @@ bool System::Internal::CPUThreadInitialize(Error* error)
     InitializeDiscordPresence();
 #endif
 
-#ifdef ENABLE_PINE_SERVER
-  if (g_settings.pine_enable)
-    PINEServer::Initialize(g_settings.pine_slot);
-#endif
-
   return true;
 }
 
 void System::Internal::CPUThreadShutdown()
 {
-#ifdef ENABLE_PINE_SERVER
-  PINEServer::Shutdown();
-#endif
-
 #ifdef ENABLE_DISCORD_PRESENCE
   ShutdownDiscordPresence();
 #endif
@@ -4523,17 +4512,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       InitializeDiscordPresence();
     else
       ShutdownDiscordPresence();
-  }
-#endif
-
-#ifdef ENABLE_PINE_SERVER
-  if (g_settings.pine_enable != old_settings.pine_enable || g_settings.pine_slot != old_settings.pine_slot)
-  {
-    PINEServer::Shutdown();
-    if (g_settings.pine_enable)
-      PINEServer::Initialize(g_settings.pine_slot);
-    else
-      ReleaseSocketMultiplexer();
   }
 #endif
 

@@ -29,12 +29,6 @@ namespace CocoaTools {
 u64 ConvertMachTimeBaseToNanoseconds(u64 ns);
 u64 ConvertNanosecondsToMachTimeBase(u64 ns);
 
-/// Add a handler to be run when macOS changes between dark and light themes
-void AddThemeChangeHandler(void* ctx, void(handler)(void* ctx));
-
-/// Remove a handler previously added using AddThemeChangeHandler with the given context
-void RemoveThemeChangeHandler(void* ctx);
-
 /// Moves a file from one location to another, using NSFileManager.
 bool MoveFile(const char* source, const char* destination, Error* error);
 
