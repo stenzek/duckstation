@@ -51,12 +51,6 @@
     <ClCompile Include="gpu_sw.cpp" />
     <ClCompile Include="gpu_sw_backend.cpp" />
     <ClCompile Include="gpu_sw_rasterizer.cpp" />
-    <ClCompile Include="gpu_sw_rasterizer_avx2.cpp">
-      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
-      <AdditionalOptions Condition="$(Configuration.Contains(Clang))">%(AdditionalOptions) -mavx2</AdditionalOptions>
-      <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="gte.cpp" />
     <ClCompile Include="dma.cpp" />
     <ClCompile Include="gpu.cpp" />

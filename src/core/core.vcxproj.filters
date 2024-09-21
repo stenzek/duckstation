@@ -67,7 +67,6 @@
     <ClCompile Include="justifier.cpp" />
     <ClCompile Include="gdb_server.cpp" />
     <ClCompile Include="gpu_sw_rasterizer.cpp" />
-    <ClCompile Include="gpu_sw_rasterizer_avx2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />

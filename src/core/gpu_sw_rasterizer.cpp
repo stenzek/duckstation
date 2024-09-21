@@ -47,7 +47,7 @@ namespace GPU_SW_Rasterizer::SIMD {
 #define USE_VECTOR 1
 #include "gpu_sw_rasterizer.inl"
 #undef USE_VECTOR
-}
+} // namespace GPU_SW_Rasterizer::SIMD
 #endif
 
 // Initialize with default implementation.
@@ -78,10 +78,9 @@ void GPU_SW_Rasterizer::SelectImplementation()
 #if defined(CPU_ARCH_SSE) || defined(CPU_ARCH_NEON)
   const char* use_isa = std::getenv("SW_USE_ISA");
 
-  // Default to scalar for now, until vector is finished.
-  use_isa = use_isa ? use_isa : "Scalar";
-
-#if defined(CPU_ARCH_SSE) && defined(_MSC_VER)
+  // AVX2/256-bit path still has issues, and I need to make sure that it's not ODR'ing any shared
+  // symbols on top of the base symbols.
+#if defined(CPU_ARCH_SSE) && defined(_MSC_VER) && 0
   if (cpuinfo_has_x86_avx2() && (!use_isa || StringUtil::Strcasecmp(use_isa, "AVX2") == 0))
   {
     SELECT_ALTERNATIVE_RASTERIZER(AVX2);
