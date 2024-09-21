@@ -27,7 +27,7 @@
 #include <cstdarg>
 #include <limits>
 
-Log_SetChannel(Host);
+LOG_CHANNEL(Host);
 
 namespace Host {
 static std::mutex s_settings_mutex;

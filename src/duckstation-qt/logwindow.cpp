@@ -157,11 +157,11 @@ void LogWindow::createUi()
   settings_menu->addSeparator();
 
   m_level_menu = settings_menu->addMenu(tr("&Log Level"));
-  for (u32 i = 0; i < static_cast<u32>(LOGLEVEL_COUNT); i++)
+  for (u32 i = 0; i < static_cast<u32>(Log::Level::Count); i++)
   {
-    action = m_level_menu->addAction(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
+    action = m_level_menu->addAction(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<Log::Level>(i))));
     action->setCheckable(true);
-    connect(action, &QAction::triggered, this, [this, i]() { setLogLevel(static_cast<LOGLEVEL>(i)); });
+    connect(action, &QAction::triggered, this, [this, i]() { setLogLevel(static_cast<Log::Level>(i)); });
   }
   updateLogLevelUi();
 
@@ -191,15 +191,16 @@ void LogWindow::createUi()
 
 void LogWindow::updateLogLevelUi()
 {
-  const u32 level = Settings::ParseLogLevelName(Host::GetBaseStringSettingValue("Logging", "LogLevel", "").c_str())
-                      .value_or(Settings::DEFAULT_LOG_LEVEL);
+  const Log::Level level =
+    Settings::ParseLogLevelName(Host::GetBaseStringSettingValue("Logging", "LogLevel", "").c_str())
+      .value_or(Settings::DEFAULT_LOG_LEVEL);
 
   const QList<QAction*> actions = m_level_menu->actions();
   for (u32 i = 0; i < actions.size(); i++)
-    actions[i]->setChecked(i == level);
+    actions[i]->setChecked(static_cast<Log::Level>(i) == level);
 }
 
-void LogWindow::setLogLevel(LOGLEVEL level)
+void LogWindow::setLogLevel(Log::Level level)
 {
   Host::SetBaseStringSettingValue("Logging", "LogLevel", Settings::GetLogLevelName(level));
   Host::CommitBaseSettingChanges();
@@ -273,10 +274,11 @@ void LogWindow::onSaveTriggered()
   file.write(m_text->toPlainText().toUtf8());
   file.close();
 
-  appendMessage(QLatin1StringView("LogWindow"), LOGLEVEL_INFO, tr("Log was written to %1.\n").arg(path));
+  appendMessage(QLatin1StringView("LogWindow"), static_cast<u32>(Log::Level::Info),
+                tr("Log was written to %1.\n").arg(path));
 }
 
-void LogWindow::logCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
+void LogWindow::logCallback(void* pUserParam, const char* channelName, const char* functionName, Log::Level level,
                             std::string_view message)
 {
   LogWindow* this_ptr = static_cast<LogWindow*>(pUserParam);
@@ -289,11 +291,11 @@ void LogWindow::logCallback(void* pUserParam, const char* channelName, const cha
   qmessage.append(QUtf8StringView(message.data(), message.length()));
   qmessage.append(QChar('\n'));
 
-  const QLatin1StringView qchannel((level <= LOGLEVEL_WARNING) ? functionName : channelName);
+  const QLatin1StringView qchannel((level <= Log::Level::Warning) ? functionName : channelName);
 
   if (g_emu_thread->isOnUIThread())
   {
-    this_ptr->appendMessage(qchannel, level, qmessage);
+    this_ptr->appendMessage(qchannel, static_cast<u32>(level), qmessage);
   }
   else
   {
@@ -328,8 +330,9 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
   temp_cursor.movePosition(QTextCursor::End);
 
   {
-    static constexpr const QChar level_characters[LOGLEVEL_COUNT] = {'X', 'E', 'W', 'I', 'V', 'D', 'B', 'T'};
-    static constexpr const QColor level_colors[LOGLEVEL_COUNT] = {
+    static constexpr const QChar level_characters[static_cast<size_t>(Log::Level::Count)] = {'X', 'E', 'W', 'I',
+                                                                                             'V', 'D', 'B', 'T'};
+    static constexpr const QColor level_colors[static_cast<size_t>(Log::Level::Count)] = {
       QColor(255, 255, 255),    // NONE
       QColor(0xE7, 0x48, 0x56), // ERROR, Red Intensity
       QColor(0xF9, 0xF1, 0xA5), // WARNING, Yellow Intensity
@@ -353,7 +356,7 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
       temp_cursor.insertText(qtimestamp);
     }
 
-    const QString qchannel = (level <= LOGLEVEL_WARNING) ?
+    const QString qchannel = (level <= static_cast<u32>(Log::Level::Warning)) ?
                                QStringLiteral("%1(%2): ").arg(level_characters[level]).arg(channel) :
                                QStringLiteral("%1/%2: ").arg(level_characters[level]).arg(channel);
     format.setForeground(QBrush(channel_color));

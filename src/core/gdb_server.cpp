@@ -21,7 +21,7 @@
 #include <sstream>
 #include <string>
 
-Log_SetChannel(GDBProtocol);
+LOG_CHANNEL(GDBProtocol);
 
 namespace GDBProtocol {
 static bool IsPacketInterrupt(std::string_view data);

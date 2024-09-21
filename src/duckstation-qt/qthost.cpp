@@ -66,7 +66,7 @@
 #include <cstdlib>
 #include <memory>
 
-Log_SetChannel(QtHost);
+LOG_CHANNEL(QtHost);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"

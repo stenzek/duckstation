@@ -13,7 +13,7 @@
 
 #include <array>
 
-Log_SetChannel(D3D11Device);
+LOG_CHANNEL(D3D11Device);
 
 std::unique_ptr<GPUTexture> D3D11Device::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,

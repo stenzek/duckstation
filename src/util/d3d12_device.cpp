@@ -27,7 +27,7 @@
 #include <limits>
 #include <mutex>
 
-Log_SetChannel(D3D12Device);
+LOG_CHANNEL(D3D12Device);
 
 // Tweakables
 enum : u32

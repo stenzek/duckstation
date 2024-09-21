@@ -35,7 +35,7 @@
 #include <utility>
 #include <variant>
 
-Log_SetChannel(ImGuiFullscreen);
+LOG_CHANNEL(ImGuiFullscreen);
 
 namespace ImGuiFullscreen {
 using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback>;

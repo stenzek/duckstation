@@ -17,7 +17,7 @@
 #include <array>
 #include <memory>
 
-Log_SetChannel(Timers);
+LOG_CHANNEL(Timers);
 
 namespace Timers {
 namespace {

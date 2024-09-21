@@ -18,7 +18,7 @@
 #include <sstream>
 #include <type_traits>
 
-Log_SetChannel(Cheats);
+LOG_CHANNEL(Cheats);
 
 static std::array<u32, 256> cht_register; // Used for D7 ,51 & 52 cheat types
 

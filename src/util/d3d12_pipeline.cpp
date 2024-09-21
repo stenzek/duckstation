@@ -14,7 +14,7 @@
 
 #include <d3dcompiler.h>
 
-Log_SetChannel(D3D12Device);
+LOG_CHANNEL(D3D12Device);
 
 D3D12Shader::D3D12Shader(GPUShaderStage stage, Bytecode bytecode) : GPUShader(stage), m_bytecode(std::move(bytecode))
 {

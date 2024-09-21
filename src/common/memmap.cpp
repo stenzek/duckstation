@@ -35,7 +35,7 @@
 #include <unistd.h>
 #endif
 
-Log_SetChannel(MemMap);
+LOG_CHANNEL(MemMap);
 
 namespace MemMap {
 /// Allocates RWX memory at the specified address.

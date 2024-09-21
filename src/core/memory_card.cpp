@@ -18,7 +18,7 @@
 #include "IconsFontAwesome5.h"
 #include "fmt/format.h"
 
-Log_SetChannel(MemoryCard);
+LOG_CHANNEL(MemoryCard);
 
 MemoryCard::MemoryCard()
   : m_save_event(

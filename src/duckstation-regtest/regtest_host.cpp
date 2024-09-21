@@ -33,7 +33,7 @@
 #include <csignal>
 #include <cstdio>
 
-Log_SetChannel(RegTestHost);
+LOG_CHANNEL(RegTestHost);
 
 namespace RegTestHost {
 static bool ParseCommandLineParameters(int argc, char* argv[], std::optional<SystemBootParameters>& autoboot);
@@ -109,7 +109,7 @@ bool RegTestHost::InitializeConfig()
   si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(AudioBackend::Null));
   si.SetBoolValue("Logging", "LogToConsole", false);
   si.SetBoolValue("Logging", "LogToFile", false);
-  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_INFO));
+  si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Info));
   si.SetBoolValue("Main", "ApplyGameSettings", false); // don't want game settings interfering
   si.SetBoolValue("BIOS", "PatchFastBoot", true);      // no point validating the bios intro..
   si.SetFloatValue("Main", "EmulationSpeed", 0.0f);
@@ -585,7 +585,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
       }
       else if (CHECK_ARG_PARAM("-log"))
       {
-        std::optional<LOGLEVEL> level = Settings::ParseLogLevelName(argv[++i]);
+        std::optional<Log::Level> level = Settings::ParseLogLevelName(argv[++i]);
         if (!level.has_value())
         {
           ERROR_LOG("Invalid log level specified.");
@@ -715,7 +715,7 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
     EmuFolders::DataRoot = std::move(dump_directory);
     s_base_settings_interface->SetBoolValue("Logging", "LogToConsole", false);
     s_base_settings_interface->SetBoolValue("Logging", "LogToFile", true);
-    s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(LOGLEVEL_DEV));
+    s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
     System::ApplySettings(false);
   }
 

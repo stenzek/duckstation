@@ -9,7 +9,7 @@
 #include "common/assert.h"
 #include "common/bitutils.h"
 #include "common/log.h"
-Log_SetChannel(VulkanDevice);
+LOG_CHANNEL(VulkanDevice);
 
 VulkanStreamBuffer::VulkanStreamBuffer() = default;
 

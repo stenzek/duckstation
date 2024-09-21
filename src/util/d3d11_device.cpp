@@ -22,7 +22,7 @@
 #include <d3dcompiler.h>
 #include <dxgi1_5.h>
 
-Log_SetChannel(D3D11Device);
+LOG_CHANNEL(D3D11Device);
 
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
 static std::mutex s_instance_mutex;

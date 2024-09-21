@@ -32,7 +32,7 @@
 #endif
 #endif
 
-Log_SetChannel(OpenGLContext);
+LOG_CHANNEL(OpenGLContext);
 
 static bool ShouldPreferESContext()
 {

@@ -12,7 +12,7 @@
 
 #include <cctype>
 
-Log_SetChannel(IsoReader);
+LOG_CHANNEL(IsoReader);
 
 IsoReader::IsoReader() = default;
 

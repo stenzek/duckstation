@@ -32,7 +32,7 @@
 #include <sstream>
 #include <tuple>
 
-Log_SetChannel(ReShadeFXShader);
+LOG_CHANNEL(ReShadeFXShader);
 
 static constexpr s32 DEFAULT_BUFFER_WIDTH = 3840;
 static constexpr s32 DEFAULT_BUFFER_HEIGHT = 2160;

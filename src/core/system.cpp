@@ -80,7 +80,7 @@
 #include <zstd.h>
 #include <zstd_errors.h>
 
-Log_SetChannel(System);
+LOG_CHANNEL(System);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"

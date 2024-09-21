@@ -34,7 +34,7 @@
 #include <QtWidgets/QScrollBar>
 #include <QtWidgets/QTextEdit>
 
-Log_SetChannel(SettingsWindow);
+LOG_CHANNEL(SettingsWindow);
 
 static QList<SettingsWindow*> s_open_game_properties_dialogs;
 

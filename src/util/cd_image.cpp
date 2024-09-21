@@ -13,7 +13,7 @@
 
 #include <array>
 
-Log_SetChannel(CDImage);
+LOG_CHANNEL(CDImage);
 
 CDImage::CDImage() = default;
 

@@ -22,7 +22,7 @@
 #include <variant>
 #include <vector>
 
-Log_SetChannel(CDImagePBP);
+LOG_CHANNEL(CDImagePBP);
 
 namespace {
 

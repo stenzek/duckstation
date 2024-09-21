@@ -25,7 +25,7 @@
 #include "spirv_cross/spirv_cross_c.h"
 #include "xxhash.h"
 
-Log_SetChannel(GPUDevice);
+LOG_CHANNEL(GPUDevice);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"

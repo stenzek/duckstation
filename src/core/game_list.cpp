@@ -35,7 +35,7 @@
 #include <unordered_map>
 #include <utility>
 
-Log_SetChannel(GameList);
+LOG_CHANNEL(GameList);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"

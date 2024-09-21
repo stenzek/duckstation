@@ -14,7 +14,7 @@
 #include <cerrno>
 #include <map>
 
-Log_SetChannel(CDImageMds);
+LOG_CHANNEL(CDImageMds);
 
 namespace {
 

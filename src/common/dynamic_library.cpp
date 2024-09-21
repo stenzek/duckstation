@@ -22,7 +22,7 @@
 #endif
 #endif
 
-Log_SetChannel(DynamicLibrary);
+LOG_CHANNEL(DynamicLibrary);
 
 DynamicLibrary::DynamicLibrary() = default;
 

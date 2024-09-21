@@ -14,7 +14,7 @@
 #include <map>
 #include <unordered_map>
 
-Log_SetChannel(CDImagePPF);
+LOG_CHANNEL(CDImagePPF);
 
 namespace {
 

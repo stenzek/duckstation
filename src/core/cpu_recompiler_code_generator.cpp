@@ -11,7 +11,7 @@
 
 #include "common/log.h"
 
-Log_SetChannel(CPU::Recompiler);
+LOG_CHANNEL(CPU::Recompiler);
 
 // TODO: Turn load+sext/zext into a single signed/unsigned load
 // TODO: mulx/shlx/etc

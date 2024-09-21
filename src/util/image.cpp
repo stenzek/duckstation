@@ -23,7 +23,7 @@
 #endif
 // clang-format on
 
-Log_SetChannel(Image);
+LOG_CHANNEL(Image);
 
 static bool PNGBufferLoader(RGBA8Image* image, const void* buffer, size_t buffer_size);
 static bool PNGBufferSaver(const RGBA8Image& image, std::vector<u8>* buffer, u8 quality);

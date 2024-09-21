@@ -19,7 +19,7 @@
 #include <dxcapi.h>
 #include <dxgi1_5.h>
 
-Log_SetChannel(D3DCommon);
+LOG_CHANNEL(D3DCommon);
 
 namespace D3DCommon {
 namespace {

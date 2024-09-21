@@ -10,7 +10,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 
-Log_SetChannel(GPUTexture);
+LOG_CHANNEL(GPUTexture);
 
 GPUTexture::GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format)
   : m_width(width), m_height(height), m_layers(layers), m_levels(levels), m_samples(samples), m_type(type),

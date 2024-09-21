@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <cerrno>
 
-Log_SetChannel(CDImageMemory);
+LOG_CHANNEL(CDImageMemory);
 
 namespace {
 

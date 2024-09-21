@@ -15,7 +15,7 @@
 #include <map>
 #include <sstream>
 
-Log_SetChannel(CDImageMemory);
+LOG_CHANNEL(CDImageMemory);
 
 namespace {
 

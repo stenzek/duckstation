@@ -13,7 +13,7 @@
 
 #include <cmath>
 
-Log_SetChannel(XInputSource);
+LOG_CHANNEL(XInputSource);
 
 static const char* s_axis_names[XInputSource::NUM_AXES] = {
   "LeftX",        // AXIS_LEFTX

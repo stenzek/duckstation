@@ -66,7 +66,7 @@ static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
 
 #endif
 
-Log_SetChannel(AutoUpdaterDialog);
+LOG_CHANNEL(AutoUpdaterDialog);
 
 AutoUpdaterDialog::AutoUpdaterDialog(QWidget* parent /* = nullptr */) : QDialog(parent)
 {

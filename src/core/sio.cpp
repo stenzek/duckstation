@@ -13,7 +13,7 @@
 #include <array>
 #include <memory>
 
-Log_SetChannel(SIO);
+LOG_CHANNEL(SIO);
 
 namespace SIO {
 namespace {

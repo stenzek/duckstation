@@ -31,7 +31,7 @@
 #include "IconsFontAwesome5.h"
 #include "fmt/format.h"
 
-Log_SetChannel(GameDatabase);
+LOG_CHANNEL(GameDatabase);
 
 #include "common/ryml_helpers.h"
 

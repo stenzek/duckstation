@@ -9,7 +9,7 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 
-Log_SetChannel(HTTPDownloader);
+LOG_CHANNEL(HTTPDownloader);
 
 static constexpr float DEFAULT_TIMEOUT_IN_SECONDS = 30;
 static constexpr u32 DEFAULT_MAX_ACTIVE_REQUESTS = 4;

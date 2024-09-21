@@ -12,7 +12,7 @@
 #include "common/log.h"
 #include "common/thirdparty/SmallVector.h"
 
-Log_SetChannel(TimingEvents);
+LOG_CHANNEL(TimingEvents);
 
 namespace TimingEvents {
 

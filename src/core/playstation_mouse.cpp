@@ -16,7 +16,7 @@
 #include <array>
 #include <cmath>
 
-Log_SetChannel(PlayStationMouse);
+LOG_CHANNEL(PlayStationMouse);
 
 static constexpr std::array<u8, static_cast<size_t>(PlayStationMouse::Binding::ButtonCount)> s_button_indices = {
   {11, 10}};

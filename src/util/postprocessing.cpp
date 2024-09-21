@@ -26,7 +26,7 @@
 #include "common/timer.h"
 #include "fmt/format.h"
 
-Log_SetChannel(PostProcessing);
+LOG_CHANNEL(PostProcessing);
 
 // TODO: ProgressCallbacks for shader compiling, it can be a bit slow.
 // TODO: buffer width/height is wrong on resize, need to change it somehow.

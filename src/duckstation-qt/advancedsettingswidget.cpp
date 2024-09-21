@@ -162,8 +162,8 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   m_ui.setupUi(this);
 
-  for (u32 i = 0; i < static_cast<u32>(LOGLEVEL_COUNT); i++)
-    m_ui.logLevel->addItem(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<LOGLEVEL>(i))));
+  for (u32 i = 0; i < static_cast<u32>(Log::Level::Count); i++)
+    m_ui.logLevel->addItem(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<Log::Level>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.logLevel, "Logging", "LogLevel", &Settings::ParseLogLevelName,
                                                &Settings::GetLogLevelName, Settings::DEFAULT_LOG_LEVEL);
@@ -298,13 +298,13 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
-                         Settings::DEFAULT_CDROM_MECHACON_VERSION);                  // CDROM Mechacon Version
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // CDROM Region Check
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Allow booting without SBI file
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Export Shared Memory
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Enable PCDRV
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                        // Enable PCDRV Writes
-    setDirectoryOption(m_ui.tweakOptionTable, i++, "");                              // PCDrv Root Directory
+                         Settings::DEFAULT_CDROM_MECHACON_VERSION); // CDROM Mechacon Version
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM Region Check
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Allow booting without SBI file
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Export Shared Memory
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV Writes
+    setDirectoryOption(m_ui.tweakOptionTable, i++, "");             // PCDrv Root Directory
 
     return;
   }

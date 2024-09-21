@@ -20,7 +20,7 @@
 
 #ifdef CPU_ARCH_RISCV64
 
-Log_SetChannel(CPU::NewRec);
+LOG_CHANNEL(CPU::NewRec);
 
 #ifdef ENABLE_HOST_DISASSEMBLY
 extern "C" {

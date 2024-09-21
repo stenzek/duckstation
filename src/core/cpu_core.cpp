@@ -26,7 +26,7 @@
 
 #include <cstdio>
 
-Log_SetChannel(CPU::Core);
+LOG_CHANNEL(CPU::Core);
 
 namespace CPU {
 enum class ExecutionBreakType

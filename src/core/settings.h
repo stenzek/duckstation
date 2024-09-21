@@ -270,7 +270,7 @@ struct Settings
   std::string pcdrv_root;
   bool pcdrv_enable_writes = false;
 
-  LOGLEVEL log_level = DEFAULT_LOG_LEVEL;
+  Log::Level log_level = DEFAULT_LOG_LEVEL;
   std::string log_filter;
   bool log_timestamps : 1 = true;
   bool log_to_console : 1 = false;
@@ -361,9 +361,9 @@ struct Settings
   static void SetDefaultControllerConfig(SettingsInterface& si);
   static void SetDefaultHotkeyConfig(SettingsInterface& si);
 
-  static std::optional<LOGLEVEL> ParseLogLevelName(const char* str);
-  static const char* GetLogLevelName(LOGLEVEL level);
-  static const char* GetLogLevelDisplayName(LOGLEVEL level);
+  static std::optional<Log::Level> ParseLogLevelName(const char* str);
+  static const char* GetLogLevelName(Log::Level level);
+  static const char* GetLogLevelDisplayName(Log::Level level);
   static std::span<const char*> GetLogFilters();
 
   static std::optional<ConsoleRegion> ParseConsoleRegionName(const char* str);
@@ -512,7 +512,7 @@ struct Settings
   static constexpr s32 DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 5;
   static constexpr s32 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;
 
-  static constexpr LOGLEVEL DEFAULT_LOG_LEVEL = LOGLEVEL_INFO;
+  static constexpr Log::Level DEFAULT_LOG_LEVEL = Log::Level::Info;
 
   static constexpr SaveStateCompressionMode DEFAULT_SAVE_STATE_COMPRESSION_MODE = SaveStateCompressionMode::ZstDefault;
 

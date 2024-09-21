@@ -14,7 +14,7 @@
 
 #include <algorithm>
 
-Log_SetChannel(GPU_SW);
+LOG_CHANNEL(GPU_SW);
 
 GPU_SW::GPU_SW() = default;
 

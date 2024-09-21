@@ -10,7 +10,7 @@
 
 #include <algorithm>
 
-Log_SetChannel(HTTPDownloader);
+LOG_CHANNEL(HTTPDownloader);
 
 HTTPDownloaderWinHttp::HTTPDownloaderWinHttp() : HTTPDownloader()
 {

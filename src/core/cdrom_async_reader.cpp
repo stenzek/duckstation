@@ -5,7 +5,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 #include "common/timer.h"
-Log_SetChannel(CDROMAsyncReader);
+LOG_CHANNEL(CDROMAsyncReader);
 
 CDROMAsyncReader::CDROMAsyncReader() = default;
 

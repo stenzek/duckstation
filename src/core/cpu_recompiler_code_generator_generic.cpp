@@ -8,7 +8,7 @@
 
 #include "common/log.h"
 
-Log_SetChannel(Recompiler::CodeGenerator);
+LOG_CHANNEL(Recompiler::CodeGenerator);
 
 namespace CPU::Recompiler {
 

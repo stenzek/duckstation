@@ -10,7 +10,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
-Log_SetChannel(PCDrv);
+LOG_CHANNEL(PCDrv);
 
 static constexpr u32 MAX_FILES = 100;
 

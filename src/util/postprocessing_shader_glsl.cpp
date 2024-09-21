@@ -12,7 +12,7 @@
 #include <cstring>
 #include <sstream>
 
-Log_SetChannel(PostProcessing);
+LOG_CHANNEL(PostProcessing);
 
 namespace {
 class PostProcessingGLSLShaderGen : public ShaderGen

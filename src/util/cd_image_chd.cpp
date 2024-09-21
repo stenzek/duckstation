@@ -27,7 +27,7 @@
 #include <mutex>
 #include <optional>
 
-Log_SetChannel(CDImageCHD);
+LOG_CHANNEL(CDImageCHD);
 
 namespace {
 

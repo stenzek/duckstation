@@ -9,7 +9,7 @@
 #include "common/log.h"
 #include "common/scoped_guard.h"
 
-Log_SetChannel(GL::OpenGLContext);
+LOG_CHANNEL(GL::OpenGLContext);
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wmicrosoft-cast"

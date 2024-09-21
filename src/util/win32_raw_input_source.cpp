@@ -15,7 +15,7 @@
 #include <hidusage.h>
 #include <malloc.h>
 
-Log_SetChannel(Win32RawInputSource);
+LOG_CHANNEL(Win32RawInputSource);
 
 static const wchar_t* WINDOW_CLASS_NAME = L"Win32RawInputSource";
 static bool s_window_class_registered = false;

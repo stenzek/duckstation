@@ -28,11 +28,11 @@ public:
 private:
   void createUi();
   void updateLogLevelUi();
-  void setLogLevel(LOGLEVEL level);
+  void setLogLevel(Log::Level level);
   void populateFilters(QMenu* filter_menu);
   void setChannelFiltered(size_t index, bool state);
 
-  static void logCallback(void* pUserParam, const char* channelName, const char* functionName, LOGLEVEL level,
+  static void logCallback(void* pUserParam, const char* channelName, const char* functionName, Log::Level level,
                           std::string_view message);
 
 protected:

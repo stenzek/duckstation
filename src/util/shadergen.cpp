@@ -15,7 +15,7 @@
 #include "opengl_loader.h"
 #endif
 
-Log_SetChannel(ShaderGen);
+LOG_CHANNEL(ShaderGen);
 
 ShaderGen::ShaderGen(RenderAPI render_api, GPUShaderLanguage shader_language, bool supports_dual_source_blend,
                      bool supports_framebuffer_fetch)

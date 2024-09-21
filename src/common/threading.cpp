@@ -41,7 +41,7 @@
 #endif
 #endif
 
-Log_SetChannel(Threading);
+LOG_CHANNEL(Threading);
 
 #ifdef _WIN32
 union FileTimeU64Union

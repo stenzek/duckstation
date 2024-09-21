@@ -19,7 +19,7 @@
 #include "IconsPromptFont.h"
 #include <array>
 
-Log_SetChannel(Justifier);
+LOG_CHANNEL(Justifier);
 
 // #define CHECK_TIMING 1
 #ifdef CHECK_TIMING

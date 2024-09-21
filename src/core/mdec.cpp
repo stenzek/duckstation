@@ -20,7 +20,7 @@
 #include <array>
 #include <memory>
 
-Log_SetChannel(MDEC);
+LOG_CHANNEL(MDEC);
 
 namespace MDEC {
 namespace {

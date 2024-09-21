@@ -35,7 +35,7 @@
 #include <numbers>
 #include <thread>
 
-Log_SetChannel(GPU);
+LOG_CHANNEL(GPU);
 
 std::unique_ptr<GPU> g_gpu;
 alignas(HOST_PAGE_SIZE) u16 g_vram[VRAM_SIZE / sizeof(u16)];

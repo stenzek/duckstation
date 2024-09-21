@@ -6,7 +6,7 @@
 #include "common/small_string.h"
 #include <cinttypes>
 #include <cstring>
-Log_SetChannel(StateWrapper);
+LOG_CHANNEL(StateWrapper);
 
 StateWrapper::StateWrapper(std::span<u8> data, Mode mode, u32 version)
   : m_data(data.data()), m_size(data.size()), m_mode(mode), m_version(version)

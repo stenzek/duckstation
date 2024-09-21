@@ -20,7 +20,7 @@
 
 #ifdef CPU_ARCH_X64
 
-Log_SetChannel(CPU::NewRec);
+LOG_CHANNEL(CPU::NewRec);
 
 #define RMEMBASE cg->rbx
 #define RSTATE cg->rbp

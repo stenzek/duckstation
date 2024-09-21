@@ -15,7 +15,7 @@
 
 #include <cstring>
 
-Log_SetChannel(PSFLoader);
+LOG_CHANNEL(PSFLoader);
 
 namespace PSFLoader {
 static bool LoadLibraryPSF(const std::string& path, bool use_pc_sp, Error* error, u32 depth = 0);

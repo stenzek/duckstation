@@ -26,7 +26,7 @@
 #include <array>
 #include <memory>
 
-Log_SetChannel(Pad);
+LOG_CHANNEL(Pad);
 
 namespace Pad {
 

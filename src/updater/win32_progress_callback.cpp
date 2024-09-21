@@ -8,7 +8,7 @@
 
 #include <CommCtrl.h>
 
-Log_SetChannel(Win32ProgressCallback);
+LOG_CHANNEL(Win32ProgressCallback);
 
 Win32ProgressCallback::Win32ProgressCallback() : ProgressCallback()
 {

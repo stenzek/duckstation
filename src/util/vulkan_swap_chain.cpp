@@ -20,7 +20,7 @@
 #include "util/metal_layer.h"
 #endif
 
-Log_SetChannel(VulkanDevice);
+LOG_CHANNEL(VulkanDevice);
 
 static_assert(VulkanSwapChain::NUM_SEMAPHORES == (VulkanDevice::NUM_COMMAND_BUFFERS + 1));
 

@@ -17,7 +17,7 @@
 #include "common/log.h"
 #include "common/small_string.h"
 
-Log_SetChannel(PlatformMisc);
+LOG_CHANNEL(PlatformMisc);
 
 #if __has_feature(objc_arc)
 #error ARC should not be enabled.

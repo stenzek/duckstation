@@ -27,7 +27,7 @@
 #include <limits>
 #include <mutex>
 
-Log_SetChannel(VulkanDevice);
+LOG_CHANNEL(VulkanDevice);
 
 // TODO: VK_KHR_display.
 

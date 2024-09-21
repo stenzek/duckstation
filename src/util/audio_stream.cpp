@@ -20,7 +20,7 @@
 #include <cstring>
 #include <limits>
 
-Log_SetChannel(AudioStream);
+LOG_CHANNEL(AudioStream);
 
 static constexpr bool LOG_TIMESTRETCH_STATS = false;
 

@@ -16,7 +16,7 @@
 
 #ifdef CPU_ARCH_ARM64
 
-Log_SetChannel(CPU::Recompiler);
+LOG_CHANNEL(CPU::Recompiler);
 
 #ifdef ENABLE_HOST_DISASSEMBLY
 #include "vixl/aarch64/disasm-aarch64.h"

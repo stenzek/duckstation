@@ -13,7 +13,7 @@
 #include <pthread.h>
 #include <signal.h>
 
-Log_SetChannel(HTTPDownloader);
+LOG_CHANNEL(HTTPDownloader);
 
 HTTPDownloaderCurl::HTTPDownloaderCurl() : HTTPDownloader()
 {

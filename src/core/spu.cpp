@@ -27,7 +27,7 @@
 
 #include <memory>
 
-Log_SetChannel(SPU);
+LOG_CHANNEL(SPU);
 
 // Enable to dump all voices of the SPU audio individually.
 // #define SPU_DUMP_ALL_VOICES 1

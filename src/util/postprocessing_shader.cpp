@@ -11,7 +11,7 @@
 #include <cstring>
 #include <sstream>
 
-Log_SetChannel(PostProcessing);
+LOG_CHANNEL(PostProcessing);
 
 void PostProcessing::Shader::ParseKeyValue(std::string_view line, std::string_view* key, std::string_view* value)
 {

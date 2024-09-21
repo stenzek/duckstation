@@ -9,7 +9,7 @@
 #include <cstdio>
 #include <limits>
 
-Log_SetChannel(ProgressCallback);
+LOG_CHANNEL(ProgressCallback);
 
 static ProgressCallback s_nullProgressCallbacks;
 ProgressCallback* ProgressCallback::NullProgressCallback = &s_nullProgressCallbacks;

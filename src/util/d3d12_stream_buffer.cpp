@@ -13,7 +13,7 @@
 
 #include <algorithm>
 
-Log_SetChannel(D3D12StreamBuffer);
+LOG_CHANNEL(D3D12StreamBuffer);
 
 D3D12StreamBuffer::D3D12StreamBuffer() = default;
 

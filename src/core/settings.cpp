@@ -25,7 +25,7 @@
 #include <cctype>
 #include <numeric>
 
-Log_SetChannel(Settings);
+LOG_CHANNEL(Settings);
 
 Settings g_settings;
 
@@ -906,13 +906,13 @@ static constexpr const std::array s_log_level_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Trace", "LogLevel"),
 };
 
-std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
+std::optional<Log::Level> Settings::ParseLogLevelName(const char* str)
 {
   int index = 0;
   for (const char* name : s_log_level_names)
   {
     if (StringUtil::Strcasecmp(name, str) == 0)
-      return static_cast<LOGLEVEL>(index);
+      return static_cast<Log::Level>(index);
 
     index++;
   }
@@ -920,12 +920,12 @@ std::optional<LOGLEVEL> Settings::ParseLogLevelName(const char* str)
   return std::nullopt;
 }
 
-const char* Settings::GetLogLevelName(LOGLEVEL level)
+const char* Settings::GetLogLevelName(Log::Level level)
 {
   return s_log_level_names[static_cast<size_t>(level)];
 }
 
-const char* Settings::GetLogLevelDisplayName(LOGLEVEL level)
+const char* Settings::GetLogLevelDisplayName(Log::Level level)
 {
   return Host::TranslateToCString("Settings", s_log_level_display_names[static_cast<size_t>(level)], "LogLevel");
 }

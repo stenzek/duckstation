@@ -32,7 +32,7 @@
 #include <map>
 #include <vector>
 
-Log_SetChannel(CDROM);
+LOG_CHANNEL(CDROM);
 
 namespace CDROM {
 namespace {
@@ -1621,7 +1621,7 @@ void CDROM::EndCommand()
 void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 {
   const CommandInfo& ci = s_command_info[static_cast<u8>(s_command)];
-  if (Log::IsLogVisible(LOGLEVEL_DEV, ___LogChannel___)) [[unlikely]]
+  if (Log::IsLogVisible(Log::Level::Dev, ___LogChannel___)) [[unlikely]]
   {
     SmallString params;
     for (u32 i = 0; i < s_param_fifo.GetSize(); i++)

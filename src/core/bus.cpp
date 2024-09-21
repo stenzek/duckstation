@@ -38,7 +38,7 @@
 #include <tuple>
 #include <utility>
 
-Log_SetChannel(Bus);
+LOG_CHANNEL(Bus);
 
 // TODO: Get rid of page code bits, instead use page faults to track SMC.
 
@@ -933,7 +933,7 @@ void Bus::AddTTYCharacter(char ch)
   {
     if (!s_tty_line_buffer.empty())
     {
-      Log::FastWrite("TTY", "", LOGLEVEL_INFO, "\033[1;34m{}\033[0m", s_tty_line_buffer);
+      Log::FastWrite("TTY", "", Log::Level::Info, "\033[1;34m{}\033[0m", s_tty_line_buffer);
 #ifdef _DEBUG
       if (CPU::IsTraceEnabled())
         CPU::WriteToExecutionLog("TTY: %s\n", s_tty_line_buffer.c_str());

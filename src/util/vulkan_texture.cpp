@@ -10,7 +10,7 @@
 #include "common/bitutils.h"
 #include "common/log.h"
 
-Log_SetChannel(VulkanDevice);
+LOG_CHANNEL(VulkanDevice);
 
 static constexpr const VkComponentMapping s_identity_swizzle{
   VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,

@@ -11,7 +11,7 @@
 #include <cstdarg>
 #include <shared_mutex>
 
-Log_SetChannel(Host);
+LOG_CHANNEL(Host);
 
 namespace Host {
 static std::pair<const char*, u32> LookupTranslationString(std::string_view context, std::string_view msg,

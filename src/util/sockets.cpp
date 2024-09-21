@@ -58,7 +58,7 @@ using nfds_t = ULONG;
 #define SD_BOTH SHUT_RDWR
 #endif
 
-Log_SetChannel(Sockets);
+LOG_CHANNEL(Sockets);
 
 static bool SetNonBlocking(SocketDescriptor sd, Error* error)
 {

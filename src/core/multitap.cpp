@@ -11,7 +11,7 @@
 #include "common/log.h"
 #include "common/types.h"
 
-Log_SetChannel(Multitap);
+LOG_CHANNEL(Multitap);
 
 Multitap::Multitap()
 {

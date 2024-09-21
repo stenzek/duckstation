@@ -6,7 +6,7 @@
 
 #include "common/log.h"
 
-Log_SetChannel(HostInterfaceProgressCallback);
+LOG_CHANNEL(HostInterfaceProgressCallback);
 
 HostInterfaceProgressCallback::HostInterfaceProgressCallback() : ProgressCallback()
 {

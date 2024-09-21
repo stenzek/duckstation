@@ -28,7 +28,7 @@
 #include <variant>
 #include <vector>
 
-Log_SetChannel(InputManager);
+LOG_CHANNEL(InputManager);
 
 namespace {
 

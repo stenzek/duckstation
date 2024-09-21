@@ -26,7 +26,7 @@
 #include <memory>
 #include <vector>
 
-Log_SetChannel(DMA);
+LOG_CHANNEL(DMA);
 
 namespace DMA {
 namespace {

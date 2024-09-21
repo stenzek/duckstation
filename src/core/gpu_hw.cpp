@@ -32,7 +32,7 @@
 #include <sstream>
 #include <tuple>
 
-Log_SetChannel(GPU_HW);
+LOG_CHANNEL(GPU_HW);
 
 // TODO: instead of full state restore, only restore what changed
 

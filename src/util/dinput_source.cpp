@@ -15,7 +15,7 @@
 
 #include <cmath>
 #include <limits>
-Log_SetChannel(DInputSource);
+LOG_CHANNEL(DInputSource);
 
 using PFNDIRECTINPUT8CREATE = HRESULT(WINAPI*)(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut,
                                                LPUNKNOWN punkOuter);

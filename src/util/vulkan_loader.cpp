@@ -16,7 +16,7 @@
 #include <cstring>
 #include <string>
 
-Log_SetChannel(VulkanDevice);
+LOG_CHANNEL(VulkanDevice);
 
 extern "C" {
 

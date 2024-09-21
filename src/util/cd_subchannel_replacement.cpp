@@ -7,7 +7,7 @@
 #include "common/path.h"
 #include <algorithm>
 #include <memory>
-Log_SetChannel(CDSubChannelReplacement);
+LOG_CHANNEL(CDSubChannelReplacement);
 
 #pragma pack(push, 1)
 struct SBIFileEntry

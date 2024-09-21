@@ -13,7 +13,7 @@
 #include <optional>
 #include <vector>
 
-Log_SetChannel(OpenGLContext);
+LOG_CHANNEL(OpenGLContext);
 
 static DynamicLibrary s_egl_library;
 static std::atomic_uint32_t s_egl_refcount = 0;

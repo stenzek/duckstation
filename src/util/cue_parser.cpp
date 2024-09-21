@@ -9,7 +9,7 @@
 
 #include <cstdarg>
 
-Log_SetChannel(CueParser);
+LOG_CHANNEL(CueParser);
 
 namespace CueParser {
 static bool TokenMatch(std::string_view s1, const char* token);

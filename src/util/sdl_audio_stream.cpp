@@ -9,7 +9,7 @@
 
 #include <SDL.h>
 
-Log_SetChannel(SDLAudioStream);
+LOG_CHANNEL(SDLAudioStream);
 
 namespace {
 class SDLAudioStream final : public AudioStream

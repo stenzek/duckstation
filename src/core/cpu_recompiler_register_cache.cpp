@@ -8,7 +8,7 @@
 
 #include <cinttypes>
 
-Log_SetChannel(CPU::Recompiler);
+LOG_CHANNEL(CPU::Recompiler);
 
 namespace CPU::Recompiler {
 

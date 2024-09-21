@@ -9,7 +9,7 @@
 #include "common/log.h"
 #include "common/scoped_guard.h"
 
-Log_SetChannel(WindowInfo);
+LOG_CHANNEL(WindowInfo);
 
 void WindowInfo::SetSurfaceless()
 {

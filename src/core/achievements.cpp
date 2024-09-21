@@ -52,7 +52,7 @@
 #include <unordered_set>
 #include <vector>
 
-Log_SetChannel(Achievements);
+LOG_CHANNEL(Achievements);
 
 #ifdef ENABLE_RAINTEGRATION
 // RA_Interface ends up including windows.h, with its silly macros.

@@ -19,7 +19,7 @@
 #include <cstdio>
 #include <optional>
 
-Log_SetChannel(MemoryCard);
+LOG_CHANNEL(MemoryCard);
 
 namespace MemoryCardImage {
 namespace {

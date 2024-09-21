@@ -13,7 +13,7 @@
 #include <iterator>
 #include <mutex>
 
-Log_SetChannel(INISettingsInterface);
+LOG_CHANNEL(INISettingsInterface);
 
 // To prevent races between saving and loading settings, particularly with game settings,
 // we only allow one ini to be parsed at any point in time.

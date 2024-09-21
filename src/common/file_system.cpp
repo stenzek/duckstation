@@ -45,7 +45,7 @@
 #include <unistd.h>
 #endif
 
-Log_SetChannel(FileSystem);
+LOG_CHANNEL(FileSystem);
 
 #ifndef __ANDROID__
 

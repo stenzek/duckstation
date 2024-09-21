@@ -15,7 +15,7 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
-Log_SetChannel(BIOS);
+LOG_CHANNEL(BIOS);
 
 namespace BIOS {
 static const ImageInfo* GetInfoForHash(const std::span<u8> image, const ImageInfo::Hash& hash);

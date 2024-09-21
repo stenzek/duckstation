@@ -19,7 +19,7 @@
 #include <array>
 #include <tuple>
 
-Log_SetChannel(OpenGLDevice);
+LOG_CHANNEL(OpenGLDevice);
 
 static constexpr const std::array<GLenum, GPUDevice::MAX_RENDER_TARGETS> s_draw_buffers = {
   {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3}};

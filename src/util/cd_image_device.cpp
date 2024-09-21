@@ -23,7 +23,7 @@
 #include <optional>
 #include <span>
 
-Log_SetChannel(CDImageDevice);
+LOG_CHANNEL(CDImageDevice);
 
 // Common code
 [[maybe_unused]] static constexpr u32 MAX_TRACK_NUMBER = 99;

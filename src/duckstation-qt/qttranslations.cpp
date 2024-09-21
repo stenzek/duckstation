@@ -32,7 +32,7 @@
 #include <ShlObj.h>
 #endif
 
-Log_SetChannel(QTTranslations);
+LOG_CHANNEL(QTTranslations);
 
 #if 0
 // Qt internal strings we'd like to have translated

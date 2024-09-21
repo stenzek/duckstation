@@ -9,7 +9,7 @@
 #include "common/error.h"
 #include "common/log.h"
 
-Log_SetChannel(D3D11Device);
+LOG_CHANNEL(D3D11Device);
 
 D3D11StreamBuffer::D3D11StreamBuffer()
 {

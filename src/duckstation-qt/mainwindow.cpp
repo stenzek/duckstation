@@ -58,7 +58,7 @@
 #include <VersionHelpers.h>
 #endif
 
-Log_SetChannel(MainWindow);
+LOG_CHANNEL(MainWindow);
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "MainWindow",

@@ -9,7 +9,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 
-Log_SetChannel(GPU_SW_Rasterizer);
+LOG_CHANNEL(GPU_SW_Rasterizer);
 
 namespace GPU_SW_Rasterizer {
 // Default implementation, compatible with all ISAs.

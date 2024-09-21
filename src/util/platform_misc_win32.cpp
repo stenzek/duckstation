@@ -18,7 +18,7 @@
 #include <WinSock2.h>
 #include <mmsystem.h>
 
-Log_SetChannel(PlatformMisc);
+LOG_CHANNEL(PlatformMisc);
 
 static bool s_screensaver_suspended = false;
 static bool s_winsock_initialized = false;

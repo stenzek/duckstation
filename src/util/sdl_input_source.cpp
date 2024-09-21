@@ -23,7 +23,7 @@
 #include <dispatch/dispatch.h>
 #endif
 
-Log_SetChannel(SDLInputSource);
+LOG_CHANNEL(SDLInputSource);
 
 static constexpr const char* CONTROLLER_DB_FILENAME = "gamecontrollerdb.txt";
 
@@ -139,14 +139,14 @@ static void SetControllerRGBLED(SDL_GameController* gc, u32 color)
 
 static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priority, const char* message)
 {
-  static constexpr LOGLEVEL priority_map[SDL_NUM_LOG_PRIORITIES] = {
-    LOGLEVEL_DEBUG,
-    LOGLEVEL_DEBUG,   // SDL_LOG_PRIORITY_VERBOSE
-    LOGLEVEL_DEBUG,   // SDL_LOG_PRIORITY_DEBUG
-    LOGLEVEL_INFO,    // SDL_LOG_PRIORITY_INFO
-    LOGLEVEL_WARNING, // SDL_LOG_PRIORITY_WARN
-    LOGLEVEL_ERROR,   // SDL_LOG_PRIORITY_ERROR
-    LOGLEVEL_ERROR,   // SDL_LOG_PRIORITY_CRITICAL
+  static constexpr Log::Level priority_map[SDL_NUM_LOG_PRIORITIES] = {
+    Log::Level::Debug,
+    Log::Level::Debug,   // SDL_LOG_PRIORITY_VERBOSE
+    Log::Level::Debug,   // SDL_LOG_PRIORITY_DEBUG
+    Log::Level::Info,    // SDL_LOG_PRIORITY_INFO
+    Log::Level::Warning, // SDL_LOG_PRIORITY_WARN
+    Log::Level::Error,   // SDL_LOG_PRIORITY_ERROR
+    Log::Level::Error,   // SDL_LOG_PRIORITY_CRITICAL
   };
 
   Log::Write("SDL", "SDL", priority_map[priority], message);
@@ -191,8 +191,7 @@ void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std:
 #endif
 
   if (m_controller_enhanced_mode != old_controller_enhanced_mode ||
-      m_controller_ps5_player_led != old_controller_ps5_player_led ||
-      drivers_changed)
+      m_controller_ps5_player_led != old_controller_ps5_player_led || drivers_changed)
   {
     settings_lock.unlock();
     ShutdownSubsystem();

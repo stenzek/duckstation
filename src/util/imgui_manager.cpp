@@ -31,7 +31,7 @@
 #include <type_traits>
 #include <unordered_map>
 
-Log_SetChannel(ImGuiManager);
+LOG_CHANNEL(ImGuiManager);
 
 namespace ImGuiManager {
 namespace {

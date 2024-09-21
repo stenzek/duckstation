@@ -8,7 +8,7 @@
 
 #include "common/log.h"
 
-Log_SetChannel(InterruptController);
+LOG_CHANNEL(InterruptController);
 
 namespace InterruptController {
 

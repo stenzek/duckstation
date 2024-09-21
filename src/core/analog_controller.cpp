@@ -20,7 +20,7 @@
 
 #include <cmath>
 
-Log_SetChannel(AnalogController);
+LOG_CHANNEL(AnalogController);
 
 AnalogController::AnalogController(u32 index) : Controller(index)
 {

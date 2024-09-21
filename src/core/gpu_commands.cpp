@@ -10,7 +10,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 
-Log_SetChannel(GPU);
+LOG_CHANNEL(GPU);
 
 #define CHECK_COMMAND_SIZE(num_words)                                                                                  \
   if (m_fifo.GetSize() < num_words)                                                                                    \

@@ -69,7 +69,7 @@ extern "C" {
 
 #endif
 
-Log_SetChannel(MediaCapture);
+LOG_CHANNEL(MediaCapture);
 
 namespace {
 

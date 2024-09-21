@@ -25,7 +25,7 @@
 #include <unordered_map>
 #include <vector>
 
-Log_SetChannel(TextureReplacements);
+LOG_CHANNEL(TextureReplacements);
 
 namespace TextureReplacements {
 namespace {

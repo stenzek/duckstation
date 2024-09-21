@@ -20,7 +20,7 @@
 
 #ifdef _DEBUG
 #include "common/log.h"
-Log_SetChannel(GunCon);
+LOG_CHANNEL(GunCon);
 #endif
 
 static constexpr std::array<u8, static_cast<size_t>(GunCon::Binding::ButtonCount)> s_button_indices = {{13, 3, 14}};

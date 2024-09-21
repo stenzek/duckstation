@@ -4,7 +4,7 @@
 #include "wav_writer.h"
 #include "common/file_system.h"
 #include "common/log.h"
-Log_SetChannel(WAVWriter);
+LOG_CHANNEL(WAVWriter);
 
 namespace {
 #pragma pack(push, 1)

@@ -44,7 +44,7 @@
 #include <mutex>
 #include <span>
 
-Log_SetChannel(ImGuiManager);
+LOG_CHANNEL(ImGuiManager);
 
 namespace ImGuiManager {
 static void FormatProcessorStat(SmallStringBase& text, double usage, double time);

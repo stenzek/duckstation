@@ -16,7 +16,7 @@
 #include <spawn.h>
 #include <unistd.h>
 
-Log_SetChannel(PlatformMisc);
+LOG_CHANNEL(PlatformMisc);
 
 bool PlatformMisc::InitializeSocketSupport(Error* error)
 {
