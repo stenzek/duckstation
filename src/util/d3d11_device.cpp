@@ -1080,7 +1080,7 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
     {
       if (m_current_render_targets[i] == tex)
       {
-        WARNING_LOG("Unbinding current RT");
+        DEV_LOG("Unbinding current RT");
         SetRenderTargets(nullptr, 0, m_current_depth_target);
         break;
       }
@@ -1088,7 +1088,7 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
   }
   else if (tex->IsDepthStencil() && m_current_depth_target == tex)
   {
-    WARNING_LOG("Unbinding current DS");
+    DEV_LOG("Unbinding current DS");
     SetRenderTargets(nullptr, 0, nullptr);
   }
 }

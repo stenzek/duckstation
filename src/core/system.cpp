@@ -5717,6 +5717,13 @@ void System::ToggleSoftwareRendering()
                                       Settings::GetRendererDisplayName(new_renderer)),
                           Host::OSD_QUICK_DURATION);
   RecreateGPU(new_renderer);
+
+  // Might have a thread change.
+  if (const Threading::Thread* sw_thread = g_gpu->GetSWThread(); sw_thread)
+    s_last_sw_time = sw_thread->GetCPUTime();
+  else
+    s_last_sw_time = 0;
+
   g_gpu->UpdateResolutionScale();
 }
 
