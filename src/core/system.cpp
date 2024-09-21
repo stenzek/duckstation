@@ -1911,6 +1911,9 @@ bool System::Initialize(bool force_software_renderer, Error* error)
 
   s_cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
+  if (g_settings.display_show_gpu_usage)
+    g_gpu_device->SetGPUTimingEnabled(true);
+
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
   return true;
@@ -1971,6 +1974,7 @@ void System::DestroySystem()
   // Restore present-all-frames behavior.
   if (s_keep_gpu_device_on_shutdown && g_gpu_device)
   {
+    g_gpu_device->SetGPUTimingEnabled(false);
     UpdateDisplayVSync();
   }
   else
@@ -4446,6 +4450,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       UpdateSpeedLimiterState();
     }
+
+    if (g_settings.display_show_gpu_usage != old_settings.display_show_gpu_usage)
+      g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
 
     if (g_settings.inhibit_screensaver != old_settings.inhibit_screensaver)
     {

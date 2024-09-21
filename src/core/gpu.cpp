@@ -80,9 +80,6 @@ GPU::~GPU()
   JoinScreenshotThreads();
   DestroyDeinterlaceTextures();
   g_gpu_device->RecycleTexture(std::move(m_chroma_smoothing_texture));
-
-  if (g_gpu_device)
-    g_gpu_device->SetGPUTimingEnabled(false);
 }
 
 bool GPU::Initialize()
@@ -100,8 +97,6 @@ bool GPU::Initialize()
     Host::ReportErrorAsync("Error", "Failed to compile base GPU pipelines.");
     return false;
   }
-
-  g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
 
 #ifdef PSX_GPU_STATS
   s_active_gpu_cycles = 0;
@@ -147,8 +142,6 @@ void GPU::UpdateSettings(const Settings& old_settings)
       Panic("Failed to compile display pipeline on settings change.");
     }
   }
-
-  g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
 }
 
 void GPU::CPUClockChanged()
