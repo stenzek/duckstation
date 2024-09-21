@@ -4449,30 +4449,15 @@ void FullscreenUI::DrawDisplaySettingsPage()
               "Usually results in worse frame pacing."),
     "Display", "DisableMailboxPresentation", false);
 
-  switch (renderer)
-  {
 #ifdef _WIN32
-    case GPURenderer::HardwareD3D11:
-    {
-      DrawToggleSetting(
-        bsi, FSUI_CSTR("Use Blit Swap Chain"),
-        FSUI_CSTR("Uses a blit presentation model instead of flipping. This may be needed on some systems."), "Display",
-        "UseBlitSwapChain", false);
-    }
-    break;
-#endif
-
-    case GPURenderer::Software:
-    {
-      DrawToggleSetting(bsi, FSUI_CSTR("Threaded Rendering"),
-                        FSUI_CSTR("Uses a second thread for drawing graphics. Speed boost, and safe to use."), "GPU",
-                        "UseThread", true);
-    }
-    break;
-
-    default:
-      break;
+  if (renderer == GPURenderer::HardwareD3D11 || renderer == GPURenderer::Software)
+  {
+    DrawToggleSetting(
+      bsi, FSUI_CSTR("Use Blit Swap Chain"),
+      FSUI_CSTR("Uses a blit presentation model instead of flipping. This may be needed on some systems."), "Display",
+      "UseBlitSwapChain", false);
   }
+#endif
 
   if (is_hardware && pgxp_enabled)
   {
@@ -5187,6 +5172,9 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawToggleSetting(bsi, FSUI_CSTR("Show Enhancement Settings"),
                     FSUI_CSTR("Shows enhancement settings in the bottom-right corner of the screen."), "Display",
                     "ShowEnhancements", false);
+  DrawToggleSetting(bsi, FSUI_CSTR("Threaded Rendering"),
+                    FSUI_CSTR("Uses a second thread for drawing graphics. Speed boost, and safe to use."), "GPU",
+                    "UseThread", true);
   DrawEnumSetting(bsi, FSUI_CSTR("Wireframe Rendering"),
                   FSUI_CSTR("Overlays or replaces normal triangle drawing with a wireframe/line view."), "GPU",
                   "WireframeMode", GPUWireframeMode::Disabled, &Settings::ParseGPUWireframeMode,
