@@ -414,7 +414,6 @@ struct SPUState
   InlineFIFOQueue<u16, FIFO_SIZE_IN_HALFWORDS> transfer_fifo;
 
   std::unique_ptr<AudioStream> audio_stream;
-  std::unique_ptr<AudioStream> null_audio_stream;
 
   s16 last_reverb_input[2];
   s32 last_reverb_output[2];
@@ -429,6 +428,7 @@ struct SPUState
 
 ALIGN_TO_CACHE_LINE static SPUState s_state;
 ALIGN_TO_CACHE_LINE static std::array<u8, RAM_SIZE> s_ram{};
+ALIGN_TO_CACHE_LINE static std::array<s16, (44100 / 60) * 2> s_muted_output_buffer{};
 
 } // namespace SPU
 
@@ -439,7 +439,6 @@ void SPU::Initialize()
   s_state.cpu_tick_divider = static_cast<TickCount>(g_settings.cpu_overclock_numerator * SYSCLK_TICKS_PER_SPU_TICK);
   s_state.tick_event.SetInterval(s_state.cpu_ticks_per_spu_tick);
   s_state.tick_event.SetPeriod(s_state.cpu_ticks_per_spu_tick);
-  s_state.null_audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, g_settings.audio_stream_parameters.buffer_ms);
 
   CreateOutputStream();
   Reset();
@@ -2359,14 +2358,21 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
     s_state.ticks_carry = (ticks + s_state.ticks_carry) % SYSCLK_TICKS_PER_SPU_TICK;
   }
 
-  AudioStream* output_stream =
-    s_state.audio_output_muted ? s_state.null_audio_stream.get() : s_state.audio_stream.get();
-
   while (remaining_frames > 0)
   {
     s16* output_frame_start;
     u32 output_frame_space = remaining_frames;
-    output_stream->BeginWrite(&output_frame_start, &output_frame_space);
+    if (!s_state.audio_output_muted) [[likely]]
+    {
+      output_frame_space = remaining_frames;
+      s_state.audio_stream->BeginWrite(&output_frame_start, &output_frame_space);
+    }
+    else
+    {
+      // dummy space for writing samples when using runahead
+      output_frame_start = s_muted_output_buffer.data();
+      output_frame_space = std::min(static_cast<u32>(s_muted_output_buffer.size() / 2), remaining_frames);
+    }
 
     s16* output_frame = output_frame_start;
     const u32 frames_in_this_batch = std::min(remaining_frames, output_frame_space);
@@ -2468,14 +2474,15 @@ void SPU::Execute(void* param, TickCount ticks, TickCount ticks_late)
     }
 
 #ifndef __ANDROID__
-    if (MediaCapture* cap = System::GetMediaCapture()) [[unlikely]]
+    if (MediaCapture* cap = System::GetMediaCapture(); cap && !s_state.audio_output_muted) [[unlikely]]
     {
       if (!cap->DeliverAudioFrames(output_frame_start, frames_in_this_batch))
         System::StopMediaCapture();
     }
 #endif
 
-    output_stream->EndWrite(frames_in_this_batch);
+    if (!s_state.audio_output_muted) [[likely]]
+      s_state.audio_stream->EndWrite(frames_in_this_batch);
     remaining_frames -= frames_in_this_batch;
   }
 }
