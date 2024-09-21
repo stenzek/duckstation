@@ -1387,12 +1387,6 @@ void System::ApplySettings(bool display_osd_messages)
 
   CheckForSettingsChanges(old_config);
   Host::CheckForSettingsChanges(old_config);
-
-  if (IsValid())
-  {
-    ResetPerformanceCounters();
-    InterruptExecution();
-  }
 }
 
 bool System::ReloadGameSettings(bool display_osd_messages)
@@ -1493,8 +1487,6 @@ void System::ResetSystem()
   if (Error error; !SetBootMode(new_boot_mode, &error))
     ERROR_LOG("Failed to reload BIOS on boot mode change, the system may be unstable: {}", error.GetDescription());
 
-  ResetPerformanceCounters();
-  ResetThrottler();
   Host::AddIconOSDMessage("SystemReset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
                           Host::OSD_QUICK_DURATION);
 
@@ -5719,7 +5711,6 @@ void System::ToggleSoftwareRendering()
                           Host::OSD_QUICK_DURATION);
   RecreateGPU(new_renderer);
   g_gpu->UpdateResolutionScale();
-  ResetPerformanceCounters();
 }
 
 void System::RequestDisplaySize(float scale /*= 0.0f*/)
