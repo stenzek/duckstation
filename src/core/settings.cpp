@@ -853,8 +853,9 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
 
 void Settings::UpdateLogSettings()
 {
-  Log::SetLogLevel(log_level);
-  Log::SetLogFilter(log_filter);
+  const bool any_logs_enabled = (log_to_console || log_to_debug || log_to_window || log_to_file);
+  Log::SetLogLevel(any_logs_enabled ? log_level : Log::Level::None);
+  Log::SetLogFilter(any_logs_enabled ? std::string_view(log_filter) : std::string_view());
   Log::SetConsoleOutputParams(log_to_console, log_timestamps);
   Log::SetDebugOutputParams(log_to_debug);
 
