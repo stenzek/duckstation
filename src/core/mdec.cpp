@@ -659,7 +659,7 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
     case DataOutputDepth_24Bit:
     {
-#ifndef CPU_ARCH_SIMD
+#ifndef GSVECTOR_HAS_FAST_INT_SHUFFLE8
       // pack tightly
       u32 index = 0;
       u32 state = 0;

@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <cmath>
 
-#define GSVECTOR_HAS_UNSIGNED 1
+#define GSVECTOR_HAS_FAST_INT_SHUFFLE8 1
 #define GSVECTOR_HAS_SRLV 1
 
 class GSVector2;

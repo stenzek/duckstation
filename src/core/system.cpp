@@ -354,12 +354,22 @@ bool System::Internal::PerformEarlyHardwareChecks(Error* error)
   cpuinfo_initialize();
 
 #ifdef CPU_ARCH_X64
+#ifdef CPU_ARCH_SSE41
   if (!cpuinfo_has_x86_sse4_1())
   {
-    Error::SetStringFmt(error, "Your CPU does not support the SSE4.1 instruction set.\n"
-                               "A CPU from 2008 or newer is required to run DuckStation.");
+    Error::SetStringFmt(error, "Your CPU does not support the SSE4.1 instruction set, which is required for this "
+                               "version of DuckStation.\nPlease download and switch to the legacy SSE2 version.\nYou "
+                               "can download this from https://www.duckstation.org/ under \"Other Platforms\".");
     return false;
   }
+#else
+  if (cpuinfo_has_x86_sse4_1())
+  {
+    Error::SetStringFmt(error, "You are running the legacy SSE2 DuckStation executable on a CPU that supports the "
+                               "SSE4.1 instruction set.\nPlease download and switch the regular, non-SSE2 "
+                               "version.\nYou can download this from https://www.duckstation.org/.");
+  }
+#endif
 #endif
 
   // Check page size. If it doesn't match, it is a fatal error.
@@ -425,7 +435,13 @@ void System::CheckCacheLineSize()
 
 void System::LogStartupInformation()
 {
-  INFO_LOG("DuckStation Version {} [{}]", g_scm_tag_str, g_scm_branch_str);
+#if !defined(CPU_ARCH_X64) || defined(CPU_ARCH_SSE41)
+  const std::string_view suffix = {};
+#else
+  const std::string_view suffix = " [Legacy SSE2]";
+#endif
+  INFO_LOG("DuckStation for {} ({}){}", TARGET_OS_STR, CPU_ARCH_STR, suffix);
+  INFO_LOG("Version: {} [{}]", g_scm_tag_str, g_scm_branch_str);
   INFO_LOG("SCM Timestamp: {}", g_scm_date_str);
   INFO_LOG("Build Timestamp: {} {}", __DATE__, __TIME__);
   if (const cpuinfo_package* package = cpuinfo_get_package(0)) [[likely]]

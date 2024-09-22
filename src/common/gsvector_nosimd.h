@@ -11,7 +11,6 @@
 #include <cmath>
 #include <cstring>
 
-#define GSVECTOR_HAS_UNSIGNED 1
 #define GSVECTOR_HAS_SRLV 1
 
 class GSVector2;
@@ -951,8 +950,10 @@ public:
 
   ALWAYS_INLINE bool rempty() const { return lt32(zwzw()).mask() != 0x00ff; }
 
-  // TODO: Optimize for no-simd, this generates crap code.
-  ALWAYS_INLINE GSVector4i runion(const GSVector4i& v) const { return min_s32(v).upl64(max_s32(v).srl<8>()); }
+  GSVector4i runion(const GSVector4i& v) const
+  {
+    return GSVector4i(std::min(x, v.x), std::min(y, v.y), std::max(z, v.z), std::max(w, v.w));
+  }
 
   ALWAYS_INLINE GSVector4i rintersect(const GSVector4i& v) const { return sat_s32(v); }
   ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return !rintersect(v).rempty(); }
