@@ -21,14 +21,8 @@ GPU_HW_ShaderGen::GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u
 
 GPU_HW_ShaderGen::~GPU_HW_ShaderGen() = default;
 
-void GPU_HW_ShaderGen::WriteCommonFunctions(std::stringstream& ss)
+void GPU_HW_ShaderGen::WriteColorConversionFunctions(std::stringstream& ss)
 {
-  DefineMacro(ss, "MULTISAMPLING", UsingMSAA());
-
-  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
-  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
-  ss << "CONSTANT uint MULTISAMPLES = " << m_multisamples << "u;\n";
-  ss << "CONSTANT bool PER_SAMPLE_SHADING = " << (m_per_sample_shading ? "true" : "false") << ";\n";
   ss << R"(
 uint RGBA8ToRGBA5551(float4 v)
 {
@@ -70,8 +64,10 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
   DefineMacro(ss, "UV_LIMITS", uv_limits);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
   DefineMacro(ss, "PGXP_DEPTH", pgxp_depth);
+  DefineMacro(ss, "UPSCALED", m_resolution_scale > 1);
 
-  WriteCommonFunctions(ss);
+  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
+
   WriteBatchUniformBuffer(ss);
 
   if (textured)
@@ -102,7 +98,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
   // Offset the vertex position by 0.5 to ensure correct interpolation of texture coordinates
   // at 1x resolution scale. This doesn't work at >1x, we adjust the texture coordinates before
   // uploading there instead.
-  float vertex_offset = (RESOLUTION_SCALE == 1u) ? 0.5 : 0.0;
+  float vertex_offset = (UPSCALED == 0) ? 0.5 : 0.0;
 
   // 0..+1023 -> -1..1
   float pos_x = ((a_pos.x + vertex_offset) / 512.0) - 1.0;
@@ -744,7 +740,12 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
   DefineMacro(ss, "UPSCALED", m_resolution_scale > 1);
 
-  WriteCommonFunctions(ss);
+  // Used for converting to normalized coordinates for sampling.
+  ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0 / float(" << VRAM_WIDTH << "), 1.0 / float(" << VRAM_HEIGHT
+     << "));\n";
+  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
+
+  WriteColorConversionFunctions(ss);
   WriteBatchUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
 
@@ -807,7 +808,7 @@ uint2 FloatToIntegerCoords(float2 coords)
 {
   // With the vertex offset applied at 1x resolution scale, we want to round the texture coordinates.
   // Floor them otherwise, as it currently breaks when upscaling as the vertex offset is not applied.
-  return uint2((RESOLUTION_SCALE == 1u || FORCE_ROUND_TEXCOORDS != 0) ? roundEven(coords) : floor(coords));
+  return uint2((UPSCALED == 0 || FORCE_ROUND_TEXCOORDS != 0) ? roundEven(coords) : floor(coords));
 }
 
 float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
@@ -825,7 +826,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
     #endif
 
     // load colour/palette
-    float4 texel = LOAD_TEXTURE(samp0, int2(vicoord * RESOLUTION_SCALE), 0);
+    float4 texel = SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0);
     uint vram_value = RGBA8ToRGBA5551(texel);
 
     // apply palette
@@ -840,13 +841,13 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       uint2 palette_icoord = uint2(((texpage.z + palette_index) & 0x3FFu), texpage.w);
     #endif
 
-    return LOAD_TEXTURE(samp0, int2(palette_icoord * RESOLUTION_SCALE), 0);
+    return SAMPLE_TEXTURE_LEVEL(samp0, float2(palette_icoord) * RCP_VRAM_SIZE, 0);
   #else
     // Direct texturing - usually render-to-texture effects.
-    uint2 vicoord;
     #if !UPSCALED
       uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
-      vicoord = (texpage.xy + icoord) & uint2(1023, 511);
+      uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
+      return LOAD_TEXTURE(samp0, int2(vicoord), 0);
     #else
       // Coordinates are already upscaled, we need to downscale them to apply the texture
       // window, then re-upscale/offset. We can't round here, because it could result in
@@ -855,11 +856,9 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       float2 nfpart = frac(ncoords);
       uint2 nicoord = ApplyTextureWindow(uint2(floor(ncoords)));
       uint2 nvicoord = (texpage.xy + nicoord) & uint2(1023, 511);
-      coords = (float2(nvicoord) + nfpart) * float(RESOLUTION_SCALE);
-      vicoord = uint2(floor(coords));
+      ncoords = (float2(nvicoord) + nfpart);
+      return SAMPLE_TEXTURE_LEVEL(samp0, ncoords * RCP_VRAM_SIZE, 0);
     #endif
-
-    return LOAD_TEXTURE(samp0, int2(vicoord), 0);
   #endif
 }
 
@@ -1133,11 +1132,15 @@ std::string GPU_HW_ShaderGen::GenerateVRAMExtractFragmentShader(bool color_24bit
 {
   std::stringstream ss;
   WriteHeader(ss);
+  WriteColorConversionFunctions(ss);
+
   DefineMacro(ss, "COLOR_24BIT", color_24bit);
   DefineMacro(ss, "DEPTH_BUFFER", depth_buffer);
-  DefineMacro(ss, "MULTISAMPLED", UsingMSAA());
+  DefineMacro(ss, "MULTISAMPLING", UsingMSAA());
+  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
+  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
+  ss << "CONSTANT uint MULTISAMPLES = " << m_multisamples << "u;\n";
 
-  WriteCommonFunctions(ss);
   DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_skip_x", "uint u_line_skip"}, true);
   DeclareTexture(ss, "samp0", 0, UsingMSAA());
   if (depth_buffer)
@@ -1217,7 +1220,6 @@ std::string GPU_HW_ShaderGen::GenerateWireframeGeometryShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
 
   if (m_glsl)
   {
@@ -1291,7 +1293,6 @@ std::string GPU_HW_ShaderGen::GenerateWireframeFragmentShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
 
   DeclareFragmentEntryPoint(ss, 0, 0);
   ss << R"(
@@ -1307,9 +1308,13 @@ std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size"}, true);
+  WriteColorConversionFunctions(ss);
 
+  DefineMacro(ss, "MULTISAMPLING", UsingMSAA());
+  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
+  ss << "CONSTANT uint MULTISAMPLES = " << m_multisamples << "u;\n";
+
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_size"}, true);
   DeclareTexture(ss, "samp0", 0, UsingMSAA());
 
   ss << R"(
@@ -1366,9 +1371,14 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
+  WriteColorConversionFunctions(ss);
+
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", m_write_mask_as_depth);
   DefineMacro(ss, "USE_BUFFER", use_buffer);
+
+  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
+  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ");\n";
+
   DeclareUniformBuffer(ss,
                        {"uint2 u_base_coords", "uint2 u_end_coords", "uint2 u_size", "uint u_buffer_base_offset",
                         "uint u_mask_or_bits", "float u_depth_value"},
@@ -1414,8 +1424,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
 
   // find offset from the start of the row/column
   uint2 offset;
-  offset.x = (coords.x < u_base_coords.x) ? ((VRAM_SIZE.x / RESOLUTION_SCALE) - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
-  offset.y = (coords.y < u_base_coords.y) ? ((VRAM_SIZE.y / RESOLUTION_SCALE) - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
+  offset.x = (coords.x < u_base_coords.x) ? (VRAM_SIZE.x - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
+  offset.y = (coords.y < u_base_coords.y) ? (VRAM_SIZE.y - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
 
 #if !USE_BUFFER
   uint value = LOAD_TEXTURE(samp0, int2(offset), 0).x;
@@ -1440,15 +1450,18 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader()
 
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", m_write_mask_as_depth);
+  DefineMacro(ss, "MSAA_COPY", msaa);
+
+  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
+  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
+
   DeclareUniformBuffer(ss,
                        {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_end_coords", "uint2 u_size",
                         "bool u_set_mask_bit", "float u_depth_value"},
                        true);
 
   DeclareTexture(ss, "samp0", 0, msaa);
-  DefineMacro(ss, "MSAA_COPY", msaa);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, m_write_mask_as_depth, false, false, msaa);
   ss << R"(
 {
@@ -1488,7 +1501,6 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", m_write_mask_as_depth);
   DefineMacro(ss, "WRAPPED", wrapped);
   DefineMacro(ss, "INTERLACED", interlaced);
@@ -1530,7 +1542,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
+  DefineMacro(ss, "MULTISAMPLING", UsingMSAA());
   DeclareTexture(ss, "samp0", 0, UsingMSAA());
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 0, false, true, false, false, UsingMSAA());
 
@@ -1575,7 +1587,6 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader(bool f
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
   WriteAdaptiveDownsampleUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0, false);
   DefineMacro(ss, "FIRST_PASS", first_pass);
@@ -1634,7 +1645,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
+  WriteColorConversionFunctions(ss);
   WriteAdaptiveDownsampleUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0, false);
 
@@ -1667,7 +1678,6 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader(
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
   DeclareTexture(ss, "samp0", 0, false);
   DeclareTexture(ss, "samp1", 1, false);
 
@@ -1689,7 +1699,6 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
 {
   std::stringstream ss;
   WriteHeader(ss);
-  WriteCommonFunctions(ss);
   DeclareUniformBuffer(ss, {"uint2 u_base_coords"}, true);
   DeclareTexture(ss, "samp0", 0, false);
 

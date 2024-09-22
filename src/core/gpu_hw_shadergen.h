@@ -40,7 +40,7 @@ private:
   ALWAYS_INLINE bool UsingMSAA() const { return m_multisamples > 1; }
   ALWAYS_INLINE bool UsingPerSampleShading() const { return m_multisamples > 1 && m_per_sample_shading; }
 
-  void WriteCommonFunctions(std::stringstream& ss);
+  void WriteColorConversionFunctions(std::stringstream& ss);
   void WriteBatchUniformBuffer(std::stringstream& ss);
   void WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter);
   void WriteAdaptiveDownsampleUniformBuffer(std::stringstream& ss);
