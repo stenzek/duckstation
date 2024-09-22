@@ -127,6 +127,10 @@ private:
     float u_dst_alpha_factor;
     u32 u_interlaced_displayed_field;
     u32 u_set_mask_while_drawing;
+    float u_resolution_scale;
+    float u_rcp_resolution_scale;
+    float u_resolution_scale_minus_one;
+    u32 pad;
   };
 
   struct RendererStats

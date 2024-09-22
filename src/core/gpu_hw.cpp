@@ -297,8 +297,6 @@ void GPU_HW::Reset(bool clear_vram)
     m_sw_renderer->Reset();
 
   m_batch = {};
-  m_batch_ubo_data = {};
-  m_batch_ubo_dirty = true;
   m_current_depth = 1;
   SetClampedDrawingArea();
 
@@ -861,6 +859,11 @@ bool GPU_HW::CreateBuffers()
   }
 
   INFO_LOG("Created HW framebuffer of {}x{}", texture_width, texture_height);
+
+  m_batch_ubo_data.u_resolution_scale = static_cast<float>(m_resolution_scale);
+  m_batch_ubo_data.u_rcp_resolution_scale = 1.0f / m_batch_ubo_data.u_resolution_scale;
+  m_batch_ubo_data.u_resolution_scale_minus_one = m_batch_ubo_data.u_resolution_scale - 1.0f;
+  m_batch_ubo_dirty = true;
 
   SetVRAMRenderTarget();
   SetFullVRAMDirtyRectangle();

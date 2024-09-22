@@ -50,7 +50,8 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss)
   DeclareUniformBuffer(ss,
                        {"uint2 u_texture_window_and", "uint2 u_texture_window_or", "float u_src_alpha_factor",
                         "float u_dst_alpha_factor", "uint u_interlaced_displayed_field",
-                        "bool u_set_mask_while_drawing"},
+                        "bool u_set_mask_while_drawing", "float u_resolution_scale", "float u_rcp_resolution_scale",
+                        "float u_resolution_scale_minus_one"},
                        false);
 }
 
@@ -65,8 +66,6 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
   DefineMacro(ss, "PGXP_DEPTH", pgxp_depth);
   DefineMacro(ss, "UPSCALED", m_resolution_scale > 1);
-
-  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
 
   WriteBatchUniformBuffer(ss);
 
@@ -129,7 +128,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
   #if TEXTURED
     v_tex0 = float2(uint2(a_texcoord & 0xFFFFu, a_texcoord >> 16));
     #if !PALETTE
-      v_tex0 *= float(RESOLUTION_SCALE);
+      v_tex0 *= u_resolution_scale;
     #endif
 
     // base_x,base_y,palette_x,palette_y
@@ -151,8 +150,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool textured, bool pale
         // Treat coordinates as being in upscaled space, and extend the UV range to all "upscaled"
         // pixels. This means 1-pixel-high polygon-based framebuffer effects won't be downsampled.
         // (e.g. Mega Man Legends 2 haze effect)
-        v_uv_limits *= float(RESOLUTION_SCALE);
-        v_uv_limits.zw += float(RESOLUTION_SCALE - 1u);
+        v_uv_limits *= u_resolution_scale;
+        v_uv_limits.zw += u_resolution_scale_minus_one;
       #endif
     #endif
   #endif
@@ -743,7 +742,6 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   // Used for converting to normalized coordinates for sampling.
   ss << "CONSTANT float2 RCP_VRAM_SIZE = float2(1.0 / float(" << VRAM_WIDTH << "), 1.0 / float(" << VRAM_HEIGHT
      << "));\n";
-  ss << "CONSTANT uint RESOLUTION_SCALE = " << m_resolution_scale << "u;\n";
 
   WriteColorConversionFunctions(ss);
   WriteBatchUniformBuffer(ss);
@@ -774,18 +772,13 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   ss << R"(
 uint3 ApplyDithering(uint2 coord, uint3 icol)
 {
-  #if DITHERING_SCALED
+  #if (DITHERING_SCALED != 0 || UPSCALED == 0)
     uint2 fc = coord & uint2(3u, 3u);
   #else
-    uint2 fc = (coord / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE)) & uint2(3u, 3u);
+    uint2 fc = uint2(float2(coord) * u_rcp_resolution_scale) & uint2(3u, 3u);
   #endif
   int offset = s_dither_values[fc.y * 4u + fc.x];
-
-  #if !TRUE_COLOR
-    return uint3(clamp((int3(icol) + int3(offset, offset, offset)) >> 3, 0, 31));
-  #else
-    return uint3(clamp(int3(icol) + int3(offset, offset, offset), 0, 255));
-  #endif
+  return uint3(clamp((int3(icol) + offset) >> 3, 0, 31));
 }
 
 #if TEXTURED
@@ -852,7 +845,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       // Coordinates are already upscaled, we need to downscale them to apply the texture
       // window, then re-upscale/offset. We can't round here, because it could result in
       // going outside of the texture window.
-      float2 ncoords = coords / float(RESOLUTION_SCALE);
+      float2 ncoords = coords * u_rcp_resolution_scale;
       float2 nfpart = frac(ncoords);
       uint2 nicoord = ApplyTextureWindow(uint2(floor(ncoords)));
       uint2 nvicoord = (texpage.xy + nicoord) & uint2(1023, 511);
@@ -942,11 +935,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
     #else
       icolor = uint3(texcol.rgb * float3(255.0, 255.0, 255.0));
       icolor = (icolor * vertcol) >> 7;
-      #if DITHERING
-        icolor = ApplyDithering(fragpos, icolor);
-      #else
-        icolor = min(icolor, uint3(255u, 255u, 255u));
-      #endif
+      icolor = min(icolor, uint3(255u, 255u, 255u));
     #endif
 
     // Compute output alpha (mask bit)
