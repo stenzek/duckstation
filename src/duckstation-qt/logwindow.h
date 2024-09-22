@@ -37,6 +37,7 @@ private:
 
 protected:
   void closeEvent(QCloseEvent* event);
+  void changeEvent(QEvent* event);
 
 private Q_SLOTS:
   void onClearTriggered();
@@ -54,6 +55,7 @@ private:
   QMenu* m_level_menu;
   std::span<const char*> m_filter_names;
 
+  bool m_is_dark_theme = false;
   bool m_attached_to_main_window = true;
   bool m_destroying = false;
 };

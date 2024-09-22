@@ -19,7 +19,8 @@
 LogWindow* g_log_window;
 
 LogWindow::LogWindow(bool attach_to_main)
-  : QMainWindow(), m_filter_names(Settings::GetLogFilters()), m_attached_to_main_window(attach_to_main)
+  : QMainWindow(), m_filter_names(Settings::GetLogFilters()), m_is_dark_theme(QtHost::IsDarkApplicationTheme()),
+    m_attached_to_main_window(attach_to_main)
 {
   restoreSize();
   createUi();
@@ -320,6 +321,14 @@ void LogWindow::closeEvent(QCloseEvent* event)
   QMainWindow::closeEvent(event);
 }
 
+void LogWindow::changeEvent(QEvent* event)
+{
+  if (event->type() == QEvent::StyleChange)
+    m_is_dark_theme = QtHost::IsDarkApplicationTheme();
+
+  QMainWindow::changeEvent(event);
+}
+
 void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, const QString& message)
 {
   QTextCursor temp_cursor = m_text->textCursor();
@@ -332,26 +341,41 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
   {
     static constexpr const QChar level_characters[static_cast<size_t>(Log::Level::Count)] = {'X', 'E', 'W', 'I',
                                                                                              'V', 'D', 'B', 'T'};
-    static constexpr const QColor level_colors[static_cast<size_t>(Log::Level::Count)] = {
-      QColor(255, 255, 255),    // NONE
-      QColor(0xE7, 0x48, 0x56), // ERROR, Red Intensity
-      QColor(0xF9, 0xF1, 0xA5), // WARNING, Yellow Intensity
-      QColor(0xF2, 0xF2, 0xF2), // INFO, White Intensity
-      QColor(0x16, 0xC6, 0x0C), // VERBOSE, Green Intensity
-      QColor(0xCC, 0xCC, 0xCC), // DEV, White
-      QColor(0x13, 0xA1, 0x0E), // DEBUG, Green
-      QColor(0x00, 0x37, 0xDA), // TRACE, Blue
+    static constexpr const QColor level_colors[2][static_cast<size_t>(Log::Level::Count)] = {
+      {
+        // Light theme
+        QColor(0, 0, 0),          // NONE
+        QColor(0x80, 0x00, 0x00), // ERROR, Red Intensity
+        QColor(0xb4, 0xb4, 0x00), // WARNING, Yellow Intensity
+        QColor(0x0d, 0x0d, 0x0d), // INFO, White Intensity
+        QColor(0x00, 0x80, 0x00), // VERBOSE, Green Intensity
+        QColor(0x70, 0x70, 0x70), // DEV, White
+        QColor(0xec, 0x5e, 0xf1), // DEBUG, Green
+        QColor(0xe9, 0x39, 0xf3), // TRACE, Blue
+      },
+      {
+        // Dark theme
+        QColor(255, 255, 255),    // NONE
+        QColor(0xE7, 0x48, 0x56), // ERROR, Red Intensity
+        QColor(0xF9, 0xF1, 0xA5), // WARNING, Yellow Intensity
+        QColor(0xF2, 0xF2, 0xF2), // INFO, White Intensity
+        QColor(0x16, 0xC6, 0x0C), // VERBOSE, Green Intensity
+        QColor(0xCC, 0xCC, 0xCC), // DEV, White
+        QColor(0x13, 0xA1, 0x0E), // DEBUG, Green
+        QColor(0x00, 0x37, 0xDA), // TRACE, Blue
+      },
     };
-    static constexpr const QColor timestamp_color = QColor(0xcc, 0xcc, 0xcc);
-    static constexpr const QColor channel_color = QColor(0xf2, 0xf2, 0xf2);
+    static constexpr const QColor timestamp_color[2] = {QColor(0x60, 0x60, 0x60), QColor(0xcc, 0xcc, 0xcc)};
+    static constexpr const QColor channel_color[2] = {QColor(0x30, 0x30, 0x30), QColor(0xf2, 0xf2, 0xf2)};
 
     QTextCharFormat format = temp_cursor.charFormat();
+    const size_t dark = static_cast<size_t>(m_is_dark_theme);
 
     if (g_settings.log_timestamps)
     {
       const float message_time = Log::GetCurrentMessageTime();
       const QString qtimestamp = QStringLiteral("[%1] ").arg(message_time, 10, 'f', 4);
-      format.setForeground(QBrush(timestamp_color));
+      format.setForeground(QBrush(timestamp_color[dark]));
       temp_cursor.setCharFormat(format);
       temp_cursor.insertText(qtimestamp);
     }
@@ -359,12 +383,12 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
     const QString qchannel = (level <= static_cast<u32>(Log::Level::Warning)) ?
                                QStringLiteral("%1(%2): ").arg(level_characters[level]).arg(channel) :
                                QStringLiteral("%1/%2: ").arg(level_characters[level]).arg(channel);
-    format.setForeground(QBrush(channel_color));
+    format.setForeground(QBrush(channel_color[dark]));
     temp_cursor.setCharFormat(format);
     temp_cursor.insertText(qchannel);
 
     // message has \n already
-    format.setForeground(QBrush(level_colors[level]));
+    format.setForeground(QBrush(level_colors[dark][level]));
     temp_cursor.setCharFormat(format);
     temp_cursor.insertText(message);
   }
