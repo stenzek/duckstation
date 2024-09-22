@@ -2254,6 +2254,7 @@ void QtHost::InitializeEarlyConsole()
   const bool was_console_enabled = Log::IsConsoleOutputEnabled();
   if (!was_console_enabled)
     Log::SetConsoleOutputParams(true);
+  Log::SetLogLevel(Log::Level::Dev);
 }
 
 void QtHost::PrintCommandLineVersion()
