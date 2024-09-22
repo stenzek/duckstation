@@ -29,10 +29,9 @@ void GPU_SW_Backend::Reset()
 void GPU_SW_Backend::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 {
   const GPURenderCommand rc{cmd->rc.bits};
-  const bool dithering_enable = rc.IsDitheringEnabled() && cmd->draw_mode.dither_enable;
 
   const GPU_SW_Rasterizer::DrawTriangleFunction DrawFunction = GPU_SW_Rasterizer::GetDrawTriangleFunction(
-    rc.shading_enable, rc.texture_enable, rc.raw_texture_enable, rc.transparency_enable, dithering_enable);
+    rc.shading_enable, rc.texture_enable, rc.raw_texture_enable, rc.transparency_enable);
 
   DrawFunction(cmd, &cmd->vertices[0], &cmd->vertices[1], &cmd->vertices[2]);
   if (rc.quad_polygon)
@@ -51,8 +50,8 @@ void GPU_SW_Backend::DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
 
 void GPU_SW_Backend::DrawLine(const GPUBackendDrawLineCommand* cmd)
 {
-  const GPU_SW_Rasterizer::DrawLineFunction DrawFunction = GPU_SW_Rasterizer::GetDrawLineFunction(
-    cmd->rc.shading_enable, cmd->rc.transparency_enable, cmd->IsDitheringEnabled());
+  const GPU_SW_Rasterizer::DrawLineFunction DrawFunction =
+    GPU_SW_Rasterizer::GetDrawLineFunction(cmd->rc.shading_enable, cmd->rc.transparency_enable);
 
   for (u16 i = 1; i < cmd->num_vertices; i++)
     DrawFunction(cmd, &cmd->vertices[i - 1], &cmd->vertices[i]);

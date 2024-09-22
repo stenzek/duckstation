@@ -28,11 +28,11 @@ using DrawTriangleFunction = void (*)(const GPUBackendDrawPolygonCommand* cmd,
                                       const GPUBackendDrawPolygonCommand::Vertex* v0,
                                       const GPUBackendDrawPolygonCommand::Vertex* v1,
                                       const GPUBackendDrawPolygonCommand::Vertex* v2);
-typedef const DrawTriangleFunction DrawTriangleFunctionTable[2][2][2][2][2];
+typedef const DrawTriangleFunction DrawTriangleFunctionTable[2][2][2][2];
 
 using DrawLineFunction = void (*)(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawLineCommand::Vertex* p0,
                                   const GPUBackendDrawLineCommand::Vertex* p1);
-typedef const DrawLineFunction DrawLineFunctionTable[2][2][2];
+typedef const DrawLineFunction DrawLineFunctionTable[2][2];
 
 // Default implementation, compatible with all ISAs.
 extern const DrawRectangleFunctionTable DrawRectangleFunctions;
@@ -46,10 +46,9 @@ extern const DrawLineFunctionTable* SelectedDrawLineFunctions;
 
 extern void SelectImplementation();
 
-ALWAYS_INLINE static DrawLineFunction GetDrawLineFunction(bool shading_enable, bool transparency_enable,
-                                                          bool dithering_enable)
+ALWAYS_INLINE static DrawLineFunction GetDrawLineFunction(bool shading_enable, bool transparency_enable)
 {
-  return (*SelectedDrawLineFunctions)[u8(shading_enable)][u8(transparency_enable)][u8(dithering_enable)];
+  return (*SelectedDrawLineFunctions)[u8(shading_enable)][u8(transparency_enable)];
 }
 
 ALWAYS_INLINE static DrawRectangleFunction GetDrawRectangleFunction(bool texture_enable, bool raw_texture_enable,
@@ -59,11 +58,10 @@ ALWAYS_INLINE static DrawRectangleFunction GetDrawRectangleFunction(bool texture
 }
 
 ALWAYS_INLINE static DrawTriangleFunction GetDrawTriangleFunction(bool shading_enable, bool texture_enable,
-                                                                  bool raw_texture_enable, bool transparency_enable,
-                                                                  bool dithering_enable)
+                                                                  bool raw_texture_enable, bool transparency_enable)
 {
   return (*SelectedDrawTriangleFunctions)[u8(shading_enable)][u8(texture_enable)][u8(raw_texture_enable)]
-                                         [u8(transparency_enable)][u8(dithering_enable)];
+                                         [u8(transparency_enable)];
 }
 
 #define DECLARE_ALTERNATIVE_RASTERIZER(isa)                                                                            \

@@ -348,8 +348,6 @@ struct GPUBackendDrawCommand : public GPUBackendCommand
   GPURenderCommand rc;
   GPUTexturePaletteReg palette;
   GPUTextureWindow window;
-
-  ALWAYS_INLINE bool IsDitheringEnabled() const { return rc.IsDitheringEnabled() && draw_mode.dither_enable; }
 };
 
 struct GPUBackendDrawPolygonCommand : public GPUBackendDrawCommand

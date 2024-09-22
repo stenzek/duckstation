@@ -20,7 +20,8 @@ namespace GPU_SW_Rasterizer {
 // TODO: UpdateVRAM, FillVRAM, etc.
 
 #ifdef USE_VECTOR
-#if 0
+// #define CHECK_VECTOR
+#ifdef CHECK_VECTOR
 static u16 s_vram_backup[VRAM_WIDTH * VRAM_HEIGHT];
 static u16 s_new_vram[VRAM_WIDTH * VRAM_HEIGHT];
 static u32 s_bad_counter = 0;
@@ -48,9 +49,6 @@ static u32 s_bad_counter = 0;
     }                                                                                                                  \
     /*Assert(std::memcmp(g_vram, s_new_vram, sizeof(g_vram)) == 0)*/                                                   \
   } while (0)
-#else
-#define BACKUP_VRAM()
-#define CHECK_VRAM(drawer)
 #endif
 #endif
 
@@ -77,7 +75,7 @@ static u32 s_bad_counter = 0;
   return std::make_tuple(static_cast<u8>(rgb24), static_cast<u8>(rgb24 >> 8), static_cast<u8>(rgb24 >> 16));
 }
 
-template<bool texture_enable, bool raw_texture_enable, bool transparency_enable, bool dithering_enable>
+template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 [[maybe_unused]] ALWAYS_INLINE_RELEASE static void ShadePixel(const GPUBackendDrawCommand* cmd, u32 x, u32 y,
                                                               u8 color_r, u8 color_g, u8 color_b, u8 texcoord_x,
                                                               u8 texcoord_y)
@@ -129,6 +127,7 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable,
     }
     else
     {
+      const bool dithering_enable = cmd->draw_mode.dither_enable;
       const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
       const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
 
@@ -142,6 +141,7 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable,
   }
   else
   {
+    const bool dithering_enable = cmd->draw_mode.dither_enable;
     const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
     const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
 
@@ -251,8 +251,8 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
 
       const u8 texcoord_x = Truncate8(ZeroExtend32(origin_texcoord_x) + offset_x);
 
-      ShadePixel<texture_enable, raw_texture_enable, transparency_enable, false>(cmd, static_cast<u32>(x), draw_y, r, g,
-                                                                                 b, texcoord_x, texcoord_y);
+      ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(cmd, static_cast<u32>(x), draw_y, r, g, b,
+                                                                          texcoord_x, texcoord_y);
     }
   }
 }
@@ -502,7 +502,7 @@ struct PixelVectors
 };
 } // namespace
 
-template<bool texture_enable, bool raw_texture_enable, bool transparency_enable, bool dithering_enable>
+template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 ALWAYS_INLINE_RELEASE static void
 ShadePixel(const PixelVectors<texture_enable>& pv, GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode,
            u32 start_x, u32 y, GSVectorNi vertex_color_rg, GSVectorNi vertex_color_ba, GSVectorNi texcoord_x,
@@ -578,16 +578,8 @@ ShadePixel(const PixelVectors<texture_enable>& pv, GPUTextureMode texture_mode, 
       GSVectorNi ba = tba.mul16l(vertex_color_ba);
 
       // Convert to 5bit.
-      if constexpr (dithering_enable)
-      {
-        rg = rg.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
-        ba = ba.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
-      }
-      else
-      {
-        rg = rg.sra16<7>();
-        ba = ba.sra16<7>();
-      }
+      rg = rg.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+      ba = ba.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
 
       // Bit15 gets passed through as-is.
       ba = ba.blend16<0xaa>(tba);
@@ -604,25 +596,15 @@ ShadePixel(const PixelVectors<texture_enable>& pv, GPUTextureMode texture_mode, 
   else
   {
     // Non-textured transparent polygons don't set bit 15, but are treated as transparent.
-    if constexpr (dithering_enable)
-    {
-      GSVectorNi rg = vertex_color_rg.add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
-      GSVectorNi ba = vertex_color_ba.add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+    GSVectorNi rg = vertex_color_rg.add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+    GSVectorNi ba = vertex_color_ba.add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
 
-      // Clamp to 5bit. We use 32bit for BA to set a to zero.
-      rg = rg.min_u16(GSVectorNi::cxpr16(0x1F));
-      ba = ba.min_u16(GSVectorNi::cxpr(0x1F));
+    // Clamp to 5bit. We use 32bit for BA to set a to zero.
+    rg = rg.min_u16(GSVectorNi::cxpr16(0x1F));
+    ba = ba.min_u16(GSVectorNi::cxpr(0x1F));
 
-      // And interleave back to 16bpp.
-      color = RG_BAToRGB5A1(rg, ba);
-    }
-    else
-    {
-      // Note that bit15 is set to 0 here, which the shift will do.
-      const GSVectorNi rg = vertex_color_rg.srl16<3>();
-      const GSVectorNi ba = vertex_color_ba.srl16<3>();
-      color = RG_BAToRGB5A1(rg, ba);
-    }
+    // And interleave back to 16bpp.
+    color = RG_BAToRGB5A1(rg, ba);
   }
 
   GSVectorNi bg_color = LoadVector(start_x, y);
@@ -725,7 +707,9 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
   const PixelVectors<texture_enable> pv(cmd);
   const u32 width = cmd->width;
 
+#ifdef CHECK_VECTOR
   BACKUP_VRAM();
+#endif
 
   for (u32 offset_y = 0; offset_y < cmd->height; offset_y++)
   {
@@ -751,7 +735,7 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
         preserve_mask = preserve_mask | xvec.gt32(pv.clip_right);
         if (!preserve_mask.alltrue())
         {
-          ShadePixel<texture_enable, raw_texture_enable, transparency_enable, false>(
+          ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(
             pv, cmd->draw_mode.texture_mode, cmd->draw_mode.transparency_mode, x, draw_y, rg, ba, row_texcoord_x,
             texcoord_y, preserve_mask, GSVectorNi::zero());
         }
@@ -768,13 +752,15 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
       texcoord_y = texcoord_y.add32(GSVectorNi::cxpr(1)) & GSVectorNi::cxpr(0xFF);
   }
 
+#ifdef CHECK_VECTOR
   CHECK_VRAM(GPU_SW_Rasterizer::DrawRectangleFunctions[texture_enable][raw_texture_enable][transparency_enable](cmd));
+#endif
 }
 
 #endif // USE_VECTOR
 
 // TODO: Vectorize line draw.
-template<bool shading_enable, bool transparency_enable, bool dithering_enable>
+template<bool shading_enable, bool transparency_enable>
 static void DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawLineCommand::Vertex* p0,
                      const GPUBackendDrawLineCommand::Vertex* p1)
 {
@@ -837,8 +823,8 @@ static void DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawL
       const u8 g = shading_enable ? unfp_rgb(curg) : p0->g;
       const u8 b = shading_enable ? unfp_rgb(curb) : p0->b;
 
-      ShadePixel<false, false, transparency_enable, dithering_enable>(
-        cmd, static_cast<u32>(x), static_cast<u32>(y) & VRAM_HEIGHT_MASK, r, g, b, 0, 0);
+      ShadePixel<false, false, transparency_enable>(cmd, static_cast<u32>(x), static_cast<u32>(y) & VRAM_HEIGHT_MASK, r,
+                                                    g, b, 0, 0);
     }
 
     curx += dxdk;
@@ -979,8 +965,7 @@ struct TrianglePart
 
 #ifndef USE_VECTOR
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
-         bool dithering_enable>
+template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
                      const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep)
 {
@@ -1009,7 +994,7 @@ static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start
 
   do
   {
-    ShadePixel<texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
+    ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(
       cmd, static_cast<u32>(current_x), static_cast<u32>(y), rgb.GetR(), rgb.GetG(), rgb.GetB(), uv.GetU(), uv.GetV());
 
     current_x++;
@@ -1020,8 +1005,7 @@ static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start
   } while (--width > 0);
 }
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
-         bool dithering_enable>
+template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCommand* cmd, const TrianglePart& tp,
                                                    const UVStepper& uv, const UVSteps& uvstep, const RGBStepper& rgb,
                                                    const RGBSteps& rgbstep)
@@ -1070,7 +1054,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
         continue;
       }
 
-      DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
+      DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
         cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
     } while (current_y > end_y);
   }
@@ -1098,7 +1082,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
       if (y >= static_cast<s32>(g_drawing_area.top) &&
           (!cmd->params.interlaced_rendering || cmd->params.active_line_lsb != (static_cast<u32>(current_y) & 1u)))
       {
-        DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
+        DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
           cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
       }
 
@@ -1158,8 +1142,7 @@ struct TriangleVectors : PixelVectors<texture_enable>
 };
 } // namespace
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
-         bool dithering_enable>
+template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
                      const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep,
                      const TriangleVectors<shading_enable, texture_enable>& tv)
@@ -1210,8 +1193,10 @@ static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start
     dv = GSVectorNi::zero();
   }
 
-  const GSVectorNi dither = GSVectorNi::broadcast128<false>(
-    &VECTOR_DITHER_MATRIX[static_cast<u32>(y) & 3][(static_cast<u32>(current_x) & 3) * 2]);
+  const GSVectorNi dither = cmd->draw_mode.dither_enable ?
+                              GSVectorNi::broadcast128<false>(
+                                &VECTOR_DITHER_MATRIX[static_cast<u32>(y) & 3][(static_cast<u32>(current_x) & 3) * 2]) :
+                              GSVectorNi::zero();
 
   GSVectorNi xvec = GSVectorNi(current_x).add32(SPAN_OFFSET_VEC);
   GSVectorNi wvec = GSVectorNi(width).sub32(SPAN_WIDTH_VEC);
@@ -1237,7 +1222,7 @@ static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start
     preserve_mask = preserve_mask | xvec.gt32(tv.clip_right);
     if (!preserve_mask.alltrue())
     {
-      ShadePixel<texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
+      ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(
         tv, cmd->draw_mode.texture_mode, cmd->draw_mode.transparency_mode, static_cast<u32>(current_x),
         static_cast<u32>(y), rg, b, u, v, preserve_mask, dither);
     }
@@ -1262,8 +1247,7 @@ static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start
   }
 }
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
-         bool dithering_enable>
+template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCommand* cmd, const TrianglePart& tp,
                                                    const UVStepper& uv, const UVSteps& uvstep, const RGBStepper& rgb,
                                                    const RGBSteps& rgbstep)
@@ -1314,7 +1298,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
         continue;
       }
 
-      DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
+      DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
         cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
     } while (current_y > end_y);
   }
@@ -1344,7 +1328,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
       if (y >= static_cast<s32>(g_drawing_area.top) &&
           (!cmd->params.interlaced_rendering || cmd->params.active_line_lsb != (static_cast<u32>(current_y) & 1u)))
       {
-        DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
+        DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
           cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
       }
 
@@ -1362,12 +1346,11 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
 
 #endif // USE_VECTOR
 
-template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable,
-         bool dithering_enable>
+template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 static void DrawTriangle(const GPUBackendDrawPolygonCommand* cmd, const GPUBackendDrawPolygonCommand::Vertex* v0,
                          const GPUBackendDrawPolygonCommand::Vertex* v1, const GPUBackendDrawPolygonCommand::Vertex* v2)
 {
-#if 0
+#ifdef CHECK_VECTOR
   const GPUBackendDrawPolygonCommand::Vertex* orig_v0 = v0;
   const GPUBackendDrawPolygonCommand::Vertex* orig_v1 = v1;
   const GPUBackendDrawPolygonCommand::Vertex* orig_v2 = v2;
@@ -1500,20 +1483,20 @@ static void DrawTriangle(const GPUBackendDrawPolygonCommand* cmd, const GPUBacke
     rgb.Init(top_left_vertex->r, top_left_vertex->g, top_left_vertex->b);
   }
 
-#ifdef USE_VECTOR
+#ifdef CHECK_VECTOR
   BACKUP_VRAM();
 #endif
 
   for (u32 i = 0; i < 2; i++)
   {
-    DrawTrianglePart<shading_enable, texture_enable, raw_texture_enable, transparency_enable, dithering_enable>(
-      cmd, triparts[i], uv, uvstep, rgb, rgbstep);
+    DrawTrianglePart<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(cmd, triparts[i], uv,
+                                                                                              uvstep, rgb, rgbstep);
   }
 
-#ifdef USE_VECTOR
+#ifdef CHECK_VECTOR
   CHECK_VRAM(
-    GPU_SW_Rasterizer::DrawTriangleFunctions[shading_enable][texture_enable][raw_texture_enable][transparency_enable]
-                                            [dithering_enable](cmd, orig_v0, orig_v1, orig_v2));
+    GPU_SW_Rasterizer::DrawTriangleFunctions[shading_enable][texture_enable][raw_texture_enable][transparency_enable](
+      cmd, orig_v0, orig_v1, orig_v2));
 #endif
 }
 
@@ -1523,29 +1506,18 @@ constinit const DrawRectangleFunctionTable DrawRectangleFunctions = {
   {{&DrawRectangle<true, false, false>, &DrawRectangle<true, false, true>},
    {&DrawRectangle<true, true, false>, &DrawRectangle<true, true, true>}}};
 
-constinit const DrawLineFunctionTable DrawLineFunctions = {
-  {{&DrawLine<false, false, false>, &DrawLine<false, false, true>},
-   {&DrawLine<false, true, false>, &DrawLine<false, true, true>}},
-  {{&DrawLine<true, false, false>, &DrawLine<true, false, true>},
-   {&DrawLine<true, true, false>, &DrawLine<true, true, true>}}};
+constinit const DrawLineFunctionTable DrawLineFunctions = {{&DrawLine<false, false>, &DrawLine<false, true>},
+                                                           {&DrawLine<true, false>, &DrawLine<true, true>}};
 
 constinit const DrawTriangleFunctionTable DrawTriangleFunctions = {
-  {{{{&DrawTriangle<false, false, false, false, false>, &DrawTriangle<false, false, false, false, true>},
-     {&DrawTriangle<false, false, false, true, false>, &DrawTriangle<false, false, false, true, true>}},
-    {{&DrawTriangle<false, false, false, false, false>, &DrawTriangle<false, false, false, false, false>},
-     {&DrawTriangle<false, false, false, true, false>, &DrawTriangle<false, false, false, true, false>}}},
-   {{{&DrawTriangle<false, true, false, false, false>, &DrawTriangle<false, true, false, false, true>},
-     {&DrawTriangle<false, true, false, true, false>, &DrawTriangle<false, true, false, true, true>}},
-    {{&DrawTriangle<false, true, true, false, false>, &DrawTriangle<false, true, true, false, false>},
-     {&DrawTriangle<false, true, true, true, false>, &DrawTriangle<false, true, true, true, false>}}}},
-  {{{{&DrawTriangle<true, false, false, false, false>, &DrawTriangle<true, false, false, false, true>},
-     {&DrawTriangle<true, false, false, true, false>, &DrawTriangle<true, false, false, true, true>}},
-    {{&DrawTriangle<true, false, false, false, false>, &DrawTriangle<true, false, false, false, false>},
-     {&DrawTriangle<true, false, false, true, false>, &DrawTriangle<true, false, false, true, false>}}},
-   {{{&DrawTriangle<true, true, false, false, false>, &DrawTriangle<true, true, false, false, true>},
-     {&DrawTriangle<true, true, false, true, false>, &DrawTriangle<true, true, false, true, true>}},
-    {{&DrawTriangle<true, true, true, false, false>, &DrawTriangle<true, true, true, false, false>},
-     {&DrawTriangle<true, true, true, true, false>, &DrawTriangle<true, true, true, true, false>}}}}};
+  {{{&DrawTriangle<false, false, false, false>, &DrawTriangle<false, false, false, true>},
+    {&DrawTriangle<false, false, false, false>, &DrawTriangle<false, false, false, true>}},
+   {{&DrawTriangle<false, true, false, false>, &DrawTriangle<false, true, false, true>},
+    {&DrawTriangle<false, true, true, false>, &DrawTriangle<false, true, true, true>}}},
+  {{{&DrawTriangle<true, false, false, false>, &DrawTriangle<true, false, false, true>},
+    {&DrawTriangle<true, false, false, false>, &DrawTriangle<true, false, false, true>}},
+   {{&DrawTriangle<true, true, false, false>, &DrawTriangle<true, true, false, true>},
+    {&DrawTriangle<true, true, true, false>, &DrawTriangle<true, true, true, true>}}}};
 
 #ifdef __INTELLISENSE__
 }
