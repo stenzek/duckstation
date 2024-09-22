@@ -260,6 +260,9 @@ def write(line):
 
 def compare_frames(path1, path2):
     try:
+        if os.stat(path1).st_size != os.stat(path2).st_size:
+            return False
+
         with open(path1, "rb") as f:
             hash1 = hashlib.md5(f.read()).digest()
         with open(path2, "rb") as f:
