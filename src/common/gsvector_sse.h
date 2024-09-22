@@ -102,17 +102,17 @@ public:
 
   ALWAYS_INLINE operator __m128i() const { return m; }
 
-  ALWAYS_INLINE GSVector2i sat_i8(const GSVector2i& min, const GSVector2i& max) const
+  ALWAYS_INLINE GSVector2i sat_s8(const GSVector2i& min, const GSVector2i& max) const
   {
-    return max_i8(min).min_i8(max);
+    return max_s8(min).min_s8(max);
   }
-  ALWAYS_INLINE GSVector2i sat_i16(const GSVector2i& min, const GSVector2i& max) const
+  ALWAYS_INLINE GSVector2i sat_s16(const GSVector2i& min, const GSVector2i& max) const
   {
-    return max_i16(min).min_i16(max);
+    return max_s16(min).min_s16(max);
   }
-  ALWAYS_INLINE GSVector2i sat_i32(const GSVector2i& min, const GSVector2i& max) const
+  ALWAYS_INLINE GSVector2i sat_s32(const GSVector2i& min, const GSVector2i& max) const
   {
-    return max_i32(min).min_i32(max);
+    return max_s32(min).min_s32(max);
   }
 
   ALWAYS_INLINE GSVector2i sat_u8(const GSVector2i& min, const GSVector2i& max) const
@@ -128,12 +128,12 @@ public:
     return max_u32(min).min_u32(max);
   }
 
-  ALWAYS_INLINE GSVector2i min_i8(const GSVector2i& v) const { return GSVector2i(_mm_min_epi8(m, v)); }
-  ALWAYS_INLINE GSVector2i max_i8(const GSVector2i& v) const { return GSVector2i(_mm_max_epi8(m, v)); }
-  ALWAYS_INLINE GSVector2i min_i16(const GSVector2i& v) const { return GSVector2i(_mm_min_epi16(m, v)); }
-  ALWAYS_INLINE GSVector2i max_i16(const GSVector2i& v) const { return GSVector2i(_mm_max_epi16(m, v)); }
-  ALWAYS_INLINE GSVector2i min_i32(const GSVector2i& v) const { return GSVector2i(_mm_min_epi32(m, v)); }
-  ALWAYS_INLINE GSVector2i max_i32(const GSVector2i& v) const { return GSVector2i(_mm_max_epi32(m, v)); }
+  ALWAYS_INLINE GSVector2i min_s8(const GSVector2i& v) const { return GSVector2i(_mm_min_epi8(m, v)); }
+  ALWAYS_INLINE GSVector2i max_s8(const GSVector2i& v) const { return GSVector2i(_mm_max_epi8(m, v)); }
+  ALWAYS_INLINE GSVector2i min_s16(const GSVector2i& v) const { return GSVector2i(_mm_min_epi16(m, v)); }
+  ALWAYS_INLINE GSVector2i max_s16(const GSVector2i& v) const { return GSVector2i(_mm_max_epi16(m, v)); }
+  ALWAYS_INLINE GSVector2i min_s32(const GSVector2i& v) const { return GSVector2i(_mm_min_epi32(m, v)); }
+  ALWAYS_INLINE GSVector2i max_s32(const GSVector2i& v) const { return GSVector2i(_mm_max_epi32(m, v)); }
 
   ALWAYS_INLINE GSVector2i min_u8(const GSVector2i& v) const { return GSVector2i(_mm_min_epu8(m, v)); }
   ALWAYS_INLINE GSVector2i max_u8(const GSVector2i& v) const { return GSVector2i(_mm_max_epu8(m, v)); }
@@ -873,37 +873,37 @@ public:
 
   ALWAYS_INLINE bool rempty() const { return lt32(zwzw()).mask() != 0x00ff; }
 
-  ALWAYS_INLINE GSVector4i runion(const GSVector4i& v) const { return min_i32(v).blend32<0xc>(max_i32(v)); }
+  ALWAYS_INLINE GSVector4i runion(const GSVector4i& v) const { return min_s32(v).blend32<0xc>(max_s32(v)); }
 
-  ALWAYS_INLINE GSVector4i rintersect(const GSVector4i& v) const { return sat_i32(v); }
+  ALWAYS_INLINE GSVector4i rintersect(const GSVector4i& v) const { return sat_s32(v); }
   ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return !rintersect(v).rempty(); }
   ALWAYS_INLINE bool rcontains(const GSVector4i& v) const { return rintersect(v).eq(v); }
 
   ALWAYS_INLINE u32 rgba32() const { return static_cast<u32>(ps32().pu16().extract32<0>()); }
 
-  ALWAYS_INLINE GSVector4i sat_i8(const GSVector4i& min, const GSVector4i& max) const
+  ALWAYS_INLINE GSVector4i sat_s8(const GSVector4i& min, const GSVector4i& max) const
   {
-    return max_i8(min).min_i8(max);
+    return max_s8(min).min_s8(max);
   }
-  ALWAYS_INLINE GSVector4i sat_i8(const GSVector4i& minmax) const
+  ALWAYS_INLINE GSVector4i sat_s8(const GSVector4i& minmax) const
   {
-    return max_i8(minmax.xyxy()).min_i8(minmax.zwzw());
+    return max_s8(minmax.xyxy()).min_s8(minmax.zwzw());
   }
-  ALWAYS_INLINE GSVector4i sat_i16(const GSVector4i& min, const GSVector4i& max) const
+  ALWAYS_INLINE GSVector4i sat_s16(const GSVector4i& min, const GSVector4i& max) const
   {
-    return max_i16(min).min_i16(max);
+    return max_s16(min).min_s16(max);
   }
-  ALWAYS_INLINE GSVector4i sat_i16(const GSVector4i& minmax) const
+  ALWAYS_INLINE GSVector4i sat_s16(const GSVector4i& minmax) const
   {
-    return max_i16(minmax.xyxy()).min_i16(minmax.zwzw());
+    return max_s16(minmax.xyxy()).min_s16(minmax.zwzw());
   }
-  ALWAYS_INLINE GSVector4i sat_i32(const GSVector4i& min, const GSVector4i& max) const
+  ALWAYS_INLINE GSVector4i sat_s32(const GSVector4i& min, const GSVector4i& max) const
   {
-    return max_i32(min).min_i32(max);
+    return max_s32(min).min_s32(max);
   }
-  ALWAYS_INLINE GSVector4i sat_i32(const GSVector4i& minmax) const
+  ALWAYS_INLINE GSVector4i sat_s32(const GSVector4i& minmax) const
   {
-    return max_i32(minmax.xyxy()).min_i32(minmax.zwzw());
+    return max_s32(minmax.xyxy()).min_s32(minmax.zwzw());
   }
 
   ALWAYS_INLINE GSVector4i sat_u8(const GSVector4i& min, const GSVector4i& max) const
@@ -931,12 +931,12 @@ public:
     return max_u32(minmax.xyxy()).min_u32(minmax.zwzw());
   }
 
-  ALWAYS_INLINE GSVector4i min_i8(const GSVector4i& v) const { return GSVector4i(_mm_min_epi8(m, v)); }
-  ALWAYS_INLINE GSVector4i max_i8(const GSVector4i& v) const { return GSVector4i(_mm_max_epi8(m, v)); }
-  ALWAYS_INLINE GSVector4i min_i16(const GSVector4i& v) const { return GSVector4i(_mm_min_epi16(m, v)); }
-  ALWAYS_INLINE GSVector4i max_i16(const GSVector4i& v) const { return GSVector4i(_mm_max_epi16(m, v)); }
-  ALWAYS_INLINE GSVector4i min_i32(const GSVector4i& v) const { return GSVector4i(_mm_min_epi32(m, v)); }
-  ALWAYS_INLINE GSVector4i max_i32(const GSVector4i& v) const { return GSVector4i(_mm_max_epi32(m, v)); }
+  ALWAYS_INLINE GSVector4i min_s8(const GSVector4i& v) const { return GSVector4i(_mm_min_epi8(m, v)); }
+  ALWAYS_INLINE GSVector4i max_s8(const GSVector4i& v) const { return GSVector4i(_mm_max_epi8(m, v)); }
+  ALWAYS_INLINE GSVector4i min_s16(const GSVector4i& v) const { return GSVector4i(_mm_min_epi16(m, v)); }
+  ALWAYS_INLINE GSVector4i max_s16(const GSVector4i& v) const { return GSVector4i(_mm_max_epi16(m, v)); }
+  ALWAYS_INLINE GSVector4i min_s32(const GSVector4i& v) const { return GSVector4i(_mm_min_epi32(m, v)); }
+  ALWAYS_INLINE GSVector4i max_s32(const GSVector4i& v) const { return GSVector4i(_mm_max_epi32(m, v)); }
 
   ALWAYS_INLINE GSVector4i min_u8(const GSVector4i& v) const { return GSVector4i(_mm_min_epu8(m, v)); }
   ALWAYS_INLINE GSVector4i max_u8(const GSVector4i& v) const { return GSVector4i(_mm_max_epu8(m, v)); }

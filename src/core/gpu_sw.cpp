@@ -533,10 +533,10 @@ void GPU_SW::DispatchRenderCommand()
       }
 
       // Cull polygons which are too large.
-      const GSVector2i min_pos_12 = positions[1].min_i32(positions[2]);
-      const GSVector2i max_pos_12 = positions[1].max_i32(positions[2]);
-      const GSVector4i draw_rect_012 = GSVector4i(min_pos_12.min_i32(positions[0]))
-                                         .upl64(GSVector4i(max_pos_12.max_i32(positions[0])))
+      const GSVector2i min_pos_12 = positions[1].min_s32(positions[2]);
+      const GSVector2i max_pos_12 = positions[1].max_s32(positions[2]);
+      const GSVector4i draw_rect_012 = GSVector4i(min_pos_12.min_s32(positions[0]))
+                                         .upl64(GSVector4i(max_pos_12.max_s32(positions[0])))
                                          .add32(GSVector4i::cxpr(0, 0, 1, 1));
       const bool first_tri_culled =
         (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
@@ -558,8 +558,8 @@ void GPU_SW::DispatchRenderCommand()
       // quads
       if (rc.quad_polygon)
       {
-        const GSVector4i draw_rect_123 = GSVector4i(min_pos_12.min_i32(positions[3]))
-                                           .upl64(GSVector4i(max_pos_12.max_i32(positions[3])))
+        const GSVector4i draw_rect_123 = GSVector4i(min_pos_12.min_s32(positions[3]))
+                                           .upl64(GSVector4i(max_pos_12.max_s32(positions[3])))
                                            .add32(GSVector4i::cxpr(0, 0, 1, 1));
 
         // Cull polygons which are too large.
@@ -680,7 +680,7 @@ void GPU_SW::DispatchRenderCommand()
 
         const GSVector4i v0 = GSVector4i::loadl(&cmd->vertices[0].x);
         const GSVector4i v1 = GSVector4i::loadl(&cmd->vertices[1].x);
-        const GSVector4i rect = v0.min_i32(v1).xyxy(v0.max_i32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        const GSVector4i rect = v0.min_s32(v1).xyxy(v0.max_s32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
         const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
 
         if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
@@ -718,7 +718,7 @@ void GPU_SW::DispatchRenderCommand()
 
           const GSVector4i v0 = GSVector4i::loadl(&cmd->vertices[0].x);
           const GSVector4i v1 = GSVector4i::loadl(&cmd->vertices[1].x);
-          const GSVector4i rect = v0.min_i32(v1).xyxy(v0.max_i32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+          const GSVector4i rect = v0.min_s32(v1).xyxy(v0.max_s32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
           const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
 
           if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())

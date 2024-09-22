@@ -580,8 +580,8 @@ ShadePixel(const PixelVectors<texture_enable>& pv, GPUTextureMode texture_mode, 
       // Convert to 5bit.
       if constexpr (dithering_enable)
       {
-        rg = rg.sra16<4>().add16(dither).max_i16(GSVectorNi::zero()).sra16<3>();
-        ba = ba.sra16<4>().add16(dither).max_i16(GSVectorNi::zero()).sra16<3>();
+        rg = rg.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+        ba = ba.sra16<4>().add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
       }
       else
       {
@@ -606,8 +606,8 @@ ShadePixel(const PixelVectors<texture_enable>& pv, GPUTextureMode texture_mode, 
     // Non-textured transparent polygons don't set bit 15, but are treated as transparent.
     if constexpr (dithering_enable)
     {
-      GSVectorNi rg = vertex_color_rg.add16(dither).max_i16(GSVectorNi::zero()).sra16<3>();
-      GSVectorNi ba = vertex_color_ba.add16(dither).max_i16(GSVectorNi::zero()).sra16<3>();
+      GSVectorNi rg = vertex_color_rg.add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
+      GSVectorNi ba = vertex_color_ba.add16(dither).max_s16(GSVectorNi::zero()).sra16<3>();
 
       // Clamp to 5bit. We use 32bit for BA to set a to zero.
       rg = rg.min_u16(GSVectorNi::cxpr16(0x1F));

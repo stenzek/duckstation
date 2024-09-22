@@ -341,9 +341,9 @@ protected:
     // TODO: Coordinates are exclusive, so off by one here...
     const GSVector2i clamp_min = GSVector2i::load(&m_clamped_drawing_area.x);
     const GSVector2i clamp_max = GSVector2i::load(&m_clamped_drawing_area.z);
-    v1 = v1.sat_i32(clamp_min, clamp_max);
-    v2 = v2.sat_i32(clamp_min, clamp_max);
-    v3 = v3.sat_i32(clamp_min, clamp_max);
+    v1 = v1.sat_s32(clamp_min, clamp_max);
+    v2 = v2.sat_s32(clamp_min, clamp_max);
+    v3 = v3.sat_s32(clamp_min, clamp_max);
 
     TickCount pixels =
       std::abs((v1.x * v2.y + v2.x * v3.y + v3.x * v1.y - v1.x * v3.y - v2.x * v1.y - v3.x * v2.y) / 2);

@@ -3525,7 +3525,7 @@ static s16 GetPeakVolume(const u8* raw_sector, u8 channel)
   GSVector4i v_peak = GSVector4i::zero();
   for (u32 i = 0; i < NUM_SAMPLES; i += 8)
   {
-    v_peak = v_peak.max_i16(GSVector4i::load<false>(current_ptr));
+    v_peak = v_peak.max_s16(GSVector4i::load<false>(current_ptr));
     current_ptr += sizeof(v_peak);
   }
 
