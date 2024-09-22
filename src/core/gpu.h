@@ -206,6 +206,7 @@ public:
   // Ticks for hblank/vblank.
   void CRTCTickEvent(TickCount ticks);
   void CommandTickEvent(TickCount ticks);
+  void FrameDoneEvent(TickCount ticks);
 
   // Dumps raw VRAM to a file.
   bool DumpVRAMToFile(const char* filename);

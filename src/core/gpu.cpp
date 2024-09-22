@@ -49,6 +49,9 @@ static TimingEvent s_crtc_tick_event(
 static TimingEvent s_command_tick_event(
   "GPU Command Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu->CommandTickEvent(ticks); },
   nullptr);
+static TimingEvent s_frame_done_event(
+  "Frame Done", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu->FrameDoneEvent(ticks); },
+  nullptr);
 
 static std::deque<std::thread> s_screenshot_threads;
 static std::mutex s_screenshot_threads_mutex;
@@ -76,6 +79,7 @@ GPU::~GPU()
 {
   s_command_tick_event.Deactivate();
   s_crtc_tick_event.Deactivate();
+  s_frame_done_event.Deactivate();
 
   JoinScreenshotThreads();
   DestroyDeinterlaceTextures();
@@ -1089,7 +1093,19 @@ void GPU::CRTCTickEvent(TickCount ticks)
   UpdateCRTCTickEvent();
 
   if (frame_done)
-    System::FrameDone();
+  {
+    // we can't issue frame done if we're in the middle of executing a rec block, e.g. from reading GPUSTAT
+    // defer it until the end of the block in this case.
+    if (!TimingEvents::IsRunningEvents()) [[unlikely]]
+    {
+      DEBUG_LOG("Deferring frame done call");
+      s_frame_done_event.Schedule(0);
+    }
+    else
+    {
+      System::FrameDone();
+    }
+  }
 }
 
 void GPU::CommandTickEvent(TickCount ticks)
@@ -1100,6 +1116,13 @@ void GPU::CommandTickEvent(TickCount ticks)
   ExecuteCommands();
   UpdateCommandTickEvent();
   m_executing_commands = false;
+}
+
+void GPU::FrameDoneEvent(TickCount ticks)
+{
+  DebugAssert(TimingEvents::IsRunningEvents());
+  s_frame_done_event.Deactivate();
+  System::FrameDone();
 }
 
 void GPU::UpdateCommandTickEvent()

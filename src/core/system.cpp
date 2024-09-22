@@ -1479,6 +1479,7 @@ void System::ResetSystem()
   Host::AddIconOSDMessage("SystemReset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
                           Host::OSD_QUICK_DURATION);
 
+  ResetPerformanceCounters();
   InterruptExecution();
 }
 
