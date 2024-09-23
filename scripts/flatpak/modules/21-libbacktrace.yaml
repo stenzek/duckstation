@@ -10,7 +10,7 @@ build-options:
 sources:
   - type: git
     url: "https://github.com/ianlancetaylor/libbacktrace.git"
-    commit: "ad106d5fdd5d960bd33fae1c48a351af567fd075"
+    commit: "86885d14049fab06ef8a33aac51664230ca09200"
 cleanup:
   - /include
   - /lib/*.a

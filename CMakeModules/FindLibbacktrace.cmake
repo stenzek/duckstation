@@ -6,14 +6,14 @@
 
 FIND_PATH(
     LIBBACKTRACE_INCLUDE_DIR backtrace.h
-    HINTS /usr/include /usr/local/include
+    HINTS "${CMAKE_PREFIX_PATH}/include" /usr/include /usr/local/include
     ${LIBBACKTRACE_PATH_INCLUDES}
 )
 
 FIND_LIBRARY(
     LIBBACKTRACE_LIBRARY
     NAMES backtrace
-    PATHS ${ADDITIONAL_LIBRARY_PATHS} ${LIBBACKTRACE_PATH_LIB}
+    PATHS "${CMAKE_PREFIX_PATH}/lib" "${CMAKE_PREFIX_PATH}/lib64" ${ADDITIONAL_LIBRARY_PATHS} ${LIBBACKTRACE_PATH_LIB}
 )
 
 include(FindPackageHandleStandardArgs)

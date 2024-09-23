@@ -28,6 +28,13 @@ if(ALLOW_INSTALL)
   message(WARNING "Install target is enabled. This will install all DuckStation files into:
   ${CMAKE_INSTALL_PREFIX}
 It does **not** use the LSB subdirectories of bin, share, etc, so you should disable this option if it is set to /usr or /usr/local.")
+
+  if(INSTALL_SELF_CONTAINED)
+    message(STATUS "Creating self-contained install at ${CMAKE_INSTALL_PREFIX}")
+  else()
+    message(STATUS "Creating relative install at ${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "  CMAKE_INSTALL_BINDIR: ${CMAKE_INSTALL_BINDIR}")
+  endif()
 endif()
 
 if(NOT IS_SUPPORTED_COMPILER)

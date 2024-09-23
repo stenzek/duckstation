@@ -43,7 +43,6 @@ modules:
   - name: duckstation
     buildsystem: cmake-ninja
     builddir: true
-    no-make-install: true
     build-options:
       # Preserve debug information, it is needed for backtraces.
       strip: false
@@ -60,7 +59,11 @@ modules:
         - "-DCMAKE_BUILD_TYPE=Release"
 
         # We're not running tests as part of the flatpak build.
-        - '-DBUILD_TESTS=OFF'
+        - "-DBUILD_TESTS=OFF"
+
+        # Install to /app/bin, use /app/lib for dependencies.
+        - "-DALLOW_INSTALL=ON"
+        - "-DINSTALL_SELF_CONTAINED=OFF"
 
         # Make sure we're using ThinLTO.
         - "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
@@ -74,9 +77,6 @@ modules:
         path: ../..
 
     post-install:
-      # Copy the binary distribution.
-      - "cp -a bin \"${FLATPAK_DEST}\""
-
       # Manually copy desktop file/metadata, it's not done as part of the regular build.
       - >-
         install -Dm644

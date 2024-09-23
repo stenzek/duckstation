@@ -33,6 +33,7 @@ detect_cache_line_size()
 
 # Build options. Depends on system attributes.
 include(DuckStationBuildOptions)
+include(DuckStationDependencies)
 
 # Enable PIC on Linux, otherwise the builds do not support ASLR.
 if(LINUX OR BSD)
@@ -94,6 +95,18 @@ endif()
 # Write binaries to a seperate directory.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 
+# Installation directories. If INSTALL_SELF_CONTAINED is set, everything goes
+# into one directory, otherwise CMAKE_INSTALL_PREFIX/bin is used (for Flatpak).
+if(ALLOW_INSTALL)
+  if(INSTALL_SELF_CONTAINED)
+    set(CMAKE_INSTALL_BINDIR "${CMAKE_INSTALL_PREFIX}")
+    set(CMAKE_INSTALL_LIBDIR "${CMAKE_INSTALL_PREFIX}")
+  else()
+    # Let GNUInstallDirs set the destinations.
+    include(GNUInstallDirs)
+  endif()
+endif()
+
 # Enable large file support on Linux 32-bit platforms.
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
   add_definitions("-D_FILE_OFFSET_BITS=64")
@@ -112,7 +125,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Recursively include the source tree.
-include(DuckStationDependencies)
 add_subdirectory(dep)
 add_subdirectory(src)
 
