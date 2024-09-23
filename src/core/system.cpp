@@ -357,17 +357,19 @@ bool System::Internal::PerformEarlyHardwareChecks(Error* error)
 #ifdef CPU_ARCH_SSE41
   if (!cpuinfo_has_x86_sse4_1())
   {
-    Error::SetStringFmt(error, "Your CPU does not support the SSE4.1 instruction set, which is required for this "
-                               "version of DuckStation.\nPlease download and switch to the legacy SSE2 version.\nYou "
-                               "can download this from https://www.duckstation.org/ under \"Other Platforms\".");
+    Error::SetStringFmt(
+      error, "<h3>Your CPU does not support the SSE4.1 instruction set.</h3><p>SSE4.1 is required for this version of "
+             "DuckStation. Please download and switch to the legacy SSE2 version.</p><p>You can download this from <a "
+             "href=\"https://www.duckstation.org/\">www.duckstation.org</a> under \"Other Platforms\".");
     return false;
   }
 #else
   if (cpuinfo_has_x86_sse4_1())
   {
-    Error::SetStringFmt(error, "You are running the legacy SSE2 DuckStation executable on a CPU that supports the "
-                               "SSE4.1 instruction set.\nPlease download and switch the regular, non-SSE2 "
-                               "version.\nYou can download this from https://www.duckstation.org/.");
+    Error::SetStringFmt(
+      error, "You are running the <strong>legacy SSE2 DuckStation executable</strong> on a CPU that supports the "
+             "SSE4.1 instruction set.\nPlease download and switch to the regular, non-SSE2 version.\nYou can download "
+             "this from <a href=\"https://www.duckstation.org/\">www.duckstation.org</a>.");
   }
 #endif
 #endif

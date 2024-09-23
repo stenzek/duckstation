@@ -2550,12 +2550,13 @@ int main(int argc, char* argv[])
   CrashHandler::Install(&Bus::CleanupMemoryMap);
 
   QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
-  QtHost::RegisterTypes();
 
   QApplication app(argc, argv);
-
   if (!QtHost::PerformEarlyHardwareChecks())
     return EXIT_FAILURE;
+
+  // Type registration has to happen after hardware checks, clang emits ptest instructions otherwise.
+  QtHost::RegisterTypes();
 
   std::shared_ptr<SystemBootParameters> autoboot;
   if (!QtHost::ParseCommandLineParametersAndInitializeConfig(app, autoboot))

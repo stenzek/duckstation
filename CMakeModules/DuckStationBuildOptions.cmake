@@ -5,6 +5,7 @@ option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" OFF)
 option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
 option(BUILD_REGTEST "Build regression test runner" OFF)
 option(BUILD_TESTS "Build unit tests" OFF)
+option(DISABLE_SSE4 "Build with SSE4 instructions disabled, reduces performance" OFF)
 
 if(LINUX OR BSD)
   option(ENABLE_X11 "Support X11 window system" ON)
