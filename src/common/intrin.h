@@ -25,7 +25,7 @@
 #elif defined(__AVX__)
 #define CPU_ARCH_AVX 1
 #define CPU_ARCH_SSE41 1
-#elif defined(__SSE4_1__) || defined(_MSC_VER)
+#elif defined(__SSE4_1__)
 #define CPU_ARCH_SSE41 1
 #endif
 #elif defined(CPU_ARCH_ARM32) || defined(CPU_ARCH_ARM64)

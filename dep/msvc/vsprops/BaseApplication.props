@@ -6,8 +6,8 @@
     <GenerateProjectSpecificOutputFolder>false</GenerateProjectSpecificOutputFolder>
 
     <!-- Use MSVC suffix for MSVC builds, and remove the Clang suffix. -->
-    <TargetName Condition="$(Configuration.EndsWith(Clang))">$(ProjectName)-$(Platform)-$(Configuration.Replace("-Clang", ""))</TargetName>
-    <TargetName Condition="!$(Configuration.EndsWith(Clang))">$(ProjectName)-$(Platform)-$(Configuration)-MSVC</TargetName>
+    <TargetName Condition="$(Configuration.Contains(Clang))">$(ProjectName)-$(Platform)-$(Configuration.Replace("-Clang", ""))</TargetName>
+    <TargetName Condition="!$(Configuration.Contains(Clang))">$(ProjectName)-$(Platform)-$(Configuration)-MSVC</TargetName>
     <ConfigurationType>Application</ConfigurationType>
   </PropertyGroup>
 

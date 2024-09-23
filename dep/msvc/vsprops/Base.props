@@ -30,7 +30,8 @@
       <PreprocessorDefinitions>_HAS_EXCEPTIONS=0;_CRT_INTERNAL_NONSTDC_NAMES;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_WARNINGS;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(DepsIncludeDir)</AdditionalIncludeDirectories>
       <AdditionalOptions Condition="!$(Configuration.Contains(Clang))">/Zc:__cplusplus /Zo /utf-8 %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And '$(Platform)'=='x64'"> -msse4.1 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And !$(Configuration.Contains(SSE2)) And '$(Platform)'=='x64'"> -msse4.1 %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions Condition="!$(Configuration.Contains(SSE2)) And !$(Configuration.Contains(Clang)) And '$(Platform)'=='x64'">__SSE3__;__SSE4_1__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <!-- Force ThinLTO for Release builds, MSVC doesn't seem to do it otherwise. -->
       <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))"> -flto=thin %(AdditionalOptions)</AdditionalOptions>
       <DisableSpecificWarnings Condition="!$(Configuration.Contains(Clang))">4324;%(DisableSpecificWarnings)</DisableSpecificWarnings>
