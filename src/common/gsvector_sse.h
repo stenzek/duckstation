@@ -184,24 +184,6 @@ public:
     return max_u32(min).min_u32(max);
   }
 
-  ALWAYS_INLINE u8 minv_u8() const
-  {
-    __m128i vmin = _mm_min_epu8(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u8>(std::min(
-      static_cast<u32>(_mm_extract_epi8(vmin, 0)),
-      std::min(static_cast<u32>(_mm_extract_epi8(vmin, 1)),
-               std::min(static_cast<u32>(_mm_extract_epi8(vmin, 2)), static_cast<u32>(_mm_extract_epi8(vmin, 3))))));
-  }
-
-  ALWAYS_INLINE u16 maxv_u8() const
-  {
-    __m128i vmax = _mm_max_epu8(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u8>(std::max(
-      static_cast<u32>(_mm_extract_epi8(vmax, 0)),
-      std::max(static_cast<u32>(_mm_extract_epi8(vmax, 1)),
-               std::max(static_cast<u32>(_mm_extract_epi8(vmax, 2)), static_cast<u32>(_mm_extract_epi8(vmax, 3))))));
-  }
-
 #ifdef CPU_ARCH_SSE41
 
   ALWAYS_INLINE GSVector2i min_s8(const GSVector2i& v) const { return GSVector2i(_mm_min_epi8(m, v)); }
@@ -220,24 +202,46 @@ public:
 
   ALWAYS_INLINE s32 addv_s32() const { return _mm_cvtsi128_si32(_mm_hadd_epi32(m, m)); }
 
-  ALWAYS_INLINE u16 minv_u16() const
-  {
-    __m128i vmin = _mm_min_epu16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u16>(
-      std::min(static_cast<u32>(_mm_extract_epi16(vmin, 0)), static_cast<u32>(_mm_extract_epi16(vmin, 1))));
+#define VECTOR2i_REDUCE_8(name, func, ret)                                                                             \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));                                                \
+    v = func(v, _mm_srli_epi32(v, 16));                                                                                \
+    v = func(v, _mm_srli_epi16(v, 8));                                                                                 \
+    return static_cast<ret>(_mm_extract_epi8(v, 0));                                                                   \
   }
 
-  ALWAYS_INLINE u16 maxv_u16() const
-  {
-    __m128i vmax = _mm_max_epu16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u16>(
-      std::max<u32>(static_cast<u32>(_mm_extract_epi16(vmax, 0)), static_cast<u32>(_mm_extract_epi16(vmax, 1))));
+#define VECTOR2i_REDUCE_16(name, func, ret)                                                                            \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));                                                \
+    v = func(v, _mm_srli_epi32(v, 16));                                                                                \
+    return static_cast<ret>(_mm_extract_epi16(v, 0));                                                                  \
   }
 
-  ALWAYS_INLINE s32 minv_s32() const { return std::min<s32>(_mm_extract_epi32(m, 0), _mm_extract_epi32(m, 1)); }
-  ALWAYS_INLINE u32 minv_u32() const { return std::min<u32>(_mm_extract_epi32(m, 0), _mm_extract_epi32(m, 1)); }
-  ALWAYS_INLINE s32 maxv_s32() const { return std::max<s32>(_mm_extract_epi32(m, 0), _mm_extract_epi32(m, 1)); }
-  ALWAYS_INLINE u32 maxv_u32() const { return std::max<u32>(_mm_extract_epi32(m, 0), _mm_extract_epi32(m, 1)); }
+#define VECTOR2i_REDUCE_32(name, func, ret)                                                                            \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));                                                \
+    return static_cast<ret>(_mm_extract_epi32(v, 0));                                                                  \
+  }
+
+  VECTOR2i_REDUCE_8(minv_s8, _mm_min_epi8, s8);
+  VECTOR2i_REDUCE_8(maxv_s8, _mm_max_epi8, s8);
+  VECTOR2i_REDUCE_8(minv_u8, _mm_min_epu8, u8);
+  VECTOR2i_REDUCE_8(maxv_u8, _mm_max_epu8, u8);
+  VECTOR2i_REDUCE_16(minv_s16, _mm_min_epi16, s16);
+  VECTOR2i_REDUCE_16(maxv_s16, _mm_max_epi16, s16);
+  VECTOR2i_REDUCE_16(minv_u16, _mm_min_epu16, u16);
+  VECTOR2i_REDUCE_16(maxv_u16, _mm_max_epu16, u16);
+  VECTOR2i_REDUCE_32(minv_s32, _mm_min_epi32, s32);
+  VECTOR2i_REDUCE_32(maxv_s32, _mm_max_epi32, s32);
+  VECTOR2i_REDUCE_32(minv_u32, _mm_min_epu32, u32);
+  VECTOR2i_REDUCE_32(maxv_u32, _mm_max_epu32, u32);
+
+#undef VECTOR2i_REDUCE_32
+#undef VECTOR2i_REDUCE_16
+#undef VECTOR2i_REDUCE_8
 
 #else
 
@@ -256,23 +260,47 @@ public:
   ALWAYS_INLINE GSVector2i max_u32(const GSVector2i& v) const { return GSVector2i(sse2_max_u32(m, v)); }
 
   s32 addv_s32() const { return (x + y); }
-  ALWAYS_INLINE u16 minv_u16() const
-  {
-    __m128i vmin = sse2_min_u16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u16>(
-      std::min(static_cast<u32>(_mm_extract_epi16(vmin, 0)), static_cast<u32>(_mm_extract_epi16(vmin, 1))));
+
+#define VECTOR2i_REDUCE_8(name, func, ret)                                                                             \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));                                                \
+    v = func(v, _mm_srli_epi32(v, 16));                                                                                \
+    v = func(v, _mm_srli_epi16(v, 8));                                                                                 \
+    return static_cast<ret>(_mm_cvtsi128_si32(v));                                                                     \
   }
 
-  ALWAYS_INLINE u16 maxv_u16() const
-  {
-    __m128i vmax = sse2_max_u16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u16>(
-      std::max<u32>(static_cast<u32>(_mm_extract_epi16(vmax, 0)), static_cast<u32>(_mm_extract_epi16(vmax, 1))));
+#define VECTOR2i_REDUCE_16(name, func, ret)                                                                            \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));                                                \
+    v = func(v, _mm_srli_epi32(v, 16));                                                                                \
+    return static_cast<ret>(_mm_cvtsi128_si32(v));                                                                     \
   }
-  s32 minv_s32() const { return std::min(x, y); }
-  u32 minv_u32() const { return std::min(U32[0], U32[1]); }
-  s32 maxv_s32() const { return std::max(x, y); }
-  u32 maxv_u32() const { return std::max(U32[0], U32[1]); }
+
+#define VECTOR2i_REDUCE_32(name, func, ret)                                                                            \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(1, 1, 1, 1)));                                                \
+    return static_cast<ret>(_mm_cvtsi128_si32(v));                                                                     \
+  }
+
+  VECTOR2i_REDUCE_8(minv_s8, sse2_min_s8, s8);
+  VECTOR2i_REDUCE_8(maxv_s8, sse2_max_s8, s8);
+  VECTOR2i_REDUCE_8(minv_u8, _mm_min_epu8, u8);
+  VECTOR2i_REDUCE_8(maxv_u8, _mm_max_epu8, u8);
+  VECTOR2i_REDUCE_16(minv_s16, _mm_min_epi16, s16);
+  VECTOR2i_REDUCE_16(maxv_s16, _mm_max_epi16, s16);
+  VECTOR2i_REDUCE_16(minv_u16, sse2_min_u16, u16);
+  VECTOR2i_REDUCE_16(maxv_u16, sse2_max_u16, u16);
+  VECTOR2i_REDUCE_32(minv_s32, sse2_min_s32, s32);
+  VECTOR2i_REDUCE_32(maxv_s32, sse2_max_s32, s32);
+  VECTOR2i_REDUCE_32(minv_u32, sse2_min_u32, u32);
+  VECTOR2i_REDUCE_32(maxv_u32, sse2_max_u32, u32);
+
+#undef VECTOR2i_REDUCE_32
+#undef VECTOR2i_REDUCE_16
+#undef VECTOR2i_REDUCE_8
 
 #endif
 
@@ -1120,45 +1148,49 @@ public:
     return _mm_cvtsi128_si32(_mm_hadd_epi32(pairs, pairs));
   }
 
-  ALWAYS_INLINE s32 minv_s32() const
-  {
-    const __m128i vmin = _mm_min_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    return std::min<s32>(_mm_extract_epi32(vmin, 0), _mm_extract_epi32(vmin, 1));
+#define VECTOR4i_REDUCE_8(name, func, ret)                                                                             \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));                                                \
+    v = func(v, _mm_shuffle_epi32(v, _MM_SHUFFLE(1, 1, 1, 1)));                                                        \
+    v = func(v, _mm_srli_epi32(v, 16));                                                                                \
+    v = func(v, _mm_srli_epi16(v, 8));                                                                                 \
+    return static_cast<ret>(_mm_extract_epi8(v, 0));                                                                   \
   }
 
-  ALWAYS_INLINE u32 minv_u32() const
-  {
-    const __m128i vmin = _mm_min_epu32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    return std::min<u32>(_mm_extract_epi32(vmin, 0), _mm_extract_epi32(vmin, 1));
+#define VECTOR4i_REDUCE_16(name, func, ret)                                                                            \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));                                                \
+    v = func(v, _mm_shuffle_epi32(v, _MM_SHUFFLE(1, 1, 1, 1)));                                                        \
+    v = func(v, _mm_srli_epi32(v, 16));                                                                                \
+    return static_cast<ret>(_mm_extract_epi16(v, 0));                                                                  \
   }
 
-  ALWAYS_INLINE s32 maxv_s32() const
-  {
-    const __m128i vmax = _mm_max_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    return std::max<s32>(_mm_extract_epi32(vmax, 0), _mm_extract_epi32(vmax, 1));
+#define VECTOR4i_REDUCE_32(name, func, ret)                                                                            \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));                                                \
+    v = func(v, _mm_shuffle_epi32(v, _MM_SHUFFLE(1, 1, 1, 1)));                                                        \
+    return static_cast<ret>(_mm_extract_epi32(v, 0));                                                                  \
   }
 
-  ALWAYS_INLINE u32 maxv_u32() const
-  {
-    const __m128i vmax = _mm_max_epu32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    return std::max<u32>(_mm_extract_epi32(vmax, 0), _mm_extract_epi32(vmax, 1));
-  }
+  VECTOR4i_REDUCE_8(minv_s8, _mm_min_epi8, s8);
+  VECTOR4i_REDUCE_8(maxv_s8, _mm_max_epi8, s8);
+  VECTOR4i_REDUCE_8(minv_u8, _mm_min_epu8, u8);
+  VECTOR4i_REDUCE_8(maxv_u8, _mm_max_epu8, u8);
+  VECTOR4i_REDUCE_16(minv_s16, _mm_min_epi16, s16);
+  VECTOR4i_REDUCE_16(maxv_s16, _mm_max_epi16, s16);
+  VECTOR4i_REDUCE_16(minv_u16, _mm_min_epu16, u16);
+  VECTOR4i_REDUCE_16(maxv_u16, _mm_max_epu16, u16);
+  VECTOR4i_REDUCE_32(minv_s32, _mm_min_epi32, s32);
+  VECTOR4i_REDUCE_32(maxv_s32, _mm_max_epi32, s32);
+  VECTOR4i_REDUCE_32(minv_u32, _mm_min_epu32, u32);
+  VECTOR4i_REDUCE_32(maxv_u32, _mm_max_epu32, u32);
 
-  ALWAYS_INLINE u16 minv_u16() const
-  {
-    __m128i vmin = _mm_min_epu16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    vmin = _mm_min_epu16(vmin, _mm_shuffle_epi32(vmin, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u16>(
-      std::min(static_cast<u32>(_mm_extract_epi16(vmin, 0)), static_cast<u32>(_mm_extract_epi16(vmin, 1))));
-  }
-
-  ALWAYS_INLINE u16 maxv_u16() const
-  {
-    __m128i vmax = _mm_max_epu16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    vmax = _mm_max_epu16(vmax, _mm_shuffle_epi32(vmax, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u16>(
-      std::max<u32>(static_cast<u32>(_mm_extract_epi16(vmax, 0)), static_cast<u32>(_mm_extract_epi16(vmax, 1))));
-  }
+#undef VECTOR4i_REDUCE_32
+#undef VECTOR4i_REDUCE_16
+#undef VECTOR4i_REDUCE_8
 
 #else
 
@@ -1179,7 +1211,7 @@ public:
   GSVector4i addp_s32() const
   {
     return GSVector4i(
-      _mm_shuffle_epi32(_mm_add_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 3, 1, 1))), _MM_SHUFFLE(3, 2, 3, 0)));
+      _mm_shuffle_epi32(_mm_add_epi32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 3, 1, 1))), _MM_SHUFFLE(3, 2, 2, 0)));
   }
 
   ALWAYS_INLINE s32 addv_s32() const
@@ -1189,67 +1221,51 @@ public:
     return _mm_cvtsi128_si32(pair2);
   }
 
-  ALWAYS_INLINE s32 minv_s32() const
-  {
-    const __m128i vmin = sse2_min_s32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    return std::min<s32>(_mm_extract_epi32(vmin, 0), _mm_extract_epi32(vmin, 1));
+#define VECTOR4i_REDUCE_8(name, func, ret)                                                                             \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));                                                \
+    v = func(v, _mm_shuffle_epi32(v, _MM_SHUFFLE(1, 1, 1, 1)));                                                        \
+    v = func(v, _mm_srli_epi32(v, 16));                                                                                \
+    v = func(v, _mm_srli_epi16(v, 8));                                                                                 \
+    return static_cast<ret>(_mm_cvtsi128_si32(v));                                                                     \
   }
 
-  ALWAYS_INLINE u32 minv_u32() const
-  {
-    const __m128i vmin = sse2_min_u32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    return std::min<u32>(_mm_extract_epi32(vmin, 0), _mm_extract_epi32(vmin, 1));
+#define VECTOR4i_REDUCE_16(name, func, ret)                                                                            \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));                                                \
+    v = func(v, _mm_shuffle_epi32(v, _MM_SHUFFLE(1, 1, 1, 1)));                                                        \
+    v = func(v, _mm_srli_epi32(v, 16));                                                                                \
+    return static_cast<ret>(_mm_cvtsi128_si32(v));                                                                     \
   }
 
-  ALWAYS_INLINE s32 maxv_s32() const
-  {
-    const __m128i vmax = sse2_max_s32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    return std::max<s32>(_mm_extract_epi32(vmax, 0), _mm_extract_epi32(vmax, 1));
+#define VECTOR4i_REDUCE_32(name, func, ret)                                                                            \
+  ALWAYS_INLINE ret name() const                                                                                       \
+  {                                                                                                                    \
+    __m128i v = func(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));                                                \
+    v = func(v, _mm_shuffle_epi32(v, _MM_SHUFFLE(1, 1, 1, 1)));                                                        \
+    return static_cast<ret>(_mm_cvtsi128_si32(v));                                                                     \
   }
 
-  ALWAYS_INLINE u32 maxv_u32() const
-  {
-    const __m128i vmax = sse2_max_u32(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    return std::max<u32>(_mm_extract_epi32(vmax, 0), _mm_extract_epi32(vmax, 1));
-  }
+  VECTOR4i_REDUCE_8(minv_s8, sse2_min_s8, s8);
+  VECTOR4i_REDUCE_8(maxv_s8, sse2_max_s8, s8);
+  VECTOR4i_REDUCE_8(minv_u8, _mm_min_epu8, u8);
+  VECTOR4i_REDUCE_8(maxv_u8, _mm_max_epu8, u8);
+  VECTOR4i_REDUCE_16(minv_s16, _mm_min_epi16, s16);
+  VECTOR4i_REDUCE_16(maxv_s16, _mm_max_epi16, s16);
+  VECTOR4i_REDUCE_16(minv_u16, sse2_min_u16, u16);
+  VECTOR4i_REDUCE_16(maxv_u16, sse2_max_u16, u16);
+  VECTOR4i_REDUCE_32(minv_s32, sse2_min_s32, s32);
+  VECTOR4i_REDUCE_32(maxv_s32, sse2_max_s32, s32);
+  VECTOR4i_REDUCE_32(minv_u32, sse2_min_u32, u32);
+  VECTOR4i_REDUCE_32(maxv_u32, sse2_max_u32, u32);
 
-  ALWAYS_INLINE u16 minv_u16() const
-  {
-    __m128i vmin = sse2_min_u16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    vmin = sse2_min_u16(vmin, _mm_shuffle_epi32(vmin, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u16>(
-      std::min(static_cast<u32>(_mm_extract_epi16(vmin, 0)), static_cast<u32>(_mm_extract_epi16(vmin, 1))));
-  }
-
-  ALWAYS_INLINE u16 maxv_u16() const
-  {
-    __m128i vmax = sse2_max_u16(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    vmax = sse2_max_u16(vmax, _mm_shuffle_epi32(vmax, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u16>(
-      std::max<u32>(static_cast<u32>(_mm_extract_epi16(vmax, 0)), static_cast<u32>(_mm_extract_epi16(vmax, 1))));
-  }
+#undef VECTOR4i_REDUCE_32
+#undef VECTOR4i_REDUCE_16
+#undef VECTOR4i_REDUCE_8
 
 #endif
-
-  ALWAYS_INLINE u8 minv_u8() const
-  {
-    __m128i vmin = _mm_min_epu8(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    vmin = _mm_min_epu8(vmin, _mm_shuffle_epi32(vmin, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u8>(std::min(
-      static_cast<u32>(_mm_extract_epi8(vmin, 0)),
-      std::min(static_cast<u32>(_mm_extract_epi8(vmin, 1)),
-               std::min(static_cast<u32>(_mm_extract_epi8(vmin, 2)), static_cast<u32>(_mm_extract_epi8(vmin, 3))))));
-  }
-
-  ALWAYS_INLINE u16 maxv_u8() const
-  {
-    __m128i vmax = _mm_max_epu8(m, _mm_shuffle_epi32(m, _MM_SHUFFLE(3, 2, 3, 2)));
-    vmax = _mm_max_epu8(vmax, _mm_shuffle_epi32(vmax, _MM_SHUFFLE(1, 1, 1, 1)));
-    return static_cast<u8>(std::max(
-      static_cast<u32>(_mm_extract_epi8(vmax, 0)),
-      std::max(static_cast<u32>(_mm_extract_epi8(vmax, 1)),
-               std::max(static_cast<u32>(_mm_extract_epi8(vmax, 2)), static_cast<u32>(_mm_extract_epi8(vmax, 3))))));
-  }
 
   ALWAYS_INLINE GSVector4i clamp8() const { return pu16().upl8(); }
 
@@ -1586,7 +1602,14 @@ public:
 
   ALWAYS_INLINE bool alltrue() const { return mask() == 0xffff; }
 
-  ALWAYS_INLINE bool allfalse() const { return _mm_testz_si128(m, m) != 0; }
+  ALWAYS_INLINE bool allfalse() const
+  {
+#ifdef CPU_ARCH_SSE41
+    return _mm_testz_si128(m, m) != 0;
+#else
+    return mask() == 0;
+#endif
+  }
 
   template<s32 i>
   ALWAYS_INLINE GSVector4i insert8(s32 a) const
