@@ -50,7 +50,7 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 // Requires that the channel be defined by the buildbot.
 #if __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
-#ifdef SCM_RELEASE_TAGS
+#if defined(SCM_RELEASE_TAGS) && defined(SCM_RELEASE_TAG) && defined(SCM_RELEASE_ASSET)
 #define AUTO_UPDATER_SUPPORTED
 #endif
 #endif
