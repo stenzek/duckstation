@@ -28,6 +28,7 @@ CMakeFiles
 Makefile
 cmake_install.cmake
 install_manifest.txt
+/.cache/
 
 # unix intermediate files
 config.h
