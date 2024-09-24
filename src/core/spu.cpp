@@ -1229,12 +1229,17 @@ void SPU::WriteVoiceRegister(u32 offset, u16 value)
     case 0x0E: // repeat address
     {
       // There is a short window of time here between the voice being keyed on and the first block finishing decoding
-      // where setting the repeat address will *NOT* ignore the block/loop start flag. Games sensitive to this are:
+      // where setting the repeat address will *NOT* ignore the block/loop start flag.
+      //
+      // We always set this flag if the voice is off, because IRQs will keep the voice reading regardless, and we don't
+      // want the address that we just set to get wiped out by the IRQ looping.
+      //
+      // Games sensitive to this are:
       //  - The Misadventures of Tron Bonne
-      //  - Re-Loaded - The Hardcore Sequel
+      //  - Re-Loaded - The Hardcore Sequel (repeated sound effects)
       //  - Valkyrie Profile
 
-      const bool ignore_loop_address = voice.IsOn() && !voice.is_first_block;
+      const bool ignore_loop_address = !voice.IsOn() || !voice.is_first_block;
       DEBUG_LOG("SPU voice {} ADPCM repeat address <- 0x{:04X}", voice_index, value);
       voice.regs.adpcm_repeat_address = value;
       voice.ignore_loop_address |= ignore_loop_address;
