@@ -312,6 +312,7 @@ static TickCount GetTicksForStop(bool motor_was_on);
 static TickCount GetTicksForSpeedChange();
 static TickCount GetTicksForTOCRead();
 static CDImage::LBA GetNextSectorToBeRead();
+static u32 GetSectorsPerTrack(CDImage::LBA lba);
 static bool CompleteSeek();
 
 static void BeginCommand(Command command); // also update status register
@@ -1440,6 +1441,12 @@ TickCount CDROM::GetTicksForRead()
   return s_mode.double_speed ? (tps / 150) : (tps / 75);
 }
 
+u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
+{
+  return static_cast<CDImage::LBA>(9.0f +
+                                   2.5440497f * std::log(static_cast<float>(lba / CDImage::FRAMES_PER_MINUTE) + 1u));
+}
+
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 {
   static constexpr TickCount MIN_TICKS = 30000;
@@ -1456,7 +1463,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     UpdatePhysicalPosition(false);
 
   const CDImage::LBA current_lba = IsMotorOn() ? (IsSeeking() ? s_seek_end_lba : s_physical_lba) : 0;
-  const u32 lba_diff = static_cast<u32>((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
+  const CDImage::LBA lba_diff = ((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
   // Motor spin-up time.
   if (!IsMotorOn())
@@ -1468,15 +1475,28 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   }
 
   float seconds;
-  if (current_lba < new_lba && lba_diff < 10)
+  std::string_view seek_type;
+  if (lba_diff < 10)
   {
-    // If we're behind the current sector, and within a small distance, the mech just waits for the sector to come up by
-    // reading normally (or apparently moves the lens according to some?). This timing is actually needed for
-    // Transformers - Beast Wars Transmetals, it gets very unstable during loading if seeks are too fast.
-    const u32 ticks_per_sector =
-      s_mode.double_speed ? static_cast<u32>(System::MASTER_CLOCK / 150) : static_cast<u32>(System::MASTER_CLOCK / 75);
-    ticks += ticks_per_sector * std::min<u32>(5u, lba_diff);
     seconds = 0.0f;
+
+    const TickCount ticks_per_sector = s_mode.double_speed ? (System::MASTER_CLOCK / 150) : (System::MASTER_CLOCK / 75);
+    if (current_lba < new_lba)
+    {
+      // If we're behind the current sector, and within a small distance, the mech just waits for the sector to come up
+      // by reading normally (or apparently moves the lens according to some?). This timing is actually needed for
+      // Transformers - Beast Wars Transmetals, it gets very unstable during loading if seeks are too fast.
+      ticks += ticks_per_sector * std::min(8u, lba_diff);
+      seek_type = "forward";
+    }
+    else
+    {
+      // Track jump back. We cap this at 8 sectors (~53ms), so it doesn't take longer than the medium seek below.
+      const CDImage::LBA sectors_per_track = GetSectorsPerTrack(current_lba);
+      const CDImage::LBA tjump_position = (current_lba >= sectors_per_track) ? (current_lba - sectors_per_track) : 0;
+      ticks += ticks_per_sector * std::clamp((new_lba - std::min(new_lba, tjump_position)), 1u, 8u);
+      seek_type = "1T back+forward";
+    }
   }
   else if (lba_diff < 7200)
   {
@@ -1487,6 +1507,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
       (-63.1333f * std::log(std::clamp(static_cast<float>(current_lba) / static_cast<float>(CDImage::FRAMES_PER_MINUTE),
                                        1.0f, 72.0f))));
     seconds = (lba_diff < switch_point) ? 0.05f : 0.1f;
+    seek_type = (new_lba > current_lba) ? "NT forward" : "NT backward";
   }
   else
   {
@@ -1500,6 +1521,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
       SLED_FIXED_COST +
       (((SLED_VARIABLE_COST * (std::log(static_cast<float>(lba_diff)) / std::log(MAX_SLED_LBA)))) * LOG_WEIGHT) +
       ((SLED_VARIABLE_COST * (lba_diff / MAX_SLED_LBA)) * (1.0f - LOG_WEIGHT));
+    seek_type = (new_lba > current_lba) ? "2N/sled forward" : "2N/sled backward";
   }
 
   constexpr u32 ticks_per_second = static_cast<u32>(System::MASTER_CLOCK);
@@ -1514,13 +1536,15 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     const TickCount remaining_change_ticks = s_drive_event.GetTicksUntilNextExecution();
     ticks += remaining_change_ticks;
 
-    DEV_LOG("Seek time for {} LBAs: {} ({:.3f} ms) ({} for speed change/implicit TOC read)", lba_diff, ticks,
-            (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f, remaining_change_ticks);
+    DEV_LOG("Seek time for {}->{} ({} LBA): {} ({:.3f} ms) ({} for speed change/init) ({})",
+            LBAToMSFString(current_lba), LBAToMSFString(new_lba), lba_diff, ticks,
+            (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f, remaining_change_ticks,
+            seek_type);
   }
   else
   {
-    DEV_LOG("Seek time for {} LBAs: {} ({:.3f} ms)", lba_diff, ticks,
-            (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f);
+    DEV_LOG("Seek time for {}->{} ({} LBA): {} ({:.3f} ms) ({})", LBAToMSFString(current_lba), LBAToMSFString(new_lba),
+            lba_diff, ticks, (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f, seek_type);
   }
 
   return System::ScaleTicksToOverclock(static_cast<TickCount>(ticks));
@@ -2703,33 +2727,17 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
   const u32 carry = diff % ticks_per_read;
   if (sector_diff > 0)
   {
-    CDImage::LBA hold_offset;
-    CDImage::LBA sectors_per_track;
-
     // hardware tests show that it holds much closer to the target sector in logical mode
-    if (s_last_sector_header_valid)
-    {
-      hold_offset = 2;
-      sectors_per_track = 4;
-    }
-    else
-    {
-      hold_offset = 0;
-      sectors_per_track =
-        static_cast<CDImage::LBA>(7.0f + 2.811844405f * std::log(static_cast<float>(s_current_lba / 4500u) + 1u));
-    }
-
+    const CDImage::LBA hold_offset = s_last_sector_header_valid ? 2 : 0;
+    const CDImage::LBA sectors_per_track = GetSectorsPerTrack(s_current_lba);
     const CDImage::LBA hold_position = s_current_lba + hold_offset;
-    const CDImage::LBA base =
-      (hold_position >= (sectors_per_track - 1)) ? (hold_position - (sectors_per_track - 1)) : hold_position;
-    if (s_physical_lba < base)
-      s_physical_lba = base;
-
-    const CDImage::LBA old_offset = s_physical_lba - base;
+    const CDImage::LBA tjump_position = (hold_position >= sectors_per_track) ? (hold_position - sectors_per_track) : 0;
+    const CDImage::LBA old_offset = s_physical_lba - tjump_position;
     const CDImage::LBA new_offset = (old_offset + sector_diff) % sectors_per_track;
-    const CDImage::LBA new_physical_lba = base + new_offset;
+    const CDImage::LBA new_physical_lba = tjump_position + new_offset;
 #ifdef _DEBUG
-    DEV_LOG("Tick diff {}, sector diff {}, old pos {}, new pos {}", diff, sector_diff, LBAToMSFString(s_physical_lba),
+    DEV_LOG("{} sectors @ {} SPT, old pos {}, hold pos {}, tjump pos {}, new pos {}", sector_diff, sectors_per_track,
+            LBAToMSFString(s_physical_lba), LBAToMSFString(hold_position), LBAToMSFString(tjump_position),
             LBAToMSFString(new_physical_lba));
 #endif
     if (s_physical_lba != new_physical_lba)
@@ -2849,6 +2857,10 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
   const bool seek_okay = CompleteSeek();
   if (seek_okay)
   {
+    DEV_LOG("{} seek to [{}] complete{}", logical ? "Logical" : "Physical",
+            LBAToMSFString(s_reader.GetLastReadSector()),
+            s_read_after_seek ? ", now reading" : (s_play_after_seek ? ", now playing" : ""));
+
     // seek complete, transition to play/read if requested
     // INT2 is not sent on play/read
     if (s_read_after_seek)
