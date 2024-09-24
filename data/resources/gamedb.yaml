@@ -176722,6 +176722,8 @@ SLPM-86379:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in screen transitions/battle stages.
   codes:
     - SLPM-86379
     - SLPM-86375
@@ -176749,6 +176751,8 @@ SLPM-86371:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in screen transitions/battle stages.
   codes:
     - SLPM-86371
     - SLPM-86375
@@ -176776,6 +176780,8 @@ SLPM-86380:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in screen transitions/battle stages.
   codes:
     - SLPM-86380
     - SLPM-86375
@@ -176803,6 +176809,8 @@ SLPM-86372:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in screen transitions/battle stages.
   codes:
     - SLPM-86372
     - SLPM-86375
@@ -176825,6 +176833,8 @@ SLPM-87355:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in screen transitions/battle stages.
   codes:
     - SLPM-87355
     - SLPM-87373
@@ -176855,6 +176865,8 @@ SLUS-01156:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in screen transitions/battle stages.
   metadata:
     publisher: "Enix America Inc"
     developer: "tri-Ace"
@@ -176882,6 +176894,8 @@ SLUS-01179:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in screen transitions/battle stages.
   metadata:
     publisher: "Enix America Inc"
     developer: "tri-Ace"
