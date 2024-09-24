@@ -112788,6 +112788,8 @@ SCES-00582:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
   metadata:
     publisher: "Activision"
     developer: "Kalisto Technologies"
@@ -112807,6 +112809,8 @@ SCES-00684:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
   metadata:
     publisher: "Activision"
     developer: "Kalisto Technologies"
@@ -112826,6 +112830,8 @@ SIPS-60027:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
   metadata:
     publisher: "Sony"
     developer: "Kalisto Technologies"
@@ -112842,6 +112848,8 @@ SIPS-60027:
     linkCable: false
 PCPX-96101:
   name: "Nightmare Creatures (Japan) (Demo)"
+  traits:
+    - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
 SLUS-00582:
   name: "Nightmare Creatures (USA)"
   compatibility:
@@ -112850,6 +112858,8 @@ SLUS-00582:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
   metadata:
     publisher: "Activision"
     developer: "Kalisto Technologies"
@@ -112866,6 +112876,8 @@ SLUS-00582:
     linkCable: false
 SLUS-90011:
   name: "Nightmare Creatures (USA) (Demo)"
+  traits:
+    - ForceRecompilerICache # Crappy CD code on boot is timing sensitive.
 SLES-02751:
   name: "Nightmare Creatures II (Europe) (En,Fr,De)"
   controllers:
