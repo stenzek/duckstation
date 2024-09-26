@@ -3484,18 +3484,19 @@ void FullscreenUI::DrawEmulationSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BACKWARD, "Enable Rewinding"),
                     FSUI_CSTR("Saves state periodically so you can rewind any mistakes while playing."), "Main",
                     "RewindEnable", false);
-  DrawFloatRangeSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_SAVE, "Rewind Save Frequency"),
-    FSUI_CSTR("How often a rewind state will be created. Higher frequencies have greater system requirements."), "Main",
-    "RewindFrequency", 10.0f, 0.0f, 3600.0f, FSUI_CSTR("%.2f Seconds"));
-  DrawIntRangeSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_GLASS_WHISKEY, "Rewind Save Slots"),
-    FSUI_CSTR("How many saves will be kept for rewinding. Higher values have greater memory requirements."), "Main",
-    "RewindSaveSlots", 10, 1, 10000, FSUI_CSTR("%d Frames"));
 
   const s32 runahead_frames = GetEffectiveIntSetting(bsi, "Main", "RunaheadFrameCount", 0);
   const bool runahead_enabled = (runahead_frames > 0);
   const bool rewind_enabled = GetEffectiveBoolSetting(bsi, "Main", "RewindEnable", false);
+
+  DrawFloatRangeSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_SAVE, "Rewind Save Frequency"),
+    FSUI_CSTR("How often a rewind state will be created. Higher frequencies have greater system requirements."), "Main",
+    "RewindFrequency", 10.0f, 0.0f, 3600.0f, FSUI_CSTR("%.2f Seconds"), 1.0f, rewind_enabled);
+  DrawIntRangeSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_GLASS_WHISKEY, "Rewind Save Slots"),
+    FSUI_CSTR("How many saves will be kept for rewinding. Higher values have greater memory requirements."), "Main",
+    "RewindSaveSlots", 10, 1, 10000, FSUI_CSTR("%d Frames"), rewind_enabled);
 
   static constexpr const std::array runahead_options = {
     FSUI_NSTR("Disabled"), FSUI_NSTR("1 Frame"),  FSUI_NSTR("2 Frames"), FSUI_NSTR("3 Frames"),
