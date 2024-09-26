@@ -162,6 +162,12 @@ static bool CreateGPU(GPURenderer renderer, bool is_switching, Error* error);
 static bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
 static void HandleHostGPUDeviceLost();
 
+/// Returns true if fast forwarding or slow motion is currently active.
+static bool IsRunningAtNonStandardSpeed();
+
+/// Returns true if boot is being fast forwarded.
+static bool IsFastForwardingBoot();
+
 /// Updates the throttle period, call when target emulation speed changes.
 static void UpdateThrottlePeriod();
 static void ResetThrottler();
@@ -1497,6 +1503,10 @@ void System::ResetSystem()
   if (Error error; !SetBootMode(new_boot_mode, &error))
     ERROR_LOG("Failed to reload BIOS on boot mode change, the system may be unstable: {}", error.GetDescription());
 
+  // Have to turn on turbo if fast forwarding boot.
+  if (IsFastForwardingBoot())
+    UpdateSpeedLimiterState();
+
   Host::AddIconOSDMessage("SystemReset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
                           Host::OSD_QUICK_DURATION);
 
@@ -1837,7 +1847,7 @@ bool System::Initialize(bool force_software_renderer, Error* error)
   g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
   s_max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
   s_frame_number = 1;
-  s_internal_frame_number = 1;
+  s_internal_frame_number = 0;
 
   s_target_speed = g_settings.emulation_speed;
   s_throttle_frequency = 60.0f;
@@ -2333,6 +2343,14 @@ void System::SingleStepCPU()
 
 void System::IncrementInternalFrameNumber()
 {
+  if (IsFastForwardingBoot()) [[unlikely]]
+  {
+    // Need to turn off present throttle.
+    s_internal_frame_number++;
+    UpdateSpeedLimiterState();
+    return;
+  }
+
   s_internal_frame_number++;
 }
 
@@ -3368,9 +3386,11 @@ void System::UpdateSpeedLimiterState()
 {
   DebugAssert(IsValid());
 
-  s_target_speed = s_turbo_enabled ?
-                     g_settings.turbo_speed :
-                     (s_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed);
+  s_target_speed =
+    IsFastForwardingBoot() ?
+      0.0f :
+      (s_turbo_enabled ? g_settings.turbo_speed :
+                         (s_fast_forward_enabled ? g_settings.fast_forward_speed : g_settings.emulation_speed));
   s_throttler_enabled = (s_target_speed != 0.0f);
   s_optimal_frame_pacing = (s_throttler_enabled && g_settings.display_optimal_frame_pacing);
   s_skip_presenting_duplicate_frames = s_throttler_enabled && g_settings.display_skip_presenting_duplicate_frames;
@@ -5088,6 +5108,11 @@ bool System::IsRunningAtNonStandardSpeed()
     return false;
 
   return (s_target_speed != 1.0f && !s_syncing_to_host);
+}
+
+bool System::IsFastForwardingBoot()
+{
+  return (g_settings.bios_fast_forward_boot && s_internal_frame_number == 0 && s_boot_mode == BootMode::FastBoot);
 }
 
 s32 System::GetAudioOutputVolume()

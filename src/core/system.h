@@ -430,9 +430,6 @@ void ApplyCheatCode(u32 index);
 /// Toggle Widescreen Hack and Aspect Ratio
 void ToggleWidescreen();
 
-/// Returns true if fast forwarding or slow motion is currently active.
-bool IsRunningAtNonStandardSpeed();
-
 /// Returns true if vsync should be used.
 GPUVSyncMode GetEffectiveVSyncMode();
 bool ShouldAllowPresentThrottle();

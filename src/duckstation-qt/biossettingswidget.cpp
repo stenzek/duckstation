@@ -21,6 +21,11 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTTYLogging, "BIOS", "TTYLogging", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "BIOS", "PatchFastBoot", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, "BIOS", "FastForwardBoot", false);
+
+  connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &BIOSSettingsWidget::onFastBootChanged);
+
+  onFastBootChanged();
 
   dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
                              tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
@@ -84,6 +89,14 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
   }
 
   refreshList();
+
+  m_dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
+                               tr("Patches the BIOS to skip the boot animation. Safe to enable."));
+  m_dialog->registerWidgetHelp(m_ui.fastForwardBoot, tr("Fast Forward Boot"), tr("Unchecked"),
+                               tr("Fast forwards through the early loading process when fast booting, saving time. "
+                                  "Results may vary between games."));
+  m_dialog->registerWidgetHelp(m_ui.enableTTYLogging, tr("Enable TTY Logging"), tr("Unchecked"),
+                               tr("Logs BIOS calls to printf(). Not all games contain debugging messages."));
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget() = default;
@@ -101,6 +114,13 @@ void BIOSSettingsWidget::refreshList()
                    m_dialog->isPerGameSettings());
   setDropDownValue(m_ui.imagePAL, m_dialog->getStringValue("BIOS", "PathPAL", std::nullopt),
                    m_dialog->isPerGameSettings());
+}
+
+void BIOSSettingsWidget::onFastBootChanged()
+{
+  const bool fast_boot_enabled =
+    m_dialog->getEffectiveBoolValue("BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
+  m_ui.fastForwardBoot->setEnabled(fast_boot_enabled);
 }
 
 void BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion region, QComboBox* cb,

@@ -258,6 +258,7 @@ struct Settings
 
   bool bios_tty_logging : 1 = false;
   bool bios_patch_fast_boot : 1 = DEFAULT_FAST_BOOT_VALUE;
+  bool bios_fast_forward_boot : 1 = false;
   bool enable_8mb_ram : 1 = false;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};

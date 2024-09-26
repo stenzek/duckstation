@@ -3266,6 +3266,11 @@ void FullscreenUI::DrawBIOSSettingsPage()
   DrawToggleSetting(bsi, FSUI_CSTR("Enable Fast Boot"),
                     FSUI_CSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
                     Settings::DEFAULT_FAST_BOOT_VALUE);
+  DrawToggleSetting(bsi, FSUI_CSTR("Fast Forward Boot"),
+                    FSUI_CSTR("Fast forwards through the early loading process when fast booting, saving time. Results "
+                              "may vary between games."),
+                    "BIOS", "FastForwardBoot", false,
+                    GetEffectiveBoolSetting(bsi, "BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE));
   DrawToggleSetting(bsi, FSUI_CSTR("Enable TTY Logging"),
                     FSUI_CSTR("Logs BIOS calls to printf(). Not all games contain debugging messages."), "BIOS",
                     "TTYLogging", false);
@@ -7399,8 +7404,10 @@ TRANSLATE_NOOP("FullscreenUI", "Failed to load '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to load shader {}. It may be invalid.\nError was:");
 TRANSLATE_NOOP("FullscreenUI", "Failed to save input profile '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
+TRANSLATE_NOOP("FullscreenUI", "Fast Forward Boot");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
+TRANSLATE_NOOP("FullscreenUI", "Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.");
 TRANSLATE_NOOP("FullscreenUI", "File Size");
 TRANSLATE_NOOP("FullscreenUI", "File Size: %.2f MB");
 TRANSLATE_NOOP("FullscreenUI", "File Title");

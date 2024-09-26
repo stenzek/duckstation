@@ -29,6 +29,7 @@ public:
 
 private Q_SLOTS:
   void refreshList();
+  void onFastBootChanged();
 
 private:
   Ui::BIOSSettingsWidget m_ui;

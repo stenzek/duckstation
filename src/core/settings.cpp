@@ -360,6 +360,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
 
   bios_tty_logging = si.GetBoolValue("BIOS", "TTYLogging", false);
   bios_patch_fast_boot = si.GetBoolValue("BIOS", "PatchFastBoot", DEFAULT_FAST_BOOT_VALUE);
+  bios_fast_forward_boot = si.GetBoolValue("BIOS", "FastForwardBoot", false);
 
   multitap_mode =
     ParseMultitapModeName(
@@ -618,6 +619,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
 
   si.SetBoolValue("BIOS", "TTYLogging", bios_tty_logging);
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
+  si.SetBoolValue("BIOS", "FastForwardBoot", bios_fast_forward_boot);
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
@@ -746,6 +748,9 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.pcdrv_enable = false;
     g_settings.bios_patch_fast_boot = false;
   }
+
+  // fast forward boot requires fast boot
+  g_settings.bios_fast_forward_boot = g_settings.bios_patch_fast_boot && g_settings.bios_fast_forward_boot;
 
   if (g_settings.pcdrv_enable && g_settings.pcdrv_root.empty())
   {
