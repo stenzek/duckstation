@@ -136757,6 +136757,8 @@ SLES-02591:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Required to fix gaps/wobble.
   metadata:
     publisher: "Ubi Soft / Red Storm Entertainment"
     developer: "Red Lemon Studios"
@@ -136780,6 +136782,8 @@ SLUS-01062:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Required to fix gaps/wobble.
   metadata:
     publisher: "Ubi Soft / Red Storm Entertainment"
     developer: "Red Lemon Studios"
