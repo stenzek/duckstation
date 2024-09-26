@@ -322,10 +322,10 @@ protected:
   bool IsCLUTValid() const;
 
   // Rendering in the backend
-  virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height);
-  virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color);
-  virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask);
-  virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height);
+  virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height) = 0;
+  virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color) = 0;
+  virtual void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) = 0;
+  virtual void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height) = 0;
   virtual void DispatchRenderCommand() = 0;
   virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;
   virtual void UpdateDisplay() = 0;
@@ -416,6 +416,8 @@ protected:
 
   union GPUSTAT
   {
+    // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
+
     u32 bits;
     BitField<u32, u8, 0, 4> texture_page_x_base;
     BitField<u32, u8, 4, 1> texture_page_y_base;
@@ -458,18 +460,6 @@ protected:
     {
       static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
       return ((bits & ACTIVE) == ACTIVE);
-    }
-
-    // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
-    ALWAYS_INLINE u16 GetMaskAND() const
-    {
-      // return check_mask_before_draw ? 0x8000 : 0x0000;
-      return Truncate16((bits << 3) & 0x8000);
-    }
-    ALWAYS_INLINE u16 GetMaskOR() const
-    {
-      // return set_mask_while_drawing ? 0x8000 : 0x0000;
-      return Truncate16((bits << 4) & 0x8000);
     }
   } m_GPUSTAT = {};
 

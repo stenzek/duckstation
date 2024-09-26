@@ -275,8 +275,6 @@ union GPUBackendCommandParameters
   BitField<u8, bool, 2, 1> set_mask_while_drawing;
   BitField<u8, bool, 3, 1> check_mask_before_draw;
 
-  ALWAYS_INLINE bool IsMaskingEnabled() const { return (bits & 12u) != 0u; }
-
   // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
   u16 GetMaskAND() const
   {

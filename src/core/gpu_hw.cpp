@@ -6,6 +6,7 @@
 #include "cpu_pgxp.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_sw_backend.h"
+#include "gpu_sw_rasterizer.h"
 #include "host.h"
 #include "settings.h"
 #include "system.h"

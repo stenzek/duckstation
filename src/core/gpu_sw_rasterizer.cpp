@@ -12,11 +12,6 @@
 LOG_CHANNEL(GPU_SW_Rasterizer);
 
 namespace GPU_SW_Rasterizer {
-// Default implementation, compatible with all ISAs.
-extern const DrawRectangleFunctionTable DrawRectangleFunctions;
-extern const DrawTriangleFunctionTable DrawTriangleFunctions;
-extern const DrawLineFunctionTable DrawLineFunctions;
-
 constinit const DitherLUT g_dither_lut = []() constexpr {
   DitherLUT lut = {};
   for (u32 i = 0; i < DITHER_MATRIX_SIZE; i++)
@@ -33,29 +28,32 @@ constinit const DitherLUT g_dither_lut = []() constexpr {
   return lut;
 }();
 
+const DrawRectangleFunctionTable* DrawRectangleFunctions = nullptr;
+const DrawTriangleFunctionTable* DrawTriangleFunctions = nullptr;
+const DrawLineFunctionTable* DrawLineFunctions = nullptr;
+FillVRAMFunction FillVRAM = nullptr;
+WriteVRAMFunction WriteVRAM = nullptr;
+CopyVRAMFunction CopyVRAM = nullptr;
 GPUDrawingArea g_drawing_area = {};
 } // namespace GPU_SW_Rasterizer
 
-// Default implementation definitions.
-namespace GPU_SW_Rasterizer {
+// Default scalar implementation definitions.
+namespace GPU_SW_Rasterizer::Scalar {
+namespace {
 #include "gpu_sw_rasterizer.inl"
 }
+} // namespace GPU_SW_Rasterizer::Scalar
 
 // Default vector implementation definitions.
 #if defined(CPU_ARCH_SSE) || defined(CPU_ARCH_NEON)
 namespace GPU_SW_Rasterizer::SIMD {
+namespace {
 #define USE_VECTOR 1
 #include "gpu_sw_rasterizer.inl"
 #undef USE_VECTOR
+} // namespace
 } // namespace GPU_SW_Rasterizer::SIMD
 #endif
-
-// Initialize with default implementation.
-namespace GPU_SW_Rasterizer {
-const DrawRectangleFunctionTable* SelectedDrawRectangleFunctions = &DrawRectangleFunctions;
-const DrawTriangleFunctionTable* SelectedDrawTriangleFunctions = &DrawTriangleFunctions;
-const DrawLineFunctionTable* SelectedDrawLineFunctions = &DrawLineFunctions;
-} // namespace GPU_SW_Rasterizer
 
 // Declare alternative implementations.
 void GPU_SW_Rasterizer::SelectImplementation()
@@ -66,13 +64,16 @@ void GPU_SW_Rasterizer::SelectImplementation()
 
   selected = true;
 
-#define SELECT_ALTERNATIVE_RASTERIZER(isa)                                                                             \
+#define SELECT_IMPLEMENTATION(isa)                                                                                     \
   do                                                                                                                   \
   {                                                                                                                    \
     INFO_LOG("Using " #isa " software rasterizer implementation.");                                                    \
-    SelectedDrawRectangleFunctions = &isa::DrawRectangleFunctions;                                                     \
-    SelectedDrawTriangleFunctions = &isa::DrawTriangleFunctions;                                                       \
-    SelectedDrawLineFunctions = &isa::DrawLineFunctions;                                                               \
+    DrawRectangleFunctions = &isa::DrawRectangleFunctions;                                                             \
+    DrawTriangleFunctions = &isa::DrawTriangleFunctions;                                                               \
+    DrawLineFunctions = &isa::DrawLineFunctions;                                                                       \
+    FillVRAM = &isa::FillVRAMImpl;                                                                                     \
+    WriteVRAM = &isa::WriteVRAMImpl;                                                                                   \
+    CopyVRAM = &isa::CopyVRAMImpl;                                                                                     \
   } while (0)
 
 #if defined(CPU_ARCH_SSE) || defined(CPU_ARCH_NEON)
@@ -83,19 +84,20 @@ void GPU_SW_Rasterizer::SelectImplementation()
 #if defined(CPU_ARCH_SSE) && defined(_MSC_VER) && 0
   if (cpuinfo_has_x86_avx2() && (!use_isa || StringUtil::Strcasecmp(use_isa, "AVX2") == 0))
   {
-    SELECT_ALTERNATIVE_RASTERIZER(AVX2);
+    SELECT_IMPLEMENTATION(AVX2);
     return;
   }
 #endif
 
   if (!use_isa || StringUtil::Strcasecmp(use_isa, "SIMD") == 0)
   {
-    SELECT_ALTERNATIVE_RASTERIZER(SIMD);
+    SELECT_IMPLEMENTATION(SIMD);
     return;
   }
 #endif
 
   INFO_LOG("Using scalar software rasterizer implementation.");
+  SELECT_IMPLEMENTATION(Scalar);
 
-#undef SELECT_ALTERNATIVE_RASTERIZER
+#undef SELECT_IMPLEMENTATION
 }
