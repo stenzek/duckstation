@@ -114,29 +114,37 @@ static MemoryCard* GetDummyMemcard();
 static void BackupMemoryCardState();
 static void RestoreMemoryCardState();
 
-static std::array<std::unique_ptr<Controller>, NUM_CONTROLLER_AND_CARD_PORTS> s_controllers;
-static std::array<std::unique_ptr<MemoryCard>, NUM_CONTROLLER_AND_CARD_PORTS> s_memory_cards;
+namespace {
 
-static std::array<Multitap, NUM_MULTITAPS> s_multitaps;
+struct PadState
+{
+  std::array<std::unique_ptr<Controller>, NUM_CONTROLLER_AND_CARD_PORTS> controllers;
+  std::array<std::unique_ptr<MemoryCard>, NUM_CONTROLLER_AND_CARD_PORTS> memory_cards;
 
-static TimingEvent s_transfer_event{"Pad Serial Transfer", 1, 1, &Pad::TransferEvent, nullptr};
-static State s_state = State::Idle;
+  std::array<Multitap, NUM_MULTITAPS> multitaps;
 
-static JOY_CTRL s_JOY_CTRL = {};
-static JOY_STAT s_JOY_STAT = {};
-static JOY_MODE s_JOY_MODE = {};
-static u16 s_JOY_BAUD = 0;
+  TimingEvent transfer_event{"Pad Serial Transfer", 1, 1, &Pad::TransferEvent, nullptr};
+  State state = State::Idle;
 
-static ActiveDevice s_active_device = ActiveDevice::None;
-static u8 s_receive_buffer = 0;
-static u8 s_transmit_buffer = 0;
-static u8 s_transmit_value = 0;
-static bool s_receive_buffer_full = false;
-static bool s_transmit_buffer_full = false;
+  JOY_STAT JOY_STAT = {};
+  JOY_CTRL JOY_CTRL = {};
+  JOY_MODE JOY_MODE = {};
+  u16 JOY_BAUD = 0;
 
-static u32 s_last_memory_card_transfer_frame = 0;
-static DynamicHeapArray<u8> s_memory_card_backup;
-static std::unique_ptr<MemoryCard> s_dummy_card;
+  ActiveDevice active_device = ActiveDevice::None;
+  u8 receive_buffer = 0;
+  u8 transmit_buffer = 0;
+  u8 transmit_value = 0;
+  bool receive_buffer_full = false;
+  bool transmit_buffer_full = false;
+
+  u32 last_memory_card_transfer_frame = 0;
+  DynamicHeapArray<u8> memory_card_backup;
+  std::unique_ptr<MemoryCard> dummy_card;
+};
+} // namespace
+
+ALIGN_TO_CACHE_LINE static PadState s_state;
 
 } // namespace Pad
 
@@ -147,14 +155,14 @@ void Pad::Initialize()
 
 void Pad::Shutdown()
 {
-  s_memory_card_backup.deallocate();
+  s_state.memory_card_backup.deallocate();
 
-  s_transfer_event.Deactivate();
+  s_state.transfer_event.Deactivate();
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    s_controllers[i].reset();
-    s_memory_cards[i].reset();
+    s_state.controllers[i].reset();
+    s_state.memory_cards[i].reset();
   }
 }
 
@@ -164,15 +172,15 @@ void Pad::Reset()
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    if (s_controllers[i])
-      s_controllers[i]->Reset();
+    if (s_state.controllers[i])
+      s_state.controllers[i]->Reset();
 
-    if (s_memory_cards[i])
-      s_memory_cards[i]->Reset();
+    if (s_state.memory_cards[i])
+      s_state.memory_cards[i]->Reset();
   }
 
   for (u32 i = 0; i < NUM_MULTITAPS; i++)
-    s_multitaps[i].Reset();
+    s_state.multitaps[i].Reset();
 }
 
 bool Pad::ShouldAvoidSavingToState()
@@ -188,7 +196,8 @@ u32 Pad::GetMaximumRollbackFrames()
 
 bool Pad::DoStateController(StateWrapper& sw, u32 i)
 {
-  const ControllerType controller_type = s_controllers[i] ? s_controllers[i]->GetType() : ControllerType::None;
+  const ControllerType controller_type =
+    s_state.controllers[i] ? s_state.controllers[i]->GetType() : ControllerType::None;
   ControllerType controller_type_in_state = controller_type;
 
   // Data type change...
@@ -213,8 +222,8 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
                   Controller::GetControllerInfo(controller_type)->GetDisplayName()),
       Host::OSD_WARNING_DURATION);
 
-    if (s_controllers[i])
-      s_controllers[i]->Reset();
+    if (s_state.controllers[i])
+      s_state.controllers[i]->Reset();
   }
 
   // Still need to consume the state. If we saved the size, this would be better, since we could just skip over it.
@@ -223,7 +232,7 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
 
   if (!sw.DoMarker("Controller"))
     return false;
-  if (const auto& controller = s_controllers[i]; controller && controller->GetType() == controller_type_in_state)
+  if (const auto& controller = s_state.controllers[i]; controller && controller->GetType() == controller_type_in_state)
     return controller->DoState(sw, g_settings.load_devices_from_save_states);
   else if (const auto dummy = Controller::Create(controller_type_in_state, i); dummy)
     return dummy->DoState(sw, g_settings.load_devices_from_save_states);
@@ -233,11 +242,11 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
 
 bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 {
-  bool card_present_in_state = static_cast<bool>(s_memory_cards[i]);
+  bool card_present_in_state = static_cast<bool>(s_state.memory_cards[i]);
 
   sw.Do(&card_present_in_state);
 
-  if (card_present_in_state && !s_memory_cards[i] && g_settings.load_devices_from_save_states)
+  if (card_present_in_state && !s_state.memory_cards[i] && g_settings.load_devices_from_save_states)
   {
     Host::AddIconOSDMessage(
       fmt::format("CardLoadWarning{}", i), ICON_FA_SD_CARD,
@@ -245,10 +254,10 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
         TRANSLATE_FS("OSDMessage", "Memory card {} present in save state but not in system. Creating temporary card."),
         i + 1u),
       Host::OSD_ERROR_DURATION);
-    s_memory_cards[i] = MemoryCard::Create();
+    s_state.memory_cards[i] = MemoryCard::Create();
   }
 
-  MemoryCard* card_ptr = s_memory_cards[i].get();
+  MemoryCard* card_ptr = s_state.memory_cards[i].get();
   if (card_present_in_state)
   {
     if (sw.IsReading() && !g_settings.load_devices_from_save_states)
@@ -266,14 +275,14 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
   if (sw.IsWriting())
     return true; // all done as far as writes concerned.
 
-  if (card_ptr != s_memory_cards[i].get())
+  if (card_ptr != s_state.memory_cards[i].get())
   {
-    if (s_memory_cards[i])
+    if (s_state.memory_cards[i])
     {
-      if (s_memory_cards[i]->GetData() == card_ptr->GetData())
+      if (s_state.memory_cards[i]->GetData() == card_ptr->GetData())
       {
         DEV_LOG("Card {} data matches, copying state", i + 1u);
-        s_memory_cards[i]->CopyState(card_ptr);
+        s_state.memory_cards[i]->CopyState(card_ptr);
       }
       else
       {
@@ -286,7 +295,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
           Host::OSD_WARNING_DURATION);
 
         WARNING_LOG("Memory card {} data mismatch. Using current data via instant-replugging.", i + 1u);
-        s_memory_cards[i]->Reset();
+        s_state.memory_cards[i]->Reset();
       }
     }
     else
@@ -301,7 +310,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
     return true;
   }
 
-  if (!card_present_in_state && s_memory_cards[i])
+  if (!card_present_in_state && s_state.memory_cards[i])
   {
     if (g_settings.load_devices_from_save_states)
     {
@@ -310,7 +319,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
         fmt::format(
           TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Removing card."), i + 1u),
         Host::OSD_ERROR_DURATION);
-      s_memory_cards[i].reset();
+      s_state.memory_cards[i].reset();
     }
     else
     {
@@ -320,7 +329,7 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
           TRANSLATE_FS("OSDMessage", "Memory card {} present in system but not in save state. Replugging card."),
           i + 1u),
         Host::OSD_WARNING_DURATION);
-      s_memory_cards[i]->Reset();
+      s_state.memory_cards[i]->Reset();
     }
   }
 
@@ -329,37 +338,37 @@ bool Pad::DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state)
 
 MemoryCard* Pad::GetDummyMemcard()
 {
-  if (!s_dummy_card)
-    s_dummy_card = MemoryCard::Create();
-  return s_dummy_card.get();
+  if (!s_state.dummy_card)
+    s_state.dummy_card = MemoryCard::Create();
+  return s_state.dummy_card.get();
 }
 
 void Pad::BackupMemoryCardState()
 {
   DEV_LOG("Backing up memory card state.");
 
-  if (s_memory_card_backup.empty())
-    s_memory_card_backup.resize(MemoryCard::STATE_SIZE * NUM_CONTROLLER_AND_CARD_PORTS);
+  if (s_state.memory_card_backup.empty())
+    s_state.memory_card_backup.resize(MemoryCard::STATE_SIZE * NUM_CONTROLLER_AND_CARD_PORTS);
 
-  StateWrapper sw(s_memory_card_backup.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  StateWrapper sw(s_state.memory_card_backup.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    if (s_memory_cards[i])
-      s_memory_cards[i]->DoState(sw);
+    if (s_state.memory_cards[i])
+      s_state.memory_cards[i]->DoState(sw);
   }
 }
 
 void Pad::RestoreMemoryCardState()
 {
-  DebugAssert(!s_memory_card_backup.empty());
+  DebugAssert(!s_state.memory_card_backup.empty());
 
   VERBOSE_LOG("Restoring backed up memory card state.");
 
-  StateWrapper sw(s_memory_card_backup.cspan(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+  StateWrapper sw(s_state.memory_card_backup.cspan(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    if (s_memory_cards[i])
-      s_memory_cards[i]->DoState(sw);
+    if (s_state.memory_cards[i])
+      s_state.memory_cards[i]->DoState(sw);
   }
 }
 
@@ -393,11 +402,11 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
     bool process_memcard_state = true;
 
     const u32 frame_number = System::GetFrameNumber();
-    const u32 frames_since_transfer = frame_number - s_last_memory_card_transfer_frame;
-    const u32 prev_transfer_frame = s_last_memory_card_transfer_frame;
+    const u32 frames_since_transfer = frame_number - s_state.last_memory_card_transfer_frame;
+    const u32 prev_transfer_frame = s_state.last_memory_card_transfer_frame;
     bool state_has_memcards = false;
 
-    sw.Do(&s_last_memory_card_transfer_frame);
+    sw.Do(&s_state.last_memory_card_transfer_frame);
 
     // If there's been a transfer within the last N_ROLLBACK frames, include the memory card state when saving.
     state_has_memcards = (frames_since_transfer <= GetMaximumRollbackFrames());
@@ -406,7 +415,8 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
     if (sw.IsReading())
     {
       // If no transfers have occurred, no need to reload state.
-      if (s_last_memory_card_transfer_frame != frame_number && s_last_memory_card_transfer_frame == prev_transfer_frame)
+      if (s_state.last_memory_card_transfer_frame != frame_number &&
+          s_state.last_memory_card_transfer_frame == prev_transfer_frame)
       {
         process_memcard_state = false;
       }
@@ -425,9 +435,9 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
       MemoryCard* dummy_card = process_memcard_state ? nullptr : GetDummyMemcard();
       for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
       {
-        if (s_memory_cards[i])
+        if (s_state.memory_cards[i])
         {
-          MemoryCard* const mc = process_memcard_state ? s_memory_cards[i].get() : dummy_card;
+          MemoryCard* const mc = process_memcard_state ? s_state.memory_cards[i].get() : dummy_card;
           mc->DoState(sw);
         }
       }
@@ -436,10 +446,10 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
     // Always save controller state.
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
-      if (s_controllers[i])
+      if (s_state.controllers[i])
       {
         // Ignore input state, use the current. I think we want this?
-        s_controllers[i]->DoState(sw, false);
+        s_state.controllers[i]->DoState(sw, false);
       }
     }
   }
@@ -451,20 +461,20 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
       {
         // loading from old savestate which only had max 2 controllers.
         // honoring load_devices_from_save_states in this case seems debatable, but might as well...
-        if (s_controllers[i])
+        if (s_state.controllers[i])
         {
           if (g_settings.load_devices_from_save_states)
-            s_controllers[i].reset();
+            s_state.controllers[i].reset();
           else
-            s_controllers[i]->Reset();
+            s_state.controllers[i]->Reset();
         }
 
-        if (s_memory_cards[i])
+        if (s_state.memory_cards[i])
         {
           if (g_settings.load_devices_from_save_states)
-            s_memory_cards[i].reset();
+            s_state.memory_cards[i].reset();
           else
-            s_memory_cards[i]->Reset();
+            s_state.memory_cards[i]->Reset();
         }
 
         // and make sure to skip trying to read controller_type / card_present flags which don't exist in old states.
@@ -483,40 +493,40 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
   {
     for (u32 i = 0; i < NUM_MULTITAPS; i++)
     {
-      if (!s_multitaps[i].DoState(sw))
+      if (!s_state.multitaps[i].DoState(sw))
         return false;
     }
   }
 
-  sw.Do(&s_state);
-  sw.Do(&s_JOY_CTRL.bits);
-  sw.Do(&s_JOY_STAT.bits);
-  sw.Do(&s_JOY_MODE.bits);
-  sw.Do(&s_JOY_BAUD);
-  sw.Do(&s_receive_buffer);
-  sw.Do(&s_transmit_buffer);
-  sw.Do(&s_receive_buffer_full);
-  sw.Do(&s_transmit_buffer_full);
+  sw.Do(&s_state.state);
+  sw.Do(&s_state.JOY_CTRL.bits);
+  sw.Do(&s_state.JOY_STAT.bits);
+  sw.Do(&s_state.JOY_MODE.bits);
+  sw.Do(&s_state.JOY_BAUD);
+  sw.Do(&s_state.receive_buffer);
+  sw.Do(&s_state.transmit_buffer);
+  sw.Do(&s_state.receive_buffer_full);
+  sw.Do(&s_state.transmit_buffer_full);
 
   if (sw.IsReading() && IsTransmitting())
-    s_transfer_event.Activate();
+    s_state.transfer_event.Activate();
 
   return !sw.HasError();
 }
 
 Controller* Pad::GetController(u32 slot)
 {
-  return s_controllers[slot].get();
+  return s_state.controllers[slot].get();
 }
 
 void Pad::SetController(u32 slot, std::unique_ptr<Controller> dev)
 {
-  s_controllers[slot] = std::move(dev);
+  s_state.controllers[slot] = std::move(dev);
 }
 
 MemoryCard* Pad::GetMemoryCard(u32 slot)
 {
-  return s_memory_cards[slot].get();
+  return s_state.memory_cards[slot].get();
 }
 
 void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
@@ -524,12 +534,12 @@ void Pad::SetMemoryCard(u32 slot, std::unique_ptr<MemoryCard> dev)
   INFO_LOG("Memory card slot {}: {}", slot,
            dev ? (dev->GetFilename().empty() ? "<no file configured>" : dev->GetFilename().c_str()) : "<unplugged>");
 
-  s_memory_cards[slot] = std::move(dev);
+  s_state.memory_cards[slot] = std::move(dev);
 }
 
 std::unique_ptr<MemoryCard> Pad::RemoveMemoryCard(u32 slot)
 {
-  std::unique_ptr<MemoryCard> ret = std::move(s_memory_cards[slot]);
+  std::unique_ptr<MemoryCard> ret = std::move(s_state.memory_cards[slot]);
   if (ret)
     ret->Reset();
   return ret;
@@ -537,7 +547,7 @@ std::unique_ptr<MemoryCard> Pad::RemoveMemoryCard(u32 slot)
 
 Multitap* Pad::GetMultitap(u32 slot)
 {
-  return &s_multitaps[slot];
+  return &s_state.multitaps[slot];
 }
 
 u32 Pad::ReadRegister(u32 offset)
@@ -547,11 +557,11 @@ u32 Pad::ReadRegister(u32 offset)
     case 0x00: // JOY_DATA
     {
       if (IsTransmitting())
-        s_transfer_event.InvokeEarly();
+        s_state.transfer_event.InvokeEarly();
 
-      const u8 value = s_receive_buffer_full ? s_receive_buffer : 0xFF;
-      DEBUG_LOG("JOY_DATA (R) -> 0x{:02X}{}", value, s_receive_buffer_full ? "" : "(EMPTY)");
-      s_receive_buffer_full = false;
+      const u8 value = s_state.receive_buffer_full ? s_state.receive_buffer : 0xFF;
+      DEBUG_LOG("JOY_DATA (R) -> 0x{:02X}{}", value, s_state.receive_buffer_full ? "" : "(EMPTY)");
+      s_state.receive_buffer_full = false;
       UpdateJoyStat();
 
       return (ZeroExtend32(value) | (ZeroExtend32(value) << 8) | (ZeroExtend32(value) << 16) |
@@ -561,21 +571,21 @@ u32 Pad::ReadRegister(u32 offset)
     case 0x04: // JOY_STAT
     {
       if (IsTransmitting())
-        s_transfer_event.InvokeEarly();
+        s_state.transfer_event.InvokeEarly();
 
-      const u32 bits = s_JOY_STAT.bits;
-      s_JOY_STAT.ACKINPUT = false;
+      const u32 bits = s_state.JOY_STAT.bits;
+      s_state.JOY_STAT.ACKINPUT = false;
       return bits;
     }
 
     case 0x08: // JOY_MODE
-      return ZeroExtend32(s_JOY_MODE.bits);
+      return ZeroExtend32(s_state.JOY_MODE.bits);
 
     case 0x0A: // JOY_CTRL
-      return ZeroExtend32(s_JOY_CTRL.bits);
+      return ZeroExtend32(s_state.JOY_CTRL.bits);
 
     case 0x0E: // JOY_BAUD
-      return ZeroExtend32(s_JOY_BAUD);
+      return ZeroExtend32(s_state.JOY_BAUD);
 
     [[unlikely]] default:
       ERROR_LOG("Unknown register read: 0x{:X}", offset);
@@ -591,11 +601,11 @@ void Pad::WriteRegister(u32 offset, u32 value)
     {
       DEBUG_LOG("JOY_DATA (W) <- 0x{:02X}", value);
 
-      if (s_transmit_buffer_full)
+      if (s_state.transmit_buffer_full)
         WARNING_LOG("TX FIFO overrun");
 
-      s_transmit_buffer = Truncate8(value);
-      s_transmit_buffer_full = true;
+      s_state.transmit_buffer = Truncate8(value);
+      s_state.transmit_buffer_full = true;
 
       if (!IsTransmitting() && CanTransfer())
         BeginTransfer();
@@ -607,21 +617,21 @@ void Pad::WriteRegister(u32 offset, u32 value)
     {
       DEBUG_LOG("JOY_CTRL <- 0x{:04X}", value);
 
-      s_JOY_CTRL.bits = Truncate16(value);
-      if (s_JOY_CTRL.RESET)
+      s_state.JOY_CTRL.bits = Truncate16(value);
+      if (s_state.JOY_CTRL.RESET)
         SoftReset();
 
-      if (s_JOY_CTRL.ACK)
+      if (s_state.JOY_CTRL.ACK)
       {
         // reset stat bits
-        s_JOY_STAT.INTR = false;
+        s_state.JOY_STAT.INTR = false;
         InterruptController::SetLineState(InterruptController::IRQ::PAD, false);
       }
 
-      if (!s_JOY_CTRL.SELECT)
+      if (!s_state.JOY_CTRL.SELECT)
         ResetDeviceTransferState();
 
-      if (!s_JOY_CTRL.SELECT || !s_JOY_CTRL.TXEN)
+      if (!s_state.JOY_CTRL.SELECT || !s_state.JOY_CTRL.TXEN)
       {
         if (IsTransmitting())
           EndTransfer();
@@ -639,14 +649,14 @@ void Pad::WriteRegister(u32 offset, u32 value)
     case 0x08: // JOY_MODE
     {
       DEBUG_LOG("JOY_MODE <- 0x{:08X}", value);
-      s_JOY_MODE.bits = Truncate16(value);
+      s_state.JOY_MODE.bits = Truncate16(value);
       return;
     }
 
     case 0x0E:
     {
       DEBUG_LOG("JOY_BAUD <- 0x{:08X}", value);
-      s_JOY_BAUD = Truncate16(value);
+      s_state.JOY_BAUD = Truncate16(value);
       return;
     }
 
@@ -660,17 +670,17 @@ void Pad::WriteRegister(u32 offset, u32 value)
 
 bool Pad::IsTransmitting()
 {
-  return s_state != State::Idle;
+  return s_state.state != State::Idle;
 }
 
 bool Pad::CanTransfer()
 {
-  return s_transmit_buffer_full && s_JOY_CTRL.SELECT && s_JOY_CTRL.TXEN;
+  return s_state.transmit_buffer_full && s_state.JOY_CTRL.SELECT && s_state.JOY_CTRL.TXEN;
 }
 
 TickCount Pad::GetTransferTicks()
 {
-  return static_cast<TickCount>(ZeroExtend32(s_JOY_BAUD) * 8);
+  return static_cast<TickCount>(ZeroExtend32(s_state.JOY_BAUD) * 8);
 }
 
 void Pad::SoftReset()
@@ -678,27 +688,27 @@ void Pad::SoftReset()
   if (IsTransmitting())
     EndTransfer();
 
-  s_JOY_CTRL.bits = 0;
-  s_JOY_STAT.bits = 0;
-  s_JOY_MODE.bits = 0;
-  s_receive_buffer = 0;
-  s_receive_buffer_full = false;
-  s_transmit_buffer = 0;
-  s_transmit_buffer_full = false;
+  s_state.JOY_CTRL.bits = 0;
+  s_state.JOY_STAT.bits = 0;
+  s_state.JOY_MODE.bits = 0;
+  s_state.receive_buffer = 0;
+  s_state.receive_buffer_full = false;
+  s_state.transmit_buffer = 0;
+  s_state.transmit_buffer_full = false;
   ResetDeviceTransferState();
   UpdateJoyStat();
 }
 
 void Pad::UpdateJoyStat()
 {
-  s_JOY_STAT.RXFIFONEMPTY = s_receive_buffer_full;
-  s_JOY_STAT.TXDONE = !s_transmit_buffer_full && s_state != State::Transmitting;
-  s_JOY_STAT.TXRDY = !s_transmit_buffer_full;
+  s_state.JOY_STAT.RXFIFONEMPTY = s_state.receive_buffer_full;
+  s_state.JOY_STAT.TXDONE = !s_state.transmit_buffer_full && s_state.state != State::Transmitting;
+  s_state.JOY_STAT.TXRDY = !s_state.transmit_buffer_full;
 }
 
 void Pad::TransferEvent(void*, TickCount ticks, TickCount ticks_late)
 {
-  if (s_state == State::Transmitting)
+  if (s_state.state == State::Transmitting)
     DoTransfer(ticks_late);
   else
     DoACK();
@@ -706,12 +716,12 @@ void Pad::TransferEvent(void*, TickCount ticks, TickCount ticks_late)
 
 void Pad::BeginTransfer()
 {
-  DebugAssert(s_state == State::Idle && CanTransfer());
+  DebugAssert(s_state.state == State::Idle && CanTransfer());
   DEBUG_LOG("Starting transfer");
 
-  s_JOY_CTRL.RXEN = true;
-  s_transmit_value = s_transmit_buffer;
-  s_transmit_buffer_full = false;
+  s_state.JOY_CTRL.RXEN = true;
+  s_state.transmit_value = s_state.transmit_buffer;
+  s_state.transmit_buffer_full = false;
 
   // The transfer or the interrupt must be delayed, otherwise the BIOS thinks there's no device detected.
   // It seems to do something resembling the following:
@@ -728,37 +738,37 @@ void Pad::BeginTransfer()
   // test in (7) will fail, and it won't send any more data. So, the transfer/interrupt must be delayed
   // until after (4) and (5) have been completed.
 
-  s_state = State::Transmitting;
-  s_transfer_event.SetPeriodAndSchedule(GetTransferTicks());
+  s_state.state = State::Transmitting;
+  s_state.transfer_event.SetPeriodAndSchedule(GetTransferTicks());
 }
 
 void Pad::DoTransfer(TickCount ticks_late)
 {
-  DEBUG_LOG("Transferring slot {}", s_JOY_CTRL.SLOT.GetValue());
+  DEBUG_LOG("Transferring slot {}", s_state.JOY_CTRL.SLOT.GetValue());
 
-  const u8 device_index = s_multitaps[0].IsEnabled() ? 4u : s_JOY_CTRL.SLOT;
-  Controller* const controller = s_controllers[device_index].get();
-  MemoryCard* const memory_card = s_memory_cards[device_index].get();
+  const u8 device_index = s_state.multitaps[0].IsEnabled() ? 4u : s_state.JOY_CTRL.SLOT;
+  Controller* const controller = s_state.controllers[device_index].get();
+  MemoryCard* const memory_card = s_state.memory_cards[device_index].get();
 
   // set rx?
-  s_JOY_CTRL.RXEN = true;
+  s_state.JOY_CTRL.RXEN = true;
 
-  const u8 data_out = s_transmit_value;
+  const u8 data_out = s_state.transmit_value;
 
   u8 data_in = 0xFF;
   bool ack = false;
 
-  switch (s_active_device)
+  switch (s_state.active_device)
   {
     case ActiveDevice::None:
     {
-      if (s_multitaps[s_JOY_CTRL.SLOT].IsEnabled())
+      if (s_state.multitaps[s_state.JOY_CTRL.SLOT].IsEnabled())
       {
-        if ((ack = s_multitaps[s_JOY_CTRL.SLOT].Transfer(data_out, &data_in)) == true)
+        if ((ack = s_state.multitaps[s_state.JOY_CTRL.SLOT].Transfer(data_out, &data_in)) == true)
         {
-          TRACE_LOG("Active device set to tap {}, sent 0x{:02X}, received 0x{:02X}", static_cast<int>(s_JOY_CTRL.SLOT),
-                    data_out, data_in);
-          s_active_device = ActiveDevice::Multitap;
+          TRACE_LOG("Active device set to tap {}, sent 0x{:02X}, received 0x{:02X}",
+                    static_cast<int>(s_state.JOY_CTRL.SLOT), data_out, data_in);
+          s_state.active_device = ActiveDevice::Multitap;
         }
       }
       else
@@ -774,24 +784,24 @@ void Pad::DoTransfer(TickCount ticks_late)
           {
             // memory card responded, make it the active device until non-ack
             TRACE_LOG("Transfer to memory card, data_out=0x{:02X}, data_in=0x{:02X}", data_out, data_in);
-            s_active_device = ActiveDevice::MemoryCard;
+            s_state.active_device = ActiveDevice::MemoryCard;
 
             // back up memory card state in case we roll back to before this transfer begun
             const u32 frame_number = System::GetFrameNumber();
 
             // consider u32 overflow case
             if (ShouldAvoidSavingToState() &&
-                (frame_number - s_last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
+                (frame_number - s_state.last_memory_card_transfer_frame) > GetMaximumRollbackFrames())
               BackupMemoryCardState();
 
-            s_last_memory_card_transfer_frame = frame_number;
+            s_state.last_memory_card_transfer_frame = frame_number;
           }
         }
         else
         {
           // controller responded, make it the active device until non-ack
           TRACE_LOG("Transfer to controller, data_out=0x{:02X}, data_in=0x{:02X}", data_out, data_in);
-          s_active_device = ActiveDevice::Controller;
+          s_state.active_device = ActiveDevice::Controller;
         }
       }
     }
@@ -811,7 +821,7 @@ void Pad::DoTransfer(TickCount ticks_late)
     {
       if (memory_card)
       {
-        s_last_memory_card_transfer_frame = System::GetFrameNumber();
+        s_state.last_memory_card_transfer_frame = System::GetFrameNumber();
         ack = memory_card->Transfer(data_out, &data_in);
         TRACE_LOG("Transfer to memory card, data_out=0x{:02X}, data_in=0x{:02X}", data_out, data_in);
       }
@@ -820,35 +830,35 @@ void Pad::DoTransfer(TickCount ticks_late)
 
     case ActiveDevice::Multitap:
     {
-      if (s_multitaps[s_JOY_CTRL.SLOT].IsEnabled())
+      if (s_state.multitaps[s_state.JOY_CTRL.SLOT].IsEnabled())
       {
-        ack = s_multitaps[s_JOY_CTRL.SLOT].Transfer(data_out, &data_in);
-        TRACE_LOG("Transfer tap {}, sent 0x{:02X}, received 0x{:02X}, acked: {}", static_cast<int>(s_JOY_CTRL.SLOT),
-                  data_out, data_in, ack ? "true" : "false");
+        ack = s_state.multitaps[s_state.JOY_CTRL.SLOT].Transfer(data_out, &data_in);
+        TRACE_LOG("Transfer tap {}, sent 0x{:02X}, received 0x{:02X}, acked: {}",
+                  static_cast<int>(s_state.JOY_CTRL.SLOT), data_out, data_in, ack ? "true" : "false");
       }
     }
     break;
   }
 
-  s_receive_buffer = data_in;
-  s_receive_buffer_full = true;
+  s_state.receive_buffer = data_in;
+  s_state.receive_buffer_full = true;
 
   // device no longer active?
   if (!ack)
   {
-    s_active_device = ActiveDevice::None;
+    s_state.active_device = ActiveDevice::None;
     EndTransfer();
   }
   else
   {
-    const bool memcard_transfer =
-      s_active_device == ActiveDevice::MemoryCard ||
-      (s_active_device == ActiveDevice::Multitap && s_multitaps[s_JOY_CTRL.SLOT].IsReadingMemoryCard());
+    const bool memcard_transfer = s_state.active_device == ActiveDevice::MemoryCard ||
+                                  (s_state.active_device == ActiveDevice::Multitap &&
+                                   s_state.multitaps[s_state.JOY_CTRL.SLOT].IsReadingMemoryCard());
 
     const TickCount ack_timer = GetACKTicks(memcard_transfer);
     DEBUG_LOG("Delaying ACK for {} ticks", ack_timer);
-    s_state = State::WaitingForACK;
-    s_transfer_event.SetPeriodAndSchedule(ack_timer);
+    s_state.state = State::WaitingForACK;
+    s_state.transfer_event.SetPeriodAndSchedule(ack_timer);
   }
 
   UpdateJoyStat();
@@ -856,12 +866,12 @@ void Pad::DoTransfer(TickCount ticks_late)
 
 void Pad::DoACK()
 {
-  s_JOY_STAT.ACKINPUT = true;
+  s_state.JOY_STAT.ACKINPUT = true;
 
-  if (s_JOY_CTRL.ACKINTEN)
+  if (s_state.JOY_CTRL.ACKINTEN)
   {
     DEBUG_LOG("Triggering ACK interrupt");
-    s_JOY_STAT.INTR = true;
+    s_state.JOY_STAT.INTR = true;
     InterruptController::SetLineState(InterruptController::IRQ::PAD, true);
   }
 
@@ -874,25 +884,25 @@ void Pad::DoACK()
 
 void Pad::EndTransfer()
 {
-  DebugAssert(s_state == State::Transmitting || s_state == State::WaitingForACK);
+  DebugAssert(s_state.state == State::Transmitting || s_state.state == State::WaitingForACK);
   DEBUG_LOG("Ending transfer");
 
-  s_state = State::Idle;
-  s_transfer_event.Deactivate();
+  s_state.state = State::Idle;
+  s_state.transfer_event.Deactivate();
 }
 
 void Pad::ResetDeviceTransferState()
 {
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    if (s_controllers[i])
-      s_controllers[i]->ResetTransferState();
-    if (s_memory_cards[i])
-      s_memory_cards[i]->ResetTransferState();
+    if (s_state.controllers[i])
+      s_state.controllers[i]->ResetTransferState();
+    if (s_state.memory_cards[i])
+      s_state.memory_cards[i]->ResetTransferState();
   }
 
   for (u32 i = 0; i < NUM_MULTITAPS; i++)
-    s_multitaps[i].ResetTransferState();
+    s_state.multitaps[i].ResetTransferState();
 
-  s_active_device = ActiveDevice::None;
+  s_state.active_device = ActiveDevice::None;
 }
