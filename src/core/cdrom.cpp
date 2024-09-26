@@ -366,72 +366,7 @@ static void CreateFileMap();
 static void CreateFileMap(IsoReader& iso, std::string_view dir);
 static const std::string* LookupFileMap(u32 lba, u32* start_lba, u32* end_lba);
 
-static TimingEvent s_command_event{"CDROM Command Event", 1, 1, &CDROM::ExecuteCommand, nullptr};
-static TimingEvent s_command_second_response_event{"CDROM Command Second Response Event", 1, 1,
-                                                   &CDROM::ExecuteCommandSecondResponse, nullptr};
-static TimingEvent s_async_interrupt_event{"CDROM Async Interrupt Event", INTERRUPT_DELAY_CYCLES, 1,
-                                           &CDROM::DeliverAsyncInterrupt, nullptr};
-static TimingEvent s_drive_event{"CDROM Drive Event", 1, 1, &CDROM::ExecuteDrive, nullptr};
-
-static Command s_command = Command::None;
-static Command s_command_second_response = Command::None;
-static DriveState s_drive_state = DriveState::Idle;
-static DiscRegion s_disc_region = DiscRegion::Other;
-
-static StatusRegister s_status = {};
-static SecondaryStatusRegister s_secondary_status = {};
-static ModeRegister s_mode = {};
-static RequestRegister s_request_register = {};
-
-static u8 s_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
-static u8 s_interrupt_flag_register = 0;
-static u8 s_pending_async_interrupt = 0;
-static GlobalTicks s_last_interrupt_time = 0;
-
-static CDImage::Position s_setloc_position = {};
-static CDImage::LBA s_requested_lba{};
-static CDImage::LBA s_current_lba{}; // this is the hold position
-static CDImage::LBA s_seek_start_lba{};
-static CDImage::LBA s_seek_end_lba{};
-static CDImage::LBA s_physical_lba{}; // current position of the disc with respect to time
-static GlobalTicks s_physical_lba_update_tick = 0;
-static u32 s_physical_lba_update_carry = 0;
-static bool s_setloc_pending = false;
-static bool s_read_after_seek = false;
-static bool s_play_after_seek = false;
-
-static bool s_muted = false;
-static bool s_adpcm_muted = false;
-
-static u8 s_xa_filter_file_number = 0;
-static u8 s_xa_filter_channel_number = 0;
-static u8 s_xa_current_file_number = 0;
-static u8 s_xa_current_channel_number = 0;
-static bool s_xa_current_set = false;
-static XASubHeader::Codinginfo s_xa_current_codinginfo = {};
-
-static CDImage::SectorHeader s_last_sector_header{};
-static XASubHeader s_last_sector_subheader{};
-static bool s_last_sector_header_valid = false; // TODO: Rename to "logical pause" or something.
-static CDImage::SubChannelQ s_last_subq{};
-static u8 s_cdda_report_start_delay = 0;
-static u8 s_last_cdda_report_frame_nibble = 0xFF;
-static u8 s_play_track_number_bcd = 0xFF;
-static u8 s_async_command_parameter = 0x00;
-static s8 s_fast_forward_rate = 0;
-
-static std::array<std::array<u8, 2>, 2> s_cd_audio_volume_matrix{};
-static std::array<std::array<u8, 2>, 2> s_next_cd_audio_volume_matrix{};
-
-static std::array<s32, 4> s_xa_last_samples{};
-static std::array<std::array<s16, XA_RESAMPLE_RING_BUFFER_SIZE>, 2> s_xa_resample_ring_buffer{};
-static u8 s_xa_resample_p = 0;
-static u8 s_xa_resample_sixstep = 6;
-
-static InlineFIFOQueue<u8, PARAM_FIFO_SIZE> s_param_fifo;
-static InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> s_response_fifo;
-static InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> s_async_response_fifo;
-
+namespace {
 struct SectorBuffer
 {
   FixedHeapArray<u8, RAW_SECTOR_OUTPUT_SIZE> data;
@@ -439,18 +374,93 @@ struct SectorBuffer
   u32 size;
 };
 
-static u32 s_current_read_sector_buffer = 0;
-static u32 s_current_write_sector_buffer = 0;
-static std::array<SectorBuffer, NUM_SECTOR_BUFFERS> s_sector_buffers;
+struct CDROMState
+{
+  TimingEvent command_event{"CDROM Command Event", 1, 1, &CDROM::ExecuteCommand, nullptr};
+  TimingEvent command_second_response_event{"CDROM Command Second Response Event", 1, 1,
+                                            &CDROM::ExecuteCommandSecondResponse, nullptr};
+  TimingEvent async_interrupt_event{"CDROM Async Interrupt Event", INTERRUPT_DELAY_CYCLES, 1,
+                                    &CDROM::DeliverAsyncInterrupt, nullptr};
+  TimingEvent drive_event{"CDROM Drive Event", 1, 1, &CDROM::ExecuteDrive, nullptr};
 
-static CDROMAsyncReader s_reader;
+  GlobalTicks physical_lba_update_tick = 0;
+  GlobalTicks last_interrupt_time = 0;
 
-// two 16-bit samples packed in 32-bits
-static HeapFIFOQueue<u32, AUDIO_FIFO_SIZE> s_audio_fifo;
+  Command command = Command::None;
+  Command command_second_response = Command::None;
+  DriveState drive_state = DriveState::Idle;
+  DiscRegion disc_region = DiscRegion::Other;
 
-static std::map<u32, std::pair<u32, std::string>> s_file_map;
-static bool s_file_map_created = false;
-static bool s_show_current_file = false;
+  StatusRegister status = {};
+
+  SecondaryStatusRegister secondary_status = {};
+  ModeRegister mode = {};
+  RequestRegister request_register = {};
+
+  u8 interrupt_enable_register = INTERRUPT_REGISTER_MASK;
+  u8 interrupt_flag_register = 0;
+  u8 pending_async_interrupt = 0;
+
+  bool setloc_pending = false;
+  bool read_after_seek = false;
+  bool play_after_seek = false;
+
+  CDImage::Position setloc_position = {};
+  CDImage::LBA requested_lba = 0;
+  CDImage::LBA current_lba = 0; // this is the hold position
+  CDImage::LBA seek_start_lba = 0;
+  CDImage::LBA seek_end_lba = 0;
+  CDImage::LBA physical_lba = 0; // current position of the disc with respect to time
+  u32 physical_lba_update_carry = 0;
+
+  bool muted = false;
+  bool adpcm_muted = false;
+
+  u8 xa_filter_file_number = 0;
+  u8 xa_filter_channel_number = 0;
+  u8 xa_current_file_number = 0;
+  u8 xa_current_channel_number = 0;
+  bool xa_current_set = false;
+  XASubHeader::Codinginfo xa_current_codinginfo = {};
+
+  CDImage::SubChannelQ last_subq = {};
+  CDImage::SectorHeader last_sector_header = {};
+  XASubHeader last_sector_subheader = {};
+  bool last_sector_header_valid = false; // TODO: Rename to "logical pause" or something.
+
+  u8 cdda_report_start_delay = 0;
+  u8 last_cdda_report_frame_nibble = 0xFF;
+  u8 play_track_number_bcd = 0xFF;
+  u8 async_command_parameter = 0x00;
+  s8 fast_forward_rate = 0;
+
+  std::array<std::array<u8, 2>, 2> cd_audio_volume_matrix{};
+  std::array<std::array<u8, 2>, 2> next_cd_audio_volume_matrix{};
+
+  std::array<s32, 4> xa_last_samples{};
+  std::array<std::array<s16, XA_RESAMPLE_RING_BUFFER_SIZE>, 2> xa_resample_ring_buffer{};
+  u8 xa_resample_p = 0;
+  u8 xa_resample_sixstep = 6;
+
+  InlineFIFOQueue<u8, PARAM_FIFO_SIZE> param_fifo;
+  InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> response_fifo;
+  InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> async_response_fifo;
+
+  std::array<SectorBuffer, NUM_SECTOR_BUFFERS> sector_buffers;
+  u32 current_read_sector_buffer = 0;
+  u32 current_write_sector_buffer = 0;
+
+  // two 16-bit samples packed in 32-bits
+  HeapFIFOQueue<u32, AUDIO_FIFO_SIZE> audio_fifo;
+
+  std::map<u32, std::pair<u32, std::string>> file_map;
+  bool file_map_created = false;
+  bool show_current_file = false;
+};
+} // namespace
+
+ALIGN_TO_CACHE_LINE static CDROMState s_state;
+ALIGN_TO_CACHE_LINE static CDROMAsyncReader s_reader;
 
 static constexpr std::array<const char*, 15> s_drive_state_names = {
   {"Idle", "Opening Shell", "Resetting", "Seeking (Physical)", "Seeking (Logical)", "Reading ID", "Reading TOC",
@@ -522,66 +532,66 @@ void CDROM::Initialize()
 
 void CDROM::Shutdown()
 {
-  s_file_map.clear();
-  s_file_map_created = false;
-  s_show_current_file = false;
+  s_state.file_map.clear();
+  s_state.file_map_created = false;
+  s_state.show_current_file = false;
 
-  s_drive_event.Deactivate();
-  s_async_interrupt_event.Deactivate();
-  s_command_second_response_event.Deactivate();
-  s_command_event.Deactivate();
+  s_state.drive_event.Deactivate();
+  s_state.async_interrupt_event.Deactivate();
+  s_state.command_second_response_event.Deactivate();
+  s_state.command_event.Deactivate();
   s_reader.StopThread();
   s_reader.RemoveMedia();
 }
 
 void CDROM::Reset()
 {
-  s_command = Command::None;
-  s_command_event.Deactivate();
+  s_state.command = Command::None;
+  s_state.command_event.Deactivate();
   ClearCommandSecondResponse();
   ClearDriveState();
-  s_status.bits = 0;
-  s_secondary_status.bits = 0;
-  s_secondary_status.motor_on = CanReadMedia();
-  s_secondary_status.shell_open = !CanReadMedia();
-  s_mode.bits = 0;
-  s_mode.read_raw_sector = true;
-  s_interrupt_enable_register = INTERRUPT_REGISTER_MASK;
-  s_interrupt_flag_register = 0;
-  s_last_interrupt_time = System::GetGlobalTickCounter() - MINIMUM_INTERRUPT_DELAY;
+  s_state.status.bits = 0;
+  s_state.secondary_status.bits = 0;
+  s_state.secondary_status.motor_on = CanReadMedia();
+  s_state.secondary_status.shell_open = !CanReadMedia();
+  s_state.mode.bits = 0;
+  s_state.mode.read_raw_sector = true;
+  s_state.interrupt_enable_register = INTERRUPT_REGISTER_MASK;
+  s_state.interrupt_flag_register = 0;
+  s_state.last_interrupt_time = System::GetGlobalTickCounter() - MINIMUM_INTERRUPT_DELAY;
   ClearAsyncInterrupt();
-  s_setloc_position = {};
-  s_seek_start_lba = 0;
-  s_seek_end_lba = 0;
-  s_setloc_pending = false;
-  s_read_after_seek = false;
-  s_play_after_seek = false;
-  s_muted = false;
-  s_adpcm_muted = false;
-  s_xa_filter_file_number = 0;
-  s_xa_filter_channel_number = 0;
-  s_xa_current_file_number = 0;
-  s_xa_current_channel_number = 0;
-  s_xa_current_set = false;
-  std::memset(&s_last_sector_header, 0, sizeof(s_last_sector_header));
-  std::memset(&s_last_sector_subheader, 0, sizeof(s_last_sector_subheader));
-  s_last_sector_header_valid = false;
-  std::memset(&s_last_subq, 0, sizeof(s_last_subq));
-  s_cdda_report_start_delay = 0;
-  s_last_cdda_report_frame_nibble = 0xFF;
+  s_state.setloc_position = {};
+  s_state.seek_start_lba = 0;
+  s_state.seek_end_lba = 0;
+  s_state.setloc_pending = false;
+  s_state.read_after_seek = false;
+  s_state.play_after_seek = false;
+  s_state.muted = false;
+  s_state.adpcm_muted = false;
+  s_state.xa_filter_file_number = 0;
+  s_state.xa_filter_channel_number = 0;
+  s_state.xa_current_file_number = 0;
+  s_state.xa_current_channel_number = 0;
+  s_state.xa_current_set = false;
+  std::memset(&s_state.last_sector_header, 0, sizeof(s_state.last_sector_header));
+  std::memset(&s_state.last_sector_subheader, 0, sizeof(s_state.last_sector_subheader));
+  s_state.last_sector_header_valid = false;
+  std::memset(&s_state.last_subq, 0, sizeof(s_state.last_subq));
+  s_state.cdda_report_start_delay = 0;
+  s_state.last_cdda_report_frame_nibble = 0xFF;
 
-  s_next_cd_audio_volume_matrix[0][0] = 0x80;
-  s_next_cd_audio_volume_matrix[0][1] = 0x00;
-  s_next_cd_audio_volume_matrix[1][0] = 0x00;
-  s_next_cd_audio_volume_matrix[1][1] = 0x80;
-  s_cd_audio_volume_matrix = s_next_cd_audio_volume_matrix;
+  s_state.next_cd_audio_volume_matrix[0][0] = 0x80;
+  s_state.next_cd_audio_volume_matrix[0][1] = 0x00;
+  s_state.next_cd_audio_volume_matrix[1][0] = 0x00;
+  s_state.next_cd_audio_volume_matrix[1][1] = 0x80;
+  s_state.cd_audio_volume_matrix = s_state.next_cd_audio_volume_matrix;
 
   ClearSectorBuffers();
   ResetAudioDecoder();
 
-  s_param_fifo.Clear();
-  s_response_fifo.Clear();
-  s_async_response_fifo.Clear();
+  s_state.param_fifo.Clear();
+  s_state.response_fifo.Clear();
+  s_state.async_response_fifo.Clear();
 
   UpdateStatusRegister();
 
@@ -590,31 +600,31 @@ void CDROM::Reset()
 
 TickCount CDROM::SoftReset(TickCount ticks_late)
 {
-  const bool was_double_speed = s_mode.double_speed;
+  const bool was_double_speed = s_state.mode.double_speed;
 
   ClearCommandSecondResponse();
   ClearDriveState();
-  s_secondary_status.bits = 0;
-  s_secondary_status.motor_on = CanReadMedia();
-  s_secondary_status.shell_open = !CanReadMedia();
-  s_mode.bits = 0;
-  s_mode.read_raw_sector = true;
-  s_request_register.bits = 0;
+  s_state.secondary_status.bits = 0;
+  s_state.secondary_status.motor_on = CanReadMedia();
+  s_state.secondary_status.shell_open = !CanReadMedia();
+  s_state.mode.bits = 0;
+  s_state.mode.read_raw_sector = true;
+  s_state.request_register.bits = 0;
   ClearAsyncInterrupt();
-  s_setloc_position = {};
-  s_setloc_pending = false;
-  s_read_after_seek = false;
-  s_play_after_seek = false;
-  s_muted = false;
-  s_adpcm_muted = false;
-  s_cdda_report_start_delay = 0;
-  s_last_cdda_report_frame_nibble = 0xFF;
+  s_state.setloc_position = {};
+  s_state.setloc_pending = false;
+  s_state.read_after_seek = false;
+  s_state.play_after_seek = false;
+  s_state.muted = false;
+  s_state.adpcm_muted = false;
+  s_state.cdda_report_start_delay = 0;
+  s_state.last_cdda_report_frame_nibble = 0xFF;
 
   ClearSectorBuffers();
   ResetAudioDecoder();
 
-  s_param_fifo.Clear();
-  s_async_response_fifo.Clear();
+  s_state.param_fifo.Clear();
+  s_state.async_response_fifo.Clear();
 
   UpdateStatusRegister();
 
@@ -627,24 +637,24 @@ TickCount CDROM::SoftReset(TickCount ticks_late)
       UpdatePhysicalPosition(false);
 
     const TickCount speed_change_ticks = was_double_speed ? GetTicksForSpeedChange() : 0;
-    const TickCount seek_ticks = (s_current_lba != 0) ? GetTicksForSeek(0) : 0;
+    const TickCount seek_ticks = (s_state.current_lba != 0) ? GetTicksForSeek(0) : 0;
     total_ticks = std::max<TickCount>(speed_change_ticks + seek_ticks, INIT_TICKS) - ticks_late;
     DEV_LOG("CDROM init total disc ticks = {} (speed change = {}, seek = {})", total_ticks, speed_change_ticks,
             seek_ticks);
 
-    if (s_current_lba != 0)
+    if (s_state.current_lba != 0)
     {
-      s_drive_state = DriveState::SeekingImplicit;
-      s_drive_event.SetIntervalAndSchedule(total_ticks);
-      s_requested_lba = 0;
-      s_reader.QueueReadSector(s_requested_lba);
-      s_seek_start_lba = s_current_lba;
-      s_seek_end_lba = 0;
+      s_state.drive_state = DriveState::SeekingImplicit;
+      s_state.drive_event.SetIntervalAndSchedule(total_ticks);
+      s_state.requested_lba = 0;
+      s_reader.QueueReadSector(s_state.requested_lba);
+      s_state.seek_start_lba = s_state.current_lba;
+      s_state.seek_end_lba = 0;
     }
     else
     {
-      s_drive_state = DriveState::ChangingSpeedOrTOCRead;
-      s_drive_event.Schedule(total_ticks);
+      s_state.drive_state = DriveState::ChangingSpeedOrTOCRead;
+      s_state.drive_event.Schedule(total_ticks);
     }
   }
   else
@@ -657,80 +667,80 @@ TickCount CDROM::SoftReset(TickCount ticks_late)
 
 bool CDROM::DoState(StateWrapper& sw)
 {
-  sw.Do(&s_command);
-  sw.DoEx(&s_command_second_response, 53, Command::None);
-  sw.Do(&s_drive_state);
-  sw.Do(&s_status.bits);
-  sw.Do(&s_secondary_status.bits);
-  sw.Do(&s_mode.bits);
-  sw.DoEx(&s_request_register.bits, 65, static_cast<u8>(0));
+  sw.Do(&s_state.command);
+  sw.DoEx(&s_state.command_second_response, 53, Command::None);
+  sw.Do(&s_state.drive_state);
+  sw.Do(&s_state.status.bits);
+  sw.Do(&s_state.secondary_status.bits);
+  sw.Do(&s_state.mode.bits);
+  sw.DoEx(&s_state.request_register.bits, 65, static_cast<u8>(0));
 
-  bool current_double_speed = s_mode.double_speed;
+  bool current_double_speed = s_state.mode.double_speed;
   sw.Do(&current_double_speed);
 
-  sw.Do(&s_interrupt_enable_register);
-  sw.Do(&s_interrupt_flag_register);
+  sw.Do(&s_state.interrupt_enable_register);
+  sw.Do(&s_state.interrupt_flag_register);
 
   if (sw.GetVersion() < 71) [[unlikely]]
   {
     u32 last_interrupt_time32 = 0;
     sw.DoEx(&last_interrupt_time32, 57, static_cast<u32>(System::GetGlobalTickCounter() - MINIMUM_INTERRUPT_DELAY));
-    s_last_interrupt_time = last_interrupt_time32;
+    s_state.last_interrupt_time = last_interrupt_time32;
   }
   else
   {
-    sw.Do(&s_last_interrupt_time);
+    sw.Do(&s_state.last_interrupt_time);
   }
 
-  sw.Do(&s_pending_async_interrupt);
-  sw.DoPOD(&s_setloc_position);
-  sw.Do(&s_current_lba);
-  sw.Do(&s_seek_start_lba);
-  sw.Do(&s_seek_end_lba);
-  sw.DoEx(&s_physical_lba, 49, s_current_lba);
+  sw.Do(&s_state.pending_async_interrupt);
+  sw.DoPOD(&s_state.setloc_position);
+  sw.Do(&s_state.current_lba);
+  sw.Do(&s_state.seek_start_lba);
+  sw.Do(&s_state.seek_end_lba);
+  sw.DoEx(&s_state.physical_lba, 49, s_state.current_lba);
 
   if (sw.GetVersion() < 71) [[unlikely]]
   {
     u32 physical_lba_update_tick32 = 0;
     sw.DoEx(&physical_lba_update_tick32, 49, static_cast<u32>(0));
-    s_physical_lba_update_tick = physical_lba_update_tick32;
+    s_state.physical_lba_update_tick = physical_lba_update_tick32;
   }
   else
   {
-    sw.Do(&s_physical_lba_update_tick);
+    sw.Do(&s_state.physical_lba_update_tick);
   }
 
-  sw.DoEx(&s_physical_lba_update_carry, 54, static_cast<u32>(0));
-  sw.Do(&s_setloc_pending);
-  sw.Do(&s_read_after_seek);
-  sw.Do(&s_play_after_seek);
-  sw.Do(&s_muted);
-  sw.Do(&s_adpcm_muted);
-  sw.Do(&s_xa_filter_file_number);
-  sw.Do(&s_xa_filter_channel_number);
-  sw.Do(&s_xa_current_file_number);
-  sw.Do(&s_xa_current_channel_number);
-  sw.Do(&s_xa_current_set);
-  sw.DoBytes(&s_last_sector_header, sizeof(s_last_sector_header));
-  sw.DoBytes(&s_last_sector_subheader, sizeof(s_last_sector_subheader));
-  sw.Do(&s_last_sector_header_valid);
-  sw.DoBytes(&s_last_subq, sizeof(s_last_subq));
-  sw.DoEx(&s_cdda_report_start_delay, 72, static_cast<u8>(0));
-  sw.Do(&s_last_cdda_report_frame_nibble);
-  sw.Do(&s_play_track_number_bcd);
-  sw.Do(&s_async_command_parameter);
+  sw.DoEx(&s_state.physical_lba_update_carry, 54, static_cast<u32>(0));
+  sw.Do(&s_state.setloc_pending);
+  sw.Do(&s_state.read_after_seek);
+  sw.Do(&s_state.play_after_seek);
+  sw.Do(&s_state.muted);
+  sw.Do(&s_state.adpcm_muted);
+  sw.Do(&s_state.xa_filter_file_number);
+  sw.Do(&s_state.xa_filter_channel_number);
+  sw.Do(&s_state.xa_current_file_number);
+  sw.Do(&s_state.xa_current_channel_number);
+  sw.Do(&s_state.xa_current_set);
+  sw.DoBytes(&s_state.last_sector_header, sizeof(s_state.last_sector_header));
+  sw.DoBytes(&s_state.last_sector_subheader, sizeof(s_state.last_sector_subheader));
+  sw.Do(&s_state.last_sector_header_valid);
+  sw.DoBytes(&s_state.last_subq, sizeof(s_state.last_subq));
+  sw.DoEx(&s_state.cdda_report_start_delay, 72, static_cast<u8>(0));
+  sw.Do(&s_state.last_cdda_report_frame_nibble);
+  sw.Do(&s_state.play_track_number_bcd);
+  sw.Do(&s_state.async_command_parameter);
 
-  sw.DoEx(&s_fast_forward_rate, 49, static_cast<s8>(0));
+  sw.DoEx(&s_state.fast_forward_rate, 49, static_cast<s8>(0));
 
-  sw.Do(&s_cd_audio_volume_matrix);
-  sw.Do(&s_next_cd_audio_volume_matrix);
-  sw.Do(&s_xa_last_samples);
-  sw.Do(&s_xa_resample_ring_buffer);
-  sw.Do(&s_xa_resample_p);
-  sw.Do(&s_xa_resample_sixstep);
-  sw.Do(&s_param_fifo);
-  sw.Do(&s_response_fifo);
-  sw.Do(&s_async_response_fifo);
+  sw.Do(&s_state.cd_audio_volume_matrix);
+  sw.Do(&s_state.next_cd_audio_volume_matrix);
+  sw.Do(&s_state.xa_last_samples);
+  sw.Do(&s_state.xa_resample_ring_buffer);
+  sw.Do(&s_state.xa_resample_p);
+  sw.Do(&s_state.xa_resample_sixstep);
+  sw.Do(&s_state.param_fifo);
+  sw.Do(&s_state.response_fifo);
+  sw.Do(&s_state.async_response_fifo);
 
   if (sw.GetVersion() < 65)
   {
@@ -739,9 +749,9 @@ bool CDROM::DoState(StateWrapper& sw)
     sw.Do(&old_fifo_size);
     sw.SkipBytes(old_fifo_size);
 
-    sw.Do(&s_current_read_sector_buffer);
-    sw.Do(&s_current_write_sector_buffer);
-    for (SectorBuffer& sb : s_sector_buffers)
+    sw.Do(&s_state.current_read_sector_buffer);
+    sw.Do(&s_state.current_write_sector_buffer);
+    for (SectorBuffer& sb : s_state.sector_buffers)
     {
       sw.Do(&sb.data);
       sw.Do(&sb.size);
@@ -752,20 +762,20 @@ bool CDROM::DoState(StateWrapper& sw)
     // I doubt this is going to work well.... don't save state in the middle of loading, ya goon.
     if (old_fifo_size > 0)
     {
-      SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
-      sb.size = s_mode.read_raw_sector ? RAW_SECTOR_OUTPUT_SIZE : DATA_SECTOR_OUTPUT_SIZE;
+      SectorBuffer& sb = s_state.sector_buffers[s_state.current_read_sector_buffer];
+      sb.size = s_state.mode.read_raw_sector ? RAW_SECTOR_OUTPUT_SIZE : DATA_SECTOR_OUTPUT_SIZE;
       sb.position = (sb.size > old_fifo_size) ? (sb.size - old_fifo_size) : 0;
-      s_request_register.BFRD = (sb.position > 0);
+      s_state.request_register.BFRD = (sb.position > 0);
     }
 
     UpdateStatusRegister();
   }
   else
   {
-    sw.Do(&s_current_read_sector_buffer);
-    sw.Do(&s_current_write_sector_buffer);
+    sw.Do(&s_state.current_read_sector_buffer);
+    sw.Do(&s_state.current_write_sector_buffer);
 
-    for (SectorBuffer& sb : s_sector_buffers)
+    for (SectorBuffer& sb : s_state.sector_buffers)
     {
       sw.Do(&sb.size);
       sw.Do(&sb.position);
@@ -784,18 +794,18 @@ bool CDROM::DoState(StateWrapper& sw)
     }
   }
 
-  sw.Do(&s_audio_fifo);
-  sw.Do(&s_requested_lba);
+  sw.Do(&s_state.audio_fifo);
+  sw.Do(&s_state.requested_lba);
 
   if (sw.IsReading())
   {
     if (s_reader.HasMedia())
-      s_reader.QueueReadSector(s_requested_lba);
+      s_reader.QueueReadSector(s_state.requested_lba);
     UpdateCommandEvent();
-    s_drive_event.SetState(!IsDriveIdle());
+    s_state.drive_event.SetState(!IsDriveIdle());
 
     // Time will get fixed up later.
-    s_command_second_response_event.SetState(s_command_second_response != Command::None);
+    s_state.command_second_response_event.SetState(s_state.command_second_response != Command::None);
   }
 
   return !sw.HasError();
@@ -818,12 +828,12 @@ const CDImage* CDROM::GetMedia()
 
 DiscRegion CDROM::GetDiscRegion()
 {
-  return s_disc_region;
+  return s_state.disc_region;
 }
 
 bool CDROM::IsMediaPS1Disc()
 {
-  return (s_disc_region != DiscRegion::NonPS1);
+  return (s_state.disc_region != DiscRegion::NonPS1);
 }
 
 bool CDROM::IsMediaAudioCD()
@@ -840,36 +850,36 @@ bool CDROM::DoesMediaRegionMatchConsole()
   if (!g_settings.cdrom_region_check)
     return true;
 
-  if (s_disc_region == DiscRegion::Other)
+  if (s_state.disc_region == DiscRegion::Other)
     return false;
 
-  return System::GetRegion() == System::GetConsoleRegionForDiscRegion(s_disc_region);
+  return System::GetRegion() == System::GetConsoleRegionForDiscRegion(s_state.disc_region);
 }
 
 bool CDROM::IsDriveIdle()
 {
-  return s_drive_state == DriveState::Idle;
+  return s_state.drive_state == DriveState::Idle;
 }
 
 bool CDROM::IsMotorOn()
 {
-  return s_secondary_status.motor_on;
+  return s_state.secondary_status.motor_on;
 }
 
 bool CDROM::IsSeeking()
 {
-  return (s_drive_state == DriveState::SeekingLogical || s_drive_state == DriveState::SeekingPhysical ||
-          s_drive_state == DriveState::SeekingImplicit);
+  return (s_state.drive_state == DriveState::SeekingLogical || s_state.drive_state == DriveState::SeekingPhysical ||
+          s_state.drive_state == DriveState::SeekingImplicit);
 }
 
 bool CDROM::IsReadingOrPlaying()
 {
-  return (s_drive_state == DriveState::Reading || s_drive_state == DriveState::Playing);
+  return (s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing);
 }
 
 bool CDROM::CanReadMedia()
 {
-  return (s_drive_state != DriveState::ShellOpening && s_reader.HasMedia());
+  return (s_state.drive_state != DriveState::ShellOpening && s_reader.HasMedia());
 }
 
 void CDROM::InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region)
@@ -880,15 +890,15 @@ void CDROM::InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region)
   INFO_LOG("Inserting new media, disc region: {}, console region: {}", Settings::GetDiscRegionName(region),
            Settings::GetConsoleRegionName(System::GetRegion()));
 
-  s_disc_region = region;
+  s_state.disc_region = region;
   s_reader.SetMedia(std::move(media));
   SetHoldPosition(0, true);
 
   // motor automatically spins up
-  if (s_drive_state != DriveState::ShellOpening)
+  if (s_state.drive_state != DriveState::ShellOpening)
     StartMotor();
 
-  if (s_show_current_file)
+  if (s_state.show_current_file)
     CreateFileMap();
 }
 
@@ -905,21 +915,21 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   INFO_LOG("Removing CD...");
   std::unique_ptr<CDImage> image = s_reader.RemoveMedia();
 
-  if (s_show_current_file)
+  if (s_state.show_current_file)
     CreateFileMap();
 
-  s_last_sector_header_valid = false;
+  s_state.last_sector_header_valid = false;
 
-  s_secondary_status.motor_on = false;
-  s_secondary_status.shell_open = true;
-  s_secondary_status.ClearActiveBits();
-  s_disc_region = DiscRegion::NonPS1;
+  s_state.secondary_status.motor_on = false;
+  s_state.secondary_status.shell_open = true;
+  s_state.secondary_status.ClearActiveBits();
+  s_state.disc_region = DiscRegion::NonPS1;
 
   // If the drive was doing anything, we need to abort the command.
   ClearDriveState();
   ClearCommandSecondResponse();
-  s_command = Command::None;
-  s_command_event.Deactivate();
+  s_state.command = Command::None;
+  s_state.command_event.Deactivate();
 
   // The console sends an interrupt when the shell is opened regardless of whether a command was executing.
   ClearAsyncInterrupt();
@@ -928,8 +938,8 @@ std::unique_ptr<CDImage> CDROM::RemoveMedia(bool for_disc_swap)
   // Begin spin-down timer, we can't swap the new disc in immediately for some games (e.g. Metal Gear Solid).
   if (for_disc_swap)
   {
-    s_drive_state = DriveState::ShellOpening;
-    s_drive_event.SetIntervalAndSchedule(stop_ticks);
+    s_state.drive_state = DriveState::ShellOpening;
+    s_state.drive_event.SetIntervalAndSchedule(stop_ticks);
   }
 
   return image;
@@ -978,14 +988,14 @@ void CDROM::SetReadaheadSectors(u32 readahead_sectors)
     s_reader.StopThread();
 
   if (HasMedia())
-    s_reader.QueueReadSector(s_requested_lba);
+    s_reader.QueueReadSector(s_state.requested_lba);
 }
 
 void CDROM::CPUClockChanged()
 {
   // reschedule the disc read event
   if (IsReadingOrPlaying())
-    s_drive_event.SetInterval(GetTicksForRead());
+    s_state.drive_event.SetInterval(GetTicksForRead());
 }
 
 u8 CDROM::ReadRegister(u32 offset)
@@ -993,18 +1003,18 @@ u8 CDROM::ReadRegister(u32 offset)
   switch (offset)
   {
     case 0: // status register
-      TRACE_LOG("CDROM read status register -> 0x{:08X}", s_status.bits);
-      return s_status.bits;
+      TRACE_LOG("CDROM read status register -> 0x{:08X}", s_state.status.bits);
+      return s_state.status.bits;
 
     case 1: // always response FIFO
     {
-      if (s_response_fifo.IsEmpty())
+      if (s_state.response_fifo.IsEmpty())
       {
         DEV_LOG("Response FIFO empty on read");
         return 0x00;
       }
 
-      const u8 value = s_response_fifo.Pop();
+      const u8 value = s_state.response_fifo.Pop();
       UpdateStatusRegister();
       DEBUG_LOG("CDROM read response FIFO -> 0x{:08X}", ZeroExtend32(value));
       return value;
@@ -1012,17 +1022,17 @@ u8 CDROM::ReadRegister(u32 offset)
 
     case 2: // always data FIFO
     {
-      SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
+      SectorBuffer& sb = s_state.sector_buffers[s_state.current_read_sector_buffer];
       u8 value = 0;
-      if (s_request_register.BFRD && sb.position < sb.size)
+      if (s_state.request_register.BFRD && sb.position < sb.size)
       {
         value = (sb.position < sb.size) ? sb.data[sb.position++] : 0;
         CheckForSectorBufferReadComplete();
       }
       else
       {
-        WARNING_LOG("Sector buffer overread (BDRD={}, buffer={}, pos={}, size={})", s_request_register.BFRD.GetValue(),
-                    s_current_read_sector_buffer, sb.position, sb.size);
+        WARNING_LOG("Sector buffer overread (BDRD={}, buffer={}, pos={}, size={})",
+                    s_state.request_register.BFRD.GetValue(), s_state.current_read_sector_buffer, sb.position, sb.size);
       }
 
       DEBUG_LOG("CDROM read data FIFO -> 0x{:02X}", value);
@@ -1031,15 +1041,15 @@ u8 CDROM::ReadRegister(u32 offset)
 
     case 3:
     {
-      if (s_status.index & 1)
+      if (s_state.status.index & 1)
       {
-        const u8 value = s_interrupt_flag_register | ~INTERRUPT_REGISTER_MASK;
+        const u8 value = s_state.interrupt_flag_register | ~INTERRUPT_REGISTER_MASK;
         DEBUG_LOG("CDROM read interrupt flag register -> 0x{:02X}", value);
         return value;
       }
       else
       {
-        const u8 value = s_interrupt_enable_register | ~INTERRUPT_REGISTER_MASK;
+        const u8 value = s_state.interrupt_enable_register | ~INTERRUPT_REGISTER_MASK;
         DEBUG_LOG("CDROM read interrupt enable register -> 0x{:02X}", value);
         return value;
       }
@@ -1050,7 +1060,7 @@ u8 CDROM::ReadRegister(u32 offset)
       [[unlikely]]
       {
         ERROR_LOG("Unknown CDROM register read: offset=0x{:02X}, index={}", offset,
-                  ZeroExtend32(s_status.index.GetValue()));
+                  ZeroExtend32(s_state.status.index.GetValue()));
         Panic("Unknown CDROM register");
       }
   }
@@ -1061,11 +1071,11 @@ void CDROM::WriteRegister(u32 offset, u8 value)
   if (offset == 0)
   {
     TRACE_LOG("CDROM status register <- 0x{:02X}", value);
-    s_status.bits = (s_status.bits & static_cast<u8>(~3)) | (value & u8(3));
+    s_state.status.bits = (s_state.status.bits & static_cast<u8>(~3)) | (value & u8(3));
     return;
   }
 
-  const u32 reg = (s_status.index * 3u) + (offset - 1);
+  const u32 reg = (s_state.status.index * 3u) + (offset - 1);
   switch (reg)
   {
     case 0:
@@ -1077,13 +1087,13 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
     case 1:
     {
-      if (s_param_fifo.IsFull())
+      if (s_state.param_fifo.IsFull())
       {
         WARNING_LOG("Parameter FIFO overflow");
-        s_param_fifo.RemoveOne();
+        s_state.param_fifo.RemoveOne();
       }
 
-      s_param_fifo.Push(value);
+      s_state.param_fifo.Push(value);
       UpdateStatusRegister();
       return;
     }
@@ -1099,13 +1109,13 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       if (rr.BFWR)
         ERROR_LOG("Buffer write enable set");
 
-      s_request_register.bits = rr.bits;
+      s_state.request_register.bits = rr.bits;
 
-      SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
-      DEBUG_LOG("{} BFRD buffer={} pos={} size={}", s_request_register.BFRD ? "Set" : "Clear",
-                s_current_read_sector_buffer, sb.position, sb.size);
+      SectorBuffer& sb = s_state.sector_buffers[s_state.current_read_sector_buffer];
+      DEBUG_LOG("{} BFRD buffer={} pos={} size={}", s_state.request_register.BFRD ? "Set" : "Clear",
+                s_state.current_read_sector_buffer, sb.position, sb.size);
 
-      if (!s_request_register.BFRD)
+      if (!s_state.request_register.BFRD)
       {
         // Clearing BFRD needs to reset the position of the current buffer.
         // Metal Gear Solid: Special Missions (PAL) clears BFRD inbetween two DMAs during its disc detection, and needs
@@ -1131,7 +1141,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
     case 4:
     {
       DEBUG_LOG("Interrupt enable register <- 0x{:02X}", value);
-      s_interrupt_enable_register = value & INTERRUPT_REGISTER_MASK;
+      s_state.interrupt_enable_register = value & INTERRUPT_REGISTER_MASK;
       UpdateInterruptRequest();
       return;
     }
@@ -1140,14 +1150,14 @@ void CDROM::WriteRegister(u32 offset, u8 value)
     {
       DEBUG_LOG("Interrupt flag register <- 0x{:02X}", value);
 
-      const u8 prev_interrupt_flag_register = s_interrupt_flag_register;
-      s_interrupt_flag_register &= ~(value & INTERRUPT_REGISTER_MASK);
-      if (s_interrupt_flag_register == 0)
+      const u8 prev_interrupt_flag_register = s_state.interrupt_flag_register;
+      s_state.interrupt_flag_register &= ~(value & INTERRUPT_REGISTER_MASK);
+      if (s_state.interrupt_flag_register == 0)
       {
         // Start the countdown from when the interrupt was cleared, not it being triggered.
         // Otherwise Ogre Battle, Crime Crackers, Lego Racers, etc have issues.
         if (prev_interrupt_flag_register != 0)
-          s_last_interrupt_time = System::GetGlobalTickCounter();
+          s_state.last_interrupt_time = System::GetGlobalTickCounter();
 
         InterruptController::SetLineState(InterruptController::IRQ::CDROM, false);
         if (HasPendingAsyncInterrupt() && !HasPendingCommand())
@@ -1159,7 +1169,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       // Bit 6 clears the parameter FIFO.
       if (value & 0x40)
       {
-        s_param_fifo.Clear();
+        s_state.param_fifo.Clear();
         UpdateStatusRegister();
       }
 
@@ -1175,28 +1185,28 @@ void CDROM::WriteRegister(u32 offset, u8 value)
     case 7:
     {
       DEBUG_LOG("Audio volume for left-to-left output <- 0x{:02X}", value);
-      s_next_cd_audio_volume_matrix[0][0] = value;
+      s_state.next_cd_audio_volume_matrix[0][0] = value;
       return;
     }
 
     case 8:
     {
       DEBUG_LOG("Audio volume for left-to-right output <- 0x{:02X}", value);
-      s_next_cd_audio_volume_matrix[0][1] = value;
+      s_state.next_cd_audio_volume_matrix[0][1] = value;
       return;
     }
 
     case 9:
     {
       DEBUG_LOG("Audio volume for right-to-right output <- 0x{:02X}", value);
-      s_next_cd_audio_volume_matrix[1][1] = value;
+      s_state.next_cd_audio_volume_matrix[1][1] = value;
       return;
     }
 
     case 10:
     {
       DEBUG_LOG("Audio volume for right-to-left output <- 0x{:02X}", value);
-      s_next_cd_audio_volume_matrix[1][0] = value;
+      s_state.next_cd_audio_volume_matrix[1][0] = value;
       return;
     }
 
@@ -1205,18 +1215,19 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       DEBUG_LOG("Audio volume apply changes <- 0x{:02X}", value);
 
       const bool adpcm_muted = ConvertToBoolUnchecked(value & u8(0x01));
-      if (adpcm_muted != s_adpcm_muted ||
-          (value & 0x20 && std::memcmp(s_cd_audio_volume_matrix.data(), s_next_cd_audio_volume_matrix.data(),
-                                       sizeof(s_cd_audio_volume_matrix)) != 0))
+      if (adpcm_muted != s_state.adpcm_muted ||
+          (value & 0x20 &&
+           std::memcmp(s_state.cd_audio_volume_matrix.data(), s_state.next_cd_audio_volume_matrix.data(),
+                       sizeof(s_state.cd_audio_volume_matrix)) != 0))
       {
         if (HasPendingDiscEvent())
-          s_drive_event.InvokeEarly();
+          s_state.drive_event.InvokeEarly();
         SPU::GeneratePendingSamples();
       }
 
-      s_adpcm_muted = adpcm_muted;
+      s_state.adpcm_muted = adpcm_muted;
       if (value & 0x20)
-        s_cd_audio_volume_matrix = s_next_cd_audio_volume_matrix;
+        s_state.cd_audio_volume_matrix = s_state.next_cd_audio_volume_matrix;
       return;
     }
 
@@ -1224,7 +1235,7 @@ void CDROM::WriteRegister(u32 offset, u8 value)
       [[unlikely]]
       {
         ERROR_LOG("Unknown CDROM register write: offset=0x{:02X}, index={}, reg={}, value=0x{:02X}", offset,
-                  s_status.index.GetValue(), reg, value);
+                  s_state.status.index.GetValue(), reg, value);
         return;
       }
   }
@@ -1232,8 +1243,8 @@ void CDROM::WriteRegister(u32 offset, u8 value)
 
 void CDROM::DMARead(u32* words, u32 word_count)
 {
-  SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
-  const u32 bytes_available = (s_request_register.BFRD && sb.position < sb.size) ? (sb.size - sb.position) : 0;
+  SectorBuffer& sb = s_state.sector_buffers[s_state.current_read_sector_buffer];
+  const u32 bytes_available = (s_state.request_register.BFRD && sb.position < sb.size) ? (sb.size - sb.position) : 0;
   u8* dst_ptr = reinterpret_cast<u8*>(words);
   u32 bytes_remaining = word_count * sizeof(u32);
   if (bytes_available > 0)
@@ -1256,36 +1267,36 @@ void CDROM::DMARead(u32* words, u32 word_count)
 
 bool CDROM::HasPendingCommand()
 {
-  return s_command != Command::None;
+  return s_state.command != Command::None;
 }
 
 bool CDROM::HasPendingInterrupt()
 {
-  return s_interrupt_flag_register != 0;
+  return s_state.interrupt_flag_register != 0;
 }
 
 bool CDROM::HasPendingAsyncInterrupt()
 {
-  return s_pending_async_interrupt != 0;
+  return s_state.pending_async_interrupt != 0;
 }
 
 void CDROM::SetInterrupt(Interrupt interrupt)
 {
-  s_interrupt_flag_register = static_cast<u8>(interrupt);
+  s_state.interrupt_flag_register = static_cast<u8>(interrupt);
   UpdateInterruptRequest();
 }
 
 void CDROM::SetAsyncInterrupt(Interrupt interrupt)
 {
-  if (s_interrupt_flag_register == static_cast<u8>(interrupt))
+  if (s_state.interrupt_flag_register == static_cast<u8>(interrupt))
   {
     DEV_LOG("Not setting async interrupt {} because there is already one unacknowledged", static_cast<u8>(interrupt));
-    s_async_response_fifo.Clear();
+    s_state.async_response_fifo.Clear();
     return;
   }
 
-  Assert(s_pending_async_interrupt == 0);
-  s_pending_async_interrupt = static_cast<u8>(interrupt);
+  Assert(s_state.pending_async_interrupt == 0);
+  s_state.pending_async_interrupt = static_cast<u8>(interrupt);
   if (!HasPendingInterrupt())
   {
     // Pending interrupt should block INT1 from going through. But pending command needs to as well, for games like
@@ -1294,20 +1305,20 @@ void CDROM::SetAsyncInterrupt(Interrupt interrupt)
     if (!HasPendingCommand())
       QueueDeliverAsyncInterrupt();
     else
-      DEBUG_LOG("Delaying async interrupt {} because of pending command", s_pending_async_interrupt);
+      DEBUG_LOG("Delaying async interrupt {} because of pending command", s_state.pending_async_interrupt);
   }
   else
   {
-    DEBUG_LOG("Delaying async interrupt {} because of pending interrupt {}", s_pending_async_interrupt,
-              s_interrupt_flag_register);
+    DEBUG_LOG("Delaying async interrupt {} because of pending interrupt {}", s_state.pending_async_interrupt,
+              s_state.interrupt_flag_register);
   }
 }
 
 void CDROM::ClearAsyncInterrupt()
 {
-  s_pending_async_interrupt = 0;
-  s_async_interrupt_event.Deactivate();
-  s_async_response_fifo.Clear();
+  s_state.pending_async_interrupt = 0;
+  s_state.async_interrupt_event.Deactivate();
+  s_state.async_response_fifo.Clear();
 }
 
 void CDROM::QueueDeliverAsyncInterrupt()
@@ -1321,16 +1332,16 @@ void CDROM::QueueDeliverAsyncInterrupt()
   // something similar anyway, the INT1 task won't run immediately after the INT3 is cleared.
   DebugAssert(HasPendingAsyncInterrupt());
 
-  const u32 diff = static_cast<u32>(System::GetGlobalTickCounter() - s_last_interrupt_time);
+  const u32 diff = static_cast<u32>(System::GetGlobalTickCounter() - s_state.last_interrupt_time);
   if (diff >= MINIMUM_INTERRUPT_DELAY)
   {
     DeliverAsyncInterrupt(nullptr, 0, 0);
   }
   else
   {
-    DEV_LOG("Delaying async interrupt {} because it's been {} cycles since last interrupt", s_pending_async_interrupt,
-            diff);
-    s_async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
+    DEV_LOG("Delaying async interrupt {} because it's been {} cycles since last interrupt",
+            s_state.pending_async_interrupt, diff);
+    s_state.async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
   }
 }
 
@@ -1339,24 +1350,24 @@ void CDROM::DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late)
   if (HasPendingInterrupt())
   {
     // This shouldn't really happen, because we should block command execution.. but just in case.
-    if (!s_async_interrupt_event.IsActive())
-      s_async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
+    if (!s_state.async_interrupt_event.IsActive())
+      s_state.async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
   }
   else
   {
-    s_async_interrupt_event.Deactivate();
+    s_state.async_interrupt_event.Deactivate();
 
-    Assert(s_pending_async_interrupt != 0 && !HasPendingInterrupt());
-    DEBUG_LOG("Delivering async interrupt {}", s_pending_async_interrupt);
+    Assert(s_state.pending_async_interrupt != 0 && !HasPendingInterrupt());
+    DEBUG_LOG("Delivering async interrupt {}", s_state.pending_async_interrupt);
 
     // This is the HC05 setting the read position from the decoder.
-    if (s_pending_async_interrupt == static_cast<u8>(Interrupt::DataReady))
-      s_current_read_sector_buffer = s_current_write_sector_buffer;
+    if (s_state.pending_async_interrupt == static_cast<u8>(Interrupt::DataReady))
+      s_state.current_read_sector_buffer = s_state.current_write_sector_buffer;
 
-    s_response_fifo.Clear();
-    s_response_fifo.PushFromQueue(&s_async_response_fifo);
-    s_interrupt_flag_register = s_pending_async_interrupt;
-    s_pending_async_interrupt = 0;
+    s_state.response_fifo.Clear();
+    s_state.response_fifo.PushFromQueue(&s_state.async_response_fifo);
+    s_state.interrupt_flag_register = s_state.pending_async_interrupt;
+    s_state.pending_async_interrupt = 0;
     UpdateInterruptRequest();
     UpdateStatusRegister();
     UpdateCommandEvent();
@@ -1365,45 +1376,45 @@ void CDROM::DeliverAsyncInterrupt(void*, TickCount ticks, TickCount ticks_late)
 
 void CDROM::SendACKAndStat()
 {
-  s_response_fifo.Push(s_secondary_status.bits);
+  s_state.response_fifo.Push(s_state.secondary_status.bits);
   SetInterrupt(Interrupt::ACK);
 }
 
 void CDROM::SendErrorResponse(u8 stat_bits /* = STAT_ERROR */, u8 reason /* = 0x80 */)
 {
-  s_response_fifo.Push(s_secondary_status.bits | stat_bits);
-  s_response_fifo.Push(reason);
+  s_state.response_fifo.Push(s_state.secondary_status.bits | stat_bits);
+  s_state.response_fifo.Push(reason);
   SetInterrupt(Interrupt::Error);
 }
 
 void CDROM::SendAsyncErrorResponse(u8 stat_bits /* = STAT_ERROR */, u8 reason /* = 0x80 */)
 {
-  s_async_response_fifo.Push(s_secondary_status.bits | stat_bits);
-  s_async_response_fifo.Push(reason);
+  s_state.async_response_fifo.Push(s_state.secondary_status.bits | stat_bits);
+  s_state.async_response_fifo.Push(reason);
   SetAsyncInterrupt(Interrupt::Error);
 }
 
 void CDROM::UpdateStatusRegister()
 {
-  s_status.ADPBUSY = false;
-  s_status.PRMEMPTY = s_param_fifo.IsEmpty();
-  s_status.PRMWRDY = !s_param_fifo.IsFull();
-  s_status.RSLRRDY = !s_response_fifo.IsEmpty();
-  s_status.DRQSTS = s_request_register.BFRD;
-  s_status.BUSYSTS = HasPendingCommand();
+  s_state.status.ADPBUSY = false;
+  s_state.status.PRMEMPTY = s_state.param_fifo.IsEmpty();
+  s_state.status.PRMWRDY = !s_state.param_fifo.IsFull();
+  s_state.status.RSLRRDY = !s_state.response_fifo.IsEmpty();
+  s_state.status.DRQSTS = s_state.request_register.BFRD;
+  s_state.status.BUSYSTS = HasPendingCommand();
 
-  DMA::SetRequest(DMA::Channel::CDROM, s_status.DRQSTS);
+  DMA::SetRequest(DMA::Channel::CDROM, s_state.status.DRQSTS);
 }
 
 void CDROM::UpdateInterruptRequest()
 {
   InterruptController::SetLineState(InterruptController::IRQ::CDROM,
-                                    (s_interrupt_flag_register & s_interrupt_enable_register) != 0);
+                                    (s_state.interrupt_flag_register & s_state.interrupt_enable_register) != 0);
 }
 
 bool CDROM::HasPendingDiscEvent()
 {
-  return (s_drive_event.IsActive() && s_drive_event.GetTicksUntilNextExecution() <= 0);
+  return (s_state.drive_event.IsActive() && s_state.drive_event.GetTicksUntilNextExecution() <= 0);
 }
 
 TickCount CDROM::GetAckDelayForCommand(Command command)
@@ -1430,8 +1441,8 @@ TickCount CDROM::GetTicksForSpinUp()
 TickCount CDROM::GetTicksForIDRead()
 {
   TickCount ticks = ID_READ_TICKS;
-  if (s_drive_state == DriveState::SpinningUp)
-    ticks += s_drive_event.GetTicksUntilNextExecution();
+  if (s_state.drive_state == DriveState::SpinningUp)
+    ticks += s_state.drive_event.GetTicksUntilNextExecution();
 
   return ticks;
 }
@@ -1440,10 +1451,10 @@ TickCount CDROM::GetTicksForRead()
 {
   const TickCount tps = System::GetTicksPerSecond();
 
-  if (g_settings.cdrom_read_speedup > 1 && !s_mode.cdda && !s_mode.xa_enable && s_mode.double_speed)
+  if (g_settings.cdrom_read_speedup > 1 && !s_state.mode.cdda && !s_state.mode.xa_enable && s_state.mode.double_speed)
     return tps / (150 * g_settings.cdrom_read_speedup);
 
-  return s_mode.double_speed ? (tps / 150) : (tps / 75);
+  return s_state.mode.double_speed ? (tps / 150) : (tps / 75);
 }
 
 u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
@@ -1467,15 +1478,15 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   else
     UpdatePhysicalPosition(false);
 
-  const CDImage::LBA current_lba = IsMotorOn() ? (IsSeeking() ? s_seek_end_lba : s_physical_lba) : 0;
+  const CDImage::LBA current_lba = IsMotorOn() ? (IsSeeking() ? s_state.seek_end_lba : s_state.physical_lba) : 0;
   const CDImage::LBA lba_diff = ((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
   // Motor spin-up time.
   if (!IsMotorOn())
   {
-    ticks +=
-      (s_drive_state == DriveState::SpinningUp) ? s_drive_event.GetTicksUntilNextExecution() : GetTicksForSpinUp();
-    if (s_drive_state == DriveState::ShellOpening || s_drive_state == DriveState::SpinningUp)
+    ticks += (s_state.drive_state == DriveState::SpinningUp) ? s_state.drive_event.GetTicksUntilNextExecution() :
+                                                               GetTicksForSpinUp();
+    if (s_state.drive_state == DriveState::ShellOpening || s_state.drive_state == DriveState::SpinningUp)
       ClearDriveState();
   }
 
@@ -1485,7 +1496,8 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   {
     seconds = 0.0f;
 
-    const TickCount ticks_per_sector = s_mode.double_speed ? (System::MASTER_CLOCK / 150) : (System::MASTER_CLOCK / 75);
+    const TickCount ticks_per_sector =
+      s_state.mode.double_speed ? (System::MASTER_CLOCK / 150) : (System::MASTER_CLOCK / 75);
     if (current_lba < new_lba)
     {
       // If we're behind the current sector, and within a small distance, the mech just waits for the sector to come up
@@ -1535,10 +1547,10 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   if (g_settings.cdrom_seek_speedup > 1)
     ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_TICKS);
 
-  if (s_drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
+  if (s_state.drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
     // we're still reading the TOC, so add that time in
-    const TickCount remaining_change_ticks = s_drive_event.GetTicksUntilNextExecution();
+    const TickCount remaining_change_ticks = s_state.drive_event.GetTicksUntilNextExecution();
     ticks += remaining_change_ticks;
 
     DEV_LOG("Seek time for {}->{} ({} LBA): {} ({:.3f} ms) ({} for speed change/init) ({})",
@@ -1557,14 +1569,14 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
 TickCount CDROM::GetTicksForStop(bool motor_was_on)
 {
-  return System::ScaleTicksToOverclock(motor_was_on ? (s_mode.double_speed ? 25000000 : 13000000) : 7000);
+  return System::ScaleTicksToOverclock(motor_was_on ? (s_state.mode.double_speed ? 25000000 : 13000000) : 7000);
 }
 
 TickCount CDROM::GetTicksForSpeedChange()
 {
   static constexpr u32 ticks_single_to_double = static_cast<u32>(0.6 * static_cast<double>(System::MASTER_CLOCK));
   static constexpr u32 ticks_double_to_single = static_cast<u32>(0.7 * static_cast<double>(System::MASTER_CLOCK));
-  return System::ScaleTicksToOverclock(s_mode.double_speed ? ticks_single_to_double : ticks_double_to_single);
+  return System::ScaleTicksToOverclock(s_state.mode.double_speed ? ticks_single_to_double : ticks_double_to_single);
 }
 
 TickCount CDROM::GetTicksForTOCRead()
@@ -1578,7 +1590,7 @@ TickCount CDROM::GetTicksForTOCRead()
 CDImage::LBA CDROM::GetNextSectorToBeRead()
 {
   if (!IsReadingOrPlaying())
-    return s_current_lba;
+    return s_state.current_lba;
 
   s_reader.WaitForReadToComplete();
   return s_reader.GetLastReadSector();
@@ -1598,26 +1610,27 @@ void CDROM::BeginCommand(Command command)
     // behavior is not correct. So, let's use a heuristic; if the number of parameters of the "old" command is
     // greater than the "new" command, empty the FIFO, which will return the error when the command executes.
     // Otherwise, override the command with the new one.
-    if (s_command_info[static_cast<u8>(s_command)].min_parameters >
+    if (s_command_info[static_cast<u8>(s_state.command)].min_parameters >
         s_command_info[static_cast<u8>(command)].min_parameters)
     {
       WARNING_LOG("Ignoring command 0x{:02X} ({}) and emptying FIFO as 0x{:02X} ({}) is still pending",
-                  static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name, static_cast<u8>(s_command),
-                  s_command_info[static_cast<u8>(s_command)].name);
-      s_param_fifo.Clear();
+                  static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name,
+                  static_cast<u8>(s_state.command), s_command_info[static_cast<u8>(s_state.command)].name);
+      s_state.param_fifo.Clear();
       return;
     }
 
-    WARNING_LOG("Cancelling pending command 0x{:02X} ({}) for new command 0x{:02X} ({})", static_cast<u8>(s_command),
-                s_command_info[static_cast<u8>(s_command)].name, static_cast<u8>(command),
-                s_command_info[static_cast<u8>(command)].name);
+    WARNING_LOG("Cancelling pending command 0x{:02X} ({}) for new command 0x{:02X} ({})",
+                static_cast<u8>(s_state.command), s_command_info[static_cast<u8>(s_state.command)].name,
+                static_cast<u8>(command), s_command_info[static_cast<u8>(command)].name);
 
     // subtract the currently-elapsed ack ticks from the new command
-    if (s_command_event.IsActive())
+    if (s_state.command_event.IsActive())
     {
-      const TickCount elapsed_ticks = s_command_event.GetInterval() - s_command_event.GetTicksUntilNextExecution();
+      const TickCount elapsed_ticks =
+        s_state.command_event.GetInterval() - s_state.command_event.GetTicksUntilNextExecution();
       ack_delay = std::max(ack_delay - elapsed_ticks, 1);
-      s_command_event.Deactivate();
+      s_state.command_event.Deactivate();
 
       // If there's a pending async interrupt, we need to deliver it now, since we've deactivated the command that was
       // blocking it from being delivered. Not doing so will cause lockups in Street Fighter Alpha 3, where it spams
@@ -1626,58 +1639,60 @@ void CDROM::BeginCommand(Command command)
       if (HasPendingAsyncInterrupt())
       {
         WARNING_LOG("Delivering pending interrupt after command {} cancellation for {}.",
-                    s_command_info[static_cast<u8>(s_command)].name, s_command_info[static_cast<u8>(command)].name);
+                    s_command_info[static_cast<u8>(s_state.command)].name,
+                    s_command_info[static_cast<u8>(command)].name);
         QueueDeliverAsyncInterrupt();
       }
     }
   }
 
-  s_command = command;
-  s_command_event.SetIntervalAndSchedule(ack_delay);
+  s_state.command = command;
+  s_state.command_event.SetIntervalAndSchedule(ack_delay);
   UpdateCommandEvent();
   UpdateStatusRegister();
 }
 
 void CDROM::EndCommand()
 {
-  s_param_fifo.Clear();
+  s_state.param_fifo.Clear();
 
-  s_command = Command::None;
-  s_command_event.Deactivate();
+  s_state.command = Command::None;
+  s_state.command_event.Deactivate();
   UpdateStatusRegister();
 }
 
 void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 {
-  const CommandInfo& ci = s_command_info[static_cast<u8>(s_command)];
+  const CommandInfo& ci = s_command_info[static_cast<u8>(s_state.command)];
   if (Log::IsLogVisible(Log::Level::Dev, ___LogChannel___)) [[unlikely]]
   {
     SmallString params;
-    for (u32 i = 0; i < s_param_fifo.GetSize(); i++)
-      params.append_format("{}0x{:02X}", (i == 0) ? "" : ", ", s_param_fifo.Peek(i));
-    DEV_LOG("CDROM executing command 0x{:02X} ({}), stat = 0x{:02X}, params = [{}]", static_cast<u8>(s_command),
-            ci.name, s_secondary_status.bits, params);
+    for (u32 i = 0; i < s_state.param_fifo.GetSize(); i++)
+      params.append_format("{}0x{:02X}", (i == 0) ? "" : ", ", s_state.param_fifo.Peek(i));
+    DEV_LOG("CDROM executing command 0x{:02X} ({}), stat = 0x{:02X}, params = [{}]", static_cast<u8>(s_state.command),
+            ci.name, s_state.secondary_status.bits, params);
   }
 
-  if (s_param_fifo.GetSize() < ci.min_parameters || s_param_fifo.GetSize() > ci.max_parameters) [[unlikely]]
+  if (s_state.param_fifo.GetSize() < ci.min_parameters || s_state.param_fifo.GetSize() > ci.max_parameters) [[unlikely]]
   {
-    WARNING_LOG("Incorrect parameters for command 0x{:02X} ({}), expecting {}-{} got {}", static_cast<u8>(s_command),
-                ci.name, ci.min_parameters, ci.max_parameters, s_param_fifo.GetSize());
+    WARNING_LOG("Incorrect parameters for command 0x{:02X} ({}), expecting {}-{} got {}",
+                static_cast<u8>(s_state.command), ci.name, ci.min_parameters, ci.max_parameters,
+                s_state.param_fifo.GetSize());
     SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
     EndCommand();
     return;
   }
 
-  if (!s_response_fifo.IsEmpty())
+  if (!s_state.response_fifo.IsEmpty())
   {
     DEBUG_LOG("Response FIFO not empty on command begin");
-    s_response_fifo.Clear();
+    s_state.response_fifo.Clear();
   }
 
   // Stop command event first, reduces our chances of ending up with out-of-order events.
-  s_command_event.Deactivate();
+  s_state.command_event.Deactivate();
 
-  switch (s_command)
+  switch (s_state.command)
   {
     case Command::Getstat:
     {
@@ -1688,7 +1703,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
       // shell open bit is cleared after sending the status
       if (CanReadMedia())
-        s_secondary_status.shell_open = false;
+        s_state.secondary_status.shell_open = false;
 
       EndCommand();
       return;
@@ -1696,7 +1711,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Test:
     {
-      const u8 subcommand = s_param_fifo.Pop();
+      const u8 subcommand = s_state.param_fifo.Pop();
       ExecuteTestCommand(subcommand);
       return;
     }
@@ -1742,12 +1757,12 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Setfilter:
     {
-      const u8 file = s_param_fifo.Peek(0);
-      const u8 channel = s_param_fifo.Peek(1);
+      const u8 file = s_state.param_fifo.Peek(0);
+      const u8 channel = s_state.param_fifo.Peek(1);
       DEBUG_LOG("CDROM setfilter command 0x{:02X} 0x{:02X}", ZeroExtend32(file), ZeroExtend32(channel));
-      s_xa_filter_file_number = file;
-      s_xa_filter_channel_number = channel;
-      s_xa_current_set = false;
+      s_state.xa_filter_file_number = file;
+      s_state.xa_filter_channel_number = channel;
+      s_state.xa_current_set = false;
       SendACKAndStat();
       EndCommand();
       return;
@@ -1755,47 +1770,47 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Setmode:
     {
-      const u8 mode = s_param_fifo.Peek(0);
-      const bool speed_change = (mode & 0x80) != (s_mode.bits & 0x80);
+      const u8 mode = s_state.param_fifo.Peek(0);
+      const bool speed_change = (mode & 0x80) != (s_state.mode.bits & 0x80);
       DEV_LOG("CDROM setmode command 0x{:02X}", ZeroExtend32(mode));
 
-      s_mode.bits = mode;
+      s_state.mode.bits = mode;
       SendACKAndStat();
       EndCommand();
 
       if (speed_change)
       {
-        if (s_drive_state == DriveState::ChangingSpeedOrTOCRead)
+        if (s_state.drive_state == DriveState::ChangingSpeedOrTOCRead)
         {
           // cancel the speed change if it's less than a quarter complete
-          if (s_drive_event.GetTicksUntilNextExecution() >= (GetTicksForSpeedChange() / 4))
+          if (s_state.drive_event.GetTicksUntilNextExecution() >= (GetTicksForSpeedChange() / 4))
           {
             DEV_LOG("Cancelling speed change event");
             ClearDriveState();
           }
         }
-        else if (s_drive_state != DriveState::SeekingImplicit && s_drive_state != DriveState::ShellOpening)
+        else if (s_state.drive_state != DriveState::SeekingImplicit && s_state.drive_state != DriveState::ShellOpening)
         {
           // if we're seeking or reading, we need to add time to the current seek/read
           const TickCount change_ticks = GetTicksForSpeedChange();
-          if (s_drive_state != DriveState::Idle)
+          if (s_state.drive_state != DriveState::Idle)
           {
             DEV_LOG("Drive is {}, delaying event by {} ticks for speed change to {}-speed",
-                    s_drive_state_names[static_cast<u8>(s_drive_state)], change_ticks,
-                    s_mode.double_speed ? "double" : "single");
-            s_drive_event.Delay(change_ticks);
+                    s_drive_state_names[static_cast<u8>(s_state.drive_state)], change_ticks,
+                    s_state.mode.double_speed ? "double" : "single");
+            s_state.drive_event.Delay(change_ticks);
 
             if (IsReadingOrPlaying())
             {
               WARNING_LOG("Speed change while reading/playing, reads will be temporarily delayed.");
-              s_drive_event.SetInterval(GetTicksForRead());
+              s_state.drive_event.SetInterval(GetTicksForRead());
             }
           }
           else
           {
             DEV_LOG("Drive is idle, speed change takes {} ticks", change_ticks);
-            s_drive_state = DriveState::ChangingSpeedOrTOCRead;
-            s_drive_event.Schedule(change_ticks);
+            s_state.drive_state = DriveState::ChangingSpeedOrTOCRead;
+            s_state.drive_event.Schedule(change_ticks);
           }
         }
       }
@@ -1805,9 +1820,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Setloc:
     {
-      const u8 mm = s_param_fifo.Peek(0);
-      const u8 ss = s_param_fifo.Peek(1);
-      const u8 ff = s_param_fifo.Peek(2);
+      const u8 mm = s_state.param_fifo.Peek(0);
+      const u8 ss = s_state.param_fifo.Peek(1);
+      const u8 ff = s_state.param_fifo.Peek(2);
       DEV_LOG("CDROM setloc command ({:02X}, {:02X}, {:02X})", mm, ss, ff);
 
       // MM must be BCD, SS must be BCD and <0x60, FF must be BCD and <0x75
@@ -1821,10 +1836,10 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         SendACKAndStat();
 
-        s_setloc_position.minute = PackedBCDToBinary(mm);
-        s_setloc_position.second = PackedBCDToBinary(ss);
-        s_setloc_position.frame = PackedBCDToBinary(ff);
-        s_setloc_pending = true;
+        s_state.setloc_position.minute = PackedBCDToBinary(mm);
+        s_state.setloc_position.second = PackedBCDToBinary(ss);
+        s_state.setloc_position.frame = PackedBCDToBinary(ff);
+        s_state.setloc_pending = true;
       }
 
       EndCommand();
@@ -1834,7 +1849,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::SeekL:
     case Command::SeekP:
     {
-      const bool logical = (s_command == Command::SeekL);
+      const bool logical = (s_state.command == Command::SeekL);
       DEBUG_LOG("CDROM {} command", logical ? "SeekL" : "SeekP");
 
       if (!CanReadMedia())
@@ -1853,10 +1868,10 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::ReadT:
     {
-      const u8 session = s_param_fifo.Peek(0);
+      const u8 session = s_state.param_fifo.Peek(0);
       DEBUG_LOG("CDROM ReadT command, session={}", session);
 
-      if (!CanReadMedia() || s_drive_state == DriveState::Reading || s_drive_state == DriveState::Playing)
+      if (!CanReadMedia() || s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing)
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
@@ -1869,9 +1884,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         ClearCommandSecondResponse();
         SendACKAndStat();
 
-        s_async_command_parameter = session;
-        s_drive_state = DriveState::ChangingSession;
-        s_drive_event.Schedule(GetTicksForTOCRead());
+        s_state.async_command_parameter = session;
+        s_state.drive_state = DriveState::ChangingSession;
+        s_state.drive_event.Schedule(GetTicksForTOCRead());
       }
 
       EndCommand();
@@ -1886,7 +1901,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
-      else if ((IsMediaAudioCD() || !DoesMediaRegionMatchConsole()) && !s_mode.cdda)
+      else if ((IsMediaAudioCD() || !DoesMediaRegionMatchConsole()) && !s_state.mode.cdda)
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
       }
@@ -1894,12 +1909,12 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         SendACKAndStat();
 
-        if ((!s_setloc_pending || s_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
-            (s_drive_state == DriveState::Reading || (IsSeeking() && s_read_after_seek)))
+        if ((!s_state.setloc_pending || s_state.setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
+            (s_state.drive_state == DriveState::Reading || (IsSeeking() && s_state.read_after_seek)))
         {
           DEV_LOG("Ignoring read command with {} setloc, already reading/reading after seek",
-                  s_setloc_pending ? "pending" : "same");
-          s_setloc_pending = false;
+                  s_state.setloc_pending ? "pending" : "same");
+          s_state.setloc_pending = false;
         }
         else
         {
@@ -1913,7 +1928,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Play:
     {
-      const u8 track = s_param_fifo.IsEmpty() ? 0 : PackedBCDToBinary(s_param_fifo.Peek(0));
+      const u8 track = s_state.param_fifo.IsEmpty() ? 0 : PackedBCDToBinary(s_state.param_fifo.Peek(0));
       DEBUG_LOG("CDROM play command, track={}", track);
 
       if (!CanReadMedia())
@@ -1924,12 +1939,12 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         SendACKAndStat();
 
-        if (track == 0 && (!s_setloc_pending || s_setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
-            (s_drive_state == DriveState::Playing || (IsSeeking() && s_play_after_seek)))
+        if (track == 0 && (!s_state.setloc_pending || s_state.setloc_position.ToLBA() == GetNextSectorToBeRead()) &&
+            (s_state.drive_state == DriveState::Playing || (IsSeeking() && s_state.play_after_seek)))
         {
           DEV_LOG("Ignoring play command with no/same setloc, already playing/playing after seek");
-          s_fast_forward_rate = 0;
-          s_setloc_pending = false;
+          s_state.fast_forward_rate = 0;
+          s_state.setloc_pending = false;
         }
         else
         {
@@ -1943,7 +1958,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Forward:
     {
-      if (s_drive_state != DriveState::Playing || !CanReadMedia())
+      if (s_state.drive_state != DriveState::Playing || !CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
@@ -1951,11 +1966,11 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         SendACKAndStat();
 
-        if (s_fast_forward_rate < 0)
-          s_fast_forward_rate = 0;
+        if (s_state.fast_forward_rate < 0)
+          s_state.fast_forward_rate = 0;
 
-        s_fast_forward_rate += static_cast<s8>(FAST_FORWARD_RATE_STEP);
-        s_fast_forward_rate = std::min<s8>(s_fast_forward_rate, static_cast<s8>(MAX_FAST_FORWARD_RATE));
+        s_state.fast_forward_rate += static_cast<s8>(FAST_FORWARD_RATE_STEP);
+        s_state.fast_forward_rate = std::min<s8>(s_state.fast_forward_rate, static_cast<s8>(MAX_FAST_FORWARD_RATE));
       }
 
       EndCommand();
@@ -1964,7 +1979,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Backward:
     {
-      if (s_drive_state != DriveState::Playing || !CanReadMedia())
+      if (s_state.drive_state != DriveState::Playing || !CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
@@ -1972,11 +1987,11 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         SendACKAndStat();
 
-        if (s_fast_forward_rate > 0)
-          s_fast_forward_rate = 0;
+        if (s_state.fast_forward_rate > 0)
+          s_state.fast_forward_rate = 0;
 
-        s_fast_forward_rate -= static_cast<s8>(FAST_FORWARD_RATE_STEP);
-        s_fast_forward_rate = std::max<s8>(s_fast_forward_rate, -static_cast<s8>(MAX_FAST_FORWARD_RATE));
+        s_state.fast_forward_rate -= static_cast<s8>(FAST_FORWARD_RATE_STEP);
+        s_state.fast_forward_rate = std::max<s8>(s_state.fast_forward_rate, -static_cast<s8>(MAX_FAST_FORWARD_RATE));
       }
 
       EndCommand();
@@ -1985,8 +2000,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Pause:
     {
-      const bool was_reading = (s_drive_state == DriveState::Reading || s_drive_state == DriveState::Playing);
-      const TickCount pause_time = was_reading ? (s_mode.double_speed ? 2000000 : 1000000) : 7000;
+      const bool was_reading =
+        (s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing);
+      const TickCount pause_time = was_reading ? (s_state.mode.double_speed ? 2000000 : 1000000) : 7000;
 
       ClearCommandSecondResponse();
       SendACKAndStat();
@@ -1994,9 +2010,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       // This behaviour has been verified with hardware tests! The mech will reject pause commands if the game
       // just started a read/seek, and it hasn't processed the first sector yet. This makes some games go bananas
       // and spam pause commands until eventually it succeeds, but it is correct behaviour.
-      if (s_drive_state == DriveState::SeekingLogical || s_drive_state == DriveState::SeekingPhysical ||
-          ((s_drive_state == DriveState::Reading || s_drive_state == DriveState::Playing) &&
-           s_secondary_status.seeking))
+      if (s_state.drive_state == DriveState::SeekingLogical || s_state.drive_state == DriveState::SeekingPhysical ||
+          ((s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing) &&
+           s_state.secondary_status.seeking))
       {
         WARNING_LOG("CDROM Pause command while seeking - sending error response");
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
@@ -2009,9 +2025,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         ClearAsyncInterrupt();
 
         // Stop reading.
-        s_drive_state = DriveState::Idle;
-        s_drive_event.Deactivate();
-        s_secondary_status.ClearActiveBits();
+        s_state.drive_state = DriveState::Idle;
+        s_state.drive_event.Deactivate();
+        s_state.secondary_status.ClearActiveBits();
       }
 
       // Reset audio buffer here - control room cutscene audio repeats in Dino Crisis otherwise.
@@ -2041,7 +2057,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       DEBUG_LOG("CDROM init command");
 
-      if (s_command_second_response == Command::Init)
+      if (s_state.command_second_response == Command::Init)
       {
         // still pending
         EndCommand();
@@ -2068,7 +2084,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         SendACKAndStat();
 
         // still pending?
-        if (s_command_second_response == Command::MotorOn)
+        if (s_state.command_second_response == Command::MotorOn)
         {
           EndCommand();
           return;
@@ -2087,7 +2103,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::Mute:
     {
       DEBUG_LOG("CDROM mute command");
-      s_muted = true;
+      s_state.muted = true;
       SendACKAndStat();
       EndCommand();
       return;
@@ -2096,7 +2112,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::Demute:
     {
       DEBUG_LOG("CDROM demute command");
-      s_muted = false;
+      s_state.muted = false;
       SendACKAndStat();
       EndCommand();
       return;
@@ -2104,21 +2120,22 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::GetlocL:
     {
-      if (!s_last_sector_header_valid)
+      if (!s_state.last_sector_header_valid)
       {
-        DEV_LOG("CDROM GetlocL command - header invalid, status 0x{:02X}", s_secondary_status.bits);
+        DEV_LOG("CDROM GetlocL command - header invalid, status 0x{:02X}", s_state.secondary_status.bits);
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
       {
         UpdatePhysicalPosition(true);
 
-        DEBUG_LOG("CDROM GetlocL command - [{:02X}:{:02X}:{:02X}]", s_last_sector_header.minute,
-                  s_last_sector_header.second, s_last_sector_header.frame);
+        DEBUG_LOG("CDROM GetlocL command - [{:02X}:{:02X}:{:02X}]", s_state.last_sector_header.minute,
+                  s_state.last_sector_header.second, s_state.last_sector_header.frame);
 
-        s_response_fifo.PushRange(reinterpret_cast<const u8*>(&s_last_sector_header), sizeof(s_last_sector_header));
-        s_response_fifo.PushRange(reinterpret_cast<const u8*>(&s_last_sector_subheader),
-                                  sizeof(s_last_sector_subheader));
+        s_state.response_fifo.PushRange(reinterpret_cast<const u8*>(&s_state.last_sector_header),
+                                        sizeof(s_state.last_sector_header));
+        s_state.response_fifo.PushRange(reinterpret_cast<const u8*>(&s_state.last_sector_subheader),
+                                        sizeof(s_state.last_sector_subheader));
         SetInterrupt(Interrupt::ACK);
       }
 
@@ -2141,18 +2158,19 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
           UpdatePhysicalPosition(false);
 
         DEV_LOG("CDROM GetlocP command - T{:02x} I{:02x} R[{:02x}:{:02x}:{:02x}] A[{:02x}:{:02x}:{:02x}]",
-                s_last_subq.track_number_bcd, s_last_subq.index_number_bcd, s_last_subq.relative_minute_bcd,
-                s_last_subq.relative_second_bcd, s_last_subq.relative_frame_bcd, s_last_subq.absolute_minute_bcd,
-                s_last_subq.absolute_second_bcd, s_last_subq.absolute_frame_bcd);
+                s_state.last_subq.track_number_bcd, s_state.last_subq.index_number_bcd,
+                s_state.last_subq.relative_minute_bcd, s_state.last_subq.relative_second_bcd,
+                s_state.last_subq.relative_frame_bcd, s_state.last_subq.absolute_minute_bcd,
+                s_state.last_subq.absolute_second_bcd, s_state.last_subq.absolute_frame_bcd);
 
-        s_response_fifo.Push(s_last_subq.track_number_bcd);
-        s_response_fifo.Push(s_last_subq.index_number_bcd);
-        s_response_fifo.Push(s_last_subq.relative_minute_bcd);
-        s_response_fifo.Push(s_last_subq.relative_second_bcd);
-        s_response_fifo.Push(s_last_subq.relative_frame_bcd);
-        s_response_fifo.Push(s_last_subq.absolute_minute_bcd);
-        s_response_fifo.Push(s_last_subq.absolute_second_bcd);
-        s_response_fifo.Push(s_last_subq.absolute_frame_bcd);
+        s_state.response_fifo.Push(s_state.last_subq.track_number_bcd);
+        s_state.response_fifo.Push(s_state.last_subq.index_number_bcd);
+        s_state.response_fifo.Push(s_state.last_subq.relative_minute_bcd);
+        s_state.response_fifo.Push(s_state.last_subq.relative_second_bcd);
+        s_state.response_fifo.Push(s_state.last_subq.relative_frame_bcd);
+        s_state.response_fifo.Push(s_state.last_subq.absolute_minute_bcd);
+        s_state.response_fifo.Push(s_state.last_subq.absolute_second_bcd);
+        s_state.response_fifo.Push(s_state.last_subq.absolute_frame_bcd);
         SetInterrupt(Interrupt::ACK);
       }
 
@@ -2168,9 +2186,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         DEV_LOG("GetTN -> {} {}", s_reader.GetMedia()->GetFirstTrackNumber(),
                 s_reader.GetMedia()->GetLastTrackNumber());
 
-        s_response_fifo.Push(s_secondary_status.bits);
-        s_response_fifo.Push(BinaryToBCD(Truncate8(s_reader.GetMedia()->GetFirstTrackNumber())));
-        s_response_fifo.Push(BinaryToBCD(Truncate8(s_reader.GetMedia()->GetLastTrackNumber())));
+        s_state.response_fifo.Push(s_state.secondary_status.bits);
+        s_state.response_fifo.Push(BinaryToBCD(Truncate8(s_reader.GetMedia()->GetFirstTrackNumber())));
+        s_state.response_fifo.Push(BinaryToBCD(Truncate8(s_reader.GetMedia()->GetLastTrackNumber())));
         SetInterrupt(Interrupt::ACK);
       }
       else
@@ -2185,7 +2203,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::GetTD:
     {
       DEBUG_LOG("CDROM GetTD command");
-      Assert(s_param_fifo.GetSize() >= 1);
+      Assert(s_state.param_fifo.GetSize() >= 1);
 
       if (!CanReadMedia())
       {
@@ -2194,7 +2212,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         return;
       }
 
-      const u8 track_bcd = s_param_fifo.Peek();
+      const u8 track_bcd = s_state.param_fifo.Peek();
       if (!IsValidPackedBCD(track_bcd))
       {
         ERROR_LOG("Invalid track number in GetTD: {:02X}", track_bcd);
@@ -2216,9 +2234,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         else
           pos = s_reader.GetMedia()->GetTrackStartMSFPosition(track);
 
-        s_response_fifo.Push(s_secondary_status.bits);
-        s_response_fifo.Push(BinaryToBCD(Truncate8(pos.minute)));
-        s_response_fifo.Push(BinaryToBCD(Truncate8(pos.second)));
+        s_state.response_fifo.Push(s_state.secondary_status.bits);
+        s_state.response_fifo.Push(BinaryToBCD(Truncate8(pos.minute)));
+        s_state.response_fifo.Push(BinaryToBCD(Truncate8(pos.second)));
         DEV_LOG("GetTD {} -> {} {}", track, pos.minute, pos.second);
 
         SetInterrupt(Interrupt::ACK);
@@ -2232,11 +2250,11 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       DEBUG_LOG("CDROM Getmode command");
 
-      s_response_fifo.Push(s_secondary_status.bits);
-      s_response_fifo.Push(s_mode.bits);
-      s_response_fifo.Push(0);
-      s_response_fifo.Push(s_xa_filter_file_number);
-      s_response_fifo.Push(s_xa_filter_channel_number);
+      s_state.response_fifo.Push(s_state.secondary_status.bits);
+      s_state.response_fifo.Push(s_state.mode.bits);
+      s_state.response_fifo.Push(0);
+      s_state.response_fifo.Push(s_state.xa_filter_file_number);
+      s_state.response_fifo.Push(s_state.xa_filter_channel_number);
       SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
@@ -2257,8 +2275,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
 
       // According to nocash this doesn't clear the parameter FIFO.
-      s_command = Command::None;
-      s_command_event.Deactivate();
+      s_state.command = Command::None;
+      s_state.command_event.Deactivate();
       UpdateStatusRegister();
       return;
     }
@@ -2266,8 +2284,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     default:
       [[unlikely]]
       {
-        ERROR_LOG("Unknown CDROM command 0x{:04X} with {} parameters, please report", static_cast<u16>(s_command),
-                  s_param_fifo.GetSize());
+        ERROR_LOG("Unknown CDROM command 0x{:04X} with {} parameters, please report", static_cast<u16>(s_state.command),
+                  s_state.param_fifo.GetSize());
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
         EndCommand();
         return;
@@ -2282,8 +2300,8 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     case 0x04: // Reset SCEx counters
     {
       DEBUG_LOG("Reset SCEx counters");
-      s_secondary_status.motor_on = true;
-      s_response_fifo.Push(s_secondary_status.bits);
+      s_state.secondary_status.motor_on = true;
+      s_state.response_fifo.Push(s_state.secondary_status.bits);
       SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
@@ -2292,9 +2310,9 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     case 0x05: // Read SCEx counters
     {
       DEBUG_LOG("Read SCEx counters");
-      s_response_fifo.Push(s_secondary_status.bits);
-      s_response_fifo.Push(0); // # of TOC reads?
-      s_response_fifo.Push(0); // # of SCEx strings received
+      s_state.response_fifo.Push(s_state.secondary_status.bits);
+      s_state.response_fifo.Push(0); // # of TOC reads?
+      s_state.response_fifo.Push(0); // # of SCEx strings received
       SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
@@ -2320,8 +2338,8 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
         {0xA1, 0x03, 0x06, 0xC3}, // PSone/late (PM-41(2))    06 Jun 2001, version vC3 (c)
       };
 
-      s_response_fifo.PushRange(version_table[static_cast<u8>(g_settings.cdrom_mechacon_version)],
-                                countof(version_table[0]));
+      s_state.response_fifo.PushRange(version_table[static_cast<u8>(g_settings.cdrom_mechacon_version)],
+                                      countof(version_table[0]));
       SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
@@ -2336,14 +2354,14 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
         case ConsoleRegion::NTSC_J:
         {
           static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'J', 'a', 'p', 'a', 'n'};
-          s_response_fifo.PushRange(response, countof(response));
+          s_state.response_fifo.PushRange(response, countof(response));
         }
         break;
 
         case ConsoleRegion::PAL:
         {
           static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'E', 'u', 'r', 'o', 'p', 'e'};
-          s_response_fifo.PushRange(response, countof(response));
+          s_state.response_fifo.PushRange(response, countof(response));
         }
         break;
 
@@ -2351,7 +2369,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
         default:
         {
           static constexpr u8 response[] = {'f', 'o', 'r', ' ', 'U', '/', 'C'};
-          s_response_fifo.PushRange(response, countof(response));
+          s_state.response_fifo.PushRange(response, countof(response));
         }
         break;
       }
@@ -2363,16 +2381,16 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
 
     case 0x60:
     {
-      if (s_param_fifo.GetSize() < 2) [[unlikely]]
+      if (s_state.param_fifo.GetSize() < 2) [[unlikely]]
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
         EndCommand();
         return;
       }
 
-      const u16 addr = ZeroExtend16(s_param_fifo.Peek(0)) | ZeroExtend16(s_param_fifo.Peek(1));
+      const u16 addr = ZeroExtend16(s_state.param_fifo.Peek(0)) | ZeroExtend16(s_state.param_fifo.Peek(1));
       WARNING_LOG("Read memory from 0x{:04X}, returning zero", addr);
-      s_response_fifo.Push(0x00); // NOTE: No STAT here.
+      s_state.response_fifo.Push(0x00); // NOTE: No STAT here.
       SetInterrupt(Interrupt::ACK);
       EndCommand();
       return;
@@ -2381,7 +2399,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
     default:
       [[unlikely]]
       {
-        ERROR_LOG("Unknown test command 0x{:02X}, {} parameters", subcommand, s_param_fifo.GetSize());
+        ERROR_LOG("Unknown test command 0x{:02X}, {} parameters", subcommand, s_state.param_fifo.GetSize());
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
         EndCommand();
         return;
@@ -2391,7 +2409,7 @@ void CDROM::ExecuteTestCommand(u8 subcommand)
 
 void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks_late)
 {
-  switch (s_command_second_response)
+  switch (s_state.command_second_response)
   {
     case Command::GetID:
       DoIDRead();
@@ -2403,8 +2421,8 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks
       // If we have a pending command (which is probably init), cancel it.
       if (HasPendingCommand())
       {
-        WARNING_LOG("Cancelling pending command 0x{:02X} ({}) due to init completion.", static_cast<u8>(s_command),
-                    s_command_info[static_cast<u8>(s_command)].name);
+        WARNING_LOG("Cancelling pending command 0x{:02X} ({}) due to init completion.",
+                    static_cast<u8>(s_state.command), s_command_info[static_cast<u8>(s_state.command)].name);
         EndCommand();
       }
     }
@@ -2421,27 +2439,28 @@ void CDROM::ExecuteCommandSecondResponse(void*, TickCount ticks, TickCount ticks
       break;
   }
 
-  s_command_second_response = Command::None;
-  s_command_second_response_event.Deactivate();
+  s_state.command_second_response = Command::None;
+  s_state.command_second_response_event.Deactivate();
 }
 
 void CDROM::QueueCommandSecondResponse(Command command, TickCount ticks)
 {
   ClearCommandSecondResponse();
-  s_command_second_response = command;
-  s_command_second_response_event.Schedule(ticks);
+  s_state.command_second_response = command;
+  s_state.command_second_response_event.Schedule(ticks);
 }
 
 void CDROM::ClearCommandSecondResponse()
 {
-  if (s_command_second_response != Command::None)
+  if (s_state.command_second_response != Command::None)
   {
-    DEV_LOG("Cancelling pending command 0x{:02X} ({}) second response", static_cast<u16>(s_command_second_response),
-            s_command_info[static_cast<u16>(s_command_second_response)].name);
+    DEV_LOG("Cancelling pending command 0x{:02X} ({}) second response",
+            static_cast<u16>(s_state.command_second_response),
+            s_command_info[static_cast<u16>(s_state.command_second_response)].name);
   }
 
-  s_command_second_response_event.Deactivate();
-  s_command_second_response = Command::None;
+  s_state.command_second_response_event.Deactivate();
+  s_state.command_second_response = Command::None;
 }
 
 void CDROM::UpdateCommandEvent()
@@ -2450,18 +2469,18 @@ void CDROM::UpdateCommandEvent()
   // so deactivate it until the interrupt is acknowledged
   if (!HasPendingCommand() || HasPendingInterrupt() || HasPendingAsyncInterrupt())
   {
-    s_command_event.Deactivate();
+    s_state.command_event.Deactivate();
     return;
   }
   else if (HasPendingCommand())
   {
-    s_command_event.Activate();
+    s_state.command_event.Activate();
   }
 }
 
 void CDROM::ExecuteDrive(void*, TickCount ticks, TickCount ticks_late)
 {
-  switch (s_drive_state)
+  switch (s_state.drive_state)
   {
     case DriveState::ShellOpening:
       DoShellOpenComplete(ticks_late);
@@ -2512,7 +2531,7 @@ void CDROM::ExecuteDrive(void*, TickCount ticks, TickCount ticks_late)
     case DriveState::UNUSED_Pausing:
     {
       ClearDriveState();
-      s_secondary_status.ClearActiveBits();
+      s_state.secondary_status.ClearActiveBits();
       DoStatSecondResponse();
     }
     break;
@@ -2533,13 +2552,13 @@ void CDROM::ExecuteDrive(void*, TickCount ticks, TickCount ticks_late)
 
 void CDROM::ClearDriveState()
 {
-  s_drive_state = DriveState::Idle;
-  s_drive_event.Deactivate();
+  s_state.drive_state = DriveState::Idle;
+  s_state.drive_event.Deactivate();
 }
 
 void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
-  if (!after_seek && s_setloc_pending)
+  if (!after_seek && s_state.setloc_pending)
   {
     BeginSeeking(true, true, false);
     return;
@@ -2549,22 +2568,22 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   // Fixes crash in Disney's The Lion King - Simba's Mighty Adventure.
   if (IsSeeking())
   {
-    DEV_LOG("Read command while seeking, scheduling read after seek {} -> {} finishes in {} ticks", s_seek_start_lba,
-            s_seek_end_lba, s_drive_event.GetTicksUntilNextExecution());
+    DEV_LOG("Read command while seeking, scheduling read after seek {} -> {} finishes in {} ticks",
+            s_state.seek_start_lba, s_state.seek_end_lba, s_state.drive_event.GetTicksUntilNextExecution());
 
     // Implicit seeks won't trigger the read, so swap it for a logical.
-    if (s_drive_state == DriveState::SeekingImplicit)
-      s_drive_state = DriveState::SeekingLogical;
+    if (s_state.drive_state == DriveState::SeekingImplicit)
+      s_state.drive_state = DriveState::SeekingLogical;
 
-    s_read_after_seek = true;
-    s_play_after_seek = false;
+    s_state.read_after_seek = true;
+    s_state.play_after_seek = false;
     return;
   }
 
-  DEBUG_LOG("Starting reading @ LBA {}", s_current_lba);
+  DEBUG_LOG("Starting reading @ LBA {}", s_state.current_lba);
 
   const TickCount ticks = GetTicksForRead();
-  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_current_lba)) - ticks_late;
+  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_state.current_lba)) - ticks_late;
 
   ClearCommandSecondResponse();
   ClearAsyncInterrupt();
@@ -2574,21 +2593,21 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   // Even though this isn't "officially" a seek, we still need to jump back to the target sector unless we're
   // immediately following a seek from Play/Read. The seeking bit will get cleared after the first sector is processed.
   if (!after_seek)
-    s_secondary_status.SetSeeking();
+    s_state.secondary_status.SetSeeking();
 
-  s_drive_state = DriveState::Reading;
-  s_drive_event.SetInterval(ticks);
-  s_drive_event.Schedule(first_sector_ticks);
+  s_state.drive_state = DriveState::Reading;
+  s_state.drive_event.SetInterval(ticks);
+  s_state.drive_event.Schedule(first_sector_ticks);
 
-  s_requested_lba = s_current_lba;
-  s_reader.QueueReadSector(s_requested_lba);
+  s_state.requested_lba = s_state.current_lba;
+  s_reader.QueueReadSector(s_state.requested_lba);
 }
 
 void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
   DEBUG_LOG("Starting playing CDDA track {}", track);
-  s_play_track_number_bcd = track;
-  s_fast_forward_rate = 0;
+  s_state.play_track_number_bcd = track;
+  s_state.fast_forward_rate = 0;
 
   // if track zero, start from current position
   if (track != 0)
@@ -2600,50 +2619,52 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
       track = Truncate8(s_reader.GetMedia()->GetTrackNumber());
     }
 
-    s_setloc_position = s_reader.GetMedia()->GetTrackStartMSFPosition(track);
-    s_setloc_pending = true;
+    s_state.setloc_position = s_reader.GetMedia()->GetTrackStartMSFPosition(track);
+    s_state.setloc_pending = true;
   }
 
-  if (s_setloc_pending)
+  if (s_state.setloc_pending)
   {
     BeginSeeking(false, false, true);
     return;
   }
 
   const TickCount ticks = GetTicksForRead();
-  const TickCount first_sector_ticks = ticks + (after_seek ? 0 : GetTicksForSeek(s_current_lba, true)) - ticks_late;
+  const TickCount first_sector_ticks =
+    ticks + (after_seek ? 0 : GetTicksForSeek(s_state.current_lba, true)) - ticks_late;
 
   ClearCommandSecondResponse();
   ClearAsyncInterrupt();
   ClearSectorBuffers();
   ResetAudioDecoder();
 
-  s_cdda_report_start_delay = CDDA_REPORT_START_DELAY;
-  s_last_cdda_report_frame_nibble = 0xFF;
+  s_state.cdda_report_start_delay = CDDA_REPORT_START_DELAY;
+  s_state.last_cdda_report_frame_nibble = 0xFF;
 
-  s_drive_state = DriveState::Playing;
-  s_drive_event.SetInterval(ticks);
-  s_drive_event.Schedule(first_sector_ticks);
+  s_state.drive_state = DriveState::Playing;
+  s_state.drive_event.SetInterval(ticks);
+  s_state.drive_event.Schedule(first_sector_ticks);
 
-  s_requested_lba = s_current_lba;
-  s_reader.QueueReadSector(s_requested_lba);
+  s_state.requested_lba = s_state.current_lba;
+  s_reader.QueueReadSector(s_state.requested_lba);
 }
 
 void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek)
 {
-  if (!s_setloc_pending)
+  if (!s_state.setloc_pending)
     WARNING_LOG("Seeking without setloc set");
 
-  s_read_after_seek = read_after_seek;
-  s_play_after_seek = play_after_seek;
+  s_state.read_after_seek = read_after_seek;
+  s_state.play_after_seek = play_after_seek;
 
   // TODO: Pending should stay set on seek command.
-  s_setloc_pending = false;
+  s_state.setloc_pending = false;
 
-  DEBUG_LOG("Seeking to [{:02d}:{:02d}:{:02d}] (LBA {}) ({})", s_setloc_position.minute, s_setloc_position.second,
-            s_setloc_position.frame, s_setloc_position.ToLBA(), logical ? "logical" : "physical");
+  DEBUG_LOG("Seeking to [{:02d}:{:02d}:{:02d}] (LBA {}) ({})", s_state.setloc_position.minute,
+            s_state.setloc_position.second, s_state.setloc_position.frame, s_state.setloc_position.ToLBA(),
+            logical ? "logical" : "physical");
 
-  const CDImage::LBA seek_lba = s_setloc_position.ToLBA();
+  const CDImage::LBA seek_lba = s_state.setloc_position.ToLBA();
   const TickCount seek_time = GetTicksForSeek(seek_lba, play_after_seek);
 
   ClearCommandSecondResponse();
@@ -2651,40 +2672,42 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   ClearSectorBuffers();
   ResetAudioDecoder();
 
-  s_secondary_status.SetSeeking();
-  s_last_sector_header_valid = false;
+  s_state.secondary_status.SetSeeking();
+  s_state.last_sector_header_valid = false;
 
-  s_drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
-  s_drive_event.SetIntervalAndSchedule(seek_time);
+  s_state.drive_state = logical ? DriveState::SeekingLogical : DriveState::SeekingPhysical;
+  s_state.drive_event.SetIntervalAndSchedule(seek_time);
 
-  s_seek_start_lba = s_current_lba;
-  s_seek_end_lba = seek_lba;
-  s_requested_lba = seek_lba;
-  s_reader.QueueReadSector(s_requested_lba);
+  s_state.seek_start_lba = s_state.current_lba;
+  s_state.seek_end_lba = seek_lba;
+  s_state.requested_lba = seek_lba;
+  s_reader.QueueReadSector(s_state.requested_lba);
 }
 
 void CDROM::UpdatePositionWhileSeeking()
 {
   DebugAssert(IsSeeking());
 
-  const float completed_frac = 1.0f - std::min(static_cast<float>(s_drive_event.GetTicksUntilNextExecution()) /
-                                                 static_cast<float>(s_drive_event.GetInterval()),
+  const float completed_frac = 1.0f - std::min(static_cast<float>(s_state.drive_event.GetTicksUntilNextExecution()) /
+                                                 static_cast<float>(s_state.drive_event.GetInterval()),
                                                1.0f);
 
   CDImage::LBA current_lba;
-  if (s_seek_end_lba > s_seek_start_lba)
+  if (s_state.seek_end_lba > s_state.seek_start_lba)
   {
     current_lba =
-      s_seek_start_lba +
+      s_state.seek_start_lba +
       std::max<CDImage::LBA>(
-        static_cast<CDImage::LBA>(static_cast<float>(s_seek_end_lba - s_seek_start_lba) * completed_frac), 1);
+        static_cast<CDImage::LBA>(static_cast<float>(s_state.seek_end_lba - s_state.seek_start_lba) * completed_frac),
+        1);
   }
-  else if (s_seek_end_lba < s_seek_start_lba)
+  else if (s_state.seek_end_lba < s_state.seek_start_lba)
   {
     current_lba =
-      s_seek_start_lba -
+      s_state.seek_start_lba -
       std::max<CDImage::LBA>(
-        static_cast<CDImage::LBA>(static_cast<float>(s_seek_start_lba - s_seek_end_lba) * completed_frac), 1);
+        static_cast<CDImage::LBA>(static_cast<float>(s_state.seek_start_lba - s_state.seek_end_lba) * completed_frac),
+        1);
   }
   else
   {
@@ -2692,20 +2715,20 @@ void CDROM::UpdatePositionWhileSeeking()
     return;
   }
 
-  DEV_LOG("Update position while seeking from {} to {} - {} ({:.2f})", s_seek_start_lba, s_seek_end_lba, current_lba,
-          completed_frac);
+  DEV_LOG("Update position while seeking from {} to {} - {} ({:.2f})", s_state.seek_start_lba, s_state.seek_end_lba,
+          current_lba, completed_frac);
 
   // access the image directly since we want to preserve the cached data for the seek complete
   CDImage::SubChannelQ subq;
   if (!s_reader.ReadSectorUncached(current_lba, &subq, nullptr))
     ERROR_LOG("Failed to read subq for sector {} for physical position", current_lba);
   else if (subq.IsCRCValid())
-    s_last_subq = subq;
+    s_state.last_subq = subq;
 
-  s_current_lba = current_lba;
-  s_physical_lba = current_lba;
-  s_physical_lba_update_tick = System::GetGlobalTickCounter();
-  s_physical_lba_update_carry = 0;
+  s_state.current_lba = current_lba;
+  s_state.physical_lba = current_lba;
+  s_state.physical_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.physical_lba_update_carry = 0;
 }
 
 void CDROM::UpdatePhysicalPosition(bool update_logical)
@@ -2716,12 +2739,12 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
     // If we're seeking+reading the first sector (no stat bits set), we need to return the set/current lba, not the last
     // physical LBA. Failing to do so may result in a track-jumped position getting returned in GetlocP, which causes
     // Mad Panic Coaster to go into a seek+play loop.
-    if ((s_secondary_status.bits & (STAT_READING | STAT_PLAYING_CDDA | STAT_MOTOR_ON)) == STAT_MOTOR_ON &&
-        s_current_lba != s_physical_lba)
+    if ((s_state.secondary_status.bits & (STAT_READING | STAT_PLAYING_CDDA | STAT_MOTOR_ON)) == STAT_MOTOR_ON &&
+        s_state.current_lba != s_state.physical_lba)
     {
-      WARNING_LOG("Jumping to hold position [{}->{}] while {} first sector", s_physical_lba, s_current_lba,
-                  (s_drive_state == DriveState::Reading) ? "reading" : "playing");
-      SetHoldPosition(s_current_lba, true);
+      WARNING_LOG("Jumping to hold position [{}->{}] while {} first sector", s_state.physical_lba, s_state.current_lba,
+                  (s_state.drive_state == DriveState::Reading) ? "reading" : "playing");
+      SetHoldPosition(s_state.current_lba, true);
     }
 
     // Otherwise, this gets updated by the read event.
@@ -2729,27 +2752,27 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
   }
 
   const u32 ticks_per_read = GetTicksForRead();
-  const u32 diff = static_cast<u32>((ticks - s_physical_lba_update_tick) + s_physical_lba_update_carry);
+  const u32 diff = static_cast<u32>((ticks - s_state.physical_lba_update_tick) + s_state.physical_lba_update_carry);
   const u32 sector_diff = diff / ticks_per_read;
   const u32 carry = diff % ticks_per_read;
   if (sector_diff > 0)
   {
     // hardware tests show that it holds much closer to the target sector in logical mode
-    const CDImage::LBA hold_offset = s_last_sector_header_valid ? 2 : 0;
-    const CDImage::LBA sectors_per_track = GetSectorsPerTrack(s_current_lba);
-    const CDImage::LBA hold_position = s_current_lba + hold_offset;
+    const CDImage::LBA hold_offset = s_state.last_sector_header_valid ? 2 : 0;
+    const CDImage::LBA sectors_per_track = GetSectorsPerTrack(s_state.current_lba);
+    const CDImage::LBA hold_position = s_state.current_lba + hold_offset;
     const CDImage::LBA tjump_position = (hold_position >= sectors_per_track) ? (hold_position - sectors_per_track) : 0;
-    const CDImage::LBA old_offset = s_physical_lba - tjump_position;
+    const CDImage::LBA old_offset = s_state.physical_lba - tjump_position;
     const CDImage::LBA new_offset = (old_offset + sector_diff) % sectors_per_track;
     const CDImage::LBA new_physical_lba = tjump_position + new_offset;
 #ifdef _DEBUG
     DEV_LOG("{} sectors @ {} SPT, old pos {}, hold pos {}, tjump pos {}, new pos {}", sector_diff, sectors_per_track,
-            LBAToMSFString(s_physical_lba), LBAToMSFString(hold_position), LBAToMSFString(tjump_position),
+            LBAToMSFString(s_state.physical_lba), LBAToMSFString(hold_position), LBAToMSFString(tjump_position),
             LBAToMSFString(new_physical_lba));
 #endif
-    if (s_physical_lba != new_physical_lba)
+    if (s_state.physical_lba != new_physical_lba)
     {
-      s_physical_lba = new_physical_lba;
+      s_state.physical_lba = new_physical_lba;
 
       CDImage::SubChannelQ subq;
       CDROMAsyncReader::SectorBuffer raw_sector;
@@ -2760,33 +2783,33 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
       else
       {
         if (subq.IsCRCValid())
-          s_last_subq = subq;
+          s_state.last_subq = subq;
 
         if (update_logical)
           ProcessDataSectorHeader(raw_sector.data());
       }
 
-      s_physical_lba_update_tick = ticks;
-      s_physical_lba_update_carry = carry;
+      s_state.physical_lba_update_tick = ticks;
+      s_state.physical_lba_update_carry = carry;
     }
   }
 }
 
 void CDROM::SetHoldPosition(CDImage::LBA lba, bool update_subq)
 {
-  if (update_subq && s_physical_lba != lba && CanReadMedia())
+  if (update_subq && s_state.physical_lba != lba && CanReadMedia())
   {
     CDImage::SubChannelQ subq;
     if (!s_reader.ReadSectorUncached(lba, &subq, nullptr))
       ERROR_LOG("Failed to read subq for sector {} for physical position", lba);
     else if (subq.IsCRCValid())
-      s_last_subq = subq;
+      s_state.last_subq = subq;
   }
 
-  s_current_lba = lba;
-  s_physical_lba = lba;
-  s_physical_lba_update_tick = System::GetGlobalTickCounter();
-  s_physical_lba_update_carry = 0;
+  s_state.current_lba = lba;
+  s_state.physical_lba = lba;
+  s_state.physical_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.physical_lba_update_carry = 0;
 }
 
 void CDROM::DoShellOpenComplete(TickCount ticks_late)
@@ -2800,7 +2823,7 @@ void CDROM::DoShellOpenComplete(TickCount ticks_late)
 
 bool CDROM::CompleteSeek()
 {
-  const bool logical = (s_drive_state == DriveState::SeekingLogical);
+  const bool logical = (s_state.drive_state == DriveState::SeekingLogical);
   ClearDriveState();
 
   bool seek_okay = s_reader.WaitForReadToComplete();
@@ -2810,7 +2833,7 @@ bool CDROM::CompleteSeek()
     if (subq.IsCRCValid())
     {
       // seek and update sub-q for ReadP command
-      s_last_subq = subq;
+      s_state.last_subq = subq;
       const auto [seek_mm, seek_ss, seek_ff] = CDImage::Position::FromLBA(s_reader.GetLastReadSector()).ToBCD();
       seek_okay = (subq.IsCRCValid() && subq.absolute_minute_bcd == seek_mm && subq.absolute_second_bcd == seek_ss &&
                    subq.absolute_frame_bcd == seek_ff);
@@ -2821,8 +2844,8 @@ bool CDROM::CompleteSeek()
           if (logical)
           {
             ProcessDataSectorHeader(s_reader.GetSectorBuffer().data());
-            seek_okay = (s_last_sector_header.minute == seek_mm && s_last_sector_header.second == seek_ss &&
-                         s_last_sector_header.frame == seek_ff);
+            seek_okay = (s_state.last_sector_header.minute == seek_mm && s_state.last_sector_header.second == seek_ss &&
+                         s_state.last_sector_header.frame == seek_ff);
           }
         }
         else
@@ -2830,14 +2853,14 @@ bool CDROM::CompleteSeek()
           if (logical)
           {
             WARNING_LOG("Logical seek to non-data sector [{:02x}:{:02x}:{:02x}]{}", seek_mm, seek_ss, seek_ff,
-                        s_read_after_seek ? ", reading after seek" : "");
+                        s_state.read_after_seek ? ", reading after seek" : "");
 
             // If CDDA mode isn't enabled and we're reading an audio sector, we need to fail the seek.
             // Test cases:
             //  - Wizard's Harmony does a logical seek to an audio sector, and expects it to succeed.
             //  - Vib-ribbon starts a read at an audio sector, and expects it to fail.
-            if (s_read_after_seek)
-              seek_okay = s_mode.cdda;
+            if (s_state.read_after_seek)
+              seek_okay = s_state.mode.cdda;
           }
         }
 
@@ -2849,39 +2872,39 @@ bool CDROM::CompleteSeek()
       }
     }
 
-    s_current_lba = s_reader.GetLastReadSector();
+    s_state.current_lba = s_reader.GetLastReadSector();
   }
 
-  s_physical_lba = s_current_lba;
-  s_physical_lba_update_tick = System::GetGlobalTickCounter();
-  s_physical_lba_update_carry = 0;
+  s_state.physical_lba = s_state.current_lba;
+  s_state.physical_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.physical_lba_update_carry = 0;
   return seek_okay;
 }
 
 void CDROM::DoSeekComplete(TickCount ticks_late)
 {
-  const bool logical = (s_drive_state == DriveState::SeekingLogical);
+  const bool logical = (s_state.drive_state == DriveState::SeekingLogical);
   const bool seek_okay = CompleteSeek();
   if (seek_okay)
   {
     DEV_LOG("{} seek to [{}] complete{}", logical ? "Logical" : "Physical",
             LBAToMSFString(s_reader.GetLastReadSector()),
-            s_read_after_seek ? ", now reading" : (s_play_after_seek ? ", now playing" : ""));
+            s_state.read_after_seek ? ", now reading" : (s_state.play_after_seek ? ", now playing" : ""));
 
     // seek complete, transition to play/read if requested
     // INT2 is not sent on play/read
-    if (s_read_after_seek)
+    if (s_state.read_after_seek)
     {
       BeginReading(ticks_late, true);
     }
-    else if (s_play_after_seek)
+    else if (s_state.play_after_seek)
     {
       BeginPlaying(0, ticks_late, true);
     }
     else
     {
-      s_secondary_status.ClearActiveBits();
-      s_async_response_fifo.Push(s_secondary_status.bits);
+      s_state.secondary_status.ClearActiveBits();
+      s_state.async_response_fifo.Push(s_state.secondary_status.bits);
       SetAsyncInterrupt(Interrupt::Complete);
     }
   }
@@ -2889,14 +2912,14 @@ void CDROM::DoSeekComplete(TickCount ticks_late)
   {
     WARNING_LOG("{} seek to [{}] failed", logical ? "Logical" : "Physical",
                 LBAToMSFString(s_reader.GetLastReadSector()));
-    s_secondary_status.ClearActiveBits();
+    s_state.secondary_status.ClearActiveBits();
     SendAsyncErrorResponse(STAT_SEEK_ERROR, 0x04);
-    s_last_sector_header_valid = false;
+    s_state.last_sector_header_valid = false;
   }
 
-  s_setloc_pending = false;
-  s_read_after_seek = false;
-  s_play_after_seek = false;
+  s_state.setloc_pending = false;
+  s_state.read_after_seek = false;
+  s_state.play_after_seek = false;
   UpdateStatusRegister();
 }
 
@@ -2909,8 +2932,8 @@ void CDROM::DoStatSecondResponse()
     return;
   }
 
-  s_async_response_fifo.Clear();
-  s_async_response_fifo.Push(s_secondary_status.bits);
+  s_state.async_response_fifo.Clear();
+  s_state.async_response_fifo.Push(s_state.secondary_status.bits);
   SetAsyncInterrupt(Interrupt::Complete);
 }
 
@@ -2918,13 +2941,13 @@ void CDROM::DoChangeSessionComplete()
 {
   DEBUG_LOG("Changing session complete");
   ClearDriveState();
-  s_secondary_status.ClearActiveBits();
-  s_secondary_status.motor_on = true;
+  s_state.secondary_status.ClearActiveBits();
+  s_state.secondary_status.motor_on = true;
 
-  s_async_response_fifo.Clear();
-  if (s_async_command_parameter == 0x01)
+  s_state.async_response_fifo.Clear();
+  if (s_state.async_command_parameter == 0x01)
   {
-    s_async_response_fifo.Push(s_secondary_status.bits);
+    s_state.async_response_fifo.Push(s_state.secondary_status.bits);
     SetAsyncInterrupt(Interrupt::Complete);
   }
   else
@@ -2937,27 +2960,27 @@ void CDROM::DoChangeSessionComplete()
 void CDROM::DoSpinUpComplete()
 {
   DEBUG_LOG("Spinup complete");
-  s_drive_state = DriveState::Idle;
-  s_drive_event.Deactivate();
-  s_secondary_status.ClearActiveBits();
-  s_secondary_status.motor_on = true;
+  s_state.drive_state = DriveState::Idle;
+  s_state.drive_event.Deactivate();
+  s_state.secondary_status.ClearActiveBits();
+  s_state.secondary_status.motor_on = true;
 }
 
 void CDROM::DoSpeedChangeOrImplicitTOCReadComplete()
 {
   DEBUG_LOG("Speed change/implicit TOC read complete");
-  s_drive_state = DriveState::Idle;
-  s_drive_event.Deactivate();
+  s_state.drive_state = DriveState::Idle;
+  s_state.drive_event.Deactivate();
 }
 
 void CDROM::DoIDRead()
 {
   DEBUG_LOG("ID read complete");
-  s_secondary_status.ClearActiveBits();
-  s_secondary_status.motor_on = CanReadMedia();
+  s_state.secondary_status.ClearActiveBits();
+  s_state.secondary_status.motor_on = CanReadMedia();
 
   // TODO: Audio CD.
-  u8 stat_byte = s_secondary_status.bits;
+  u8 stat_byte = s_state.secondary_status.bits;
   u8 flags_byte = 0;
   if (!CanReadMedia())
   {
@@ -2978,16 +3001,17 @@ void CDROM::DoIDRead()
     }
   }
 
-  s_async_response_fifo.Clear();
-  s_async_response_fifo.Push(stat_byte);
-  s_async_response_fifo.Push(flags_byte);
-  s_async_response_fifo.Push(0x20); // TODO: Disc type from TOC
-  s_async_response_fifo.Push(0x00); // TODO: Session info?
+  s_state.async_response_fifo.Clear();
+  s_state.async_response_fifo.Push(stat_byte);
+  s_state.async_response_fifo.Push(flags_byte);
+  s_state.async_response_fifo.Push(0x20); // TODO: Disc type from TOC
+  s_state.async_response_fifo.Push(0x00); // TODO: Session info?
 
   static constexpr u32 REGION_STRING_LENGTH = 4;
   static constexpr std::array<std::array<u8, REGION_STRING_LENGTH>, static_cast<size_t>(DiscRegion::Count)>
     region_strings = {{{'S', 'C', 'E', 'I'}, {'S', 'C', 'E', 'A'}, {'S', 'C', 'E', 'E'}, {0, 0, 0, 0}, {0, 0, 0, 0}}};
-  s_async_response_fifo.PushRange(region_strings[static_cast<u8>(s_disc_region)].data(), REGION_STRING_LENGTH);
+  s_state.async_response_fifo.PushRange(region_strings[static_cast<u8>(s_state.disc_region)].data(),
+                                        REGION_STRING_LENGTH);
 
   SetAsyncInterrupt((flags_byte != 0) ? Interrupt::Error : Interrupt::Complete);
 }
@@ -2995,33 +3019,33 @@ void CDROM::DoIDRead()
 void CDROM::StopReadingWithDataEnd()
 {
   ClearAsyncInterrupt();
-  s_async_response_fifo.Push(s_secondary_status.bits);
+  s_state.async_response_fifo.Push(s_state.secondary_status.bits);
   SetAsyncInterrupt(Interrupt::DataEnd);
 
-  s_secondary_status.ClearActiveBits();
+  s_state.secondary_status.ClearActiveBits();
   ClearDriveState();
 }
 
 void CDROM::StartMotor()
 {
-  if (s_drive_state == DriveState::SpinningUp)
+  if (s_state.drive_state == DriveState::SpinningUp)
   {
     DEV_LOG("Starting motor - already spinning up");
     return;
   }
 
   DEV_LOG("Starting motor");
-  s_drive_state = DriveState::SpinningUp;
-  s_drive_event.Schedule(GetTicksForSpinUp());
+  s_state.drive_state = DriveState::SpinningUp;
+  s_state.drive_event.Schedule(GetTicksForSpinUp());
 }
 
 void CDROM::StopMotor()
 {
-  s_secondary_status.ClearActiveBits();
-  s_secondary_status.motor_on = false;
+  s_state.secondary_status.ClearActiveBits();
+  s_state.secondary_status.motor_on = false;
   ClearDriveState();
   SetHoldPosition(0, false);
-  s_last_sector_header_valid = false; // TODO: correct?
+  s_state.last_sector_header_valid = false; // TODO: correct?
 }
 
 void CDROM::DoSectorRead()
@@ -3031,22 +3055,22 @@ void CDROM::DoSectorRead()
   if (!s_reader.WaitForReadToComplete())
     Panic("Sector read failed");
 
-  s_current_lba = s_reader.GetLastReadSector();
-  s_physical_lba = s_current_lba;
-  s_physical_lba_update_tick = System::GetGlobalTickCounter();
-  s_physical_lba_update_carry = 0;
+  s_state.current_lba = s_reader.GetLastReadSector();
+  s_state.physical_lba = s_state.current_lba;
+  s_state.physical_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.physical_lba_update_carry = 0;
 
-  s_secondary_status.SetReadingBits(s_drive_state == DriveState::Playing);
+  s_state.secondary_status.SetReadingBits(s_state.drive_state == DriveState::Playing);
 
   const CDImage::SubChannelQ& subq = s_reader.GetSectorSubQ();
   const bool subq_valid = subq.IsCRCValid();
   if (subq_valid)
   {
-    s_last_subq = subq;
+    s_state.last_subq = subq;
   }
   else
   {
-    DEV_LOG("Sector {} [{}] has invalid subchannel Q", s_current_lba, LBAToMSFString(s_current_lba));
+    DEV_LOG("Sector {} [{}] has invalid subchannel Q", s_state.current_lba, LBAToMSFString(s_state.current_lba));
   }
 
   if (subq.track_number_bcd == CDImage::LEAD_OUT_TRACK_NUMBER)
@@ -3062,70 +3086,72 @@ void CDROM::DoSectorRead()
   {
     ProcessDataSectorHeader(s_reader.GetSectorBuffer().data());
   }
-  else if (s_mode.auto_pause)
+  else if (s_state.mode.auto_pause)
   {
     // Only update the tracked track-to-pause-after once auto pause is enabled. Pitball's menu music starts mid-second,
     // and there's no pregap, so the first couple of reports are for the previous track. It doesn't enable autopause
     // until receiving a couple, and it's actually playing the track it wants.
-    if (s_play_track_number_bcd == 0)
+    if (s_state.play_track_number_bcd == 0)
     {
       // track number was not specified, but we've found the track now
-      s_play_track_number_bcd = subq.track_number_bcd;
-      DEBUG_LOG("Setting playing track number to {}", s_play_track_number_bcd);
+      s_state.play_track_number_bcd = subq.track_number_bcd;
+      DEBUG_LOG("Setting playing track number to {}", s_state.play_track_number_bcd);
     }
-    else if (subq.track_number_bcd != s_play_track_number_bcd)
+    else if (subq.track_number_bcd != s_state.play_track_number_bcd)
     {
       // we don't want to update the position if the track changes, so we check it before reading the actual sector.
-      DEV_LOG("Auto pause at the start of track {:02x} (LBA {})", s_last_subq.track_number_bcd, s_current_lba);
+      DEV_LOG("Auto pause at the start of track {:02x} (LBA {})", s_state.last_subq.track_number_bcd,
+              s_state.current_lba);
       StopReadingWithDataEnd();
       return;
     }
   }
 
-  u32 next_sector = s_current_lba + 1u;
-  if (is_data_sector && s_drive_state == DriveState::Reading)
+  u32 next_sector = s_state.current_lba + 1u;
+  if (is_data_sector && s_state.drive_state == DriveState::Reading)
   {
     ProcessDataSector(s_reader.GetSectorBuffer().data(), subq);
   }
-  else if (!is_data_sector &&
-           (s_drive_state == DriveState::Playing || (s_drive_state == DriveState::Reading && s_mode.cdda)))
+  else if (!is_data_sector && (s_state.drive_state == DriveState::Playing ||
+                               (s_state.drive_state == DriveState::Reading && s_state.mode.cdda)))
   {
     ProcessCDDASector(s_reader.GetSectorBuffer().data(), subq, subq_valid);
 
-    if (s_fast_forward_rate != 0)
-      next_sector = s_current_lba + SignExtend32(s_fast_forward_rate);
+    if (s_state.fast_forward_rate != 0)
+      next_sector = s_state.current_lba + SignExtend32(s_state.fast_forward_rate);
   }
-  else if (s_drive_state != DriveState::Reading && s_drive_state != DriveState::Playing)
+  else if (s_state.drive_state != DriveState::Reading && s_state.drive_state != DriveState::Playing)
   {
     Panic("Not reading or playing");
   }
   else
   {
-    WARNING_LOG("Skipping sector {} as it is a {} sector and we're not {}", s_current_lba,
+    WARNING_LOG("Skipping sector {} as it is a {} sector and we're not {}", s_state.current_lba,
                 is_data_sector ? "data" : "audio", is_data_sector ? "reading" : "playing");
   }
 
-  s_requested_lba = next_sector;
-  s_reader.QueueReadSector(s_requested_lba);
+  s_state.requested_lba = next_sector;
+  s_reader.QueueReadSector(s_state.requested_lba);
 }
 
 ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
 {
-  std::memcpy(&s_last_sector_header, &raw_sector[SECTOR_SYNC_SIZE], sizeof(s_last_sector_header));
-  std::memcpy(&s_last_sector_subheader, &raw_sector[SECTOR_SYNC_SIZE + sizeof(s_last_sector_header)],
-              sizeof(s_last_sector_subheader));
-  s_last_sector_header_valid = true;
+  std::memcpy(&s_state.last_sector_header, &raw_sector[SECTOR_SYNC_SIZE], sizeof(s_state.last_sector_header));
+  std::memcpy(&s_state.last_sector_subheader, &raw_sector[SECTOR_SYNC_SIZE + sizeof(s_state.last_sector_header)],
+              sizeof(s_state.last_sector_subheader));
+  s_state.last_sector_header_valid = true;
 }
 
 ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
-  const u32 sb_num = (s_current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
-  DEV_LOG("Read sector {} [{}]: mode {} submode 0x{:02X} into buffer {}", s_current_lba, LBAToMSFString(s_current_lba),
-          s_last_sector_header.sector_mode, ZeroExtend32(s_last_sector_subheader.submode.bits), sb_num);
+  const u32 sb_num = (s_state.current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
+  DEV_LOG("Read sector {} [{}]: mode {} submode 0x{:02X} into buffer {}", s_state.current_lba,
+          LBAToMSFString(s_state.current_lba), s_state.last_sector_header.sector_mode,
+          ZeroExtend32(s_state.last_sector_subheader.submode.bits), sb_num);
 
-  if (s_mode.xa_enable && s_last_sector_header.sector_mode == 2)
+  if (s_state.mode.xa_enable && s_state.last_sector_header.sector_mode == 2)
   {
-    if (s_last_sector_subheader.submode.realtime && s_last_sector_subheader.submode.audio)
+    if (s_state.last_sector_subheader.submode.realtime && s_state.last_sector_subheader.submode.audio)
     {
       ProcessXAADPCMSector(raw_sector, subq);
 
@@ -3135,19 +3161,19 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
   }
 
   // TODO: How does XA relate to this buffering?
-  SectorBuffer* sb = &s_sector_buffers[sb_num];
+  SectorBuffer* sb = &s_state.sector_buffers[sb_num];
   if (sb->position == 0 && sb->size > 0)
   {
     DEV_LOG("Sector buffer {} was not read, previous sector dropped",
-            (s_current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
+            (s_state.current_write_sector_buffer - 1) % NUM_SECTOR_BUFFERS);
   }
 
-  if (s_mode.ignore_bit)
-    WARNING_LOG("SetMode.4 bit set on read of sector {}", s_current_lba);
+  if (s_state.mode.ignore_bit)
+    WARNING_LOG("SetMode.4 bit set on read of sector {}", s_state.current_lba);
 
-  if (s_mode.read_raw_sector)
+  if (s_state.mode.read_raw_sector)
   {
-    if (s_last_sector_header.sector_mode == 1)
+    if (s_state.last_sector_header.sector_mode == 1)
     {
       // Raw reads in MODE1 appear to fill in a MODE2 header...
       std::memcpy(&sb->data[0], raw_sector + SECTOR_SYNC_SIZE, MODE1_HEADER_SIZE);
@@ -3164,20 +3190,20 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
   }
   else
   {
-    if (s_last_sector_header.sector_mode != 1 && s_last_sector_header.sector_mode != 2)
+    if (s_state.last_sector_header.sector_mode != 1 && s_state.last_sector_header.sector_mode != 2)
     {
-      WARNING_LOG("Ignoring non-MODE1/MODE2 sector at {}", s_current_lba);
+      WARNING_LOG("Ignoring non-MODE1/MODE2 sector at {}", s_state.current_lba);
       return;
     }
 
-    const u32 offset = (s_last_sector_header.sector_mode == 1) ? (SECTOR_SYNC_SIZE + MODE1_HEADER_SIZE) :
-                                                                 (SECTOR_SYNC_SIZE + MODE2_HEADER_SIZE);
+    const u32 offset = (s_state.last_sector_header.sector_mode == 1) ? (SECTOR_SYNC_SIZE + MODE1_HEADER_SIZE) :
+                                                                       (SECTOR_SYNC_SIZE + MODE2_HEADER_SIZE);
     std::memcpy(sb->data.data(), raw_sector + offset, DATA_SECTOR_OUTPUT_SIZE);
     sb->size = DATA_SECTOR_OUTPUT_SIZE;
   }
 
   sb->position = 0;
-  s_current_write_sector_buffer = sb_num;
+  s_state.current_write_sector_buffer = sb_num;
 
   // Deliver to CPU
   if (HasPendingAsyncInterrupt())
@@ -3188,30 +3214,31 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const 
 
   if (HasPendingInterrupt())
   {
-    const u32 sectors_missed = (s_current_write_sector_buffer - s_current_read_sector_buffer) % NUM_SECTOR_BUFFERS;
+    const u32 sectors_missed =
+      (s_state.current_write_sector_buffer - s_state.current_read_sector_buffer) % NUM_SECTOR_BUFFERS;
     if (sectors_missed > 1)
       WARNING_LOG("Interrupt not processed in time, missed {} sectors", sectors_missed - 1);
   }
 
-  s_async_response_fifo.Push(s_secondary_status.bits);
+  s_state.async_response_fifo.Push(s_state.secondary_status.bits);
   SetAsyncInterrupt(Interrupt::DataReady);
 }
 
 std::tuple<s16, s16> CDROM::GetAudioFrame()
 {
-  const u32 frame = s_audio_fifo.IsEmpty() ? 0u : s_audio_fifo.Pop();
+  const u32 frame = s_state.audio_fifo.IsEmpty() ? 0u : s_state.audio_fifo.Pop();
   const s16 left = static_cast<s16>(Truncate16(frame));
   const s16 right = static_cast<s16>(Truncate16(frame >> 16));
-  const s16 left_out = SaturateVolume(ApplyVolume(left, s_cd_audio_volume_matrix[0][0]) +
-                                      ApplyVolume(right, s_cd_audio_volume_matrix[1][0]));
-  const s16 right_out = SaturateVolume(ApplyVolume(left, s_cd_audio_volume_matrix[0][1]) +
-                                       ApplyVolume(right, s_cd_audio_volume_matrix[1][1]));
+  const s16 left_out = SaturateVolume(ApplyVolume(left, s_state.cd_audio_volume_matrix[0][0]) +
+                                      ApplyVolume(right, s_state.cd_audio_volume_matrix[1][0]));
+  const s16 right_out = SaturateVolume(ApplyVolume(left, s_state.cd_audio_volume_matrix[0][1]) +
+                                       ApplyVolume(right, s_state.cd_audio_volume_matrix[1][1]));
   return std::tuple<s16, s16>(left_out, right_out);
 }
 
 void CDROM::AddCDAudioFrame(s16 left, s16 right)
 {
-  s_audio_fifo.Push(ZeroExtend32(static_cast<u16>(left)) | (ZeroExtend32(static_cast<u16>(right)) << 16));
+  s_state.audio_fifo.Push(ZeroExtend32(static_cast<u16>(left)) | (ZeroExtend32(static_cast<u16>(right)) << 16));
 }
 
 s32 CDROM::ApplyVolume(s16 sample, u8 volume)
@@ -3270,7 +3297,7 @@ void CDROM::DecodeXAADPCMChunks(const u8* chunk_ptr, s16* samples)
         const s16 sample = static_cast<s16>(Truncate16(nibble << (IS_8BIT ? 8 : 12))) >> shift;
 
         // mix in previous values
-        s32* prev = IS_STEREO ? &s_xa_last_samples[(block & 1) * 2] : &s_xa_last_samples[0];
+        s32* prev = IS_STEREO ? &s_state.xa_last_samples[(block & 1) * 2] : &s_state.xa_last_samples[0];
         const s32 interp_sample = std::clamp<s32>(
           static_cast<s32>(sample) + ((prev[0] * filter_pos) >> 6) + ((prev[1] * filter_neg) >> 6), -32767, 32768);
 
@@ -3323,10 +3350,10 @@ void CDROM::ResampleXAADPCM(const s16* frames_in, u32 num_frames_in)
     return static_cast<s16>(std::clamp<s32>(sum, -0x8000, 0x7FFF));
   };
 
-  s16* const left_ringbuf = s_xa_resample_ring_buffer[0].data();
-  [[maybe_unused]] s16* const right_ringbuf = s_xa_resample_ring_buffer[1].data();
-  u32 p = s_xa_resample_p;
-  u32 sixstep = s_xa_resample_sixstep;
+  s16* const left_ringbuf = s_state.xa_resample_ring_buffer[0].data();
+  [[maybe_unused]] s16* const right_ringbuf = s_state.xa_resample_ring_buffer[1].data();
+  u32 p = s_state.xa_resample_p;
+  u32 sixstep = s_state.xa_resample_sixstep;
 
   for (u32 in_sample_index = 0; in_sample_index < num_frames_in; in_sample_index++)
   {
@@ -3350,8 +3377,8 @@ void CDROM::ResampleXAADPCM(const s16* frames_in, u32 num_frames_in)
     }
   }
 
-  s_xa_resample_p = Truncate8(p);
-  s_xa_resample_sixstep = Truncate8(sixstep);
+  s_state.xa_resample_p = Truncate8(p);
+  s_state.xa_resample_sixstep = Truncate8(sixstep);
 }
 
 template<bool STEREO>
@@ -3387,10 +3414,10 @@ void CDROM::ResampleXAADPCM18900(const s16* frames_in, u32 num_frames_in)
     return static_cast<s16>(std::clamp<s32>(sum >> 15, -0x8000, 0x7FFF));
   };
 
-  s16* const left_ringbuf = s_xa_resample_ring_buffer[0].data();
-  [[maybe_unused]] s16* const right_ringbuf = s_xa_resample_ring_buffer[1].data();
-  u32 p = s_xa_resample_p;
-  u32 sixstep = s_xa_resample_sixstep;
+  s16* const left_ringbuf = s_state.xa_resample_ring_buffer[0].data();
+  [[maybe_unused]] s16* const right_ringbuf = s_state.xa_resample_ring_buffer[1].data();
+  u32 p = s_state.xa_resample_p;
+  u32 sixstep = s_state.xa_resample_sixstep;
 
   for (u32 in_sample_index = 0; in_sample_index < num_frames_in;)
   {
@@ -3412,71 +3439,74 @@ void CDROM::ResampleXAADPCM18900(const s16* frames_in, u32 num_frames_in)
     sixstep += 3;
   }
 
-  s_xa_resample_p = Truncate8(p);
-  s_xa_resample_sixstep = Truncate8(sixstep);
+  s_state.xa_resample_p = Truncate8(p);
+  s_state.xa_resample_sixstep = Truncate8(sixstep);
 }
 
 void CDROM::ResetCurrentXAFile()
 {
-  s_xa_current_channel_number = 0;
-  s_xa_current_file_number = 0;
-  s_xa_current_set = false;
+  s_state.xa_current_channel_number = 0;
+  s_state.xa_current_file_number = 0;
+  s_state.xa_current_set = false;
 }
 
 void CDROM::ResetAudioDecoder()
 {
   ResetCurrentXAFile();
 
-  s_xa_last_samples.fill(0);
+  s_state.xa_last_samples.fill(0);
   for (u32 i = 0; i < 2; i++)
   {
-    s_xa_resample_ring_buffer[i].fill(0);
-    s_xa_resample_p = 0;
-    s_xa_resample_sixstep = 6;
+    s_state.xa_resample_ring_buffer[i].fill(0);
+    s_state.xa_resample_p = 0;
+    s_state.xa_resample_sixstep = 6;
   }
-  s_audio_fifo.Clear();
+  s_state.audio_fifo.Clear();
 }
 
 ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   // Check for automatic ADPCM filter.
-  if (s_mode.xa_filter && (s_last_sector_subheader.file_number != s_xa_filter_file_number ||
-                           s_last_sector_subheader.channel_number != s_xa_filter_channel_number))
+  if (s_state.mode.xa_filter && (s_state.last_sector_subheader.file_number != s_state.xa_filter_file_number ||
+                                 s_state.last_sector_subheader.channel_number != s_state.xa_filter_channel_number))
   {
-    DEBUG_LOG("Skipping sector due to filter mismatch (expected {}/{} got {}/{})", s_xa_filter_file_number,
-              s_xa_filter_channel_number, s_last_sector_subheader.file_number, s_last_sector_subheader.channel_number);
+    DEBUG_LOG("Skipping sector due to filter mismatch (expected {}/{} got {}/{})", s_state.xa_filter_file_number,
+              s_state.xa_filter_channel_number, s_state.last_sector_subheader.file_number,
+              s_state.last_sector_subheader.channel_number);
     return;
   }
 
   // Track the current file being played. If this is not set by the filter, it'll be set by the first file/sector which
   // is read. Fixes audio in Tomb Raider III menu.
-  if (!s_xa_current_set)
+  if (!s_state.xa_current_set)
   {
     // Some games (Taxi 2 and Blues Clues) have junk audio sectors with a channel number of 255.
     // We need to skip them otherwise it ends up playing the incorrect file.
     // TODO: Verify with a hardware test.
-    if (s_last_sector_subheader.channel_number == 255 && (!s_mode.xa_filter || s_xa_filter_channel_number != 255))
+    if (s_state.last_sector_subheader.channel_number == 255 &&
+        (!s_state.mode.xa_filter || s_state.xa_filter_channel_number != 255))
     {
       WARNING_LOG("Skipping XA file with file number {} and channel number {} (submode 0x{:02X} coding 0x{:02X})",
-                  s_last_sector_subheader.file_number, s_last_sector_subheader.channel_number,
-                  s_last_sector_subheader.submode.bits, s_last_sector_subheader.codinginfo.bits);
+                  s_state.last_sector_subheader.file_number, s_state.last_sector_subheader.channel_number,
+                  s_state.last_sector_subheader.submode.bits, s_state.last_sector_subheader.codinginfo.bits);
       return;
     }
 
-    s_xa_current_file_number = s_last_sector_subheader.file_number;
-    s_xa_current_channel_number = s_last_sector_subheader.channel_number;
-    s_xa_current_set = true;
+    s_state.xa_current_file_number = s_state.last_sector_subheader.file_number;
+    s_state.xa_current_channel_number = s_state.last_sector_subheader.channel_number;
+    s_state.xa_current_set = true;
   }
-  else if (s_last_sector_subheader.file_number != s_xa_current_file_number ||
-           s_last_sector_subheader.channel_number != s_xa_current_channel_number)
+  else if (s_state.last_sector_subheader.file_number != s_state.xa_current_file_number ||
+           s_state.last_sector_subheader.channel_number != s_state.xa_current_channel_number)
   {
-    DEBUG_LOG("Skipping sector due to current file mismatch (expected {}/{} got {}/{})", s_xa_current_file_number,
-              s_xa_current_channel_number, s_last_sector_subheader.file_number, s_last_sector_subheader.channel_number);
+    DEBUG_LOG("Skipping sector due to current file mismatch (expected {}/{} got {}/{})", s_state.xa_current_file_number,
+              s_state.xa_current_channel_number, s_state.last_sector_subheader.file_number,
+              s_state.last_sector_subheader.channel_number);
     return;
   }
 
   // Reset current file on EOF, and play the file in the next sector.
-  if (s_last_sector_subheader.submode.eof)
+  if (s_state.last_sector_subheader.submode.eof)
     ResetCurrentXAFile();
 
   // Ensure the SPU is caught up for the test below.
@@ -3486,11 +3516,11 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, con
   // the SPU will over-read in the next batch to catch up. We also should not process the sector, because it'll affect
   // the previous samples used for interpolation/ADPCM. Not doing so causes crackling audio in Simple 1500 Series Vol.
   // 92 - The Tozan RPG - Ginrei no Hasha (Japan).
-  const u32 num_frames = s_last_sector_subheader.codinginfo.GetSamplesPerSector() >>
-                         BoolToUInt8(s_last_sector_subheader.codinginfo.IsStereo());
-  if (s_audio_fifo.GetSize() > AUDIO_FIFO_LOW_WATERMARK)
+  const u32 num_frames = s_state.last_sector_subheader.codinginfo.GetSamplesPerSector() >>
+                         BoolToUInt8(s_state.last_sector_subheader.codinginfo.IsStereo());
+  if (s_state.audio_fifo.GetSize() > AUDIO_FIFO_LOW_WATERMARK)
   {
-    DEV_LOG("Dropping {} XA frames because audio FIFO still has {} frames", num_frames, s_audio_fifo.GetSize());
+    DEV_LOG("Dropping {} XA frames because audio FIFO still has {} frames", num_frames, s_state.audio_fifo.GetSize());
     return;
   }
 
@@ -3498,37 +3528,37 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessXAADPCMSector(const u8* raw_sector, con
   std::array<s16, XA_ADPCM_SAMPLES_PER_SECTOR_4BIT> sample_buffer;
   const u8* xa_block_start =
     raw_sector + CDImage::SECTOR_SYNC_SIZE + sizeof(CDImage::SectorHeader) + sizeof(XASubHeader) * 2;
-  s_xa_current_codinginfo.bits = s_last_sector_subheader.codinginfo.bits;
+  s_state.xa_current_codinginfo.bits = s_state.last_sector_subheader.codinginfo.bits;
 
-  if (s_last_sector_subheader.codinginfo.Is8BitADPCM())
+  if (s_state.last_sector_subheader.codinginfo.Is8BitADPCM())
   {
-    if (s_last_sector_subheader.codinginfo.IsStereo())
+    if (s_state.last_sector_subheader.codinginfo.IsStereo())
       DecodeXAADPCMChunks<true, true>(xa_block_start, sample_buffer.data());
     else
       DecodeXAADPCMChunks<false, true>(xa_block_start, sample_buffer.data());
   }
   else
   {
-    if (s_last_sector_subheader.codinginfo.IsStereo())
+    if (s_state.last_sector_subheader.codinginfo.IsStereo())
       DecodeXAADPCMChunks<true, false>(xa_block_start, sample_buffer.data());
     else
       DecodeXAADPCMChunks<false, false>(xa_block_start, sample_buffer.data());
   }
 
   // Only send to SPU if we're not muted.
-  if (s_muted || s_adpcm_muted || g_settings.cdrom_mute_cd_audio)
+  if (s_state.muted || s_state.adpcm_muted || g_settings.cdrom_mute_cd_audio)
     return;
 
-  if (s_last_sector_subheader.codinginfo.IsStereo())
+  if (s_state.last_sector_subheader.codinginfo.IsStereo())
   {
-    if (s_last_sector_subheader.codinginfo.IsHalfSampleRate())
+    if (s_state.last_sector_subheader.codinginfo.IsHalfSampleRate())
       ResampleXAADPCM18900<true>(sample_buffer.data(), num_frames);
     else
       ResampleXAADPCM<true>(sample_buffer.data(), num_frames);
   }
   else
   {
-    if (s_last_sector_subheader.codinginfo.IsHalfSampleRate())
+    if (s_state.last_sector_subheader.codinginfo.IsHalfSampleRate())
       ResampleXAADPCM18900<false>(sample_buffer.data(), num_frames);
     else
       ResampleXAADPCM<false>(sample_buffer.data(), num_frames);
@@ -3559,42 +3589,42 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
                                                     bool subq_valid)
 {
   // For CDDA sectors, the whole sector contains the audio data.
-  DEV_LOG("Read sector {} as CDDA", s_current_lba);
+  DEV_LOG("Read sector {} as CDDA", s_state.current_lba);
 
   // The reporting doesn't happen if we're reading with the CDDA mode bit set.
-  if (s_drive_state == DriveState::Playing && s_mode.report_audio && subq_valid)
+  if (s_state.drive_state == DriveState::Playing && s_state.mode.report_audio && subq_valid)
   {
-    if (s_cdda_report_start_delay == 0)
+    if (s_state.cdda_report_start_delay == 0)
     {
       const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
 
-      if (s_last_cdda_report_frame_nibble != frame_nibble)
+      if (s_state.last_cdda_report_frame_nibble != frame_nibble)
       {
-        s_last_cdda_report_frame_nibble = frame_nibble;
+        s_state.last_cdda_report_frame_nibble = frame_nibble;
 
         ClearAsyncInterrupt();
-        s_async_response_fifo.Push(s_secondary_status.bits);
-        s_async_response_fifo.Push(subq.track_number_bcd);
-        s_async_response_fifo.Push(subq.index_number_bcd);
+        s_state.async_response_fifo.Push(s_state.secondary_status.bits);
+        s_state.async_response_fifo.Push(subq.track_number_bcd);
+        s_state.async_response_fifo.Push(subq.index_number_bcd);
         if (subq.absolute_frame_bcd & 0x10)
         {
-          s_async_response_fifo.Push(subq.relative_minute_bcd);
-          s_async_response_fifo.Push(0x80 | subq.relative_second_bcd);
-          s_async_response_fifo.Push(subq.relative_frame_bcd);
+          s_state.async_response_fifo.Push(subq.relative_minute_bcd);
+          s_state.async_response_fifo.Push(0x80 | subq.relative_second_bcd);
+          s_state.async_response_fifo.Push(subq.relative_frame_bcd);
         }
         else
         {
-          s_async_response_fifo.Push(subq.absolute_minute_bcd);
-          s_async_response_fifo.Push(subq.absolute_second_bcd);
-          s_async_response_fifo.Push(subq.absolute_frame_bcd);
+          s_state.async_response_fifo.Push(subq.absolute_minute_bcd);
+          s_state.async_response_fifo.Push(subq.absolute_second_bcd);
+          s_state.async_response_fifo.Push(subq.absolute_frame_bcd);
         }
 
         const u8 channel = subq.absolute_second_bcd & 1u;
         const s16 peak_volume = std::min<s16>(GetPeakVolume(raw_sector, channel), 32767);
         const u16 peak_value = (ZeroExtend16(channel) << 15) | peak_volume;
 
-        s_async_response_fifo.Push(Truncate8(peak_value));      // peak low
-        s_async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
+        s_state.async_response_fifo.Push(Truncate8(peak_value));      // peak low
+        s_state.async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
         SetAsyncInterrupt(Interrupt::DataReady);
 
         DEV_LOG(
@@ -3606,12 +3636,12 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
     }
     else
     {
-      s_cdda_report_start_delay--;
+      s_state.cdda_report_start_delay--;
     }
   }
 
   // Apply volume when pushing sectors to SPU.
-  if (s_muted || g_settings.cdrom_mute_cd_audio)
+  if (s_state.muted || g_settings.cdrom_mute_cd_audio)
     return;
 
   SPU::GeneratePendingSamples();
@@ -3619,16 +3649,16 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
   // 2 samples per channel, always stereo.
   // Apparently in 2X mode, only half the samples in a sector get processed.
   // Test cast: Menu background sound in 360 Three Sixty.
-  const u32 num_samples = (CDImage::RAW_SECTOR_SIZE / sizeof(s16)) / (s_mode.double_speed ? 4 : 2);
-  const u32 remaining_space = s_audio_fifo.GetSpace();
+  const u32 num_samples = (CDImage::RAW_SECTOR_SIZE / sizeof(s16)) / (s_state.mode.double_speed ? 4 : 2);
+  const u32 remaining_space = s_state.audio_fifo.GetSpace();
   if (remaining_space < num_samples)
   {
     WARNING_LOG("Dropping {} frames from audio FIFO", num_samples - remaining_space);
-    s_audio_fifo.Remove(num_samples - remaining_space);
+    s_state.audio_fifo.Remove(num_samples - remaining_space);
   }
 
   const u8* sector_ptr = raw_sector;
-  const size_t step = s_mode.double_speed ? (sizeof(s16) * 4) : (sizeof(s16) * 2);
+  const size_t step = s_state.mode.double_speed ? (sizeof(s16) * 4) : (sizeof(s16) * 2);
   for (u32 i = 0; i < num_samples; i++)
   {
     s16 samp_left, samp_right;
@@ -3641,26 +3671,26 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
 
 void CDROM::ClearSectorBuffers()
 {
-  s_current_read_sector_buffer = 0;
-  s_current_write_sector_buffer = 0;
+  s_state.current_read_sector_buffer = 0;
+  s_state.current_write_sector_buffer = 0;
 
-  for (SectorBuffer& sb : s_sector_buffers)
+  for (SectorBuffer& sb : s_state.sector_buffers)
   {
     sb.position = 0;
     sb.size = 0;
   }
 
-  s_request_register.BFRD = false;
-  s_status.DRQSTS = false;
+  s_state.request_register.BFRD = false;
+  s_state.status.DRQSTS = false;
 }
 
 void CDROM::CheckForSectorBufferReadComplete()
 {
-  SectorBuffer& sb = s_sector_buffers[s_current_read_sector_buffer];
+  SectorBuffer& sb = s_state.sector_buffers[s_state.current_read_sector_buffer];
 
   // BFRD gets cleared on DMA completion.
-  s_request_register.BFRD = (s_request_register.BFRD && sb.position < sb.size);
-  s_status.DRQSTS = s_request_register.BFRD;
+  s_state.request_register.BFRD = (s_state.request_register.BFRD && sb.position < sb.size);
+  s_state.status.DRQSTS = s_state.request_register.BFRD;
 
   // Buffer complete?
   if (sb.position >= sb.size)
@@ -3674,20 +3704,20 @@ void CDROM::CheckForSectorBufferReadComplete()
   // Normally, this would happen some time after the DMA actually completes, so we need to put it on a delay.
   // Otherwise, if games read the header then data out as two separate transfers (which is typical), they'll
   // get the header for one sector, and the header for the next in the second transfer.
-  SectorBuffer& next_sb = s_sector_buffers[s_current_write_sector_buffer];
+  SectorBuffer& next_sb = s_state.sector_buffers[s_state.current_write_sector_buffer];
   if (next_sb.position == 0 && next_sb.size > 0 && !HasPendingAsyncInterrupt())
   {
-    DEV_LOG("Sending additional INT1 for missed sector in buffer {}", s_current_write_sector_buffer);
-    s_async_response_fifo.Push(s_secondary_status.bits);
-    s_pending_async_interrupt = static_cast<u8>(Interrupt::DataReady);
-    s_async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
+    DEV_LOG("Sending additional INT1 for missed sector in buffer {}", s_state.current_write_sector_buffer);
+    s_state.async_response_fifo.Push(s_state.secondary_status.bits);
+    s_state.pending_async_interrupt = static_cast<u8>(Interrupt::DataReady);
+    s_state.async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
   }
 }
 
 void CDROM::CreateFileMap()
 {
-  s_file_map.clear();
-  s_file_map_created = true;
+  s_state.file_map.clear();
+  s_state.file_map_created = true;
 
   if (!s_reader.HasMedia())
     return;
@@ -3702,9 +3732,9 @@ void CDROM::CreateFileMap()
   }
 
   DEV_LOG("Creating file map for {}...", media->GetFileName());
-  s_file_map.emplace(iso.GetPVDLBA(), std::make_pair(iso.GetPVDLBA(), std::string("PVD")));
+  s_state.file_map.emplace(iso.GetPVDLBA(), std::make_pair(iso.GetPVDLBA(), std::string("PVD")));
   CreateFileMap(iso, std::string_view());
-  DEV_LOG("Found {} files", s_file_map.size());
+  DEV_LOG("Found {} files", s_state.file_map.size());
 }
 
 void CDROM::CreateFileMap(IsoReader& iso, std::string_view dir)
@@ -3714,7 +3744,7 @@ void CDROM::CreateFileMap(IsoReader& iso, std::string_view dir)
     if (entry.IsDirectory())
     {
       DEV_LOG("{}-{} = {}", entry.location_le, entry.location_le + entry.GetSizeInSectors() - 1, path);
-      s_file_map.emplace(entry.location_le, std::make_pair(entry.location_le + entry.GetSizeInSectors() - 1,
+      s_state.file_map.emplace(entry.location_le, std::make_pair(entry.location_le + entry.GetSizeInSectors() - 1,
                                                            fmt::format("<DIR> {}", path)));
 
       CreateFileMap(iso, path);
@@ -3722,23 +3752,23 @@ void CDROM::CreateFileMap(IsoReader& iso, std::string_view dir)
     }
 
     DEV_LOG("{}-{} = {}", entry.location_le, entry.location_le + entry.GetSizeInSectors() - 1, path);
-    s_file_map.emplace(entry.location_le,
+    s_state.file_map.emplace(entry.location_le,
                        std::make_pair(entry.location_le + entry.GetSizeInSectors() - 1, std::move(path)));
   }
 }
 
 const std::string* CDROM::LookupFileMap(u32 lba, u32* start_lba, u32* end_lba)
 {
-  if (s_file_map.empty())
+  if (s_state.file_map.empty())
     return nullptr;
 
-  auto iter = s_file_map.lower_bound(lba);
-  if (iter == s_file_map.end())
-    iter = (++s_file_map.rbegin()).base();
+  auto iter = s_state.file_map.lower_bound(lba);
+  if (iter == s_state.file_map.end())
+    iter = (++s_state.file_map.rbegin()).base();
   if (lba < iter->first)
   {
     // before first file
-    if (iter == s_file_map.begin())
+    if (iter == s_state.file_map.begin())
       return nullptr;
 
     --iter;
@@ -3770,7 +3800,7 @@ void CDROM::DrawDebugWindow()
     if (s_reader.HasMedia())
     {
       const CDImage* media = s_reader.GetMedia();
-      const CDImage::Position disc_position = CDImage::Position::FromLBA(s_current_lba);
+      const CDImage::Position disc_position = CDImage::Position::FromLBA(s_state.current_lba);
       const float start_y = ImGui::GetCursorPosY();
 
       if (media->HasSubImages())
@@ -3794,23 +3824,25 @@ void CDROM::DrawDebugWindow()
       else
       {
         const CDImage::Position track_position = CDImage::Position::FromLBA(
-          s_current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber())));
+          s_state.current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber())));
         ImGui::Text("Track Position: Number[%u] MSF[%02u:%02u:%02u] LBA[%u]", media->GetTrackNumber(),
                     track_position.minute, track_position.second, track_position.frame, track_position.ToLBA());
       }
 
-      ImGui::Text("Last Sector: %02X:%02X:%02X (Mode %u)", s_last_sector_header.minute, s_last_sector_header.second,
-                  s_last_sector_header.frame, s_last_sector_header.sector_mode);
+      ImGui::Text("Last Sector: %02X:%02X:%02X (Mode %u)", s_state.last_sector_header.minute,
+                  s_state.last_sector_header.second, s_state.last_sector_header.frame,
+                  s_state.last_sector_header.sector_mode);
 
-      if (s_show_current_file)
+      if (s_state.show_current_file)
       {
         if (media->GetTrackNumber() == 1)
         {
-          if (!s_file_map_created)
+          if (!s_state.file_map_created)
             CreateFileMap();
 
           u32 current_file_start_lba, current_file_end_lba;
-          const u32 track_lba = s_current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber()));
+          const u32 track_lba =
+            s_state.current_lba - media->GetTrackStartPosition(static_cast<u8>(media->GetTrackNumber()));
           const std::string* current_file = LookupFileMap(track_lba, &current_file_start_lba, &current_file_end_lba);
           if (current_file)
           {
@@ -3851,7 +3883,7 @@ void CDROM::DrawDebugWindow()
         }
 
         ImGui::SameLine();
-        ImGui::Text("[%u files on disc]", static_cast<u32>(s_file_map.size()));
+        ImGui::Text("[%u files on disc]", static_cast<u32>(s_state.file_map.size()));
       }
       else
       {
@@ -3859,7 +3891,7 @@ void CDROM::DrawDebugWindow()
         ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 120.0f * framebuffer_scale);
         ImGui::SetCursorPosY(start_y);
         if (ImGui::Button("Show Current File"))
-          s_show_current_file = true;
+          s_state.show_current_file = true;
 
         ImGui::SetCursorPosY(end_y);
       }
@@ -3881,78 +3913,80 @@ void CDROM::DrawDebugWindow()
     ImGui::Text("Mode Status");
     ImGui::NextColumn();
 
-    ImGui::TextColored(s_status.ADPBUSY ? active_color : inactive_color, "ADPBUSY: %s",
-                       s_status.ADPBUSY ? "Yes" : "No");
+    ImGui::TextColored(s_state.status.ADPBUSY ? active_color : inactive_color, "ADPBUSY: %s",
+                       s_state.status.ADPBUSY ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_secondary_status.error ? active_color : inactive_color, "Error: %s",
-                       s_secondary_status.error ? "Yes" : "No");
+    ImGui::TextColored(s_state.secondary_status.error ? active_color : inactive_color, "Error: %s",
+                       s_state.secondary_status.error ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_mode.cdda ? active_color : inactive_color, "CDDA: %s", s_mode.cdda ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_status.PRMEMPTY ? active_color : inactive_color, "PRMEMPTY: %s",
-                       s_status.PRMEMPTY ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_secondary_status.motor_on ? active_color : inactive_color, "Motor On: %s",
-                       s_secondary_status.motor_on ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_mode.auto_pause ? active_color : inactive_color, "Auto Pause: %s",
-                       s_mode.auto_pause ? "Yes" : "No");
+    ImGui::TextColored(s_state.mode.cdda ? active_color : inactive_color, "CDDA: %s", s_state.mode.cdda ? "Yes" : "No");
     ImGui::NextColumn();
 
-    ImGui::TextColored(s_status.PRMWRDY ? active_color : inactive_color, "PRMWRDY: %s",
-                       s_status.PRMWRDY ? "Yes" : "No");
+    ImGui::TextColored(s_state.status.PRMEMPTY ? active_color : inactive_color, "PRMEMPTY: %s",
+                       s_state.status.PRMEMPTY ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_secondary_status.seek_error ? active_color : inactive_color, "Seek Error: %s",
-                       s_secondary_status.seek_error ? "Yes" : "No");
+    ImGui::TextColored(s_state.secondary_status.motor_on ? active_color : inactive_color, "Motor On: %s",
+                       s_state.secondary_status.motor_on ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_mode.report_audio ? active_color : inactive_color, "Report Audio: %s",
-                       s_mode.report_audio ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_status.RSLRRDY ? active_color : inactive_color, "RSLRRDY: %s",
-                       s_status.RSLRRDY ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_secondary_status.id_error ? active_color : inactive_color, "ID Error: %s",
-                       s_secondary_status.id_error ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_mode.xa_filter ? active_color : inactive_color, "XA Filter: %s (File %u Channel %u)",
-                       s_mode.xa_filter ? "Yes" : "No", s_xa_filter_file_number, s_xa_filter_channel_number);
+    ImGui::TextColored(s_state.mode.auto_pause ? active_color : inactive_color, "Auto Pause: %s",
+                       s_state.mode.auto_pause ? "Yes" : "No");
     ImGui::NextColumn();
 
-    ImGui::TextColored(s_status.DRQSTS ? active_color : inactive_color, "DRQSTS: %s", s_status.DRQSTS ? "Yes" : "No");
+    ImGui::TextColored(s_state.status.PRMWRDY ? active_color : inactive_color, "PRMWRDY: %s",
+                       s_state.status.PRMWRDY ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_secondary_status.shell_open ? active_color : inactive_color, "Shell Open: %s",
-                       s_secondary_status.shell_open ? "Yes" : "No");
+    ImGui::TextColored(s_state.secondary_status.seek_error ? active_color : inactive_color, "Seek Error: %s",
+                       s_state.secondary_status.seek_error ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_mode.ignore_bit ? active_color : inactive_color, "Ignore Bit: %s",
-                       s_mode.ignore_bit ? "Yes" : "No");
-    ImGui::NextColumn();
-
-    ImGui::TextColored(s_status.BUSYSTS ? active_color : inactive_color, "BUSYSTS: %s",
-                       s_status.BUSYSTS ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_secondary_status.reading ? active_color : inactive_color, "Reading: %s",
-                       s_secondary_status.reading ? "Yes" : "No");
-    ImGui::NextColumn();
-    ImGui::TextColored(s_mode.read_raw_sector ? active_color : inactive_color, "Read Raw Sectors: %s",
-                       s_mode.read_raw_sector ? "Yes" : "No");
+    ImGui::TextColored(s_state.mode.report_audio ? active_color : inactive_color, "Report Audio: %s",
+                       s_state.mode.report_audio ? "Yes" : "No");
     ImGui::NextColumn();
 
+    ImGui::TextColored(s_state.status.RSLRRDY ? active_color : inactive_color, "RSLRRDY: %s",
+                       s_state.status.RSLRRDY ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_secondary_status.seeking ? active_color : inactive_color, "Seeking: %s",
-                       s_secondary_status.seeking ? "Yes" : "No");
+    ImGui::TextColored(s_state.secondary_status.id_error ? active_color : inactive_color, "ID Error: %s",
+                       s_state.secondary_status.id_error ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_mode.xa_enable ? active_color : inactive_color, "XA Enable: %s",
-                       s_mode.xa_enable ? "Yes" : "No");
+    ImGui::TextColored(s_state.mode.xa_filter ? active_color : inactive_color, "XA Filter: %s (File %u Channel %u)",
+                       s_state.mode.xa_filter ? "Yes" : "No", s_state.xa_filter_file_number,
+                       s_state.xa_filter_channel_number);
+    ImGui::NextColumn();
+
+    ImGui::TextColored(s_state.status.DRQSTS ? active_color : inactive_color, "DRQSTS: %s",
+                       s_state.status.DRQSTS ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(s_state.secondary_status.shell_open ? active_color : inactive_color, "Shell Open: %s",
+                       s_state.secondary_status.shell_open ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(s_state.mode.ignore_bit ? active_color : inactive_color, "Ignore Bit: %s",
+                       s_state.mode.ignore_bit ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::TextColored(s_state.status.BUSYSTS ? active_color : inactive_color, "BUSYSTS: %s",
+                       s_state.status.BUSYSTS ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(s_state.secondary_status.reading ? active_color : inactive_color, "Reading: %s",
+                       s_state.secondary_status.reading ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(s_state.mode.read_raw_sector ? active_color : inactive_color, "Read Raw Sectors: %s",
+                       s_state.mode.read_raw_sector ? "Yes" : "No");
     ImGui::NextColumn();
 
     ImGui::NextColumn();
-    ImGui::TextColored(s_secondary_status.playing_cdda ? active_color : inactive_color, "Playing CDDA: %s",
-                       s_secondary_status.playing_cdda ? "Yes" : "No");
+    ImGui::TextColored(s_state.secondary_status.seeking ? active_color : inactive_color, "Seeking: %s",
+                       s_state.secondary_status.seeking ? "Yes" : "No");
     ImGui::NextColumn();
-    ImGui::TextColored(s_mode.double_speed ? active_color : inactive_color, "Double Speed: %s",
-                       s_mode.double_speed ? "Yes" : "No");
+    ImGui::TextColored(s_state.mode.xa_enable ? active_color : inactive_color, "XA Enable: %s",
+                       s_state.mode.xa_enable ? "Yes" : "No");
+    ImGui::NextColumn();
+
+    ImGui::NextColumn();
+    ImGui::TextColored(s_state.secondary_status.playing_cdda ? active_color : inactive_color, "Playing CDDA: %s",
+                       s_state.secondary_status.playing_cdda ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(s_state.mode.double_speed ? active_color : inactive_color, "Double Speed: %s",
+                       s_state.mode.double_speed ? "Yes" : "No");
     ImGui::NextColumn();
 
     ImGui::Columns(1);
@@ -3961,8 +3995,8 @@ void CDROM::DrawDebugWindow()
     if (HasPendingCommand())
     {
       ImGui::TextColored(active_color, "Command: %s (0x%02X) (%d ticks remaining)",
-                         s_command_info[static_cast<u8>(s_command)].name, static_cast<u8>(s_command),
-                         s_command_event.IsActive() ? s_command_event.GetTicksUntilNextExecution() : 0);
+                         s_command_info[static_cast<u8>(s_state.command)].name, static_cast<u8>(s_state.command),
+                         s_state.command_event.IsActive() ? s_state.command_event.GetTicksUntilNextExecution() : 0);
     }
     else
     {
@@ -3976,48 +4010,48 @@ void CDROM::DrawDebugWindow()
     else
     {
       ImGui::TextColored(active_color, "Drive: %s (%d ticks remaining)",
-                         s_drive_state_names[static_cast<u8>(s_drive_state)],
-                         s_drive_event.IsActive() ? s_drive_event.GetTicksUntilNextExecution() : 0);
+                         s_drive_state_names[static_cast<u8>(s_state.drive_state)],
+                         s_state.drive_event.IsActive() ? s_state.drive_event.GetTicksUntilNextExecution() : 0);
     }
 
-    ImGui::Text("Interrupt Enable Register: 0x%02X", s_interrupt_enable_register);
-    ImGui::Text("Interrupt Flag Register: 0x%02X", s_interrupt_flag_register);
+    ImGui::Text("Interrupt Enable Register: 0x%02X", s_state.interrupt_enable_register);
+    ImGui::Text("Interrupt Flag Register: 0x%02X", s_state.interrupt_flag_register);
 
     if (HasPendingAsyncInterrupt())
     {
       ImGui::SameLine();
-      ImGui::TextColored(inactive_color, " (0x%02X pending)", s_pending_async_interrupt);
+      ImGui::TextColored(inactive_color, " (0x%02X pending)", s_state.pending_async_interrupt);
     }
   }
 
   if (ImGui::CollapsingHeader("CD Audio", ImGuiTreeNodeFlags_DefaultOpen))
   {
-    if (s_drive_state == DriveState::Reading && s_mode.xa_enable)
+    if (s_state.drive_state == DriveState::Reading && s_state.mode.xa_enable)
     {
       ImGui::TextColored(active_color, "Playing: XA-ADPCM (File %u | Channel %u | %s | %s | %s)",
-                         s_xa_current_file_number, s_xa_current_channel_number,
-                         s_xa_current_codinginfo.IsStereo() ? "Stereo" : "Mono",
-                         s_xa_current_codinginfo.Is8BitADPCM() ? "8-bit" : "4-bit",
-                         s_xa_current_codinginfo.IsHalfSampleRate() ? "18900hz" : "37800hz");
+                         s_state.xa_current_file_number, s_state.xa_current_channel_number,
+                         s_state.xa_current_codinginfo.IsStereo() ? "Stereo" : "Mono",
+                         s_state.xa_current_codinginfo.Is8BitADPCM() ? "8-bit" : "4-bit",
+                         s_state.xa_current_codinginfo.IsHalfSampleRate() ? "18900hz" : "37800hz");
     }
-    else if (s_drive_state == DriveState::Playing)
+    else if (s_state.drive_state == DriveState::Playing)
     {
-      ImGui::TextColored(active_color, "Playing: CDDA (Track %x)", s_last_subq.track_number_bcd);
+      ImGui::TextColored(active_color, "Playing: CDDA (Track %x)", s_state.last_subq.track_number_bcd);
     }
     else
     {
       ImGui::TextColored(inactive_color, "Playing: Inactive");
     }
 
-    ImGui::TextColored(s_muted ? inactive_color : active_color, "Muted: %s", s_muted ? "Yes" : "No");
-    ImGui::Text("Left Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", s_cd_audio_volume_matrix[0][0],
-                ZeroExtend32(s_cd_audio_volume_matrix[0][0]) * 100 / 0x80, s_cd_audio_volume_matrix[1][0],
-                ZeroExtend32(s_cd_audio_volume_matrix[1][0]) * 100 / 0x80);
-    ImGui::Text("Right Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)", s_cd_audio_volume_matrix[0][1],
-                ZeroExtend32(s_cd_audio_volume_matrix[0][1]) * 100 / 0x80, s_cd_audio_volume_matrix[1][1],
-                ZeroExtend32(s_cd_audio_volume_matrix[1][1]) * 100 / 0x80);
+    ImGui::TextColored(s_state.muted ? inactive_color : active_color, "Muted: %s", s_state.muted ? "Yes" : "No");
+    ImGui::Text("Left Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)",
+                s_state.cd_audio_volume_matrix[0][0], ZeroExtend32(s_state.cd_audio_volume_matrix[0][0]) * 100 / 0x80,
+                s_state.cd_audio_volume_matrix[1][0], ZeroExtend32(s_state.cd_audio_volume_matrix[1][0]) * 100 / 0x80);
+    ImGui::Text("Right Output: Left Channel=%02X (%u%%), Right Channel=%02X (%u%%)",
+                s_state.cd_audio_volume_matrix[0][1], ZeroExtend32(s_state.cd_audio_volume_matrix[0][1]) * 100 / 0x80,
+                s_state.cd_audio_volume_matrix[1][1], ZeroExtend32(s_state.cd_audio_volume_matrix[1][1]) * 100 / 0x80);
 
-    ImGui::Text("Audio FIFO Size: %u frames", s_audio_fifo.GetSize());
+    ImGui::Text("Audio FIFO Size: %u frames", s_state.audio_fifo.GetSize());
   }
 
   ImGui::End();
