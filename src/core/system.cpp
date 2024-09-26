@@ -1086,8 +1086,11 @@ DiscRegion System::GetRegionFromSystemArea(CDImage* cdi)
 {
   // The license code is on sector 4 of the disc.
   u8 sector[CDImage::DATA_SECTOR_SIZE];
-  if (!cdi->Seek(1, 4) || cdi->Read(CDImage::ReadMode::DataOnly, 1, sector) != 1)
+  if (cdi->GetTrackMode(1) == CDImage::TrackMode::Audio || !cdi->Seek(1, 4) ||
+      cdi->Read(CDImage::ReadMode::DataOnly, 1, sector) != 1)
+  {
     return DiscRegion::Other;
+  }
 
   static constexpr char ntsc_u_string[] = "          Licensed  by          Sony Computer Entertainment Amer  ica ";
   static constexpr char ntsc_j_string[] = "          Licensed  by          Sony Computer Entertainment Inc.";

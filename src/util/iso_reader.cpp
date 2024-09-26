@@ -29,6 +29,12 @@ bool IsoReader::Open(CDImage* image, u32 track_number, Error* error)
   m_image = image;
   m_track_number = track_number;
 
+  if (image->GetTrackMode(static_cast<u8>(track_number)) == CDImage::TrackMode::Audio)
+  {
+    Error::SetStringFmt(error, "Track {} is an audio track.", track_number);
+    return false;
+  }
+
   if (!ReadPVD(error))
     return false;
 
