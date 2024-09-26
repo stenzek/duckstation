@@ -58272,6 +58272,8 @@ SCES-03884:
     - AnalogController
     - DigitalController
     - NeGcon
+  traits:
+    - ForcePGXPCPUMode # Fixes gaps in geometry.
   metadata:
     publisher: "Sony"
     developer: "Attention To Detail Limited"
