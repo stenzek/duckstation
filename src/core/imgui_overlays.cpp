@@ -805,6 +805,15 @@ void SaveStateSelectorUI::RefreshList(const std::string& serial)
       s_slots.push_back(std::move(li));
     }
   }
+  else
+  {
+    // reset slot if it's not global
+    if (!s_current_slot_global)
+    {
+      s_current_slot = 0;
+      s_current_slot_global = true;
+    }
+  }
 
   for (s32 i = 1; i <= System::GLOBAL_SAVE_STATE_SLOTS; i++)
   {
@@ -879,13 +888,9 @@ void SaveStateSelectorUI::SelectNextSlot(bool open_selector)
   s_current_slot++;
   if (s_current_slot >= total_slots)
   {
+    if (!System::GetGameSerial().empty())
+      s_current_slot_global ^= true;
     s_current_slot -= total_slots;
-    s_current_slot_global = !s_current_slot_global;
-    if (System::GetGameSerial().empty() && !s_current_slot_global)
-    {
-      s_current_slot_global = false;
-      s_current_slot = 0;
-    }
   }
 
   if (open_selector)
@@ -906,13 +911,9 @@ void SaveStateSelectorUI::SelectPreviousSlot(bool open_selector)
   s_current_slot--;
   if (s_current_slot < 0)
   {
-    s_current_slot_global = !s_current_slot_global;
+    if (!System::GetGameSerial().empty())
+      s_current_slot_global ^= true;
     s_current_slot += s_current_slot_global ? System::GLOBAL_SAVE_STATE_SLOTS : System::PER_GAME_SAVE_STATE_SLOTS;
-    if (System::GetGameSerial().empty() && !s_current_slot_global)
-    {
-      s_current_slot_global = false;
-      s_current_slot = 0;
-    }
   }
 
   if (open_selector)
