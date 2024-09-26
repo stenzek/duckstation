@@ -934,6 +934,11 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
     {
       // Away to the int you go!
       ERROR_LOG("Instruction read failed at PC=0x{:08X}, truncating block.", pc);
+
+      // If the last instruction was a branch, we need the delay slot in the block to compile it.
+      if (is_branch_delay_slot)
+        instructions->pop_back();
+
       break;
     }
 
