@@ -251,8 +251,28 @@ bool BIOS::PatchBIOSFastBoot(u8* image, u32 image_size, ImageInfo::FastBootPatch
   u32 patch_offset;
   if (type == ImageInfo::FastBootPatch::Type1)
   {
-    patch_offset = 0x18000;
-    INFO_LOG("Using Type 1 fast boot patch at offset 0x{:08X}.", patch_offset);
+    // Try the "new" fast boot (Type 1B), where we patch the routine that copies/decompresses the shell.
+    // This saves approximately 2 seconds of fast boot time, because the memcpy() executes out of uncached ROM...
+    static constexpr const char* search_pattern = "e0 ff bd 27"  // add sp, sp, -20
+                                                  "1c 00 bf af"  // sw ra, 0xc(sp)
+                                                  "20 00 a4 af"  // sw a0, 0x20(sp)
+                                                  "?? ?? 05 3c"  // lui a1, 0xbfc1
+                                                  "?? ?? 06 3c"  // lui a2, 0x6
+                                                  "?? ?? c6 34"  // ori a2, a2, 0x7ff0
+                                                  "?? ?? a5 34"  // ori a1, a1, 0x8000
+                                                  "?? ?? ?? 0f"; // jal 0xbfc02b50
+    const std::optional<size_t> offset =
+      StringUtil::BytePatternSearch(std::span<const u8>(image, image_size), search_pattern);
+    if (offset.has_value())
+    {
+      patch_offset = static_cast<u32>(offset.value());
+      VERBOSE_LOG("Found Type 1B pattern at offset 0x{:08X}", patch_offset);
+    }
+    else
+    {
+      patch_offset = 0x18000;
+      INFO_LOG("Using Type 1A fast boot patch at offset 0x{:08X}.", patch_offset);
+    }
   }
   else if (type == ImageInfo::FastBootPatch::Type2)
   {
