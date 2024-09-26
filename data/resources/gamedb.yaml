@@ -72390,6 +72390,8 @@ SLES-01041:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in minimap.
   libcrypt: true
   metadata:
     publisher: "Infogrames"
@@ -72407,6 +72409,8 @@ SLES-01041:
     linkCable: false
 SLED-03054:
   name: "Hogs of War (Europe) (Demo)"
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in minimap.
 SLUS-01195:
   name: "Hogs of War (USA)"
   compatibility:
@@ -72415,6 +72419,8 @@ SLUS-01195:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in minimap.
   metadata:
     publisher: "Infogrames"
     developer: "Infogrames"
@@ -72434,6 +72440,8 @@ SLES-02769:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - ForcePGXPCPUMode # Fixes wobble in minimap.
   libcrypt: true
   metadata:
     publisher: "Infogrames"
