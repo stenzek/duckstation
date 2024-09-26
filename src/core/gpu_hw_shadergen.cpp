@@ -1550,7 +1550,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader()
 
 void GPU_HW_ShaderGen::WriteAdaptiveDownsampleUniformBuffer(std::stringstream& ss)
 {
-  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_rcp_resolution", "float u_lod"}, true);
+  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_pixel_size", "float u_lod"}, true);
 }
 
 std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleVertexShader()
@@ -1572,58 +1572,34 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleVertexShader()
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader(bool first_pass)
+std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader()
 {
   std::stringstream ss;
   WriteHeader(ss);
   WriteAdaptiveDownsampleUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0, false);
-  DefineMacro(ss, "FIRST_PASS", first_pass);
-
-  // mipmap_energy.glsl ported from parallel-rsx.
-  ss << R"(
-
-float4 get_bias(float3 c00, float3 c01, float3 c10, float3 c11)
-{
-   // Measure the "energy" (variance) in the pixels.
-   // If the pixels are all the same (2D content), use maximum bias, otherwise, taper off quickly back to 0 (edges)
-   float3 avg = 0.25 * (c00 + c01 + c10 + c11);
-   float s00 = dot(c00 - avg, c00 - avg);
-   float s01 = dot(c01 - avg, c01 - avg);
-   float s10 = dot(c10 - avg, c10 - avg);
-   float s11 = dot(c11 - avg, c11 - avg);
-   return float4(avg, 1.0 - log2(1000.0 * (s00 + s01 + s10 + s11) + 1.0));
-}
-
-float4 get_bias(float4 c00, float4 c01, float4 c10, float4 c11)
-{
-   // Measure the "energy" (variance) in the pixels.
-   // If the pixels are all the same (2D content), use maximum bias, otherwise, taper off quickly back to 0 (edges)
-   float avg = 0.25 * (c00.a + c01.a + c10.a + c11.a);
-   float4 bias = get_bias(c00.rgb, c01.rgb, c10.rgb, c11.rgb);
-   bias.a *= avg;
-   return bias;
-}
-
-)";
-
   DeclareFragmentEntryPoint(ss, 0, 1);
   ss << R"(
 {
-  float2 uv = v_tex0 - (u_rcp_resolution * 0.25);
-#ifdef FIRST_PASS
-   vec3 c00 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 0)).rgb;
-   vec3 c01 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 1)).rgb;
-   vec3 c10 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 0)).rgb;
-   vec3 c11 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 1)).rgb;
-   o_col0 = get_bias(c00, c01, c10, c11);
-#else
-   vec4 c00 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 0));
-   vec4 c01 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 1));
-   vec4 c10 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 0));
-   vec4 c11 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 1));
-   o_col0 = get_bias(c00, c01, c10, c11);
-#endif
+  // Gather 4 samples for bilinear filtering.
+  float2 uv = v_tex0 - u_pixel_size; // * 0.25 done on CPU
+  float4 c00 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 0));
+  float4 c01 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(0, 1));
+  float4 c10 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 0));
+  float4 c11 = SAMPLE_TEXTURE_LEVEL_OFFSET(samp0, uv, u_lod, int2(1, 1));
+  float3 cavg = (c00.rgb + c01.rgb + c10.rgb + c11.rgb) * 0.25;
+
+  // Compute variance between pixels with logarithmic scaling to aggressively reduce along the edges.
+  float variance =
+    1.0 - log2(1000.0 * (dot(c00.rgb - cavg.rgb, c00.rgb - cavg.rgb) + dot(c01.rgb - cavg, c01.rgb - cavg) +
+                         dot(c10.rgb - cavg.rgb, c10.rgb - cavg.rgb) + dot(c11.rgb - cavg, c11.rgb - cavg)) +
+               1.0);
+
+  // Write variance to the alpha channel, weighted by the previous LOD's variance.
+  // There's no variance in the first LOD.
+  float aavg = (c00.a + c01.a + c10.a + c11.a) * 0.25;
+  o_col0.rgb = cavg.rgb;
+  o_col0.a = variance * ((u_lod == 0.0) ? 1.0 : aavg);
 }
 )";
 
@@ -1637,26 +1613,30 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader()
   WriteColorConversionFunctions(ss);
   WriteAdaptiveDownsampleUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0, false);
-
-  // mipmap_blur.glsl ported from parallel-rsx.
   DeclareFragmentEntryPoint(ss, 0, 1);
   ss << R"(
 {
-  float bias = 0.0;
-  const float w0 = 0.25;
-  const float w1 = 0.125;
-  const float w2 = 0.0625;
-#define UV(x, y) clamp((v_tex0 + float2(x, y) * u_rcp_resolution), u_uv_min, u_uv_max)
-  bias += w2 * SAMPLE_TEXTURE(samp0, UV(-1.0, -1.0)).a;
-  bias += w2 * SAMPLE_TEXTURE(samp0, UV(+1.0, -1.0)).a;
-  bias += w2 * SAMPLE_TEXTURE(samp0, UV(-1.0, +1.0)).a;
-  bias += w2 * SAMPLE_TEXTURE(samp0, UV(+1.0, +1.0)).a;
-  bias += w1 * SAMPLE_TEXTURE(samp0, UV( 0.0, -1.0)).a;
-  bias += w1 * SAMPLE_TEXTURE(samp0, UV(-1.0,  0.0)).a;
-  bias += w1 * SAMPLE_TEXTURE(samp0, UV(+1.0,  0.0)).a;
-  bias += w1 * SAMPLE_TEXTURE(samp0, UV( 0.0, +1.0)).a;
-  bias += w0 * SAMPLE_TEXTURE(samp0, UV( 0.0,  0.0)).a;
-  o_col0 = float4(bias, bias, bias, bias);
+  // Bog standard blur kernel unrolled for speed:
+  // [ 0.0625, 0.125, 0.0625
+  //   0.125,  0.25,  0.125
+  //   0.0625, 0.125, 0.0625 ]
+  //
+  // Can't use offset for sampling here, because we need to clamp, and the source texture is larger.
+  //
+#define KERNEL_SAMPLE(weight, xoff, yoff)                                                                              \
+  (weight) * SAMPLE_TEXTURE_LEVEL(                                                                                     \
+               samp0, clamp((v_tex0 + float2(float(xoff), float(yoff)) * u_pixel_size), u_uv_min, u_uv_max), 0.0)      \
+               .a
+  float blur = KERNEL_SAMPLE(0.0625, -1, -1);
+  blur += KERNEL_SAMPLE(0.0625, 1, -1);
+  blur += KERNEL_SAMPLE(0.0625, -1, 1);
+  blur += KERNEL_SAMPLE(0.0625, 1, 1);
+  blur += KERNEL_SAMPLE(0.125, 0, -1);
+  blur += KERNEL_SAMPLE(0.125, -1, 0);
+  blur += KERNEL_SAMPLE(0.125, 1, 0);
+  blur += KERNEL_SAMPLE(0.125, 0, 1);
+  blur += KERNEL_SAMPLE(0.25, 0, 0);
+  o_col0 = float4(blur, blur, blur, blur);
 }
 )";
 
@@ -1667,17 +1647,14 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader(
 {
   std::stringstream ss;
   WriteHeader(ss);
+  WriteAdaptiveDownsampleUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0, false);
   DeclareTexture(ss, "samp1", 1, false);
-
-  // mipmap_resolve.glsl ported from parallel-rsx.
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
   ss << R"(
 {
-  float bias = SAMPLE_TEXTURE(samp1, v_tex0).r;
-  float mip = float(RESOLUTION_SCALE - 1u) * bias;
-  float3 color = SAMPLE_TEXTURE_LEVEL(samp0, v_tex0, mip).rgb;
-  o_col0 = float4(color, 1.0);
+  // Sample the mip level determined by the weight texture. samp0 is trilinear, so it will blend between levels.
+  o_col0 = float4(SAMPLE_TEXTURE_LEVEL(samp0, v_tex0, SAMPLE_TEXTURE(samp1, v_tex0).r * u_lod).rgb, 1.0);
 }
 )";
 

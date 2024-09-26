@@ -31,7 +31,7 @@ public:
   std::string GenerateVRAMExtractFragmentShader(bool color_24bit, bool depth_buffer);
 
   std::string GenerateAdaptiveDownsampleVertexShader();
-  std::string GenerateAdaptiveDownsampleMipFragmentShader(bool first_pass);
+  std::string GenerateAdaptiveDownsampleMipFragmentShader();
   std::string GenerateAdaptiveDownsampleBlurFragmentShader();
   std::string GenerateAdaptiveDownsampleCompositeFragmentShader();
   std::string GenerateBoxSampleDownsampleFragmentShader(u32 factor);

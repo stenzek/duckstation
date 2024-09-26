@@ -1563,49 +1563,39 @@ bool GPU_HW::CompilePipelines(Error* error)
       GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateAdaptiveDownsampleVertexShader(), error);
     std::unique_ptr<GPUShader> fs =
       g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                 shadergen.GenerateAdaptiveDownsampleMipFragmentShader(true), error);
+                                 shadergen.GenerateAdaptiveDownsampleMipFragmentShader(), error);
     if (!vs || !fs)
       return false;
     GL_OBJECT_NAME(fs, "Downsample Vertex Shader");
-    GL_OBJECT_NAME(fs, "Downsample First Pass Fragment Shader");
+    GL_OBJECT_NAME(fs, "Downsample Fragment Shader");
     plconfig.vertex_shader = vs.get();
     plconfig.fragment_shader = fs.get();
-    if (!(m_downsample_first_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+    if (!(m_downsample_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
-    GL_OBJECT_NAME(m_downsample_first_pass_pipeline, "Downsample First Pass Pipeline");
-
-    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                    shadergen.GenerateAdaptiveDownsampleMipFragmentShader(false), error);
-    if (!fs)
-      return false;
-    GL_OBJECT_NAME(fs, "Downsample Mid Pass Fragment Shader");
-    plconfig.fragment_shader = fs.get();
-    if (!(m_downsample_mid_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-      return false;
-    GL_OBJECT_NAME(m_downsample_mid_pass_pipeline, "Downsample Mid Pass Pipeline");
+    GL_OBJECT_NAME(m_downsample_pass_pipeline, "Downsample First Pass Pipeline");
 
     fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                     shadergen.GenerateAdaptiveDownsampleBlurFragmentShader(), error);
     if (!fs)
       return false;
-    GL_OBJECT_NAME(fs, "Downsample Blur Pass Fragment Shader");
+    GL_OBJECT_NAME(fs, "Downsample Blur Fragment Shader");
     plconfig.fragment_shader = fs.get();
     plconfig.SetTargetFormats(GPUTexture::Format::R8);
-    if (!(m_downsample_blur_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+    if (!(m_downsample_blur_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
-    GL_OBJECT_NAME(m_downsample_blur_pass_pipeline, "Downsample Blur Pass Pipeline");
+    GL_OBJECT_NAME(m_downsample_blur_pipeline, "Downsample Blur Pass Pipeline");
 
     fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
                                     shadergen.GenerateAdaptiveDownsampleCompositeFragmentShader(), error);
     if (!fs)
       return false;
-    GL_OBJECT_NAME(fs, "Downsample Composite Pass Fragment Shader");
+    GL_OBJECT_NAME(fs, "Downsample Composite Fragment Shader");
     plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
     plconfig.fragment_shader = fs.get();
     plconfig.SetTargetFormats(VRAM_RT_FORMAT);
-    if (!(m_downsample_composite_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+    if (!(m_downsample_composite_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
-    GL_OBJECT_NAME(m_downsample_composite_pass_pipeline, "Downsample Blur Pass Pipeline");
+    GL_OBJECT_NAME(m_downsample_composite_pipeline, "Downsample Blur Pass Pipeline");
 
     GPUSampler::Config config = GPUSampler::GetLinearConfig();
     config.min_lod = 0;
@@ -1638,10 +1628,10 @@ bool GPU_HW::CompilePipelines(Error* error)
     GL_OBJECT_NAME(fs, "Downsample First Pass Fragment Shader");
     plconfig.fragment_shader = fs.get();
 
-    if (!(m_downsample_first_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+    if (!(m_downsample_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
-    GL_OBJECT_NAME(m_downsample_first_pass_pipeline, "Downsample First Pass Pipeline");
+    GL_OBJECT_NAME(m_downsample_pass_pipeline, "Downsample First Pass Pipeline");
     progress.Increment();
   }
 
@@ -1674,10 +1664,10 @@ void GPU_HW::DestroyPipelines()
   destroy(m_vram_update_depth_pipeline);
   destroy(m_vram_write_replacement_pipeline);
 
-  destroy(m_downsample_first_pass_pipeline);
-  destroy(m_downsample_mid_pass_pipeline);
-  destroy(m_downsample_blur_pass_pipeline);
-  destroy(m_downsample_composite_pass_pipeline);
+  destroy(m_downsample_pass_pipeline);
+  destroy(m_downsample_blur_pipeline);
+  destroy(m_downsample_composite_pipeline);
+  m_downsample_lod_sampler.reset();
   m_downsample_composite_sampler.reset();
 
   m_copy_depth_pipeline.reset();
@@ -2772,8 +2762,8 @@ void GPU_HW::LoadVertices()
           const GPUVertexPosition vp{m_blit_buffer[buffer_pos++]};
           const GSVector2i end_pos = GSVector2i(m_drawing_offset.x + vp.x, m_drawing_offset.y + vp.y);
           const GSVector4i bounds = GSVector4i::xyxy(start_pos, end_pos);
-          const GSVector4i rect =
-            GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+          const GSVector4i rect = GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos))
+                                    .add32(GSVector4i::cxpr(0, 0, 1, 1));
           const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
           if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
           {
@@ -3874,15 +3864,14 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     uniforms.min_uv[1] = 0.0f;
     uniforms.max_uv[0] = static_cast<float>(level_width) * rcp_width;
     uniforms.max_uv[1] = static_cast<float>(level_height) * rcp_height;
-    uniforms.rcp_size[0] = rcp_width;
-    uniforms.rcp_size[1] = rcp_height;
+    uniforms.rcp_size[0] = rcp_width * 0.25f;
+    uniforms.rcp_size[1] = rcp_height * 0.25f;
     uniforms.lod = static_cast<float>(level - 1);
 
     g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, level_width, level_height));
-    g_gpu_device->SetPipeline((level == 1) ? m_downsample_first_pass_pipeline.get() :
-                                             m_downsample_mid_pass_pipeline.get());
+    g_gpu_device->SetPipeline(m_downsample_pass_pipeline.get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
     g_gpu_device->CopyTextureRegion(level_texture.get(), 0, 0, 0, level, m_downsample_texture.get(), 0, 0, 0, 0,
@@ -3911,7 +3900,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->SetRenderTarget(weight_texture.get());
     g_gpu_device->SetTextureSampler(0, m_downsample_texture.get(), g_gpu_device->GetNearestSampler());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, last_width, last_height));
-    g_gpu_device->SetPipeline(m_downsample_blur_pass_pipeline.get());
+    g_gpu_device->SetPipeline(m_downsample_blur_pipeline.get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
     weight_texture->MakeReadyForSampling();
@@ -3925,13 +3914,14 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     uniforms.min_uv[1] = 0.0f;
     uniforms.max_uv[0] = 1.0f;
     uniforms.max_uv[1] = 1.0f;
+    uniforms.lod = static_cast<float>(level_texture->GetLevels() - 1);
 
     g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetRenderTarget(m_downsample_texture.get());
     g_gpu_device->SetTextureSampler(0, level_texture.get(), m_downsample_composite_sampler.get());
     g_gpu_device->SetTextureSampler(1, weight_texture.get(), m_downsample_lod_sampler.get());
     g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, width, height));
-    g_gpu_device->SetPipeline(m_downsample_composite_pass_pipeline.get());
+    g_gpu_device->SetPipeline(m_downsample_composite_pipeline.get());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
     m_downsample_texture->MakeReadyForSampling();
@@ -3971,7 +3961,7 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
 
   g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
   g_gpu_device->SetRenderTarget(m_downsample_texture.get());
-  g_gpu_device->SetPipeline(m_downsample_first_pass_pipeline.get());
+  g_gpu_device->SetPipeline(m_downsample_pass_pipeline.get());
   g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetNearestSampler());
   g_gpu_device->SetViewportAndScissor(0, 0, ds_width, ds_height);
   g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));

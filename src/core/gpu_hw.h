@@ -323,10 +323,9 @@ private:
   std::unique_ptr<GPUPipeline> m_copy_depth_pipeline;
 
   std::unique_ptr<GPUTexture> m_downsample_texture;
-  std::unique_ptr<GPUPipeline> m_downsample_first_pass_pipeline;
-  std::unique_ptr<GPUPipeline> m_downsample_mid_pass_pipeline;
-  std::unique_ptr<GPUPipeline> m_downsample_blur_pass_pipeline;
-  std::unique_ptr<GPUPipeline> m_downsample_composite_pass_pipeline;
+  std::unique_ptr<GPUPipeline> m_downsample_pass_pipeline;
+  std::unique_ptr<GPUPipeline> m_downsample_blur_pipeline;
+  std::unique_ptr<GPUPipeline> m_downsample_composite_pipeline;
   std::unique_ptr<GPUSampler> m_downsample_lod_sampler;
   std::unique_ptr<GPUSampler> m_downsample_composite_sampler;
   u32 m_downsample_scale_or_levels = 0;
