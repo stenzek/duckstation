@@ -65,6 +65,7 @@ enum : u32
   MAX_FAST_FORWARD_RATE = 12,
   FAST_FORWARD_RATE_STEP = 4,
 
+  CDDA_REPORT_START_DELAY = 60, // 60 frames
   MINIMUM_INTERRUPT_DELAY = 1000,
   INTERRUPT_DELAY_CYCLES = 500,
 };
@@ -413,6 +414,7 @@ static CDImage::SectorHeader s_last_sector_header{};
 static XASubHeader s_last_sector_subheader{};
 static bool s_last_sector_header_valid = false; // TODO: Rename to "logical pause" or something.
 static CDImage::SubChannelQ s_last_subq{};
+static u8 s_cdda_report_start_delay = 0;
 static u8 s_last_cdda_report_frame_nibble = 0xFF;
 static u8 s_play_track_number_bcd = 0xFF;
 static u8 s_async_command_parameter = 0x00;
@@ -565,6 +567,7 @@ void CDROM::Reset()
   std::memset(&s_last_sector_subheader, 0, sizeof(s_last_sector_subheader));
   s_last_sector_header_valid = false;
   std::memset(&s_last_subq, 0, sizeof(s_last_subq));
+  s_cdda_report_start_delay = 0;
   s_last_cdda_report_frame_nibble = 0xFF;
 
   s_next_cd_audio_volume_matrix[0][0] = 0x80;
@@ -604,6 +607,7 @@ TickCount CDROM::SoftReset(TickCount ticks_late)
   s_play_after_seek = false;
   s_muted = false;
   s_adpcm_muted = false;
+  s_cdda_report_start_delay = 0;
   s_last_cdda_report_frame_nibble = 0xFF;
 
   ClearSectorBuffers();
@@ -711,6 +715,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.DoBytes(&s_last_sector_subheader, sizeof(s_last_sector_subheader));
   sw.Do(&s_last_sector_header_valid);
   sw.DoBytes(&s_last_subq, sizeof(s_last_subq));
+  sw.DoEx(&s_cdda_report_start_delay, 72, static_cast<u8>(0));
   sw.Do(&s_last_cdda_report_frame_nibble);
   sw.Do(&s_play_track_number_bcd);
   sw.Do(&s_async_command_parameter);
@@ -2582,7 +2587,6 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
 void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_seek /* = false */)
 {
   DEBUG_LOG("Starting playing CDDA track {}", track);
-  s_last_cdda_report_frame_nibble = 0xFF;
   s_play_track_number_bcd = track;
   s_fast_forward_rate = 0;
 
@@ -2613,6 +2617,9 @@ void CDROM::BeginPlaying(u8 track, TickCount ticks_late /* = 0 */, bool after_se
   ClearAsyncInterrupt();
   ClearSectorBuffers();
   ResetAudioDecoder();
+
+  s_cdda_report_start_delay = CDDA_REPORT_START_DELAY;
+  s_last_cdda_report_frame_nibble = 0xFF;
 
   s_drive_state = DriveState::Playing;
   s_drive_event.SetInterval(ticks);
@@ -3557,42 +3564,49 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
   // The reporting doesn't happen if we're reading with the CDDA mode bit set.
   if (s_drive_state == DriveState::Playing && s_mode.report_audio && subq_valid)
   {
-    const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
-
-    if (s_last_cdda_report_frame_nibble != frame_nibble)
+    if (s_cdda_report_start_delay == 0)
     {
-      s_last_cdda_report_frame_nibble = frame_nibble;
+      const u8 frame_nibble = subq.absolute_frame_bcd >> 4;
 
-      ClearAsyncInterrupt();
-      s_async_response_fifo.Push(s_secondary_status.bits);
-      s_async_response_fifo.Push(subq.track_number_bcd);
-      s_async_response_fifo.Push(subq.index_number_bcd);
-      if (subq.absolute_frame_bcd & 0x10)
+      if (s_last_cdda_report_frame_nibble != frame_nibble)
       {
-        s_async_response_fifo.Push(subq.relative_minute_bcd);
-        s_async_response_fifo.Push(0x80 | subq.relative_second_bcd);
-        s_async_response_fifo.Push(subq.relative_frame_bcd);
+        s_last_cdda_report_frame_nibble = frame_nibble;
+
+        ClearAsyncInterrupt();
+        s_async_response_fifo.Push(s_secondary_status.bits);
+        s_async_response_fifo.Push(subq.track_number_bcd);
+        s_async_response_fifo.Push(subq.index_number_bcd);
+        if (subq.absolute_frame_bcd & 0x10)
+        {
+          s_async_response_fifo.Push(subq.relative_minute_bcd);
+          s_async_response_fifo.Push(0x80 | subq.relative_second_bcd);
+          s_async_response_fifo.Push(subq.relative_frame_bcd);
+        }
+        else
+        {
+          s_async_response_fifo.Push(subq.absolute_minute_bcd);
+          s_async_response_fifo.Push(subq.absolute_second_bcd);
+          s_async_response_fifo.Push(subq.absolute_frame_bcd);
+        }
+
+        const u8 channel = subq.absolute_second_bcd & 1u;
+        const s16 peak_volume = std::min<s16>(GetPeakVolume(raw_sector, channel), 32767);
+        const u16 peak_value = (ZeroExtend16(channel) << 15) | peak_volume;
+
+        s_async_response_fifo.Push(Truncate8(peak_value));      // peak low
+        s_async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
+        SetAsyncInterrupt(Interrupt::DataReady);
+
+        DEV_LOG(
+          "CDDA report at track[{:02x}] index[{:02x}] rel[{:02x}:{:02x}:{:02x}] abs[{:02x}:{:02x}:{:02x}] peak[{}:{}]",
+          subq.track_number_bcd, subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
+          subq.relative_frame_bcd, subq.absolute_minute_bcd, subq.absolute_second_bcd, subq.absolute_frame_bcd, channel,
+          peak_volume);
       }
-      else
-      {
-        s_async_response_fifo.Push(subq.absolute_minute_bcd);
-        s_async_response_fifo.Push(subq.absolute_second_bcd);
-        s_async_response_fifo.Push(subq.absolute_frame_bcd);
-      }
-
-      const u8 channel = subq.absolute_second_bcd & 1u;
-      const s16 peak_volume = std::min<s16>(GetPeakVolume(raw_sector, channel), 32767);
-      const u16 peak_value = (ZeroExtend16(channel) << 15) | peak_volume;
-
-      s_async_response_fifo.Push(Truncate8(peak_value));      // peak low
-      s_async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
-      SetAsyncInterrupt(Interrupt::DataReady);
-
-      DEV_LOG(
-        "CDDA report at track[{:02x}] index[{:02x}] rel[{:02x}:{:02x}:{:02x}] abs[{:02x}:{:02x}:{:02x}] peak[{}:{}]",
-        subq.track_number_bcd, subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
-        subq.relative_frame_bcd, subq.absolute_minute_bcd, subq.absolute_second_bcd, subq.absolute_frame_bcd, channel,
-        peak_volume);
+    }
+    else
+    {
+      s_cdda_report_start_delay--;
     }
   }
 

@@ -6,7 +6,7 @@
 #include "common/types.h"
 
 static constexpr u32 SAVE_STATE_MAGIC = 0x43435544;
-static constexpr u32 SAVE_STATE_VERSION = 71;
+static constexpr u32 SAVE_STATE_VERSION = 72;
 static constexpr u32 SAVE_STATE_MINIMUM_VERSION = 42;
 
 static_assert(SAVE_STATE_VERSION >= SAVE_STATE_MINIMUM_VERSION);
