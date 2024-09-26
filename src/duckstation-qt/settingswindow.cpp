@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "settingswindow.h"
+#include "achievementsettingswidget.h"
 #include "advancedsettingswidget.h"
 #include "audiosettingswidget.h"
 #include "biossettingswidget.h"
 #include "consolesettingswidget.h"
-
-#include "achievementsettingswidget.h"
 #include "emulationsettingswidget.h"
 #include "foldersettingswidget.h"
 #include "gamelistsettingswidget.h"
@@ -18,6 +17,7 @@
 #include "memorycardsettingswidget.h"
 #include "postprocessingsettingswidget.h"
 #include "qthost.h"
+#include "settingwidgetbinder.h"
 
 #include "core/achievements.h"
 #include "core/host.h"
@@ -221,6 +221,11 @@ void SettingsWindow::connectUi()
     connect(m_ui.copyGlobalSettings, &QPushButton::clicked, this, &SettingsWindow::onCopyGlobalSettingsClicked);
   if (m_ui.clearGameSettings)
     connect(m_ui.clearGameSettings, &QPushButton::clicked, this, &SettingsWindow::onClearSettingsClicked);
+
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_sif.get(), m_ui.safeMode, "Main", "DisableAllEnhancements", false);
+  registerWidgetHelp(m_ui.safeMode, tr("Safe Mode"), tr("Unchecked"),
+                     tr("Disables all enhancement options, simulating the system as accurately as possible. Use to "
+                        "quickly determine whether an enhancement is responsible for game bugs."));
 }
 
 void SettingsWindow::addWidget(QWidget* widget, QString title, QString icon, QString help_text)

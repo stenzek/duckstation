@@ -4634,7 +4634,7 @@ void System::WarnAboutUnsafeSettings()
 
   if (g_settings.disable_all_enhancements)
   {
-    append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "All enhancements are currently disabled."));
+    append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "Safe mode is enabled."));
 
     if (ImGuiManager::IsShowingOSDMessages())
     {

@@ -3310,13 +3310,13 @@ void FullscreenUI::DrawConsoleSettingsPage()
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_GLOBE, "Region"), FSUI_CSTR("Determines the emulated hardware type."),
                   "Console", "Region", Settings::DEFAULT_CONSOLE_REGION, &Settings::ParseConsoleRegionName,
                   &Settings::GetConsoleRegionName, &Settings::GetConsoleRegionDisplayName, ConsoleRegion::Count);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Safe Mode"),
+                    FSUI_CSTR("Temporarily disables all enhancements, useful when testing."), "Main",
+                    "DisableAllEnhancements", false);
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_MEMORY, "Enable 8MB RAM"),
     FSUI_CSTR("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles."),
     "Console", "Enable8MBRAM", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Disable All Enhancements"),
-                    FSUI_CSTR("Temporarily disables all enhancements, useful when testing."), "Main",
-                    "DisableAllEnhancements", false);
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_FROWN, "Enable Cheats"),
     FSUI_CSTR("Automatically loads and applies cheats on game start. Cheats can break games and saves."), "Console",
@@ -7336,7 +7336,6 @@ TRANSLATE_NOOP("FullscreenUI", "Determines the size of screenshots created by Du
 TRANSLATE_NOOP("FullscreenUI", "Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.");
 TRANSLATE_NOOP("FullscreenUI", "Determines which algorithm is used to convert interlaced frames to progressive for display on your system.");
 TRANSLATE_NOOP("FullscreenUI", "Device Settings");
-TRANSLATE_NOOP("FullscreenUI", "Disable All Enhancements");
 TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Disable on 2D Polygons");
@@ -7626,6 +7625,7 @@ TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
 TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance.");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Player LED");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualShock 4 / DualSense Enhanced Mode");
+TRANSLATE_NOOP("FullscreenUI", "Safe Mode");
 TRANSLATE_NOOP("FullscreenUI", "Save Profile");
 TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
 TRANSLATE_NOOP("FullscreenUI", "Save State");

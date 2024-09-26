@@ -68,6 +68,26 @@
    <item row="2" column="0" colspan="2">
     <layout class="QHBoxLayout" name="footerLayout">
      <item>
+      <widget class="QCheckBox" name="safeMode">
+       <property name="text">
+        <string>Safe Mode</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
       <widget class="QPushButton" name="restoreDefaults">
        <property name="text">
         <string>Restore Defaults</string>
@@ -87,19 +107,6 @@
         <string>Clear Settings</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Orientation::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>40</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
      </item>
      <item>
       <widget class="QPushButton" name="close">
