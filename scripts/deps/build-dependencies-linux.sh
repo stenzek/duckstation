@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0
+
 set -e
 
 if [ "$#" -lt 1 ]; then
@@ -55,19 +58,19 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 fi
 
 FREETYPE=2.13.3
-HARFBUZZ=9.0.0
-LIBBACKTRACE=ad106d5fdd5d960bd33fae1c48a351af567fd075
-LIBJPEGTURBO=3.0.3
-LIBPNG=1.6.43
+HARFBUZZ=10.0.1
+LIBBACKTRACE=86885d14049fab06ef8a33aac51664230ca09200
+LIBJPEGTURBO=3.0.4
+LIBPNG=1.6.44
 LIBWEBP=1.4.0
 SDL2=2.30.7
-QT=6.7.2
+QT=6.7.3
 ZSTD=1.5.6
 
 CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
 DISCORD_RPC=144f3a3f1209994d8d9e8a87964a989cb9911c1e
 LUNASVG=9af1ac7b90658a279b372add52d6f77a4ebb482c
-SHADERC=3c12f7af773c547973138bee6d6ac70d91729479
+SHADERC=1c0d3d18819aa75ec74f1fbd9ff0461e1b69a4d6
 SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
 SPIRV_CROSS=vulkan-sdk-1.3.290.0
 
@@ -76,7 +79,7 @@ cd deps-build
 
 if [ "$SKIP_DOWNLOAD" != true ]; then
 	curl -C - -L \
-		-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.zip" \
+		-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.tar.gz" \
 		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL2/SDL2-$SDL2.tar.gz" \
 		-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
 		-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz" \
@@ -86,12 +89,12 @@ if [ "$SKIP_DOWNLOAD" != true ]; then
 fi
 
 cat > SHASUMS <<EOF
-fd6f417fe9e3a071cf1424a5152d926a34c4a3c5070745470be6cf12a404ed79  $LIBBACKTRACE.zip
+baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  $LIBBACKTRACE.tar.gz
 2508c80438cd5ff3bbeb8fe36b8f3ce7805018ff30303010b61b03bb83ab9694  SDL2-$SDL2.tar.gz
 e1351218d270db49c3dddcba04fb2153b09731ea3fa6830e423f5952f44585be  cpuinfo-$CPUINFO.tar.gz
 3eea5ccce6670c126282f1ba4d32c19d486db49a1a5cbfb8d6f48774784d310c  discord-rpc-$DISCORD_RPC.tar.gz
 3998b024b0d442614a9ee270e76e018bb37a17b8c6941212171731123cbbcac7  lunasvg-$LUNASVG.tar.gz
-0663bf6dabbb86fc0e697a601ee0030af715c8c1fbfa6e2b2240bde332f479a0  shaderc-$SHADERC.tar.gz
+3826d86f8a13564be1c047ac105041a3c5d0dc0bf826fe47cc582fe17a2ce7b1  shaderc-$SHADERC.tar.gz
 fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
 
@@ -108,7 +111,7 @@ if [ "$SKIP_HARFBUZZ" != true ]; then
 		curl -C - -L -o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-b7e481b109d19aefdba31e9f5888aa0cdfbe7608fed9a43494c060ce1f8a34d2  harfbuzz-$HARFBUZZ.tar.gz
+e7358ea86fe10fb9261931af6f010d4358dac64f7074420ca9bc94aae2bdd542  harfbuzz-$HARFBUZZ.tar.gz
 EOF
 fi
 if [ "$SKIP_LIBJPEG" != true ]; then
@@ -116,7 +119,7 @@ if [ "$SKIP_LIBJPEG" != true ]; then
 		curl -C - -L -O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
-343e789069fc7afbcdfe44dbba7dbbf45afa98a15150e079a38e60e44578865d  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
+99130559e7d62e8d695f2c0eaeef912c5828d5b84a0537dcb24c9678c9d5b76b  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 EOF
 fi
 if [ "$SKIP_LIBPNG" != true ]; then
@@ -124,7 +127,7 @@ if [ "$SKIP_LIBPNG" != true ]; then
 		curl -C - -L -O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz"
 	fi
 	cat >> SHASUMS <<EOF
-6a5ca0652392a2d7c9db2ae5b40210843c0bbc081cbd410825ab00cc59f14a6c  libpng-$LIBPNG.tar.xz
+60c4da1d5b7f0aa8d158da48e8f8afa9773c1c8baa5d21974df61f1886b8ce8e  libpng-$LIBPNG.tar.xz
 EOF
 fi
 if [ "$SKIP_LIBWEBP" != true ]; then
@@ -154,12 +157,12 @@ if [ "$SKIP_QT" != true ]; then
 			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtwayland-everywhere-src-$QT.tar.xz" 
 	fi
 	cat >> SHASUMS <<EOF
-c5f22a5e10fb162895ded7de0963328e7307611c688487b5d152c9ee64767599  qtbase-everywhere-src-$QT.tar.xz
-e1a1d8785fae67d16ad0a443b01d5f32663a6b68d275f1806ebab257485ce5d6  qtimageformats-everywhere-src-$QT.tar.xz
-fb0d1286a35be3583fee34aeb5843c94719e07193bdf1d4d8b0dc14009caef01  qtsvg-everywhere-src-$QT.tar.xz
-58e855ad1b2533094726c8a425766b63a04a0eede2ed85086860e54593aa4b2a  qttools-everywhere-src-$QT.tar.xz
-9845780b5dc1b7279d57836db51aeaf2e4a1160c42be09750616f39157582ca9  qttranslations-everywhere-src-$QT.tar.xz
-a2a057e1dd644bd44abb9990fecc194b2e25c2e0f39e81aa9fee4c1e5e2a8a5b  qtwayland-everywhere-src-$QT.tar.xz
+8ccbb9ab055205ac76632c9eeddd1ed6fc66936fc56afc2ed0fd5d9e23da3097  qtbase-everywhere-src-$QT.tar.xz
+9fd58144081654c3373768dd96ead294023830927b14fe3d3c1ef641fb324753  qtimageformats-everywhere-src-$QT.tar.xz
+40142cb71fb1e07ad612bc361b67f5d54cd9367f9979ae6b86124a064deda06b  qtsvg-everywhere-src-$QT.tar.xz
+f03bb7df619cd9ac9dba110e30b7bcab5dd88eb8bdc9cc752563b4367233203f  qttools-everywhere-src-$QT.tar.xz
+dcc762acac043b9bb5e4d369b6d6f53e0ecfcf76a408fe0db5f7ef071c9d6dc8  qttranslations-everywhere-src-$QT.tar.xz
+e326c7ceb628f503bfc20577d5d2df9690ee10db08eb940cb80c759a6972b2b5  qtwayland-everywhere-src-$QT.tar.xz
 EOF
 fi
 
@@ -174,7 +177,7 @@ fi
 
 echo "Building libbacktrace..."
 rm -fr "libbacktrace-$LIBBACKTRACE"
-unzip "$LIBBACKTRACE.zip"
+tar xf "$LIBBACKTRACE.tar.gz"
 cd "libbacktrace-$LIBBACKTRACE"
 ./configure --prefix="$INSTALLDIR" --with-pic
 make
@@ -313,7 +316,7 @@ if [ "$SKIP_QT" != true ]; then
 	cd "qtwayland-everywhere-src-$QT"
 	mkdir build
 	cd build
-	"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR"
+	"$INSTALLDIR/bin/qt-configure-module" .. -- -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DFEATURE_wayland_server=OFF
 	cmake --build . --parallel
 	ninja install
 	cd ../../
