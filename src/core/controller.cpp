@@ -215,8 +215,9 @@ bool Controller::PortAndSlotIsMultitap(u32 port, u32 slot)
 
 const char* Controller::GetPortDisplayName(u32 port, u32 slot, bool mtap)
 {
-  static constexpr const char* no_mtap_labels[] = {"1", "2"};
-  static constexpr const char* mtap_labels[][4] = {{"1A", "1B", "1C", "1D"}, {"2A", "2B", "2C", "2D"}};
+  static constexpr const std::array<const char*, NUM_MULTITAPS> no_mtap_labels = {{"1", "2"}};
+  static constexpr const std::array<std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS_PER_MULTITAP>, NUM_MULTITAPS>
+    mtap_labels = {{{{"1A", "1B", "1C", "1D"}}, {{"2A", "2B", "2C", "2D"}}}};
 
   DebugAssert(port < 2 && slot < 4);
   return mtap ? mtap_labels[port][slot] : no_mtap_labels[port];

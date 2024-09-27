@@ -21,8 +21,6 @@
 #include <QtWidgets/QTextEdit>
 #include <array>
 
-static constexpr const std::array<char, 4> s_mtap_slot_names = {{'A', 'B', 'C', 'D'}};
-
 ControllerSettingsWindow::ControllerSettingsWindow(SettingsInterface* game_sif /* = nullptr */,
                                                    QWidget* parent /* = nullptr */)
   : QWidget(parent), m_editing_settings_interface(game_sif)

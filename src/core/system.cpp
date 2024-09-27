@@ -3904,14 +3904,14 @@ void System::UpdateMultitaps()
     case MultitapMode::Disabled:
     {
       Pad::GetMultitap(0)->SetEnable(false, 0);
-      Pad::GetMultitap(1)->SetEnable(false, 0);
+      Pad::GetMultitap(1)->SetEnable(false, 1);
     }
     break;
 
     case MultitapMode::Port1Only:
     {
       Pad::GetMultitap(0)->SetEnable(true, 0);
-      Pad::GetMultitap(1)->SetEnable(false, 0);
+      Pad::GetMultitap(1)->SetEnable(false, 1);
     }
     break;
 
@@ -3925,7 +3925,7 @@ void System::UpdateMultitaps()
     case MultitapMode::BothPorts:
     {
       Pad::GetMultitap(0)->SetEnable(true, 0);
-      Pad::GetMultitap(1)->SetEnable(true, 4);
+      Pad::GetMultitap(1)->SetEnable(true, 1);
     }
     break;
 
