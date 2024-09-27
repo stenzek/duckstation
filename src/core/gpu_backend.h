@@ -26,10 +26,11 @@ public:
 
   ALWAYS_INLINE const Threading::Thread* GetThread() const { return m_use_gpu_thread ? &m_gpu_thread : nullptr; }
 
-  virtual bool Initialize(bool force_thread);
-  virtual void UpdateSettings();
+  virtual bool Initialize(bool use_thread);
   virtual void Reset();
   virtual void Shutdown();
+
+  void SetThreadEnabled(bool use_thread);
 
   GPUBackendFillVRAMCommand* NewFillVRAMCommand();
   GPUBackendUpdateVRAMCommand* NewUpdateVRAMCommand(u32 num_words);

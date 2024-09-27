@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_backend.h"
-#include "settings.h"
 
 #include "util/state_wrapper.h"
 
@@ -18,9 +17,9 @@ GPUBackend::GPUBackend() = default;
 
 GPUBackend::~GPUBackend() = default;
 
-bool GPUBackend::Initialize(bool force_thread)
+bool GPUBackend::Initialize(bool use_thread)
 {
-  if (force_thread || g_settings.gpu_use_thread)
+  if (use_thread)
     StartGPUThread();
 
   return true;
@@ -32,13 +31,13 @@ void GPUBackend::Reset()
   DrawingAreaChanged(GPUDrawingArea{0, 0, 0, 0}, GSVector4i::zero());
 }
 
-void GPUBackend::UpdateSettings()
+void GPUBackend::SetThreadEnabled(bool use_thread)
 {
   Sync(true);
 
-  if (m_use_gpu_thread != g_settings.gpu_use_thread)
+  if (m_use_gpu_thread != use_thread)
   {
-    if (!g_settings.gpu_use_thread)
+    if (!use_thread)
       StopGPUThread();
     else
       StartGPUThread();

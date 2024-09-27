@@ -14,7 +14,7 @@ public:
   GPU_SW_Backend();
   ~GPU_SW_Backend() override;
 
-  bool Initialize(bool force_thread) override;
+  bool Initialize(bool use_thread) override;
   void Reset() override;
 
 protected:

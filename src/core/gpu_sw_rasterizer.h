@@ -9,7 +9,6 @@
 #include "common/intrin.h"
 #include "common/types.h"
 
-#include <algorithm>
 #include <array>
 
 namespace GPU_SW_Rasterizer {
@@ -76,7 +75,7 @@ ALWAYS_INLINE static DrawTriangleFunction GetDrawTriangleFunction(bool shading_e
   }
 
 // Have to define the symbols globally, because clang won't include them otherwise.
-#if defined(CPU_ARCH_SSE) && defined(_MSC_VER)
+#if defined(CPU_ARCH_SSE) && 0
 #define ALTERNATIVE_RASTERIZER_LIST() DECLARE_ALTERNATIVE_RASTERIZER(AVX2)
 #else
 #define ALTERNATIVE_RASTERIZER_LIST()
@@ -87,5 +86,3 @@ ALTERNATIVE_RASTERIZER_LIST()
 #undef DECLARE_ALTERNATIVE_RASTERIZER
 
 } // namespace GPU_SW_Rasterizer
-
-// static u32 s_bad_counter = 0;

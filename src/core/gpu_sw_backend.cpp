@@ -14,9 +14,9 @@ GPU_SW_Backend::GPU_SW_Backend() = default;
 
 GPU_SW_Backend::~GPU_SW_Backend() = default;
 
-bool GPU_SW_Backend::Initialize(bool force_thread)
+bool GPU_SW_Backend::Initialize(bool use_thread)
 {
-  return GPUBackend::Initialize(force_thread);
+  return GPUBackend::Initialize(use_thread);
 }
 
 void GPU_SW_Backend::Reset()

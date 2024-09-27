@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_sw.h"
+#include "settings.h"
 #include "system.h"
 
 #include "util/gpu_device.h"
@@ -36,7 +37,7 @@ bool GPU_SW::IsHardwareRenderer() const
 
 bool GPU_SW::Initialize()
 {
-  if (!GPU::Initialize() || !m_backend.Initialize(false))
+  if (!GPU::Initialize() || !m_backend.Initialize(g_settings.gpu_use_thread))
     return false;
 
   static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551,
@@ -82,7 +83,8 @@ void GPU_SW::Reset(bool clear_vram)
 void GPU_SW::UpdateSettings(const Settings& old_settings)
 {
   GPU::UpdateSettings(old_settings);
-  m_backend.UpdateSettings();
+  if (g_settings.gpu_use_thread != old_settings.gpu_use_thread)
+    m_backend.SetThreadEnabled(g_settings.gpu_use_thread);
 }
 
 GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format format)
