@@ -7,7 +7,7 @@
 
 #include "util/input_manager.h"
 
-#include "common/types.h"
+#include "core/types.h"
 
 #include <QtCore/QList>
 #include <QtCore/QPair>
@@ -39,11 +39,6 @@ public:
     FirstControllerSettings,
     HotkeySettings,
     Count
-  };
-
-  enum : u32
-  {
-    MAX_PORTS = 8
   };
 
   ControllerSettingsWindow(SettingsInterface* game_sif = nullptr, QWidget* parent = nullptr);
@@ -121,7 +116,7 @@ private:
   SettingsInterface* m_editing_settings_interface = nullptr;
 
   ControllerGlobalSettingsWidget* m_global_settings = nullptr;
-  std::array<ControllerBindingWidget*, MAX_PORTS> m_port_bindings{};
+  std::array<ControllerBindingWidget*, NUM_CONTROLLER_AND_CARD_PORTS> m_port_bindings{};
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
 
   std::vector<std::pair<std::string, std::string>> m_device_list;

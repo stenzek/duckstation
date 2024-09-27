@@ -369,20 +369,20 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
       .value_or(DEFAULT_MULTITAP_MODE);
 
   const std::array<bool, 2> mtap_enabled = {{IsPort1MultitapEnabled(), IsPort2MultitapEnabled()}};
-  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+  for (u32 pad = 0; pad < NUM_CONTROLLER_AND_CARD_PORTS; pad++)
   {
     // Ignore types when multitap not enabled
-    const auto [port, slot] = Controller::ConvertPadToPortAndSlot(i);
-    if (Controller::PadIsMultitapSlot(slot) && !mtap_enabled[port])
+    const auto [port, slot] = Controller::ConvertPadToPortAndSlot(pad);
+    if (Controller::PadIsMultitapSlot(pad) && !mtap_enabled[port])
     {
-      controller_types[i] = ControllerType::None;
+      controller_types[pad] = ControllerType::None;
       continue;
     }
 
-    const ControllerType default_type = (i == 0) ? DEFAULT_CONTROLLER_1_TYPE : DEFAULT_CONTROLLER_2_TYPE;
+    const ControllerType default_type = (pad == 0) ? DEFAULT_CONTROLLER_1_TYPE : DEFAULT_CONTROLLER_2_TYPE;
     const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_si.GetTinyStringValue(
-      Controller::GetSettingsSection(i).c_str(), "Type", Controller::GetControllerInfo(default_type)->name));
-    controller_types[i] = cinfo ? cinfo->type : default_type;
+      Controller::GetSettingsSection(pad).c_str(), "Type", Controller::GetControllerInfo(default_type)->name));
+    controller_types[pad] = cinfo ? cinfo->type : default_type;
   }
 
   memory_card_types[0] =

@@ -312,7 +312,7 @@ struct Settings
   }
   ALWAYS_INLINE bool IsPort2MultitapEnabled() const
   {
-    return (multitap_mode == MultitapMode::Port1Only || multitap_mode == MultitapMode::BothPorts);
+    return (multitap_mode == MultitapMode::Port2Only || multitap_mode == MultitapMode::BothPorts);
   }
   ALWAYS_INLINE bool IsMultitapPortEnabled(u32 port) const
   {

@@ -3743,28 +3743,16 @@ void FullscreenUI::DrawControllerSettingsPage()
     {(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
      (mtap_mode == MultitapMode::Port2Only || mtap_mode == MultitapMode::BothPorts)}};
 
-  // we reorder things a little to make it look less silly for mtap
-  static constexpr const std::array<char, 4> mtap_slot_names = {{'A', 'B', 'C', 'D'}};
-  static constexpr const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> mtap_port_order = {{0, 2, 3, 4, 1, 5, 6, 7}};
-
   // create the ports
-  for (u32 global_slot : mtap_port_order)
+  for (const u32 global_slot : Controller::PortDisplayOrder)
   {
     const auto [mtap_port, mtap_slot] = Controller::ConvertPadToPortAndSlot(global_slot);
     const bool is_mtap_port = Controller::PortAndSlotIsMultitap(mtap_port, mtap_slot);
     if (is_mtap_port && !mtap_enabled[mtap_port])
       continue;
 
-    if (mtap_enabled[mtap_port])
-    {
-      MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}{}")),
-                                          mtap_port + 1, mtap_slot_names[mtap_slot]));
-    }
-    else
-    {
-      MenuHeading(
-        TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")), mtap_port + 1));
-    }
+    MenuHeading(TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_PLUG, "Controller Port {}")),
+                                        Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
 
     const TinyString section = TinyString::from_format("Pad{}", global_slot + 1);
     const TinyString type =
@@ -3810,16 +3798,9 @@ void FullscreenUI::DrawControllerSettingsPage()
                              Host::TranslateToCString(ci->name, bi.display_name), bi.icon_name, true);
     }
 
-    if (mtap_enabled[mtap_port])
-    {
-      MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {}{} Macros")),
-                                           mtap_port + 1, mtap_slot_names[mtap_slot]));
-    }
-    else
-    {
-      MenuHeading(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
-                                           mtap_port + 1));
-    }
+    MenuHeading(
+      SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
+                               Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
     {
@@ -3962,17 +3943,9 @@ void FullscreenUI::DrawControllerSettingsPage()
 
     if (!ci->settings.empty())
     {
-      if (mtap_enabled[mtap_port])
-      {
-        MenuHeading(
-          SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {}{} Settings")),
-                                   mtap_port + 1, mtap_slot_names[mtap_slot]));
-      }
-      else
-      {
-        MenuHeading(SmallString::from_format(
-          fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {} Settings")), mtap_port + 1));
-      }
+      MenuHeading(
+        SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Controller Port {} Settings")),
+                                 Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
 
       for (const SettingInfo& si : ci->settings)
       {

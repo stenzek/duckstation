@@ -111,6 +111,15 @@ public:
   static const ControllerInfo* GetControllerInfo(ControllerType type);
   static const ControllerInfo* GetControllerInfo(std::string_view name);
 
+  /// Applies an analog deadzone/sensitivity.
+  static float ApplyAnalogDeadzoneSensitivity(float deadzone, float sensitivity, float value)
+  {
+    return (value < deadzone) ? 0.0f : ((value - deadzone) / (1.0f - deadzone) * sensitivity);
+  }
+
+  /// Returns true if the specified coordinates are inside a circular deadzone.
+  static bool InCircularDeadzone(float deadzone, float pos_x, float pos_y);
+
   /// Converts a global pad index to a multitap port and slot.
   static std::tuple<u32, u32> ConvertPadToPortAndSlot(u32 index);
 
@@ -124,14 +133,11 @@ public:
   /// Returns the configuration section for the specified gamepad.
   static std::string GetSettingsSection(u32 pad);
 
-  /// Applies an analog deadzone/sensitivity.
-  static float ApplyAnalogDeadzoneSensitivity(float deadzone, float sensitivity, float value)
-  {
-    return (value < deadzone) ? 0.0f : ((value - deadzone) / (1.0f - deadzone) * sensitivity);
-  }
+  /// Returns a printable label for a given port.
+  static const char* GetPortDisplayName(u32 port, u32 slot, bool mtap);
 
-  /// Returns true if the specified coordinates are inside a circular deadzone.
-  static bool InCircularDeadzone(float deadzone, float pos_x, float pos_y);
+  /// List of controller indices in the order that they should be displayed.
+  static const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> PortDisplayOrder;
 
 protected:
   /// Returns true if automatic analog mode can be used.

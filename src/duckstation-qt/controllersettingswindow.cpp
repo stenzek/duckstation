@@ -489,12 +489,7 @@ void ControllerSettingsWindow::createWidgets()
 
   // load mtap settings
   const std::array<bool, 2> mtap_enabled = getEnabledMultitaps();
-
-  // we reorder things a little to make it look less silly for mtap
-  static constexpr const std::array<u32, MAX_PORTS> mtap_port_order = {{0, 2, 3, 4, 1, 5, 6, 7}};
-
-  // create the ports
-  for (u32 global_slot : mtap_port_order)
+  for (u32 global_slot : Controller::PortDisplayOrder)
   {
     const bool is_mtap_port = Controller::PadIsMultitapSlot(global_slot);
     const auto [port, slot] = Controller::ConvertPadToPortAndSlot(global_slot);
@@ -507,9 +502,9 @@ void ControllerSettingsWindow::createWidgets()
     const QString display_name(QString::fromUtf8(m_port_bindings[global_slot]->getControllerInfo()->GetDisplayName()));
 
     QListWidgetItem* item = new QListWidgetItem();
-    item->setText(mtap_enabled[port] ?
-                    (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :
-                    tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
+    item->setText(tr("Controller Port %1\n%2")
+                    .arg(Controller::GetPortDisplayName(port, slot, mtap_enabled[port]))
+                    .arg(display_name));
     item->setIcon(m_port_bindings[global_slot]->getIcon());
     item->setData(Qt::UserRole, QVariant(global_slot));
     m_ui.settingsCategory->addItem(item);
@@ -555,9 +550,9 @@ void ControllerSettingsWindow::updateListDescription(u32 global_slot, Controller
 
       const QString display_name = QString::fromUtf8(widget->getControllerInfo()->GetDisplayName());
 
-      item->setText(mtap_enabled[port] ?
-                      (tr("Controller Port %1%2\n%3").arg(port + 1).arg(s_mtap_slot_names[slot]).arg(display_name)) :
-                      tr("Controller Port %1\n%2").arg(port + 1).arg(display_name));
+      item->setText(tr("Controller Port %1\n%2")
+                      .arg(Controller::GetPortDisplayName(port, slot, mtap_enabled[port]))
+                      .arg(display_name));
       item->setIcon(widget->getIcon());
       break;
     }

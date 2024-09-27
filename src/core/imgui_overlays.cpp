@@ -628,16 +628,19 @@ void ImGuiManager::DrawInputsOverlay()
 
   SmallString text;
 
-  for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
+  for (const u32 pad : Controller::PortDisplayOrder)
   {
-    if (g_settings.controller_types[port] == ControllerType::None)
+    if (g_settings.controller_types[pad] == ControllerType::None)
       continue;
 
-    const Controller* controller = System::GetController(port);
+    const Controller* controller = System::GetController(pad);
     const Controller::ControllerInfo* cinfo =
       controller ? Controller::GetControllerInfo(controller->GetType()) : nullptr;
     if (!cinfo)
       continue;
+
+    const auto& [port, slot] = Controller::ConvertPadToPortAndSlot(pad);
+    const char* port_label = Controller::GetPortDisplayName(port, slot, g_settings.IsMultitapPortEnabled(port));
 
     float text_start_x = current_x;
     if (cinfo->icon_name)
@@ -649,11 +652,11 @@ void ImGuiManager::DrawInputsOverlay()
       dl->AddText(font, font->FontSize, ImVec2(current_x, current_y), icon_color, cinfo->icon_name, nullptr, 0.0f,
                   &clip_rect);
       text_start_x += icon_size.x;
-      text.format(" {}", port + 1u);
+      text.format(" {}", port_label);
     }
     else
     {
-      text.format("{} |", port + 1u);
+      text.format("{} |", port_label);
     }
 
     for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)

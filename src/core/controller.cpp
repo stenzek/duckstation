@@ -32,6 +32,8 @@ static const Controller::ControllerInfo* s_controller_info[] = {
   &Justifier::INFO,
 };
 
+const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> Controller::PortDisplayOrder = {{0, 2, 3, 4, 1, 5, 6, 7}};
+
 const char* Controller::ControllerInfo::GetDisplayName() const
 {
   return Host::TranslateToCString("ControllerType", display_name);
@@ -209,6 +211,15 @@ bool Controller::PadIsMultitapSlot(u32 index)
 bool Controller::PortAndSlotIsMultitap(u32 port, u32 slot)
 {
   return (slot != 0);
+}
+
+const char* Controller::GetPortDisplayName(u32 port, u32 slot, bool mtap)
+{
+  static constexpr const char* no_mtap_labels[] = {"1", "2"};
+  static constexpr const char* mtap_labels[][4] = {{"1A", "1B", "1C", "1D"}, {"2A", "2B", "2C", "2D"}};
+
+  DebugAssert(port < 2 && slot < 4);
+  return mtap ? mtap_labels[port][slot] : no_mtap_labels[port];
 }
 
 std::string Controller::GetSettingsSection(u32 pad)
