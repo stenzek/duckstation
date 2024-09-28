@@ -5121,12 +5121,6 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                     FSUI_CSTR("Enable debugging when supported by the host's renderer API. Only for developer use."),
                     "GPU", "UseDebugDevice", false);
 
-#ifdef _WIN32
-  DrawToggleSetting(bsi, FSUI_CSTR("Increase Timer Resolution"),
-                    FSUI_CSTR("Enables more precise frame pacing at the cost of battery life."), "Main",
-                    "IncreaseTimerResolution", true);
-#endif
-
   DrawToggleSetting(bsi, FSUI_CSTR("Allow Booting Without SBI File"),
                     FSUI_CSTR("Allows loading protected games without subchannel information."), "CDROM",
                     "AllowBootingWithoutSBIFile", false);
@@ -7259,9 +7253,6 @@ TRANSLATE_NOOP("FullscreenUI", "Contributor List");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {}");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Macros");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Settings");
-TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{}");
-TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Macros");
-TRANSLATE_NOOP("FullscreenUI", "Controller Port {}{} Settings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Settings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Type");
 TRANSLATE_NOOP("FullscreenUI", "Controller settings reset to default.");
@@ -7354,7 +7345,6 @@ TRANSLATE_NOOP("FullscreenUI", "Enable/Disable the Player LED on DualSense contr
 TRANSLATE_NOOP("FullscreenUI", "Enables alignment and bus exceptions. Not needed for any known games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
-TRANSLATE_NOOP("FullscreenUI", "Enables more precise frame pacing at the cost of battery life.");
 TRANSLATE_NOOP("FullscreenUI", "Enables smooth scrolling of menus in Big Picture UI.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
@@ -7427,7 +7417,6 @@ TRANSLATE_NOOP("FullscreenUI", "How many saves will be kept for rewinding. Highe
 TRANSLATE_NOOP("FullscreenUI", "How often a rewind state will be created. Higher frequencies have greater system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game directories.");
 TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
-TRANSLATE_NOOP("FullscreenUI", "Increase Timer Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.");
 TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
 TRANSLATE_NOOP("FullscreenUI", "Infinite/Instantaneous");

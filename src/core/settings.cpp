@@ -148,7 +148,6 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   fast_forward_speed = si.GetFloatValue("Main", "FastForwardSpeed", 0.0f);
   turbo_speed = si.GetFloatValue("Main", "TurboSpeed", 0.0f);
   sync_to_host_refresh_rate = si.GetBoolValue("Main", "SyncToHostRefreshRate", false);
-  increase_timer_resolution = si.GetBoolValue("Main", "IncreaseTimerResolution", true);
   inhibit_screensaver = si.GetBoolValue("Main", "InhibitScreensaver", true);
   start_paused = si.GetBoolValue("Main", "StartPaused", false);
   start_fullscreen = si.GetBoolValue("Main", "StartFullscreen", false);
@@ -464,7 +463,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   if (!ignore_base)
   {
     si.SetBoolValue("Main", "SyncToHostRefreshRate", sync_to_host_refresh_rate);
-    si.SetBoolValue("Main", "IncreaseTimerResolution", increase_timer_resolution);
     si.SetBoolValue("Main", "InhibitScreensaver", inhibit_screensaver);
     si.SetBoolValue("Main", "StartPaused", start_paused);
     si.SetBoolValue("Main", "StartFullscreen", start_fullscreen);

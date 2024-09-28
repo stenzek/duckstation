@@ -135,7 +135,7 @@ void Timer::SleepUntil(Value value, bool exact)
     }
 
     // falling back to sleep... bad.
-    Sleep(static_cast<DWORD>(static_cast<u64>(diff) / 1000000));
+    Sleep(static_cast<DWORD>(ConvertValueToMilliseconds(diff)));
   }
 }
 

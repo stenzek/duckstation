@@ -218,8 +218,6 @@ void AdvancedSettingsWidget::addTweakOptions()
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Apply Compatibility Settings"), "Main",
                         "ApplyCompatibilitySettings", true);
-  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Increase Timer Resolution"), "Main",
-                        "IncreaseTimerResolution", true);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Load Devices From Save States"), "Main",
                         "LoadDevicesFromSaveStates", false);
   addChoiceTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Save State Compression"), "Main", "SaveStateCompression",
@@ -281,7 +279,6 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
 
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply Game Settings
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply compatibility settings
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Increase Timer Resolution
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Load Devices From Save States
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE); // Save State Compression
@@ -312,7 +309,6 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   // for per-game it's easier to just clear and recreate
   SettingsInterface* sif = m_dialog->getSettingsInterface();
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
-  sif->DeleteValue("Main", "IncreaseTimerResolution");
   sif->DeleteValue("Main", "LoadDevicesFromSaveStates");
   sif->DeleteValue("Main", "CompressSaveStates");
   sif->DeleteValue("Display", "ActiveStartOffset");

@@ -85,8 +85,6 @@ LOG_CHANNEL(System);
 #ifdef _WIN32
 #include "common/windows_headers.h"
 #include <Objbase.h>
-#include <mmsystem.h>
-#include <objbase.h>
 #endif
 
 #ifndef __ANDROID__
@@ -222,8 +220,6 @@ static void SaveRunaheadState();
 static bool DoRunahead();
 
 static void UpdateSessionTime(const std::string& prev_serial);
-
-static void SetTimerResolutionIncreased(bool enabled);
 
 #ifdef ENABLE_DISCORD_PRESENCE
 static void InitializeDiscordPresence();
@@ -1969,8 +1965,6 @@ void System::DestroySystem()
   if (g_settings.inhibit_screensaver)
     PlatformMisc::ResumeScreensaver();
 
-  SetTimerResolutionIncreased(false);
-
   s_cpu_thread_usage = {};
 
   ClearMemorySaveStates();
@@ -2323,10 +2317,14 @@ void System::Throttle(Common::Timer::Value current_time)
 #endif
 
 #if 0
-  DEV_LOG("Asked for {:.2f} ms, slept for {:.2f} ms, {:.2f} ms late",
+  const Common::Timer::Value time_after_sleep = Common::Timer::GetCurrentValue();
+  DEV_LOG("Asked for {:.2f} ms, slept for {:.2f} ms, {:.2f} ms {}",
           Common::Timer::ConvertValueToMilliseconds(s_next_frame_time - current_time),
-          Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - current_time),
-          Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - s_next_frame_time));
+          Common::Timer::ConvertValueToMilliseconds(time_after_sleep - current_time),
+          Common::Timer::ConvertValueToMilliseconds((time_after_sleep < s_next_frame_time) ?
+                                                      (s_next_frame_time - time_after_sleep) :
+                                                      (time_after_sleep - s_next_frame_time)),
+          (time_after_sleep < s_next_frame_time) ? "early" : "late");
 #endif
 
   s_next_frame_time += s_frame_period;
@@ -3437,9 +3435,6 @@ void System::UpdateSpeedLimiterState()
   ResetThrottler();
   UpdateDisplayVSync();
 
-  if (g_settings.increase_timer_resolution)
-    SetTimerResolutionIncreased(s_throttler_enabled);
-
 #ifdef __APPLE__
   // To get any resemblence of consistent frame times on MacOS, we need to tell the scheduler how often we need to run.
   // Assume a maximum of 7ms for running a frame. It'll be much lower than that, Apple Silicon is fast.
@@ -4468,7 +4463,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
     if (g_settings.audio_backend != old_settings.audio_backend ||
-        g_settings.increase_timer_resolution != old_settings.increase_timer_resolution ||
         g_settings.emulation_speed != old_settings.emulation_speed ||
         g_settings.fast_forward_speed != old_settings.fast_forward_speed ||
         g_settings.display_optimal_frame_pacing != old_settings.display_optimal_frame_pacing ||
@@ -5839,22 +5833,6 @@ void System::InvalidateDisplay()
 
   if (g_gpu)
     g_gpu->RestoreDeviceContext();
-}
-
-void System::SetTimerResolutionIncreased(bool enabled)
-{
-#if defined(_WIN32)
-  static bool current_state = false;
-  if (current_state == enabled)
-    return;
-
-  current_state = enabled;
-
-  if (enabled)
-    timeBeginPeriod(1);
-  else
-    timeEndPeriod(1);
-#endif
 }
 
 void System::UpdateSessionTime(const std::string& prev_serial)
