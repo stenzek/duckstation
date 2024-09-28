@@ -2640,7 +2640,7 @@ public:
   template<s32 i>
   ALWAYS_INLINE GSVector8i srl() const
   {
-    return GSVector8i(_mm256_srli_si128(m, i));
+    return GSVector8i(_mm256_srli_si256(m, i));
   }
 
   template<s32 i>
@@ -2652,7 +2652,7 @@ public:
   template<s32 i>
   ALWAYS_INLINE GSVector8i sll() const
   {
-    return GSVector8i(_mm256_slli_si128(m, i));
+    return GSVector8i(_mm256_slli_si256(m, i));
   }
 
   template<s32 i>
