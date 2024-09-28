@@ -153,9 +153,9 @@ void QtUtils::OpenURL(QWidget* parent, const QUrl& qurl)
   }
 }
 
-void QtUtils::OpenURL(QWidget* parent, const char* url)
+void QtUtils::OpenURL(QWidget* parent, const std::string_view url)
 {
-  return OpenURL(parent, QUrl::fromEncoded(QByteArray(url, static_cast<int>(std::strlen(url)))));
+  return OpenURL(parent, QUrl::fromEncoded(QByteArray(url.data(), static_cast<int>(url.length()))));
 }
 
 std::optional<unsigned> QtUtils::PromptForAddress(QWidget* parent, const QString& title, const QString& label,

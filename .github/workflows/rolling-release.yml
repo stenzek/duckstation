@@ -53,6 +53,11 @@ jobs:
       shell: cmd
       run: |
         echo #pragma once > src/scmversion/tag.h
+
+    - name: Set Build Tag Asset
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      shell: cmd
+      run: |
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
 
@@ -139,6 +144,11 @@ jobs:
       shell: cmd
       run: |
         echo #pragma once > src/scmversion/tag.h
+
+    - name: Set Build Tag Asset
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      shell: cmd
+      run: |
         echo #define SCM_RELEASE_ASSET "duckstation-windows-x64-sse2-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
 
@@ -226,6 +236,11 @@ jobs:
       shell: cmd
       run: |
         echo #pragma once > src/scmversion/tag.h
+
+    - name: Set Build Tag Asset
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      shell: cmd
+      run: |
         echo #define SCM_RELEASE_ASSET "duckstation-windows-arm64-release.zip" >> src/scmversion/tag.h
         echo #define SCM_RELEASE_TAGS {"latest", "preview"} >> src/scmversion/tag.h
 
@@ -308,6 +323,10 @@ jobs:
     - name: Initialize Build Tag
       run: |
         echo '#pragma once' > src/scmversion/tag.h
+
+    - name: Set Build Tag Asset
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      run: |
         echo '#define SCM_RELEASE_ASSET "DuckStation-x64.AppImage"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
 
@@ -368,6 +387,10 @@ jobs:
     - name: Initialize Build Tag
       run: |
         echo '#pragma once' > src/scmversion/tag.h
+
+    - name: Set Build Tag Asset
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      run: |
         echo '#define SCM_RELEASE_ASSET "DuckStation-x64-SSE2.AppImage"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
 
@@ -419,6 +442,21 @@ jobs:
     - name: Initialize Build Tag
       run: |
         echo '#pragma once' > src/scmversion/tag.h
+
+    - name: Set Build Tags
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      run: |
+        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
+
+    - name: Tag as Preview Release
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
+
+    - name: Tag as Rolling Release
+      if: github.ref == 'refs/heads/dev'
+      run: |
+        echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
 
     - name: Generate AppStream XML
       run: |
@@ -498,18 +536,20 @@ jobs:
       run: |
         echo '#pragma once' > src/scmversion/tag.h
 
-    - name: Tag as Preview Release
-      if: github.ref == 'refs/heads/master'
+    - name: Set Build Tags
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       run: |
         echo '#define SCM_RELEASE_ASSET "duckstation-mac-release.zip"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
+
+    - name: Tag as Preview Release
+      if: github.ref == 'refs/heads/master'
+      run: |
         echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
 
     - name: Tag as Rolling Release
       if: github.ref == 'refs/heads/dev'
       run: |
-        echo '#define SCM_RELEASE_ASSET "duckstation-mac-release.zip"' >> src/scmversion/tag.h
-        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
 
     - name: Compile and Zip .app
@@ -532,6 +572,7 @@ jobs:
 
 
   create-release:
+    name: Create Release
     needs: [windows-x64-build, windows-x64-sse2-build, windows-arm64-build, linux-x64-appimage-build, linux-x64-sse2-appimage-build, linux-flatpak-build, macos-build]
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'

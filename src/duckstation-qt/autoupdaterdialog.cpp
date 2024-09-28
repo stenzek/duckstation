@@ -50,19 +50,27 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 // Requires that the channel be defined by the buildbot.
 #if __has_include("scmversion/tag.h")
 #include "scmversion/tag.h"
-#if defined(SCM_RELEASE_TAGS) && defined(SCM_RELEASE_TAG) && defined(SCM_RELEASE_ASSET)
+#if defined(SCM_RELEASE_TAGS) && defined(SCM_RELEASE_TAG)
+#define UPDATE_CHECKER_SUPPORTED
+#ifdef SCM_RELEASE_ASSET
 #define AUTO_UPDATER_SUPPORTED
 #endif
 #endif
+#endif
 
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
 
 static const char* LATEST_TAG_URL = "https://api.github.com/repos/stenzek/duckstation/tags";
 static const char* LATEST_RELEASE_URL = "https://api.github.com/repos/stenzek/duckstation/releases/tags/{}";
 static const char* CHANGES_URL = "https://api.github.com/repos/stenzek/duckstation/compare/{}...{}";
-static const char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
 static const char* UPDATE_TAGS[] = SCM_RELEASE_TAGS;
 static const char* THIS_RELEASE_TAG = SCM_RELEASE_TAG;
+
+#ifdef AUTO_UPDATER_SUPPORTED
+static const char* UPDATE_ASSET_FILENAME = SCM_RELEASE_ASSET;
+#else
+static const char* DOWNLOAD_PAGE_URL = "https://github.com/stenzek/duckstation/releases/tag/{}";
+#endif
 
 #endif
 
@@ -87,20 +95,8 @@ AutoUpdaterDialog::~AutoUpdaterDialog() = default;
 
 bool AutoUpdaterDialog::isSupported()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
-#ifdef __linux__
-  // For Linux, we need to check whether we're running from the appimage.
-  if (!std::getenv("APPIMAGE"))
-  {
-    INFO_LOG("We're a CI release, but not running from an AppImage. Disabling automatic updater.");
-    return false;
-  }
-
+#ifdef UPDATE_CHECKER_SUPPORTED
   return true;
-#else
-  // Windows/Mac - always supported.
-  return true;
-#endif
 #else
   return false;
 #endif
@@ -204,7 +200,7 @@ bool AutoUpdaterDialog::warnAboutUnofficialBuild()
 
 QStringList AutoUpdaterDialog::getTagList()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   return QStringList(std::begin(UPDATE_TAGS), std::end(UPDATE_TAGS));
 #else
   return QStringList();
@@ -213,7 +209,7 @@ QStringList AutoUpdaterDialog::getTagList()
 
 std::string AutoUpdaterDialog::getDefaultTag()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   return THIS_RELEASE_TAG;
 #else
   return {};
@@ -222,7 +218,7 @@ std::string AutoUpdaterDialog::getDefaultTag()
 
 std::string AutoUpdaterDialog::getCurrentUpdateTag() const
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   return Host::GetBaseStringSettingValue("AutoUpdater", "UpdateTag", THIS_RELEASE_TAG);
 #else
   return {};
@@ -271,7 +267,7 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 {
   m_display_messages = display_message;
 
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   if (!ensureHttpReady())
   {
     emit updateCheckCompleted();
@@ -287,7 +283,7 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
 
 void AutoUpdaterDialog::queueGetLatestRelease()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   if (!ensureHttpReady())
   {
     emit updateCheckCompleted();
@@ -302,7 +298,7 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 
 void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, std::vector<u8> response)
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   const std::string selected_tag(getCurrentUpdateTag());
   const QString selected_tag_qstr = QString::fromStdString(selected_tag);
 
@@ -362,7 +358,7 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, std::vector<u8> re
 
 void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8> response)
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
     QJsonParseError parse_error;
@@ -372,9 +368,14 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
     {
       const QJsonObject doc_object(doc.object());
 
+      m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(g_scm_hash_str).arg(g_scm_date_str));
+      m_ui.newVersion->setText(tr("New Version: %1 (%2)").arg(m_latest_sha).arg(doc_object["published_at"].toString()));
+
+#ifdef AUTO_UPDATER_SUPPORTED
       // search for the correct file
       const QJsonArray assets(doc_object["assets"].toArray());
       const QString asset_filename(UPDATE_ASSET_FILENAME);
+      bool asset_found = false;
       for (const QJsonValue& asset : assets)
       {
         const QJsonObject asset_obj(asset.toObject());
@@ -382,27 +383,28 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
         {
           m_download_url = asset_obj["browser_download_url"].toString();
           if (!m_download_url.isEmpty())
-          {
             m_download_size = asset_obj["size"].toInt();
-            m_ui.currentVersion->setText(tr("Current Version: %1 (%2)").arg(g_scm_hash_str).arg(g_scm_date_str));
-            m_ui.newVersion->setText(
-              tr("New Version: %1 (%2)").arg(m_latest_sha).arg(doc_object["published_at"].toString()));
-            m_ui.updateNotes->setText(tr("Loading..."));
-            m_ui.downloadAndInstall->setEnabled(true);
-            queueGetChanges();
-
-            // We have to defer this, because it comes back through the timer/HTTP callback...
-            QMetaObject::invokeMethod(this, "exec", Qt::QueuedConnection);
-
-            emit updateCheckCompleted();
-            return;
-          }
-
+          asset_found = true;
           break;
         }
       }
 
-      reportError("Asset/asset download not found");
+      if (!asset_found)
+      {
+        reportError("Asset/asset download not found");
+        return;
+      }
+#else
+      // Just display the version and a download link.
+      m_ui.downloadAndInstall->setText(tr("Download..."));
+#endif
+
+      m_ui.downloadAndInstall->setEnabled(true);
+      m_ui.updateNotes->setText(tr("Loading..."));
+      queueGetChanges();
+
+      // We have to defer this, because it comes back through the timer/HTTP callback...
+      QMetaObject::invokeMethod(this, "exec", Qt::QueuedConnection);
     }
     else
     {
@@ -420,7 +422,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
 
 void AutoUpdaterDialog::queueGetChanges()
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   if (!ensureHttpReady())
     return;
 
@@ -432,7 +434,7 @@ void AutoUpdaterDialog::queueGetChanges()
 
 void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> response)
 {
-#ifdef AUTO_UPDATER_SUPPORTED
+#ifdef UPDATE_CHECKER_SUPPORTED
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
   {
     QJsonParseError parse_error;
@@ -506,6 +508,7 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> resp
 
 void AutoUpdaterDialog::downloadUpdateClicked()
 {
+#ifdef AUTO_UPDATER_SUPPORTED
   m_display_messages = true;
 
   std::optional<bool> download_result;
@@ -539,8 +542,8 @@ void AutoUpdaterDialog::downloadUpdateClicked()
     },
     &progress);
 
-  // Since we're going to block, don't allow the timer to poll, otherwise the progress callback can cause the timer to
-  // run, and recursively poll again.
+  // Since we're going to block, don't allow the timer to poll, otherwise the progress callback can cause the timer
+  // to run, and recursively poll again.
   m_http_poll_timer->stop();
 
   // Block until completion.
@@ -558,6 +561,9 @@ void AutoUpdaterDialog::downloadUpdateClicked()
     QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, true));
     done(0);
   }
+#elif defined(UPDATE_CHECKER_SUPPORTED)
+  QtUtils::OpenURL(this, fmt::format(fmt::runtime(DOWNLOAD_PAGE_URL), getCurrentUpdateTag()));
+#endif
 }
 
 bool AutoUpdaterDialog::updateNeeded() const

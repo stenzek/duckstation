@@ -84,7 +84,7 @@ u32 KeyEventToCode(const QKeyEvent* ev);
 void OpenURL(QWidget* parent, const QUrl& qurl);
 
 /// Opens a URL string with the default handler.
-void OpenURL(QWidget* parent, const char* url);
+void OpenURL(QWidget* parent, const std::string_view url);
 
 /// Prompts for an address in hex.
 std::optional<unsigned> PromptForAddress(QWidget* parent, const QString& title, const QString& label, bool code);
