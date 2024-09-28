@@ -1764,7 +1764,8 @@ void MainWindow::setupAdditionalUi()
 #ifdef ENABLE_RAINTEGRATION
   if (Achievements::IsUsingRAIntegration())
   {
-    QMenu* raMenu = new QMenu(QStringLiteral("RAIntegration"), m_ui.menu_Tools);
+    QMenu* raMenu = new QMenu(QStringLiteral("&RAIntegration"));
+    m_ui.menuBar->insertMenu(m_ui.menuDebug->menuAction(), raMenu);
     connect(raMenu, &QMenu::aboutToShow, this, [this, raMenu]() {
       raMenu->clear();
 
@@ -1788,7 +1789,6 @@ void MainWindow::setupAdditionalUi()
                 [id = id]() { Host::RunOnCPUThread([id]() { Achievements::RAIntegration::ActivateMenuItem(id); }); });
       }
     });
-    m_ui.menu_Tools->insertMenu(m_ui.actionOpenDataDirectory, raMenu);
   }
 #endif
 }
