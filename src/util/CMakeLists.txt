@@ -313,6 +313,7 @@ function(add_util_resources target)
       set_target_properties(${target} PROPERTIES INSTALL_RPATH "$ORIGIN")
 
       # Copy dependency libraries to installation directory.
+      install_imported_dep_library(SDL2::SDL2)
       install_imported_dep_library(Shaderc::shaderc_shared)
       install_imported_dep_library(spirv-cross-c-shared)
       install_imported_dep_library(SoundTouch::SoundTouchDLL)

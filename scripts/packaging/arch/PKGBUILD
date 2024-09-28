@@ -1,0 +1,128 @@
+# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0
+
+# NOTE: These package files are intended for your own personal/private use.
+# You do not have permission to upload them independently to other package repositories.
+
+pkgname=duckstation
+pkgver=0
+pkgrel=1
+pkgdesc='PlayStation 1, aka. PSX Emulator'
+arch=('x86_64' 'aarch64')
+url='https://www.duckstation.org/'
+license=('CC-BY-NC-ND-4.0')
+
+# We want to keep debug symbols for backtraces.
+# Our cmake build already generates symbols.
+options=('!strip' '!debug')
+
+# User-selectable dependencies (as .so), and packages.
+depends=('libjpeg.so' # libjpeg or libjpeg-turbo
+	'libudev.so'
+	'curl'
+	'dbus'
+	'freetype2'
+	'hicolor-icon-theme'
+	'libpng'
+	'libwebp'
+	'libx11'
+	'libxrandr'
+	'qt6-base'
+	'qt6-imageformats'
+	'qt6-svg'
+	'wayland'
+	'zlib'
+	'zstd'
+)
+
+# qttools only needed for building (moc/uic/rcc/lupdate)
+# Same with the compilers.
+makedepends=('base-devel'
+	'clang'
+	'cmake'
+	'extra-cmake-modules'
+	'git'
+	'lld'
+	'llvm'
+	'ninja'
+	'qt6-tools')
+
+source=(
+	"${pkgname}::git+file://${startdir}/../../.."
+)
+sha256sums=(
+	"SKIP"
+)
+
+# Name of the .desktop file that will be installed.
+_desktopname=org.duckstation.DuckStation
+
+# https://wiki.archlinux.org/title/VCS_package_guidelines#Git
+# --dirty omitted, we need to ignore changes to this script because
+# makepkg is fricking weird and edits the build recipe, instead of
+# just setting in the resulting file?!
+pkgver() {
+  cd "$pkgname"
+  git describe | sed 's/\([^-]*-g\)/r\1/;s/-/./g'
+}
+
+prepare() {
+	cd "${pkgname}"
+
+	# Are we creating a CI/official build?
+	_tagpath="${startdir}/../../../src/scmversion/tag.h"
+	if [[ -f "${_tagpath}" ]]; then
+		echo "Copying SCM release tag..."
+		cp "${_tagpath}" src/scmversion
+	fi
+
+	# build dependencies
+	if [[ ! -z "$DEPSDIR" ]]; then
+		_depsdir="$DEPSDIR"
+		echo "Using existing dependencies from ${_depsdir}."
+	else
+		_depsdir="$PWD/deps"
+		echo "Building dependencies to ${_depsdir}..."
+		./scripts/deps/build-dependencies-linux.sh \
+			-system-freetype -system-harfbuzz -system-libjpeg \
+			-system-libpng -system-libwebp -system-zstd -system-qt \
+			"${_depsdir}"
+	fi
+}
+
+build() {
+	cd "${pkgname}"
+
+	rm -fr build-arch
+	cmake -B build-arch \
+		-G Ninja \
+		-DCMAKE_C_COMPILER=clang \
+		-DCMAKE_CXX_COMPILER=clang++ \
+		-DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+		-DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+		-DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+		-DCMAKE_PREFIX_PATH="${_depsdir}" \
+		-DCMAKE_BUILD_TYPE=Release \
+		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+		-DALLOW_INSTALL=ON \
+		-DINSTALL_SELF_CONTAINED=ON \
+		-DCMAKE_INSTALL_PREFIX="${pkgdir}/opt/duckstation"
+	ninja -C build-arch
+}
+
+package() {
+	cd "${pkgname}"
+	ninja -C build-arch install
+
+	# install wrapper script
+	install -Dm755 scripts/packaging/duckstation-qt "${pkgdir}/usr/bin/duckstation-qt"
+
+	# install desktop file and icon
+	install -Dm644 scripts/${_desktopname}.desktop "${pkgdir}/usr/share/applications/${_desktopname}.desktop"
+	install -Dm644 scripts/${_desktopname}.png "${pkgdir}/usr/share/icons/hicolor/512x512/apps/${_desktopname}.png"
+
+	# install license
+	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+	install -Dm644 data/resources/thirdparty.html "${pkgdir}/usr/share/licenses/${pkgname}/thirdparty.html"
+}
+
