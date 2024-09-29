@@ -290,15 +290,16 @@ std::string Achievements::GetGameHash(CDImage* image)
     return {};
   }
 
-  // See rcheevos hash.c - rc_hash_psx().
-  const u32 MAX_HASH_SIZE = 64 * 1024 * 1024;
-  const u32 hash_size =
-    std::min(std::min<u32>(sizeof(header) + header.file_size, MAX_HASH_SIZE), static_cast<u32>(executable_data.size()));
+  // This is absolutely bonkers silly. Someone decided to hash the file size specified in the executable, plus 2048,
+  // instead of adding the size of the header. It _should_ be "header.file_size + sizeof(header)". But we have to hack
+  // around it because who knows how many games are affected by this.
+  // https://github.com/RetroAchievements/rcheevos/blob/b8dd5747a4ed38f556fd776e6f41b131ea16178f/src/rhash/hash.c#L2824
+  const u32 hash_size = std::min(header.file_size + 2048, static_cast<u32>(executable_data.size()));
 
   MD5Digest digest;
   digest.Update(executable_name.c_str(), static_cast<u32>(executable_name.size()));
   if (hash_size > 0)
-    digest.Update(executable_data);
+    digest.Update(executable_data.data(), hash_size);
 
   u8 hash[16];
   digest.Final(hash);
