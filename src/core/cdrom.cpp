@@ -344,8 +344,8 @@ static void StopReadingWithDataEnd();
 static void StartMotor();
 static void StopMotor();
 static void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
-static void UpdatePositionWhileSeeking();
-static void UpdatePhysicalPosition(bool update_logical);
+static void UpdateSubQPositionWhileSeeking();
+static void UpdateSubQPosition(bool update_logical);
 static void SetHoldPosition(CDImage::LBA lba, bool update_subq);
 static void ResetCurrentXAFile();
 static void ResetAudioDecoder();
@@ -383,7 +383,7 @@ struct CDROMState
                                     &CDROM::DeliverAsyncInterrupt, nullptr};
   TimingEvent drive_event{"CDROM Drive Event", 1, 1, &CDROM::ExecuteDrive, nullptr};
 
-  GlobalTicks physical_lba_update_tick = 0;
+  GlobalTicks subq_lba_update_tick = 0;
   GlobalTicks last_interrupt_time = 0;
 
   Command command = Command::None;
@@ -407,11 +407,11 @@ struct CDROMState
 
   CDImage::Position setloc_position = {};
   CDImage::LBA requested_lba = 0;
-  CDImage::LBA current_lba = 0; // this is the hold position
+  CDImage::LBA current_lba = 0;      // this is the hold position
+  CDImage::LBA current_subq_lba = 0; // current position of the disc with respect to time
   CDImage::LBA seek_start_lba = 0;
   CDImage::LBA seek_end_lba = 0;
-  CDImage::LBA physical_lba = 0; // current position of the disc with respect to time
-  u32 physical_lba_update_carry = 0;
+  u32 subq_lba_update_carry = 0;
 
   bool muted = false;
   bool adpcm_muted = false;
@@ -632,9 +632,9 @@ TickCount CDROM::SoftReset(TickCount ticks_late)
   if (HasMedia())
   {
     if (IsSeeking())
-      UpdatePositionWhileSeeking();
+      UpdateSubQPositionWhileSeeking();
     else
-      UpdatePhysicalPosition(false);
+      UpdateSubQPosition(false);
 
     const TickCount speed_change_ticks = was_double_speed ? GetTicksForSpeedChange() : 0;
     const TickCount seek_ticks = (s_state.current_lba != 0) ? GetTicksForSeek(0) : 0;
@@ -697,20 +697,20 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&s_state.current_lba);
   sw.Do(&s_state.seek_start_lba);
   sw.Do(&s_state.seek_end_lba);
-  sw.DoEx(&s_state.physical_lba, 49, s_state.current_lba);
+  sw.DoEx(&s_state.current_subq_lba, 49, s_state.current_lba);
 
   if (sw.GetVersion() < 71) [[unlikely]]
   {
-    u32 physical_lba_update_tick32 = 0;
-    sw.DoEx(&physical_lba_update_tick32, 49, static_cast<u32>(0));
-    s_state.physical_lba_update_tick = physical_lba_update_tick32;
+    u32 subq_lba_update_tick32 = 0;
+    sw.DoEx(&subq_lba_update_tick32, 49, static_cast<u32>(0));
+    s_state.subq_lba_update_tick = subq_lba_update_tick32;
   }
   else
   {
-    sw.Do(&s_state.physical_lba_update_tick);
+    sw.Do(&s_state.subq_lba_update_tick);
   }
 
-  sw.DoEx(&s_state.physical_lba_update_carry, 54, static_cast<u32>(0));
+  sw.DoEx(&s_state.subq_lba_update_carry, 54, static_cast<u32>(0));
   sw.Do(&s_state.setloc_pending);
   sw.Do(&s_state.read_after_seek);
   sw.Do(&s_state.play_after_seek);
@@ -1474,11 +1474,11 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
   // Update start position for seek.
   if (IsSeeking())
-    UpdatePositionWhileSeeking();
+    UpdateSubQPositionWhileSeeking();
   else
-    UpdatePhysicalPosition(false);
+    UpdateSubQPosition(false);
 
-  const CDImage::LBA current_lba = IsMotorOn() ? (IsSeeking() ? s_state.seek_end_lba : s_state.physical_lba) : 0;
+  const CDImage::LBA current_lba = IsMotorOn() ? (IsSeeking() ? s_state.seek_end_lba : s_state.current_subq_lba) : 0;
   const CDImage::LBA lba_diff = ((new_lba > current_lba) ? (new_lba - current_lba) : (current_lba - new_lba));
 
   // Motor spin-up time.
@@ -2127,7 +2127,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       }
       else
       {
-        UpdatePhysicalPosition(true);
+        UpdateSubQPosition(true);
 
         DEBUG_LOG("CDROM GetlocL command - [{:02X}:{:02X}:{:02X}]", s_state.last_sector_header.minute,
                   s_state.last_sector_header.second, s_state.last_sector_header.frame);
@@ -2153,9 +2153,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       else
       {
         if (IsSeeking())
-          UpdatePositionWhileSeeking();
+          UpdateSubQPositionWhileSeeking();
         else
-          UpdatePhysicalPosition(false);
+          UpdateSubQPosition(false);
 
         DEV_LOG("CDROM GetlocP command - T{:02x} I{:02x} R[{:02x}:{:02x}:{:02x}] A[{:02x}:{:02x}:{:02x}]",
                 s_state.last_subq.track_number_bcd, s_state.last_subq.index_number_bcd,
@@ -2684,7 +2684,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   s_reader.QueueReadSector(s_state.requested_lba);
 }
 
-void CDROM::UpdatePositionWhileSeeking()
+void CDROM::UpdateSubQPositionWhileSeeking()
 {
   DebugAssert(IsSeeking());
 
@@ -2721,29 +2721,29 @@ void CDROM::UpdatePositionWhileSeeking()
   // access the image directly since we want to preserve the cached data for the seek complete
   CDImage::SubChannelQ subq;
   if (!s_reader.ReadSectorUncached(current_lba, &subq, nullptr))
-    ERROR_LOG("Failed to read subq for sector {} for physical position", current_lba);
+    ERROR_LOG("Failed to read subq for sector {} for subq position", current_lba);
   else if (subq.IsCRCValid())
     s_state.last_subq = subq;
 
   s_state.current_lba = current_lba;
-  s_state.physical_lba = current_lba;
-  s_state.physical_lba_update_tick = System::GetGlobalTickCounter();
-  s_state.physical_lba_update_carry = 0;
+  s_state.current_subq_lba = current_lba;
+  s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.subq_lba_update_carry = 0;
 }
 
-void CDROM::UpdatePhysicalPosition(bool update_logical)
+void CDROM::UpdateSubQPosition(bool update_logical)
 {
   const GlobalTicks ticks = System::GetGlobalTickCounter();
   if (IsSeeking() || IsReadingOrPlaying() || !IsMotorOn())
   {
     // If we're seeking+reading the first sector (no stat bits set), we need to return the set/current lba, not the last
-    // physical LBA. Failing to do so may result in a track-jumped position getting returned in GetlocP, which causes
+    // SubQ LBA. Failing to do so may result in a track-jumped position getting returned in GetlocP, which causes
     // Mad Panic Coaster to go into a seek+play loop.
     if ((s_state.secondary_status.bits & (STAT_READING | STAT_PLAYING_CDDA | STAT_MOTOR_ON)) == STAT_MOTOR_ON &&
-        s_state.current_lba != s_state.physical_lba)
+        s_state.current_lba != s_state.current_subq_lba)
     {
-      WARNING_LOG("Jumping to hold position [{}->{}] while {} first sector", s_state.physical_lba, s_state.current_lba,
-                  (s_state.drive_state == DriveState::Reading) ? "reading" : "playing");
+      WARNING_LOG("Jumping to hold position [{}->{}] while {} first sector", s_state.current_subq_lba,
+                  s_state.current_lba, (s_state.drive_state == DriveState::Reading) ? "reading" : "playing");
       SetHoldPosition(s_state.current_lba, true);
     }
 
@@ -2752,7 +2752,7 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
   }
 
   const u32 ticks_per_read = GetTicksForRead();
-  const u32 diff = static_cast<u32>((ticks - s_state.physical_lba_update_tick) + s_state.physical_lba_update_carry);
+  const u32 diff = static_cast<u32>((ticks - s_state.subq_lba_update_tick) + s_state.subq_lba_update_carry);
   const u32 sector_diff = diff / ticks_per_read;
   const u32 carry = diff % ticks_per_read;
   if (sector_diff > 0)
@@ -2762,23 +2762,23 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
     const CDImage::LBA sectors_per_track = GetSectorsPerTrack(s_state.current_lba);
     const CDImage::LBA hold_position = s_state.current_lba + hold_offset;
     const CDImage::LBA tjump_position = (hold_position >= sectors_per_track) ? (hold_position - sectors_per_track) : 0;
-    const CDImage::LBA old_offset = s_state.physical_lba - tjump_position;
+    const CDImage::LBA old_offset = s_state.current_subq_lba - tjump_position;
     const CDImage::LBA new_offset = (old_offset + sector_diff) % sectors_per_track;
-    const CDImage::LBA new_physical_lba = tjump_position + new_offset;
+    const CDImage::LBA new_subq_lba = tjump_position + new_offset;
 #ifdef _DEBUG
     DEV_LOG("{} sectors @ {} SPT, old pos {}, hold pos {}, tjump pos {}, new pos {}", sector_diff, sectors_per_track,
-            LBAToMSFString(s_state.physical_lba), LBAToMSFString(hold_position), LBAToMSFString(tjump_position),
-            LBAToMSFString(new_physical_lba));
+            LBAToMSFString(s_state.current_subq_lba), LBAToMSFString(hold_position), LBAToMSFString(tjump_position),
+            LBAToMSFString(new_subq_lba));
 #endif
-    if (s_state.physical_lba != new_physical_lba)
+    if (s_state.current_subq_lba != new_subq_lba)
     {
-      s_state.physical_lba = new_physical_lba;
+      s_state.current_subq_lba = new_subq_lba;
 
       CDImage::SubChannelQ subq;
       CDROMAsyncReader::SectorBuffer raw_sector;
-      if (!s_reader.ReadSectorUncached(new_physical_lba, &subq, update_logical ? &raw_sector : nullptr))
+      if (!s_reader.ReadSectorUncached(new_subq_lba, &subq, update_logical ? &raw_sector : nullptr))
       {
-        ERROR_LOG("Failed to read subq for sector {} for physical position", new_physical_lba);
+        ERROR_LOG("Failed to read subq for sector {} for subq position", new_subq_lba);
       }
       else
       {
@@ -2789,27 +2789,27 @@ void CDROM::UpdatePhysicalPosition(bool update_logical)
           ProcessDataSectorHeader(raw_sector.data());
       }
 
-      s_state.physical_lba_update_tick = ticks;
-      s_state.physical_lba_update_carry = carry;
+      s_state.subq_lba_update_tick = ticks;
+      s_state.subq_lba_update_carry = carry;
     }
   }
 }
 
 void CDROM::SetHoldPosition(CDImage::LBA lba, bool update_subq)
 {
-  if (update_subq && s_state.physical_lba != lba && CanReadMedia())
+  if (update_subq && s_state.current_subq_lba != lba && CanReadMedia())
   {
     CDImage::SubChannelQ subq;
     if (!s_reader.ReadSectorUncached(lba, &subq, nullptr))
-      ERROR_LOG("Failed to read subq for sector {} for physical position", lba);
+      ERROR_LOG("Failed to read subq for sector {} for subq position", lba);
     else if (subq.IsCRCValid())
       s_state.last_subq = subq;
   }
 
   s_state.current_lba = lba;
-  s_state.physical_lba = lba;
-  s_state.physical_lba_update_tick = System::GetGlobalTickCounter();
-  s_state.physical_lba_update_carry = 0;
+  s_state.current_subq_lba = lba;
+  s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.subq_lba_update_carry = 0;
 }
 
 void CDROM::DoShellOpenComplete(TickCount ticks_late)
@@ -2875,9 +2875,9 @@ bool CDROM::CompleteSeek()
     s_state.current_lba = s_reader.GetLastReadSector();
   }
 
-  s_state.physical_lba = s_state.current_lba;
-  s_state.physical_lba_update_tick = System::GetGlobalTickCounter();
-  s_state.physical_lba_update_carry = 0;
+  s_state.current_subq_lba = s_state.current_lba;
+  s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.subq_lba_update_carry = 0;
   return seek_okay;
 }
 
@@ -3056,9 +3056,9 @@ void CDROM::DoSectorRead()
     Panic("Sector read failed");
 
   s_state.current_lba = s_reader.GetLastReadSector();
-  s_state.physical_lba = s_state.current_lba;
-  s_state.physical_lba_update_tick = System::GetGlobalTickCounter();
-  s_state.physical_lba_update_carry = 0;
+  s_state.current_subq_lba = s_state.current_lba;
+  s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.subq_lba_update_carry = 0;
 
   s_state.secondary_status.SetReadingBits(s_state.drive_state == DriveState::Playing);
 
