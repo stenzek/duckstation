@@ -1107,7 +1107,15 @@ void SaveStateSelectorUI::Draw()
   // auto-close
   s_open_time += io.DeltaTime;
   if (s_open_time >= s_close_time)
+  {
     Close();
+  }
+  else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+  {
+    // Need to cancel the hotkey bindings, otherwise the pause menu will open.
+    InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
+    Close();
+  }
 }
 
 s32 SaveStateSelectorUI::GetCurrentSlot()

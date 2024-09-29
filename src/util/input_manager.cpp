@@ -1142,7 +1142,7 @@ void InputManager::ClearBindStateFromSource(InputBindingKey key)
 
         if (current_mask == binding->full_mask)
         {
-          std::get<InputButtonEventHandler>(binding->handler)(0);
+          std::get<InputButtonEventHandler>(binding->handler)(-1);
           matched = true;
           break;
         }
