@@ -180,6 +180,7 @@ struct Settings
   u8 cdrom_readahead_sectors = DEFAULT_CDROM_READAHEAD_SECTORS;
   CDROMMechaconVersion cdrom_mechacon_version = DEFAULT_CDROM_MECHACON_VERSION;
   bool cdrom_region_check : 1 = false;
+  bool cdrom_subq_skew : 1 = false;
   bool cdrom_load_image_to_ram : 1 = false;
   bool cdrom_load_image_patches : 1 = false;
   bool cdrom_mute_cd_audio : 1 = false;

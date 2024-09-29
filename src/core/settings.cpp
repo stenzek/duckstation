@@ -329,6 +329,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
       si.GetStringValue("CDROM", "MechaconVersion", GetCDROMMechVersionName(DEFAULT_CDROM_MECHACON_VERSION)).c_str())
       .value_or(DEFAULT_CDROM_MECHACON_VERSION);
   cdrom_region_check = si.GetBoolValue("CDROM", "RegionCheck", false);
+  cdrom_subq_skew = si.GetBoolValue("CDROM", "SubQSkew", false);
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_load_image_patches = si.GetBoolValue("CDROM", "LoadImagePatches", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
@@ -615,6 +616,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
   si.SetStringValue("CDROM", "MechaconVersion", GetCDROMMechVersionName(cdrom_mechacon_version));
   si.SetBoolValue("CDROM", "RegionCheck", cdrom_region_check);
+  si.SetBoolValue("CDROM", "SubQSkew", cdrom_subq_skew);
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "LoadImagePatches", cdrom_load_image_patches);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);

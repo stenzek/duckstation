@@ -53,6 +53,7 @@ enum class Trait : u32
   ForceRecompilerMemoryExceptions,
   ForceRecompilerICache,
   ForceRecompilerLUTFastmem,
+  ForceCDROMSubQSkew,
   IsLibCryptProtected,
 
   Count

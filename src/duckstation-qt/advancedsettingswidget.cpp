@@ -261,6 +261,7 @@ void AdvancedSettingsWidget::addTweakOptions()
                        Settings::GetCDROMMechVersionDisplayName, static_cast<u8>(CDROMMechaconVersion::Count),
                        Settings::DEFAULT_CDROM_MECHACON_VERSION);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), "CDROM", "RegionCheck", false);
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM SubQ Skew"), "CDROM", "SubQSkew", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
                         "AllowBootingWithoutSBIFile", false);
 
@@ -297,6 +298,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CDROM_MECHACON_VERSION); // CDROM Mechacon Version
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM Region Check
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM SubQ Skew
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Allow booting without SBI file
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Export Shared Memory
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV
@@ -325,6 +327,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CPU", "FastmemMode");
   sif->DeleteValue("CDROM", "MechaconVersion");
   sif->DeleteValue("CDROM", "RegionCheck");
+  sif->DeleteValue("CDROM", "SubQSkew");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
   sif->DeleteValue("PCDrv", "Enabled");
   sif->DeleteValue("PCDrv", "EnableWrites");

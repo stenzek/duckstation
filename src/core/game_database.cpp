@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 15,
+  GAME_DATABASE_CACHE_VERSION = 16,
 };
 
 static Entry* GetMutableEntry(std::string_view serial);
@@ -101,6 +101,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "ForceRecompilerMemoryExceptions",
   "ForceRecompilerICache",
   "ForceRecompilerLUTFastmem",
+  "ForceCDROMSubQSkew",
   "IsLibCryptProtected",
 }};
 
@@ -130,6 +131,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler Memory Exceptions", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler ICache", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler LUT Fastmem", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force CD-ROM SubQ Skew", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
 }};
 
@@ -608,6 +610,12 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   {
     WARNING_LOG("LUT fastmem for recompiler forced by compatibility settings.");
     settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
+  }
+
+  if (HasTrait(Trait::ForceCDROMSubQSkew))
+  {
+    WARNING_LOG("CD-ROM SubQ Skew forced by compatibility settings.");
+    settings.cdrom_subq_skew = true;
   }
 
   if (!messages.empty())

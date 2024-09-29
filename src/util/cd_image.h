@@ -301,6 +301,12 @@ public:
   // Read a single raw sector, and subchannel from the current LBA.
   bool ReadRawSector(void* buffer, SubChannelQ* subq);
 
+  /// Generates sub-channel Q given the specified position.
+  bool GenerateSubChannelQ(SubChannelQ* subq, LBA lba) const;
+
+  /// Generates sub-channel Q from the given index and index-offset.
+  void GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 index_offset) const;
+
   // Reads sub-channel Q for the specified index+LBA.
   virtual bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index);
 
@@ -340,14 +346,8 @@ protected:
   void ClearTOC();
   void CopyTOC(const CDImage* image);
 
-  const Index* GetIndexForDiscPosition(LBA pos);
-  const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos);
-
-  /// Generates sub-channel Q given the specified position.
-  bool GenerateSubChannelQ(SubChannelQ* subq, LBA lba);
-
-  /// Generates sub-channel Q from the given index and index-offset.
-  void GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 index_offset);
+  const Index* GetIndexForDiscPosition(LBA pos) const;
+  const Index* GetIndexForTrackPosition(u32 track_number, LBA track_pos) const;
 
   /// Synthesis of lead-out data.
   void AddLeadOutIndex();

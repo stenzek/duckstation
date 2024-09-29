@@ -3067,6 +3067,32 @@ void CDROM::DoSectorRead()
   if (subq_valid)
   {
     s_state.last_subq = subq;
+    if (g_settings.cdrom_subq_skew) [[unlikely]]
+    {
+      // SubQ Skew Hack. It's horrible. Needed for Captain Commando.
+      // Here's my previous rambling about the game:
+      //
+      //   So, there's two Getloc commands on the PS1 to retrieve the most-recent-read sector:
+      //   GetlocL, which returns the timecode based on the data sector header, and GetlocP, which gets it from subq.
+      //   Captain Commando would always corrupt the first boss sprite.
+      //
+      //   What the game does, is repeat the tile/texture data throughout the audio sectors for the background
+      //   music when you reach the boss part of the level, it looks for a specific subq timecode coming in (by spamming
+      //   GetlocP) then DMA's the data sector interleaved with the audio sectors out at the last possible moment
+      //
+      //   So, they hard coded it to look for a sector timecode +2 from the sector they actually wanted, then DMA that
+      //   data out they do perform some validation on the data itself, so if you're not offsetting the timecode query,
+      //   it never gets the right sector, and just keeps reading forever. Hence why the boss tiles are broken, because
+      //   it never gets the data to upload. The most insane part is they should have just done what every other game
+      //   does: use the raw read mode (2352 instead of 2048), and look at the data sector header. Instead they do this
+      //   nonsense of repeating the data throughout the audio, and racing the DMA at the last possible minute.
+      //
+      // This hack just generates synthetic SubQ with a +2 offset. I'd planned on refactoring the CDImage interface
+      // so that multiple sectors could be read in one back, in which case we could just "look ahead" to grab the
+      // subq, but I haven't got around to it. It'll break libcrypt, but CC doesn't use it. One day I'll get around to
+      // doing the refactor.... but given this is the only game that relies on it, priorities.
+      s_reader.GetMedia()->GenerateSubChannelQ(&s_state.last_subq, s_state.current_lba + 2);
+    }
   }
   else
   {
@@ -3745,7 +3771,7 @@ void CDROM::CreateFileMap(IsoReader& iso, std::string_view dir)
     {
       DEV_LOG("{}-{} = {}", entry.location_le, entry.location_le + entry.GetSizeInSectors() - 1, path);
       s_state.file_map.emplace(entry.location_le, std::make_pair(entry.location_le + entry.GetSizeInSectors() - 1,
-                                                           fmt::format("<DIR> {}", path)));
+                                                                 fmt::format("<DIR> {}", path)));
 
       CreateFileMap(iso, path);
       continue;
@@ -3753,7 +3779,7 @@ void CDROM::CreateFileMap(IsoReader& iso, std::string_view dir)
 
     DEV_LOG("{}-{} = {}", entry.location_le, entry.location_le + entry.GetSizeInSectors() - 1, path);
     s_state.file_map.emplace(entry.location_le,
-                       std::make_pair(entry.location_le + entry.GetSizeInSectors() - 1, std::move(path)));
+                             std::make_pair(entry.location_le + entry.GetSizeInSectors() - 1, std::move(path)));
   }
 }
 

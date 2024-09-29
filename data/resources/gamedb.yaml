@@ -22079,11 +22079,13 @@ SLUS-01476:
 SLPS-01567:
   name: "Captain Commando (Japan)"
   compatibility:
-    rating: GraphicalAudioIssues
-    versionTested: "0.1-2433-g9089c973"
-    upscalingIssues: "There's garbage in right of the screen and the first boss sprite is corrupted."
+    rating: NoIssues
   controllers:
     - DigitalController
+  traits:
+    - DisablePGXP # 2D, PGXP is not beneficial.
+    - DisableWidescreen # GTE is not used, no effect.
+    - ForceCDROMSubQSkew # Fixes boss sprites.
   settings:
     displayActiveStartOffset: -62
     displayActiveEndOffset: 51

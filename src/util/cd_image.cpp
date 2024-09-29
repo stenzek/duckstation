@@ -456,7 +456,7 @@ void CDImage::CopyTOC(const CDImage* image)
   m_position_on_disc = 0;
 }
 
-const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos)
+const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos) const
 {
   for (const Index& index : m_indices)
   {
@@ -473,7 +473,7 @@ const CDImage::Index* CDImage::GetIndexForDiscPosition(LBA pos)
   return nullptr;
 }
 
-const CDImage::Index* CDImage::GetIndexForTrackPosition(u32 track_number, LBA track_pos)
+const CDImage::Index* CDImage::GetIndexForTrackPosition(u32 track_number, LBA track_pos) const
 {
   if (track_number < 1 || track_number > m_tracks.size())
     return nullptr;
@@ -485,18 +485,18 @@ const CDImage::Index* CDImage::GetIndexForTrackPosition(u32 track_number, LBA tr
   return GetIndexForDiscPosition(track.start_lba + track_pos);
 }
 
-bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba)
+bool CDImage::GenerateSubChannelQ(SubChannelQ* subq, LBA lba) const
 {
   const Index* index = GetIndexForDiscPosition(lba);
   if (!index)
     return false;
 
-  const u32 index_offset = index->start_lba_on_disc - lba;
+  const u32 index_offset = lba - index->start_lba_on_disc;
   GenerateSubChannelQ(subq, *index, index_offset);
   return true;
 }
 
-void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 index_offset)
+void CDImage::GenerateSubChannelQ(SubChannelQ* subq, const Index& index, u32 index_offset) const
 {
   subq->control_bits = index.control.bits;
   subq->track_number_bcd = (index.track_number <= m_tracks.size() ? BinaryToBCD(static_cast<u8>(index.track_number)) :

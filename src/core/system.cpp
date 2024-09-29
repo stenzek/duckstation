@@ -4697,6 +4697,9 @@ void System::WarnAboutUnsafeSettings()
            TRANSLATE_STR("System", "Compatibility settings are not enabled. Some games may not function correctly."));
   }
 
+  if (g_settings.cdrom_subq_skew)
+    append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM SubQ Skew is enabled. This will break games."));
+
   if (!messages.empty())
   {
     if (messages.back() == '\n')
