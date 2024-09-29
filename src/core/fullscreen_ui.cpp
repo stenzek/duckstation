@@ -4521,9 +4521,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
     bsi, FSUI_CSTR("Enable Texture Dumping"),
     FSUI_CSTR("Enables dumping of textures to image files, which can be replaced. Not compatible with all games."),
     "TextureReplacements", "DumpTextures", false, texture_cache_enabled);
-  DrawToggleSetting(bsi, FSUI_CSTR("Dump Replaced Textures"),
-                    FSUI_CSTR("Dumps textures that have replacements already loaded."), "TextureReplacements",
-                    "DumpReplacedTextures", false, texture_cache_enabled);
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Dump Replaced Textures"), FSUI_CSTR("Dumps textures that have replacements already loaded."),
+    "TextureReplacements", "DumpReplacedTextures", false,
+    texture_cache_enabled && GetEffectiveBoolSetting(bsi, "TextureReplacements", "DumpTextures", false));
 
   DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
                     FSUI_CSTR("Enables the replacement of background textures in supported games."),

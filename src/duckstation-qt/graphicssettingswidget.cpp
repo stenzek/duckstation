@@ -280,6 +280,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GraphicsSettingsWidget::onEnableTextureCacheChanged);
   connect(m_ui.enableTextureReplacements, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged);
+  connect(m_ui.enableTextureDumping, &QCheckBox::checkStateChanged, this,
+          &GraphicsSettingsWidget::onEnableTextureDumpingChanged);
   connect(m_ui.vramWriteReplacement, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged);
   connect(m_ui.textureReplacementOptions, &QPushButton::clicked, this,
@@ -1137,6 +1139,16 @@ void GraphicsSettingsWidget::onEnableTextureCacheChanged()
   const bool tc_enabled = m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false);
   m_ui.enableTextureReplacements->setEnabled(tc_enabled);
   m_ui.enableTextureDumping->setEnabled(tc_enabled);
+  onEnableTextureDumpingChanged();
+  onEnableAnyTextureReplacementsChanged();
+}
+
+void GraphicsSettingsWidget::onEnableTextureDumpingChanged()
+{
+  const bool tc_enabled = m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false);
+  const bool dumping_enabled =
+    tc_enabled && m_dialog->getEffectiveBoolValue("TextureReplacements", "DumpTextures", false);
+  m_ui.dumpReplacedTextures->setEnabled(dumping_enabled);
 }
 
 void GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged()
