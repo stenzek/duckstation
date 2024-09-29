@@ -27,3 +27,4 @@
 #define ICON_EMOJI_MAGNIFIYING_GLASS_TILTED_LEFT "\xf0\x9f\x94\x8d"
 #define ICON_EMOJI_LOCKED "\xf0\x9f\x94\x92"
 #define ICON_EMOJI_UNLOCKED "\xf0\x9f\x94\x93"
+#define ICON_EMOJI_REFRESH "\xf0\x9f\x94\x84"

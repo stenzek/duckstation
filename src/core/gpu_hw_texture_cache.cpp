@@ -10,6 +10,7 @@
 #include "system.h"
 
 #include "util/gpu_device.h"
+#include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
 
 #include "common/error.h"
@@ -19,6 +20,8 @@
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/timer.h"
+
+#include "IconsEmoji.h"
 
 #define XXH_STATIC_LINKING_ONLY
 #include "xxhash.h"
@@ -233,6 +236,7 @@ using TextureReplacementMap =
 
 static bool ShouldTrackVRAMWrites();
 static bool IsDumpingVRAMWriteTextures();
+static void UpdateVRAMTrackingState();
 
 static bool CompilePipelines();
 static void DestroyPipelines();
@@ -245,9 +249,17 @@ static void ApplyTextureReplacements(SourceKey key, HashType tex_hash, HashType 
 static void RemoveFromHashCache(HashCache::iterator it);
 static void ClearHashCache();
 
+static bool IsPageDrawn(u32 page_index, const GSVector4i rect);
+static void InvalidatePageSources(u32 pn);
+static void InvalidatePageSources(u32 pn, const GSVector4i rc);
+static void InvalidateSources();
+static void DestroySource(Source* src);
+
 static HashType HashPage(u8 page, GPUTextureMode mode);
 static HashType HashPalette(GPUTexturePaletteReg palette, GPUTextureMode mode);
 static HashType HashPartialPalette(const u16* palette, u32 min, u32 max);
+static HashType HashPartialPalette(GPUTexturePaletteReg palette, GPUTextureMode mode, u32 min, u32 max);
+static HashType HashRect(const GSVector4i rc);
 
 static std::pair<u32, u32> ReducePaletteBounds(const GSVector4i rect, GPUTextureMode mode,
                                                GPUTexturePaletteReg palette);
@@ -262,6 +274,8 @@ static void RemoveVRAMWrite(VRAMWrite* entry);
 static void DumpTexturesFromVRAMWrite(VRAMWrite* entry);
 static void DumpTextureFromPage(const Source* src);
 
+static void DecodeTexture(GPUTextureMode mode, const u16* page_ptr, const u16* palette, u32* dest, u32 dest_stride,
+                          u32 width, u32 height);
 static void DecodeTexture4(const u16* page, const u16* palette, u32 width, u32 height, u32* dest, u32 dest_stride);
 static void DecodeTexture8(const u16* page, const u16* palette, u32 width, u32 height, u32* dest, u32 dest_stride);
 static void DecodeTexture16(const u16* page, u32 width, u32 height, u32* dest, u32 dest_stride);
@@ -561,7 +575,7 @@ void GPUTextureCache::UpdateSettings(const Settings& old_settings)
 
   // Reload textures if configuration changes.
   if (LoadLocalConfiguration(false, false))
-    ReloadTextureReplacements();
+    ReloadTextureReplacements(false);
 }
 
 bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
@@ -1221,11 +1235,6 @@ const GPUTextureCache::Source* GPUTextureCache::ReturnSource(Source* source, con
   return source;
 }
 
-bool GPUTextureCache::IsPageDrawn(u32 page_index)
-{
-  return (s_pages[page_index].num_draw_rects > 0);
-}
-
 bool GPUTextureCache::IsPageDrawn(u32 page_index, const GSVector4i rect)
 {
   const PageEntry& page = s_pages[page_index];
@@ -1317,6 +1326,15 @@ void GPUTextureCache::Invalidate()
     DebugAssert(!s_pages[i].sources.head && !s_pages[i].sources.tail);
   DebugAssert(!s_last_vram_write);
 #endif
+
+  ClearHashCache();
+}
+
+void GPUTextureCache::InvalidateSources()
+{
+  // keep draw rects and vram writes
+  for (u32 i = 0; i < NUM_VRAM_PAGES; i++)
+    InvalidatePageSources(i);
 
   ClearHashCache();
 }
@@ -2397,7 +2415,7 @@ void GPUTextureCache::SetGameID(std::string game_id)
     return;
 
   s_game_id = game_id;
-  ReloadTextureReplacements();
+  ReloadTextureReplacements(false);
 }
 
 const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetVRAMReplacement(u32 width, u32 height,
@@ -2917,7 +2935,7 @@ const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetTextureRepla
     return nullptr;
   }
 
-  INFO_LOG("Loaded '{}': {}x{}", Path::GetFileName(filename), image.GetWidth(), image.GetHeight());
+  VERBOSE_LOG("Loaded '{}': {}x{}", Path::GetFileName(filename), image.GetWidth(), image.GetHeight());
   it = s_replacement_image_cache.emplace(filename, std::move(image)).first;
   return &it->second;
 }
@@ -3098,7 +3116,7 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
   return (s_config != old_config);
 }
 
-void GPUTextureCache::ReloadTextureReplacements()
+void GPUTextureCache::ReloadTextureReplacements(bool show_info)
 {
   s_vram_replacements.clear();
   s_vram_write_texture_replacements.clear();
@@ -3118,7 +3136,19 @@ void GPUTextureCache::ReloadTextureReplacements()
   PurgeUnreferencedTexturesFromCache();
 
   DebugAssert(g_gpu);
-  GPUTextureCache::UpdateVRAMTrackingState();
+  UpdateVRAMTrackingState();
+  InvalidateSources();
+
+  if (show_info)
+  {
+    const int total = static_cast<int>(s_vram_replacements.size() + s_vram_write_texture_replacements.size() +
+                                       s_texture_page_texture_replacements.size());
+    Host::AddIconOSDMessage("ReloadTextureReplacements", ICON_EMOJI_REFRESH,
+                            (total > 0) ? TRANSLATE_PLURAL_STR("GPU_HW", "%n replacement textures found.",
+                                                               "Replacement texture count", total) :
+                                          TRANSLATE_STR("GPU_HW", "No replacement textures found."),
+                            Host::OSD_INFO_DURATION);
+  }
 }
 
 void GPUTextureCache::PurgeUnreferencedTexturesFromCache()

@@ -16,7 +16,7 @@
 <context>
     <name>Achievements</name>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1213"/>
+        <location filename="../../core/achievements.cpp" line="1214"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -25,7 +25,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1216"/>
+        <location filename="../../core/achievements.cpp" line="1217"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1291"/>
+        <location filename="../../core/achievements.cpp" line="1292"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -43,8 +43,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1293"/>
-        <location filename="../../core/achievements.cpp" line="2598"/>
+        <location filename="../../core/achievements.cpp" line="1294"/>
+        <location filename="../../core/achievements.cpp" line="2606"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -53,7 +53,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2424"/>
+        <location filename="../../core/achievements.cpp" line="2425"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -62,7 +62,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2834"/>
+        <location filename="../../core/achievements.cpp" line="2842"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -79,6 +79,18 @@
         <translation>
             <numerusform>Rewind for %n frame, lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</numerusform>
             <numerusform>Rewind for %n frames, lasting %1 second(s) will require up to %2MB of RAM and %3MB of VRAM.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>GPU_HW</name>
+    <message numerus="yes">
+        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3153"/>
+        <source>%n replacement textures found.</source>
+        <comment>Replacement texture count</comment>
+        <translation>
+            <numerusform>%n replacement texture found.</numerusform>
+            <numerusform>%n replacement textures found.</numerusform>
         </translation>
     </message>
 </context>
@@ -128,7 +140,7 @@
 <context>
     <name>System</name>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3549"/>
+        <location filename="../../core/system.cpp" line="3593"/>
         <source>%n cheat(s) are now active.</source>
         <translation>
             <numerusform>%n cheat is now active.</numerusform>
@@ -136,7 +148,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3550"/>
+        <location filename="../../core/system.cpp" line="3594"/>
         <source>%n cheat(s) are now inactive.</source>
         <translation>
             <numerusform>%n cheat is now inactive.</numerusform>
@@ -144,7 +156,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/system.cpp" line="4201"/>
+        <location filename="../../core/system.cpp" line="4245"/>
         <source>%n cheat(s) are enabled. This may crash games.</source>
         <translation>
             <numerusform>%n cheat is enabled. This may crash games.</numerusform>

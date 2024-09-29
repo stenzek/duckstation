@@ -116,28 +116,16 @@ void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height,
               const GSVector4i src_bounds, const GSVector4i dst_bounds);
 void WriteVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask,
                 const GSVector4i bounds);
-void UpdateVRAMTrackingState();
 
 const Source* LookupSource(SourceKey key, const GSVector4i uv_rect, PaletteRecordFlags flags);
 
-bool IsPageDrawn(u32 page_index);
-bool IsPageDrawn(u32 page_index, const GSVector4i rect);
 bool IsRectDrawn(const GSVector4i rect);
 bool AreSourcePagesDrawn(SourceKey key, const GSVector4i rect);
 
-void InvalidatePageSources(u32 pn);
-void InvalidatePageSources(u32 pn, const GSVector4i rc);
-void DestroySource(Source* src);
-
 void Compact();
 
-void DecodeTexture(GPUTextureMode mode, const u16* page_ptr, const u16* palette, u32* dest, u32 dest_stride, u32 width,
-                   u32 height);
-HashType HashPartialPalette(GPUTexturePaletteReg palette, GPUTextureMode mode, u32 min, u32 max);
-HashType HashRect(const GSVector4i rc);
-
 void SetGameID(std::string game_id);
-void ReloadTextureReplacements();
+void ReloadTextureReplacements(bool show_info);
 
 // VRAM Write Replacements
 const TextureReplacementImage* GetVRAMReplacement(u32 width, u32 height, const void* pixels);

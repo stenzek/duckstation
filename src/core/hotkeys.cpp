@@ -438,11 +438,7 @@ DEFINE_HOTKEY("ReloadPostProcessingShaders", TRANSLATE_NOOP("Hotkeys", "Graphics
 DEFINE_HOTKEY("ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Reload Texture Replacements"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                {
-                  Host::AddKeyedOSDMessage("ReloadTextureReplacements",
-                                           TRANSLATE_STR("OSDMessage", "Texture replacements reloaded."), 10.0f);
-                  GPUTextureCache::ReloadTextureReplacements();
-                }
+                  GPUTextureCache::ReloadTextureReplacements(true);
               })
 
 DEFINE_HOTKEY("ToggleWidescreen", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Toggle Widescreen"),

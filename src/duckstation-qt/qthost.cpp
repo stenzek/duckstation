@@ -1361,7 +1361,7 @@ void EmuThread::reloadTextureReplacements()
   }
 
   if (System::IsValid())
-    GPUTextureCache::ReloadTextureReplacements();
+    GPUTextureCache::ReloadTextureReplacements(true);
 }
 
 void EmuThread::runOnEmuThread(std::function<void()> callback)
