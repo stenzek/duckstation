@@ -23,7 +23,9 @@
 
 #include "IconsEmoji.h"
 
+#ifndef XXH_STATIC_LINKING_ONLY
 #define XXH_STATIC_LINKING_ONLY
+#endif
 #include "xxhash.h"
 #ifdef CPU_ARCH_SSE
 #include "xxh_x86dispatch.h"
