@@ -25,6 +25,9 @@ static constexpr u32 TEXTURE_UPLOAD_ALIGNMENT = 64;
 // We need 32 here for AVX2, so 64 is also fine.
 static constexpr u32 TEXTURE_UPLOAD_PITCH_ALIGNMENT = 64;
 
+// Default upload alignment, for restoring.
+static constexpr u32 DEFAULT_UPLOAD_ALIGNMENT = 4;
+
 const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(GPUTexture::Format format, bool gles)
 {
   static constexpr std::array<std::tuple<GLenum, GLenum, GLenum>, static_cast<u32>(GPUTexture::Format::MaxCount)>
@@ -87,6 +90,11 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
     }};
 
   return gles ? mapping_gles[static_cast<u32>(format)] : mapping[static_cast<u32>(format)];
+}
+
+ALWAYS_INLINE static u32 GetUploadAlignment(u32 pitch)
+{
+  return ((pitch % 4) == 0) ? 4 : (((pitch % 2) == 0) ? 2 : 1);
 }
 
 OpenGLTexture::OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
@@ -170,14 +178,14 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
     if (!use_texture_storage || data)
     {
       const u32 pixel_size = GetPixelSize(format);
-      const u32 alignment = ((data_pitch % 4) == 0) ? 4 : (((data_pitch % 2) == 0) ? 2 : 1);
+      const u32 alignment = GetUploadAlignment(data_pitch);
       if (data)
       {
         GPUDevice::GetStatistics().buffer_streamed += data_pitch * height;
         GPUDevice::GetStatistics().num_uploads++;
 
         glPixelStorei(GL_UNPACK_ROW_LENGTH, data_pitch / pixel_size);
-        if (alignment != 4)
+        if (alignment != DEFAULT_UPLOAD_ALIGNMENT)
           glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
       }
 
@@ -214,8 +222,8 @@ std::unique_ptr<OpenGLTexture> OpenGLTexture::Create(u32 width, u32 height, u32 
 
       if (data)
       {
-        if (alignment != 4)
-          glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+        if (alignment != DEFAULT_UPLOAD_ALIGNMENT)
+          glPixelStorei(GL_UNPACK_ALIGNMENT, DEFAULT_UPLOAD_ALIGNMENT);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
       }
     }
@@ -251,8 +259,9 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   // Worth using the PBO? Driver probably knows better...
   const GLenum target = GetGLTarget();
   const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_format, OpenGLDevice::IsGLES());
+  const u32 pixel_size = GetPixelSize();
   const u32 preferred_pitch =
-    Common::AlignUpPow2(static_cast<u32>(width) * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+    Common::AlignUpPow2(static_cast<u32>(width) * pixel_size, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
   const u32 map_size = preferred_pitch * static_cast<u32>(height);
   OpenGLStreamBuffer* sb = OpenGLDevice::GetTextureStreamBuffer();
 
@@ -267,18 +276,26 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   if (!sb || map_size > sb->GetChunkSize())
   {
     GL_INS_FMT("Not using PBO for map size {}", map_size);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / GetPixelSize());
+
+    const u32 alignment = GetUploadAlignment(pitch);
+    if (alignment != DEFAULT_UPLOAD_ALIGNMENT)
+      glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, pitch / pixel_size);
     glTexSubImage2D(target, layer, x, y, width, height, gl_format, gl_type, data);
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+
+    if (alignment != DEFAULT_UPLOAD_ALIGNMENT)
+      glPixelStorei(GL_UNPACK_ALIGNMENT, DEFAULT_UPLOAD_ALIGNMENT);
   }
   else
   {
     const auto map = sb->Map(TEXTURE_UPLOAD_ALIGNMENT, map_size);
-    StringUtil::StrideMemCpy(map.pointer, preferred_pitch, data, pitch, width * GetPixelSize(), height);
+    StringUtil::StrideMemCpy(map.pointer, preferred_pitch, data, pitch, width * pixel_size, height);
     sb->Unmap(map_size);
     sb->Bind();
 
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, preferred_pitch / GetPixelSize());
+    glPixelStorei(GL_UNPACK_ROW_LENGTH, preferred_pitch / pixel_size);
     glTexSubImage2D(GL_TEXTURE_2D, layer, x, y, width, height, gl_format, gl_type,
                     reinterpret_cast<void*>(static_cast<uintptr_t>(map.buffer_offset)));
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
