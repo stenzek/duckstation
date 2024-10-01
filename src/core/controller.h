@@ -140,9 +140,9 @@ public:
   /// List of controller indices in the order that they should be displayed.
   static const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> PortDisplayOrder;
 
-protected:
   /// Returns true if automatic analog mode can be used.
   static bool CanStartInAnalogMode(ControllerType ctype);
 
+protected:
   u32 m_index;
 };

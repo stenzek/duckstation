@@ -268,6 +268,9 @@ void SingleStepCPU();
 float GetTargetSpeed();
 float GetAudioNominalRate();
 
+/// Returns true if fast forwarding or slow motion is currently active.
+bool IsRunningAtNonStandardSpeed();
+
 /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
 void SetThrottleFrequency(float frequency);
 
@@ -391,8 +394,6 @@ bool SaveScreenshot(const char* filename = nullptr, DisplayScreenshotMode mode =
                     DisplayScreenshotFormat format = g_settings.display_screenshot_format,
                     u8 quality = g_settings.display_screenshot_quality, bool compress_on_thread = true);
 
-#ifndef __ANDROID__
-
 /// Returns the path that a new media capture would be saved to by default. Safe to call from any thread.
 std::string GetNewMediaCapturePath(const std::string_view title, const std::string_view container);
 
@@ -403,8 +404,6 @@ MediaCapture* GetMediaCapture();
 bool StartMediaCapture(std::string path = {});
 bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio);
 void StopMediaCapture();
-
-#endif
 
 /// Loads the cheat list for the current game title from the user directory.
 bool LoadCheatList();

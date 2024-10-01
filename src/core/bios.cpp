@@ -18,7 +18,6 @@
 LOG_CHANNEL(BIOS);
 
 namespace BIOS {
-static const ImageInfo* GetInfoForHash(const std::span<u8> image, const ImageInfo::Hash& hash);
 
 static constexpr ImageInfo::Hash MakeHashFromString(const char str[])
 {
@@ -206,7 +205,7 @@ std::optional<BIOS::Image> BIOS::LoadImageFromFile(const char* filename, Error* 
   return ret;
 }
 
-const BIOS::ImageInfo* BIOS::GetInfoForHash(const std::span<u8> image, const ImageInfo::Hash& hash)
+const BIOS::ImageInfo* BIOS::GetInfoForHash(const std::span<const u8> image, const ImageInfo::Hash& hash)
 {
   // check for openbios
   if (image.size() >= (s_openbios_signature_offset + std::size(s_openbios_signature)) &&

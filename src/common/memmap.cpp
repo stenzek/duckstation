@@ -27,7 +27,7 @@
 #include <mach/mach_vm.h>
 #include <mach/vm_map.h>
 #include <sys/mman.h>
-#elif !defined(__ANDROID__)
+#else
 #include <cerrno>
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -598,7 +598,7 @@ void MemMap::EndCodeWrite()
 
 #endif
 
-#elif !defined(__ANDROID__)
+#else
 
 bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
 {
@@ -624,6 +624,8 @@ std::string MemMap::GetFileMappingName(const char* prefix)
   return fmt::format("{}_{}", prefix, pid);
 #endif
 }
+
+#ifndef __ANDROID__
 
 void* MemMap::CreateSharedMemory(const char* name, size_t size, Error* error)
 {
@@ -682,6 +684,8 @@ void MemMap::DeleteSharedMemory(const char* name)
 {
   shm_unlink(name);
 }
+
+#endif
 
 void* MemMap::MapSharedMemory(void* handle, size_t offset, void* baseaddr, size_t size, PageProtect mode)
 {

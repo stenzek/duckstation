@@ -153,7 +153,7 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(const WindowInfo& wi, Error
 #elif defined(__APPLE__)
   context = OpenGLContextAGL::Create(wi, versions_to_try, error);
 #elif defined(__ANDROID__)
-  context = ContextEGLAndroid::Create(wi, versions_to_try, error);
+  context = OpenGLContextEGLAndroid::Create(wi, versions_to_try, error);
 #else
 #if defined(ENABLE_X11)
   if (wi.type == WindowInfo::Type::X11)

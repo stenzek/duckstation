@@ -160,9 +160,6 @@ static bool CreateGPU(GPURenderer renderer, bool is_switching, Error* error);
 static bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
 static void HandleHostGPUDeviceLost();
 
-/// Returns true if fast forwarding or slow motion is currently active.
-static bool IsRunningAtNonStandardSpeed();
-
 /// Returns true if boot is being fast forwarded.
 static bool IsFastForwardingBoot();
 
@@ -4136,7 +4133,7 @@ bool System::CheckForSBIFile(CDImage* image, Error* error)
     s_running_game_serial, s_running_game_title);
 #else
   // Shorter because no confirm messages.
-  Error::SetStringView(error, "Missing SBI file.", "The selected game requires a SBI file to run properly.");
+  Error::SetStringView(error, "The selected game requires a SBI file to run properly.");
 #endif
 
   return false;
