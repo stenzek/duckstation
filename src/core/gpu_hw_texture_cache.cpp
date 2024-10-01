@@ -1498,9 +1498,12 @@ std::pair<u32, u32> GPUTextureCache::ReducePaletteBounds(const GSVector4i rect, 
 
   if (mode == GPUTextureMode::Palette4Bit)
   {
+    const u16* row_ptr = &g_vram[rect.y * VRAM_WIDTH + rect.x];
     for (u32 y = 0; y < rect_height; y++)
     {
-      const u16* ptr = &g_vram[rect.y * VRAM_WIDTH + rect.x];
+      const u16* ptr = row_ptr;
+      row_ptr += VRAM_WIDTH;
+
       for (u32 x = 0; x < rect_width; x++)
       {
         const u16 val = *(ptr++);
@@ -1519,7 +1522,7 @@ std::pair<u32, u32> GPUTextureCache::ReducePaletteBounds(const GSVector4i rect, 
     const u16* row_ptr = &g_vram[rect.y * VRAM_WIDTH + rect.x];
     for (u32 y = 0; y < rect_height; y++)
     {
-      const u16* ptr = reinterpret_cast<const u16*>(row_ptr);
+      const u16* ptr = row_ptr;
       row_ptr += VRAM_WIDTH;
 
       if (aligned_width > 0) [[likely]]
