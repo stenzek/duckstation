@@ -4430,6 +4430,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         CPU::PGXP::Initialize();
 
       CPU::CodeCache::Reset();
+      CPU::UpdateDebugDispatcherFlag();
+      InterruptExecution();
     }
 
     if (g_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats)
