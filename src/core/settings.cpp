@@ -2240,7 +2240,6 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(Cheats.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Covers.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Dumps.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Dumps, "audio").c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameIcons.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;
