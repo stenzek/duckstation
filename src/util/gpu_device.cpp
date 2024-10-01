@@ -22,7 +22,7 @@
 #include "fmt/format.h"
 #include "imgui.h"
 #include "shaderc/shaderc.h"
-#include "spirv_cross/spirv_cross_c.h"
+#include "spirv_cross_c.h"
 #include "xxhash.h"
 
 LOG_CHANNEL(GPUDevice);

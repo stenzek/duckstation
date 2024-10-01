@@ -133,7 +133,7 @@ if(ENABLE_OPENGL)
       )
     endif()
     if(ANDROID)
-      target_include_directories(util PRIVATE "${CMAKE_SOURCE_DIR}/android/app/src/cpp")
+      target_include_directories(util PRIVATE "${CMAKE_SOURCE_DIR}/android")
     endif()
   endif()
 
@@ -170,9 +170,10 @@ if(ENABLE_VULKAN)
 endif()
 
 if(ENABLE_VULKAN OR APPLE)
-  # shaderc is loaded dynamically to reduce module loads on startup.
+  # shaderc/spirv-cross is loaded dynamically to reduce module loads on startup.
   get_target_property(SHADERC_INCLUDE_DIR Shaderc::shaderc_shared INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(util PUBLIC ${SHADERC_INCLUDE_DIR})
+  get_target_property(SPIRV_CROSS_INCLUDE_DIR spirv-cross-c-shared INTERFACE_INCLUDE_DIRECTORIES)
+  target_include_directories(util PUBLIC ${SHADERC_INCLUDE_DIR} ${SPIRV_CROSS_INCLUDE_DIR})
 endif()
 
 if(NOT ANDROID)
