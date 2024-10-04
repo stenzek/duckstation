@@ -933,6 +933,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
     g_settings.gpu_force_video_timing = ForceVideoTimingMode::Disabled;
     g_settings.gpu_widescreen_hack = false;
+    g_settings.gpu_texture_cache = false;
     g_settings.gpu_pgxp_enable = false;
     g_settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Adaptive;
     g_settings.display_24bit_chroma_smoothing = false;
