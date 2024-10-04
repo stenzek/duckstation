@@ -514,7 +514,6 @@ static std::vector<std::pair<HashCache::iterator, s32>> s_hash_cache_purge_list;
 static std::vector<VRAMWrite*> s_temp_vram_write_list;
 
 static std::unique_ptr<GPUTexture> s_replacement_texture_render_target;
-static std::unique_ptr<GPUPipeline> s_replacement_init_pipeline;
 static std::unique_ptr<GPUPipeline> s_replacement_draw_pipeline;                 // copies alpha as-is
 static std::unique_ptr<GPUPipeline> s_replacement_semitransparent_draw_pipeline; // inverts alpha (i.e. semitransparent)
 
@@ -554,6 +553,7 @@ bool GPUTextureCache::IsDumpingVRAMWriteTextures()
 
 bool GPUTextureCache::Initialize()
 {
+  LoadLocalConfiguration(false, false);
   UpdateVRAMTrackingState();
   if (!CompilePipelines())
     return false;
@@ -571,13 +571,22 @@ void GPUTextureCache::UpdateSettings(const Settings& old_settings)
     Invalidate();
 
     DestroyPipelines();
-    if (!CompilePipelines())
+    if (!CompilePipelines()) [[unlikely]]
       Panic("Failed to compile pipelines on TC settings change");
   }
 
   // Reload textures if configuration changes.
+  const bool old_replacement_scale_linear_filter = s_config.replacement_scale_linear_filter;
   if (LoadLocalConfiguration(false, false))
+  {
+    if (s_config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
+    {
+      if (!CompilePipelines()) [[unlikely]]
+        Panic("Failed to compile pipelines on TC replacement settings change");
+    }
+
     ReloadTextureReplacements(false);
+  }
 }
 
 bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
@@ -755,24 +764,18 @@ bool GPUTextureCache::CompilePipelines()
 
   plconfig.vertex_shader = fullscreen_quad_vertex_shader.get();
 
-  std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                             shadergen.GenerateCopyFragmentShader());
-  if (!fs)
-    return false;
-  plconfig.fragment_shader = fs.get();
-  if (!(s_replacement_init_pipeline = g_gpu_device->CreatePipeline(plconfig)))
-    return false;
-
-  g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                             shadergen.GenerateReplacementMergeFragmentShader(false));
+  std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+    GPUShaderStage::Fragment, shadergen.GetLanguage(),
+    shadergen.GenerateReplacementMergeFragmentShader(false, s_config.replacement_scale_linear_filter));
   if (!fs)
     return false;
   plconfig.fragment_shader = fs.get();
   if (!(s_replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
 
-  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                  shadergen.GenerateReplacementMergeFragmentShader(true));
+  fs = g_gpu_device->CreateShader(
+    GPUShaderStage::Fragment, shadergen.GetLanguage(),
+    shadergen.GenerateReplacementMergeFragmentShader(true, s_config.replacement_scale_linear_filter));
   if (!fs)
     return false;
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
@@ -785,7 +788,6 @@ bool GPUTextureCache::CompilePipelines()
 
 void GPUTextureCache::DestroyPipelines()
 {
-  s_replacement_init_pipeline.reset();
   s_replacement_draw_pipeline.reset();
   s_replacement_semitransparent_draw_pipeline.reset();
 }
@@ -3232,9 +3234,6 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   max_scale_y = std::min(max_scale_y, max_possible_scale);
 
   const GSVector4 max_scale_v = GSVector4(max_scale_x, max_scale_y).xyxy();
-  GPUSampler* filter =
-    s_config.replacement_scale_linear_filter ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler();
-
   const u32 new_width = static_cast<u32>(std::ceil(static_cast<float>(TEXTURE_PAGE_WIDTH) * max_scale_x));
   const u32 new_height = static_cast<u32>(std::ceil(static_cast<float>(TEXTURE_PAGE_HEIGHT) * max_scale_y));
   if (!s_replacement_texture_render_target || s_replacement_texture_render_target->GetWidth() < new_width ||
@@ -3259,16 +3258,17 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
     return;
   }
 
-  // TODO: This is AWFUL. Need a better way.
-  // Linear filtering is also wrong, it should do hard edges for 0000 pixels.
-  // We could just copy this from the original image...
-  static constexpr const float u_src_rect[4] = {0.0f, 0.0f, 1.0f, 1.0f};
+  // TODO: Use rects instead of fullscreen tris, maybe avoid the copy..
+  alignas(VECTOR_ALIGNMENT) float uniforms[4];
+  GSVector2 texture_size = GSVector2(GSVector2i(entry->texture->GetWidth(), entry->texture->GetHeight()));
+  GSVector2::store(&uniforms[0], texture_size);
+  GSVector2::store(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
   g_gpu_device->InvalidateRenderTarget(s_replacement_texture_render_target.get());
   g_gpu_device->SetRenderTarget(s_replacement_texture_render_target.get());
   g_gpu_device->SetViewportAndScissor(0, 0, new_width, new_height);
-  g_gpu_device->SetPipeline(s_replacement_init_pipeline.get());
-  g_gpu_device->PushUniformBuffer(u_src_rect, sizeof(u_src_rect));
-  g_gpu_device->SetTextureSampler(0, entry->texture.get(), filter);
+  g_gpu_device->SetPipeline(s_replacement_draw_pipeline.get());
+  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+  g_gpu_device->SetTextureSampler(0, entry->texture.get(), g_gpu_device->GetNearestSampler());
   g_gpu_device->Draw(3, 0);
 
   for (const TextureReplacementSubImage& si : subimages)
@@ -3280,8 +3280,11 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
       continue;
 
     const GSVector4i dst_rect = GSVector4i(GSVector4(si.dst_rect) * max_scale_v);
+    texture_size = GSVector2(GSVector2i(temp_texture->GetWidth(), temp_texture->GetHeight()));
+    GSVector2::store(&uniforms[0], texture_size);
+    GSVector2::store(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
     g_gpu_device->SetViewportAndScissor(dst_rect);
-    g_gpu_device->SetTextureSampler(0, temp_texture.get(), filter);
+    g_gpu_device->SetTextureSampler(0, temp_texture.get(), g_gpu_device->GetNearestSampler());
     g_gpu_device->SetPipeline(si.invert_alpha ? s_replacement_semitransparent_draw_pipeline.get() :
                                                 s_replacement_draw_pipeline.get());
     g_gpu_device->Draw(3, 0);

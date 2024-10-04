@@ -252,7 +252,7 @@ struct Settings
       bool dump_c16_textures : 1 = false;
       bool reduce_palette_range : 1 = true;
       bool convert_copies_to_writes : 1 = false;
-      bool replacement_scale_linear_filter = true;
+      bool replacement_scale_linear_filter = false;
 
       u32 max_vram_write_splits = 0;
       u32 max_vram_write_coalesce_width = 0;

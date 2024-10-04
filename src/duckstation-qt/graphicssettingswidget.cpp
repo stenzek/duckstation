@@ -1183,6 +1183,9 @@ void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, dlgui.convertCopiesToWrites, "TextureReplacements",
                                                "ConvertCopiesToWrites",
                                                default_replacement_config.convert_copies_to_writes);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, dlgui.replacementScaleLinearFilter, "TextureReplacements",
+                                               "ReplacementScaleLinearFilter",
+                                               default_replacement_config.replacement_scale_linear_filter);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.maxVRAMWriteSplits, "TextureReplacements",
                                               "MaxVRAMWriteSplits", default_replacement_config.max_vram_write_splits);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, dlgui.maxVRAMWriteCoalesceWidth, "TextureReplacements",
@@ -1225,6 +1228,7 @@ void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()
     config.dump_c16_textures = dlgui.dumpC16Textures->isChecked();
     config.reduce_palette_range = dlgui.reducePaletteRange->isChecked();
     config.convert_copies_to_writes = dlgui.convertCopiesToWrites->isChecked();
+    config.replacement_scale_linear_filter = dlgui.replacementScaleLinearFilter->isChecked();
     config.max_vram_write_splits = dlgui.maxVRAMWriteSplits->value();
     config.max_vram_write_coalesce_width = dlgui.maxVRAMWriteCoalesceWidth->value();
     config.max_vram_write_coalesce_height = dlgui.maxVRAMWriteCoalesceHeight->value();

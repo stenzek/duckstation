@@ -1752,19 +1752,54 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitransparent)
+std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter)
 {
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "SEMITRANSPARENT", semitransparent);
-  DeclareUniformBuffer(ss, {"float4 u_src_rect"}, true);
+  DefineMacro(ss, "BILINEAR_FILTER", bilinear_filter);
+  DeclareUniformBuffer(ss, {"float4 u_texture_size"}, true);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1);
 
   ss << R"(
 {
-  float2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
-  float4 color = SAMPLE_TEXTURE(samp0, coords);
+#if BILINEAR_FILTER
+  // Compute the coordinates of the four texels we will be interpolating between.
+  // Clamp this to the triangle texture coordinates.
+  float2 coords = v_tex0 * u_texture_size.xy;
+  float2 texel_top_left = frac(coords) - float2(0.5, 0.5);
+  float2 texel_offset = sign(texel_top_left);
+  float4 fcoords = max(coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
+                        float4(0.0, 0.0, 0.0, 0.0)) * u_texture_size.zwzw;
+
+  // Load four texels.
+  float4 s00 = SAMPLE_TEXTURE_LEVEL(samp0, fcoords.xy, 0.0);
+  float4 s10 = SAMPLE_TEXTURE_LEVEL(samp0, fcoords.zy, 0.0);
+  float4 s01 = SAMPLE_TEXTURE_LEVEL(samp0, fcoords.xw, 0.0);
+  float4 s11 = SAMPLE_TEXTURE_LEVEL(samp0, fcoords.zw, 0.0);
+
+  // Bilinearly interpolate.
+  float2 weights = abs(texel_top_left);
+  float4 color = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
+
+  #if !SEMITRANSPARENT
+    // Compute alpha from how many texels aren't pixel color 0000h.
+    float a00 = float(VECTOR_NEQ(s00, float4(0.0, 0.0, 0.0, 0.0)));
+    float a10 = float(VECTOR_NEQ(s10, float4(0.0, 0.0, 0.0, 0.0)));
+    float a01 = float(VECTOR_NEQ(s01, float4(0.0, 0.0, 0.0, 0.0)));
+    float a11 = float(VECTOR_NEQ(s11, float4(0.0, 0.0, 0.0, 0.0)));
+    color.a = lerp(lerp(a00, a10, weights.x), lerp(a01, a11, weights.x), weights.y);
+
+    // Compensate for partially transparent sampling.
+    color.rgb /= (color.a != 0.0) ? color.a : 1.0;
+
+    // Use binary alpha.
+    color.a = (color.a >= 0.5) ? 1.0 : 0.0;
+  #endif
+#else
+  float4 color = SAMPLE_TEXTURE_LEVEL(samp0, v_tex0, 0.0);
+#endif
   o_col0.rgb = color.rgb;
 
   // Alpha processing.

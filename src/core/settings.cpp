@@ -458,7 +458,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   texture_replacements.config.convert_copies_to_writes =
     si.GetBoolValue("TextureReplacements", "ConvertCopiesToWrites", false);
   texture_replacements.config.replacement_scale_linear_filter =
-    si.GetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter", true);
+    si.GetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter", false);
 
   texture_replacements.config.max_vram_write_splits = si.GetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", 0u);
   texture_replacements.config.max_vram_write_coalesce_width =

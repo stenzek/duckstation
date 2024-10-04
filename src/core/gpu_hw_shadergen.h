@@ -36,7 +36,7 @@ public:
   std::string GenerateAdaptiveDownsampleCompositeFragmentShader();
   std::string GenerateBoxSampleDownsampleFragmentShader(u32 factor);
 
-  std::string GenerateReplacementMergeFragmentShader(bool semitransparent);
+  std::string GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter);
 
 private:
   ALWAYS_INLINE bool UsingMSAA() const { return m_multisamples > 1; }
