@@ -9,7 +9,7 @@
 
 class SettingsWindow;
 
-enum class ConsoleRegion;
+enum class ConsoleRegion : u8;
 namespace BIOS {
 struct ImageInfo;
 }

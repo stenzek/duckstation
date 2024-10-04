@@ -32,7 +32,7 @@ class QVariant;
 class QWidget;
 class QUrl;
 
-enum class ConsoleRegion;
+enum class ConsoleRegion : u8;
 enum class DiscRegion : u8;
 namespace GameDatabase {
 enum class CompatibilityRating : u8;

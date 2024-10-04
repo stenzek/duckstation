@@ -40,11 +40,13 @@ struct ImageInfo
 
   const char* description;
   ConsoleRegion region;
-  Hash hash;
+  bool region_check;
   FastBootPatch fastboot_patch;
   u8 priority;
+  alignas(16) Hash hash;
 
   bool SupportsFastBoot() const { return (fastboot_patch != FastBootPatch::Unsupported); }
+  bool CanSlowBootDisc(DiscRegion disc_region) const;
 
   static TinyString GetHashString(const Hash& hash);
 };

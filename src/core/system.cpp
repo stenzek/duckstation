@@ -151,7 +151,7 @@ static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
 static bool Initialize(bool force_software_renderer, Error* error);
 static bool LoadBIOS(Error* error);
-static bool SetBootMode(BootMode new_boot_mode, Error* error);
+static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* error);
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
@@ -1493,7 +1493,7 @@ void System::ResetSystem()
   const BootMode new_boot_mode = (s_boot_mode == BootMode::BootEXE || s_boot_mode == BootMode::BootPSF) ?
                                    s_boot_mode :
                                    (g_settings.bios_patch_fast_boot ? BootMode::FastBoot : BootMode::FullBoot);
-  if (Error error; !SetBootMode(new_boot_mode, &error))
+  if (Error error; !SetBootMode(new_boot_mode, CDROM::GetDiscRegion(), &error))
     ERROR_LOG("Failed to reload BIOS on boot mode change, the system may be unstable: {}", error.GetDescription());
 
   // Have to turn on turbo if fast forwarding boot.
@@ -1758,7 +1758,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Load BIOS image.
-  if (!SetBootMode(boot_mode, error))
+  if (!SetBootMode(boot_mode, disc_region, error))
   {
     s_state = State::Shutdown;
     ClearRunningGame();
@@ -2409,7 +2409,17 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("System"))
     return false;
 
-  sw.Do(&s_region);
+  if (sw.GetVersion() < 74) [[unlikely]]
+  {
+    u32 region32 = static_cast<u32>(s_region);
+    sw.Do(&region32);
+    s_region = static_cast<ConsoleRegion>(region32);
+  }
+  else
+  {
+    sw.Do(&s_region);
+  }
+
   sw.Do(&s_frame_number);
   sw.Do(&s_internal_frame_number);
 
@@ -2568,14 +2578,16 @@ void System::InternalReset()
   s_internal_frame_number = 0;
 }
 
-bool System::SetBootMode(BootMode new_boot_mode, Error* error)
+bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* error)
 {
   // Can we actually fast boot? If starting, s_bios_image_info won't be valid.
   const bool can_fast_boot =
-    (CDROM::IsMediaPS1Disc() &&
+    ((disc_region != DiscRegion::NonPS1) &&
      (s_state == State::Starting || (s_bios_image_info && s_bios_image_info->SupportsFastBoot())));
   const System::BootMode actual_new_boot_mode =
-    (new_boot_mode == BootMode::FastBoot) ? (can_fast_boot ? BootMode::FastBoot : BootMode::FullBoot) : new_boot_mode;
+    (new_boot_mode == BootMode::FastBoot || (s_bios_image_info && s_bios_image_info->CanSlowBootDisc(disc_region))) ?
+      (can_fast_boot ? BootMode::FastBoot : BootMode::FullBoot) :
+      new_boot_mode;
   if (actual_new_boot_mode == s_boot_mode)
     return true;
 
@@ -2583,7 +2595,11 @@ bool System::SetBootMode(BootMode new_boot_mode, Error* error)
   if (!LoadBIOS(error))
     return false;
 
-  s_boot_mode = actual_new_boot_mode;
+  // Handle the case of BIOSes not being able to full boot.
+  s_boot_mode = (actual_new_boot_mode == BootMode::FullBoot && s_bios_image_info &&
+                 !s_bios_image_info->CanSlowBootDisc(disc_region)) ?
+                  BootMode::FastBoot :
+                  actual_new_boot_mode;
   if (s_boot_mode == BootMode::FastBoot)
   {
     if (s_bios_image_info && s_bios_image_info->SupportsFastBoot())
