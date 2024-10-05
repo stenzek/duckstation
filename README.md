@@ -27,6 +27,7 @@ Other features include:
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers.
  - Accurate blending via Rasterizer Order Views/Fragment Shader Interlock.
  - PGXP for geometry precision, texture correction, and depth buffer emulation.
+ - Texture replacement system in hardware renderers.
  - Motion adaptive deinterlacing.
  - Adaptive downsampling filter.
  - Screen rotation for vertical or "TATE" shmup games.
@@ -39,7 +40,7 @@ Other features include:
  - Automatic loading/applying of PPF patches.
  - Direct booting of homebrew executables.
  - Direct loading of Portable Sound Format (psf) files.
- - Time stretched audio when running outside of 100% speed, and surround sound expansion.
+ - Time stretched audio when running outside of 100% speed.
  - Digital and analog controllers for input (rumble is forwarded to host).
  - GunCon and Justifier lightgun support (simulated with mouse).
  - NeGcon support.
@@ -57,7 +58,7 @@ Other features include:
  - Video capture with Media Foundation (Windows) and [FFmpeg](https://www.ffmpeg.org/) (All Platforms) backends.
 
 ## System Requirements
- - A CPU faster than a potato. But it needs to be x86_64 (SSE4.1), AArch32/armv7, AArch64/ARMv8, or RISC-V/RV64.
+ - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, AArch64/ARMv8, or RISC-V/RV64.
  - For the hardware renderers, a GPU capable of OpenGL 3.1/OpenGL ES 3.1/Direct3D 11 Feature Level 10.0 (or Vulkan 1.0) and above. So, basically anything made in the last 10 years or so.
  - SDL, XInput or DInput compatible game controller (e.g. XB360/XBOne/XBSeries). DualShock 3 users on Windows will need to install the official DualShock 3 drivers included as part of PlayStation Now.
 
@@ -66,7 +67,7 @@ Binaries of DuckStation for Windows x64/ARM64, Linux x86_64 (in AppImage/Flatpak
 
 As per the terms of CC-BY-NC-ND, redistribution of **unmodified releases and code** is permitted. However, we would prefer if you linked to https://www.duckstation.org/ instead. Please note that pre-configured settings and packages are considered modifications.
 
-For x86 machines (most systems), you will need a CPU that supports the SSE4.1 instruction set. This includes all CPUs manufactured after 2007. If you want to use DuckStation with a CPU that is older, [v0.1-6995](https://github.com/stenzek/duckstation/releases/tag/v0.1-6995) is the last version that does not require SSE4.1.
+For x86 machines (most systems), you will need a CPU that supports the SSE4.1 instruction set for the "normal" build. This includes all Intel CPUs manufactured after 2007, and AMD CPUs manufactured after 2011. If you have a CPU that is older, you will need to download the "SSE2" build from the releases page, which has lower performance but still supports these CPUs.
 
 ### Windows
 
