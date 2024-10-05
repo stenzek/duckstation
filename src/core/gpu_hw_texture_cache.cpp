@@ -561,28 +561,38 @@ bool GPUTextureCache::Initialize()
   return true;
 }
 
-void GPUTextureCache::UpdateSettings(const Settings& old_settings)
+void GPUTextureCache::UpdateSettings(bool use_texture_cache, const Settings& old_settings)
 {
-  UpdateVRAMTrackingState();
-
-  if (g_settings.texture_replacements.enable_texture_replacements !=
-      old_settings.texture_replacements.enable_texture_replacements)
+  if (use_texture_cache)
   {
-    Invalidate();
+    UpdateVRAMTrackingState();
 
-    DestroyPipelines();
-    if (!CompilePipelines()) [[unlikely]]
-      Panic("Failed to compile pipelines on TC settings change");
+    if (g_settings.texture_replacements.enable_texture_replacements !=
+        old_settings.texture_replacements.enable_texture_replacements)
+    {
+      Invalidate();
+
+      DestroyPipelines();
+      if (!CompilePipelines()) [[unlikely]]
+        Panic("Failed to compile pipelines on TC settings change");
+    }
   }
 
   // Reload textures if configuration changes.
   const bool old_replacement_scale_linear_filter = s_config.replacement_scale_linear_filter;
-  if (LoadLocalConfiguration(false, false))
+  if (LoadLocalConfiguration(false, false) ||
+      g_settings.texture_replacements.enable_texture_replacements !=
+        old_settings.texture_replacements.enable_texture_replacements ||
+      g_settings.texture_replacements.enable_vram_write_replacements !=
+        old_settings.texture_replacements.enable_vram_write_replacements)
   {
-    if (s_config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
+    if (use_texture_cache)
     {
-      if (!CompilePipelines()) [[unlikely]]
-        Panic("Failed to compile pipelines on TC replacement settings change");
+      if (s_config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
+      {
+        if (!CompilePipelines()) [[unlikely]]
+          Panic("Failed to compile pipelines on TC replacement settings change");
+      }
     }
 
     ReloadTextureReplacements(false);

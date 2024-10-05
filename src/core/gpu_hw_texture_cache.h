@@ -103,7 +103,7 @@ struct Source
 };
 
 bool Initialize();
-void UpdateSettings(const Settings& old_settings);
+void UpdateSettings(bool use_texture_cache, const Settings& old_settings);
 bool DoState(StateWrapper& sw, bool skip);
 void Shutdown();
 

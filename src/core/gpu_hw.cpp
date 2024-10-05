@@ -557,10 +557,8 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
   {
     GPUTextureCache::Shutdown();
   }
-  else if (m_use_texture_cache)
-  {
-    GPUTextureCache::UpdateSettings(old_settings);
-  }
+
+  GPUTextureCache::UpdateSettings(m_use_texture_cache, old_settings);
 
   if (g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
       (g_settings.gpu_downsample_mode == GPUDownsampleMode::Box &&
