@@ -154,7 +154,7 @@ static constexpr const ImageInfo s_image_info_by_hash[] = {
 // OpenBIOS is separate, because there's no fixed hash for it. So just in case something collides with a hash of zero...
 // which would be unlikely.
 static constexpr const ImageInfo s_openbios_info = {
-  "OpenBIOS", ConsoleRegion::Auto, {}, ImageInfo::FastBootPatch::Unsupported, 200};
+  "OpenBIOS", ConsoleRegion::Auto, false, ImageInfo::FastBootPatch::Unsupported, 200, {}};
 static constexpr const char s_openbios_signature[] = {'O', 'p', 'e', 'n', 'B', 'I', 'O', 'S'};
 static constexpr u32 s_openbios_signature_offset = 0x78;
 
