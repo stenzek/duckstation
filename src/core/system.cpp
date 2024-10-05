@@ -55,6 +55,7 @@
 #include "common/file_system.h"
 #include "common/layered_settings_interface.h"
 #include "common/log.h"
+#include "common/memmap.h"
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/threading.h"
@@ -373,8 +374,9 @@ bool System::Internal::PerformEarlyHardwareChecks(Error* error)
 #endif
 #endif
 
+#ifndef DYNAMIC_HOST_PAGE_SIZE
   // Check page size. If it doesn't match, it is a fatal error.
-  const size_t runtime_host_page_size = PlatformMisc::GetRuntimePageSize();
+  const size_t runtime_host_page_size = MemMap::GetRuntimePageSize();
   if (runtime_host_page_size == 0)
   {
     Error::SetStringFmt(error, "Cannot determine size of page. Continuing with expectation of {} byte pages.",
@@ -388,6 +390,15 @@ bool System::Internal::PerformEarlyHardwareChecks(Error* error)
     CPUThreadShutdown();
     return false;
   }
+#else
+  if (HOST_PAGE_SIZE == 0 || HOST_PAGE_SIZE < MIN_HOST_PAGE_SIZE || HOST_PAGE_SIZE > MAX_HOST_PAGE_SIZE)
+  {
+    Error::SetStringFmt(error, "Page size of {} bytes is out of the range supported by this build: {}-{}.",
+                        HOST_PAGE_SIZE, MIN_HOST_PAGE_SIZE, MAX_HOST_PAGE_SIZE);
+    CPUThreadShutdown();
+    return false;
+  }
+#endif
 
   return true;
 }
@@ -451,6 +462,10 @@ void System::LogStartupInformation()
     INFO_LOG("CPU has {} logical processor(s) and {} core(s) across {} cluster(s).", package->processor_count,
              package->core_count, package->cluster_count);
   }
+
+#ifdef DYNAMIC_HOST_PAGE_SIZE
+  INFO_LOG("Host Page Size: {} bytes", HOST_PAGE_SIZE);
+#endif
 }
 
 bool System::Internal::ProcessStartup(Error* error)

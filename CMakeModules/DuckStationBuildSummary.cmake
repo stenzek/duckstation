@@ -37,6 +37,15 @@ It does **not** use the LSB subdirectories of bin, share, etc, so you should dis
   endif()
 endif()
 
+if(DEFINED HOST_MIN_PAGE_SIZE AND DEFINED HOST_MAX_PAGE_SIZE)
+  message(STATUS "Building with a dynamic page size of ${HOST_MIN_PAGE_SIZE} - ${HOST_MAX_PAGE_SIZE} bytes.")
+elseif(DEFINED HOST_PAGE_SIZE)
+  message(STATUS "Building with detected page size of ${HOST_PAGE_SIZE}")
+endif()
+if(DEFINED HOST_CACHE_LINE_SIZE)
+  message(STATUS "Building with detected cache line size of ${HOST_CACHE_LINE_SIZE}")
+endif()
+
 if(NOT IS_SUPPORTED_COMPILER)
   message(WARNING "*************** UNSUPPORTED CONFIGURATION ***************
 You are not compiling DuckStation with a supported compiler.

@@ -135,12 +135,6 @@ void PlatformMisc::ResumeScreensaver()
   s_screensaver_suspended = false;
 }
 
-size_t PlatformMisc::GetRuntimePageSize()
-{
-  int res = sysconf(_SC_PAGESIZE);
-  return (res > 0) ? static_cast<size_t>(res) : 0;
-}
-
 bool PlatformMisc::PlaySoundAsync(const char* path)
 {
 #ifdef __linux__

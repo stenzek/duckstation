@@ -505,7 +505,9 @@ struct Settings
 #endif
 
   // LUT still ends up faster on Apple Silicon for now, because of 16K pages.
-#if defined(ENABLE_MMAP_FASTMEM) && (!defined(__APPLE__) || !defined(__aarch64__))
+#ifdef DYNAMIC_HOST_PAGE_SIZE
+  static const CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE;
+#elif defined(ENABLE_MMAP_FASTMEM) && (!defined(__APPLE__) || !defined(__aarch64__))
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::MMap;
 #else
   static constexpr CPUFastmemMode DEFAULT_CPU_FASTMEM_MODE = CPUFastmemMode::LUT;

@@ -142,7 +142,7 @@ static constexpr u32 RECOMPILER_FAR_CODE_CACHE_SIZE = 16 * 1024 * 1024;
 #define USE_CODE_BUFFER_SECTION 1
 #ifdef __clang__
 #pragma clang section bss = ".jitstorage"
-__attribute__((aligned(HOST_PAGE_SIZE))) static u8 s_code_buffer_ptr[RECOMPILER_CODE_CACHE_SIZE];
+__attribute__((aligned(MAX_HOST_PAGE_SIZE))) static u8 s_code_buffer_ptr[RECOMPILER_CODE_CACHE_SIZE];
 #pragma clang section bss = ""
 #endif
 #else
@@ -614,7 +614,7 @@ void CPU::CodeCache::InvalidateBlocksWithPageIndex(u32 index)
   else if (ppi.invalidate_count > INVALIDATE_COUNT_FOR_MANUAL_PROTECTION)
   {
     DEV_LOG("{} invalidations in {} frames to page {} [0x{:08X} -> 0x{:08X}], switching to manual protection",
-            ppi.invalidate_count, frame_delta, index, (index * HOST_PAGE_SIZE), ((index + 1) * HOST_PAGE_SIZE));
+            ppi.invalidate_count, frame_delta, index, (index << HOST_PAGE_SHIFT), ((index + 1) << HOST_PAGE_SHIFT));
     ppi.mode = PageProtectionMode::ManualCheck;
     new_block_state = BlockState::NeedsRecompile;
   }
@@ -693,6 +693,7 @@ void CPU::CodeCache::InvalidateAllRAMBlocks()
 
 void CPU::CodeCache::ClearBlocks()
 {
+
   for (u32 i = 0; i < Bus::RAM_8MB_CODE_PAGE_COUNT; i++)
   {
     PageProtectionInfo& ppi = s_page_protection[i];

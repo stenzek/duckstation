@@ -51,6 +51,9 @@ enum class PageProtect : u32
 class Error;
 
 namespace MemMap {
+/// Returns the size of pages for the current host.
+u32 GetRuntimePageSize();
+
 std::string GetFileMappingName(const char* prefix);
 void* CreateSharedMemory(const char* name, size_t size, Error* error);
 void DeleteSharedMemory(const char* name);
@@ -101,7 +104,7 @@ public:
 
   ALWAYS_INLINE u8* BasePointer() const { return m_base_ptr; }
   ALWAYS_INLINE u8* OffsetPointer(size_t offset) const { return m_base_ptr + offset; }
-  ALWAYS_INLINE u8* PagePointer(size_t page) const { return m_base_ptr + HOST_PAGE_SIZE * page; }
+  ALWAYS_INLINE u8* PagePointer(size_t page) const { return m_base_ptr + (page << HOST_PAGE_SHIFT); }
 
   bool Create(size_t size);
   void Destroy();

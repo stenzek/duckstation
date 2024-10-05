@@ -12,9 +12,6 @@ bool InitializeSocketSupport(Error* error);
 void SuspendScreensaver();
 void ResumeScreensaver();
 
-/// Returns the size of pages for the current host.
-size_t GetRuntimePageSize();
-
 /// Abstracts platform-specific code for asynchronously playing a sound.
 /// On Windows, this will use PlaySound(). On Linux, it will shell out to aplay. On MacOS, it uses NSSound.
 bool PlaySoundAsync(const char* path);

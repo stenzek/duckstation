@@ -15,6 +15,7 @@
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/memmap.h"
 #include "common/path.h"
 #include "common/string_util.h"
 
@@ -84,6 +85,12 @@ float SettingInfo::FloatStepValue() const
   static constexpr float fallback_value = 0.1f;
   return step_value ? StringUtil::FromChars<float>(step_value).value_or(fallback_value) : fallback_value;
 }
+
+#ifdef DYNAMIC_HOST_PAGE_SIZE
+// See note in settings.h - 16K ends up faster with LUT because of nearby code/data.
+const CPUFastmemMode Settings::DEFAULT_CPU_FASTMEM_MODE =
+  (MemMap::GetRuntimePageSize() > 4096) ? CPUFastmemMode::LUT : CPUFastmemMode::MMap;
+#endif
 
 #if defined(_WIN32)
 const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCaptureBackend::MediaFoundation;

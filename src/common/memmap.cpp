@@ -27,6 +27,7 @@
 #include <mach/mach_vm.h>
 #include <mach/vm_map.h>
 #include <sys/mman.h>
+#include <sys/sysctl.h>
 #else
 #include <cerrno>
 #include <dlfcn.h>
@@ -42,7 +43,25 @@ namespace MemMap {
 static void* AllocateJITMemoryAt(const void* addr, size_t size);
 } // namespace MemMap
 
+#ifdef DYNAMIC_HOST_PAGE_SIZE
+const u32 HOST_PAGE_SIZE = MemMap::GetRuntimePageSize();
+const u32 HOST_PAGE_MASK = MemMap::GetRuntimePageSize() - 1;
+const u32 HOST_PAGE_SHIFT = std::bit_width(MemMap::GetRuntimePageSize() - 1);
+#endif
+
 #ifdef _WIN32
+
+u32 MemMap::GetRuntimePageSize()
+{
+  static u32 cached_page_size = 0;
+  if (cached_page_size != 0) [[likely]]
+    return cached_page_size;
+
+  SYSTEM_INFO si = {};
+  GetSystemInfo(&si);
+  cached_page_size = si.dwPageSize;
+  return cached_page_size;
+}
 
 bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
 {
@@ -193,7 +212,7 @@ bool SharedMemoryMappingArea::Create(size_t size)
     return false;
 
   m_size = size;
-  m_num_pages = size / HOST_PAGE_SIZE;
+  m_num_pages = size >> HOST_PAGE_SHIFT;
   m_placeholder_ranges.emplace(0, size);
   return true;
 }
@@ -338,6 +357,18 @@ bool SharedMemoryMappingArea::Unmap(void* map_base, size_t map_size)
 }
 
 #elif defined(__APPLE__)
+
+u32 MemMap::GetRuntimePageSize()
+{
+  static u32 cached_page_size = 0;
+  if (cached_page_size != 0) [[likely]]
+    return cached_page_size;
+
+  size_t page_size_size = sizeof(cached_page_size);
+  if (sysctlbyname("hw.pagesize", &cached_page_size, &page_size_size, nullptr, 0) != 0) [[unlikely]]
+    cached_page_size = 0;
+  return cached_page_size;
+}
 
 bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
 {
@@ -515,7 +546,7 @@ bool SharedMemoryMappingArea::Create(size_t size)
   }
 
   m_size = size;
-  m_num_pages = size / HOST_PAGE_SIZE;
+  m_num_pages = size >> HOST_PAGE_SHIFT;
   return true;
 }
 
@@ -599,6 +630,17 @@ void MemMap::EndCodeWrite()
 #endif
 
 #else
+
+u32 MemMap::GetRuntimePageSize()
+{
+  static u32 cached_page_size = 0;
+  if (cached_page_size != 0) [[likely]]
+    return cached_page_size;
+
+  const int res = sysconf(_SC_PAGESIZE);
+  cached_page_size = (res > 0) ? static_cast<u32>(res) : 0;
+  return cached_page_size;
+}
 
 bool MemMap::MemProtect(void* baseaddr, size_t size, PageProtect mode)
 {
@@ -788,7 +830,7 @@ bool SharedMemoryMappingArea::Create(size_t size)
 
   m_base_ptr = static_cast<u8*>(alloc);
   m_size = size;
-  m_num_pages = size / HOST_PAGE_SIZE;
+  m_num_pages = size >> HOST_PAGE_SHIFT;
   return true;
 }
 

@@ -606,8 +606,8 @@ void DebuggerWindow::setMemoryViewRegion(Bus::MemoryRegion region)
     if (offset > Bus::g_ram_size)
       return;
 
-    const u32 start_page = static_cast<u32>(offset) / HOST_PAGE_SIZE;
-    const u32 end_page = static_cast<u32>(offset + count - 1) / HOST_PAGE_SIZE;
+    const u32 start_page = static_cast<u32>(offset) >> HOST_PAGE_SHIFT;
+    const u32 end_page = static_cast<u32>(offset + count - 1) >> HOST_PAGE_SHIFT;
     for (u32 i = start_page; i <= end_page; i++)
     {
       if (Bus::g_ram_code_bits[i])

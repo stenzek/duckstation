@@ -78,13 +78,6 @@ void PlatformMisc::ResumeScreensaver()
   s_screensaver_suspended = false;
 }
 
-size_t PlatformMisc::GetRuntimePageSize()
-{
-  SYSTEM_INFO si = {};
-  GetSystemInfo(&si);
-  return si.dwPageSize;
-}
-
 bool PlatformMisc::PlaySoundAsync(const char* path)
 {
   const std::wstring wpath(FileSystem::GetWin32Path(path));

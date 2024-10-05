@@ -3001,7 +3001,7 @@ ALWAYS_INLINE bool CPU::DoSafeMemoryAccess(VirtualMemoryAddress address, u32& va
     }
     else
     {
-      const u32 page_index = offset / HOST_PAGE_SIZE;
+      const u32 page_index = offset >> HOST_PAGE_SHIFT;
 
       if constexpr (size == MemoryAccessSize::Byte)
       {

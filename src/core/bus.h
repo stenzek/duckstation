@@ -95,8 +95,8 @@ enum : TickCount
 
 enum : u32
 {
-  RAM_2MB_CODE_PAGE_COUNT = (RAM_2MB_SIZE + (HOST_PAGE_SIZE - 1)) / HOST_PAGE_SIZE,
-  RAM_8MB_CODE_PAGE_COUNT = (RAM_8MB_SIZE + (HOST_PAGE_SIZE - 1)) / HOST_PAGE_SIZE,
+  RAM_2MB_CODE_PAGE_COUNT = (RAM_2MB_SIZE + (MIN_HOST_PAGE_SIZE - 1)) / MIN_HOST_PAGE_SIZE,
+  RAM_8MB_CODE_PAGE_COUNT = (RAM_8MB_SIZE + (MIN_HOST_PAGE_SIZE - 1)) / MIN_HOST_PAGE_SIZE,
 
   MEMORY_LUT_PAGE_SIZE = 4096,
   MEMORY_LUT_PAGE_SHIFT = 12,
@@ -172,7 +172,7 @@ ALWAYS_INLINE static bool IsRAMAddress(PhysicalMemoryAddress address)
 /// Returns the code page index for a RAM address.
 ALWAYS_INLINE static u32 GetRAMCodePageIndex(PhysicalMemoryAddress address)
 {
-  return (address & g_ram_mask) / HOST_PAGE_SIZE;
+  return (address & g_ram_mask) >> HOST_PAGE_SHIFT;
 }
 
 /// Returns true if the specified page contains code.
