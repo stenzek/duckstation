@@ -882,7 +882,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 float4 SampleFromPageTexture(float2 coords)
 {
   // Cached textures.
-#if UPSCALED == 0 || FORCE_ROUND_TEXCOORDS != 0
+#if UPSCALED == 0
   float2 fpart = coords - roundEven(coords);
 #else
   float2 fpart = frac(coords);
