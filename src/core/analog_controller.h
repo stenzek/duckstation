@@ -99,6 +99,9 @@ private:
     GetSetRumble       // 0x4D
   };
 
+  static constexpr s16 DEFAULT_SMALL_MOTOR_VIBRATION_BIAS = 8;
+  static constexpr s16 DEFAULT_LARGE_MOTOR_VIBRATION_BIAS = 8;
+
   Command m_command = Command::Idle;
   int m_command_step = 0;
 
@@ -122,14 +125,14 @@ private:
   void ResetRumbleConfig();
   void SetMotorStateForConfigIndex(int index, u8 value);
 
-  bool m_force_analog_on_reset = false;
-  bool m_analog_dpad_in_digital_mode = false;
   float m_analog_deadzone = 0.0f;
   float m_analog_sensitivity = 1.33f;
   float m_button_deadzone = 0.0f;
-  u8 m_rumble_bias = 8;
+  std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_LARGE_MOTOR_VIBRATION_BIAS, DEFAULT_SMALL_MOTOR_VIBRATION_BIAS};
   u8 m_invert_left_stick = 0;
   u8 m_invert_right_stick = 0;
+  bool m_force_analog_on_reset = false;
+  bool m_analog_dpad_in_digital_mode = false;
 
   bool m_analog_mode = false;
   bool m_analog_locked = false;

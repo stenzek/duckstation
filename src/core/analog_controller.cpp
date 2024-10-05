@@ -353,7 +353,7 @@ void AnalogController::UpdateHostVibration()
   {
     // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
     const u8 state = m_motor_state[motor];
-    const double x = static_cast<double>(std::min<u32>(state + static_cast<u32>(m_rumble_bias), 255));
+    const double x = static_cast<double>(std::clamp<s32>(static_cast<s32>(state) + m_vibration_bias[motor], 0, 255));
     const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
                             156.82454281087692 * x + 3.637978807091713e-11;
 
@@ -866,10 +866,18 @@ static const SettingInfo s_settings[] = {
    TRANSLATE_NOOP("AnalogController", "Sets the deadzone for activating buttons/triggers, "
                                       "i.e. the fraction of the trigger which will be ignored."),
    "0.25", "0.01", "1.00", "0.01", "%.0f%%", nullptr, 100.0f},
-  {SettingInfo::Type::Integer, "VibrationBias", TRANSLATE_NOOP("AnalogController", "Vibration Bias"),
-   TRANSLATE_NOOP("AnalogController", "Sets the rumble bias value. If rumble in some games is too weak or not "
-                                      "functioning, try increasing this value."),
-   "8", "0", "255", "1", "%d", nullptr, 1.0f},
+  {SettingInfo::Type::Integer, "LargeMotorVibrationBias",
+   TRANSLATE_NOOP("AnalogController", "Large Motor Vibration Bias"),
+   TRANSLATE_NOOP("AnalogController",
+                  "Sets the bias value for the large vibration motor. If vibration in some games is too weak or not "
+                  "functioning, try increasing this value. Negative values will decrease the intensity of vibration."),
+   "8", "-255", "255", "1", "%d", nullptr, 1.0f},
+  {SettingInfo::Type::Integer, "SmallMotorVibrationBias",
+   TRANSLATE_NOOP("AnalogController", "Small Motor Vibration Bias"),
+   TRANSLATE_NOOP("AnalogController",
+                  "Sets the bias value for the small vibration motor. If vibration in some games is too weak or not "
+                  "functioning, try increasing this value. Negative values will decrease the intensity of vibration."),
+   "8", "-255", "255", "1", "%d", nullptr, 1.0f},
   {SettingInfo::Type::IntegerList, "InvertLeftStick", TRANSLATE_NOOP("AnalogController", "Invert Left Stick"),
    TRANSLATE_NOOP("AnalogController", "Inverts the direction of the left analog stick."), "0", "0", "3", nullptr,
    nullptr, s_invert_settings, 0.0f},
@@ -895,7 +903,10 @@ void AnalogController::LoadSettings(SettingsInterface& si, const char* section, 
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
   m_button_deadzone = std::clamp(si.GetFloatValue(section, "ButtonDeadzone", DEFAULT_BUTTON_DEADZONE), 0.01f, 1.0f);
-  m_rumble_bias = static_cast<u8>(std::min<u32>(si.GetIntValue(section, "VibrationBias", 8), 255));
+  m_vibration_bias[0] = static_cast<s16>(
+    std::clamp(si.GetIntValue(section, "LargeMotorVibrationBias", DEFAULT_LARGE_MOTOR_VIBRATION_BIAS), -255, 255));
+  m_vibration_bias[1] = static_cast<s16>(
+    std::clamp(si.GetIntValue(section, "SmallMotorVibrationBias", DEFAULT_SMALL_MOTOR_VIBRATION_BIAS), -255, 255));
   m_invert_left_stick = static_cast<u8>(si.GetIntValue(section, "InvertLeftStick", 0));
   m_invert_right_stick = static_cast<u8>(si.GetIntValue(section, "InvertRightStick", 0));
 }
