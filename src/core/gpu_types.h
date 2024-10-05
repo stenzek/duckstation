@@ -10,6 +10,7 @@
 #include "common/gsvector.h"
 
 #include <array>
+#include <string>
 
 enum : u32
 {
@@ -229,6 +230,16 @@ struct GPUTextureWindow
   u8 and_y;
   u8 or_x;
   u8 or_y;
+
+  ALWAYS_INLINE bool operator==(const GPUTextureWindow& rhs) const
+  {
+    return (std::memcmp(this, &rhs, sizeof(*this)) == 0);
+  }
+
+  ALWAYS_INLINE bool operator!=(const GPUTextureWindow& rhs) const
+  {
+    return (std::memcmp(this, &rhs, sizeof(*this)) != 0);
+  }
 };
 
 ALWAYS_INLINE static constexpr u32 VRAMPageIndex(u32 px, u32 py)

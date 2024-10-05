@@ -478,15 +478,10 @@ protected:
     bool texture_x_flip;
     bool texture_y_flip;
     bool texture_page_changed;
-    bool texture_window_changed;
 
     ALWAYS_INLINE bool IsTexturePageChanged() const { return texture_page_changed; }
     ALWAYS_INLINE void SetTexturePageChanged() { texture_page_changed = true; }
     ALWAYS_INLINE void ClearTexturePageChangedFlag() { texture_page_changed = false; }
-
-    ALWAYS_INLINE bool IsTextureWindowChanged() const { return texture_window_changed; }
-    ALWAYS_INLINE void SetTextureWindowChanged() { texture_window_changed = true; }
-    ALWAYS_INLINE void ClearTextureWindowChangedFlag() { texture_window_changed = false; }
   } m_draw_mode = {};
 
   GPUDrawingArea m_drawing_area = {};

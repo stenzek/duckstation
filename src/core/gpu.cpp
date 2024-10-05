@@ -356,7 +356,6 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
   if (sw.IsReading())
   {
     m_draw_mode.texture_page_changed = true;
-    m_draw_mode.texture_window_changed = true;
     m_drawing_area_changed = true;
     SetClampedDrawingArea();
     UpdateDMARequest();
@@ -1584,8 +1583,6 @@ void GPU::SetTextureWindow(u32 value)
   if (m_draw_mode.texture_window_value == value)
     return;
 
-  FlushRender();
-
   const u8 mask_x = Truncate8(value & UINT32_C(0x1F));
   const u8 mask_y = Truncate8((value >> 5) & UINT32_C(0x1F));
   const u8 offset_x = Truncate8((value >> 10) & UINT32_C(0x1F));
@@ -1597,7 +1594,6 @@ void GPU::SetTextureWindow(u32 value)
   m_draw_mode.texture_window.or_x = (offset_x & mask_x) * 8u;
   m_draw_mode.texture_window.or_y = (offset_y & mask_y) * 8u;
   m_draw_mode.texture_window_value = value;
-  m_draw_mode.texture_window_changed = true;
 }
 
 void GPU::ReadCLUT(u16* dest, GPUTexturePaletteReg reg, bool clut_is_8bit)

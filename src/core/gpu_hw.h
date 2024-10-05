@@ -113,7 +113,7 @@ private:
     void SetUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v);
   };
 
-  struct BatchConfig
+  struct alignas(4) BatchConfig
   {
     BatchTextureMode texture_mode = BatchTextureMode::Disabled;
     GPUTransparencyMode transparency_mode = GPUTransparencyMode::Disabled;
@@ -130,7 +130,7 @@ private:
     BatchRenderMode GetRenderMode() const;
   };
 
-  struct BatchUBOData
+  struct alignas(VECTOR_ALIGNMENT) BatchUBOData
   {
     u32 u_texture_window[4]; // and_x, and_y, or_x, or_y
     float u_src_alpha_factor;
@@ -140,7 +140,7 @@ private:
     float u_resolution_scale;
     float u_rcp_resolution_scale;
     float u_resolution_scale_minus_one;
-    u32 pad;
+    GPUTextureWindow u_texture_window_bits; // not actually used on GPU
   };
 
   struct RendererStats
@@ -302,10 +302,10 @@ private:
 
   u8 m_texpage_dirty = 0;
 
+  bool m_batch_ubo_dirty = true;
   BatchConfig m_batch;
 
   // Changed state
-  bool m_batch_ubo_dirty = true;
   BatchUBOData m_batch_ubo_data = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.

@@ -3634,7 +3634,7 @@ void GPU_HW::DispatchRenderCommand()
   {
     if (texture_mode != m_batch.texture_mode || transparency_mode != m_batch.transparency_mode ||
         (transparency_mode == GPUTransparencyMode::BackgroundMinusForeground && !m_allow_shader_blend) ||
-        dithering_enable != m_batch.dithering ||
+        dithering_enable != m_batch.dithering || m_batch_ubo_data.u_texture_window_bits != m_draw_mode.texture_window ||
         (texture_mode == BatchTextureMode::PageTexture && m_batch.texture_cache_key != texture_cache_key))
     {
       FlushRender();
@@ -3684,17 +3684,12 @@ void GPU_HW::DispatchRenderCommand()
     m_batch.dithering = dithering_enable;
     m_batch.texture_cache_key = texture_cache_key;
 
-    if (m_draw_mode.IsTextureWindowChanged())
+    if (m_batch_ubo_data.u_texture_window_bits != m_draw_mode.texture_window)
     {
-      m_draw_mode.ClearTextureWindowChangedFlag();
-
-      m_batch_ubo_data.u_texture_window[0] = ZeroExtend32(m_draw_mode.texture_window.and_x);
-      m_batch_ubo_data.u_texture_window[1] = ZeroExtend32(m_draw_mode.texture_window.and_y);
-      m_batch_ubo_data.u_texture_window[2] = ZeroExtend32(m_draw_mode.texture_window.or_x);
-      m_batch_ubo_data.u_texture_window[3] = ZeroExtend32(m_draw_mode.texture_window.or_y);
-
-      m_texture_window_active = ((m_draw_mode.texture_window.and_x & m_draw_mode.texture_window.and_y) != 0xFF ||
-                                 ((m_draw_mode.texture_window.or_x | m_draw_mode.texture_window.or_y) != 0));
+      m_batch_ubo_data.u_texture_window_bits = m_draw_mode.texture_window;
+      m_texture_window_active = (m_draw_mode.texture_window != GPUTextureWindow{0xFF, 0xFF, 0x00, 0x00});
+      GSVector4i::store<true>(&m_batch_ubo_data.u_texture_window[0],
+                              GSVector4i::load32(&m_draw_mode.texture_window).u8to32());
       m_batch_ubo_dirty = true;
     }
 
