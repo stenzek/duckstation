@@ -187,6 +187,15 @@ struct dependent_int_false : std::false_type
 #endif
 
 // Host page sizes.
+#if defined(MIN_HOST_PAGE_SIZE) || defined(MAX_HOST_PAGE_SIZE)
+#if !defined(MIN_HOST_PAGE_SIZE) || !defined(MAX_HOST_PAGE_SIZE)
+#error Both MIN_HOST_PAGE_SIZE and MAX_HOST_PAGE_SIZE need to be defined.
+#endif
+#define DYNAMIC_HOST_PAGE_SIZE 1
+extern const u32 HOST_PAGE_SIZE;
+extern const u32 HOST_PAGE_MASK;
+extern const u32 HOST_PAGE_SHIFT;
+#else
 #if defined(OVERRIDE_HOST_PAGE_SIZE)
 static constexpr u32 HOST_PAGE_SIZE = OVERRIDE_HOST_PAGE_SIZE;
 static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
@@ -199,6 +208,9 @@ static constexpr u32 HOST_PAGE_SHIFT = 14;
 static constexpr u32 HOST_PAGE_SIZE = 0x1000;
 static constexpr u32 HOST_PAGE_MASK = HOST_PAGE_SIZE - 1;
 static constexpr u32 HOST_PAGE_SHIFT = 12;
+#endif
+static constexpr u32 MIN_HOST_PAGE_SIZE = HOST_PAGE_SIZE;
+static constexpr u32 MAX_HOST_PAGE_SIZE = HOST_PAGE_SIZE;
 #endif
 
 // Host cache line sizes.

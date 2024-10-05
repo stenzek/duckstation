@@ -110,13 +110,21 @@ endfunction()
 
 function(detect_page_size)
   # This is only needed for ARM64, or if the user hasn't overridden it explicitly.
-  if(NOT CPU_ARCH_ARM64 OR HOST_PAGE_SIZE)
+  # For universal Apple builds, we use preprocessor macros to determine page size.
+  # Similar for Windows, except it's always 4KB.
+  if(NOT CPU_ARCH_ARM64 OR NOT LINUX)
+    unset(HOST_PAGE_SIZE PARENT_SCOPE)
+    unset(HOST_MIN_PAGE_SIZE PARENT_SCOPE)
+    unset(HOST_MAX_PAGE_SIZE PARENT_SCOPE)
+    return()
+  elseif(DEFINED HOST_PAGE_SIZE)
     return()
   endif()
 
-  if(NOT LINUX)
-    # For universal Apple builds, we use preprocessor macros to determine page size.
-    # Similar for Windows, except it's always 4KB.
+  if(HOST_MIN_PAGE_SIZE OR HOST_MAX_PAGE_SIZE)
+    if(NOT HOST_MIN_PAGE_SIZE OR NOT HOST_MAX_PAGE_SIZE)
+      message(FATAL_ERROR "Both HOST_MIN_PAGE_SIZE and HOST_MAX_PAGE_SIZE must be defined.")
+    endif()
     return()
   endif()
 
@@ -153,6 +161,7 @@ endfunction()
 function(detect_cache_line_size)
   # This is only needed for ARM64, or if the user hasn't overridden it explicitly.
   if(NOT CPU_ARCH_ARM64 OR HOST_CACHE_LINE_SIZE)
+    unset(HOST_CACHE_LINE_SIZE PARENT_SCOPE)
     return()
   endif()
 

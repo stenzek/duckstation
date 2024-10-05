@@ -7,7 +7,6 @@
 #include <QuartzCore/QuartzCore.h>
 #include <cinttypes>
 #include <optional>
-#include <sys/sysctl.h>
 #include <vector>
 
 #include "metal_layer.h"
@@ -76,22 +75,6 @@ void PlatformMisc::ResumeScreensaver()
     ERROR_LOG("Failed to resume screensaver.");
 
   s_screensaver_suspended = false;
-}
-
-template<typename T>
-static std::optional<T> sysctlbyname(const char* name)
-{
-  T output = 0;
-  size_t output_size = sizeof(output);
-  if (sysctlbyname(name, &output, &output_size, nullptr, 0) != 0)
-    return std::nullopt;
-
-  return output;
-}
-
-size_t PlatformMisc::GetRuntimePageSize()
-{
-  return sysctlbyname<u32>("hw.pagesize").value_or(0);
 }
 
 bool PlatformMisc::PlaySoundAsync(const char* path)

@@ -798,7 +798,7 @@ void VulkanDevice::ProcessDeviceExtensions()
 
   // vk_ext_external_memory_host is only used if the import alignment is the same as the system's page size
   m_optional_extensions.vk_ext_external_memory_host &=
-    (external_memory_host_properties.minImportedHostPointerAlignment == HOST_PAGE_SIZE);
+    (external_memory_host_properties.minImportedHostPointerAlignment <= HOST_PAGE_SIZE);
 
 #define LOG_EXT(name, field) INFO_LOG(name " is {}", m_optional_extensions.field ? "supported" : "NOT supported")
 

@@ -565,7 +565,7 @@ void Bus::MapFastmemViews()
       {
         if (g_ram_code_bits[i])
         {
-          u8* page_address = map_address + (i * HOST_PAGE_SIZE);
+          u8* page_address = map_address + (i << HOST_PAGE_SHIFT);
           if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, PageProtect::ReadOnly)) [[unlikely]]
           {
             ERROR_LOG("Failed to write-protect code page at {}", static_cast<void*>(page_address));
@@ -706,7 +706,7 @@ void Bus::ClearRAMCodePage(u32 index)
 
 void Bus::SetRAMPageWritable(u32 page_index, bool writable)
 {
-  if (!MemMap::MemProtect(&g_ram[page_index * HOST_PAGE_SIZE], HOST_PAGE_SIZE,
+  if (!MemMap::MemProtect(&g_ram[page_index << HOST_PAGE_SHIFT], HOST_PAGE_SIZE,
                           writable ? PageProtect::ReadWrite : PageProtect::ReadOnly)) [[unlikely]]
   {
     ERROR_LOG("Failed to set RAM host page {} ({}) to {}", page_index,
@@ -722,11 +722,11 @@ void Bus::SetRAMPageWritable(u32 page_index, bool writable)
     // unprotect fastmem pages
     for (const auto& it : s_fastmem_ram_views)
     {
-      u8* page_address = it.first + (page_index * HOST_PAGE_SIZE);
+      u8* page_address = it.first + (page_index << HOST_PAGE_SHIFT);
       if (!MemMap::MemProtect(page_address, HOST_PAGE_SIZE, protect)) [[unlikely]]
       {
         ERROR_LOG("Failed to {} code page {} (0x{:08X}) @ {}", writable ? "unprotect" : "protect", page_index,
-                  page_index * static_cast<u32>(HOST_PAGE_SIZE), static_cast<void*>(page_address));
+                  page_index << HOST_PAGE_SHIFT, static_cast<void*>(page_address));
       }
     }
 
@@ -757,7 +757,7 @@ void Bus::ClearRAMCodePageFlags()
 
 bool Bus::IsCodePageAddress(PhysicalMemoryAddress address)
 {
-  return IsRAMAddress(address) ? g_ram_code_bits[(address & g_ram_mask) / HOST_PAGE_SIZE] : false;
+  return IsRAMAddress(address) ? g_ram_code_bits[(address & g_ram_mask) >> HOST_PAGE_SHIFT] : false;
 }
 
 bool Bus::HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size)
@@ -770,7 +770,7 @@ bool Bus::HasCodePagesInRange(PhysicalMemoryAddress start_address, u32 size)
   const u32 end_address = start_address + size;
   while (start_address < end_address)
   {
-    const u32 code_page_index = start_address / HOST_PAGE_SIZE;
+    const u32 code_page_index = start_address >> HOST_PAGE_SHIFT;
     if (g_ram_code_bits[code_page_index])
       return true;
 

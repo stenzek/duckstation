@@ -112,9 +112,18 @@ if(LINUX)
 endif()
 
 # If the host size was detected, we need to set it as a macro.
-if(HOST_PAGE_SIZE)
-  target_compile_definitions(common PUBLIC "-DOVERRIDE_HOST_PAGE_SIZE=${HOST_PAGE_SIZE}")
+if(DEFINED HOST_MIN_PAGE_SIZE AND DEFINED HOST_MAX_PAGE_SIZE)
+  target_compile_definitions(common PUBLIC
+    "-DMIN_HOST_PAGE_SIZE=${HOST_MIN_PAGE_SIZE}"
+    "-DMAX_HOST_PAGE_SIZE=${HOST_MAX_PAGE_SIZE}"
+  )
+elseif(DEFINED HOST_PAGE_SIZE)
+  target_compile_definitions(common PUBLIC
+    "-DOVERRIDE_HOST_PAGE_SIZE=${HOST_PAGE_SIZE}"
+  )
 endif()
-if(HOST_CACHE_LINE_SIZE)
-	target_compile_definitions(common PUBLIC "-DOVERRIDE_HOST_CACHE_LINE_SIZE=${HOST_CACHE_LINE_SIZE}")
+if(DEFINED HOST_CACHE_LINE_SIZE)
+	target_compile_definitions(common PUBLIC
+    "-DOVERRIDE_HOST_CACHE_LINE_SIZE=${HOST_CACHE_LINE_SIZE}"
+  )
 endif()
