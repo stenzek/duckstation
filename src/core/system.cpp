@@ -3116,6 +3116,7 @@ bool System::SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp,
     DebugAssert(FileSystem::FTell64(fp) == static_cast<s64>(file_position));
     header.media_path_length = static_cast<u32>(buffer.media_path.length());
     header.offset_to_media_path = file_position;
+    header.media_subimage_index = buffer.media_subimage_index;
     if (std::fwrite(buffer.media_path.data(), buffer.media_path.length(), 1, fp) != 1)
     {
       Error::SetErrno(error, "fwrite() for media path failed: ", errno);
