@@ -5,7 +5,6 @@
 #include "aboutdialog.h"
 #include "achievementlogindialog.h"
 #include "autoupdaterdialog.h"
-#include "cheatmanagerwindow.h"
 #include "coverdownloaddialog.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
@@ -23,6 +22,7 @@
 #include "settingwidgetbinder.h"
 
 #include "core/achievements.h"
+#include "core/cheats.h"
 #include "core/game_list.h"
 #include "core/host.h"
 #include "core/memory_card.h"
@@ -787,7 +787,6 @@ void MainWindow::destroySubWindows()
 {
   QtUtils::CloseAndDeleteWindow(m_memory_scanner_window);
   QtUtils::CloseAndDeleteWindow(m_debugger_window);
-  QtUtils::CloseAndDeleteWindow(m_cheat_manager_window);
   QtUtils::CloseAndDeleteWindow(m_memory_card_editor_window);
   QtUtils::CloseAndDeleteWindow(m_controller_settings_window);
   QtUtils::CloseAndDeleteWindow(m_settings_window);
@@ -998,125 +997,55 @@ void MainWindow::populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* actio
   }
 }
 
-void MainWindow::updateCheatActionsVisibility()
-{
-  // If the cheat system is disabled, put an action to enable it in place of the menu under System.
-  const bool cheats_enabled = Host::GetBoolSettingValue("Console", "EnableCheats", false);
-  m_ui.actionCheats->setVisible(!cheats_enabled);
-  m_ui.menuCheats->menuAction()->setVisible(cheats_enabled);
-}
-
 void MainWindow::onCheatsActionTriggered()
 {
-  const bool cheats_enabled = Host::GetBoolSettingValue("Console", "EnableCheats", false);
-  if (cheats_enabled)
-  {
-    m_ui.menuCheats->exec(QCursor::pos());
-    return;
-  }
-
-  SystemLock lock(pauseAndLockSystem());
-  QMessageBox mb(this);
-  mb.setWindowTitle(tr("Enable Cheats"));
-  mb.setText(
-    tr("Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted "
-       "saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not "
-       "provide you with any assistance when games break.\n\nCheats persist through save states even after being "
-       "disabled, please remember to reset/reboot the game after turning off any codes.\n\nAre you sure you want "
-       "to continue?"));
-  mb.setIcon(QMessageBox::Warning);
-  QPushButton* global = mb.addButton(tr("Enable For All Games"), QMessageBox::DestructiveRole);
-  QPushButton* game = mb.addButton(tr("Enable For This Game"), QMessageBox::AcceptRole);
-  game->setEnabled(s_system_valid && !s_current_game_serial.isEmpty());
-  QPushButton* cancel = mb.addButton(tr("Cancel"), QMessageBox::RejectRole);
-  mb.setDefaultButton(cancel);
-  mb.setEscapeButton(cancel);
-  mb.exec();
-
-  if (mb.clickedButton() == global)
-  {
-    // enable globally
-    Host::SetBaseBoolSettingValue("Console", "EnableCheats", true);
-    Host::CommitBaseSettingChanges();
-    g_emu_thread->applySettings(false);
-  }
-  else if (mb.clickedButton() == game)
-  {
-    if (!SettingsWindow::setGameSettingsBoolForSerial(s_current_game_serial.toStdString(), "Console", "EnableCheats",
-                                                      true))
-    {
-      QMessageBox::critical(this, tr("Error"), tr("Failed to enable cheats for %1.").arg(s_current_game_serial));
-      return;
-    }
-
-    g_emu_thread->reloadGameSettings(false);
-  }
-  else
-  {
-    // do nothing
-    return;
-  }
+  m_ui.menuCheats->exec(QCursor::pos());
 }
 
 void MainWindow::onCheatsMenuAboutToShow()
 {
   m_ui.menuCheats->clear();
-  connect(m_ui.menuCheats->addAction(tr("Cheat Manager")), &QAction::triggered, this, &MainWindow::openCheatManager);
+  connect(m_ui.menuCheats->addAction(tr("Select Cheats...")), &QAction::triggered, this,
+          [this]() { openGamePropertiesForCurrentGame("Cheats"); });
   m_ui.menuCheats->addSeparator();
   populateCheatsMenu(m_ui.menuCheats);
 }
 
 void MainWindow::populateCheatsMenu(QMenu* menu)
 {
-  const bool has_cheat_list = (s_system_valid && System::HasCheatList());
+  Host::RunOnCPUThread([menu]() {
+    if (!System::IsValid())
+      return;
 
-  QMenu* enabled_menu = menu->addMenu(tr("&Enabled Cheats"));
-  enabled_menu->setEnabled(s_system_valid);
-  QMenu* apply_menu = menu->addMenu(tr("&Apply Cheats"));
-  apply_menu->setEnabled(s_system_valid);
-
-  if (has_cheat_list)
-  {
-    CheatList* cl = System::GetCheatList();
-    for (const std::string& group : cl->GetCodeGroups())
+    if (!Cheats::AreCheatsEnabled())
     {
-      QMenu* enabled_submenu = nullptr;
-      QMenu* apply_submenu = nullptr;
-
-      for (u32 i = 0; i < cl->GetCodeCount(); i++)
-      {
-        CheatCode& cc = cl->GetCode(i);
-        if (cc.group != group)
-          continue;
-
-        QString desc(QString::fromStdString(cc.description));
-        if (cc.IsManuallyActivated())
-        {
-          if (!apply_submenu)
-          {
-            apply_menu->setEnabled(true);
-            apply_submenu = apply_menu->addMenu(QString::fromStdString(group));
-          }
-
-          QAction* action = apply_submenu->addAction(desc);
-          connect(action, &QAction::triggered, [i]() { g_emu_thread->applyCheat(i); });
-        }
-        else
-        {
-          if (!enabled_submenu)
-          {
-            enabled_menu->setEnabled(true);
-            enabled_submenu = enabled_menu->addMenu(QString::fromStdString(group));
-          }
-
-          QAction* action = enabled_submenu->addAction(desc);
-          action->setCheckable(true);
-          action->setChecked(cc.enabled);
-          connect(action, &QAction::toggled, [i](bool enabled) { g_emu_thread->setCheatEnabled(i, enabled); });
-        }
-      }
+      QAction* action = menu->addAction(tr("Cheats are not enabled."));
+      action->setEnabled(false);
+      return;
     }
-  }
+
+    QStringList names;
+    Cheats::EnumerateManualCodes([&names](const std::string& name) {
+      names.append(QString::fromStdString(name));
+      return true;
+    });
+    if (names.empty())
+      return;
+
+    QtHost::RunOnUIThread([menu, names = std::move(names)]() {
+      QMenu* apply_submenu = menu->addMenu(tr("&Apply Cheat"));
+      for (const QString& name : names)
+      {
+        const QAction* action = apply_submenu->addAction(name);
+        connect(action, &QAction::triggered, apply_submenu, [action]() {
+          Host::RunOnCPUThread([name = action->text().toStdString()]() {
+            if (System::IsValid())
+              Cheats::ApplyManualCode(name);
+          });
+        });
+      }
+    });
+  });
 }
 
 const GameList::Entry* MainWindow::resolveDiscSetEntry(const GameList::Entry* entry,
@@ -1375,23 +1304,6 @@ void MainWindow::onViewSystemDisplayTriggered()
     switchToEmulationView();
 }
 
-void MainWindow::onViewGamePropertiesActionTriggered()
-{
-  if (!s_system_valid)
-    return;
-
-  Host::RunOnCPUThread([]() {
-    const std::string& path = System::GetDiscPath();
-    const std::string& serial = System::GetGameSerial();
-    if (path.empty() || serial.empty())
-      return;
-
-    QtHost::RunOnUIThread([path = path, serial = serial]() {
-      SettingsWindow::openGamePropertiesDialog(path, System::GetGameTitle(), serial, System::GetDiscRegion());
-    });
-  });
-}
-
 void MainWindow::onGitHubRepositoryActionTriggered()
 {
   QtUtils::OpenURL(this, "https://github.com/stenzek/duckstation/");
@@ -1486,7 +1398,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
     if (!entry->IsDiscSet())
     {
       connect(menu.addAction(tr("Properties...")), &QAction::triggered, [entry]() {
-        SettingsWindow::openGamePropertiesDialog(entry->path, entry->title, entry->serial, entry->region);
+        SettingsWindow::openGamePropertiesDialog(entry->path, entry->title, entry->serial, entry->hash, entry->region);
       });
 
       connect(menu.addAction(tr("Open Containing Directory...")), &QAction::triggered, [this, entry]() {
@@ -1556,7 +1468,7 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         if (first_disc)
         {
           SettingsWindow::openGamePropertiesDialog(first_disc->path, first_disc->title, first_disc->serial,
-                                                   first_disc->region);
+                                                   first_disc->hash, first_disc->region);
         }
       });
 
@@ -1709,7 +1621,6 @@ void MainWindow::setupAdditionalUi()
   m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->isShowingGridCoverTitles());
 
   updateDebugMenuVisibility();
-  updateCheatActionsVisibility();
 
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {
@@ -1795,37 +1706,38 @@ void MainWindow::setupAdditionalUi()
 
 void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode)
 {
-  m_ui.actionStartFile->setDisabled(starting || running);
-  m_ui.actionStartDisc->setDisabled(starting || running);
-  m_ui.actionStartBios->setDisabled(starting || running);
-  m_ui.actionResumeLastState->setDisabled(starting || running || cheevos_challenge_mode);
-  m_ui.actionStartFullscreenUI->setDisabled(starting || running);
-  m_ui.actionStartFullscreenUI2->setDisabled(starting || running);
+  const bool starting_or_running = (starting || running);
+  const bool starting_or_not_running = (starting || !running);
+  m_ui.actionStartFile->setDisabled(starting_or_running);
+  m_ui.actionStartDisc->setDisabled(starting_or_running);
+  m_ui.actionStartBios->setDisabled(starting_or_running);
+  m_ui.actionResumeLastState->setDisabled(starting_or_running || cheevos_challenge_mode);
+  m_ui.actionStartFullscreenUI->setDisabled(starting_or_running);
+  m_ui.actionStartFullscreenUI2->setDisabled(starting_or_running);
 
-  m_ui.actionPowerOff->setDisabled(starting || !running);
-  m_ui.actionPowerOffWithoutSaving->setDisabled(starting || !running);
-  m_ui.actionReset->setDisabled(starting || !running);
-  m_ui.actionPause->setDisabled(starting || !running);
-  m_ui.actionChangeDisc->setDisabled(starting || !running);
-  m_ui.actionCheats->setDisabled(cheevos_challenge_mode);
-  m_ui.actionCheatsToolbar->setDisabled(cheevos_challenge_mode);
-  m_ui.actionScreenshot->setDisabled(starting || !running);
-  m_ui.menuChangeDisc->setDisabled(starting || !running);
-  m_ui.menuCheats->setDisabled(cheevos_challenge_mode);
+  m_ui.actionPowerOff->setDisabled(starting_or_not_running);
+  m_ui.actionPowerOffWithoutSaving->setDisabled(starting_or_not_running);
+  m_ui.actionReset->setDisabled(starting_or_not_running);
+  m_ui.actionPause->setDisabled(starting_or_not_running);
+  m_ui.actionChangeDisc->setDisabled(starting_or_not_running);
+  m_ui.actionCheatsToolbar->setDisabled(starting_or_not_running || cheevos_challenge_mode);
+  m_ui.actionScreenshot->setDisabled(starting_or_not_running);
+  m_ui.menuChangeDisc->setDisabled(starting_or_not_running);
+  m_ui.menuCheats->setDisabled(starting_or_not_running || cheevos_challenge_mode);
   m_ui.actionCPUDebugger->setDisabled(cheevos_challenge_mode);
   m_ui.actionMemoryScanner->setDisabled(cheevos_challenge_mode);
-  m_ui.actionReloadTextureReplacements->setDisabled(starting || !running);
-  m_ui.actionDumpRAM->setDisabled(starting || !running || cheevos_challenge_mode);
-  m_ui.actionDumpVRAM->setDisabled(starting || !running || cheevos_challenge_mode);
-  m_ui.actionDumpSPURAM->setDisabled(starting || !running || cheevos_challenge_mode);
+  m_ui.actionReloadTextureReplacements->setDisabled(starting_or_not_running);
+  m_ui.actionDumpRAM->setDisabled(starting_or_not_running || cheevos_challenge_mode);
+  m_ui.actionDumpVRAM->setDisabled(starting_or_not_running || cheevos_challenge_mode);
+  m_ui.actionDumpSPURAM->setDisabled(starting_or_not_running || cheevos_challenge_mode);
 
-  m_ui.actionSaveState->setDisabled(starting || !running);
-  m_ui.menuSaveState->setDisabled(starting || !running);
-  m_ui.menuWindowSize->setDisabled(starting || !running);
+  m_ui.actionSaveState->setDisabled(starting_or_not_running);
+  m_ui.menuSaveState->setDisabled(starting_or_not_running);
+  m_ui.menuWindowSize->setDisabled(starting_or_not_running);
 
-  m_ui.actionViewGameProperties->setDisabled(starting || !running);
+  m_ui.actionViewGameProperties->setDisabled(starting_or_not_running);
 
-  if (starting || running)
+  if (starting_or_running)
   {
     if (!m_ui.toolBar->actions().contains(m_ui.actionPowerOff))
     {
@@ -2037,7 +1949,6 @@ void MainWindow::connectSignals()
   connect(m_ui.menuLoadState, &QMenu::aboutToShow, this, &MainWindow::onLoadStateMenuAboutToShow);
   connect(m_ui.menuSaveState, &QMenu::aboutToShow, this, &MainWindow::onSaveStateMenuAboutToShow);
   connect(m_ui.menuCheats, &QMenu::aboutToShow, this, &MainWindow::onCheatsMenuAboutToShow);
-  connect(m_ui.actionCheats, &QAction::triggered, this, &MainWindow::onCheatsActionTriggered);
   connect(m_ui.actionCheatsToolbar, &QAction::triggered, this, &MainWindow::onCheatsActionTriggered);
   connect(m_ui.actionStartFullscreenUI, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
   connect(m_ui.actionStartFullscreenUI2, &QAction::triggered, this, &MainWindow::onStartFullscreenUITriggered);
@@ -2081,7 +1992,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionViewGameList, &QAction::triggered, this, &MainWindow::onViewGameListActionTriggered);
   connect(m_ui.actionViewGameGrid, &QAction::triggered, this, &MainWindow::onViewGameGridActionTriggered);
   connect(m_ui.actionViewSystemDisplay, &QAction::triggered, this, &MainWindow::onViewSystemDisplayTriggered);
-  connect(m_ui.actionViewGameProperties, &QAction::triggered, this, &MainWindow::onViewGamePropertiesActionTriggered);
+  connect(m_ui.actionViewGameProperties, &QAction::triggered, this, [this]() { openGamePropertiesForCurrentGame(); });
   connect(m_ui.actionGitHubRepository, &QAction::triggered, this, &MainWindow::onGitHubRepositoryActionTriggered);
   connect(m_ui.actionDiscordServer, &QAction::triggered, this, &MainWindow::onDiscordServerActionTriggered);
   connect(m_ui.actionViewThirdPartyNotices, &QAction::triggered, this,
@@ -2095,8 +2006,10 @@ void MainWindow::connectSignals()
   connect(m_ui.actionMediaCapture, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
-  connect(m_ui.actionOpenTextureDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenTextureDirectoryTriggered);
-  connect(m_ui.actionReloadTextureReplacements, &QAction::triggered, g_emu_thread, &EmuThread::reloadTextureReplacements);
+  connect(m_ui.actionOpenTextureDirectory, &QAction::triggered, this,
+          &MainWindow::onToolsOpenTextureDirectoryTriggered);
+  connect(m_ui.actionReloadTextureReplacements, &QAction::triggered, g_emu_thread,
+          &EmuThread::reloadTextureReplacements);
   connect(m_ui.actionMergeDiscSets, &QAction::triggered, m_game_list_widget, &GameListWidget::setMergeDiscSets);
   connect(m_ui.actionShowGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowGameIcons);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
@@ -2333,6 +2246,25 @@ void MainWindow::doSettings(const char* category /* = nullptr */)
   QtUtils::ShowOrRaiseWindow(dlg);
   if (category)
     dlg->setCategory(category);
+}
+
+void MainWindow::openGamePropertiesForCurrentGame(const char* category /* = nullptr */)
+{
+  if (!s_system_valid)
+    return;
+
+  Host::RunOnCPUThread([category]() {
+    const std::string& path = System::GetDiscPath();
+    const std::string& serial = System::GetGameSerial();
+    if (path.empty() || serial.empty())
+      return;
+
+    QtHost::RunOnUIThread([title = std::string(System::GetGameTitle()), path = std::string(path),
+                           serial = std::string(serial), hash = System::GetGameHash(), region = System::GetDiscRegion(),
+                           category]() {
+      SettingsWindow::openGamePropertiesDialog(path, title, std::move(serial), hash, region, category);
+    });
+  });
 }
 
 ControllerSettingsWindow* MainWindow::getControllerSettingsWindow()
@@ -2628,7 +2560,6 @@ void MainWindow::checkForSettingChanges()
 {
   LogWindow::updateSettings();
   updateWindowState();
-  updateCheatActionsVisibility();
 }
 
 std::optional<WindowInfo> MainWindow::getWindowInfo()
@@ -2709,7 +2640,6 @@ void MainWindow::onAchievementsChallengeModeChanged(bool enabled)
 {
   if (enabled)
   {
-    QtUtils::CloseAndDeleteWindow(m_cheat_manager_window);
     QtUtils::CloseAndDeleteWindow(m_debugger_window);
     QtUtils::CloseAndDeleteWindow(m_memory_scanner_window);
   }
@@ -2779,23 +2709,6 @@ void MainWindow::onToolsMemoryScannerTriggered()
   }
 
   QtUtils::ShowOrRaiseWindow(m_memory_scanner_window);
-}
-
-void MainWindow::openCheatManager()
-{
-  if (Achievements::IsHardcoreModeActive())
-    return;
-
-  if (!m_cheat_manager_window)
-  {
-    m_cheat_manager_window = new CheatManagerWindow();
-    connect(m_cheat_manager_window, &CheatManagerWindow::closed, this, [this]() {
-      m_cheat_manager_window->deleteLater();
-      m_cheat_manager_window = nullptr;
-    });
-  }
-
-  QtUtils::ShowOrRaiseWindow(m_cheat_manager_window);
 }
 
 void MainWindow::openCPUDebugger()

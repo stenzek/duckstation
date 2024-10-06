@@ -197,6 +197,8 @@ enum class SettingsPage
   Audio,
   Achievements,
   Advanced,
+  Patches,
+  Cheats,
   Count
 };
 
@@ -276,7 +278,6 @@ static void DoChangeDisc();
 static void DoRequestExit();
 static void DoDesktopMode();
 static void DoToggleFullscreen();
-static void DoCheatsMenu();
 static void DoToggleAnalogMode();
 
 //////////////////////////////////////////////////////////////////////////
@@ -304,6 +305,7 @@ static void DrawControllerSettingsPage();
 static void DrawHotkeySettingsPage();
 static void DrawAchievementsSettingsPage();
 static void DrawAdvancedSettingsPage();
+static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
 static bool IsEditingGameSettings(SettingsInterface* bsi);
 static SettingsInterface* GetEditingSettingsInterface();
@@ -386,6 +388,7 @@ static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const c
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
+static void PopulatePatchesAndCheatsList(const std::string_view serial);
 static void PopulatePostProcessingChain(SettingsInterface* si, const char* section);
 static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
                               std::string_view key, std::string_view display_name);
@@ -402,6 +405,11 @@ static std::unique_ptr<GameList::Entry> s_game_settings_entry;
 static std::vector<std::pair<std::string, bool>> s_game_list_directories_cache;
 static GPUDevice::AdapterInfoList s_graphics_adapter_list_cache;
 static std::vector<std::string> s_fullscreen_mode_list_cache;
+static Cheats::CodeInfoList s_game_patch_list;
+static std::vector<std::string> s_enabled_game_patch_cache;
+static Cheats::CodeInfoList s_game_cheats_list;
+static std::vector<std::string> s_enabled_game_cheat_cache;
+static std::vector<std::string_view> s_game_cheat_groups;
 static std::vector<PostProcessingStageInfo> s_postprocessing_stages;
 static std::vector<const HotkeyInfo*> s_hotkey_list_cache;
 static std::atomic_bool s_settings_changed{false};
@@ -754,6 +762,11 @@ void FullscreenUI::Shutdown()
   std::memset(s_controller_macro_expanded, 0, sizeof(s_controller_macro_expanded));
   s_game_list_sorted_entries = {};
   s_game_list_directories_cache = {};
+  s_game_patch_list = {};
+  s_enabled_game_patch_cache = {};
+  s_game_cheats_list = {};
+  s_enabled_game_cheat_cache = {};
+  s_game_cheat_groups = {};
   s_postprocessing_stages = {};
   s_fullscreen_mode_list_cache = {};
   s_graphics_adapter_list_cache = {};
@@ -1209,48 +1222,6 @@ void FullscreenUI::DoChangeDisc()
   }
 
   DoChangeDiscFromFile();
-}
-
-void FullscreenUI::DoCheatsMenu()
-{
-  CheatList* cl = System::GetCheatList();
-  if (!cl)
-  {
-    if (!System::LoadCheatListFromDatabase() || ((cl = System::GetCheatList()) == nullptr))
-    {
-      Host::AddKeyedOSDMessage("load_cheat_list",
-                               fmt::format(FSUI_FSTR("No cheats found for {}."), System::GetGameTitle()), 10.0f);
-      ReturnToPreviousWindow();
-      return;
-    }
-  }
-
-  ImGuiFullscreen::ChoiceDialogOptions options;
-  options.reserve(cl->GetCodeCount());
-  for (u32 i = 0; i < cl->GetCodeCount(); i++)
-  {
-    const CheatCode& cc = cl->GetCode(i);
-    options.emplace_back(cc.description.c_str(), cc.enabled);
-  }
-
-  auto callback = [](s32 index, const std::string& title, bool checked) {
-    if (index < 0)
-    {
-      ReturnToPreviousWindow();
-      return;
-    }
-
-    CheatList* cl = System::GetCheatList();
-    if (!cl)
-      return;
-
-    const CheatCode& cc = cl->GetCode(static_cast<u32>(index));
-    if (cc.activation == CheatCode::Activation::Manual)
-      cl->ApplyCode(static_cast<u32>(index));
-    else
-      System::SetCheatCodeState(static_cast<u32>(index), checked);
-  };
-  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_FROWN, "Cheat List"), true, std::move(options), std::move(callback));
 }
 
 void FullscreenUI::DoToggleAnalogMode()
@@ -2728,6 +2699,11 @@ void FullscreenUI::SwitchToSettings()
 {
   s_game_settings_entry.reset();
   s_game_settings_interface.reset();
+  s_game_patch_list = {};
+  s_enabled_game_patch_cache = {};
+  s_game_cheats_list = {};
+  s_enabled_game_cheat_cache = {};
+  s_game_cheat_groups = {};
 
   PopulateGraphicsAdapterList();
   PopulatePostProcessingChain(GetEditingSettingsInterface(), PostProcessing::Config::DISPLAY_CHAIN_SECTION);
@@ -2741,6 +2717,7 @@ void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
   s_game_settings_entry.reset();
   s_game_settings_interface = std::make_unique<INISettingsInterface>(System::GetGameSettingsPath(serial));
   s_game_settings_interface->Load();
+  PopulatePatchesAndCheatsList(serial);
   s_current_main_window = MainWindowType::Settings;
   s_settings_page = SettingsPage::Summary;
   QueueResetFocus(FocusResetType::ViewChanged);
@@ -2796,6 +2773,19 @@ void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
     s_game_list_directories_cache.emplace_back(std::move(dir), true);
 }
 
+void FullscreenUI::PopulatePatchesAndCheatsList(const std::string_view serial)
+{
+  s_game_patch_list = Cheats::GetCodeInfoList(serial, std::nullopt, false, true, true);
+  s_game_cheats_list =
+    Cheats::GetCodeInfoList(serial, std::nullopt, true,
+                            s_game_settings_interface->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true), true);
+  s_game_cheat_groups = Cheats::GetCodeListUniquePrefixes(s_game_cheats_list, true);
+  s_enabled_game_patch_cache =
+    s_game_settings_interface->GetStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
+  s_enabled_game_cheat_cache =
+    s_game_settings_interface->GetStringList(Cheats::CHEATS_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
+}
+
 void FullscreenUI::DoCopyGameSettings()
 {
   if (!s_game_settings_interface)
@@ -2839,32 +2829,34 @@ void FullscreenUI::DrawSettingsWindow()
   {
     static constexpr float ITEM_WIDTH = 25.0f;
 
-    static constexpr const char* global_icons[] = {
-      ICON_FA_TV,           ICON_FA_DICE_D20,    ICON_FA_COGS,   ICON_PF_MICROCHIP,
-      ICON_PF_PICTURE,      ICON_FA_MAGIC,       ICON_PF_SOUND,  ICON_PF_GAMEPAD_ALT,
-      ICON_PF_KEYBOARD_ALT, ICON_PF_MEMORY_CARD, ICON_FA_TROPHY, ICON_FA_EXCLAMATION_TRIANGLE};
-    static constexpr const char* per_game_icons[] = {ICON_FA_PARAGRAPH,   ICON_FA_HDD,    ICON_FA_COGS,
-                                                     ICON_PF_PICTURE,     ICON_PF_SOUND,  ICON_PF_GAMEPAD_ALT,
-                                                     ICON_PF_MEMORY_CARD, ICON_FA_TROPHY, ICON_FA_EXCLAMATION_TRIANGLE};
-    static constexpr SettingsPage global_pages[] = {
+    static constexpr const SettingsPage global_pages[] = {
       SettingsPage::Interface, SettingsPage::Console,        SettingsPage::Emulation,    SettingsPage::BIOS,
       SettingsPage::Display,   SettingsPage::PostProcessing, SettingsPage::Audio,        SettingsPage::Controller,
       SettingsPage::Hotkey,    SettingsPage::MemoryCards,    SettingsPage::Achievements, SettingsPage::Advanced};
-    static constexpr SettingsPage per_game_pages[] = {
-      SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation,
-      SettingsPage::Display,     SettingsPage::Audio,        SettingsPage::Controller,
+    static constexpr const SettingsPage per_game_pages[] = {
+      SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation, SettingsPage::Patches,
+      SettingsPage::Cheats,      SettingsPage::Display,      SettingsPage::Audio,     SettingsPage::Controller,
       SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
-    static constexpr std::array<const char*, static_cast<u32>(SettingsPage::Count)> titles = {
-      {FSUI_NSTR("Summary"), FSUI_NSTR("Interface Settings"), FSUI_NSTR("Console Settings"),
-       FSUI_NSTR("Emulation Settings"), FSUI_NSTR("BIOS Settings"), FSUI_NSTR("Controller Settings"),
-       FSUI_NSTR("Hotkey Settings"), FSUI_NSTR("Memory Card Settings"), FSUI_NSTR("Graphics Settings"),
-       FSUI_NSTR("Post-Processing Settings"), FSUI_NSTR("Audio Settings"), FSUI_NSTR("Achievements Settings"),
-       FSUI_NSTR("Advanced Settings")}};
+    static constexpr std::array<std::pair<const char*, const char*>, static_cast<u32>(SettingsPage::Count)> titles = {
+      {{FSUI_NSTR("Summary"), ICON_FA_PARAGRAPH},
+       {FSUI_NSTR("Interface Settings"), ICON_FA_TV},
+       {FSUI_NSTR("Console Settings"), ICON_FA_DICE_D20},
+       {FSUI_NSTR("Emulation Settings"), ICON_FA_COGS},
+       {FSUI_NSTR("BIOS Settings"), ICON_PF_MICROCHIP},
+       {FSUI_NSTR("Controller Settings"), ICON_PF_GAMEPAD_ALT},
+       {FSUI_NSTR("Hotkey Settings"), ICON_PF_KEYBOARD_ALT},
+       {FSUI_NSTR("Memory Card Settings"), ICON_PF_MEMORY_CARD},
+       {FSUI_NSTR("Graphics Settings"), ICON_PF_PICTURE},
+       {FSUI_NSTR("Post-Processing Settings"), ICON_FA_MAGIC},
+       {FSUI_NSTR("Audio Settings"), ICON_PF_SOUND},
+       {FSUI_NSTR("Achievements Settings"), ICON_FA_TROPHY},
+       {FSUI_NSTR("Advanced Settings"), ICON_FA_EXCLAMATION_TRIANGLE},
+       {FSUI_NSTR("Patches"), ICON_FA_BAND_AID},
+       {FSUI_NSTR("Cheats"), ICON_FA_FLASK}}};
 
     const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
     const u32 count =
       game_settings ? static_cast<u32>(std::size(per_game_pages)) : static_cast<u32>(std::size(global_pages));
-    const char* const* icons = game_settings ? per_game_icons : global_icons;
     const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
     u32 index = 0;
     for (u32 i = 0; i < count; i++)
@@ -2903,13 +2895,14 @@ void FullscreenUI::DrawSettingsWindow()
     if (s_game_settings_entry)
       NavTitle(s_game_settings_entry->title.c_str());
     else
-      NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])]));
+      NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(pages[index])].first));
 
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     for (u32 i = 0; i < count; i++)
     {
-      if (NavButton(icons[i], i == index, true, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+      if (NavButton(titles[static_cast<u32>(pages[i])].second, i == index, true, ITEM_WIDTH,
+                    LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
       {
         s_settings_page = pages[i];
         QueueResetFocus(FocusResetType::Other);
@@ -2992,6 +2985,14 @@ void FullscreenUI::DrawSettingsWindow()
 
       case SettingsPage::Advanced:
         DrawAdvancedSettingsPage();
+        break;
+
+      case SettingsPage::Patches:
+        DrawPatchesOrCheatsSettingsPage(false);
+        break;
+
+      case SettingsPage::Cheats:
+        DrawPatchesOrCheatsSettingsPage(true);
         break;
 
       default:
@@ -5220,6 +5221,186 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   EndMenuButtons();
 }
 
+void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
+{
+  SettingsInterface* bsi = GetEditingSettingsInterface();
+
+  const Cheats::CodeInfoList& code_list = cheats ? s_game_cheats_list : s_game_patch_list;
+  std::vector<std::string>& enable_list = cheats ? s_enabled_game_cheat_cache : s_enabled_game_patch_cache;
+  const char* section = cheats ? Cheats::CHEATS_CONFIG_SECTION : Cheats::PATCHES_CONFIG_SECTION;
+
+  BeginMenuButtons();
+
+  static constexpr auto draw_code = [](SettingsInterface* bsi, const char* section, const Cheats::CodeInfo& ci,
+                                       std::vector<std::string>& enable_list, bool cheats) {
+    const auto enable_it = std::find(enable_list.begin(), enable_list.end(), ci.name);
+
+    SmallString title;
+    if (!cheats)
+      title = std::string_view(ci.name);
+    else
+      title = ci.GetNamePart();
+
+    // TODO: Handle ranges.
+    bool state = (enable_it != enable_list.end());
+
+    if (ci.HasOptionChoices())
+    {
+      TinyString visible_value(FSUI_VSTR("Disabled"));
+      bool has_option = false;
+      if (state)
+      {
+        // Need to map the value to an option.
+        visible_value = ci.MapOptionValueToName(bsi->GetTinyStringValue(section, ci.name.c_str()));
+        has_option = true;
+      }
+
+      if (MenuButtonWithValue(title.c_str(), ci.description.c_str(), visible_value))
+      {
+        ImGuiFullscreen::ChoiceDialogOptions options;
+        options.reserve(ci.options.size() + 1);
+        options.emplace_back(FSUI_VSTR("Disabled"), !has_option);
+
+        for (const Cheats::CodeOption& opt : ci.options)
+          options.emplace_back(opt.first, has_option && (visible_value.view() == opt.first));
+
+        OpenChoiceDialog(ci.name, false, std::move(options),
+                         [cheat_name = ci.name, cheats, section](s32 index, const std::string& title, bool checked) {
+                           if (index >= 0)
+                           {
+                             const Cheats::CodeInfo* ci =
+                               Cheats::FindCodeInInfoList(cheats ? s_game_cheats_list : s_game_patch_list, cheat_name);
+                             if (ci)
+                             {
+                               SettingsInterface* bsi = GetEditingSettingsInterface();
+                               std::vector<std::string>& enable_list =
+                                 cheats ? s_enabled_game_cheat_cache : s_enabled_game_patch_cache;
+                               const auto it = std::find(enable_list.begin(), enable_list.end(), ci->name);
+                               if (index == 0)
+                               {
+                                 bsi->RemoveFromStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci->name.c_str());
+                                 if (it != enable_list.end())
+                                   enable_list.erase(it);
+                               }
+                               else
+                               {
+                                 bsi->AddToStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci->name.c_str());
+                                 bsi->SetUIntValue(section, ci->name.c_str(), ci->MapOptionNameToValue(title));
+                                 if (it == enable_list.end())
+                                   enable_list.push_back(std::move(cheat_name));
+                               }
+
+                               SetSettingsChanged(bsi);
+                             }
+                           }
+
+                           CloseChoiceDialog();
+                         });
+      }
+    }
+    else
+    {
+      const bool changed = ToggleButton(title.c_str(), ci.description.c_str(), &state);
+      if (changed)
+      {
+        if (state)
+        {
+          bsi->AddToStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci.name.c_str());
+          enable_list.push_back(ci.name);
+        }
+        else
+        {
+          bsi->RemoveFromStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci.name.c_str());
+          enable_list.erase(enable_it);
+        }
+
+        SetSettingsChanged(bsi);
+      }
+    }
+  };
+
+  if (cheats)
+  {
+    ActiveButton(
+      FSUI_CSTR(
+        "WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games."),
+      false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+    MenuHeading(FSUI_CSTR("Settings"));
+
+    bool enable_cheats = bsi->GetBoolValue("Cheats", "EnableCheats", false);
+    if (ToggleButton(FSUI_CSTR("Enable Cheats"), FSUI_CSTR("Enables the cheats that are selected below."),
+                     &enable_cheats))
+    {
+      if (enable_cheats)
+        bsi->SetBoolValue("Cheats", "EnableCheats", true);
+      else
+        bsi->DeleteValue("Cheats", "EnableCheats");
+      SetSettingsChanged(bsi);
+    }
+
+    bool load_database_cheats = bsi->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true);
+    if (ToggleButton(FSUI_CSTR("Load Database Cheats"),
+                     FSUI_CSTR("Enables loading of cheats for this game from DuckStation's database."),
+                     &load_database_cheats))
+    {
+      if (load_database_cheats)
+        bsi->DeleteValue("Cheats", "LoadCheatsFromDatabase");
+      else
+        bsi->SetBoolValue("Cheats", "LoadCheatsFromDatabase", false);
+      SetSettingsChanged(bsi);
+      if (s_game_settings_entry)
+        PopulatePatchesAndCheatsList(s_game_settings_entry->serial);
+    }
+
+    if (code_list.empty())
+    {
+      ActiveButton(FSUI_CSTR("No cheats are available for this game."), false, false,
+                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    }
+    else
+    {
+      for (const std::string_view& group : s_game_cheat_groups)
+      {
+        if (group.empty())
+          MenuHeading(FSUI_CSTR("Ungrouped"));
+        else
+          MenuHeading(SmallString(group).c_str());
+
+        for (const Cheats::CodeInfo& ci : code_list)
+        {
+          if (ci.GetNameParentPart() != group)
+            continue;
+
+          draw_code(bsi, section, ci, enable_list, true);
+        }
+      }
+    }
+  }
+  else
+  {
+    ActiveButton(
+      FSUI_CSTR("WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken "
+                "saved games."),
+      false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+
+    if (code_list.empty())
+    {
+      ActiveButton(FSUI_CSTR("No patches are available for this game."), false, false,
+                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+    }
+    else
+    {
+      MenuHeading(FSUI_CSTR("Game Patches"));
+
+      for (const Cheats::CodeInfo& ci : code_list)
+        draw_code(bsi, section, ci, enable_list, false);
+    }
+  }
+
+  EndMenuButtons();
+}
+
 void FullscreenUI::DrawPauseMenu()
 {
   SmallString buffer;
@@ -5327,7 +5508,7 @@ void FullscreenUI::DrawPauseMenu()
                             ImVec2(10.0f, 10.0f), ImGuiWindowFlags_NoBackground))
   {
     static constexpr u32 submenu_item_count[] = {
-      12, // None
+      11, // None
       4,  // Exit
       3,  // Achievements
     };
@@ -5363,13 +5544,6 @@ void FullscreenUI::DrawPauseMenu()
         {
           if (OpenSaveStateSelector(false))
             s_current_main_window = MainWindowType::None;
-        }
-
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_FROWN_OPEN, "Cheat List"), false,
-                         !System::GetGameSerial().empty() && g_settings.enable_cheats))
-        {
-          s_current_main_window = MainWindowType::None;
-          DoCheatsMenu();
         }
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Toggle Analog"), false))

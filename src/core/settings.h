@@ -88,7 +88,6 @@ struct Settings
   bool load_devices_from_save_states : 1 = false;
   bool apply_compatibility_settings : 1 = true;
   bool apply_game_settings : 1 = true;
-  bool enable_cheats : 1 = false;
   bool disable_all_enhancements : 1 = false;
   bool enable_discord_presence : 1 = false;
 
@@ -578,6 +577,7 @@ extern std::string GameIcons;
 extern std::string GameSettings;
 extern std::string InputProfiles;
 extern std::string MemoryCards;
+extern std::string Patches;
 extern std::string Resources;
 extern std::string SaveStates;
 extern std::string Screenshots;

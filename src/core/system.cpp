@@ -252,7 +252,7 @@ static std::string s_running_game_serial;
 static std::string s_running_game_title;
 static std::string s_exe_override;
 static const GameDatabase::Entry* s_running_game_entry = nullptr;
-static System::GameHash s_running_game_hash;
+static GameHash s_running_game_hash;
 static System::BootMode s_boot_mode = System::BootMode::None;
 static bool s_running_game_custom_title = false;
 
@@ -311,7 +311,6 @@ static Common::Timer s_fps_timer;
 static Common::Timer s_frame_timer;
 static Threading::ThreadHandle s_cpu_thread_handle;
 
-static std::unique_ptr<CheatList> s_cheat_list;
 static std::unique_ptr<MediaCapture> s_media_capture;
 
 // temporary save state, created when loading, used to undo load state
@@ -714,7 +713,7 @@ const GameDatabase::Entry* System::GetGameDatabaseEntry()
   return s_running_game_entry;
 }
 
-System::GameHash System::GetGameHash()
+GameHash System::GetGameHash()
 {
   return s_running_game_hash;
 }
@@ -922,7 +921,7 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
   return true;
 }
 
-System::GameHash System::GetGameHashFromFile(const char* path)
+GameHash System::GetGameHashFromFile(const char* path)
 {
   const std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(path);
   if (!data)
@@ -1061,8 +1060,8 @@ bool System::ReadExecutableFromImage(IsoReader& iso, std::string* out_executable
   return true;
 }
 
-System::GameHash System::GetGameHashFromBuffer(std::string_view exe_name, std::span<const u8> exe_buffer,
-                                               const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length)
+GameHash System::GetGameHashFromBuffer(std::string_view exe_name, std::span<const u8> exe_buffer,
+                                       const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length)
 {
   XXH64_state_t* state = XXH64_createState();
   XXH64_reset(state, 0x4242D00C);
@@ -1288,6 +1287,9 @@ void System::LoadSettings(bool display_osd_messages)
       entry->ApplySettings(g_settings, display_osd_messages);
   }
 
+  // patch overrides take precedence over compat settings
+  Cheats::ApplySettingOverrides();
+
   g_settings.FixIncompatibleSettings(display_osd_messages);
 }
 
@@ -1483,6 +1485,9 @@ bool System::UpdateGameSettingsLayer()
   Host::Internal::SetInputSettingsLayer(input_interface.get(), lock);
   s_input_settings_interface = std::move(input_interface);
   s_input_profile_name = std::move(input_profile_name);
+
+  Cheats::ReloadCheats(false, true, false, true);
+
   return true;
 }
 
@@ -1496,9 +1501,8 @@ void System::ResetSystem()
 
   if (Achievements::ResetHardcoreMode(false))
   {
-    // Make sure a pre-existing cheat file hasn't been loaded when resetting
-    // after enabling HC mode.
-    s_cheat_list.reset();
+    // Make sure a pre-existing cheat file hasn't been loaded when resetting after enabling HC mode.
+    Cheats::ReloadCheats(true, true, false, true);
     ApplySettings(false);
   }
 
@@ -1712,6 +1716,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       Error::SetStringFmt(error, "File '{}' is not a valid executable to boot.",
                           Path::GetFileName(parameters.override_exe));
       s_state = State::Shutdown;
+      Cheats::UnloadAll();
+      ClearRunningGame();
       Host::OnSystemDestroyed();
       Host::OnIdleStateChanged();
       return false;
@@ -1726,6 +1732,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (!CheckForSBIFile(disc.get(), error))
   {
     s_state = State::Shutdown;
+    Cheats::UnloadAll();
     ClearRunningGame();
     Host::OnSystemDestroyed();
     Host::OnIdleStateChanged();
@@ -1763,6 +1770,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     if (cancelled)
     {
       s_state = State::Shutdown;
+      Cheats::UnloadAll();
       ClearRunningGame();
       Host::OnSystemDestroyed();
       Host::OnIdleStateChanged();
@@ -1776,6 +1784,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (!SetBootMode(boot_mode, disc_region, error))
   {
     s_state = State::Shutdown;
+    Cheats::UnloadAll();
     ClearRunningGame();
     Host::OnSystemDestroyed();
     Host::OnIdleStateChanged();
@@ -1787,6 +1796,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   {
     s_boot_mode = System::BootMode::None;
     s_state = State::Shutdown;
+    Cheats::UnloadAll();
     ClearRunningGame();
     Host::OnSystemDestroyed();
     Host::OnIdleStateChanged();
@@ -1981,6 +1991,7 @@ void System::DestroySystem()
 
   ClearMemorySaveStates();
 
+  Cheats::UnloadAll();
   PCDrv::Shutdown();
   SIO::Shutdown();
   MDEC::Shutdown();
@@ -2013,7 +2024,6 @@ void System::DestroySystem()
   s_bios_image_info = nullptr;
   s_exe_override = {};
   s_boot_mode = BootMode::None;
-  s_cheat_list.reset();
 
   s_state = State::Shutdown;
 
@@ -2085,8 +2095,7 @@ void System::FrameDone()
   // TODO: when running ahead, we can skip this (and the flush above)
   SPU::GeneratePendingSamples();
 
-  if (s_cheat_list)
-    s_cheat_list->Apply();
+  Cheats::ApplyFrameEndCodes();
 
   if (Achievements::IsActive())
     Achievements::FrameUpdate();
@@ -3598,33 +3607,6 @@ void System::DoFrameStep()
   PauseSystem(false);
 }
 
-void System::DoToggleCheats()
-{
-  if (!System::IsValid())
-    return;
-
-  if (Achievements::IsHardcoreModeActive())
-  {
-    Achievements::ConfirmHardcoreModeDisableAsync("Toggling cheats", [](bool approved) { DoToggleCheats(); });
-    return;
-  }
-
-  CheatList* cl = GetCheatList();
-  if (!cl)
-  {
-    Host::AddKeyedOSDMessage("ToggleCheats", TRANSLATE_STR("OSDMessage", "No cheats are loaded."), 10.0f);
-    return;
-  }
-
-  cl->SetMasterEnable(!cl->GetMasterEnable());
-  Host::AddIconOSDMessage(
-    "ToggleCheats", ICON_FA_EXCLAMATION_TRIANGLE,
-    cl->GetMasterEnable() ?
-      TRANSLATE_PLURAL_STR("System", "%n cheat(s) are now active.", "", cl->GetEnabledCodeCount()) :
-      TRANSLATE_PLURAL_STR("System", "%n cheat(s) are now inactive.", "", cl->GetEnabledCodeCount()),
-    Host::OSD_QUICK_DURATION);
-}
-
 #if 0
 // currently not used until EXP1 is implemented
 
@@ -4114,12 +4096,11 @@ void System::UpdateRunningGame(const std::string_view path, CDImage* image, bool
 
   Achievements::GameChanged(s_running_game_path, image);
 
+  // game layer reloads cheats, but only the active list, we need new files
+  Cheats::ReloadCheats(true, false, false, true);
   UpdateGameSettingsLayer();
-  ApplySettings(true);
 
-  s_cheat_list.reset();
-  if (g_settings.enable_cheats)
-    LoadCheatList();
+  ApplySettings(true);
 
   if (s_running_game_serial != prev_serial)
     UpdateSessionTime(prev_serial);
@@ -4248,40 +4229,6 @@ bool System::SwitchMediaSubImage(u32 index)
   return true;
 }
 
-bool System::HasCheatList()
-{
-  return static_cast<bool>(s_cheat_list);
-}
-
-CheatList* System::GetCheatList()
-{
-  return s_cheat_list.get();
-}
-
-void System::ApplyCheatCode(const CheatCode& code)
-{
-  Assert(!IsShutdown());
-  code.Apply();
-}
-
-void System::SetCheatList(std::unique_ptr<CheatList> cheats)
-{
-  Assert(!IsShutdown());
-  s_cheat_list = std::move(cheats);
-
-  if (s_cheat_list && s_cheat_list->GetEnabledCodeCount() > 0)
-  {
-    Host::AddIconOSDMessage("CheatsLoadWarning", ICON_FA_EXCLAMATION_TRIANGLE,
-                            TRANSLATE_PLURAL_STR("System", "%n cheat(s) are enabled. This may crash games.", "",
-                                                 s_cheat_list->GetEnabledCodeCount()),
-                            Host::OSD_WARNING_DURATION);
-  }
-  else
-  {
-    Host::RemoveKeyedOSDMessage("CheatsLoadWarning");
-  }
-}
-
 void System::CheckForSettingsChanges(const Settings& old_settings)
 {
   if (IsValid() &&
@@ -4388,14 +4335,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       // Reallocate fastmem area, even if it's not being used.
       Bus::RemapFastmemViews();
-    }
-
-    if (g_settings.enable_cheats != old_settings.enable_cheats)
-    {
-      if (g_settings.enable_cheats)
-        LoadCheatList();
-      else
-        SetCheatList(nullptr);
     }
 
     SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
@@ -4688,8 +4627,10 @@ void System::WarnAboutUnsafeSettings()
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
       if (g_settings.enable_8mb_ram)
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
-      if (g_settings.enable_cheats)
+      if (s_game_settings_interface && s_game_settings_interface->GetBoolValue("Cheats", "EnableCheats", false))
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
+      if (s_game_settings_interface && s_game_settings_interface->ContainsValue("Patches", "Enable"))
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Patches disabled."));
       if (g_settings.gpu_resolution_scale != 1)
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
       if (g_settings.gpu_multisamples != 1)
@@ -5583,154 +5524,6 @@ std::string System::GetCheatFileName()
     ret = Path::Combine(EmuFolders::Cheats, fmt::format("{}.cht", title.c_str()));
 
   return ret;
-}
-
-bool System::LoadCheatList()
-{
-  // Called when booting, needs to test for shutdown.
-  if (IsShutdown() || !g_settings.enable_cheats)
-    return false;
-
-  const std::string filename(GetCheatFileName());
-  if (filename.empty() || !FileSystem::FileExists(filename.c_str()))
-    return false;
-
-  std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
-  if (!cl->LoadFromFile(filename.c_str(), CheatList::Format::Autodetect))
-  {
-    Host::AddIconOSDMessage(
-      "cheats_loaded", ICON_FA_EXCLAMATION_TRIANGLE,
-      fmt::format(TRANSLATE_FS("System", "Failed to load cheats from '{}'."), Path::GetFileName(filename)));
-    return false;
-  }
-
-  SetCheatList(std::move(cl));
-  return true;
-}
-
-bool System::LoadCheatListFromDatabase()
-{
-  if (IsShutdown() || s_running_game_serial.empty() || Achievements::IsHardcoreModeActive())
-    return false;
-
-  std::unique_ptr<CheatList> cl = std::make_unique<CheatList>();
-  if (!cl->LoadFromPackage(s_running_game_serial))
-    return false;
-
-  INFO_LOG("Loaded {} cheats from database.", cl->GetCodeCount());
-  SetCheatList(std::move(cl));
-  return true;
-}
-
-bool System::SaveCheatList()
-{
-  if (!System::IsValid() || !System::HasCheatList())
-    return false;
-
-  const std::string filename(GetCheatFileName());
-  if (filename.empty())
-    return false;
-
-  if (!System::GetCheatList()->SaveToPCSXRFile(filename.c_str()))
-  {
-    Host::AddIconOSDMessage(
-      "CheatSaveError", ICON_FA_EXCLAMATION_TRIANGLE,
-      fmt::format(TRANSLATE_FS("System", "Failed to save cheat list to '{}'."), Path::GetFileName(filename)),
-      Host::OSD_ERROR_DURATION);
-  }
-
-  return true;
-}
-
-bool System::DeleteCheatList()
-{
-  if (!System::IsValid())
-    return false;
-
-  const std::string filename(GetCheatFileName());
-  if (!filename.empty())
-  {
-    if (!FileSystem::DeleteFile(filename.c_str()))
-      return false;
-
-    Host::AddIconOSDMessage(
-      "CheatDelete", ICON_FA_EXCLAMATION_TRIANGLE,
-      fmt::format(TRANSLATE_FS("System", "Deleted cheat list '{}'."), Path::GetFileName(filename)),
-      Host::OSD_INFO_DURATION);
-  }
-
-  System::SetCheatList(nullptr);
-  return true;
-}
-
-void System::ClearCheatList(bool save_to_file)
-{
-  if (!System::IsValid())
-    return;
-
-  CheatList* cl = System::GetCheatList();
-  if (!cl)
-    return;
-
-  while (cl->GetCodeCount() > 0)
-    cl->RemoveCode(cl->GetCodeCount() - 1);
-
-  if (save_to_file)
-    SaveCheatList();
-}
-
-void System::SetCheatCodeState(u32 index, bool enabled)
-{
-  if (!System::IsValid() || !System::HasCheatList())
-    return;
-
-  CheatList* cl = System::GetCheatList();
-  if (index >= cl->GetCodeCount())
-    return;
-
-  CheatCode& cc = cl->GetCode(index);
-  if (cc.enabled == enabled)
-    return;
-
-  cc.enabled = enabled;
-  if (!enabled)
-    cc.ApplyOnDisable();
-
-  if (enabled)
-  {
-    Host::AddIconOSDMessage(fmt::format("Cheat{}State", index), ICON_FA_EXCLAMATION_TRIANGLE,
-                            fmt::format(TRANSLATE_FS("System", "Cheat '{}' enabled."), cc.description),
-                            Host::OSD_INFO_DURATION);
-  }
-  else
-  {
-    Host::AddIconOSDMessage(fmt::format("Cheat{}State", index), ICON_FA_EXCLAMATION_TRIANGLE,
-                            fmt::format(TRANSLATE_FS("System", "Cheat '{}' disabled."), cc.description),
-                            Host::OSD_INFO_DURATION);
-  }
-
-  SaveCheatList();
-}
-
-void System::ApplyCheatCode(u32 index)
-{
-  if (!System::HasCheatList() || index >= System::GetCheatList()->GetCodeCount())
-    return;
-
-  const CheatCode& cc = System::GetCheatList()->GetCode(index);
-  if (!cc.enabled)
-  {
-    cc.Apply();
-    Host::AddIconOSDMessage(fmt::format("Cheat{}State", index), ICON_FA_EXCLAMATION_TRIANGLE,
-                            fmt::format(TRANSLATE_FS("System", "Applied cheat '{}'."), cc.description),
-                            Host::OSD_INFO_DURATION);
-  }
-  else
-  {
-    Host::AddIconOSDMessage(fmt::format("Cheat{}State", index), ICON_FA_EXCLAMATION_TRIANGLE,
-                            fmt::format(TRANSLATE_FS("System", "Cheat '{}' is already enabled."), cc.description),
-                            Host::OSD_INFO_DURATION);
-  }
 }
 
 void System::ToggleWidescreen()

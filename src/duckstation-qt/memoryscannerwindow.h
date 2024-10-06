@@ -5,7 +5,7 @@
 
 #include "ui_memoryscannerwindow.h"
 
-#include "core/cheats.h"
+#include "core/memory_scanner.h"
 
 #include <QtCore/QTimer>
 #include <QtWidgets/QComboBox>

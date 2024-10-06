@@ -87,7 +87,6 @@
     <addaction name="actionPause"/>
     <addaction name="menuChangeDisc"/>
     <addaction name="separator"/>
-    <addaction name="actionCheats"/>
     <addaction name="menuCheats"/>
     <addaction name="actionScreenshot"/>
     <addaction name="separator"/>
@@ -479,14 +478,6 @@
    </property>
    <property name="text">
     <string>Change Disc...</string>
-   </property>
-  </action>
-  <action name="actionCheats">
-   <property name="icon">
-    <iconset theme="cheats-line"/>
-   </property>
-   <property name="text">
-    <string>Cheats...</string>
    </property>
   </action>
   <action name="actionCheatsToolbar">

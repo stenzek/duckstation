@@ -29,7 +29,6 @@ class GameListWidget;
 class EmuThread;
 class AutoUpdaterDialog;
 class MemoryCardEditorWindow;
-class CheatManagerWindow;
 class DebuggerWindow;
 class MemoryScannerWindow;
 
@@ -95,9 +94,6 @@ public:
   ALWAYS_INLINE QLabel* getStatusResolutionWidget() const { return m_status_resolution_widget; }
   ALWAYS_INLINE QLabel* getStatusFPSWidget() const { return m_status_fps_widget; }
   ALWAYS_INLINE QLabel* getStatusVPSWidget() const { return m_status_vps_widget; }
-
-  /// Accessors for child windows.
-  CheatManagerWindow* getCheatManagerWindow() const { return m_cheat_manager_window; }
 
   /// Opens the editor for a specific input profile.
   void openInputProfileEditor(const std::string_view name);
@@ -171,7 +167,6 @@ private Q_SLOTS:
   void onViewGameListActionTriggered();
   void onViewGameGridActionTriggered();
   void onViewSystemDisplayTriggered();
-  void onViewGamePropertiesActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();
@@ -193,7 +188,6 @@ private Q_SLOTS:
 
   void onUpdateCheckComplete();
 
-  void openCheatManager();
   void openCPUDebugger();
 
 protected:
@@ -220,7 +214,6 @@ private:
   void updateStatusBarWidgetVisibility();
   void updateWindowTitle();
   void updateWindowState(bool force_visible = false);
-  void updateCheatActionsVisibility();
 
   void setProgressBar(int current, int total);
   void clearProgressBar();
@@ -245,6 +238,7 @@ private:
   void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
 
   void doSettings(const char* category = nullptr);
+  void openGamePropertiesForCurrentGame(const char* category = nullptr);
   void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
 
   void updateDebugMenuCPUExecutionMode();
@@ -301,7 +295,6 @@ private:
 
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
   MemoryCardEditorWindow* m_memory_card_editor_window = nullptr;
-  CheatManagerWindow* m_cheat_manager_window = nullptr;
   DebuggerWindow* m_debugger_window = nullptr;
   MemoryScannerWindow* m_memory_scanner_window = nullptr;
 

@@ -228,7 +228,7 @@ std::string GameDatabase::GetSerialForPath(const char* path)
 const GameDatabase::Entry* GameDatabase::GetEntryForDisc(CDImage* image)
 {
   std::string id;
-  System::GameHash hash;
+  GameHash hash;
   System::GetGameDetailsFromImage(image, &id, &hash);
   const Entry* entry = GetEntryForGameDetails(id, hash);
   if (entry)

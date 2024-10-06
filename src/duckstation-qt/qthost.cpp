@@ -1292,28 +1292,34 @@ void EmuThread::changeDiscFromPlaylist(quint32 index)
     errorReported(tr("Error"), tr("Failed to switch to subimage %1").arg(index));
 }
 
-void EmuThread::setCheatEnabled(quint32 index, bool enabled)
+void EmuThread::reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
 {
   if (!isOnThread())
   {
-    QMetaObject::invokeMethod(this, "setCheatEnabled", Qt::QueuedConnection, Q_ARG(quint32, index),
-                              Q_ARG(bool, enabled));
+    QMetaObject::invokeMethod(this, "reloadCheats", Qt::QueuedConnection, Q_ARG(bool, reload_files),
+                              Q_ARG(bool, reload_enabled_list), Q_ARG(bool, verbose), Q_ARG(bool, verbose_if_changed));
     return;
   }
 
-  System::SetCheatCodeState(index, enabled);
-  emit cheatEnabled(index, enabled);
+  if (System::IsValid())
+  {
+    // If the reloaded list is being enabled, we also need to reload the gameini file.
+    if (reload_enabled_list)
+      System::ReloadGameSettings(verbose);
+    Cheats::ReloadCheats(reload_files, reload_enabled_list, verbose, verbose_if_changed);
+  }
 }
 
-void EmuThread::applyCheat(quint32 index)
+void EmuThread::applyCheat(const QString& name)
 {
   if (!isOnThread())
   {
-    QMetaObject::invokeMethod(this, "applyCheat", Qt::QueuedConnection, Q_ARG(quint32, index));
+    QMetaObject::invokeMethod(this, "applyCheat", Qt::QueuedConnection, Q_ARG(const QString&, name));
     return;
   }
 
-  System::ApplyCheatCode(index);
+  if (System::IsValid())
+    Cheats::ApplyManualCode(name.toStdString());
 }
 
 void EmuThread::reloadPostProcessingShaders()
