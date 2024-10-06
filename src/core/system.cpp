@@ -2600,7 +2600,8 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* 
     ((disc_region != DiscRegion::NonPS1) &&
      (s_state == State::Starting || (s_bios_image_info && s_bios_image_info->SupportsFastBoot())));
   const System::BootMode actual_new_boot_mode =
-    (new_boot_mode == BootMode::FastBoot || (s_bios_image_info && s_bios_image_info->CanSlowBootDisc(disc_region))) ?
+    (new_boot_mode == BootMode::FastBoot ||
+     (new_boot_mode == BootMode::FullBoot && s_bios_image_info && !s_bios_image_info->CanSlowBootDisc(disc_region))) ?
       (can_fast_boot ? BootMode::FastBoot : BootMode::FullBoot) :
       new_boot_mode;
   if (actual_new_boot_mode == s_boot_mode)
