@@ -94,7 +94,7 @@ inline std::optional<T> FromChars(const std::string_view str, int base, std::str
 
   if (endptr)
   {
-    const size_t remaining_len = end - ptr - 1;
+    const size_t remaining_len = end - result.ptr;
     *endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
   }
 
@@ -125,7 +125,7 @@ inline std::optional<T> FromChars(const std::string_view str, std::string_view* 
 
   if (endptr)
   {
-    const size_t remaining_len = end - ptr - 1;
+    const size_t remaining_len = end - result.ptr;
     *endptr = (remaining_len > 0) ? std::string_view(result.ptr, remaining_len) : std::string_view();
   }
 
