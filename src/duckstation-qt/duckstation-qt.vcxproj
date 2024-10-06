@@ -9,8 +9,6 @@
     <ClCompile Include="audiosettingswidget.cpp" />
     <ClCompile Include="autoupdaterdialog.cpp" />
     <ClCompile Include="biossettingswidget.cpp" />
-    <ClCompile Include="cheatmanagerwindow.cpp" />
-    <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="colorpickerbutton.cpp" />
     <ClCompile Include="consolesettingswidget.cpp" />
     <ClCompile Include="controllerbindingwidgets.cpp" />
@@ -21,7 +19,9 @@
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
     <ClCompile Include="foldersettingswidget.cpp" />
+    <ClCompile Include="gamecheatsettingswidget.cpp" />
     <ClCompile Include="gamelistmodel.cpp" />
+    <ClCompile Include="gamepatchsettingswidget.cpp" />
     <ClCompile Include="interfacesettingswidget.cpp" />
     <ClCompile Include="graphicssettingswidget.cpp" />
     <ClCompile Include="hotkeysettingswidget.cpp" />
@@ -58,8 +58,6 @@
     <QtMoc Include="aboutdialog.h" />
     <QtMoc Include="audiosettingswidget.h" />
     <QtMoc Include="biossettingswidget.h" />
-    <QtMoc Include="cheatmanagerwindow.h" />
-    <QtMoc Include="cheatcodeeditordialog.h" />
     <QtMoc Include="coverdownloaddialog.h" />
     <QtMoc Include="memorycardsettingswidget.h" />
     <QtMoc Include="memorycardeditorwindow.h" />
@@ -85,6 +83,8 @@
     <QtMoc Include="logwindow.h" />
     <QtMoc Include="graphicssettingswidget.h" />
     <QtMoc Include="memoryscannerwindow.h" />
+    <QtMoc Include="gamecheatsettingswidget.h" />
+    <QtMoc Include="gamepatchsettingswidget.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="selectdiscdialog.h" />
@@ -139,10 +139,7 @@
     <QtUi Include="memorycardeditorwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
-    <QtUi Include="cheatmanagerwindow.ui">
-      <FileType>Document</FileType>
-    </QtUi>
-    <QtUi Include="cheatcodeeditordialog.ui">
+    <QtUi Include="gamecheatcodeeditordialog.ui">
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="inputbindingdialog.ui">
@@ -222,8 +219,6 @@
     <ClCompile Include="$(IntDir)moc_autoupdaterdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_advancedsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_biossettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_cheatmanagerwindow.cpp" />
-    <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp" />
     <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp" />
     <ClCompile Include="$(IntDir)moc_consolesettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_controllerbindingwidgets.cpp" />
@@ -233,10 +228,12 @@
     <ClCompile Include="$(IntDir)moc_displaywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_foldersettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamecheatsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistmodel.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistrefreshthread.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamepatchsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamesummarywidget.cpp" />
     <ClCompile Include="$(IntDir)moc_graphicssettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_debuggermodels.cpp" />
@@ -342,6 +339,18 @@
     <QtUi Include="texturereplacementsettingsdialog.ui">
       <FileType>Document</FileType>
     </QtUi>
+    <QtUi Include="gamecheatsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="gamepatchsettingswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="gamepatchdetailswidget.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="gamecheatcodechoiceeditordialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
     <None Include="translations\duckstation-qt_tr.ts" />
   </ItemGroup>
@@ -395,7 +404,6 @@
       <PreprocessorDefinitions>QT_NO_EXCEPTIONS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4127;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\minizip\include</AdditionalIncludeDirectories>
-
       <!-- Qt relies on RTTI for assertions in Debug builds. -->
       <RuntimeTypeInfo Condition="$(Configuration.Contains(Debug))">true</RuntimeTypeInfo>
       <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(Debug))">%(AdditionalOptions) /clang:-frtti</AdditionalOptions>

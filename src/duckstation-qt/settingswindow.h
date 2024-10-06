@@ -6,12 +6,13 @@
 
 #include "util/ini_settings_interface.h"
 
-#include "common/types.h"
+#include "core/types.h"
 
 #include <QtCore/QMap>
 #include <QtCore/QString>
 #include <QtWidgets/QDialog>
 #include <array>
+#include <optional>
 
 class QWheelEvent;
 
@@ -25,6 +26,8 @@ struct Entry;
 class InterfaceSettingsWidget;
 class BIOSSettingsWidget;
 class GameListSettingsWidget;
+class GamePatchSettingsWidget;
+class GameCheatSettingsWidget;
 class ConsoleSettingsWidget;
 class EmulationSettingsWidget;
 class MemoryCardSettingsWidget;
@@ -41,12 +44,12 @@ class SettingsWindow final : public QWidget
 
 public:
   SettingsWindow();
-  SettingsWindow(const std::string& path, std::string serial, DiscRegion region, const GameDatabase::Entry* entry,
-                 std::unique_ptr<INISettingsInterface> sif);
+  SettingsWindow(const std::string& path, std::string serial, GameHash hash, DiscRegion region,
+                 const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif);
   ~SettingsWindow();
 
-  static void openGamePropertiesDialog(const std::string& path, const std::string& title, const std::string& serial,
-                                       DiscRegion region);
+  static SettingsWindow* openGamePropertiesDialog(const std::string& path, const std::string& title, std::string serial,
+                                                  GameHash hash, DiscRegion region, const char* category = nullptr);
   static void closeGamePropertiesDialogs();
 
   // Helper for externally setting fields in game settings ini.
@@ -56,6 +59,8 @@ public:
 
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
   ALWAYS_INLINE INISettingsInterface* getSettingsInterface() const { return m_sif.get(); }
+  ALWAYS_INLINE const std::string& getGameSerial() const { return m_serial; }
+  ALWAYS_INLINE const std::optional<GameHash>& getGameHash() const { return m_hash; }
 
   ALWAYS_INLINE InterfaceSettingsWidget* getInterfaceSettingsWidget() const { return m_interface_settings; }
   ALWAYS_INLINE BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
@@ -93,7 +98,6 @@ public:
   bool containsSettingValue(const char* section, const char* key) const;
   void removeSettingValue(const char* section, const char* key);
   void saveAndReloadGameSettings();
-  void reloadGameSettingsFromIni();
 
   bool hasGameTrait(GameDatabase::Trait trait);
 
@@ -117,7 +121,7 @@ protected:
 private:
   enum : u32
   {
-    MAX_SETTINGS_WIDGETS = 12
+    MAX_SETTINGS_WIDGETS = 13
   };
 
   void connectUi();
@@ -137,6 +141,8 @@ private:
   ConsoleSettingsWidget* m_console_settings = nullptr;
   EmulationSettingsWidget* m_emulation_settings = nullptr;
   GameListSettingsWidget* m_game_list_settings = nullptr;
+  GamePatchSettingsWidget* m_game_patch_settings_widget = nullptr;
+  GameCheatSettingsWidget* m_game_cheat_settings_widget = nullptr;
   MemoryCardSettingsWidget* m_memory_card_settings = nullptr;
   GraphicsSettingsWidget* m_graphics_settings = nullptr;
   PostProcessingSettingsWidget* m_post_processing_settings = nullptr;
@@ -150,5 +156,6 @@ private:
   QObject* m_current_help_widget = nullptr;
   QMap<QObject*, QString> m_widget_help_text_map;
 
-  std::string m_game_list_filename;
+  std::string m_serial;
+  std::optional<GameHash> m_hash;
 };

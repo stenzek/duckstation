@@ -2,46 +2,1957 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cheats.h"
+#include "achievements.h"
 #include "bus.h"
 #include "controller.h"
 #include "cpu_core.h"
+#include "game_database.h"
 #include "host.h"
 #include "system.h"
 
+#include "util/imgui_manager.h"
+
+#include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/minizip_helpers.h"
+#include "common/path.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
 
-#include <cctype>
-#include <iomanip>
-#include <sstream>
-#include <type_traits>
+#include "IconsEmoji.h"
+#include "IconsFontAwesome5.h"
+#include "fmt/format.h"
 
 LOG_CHANNEL(Cheats);
 
-static std::array<u32, 256> cht_register; // Used for D7 ,51 & 52 cheat types
-
-using KeyValuePairVector = std::vector<std::pair<std::string, std::string>>;
-
-static bool IsValidScanAddress(PhysicalMemoryAddress address)
+namespace {
+class CheatFileReader
 {
-  if ((address & CPU::SCRATCHPAD_ADDR_MASK) == CPU::SCRATCHPAD_ADDR &&
-      (address & CPU::SCRATCHPAD_OFFSET_MASK) < CPU::SCRATCHPAD_SIZE)
+public:
+  CheatFileReader(const std::string_view contents) : m_contents(contents) {}
+
+  ALWAYS_INLINE size_t GetCurrentOffset() const { return m_current_offset; }
+  ALWAYS_INLINE size_t GetCurrentLineOffset() const { return m_current_line_offset; }
+  ALWAYS_INLINE u32 GetCurrentLineNumber() const { return m_current_line_number; }
+
+  bool GetLine(std::string_view* line)
   {
+    const size_t length = m_contents.length();
+    if (m_current_offset == length)
+    {
+      m_current_line_offset = m_current_offset;
+      return false;
+    }
+
+    size_t end_position = m_current_offset;
+    for (; end_position < length; end_position++)
+    {
+      // ignore carriage returns
+      if (m_contents[end_position] == '\r')
+        continue;
+
+      if (m_contents[end_position] == '\n')
+        break;
+    }
+
+    m_current_line_number++;
+    m_current_line_offset = m_current_offset;
+    *line = m_contents.substr(m_current_offset, end_position - m_current_offset);
+    m_current_offset = std::min(end_position + 1, length);
     return true;
   }
 
-  address &= CPU::PHYSICAL_MEMORY_ADDRESS_MASK;
+  std::optional<std::string_view> GetLine()
+  {
+    std::optional<std::string_view> ret = std::string_view();
+    if (!GetLine(&ret.value()))
+      ret.reset();
+    return ret;
+  }
 
-  if (address < Bus::RAM_MIRROR_END)
-    return true;
+  template<typename... T>
+  bool LogError(Error* error, bool stop_on_error, fmt::format_string<T...> fmt, T&&... args)
+  {
+    if (!stop_on_error)
+    {
+      Log::WriteFmtArgs(___LogChannel___, Log::Level::Warning, fmt, fmt::make_format_args(args...));
+      return true;
+    }
 
-  if (address >= Bus::BIOS_BASE && address < (Bus::BIOS_BASE + Bus::BIOS_SIZE))
+    if (error)
+      error->SetString(fmt::vformat(fmt, fmt::make_format_args(args...)));
+
+    return false;
+  }
+
+private:
+  const std::string_view m_contents;
+  size_t m_current_offset = 0;
+  size_t m_current_line_offset = 0;
+  u32 m_current_line_number = 0;
+};
+
+class CheatArchive
+{
+public:
+  ~CheatArchive()
+  {
+    if (m_unz_file)
+      unzClose(m_unz_file);
+  }
+
+  ALWAYS_INLINE bool IsOpen() const { return (m_unz_file != nullptr); }
+
+  bool Open(const char* name)
+  {
+    if (m_unz_file)
+      return true;
+
+    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(name, false);
+    if (!data.has_value())
+    {
+      ERROR_LOG("Failed to read cheat archive {}.", name);
+      return false;
+    }
+
+    m_data = std::move(data.value());
+    m_unz_file = MinizipHelpers::OpenUnzMemoryFile(m_data.data(), m_data.size());
+    if (!m_unz_file) [[unlikely]]
+    {
+      ERROR_LOG("Failed to open cheat archive {}.", name);
+      return false;
+    }
+
     return true;
+  }
+
+  std::optional<std::string> ReadFile(const char* name) const
+  {
+    Error error;
+    std::optional<std::string> ret = MinizipHelpers::ReadZipFileToString(m_unz_file, name, false, &error);
+    if (!ret.has_value())
+      DEV_LOG("Failed to read {} from zip: {}", name, error.GetDescription());
+    return ret;
+  }
+
+private:
+  // Maybe counter-intuitive, but it ends up faster for reading a single game's cheats if we keep a
+  // copy of the archive in memory, as opposed to reading from disk.
+  DynamicHeapArray<u8> m_data;
+  unzFile m_unz_file = nullptr;
+};
+
+} // namespace
+
+namespace Cheats {
+
+namespace {
+/// Represents a cheat code, after being parsed.
+class CheatCode
+{
+public:
+  /// Additional metadata to a cheat code, present for all types.
+  struct Metadata
+  {
+    std::string name;
+    CodeType type = CodeType::Gameshark;
+    CodeActivation activation = CodeActivation::EndFrame;
+    std::optional<u32> override_cpu_overclock;
+    std::optional<DisplayAspectRatio> override_aspect_ratio;
+    bool has_options : 1;
+    bool disable_widescreen_rendering : 1;
+    bool disallow_for_achievements : 1;
+  };
+
+public:
+  CheatCode(Metadata metadata);
+  virtual ~CheatCode();
+
+  ALWAYS_INLINE const Metadata& GetMetadata() const { return m_metadata; }
+  ALWAYS_INLINE const std::string& GetName() const { return m_metadata.name; }
+  ALWAYS_INLINE CodeActivation GetActivation() const { return m_metadata.activation; }
+  ALWAYS_INLINE bool IsManuallyActivated() const { return (m_metadata.activation == CodeActivation::Manual); }
+  ALWAYS_INLINE bool HasOptions() const { return m_metadata.has_options; }
+
+  void ApplySettingOverrides();
+
+  virtual void SetOptionValue(u32 value) = 0;
+
+  virtual void Apply() const = 0;
+  virtual void ApplyOnDisable() const = 0;
+
+protected:
+  Metadata m_metadata;
+};
+} // namespace
+
+using CheatCodeList = std::vector<std::unique_ptr<CheatCode>>;
+using ActiveCodeList = std::vector<const CheatCode*>;
+using EnableCodeList = std::vector<std::string>;
+
+static std::string GetChtTemplate(const std::string_view serial, std::optional<GameHash> hash, bool add_wildcard);
+static std::vector<std::string> FindChtFilesOnDisk(const std::string_view serial, std::optional<GameHash> hash,
+                                                   bool cheats);
+static void ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bool from_database);
+static void AppendCheatToList(CodeInfoList* dst, CodeInfo code);
+static std::string FormatCodeForFile(const CodeInfo& code);
+
+static bool ShouldLoadDatabaseCheats();
+static bool AreAnyPatchesEnabled();
+static void ReloadEnabledLists();
+static u32 EnableCheats(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
+                        bool hc_mode_active);
+static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed);
+
+template<typename F>
+static void EnumerateChtFiles(const std::string_view serial, std::optional<GameHash> hash, bool cheats, bool for_ui,
+                              bool load_from_disk, bool load_from_database, const F& f);
+
+static std::optional<CodeOption> ParseOption(const std::string_view value);
+static bool ParseOptionRange(const std::string_view value, u16* out_range_start, u16* out_range_end);
+extern void ParseFile(CheatCodeList* dst_list, const std::string_view file_contents);
+
+static Cheats::FileFormat DetectFileFormat(const std::string_view file_contents);
+static bool ImportPCSXFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error, Error* error);
+static bool ImportLibretroFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error,
+                               Error* error);
+static bool ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error, Error* error);
+static bool ImportOldChtFile(const std::string_view serial);
+
+static std::unique_ptr<CheatCode> ParseGamesharkCode(CheatCode::Metadata metadata, const std::string_view data,
+                                                     Error* error);
+
+const char* PATCHES_CONFIG_SECTION = "Patches";
+const char* CHEATS_CONFIG_SECTION = "Cheats";
+const char* PATCH_ENABLE_CONFIG_KEY = "Enable";
+
+static CheatArchive s_patches_zip;
+static CheatArchive s_cheats_zip;
+static CheatCodeList s_patch_codes;
+static CheatCodeList s_cheat_codes;
+static EnableCodeList s_enabled_cheats;
+static EnableCodeList s_enabled_patches;
+
+static ActiveCodeList s_frame_end_codes;
+
+static bool s_patches_enabled = false;
+static bool s_cheats_enabled = false;
+static bool s_database_cheat_codes_enabled = false;
+
+} // namespace Cheats
+
+Cheats::CheatCode::CheatCode(Metadata metadata) : m_metadata(std::move(metadata))
+{
+}
+
+void Cheats::CheatCode::ApplySettingOverrides()
+{
+  if (m_metadata.disable_widescreen_rendering && g_settings.gpu_widescreen_hack)
+  {
+    DEV_LOG("Disabling widescreen rendering from {} patch.", GetName());
+    g_settings.gpu_widescreen_hack = false;
+  }
+  if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto)
+  {
+    DEV_LOG("Setting aspect ratio to {} from {} patch.",
+            Settings::GetDisplayAspectRatioName(m_metadata.override_aspect_ratio.value()), GetName());
+    g_settings.display_aspect_ratio = m_metadata.override_aspect_ratio.value();
+  }
+  if (m_metadata.override_cpu_overclock.has_value())
+  {
+    DEV_LOG("Setting CPU overclock to {} from {} patch.", m_metadata.override_cpu_overclock.value(), GetName());
+    g_settings.SetCPUOverclockPercent(m_metadata.override_cpu_overclock.value());
+    g_settings.cpu_overclock_enable = true;
+    g_settings.UpdateOverclockActive();
+  }
+}
+
+Cheats::CheatCode::~CheatCode() = default;
+
+static std::array<const char*, 1> s_cheat_code_type_names = {{"Gameshark"}};
+static std::array<const char*, 1> s_cheat_code_type_display_names{{TRANSLATE_NOOP("Cheats", "Gameshark")}};
+
+const char* Cheats::GetTypeName(CodeType type)
+{
+  return s_cheat_code_type_names[static_cast<u32>(type)];
+}
+
+const char* Cheats::GetTypeDisplayName(CodeType type)
+{
+  return TRANSLATE("Cheats", s_cheat_code_type_display_names[static_cast<u32>(type)]);
+}
+
+std::optional<Cheats::CodeType> Cheats::ParseTypeName(const std::string_view str)
+{
+  for (size_t i = 0; i < s_cheat_code_type_names.size(); i++)
+  {
+    if (str == s_cheat_code_type_names[i])
+      return static_cast<CodeType>(i);
+  }
+
+  return std::nullopt;
+}
+
+static std::array<const char*, 2> s_cheat_code_activation_names = {{"Manual", "EndFrame"}};
+static std::array<const char*, 2> s_cheat_code_activation_display_names{
+  {TRANSLATE_NOOP("Cheats", "Manual"), TRANSLATE_NOOP("Cheats", "Automatic (Frame End)")}};
+
+const char* Cheats::GetActivationName(CodeActivation activation)
+{
+  return s_cheat_code_activation_names[static_cast<u32>(activation)];
+}
+
+const char* Cheats::GetActivationDisplayName(CodeActivation activation)
+{
+  return TRANSLATE("Cheats", s_cheat_code_activation_display_names[static_cast<u32>(activation)]);
+}
+
+std::optional<Cheats::CodeActivation> Cheats::ParseActivationName(const std::string_view str)
+{
+  for (u32 i = 0; i < static_cast<u32>(s_cheat_code_activation_names.size()); i++)
+  {
+    if (str == s_cheat_code_activation_names[i])
+      return static_cast<CodeActivation>(i);
+  }
+
+  return std::nullopt;
+}
+
+std::string Cheats::GetChtTemplate(const std::string_view serial, std::optional<GameHash> hash, bool add_wildcard)
+{
+  if (!hash.has_value())
+    return fmt::format("{}{}.cht", serial, add_wildcard ? "*" : "");
+  else
+    return fmt::format("{}_{:016X}{}.cht", serial, hash.value(), add_wildcard ? "*" : "");
+}
+
+std::vector<std::string> Cheats::FindChtFilesOnDisk(const std::string_view serial, std::optional<GameHash> hash,
+                                                    bool cheats)
+{
+  std::vector<std::string> ret;
+  FileSystem::FindResultsArray files;
+  FileSystem::FindFiles(cheats ? EmuFolders::Cheats.c_str() : EmuFolders::Patches.c_str(),
+                        GetChtTemplate(serial, hash, true).c_str(),
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
+  ret.reserve(files.size());
+  for (FILESYSTEM_FIND_DATA& fd : files)
+  {
+    // Skip mismatched hashes.
+    if (hash.has_value())
+    {
+      if (const std::string_view filename = Path::GetFileTitle(fd.FileName); filename.length() >= serial.length() + 18)
+      {
+        const std::string_view filename_hash = filename.substr(serial.length() + 1, 16);
+        const std::optional filename_parsed_hash = StringUtil::FromChars<GameHash>(filename_hash, 16);
+        if (filename_parsed_hash.has_value() && filename_parsed_hash.value() != hash.value())
+          continue;
+      }
+    }
+    ret.push_back(std::move(fd.FileName));
+  }
+
+  return ret;
+}
+
+template<typename F>
+void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<GameHash> hash, bool cheats, bool for_ui,
+                               bool load_from_files, bool load_from_database, const F& f)
+{
+  // Prefer files on disk over the zip, so we have to load the zip first.
+  if (load_from_database)
+  {
+    CheatArchive& archive = cheats ? s_cheats_zip : s_patches_zip;
+    if (!archive.IsOpen())
+    {
+      const char* archive_name = cheats ? "cheats.zip" : "patches.zip";
+      archive.Open(archive_name);
+    }
+
+    if (archive.IsOpen())
+    {
+      // Prefer filename with hash.
+      std::string zip_filename = GetChtTemplate(serial, hash, false);
+      std::optional<std::string> data = archive.ReadFile(zip_filename.c_str());
+      if (!data.has_value() && hash.has_value())
+      {
+        // Try without the hash.
+        zip_filename = GetChtTemplate(serial, std::nullopt, false);
+        data = archive.ReadFile(zip_filename.c_str());
+      }
+      if (data.has_value())
+        f(std::move(zip_filename), std::move(data.value()), true);
+    }
+  }
+
+  if (load_from_files)
+  {
+    std::vector<std::string> disk_patch_files;
+    if (for_ui || !Achievements::IsHardcoreModeActive())
+    {
+      disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? hash : std::nullopt, cheats);
+      if (cheats && disk_patch_files.empty())
+      {
+        // Check if there's an old-format titled file.
+        if (ImportOldChtFile(serial))
+          disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? hash : std::nullopt, cheats);
+      }
+    }
+
+    Error error;
+    if (!disk_patch_files.empty())
+    {
+      for (const std::string& file : disk_patch_files)
+      {
+        const std::optional<std::string> contents = FileSystem::ReadFileToString(file.c_str(), &error);
+        if (contents.has_value())
+          f(std::move(file), std::move(contents.value()), false);
+        else
+          WARNING_LOG("Failed to read cht file '{}': {}", Path::GetFileName(file), error.GetDescription());
+      }
+    }
+  }
+}
+
+std::string_view Cheats::CodeInfo::GetNamePart() const
+{
+  const std::string::size_type pos = name.rfind('\\');
+  std::string_view ret = name;
+  if (pos != std::string::npos)
+    ret = ret.substr(pos + 1);
+  return ret;
+}
+
+std::string_view Cheats::CodeInfo::GetNameParentPart() const
+{
+  const std::string::size_type pos = name.rfind('\\');
+  std::string_view ret;
+  if (pos != std::string::npos)
+    ret = std::string_view(name).substr(0, pos);
+  return ret;
+}
+
+std::string_view Cheats::CodeInfo::MapOptionValueToName(u32 value) const
+{
+  std::string_view ret;
+  if (!options.empty())
+    ret = options.front().first;
+
+  for (const Cheats::CodeOption& opt : options)
+  {
+    if (opt.second == value)
+    {
+      ret = opt.first;
+      break;
+    }
+  }
+
+  return ret;
+}
+
+std::string_view Cheats::CodeInfo::MapOptionValueToName(const std::string_view value) const
+{
+  const std::optional<u32> value_uint = StringUtil::FromChars<u32>(value);
+  return MapOptionValueToName(value_uint.value_or(options.empty() ? 0 : options.front().second));
+}
+
+u32 Cheats::CodeInfo::MapOptionNameToValue(const std::string_view opt_name) const
+{
+  for (const Cheats::CodeOption& opt : options)
+  {
+    if (opt.first == opt_name)
+      return opt.second;
+  }
+
+  return options.empty() ? 0 : options.front().second;
+}
+
+Cheats::CodeInfoList Cheats::GetCodeInfoList(const std::string_view serial, std::optional<GameHash> hash, bool cheats,
+                                             bool load_from_database, bool sort_by_name)
+{
+  CodeInfoList ret;
+
+  EnumerateChtFiles(serial, hash, cheats, true, true, load_from_database,
+                    [&ret](const std::string& filename, const std::string& data, bool from_database) {
+                      ExtractCodeInfo(&ret, data, from_database);
+                    });
+
+  if (sort_by_name)
+    std::sort(ret.begin(), ret.end(), [](const CodeInfo& lhs, const CodeInfo& rhs) {
+      // ungrouped cheats go together first
+      if (const int lhs_group = static_cast<int>(lhs.name.find('\\') != std::string::npos),
+          rhs_group = static_cast<int>(rhs.name.find('\\') != std::string::npos);
+          lhs_group != rhs_group)
+      {
+        return (lhs_group < rhs_group);
+      }
+
+      return lhs.name < rhs.name;
+    });
+
+  return ret;
+}
+
+std::vector<std::string_view> Cheats::GetCodeListUniquePrefixes(const CodeInfoList& list, bool include_empty)
+{
+  std::vector<std::string_view> ret;
+  for (const Cheats::CodeInfo& code : list)
+  {
+    const std::string_view prefix = code.GetNameParentPart();
+    if (prefix.empty())
+    {
+      if (include_empty && (ret.empty() || !ret.front().empty()))
+        ret.insert(ret.begin(), std::string_view());
+
+      continue;
+    }
+
+    if (std::find(ret.begin(), ret.end(), prefix) == ret.end())
+      ret.push_back(prefix);
+  }
+  return ret;
+}
+
+const Cheats::CodeInfo* Cheats::FindCodeInInfoList(const CodeInfoList& list, const std::string_view name)
+{
+  const auto it = std::find_if(list.cbegin(), list.cend(), [&name](const CodeInfo& rhs) { return name == rhs.name; });
+  return (it != list.end()) ? &(*it) : nullptr;
+}
+
+Cheats::CodeInfo* Cheats::FindCodeInInfoList(CodeInfoList& list, const std::string_view name)
+{
+  const auto it = std::find_if(list.begin(), list.end(), [&name](const CodeInfo& rhs) { return name == rhs.name; });
+  return (it != list.end()) ? &(*it) : nullptr;
+}
+
+std::string Cheats::FormatCodeForFile(const CodeInfo& code)
+{
+  fmt::memory_buffer buf;
+  auto appender = std::back_inserter(buf);
+  fmt::format_to(appender, "[{}]\n", code.name);
+  if (!code.description.empty())
+    fmt::format_to(appender, "Description = {}\n", code.description);
+  fmt::format_to(appender, "Type = {}\n", GetTypeName(code.type));
+  fmt::format_to(appender, "Activation = {}\n", GetActivationName(code.activation));
+  if (code.HasOptionChoices())
+  {
+    for (const CodeOption& opt : code.options)
+      fmt::format_to(appender, "Option = {}:{}\n", opt.first, opt.second);
+  }
+  else if (code.HasOptionRange())
+  {
+    fmt::format_to(appender, "OptionRange = {}:{}\n", code.option_range_start, code.option_range_end);
+  }
+
+  fmt::format_to(appender, "{}\n", code.body);
+  return std::string(buf.begin(), buf.end());
+}
+
+bool Cheats::UpdateCodeInFile(const char* path, const std::string_view name, const CodeInfo* code, Error* error)
+{
+  std::string file_contents;
+  if (FileSystem::FileExists(path))
+  {
+    std::optional<std::string> ofile_contents = FileSystem::ReadFileToString(path, error);
+    if (!ofile_contents.has_value())
+    {
+      Error::AddPrefix(error, "Failed to read existing file: ");
+      return false;
+    }
+    file_contents = std::move(ofile_contents.value());
+  }
+
+  // This is a bit crap, we're allocating everything and then tossing it away.
+  // Hopefully it won't fragment too much at least, because it's freed in reverse order...
+  std::optional<size_t> replace_start, replace_end;
+  if (!file_contents.empty() && !name.empty())
+  {
+    CodeInfoList existing_codes_in_file;
+    ExtractCodeInfo(&existing_codes_in_file, file_contents, false);
+
+    const CodeInfo* existing_code = FindCodeInInfoList(existing_codes_in_file, name);
+    if (existing_code)
+    {
+      replace_start = existing_code->file_offset_start;
+      replace_end = existing_code->file_offset_end;
+    }
+  }
+
+  if (replace_start.has_value())
+  {
+    const auto start = file_contents.begin() + replace_start.value();
+    const auto end = file_contents.begin() + replace_end.value();
+    if (code)
+      file_contents.replace(start, end, FormatCodeForFile(*code));
+    else
+      file_contents.erase(start, end);
+  }
+  else if (code)
+  {
+    const std::string code_body = FormatCodeForFile(*code);
+    file_contents.reserve(file_contents.length() + 1 + code_body.length());
+    if (!file_contents.empty() && file_contents.back() != '\n')
+      file_contents.push_back('\n');
+    file_contents.append(code_body);
+  }
+
+  INFO_LOG("Updating {}...", path);
+  if (!FileSystem::WriteStringToFile(path, file_contents, error))
+  {
+    Error::AddPrefix(error, "Failed to rewrite file: ");
+    return false;
+  }
+
+  return true;
+}
+
+bool Cheats::SaveCodesToFile(const char* path, const CodeInfoList& codes, Error* error)
+{
+  std::string file_contents;
+  if (FileSystem::FileExists(path))
+  {
+    std::optional<std::string> ofile_contents = FileSystem::ReadFileToString(path, error);
+    if (!ofile_contents.has_value())
+    {
+      Error::AddPrefix(error, "Failed to read existing file: ");
+      return false;
+    }
+    file_contents = std::move(ofile_contents.value());
+  }
+
+  for (const CodeInfo& code : codes)
+  {
+    // This is _really_ crap.. but it's only on importing.
+    std::optional<size_t> replace_start, replace_end;
+    if (!file_contents.empty())
+    {
+      CodeInfoList existing_codes_in_file;
+      ExtractCodeInfo(&existing_codes_in_file, file_contents, false);
+
+      const CodeInfo* existing_code = FindCodeInInfoList(existing_codes_in_file, code.name);
+      if (existing_code)
+      {
+        replace_start = existing_code->file_offset_start;
+        replace_end = existing_code->file_offset_end;
+      }
+    }
+
+    if (replace_start.has_value())
+    {
+      const auto start = file_contents.begin() + replace_start.value();
+      const auto end = file_contents.begin() + replace_end.value();
+      file_contents.replace(start, end, FormatCodeForFile(code));
+    }
+    else
+    {
+      const std::string code_body = FormatCodeForFile(code);
+      file_contents.reserve(file_contents.length() + 1 + code_body.length());
+      if (!file_contents.empty() && file_contents.back() != '\n')
+        file_contents.push_back('\n');
+      file_contents.append(code_body);
+    }
+  }
+
+  INFO_LOG("Updating {}...", path);
+  if (!FileSystem::WriteStringToFile(path, file_contents, error))
+  {
+    Error::AddPrefix(error, "Failed to rewrite file: ");
+    return false;
+  }
+
+  return true;
+}
+
+void Cheats::MergeCheatList(CodeInfoList* dst, CodeInfoList src)
+{
+  for (CodeInfo& code : src)
+  {
+    CodeInfo* existing_code = FindCodeInInfoList(*dst, code.name);
+    if (existing_code)
+      *existing_code = std::move(code);
+    else
+      dst->push_back(std::move(code));
+  }
+}
+
+std::string Cheats::GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats)
+{
+  return Path::Combine(cheats ? EmuFolders::Cheats : EmuFolders::Patches, GetChtTemplate(serial, hash, false));
+}
+
+bool Cheats::AreCheatsEnabled()
+{
+  if (Achievements::IsHardcoreModeActive() || g_settings.disable_all_enhancements)
+    return false;
+
+  // Only in the gameini.
+  const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+  return (sif && sif->GetBoolValue("Cheats", "EnableCheats", false));
+}
+
+bool Cheats::ShouldLoadDatabaseCheats()
+{
+  // Only in the gameini.
+  const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+  return (sif && sif->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true));
+}
+
+bool Cheats::AreAnyPatchesEnabled()
+{
+  if (g_settings.disable_all_enhancements)
+    return false;
+
+  // Only in the gameini.
+  const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+  return (sif && sif->ContainsValue("Patches", "Enable"));
+}
+
+void Cheats::ReloadEnabledLists()
+{
+  const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+  if (!sif)
+  {
+    // no gameini => nothing is going to be enabled.
+    s_enabled_cheats = {};
+    s_enabled_patches = {};
+    return;
+  }
+
+  if (AreCheatsEnabled())
+    s_enabled_cheats = sif->GetStringList(CHEATS_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
+  else
+    s_enabled_cheats = {};
+
+  s_enabled_patches = sif->GetStringList(PATCHES_CONFIG_SECTION, PATCH_ENABLE_CONFIG_KEY);
+}
+
+u32 Cheats::EnableCheats(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
+                         bool hc_mode_active)
+{
+  u32 count = 0;
+  for (const std::unique_ptr<CheatCode>& p : patches)
+  {
+    // ignore manually-activated codes
+    if (p->IsManuallyActivated())
+      continue;
+
+    // don't load banned patches
+    if (p->GetMetadata().disallow_for_achievements && hc_mode_active)
+      continue;
+
+    if (std::find(enable_list.begin(), enable_list.end(), p->GetName()) == enable_list.end())
+      continue;
+
+    INFO_LOG("Enabled code from {}: {}", section, p->GetName());
+
+    switch (p->GetActivation())
+    {
+      case CodeActivation::EndFrame:
+        s_frame_end_codes.push_back(p.get());
+        break;
+
+      default:
+        break;
+    }
+
+    if (p->HasOptions())
+    {
+      // need to extract the option from the ini
+      SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+      if (sif) [[likely]]
+      {
+        if (const std::optional<u32> value = sif->GetOptionalUIntValue(section, p->GetName().c_str(), std::nullopt))
+        {
+          DEV_LOG("Setting {} option value to 0x{:X}", p->GetName(), value.value());
+          p->SetOptionValue(value.value());
+        }
+      }
+    }
+
+    count++;
+  }
+
+  return count;
+}
+
+void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+{
+  for (const CheatCode* code : s_frame_end_codes)
+    code->ApplyOnDisable();
+
+  // Reload files if cheats or patches are enabled, and they were not previously.
+  const bool patches_are_enabled = AreAnyPatchesEnabled();
+  const bool cheats_are_enabled = AreCheatsEnabled();
+  const bool cheatdb_is_enabled = cheats_are_enabled && ShouldLoadDatabaseCheats();
+  reload_files = reload_files || (s_patches_enabled != patches_are_enabled);
+  reload_files = reload_files || (s_cheats_enabled != cheats_are_enabled);
+  reload_files = reload_files || (s_database_cheat_codes_enabled != cheatdb_is_enabled);
+
+  if (reload_files)
+  {
+    s_patch_codes.clear();
+    s_cheat_codes.clear();
+
+    if (const std::string& serial = System::GetGameSerial(); !serial.empty())
+    {
+      const GameHash hash = System::GetGameHash();
+
+      s_patches_enabled = patches_are_enabled;
+      if (patches_are_enabled)
+      {
+        EnumerateChtFiles(serial, hash, false, false, !Achievements::IsHardcoreModeActive(), true,
+                          [](const std::string& filename, const std::string& file_contents, bool from_database) {
+                            ParseFile(&s_patch_codes, file_contents);
+                            if (s_patch_codes.size() > 0)
+                              INFO_LOG("Found {} game patches in {}.", s_patch_codes.size(), filename);
+                          });
+      }
+
+      s_cheats_enabled = cheats_are_enabled;
+      s_database_cheat_codes_enabled = cheatdb_is_enabled;
+      if (cheats_are_enabled)
+      {
+        EnumerateChtFiles(serial, hash, true, false, true, cheatdb_is_enabled,
+                          [](const std::string& filename, const std::string& file_contents, bool from_database) {
+                            ParseFile(&s_cheat_codes, file_contents);
+                            if (s_cheat_codes.size() > 0)
+                              INFO_LOG("Found {} cheats in {}.", s_cheat_codes.size(), filename);
+                          });
+      }
+    }
+  }
+
+  UpdateActiveCodes(reload_enabled_list, verbose, verbose_if_changed);
+}
+
+void Cheats::UnloadAll()
+{
+  s_frame_end_codes = ActiveCodeList();
+  s_enabled_patches = EnableCodeList();
+  s_enabled_cheats = EnableCodeList();
+  s_cheat_codes = CheatCodeList();
+  s_patch_codes = CheatCodeList();
+  s_patches_enabled = false;
+  s_cheats_enabled = false;
+  s_database_cheat_codes_enabled = false;
+}
+
+void Cheats::ApplySettingOverrides()
+{
+  // only need to check patches for this
+  for (const std::string& name : s_enabled_patches)
+  {
+    for (std::unique_ptr<CheatCode>& code : s_patch_codes)
+    {
+      if (name == code->GetName())
+      {
+        code->ApplySettingOverrides();
+        break;
+      }
+    }
+  }
+}
+
+void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+{
+  if (reload_enabled_list)
+    ReloadEnabledLists();
+
+  const size_t prev_count = s_frame_end_codes.size();
+  s_frame_end_codes.clear();
+
+  u32 patch_count = 0;
+  u32 cheat_count = 0;
+
+  if (!g_settings.disable_all_enhancements)
+  {
+    const bool hc_mode_active = Achievements::IsHardcoreModeActive();
+    patch_count = EnableCheats(s_patch_codes, s_enabled_patches, "Patches", hc_mode_active);
+    cheat_count = AreCheatsEnabled() ? EnableCheats(s_cheat_codes, s_enabled_cheats, "Cheats", hc_mode_active) : 0;
+  }
+
+  // Display message on first boot when we load patches.
+  // Except when it's just GameDB.
+  const size_t new_count = s_frame_end_codes.size();
+  if (verbose || (verbose_if_changed && prev_count != new_count))
+  {
+    if (patch_count > 0)
+    {
+      Host::AddIconOSDMessage("LoadPatches", ICON_FA_BAND_AID,
+                              TRANSLATE_PLURAL_STR("Cheats", "%n game patches are active.", "OSD Message", patch_count),
+                              Host::OSD_INFO_DURATION);
+    }
+    if (cheat_count > 0)
+    {
+      Host::AddIconOSDMessage(
+        "LoadCheats", ICON_EMOJI_WARNING,
+        TRANSLATE_PLURAL_STR("Cheats", "%n cheats are enabled. This may crash games.", "OSD Message", cheat_count),
+        Host::OSD_WARNING_DURATION);
+    }
+    else if (patch_count == 0)
+    {
+      Host::RemoveKeyedOSDMessage("LoadPatches");
+      Host::AddIconOSDMessage("LoadCheats", ICON_FA_BAND_AID,
+                              TRANSLATE_STR("Cheats", "No cheats/patches are found or enabled."),
+                              Host::OSD_INFO_DURATION);
+    }
+  }
+}
+
+void Cheats::ApplyFrameEndCodes()
+{
+  for (const CheatCode* code : s_frame_end_codes)
+    code->Apply();
+}
+
+bool Cheats::EnumerateManualCodes(std::function<bool(const std::string& name)> callback)
+{
+  for (const std::unique_ptr<CheatCode>& code : s_cheat_codes)
+  {
+    if (code->IsManuallyActivated())
+    {
+      if (!callback(code->GetName()))
+        return false;
+    }
+  }
+  return true;
+}
+
+bool Cheats::ApplyManualCode(const std::string_view name)
+{
+  for (const std::unique_ptr<CheatCode>& code : s_cheat_codes)
+  {
+    if (code->IsManuallyActivated() && code->GetName() == name)
+    {
+      Host::AddIconOSDMessage(code->GetName(), ICON_FA_BAND_AID,
+                              fmt::format(TRANSLATE_FS("Cheats", "Cheat '{}' applied."), code->GetName()),
+                              Host::OSD_INFO_DURATION);
+      code->Apply();
+      return true;
+    }
+  }
 
   return false;
 }
+
+//////////////////////////////////////////////////////////////////////////
+// File Parsing
+//////////////////////////////////////////////////////////////////////////
+
+void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bool from_database)
+{
+  CodeInfo current_code;
+
+  std::optional<std::string> legacy_group;
+  std::optional<CodeType> legacy_type;
+  std::optional<CodeActivation> legacy_activation;
+
+  const auto finish_code = [&dst, &file_data, &current_code]() {
+    if (current_code.file_offset_end > current_code.file_offset_body_start)
+    {
+      current_code.body = std::string_view(file_data).substr(
+        current_code.file_offset_body_start, current_code.file_offset_end - current_code.file_offset_body_start);
+    }
+
+    AppendCheatToList(dst, std::move(current_code));
+  };
+
+  CheatFileReader reader(file_data);
+  std::string_view line;
+  while (reader.GetLine(&line))
+  {
+    std::string_view linev = StringUtil::StripWhitespace(line);
+    if (linev.empty())
+      continue;
+
+    // legacy metadata parsing
+    if (linev.starts_with("#group="))
+    {
+      legacy_group = StringUtil::StripWhitespace(linev.substr(7));
+      continue;
+    }
+    else if (linev.starts_with("#type="))
+    {
+      legacy_type = ParseTypeName(StringUtil::StripWhitespace(linev.substr(6)));
+      if (!legacy_type.has_value()) [[unlikely]]
+        WARNING_LOG("Unknown type at line {}: {}", reader.GetCurrentLineNumber(), line);
+      continue;
+    }
+    else if (linev.starts_with("#activation="))
+    {
+      legacy_activation = ParseActivationName(StringUtil::StripWhitespace(linev.substr(12)));
+      if (!legacy_activation.has_value()) [[unlikely]]
+        WARNING_LOG("Unknown type at line {}: {}", reader.GetCurrentLineNumber(), line);
+      continue;
+    }
+
+    // skip comments
+    if (linev[0] == '#' || linev[0] == ';')
+      continue;
+
+    if (linev.front() == '[')
+    {
+      if (linev.size() < 3 || linev.back() != ']')
+      {
+        WARNING_LOG("Malformed code at line {}: {}", reader.GetCurrentLineNumber(), line);
+        continue;
+      }
+
+      // new code.
+      if (!current_code.name.empty())
+      {
+        // overwrite existing codes with the same name.
+        finish_code();
+        current_code = CodeInfo();
+      }
+
+      const std::string_view name = linev.substr(1, linev.length() - 2);
+      current_code.name =
+        legacy_group.has_value() ? fmt::format("{}\\{}", legacy_group.value(), name) : std::string(name);
+      current_code.type = legacy_type.value_or(CodeType::Gameshark);
+      current_code.activation = legacy_activation.value_or(CodeActivation::EndFrame);
+      current_code.file_offset_start = static_cast<u32>(reader.GetCurrentLineOffset());
+      current_code.file_offset_end = current_code.file_offset_start;
+      current_code.file_offset_body_start = current_code.file_offset_start;
+      current_code.from_database = from_database;
+      continue;
+    }
+
+    // strip comments off end of lines
+    const std::string_view::size_type comment_pos = linev.find_last_of("#;");
+    if (comment_pos != std::string_view::npos)
+    {
+      linev = StringUtil::StripWhitespace(linev.substr(0, comment_pos));
+      if (linev.empty())
+        continue;
+    }
+
+    // metadata?
+    if (linev.find('=') != std::string_view::npos)
+    {
+      std::string_view key, value;
+      if (!StringUtil::ParseAssignmentString(linev, &key, &value))
+      {
+        WARNING_LOG("Malformed code at line {}: {}", reader.GetCurrentLineNumber(), line);
+        continue;
+      }
+
+      if (key == "Description")
+      {
+        current_code.description = value;
+      }
+      else if (key == "Author")
+      {
+        current_code.author = value;
+      }
+      else if (key == "Type")
+      {
+        const std::optional<CodeType> type = ParseTypeName(value);
+        if (type.has_value()) [[unlikely]]
+          current_code.type = type.value();
+        else
+          WARNING_LOG("Unknown code type at line {}: {}", reader.GetCurrentLineNumber(), line);
+      }
+      else if (key == "Activation")
+      {
+        const std::optional<CodeActivation> activation = ParseActivationName(value);
+        if (activation.has_value()) [[unlikely]]
+          current_code.activation = activation.value();
+        else
+          WARNING_LOG("Unknown code activation at line {}: {}", reader.GetCurrentLineNumber(), line);
+      }
+      else if (key == "Option")
+      {
+        if (std::optional<Cheats::CodeOption> opt = ParseOption(value))
+          current_code.options.push_back(std::move(opt.value()));
+        else
+          WARNING_LOG("Invalid option declaration at line {}: {}", reader.GetCurrentLineNumber(), line);
+      }
+      else if (key == "OptionRange")
+      {
+        if (!ParseOptionRange(value, &current_code.option_range_start, &current_code.option_range_end))
+          WARNING_LOG("Invalid option range declaration at line {}: {}", reader.GetCurrentLineNumber(), line);
+      }
+
+      // ignore other keys when we're only grabbing info
+      continue;
+    }
+
+    if (current_code.name.empty())
+    {
+      WARNING_LOG("Code data specified without name at line {}: {}", reader.GetCurrentLineNumber(), line);
+      continue;
+    }
+
+    if (current_code.file_offset_body_start == current_code.file_offset_start)
+      current_code.file_offset_body_start = static_cast<u32>(reader.GetCurrentLineOffset());
+
+    // if it's a code line, update the ending point
+    current_code.file_offset_end = static_cast<u32>(reader.GetCurrentOffset());
+  }
+
+  // last code.
+  if (!current_code.name.empty())
+    finish_code();
+}
+
+void Cheats::AppendCheatToList(CodeInfoList* dst, CodeInfo code)
+{
+  const auto iter =
+    std::find_if(dst->begin(), dst->end(), [&code](const CodeInfo& rhs) { return code.name == rhs.name; });
+  if (iter != dst->end())
+    *iter = std::move(code);
+  else
+    dst->push_back(std::move(code));
+}
+
+void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_contents)
+{
+  CheatFileReader reader(file_contents);
+
+  std::string_view next_code_group;
+  CheatCode::Metadata next_code_metadata;
+  std::optional<size_t> code_body_start;
+
+  const auto finish_code = [&dst_list, &file_contents, &reader, &next_code_group, &next_code_metadata,
+                            &code_body_start]() {
+    if (!code_body_start.has_value())
+    {
+      WARNING_LOG("Empty cheat body at line {}", reader.GetCurrentLineNumber());
+      next_code_metadata = CheatCode::Metadata();
+      return;
+    }
+
+    const std::string_view code_body =
+      file_contents.substr(code_body_start.value(), reader.GetCurrentLineOffset() - code_body_start.value());
+
+    std::unique_ptr<CheatCode> code;
+    if (next_code_metadata.type == CodeType::Gameshark)
+    {
+      Error error;
+      code = ParseGamesharkCode(std::move(next_code_metadata), code_body, &error);
+      if (!code)
+      {
+        WARNING_LOG("Failed to parse gameshark code ending on line {}: {}", reader.GetCurrentLineNumber(),
+                    error.GetDescription());
+        return;
+      }
+    }
+    else
+    {
+      WARNING_LOG("Unknown code type ending at line {}", reader.GetCurrentLineNumber());
+      return;
+    }
+
+    next_code_group = {};
+    next_code_metadata = CheatCode::Metadata();
+    code_body_start.reset();
+
+    // overwrite existing codes with the same name.
+    const auto iter = std::find_if(dst_list->begin(), dst_list->end(), [&code](const std::unique_ptr<CheatCode>& rhs) {
+      return code->GetName() == rhs->GetName();
+    });
+    if (iter != dst_list->end())
+      *iter = std::move(code);
+    else
+      dst_list->push_back(std::move(code));
+  };
+
+  std::string_view line;
+  while (reader.GetLine(&line))
+  {
+    std::string_view linev = StringUtil::StripWhitespace(line);
+    if (linev.empty())
+      continue;
+
+    // legacy metadata parsing
+    if (linev.starts_with("#group="))
+    {
+      next_code_group = StringUtil::StripWhitespace(linev.substr(7));
+      continue;
+    }
+    else if (linev.starts_with("#type="))
+    {
+      const std::optional<CodeType> type = ParseTypeName(StringUtil::StripWhitespace(linev.substr(6)));
+      if (!type.has_value())
+        WARNING_LOG("Unknown type at line {}: {}", reader.GetCurrentLineNumber(), line);
+      else
+        next_code_metadata.type = type.value();
+
+      continue;
+    }
+    else if (linev.starts_with("#activation="))
+    {
+      const std::optional<CodeActivation> activation =
+        ParseActivationName(StringUtil::StripWhitespace(linev.substr(12)));
+      if (!activation.has_value())
+        WARNING_LOG("Unknown type at line {}: {}", reader.GetCurrentLineNumber(), line);
+      else
+        next_code_metadata.activation = activation.value();
+
+      continue;
+    }
+
+    // skip comments
+    if (linev[0] == '#' || linev[0] == ';')
+      continue;
+
+    if (linev.front() == '[')
+    {
+      if (linev.size() < 3 || linev.back() != ']')
+      {
+        WARNING_LOG("Malformed code at line {}: {}", reader.GetCurrentLineNumber(), line);
+        continue;
+      }
+
+      if (!next_code_metadata.name.empty())
+        finish_code();
+
+      // new code.
+      const std::string_view name = linev.substr(1, linev.length() - 2);
+      next_code_metadata.name =
+        next_code_group.empty() ? std::string(name) : fmt::format("{}\\{}", next_code_group, name);
+      continue;
+    }
+
+    // strip comments off end of lines
+    const std::string_view::size_type comment_pos = linev.find_last_of("#;");
+    if (comment_pos != std::string_view::npos)
+    {
+      linev = StringUtil::StripWhitespace(linev.substr(0, comment_pos));
+      if (linev.empty())
+        continue;
+    }
+
+    // metadata?
+    if (linev.find('=') != std::string_view::npos)
+    {
+      std::string_view key, value;
+      if (!StringUtil::ParseAssignmentString(linev, &key, &value))
+      {
+        WARNING_LOG("Malformed code at line {}: {}", reader.GetCurrentLineNumber(), line);
+        continue;
+      }
+
+      if (key == "Type")
+      {
+        const std::optional<CodeType> type = ParseTypeName(value);
+        if (!type.has_value())
+          WARNING_LOG("Unknown code type at line {}: {}", reader.GetCurrentLineNumber(), line);
+        else
+          next_code_metadata.type = type.value();
+      }
+      else if (key == "Activation")
+      {
+        const std::optional<CodeActivation> activation = ParseActivationName(value);
+        if (!activation.has_value())
+          WARNING_LOG("Unknown code activation at line {}: {}", reader.GetCurrentLineNumber(), line);
+        else
+          next_code_metadata.activation = activation.value();
+      }
+      else if (key == "OverrideAspectRatio")
+      {
+        const std::optional<DisplayAspectRatio> aspect_ratio =
+          Settings::ParseDisplayAspectRatio(TinyString(value).c_str());
+        if (!aspect_ratio.has_value())
+          WARNING_LOG("Unknown aspect ratio at line {}: {}", reader.GetCurrentLineNumber(), line);
+        else
+          next_code_metadata.override_aspect_ratio = aspect_ratio;
+      }
+      else if (key == "OverrideCPUOverclock")
+      {
+        const std::optional<u32> ocvalue = StringUtil::FromChars<u32>(value);
+        if (!ocvalue.has_value() || ocvalue.value() == 0)
+          WARNING_LOG("Invalid CPU overclock at line {}: {}", reader.GetCurrentLineNumber(), line);
+        else
+          next_code_metadata.override_cpu_overclock = ocvalue.value();
+      }
+      else if (key == "DisableWidescreenRendering")
+      {
+        next_code_metadata.disable_widescreen_rendering = StringUtil::FromChars<bool>(value).value_or(false);
+      }
+      else if (key == "DisallowForAchievements")
+      {
+        next_code_metadata.disallow_for_achievements = StringUtil::FromChars<bool>(value).value_or(false);
+      }
+      else if (key == "Option" || key == "OptionRange")
+      {
+        // we don't care about the actual values, we load them from the config
+        next_code_metadata.has_options = true;
+      }
+      else if (key == "Author" || key == "Description")
+      {
+        // ignored when loading
+      }
+      else
+      {
+        WARNING_LOG("Unknown parameter {} at line {}", key, reader.GetCurrentLineNumber());
+      }
+
+      continue;
+    }
+
+    if (!code_body_start.has_value())
+      code_body_start = reader.GetCurrentLineOffset();
+  }
+
+  finish_code();
+}
+
+std::optional<Cheats::CodeOption> Cheats::ParseOption(const std::string_view value)
+{
+  // Option = Value1:0x1
+  std::optional<CodeOption> ret;
+  if (const std::string_view::size_type pos = value.rfind(':'); pos != std::string_view::npos)
+  {
+    const std::string_view opt_name = StringUtil::StripWhitespace(value.substr(0, pos));
+    const std::optional<u32> opt_value =
+      StringUtil::FromCharsWithOptionalBase<u32>(StringUtil::StripWhitespace(value.substr(pos + 1)));
+    if (opt_value.has_value())
+      ret = CodeOption(opt_name, opt_value.value());
+  }
+  return ret;
+}
+
+bool Cheats::ParseOptionRange(const std::string_view value, u16* out_range_start, u16* out_range_end)
+{
+  // OptionRange = 0:255
+  if (const std::string_view::size_type pos = value.rfind(':'); pos != std::string_view::npos)
+  {
+    const std::optional<u32> start = StringUtil::FromChars<u32>(StringUtil::StripWhitespace(value.substr(0, pos)));
+    const std::optional<u32> end = StringUtil::FromChars<u32>(StringUtil::StripWhitespace(value.substr(pos + 1)));
+    if (start.has_value() && end.has_value() && start.value() <= std::numeric_limits<u16>::max() &&
+        end.value() <= std::numeric_limits<u16>::max() && end.value() > start.value())
+    {
+      *out_range_start = static_cast<u16>(start.value());
+      *out_range_end = static_cast<u16>(end.value());
+      return true;
+    }
+  }
+
+  return false;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// File Importing
+//////////////////////////////////////////////////////////////////////////
+
+bool Cheats::ExportCodesToFile(std::string path, const CodeInfoList& codes, Error* error)
+{
+  if (codes.empty())
+  {
+    Error::SetStringView(error, "Code list is empty.");
+    return false;
+  }
+
+  auto fp = FileSystem::CreateAtomicRenamedFile(std::move(path), error);
+  if (!fp)
+    return false;
+
+  for (const CodeInfo& code : codes)
+  {
+    std::string code_body = FormatCodeForFile(code);
+
+    // ensure there's at least two newlines of space between each code
+    const size_t newline_len = code_body.ends_with("\n\n") ? 0 : (code_body.ends_with("\n") ? 1 : 2);
+    for (size_t i = 0; i < newline_len; i++)
+      code_body.push_back('\n');
+
+    if (std::fwrite(code_body.data(), code_body.length(), 1, fp.get()) != 1)
+    {
+      Error::SetErrno(error, "fwrite() failed: ", errno);
+      FileSystem::DiscardAtomicRenamedFile(fp);
+      return false;
+    }
+  }
+
+  return FileSystem::CommitAtomicRenamedFile(fp, error);
+}
+
+bool Cheats::ImportCodesFromString(CodeInfoList* dst, const std::string_view file_contents, FileFormat file_format,
+                                   bool stop_on_error, Error* error)
+{
+  if (file_format == FileFormat::Unknown)
+    file_format = DetectFileFormat(file_contents);
+
+  if (file_format == FileFormat::PCSX)
+  {
+    if (!ImportPCSXFile(dst, file_contents, stop_on_error, error))
+      return false;
+  }
+  else if (file_format == FileFormat::Libretro)
+  {
+    if (!ImportLibretroFile(dst, file_contents, stop_on_error, error))
+      return false;
+  }
+  else if (file_format == FileFormat::EPSXe)
+  {
+    if (!ImportEPSXeFile(dst, file_contents, stop_on_error, error))
+      return false;
+  }
+  else
+  {
+    Error::SetStringView(error, "Unknown file format.");
+    return false;
+  }
+
+  if (dst->empty())
+  {
+    Error::SetStringView(error, "No codes found in file.");
+    return false;
+  }
+
+  return true;
+}
+
+Cheats::FileFormat Cheats::DetectFileFormat(const std::string_view file_contents)
+{
+  CheatFileReader reader(file_contents);
+  std::string_view line;
+  while (reader.GetLine(&line))
+  {
+    // skip comments/empty lines
+    std::string_view linev = StringUtil::StripWhitespace(line);
+    if (linev.empty() || linev[0] == ';' || linev[0] == '#')
+      continue;
+
+    if (linev.starts_with("cheats"))
+      return FileFormat::Libretro;
+
+    // pcsxr if we see brackets
+    if (linev[0] == '[')
+      return FileFormat::PCSX;
+
+    // otherwise if it's a code, it's probably epsxe
+    if (StringUtil::IsHexDigit(linev[0]))
+      return FileFormat::EPSXe;
+  }
+
+  return FileFormat::Unknown;
+}
+
+bool Cheats::ImportPCSXFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error, Error* error)
+{
+  CheatFileReader reader(file_contents);
+  CodeInfo current_code;
+
+  const auto finish_code = [&dst, &file_contents, &stop_on_error, &error, &current_code, &reader]() {
+    if (current_code.file_offset_end <= current_code.file_offset_body_start)
+    {
+      if (!reader.LogError(error, stop_on_error, "Empty body for cheat '{}'", current_code.name))
+        return false;
+    }
+
+    current_code.body = std::string_view(file_contents)
+                          .substr(current_code.file_offset_body_start,
+                                  current_code.file_offset_end - current_code.file_offset_body_start);
+
+    AppendCheatToList(dst, std::move(current_code));
+    return true;
+  };
+
+  std::string_view line;
+  while (reader.GetLine(&line))
+  {
+    std::string_view linev = StringUtil::StripWhitespace(line);
+    if (linev.empty() || linev[0] == '#' || linev[0] == ';')
+      continue;
+
+    if (linev.front() == '[')
+    {
+      if (linev.size() < 3 || linev.back() != ']')
+      {
+        if (!reader.LogError(error, stop_on_error, "Malformed code at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
+        continue;
+      }
+
+      // new code.
+      if (!current_code.name.empty() && !finish_code())
+        return false;
+
+      current_code = CodeInfo();
+      current_code.name = linev.substr(1, linev.length() - 2);
+      current_code.file_offset_start = static_cast<u32>(reader.GetCurrentLineOffset());
+      current_code.file_offset_end = current_code.file_offset_start;
+      current_code.file_offset_body_start = current_code.file_offset_start;
+      current_code.type = CodeType::Gameshark;
+      current_code.activation = CodeActivation::EndFrame;
+      current_code.from_database = false;
+      continue;
+    }
+
+    // strip comments off end of lines
+    const std::string_view::size_type comment_pos = linev.find_last_of("#;");
+    if (comment_pos != std::string_view::npos)
+    {
+      linev = StringUtil::StripWhitespace(linev.substr(0, comment_pos));
+      if (linev.empty())
+        continue;
+    }
+
+    if (current_code.name.empty())
+    {
+      if (!reader.LogError(error, stop_on_error, "Code data specified without name at line {}: {}",
+                           reader.GetCurrentLineNumber(), line))
+      {
+        return false;
+      }
+
+      continue;
+    }
+
+    if (current_code.file_offset_body_start == current_code.file_offset_start)
+      current_code.file_offset_body_start = static_cast<u32>(reader.GetCurrentLineOffset());
+
+    // if it's a code line, update the ending point
+    current_code.file_offset_end = static_cast<u32>(reader.GetCurrentOffset());
+  }
+
+  // last code.
+  if (!current_code.name.empty() && !finish_code())
+    return false;
+
+  return true;
+}
+
+bool Cheats::ImportLibretroFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error,
+                                Error* error)
+{
+  std::vector<std::pair<std::string_view, std::string_view>> kvp;
+
+  static constexpr auto FindKey = [](const std::vector<std::pair<std::string_view, std::string_view>>& kvp,
+                                     const std::string_view search) -> const std::string_view* {
+    for (const auto& it : kvp)
+    {
+      if (StringUtil::EqualNoCase(search, it.first))
+        return &it.second;
+    }
+
+    return nullptr;
+  };
+
+  CheatFileReader reader(file_contents);
+  std::string_view line;
+  while (reader.GetLine(&line))
+  {
+    const std::string_view linev = StringUtil::StripWhitespace(line);
+    if (linev.empty())
+      continue;
+
+    // skip comments
+    if (linev[0] == '#' || linev[0] == ';')
+      continue;
+
+    std::string_view key, value;
+    if (!StringUtil::ParseAssignmentString(linev, &key, &value))
+    {
+      if (!reader.LogError(error, stop_on_error, "Malformed code at line {}: {}", reader.GetCurrentLineNumber(), line))
+        return false;
+
+      continue;
+    }
+
+    kvp.emplace_back(key, value);
+  }
+
+  if (kvp.empty())
+  {
+    reader.LogError(error, stop_on_error, "No key/values found.");
+    return false;
+  }
+
+  const std::string_view* num_cheats_value = FindKey(kvp, "cheats");
+  const u32 num_cheats = num_cheats_value ? StringUtil::FromChars<u32>(*num_cheats_value).value_or(0) : 0;
+  if (num_cheats == 0)
+    return false;
+
+  for (u32 i = 0; i < num_cheats; i++)
+  {
+    const std::string_view* desc = FindKey(kvp, TinyString::from_format("cheat{}_desc", i));
+    const std::string_view* code = FindKey(kvp, TinyString::from_format("cheat{}_code", i));
+    if (!desc || desc->empty() || !code || code->empty())
+    {
+      if (!reader.LogError(error, stop_on_error, "Missing desc/code for cheat {}", i))
+        return false;
+
+      continue;
+    }
+
+    // Need to convert + to newlines.
+    CodeInfo info;
+    info.name = *desc;
+    info.body = StringUtil::ReplaceAll(*code, '+', '\n');
+    info.file_offset_start = 0;
+    info.file_offset_end = 0;
+    info.file_offset_body_start = 0;
+    info.type = CodeType::Gameshark;
+    info.activation = CodeActivation::EndFrame;
+    info.from_database = false;
+    AppendCheatToList(dst, std::move(info));
+  }
+
+  return true;
+}
+
+bool Cheats::ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_contents, bool stop_on_error, Error* error)
+{
+  CheatFileReader reader(file_contents);
+  CodeInfo current_code;
+
+  const auto finish_code = [&dst, &file_contents, &stop_on_error, &error, &current_code, &reader]() {
+    if (current_code.file_offset_end <= current_code.file_offset_body_start)
+    {
+      if (!reader.LogError(error, stop_on_error, "Empty body for cheat '{}'", current_code.name))
+        return false;
+    }
+
+    current_code.body =
+      std::string_view(file_contents).substr(current_code.file_offset_body_start, current_code.file_offset_end);
+
+    AppendCheatToList(dst, std::move(current_code));
+    return true;
+  };
+
+  std::string_view line;
+  while (reader.GetLine(&line))
+  {
+    std::string_view linev = StringUtil::StripWhitespace(line);
+    if (linev.empty() || linev[0] == ';')
+      continue;
+
+    if (linev.front() == '#')
+    {
+      if (linev.size() < 2)
+      {
+        if (!reader.LogError(error, stop_on_error, "Malformed code at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
+        continue;
+      }
+
+      if (!current_code.name.empty() && !finish_code())
+        return false;
+
+      // new code.
+      current_code = CodeInfo();
+      current_code.name = linev.substr(1);
+      current_code.file_offset_start = static_cast<u32>(reader.GetCurrentLineOffset());
+      current_code.file_offset_end = current_code.file_offset_start;
+      current_code.file_offset_body_start = current_code.file_offset_start;
+      current_code.type = CodeType::Gameshark;
+      current_code.activation = CodeActivation::EndFrame;
+      current_code.from_database = false;
+      continue;
+    }
+
+    if (current_code.name.empty())
+    {
+      if (!reader.LogError(error, stop_on_error, "Code data specified without name at line {}: {}",
+                           reader.GetCurrentLineNumber(), line))
+      {
+        return false;
+      }
+
+      continue;
+    }
+
+    // if it's a code line, update the ending point
+    current_code.file_offset_end = static_cast<u32>(reader.GetCurrentOffset());
+  }
+
+  // last code.
+  if (!current_code.name.empty() && !finish_code())
+    return false;
+
+  return true;
+}
+
+bool Cheats::ImportOldChtFile(const std::string_view serial)
+{
+  const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(serial);
+  if (!dbentry || dbentry->title.empty())
+    return false;
+
+  const std::string old_path = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.cht", EmuFolders::Cheats, dbentry->title);
+  if (!FileSystem::FileExists(old_path.c_str()))
+    return false;
+
+  Error error;
+  std::optional<std::string> old_data = FileSystem::ReadFileToString(old_path.c_str(), &error);
+  if (!old_data.has_value())
+  {
+    ERROR_LOG("Failed to open old cht file '{}' for importing: {}", Path::GetFileName(old_path),
+              error.GetDescription());
+    return false;
+  }
+
+  CodeInfoList new_codes;
+  if (!ImportCodesFromString(&new_codes, old_data.value(), FileFormat::Unknown, false, &error) || new_codes.empty())
+  {
+    ERROR_LOG("Failed to import old cht file '{}': {}", Path::GetFileName(old_path), error.GetDescription());
+    return false;
+  }
+
+  const std::string new_path = GetChtFilename(serial, std::nullopt, true);
+  if (!SaveCodesToFile(new_path.c_str(), new_codes, &error))
+  {
+    ERROR_LOG("Failed to write new cht file '{}': {}", Path::GetFileName(new_path), error.GetDescription());
+    return false;
+  }
+
+  INFO_LOG("Imported {} codes from {}.", new_codes.size(), Path::GetFileName(old_path));
+  return true;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Gameshark codes
+//////////////////////////////////////////////////////////////////////////
+
+namespace Cheats {
+namespace {
+
+class GamesharkCheatCode final : public CheatCode
+{
+public:
+  GamesharkCheatCode(Metadata metadata);
+  ~GamesharkCheatCode() override;
+
+  static std::unique_ptr<GamesharkCheatCode> Parse(Metadata metadata, const std::string_view data, Error* error);
+
+  void SetOptionValue(u32 value) override;
+
+  void Apply() const override;
+  void ApplyOnDisable() const override;
+
+private:
+  enum class InstructionCode : u8
+  {
+    Nop = 0x00,
+    ConstantWrite8 = 0x30,
+    ConstantWrite16 = 0x80,
+    ScratchpadWrite16 = 0x1F,
+    Increment16 = 0x10,
+    Decrement16 = 0x11,
+    Increment8 = 0x20,
+    Decrement8 = 0x21,
+    DelayActivation = 0xC1,
+    SkipIfNotEqual16 = 0xC0,
+    SkipIfButtonsNotEqual = 0xD5,
+    SkipIfButtonsEqual = 0xD6,
+    CompareButtons = 0xD4,
+    CompareEqual16 = 0xD0,
+    CompareNotEqual16 = 0xD1,
+    CompareLess16 = 0xD2,
+    CompareGreater16 = 0xD3,
+    CompareEqual8 = 0xE0,
+    CompareNotEqual8 = 0xE1,
+    CompareLess8 = 0xE2,
+    CompareGreater8 = 0xE3,
+    Slide = 0x50,
+    MemoryCopy = 0xC2,
+    ExtImprovedSlide = 0x53,
+
+    // Extension opcodes, not present on original GameShark.
+    ExtConstantWrite32 = 0x90,
+    ExtScratchpadWrite32 = 0xA5,
+    ExtCompareEqual32 = 0xA0,
+    ExtCompareNotEqual32 = 0xA1,
+    ExtCompareLess32 = 0xA2,
+    ExtCompareGreater32 = 0xA3,
+    ExtSkipIfNotEqual32 = 0xA4,
+    ExtIncrement32 = 0x60,
+    ExtDecrement32 = 0x61,
+    ExtConstantWriteIfMatch16 = 0xA6,
+    ExtConstantWriteIfMatchWithRestore16 = 0xA7,
+    ExtConstantForceRange8 = 0xF0,
+    ExtConstantForceRangeLimits16 = 0xF1,
+    ExtConstantForceRangeRollRound16 = 0xF2,
+    ExtConstantForceRange16 = 0xF3,
+    ExtFindAndReplace = 0xF4,
+    ExtConstantSwap16 = 0xF5,
+
+    ExtConstantBitSet8 = 0x31,
+    ExtConstantBitClear8 = 0x32,
+    ExtConstantBitSet16 = 0x81,
+    ExtConstantBitClear16 = 0x82,
+    ExtConstantBitSet32 = 0x91,
+    ExtConstantBitClear32 = 0x92,
+
+    ExtBitCompareButtons = 0xD7,
+    ExtSkipIfNotLess8 = 0xC3,
+    ExtSkipIfNotGreater8 = 0xC4,
+    ExtSkipIfNotLess16 = 0xC5,
+    ExtSkipIfNotGreater16 = 0xC6,
+    ExtMultiConditionals = 0xF6,
+
+    ExtCheatRegisters = 0x51,
+    ExtCheatRegistersCompare = 0x52,
+
+    ExtCompareBitsSet8 = 0xE4,   // Only used inside ExtMultiConditionals
+    ExtCompareBitsClear8 = 0xE5, // Only used inside ExtMultiConditionals
+  };
+
+  union Instruction
+  {
+    u64 bits;
+
+    struct
+    {
+      u32 second;
+      u32 first;
+    };
+
+    BitField<u64, InstructionCode, 32 + 24, 8> code;
+    BitField<u64, u32, 32, 24> address;
+    BitField<u64, u32, 0, 32> value32;
+    BitField<u64, u16, 0, 16> value16;
+    BitField<u64, u8, 0, 8> value8;
+  };
+
+  std::vector<Instruction> instructions;
+  std::vector<std::tuple<u32, u8, u8>> option_instruction_values;
+
+  u32 GetNextNonConditionalInstruction(u32 index) const;
+
+  static bool IsConditionalInstruction(InstructionCode code);
+};
+
+} // namespace
+
+} // namespace Cheats
+
+Cheats::GamesharkCheatCode::GamesharkCheatCode(Metadata metadata) : CheatCode(std::move(metadata))
+{
+}
+
+Cheats::GamesharkCheatCode::~GamesharkCheatCode() = default;
+
+static std::optional<u32> ParseHexOptionMask(const std::string_view str, u8* out_option_start, u8* out_option_count)
+{
+  if (str.length() > 8)
+    return std::nullopt;
+
+  const u32 num_nibbles = static_cast<u32>(str.size());
+  std::array<char, 8> nibble_values;
+  u32 option_nibble_start = 0;
+  u32 option_nibble_count = 0;
+  bool last_was_option = false;
+  for (u32 i = 0; i < num_nibbles; i++)
+  {
+    if (str[i] == '?')
+    {
+      if (option_nibble_count == 0)
+      {
+        option_nibble_start = i;
+      }
+      else if (!last_was_option)
+      {
+        // ? must be consecutive
+        return false;
+      }
+
+      option_nibble_count++;
+      last_was_option = true;
+      nibble_values[i] = '0';
+    }
+    else if (StringUtil::IsHexDigit(str[i]))
+    {
+      last_was_option = false;
+      nibble_values[i] = str[i];
+    }
+    else
+    {
+      // not a valid hex digit
+      return false;
+    }
+  }
+
+  // use stringutil to decode it, it has zeros in the place
+  const std::optional<u32> parsed = StringUtil::FromChars<u32>(std::string_view(nibble_values.data(), num_nibbles), 16);
+  if (!parsed.has_value()) [[unlikely]]
+    return std::nullopt;
+
+  // LSB comes first, so reverse
+  *out_option_start = static_cast<u8>((num_nibbles - option_nibble_start - option_nibble_count) * 4);
+  *out_option_count = static_cast<u8>(option_nibble_count * 4);
+  return parsed;
+}
+
+std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(Metadata metadata,
+                                                                              const std::string_view data, Error* error)
+{
+  std::unique_ptr<GamesharkCheatCode> code = std::make_unique<GamesharkCheatCode>(std::move(metadata));
+  CheatFileReader reader(data);
+  std::string_view line;
+  while (reader.GetLine(&line))
+  {
+    // skip comments/empty lines
+    std::string_view linev = StringUtil::StripWhitespace(line);
+    if (linev.empty() || !StringUtil::IsHexDigit(linev[0]))
+      continue;
+
+    std::string_view next;
+    const std::optional<u32> first = StringUtil::FromChars<u32>(linev, 16, &next);
+    if (!first.has_value())
+    {
+      Error::SetStringFmt(error, "Malformed instruction at line {}: {}", reader.GetCurrentLineNumber(), linev);
+      code.reset();
+      break;
+    }
+
+    size_t next_offset = 0;
+    while (next_offset < next.size() && !StringUtil::IsHexDigit(next[next_offset]))
+      next_offset++;
+    next = (next_offset < next.size()) ? next.substr(next_offset) : std::string_view();
+
+    std::optional<u32> second;
+    if (next.find('?') != std::string_view::npos)
+    {
+      u8 option_bitpos, option_bitcount;
+      second = ParseHexOptionMask(next, &option_bitpos, &option_bitcount);
+      if (second.has_value())
+      {
+        code->option_instruction_values.emplace_back(static_cast<u32>(code->instructions.size()), option_bitpos,
+                                                     option_bitcount);
+      }
+    }
+    else
+    {
+      second = StringUtil::FromChars<u32>(next, 16);
+    }
+
+    if (!second.has_value())
+    {
+      Error::SetStringFmt(error, "Malformed instruction at line {}: {}", reader.GetCurrentLineNumber(), linev);
+      code.reset();
+      break;
+    }
+
+    Instruction inst;
+    inst.first = first.value();
+    inst.second = second.value();
+    code->instructions.push_back(inst);
+  }
+
+  if (code->instructions.empty())
+  {
+    Error::SetStringFmt(error, "No instructions in code.");
+    code.reset();
+  }
+
+  return code;
+}
+
+static std::array<u32, 256> cht_register; // Used for D7 ,51 & 52 cheat types
 
 template<typename T>
 NEVER_INLINE static T DoMemoryRead(VirtualMemoryAddress address)
@@ -167,805 +2078,23 @@ NEVER_INLINE static u32 GetControllerAnalogBits()
   return bits;
 }
 
-CheatList::CheatList() = default;
-
-CheatList::~CheatList() = default;
-
-static int SignedCharToInt(char ch)
-{
-  return static_cast<int>(static_cast<unsigned char>(ch));
-}
-
-static const std::string* FindKey(const KeyValuePairVector& kvp, const char* search)
-{
-  for (const auto& it : kvp)
-  {
-    if (StringUtil::Strcasecmp(it.first.c_str(), search) == 0)
-      return &it.second;
-  }
-
-  return nullptr;
-}
-
-bool CheatList::LoadFromPCSXRFile(const char* filename)
-{
-  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
-  if (!str.has_value() || str->empty())
-    return false;
-
-  return LoadFromPCSXRString(str.value());
-}
-
-bool CheatList::LoadFromPCSXRString(const std::string& str)
-{
-  std::istringstream iss(str);
-
-  std::string line;
-  std::string comments;
-  std::string group;
-  CheatCode::Type type = CheatCode::Type::Gameshark;
-  CheatCode::Activation activation = CheatCode::Activation::EndFrame;
-  CheatCode current_code;
-  while (std::getline(iss, line))
-  {
-    char* start = line.data();
-    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
-      start++;
-
-    // skip empty lines
-    if (*start == '\0')
-      continue;
-
-    char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(SignedCharToInt(*end)))
-    {
-      *end = '\0';
-      end--;
-    }
-
-    // DuckStation metadata
-    if (StringUtil::Strncasecmp(start, "#group=", 7) == 0)
-    {
-      group = start + 7;
-      continue;
-    }
-    if (StringUtil::Strncasecmp(start, "#type=", 6) == 0)
-    {
-      type = CheatCode::ParseTypeName(start + 6).value_or(CheatCode::Type::Gameshark);
-      continue;
-    }
-    if (StringUtil::Strncasecmp(start, "#activation=", 12) == 0)
-    {
-      activation = CheatCode::ParseActivationName(start + 12).value_or(CheatCode::Activation::EndFrame);
-      continue;
-    }
-
-    // skip comments and empty line
-    if (*start == '#' || *start == ';' || *start == '/' || *start == '\"')
-    {
-      comments.append(start);
-      comments += '\n';
-      continue;
-    }
-
-    if (*start == '[' && *end == ']')
-    {
-      start++;
-      *end = '\0';
-
-      // new cheat
-      if (current_code.Valid())
-        m_codes.push_back(std::move(current_code));
-
-      current_code = CheatCode();
-      if (group.empty())
-        group = "Ungrouped";
-
-      current_code.group = std::move(group);
-      group = std::string();
-      current_code.comments = std::move(comments);
-      comments = std::string();
-      current_code.type = type;
-      type = CheatCode::Type::Gameshark;
-      current_code.activation = activation;
-      activation = CheatCode::Activation::EndFrame;
-
-      if (*start == '*')
-      {
-        current_code.enabled = true;
-        start++;
-      }
-
-      current_code.description.append(start);
-      continue;
-    }
-
-    while (!StringUtil::IsHexDigit(*start) && start != end)
-      start++;
-    if (start == end)
-      continue;
-
-    char* end_ptr;
-    CheatCode::Instruction inst;
-    inst.first = static_cast<u32>(std::strtoul(start, &end_ptr, 16));
-    inst.second = 0;
-    if (end_ptr)
-    {
-      while (!StringUtil::IsHexDigit(*end_ptr) && end_ptr != end)
-        end_ptr++;
-      if (end_ptr != end)
-        inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
-    }
-    current_code.instructions.push_back(inst);
-  }
-
-  if (current_code.Valid())
-  {
-    // technically this isn't the place for end of file
-    if (!comments.empty())
-      current_code.comments += comments;
-    m_codes.push_back(std::move(current_code));
-  }
-
-  INFO_LOG("Loaded {} cheats (PCSXR format)", m_codes.size());
-  return !m_codes.empty();
-}
-
-bool CheatList::LoadFromLibretroFile(const char* filename)
-{
-  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
-  if (!str.has_value() || str->empty())
-    return false;
-
-  return LoadFromLibretroString(str.value());
-}
-
-bool CheatList::LoadFromLibretroString(const std::string& str)
-{
-  std::istringstream iss(str);
-  std::string line;
-  KeyValuePairVector kvp;
-  while (std::getline(iss, line))
-  {
-    char* start = line.data();
-    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
-      start++;
-
-    // skip empty lines
-    if (*start == '\0' || *start == '=')
-      continue;
-
-    char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(SignedCharToInt(*end)))
-    {
-      *end = '\0';
-      end--;
-    }
-
-    char* equals = start;
-    while (*equals != '=' && equals != end)
-      equals++;
-    if (equals == end)
-      continue;
-
-    *equals = '\0';
-
-    char* key_end = equals - 1;
-    while (key_end > start && std::isspace(SignedCharToInt(*key_end)))
-    {
-      *key_end = '\0';
-      key_end--;
-    }
-
-    char* value_start = equals + 1;
-    while (*value_start != '\0' && std::isspace(SignedCharToInt(*value_start)))
-      value_start++;
-
-    if (*value_start == '\0')
-      continue;
-
-    char* value_end = value_start + std::strlen(value_start) - 1;
-    while (value_end > value_start && std::isspace(SignedCharToInt(*value_end)))
-    {
-      *value_end = '\0';
-      value_end--;
-    }
-
-    if (*value_start == '\"')
-    {
-      if (*value_end != '\"')
-        continue;
-
-      value_start++;
-      *value_end = '\0';
-    }
-
-    kvp.emplace_back(start, value_start);
-  }
-
-  if (kvp.empty())
-    return false;
-
-  const std::string* num_cheats_value = FindKey(kvp, "cheats");
-  const u32 num_cheats = num_cheats_value ? StringUtil::FromChars<u32>(*num_cheats_value).value_or(0) : 0;
-  if (num_cheats == 0)
-    return false;
-
-  for (u32 i = 0; i < num_cheats; i++)
-  {
-    const std::string* desc = FindKey(kvp, TinyString::from_format("cheat{}_desc", i));
-    const std::string* code = FindKey(kvp, TinyString::from_format("cheat{}_code", i));
-    const std::string* enable = FindKey(kvp, TinyString::from_format("cheat{}_enable", i));
-    if (!desc || !code || !enable)
-    {
-      WARNING_LOG("Missing desc/code/enable for cheat {}", i);
-      continue;
-    }
-
-    CheatCode cc;
-    cc.group = "Ungrouped";
-    cc.description = *desc;
-    cc.enabled = StringUtil::FromChars<bool>(*enable).value_or(false);
-    if (ParseLibretroCheat(&cc, code->c_str()))
-      m_codes.push_back(std::move(cc));
-  }
-
-  INFO_LOG("Loaded {} cheats (libretro format)", m_codes.size());
-  return !m_codes.empty();
-}
-
-bool CheatList::LoadFromEPSXeString(const std::string& str)
-{
-  std::istringstream iss(str);
-
-  std::string line;
-  std::string group;
-  CheatCode::Type type = CheatCode::Type::Gameshark;
-  CheatCode::Activation activation = CheatCode::Activation::EndFrame;
-  CheatCode current_code;
-  while (std::getline(iss, line))
-  {
-    char* start = line.data();
-    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
-      start++;
-
-    // skip empty lines
-    if (*start == '\0')
-      continue;
-
-    char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(SignedCharToInt(*end)))
-    {
-      *end = '\0';
-      end--;
-    }
-
-    // skip comments and empty line
-    if (*start == ';' || *start == '\0')
-      continue;
-
-    if (*start == '#')
-    {
-      start++;
-
-      // new cheat
-      if (current_code.Valid())
-        m_codes.push_back(std::move(current_code));
-
-      current_code = CheatCode();
-      if (group.empty())
-        group = "Ungrouped";
-
-      current_code.group = std::move(group);
-      group = std::string();
-      current_code.type = type;
-      type = CheatCode::Type::Gameshark;
-      current_code.activation = activation;
-      activation = CheatCode::Activation::EndFrame;
-
-      char* separator = std::strchr(start, '\\');
-      if (separator)
-      {
-        *separator = 0;
-        current_code.group = start;
-        start = separator + 1;
-      }
-
-      current_code.description.append(start);
-      continue;
-    }
-
-    while (!StringUtil::IsHexDigit(*start) && start != end)
-      start++;
-    if (start == end)
-      continue;
-
-    char* end_ptr;
-    CheatCode::Instruction inst;
-    inst.first = static_cast<u32>(std::strtoul(start, &end_ptr, 16));
-    inst.second = 0;
-    if (end_ptr)
-    {
-      while (!StringUtil::IsHexDigit(*end_ptr) && end_ptr != end)
-        end_ptr++;
-      if (end_ptr != end)
-        inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
-    }
-    current_code.instructions.push_back(inst);
-  }
-
-  if (current_code.Valid())
-    m_codes.push_back(std::move(current_code));
-
-  INFO_LOG("Loaded {} cheats (EPSXe format)", m_codes.size());
-  return !m_codes.empty();
-}
-
-static bool IsLibretroSeparator(char ch)
-{
-  return (ch == ' ' || ch == '-' || ch == ':' || ch == '+');
-}
-
-bool CheatList::ParseLibretroCheat(CheatCode* cc, const char* line)
-{
-  const char* current_ptr = line;
-  while (current_ptr)
-  {
-    char* end_ptr;
-    CheatCode::Instruction inst;
-    inst.first = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
-    current_ptr = end_ptr;
-    if (end_ptr)
-    {
-      if (!IsLibretroSeparator(*end_ptr))
-      {
-        WARNING_LOG("Malformed code '{}'", line);
-        break;
-      }
-
-      end_ptr++;
-      inst.second = static_cast<u32>(std::strtoul(current_ptr, &end_ptr, 16));
-      if (end_ptr && *end_ptr == '\0')
-        end_ptr = nullptr;
-
-      if (end_ptr && *end_ptr != '\0')
-      {
-        if (!IsLibretroSeparator(*end_ptr))
-        {
-          WARNING_LOG("Malformed code '{}'", line);
-          break;
-        }
-
-        end_ptr++;
-      }
-
-      current_ptr = end_ptr;
-      cc->instructions.push_back(inst);
-    }
-  }
-
-  return !cc->instructions.empty();
-}
-
-void CheatList::Apply()
-{
-  if (!m_master_enable)
-    return;
-
-  for (const CheatCode& code : m_codes)
-  {
-    if (code.enabled)
-      code.Apply();
-  }
-}
-
-void CheatList::AddCode(CheatCode cc)
-{
-  m_codes.push_back(std::move(cc));
-}
-
-void CheatList::SetCode(u32 index, CheatCode cc)
-{
-  if (index > m_codes.size())
-    return;
-
-  if (index == m_codes.size())
-  {
-    m_codes.push_back(std::move(cc));
-    return;
-  }
-
-  m_codes[index] = std::move(cc);
-}
-
-void CheatList::RemoveCode(u32 i)
-{
-  m_codes.erase(m_codes.begin() + i);
-}
-
-std::optional<CheatList::Format> CheatList::DetectFileFormat(const char* filename)
-{
-  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
-  if (!str.has_value() || str->empty())
-    return std::nullopt;
-
-  return DetectFileFormat(str.value());
-}
-
-CheatList::Format CheatList::DetectFileFormat(const std::string& str)
-{
-  std::istringstream iss(str);
-  std::string line;
-  while (std::getline(iss, line))
-  {
-    char* start = line.data();
-    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
-      start++;
-
-    // skip empty lines
-    if (*start == '\0')
-      continue;
-
-    char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(SignedCharToInt(*end)))
-    {
-      *end = '\0';
-      end--;
-    }
-
-    // eat comments
-    if (start[0] == '#' || start[0] == ';')
-      continue;
-
-    if (line.starts_with("cheats"))
-      return Format::Libretro;
-
-    // pcsxr if we see brackets
-    if (start[0] == '[')
-      return Format::PCSXR;
-
-    // otherwise if it's a code, it's probably epsxe
-    if (StringUtil::IsHexDigit(start[0]))
-      return Format::EPSXe;
-  }
-
-  return Format::Count;
-}
-
-bool CheatList::LoadFromFile(const char* filename, Format format)
-{
-  if (!FileSystem::FileExists(filename))
-    return false;
-
-  std::optional<std::string> str = FileSystem::ReadFileToString(filename);
-  if (!str.has_value())
-    return false;
-
-  if (str->empty())
-    return true;
-
-  return LoadFromString(str.value(), format);
-}
-
-bool CheatList::LoadFromString(const std::string& str, Format format)
-{
-  if (format == Format::Autodetect)
-    format = DetectFileFormat(str);
-
-  if (format == Format::PCSXR)
-    return LoadFromPCSXRString(str);
-  else if (format == Format::Libretro)
-    return LoadFromLibretroString(str);
-  else if (format == Format::EPSXe)
-    return LoadFromEPSXeString(str);
-  else
-    return false;
-}
-
-bool CheatList::SaveToPCSXRFile(const char* filename)
-{
-  auto fp = FileSystem::OpenManagedCFile(filename, "wb");
-  if (!fp)
-    return false;
-
-  for (const CheatCode& cc : m_codes)
-  {
-    if (!cc.comments.empty())
-      std::fputs(cc.comments.c_str(), fp.get());
-    std::fprintf(fp.get(), "#group=%s\n", cc.group.c_str());
-    std::fprintf(fp.get(), "#type=%s\n", CheatCode::GetTypeName(cc.type));
-    std::fprintf(fp.get(), "#activation=%s\n", CheatCode::GetActivationName(cc.activation));
-    std::fprintf(fp.get(), "[%s%s]\n", cc.enabled ? "*" : "", cc.description.c_str());
-    for (const CheatCode::Instruction& i : cc.instructions)
-      std::fprintf(fp.get(), "%08X %04X\n", i.first, i.second);
-    std::fprintf(fp.get(), "\n");
-  }
-
-  std::fflush(fp.get());
-  return (std::ferror(fp.get()) == 0);
-}
-
-bool CheatList::LoadFromPackage(const std::string& serial)
-{
-  const std::optional<std::string> db_string(Host::ReadResourceFileToString("chtdb.txt", false));
-  if (!db_string.has_value())
-    return false;
-
-  std::istringstream iss(db_string.value());
-  std::string line;
-  while (std::getline(iss, line))
-  {
-    char* start = line.data();
-    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
-      start++;
-
-    // skip empty lines
-    if (*start == '\0' || *start == ';')
-      continue;
-
-    char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(SignedCharToInt(*end)))
-    {
-      *end = '\0';
-      end--;
-    }
-
-    if (start == end)
-      continue;
-
-    if (start[0] != ':' || std::strcmp(&start[1], serial.c_str()) != 0)
-      continue;
-
-    // game code match
-    CheatCode current_code;
-    while (std::getline(iss, line))
-    {
-      start = line.data();
-      while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
-        start++;
-
-      // skip empty lines
-      if (*start == '\0' || *start == ';')
-        continue;
-
-      end = start + std::strlen(start) - 1;
-      while (end > start && std::isspace(SignedCharToInt(*end)))
-      {
-        *end = '\0';
-        end--;
-      }
-
-      if (start == end)
-        continue;
-
-      // stop adding codes when we hit a different game
-      if (start[0] == ':' && (!m_codes.empty() || current_code.Valid()))
-        break;
-
-      if (start[0] == '#')
-      {
-        start++;
-
-        if (current_code.Valid())
-        {
-          m_codes.push_back(std::move(current_code));
-          current_code = CheatCode();
-        }
-
-        // new code
-        char* slash = std::strrchr(start, '\\');
-        if (slash)
-        {
-          *slash = '\0';
-          current_code.group = start;
-          start = slash + 1;
-        }
-        if (current_code.group.empty())
-          current_code.group = "Ungrouped";
-
-        current_code.description = start;
-        continue;
-      }
-
-      while (!StringUtil::IsHexDigit(*start) && start != end)
-        start++;
-      if (start == end)
-        continue;
-
-      char* end_ptr;
-      CheatCode::Instruction inst;
-      inst.first = static_cast<u32>(std::strtoul(start, &end_ptr, 16));
-      inst.second = 0;
-      if (end_ptr)
-      {
-        while (!StringUtil::IsHexDigit(*end_ptr) && end_ptr != end)
-          end_ptr++;
-        if (end_ptr != end)
-          inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
-      }
-      current_code.instructions.push_back(inst);
-    }
-
-    if (current_code.Valid())
-      m_codes.push_back(std::move(current_code));
-
-    INFO_LOG("Loaded {} codes from package for {}", m_codes.size(), serial);
-    return !m_codes.empty();
-  }
-
-  WARNING_LOG("No codes found in package for {}", serial);
-  return false;
-}
-
-u32 CheatList::GetEnabledCodeCount() const
-{
-  u32 count = 0;
-  for (const CheatCode& cc : m_codes)
-  {
-    if (cc.enabled)
-      count++;
-  }
-
-  return count;
-}
-
-std::vector<std::string> CheatList::GetCodeGroups() const
-{
-  std::vector<std::string> groups;
-  for (const CheatCode& cc : m_codes)
-  {
-    if (std::any_of(groups.begin(), groups.end(), [cc](const std::string& group) { return (group == cc.group); }))
-      continue;
-
-    groups.emplace_back(cc.group);
-  }
-
-  return groups;
-}
-
-void CheatList::SetCodeEnabled(u32 index, bool state)
-{
-  if (index >= m_codes.size() || m_codes[index].enabled == state)
-    return;
-
-  m_codes[index].enabled = state;
-  if (!state)
-    m_codes[index].ApplyOnDisable();
-}
-
-void CheatList::EnableCode(u32 index)
-{
-  SetCodeEnabled(index, true);
-}
-
-void CheatList::DisableCode(u32 index)
-{
-  SetCodeEnabled(index, false);
-}
-
-void CheatList::ApplyCode(u32 index)
-{
-  if (index >= m_codes.size())
-    return;
-
-  m_codes[index].Apply();
-}
-
-const CheatCode* CheatList::FindCode(const char* name) const
-{
-  for (const CheatCode& cc : m_codes)
-  {
-    if (cc.description == name)
-      return &cc;
-  }
-
-  return nullptr;
-}
-
-const CheatCode* CheatList::FindCode(const char* group, const char* name) const
-{
-  for (const CheatCode& cc : m_codes)
-  {
-    if (cc.group == group && cc.description == name)
-      return &cc;
-  }
-
-  return nullptr;
-}
-
-void CheatList::MergeList(const CheatList& cl)
-{
-  for (const CheatCode& cc : cl.m_codes)
-  {
-    if (!FindCode(cc.group.c_str(), cc.description.c_str()))
-      AddCode(cc);
-  }
-}
-
-std::string CheatCode::GetInstructionsAsString() const
-{
-  std::stringstream ss;
-
-  for (const Instruction& inst : instructions)
-  {
-    ss << std::hex << std::uppercase << std::setw(8) << std::setfill('0') << inst.first;
-    ss << " ";
-    ss << std::hex << std::uppercase << std::setw(8) << std::setfill('0') << inst.second;
-    ss << '\n';
-  }
-
-  return ss.str();
-}
-
-bool CheatCode::SetInstructionsFromString(const std::string& str)
-{
-  std::vector<Instruction> new_instructions;
-  std::istringstream ss(str);
-
-  for (std::string line; std::getline(ss, line);)
-  {
-    char* start = line.data();
-    while (*start != '\0' && std::isspace(SignedCharToInt(*start)))
-      start++;
-
-    // skip empty lines
-    if (*start == '\0')
-      continue;
-
-    char* end = start + std::strlen(start) - 1;
-    while (end > start && std::isspace(SignedCharToInt(*end)))
-    {
-      *end = '\0';
-      end--;
-    }
-
-    // skip comments and empty line
-    if (*start == '#' || *start == ';' || *start == '/' || *start == '\"')
-      continue;
-
-    while (!StringUtil::IsHexDigit(*start) && start != end)
-      start++;
-    if (start == end)
-      continue;
-
-    char* end_ptr;
-    CheatCode::Instruction inst;
-    inst.first = static_cast<u32>(std::strtoul(start, &end_ptr, 16));
-    inst.second = 0;
-    if (end_ptr)
-    {
-      while (!StringUtil::IsHexDigit(*end_ptr) && end_ptr != end)
-        end_ptr++;
-      if (end_ptr != end)
-        inst.second = static_cast<u32>(std::strtoul(end_ptr, nullptr, 16));
-    }
-    new_instructions.push_back(inst);
-  }
-
-  if (new_instructions.empty())
-    return false;
-
-  instructions = std::move(new_instructions);
-  return true;
-}
-
-static bool IsConditionalInstruction(CheatCode::InstructionCode code)
+bool Cheats::GamesharkCheatCode::IsConditionalInstruction(InstructionCode code)
 {
   switch (code)
   {
-    case CheatCode::InstructionCode::CompareEqual16:       // D0
-    case CheatCode::InstructionCode::CompareNotEqual16:    // D1
-    case CheatCode::InstructionCode::CompareLess16:        // D2
-    case CheatCode::InstructionCode::CompareGreater16:     // D3
-    case CheatCode::InstructionCode::CompareEqual8:        // E0
-    case CheatCode::InstructionCode::CompareNotEqual8:     // E1
-    case CheatCode::InstructionCode::CompareLess8:         // E2
-    case CheatCode::InstructionCode::CompareGreater8:      // E3
-    case CheatCode::InstructionCode::CompareButtons:       // D4
-    case CheatCode::InstructionCode::ExtCompareEqual32:    // A0
-    case CheatCode::InstructionCode::ExtCompareNotEqual32: // A1
-    case CheatCode::InstructionCode::ExtCompareLess32:     // A2
-    case CheatCode::InstructionCode::ExtCompareGreater32:  // A3
+    case InstructionCode::CompareEqual16:       // D0
+    case InstructionCode::CompareNotEqual16:    // D1
+    case InstructionCode::CompareLess16:        // D2
+    case InstructionCode::CompareGreater16:     // D3
+    case InstructionCode::CompareEqual8:        // E0
+    case InstructionCode::CompareNotEqual8:     // E1
+    case InstructionCode::CompareLess8:         // E2
+    case InstructionCode::CompareGreater8:      // E3
+    case InstructionCode::CompareButtons:       // D4
+    case InstructionCode::ExtCompareEqual32:    // A0
+    case InstructionCode::ExtCompareNotEqual32: // A1
+    case InstructionCode::ExtCompareLess32:     // A2
+    case InstructionCode::ExtCompareGreater32:  // A3
       return true;
 
     default:
@@ -973,7 +2102,7 @@ static bool IsConditionalInstruction(CheatCode::InstructionCode code)
   }
 }
 
-u32 CheatCode::GetNextNonConditionalInstruction(u32 index) const
+u32 Cheats::GamesharkCheatCode::GetNextNonConditionalInstruction(u32 index) const
 {
   const u32 count = static_cast<u32>(instructions.size());
   for (; index < count; index++)
@@ -988,7 +2117,7 @@ u32 CheatCode::GetNextNonConditionalInstruction(u32 index) const
   return index;
 }
 
-void CheatCode::Apply() const
+void Cheats::GamesharkCheatCode::Apply() const
 {
   const u32 count = static_cast<u32>(instructions.size());
   u32 index = 0;
@@ -1476,11 +2605,11 @@ void CheatCode::Apply() const
             DoMemoryWrite<u8>(cht_register[cht_reg_no1], Truncate8(poke_value & 0xFFu));
             break;
           case 0x03: // Write the u8 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
-                     // and add the u8 from the address field to it
+            // and add the u8 from the address field to it
             cht_register[cht_reg_no1] = Truncate8(cht_register[cht_reg_no2] & 0xFFu) + Truncate8(poke_value & 0xFFu);
             break;
           case 0x04: // Write the u8 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
-                     // stored in cht_register[cht_reg_no1]
+            // stored in cht_register[cht_reg_no1]
             DoMemoryWrite<u8>(cht_register[cht_reg_no1],
                               Truncate8(cht_register[cht_reg_no2] & 0xFFu) + Truncate8(poke_value & 0xFFu));
             break;
@@ -1488,7 +2617,7 @@ void CheatCode::Apply() const
             cht_register[cht_reg_no1] = Truncate8(poke_value & 0xFFu);
             break;
           case 0x06: // Read the u8 value from the address (cht_register[cht_reg_no2] + poke_value) to
-                     // cht_register[cht_reg_no1]
+            // cht_register[cht_reg_no1]
             cht_register[cht_reg_no1] = DoMemoryRead<u8>(cht_register[cht_reg_no2] + poke_value);
             break;
 
@@ -1502,12 +2631,12 @@ void CheatCode::Apply() const
             DoMemoryWrite<u16>(cht_register[cht_reg_no1], Truncate16(poke_value & 0xFFFFu));
             break;
           case 0x43: // Write the u16 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
-                     // and add the u16 from the address field to it
+            // and add the u16 from the address field to it
             cht_register[cht_reg_no1] =
               Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) + Truncate16(poke_value & 0xFFFFu);
             break;
           case 0x44: // Write the u16 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
-                     // stored in cht_register[cht_reg_no1]
+            // stored in cht_register[cht_reg_no1]
             DoMemoryWrite<u16>(cht_register[cht_reg_no1],
                                Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) + Truncate16(poke_value & 0xFFFFu));
             break;
@@ -1515,7 +2644,7 @@ void CheatCode::Apply() const
             cht_register[cht_reg_no1] = Truncate16(poke_value & 0xFFFFu);
             break;
           case 0x46: // Read the u16 value from the address (cht_register[cht_reg_no2] + poke_value) to
-                     // cht_register[cht_reg_no1]
+            // cht_register[cht_reg_no1]
             cht_register[cht_reg_no1] = DoMemoryRead<u16>(cht_register[cht_reg_no2] + poke_value);
             break;
 
@@ -1529,18 +2658,18 @@ void CheatCode::Apply() const
             DoMemoryWrite<u32>(cht_register[cht_reg_no1], poke_value);
             break;
           case 0x83: // Write the u32 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
-                     // and add the u32 from the address field to it
+            // and add the u32 from the address field to it
             cht_register[cht_reg_no1] = cht_register[cht_reg_no2] + poke_value;
             break;
           case 0x84: // Write the u32 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
-                     // stored in cht_register[cht_reg_no1]
+            // stored in cht_register[cht_reg_no1]
             DoMemoryWrite<u32>(cht_register[cht_reg_no1], cht_register[cht_reg_no2] + poke_value);
             break;
           case 0x85: // Write the u32 poke value to cht_register[cht_reg_no1]
             cht_register[cht_reg_no1] = poke_value;
             break;
           case 0x86: // Read the u32 value from the address (cht_register[cht_reg_no2] + poke_value) to
-                     // cht_register[cht_reg_no1]
+            // cht_register[cht_reg_no1]
             cht_register[cht_reg_no1] = DoMemoryRead<u32>(cht_register[cht_reg_no2] + poke_value);
             break;
 
@@ -1583,7 +2712,7 @@ void CheatCode::Apply() const
           case 0xCA: // Reg3 = Reg1 >> X
             cht_register[cht_reg_no3] = cht_register[cht_reg_no1] >> cht_reg_no2;
             break;
-          // Lots of options exist for expanding into this space
+            // Lots of options exist for expanding into this space
           default:
             break;
         }
@@ -2663,7 +3792,7 @@ void CheatCode::Apply() const
   }
 }
 
-void CheatCode::ApplyOnDisable() const
+void Cheats::GamesharkCheatCode::ApplyOnDisable() const
 {
   const u32 count = static_cast<u32>(instructions.size());
   u32 index = 0;
@@ -2709,7 +3838,7 @@ void CheatCode::ApplyOnDisable() const
       case InstructionCode::ExtFindAndReplace:
         index += 5;
         break;
-      // for conditionals, we don't want to skip over in case it changed at some point
+        // for conditionals, we don't want to skip over in case it changed at some point
       case InstructionCode::ExtCompareEqual32:
       case InstructionCode::ExtCompareNotEqual32:
       case InstructionCode::ExtCompareLess32:
@@ -2726,7 +3855,7 @@ void CheatCode::ApplyOnDisable() const
         index++;
         break;
 
-      // same deal for block conditionals
+        // same deal for block conditionals
       case InstructionCode::SkipIfNotEqual16:         // C0
       case InstructionCode::ExtSkipIfNotEqual32:      // A4
       case InstructionCode::SkipIfButtonsNotEqual:    // D5
@@ -2764,481 +3893,20 @@ void CheatCode::ApplyOnDisable() const
   }
 }
 
-static std::array<const char*, 1> s_cheat_code_type_names = {{"Gameshark"}};
-static std::array<const char*, 1> s_cheat_code_type_display_names{{TRANSLATE_NOOP("Cheats", "Gameshark")}};
-
-const char* CheatCode::GetTypeName(Type type)
+void Cheats::GamesharkCheatCode::SetOptionValue(u32 value)
 {
-  return s_cheat_code_type_names[static_cast<u32>(type)];
-}
-
-const char* CheatCode::GetTypeDisplayName(Type type)
-{
-  return s_cheat_code_type_display_names[static_cast<u32>(type)];
-}
-
-std::optional<CheatCode::Type> CheatCode::ParseTypeName(const char* str)
-{
-  for (size_t i = 0; i < s_cheat_code_type_names.size(); i++)
+  for (const auto& [index, bitpos_start, bit_count] : option_instruction_values)
   {
-    if (std::strcmp(s_cheat_code_type_names[i], str) == 0)
-      return static_cast<Type>(i);
-  }
-
-  return std::nullopt;
-}
-
-static std::array<const char*, 2> s_cheat_code_activation_names = {{"Manual", "EndFrame"}};
-static std::array<const char*, 2> s_cheat_code_activation_display_names{
-  {TRANSLATE_NOOP("Cheats", "Manual"), TRANSLATE_NOOP("Cheats", "Automatic (Frame End)")}};
-
-const char* CheatCode::GetActivationName(Activation activation)
-{
-  return s_cheat_code_activation_names[static_cast<u32>(activation)];
-}
-
-const char* CheatCode::GetActivationDisplayName(Activation activation)
-{
-  return s_cheat_code_activation_display_names[static_cast<u32>(activation)];
-}
-
-std::optional<CheatCode::Activation> CheatCode::ParseActivationName(const char* str)
-{
-  for (u32 i = 0; i < static_cast<u32>(s_cheat_code_activation_names.size()); i++)
-  {
-    if (std::strcmp(s_cheat_code_activation_names[i], str) == 0)
-      return static_cast<Activation>(i);
-  }
-
-  return std::nullopt;
-}
-
-MemoryScan::MemoryScan() = default;
-
-MemoryScan::~MemoryScan() = default;
-
-void MemoryScan::ResetSearch()
-{
-  m_results.clear();
-}
-
-void MemoryScan::Search()
-{
-  m_results.clear();
-
-  switch (m_size)
-  {
-    case MemoryAccessSize::Byte:
-      SearchBytes();
-      break;
-
-    case MemoryAccessSize::HalfWord:
-      SearchHalfwords();
-      break;
-
-    case MemoryAccessSize::Word:
-      SearchWords();
-      break;
-
-    default:
-      break;
+    Instruction& inst = instructions[index];
+    const u32 value_mask = ((1u << bit_count) - 1);
+    ;
+    const u32 fixed_mask = ~(value_mask << bitpos_start);
+    inst.second = (inst.second & fixed_mask) | ((value & value_mask) << bitpos_start);
   }
 }
 
-void MemoryScan::SearchBytes()
+std::unique_ptr<Cheats::CheatCode> Cheats::ParseGamesharkCode(CheatCode::Metadata metadata, const std::string_view data,
+                                                              Error* error)
 {
-  for (PhysicalMemoryAddress address = m_start_address; address < m_end_address; address++)
-  {
-    if (!IsValidScanAddress(address))
-      continue;
-
-    const u8 bvalue = DoMemoryRead<u8>(address);
-
-    Result res;
-    res.address = address;
-    res.value = m_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
-    res.last_value = res.value;
-    res.value_changed = false;
-
-    if (res.Filter(m_operator, m_value, m_signed))
-      m_results.push_back(res);
-  }
-}
-
-void MemoryScan::SearchHalfwords()
-{
-  for (PhysicalMemoryAddress address = m_start_address; address < m_end_address; address += 2)
-  {
-    if (!IsValidScanAddress(address))
-      continue;
-
-    const u16 bvalue = DoMemoryRead<u16>(address);
-
-    Result res;
-    res.address = address;
-    res.value = m_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
-    res.last_value = res.value;
-    res.value_changed = false;
-
-    if (res.Filter(m_operator, m_value, m_signed))
-      m_results.push_back(res);
-  }
-}
-
-void MemoryScan::SearchWords()
-{
-  for (PhysicalMemoryAddress address = m_start_address; address < m_end_address; address += 4)
-  {
-    if (!IsValidScanAddress(address))
-      continue;
-
-    Result res;
-    res.address = address;
-    res.value = DoMemoryRead<u32>(address);
-    res.last_value = res.value;
-    res.value_changed = false;
-
-    if (res.Filter(m_operator, m_value, m_signed))
-      m_results.push_back(res);
-  }
-}
-
-void MemoryScan::SearchAgain()
-{
-  ResultVector new_results;
-  new_results.reserve(m_results.size());
-  for (Result& res : m_results)
-  {
-    res.UpdateValue(m_size, m_signed);
-
-    if (res.Filter(m_operator, m_value, m_signed))
-    {
-      res.last_value = res.value;
-      new_results.push_back(res);
-    }
-  }
-
-  m_results.swap(new_results);
-}
-
-void MemoryScan::UpdateResultsValues()
-{
-  for (Result& res : m_results)
-    res.UpdateValue(m_size, m_signed);
-}
-
-void MemoryScan::SetResultValue(u32 index, u32 value)
-{
-  if (index >= m_results.size())
-    return;
-
-  Result& res = m_results[index];
-  if (res.value == value)
-    return;
-
-  switch (m_size)
-  {
-    case MemoryAccessSize::Byte:
-      DoMemoryWrite<u8>(res.address, Truncate8(value));
-      break;
-
-    case MemoryAccessSize::HalfWord:
-      DoMemoryWrite<u16>(res.address, Truncate16(value));
-      break;
-
-    case MemoryAccessSize::Word:
-      CPU::SafeWriteMemoryWord(res.address, value);
-      break;
-  }
-
-  res.value = value;
-  res.value_changed = true;
-}
-
-bool MemoryScan::Result::Filter(Operator op, u32 comp_value, bool is_signed) const
-{
-  switch (op)
-  {
-    case Operator::Equal:
-    {
-      return (value == comp_value);
-    }
-
-    case Operator::NotEqual:
-    {
-      return (value != comp_value);
-    }
-
-    case Operator::GreaterThan:
-    {
-      return is_signed ? (static_cast<s32>(value) > static_cast<s32>(comp_value)) : (value > comp_value);
-    }
-
-    case Operator::GreaterEqual:
-    {
-      return is_signed ? (static_cast<s32>(value) >= static_cast<s32>(comp_value)) : (value >= comp_value);
-    }
-
-    case Operator::LessThan:
-    {
-      return is_signed ? (static_cast<s32>(value) < static_cast<s32>(comp_value)) : (value < comp_value);
-    }
-
-    case Operator::LessEqual:
-    {
-      return is_signed ? (static_cast<s32>(value) <= static_cast<s32>(comp_value)) : (value <= comp_value);
-    }
-
-    case Operator::IncreasedBy:
-    {
-      return is_signed ? ((static_cast<s32>(value) - static_cast<s32>(last_value)) == static_cast<s32>(comp_value)) :
-                         ((value - last_value) == comp_value);
-    }
-
-    case Operator::DecreasedBy:
-    {
-      return is_signed ? ((static_cast<s32>(last_value) - static_cast<s32>(value)) == static_cast<s32>(comp_value)) :
-                         ((last_value - value) == comp_value);
-    }
-
-    case Operator::ChangedBy:
-    {
-      if (is_signed)
-        return (std::abs(static_cast<s32>(last_value) - static_cast<s32>(value)) == static_cast<s32>(comp_value));
-      else
-        return ((last_value > value) ? (last_value - value) : (value - last_value)) == comp_value;
-    }
-
-    case Operator::EqualLast:
-    {
-      return (value == last_value);
-    }
-
-    case Operator::NotEqualLast:
-    {
-      return (value != last_value);
-    }
-
-    case Operator::GreaterThanLast:
-    {
-      return is_signed ? (static_cast<s32>(value) > static_cast<s32>(last_value)) : (value > last_value);
-    }
-
-    case Operator::GreaterEqualLast:
-    {
-      return is_signed ? (static_cast<s32>(value) >= static_cast<s32>(last_value)) : (value >= last_value);
-    }
-
-    case Operator::LessThanLast:
-    {
-      return is_signed ? (static_cast<s32>(value) < static_cast<s32>(last_value)) : (value < last_value);
-    }
-
-    case Operator::LessEqualLast:
-    {
-      return is_signed ? (static_cast<s32>(value) <= static_cast<s32>(last_value)) : (value <= last_value);
-    }
-
-    case Operator::Any:
-      return true;
-
-    default:
-      return false;
-  }
-}
-
-void MemoryScan::Result::UpdateValue(MemoryAccessSize size, bool is_signed)
-{
-  const u32 old_value = value;
-
-  switch (size)
-  {
-    case MemoryAccessSize::Byte:
-    {
-      u8 bvalue = DoMemoryRead<u8>(address);
-      value = is_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
-    }
-    break;
-
-    case MemoryAccessSize::HalfWord:
-    {
-      u16 bvalue = DoMemoryRead<u16>(address);
-      value = is_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
-    }
-    break;
-
-    case MemoryAccessSize::Word:
-    {
-      CPU::SafeReadMemoryWord(address, &value);
-    }
-    break;
-  }
-
-  value_changed = (value != old_value);
-}
-
-MemoryWatchList::MemoryWatchList() = default;
-
-MemoryWatchList::~MemoryWatchList() = default;
-
-const MemoryWatchList::Entry* MemoryWatchList::GetEntryByAddress(u32 address) const
-{
-  for (const Entry& entry : m_entries)
-  {
-    if (entry.address == address)
-      return &entry;
-  }
-
-  return nullptr;
-}
-
-bool MemoryWatchList::AddEntry(std::string description, u32 address, MemoryAccessSize size, bool is_signed, bool freeze)
-{
-  if (GetEntryByAddress(address))
-    return false;
-
-  Entry entry;
-  entry.description = std::move(description);
-  entry.address = address;
-  entry.size = size;
-  entry.is_signed = is_signed;
-  entry.freeze = false;
-
-  UpdateEntryValue(&entry);
-
-  entry.changed = false;
-  entry.freeze = freeze;
-
-  m_entries.push_back(std::move(entry));
-  return true;
-}
-
-void MemoryWatchList::RemoveEntry(u32 index)
-{
-  if (index >= m_entries.size())
-    return;
-
-  m_entries.erase(m_entries.begin() + index);
-}
-
-bool MemoryWatchList::RemoveEntryByAddress(u32 address)
-{
-  for (auto it = m_entries.begin(); it != m_entries.end(); ++it)
-  {
-    if (it->address == address)
-    {
-      m_entries.erase(it);
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void MemoryWatchList::SetEntryDescription(u32 index, std::string description)
-{
-  if (index >= m_entries.size())
-    return;
-
-  Entry& entry = m_entries[index];
-  entry.description = std::move(description);
-}
-
-void MemoryWatchList::SetEntryFreeze(u32 index, bool freeze)
-{
-  if (index >= m_entries.size())
-    return;
-
-  Entry& entry = m_entries[index];
-  entry.freeze = freeze;
-}
-
-void MemoryWatchList::SetEntryValue(u32 index, u32 value)
-{
-  if (index >= m_entries.size())
-    return;
-
-  Entry& entry = m_entries[index];
-  if (entry.value == value)
-    return;
-
-  SetEntryValue(&entry, value);
-}
-
-bool MemoryWatchList::RemoveEntryByDescription(const char* description)
-{
-  bool result = false;
-  for (auto it = m_entries.begin(); it != m_entries.end();)
-  {
-    if (it->description == description)
-    {
-      it = m_entries.erase(it);
-      result = true;
-      continue;
-    }
-
-    ++it;
-  }
-
-  return result;
-}
-
-void MemoryWatchList::UpdateValues()
-{
-  for (Entry& entry : m_entries)
-    UpdateEntryValue(&entry);
-}
-
-void MemoryWatchList::SetEntryValue(Entry* entry, u32 value)
-{
-  switch (entry->size)
-  {
-    case MemoryAccessSize::Byte:
-      DoMemoryWrite<u8>(entry->address, Truncate8(value));
-      break;
-
-    case MemoryAccessSize::HalfWord:
-      DoMemoryWrite<u16>(entry->address, Truncate16(value));
-      break;
-
-    case MemoryAccessSize::Word:
-      DoMemoryWrite<u32>(entry->address, value);
-      break;
-  }
-
-  entry->changed = (entry->value != value);
-  entry->value = value;
-}
-
-void MemoryWatchList::UpdateEntryValue(Entry* entry)
-{
-  const u32 old_value = entry->value;
-
-  switch (entry->size)
-  {
-    case MemoryAccessSize::Byte:
-    {
-      u8 bvalue = DoMemoryRead<u8>(entry->address);
-      entry->value = entry->is_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
-    }
-    break;
-
-    case MemoryAccessSize::HalfWord:
-    {
-      u16 bvalue = DoMemoryRead<u16>(entry->address);
-      entry->value = entry->is_signed ? SignExtend32(bvalue) : ZeroExtend32(bvalue);
-    }
-    break;
-
-    case MemoryAccessSize::Word:
-    {
-      entry->value = DoMemoryRead<u32>(entry->address);
-    }
-    break;
-  }
-
-  entry->changed = (old_value != entry->value);
-
-  if (entry->freeze && entry->changed)
-    SetEntryValue(entry, old_value);
+  return GamesharkCheatCode::Parse(std::move(metadata), data, error);
 }

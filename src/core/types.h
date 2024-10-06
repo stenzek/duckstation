@@ -22,6 +22,7 @@ enum class MemoryAccessSize : u32
 
 using TickCount = s32;
 using GlobalTicks = u64;
+using GameHash = u64;
 
 enum class ConsoleRegion : u8
 {

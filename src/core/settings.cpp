@@ -168,7 +168,6 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   load_devices_from_save_states = si.GetBoolValue("Main", "LoadDevicesFromSaveStates", false);
   apply_compatibility_settings = si.GetBoolValue("Main", "ApplyCompatibilitySettings", true);
   apply_game_settings = si.GetBoolValue("Main", "ApplyGameSettings", true);
-  enable_cheats = si.GetBoolValue("Console", "EnableCheats", false);
   disable_all_enhancements = si.GetBoolValue("Main", "DisableAllEnhancements", false);
   enable_discord_presence = si.GetBoolValue("Main", "EnableDiscordPresence", false);
   rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
@@ -518,7 +517,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   }
 
   si.SetBoolValue("Main", "LoadDevicesFromSaveStates", load_devices_from_save_states);
-  si.SetBoolValue("Console", "EnableCheats", enable_cheats);
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
   si.SetBoolValue("Main", "RewindEnable", rewind_enable);
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
@@ -938,7 +936,6 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.cpu_overclock_enable = false;
     g_settings.cpu_overclock_active = false;
     g_settings.enable_8mb_ram = false;
-    g_settings.enable_cheats = false;
     g_settings.gpu_resolution_scale = 1;
     g_settings.gpu_multisamples = 1;
     g_settings.gpu_per_sample_shading = false;
@@ -1051,7 +1048,6 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
       (g_settings.fast_forward_speed != 0.0f) ? std::max(g_settings.fast_forward_speed, 1.0f) : 0.0f;
     g_settings.turbo_speed = (g_settings.turbo_speed != 0.0f) ? std::max(g_settings.turbo_speed, 1.0f) : 0.0f;
     g_settings.rewind_enable = false;
-    g_settings.enable_cheats = false;
     if (g_settings.cpu_overclock_enable && g_settings.GetCPUOverclockPercent() < 100)
     {
       g_settings.cpu_overclock_enable = false;
@@ -2135,6 +2131,7 @@ std::string EmuFolders::GameIcons;
 std::string EmuFolders::GameSettings;
 std::string EmuFolders::InputProfiles;
 std::string EmuFolders::MemoryCards;
+std::string EmuFolders::Patches;
 std::string EmuFolders::Resources;
 std::string EmuFolders::SaveStates;
 std::string EmuFolders::Screenshots;
@@ -2154,6 +2151,7 @@ void EmuFolders::SetDefaults()
   GameSettings = Path::Combine(DataRoot, "gamesettings");
   InputProfiles = Path::Combine(DataRoot, "inputprofiles");
   MemoryCards = Path::Combine(DataRoot, "memcards");
+  Patches = Path::Combine(DataRoot, "patches");
   SaveStates = Path::Combine(DataRoot, "savestates");
   Screenshots = Path::Combine(DataRoot, "screenshots");
   Shaders = Path::Combine(DataRoot, "shaders");
@@ -2185,6 +2183,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   GameSettings = LoadPathFromSettings(si, DataRoot, "Folders", "GameSettings", "gamesettings");
   InputProfiles = LoadPathFromSettings(si, DataRoot, "Folders", "InputProfiles", "inputprofiles");
   MemoryCards = LoadPathFromSettings(si, DataRoot, "MemoryCards", "Directory", "memcards");
+  Patches = LoadPathFromSettings(si, DataRoot, "Folders", "Patches", "patches");
   SaveStates = LoadPathFromSettings(si, DataRoot, "Folders", "SaveStates", "savestates");
   Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Screenshots", "screenshots");
   Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Shaders", "shaders");
@@ -2201,6 +2200,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   DEV_LOG("Game Settings Directory: {}", GameSettings);
   DEV_LOG("Input Profile Directory: {}", InputProfiles);
   DEV_LOG("MemoryCards Directory: {}", MemoryCards);
+  DEV_LOG("Patches Directory: {}", Patches);
   DEV_LOG("Resources Directory: {}", Resources);
   DEV_LOG("SaveStates Directory: {}", SaveStates);
   DEV_LOG("Screenshots Directory: {}", Screenshots);
@@ -2222,6 +2222,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
   si.SetStringValue("Folders", "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
   si.SetStringValue("MemoryCards", "Directory", Path::MakeRelative(MemoryCards, DataRoot).c_str());
+  si.SetStringValue("Folders", "Patches", Path::MakeRelative(Patches, DataRoot).c_str());
   si.SetStringValue("Folders", "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
   si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
   si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
@@ -2262,6 +2263,7 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(MemoryCards.c_str(), false) && result;
+  result = FileSystem::EnsureDirectoryExists(Patches.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(SaveStates.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Screenshots.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Shaders.c_str(), false) && result;

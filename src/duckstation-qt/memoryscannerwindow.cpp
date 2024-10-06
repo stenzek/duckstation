@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memoryscannerwindow.h"
-#include "cheatcodeeditordialog.h"
 #include "qthost.h"
 #include "qtutils.h"
 

@@ -9,7 +9,9 @@
 #include "consolesettingswidget.h"
 #include "emulationsettingswidget.h"
 #include "foldersettingswidget.h"
+#include "gamecheatsettingswidget.h"
 #include "gamelistsettingswidget.h"
+#include "gamepatchsettingswidget.h"
 #include "gamesummarywidget.h"
 #include "graphicssettingswidget.h"
 #include "interfacesettingswidget.h"
@@ -46,9 +48,9 @@ SettingsWindow::SettingsWindow() : QWidget()
   connectUi();
 }
 
-SettingsWindow::SettingsWindow(const std::string& path, std::string serial, DiscRegion region,
+SettingsWindow::SettingsWindow(const std::string& path, std::string serial, GameHash hash, DiscRegion region,
                                const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
-  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry)
+  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry), m_serial(serial), m_hash(hash)
 {
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -108,6 +110,23 @@ void SettingsWindow::addPages()
     QStringLiteral("emulation-line"),
     tr("<strong>Emulation Settings</strong><hr>These options determine the speed and runahead behavior of the "
        "system.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
+
+  if (isPerGameSettings())
+  {
+    addWidget(m_game_patch_settings_widget = new GamePatchSettingsWidget(this, m_ui.settingsContainer), tr("Patches"),
+              QStringLiteral("sparkling-line"),
+              tr("<strong>Patches</strong><hr>This section allows you to select optional patches to apply to the game, "
+                 "which may provide performance, visual, or gameplay improvements. Activating game patches can cause "
+                 "unpredictable behavior, crashing, soft-locks, or broken saved games. Use patches at your own risk, "
+                 "no support will be provided to users who have enabled game patches."));
+    addWidget(m_game_cheat_settings_widget = new GameCheatSettingsWidget(this, m_ui.settingsContainer), tr("Cheats"),
+              QStringLiteral("cheats-line"),
+              tr("<strong>Cheats</strong><hr>This section allows you to select which cheats you wish to enable. "
+                 "<strong>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, "
+                 "and corrupted saves.</strong> Cheats also persist through save states even after being disabled, "
+                 "please remember to reset/reboot the game after turning off any codes."));
+  }
+
   addWidget(
     m_memory_card_settings = new MemoryCardSettingsWidget(this, m_ui.settingsContainer), tr("Memory Cards"),
     QStringLiteral("memcard-line"),
@@ -635,8 +654,9 @@ bool SettingsWindow::hasGameTrait(GameDatabase::Trait trait)
           m_sif->GetBoolValue("Main", "ApplyCompatibilitySettings", true));
 }
 
-void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std::string& title,
-                                              const std::string& serial, DiscRegion region)
+SettingsWindow* SettingsWindow::openGamePropertiesDialog(const std::string& path, const std::string& title,
+                                                         std::string serial, GameHash hash, DiscRegion region,
+                                                         const char* category /* = nullptr */)
 {
   const GameDatabase::Entry* dentry = nullptr;
   if (!System::IsExeFileName(path) && !System::IsPsfFileName(path))
@@ -669,7 +689,9 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
       dialog->raise();
       dialog->activateWindow();
       dialog->setFocus();
-      return;
+      if (category)
+        dialog->setCategory(category);
+      return dialog;
     }
   }
 
@@ -677,8 +699,11 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
   if (FileSystem::FileExists(sif->GetFileName().c_str()))
     sif->Load();
 
-  SettingsWindow* dialog = new SettingsWindow(path, std::string(real_serial), region, dentry, std::move(sif));
+  SettingsWindow* dialog = new SettingsWindow(path, std::move(real_serial), hash, region, dentry, std::move(sif));
   dialog->show();
+  if (category)
+    dialog->setCategory(category);
+  return dialog;
 }
 
 void SettingsWindow::closeGamePropertiesDialogs()
