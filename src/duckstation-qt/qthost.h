@@ -158,6 +158,7 @@ public Q_SLOTS:
   void setDefaultSettings(bool system = true, bool controller = true);
   void applySettings(bool display_osd_messages = false);
   void reloadGameSettings(bool display_osd_messages = false);
+  void reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
   void updateEmuFolders();
   void updateControllerSettings();
   void reloadInputSources();
@@ -194,8 +195,7 @@ public Q_SLOTS:
   void setFullscreen(bool fullscreen, bool allow_render_to_main);
   void setSurfaceless(bool surfaceless);
   void requestDisplaySize(float scale);
-  void setCheatEnabled(quint32 index, bool enabled);
-  void applyCheat(quint32 index);
+  void applyCheat(const QString& name);
   void reloadPostProcessingShaders();
   void updatePostProcessingSettings();
   void clearInputBindStateFromSource(InputBindingKey key);

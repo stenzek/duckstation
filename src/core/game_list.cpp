@@ -81,7 +81,7 @@ struct MemcardTimestampCacheEntry
 using CacheMap = PreferUnorderedStringMap<Entry>;
 using PlayedTimeMap = PreferUnorderedStringMap<PlayedTimeEntry>;
 
-static_assert(std::is_same_v<decltype(Entry::hash), System::GameHash>);
+static_assert(std::is_same_v<decltype(Entry::hash), GameHash>);
 
 static bool GetExeListEntry(const std::string& path, Entry* entry);
 static bool GetPsfListEntry(const std::string& path, Entry* entry);
@@ -192,7 +192,7 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
     return false;
   }
 
-  const System::GameHash hash = System::GetGameHashFromFile(path.c_str());
+  const GameHash hash = System::GetGameHashFromFile(path.c_str());
 
   entry->serial = hash ? System::GetGameHashId(hash) : std::string();
   entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));

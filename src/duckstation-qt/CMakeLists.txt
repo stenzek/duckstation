@@ -29,12 +29,6 @@ set(SRCS
   biossettingswidget.cpp
   biossettingswidget.h
   biossettingswidget.ui
-  cheatcodeeditordialog.cpp
-  cheatcodeeditordialog.h
-  cheatcodeeditordialog.ui
-  cheatmanagerwindow.cpp
-  cheatmanagerwindow.h
-  cheatmanagerwindow.ui
   colorpickerbutton.cpp
   colorpickerbutton.h
   consolesettingswidget.cpp
@@ -79,6 +73,15 @@ set(SRCS
   foldersettingswidget.cpp
   foldersettingswidget.h
   foldersettingswidget.ui
+  gamecheatcodechoiceeditordialog.ui
+  gamecheatcodeeditordialog.ui
+  gamecheatsettingswidget.cpp
+  gamecheatsettingswidget.h
+  gamecheatsettingswidget.ui
+  gamepatchdetailswidget.ui
+  gamepatchsettingswidget.cpp
+  gamepatchsettingswidget.h
+  gamepatchsettingswidget.ui
   gamelistmodel.cpp
   gamelistmodel.h
   gamelistrefreshthread.cpp
