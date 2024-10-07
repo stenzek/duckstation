@@ -1418,9 +1418,9 @@ void FullscreenUI::DrawLandingWindow()
   {
     if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
       OpenAboutWindow();
-    else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
+    else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
       DoResume();
-    else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_F11, false))
+    else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F11, false))
       DoToggleFullscreen();
   }
 
@@ -5651,6 +5651,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
   bool closed = false;
   bool was_close_not_back = false;
+  bool ignore_close_request = false;
   if (ImGui::BeginChild("state_titlebar", heading_size, false, ImGuiWindowFlags_NavFlattened))
   {
     BeginNavBar();
@@ -5717,7 +5718,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
           g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
         const float height =
           title_height +
-          LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + (LAYOUT_MENU_BUTTON_Y_PADDING * 2.0f)) * 3.0f;
+          ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f)) *
+           3.0f);
         ImGui::SetNextWindowSize(ImVec2(width, height));
         ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
         ImGui::OpenPopup(entry.title.c_str());
@@ -5775,9 +5777,10 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
           }
 
           if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false, true,
-                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) || WantsToCloseMenu())
           {
             is_open = false;
+            ignore_close_request = true;
           }
 
           EndMenuButtons();
@@ -5866,8 +5869,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
           was_close_not_back = true;
         }
         else if (hovered &&
-                 (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) ||
-                  ImGui::IsKeyPressed(ImGuiKey_F1, false)))
+                 (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
+                  ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false)))
         {
           s_save_state_selector_submenu_index = static_cast<s32>(i);
         }
@@ -5913,7 +5916,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
       std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
   }
 
-  if (WantsToCloseMenu() || closed)
+  if ((!ignore_close_request && WantsToCloseMenu()) || closed)
   {
     CloseSaveStateSelector();
     if (was_close_not_back)
@@ -6221,7 +6224,7 @@ void FullscreenUI::DrawGameListWindow()
 
   EndFullscreenWindow();
 
-  if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+  if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
   {
     s_game_list_view = (s_game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
   }
@@ -6344,7 +6347,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
           selected_entry = entry;
 
         if (selected_entry &&
-            (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) ||
+            (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) ||
              ImGui::IsKeyPressed(ImGuiKey_F3, false)))
         {
           HandleGameListOptions(selected_entry);
@@ -6567,7 +6570,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         HandleGameListActivate(entry);
       }
       else if (hovered &&
-               (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) ||
+               (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) ||
                 ImGui::IsKeyPressed(ImGuiKey_F3, false)))
       {
         HandleGameListOptions(entry);
