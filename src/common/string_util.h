@@ -114,6 +114,32 @@ inline std::optional<T> FromChars(const std::string_view str, int base, std::str
   return value;
 }
 
+template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
+inline std::optional<T> FromCharsWithOptionalBase(std::string_view str, std::string_view* endptr = nullptr)
+{
+  int base = 10;
+  if (str.starts_with("0x"))
+  {
+    base = 16;
+    str = str.substr(2);
+  }
+  else if (str.starts_with("0b"))
+  {
+    base = 2;
+    str = str.substr(1);
+  }
+  else if (str.starts_with("0") && str.length() > 1)
+  {
+    base = 8;
+    str = str.substr(1);
+  }
+
+  if (endptr)
+    return FromChars<T>(str, base, endptr);
+  else
+    return FromChars<T>(str, base);
+}
+
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
 inline std::optional<T> FromChars(const std::string_view str)
 {
@@ -216,6 +242,7 @@ inline std::string ToChars(bool value, int base)
 }
 
 /// Encode/decode hexadecimal byte buffers
+u8 DecodeHexDigit(char ch);
 std::optional<std::vector<u8>> DecodeHex(const std::string_view str);
 std::string EncodeHex(const void* data, size_t length);
 template<typename T>
