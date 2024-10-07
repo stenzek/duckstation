@@ -808,9 +808,6 @@
 ; [ 007 Racing (USA) (2000) (Electronic Arts) {SLUS-01300, SLUS-01300CE} <007rcng> ]
 :SLUS-01300
 :SLUS-01300CE
-#Play game at 60 FPS
-E006ABB0 0003
-3006ABB0 0001
 #Infinite Health
 8005DF0A 0000
 #Stop Timer
@@ -840,6 +837,9 @@ C003C1FA F7FF
 8005EA08 0001
 8005EA0C 00B4
 00000000 FFFF
+#Play game at 60 FPS
+E006ABB0 0003
+3006ABB0 0001
 
 ; [ 007 - Tomorrow Never Dies (USA) (1999) (Electronic Arts) {SLUS-00975, SLUS-00975CE, SLUS-00975GH} <007tnd> ]
 :SLUS-00975
@@ -981,8 +981,12 @@ D00B29B2 FCFF
 80169C10 0001
 8016A104 0001
 8016ABC4 0001
-#Widescreen 16-9
-8007A09C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A707A09C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707A09C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707A09C 10000400
 
 ; [ Ten Pin Alley (USA) (1996) (ASC Games) {SLUS-00377} <10pin> ]
 :SLUS-00377
@@ -1248,6 +1252,8 @@ A702DB86 04411400
 #Collect Anywhere
 A702E946 04411400
 A702E922 10401400
+#Faster FPS
+A7057A54 00020001
 
 ; [ The Fifth Element (USA) (1998) (Activision) {SLUS-00711} <5element> ]
 :SLUS-00711
@@ -1611,7 +1617,7 @@ A706981E A4C22400
 #Research Enabled
 3009BBDF 0001
 #Widescreen 16-9 (Vert-)
-8009E3D0 1400
+A709E3D0 10001400
 
 ; [ Alien Trilogy (USA) (1996) (Acclaim Entertainment) {SLUS-00007} <alientri> ]
 :SLUS-00007
@@ -1908,7 +1914,7 @@ E0081BFA 00BD
 #Infinite Dungeon Keys (The Races Vs Bull)
 3006744F 0009
 #Widescreen 16-9 (Vert-)
-800595B8 0C00
+A70595B8 10000C00
 
 ; [ Alundra (USA, v1.0) (1997) (Working Designs) {SLUS-00553} <alundraa> ]
 :SLUS-00553
@@ -2050,7 +2056,7 @@ E00EB1D2 0001
 #Infinite Health P2 Only
 9003BA50 32210100
 9003BA5C 14200002
-#nfinite Ammo All Weapons
+#Infinite Ammo All Weapons
 80050642 2400
 
 ; [ Army Men - Air Attack 2 (USA) (2000) (The 3DO Company) {SLUS-01132} <amenair2> ]
@@ -2286,8 +2292,6 @@ D00586D0 D5C0
 
 ; [ Andretti Racing (USA) (1996) (Electronic Arts) {SLUS-00264} <andretti> ]
 :SLUS-00264
-#Play game at 60 FPS
-A7184972 0C081400
 #Infinite Fuel
 801EB3A8 3D60
 801ECA8C 3732
@@ -2309,6 +2313,8 @@ A7184972 0C081400
 90082114 42204F47
 90082118 4E495552
 8008211C 2153
+#Play game at 60 FPS
+A7184972 0C061400
 
 ; [ Animaniacs - Ten Pin Alley (USA) (1998) (American Softworks) {SLUS-00784} <animn10p> ]
 ;:SLUS-00784
@@ -2352,8 +2358,12 @@ D00E5478 0008
 800DFA26 0202
 50001002 0000
 800DFC70 0202
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70AF0A0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70AF0A0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70AF0A0 10000400
 
 ; [ Apocalypse (USA) (1998) (Activision) {SLUS-00373} <apocalyp> ]
 :SLUS-00373
@@ -2388,7 +2398,7 @@ A70AF0A0 10000C00
 ; [ Aquanaut's Holiday (USA) (1996) (Sony Computer Entertainment America) {SCUS-94603} <aquanaut> ]
 :SCUS-94603
 #Widescreen 16-9:Enabling this code results in the camera shaking heavily while turning
-8013E788 0C00
+A713E788 10000C00
 
 ; [ Arcade's Greatest Hits - The Atari Collection 2 (USA) (1998) (Midway Home Entertainment) {SLUS-00449} <arcadea2> ]
 :SLUS-00449
@@ -4147,8 +4157,6 @@ A7037D26 14621000
 
 ; [ Agile Warrior - F-111X (USA) (1995) (Virgin Interactive Entertainment) {SLUS-00023} <awf111x> ]
 :SLUS-00023
-#Play game at 60 FPS
-300F9764 003C
 #Infinite Armor
 800D43DC 0064
 800EB550 86A0
@@ -4172,6 +4180,9 @@ A7037D26 14621000
 80060F30 0064
 #Infinite Armor (Uses Built-In Cheat)
 800D432E 0101
+#Play game at 60 FPS
+A70F9764 001E003C
+;Does the above actually work?
 
 ; [ Azure Dreams (USA) (1998) (Konami of America) {SLUS-00614} <azuredrm> ]
 :SLUS-00614
@@ -4426,13 +4437,13 @@ C007CB76 EFFF
 800C6DA0 0032
 00000000 FFFF
 #Select Widescreen Type\Widescreen 16-9
-80043BC8 1555
-80043BCC 1555
+A7043BC8 10001555
+A7043BCC 10001555
 #Select Widescreen Type\Widescreen 16-9 (Vert-)
-80043BC8 1555
+A7043BC8 10001555
 #Select Widescreen Type\Widescreen 16-9 (Vert- Adjusted)
-80043BC8 1555
-80043BCC 1150
+A7043BC8 10001555
+A7043BCC 10001150
 
 ; [ Ball Breakers (USA) (2000) (Take-Two Interactive Software) {SLUS-01249} <ballbrk> ]
 :SLUS-01249
@@ -4748,12 +4759,24 @@ A6056B8C 00020082
 90010144 FFFFFFFF
 #Have All Fingerprints
 80010148 FFFF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70EC4AC 10000C00
 A71048C4 10000C00
 A71049C4 10000C00
 A710230C 10000C00
 A7089BE8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EC4AC 1000090
+A71048C4 1000090
+A71049C4 1000090
+A710230C 1000090
+A7089BE8 1000090
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EC4AC 10000400
+A71048C4 10000400
+A71049C4 10000400
+A710230C 10000400
+A7089BE8 10000400
 
 ; [ Barbie - Race & Ride (USA) (1999) (Mattel Interactive) {SLUS-00981} <barbierr> ]
 :SLUS-00981
@@ -4791,8 +4814,12 @@ D00183F0 8006
 80058D74 0FFF
 #Time Is 0:00:00
 8002031E 2400
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70AA386 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70AA386 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70AA386 10000400
 
 ; [ Bases Loaded '96 - Double Header (USA) (1995) (Jaleco USA) {SLUS-00086} <baslod96> ]
 :SLUS-00086
@@ -4872,8 +4899,12 @@ A6079414 00010004
 81069D7C 0004
 #Select Cheat\Level Select:Pause game for it; X and Triangle to toggle it; press Start to load level; L1 to increase milliseconds; L2 to increase seconds
 81069D7C 0008
-#Widescreen 16-9
-80061B60 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7061B60 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7061B60 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7061B60 10000400
 #Widescreen 16-9 (Vert-)
 80061B64 1555
 
@@ -4923,8 +4954,12 @@ A6079414 00010004
 800A11F4 0009
 #98 Kills
 800A10B0 0008
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A713C87C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A713C87C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A713C87C 10000400
 
 ; [ Bushido Blade 2 (USA) (1998) (Square Electronic Arts) {SLUS-00663} <bblade2> ]
 :SLUS-00663
@@ -4967,8 +5002,12 @@ A713C87C 10000C00
 3009BC7F 0003
 #Kill 1 Ninja To Beat Slash Mode (99 Kills):This cheat will start you with 99 kills. Kill the opponent you're facing and you win. This helps you get the four secret characters that require you to beat Slash Mode under 15 minutes and without dying
 800A38E2 0064
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70FF650 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70FF650 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70FF650 10000400
 #Dither OFF
 A707C788 02000000
 
@@ -5045,8 +5084,12 @@ A702D8AA 16622400
 A70168B2 14402400
 #Invincibility V2
 A701C9DA 18401000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70990AC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70990AC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70990AC 10000400
 
 ; [ Big Bass World Championship (USA) (1997) (HOT-B USA) {SLUS-00228} <bbwc> ]
 :SLUS-00228
@@ -5188,7 +5231,7 @@ C207B08C 0001
 #P1 Max LP
 800BD2AC 0064
 #Widescreen 16-9
-80048342 0EC8
+A7048342 10000EC8
 
 ; [ Beyond the Beyond (USA) (1996) (Sony Computer Entertainment America) {SCUS-94702} <beyond> ]
 :SCUS-94702
@@ -5267,8 +5310,12 @@ C207B08C 0001
 800A07D8 0005
 #Time Is Always 0:00:00
 8006AB94 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A706B650 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706B650 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706B650 10000400
 
 ; [ Frank Thomas Big Hurt Baseball (USA) (1996) (Acclaim Entertainment) {SLUS-00010} <bighurt> ]
 :SLUS-00010
@@ -10366,8 +10413,12 @@ D003F3DC 01B4
 300F83AA 0010
 #Grasshopper Mode
 800F8330 04FF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C5CB6 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C5CB6 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C5CB6 10000400
 
 ; [ Bob the Builder - Can We Fix It? (USA) (2001) (THQ) {SLUS-01407} <bobbuild> ]
 :SLUS-01407
@@ -10622,7 +10673,7 @@ A71D3666 A2622400
 #Slot 3-Max Infinite HP
 801C7DB0 270F
 801C7E50 270F
-#nfinite Zenny
+#Infinite Zenny
 8011AD80 FFFF
 #Max Zenny
 9011AD80 0098967F
@@ -10716,6 +10767,12 @@ F51D16E6 12932400
 #Widescreen 16-9
 8003F89C 0C00
 8003F89E 2405
+#Screen Adjust 1
+A7147D30 10000C00
+#Screen Adjust 2
+A7147D38 10000C00
+#Screen Adjust 3
+A7147D40 10000C00
 
 ; [ The Bombing Islands (USA) (2001) (Kemco U.S.A.) {SLUS-01292} <bombisl> ]
 :SLUS-01292
@@ -10727,15 +10784,28 @@ F51D16E6 12932400
 ; [ Bomberman - Party Edition (USA) (2000) (Vatical Entertainment) {SLUS-01189} <bombmpty> ]
 :SLUS-01189
 #Stop Timer
-80061DC2 2400
+A7061DC2 A4822400
 #Infinite Lives
-A60934A0 00030004
+A705EA0E A4242400
+#Infinite Bombs
+A701FF42 A6022400
+#Max Flame length
+801D8C08 0009
+#Invincibility
+A7056E02 14511000
+A70291CE 10401000
+#Walk through Walls
+A7026ED6 14401400
+A70271DE 14401400
+A70274F6 14401400
+A70277FE 14401400
 #Max Score
 900934A4 05F5E0FF
-#Max Flame
-801D8C08 0009
-#Max Bomb
-801D8C0C 0063
+;f 0,fffff,w.a424,d.00042400  <--Lives
+;f 0,fffff,w.a602,d.8602006a  <--Bombs
+;f 0,fffff,w.1451,0,0,?,0801  <--Invincibility Pt1
+;f 0,fffff,w.1040,d.2650004c  <--Invincibility Pt2  
+;f 0,fffff,w.1440,d.240a821  <WTW All 4 addresses
 
 ; [ Bomberman World (USA) (1998) (Atlus Software) {SLUS-00680} <bombmwld> ]
 :SLUS-00680
@@ -11554,8 +11624,12 @@ F402C000 00995000
 9999422C 999983AF
 99999999 99999999
 99999999 99999999
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71CBF20 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71CBF20 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71CBF20 10000400
 
 ; [ Bugriders - The Race of Kings (USA) (1997) (GT Interactive Software) {SLUS-00354} <bugridrs> ]
 :SLUS-00354
@@ -11646,8 +11720,8 @@ F504D62A 04411400
 #Invincibility no hit
 A704AE8E 10401000
 #Invincibility
-A704A792 1C601000
-#Infinite lives
+A704A792 1C001000
+#Infinite Lives
 A705B334 FFFF0000
 #Instant training mission unravel
 A704D29E 18402400
@@ -11670,6 +11744,8 @@ A7048B96 14401000
 A7053C62 10402400
 A7054554 80085174
 A7054556 3C020801
+#1-Hit Kills:Disable when facing Hopper + Thud
+A70591EE 1C402400
 #Attract grains from anywhere
 A7053BFA 10402400
 A7053C1E 14402400
@@ -11704,7 +11780,7 @@ A704908A 24020000
 9000C05C 39080080
 9000C060 11000006
 9000C068 86230086
-9000C06C 3402000A
+9000C06C 2402000A
 9000C074 08003020
 9000C07C 27FF0008
 9000C080 8FA80010
@@ -11721,8 +11797,8 @@ A704908A 24020000
 #Select Jump Height\0.5x
 80048D78 0200
 #Widescreen 16-9
-80027DC0 4CCC
-80027DC8 CCCD
+A7027DC0 66664CCC
+A7027DC8 6667CCCD
 
 ; [ Disney/Pixar A Bug's Life (USA, v1.0) (1998) (Sony Computer Entertainment America) {SCUS-94288} <bugslifea> ]
 :SCUS-94288
@@ -11759,6 +11835,8 @@ A7048B96 14401000
 A7053C62 10402400
 A7054554 80085174
 A7054556 3C020801
+#1-Hit Kills:Disable when facing Hopper + Thud
+A70591EE 1C402400
 #Attract grains from anywhere
 A7053BFA 10402400
 A7053C1E 14402400
@@ -11793,7 +11871,7 @@ A704908A 24020000
 9000C05C 39080080
 9000C060 11000006
 9000C068 86230086
-9000C06C 3402000A
+9000C06C 2402000A
 9000C074 08003020
 9000C07C 27FF0008
 9000C080 8FA80010
@@ -11810,8 +11888,8 @@ A704908A 24020000
 #Select Jump Height\0.5x
 80048D78 0200
 #Widescreen 16-9
-80027DC0 4CCC
-80027DC8 CCCD
+A7027DC0 66664CCC
+A7027DC8 6667CCCD
 
 ; [ Builder's Block (USA) (2000) (Jaleco USA) {SLUS-01086} <buildblk> ]
 :SLUS-01086
@@ -11922,6 +12000,8 @@ A7044CEE 0C002400
 #Walk through walls (Press R3 to toggle on/off)
 D7010001 02000400
 F50527D2 14431000
+#Hit Anywhere
+A70818DA 11601400
 #Moon Jump
 ;Moon Jump cheat by Teh69thSpartan
 ;Toy Story 2 [Europe v1.1]
@@ -11964,8 +12044,8 @@ F5082742 10402400
 #Grab dead enemies' triangles from anywhere
 A7070B12 10402400
 #Widescreen 16-9
-8002E804 4CCC
-8002E80C CCCC
+A702E804 66664CCC
+A702E80C 6667CCCC
 
 ; [ Transformers - Beast Wars Transmetals (USA) (2000) (BAM! Entertainment) {SLUS-01160} <bwtmetal> ]
 :SLUS-01160
@@ -12616,8 +12696,12 @@ C007B120 0100
 80095854 0001
 #Jennifer Scenario 1 Office Door Open
 80095900 0200
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7066144 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7066144 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7066144 10000400
 
 ; [ Clock Tower II - The Struggle Within (USA) (1999) (Agetec) {SLUS-00695} <clocktw2> ]
 :SLUS-00695
@@ -12642,8 +12726,12 @@ A7066144 10000C00
 800709D4 0063
 #Time Attack Mode Infinite Shotgun Ammo
 800709D0 0063
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A706F7B8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706F7B8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706F7B8 10000400
 
 ; [ Command & Conquer (USA) (1997) (Virgin Interactive Entertainment) {SLUS-00379 / SLUS-00410} <cnc> ]
 :SLUS-00379
@@ -12768,6 +12856,8 @@ D002A3F8 FFFF
 300662D2 0001
 #Infinite HPS (Health)
 300662D6 0001
+;#Widescreen 16-9 Y-
+;A702BC3E 10001333
 
 ; [ In Cold Blood (USA) (2001) (DreamCatcher Interactive) {SLUS-01294 / SLUS-01314} <coldblod> ]
 :SLUS-01294
@@ -12838,8 +12928,12 @@ D007D1FC 0023
 8011FC94 0076
 #Cyclops\Infinite Energy
 80125E10 0090
-#Widescreen 16-9
-800BC338 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70BC338 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70BC338 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70BC338 10000400
 
 ; [ Contender (USA) (1999) (Sony Computer Entertainment America) {SCUS-94294} <contendr> ]
 :SCUS-94294
@@ -12848,8 +12942,12 @@ A60669D4 00000050
 A60669D6 00003241
 A6066A1C 0000000E
 A6066A1E 00001420
-#Widescreen 16-9
-80059958 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7059958 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7059958 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7059958 10000400
 
 ; [ C - The Contra Adventure (USA) (1998) (Konami of America) {SLUS-00499} <contradv> ]
 :SLUS-00499
@@ -12926,8 +13024,12 @@ D010720E AFBF
 80007626 0803
 800FE8D4 1D80
 800FE8D6 0800
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70EC508 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EC508 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EC508 10000400
 
 ; [ Contra - Legacy of War (USA) (1996) (Konami of America) {SLUS-00288} <contralw> ]
 :SLUS-00288
@@ -12979,8 +13081,12 @@ A70EC508 10000C00
 3008BC1B 0005
 #4th Weapon Slot\P2 Always Has Homing Laser
 3008BC1B 0001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70DCA08 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70DCA08 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70DCA08 10000400
 
 ; [ Cool Boarders 2001 (USA) (2000) (Sony Computer Entertainment America) {SCUS-94597} <coolb2k1> ]
 :SCUS-94597
@@ -13409,9 +13515,9 @@ D005E72C 0108
 9000768C AC2200A0
 90007690 03E00008
 #Widescreen 16-9
-80017A4C 0C00
-80017A4E 2402
-80017A8E A433
+A7017A4C E4340C00
+A7017A4E 0C002402
+A7017A8E A422A433
 
 ; [ Crash Bandicoot 8 april proto ]
 :UNKNOWN
@@ -13463,12 +13569,71 @@ D0069922 FEFF
 8003944A 2400
 D0069922 FDFF
 8003944A 0C00
+#Collect from Anywhere/Easy Hit Boxes (Press R2)
+A702D9F2 14001040
+A702DA02 14001160
+A702DA16 14001040
+A702DD5A 14001560
+A702DD6A 14001160
+A702DD7E 14001040
+A702DCF6 10001160
+D7200000 00000002
+A702D9F2 10401400
+A702DA02 11601400
+A702DA16 10401400
+A702DD5A 15601400
+A702DD6A 11601400
+A702DD7E 10401400
+A702DCF6 11601000
+;f 0,fffff,w.1040,0,0,?,8fab,0,0,?,1160
+;f 0,fffff,w.1160,1,3c0b
+;f 0,fffff,w.1040,0,0,0100,8ee2
+;f 0,fffff,w.1560,0,0,?,8fab
+;f 0,fffff,w.1160,18,27a4
+;f 0,fffff,w.1040,2021,2e0
+;f 0,fffff,w.1160,0,0,?,8fab
+;hugopocked type 1, Teh69thSpartan type 2
+#Select Moon Jump Cheat\Type 1
+A701E2D0 00882000
+A701E2D2 AE230800
+A701E2D6 00652400
+90008000 3C148006
+90008004 36949922
+90008008 96930000
+90008010 00139B82
+90008018 32730001
+90008020 16600005
+90008028 3063FFFF
+9000802C 3C14000C
+90008030 00741825
+90008038 AE230088
+9000803C 080078B6
+90008040 0065182A
+#Select Moon Jump Cheat\Type 2
+A701E278 00AC2C00
+A701E27A 8E220C00
+9000B000 27BDFFE8
+9000B004 AFA80010
+9000B008 3C088007
+9000B00C 95089922
+9000B014 00084027
+9000B018 31084000
+9000B01C 39084000
+9000B020 11000002
+9000B028 8E2200AC
+9000B030 8FA80010
+9000B034 27BD0018
+9000B038 03E00008
+#Invincibility
+A701CE36 14401000
+#Crates suddenly break:Use with Invincibility cheat
+A702B962 0C002400
 #Widescreen 16-9
-80017BFC 0C00
-80017BFE 241B
-80017C00 1000
-80017C02 2402
-80017C1E A67B
+A7017BFC F4D80C00
+A7017BFE 0C00241B
+A7017C00 20231000
+A7017C02 00042402
+A7017C1E A662A67B
 
 ; [ Crash Bandicoot - Warped (USA) (1998) (Sony Computer Entertainment America) {SCUS-94244, SCUS-94244CE} <crash3> ]
 :SCUS-94244
@@ -13529,7 +13694,7 @@ D7200000 00000004
 A705E326 10402400
 A7051D12 10401000
 A701DE1E 10401000
-#Infinite laps
+#Infinite Laps
 A704172E 14621000
 #One lap to end race
 A704172E 14622400
@@ -13553,12 +13718,6 @@ A701DD4C 00000004
 A701DD4E 00002402
 #Telekenetic Box Breaking as Crash
 A702C842 0C002400
-#Widescreen 16-9
-80018A90 0C00
-80018A92 2402
-80018A94 1000
-80018A96 2413
-80018AB2 A633
 #Select Crash Speed Multiplier\Default
 9001EED8 0C002C00
 9001EEDC 00000000
@@ -13631,6 +13790,84 @@ A702C842 0C002400
 9000B030 27BD0018
 9000B034 03E00008
 9000B038 00000000
+;hugopocked type 1, Teh69thSpartan type 2
+#Select Moon Jump Cheat\Type 1 (L3/LS to toggle on/off)
+D7010001 01000200
+F501F9D0 00882000
+F501F9D2 AE430800
+F501F9D6 00652400
+90008000 3C148006
+90008004 36945BCE
+90008008 96810000
+90008010 00010B82
+90008018 30210001
+90008020 14200005
+90008028 3063FFFF
+9000802C 3C14000D
+90008030 00741825
+90008038 AE430088
+9000803C 08007E76
+90008040 0065182A
+#Select Moon Jump Cheat\Type 2
+A701F95C 00AC2C00
+A701F95E 8E420C00
+9000B000 27BDFFE8
+9000B004 AFA80010
+9000B008 3C088006
+9000B00C 95085BCE
+9000B014 00084027
+9000B018 31084000
+9000B01C 39084000
+9000B020 11000002
+9000B028 8E4200AC
+9000B030 8FA80010
+9000B034 27BD0018
+9000B038 03E00008
+#Select Crash/Coco Speed\Enable this line and select speed multiplier
+8000C03E 240B
+9000C000 8E420104
+9000C004 27BDFFE0
+9000C008 AFA80010
+9000C00C AFA90014
+9000C010 AFAA0018
+9000C014 AFAB001C
+9000C01C 00004012
+9000C020 00004810
+9000C024 344A0000
+9000C028 340B0064
+9000C02C 014B001A
+9000C030 00005012
+9000C040 014B0018
+9000C044 00005012
+9000C048 004A1021
+9000C054 01000013
+9000C058 01200011
+9000C05C 8FA80010
+9000C060 8FA90014
+9000C064 8FAA0018
+9000C068 8FAB001C
+9000C06C 27BD0020
+9000C070 03E00008
+A701EF7C 01043000
+A701EF7E 8E420C00
+#Select Crash/Coco Speed\Normal Speed
+8000C03C 0000
+#Select Crash/Coco Speed\50% faster
+8000C03C 0019 
+#Select Crash/Coco Speed\100% faster
+8000C03C 0032 
+#Select Crash/Coco Speed\200% faster
+8000C03C 0064 
+#Select Crash/Coco Speed\300% faster
+8000C03C 0096 
+#Select Crash/Coco Speed\400% faster
+8000C03C 00C8 
+#Widescreen 16-9
+A7018A90 F0D90C00
+A7018A92 0C002402
+A7018A94 20231000
+A7018A96 00042413
+A7018AB2 A622A633
 #Enable 60 FPS (Play with Overclock to get preferred speed)
 A704B40E 10401000
 #Enable 60 FPS Alternative (Play with Overclock to get preferred speed)
@@ -13807,8 +14044,12 @@ A605A6E0 00000002
 #Extra Characters
 50000D02 0000
 801E7B2A 0100
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71EAD78 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71EAD78 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71EAD78 10000400
 
 ; [ Creatures - Raised in Space (USA) (2003) (Conspiracy Entertainment) {SLUS-01553} <creatris> ]
 :SLUS-01553
@@ -13983,8 +14224,12 @@ D00926A6 FEFF
 80059C78 0320
 80059B08 0320
 80059DE8 0300
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70DC888 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70DC888 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70DC888 10000400
 
 ; [ Croc - Legend of the Gobbos (USA) (1997) (Fox Interactive) {SLUS-00530} <croc> ]
 :SLUS-00530
@@ -14192,10 +14437,18 @@ A70126CA 14622400
 801D0094 000D
 #Select Character\Overseer
 801D0094 000F
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71CF2A4 10000C00
 A71CF304 10000C00
 A71CF364 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71CF2A4 10000900
+A71CF304 10000900
+A71CF364 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71CF2A4 10000400
+A71CF304 10000400
+A71CF364 10000400
 
 ; [ Crusader - No Remorse (USA) (1996) (Electronic Arts) {SLUS-00268} <crusader> ]
 :SLUS-00268
@@ -16343,7 +16596,7 @@ A701DE1E 10401000
 A705E326 10402400
 A7051D12 10401000
 A701DE1E 10401000
-#Infinite laps
+#Infinite Laps
 A704172E 14621000
 #One lap to end race
 A704172E 14622400
@@ -16796,8 +17049,12 @@ D005686C 0180
 #Quick Level Up
 8003B860 0001
 8003B864 0400
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A703BE30 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A703BE30 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A703BE30 10000400
 
 ; [ Dragon Ball Z - Ultimate Battle 22 (USA) (2003) (Infogrames) {SLUS-01550} <dbzub22> ]
 :SLUS-01550
@@ -17104,6 +17361,8 @@ C00AA5C0 4000
 8019AB9E 0018
 #Female Health
 8019B3A2 0018
+#Faster FPS
+A7086ADC 00040001
 
 ; [ Deception III - Dark Delusion (USA) (2000) (Tecmo) {SLUS-01067} <decept3> ]
 :SLUS-01067
@@ -17226,17 +17485,21 @@ A70959DE 10502400
 A709501E 10502400
 #Select any game mode even if it's locked
 A7096F32 10502400
-#Infinite laps V1 (Has lap counter active, randomly cycles after round 9)
+#Infinite Laps V1 (Has lap counter active, randomly cycles after round 9)
 A701717E 10402400
-#Infinite laps V2 (Freezes lap counter)
+#Infinite Laps V2 (Freezes lap counter)
 A7016FFA 86302400
-#Infinite laps + Cpu controlling P1
+#Infinite Laps + CPU controlling P1
 A70B7C32 10402400
 A7016FFA 86302400
-#CPU controls player 1
+#CPU controls P1
 A70B7C32 10402400
-#Widescreen 16-9
-30065169 000C
+#Select Widescreen Aspect Ratio\16-9
+A7065168 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7065168 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7065168 10000400
 
 ; [ Descent (USA) (1996) (Interplay Productions) {SLUS-00037} <descent> ]
 :SLUS-00037
@@ -17315,8 +17578,12 @@ A70B7C32 10402400
 800E34F4 0001
 #P2 1-Hit Death
 A60C9B20 00C80001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70ED4E8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70ED4E8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70ED4E8 10000400
 
 ; [ Devil Dice (USA) (1998) (THQ) {SLUS-00672} <devildce> ]
 :SLUS-00672
@@ -17929,8 +18196,12 @@ D0135450 FF7F
 #More Misc.\All Digimon Raised
 50000801 0000
 301BE00D 00FF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7136F64 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7136F64 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7136F64 10000400
 
 ; [ Digimon World 2 (USA) (2001) (Bandai America) {SLUS-01193} <digiwld2> ]
 :SLUS-01193
@@ -18096,8 +18367,12 @@ A7136F64 10000C00
 8005E648 270F
 #Misc.\Max EP
 8005E64A 270F
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7061A28 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7061A28 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7061A28 10000400
 
 ; [ Digimon World 3 (USA) (2002) (Bandai America) {SLUS-01436GH} <digiwld3> ]
 :SLUS-01436
@@ -18216,8 +18491,12 @@ A7061A28 10000C00
 9004A78C 03E703E7
 9004A790 03E703E7
 8004A794 03E7
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7080B10 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7080B10 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7080B10 10000400
 #Select Reverb\Disable Reverb
 A70367EE 10401000
 #Select Reverb\Maximize Reverb
@@ -19818,6 +20097,8 @@ A7029D1A 10401400
 A7020FBA 14401400
 #Open All Doors Automatically
 A7023E62 10401400
+#Widescreen 16-9 (Vert-)
+A7040F74 10001333
 
 ; [ Dead in the Water (USA) (1999) (ASC Games) {SLUS-00693} <ditw> ]
 :SLUS-00693
@@ -19906,8 +20187,12 @@ A7023E62 10401400
 90092F88 0F0F0F0F
 80092F8C 0F0F
 30092F8E 000F
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7049F10 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7049F10 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7049F10 10000400
 
 ; [ Doom (USA) (1995) (Williams Entertainment) {SLUS-00077} <doom> ]
 :SLUS-00077
@@ -20046,8 +20331,12 @@ A7049F10 10000C00
 800EE5BC 0009
 #Max Attack Strength
 800846D0 0063
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7097408 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7097408 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7097408 10000400
 
 ; [ Driver - You Are the Wheelman (USA, v1.1) (1999) (GT Interactive Software) {SLUS-00842, SLUS-00842GH} <driver> ]
 :SLUS-00842
@@ -20203,8 +20492,12 @@ D00D9382-FFF9
 80138808-0002
 D00D9382-FFF9
 80138848-0002
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A707F170 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707F170 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707F170 10000400
 
 ; [ Driver 2 (USA, v1.0) (2000) (Infogrames) {SLUS-01161 / SLUS-01318} <driver2a> ]
 :SLUS-01161
@@ -20259,8 +20552,12 @@ D00D9382-FFF9
 80138808-0002
 D00D9382-FFF9
 80138848-0002
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A707EC48 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707EC48 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707EC48 10000400
 
 ; [ Driver - You Are the Wheelman (USA, v1.0) (1999) (GT Interactive Software) {SLUS-00842} <drivera> ]
 :SLUS-00842
@@ -20725,8 +21022,8 @@ E016860D 0001
 D0176E18 6425
 30176E1B 0001
 #Widescreen 16-9
-80183028 1558
-80183068 0C00
+A7183028 10001558
+A7183068 10000C00
 
 ; [ Dragon Valor (USA) (2000) (Namco Hometek) {SLUS-01092 / SLUS-01164} <dvalor> ]
 :SLUS-01092
@@ -20864,9 +21161,15 @@ D0133014 0070
 80011586 0E13
 #Debug Menu press Select while in control of your character to access the menu
 800F2518 0100
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7026544 10000C00
 A7026554 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7026544 10000900
+A7026554 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7026544 10000400
+A7026554 10000400
 
 ; [ Dynasty Warriors (USA) (1997) (Koei) {SLUS-00438} <dynwarr> ]
 :SLUS-00438
@@ -20940,8 +21243,12 @@ A60B364C 00C80001
 800B81C6 001E
 #P1 Select Character\Toukichi (alternate costume)
 800B81C6 001F
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70BBB94 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70BBB94 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70BBB94 10000400
 
 ; [ Eagle One - Harrier Attack (USA) (1999) (Infogrames) {SLUS-00943} <eagle1> ]
 :SLUS-00943
@@ -23912,7 +24219,7 @@ A61228F2 00B80000
 800F69FC 0011
 #P1 Select Character\Zax
 800F69FC 0013
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 D0057A9A AC64
 80057A88 2080
 D0057A9A AC64
@@ -23925,6 +24232,21 @@ D0057A9A AC64
 90008204 00850019
 90008208 00002012
 9000820C 00042083
+90008210 03E00008
+90008214 8C450004
+#Select Widescreen Aspect Ratio\20-9
+D0057A9A AC64
+80057A88 2080
+D0057A9A AC64
+80057A8A 0C00
+D0057A9A AC64
+80057A8C 0000
+D0057A9A AC64
+80057A8E 8C44
+90008200 24050009
+90008204 00850019
+90008208 00002012
+9000820C 00042103
 90008210 03E00008
 90008214 8C450004
 
@@ -23980,8 +24302,12 @@ D0083E2E 0001
 D00ADA52 0100
 D0083E2E 0100
 300ADA53 0004
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A713EFF8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A713EFF8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A713EFF8 10000400
 
 ; [ Gold and Glory - The Road to El Dorado (USA) (2000) (Ubi Soft Entertainment Software) {SLUS-01312} <eldorado> ]
 :SLUS-01312
@@ -24142,8 +24468,12 @@ E0070E85 0000
 30070E85 0032
 E0070E86 0000
 30070E86 0031
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A707D288 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707D288 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707D288 10000400
 
 ; [ ESPN Extreme Games (USA) (1995) (Sony Computer Entertainment America) {SCUS-94503} <espnxtrm> ]
 :SCUS-94503
@@ -24226,8 +24556,12 @@ F50252DE 12601000
 800A83E4 FFFF
 #Infinite HP 1
 90046890 10800002
-#Widescreen 16-9
-800297F4 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70297F4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70297F4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70297F4 10000400
 #Widescreen 16-9 (Alt)
 800297F4 0C00
 8002D91C 0C00
@@ -24614,8 +24948,12 @@ D00A3A70 0001
 800AC134 FFFF
 #Unlock All Movies
 900AC130 00FFFFFF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A707B59C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707B59C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707B59C 10000400
 
 ; [ Fisherman's Bait - A Bass Challenge (USA) (1999) (Konami of America) {SLUS-00802} <fbait> ]
 :SLUS-00802
@@ -25900,7 +26238,7 @@ D005F146 0003
 80023940 00E3
 D005F146 0003
 80023942 3403
-#Infinite item usage in-battle
+#Infinite Item Usage In-Battle
 D005F146 0003
 800DA17E 2400
 #Draw 100 magic (Battle)
@@ -25957,7 +26295,7 @@ E0082DEE 0000
 80078DF8 0000
 D005F146 0003
 800A44E4 0018
-#Infinite card usage
+#Infinite Card Usage
 A709F2EA 18402400
 #Peek at teams cards before starting "Hold select"
 A709AF56 24000440
@@ -25969,8 +26307,23 @@ A70A444A 0C002400
 A709FFE2 10401000
 #Force card spin animation off
 A709FFE2 10402400
-#Skip FMV's
+#Skip FMVs
 A70B15A2 14602400
+#Select Widescreen (In Battle)\16-9
+C005F146 00000003
+A70577A0 10000C00
+A7142386 10000C00
+A714540A 10000C00
+#Select Widescreen (In Battle)\20-9
+C005F146 00000003
+A70577A0 10000900
+A7142386 10000900
+A714540A 10000900
+#Select Widescreen (In Battle)\Eye Infinity
+C005F146 00000003
+A70577A0 10000500
+A7142386 10000500
+A714540A 10000500
 
 ; [ Final Fantasy IX (USA, v1.1) (2000) (Square Electronic Arts) {SLUS-01251GH / SLUS-01295GH / SLUS-01296GH / SLUS-01297GH} <ffant9> ]
 :SLUS-01251
@@ -26490,8 +26843,60 @@ D00B8A24 005A
 801F6E64 0063
 
 ; [ FIFA 2000 - Major League Soccer (USA) (1999) (Electronic Arts) {SLUS-00994} <fifa2k> ]
-;:SLUS-00994
-;This game currently has no cheats
+:SLUS-00994
+#Outfield Players cant tackle
+;Euro Rev1
+A70C1002 10401000
+A70C10BA 12511000
+A70C10DE 12951000
+;Euro 
+A70C0EFE 10401000
+A70C0FB6 12511000
+A70C0FDA 12951000
+;USA 
+A70C0EF6 10401000
+A70C0FAE 12511000
+A70C0FD2 12951000
+#Goalkeeper can't tackle or save ball
+;Euro Rev1
+A70F1C36 10401000
+;Euro 
+A70F1B32 10401000
+;USA
+A70F1B2A 10401000
+#Team with ball have it easy (R3 on, L3 off):Combines Outfield Players cant tackle & Goalkeeper can't tackle or save ball cheats
+D7010001 01000400
+;Euro Rev1
+A70C1002 10401000
+A70C10BA 12511000
+A70C10DE 12951000
+A70F1C36 10401000
+;Euro 
+A70C0EFE 10401000
+A70C0FB6 12511000
+A70C0FDA 12951000
+A70F1B32 10401000
+;USA 
+A70C0EF6 10401000
+A70C0FAE 12511000
+A70C0FD2 12951000
+A70F1B2A 10401000
+D7010001 01000200
+;Euro Rev1
+A70C1002 10001040
+A70C10BA 10001251
+A70C10DE 10001295
+A70F1C36 10001040
+;Euro 
+A70C0EFE 10001040
+A70C0FB6 10001251
+A70C0FDA 10001295
+A70F1B32 10001040
+;USA 
+A70C0EF6 10001040
+A70C0FAE 10001251
+A70C0FD2 10001295
+A70F1B2A 10001040
 
 ; [ FIFA 2001 (USA) (2000) (Electronic Arts) {SLUS-01262} <fifa2k1> ]
 ;:SLUS-01262
@@ -26630,8 +27035,12 @@ E01E0BA0 0000
 #P2 Has 1 Win Advantage
 E01E0BA1 0000
 301E0BA1 0001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71EF410 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71EF410 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71EF410 10000400
 
 ; [ The Final Round (USA) (1996) (Konami of America) {SLUS-00064} <finalrnd> ]
 :SLUS-00064
@@ -27128,8 +27537,12 @@ D00A16E6 FEFF
 #Press L1 For Quick Level Win
 D00A16E6 FBFF
 8007C530 0005
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70A4818 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70A4818 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70A4818 10000400
 
 ; [ Front Mission 3 (USA) (2000) (Square Electronic Arts) {SLUS-01011} <frontms3> ]
 :SLUS-01011
@@ -27716,6 +28129,8 @@ E01AC8DC 00000080
 80097000 0001
 #Have Tigress
 80097008 0001
+#Zoom Out
+A701E040 10000800
 
 ; [ Guardian's Crusade (USA) (1999) (Activision) {SLUS-00811} <gcrusade> ]
 :SLUS-00811
@@ -27741,6 +28156,14 @@ E01AC8DC 00000080
 #Have All Junk
 50001E02 0001
 301B5419 00B8
+#Select Zoom\Zoom In
+A717682C 10001800
+#Select Zoom\Zoom Out
+A717682C 10000C00
+#Select Zoom\Zoom Out More
+A717682C 10000800
+#Widescreen 16-9 Y-
+A71B76A8 10001333
 
 ; [ G. Darius (USA) (1998) (THQ) {SLUS-00690} <gdarius> ]
 :SLUS-00690
@@ -27784,8 +28207,12 @@ D00C6AF8 F7FF
 800B7170 FFFF
 #Invincibility (All Characters)
 801FEE34 0005
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70119E0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70119E0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70119E0 10000400
 
 ; [ Gekioh - Shooting King (USA) (2002) (Natsume) {SLUS-01498} <gekioh> ]
 :SLUS-01498
@@ -27806,12 +28233,16 @@ A70119E0 10000C00
 
 ; [ Gex (USA) (1995) (Crystal Dynamics) {SLUS-00042} <gex> ]
 :SLUS-00042
+;#Infinite Lives
+;80097B2C 0064
+;#Infinite Lives ALT
+;8009732C 0063
 #Infinite Lives
-80097B2C 0064
-#Infinite Lives ALT
-8009732C 0063
+A7047658 FFFF0000
 #Infinite Energy
-80097B1C 0003
+A7047468 FFFF0000
+;#Infinite Energy
+;80097B1C 0003
 #Infinite Gold Flies
 80097AF8 0063
 #Invincibility
@@ -28204,6 +28635,10 @@ D000857C 00FF
 801EB780 0784
 #Infinite Time Tug-o-war
 801F46C8 FFFF
+#Make the Room Background Black
+A7077452 0C011400
+#Turn Music Off
+A70A6812 0C021400
 
 ; [ Batman - Gotham City Racer (USA) (2001) (Ubi Soft Entertainment Software) {SLUS-01141} <gothamrc> ]
 :SLUS-01141
@@ -28453,8 +28888,12 @@ D0042ABC 00D0
 901C9154 FFFFFFFF
 #Infinite Health In Battle
 800C0F04 001E
-#Widescreen 16-9
-800C0570 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70C0570 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C0570 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C0570 10000400
 
 ; [ Grid Runner (USA) (1996) (Virgin Interactive Entertainment) {SLUS-00323} <gridrun> ]
 :SLUS-00323
@@ -28468,10 +28907,18 @@ E009D4A2 000F
 800912B8 FFFF
 #Infinite Magic
 8009D3D2 000F
-#Widescreen 16-9
-80079672 0C00
-8009D3BC 0C00
-8009D3F4 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7079672 10000C00
+A709D3BC 10000C00
+A709D3F4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7079672 10000900
+A709D3BC 10000900
+A709D3F4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7079672 10000400
+A709D3BC 10000400
+A709D3F4 10000400
 
 ; [ The Grinch (USA) (2000) (Konami of America) {SLUS-01197} <grinch> ]
 :SLUS-01197
@@ -28500,8 +28947,12 @@ E009D4A2 000F
 8008F6CA 002B
 #Cheat - Level Select (all regular levels open),200 Eggs + All Gadgets
 3001008C 0007
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A709A704 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709A704 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709A704 10000400
 
 ; [ Grind Session (USA) (2000) (Sony Computer Entertainment America) {SCUS-94568} <grindses> ]
 :SCUS-94568
@@ -30503,6 +30954,13 @@ A705B048 02000000
 
 ; [ Herc's Adventures (USA) (1997) (LucasArts Entertainment Company) {SLUS-00298} <hercsadv> ]
 :SLUS-00298
+#Walk through Walls
+A707EB66 14401000
+A707EC22 14401000
+#Walk through Water
+A707B5F2 10401000
+#No Biting Fish
+A7076466 14401400
 #P1 Infinite Health
 800C4AE0 0032
 #P1 Infinite A Keys
@@ -30531,8 +30989,17 @@ A705B048 02000000
 900C4B34 00630063
 
 ; [ Disney's Hercules Action Game (USA, v1.1) (1999) (Disney Interactive) {SLUS-01029} <hercules> ]
-;:SLUS-01029
-;This game currently has no cheats
+:SLUS-01029
+#Infinite Lives
+30034F1C 0009
+#Infinite Energy
+80034F34 0080
+#100% Coins
+80034F24 00FF
+#Have All Letters
+80034F2C 00FF
+#Helmet of Invincibilty
+80034F3C 00C8
 
 ; [ Disney's Hercules Action Game (USA, v1.0) (1997) (Disney Interactive) {SLUS-00529} <herculesa> ]
 :SLUS-00529
@@ -31426,8 +31893,12 @@ D011B38A FFFE
 801397E0 0020
 #Activate Cheat Shadow Car
 801397E0 0080
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A711A7DC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A711A7DC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A711A7DC 10000400
 
 ; [ Hot Wheels - Extreme Racing (USA) (2001) (THQ) {SLUS-01293} <hotwhlxr> ]
 :SLUS-01293
@@ -31763,8 +32234,12 @@ D7100000 00000003
 8006C738 0007
 #Select Level\8
 8006C738 0008
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7097E00 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7097E00 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7097E00 10000400
 
 ; [ Advanced Dungeons & Dragons - Iron & Blood - Warriors of Ravenloft (USA) (1996) (Acclaim Entertainment) {SLUS-00378} <ironblod> ]
 :SLUS-00378
@@ -31879,8 +32354,12 @@ A7097E00 10000C00
 30073E03 0000
 #Infinite Points (Master League)
 3011757D 00FF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70719D0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70719D0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70719D0 10000400
 
 ; [ The Italian Job (USA) (2002) (Rockstar Games) {SLUS-01457} <italjob> ]
 :SLUS-01457
@@ -32019,8 +32498,12 @@ A60A6828 00010000
 901A58FC 3F3F3F3F
 #P1 Max Score (1 Player Mode)
 80078D12 270F
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71C4B28 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71C4B28 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71C4B28 10000400
 
 ; [ Johnny Bazookatone (USA) (1996) (U.S. Gold) {SLUS-00194} <jbazooka> ]
 :SLUS-00194
@@ -32106,8 +32589,12 @@ D001000C 0010
 80010040 0063
 #Infinite Lives
 80010042 0900
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7048164 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7048164 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7048164 10000400
 
 ; [ Jet Moto 2 - Championship Edition (USA) (1997) (Sony Computer Entertainment America) {SCUS-94167} <jmoto2ce> ]
 :SCUS-94167
@@ -32180,12 +32667,24 @@ A7048164 10000C00
 80175B2A 0006
 #Race All Tracks In Wire-Frame Mode
 8016B114 0101
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A719848C 10000C00
 A71983CC 10000C00
 A719842C 10000C00
 A71982AC 10000C00
 A719830C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A719848C 10000900
+A71983CC 10000900
+A719842C 10000900
+A71982AC 10000900
+A719830C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A719848C 10000400
+A71983CC 10000400
+A719842C 10000400
+A71982AC 10000400
+A719830C 10000400
 
 ; [ Jet Moto (USA) (1996) (Sony Computer Entertainment America) {SCUS-94309} <jetmoto> ]
 :SCUS-94309
@@ -32261,12 +32760,24 @@ A719830C 10000C00
 #Stunt Race is Off
 80017C06 0002
 80017CBE 0002
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A716EBBC 10000C00
 A716E91C 10000C00
 A716E97C 10000C00
 A716EA3C 10000C00
 A716EA9C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A716EBBC 10000900
+A716E91C 10000900
+A716E97C 10000900
+A716EA3C 10000900
+A716EA9C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A716EBBC 10000400
+A716E91C 10000400
+A716E97C 10000400
+A716EA3C 10000400
+A716EA9C 10000400
 
 ; [ Jet Moto 2 (USA) (1997) (Sony Computer Entertainment America) {SCUS-94167} <jetmoto2> ]
 :SCUS-94167
@@ -32339,12 +32850,24 @@ A716EA9C 10000C00
 80175B2A 0006
 #Race All Tracks In Wire-Frame Mode
 8016B114 0101
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71948F0 10000C00
 A7194830 10000C00
 A7194890 10000C00
 A7194710 10000C00
 A7194770 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71948F0 10000900
+A7194830 10000900
+A7194890 10000900
+A7194710 10000900
+A7194770 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71948F0 10000400
+A7194830 10000400
+A7194890 10000400
+A7194710 10000400
+A7194770 10000400
 
 ; [ Jet Moto 3 (USA) (1999) (989 Studios) {SCUS-94555} <jetmoto3> ]
 :SCUS-94555
@@ -33463,8 +33986,12 @@ A60B44C0 03E801F4
 A60B44C0 03E802EE
 #Infinite Credits
 800B49D4 0003
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70FE91C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70FE91C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70FE91C 10000400
 
 ; [ K-1 Grand Prix (USA) (2000) (Jaleco USA) {SLUS-00941} <k1gp> ]
 :SLUS-00941
@@ -33475,8 +34002,12 @@ A70FE91C 10000C00
 800E5EE6 0128
 #P2 No health
 900E61BC 00000000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C6A68 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C6A68 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C6A68 10000400
 
 ; [ K-1 Revenge (USA) (1999) (Jaleco USA) {SLUS-00766} <k1rev> ]
 :SLUS-00766
@@ -33488,8 +34019,12 @@ A70C6A68 10000C00
 #P2 No Health
 800BB2CC 0000
 800BB2D4 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7109F90 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7109F90 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7109F90 10000400
 
 ; [ Kagero - Deception II (USA) (1998) (Tecmo) {SLUS-00677} <kagero> ]
 :SLUS-00677
@@ -33535,8 +34070,12 @@ A60DB4C2 0001002C
 800E6B8A 0000
 800E6C06 0000
 800E6C82 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70EECE0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EECE0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EECE0 10000400
 
 ; [ Blood Omen - Legacy of Kain (USA) (1996) (Crystal Dynamics) {SLUS-00027, SLUS-00027CE} <kain> ]
 :SLUS-00027
@@ -33771,8 +34310,12 @@ D00D1080 0080
 800CF5F8 00C0
 #Extra Characters
 90010588 003FFFFF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C7F40 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C7F40 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C7F40 10000400
 
 ; [ Kickboxing (USA) (2002) (Agetec / A1 Games) {SLUS-01412} <kickbox> ]
 :SLUS-01412
@@ -33838,8 +34381,12 @@ A608F9F0 02000180
 8008F9F0 0000
 #P2 1-Hit Death
 A608F9F0 02000001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70BE58C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70BE58C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70BE58C 10000400
 
 ; [ Kingsley's Adventure (USA) (1999) (Psygnosis) {SLUS-00801} <kingsadv> ]
 :SLUS-00801
@@ -34019,12 +34566,24 @@ A7056BE2 10401000
 A707109A 24001080
 D7200000 0000000C
 A707109A 10802400
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A710A440 10000C00
 A70C47EC 10000C00
 A70C4808 10000C00
 A70C4824 10000C00
 A70C47EC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A710A440 10000900
+A70C47EC 10000900
+A70C4808 10000900
+A70C4824 10000900
+A70C47EC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A710A440 10000400
+A70C47EC 10000400
+A70C4808 10000400
+A70C4824 10000400
+A70C47EC 10000400
 #Widescreen 16-9 [ALT]:Fixes Most Sprites and 3D environment.
 A7019FA0 00000C00
 A7019FA2 8CE22402
@@ -34515,8 +35074,12 @@ D00CCDF8 0004
 #Cheats for All Other Characters\All Characters In Party
 5000092C 0000
 300BAEF8 0003
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C3588 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C3588 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C3588 10000400
 
 ; [ Lode Runner (USA) (1998) (Natsume) {SLUS-00557} <ldrun> ]
 :SLUS-00557
@@ -34764,8 +35327,12 @@ D00FC970 0100
 #Level Select Cheat Activated (press select after you have started level 1 then quit)
 D00FC970 0100
 300A1486 0001
-#Widescreen 16-9
-8002CB16 0C00
+#Select Widescreen Aspect Ratio\16-9
+A702CB16 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A702CB16 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A702CB16 10000400
 
 ; [ The Adventures of Lomax (USA) (1996) (Psygnosis) {SCUS-94906} <lomax> ]
 :SCUS-94906
@@ -36305,8 +36872,6 @@ D7100000 0000000C
 8003799A 00001040
 800379CA 00001440
 8003858E 00001440
-#Widescreen 16-9
-A7AF88FC 19991333
 #One hit kills
 A7045F5E 1C802400
 #Moon Jump
@@ -36344,9 +36909,20 @@ A702FEFA 14622400
 A7022656 10201000
 #FPS Uncap
 A70A3F32 10401000
+#Bigger Play Area - Mess around with 2000
+A70F890C 10002000
+#Select Widescreen\16-9
+A70F88FC 19991333
+#Select Widescreen\20-9
+A70F88FC 19990E66
+#Select Widescreen\Eye Infinity
+A70F88FC 19990666
 
 ; [ MediEvil II (USA) (2000) (Sony Computer Entertainment America) {SCUS-94564} <medievl2> ]
 :SCUS-94564
+#Infinite Time
+D00795FC FFFF
+80079602 2400
 #Infinite Health
 800F152C 012C
 #Max Infinite Gold
@@ -36368,14 +36944,17 @@ E00D36BD 0001
 800F3860 012C
 800F3864 012C
 800F3868 012C
+#Invincibility
+A7041CFA 17C21000
+#Moon Jump:Don't jump too high or you'll receive fall damage
+A703BD62 10001440
+D7200000 00000020
+A703BD62 14401000
 #Enable Big Head Dan
 E00EFF1E 0000
 300EFF1E 0004
 #Enable Matrixcam
 300EFF29 0002
-#Infinite Time
-D00795FC FFFF
-80079602 2400
 #Max Infinite Antidote
 800F1648 1004
 #Infinite Health-Danenstein
@@ -36448,61 +37027,61 @@ D00795FC FFFF
 800E1844 0021
 #The Demon-Unlocked + Completed
 800E1864 0021
-#Have Cannonball
+#Always have Cannonball
 800F165C 0001
-#Have Museum Key
+#Always have Museum Key
 800F166C 0001
-#Have Dinosaur Key
+#Always have Dinosaur Key
 800F1670 0001
-#Have Scroll Of Sekhmet
+#Always have Scroll Of Sekhmet
 800F1630 0001
-#Have Staff Of Anubis
+#Always have Staff Of Anubis
 800F1634 0001
-#Have Tablet Of Horus
+#Always have Tablet Of Horus
 800F1638 0001
-#Have Pocketwatch
+#Always have Pocketwatch
 800F163C 0001
-#Have Town House Key
+#Always have Town House Key
 800F1640 0001
-#Have Depot Key
+#Always have Depot Key
 800F1668 0001
-#Have Snakeman Keys
+#Always have Snakeman Keys
 800F15D4 0064
-#Have Elephant Key 1
+#Always have Elephant Key 1
 800F1618 0001
-#Have Elephant Key 2
+#Always have Elephant Key 2
 800F161C 0001
-#Have Bellows
+#Always have Bellows
 800F15F0 0001
-#Have Pond Room Valve
+#Always have Pond Room Valve
 800F164C 0001
-#Have Hothouse Valve
+#Always have Hothouse Valve
 800F1650 0001
-#Have Water Tank Valve
+#Always have Water Tank Valve
 800F1654 0001
-#Have Potting Shed Key
+#Always have Potting Shed Key
 800F1660 0001
-#Have Front Door Key
+#Always have Front Door Key
 801F1664 0001
-#Have Poster
+#Always have Poster
 800F15B0 0001
-#Have Time Machine Piece 1
+#Always have Time Machine Piece 1
 800F1620 0001
-#Have Time Machine Piece 2
+#Always have Time Machine Piece 2
 800F1624 0001
-#Have Time Machine Piece 3
+#Always have Time Machine Piece 3
 800F1628 0001
-#Have Time Stone
+#Always have Time Stone
 800F1644 0001
-#Have Library Key
+#Always have Library Key
 800F1610 0001
-#Have Club Membership Card
+#Always have Club Membership Card
 800F1614 0001
-#Have Griffin Shield
+#Always have Griffin Shield
 800F1600 0001
-#Have Unicorn Shield
+#Always have Unicorn Shield
 800F1604 0001
-#Have Beard
+#Always have Beard
 800F160C 0001
 #Widescreen 16-9
 A7129044 19991333
@@ -39122,9 +39701,9 @@ D5000000 00000400
 80023F92 00001440
 80023FC2 00001440
 #Widescreen 16-9
-800B22BA 4006
-800248b4 000C
-800557E2 00C0
+A70B22BA 40054006
+A70248B4 000A000C
+A70557E2 010000C0
 
 ; [ Monkey Hero (USA) (1999) (Take-Two Interactive Software) {SLUS-00765} <monkhero> ]
 :SLUS-00765
@@ -39156,7 +39735,7 @@ E208E0FA 009C
 00000000 0000
 #Infinite Firefly container
 8008E0FB 001C
-#Infinite beauty fly
+#Infinite Beauty Fly
 8008E102 0100
 
 ; [ Monopoly (USA) (1997) (Hasbro Interactive) {SLUS-00507} <monopoly> ]
@@ -39626,8 +40205,12 @@ C0083472 FEFF
 800DDE72 03E7
 #Infinite Money
 800E8540 FFFF
-#Widescreen 16-9
-800E7E60 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E7E60 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E7E60 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E7E60 10000400
 
 ; [ Monster Rancher Hop-A-Bout (USA) (2000) (Tecmo) {SLUS-01325} <mranchop> ]
 :SLUS-01325
@@ -39678,8 +40261,12 @@ D00938AE 0001
 90097BBC 00010001
 90097BC0 00010001
 90097BC4 00010001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A708E5A0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A708E5A0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A708E5A0 10000400
 
 ; [ Marble Master (USA) (2002) (Crave Entertainment) {SLUS-01471} <mrblmast> ]
 :SLUS-01471
@@ -39828,8 +40415,12 @@ A61F81CA 000103E7
 80109510 0001
 #Infinite Lives-Classic Mode
 A60F5800 00020063
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71F3828 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F3828 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F3828 10000400
 
 ; [ Ms. Pac-Man Maze Madness (USA, v1.0) (2000) (Namco Hometek) {SLUS-01018} <mspacmma> ]
 :SLUS-01018
@@ -39866,8 +40457,12 @@ A61F81CA 000103E7
 80109510 0001
 #Infinite Lives-Classic Mode
 A60F5800 00020063
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71F3828 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F3828 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F3828 10000400
 
 ; [ Motor Toon Grand Prix (USA) (1996) (Sony Computer Entertainment America) {SCUS-94355} <mtoongp> ]
 :SCUS-94355
@@ -40382,8 +40977,12 @@ D0078DCA 0040
 800BA242 C1C2
 #Always have Dlumina2 + Dlumina3 Toy
 800BA244 C1C2
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70AE7F0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70AE7F0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70AE7F0 10000400
 
 ; [ Marvel vs. Capcom - Clash of Super Heroes (USA) (2000) (Capcom Entertainment) {SLUS-01059} <mvsc> ]
 :SLUS-01059
@@ -42121,6 +42720,13 @@ D01ABCD8 0008
 
 ; [ Newman Haas Racing (USA) (1998) (Psygnosis) {SLUS-00602} <newmanh> ]
 :SLUS-00602
+#Drive Through Other Cars
+A704D09A 12001000
+#Drive Anywhere
+A706F552 14401000
+A70708EE 10401000
+#Infinite Turbo
+800D3C80 E04C
 #A. Luyendyk Max Championship Points
 D00DE6EC FFF6
 800DE6FC 7FFF
@@ -42208,8 +42814,6 @@ D007B48C 0000
 #Select Track\Hill Fields 200
 D007B48C 0000
 3007B674 000D
-#Infinite Turbo
-800D3C80 E04C
 
 ; [ NFL Full Contact (USA) (1996) (Konami of America) {SLUS-00047} <nflfcont> ]
 :SLUS-00047
@@ -42739,6 +43343,10 @@ D00BB11C 0028
 80127A4C 0002
 #Menu Modifier 05- Debug Start (debug menu)
 80127A4C 0005
+#Free Fly (Autopilot never Engages)
+A70BDD16 04411000
+#Autopilot Stays On if Engaged
+A70BDDFE 18A01000
 
 ; [ NHL 2000 (USA) (1999) (Electronic Arts) {SLUS-00965} <nhl2k> ]
 :SLUS-00965
@@ -43147,8 +43755,12 @@ C00A879E FFFE
 8006AD2A 0200
 #Select Weapon\Skeleton w/Ultimate Sword
 8006AD2A 0208
-#Widescreen 16-9
-800162E8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70162E8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70162E8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70162E8 10000400
 
 ; [ No Fear Downhill Mountain Bike Racing (USA) (1999) (The Codemasters Software Company) {SLUS-01000} <nofear> ]
 :SLUS-01000
@@ -43533,8 +44145,12 @@ D010B85C 0500
 800EF558 0001
 #Have Portable Food
 800EF55C 0001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70EBB90 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EBB90 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EBB90 10000400
 #Widescreen 16-9 [ALT]
 A7076370 10000C00
 #Dither Off
@@ -43706,8 +44322,12 @@ A6153C60 0000FFFF
 80153D26 00FF
 50001C02 0000
 80153DA2 00FF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7150FF0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7150FF0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7150FF0 10000400
 
 ; [ Pandemonium 2 (USA) (1997) (Midway Home Entertainment) {SLUS-00578} <pandemn2> ]
 :SLUS-00578
@@ -43898,8 +44518,12 @@ A704118E 08012400
 30087B92 0001
 50000602 0000
 30087B86 0003
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70928A8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70928A8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70928A8 10000400
 
 ; [ Parasite Eve II (USA) (2000) (Square Electronic Arts) {SLUS-01042 / SLUS-01055} <parasev2> ]
 :SLUS-01042
@@ -43949,15 +44573,15 @@ A70A31AE 24622400
 #Aya Matrix Mode (Press Triangle):This code allows you to walk around freely while the rest is frozen in time
 A710160E 14402400
 #Invincibility (No Hit)
-F40DBDCA 00AA0800
-40102120 80022128
+F40DBDC8 00AA0800
+AAAA4010 21208002
+2128AAAA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
-AAAAAAAA AAAAAAAA
-F40DBC1E 00AA0800
-40100200 6230AAAA
-40AAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
+F40DBC1C 00AA0800
+AAAA4010 02006230
+AAAA40AA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
 #Turn Aya and NPC's invisible
 A70182E6 00402400
@@ -44030,6 +44654,10 @@ A710946E 10402400
 #Infinite Parasite Energy
 800B8A2A 270F
 800B8A4E 270F
+#Walk Faster (Hold R2)
+A7073BDA 10001040
+D7200000 00000002
+A7073BDA 10401000
 #Max At Points
 800B8A30 FFFF
 #Quick Level Gain
@@ -44277,8 +44905,12 @@ A609CA10 00000001
 #Have All Tarot Cards
 50001602 0000
 800835E6 03E7
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A708B3E8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A708B3E8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A708B3E8 10000400
 
 ; [ Peter Pan in Disney's Return to Never Land (USA) (2002) (Sony Computer Entertainment America) {SCUS-94643} <petpanrn> ]
 :SCUS-94643
@@ -44963,9 +45595,15 @@ A703269E 1C401400
 #Hit Anywhere (Both Players Delay)
 D0026E1C 00C8
 80026E1E 2400
-#Widescreen 16-9
-8002C63C 0C00
-8002C6D0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A702C63C 10000C00
+A702C6D0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A702C63C 10000900
+A702C6D0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A702C63C 10000400
+A702C6D0 10000400
 
 ; [ Panzer Front (USA) (2001) (Agetec) {SLUS-01399} <pnzfront> ]
 :SLUS-01399
@@ -45094,7 +45732,7 @@ C0038A74 0001
 80172402 0000
 #Mission 20 - Final Showdown\Infinite Health
 80172BCA 0000
-#Infinite health all levels (P1)
+#P1 Infinite Health (All levels)
 A70707E4 00023000
 A70707E6 A7C20C00
 A700C000 00000002
@@ -45107,8 +45745,6 @@ A700C00C 00000008
 A700C00E 000003E0
 #Disable visual damage (Works for all cars until it catches fire)
 A70710BE 10401000
-#FPS Uncap
-A701C28A 0C032400
 #Disable police chase free play
 A7077FAE 10401000
 #Matrix mode "Press L3 to toggle on/off"
@@ -45128,23 +45764,14 @@ A7070792 10C01000
 #Invincible cars V2 (All cars)
 A70B3C8A 10401000
 A707053A 10401000
-#Infinite health all levels (P1 only)
-A70707E4 00023000
-A70707E6 A7C20C00
-A700C000 00000002
-A700C002 0000A7C2
-A700C004 00000000
-A700C006 00003402
-A700C008 00000000
-A700C00A 0000AFC2
-A700C00C 00000008
-A700C00E 000003E0
 #No visual damage (All cars unless on fire)
 A70710BE 10401000
 #Turbo fire v1
 A706B41A 0C012400
 #Turbo fire v2
 A706ADEA 10621000
+#FPS Uncap
+A701C28A 0C032400
 
 ; [ Pong - The Next Level (USA) (1999) (Hasbro Interactive) {SLUS-00889} <pongnext> ]
 :SLUS-00889
@@ -45402,8 +46029,12 @@ A609E2E0 00800001
 80084C06 FFFF
 #Have Map
 80084C0C FFFF
-#Widescreen 16-9
-80042A64 1550
+#Select Widescreen Aspect Ratio\16-9
+A7075766 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7075766 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7075766 10000400
 
 ; [ Poy Poy (USA) (1997) (Konami of America) {SLUS-00486} <poypoy> ]
 :SLUS-00486
@@ -45443,8 +46074,12 @@ A609E2E0 00800001
 800DB0E0 0007
 #Select Stage\Technical Bonus
 800DB0E0 0008
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A710D54C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A710D54C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A710D54C 10000400
 
 ; [ Pro Pinball - Big Race USA (USA) (2000) (Empire Interactive Entertainment) {SLUS-01260} <ppinbru> ]
 :SLUS-01260
@@ -45689,8 +46324,12 @@ E00B2985 0000
 A6101F98 03E80001
 #P1 Needs 1 Win to Win
 A6101E6E 00010101
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71CE644 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71CE644 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71CE644 10000400
 
 ; [ Point Blank (USA) (1998) (Namco Hometek) {SLUS-00481} <ptblank> ]
 :SLUS-00481
@@ -45834,8 +46473,12 @@ C00CC620 0100
 300CFBA0 0064
 #Finish License Test For Perfect Score Carrying Goods
 300CFBA1 0064
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70D06B8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D06B8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D06B8 10000400
 
 ; [ Q*bert (USA) (1999) (Atari Interactive) {SLUS-00904} <qbert> ]
 :SLUS-00904
@@ -45960,14 +46603,16 @@ A60B3408 000C0001
 
 ; [ Rage Racer (USA) (1997) (Namco Hometek) {SLUS-00403} <ragerace> ]
 :SLUS-00403
+#Infinite Time
+8009ACA4 06C5
+#Always Place 1st
+8009E53C 0001
+#Drive through Other Cars
+A702D136 04401000
 #Max Money
 9019C610 3B9AC9FF
 #Infinite Race Tries
 801E3FFA 0005
-#Always Place 1st
-8009E53C 0001
-#Infinite Time
-8009ACA4 06C5
 #Nitro Boost With this code, Release Gas and Press O button for Nitro Boost.
 D01E4072 0020
 8009E52E 0FFF
@@ -46474,6 +47119,8 @@ A610F468 0000FFFF
 301F61E2 004D
 D01F7EDA FFFE
 301F61E2 00FF
+#Hit Anywhere
+A71425A2 10A21400
 #Pause For Max Health + Lives
 8013519A 2400
 #Skip Level (Triangle+Circle)
@@ -46683,8 +47330,12 @@ D0007800 4D43
 8005EC54 0000
 #Time Attack Lap 3 Time 00'00'00
 8005EC58 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A705F600 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A705F600 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A705F600 10000400
 
 ; [ Razor Freestyle Scooter (USA) (2000) (Crave Entertainment) {SLUS-01322} <razorfs> ]
 :SLUS-01322
@@ -46883,8 +47534,12 @@ D0098DFA 0100
 8005981A 6464
 #4000 Experience Points After Your First Race
 80099956 0FFF
-#Widescreen 16-9
-80099750 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7099750 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7099750 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7099750 10000400
 
 ; [ ReBoot (USA) (1998) (Electronic Arts) {SLUS-00274} <reboot> ]
 :SLUS-00274
@@ -47665,8 +48320,6 @@ A7102326 1C401400
 A7101356 10401000
 #One Hit Kill Dogs
 A710223A 18401000
-#Widescreen 16-9
-A7065B90 10000C00
 #See through walls
 A706D252 10401400
 #Alley zombie back attacks you
@@ -47749,7 +48402,12 @@ D7000000 00400400
 00000000 0000FFFF
 D7000000 00100400
 610A865C 00000016
-
+#Select Widescreen Aspect Ratio\16-9
+A7065B90 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7065B90 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7065B90 10000400
 
 ; [ Re-Volt (USA) (1999) (Acclaim Entertainment) {SLUS-00851} <revolt> ]
 :SLUS-00851
@@ -48488,8 +49146,12 @@ A60A7E0E 00960001
 800A83B0 0020
 #P2 No Specials
 800A83B0 0000
-#Widescreen 16-9
-80156450 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7156450 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7156450 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7156450 10000400
 
 ; [ Robo Pit 2 (USA) (2003) (Mud Duck Productions) {SLUS-01563} <robopit2> ]
 :SLUS-01563
@@ -48514,6 +49176,14 @@ A60A7E0E 00960001
 #Infinite Time
 800A33F8 1250
 800A573C 1250
+#Roll Over Gaps:Note, if you jump you may still fall and some blocks are completely 3D
+A702F8FA 04411000
+A702F946 04411000
+A70302DA 14401000
+A702F6B2 14401000
+900BA18C 00000000
+#Roll Over Spikes
+A703B036 14621000
 #Have All Fruit
 800A5664 00FF
 #Max Score
@@ -48522,8 +49192,44 @@ A60A7E0E 00960001
 800A53C8 FFFF
 #Start At Level 151
 800A3454 0001
-#Widescreen 16-9
+#High Score
+800A5E84 FFFF
+#Negative Time In Time Attack
+800A5584 0000
+#Select Ball Type\Type 01 (Default)
+300A553C 00
+#Select Ball Type\Type 02
+300A553C 01
+#Select Ball Type\Type 03
+300A553C 02
+#Select Ball Type\Type 04
+300A553C 03
+#Select Ball Type\Type 05
+300A553C 04
+#Select Ball Type\Type 06
+300A553C 05
+#Select Ball Type\Type 07
+300A553C 06
+#Select Ball Type\Type 08
+300A553C 07
+#Select Ball Type\Type 09
+300A553C 08
+#Select Ball Type\Type 10
+300A553C 09
+#Select Ball Type\Type 11
+300A553C 0A
+#Select Ball Type\Type 12
+300A553C 0B
+#Select Ball Type\Type 13
+300A553C 0C
+#Select Ball Type\Type 14
+300A553C 0D
+#Select Widescreen Aspect Ratio\16-9
 A70A33D8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70A33D8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70A33D8 10000400
 
 ; [ Rollcage Stage II (USA) (2000) (Midway Home Entertainment) {SLUS-00867} <rollcag2> ]
 :SLUS-00867
@@ -48946,8 +49652,12 @@ D0010142 0006
 800A9D96 2400
 D0010142 0007
 800BF926 2400
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7193DE0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7193DE0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7193DE0 10000400
 
 ; [ R-Types (USA) (1998) (ASCII Entertainment Software) {SLUS-00753} <rtypes> ]
 :SLUS-00753
@@ -49012,6 +49722,11 @@ A7193DE0 10000C00
 80080AA6 2400
 #Infinite Booster Jumps
 300E75B3 0063
+#Auto Climb Obstacles
+A705C63A 04A11000
+A7060976 10401000
+A70609A2 14401400
+
 
 ; [ Nickelodeon Rugrats - Totally Angelica (USA) (2001) (THQ) {SLUS-01364} <rugtotan> ]
 :SLUS-01364
@@ -49159,8 +49874,12 @@ A61022AC 00000001
 801F64C0 0007
 #P2 1 Hit Kill
 801EFE02 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71F6120 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F6120 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F6120 10000400
 
 ; [ Razor Racing (USA) (2001) (Crave Entertainment) {SLUS-01410} <rzrracng> ]
 :SLUS-01410
@@ -51001,8 +51720,12 @@ D012C008 000F
 80137718 FFFF
 #Infinite Were Points
 300EBE44 0020
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7199174 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7199174 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7199174 10000400
 
 ; [ Saltwater Sportfishing (USA) (2001) (Take-Two Interactive Software) {SLUS-01397} <saltwatr> ]
 :SLUS-01397
@@ -51016,9 +51739,11 @@ A7199174 10000C00
 
 ; [ Samurai Shodown III - Blades of Blood (USA) (1996) (Sony Computer Entertainment America) {SCUS-94206} <samsho3> ]
 :SCUS-94206
+#Infinite Time
+A709B688 FFFF0000
 #P1 Infinite Energy
 800185B4 0080
-#P2 1-Hit Death
+#P1 1-Hit Death of P2
 A60186B4 00800001
 #P1 POW Always Full
 800185BE 4000
@@ -51049,8 +51774,12 @@ D009C32A F0FF
 300B4AA4 00FF
 #Infinite Trading Cards (Gallery Mode)
 800BA050 0063
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A709ACB8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709ACB8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709ACB8 10000400
 
 ; [ Super Bubble Pop (USA) (2002) (Jaleco USA) {SLUS-01528} <sbubblep> ]
 :SLUS-01528
@@ -51061,8 +51790,12 @@ D0080EE0 0104
 800F314A 1C00
 #Quick Score Gain
 800F3054 FFFF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70D6D44 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D6D44 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D6D44 10000400
 
 ; [ S.C.A.R.S. (USA) (1998) (Ubi Soft Entertainment Software) {SLUS-00692} <scars> ]
 :SLUS-00692
@@ -51402,8 +52135,12 @@ E01E667E 0000
 801F4F0E FFFF
 801F4F10 FFFF
 801F4F14 FFFF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71F73E8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F73E8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F73E8 10000400
 
 ; [ Street Fighter EX Plus Alpha (USA) (1997) (Capcom Entertainment) {SLUS-00548} <sfexpa> ]
 :SLUS-00548
@@ -51448,8 +52185,12 @@ D01D78DC 9600
 801DC9F6 FFFF
 #P1 Low Overall Time (Time Attack Mode)
 801DC9D8 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71DD2E0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71DD2E0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71DD2E0 10000400
 
 ; [ Street Fighter - The Movie (USA) (1995) (Acclaim Entertainment) {SLUS-00041} <sfmovie> ]
 :SLUS-00041
@@ -51847,6 +52588,7 @@ A70A5F3A 04812400
 
 ; [ Silent Hill (USA) (1999) (Konami of America) {SLUS-00707} <silenth> ]
 :SLUS-00707
+:SLUS-00707GHA
 #Infinite Health
 300BA0BD 0040
 800BA0BE 0006
@@ -51908,9 +52650,15 @@ A70CEE1E 10401400
 A70CE902 14401400
 #Remove Snow
 A70CEDF2 10401000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C6FE0 10000C00
 A70C6FF0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C6FE0 10000900
+A70C6FF0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C6FE0 10000400
+A70C6FF0 10000400
 #60 FPS
 A70A8FF0 00020001
 A70AB38C 00020001
@@ -51918,6 +52666,7 @@ A70AB38C 00020001
 A7044A92 10001040
 D7200000 00000042
 A7044A92 10401000
+
 ; [ Silhouette Mirage (USA) (1999) (Working Designs) {SLUS-00728B, SLUS-00728C} <silhouet> ]
 :SLUS-00728
 :SLUS-00728B
@@ -52069,8 +52818,12 @@ A7044A92 10401000
 80072940 0001
 #Big Ape Mode enabled
 8007317C 0001
-#Widescreen 16-9
-80047B28 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7047B28 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7047B28 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7047B28 10000400
 
 ; [ Sim Theme Park (USA) (2000) (Electronic Arts) {SLUS-01069} <simtprk> ]
 :SLUS-01069
@@ -52137,6 +52890,8 @@ A61D568E 000000FF
 800A06CD 0009
 #Infinite Monkeys
 3009B250 0009
+#Infinite Halos
+3009B24B 0009
 #Have All 3 Green Swirls
 3009B24E 0003
 #Have 3 Bonus Swirls
@@ -52394,8 +53149,12 @@ C0052B7A 8E22
 80094408 0001
 #Everything Unlocked
 800100EA FFFF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A709C96C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709C96C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709C96C 10000400
 
 ; [ The Smurfs (USA) (1999) (Infogrames) {SLUS-01008} <smurfs> ]
 :SLUS-01008
@@ -53022,8 +53781,12 @@ A60C2EF2 00F00001
 300A23BB 0013
 300A23BC 0017
 300A23C0 000F
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7030CB4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7030CB4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7030CB4 10000400
 
 ; [ Soul Blade (USA, v1.0) (1997) (Namco Hometek) {SLUS-00240} <soulblada> ]
 :SLUS-00240
@@ -53087,8 +53850,12 @@ A60C2EF2 00F00001
 300A23BB 0013
 300A23BC 0017
 300A23C0 000F
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7030CB4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7030CB4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7030CB4 10000400
 
 ; [ Soul of the Samurai (USA) (1999) (Konami of America) {SLUS-00822} <soulsam> ]
 :SLUS-00822
@@ -53272,8 +54039,12 @@ D0093F34 00A4
 8010180C 0001
 #Have More Views
 3007F94C 0004
-#Widescreen 16-9
-80100D50 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7100D50 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7100D50 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7100D50 10000400
 #Widescreen 16-9 (Vert-)
 80100D58 1555
 
@@ -53662,12 +54433,31 @@ A6073240 00000063
 ; [ Spyro the Dragon (USA) (1998) (Sony Computer Entertainment America) {SCUS-94228, SCUS-94228CE} <spyro> ]
 :SCUS-94228
 :SCUS-94228CE
-#Infinite Time
-8007C110 0A00
-#Infinite Lives
-8007C100 000F
-#Infinite Health
-8007F54C 0003
+#Infinite Lives (ASM)
+A702C86C FFFF0000
+#Infinite Health (ASM)
+A7041010 FFFF0000
+#Infinite Time (ASM)
+A7080E6A AC232400
+#Collect Gems From Anywhere (ASM)
+F407E800 00AA2000
+49006392 00000000
+AAAAAAAA AAAAAAAA
+03000334 AAAAAAAA
+AAAAAAAA AAAAAAAA
+;#Infinite Time
+;8007C110 0A00
+;#Infinite Time On Flying Levels
+;80075840 053C
+;80075908 053C
+;#Infinite Lives
+;8007C100 000F
+;#Infinite Lives
+;8007582C 0009
+;#Infinite Health
+;80078BBC 0003
+;#Infinite Health
+;8007F54C 0003
 #Fly Instead of Glide:Off (Press R1 + Triangle), On (Press L1 + Triangle)
 D007F032 E7FF
 8007F634 0000
@@ -53779,13 +54569,6 @@ D0082734 059A
 80075810 000C
 #Have Over 65,000 Jewels
 80075860 FFFF
-#Infinite Health
-80078BBC 0003
-#Infinite Lives
-8007582C 0009
-#Infinite Time On Flying Levels
-80075840 053C
-80075908 053C
 #Invincibility:First line makes you invulnerable against enemies or electric floors, second line enables you to walk on hazardous water. Nothing can hurt you.
 30078BB8 0005
 80011380 7064
@@ -55184,8 +55967,12 @@ A7144426 A6022400
 800F0E90 0000
 #Select Home Team Score\9
 800F0E90 0009
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A711E878 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A711E878 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A711E878 10000400
 
 ; [ Soviet Strike (USA) (1996) (Electronic Arts) {SLUS-00061} <sstrike> ]
 :SLUS-00061
@@ -55284,8 +56071,12 @@ A61D8218 00C80001
 #P2 Low Gravity
 801D8206 0001
 801D8238 FFFF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71D8628 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71D8628 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71D8628 10000400
 
 ; [ Star Ocean - The Second Story (USA) (1999) (Sony Computer Entertainment America) {SCUS-94421 / SCUS-94421} <starocn2> ]
 :SCUS-94421
@@ -55518,12 +56309,24 @@ A703B05A 00402400
 801B5C20 FFFF
 #Select Confidence Meter\Full
 801B5C20 0FFF
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71E9984 10000C00
 A71E98C4 10000C00
 A71E9924 10000C00
 A71E97A4 10000C00
 A71E9804 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71E9984 10000900
+A71E98C4 10000900
+A71E9924 10000900
+A71E97A4 10000900
+A71E9804 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71E9984 10000400
+A71E98C4 10000400
+A71E9924 10000400
+A71E97A4 10000400
+A71E9804 10000400
 
 ; [ Star Trek - Invasion (USA) (2000) (Activision) {SLUS-00924} <strekinv> ]
 :SLUS-00924
@@ -56332,8 +57135,12 @@ A60AC2BC 10000100
 #Jedi Mind Trick .Press Select
 D00802C4 0100
 800AC28C 0000
-#Widescreen 16-9
-8002578C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A702578C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A702578C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A702578C 10000400
 
 ; [ Sydney 2000 (USA) (2000) (Eidos Interactive) {SLUS-01177} <sydney2k> ]
 :SLUS-01177
@@ -56525,9 +57332,15 @@ D00802C4 0100
 301168D0 0001
 #More Misc.\Stop Countdown Timer (Missile Silo Level)
 80116690 0BB8
-#Widescreen 16-9
-8012D700 0C00
-8012D9DC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A712D700 10000C00
+A712D9DC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A712D700 10000900
+A712D9DC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A712D700 10000400
+A712D9DC 10000400
 
 ; [ Syphon Filter 2 (USA) (2000) (989 Studios) {SCUS-94451 / SCUS-94451, SCUS-94492} <syphonf2> ]
 :SCUS-94451
@@ -56855,9 +57668,15 @@ D011EC70 0003
 8011FC80 FFFF
 #Invisibility Code If you press and hold the L1 button, you can turn invisibility off to turn it on again, just release the L1 button
 8011F860 FFFF
-#Widescreen 16-9
-80120968 0C00
-80120F08 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7120968 10000C00
+A7120F08 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7120968 10000900
+A7120F08 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7120968 10000400
+A7120F08 10000400
 
 ; [ Syphon Filter 3 (USA) (2001) (Sony Computer Entertainment America) {SCUS-94640} <syphonf3> ]
 :SCUS-94640
@@ -56974,9 +57793,15 @@ D01B39AE 801A
 #Have All Weapons And Items
 9012D7D8 F9FFFFFF
 8012D7DC 005F
-#Widescreen 16-9
-801236C8 0C00
-80123C68 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71236C8 10000C00
+A7123C68 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71236C8 10000900
+A7123C68 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71236C8 10000400
+A7123C68 10000400
 
 ; [ Syphon Filter (USA, v1.0) (1999) (989 Studios) {SCUS-94240} <syphonfa> ]
 :SCUS-94240
@@ -57143,9 +57968,15 @@ D01B39AE 801A
 301168D0 0001
 #More Misc.\Stop Countdown Timer (Missile Silo Level)
 80116690 0BB8
-#Widescreen 16-9
-8012D700 0C00
-8012D9DC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A712D700 10000C00
+A712D9DC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A712D700 10000900
+A712D9DC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A712D700 10000400
+A712D9DC 10000400
 
 ; [ Tactics Ogre (USA) (1998) (Atlus Software) {SLUS-00560} <tactogre> ]
 :SLUS-00560
@@ -57335,6 +58166,14 @@ D011F338 0001
 800A5218 0010
 #Infinite Time Bonus Level
 800A3470 1910
+#1-Hit Kill with the Knife
+A70985A0 FF60F7FF
+#1-Hit Kill with the Fruits
+A70987A4 FF80F7FF
+#1-Hit Kill Sabor
+A70D5D06 AC62AC60
+#Hit Sabor Anywhere
+A70DC8F2 10402400
 #Have All Levels/Movies
 50000D02 0000
 30059D73 00FF
@@ -57382,8 +58221,12 @@ D006F264 0210
 30064716 000E
 #Nitro Boost (press R1)
 30067385 0001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A706F2C8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706F2C8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706F2C8 10000400
 
 ; [ Test Drive 5 (USA) (1998) (Accolade) {SLUS-00610} <td5> ]
 :SLUS-00610
@@ -57470,8 +58313,12 @@ D7000000 00000400
 8003321A 00000621
 80033636 00000601
 800333BA 00000621
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70A56C0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70A56C0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70A56C0 10000400
 
 ; [ Test Drive Le Mans (USA) (2000) (Infogrames) {SLUS-01077} <tdlemans> ]
 :SLUS-01077
@@ -57783,8 +58630,12 @@ E00454DC 0000
 80064294 0016
 #Select Car\Ice.Cream Truck (Hidden Vehicle)
 80064294 0017
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7074E28 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7074E28 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7074E28 10000400
 
 ; [ Test Drive Off-Road 3 (USA) (1999) (Infogrames) {SLUS-00840} <tdoffr3> ]
 :SLUS-00840
@@ -57812,8 +58663,12 @@ A7074E28 10000C00
 #World Tour - Open All Divisions
 8013D998 001F
 8013DA6C 0001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A707C6AC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707C6AC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707C6AC 10000400
 
 ; [ Team Buddies (USA) (2000) (Midway Home Entertainment) {SLUS-00869} <teambud> ]
 :SLUS-00869
@@ -57943,8 +58798,12 @@ A707C6AC 10000C00
 8009F660 0101
 #Always Have Tiara
 8009F678 0001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7073338 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7073338 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7073338 10000400
 
 ; [ Tecmo Super Bowl (USA) (1996) (Tecmo) {SLUS-00070} <tecmosb> ]
 :SLUS-00070
@@ -58048,6 +58907,8 @@ A60D1BF2 006E0001
 800D2C1C 090E
 #Infinite Time To Pick Character
 801ED1C0 0449
+#Hit Anywhere
+A7062FE6 10401400
 #P1 Set 2 Win
 800D083C 0002
 #P2 Set 2 Win
@@ -58075,6 +58936,9 @@ A60D1BF2 006E0001
 A60A961E 008C0001
 #P2 1-Hit Death
 A60AAEAA 008C0001
+#Hit Anywhere
+A7047D02 14401000
+;f 0,fffff,w.1440,0,0,1,2610
 #Absolutely Everything Unlocked
 80097EF0 FFFF
 30097EF2 001F
@@ -59610,8 +60474,12 @@ C000E226 800B
 80010244 1300
 5000060C 0000
 8001037C 1300
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C4108 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C4108 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C4108 10000400
 
 ; [ Tenchu 2 - Birth of the Stealth Assassins (USA) (2000) (Activision) {SLUS-00939, SLUS-00939GH} <tenchu2> ]
 :SLUS-00939
@@ -59918,8 +60786,12 @@ D00104B0 0001
 80010126 7FFF
 50000708 0000
 80010128 EA5F
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70CD358 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70CD358 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70CD358 10000400
 
 ; [ Tenchu - Stealth Assassins (USA, v1.0) (1998) (Activision) {SLUS-00706} <tenchua> ]
 :SLUS-00706
@@ -61384,8 +62256,12 @@ C000E226 800B
 8001016C 1300
 80010178 1300
 80010184 1300
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C4108 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C4108 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C4108 10000400
 
 ; [ Tennis (USA) (2001) (Agetec) {SLUS-01348} <tennis> ]
 :SLUS-01348
@@ -61846,14 +62722,14 @@ A709FFE6 14401000
 300A8248 00FF
 #More Misc.\P2 Super Max Turning
 300A8249 00FF
-#Infinite hang time for tricks "Press L3 to toggle on/off"
+#Infinite Hang Time for Tricks:Press L3 to toggle on/off
 D7010001 01000200
 F509A166 0C021400
 #Wireframe mode "Press R3 to toggle on/off"
 D7010001 02000400
 A7039F9E 0C002400
 #Widescreen 16-9 (Vert-)
-800D2194 1333
+A70D2194 19991333
 
 ; [ Tony Hawk's Pro Skater 2 (USA) (2000) (Activision) {SLUS-01066, SLUS-01066GH} <thps2> ]
 :SLUS-01066
@@ -61936,7 +62812,7 @@ A7039F9E 0C002400
 #Max Cash
 900BB5D4 7530FFFF
 #Widescreen 16-9 (Vert-)
-800D8640 1333
+A70D8640 19991333
 
 ; [ Tony Hawk's Pro Skater 3 (USA) (2001) (Activision) {SLUS-01419} <thps3> ]
 :SLUS-01419
@@ -63814,8 +64690,12 @@ D00716E8 4020
 800714FE 000F
 #Select Level\Mutank Slide
 800714FE 0010
-#Widescreen 16-9
-80083C80 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7083C80 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7083C80 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7083C80 10000400
 #Widescreen 16-9 (Adjusted)
 80083C80 0C00
 80083C90 0D00
@@ -63972,6 +64852,9 @@ A61F1F5E 01000001
 300100C6 0001
 #1 Lap To Win (Both Modes)
 800B627C 0003
+#Drive Anywhere
+A702CB9E 10801000
+A702CAD2 04401400
 
 ; [ TOCA 2 Touring Car Challenge (USA) (1999) (The Codemasters Software Company) {SLUS-00996} <toca2> ]
 :SLUS-00996
@@ -63987,6 +64870,8 @@ A61F1F5E 01000001
 3001016F 0001
 #Unlock Mini Car Mode Cheat
 30010170 0001
+#Drive Anywhere
+A70960DA 10401000
 
 ; [ Tales of Destiny (USA) (1998) (Namco Hometek) {SLUS-00626} <todest> ]
 :SLUS-00626
@@ -64473,6 +65358,10 @@ D7200000 0010
 D7200000 0080
 800A10E0 0000
 00000000 FFFF
+#Bosses & enemies are faster - disable it in the Bombs Away level
+A706C422 14401000
+#Bosses & enemies can't move - disable it in the Final Showdown level
+A706C726 10401000
 #Widescreen 16-9
 8002CA58 4CCC
 8002CA60 CCCC
@@ -64535,24 +65424,29 @@ D7200000 0001
 D7200000 0002
 300A12C0 0008
 #No Falling
-300A1320 0000
+A704D156 14401000
+;300A1320 0000
 #Al's Penthouse is full of water
 800D5B38 0000
 #Insta-Charge Laser
-A704A5F0 20210040
-A704A5F2 00443404
+A704A636 14402400
+;A704A5F0 20210040
+;A704A5F2 00443404
 #Insta-Charge Spin
-A704AD14 1021003C
-A704AD16 00623402
+A704AD22 14402400
+;A704AD14 1021003C
+;A704AD16 00623402
 #Hit Anywhere
 A707E2F2 10402400
 #Laser Ricochet
 A707E476 13202400
 #Multi Jumps
-A7049928 00050001
+;A7049928 00050001
+A7049A4A 14622400
 #Rapid Jumps
-A7049928 00050002
-A70499F8 00030002
+A70497BA 14622400
+;A7049928 00050002
+;A70499F8 00030002
 #Infinite Double Jumps
 A704995E 10402400
 #Infinite Single Jumps
@@ -64670,16 +65564,6 @@ E00C0D2B 0000
 #99 Tournament Points Car 1
 300BD690 0063
 #Widescreen 16-9
-A7033E58 66664CCC
-A7033E5C 6667CCCD
-A704DC1C 66664CCC
-A704DC20 6667CCCD
-A704DD00 66664CCC
-A704DD04 6667CCCD
-A704DDB4 66664CCC
-A704DDBC 6667CCCD
-A704E3AC 66664CCC
-A704E3B0 6667CCCD
 A706D948 66664CCC
 A706D950 6667CCCD
 
@@ -66553,8 +67437,12 @@ A61FFF90 0001000F
 #Have All Characters Unlocked
 80124B06 0101
 80124B08 0101
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7138698 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7138698 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7138698 10000400
 
 ; [ Disney's Treasure Planet (USA) (2002) (Sony Computer Entertainment America) {SCUS-94647} <treaspln> ]
 :SCUS-94647
@@ -67028,8 +67916,12 @@ E003F6D8 0000
 80189BA0 0000
 #Select Stage\Treetop Rumble
 80189BA0 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71D2108 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71D2108 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71D2108 10000400
 
 ; [ Twisted Metal 2 (USA) (1996) (Sony Computer Entertainment America) {SCUS-94306} <twistmt2> ]
 :SCUS-94306
@@ -67240,8 +68132,12 @@ D005D810 0134
 8018ED04 0005
 #Select Perm Level\Arena
 8018ED04 0006
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7173F9C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7173F9C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7173F9C 10000400
 
 ; [ Tyco R/C - Assault with a Battery (USA) (2000) (Mattel Interactive) {SLUS-01074} <tycorc> ]
 :SLUS-01074
@@ -67807,12 +68703,24 @@ D0110F48 0000
 301B39A7 0001
 #P1 Infinite Turbo
 801D8234 0327
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71C2E5C 10000C00
 A71C2F1C 10000C00
 A71C2F7C 10000C00
 A71C303C 10000C00
 A71C309C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71C2E5C 10000900
+A71C2F1C 10000900
+A71C2F7C 10000900
+A71C303C 10000900
+A71C309C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71C2E5C 10000400
+A71C2F1C 10000400
+A71C2F7C 10000400
+A71C303C 10000400
+A71C309C 10000400
 
 ; [ Vagrant Story (USA) (2000) (Square Electronic Arts) {SLUS-01040} <vagstory> ]
 :SLUS-01040
@@ -68348,8 +69256,8 @@ D005E1C0 0020
 50002401 0000
 300616EE 0001
 #Widescreen 16-9
-8007AE6C 0D80
-800AED50 12F5
+A707AE6C 12000D80
+A70AED50 0E3812F5
 
 ; [ Valkyrie Profile (USA) (2000) (Enix America) {SLUS-01156 / SLUS-01179} <valkyrpf> ]
 :SLUS-01156
@@ -69244,8 +70152,12 @@ D01619C8 0102
 801C8FA0 1000
 #Level 1\P2 No Health
 801CB9A0 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70D4CAE 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D4CAE 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D4CAE 10000400
 
 ; [ Warhawk - The Red Mercury Missions (USA) (1995) (Sony Computer Entertainment America) {SCUS-94305} <warhawk> ]
 :SCUS-94305
@@ -69277,8 +70189,12 @@ A70D4CAE 10000C00
 801B8A56 0000
 #Invincibility
 8013A51C 0000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7173AD0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7173AD0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7173AD0 10000400
 
 ; [ Warhammer - Shadow of the Horned Rat (USA) (1996) (Strategic Simulations) {SLUS-00117} <warhmrat> ]
 :SLUS-00117
@@ -69430,8 +70346,12 @@ E0030EB7 0000
 #P1 Quick Win
 90060F3C 14800003
 80060F4A 2400
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7041558 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7041558 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7041558 10000400
 
 ; [ World Cup 98 (USA) (1998) (Electronic Arts) {SLUS-00644} <wc98> ]
 :SLUS-00644
@@ -69708,8 +70628,12 @@ D00F8C62 FBFF
 800EF79C 2580
 800EF804 00C8
 800EF84C 1680
-#Widescreen 16-9
-800D1450 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70D1450 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D1450 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D1450 10000400
 
 ; [ Wheel of Fortune - 2nd Edition (USA) (2000) (Hasbro Interactive) {SLUS-01174} <wheelfr2> ]
 :SLUS-01174
@@ -70128,6 +71052,11 @@ A61F7014 08020803
 801AD3CC 0200
 #Infinite Magic
 801B5138 0200
+#Invincibility
+A701C32A 14401000
+A70652F2 10401000
+#Hit Anywhere (Partial)
+A7065F1E 14601400
 #Select Level\EXODUS You need to have at least 1 save game on your memory card with any of these and then choose load game
 800DC6A8 0005
 #Select Level\CANYON
@@ -71248,6 +72177,11 @@ A708CF56 A4222400
 800987E0 012C
 #In Battle\Battling Arena\Never Overheat
 800987E2 0000
+#Battle HUD Off
+A707644E 0C011400
+A7076456 0C011400
+A707645E 0C011400
+A707648E 0C011400
 #Infinite Items All Slots
 A71DBC32 A2E22400
 #Infinite Gold
@@ -72954,7 +73888,6 @@ AAAAAAAA AAAAAAAA
 
 ; [ PlayStation Underground Number 1 (USA) (1997) (Sony Computer Entertainment America) {SCUS-94161 / SCUS-94161} <psu1> ]
 ;:SCUS-94161
-;:SCUS-94161
 ;This game currently has no cheats
 
 ; [ PlayStation Underground Number 2 (USA) (1997) (Sony Computer Entertainment America) {SCUS-94178 / SCUS-94179} <psu2> ]
@@ -73278,8 +74211,12 @@ C01C50A4 0603
 80169372 1000
 #Infinite Time
 80170B9C 0DEA
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7161F60 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7161F60 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7161F60 10000400
 #Widescreen 16-9 (Secondary)
 A7161F60 10000C00
 #Widescreen 16-9 (Cut Scenes)
@@ -73315,6 +74252,8 @@ A61B4054 00000003
 A61B4054 00000003
 #Infinite Time
 801C56A6 0000
+;60 FPS
+;A717B234 02000105
 
 ; [ Afraid Gear Another (Jpn) (2001) (Office Create) {SLPM-86834} <afragean> ]
 :SLPM-86834
@@ -73963,8 +74902,12 @@ D00F5164 0003
 80158AA6 00B4
 #Infinite HP Story Mode - Faye - Level 5 + 7
 8015B2A6 00B4
-#Widescreen 16-9
-80066080 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7066080 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7066080 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7066080 10000400
 
 ; [ Agent Armstrong - Himitsu Shirei Daisakusen (Jpn) (1997) (WENet) {SLPS-01073 (WG 0005)} <armstrng> ]
 ;:SLPS-01073
@@ -75221,8 +76164,12 @@ D005C006 FFFE
 800D0B24 0000
 #P2 1-Hit Death
 800D1EC0 0000
-#Widescreen 16-9
-800CA808 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70CA808 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70CA808 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70CA808 10000400
 
 ; [ Burn Out (Jpn, SuperLite 1500 Series) (2000) (Success) {SLPM-86598} <burnout> ]
 ;:SLPM-86598
@@ -75769,8 +76716,12 @@ A6116CB8 FFFF0000
 A6116CBA 24422402
 A611582E 00430000
 A610E476 00460000
-#Widescreen 16-9
-800EC098 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70EC098 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EC098 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EC098 10000400
 
 ; [ Cyber War (Jpn) (1995) (Coconuts Japan) {SLPS-00055~SLPS-00057} <cyberwar> ]
 ;:SLPS-00055
@@ -76030,8 +76981,12 @@ D0007572 FEFE
 
 ; [ Dark Tales from the Lost Soul (Jpn) (1999) (Sammy) {SLPS-02316} <darktale> ]
 :SLPS-02316
-#Widescreen 16-9
-800BC580 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70BC580 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70BC580 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70BC580 10000400
 
 ; [ Dynamite Boxing (Jpn) (1998) (Victor Interactive Software) {SLPS-01387} <dboxing> ]
 :SLPS-01387
@@ -76759,8 +77714,12 @@ D01FC418 0100
 801FC4E6 0050
 #Max Exp
 801FC4E6 0050
-#Widescreen 16-9
-801FC384 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71FC384 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71FC384 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71FC384 10000400
 
 ; [ The Drug Store - Matsumoto Kiyoshi de Okaimono! (Jpn) (1998) (Human) {SLPS-01516} <drugstor> ]
 :SLPS-01516
@@ -77023,8 +77982,12 @@ A6089BF4 FFFF0000
 80082980 0000
 #Save Anywhere
 300861DC 0001
-#Widescreen 16-9
-8008D5B8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A708D5B8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A708D5B8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A708D5B8 10000400
 
 ; [ Elf wo Karu Mono-tachi II (Jpn) (1998) (Altron) {SLPS-01456~SLPS-01458} <elf2> ]
 :SLPS-01456
@@ -77108,7 +78071,7 @@ D0076252 FFFE
 300CE120 000D
 #Select Scenario\14
 300CE120 000E
-#Infinite number of attacks
+#Infinite Attacks
 A601B650 FFFF0000
 #Does not increase TP
 A607DBDA 00430040
@@ -78196,8 +79159,12 @@ D01B3940 0001
 800E625A 4C00
 #All Hidden characters availables
 300D4124 0002
-#Widescreen 16-9
-800E9980 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E9980 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E9980 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E9980 10000400
 
 ; [ 70's Robot Anime - Geppy-X - The Super Boosted Armor (Jpn) (1999) (Aroma) {SLPS-01995~SLPS-01998} <geppyx> ]
 :SLPS-01995
@@ -78267,18 +79234,6 @@ A61ECBD2 00430000
 
 ; [ Ganbare Goemon - Ooedo Daikaiten (Jpn) (2001) (Konami) {SLPM-86774 (VX239-J1)} <ggoemoed> ]
 :SLPM-86774
-#P1 Infinite Energy
-80063AC6 0006
-#P1 Infinite Lives
-800468D2 0009
-#P1 Infinite Coins
-800468C6 03E7
-#P2 Infinite Energy
-80063B6E 0006
-#P2 Infinite Lives
-800530FA 0009
-#P2 Infinite Coins
-800530EE 03E7
 #Infinite Time
 80045E58 0063
 #Infinite Health robot
@@ -78287,16 +79242,32 @@ A61ECBD2 00430000
 800A9CAA 03E7
 #One-Hit Kill Bosses
 800642A6 0000
-#P1 Invincibility
-80063B18 0010
-#P2 Invincibility
-80063BC0 0010
 #All Stages Open
 50000C02 0000
 80045D88 FFFF
 #Have All Passes
 50000501 0000
 30045D44 000B
+#Ammo takes on character model
+A70841B2 0C022400
+#Moon Jump
+A70865DA 14401000
+#P1 Infinite Energy
+80063AC6 0006
+#P1 Infinite Lives
+800468D2 0009
+#P1 Infinite Coins
+800468C6 03E7
+#P2 Infinite Energy
+80063B6E 0006
+#P1 Invincibility
+80063B18 0010
+#P2 Infinite Lives
+800530FA 0009
+#P2 Infinite Coins
+800530EE 03E7
+#P2 Invincibility
+80063BC0 0010
 
 ; [ Ganbare Goemon - Uchuu Kaizoku Akogingu (Jpn) (1996) (Konami) {SLPS-00217 (VX011-J1)} <ggoemuka> ]
 :SLPS-00217
@@ -78592,8 +79563,12 @@ D0035342 2442
 #P2 Life 0 Press SELECT
 D013F5FA FFFE
 80128EEC FFFF
-#Widescreen 16-9
-8013BA70 0C00
+#Select Widescreen Aspect Ratio\16-9
+A713BA70 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A713BA70 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A713BA70 10000400
 
 ; [ Golgo 13 - 1 - Karairu no Yabou (Jpn) (1998) (Daiki) {SLPS-01712} <golgo13k> ]
 ;:SLPS-01712
@@ -79155,8 +80130,12 @@ C00FC434 002C
 80104E30 00F0
 #Freeze Total Time
 8002C91C 0000
-#Widescreen 16-9
-8011AC6C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A711AC6C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A711AC6C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A711AC6C 10000400
 
 ; [ Hunter X Hunter - Maboroshi no Greed Island (Jpn) (2000) (Konami) {SLPM-86651 (VX214-J1)} <hxhgrisl> ]
 :SLPM-86651
@@ -79563,8 +80542,12 @@ C00A4D44 0018
 900A4E38 A02318A8
 800A4E3C 000B
 00000000 FFFF
-#Widescreen 16-9
-801F6120 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71F6120 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F6120 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F6120 10000400
 
 ; [ Jigsaw World (Jpn, Honkakuha de 1300Yen Series) (1999) (Hect) {SLPS-02251} <jigsawld> ]
 ;:SLPS-02251
@@ -79589,8 +80572,12 @@ C00A4D44 0018
 800E573E 012F
 #Infinite TP Points At K1 Challenge
 800A80FE 0299
-#Widescreen 16-9
-800C6DF0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70C6DF0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C6DF0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C6DF0 10000400
 
 ; [ Kaeru no Ehon - Nakushita Kioku o Motomete (Jpn) (1999) (Victor Interactive Software) {SLPS-02332} <kaeruehn> ]
 :SLPS-02332
@@ -79902,8 +80889,12 @@ D0015B00 8888
 800843CA 0001
 #Battle (number of holes) 10
 800843CA 000A
-#Widescreen 16-9
-80078630 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7078630 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7078630 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7078630 10000400
 
 ; [ Khamrai (Jpn) (2000) (Namco) {SLPS-02640} <khamrai> ]
 :SLPS-02640
@@ -79953,9 +80944,15 @@ D00CB82C 0101
 800334FE 1000
 D00CB82C 0102
 800334FE 1200
-#Widescreen 16-9
-800E5C28 0C00
-800C1B74 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E5C28 10000C00
+A70C1B74 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E5C28 10000900
+A70C1B74 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E5C28 10000400
+A70C1B74 10000400
 
 ; [ Killer Bass (Jpn) (2000) (Magical) {SLPS-02747} <killbass> ]
 ;:SLPS-02747
@@ -80948,8 +81945,12 @@ D015B74A 0180
 
 ; [ LSD - Dream Emulator (Jpn, Limited Edition) (1998) (Asmik Ace) {SLPS-01556} <lsd> ]
 :SLPS-01556
-#Widescreen 16-9
-8008E98C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A708E98C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A708E98C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A708E98C 10000400
 
 ; [ Lucifer Ring (Jpn) (1998) (Toshiba EMI) {SLPS-01784} <lucifer> ]
 :SLPS-01784
@@ -80960,8 +81961,12 @@ D015B74A 0180
 8007F29C 03E7
 #Infinite Lives
 8012F0CE 0009
-#Widescreen 16-9
-8009BD00 0C00
+#Select Widescreen Aspect Ratio\16-9
+A709BD00 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709BD00 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709BD00 10000400
 
 ; [ Lunar 2 - Eternal Blue (Jpn) (1999) (Kadokawa Shoten) {SLPS-02081~SLPS-02083} <lunar2j> ]
 :SLPS-02081
@@ -81122,9 +82127,15 @@ D01B5E16 FFFE
 #LUCKY (R1 + R2)
 D01B5E16 F5FF
 301A5B18 0003
-#Widescreen 16-9
-801EFAA8 0C00
-801E56E0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71EFAA8 10000C00
+A71E56E0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71EFAA8 10000900
+A71E56E0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71EFAA8 10000400
+A71E56E0 10000400
 
 ; [ Mad Stalker - Full Metal Force (Jpn) (1997) (Family Soft) {SLPS-00734} <madstalk> ]
 :SLPS-00734
@@ -81256,8 +82267,12 @@ A7021BB6 10401000
 800F8862 00CF
 #P2 No Energy
 800F8862 0000
-#Widescreen 16-9
-800E178C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E178C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E178C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E178C 10000400
 
 ; [ Masumon Kids - The Another World of The Master of Monsters (Jpn) (1998) (Toshiba EMI) {SLPS-01426} <masumkid> ]
 :SLPS-01426
@@ -81723,8 +82738,11 @@ D0025112 A385
 300A36D8 0007
 #Day 7 END OF GAME
 300A373C 0007
-#Widescreen 16-9
-800FE2B0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70FE2B0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70FE2B0 10000900
+;Note Eye Infinity Pointless here
 #Dither Off
 A7054300 02000000
 
@@ -82933,8 +83951,12 @@ D0095848 0008
 8009EB7C 3900
 #All Pepsiman
 800958C8 000F
-#Widescreen 16-9
-800E4858 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E4858 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E4858 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E4858 10000400
 
 ; [ Pocket Fighter (Jpn) (1998) (Capcom) {SLPS-01360} <pfghtj> ]
 :SLPS-01360
@@ -83049,8 +84071,12 @@ D00A5584 0100
 800A8816 4268
 #P2 Infinite Glove Energy
 800A882E 4268
-#Widescreen 16-9
-800E69D8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E69D8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E69D8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E69D8 10000400
 
 ; [ Policenauts - Private Collection (Jpn) (1996) (Konami) {SLPS-00228} <policnpc> ]
 ;:SLPS-00228
@@ -83574,8 +84600,12 @@ D00CF3A6 2462
 800C8318 00BE
 #P2 Max Power Gauge
 800C831A 00BE
-#Widescreen 16-9
-800C2894 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70C2894 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C2894 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C2894 10000400
 
 ; [ Kaisoku Tenshi - The Rapid Angel (Jpn) (1998) (Techno Soleil) {SLPS-01553} <rapidang> ]
 :SLPS-01553
@@ -84718,10 +85748,18 @@ A7054462 14402400
 80059B50 1A0A
 #P2 Infinite HP
 80059B54 1A0A
-#Widescreen 16-9
-80071C44 0C00
-80071BCC 0C00
-80064EE4 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7071C44 10000C00
+A7071BCC 10000C00
+A7064EE4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7071C44 10000900
+A7071BCC 10000900
+A7064EE4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7071C44 10000400
+A7071BCC 10000400
+A7064EE4 10000400
 
 ; [ Side Pocket 3 - 3D Polygon Billiard Game (Jpn) (1998) (Data East) {SLPS-01079} <sidepck3> ]
 ;:SLPS-01079
@@ -84984,8 +86022,12 @@ D0088D72 FFFE
 8007A1A0 FFFF
 50001502 0000
 8007A214 0202
-#Widescreen 16-9
-80200464 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7200464 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7200464 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7200464 10000400
 
 ; [ Super Live Stadium (Jpn) (1998) (Squaresoft) {SLPM-86019} <slivstad> ]
 :SLPM-86019
@@ -85021,8 +86063,12 @@ C009DC68 DEFF
 80120EAC 270F
 #Infinite Weapons (Not Special Attacks)
 801217D0 0003
-#Widescreen 16-9
-8013F870 0C00
+#Select Widescreen Aspect Ratio\16-9
+A713F870 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A713F870 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A713F870 10000400
 
 ; [ Soukyugurentai - Oubushustugeki (Jpn) (1997) (Data East) {SLPS-01172} <sokyugrt> ]
 :SLPS-01172
@@ -85529,9 +86575,9 @@ D00F9BB6 1040
 800C41A0 0000
 #Infinite Item Suu Kyi eye
 800F1258 0009
-#nfinite Item Hyper chastisement
+#Infinite Item Hyper chastisement
 800F1260 0009
-#nfinite Item Suu Kyi stick
+#Infinite Item Suu Kyi stick
 800F1270 0009
 #MAX point have their own
 900EFDB8 0001869F
@@ -86712,8 +87758,12 @@ D00D2140 005C
 8004768A 0000
 #P1 Dragon devil available to determine the character while holding down the R2 and L2 which character ANYTHING.
 80098FC8 0001
-#Widescreen 16-9
-8009AA48 0C00
+#Select Widescreen Aspect Ratio\16-9
+A709AA48 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709AA48 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709AA48 10000400
 
 ; [ Victory Zone - Real Pachinko Simulator (Jpn) (1995) (SCEI) {SCPS-10002} <victzone> ]
 ;:SCPS-10002
@@ -87115,8 +88165,12 @@ D30B1C84 0007
 800289D0 0101
 50002D02 0000
 80028BCE 0101
-#Widescreen 16-9
-80096238 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7096238 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7096238 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7096238 10000400
 
 ; [ Yakiniku Bugyou (Jpn) (2001) (Media Entertainment) {SLPS-03209} <yakibugy> ]
 :SLPS-03209
@@ -87281,8 +88335,12 @@ D01CCAD4 0100
 #Infinite Energy
 800B0568 015C
 800B0566 015C
-#Widescreen 16-9
-800C5BA0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70C5BA0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C5BA0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C5BA0 10000400
 
 ; [ Zeitgeist (Jpn) (1995) (Taito) {SLPS-00034} <zeitgest> ]
 :SLPS-00034
@@ -87508,8 +88566,12 @@ D01CCAD4 0100
 800F4D68 0258
 #Get One Monkey To Finish Level
 800F4454 00FF
-#Widescreen 16-9
-800AF050 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70AF050 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70AF050 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70AF050 10000400
 
 ; [ Autumn/Christmas Releases '96 (Euro) (1996) (Sony Computer Entertainment Europe) {SCED-00273 (9636229)} <acrels96> ]
 ;:SCED-00273
@@ -89038,7 +90100,7 @@ A60B4EFC 00000FFF
 #Always First
 800DA31E 0001
 #Widescreen 16-9
-800C9DA4 1222
+A70C9DA4 18061222
 
 ; [ Power Source (Euro) (1997?) (Sony Computer Entertainment Europe) {SCES-00667} <powrsrc> ]
 ;:SCES-00667
@@ -89214,8 +90276,12 @@ D006FD9C 0002
 8006FD98 0000
 #OK Status
 800A8736 0000
-#Widescreen 16-9
-80065B80 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7065B80 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7065B80 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7065B80 10000400
 
 ; [ Silent Hill (Euro) (1999) (Konami Digital Entertainment) {SLES-01514, SLES-01514 - P} <silenthe> ]
 :SLES-01514
@@ -89266,9 +90332,15 @@ D006FD9C 0002
 900BC18C FFFFFFFF
 #Language Option Always Available
 801E7698 0001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C65D0 10000C00
 A70C65E0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C65D0 10000900
+A70C65E0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C65D0 10000400
+A70C65E0 10000400
 
 ; [ Sphere 360° (Euro) (1999?) (ASCII Entertainment Europe) {SLED-01711 (2083014)} <sphere360> ]
 ;:SLED-01711
@@ -89643,8 +90715,12 @@ A7038A2A 14401000
 #Going above 40kmph gives controller vibration
 D3098729 0102
 3009840D 0002
-#Widescreen 16-9
-8009806C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A709806C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709806C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709806C 10000400
 #Wide screen part 1 (Stretch)
 A706E298 28420000
 A706E29A 00050000
@@ -89909,8 +90985,12 @@ D0094634 1021
 #P1 only needs 1 win
 E00313A7 0000
 300313A7 0001
-#Widescreen 16-9
-80041BA8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7041BA8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7041BA8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7041BA8 10000400
 
 ; [ WCW Mayhem (Euro) (1999) (Electronic Arts) {SLES-02193 (EAX06102705D), SLES-02193#} <wcwmayhme> ]
 :SLES-02193
@@ -90143,9 +91223,15 @@ A702E836 14402400
 A706B1CA 18602400
 #Alternate window lines
 A7051BD2 05E11000
-#Widescreen 16-9
-800929E4 0C00
-801191F0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70929E4 10000C00
+A71191F0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70929E4 10000900
+A71191F0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70929E4 10000400
+A71191F0 10000400
 
 ; [ 0 kara no Mahjong: Mahjong Youchien Tamago-gumi (Japan) {SLPS-01311} ]
 ; [ 0 kara no Shougi: Shougi Youchien Ayumi-gumi (Japan) (Genteiban, Renkaban) {SLPS-01986} ]
@@ -90820,8 +91906,12 @@ A60389F8 FFFF0000
 8008ED38 0003
 #Start At 3rd Lap (Championship)
 80094B34 0003
-#Widescreen 16-9
-8009D038 0C00
+#Select Widescreen Aspect Ratio\16-9
+A709D038 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709D038 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709D038 10000400
 
 ; [ 360 Three Sixty (Europe) {SLES-02089} ]
 :SLES-02089
@@ -90994,8 +92084,12 @@ D0090F72 000F
 900330EC 00000000
 #Always First
 80023086 0040
-#Widescreen 16-9
-8007E7B0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A707E7B0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707E7B0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707E7B0 10000400
 
 ; [ 5 Star Racing (Europe) {SLES-04064} ]
 ; [ 70's Robot Anime: Geppy-X (Japan) Demo {SLP-80387} ]
@@ -91511,8 +92605,12 @@ D00B9F44 FCFF
 800B5FAE 00C8
 #Infinite Health Skullbot Factory
 801C8A20 03E0
-#Widescreen 16-9
-800C08EC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70C08EC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C08EC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C08EC 10000400
 
 ; [ Action Replay (Europe) {Unlicensed} ]
 ; [ Action Replay 2 (Disc 2\2\2\2\2) (France) (Unlicensed) {Unlicensed | Unlicensed | Unlicensed | Unlicensed | Unlicensed} ]
@@ -91639,8 +92737,12 @@ D0062A62 0100
 800C8E7A 0000
 
 ; [ Aeon Flux (USA) (Prototype) {Unlicensed} ]
-#Widescreen 16-9
-800D9C58 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70D9C58 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D9C58 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D9C58 10000400
 
 ; [ Aerodive (Japan) {SLPS-02367} ]
 ; [ Affect Taikenban Vol. 1 (Japan) Demo {SLP-80552} ]
@@ -92998,7 +94100,7 @@ A60A5A8C 00000002
 #Max Points
 80089B04 0378
 #Widescreen 16-9
-8012257C 0E5A
+A712257C 13230E5A
 
 ; [ Aquanaut no Kyuujitsu (Japan) {SLPS-00060} ]
 ; [ Aquanaut no Kyuujitsu 2 (Japan) (Promotion Disc) {SLP-80449} ]
@@ -94823,8 +95925,12 @@ D00EC51A EFFF
 A60BF0A4 FFFF0000
 #Secret Mode & Option
 90089DE8 FFFFFFFF
-#Widescreen 16-9
-8009EF70 0C00
+#Select Widescreen Aspect Ratio\16-9
+A709EF70 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709EF70 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709EF70 10000400
 
 ; [ Bakuten Shoot Beyblade 2002: Bey Battle Tournament 2 (Japan) (Gentei Box) {SLP-87130} ]
 ; [ Bakuten Shoot Beyblade: Bey Battle Tournament (Japan) {SLP-86980} ]
@@ -95526,8 +96632,12 @@ A604345C FFFF0000
 8007BCAC FFFF
 #Always Finish First
 3006BA60 0000
-#Widescreen 16-9
-8006B6E0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A706B6E0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706B6E0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706B6E0 10000400
 
 ; [ Big Bass Fishing (Europe) {SLES-03847} ]
 
@@ -95972,8 +97082,12 @@ D00CBED8 1009
 
 ; [ Biohazard: Gun Survivor (Japan) {SLPS-02553} ]
 :SLPS-02553
-#Widescreen 16-9
-80066320 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7066320 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7066320 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7066320 10000400
 
 ; [ Bishi Bashi Special (Europe) {SLES-02537} ]
 :SLES-02537
@@ -96288,7 +97402,7 @@ A6024C26 14510C00
 #Infinite Magic
 801CAB4A 0190
 801CAB4C 0190
-#nfinite Item Usage
+#Infinite Item Usage
 8004316E 3C00
 
 ; [ Blood Omen: Legacy of Kain (France) {SLES-00522} ]
@@ -96307,7 +97421,6 @@ A6024C26 14510C00
 801CAB4A 0190
 801CAB4C 0190
 
-; [ Blood Omen: Legacy of Kain (USA) Beta {Unlicensed} ]
 ; [ Blood Omen: Legacy of Kain (USA) Beta {Unlicensed} ]
 ; [ Bloody Roar 2: Bringer of the New Age (Europe) Demo {SLED-01928} ]
 
@@ -96385,8 +97498,12 @@ A71EF308 19991333
 800E665E 0140
 #P2 Infinite MP
 800E6660 0005
-#Widescreen 16-9
-800DACB0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70DACB0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70DACB0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70DACB0 10000400
 
 ; [ Blue Breaker: Egao no Yakusoku (Japan) (Major Wave) {SLP-86646} ]
 
@@ -96584,29 +97701,34 @@ A60FD668 00040063
 ; [ Bomberman (Europe) {SLES-01893} ]
 :SLES-01893
 #Infinite Lives
-8005EB7A 2400
+A705EB7A A4242400
 #Infinite Time
 80061F2E 2400
-#P1 Max Bomb Power
-D0083A9E 0001
-801D8C08 0009
-D0083A9E 0009
-801DFC38 0009
-#P1 Infinite Bombs
-D0083A9E 0001
-801D8C0A 0001
-D0083A9E 0009
-801DFC3A 0009
-#L2=Timer Bomb
+#Infinite Bombs
+A702002E A6022400
+#Invincibility
+A7056F6E 14511000
+A70292BA 10401000
+#Walk through Walls
+A7026FC2 14401400
+A70272CA 14401400
+A70275E2 14401400
+A70278EA 14401400
+;f 0,fffff,w.a424,d.00042400  <--Lives
+;f 0,fffff,w.a602,d.8602006a  <--Bombs
+;f 0,fffff,w.1451,0,0,?,0801  <--Invincibility Pt1
+;f 0,fffff,w.1040,d.2650004c  <--Invincibility Pt2  
+;f 0,fffff,w.1440,d.240a821  <WTW All 4 addresses
+#Press L2 for Timer Bomb
 D0093B76 0401
 801D8C14 0001
-#R2=Power Bomb
+#Press R2 for Power Bomb
 D0093B76 0402
 801D8C14 0002
-#L1=Slime Bomb
+#Press L1 for Slime Bomb
 D0093B76 0404
 801D8C14 0003
-#R1=Heavy Bomb
+#Press R1 for Heavy Bomb
 D0093B76 0408
 801D8C14 0004
 
@@ -96970,10 +98092,10 @@ D0077BD2 0005
 
 ; [ Brave Fencer Musashiden (Japan) {SLPS-01490} ]
 :SLPS-01490
-#Infinite and Max Hp
+#Infinite + Max HP
 80078012 01F4
 80078014 01F4
-#Infinite and Max Mp
+#Infinite + Max MP
 80078016 01F4
 80078018 01F4
 #Infinite Money
@@ -97550,9 +98672,15 @@ D00995DC 0002
 801D9378 0063
 #Infinite Shields
 801D937C 0063
-#Widescreen 16-9
-801CF2C0 0C00
-801DE128 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71CF2C0 10000C00
+A71DE128 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71CF2C0 10000900
+A71DE128 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71CF2C0 10000400
+A71DE128 10000400
 
 ; [ Buggy (Europe) (EDC ZOO Classics) {SLES-00174} ]
 :SLES-00174
@@ -97755,8 +98883,12 @@ D0010086 0000
 300100CD 0005
 #TRANSYLVANIAN ERA Count's Castle\Have all characters found
 300100F1 0001
-#Widescreen 16-9
-80098A2C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7098A2C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7098A2C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7098A2C 10000400
 
 ; [ Bugs Bunny: Lost in Time (Europe) Demo {SLED-02125} ]
 
@@ -97770,8 +98902,12 @@ D0010086 0000
 30010045 00DD
 #99 Carots
 30010043 0063
-#Widescreen 16-9
-80076158 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7076158 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7076158 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7076158 10000400
 
 ; [ Bugs Bunny: Lost in Time (USA) Demo {SLUS-90058} ]
 ; [ Building Crush! (Japan) {SLPS-00497} ]
@@ -98556,8 +99692,12 @@ A610E040 00020003
 801EE9B8 0000
 #P1 1 Round won
 801EE97C 0001
-#Widescreen 16-9
-801EB060 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71EB060 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71EB060 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71EB060 10000400
 
 ; [ Cardinal Syn (France) (Promo) {SCES-01077} ]
 ; [ Cardinal Syn (Italy) {SCES-01205} ]
@@ -98704,8 +99844,12 @@ A6078448 00000505
 900DF9FC 05F5E0FF
 #Unit 1 Ammo 99
 8010CB54 0063
-#Widescreen 16-9
-801280F4 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71280F4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71280F4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71280F4 10000400
 
 ; [ Carnage Heart (Japan) {SLPS-00151} ]
 :SLPS-00151
@@ -99379,7 +100523,7 @@ D011BF16 A483
 800C4FAA 0009
 #Have 1000 fuel in Mystery Planet
 800C4F9E 03E8
-#Infinite oxygen in Sea Fighter
+#Infinite Oxygen in Sea Fighter
 8012A2E6 0064
 #Have always 8 bullets in Carnival Hunt
 800A470C 0008
@@ -99484,8 +100628,12 @@ D00E524E 015E
 300E52A4 0063
 50000502 0000
 800E52A6 6363
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70F2B80 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70F2B80 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70F2B80 10000400
 #Widescreen 16-9 (Optional Extra)
 A70F2BA0 10000C00
 #Dither Off
@@ -99494,8 +100642,12 @@ A70905D4 02000000
 ; [ Chaos Break (Japan) {SLP-86363} ]
 :SLP-86363
 :SLPM-86363
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70F3148 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70F3148 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70F3148 10000400
 #Widescreen 16-9 (Optional Extra)
 A70F3168 10000C00
 #Dither Off
@@ -99753,8 +100905,12 @@ D00B94EA FAFF
 300ADC5B 0001
 #Infinite Sprouts
 A6069BF0 FFFF0001
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70B6D0C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70B6D0C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70B6D0C 10000400
 
 ; [ Chiki Chiki Machine Mou Race: Wacky Races (Japan) {SLP-86845} ]
 ; [ Chill (Europe) Demo {SLED-01194} ]
@@ -100255,13 +101411,21 @@ A60ACC60 00010004
 
 ; [ Clock Tower (Europe) {SLES-00870} ]
 :SLES-00870
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70663C4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70663C4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70663C4 10000400
 
 ; [ Clock Tower (France) {SLES-00871} ]
 :SLES-00871
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7066410 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7066410 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7066410 10000400
 
 ; [ Clock Tower (Germany) {SLES-00872} ]
 ; [ Clock Tower 2 (Japan) Demo {SLP-80062} ]
@@ -101481,8 +102645,12 @@ A608D508 00000001
 A608D558 00000005
 #Bamboo Arcade Game\P2 Max Score
 A608C4AC 0000FFFF
-#Widescreen 16-9
-800DD4E0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70DD4E0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70DD4E0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70DD4E0 10000400
 
 ; [ Cool Boarders (Europe) {SCES-00568} ]
 :SCES-00568
@@ -102004,6 +103172,30 @@ A7017E06 A422A433
 #All Gems
 9006CEC0 FFFFFFFF
 9006CEC4 FFFFFFFF
+#Collect from Anywhere/Easy Hit Boxes (Press R2)
+A702DD06 14001040
+A702DD16 14001160
+A702DD2A 14001040
+A702E06E 14001560
+A702E07E 14001160
+A702E092 14001040
+A702E00A 10001160
+D7200000 00000002
+A702DD06 10401400
+A702DD16 11601400
+A702DD2A 10401400
+A702E06E 15601400
+A702E07E 11601400
+A702E092 10401400
+A702E00A 11601000
+;Finds to duplicate above addresses for clones/regions
+;f 0,fffff,w.1040,0,0,?,8fab,0,0,?,1160
+;f 0,fffff,w.1160,1,3c0b
+;f 0,fffff,w.1040,0,0,0100,8ee2
+;f 0,fffff,w.1560,0,0,?,8fab
+;f 0,fffff,w.1160,18,27a4
+;f 0,fffff,w.1040,2021,2e0
+;f 0,fffff,w.1160,0,0,?,8fab
 #Open All Levels (This code must be used with all crystals and gems turned on)
 80008006 CE74
 800043C8 0000
@@ -102041,8 +103233,76 @@ D006BD92 FF7E
 8001E9F4 0000
 D006BD92 FFDE
 8001E9F4 00A8
+#Collect from Anywhere/Easy Hit Boxes (Press R2)
+A702DF4A 14001040
+A702DF5A 14001160
+A702DF6E 14001040
+A702E2B2 14001560
+A702E2C2 14001160
+A702E2D6 14001040
+A702E24E 10001160
+D7200000 00000002
+A702DF4A 10401400
+A702DF5A 11601400
+A702DF6E 10401400
+A702E2B2 15601400
+A702E2C2 11601400
+A702E2D6 10401400
+A702E24E 11601000
+;Finds to duplicate above addresses for clones/regions
+;f 0,fffff,w.1040,0,0,?,8fab,0,0,?,1160
+;f 0,fffff,w.1160,1,3c0b
+;f 0,fffff,w.1040,0,0,0100,8ee2
+;f 0,fffff,w.1560,0,0,?,8fab
+;f 0,fffff,w.1160,18,27a4
+;f 0,fffff,w.1040,2021,2e0
+;f 0,fffff,w.1160,0,0,?,8fab
+;#Invincibility
+;9001D264 24030004
+;hugopocked type 1, Teh69thSpartan type 2
+#Select Moon Jump Cheat\Type 1
+A701E7F0 00882000
+A701E7F2 AE230800
+A701E7F6 00652400
+90008000 3C148006
+90008004 3694BD92
+90008008 96930000
+90008010 00139B82
+90008018 32730001
+90008020 16600005
+90008028 3063FFFF
+9000802C 3C14000C
+90008030 00741825
+90008038 AE230088
+9000803C 080079FE
+90008040 0065182A
+#Select Moon Jump Cheat\Type 2
+A701E798 00AC2C00
+A701E79A 8E220C00
+9000B000 27BDFFE8
+9000B004 AFA80010
+9000B008 3C088007
+9000B00C 9508BD92
+9000B014 00084027
+9000B018 31084000
+9000B01C 39084000
+9000B020 11000002
+9000B028 8E2200AC
+9000B030 8FA80010
+9000B034 27BD0018
+9000B038 03E00008
 #Invincibility
-9001D264 24030004
+A701D272 14401000
+#Invincibility No Hit:Press Select/Back to disable (You must disable it to make the level platforms work - such as Bonus Rounds, Death Routes)
+A701E812 10001040
+D7100000 00000100
+A701E812 10401000
+#Invincibility No Hit:Press Select/Back to disable "alt code" (You must disable it to make the level platforms work - such as Bonus Rounds, Death Routes)
+A701E84E 10001440
+D7100000 00000100
+A701E84E 14401000
+#Crates suddenly break:Use with Invincibility cheat
+A702B962 0C002400
 #Select Widescreen Type\Widescreen Hor+
 A7017F04 F5F70C00
 A7017F06 0C00241B
@@ -102091,6 +103351,85 @@ D0065FCE FF7E
 8001FE74 0000
 D0065FCE FFDE
 8001FE74 00A8
+;hugopocked type 1, Teh69thSpartan type 2
+#Select Moon Jump Cheat\Type 1 (L3/LS to toggle on/off)
+D7010001 01000200
+F501FC74 00882000
+F501FC76 AE430800
+F501FC7A 00652400
+90008000 3C148006
+90008004 36945FCE
+90008008 96810000
+90008010 00010B82
+90008018 30210001
+90008020 14200005
+90008028 3063FFFF
+9000802C 3C14000D
+90008030 00741825
+90008038 AE430088
+9000803C 08007F1F
+90008040 0065182A
+#Select Moon Jump Cheat\Type 2
+A701FC00 00AC2C00
+A701FC02 8E420C00
+9000B000 27BDFFE8
+9000B004 AFA80010
+9000B008 3C088006
+9000B00C 95085FCE
+9000B014 00084027
+9000B018 31084000
+9000B01C 39084000
+9000B020 11000002
+9000B028 8E4200AC
+9000B030 8FA80010
+9000B034 27BD0018
+9000B038 03E00008
+#Select Crash/Coco Speed\Enable this line and select speed multiplier
+8000C03E 240B
+9000C000 8E420104
+9000C004 27BDFFE0
+9000C008 AFA80010
+9000C00C AFA90014
+9000C010 AFAA0018
+9000C014 AFAB001C
+9000C01C 00004012
+9000C020 00004810
+9000C024 344A0000
+9000C028 340B0064
+9000C02C 014B001A
+9000C030 00005012
+9000C040 014B0018
+9000C044 00005012
+9000C048 004A1021
+9000C054 01000013
+9000C058 01200011
+9000C05C 8FA80010
+9000C060 8FA90014
+9000C064 8FAA0018
+9000C068 8FAB001C
+9000C06C 27BD0020
+9000C070 03E00008
+A701F220 01043000
+A701F222 8E420C00
+#Select Crash/Coco Speed\Normal Speed
+8000C03C 0000
+#Select Crash/Coco Speed\50% faster
+8000C03C 0019 
+#Select Crash/Coco Speed\100% faster
+8000C03C 0032 
+#Select Crash/Coco Speed\200% faster
+8000C03C 0064 
+#Select Crash/Coco Speed\300% faster
+8000C03C 0096 
+#Select Crash/Coco Speed\400% faster
+8000C03C 00C8 
+#Widescreen
+A7018C54 F1C60C00
+A7018C56 0C002402
+A7018C58 20231000
+A7018C5A 00042413
+A7018C76 A622A633
+
 
 ; [ Crash Bandicoot 3: Warped (Europe) {SCES-01420} ]
 :SCES-01420
@@ -102600,9 +103939,15 @@ D0130D74 0100
 80158B50 00FF
 #Revelation Infinite Health
 801A8390 00FF
-#Widescreen 16-9
-801A2500 0C00
-801911D8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71A2500 10000C00
+A71911D8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71A2500 10000900
+A71911D8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71A2500 10000400
+A71911D8 10000400
 
 ; [ Crime Killer (Germany) Demo {SLED-01305} ]
 
@@ -102618,8 +103963,12 @@ D0130D74 0100
 D00852A6 0043
 800852A4 0000
 A60852A6 00433402
-#Widescreen 16-9
-8005E510 0C00
+#Select Widescreen Aspect Ratio\16-9
+A705E510 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A705E510 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A705E510 10000400
 
 ; [ Crisis Beat (Japan) {SLPS-01430} ]
 :SLPS-01430
@@ -102633,8 +103982,12 @@ A60852A6 00433402
 900ACE20 09090909
 #Unlock All Extras
 80058586 FFFF
-#Widescreen 16-9
-80061E30 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7061E30 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7061E30 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7061E30 10000400
 
 ; [ Crisis City (Japan) {SLPS-01269} ]
 :SLPS-01269
@@ -102672,15 +104025,27 @@ D008080C 002C
 3010FBC1 0004
 #Secret Character
 80068C54 0FF7
-#Widescreen 16-9
-80082400 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7082400 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7082400 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7082400 10000400
 
 ; [ Critical Depth (Europe) {SLES-00136} ]
 :SLES-00136
-#Widescreen 16-9
-801CF60C 0C00
-801CF66C 0C00
-801CF6CC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71CF60C 10000C00
+A71CF66C 10000C00
+A71CF6CC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71CF60C 10000900
+A71CF66C 10000900
+A71CF6CC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71CF60C 10000400
+A71CF66C 10000400
+A71CF6CC 10000400
 
 ; [ Criticom aka Criticom: Critical Combat (Europe) {SLES-00196} ]
 :SLES-00196
@@ -102692,8 +104057,12 @@ D008080C 002C
 80059C78 0320
 80059B08 0320
 80059DE8 0300
-#Widescreen 16-9
-80106C10 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7106C10 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7106C10 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7106C10 10000400
 
 ; [ Criticom: The Critical Combat (Japan) {SLPS-00229} ]
 ; [ Croc 2 (Europe) Demo {SLED-02119} ]
@@ -102806,9 +104175,9 @@ D0075840 0800
 80105438 0064
 #Infinite Gold
 80105428 0064
-#Infinite healing potions
+#Infinite Healing Potions
 8010542A 0063
-#Infinite mana potions
+#Infinite Mana Potions
 8010542C 0063
 #Infinite Vanish Dusts
 80105430 0063
@@ -103317,8 +104686,12 @@ D01255C4 1023
 800F0D82 0003
 #Infinite Time
 800EFFDC 06F7
-#Widescreen 16-9
-800BE3FC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70BE3FC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70BE3FC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70BE3FC 10000400
 #Widescreen 16-9 (Menus)
 800167B4 0C00
 
@@ -103699,8 +105072,12 @@ A60C2000 00000028
 30095145 000E
 #Enable Extra Costumes\Bass
 80095146 000E
-#Widescreen 16-9
-80049F30 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7049F30 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7049F30 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7049F30 10000400
 
 ; [ Dead or Alive (Japan) {SLPS-01289} ]
 :SLPS-01289
@@ -103742,8 +105119,12 @@ D008E010 0100
 30092BC4 0005
 30092BC5 000E
 80092BC6 000E
-#Widescreen 16-9
-80049EC0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7049EC0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7049EC0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7049EC0 10000400
 
 ; [ Dead or Alive (UK) Demo {SCED-01372} ]
 ; [ Dead or Alive (USA) (News Version) {Unlicensed} ]
@@ -104022,8 +105403,12 @@ D005F790 0001
 #Damagecount On 99 P2 (Press Select. In some modes it's better to be able to get damaged. Use this one be stay in the game)
 D005F794 0001
 300614CD 0000
-#Widescreen 16-9
-8005F3D8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A705F3D8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A705F3D8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A705F3D8 10000400
 
 ; [ Dengeki Construction: Ochigee Yarou ze! (Japan) {SLPS-01215} ]
 ; [ Dengeki PlayStation D (Japan) {SLP-80071} ]
@@ -104527,19 +105912,35 @@ D009E412 FFFE
 
 ; [ Detective Barbie: The Mystery Cruise (Europe) {SLES-03803} ]
 :SLES-03803
-#Widescreen 16-9
-800EBCDC 0C00
-800FEA94 0C00
-800FEB94 0C00
-80102304 0C00
-8008A428 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70EBCDC 10000C00
+A70FEA94 10000C00
+A70FEB94 10000C00
+A7102304 10000C00
+A708A428 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EBCDC 10000900
+A70FEA94 10000900
+A70FEB94 10000900
+A7102304 10000900
+A708A428 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EBCDC 10000400
+A70FEA94 10000400
+A70FEB94 10000400
+A7102304 10000400
+A708A428 10000400
 
 ; [ Detective Mouse (Europe) {SLES-04130} ]
 
 ; [ Deuce (USA) (Prototype) {Unlicensed} ]
-:UNLICENSED
-#Deuce\Widescreen 16-9
+:DEUCEEXE
+#Select Widescreen\16-9
 A70925D0 19991333
+#Select Widescreen\20-9
+A70925D0 19990E66
+#Select Widescreen\Eye Infinity
+A70925D0 19990666
 
 ; [ Devil Dice (Europe) {SCES-01312} ]
 :SCES-01312
@@ -104674,8 +106075,12 @@ D00A004A FEFF
 9009C094 31000973
 9009C098 09050600
 8009C09C 0006
-#Widescreen 16-9
-8006DD50 0C00
+#Select Widescreen Aspect Ratio\16-9
+A706DD50 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706DD50 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706DD50 10000400
 
 ; [ DewPrism (Japan, Asia) {SCPS-45436} ]
 
@@ -105431,8 +106836,12 @@ D009E234 0028
 8004A04E 0063
 #Infinite TP Monmon
 80049C72 0063
-#Widescreen 16-9
-80081398 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7081398 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7081398 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7081398 10000400
 
 ; [ DigimonTamers: PocketCulumon (Japan) {SLPS-03211} ]
 
@@ -106655,6 +108064,8 @@ A7055D12 10402400
 A7053CF2 10402400
 A70545E4 80085198
 A70545E6 3C020801
+#1-Hit Kills:Disable when facing Hopper + Thud
+A70591EE 1C402400
 #Moon Jump
 A7048DE4 00823000
 A7048DE6 86220C00
@@ -106684,7 +108095,7 @@ A7049106 24020000
 9000C05C 39080080
 9000C060 11000006
 9000C068 86230086
-9000C06C 3402000A
+9000C06C 2402000A
 9000C074 08003020
 9000C07C 27FF0008
 9000C080 8FA80010
@@ -107211,15 +108622,18 @@ D7200000 0001
 D7200000 0002
 300A1360 0008
 #No Falling
-300A13C0 0000
+A704D1A2 14401000
+;300A13C0 0000
 #Al's Penthouse is full of water
 800D5BB0 0000
 #Insta-Charge Laser
-A704A63C 20210040
-A704A63E 00443404
+A704A686 14402400
+;A704A63C 20210040
+;A704A63E 00443404
 #Insta-Charge Spin
-A704AD60 1021003C
-A704AD62 00623402
+A704AD6E 14402400
+;A704AD60 1021003C
+;A704AD62 00623402
 #Invincibility
 A706B1A2 10401000
 #Invincibility No Hit
@@ -107229,10 +108643,12 @@ A707E392 10402400
 #Laser Ricochet
 A707E516 13202400
 #Multi Jumps
-A7049974 00050001
+;A7049974 00050001
+A7049A96 14622400
 #Rapid Jumps
-A7049974 00050002
-A7049A44 00030002
+A70498A6 14622400
+;A7049974 00050002
+;A7049A44 00030002
 #Infinite Double Jumps
 A70499AA 10402400
 #Infinite Single Jumps
@@ -107330,6 +108746,10 @@ D7200000 0080
 300A1180 000B
 800A1680 0000
 00000000 FFFF
+#Bosses & enemies are faster - disable it in the Bombs Away level
+A706C422 14401000
+#Bosses & enemies can't move - disable it in the Final Showdown level
+A706C726 10401000
 #50 FPS
 800A1214 0001
 800A1574 0001
@@ -107352,8 +108772,8 @@ FFFFFFFF FFFFFFFF
 0030000C FFFFFFFF
 9000C000 27BDFFE8
 9000C004 AFA80010
-9000C008 3C08800B
-9000C00C 9108CE6B
+9000C008 3C08800A
+9000C00C 910841CB
 9000C014 00084027
 9000C018 31080040
 9000C01C 39080040
@@ -107422,8 +108842,8 @@ FFFFFFFF FFFFFFFF
 0030000C FFFFFFFF
 9000C000 27BDFFE8
 9000C004 AFA80010
-9000C008 3C08800B
-9000C00C 9108CE6B
+9000C008 3C08800A
+9000C00C 910841EB
 9000C014 00084027
 9000C018 31080040
 9000C01C 39080040
@@ -107474,16 +108894,6 @@ FFFFFFFF FFFFFFFF
 50000C08 0000
 300D741C 0001
 #Widescreen 16-9
-A7033E28 66664CCC
-A7033E2C 6667CCCD
-A704D6FC 66664CCC
-A704D799 6667CCCD
-A704D7E0 66664CCC
-A704D7E4 6667CCCD
-A704D894 66664CCC
-A704D89C 6667CCCD
-A704DE8C 66664CCC
-A704DE90 6667CCCD
 A706D404 66664CCC
 A706D40C 6667CCCD
 
@@ -107504,6 +108914,9 @@ A706D40C 6667CCCD
 800C178B 0002
 #Have 200 Soldiers All levels Unlocked
 800D8454 00C8
+#Widescreen 16-9
+A706E1F8 66664CCC
+A706E200 6667CCCD
 
 ; [ Disney/Pixar Ã–tÃ¶kän elämää (Finland) {SCES-01737} ]
 ; [ Disneyn Aladdin: Nasiran Kosto (Finland) {SCES-03003} ]
@@ -108639,8 +110052,12 @@ D0056250 0023
 
 ; [ Dragon Ball: Final Bout (France) {SLES-00964} ]
 :SLES-00964
-#Widescreen 16-9
-8002219C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A702219C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A702219C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A702219C 10000400
 
 ; [ Dragon Ball: Final Bout (Germany) {SLES-03683} ]
 ; [ Dragon Ball: Final Bout (Italy) {SLES-03684} ]
@@ -108744,7 +110161,7 @@ D0056250 0023
 
 ; [ Dragon Seeds: Saishuu Shinka Keitai (Japan) {SLPS-01514} ]
 :SLPS-01514
-#nfinite HP
+#Infinite HP
 8008F93A 03E7
 #Infinite Money
 8008F814 FFFF
@@ -108758,8 +110175,12 @@ D0056250 0023
 ; [ Dragon Valor (France) {SCES-02565 | SCES-12565} ]
 :SCES-02565
 :SCES-12565
-#Widescreen 16-9
-8002E3EC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A702E3EC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A702E3EC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A702E3EC 10000400
 
 ; [ Dragon Valor (Germany) {SCES-02566 | SCES-12566} ]
 :SCES-02566
@@ -109126,15 +110547,23 @@ D001CDB8 0009
 8001CDBA 1043
 D001CDCC 0003
 8001CDCE 1000
-#Widescreen 16-9
-8007F0F8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A707F0F8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707F0F8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707F0F8 10000400
 
 ; [ Driver 2: Back on the Streets (France) Rev 1 {SLES-02994 | SLES-12994} ]
 ; [ Driver 2: Back on the Streets (France) {SLES-02994 | SLES-12994} ]
 :SLES-02994
 :SLES-12994
-#Widescreen 16-9
-8007F2F8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A707F2F8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707F2F8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707F2F8 10000400
 
 ; [ Driver 2: Back on the Streets (Germany) Rev 1 {SLES-02995 | SLES-12995} ]
 :SLES-02995
@@ -109290,7 +110719,7 @@ D00B6172 0005
 :SLES-03440
 #All cheats unlocked
 8006FBAB 681B
-#Infinite energy
+#Infinite Energy
 800EF295 7B27
 
 ; [ Duke Nukem: Time to Kill (Europe) (Take 2 Rerelease) {SLES-03517} ]
@@ -110331,7 +111760,7 @@ A606DFDA 00332402
 80046AA6 2400
 #Infinite Auto-gun ammo
 8008C71C 0028
-#nfinite Flares
+#Infinite Flares
 80088C72 03E7
 #Have All 3 secrets
 800DE7F2 000F
@@ -110713,8 +112142,12 @@ D003B9FC 014C
 A603B9FC 014C0000
 #Infinite Health - chip
 A601D448 FFFF0000
-#Widescreen 16-9
-80132760 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7132760 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7132760 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7132760 10000400
 
 ; [ Exalegiuse (Japan) {SLPS-01117} ]
 :SLPS-01117
@@ -110805,6 +112238,7 @@ A601D448 FFFF0000
 
 ; [ Exhumed (Europe) {SLES-00097} ]
 :SLES-00097
+;Note: Powerslave is the USA version
 #Infinite Life Energy
 800791BC 00C8
 #Infinite Lives
@@ -110860,7 +112294,7 @@ A601D448 FFFF0000
 50000702 0040
 800830C6 0000
 #Widescreen 16-9
-80074C60 1550
+A7074C60 10001550
 
 ; [ Exodus Guilty (Japan) {SLPS-01707} ]
 :SLPS-01707
@@ -111170,6 +112604,63 @@ D3029338 0001
 80032518 0014
 #Select Away Team Score\0 Goals
 80032518 0000
+#Outfield Players cant tackle
+;Euro Rev1
+A70C1002 10401000
+A70C10BA 12511000
+A70C10DE 12951000
+;Euro 
+A70C0EFE 10401000
+A70C0FB6 12511000
+A70C0FDA 12951000
+;USA 
+A70C0EF6 10401000
+A70C0FAE 12511000
+A70C0FD2 12951000
+#Goalkeeper can't tackle or save ball
+;Euro Rev1
+A70F1C36 10401000
+;Euro 
+A70F1B32 10401000
+;USA
+A70F1B2A 10401000
+#Team with ball have it easy (R3 on, L3 off):Combines Outfield Players cant tackle & Goalkeeper can't tackle or save ball cheats
+D7010001 01000400
+;Euro Rev1
+A70C1002 10401000
+A70C10BA 12511000
+A70C10DE 12951000
+A70F1C36 10401000
+;Euro 
+A70C0EFE 10401000
+A70C0FB6 12511000
+A70C0FDA 12951000
+A70F1B32 10401000
+;USA 
+A70C0EF6 10401000
+A70C0FAE 12511000
+A70C0FD2 12951000
+A70F1B2A 10401000
+D7010001 01000200
+;Euro Rev1
+A70C1002 10001040
+A70C10BA 10001251
+A70C10DE 10001295
+A70F1C36 10001040
+;Euro 
+A70C0EFE 10001040
+A70C0FB6 10001251
+A70C0FDA 10001295
+A70F1B32 10001040
+;USA 
+A70C0EF6 10001040
+A70C0FAE 10001251
+A70C0FD2 10001295
+A70F1B2A 10001040
+;f 0,fffff,w.1040,d.02402021,24050001,0c0305b5
+;f 0,fffff,w.1251,d.2415ffff
+;f 0,fffff,w.1295,d.2c02021
+;f 0,fffff,w.1040,d.27b30038
 
 ; [ FIFA 2000 (Europe) {SLES-02315} ]
 :SLES-02315
@@ -111181,6 +112672,59 @@ D3029338 0001
 80032518 0014
 #Select Away Team Score\0 Goals
 80032518 0000
+#Outfield Players cant tackle
+;Euro Rev1
+A70C1002 10401000
+A70C10BA 12511000
+A70C10DE 12951000
+;Euro 
+A70C0EFE 10401000
+A70C0FB6 12511000
+A70C0FDA 12951000
+;USA 
+A70C0EF6 10401000
+A70C0FAE 12511000
+A70C0FD2 12951000
+#Goalkeeper can't tackle or save ball
+;Euro Rev1
+A70F1C36 10401000
+;Euro 
+A70F1B32 10401000
+;USA
+A70F1B2A 10401000
+#Team with ball have it easy (R3 on, L3 off):Combines Outfield Players cant tackle & Goalkeeper can't tackle or save ball cheats
+D7010001 01000400
+;Euro Rev1
+A70C1002 10401000
+A70C10BA 12511000
+A70C10DE 12951000
+A70F1C36 10401000
+;Euro 
+A70C0EFE 10401000
+A70C0FB6 12511000
+A70C0FDA 12951000
+A70F1B32 10401000
+;USA 
+A70C0EF6 10401000
+A70C0FAE 12511000
+A70C0FD2 12951000
+A70F1B2A 10401000
+D7010001 01000200
+;Euro Rev1
+A70C1002 10001040
+A70C10BA 10001251
+A70C10DE 10001295
+A70F1C36 10001040
+;Euro 
+A70C0EFE 10001040
+A70C0FB6 10001251
+A70C0FDA 10001295
+A70F1B32 10001040
+;USA 
+A70C0EF6 10001040
+A70C0FAE 10001251
+A70C0FD2 10001295
+A70F1B2A 10001040
 
 ; [ FIFA 2000 (France) {SLES-02316} ]
 ; [ FIFA 2000 (Germany) {SLES-02317} ]
@@ -111798,8 +113342,12 @@ D0070CCC 0044
 900A3668 FFFFFFFF
 800A366C FFFF
 300A366E 000F
-#Widescreen 16-9
-800DF7D0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70DF7D0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70DF7D0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70DF7D0 10000400
 
 ; [ Fighting Illusion: K-1 Grand Prix '98 (Japan) (Tentou Demo-ban) {SLP-80341} ]
 
@@ -113422,7 +114970,7 @@ D00832BE 000C
 8007809A 270F
 #Edea Infinite HP
 80078132 270F
-#Infinite objects - Objetos infinitos
+#Infinite Objects - Objetos Infinitos
 A71E459E A0A32400
 A71E45AA A0A02400
 #All cards
@@ -114930,8 +116478,12 @@ D00AE60A FAFF
 8007C630 0005
 #All Levels Unlocked
 80083954 0009
-#Widescreen 16-9
-800A4920 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70A4920 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70A4920 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70A4920 10000400
 
 ; [ From Software 1998 Summer Preview Movies (Japan) (Hibaihin) {SLP-80268} ]
 
@@ -116279,8 +117831,12 @@ D01AD0C8 0002
 900C3080 270F270F
 #Infinite Money
 900C3468 000F423F
-#Widescreen 16-9
-801D050C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71D050C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71D050C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71D050C 10000400
 
 ; [ Ganbare Morikawa-kun 2-gou (Japan) {SCPS-10036} ]
 :SCPS-10036
@@ -116291,8 +117847,12 @@ D01AD0C8 0002
 900C3080 270F270F
 #Infinite Money
 900C3468 000F423F
-#Widescreen 16-9
-801D050C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71D050C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71D050C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71D050C 10000400
 
 ; [ Ganbare! Nippon! Olympic 2000 (Japan) {SLP-86482} ]
 
@@ -116921,6 +118481,7 @@ D0091238 0000
 
 ; [ Gradius Gaiden (Japan) {SLP-86042} ]
 :SLP-86042
+:SLPM-86042
 #Infinite Lives
 A7043A94 FFFF0000
 #Invincibility against Sprites
@@ -118363,8 +119924,12 @@ A618D8C0 00007000
 800498A5 FFF0
 #Mode 60 HZ
 8003186A 3C00
-#Widescreen 16-9
-80049B1C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7049B1C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7049B1C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7049B1C 10000400
 
 ; [ Gungage (Japan) {SLP-86233} ]
 ; [ Gungho Brigade (Japan) Demo {SLP-80324} ]
@@ -118959,21 +120524,34 @@ D00882CC 0400
 800AD840 0000
 #Infinite Ammo
 800ADD54 0001
-#NPC is Naomi
+#Select NPC\Naomi
 800ADD50 0001
 800ADD58 0000
-#NPC is Kamiya
+#Select NPC\Kamiya
 800ADD50 0002
 800ADD58 0000
-#NPC is Ivanoff
+#Select NPC\Ivanoff
 800ADD50 0003
 800ADD58 0000
-#NPC is Rene
+#Select NPC\Rene
 800ADD50 0004
 800ADD58 0000
-#NPC is The Monster
+#Select NPC\The Monster
 800ADD50 0005
 800ADD58 0000
+#Active game overlay map:Press R3 to toggle on/off
+D7010001 02000400
+F5025AB2 10402400
+#Hide Compass
+A702ADAA 00402400
+#Show full map
+A7025726 10602400
+#The monster can't hurt you
+A705625A 10401000
+A7055E6A 14401000
+#Walk through walls:Press L3 to toggle on/off 
+D7010001 01000200
+F50598AE 14401000
 
 ; [ Hello Charlie!! (Japan) {SLP-86083} ]
 ; [ Henry Explorers (Japan) {SLP-86021} ]
@@ -119357,6 +120935,18 @@ D002C922 FCFF
 
 ; [ Hokuto no Ken: Seikimatsu Kyuuseishu Densetsu (Japan) {SLPS-02993} ]
 :SLPS-02993
+#1-Hit Kills
+A70ED7E6 14401000
+#1-Hit Kills 'ALT'
+A70ED93E 14401000
+#1-Hit to make enemies explode
+A70EDA0A 1C402400
+#Invincibility - Also affects P2 & some bosses
+A70DCAA6 14622400
+#Enemies are frozen
+A70EDAEA 14401000
+#Walk Anywhere
+A702C366 14401000
 #P1 Infinite Energy
 80172FFC 0800
 #P1 Infinite Guard Bar
@@ -119409,8 +120999,13 @@ A70F617E 14A21400
 8008FD8A 0006
 #Select Level\Chapter VIII - Farewell to the Final
 8008FD8A 0008
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7166C00 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7166C00 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7166C00 10000400
+
 
 ; [ Holiday Special (Japan) (PlayStation Demo Disc) {PBPX-95005} ]
 ; [ Home Doctor (Japan) {SLPS-01075} ]
@@ -119990,23 +121585,39 @@ D008FDFA BFFF
 ; [ ISS Pro Evolution (Europe) (EDC Platinum) {SLES-02095} ]
 ; [ ISS Pro Evolution (Europe) {SLES-02095} ]
 :SLES-02095
-#Widescreen 16-9
-80073590 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7073590 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7073590 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7073590 10000400
 
 ; [ ISS Pro Evolution (Europe) {SLES-02424} ]
 :SLES-02424
-#Widescreen 16-9
-800727A0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70727A0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70727A0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70727A0 10000400
 
 ; [ ISS Pro Evolution 2 (Europe) {SLES-03321} ]
 :SLES-03321
-#Widescreen 16-9
-80073668 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7073668 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7073668 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7073668 10000400
 
 ; [ ISS Pro Evolution 2 (Europe) {SLES-03322} ]
 :SLES-03322
-#Widescreen 16-9
-80072A78 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7072A78 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7072A78 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7072A78 10000400
 
 ; [ Ian Livingstone's Deathtrap Dungeon (Europe) {SLES-00746} ]
 :SLES-00746
@@ -120674,8 +122285,12 @@ D00B1628 0002
 #High Jump\P2 Full Speed Press R2
 D00B1860 0004
 80102B92 42A0
-#Widescreen 16-9
-800DB28C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70DB28C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70DB28C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70DB28C 10000400
 
 ; [ International Track & Field 2 (Europe) {SLES-02448} ]
 :SLES-02448
@@ -120721,8 +122336,12 @@ A60C6F2C 00010000
 #100m P1 Hold L1 when going over finish to reset the timer
 D00A7E3A FBFF
 800C3EDC 000D
-#Widescreen 16-9
-800AC970 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70AC970 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70AC970 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70AC970 10000400
 
 ; [ Interplay Sports Baseball 2000 (Europe) {SLES-01935} ]
 
@@ -121009,7 +122628,7 @@ D00A7E3A FBFF
 
 ; [ Iron Man / X-O Manowar in Heavy Metal (Japan) {SLPS-00455} ]
 :SLPS-00455
-#Infinite credits
+#Infinite Credits
 800A695C 0003
 
 ; [ Iron Soldier 3 (Europe) {SLES-03250} ]
@@ -121111,26 +122730,42 @@ A60C382C 00010000
 ; [ J.League Jikkyou Winning Eleven 2000 (Japan) {SLP-86538} ]
 :SLP-86538
 :SLPM-86538
-#Widescreen 16-9
-8006F2B8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A706F2B8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706F2B8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706F2B8 10000400
 
 ; [ J.League Jikkyou Winning Eleven 2000 2nd (Japan) {SLP-86668} ]
 :SLP-86668
 :SLPM-86668
-#Widescreen 16-9
-8006F140 0C00
+#Select Widescreen Aspect Ratio\16-9
+A706F140 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706F140 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706F140 10000400
 
 ; [ J.League Jikkyou Winning Eleven 2001 (Japan) {SLP-86835} ]
 :SLP-86835
 :SLPM-86835
-#Widescreen 16-9
-8006F248 0C00
+#Select Widescreen Aspect Ratio\16-9
+A706F248 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706F248 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706F248 10000400
 
 ; [ J.League Jikkyou Winning Eleven 3 (Japan) {SLP-86055} ]
 :SLP-86055
 :SLPM-86055
-#Widescreen 16-9
-800E6368 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E6368 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E6368 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E6368 10000400
 
 ; [ J.League Soccer: Jikkyou Survival League (Japan) {SLPS-02436} ]
 ; [ J.League Soccer: Prime Goal EX (Japan) (Lawson Station) {SLPS-00079} ]
@@ -121437,8 +123072,12 @@ D0093B60 0000
 #All 5 Letters Press Select
 D001000E 0100
 800639C8 0020
-#Widescreen 16-9
-800507F8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70507F8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70507F8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70507F8 10000400
 
 ; [ Jersey Devil no Daibouken (Japan) {SLP-86075} ]
 
@@ -121462,12 +123101,24 @@ D001000E 0100
 A617CE4C 00000002
 #Select Starting Lap\3
 A617CE4C 00000003
-#Widescreen 16-9
-8016EEAC 0C00
-8016EC0C 0C00
-8016EC6C 0C00
-8016ED2C 0C00
-8016ED8C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A716EEAC 10000C00
+A716EC0C 10000C00
+A716EC6C 10000C00
+A716ED2C 10000C00
+A716ED8C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A716EEAC 10000900
+A716EC0C 10000900
+A716EC6C 10000900
+A716ED2C 10000900
+A716ED8C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A716EEAC 10000400
+A716EC0C 10000400
+A716EC6C 10000400
+A716ED2C 10000400
+A716ED8C 10000400
 
 ; [ Jet Rider 2 (Europe) {SCES-01045} ]
 :SCES-01045
@@ -121500,12 +123151,24 @@ A617CE4C 00000003
 #Always Come In 1st
 8017DB14 0001
 8017008C 0003
-#Widescreen 16-9
-80194CD4 0C00
-80194C14 0C00
-80194C74 0C00
-80194AF4 0C00
-80194B54 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7194CD4 10000C00
+A7194C14 10000C00
+A7194C74 10000C00
+A7194AF4 10000C00
+A7194B54 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7194CD4 10000900
+A7194C14 10000900
+A7194C74 10000900
+A7194AF4 10000900
+A7194B54 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7194CD4 10000400
+A7194C14 10000400
+A7194C74 10000400
+A7194AF4 10000400
+A7194B54 10000400
 
 ; [ Jet de Go! Let's Go by Airliner (Japan) (JAL Kinai Hanbai Gentei) {SLP-86324} ]
 ; [ Jet de Go! Let's Go by Airliner (Japan) Demo {SLP-80515} ]
@@ -121513,8 +123176,12 @@ A617CE4C 00000003
 ; [ Jet de Go! Let's Go by Airliner (Japan) {SLP-86323} ]
 :SLP-86323
 :SLPM-86323
-#Widescreen 16-9
-801472D0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71472D0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71472D0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71472D0 10000400
 
 ; [ JetMoto (Japan) {PCPX-96080} ]
 ; [ Jetracer (Europe) (Pocket Price Midas) {SLES-03328} ]
@@ -121729,8 +123396,12 @@ D00D08E6 0001
 
 ; [ Jonah Lomu Rugby (France) {SLES-00611} ]
 :SLES-00611
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A701B100 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A701B100 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A701B100 10000400
 
 ; [ Joue avec les Teletubbies (France) {SLES-02772} ]
 
@@ -122055,8 +123726,12 @@ D10E5E38 0000
 #P2 Sudden Death
 50000302 0000
 800E6104 0000
-#Widescreen 16-9
-800C69F0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70C69F0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C69F0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C69F0 10000400
 
 ; [ K-1 Ouja ni Narou! King of Kings (Japan) {SLPS-02602} ]
 :SLPS-02602
@@ -122075,14 +123750,22 @@ D10E5E38 0000
 #P2 1-Hit Death
 A608E95C 03E80001
 A608E964 03E80001
-#Widescreen 16-9
-800D1CE8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70D1CE8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D1CE8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D1CE8 10000400
 
 ; [ K-1 World Grand Prix 2001: Kaimakuban (Japan) {SLP-86763} ]
 :SLP-86763
 :SLPM-86763
-#Widescreen 16-9
-800E1200 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E1200 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E1200 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E1200 10000400
 
 ; [ K.O.: The Live Boxing (Japan) {SLPS-01413} ]
 :SLPS-01413
@@ -122109,15 +123792,16 @@ D00BA3BA FEEF
 ; [ KKND Krossfire (France) {SLES-01616} ]
 ; [ KKND Krossfire (Germany) {SLES-01617} ]
 ; [ Kaeru no Ehon: Nakushita Kioku o Motomete (Japan) Demo {SLP-80460} ]
-; [ Kaette Kita Cyborg Kuro-chan (Japan) {SLP-87174} ]
+; [ Kaette Kita Cyborg Kuro-chan (Japan) {SLPM-87174} ]
+:SLPM-87174
 :SLP-87174
-#Infinite lives (All characters)
+#Infinite Lives
 A7051652 24422400
-#Invincibility (All characters)
+#Invincibility
 A702DF0A 14401000
 #Unlock cyborg Kuro (Press up in menu)
 A70D8ECC 00000001
-#Walk through obstacles (All characters)
+#Walk through obstacles
 A704F3D2 10401000
 #Turbo fire Kuro (All projectile weapons except FT)
 A705683A 10601000
@@ -122135,19 +123819,19 @@ A7060662 10401000
 A705A1BE 10401000
 A705B2C2 10401000
 A705C07E 10401000
-#Infinite ammo (All characters P1)
+#P1 Infinite Ammo
 300D8F42 00000003
 300D8F44 00000023
 300D8F46 00000032
 300D8F48 0000001E
 300D8F4A 00000006
-#Main infinite weapon hit anywhere (All characters)
+#Main infinite weapon hit anywhere 
 A702DC5E 14402400
 A702DC76 14402400
 A702DC82 14402400
-#Instant dash double press (All characters)
+#Instant dash double press
 A7052022 14512400
-#Instant dash one time press (All characters)
+#Instant dash one time press
 A7052022 14512400
 A704E6B2 14402400
 A704E6FA 14402400
@@ -122190,8 +123874,12 @@ A70C2EDE 10401000
 800E82AE 0196
 #Ark
 800E82BC 2710
-#Widescreen 16-9
-800EF340 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70EF340 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EF340 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EF340 10000400
 
 ; [ Kagerou: Kokumeikan Shinshou (Japan) Demo {SLP-80273} ]
 
@@ -122434,10 +124122,18 @@ D00B6C3A 1440
 8010DADE 0006
 #I can many times jump in the air
 9006E49C 00000000
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70BE9F0 10000C00
 A7105568 10000C00
 A7109950 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70BE9F0 10000900
+A7105568 10000900
+A7109950 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70BE9F0 10000400
+A7105568 10000400
+A7109950 10000400
 #Remove Dither (Use with widescreen code)
 A70A95DC 02000000
 #Widescreen Heart Sprites (Level 1 only)
@@ -122505,8 +124201,12 @@ A70C3D18 10000C00
 900485D8 10400004
 #P1 1 round to win
 3001020C 0002
-#Widescreen 16-9
-800C7F18 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70C7F18 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C7F18 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C7F18 10000400
 
 ; [ Kensei: The King of Boxing (Japan) {SLPS-00502} ]
 :SLPS-00502
@@ -123485,9 +125185,15 @@ D0077F4E 0003
 8010E472 0006
 #Infinite Energy
 8010E478 0004
-#Widescreen 16-9
-8010A2E8 0C00
-800BEE12 0C00
+#Select Widescreen Aspect Ratio\16-9
+A710A2E8 10000C00
+A70BEE12 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A710A2E8 10000900
+A70BEE12 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A710A2E8 10000400
+A70BEE12 10000400
 
 ; [ Klonoa: Door to Phantomile (Germany) {SCES-01186} ]
 #Alle Level zugänglich
@@ -123573,8 +125279,12 @@ D00C629A FDFF
 
 ; [ Knockout Kings 2001 (France) {SLES-03122} ]
 :SLES-03122
-#Widescreen 16-9
-8012B3C0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A712B3C0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A712B3C0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A712B3C0 10000400
 
 ; [ Knockout Kings 99 (Europe) {SLES-01448} ]
 :SLES-01448
@@ -123591,8 +125301,12 @@ D00C629A FDFF
 
 ; [ Knockout Kings 99 (France) {SLES-01450} ]
 :SLES-01450
-#Widescreen 16-9
-800107C8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70107C8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70107C8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70107C8 10000400
 
 ; [ Kogepan: Pan mo Game o Yarurashii... (Japan) {SLPS-03499} ]
 :SLPS-03499
@@ -124051,8 +125765,12 @@ D003E356 FAFF
 #Press Select To Finish Level
 D00A50BC 0001
 800A47A8 0001
-#Widescreen 16-9
-800A2E70 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70A2E70 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70A2E70 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70A2E70 10000400
 
 ; [ KulaQuest (Japan) Demo {PCPX-96121} ]
 
@@ -124064,8 +125782,12 @@ D00A50BC 0001
 90093E88 FF00FFFF
 #Timer Without Restrictive Time
 800932BC 1B00
-#Widescreen 16-9
-8009F4D8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A709F4D8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A709F4D8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A709F4D8 10000400
 
 ; [ Kuma no Pooh-tarou: Sora wa Pink da! Zen'in Shuugou!! (Japan) {SLPS-00115} ]
 :SLPS-00115
@@ -124139,8 +125861,12 @@ D00A50BC 0001
 8006D648 0007
 #Select Stage\8
 8006D648 0008
-#Widescreen 16-9
-80098F98 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7098F98 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7098F98 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7098F98 10000400
 
 ; [ Kurushi Final aka Kurushi Final: Das Ultimative Puzzle (Germany) {SCES-02011} ]
 ; [ Kurushi Final aka Kurushi Final: El Rompecabezas Elevado al Cubo (Spain) {SCES-02013} ]
@@ -124665,8 +126391,12 @@ D00D5DE4 0002
 800B00B2 0048
 #P2 Infinite Magic
 800B00F8 0009
-#Widescreen 16-9
-800BBFDC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70BBFDC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70BBFDC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70BBFDC 10000400
 
 ; [ Legend of Foresia: La Contrée Interdite (France) {SLES-01273} ]
 
@@ -125043,8 +126773,12 @@ D01C8F70 0082
 ; [ Lightning Legend: Daigo no Daibouken (Japan) {SLP-86015} ]
 :SLP-86015
 :SLPM-86015
-#Widescreen 16-9
-800D0E94 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70D0E94 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D0E94 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D0E94 10000400
 
 ; [ LindaÂ³ Again (Japan) {SCPS-10039} ]
 :SCPS-10039
@@ -125956,8 +127690,12 @@ A6150E22 00500040
 301F3B0D 0002
 #MOVIE fully open
 301F3B25 0010
-#Widescreen 16-9
-801FB140 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71FB140 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71FB140 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71FB140 10000400
 
 ; [ Macross VF-X2 (Japan) {SLPS-02237} ]
 :SLPS-02237
@@ -125991,8 +127729,12 @@ A601A01C 00010000
 80085908 000A
 #Fast Battle
 800785A0 0000
-#Widescreen 16-9
-8008E538 0C00
+#Select Widescreen Aspect Ratio\16-9
+A708E538 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A708E538 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A708E538 10000400
 
 ; [ Macross VF-X2, Patlabor: The Game (Japan) Demo {SLPS-02007} ]
 
@@ -126346,8 +128088,12 @@ D00562D0 0005
 
 ; [ Marcel Desailly Pro Football (France) {SLES-03868} ]
 :SLES-03868
-#Widescreen 16-9
-800BB4A8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70BB4A8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70BB4A8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70BB4A8 10000400
 
 ; [ Maria 2: Jutai Kokuchi no Nazo (Japan) {SLPS-02240 | SLPS-02241 | SLPS-02242} ]
 ; [ Maria: Kimitachi ga Umareta Wake (Japan) Demo {SLP-80185} ]
@@ -127005,17 +128751,6 @@ D007E86C 0048
 80039D20 0FFF
 
 ; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
-; [ MediEvil (Europe) Beta {Unlicensed} ]
 
 ; [ MediEvil (Europe) {SCES-00311} ]
 :SCES-00311
@@ -127094,10 +128829,6 @@ A70F8C9C 19991333
 50001401 0000
 300F84BA 0001
 
-; [ MediEvil (USA) Beta {Unlicensed} ]
-; [ MediEvil (USA) Beta {Unlicensed} ]
-; [ MediEvil (USA) Beta {Unlicensed} ]
-; [ MediEvil (USA) Beta {Unlicensed} ]
 ; [ MediEvil (USA) Beta {Unlicensed} ]
 ; [ MediEvil 2 (Europe) Demo {SCED-02818} ]
 
@@ -130293,8 +132024,12 @@ D00478D2 0043
 #Infinite Lives both players CLASSIC MODE
 D003620C FFFF
 80036212 0000
-#Widescreen 16-9
-801F32C8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71F32C8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F32C8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F32C8 10000400
 
 ; [ Ms. Pac-Man Maze Madness (Japan) {SLPS-03000} ]
 ; [ Mundial 2002 Challenge (Portugal) {SLES-03870} ]
@@ -131538,7 +133273,7 @@ D00AB418 2021
 :SLPS-00835
 #Infinite Lives
 800CACD4 0003
-#Infinite energy
+#Infinite Energy
 800CACD8 1000
 #Score 9999999
 A60CACE8 0000E0FF
@@ -134200,8 +135935,12 @@ A60E2972 00000803
 :SLES-00768
 #Infinite Health
 800CFB18 0063
-#Widescreen 16-9
-800EBE94 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70EBE94 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EBE94 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EBE94 10000400
 
 ; [ OverBlood (France) {SLES-00769} ]
 
@@ -134314,10 +136053,16 @@ A60E2972 00000803
 801BF654 0063
 #Infinite Money
 901BF20C 0001869F
-#InfinIte antique gun ammo
+#Infinite Antique Gun Ammo
 801BF22A 0009
-#Widescreen 16-9
-801F0FB8 0C00
+#Walk through NPCs
+A70436AA 10401400
+#Select Widescreen Aspect Ratio\16-9
+A71F0FB8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F0FB8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F0FB8 10000400
 
 ; [ OverBlood 2 (Germany) Rev 1 {SLES-02187 | SLES-12187} ]
 :SLES-02187
@@ -134357,8 +136102,12 @@ A60E2972 00000803
 80044FAE 0000
 #Infinite Bullets
 8006F3F6 8482
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A71F0F80 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F0F80 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F0F80 10000400
 #Widescreen 16-9 (Optional Extra)
 A71F0FC0 10000C00
 #Dither Off
@@ -134367,11 +136116,22 @@ A7088048 02000000
 ; [ Overboard! (Europe) {SLES-00865} ]
 :SLES-00865
 #Infinite Lives
-801EFF60 0002
-#Infinite Ammo (BPC)
-800B7B84 0000
-#Infinite Health (BPC)
-800A54FC 0000
+A701A6D4 FFFF0000
+;ASM Infinite Energy also makes it impossible to destroy the gun inplacements - so use the Level ones instead
+;#Infinite Energy
+;A70A54F2 00520040
+#Infinite Ammo
+A70B7B82 00440040
+#Hold Triangle button for One Hit Kills:Note, One hit kills also affect your ship
+A70A5412 14001440
+D7000000 00000010
+A70A5412 14401400
+00000000 FFFF
+#Ship cant catch Fire
+A70B1CBE 10601000
+A7092496 10401000
+#Stop Waves Effect
+A7034278 00020001
 #Infinite Energy Level 1-1
 800CD2A6 003F
 #Infinite Energy Level 1-2
@@ -134585,8 +136345,12 @@ A7088048 02000000
 3008CE1A 0001
 50000602 0000
 3008CE0E 0003
-#Widescreen 16-9
-80097B30 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7097B30 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7097B30 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7097B30 10000400
 
 ; [ Pac-Man World (USA) Rev 1 {SLUS-90057} ]
 
@@ -135353,15 +137117,15 @@ A6083D48 73D40000
 50008404 0000
 80072316 03E7
 #Invincibility (No Hit)
-F40DBDCA 00AA0800
-40102120 80022128
+F40DBDC8 00AA0800
+AAAA4010 21208002
+2128AAAA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
-AAAAAAAA AAAAAAAA
-F40DBC1E 00AA0800
-40100200 6230AAAA
-40AAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
+F40DBC1C 00AA0800
+AAAA4010 02006230
+AAAA40AA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
 #Quick Turn (Up + L2)
 E0071625 00000010
@@ -135371,15 +137135,15 @@ E0071626 00000001
 ; [ Parasite Eve II (France) {SLES-02559 | SLES-12559} ]
 :SLES-12559
 #Invincibility (No Hit)
-F40DBDCA 00AA0800
-40102120 80022128
+F40DBDC8 00AA0800
+AAAA4010 21208002
+2128AAAA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
-AAAAAAAA AAAAAAAA
-F40DBC1E 00AA0800
-40100200 6230AAAA
-40AAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
+F40DBC1C 00AA0800
+AAAA4010 02006230
+AAAA40AA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
 
 ; [ Parasite Eve II (Germany) {SLES-02560 | SLES-12560} ]
@@ -135429,15 +137193,15 @@ D00B738C 0001
 50000C01 0000
 30073C70 0003
 #Invincibility (No Hit)
-F40DBDCA 00AA0800
-40102120 80022128
+F40DBDC8 00AA0800
+AAAA4010 21208002
+2128AAAA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
-AAAAAAAA AAAAAAAA
-F40DBC1E 00AA0800
-40100200 6230AAAA
-40AAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
+F40DBC1C 00AA0800
+AAAA4010 02006230
+AAAA40AA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
 
 ; [ Parasite Eve II (Italy) {SLES-02562 | SLES-12562} ]
@@ -135459,30 +137223,30 @@ AAAAAAAA AAAAAAAA
 50000602 0000
 80073C78 0303
 #Invincibility (No Hit)
-F40DBDCA 00AA0800
-40102120 80022128
+F40DBDC8 00AA0800
+AAAA4010 21208002
+2128AAAA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
-AAAAAAAA AAAAAAAA
-F40DBC1E 00AA0800
-40100200 6230AAAA
-40AAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
+F40DBC1C 00AA0800
+AAAA4010 02006230
+AAAA40AA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
 
 ; [ Parasite Eve II (Japan, Asia) {SCPS-45467 | SCPS-45468} ]
 :SCPS-45467
 :SCPS-45468
 #Invincibility (No Hit)
-F40DBDCA 00AA0800
-40102120 80022128
+F40DBDC8 00AA0800
+AAAA4010 21208002
+2128AAAA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
-AAAAAAAA AAAAAAAA
-F40DBC1E 00AA0800
-40100200 6230AAAA
-40AAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
+F40DBC1C 00AA0800
+AAAA4010 02006230
+AAAA40AA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
 
 ; [ Parasite Eve II (Spain) {SLES-02561 | SLES-12561} ]
@@ -135509,15 +137273,15 @@ AAAAAAAA AAAAAAAA
 #Bp
 80074F64 FFFF
 #Invincibility (No Hit)
-F40DBDCA 00AA0800
-40102120 80022128
+F40DBDC8 00AA0800
+AAAA4010 21208002
+2128AAAA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
-AAAAAAAA AAAAAAAA
-F40DBC1E 00AA0800
-40100200 6230AAAA
-40AAAAAA AAAAAAAA
-00AAAAAA AAAAAAAA
+F40DBC1C 00AA0800
+AAAA4010 02006230
+AAAA40AA AAAAAAAA
+AAAA00AA AAAAAAAA
 AAAAAAAA AAAAAAAA
 
 ; [ Parasite Eve: Special CD-ROM (Japan) (Bundled with Magazine) {SLP-80300} ]
@@ -135678,8 +137442,12 @@ D00AD70E 0000
 #Select Level\Temple Press X at Password-Screen
 D00AD70E 0000
 300AD70E 0002
-#Widescreen 16-9
-8010F4C0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A710F4C0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A710F4C0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A710F4C0 10000400
 
 ; [ Peak Performance (Europe) {SLES-00727} ]
 :SLES-00727
@@ -135922,16 +137690,24 @@ D007B2B8 0201
 8001765C 0001
 #Debug DEBUG, DBG magic added to the battle menu You can not see the menu Magic DBG is disabled
 A6102900 00040006
-#Widescreen 16-9
-80087A68 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7087A68 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7087A68 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7087A68 10000400
 
 ; [ Pesni iz Kino aka ÐŸÐµÑÐ½Ð¸ Ð¸Ð· ÐºÐ¸Ð½Ð¾ (Russia) {Unlicensed} ]
 ; [ Pet Pet Pet (Japan) (Magical 1500) {SLPS-03082} ]
 
 ; [ Pet in TV (Europe) {SCES-00981} ]
 :SCES-00981
-#Widescreen 16-9
-801C2D50 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71C2D50 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71C2D50 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71C2D50 10000400
 
 ; [ Pet in TV (Germany) {SCES-01358} ]
 ; [ Pet in TV: Ton Nouveau Meilleur Ami! (France) {SCES-01357} ]
@@ -137067,8 +138843,12 @@ D00F9642 0000
 :SLES-03388
 #Infinite Time
 300F734C 0022
-#Widescreen 16-9
-800D43F8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70D43F8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D43F8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D43F8 10000400
 
 ; [ Power DoLLS 2 (Japan) {SLPS-01033} ]
 ; [ Power League (Japan) {SLPS-01517} ]
@@ -137099,8 +138879,12 @@ D00F9642 0000
 800DB73C 0BA9
 #Infinie Energy
 900DD1CC 00960096
-#Widescreen 16-9
-8010DBB0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A710DBB0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A710DBB0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A710DBB0 10000400
 
 ; [ Poy Poy 2 (Europe) {SLES-01536} ]
 :SLES-01536
@@ -137121,8 +138905,12 @@ D00F9642 0000
 #Able To Upgrade Your Gloves
 50002C02 0000
 800ACA6C 03E7
-#Widescreen 16-9
-800EAA68 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70EAA68 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70EAA68 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70EAA68 10000400
 
 ; [ PrePre PlayStation Vol. 0 (Japan) (Otameshi Disc) {PCPD-99501} ]
 ; [ PrePre Plus 001: 1999 October (Japan) Demo {PCPX-96173 | PCPX-96174} ]
@@ -137576,20 +139364,32 @@ D0102BE0 0400
 
 ; [ Pro Evolution Soccer (Europe) {SLES-03795} ]
 :SLES-03795
-#Widescreen 16-9
-80072DD8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7072DD8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7072DD8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7072DD8 10000400
 
 ; [ Pro Evolution Soccer (Europe) {SLES-03796} ]
 :SLES-03796
-#Widescreen 16-9
-80072058 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7072058 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7072058 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7072058 10000400
 
 ; [ Pro Evolution Soccer 2 (Europe) {SLES-03946} ]
 :SLES-03946
 #Unlock All Secret Teams
 8006F7BC FFFF
-#Widescreen 16-9
-8007D2E0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A707D2E0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707D2E0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707D2E0 10000400
 
 ; [ Pro Evolution Soccer 2 (Europe) {SLES-03957} ]
 ; [ Pro Foot Contest '98 + Grand Theft Auto + Courier Crisis (France) {SLED-01295} ]
@@ -137605,8 +139405,12 @@ D0102BE0 0400
 801F5F0C 0000
 #Opponent 2 has 9 points
 801F5DC0 0000
-#Widescreen 16-9
-8007C678 0C00
+#Select Widescreen Aspect Ratio\16-9
+A707C678 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707C678 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707C678 10000400
 
 ; [ Pro Mahjong Tsuwamono 2 (Japan) (BPV (Best Price Version)) {SLPS-03065} ]
 ; [ Pro Mahjong Tsuwamono 2 (Japan) {SLPS-01987} ]
@@ -137751,16 +139555,24 @@ A6101F9C 03E80001
 A61020E0 03E80001
 #Infinite Time To Select Character
 8011F484 0320
-#Widescreen 16-9
-801CE78C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71CE78C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71CE78C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71CE78C 10000400
 
 ; [ Psychic Force (Japan) (Tentou Demo-ban) {SLP-80049} ]
 ; [ Psychic Force (Japan) {SLP-86616} ]
 
 ; [ Psychic Force (Japan) {SLPS-00520} ]
 :SLPS-00520
-#Widescreen 16-9
-801D7448 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71D7448 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71D7448 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71D7448 10000400
 
 ; [ Psychic Force 2 (Europe) {SLES-02557} ]
 :SLES-02557
@@ -137782,16 +139594,24 @@ D0075532 0000
 #Unlock All Skills in Psy-Expand Mode
 50004302 0000
 80075488 FFFF
-#Widescreen 16-9
-80076CA0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7076CA0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7076CA0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7076CA0 10000400
 
 ; [ Psychic Force 2 (Japan) Demo {SLP-80463} ]
 
 ; [ Psychic Force 2 (Japan) {SLP-86273} ]
 :SLP-86273
 :SLPM-86273
-#Widescreen 16-9
-8007B8C8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A707B8C8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707B8C8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707B8C8 10000400
 
 ; [ Psychic Force: Puzzle Taisen (Game Disc) (Japan) {SLPS-01018 | SLPS-01019} ]
 :SLPS-01018
@@ -138809,8 +140629,12 @@ D0010142 0007
 80013A44 FFFF
 #Infinite Credits
 8001014C 0009
-#Widescreen 16-9
-80193740 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7193740 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7193740 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7193740 10000400
 
 ; [ R-Type Delta (Japan) {SLPS-01688} ]
 :SLPS-01688
@@ -138884,8 +140708,12 @@ D0010142 0007
 300B9990 0040
 #Stage 7\Invincibility For R-9
 801540B8 0083
-#Widescreen 16-9
-801F7418 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71F7418 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F7418 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F7418 10000400
 
 ; [ R-Types (Europe) {SLES-01355} ]
 :SLES-01355
@@ -139945,8 +141773,12 @@ A610F6D0 0000FFFF
 80058378 05DC
 #Infinite Nitro
 80057F3C 03B6
-#Widescreen 16-9
-8005EAF0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A705EAF0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A705EAF0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A705EAF0 10000400
 
 ; [ Ray-Ray CD-ROM (Japan) (Promotion Ban) {SLP-80078} ]
 
@@ -140573,7 +142405,7 @@ D008A11C FEFF
 #Fast Level Up Press Select During The Battle
 D007D008 0100
 8006C450 270F
-#nfinite HP
+#Infinite HP
 A60B4B3E 00430040
 A60C6216 00430040
 #Infinite SP
@@ -142297,9 +144129,15 @@ D0039FD4 0150
 8006D01C 0001
 #Gold Key
 8006D034 0001
-#Widescreen 16-9
-800C6500 0C00
-800D23B0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70C6500 10000C00
+A70D23B0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C6500 10000900
+A70D23B0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C6500 10000400
+A70D23B0 10000400
 
 ; [ Rittai Ninja Katsugeki: Tenchu: Shinobi Hyakusen (Japan) {SLPS-02400} ]
 :SLPS-02400
@@ -142369,10 +144207,18 @@ D004112E 2402
 90010078 02020202
 9001007C 02020202
 90010080 02020202
-#Widescreen 16-9
-800E8B38 0C00
-800908F2 0C00
-80090916 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70E8B38 10000C00
+A70908F2 10000C00
+A7090916 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70E8B38 10000900
+A70908F2 10000900
+A7090916 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70E8B38 10000400
+A70908F2 10000400
+A7090916 10000400
 
 ; [ Rival Schools + Resident Evil 2 + Bloody Roar + Street Fighter EX Plus Alpha + Mr Domino + Victory Boxing 2 (France) {SLED-01756} ]
 
@@ -142428,8 +144274,12 @@ D004112E 2402
 901F1F1C 0001869F
 #Target Mode 9999 Hi-Score
 801F1F66 270F
-#Widescreen 16-9
-801F6120 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71F6120 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F6120 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F6120 10000400
 
 ; [ Riven: The Sequel to Myst (Europe) {SLES-00963 | SLES-10963 | SLES-20963 | SLES-30963 | SLES-40963} ]
 ; [ Riven: The Sequel to Myst (France) {SLES-01099 | SLES-11099 | SLES-21099 | SLES-31099 | SLES-41099} ]
@@ -142893,10 +144743,18 @@ D0134B48 0108
 301D8947 0063
 #P2 Upgraded Prowlers
 301D8948 0063
-#Widescreen 16-9
-801C2C8C 0C00
-801C2D4C 0C00
-801C2DAC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71C2C8C 10000C00
+A71C2D4C 10000C00
+A71C2DAC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71C2C8C 10000900
+A71C2D4C 10000900
+A71C2DAC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71C2C8C 10000400
+A71C2D4C 10000400
+A71C2DAC 10000400
 
 ; [ Rogue Trip: Vacation 2012 (USA) (Trade Demo) {SLUS-80643} ]
 ; [ Rogue Trip: Vacation 2012 (USA) Demo {SLUS-90044} ]
@@ -143303,6 +145161,10 @@ D00C2A4C FDFF
 #Unlock all levels (Press L1 & L2 & R1 & R2 at main screen)
 D006F49E F0FF
 3009EA50 0010
+#Infinite Ammo
+800EAF7C 000A
+#Infinite Ammo (ASM)
+A7096148 FFFF0000
 #Infinite Health The Beginning
 800EA5BA 0064
 #Infinite Health The Dye Factory
@@ -144311,8 +146173,13 @@ D00BADDA FAFF
 
 ; [ Segare Ijiri (Japan) {SLP-86230} ]
 :SLP-86230
-#Widescreen 16-9
-801BFE20 0C00
+:SLPM-86230
+#Select Widescreen Aspect Ratio\16-9
+A71BFE20 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71BFE20 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71BFE20 10000400
 
 ; [ Seiken Densetsu: Legend of Mana (Japan, Asia) {SCPS-45416} ]
 
@@ -145169,7 +147036,7 @@ D00DBA4A FFFE
 :SLES-01658
 #Infinite Health Vs Mode
 8016DF04 0200
-#Infinite and max copper
+#Infinite + Max Copper
 80186F76 869F
 #Infinite Heath Story Mode
 8016DF04 006E
@@ -145297,9 +147164,15 @@ D00DBA4A FFFE
 80082D7C 0012
 #P2 always in fighting spirit rush state
 80083300 001A
-#Widescreen 16-9
-8002C634 0C00
-8002C6C8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A702C634 10000C00
+A702C6C8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A702C634 10000900
+A702C6C8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A702C634 10000400
+A702C6C8 10000400
 
 ; [ Shin Nihon Pro Wrestling: Toukon Retsuden 2 (Japan) {SLPS-00637} ]
 
@@ -145883,9 +147756,15 @@ D00C7940 0002
 ; [ Silent Hill (Japan) {SLP-86192} ]
 :SLP-86192
 :SLPM-86192
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A70C9510 10000C00
 A70C9520 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70C9510 10000900
+A70C9520 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70C9510 10000400
+A70C9520 10000400
 #Dither Off
 A7019810 02000000
 #Select Fog Distance\1999
@@ -145912,8 +147791,12 @@ A70AB38C 00020001
 8008DDC8 03E7
 #Infinite Missiles
 8008DDCC 0063
-#Widescreen 16-9
-80082E28 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7082E28 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7082E28 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7082E28 10000400
 
 ; [ Silent MÃ¶bius: Case: Titanic (Japan) {SLPS-01618} ]
 :SLPS-01618
@@ -145954,8 +147837,13 @@ D0095252 0060
 ; [ Simple 1500 Jitsuyou Series Vol. 13: Shinri Game: Soreike x Kokology: Kokoro no Uso no Makafushigi (Japan) {SLP-87016} ]
 ; [ Simple 1500 Jitsuyou Series Vol. 14: Kurashi no Manner: Kankon Sousai-hen (Japan) {SLP-87022} ]
 :SLP-87022
-#Widescreen 16-9
-80030C04 0C00
+:SLPM-87022
+#Select Widescreen Aspect Ratio\16-9
+A7030C04 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7030C04 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7030C04 10000400
 
 ; [ Simple 1500 Jitsuyou Series Vol. 15: Inu no Kai-kata: Sekai no Inu Catalog (Japan) {SLP-87051} ]
 ; [ Simple 1500 Jitsuyou Series Vol. 16: Neko no Kai-kata: Sekai no Neko Catalog (Japan) {SLP-87052} ]
@@ -146221,6 +148109,7 @@ D007C6B2 1080
 ; [ Simple 1500 Series Vol. 51: The Jigsaw Puzzle (Japan) {SLP-86700} ]
 ; [ Simple 1500 Series Vol. 52: The Pro Wrestling 2 (Japan) {SLP-86702} ]
 :SLP-86702
+:SLPM-86702
 #Widescreen 16-9 (In-Game)
 80022CD4 0C00
 
@@ -146514,8 +148403,12 @@ D007C6B2 1080
 800447ED 006E
 #P2 No energy
 8004FE9C 0000
-#Widescreen 16-9
-8005BA30 0C00
+#Select Widescreen Aspect Ratio\16-9
+A705BA30 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A705BA30 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A705BA30 10000400
 
 ; [ Slamscape (Europe) {SLES-00427} ]
 :SLES-00427
@@ -148108,9 +150001,15 @@ D000004A 9C19
 8004BBFB D1A1
 #Infinite Health
 80044A12 32BC
-#Widescreen 16-9
-80091974 0C00
-800919E4 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7091974 10000C00
+A70919E4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7091974 10000900
+A70919E4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7091974 10000400
+A70919E4 10000400
 
 ; [ Spec Ops: Stealth Patrol (Europe) {SLES-00844} ]
 :SLES-00844
@@ -148137,9 +150036,15 @@ D0015C22 0044
 80032400 0000
 #Invulnerable cheat menu (Open the pause menu)
 A6064D0C 00000100
-#Widescreen 16-9
-800FC9D8 0C00
-800FCA58 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70FC9D8 10000C00
+A70FCA58 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70FC9D8 10000900
+A70FCA58 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70FC9D8 10000400
+A70FCA58 10000400
 
 ; [ Spectral Force (Japan) (Shokai Gentei Box) {SLPS-00969} ]
 :SLPS-00969
@@ -148187,7 +150092,7 @@ A6064D0C 00000100
 
 ; [ Spectral Force 2 (Japan) {SLPS-01628} ]
 :SLPS-01628
-#Infinite oney
+#Infinite Money
 801CF4A4 03E7
 801CFC5A 03E7
 801CF8AE 03E7
@@ -148808,7 +150713,7 @@ AAAAAAAA AAAAAAAA
 
 ; [ Star Gladiator: Episode I: Final Crusade (Europe) {SLES-00495} ]
 :SLES-00495
-#P1 infinite energy
+#P1 Infinite Energy
 801D8210 00C8
 #Extra-characters
 901EAE54 00010101
@@ -148816,8 +150721,12 @@ AAAAAAAA AAAAAAAA
 801BE4FA 7A8D
 801BE51A 7A8D
 801D7F8C 0000
-#Widescreen 16-9
-801D8B98 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71D8B98 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71D8B98 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71D8B98 10000400
 
 ; [ Star Gladiator: Episode I: Final Crusade (Japan) (Demo Movie CD-ROM) {SLP-80056} ]
 
@@ -148834,8 +150743,12 @@ D01EAAE0 0100
 801D8384 0000
 #All bonus characters
 901EAA50 00010101
-#Widescreen 16-9
-801D8794 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71D8794 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71D8794 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71D8794 10000400
 
 ; [ Star Ixiom (Europe) {SCES-01707} ]
 :SCES-01707
@@ -149705,12 +151618,24 @@ D01BB362 FFFE
 #Have 4999 points Press Select
 D01BB362 FFFE
 801B5D8C 1387
-#Widescreen 16-9
-801E9A3C 0C00
-801E997C 0C00
-801E99DC 0C00
-801E985C 0C00
-801E98BC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71E9A3C 10000C00
+A71E997C 10000C00
+A71E99DC 10000C00
+A71E985C 10000C00
+A71E98BC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71E9A3C 10000900
+A71E997C 10000900
+A71E99DC 10000900
+A71E985C 10000900
+A71E98BC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71E9A3C 10000400
+A71E997C 10000400
+A71E99DC 10000400
+A71E985C 10000400
+A71E98BC 10000400
 
 ; [ Street Boarders (Japan) {SLPS-01622} ]
 :SLPS-01622
@@ -149920,20 +151845,32 @@ D01D6E0C 00C8
 801EA062 77FD
 #Unlock Bonus Game
 801EA316 6101
-#Widescreen 16-9
-801DDD38 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71DDD38 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71DDD38 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71DDD38 10000400
 
 ; [ Street Fighter EX Plus Alpha (Japan) {SLP-86041} ]
 :SLP-86041
 :SLPM-86041
-#Widescreen 16-9
-801DDAD8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71DDAD8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71DDAD8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71DDAD8 10000400
 
 ; [ Street Fighter EX Plus Alpha (Promo CD) (Japan) {SLPM-80149} ]
 :SLP-80149
 :SLPM-80149
-#Widescreen 16-9
-801D8148 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71D8148 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71D8148 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71D8148 10000400
 
 ; [ Street Fighter EX2 Plus (Europe) {SLES-02598} ]
 :SLES-02598
@@ -149961,8 +151898,12 @@ D01EF360 0103
 301EF366 00FF
 #Barrel-Codes\99 Combo
 301EF367 0063
-#Widescreen 16-9
-801F7C90 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71F7C90 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F7C90 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F7C90 10000400
 
 ; [ Street Fighter EX2 Plus (Japan) Demo {SLP-80517} ]
 
@@ -149998,8 +151939,12 @@ D01EF360 0103
 901F4C9C 44FD3B6D
 901F4CA0 1FFF5011
 901F4CA4 5BAF5A19
-#Widescreen 16-9
-801F6C80 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71F6C80 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71F6C80 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71F6C80 10000400
 
 ; [ Street Fighter II Movie (Japan) {SLPS-00080 | SLPS-00081} ]
 
@@ -150826,7 +152771,7 @@ A604DF88 00040001
 #The HP does not decrease in the L1 + R1
 D01FB83A F3FF
 800640AA 0060
-#reduced HP in L2 + R2 Because the friend or foe common When he or she attacks Press L2 + R2
+#Reduced HP in L2 + R2 Because the friend or foe common When he or she attacks Press L2 + R2
 D01FB83A FCFF
 800640AA 0065
 
@@ -150947,9 +152892,7 @@ D0078B5C 000A
 
 ; [ Super Price Series: Block & Switch (Japan) {SLPS-03386} ]
 :SLPS-03386
-#infinite blocks
-800F34C0 0002
-#infinite pushing blocks
+#Infinite Pushing Blocks
 800F34C0 0063
 
 ; [ Super Price Series: Hanafuda (Japan) {SLPS-03387} ]
@@ -152292,6 +154235,8 @@ D00E014E FFBE
 800E77B4 000F
 #Support team mode Lots of points
 800DB6A0 0FFF
+#Drive Anywhere
+A7095E92 10401000
 
 ; [ TOCA 2 Touring Cars (Europe) {SLES-01542} ]
 :SLES-01542
@@ -152321,6 +154266,8 @@ D00E014E FFBE
 800E77B4 000F
 #Support team mode Lots of points
 800DB6A0 0FFF
+#Drive Anywhere
+A7095E92 10401000
 
 ; [ TOCA 2 Touring Cars (Europe) {SLES-01547} ]
 
@@ -152426,6 +154373,12 @@ D00A1A54 0002
 300100B4 0001
 #Unlocked Go-Kart-Mode
 300100B5 0001
+;Drive Anywhere for both revisions
+#Drive Anywhere
+A702D072 10801000
+A702CFA6 04401400
+A7021BC6 10801000
+A7021AFA 04401400
 
 ; [ TOCA Touring Car Championship (Europe) {SLES-00376} ]
 :SLES-00376
@@ -152529,6 +154482,12 @@ D00A1A54 0002
 300100B4 0001
 #Unlocked Go-Kart-Mode
 300100B5 0001
+;Drive Anywhere for both revisions
+#Drive Anywhere
+A702D072 10801000
+A702CFA6 04401400
+A7021BC6 10801000
+A7021AFA 04401400
 
 ; [ TOCA World Touring Cars (Europe) {SLES-02573} ]
 
@@ -152951,6 +154910,20 @@ A61329E0 00000001
 
 ; [ Taxi 2 aka Taxi 2: Le Jeu (France) {SLES-03597} ]
 :SLES-03597
+#Infinite Time
+A702A178 20230009
+A702A17A 00833404
+#No Damage Decrement:Note, not against One Hit Killers like Tanks
+A702318A A4A21400
+A70231F6 00441400
+A70231E0 00100000
+A70231E2 A4A20000
+#Schlesser Never Wins
+A7014D92 10621000
+#Drive through other Vehicles
+A701918A 10401000
+#Drive Safely pass Tanks
+A702115E 10401000
 #Unlock All Arcade Mode
 8007664A 0008
 #Unlock All Mission Mode
@@ -153173,6 +155146,9 @@ A60AAE72 008C0001
 800AAAE0 1000
 800AAAFE 1000
 800AAB04 0000
+#Hit Anywhere
+A7047CEA 14401000
+;f 0,fffff,w.1440,0,0,1,2610
 #Select Stage (Arcade Mode)\1
 D00AFA74 0000
 300AFA74 0000
@@ -153790,8 +155766,12 @@ A6096D10 00000002
 A607F1D2 000003E8
 #Hypermode 120%
 8005DF48 0002
-#Widescreen 16-9
-8006F2D8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A706F2D8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A706F2D8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A706F2D8 10000400
 
 ; [ Test Drive 4 (Japan) {SLPS-01288} ]
 
@@ -153803,8 +155783,12 @@ A607F1D2 000003E8
 300890F1 00FF
 #Huge amount of points in World tour mode
 800859D8 00DE
-#Widescreen 16-9
-80074E78 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7074E78 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7074E78 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7074E78 10000400
 
 ; [ Test Drive 5 (Europe) {SLES-01165} ]
 :SLES-01165
@@ -153990,7 +155974,7 @@ A607F1D2 000003E8
 900E9720 FFFFFFFF
 800E9724 FFFF
 300E9726 0007
-#that align all - play Tetris character
+#That align all - play Tetris character
 800BB3B4 1FFF
 
 ; [ Tetsudou-ou '96: Iku ze Okuman Chouja!! (Japan) Rev 1 {SLPS-00164} ]
@@ -154032,8 +156016,12 @@ A607F1D2 000003E8
 #Unlock All Extras
 50000702 0000
 801D5110 003F
-#Widescreen 16-9
-801DE638 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71DE638 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71DE638 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71DE638 10000400
 
 ; [ Tettei Kaiseki: Hisshou Pachi-Slot Doujou: Yamasa & Pioneer (Japan) {SLPS-01718} ]
 ; [ That's QT (Japan) {SLP-86340} ]
@@ -154514,8 +156502,12 @@ A60321D6 00000100
 80015846 2400
 #Stop timer
 80061A6C 0000
-#Widescreen 16-9
-80099A8C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7099A8C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7099A8C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7099A8C 10000400
 
 ; [ The Guardian of Darkness (Europe) {SLES-01776} ]
 :SLES-01776
@@ -154617,9 +156609,15 @@ A60B1930 00000001
 300110C4 0001
 #Infinite Time Home Free Mission
 800DAA2C 0000
-#Widescreen 16-9
-80040F90 0C00
-800410F0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7040F90 10000C00
+A70410F0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7040F90 10000900
+A70410F0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7040F90 10000400
+A70410F0 10000400
 
 ; [ The Italian Job (Italy) {SLES-03648} ]
 ; [ The Italian Job (UK) Demo {SLED-03679} ]
@@ -155167,8 +157165,12 @@ D010B568 1023
 90014D74 00000000
 #Infinite Energy
 900243FC 00000000
-#Widescreen 16-9
-80065460 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7065460 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7065460 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7065460 10000400
 
 ; [ The Lost World: Jurassic Park (Japan) {SLPS-01099} ]
 ; [ The Maestromusic (Japan) (Baton Controller Doukonban) {SLP-86585} ]
@@ -157507,7 +159509,7 @@ A606DFDA 00332402
 80046AA6 2400
 #Infinite Auto-gun ammo
 8008C71C 0028
-#nfinite Flares
+#Infinite Flares
 80088C72 03E7
 #Have All 3 secrets
 800DE7F2 000F
@@ -157589,7 +159591,7 @@ A606DFDA 00332402
 80046AA6 2400
 #Infinite Auto-gun ammo
 8008C71C 0028
-#nfinite Flares
+#Infinite Flares
 80088C72 03E7
 #Have All 3 secrets
 800DE7F2 000F
@@ -157618,7 +159620,7 @@ A606DFDA 00332402
 80046AA6 2400
 #Infinite Auto-gun ammo
 8008C71C 0028
-#nfinite Flares
+#Infinite Flares
 80088C72 03E7
 #Have All 3 secrets
 800DE7F2 000F
@@ -157663,7 +159665,7 @@ A606DFDA 00332402
 80046AA6 2400
 #Infinite Auto-gun ammo
 8008C71C 0028
-#nfinite Flares
+#Infinite Flares
 80088C72 03E7
 #Have All 3 secrets
 800DE7F2 000F
@@ -159198,8 +161200,12 @@ D01D69BA FCFF
 #Mini Games Codes\Fight! Wolfy\P2 Can't Climb
 D11DA38A 0000
 801DA38A 0000
-#Widescreen 16-9
-801DBCBC 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71DBCBC 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71DBCBC 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71DBCBC 10000400
 
 ; [ Total Activision Demo (France) {SLED-02023} ]
 
@@ -159447,8 +161453,12 @@ A6049A1E 00430000
 #All Characters unlocked
 80126D8E 0101
 80126D90 0101
-#Widescreen 16-9
-8013A920 0C00
+#Select Widescreen Aspect Ratio\16-9
+A713A920 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A713A920 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A713A920 10000400
 
 ; [ Trash It aka Trash-It (Europe) {SLES-00256} ]
 :SLES-00256
@@ -160293,8 +162303,12 @@ A708144A 10401400
 8018F530 0005
 #Select Perm Level\Arena
 8018F530 0006
-#Widescreen 16-9
-801747C0 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71747C0 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71747C0 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71747C0 10000400
 
 ; [ Twisted Metal (Japan) {SIPS-60007} ]
 :SIPS-60007
@@ -160411,8 +162425,12 @@ A708144A 10401400
 301646C4 000B
 #Play always level Rooftop
 301646C4 000C
-#Widescreen 16-9
-8017EC1C 0C00
+#Select Widescreen Aspect Ratio\16-9
+A717EC1C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A717EC1C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A717EC1C 10000400
 
 ; [ Two Product Psygnosis Demo (Europe) Demo {SCED-02540} ]
 
@@ -160706,8 +162724,12 @@ D0095488 0038
 301A5051 0001
 50000302 0000
 801A5052 3F3F
-#Widescreen 16-9
-801C4290 0C00
+#Select Widescreen Aspect Ratio\16-9
+A71C4290 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A71C4290 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A71C4290 10000400
 
 ; [ Um Jammer Lammy (Japan) {SCPS-18011} ]
 :SCPS-18011
@@ -161731,8 +163753,12 @@ A6049D44 05C80000
 A6049D46 AF800000
 A6049D48 31278C62
 A6049D4A 0C010C00
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A707F624 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A707F624 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A707F624 10000400
 
 ; [ Victory Boxing (Japan) {SLPS-02740} ]
 ; [ Victory Boxing 2 (Europe) Demo {SLED-01529} ]
@@ -163343,12 +165369,12 @@ A60ED5EA 0040004A
 
 ; [ Waku Puyo Dungeon: Ketteiban (Japan) {SLPS-01966} ]
 :SLPS-01966
-#Infinite and max money
+#Infinite + Max Money
 9010CF80 0098967F
-#Infinite and Max HP for the three characters
+#Infinite + Max HP for the three characters
 8010CF86 03E7
 8010CF88 03E7
-#Infinite and Max MP for the three characters
+#Infinite + Max MP for the three characters
 9010CF8C 03E703E7
 #Max power
 8010CF92 03E7
@@ -163685,8 +165711,12 @@ A6092534 000101F4
 800F0A04 0500
 #Infinite Energy Dragoon Tank (Multi-5) version
 800F0AB4 1180
-#Widescreen 16-9
-800D1A88 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70D1A88 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70D1A88 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70D1A88 10000400
 
 ; [ WarGames: Defcon 1 (Europe, Australia) Demo {SLED-01366} ]
 
@@ -163763,8 +165793,12 @@ A6092534 000101F4
 801B8C62 0001
 #Mg-Cooler
 801B8C54 0000
-#Widescreen 16-9
-80173CE4 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7173CE4 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7173CE4 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7173CE4 10000400
 
 ; [ Warm Up! aka Warm-Up! GP 2001 (Europe) {SLES-03247} ]
 :SLES-03247
@@ -163896,8 +165930,12 @@ D01B56D0 0008
 9014CE94 0098967F
 #Power Never Decreases
 8006FE0E 2400
-#Widescreen 16-9
-800CB808 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70CB808 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70CB808 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70CB808 10000400
 
 ; [ Warzone 2100 (France) {SLES-01742} ]
 
@@ -165021,7 +167059,7 @@ D010DF36 AC83
 
 ; [ Wizardry VII: Guardia no Houju (Japan) {SCPS-10010} ]
 :SCPS-10010
-#Infinite character creation points Deactivate after completing creating the character
+#Infinite Character Creation Points:Deactivate after completing creating the character
 800D0374 0063
 
 ; [ Wizardry: Dimguil (Japan) Rev 1 {SLPS-02691} ]
@@ -165284,15 +167322,23 @@ D01D0CD0 0010
 ; [ World Soccer Jikkyou Winning Eleven 2000: U-23 Medal e no Chousen (Japan) {SLP-86600} ]
 :SLP-86600
 :SLPM-86600
-#Widescreen 16-9
-80072A48 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7072A48 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7072A48 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7072A48 10000400
 
 ; [ World Soccer Jikkyou Winning Eleven 3: Final Ver. (Japan) Rev 1 {SLP-86162} ]
 ; [ World Soccer Jikkyou Winning Eleven 3: Final Ver. (Japan) {SLP-86162} ]
 :SLP-86162
 :SLPM-86162
-#Widescreen 16-9
-800FF6A8 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70FF6A8 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70FF6A8 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70FF6A8 10000400
 
 ; [ World Soccer Jikkyou Winning Eleven 3: World Cup France '98 (Japan) Demo {SLP-80240} ]
 
@@ -165300,15 +167346,23 @@ D01D0CD0 0010
 ; [ World Soccer Jikkyou Winning Eleven 3: World Cup France '98 (Japan) {SLP-86086} ]
 :SLP-86086
 :SLPM-86086
-#Widescreen 16-9
-800F1D18 0C00
+#Select Widescreen Aspect Ratio\16-9
+A70F1D18 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A70F1D18 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A70F1D18 10000400
 
 ; [ World Soccer Jikkyou Winning Eleven 4 (Japan) Rev 1 {SLP-86291} ]
 ; [ World Soccer Jikkyou Winning Eleven 4 (Japan) {SLP-86291} ]
 :SLP-86291
 :SLPM-86291
-#Widescreen 16-9
-80072F90 0C00
+#Select Widescreen Aspect Ratio\16-9
+A7072F90 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7072F90 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7072F90 10000400
 
 ; [ World Soccer Winning Eleven '97 (Japan) Rev 1 {SLP-86035} ]
 ; [ World Soccer Winning Eleven '97 (Japan) {SLP-86035} ]
@@ -166790,8 +168844,12 @@ D008A57C 0000
 300F7EF8 0001
 800F7F00 0101
 800F7F08 0101
-#Widescreen 16-9
-8011B148 0C00
+#Select Widescreen Aspect Ratio\16-9
+A711B148 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A711B148 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A711B148 10000400
 
 ; [ Yutona Eiyuu Senki: TearRingSaga (Japan) {SLPS-03177} ]
 :SLPS-03177
@@ -167486,8 +169544,12 @@ E01A244D 00000004
 A70FC6CA 12221000
 #One Hit Kills
 A70FA626 1C401400
-#Widescreen 16-9
+#Select Widescreen Aspect Ratio\16-9
 A7063F0C 10000C00
+#Select Widescreen Aspect Ratio\20-9
+A7063F0C 10000900
+#Select Widescreen Aspect Ratio\Eye Infinity
+A7063F0C 10000400
 #Dither Off
 A70F13C4 02000000
 
