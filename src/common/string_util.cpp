@@ -152,6 +152,18 @@ std::size_t StringUtil::Strlcpy(char* dst, const std::string_view src, std::size
   return len;
 }
 
+u8 StringUtil::DecodeHexDigit(char ch)
+{
+  if (ch >= '0' && ch <= '9')
+    return static_cast<u8>(ch - '0');
+  else if (ch >= 'a' && ch <= 'f')
+    return static_cast<u8>(0xa + (ch - 'a'));
+  else if (ch >= 'A' && ch <= 'F')
+    return static_cast<u8>(0xa + (ch - 'A'));
+  else
+    return 0;
+}
+
 std::optional<std::vector<u8>> StringUtil::DecodeHex(const std::string_view in)
 {
   std::vector<u8> data;

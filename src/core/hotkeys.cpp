@@ -285,20 +285,6 @@ DEFINE_HOTKEY("Rewind", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hot
   System::SetRewindState(pressed > 0);
 })
 
-#ifndef __ANDROID__
-DEFINE_HOTKEY("ToggleCheats", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Cheats"),
-              [](s32 pressed) {
-                if (!pressed)
-                  System::DoToggleCheats();
-              })
-#else
-DEFINE_HOTKEY("TogglePatchCodes", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Toggle Patch Codes"),
-              [](s32 pressed) {
-                if (!pressed)
-                  System::DoToggleCheats();
-              })
-#endif
-
 DEFINE_HOTKEY("ToggleOverclocking", TRANSLATE_NOOP("Hotkeys", "System"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Clock Speed Control (Overclocking)"), [](s32 pressed) {
                 if (!pressed && System::IsValid())

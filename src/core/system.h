@@ -23,9 +23,6 @@ enum class GPUVSyncMode : u8;
 
 class Controller;
 
-struct CheatCode;
-class CheatList;
-
 class GPUTexture;
 class MediaCapture;
 
@@ -106,8 +103,6 @@ enum class BootMode
   BootEXE,
   BootPSF,
 };
-
-using GameHash = u64;
 
 extern TickCount g_ticks_per_second;
 
@@ -315,18 +310,6 @@ std::string GetMediaSubImageTitle(u32 index);
 /// Switches to the specified media/disc playlist index.
 bool SwitchMediaSubImage(u32 index);
 
-/// Returns true if there is currently a cheat list.
-bool HasCheatList();
-
-/// Accesses the current cheat list.
-CheatList* GetCheatList();
-
-/// Applies a single cheat code.
-void ApplyCheatCode(const CheatCode& code);
-
-/// Sets or clears the provided cheat list, applying every frame.
-void SetCheatList(std::unique_ptr<CheatList> cheats);
-
 /// Updates throttler.
 void UpdateSpeedLimiterState();
 
@@ -343,7 +326,6 @@ bool IsRewinding();
 void SetRewindState(bool enabled);
 
 void DoFrameStep();
-void DoToggleCheats();
 
 /// Returns the path to a save state file. Specifying an index of -1 is the "resume" save state.
 std::string GetGameSaveStateFileName(std::string_view serial, s32 slot);
@@ -404,27 +386,6 @@ MediaCapture* GetMediaCapture();
 bool StartMediaCapture(std::string path = {});
 bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio);
 void StopMediaCapture();
-
-/// Loads the cheat list for the current game title from the user directory.
-bool LoadCheatList();
-
-/// Loads the cheat list for the current game code from the built-in code database.
-bool LoadCheatListFromDatabase();
-
-/// Saves the current cheat list to the game title's file.
-bool SaveCheatList();
-
-/// Deletes the cheat list, if present.
-bool DeleteCheatList();
-
-/// Removes all cheats from the cheat list.
-void ClearCheatList(bool save_to_file);
-
-/// Enables/disabled the specified cheat code.
-void SetCheatCodeState(u32 index, bool enabled);
-
-/// Immediately applies the specified cheat code.
-void ApplyCheatCode(u32 index);
 
 /// Toggle Widescreen Hack and Aspect Ratio
 void ToggleWidescreen();

@@ -7,316 +7,145 @@
 
 #include "types.h"
 
+#include <functional>
+#include <memory>
 #include <optional>
 #include <string>
+#include <string_view>
+#include <utility>
 #include <vector>
 
-struct CheatCode
+class Error;
+
+namespace Cheats {
+enum class CodeType : u8
 {
-  enum class Type : u8
-  {
-    Gameshark,
-    Count
-  };
+  Gameshark,
+  Count
+};
 
-  enum class Activation : u8
-  {
-    Manual,
-    EndFrame,
-    Count,
-  };
+enum class CodeActivation : u8
+{
+  Manual,
+  EndFrame,
+  Count,
+};
 
-  enum class InstructionCode : u8
-  {
-    Nop = 0x00,
-    ConstantWrite8 = 0x30,
-    ConstantWrite16 = 0x80,
-    ScratchpadWrite16 = 0x1F,
-    Increment16 = 0x10,
-    Decrement16 = 0x11,
-    Increment8 = 0x20,
-    Decrement8 = 0x21,
-    DelayActivation = 0xC1,
-    SkipIfNotEqual16 = 0xC0,
-    SkipIfButtonsNotEqual = 0xD5,
-    SkipIfButtonsEqual = 0xD6,
-    CompareButtons = 0xD4,
-    CompareEqual16 = 0xD0,
-    CompareNotEqual16 = 0xD1,
-    CompareLess16 = 0xD2,
-    CompareGreater16 = 0xD3,
-    CompareEqual8 = 0xE0,
-    CompareNotEqual8 = 0xE1,
-    CompareLess8 = 0xE2,
-    CompareGreater8 = 0xE3,
-    Slide = 0x50,
-    MemoryCopy = 0xC2,
-    ExtImprovedSlide = 0x53,
+enum class FileFormat : u8
+{
+  Unknown,
+  PCSX,
+  Libretro,
+  EPSXe,
+  Count
+};
 
-    // Extension opcodes, not present on original GameShark.
-    ExtConstantWrite32 = 0x90,
-    ExtScratchpadWrite32 = 0xA5,
-    ExtCompareEqual32 = 0xA0,
-    ExtCompareNotEqual32 = 0xA1,
-    ExtCompareLess32 = 0xA2,
-    ExtCompareGreater32 = 0xA3,
-    ExtSkipIfNotEqual32 = 0xA4,
-    ExtIncrement32 = 0x60,
-    ExtDecrement32 = 0x61,
-    ExtConstantWriteIfMatch16 = 0xA6,
-    ExtConstantWriteIfMatchWithRestore16 = 0xA7,
-    ExtConstantForceRange8 = 0xF0,
-    ExtConstantForceRangeLimits16 = 0xF1,
-    ExtConstantForceRangeRollRound16 = 0xF2,
-    ExtConstantForceRange16 = 0xF3,
-    ExtFindAndReplace = 0xF4,
-    ExtConstantSwap16 = 0xF5,
+using CodeOption = std::pair<std::string, u32>;
+using CodeOptionList = std::vector<CodeOption>;
 
-    ExtConstantBitSet8 = 0x31,
-    ExtConstantBitClear8 = 0x32,
-    ExtConstantBitSet16 = 0x81,
-    ExtConstantBitClear16 = 0x82,
-    ExtConstantBitSet32 = 0x91,
-    ExtConstantBitClear32 = 0x92,
-
-    ExtBitCompareButtons = 0xD7,
-    ExtSkipIfNotLess8 = 0xC3,
-    ExtSkipIfNotGreater8 = 0xC4,
-    ExtSkipIfNotLess16 = 0xC5,
-    ExtSkipIfNotGreater16 = 0xC6,
-    ExtMultiConditionals = 0xF6,
-
-    ExtCheatRegisters = 0x51,
-    ExtCheatRegistersCompare = 0x52,
-    
-    ExtCompareBitsSet8 = 0xE4,   //Only used inside ExtMultiConditionals
-    ExtCompareBitsClear8 = 0xE5, //Only used inside ExtMultiConditionals
-  };
-
-  union Instruction
-  {
-    u64 bits;
-
-    struct
-    {
-      u32 second;
-      u32 first;
-    };
-
-    BitField<u64, InstructionCode, 32 + 24, 8> code;
-    BitField<u64, u32, 32, 24> address;
-    BitField<u64, u32, 0, 32> value32;
-    BitField<u64, u16, 0, 16> value16;
-    BitField<u64, u8, 0, 8> value8;
-  };
-
-  std::string group;
+/// Contains all the information required to present a cheat code to the user.
+struct CodeInfo
+{
+  std::string name;
+  std::string author;
   std::string description;
-  std::vector<Instruction> instructions;
-  std::string comments;
-  Type type = Type::Gameshark;
-  Activation activation = Activation::EndFrame;
-  bool enabled = false;
+  std::string body;
+  CodeOptionList options;
+  u16 option_range_start = 0;
+  u16 option_range_end = 0;
+  u32 file_offset_start = 0;
+  u32 file_offset_body_start = 0;
+  u32 file_offset_end = 0;
+  CodeType type = CodeType::Gameshark;
+  CodeActivation activation = CodeActivation::EndFrame;
+  bool from_database = false;
 
-  ALWAYS_INLINE bool Valid() const { return !instructions.empty() && !description.empty(); }
-  ALWAYS_INLINE bool IsManuallyActivated() const { return (activation == Activation::Manual); }
+  std::string_view GetNamePart() const;
+  std::string_view GetNameParentPart() const;
 
-  std::string GetInstructionsAsString() const;
-  bool SetInstructionsFromString(const std::string& str);
-
-  u32 GetNextNonConditionalInstruction(u32 index) const;
-
-  void Apply() const;
-  void ApplyOnDisable() const;
-
-  static const char* GetTypeName(Type type);
-  static const char* GetTypeDisplayName(Type type);
-  static std::optional<Type> ParseTypeName(const char* str);
-
-  static const char* GetActivationName(Activation activation);
-  static const char* GetActivationDisplayName(Activation activation);
-  static std::optional<Activation> ParseActivationName(const char* str);
+  bool HasOptionChoices() const { return (!options.empty()); }
+  bool HasOptionRange() const { return (option_range_end > option_range_start); }
+  std::string_view MapOptionValueToName(u32 value) const;
+  std::string_view MapOptionValueToName(const std::string_view value) const;
+  u32 MapOptionNameToValue(const std::string_view opt_name) const;
 };
 
-class CheatList final
-{
-public:
-  enum class Format
-  {
-    Autodetect,
-    PCSXR,
-    Libretro,
-    EPSXe,
-    Count
-  };
+using CodeInfoList = std::vector<CodeInfo>;
 
-  CheatList();
-  ~CheatList();
+/// Returns the internal identifier for a code type.
+extern const char* GetTypeName(CodeType type);
 
-  ALWAYS_INLINE const CheatCode& GetCode(u32 i) const { return m_codes[i]; }
-  ALWAYS_INLINE CheatCode& GetCode(u32 i) { return m_codes[i]; }
-  ALWAYS_INLINE u32 GetCodeCount() const { return static_cast<u32>(m_codes.size()); }
-  ALWAYS_INLINE bool IsCodeEnabled(u32 index) const { return m_codes[index].enabled; }
+/// Returns the human-readable name for a code type.
+extern const char* GetTypeDisplayName(CodeType type);
 
-  ALWAYS_INLINE bool GetMasterEnable() const { return m_master_enable; }
-  ALWAYS_INLINE void SetMasterEnable(bool enable) { m_master_enable = enable; }
+/// Parses an internal identifier, returning the code type.
+extern std::optional<CodeType> ParseTypeName(const std::string_view str);
 
-  const CheatCode* FindCode(const char* name) const;
-  const CheatCode* FindCode(const char* group, const char* name) const;
+/// Returns the internal identifier for a code activation.
+extern const char* GetActivationName(CodeActivation activation);
 
-  void AddCode(CheatCode cc);
-  void SetCode(u32 index, CheatCode cc);
-  void RemoveCode(u32 i);
+/// Returns the human-readable name for a code activation.
+extern const char* GetActivationDisplayName(CodeActivation activation);
 
-  u32 GetEnabledCodeCount() const;
-  std::vector<std::string> GetCodeGroups() const;
-  void EnableCode(u32 index);
-  void DisableCode(u32 index);
-  void SetCodeEnabled(u32 index, bool state);
+/// Parses an internal identifier, returning the activation type.
+extern std::optional<CodeActivation> ParseActivationName(const std::string_view str);
 
-  static std::optional<Format> DetectFileFormat(const char* filename);
-  static Format DetectFileFormat(const std::string& str);
-  static bool ParseLibretroCheat(CheatCode* cc, const char* line);
+/// Returns a list of all available cheats/patches for a given game.
+extern CodeInfoList GetCodeInfoList(const std::string_view serial, std::optional<GameHash> hash, bool cheats,
+                                    bool load_from_database, bool sort_by_name);
 
-  bool LoadFromFile(const char* filename, Format format);
-  bool LoadFromPCSXRFile(const char* filename);
-  bool LoadFromLibretroFile(const char* filename);
+/// Returns a list of all unique prefixes/groups for a cheat list.
+extern std::vector<std::string_view> GetCodeListUniquePrefixes(const CodeInfoList& list, bool include_empty);
 
-  bool LoadFromString(const std::string& str, Format format);
-  bool LoadFromPCSXRString(const std::string& str);
-  bool LoadFromLibretroString(const std::string& str);
-  bool LoadFromEPSXeString(const std::string& str);
+/// Searches for a given code by name.
+extern const CodeInfo* FindCodeInInfoList(const CodeInfoList& list, const std::string_view name);
 
-  bool SaveToPCSXRFile(const char* filename);
+/// Searches for a given code by name.
+extern CodeInfo* FindCodeInInfoList(CodeInfoList& list, const std::string_view name);
 
-  bool LoadFromPackage(const std::string& serial);
+/// Imports all codes from the provided string.
+extern bool ImportCodesFromString(CodeInfoList* dst, const std::string_view file_contents, FileFormat file_format,
+                                  bool stop_on_error, Error* error);
 
-  void Apply();
+/// Exports codes to the given file, in DuckStation format.
+extern bool ExportCodesToFile(std::string path, const CodeInfoList& codes, Error* error);
 
-  void ApplyCode(u32 index);
+/// Adds, updates, or removes the specified code from the file, rewriting it. If code is null, it will be removed.
+extern bool UpdateCodeInFile(const char* path, const std::string_view name, const CodeInfo* code, Error* error);
 
-  void MergeList(const CheatList& cl);
+/// Updates or adds multiple codes to the file, rewriting it.
+extern bool SaveCodesToFile(const char* path, const CodeInfoList& codes, Error* error);
 
-private:
-  std::vector<CheatCode> m_codes;
-  bool m_master_enable = true;
-};
+/// Merges two cheat lists, with any duplicates in the new list taking precedence.
+extern void MergeCheatList(CodeInfoList* dst, CodeInfoList src);
 
-class MemoryScan
-{
-public:
-  enum class Operator
-  {
-    Any,
-    LessThanLast,
-    LessEqualLast,
-    GreaterThanLast,
-    GreaterEqualLast,
-    NotEqualLast,
-    EqualLast,
-    DecreasedBy,
-    IncreasedBy,
-    ChangedBy,
-    Equal,
-    NotEqual,
-    LessThan,
-    LessEqual,
-    GreaterThan,
-    GreaterEqual
-  };
+/// Returns the path to a new cheat/patch cht for the specified serial and hash.
+extern std::string GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats);
 
-  struct Result
-  {
-    PhysicalMemoryAddress address;
-    u32 value;
-    u32 last_value;
-    bool value_changed;
+/// Reloads cheats and game patches. The parameters control the degree to which data is reloaded.
+extern void ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 
-    bool Filter(Operator op, u32 comp_value, bool is_signed) const;
-    void UpdateValue(MemoryAccessSize size, bool is_signed);
-  };
+/// Releases all cheat-related state.
+extern void UnloadAll();
 
-  using ResultVector = std::vector<Result>;
+/// Applies setting changes based on patches.
+extern void ApplySettingOverrides();
 
-  MemoryScan();
-  ~MemoryScan();
+/// Applies all currently-registered frame end cheat codes.
+extern void ApplyFrameEndCodes();
 
-  u32 GetValue() const { return m_value; }
-  bool GetValueSigned() const { return m_signed; }
-  MemoryAccessSize GetSize() const { return m_size; }
-  Operator GetOperator() const { return m_operator; }
-  PhysicalMemoryAddress GetStartAddress() const { return m_start_address; }
-  PhysicalMemoryAddress GetEndAddress() const { return m_end_address; }
-  const ResultVector& GetResults() const { return m_results; }
-  const Result& GetResult(u32 index) const { return m_results[index]; }
-  u32 GetResultCount() const { return static_cast<u32>(m_results.size()); }
+/// Returns true if cheats are enabled in the current game's configuration.
+extern bool AreCheatsEnabled();
 
-  void SetValue(u32 value) { m_value = value; }
-  void SetValueSigned(bool s) { m_signed = s; }
-  void SetSize(MemoryAccessSize size) { m_size = size; }
-  void SetOperator(Operator op) { m_operator = op; }
-  void SetStartAddress(PhysicalMemoryAddress addr) { m_start_address = addr; }
-  void SetEndAddress(PhysicalMemoryAddress addr) { m_end_address = addr; }
+/// Enumerates the names of all manually-activated codes.
+extern bool EnumerateManualCodes(std::function<bool(const std::string& name)> callback);
 
-  void ResetSearch();
-  void Search();
-  void SearchAgain();
-  void UpdateResultsValues();
+/// Invokes/applies the specified manually-activated code.
+extern bool ApplyManualCode(const std::string_view name);
 
-  void SetResultValue(u32 index, u32 value);
+// Config sections/keys to use to enable patches.
+extern const char* PATCHES_CONFIG_SECTION;
+extern const char* CHEATS_CONFIG_SECTION;
+extern const char* PATCH_ENABLE_CONFIG_KEY;
 
-private:
-  void SearchBytes();
-  void SearchHalfwords();
-  void SearchWords();
-
-  u32 m_value = 0;
-  MemoryAccessSize m_size = MemoryAccessSize::HalfWord;
-  Operator m_operator = Operator::Equal;
-  PhysicalMemoryAddress m_start_address = 0;
-  PhysicalMemoryAddress m_end_address = 0x200000;
-  ResultVector m_results;
-  bool m_signed = false;
-};
-
-class MemoryWatchList
-{
-public:
-  MemoryWatchList();
-  ~MemoryWatchList();
-
-  struct Entry
-  {
-    std::string description;
-    u32 address;
-    u32 value;
-    MemoryAccessSize size;
-    bool is_signed;
-    bool freeze;
-    bool changed;
-  };
-
-  using EntryVector = std::vector<Entry>;
-
-  const Entry* GetEntryByAddress(u32 address) const;
-  const EntryVector& GetEntries() const { return m_entries; }
-  const Entry& GetEntry(u32 index) const { return m_entries[index]; }
-  u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
-
-  bool AddEntry(std::string description, u32 address, MemoryAccessSize size, bool is_signed, bool freeze);
-  void RemoveEntry(u32 index);
-  bool RemoveEntryByDescription(const char* description);
-  bool RemoveEntryByAddress(u32 address);
-
-  void SetEntryDescription(u32 index, std::string description);
-  void SetEntryFreeze(u32 index, bool freeze);
-  void SetEntryValue(u32 index, u32 value);
-
-  void UpdateValues();
-
-private:
-  static void SetEntryValue(Entry* entry, u32 value);
-  static void UpdateEntryValue(Entry* entry);
-
-  EntryVector m_entries;
-};
+} // namespace Cheats

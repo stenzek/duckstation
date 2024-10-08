@@ -23,8 +23,6 @@
     <ClCompile Include="biossettingswidget.cpp" />
     <ClCompile Include="memorycardeditorwindow.cpp" />
     <ClCompile Include="postprocessingsettingswidget.cpp" />
-    <ClCompile Include="cheatmanagerwindow.cpp" />
-    <ClCompile Include="cheatcodeeditordialog.cpp" />
     <ClCompile Include="debuggerwindow.cpp" />
     <ClCompile Include="debuggermodels.cpp" />
     <ClCompile Include="memoryviewwidget.cpp" />
@@ -63,12 +61,6 @@
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_biossettingswidget.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_cheatcodeeditordialog.cpp">
-      <Filter>moc</Filter>
-    </ClCompile>
-    <ClCompile Include="$(IntDir)moc_cheatmanagerwindow.cpp">
       <Filter>moc</Filter>
     </ClCompile>
     <ClCompile Include="$(IntDir)moc_colorpickerbutton.cpp">
@@ -175,6 +167,14 @@
     </ClCompile>
     <ClCompile Include="vcruntimecheck.cpp" />
     <ClCompile Include="qtthemes.cpp" />
+    <ClCompile Include="gamecheatsettingswidget.cpp" />
+    <ClCompile Include="gamepatchsettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_gamepatchsettingswidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
+    <ClCompile Include="$(IntDir)moc_gamecheatsettingswidget.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -216,8 +216,6 @@
     <QtMoc Include="biossettingswidget.h" />
     <QtMoc Include="memorycardeditorwindow.h" />
     <QtMoc Include="postprocessingsettingswidget.h" />
-    <QtMoc Include="cheatmanagerwindow.h" />
-    <QtMoc Include="cheatcodeeditordialog.h" />
     <QtMoc Include="debuggermodels.h" />
     <QtMoc Include="debuggerwindow.h" />
     <QtMoc Include="memoryviewwidget.h" />
@@ -237,6 +235,8 @@
     <QtMoc Include="graphicssettingswidget.h" />
     <QtMoc Include="memoryscannerwindow.h" />
     <QtMoc Include="selectdiscdialog.h" />
+    <QtMoc Include="gamecheatsettingswidget.h" />
+    <QtMoc Include="gamepatchsettingswidget.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -252,8 +252,7 @@
     <QtUi Include="biossettingswidget.ui" />
     <QtUi Include="postprocessingchainconfigwidget.ui" />
     <QtUi Include="memorycardeditorwindow.ui" />
-    <QtUi Include="cheatmanagerwindow.ui" />
-    <QtUi Include="cheatcodeeditordialog.ui" />
+    <QtUi Include="gamecheatcodeeditordialog.ui" />
     <QtUi Include="emulationsettingswidget.ui" />
     <QtUi Include="achievementsettingswidget.ui" />
     <QtUi Include="achievementlogindialog.ui" />
@@ -285,6 +284,10 @@
     <QtUi Include="controllerbindingwidget_justifier.ui" />
     <QtUi Include="selectdiscdialog.ui" />
     <QtUi Include="texturereplacementsettingsdialog.ui" />
+    <QtUi Include="gamepatchsettingswidget.ui" />
+    <QtUi Include="gamecheatsettingswidget.ui" />
+    <QtUi Include="gamepatchdetailswidget.ui" />
+    <QtUi Include="gamecheatcodechoiceeditordialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />

@@ -85,6 +85,8 @@ add_library(core
   memory_card.h
   memory_card_image.cpp
   memory_card_image.h
+  memory_scanner.cpp
+  memory_scanner.h
   mips_encoder.h
   multitap.cpp
   multitap.h
@@ -136,7 +138,7 @@ target_precompile_headers(core PRIVATE "pch.h")
 target_include_directories(core PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_include_directories(core PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/..")
 target_link_libraries(core PUBLIC Threads::Threads common util)
-target_link_libraries(core PRIVATE xxhash imgui rapidyaml rcheevos cpuinfo::cpuinfo ZLIB::ZLIB Zstd::Zstd)
+target_link_libraries(core PRIVATE xxhash imgui minizip rapidyaml rcheevos cpuinfo::cpuinfo ZLIB::ZLIB Zstd::Zstd)
 
 if(CPU_ARCH_X64)
   target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_NEWREC=1" "ENABLE_MMAP_FASTMEM=1")

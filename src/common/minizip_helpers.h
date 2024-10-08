@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include "error.h"
 #include "file_system.h"
+
 #include "ioapi.h"
 #include "types.h"
 #include "unzip.h"
@@ -86,6 +88,48 @@ namespace MinizipHelpers {
   };
 
   return unzOpen2_64(filename, &funcs);
+}
+
+[[maybe_unused]] static std::optional<std::string> ReadZipFileToString(unzFile zf, const char* filename,
+                                                                       bool case_sensitivity, Error* error)
+{
+  std::optional<std::string> ret;
+
+  int err = unzLocateFile(zf, filename, case_sensitivity);
+  if (err != UNZ_OK)
+  {
+    Error::SetStringView(error, "File not found.");
+    return ret;
+  }
+
+  unz_file_info64 fi;
+  err = unzGetCurrentFileInfo64(zf, &fi, nullptr, 0, nullptr, 0, nullptr, 0);
+  if (err != UNZ_OK || fi.uncompressed_size > std::numeric_limits<int>::max()) [[unlikely]]
+  {
+    Error::SetStringFmt(error, "Failed to get file size: {}", err);
+    return ret;
+  }
+
+  err = unzOpenCurrentFile(zf);
+  if (err != UNZ_OK) [[unlikely]]
+  {
+    Error::SetStringFmt(error, "Failed to open file: {}", err);
+    return ret;
+  }
+
+  ret = std::string();
+  ret->resize(static_cast<size_t>(fi.uncompressed_size));
+  if (!ret->empty())
+  {
+    const int size = unzReadCurrentFile(zf, ret->data(), static_cast<unsigned>(ret->size()));
+    if (size != static_cast<int>(ret->size()))
+    {
+      Error::SetStringFmt(error, "Only read {} of {} bytes.", size, ret->size());
+      ret.reset();
+    }
+  }
+
+  return ret;
 }
 
 } // namespace MinizipHelpers
