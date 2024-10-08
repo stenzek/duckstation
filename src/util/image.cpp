@@ -5,12 +5,15 @@
 
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/fastjmp.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
+
+#include "lunasvg_c.h"
 
 #include <jpeglib.h>
 #include <png.h>
@@ -151,6 +154,76 @@ bool RGBA8Image::LoadFromBuffer(std::string_view filename, const void* buffer, s
   return handler->buffer_loader(this, buffer, buffer_size);
 }
 
+bool RGBA8Image::LoadFromFileWithSizeHint(std::string_view filename, std::FILE* fp, u32 width_hint, u32 height_hint,
+                                          Error* error)
+{
+  if (StringUtil::EqualNoCase(Path::GetExtension(filename), "svg"))
+  {
+    const std::optional<DynamicHeapArray<u8>> data = FileSystem::ReadBinaryFile(fp, error);
+    if (!data.has_value())
+      return false;
+
+    return RasterizeSVG(data->cspan(), width_hint, height_hint, error);
+  }
+
+  return LoadFromFile(filename, fp);
+}
+
+bool RGBA8Image::LoadFromBufferWithSizeHint(std::string_view filename, const void* buffer, size_t buffer_size,
+                                            u32 width_hint, u32 height_hint, Error* error /*= nullptr*/)
+{
+  if (StringUtil::EqualNoCase(Path::GetExtension(filename), "svg"))
+  {
+    return RasterizeSVG(std::span<const u8>(static_cast<const u8*>(buffer), buffer_size), width_hint, height_hint,
+                        error);
+  }
+  else
+  {
+    return LoadFromBuffer(filename, buffer, buffer_size);
+  }
+}
+
+bool RGBA8Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, Error* error)
+{
+  if (width == 0 || height == 0)
+  {
+    Error::SetStringFmt(error, "Invalid dimensions: {}x{}", width, height);
+    return false;
+  }
+
+  std::unique_ptr<lunasvg_document, void (*)(lunasvg_document*)> doc(
+    lunasvg_document_load_from_data(data.data(), data.size()), lunasvg_document_destroy);
+  if (!doc)
+  {
+    Error::SetStringView(error, "lunasvg_document_load_from_data() failed");
+    return false;
+  }
+
+#if 0
+  std::unique_ptr<lunasvg_bitmap, void (*)(lunasvg_bitmap*)> bitmap(lunasvg_bitmap_create_with_size(width, height),
+                                                                    lunasvg_bitmap_destroy);
+  if (!bitmap)
+  {
+    Error::SetStringView(error, "lunasvg_bitmap_create_with_size() failed");
+    return false;
+  }
+
+  std::unique_ptr<lunasvg_matrix, void (*)(lunasvg_matrix*)> matrix(lunasvg_matrix_create(), lunasvg_matrix_destroy);
+  lunasvg_matrix_identity(matrix.get());
+#endif
+  std::unique_ptr<lunasvg_bitmap, void (*)(lunasvg_bitmap*)> bitmap(
+    lunasvg_document_render_to_bitmap(doc.get(), width, height, 0), lunasvg_bitmap_destroy);
+  if (!bitmap)
+  {
+    Error::SetStringView(error, "lunasvg_document_render_to_bitmap() failed");
+    return false;
+  }
+
+  SetPixels(width, height, lunasvg_bitmap_data(bitmap.get()), lunasvg_bitmap_stride(bitmap.get()));
+  SwapBGRAToRGBA();
+  return true;
+}
+
 bool RGBA8Image::SaveToFile(std::string_view filename, std::FILE* fp, u8 quality) const
 {
   const std::string_view extension(Path::GetExtension(filename));
@@ -184,6 +257,23 @@ std::optional<std::vector<u8>> RGBA8Image::SaveToBuffer(std::string_view filenam
     ret.reset();
 
   return ret;
+}
+
+void RGBA8Image::SwapBGRAToRGBA()
+{
+  // TODO: GSVectorify
+  for (u32 y = 0; y < m_height; y++)
+  {
+    u8* pixels = reinterpret_cast<u8*>(m_pixels.data()) + (y * sizeof(u32) * m_width);
+    for (u32 x = 0; x < m_width; x++)
+    {
+      u32 pixel;
+      std::memcpy(&pixel, pixels, sizeof(pixel));
+      pixel = (pixel & 0xFF00FF00) | ((pixel & 0xFF) << 16) | ((pixel >> 16) & 0xFF);
+      std::memcpy(pixels, &pixel, sizeof(pixel));
+      pixels += sizeof(pixel);
+    }
+  }
 }
 
 #if 0

@@ -130,8 +130,8 @@ void Shutdown();
 /// Texture cache.
 const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();
 std::unique_ptr<GPUTexture> CreateTextureFromImage(const RGBA8Image& image);
-std::shared_ptr<GPUTexture> LoadTexture(std::string_view path);
-GPUTexture* GetCachedTexture(std::string_view name);
+std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, u32 width_hint = 0, u32 height_hint = 0);
+GPUTexture* GetCachedTexture(std::string_view name, u32 width_hint = 0, u32 height = 0);
 GPUTexture* GetCachedTextureAsync(std::string_view name);
 bool InvalidateCachedTexture(const std::string& path);
 void UploadAsyncTextures();

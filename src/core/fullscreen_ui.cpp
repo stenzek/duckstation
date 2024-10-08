@@ -1382,7 +1382,7 @@ void FullscreenUI::DrawLandingWindow()
   {
     ResetFocusHere();
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/address-book-new.png"), FSUI_CSTR("Game List"),
+    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/pepe.svg", 256, 256), FSUI_CSTR("Game List"),
                            FSUI_CSTR("Launch a game from images scanned from your game directories.")))
     {
       SwitchToGameList();
@@ -5777,7 +5777,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
           }
 
           if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false, true,
-                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) || WantsToCloseMenu())
+                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) ||
+              WantsToCloseMenu())
           {
             is_open = false;
             ignore_close_request = true;

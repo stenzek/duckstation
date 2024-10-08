@@ -9,8 +9,11 @@
 #include <cstdio>
 #include <cstring>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <vector>
+
+class Error;
 
 template<typename PixelType>
 class Image
@@ -98,6 +101,28 @@ public:
     m_pixels = std::move(pixels);
   }
 
+  void SetPixels(u32 width, u32 height, const void* data, u32 stride)
+  {
+    const u32 copy_width = width * sizeof(PixelType);
+    if (stride == copy_width)
+    {
+      SetPixels(width, height, static_cast<const PixelType*>(data));
+      return;
+    }
+
+    m_width = width;
+    m_height = height;
+    m_pixels.resize(width, height);
+    PixelType* out_ptr = m_pixels.data();
+    const u8* in_ptr = static_cast<const u8*>(data);
+    for (u32 row = 0; row < height; row++)
+    {
+      std::memcpy(out_ptr, in_ptr, copy_width);
+      out_ptr += width;
+      in_ptr += stride;
+    }
+  }
+
   std::vector<PixelType> TakePixels()
   {
     m_width = 0;
@@ -130,7 +155,16 @@ public:
   bool LoadFromFile(std::string_view filename, std::FILE* fp);
   bool LoadFromBuffer(std::string_view filename, const void* buffer, size_t buffer_size);
 
+  bool LoadFromFileWithSizeHint(std::string_view filename, std::FILE* fp, u32 width_hint, u32 height_hint,
+                                Error* error = nullptr);
+  bool LoadFromBufferWithSizeHint(std::string_view filename, const void* buffer, size_t buffer_size, u32 width_hint,
+                                  u32 height_hint, Error* error = nullptr);
+
+  bool RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, Error* error = nullptr);
+
   bool SaveToFile(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
   bool SaveToFile(std::string_view filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY) const;
   std::optional<std::vector<u8>> SaveToBuffer(std::string_view filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
+private:
+  void SwapBGRAToRGBA();
 };
