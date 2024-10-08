@@ -38,14 +38,14 @@ fi
 
 FREETYPE=2.13.3
 HARFBUZZ=10.0.1
-SDL2=2.30.7
+SDL2=2.30.8
 ZSTD=1.5.6
 LIBPNG=1.6.44
 LIBJPEGTURBO=3.0.4
 LIBWEBP=1.4.0
 FFMPEG=7.0.2
 MOLTENVK=1.2.9
-QT=6.7.3
+QT=6.8.0
 
 CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
 DISCORD_RPC=144f3a3f1209994d8d9e8a87964a989cb9911c1e
@@ -78,15 +78,15 @@ e7358ea86fe10fb9261931af6f010d4358dac64f7074420ca9bc94aae2bdd542  harfbuzz-$HARF
 60c4da1d5b7f0aa8d158da48e8f8afa9773c1c8baa5d21974df61f1886b8ce8e  libpng-$LIBPNG.tar.xz
 99130559e7d62e8d695f2c0eaeef912c5828d5b84a0537dcb24c9678c9d5b76b  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
-2508c80438cd5ff3bbeb8fe36b8f3ce7805018ff30303010b61b03bb83ab9694  SDL2-$SDL2.tar.gz
+380c295ea76b9bd72d90075793971c8bcb232ba0a69a9b14da4ae8f603350058  SDL2-$SDL2.tar.gz
 8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
 8646515b638a3ad303e23af6a3587734447cb8fc0a0c064ecdb8e95c4fd8b389  ffmpeg-$FFMPEG.tar.xz
 f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
-8ccbb9ab055205ac76632c9eeddd1ed6fc66936fc56afc2ed0fd5d9e23da3097  qtbase-everywhere-src-$QT.tar.xz
-9fd58144081654c3373768dd96ead294023830927b14fe3d3c1ef641fb324753  qtimageformats-everywhere-src-$QT.tar.xz
-40142cb71fb1e07ad612bc361b67f5d54cd9367f9979ae6b86124a064deda06b  qtsvg-everywhere-src-$QT.tar.xz
-f03bb7df619cd9ac9dba110e30b7bcab5dd88eb8bdc9cc752563b4367233203f  qttools-everywhere-src-$QT.tar.xz
-dcc762acac043b9bb5e4d369b6d6f53e0ecfcf76a408fe0db5f7ef071c9d6dc8  qttranslations-everywhere-src-$QT.tar.xz
+1bad481710aa27f872de6c9f72651f89a6107f0077003d0ebfcc9fd15cba3c75  qtbase-everywhere-src-$QT.tar.xz
+595bf8557b91e1f8ebc726f1e09868a3c7e610ff5045068f2d4ea2428c49a5d4  qtimageformats-everywhere-src-$QT.tar.xz
+cf7a593d5e520f8177240610d9e55d5b75b0887fe5f385554ff64377f1646199  qtsvg-everywhere-src-$QT.tar.xz
+403115d8268503c6cc6e43310c8ae28eb9e605072a5d04e4a2de8b6af39981f7  qttools-everywhere-src-$QT.tar.xz
+84bf2b67c243cd0c50a08acd7bfa9df2b1965028511815c1b6b65a0687437cb6  qttranslations-everywhere-src-$QT.tar.xz
 e1351218d270db49c3dddcba04fb2153b09731ea3fa6830e423f5952f44585be  cpuinfo-$CPUINFO.tar.gz
 3eea5ccce6670c126282f1ba4d32c19d486db49a1a5cbfb8d6f48774784d310c  discord-rpc-$DISCORD_RPC.tar.gz
 3998b024b0d442614a9ee270e76e018bb37a17b8c6941212171731123cbbcac7  lunasvg-$LUNASVG.tar.gz
@@ -264,22 +264,9 @@ cd "qtbase-everywhere-src-$QT"
 # (only indirectly from iconengines), and the libqsvg.dylib imageformat plugin does not get deployed.
 # We could run macdeployqt twice, but that's even more janky than patching it.
 
-# https://github.com/qt/qtbase/commit/7b018629c3c3ab23665bf1da00c43c1546042035
-# The QProcess default wait time of 30s may be too short in e.g. CI environments where processes may be blocked
-# for a longer time waiting for CPU or IO.
-
 patch -u src/tools/macdeployqt/shared/shared.cpp <<EOF
 --- shared.cpp
 +++ shared.cpp
-@@ -152,7 +152,7 @@
-     LogDebug() << " inspecting" << binaryPath;
-     QProcess otool;
-     otool.start("otool", QStringList() << "-L" << binaryPath);
--    otool.waitForFinished();
-+    otool.waitForFinished(-1);
- 
-     if (otool.exitStatus() != QProcess::NormalExit || otool.exitCode() != 0) {
-         LogError() << otool.readAllStandardError();
 @@ -1122,14 +1122,8 @@
          addPlugins(QStringLiteral("networkinformation"));
      }
