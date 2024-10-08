@@ -19164,6 +19164,7 @@ SLES-03552:
     - DigitalController
   traits:
     - ForceRecompilerICache
+    - DisableWidescreen # Breaks sprite sizes.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -19188,6 +19189,7 @@ SLUS-01324:
     - DigitalController
   traits:
     - ForceRecompilerICache
+    - DisableWidescreen # Breaks sprite sizes.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -19203,12 +19205,13 @@ SLUS-01324:
     multitap: false
     linkCable: false
 SLPS-02728:
-  name: "Breath of Fire IV (USA) (Beta)"
+  name: "Breath of Fire IV: Utsurowazaru Mono"
   controllers:
     - AnalogController
     - DigitalController
   traits:
     - ForceRecompilerICache
+    - DisableWidescreen # Breaks sprite sizes.
   codes:
     - SLPS-02728
     - SLPM-87159
