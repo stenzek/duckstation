@@ -23459,6 +23459,7 @@ SLPS-00168:
   name: "Chaos Control (Japan)"
   controllers:
     - DigitalController
+    - PlayStationMouse
   metadata:
     publisher: "Virgin Interactive"
     developer: "Infogrames"
