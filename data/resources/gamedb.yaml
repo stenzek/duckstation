@@ -19029,6 +19029,7 @@ SLES-01304:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Fixes jittery sprites.
+    - DisableWidescreen # Breaks sprite placement.
   metadata:
     publisher: "Infogrames"
     developer: "Capcom"
@@ -19049,6 +19050,7 @@ SLES-01319:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Fixes jittery sprites.
+    - DisableWidescreen # Breaks sprite placement.
   metadata:
     publisher: "Infogrames"
     developer: "Capcom"
@@ -19069,6 +19071,7 @@ SLES-01320:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Fixes jittery sprites.
+    - DisableWidescreen # Breaks sprite placement.
   metadata:
     publisher: "Infogrames"
     developer: "Capcom"
@@ -19089,6 +19092,7 @@ SLPS-00990:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Fixes jittery sprites.
+    - DisableWidescreen # Breaks sprite placement.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -19107,6 +19111,7 @@ SLPM-80115:
   name: "Breath of Fire III (Japan) (Demo)"
   traits:
     - ForcePGXPCPUMode # Fixes jittery sprites.
+    - DisableWidescreen # Breaks sprite placement.
 SLUS-00422:
   name: "Breath of Fire III (USA)"
   compatibility:
@@ -19116,6 +19121,7 @@ SLUS-00422:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Fixes jittery sprites.
+    - DisableWidescreen # Breaks sprite placement.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
@@ -19136,6 +19142,7 @@ SLPM-86720:
     - DigitalController
   traits:
     - ForcePGXPCPUMode # Fixes jittery sprites.
+    - DisableWidescreen # Breaks sprite placement.
   metadata:
     publisher: "Capcom"
     developer: "Capcom"
