@@ -301,17 +301,18 @@ std::unique_ptr<GPUTexture> ImGuiFullscreen::CreateTextureFromImage(const RGBA8I
 std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view path)
 {
   std::optional<RGBA8Image> image;
+  Error error;
+
   if (Path::IsAbsolute(path))
   {
-    Error error;
     std::string path_str(path);
     auto fp = FileSystem::OpenManagedCFile(path_str.c_str(), "rb", &error);
     if (fp)
     {
       image = RGBA8Image();
-      if (!image->LoadFromFile(path_str.c_str(), fp.get()))
+      if (!image->LoadFromFile(path_str.c_str(), fp.get(), &error))
       {
-        ERROR_LOG("Failed to read texture file '{}'", path);
+        ERROR_LOG("Failed to read texture file '{}': {}", path, error.GetDescription());
         image.reset();
       }
     }
@@ -326,9 +327,9 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
     if (data.has_value())
     {
       image = RGBA8Image();
-      if (!image->LoadFromBuffer(path, data->data(), data->size()))
+      if (!image->LoadFromBuffer(path, data->cspan(), &error))
       {
-        ERROR_LOG("Failed to read texture resource '{}'", path);
+        ERROR_LOG("Failed to read texture resource '{}': {}", path, error.GetDescription());
         image.reset();
       }
     }

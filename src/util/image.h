@@ -3,14 +3,18 @@
 
 #pragma once
 
+#include "common/heap_array.h"
 #include "common/types.h"
 
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
 #include <optional>
+#include <span>
 #include <string_view>
 #include <vector>
+
+class Error;
 
 template<typename PixelType>
 class Image
@@ -126,11 +130,13 @@ public:
   RGBA8Image& operator=(const RGBA8Image& copy);
   RGBA8Image& operator=(RGBA8Image&& move);
 
-  bool LoadFromFile(const char* filename);
-  bool LoadFromFile(std::string_view filename, std::FILE* fp);
-  bool LoadFromBuffer(std::string_view filename, const void* buffer, size_t buffer_size);
+  bool LoadFromFile(const char* filename, Error* error = nullptr);
+  bool LoadFromFile(std::string_view filename, std::FILE* fp, Error* error = nullptr);
+  bool LoadFromBuffer(std::string_view filename, std::span<const u8> data, Error* error = nullptr);
 
-  bool SaveToFile(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
-  bool SaveToFile(std::string_view filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY) const;
-  std::optional<std::vector<u8>> SaveToBuffer(std::string_view filename, u8 quality = DEFAULT_SAVE_QUALITY) const;
+  bool SaveToFile(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY, Error* error = nullptr) const;
+  bool SaveToFile(std::string_view filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY,
+                  Error* error = nullptr) const;
+  std::optional<DynamicHeapArray<u8>> SaveToBuffer(std::string_view filename, u8 quality = DEFAULT_SAVE_QUALITY,
+                                                   Error* error = nullptr) const;
 };
