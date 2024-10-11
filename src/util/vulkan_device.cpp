@@ -3752,7 +3752,9 @@ void VulkanDevice::SetScissor(const GSVector4i rc)
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
     return;
 
-  const VkRect2D vrc = {{rc.x, rc.y}, {static_cast<u32>(rc.width()), static_cast<u32>(rc.height())}};
+  const GSVector4i clamped_rc = rc.max_s32(GSVector4i::zero());
+  const VkRect2D vrc = {{clamped_rc.x, clamped_rc.y},
+                        {static_cast<u32>(clamped_rc.width()), static_cast<u32>(clamped_rc.height())}};
   vkCmdSetScissor(GetCurrentCommandBuffer(), 0, 1, &vrc);
 }
 
