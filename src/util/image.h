@@ -102,6 +102,28 @@ public:
     m_pixels = std::move(pixels);
   }
 
+  void SetPixels(u32 width, u32 height, const void* data, u32 stride)
+  {
+    const u32 copy_width = width * sizeof(PixelType);
+    if (stride == copy_width)
+    {
+      SetPixels(width, height, static_cast<const PixelType*>(data));
+      return;
+    }
+
+    m_width = width;
+    m_height = height;
+    m_pixels.resize(width, height);
+    PixelType* out_ptr = m_pixels.data();
+    const u8* in_ptr = static_cast<const u8*>(data);
+    for (u32 row = 0; row < height; row++)
+    {
+      std::memcpy(out_ptr, in_ptr, copy_width);
+      out_ptr += width;
+      in_ptr += stride;
+    }
+  }
+
   std::vector<PixelType> TakePixels()
   {
     m_width = 0;
@@ -134,9 +156,13 @@ public:
   bool LoadFromFile(std::string_view filename, std::FILE* fp, Error* error = nullptr);
   bool LoadFromBuffer(std::string_view filename, std::span<const u8> data, Error* error = nullptr);
 
+  bool RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, Error* error = nullptr);
+
   bool SaveToFile(const char* filename, u8 quality = DEFAULT_SAVE_QUALITY, Error* error = nullptr) const;
   bool SaveToFile(std::string_view filename, std::FILE* fp, u8 quality = DEFAULT_SAVE_QUALITY,
                   Error* error = nullptr) const;
   std::optional<DynamicHeapArray<u8>> SaveToBuffer(std::string_view filename, u8 quality = DEFAULT_SAVE_QUALITY,
                                                    Error* error = nullptr) const;
+
+  static void SwapBGRAToRGBA(void* pixels, u32 width, u32 height, u32 pitch);
 };

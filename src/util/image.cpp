@@ -8,11 +8,14 @@
 #include "common/error.h"
 #include "common/fastjmp.h"
 #include "common/file_system.h"
+#include "common/gsvector.h"
 #include "common/heap_array.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
+
+#include "lunasvg_c.h"
 
 #include <jpeglib.h>
 #include <png.h>
@@ -154,6 +157,35 @@ bool RGBA8Image::LoadFromBuffer(std::string_view filename, std::span<const u8> d
   return handler->buffer_loader(this, data, error);
 }
 
+bool RGBA8Image::RasterizeSVG(const std::span<const u8> data, u32 width, u32 height, Error* error)
+{
+  if (width == 0 || height == 0)
+  {
+    Error::SetStringFmt(error, "Invalid dimensions: {}x{}", width, height);
+    return false;
+  }
+
+  std::unique_ptr<lunasvg_document, void (*)(lunasvg_document*)> doc(
+    lunasvg_document_load_from_data(data.data(), data.size()), lunasvg_document_destroy);
+  if (!doc)
+  {
+    Error::SetStringView(error, "lunasvg_document_load_from_data() failed");
+    return false;
+  }
+
+  std::unique_ptr<lunasvg_bitmap, void (*)(lunasvg_bitmap*)> bitmap(
+    lunasvg_document_render_to_bitmap(doc.get(), width, height, 0), lunasvg_bitmap_destroy);
+  if (!bitmap)
+  {
+    Error::SetStringView(error, "lunasvg_document_render_to_bitmap() failed");
+    return false;
+  }
+
+  SetPixels(width, height, lunasvg_bitmap_data(bitmap.get()), lunasvg_bitmap_stride(bitmap.get()));
+  SwapBGRAToRGBA(m_pixels.data(), m_width, m_height, GetPitch());
+  return true;
+}
+
 bool RGBA8Image::SaveToFile(std::string_view filename, std::FILE* fp, u8 quality /* = DEFAULT_SAVE_QUALITY */,
                             Error* error /* = nullptr */) const
 {
@@ -196,6 +228,41 @@ std::optional<DynamicHeapArray<u8>> RGBA8Image::SaveToBuffer(std::string_view fi
     ret.reset();
 
   return ret;
+}
+
+void RGBA8Image::SwapBGRAToRGBA(void* pixels, u32 width, u32 height, u32 pitch)
+{
+#ifdef GSVECTOR_HAS_FAST_INT_SHUFFLE8
+  constexpr u32 pixels_per_vec = sizeof(GSVector4i) / 4;
+  const u32 aligned_width = Common::AlignDownPow2(width, pixels_per_vec);
+#endif
+
+  u8* pixels_ptr = static_cast<u8*>(pixels);
+  for (u32 y = 0; y < height; y++)
+  {
+    u8* row_pixels_ptr = pixels_ptr;
+    u32 x;
+
+#ifdef GSVECTOR_HAS_FAST_INT_SHUFFLE8
+    for (x = 0; x < aligned_width; x += pixels_per_vec)
+    {
+      static constexpr GSVector4i mask = GSVector4i::cxpr8(2, 1, 0, 3, 6, 5, 4, 7, 10, 9, 8, 11, 14, 13, 12, 15);
+      GSVector4i::store<false>(row_pixels_ptr, GSVector4i::load<false>(row_pixels_ptr).shuffle8(mask));
+      row_pixels_ptr += sizeof(GSVector4i);
+    }
+#endif
+
+    for (; x < width; x++)
+    {
+      u32 pixel;
+      std::memcpy(&pixel, row_pixels_ptr, sizeof(pixel));
+      pixel = (pixel & 0xFF00FF00) | ((pixel & 0xFF) << 16) | ((pixel >> 16) & 0xFF);
+      std::memcpy(row_pixels_ptr, &pixel, sizeof(pixel));
+      row_pixels_ptr += sizeof(pixel);
+    }
+
+    pixels_ptr += pitch;
+  }
 }
 
 #if 0
