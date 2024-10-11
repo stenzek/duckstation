@@ -413,6 +413,8 @@ static std::string s_input_binding_display_name;
 static std::vector<InputBindingKey> s_input_binding_new_bindings;
 static std::vector<std::pair<InputBindingKey, std::pair<float, float>>> s_input_binding_value_ranges;
 static Common::Timer s_input_binding_timer;
+static bool s_controller_macro_expanded[NUM_CONTROLLER_AND_CARD_PORTS][InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER] =
+  {};
 
 //////////////////////////////////////////////////////////////////////////
 // Save State List
@@ -746,8 +748,10 @@ void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
 void FullscreenUI::Shutdown()
 {
   Achievements::ClearUIState();
+  ClearInputBindingVariables();
   CloseSaveStateSelector();
   s_cover_image_map.clear();
+  std::memset(s_controller_macro_expanded, 0, sizeof(s_controller_macro_expanded));
   s_game_list_sorted_entries = {};
   s_game_list_directories_cache = {};
   s_postprocessing_stages = {};
@@ -3804,6 +3808,13 @@ void FullscreenUI::DrawControllerSettingsPage()
 
     for (u32 macro_index = 0; macro_index < InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_index++)
     {
+      bool& expanded = s_controller_macro_expanded[global_slot][macro_index];
+      expanded ^= MenuHeadingButton(
+        SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_PF_EMPTY_KEYCAP, "Macro Button {}")), macro_index + 1),
+        s_controller_macro_expanded[global_slot][macro_index] ? ICON_FA_CHEVRON_UP : ICON_FA_CHEVRON_DOWN);
+      if (!expanded)
+        continue;
+
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
                              TinyString::from_format("Macro{}", macro_index + 1),
                              TinyString::from_format(FSUI_FSTR("Macro {} Trigger"), macro_index + 1), nullptr);
@@ -5777,7 +5788,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
           }
 
           if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false, true,
-                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) || WantsToCloseMenu())
+                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) ||
+              WantsToCloseMenu())
           {
             is_open = false;
             ignore_close_request = true;
@@ -7494,6 +7506,7 @@ TRANSLATE_NOOP("FullscreenUI", "Logs messages to duckstation.log in the user dir
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to the console window.");
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to the debug console where supported.");
 TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
+TRANSLATE_NOOP("FullscreenUI", "Macro Button {}");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Buttons");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Frequency");
 TRANSLATE_NOOP("FullscreenUI", "Macro {} Press To Toggle");
