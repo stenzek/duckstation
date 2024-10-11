@@ -43,7 +43,7 @@ using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, Con
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 
-static std::optional<RGBA8Image> LoadTextureImage(std::string_view path);
+static std::optional<RGBA8Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const RGBA8Image& image);
 static void TextureLoaderThread();
 
@@ -298,12 +298,34 @@ std::unique_ptr<GPUTexture> ImGuiFullscreen::CreateTextureFromImage(const RGBA8I
   return ret;
 }
 
-std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view path)
+std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height)
 {
   std::optional<RGBA8Image> image;
   Error error;
 
-  if (Path::IsAbsolute(path))
+  if (StringUtil::EqualNoCase(Path::GetExtension(path), "svg"))
+  {
+    std::optional<DynamicHeapArray<u8>> svg_data;
+    if (Path::IsAbsolute(path))
+      svg_data = FileSystem::ReadBinaryFile(std::string(path).c_str(), &error);
+    else
+      svg_data = Host::ReadResourceFile(path, true);
+
+    if (svg_data.has_value())
+    {
+      image = RGBA8Image();
+      if (!image->RasterizeSVG(svg_data->cspan(), svg_width, svg_height))
+      {
+        ERROR_LOG("Failed to rasterize SVG texture file '{}': {}", path, error.GetDescription());
+        image.reset();
+      }
+    }
+    else
+    {
+      ERROR_LOG("Failed to read SVG texture file '{}': {}", path, error.GetDescription());
+    }
+  }
+  else if (Path::IsAbsolute(path))
   {
     std::string path_str(path);
     auto fp = FileSystem::OpenManagedCFile(path_str.c_str(), "rb", &error);
@@ -349,7 +371,7 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(std::string_view path
                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
   if (!texture)
   {
-    ERROR_LOG("failed to create {}x{} texture for resource", image.GetWidth(), image.GetHeight());
+    ERROR_LOG("Failed to create {}x{} texture for resource", image.GetWidth(), image.GetHeight());
     return {};
   }
 
@@ -357,9 +379,9 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(std::string_view path
   return std::shared_ptr<GPUTexture>(texture.release(), GPUDevice::PooledTextureDeleter());
 }
 
-std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(std::string_view path)
+std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(std::string_view path, u32 width_hint, u32 height_hint)
 {
-  std::optional<RGBA8Image> image(LoadTextureImage(path));
+  std::optional<RGBA8Image> image(LoadTextureImage(path, width_hint, height_hint));
   if (image.has_value())
   {
     std::shared_ptr<GPUTexture> ret(UploadTexture(path, image.value()));
@@ -375,8 +397,24 @@ GPUTexture* ImGuiFullscreen::GetCachedTexture(std::string_view name)
   std::shared_ptr<GPUTexture>* tex_ptr = s_texture_cache.Lookup(name);
   if (!tex_ptr)
   {
-    std::shared_ptr<GPUTexture> tex(LoadTexture(name));
+    std::shared_ptr<GPUTexture> tex = LoadTexture(name);
     tex_ptr = s_texture_cache.Insert(std::string(name), std::move(tex));
+  }
+
+  return tex_ptr->get();
+}
+
+GPUTexture* ImGuiFullscreen::GetCachedTexture(std::string_view name, u32 svg_width, u32 svg_height)
+{
+  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
+  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
+
+  const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
+  std::shared_ptr<GPUTexture>* tex_ptr = s_texture_cache.Lookup(wh_name.view());
+  if (!tex_ptr)
+  {
+    std::shared_ptr<GPUTexture> tex = LoadTexture(name, svg_width, svg_height);
+    tex_ptr = s_texture_cache.Insert(std::string(wh_name.view()), std::move(tex));
   }
 
   return tex_ptr->get();
@@ -442,7 +480,7 @@ void ImGuiFullscreen::TextureLoaderThread()
       s_texture_load_queue.pop_front();
 
       lock.unlock();
-      std::optional<RGBA8Image> image(LoadTextureImage(path.c_str()));
+      std::optional<RGBA8Image> image(LoadTextureImage(path.c_str(), 0, 0));
       lock.lock();
 
       // don't bother queuing back if it doesn't exist
