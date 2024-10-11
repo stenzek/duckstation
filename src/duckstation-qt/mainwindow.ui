@@ -160,7 +160,6 @@
     <addaction name="actionDisableAllEnhancements"/>
     <addaction name="separator"/>
     <addaction name="actionCPUDebugger"/>
-    <addaction name="actionEnableGDBServer"/>
     <addaction name="separator"/>
     <addaction name="actionDumpRAM"/>
     <addaction name="actionDumpVRAM"/>
@@ -796,14 +795,6 @@
   <action name="actionCPUDebugger">
    <property name="text">
     <string>CPU D&amp;ebugger</string>
-   </property>
-  </action>
-  <action name="actionEnableGDBServer">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Enable GDB Server</string>
    </property>
   </action>
   <action name="actionViewGameGrid">

@@ -226,8 +226,10 @@ struct Settings
     bool dump_cpu_to_vram_copies : 1 = false;
     bool dump_vram_to_cpu_copies : 1 = false;
 
+#ifndef __ANDROID__
     bool enable_gdb_server : 1 = false;
-    u16 gdb_server_port = 1234;
+    u16 gdb_server_port = DEFAULT_GDB_SERVER_PORT;
+#endif
 
     // Mutable because the imgui window can close itself.
     mutable bool show_gpu_state = false;
@@ -555,6 +557,7 @@ struct Settings
 #ifndef __ANDROID__
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = true;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
+  static constexpr u16 DEFAULT_GDB_SERVER_PORT = 2345;
 #else
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;

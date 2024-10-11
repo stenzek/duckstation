@@ -435,8 +435,12 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   debugging.show_vram = si.GetBoolValue("Debug", "ShowVRAM");
   debugging.dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
   debugging.dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
+
+#ifndef __ANDROID__
   debugging.enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
-  debugging.gdb_server_port = static_cast<u16>(si.GetIntValue("Debug", "GDBServerPort"));
+  debugging.gdb_server_port = static_cast<u16>(si.GetUIntValue("Debug", "GDBServerPort", DEFAULT_GDB_SERVER_PORT));
+#endif
+
   debugging.show_gpu_state = si.GetBoolValue("Debug", "ShowGPUState");
   debugging.show_cdrom_state = si.GetBoolValue("Debug", "ShowCDROMState");
   debugging.show_spu_state = si.GetBoolValue("Debug", "ShowSPUState");
@@ -709,6 +713,12 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Debug", "ShowVRAM", debugging.show_vram);
     si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", debugging.dump_cpu_to_vram_copies);
     si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", debugging.dump_vram_to_cpu_copies);
+
+#ifndef __ANDROID__
+    si.SetBoolValue("Debug", "EnableGDBServer", debugging.enable_gdb_server);
+    si.SetUIntValue("Debug", "GDBServerPort", debugging.gdb_server_port);
+#endif
+
     si.SetBoolValue("Debug", "ShowGPUState", debugging.show_gpu_state);
     si.SetBoolValue("Debug", "ShowCDROMState", debugging.show_cdrom_state);
     si.SetBoolValue("Debug", "ShowSPUState", debugging.show_spu_state);

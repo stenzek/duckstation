@@ -265,6 +265,10 @@ void AdvancedSettingsWidget::addTweakOptions()
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
                         "AllowBootingWithoutSBIFile", false);
 
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable GDB Server"), "Debug", "EnableGDBServer", false);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GDB Server Port"), "Debug", "GDBServerPort", 1, 65535,
+                         Settings::DEFAULT_GDB_SERVER_PORT);
+
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Export Shared Memory"), "Hacks", "ExportSharedMemory",
                         false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable PCDrv"), "PCDrv", "Enabled", false);
@@ -300,10 +304,12 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM Region Check
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM SubQ Skew
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Allow booting without SBI file
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Export Shared Memory
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable PCDRV Writes
-    setDirectoryOption(m_ui.tweakOptionTable, i++, "");             // PCDrv Root Directory
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable GDB Server
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_GDB_SERVER_PORT); // GDB Server Port
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Export Shared Memory
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Enable PCDRV
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Enable PCDRV Writes
+    setDirectoryOption(m_ui.tweakOptionTable, i++, "");                                    // PCDrv Root Directory
 
     return;
   }
@@ -329,6 +335,8 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CDROM", "RegionCheck");
   sif->DeleteValue("CDROM", "SubQSkew");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");
+  sif->DeleteValue("Debug", "EnableGDBServer");
+  sif->DeleteValue("Debug", "GDBServerPort");
   sif->DeleteValue("PCDrv", "Enabled");
   sif->DeleteValue("PCDrv", "EnableWrites");
   sif->DeleteValue("PCDrv", "Root");

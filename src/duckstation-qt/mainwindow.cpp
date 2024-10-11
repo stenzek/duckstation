@@ -2094,7 +2094,6 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionMediaCapture, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
-  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableGDBServer, "Debug", "EnableGDBServer", false);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionOpenTextureDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenTextureDirectoryTriggered);
   connect(m_ui.actionReloadTextureReplacements, &QAction::triggered, g_emu_thread, &EmuThread::reloadTextureReplacements);
