@@ -6292,7 +6292,7 @@ SLES-02429:
     releaseDate: "1999-12-31"
     genre: "Adventure"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -6317,7 +6317,7 @@ SLES-12429:
     releaseDate: "1999-12-31"
     genre: "Adventure"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -10283,7 +10283,7 @@ SLES-02092:
     languages:
       - Dutch
       - French
-      - Germany
+      - German
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 9
@@ -17798,7 +17798,7 @@ SLES-01712:
     languages:
       - English
       - French
-      - Germany
+      - German
       - Spanish
     minPlayers: 1
     maxPlayers: 1
@@ -17956,7 +17956,7 @@ SCES-01078:
     languages:
       - English
       - French
-      - Germany
+      - German
       - Italian
       - Spanish
     minPlayers: 1
@@ -38708,7 +38708,7 @@ SCES-03543:
     releaseDate: "2001-10-19"
     genre: "Action / Adventure / Platformer"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -39278,7 +39278,7 @@ SCES-03877:
     releaseDate: "2002-06-27"
     genre: "Platformer"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -39335,7 +39335,7 @@ SCES-03717:
     releaseDate: "2002-02-14"
     genre: "Platformer"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -41447,7 +41447,7 @@ SCES-03769:
     releaseDate: "2002-01-02"
     genre: "Action / Platformer"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -43847,7 +43847,7 @@ SLES-02762:
     releaseDate: "2001-06-09"
     genre: "Adventure ( First Person perspective )"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -43871,7 +43871,7 @@ SLES-12762:
     releaseDate: "2001-06-09"
     genre: "Adventure ( First Person perspective )"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -67019,7 +67019,7 @@ SCES-02885:
       - French
       - German
       - Italian
-      - Portugese
+      - Portuguese
       - Spanish
     minPlayers: 1
     maxPlayers: 1
@@ -73740,7 +73740,7 @@ SLES-01813:
     releaseDate: "1999-04-15"
     genre: "Platformer"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -91152,7 +91152,7 @@ SLES-00451:
     genre: "Platformer"
     languages:
       - English
-      - France
+      - French
       - German
       - Italian
       - Spanish
@@ -104716,7 +104716,7 @@ SLES-03870:
     releaseDate: "2002-04-26"
     genre: "Sports / Soccer"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -110771,7 +110771,7 @@ SLES-03498:
     releaseDate: "2001-11-09"
     genre: "Adventure"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -110796,7 +110796,7 @@ SLES-13498:
     releaseDate: "2001-11-09"
     genre: "Adventure"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -115957,7 +115957,7 @@ SCES-02120:
     languages:
       - English
       - French
-      - Germany
+      - German
       - Italian
       - Spanish
     minPlayers: 1
@@ -123733,7 +123733,7 @@ SLES-02015:
     releaseDate: "1999-11-15"
     genre: "Soccer Manager"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 15
@@ -156694,7 +156694,7 @@ SCES-03851:
     releaseDate: "2002-07-19"
     genre: "Platformer"
     languages:
-      - Portugese
+      - Portuguese
     minPlayers: 1
     maxPlayers: 1
     minBlocks: 1
@@ -172609,7 +172609,7 @@ SLES-00262:
     genre: "Strategy / Constructing"
     languages:
       - English
-      - France
+      - French
       - German
       - Italian
       - Spanish
@@ -178260,7 +178260,7 @@ SLES-01302:
     languages:
       - English
       - French
-      - Germany
+      - German
       - Italian
       - Spanish
     minPlayers: 1
@@ -179904,7 +179904,7 @@ SLES-02733:
       - Dutch
       - English
       - French
-      - Germany
+      - German
       - Italian
       - Norwegian
       - Spanish
