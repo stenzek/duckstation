@@ -2100,7 +2100,8 @@ bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, co
   dl->AddImage(reinterpret_cast<ImTextureID>(icon), icon_pos, icon_pos + ImVec2(icon_size, icon_size));
 
   ImFont* title_font = g_large_font;
-  const ImVec2 title_size = title_font->CalcTextSizeA(title_font->FontSize, avail_width, 0.0f, title);
+  const ImVec2 title_size =
+    title_font->CalcTextSizeA(title_font->FontSize, std::numeric_limits<float>::max(), avail_width, title);
   const ImVec2 title_pos =
     ImVec2(bb.Min.x + (avail_width - title_size.x) * 0.5f, icon_pos.y + icon_size + LayoutScale(10.0f));
   const ImVec4 title_bb = ImVec4(title_pos.x, title_pos.y, title_pos.x + title_size.x, title_pos.y + title_size.y);
@@ -2109,7 +2110,8 @@ bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, co
               &title_bb);
 
   ImFont* desc_font = g_medium_font;
-  const ImVec2 desc_size = desc_font->CalcTextSizeA(desc_font->FontSize, avail_width, avail_width, description);
+  const ImVec2 desc_size =
+    desc_font->CalcTextSizeA(desc_font->FontSize, std::numeric_limits<float>::max(), avail_width, description);
   const ImVec2 desc_pos = ImVec2(bb.Min.x + (avail_width - desc_size.x) * 0.5f, title_bb.w + LayoutScale(10.0f));
   const ImVec4 desc_bb = ImVec4(desc_pos.x, desc_pos.y, desc_pos.x + desc_size.x, desc_pos.y + desc_size.y);
 
