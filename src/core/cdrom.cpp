@@ -389,7 +389,7 @@ struct CDROMState
   Command command = Command::None;
   Command command_second_response = Command::None;
   DriveState drive_state = DriveState::Idle;
-  DiscRegion disc_region = DiscRegion::Other;
+  DiscRegion disc_region = DiscRegion::NonPS1;
 
   StatusRegister status = {};
 
@@ -524,6 +524,8 @@ static std::array<CommandInfo, 255> s_command_info = {{
 
 void CDROM::Initialize()
 {
+  s_state.disc_region = DiscRegion::NonPS1;
+
   if (g_settings.cdrom_readahead_sectors > 0)
     s_reader.StartThread(g_settings.cdrom_readahead_sectors);
 

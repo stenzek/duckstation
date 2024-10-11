@@ -63,8 +63,8 @@ static constexpr const ImageInfo s_image_info_by_hash[] = {
   {"SCPH-7001, 7501, 7503, 9001, 9003, 9903 (v4.1 12-16-97 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("1e68c231d0896b7eadcad1d7d8e76129")},
   {"SCPH-7002, 7502, 9002 (v4.1 12-16-97 E)", ConsoleRegion::PAL, false, ImageInfo::FastBootPatch::Type1, 20, MakeHashFromString("b9d9a0286c33dc6b7237bb13cd46fdee")},
   {"SCPH-100 (v4.3 03-11-00 J)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("8abc1b549a4a80954addc48ef02c4521")},
-  {"SCPH-101 (v4.4 03-24-00 A)", ConsoleRegion::NTSC_U, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("9a09ab7e49b422c007e6d54d7c49b965")},
-  {"SCPH-101 (v4.5 05-25-00 A)", ConsoleRegion::NTSC_U, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("6e3735ff4c7dc899ee98981385f6f3d0")},
+  {"SCPH-101 (v4.4 03-24-00 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("9a09ab7e49b422c007e6d54d7c49b965")},
+  {"SCPH-101 (v4.5 05-25-00 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("6e3735ff4c7dc899ee98981385f6f3d0")},
   {"SCPH-102 (v4.4 03-24-00 E)", ConsoleRegion::PAL, true, ImageInfo::FastBootPatch::Type1, 20, MakeHashFromString("b10f5e0e3d9eb60e5159690680b1e774")},
   {"SCPH-102 (v4.5 05-25-00 E)", ConsoleRegion::PAL, true, ImageInfo::FastBootPatch::Type1, 20, MakeHashFromString("de93caec13d1a141a40a79f5c86168d6")},
   {"SCPH-1000R (v4.5 05-25-00 J)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("476d68a94ccec3b9c8303bbd1daf2810")},
@@ -164,6 +164,10 @@ bool BIOS::ImageInfo::CanSlowBootDisc(DiscRegion disc_region) const
 {
   // BIOSes without region checks can slow boot anything, those with region checks can't slow boot mismatched games.
   if (!region_check)
+    return true;
+
+  // Boot to BIOS for non-PS1 discs, e.g. audio.
+  if (disc_region == DiscRegion::NonPS1)
     return true;
 
   switch (region)
