@@ -2341,7 +2341,7 @@ A7184972 0C061400
 800F44B6 00CE
 #Max Gold Triangle
 800F44B8 0063
-#Timer is 0:00:00
+#Timer is 0.00.00
 800F4490 0000
 #Have All Gadgets
 D00F51C4 0003
@@ -3876,7 +3876,7 @@ D005BA88 0008
 8009345C 0063
 #Infinite Coins
 80093468 0063
-#Time Always 00:00:00
+#Time Always 00.00.00
 800191B0 0000
 
 ; [ All-Star Baseball 97 featuring Frank Thomas (USA) (1997) (Acclaim Entertainment) {SLUS-00392} <asbase97> ]
@@ -4102,7 +4102,7 @@ A7037D26 14621000
 
 ; [ ATV Mania (USA) (2003) (Gotham Games) {SLUS-01545} <atvmania> ]
 :SLUS-01545
-#Time Always 0:00
+#Time Always 0.00
 8007704C 0000
 #Infinite Health
 800C7AF4 0ED7
@@ -4122,7 +4122,7 @@ A7037D26 14621000
 #Unlock Everything
 50000601 0000
 3004E255 0004
-#Time Always 0:00:00
+#Time Always 0.00.00
 8005E676 2400
 #Select Lap\Lap 3
 301FD2F8 0003
@@ -4812,7 +4812,7 @@ D001840C 8005
 #Max Money:With this cheat, you need to go play a game, quit, then go back to snowboard/in-line skate shop to have lots of money
 D00183F0 8006
 80058D74 0FFF
-#Time Is 0:00:00
+#Time Is 0.00.00
 8002031E 2400
 #Select Widescreen Aspect Ratio\16-9
 A70AA386 10000C00
@@ -5308,7 +5308,7 @@ A7048342 10000EC8
 800A07D8 0004
 #Select Track\France
 800A07D8 0005
-#Time Is Always 0:00:00
+#Time Is Always 0.00.00
 8006AB94 0000
 #Select Widescreen Aspect Ratio\16-9
 A706B650 10000C00
@@ -10437,7 +10437,7 @@ A70C5CB6 10000400
 80143F22 0000
 #Other\Misc.\5 Million Zenny
 90144F50 02FAF08E
-#Other\Misc.\Time Always 00:00
+#Other\Misc.\Time Always 00.00
 80144FC0 0000
 #Other\Misc.\Have All Dragon Genes
 90145548 FFFFFFFF
@@ -10677,7 +10677,7 @@ A71D3666 A2622400
 8011AD80 FFFF
 #Max Zenny
 9011AD80 0098967F
-#Time 0:00
+#Time 0.00
 9011AD90 00000000
 8011AD94 0000
 #Have All Skills In Camp List
@@ -10758,11 +10758,11 @@ F51D16E6 12932400
 8014AB20 0C69
 #Max GB in Bonus Round
 80148894 03E7
-#Lap 1 is 0:00:00
+#Lap 1 is 0.00.00
 8014AB20 0000
-#Lap 2 is 0:00:00
+#Lap 2 is 0.00.00
 8014AB24 0000
-#Lap 3 is 0:00:00
+#Lap 3 is 0.00.00
 8014AB28 0000
 #Widescreen 16-9
 8003F89C 0C00
@@ -10804,18 +10804,18 @@ A70277FE 14401400
 ;f 0,fffff,w.a424,d.00042400  <--Lives
 ;f 0,fffff,w.a602,d.8602006a  <--Bombs
 ;f 0,fffff,w.1451,0,0,?,0801  <--Invincibility Pt1
-;f 0,fffff,w.1040,d.2650004c  <--Invincibility Pt2  
+;f 0,fffff,w.1040,d.2650004c  <--Invincibility Pt2
 ;f 0,fffff,w.1440,d.240a821  <WTW All 4 addresses
 
 ; [ Bomberman World (USA) (1998) (Atlus Software) {SLUS-00680} <bombmwld> ]
 :SLUS-00680
 #Indestructible Bomberman
 A60CCAE2 00002000
-#Infinite Lives:
+#Infinite Lives
 800CCB50 0009
-#Stop Timer:
+#Stop Timer
 80077B82 003B
-#Have All Needed Crystals:
+#Have All Needed Crystals
 D0077BD2 0004
 80077BD0 0004
 D0077BD2 0006
@@ -12472,9 +12472,9 @@ C00BB544 000A
 8009B19C 0020
 #Select Perm Turn\Always White's Turn
 8009B19C 0010
-#Time Always 00:00:00 For Black
+#Time Always 00.00.00 For Black
 8009B1F4 0000
-#Time Always 00:00:00 For White
+#Time Always 00.00.00 For White
 8009B1F0 0000
 
 ; [ Chicken Run (USA) (2000) (Eidos Interactive) {SLUS-01304} <chickrun> ]
@@ -12563,7 +12563,7 @@ C007B120 0100
 #Enable All Characters + Tracks
 801E929C FFFF
 300AF04F 0008
-#Time is 0:00:00
+#Time is 0.00.00
 80030338 2400
 #99 Points-Grand Prix Mode
 8008C028 0063
@@ -12709,7 +12709,7 @@ A7066144 10000400
 80070A18 0003
 #Infinite Ammo All Weapons
 80070954 0063
-#Play Time And Time Attack Mode Time 00:00:00
+#Play Time And Time Attack Mode Time 00.00.00
 80070A48 0000
 80070A54 0000
 #Have All Endings + Extra Mode
@@ -13853,15 +13853,15 @@ A701EF7E 8E420C00
 #Select Crash/Coco Speed\Normal Speed
 8000C03C 0000
 #Select Crash/Coco Speed\50% faster
-8000C03C 0019 
+8000C03C 0019
 #Select Crash/Coco Speed\100% faster
-8000C03C 0032 
+8000C03C 0032
 #Select Crash/Coco Speed\200% faster
-8000C03C 0064 
+8000C03C 0064
 #Select Crash/Coco Speed\300% faster
-8000C03C 0096 
+8000C03C 0096
 #Select Crash/Coco Speed\400% faster
-8000C03C 00C8 
+8000C03C 00C8
 #Widescreen 16-9
 A7018A90 F0D90C00
 A7018A92 0C002402
@@ -14460,7 +14460,7 @@ A71CF364 10000400
 80145766 000A
 #Infinite Money
 801457D8 FFFF
-#Infintie Medi Kits
+#Infinite Medi Kits
 80145772 000A
 #Infinite Landmines
 8014576A 000A
@@ -16471,7 +16471,7 @@ D01F3328 0000
 #Tiger-Temple\Start on 3rd lap
 D01E4418 0000
 301E4418 0002
-#Time Always 0:00:00
+#Time Always 0.00.00
 80035012 2400
 #Tiny Arena\All time-crates
 301E37CA 003C
@@ -18580,7 +18580,7 @@ D00B1418 000A
 800C7C42 0403
 #Infinite Time-Wipeout Missions
 800480CA 2400
-#Clear Time Is 0:00:00
+#Clear Time Is 0.00.00
 900C14C4 00000000
 #Used 0 Continues
 300C14CA 0005
@@ -18785,7 +18785,7 @@ D00B1418 000A
 800C7C42 0403
 #Infinite Time-Wipeout Missions
 800480CA 2400
-#Clear Time Is 0:00:00
+#Clear Time Is 0.00.00
 900C14C4 00000000
 #Used 0 Continues
 300C14CA 0005
@@ -21333,7 +21333,7 @@ E00A1FAA 0000
 300A1FAA 0004
 #Max Season Points
 800FCA24 FFFF
-#Time is 0:00:00
+#Time is 0.00.00
 9009DFC8 00019CA6
 #Enable All Cheats .Press R1 On Quick Race Option
 900A1AC0 FFFFFFFF
@@ -24157,7 +24157,7 @@ D00E0EC2 8006
 8011EADE 00B8
 #P1 Infinite Special Energy
 8011F7D6 00D0
-#Time is Always 0:00:01
+#Time is Always 0.00.01
 800F6C30 0000
 #Enable All Characters
 901F19FC FFFFFFFF
@@ -24269,7 +24269,7 @@ D0083E2C 0010
 80085734 0C0D
 #Astrea\Infinite Top Pod Ammo
 80084982 000F
-#Astrea\Have Unknown Fighter Type i:Push the triangle button at the fighter select screen
+#Astrea\Have Unknown Fighter Type I:Push the triangle button at the fighter select screen
 D0083E2C 0010
 80081434 0003
 #Astrea\Have Unknown Fighter Type II:Push the triangle button at the fighter select screen
@@ -24403,7 +24403,7 @@ A702498A 0C001400
 800A7EB6 0028
 #Energy Tank Always Full
 80017E98 0020
-#Elapsed Time is Always 00:00
+#Elapsed Time is Always 00.00
 800D6364 0000
 800DBF88 0000
 #Walk through Walls
@@ -25558,7 +25558,7 @@ A7040146 10401000
 800BC4DC 0001
 #All Weapons
 3007B4F9 0001
-#Game Time (00:00:00)
+#Game Time (00.00.00)
 9007B4F4 00000000
 #Walk through Doors (Disable if it starts making a continuous noise)
 A70344FE 10401400
@@ -25579,7 +25579,7 @@ D00495EC 0068
 800BC4DC 0001
 #All Weapons
 3007B4F9 0001
-#Game Time (00:00:00)
+#Game Time (00.00.00)
 9007B4F4 00000000
 
 ; [ Felony 11-79 (USA) (1997) (ASCII Entertainment Software) {SLUS-00533} <fel1179> ]
@@ -26849,18 +26849,18 @@ D00B8A24 005A
 A70C1002 10401000
 A70C10BA 12511000
 A70C10DE 12951000
-;Euro 
+;Euro
 A70C0EFE 10401000
 A70C0FB6 12511000
 A70C0FDA 12951000
-;USA 
+;USA
 A70C0EF6 10401000
 A70C0FAE 12511000
 A70C0FD2 12951000
 #Goalkeeper can't tackle or save ball
 ;Euro Rev1
 A70F1C36 10401000
-;Euro 
+;Euro
 A70F1B32 10401000
 ;USA
 A70F1B2A 10401000
@@ -26871,12 +26871,12 @@ A70C1002 10401000
 A70C10BA 12511000
 A70C10DE 12951000
 A70F1C36 10401000
-;Euro 
+;Euro
 A70C0EFE 10401000
 A70C0FB6 12511000
 A70C0FDA 12951000
 A70F1B32 10401000
-;USA 
+;USA
 A70C0EF6 10401000
 A70C0FAE 12511000
 A70C0FD2 12951000
@@ -26887,12 +26887,12 @@ A70C1002 10001040
 A70C10BA 10001251
 A70C10DE 10001295
 A70F1C36 10001040
-;Euro 
+;Euro
 A70C0EFE 10001040
 A70C0FB6 10001251
 A70C0FDA 10001295
 A70F1B32 10001040
-;USA 
+;USA
 A70C0EF6 10001040
 A70C0FAE 10001251
 A70C0FD2 10001295
@@ -27335,7 +27335,7 @@ D00E4A1E BFEF
 
 ; [ Ford Truck Mania (USA) (2003) (Gotham Games) {SLUS-01540} <fordtrkm> ]
 :SLUS-01540
-#Always 0:00 Time
+#Always 0.00 Time
 8005F5FC 0000
 #Always 1st Place
 800710EC 0001
@@ -27468,7 +27468,7 @@ D001784C 7ED2
 800B6924 FFFF
 #Infinite Attribute Points
 800DE5E8 0009
-#Time is 0:00:00
+#Time is 0.00.00
 800B65C8 0000
 #Never Miss Any Flags
 800B65F8 0000
@@ -28098,7 +28098,7 @@ D0124890 0105
 301AF994 0003
 #Have D-Felon Ability
 801AF9AE FFFF
-#Overall Time Is 0:00:00
+#Overall Time Is 0.00.00
 801AFDEC 0000
 #Have Max Item Slots
 801AFAFE 0028
@@ -29499,7 +29499,7 @@ D0010000 FFE0
 #Widescreen 16-9 option Better Graphics
 800674EC 0060
 800674EE 3404
-#16:9 Widescreen 2.0
+#16-9 Widescreen 2.0
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -29571,7 +29571,7 @@ A701CDF4 00B30086
 A701CDFC FFCEFFDB
 A701CE04 03200258
 00000000 FFFF
-#21:9 Widescreen 2.0
+#21-9 Widescreen 2.0
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -30005,7 +30005,7 @@ A70442E6 00622673
 900A7AE8 03E00008
 #Low-Rider
 A70442F2 14402400
-#16:9 Widescreen
+#16-9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -30077,7 +30077,7 @@ A701CDF4 00B30086
 A701CDFC FFCEFFDB
 A701CE04 03200258
 00000000 FFFF
-#21:9 Widescreen
+#21-9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -31424,7 +31424,7 @@ A70E274A 10401000
 
 ; [ Castrol Honda Superbike Racing (USA) (1999) (Electronic Arts) {SLUS-00882} <hondasbr> ]
 :SLUS-00882
-#Lap Time Is 0:00:00
+#Lap Time Is 0.00.00
 8002BB8A 2400
 #Start On 3rd Lap
 90026234 0C07C000
@@ -31873,7 +31873,7 @@ D01295AC 0000
 8013987C FFFF
 #Unlock All Tracks
 801397C0 FFFF
-#Time Is Always 0:00:00 Press Select right before you cross the line to go into next lap and it will reset timer to 0:00:00
+#Time Is Always 0.00.00 Press Select right before you cross the line to go into next lap and it will reset timer to 0.00.00
 D011B38A FFFE
 900D0E34 00000000
 #Car Is Invisible
@@ -31960,7 +31960,7 @@ A7075C6E 10002000
 #All Bean Challenges Complete
 3008268B 00FF
 3008268C 00FF
-#Total Time = 00:00
+#Total Time = 00.00
 90082970 00000000
 #Invincibility
 3007C9F9 00FF
@@ -32888,7 +32888,7 @@ A7194770 10000400
 800BBC86 0300
 800BBC8E 0400
 800BBC96 0500
-#Lap Time 0:00.00
+#Lap Time 0.00.00
 8005F49E 2400
 #Select Starting Lap\NO LAPS
 30010F6F 0000
@@ -35187,7 +35187,7 @@ D009BAFC 0004
 
 ; [ LEGO Racers (USA) (1999) (LEGO Media International) {SLUS-00581} <legorace> ]
 :SLUS-00581
-#Time is 0:00:00
+#Time is 0.00.00
 800B026E 2400
 #Unlock Everything
 D00687B0 4003
@@ -37590,7 +37590,7 @@ A70CB2AE 14401000
 800AE178 0000
 #Ocelot Has 0 Bullets
 80167CA8 0000
-#Infinite 3:00 Fight Time
+#Infinite 3.00 Fight Time
 800E72BC 1475
 #Infinite Time-Jeep Chase
 800E1258 FFFF
@@ -37829,7 +37829,7 @@ D00B2D60 0004
 800AE180 0000
 #Ocelot has 0 bullets
 80167CB0 0000
-#Infinite 3:00 Fight Time
+#Infinite 3.00 Fight Time
 800E72C4 1475
 #Infinite Time Jeep Chase
 800E1260 FFFF
@@ -37903,7 +37903,7 @@ A706381A 0C002400
 800AE178 0000
 #Ocelot Has 0 Bullets
 80167CA8 0000
-#Infinite 3:00 Fight Time
+#Infinite 3.00 Fight Time
 800E72BC 1475
 #Infinite Time-Jeep Chase
 800E1258 FFFF
@@ -38350,11 +38350,11 @@ D008D404 006E
 80039E2C 0001
 #Mission 1 Level 2\Infinite Health
 800E2DDA 0080
-#Mission 1Have Level 3\Unlocked
+#Mission 1 Level 3\Unlocked
 80039E5C 0001
 #Mission 1 Level 3\Infinite Health
 800E6E2A 0080
-#Mission 1 Have Level 4\Unlocked
+#Mission 1 Level 4\Unlocked
 80039E8C 0001
 #Mission 1 Level 4\Infinite Health
 800E689A 0080
@@ -38380,7 +38380,7 @@ D008D404 006E
 800EC48A 0080
 #Mission 3 Level 2\Unlock Level
 80039FBC 0001
-#Mission 3 Infintie Health Level 2
+#Mission 3  Level 2\Infinite Health
 800DCDEA 0080
 #Mission 3 Level 3\Unlock Level
 80039FEC 0001
@@ -39391,7 +39391,7 @@ A60B34D0 00000001
 3008C19C 00FF
 #Max Zenny
 9009C820 0098967F
-#Time 0:00:00
+#Time 0.00.00
 9009C818 00000000
 #Max Upgrade-All Special Weapons
 50006E01 0000
@@ -39544,7 +39544,7 @@ D009CF38 73EA
 8009CF3E 0017
 #Max Points
 3001B20D 00FF
-#Stop Timer/Always Place 1st You need to turn off the code to let the time goes up a little bit before the race ends as the champ mode does not accept 00:00:00 as your time
+#Stop Timer/Always Place 1st You need to turn off the code to let the time goes up a little bit before the race ends as the champ mode does not accept 00.00.00 as your time
 800F6FB4 06EC
 #Select Difficulty\Hard
 3001AFDC 0000
@@ -39990,7 +39990,7 @@ A7030ED2 10B01000
 #Max Speed
 800A558E 4300
 800A5596 4300
-#Lap Time is 0:00:00
+#Lap Time is 0.00.00
 8008ED6C 0000
 #Infinite Time
 8008F6D8 A000
@@ -40161,7 +40161,7 @@ A610F414 FFFFFF01
 80086E6C 0FFF
 #Max Money
 800DCF84 03E8
-#Lap Timer Always 00:00:00
+#Lap Timer Always 00.00.00
 8006F22C 0041
 #Freeze Cpu
 8004D27E 2400
@@ -40898,7 +40898,7 @@ E00C1E00 0000
 900BA214 01010101
 800BA218 0101
 300BA21A 0001
-#Time 00:00:00
+#Time 00.00.00
 90078E7C 00000000
 #Tired At 0%
 80078EA6 00A0
@@ -41467,7 +41467,7 @@ D0052E88 0024
 
 ; [ NASCAR 98 Collector's Edition (USA) (1998) (Electronic Arts) {SLUS-00647} <nasc98ce> ]
 :SLUS-00647
-#Lap Time is 00:00:000
+#Lap Time is 00.00.000
 800C2A24 0000
 #One Lap Needed To Finish Race
 800C29A2 0009
@@ -41499,7 +41499,7 @@ A60F3046 00000001
 
 ; [ NASCAR 98 (USA) (1997) (Electronic Arts) {SLUS-00521} <nascar98> ]
 :SLUS-00521
-#Lap Time is 00:00:000
+#Lap Time is 00.00.000
 800BF2FC 0000
 #One Lap Needed To Finish Race
 800BF27A 0009
@@ -43764,7 +43764,7 @@ A70162E8 10000400
 
 ; [ No Fear Downhill Mountain Bike Racing (USA) (1999) (The Codemasters Software Company) {SLUS-01000} <nofear> ]
 :SLUS-01000
-#Time Is 0:00:00
+#Time Is 0.00.00
 8001CC62 2400
 #Unlock All Difficulties, Levels, + Videos
 300D1616 0002
@@ -44675,7 +44675,7 @@ D00A76BC 03E8
 8004AAAC 0000
 #Infinite Ammo Everything (Bpc)
 80056BE0 0000
-#Time 00:00:00
+#Time 00.00.00
 900A76BC 00000000
 #Activate Tools + BP Menu
 8009CEF0 FFFF
@@ -46407,7 +46407,7 @@ A60A8F12 00000063
 
 ; [ Puzznic (USA) (2003) (Mud Duck Productions) {SLUS-01492} <puzznic> ]
 :SLUS-01492
-#Time Always 00:00
+#Time Always 00.00
 8009B418 0000
 #Max Score
 8009B408 270F
@@ -48417,13 +48417,13 @@ A60B9318 00000002
 A60BE36C 00000003
 #One Stage To Race In Championship Mode Platinum Cup
 A60BE36C 00000005
-#Time is 0:00:00
+#Time is 0.00.00
 900B11B0 00000000
 #Max Points in Championship Mode
 800BE37C 0063
 #Infinite Tries
 800BE370 0003
-#Time Trial - Time is 0:00:00
+#Time Trial - Time is 0.00.00
 8006AD32 2400
 #Add A Retry
 8002DA40 0001
@@ -49240,7 +49240,7 @@ E00D23F8 0000
 80019ADC FFFF
 #99 League Points
 30019A0C 0063
-#Lap Time Is 0:00:00
+#Lap Time Is 0.00.00
 800B2D04 0000
 #Unlock Everything
 80019DEC 2000
@@ -49425,17 +49425,17 @@ D00F3BEA 0100
 #Have All Cars
 50002002 0000
 800F3AE0 FFFF
-#Lap 1 is 0:00:00
+#Lap 1 is 0.00.00
 800F4D58 0000
-#Lap 2 is 0:00:00
+#Lap 2 is 0.00.00
 800F4D5C 0000
-#Lap 3 is 0:00:00
+#Lap 3 is 0.00.00
 800F4D60 0000
-#Lap 4 is 0:00:00
+#Lap 4 is 0.00.00
 800F4D64 0000
-#Lap 5 is 0:00:00
+#Lap 5 is 0.00.00
 800F4D68 0000
-#Lap 6 is 0:00:00
+#Lap 6 is 0.00.00
 800F4D6C 0000
 #Unlock All Decals
 900F3B28 01010101
@@ -52275,7 +52275,7 @@ A71DD2E0 10000400
 
 ; [ Shadow Man (USA) (1999) (Acclaim Entertainment) {SLUS-00895} <shadowmn> ]
 :SLUS-00895
-#Time is 0:00:00
+#Time is 0.00.00
 900B5588 00000000
 #Infinite Health
 900C13C4 00002710
@@ -52610,7 +52610,7 @@ D00BC76C 2400
 #Infinite All Items 1
 50002804 0000
 300BCA35 00FF
-#Game Time 0:0:0
+#Game Time 0.0.0
 900BCC84 00000000
 #Radio Always On
 800BCAE0 0001
@@ -53092,7 +53092,7 @@ A70E0128 19991333
 900D7E84 0FFFFFFF
 #Have All Characters
 800D7D28 FFFF
-#Overall Time is 0:00:00
+#Overall Time is 0.00.00
 800D7D18 0000
 #All Targets Destroyed
 C20D7E3E 0001
@@ -53670,7 +53670,7 @@ A71C1FB6 14401400
 80097BF4 FFFF
 #Every Room You Enter Increases Total 65535
 8003C760 FFFF
-#Game Time 00:00:00
+#Game Time 00.00.00
 80097C38 0000
 #Hyper Hydrostorm (Richter Only):With this cheat, to use it, use the Holy Water Item Crash. After the FX are over, the Hydrostorm will keep doing damage! This little rain of death will continue until you go through a 'CD Load' hallway or cause disc access.
 80074CFC FFFF
@@ -55907,7 +55907,7 @@ D00127C4 1012
 
 ; [ Street Racquetball (USA) (2002) (Agetec) {SLUS-01450} <sracquet> ]
 :SLUS-01450
-#Time Always 00:00
+#Time Always 00.00
 8007DBEC 0000
 #P1 Max Score
 800BDEB8 000F
@@ -56199,7 +56199,7 @@ A703B05A 00402400
 80154408 0009
 #Infinite Trench Missiles
 8015440A 0009
-#Time Always 00:00:00 (Can't Lose With This Cheat)
+#Time Always 00.00.00 (Can't Lose With This Cheat)
 800AB4CC 0000
 #Select Ship\Explorer, Kitty Hawk Class
 800AB4F0 0000
@@ -56547,12 +56547,12 @@ D00D27E2 0100
 300EAE10 0001
 #Unlock Display Debug Info
 300EADA0 0001
-#Unlock Flycam:On Select Menu
+#Unlock Flycam (On Select Menu)
 300EADF4 0001
 #Unlock ???1:Unlocks something maybe but not sure what
 300EADBC 0001
 #Unlock ???2:Unlocks something maybe but not sure what
-300EADD8 0001
+300EADD8 0002
 
 ; [ Mortal Kombat Mythologies - Sub-Zero (USA) (1997) (Midway Home Entertainment) {SLUS-00476} <subzero> ]
 :SLUS-00476
@@ -58119,7 +58119,7 @@ D011F338 0001
 800CD756 0025
 #Stop Timer
 800D42E8 0000
-#Time 00:00:00
+#Time 00.00.00
 900D42E8 00000000
 #Max Whistles
 300D42CB 0063
@@ -58258,7 +58258,7 @@ A708815C 199A1334
 :SLUS-00839
 #Max Credits
 900AC628 3B9AC9FF
-#Total Time 00:00:00/Always 1st
+#Total Time 00.00.00/Always 1st
 800A80EC 0000
 #Infinite Check Point
 800A80F0 0AA9
@@ -59693,7 +59693,7 @@ A612DF8E 0000000B
 8001034C 1300
 #Ayame\Misc.\Grand Master Status - Records Screen\Training
 80010358 1300
-#Ayame\Training Level-In Battle\00:00 Time
+#Ayame\Training Level-In Battle\00.00 Time
 90095358 00000000
 #Ayame\Training Level-In Battle\Grapling Hook
 30125140 00FF
@@ -59846,7 +59846,7 @@ A612A4D2 0000000B
 3012F5C7 00FF
 #Rikimaru\Level 2-In Battle\Transporter
 3012F5C8 00FF
-#Rikimaru\Level 2-In Battle\Infintie Health
+#Rikimaru\Level 2-In Battle\Infinite Health
 D000E226 800B
 8012F504 0064
 #Rikimaru\Level 2-In Battle\Stealth Mode
@@ -60377,7 +60377,7 @@ A612E092 0000000B
 80010178 1300
 #Rikimaru\Misc.\Grand Master Status-Records Screen\Training
 80010184 1300
-#Rikimaru\Training Level-In Battle\00:00 Time
+#Rikimaru\Training Level-In Battle\00.00 Time
 90095358 00000000
 #Rikimaru\Training Level-In Battle\Grapling Hook
 30125244 00FF
@@ -60490,7 +60490,7 @@ A70C4108 10000400
 30010075 00FF
 #Rikimaru\Record\The Training Course\Max Score
 80010076 7FFF
-#Rikimaru\Record\The Training Course\Time 0:00.0/Enables Mission
+#Rikimaru\Record\The Training Course\Time 0.00.0/Enables Mission
 80010078 EA5F
 #Rikimaru\Record\The Gang Of Thieves\Grand Master Status
 3001007C 0006
@@ -60498,7 +60498,7 @@ A70C4108 10000400
 3001007D 00FF
 #Rikimaru\Record\The Gang Of Thieves\Max Score
 8001007E 7FFF
-#Rikimaru\Record\The Gang Of Thieves\Time 0:00.0/Enables Mission
+#Rikimaru\Record\The Gang Of Thieves\Time 0.00.0/Enables Mission
 80010080 EA5F
 #Rikimaru\Record\Treason At Gohde Castle\Grand Master Status
 30010084 0006
@@ -60506,7 +60506,7 @@ A70C4108 10000400
 30010085 00FF
 #Rikimaru\Record\Treason At Gohde Castle\Max Score
 80010086 7FFF
-#Rikimaru\Record\Treason At Gohde Castle\Time 0:00.0/Enables Mission
+#Rikimaru\Record\Treason At Gohde Castle\Time 0.00.0/Enables Mission
 80010088 EA5F
 #Rikimaru\Record\Lord Toda's War Camp\Grand Master Status
 3001008C 0006
@@ -60514,7 +60514,7 @@ A70C4108 10000400
 3001008D 00FF
 #Rikimaru\Record\Lord Toda's War Camp\Max Score
 8001008E 7FFF
-#Rikimaru\Record\Lord Toda's War Camp\Time 0:00.0/Enables Mission
+#Rikimaru\Record\Lord Toda's War Camp\Time 0.00.0/Enables Mission
 80010090 EA5F
 #Rikimaru\Record\Demon Mountain\Grand Master Status
 30010094 0006
@@ -60522,7 +60522,7 @@ A70C4108 10000400
 30010095 00FF
 #Rikimaru\Record\Demon Mountain\Max Score
 80010096 7FFF
-#Rikimaru\Record\Demon Mountain\Time 0:00.0/Enables Mission
+#Rikimaru\Record\Demon Mountain\Time 0.00.0/Enables Mission
 80010098 EA5F
 #Rikimaru\Record\The Secret Harbor\Grand Master Status
 3001009C 0006
@@ -60530,7 +60530,7 @@ A70C4108 10000400
 3001009D 00FF
 #Rikimaru\Record\The Secret Harbor\Max Score
 8001009E 7FFF
-#Rikimaru\Record\The Secret Harbor\Time 0:00.0/Enables Mission
+#Rikimaru\Record\The Secret Harbor\Time 0.00.0/Enables Mission
 800100A0 EA5F
 #Rikimaru\Record\The Temple Of Dreams\Grand Master Status
 300100A4 0006
@@ -60538,7 +60538,7 @@ A70C4108 10000400
 300100A5 00FF
 #Rikimaru\Record\The Temple Of Dreams\Max Score
 800100A6 7FFF
-#Rikimaru\Record\The Temple Of Dreams\Time 0:00.0/Enables Mission
+#Rikimaru\Record\The Temple Of Dreams\Time 0.00.0/Enables Mission
 800100A8 EA5F
 #Rikimaru\Record\Ninja Village Under Attack\Grand Master Status
 300100AC 0006
@@ -60546,7 +60546,7 @@ A70C4108 10000400
 300100AD 00FF
 #Rikimaru\Record\Ninja Village Under Attack\Max Score
 800100AE 7FFF
-#Rikimaru\Record\Ninja Village Under Attack\Time 0:00.0/Enables Mission
+#Rikimaru\Record\Ninja Village Under Attack\Time 0.00.0/Enables Mission
 800100B0 EA5F
 #Rikimaru\Record\In Pursuit Of Tatsumaru\Grand Master Status
 300100B4 0006
@@ -60554,7 +60554,7 @@ A70C4108 10000400
 300100B5 00FF
 #Rikimaru\Record\In Pursuit Of Tatsumaru\Max Score
 800100B6 7FFF
-#Rikimaru\Record\In Pursuit Of Tatsumaru\Time 0:00.0/Enables Mission
+#Rikimaru\Record\In Pursuit Of Tatsumaru\Time 0.00.0/Enables Mission
 800100B8 EA5F
 #Rikimaru\Record\The Kansen Caverns\Grand Master Status
 300100BC 0006
@@ -60562,7 +60562,7 @@ A70C4108 10000400
 300100BD 00FF
 #Rikimaru\Record\The Kansen Caverns\Max Score
 800100BE 7FFF
-#Rikimaru\Record\The Kansen Caverns\Time 0:00.0/Enables Mission
+#Rikimaru\Record\The Kansen Caverns\Time 0.00.0/Enables Mission
 800100C0 EA5F
 #Rikimaru\Record\The Sea Battle\Grand Master Status
 300100C4 0006
@@ -60570,7 +60570,7 @@ A70C4108 10000400
 300100C5 00FF
 #Rikimaru\Record\The Sea Battle\Max Score
 800100C6 7FFF
-#Rikimaru\Record\The Sea Battle\Time 0:00.0/Enables Mission
+#Rikimaru\Record\The Sea Battle\Time 0.00.0/Enables Mission
 800100C8 EA5F
 #Rikimaru\Record\The Sea Battle\Have All Items
 50001401 0000
@@ -60581,7 +60581,7 @@ A70C4108 10000400
 300100CD 00FF
 #Ayame\Record\The Training Course\Max Score
 800100CE 7FFF
-#Ayame\Record\The Training Course\Time 0:00.0/Enables Mission
+#Ayame\Record\The Training Course\Time 0.00.0/Enables Mission
 800100D0 EA5F
 #Ayame\Record\The Mountain Bandits\Grand Master Status
 300100D4 0006
@@ -60589,7 +60589,7 @@ A70C4108 10000400
 300100D5 00FF
 #Ayame\Record\The Mountain Bandits\Max Score
 800100D6 7FFF
-#Ayame\Record\The Mountain Bandits\Time 0:00.0/Enables Mission
+#Ayame\Record\The Mountain Bandits\Time 0.00.0/Enables Mission
 800100D8 EA5F
 #Ayame\Record\Lady Kei In Danger\Grand Master Status
 300100DC 0006
@@ -60597,7 +60597,7 @@ A70C4108 10000400
 300100DD 00FF
 #Ayame\Record\Lady Kei In Danger\Max Score
 800100DE 7FFF
-#Ayame\Record\Lady Kei In Danger\Time 0:00.0/Enables Mission
+#Ayame\Record\Lady Kei In Danger\Time 0.00.0/Enables Mission
 800100E0 EA5F
 #Ayame\Record\To Save A Princess\Grand Master Status
 300100E4 0006
@@ -60605,7 +60605,7 @@ A70C4108 10000400
 300100E5 00FF
 #Ayame\Record\To Save A Princess\Max Score
 800100E6 7FFF
-#Ayame\Record\To Save A Princess\Time 0:00.0/Enables Mission
+#Ayame\Record\To Save A Princess\Time 0.00.0/Enables Mission
 800100E8 EA5F
 #Ayame\Record\Kuban Island\Grand Master Status
 300100EC 0006
@@ -60613,7 +60613,7 @@ A70C4108 10000400
 300100ED 00FF
 #Ayame\Record\Kuban Island\Max Score
 800100EE 7FFF
-#Ayame\Record\Kuban Island\Time 0:00.0/Enables Mission
+#Ayame\Record\Kuban Island\Time 0.00.0/Enables Mission
 800100F0 EA5F
 #Ayame\Record\The Island Fort\Grand Master Status
 300100F4 0006
@@ -60621,7 +60621,7 @@ A70C4108 10000400
 300100F5 00FF
 #Ayame\Record\The Island Fort\Max Score
 800100F6 7FFF
-#Ayame\Record\The Island Fort\Time 0:00.0/Enables Mission
+#Ayame\Record\The Island Fort\Time 0.00.0/Enables Mission
 800100F8 EA5F
 #Ayame\Record\The Quarantine Village\Grand Master Status
 300100FC 0006
@@ -60629,7 +60629,7 @@ A70C4108 10000400
 300100FD 00FF
 #Ayame\Record\The Quarantine Village\Max Score
 800100FE 7FFF
-#Ayame\Record\The Quarantine Village\Time 0:00.0/Enables Mission
+#Ayame\Record\The Quarantine Village\Time 0.00.0/Enables Mission
 80010100 EA5F
 #Ayame\Record\Cherry Tree Hill\Grand Master Status
 30010104 0006
@@ -60637,7 +60637,7 @@ A70C4108 10000400
 30010105 00FF
 #Ayame\Record\Cherry Tree Hill\Max Score
 80010106 7FFF
-#Ayame\Record\Cherry Tree Hill\Time 0:00.0/Enables Mission
+#Ayame\Record\Cherry Tree Hill\Time 0.00.0/Enables Mission
 80010108 EA5F
 #Ayame\Record\In Pursuit Of Tatsumaru\Grand Master Status
 3001010C 0006
@@ -60645,7 +60645,7 @@ A70C4108 10000400
 3001010D 00FF
 #Ayame\Record\In Pursuit Of Tatsumaru\Max Score
 8001010E 7FFF
-#Ayame\Record\In Pursuit Of Tatsumaru\Time 0:00.0/Enables Mission
+#Ayame\Record\In Pursuit Of Tatsumaru\Time 0.00.0/Enables Mission
 80010110 EA5F
 #Ayame\Record\The Kansen Caverns\Grand Master Status
 30010114 0006
@@ -60653,7 +60653,7 @@ A70C4108 10000400
 30010115 00FF
 #Ayame\Record\The Kansen Caverns\Max Score
 80010116 7FFF
-#Ayame\Record\The Kansen Caverns\Time 0:00.0/Enables Mission
+#Ayame\Record\The Kansen Caverns\Time 0.00.0/Enables Mission
 80010118 EA5F
 #Ayame\Record\The Fire Demon\Grand Master Status
 3001011C 0006
@@ -60661,7 +60661,7 @@ A70C4108 10000400
 3001011D 00FF
 #Ayame\Record\The Fire Demon\Max Score
 8001011E 7FFF
-#Ayame\Record\The Fire Demon\Time 0:00.0/Enables Mission
+#Ayame\Record\The Fire Demon\Time 0.00.0/Enables Mission
 80010120 EA5F
 #Ayame\Record\The Fire Demon\Have All Items
 50001401 0000
@@ -60726,7 +60726,7 @@ D00104B0 0001
 30010125 00FF
 #Tatsumaru\Record\A Shadow\Max Score
 80010126 7FFF
-#Tatsumaru\Record\A Shadow\Time 0:00:00/Enable Mission
+#Tatsumaru\Record\A Shadow\Time 0.00.00/Enable Mission
 80010128 EA5F
 #Tatsumaru\Record\The Head Of Lord Toda\Grand Master Status
 3001012C 0006
@@ -60734,7 +60734,7 @@ D00104B0 0001
 3001012D 00FF
 #Tatsumaru\Record\The Head Of Lord Toda\Max Score
 8001012E 7FFF
-#Tatsumaru\Record\The Head Of Lord Toda\Time 0:00:00/Enable Mission
+#Tatsumaru\Record\The Head Of Lord Toda\Time 0.00.00/Enable Mission
 80010130 EA5F
 #Tatsumaru\Record\Labor Shortage\Grand Master Status
 30010134 0006
@@ -60742,7 +60742,7 @@ D00104B0 0001
 30010135 00FF
 #Tatsumaru\Record\Labor Shortage\Max Score
 80010136 7FFF
-#Tatsumaru\Record\Labor Shortage\Time 0:00:00/Enable Mission
+#Tatsumaru\Record\Labor Shortage\Time 0.00.00/Enable Mission
 80010138 EA5F
 #Tatsumaru\Record\Guarding The Secret Harbor\Grand Master Status
 3001013C 0006
@@ -60750,7 +60750,7 @@ D00104B0 0001
 3001013D 00FF
 #Tatsumaru\Record\Guarding The Secret Harbor\Max Score
 8001013E 7FFF
-#Tatsumaru\Record\Guarding The Secret Harbor\Time 0:00:00/Enable Mission
+#Tatsumaru\Record\Guarding The Secret Harbor\Time 0.00.00/Enable Mission
 80010140 EA5F
 #Tatsumaru\Record\No Mercy Unlocked\Grand Master Status
 30010144 0006
@@ -60758,7 +60758,7 @@ D00104B0 0001
 30010145 00FF
 #Tatsumaru\Record\No Mercy Unlocked\Max Score
 80010146 7FFF
-#Tatsumaru\Record\No Mercy Unlocked\Time 0:00:00/Enable Mission
+#Tatsumaru\Record\No Mercy Unlocked\Time 0.00.00/Enable Mission
 80010148 EA5F
 #Tatsumaru\Record\Assault On The Ninja Village\Grand Master Status
 3001014C 0006
@@ -60766,7 +60766,7 @@ D00104B0 0001
 3001014D 00FF
 #Tatsumaru\Record\Assault On The Ninja Village\Max Score
 8001014E 7FFF
-#Tatsumaru\Record\Assault On The Ninja Village\Time 0:00:00/Enable Mission
+#Tatsumaru\Record\Assault On The Ninja Village\Time 0.00.00/Enable Mission
 80010150 EA5F
 #Tatsumaru\Record\The Final Dawn\Grand Master Status
 30010154 0006
@@ -60774,7 +60774,7 @@ D00104B0 0001
 30010155 00FF
 #Tatsumaru\Record\The Final Dawn\Max Score
 80010156 7FFF
-#Tatsumaru\Record\The Final Dawn\Time 0:00:00/Enable Mission
+#Tatsumaru\Record\The Final Dawn\Time 0.00.00/Enable Mission
 80010158 EA5F
 #Tatsumaru\Record\The Final Dawn\Have All Items
 50001401 0000
@@ -61427,7 +61427,7 @@ A612DF8E 0000000B
 8001034C 1300
 #Ayame\Misc.\Grand Master Status - Records Screen\Training
 80010358 1300
-#Ayame\Training Level-In Battle\00:00 Time
+#Ayame\Training Level-In Battle\00.00 Time
 90095358 00000000
 #Ayame\Training Level-In Battle\Grapling Hook
 30125140 00FF
@@ -61580,7 +61580,7 @@ A612A4D2 0000000B
 3012F5C7 00FF
 #Rikimaru\Level 2-In Battle\Transporter
 3012F5C8 00FF
-#Rikimaru\Level 2-In Battle\Infintie Health
+#Rikimaru\Level 2-In Battle\Infinite Health
 D000E226 800B
 8012F504 0064
 #Rikimaru\Level 2-In Battle\Stealth Mode
@@ -62111,7 +62111,7 @@ A612E092 0000000B
 80010178 1300
 #Rikimaru\Misc.\Grand Master Status-Records Screen\Training
 80010184 1300
-#Rikimaru\Training Level-In Battle\00:00 Time
+#Rikimaru\Training Level-In Battle\00.00 Time
 90095358 00000000
 #Rikimaru\Training Level-In Battle\Grapling Hook
 30125244 00FF
@@ -64481,7 +64481,7 @@ A70DA244 19990666
 80128840 03E7
 #Max Money
 9009B2D8 0098967F
-#Time Always 00:00:00
+#Time Always 00.00.00
 800A7AA0 0000
 #Infinite + Max HP
 8009B368 03E7
@@ -64714,7 +64714,7 @@ A7083C80 10000400
 800B2628 0004
 #Select Track\Arctic Inferno
 800B2628 0005
-#Total Time = 00:00:00
+#Total Time = 00.00.00
 801F3ACC 0000
 #Car Select Tree Killer
 800B2614 0000
@@ -65083,7 +65083,7 @@ A70EE126 10401000
 800E7FEE 0010
 #Max AP
 900BF874 05F5E0FF
-#Overall Time is 0:00:00
+#Overall Time is 0.00.00
 800BF878 0000
 #Have All 137 Events in Clear
 300BF8AA 0089
@@ -67520,7 +67520,7 @@ A7053356 10401400
 :SLUS-00979
 #Max Points
 800C135C FFFF
-#Time is 0:00:00
+#Time is 0.00.00
 800AAEB8 0000
 #Unlock All Characters
 50000502 0000
@@ -67559,7 +67559,7 @@ A7053356 10401400
 800C8620 10F0
 #Max Health
 800C8622 10F0
-#Time is 0:00:00
+#Time is 0.00.00
 800C85C0 0000
 #Max Zenny/Money
 900C85CC 0098967F
@@ -68186,7 +68186,7 @@ A60D5AEC 00000002
 3011DC52 0000
 #P2 Have 3 Fouls
 3011DC52 0002
-#Time is 0:00:00
+#Time is 0.00.00
 80015916 2400
 #P2 Infinite Lives
 8011DD3E 0003
@@ -70443,7 +70443,7 @@ D008B190 0100
 800CEFC4 0064
 #P2 Have Tired Spirt (White)
 800CF270 0064
-#Time Always At 00:00
+#Time Always At 00.00
 80075332 0000
 #Infinite Time To Fight Outside Ring
 800752EE 0000
@@ -70982,13 +70982,13 @@ A61F7014 08020803
 80186B80 0FFF
 #P2 Max Points In Tournament
 80186B84 0FFF
-#P1 Overall Time is 0:00:00
+#P1 Overall Time is 0.00.00
 901F60B4 00000000
-#P2 Overall Time is 0:00:00
+#P2 Overall Time is 0.00.00
 901F6220 00000000
-#P1 Lap Time is 0:00:00
+#P1 Lap Time is 0.00.00
 901F60D0 00000000
-#P2 Lap Time is 0:00:00
+#P2 Lap Time is 0.00.00
 901F623C 00000000
 #P1 Infinite Shield Energy
 801E4D70 0000
@@ -71235,7 +71235,7 @@ A7063ECA 14401000
 800A18A2 0001
 #Select Weapons\Off
 800A18A2 0000
-#Lap Times is 0:00:00
+#Lap Times is 0.00.00
 800BB750 0000
 800BB760 0000
 800BB770 0000
@@ -72186,7 +72186,7 @@ A707648E 0C011400
 A71DBC32 A2E22400
 #Infinite Gold
 9006EF58 0098967F
-#Time Always 000:00:00
+#Time Always 000.00.00
 90059488 00000000
 #Save Anywhere
 80059170 0100
@@ -72537,7 +72537,7 @@ A701199A 04812400
 :SLUS-01506
 #Infinite Time
 800F04D8 759C
-#Time Always 0:00
+#Time Always 0.00
 800F0484 0000
 #Always Place First
 301BEF05 0001
@@ -74096,7 +74096,7 @@ C00460EC 0005
 8008B38C 08CA
 #Freeze Laptime
 8008B3C0 0000
-#Total Time 00:00:00/1st
+#Total Time 00.00.00/1st
 8008B418 0000
 
 ; [ Wares 1092: Souheiden (Jpn) (1997) (Yutaka) {SLPS 00596 (104017-0052421-9800), SLPS 00740 (104017-0051785-5800)} <wares> ]
@@ -74456,7 +74456,7 @@ D00E0A34 0102
 90063ED0 03E703E7
 #Max Money
 90063EC4 000F423F
-#Time 00:00
+#Time 00.00
 800626FE 0000
 8006338E 0000
 
@@ -77148,7 +77148,7 @@ D001004C 0100
 80047C00 0000
 #9999 POINTS
 800D6FC8 270F
-#TIME 0:00 (L2 + R2)
+#TIME 0.00 (L2 + R2)
 D01ACE00 FFFC
 800D6F50 0000
 
@@ -77529,7 +77529,7 @@ D002FE2A 2442
 
 ; [ Dokomademo Aoku... (Jpn, Limited Edition) (2002) (KID) {SLPS-03388} <dokomade> ]
 :SLPS-03388
-#Time ?00:00?
+#Time ?00.00?
 800660E0 0000
 300660E2 0000
 
@@ -81657,7 +81657,7 @@ D00DC328 0003
 800BB620 FFFF
 #1 Fight For Max Exp.
 900BB65C 000F423F
-#Play Time 00:00
+#Play Time 00.00
 900B9968 00000000
 #Save Anywhere
 30059068 0001
@@ -84370,7 +84370,7 @@ D00BE0F0 0002
 801473C8 001E
 801473D0 001E
 801473D4 001E
-#Total Time = 00:00
+#Total Time = 00.00
 9016E000 00000000
 #Unlock All Extras
 80125838 0001
@@ -84553,11 +84553,11 @@ E00CB336 0002
 #Unlock All Classes Championship Mode
 90110960 00010001
 80110964 0001
-#Rossini-Codes Time 00:00:00 (1St)
+#Rossini-Codes Time 00.00.00 (1St)
 800C51EC 0000
-#Tylor-Codes Time 00:00:00 (1St)
+#Tylor-Codes Time 00.00.00 (1St)
 800C5B70 0000
-#Verlaine-Codes Time 00:00:00 (1St)
+#Verlaine-Codes Time 00.00.00 (1St)
 800C64F4 0000
 #Verlaine cars Time 0
 800C6E79-0001
@@ -86850,7 +86850,7 @@ D00F9BB6 1040
 8009776C FFFE
 #Time Attack mode Remaining time (0000 ~ FFFF)
 80083BF0 FFFF
-#TOTAL ATTACK TIME 00:00:00
+#TOTAL ATTACK TIME 00.00.00
 90083C4C 00000000
 
 ; [ TFX - Tactical Fighter Experiment (Jpn) (1996) (Imageneer) {SLPS-00511} <tfx> ]
@@ -87184,7 +87184,7 @@ A7053B12 10601400
 
 ; [ Toca Touring Car Championship (Jpn) (1998) (Upstar) {SLPS-01410} <tocaj> ]
 :SLPS-01410
-#Time 00:00
+#Time 00.00
 800A62DA 0000
 
 ; [ Tokimeki Memorial Drama Series Vol.1 - Nijiiro No Seishun (Jpn, Konami the Best) (1999) (Konami) {SLPM-86360 (VX069-J2)} <tokimdv1> ]
@@ -89117,7 +89117,7 @@ D01C97DA FFFE
 #Play Any Race With Any Car In Simulation Mode
 D0014908 000C
 8001490A 1000
-#16:9 Widescreen
+#16-9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -89189,7 +89189,7 @@ A701CD68 00B30086
 A701CD70 FFCEFFDB
 A701CD78 03200258
 00000000 FFFF
-#21:9 Widescreen
+#21-9 Widescreen
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -89780,7 +89780,7 @@ D00AC9CC 0002
 800129DA 0003
 #Only one lap to race
 8013AB3E 0003
-#Lap time 0:00:00
+#Lap time 0.00.00
 800BB5CC 0000
 
 ; [ Moto Racer (Euro) (1997) (Electronic Arts) {SLES-00469} <motorcre> ]
@@ -90012,7 +90012,7 @@ D011DDE0 0000
 #Fourth Lap Press X & L2 & R2
 D012E3A2 BCFF
 3011DDE0 0003
-#Stopwatch 00:00:00 Press X & L1 & R1
+#Stopwatch 00.00.00 Press X & L1 & R1
 D012E3A2 B3FF
 80108468 0000
 D012E3A2 B3FF
@@ -90208,7 +90208,7 @@ D00CE5E8 000F
 #Rapid Fire Press R1+R2+X
 D00CE5E8 004A
 300CEA45 001E
-#Total Time 0:00 .Get Grade S
+#Total Time 0.00 .Get Grade S
 900D3CE0 00000000
 #Secret Mode With this code, it starts a new game with new weapons in chest and all weapons and infinite ink ribbons and a key to Boutique with all costumes!
 800D3CEA FFE0
@@ -90314,7 +90314,7 @@ A7065B80 10000400
 8007CB5E 2400
 #Infinite Ammo (ASM)
 80074A6E 2400
-#Total Time = 00:00
+#Total Time = 00.00
 900BC274 00000000
 #Saves = 0
 800BC0CA 0000
@@ -90662,7 +90662,7 @@ D009EFF8 9C40
 A609EFF8 9C4021B8
 #Infinite Checkpoint Time
 800471F4 0000
-#Total Time 00:00:00/Always 1st
+#Total Time 00.00.00/Always 1st
 90046FFC 00000000
 #Always First (Display)
 30018982 0020
@@ -90935,7 +90935,7 @@ D005AE30 000C
 80010CC8 0000
 #Always Have 100 Points
 80010CC6 0000
-#Stage Time 00:00:00 / Always First
+#Stage Time 00.00.00 / Always First
 3002BDC6 0000
 #Unlock All Cars
 50000202 0000
@@ -91900,7 +91900,7 @@ A60389F8 FFFF0000
 
 ; [ 3, 2, 1, Smurf! My First Racing Game (Europe) {SLES-03120} ]
 :SLES-03120
-#Time 00:00:00
+#Time 00.00.00
 8008DFB0 0000
 #Always First
 8008ED38 0003
@@ -92884,7 +92884,7 @@ A605F300 000103E8
 801E91E0 0001
 #Infinite Checkpoint Time
 801DE894 1693
-#Lap Time 00:00
+#Lap Time 00.00
 801D91DC 0000
 801D91E0 0000
 801D91E4 0000
@@ -92917,7 +92917,7 @@ A605F300 000103E8
 801160EC 0384
 #9999 Wings
 80106544 270F
-#Infinite Secondary Weapons:
+#Infinite Secondary Weapons
 801064AC 0009
 #Press Select For No Wings In Shop
 D00AA310 0100
@@ -94081,7 +94081,7 @@ D004689A 2484
 
 ; [ Aqua GT (Europe) {SLES-03390} ]
 :SLES-03390
-#Time 00:00:00 / Always Pole
+#Time 00.00.00 / Always Pole
 A6058D22 AE020000
 #Get 15 Points For Each Race / Always First In Rankings
 D0058218 00A0
@@ -95708,7 +95708,7 @@ A6056020 00010025
 800813C8 6300
 #Quick level up	English
 800813D0 FFFF
-#Total time 00:00:00 English
+#Total time 00.00.00 English
 8003CBC2 AE20
 #Infinite Money	French
 80082545 E0FF
@@ -95870,7 +95870,7 @@ A6056020 00010025
 
 ; [ Bakuryuu (Japan) {SLPS-02429} ]
 :SLPS-02429
-#Time: 00.00.000 / 1st Place
+#Time - 00.00.000 / 1st Place
 90067E0C 00000000
 #character PEROKUN
 900102A0 BE7C3F04
@@ -96324,7 +96324,7 @@ D0042B40 FFFF
 
 ; [ Battle Athletess: Daiundoukai Alternative (Japan) {SLPS-01133} ]
 :SLPS-01133
-#Max energy:
+#Max energy
 800E001E 03E7
 800E0020 03E7
 #Minimum fatigue
@@ -97717,7 +97717,7 @@ A70278EA 14401400
 ;f 0,fffff,w.a424,d.00042400  <--Lives
 ;f 0,fffff,w.a602,d.8602006a  <--Bombs
 ;f 0,fffff,w.1451,0,0,?,0801  <--Invincibility Pt1
-;f 0,fffff,w.1040,d.2650004c  <--Invincibility Pt2  
+;f 0,fffff,w.1040,d.2650004c  <--Invincibility Pt2
 ;f 0,fffff,w.1440,d.240a821  <WTW All 4 addresses
 #Press L2 for Timer Bomb
 D0093B76 0401
@@ -97740,7 +97740,7 @@ D0093B76 0408
 90147C84 0098967F
 #Infinite Stamina
 800100EA 08FF
-#Lap Time = 0:00:01
+#Lap Time = 0.00.01
 8014AB20 0001
 8014AB24 0001
 8014AB28 0001
@@ -97808,7 +97808,7 @@ D0077BD2 0005
 80077A5E 0004
 #Invincibility In Spark Bomber Game:
 800F7F48 04D6
-#Infinite Time:
+#Infinite Time
 80077BD8 13AF
 
 ; [ Bomberman World (Japan) Rev 1 {SLPS-91149} ]
@@ -98281,7 +98281,7 @@ D00F50F8 0001
 80146190 0000
 #Eine Menge Zennies
 90144F50 00A84450
-#Zeit bleibt bei 00:00
+#Zeit bleibt bei 00.00
 80144FC0 0000
 #Habe alle Drachen-Gene
 90145548 FFFFFFFF
@@ -99136,25 +99136,25 @@ D00329C0 000E
 #Arcade Mode All countries and levels unlocked
 50000A02 0003
 80025526 0000
-#Arcade Mode Codes\All Stages Selectable: Africa
+#Arcade Mode Codes\All Stages Selectable - Africa
 80025538 0003
-#Arcade Mode Codes\All Stages Selectable: Monaco
+#Arcade Mode Codes\All Stages Selectable - Monaco
 80025528 0003
-#Arcade Mode Codes\All Stages Selectable: Roma
+#Arcade Mode Codes\All Stages Selectable - Roma
 80025526 0003
-#Arcade Mode Codes\All Stages Selectable: Norway
+#Arcade Mode Codes\All Stages Selectable - Norway
 8002552A 0003
-#Arcade Mode Codes\All Stages Selectable: Great Britain
+#Arcade Mode Codes\All Stages Selectable - Great Britain
 8002552C 0003
-#Arcade Mode Codes\All Stages Selectable: China
+#Arcade Mode Codes\All Stages Selectable - China
 80025530 0003
-#Arcade Mode Codes\All Stages Selectable: Usa
+#Arcade Mode Codes\All Stages Selectable - Usa
 80025532 0003
-#Arcade Mode Codes\All Stages Selectable: Indonesia
+#Arcade Mode Codes\All Stages Selectable - Indonesia
 80025534 0003
-#Arcade Mode Codes\All Stages Selectable: Brasilia
+#Arcade Mode Codes\All Stages Selectable - Brasilia
 80025536 0003
-#Arcade Mode Codes\All Stages Selectable: Peru
+#Arcade Mode Codes\All Stages Selectable - Peru
 8002552E 0003
 #Arcade Mode Codes\All Stages Selectable (Use this or the specified codes)
 50000A02 0000
@@ -99175,25 +99175,25 @@ D00329C0 000E
 #Arcade Mode All countries and levels unlocked
 50000A02 0003
 80025526 0000
-#Arcade Mode Codes\All Stages Selectable: Africa
+#Arcade Mode Codes\All Stages Selectable - Africa
 80025538 0003
-#Arcade Mode Codes\All Stages Selectable: Monaco
+#Arcade Mode Codes\All Stages Selectable - Monaco
 80025528 0003
-#Arcade Mode Codes\All Stages Selectable: Roma
+#Arcade Mode Codes\All Stages Selectable - Roma
 80025526 0003
-#Arcade Mode Codes\All Stages Selectable: Norway
+#Arcade Mode Codes\All Stages Selectable - Norway
 8002552A 0003
-#Arcade Mode Codes\All Stages Selectable: Great Britain
+#Arcade Mode Codes\All Stages Selectable - Great Britain
 8002552C 0003
-#Arcade Mode Codes\All Stages Selectable: China
+#Arcade Mode Codes\All Stages Selectable - China
 80025530 0003
-#Arcade Mode Codes\All Stages Selectable: Usa
+#Arcade Mode Codes\All Stages Selectable - Usa
 80025532 0003
-#Arcade Mode Codes\All Stages Selectable: Indonesia
+#Arcade Mode Codes\All Stages Selectable - Indonesia
 80025534 0003
-#Arcade Mode Codes\All Stages Selectable: Brasilia
+#Arcade Mode Codes\All Stages Selectable - Brasilia
 80025536 0003
-#Arcade Mode Codes\All Stages Selectable: Peru
+#Arcade Mode Codes\All Stages Selectable - Peru
 8002552E 0003
 #Arcade Mode Codes\All Stages Selectable (Use this or the specified codes)
 50000A02 0000
@@ -100007,7 +100007,7 @@ E0072EF0 000A
 30097C04 0FFF
 #Have Superjump
 30097458 0090
-#Playing Time 00:00:00
+#Playing Time 00.00.00
 80097C48 0000
 #All Have Exp 99
 5000050C 0000
@@ -100668,7 +100668,7 @@ A709097C 02000000
 ; [ Chase the Express (Germany) {SCES-02814 | SCES-12814} ]
 :SCES-02814
 :SCES-12814
-#Zeit 0:00:05
+#Zeit 0.00.05
 8001CE8E 0000
 #Unendlich Gesundheit
 80010402 1000
@@ -100919,7 +100919,7 @@ A70B6D0C 10000400
 :SLES-00711
 #1.111.111 Points
 901131F4 0010F447
-#Race Time = 1:45:08
+#Race Time = 1.45.08
 90099148 001008B0
 #Unlock Yeti
 30089C3E 0001
@@ -100934,7 +100934,7 @@ A70B6D0C 10000400
 
 ; [ Chocobo Racing (Europe) {SLES-02079} ]
 :SLES-02079
-#Time is 0:00:00
+#Time is 0.00.00
 80030336 3C00
 #99 Points In Gp-Mode
 8008BEB0 0063
@@ -102675,7 +102675,7 @@ A70DD4E0 10000400
 #Competition Codes\Always First
 D005FAFE 8CC2
 80130654 0001
-#Competition Codes\Stopwatch 00:00:00 & Infinite Checkpoint Time
+#Competition Codes\Stopwatch 00.00.00 & Infinite Checkpoint Time
 D005CF5E AC22
 3005CF5E 0020
 #Competition Codes\Infinite Checkpoint Time Only (Use this or the above one)
@@ -102689,7 +102689,7 @@ D0073E0E A682
 30073E0E 0080
 D006962E A602
 3006962E 0000
-#Freestyle Codes\Stopwatch 00:00:00 & Infinite Checkpoint Time
+#Freestyle Codes\Stopwatch 00.00.00 & Infinite Checkpoint Time
 D005CC56 AC22
 3005CC56 0020
 #Freestyle Codes\Infinite Checkpoint Time Only
@@ -102750,9 +102750,9 @@ D00685E6 A602
 :SLPS-01698
 #Total trick point MAX
 9009AFDC 000F423F
-#Elapsed time 0:00:00 (0:00:03 displayed)
+#Elapsed time 0.00.00 (0.00.03 displayed)
 8009C8D4 0000
-#Penalty 0:00:00
+#Penalty 0.00.00
 3009B0F2 0000
 #All course selection possible
 30069228 0005
@@ -103228,7 +103228,7 @@ A702E00A 11601000
 9006DA28 FFFFFFFF
 9006DBA0 FFFFFF01
 8006D9D8 43C8
-#Jump infinite Select + Left press: ON Select + Right Press: OFF
+#Infinite Jump (Press Select + Left ON, Select + Right OFF)
 D006BD92 FF7E
 8001E9F4 0000
 D006BD92 FFDE
@@ -103346,7 +103346,7 @@ A7017F26 A662A67B
 800693B4 00F8
 9006957C FFFFFFFF
 9006963C 08FFFFFF
-#Jump infinite Select + Left press: ON Select + Right Press: OFF
+#Infinite Jump (Press Select + Left ON, Select + Right OFF)
 D0065FCE FF7E
 8001FE74 0000
 D0065FCE FFDE
@@ -103414,15 +103414,15 @@ A701F222 8E420C00
 #Select Crash/Coco Speed\Normal Speed
 8000C03C 0000
 #Select Crash/Coco Speed\50% faster
-8000C03C 0019 
+8000C03C 0019
 #Select Crash/Coco Speed\100% faster
-8000C03C 0032 
+8000C03C 0032
 #Select Crash/Coco Speed\200% faster
-8000C03C 0064 
+8000C03C 0064
 #Select Crash/Coco Speed\300% faster
-8000C03C 0096 
+8000C03C 0096
 #Select Crash/Coco Speed\400% faster
-8000C03C 00C8 
+8000C03C 00C8
 #Widescreen
 A7018C54 F1C60C00
 A7018C56 0C002402
@@ -104775,7 +104775,7 @@ A70BE3FC 10000400
 #All Lessons Clear
 50000C02 0000
 800D9274 0202
-#Unlock All Extras (Unlocks event mode and lost DDR: 3rd Mix gallery (select EXIT on options)
+#Unlock All Extras:Unlocks event mode and lost DDR, 3rd Mix gallery (select EXIT on options)
 800D7E88 027F
 800D7E90 0FFF
 800D7E98 003F
@@ -104796,7 +104796,7 @@ E010DA50 0008
 #All Lessons Clear
 50000C02 0000
 800D9274 0202
-#Unlock All Extras (Unlocks event mode and lost DDR: 3rd Mix gallery (select EXIT on options)
+#Unlock All Extras:Unlocks event mode and lost DDR, 3rd Mix gallery (select EXIT on options)
 800D7E88 027F
 800D7E90 0FFF
 800D7E98 003F
@@ -105020,7 +105020,7 @@ A60C2000 00000028
 80095E48 0000
 #P2 Select Health\1 Hit Death
 80095E48 0001
-#Total Run Time 99:59:59
+#Total Run Time 99.59.59
 80095108 FFFF
 #Enable Extra Config
 80094E92 7F40
@@ -106784,7 +106784,7 @@ D009E234 0028
 #Max MP Kumamon
 800A4856 270F
 800A4858 270F
-#Max Level Kotemon:
+#Max Level Kotemon
 800494B8 0063
 #Max Level Renamon
 8004ABE0 0063
@@ -106915,7 +106915,7 @@ A7081398 10000400
 :SLPS-02276
 #Distance Max (0-9999)
 800FE19E 1250
-#Have 50:00:00 minutes of flight time
+#Have 50.00.00 minutes of flight time
 80082B84 EA60
 
 ; [ Dino Crisis (Europe) (Preview) {Unlicensed} ]
@@ -106985,7 +106985,7 @@ D00AE232 F5FF
 300B9E22 0003
 #Nie gespeichert
 300B9E23 0000
-#Spielzeit bleibt 0:00:00
+#Spielzeit bleibt 0.00.00
 900B9E24 00000000
 #Keine Continues verbraucht
 300B9E2A 0005
@@ -109900,7 +109900,7 @@ A60A8890 00000001
 ; [ Dracula: Resurrection (Germany) {SLES-02759 | SLES-12759} ]
 :SLES-02759
 :SLES-12759
-#Stoppuhr 00:00:00
+#Stoppuhr 00.00.00
 3001F176 0020
 #Habe Kerze
 300A5158 0001
@@ -110508,9 +110508,9 @@ D0000002 4D43
 ; [ Driver 2: Back on the Streets (Europe) {SLES-02993 | SLES-12993} ]
 :SLES-02993
 :SLES-12993
-#Invincibility : on
+#Invincibility ON
 800AA678 0001
-#Immunity : on
+#Immunity ON
 800AA67C 0001
 #Unlock everything
 800AA5B0 0028
@@ -112305,7 +112305,7 @@ A7074C60 10001550
 
 ; [ Explosive Racing (Europe) {SLES-00716} ]
 :SLES-00716
-#Total race time always 00:00:00
+#Total race time always 00.00.00
 80072A9F 0000
 #Infinite Time
 8007285C 0063
@@ -112434,7 +112434,7 @@ D0088BA4 0001
 80088BA6 3402
 #Team Has 999 Points
 8003C3AA 03E7
-#Timer At 0:00:00 (Always Pole)(.Press L1 & L2 & R1 & R2
+#Timer At 0.00.00 (Always Pole)(.Press L1 & L2 & R1 & R2
 D0038FA6 F0FF
 80034E14 0000
 #Other Drivers Can't Score (Press L1 & R1)
@@ -112609,18 +112609,18 @@ D3029338 0001
 A70C1002 10401000
 A70C10BA 12511000
 A70C10DE 12951000
-;Euro 
+;Euro
 A70C0EFE 10401000
 A70C0FB6 12511000
 A70C0FDA 12951000
-;USA 
+;USA
 A70C0EF6 10401000
 A70C0FAE 12511000
 A70C0FD2 12951000
 #Goalkeeper can't tackle or save ball
 ;Euro Rev1
 A70F1C36 10401000
-;Euro 
+;Euro
 A70F1B32 10401000
 ;USA
 A70F1B2A 10401000
@@ -112631,12 +112631,12 @@ A70C1002 10401000
 A70C10BA 12511000
 A70C10DE 12951000
 A70F1C36 10401000
-;Euro 
+;Euro
 A70C0EFE 10401000
 A70C0FB6 12511000
 A70C0FDA 12951000
 A70F1B32 10401000
-;USA 
+;USA
 A70C0EF6 10401000
 A70C0FAE 12511000
 A70C0FD2 12951000
@@ -112647,12 +112647,12 @@ A70C1002 10001040
 A70C10BA 10001251
 A70C10DE 10001295
 A70F1C36 10001040
-;Euro 
+;Euro
 A70C0EFE 10001040
 A70C0FB6 10001251
 A70C0FDA 10001295
 A70F1B32 10001040
-;USA 
+;USA
 A70C0EF6 10001040
 A70C0FAE 10001251
 A70C0FD2 10001295
@@ -112677,18 +112677,18 @@ A70F1B2A 10001040
 A70C1002 10401000
 A70C10BA 12511000
 A70C10DE 12951000
-;Euro 
+;Euro
 A70C0EFE 10401000
 A70C0FB6 12511000
 A70C0FDA 12951000
-;USA 
+;USA
 A70C0EF6 10401000
 A70C0FAE 12511000
 A70C0FD2 12951000
 #Goalkeeper can't tackle or save ball
 ;Euro Rev1
 A70F1C36 10401000
-;Euro 
+;Euro
 A70F1B32 10401000
 ;USA
 A70F1B2A 10401000
@@ -112699,12 +112699,12 @@ A70C1002 10401000
 A70C10BA 12511000
 A70C10DE 12951000
 A70F1C36 10401000
-;Euro 
+;Euro
 A70C0EFE 10401000
 A70C0FB6 12511000
 A70C0FDA 12951000
 A70F1B32 10401000
-;USA 
+;USA
 A70C0EF6 10401000
 A70C0FAE 12511000
 A70C0FD2 12951000
@@ -112715,12 +112715,12 @@ A70C1002 10001040
 A70C10BA 10001251
 A70C10DE 10001295
 A70F1C36 10001040
-;Euro 
+;Euro
 A70C0EFE 10001040
 A70C0FB6 10001251
 A70C0FDA 10001295
 A70F1B32 10001040
-;USA 
+;USA
 A70C0EF6 10001040
 A70C0FAE 10001251
 A70C0FD2 10001295
@@ -112750,7 +112750,7 @@ A70F1B2A 10001040
 #P1 Beginne mit letzter Frage
 D006FED4 0000
 3006FED4 000F
-#P1 Unendlich Joker alle Spieler 50 : 50
+#P1 Unendlich Joker alle Spieler 50 - 50
 D001E3C2 03E0
 8001E3C4 0000
 #P1 Unendlich Joker alle Spiele	Publikumsbefragung
@@ -113026,7 +113026,7 @@ D001E3E2 03E0
 #Infinite Health (No Fear)
 801D8577 7F00
 801D8578 007F
-#Time is 0:00:00
+#Time is 0.00.00
 80077958 0000
 #Hana-Codes\Have 2 Pistols And Infinite Ammo
 9008E050 63630002
@@ -113192,7 +113192,7 @@ A60B9018 FFFF0001
 8009CB98 0000
 #Infinite Time
 800B7232 012C
-#Elapsed Time is 00:00:00
+#Elapsed Time is 00.00.00
 800A36CA 0000
 900A36CC 00000000
 #Infinite Money
@@ -113471,7 +113471,7 @@ D00B959C 1021
 #Diverse\Habe 9.999.999 Gil
 50000202 6A19
 8008B7B0 967F
-#Diverse\Uhr 00:00:00
+#Diverse\Uhr 00.00.00
 8002487A AC60
 #Diverse\Zeit LäUft RüCkwäRts
 D0024874 1021
@@ -113660,7 +113660,7 @@ D01F0C4C C317
 #Diverse\Habe 9.999.999 Gil
 50000202 6A19
 8008B7B0 967F
-#Diverse\Uhr 00:00:00
+#Diverse\Uhr 00.00.00
 8002487A AC60
 #Diverse\Zeit LäUft RüCkwäRts
 D0024874 1021
@@ -113849,7 +113849,7 @@ D01F0C4C C317
 #Diverse\Habe 9.999.999 Gil
 50000202 6A19
 8008B7B0 967F
-#Diverse\Uhr 00:00:00
+#Diverse\Uhr 00.00.00
 8002487A AC60
 #Diverse\Zeit LäUft RüCkwäRts
 D0024874 1021
@@ -114038,7 +114038,7 @@ D01F0C4C C317
 #Diverse\Habe 9.999.999 Gil
 50000202 6A19
 8008B7B0 967F
-#Diverse\Uhr 00:00:00
+#Diverse\Uhr 00.00.00
 8002487A AC60
 #Diverse\Zeit LäUft RüCkwäRts
 D0024874 1021
@@ -114863,7 +114863,7 @@ D00993F4 000F
 30078B3D 00F0
 50000501 0000
 30078B5E 00FF
-#Always Time = 00:00
+#Always Time = 00.00
 900784E0 00000000
 #Infinite HP In Battle
 80078D2A 270F
@@ -116050,7 +116050,7 @@ D00BD140 6000
 8003BE88 0000
 #No time limit
 801C24B4 EFFE
-#Timer 00:00:00
+#Timer 00.00.00
 A60AB822 AF82AF80
 #Infinite Checkpoint time
 D003BE88 0124
@@ -116069,7 +116069,7 @@ A60AEE80 00020000
 8003BE88 0000
 #No time limit
 801C24B4 EFFE
-#Timer 00:00:00
+#Timer 00.00.00
 A60AB822 AF82AF80
 #Infinite Checkpoint time
 D003BE88 0124
@@ -116123,14 +116123,14 @@ A60AEE80 00020000
 :SLES-02526
 #Start On Lap 3
 A6106E14 00000003
-#Time 00:00:00
+#Time 00.00.00
 800F60E8 0000
 #Enable All Scenario Mode
 A601F7B6 00000004
 
 ; [ Formula Nippon (Europe) {SLES-02527} ]
 :SLES-02527
-#Time is 0:00:00
+#Time is 0.00.00
 D006B230 0001
 3006B230 0000
 #Enable All Scenario Mode
@@ -116170,7 +116170,7 @@ A608A548 10000C00
 :SCES-01979
 #Have 160 points in championship mode - Hakkinen
 80010E5E 00A0
-#Racetime 00:00:00
+#Racetime 00.00.00
 D0050492 AC22
 30050492 0020
 #No time wasted pole & pitstop
@@ -117673,21 +117673,21 @@ D003AF4C FFFF
 801B2AF4 00C8
 #Habe D-Felon-Faehigkeit
 801B2B0E FFFF
-#Gesamtzeit Immer 0:00:00
+#Gesamtzeit Immer 0.00.00
 801B2F4C 0000
-#Unendlich Medizin\Platz 1 : Nalcon
+#Unendlich Medizin\Platz 1 - Nalcon
 801B2C60 0000
-#Unendlich Medizin\Platz 2 : Red
+#Unendlich Medizin\Platz 2 - Red
 801B2C62 0001
-#Unendlich Medizin\Platz 3 : D-Felon
+#Unendlich Medizin\Platz 3 - D-Felon
 801B2C64 0002
-#Unendlich Medizin\Platz 4 : Erholungskapsel
+#Unendlich Medizin\Platz 4 - Erholungskapsel
 801B2C66 0003
-#Unendlich Medizin\Platz 5 : Delmetor
+#Unendlich Medizin\Platz 5 - Delmetor
 801B2C68 0004
-#Unendlich Medizin\Platz 6 : Appolinar
+#Unendlich Medizin\Platz 6 - Appolinar
 801B2C6A 0005
-#Unendlich Medizin\Platz 7 : Skip
+#Unendlich Medizin\Platz 7 - Skip
 801B2C6C 0006
 #Unlock FMVs
 901FD2B4 FFFFFFFF
@@ -118615,7 +118615,7 @@ D01F068A FFFE
 50000B02 0000
 801C9DE8 FFFF
 301C9F45 0001
-#16:9 Widescreen 2.0 (NTSC-J 1.0)
+#16-9 Widescreen 2.0 (NTSC-J 1.0)
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -118687,7 +118687,7 @@ A701C9D4 00B30086
 A701C9DC FFCEFFDB
 A701C9E4 03200258
 00000000 FFFF
-#16:9 Widescreen 2.0 (NTSC-J 1.1)
+#16-9 Widescreen 2.0 (NTSC-J 1.1)
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -118759,7 +118759,7 @@ A701C9D4 00B30086
 A701C9DC FFCEFFDB
 A701C9E4 03200258
 00000000 FFFF
-#21:9 Widescreen 2.0 (NTSC-J 1.0)
+#21-9 Widescreen 2.0 (NTSC-J 1.0)
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -118831,7 +118831,7 @@ A701C9D4 00B30066
 A701C9DC FFCEFFE4
 A701C9E4 032001C9
 00000000 FFFF
-#21:9 Widescreen (NTSC-J 1.1)
+#21-9 Widescreen (NTSC-J 1.1)
 ;"Help" the game unload segments that normally are left unwritten to,
 ;so further cheat detection is more reliable. This is safe as it overwrites dead code.
 ;Reset the race overlay for Arcade
@@ -119215,7 +119215,7 @@ A0010A4C 00008021
 8002B5EE 0014
 #9 Million Points
 8002B49E 0090
-#Music : Off
+#Music OFF
 30153F1C 0000
 #Slow Motion\On Press Select & Up
 D0047942 FFEE
@@ -119254,7 +119254,7 @@ D0047942 FFBE
 8002B5EE 0014
 #9 Million Points
 8002B49E 0090
-#Music : Off
+#Music OFF
 30153F1C 0000
 #Slow Motion\On Press Select & Up
 D0047942 FFEE
@@ -120408,7 +120408,7 @@ A7021876 AE02AE00
 #Press L1 For Invisibility
 E0077B67 00FB
 3007B7AA 00FF
-#Total Time = 00:00
+#Total Time = 00.00
 900817C8 00000000
 
 ; [ Haru no BuruBuru (Japan) Demo {PCPX-96110} ]
@@ -120549,7 +120549,7 @@ A7025726 10602400
 #The monster can't hurt you
 A705625A 10401000
 A7055E6A 14401000
-#Walk through walls:Press L3 to toggle on/off 
+#Walk through walls:Press L3 to toggle on/off
 D7010001 01000200
 F50598AE 14401000
 
@@ -123825,7 +123825,7 @@ A705C07E 10401000
 300D8F46 00000032
 300D8F48 0000001E
 300D8F4A 00000006
-#Main infinite weapon hit anywhere 
+#Main infinite weapon hit anywhere
 A702DC5E 14402400
 A702DC76 14402400
 A702DC82 14402400
@@ -124722,7 +124722,7 @@ D0016F92 8CE2
 #Infinite Magnet Energy
 D0016F92 8CE2
 800133AA 3C00
-#Time Stays At 0:00:00
+#Time Stays At 0.00.00
 D00167B4 1021
 80016822 3C00
 D00167B4 1021
@@ -128566,55 +128566,55 @@ A606FC90 00000002
 80046362 3C00
 #Single Player Codes\Rapid Fire All Levels
 8007E2FE 3C00
-#Single Player Codes\Infinite Health Mission 1: Level 1
+#Single Player Codes\Infinite Health Mission 1 - Level 1
 800EE956 0080
-#Single Player Codes\Infinite Health Mission 1: Level 2
+#Single Player Codes\Infinite Health Mission 1 - Level 2
 800E3936 0080
-#Single Player Codes\Infinite Health Mission 1: Level 3
+#Single Player Codes\Infinite Health Mission 1 - Level 3
 800E3086 0080
-#Single Player Codes\Infinite Health Mission 2: Level 1
+#Single Player Codes\Infinite Health Mission 2 - Level 1
 800F7F76 0080
-#Single Player Codes\Infinite Health Mission 2: Level 2
+#Single Player Codes\Infinite Health Mission 2 - Level 2
 800E07E6 0080
-#Single Player Codes\Infinite Health Mission 2: Level 3
+#Single Player Codes\Infinite Health Mission 2 - Level 3
 800E4B16 0080
-#Single Player Codes\Infinite Health Mission 2: Level 4
+#Single Player Codes\Infinite Health Mission 2 - Level 4
 800EF116 0080
-#Single Player Codes\Infinite Health Mission 3: Level 1
+#Single Player Codes\Infinite Health Mission 3 - Level 1
 800E6366 0080
-#Single Player Codes\Mission 3: Level 1: Have Id
+#Single Player Codes\Mission 3 - Level 1 - Have Id
 800E6290 0380
-#Single Player Codes\Infinite Health Mission 3: Level 2
+#Single Player Codes\Infinite Health Mission 3 - Level 2
 800E7DA6 0080
-#Single Player Codes\Infinite Health Mission 3: Level 3
+#Single Player Codes\Infinite Health Mission 3 - Level 3
 800EC0B6 0080
-#Single Player Codes\Infinite Health Mission 3: Level 4
+#Single Player Codes\Infinite Health Mission 3 - Level 4
 800EEF26 0080
-#Single Player Codes\Infinite Health Mission 4: Level 1
+#Single Player Codes\Infinite Health Mission 4 - Level 1
 800E2CC6 0080
-#Single Player Codes\Infinite Health Mission 4: Level 2
+#Single Player Codes\Infinite Health Mission 4 - Level 2
 800E4736 0080
-#Single Player Codes\Infinite Health Mission 4: Level 3
+#Single Player Codes\Infinite Health Mission 4 - Level 3
 800E6676 0080
-#Single Player Codes\Infinite Health Mission 5: Level 1
+#Single Player Codes\Infinite Health Mission 5 - Level 1
 800E6916 0080
-#Single Player Codes\Infinite Health Mission 5: Level 2
+#Single Player Codes\Infinite Health Mission 5 - Level 2
 800EF4E6 0080
-#Single Player Codes\Infinite Health Mission 5: Level 3
+#Single Player Codes\Infinite Health Mission 5 - Level 3
 800E9366 0080
-#Single Player Codes\Infinite Health Mission 5: Level 4
+#Single Player Codes\Infinite Health Mission 5 - Level 4
 800EB446 0080
-#Single Player Codes\Infinite Health Mission 6: Level 1
+#Single Player Codes\Infinite Health Mission 6 - Level 1
 800F3CB6 0080
-#Single Player Codes\Infinite Health Mission 6: Level 2
+#Single Player Codes\Infinite Health Mission 6 - Level 2
 800E8196 0080
-#Single Player Codes\Infinite Health Mission 6: Level 3
+#Single Player Codes\Infinite Health Mission 6 - Level 3
 800EB236 0080
-#Single Player Codes\Infinite Health Mission 7: Level 1
+#Single Player Codes\Infinite Health Mission 7 - Level 1
 800EF9D6 0080
-#Single Player Codes\Infinite Health Mission 7: Level 2
+#Single Player Codes\Infinite Health Mission 7 - Level 2
 800EC666 0080
-#Single Player Codes\Infinite Health Mission 7: Level 3
+#Single Player Codes\Infinite Health Mission 7 - Level 3
 800EAC86 0080
 #Multi Player Codes\Infinite Ammo Multi-Player (Both Players, All Guns, All Levels)
 8007ADD6 3C00
@@ -128886,7 +128886,7 @@ A70F8C9C 19991333
 800F1124 012C
 #Unlock Cheat Menu (Enable All Levels,Invincibility)
 800D2D3C 0004
-#Widescreen 16:9
+#Widescreen 16-9
 A712932C 19991333
 
 ; [ MediEvil 2 (Russia) {SCES-02546} ]
@@ -128929,7 +128929,7 @@ A71BE438 19991333
 900C1B94 000F423F
 #Infinite Life
 800B5286 00C4
-#Time 00:00
+#Time 00.00
 900C1B84 00000000
 #Have all Normal Items
 900BE488 FFFFFFFF
@@ -128949,7 +128949,7 @@ A71BE438 19991333
 3008C112 00A0
 #Water pressure at max
 8008C23A 0100
-#Time 00:00:00
+#Time 00.00.00
 8009C808 0000
 #Have all items
 900985B8 FFF07F1F
@@ -130817,7 +130817,7 @@ D0102FE2 FFEE
 #All open Press Select & Up
 D006AA76 FFEE
 3006AB00 0005
-#Championship Mode Time frozen Press L1 & L2 with time at 00:00:00 to freeze timer, press R1 & R2 before race is over to avoid game freezing
+#Championship Mode Time frozen Press L1 & L2 with time at 00.00.00 to freeze timer, press R1 & R2 before race is over to avoid game freezing
 D00A6750 0001
 800F700C 03E8
 #Championship Mode Finish 1st
@@ -131833,7 +131833,7 @@ D0089CFC 0100
 :SCPS-10001
 #Grand Prix - Always Get 1st Place
 800B59BC 0001
-#Grand prix - Time = 00:00
+#Grand prix - Time = 00.00
 D01FFE54 2400
 801FFE58 0000
 D01FFE54 2400
@@ -131843,11 +131843,11 @@ E00B59C0 0001
 300B59C0 0003
 #1P Modes - Always Super Toon
 300B59C1 0001
-#All Modes:
+#All Modes
 #Press L2 for P1 Select Zako
 E01FFC30 0001
 80057534 0005
-#Time Trial - Time = 00:00
+#Time Trial - Time = 00.00
 D01FFD28 6363
 801FFD30 0000
 D01FFD28 6363
@@ -131857,7 +131857,7 @@ D01FFD28 6363
 :SCPS-10001
 #Grand Prix - Always Get 1st Place
 800B59BC 0001
-#Grand prix - Time = 00:00
+#Grand prix - Time = 00.00
 D01FFE54 2400
 801FFE58 0000
 D01FFE54 2400
@@ -131867,11 +131867,11 @@ E00B59C0 0001
 300B59C0 0003
 #1P Modes - Always Super Toon
 300B59C1 0001
-#All Modes:
+#All Modes
 #Press L2 for P1 Select Zako
 E01FFC30 0001
 80057534 0005
-#Time Trial - Time = 00:00
+#Time Trial - Time = 00.00
 D01FFD28 6363
 801FFD30 0000
 D01FFD28 6363
@@ -131953,7 +131953,7 @@ A60CCAEC D8700000
 #Invincibility
 D01F3998 0001
 301F3998 0000
-#Time 00:00:00
+#Time 00.00.00
 D119B818 0000
 8019B818 0000
 #Time Attack Mode Timer stopped
@@ -133327,7 +133327,7 @@ A60CACEA 000005F5
 
 ; [ Need for Speed: Porsche 2000 (Europe) {SLES-02689} ]
 :SLES-02689
-#Stopwatch 00:00:00
+#Stopwatch 00.00.00
 3007A526 0020
 #Timer frozen (Time trials)
 A6011EE8 FFFF0000
@@ -133422,7 +133422,7 @@ D00C4862 BFFB
 
 ; [ Need for Speed: Porsche 2000 (Europe) {SLES-02700} ]
 :SLES-02700
-#Stopwatch 00:00:00
+#Stopwatch 00.00.00
 3007A526 0020
 #Timer frozen (Time trials)
 A6011EE8 FFFF0000
@@ -136945,7 +136945,7 @@ D00CB188 0046
 #Map fully open
 50002A02 0000
 800B5618 FFFF
-#Total time 0:00:00
+#Total time 0.00.00
 900B5740 00000000
 #COMPLETE
 300B5675 00FF
@@ -137719,7 +137719,7 @@ A71C2D50 10000400
 
 ; [ Phat Air: Extreme Snowboarding (Europe) {SLES-01178} ]
 :SLES-01178
-#Stopwatch 00:00:00 / Always First
+#Stopwatch 00.00.00 / Always First
 800470D2 AC80
 #Start with 50.000 points / Always first
 A6114370 0000C350
@@ -139748,7 +139748,7 @@ D009FC06 2442
 :SLPS-00679
 #Infinite Lives
 800E393E 0009
-#Total Time = 00:00
+#Total Time = 00.00
 900949FC 00000000
 #Unlock All Photos
 90094490 FFFFFFFF
@@ -139924,7 +139924,7 @@ A61CDB00 00010008
 800B3F92 0000
 #P2 No Zen-Keshi Bonus
 800B4012 0000
-#Total Time = 00:00
+#Total Time = 00.00
 800B0AC4 0000
 800B0E28 0000
 #Tsuu Mode\All Clear
@@ -139990,7 +139990,7 @@ E00B0C84 0004
 800B3F92 0000
 #P2 No Zen-Keshi Bonus
 800B4012 0000
-#Total Time = 00:00
+#Total Time = 00.00
 800B0AC4 0000
 800B0E28 0000
 #Tsuu Mode\All Clear
@@ -140018,7 +140018,7 @@ E00B0C84 0004
 
 ; [ Puzznic (Europe) {SLES-03915} ]
 :SLES-03915
-#Time Always 00:00
+#Time Always 00.00
 8009AD30 0000
 #Score = 99999
 9009AD20 0001869F
@@ -141037,11 +141037,11 @@ D019FEF8 0060
 300BE000 0003
 #Planet Adventure\Cars Attacks!\Mirror Mode
 300BE000 0007
-#Planet Adventure\20:01 A Space Odd Rc\Unlocked
+#Planet Adventure\20.01 A Space Odd Rc\Unlocked
 300BE005 0001
-#Planet Adventure\20:01 A Space Odd Rc\Reverse Mode
+#Planet Adventure\20.01 A Space Odd Rc\Reverse Mode
 300BE005 0003
-#Planet Adventure\20:01 A Space Odd Rc\Mirror Mode
+#Planet Adventure\20.01 A Space Odd Rc\Mirror Mode
 300BE005 0007
 #Planet Adventure\Cars Attacks! Again!\Unlocked
 300BE00A 0001
@@ -141049,11 +141049,11 @@ D019FEF8 0060
 300BE00A 0003
 #Planet Adventure\Cars Attacks! Again!\Mirror Mode
 300BE00A 0007
-#Planet Adventure\20:01 A Space Odd Rc - Digitally Remastered\Unlocked
+#Planet Adventure\20.01 A Space Odd Rc - Digitally Remastered\Unlocked
 300BE00F 0001
-#Planet Adventure\20:01 A Space Odd Rc - Digitally Remastered\Reverse Mode
+#Planet Adventure\20.01 A Space Odd Rc - Digitally Remastered\Reverse Mode
 300BE00F 0003
-#Planet Adventure\20:01 A Space Odd Rc - Digitally Remastered\Mirror Mode
+#Planet Adventure\20.01 A Space Odd Rc - Digitally Remastered\Mirror Mode
 300BE00F 0007
 #Jungle World\Tempel Of Vroom\Reverse Mode
 300BE001 0003
@@ -141151,9 +141151,9 @@ D019FEF8 0060
 800BD8C4 1000
 #Track Codes\I Know What You Drove Last Summer\Reverse
 800BD914 1000
-#Track Codes\20:01 A Space Odd Rc\Normal
+#Track Codes\20.01 A Space Odd Rc\Normal
 800BD8C8 1000
-#Track Codes\20:01 A Space Odd Rc\Reverse
+#Track Codes\20.01 A Space Odd Rc\Reverse
 800BD918 1000
 #Track Codes\Racers Of The Lost Park\Normal
 800BD8CC 1000
@@ -141191,9 +141191,9 @@ D019FEF8 0060
 800BD8EC 1000
 #Track Codes\I Still Know What You Drove Last Summer\Reverse
 800BD93C 1000
-#Track Codes\20:01 A Space Odd Rc - Digitally Remastered\Normal
+#Track Codes\20.01 A Space Odd Rc - Digitally Remastered\Normal
 800BD8F0 1000
-#Track Codes\20:01 A Space Odd Rc - Digitally Remastered\Reverse
+#Track Codes\20.01 A Space Odd Rc - Digitally Remastered\Reverse
 800BD940 1000
 #Track Codes\Racers Of The Lost Park - Collector's Edition\Normal
 800BD8F4 1000
@@ -144464,7 +144464,7 @@ A60D82AA 000037FF
 1F800299 00FF
 #BGM is Arranged-Type
 30055DEC 0001
-#Boss Attack Time = 00:00
+#Boss Attack Time = 00.00
 80055D90 0000
 80055DCC 0000
 #Have All Weapons & Infinite Ammo
@@ -144551,7 +144551,7 @@ E00B560D 0040
 800B5536 FF20
 #Infinite Special Weapon Energy
 800B5A42 0018
-#Time is 0:00:00
+#Time is 0.00.00
 900C1E6C 00000000
 #Infinite Weapon Power
 50000C08 0000
@@ -144577,7 +144577,7 @@ E00B560D 0040
 900BE774 FFFFFFFF
 #Rock-Buster Always Active
 300B5661 0001
-#Total Time = 00:00
+#Total Time = 00.00
 900C1E6C 00000000
 #Unlock All Extras
 900C1E78 00010001
@@ -144881,279 +144881,279 @@ D00C2A4C FDFF
 80030E60 00FF
 #Laundry 1 Codes\Infinite Fire Extinguisher
 80030E20 00FF
-#Laundry 2 Codes (Password: Fluffy)\Infinite Water
+#Laundry 2 Codes (Password - Fluffy)\Infinite Water
 80030E6C 0600
 8003A528 0600
-#Laundry 2 Codes (Password: Fluffy)\Infinite Health
+#Laundry 2 Codes (Password - Fluffy)\Infinite Health
 80030DEC 0064
 80031520 0064
-#Laundry 2 Codes (Password: Fluffy)\Temperature Don't Raises
+#Laundry 2 Codes (Password - Fluffy)\Temperature Don't Raises
 80031350 0000
-#Laundry 2 Codes (Password: Fluffy)\Infinite Waterbombs
+#Laundry 2 Codes (Password - Fluffy)\Infinite Waterbombs
 80030CC0 00FF
-#Laundry 2 Codes (Password: Fluffy)\Infinite Throwing Axes
+#Laundry 2 Codes (Password - Fluffy)\Infinite Throwing Axes
 80030CBC 00FF
-#Laundry 2 Codes (Password: Fluffy)\Infinite Super Axes
+#Laundry 2 Codes (Password - Fluffy)\Infinite Super Axes
 80030CB8 00FF
-#Laundry 2 Codes (Password: Fluffy)\Infinite Fire Extinguisher
+#Laundry 2 Codes (Password - Fluffy)\Infinite Fire Extinguisher
 80030C78 00FF
-#Laundry 3 Codes (Password: Sweaty)\Infinite Water
+#Laundry 3 Codes (Password - Sweaty)\Infinite Water
 8003102C 0600
 8003162C 0600
-#Laundry 3 Codes (Password: Sweaty)\Infinite Health
+#Laundry 3 Codes (Password - Sweaty)\Infinite Health
 80030FAC 0064
 80031624 0064
-#Laundry 3 Codes (Password: Sweaty)\Temperature Don't Raises
+#Laundry 3 Codes (Password - Sweaty)\Temperature Don't Raises
 80031454 0000
-#Laundry 3 Codes (Password: Sweaty)\Infinite Waterbombs
+#Laundry 3 Codes (Password - Sweaty)\Infinite Waterbombs
 80031028 00FF
-#Laundry 3 Codes (Password: Sweaty)\Infinite Throwing Axes
+#Laundry 3 Codes (Password - Sweaty)\Infinite Throwing Axes
 80031024 00FF
-#Laundry 3 Codes (Password: Sweaty)\Infinite Super Axes
+#Laundry 3 Codes (Password - Sweaty)\Infinite Super Axes
 80031020 00FF
-#Laundry 3 Codes (Password: Sweaty)\Infinite Fire Extinguisher
+#Laundry 3 Codes (Password - Sweaty)\Infinite Fire Extinguisher
 80030FE0 00FF
-#Auto 1 Codes (Password: Hotrod)\Infinite Water
+#Auto 1 Codes (Password - Hotrod)\Infinite Water
 80030E10 0600
 800313DC 0600
-#Auto 1 Codes (Password: Hotrod)\Infinite Health
+#Auto 1 Codes (Password - Hotrod)\Infinite Health
 80030D90 0064
 800313D4 0064
-#Auto 1 Codes (Password: Hotrod)\Temperature Don't Raises
+#Auto 1 Codes (Password - Hotrod)\Temperature Don't Raises
 80031200 0000
-#Auto 1 Codes (Password: Hotrod)\Infinite Waterbombs
+#Auto 1 Codes (Password - Hotrod)\Infinite Waterbombs
 80030E0C 00FF
-#Auto 1 Codes (Password: Hotrod)\Infinite Throwing Axes
+#Auto 1 Codes (Password - Hotrod)\Infinite Throwing Axes
 80030E08 00FF
-#Auto 1 Codes (Password: Hotrod)\Infinite Super Axes
+#Auto 1 Codes (Password - Hotrod)\Infinite Super Axes
 80030E04 00FF
-#Auto 1 Codes (Password: Hotrod)\Infinite Fire Extinguisher
+#Auto 1 Codes (Password - Hotrod)\Infinite Fire Extinguisher
 80030DC4 00FF
-#Auto 2 Codes (Password: Grease)\Infinite Water
+#Auto 2 Codes (Password - Grease)\Infinite Water
 80030F54 0600
 80031480 0600
-#Auto 2 Codes (Password: Grease)\Infinite Health
+#Auto 2 Codes (Password - Grease)\Infinite Health
 80030ED4 0064
 80031478 0064
-#Auto 2 Codes (Password: Grease)\Temperature Don't Raises
+#Auto 2 Codes (Password - Grease)\Temperature Don't Raises
 800312A4 0000
-#Auto 2 Codes (Password: Grease)\Infinite Waterbombs
+#Auto 2 Codes (Password - Grease)\Infinite Waterbombs
 80030F50 00FF
-#Auto 2 Codes (Password: Grease)\Infinite Throwing Axes
+#Auto 2 Codes (Password - Grease)\Infinite Throwing Axes
 80030F4C 00FF
-#Auto 2 Codes (Password: Grease)\Infinite Super Axes
+#Auto 2 Codes (Password - Grease)\Infinite Super Axes
 80030F48 00FF
-#Auto 2 Codes (Password: Grease)\Infinite Fire Extinguisher
+#Auto 2 Codes (Password - Grease)\Infinite Fire Extinguisher
 80030F08 00FF
-#Auto 3 Codes (Password: Bigend)\Infinite Water
+#Auto 3 Codes (Password - Bigend)\Infinite Water
 800311C0 0600
 800317B0 0600
-#Auto 3 Codes (Password: Bigend)\Infinite Health
+#Auto 3 Codes (Password - Bigend)\Infinite Health
 80031140 0064
 800317A8 0064
-#Auto 3 Codes (Password: Bigend)\Temperature Don't Raises
+#Auto 3 Codes (Password - Bigend)\Temperature Don't Raises
 800315D4 0000
 800315D8 0000
-#Auto 3 Codes (Password: Bigend)\Infinite Waterbombs
+#Auto 3 Codes (Password - Bigend)\Infinite Waterbombs
 800311BC 00FF
-#Auto 3 Codes (Password: Bigend)\Infinite Throwing Axes
+#Auto 3 Codes (Password - Bigend)\Infinite Throwing Axes
 800311B8 00FF
-#Auto 3 Codes (Password: Bigend)\Infinite Super Axes
+#Auto 3 Codes (Password - Bigend)\Infinite Super Axes
 800311B4 00FF
-#Auto 3 Codes (Password: Bigend)\Infinite Fire Extinguisher
+#Auto 3 Codes (Password - Bigend)\Infinite Fire Extinguisher
 80031174 00FF
-#Harold's 1 Codes (Password: Smelly)\Infinite Water
+#Harold's 1 Codes (Password - Smelly)\Infinite Water
 800351C4 0600
 80035810 0600
-#Harold's 1 Codes (Password: Smelly)\Infinite Health
+#Harold's 1 Codes (Password - Smelly)\Infinite Health
 80035144 0064
 80035808 0064
-#Harold's 1 Codes (Password: Smelly)\Temperature Don't Raises
+#Harold's 1 Codes (Password - Smelly)\Temperature Don't Raises
 80035634 0000
 80035638 0000
-#Harold's 1 Codes (Password: Smelly)\Infinite Time
+#Harold's 1 Codes (Password - Smelly)\Infinite Time
 800355CC 3828
 80100E80 3828
-#Harold's 1 Codes (Password: Smelly)\Infinite Waterbombs
+#Harold's 1 Codes (Password - Smelly)\Infinite Waterbombs
 800351C0 00FF
-#Harold's 1 Codes (Password: Smelly)\Infinite Throwing Axes
+#Harold's 1 Codes (Password - Smelly)\Infinite Throwing Axes
 800351BC 00FF
-#Harold's 1 Codes (Password: Smelly)\Infinite Super Axes
+#Harold's 1 Codes (Password - Smelly)\Infinite Super Axes
 800351B8 00FF
-#Harold's 1 Codes (Password: Smelly)\Infinite Fire Extinguisher
+#Harold's 1 Codes (Password - Smelly)\Infinite Fire Extinguisher
 80035178 00FF
-#Harold's 2 Codes (Password: Widetv)\Infinite Water
+#Harold's 2 Codes (Password - Widetv)\Infinite Water
 80034F20 0600
 80035594 0600
-#Harold's 2 Codes (Password: Widetv)\Infinite Health
+#Harold's 2 Codes (Password - Widetv)\Infinite Health
 80034EA0 0064
 8003558C 0064
-#Harold's 2 Codes (Password: Widetv)\Temperature Don't Raises
+#Harold's 2 Codes (Password - Widetv)\Temperature Don't Raises
 800353BC 0000
 800353C0 0000
-#Harold's 2 Codes (Password: Widetv)\Infinite Time
+#Harold's 2 Codes (Password - Widetv)\Infinite Time
 80035354 3828
 800F71E4 3828
 800F7764 3828
 800F7974 3828
-#Harold's 2 Codes (Password: Widetv)\Infinite Waterbombs
+#Harold's 2 Codes (Password - Widetv)\Infinite Waterbombs
 80034F1C 00FF
-#Harold's 2 Codes (Password: Widetv)\Infinite Throwing Axes
+#Harold's 2 Codes (Password - Widetv)\Infinite Throwing Axes
 80034F18 00FF
-#Harold's 2 Codes (Password: Widetv)\Infinite Super Axes
+#Harold's 2 Codes (Password - Widetv)\Infinite Super Axes
 80034F14 00FF
-#Harold's 2 Codes (Password: Widetv)\Infinite Fire Extinguisher
+#Harold's 2 Codes (Password - Widetv)\Infinite Fire Extinguisher
 80034ED4 00FF
-#Harold's 3 Codes (Password: Pillow)\Infinite Water
+#Harold's 3 Codes (Password - Pillow)\Infinite Water
 8003502C 0600
 80035668 0600
-#Harold's 3 Codes (Password: Pillow)\Infinite Health
+#Harold's 3 Codes (Password - Pillow)\Infinite Health
 80034FAC 0064
 80035660 0064
-#Harold's 3 Codes (Password: Pillow)\Temperature Don't Raises
+#Harold's 3 Codes (Password - Pillow)\Temperature Don't Raises
 80035490 0000
 80035494 0000
 80035808 0000
 80035840 0000
 80035844 0000
-#Harold's 3 Codes (Password: Pillow)\Infinite Throwing Axes
+#Harold's 3 Codes (Password - Pillow)\Infinite Throwing Axes
 80035024 00FF
-#Harold's 3 Codes (Password: Pillow)\Infinite Fire Extinguisher
+#Harold's 3 Codes (Password - Pillow)\Infinite Fire Extinguisher
 80034FE0 00FF
-#Harold's 3 Codes (Password: Pillow)\Infinite Time
+#Harold's 3 Codes (Password - Pillow)\Infinite Time
 80035424 3828
 800F622C 3828
 800F6CD4 3828
 800F6D00 3828
-#Harold's 3 Codes (Password: Pillow)\Infinite Waterbombs
+#Harold's 3 Codes (Password - Pillow)\Infinite Waterbombs
 80035028 00FF
-#Harold's 3 Codes (Password: Pillow)\Infinite Super Axes
+#Harold's 3 Codes (Password - Pillow)\Infinite Super Axes
 80035020 00FF
-#Leisure 1 Codes (Password: Tricep)\Infinite Water
+#Leisure 1 Codes (Password - Tricep)\Infinite Water
 800347C8 0600
 80034F88 0600
-#Leisure 1 Codes (Password: Tricep)\Infinite Health
+#Leisure 1 Codes (Password - Tricep)\Infinite Health
 80034748 0064
 80034F80 0064
-#Leisure 1 Codes (Password: Tricep)\Temperature Don't Raises
+#Leisure 1 Codes (Password - Tricep)\Temperature Don't Raises
 80034DB0 0000
 80034F5C 0000
 80035128 0000
 80035160 0000
 80035164 0000
-#Leisure 1 Codes (Password: Tricep)\Infinite Time
+#Leisure 1 Codes (Password - Tricep)\Infinite Time
 80034D44 3828
 800F6C80 3828
 800F6F98 3828
-#Leisure 1 Codes (Password: Tricep)\Infinite Throwing Axes
+#Leisure 1 Codes (Password - Tricep)\Infinite Throwing Axes
 800347C0 00FF
-#Leisure 1 Codes (Password: Tricep)\Infinite Waterbombs
+#Leisure 1 Codes (Password - Tricep)\Infinite Waterbombs
 800347C4 00FF
-#Leisure 1 Codes (Password: Tricep)\Infinite Super Axes
+#Leisure 1 Codes (Password - Tricep)\Infinite Super Axes
 800347BC 00FF
-#Leisure 1 Codes (Password: Tricep)\Infinite Fire Extinguisher
+#Leisure 1 Codes (Password - Tricep)\Infinite Fire Extinguisher
 8003477C 00FF
-#Leisure 2 Codes (Password: Motion)\Infinite Water
+#Leisure 2 Codes (Password - Motion)\Infinite Water
 800320BC 0600
 800325AC 0600
-#Leisure 2 Codes (Password: Motion)\Infinite Health
+#Leisure 2 Codes (Password - Motion)\Infinite Health
 8003203C 0064
 800325A4 0064
-#Leisure 2 Codes (Password: Motion)\Temperature Don't Raises
+#Leisure 2 Codes (Password - Motion)\Temperature Don't Raises
 800323D4 0000
-#Leisure 2 Codes (Password: Motion)\Infinite Time
+#Leisure 2 Codes (Password - Motion)\Infinite Time
 80032368 3828
 800F0634 3828
 800F0660 3828
 800F2918 3828
-#Leisure 2 Codes (Password: Motion)\Infinite Throwing Axes
+#Leisure 2 Codes (Password - Motion)\Infinite Throwing Axes
 800320B4 00FF
-#Leisure 2 Codes (Password: Motion)\Infinite Waterbombs
+#Leisure 2 Codes (Password - Motion)\Infinite Waterbombs
 800320B8 00FF
-#Leisure 2 Codes (Password: Motion)\Infinite Super Axes
+#Leisure 2 Codes (Password - Motion)\Infinite Super Axes
 800320B0 00FF
-#Leisure 2 Codes (Password: Motion)\Infinite Fire Extinguisher
+#Leisure 2 Codes (Password - Motion)\Infinite Fire Extinguisher
 80032070 00FF
-#Leisure 3 Codes (Password: Hiphop)\Infinite Water
+#Leisure 3 Codes (Password - Hiphop)\Infinite Water
 800315AC 0600
 80031CB8 0600
-#Leisure 3 Codes (Password: Hiphop)\Infinite Health
+#Leisure 3 Codes (Password - Hiphop)\Infinite Health
 8003152C 0064
 80031CB0 0064
-#Leisure 3 Codes (Password: Hiphop)\Temperature Don't Raises
+#Leisure 3 Codes (Password - Hiphop)\Temperature Don't Raises
 80030B2A 0000
-#Leisure 3 Codes (Password: Hiphop)\Infinite Time
+#Leisure 3 Codes (Password - Hiphop)\Infinite Time
 80031A64 0CFF
 800F77EA 0CFF
 800F7810 0CFF
 800F783C 0CFF
-#Leisure 3 Codes (Password: Hiphop)\Infinite Throwing Axes
+#Leisure 3 Codes (Password - Hiphop)\Infinite Throwing Axes
 800315A4 00FF
-#Leisure 3 Codes (Password: Hiphop)\Infinite Waterbombs
+#Leisure 3 Codes (Password - Hiphop)\Infinite Waterbombs
 800315A8 00FF
-#Leisure 3 Codes (Password: Hiphop)\Infinite Super Axes
+#Leisure 3 Codes (Password - Hiphop)\Infinite Super Axes
 800315A0 00FF
-#Leisure 3 Codes (Password: Hiphop)\Infinite Fire Extinguisher
+#Leisure 3 Codes (Password - Hiphop)\Infinite Fire Extinguisher
 80031560 00FF
-#Residential 1 Codes (Password: Kennel)\Infinite Water
+#Residential 1 Codes (Password - Kennel)\Infinite Water
 80033108 0600
 8003371C 0600
-#Residential 1 Codes (Password: Kennel)\Infinite Health
+#Residential 1 Codes (Password - Kennel)\Infinite Health
 80033088 0064
 80033714 0064
-#Residential 1 Codes (Password: Kennel)\Temperature Don't Raises
+#Residential 1 Codes (Password - Kennel)\Temperature Don't Raises
 800334AC 0000
-#Residential 1 Codes (Password: Kennel)\Infinite Time
+#Residential 1 Codes (Password - Kennel)\Infinite Time
 80033440 3828
 800F4B40 3828
-#Residential 1 Codes (Password: Kennel)\Infinite Throwing Axes
+#Residential 1 Codes (Password - Kennel)\Infinite Throwing Axes
 80033100 00FF
-#Residential 1 Codes (Password: Kennel)\Infinite Waterbombs
+#Residential 1 Codes (Password - Kennel)\Infinite Waterbombs
 80033104 00FF
-#Residential 1 Codes (Password: Kennel)\Infinite Super Axes
+#Residential 1 Codes (Password - Kennel)\Infinite Super Axes
 800330FC 00FF
-#Residential 1 Codes (Password: Kennel)\Infinite Fire Extinguisher
+#Residential 1 Codes (Password - Kennel)\Infinite Fire Extinguisher
 800330BC 00FF
-#Residential 2 Codes (Password: Barrel)\Infinite Water
+#Residential 2 Codes (Password - Barrel)\Infinite Water
 80033204 0600
 8003370C 0600
-#Residential 2 Codes (Password: Barrel)\Infinite Health
+#Residential 2 Codes (Password - Barrel)\Infinite Health
 80033184 0064
 80033704 0064
-#Residential 2 Codes (Password: Barrel)\Temperature Don't Raises
+#Residential 2 Codes (Password - Barrel)\Temperature Don't Raises
 80033534 0000
 80033538 0000
-#Residential 2 Codes (Password: Barrel)\Infinite Time
+#Residential 2 Codes (Password - Barrel)\Infinite Time
 800EEF84 36EF
 800EF0E4 36EF
 800F0660 36EF
 800F0D6C 36EF
-#Residential 2 Codes (Password: Barrel)\Infinite Throwing Axes
+#Residential 2 Codes (Password - Barrel)\Infinite Throwing Axes
 800331FC 00FF
-#Residential 2 Codes (Password: Barrel)\Infinite Waterbombs
+#Residential 2 Codes (Password - Barrel)\Infinite Waterbombs
 80033200 00FF
-#Residential 2 Codes (Password: Barrel)\Infinite Super Axes
+#Residential 2 Codes (Password - Barrel)\Infinite Super Axes
 800331F8 00FF
-#Residential 2 Codes (Password: Barrel)\Infinite Fire Extinguisher
+#Residential 2 Codes (Password - Barrel)\Infinite Fire Extinguisher
 800331B8 00FF
-#Runaround Codes (Password: Splash)\Infinite Water
+#Runaround Codes (Password - Splash)\Infinite Water
 80049848 0600
 80049E6C 0600
-#Runaround Codes (Password: Splash)\Infinite Health
+#Runaround Codes (Password - Splash)\Infinite Health
 800497C8 0064
 80049E64 0064
-#Runaround Codes (Password: Splash)\Infinite Time
+#Runaround Codes (Password - Splash)\Infinite Time
 80049C28 4636
 80049C2C 4636
-#Runaround Codes (Password: Splash)\Infinite Air
+#Runaround Codes (Password - Splash)\Infinite Air
 80049582 1000
-#Runaround Codes (Password: Splash)\Infinite Throwing Axes
+#Runaround Codes (Password - Splash)\Infinite Throwing Axes
 80049840 00FF
-#Runaround Codes (Password: Splash)\Infinite Waterbombs
+#Runaround Codes (Password - Splash)\Infinite Waterbombs
 80049844 00FF
-#Runaround Codes (Password: Splash)\Infinite Super Axes
+#Runaround Codes (Password - Splash)\Infinite Super Axes
 8004983C 00FF
-#Runaround Codes (Password: Splash)\Infinite Fire Extinguisher
+#Runaround Codes (Password - Splash)\Infinite Fire Extinguisher
 800497FC 00FF
 
 ; [ Roswell Conspiracies: Aliens, Myths & Legends (Europe) {SLES-02591} ]
@@ -145242,7 +145242,7 @@ E00699F0 0002
 
 ; [ Ruff & Tumble aka Ruff & Tumble: De Droomkrijgers (Netherlands) {SLES-02384} ]
 :SLES-02384
-#Cheat Menu .Druk op L2 in het huis terwijl het spel op pauze staat en je cursor verdwijnt. Druk dan op X en je komt in het Cheat-Menu WAARSCHUWING : Het Cheat-Menu is onstabiel en kan het spel laten vastlopen.
+#Cheat Menu .Druk op L2 in het huis terwijl het spel op pauze staat en je cursor verdwijnt. Druk dan op X en je komt in het Cheat-Menu:WAARSCHUWING - Het Cheat-Menu is onstabiel en kan het spel laten vastlopen.
 D0092D88 0100
 30092ABC 0002
 #Oneindige Zzz's
@@ -145281,7 +145281,7 @@ D0092D88 4200
 800B63D6 012C
 #No Damage
 8009A1A0 0000
-#Total Time is 00:00:00
+#Total Time is 00.00.00
 800A2772 0000
 #Infinite Fuel
 800B45FA 0019
@@ -146121,7 +146121,7 @@ D00BADDA FAFF
 800F4104 0064
 #Max Chips
 800F4130 0063
-#Total Time = 00:00
+#Total Time = 00.00
 900F4108 00000000
 #Complete Monkey Book
 5000FF02 0000
@@ -146864,37 +146864,37 @@ E00BC40E 0010
 800C1A40 2710
 #Shadow Man\Unendlich Voodoo-Kraft
 800C1A44 2710
-#Alle Geheimnisse Gefunden:\Bayou Paradis, Louisiana
+#Alle Geheimnisse Gefunden\Bayou Paradis, Louisiana
 8009D018 0808
-#Alle Geheimnisse Gefunden:\Mordant Street, Queens, Ny
+#Alle Geheimnisse Gefunden\Mordant Street, Queens, Ny
 8009D01A 0101
-#Alle Geheimnisse Gefunden:\Gardelle County GefäNgnis, Texas
+#Alle Geheimnisse Gefunden\Gardelle County GefäNgnis, Texas
 8009D01C 0303
-#Alle Geheimnisse Gefunden:\Down Street Station, London
+#Alle Geheimnisse Gefunden\Down Street Station, London
 8009D01E 0101
-#Alle Geheimnisse Gefunden:\Reich Der Toten: Marktore, Pfad Der Schatten, Prophezeiungsraum
+#Alle Geheimnisse Gefunden\Reich Der Toten Marktore, Pfad Der Schatten, Prophezeiungsraum
 8009D020 0404
-#Alle Geheimnisse Gefunden:\WüStes Land: Tempel Des Lebens
+#Alle Geheimnisse Gefunden\WüStes Land Tempel Des Lebens
 8009D022 0D0D
-#Alle Geheimnisse Gefunden:\Asyl: Tor
+#Alle Geheimnisse Gefunden\Asyl - Tor
 8009D024 0C0C
-#Alle Geheimnisse Gefunden:\Asyl: Kathedrale Des Schmerzes
+#Alle Geheimnisse Gefunden\Asyl - Kathedrale Des Schmerzes
 8009D026 0202
-#Alle Geheimnisse Gefunden:\Asyl: Maschinenblock
+#Alle Geheimnisse Gefunden\Asyl - Maschinenblock
 8009D028 0B0B
-#Alle Geheimnisse Gefunden:\Tempel Des Feuers (Touche)
+#Alle Geheimnisse Gefunden\Tempel Des Feuers (Touche)
 8009D02A 0B0B
-#Alle Geheimnisse Gefunden:\Asyl: KäFigpfade
+#Alle Geheimnisse Gefunden\Asyl - KäFigpfade
 8009D02C 0B0B
-#Alle Geheimnisse Gefunden:\Asyl: Spielzimmer
+#Alle Geheimnisse Gefunden\Asyl - Spielzimmer
 8009D02E 0A0A
-#Alle Geheimnisse Gefunden:\Tempel Der Prophezeiung (Marcher)
+#Alle Geheimnisse Gefunden\Tempel Der Prophezeiung (Marcher)
 8009D030 0D0D
-#Alle Geheimnisse Gefunden:\Asyl: Lavaducte
+#Alle Geheimnisse Gefunden\Asyl - Lavaducte
 8009D032 0909
-#Alle Geheimnisse Gefunden:\Tempel Des Blutes (Nager)
+#Alle Geheimnisse Gefunden\Tempel Des Blutes (Nager)
 8009D034 0808
-#Alle Geheimnisse Gefunden:\Asyl: Unterstadt
+#Alle Geheimnisse Gefunden\Asyl - Unterstadt
 8009D036 0303
 
 ; [ Shadow Master (Europe) Demo {SLED-00968} ]
@@ -150280,7 +150280,7 @@ A608EAF8 18230023
 80042F9E AE80
 #Always first (Display)
 A60E465A 24422402
-#Time attack Timer 00:00
+#Time attack Timer 00.00
 A609324C 00010000
 
 ; [ Speed King: Neo Kobe 2045 (Japan) {SLP-86013} ]
@@ -150821,7 +150821,7 @@ D003C7EA 0800
 8003C7EE 0000
 D003C7EA 0800
 8003C7FA 0000
-#Zeit 0:00
+#Zeit 0.00
 300136F2 0020
 #UE GP
 D003B360 488B
@@ -151481,7 +151481,7 @@ E0077774 0040
 
 ; [ Starwinder: The Ultimate Space Race (Europe) {SLES-00090} ]
 :SLES-00090
-#Timer 00:00:00
+#Timer 00.00.00
 3002D7DA 0020
 #Infinite Ammo
 80155ED0 0063
@@ -154223,7 +154223,7 @@ A60541A2 A046A040
 3001016D 0001
 #All cars
 3001016E 0001
-#Championship disqualification : off
+#Championship disqualification OFF
 3001016F 0001
 #Lap Bisect (Press Select & Up)
 D00E014E FFEE
@@ -154254,7 +154254,7 @@ A60541A2 A046A040
 3001016D 0001
 #All cars
 3001016E 0001
-#Championship disqualification : off
+#Championship disqualification OFF
 3001016F 0001
 #Lap Bisect (Press Select & Up)
 D00E014E FFEE
@@ -154547,7 +154547,7 @@ A7021AFA 04401400
 800CAE76 00FE
 #Infinite Fuel
 800CAE62 012C
-#Total Time = 00:00
+#Total Time = 00.00
 900D1A04 00000000
 #Infinite Whistles
 300D19EB 0063
@@ -156065,7 +156065,7 @@ A71DE638 10000400
 80036F14 0018
 #Checkout supply and security
 8003AA68 6464
-#Max Status 100% in customer service, security and cleaning supplies(Conditions: After some work)
+#Max Status 100% in customer service, security and cleaning supplies(Conditions - After some work)
 9003AA68 34026464
 9003AA6C A4A2001E
 9003AA70 A4A20020
@@ -158097,7 +158097,7 @@ C20B6270 0001
 80022BDA 2400
 #No Reload
 8001E516 2400
-#Overall Time Is 0:00:00
+#Overall Time Is 0.00.00
 80022C76 2400
 
 ; [ Tintin: Destination Adventure (Europe) {SLES-03459} ]
@@ -160562,7 +160562,7 @@ D009D198 4000
 800E88DE 0008
 #Max Ap
 900C0164 05F5E0FF
-#Spielzeit 0:00:00
+#Spielzeit 0.00.00
 800C0168 0000
 #Habe GegenstäNde-Start-Code
 300C0191 00FF
@@ -160691,7 +160691,7 @@ D00ADED6 0000
 8009F43C 003C
 #Infinite Repairtime
 801280D8 EA60
-#Stopwatch 00:00:00
+#Stopwatch 00.00.00
 3002F7BA 0080
 #Activate Cheat Menu
 3009B016 0000
@@ -161603,7 +161603,7 @@ A701277A 10401000
 300CC142 00FF
 50002808 0000
 300CC144 0000
-#Total Time = 00:00
+#Total Time = 00.00
 900C91C0 00000000
 
 ; [ Truck Racing (Europe) {SLES-03953} ]
@@ -162567,7 +162567,7 @@ A717EC1C 10000400
 
 ; [ Ubik (Europe) {SLES-00722} ]
 :SLES-00722
-#Stopwatch 00:00:00 Press Select & Start Pad 2
+#Stopwatch 00.00.00 Press Select & Start Pad 2
 D0079F4A FFF6
 3005FA18 0000
 
@@ -163013,7 +163013,7 @@ A6028A48 FFFF0001
 
 ; [ Vagrant Story (Europe) {SLES-02754} ]
 :SLES-02754
-#Time 00:00:00
+#Time 00.00.00
 D0042BD4 15F4
 80042BD6 0000
 A6042BD4 15F40000
@@ -163219,7 +163219,7 @@ D011FA2E 8011
 #Moonjump
 D003FF5A 7FFF
 801203C2 FDF9
-#Zeit 00:00:00
+#Zeit 00.00.00
 D0042BD4 15F4
 80042BD6 0000
 A6042BD4 15F40000
@@ -163526,7 +163526,7 @@ D003FF5A F0FE
 300A4205 0001
 300A4206 0001
 300A4207 0001
-#Total Time = 00:00
+#Total Time = 00.00
 900A0218 00000000
 
 ; [ Vampire Savior: EX Edition (Japan) {SLPS-01700} ]
@@ -163621,7 +163621,7 @@ D01F7158 F7FF
 301DE6F5 0009
 50007002 0000
 801DE6F6 0909
-#SuddenDeath : on Invincibility : off Works for both parties, so use it just when you're sure you will hit the enemy.(Press L1 & L2)
+#SuddenDeath ON - Invincibility OFF:Works for both parties, so use it just when you're sure you will hit the enemy.(Press L1 & L2)
 D0007572 FAFF
 80049030 0000
 D0007572 FAFF
@@ -163630,7 +163630,7 @@ D0007572 FAFF
 80049038 0026
 D0007572 FAFF
 8004903A A662
-#SuddenDeath : off Invincibility : on Works for both parties, so use it just when you're sure you will hit the enemy.(Press R1 & R2)
+#SuddenDeath OFF - Invincibility ON:Works for both parties, so use it just when you're sure you will hit the enemy.(Press R1 & R2)
 D0007572 F5FF
 80049030 1023
 D0007572 F5FF
@@ -164651,7 +164651,7 @@ D0054F56 0100
 800CEF54 0064
 #P2 Have High Spirit (White)
 800CEF54 0064
-#Time Always at 00:00
+#Time Always at 00.00
 800752C2 0000
 #Infinite Time to Fight Outside Ring
 80075290 0000
@@ -165995,7 +165995,7 @@ D007EA18 0000
 #P1 Telefontipp
 D007EA1C 0000
 3007EA1C 0001
-#Unendlich Joker alle Spieler 50 : 50
+#Unendlich Joker alle Spieler 50 - 50
 D0021AC6 03E0
 80021AC8 0000
 #Unendlich Joker alle Spiele Publikumsbefragung
@@ -166018,7 +166018,7 @@ D0073F50 0000
 #P1 Telefontipp
 D0073F54 0000
 30073F54 0001
-#Unendlich Joker alle Spieler 50 : 50
+#Unendlich Joker alle Spieler 50 - 50
 D001EE4E 03E0
 8001EE50 0000
 #Unendlich Joker alle Spiele Publikumsbefragung
@@ -166085,7 +166085,7 @@ D007EA34 0000
 #P1 Telephone hint given
 D007EA18 0000
 3007EA18 0001
-#Infinite Lifelines 50 : 50
+#Infinite Lifelines 50 - 50
 D007EA20 0001
 3007EA20 0000
 #Infinite Lifelines Ask the audience
@@ -166596,13 +166596,13 @@ D00F5CA6 0800
 30069270 0003
 #Turbos Never Decrease
 80018658 0000
-#Timer Stopped 0:00:00/Always First
+#Timer Stopped 0.00.00/Always First
 D00259A0 0178
 800259A2 0000
 A60259A0 01780000
 #Everythings Unlocked
 800102A0 FFFF
-#Timer Stopped 9:59:59/Always First
+#Timer Stopped 9.59.59/Always First
 D00259A0 0178
 8002599C FFFF
 D00259A0 0178
@@ -166995,7 +166995,7 @@ A61F7014 08020803
 801931FC 0101
 #P1 Infinite Energy turbo
 801EA7BD 0000
-#Laptime 0:00:00
+#Laptime 0.00.00
 D010DF36 AC83
 3010DF36 0000
 #Prototype-mode (Vector) unlocked
@@ -167165,11 +167165,11 @@ A601826C FFFF0000
 A6018B64 FFFF0000
 A605E8DC FFFF0000
 A605E928 FFFF0000
-#You are here: X
+#You are here - X
 800C3F70 0081
-#You are here: Y
+#You are here - Y
 800C3F74 0081
-#You are here: Z
+#You are here - Z
 800C3F7C 0001
 
 ; [ Wolkenkratzer: Shinpan no Tou (Japan) {SLPS-00197} ]
@@ -168490,7 +168490,7 @@ D0058A10 000A
 9006E5E8 FF00FFFF
 #Infinite No. Of Item Of First Box
 8006EC54 6363
-#Total Time Of The Game = 00:00
+#Total Time Of The Game = 00.00
 80058B24 0000
 #Max Combo
 D0058A10 0002
