@@ -102,6 +102,10 @@ public:
   /// Opens the editor for a specific input profile.
   void openInputProfileEditor(const std::string_view name);
 
+  /// Returns pointer to settings window.
+  SettingsWindow* getSettingsWindow();
+  ControllerSettingsWindow* getControllerSettingsWindow();
+
 public Q_SLOTS:
   /// Updates debug menu visibility (hides if disabled).
   void updateDebugMenuVisibility();
@@ -240,10 +244,7 @@ private:
   void updateDisplayWidgetCursor();
   void updateDisplayRelatedActions(bool has_surface, bool render_to_main, bool fullscreen);
 
-  SettingsWindow* getSettingsWindow();
   void doSettings(const char* category = nullptr);
-
-  ControllerSettingsWindow* getControllerSettingsWindow();
   void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
 
   void updateDebugMenuCPUExecutionMode();

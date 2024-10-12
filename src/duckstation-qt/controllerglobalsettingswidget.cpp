@@ -78,7 +78,13 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   }
 
   if (dialog->isEditingGameSettings())
-    m_ui.deviceListGroup->setEnabled(false);
+  {
+    m_ui.mainLayout->removeWidget(m_ui.deviceListGroup);
+    delete m_ui.deviceList;
+    m_ui.deviceList = nullptr;
+    delete m_ui.deviceListGroup;
+    m_ui.deviceListGroup = nullptr;
+  }
 
   connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() { emit bindingSetupChanged(); });
 

@@ -4,6 +4,7 @@
 #include "controllerbindingwidgets.h"
 #include "controllersettingswindow.h"
 #include "controllersettingwidgetbinder.h"
+#include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingswindow.h"
@@ -271,7 +272,10 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
   QMenu menu(this);
   bool added = false;
 
-  for (const auto& [identifier, device_name] : m_dialog->getDeviceList())
+  const auto& device_list = m_dialog->isEditingGameSettings() ?
+                              g_main_window->getControllerSettingsWindow()->getDeviceList() :
+                              m_dialog->getDeviceList();
+  for (const auto& [identifier, device_name] : device_list)
   {
     // we set it as data, because the device list could get invalidated while the menu is up
     const QString qidentifier = QString::fromStdString(identifier);

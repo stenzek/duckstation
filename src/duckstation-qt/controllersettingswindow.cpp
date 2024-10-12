@@ -481,8 +481,11 @@ void ControllerSettingsWindow::createWidgets()
     m_ui.settingsContainer->addWidget(m_global_settings);
     connect(m_global_settings, &ControllerGlobalSettingsWidget::bindingSetupChanged, this,
             &ControllerSettingsWindow::createWidgets);
-    for (const auto& [identifier, device_name] : m_device_list)
-      m_global_settings->addDeviceToList(QString::fromStdString(identifier), QString::fromStdString(device_name));
+    if (isEditingGlobalSettings())
+    {
+      for (const auto& [identifier, device_name] : m_device_list)
+        m_global_settings->addDeviceToList(QString::fromStdString(identifier), QString::fromStdString(device_name));
+    }
   }
 
   // load mtap settings
