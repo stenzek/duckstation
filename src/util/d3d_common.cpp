@@ -19,7 +19,7 @@
 #include <dxcapi.h>
 #include <dxgi1_5.h>
 
-LOG_CHANNEL(D3DCommon);
+LOG_CHANNEL(GPUDevice);
 
 namespace D3DCommon {
 namespace {
@@ -123,6 +123,14 @@ Microsoft::WRL::ComPtr<IDXGIFactory5> D3DCommon::CreateFactory(bool debug, Error
   return factory;
 }
 
+bool D3DCommon::SupportsAllowTearing(IDXGIFactory5* factory)
+{
+  BOOL allow_tearing_supported = false;
+  HRESULT hr = factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
+                                            sizeof(allow_tearing_supported));
+  return (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
+}
+
 static std::string FixupDuplicateAdapterNames(const GPUDevice::AdapterInfoList& adapter_names, std::string adapter_name)
 {
   if (std::any_of(adapter_names.begin(), adapter_names.end(),
@@ -183,9 +191,11 @@ GPUDevice::AdapterInfoList D3DCommon::GetAdapterInfoList()
         {
           for (const DXGI_MODE_DESC& mode : dmodes)
           {
-            ai.fullscreen_modes.push_back(GPUDevice::GetFullscreenModeString(
-              mode.Width, mode.Height,
-              static_cast<float>(mode.RefreshRate.Numerator) / static_cast<float>(mode.RefreshRate.Denominator)));
+            ai.fullscreen_modes.push_back(
+              GPUDevice::ExclusiveFullscreenMode{.width = mode.Width,
+                                                 .height = mode.Height,
+                                                 .refresh_rate = static_cast<float>(mode.RefreshRate.Numerator) /
+                                                                 static_cast<float>(mode.RefreshRate.Denominator)});
           }
         }
         else
@@ -211,10 +221,13 @@ GPUDevice::AdapterInfoList D3DCommon::GetAdapterInfoList()
   return adapters;
 }
 
-bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width,
-                                                        u32 height, float refresh_rate, DXGI_FORMAT format,
-                                                        DXGI_MODE_DESC* fullscreen_mode, IDXGIOutput** output)
+std::optional<DXGI_MODE_DESC>
+D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect,
+                                                   const GPUDevice::ExclusiveFullscreenMode* requested_fullscreen_mode,
+                                                   DXGI_FORMAT format, IDXGIOutput** output)
 {
+  std::optional<DXGI_MODE_DESC> ret;
+
   // We need to find which monitor the window is located on.
   const GSVector4i client_rc_vec(window_rect.left, window_rect.top, window_rect.right, window_rect.bottom);
 
@@ -260,7 +273,7 @@ bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, 
     if (!first_output)
     {
       ERROR_LOG("No DXGI output found. Can't use exclusive fullscreen.");
-      return false;
+      return ret;
     }
 
     WARNING_LOG("No DXGI output found for window, using first.");
@@ -268,22 +281,25 @@ bool D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, 
   }
 
   DXGI_MODE_DESC request_mode = {};
-  request_mode.Width = width;
-  request_mode.Height = height;
+  request_mode.Width = requested_fullscreen_mode->width;
+  request_mode.Height = requested_fullscreen_mode->height;
   request_mode.Format = format;
-  request_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(refresh_rate * 1000.0f));
+  request_mode.RefreshRate.Numerator = static_cast<UINT>(std::floor(requested_fullscreen_mode->refresh_rate * 1000.0f));
   request_mode.RefreshRate.Denominator = 1000u;
 
-  if (FAILED(hr = intersecting_output->FindClosestMatchingMode(&request_mode, fullscreen_mode, nullptr)) ||
+  ret = DXGI_MODE_DESC();
+
+  if (FAILED(hr = intersecting_output->FindClosestMatchingMode(&request_mode, &ret.value(), nullptr)) ||
       request_mode.Format != format)
   {
     ERROR_LOG("Failed to find closest matching mode, hr={:08X}", static_cast<unsigned>(hr));
-    return false;
+    ret.reset();
+    return ret;
   }
 
   *output = intersecting_output.Get();
   intersecting_output->AddRef();
-  return true;
+  return ret;
 }
 
 Microsoft::WRL::ComPtr<IDXGIAdapter1> D3DCommon::GetAdapterByName(IDXGIFactory5* factory, std::string_view name)

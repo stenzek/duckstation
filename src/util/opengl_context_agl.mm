@@ -9,9 +9,9 @@
 
 #include <dlfcn.h>
 
-LOG_CHANNEL(OpenGLContext);
+LOG_CHANNEL(GPUDevice);
 
-OpenGLContextAGL::OpenGLContextAGL(const WindowInfo& wi) : OpenGLContext(wi)
+OpenGLContextAGL::OpenGLContextAGL() : OpenGLContext()
 {
   m_opengl_module_handle = dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_NOW);
   if (!m_opengl_module_handle)
@@ -33,24 +33,28 @@ OpenGLContextAGL::~OpenGLContextAGL()
     dlclose(m_opengl_module_handle);
 }
 
-std::unique_ptr<OpenGLContext> OpenGLContextAGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextAGL::Create(WindowInfo& wi, SurfaceHandle* surface,
+                                                        std::span<const Version> versions_to_try, Error* error)
 {
-  std::unique_ptr<OpenGLContextAGL> context = std::make_unique<OpenGLContextAGL>(wi);
-  if (!context->Initialize(versions_to_try, error))
+  std::unique_ptr<OpenGLContextAGL> context = std::make_unique<OpenGLContextAGL>();
+  if (!context->Initialize(wi, surface, versions_to_try, error))
     return nullptr;
 
   return context;
 }
 
-bool OpenGLContextAGL::Initialize(const std::span<const Version> versions_to_try, Error* error)
+bool OpenGLContextAGL::Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try,
+                                  Error* error)
 {
   for (const Version& cv : versions_to_try)
   {
-    if (cv.profile == Profile::NoProfile && CreateContext(nullptr, NSOpenGLProfileVersionLegacy, true, error))
+    if (cv.profile == Profile::NoProfile && CreateContext(nullptr, NSOpenGLProfileVersionLegacy, error))
     {
       // we already have the dummy context, so just use that
+      BindContextToView(wi, m_context);
+      *surface = wi.window_handle;
       m_version = cv;
-      return true;
+      return MakeCurrent(*surface, error);
     }
     else if (cv.profile == Profile::Core)
     {
@@ -59,10 +63,12 @@ bool OpenGLContextAGL::Initialize(const std::span<const Version> versions_to_try
 
       const NSOpenGLPixelFormatAttribute profile =
         (cv.major_version > 3 || cv.minor_version > 2) ? NSOpenGLProfileVersion4_1Core : NSOpenGLProfileVersion3_2Core;
-      if (CreateContext(nullptr, static_cast<int>(profile), true, error))
+      if (CreateContext(nullptr, static_cast<int>(profile), error))
       {
+        BindContextToView(wi, m_context);
+        *surface = wi.window_handle;
         m_version = cv;
-        return true;
+        return MakeCurrent(*surface, error);
       }
     }
   }
@@ -80,41 +86,31 @@ void* OpenGLContextAGL::GetProcAddress(const char* name)
   return dlsym(RTLD_NEXT, name);
 }
 
-bool OpenGLContextAGL::ChangeSurface(const WindowInfo& new_wi)
+OpenGLContext::SurfaceHandle OpenGLContextAGL::CreateSurface(WindowInfo& wi, Error* error)
 {
-  m_wi = new_wi;
-  BindContextToView();
-  return true;
+  if (m_context.view != nil)
+  {
+    Error::SetStringView(error, "Multiple windows are not supported on this backend.");
+    return nullptr;
+  }
+
+  BindContextToView(wi, m_context);
+  return wi.window_handle;
 }
 
-void OpenGLContextAGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
+void OpenGLContextAGL::DestroySurface(SurfaceHandle handle)
 {
-  UpdateDimensions();
+  if (!handle)
+    return;
+
+  DebugAssert(m_context.view == handle);
+  [m_context setView:nil];
 }
 
-bool OpenGLContextAGL::UpdateDimensions()
+void OpenGLContextAGL::ResizeSurface(WindowInfo& wi, SurfaceHandle handle)
 {
-  const NSSize window_size = [GetView() frame].size;
-  const CGFloat window_scale = [[GetView() window] backingScaleFactor];
-  const u32 new_width = static_cast<u32>(static_cast<CGFloat>(window_size.width) * window_scale);
-  const u32 new_height = static_cast<u32>(static_cast<CGFloat>(window_size.height) * window_scale);
-
-  if (m_wi.surface_width == new_width && m_wi.surface_height == new_height)
-    return false;
-
-  m_wi.surface_width = new_width;
-  m_wi.surface_height = new_height;
-
-  dispatch_block_t block = ^{
-    [m_context update];
-  };
-
-  if ([NSThread isMainThread])
-    block();
-  else
-    dispatch_sync(dispatch_get_main_queue(), block);
-
-  return true;
+  DebugAssert(m_context.view == handle);
+  UpdateSurfaceSize(wi, m_context);
 }
 
 bool OpenGLContextAGL::SwapBuffers()
@@ -128,8 +124,9 @@ bool OpenGLContextAGL::IsCurrent() const
   return (m_context != nil && [NSOpenGLContext currentContext] == m_context);
 }
 
-bool OpenGLContextAGL::MakeCurrent()
+bool OpenGLContextAGL::MakeCurrent(SurfaceHandle surface, Error* error)
 {
+  DebugAssert(surface == m_context.view);
   [m_context makeCurrentContext];
   return true;
 }
@@ -145,35 +142,21 @@ bool OpenGLContextAGL::SupportsNegativeSwapInterval() const
   return false;
 }
 
-bool OpenGLContextAGL::SetSwapInterval(s32 interval)
+bool OpenGLContextAGL::SetSwapInterval(s32 interval, Error* error)
 {
   GLint gl_interval = static_cast<GLint>(interval);
   [m_context setValues:&gl_interval forParameter:NSOpenGLCPSwapInterval];
   return true;
 }
 
-std::unique_ptr<OpenGLContext> OpenGLContextAGL::CreateSharedContext(const WindowInfo& wi, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextAGL::CreateSharedContext(WindowInfo& wi, SurfaceHandle* handle,
+                                                                     Error* error)
 {
-  std::unique_ptr<OpenGLContextAGL> context = std::make_unique<OpenGLContextAGL>(wi);
-
-  context->m_context = [[NSOpenGLContext alloc] initWithFormat:m_pixel_format shareContext:m_context];
-  if (context->m_context == nil)
-  {
-    Error::SetStringView(error, "NSOpenGLContext initWithFormat failed");
-    return nullptr;
-  }
-
-  context->m_version = m_version;
-  context->m_pixel_format = m_pixel_format;
-  [context->m_pixel_format retain];
-
-  if (wi.type == WindowInfo::Type::MacOS)
-    context->BindContextToView();
-
-  return context;
+  Error::SetStringView(error, "Not supported on this backend.");
+  return {};
 }
 
-bool OpenGLContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, bool make_current, Error* error)
+bool OpenGLContextAGL::CreateContext(NSOpenGLContext* share_context, int profile, Error* error)
 {
   if (m_context)
   {
@@ -201,26 +184,18 @@ bool OpenGLContextAGL::CreateContext(NSOpenGLContext* share_context, int profile
     return false;
   }
 
-  if (m_wi.type == WindowInfo::Type::MacOS)
-    BindContextToView();
-
-  if (make_current)
-    [m_context makeCurrentContext];
-
   return true;
 }
 
-void OpenGLContextAGL::BindContextToView()
+void OpenGLContextAGL::BindContextToView(WindowInfo& wi, NSOpenGLContext* context)
 {
-  NSView* const view = GetView();
+  NSView* const view = static_cast<NSView*>((__bridge NSView*)wi.window_handle);
   NSWindow* const window = [view window];
   [view setWantsBestResolutionOpenGLSurface:YES];
 
-  UpdateDimensions();
-
   dispatch_block_t block = ^{
     [window makeFirstResponder:view];
-    [m_context setView:view];
+    [context setView:view];
     [window makeKeyAndOrderFront:nil];
   };
 
@@ -228,4 +203,32 @@ void OpenGLContextAGL::BindContextToView()
     block();
   else
     dispatch_sync(dispatch_get_main_queue(), block);
+
+  UpdateSurfaceSize(wi, context);
+}
+
+void OpenGLContextAGL::UpdateSurfaceSize(WindowInfo& wi, NSOpenGLContext* context)
+{
+  NSView* const view = static_cast<NSView*>((__bridge NSView*)wi.window_handle);
+  const NSSize window_size = [view frame].size;
+  const CGFloat window_scale = [[view window] backingScaleFactor];
+  const u32 new_width = static_cast<u32>(static_cast<CGFloat>(window_size.width) * window_scale);
+  const u32 new_height = static_cast<u32>(static_cast<CGFloat>(window_size.height) * window_scale);
+
+  if (wi.surface_width == new_width && wi.surface_height == new_height)
+    return;
+
+  wi.surface_width = static_cast<u16>(new_width);
+  wi.surface_height = static_cast<u16>(new_height);
+
+  dispatch_block_t block = ^{
+    [context update];
+  };
+
+  if ([NSThread isMainThread])
+    block();
+  else
+    dispatch_sync(dispatch_get_main_queue(), block);
+
+  return true;
 }

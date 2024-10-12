@@ -21,7 +21,7 @@
 #include <mach/mach_time.h>
 #include <pthread.h>
 
-LOG_CHANNEL(MetalDevice);
+LOG_CHANNEL(GPUDevice);
 
 // TODO: Disable hazard tracking and issue barriers explicitly.
 
@@ -128,34 +128,160 @@ static void RunOnMainThread(F&& f)
 
 MetalDevice::MetalDevice() : m_current_viewport(0, 0, 1, 1), m_current_scissor(0, 0, 1, 1)
 {
+  m_render_api = RenderAPI::Metal;
 }
 
 MetalDevice::~MetalDevice()
 {
-  Assert(m_pipeline_archive == nil && m_layer == nil && m_device == nil);
+  Assert(m_pipeline_archive == nil && m_layer_drawable == nil && m_device == nil);
 }
 
-bool MetalDevice::HasSurface() const
+MetalSwapChain::MetalSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                               CAMetalLayer* layer)
+  : GPUSwapChain(wi, vsync_mode, allow_present_throttle), m_layer(layer)
 {
-  return (m_layer != nil);
 }
 
-void MetalDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
+MetalSwapChain::~MetalSwapChain()
+{
+  Destroy(true);
+}
+
+void MetalSwapChain::Destroy(bool wait_for_gpu)
+{
+  if (!m_layer)
+    return;
+
+  if (wait_for_gpu)
+    MetalDevice::GetInstance().WaitForGPUIdle();
+
+  RunOnMainThread([this]() {
+    NSView* view = (__bridge NSView*)m_window_info.window_handle;
+    [view setLayer:nil];
+    [view setWantsLayer:FALSE];
+    [m_layer release];
+    m_layer = nullptr;
+  });
+}
+
+bool MetalSwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
+{
+  @autoreleasepool
+  {
+    m_window_info.surface_scale = new_scale;
+    if (new_width == m_window_info.surface_width && new_height == m_window_info.surface_height)
+    {
+      return true;
+    }
+
+    m_window_info.surface_width = new_width;
+    m_window_info.surface_height = new_height;
+
+    [m_layer setDrawableSize:CGSizeMake(new_width, new_height)];
+    return true;
+  }
+}
+
+bool MetalSwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
 {
   // Metal does not support mailbox mode.
   mode = (mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : mode;
   m_allow_present_throttle = allow_present_throttle;
 
   if (m_vsync_mode == mode)
-    return;
+    return true;
 
   m_vsync_mode = mode;
   if (m_layer != nil)
     [m_layer setDisplaySyncEnabled:m_vsync_mode == GPUVSyncMode::FIFO];
+
+  return true;
 }
 
-bool MetalDevice::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                               FeatureMask disabled_features, Error* error)
+std::unique_ptr<GPUSwapChain> MetalDevice::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                           bool allow_present_throttle,
+                                                           const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                           std::optional<bool> exclusive_fullscreen_control,
+                                                           Error* error)
+{
+  @autoreleasepool
+  {
+    CAMetalLayer* layer;
+    WindowInfo wi_copy(wi);
+    RunOnMainThread([this, &layer, &wi_copy, error]() {
+      @autoreleasepool
+      {
+        INFO_LOG("Creating a {}x{} Metal layer.", wi_copy.surface_width, wi_copy.surface_height);
+        layer = [CAMetalLayer layer]; // TODO: Does this need retain??
+        if (layer == nil)
+        {
+          Error::SetStringView(error, "Failed to create metal layer.");
+          return;
+        }
+
+        [layer setDevice:m_device];
+        [layer setDrawableSize:CGSizeMake(static_cast<float>(wi_copy.surface_width),
+                                          static_cast<float>(wi_copy.surface_height))];
+
+        // Default should be BGRA8.
+        const MTLPixelFormat layer_fmt = [layer pixelFormat];
+        wi_copy.surface_format = GetTextureFormatForMTLFormat(layer_fmt);
+        if (wi_copy.surface_format == GPUTexture::Format::Unknown)
+        {
+          ERROR_LOG("Invalid pixel format {} in layer, using BGRA8.", static_cast<u32>(layer_fmt));
+          [layer setPixelFormat:MTLPixelFormatBGRA8Unorm];
+          wi_copy.surface_format = GPUTexture::Format::BGRA8;
+        }
+
+        VERBOSE_LOG("Metal layer pixel format is {}.", GPUTexture::GetFormatName(wi_copy.surface_format));
+
+        NSView* view = (__bridge NSView*)wi_copy.window_handle;
+        [view setWantsLayer:TRUE];
+        [view setLayer:layer];
+      }
+    });
+
+    if (!layer)
+      return {};
+
+    // Metal does not support mailbox mode.
+    vsync_mode = (vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : vsync_mode;
+    [layer setDisplaySyncEnabled:vsync_mode == GPUVSyncMode::FIFO];
+
+    // Clear it out ASAP.
+    std::unique_ptr<MetalSwapChain> swap_chain =
+      std::make_unique<MetalSwapChain>(wi_copy, vsync_mode, allow_present_throttle, layer);
+    RenderBlankFrame(swap_chain.get());
+    return swap_chain;
+  }
+}
+
+void MetalDevice::RenderBlankFrame(MetalSwapChain* swap_chain)
+{
+  @autoreleasepool
+  {
+    // has to be encoding, we don't "begin" a render pass here, so the inline encoder won't get flushed otherwise.
+    EndAnyEncoding();
+
+    id<MTLDrawable> drawable = [[swap_chain->GetLayer() nextDrawable] retain];
+    MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
+    desc.colorAttachments[0].loadAction = MTLLoadActionClear;
+    desc.colorAttachments[0].storeAction = MTLStoreActionStore;
+    desc.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
+    desc.colorAttachments[0].texture = [drawable texture];
+    id<MTLRenderCommandEncoder> encoder = [m_render_cmdbuf renderCommandEncoderWithDescriptor:desc];
+    [encoder endEncoding];
+    [m_render_cmdbuf presentDrawable:drawable];
+    DeferRelease(drawable);
+    SubmitCommandBuffer();
+  }
+}
+
+bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+                                               const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                               bool allow_present_throttle,
+                                               const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                               std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   @autoreleasepool
   {
@@ -199,15 +325,20 @@ bool MetalDevice::CreateDevice(std::string_view adapter, std::optional<bool> exc
     INFO_LOG("Metal Device: {}", [[m_device name] UTF8String]);
 
     SetFeatures(disabled_features);
-
-    if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateLayer())
-    {
-      Error::SetStringView(error, "Failed to create layer.");
-      return false;
-    }
-
     CreateCommandBuffer();
-    RenderBlankFrame();
+
+    if (!wi.IsSurfaceless())
+    {
+      m_main_swap_chain = CreateSwapChain(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode,
+                                          exclusive_fullscreen_control, error);
+      if (!m_main_swap_chain)
+      {
+        Error::SetStringView(error, "Failed to create layer.");
+        return false;
+      }
+
+      RenderBlankFrame(static_cast<MetalSwapChain*>(m_main_swap_chain.get()));
+    }
 
     if (!LoadShaders())
     {
@@ -228,7 +359,6 @@ bool MetalDevice::CreateDevice(std::string_view adapter, std::optional<bool> exc
 void MetalDevice::SetFeatures(FeatureMask disabled_features)
 {
   // Set version to Metal 2.3, that's all we're using. Use SPIRV-Cross version encoding.
-  m_render_api = RenderAPI::Metal;
   m_render_api_version = 20300;
   m_max_texture_size = GetMetalMaxTextureSize(m_device);
   m_max_multisamples = GetMetalMaxMultisamples(m_device);
@@ -416,6 +546,12 @@ void MetalDevice::DestroyDevice()
     m_render_cmdbuf = nil;
   }
 
+  if (m_main_swap_chain)
+  {
+    static_cast<MetalSwapChain*>(m_main_swap_chain.get())->Destroy(false);
+    m_main_swap_chain.reset();
+  }
+
   DestroyBuffers();
 
   for (auto& it : m_cleanup_objects)
@@ -454,135 +590,6 @@ void MetalDevice::DestroyDevice()
   {
     [m_device release];
     m_device = nil;
-  }
-}
-
-bool MetalDevice::CreateLayer()
-{
-  @autoreleasepool
-  {
-    RunOnMainThread([this]() {
-      @autoreleasepool
-      {
-        INFO_LOG("Creating a {}x{} Metal layer.", m_window_info.surface_width, m_window_info.surface_height);
-        const auto size =
-          CGSizeMake(static_cast<float>(m_window_info.surface_width), static_cast<float>(m_window_info.surface_height));
-        m_layer = [CAMetalLayer layer];
-        [m_layer setDevice:m_device];
-        [m_layer setDrawableSize:size];
-
-        // Default should be BGRA8.
-        const MTLPixelFormat layer_fmt = [m_layer pixelFormat];
-        m_window_info.surface_format = GetTextureFormatForMTLFormat(layer_fmt);
-        if (m_window_info.surface_format == GPUTexture::Format::Unknown)
-        {
-          ERROR_LOG("Invalid pixel format {} in layer, using BGRA8.", static_cast<u32>(layer_fmt));
-          [m_layer setPixelFormat:MTLPixelFormatBGRA8Unorm];
-          m_window_info.surface_format = GPUTexture::Format::BGRA8;
-        }
-
-        VERBOSE_LOG("Metal layer pixel format is {}.", GPUTexture::GetFormatName(m_window_info.surface_format));
-
-        NSView* view = GetWindowView();
-        [view setWantsLayer:TRUE];
-        [view setLayer:m_layer];
-      }
-    });
-
-    // Metal does not support mailbox mode.
-    m_vsync_mode = (m_vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : m_vsync_mode;
-    [m_layer setDisplaySyncEnabled:m_vsync_mode == GPUVSyncMode::FIFO];
-
-    DebugAssert(m_layer_pass_desc == nil);
-    m_layer_pass_desc = [[MTLRenderPassDescriptor renderPassDescriptor] retain];
-    m_layer_pass_desc.renderTargetWidth = m_window_info.surface_width;
-    m_layer_pass_desc.renderTargetHeight = m_window_info.surface_height;
-    m_layer_pass_desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-    m_layer_pass_desc.colorAttachments[0].storeAction = MTLStoreActionStore;
-    m_layer_pass_desc.colorAttachments[0].clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1.0);
-    return true;
-  }
-}
-
-void MetalDevice::DestroyLayer()
-{
-  if (m_layer == nil)
-    return;
-
-  // Should wait for previous command buffers to finish, which might be rendering to drawables.
-  WaitForPreviousCommandBuffers();
-
-  [m_layer_pass_desc release];
-  m_layer_pass_desc = nil;
-  m_window_info.surface_format = GPUTexture::Format::Unknown;
-
-  RunOnMainThread([this]() {
-    NSView* view = GetWindowView();
-    [view setLayer:nil];
-    [view setWantsLayer:FALSE];
-    [m_layer release];
-    m_layer = nullptr;
-  });
-}
-
-void MetalDevice::RenderBlankFrame()
-{
-  DebugAssert(!InRenderPass());
-  if (m_layer == nil)
-    return;
-
-  @autoreleasepool
-  {
-    id<MTLDrawable> drawable = [[m_layer nextDrawable] retain];
-    m_layer_pass_desc.colorAttachments[0].texture = [drawable texture];
-    id<MTLRenderCommandEncoder> encoder = [m_render_cmdbuf renderCommandEncoderWithDescriptor:m_layer_pass_desc];
-    [encoder endEncoding];
-    [m_render_cmdbuf presentDrawable:drawable];
-    DeferRelease(drawable);
-    SubmitCommandBuffer();
-  }
-}
-
-bool MetalDevice::UpdateWindow()
-{
-  if (InRenderPass())
-    EndRenderPass();
-  DestroyLayer();
-
-  if (!AcquireWindow(false))
-    return false;
-
-  if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateLayer())
-  {
-    ERROR_LOG("Failed to create layer on updated window");
-    return false;
-  }
-
-  return true;
-}
-
-void MetalDevice::DestroySurface()
-{
-  DestroyLayer();
-}
-
-void MetalDevice::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
-{
-  @autoreleasepool
-  {
-    m_window_info.surface_scale = new_window_scale;
-    if (static_cast<u32>(new_window_width) == m_window_info.surface_width &&
-        static_cast<u32>(new_window_height) == m_window_info.surface_height)
-    {
-      return;
-    }
-
-    m_window_info.surface_width = new_window_width;
-    m_window_info.surface_height = new_window_height;
-
-    [m_layer setDrawableSize:CGSizeMake(new_window_width, new_window_height)];
-    m_layer_pass_desc.renderTargetWidth = m_window_info.surface_width;
-    m_layer_pass_desc.renderTargetHeight = m_window_info.surface_height;
   }
 }
 
@@ -2082,6 +2089,8 @@ void MetalDevice::BeginRenderPass()
       // Rendering to view, but we got interrupted...
       desc.colorAttachments[0].texture = [m_layer_drawable texture];
       desc.colorAttachments[0].loadAction = MTLLoadActionLoad;
+      desc.renderTargetWidth = m_current_framebuffer_size.width();
+      desc.renderTargetHeight = m_current_framebuffer_size.height();
     }
     else
     {
@@ -2157,6 +2166,10 @@ void MetalDevice::BeginRenderPass()
             break;
         }
       }
+
+      MetalTexture* rt_or_ds =
+        (m_num_current_render_targets > 0) ? m_current_render_targets[0] : m_current_depth_target;
+      m_current_framebuffer_size = GSVector4i(0, 0, rt_or_ds->GetWidth(), rt_or_ds->GetHeight());
     }
 
     m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:desc] retain];
@@ -2218,7 +2231,7 @@ void MetalDevice::SetInitialEncoderState()
 
 void MetalDevice::SetViewportInRenderEncoder()
 {
-  const GSVector4i rc = ClampToFramebufferSize(m_current_viewport);
+  const GSVector4i rc = m_current_viewport.rintersect(m_current_framebuffer_size);
   [m_render_encoder
     setViewport:(MTLViewport){static_cast<double>(rc.left), static_cast<double>(rc.top),
                               static_cast<double>(rc.width()), static_cast<double>(rc.height()), 0.0, 1.0}];
@@ -2226,19 +2239,10 @@ void MetalDevice::SetViewportInRenderEncoder()
 
 void MetalDevice::SetScissorInRenderEncoder()
 {
-  const GSVector4i rc = ClampToFramebufferSize(m_current_scissor);
+  const GSVector4i rc = m_current_scissor.rintersect(m_current_framebuffer_size);
   [m_render_encoder
     setScissorRect:(MTLScissorRect){static_cast<NSUInteger>(rc.left), static_cast<NSUInteger>(rc.top),
                                     static_cast<NSUInteger>(rc.width()), static_cast<NSUInteger>(rc.height())}];
-}
-
-GSVector4i MetalDevice::ClampToFramebufferSize(const GSVector4i rc) const
-{
-  const MetalTexture* rt_or_ds =
-    (m_num_current_render_targets > 0) ? m_current_render_targets[0] : m_current_depth_target;
-  const s32 clamp_width = rt_or_ds ? rt_or_ds->GetWidth() : m_window_info.surface_width;
-  const s32 clamp_height = rt_or_ds ? rt_or_ds->GetHeight() : m_window_info.surface_height;
-  return rc.rintersect(GSVector4i(0, 0, clamp_width, clamp_height));
 }
 
 void MetalDevice::PreDrawCheck()
@@ -2413,35 +2417,35 @@ id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
   }
 }
 
-GPUDevice::PresentResult MetalDevice::BeginPresent(u32 clear_color)
+GPUDevice::PresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
   @autoreleasepool
   {
-    if (m_layer == nil)
-    {
-      TrimTexturePool();
-      return PresentResult::SkipPresent;
-    }
-
     EndAnyEncoding();
 
-    m_layer_drawable = [[m_layer nextDrawable] retain];
+    m_layer_drawable = [[static_cast<MetalSwapChain*>(swap_chain)->GetLayer() nextDrawable] retain];
     if (m_layer_drawable == nil)
     {
+      WARNING_LOG("Failed to get drawable from layer.");
+      SubmitCommandBuffer();
       TrimTexturePool();
       return PresentResult::SkipPresent;
     }
 
-    SetViewportAndScissor(0, 0, m_window_info.surface_width, m_window_info.surface_height);
+    m_current_framebuffer_size = GSVector4i(0, 0, swap_chain->GetWidth(), swap_chain->GetHeight());
+    SetViewportAndScissor(m_current_framebuffer_size);
 
     // Set up rendering to layer.
     const GSVector4 clear_color_v = GSVector4::rgba32(clear_color);
     id<MTLTexture> layer_texture = [m_layer_drawable texture];
-    m_layer_pass_desc.colorAttachments[0].texture = layer_texture;
-    m_layer_pass_desc.colorAttachments[0].loadAction = MTLLoadActionClear;
-    m_layer_pass_desc.colorAttachments[0].clearColor =
+    MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
+    desc.colorAttachments[0].texture = layer_texture;
+    desc.colorAttachments[0].loadAction = MTLLoadActionClear;
+    desc.colorAttachments[0].clearColor =
       MTLClearColorMake(clear_color_v.r, clear_color_v.g, clear_color_v.g, clear_color_v.a);
-    m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:m_layer_pass_desc] retain];
+    desc.renderTargetWidth = swap_chain->GetWidth();
+    desc.renderTargetHeight = swap_chain->GetHeight();
+    m_render_encoder = [[m_render_cmdbuf renderCommandEncoderWithDescriptor:desc] retain];
     s_stats.num_render_passes++;
     std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
     m_num_current_render_targets = 0;
@@ -2454,7 +2458,7 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(u32 clear_color)
   }
 }
 
-void MetalDevice::EndPresent(bool explicit_present, u64 present_time)
+void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
   DebugAssert(!explicit_present);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
@@ -2480,7 +2484,7 @@ void MetalDevice::EndPresent(bool explicit_present, u64 present_time)
   TrimTexturePool();
 }
 
-void MetalDevice::SubmitPresent()
+void MetalDevice::SubmitPresent(GPUSwapChain* swap_chainwel)
 {
   Panic("Not supported by this API.");
 }
@@ -2585,10 +2589,16 @@ void MetalDevice::WaitForPreviousCommandBuffers()
   WaitForFenceCounter(m_current_fence_counter - 1);
 }
 
-void MetalDevice::ExecuteAndWaitForGPUIdle()
+void MetalDevice::WaitForGPUIdle()
 {
   SubmitCommandBuffer(true);
   CleanupObjects();
+}
+
+void MetalDevice::FlushCommands()
+{
+  SubmitCommandBuffer();
+  TrimTexturePool();
 }
 
 void MetalDevice::CleanupObjects()

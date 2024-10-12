@@ -7,6 +7,7 @@
 #include "core/game_list.h"
 #include "core/system.h"
 
+#include "common/error.h"
 #include "common/log.h"
 
 #include <QtCore/QCoreApplication>
@@ -316,7 +317,7 @@ qreal QtUtils::GetDevicePixelRatioForWidget(const QWidget* widget)
   return screen_for_ratio ? screen_for_ratio->devicePixelRatio() : static_cast<qreal>(1);
 }
 
-std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget)
+std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Error* error)
 {
   WindowInfo wi;
 
@@ -344,14 +345,14 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget)
   }
   else
   {
-    qCritical() << "Unknown PNI platform " << platform_name;
+    Error::SetStringFmt(error, "Unknown PNI platform {}", platform_name.toStdString());
     return std::nullopt;
   }
 #endif
 
   const qreal dpr = GetDevicePixelRatioForWidget(widget);
-  wi.surface_width = static_cast<u32>(static_cast<qreal>(widget->width()) * dpr);
-  wi.surface_height = static_cast<u32>(static_cast<qreal>(widget->height()) * dpr);
+  wi.surface_width = static_cast<u16>(static_cast<qreal>(widget->width()) * dpr);
+  wi.surface_height = static_cast<u16>(static_cast<qreal>(widget->height()) * dpr);
   wi.surface_scale = static_cast<float>(dpr);
 
   // Query refresh rate, we need it for sync.

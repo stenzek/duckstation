@@ -22,7 +22,7 @@
 #include <d3dcompiler.h>
 #include <dxgi1_5.h>
 
-LOG_CHANNEL(D3D11Device);
+LOG_CHANNEL(GPUDevice);
 
 // We need to synchronize instance creation because of adapter enumeration from the UI thread.
 static std::mutex s_instance_mutex;
@@ -45,7 +45,10 @@ void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
 #endif
 }
 
-D3D11Device::D3D11Device() = default;
+D3D11Device::D3D11Device()
+{
+  m_render_api = RenderAPI::D3D11;
+}
 
 D3D11Device::~D3D11Device()
 {
@@ -53,13 +56,11 @@ D3D11Device::~D3D11Device()
   Assert(!m_device);
 }
 
-bool D3D11Device::HasSurface() const
-{
-  return static_cast<bool>(m_swap_chain);
-}
-
-bool D3D11Device::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                               FeatureMask disabled_features, Error* error)
+bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+                                               const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                               bool allow_present_throttle,
+                                               const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                               std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
 
@@ -125,17 +126,14 @@ bool D3D11Device::CreateDevice(std::string_view adapter, std::optional<bool> exc
   INFO_LOG("Max device feature level: {}",
            D3DCommon::GetFeatureLevelString(D3DCommon::GetRenderAPIVersionForFeatureLevel(m_max_feature_level)));
 
-  BOOL allow_tearing_supported = false;
-  hr = m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
-                                           sizeof(allow_tearing_supported));
-  m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
-
   SetFeatures(disabled_features);
 
-  if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
+  if (!wi.IsSurfaceless())
   {
-    Error::SetStringView(error, "Failed to create swap chain");
-    return false;
+    m_main_swap_chain = CreateSwapChain(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode,
+                                        exclusive_fullscreen_control, error);
+    if (!m_main_swap_chain)
+      return false;
   }
 
   if (!CreateBuffers())
@@ -152,6 +150,7 @@ void D3D11Device::DestroyDevice()
   std::unique_lock lock(s_instance_mutex);
 
   DestroyBuffers();
+  m_main_swap_chain.reset();
   m_context.Reset();
   m_device.Reset();
 }
@@ -160,7 +159,6 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
 {
   const D3D_FEATURE_LEVEL feature_level = m_device->GetFeatureLevel();
 
-  m_render_api = RenderAPI::D3D11;
   m_render_api_version = D3DCommon::GetRenderAPIVersionForFeatureLevel(feature_level);
   m_max_texture_size = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
   m_max_multisamples = 1;
@@ -202,96 +200,107 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   }
 }
 
-u32 D3D11Device::GetSwapChainBufferCount() const
+D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                               const GPUDevice::ExclusiveFullscreenMode* fullscreen_mode)
+  : GPUSwapChain(wi, vsync_mode, allow_present_throttle)
 {
-  // With vsync off, we only need two buffers. Same for blocking vsync.
-  // With triple buffering, we need three.
-  return (m_vsync_mode == GPUVSyncMode::Mailbox) ? 3 : 2;
+  if (fullscreen_mode)
+    InitializeExclusiveFullscreenMode(fullscreen_mode);
 }
 
-bool D3D11Device::CreateSwapChain()
+D3D11SwapChain::~D3D11SwapChain()
 {
-  if (m_window_info.type != WindowInfo::Type::Win32)
-    return false;
+  m_swap_chain_rtv.Reset();
+  DestroySwapChain();
+}
 
-  const DXGI_FORMAT dxgi_format = D3DCommon::GetFormatMapping(s_swap_chain_format).resource_format;
+bool D3D11SwapChain::InitializeExclusiveFullscreenMode(const GPUDevice::ExclusiveFullscreenMode* mode)
+{
+  const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(s_swap_chain_format);
 
   const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
 
-  DXGI_MODE_DESC fullscreen_mode = {};
-  ComPtr<IDXGIOutput> fullscreen_output;
-  if (Host::IsFullscreen())
-  {
-    u32 fullscreen_width, fullscreen_height;
-    float fullscreen_refresh_rate;
-    m_is_exclusive_fullscreen =
-      GetRequestedExclusiveFullscreenMode(&fullscreen_width, &fullscreen_height, &fullscreen_refresh_rate) &&
-      D3DCommon::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.Get(), client_rc, fullscreen_width,
-                                                         fullscreen_height, fullscreen_refresh_rate, dxgi_format,
-                                                         &fullscreen_mode, fullscreen_output.GetAddressOf());
+  m_fullscreen_mode = D3DCommon::GetRequestedExclusiveFullscreenModeDesc(
+    D3D11Device::GetDXGIFactory(), client_rc, mode, fm.resource_format, m_fullscreen_output.GetAddressOf());
+  return m_fullscreen_mode.has_value();
+}
 
-    // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
-    if (m_vsync_mode == GPUVSyncMode::Mailbox && m_is_exclusive_fullscreen)
-    {
-      WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
-      m_vsync_mode = GPUVSyncMode::FIFO;
-    }
-  }
-  else
+u32 D3D11SwapChain::GetNewBufferCount(GPUVSyncMode vsync_mode)
+{
+  // With vsync off, we only need two buffers. Same for blocking vsync.
+  // With triple buffering, we need three.
+  return (vsync_mode == GPUVSyncMode::Mailbox) ? 3 : 2;
+}
+
+bool D3D11SwapChain::CreateSwapChain(Error* error)
+{
+  const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(s_swap_chain_format);
+
+  const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
+  RECT client_rc{};
+  GetClientRect(window_hwnd, &client_rc);
+
+  // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+  if (IsExclusiveFullscreen() && m_vsync_mode == GPUVSyncMode::Mailbox)
   {
-    m_is_exclusive_fullscreen = false;
+    WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+    m_vsync_mode = GPUVSyncMode::FIFO;
   }
 
   m_using_flip_model_swap_chain =
-    !Host::GetBoolSettingValue("Display", "UseBlitSwapChain", false) || m_is_exclusive_fullscreen;
+    !Host::GetBoolSettingValue("Display", "UseBlitSwapChain", false) || IsExclusiveFullscreen();
+
+  IDXGIFactory5* const dxgi_factory = D3D11Device::GetDXGIFactory();
+  ID3D11Device1* const d3d_device = D3D11Device::GetD3DDevice();
 
   DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
   swap_chain_desc.Width = static_cast<u32>(client_rc.right - client_rc.left);
   swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
-  swap_chain_desc.Format = dxgi_format;
+  swap_chain_desc.Format = fm.resource_format;
   swap_chain_desc.SampleDesc.Count = 1;
-  swap_chain_desc.BufferCount = GetSwapChainBufferCount();
+  swap_chain_desc.BufferCount = GetNewBufferCount(m_vsync_mode);
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   swap_chain_desc.SwapEffect = m_using_flip_model_swap_chain ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
 
-  m_using_allow_tearing = (m_allow_tearing_supported && m_using_flip_model_swap_chain && !m_is_exclusive_fullscreen);
-  if (m_using_allow_tearing)
-    swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
   HRESULT hr = S_OK;
 
-  if (m_is_exclusive_fullscreen)
+  if (IsExclusiveFullscreen())
   {
     DXGI_SWAP_CHAIN_DESC1 fs_sd_desc = swap_chain_desc;
     DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
 
     fs_sd_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-    fs_sd_desc.Width = fullscreen_mode.Width;
-    fs_sd_desc.Height = fullscreen_mode.Height;
-    fs_desc.RefreshRate = fullscreen_mode.RefreshRate;
-    fs_desc.ScanlineOrdering = fullscreen_mode.ScanlineOrdering;
-    fs_desc.Scaling = fullscreen_mode.Scaling;
+    fs_sd_desc.Width = m_fullscreen_mode->Width;
+    fs_sd_desc.Height = m_fullscreen_mode->Height;
+    fs_desc.RefreshRate = m_fullscreen_mode->RefreshRate;
+    fs_desc.ScanlineOrdering = m_fullscreen_mode->ScanlineOrdering;
+    fs_desc.Scaling = m_fullscreen_mode->Scaling;
     fs_desc.Windowed = FALSE;
 
     VERBOSE_LOG("Creating a {}x{} exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
-    hr = m_dxgi_factory->CreateSwapChainForHwnd(m_device.Get(), window_hwnd, &fs_sd_desc, &fs_desc,
-                                                fullscreen_output.Get(), m_swap_chain.ReleaseAndGetAddressOf());
+    hr = dxgi_factory->CreateSwapChainForHwnd(d3d_device, window_hwnd, &fs_sd_desc, &fs_desc, m_fullscreen_output.Get(),
+                                              m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr))
     {
       WARNING_LOG("Failed to create fullscreen swap chain, trying windowed.");
-      m_is_exclusive_fullscreen = false;
-      m_using_allow_tearing = m_allow_tearing_supported && m_using_flip_model_swap_chain;
+      m_fullscreen_output.Reset();
+      m_fullscreen_mode.reset();
+      m_using_allow_tearing = (m_using_flip_model_swap_chain && D3DCommon::SupportsAllowTearing(dxgi_factory));
     }
   }
 
-  if (!m_is_exclusive_fullscreen)
+  if (!IsExclusiveFullscreen())
   {
     VERBOSE_LOG("Creating a {}x{} {} windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height,
                 m_using_flip_model_swap_chain ? "flip-discard" : "discard");
-    hr = m_dxgi_factory->CreateSwapChainForHwnd(m_device.Get(), window_hwnd, &swap_chain_desc, nullptr, nullptr,
-                                                m_swap_chain.ReleaseAndGetAddressOf());
+    m_using_allow_tearing = (m_using_flip_model_swap_chain && !IsExclusiveFullscreen() &&
+                             D3DCommon::SupportsAllowTearing(D3D11Device::GetDXGIFactory()));
+    if (m_using_allow_tearing)
+      swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    hr = dxgi_factory->CreateSwapChainForHwnd(d3d_device, window_hwnd, &swap_chain_desc, nullptr, nullptr,
+                                              m_swap_chain.ReleaseAndGetAddressOf());
   }
 
   if (FAILED(hr) && m_using_flip_model_swap_chain)
@@ -302,11 +311,11 @@ bool D3D11Device::CreateSwapChain()
     m_using_flip_model_swap_chain = false;
     m_using_allow_tearing = false;
 
-    hr = m_dxgi_factory->CreateSwapChainForHwnd(m_device.Get(), window_hwnd, &swap_chain_desc, nullptr, nullptr,
-                                                m_swap_chain.ReleaseAndGetAddressOf());
+    hr = dxgi_factory->CreateSwapChainForHwnd(d3d_device, window_hwnd, &swap_chain_desc, nullptr, nullptr,
+                                              m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      ERROR_LOG("CreateSwapChainForHwnd failed: 0x{:08X}", static_cast<unsigned>(hr));
+      Error::SetHResult(error, "CreateSwapChainForHwnd() failed: ", hr);
       return false;
     }
   }
@@ -319,25 +328,29 @@ bool D3D11Device::CreateSwapChain()
     WARNING_LOG("MakeWindowAssociation() to disable ALT+ENTER failed");
   }
 
-  if (!CreateSwapChainRTV())
-  {
-    DestroySwapChain();
-    return false;
-  }
-
-  // Render a frame as soon as possible to clear out whatever was previously being displayed.
-  m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), s_clear_color.data());
-  m_swap_chain->Present(0, m_using_allow_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
   return true;
 }
 
-bool D3D11Device::CreateSwapChainRTV()
+void D3D11SwapChain::DestroySwapChain()
+{
+  if (!m_swap_chain)
+    return;
+
+  // switch out of fullscreen before destroying
+  BOOL is_fullscreen;
+  if (SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen)
+    m_swap_chain->SetFullscreenState(FALSE, nullptr);
+
+  m_swap_chain.Reset();
+}
+
+bool D3D11SwapChain::CreateRTV(Error* error)
 {
   ComPtr<ID3D11Texture2D> backbuffer;
   HRESULT hr = m_swap_chain->GetBuffer(0, IID_PPV_ARGS(backbuffer.GetAddressOf()));
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("GetBuffer for RTV failed: 0x{:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "GetBuffer() failed: ", hr);
     return false;
   }
 
@@ -346,16 +359,17 @@ bool D3D11Device::CreateSwapChainRTV()
 
   CD3D11_RENDER_TARGET_VIEW_DESC rtv_desc(D3D11_RTV_DIMENSION_TEXTURE2D, backbuffer_desc.Format, 0, 0,
                                           backbuffer_desc.ArraySize);
-  hr = m_device->CreateRenderTargetView(backbuffer.Get(), &rtv_desc, m_swap_chain_rtv.ReleaseAndGetAddressOf());
+  hr = D3D11Device::GetD3DDevice()->CreateRenderTargetView(backbuffer.Get(), &rtv_desc,
+                                                           m_swap_chain_rtv.ReleaseAndGetAddressOf());
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("CreateRenderTargetView for swap chain failed: 0x{:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateRenderTargetView(): ", hr);
     m_swap_chain_rtv.Reset();
     return false;
   }
 
-  m_window_info.surface_width = backbuffer_desc.Width;
-  m_window_info.surface_height = backbuffer_desc.Height;
+  m_window_info.surface_width = static_cast<u16>(backbuffer_desc.Width);
+  m_window_info.surface_height = static_cast<u16>(backbuffer_desc.Height);
   m_window_info.surface_format = s_swap_chain_format;
   VERBOSE_LOG("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
 
@@ -374,65 +388,77 @@ bool D3D11Device::CreateSwapChainRTV()
   return true;
 }
 
-void D3D11Device::DestroySwapChain()
+bool D3D11SwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
 {
-  if (!m_swap_chain)
-    return;
-
-  m_swap_chain_rtv.Reset();
-
-  // switch out of fullscreen before destroying
-  BOOL is_fullscreen;
-  if (SUCCEEDED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) && is_fullscreen)
-    m_swap_chain->SetFullscreenState(FALSE, nullptr);
-
-  m_swap_chain.Reset();
-  m_is_exclusive_fullscreen = false;
-}
-
-bool D3D11Device::UpdateWindow()
-{
-  DestroySwapChain();
-
-  if (!AcquireWindow(false))
-    return false;
-
-  if (m_window_info.type != WindowInfo::Type::Surfaceless && !CreateSwapChain())
-  {
-    ERROR_LOG("Failed to create swap chain on updated window");
-    return false;
-  }
-
-  return true;
-}
-
-void D3D11Device::DestroySurface()
-{
-  DestroySwapChain();
-}
-
-void D3D11Device::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
-{
-  if (!m_swap_chain || m_is_exclusive_fullscreen)
-    return;
-
-  m_window_info.surface_scale = new_window_scale;
-
-  if (m_window_info.surface_width == static_cast<u32>(new_window_width) &&
-      m_window_info.surface_height == static_cast<u32>(new_window_height))
-  {
-    return;
-  }
+  m_window_info.surface_scale = new_scale;
+  if (m_window_info.surface_width == new_width && m_window_info.surface_height == new_height)
+    return true;
 
   m_swap_chain_rtv.Reset();
 
   HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
                                            m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
   if (FAILED(hr)) [[unlikely]]
-    ERROR_LOG("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
+  {
+    Error::SetHResult(error, "ResizeBuffers() failed: ", hr);
+    return false;
+  }
 
-  if (!CreateSwapChainRTV())
-    Panic("Failed to recreate swap chain RTV after resize");
+  return CreateRTV(error);
+}
+
+bool D3D11SwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
+{
+  m_allow_present_throttle = allow_present_throttle;
+
+  // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+  if (mode == GPUVSyncMode::Mailbox && IsExclusiveFullscreen())
+  {
+    WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+    mode = GPUVSyncMode::FIFO;
+  }
+
+  if (m_vsync_mode == mode)
+    return true;
+
+  const u32 old_buffer_count = GetNewBufferCount(m_vsync_mode);
+  const u32 new_buffer_count = GetNewBufferCount(mode);
+  m_vsync_mode = mode;
+  if (old_buffer_count == new_buffer_count)
+    return true;
+
+  // Buffer count change => needs recreation.
+  m_swap_chain_rtv.Reset();
+  DestroySwapChain();
+  return CreateSwapChain(error) && CreateRTV(error);
+}
+
+std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                           bool allow_present_throttle,
+                                                           const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                           std::optional<bool> exclusive_fullscreen_control,
+                                                           Error* error)
+{
+  std::unique_ptr<D3D11SwapChain> ret;
+  if (wi.type != WindowInfo::Type::Win32)
+  {
+    Error::SetStringView(error, "Cannot create a swap chain on non-win32 window.");
+    return ret;
+  }
+
+  ret = std::make_unique<D3D11SwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode);
+  if (ret->CreateSwapChain(error) && ret->CreateRTV(error))
+  {
+    // Render a frame as soon as possible to clear out whatever was previously being displayed.
+    m_context->ClearRenderTargetView(ret->GetRTV(), s_clear_color.data());
+    ret->GetSwapChain()->Present(0, ret->IsUsingAllowTearing() ? DXGI_PRESENT_ALLOW_TEARING : 0);
+  }
+  else
+  {
+    ret.reset();
+  }
+
+  return ret;
 }
 
 bool D3D11Device::SupportsExclusiveFullscreen() const
@@ -471,9 +497,16 @@ std::string D3D11Device::GetDriverInfo() const
   return ret;
 }
 
-void D3D11Device::ExecuteAndWaitForGPUIdle()
+void D3D11Device::FlushCommands()
 {
   m_context->Flush();
+  TrimTexturePool();
+}
+
+void D3D11Device::WaitForGPUIdle()
+{
+  m_context->Flush();
+  TrimTexturePool();
 }
 
 bool D3D11Device::CreateBuffers()
@@ -610,63 +643,29 @@ void D3D11Device::InvalidateRenderTarget(GPUTexture* t)
     T->CommitClear(m_context.Get());
 }
 
-void D3D11Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
+GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
-  m_allow_present_throttle = allow_present_throttle;
-
-  // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
-  if (mode == GPUVSyncMode::Mailbox && m_is_exclusive_fullscreen)
-  {
-    WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
-    mode = GPUVSyncMode::FIFO;
-  }
-
-  if (m_vsync_mode == mode)
-    return;
-
-  const u32 old_buffer_count = GetSwapChainBufferCount();
-  m_vsync_mode = mode;
-  if (!m_swap_chain)
-    return;
-
-  if (GetSwapChainBufferCount() != old_buffer_count)
-  {
-    DestroySwapChain();
-    if (!CreateSwapChain())
-      Panic("Failed to recreate swap chain after vsync change.");
-  }
-}
-
-GPUDevice::PresentResult D3D11Device::BeginPresent(u32 clear_color)
-{
-  if (!m_swap_chain)
-  {
-    // Note: Really slow on Intel...
-    m_context->Flush();
-    TrimTexturePool();
-    return PresentResult::SkipPresent;
-  }
+  D3D11SwapChain* const SC = static_cast<D3D11SwapChain*>(swap_chain);
 
   // Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
   // This might get called repeatedly if it takes a while to switch back, that's the host's problem.
   BOOL is_fullscreen;
-  if (m_is_exclusive_fullscreen &&
-      (FAILED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
+  if (SC->IsExclusiveFullscreen() &&
+      (FAILED(SC->GetSwapChain()->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
   {
-    Host::SetFullscreen(false);
     TrimTexturePool();
-    return PresentResult::SkipPresent;
+    return PresentResult::ExclusiveFullscreenLost;
   }
 
   // When using vsync, the time here seems to include the time for the buffer to become available.
   // This blows our our GPU usage number considerably, so read the timestamp before the final blit
   // in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
   // the time, when it's more like a couple of percent.
-  if (m_vsync_mode == GPUVSyncMode::FIFO && m_gpu_timing_enabled)
+  if (SC == m_main_swap_chain.get() && SC->GetVSyncMode() == GPUVSyncMode::FIFO && m_gpu_timing_enabled)
     PopTimestampQuery();
 
-  m_context->ClearRenderTargetView(m_swap_chain_rtv.Get(), GSVector4::rgba32(clear_color).F32);
-  m_context->OMSetRenderTargets(1, m_swap_chain_rtv.GetAddressOf(), nullptr);
+  m_context->ClearRenderTargetView(SC->GetRTV(), GSVector4::rgba32(clear_color).F32);
+  m_context->OMSetRenderTargets(1, SC->GetRTVArray(), nullptr);
   s_stats.num_render_passes++;
   m_num_current_render_targets = 0;
   m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
@@ -675,17 +674,19 @@ GPUDevice::PresentResult D3D11Device::BeginPresent(u32 clear_color)
   return PresentResult::OK;
 }
 
-void D3D11Device::EndPresent(bool explicit_present, u64 present_time)
+void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
+  D3D11SwapChain* const SC = static_cast<D3D11SwapChain*>(swap_chain);
   DebugAssert(!explicit_present && present_time == 0);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
 
-  if (m_vsync_mode != GPUVSyncMode::FIFO && m_gpu_timing_enabled)
+  if (SC == m_main_swap_chain.get() && SC->GetVSyncMode() != GPUVSyncMode::FIFO && m_gpu_timing_enabled)
     PopTimestampQuery();
 
-  const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GPUVSyncMode::FIFO);
-  const UINT flags = (m_vsync_mode == GPUVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
-  m_swap_chain->Present(sync_interval, flags);
+  const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
+  const UINT flags =
+    (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+  SC->GetSwapChain()->Present(sync_interval, flags);
 
   if (m_gpu_timing_enabled)
     KickTimestampQuery();
@@ -693,7 +694,7 @@ void D3D11Device::EndPresent(bool explicit_present, u64 present_time)
   TrimTexturePool();
 }
 
-void D3D11Device::SubmitPresent()
+void D3D11Device::SubmitPresent(GPUSwapChain* swap_chain)
 {
   Panic("Not supported by this API.");
 }

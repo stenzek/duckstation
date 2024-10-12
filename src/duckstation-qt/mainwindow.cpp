@@ -83,6 +83,7 @@ static bool s_use_central_widget = false;
 // UI thread VM validity.
 static bool s_system_valid = false;
 static bool s_system_paused = false;
+static std::atomic_uint32_t s_system_locked{false};
 static QString s_current_game_title;
 static QString s_current_game_serial;
 static QString s_current_game_path;
@@ -220,30 +221,25 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 
 #endif
 
-std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main,
-                                                          bool surfaceless, bool use_main_window_pos)
+std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool fullscreen, bool render_to_main, bool surfaceless,
+                                                          bool use_main_window_pos, Error* error)
 {
-  DEV_LOG("acquireRenderWindow() recreate={} fullscreen={} render_to_main={} surfaceless={} use_main_window_pos={}",
-          recreate_window ? "true" : "false", fullscreen ? "true" : "false", render_to_main ? "true" : "false",
-          surfaceless ? "true" : "false", use_main_window_pos ? "true" : "false");
+  DEV_LOG("acquireRenderWindow() fullscreen={} render_to_main={} surfaceless={} use_main_window_pos={}",
+          fullscreen ? "true" : "false", render_to_main ? "true" : "false", surfaceless ? "true" : "false",
+          use_main_window_pos ? "true" : "false");
 
   QWidget* container =
     m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
   const bool is_fullscreen = isRenderingFullscreen();
   const bool is_rendering_to_main = isRenderingToMain();
   const bool changing_surfaceless = (!m_display_widget != surfaceless);
-  if (m_display_created && !recreate_window && fullscreen == is_fullscreen && is_rendering_to_main == render_to_main &&
-      !changing_surfaceless)
-  {
-    return m_display_widget ? m_display_widget->getWindowInfo() : WindowInfo();
-  }
 
   // Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
   // .. except on Wayland, where everything tends to break if you don't recreate.
   const bool has_container = (m_display_container != nullptr);
   const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
-  if (m_display_created && !recreate_window && !is_rendering_to_main && !render_to_main &&
-      has_container == needs_container && !needs_container && !changing_surfaceless)
+  if (m_display_created && !is_rendering_to_main && !render_to_main && has_container == needs_container &&
+      !needs_container && !changing_surfaceless)
   {
     DEV_LOG("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
 
@@ -257,12 +253,11 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
     }
     else
     {
+      container->showNormal();
       if (use_main_window_pos)
         container->setGeometry(geometry());
       else
         restoreDisplayWindowGeometryFromConfig();
-
-      container->showNormal();
     }
 
     updateDisplayWidgetCursor();
@@ -270,7 +265,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
     updateWindowState();
 
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    return m_display_widget->getWindowInfo();
+    return m_display_widget->getWindowInfo(error);
   }
 
   destroyDisplayWidget(surfaceless);
@@ -282,7 +277,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 
   createDisplayWidget(fullscreen, render_to_main, use_main_window_pos);
 
-  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
+  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo(error);
   if (!wi.has_value())
   {
     QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
@@ -2852,11 +2847,13 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
 MainWindow::SystemLock::SystemLock(QWidget* dialog_parent, bool was_paused, bool was_fullscreen)
   : m_dialog_parent(dialog_parent), m_was_paused(was_paused), m_was_fullscreen(was_fullscreen)
 {
+  s_system_locked.fetch_add(1, std::memory_order_release);
 }
 
 MainWindow::SystemLock::SystemLock(SystemLock&& lock)
   : m_dialog_parent(lock.m_dialog_parent), m_was_paused(lock.m_was_paused), m_was_fullscreen(lock.m_was_fullscreen)
 {
+  s_system_locked.fetch_add(1, std::memory_order_release);
   lock.m_dialog_parent = nullptr;
   lock.m_was_paused = true;
   lock.m_was_fullscreen = false;
@@ -2864,6 +2861,8 @@ MainWindow::SystemLock::SystemLock(SystemLock&& lock)
 
 MainWindow::SystemLock::~SystemLock()
 {
+  DebugAssert(s_system_locked.load(std::memory_order_relaxed) > 0);
+  s_system_locked.fetch_sub(1, std::memory_order_release);
   if (m_was_fullscreen)
     g_emu_thread->setFullscreen(true, true);
   if (!m_was_paused)
@@ -2874,4 +2873,9 @@ void MainWindow::SystemLock::cancelResume()
 {
   m_was_paused = true;
   m_was_fullscreen = false;
+}
+
+bool QtHost::IsSystemLocked()
+{
+  return (s_system_locked.load(std::memory_order_acquire) > 0);
 }

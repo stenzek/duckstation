@@ -13,6 +13,7 @@
 #include "platform_misc.h"
 #include "window_info.h"
 
+#include "common/error.h"
 #include "common/log.h"
 #include "common/small_string.h"
 
@@ -87,49 +88,45 @@ bool PlatformMisc::PlaySoundAsync(const char* path)
   return result;
 }
 
-bool CocoaTools::CreateMetalLayer(WindowInfo* wi)
+void* CocoaTools::CreateMetalLayer(const WindowInfo& wi, Error* error)
 {
   // Punt off to main thread if we're not calling from it already.
   if (![NSThread isMainThread])
   {
-    bool ret;
-    dispatch_sync(dispatch_get_main_queue(), [&ret, wi]() { ret = CreateMetalLayer(wi); });
+    void* ret;
+    dispatch_sync(dispatch_get_main_queue(), [&ret, &wi, error]() { ret = CreateMetalLayer(wi, error); });
     return ret;
   }
 
   CAMetalLayer* layer = [CAMetalLayer layer];
   if (layer == nil)
   {
-    ERROR_LOG("Failed to create CAMetalLayer");
-    return false;
+    Error::SetStringView(error, "Failed to create CAMetalLayer");
+    return nullptr;
   }
 
-  NSView* view = (__bridge NSView*)wi->window_handle;
+  NSView* view = (__bridge NSView*)wi.window_handle;
   [view setWantsLayer:TRUE];
   [view setLayer:layer];
   [layer setContentsScale:[[[view window] screen] backingScaleFactor]];
 
-  wi->surface_handle = (__bridge void*)layer;
-  return true;
+  return (__bridge void*)layer;
 }
 
-void CocoaTools::DestroyMetalLayer(WindowInfo* wi)
+void CocoaTools::DestroyMetalLayer(const WindowInfo& wi, void* layer)
 {
-  if (!wi->surface_handle)
-    return;
-
   // Punt off to main thread if we're not calling from it already.
   if (![NSThread isMainThread])
   {
-    dispatch_sync(dispatch_get_main_queue(), [wi]() { DestroyMetalLayer(wi); });
+    dispatch_sync(dispatch_get_main_queue(), [&wi, layer]() { DestroyMetalLayer(wi, layer); });
     return;
   }
 
-  NSView* view = (__bridge NSView*)wi->window_handle;
-  CAMetalLayer* layer = (__bridge CAMetalLayer*)wi->surface_handle;
+  NSView* view = (__bridge NSView*)wi.window_handle;
+  CAMetalLayer* clayer = (__bridge CAMetalLayer*)layer;
   [view setLayer:nil];
   [view setWantsLayer:NO];
-  [layer release];
+  [clayer release];
 }
 
 std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi)
@@ -137,7 +134,7 @@ std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi)
   if (![NSThread isMainThread])
   {
     std::optional<float> ret;
-    dispatch_sync(dispatch_get_main_queue(), [&ret, wi]{ ret = GetViewRefreshRate(wi); });
+    dispatch_sync(dispatch_get_main_queue(), [&ret, wi] { ret = GetViewRefreshRate(wi); });
     return ret;
   }
 

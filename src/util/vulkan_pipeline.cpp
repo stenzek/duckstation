@@ -11,7 +11,7 @@
 #include "common/heap_array.h"
 #include "common/log.h"
 
-LOG_CHANNEL(VulkanDevice);
+LOG_CHANNEL(GPUDevice);
 
 VulkanShader::VulkanShader(GPUShaderStage stage, VkShaderModule mod) : GPUShader(stage), m_module(mod)
 {

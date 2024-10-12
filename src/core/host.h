@@ -82,11 +82,25 @@ void DisplayLoadingScreen(const char* message, int progress_min = -1, int progre
 /// Safely executes a function on the VM thread.
 void RunOnCPUThread(std::function<void()> function, bool block = false);
 
+/// Called when the core is creating a render device.
+/// This could also be fullscreen transition.
+std::optional<WindowInfo> AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
+                                              Error* error);
+
+/// Called when the core is finished with a render window.
+void ReleaseRenderWindow();
+
+/// Returns true if the hosting application is currently fullscreen.
+bool IsFullscreen();
+
+/// Alters fullscreen state of hosting application.
+void SetFullscreen(bool enabled);
+
 /// Attempts to create the rendering device backend.
-bool CreateGPUDevice(RenderAPI api, Error* error);
+bool CreateGPUDevice(RenderAPI api, bool fullscreen, Error* error);
 
 /// Handles fullscreen transitions and such.
-void UpdateDisplayWindow();
+void UpdateDisplayWindow(bool fullscreen);
 
 /// Called when the window is resized.
 void ResizeDisplayWindow(s32 width, s32 height, float scale);

@@ -184,6 +184,23 @@ private:
   MetalStreamBuffer m_buffer;
 };
 
+class MetalSwapChain : public GPUSwapChain
+{
+public:
+  MetalSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle, CAMetalLayer* layer);
+  ~MetalSwapChain() override;
+
+  void Destroy(bool wait_for_gpu);
+
+  CAMetalLayer* GetLayer() const { return m_layer; }
+
+  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+
+private:
+  CAMetalLayer* m_layer = nil;
+};
+
 class MetalDevice final : public GPUDevice
 {
   friend MetalTexture;
@@ -198,16 +215,16 @@ public:
   MetalDevice();
   ~MetalDevice();
 
-  bool HasSurface() const override;
-
-  bool UpdateWindow() override;
-  void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
-  void DestroySurface() override;
-
   std::string GetDriverInfo() const override;
 
-  void ExecuteAndWaitForGPUIdle() override;
+  void FlushCommands() override;
+  void WaitForGPUIdle() override;
 
+  std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control,
+                                                Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                             GPUTexture::Type type, GPUTexture::Format format,
                                             const void* data = nullptr, u32 data_stride = 0) override;
@@ -261,11 +278,9 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
-
-  PresentResult BeginPresent(u32 clear_color) override;
-  void EndPresent(bool explicit_submit, u64 present_time) override;
-  void SubmitPresent() override;
+  PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
+  void EndPresent(GPUSwapChain* swap_chain, bool explicit_submit, u64 present_time) override;
+  void SubmitPresent(GPUSwapChain* swap_chain) override;
 
   void WaitForFenceCounter(u64 counter);
 
@@ -285,8 +300,10 @@ public:
   static void DeferRelease(u64 fence_counter, id obj);
 
 protected:
-  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                    FeatureMask disabled_features, Error* error) override;
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+                                    GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                    const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                    std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
   bool OpenPipelineCache(const std::string& path, Error* error) override;
   bool CreatePipelineCache(const std::string& path, Error* error) override;
@@ -315,8 +332,6 @@ private:
   };
   static_assert(sizeof(ClearPipelineConfig) == 8);
 
-  ALWAYS_INLINE NSView* GetWindowView() const { return (__bridge NSView*)m_window_info.window_handle; }
-
   void SetFeatures(FeatureMask disabled_features);
   bool LoadShaders();
 
@@ -340,15 +355,12 @@ private:
   void EndInlineUploading();
   void EndAnyEncoding();
 
-  GSVector4i ClampToFramebufferSize(const GSVector4i rc) const;
   void PreDrawCheck();
   void SetInitialEncoderState();
   void SetViewportInRenderEncoder();
   void SetScissorInRenderEncoder();
 
-  bool CreateLayer();
-  void DestroyLayer();
-  void RenderBlankFrame();
+  void RenderBlankFrame(MetalSwapChain* swap_chain);
 
   bool CreateBuffers();
   void DestroyBuffers();
@@ -357,10 +369,6 @@ private:
 
   id<MTLDevice> m_device;
   id<MTLCommandQueue> m_queue;
-
-  CAMetalLayer* m_layer = nil;
-  id<MTLDrawable> m_layer_drawable = nil;
-  MTLRenderPassDescriptor* m_layer_pass_desc = nil;
 
   std::mutex m_fence_mutex;
   u64 m_current_fence_counter = 0;
@@ -402,10 +410,11 @@ private:
   id<MTLBuffer> m_current_ssbo = nil;
   GSVector4i m_current_viewport = {};
   GSVector4i m_current_scissor = {};
-
-  bool m_vsync_enabled = false;
-  bool m_pipeline_cache_modified = false;
+  GSVector4i m_current_framebuffer_size = {};
 
   double m_accumulated_gpu_time = 0;
   double m_last_gpu_time_end = 0;
+
+  id<MTLDrawable> m_layer_drawable = nil;
+  bool m_pipeline_cache_modified = false;
 };

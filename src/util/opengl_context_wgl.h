@@ -15,36 +15,34 @@
 class OpenGLContextWGL final : public OpenGLContext
 {
 public:
-  OpenGLContextWGL(const WindowInfo& wi);
+  OpenGLContextWGL();
   ~OpenGLContextWGL() override;
 
-  static std::unique_ptr<OpenGLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
-                                               Error* error);
+  static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface,
+                                               std::span<const Version> versions_to_try, Error* error);
 
   void* GetProcAddress(const char* name) override;
-  bool ChangeSurface(const WindowInfo& new_wi) override;
-  void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
+  SurfaceHandle CreateSurface(WindowInfo& wi, Error* error = nullptr) override;
+  void DestroySurface(SurfaceHandle handle) override;
+  void ResizeSurface(WindowInfo& wi, SurfaceHandle handle) override;
   bool SwapBuffers() override;
   bool IsCurrent() const override;
-  bool MakeCurrent() override;
+  bool MakeCurrent(SurfaceHandle surface, Error* error = nullptr) override;
   bool DoneCurrent() override;
   bool SupportsNegativeSwapInterval() const override;
-  bool SetSwapInterval(s32 interval) override;
-  std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
+  bool SetSwapInterval(s32 interval, Error* error = nullptr) override;
+  std::unique_ptr<OpenGLContext> CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface, Error* error) override;
 
 private:
-  ALWAYS_INLINE HWND GetHWND() const { return static_cast<HWND>(m_wi.window_handle); }
+  bool Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try, Error* error);
 
-  HDC GetDCAndSetPixelFormat(HWND hwnd, Error* error);
+  bool CreateAnyContext(HDC hdc, HGLRC share_context, bool make_current, Error* error);
+  bool CreateVersionContext(const Version& version, HDC hdc, HGLRC share_context, bool make_current, Error* error);
 
-  bool Initialize(std::span<const Version> versions_to_try, Error* error);
-  bool InitializeDC(Error* error);
-  void ReleaseDC();
-  bool CreatePBuffer(Error* error);
-  bool CreateAnyContext(HGLRC share_context, bool make_current, Error* error);
-  bool CreateVersionContext(const Version& version, HGLRC share_context, bool make_current, Error* error);
+  HDC CreateDCAndSetPixelFormat(WindowInfo& wi, Error* error);
+  HDC GetPBufferDC(Error* error);
 
-  HDC m_dc = {};
+  HDC m_current_dc = {};
   HGLRC m_rc = {};
 
   // Can't change pixel format once it's set for a RC.
@@ -54,4 +52,5 @@ private:
   HWND m_dummy_window = {};
   HDC m_dummy_dc = {};
   HPBUFFERARB m_pbuffer = {};
+  HDC m_pbuffer_dc = {};
 };

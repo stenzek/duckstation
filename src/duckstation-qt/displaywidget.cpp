@@ -58,9 +58,9 @@ int DisplayWidget::scaledWindowHeight() const
     static_cast<int>(std::ceil(static_cast<qreal>(height()) * QtUtils::GetDevicePixelRatioForWidget(this))), 1);
 }
 
-std::optional<WindowInfo> DisplayWidget::getWindowInfo()
+std::optional<WindowInfo> DisplayWidget::getWindowInfo(Error* error)
 {
-  std::optional<WindowInfo> ret(QtUtils::GetWindowInfoForWidget(this));
+  std::optional<WindowInfo> ret(QtUtils::GetWindowInfoForWidget(this, error));
   if (ret.has_value())
   {
     m_last_window_width = ret->surface_width;

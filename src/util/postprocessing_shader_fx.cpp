@@ -333,9 +333,9 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
   // TODO: This could use spv, it's probably fastest.
   const auto& [cg, cg_language] = CreateRFXCodegen();
 
-  if (!CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetWindowWidth(),
-                    only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetWindowHeight(), cg.get(), std::move(code),
-                    error))
+  if (!CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetMainSwapChain()->GetWidth(),
+                    only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetMainSwapChain()->GetHeight(), cg.get(),
+                    std::move(code), error))
   {
     return false;
   }
@@ -1762,7 +1762,8 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
     if (pass.render_targets.size() == 1 && pass.render_targets[0] == OUTPUT_COLOR_TEXTURE && !final_target)
     {
       // Special case: drawing to final buffer.
-      if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(); pres != GPUDevice::PresentResult::OK)
+      const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain());
+      if (pres != GPUDevice::PresentResult::OK)
       {
         GL_POP();
         return pres;

@@ -37,6 +37,8 @@ namespace D3D12MA {
 class Allocator;
 }
 
+class D3D12SwapChain;
+
 class D3D12Device final : public GPUDevice
 {
 public:
@@ -58,17 +60,16 @@ public:
   D3D12Device();
   ~D3D12Device() override;
 
-  bool HasSurface() const override;
-
-  bool UpdateWindow() override;
-  void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
-
-  void DestroySurface() override;
-
   std::string GetDriverInfo() const override;
 
-  void ExecuteAndWaitForGPUIdle() override;
+  void FlushCommands() override;
+  void WaitForGPUIdle() override;
 
+  std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control,
+                                                Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                             GPUTexture::Type type, GPUTexture::Format format,
                                             const void* data = nullptr, u32 data_stride = 0) override;
@@ -119,23 +120,22 @@ public:
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
 
-  void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
-
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  PresentResult BeginPresent(u32 clear_color) override;
-  void EndPresent(bool explicit_present, u64 present_time) override;
-  void SubmitPresent() override;
+  PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
+  void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
+  void SubmitPresent(GPUSwapChain* swap_chain) override;
 
   // Global state accessors
   ALWAYS_INLINE static D3D12Device& GetInstance() { return *static_cast<D3D12Device*>(g_gpu_device.get()); }
   ALWAYS_INLINE IDXGIAdapter1* GetAdapter() const { return m_adapter.Get(); }
   ALWAYS_INLINE ID3D12Device1* GetDevice() const { return m_device.Get(); }
   ALWAYS_INLINE ID3D12CommandQueue* GetCommandQueue() const { return m_command_queue.Get(); }
+  ALWAYS_INLINE IDXGIFactory5* GetDXGIFactory() { return m_dxgi_factory.Get(); }
   ALWAYS_INLINE D3D12MA::Allocator* GetAllocator() const { return m_allocator.Get(); }
 
-  void WaitForGPUIdle();
+  void WaitForAllFences();
 
   // Descriptor manager access.
   D3D12DescriptorHeapManager& GetDescriptorHeapManager() { return m_descriptor_heap_manager; }
@@ -173,6 +173,12 @@ public:
   // Also invokes callbacks for completion.
   void WaitForFence(u64 fence_counter);
 
+  // Ends a render pass if we're currently in one.
+  // When Bind() is next called, the pass will be restarted.
+  void BeginRenderPass();
+  void EndRenderPass();
+  bool InRenderPass();
+
   /// Ends any render pass, executes the command buffer, and invalidates cached state.
   void SubmitCommandList(bool wait_for_completion);
   void SubmitCommandList(bool wait_for_completion, const std::string_view reason);
@@ -183,8 +189,10 @@ public:
   void UnbindTextureBuffer(D3D12TextureBuffer* buf);
 
 protected:
-  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                    FeatureMask disabled_features, Error* error) override;
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+                                    GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                    const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                    std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(DynamicHeapArray<u8> data, Error* error) override;
@@ -232,12 +240,6 @@ private:
   void GetPipelineCacheHeader(PIPELINE_CACHE_HEADER* hdr);
   void SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disabled_features);
 
-  u32 GetSwapChainBufferCount() const;
-  bool CreateSwapChain(Error* error);
-  bool CreateSwapChainRTV(Error* error);
-  void DestroySwapChainRTVs();
-  void DestroySwapChain();
-
   bool CreateCommandLists(Error* error);
   void DestroyCommandLists();
   bool CreateRootSignatures(Error* error);
@@ -252,7 +254,7 @@ private:
   void DestroySamplers();
   void DestroyDeferredObjects(u64 fence_value);
 
-  void RenderBlankFrame();
+  void RenderBlankFrame(D3D12SwapChain* swap_chain);
   void MoveToNextCommandList();
 
   bool CreateSRVDescriptor(ID3D12Resource* resource, u32 layers, u32 levels, u32 samples, DXGI_FORMAT format,
@@ -280,13 +282,6 @@ private:
   bool UpdateParametersForLayout(u32 dirty);
   bool UpdateRootParameters(u32 dirty);
 
-  // Ends a render pass if we're currently in one.
-  // When Bind() is next called, the pass will be restarted.
-  void BeginRenderPass();
-  void BeginSwapChainRenderPass(u32 clear_color);
-  void EndRenderPass();
-  bool InRenderPass();
-
   ComPtr<IDXGIAdapter1> m_adapter;
   ComPtr<ID3D12Device1> m_device;
   ComPtr<ID3D12CommandQueue> m_command_queue;
@@ -299,15 +294,9 @@ private:
 
   std::array<CommandList, NUM_COMMAND_LISTS> m_command_lists;
   u32 m_current_command_list = NUM_COMMAND_LISTS - 1;
+  bool m_device_was_lost = false;
 
   ComPtr<IDXGIFactory5> m_dxgi_factory;
-  ComPtr<IDXGISwapChain1> m_swap_chain;
-  std::vector<std::pair<ComPtr<ID3D12Resource>, D3D12DescriptorHandle>> m_swap_chain_buffers;
-  u32 m_current_swap_chain_buffer = 0;
-  bool m_allow_tearing_supported = false;
-  bool m_using_allow_tearing = false;
-  bool m_is_exclusive_fullscreen = false;
-  bool m_device_was_lost = false;
 
   D3D12DescriptorHeapManager m_descriptor_heap_manager;
   D3D12DescriptorHeapManager m_rtv_heap_manager;
@@ -358,4 +347,52 @@ private:
   D3D12TextureBuffer* m_current_texture_buffer = nullptr;
   GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
   GSVector4i m_current_scissor = {};
+
+  D3D12SwapChain* m_current_swap_chain = nullptr;
+};
+
+class D3D12SwapChain : public GPUSwapChain
+{
+public:
+  template<typename T>
+  using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+  friend D3D12Device;
+
+  using BufferPair = std::pair<ComPtr<ID3D12Resource>, D3D12DescriptorHandle>;
+
+  D3D12SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                 const GPUDevice::ExclusiveFullscreenMode* fullscreen_mode);
+  ~D3D12SwapChain() override;
+
+  ALWAYS_INLINE IDXGISwapChain1* GetSwapChain() const { return m_swap_chain.Get(); }
+  ALWAYS_INLINE const BufferPair& GetCurrentBuffer() const { return m_swap_chain_buffers[m_current_swap_chain_buffer]; }
+  ALWAYS_INLINE bool IsUsingAllowTearing() const { return m_using_allow_tearing; }
+  ALWAYS_INLINE bool IsExclusiveFullscreen() const { return m_fullscreen_mode.has_value(); }
+
+  void AdvanceBuffer()
+  {
+    m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
+  }
+  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+
+private:
+  static u32 GetNewBufferCount(GPUVSyncMode vsync_mode);
+
+  bool InitializeExclusiveFullscreenMode(const GPUDevice::ExclusiveFullscreenMode* mode);
+
+  bool CreateSwapChain(D3D12Device& dev, Error* error);
+  bool CreateRTV(D3D12Device& dev, Error* error);
+
+  void DestroySwapChain();
+  void DestroyRTVs();
+
+  ComPtr<IDXGISwapChain1> m_swap_chain;
+  std::vector<BufferPair> m_swap_chain_buffers;
+  u32 m_current_swap_chain_buffer = 0;
+  bool m_using_allow_tearing = false;
+
+  ComPtr<IDXGIOutput> m_fullscreen_output;
+  std::optional<DXGI_MODE_DESC> m_fullscreen_mode;
 };

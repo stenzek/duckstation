@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "gpu_device.h"
 #include "vulkan_loader.h"
 #include "vulkan_texture.h"
 #include "window_info.h"
@@ -14,41 +15,19 @@
 #include <optional>
 #include <vector>
 
-class VulkanSwapChain
+class VulkanSwapChain final : public GPUSwapChain
 {
 public:
-  // We don't actually need +1 semaphores, or, more than one really.
-  // But, the validation layer gets cranky if we don't fence wait before the next image acquire.
-  // So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
-  static constexpr u32 NUM_SEMAPHORES = 4; // Should be command buffers + 1
-
-  ~VulkanSwapChain();
-
-  // Creates a vulkan-renderable surface for the specified window handle.
-  static VkSurfaceKHR CreateVulkanSurface(VkInstance instance, VkPhysicalDevice physical_device, WindowInfo* wi);
-
-  // Destroys a previously-created surface.
-  static void DestroyVulkanSurface(VkInstance instance, WindowInfo* wi, VkSurfaceKHR surface);
-
-  // Create a new swap chain from a pre-existing surface.
-  static std::unique_ptr<VulkanSwapChain> Create(const WindowInfo& wi, VkSurfaceKHR surface,
-                                                 VkPresentModeKHR present_mode,
-                                                 std::optional<bool> exclusive_fullscreen_control);
-
-  // Determines present mode to use.
-  static bool SelectPresentMode(VkSurfaceKHR surface, GPUVSyncMode* vsync_mode, VkPresentModeKHR* present_mode);
+  VulkanSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                  std::optional<bool> exclusive_fullscreen_control);
+  ~VulkanSwapChain() override;
 
   ALWAYS_INLINE VkSurfaceKHR GetSurface() const { return m_surface; }
   ALWAYS_INLINE VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
   ALWAYS_INLINE const VkSwapchainKHR* GetSwapChainPtr() const { return &m_swap_chain; }
-  ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_window_info; }
-  ALWAYS_INLINE u32 GetWidth() const { return m_window_info.surface_width; }
-  ALWAYS_INLINE u32 GetHeight() const { return m_window_info.surface_height; }
-  ALWAYS_INLINE float GetScale() const { return m_window_info.surface_scale; }
   ALWAYS_INLINE u32 GetCurrentImageIndex() const { return m_current_image; }
   ALWAYS_INLINE const u32* GetCurrentImageIndexPtr() const { return &m_current_image; }
   ALWAYS_INLINE u32 GetImageCount() const { return static_cast<u32>(m_images.size()); }
-  ALWAYS_INLINE VkFormat GetImageFormat() const { return m_format; }
   ALWAYS_INLINE VkImage GetCurrentImage() const { return m_images[m_current_image].image; }
   ALWAYS_INLINE VkImageView GetCurrentImageView() const { return m_images[m_current_image].view; }
   ALWAYS_INLINE VkFramebuffer GetCurrentFramebuffer() const { return m_images[m_current_image].framebuffer; }
@@ -69,27 +48,31 @@ public:
     return &m_semaphores[m_current_semaphore].rendering_finished_semaphore;
   }
 
+  bool CreateSurface(VkInstance instance, VkPhysicalDevice physical_device, Error* error);
+  bool CreateSwapChain(VulkanDevice& dev, Error* error);
+  bool CreateSwapChainImages(VulkanDevice& dev, Error* error);
+  void Destroy(VulkanDevice& dev, bool wait_for_idle);
+
   VkResult AcquireNextImage();
   void ReleaseCurrentImage();
   void ResetImageAcquireResult();
 
-  bool RecreateSurface(const WindowInfo& new_wi);
-  bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
+  bool RecreateSurface(Error* error);
 
-  // Change vsync enabled state. This may fail as it causes a swapchain recreation.
-  bool SetPresentMode(VkPresentModeKHR present_mode);
+  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
 
 private:
-  VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
-                  std::optional<bool> exclusive_fullscreen_control);
+  // We don't actually need +1 semaphores, or, more than one really.
+  // But, the validation layer gets cranky if we don't fence wait before the next image acquire.
+  // So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
+  static constexpr u32 NUM_SEMAPHORES = 4; // Should be command buffers + 1
 
-  static std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkSurfaceKHR surface);
-
-  bool CreateSwapChain();
-  void DestroySwapChain();
+  std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkPhysicalDevice physdev, Error* error);
+  std::optional<VkPresentModeKHR> SelectPresentMode(VkPhysicalDevice physdev, GPUVSyncMode& vsync_mode, Error* error);
 
   void DestroySwapChainImages();
-
+  void DestroySwapChain();
   void DestroySurface();
 
   struct Image
@@ -105,9 +88,13 @@ private:
     VkSemaphore rendering_finished_semaphore;
   };
 
-  WindowInfo m_window_info;
-
   VkSurfaceKHR m_surface = VK_NULL_HANDLE;
+
+#ifdef __APPLE__
+  // On MacOS, we need to store a pointer to the metal layer as well.
+  void* m_metal_layer = nullptr;
+#endif
+
   VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 
   std::vector<Image> m_images;
@@ -116,7 +103,6 @@ private:
   u32 m_current_image = 0;
   u32 m_current_semaphore = 0;
 
-  VkFormat m_format = VK_FORMAT_UNDEFINED;
   VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 
   std::optional<VkResult> m_image_acquire_result;

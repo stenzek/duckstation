@@ -10,47 +10,53 @@
 class OpenGLContextEGL : public OpenGLContext
 {
 public:
-  OpenGLContextEGL(const WindowInfo& wi);
+  OpenGLContextEGL();
   ~OpenGLContextEGL() override;
 
-  static std::unique_ptr<OpenGLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
-                                               Error* error);
+  static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface,
+                                               std::span<const Version> versions_to_try, Error* error);
 
   void* GetProcAddress(const char* name) override;
-  virtual bool ChangeSurface(const WindowInfo& new_wi) override;
-  virtual void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
+  SurfaceHandle CreateSurface(WindowInfo& wi, Error* error = nullptr) override;
+  void DestroySurface(SurfaceHandle handle) override;
+  void ResizeSurface(WindowInfo& wi, SurfaceHandle handle) override;
   bool SwapBuffers() override;
   bool IsCurrent() const override;
-  bool MakeCurrent() override;
+  bool MakeCurrent(SurfaceHandle surface, Error* error = nullptr) override;
   bool DoneCurrent() override;
   bool SupportsNegativeSwapInterval() const override;
-  bool SetSwapInterval(s32 interval) override;
-  virtual std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
+  bool SetSwapInterval(s32 interval, Error* error = nullptr) override;
+  std::unique_ptr<OpenGLContext> CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface, Error* error) override;
 
 protected:
-  virtual EGLDisplay GetPlatformDisplay(Error* error);
-  virtual EGLSurface CreatePlatformSurface(EGLConfig config, void* win, Error* error);
+  virtual EGLDisplay GetPlatformDisplay(const WindowInfo& wi, Error* error);
+  virtual EGLSurface CreatePlatformSurface(EGLConfig config, const WindowInfo& wi, Error* error);
+  virtual void DestroyPlatformSurface(EGLSurface surface);
 
-  EGLDisplay TryGetPlatformDisplay(EGLenum platform, const char* platform_ext);
+  bool SupportsSurfaceless() const;
+
+  EGLDisplay TryGetPlatformDisplay(void* display, EGLenum platform, const char* platform_ext);
   EGLSurface TryCreatePlatformSurface(EGLConfig config, void* window, Error* error);
-  EGLDisplay GetFallbackDisplay(Error* error);
+  EGLDisplay GetFallbackDisplay(void* display, Error* error);
   EGLSurface CreateFallbackSurface(EGLConfig config, void* window, Error* error);
 
-  bool Initialize(std::span<const Version> versions_to_try, Error* error);
-  bool CreateContext(const Version& version, EGLContext share_context);
-  bool CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current);
-  bool CreateSurface();
-  bool CreatePBufferSurface();
+  bool Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try, Error* error);
+  bool CreateContext(bool surfaceless, GPUTexture::Format surface_format, const Version& version,
+                     EGLContext share_context, Error* error);
+  bool CreateContextAndSurface(WindowInfo& wi, SurfaceHandle* surface, const Version& version, EGLContext share_context,
+                               bool make_current, Error* error);
+  EGLSurface GetPBufferSurface(Error* error);
+  EGLSurface GetSurfacelessSurface();
   bool CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format format);
-  GPUTexture::Format GetSurfaceTextureFormat() const;
-  void DestroyContext();
-  void DestroySurface();
+  void UpdateWindowInfoSize(WindowInfo& wi, EGLSurface surface) const;
 
   EGLDisplay m_display = EGL_NO_DISPLAY;
-  EGLSurface m_surface = EGL_NO_SURFACE;
   EGLContext m_context = EGL_NO_CONTEXT;
+  EGLSurface m_current_surface = EGL_NO_SURFACE;
 
   EGLConfig m_config = {};
+
+  EGLSurface m_pbuffer_surface = EGL_NO_SURFACE;
 
   bool m_use_ext_platform_base = false;
   bool m_supports_negative_swap_interval = false;

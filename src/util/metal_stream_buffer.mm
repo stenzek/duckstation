@@ -8,7 +8,7 @@
 #include "common/assert.h"
 #include "common/log.h"
 
-LOG_CHANNEL(MetalDevice);
+LOG_CHANNEL(GPUDevice);
 
 MetalStreamBuffer::MetalStreamBuffer() = default;
 

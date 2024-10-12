@@ -8,15 +8,15 @@
 class OpenGLContextEGLX11 final : public OpenGLContextEGL
 {
 public:
-  OpenGLContextEGLX11(const WindowInfo& wi);
+  OpenGLContextEGLX11();
   ~OpenGLContextEGLX11() override;
 
-  static std::unique_ptr<OpenGLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
-                                               Error* error);
+  static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface,
+                                               std::span<const Version> versions_to_try, Error* error);
 
-  std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
+  std::unique_ptr<OpenGLContext> CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface, Error* error) override;
 
 protected:
-  EGLDisplay GetPlatformDisplay(Error* error) override;
-  EGLSurface CreatePlatformSurface(EGLConfig config, void* win, Error* error) override;
+  EGLDisplay GetPlatformDisplay(const WindowInfo& wi, Error* error) override;
+  EGLSurface CreatePlatformSurface(EGLConfig config, const WindowInfo& wi, Error* error) override;
 };

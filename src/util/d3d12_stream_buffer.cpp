@@ -13,7 +13,7 @@
 
 #include <algorithm>
 
-LOG_CHANNEL(D3D12StreamBuffer);
+LOG_CHANNEL(GPUDevice);
 
 D3D12StreamBuffer::D3D12StreamBuffer() = default;
 

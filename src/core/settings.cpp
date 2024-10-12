@@ -158,8 +158,6 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   turbo_speed = si.GetFloatValue("Main", "TurboSpeed", 0.0f);
   sync_to_host_refresh_rate = si.GetBoolValue("Main", "SyncToHostRefreshRate", false);
   inhibit_screensaver = si.GetBoolValue("Main", "InhibitScreensaver", true);
-  start_paused = si.GetBoolValue("Main", "StartPaused", false);
-  start_fullscreen = si.GetBoolValue("Main", "StartFullscreen", false);
   pause_on_focus_loss = si.GetBoolValue("Main", "PauseOnFocusLoss", false);
   pause_on_controller_disconnection = si.GetBoolValue("Main", "PauseOnControllerDisconnection", false);
   save_state_on_exit = si.GetBoolValue("Main", "SaveStateOnExit", true);
@@ -505,8 +503,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   {
     si.SetBoolValue("Main", "SyncToHostRefreshRate", sync_to_host_refresh_rate);
     si.SetBoolValue("Main", "InhibitScreensaver", inhibit_screensaver);
-    si.SetBoolValue("Main", "StartPaused", start_paused);
-    si.SetBoolValue("Main", "StartFullscreen", start_fullscreen);
     si.SetBoolValue("Main", "PauseOnFocusLoss", pause_on_focus_loss);
     si.SetBoolValue("Main", "PauseOnControllerDisconnection", pause_on_controller_disconnection);
     si.SetBoolValue("Main", "SaveStateOnExit", save_state_on_exit);
@@ -1657,10 +1653,11 @@ float Settings::GetDisplayAspectRatioValue() const
   {
     case DisplayAspectRatio::MatchWindow:
     {
-      if (!g_gpu_device)
+      if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
         return s_display_aspect_ratio_values[static_cast<size_t>(DEFAULT_DISPLAY_ASPECT_RATIO)];
 
-      return static_cast<float>(g_gpu_device->GetWindowWidth()) / static_cast<float>(g_gpu_device->GetWindowHeight());
+      return static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) /
+             static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
     }
 
     case DisplayAspectRatio::Custom:
@@ -2110,7 +2107,6 @@ std::string EmuFolders::Bios;
 std::string EmuFolders::Cache;
 std::string EmuFolders::Cheats;
 std::string EmuFolders::Covers;
-std::string EmuFolders::Dumps;
 std::string EmuFolders::GameIcons;
 std::string EmuFolders::GameSettings;
 std::string EmuFolders::InputProfiles;
@@ -2130,7 +2126,6 @@ void EmuFolders::SetDefaults()
   Cache = Path::Combine(DataRoot, "cache");
   Cheats = Path::Combine(DataRoot, "cheats");
   Covers = Path::Combine(DataRoot, "covers");
-  Dumps = Path::Combine(DataRoot, "dump");
   GameIcons = Path::Combine(DataRoot, "gameicons");
   GameSettings = Path::Combine(DataRoot, "gamesettings");
   InputProfiles = Path::Combine(DataRoot, "inputprofiles");
@@ -2162,7 +2157,6 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   Cache = LoadPathFromSettings(si, DataRoot, "Folders", "Cache", "cache");
   Cheats = LoadPathFromSettings(si, DataRoot, "Folders", "Cheats", "cheats");
   Covers = LoadPathFromSettings(si, DataRoot, "Folders", "Covers", "covers");
-  Dumps = LoadPathFromSettings(si, DataRoot, "Folders", "Dumps", "dump");
   GameIcons = LoadPathFromSettings(si, DataRoot, "Folders", "GameIcons", "gameicons");
   GameSettings = LoadPathFromSettings(si, DataRoot, "Folders", "GameSettings", "gamesettings");
   InputProfiles = LoadPathFromSettings(si, DataRoot, "Folders", "InputProfiles", "inputprofiles");
@@ -2179,7 +2173,6 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   DEV_LOG("Cache Directory: {}", Cache);
   DEV_LOG("Cheats Directory: {}", Cheats);
   DEV_LOG("Covers Directory: {}", Covers);
-  DEV_LOG("Dumps Directory: {}", Dumps);
   DEV_LOG("Game Icons Directory: {}", GameIcons);
   DEV_LOG("Game Settings Directory: {}", GameSettings);
   DEV_LOG("Input Profile Directory: {}", InputProfiles);
@@ -2201,7 +2194,6 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "Cache", Path::MakeRelative(Cache, DataRoot).c_str());
   si.SetStringValue("Folders", "Cheats", Path::MakeRelative(Cheats, DataRoot).c_str());
   si.SetStringValue("Folders", "Covers", Path::MakeRelative(Covers, DataRoot).c_str());
-  si.SetStringValue("Folders", "Dumps", Path::MakeRelative(Dumps, DataRoot).c_str());
   si.SetStringValue("Folders", "GameIcons", Path::MakeRelative(GameIcons, DataRoot).c_str());
   si.SetStringValue("Folders", "GameSettings", Path::MakeRelative(GameSettings, DataRoot).c_str());
   si.SetStringValue("Folders", "InputProfiles", Path::MakeRelative(InputProfiles, DataRoot).c_str());
@@ -2242,7 +2234,6 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(Path::Combine(Cache, "achievement_images").c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Cheats.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Covers.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Dumps.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameIcons.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;

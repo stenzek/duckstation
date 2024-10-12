@@ -11,6 +11,8 @@
 #include <QtWidgets/QWidget>
 #include <optional>
 
+class Error;
+
 class QCloseEvent;
 
 class DisplayWidget final : public QWidget
@@ -26,7 +28,7 @@ public:
   int scaledWindowWidth() const;
   int scaledWindowHeight() const;
 
-  std::optional<WindowInfo> getWindowInfo();
+  std::optional<WindowInfo> getWindowInfo(Error* error);
 
   void updateRelativeMode(bool enabled);
   void updateCursor(bool hidden);

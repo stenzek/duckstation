@@ -98,7 +98,7 @@ public:
   ALWAYS_INLINE bool isSurfaceless() const { return m_is_surfaceless; }
   ALWAYS_INLINE bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
 
-  std::optional<WindowInfo> acquireRenderWindow(bool recreate_window);
+  std::optional<WindowInfo> acquireRenderWindow(bool fullscreen, bool exclusive_fullscreen, Error* error);
   void connectDisplaySignals(DisplayWidget* widget);
   void releaseRenderWindow();
 
@@ -135,8 +135,8 @@ Q_SIGNALS:
   void systemPaused();
   void systemResumed();
   void gameListRefreshed();
-  std::optional<WindowInfo> onAcquireRenderWindowRequested(bool recreate_window, bool fullscreen, bool render_to_main,
-                                                           bool surfaceless, bool use_main_window_pos);
+  std::optional<WindowInfo> onAcquireRenderWindowRequested(bool fullscreen, bool render_to_main, bool surfaceless,
+                                                           bool use_main_window_pos, Error* error);
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
   void onReleaseRenderWindowRequested();
   void focusDisplayWidgetRequested();
@@ -220,7 +220,6 @@ private:
 
   void createBackgroundControllerPollTimer();
   void destroyBackgroundControllerPollTimer();
-  void setInitialState(std::optional<bool> override_fullscreen);
   void confirmActionIfMemoryCardBusy(const QString& action, bool cancel_resume_on_accept,
                                      std::function<void(bool)> callback) const;
 
@@ -233,8 +232,6 @@ private:
   bool m_run_fullscreen_ui = false;
   bool m_is_rendering_to_main = false;
   bool m_is_fullscreen = false;
-  bool m_is_exclusive_fullscreen = false;
-  bool m_lost_exclusive_fullscreen = false;
   bool m_is_surfaceless = false;
   bool m_save_state_on_shutdown = false;
 
@@ -319,6 +316,9 @@ bool ShouldShowDebugOptions();
 /// VM state, safe to access on UI thread.
 bool IsSystemValid();
 bool IsSystemPaused();
+
+/// Returns true if any lock is in place.
+bool IsSystemLocked();
 
 /// Accessors for game information.
 const QString& GetCurrentGameTitle();

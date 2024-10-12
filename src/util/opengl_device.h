@@ -36,20 +36,21 @@ public:
     return GetInstance().m_texture_stream_buffer.get();
   }
   ALWAYS_INLINE static bool IsGLES() { return GetInstance().m_gl_context->IsGLES(); }
+  ALWAYS_INLINE static OpenGLContext* GetContext() { return GetInstance().m_gl_context.get(); }
   static void BindUpdateTextureUnit();
   static bool ShouldUsePBOsForDownloads();
   static void SetErrorObject(Error* errptr, std::string_view prefix, GLenum glerr);
 
-  bool HasSurface() const override;
-  void DestroySurface() override;
-
-  bool UpdateWindow() override;
-  void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
-
   std::string GetDriverInfo() const override;
 
-  void ExecuteAndWaitForGPUIdle() override;
+  void FlushCommands() override;
+  void WaitForGPUIdle() override;
 
+  std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control,
+                                                Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                             GPUTexture::Type type, GPUTexture::Format format,
                                             const void* data = nullptr, u32 data_stride = 0) override;
@@ -100,11 +101,9 @@ public:
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
 
-  void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
-
-  PresentResult BeginPresent(u32 clear_color) override;
-  void EndPresent(bool explicit_present, u64 present_time) override;
-  void SubmitPresent() override;
+  PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
+  void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
+  void SubmitPresent(GPUSwapChain* swap_chain) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
@@ -131,9 +130,13 @@ public:
   void UnbindSampler(GLuint id);
   void UnbindPipeline(const OpenGLPipeline* pl);
 
+  void RenderBlankFrame();
+
 protected:
-  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                    FeatureMask disabled_features, Error* error) override;
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+                                    GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                    const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                    std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
   bool OpenPipelineCache(const std::string& path, Error* error) override;
@@ -153,9 +156,6 @@ private:
   bool CheckFeatures(FeatureMask disabled_features);
   bool CreateBuffers();
   void DestroyBuffers();
-
-  void SetSwapInterval();
-  void RenderBlankFrame();
 
   s32 IsRenderTargetBound(const GPUTexture* tex) const;
   static GLuint CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, u32 flags);
@@ -229,4 +229,22 @@ private:
 
   bool m_disable_pbo = false;
   bool m_disable_async_download = false;
+};
+
+class OpenGLSwapChain : public GPUSwapChain
+{
+public:
+  OpenGLSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                  OpenGLContext::SurfaceHandle surface_handle);
+  ~OpenGLSwapChain() override;
+
+  ALWAYS_INLINE OpenGLContext::SurfaceHandle GetSurfaceHandle() const { return m_surface_handle; }
+
+  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+
+  static bool SetSwapInterval(OpenGLContext* ctx, GPUVSyncMode mode, Error* error);
+
+private:
+  OpenGLContext::SurfaceHandle m_surface_handle;
 };

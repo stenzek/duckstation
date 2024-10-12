@@ -231,7 +231,8 @@ bool ImGuiManager::Initialize(float global_scale, Error* error)
   }
 
   s_global_prescale = global_scale;
-  s_global_scale = std::max(g_gpu_device->GetWindowScale() * global_scale, 1.0f);
+  s_global_scale = std::max(
+    (g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f) * global_scale, 1.0f);
   s_scale_changed = false;
 
   ImGui::CreateContext();
@@ -250,8 +251,10 @@ bool ImGuiManager::Initialize(float global_scale, Error* error)
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 #endif
 
-  s_window_width = static_cast<float>(g_gpu_device->GetWindowWidth());
-  s_window_height = static_cast<float>(g_gpu_device->GetWindowHeight());
+  s_window_width =
+    g_gpu_device->HasMainSwapChain() ? static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) : 0.0f;
+  s_window_height =
+    g_gpu_device->HasMainSwapChain() ? static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight()) : 0.0f;
   io.DisplayFramebufferScale = ImVec2(1, 1); // We already scale things ourselves, this would double-apply scaling
   io.DisplaySize = ImVec2(s_window_width, s_window_height);
 
@@ -316,7 +319,8 @@ void ImGuiManager::RequestScaleUpdate()
 
 void ImGuiManager::UpdateScale()
 {
-  const float window_scale = g_gpu_device ? g_gpu_device->GetWindowScale() : 1.0f;
+  const float window_scale =
+    (g_gpu_device && g_gpu_device->HasMainSwapChain()) ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f;
   const float scale = std::max(window_scale * s_global_prescale, 1.0f);
 
   if ((!HasFullscreenFonts() || !ImGuiFullscreen::UpdateLayoutScale()) && scale == s_global_scale)

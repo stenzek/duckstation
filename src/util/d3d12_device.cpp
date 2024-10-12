@@ -8,8 +8,6 @@
 #include "d3d12_texture.h"
 #include "d3d_common.h"
 
-#include "core/host.h"
-
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -27,7 +25,7 @@
 #include <limits>
 #include <mutex>
 
-LOG_CHANNEL(D3D12Device);
+LOG_CHANNEL(GPUDevice);
 
 // Tweakables
 enum : u32
@@ -69,6 +67,8 @@ static u32 s_debug_scope_depth = 0;
 
 D3D12Device::D3D12Device()
 {
+  m_render_api = RenderAPI::D3D12;
+
 #ifdef _DEBUG
   s_debug_scope_depth = 0;
 #endif
@@ -117,8 +117,11 @@ D3D12Device::ComPtr<ID3D12RootSignature> D3D12Device::CreateRootSignature(const 
   return rs;
 }
 
-bool D3D12Device::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                               FeatureMask disabled_features, Error* error)
+bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+                                               const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                               bool allow_present_throttle,
+                                               const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                               std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
 
@@ -238,8 +241,13 @@ bool D3D12Device::CreateDevice(std::string_view adapter, std::optional<bool> exc
   if (!CreateCommandLists(error) || !CreateDescriptorHeaps(error))
     return false;
 
-  if (!m_window_info.IsSurfaceless() && !CreateSwapChain(error))
-    return false;
+  if (!wi.IsSurfaceless())
+  {
+    m_main_swap_chain = CreateSwapChain(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode,
+                                        exclusive_fullscreen_control, error);
+    if (!m_main_swap_chain)
+      return false;
+  }
 
   if (!CreateRootSignatures(error) || !CreateBuffers(error))
     return false;
@@ -256,7 +264,9 @@ void D3D12Device::DestroyDevice()
   if (InRenderPass())
     EndRenderPass();
 
-  WaitForGPUIdle();
+  WaitForAllFences();
+
+  m_main_swap_chain.reset();
 
   DestroyDeferredObjects(m_current_fence_value);
   DestroySamplers();
@@ -264,7 +274,6 @@ void D3D12Device::DestroyDevice()
   DestroyBuffers();
   DestroyDescriptorHeaps();
   DestroyRootSignatures();
-  DestroySwapChain();
   DestroyCommandLists();
 
   m_pipeline_library.Reset();
@@ -656,7 +665,7 @@ void D3D12Device::WaitForFence(u64 fence)
   DestroyDeferredObjects(m_completed_fence_value);
 }
 
-void D3D12Device::WaitForGPUIdle()
+void D3D12Device::WaitForAllFences()
 {
   u32 index = (m_current_command_list + 1) % NUM_COMMAND_LISTS;
   for (u32 i = 0; i < (NUM_COMMAND_LISTS - 1); i++)
@@ -666,7 +675,16 @@ void D3D12Device::WaitForGPUIdle()
   }
 }
 
-void D3D12Device::ExecuteAndWaitForGPUIdle()
+void D3D12Device::FlushCommands()
+{
+  if (InRenderPass())
+    EndRenderPass();
+
+  SubmitCommandList(false);
+  TrimTexturePool();
+}
+
+void D3D12Device::WaitForGPUIdle()
 {
   if (InRenderPass())
     EndRenderPass();
@@ -790,54 +808,54 @@ void D3D12Device::DestroyDeferredObjects(u64 fence_value)
   }
 }
 
-bool D3D12Device::HasSurface() const
+D3D12SwapChain::D3D12SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                               const GPUDevice::ExclusiveFullscreenMode* fullscreen_mode)
+  : GPUSwapChain(wi, vsync_mode, allow_present_throttle)
 {
-  return static_cast<bool>(m_swap_chain);
+  if (fullscreen_mode)
+    InitializeExclusiveFullscreenMode(fullscreen_mode);
 }
 
-u32 D3D12Device::GetSwapChainBufferCount() const
+D3D12SwapChain::~D3D12SwapChain()
 {
-  // With vsync off, we only need two buffers. Same for blocking vsync.
-  // With triple buffering, we need three.
-  return (m_vsync_mode == GPUVSyncMode::Mailbox) ? 3 : 2;
+  DestroyRTVs();
+  DestroySwapChain();
 }
 
-bool D3D12Device::CreateSwapChain(Error* error)
+bool D3D12SwapChain::InitializeExclusiveFullscreenMode(const GPUDevice::ExclusiveFullscreenMode* mode)
 {
-  if (m_window_info.type != WindowInfo::Type::Win32)
-  {
-    Error::SetStringView(error, "D3D12 expects a Win32 window.");
-    return false;
-  }
-
   const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(s_swap_chain_format);
 
   const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
 
-  DXGI_MODE_DESC fullscreen_mode = {};
-  ComPtr<IDXGIOutput> fullscreen_output;
-  if (Host::IsFullscreen())
-  {
-    u32 fullscreen_width, fullscreen_height;
-    float fullscreen_refresh_rate;
-    m_is_exclusive_fullscreen =
-      GetRequestedExclusiveFullscreenMode(&fullscreen_width, &fullscreen_height, &fullscreen_refresh_rate) &&
-      D3DCommon::GetRequestedExclusiveFullscreenModeDesc(m_dxgi_factory.Get(), client_rc, fullscreen_width,
-                                                         fullscreen_height, fullscreen_refresh_rate, fm.resource_format,
-                                                         &fullscreen_mode, fullscreen_output.GetAddressOf());
+  m_fullscreen_mode =
+    D3DCommon::GetRequestedExclusiveFullscreenModeDesc(D3D12Device::GetInstance().GetDXGIFactory(), client_rc, mode,
+                                                       fm.resource_format, m_fullscreen_output.GetAddressOf());
+  return m_fullscreen_mode.has_value();
+}
 
-    // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
-    if (m_vsync_mode == GPUVSyncMode::Mailbox && m_is_exclusive_fullscreen)
-    {
-      WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
-      m_vsync_mode = GPUVSyncMode::FIFO;
-    }
-  }
-  else
+u32 D3D12SwapChain::GetNewBufferCount(GPUVSyncMode vsync_mode)
+{
+  // With vsync off, we only need two buffers. Same for blocking vsync.
+  // With triple buffering, we need three.
+  return (vsync_mode == GPUVSyncMode::Mailbox) ? 3 : 2;
+}
+
+bool D3D12SwapChain::CreateSwapChain(D3D12Device& dev, Error* error)
+{
+  const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(s_swap_chain_format);
+
+  const HWND window_hwnd = reinterpret_cast<HWND>(m_window_info.window_handle);
+  RECT client_rc{};
+  GetClientRect(window_hwnd, &client_rc);
+
+  // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+  if (IsExclusiveFullscreen() && m_vsync_mode == GPUVSyncMode::Mailbox)
   {
-    m_is_exclusive_fullscreen = false;
+    WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+    m_vsync_mode = GPUVSyncMode::FIFO;
   }
 
   DXGI_SWAP_CHAIN_DESC1 swap_chain_desc = {};
@@ -845,45 +863,44 @@ bool D3D12Device::CreateSwapChain(Error* error)
   swap_chain_desc.Height = static_cast<u32>(client_rc.bottom - client_rc.top);
   swap_chain_desc.Format = fm.resource_format;
   swap_chain_desc.SampleDesc.Count = 1;
-  swap_chain_desc.BufferCount = GetSwapChainBufferCount();
+  swap_chain_desc.BufferCount = GetNewBufferCount(m_vsync_mode);
   swap_chain_desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
   swap_chain_desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 
-  m_using_allow_tearing = (m_allow_tearing_supported && !m_is_exclusive_fullscreen);
-  if (m_using_allow_tearing)
-    swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
-
   HRESULT hr = S_OK;
 
-  if (m_is_exclusive_fullscreen)
+  if (IsExclusiveFullscreen())
   {
     DXGI_SWAP_CHAIN_DESC1 fs_sd_desc = swap_chain_desc;
     DXGI_SWAP_CHAIN_FULLSCREEN_DESC fs_desc = {};
 
     fs_sd_desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-    fs_sd_desc.Width = fullscreen_mode.Width;
-    fs_sd_desc.Height = fullscreen_mode.Height;
-    fs_desc.RefreshRate = fullscreen_mode.RefreshRate;
-    fs_desc.ScanlineOrdering = fullscreen_mode.ScanlineOrdering;
-    fs_desc.Scaling = fullscreen_mode.Scaling;
+    fs_sd_desc.Width = m_fullscreen_mode->Width;
+    fs_sd_desc.Height = m_fullscreen_mode->Height;
+    fs_desc.RefreshRate = m_fullscreen_mode->RefreshRate;
+    fs_desc.ScanlineOrdering = m_fullscreen_mode->ScanlineOrdering;
+    fs_desc.Scaling = m_fullscreen_mode->Scaling;
     fs_desc.Windowed = FALSE;
 
     VERBOSE_LOG("Creating a {}x{} exclusive fullscreen swap chain", fs_sd_desc.Width, fs_sd_desc.Height);
-    hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.Get(), window_hwnd, &fs_sd_desc, &fs_desc,
-                                                fullscreen_output.Get(), m_swap_chain.ReleaseAndGetAddressOf());
+    hr = dev.GetDXGIFactory()->CreateSwapChainForHwnd(dev.GetCommandQueue(), window_hwnd, &fs_sd_desc, &fs_desc,
+                                                      m_fullscreen_output.Get(), m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr))
     {
       WARNING_LOG("Failed to create fullscreen swap chain, trying windowed.");
-      m_is_exclusive_fullscreen = false;
-      m_using_allow_tearing = m_allow_tearing_supported;
+      m_fullscreen_output.Reset();
+      m_fullscreen_mode.reset();
     }
   }
 
-  if (!m_is_exclusive_fullscreen)
+  if (!IsExclusiveFullscreen())
   {
     VERBOSE_LOG("Creating a {}x{} windowed swap chain", swap_chain_desc.Width, swap_chain_desc.Height);
-    hr = m_dxgi_factory->CreateSwapChainForHwnd(m_command_queue.Get(), window_hwnd, &swap_chain_desc, nullptr, nullptr,
-                                                m_swap_chain.ReleaseAndGetAddressOf());
+    m_using_allow_tearing = D3DCommon::SupportsAllowTearing(dev.GetDXGIFactory());
+    if (m_using_allow_tearing)
+      swap_chain_desc.Flags |= DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+    hr = dev.GetDXGIFactory()->CreateSwapChainForHwnd(dev.GetCommandQueue(), window_hwnd, &swap_chain_desc, nullptr,
+                                                      nullptr, m_swap_chain.ReleaseAndGetAddressOf());
     if (FAILED(hr))
     {
       Error::SetHResult(error, "CreateSwapChainForHwnd() failed: ", hr);
@@ -891,22 +908,14 @@ bool D3D12Device::CreateSwapChain(Error* error)
     }
   }
 
-  hr = m_dxgi_factory->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+  hr = dev.GetDXGIFactory()->MakeWindowAssociation(window_hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
   if (FAILED(hr))
     WARNING_LOG("MakeWindowAssociation() to disable ALT+ENTER failed");
 
-  if (!CreateSwapChainRTV(error))
-  {
-    DestroySwapChain();
-    return false;
-  }
-
-  // Render a frame as soon as possible to clear out whatever was previously being displayed.
-  RenderBlankFrame();
   return true;
 }
 
-bool D3D12Device::CreateSwapChainRTV(Error* error)
+bool D3D12SwapChain::CreateRTV(D3D12Device& dev, Error* error)
 {
   DXGI_SWAP_CHAIN_DESC swap_chain_desc;
   HRESULT hr = m_swap_chain->GetDesc(&swap_chain_desc);
@@ -925,67 +934,67 @@ bool D3D12Device::CreateSwapChainRTV(Error* error)
     if (FAILED(hr))
     {
       Error::SetHResult(error, "GetBuffer for RTV failed: ", hr);
-      DestroySwapChainRTVs();
+      DestroyRTVs();
       return false;
     }
 
     D3D12::SetObjectName(backbuffer.Get(), TinyString::from_format("Swap Chain Buffer #{}", i));
 
     D3D12DescriptorHandle rtv;
-    if (!m_rtv_heap_manager.Allocate(&rtv))
+    if (!dev.GetRTVHeapManager().Allocate(&rtv))
     {
       Error::SetStringView(error, "Failed to allocate RTV handle.");
-      DestroySwapChainRTVs();
+      DestroyRTVs();
       return false;
     }
 
-    m_device->CreateRenderTargetView(backbuffer.Get(), &rtv_desc, rtv);
+    dev.GetDevice()->CreateRenderTargetView(backbuffer.Get(), &rtv_desc, rtv);
     m_swap_chain_buffers.emplace_back(std::move(backbuffer), rtv);
   }
 
-  m_window_info.surface_width = swap_chain_desc.BufferDesc.Width;
-  m_window_info.surface_height = swap_chain_desc.BufferDesc.Height;
+  m_window_info.surface_width = static_cast<u16>(swap_chain_desc.BufferDesc.Width);
+  m_window_info.surface_height = static_cast<u16>(swap_chain_desc.BufferDesc.Height);
   m_window_info.surface_format = s_swap_chain_format;
   VERBOSE_LOG("Swap chain buffer size: {}x{}", m_window_info.surface_width, m_window_info.surface_height);
 
-  if (m_window_info.type == WindowInfo::Type::Win32)
+  BOOL fullscreen = FALSE;
+  DXGI_SWAP_CHAIN_DESC desc;
+  if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
+      SUCCEEDED(m_swap_chain->GetDesc(&desc)))
   {
-    BOOL fullscreen = FALSE;
-    DXGI_SWAP_CHAIN_DESC desc;
-    if (SUCCEEDED(m_swap_chain->GetFullscreenState(&fullscreen, nullptr)) && fullscreen &&
-        SUCCEEDED(m_swap_chain->GetDesc(&desc)))
-    {
-      m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
-                                           static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
-    }
+    m_window_info.surface_refresh_rate = static_cast<float>(desc.BufferDesc.RefreshRate.Numerator) /
+                                         static_cast<float>(desc.BufferDesc.RefreshRate.Denominator);
   }
 
   m_current_swap_chain_buffer = 0;
   return true;
 }
 
-void D3D12Device::DestroySwapChainRTVs()
+void D3D12SwapChain::DestroyRTVs()
 {
+  if (m_swap_chain_buffers.empty())
+    return;
+
+  D3D12Device& dev = D3D12Device::GetInstance();
+
   // Runtime gets cranky if we don't submit the current buffer...
-  if (InRenderPass())
-    EndRenderPass();
-  SubmitCommandList(true);
+  if (dev.InRenderPass())
+    dev.EndRenderPass();
+  dev.SubmitCommandList(true);
 
   for (auto it = m_swap_chain_buffers.rbegin(); it != m_swap_chain_buffers.rend(); ++it)
   {
-    m_rtv_heap_manager.Free(it->second.index);
+    dev.GetRTVHeapManager().Free(it->second.index);
     it->first.Reset();
   }
   m_swap_chain_buffers.clear();
   m_current_swap_chain_buffer = 0;
 }
 
-void D3D12Device::DestroySwapChain()
+void D3D12SwapChain::DestroySwapChain()
 {
   if (!m_swap_chain)
     return;
-
-  DestroySwapChainRTVs();
 
   // switch out of fullscreen before destroying
   BOOL is_fullscreen;
@@ -993,80 +1002,94 @@ void D3D12Device::DestroySwapChain()
     m_swap_chain->SetFullscreenState(FALSE, nullptr);
 
   m_swap_chain.Reset();
-  m_is_exclusive_fullscreen = false;
 }
 
-void D3D12Device::RenderBlankFrame()
+bool D3D12SwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
 {
-  if (InRenderPass())
-    EndRenderPass();
+  m_allow_present_throttle = allow_present_throttle;
 
-  auto& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
-  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
-  m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
-  D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_COMMON,
-                                             D3D12_RESOURCE_STATE_RENDER_TARGET);
-  cmdlist->ClearRenderTargetView(swap_chain_buf.second, GSVector4::cxpr(0.0f, 0.0f, 0.0f, 1.0f).F32, 0, nullptr);
-  D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_RENDER_TARGET,
-                                             D3D12_RESOURCE_STATE_PRESENT);
-  SubmitCommandList(false);
-  m_swap_chain->Present(0, m_using_allow_tearing ? DXGI_PRESENT_ALLOW_TEARING : 0);
-}
+  // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
+  if (mode == GPUVSyncMode::Mailbox && IsExclusiveFullscreen())
+  {
+    WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
+    mode = GPUVSyncMode::FIFO;
+  }
 
-bool D3D12Device::UpdateWindow()
-{
-  WaitForGPUIdle();
-  DestroySwapChain();
-
-  if (!AcquireWindow(false))
-    return false;
-
-  if (m_window_info.IsSurfaceless())
+  if (m_vsync_mode == mode)
     return true;
 
-  Error error;
-  if (!CreateSwapChain(&error))
-  {
-    ERROR_LOG("Failed to create swap chain on updated window: {}", error.GetDescription());
-    return false;
-  }
+  const u32 old_buffer_count = GetNewBufferCount(m_vsync_mode);
+  const u32 new_buffer_count = GetNewBufferCount(mode);
+  m_vsync_mode = mode;
+  if (old_buffer_count == new_buffer_count)
+    return true;
 
-  RenderBlankFrame();
-  return true;
+  // Buffer count change => needs recreation.
+  DestroyRTVs();
+  DestroySwapChain();
+
+  D3D12Device& dev = D3D12Device::GetInstance();
+  return CreateSwapChain(dev, error) && CreateRTV(dev, error);
 }
 
-void D3D12Device::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+bool D3D12SwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
 {
-  if (!m_swap_chain)
-    return;
+  m_window_info.surface_scale = new_scale;
+  if (m_window_info.surface_width == new_width && m_window_info.surface_height == new_height)
+    return true;
 
-  m_window_info.surface_scale = new_window_scale;
-
-  if (m_window_info.surface_width == static_cast<u32>(new_window_width) &&
-      m_window_info.surface_height == static_cast<u32>(new_window_height))
-  {
-    return;
-  }
-
-  DestroySwapChainRTVs();
+  DestroyRTVs();
 
   HRESULT hr = m_swap_chain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_UNKNOWN,
                                            m_using_allow_tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0);
   if (FAILED(hr))
     ERROR_LOG("ResizeBuffers() failed: 0x{:08X}", static_cast<unsigned>(hr));
 
-  Error error;
-  if (!CreateSwapChainRTV(&error))
-  {
-    ERROR_LOG("Failed to recreate swap chain RTV after resize", error.GetDescription());
-    Panic("Failed to recreate swap chain RTV after resize");
-  }
+  return CreateRTV(D3D12Device::GetInstance(), error);
 }
 
-void D3D12Device::DestroySurface()
+std::unique_ptr<GPUSwapChain> D3D12Device::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                           bool allow_present_throttle,
+                                                           const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                           std::optional<bool> exclusive_fullscreen_control,
+                                                           Error* error)
 {
-  DestroySwapChainRTVs();
-  DestroySwapChain();
+  std::unique_ptr<D3D12SwapChain> ret;
+  if (wi.type != WindowInfo::Type::Win32)
+  {
+    Error::SetStringView(error, "Cannot create a swap chain on non-win32 window.");
+    return ret;
+  }
+
+  ret = std::make_unique<D3D12SwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode);
+  if (ret->CreateSwapChain(*this, error) && ret->CreateRTV(*this, error))
+  {
+    // Render a frame as soon as possible to clear out whatever was previously being displayed.
+    RenderBlankFrame(ret.get());
+  }
+  else
+  {
+    ret.reset();
+  }
+
+  return ret;
+}
+
+void D3D12Device::RenderBlankFrame(D3D12SwapChain* swap_chain)
+{
+  if (InRenderPass())
+    EndRenderPass();
+
+  const D3D12SwapChain::BufferPair& swap_chain_buf = swap_chain->GetCurrentBuffer();
+  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
+  D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_COMMON,
+                                             D3D12_RESOURCE_STATE_RENDER_TARGET);
+  cmdlist->ClearRenderTargetView(swap_chain_buf.second, GSVector4::cxpr(0.0f, 0.0f, 0.0f, 1.0f).F32, 0, nullptr);
+  D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                             D3D12_RESOURCE_STATE_PRESENT);
+  SubmitCommandList(false);
+  swap_chain->GetSwapChain()->Present(0, swap_chain->IsUsingAllowTearing() ? DXGI_PRESENT_ALLOW_TEARING : 0);
+  swap_chain->AdvanceBuffer();
 }
 
 bool D3D12Device::SupportsTextureFormat(GPUTexture::Format format) const
@@ -1105,79 +1128,77 @@ std::string D3D12Device::GetDriverInfo() const
   return ret;
 }
 
-void D3D12Device::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
+GPUDevice::PresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
-  m_allow_present_throttle = allow_present_throttle;
-
-  // Using mailbox-style no-allow-tearing causes tearing in exclusive fullscreen.
-  if (mode == GPUVSyncMode::Mailbox && m_is_exclusive_fullscreen)
-  {
-    WARNING_LOG("Using FIFO instead of Mailbox vsync due to exclusive fullscreen.");
-    mode = GPUVSyncMode::FIFO;
-  }
-
-  if (m_vsync_mode == mode)
-    return;
-
-  const u32 old_buffer_count = GetSwapChainBufferCount();
-  m_vsync_mode = mode;
-  if (!m_swap_chain)
-    return;
-
-  if (GetSwapChainBufferCount() != old_buffer_count)
-  {
-    DestroySwapChain();
-
-    Error error;
-    if (!CreateSwapChain(&error))
-    {
-      ERROR_LOG("Failed to recreate swap chain after vsync change: {}", error.GetDescription());
-      Panic("Failed to recreate swap chain after vsync change.");
-    }
-  }
-}
-
-GPUDevice::PresentResult D3D12Device::BeginPresent(u32 clear_color)
-{
+  D3D12SwapChain* const SC = static_cast<D3D12SwapChain*>(swap_chain);
   if (InRenderPass())
     EndRenderPass();
 
   if (m_device_was_lost) [[unlikely]]
     return PresentResult::DeviceLost;
 
-  // If we're running surfaceless, kick the command buffer so we don't run out of descriptors.
-  if (!m_swap_chain)
-  {
-    SubmitCommandList(false);
-    TrimTexturePool();
-    return PresentResult::SkipPresent;
-  }
-
   // TODO: Check if the device was lost.
 
   // Check if we lost exclusive fullscreen. If so, notify the host, so it can switch to windowed mode.
   // This might get called repeatedly if it takes a while to switch back, that's the host's problem.
   BOOL is_fullscreen;
-  if (m_is_exclusive_fullscreen &&
-      (FAILED(m_swap_chain->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
+  if (SC->IsExclusiveFullscreen() &&
+      (FAILED(SC->GetSwapChain()->GetFullscreenState(&is_fullscreen, nullptr)) || !is_fullscreen))
   {
-    Host::RunOnCPUThread([]() { Host::SetFullscreen(false); });
+    FlushCommands();
     TrimTexturePool();
-    return PresentResult::SkipPresent;
+    return PresentResult::ExclusiveFullscreenLost;
   }
 
-  BeginSwapChainRenderPass(clear_color);
+  m_current_swap_chain = SC;
+
+  const D3D12SwapChain::BufferPair& swap_chain_buf = SC->GetCurrentBuffer();
+  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
+
+  D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_COMMON,
+                                             D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+  // All textures should be in shader read only optimal already, but just in case..
+  const u32 num_textures = GetActiveTexturesForLayout(m_current_pipeline_layout);
+  for (u32 i = 0; i < num_textures; i++)
+  {
+    if (m_current_textures[i])
+      m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  }
+
+  D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {swap_chain_buf.second,
+                                                  {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, {}},
+                                                  {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
+  GSVector4::store<false>(rt_desc.BeginningAccess.Clear.ClearValue.Color, GSVector4::rgba32(clear_color));
+  cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
+
+  std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
+  m_num_current_render_targets = 0;
+  m_dirty_flags =
+    (m_dirty_flags & ~DIRTY_FLAG_RT_UAVS) | ((IsUsingROVRootSignature()) ? DIRTY_FLAG_PIPELINE_LAYOUT : 0);
+  m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
+  m_current_depth_target = nullptr;
+  m_in_render_pass = true;
+  s_stats.num_render_passes++;
+
+  // Clear pipeline, it's likely incompatible.
+  m_current_pipeline = nullptr;
+
   return PresentResult::OK;
 }
 
-void D3D12Device::EndPresent(bool explicit_present, u64 present_time)
+void D3D12Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
+  D3D12SwapChain* const SC = static_cast<D3D12SwapChain*>(swap_chain);
   DebugAssert(present_time == 0);
   DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
   EndRenderPass();
 
-  const auto& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
-  m_current_swap_chain_buffer = ((m_current_swap_chain_buffer + 1) % static_cast<u32>(m_swap_chain_buffers.size()));
+  DebugAssert(SC == m_current_swap_chain);
+  m_current_swap_chain = nullptr;
+
+  const D3D12SwapChain::BufferPair& swap_chain_buf = SC->GetCurrentBuffer();
+  SC->AdvanceBuffer();
 
   ID3D12GraphicsCommandList* cmdlist = GetCommandList();
   D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_RENDER_TARGET,
@@ -1187,18 +1208,19 @@ void D3D12Device::EndPresent(bool explicit_present, u64 present_time)
   TrimTexturePool();
 
   if (!explicit_present)
-    SubmitPresent();
+    SubmitPresent(swap_chain);
 }
 
-void D3D12Device::SubmitPresent()
+void D3D12Device::SubmitPresent(GPUSwapChain* swap_chain)
 {
-  DebugAssert(m_swap_chain);
+  D3D12SwapChain* const SC = static_cast<D3D12SwapChain*>(swap_chain);
   if (m_device_was_lost) [[unlikely]]
     return;
 
-  const UINT sync_interval = static_cast<UINT>(m_vsync_mode == GPUVSyncMode::FIFO);
-  const UINT flags = (m_vsync_mode == GPUVSyncMode::Disabled && m_using_allow_tearing) ? DXGI_PRESENT_ALLOW_TEARING : 0;
-  m_swap_chain->Present(sync_interval, flags);
+  const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
+  const UINT flags =
+    (SC->GetVSyncMode() == GPUVSyncMode::Disabled && SC->IsUsingAllowTearing()) ? DXGI_PRESENT_ALLOW_TEARING : 0;
+  SC->GetSwapChain()->Present(sync_interval, flags);
 }
 
 #ifdef _DEBUG
@@ -1251,7 +1273,6 @@ void D3D12Device::InsertDebugMessage(const char* msg)
 
 void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disabled_features)
 {
-  m_render_api = RenderAPI::D3D12;
   m_render_api_version = D3DCommon::GetRenderAPIVersionForFeatureLevel(feature_level);
   m_max_texture_size = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
   m_max_multisamples = 1;
@@ -1285,11 +1306,6 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;
-
-  BOOL allow_tearing_supported = false;
-  HRESULT hr = m_dxgi_factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allow_tearing_supported,
-                                                   sizeof(allow_tearing_supported));
-  m_allow_tearing_supported = (SUCCEEDED(hr) && allow_tearing_supported == TRUE);
 
   m_features.raster_order_views = false;
   if (!(disabled_features & FEATURE_MASK_RASTER_ORDER_VIEWS))
@@ -1841,7 +1857,7 @@ void D3D12Device::BeginRenderPass()
   else
   {
     // Re-rendering to swap chain.
-    const auto& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
+    const auto& swap_chain_buf = m_current_swap_chain->GetCurrentBuffer();
     rt_desc[0] = {swap_chain_buf.second,
                   {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE, {}},
                   {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
@@ -1867,43 +1883,6 @@ void D3D12Device::BeginRenderPass()
   // If this is a new command buffer, bind the pipeline and such.
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
     SetInitialPipelineState();
-}
-
-void D3D12Device::BeginSwapChainRenderPass(u32 clear_color)
-{
-  DebugAssert(!InRenderPass());
-
-  ID3D12GraphicsCommandList4* const cmdlist = GetCommandList();
-  const auto& swap_chain_buf = m_swap_chain_buffers[m_current_swap_chain_buffer];
-
-  D3D12Texture::TransitionSubresourceToState(cmdlist, swap_chain_buf.first.Get(), 0, D3D12_RESOURCE_STATE_COMMON,
-                                             D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-  // All textures should be in shader read only optimal already, but just in case..
-  const u32 num_textures = GetActiveTexturesForLayout(m_current_pipeline_layout);
-  for (u32 i = 0; i < num_textures; i++)
-  {
-    if (m_current_textures[i])
-      m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-  }
-
-  D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {swap_chain_buf.second,
-                                                  {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, {}},
-                                                  {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
-  GSVector4::store<false>(rt_desc.BeginningAccess.Clear.ClearValue.Color, GSVector4::rgba32(clear_color));
-  cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
-
-  std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
-  m_num_current_render_targets = 0;
-  m_dirty_flags =
-    (m_dirty_flags & ~DIRTY_FLAG_RT_UAVS) | ((IsUsingROVRootSignature()) ? DIRTY_FLAG_PIPELINE_LAYOUT : 0);
-  m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
-  m_current_depth_target = nullptr;
-  m_in_render_pass = true;
-  s_stats.num_render_passes++;
-
-  // Clear pipeline, it's likely incompatible.
-  m_current_pipeline = nullptr;
 }
 
 bool D3D12Device::InRenderPass()

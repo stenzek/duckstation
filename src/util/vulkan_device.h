@@ -75,16 +75,16 @@ public:
   static GPUList EnumerateGPUs();
   static AdapterInfoList GetAdapterList();
 
-  bool HasSurface() const override;
-
-  bool UpdateWindow() override;
-  void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
-  void DestroySurface() override;
-
   std::string GetDriverInfo() const override;
 
-  void ExecuteAndWaitForGPUIdle() override;
+  void FlushCommands() override;
+  void WaitForGPUIdle() override;
 
+  std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control,
+                                                Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                             GPUTexture::Type type, GPUTexture::Format format,
                                             const void* data = nullptr, u32 data_stride = 0) override;
@@ -138,11 +138,9 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
-
-  PresentResult BeginPresent(u32 clear_color) override;
-  void EndPresent(bool explicit_present, u64 present_time) override;
-  void SubmitPresent() override;
+  PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
+  void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
+  void SubmitPresent(GPUSwapChain* swap_chain) override;
 
   // Global state accessors
   ALWAYS_INLINE static VulkanDevice& GetInstance() { return *static_cast<VulkanDevice*>(g_gpu_device.get()); }
@@ -167,7 +165,7 @@ public:
     return static_cast<u32>(m_device_properties.limits.optimalBufferCopyRowPitchAlignment);
   }
 
-  void WaitForGPUIdle();
+  void WaitForAllFences();
 
   // Creates a simple render pass.
   VkRenderPass GetRenderPass(const GPUPipeline::GraphicsConfig& config);
@@ -219,19 +217,26 @@ public:
   // Also invokes callbacks for completion.
   void WaitForFenceCounter(u64 fence_counter);
 
+  // Ends a render pass if we're currently in one.
+  // When Bind() is next called, the pass will be restarted.
+  void BeginRenderPass();
+  void EndRenderPass();
+  bool InRenderPass();
+
   /// Ends any render pass, executes the command buffer, and invalidates cached state.
   void SubmitCommandBuffer(bool wait_for_completion);
   void SubmitCommandBuffer(bool wait_for_completion, const std::string_view reason);
   void SubmitCommandBufferAndRestartRenderPass(const std::string_view reason);
 
-  void UnbindFramebuffer(VulkanTexture* tex);
   void UnbindPipeline(VulkanPipeline* pl);
   void UnbindTexture(VulkanTexture* tex);
   void UnbindTextureBuffer(VulkanTextureBuffer* buf);
 
 protected:
-  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                    FeatureMask disabled_features, Error* error) override;
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+                                    GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                    const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                    std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(DynamicHeapArray<u8> data, Error* error) override;
@@ -351,7 +356,7 @@ private:
   VkSampler GetSampler(const GPUSampler::Config& config);
   void DestroySamplers();
 
-  void RenderBlankFrame();
+  void RenderBlankFrame(VulkanSwapChain* swap_chain);
 
   bool TryImportHostMemory(void* data, size_t data_size, VkBufferUsageFlags buffer_usage, VkDeviceMemory* out_memory,
                            VkBuffer* out_buffer, VkDeviceSize* out_offset);
@@ -371,12 +376,7 @@ private:
   bool UpdateDescriptorSetsForLayout(u32 dirty);
   bool UpdateDescriptorSets(u32 dirty);
 
-  // Ends a render pass if we're currently in one.
-  // When Bind() is next called, the pass will be restarted.
-  void BeginRenderPass();
-  void BeginSwapChainRenderPass(u32 clear_color);
-  void EndRenderPass();
-  bool InRenderPass();
+  void BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 clear_color);
 
   VkRenderPass CreateCachedRenderPass(RenderPassCacheKey key);
   static VkFramebuffer CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds, u32 flags);
@@ -427,7 +427,6 @@ private:
   OptionalExtensions m_optional_extensions = {};
   std::optional<bool> m_exclusive_fullscreen_control;
 
-  std::unique_ptr<VulkanSwapChain> m_swap_chain;
   std::unique_ptr<VulkanTexture> m_null_texture;
 
   VkDescriptorSetLayout m_ubo_ds_layout = VK_NULL_HANDLE;
@@ -468,4 +467,5 @@ private:
   VulkanTextureBuffer* m_current_texture_buffer = nullptr;
   GSVector4i m_current_viewport = GSVector4i::cxpr(0, 0, 1, 1);
   GSVector4i m_current_scissor = GSVector4i::cxpr(0, 0, 1, 1);
+  VulkanSwapChain* m_current_swap_chain = nullptr;
 };

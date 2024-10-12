@@ -18,32 +18,30 @@ struct NSView;
 class OpenGLContextAGL final : public OpenGLContext
 {
 public:
-  OpenGLContextAGL(const WindowInfo& wi);
+  OpenGLContextAGL();
   ~OpenGLContextAGL() override;
 
-  static std::unique_ptr<OpenGLContext> Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
-                                               Error* error);
+  static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface,
+                                               std::span<const Version> versions_to_try, Error* error);
 
   void* GetProcAddress(const char* name) override;
-  bool ChangeSurface(const WindowInfo& new_wi) override;
-  void ResizeSurface(u32 new_surface_width = 0, u32 new_surface_height = 0) override;
+  SurfaceHandle CreateSurface(WindowInfo& wi, Error* error = nullptr) override;
+  void DestroySurface(SurfaceHandle handle) override;
+  void ResizeSurface(WindowInfo& wi, SurfaceHandle handle) override;
   bool SwapBuffers() override;
   bool IsCurrent() const override;
-  bool MakeCurrent() override;
+  bool MakeCurrent(SurfaceHandle surface, Error* error = nullptr) override;
   bool DoneCurrent() override;
   bool SupportsNegativeSwapInterval() const override;
-  bool SetSwapInterval(s32 interval) override;
-  std::unique_ptr<OpenGLContext> CreateSharedContext(const WindowInfo& wi, Error* error) override;
+  bool SetSwapInterval(s32 interval, Error* error = nullptr) override;
+  std::unique_ptr<OpenGLContext> CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface, Error* error) override;
 
 private:
-  ALWAYS_INLINE NSView* GetView() const { return static_cast<NSView*>((__bridge NSView*)m_wi.window_handle); }
+  bool Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try, Error* error);
+  bool CreateContext(NSOpenGLContext* share_context, int profile, Error* error);
 
-  bool Initialize(std::span<const Version> versions_to_try, Error* error);
-  bool CreateContext(NSOpenGLContext* share_context, int profile, bool make_current, Error* error);
-  void BindContextToView();
-
-  // returns true if dimensions have changed
-  bool UpdateDimensions();
+  static void BindContextToView(WindowInfo& wi, NSOpenGLContext* context);
+  static void UpdateSurfaceSize(WindowInfo& wi, NSOpenGLContext* context);
 
   NSOpenGLContext* m_context = nullptr;
   NSOpenGLPixelFormat* m_pixel_format = nullptr;

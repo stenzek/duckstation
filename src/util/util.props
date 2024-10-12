@@ -4,7 +4,7 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions>%(PreprocessorDefinitions);CPUINFO_SHARED=1;ENABLE_VULKAN=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);CPUINFO_SHARED=1;ENABLE_VULKAN=1;ENABLE_SDL=1</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'!='ARM64'">%(PreprocessorDefinitions);ENABLE_OPENGL=1</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\xxhash\include;$(SolutionDir)dep\kissfft\include;$(SolutionDir)dep\imgui\include;$(SolutionDir)dep\simpleini\include;$(SolutionDir)dep\libchdr\include;$(SolutionDir)dep\cubeb\include;$(SolutionDir)dep\d3d12ma\include;$(SolutionDir)dep\vulkan\include;$(SolutionDir)dep\ffmpeg\include</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Platform)'!='ARM64'">%(AdditionalIncludeDirectories);$(SolutionDir)dep\glad\include</AdditionalIncludeDirectories>
@@ -14,7 +14,6 @@
   <ItemDefinitionGroup>
     <Link>
       <AdditionalDependencies>%(AdditionalDependencies);d3d11.lib;d3d12.lib;d3dcompiler.lib;dxgi.lib;Dwmapi.lib;winhttp.lib</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Platform)'!='ARM64'">%(AdditionalDependencies);opengl32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 

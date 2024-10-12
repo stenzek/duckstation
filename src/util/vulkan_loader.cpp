@@ -16,7 +16,7 @@
 #include <cstring>
 #include <string>
 
-LOG_CHANNEL(VulkanDevice);
+LOG_CHANNEL(GPUDevice);
 
 extern "C" {
 

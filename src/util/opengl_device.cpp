@@ -19,13 +19,16 @@
 #include <array>
 #include <tuple>
 
-LOG_CHANNEL(OpenGLDevice);
+LOG_CHANNEL(GPUDevice);
 
 static constexpr const std::array<GLenum, GPUDevice::MAX_RENDER_TARGETS> s_draw_buffers = {
   {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3}};
 
 OpenGLDevice::OpenGLDevice()
 {
+  // Could change to GLES later.
+  m_render_api = RenderAPI::OpenGL;
+
   // Something which won't be matched..
   std::memset(&m_last_rasterization_state, 0xFF, sizeof(m_last_rasterization_state));
   std::memset(&m_last_depth_state, 0xFF, sizeof(m_last_depth_state));
@@ -238,19 +241,6 @@ void OpenGLDevice::InsertDebugMessage(const char* msg)
 #endif
 }
 
-void OpenGLDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
-{
-  // OpenGL does not support Mailbox.
-  mode = (mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : mode;
-  m_allow_present_throttle = allow_present_throttle;
-
-  if (m_vsync_mode == mode)
-    return;
-
-  m_vsync_mode = mode;
-  SetSwapInterval();
-}
-
 static void GLAD_API_PTR GLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                          const GLchar* message, const void* userParam)
 {
@@ -271,15 +261,15 @@ static void GLAD_API_PTR GLDebugCallback(GLenum source, GLenum type, GLuint id, 
   }
 }
 
-bool OpenGLDevice::HasSurface() const
+bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+                                                const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
-  return m_window_info.type != WindowInfo::Type::Surfaceless;
-}
-
-bool OpenGLDevice::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                                FeatureMask disabled_features, Error* error)
-{
-  m_gl_context = OpenGLContext::Create(m_window_info, error);
+  WindowInfo wi_copy(wi);
+  OpenGLContext::SurfaceHandle wi_surface;
+  m_gl_context = OpenGLContext::Create(wi_copy, &wi_surface, error);
   if (!m_gl_context)
   {
     ERROR_LOG("Failed to create any GL context");
@@ -287,9 +277,11 @@ bool OpenGLDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
     return false;
   }
 
+#if 0
   // Is this needed?
   m_window_info = m_gl_context->GetWindowInfo();
-  m_vsync_mode = (m_vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : m_vsync_mode;
+  m_vsync_mode = ;
+#endif
 
   const bool opengl_is_available =
     ((!m_gl_context->IsGLES() && (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
@@ -302,10 +294,6 @@ bool OpenGLDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
     m_gl_context.reset();
     return false;
   }
-
-  SetSwapInterval();
-  if (HasSurface())
-    RenderBlankFrame();
 
   if (m_debug_device && GLAD_GL_KHR_debug)
   {
@@ -324,6 +312,21 @@ bool OpenGLDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
     glPopDebugGroup = nullptr;
     glDebugMessageInsert = nullptr;
     glObjectLabel = nullptr;
+  }
+
+  // create main swap chain
+  if (!wi_copy.IsSurfaceless())
+  {
+    // OpenGL does not support mailbox.
+    m_main_swap_chain = std::make_unique<OpenGLSwapChain>(
+      wi_copy, (vsync_mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : vsync_mode, allow_present_throttle,
+      wi_surface);
+
+    Error swap_interval_error;
+    if (!OpenGLSwapChain::SetSwapInterval(m_gl_context.get(), m_main_swap_chain->GetVSyncMode(), &swap_interval_error))
+      WARNING_LOG("Failed to set swap interval on main swap chain: {}", swap_interval_error.GetDescription());
+
+    RenderBlankFrame();
   }
 
   if (!CheckFeatures(disabled_features))
@@ -532,50 +535,104 @@ void OpenGLDevice::DestroyDevice()
   DestroyBuffers();
 
   m_gl_context->DoneCurrent();
+  m_main_swap_chain.reset();
   m_gl_context.reset();
 }
 
-bool OpenGLDevice::UpdateWindow()
+OpenGLSwapChain::OpenGLSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                 OpenGLContext::SurfaceHandle surface_handle)
+  : GPUSwapChain(wi, vsync_mode, allow_present_throttle), m_surface_handle(surface_handle)
 {
-  Assert(m_gl_context);
+}
 
-  DestroySurface();
+OpenGLSwapChain::~OpenGLSwapChain()
+{
+  OpenGLDevice::GetContext()->DestroySurface(m_surface_handle);
+}
 
-  if (!AcquireWindow(false))
-    return false;
+bool OpenGLSwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
+{
+  m_window_info.surface_scale = new_scale;
+  if (m_window_info.surface_width == new_width && m_window_info.surface_height == new_height)
+    return true;
 
-  if (!m_gl_context->ChangeSurface(m_window_info))
-  {
-    ERROR_LOG("Failed to change surface");
-    return false;
-  }
+  m_window_info.surface_width = new_width;
+  m_window_info.surface_height = new_height;
 
-  m_window_info = m_gl_context->GetWindowInfo();
-
-  if (m_window_info.type != WindowInfo::Type::Surfaceless)
-  {
-    // reset vsync rate, since it (usually) gets lost
-    SetSwapInterval();
-    RenderBlankFrame();
-  }
-
+  OpenGLDevice::GetContext()->ResizeSurface(m_window_info, m_surface_handle);
   return true;
 }
 
-void OpenGLDevice::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
+bool OpenGLSwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
 {
-  if (m_window_info.IsSurfaceless())
-    return;
+  // OpenGL does not support Mailbox.
+  mode = (mode == GPUVSyncMode::Mailbox) ? GPUVSyncMode::FIFO : mode;
+  m_allow_present_throttle = allow_present_throttle;
 
-  m_window_info.surface_scale = new_window_scale;
-  if (m_window_info.surface_width == static_cast<u32>(new_window_width) &&
-      m_window_info.surface_height == static_cast<u32>(new_window_height))
+  if (m_vsync_mode == mode)
+    return true;
+
+  const bool is_main_swap_chain = (g_gpu_device->GetMainSwapChain() == this);
+
+  OpenGLContext* ctx = OpenGLDevice::GetContext();
+  if (!is_main_swap_chain && !ctx->MakeCurrent(m_surface_handle))
+    return false;
+
+  const bool result = SetSwapInterval(ctx, mode, error);
+
+  if (!is_main_swap_chain)
+    ctx->MakeCurrent(static_cast<OpenGLSwapChain*>(g_gpu_device->GetMainSwapChain())->m_surface_handle);
+
+  if (!result)
+    return false;
+
+  m_vsync_mode = mode;
+  return true;
+}
+
+bool OpenGLSwapChain::SetSwapInterval(OpenGLContext* ctx, GPUVSyncMode mode, Error* error)
+{
+  // Window framebuffer has to be bound to call SetSwapInterval.
+  const s32 interval = static_cast<s32>(mode == GPUVSyncMode::FIFO);
+  GLint current_fbo = 0;
+  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
+  const bool result = ctx->SetSwapInterval(interval);
+
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
+  return result;
+}
+
+std::unique_ptr<GPUSwapChain> OpenGLDevice::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                            bool allow_present_throttle,
+                                                            const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                            std::optional<bool> exclusive_fullscreen_control,
+                                                            Error* error)
+{
+  if (wi.IsSurfaceless())
   {
-    return;
+    Error::SetStringView(error, "Trying to create a surfaceless swap chain.");
+    return {};
   }
 
-  m_gl_context->ResizeSurface(static_cast<u32>(new_window_width), static_cast<u32>(new_window_height));
-  m_window_info = m_gl_context->GetWindowInfo();
+  WindowInfo wi_copy(wi);
+  const OpenGLContext::SurfaceHandle surface_handle = m_gl_context->CreateSurface(wi_copy, error);
+  if (!surface_handle || !m_gl_context->MakeCurrent(surface_handle, error))
+    return {};
+
+  Error swap_interval_error;
+  if (!OpenGLSwapChain::SetSwapInterval(m_gl_context.get(), vsync_mode, &swap_interval_error))
+    WARNING_LOG("Failed to set swap interval on new swap chain: {}", swap_interval_error.GetDescription());
+
+  RenderBlankFrame();
+
+  // only bother switching back if we actually have a main swap chain, avoids a couple of
+  // SetCurrent() calls when we're switching to and from fullscreen.
+  if (m_main_swap_chain)
+    m_gl_context->MakeCurrent(static_cast<OpenGLSwapChain*>(m_main_swap_chain.get())->GetSurfaceHandle());
+
+  return std::make_unique<OpenGLSwapChain>(wi_copy, vsync_mode, allow_present_throttle, surface_handle);
 }
 
 std::string OpenGLDevice::GetDriverInfo() const
@@ -588,27 +645,16 @@ std::string OpenGLDevice::GetDriverInfo() const
                      gl_shading_language_version);
 }
 
-void OpenGLDevice::ExecuteAndWaitForGPUIdle()
+void OpenGLDevice::FlushCommands()
+{
+  glFlush();
+  TrimTexturePool();
+}
+
+void OpenGLDevice::WaitForGPUIdle()
 {
   // Could be glFinish(), but I'm afraid for mobile drivers...
   glFlush();
-}
-
-void OpenGLDevice::SetSwapInterval()
-{
-  if (m_window_info.type == WindowInfo::Type::Surfaceless)
-    return;
-
-  // Window framebuffer has to be bound to call SetSwapInterval.
-  const s32 interval = static_cast<s32>(m_vsync_mode == GPUVSyncMode::FIFO);
-  GLint current_fbo = 0;
-  glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, &current_fbo);
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-
-  if (!m_gl_context->SetSwapInterval(interval))
-    WARNING_LOG("Failed to set swap interval to {}", interval);
-
-  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, current_fbo);
 }
 
 void OpenGLDevice::RenderBlankFrame()
@@ -675,16 +721,6 @@ void OpenGLDevice::DestroyFramebuffer(GLuint fbo)
     glDeleteFramebuffers(1, &fbo);
 }
 
-void OpenGLDevice::DestroySurface()
-{
-  if (!m_gl_context)
-    return;
-
-  m_window_info.SetSurfaceless();
-  if (!m_gl_context->ChangeSurface(m_window_info))
-    ERROR_LOG("Failed to switch to surfaceless");
-}
-
 bool OpenGLDevice::CreateBuffers()
 {
   if (!(m_vertex_buffer = OpenGLStreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE)) ||
@@ -742,14 +778,9 @@ void OpenGLDevice::DestroyBuffers()
   m_vertex_buffer.reset();
 }
 
-GPUDevice::PresentResult OpenGLDevice::BeginPresent(u32 clear_color)
+GPUDevice::PresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
-  if (m_window_info.type == WindowInfo::Type::Surfaceless)
-  {
-    glFlush();
-    TrimTexturePool();
-    return PresentResult::SkipPresent;
-  }
+  m_gl_context->MakeCurrent(static_cast<OpenGLSwapChain*>(swap_chain)->GetSurfaceHandle());
 
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_SCISSOR_TEST);
@@ -764,7 +795,8 @@ GPUDevice::PresentResult OpenGLDevice::BeginPresent(u32 clear_color)
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_current_depth_target = nullptr;
 
-  const GSVector4i window_rc = GSVector4i(0, 0, m_window_info.surface_width, m_window_info.surface_height);
+  const GSVector4i window_rc =
+    GSVector4i(0, 0, static_cast<s32>(swap_chain->GetWidth()), static_cast<s32>(swap_chain->GetHeight()));
   m_last_viewport = window_rc;
   m_last_scissor = window_rc;
   UpdateViewport();
@@ -772,23 +804,23 @@ GPUDevice::PresentResult OpenGLDevice::BeginPresent(u32 clear_color)
   return PresentResult::OK;
 }
 
-void OpenGLDevice::EndPresent(bool explicit_present, u64 present_time)
+void OpenGLDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
   DebugAssert(!explicit_present && present_time == 0);
   DebugAssert(m_current_fbo == 0);
 
-  if (m_gpu_timing_enabled)
+  if (swap_chain == m_main_swap_chain.get() && m_gpu_timing_enabled)
     PopTimestampQuery();
 
   m_gl_context->SwapBuffers();
 
-  if (m_gpu_timing_enabled)
+  if (swap_chain == m_main_swap_chain.get() && m_gpu_timing_enabled)
     KickTimestampQuery();
 
   TrimTexturePool();
 }
 
-void OpenGLDevice::SubmitPresent()
+void OpenGLDevice::SubmitPresent(GPUSwapChain* swap_chain)
 {
   Panic("Not supported by this API.");
 }

@@ -78,8 +78,6 @@ struct Settings
   float turbo_speed = 0.0f;
   bool sync_to_host_refresh_rate : 1 = false;
   bool inhibit_screensaver : 1 = true;
-  bool start_paused : 1 = false;
-  bool start_fullscreen : 1 = false;
   bool pause_on_focus_loss : 1 = false;
   bool pause_on_controller_disconnection : 1 = false;
   bool save_state_on_exit : 1 = true;
@@ -572,7 +570,6 @@ extern std::string Bios;
 extern std::string Cache;
 extern std::string Cheats;
 extern std::string Covers;
-extern std::string Dumps;
 extern std::string GameIcons;
 extern std::string GameSettings;
 extern std::string InputProfiles;

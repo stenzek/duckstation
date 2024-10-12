@@ -274,13 +274,19 @@ std::string Host::GetHTTPUserAgent()
   return fmt::format("DuckStation for {} ({}) {}", TARGET_OS_STR, CPU_ARCH_STR, g_scm_tag_str);
 }
 
-bool Host::CreateGPUDevice(RenderAPI api, Error* error)
+bool Host::CreateGPUDevice(RenderAPI api, bool fullscreen, Error* error)
 {
   DebugAssert(!g_gpu_device);
 
   INFO_LOG("Trying to create a {} GPU device...", GPUDevice::RenderAPIToString(api));
   g_gpu_device = GPUDevice::CreateDeviceForAPI(api);
 
+  std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode;
+  if (fullscreen && g_gpu_device && g_gpu_device->SupportsExclusiveFullscreen())
+  {
+    fullscreen_mode =
+      GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+  }
   std::optional<bool> exclusive_fullscreen_control;
   if (g_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
   {
@@ -300,18 +306,30 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
   if (g_settings.gpu_disable_raster_order_views)
     disabled_features |= GPUDevice::FEATURE_MASK_RASTER_ORDER_VIEWS;
 
+    // Don't dump shaders on debug builds for Android, users will complain about storage...
+#if !defined(__ANDROID__) || defined(_DEBUG)
+  const std::string_view shader_dump_directory(EmuFolders::DataRoot);
+#else
+  const std::string_view shader_dump_directory;
+#endif
+
   Error create_error;
-  if (!g_gpu_device || !g_gpu_device->Create(
-                         g_settings.gpu_adapter,
-                         g_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
-                         SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, System::GetEffectiveVSyncMode(),
-                         System::ShouldAllowPresentThrottle(), exclusive_fullscreen_control,
-                         static_cast<GPUDevice::FeatureMask>(disabled_features), &create_error))
+  std::optional<WindowInfo> wi;
+  if (!g_gpu_device ||
+      !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
+      !g_gpu_device->Create(
+        g_settings.gpu_adapter, static_cast<GPUDevice::FeatureMask>(disabled_features), shader_dump_directory,
+        g_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
+        SHADER_CACHE_VERSION, g_settings.gpu_use_debug_device, wi.value(), System::GetEffectiveVSyncMode(),
+        System::ShouldAllowPresentThrottle(), fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
+        exclusive_fullscreen_control, &create_error))
   {
     ERROR_LOG("Failed to create GPU device: {}", create_error.GetDescription());
     if (g_gpu_device)
       g_gpu_device->Destroy();
     g_gpu_device.reset();
+    if (wi.has_value())
+      Host::ReleaseRenderWindow();
 
     Error::SetStringFmt(
       error,
@@ -327,27 +345,52 @@ bool Host::CreateGPUDevice(RenderAPI api, Error* error)
     Error::SetStringFmt(error, "Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     g_gpu_device->Destroy();
     g_gpu_device.reset();
+    Host::ReleaseRenderWindow();
     return false;
   }
 
-  InputManager::SetDisplayWindowSize(static_cast<float>(g_gpu_device->GetWindowWidth()),
-                                     static_cast<float>(g_gpu_device->GetWindowHeight()));
+  InputManager::SetDisplayWindowSize(ImGuiManager::GetWindowWidth(), ImGuiManager::GetWindowHeight());
   return true;
 }
 
-void Host::UpdateDisplayWindow()
+void Host::UpdateDisplayWindow(bool fullscreen)
 {
   if (!g_gpu_device)
     return;
 
-  if (!g_gpu_device->UpdateWindow())
+  const GPUVSyncMode vsync_mode =
+    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetVSyncMode() : GPUVSyncMode::Disabled;
+  const bool allow_present_throttle =
+    g_gpu_device->HasMainSwapChain() && g_gpu_device->GetMainSwapChain()->IsPresentThrottleAllowed();
+  std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode;
+  if (fullscreen && g_gpu_device->SupportsExclusiveFullscreen())
   {
-    Host::ReportErrorAsync("Error", "Failed to change window after update. The log may contain more information.");
+    fullscreen_mode =
+      GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+  }
+  std::optional<bool> exclusive_fullscreen_control;
+  if (g_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
+  {
+    exclusive_fullscreen_control =
+      (g_settings.display_exclusive_fullscreen_control == DisplayExclusiveFullscreenControl::Allowed);
+  }
+
+  g_gpu_device->DestroyMainSwapChain();
+
+  Error error;
+  std::optional<WindowInfo> wi;
+  if (!(wi = Host::AcquireRenderWindow(g_gpu_device->GetRenderAPI(), fullscreen, fullscreen_mode.has_value(), &error))
+         .has_value() ||
+      !g_gpu_device->RecreateMainSwapChain(wi.value(), vsync_mode, allow_present_throttle,
+                                           fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
+                                           exclusive_fullscreen_control, &error))
+  {
+    Host::ReportFatalError("Failed to change window after update", error.GetDescription());
     return;
   }
 
-  const float f_width = static_cast<float>(g_gpu_device->GetWindowWidth());
-  const float f_height = static_cast<float>(g_gpu_device->GetWindowHeight());
+  const float f_width = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth());
+  const float f_height = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
   ImGuiManager::WindowResized(f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
   System::HostDisplayResized();
@@ -365,15 +408,21 @@ void Host::UpdateDisplayWindow()
 
 void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
 {
-  if (!g_gpu_device)
+  if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
     return;
 
   DEV_LOG("Display window resized to {}x{}", width, height);
 
-  g_gpu_device->ResizeWindow(width, height, scale);
+  Error error;
+  if (!g_gpu_device->GetMainSwapChain()->ResizeBuffers(width, height, scale, &error))
+  {
+    ERROR_LOG("Failed to resize main swap chain: {}", error.GetDescription());
+    UpdateDisplayWindow(Host::IsFullscreen());
+    return;
+  }
 
-  const float f_width = static_cast<float>(g_gpu_device->GetWindowWidth());
-  const float f_height = static_cast<float>(g_gpu_device->GetWindowHeight());
+  const float f_width = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth());
+  const float f_height = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
   ImGuiManager::WindowResized(f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
 
@@ -404,4 +453,6 @@ void Host::ReleaseGPUDevice()
   INFO_LOG("Destroying {} GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
   g_gpu_device->Destroy();
   g_gpu_device.reset();
+
+  Host::ReleaseRenderWindow();
 }

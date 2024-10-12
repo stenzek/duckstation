@@ -32,7 +32,7 @@
 #endif
 #endif
 
-LOG_CHANNEL(OpenGLContext);
+LOG_CHANNEL(GPUDevice);
 
 static bool ShouldPreferESContext()
 {
@@ -105,13 +105,11 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
   }
 }
 
-OpenGLContext::OpenGLContext(const WindowInfo& wi) : m_wi(wi)
-{
-}
+OpenGLContext::OpenGLContext() = default;
 
 OpenGLContext::~OpenGLContext() = default;
 
-std::unique_ptr<OpenGLContext> OpenGLContext::Create(const WindowInfo& wi, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHandle* surface, Error* error)
 {
   static constexpr std::array<Version, 14> vlist = {{{Profile::Core, 4, 6},
                                                      {Profile::Core, 4, 5},
@@ -149,22 +147,22 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(const WindowInfo& wi, Error
 
   std::unique_ptr<OpenGLContext> context;
 #if defined(_WIN32) && !defined(_M_ARM64)
-  context = OpenGLContextWGL::Create(wi, versions_to_try, error);
+  context = OpenGLContextWGL::Create(wi, surface, versions_to_try, error);
 #elif defined(__APPLE__)
-  context = OpenGLContextAGL::Create(wi, versions_to_try, error);
+  context = OpenGLContextAGL::Create(wi, surface, versions_to_try, error);
 #elif defined(__ANDROID__)
-  context = OpenGLContextEGLAndroid::Create(wi, versions_to_try, error);
+  context = OpenGLContextEGLAndroid::Create(wi, surface, versions_to_try, error);
 #else
 #if defined(ENABLE_X11)
   if (wi.type == WindowInfo::Type::X11)
-    context = OpenGLContextEGLX11::Create(wi, versions_to_try, error);
+    context = OpenGLContextEGLX11::Create(wi, surface, versions_to_try, error);
 #endif
 #if defined(ENABLE_WAYLAND)
   if (wi.type == WindowInfo::Type::Wayland)
-    context = OpenGLContextEGLWayland::Create(wi, versions_to_try, error);
+    context = OpenGLContextEGLWayland::Create(wi, surface, versions_to_try, error);
 #endif
   if (wi.type == WindowInfo::Type::Surfaceless)
-    context = OpenGLContextEGL::Create(wi, versions_to_try, error);
+    context = OpenGLContextEGL::Create(wi, surface, versions_to_try, error);
 #endif
 
   if (!context)

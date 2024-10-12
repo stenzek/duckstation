@@ -110,7 +110,6 @@ if(ENABLE_OPENGL)
       opengl_context_wgl.cpp
       opengl_context_wgl.h
     )
-    target_link_libraries(util PRIVATE "opengl32.lib")
   endif()
 
   if(LINUX OR BSD OR ANDROID)
@@ -182,6 +181,9 @@ if(NOT ANDROID)
     sdl_audio_stream.cpp
     sdl_input_source.cpp
     sdl_input_source.h
+  )
+  target_compile_definitions(util PUBLIC
+    ENABLE_SDL
   )
   target_link_libraries(util PUBLIC
     cubeb

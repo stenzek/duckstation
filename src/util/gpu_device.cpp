@@ -3,8 +3,6 @@
 
 #include "gpu_device.h"
 #include "compress_helpers.h"
-#include "core/host.h"     // TODO: Remove, needed for getting fullscreen mode.
-#include "core/settings.h" // TODO: Remove, needed for dump directory.
 #include "gpu_framebuffer_manager.h"
 #include "shadergen.h"
 
@@ -44,6 +42,7 @@ LOG_CHANNEL(GPUDevice);
 
 std::unique_ptr<GPUDevice> g_gpu_device;
 
+static std::string s_shader_dump_path;
 static std::string s_pipeline_cache_path;
 static size_t s_pipeline_cache_size;
 static std::array<u8, SHA1Digest::DIGEST_SIZE> s_pipeline_cache_hash;
@@ -226,6 +225,49 @@ size_t GPUFramebufferManagerBase::KeyHash::operator()(const Key& key) const
     return XXH32(&key, sizeof(key), 0x1337);
 }
 
+GPUSwapChain::GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle)
+  : m_window_info(wi), m_vsync_mode(vsync_mode), m_allow_present_throttle(allow_present_throttle)
+{
+}
+
+GPUSwapChain::~GPUSwapChain() = default;
+
+bool GPUSwapChain::ShouldSkipPresentingFrame()
+{
+  // Only needed with FIFO. But since we're so fast, we allow it always.
+  if (!m_allow_present_throttle)
+    return false;
+
+  const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
+  const float throttle_period = 1.0f / throttle_rate;
+
+  const u64 now = Common::Timer::GetCurrentValue();
+  const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
+  if (diff < throttle_period)
+    return true;
+
+  m_last_frame_displayed_time = now;
+  return false;
+}
+
+void GPUSwapChain::ThrottlePresentation()
+{
+  const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
+
+  const u64 sleep_period = Common::Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
+  const u64 current_ts = Common::Timer::GetCurrentValue();
+
+  // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
+  // allow time for the actual rendering.
+  const u64 max_variance = sleep_period * 2;
+  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - m_last_frame_displayed_time))) > max_variance)
+    m_last_frame_displayed_time = current_ts + sleep_period;
+  else
+    m_last_frame_displayed_time += sleep_period;
+
+  Common::Timer::SleepUntil(m_last_frame_displayed_time, false);
+}
+
 GPUDevice::GPUDevice()
 {
   ResetStatistics();
@@ -346,21 +388,18 @@ GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
   return ret;
 }
 
-bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version,
-                       bool debug_device, GPUVSyncMode vsync, bool allow_present_throttle,
-                       std::optional<bool> exclusive_fullscreen_control, FeatureMask disabled_features, Error* error)
+bool GPUDevice::Create(std::string_view adapter, FeatureMask disabled_features, std::string_view shader_dump_path,
+                       std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
+                       const WindowInfo& wi, GPUVSyncMode vsync, bool allow_present_throttle,
+                       const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                       std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
-  m_vsync_mode = vsync;
-  m_allow_present_throttle = allow_present_throttle;
   m_debug_device = debug_device;
+  s_shader_dump_path = shader_dump_path;
 
-  if (!AcquireWindow(true))
-  {
-    Error::SetStringView(error, "Failed to acquire window from host.");
-    return false;
-  }
-
-  if (!CreateDevice(adapter, exclusive_fullscreen_control, disabled_features, error))
+  INFO_LOG("Main render window is {}x{}.", wi.surface_width, wi.surface_height);
+  if (!CreateDeviceAndMainSwapChain(adapter, disabled_features, wi, vsync, allow_present_throttle,
+                                    exclusive_fullscreen_mode, exclusive_fullscreen_control, error))
   {
     if (error && !error->IsValid())
       error->SetStringView("Failed to create device.");
@@ -383,12 +422,28 @@ bool GPUDevice::Create(std::string_view adapter, std::string_view shader_cache_p
 
 void GPUDevice::Destroy()
 {
+  s_shader_dump_path = {};
+
   PurgeTexturePool();
-  if (HasSurface())
-    DestroySurface();
   DestroyResources();
   CloseShaderCache();
   DestroyDevice();
+}
+
+bool GPUDevice::RecreateMainSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                      const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                      std::optional<bool> exclusive_fullscreen_control, Error* error)
+{
+
+  m_main_swap_chain.reset();
+  m_main_swap_chain = CreateSwapChain(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_mode,
+                                      exclusive_fullscreen_control, error);
+  return static_cast<bool>(m_main_swap_chain);
+}
+
+void GPUDevice::DestroyMainSwapChain()
+{
+  m_main_swap_chain.reset();
 }
 
 bool GPUDevice::SupportsExclusiveFullscreen() const
@@ -533,17 +588,6 @@ bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
   return false;
 }
 
-bool GPUDevice::AcquireWindow(bool recreate_window)
-{
-  std::optional<WindowInfo> wi = Host::AcquireRenderWindow(recreate_window);
-  if (!wi.has_value())
-    return false;
-
-  INFO_LOG("Render window is {}x{}.", wi->surface_width, wi->surface_height);
-  m_window_info = wi.value();
-  return true;
-}
-
 bool GPUDevice::CreateResources(Error* error)
 {
   if (!(m_nearest_sampler = CreateSampler(GPUSampler::GetNearestConfig())) ||
@@ -587,7 +631,7 @@ bool GPUDevice::CreateResources(Error* error)
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
   plconfig.blend = GPUPipeline::BlendState::GetAlphaBlendingState();
   plconfig.blend.write_mask = 0x7;
-  plconfig.SetTargetFormats(HasSurface() ? m_window_info.surface_format : GPUTexture::Format::RGBA8);
+  plconfig.SetTargetFormats(m_main_swap_chain ? m_main_swap_chain->GetFormat() : GPUTexture::Format::RGBA8);
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
   plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
@@ -619,23 +663,23 @@ void GPUDevice::DestroyResources()
   m_shader_cache.Close();
 }
 
-void GPUDevice::RenderImGui()
+void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
 {
   GL_SCOPE("RenderImGui");
 
   ImGui::Render();
 
   const ImDrawData* draw_data = ImGui::GetDrawData();
-  if (draw_data->CmdListsCount == 0)
+  if (draw_data->CmdListsCount == 0 || !swap_chain)
     return;
 
   SetPipeline(m_imgui_pipeline.get());
-  SetViewportAndScissor(0, 0, m_window_info.surface_width, m_window_info.surface_height);
+  SetViewportAndScissor(0, 0, swap_chain->GetWidth(), swap_chain->GetHeight());
 
   const float L = 0.0f;
-  const float R = static_cast<float>(m_window_info.surface_width);
+  const float R = static_cast<float>(swap_chain->GetWidth());
   const float T = 0.0f;
-  const float B = static_cast<float>(m_window_info.surface_height);
+  const float B = static_cast<float>(swap_chain->GetHeight());
   const float ortho_projection[4][4] = {
     {2.0f / (R - L), 0.0f, 0.0f, 0.0f},
     {0.0f, 2.0f / (T - B), 0.0f, 0.0f},
@@ -666,8 +710,7 @@ void GPUDevice::RenderImGui()
       if (flip)
       {
         const s32 height = static_cast<s32>(pcmd->ClipRect.w - pcmd->ClipRect.y);
-        const s32 flipped_y =
-          static_cast<s32>(m_window_info.surface_height) - static_cast<s32>(pcmd->ClipRect.y) - height;
+        const s32 flipped_y = static_cast<s32>(swap_chain->GetHeight()) - static_cast<s32>(pcmd->ClipRect.y) - height;
         SetScissor(static_cast<s32>(pcmd->ClipRect.x), flipped_y, static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
                    height);
       }
@@ -789,69 +832,59 @@ std::unique_ptr<GPUShader> GPUDevice::CreateShader(GPUShaderStage stage, GPUShad
   return shader;
 }
 
-bool GPUDevice::GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate)
+std::optional<GPUDevice::ExclusiveFullscreenMode> GPUDevice::ExclusiveFullscreenMode::Parse(std::string_view str)
 {
-  const std::string mode = Host::GetBaseStringSettingValue("GPU", "FullscreenMode", "");
-  if (!mode.empty())
+  std::optional<ExclusiveFullscreenMode> ret;
+  std::string_view::size_type sep1 = str.find('x');
+  if (sep1 != std::string_view::npos)
   {
-    const std::string_view mode_view = mode;
-    std::string_view::size_type sep1 = mode.find('x');
-    if (sep1 != std::string_view::npos)
-    {
-      std::optional<u32> owidth = StringUtil::FromChars<u32>(mode_view.substr(0, sep1));
+    std::optional<u32> owidth = StringUtil::FromChars<u32>(str.substr(0, sep1));
+    sep1++;
+
+    while (sep1 < str.length() && std::isspace(str[sep1]))
       sep1++;
 
-      while (sep1 < mode.length() && std::isspace(mode[sep1]))
-        sep1++;
-
-      if (owidth.has_value() && sep1 < mode.length())
+    if (owidth.has_value() && sep1 < str.length())
+    {
+      std::string_view::size_type sep2 = str.find('@', sep1);
+      if (sep2 != std::string_view::npos)
       {
-        std::string_view::size_type sep2 = mode.find('@', sep1);
-        if (sep2 != std::string_view::npos)
-        {
-          std::optional<u32> oheight = StringUtil::FromChars<u32>(mode_view.substr(sep1, sep2 - sep1));
+        std::optional<u32> oheight = StringUtil::FromChars<u32>(str.substr(sep1, sep2 - sep1));
+        sep2++;
+
+        while (sep2 < str.length() && std::isspace(str[sep2]))
           sep2++;
 
-          while (sep2 < mode.length() && std::isspace(mode[sep2]))
-            sep2++;
-
-          if (oheight.has_value() && sep2 < mode.length())
+        if (oheight.has_value() && sep2 < str.length())
+        {
+          std::optional<float> orefresh_rate = StringUtil::FromChars<float>(str.substr(sep2));
+          if (orefresh_rate.has_value())
           {
-            std::optional<float> orefresh_rate = StringUtil::FromChars<float>(mode_view.substr(sep2));
-            if (orefresh_rate.has_value())
-            {
-              *width = owidth.value();
-              *height = oheight.value();
-              *refresh_rate = orefresh_rate.value();
-              return true;
-            }
+            ret = ExclusiveFullscreenMode{
+              .width = owidth.value(), .height = oheight.value(), .refresh_rate = orefresh_rate.value()};
           }
         }
       }
     }
   }
 
-  *width = 0;
-  *height = 0;
-  *refresh_rate = 0;
-  return false;
+  return ret;
 }
 
-std::string GPUDevice::GetFullscreenModeString(u32 width, u32 height, float refresh_rate)
+TinyString GPUDevice::ExclusiveFullscreenMode::ToString() const
 {
-  return fmt::format("{} x {} @ {} hz", width, height, refresh_rate);
-}
-
-std::string GPUDevice::GetShaderDumpPath(std::string_view name)
-{
-  return Path::Combine(EmuFolders::Dumps, name);
+  return TinyString::from_format("{} x {} @ {} hz", width, height, refresh_rate);
 }
 
 void GPUDevice::DumpBadShader(std::string_view code, std::string_view errors)
 {
   static u32 next_bad_shader_id = 0;
 
-  const std::string filename = GetShaderDumpPath(fmt::format("bad_shader_{}.txt", ++next_bad_shader_id));
+  if (s_shader_dump_path.empty())
+    return;
+
+  const std::string filename =
+    Path::Combine(s_shader_dump_path, TinyString::from_format("bad_shader_{}.txt", ++next_bad_shader_id));
   auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb");
   if (fp)
   {
@@ -1122,42 +1155,6 @@ bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u
   RecycleTexture(std::move(*tex));
   *tex = std::move(new_tex);
   return true;
-}
-
-bool GPUDevice::ShouldSkipPresentingFrame()
-{
-  // Only needed with FIFO. But since we're so fast, we allow it always.
-  if (!m_allow_present_throttle)
-    return false;
-
-  const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
-  const float throttle_period = 1.0f / throttle_rate;
-
-  const u64 now = Common::Timer::GetCurrentValue();
-  const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
-  if (diff < throttle_period)
-    return true;
-
-  m_last_frame_displayed_time = now;
-  return false;
-}
-
-void GPUDevice::ThrottlePresentation()
-{
-  const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
-
-  const u64 sleep_period = Common::Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
-  const u64 current_ts = Common::Timer::GetCurrentValue();
-
-  // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
-  // allow time for the actual rendering.
-  const u64 max_variance = sleep_period * 2;
-  if (static_cast<u64>(std::abs(static_cast<s64>(current_ts - m_last_frame_displayed_time))) > max_variance)
-    m_last_frame_displayed_time = current_ts + sleep_period;
-  else
-    m_last_frame_displayed_time += sleep_period;
-
-  Common::Timer::SleepUntil(m_last_frame_displayed_time, false);
 }
 
 bool GPUDevice::SetGPUTimingEnabled(bool enabled)

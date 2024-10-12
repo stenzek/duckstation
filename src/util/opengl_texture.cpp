@@ -15,7 +15,7 @@
 #include <limits>
 #include <tuple>
 
-LOG_CHANNEL(OpenGLDevice);
+LOG_CHANNEL(GPUDevice);
 
 // Looking across a range of GPUs, the optimal copy alignment for Vulkan drivers seems
 // to be between 1 (AMD/NV) and 64 (Intel). So, we'll go with 64 here.
@@ -260,8 +260,7 @@ bool OpenGLTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   const GLenum target = GetGLTarget();
   const auto [gl_internal_format, gl_format, gl_type] = GetPixelFormatMapping(m_format, OpenGLDevice::IsGLES());
   const u32 pixel_size = GetPixelSize();
-  const u32 preferred_pitch =
-    Common::AlignUpPow2(static_cast<u32>(width) * pixel_size, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 preferred_pitch = Common::AlignUpPow2(static_cast<u32>(width) * pixel_size, TEXTURE_UPLOAD_PITCH_ALIGNMENT);
   const u32 map_size = preferred_pitch * static_cast<u32>(height);
   OpenGLStreamBuffer* sb = OpenGLDevice::GetTextureStreamBuffer();
 
@@ -551,7 +550,8 @@ void OpenGLDevice::CommitRTClearInFB(OpenGLTexture* tex, u32 idx)
     case GPUTexture::State::Invalidated:
     {
       const GLenum attachment = GL_COLOR_ATTACHMENT0 + idx;
-      glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
+      if (glInvalidateFramebuffer)
+        glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
       tex->SetState(GPUTexture::State::Dirty);
     }
     break;
@@ -589,7 +589,8 @@ void OpenGLDevice::CommitDSClearInFB(OpenGLTexture* tex)
     case GPUTexture::State::Invalidated:
     {
       const GLenum attachment = GL_DEPTH_ATTACHMENT;
-      glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
+      if (glInvalidateFramebuffer)
+        glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
       tex->SetState(GPUTexture::State::Dirty);
     }
     break;

@@ -4341,10 +4341,11 @@ void FullscreenUI::DrawDisplaySettingsPage()
     options.emplace_back(FSUI_STR("Borderless Fullscreen"), strvalue.has_value() && strvalue->empty());
     if (selected_adapter)
     {
-      for (const std::string& mode : selected_adapter->fullscreen_modes)
+      for (const GPUDevice::ExclusiveFullscreenMode& mode : selected_adapter->fullscreen_modes)
       {
-        const bool checked = (strvalue.has_value() && strvalue.value() == mode);
-        options.emplace_back(mode, checked);
+        const TinyString mode_str = mode.ToString();
+        const bool checked = (strvalue.has_value() && strvalue.value() == mode_str);
+        options.emplace_back(std::string(mode_str.view()), checked);
       }
     }
 

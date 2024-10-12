@@ -27,7 +27,7 @@
 #include <limits>
 #include <mutex>
 
-LOG_CHANNEL(VulkanDevice);
+LOG_CHANNEL(GPUDevice);
 
 // TODO: VK_KHR_display.
 
@@ -110,6 +110,8 @@ static std::mutex s_instance_mutex;
 
 VulkanDevice::VulkanDevice()
 {
+  m_render_api = RenderAPI::Vulkan;
+
 #ifdef _DEBUG
   s_debug_scope_depth = 0;
 #endif
@@ -636,14 +638,6 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   enabled_features.geometryShader = available_features.geometryShader;
   enabled_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
   device_info.pEnabledFeatures = &enabled_features;
-
-  // Enable debug layer on debug builds
-  if (enable_validation_layer)
-  {
-    static const char* layer_names[] = {"VK_LAYER_LUNARG_standard_validation"};
-    device_info.enabledLayerCount = 1;
-    device_info.ppEnabledLayerNames = layer_names;
-  }
 
   VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
     VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_FEATURES_EXT, nullptr, VK_TRUE, VK_FALSE,
@@ -1266,11 +1260,6 @@ void VulkanDevice::WaitForFenceCounter(u64 fence_counter)
   WaitForCommandBufferCompletion(index);
 }
 
-void VulkanDevice::WaitForGPUIdle()
-{
-  vkDeviceWaitIdle(m_device);
-}
-
 float VulkanDevice::GetAndResetAccumulatedGPUTime()
 {
   const float time = m_accumulated_gpu_time;
@@ -1445,9 +1434,15 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
   {
     // VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
     if (res == VK_ERROR_OUT_OF_DATE_KHR)
-      ResizeWindow(0, 0, m_window_info.surface_scale);
+    {
+      Error error;
+      if (!present_swap_chain->ResizeBuffers(0, 0, present_swap_chain->GetScale(), &error)) [[unlikely]]
+        WARNING_LOG("Failed to reszie swap chain: {}", error.GetDescription());
+    }
     else
+    {
       LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
+    }
 
     return;
   }
@@ -1889,13 +1884,11 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
 #endif
 }
 
-bool VulkanDevice::HasSurface() const
-{
-  return static_cast<bool>(m_swap_chain);
-}
-
-bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                                FeatureMask disabled_features, Error* error)
+bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+                                                const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
   bool enable_debug_utils = m_debug_device;
@@ -1908,7 +1901,7 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
     return false;
   }
 
-  m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
+  m_instance = CreateVulkanInstance(wi, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
   if (m_instance == VK_NULL_HANDLE)
   {
     if (enable_debug_utils || enable_validation_layer)
@@ -1916,8 +1909,7 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
       // Try again without the validation layer.
       enable_debug_utils = false;
       enable_validation_layer = false;
-      m_instance =
-        CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
+      m_instance = CreateVulkanInstance(wi, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
       if (m_instance == VK_NULL_HANDLE)
       {
         Error::SetStringView(error, "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?");
@@ -1983,21 +1975,21 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
   if (enable_debug_utils)
     EnableDebugUtils();
 
-  VkSurfaceKHR surface = VK_NULL_HANDLE;
-  ScopedGuard surface_cleanup = [this, &surface]() {
-    if (surface != VK_NULL_HANDLE)
-      vkDestroySurfaceKHR(m_instance, surface, nullptr);
-  };
-  if (m_window_info.type != WindowInfo::Type::Surfaceless)
+  std::unique_ptr<VulkanSwapChain> swap_chain;
+  if (!wi.IsSurfaceless())
   {
-    surface = VulkanSwapChain::CreateVulkanSurface(m_instance, m_physical_device, &m_window_info);
-    if (surface == VK_NULL_HANDLE)
+    swap_chain =
+      std::make_unique<VulkanSwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_control);
+    if (!swap_chain->CreateSurface(m_instance, m_physical_device, error))
       return false;
   }
 
   // Attempt to create the device.
-  if (!CreateDevice(surface, enable_validation_layer, disabled_features, error))
+  if (!CreateDevice(swap_chain ? swap_chain->GetSurface() : VK_NULL_HANDLE, enable_validation_layer, disabled_features,
+                    error))
+  {
     return false;
+  }
 
   // And critical resources.
   if (!CreateAllocator() || !CreatePersistentDescriptorPool() || !CreateCommandBuffers() || !CreatePipelineLayouts())
@@ -2005,25 +1997,15 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
 
   m_exclusive_fullscreen_control = exclusive_fullscreen_control;
 
-  if (surface != VK_NULL_HANDLE)
+  if (swap_chain)
   {
-    VkPresentModeKHR present_mode;
-    if (!VulkanSwapChain::SelectPresentMode(surface, &m_vsync_mode, &present_mode) ||
-        !(m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, present_mode, m_exclusive_fullscreen_control)))
-    {
-      Error::SetStringView(error, "Failed to create swap chain");
+    // Render a frame as soon as possible to clear out whatever was previously being displayed.
+    if (!swap_chain->CreateSwapChain(*this, error) || !swap_chain->CreateSwapChainImages(*this, error))
       return false;
-    }
 
-    // NOTE: This is assigned afterwards, because some platforms can modify the window info (e.g. Metal).
-    m_window_info = m_swap_chain->GetWindowInfo();
+    RenderBlankFrame(swap_chain.get());
+    m_main_swap_chain = std::move(swap_chain);
   }
-
-  surface_cleanup.Cancel();
-
-  // Render a frame as soon as possible to clear out whatever was previously being displayed.
-  if (m_window_info.type != WindowInfo::Type::Surfaceless)
-    RenderBlankFrame();
 
   if (!CreateNullTexture())
   {
@@ -2049,9 +2031,14 @@ void VulkanDevice::DestroyDevice()
 
   // Don't both submitting the current command buffer, just toss it.
   if (m_device != VK_NULL_HANDLE)
-    WaitForGPUIdle();
+    vkDeviceWaitIdle(m_device);
 
-  m_swap_chain.reset();
+  if (m_main_swap_chain)
+  {
+    // Explicit swap chain destroy, we don't want to execute the current cmdbuffer.
+    static_cast<VulkanSwapChain*>(m_main_swap_chain.get())->Destroy(*this, false);
+    m_main_swap_chain.reset();
+  }
 
   if (m_null_texture)
   {
@@ -2208,73 +2195,27 @@ bool VulkanDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error
   return true;
 }
 
-bool VulkanDevice::UpdateWindow()
+std::unique_ptr<GPUSwapChain> VulkanDevice::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                            bool allow_present_throttle,
+                                                            const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                            std::optional<bool> exclusive_fullscreen_control,
+                                                            Error* error)
 {
-  DestroySurface();
-
-  if (!AcquireWindow(false))
-    return false;
-
-  if (m_window_info.IsSurfaceless())
-    return true;
-
-  // make sure previous frames are presented
-  if (InRenderPass())
-    EndRenderPass();
-  SubmitCommandBuffer(false);
-  WaitForGPUIdle();
-
-  VkSurfaceKHR surface = VulkanSwapChain::CreateVulkanSurface(m_instance, m_physical_device, &m_window_info);
-  if (surface == VK_NULL_HANDLE)
+  std::unique_ptr<VulkanSwapChain> swap_chain =
+    std::make_unique<VulkanSwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_control);
+  if (swap_chain->CreateSurface(m_instance, m_physical_device, error) && swap_chain->CreateSwapChain(*this, error) &&
+      swap_chain->CreateSwapChainImages(*this, error))
   {
-    ERROR_LOG("Failed to create new surface for swap chain");
-    return false;
+    if (InRenderPass())
+      EndRenderPass();
+    RenderBlankFrame(swap_chain.get());
+  }
+  else
+  {
+    swap_chain.reset();
   }
 
-  VkPresentModeKHR present_mode;
-  if (!VulkanSwapChain::SelectPresentMode(surface, &m_vsync_mode, &present_mode) ||
-      !(m_swap_chain = VulkanSwapChain::Create(m_window_info, surface, present_mode, m_exclusive_fullscreen_control)))
-  {
-    ERROR_LOG("Failed to create swap chain");
-    VulkanSwapChain::DestroyVulkanSurface(m_instance, &m_window_info, surface);
-    return false;
-  }
-
-  m_window_info = m_swap_chain->GetWindowInfo();
-  RenderBlankFrame();
-  return true;
-}
-
-void VulkanDevice::ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale)
-{
-  if (!m_swap_chain)
-    return;
-
-  if (m_swap_chain->GetWidth() == static_cast<u32>(new_window_width) &&
-      m_swap_chain->GetHeight() == static_cast<u32>(new_window_height))
-  {
-    // skip unnecessary resizes
-    m_window_info.surface_scale = new_window_scale;
-    return;
-  }
-
-  // make sure previous frames are presented
-  WaitForGPUIdle();
-
-  if (!m_swap_chain->ResizeSwapChain(new_window_width, new_window_height, new_window_scale))
-  {
-    // AcquireNextImage() will fail, and we'll recreate the surface.
-    ERROR_LOG("Failed to resize swap chain. Next present will fail.");
-    return;
-  }
-
-  m_window_info = m_swap_chain->GetWindowInfo();
-}
-
-void VulkanDevice::DestroySurface()
-{
-  WaitForGPUIdle();
-  m_swap_chain.reset();
+  return swap_chain;
 }
 
 bool VulkanDevice::SupportsTextureFormat(GPUTexture::Format format) const
@@ -2308,7 +2249,16 @@ std::string VulkanDevice::GetDriverInfo() const
   return ret;
 }
 
-void VulkanDevice::ExecuteAndWaitForGPUIdle()
+void VulkanDevice::FlushCommands()
+{
+  if (InRenderPass())
+    EndRenderPass();
+
+  SubmitCommandBuffer(false);
+  TrimTexturePool();
+}
+
+void VulkanDevice::WaitForGPUIdle()
 {
   if (InRenderPass())
     EndRenderPass();
@@ -2316,39 +2266,7 @@ void VulkanDevice::ExecuteAndWaitForGPUIdle()
   SubmitCommandBuffer(true);
 }
 
-void VulkanDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
-{
-  m_allow_present_throttle = allow_present_throttle;
-  if (!m_swap_chain)
-  {
-    // For when it is re-created.
-    m_vsync_mode = mode;
-    return;
-  }
-
-  VkPresentModeKHR present_mode;
-  if (!VulkanSwapChain::SelectPresentMode(m_swap_chain->GetSurface(), &mode, &present_mode))
-  {
-    ERROR_LOG("Ignoring vsync mode change.");
-    return;
-  }
-
-  // Actually changed? If using a fallback, it might not have.
-  if (m_vsync_mode == mode)
-    return;
-
-  m_vsync_mode = mode;
-
-  // This swap chain should not be used by the current buffer, thus safe to destroy.
-  WaitForGPUIdle();
-  if (!m_swap_chain->SetPresentMode(present_mode))
-  {
-    Panic("Failed to update swap chain present mode.");
-    m_swap_chain.reset();
-  }
-}
-
-GPUDevice::PresentResult VulkanDevice::BeginPresent(u32 clear_color)
+GPUDevice::PresentResult VulkanDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
   if (InRenderPass())
     EndRenderPass();
@@ -2356,37 +2274,30 @@ GPUDevice::PresentResult VulkanDevice::BeginPresent(u32 clear_color)
   if (m_device_was_lost) [[unlikely]]
     return PresentResult::DeviceLost;
 
-  // If we're running surfaceless, kick the command buffer so we don't run out of descriptors.
-  if (!m_swap_chain)
-  {
-    SubmitCommandBuffer(false);
-    TrimTexturePool();
-    return PresentResult::SkipPresent;
-  }
-
-  VkResult res = m_swap_chain->AcquireNextImage();
+  VulkanSwapChain* const SC = static_cast<VulkanSwapChain*>(swap_chain);
+  VkResult res = SC->AcquireNextImage();
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
-    m_swap_chain->ReleaseCurrentImage();
+    SC->ReleaseCurrentImage();
 
     if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
     {
-      ResizeWindow(0, 0, m_window_info.surface_scale);
-      res = m_swap_chain->AcquireNextImage();
+      Error error;
+      if (!SC->ResizeBuffers(0, 0, SC->GetScale(), &error)) [[unlikely]]
+        WARNING_LOG("Failed to resize buffers: {}", error.GetDescription());
+      else
+        res = SC->AcquireNextImage();
     }
     else if (res == VK_ERROR_SURFACE_LOST_KHR)
     {
       WARNING_LOG("Surface lost, attempting to recreate");
-      if (!m_swap_chain->RecreateSurface(m_window_info))
-      {
-        ERROR_LOG("Failed to recreate surface after loss");
-        SubmitCommandBuffer(false);
-        TrimTexturePool();
-        return PresentResult::SkipPresent;
-      }
 
-      res = m_swap_chain->AcquireNextImage();
+      Error error;
+      if (!SC->RecreateSurface(&error))
+        ERROR_LOG("Failed to recreate surface after loss: {}", error.GetDescription());
+      else
+        res = SC->AcquireNextImage();
     }
 
     // This can happen when multiple resize events happen in quick succession.
@@ -2400,33 +2311,38 @@ GPUDevice::PresentResult VulkanDevice::BeginPresent(u32 clear_color)
     }
   }
 
-  BeginSwapChainRenderPass(clear_color);
+  BeginSwapChainRenderPass(SC, clear_color);
   return PresentResult::OK;
 }
 
-void VulkanDevice::EndPresent(bool explicit_present, u64 present_time)
+void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
+  VulkanSwapChain* const SC = static_cast<VulkanSwapChain*>(swap_chain);
+
   DebugAssert(present_time == 0);
   DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
   EndRenderPass();
 
+  DebugAssert(SC == m_current_swap_chain);
+  m_current_swap_chain = nullptr;
+
   VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
-  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, m_swap_chain->GetCurrentImage(), GPUTexture::Type::RenderTarget,
-                                                0, 1, 0, 1, VulkanTexture::Layout::ColorAttachment,
+  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, SC->GetCurrentImage(), GPUTexture::Type::RenderTarget, 0, 1, 0,
+                                                1, VulkanTexture::Layout::ColorAttachment,
                                                 VulkanTexture::Layout::PresentSrc);
-  EndAndSubmitCommandBuffer(m_swap_chain.get(), explicit_present);
+  EndAndSubmitCommandBuffer(SC, explicit_present);
   MoveToNextCommandBuffer();
   InvalidateCachedState();
   TrimTexturePool();
 }
 
-void VulkanDevice::SubmitPresent()
+void VulkanDevice::SubmitPresent(GPUSwapChain* swap_chain)
 {
-  DebugAssert(m_swap_chain);
+  DebugAssert(swap_chain);
   if (m_device_was_lost) [[unlikely]]
     return;
 
-  QueuePresent(m_swap_chain.get());
+  QueuePresent(static_cast<VulkanSwapChain*>(swap_chain));
 }
 
 #ifdef _DEBUG
@@ -2515,7 +2431,6 @@ u32 VulkanDevice::GetMaxMultisamples(VkPhysicalDevice physical_device, const VkP
 void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDeviceFeatures& vk_features)
 {
   const u32 store_api_version = std::min(m_device_properties.apiVersion, VK_API_VERSION_1_1);
-  m_render_api = RenderAPI::Vulkan;
   m_render_api_version = (VK_API_VERSION_MAJOR(store_api_version) * 100u) +
                          (VK_API_VERSION_MINOR(store_api_version) * 10u) + (VK_API_VERSION_PATCH(store_api_version));
   m_max_texture_size =
@@ -3076,9 +2991,9 @@ void VulkanDevice::DestroyPersistentDescriptorSets()
     FreePersistentDescriptorSet(m_ubo_descriptor_set);
 }
 
-void VulkanDevice::RenderBlankFrame()
+void VulkanDevice::RenderBlankFrame(VulkanSwapChain* swap_chain)
 {
-  VkResult res = m_swap_chain->AcquireNextImage();
+  VkResult res = swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {
     ERROR_LOG("Failed to acquire image for blank frame present");
@@ -3087,7 +3002,7 @@ void VulkanDevice::RenderBlankFrame()
 
   VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
 
-  const VkImage image = m_swap_chain->GetCurrentImage();
+  const VkImage image = swap_chain->GetCurrentImage();
   static constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
   static constexpr VkClearColorValue clear_color = {{0.0f, 0.0f, 0.0f, 1.0f}};
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
@@ -3096,7 +3011,7 @@ void VulkanDevice::RenderBlankFrame()
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
                                                 VulkanTexture::Layout::TransferDst, VulkanTexture::Layout::PresentSrc);
 
-  EndAndSubmitCommandBuffer(m_swap_chain.get(), false);
+  EndAndSubmitCommandBuffer(swap_chain, false);
   MoveToNextCommandBuffer();
 
   InvalidateCachedState();
@@ -3363,7 +3278,7 @@ void VulkanDevice::BeginRenderPass()
       VkRenderingAttachmentInfo& ai = attachments[0];
       ai.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
       ai.pNext = nullptr;
-      ai.imageView = m_swap_chain->GetCurrentImageView();
+      ai.imageView = m_current_swap_chain->GetCurrentImageView();
       ai.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
       ai.resolveMode = VK_RESOLVE_MODE_NONE_KHR;
       ai.resolveImageView = VK_NULL_HANDLE;
@@ -3373,7 +3288,7 @@ void VulkanDevice::BeginRenderPass()
 
       ri.colorAttachmentCount = 1;
       ri.pColorAttachments = attachments.data();
-      ri.renderArea = {{}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}};
+      ri.renderArea = {{}, {m_current_swap_chain->GetWidth(), m_current_swap_chain->GetHeight()}};
     }
 
     m_current_render_pass = DYNAMIC_RENDERING_RENDER_PASS;
@@ -3434,10 +3349,10 @@ void VulkanDevice::BeginRenderPass()
     else
     {
       // Re-rendering to swap chain.
-      bi.framebuffer = m_swap_chain->GetCurrentFramebuffer();
+      bi.framebuffer = m_current_swap_chain->GetCurrentFramebuffer();
       bi.renderPass = m_current_render_pass =
-        GetSwapChainRenderPass(m_swap_chain->GetWindowInfo().surface_format, VK_ATTACHMENT_LOAD_OP_LOAD);
-      bi.renderArea.extent = {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()};
+        GetSwapChainRenderPass(m_current_swap_chain->GetFormat(), VK_ATTACHMENT_LOAD_OP_LOAD);
+      bi.renderArea.extent = {m_current_swap_chain->GetWidth(), m_current_swap_chain->GetHeight()};
     }
 
     DebugAssert(m_current_render_pass);
@@ -3451,12 +3366,12 @@ void VulkanDevice::BeginRenderPass()
     SetInitialPipelineState();
 }
 
-void VulkanDevice::BeginSwapChainRenderPass(u32 clear_color)
+void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 clear_color)
 {
   DebugAssert(!InRenderPass());
 
   const VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
-  const VkImage swap_chain_image = m_swap_chain->GetCurrentImage();
+  const VkImage swap_chain_image = swap_chain->GetCurrentImage();
 
   // Swap chain images start in undefined
   VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, swap_chain_image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
@@ -3477,7 +3392,7 @@ void VulkanDevice::BeginSwapChainRenderPass(u32 clear_color)
   {
     VkRenderingAttachmentInfo ai = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
                                     nullptr,
-                                    m_swap_chain->GetCurrentImageView(),
+                                    swap_chain->GetCurrentImageView(),
                                     VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                     VK_RESOLVE_MODE_NONE_KHR,
                                     VK_NULL_HANDLE,
@@ -3489,7 +3404,7 @@ void VulkanDevice::BeginSwapChainRenderPass(u32 clear_color)
     const VkRenderingInfoKHR ri = {VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
                                    nullptr,
                                    0u,
-                                   {{}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
+                                   {{}, {swap_chain->GetWidth(), swap_chain->GetHeight()}},
                                    1u,
                                    0u,
                                    1u,
@@ -3503,14 +3418,14 @@ void VulkanDevice::BeginSwapChainRenderPass(u32 clear_color)
   else
   {
     m_current_render_pass =
-      GetSwapChainRenderPass(m_swap_chain->GetWindowInfo().surface_format, VK_ATTACHMENT_LOAD_OP_CLEAR);
+      GetSwapChainRenderPass(swap_chain->GetWindowInfo().surface_format, VK_ATTACHMENT_LOAD_OP_CLEAR);
     DebugAssert(m_current_render_pass);
 
     const VkRenderPassBeginInfo rp = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
                                       nullptr,
                                       m_current_render_pass,
-                                      m_swap_chain->GetCurrentFramebuffer(),
-                                      {{0, 0}, {m_swap_chain->GetWidth(), m_swap_chain->GetHeight()}},
+                                      swap_chain->GetCurrentFramebuffer(),
+                                      {{0, 0}, {swap_chain->GetWidth(), swap_chain->GetHeight()}},
                                       1u,
                                       &clear_value};
     vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
@@ -3526,6 +3441,7 @@ void VulkanDevice::BeginSwapChainRenderPass(u32 clear_color)
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
   m_current_depth_target = nullptr;
   m_current_framebuffer = VK_NULL_HANDLE;
+  m_current_swap_chain = swap_chain;
 }
 
 bool VulkanDevice::InRenderPass()

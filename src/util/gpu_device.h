@@ -453,6 +453,38 @@ protected:
   u32 m_current_position = 0;
 };
 
+class GPUSwapChain
+{
+public:
+  GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle);
+  virtual ~GPUSwapChain();
+
+  ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_window_info; }
+  ALWAYS_INLINE u32 GetWidth() const { return m_window_info.surface_width; }
+  ALWAYS_INLINE u32 GetHeight() const { return m_window_info.surface_height; }
+  ALWAYS_INLINE float GetScale() const { return m_window_info.surface_scale; }
+  ALWAYS_INLINE GPUTexture::Format GetFormat() const { return m_window_info.surface_format; }
+
+  ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
+  ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode == GPUVSyncMode::FIFO); }
+  ALWAYS_INLINE bool IsPresentThrottleAllowed() const { return m_allow_present_throttle; }
+
+  virtual bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) = 0;
+  virtual bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) = 0;
+
+  bool ShouldSkipPresentingFrame();
+  void ThrottlePresentation();
+
+protected:
+  // TODO: Merge WindowInfo into this struct...
+  WindowInfo m_window_info;
+
+  GPUVSyncMode m_vsync_mode = GPUVSyncMode::Disabled;
+  bool m_allow_present_throttle = false;
+
+  u64 m_last_frame_displayed_time = 0;
+};
+
 class GPUDevice
 {
 public:
@@ -485,6 +517,7 @@ public:
   {
     OK,
     SkipPresent,
+    ExclusiveFullscreenLost,
     DeviceLost,
   };
 
@@ -521,10 +554,22 @@ public:
     u32 num_uploads;
   };
 
+  // Parameters for exclusive fullscreen.
+  struct ExclusiveFullscreenMode
+  {
+    u32 width;
+    u32 height;
+    float refresh_rate;
+
+    TinyString ToString() const;
+
+    static std::optional<ExclusiveFullscreenMode> Parse(std::string_view str);
+  };
+
   struct AdapterInfo
   {
     std::string name;
-    std::vector<std::string> fullscreen_modes;
+    std::vector<ExclusiveFullscreenMode> fullscreen_modes;
     u32 max_texture_size;
     u32 max_multisamples;
     bool supports_sample_shading;
@@ -565,15 +610,6 @@ public:
   /// Returns a list of adapters for the given API.
   static AdapterInfoList GetAdapterListForAPI(RenderAPI api);
 
-  /// Parses a fullscreen mode into its components (width * height @ refresh hz)
-  static bool GetRequestedExclusiveFullscreenMode(u32* width, u32* height, float* refresh_rate);
-
-  /// Converts a fullscreen mode to a string.
-  static std::string GetFullscreenModeString(u32 width, u32 height, float refresh_rate);
-
-  /// Returns the directory bad shaders are saved to.
-  static std::string GetShaderDumpPath(std::string_view name);
-
   /// Dumps out a shader that failed compilation.
   static void DumpBadShader(std::string_view code, std::string_view errors);
 
@@ -600,35 +636,44 @@ public:
   ALWAYS_INLINE u32 GetMaxTextureSize() const { return m_max_texture_size; }
   ALWAYS_INLINE u32 GetMaxMultisamples() const { return m_max_multisamples; }
 
-  ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_window_info; }
-  ALWAYS_INLINE s32 GetWindowWidth() const { return static_cast<s32>(m_window_info.surface_width); }
-  ALWAYS_INLINE s32 GetWindowHeight() const { return static_cast<s32>(m_window_info.surface_height); }
-  ALWAYS_INLINE float GetWindowScale() const { return m_window_info.surface_scale; }
-  ALWAYS_INLINE GPUTexture::Format GetWindowFormat() const { return m_window_info.surface_format; }
+  ALWAYS_INLINE GPUSwapChain* GetMainSwapChain() const { return m_main_swap_chain.get(); }
+  ALWAYS_INLINE bool HasMainSwapChain() const { return static_cast<bool>(m_main_swap_chain); }
+  // ALWAYS_INLINE u32 GetMainSwapChainWidth() const { return m_main_swap_chain->GetWidth(); }
+  // ALWAYS_INLINE u32 GetMainSwapChainHeight() const { return m_main_swap_chain->GetHeight(); }
+  // ALWAYS_INLINE float GetWindowScale() const { return m_window_info.surface_scale; }
+  // ALWAYS_INLINE GPUTexture::Format GetWindowFormat() const { return m_window_info.surface_format; }
 
   ALWAYS_INLINE GPUSampler* GetLinearSampler() const { return m_linear_sampler.get(); }
   ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler.get(); }
 
   ALWAYS_INLINE bool IsGPUTimingEnabled() const { return m_gpu_timing_enabled; }
 
-  bool Create(std::string_view adapter, std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
-              GPUVSyncMode vsync, bool allow_present_throttle, std::optional<bool> exclusive_fullscreen_control,
-              FeatureMask disabled_features, Error* error);
+  bool Create(std::string_view adapter, FeatureMask disabled_features, std::string_view shader_dump_path,
+              std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device, const WindowInfo& wi,
+              GPUVSyncMode vsync, bool allow_present_throttle, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+              std::optional<bool> exclusive_fullscreen_control, Error* error);
   void Destroy();
 
-  virtual bool HasSurface() const = 0;
-  virtual void DestroySurface() = 0;
-  virtual bool UpdateWindow() = 0;
+  virtual std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                        bool allow_present_throttle,
+                                                        const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                        std::optional<bool> exclusive_fullscreen_control,
+                                                        Error* error) = 0;
+
+  bool RecreateMainSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                             const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                             std::optional<bool> exclusive_fullscreen_control, Error* error);
+  void DestroyMainSwapChain();
 
   virtual bool SupportsExclusiveFullscreen() const;
 
-  /// Call when the window size changes externally to recreate any resources.
-  virtual void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) = 0;
-
   virtual std::string GetDriverInfo() const = 0;
 
+  // Flushes current command buffer, but does not wait for completion.
+  virtual void FlushCommands() = 0;
+
   // Executes current command buffer, waits for its completion, and destroys all pending resources.
-  virtual void ExecuteAndWaitForGPUIdle() = 0;
+  virtual void WaitForGPUIdle() = 0;
 
   virtual std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Type type, GPUTexture::Format format,
@@ -710,17 +755,12 @@ public:
   virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
 
   /// Returns false if the window was completely occluded.
-  virtual PresentResult BeginPresent(u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
-  virtual void EndPresent(bool explicit_submit, u64 submit_time = 0) = 0;
-  virtual void SubmitPresent() = 0;
+  virtual PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
+  virtual void EndPresent(GPUSwapChain* swap_chain, bool explicit_submit, u64 submit_time = 0) = 0;
+  virtual void SubmitPresent(GPUSwapChain* swap_chain) = 0;
 
   /// Renders ImGui screen elements. Call before EndPresent().
-  void RenderImGui();
-
-  ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
-  ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode == GPUVSyncMode::FIFO); }
-  ALWAYS_INLINE bool IsPresentThrottleAllowed() const { return m_allow_present_throttle; }
-  virtual void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) = 0;
+  void RenderImGui(GPUSwapChain* swap_chain);
 
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }
   ALWAYS_INLINE size_t GetVRAMUsage() const { return s_total_vram_usage; }
@@ -730,8 +770,6 @@ public:
   static GSVector4i FlipToLowerLeft(GSVector4i rc, s32 target_height);
   bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
                      GPUTexture::Format format, bool preserve = true);
-  bool ShouldSkipPresentingFrame();
-  void ThrottlePresentation();
 
   virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
 
@@ -745,8 +783,10 @@ public:
   static void ResetStatistics();
 
 protected:
-  virtual bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                            FeatureMask disabled_features, Error* error) = 0;
+  virtual bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+                                            const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                            const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                            std::optional<bool> exclusive_fullscreen_control, Error* error) = 0;
   virtual void DestroyDevice() = 0;
 
   std::string GetShaderCacheBaseName(std::string_view type) const;
@@ -761,8 +801,6 @@ protected:
   virtual std::unique_ptr<GPUShader> CreateShaderFromSource(GPUShaderStage stage, GPUShaderLanguage language,
                                                             std::string_view source, const char* entry_point,
                                                             DynamicHeapArray<u8>* out_binary, Error* error) = 0;
-
-  bool AcquireWindow(bool recreate_window);
 
   void TrimTexturePool();
 
@@ -784,8 +822,7 @@ protected:
   u32 m_max_texture_size = 0;
   u32 m_max_multisamples = 0;
 
-  WindowInfo m_window_info;
-  u64 m_last_frame_displayed_time = 0;
+  std::unique_ptr<GPUSwapChain> m_main_swap_chain;
 
   GPUShaderCache m_shader_cache;
 
@@ -852,8 +889,6 @@ private:
 protected:
   static Statistics s_stats;
 
-  GPUVSyncMode m_vsync_mode = GPUVSyncMode::Disabled;
-  bool m_allow_present_throttle = false;
   bool m_gpu_timing_enabled = false;
   bool m_debug_device = false;
 };
@@ -864,21 +899,6 @@ ALWAYS_INLINE void GPUDevice::PooledTextureDeleter::operator()(GPUTexture* const
 {
   g_gpu_device->RecycleTexture(std::unique_ptr<GPUTexture>(tex));
 }
-
-namespace Host {
-/// Called when the core is creating a render device.
-/// This could also be fullscreen transition.
-std::optional<WindowInfo> AcquireRenderWindow(bool recreate_window);
-
-/// Called when the core is finished with a render window.
-void ReleaseRenderWindow();
-
-/// Returns true if the hosting application is currently fullscreen.
-bool IsFullscreen();
-
-/// Alters fullscreen state of hosting application.
-void SetFullscreen(bool enabled);
-} // namespace Host
 
 // Macros for debug messages.
 #ifdef _DEBUG

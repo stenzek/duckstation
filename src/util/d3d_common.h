@@ -35,14 +35,16 @@ D3D_FEATURE_LEVEL GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter);
 
 // create a dxgi factory
 Microsoft::WRL::ComPtr<IDXGIFactory5> CreateFactory(bool debug, Error* error);
+bool SupportsAllowTearing(IDXGIFactory5* factory);
 
 // returns a list of all adapter names
 GPUDevice::AdapterInfoList GetAdapterInfoList();
 
 // returns the fullscreen mode to use for the specified dimensions
-bool GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect, u32 width, u32 height,
-                                             float refresh_rate, DXGI_FORMAT format, DXGI_MODE_DESC* fullscreen_mode,
-                                             IDXGIOutput** output);
+std::optional<DXGI_MODE_DESC>
+GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect,
+                                        const GPUDevice::ExclusiveFullscreenMode* requested_fullscreen_mode,
+                                        DXGI_FORMAT format, IDXGIOutput** output);
 
 // get an adapter based on name
 Microsoft::WRL::ComPtr<IDXGIAdapter1> GetAdapterByName(IDXGIFactory5* factory, std::string_view name);
