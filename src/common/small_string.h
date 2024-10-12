@@ -158,6 +158,9 @@ public:
   // Cuts characters off the string to reduce it to len bytes long.
   void resize(u32 new_size, char fill = ' ', bool shrink_if_smaller = false);
 
+  // sets the size externally, use with data()
+  void set_size(u32 new_size, bool shrink_if_smaller = false);
+
   // updates the internal length counter when the string is externally modified
   void update_size();
 

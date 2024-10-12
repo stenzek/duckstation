@@ -1,0 +1,2 @@
+Spanish.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Spain.svg
+Other.svg: https://en.wikipedia.org/wiki/File:Flag_with_question_mark.svg

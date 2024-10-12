@@ -58,7 +58,9 @@ struct Entry
 
   std::string_view GetLanguageIcon() const;
 
-  size_t GetReleaseDateString(char* buffer, size_t buffer_size) const;
+  TinyString GetLanguageIconFileName() const;
+
+  TinyString GetReleaseDateString() const;
 
   ALWAYS_INLINE bool IsDisc() const { return (type == EntryType::Disc); }
   ALWAYS_INLINE bool IsDiscSet() const { return (type == EntryType::DiscSet); }

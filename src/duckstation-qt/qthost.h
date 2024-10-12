@@ -294,6 +294,9 @@ const QIcon& GetAppIcon();
 /// Returns the base path for resources. This may be : prefixed, if we're using embedded resources.
 QString GetResourcesBasePath();
 
+/// Returns the path to the specified resource.
+std::string GetResourcePath(std::string_view name, bool allow_override);
+
 /// Returns the base settings interface. Should lock before manipulating.
 INISettingsInterface* GetBaseSettingsInterface();
 

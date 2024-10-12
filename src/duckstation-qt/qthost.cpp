@@ -103,7 +103,6 @@ static void SetDefaultSettings(SettingsInterface& si, bool system, bool controll
 static void MigrateSettings();
 static void SaveSettings();
 static bool RunSetupWizard();
-static std::string GetResourcePath(std::string_view name, bool allow_override);
 static std::optional<bool> DownloadFile(QWidget* parent, const QString& title, std::string url, std::vector<u8>* data);
 static void InitializeEarlyConsole();
 static void HookSignals();
@@ -1948,7 +1947,7 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
   }
 }
 
-ALWAYS_INLINE std::string QtHost::GetResourcePath(std::string_view filename, bool allow_override)
+std::string QtHost::GetResourcePath(std::string_view filename, bool allow_override)
 {
   return allow_override ? EmuFolders::GetOverridableResourcePath(filename) :
                           Path::Combine(EmuFolders::Resources, filename);

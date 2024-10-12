@@ -284,6 +284,21 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
   return m_type_pixmaps[static_cast<u32>(ge->type)];
 }
 
+const QPixmap& GameListModel::getFlagPixmapForEntry(const GameList::Entry* ge) const
+{
+  static constexpr u32 FLAG_PIXMAP_WIDTH = 42;
+  static constexpr u32 FLAG_PIXMAP_HEIGHT = 30;
+
+  const std::string_view name = ge->GetLanguageIcon();
+  auto it = m_flag_pixmap_cache.find(name);
+  if (it != m_flag_pixmap_cache.end())
+    return it->second;
+
+  const QIcon icon(QString::fromStdString(QtHost::GetResourcePath(ge->GetLanguageIconFileName(), true)));
+  it = m_flag_pixmap_cache.emplace(name, icon.pixmap(FLAG_PIXMAP_WIDTH, FLAG_PIXMAP_HEIGHT)).first;
+  return it->second;
+}
+
 QIcon GameListModel::getIconForGame(const QString& path)
 {
   QIcon ret;
@@ -544,7 +559,7 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
         case Column_Region:
         {
-          return m_region_pixmaps[static_cast<u32>(ge->region)];
+          return getFlagPixmapForEntry(ge);
         }
 
         case Column_Compatibility:
@@ -788,9 +803,6 @@ void GameListModel::loadThemeSpecificImages()
 {
   for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::Count); i++)
     m_type_pixmaps[i] = QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)).pixmap(QSize(24, 24));
-
-  for (u32 i = 0; i < static_cast<u32>(DiscRegion::Count); i++)
-    m_region_pixmaps[i] = QtUtils::GetIconForRegion(static_cast<DiscRegion>(i)).pixmap(42, 30);
 }
 
 void GameListModel::loadCommonImages()

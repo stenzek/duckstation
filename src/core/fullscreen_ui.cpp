@@ -6434,13 +6434,20 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       // region
       {
-        const TinyString flag_texture =
-          TinyString::from_format("fullscreenui/{}.png", Settings::GetDiscRegionName(selected_entry->region));
-        ImGui::TextUnformatted(FSUI_CSTR("Region: "));
+        const bool display_as_language = (selected_entry->dbentry && selected_entry->dbentry->HasAnyLanguage());
+        ImGui::TextUnformatted(display_as_language ? FSUI_CSTR("Language: ") : FSUI_CSTR("Region: "));
         ImGui::SameLine();
-        ImGui::Image(GetCachedTextureAsync(flag_texture.c_str()), LayoutScale(23.0f, 16.0f));
+        ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconFileName(), 23, 16), LayoutScale(23.0f, 16.0f));
         ImGui::SameLine();
-        ImGui::Text(" (%s)", Settings::GetDiscRegionDisplayName(selected_entry->region));
+        if (display_as_language)
+        {
+          ImGui::TextWrapped(" (%s, %s)", selected_entry->dbentry->GetLanguagesString().c_str(),
+                             Settings::GetDiscRegionName(selected_entry->region));
+        }
+        else
+        {
+          ImGui::TextWrapped(" (%s)", Settings::GetDiscRegionName(selected_entry->region));
+        }
       }
 
       // genre
@@ -6448,9 +6455,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         ImGui::Text(FSUI_CSTR("Genre: %s"), selected_entry->dbentry->genre.c_str());
 
       // release date
-      char release_date_str[64];
-      selected_entry->GetReleaseDateString(release_date_str, sizeof(release_date_str));
-      ImGui::Text(FSUI_CSTR("Release Date: %s"), release_date_str);
+      ImGui::Text(FSUI_CSTR("Release Date: %s"), selected_entry->GetReleaseDateString().c_str());
 
       // compatibility
       ImGui::TextUnformatted(FSUI_CSTR("Compatibility: "));

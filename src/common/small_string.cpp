@@ -864,6 +864,14 @@ void SmallStringBase::resize(u32 new_size, char fill, bool shrink_if_smaller)
   }
 }
 
+void SmallStringBase::set_size(u32 new_size, bool shrink_if_smaller /*= false*/)
+{
+  DebugAssert(new_size <= m_buffer_size);
+  m_length = new_size;
+  if (shrink_if_smaller)
+    shrink_to_fit();
+}
+
 void SmallStringBase::update_size()
 {
   m_length = static_cast<u32>(std::strlen(m_buffer));

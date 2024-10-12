@@ -111,6 +111,7 @@ private:
   void invalidateCoverForPath(const std::string& path);
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
+  const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
   static void fixIconPixmapSize(QPixmap& pm);
 
   static QString formatTimespan(time_t timespan);
@@ -123,11 +124,12 @@ private:
 
   std::array<QString, Column_Count> m_column_display_names;
   std::array<QPixmap, static_cast<int>(GameList::EntryType::Count)> m_type_pixmaps;
-  std::array<QPixmap, static_cast<int>(DiscRegion::Count)> m_region_pixmaps;
   std::array<QPixmap, static_cast<int>(GameDatabase::CompatibilityRating::Count)> m_compatibility_pixmaps;
 
   QPixmap m_placeholder_pixmap;
   QPixmap m_loading_pixmap;
+
+  mutable PreferUnorderedStringMap<QPixmap> m_flag_pixmap_cache;
 
   mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
 

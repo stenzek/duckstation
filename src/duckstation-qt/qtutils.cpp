@@ -251,11 +251,14 @@ QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
   switch (region)
   {
     case ConsoleRegion::NTSC_J:
-      return QIcon(QStringLiteral(":/icons/flag-jp.svg"));
-    case ConsoleRegion::PAL:
-      return QIcon(QStringLiteral(":/icons/flag-eu.svg"));
+      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/NTSC-J.svg", true)));
+
     case ConsoleRegion::NTSC_U:
-      return QIcon(QStringLiteral(":/icons/flag-uc.svg"));
+      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/NTSC-U.svg", true)));
+
+    case ConsoleRegion::PAL:
+      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/PAL.svg", true)));
+
     default:
       return QIcon::fromTheme(QStringLiteral("file-unknow-line"));
   }
@@ -266,11 +269,14 @@ QIcon QtUtils::GetIconForRegion(DiscRegion region)
   switch (region)
   {
     case DiscRegion::NTSC_J:
-      return QIcon(QStringLiteral(":/icons/flag-jp.svg"));
-    case DiscRegion::PAL:
-      return QIcon(QStringLiteral(":/icons/flag-eu.svg"));
+      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/NTSC-J.svg", true)));
+
     case DiscRegion::NTSC_U:
-      return QIcon(QStringLiteral(":/icons/flag-uc.svg"));
+      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/NTSC-U.svg", true)));
+
+    case DiscRegion::PAL:
+      return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/PAL.svg", true)));
+
     case DiscRegion::Other:
     case DiscRegion::NonPS1:
     default:

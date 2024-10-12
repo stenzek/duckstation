@@ -28,8 +28,8 @@
 #include "fmt/format.h"
 
 #include <algorithm>
-#include <bit>
 #include <array>
+#include <bit>
 #include <ctime>
 #include <string_view>
 #include <type_traits>
@@ -990,21 +990,34 @@ std::string_view GameList::Entry::GetLanguageIcon() const
   return ret;
 }
 
-size_t GameList::Entry::GetReleaseDateString(char* buffer, size_t buffer_size) const
+TinyString GameList::Entry::GetLanguageIconFileName() const
 {
-  if (!dbentry || dbentry->release_date == 0)
-    return StringUtil::Strlcpy(buffer, "Unknown", buffer_size);
+  return TinyString::from_format("images/flags/{}.svg", GetLanguageIcon());
+}
 
-  std::time_t date_as_time = static_cast<std::time_t>(dbentry->release_date);
+TinyString GameList::Entry::GetReleaseDateString() const
+{
+  TinyString ret;
+
+  if (!dbentry || dbentry->release_date == 0)
+  {
+    ret.append(TRANSLATE_SV("GameList", "Unknown"));
+  }
+  else
+  {
+    std::time_t date_as_time = static_cast<std::time_t>(dbentry->release_date);
 #ifdef _WIN32
-  tm date_tm = {};
-  gmtime_s(&date_tm, &date_as_time);
+    tm date_tm = {};
+    gmtime_s(&date_tm, &date_as_time);
 #else
-  tm date_tm = {};
-  gmtime_r(&date_as_time, &date_tm);
+    tm date_tm = {};
+    gmtime_r(&date_as_time, &date_tm);
 #endif
 
-  return std::strftime(buffer, buffer_size, "%d %B %Y", &date_tm);
+    ret.set_size(static_cast<u32>(std::strftime(ret.data(), ret.buffer_size(), "%d %B %Y", &date_tm)));
+  }
+
+  return ret;
 }
 
 std::string GameList::GetPlayedTimeFile()
