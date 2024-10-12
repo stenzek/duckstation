@@ -2,8 +2,13 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "core/types.h"
+
+#include "types.h"
+
 #include "util/cd_image_hasher.h"
+
+#include "common/small_string.h"
+
 #include <bitset>
 #include <map>
 #include <string>
@@ -56,7 +61,33 @@ enum class Trait : u32
   ForceCDROMSubQSkew,
   IsLibCryptProtected,
 
-  Count
+  MaxCount
+};
+
+enum class Language : u8
+{
+  Catalan,
+  Chinese,
+  Czech,
+  Danish,
+  Dutch,
+  English,
+  Finnish,
+  French,
+  German,
+  Greek,
+  Hebrew,
+  Iranian,
+  Italian,
+  Japanese,
+  Korean,
+  Norwegian,
+  Polish,
+  Portuguese,
+  Russian,
+  Spanish,
+  Swedish,
+  MaxCount,
 };
 
 struct Entry
@@ -77,7 +108,8 @@ struct Entry
   u16 supported_controllers;
   CompatibilityRating compatibility;
 
-  std::bitset<static_cast<int>(Trait::Count)> traits{};
+  std::bitset<static_cast<size_t>(Trait::MaxCount)> traits{};
+  std::bitset<static_cast<size_t>(Language::MaxCount)> languages{};
   std::optional<s16> display_active_start_offset;
   std::optional<s16> display_active_end_offset;
   std::optional<s8> display_line_start_offset;
@@ -96,6 +128,10 @@ struct Entry
   std::vector<std::string> disc_set_serials;
 
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }
+  ALWAYS_INLINE bool HasLanguage(Language language) const { return languages.test(static_cast<size_t>(language)); }
+  ALWAYS_INLINE bool HasAnyLanguage() const { return !languages.none(); }
+
+  SmallString GetLanguagesString() const;
 
   void ApplySettings(Settings& settings, bool display_osd_messages) const;
 
@@ -116,6 +152,9 @@ const char* GetTraitDisplayName(Trait trait);
 
 const char* GetCompatibilityRatingName(CompatibilityRating rating);
 const char* GetCompatibilityRatingDisplayName(CompatibilityRating rating);
+
+const char* GetLanguageName(Language language);
+std::optional<Language> ParseLanguageName(std::string_view str);
 
 /// Map of track hashes for image verification
 struct TrackData

@@ -22,7 +22,7 @@ class ProgressCallback;
 struct SystemBootParameters;
 
 namespace GameList {
-enum class EntryType
+enum class EntryType : u8
 {
   Disc,
   DiscSet,
@@ -37,13 +37,18 @@ struct Entry
   EntryType type = EntryType::Disc;
   DiscRegion region = DiscRegion::Other;
 
+  s8 disc_set_index = -1;
+  bool disc_set_member = false;
+  bool has_custom_title = false;
+  bool has_custom_region = false;
+
   std::string path;
   std::string serial;
   std::string title;
   std::string disc_set_name;
-  std::string genre;
-  std::string publisher;
-  std::string developer;
+
+  const GameDatabase::Entry* dbentry = nullptr;
+
   u64 hash = 0;
   s64 file_size = 0;
   u64 uncompressed_size = 0;
@@ -51,18 +56,7 @@ struct Entry
   std::time_t last_played_time = 0;
   std::time_t total_played_time = 0;
 
-  u64 release_date = 0;
-  u16 supported_controllers = static_cast<u16>(~0u);
-  u8 min_players = 1;
-  u8 max_players = 1;
-  u8 min_blocks = 0;
-  u8 max_blocks = 0;
-  s8 disc_set_index = -1;
-  bool disc_set_member = false;
-  bool has_custom_title = false;
-  bool has_custom_region = false;
-
-  GameDatabase::CompatibilityRating compatibility = GameDatabase::CompatibilityRating::Unknown;
+  std::string_view GetLanguageIcon() const;
 
   size_t GetReleaseDateString(char* buffer, size_t buffer_size) const;
 

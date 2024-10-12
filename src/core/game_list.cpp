@@ -28,6 +28,7 @@
 #include "fmt/format.h"
 
 #include <algorithm>
+#include <bit>
 #include <array>
 #include <ctime>
 #include <string_view>
@@ -47,7 +48,7 @@ namespace {
 enum : u32
 {
   GAME_LIST_CACHE_SIGNATURE = 0x45434C48,
-  GAME_LIST_CACHE_VERSION = 35,
+  GAME_LIST_CACHE_VERSION = 36,
 
   PLAYED_TIME_SERIAL_LENGTH = 32,
   PLAYED_TIME_LAST_TIME_LENGTH = 20,  // uint64
@@ -200,7 +201,6 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
   entry->file_size = ZeroExtend64(file_size);
   entry->uncompressed_size = entry->file_size;
   entry->type = EntryType::PSExe;
-  entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
 
   return true;
 }
@@ -217,7 +217,6 @@ bool GameList::GetPsfListEntry(const std::string& path, Entry* entry)
   entry->file_size = static_cast<u32>(file.GetProgramData().size());
   entry->uncompressed_size = entry->file_size;
   entry->type = EntryType::PSF;
-  entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
 
   // Game - Title
   std::optional<std::string> game(file.GetTagString("game"));
@@ -255,7 +254,6 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   entry->file_size = cdi->GetSizeOnDisk();
   entry->uncompressed_size = static_cast<u64>(CDImage::RAW_SECTOR_SIZE) * static_cast<u64>(cdi->GetLBACount());
   entry->type = EntryType::Disc;
-  entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
 
   std::string id;
   System::GetGameDetailsFromImage(cdi.get(), &id, &entry->hash);
@@ -267,16 +265,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
     // pull from database
     entry->serial = dentry->serial;
     entry->title = dentry->title;
-    entry->genre = dentry->genre;
-    entry->publisher = dentry->publisher;
-    entry->developer = dentry->developer;
-    entry->release_date = dentry->release_date;
-    entry->min_players = dentry->min_players;
-    entry->max_players = dentry->max_players;
-    entry->min_blocks = dentry->min_blocks;
-    entry->max_blocks = dentry->max_blocks;
-    entry->supported_controllers = dentry->supported_controllers;
-    entry->compatibility = dentry->compatibility;
+    entry->dbentry = dentry;
 
     if (!cdi->HasSubImages())
     {
@@ -293,18 +282,9 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   }
   else
   {
-    const std::string display_name(FileSystem::GetDisplayNameFromPath(path));
-
     // no game code, so use the filename title
     entry->serial = std::move(id);
-    entry->title = Path::GetFileTitle(display_name);
-    entry->compatibility = GameDatabase::CompatibilityRating::Unknown;
-    entry->release_date = 0;
-    entry->min_players = 0;
-    entry->max_players = 0;
-    entry->min_blocks = 0;
-    entry->max_blocks = 0;
-    entry->supported_controllers = static_cast<u16>(~0u);
+    entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
   }
 
   // region detection
@@ -352,6 +332,7 @@ bool GameList::GetGameListEntryFromCache(const std::string& path, Entry* entry,
     return false;
 
   *entry = std::move(iter->second);
+  entry->dbentry = GameDatabase::GetEntryForSerial(entry->serial);
   s_cache_map.erase(iter);
   ApplyCustomAttributes(path, entry, custom_attributes_ini);
   return true;
@@ -374,19 +355,13 @@ bool GameList::LoadEntriesFromCache(BinaryFileReader& reader)
 
     u8 type;
     u8 region;
-    u8 compatibility_rating;
 
     if (!reader.ReadU8(&type) || !reader.ReadU8(&region) || !reader.ReadSizePrefixedString(&path) ||
         !reader.ReadSizePrefixedString(&ge.serial) || !reader.ReadSizePrefixedString(&ge.title) ||
-        !reader.ReadSizePrefixedString(&ge.disc_set_name) || !reader.ReadSizePrefixedString(&ge.genre) ||
-        !reader.ReadSizePrefixedString(&ge.publisher) || !reader.ReadSizePrefixedString(&ge.developer) ||
-        !reader.ReadU64(&ge.hash) || !reader.ReadS64(&ge.file_size) || !reader.ReadU64(&ge.uncompressed_size) ||
-        !reader.ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !reader.ReadU64(&ge.release_date) ||
-        !reader.ReadU16(&ge.supported_controllers) || !reader.ReadU8(&ge.min_players) ||
-        !reader.ReadU8(&ge.max_players) || !reader.ReadU8(&ge.min_blocks) || !reader.ReadU8(&ge.max_blocks) ||
-        !reader.ReadS8(&ge.disc_set_index) || !reader.ReadU8(&compatibility_rating) ||
-        region >= static_cast<u8>(DiscRegion::Count) || type >= static_cast<u8>(EntryType::Count) ||
-        compatibility_rating >= static_cast<u8>(GameDatabase::CompatibilityRating::Count))
+        !reader.ReadSizePrefixedString(&ge.disc_set_name) || !reader.ReadU64(&ge.hash) ||
+        !reader.ReadS64(&ge.file_size) || !reader.ReadU64(&ge.uncompressed_size) ||
+        !reader.ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !reader.ReadS8(&ge.disc_set_index) ||
+        region >= static_cast<u8>(DiscRegion::Count) || type >= static_cast<u8>(EntryType::Count))
     {
       WARNING_LOG("Game list cache entry is corrupted");
       return false;
@@ -395,7 +370,6 @@ bool GameList::LoadEntriesFromCache(BinaryFileReader& reader)
     ge.path = path;
     ge.region = static_cast<DiscRegion>(region);
     ge.type = static_cast<EntryType>(type);
-    ge.compatibility = static_cast<GameDatabase::CompatibilityRating>(compatibility_rating);
 
     auto iter = s_cache_map.find(ge.path);
     if (iter != s_cache_map.end())
@@ -415,21 +389,11 @@ bool GameList::WriteEntryToCache(const Entry* entry, BinaryFileWriter& writer)
   writer.WriteSizePrefixedString(entry->serial);
   writer.WriteSizePrefixedString(entry->title);
   writer.WriteSizePrefixedString(entry->disc_set_name);
-  writer.WriteSizePrefixedString(entry->genre);
-  writer.WriteSizePrefixedString(entry->publisher);
-  writer.WriteSizePrefixedString(entry->developer);
   writer.WriteU64(entry->hash);
   writer.WriteS64(entry->file_size);
   writer.WriteU64(entry->uncompressed_size);
   writer.WriteU64(entry->last_modified_time);
-  writer.WriteU64(entry->release_date);
-  writer.WriteU16(entry->supported_controllers);
-  writer.WriteU8(entry->min_players);
-  writer.WriteU8(entry->max_players);
-  writer.WriteU8(entry->min_blocks);
-  writer.WriteU8(entry->max_blocks);
   writer.WriteS8(entry->disc_set_index);
-  writer.WriteU8(static_cast<u8>(entry->compatibility));
   return writer.IsGood();
 }
 
@@ -881,27 +845,18 @@ void GameList::CreateDiscSetEntries(const std::vector<std::string>& excluded_pat
     }
 
     Entry set_entry;
+    set_entry.dbentry = entry.dbentry;
     set_entry.type = EntryType::DiscSet;
     set_entry.region = entry.region;
     set_entry.path = disc_set_name;
     set_entry.serial = entry.serial;
     set_entry.title = entry.disc_set_name;
-    set_entry.genre = entry.developer;
-    set_entry.publisher = entry.publisher;
-    set_entry.developer = entry.developer;
     set_entry.hash = entry.hash;
     set_entry.file_size = 0;
     set_entry.uncompressed_size = 0;
     set_entry.last_modified_time = entry.last_modified_time;
     set_entry.last_played_time = 0;
     set_entry.total_played_time = 0;
-    set_entry.release_date = entry.release_date;
-    set_entry.supported_controllers = entry.supported_controllers;
-    set_entry.min_players = entry.min_players;
-    set_entry.max_players = entry.max_players;
-    set_entry.min_blocks = entry.min_blocks;
-    set_entry.max_blocks = entry.max_blocks;
-    set_entry.compatibility = entry.compatibility;
 
     // figure out play time for all discs, and sum it
     // we do this via lookups, rather than the other entries, because of duplicates
@@ -1016,12 +971,31 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
   return Path::Combine(EmuFolders::Covers, Path::SanitizeFileName(name));
 }
 
+std::string_view GameList::Entry::GetLanguageIcon() const
+{
+  // If there's only one language, this is the flag we want to use.
+  // Except if it's English, then we want to use the disc region's flag.
+  std::string_view ret;
+  if (dbentry && dbentry->languages.count() == 1 &&
+      !dbentry->languages.test(static_cast<size_t>(GameDatabase::Language::English)))
+  {
+    ret = GameDatabase::GetLanguageName(
+      static_cast<GameDatabase::Language>(std::countr_zero(dbentry->languages.to_ulong())));
+  }
+  else
+  {
+    ret = Settings::GetDiscRegionName(region);
+  }
+
+  return ret;
+}
+
 size_t GameList::Entry::GetReleaseDateString(char* buffer, size_t buffer_size) const
 {
-  if (release_date == 0)
+  if (!dbentry || dbentry->release_date == 0)
     return StringUtil::Strlcpy(buffer, "Unknown", buffer_size);
 
-  std::time_t date_as_time = static_cast<std::time_t>(release_date);
+  std::time_t date_as_time = static_cast<std::time_t>(dbentry->release_date);
 #ifdef _WIN32
   tm date_tm = {};
   gmtime_s(&date_tm, &date_as_time);

@@ -3042,10 +3042,15 @@ void FullscreenUI::DrawSummarySettingsPage()
                           Settings::GetDiscRegionDisplayName(s_game_settings_entry->region));
     }
     if (MenuButton(FSUI_ICONSTR(ICON_FA_STAR, "Compatibility Rating"),
-                   GameDatabase::GetCompatibilityRatingDisplayName(s_game_settings_entry->compatibility), true))
+                   GameDatabase::GetCompatibilityRatingDisplayName(s_game_settings_entry->dbentry ?
+                                                                     s_game_settings_entry->dbentry->compatibility :
+                                                                     GameDatabase::CompatibilityRating::Unknown),
+                   true))
     {
       CopyTextToClipboard(FSUI_STR("Game compatibility rating copied to clipboard."),
-                          GameDatabase::GetCompatibilityRatingDisplayName(s_game_settings_entry->compatibility));
+                          GameDatabase::GetCompatibilityRatingDisplayName(
+                            s_game_settings_entry->dbentry ? s_game_settings_entry->dbentry->compatibility :
+                                                             GameDatabase::CompatibilityRating::Unknown));
     }
     if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Path"), s_game_settings_entry->path.c_str(), true))
     {
@@ -6410,14 +6415,15 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::PushFont(g_medium_font);
 
       // developer
-      if (!selected_entry->developer.empty())
+      if (selected_entry->dbentry && !selected_entry->dbentry->developer.empty())
       {
         text_width =
-          ImGui::CalcTextSize(selected_entry->developer.c_str(),
-                              selected_entry->developer.c_str() + selected_entry->developer.length(), false, work_width)
+          ImGui::CalcTextSize(selected_entry->dbentry->developer.c_str(),
+                              selected_entry->dbentry->developer.c_str() + selected_entry->dbentry->developer.length(),
+                              false, work_width)
             .x;
         ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
-        ImGui::TextWrapped("%s", selected_entry->developer.c_str());
+        ImGui::TextWrapped("%s", selected_entry->dbentry->developer.c_str());
       }
 
       // code
@@ -6438,7 +6444,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       }
 
       // genre
-      ImGui::Text(FSUI_CSTR("Genre: %s"), selected_entry->genre.c_str());
+      if (selected_entry->dbentry && !selected_entry->dbentry->genre.empty())
+        ImGui::Text(FSUI_CSTR("Genre: %s"), selected_entry->dbentry->genre.c_str());
 
       // release date
       char release_date_str[64];
@@ -6448,13 +6455,16 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       // compatibility
       ImGui::TextUnformatted(FSUI_CSTR("Compatibility: "));
       ImGui::SameLine();
-      if (selected_entry->compatibility != GameDatabase::CompatibilityRating::Unknown)
+      if (selected_entry->dbentry &&
+          selected_entry->dbentry->compatibility != GameDatabase::CompatibilityRating::Unknown)
       {
-        ImGui::Image(s_game_compatibility_textures[static_cast<u32>(selected_entry->compatibility)].get(),
+        ImGui::Image(s_game_compatibility_textures[static_cast<u32>(selected_entry->dbentry->compatibility)].get(),
                      LayoutScale(64.0f, 16.0f));
         ImGui::SameLine();
       }
-      ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(selected_entry->compatibility));
+      ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(
+                             selected_entry->dbentry ? selected_entry->dbentry->compatibility :
+                                                       GameDatabase::CompatibilityRating::Unknown));
 
       // play time
       ImGui::Text(FSUI_CSTR("Time Played: %s"), GameList::FormatTimespan(selected_entry->total_played_time).c_str());

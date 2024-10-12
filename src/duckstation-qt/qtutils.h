@@ -38,7 +38,7 @@ namespace GameDatabase {
 enum class CompatibilityRating : u8;
 }
 namespace GameList {
-enum class EntryType;
+enum class EntryType : u8;
 }
 
 namespace QtUtils {

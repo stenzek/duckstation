@@ -409,20 +409,22 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
 
         case Column_Developer:
-          return QString::fromStdString(ge->developer);
+          return (ge->dbentry && !ge->dbentry->developer.empty()) ? QString::fromStdString(ge->dbentry->developer) :
+                                                                    QString();
 
         case Column_Publisher:
-          return QString::fromStdString(ge->publisher);
+          return (ge->dbentry && !ge->dbentry->publisher.empty()) ? QString::fromStdString(ge->dbentry->publisher) :
+                                                                    QString();
 
         case Column_Genre:
-          return QString::fromStdString(ge->genre);
+          return (ge->dbentry && !ge->dbentry->genre.empty()) ? QString::fromStdString(ge->dbentry->genre) : QString();
 
         case Column_Year:
         {
-          if (ge->release_date != 0)
+          if (ge->dbentry && ge->dbentry->release_date != 0)
           {
             return QStringLiteral("%1").arg(
-              QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge->release_date), Qt::UTC).date().year());
+              QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge->dbentry->release_date), Qt::UTC).date().year());
           }
           else
           {
@@ -432,10 +434,10 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
         case Column_Players:
         {
-          if (ge->min_players == ge->max_players)
-            return QStringLiteral("%1").arg(ge->min_players);
+          if (ge->dbentry->min_players == ge->dbentry->max_players)
+            return QStringLiteral("%1").arg(ge->dbentry->min_players);
           else
-            return QStringLiteral("%1-%2").arg(ge->min_players).arg(ge->max_players);
+            return QStringLiteral("%1-%2").arg(ge->dbentry->min_players).arg(ge->dbentry->max_players);
         }
 
         case Column_FileSize:
@@ -488,25 +490,31 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
 
         case Column_Developer:
-          return QString::fromStdString(ge->developer);
+          return (ge->dbentry && !ge->dbentry->developer.empty()) ? QString::fromStdString(ge->dbentry->developer) :
+                                                                    QString();
 
         case Column_Publisher:
-          return QString::fromStdString(ge->publisher);
+          return (ge->dbentry && !ge->dbentry->publisher.empty()) ? QString::fromStdString(ge->dbentry->publisher) :
+                                                                    QString();
 
         case Column_Genre:
-          return QString::fromStdString(ge->genre);
+          return (ge->dbentry && !ge->dbentry->genre.empty()) ? QString::fromStdString(ge->dbentry->genre) : QString();
 
         case Column_Year:
-          return QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge->release_date), Qt::UTC).date().year();
+          return ge->dbentry ? QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge->dbentry->release_date), Qt::UTC)
+                                 .date()
+                                 .year() :
+                               0;
 
         case Column_Players:
-          return static_cast<int>(ge->max_players);
+          return static_cast<int>(ge->dbentry ? ge->dbentry->max_players : 0);
 
         case Column_Region:
           return static_cast<int>(ge->region);
 
         case Column_Compatibility:
-          return static_cast<int>(ge->compatibility);
+          return static_cast<int>(ge->dbentry ? ge->dbentry->compatibility :
+                                                GameDatabase::CompatibilityRating::Unknown);
 
         case Column_TimePlayed:
           return static_cast<qlonglong>(ge->total_played_time);
@@ -541,7 +549,8 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
         case Column_Compatibility:
         {
-          return m_compatibility_pixmaps[static_cast<u32>(ge->compatibility)];
+          return m_compatibility_pixmaps[static_cast<u32>(ge->dbentry ? ge->dbentry->compatibility :
+                                                                        GameDatabase::CompatibilityRating::Unknown)];
         }
 
         case Column_Cover:
@@ -684,10 +693,14 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
 
     case Column_Compatibility:
     {
-      if (left->compatibility == right->compatibility)
+      const GameDatabase::CompatibilityRating left_compatibility =
+        left->dbentry ? left->dbentry->compatibility : GameDatabase::CompatibilityRating::Unknown;
+      const GameDatabase::CompatibilityRating right_compatibility =
+        right->dbentry ? right->dbentry->compatibility : GameDatabase::CompatibilityRating::Unknown;
+      if (left_compatibility == right_compatibility)
         return titlesLessThan(left, right);
 
-      return (static_cast<int>(left->compatibility) < static_cast<int>(right->compatibility));
+      return (static_cast<int>(left_compatibility) < static_cast<int>(right_compatibility));
     }
 
     case Column_FileSize:
@@ -708,31 +721,36 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
 
     case Column_Genre:
     {
-      if (left->genre == right->genre)
-        return titlesLessThan(left, right);
-      return (StringUtil::Strcasecmp(left->genre.c_str(), right->genre.c_str()) < 0);
+      const int compres =
+        StringUtil::CompareNoCase(left->dbentry ? std::string_view(left->dbentry->genre) : std::string_view(),
+                                  right->dbentry ? std::string_view(right->dbentry->genre) : std::string_view());
+      return (compres == 0) ? titlesLessThan(left, right) : (compres < 0);
     }
 
     case Column_Developer:
     {
-      if (left->developer == right->developer)
-        return titlesLessThan(left, right);
-      return (StringUtil::Strcasecmp(left->developer.c_str(), right->developer.c_str()) < 0);
+      const int compres =
+        StringUtil::CompareNoCase(left->dbentry ? std::string_view(left->dbentry->developer) : std::string_view(),
+                                  right->dbentry ? std::string_view(right->dbentry->developer) : std::string_view());
+      return (compres == 0) ? titlesLessThan(left, right) : (compres < 0);
     }
 
     case Column_Publisher:
     {
-      if (left->publisher == right->publisher)
-        return titlesLessThan(left, right);
-      return (StringUtil::Strcasecmp(left->publisher.c_str(), right->publisher.c_str()) < 0);
+      const int compres =
+        StringUtil::CompareNoCase(left->dbentry ? std::string_view(left->dbentry->publisher) : std::string_view(),
+                                  right->dbentry ? std::string_view(right->dbentry->publisher) : std::string_view());
+      return (compres == 0) ? titlesLessThan(left, right) : (compres < 0);
     }
 
     case Column_Year:
     {
-      if (left->release_date == right->release_date)
+      const u64 ldate = left->dbentry ? left->dbentry->release_date : 0;
+      const u64 rdate = right->dbentry ? right->dbentry->release_date : 0;
+      if (ldate == rdate)
         return titlesLessThan(left, right);
 
-      return (left->release_date < right->release_date);
+      return (ldate < rdate);
     }
 
     case Column_TimePlayed:
@@ -753,8 +771,8 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
 
     case Column_Players:
     {
-      u8 left_players = (left->min_players << 4) + left->max_players;
-      u8 right_players = (right->min_players << 4) + right->max_players;
+      const u8 left_players = left->dbentry ? ((left->dbentry->min_players << 4) + left->dbentry->max_players) : 0;
+      const u8 right_players = right->dbentry ? ((right->dbentry->min_players << 4) + right->dbentry->max_players) : 0;
       if (left_players == right_players)
         return titlesLessThan(left, right);
 

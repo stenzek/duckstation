@@ -40,10 +40,9 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 16,
+  GAME_DATABASE_CACHE_VERSION = 17,
 };
 
-static Entry* GetMutableEntry(std::string_view serial);
 static const Entry* GetEntryForId(std::string_view code);
 
 static bool LoadFromCache();
@@ -52,7 +51,8 @@ static bool SaveToCache();
 static void SetRymlCallbacks();
 static bool LoadGameDBYaml();
 static bool ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value);
-static bool ParseYamlCodes(u32 index, const ryml::ConstNodeRef& value, std::string_view serial);
+static bool ParseYamlCodes(PreferUnorderedStringMap<std::string_view>& lookup, const ryml::ConstNodeRef& value,
+                           std::string_view serial);
 static bool LoadTrackHashes();
 
 static constexpr const std::array<const char*, static_cast<int>(CompatibilityRating::Count)>
@@ -75,7 +75,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Compatibility
     TRANSLATE_DISAMBIG_NOOP("GameDatabase", "No Issues", "CompatibilityRating"),
   }};
 
-static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_names = {{
+static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCount)> s_trait_names = {{
   "ForceInterpreter",
   "ForceSoftwareRenderer",
   "ForceSoftwareRendererForReadbacks",
@@ -105,7 +105,7 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   "IsLibCryptProtected",
 }};
 
-static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Trait::Count)> s_trait_display_names = {{
+static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCount)> s_trait_display_names = {{
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Interpreter", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer For Readbacks", "GameDatabase::Trait"),
@@ -133,6 +133,12 @@ static constexpr const std::array<const char*, static_cast<u32>(GameDatabase::Tr
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler LUT Fastmem", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force CD-ROM SubQ Skew", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
+}};
+
+static constexpr std::array<const char*, static_cast<size_t>(Language::MaxCount)> s_language_names = {{
+  "Catalan", "Chinese",   "Czech",  "Danish",     "Dutch",   "English", "Finnish",
+  "French",  "German",    "Greek",  "Hebrew",     "Iranian", "Italian", "Japanese",
+  "Korean",  "Norwegian", "Polish", "Portuguese", "Russian", "Spanish", "Swedish",
 }};
 
 static constexpr const char* GAMEDB_YAML_FILENAME = "gamedb.yaml";
@@ -245,20 +251,15 @@ const GameDatabase::Entry* GameDatabase::GetEntryForGameDetails(const std::strin
 
 const GameDatabase::Entry* GameDatabase::GetEntryForSerial(std::string_view serial)
 {
+  if (serial.empty())
+    return nullptr;
+
   EnsureLoaded();
 
-  return GetMutableEntry(serial);
-}
-
-GameDatabase::Entry* GameDatabase::GetMutableEntry(std::string_view serial)
-{
-  for (Entry& entry : s_entries)
-  {
-    if (entry.serial == serial)
-      return &entry;
-  }
-
-  return nullptr;
+  const auto it =
+    std::lower_bound(s_entries.cbegin(), s_entries.cend(), serial,
+                     [](const Entry& entry, const std::string_view& search) { return (entry.serial < search); });
+  return (it != s_entries.end() && it->serial == serial) ? &(*it) : nullptr;
 }
 
 const char* GameDatabase::GetTraitName(Trait trait)
@@ -281,6 +282,42 @@ const char* GameDatabase::GetCompatibilityRatingDisplayName(CompatibilityRating 
   return (rating >= CompatibilityRating::Unknown && rating < CompatibilityRating::Count) ?
            Host::TranslateToCString("GameDatabase", s_compatibility_rating_display_names[static_cast<size_t>(rating)]) :
            "";
+}
+
+const char* GameDatabase::GetLanguageName(Language language)
+{
+  return s_language_names[static_cast<size_t>(language)];
+}
+
+std::optional<GameDatabase::Language> GameDatabase::ParseLanguageName(std::string_view str)
+{
+  for (size_t i = 0; i < static_cast<size_t>(Language::MaxCount); i++)
+  {
+    if (str == s_language_names[i])
+      return static_cast<Language>(i);
+  }
+
+  return std::nullopt;
+}
+
+SmallString GameDatabase::Entry::GetLanguagesString() const
+{
+  SmallString ret;
+
+  bool first = true;
+  for (u32 i = 0; i < static_cast<u32>(Language::MaxCount); i++)
+  {
+    if (languages.test(i))
+    {
+      ret.append_format("{}{}", first ? "" : ", ", GetLanguageName(static_cast<Language>(i)));
+      first = false;
+    }
+  }
+
+  if (ret.empty())
+    ret.append(TRANSLATE_SV("GameDatabase", "Unknown"));
+
+  return ret;
 }
 
 void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_messages) const
@@ -732,6 +769,10 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
   LargeString ret;
   ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Title"), title);
   ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Serial"), serial);
+
+  if (languages.any())
+    ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Languages"), GetLanguagesString());
+
   ret.append_format("**{}:** {}\n\n", TRANSLATE_SV("GameDatabase", "Rating"),
                     GetCompatibilityRatingDisplayName(compatibility));
 
@@ -759,7 +800,7 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
   if (traits.any())
   {
     ret.append_format("**{}**\n\n", TRANSLATE_SV("GameDatabase", "Traits"));
-    for (u32 i = 0; i < static_cast<u32>(Trait::Count); i++)
+    for (u32 i = 0; i < static_cast<u32>(Trait::MaxCount); i++)
     {
       if (traits.test(i))
         ret.append_format(" - {}\n", GetTraitDisplayName(static_cast<Trait>(i)));
@@ -839,8 +880,10 @@ bool GameDatabase::LoadFromCache()
   {
     Entry& entry = s_entries.emplace_back();
 
-    constexpr u32 num_bytes = (static_cast<u32>(Trait::Count) + 7) / 8;
-    std::array<u8, num_bytes> bits;
+    constexpr u32 trait_num_bytes = (static_cast<u32>(Trait::MaxCount) + 7) / 8;
+    constexpr u32 language_num_bytes = (static_cast<u32>(Language::MaxCount) + 7) / 8;
+    std::array<u8, trait_num_bytes> trait_bits;
+    std::array<u8, language_num_bytes> language_bits;
     u8 compatibility;
     u32 num_disc_set_serials;
 
@@ -852,7 +895,8 @@ bool GameDatabase::LoadFromCache()
         !reader.ReadU8(&entry.min_players) || !reader.ReadU8(&entry.max_players) || !reader.ReadU8(&entry.min_blocks) ||
         !reader.ReadU8(&entry.max_blocks) || !reader.ReadU16(&entry.supported_controllers) ||
         !reader.ReadU8(&compatibility) || compatibility >= static_cast<u8>(GameDatabase::CompatibilityRating::Count) ||
-        !reader.Read(bits.data(), num_bytes) || !reader.ReadOptionalT(&entry.display_active_start_offset) ||
+        !reader.Read(trait_bits.data(), trait_num_bytes) || !reader.Read(language_bits.data(), language_num_bytes) ||
+        !reader.ReadOptionalT(&entry.display_active_start_offset) ||
         !reader.ReadOptionalT(&entry.display_active_end_offset) ||
         !reader.ReadOptionalT(&entry.display_line_start_offset) ||
         !reader.ReadOptionalT(&entry.display_line_end_offset) || !reader.ReadOptionalT(&entry.display_crop_mode) ||
@@ -881,10 +925,15 @@ bool GameDatabase::LoadFromCache()
 
     entry.compatibility = static_cast<GameDatabase::CompatibilityRating>(compatibility);
     entry.traits.reset();
-    for (u32 j = 0; j < static_cast<int>(Trait::Count); j++)
+    for (size_t j = 0; j < static_cast<size_t>(Trait::MaxCount); j++)
     {
-      if ((bits[j / 8] & (1u << (j % 8))) != 0)
+      if ((trait_bits[j / 8] & (1u << (j % 8))) != 0)
         entry.traits[j] = true;
+    }
+    for (size_t j = 0; j < static_cast<size_t>(Language::MaxCount); j++)
+    {
+      if ((language_bits[j / 8] & (1u << (j % 8))) != 0)
+        entry.languages[j] = true;
     }
   }
 
@@ -941,16 +990,24 @@ bool GameDatabase::SaveToCache()
     writer.WriteU16(entry.supported_controllers);
     writer.WriteU8(static_cast<u8>(entry.compatibility));
 
-    constexpr u32 num_bytes = (static_cast<u32>(Trait::Count) + 7) / 8;
-    std::array<u8, num_bytes> bits;
-    bits.fill(0);
-    for (u32 j = 0; j < static_cast<int>(Trait::Count); j++)
+    constexpr u32 trait_num_bytes = (static_cast<u32>(Trait::MaxCount) + 7) / 8;
+    std::array<u8, trait_num_bytes> trait_bits = {};
+    for (size_t j = 0; j < static_cast<size_t>(Trait::MaxCount); j++)
     {
       if (entry.traits[j])
-        bits[j / 8] |= (1u << (j % 8));
+        trait_bits[j / 8] |= (1u << (j % 8));
     }
 
-    writer.Write(bits.data(), num_bytes);
+    writer.Write(trait_bits.data(), trait_num_bytes);
+
+    constexpr u32 language_num_bytes = (static_cast<u32>(Language::MaxCount) + 7) / 8;
+    std::array<u8, language_num_bytes> language_bits = {};
+    for (size_t j = 0; j < static_cast<size_t>(Language::MaxCount); j++)
+    {
+      if (entry.languages[j])
+        language_bits[j / 8] |= (1u << (j % 8));
+    }
+    writer.Write(language_bits.data(), language_num_bytes);
 
     writer.WriteOptionalT(entry.display_active_start_offset);
     writer.WriteOptionalT(entry.display_active_end_offset);
@@ -1007,33 +1064,55 @@ bool GameDatabase::LoadGameDBYaml()
   const ryml::ConstNodeRef root = tree.rootref();
   s_entries.reserve(root.num_children());
 
+  PreferUnorderedStringMap<std::string_view> code_lookup;
+
   for (const ryml::ConstNodeRef& current : root.cchildren())
   {
-    // TODO: binary sort
-    const u32 index = static_cast<u32>(s_entries.size());
+    const std::string_view serial = to_stringview(current.key());
+    if (current.empty())
+    {
+      ERROR_LOG("Missing serial for entry.");
+      return false;
+    }
+
     Entry& entry = s_entries.emplace_back();
+    entry.serial = serial;
     if (!ParseYamlEntry(&entry, current))
     {
       s_entries.pop_back();
       continue;
     }
 
-    ParseYamlCodes(index, current, entry.serial);
+    ParseYamlCodes(code_lookup, current, serial);
   }
 
+  // Sorting must be done before generating code lookup, because otherwise the indices won't match.
+  s_entries.shrink_to_fit();
+  std::sort(s_entries.begin(), s_entries.end(),
+            [](const Entry& lhs, const Entry& rhs) { return (lhs.serial < rhs.serial); });
+
   ryml::reset_callbacks();
+
+  for (const auto& [code, serial] : code_lookup)
+  {
+    const auto it =
+      std::lower_bound(s_entries.cbegin(), s_entries.cend(), serial,
+                       [](const Entry& entry, const std::string_view& search) { return (entry.serial < search); });
+    if (it == s_entries.end() || it->serial != serial)
+    {
+      ERROR_LOG("Somehow we messed up our code lookup for {} and {}?!", code, serial);
+      continue;
+    }
+
+    if (!s_code_lookup.emplace(code, static_cast<u32>(std::distance(s_entries.cbegin(), it))).second)
+      ERROR_LOG("Failed to insert code {}", code);
+  }
+
   return !s_entries.empty();
 }
 
 bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
 {
-  entry->serial = to_stringview(value.key());
-  if (entry->serial.empty())
-  {
-    ERROR_LOG("Missing serial for entry.");
-    return false;
-  }
-
   GetStringFromObject(value, "name", &entry->title);
 
   if (const ryml::ConstNodeRef metadata = value.find_child(to_csubstr("metadata")); metadata.valid())
@@ -1046,6 +1125,18 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     GetUIntFromObject(metadata, "maxPlayers", &entry->max_players);
     GetUIntFromObject(metadata, "minBlocks", &entry->min_blocks);
     GetUIntFromObject(metadata, "maxBlocks", &entry->max_blocks);
+
+    if (const ryml::ConstNodeRef languages = metadata.find_child(to_csubstr("languages")); languages.valid())
+    {
+      for (const ryml::ConstNodeRef language : languages.cchildren())
+      {
+        const std::string_view vlanguage = to_stringview(language.val());
+        if (const std::optional<Language> planguage = ParseLanguageName(vlanguage); planguage.has_value())
+          entry->languages[static_cast<size_t>(planguage.value())] = true;
+        else
+          WARNING_LOG("Unknown language {} in {}.", vlanguage, entry->serial);
+      }
+    }
 
     entry->release_date = 0;
     {
@@ -1144,7 +1235,7 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
       }
 
       const size_t trait_idx = static_cast<size_t>(std::distance(s_trait_names.begin(), iter));
-      DebugAssert(trait_idx < static_cast<size_t>(Trait::Count));
+      DebugAssert(trait_idx < static_cast<size_t>(Trait::MaxCount));
       entry->traits[trait_idx] = true;
     }
   }
@@ -1215,20 +1306,21 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
   return true;
 }
 
-bool GameDatabase::ParseYamlCodes(u32 index, const ryml::ConstNodeRef& value, std::string_view serial)
+bool GameDatabase::ParseYamlCodes(PreferUnorderedStringMap<std::string_view>& lookup, const ryml::ConstNodeRef& value,
+                                  std::string_view serial)
 {
   const ryml::ConstNodeRef& codes = value.find_child(to_csubstr("codes"));
   if (!codes.valid() || !codes.has_children())
   {
     // use serial instead
-    auto iter = s_code_lookup.find(serial);
-    if (iter != s_code_lookup.end())
+    auto iter = lookup.find(serial);
+    if (iter != lookup.end())
     {
       WARNING_LOG("Duplicate code '{}'", serial);
       return false;
     }
 
-    s_code_lookup.emplace(serial, index);
+    lookup.emplace(serial, serial);
     return true;
   }
 
@@ -1242,14 +1334,14 @@ bool GameDatabase::ParseYamlCodes(u32 index, const ryml::ConstNodeRef& value, st
       continue;
     }
 
-    auto iter = s_code_lookup.find(current_code_str);
-    if (iter != s_code_lookup.end())
+    auto iter = lookup.find(current_code_str);
+    if (iter != lookup.end())
     {
       WARNING_LOG("Duplicate code '{}' in {}", current_code_str, serial);
       continue;
     }
 
-    s_code_lookup.emplace(current_code_str, index);
+    lookup.emplace(current_code_str, serial);
     added++;
   }
 
