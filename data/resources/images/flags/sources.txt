@@ -1,2 +1,8 @@
+Finish.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Finland.svg
+French.svg: https://commons.wikimedia.org/wiki/File:Flag_of_France.svg
+German.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Germany.svg
+Italian.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Italy.svg
+Portugese.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Portugal.svg
 Spanish.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Spain.svg
+Swedish.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Sweden.svg
 Other.svg: https://en.wikipedia.org/wiki/File:Flag_with_question_mark.svg
