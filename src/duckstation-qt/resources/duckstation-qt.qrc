@@ -142,14 +142,6 @@
 		<file>icons/edit-find.png</file>
 		<file>icons/emblem-person-blue@2x.png</file>
 		<file>icons/emblem-person-blue.png</file>
-		<file>icons/flag-eu@2x.png</file>
-		<file>icons/flag-eu.png</file>
-		<file>icons/flag-eu.svg</file>
-		<file>icons/flag-jp@2x.png</file>
-		<file>icons/flag-jp.png</file>
-		<file>icons/flag-jp.svg</file>
-		<file>icons/flag-other@2x.png</file>
-		<file>icons/flag-other.png</file>
 		<file>icons/flags/de@2x.png</file>
 		<file>icons/flags/de.png</file>
 		<file>icons/flags/en@2x.png</file>
@@ -182,12 +174,6 @@
 		<file>icons/flags/tr.png</file>
 		<file>icons/flags/zh-CN@2x.png</file>
 		<file>icons/flags/zh-CN.png</file>
-		<file>icons/flag-uc@2x.png</file>
-		<file>icons/flag-uc.png</file>
-		<file>icons/flag-uc.svg</file>
-		<file>icons/flag-us@2x.png</file>
-		<file>icons/flag-us.png</file>
-		<file>icons/flag-us.svg</file>
 		<file>icons/folder-open@2x.png</file>
 		<file>icons/folder-open.png</file>
 		<file>icons/github.png</file>
