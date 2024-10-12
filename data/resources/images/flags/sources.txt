@@ -14,7 +14,7 @@ Italian.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Italy.svg
 Korean.svg: https://commons.wikimedia.org/wiki/Flag_of_South_Korea.svg
 Norwegian.svg https://commons.wikimedia.org/wiki/File:Flag_of_Norway.svg
 Polish.svg: https://commons.wikimedia.org/wiki/Flag_of_Poland.svg
-Portugese.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Portugal.svg
+Portuguese.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Portugal.svg
 Spanish.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Spain.svg
 Swedish.svg: https://commons.wikimedia.org/wiki/File:Flag_of_Sweden.svg
 Other.svg: https://en.wikipedia.org/wiki/File:Flag_with_question_mark.svg
