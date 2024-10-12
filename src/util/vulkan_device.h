@@ -75,16 +75,16 @@ public:
   static GPUList EnumerateGPUs();
   static AdapterInfoList GetAdapterList();
 
-  bool HasSurface() const override;
-
-  bool UpdateWindow() override;
-  void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
-  void DestroySurface() override;
-
   std::string GetDriverInfo() const override;
 
-  void ExecuteAndWaitForGPUIdle() override;
+  void FlushCommands() override;
+  void WaitForGPUIdle() override;
 
+  std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control,
+                                                Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                             GPUTexture::Type type, GPUTexture::Format format,
                                             const void* data = nullptr, u32 data_stride = 0) override;
@@ -138,11 +138,9 @@ public:
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
-
-  PresentResult BeginPresent(u32 clear_color) override;
-  void EndPresent(bool explicit_present, u64 present_time) override;
-  void SubmitPresent() override;
+  PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
+  void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
+  void SubmitPresent(GPUSwapChain* swap_chain) override;
 
   // Global state accessors
   ALWAYS_INLINE static VulkanDevice& GetInstance() { return *static_cast<VulkanDevice*>(g_gpu_device.get()); }
@@ -167,7 +165,7 @@ public:
     return static_cast<u32>(m_device_properties.limits.optimalBufferCopyRowPitchAlignment);
   }
 
-  void WaitForGPUIdle();
+  void WaitForAllFences();
 
   // Creates a simple render pass.
   VkRenderPass GetRenderPass(const GPUPipeline::GraphicsConfig& config);
@@ -230,8 +228,10 @@ public:
   void UnbindTextureBuffer(VulkanTextureBuffer* buf);
 
 protected:
-  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                    FeatureMask disabled_features, Error* error) override;
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+                                    GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                    const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                    std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
   bool ReadPipelineCache(DynamicHeapArray<u8> data, Error* error) override;

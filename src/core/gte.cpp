@@ -243,14 +243,14 @@ void GTE::UpdateAspectRatio()
   {
     case DisplayAspectRatio::MatchWindow:
     {
-      if (!g_gpu_device)
+      if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
       {
         s_config.aspect_ratio = DisplayAspectRatio::R4_3;
         return;
       }
 
-      num = g_gpu_device->GetWindowWidth();
-      denom = g_gpu_device->GetWindowHeight();
+      num = g_gpu_device->GetMainSwapChain()->GetWidth();
+      denom = g_gpu_device->GetMainSwapChain()->GetHeight();
     }
     break;
 

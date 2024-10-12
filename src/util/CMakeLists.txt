@@ -179,9 +179,14 @@ endif()
 if(NOT ANDROID)
   target_sources(util PRIVATE
     cubeb_audio_stream.cpp
+    opengl_context_sdl.cpp
+    opengl_context_sdl.h
     sdl_audio_stream.cpp
     sdl_input_source.cpp
     sdl_input_source.h
+  )
+  target_compile_definitions(util PUBLIC
+    ENABLE_SDL
   )
   target_link_libraries(util PUBLIC
     cubeb

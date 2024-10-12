@@ -437,10 +437,10 @@ void PostProcessing::Chain::LoadStages()
     DEV_LOG("Loaded {} post-processing stages.", stage_count);
 
   // precompile shaders
-  if (!IsInternalChain() && g_gpu_device && g_gpu_device->GetWindowFormat() != GPUTexture::Format::Unknown)
+  if (!IsInternalChain() && g_gpu_device && g_gpu_device->HasMainSwapChain())
   {
-    CheckTargets(g_gpu_device->GetWindowFormat(), g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(),
-                 &progress);
+    CheckTargets(g_gpu_device->GetMainSwapChain()->GetFormat(), g_gpu_device->GetMainSwapChain()->GetWidth(),
+                 g_gpu_device->GetMainSwapChain()->GetHeight(), &progress);
   }
 
   // must be down here, because we need to compile first, triggered by CheckTargets()

@@ -27,7 +27,7 @@
 #include <limits>
 #include <mutex>
 
-LOG_CHANNEL(VulkanDevice);
+LOG_CHANNEL(GPUDevice);
 
 // TODO: VK_KHR_display.
 
@@ -110,6 +110,8 @@ static std::mutex s_instance_mutex;
 
 VulkanDevice::VulkanDevice()
 {
+  m_render_api = RenderAPI::Vulkan;
+
 #ifdef _DEBUG
   s_debug_scope_depth = 0;
 #endif
@@ -1266,11 +1268,6 @@ void VulkanDevice::WaitForFenceCounter(u64 fence_counter)
   WaitForCommandBufferCompletion(index);
 }
 
-void VulkanDevice::WaitForGPUIdle()
-{
-  vkDeviceWaitIdle(m_device);
-}
-
 float VulkanDevice::GetAndResetAccumulatedGPUTime()
 {
   const float time = m_accumulated_gpu_time;
@@ -1440,6 +1437,7 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
 
   present_swap_chain->ResetImageAcquireResult();
 
+#if 0
   const VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
   if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
   {
@@ -1451,6 +1449,7 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
 
     return;
   }
+#endif
 
   // Grab the next image as soon as possible, that way we spend less time blocked on the next
   // submission. Don't care if it fails, we'll deal with that at the presentation call site.
@@ -1889,13 +1888,18 @@ bool VulkanDevice::IsSuitableDefaultRenderer()
 #endif
 }
 
+#if 0
 bool VulkanDevice::HasSurface() const
 {
   return static_cast<bool>(m_swap_chain);
 }
+#endif
 
-bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                                FeatureMask disabled_features, Error* error)
+bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features,
+                                                const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   std::unique_lock lock(s_instance_mutex);
   bool enable_debug_utils = m_debug_device;
@@ -1908,7 +1912,7 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
     return false;
   }
 
-  m_instance = CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
+  m_instance = CreateVulkanInstance(wi, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
   if (m_instance == VK_NULL_HANDLE)
   {
     if (enable_debug_utils || enable_validation_layer)
@@ -1916,8 +1920,7 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
       // Try again without the validation layer.
       enable_debug_utils = false;
       enable_validation_layer = false;
-      m_instance =
-        CreateVulkanInstance(m_window_info, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
+      m_instance = CreateVulkanInstance(wi, &m_optional_extensions, enable_debug_utils, enable_validation_layer);
       if (m_instance == VK_NULL_HANDLE)
       {
         Error::SetStringView(error, "Failed to create Vulkan instance. Does your GPU and/or driver support Vulkan?");
@@ -1988,12 +1991,14 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
     if (surface != VK_NULL_HANDLE)
       vkDestroySurfaceKHR(m_instance, surface, nullptr);
   };
+#if 0
   if (m_window_info.type != WindowInfo::Type::Surfaceless)
   {
     surface = VulkanSwapChain::CreateVulkanSurface(m_instance, m_physical_device, &m_window_info);
     if (surface == VK_NULL_HANDLE)
       return false;
   }
+#endif
 
   // Attempt to create the device.
   if (!CreateDevice(surface, enable_validation_layer, disabled_features, error))
@@ -2005,6 +2010,7 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
 
   m_exclusive_fullscreen_control = exclusive_fullscreen_control;
 
+#if 0
   if (surface != VK_NULL_HANDLE)
   {
     VkPresentModeKHR present_mode;
@@ -2018,12 +2024,15 @@ bool VulkanDevice::CreateDevice(std::string_view adapter, std::optional<bool> ex
     // NOTE: This is assigned afterwards, because some platforms can modify the window info (e.g. Metal).
     m_window_info = m_swap_chain->GetWindowInfo();
   }
+#endif
 
   surface_cleanup.Cancel();
 
+#if 0
   // Render a frame as soon as possible to clear out whatever was previously being displayed.
   if (m_window_info.type != WindowInfo::Type::Surfaceless)
     RenderBlankFrame();
+#endif
 
   if (!CreateNullTexture())
   {
@@ -2051,7 +2060,7 @@ void VulkanDevice::DestroyDevice()
   if (m_device != VK_NULL_HANDLE)
     WaitForGPUIdle();
 
-  m_swap_chain.reset();
+  m_main_swap_chain.reset();
 
   if (m_null_texture)
   {
@@ -2208,6 +2217,16 @@ bool VulkanDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error
   return true;
 }
 
+std::unique_ptr<GPUSwapChain> VulkanDevice::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                            bool allow_present_throttle,
+                                                            const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                            std::optional<bool> exclusive_fullscreen_control,
+                                                            Error* error)
+{
+  return {};
+}
+
+#if 0
 bool VulkanDevice::UpdateWindow()
 {
   DestroySurface();
@@ -2276,6 +2295,7 @@ void VulkanDevice::DestroySurface()
   WaitForGPUIdle();
   m_swap_chain.reset();
 }
+#endif
 
 bool VulkanDevice::SupportsTextureFormat(GPUTexture::Format format) const
 {
@@ -2308,7 +2328,16 @@ std::string VulkanDevice::GetDriverInfo() const
   return ret;
 }
 
-void VulkanDevice::ExecuteAndWaitForGPUIdle()
+void VulkanDevice::FlushCommands()
+{
+  if (InRenderPass())
+    EndRenderPass();
+
+  SubmitCommandBuffer(false);
+  TrimTexturePool();
+}
+
+void VulkanDevice::WaitForGPUIdle()
 {
   if (InRenderPass())
     EndRenderPass();
@@ -2316,6 +2345,7 @@ void VulkanDevice::ExecuteAndWaitForGPUIdle()
   SubmitCommandBuffer(true);
 }
 
+#if 0
 void VulkanDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
 {
   m_allow_present_throttle = allow_present_throttle;
@@ -2347,8 +2377,9 @@ void VulkanDevice::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle)
     m_swap_chain.reset();
   }
 }
+#endif
 
-GPUDevice::PresentResult VulkanDevice::BeginPresent(u32 clear_color)
+GPUDevice::PresentResult VulkanDevice::BeginPresent(GPUSwapChain* swap_chain, u32 clear_color)
 {
   if (InRenderPass())
     EndRenderPass();
@@ -2364,6 +2395,7 @@ GPUDevice::PresentResult VulkanDevice::BeginPresent(u32 clear_color)
     return PresentResult::SkipPresent;
   }
 
+#if 0
   VkResult res = m_swap_chain->AcquireNextImage();
   if (res != VK_SUCCESS)
   {
@@ -2399,12 +2431,13 @@ GPUDevice::PresentResult VulkanDevice::BeginPresent(u32 clear_color)
       return PresentResult::SkipPresent;
     }
   }
+#endif
 
   BeginSwapChainRenderPass(clear_color);
   return PresentResult::OK;
 }
 
-void VulkanDevice::EndPresent(bool explicit_present, u64 present_time)
+void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time)
 {
   DebugAssert(present_time == 0);
   DebugAssert(InRenderPass() && m_num_current_render_targets == 0 && !m_current_depth_target);
@@ -2420,7 +2453,7 @@ void VulkanDevice::EndPresent(bool explicit_present, u64 present_time)
   TrimTexturePool();
 }
 
-void VulkanDevice::SubmitPresent()
+void VulkanDevice::SubmitPresent(GPUSwapChain* swap_chain)
 {
   DebugAssert(m_swap_chain);
   if (m_device_was_lost) [[unlikely]]
@@ -2515,7 +2548,6 @@ u32 VulkanDevice::GetMaxMultisamples(VkPhysicalDevice physical_device, const VkP
 void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDeviceFeatures& vk_features)
 {
   const u32 store_api_version = std::min(m_device_properties.apiVersion, VK_API_VERSION_1_1);
-  m_render_api = RenderAPI::Vulkan;
   m_render_api_version = (VK_API_VERSION_MAJOR(store_api_version) * 100u) +
                          (VK_API_VERSION_MINOR(store_api_version) * 10u) + (VK_API_VERSION_PATCH(store_api_version));
   m_max_texture_size =

@@ -32,21 +32,23 @@ public:
   ~D3D11Device();
 
   ALWAYS_INLINE static D3D11Device& GetInstance() { return *static_cast<D3D11Device*>(g_gpu_device.get()); }
-  ALWAYS_INLINE static ID3D11Device* GetD3DDevice() { return GetInstance().m_device.Get(); }
+  ALWAYS_INLINE static ID3D11Device1* GetD3DDevice() { return GetInstance().m_device.Get(); }
   ALWAYS_INLINE static ID3D11DeviceContext1* GetD3DContext() { return GetInstance().m_context.Get(); }
+  ALWAYS_INLINE static IDXGIFactory5* GetDXGIFactory() { return GetInstance().m_dxgi_factory.Get(); }
   ALWAYS_INLINE static D3D_FEATURE_LEVEL GetMaxFeatureLevel() { return GetInstance().m_max_feature_level; }
 
-  bool HasSurface() const override;
-
-  bool UpdateWindow() override;
-  void ResizeWindow(s32 new_window_width, s32 new_window_height, float new_window_scale) override;
   bool SupportsExclusiveFullscreen() const override;
-  void DestroySurface() override;
 
   std::string GetDriverInfo() const override;
 
-  void ExecuteAndWaitForGPUIdle() override;
+  void FlushCommands() override;
+  void WaitForGPUIdle() override;
 
+  std::unique_ptr<GPUSwapChain> CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
+                                                bool allow_present_throttle,
+                                                const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                                std::optional<bool> exclusive_fullscreen_control,
+                                                Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                             GPUTexture::Type type, GPUTexture::Format format,
                                             const void* data = nullptr, u32 data_stride = 0) override;
@@ -97,21 +99,21 @@ public:
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
 
-  void SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle) override;
-
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
 
-  PresentResult BeginPresent(u32 clear_color) override;
-  void EndPresent(bool explicit_present, u64 present_time) override;
-  void SubmitPresent() override;
+  PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color) override;
+  void EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u64 present_time) override;
+  void SubmitPresent(GPUSwapChain* swap_chain) override;
 
   void UnbindPipeline(D3D11Pipeline* pl);
   void UnbindTexture(D3D11Texture* tex);
 
 protected:
-  bool CreateDevice(std::string_view adapter, std::optional<bool> exclusive_fullscreen_control,
-                    FeatureMask disabled_features, Error* error) override;
+  bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
+                                    GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                    const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+                                    std::optional<bool> exclusive_fullscreen_control, Error* error) override;
   void DestroyDevice() override;
 
 private:
@@ -136,11 +138,6 @@ private:
 
   void SetFeatures(FeatureMask disabled_features);
 
-  u32 GetSwapChainBufferCount() const;
-  bool CreateSwapChain();
-  bool CreateSwapChainRTV();
-  void DestroySwapChain();
-
   bool CreateBuffers();
   void DestroyBuffers();
 
@@ -161,8 +158,6 @@ private:
   ComPtr<ID3DUserDefinedAnnotation> m_annotation;
 
   ComPtr<IDXGIFactory5> m_dxgi_factory;
-  ComPtr<IDXGISwapChain1> m_swap_chain;
-  ComPtr<ID3D11RenderTargetView> m_swap_chain_rtv;
 
   RasterizationStateMap m_rasterization_states;
   DepthStateMap m_depth_states;
@@ -170,10 +165,6 @@ private:
   InputLayoutMap m_input_layouts;
 
   D3D_FEATURE_LEVEL m_max_feature_level = D3D_FEATURE_LEVEL_10_0;
-  bool m_allow_tearing_supported = false;
-  bool m_using_flip_model_swap_chain = true;
-  bool m_using_allow_tearing = false;
-  bool m_is_exclusive_fullscreen = false;
 
   D3D11StreamBuffer m_vertex_buffer;
   D3D11StreamBuffer m_index_buffer;
@@ -205,6 +196,47 @@ private:
   u8 m_waiting_timestamp_queries = 0;
   bool m_timestamp_query_started = false;
   float m_accumulated_gpu_time = 0.0f;
+};
+
+class D3D11SwapChain : public GPUSwapChain
+{
+public:
+  template<typename T>
+  using ComPtr = Microsoft::WRL::ComPtr<T>;
+
+  friend D3D11Device;
+
+  D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                 const GPUDevice::ExclusiveFullscreenMode* fullscreen_mode);
+  ~D3D11SwapChain() override;
+
+  ALWAYS_INLINE IDXGISwapChain1* GetSwapChain() const { return m_swap_chain.Get(); }
+  ALWAYS_INLINE ID3D11RenderTargetView* GetRTV() const { return m_swap_chain_rtv.Get(); }
+  ALWAYS_INLINE ID3D11RenderTargetView* const* GetRTVArray() const { return m_swap_chain_rtv.GetAddressOf(); }
+  ALWAYS_INLINE bool IsUsingAllowTearing() const { return m_using_allow_tearing; }
+  ALWAYS_INLINE bool IsExclusiveFullscreen() const { return m_fullscreen_mode.has_value(); }
+
+  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+
+private:
+  static u32 GetNewBufferCount(GPUVSyncMode vsync_mode);
+
+  bool InitializeExclusiveFullscreenMode(const GPUDevice::ExclusiveFullscreenMode* mode);
+
+  bool CreateSwapChain(Error* error);
+  bool CreateRTV(Error* error);
+
+  void DestroySwapChain();
+
+  ComPtr<IDXGISwapChain1> m_swap_chain;
+  ComPtr<ID3D11RenderTargetView> m_swap_chain_rtv;
+
+  ComPtr<IDXGIOutput> m_fullscreen_output;
+  std::optional<DXGI_MODE_DESC> m_fullscreen_mode;
+
+  bool m_using_flip_model_swap_chain = true;
+  bool m_using_allow_tearing = false;
 };
 
 void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name);

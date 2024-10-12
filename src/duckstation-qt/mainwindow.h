@@ -126,8 +126,8 @@ private Q_SLOTS:
   bool confirmMessage(const QString& title, const QString& message);
   void onStatusMessage(const QString& message);
 
-  std::optional<WindowInfo> acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main,
-                                                bool surfaceless, bool use_main_window_pos);
+  std::optional<WindowInfo> acquireRenderWindow(bool fullscreen, bool render_to_main, bool surfaceless,
+                                                bool use_main_window_pos, Error* error);
   void displayResizeRequested(qint32 width, qint32 height);
   void releaseRenderWindow();
   void focusDisplayWidget();

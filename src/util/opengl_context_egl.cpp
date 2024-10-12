@@ -13,7 +13,7 @@
 #include <optional>
 #include <vector>
 
-LOG_CHANNEL(OpenGLContext);
+LOG_CHANNEL(GPUDevice);
 
 static DynamicLibrary s_egl_library;
 static std::atomic_uint32_t s_egl_refcount = 0;
@@ -67,34 +67,42 @@ static bool LoadGLADEGL(EGLDisplay display, Error* error)
   return true;
 }
 
-OpenGLContextEGL::OpenGLContextEGL(const WindowInfo& wi) : OpenGLContext(wi)
+OpenGLContextEGL::OpenGLContextEGL() : OpenGLContext()
 {
   LoadEGL();
 }
 
 OpenGLContextEGL::~OpenGLContextEGL()
 {
-  DestroySurface();
-  DestroyContext();
+  if (m_context != EGL_NO_CONTEXT && eglGetCurrentContext() == m_context)
+    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+  if (m_pbuffer_surface != EGL_NO_SURFACE)
+    eglDestroySurface(m_display, m_pbuffer_surface);
+
+  if (m_context != EGL_NO_CONTEXT)
+    eglDestroyContext(m_display, m_context);
+
   UnloadEGL();
 }
 
-std::unique_ptr<OpenGLContext> OpenGLContextEGL::Create(const WindowInfo& wi, std::span<const Version> versions_to_try,
-                                                        Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextEGL::Create(WindowInfo& wi, SurfaceHandle* surface,
+                                                        std::span<const Version> versions_to_try, Error* error)
 {
-  std::unique_ptr<OpenGLContextEGL> context = std::make_unique<OpenGLContextEGL>(wi);
-  if (!context->Initialize(versions_to_try, error))
+  std::unique_ptr<OpenGLContextEGL> context = std::make_unique<OpenGLContextEGL>();
+  if (!context->Initialize(wi, surface, versions_to_try, error))
     return nullptr;
 
   return context;
 }
 
-bool OpenGLContextEGL::Initialize(std::span<const Version> versions_to_try, Error* error)
+bool OpenGLContextEGL::Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try,
+                                  Error* error)
 {
   if (!LoadGLADEGL(EGL_NO_DISPLAY, error))
     return false;
 
-  m_display = GetPlatformDisplay(error);
+  m_display = GetPlatformDisplay(wi, error);
   if (m_display == EGL_NO_DISPLAY)
     return false;
 
@@ -117,7 +125,7 @@ bool OpenGLContextEGL::Initialize(std::span<const Version> versions_to_try, Erro
 
   for (const Version& cv : versions_to_try)
   {
-    if (CreateContextAndSurface(cv, nullptr, true))
+    if (CreateContextAndSurface(wi, surface, cv, nullptr, true, error))
       return true;
   }
 
@@ -125,24 +133,30 @@ bool OpenGLContextEGL::Initialize(std::span<const Version> versions_to_try, Erro
   return false;
 }
 
-EGLDisplay OpenGLContextEGL::GetPlatformDisplay(Error* error)
+EGLDisplay OpenGLContextEGL::GetPlatformDisplay(const WindowInfo& wi, Error* error)
 {
-  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_SURFACELESS_MESA, "EGL_MESA_platform_surfaceless");
+  EGLDisplay dpy =
+    TryGetPlatformDisplay(wi.display_connection, EGL_PLATFORM_SURFACELESS_MESA, "EGL_MESA_platform_surfaceless");
   if (dpy == EGL_NO_DISPLAY)
-    dpy = GetFallbackDisplay(error);
+    dpy = GetFallbackDisplay(wi.display_connection, error);
 
   return dpy;
 }
 
-EGLSurface OpenGLContextEGL::CreatePlatformSurface(EGLConfig config, void* win, Error* error)
+EGLSurface OpenGLContextEGL::CreatePlatformSurface(EGLConfig config, const WindowInfo& wi, Error* error)
 {
-  EGLSurface surface = TryCreatePlatformSurface(config, win, error);
-  if (!surface)
-    surface = CreateFallbackSurface(config, win, error);
+  EGLSurface surface = TryCreatePlatformSurface(config, wi.window_handle, error);
+  if (surface == EGL_NO_SURFACE)
+    surface = CreateFallbackSurface(config, wi.window_handle, error);
   return surface;
 }
 
-EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(EGLenum platform, const char* platform_ext)
+bool OpenGLContextEGL::SupportsSurfaceless() const
+{
+  return GLAD_EGL_KHR_surfaceless_context;
+}
+
+EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(void* display, EGLenum platform, const char* platform_ext)
 {
   const char* extensions_str = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
   if (!extensions_str)
@@ -160,7 +174,7 @@ EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(EGLenum platform, const char*
       (PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
     if (get_platform_display_ext)
     {
-      dpy = get_platform_display_ext(platform, m_wi.display_connection, nullptr);
+      dpy = get_platform_display_ext(platform, display, nullptr);
       m_use_ext_platform_base = (dpy != EGL_NO_DISPLAY);
       if (!m_use_ext_platform_base)
       {
@@ -181,7 +195,7 @@ EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(EGLenum platform, const char*
   return dpy;
 }
 
-EGLSurface OpenGLContextEGL::TryCreatePlatformSurface(EGLConfig config, void* win, Error* error)
+EGLSurface OpenGLContextEGL::TryCreatePlatformSurface(EGLConfig config, void* window, Error* error)
 {
   EGLSurface surface = EGL_NO_SURFACE;
   if (m_use_ext_platform_base)
@@ -190,7 +204,7 @@ EGLSurface OpenGLContextEGL::TryCreatePlatformSurface(EGLConfig config, void* wi
       (PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC)eglGetProcAddress("eglCreatePlatformWindowSurfaceEXT");
     if (create_platform_window_surface_ext)
     {
-      surface = create_platform_window_surface_ext(m_display, config, win, nullptr);
+      surface = create_platform_window_surface_ext(m_display, config, window, nullptr);
       if (surface == EGL_NO_SURFACE)
       {
         const EGLint err = eglGetError();
@@ -206,11 +220,11 @@ EGLSurface OpenGLContextEGL::TryCreatePlatformSurface(EGLConfig config, void* wi
   return surface;
 }
 
-EGLDisplay OpenGLContextEGL::GetFallbackDisplay(Error* error)
+EGLDisplay OpenGLContextEGL::GetFallbackDisplay(void* display, Error* error)
 {
   WARNING_LOG("Using fallback eglGetDisplay() path.");
 
-  EGLDisplay dpy = eglGetDisplay(m_wi.display_connection);
+  EGLDisplay dpy = eglGetDisplay((EGLNativeDisplayType)display);
   if (dpy == EGL_NO_DISPLAY)
   {
     const EGLint err = eglGetError();
@@ -234,61 +248,56 @@ EGLSurface OpenGLContextEGL::CreateFallbackSurface(EGLConfig config, void* win, 
   return surface;
 }
 
+void OpenGLContextEGL::DestroyPlatformSurface(EGLSurface surface)
+{
+  eglDestroySurface(m_display, surface);
+}
+
 void* OpenGLContextEGL::GetProcAddress(const char* name)
 {
   return reinterpret_cast<void*>(eglGetProcAddress(name));
 }
 
-bool OpenGLContextEGL::ChangeSurface(const WindowInfo& new_wi)
+OpenGLContext::SurfaceHandle OpenGLContextEGL::CreateSurface(WindowInfo& wi, Error* error /* = nullptr */)
 {
-  const bool was_current = (eglGetCurrentContext() == m_context);
-  if (was_current)
-    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-  if (m_surface != EGL_NO_SURFACE)
+  if (wi.IsSurfaceless()) [[unlikely]]
   {
-    eglDestroySurface(m_display, m_surface);
-    m_surface = EGL_NO_SURFACE;
+    Error::SetStringView(error, "Trying to create a surfaceless surface.");
+    return nullptr;
   }
 
-  m_wi = new_wi;
-  if (!CreateSurface())
-    return false;
+  EGLSurface surface = CreatePlatformSurface(m_config, wi, error);
+  if (surface == EGL_NO_SURFACE)
+    return nullptr;
 
-  if (was_current && !eglMakeCurrent(m_display, m_surface, m_surface, m_context))
-  {
-    ERROR_LOG("Failed to make context current again after surface change");
-    return false;
-  }
-
-  return true;
+  UpdateWindowInfoSize(wi, surface);
+  return (SurfaceHandle)surface;
 }
 
-void OpenGLContextEGL::ResizeSurface(u32 new_surface_width /*= 0*/, u32 new_surface_height /*= 0*/)
+void OpenGLContextEGL::DestroySurface(SurfaceHandle handle)
 {
-  if (new_surface_width == 0 && new_surface_height == 0)
-  {
-    EGLint surface_width, surface_height;
-    if (eglQuerySurface(m_display, m_surface, EGL_WIDTH, &surface_width) &&
-        eglQuerySurface(m_display, m_surface, EGL_HEIGHT, &surface_height)) [[likely]]
-    {
-      m_wi.surface_width = static_cast<u32>(surface_width);
-      m_wi.surface_height = static_cast<u32>(surface_height);
-      return;
-    }
-    else
-    {
-      ERROR_LOG("eglQuerySurface() failed: 0x{:X}", eglGetError());
-    }
-  }
+  // pbuffer surface?
+  if (!handle)
+    return;
 
-  m_wi.surface_width = new_surface_width;
-  m_wi.surface_height = new_surface_height;
+  EGLSurface surface = (EGLSurface)handle;
+  if (eglGetCurrentSurface(EGL_DRAW) == surface)
+    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+
+  DestroyPlatformSurface(surface);
+}
+
+void OpenGLContextEGL::ResizeSurface(WindowInfo& wi, SurfaceHandle handle)
+{
+  if (!handle)
+    return;
+
+  UpdateWindowInfoSize(wi, (EGLSurface)handle);
 }
 
 bool OpenGLContextEGL::SwapBuffers()
 {
-  return eglSwapBuffers(m_display, m_surface);
+  return eglSwapBuffers(m_display, m_current_surface);
 }
 
 bool OpenGLContextEGL::IsCurrent() const
@@ -296,20 +305,29 @@ bool OpenGLContextEGL::IsCurrent() const
   return m_context && eglGetCurrentContext() == m_context;
 }
 
-bool OpenGLContextEGL::MakeCurrent()
+bool OpenGLContextEGL::MakeCurrent(SurfaceHandle surface, Error* error /* = nullptr */)
 {
-  if (!eglMakeCurrent(m_display, m_surface, m_surface, m_context)) [[unlikely]]
+  EGLSurface esurface = surface ? (EGLSurface)surface : GetSurfacelessSurface();
+  if (esurface == m_current_surface)
+    return true;
+
+  if (!eglMakeCurrent(m_display, esurface, esurface, m_context)) [[unlikely]]
   {
-    ERROR_LOG("eglMakeCurrent() failed: 0x{:X}", eglGetError());
+    Error::SetStringFmt(error, "eglMakeCurrent() failed: 0x{:X}", eglGetError());
     return false;
   }
 
+  m_current_surface = esurface;
   return true;
 }
 
 bool OpenGLContextEGL::DoneCurrent()
 {
-  return eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+  if (!eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT))
+    return false;
+
+  m_current_surface = EGL_NO_SURFACE;
+  return true;
 }
 
 bool OpenGLContextEGL::SupportsNegativeSwapInterval() const
@@ -317,17 +335,24 @@ bool OpenGLContextEGL::SupportsNegativeSwapInterval() const
   return m_supports_negative_swap_interval;
 }
 
-bool OpenGLContextEGL::SetSwapInterval(s32 interval)
+bool OpenGLContextEGL::SetSwapInterval(s32 interval, Error* error /* = nullptr */)
 {
-  return eglSwapInterval(m_display, interval);
+  if (!eglSwapInterval(m_display, interval))
+  {
+    Error::SetStringFmt(error, "eglMakeCurrent() failed: 0x{:X}", eglGetError());
+    return false;
+  }
+
+  return true;
 }
 
-std::unique_ptr<OpenGLContext> OpenGLContextEGL::CreateSharedContext(const WindowInfo& wi, Error* error)
+std::unique_ptr<OpenGLContext> OpenGLContextEGL::CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface,
+                                                                     Error* error)
 {
-  std::unique_ptr<OpenGLContextEGL> context = std::make_unique<OpenGLContextEGL>(wi);
+  std::unique_ptr<OpenGLContextEGL> context = std::make_unique<OpenGLContextEGL>();
   context->m_display = m_display;
 
-  if (!context->CreateContextAndSurface(m_version, m_context, false))
+  if (!context->CreateContextAndSurface(wi, surface, m_version, m_context, false, error))
   {
     Error::SetStringView(error, "Failed to create context/surface");
     return nullptr;
@@ -336,63 +361,33 @@ std::unique_ptr<OpenGLContext> OpenGLContextEGL::CreateSharedContext(const Windo
   return context;
 }
 
-bool OpenGLContextEGL::CreateSurface()
+EGLSurface OpenGLContextEGL::GetSurfacelessSurface()
 {
-  if (m_wi.type == WindowInfo::Type::Surfaceless)
-  {
-    if (GLAD_EGL_KHR_surfaceless_context)
-      return true;
-    else
-      return CreatePBufferSurface();
-  }
-
-  Error error;
-  m_surface = CreatePlatformSurface(m_config, m_wi.window_handle, &error);
-  if (m_surface == EGL_NO_SURFACE)
-  {
-    ERROR_LOG("Failed to create platform surface: {}", error.GetDescription());
-    return false;
-  }
-
-  // Some implementations may require the size to be queried at runtime.
-  EGLint surface_width, surface_height;
-  if (eglQuerySurface(m_display, m_surface, EGL_WIDTH, &surface_width) &&
-      eglQuerySurface(m_display, m_surface, EGL_HEIGHT, &surface_height))
-  {
-    m_wi.surface_width = static_cast<u32>(surface_width);
-    m_wi.surface_height = static_cast<u32>(surface_height);
-  }
-  else
-  {
-    ERROR_LOG("eglQuerySurface() failed: 0x{:X}", eglGetError());
-  }
-
-  m_wi.surface_format = GetSurfaceTextureFormat();
-
-  return true;
+  return SupportsSurfaceless() ? EGL_NO_SURFACE : GetPBufferSurface(nullptr);
 }
 
-bool OpenGLContextEGL::CreatePBufferSurface()
+EGLSurface OpenGLContextEGL::GetPBufferSurface(Error* error)
 {
-  const u32 width = std::max<u32>(m_wi.surface_width, 1);
-  const u32 height = std::max<u32>(m_wi.surface_height, 1);
+  if (m_pbuffer_surface)
+    return m_pbuffer_surface;
 
-  // TODO: Format
   EGLint attrib_list[] = {
-    EGL_WIDTH, static_cast<EGLint>(width), EGL_HEIGHT, static_cast<EGLint>(height), EGL_NONE,
+    EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE,
   };
 
-  m_surface = eglCreatePbufferSurface(m_display, m_config, attrib_list);
-  if (!m_surface) [[unlikely]]
+  m_pbuffer_surface = eglCreatePbufferSurface(m_display, m_config, attrib_list);
+  if (!m_pbuffer_surface) [[unlikely]]
   {
-    ERROR_LOG("eglCreatePbufferSurface() failed: {}", eglGetError());
-    return false;
+    if (error)
+      error->SetStringFmt("eglCreatePbufferSurface() failed: {}", eglGetError());
+    else
+      ERROR_LOG("eglCreatePbufferSurface() failed: {}", eglGetError());
+
+    return nullptr;
   }
 
-  m_wi.surface_format = GetSurfaceTextureFormat();
-
-  DEV_LOG("Created {}x{} pbuffer surface", width, height);
-  return true;
+  DEV_LOG("Created pbuffer surface");
+  return m_pbuffer_surface;
 }
 
 bool OpenGLContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Format format)
@@ -425,8 +420,21 @@ bool OpenGLContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Fo
   }
 }
 
-GPUTexture::Format OpenGLContextEGL::GetSurfaceTextureFormat() const
+void OpenGLContextEGL::UpdateWindowInfoSize(WindowInfo& wi, EGLSurface surface) const
 {
+  // Some implementations may require the size to be queried at runtime.
+  EGLint surface_width, surface_height;
+  if (eglQuerySurface(m_display, surface, EGL_WIDTH, &surface_width) &&
+      eglQuerySurface(m_display, surface, EGL_HEIGHT, &surface_height))
+  {
+    wi.surface_width = static_cast<u16>(surface_width);
+    wi.surface_height = static_cast<u16>(surface_height);
+  }
+  else
+  {
+    ERROR_LOG("eglQuerySurface() failed: 0x{:X}", eglGetError());
+  }
+
   int red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
   eglGetConfigAttrib(m_display, m_config, EGL_RED_SIZE, &red_size);
   eglGetConfigAttrib(m_display, m_config, EGL_GREEN_SIZE, &green_size);
@@ -435,48 +443,25 @@ GPUTexture::Format OpenGLContextEGL::GetSurfaceTextureFormat() const
 
   if (red_size == 5 && green_size == 6 && blue_size == 5)
   {
-    return GPUTexture::Format::RGB565;
+    wi.surface_format = GPUTexture::Format::RGB565;
   }
   else if (red_size == 5 && green_size == 5 && blue_size == 5 && alpha_size == 1)
   {
-    return GPUTexture::Format::RGBA5551;
+    wi.surface_format = GPUTexture::Format::RGBA5551;
   }
   else if (red_size == 8 && green_size == 8 && blue_size == 8 && alpha_size == 8)
   {
-    return GPUTexture::Format::RGBA8;
+    wi.surface_format = GPUTexture::Format::RGBA8;
   }
   else
   {
     ERROR_LOG("Unknown surface format: R={}, G={}, B={}, A={}", red_size, green_size, blue_size, alpha_size);
-    return GPUTexture::Format::RGBA8;
+    wi.surface_format = GPUTexture::Format::RGBA8;
   }
 }
 
-void OpenGLContextEGL::DestroyContext()
-{
-  if (eglGetCurrentContext() == m_context)
-    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-  if (m_context != EGL_NO_CONTEXT)
-  {
-    eglDestroyContext(m_display, m_context);
-    m_context = EGL_NO_CONTEXT;
-  }
-}
-
-void OpenGLContextEGL::DestroySurface()
-{
-  if (eglGetCurrentSurface(EGL_DRAW) == m_surface)
-    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-  if (m_surface != EGL_NO_SURFACE)
-  {
-    eglDestroySurface(m_display, m_surface);
-    m_surface = EGL_NO_SURFACE;
-  }
-}
-
-bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_context)
+bool OpenGLContextEGL::CreateContext(bool surfaceless, GPUTexture::Format surface_format, const Version& version,
+                                     EGLContext share_context, Error* error)
 {
   DEV_LOG("Trying version {}.{} ({})", version.major_version, version.minor_version,
           version.profile == OpenGLContext::Profile::ES ?
@@ -489,18 +474,14 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
                                       ((version.major_version == 2) ? EGL_OPENGL_ES2_BIT : EGL_OPENGL_ES_BIT)) :
       EGL_OPENGL_BIT,
     EGL_SURFACE_TYPE,
-    (m_wi.type != WindowInfo::Type::Surfaceless) ? EGL_WINDOW_BIT : 0,
+    surfaceless ? 0 : EGL_WINDOW_BIT,
   };
   int nsurface_attribs = 4;
 
-  const GPUTexture::Format format = m_wi.surface_format;
-  if (format == GPUTexture::Format::Unknown)
-  {
-    WARNING_LOG("Surface format not specified, assuming RGBA8.");
-    m_wi.surface_format = GPUTexture::Format::RGBA8;
-  }
+  if (surface_format == GPUTexture::Format::Unknown)
+    surface_format = GPUTexture::Format::RGBA8;
 
-  switch (m_wi.surface_format)
+  switch (surface_format)
   {
     case GPUTexture::Format::RGBA8:
       surface_attribs[nsurface_attribs++] = EGL_RED_SIZE;
@@ -522,11 +503,8 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
       surface_attribs[nsurface_attribs++] = 5;
       break;
 
-    case GPUTexture::Format::Unknown:
-      break;
-
     default:
-      UnreachableCode();
+      Error::SetStringFmt(error, "Unsupported texture format {}", GPUTexture::GetFormatName(surface_format));
       break;
   }
 
@@ -536,14 +514,14 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
   EGLint num_configs;
   if (!eglChooseConfig(m_display, surface_attribs, nullptr, 0, &num_configs) || num_configs == 0)
   {
-    ERROR_LOG("eglChooseConfig() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
+    Error::SetStringFmt(error, "eglChooseConfig() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
     return false;
   }
 
   std::vector<EGLConfig> configs(static_cast<u32>(num_configs));
   if (!eglChooseConfig(m_display, surface_attribs, configs.data(), num_configs, &num_configs))
   {
-    ERROR_LOG("eglChooseConfig() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
+    Error::SetStringFmt(error, "eglChooseConfig() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
     return false;
   }
   configs.resize(static_cast<u32>(num_configs));
@@ -551,7 +529,7 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
   std::optional<EGLConfig> config;
   for (EGLConfig check_config : configs)
   {
-    if (CheckConfigSurfaceFormat(check_config, m_wi.surface_format))
+    if (CheckConfigSurfaceFormat(check_config, surface_format))
     {
       config = check_config;
       break;
@@ -578,14 +556,15 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
 
   if (!eglBindAPI((version.profile == Profile::ES) ? EGL_OPENGL_ES_API : EGL_OPENGL_API))
   {
-    ERROR_LOG("eglBindAPI({}) failed", (version.profile == Profile::ES) ? "EGL_OPENGL_ES_API" : "EGL_OPENGL_API");
+    Error::SetStringFmt(error, "eglBindAPI({}) failed",
+                        (version.profile == Profile::ES) ? "EGL_OPENGL_ES_API" : "EGL_OPENGL_API");
     return false;
   }
 
   m_context = eglCreateContext(m_display, config.value(), share_context, attribs);
   if (!m_context)
   {
-    ERROR_LOG("eglCreateContext() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
+    Error::SetStringFmt(error, "eglCreateContext() failed: 0x{:x}", static_cast<unsigned>(eglGetError()));
     return false;
   }
 
@@ -611,30 +590,62 @@ bool OpenGLContextEGL::CreateContext(const Version& version, EGLContext share_co
   return true;
 }
 
-bool OpenGLContextEGL::CreateContextAndSurface(const Version& version, EGLContext share_context, bool make_current)
+bool OpenGLContextEGL::CreateContextAndSurface(WindowInfo& wi, SurfaceHandle* surface, const Version& version,
+                                               EGLContext share_context, bool make_current, Error* error)
 {
-  if (!CreateContext(version, share_context))
+  if (!CreateContext(wi.IsSurfaceless(), wi.surface_format, version, share_context, error))
     return false;
 
-  if (!CreateSurface())
+  // create actual surface, need to handle surfaceless here
+  EGLSurface esurface;
+  if (wi.IsSurfaceless())
   {
-    ERROR_LOG("Failed to create surface for context");
-    eglDestroyContext(m_display, m_context);
-    m_context = EGL_NO_CONTEXT;
-    return false;
+    if (!SupportsSurfaceless())
+    {
+      esurface = GetPBufferSurface(error);
+      if (esurface == EGL_NO_SURFACE)
+      {
+        ERROR_LOG("Failed to create pbuffer surface for context");
+        eglDestroyContext(m_display, m_context);
+        m_context = EGL_NO_SURFACE;
+        return false;
+      }
+    }
+    else
+    {
+      esurface = EGL_NO_SURFACE;
+    }
+
+    *surface = nullptr;
+  }
+  else
+  {
+    esurface = CreatePlatformSurface(m_config, wi, error);
+    if (esurface == EGL_NO_SURFACE)
+    {
+      ERROR_LOG("Failed to create surface for context");
+      eglDestroyContext(m_display, m_context);
+      m_context = EGL_NO_SURFACE;
+      return false;
+    }
+
+    UpdateWindowInfoSize(wi, esurface);
+    *surface = esurface;
   }
 
-  if (make_current && !eglMakeCurrent(m_display, m_surface, m_surface, m_context))
+  if (make_current)
   {
-    ERROR_LOG("eglMakeCurrent() failed: 0x{:X}", eglGetError());
-    if (m_surface != EGL_NO_SURFACE)
+    if (!eglMakeCurrent(m_display, esurface, esurface, m_context))
     {
-      eglDestroySurface(m_display, m_surface);
-      m_surface = EGL_NO_SURFACE;
+      Error::SetStringFmt(error, "eglMakeCurrent() failed: 0x{:X}", eglGetError());
+      if (esurface != EGL_NO_SURFACE && esurface != m_pbuffer_surface)
+        DestroyPlatformSurface(esurface);
+      eglDestroyContext(m_display, m_context);
+      m_context = EGL_NO_CONTEXT;
+      return false;
     }
-    eglDestroyContext(m_display, m_context);
-    m_context = EGL_NO_CONTEXT;
-    return false;
+
+    m_current_surface = esurface;
   }
 
   return true;

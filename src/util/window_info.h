@@ -11,7 +11,7 @@
 // Contains the information required to create a graphics context in a window.
 struct WindowInfo
 {
-  enum class Type
+  enum class Type : u8
   {
     Surfaceless,
     Win32,
@@ -19,22 +19,17 @@ struct WindowInfo
     Wayland,
     MacOS,
     Android,
-    Display,
+    SDL,
   };
 
   Type type = Type::Surfaceless;
-  void* display_connection = nullptr;
-  void* window_handle = nullptr;
-  u32 surface_width = 0;
-  u32 surface_height = 0;
+  GPUTexture::Format surface_format = GPUTexture::Format::Unknown;
+  u16 surface_width = 0;
+  u16 surface_height = 0;
   float surface_refresh_rate = 0.0f;
   float surface_scale = 1.0f;
-  GPUTexture::Format surface_format = GPUTexture::Format::Unknown;
-
-  // Needed for macOS.
-#ifdef __APPLE__
-  void* surface_handle = nullptr;
-#endif
+  void* display_connection = nullptr;
+  void* window_handle = nullptr;
 
   ALWAYS_INLINE bool IsSurfaceless() const { return type == Type::Surfaceless; }
 

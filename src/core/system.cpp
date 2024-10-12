@@ -145,21 +145,26 @@ static bool ReadExecutableFromImage(IsoReader& iso, std::string* out_executable_
 static GameHash GetGameHashFromBuffer(std::string_view exe_name, std::span<const u8> exe_buffer,
                                       const IsoReader::ISOPrimaryVolumeDescriptor& iso_pvd, u32 track_1_length);
 
+/// Settings that are looked up on demand.
+static bool ShouldStartFullscreen();
+static bool ShouldStartPaused();
+
 /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
 static void CheckForSettingsChanges(const Settings& old_settings);
 static void WarnAboutUnsafeSettings();
 static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
-static bool Initialize(bool force_software_renderer, Error* error);
+static bool Initialize(bool force_software_renderer, bool fullscreen, Error* error);
 static bool LoadBIOS(Error* error);
 static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* error);
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
 
-static bool CreateGPU(GPURenderer renderer, bool is_switching, Error* error);
+static bool CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen, Error* error);
 static bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
 static void HandleHostGPUDeviceLost();
+static void HandleExclusiveFullscreenLost();
 
 /// Returns true if boot is being fast forwarded.
 static bool IsFastForwardingBoot();
@@ -1201,10 +1206,11 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   {
     PostProcessing::Shutdown();
     Host::ReleaseGPUDevice();
+    Host::ReleaseRenderWindow();
   }
 
   Error error;
-  if (!CreateGPU(renderer, true, &error))
+  if (!CreateGPU(renderer, true, Host::IsFullscreen(), &error))
   {
     if (!IsStartupCancelled())
       Host::ReportErrorAsync("Error", error.GetDescription());
@@ -1263,6 +1269,12 @@ void System::HandleHostGPUDeviceLost()
     "HostGPUDeviceLost", ICON_EMOJI_WARNING,
     TRANSLATE_STR("System", "Host GPU device encountered an error and has recovered. This may cause broken rendering."),
     Host::OSD_CRITICAL_ERROR_DURATION);
+}
+
+void System::HandleExclusiveFullscreenLost()
+{
+  WARNING_LOG("Lost exclusive fullscreen.");
+  Host::SetFullscreen(false);
 }
 
 void System::LoadSettings(bool display_osd_messages)
@@ -1371,6 +1383,9 @@ void System::SetDefaultSettings(SettingsInterface& si)
     temp.controller_types[i] = g_settings.controller_types[i];
 
   temp.Save(si, false);
+
+  si.SetBoolValue("Main", "StartPaused", false);
+  si.SetBoolValue("Main", "StartFullscreen", false);
 
 #if !defined(_WIN32) && !defined(__ANDROID__)
   // On Linux, default the console to whether standard input is currently available.
@@ -1792,7 +1807,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Component setup.
-  if (!Initialize(parameters.force_software_renderer, error))
+  if (!Initialize(parameters.force_software_renderer, parameters.override_fullscreen.value_or(ShouldStartFullscreen()),
+                  error))
   {
     s_boot_mode = System::BootMode::None;
     s_state = State::Shutdown;
@@ -1852,7 +1868,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (parameters.start_media_capture)
     StartMediaCapture({});
 
-  if (g_settings.start_paused || parameters.override_start_paused.value_or(false))
+  if (ShouldStartPaused() || parameters.override_start_paused.value_or(false))
     PauseSystem(true);
 
   UpdateSpeedLimiterState();
@@ -1860,7 +1876,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   return true;
 }
 
-bool System::Initialize(bool force_software_renderer, Error* error)
+bool System::Initialize(bool force_software_renderer, bool fullscreen, Error* error)
 {
   g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
   s_max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
@@ -1910,7 +1926,7 @@ bool System::Initialize(bool force_software_renderer, Error* error)
   Bus::Initialize();
   CPU::Initialize();
 
-  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, error))
+  if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, fullscreen, error))
   {
     CPU::Shutdown();
     Bus::Shutdown();
@@ -1927,10 +1943,7 @@ bool System::Initialize(bool force_software_renderer, Error* error)
   {
     g_gpu.reset();
     if (!s_keep_gpu_device_on_shutdown)
-    {
       Host::ReleaseGPUDevice();
-      Host::ReleaseRenderWindow();
-    }
     if (g_settings.gpu_pgxp_enable)
       CPU::PGXP::Shutdown();
     CPU::Shutdown();
@@ -2017,7 +2030,6 @@ void System::DestroySystem()
   else
   {
     Host::ReleaseGPUDevice();
-    Host::ReleaseRenderWindow();
   }
 
   s_bios_hash = {};
@@ -2188,12 +2200,13 @@ void System::FrameDone()
   const bool is_unique_frame = (s_last_presented_internal_frame_number != s_internal_frame_number);
   s_last_presented_internal_frame_number = s_internal_frame_number;
 
-  const bool skip_this_frame = (((s_skip_presenting_duplicate_frames && !is_unique_frame &&
-                                  s_skipped_frame_count < MAX_SKIPPED_DUPLICATE_FRAME_COUNT) ||
-                                 (!s_optimal_frame_pacing && current_time > s_next_frame_time &&
-                                  s_skipped_frame_count < MAX_SKIPPED_TIMEOUT_FRAME_COUNT) ||
-                                 g_gpu_device->ShouldSkipPresentingFrame()) &&
-                                !s_syncing_to_host_with_vsync && !IsExecutionInterrupted());
+  const bool skip_this_frame =
+    (((s_skip_presenting_duplicate_frames && !is_unique_frame &&
+       s_skipped_frame_count < MAX_SKIPPED_DUPLICATE_FRAME_COUNT) ||
+      (!s_optimal_frame_pacing && current_time > s_next_frame_time &&
+       s_skipped_frame_count < MAX_SKIPPED_TIMEOUT_FRAME_COUNT) ||
+      (g_gpu_device->HasMainSwapChain() && g_gpu_device->GetMainSwapChain()->ShouldSkipPresentingFrame())) &&
+     !s_syncing_to_host_with_vsync && !IsExecutionInterrupted());
   if (!skip_this_frame)
   {
     s_skipped_frame_count = 0;
@@ -2210,7 +2223,7 @@ void System::FrameDone()
       const bool do_present = PresentDisplay(true, 0);
       Throttle(current_time);
       if (do_present)
-        g_gpu_device->SubmitPresent();
+        g_gpu_device->SubmitPresent(g_gpu_device->GetMainSwapChain());
     }
     else
     {
@@ -2372,7 +2385,7 @@ void System::IncrementInternalFrameNumber()
   s_internal_frame_number++;
 }
 
-bool System::CreateGPU(GPURenderer renderer, bool is_switching, Error* error)
+bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen, Error* error)
 {
   const RenderAPI api = Settings::GetRenderAPIForRenderer(renderer);
 
@@ -2387,7 +2400,7 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, Error* error)
     }
 
     Host::ReleaseGPUDevice();
-    if (!Host::CreateGPUDevice(api, error))
+    if (!Host::CreateGPUDevice(api, fullscreen, error))
     {
       Host::ReleaseRenderWindow();
       return false;
@@ -3435,9 +3448,9 @@ void System::UpdateSpeedLimiterState()
   s_syncing_to_host = false;
   s_syncing_to_host_with_vsync = false;
 
-  if (g_settings.sync_to_host_refresh_rate)
+  if (g_settings.sync_to_host_refresh_rate && g_gpu_device->HasMainSwapChain())
   {
-    const float host_refresh_rate = g_gpu_device->GetWindowInfo().surface_refresh_rate;
+    const float host_refresh_rate = g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate;
     if (host_refresh_rate > 0.0f)
     {
       const float ratio = host_refresh_rate / System::GetThrottleFrequency();
@@ -3498,14 +3511,23 @@ void System::UpdateDisplayVSync()
   // Avoid flipping vsync on and off by manually throttling when vsync is on.
   const GPUVSyncMode vsync_mode = GetEffectiveVSyncMode();
   const bool allow_present_throttle = ShouldAllowPresentThrottle();
-  if (g_gpu_device->GetVSyncMode() == vsync_mode && g_gpu_device->IsPresentThrottleAllowed() == allow_present_throttle)
+  if (!g_gpu_device->HasMainSwapChain() ||
+      (g_gpu_device->GetMainSwapChain()->GetVSyncMode() == vsync_mode &&
+       g_gpu_device->GetMainSwapChain()->IsPresentThrottleAllowed() == allow_present_throttle))
+  {
     return;
+  }
 
   VERBOSE_LOG("VSync: {}{}{}", vsync_modes[static_cast<size_t>(vsync_mode)],
               s_syncing_to_host_with_vsync ? " (for throttling)" : "",
               allow_present_throttle ? " (present throttle allowed)" : "");
 
-  g_gpu_device->SetVSyncMode(vsync_mode, allow_present_throttle);
+  Error error;
+  if (!g_gpu_device->GetMainSwapChain()->SetVSyncMode(vsync_mode, allow_present_throttle, &error))
+  {
+    ERROR_LOG("Failed to update vsync mode to {}: {}", vsync_modes[static_cast<size_t>(vsync_mode)],
+              error.GetDescription());
+  }
 }
 
 GPUVSyncMode System::GetEffectiveVSyncMode()
@@ -4227,6 +4249,16 @@ bool System::SwitchMediaSubImage(u32 index)
 
   ClearMemorySaveStates();
   return true;
+}
+
+bool System::ShouldStartFullscreen()
+{
+  return Host::GetBoolSettingValue("Main", "StartFullscreen", false);
+}
+
+bool System::ShouldStartPaused()
+{
+  return Host::GetBoolSettingValue("Main", "StartPaused", false);
 }
 
 void System::CheckForSettingsChanges(const Settings& old_settings)
@@ -5192,7 +5224,7 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
   u32 capture_height =
     Host::GetUIntSettingValue("MediaCapture", "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
   const GPUTexture::Format capture_format =
-    g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
+    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
   const float fps = System::GetThrottleFrequency();
   if (capture_video)
   {
@@ -5639,11 +5671,14 @@ bool System::PresentDisplay(bool explicit_present, u64 present_time)
   ImGuiManager::RenderOverlayWindows();
   ImGuiManager::RenderDebugWindows();
 
-  const GPUDevice::PresentResult pres = g_gpu ? g_gpu->PresentDisplay() : g_gpu_device->BeginPresent();
+  const GPUDevice::PresentResult pres =
+    g_gpu_device->HasMainSwapChain() ?
+      (g_gpu ? g_gpu->PresentDisplay() : g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain())) :
+      GPUDevice::PresentResult::SkipPresent;
   if (pres == GPUDevice::PresentResult::OK)
   {
-    g_gpu_device->RenderImGui();
-    g_gpu_device->EndPresent(explicit_present, present_time);
+    g_gpu_device->RenderImGui(g_gpu_device->GetMainSwapChain());
+    g_gpu_device->EndPresent(g_gpu_device->GetMainSwapChain(), explicit_present, present_time);
 
     if (g_gpu_device->IsGPUTimingEnabled())
     {
@@ -5655,9 +5690,13 @@ bool System::PresentDisplay(bool explicit_present, u64 present_time)
   {
     if (pres == GPUDevice::PresentResult::DeviceLost) [[unlikely]]
       HandleHostGPUDeviceLost();
+    else if (pres == GPUDevice::PresentResult::ExclusiveFullscreenLost)
+      HandleExclusiveFullscreenLost();
+    else
+      g_gpu_device->FlushCommands();
 
     // Still need to kick ImGui or it gets cranky.
-    ImGui::Render();
+    ImGui::EndFrame();
   }
 
   ImGuiManager::NewFrame();

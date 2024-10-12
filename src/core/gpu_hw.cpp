@@ -525,7 +525,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     // When using very high upscaling, it's possible that we don't have enough VRAM for two sets of buffers.
     // Purge the pool, and idle the GPU so that all video memory is freed prior to creating the new buffers.
     g_gpu_device->PurgeTexturePool();
-    g_gpu_device->ExecuteAndWaitForGPUIdle();
+    g_gpu_device->WaitForGPUIdle();
 
     if (!CreateBuffers())
       Panic("Failed to recreate buffers.");
@@ -680,7 +680,7 @@ u32 GPU_HW::CalculateResolutionScale() const
   {
     // Auto scaling.
     if (m_crtc_state.display_width == 0 || m_crtc_state.display_height == 0 || m_crtc_state.display_vram_width == 0 ||
-        m_crtc_state.display_vram_height == 0 || m_GPUSTAT.display_disable)
+        m_crtc_state.display_vram_height == 0 || m_GPUSTAT.display_disable || !g_gpu_device->HasMainSwapChain())
     {
       // When the system is starting and all borders crop is enabled, the registers are zero, and
       // display_height therefore is also zero. Keep the existing resolution until it updates.
@@ -689,8 +689,8 @@ u32 GPU_HW::CalculateResolutionScale() const
     else
     {
       GSVector4i display_rect, draw_rect;
-      CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), true, true, &display_rect,
-                        &draw_rect);
+      CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(), g_gpu_device->GetMainSwapChain()->GetHeight(),
+                        true, true, &display_rect, &draw_rect);
 
       // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
       // anamorphic aspect ratio.

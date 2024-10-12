@@ -15,7 +15,7 @@
 
 #include "D3D12MemAlloc.h"
 
-LOG_CHANNEL(D3D12Device);
+LOG_CHANNEL(GPUDevice);
 
 D3D12Texture::D3D12Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
                            DXGI_FORMAT dxgi_format, ComPtr<ID3D12Resource> resource,

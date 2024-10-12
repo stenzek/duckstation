@@ -21,7 +21,7 @@
 
 #include <cerrno>
 
-LOG_CHANNEL(OpenGLDevice);
+LOG_CHANNEL(GPUDevice);
 
 struct PipelineDiskCacheFooter
 {

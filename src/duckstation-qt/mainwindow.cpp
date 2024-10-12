@@ -220,30 +220,25 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 
 #endif
 
-std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, bool fullscreen, bool render_to_main,
-                                                          bool surfaceless, bool use_main_window_pos)
+std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool fullscreen, bool render_to_main, bool surfaceless,
+                                                          bool use_main_window_pos, Error* error)
 {
-  DEV_LOG("acquireRenderWindow() recreate={} fullscreen={} render_to_main={} surfaceless={} use_main_window_pos={}",
-          recreate_window ? "true" : "false", fullscreen ? "true" : "false", render_to_main ? "true" : "false",
-          surfaceless ? "true" : "false", use_main_window_pos ? "true" : "false");
+  DEV_LOG("acquireRenderWindow() fullscreen={} render_to_main={} surfaceless={} use_main_window_pos={}",
+          fullscreen ? "true" : "false", render_to_main ? "true" : "false", surfaceless ? "true" : "false",
+          use_main_window_pos ? "true" : "false");
 
   QWidget* container =
     m_display_container ? static_cast<QWidget*>(m_display_container) : static_cast<QWidget*>(m_display_widget);
   const bool is_fullscreen = isRenderingFullscreen();
   const bool is_rendering_to_main = isRenderingToMain();
   const bool changing_surfaceless = (!m_display_widget != surfaceless);
-  if (m_display_created && !recreate_window && fullscreen == is_fullscreen && is_rendering_to_main == render_to_main &&
-      !changing_surfaceless)
-  {
-    return m_display_widget ? m_display_widget->getWindowInfo() : WindowInfo();
-  }
 
   // Skip recreating the surface if we're just transitioning between fullscreen and windowed with render-to-main off.
   // .. except on Wayland, where everything tends to break if you don't recreate.
   const bool has_container = (m_display_container != nullptr);
   const bool needs_container = DisplayContainer::isNeeded(fullscreen, render_to_main);
-  if (m_display_created && !recreate_window && !is_rendering_to_main && !render_to_main &&
-      has_container == needs_container && !needs_container && !changing_surfaceless)
+  if (m_display_created && !is_rendering_to_main && !render_to_main && has_container == needs_container &&
+      !needs_container && !changing_surfaceless)
   {
     DEV_LOG("Toggling to {} without recreating surface", (fullscreen ? "fullscreen" : "windowed"));
 
@@ -270,7 +265,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
     updateWindowState();
 
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    return m_display_widget->getWindowInfo();
+    return m_display_widget->getWindowInfo(error);
   }
 
   destroyDisplayWidget(surfaceless);
@@ -282,7 +277,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool recreate_window, 
 
   createDisplayWidget(fullscreen, render_to_main, use_main_window_pos);
 
-  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo();
+  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo(error);
   if (!wi.has_value())
   {
     QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));

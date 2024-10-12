@@ -21,7 +21,7 @@
 #include <mach/mach_time.h>
 #include <pthread.h>
 
-LOG_CHANNEL(MetalDevice);
+LOG_CHANNEL(GPUDevice);
 
 // TODO: Disable hazard tracking and issue barriers explicitly.
 
@@ -128,6 +128,7 @@ static void RunOnMainThread(F&& f)
 
 MetalDevice::MetalDevice() : m_current_viewport(0, 0, 1, 1), m_current_scissor(0, 0, 1, 1)
 {
+  m_render_api = RenderAPI::Metal;
 }
 
 MetalDevice::~MetalDevice()
@@ -228,7 +229,6 @@ bool MetalDevice::CreateDevice(std::string_view adapter, std::optional<bool> exc
 void MetalDevice::SetFeatures(FeatureMask disabled_features)
 {
   // Set version to Metal 2.3, that's all we're using. Use SPIRV-Cross version encoding.
-  m_render_api = RenderAPI::Metal;
   m_render_api_version = 20300;
   m_max_texture_size = GetMetalMaxTextureSize(m_device);
   m_max_multisamples = GetMetalMaxMultisamples(m_device);
@@ -415,6 +415,8 @@ void MetalDevice::DestroyDevice()
     [m_render_cmdbuf release];
     m_render_cmdbuf = nil;
   }
+
+  m_main_swap_chain.reset();
 
   DestroyBuffers();
 

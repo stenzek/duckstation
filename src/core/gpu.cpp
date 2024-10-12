@@ -1145,8 +1145,16 @@ void GPU::UpdateCommandTickEvent()
 void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
                                                        float* display_y) const
 {
+  if (!g_gpu_device->HasMainSwapChain()) [[unlikely]]
+  {
+    *display_x = 0.0f;
+    *display_y = 0.0f;
+    return;
+  }
+
   GSVector4i display_rc, draw_rc;
-  CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), true, true, &display_rc, &draw_rc);
+  CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(), g_gpu_device->GetMainSwapChain()->GetHeight(), true,
+                    true, &display_rc, &draw_rc);
 
   // convert coordinates to active display region, then to full display region
   const float scaled_display_x =
@@ -1644,7 +1652,8 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
   if (display)
   {
     plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-    plconfig.SetTargetFormats(g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8);
+    plconfig.SetTargetFormats(g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() :
+                                                                 GPUTexture::Format::RGBA8);
 
     std::string vs = shadergen.GenerateDisplayVertexShader();
     std::string fs;
@@ -1839,10 +1848,13 @@ GPUDevice::PresentResult GPU::PresentDisplay()
 {
   FlushRender();
 
+  if (!g_gpu_device->HasMainSwapChain())
+    return GPUDevice::PresentResult::SkipPresent;
+
   GSVector4i display_rect;
   GSVector4i draw_rect;
-  CalculateDrawRect(g_gpu_device->GetWindowWidth(), g_gpu_device->GetWindowHeight(), !g_settings.debugging.show_vram,
-                    true, &display_rect, &draw_rect);
+  CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(), g_gpu_device->GetMainSwapChain()->GetHeight(),
+                    !g_settings.debugging.show_vram, true, &display_rect, &draw_rect);
   return RenderDisplay(nullptr, display_rect, draw_rect, !g_settings.debugging.show_vram);
 }
 
@@ -1887,13 +1899,12 @@ GPUDevice::PresentResult GPU::RenderDisplay(GPUTexture* target, const GSVector4i
     }
   }
 
-  const GPUTexture::Format hdformat = target ? target->GetFormat() : g_gpu_device->GetWindowFormat();
-  const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetWindowWidth();
-  const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetWindowHeight();
-  const bool really_postfx =
-    (postfx && PostProcessing::DisplayChain.IsActive() && !g_gpu_device->GetWindowInfo().IsSurfaceless() &&
-     hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
-     PostProcessing::DisplayChain.CheckTargets(hdformat, target_width, target_height));
+  const GPUTexture::Format hdformat = target ? target->GetFormat() : g_gpu_device->GetMainSwapChain()->GetFormat();
+  const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetMainSwapChain()->GetWidth();
+  const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetMainSwapChain()->GetHeight();
+  const bool really_postfx = (postfx && PostProcessing::DisplayChain.IsActive() && g_gpu_device->HasMainSwapChain() &&
+                              hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
+                              PostProcessing::DisplayChain.CheckTargets(hdformat, target_width, target_height));
   const GSVector4i real_draw_rect =
     g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(draw_rect, target_height) : draw_rect;
   if (really_postfx)
@@ -1904,9 +1915,15 @@ GPUDevice::PresentResult GPU::RenderDisplay(GPUTexture* target, const GSVector4i
   else
   {
     if (target)
+    {
       g_gpu_device->SetRenderTarget(target);
-    else if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(); pres != GPUDevice::PresentResult::OK)
-      return pres;
+    }
+    else
+    {
+      const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain());
+      if (pres != GPUDevice::PresentResult::OK)
+        return pres;
+    }
   }
 
   if (display_texture)
@@ -2559,7 +2576,7 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i displ
                                    GPUTexture::Format* out_format)
 {
   const GPUTexture::Format hdformat =
-    g_gpu_device->HasSurface() ? g_gpu_device->GetWindowFormat() : GPUTexture::Format::RGBA8;
+    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
 
   auto render_texture =
     g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget, hdformat);
@@ -2605,8 +2622,8 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i displ
 void GPU::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height, GSVector4i* display_rect,
                                   GSVector4i* draw_rect) const
 {
-  *width = g_gpu_device->GetWindowWidth();
-  *height = g_gpu_device->GetWindowHeight();
+  *width = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetWidth() : 1;
+  *height = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetHeight() : 1;
   CalculateDrawRect(*width, *height, true, !g_settings.debugging.show_vram, display_rect, draw_rect);
 
   const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_settings.debugging.show_vram);

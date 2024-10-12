@@ -84,7 +84,7 @@ static std::tuple<float, float> GetMinMax(std::span<const float> values)
 void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, int progress_max /*= -1*/,
                                 int progress_value /*= -1*/)
 {
-  if (!g_gpu_device)
+  if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
   {
     INFO_LOG("{}: {}/{}", message, progress_value, progress_max);
     return;
@@ -160,10 +160,11 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
 
   // TODO: Glass effect or something.
 
-  if (g_gpu_device->BeginPresent() == GPUDevice::PresentResult::OK)
+  GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
+  if (g_gpu_device->BeginPresent(swap_chain) == GPUDevice::PresentResult::OK)
   {
-    g_gpu_device->RenderImGui();
-    g_gpu_device->EndPresent(false);
+    g_gpu_device->RenderImGui(swap_chain);
+    g_gpu_device->EndPresent(swap_chain, false);
   }
 
   ImGui::NewFrame();

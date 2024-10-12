@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "gpu_device.h"
 #include "vulkan_loader.h"
 #include "vulkan_texture.h"
 #include "window_info.h"
@@ -14,14 +15,9 @@
 #include <optional>
 #include <vector>
 
-class VulkanSwapChain
+class VulkanSwapChain : public GPUSwapChain
 {
 public:
-  // We don't actually need +1 semaphores, or, more than one really.
-  // But, the validation layer gets cranky if we don't fence wait before the next image acquire.
-  // So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
-  static constexpr u32 NUM_SEMAPHORES = 4; // Should be command buffers + 1
-
   ~VulkanSwapChain();
 
   // Creates a vulkan-renderable surface for the specified window handle.
@@ -35,8 +31,7 @@ public:
                                                  VkPresentModeKHR present_mode,
                                                  std::optional<bool> exclusive_fullscreen_control);
 
-  // Determines present mode to use.
-  static bool SelectPresentMode(VkSurfaceKHR surface, GPUVSyncMode* vsync_mode, VkPresentModeKHR* present_mode);
+
 
   ALWAYS_INLINE VkSurfaceKHR GetSurface() const { return m_surface; }
   ALWAYS_INLINE VkSwapchainKHR GetSwapChain() const { return m_swap_chain; }
@@ -74,16 +69,23 @@ public:
   void ResetImageAcquireResult();
 
   bool RecreateSurface(const WindowInfo& new_wi);
-  bool ResizeSwapChain(u32 new_width = 0, u32 new_height = 0, float new_scale = 1.0f);
 
-  // Change vsync enabled state. This may fail as it causes a swapchain recreation.
-  bool SetPresentMode(VkPresentModeKHR present_mode);
+  bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
+  bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
 
 private:
-  VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
-                  std::optional<bool> exclusive_fullscreen_control);
+  // We don't actually need +1 semaphores, or, more than one really.
+  // But, the validation layer gets cranky if we don't fence wait before the next image acquire.
+  // So, add an additional semaphore to ensure that we're never acquiring before fence waiting.
+  static constexpr u32 NUM_SEMAPHORES = 4; // Should be command buffers + 1
+
+  VulkanSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                  std::optional<bool> exclusive_fullscreen_control, VkSurfaceKHR surface);
 
   static std::optional<VkSurfaceFormatKHR> SelectSurfaceFormat(VkSurfaceKHR surface);
+
+  // Determines present mode to use.
+  static bool SelectPresentMode(VkSurfaceKHR surface, GPUVSyncMode* vsync_mode, VkPresentModeKHR* present_mode);
 
   bool CreateSwapChain();
   void DestroySwapChain();
@@ -105,8 +107,6 @@ private:
     VkSemaphore rendering_finished_semaphore;
   };
 
-  WindowInfo m_window_info;
-
   VkSurfaceKHR m_surface = VK_NULL_HANDLE;
   VkSwapchainKHR m_swap_chain = VK_NULL_HANDLE;
 
@@ -117,7 +117,6 @@ private:
   u32 m_current_semaphore = 0;
 
   VkFormat m_format = VK_FORMAT_UNDEFINED;
-  VkPresentModeKHR m_present_mode = VK_PRESENT_MODE_IMMEDIATE_KHR;
 
   std::optional<VkResult> m_image_acquire_result;
   std::optional<bool> m_exclusive_fullscreen_control;

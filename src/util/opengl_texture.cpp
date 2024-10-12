@@ -15,7 +15,7 @@
 #include <limits>
 #include <tuple>
 
-LOG_CHANNEL(OpenGLDevice);
+LOG_CHANNEL(GPUDevice);
 
 // Looking across a range of GPUs, the optimal copy alignment for Vulkan drivers seems
 // to be between 1 (AMD/NV) and 64 (Intel). So, we'll go with 64 here.

@@ -6,17 +6,16 @@
 #include "opengl_context.h"
 #include "opengl_loader.h"
 
-#include "common/windows_headers.h"
-
-#include "glad/wgl.h"
-
 #include <optional>
 
-class OpenGLContextWGL final : public OpenGLContext
+typedef void* SDL_GLContext;
+struct SDL_Window;
+
+class OpenGLContextSDL final : public OpenGLContext
 {
 public:
-  OpenGLContextWGL();
-  ~OpenGLContextWGL() override;
+  OpenGLContextSDL();
+  ~OpenGLContextSDL() override;
 
   static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface,
                                                std::span<const Version> versions_to_try, Error* error);
@@ -34,23 +33,12 @@ public:
   std::unique_ptr<OpenGLContext> CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface, Error* error) override;
 
 private:
-  bool Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try, Error* error);
+  bool Initialize(WindowInfo& wi, SurfaceHandle* surface, std::span<const Version> versions_to_try, bool share_context,
+                  Error* error);
 
-  bool CreateAnyContext(HDC hdc, HGLRC share_context, bool make_current, Error* error);
-  bool CreateVersionContext(const Version& version, HDC hdc, HGLRC share_context, bool make_current, Error* error);
+  bool CreateVersionContext(const Version& version, SDL_Window* window, GPUTexture::Format surface_format,
+                            bool share_context, bool make_current, Error* error);
 
-  HDC CreateDCAndSetPixelFormat(WindowInfo& wi, Error* error);
-  HDC GetPBufferDC(Error* error);
-
-  HDC m_current_dc = {};
-  HGLRC m_rc = {};
-
-  // Can't change pixel format once it's set for a RC.
-  std::optional<int> m_pixel_format;
-
-  // Dummy window for creating a PBuffer off when we're surfaceless.
-  HWND m_dummy_window = {};
-  HDC m_dummy_dc = {};
-  HPBUFFERARB m_pbuffer = {};
-  HDC m_pbuffer_dc = {};
+  SDL_GLContext m_context = nullptr;
+  SDL_Window* m_current_window = nullptr;
 };

@@ -9,7 +9,7 @@
 
 #include <dlfcn.h>
 
-LOG_CHANNEL(OpenGLContext);
+LOG_CHANNEL(GPUDevice);
 
 OpenGLContextAGL::OpenGLContextAGL(const WindowInfo& wi) : OpenGLContext(wi)
 {

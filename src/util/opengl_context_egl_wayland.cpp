@@ -3,89 +3,20 @@
 
 #include "opengl_context_egl_wayland.h"
 
+#include "common/assert.h"
 #include "common/error.h"
 
 #include <dlfcn.h>
 
 static const char* WAYLAND_EGL_MODNAME = "libwayland-egl.so.1";
 
-OpenGLContextEGLWayland::OpenGLContextEGLWayland(const WindowInfo& wi) : OpenGLContextEGL(wi)
-{
-}
+OpenGLContextEGLWayland::OpenGLContextEGLWayland() = default;
 
 OpenGLContextEGLWayland::~OpenGLContextEGLWayland()
 {
-  if (m_wl_window)
-    m_wl_egl_window_destroy(m_wl_window);
+  AssertMsg(m_wl_window_map.empty(), "WL window map should be empty on destructor.");
   if (m_wl_module)
     dlclose(m_wl_module);
-}
-
-std::unique_ptr<OpenGLContext> OpenGLContextEGLWayland::Create(const WindowInfo& wi,
-                                                               std::span<const Version> versions_to_try, Error* error)
-{
-  std::unique_ptr<OpenGLContextEGLWayland> context = std::make_unique<OpenGLContextEGLWayland>(wi);
-  if (!context->LoadModule(error) || !context->Initialize(versions_to_try, error))
-    return nullptr;
-
-  return context;
-}
-
-std::unique_ptr<OpenGLContext> OpenGLContextEGLWayland::CreateSharedContext(const WindowInfo& wi, Error* error)
-{
-  std::unique_ptr<OpenGLContextEGLWayland> context = std::make_unique<OpenGLContextEGLWayland>(wi);
-  context->m_display = m_display;
-
-  if (!context->LoadModule(error) || !context->CreateContextAndSurface(m_version, m_context, false))
-    return nullptr;
-
-  return context;
-}
-
-void OpenGLContextEGLWayland::ResizeSurface(u32 new_surface_width, u32 new_surface_height)
-{
-  if (m_wl_window)
-    m_wl_egl_window_resize(m_wl_window, new_surface_width, new_surface_height, 0, 0);
-
-  OpenGLContextEGL::ResizeSurface(new_surface_width, new_surface_height);
-}
-
-EGLDisplay OpenGLContextEGLWayland::GetPlatformDisplay(Error* error)
-{
-  EGLDisplay dpy = TryGetPlatformDisplay(EGL_PLATFORM_WAYLAND_KHR, "EGL_EXT_platform_wayland");
-  if (dpy == EGL_NO_DISPLAY)
-    dpy = GetFallbackDisplay(error);
-
-  return dpy;
-}
-
-EGLSurface OpenGLContextEGLWayland::CreatePlatformSurface(EGLConfig config, void* win, Error* error)
-{
-  if (m_wl_window)
-  {
-    m_wl_egl_window_destroy(m_wl_window);
-    m_wl_window = nullptr;
-  }
-
-  m_wl_window = m_wl_egl_window_create(static_cast<wl_surface*>(win), m_wi.surface_width, m_wi.surface_height);
-  if (!m_wl_window)
-  {
-    Error::SetStringView(error, "wl_egl_window_create() failed");
-    return EGL_NO_SURFACE;
-  }
-
-  EGLSurface surface = TryCreatePlatformSurface(config, m_wl_window, error);
-  if (surface == EGL_NO_SURFACE)
-  {
-    surface = CreateFallbackSurface(config, m_wl_window, error);
-    if (surface == EGL_NO_SURFACE)
-    {
-      m_wl_egl_window_destroy(m_wl_window);
-      m_wl_window = nullptr;
-    }
-  }
-
-  return surface;
 }
 
 bool OpenGLContextEGLWayland::LoadModule(Error* error)
@@ -111,4 +42,79 @@ bool OpenGLContextEGLWayland::LoadModule(Error* error)
   }
 
   return true;
+}
+
+EGLDisplay OpenGLContextEGLWayland::GetPlatformDisplay(const WindowInfo& wi, Error* error)
+{
+  EGLDisplay dpy = TryGetPlatformDisplay(wi.display_connection, EGL_PLATFORM_WAYLAND_KHR, "EGL_EXT_platform_wayland");
+  if (dpy == EGL_NO_DISPLAY)
+    dpy = GetFallbackDisplay(wi.display_connection, error);
+
+  return dpy;
+}
+
+EGLSurface OpenGLContextEGLWayland::CreatePlatformSurface(EGLConfig config, const WindowInfo& wi, Error* error)
+{
+  struct wl_egl_window* wl_window =
+    m_wl_egl_window_create(static_cast<wl_surface*>(wi.window_handle), wi.surface_width, wi.surface_height);
+  if (!wl_window)
+  {
+    Error::SetStringView(error, "wl_egl_window_create() failed");
+    return EGL_NO_SURFACE;
+  }
+
+  EGLSurface surface = TryCreatePlatformSurface(config, wl_window, error);
+  if (surface == EGL_NO_SURFACE)
+  {
+    surface = CreateFallbackSurface(config, wl_window, error);
+    if (surface == EGL_NO_SURFACE)
+    {
+      m_wl_egl_window_destroy(wl_window);
+      return nullptr;
+    }
+  }
+
+  m_wl_window_map.emplace(surface, wl_window);
+  return surface;
+}
+
+void OpenGLContextEGLWayland::ResizeSurface(WindowInfo& wi, SurfaceHandle handle)
+{
+  const auto it = m_wl_window_map.find((EGLSurface)handle);
+  AssertMsg(it != m_wl_window_map.end(), "Missing WL window");
+  m_wl_egl_window_resize(it->second, wi.surface_width, wi.surface_height, 0, 0);
+
+  OpenGLContextEGL::ResizeSurface(wi, handle);
+}
+
+void OpenGLContextEGLWayland::DestroyPlatformSurface(EGLSurface surface)
+{
+  const auto it = m_wl_window_map.find((EGLSurface)surface);
+  AssertMsg(it != m_wl_window_map.end(), "Missing WL window");
+  m_wl_egl_window_destroy(it->second);
+  m_wl_window_map.erase(it);
+
+  OpenGLContextEGL::DestroyPlatformSurface(surface);
+}
+
+std::unique_ptr<OpenGLContext> OpenGLContextEGLWayland::Create(WindowInfo& wi, SurfaceHandle* surface,
+                                                               std::span<const Version> versions_to_try, Error* error)
+{
+  std::unique_ptr<OpenGLContextEGLWayland> context = std::make_unique<OpenGLContextEGLWayland>();
+  if (!context->LoadModule(error) || !context->Initialize(wi, surface, versions_to_try, error))
+    return nullptr;
+
+  return context;
+}
+
+std::unique_ptr<OpenGLContext> OpenGLContextEGLWayland::CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface,
+                                                                            Error* error)
+{
+  std::unique_ptr<OpenGLContextEGLWayland> context = std::make_unique<OpenGLContextEGLWayland>();
+  context->m_display = m_display;
+
+  if (!context->LoadModule(error) || !context->CreateContextAndSurface(wi, surface, m_version, m_context, false, error))
+    return nullptr;
+
+  return context;
 }

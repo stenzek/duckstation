@@ -852,9 +852,9 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"), QVariant(QString()));
     if (current_adapter)
     {
-      for (const std::string& mode_name : current_adapter->fullscreen_modes)
+      for (const GPUDevice::ExclusiveFullscreenMode& mode : current_adapter->fullscreen_modes)
       {
-        const QString qmodename = QString::fromStdString(mode_name);
+        const QString qmodename = QtUtils::StringViewToQString(mode.ToString());
         m_ui.fullscreenMode->addItem(qmodename, QVariant(qmodename));
       }
     }

@@ -625,13 +625,6 @@ void EmuThread::loadSettings(SettingsInterface& si)
   //
 }
 
-void EmuThread::setInitialState(std::optional<bool> override_fullscreen)
-{
-  m_is_fullscreen = override_fullscreen.value_or(Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
-  m_is_rendering_to_main = shouldRenderToMain();
-  m_is_surfaceless = false;
-}
-
 void EmuThread::checkForSettingsChanges(const Settings& old_settings)
 {
   if (g_main_window)
@@ -643,11 +636,11 @@ void EmuThread::checkForSettingsChanges(const Settings& old_settings)
   }
 
   const bool render_to_main = shouldRenderToMain();
-  if (m_is_rendering_to_main != render_to_main)
+  if (m_is_rendering_to_main != render_to_main && !m_is_fullscreen)
   {
     m_is_rendering_to_main = render_to_main;
     if (g_gpu_device)
-      g_gpu_device->UpdateWindow();
+      Host::UpdateDisplayWindow(m_is_fullscreen);
   }
 }
 
@@ -780,16 +773,15 @@ void EmuThread::startFullscreenUI()
   // we want settings loaded so we choose the correct renderer
   // this also sorts out input sources.
   System::LoadSettings(false);
-  setInitialState(s_start_fullscreen_ui_fullscreen ? std::optional<bool>(true) : std::optional<bool>());
+  m_is_rendering_to_main = shouldRenderToMain();
   m_run_fullscreen_ui = true;
 
   Error error;
-  if (!Host::CreateGPUDevice(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer), &error) ||
+  if (!Host::CreateGPUDevice(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer),
+                             s_start_fullscreen_ui_fullscreen, &error) ||
       !FullscreenUI::Initialize())
   {
     Host::ReportErrorAsync("Error", error.GetDescription());
-    Host::ReleaseGPUDevice();
-    Host::ReleaseRenderWindow();
     m_run_fullscreen_ui = false;
     return;
   }
@@ -825,7 +817,6 @@ void EmuThread::stopFullscreenUI()
     return;
 
   Host::ReleaseGPUDevice();
-  Host::ReleaseRenderWindow();
 }
 
 void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
@@ -841,7 +832,7 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
   if (System::IsValidOrInitializing())
     return;
 
-  setInitialState(params->override_fullscreen);
+  m_is_rendering_to_main = shouldRenderToMain();
 
   Error error;
   if (!System::BootSystem(std::move(*params), &error))
@@ -974,7 +965,7 @@ void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
 
   m_is_fullscreen = fullscreen;
   m_is_rendering_to_main = allow_render_to_main && shouldRenderToMain();
-  Host::UpdateDisplayWindow();
+  Host::UpdateDisplayWindow(fullscreen);
 }
 
 bool Host::IsFullscreen()
@@ -999,7 +990,7 @@ void EmuThread::setSurfaceless(bool surfaceless)
     return;
 
   m_is_surfaceless = surfaceless;
-  Host::UpdateDisplayWindow();
+  Host::UpdateDisplayWindow(false);
 }
 
 void EmuThread::requestDisplaySize(float scale)
@@ -1016,20 +1007,19 @@ void EmuThread::requestDisplaySize(float scale)
   System::RequestDisplaySize(scale);
 }
 
-std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool recreate_window)
+std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool fullscreen, bool exclusive_fullscreen, Error* error)
 {
   DebugAssert(g_gpu_device);
-  u32 fs_width, fs_height;
-  float fs_refresh_rate;
-  m_is_exclusive_fullscreen = (m_is_fullscreen && g_gpu_device->SupportsExclusiveFullscreen() &&
-                               GPUDevice::GetRequestedExclusiveFullscreenMode(&fs_width, &fs_height, &fs_refresh_rate));
+
+  m_is_fullscreen = fullscreen;
+  m_is_exclusive_fullscreen = exclusive_fullscreen;
 
   const bool window_fullscreen = m_is_fullscreen && !m_is_exclusive_fullscreen;
   const bool render_to_main = !m_is_exclusive_fullscreen && !window_fullscreen && m_is_rendering_to_main;
   const bool use_main_window_pos = shouldRenderToMain();
 
-  return emit onAcquireRenderWindowRequested(recreate_window, window_fullscreen, render_to_main, m_is_surfaceless,
-                                             use_main_window_pos);
+  return emit onAcquireRenderWindowRequested(window_fullscreen, render_to_main, m_is_surfaceless, use_main_window_pos,
+                                             error);
 }
 
 void EmuThread::releaseRenderWindow()
@@ -1811,11 +1801,11 @@ void EmuThread::run()
 
       m_event_loop->processEvents(QEventLoop::AllEvents);
       System::Internal::IdlePollUpdate();
-      if (g_gpu_device)
+      if (g_gpu_device && g_gpu_device->HasMainSwapChain())
       {
         System::PresentDisplay(false, 0);
-        if (!g_gpu_device->IsVSyncModeBlocking())
-          g_gpu_device->ThrottlePresentation();
+        if (!g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
+          g_gpu_device->GetMainSwapChain()->ThrottlePresentation();
       }
     }
   }
@@ -2005,9 +1995,10 @@ void Host::CommitBaseSettingChanges()
     QtHost::QueueSettingsSave();
 }
 
-std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
+std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
+                                                    Error* error)
 {
-  return g_emu_thread->acquireRenderWindow(recreate_window);
+  return g_emu_thread->acquireRenderWindow(fullscreen, exclusive_fullscreen, error);
 }
 
 void Host::ReleaseRenderWindow()

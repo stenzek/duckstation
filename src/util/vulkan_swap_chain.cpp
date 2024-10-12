@@ -20,9 +20,7 @@
 #include "util/metal_layer.h"
 #endif
 
-LOG_CHANNEL(VulkanDevice);
-
-static_assert(VulkanSwapChain::NUM_SEMAPHORES == (VulkanDevice::NUM_COMMAND_BUFFERS + 1));
+LOG_CHANNEL(GPUDevice);
 
 static VkFormat GetLinearFormat(VkFormat format)
 {
@@ -72,11 +70,12 @@ static const char* PresentModeToString(VkPresentModeKHR mode)
   }
 }
 
-VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, VkSurfaceKHR surface, VkPresentModeKHR present_mode,
-                                 std::optional<bool> exclusive_fullscreen_control)
-  : m_window_info(wi), m_surface(surface), m_present_mode(present_mode),
+VulkanSwapChain::VulkanSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
+                                 std::optional<bool> exclusive_fullscreen_control, VkSurfaceKHR surface)
+  : GPUSwapChain(wi, vsync_mode, allow_present_throttle), m_surface(surface),
     m_exclusive_fullscreen_control(exclusive_fullscreen_control)
 {
+  static_assert(NUM_SEMAPHORES == (VulkanDevice::NUM_COMMAND_BUFFERS + 1));
 }
 
 VulkanSwapChain::~VulkanSwapChain()
@@ -214,12 +213,16 @@ std::unique_ptr<VulkanSwapChain> VulkanSwapChain::Create(const WindowInfo& wi, V
                                                          VkPresentModeKHR present_mode,
                                                          std::optional<bool> exclusive_fullscreen_control)
 {
+#if 0
   std::unique_ptr<VulkanSwapChain> swap_chain =
     std::unique_ptr<VulkanSwapChain>(new VulkanSwapChain(wi, surface, present_mode, exclusive_fullscreen_control));
   if (!swap_chain->CreateSwapChain())
     return nullptr;
 
   return swap_chain;
+#else
+  return {};
+#endif
 }
 
 std::optional<VkSurfaceFormatKHR> VulkanSwapChain::SelectSurfaceFormat(VkSurfaceKHR surface)
@@ -340,6 +343,7 @@ bool VulkanSwapChain::SelectPresentMode(VkSurfaceKHR surface, GPUVSyncMode* vsyn
 
 bool VulkanSwapChain::CreateSwapChain()
 {
+#if 0
   VulkanDevice& dev = VulkanDevice::GetInstance();
 
   // Select swap chain format
@@ -567,6 +571,9 @@ bool VulkanSwapChain::CreateSwapChain()
   }
 
   return true;
+#else
+  return false;
+#endif
 }
 
 void VulkanSwapChain::DestroySwapChainImages()
@@ -649,15 +656,19 @@ void VulkanSwapChain::ResetImageAcquireResult()
   m_image_acquire_result.reset();
 }
 
-bool VulkanSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_scale)
+bool VulkanSwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
 {
+  m_window_info.surface_scale = new_scale;
+  if (m_window_info.surface_width == new_width && m_window_info.surface_height == new_height)
+    return true;
+
   ReleaseCurrentImage();
   DestroySwapChainImages();
 
   if (new_width != 0 && new_height != 0)
   {
-    m_window_info.surface_width = new_width;
-    m_window_info.surface_height = new_height;
+    m_window_info.surface_width = static_cast<u16>(new_width);
+    m_window_info.surface_height = static_cast<u16>(new_height);
   }
 
   m_window_info.surface_scale = new_scale;
@@ -671,12 +682,13 @@ bool VulkanSwapChain::ResizeSwapChain(u32 new_width, u32 new_height, float new_s
   return true;
 }
 
-bool VulkanSwapChain::SetPresentMode(VkPresentModeKHR present_mode)
+bool VulkanSwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error)
 {
-  if (m_present_mode == present_mode)
+  m_allow_present_throttle = allow_present_throttle;
+  if (m_vsync_mode == mode)
     return true;
 
-  m_present_mode = present_mode;
+  m_vsync_mode = mode;
 
   // Recreate the swap chain with the new present mode.
   VERBOSE_LOG("Recreating swap chain to change present mode.");

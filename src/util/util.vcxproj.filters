@@ -73,6 +73,7 @@
     <ClInclude Include="sockets.h" />
     <ClInclude Include="media_capture.h" />
     <ClInclude Include="compress_helpers.h" />
+    <ClInclude Include="opengl_context_sdl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="sockets.cpp" />
     <ClCompile Include="media_capture.cpp" />
     <ClCompile Include="compress_helpers.cpp" />
+    <ClCompile Include="opengl_context_sdl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />
