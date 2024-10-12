@@ -7,6 +7,7 @@
 #include <charconv>
 #include <cstddef>
 #include <cstring>
+#include <functional>
 #include <iomanip>
 #include <optional>
 #include <span>
@@ -67,6 +68,17 @@ static inline bool EqualNoCase(std::string_view s1, std::string_view s2)
     return false;
 
   return (Strncasecmp(s1.data(), s2.data(), s1.length()) == 0);
+}
+static inline int CompareNoCase(std::string_view s1, std::string_view s2)
+{
+  const size_t s1_len = s1.length();
+  const size_t s2_len = s2.length();
+  if (s1_len != s2_len)
+    return false;
+
+  const size_t compare_len = std::min(s1_len, s2_len);
+  const int compare_res = Strncasecmp(s1.data(), s2.data(), compare_len);
+  return (compare_len != 0) ? compare_res : ((s1_len < s2_len) ? -1 : ((s1_len > s2_len) ? 1 : 0));
 }
 
 /// Wrapper around std::from_chars
