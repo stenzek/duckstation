@@ -46,7 +46,7 @@ SettingsWindow::SettingsWindow() : QWidget()
   connectUi();
 }
 
-SettingsWindow::SettingsWindow(const std::string& path, const std::string& serial, DiscRegion region,
+SettingsWindow::SettingsWindow(const std::string& path, std::string serial, DiscRegion region,
                                const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
   : QWidget(), m_sif(std::move(sif)), m_database_entry(entry)
 {
@@ -656,7 +656,7 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
     }
   }
 
-  const std::string& real_serial = dentry ? dentry->serial : serial;
+  std::string real_serial = dentry ? std::string(dentry->serial) : std::move(serial);
   std::string ini_filename = System::GetGameSettingsPath(real_serial);
 
   // check for an existing dialog with this crc
@@ -677,7 +677,7 @@ void SettingsWindow::openGamePropertiesDialog(const std::string& path, const std
   if (FileSystem::FileExists(sif->GetFileName().c_str()))
     sif->Load();
 
-  SettingsWindow* dialog = new SettingsWindow(path, real_serial, region, dentry, std::move(sif));
+  SettingsWindow* dialog = new SettingsWindow(path, std::string(real_serial), region, dentry, std::move(sif));
   dialog->show();
 }
 

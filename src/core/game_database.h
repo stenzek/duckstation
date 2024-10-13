@@ -92,14 +92,13 @@ enum class Language : u8
 
 struct Entry
 {
-  // TODO: Make string_view.
-  std::string serial;
-  std::string title;
-  std::string genre;
-  std::string developer;
-  std::string publisher;
-  std::string compatibility_version_tested;
-  std::string compatibility_comments;
+  std::string_view serial;
+  std::string_view title;
+  std::string_view genre;
+  std::string_view developer;
+  std::string_view publisher;
+  std::string_view compatibility_version_tested;
+  std::string_view compatibility_comments;
   u64 release_date;
   u8 min_players;
   u8 max_players;

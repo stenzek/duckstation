@@ -41,6 +41,20 @@
   return true;
 }
 
+[[maybe_unused]] static bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key,
+                                                 std::string_view* dest)
+{
+  const ryml::ConstNodeRef member = object.find_child(to_csubstr(key));
+  if (!member.valid())
+  {
+    *dest = std::string_view();
+    return false;
+  }
+
+  *dest = to_stringview(member.val());
+  return true;
+}
+
 template<typename T>
 [[maybe_unused]] static bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view key, T* dest)
 {
