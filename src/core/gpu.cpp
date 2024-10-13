@@ -2759,17 +2759,8 @@ bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride
   return image.SaveToFile(filename);
 }
 
-void GPU::DrawDebugStateWindow()
+void GPU::DrawDebugStateWindow(float scale)
 {
-  const float framebuffer_scale = ImGuiManager::GetGlobalScale();
-
-  ImGui::SetNextWindowSize(ImVec2(450.0f * framebuffer_scale, 550.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("GPU", nullptr))
-  {
-    ImGui::End();
-    return;
-  }
-
   DrawRendererStats();
 
   if (ImGui::CollapsingHeader("GPU", ImGuiTreeNodeFlags_DefaultOpen))
@@ -2824,8 +2815,6 @@ void GPU::DrawDebugStateWindow()
                 cs.display_width - cs.display_vram_width - cs.display_origin_left,
                 cs.display_height - cs.display_vram_height - cs.display_origin_top);
   }
-
-  ImGui::End();
 }
 
 void GPU::DrawRendererStats()

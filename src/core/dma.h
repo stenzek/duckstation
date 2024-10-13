@@ -35,6 +35,6 @@ void WriteRegister(u32 offset, u32 value);
 
 void SetRequest(Channel channel, bool request);
 
-void DrawDebugStateWindow();
+void DrawDebugStateWindow(float scale);
 
 } // namespace DMA

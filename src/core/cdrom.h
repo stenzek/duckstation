@@ -37,7 +37,7 @@ void WriteRegister(u32 offset, u8 value);
 void DMARead(u32* words, u32 word_count);
 
 // Render statistics debug window.
-void DrawDebugWindow();
+void DrawDebugWindow(float scale);
 
 void SetReadaheadSectors(u32 readahead_sectors);
 

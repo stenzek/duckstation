@@ -21,6 +21,6 @@ void WriteRegister(u32 offset, u32 value);
 void DMARead(u32* words, u32 word_count);
 void DMAWrite(const u32* words, u32 word_count);
 
-void DrawDebugStateWindow();
+void DrawDebugStateWindow(float scale);
 
 } // namespace MDEC

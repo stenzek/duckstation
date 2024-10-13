@@ -910,33 +910,24 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
   return Bus::GetDMARAMTickCount(word_count);
 }
 
-void DMA::DrawDebugStateWindow()
+void DMA::DrawDebugStateWindow(float scale)
 {
   static constexpr u32 NUM_COLUMNS = 10;
   static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
     {"#", "Req", "Direction", "Chopping", "Mode", "Busy", "Enable", "Priority", "IRQ", "Flag"}};
   static constexpr std::array<const char*, 4> sync_mode_names = {{"Manual", "Request", "LinkedList", "Reserved"}};
 
-  const float framebuffer_scale = ImGuiManager::GetGlobalScale();
-
-  ImGui::SetNextWindowSize(ImVec2(850.0f * framebuffer_scale, 250.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("DMA State", nullptr))
-  {
-    ImGui::End();
-    return;
-  }
-
   ImGui::Columns(NUM_COLUMNS);
-  ImGui::SetColumnWidth(0, 100.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(1, 50.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(2, 100.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(3, 150.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(4, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(5, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(6, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(7, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(8, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(9, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(0, 100.0f * scale);
+  ImGui::SetColumnWidth(1, 50.0f * scale);
+  ImGui::SetColumnWidth(2, 100.0f * scale);
+  ImGui::SetColumnWidth(3, 150.0f * scale);
+  ImGui::SetColumnWidth(4, 80.0f * scale);
+  ImGui::SetColumnWidth(5, 80.0f * scale);
+  ImGui::SetColumnWidth(6, 80.0f * scale);
+  ImGui::SetColumnWidth(7, 80.0f * scale);
+  ImGui::SetColumnWidth(8, 80.0f * scale);
+  ImGui::SetColumnWidth(9, 80.0f * scale);
 
   for (const char* title : column_names)
   {
@@ -984,7 +975,6 @@ void DMA::DrawDebugStateWindow()
   }
 
   ImGui::Columns(1);
-  ImGui::End();
 }
 
 // Instantiate channel functions.
