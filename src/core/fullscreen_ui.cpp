@@ -250,8 +250,6 @@ static bool LoadResources();
 static void DestroyResources();
 
 static std::shared_ptr<GPUTexture> s_app_icon_texture;
-static std::array<std::shared_ptr<GPUTexture>, static_cast<u32>(GameDatabase::CompatibilityRating::Count)>
-  s_game_compatibility_textures;
 static std::shared_ptr<GPUTexture> s_fallback_disc_texture;
 static std::shared_ptr<GPUTexture> s_fallback_exe_texture;
 static std::shared_ptr<GPUTexture> s_fallback_psf_texture;
@@ -918,10 +916,6 @@ bool FullscreenUI::LoadResources()
   s_fallback_exe_texture = LoadTexture("fullscreenui/applications-system.png");
   s_fallback_psf_texture = LoadTexture("fullscreenui/multimedia-player.png");
   s_fallback_playlist_texture = LoadTexture("fullscreenui/address-book-new.png");
-
-  for (u32 i = 0; i < static_cast<u32>(GameDatabase::CompatibilityRating::Count); i++)
-    s_game_compatibility_textures[i] = LoadTexture(TinyString::from_format("fullscreenui/star-{}.png", i).c_str());
-
   return true;
 }
 
@@ -932,8 +926,6 @@ void FullscreenUI::DestroyResources()
   s_fallback_psf_texture.reset();
   s_fallback_exe_texture.reset();
   s_fallback_disc_texture.reset();
-  for (auto& tex : s_game_compatibility_textures)
-    tex.reset();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -6641,8 +6633,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (selected_entry->dbentry &&
           selected_entry->dbentry->compatibility != GameDatabase::CompatibilityRating::Unknown)
       {
-        ImGui::Image(s_game_compatibility_textures[static_cast<u32>(selected_entry->dbentry->compatibility)].get(),
-                     LayoutScale(64.0f, 16.0f));
+        ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), 88, 16),
+                     LayoutScale(88.0f, 16.0f));
         ImGui::SameLine();
       }
       ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(

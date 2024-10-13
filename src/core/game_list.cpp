@@ -995,6 +995,13 @@ TinyString GameList::Entry::GetLanguageIconFileName() const
   return TinyString::from_format("images/flags/{}.svg", GetLanguageIcon());
 }
 
+TinyString GameList::Entry::GetCompatibilityIconFileName() const
+{
+  return TinyString::from_format(
+    "images/star-{}.svg",
+    static_cast<u32>(dbentry ? dbentry->compatibility : GameDatabase::CompatibilityRating::Unknown));
+}
+
 TinyString GameList::Entry::GetReleaseDateString() const
 {
   TinyString ret;

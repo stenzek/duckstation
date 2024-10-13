@@ -59,6 +59,7 @@ struct Entry
   std::string_view GetLanguageIcon() const;
 
   TinyString GetLanguageIconFileName() const;
+  TinyString GetCompatibilityIconFileName() const;
 
   TinyString GetReleaseDateString() const;
 

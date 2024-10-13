@@ -303,7 +303,8 @@ QIcon QtUtils::GetIconForEntryType(GameList::EntryType type)
 
 QIcon QtUtils::GetIconForCompatibility(GameDatabase::CompatibilityRating rating)
 {
-  return QIcon(QStringLiteral(":/icons/star-%1.png").arg(static_cast<u32>(rating)));
+  return QIcon(QString::fromStdString(
+    QtHost::GetResourcePath(TinyString::from_format("images/star-{}.svg", static_cast<u32>(rating)), true)));
 }
 
 qreal QtUtils::GetDevicePixelRatioForWidget(const QWidget* widget)
