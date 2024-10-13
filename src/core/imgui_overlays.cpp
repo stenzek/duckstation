@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "imgui_overlays.h"
+#include "achievements.h"
 #include "cdrom.h"
 #include "controller.h"
 #include "cpu_core_private.h"
@@ -37,6 +38,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
+#include <array>
 #include <atomic>
 #include <chrono>
 #include <cmath>
@@ -47,12 +49,43 @@
 LOG_CHANNEL(ImGuiManager);
 
 namespace ImGuiManager {
+
+namespace {
+
+#ifndef __ANDROID__
+
+struct DebugWindowInfo
+{
+  const char* name;
+  const char* window_title;
+  const char* icon_name;
+  void (*draw_func)(float);
+  u32 default_width;
+  u32 default_height;
+};
+
+#endif
+
+} // namespace
+
 static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
 static void DrawPerformanceOverlay(float& position_y, float scale, float margin, float spacing);
 static void DrawMediaCaptureOverlay(float& position_y, float scale, float margin, float spacing);
 static void DrawFrameTimeOverlay(float& position_y, float scale, float margin, float spacing);
 static void DrawEnhancementsOverlay();
 static void DrawInputsOverlay();
+
+static constexpr size_t NUM_DEBUG_WINDOWS = 6;
+static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
+static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
+  {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 800, 915},
+  {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 800, 540},
+  {"GPU", "GPU State", ":icons/applications-system.png", [](float sc) { g_gpu->DrawDebugStateWindow(sc); }, 450, 550},
+  {"DMA", "DMA State", ":icons/applications-system.png", &DMA::DrawDebugStateWindow, 860, 180},
+  {"MDEC", "MDEC State", ":icons/applications-system.png", &MDEC::DrawDebugStateWindow, 300, 350},
+  {"Timers", "Timers State", ":icons/applications-system.png", &Timers::DrawDebugStateWindow, 800, 95},
+}};
+static std::array<ImGuiManager::AuxiliaryRenderWindowState, NUM_DEBUG_WINDOWS> s_debug_window_state = {};
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
@@ -170,23 +203,71 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
   ImGui::NewFrame();
 }
 
+void ImGuiManager::UpdateDebugWindowConfig()
+{
+#ifndef __ANDROID__
+  const bool block_all = Achievements::IsHardcoreModeActive();
+
+  for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
+  {
+    AuxiliaryRenderWindowState& state = s_debug_window_state[i];
+    const DebugWindowInfo& info = s_debug_window_info[i];
+
+    const bool current = (state.window_handle != nullptr);
+    const bool enabled = (!block_all && Host::GetBaseBoolSettingValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false));
+    if (enabled == current)
+      continue;
+
+    if (!enabled)
+    {
+      DestroyAuxiliaryRenderWindow(&state, DEBUG_WINDOW_CONFIG_SECTION, info.name);
+    }
+    else
+    {
+      Error error;
+      if (!CreateAuxiliaryRenderWindow(&state, info.window_title, info.icon_name, DEBUG_WINDOW_CONFIG_SECTION,
+                                       info.name, info.default_width, info.default_height, &error))
+      {
+        ERROR_LOG("Failed to create aux render window for {}: {}", info.name, error.GetDescription());
+      }
+    }
+  }
+#endif
+}
+
 void ImGuiManager::RenderDebugWindows()
 {
-  if (System::IsValid())
+#ifndef __ANDROID__
+  for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
   {
-    if (g_settings.debugging.show_gpu_state)
-      g_gpu->DrawDebugStateWindow();
-    if (g_settings.debugging.show_cdrom_state)
-      CDROM::DrawDebugWindow();
-    if (g_settings.debugging.show_timers_state)
-      Timers::DrawDebugStateWindow();
-    if (g_settings.debugging.show_spu_state)
-      SPU::DrawDebugStateWindow();
-    if (g_settings.debugging.show_mdec_state)
-      MDEC::DrawDebugStateWindow();
-    if (g_settings.debugging.show_dma_state)
-      DMA::DrawDebugStateWindow();
+    AuxiliaryRenderWindowState& state = s_debug_window_state[i];
+    if (!state.window_handle)
+      continue;
+
+    if (!RenderAuxiliaryRenderWindow(&state, s_debug_window_info[i].draw_func))
+    {
+      // window was closed, destroy it and update the configuration
+      const DebugWindowInfo& info = s_debug_window_info[i];
+      DestroyAuxiliaryRenderWindow(&state, DEBUG_WINDOW_CONFIG_SECTION, info.name);
+      Host::SetBaseBoolSettingValue(DEBUG_WINDOW_CONFIG_SECTION, info.name, false);
+      Host::CommitBaseSettingChanges();
+    }
   }
+#endif
+}
+
+void ImGuiManager::DestroyAllDebugWindows()
+{
+#ifndef __ANDROID__
+  for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
+  {
+    AuxiliaryRenderWindowState& state = s_debug_window_state[i];
+    if (!state.window_handle)
+      continue;
+
+    ImGuiManager::DestroyAuxiliaryRenderWindow(&state, DEBUG_WINDOW_CONFIG_SECTION, s_debug_window_info[i].name);
+  }
+#endif
 }
 
 void ImGuiManager::RenderTextOverlays()

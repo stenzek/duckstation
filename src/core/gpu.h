@@ -103,7 +103,7 @@ public:
   virtual void RestoreDeviceContext();
 
   // Render statistics debug window.
-  void DrawDebugStateWindow();
+  void DrawDebugStateWindow(float scale);
   void GetStatsString(SmallStringBase& str);
   void GetMemoryStatsString(SmallStringBase& str);
   void ResetStatistics();

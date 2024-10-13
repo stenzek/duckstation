@@ -446,6 +446,7 @@ void Host::ReleaseGPUDevice()
   if (!g_gpu_device)
     return;
 
+  ImGuiManager::DestroyAllDebugWindows();
   ImGuiManager::DestroyOverlayTextures();
   FullscreenUI::Shutdown();
   ImGuiManager::Shutdown();

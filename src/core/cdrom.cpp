@@ -3809,18 +3809,10 @@ const std::string* CDROM::LookupFileMap(u32 lba, u32* start_lba, u32* end_lba)
   return &iter->second.second;
 }
 
-void CDROM::DrawDebugWindow()
+void CDROM::DrawDebugWindow(float scale)
 {
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
-  const float framebuffer_scale = ImGuiManager::GetGlobalScale();
-
-  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 580.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("CDROM State", nullptr))
-  {
-    ImGui::End();
-    return;
-  }
 
   // draw voice states
   if (ImGui::CollapsingHeader("Media", ImGuiTreeNodeFlags_DefaultOpen))
@@ -3916,7 +3908,7 @@ void CDROM::DrawDebugWindow()
       else
       {
         const float end_y = ImGui::GetCursorPosY();
-        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 120.0f * framebuffer_scale);
+        ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 120.0f * scale);
         ImGui::SetCursorPosY(start_y);
         if (ImGui::Button("Show Current File"))
           s_state.show_current_file = true;
@@ -4081,6 +4073,4 @@ void CDROM::DrawDebugWindow()
 
     ImGui::Text("Audio FIFO Size: %u frames", s_state.audio_fifo.GetSize());
   }
-
-  ImGui::End();
 }

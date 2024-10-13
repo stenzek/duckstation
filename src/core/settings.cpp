@@ -438,13 +438,6 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   debugging.gdb_server_port = static_cast<u16>(si.GetUIntValue("Debug", "GDBServerPort", DEFAULT_GDB_SERVER_PORT));
 #endif
 
-  debugging.show_gpu_state = si.GetBoolValue("Debug", "ShowGPUState");
-  debugging.show_cdrom_state = si.GetBoolValue("Debug", "ShowCDROMState");
-  debugging.show_spu_state = si.GetBoolValue("Debug", "ShowSPUState");
-  debugging.show_timers_state = si.GetBoolValue("Debug", "ShowTimersState");
-  debugging.show_mdec_state = si.GetBoolValue("Debug", "ShowMDECState");
-  debugging.show_dma_state = si.GetBoolValue("Debug", "ShowDMAState");
-
   texture_replacements.enable_texture_replacements =
     si.GetBoolValue("TextureReplacements", "EnableTextureReplacements", false);
   texture_replacements.enable_vram_write_replacements =
@@ -712,13 +705,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Debug", "EnableGDBServer", debugging.enable_gdb_server);
     si.SetUIntValue("Debug", "GDBServerPort", debugging.gdb_server_port);
 #endif
-
-    si.SetBoolValue("Debug", "ShowGPUState", debugging.show_gpu_state);
-    si.SetBoolValue("Debug", "ShowCDROMState", debugging.show_cdrom_state);
-    si.SetBoolValue("Debug", "ShowSPUState", debugging.show_spu_state);
-    si.SetBoolValue("Debug", "ShowTimersState", debugging.show_timers_state);
-    si.SetBoolValue("Debug", "ShowMDECState", debugging.show_mdec_state);
-    si.SetBoolValue("Debug", "ShowDMAState", debugging.show_dma_state);
   }
 
   si.SetBoolValue("TextureReplacements", "EnableTextureReplacements", texture_replacements.enable_texture_replacements);
@@ -1035,12 +1021,6 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     }
     g_settings.debugging.enable_gdb_server = false;
     g_settings.debugging.show_vram = false;
-    g_settings.debugging.show_gpu_state = false;
-    g_settings.debugging.show_cdrom_state = false;
-    g_settings.debugging.show_spu_state = false;
-    g_settings.debugging.show_timers_state = false;
-    g_settings.debugging.show_mdec_state = false;
-    g_settings.debugging.show_dma_state = false;
     g_settings.debugging.dump_cpu_to_vram_copies = false;
     g_settings.debugging.dump_vram_to_cpu_copies = false;
   }

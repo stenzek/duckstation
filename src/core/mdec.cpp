@@ -1125,17 +1125,8 @@ void MDEC::SetScaleMatrix(const u16* values)
   }
 }
 
-void MDEC::DrawDebugStateWindow()
+void MDEC::DrawDebugStateWindow(float scale)
 {
-  const float framebuffer_scale = ImGuiManager::GetGlobalScale();
-
-  ImGui::SetNextWindowSize(ImVec2(300.0f * framebuffer_scale, 350.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("MDEC State", nullptr))
-  {
-    ImGui::End();
-    return;
-  }
-
   static constexpr std::array<const char*, 5> state_names = {
     {"None", "Decoding Macroblock", "Writing Macroblock", "SetIqTab", "SetScale"}};
   static constexpr std::array<const char*, 4> output_depths = {{"4-bit", "8-bit", "24-bit", "15-bit"}};
@@ -1163,6 +1154,4 @@ void MDEC::DrawDebugStateWindow()
     ImGui::Text("Parameter Words Remaining: %d",
                 static_cast<s32>(SignExtend32(s_state.status.parameter_words_remaining.GetValue())));
   }
-
-  ImGui::End();
 }

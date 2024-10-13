@@ -219,22 +219,14 @@ struct Settings
 
   struct DebugSettings
   {
+#ifndef __ANDROID__
+    u16 gdb_server_port = DEFAULT_GDB_SERVER_PORT;
+    bool enable_gdb_server : 1 = false;
+#endif
+
     bool show_vram : 1 = false;
     bool dump_cpu_to_vram_copies : 1 = false;
     bool dump_vram_to_cpu_copies : 1 = false;
-
-#ifndef __ANDROID__
-    bool enable_gdb_server : 1 = false;
-    u16 gdb_server_port = DEFAULT_GDB_SERVER_PORT;
-#endif
-
-    // Mutable because the imgui window can close itself.
-    mutable bool show_gpu_state = false;
-    mutable bool show_cdrom_state = false;
-    mutable bool show_spu_state = false;
-    mutable bool show_timers_state = false;
-    mutable bool show_mdec_state = false;
-    mutable bool show_dma_state = false;
   } debugging;
 
   // texture replacements

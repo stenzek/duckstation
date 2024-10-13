@@ -1227,6 +1227,9 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
     TimingEvents::DoState(sw);
   }
 
+  if (force_recreate_device)
+    ImGuiManager::UpdateDebugWindowConfig();
+
   // fix up vsync etc
   UpdateSpeedLimiterState();
   return true;
@@ -1873,6 +1876,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     PauseSystem(true);
 
   UpdateSpeedLimiterState();
+  ImGuiManager::UpdateDebugWindowConfig();
   ResetPerformanceCounters();
   return true;
 }
@@ -1980,6 +1984,8 @@ void System::DestroySystem()
 
   if (s_media_capture)
     StopMediaCapture();
+
+  ImGuiManager::DestroyAllDebugWindows();
 
   s_undo_load_state.reset();
 
@@ -4507,6 +4513,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     PostProcessing::UpdateSettings();
 
+    ImGuiManager::UpdateDebugWindowConfig();
+
 #ifdef ENABLE_GDB_SERVER
     if (g_settings.debugging.enable_gdb_server != old_settings.debugging.enable_gdb_server ||
         g_settings.debugging.gdb_server_port != old_settings.debugging.gdb_server_port)
@@ -5670,7 +5678,9 @@ bool System::PresentDisplay(bool explicit_present, u64 present_time)
 
   // Debug windows are always rendered, otherwise mouse input breaks on skip.
   ImGuiManager::RenderOverlayWindows();
-  ImGuiManager::RenderDebugWindows();
+
+  if (IsValid())
+    ImGuiManager::RenderDebugWindows();
 
   const GPUDevice::PresentResult pres =
     g_gpu_device->HasMainSwapChain() ?

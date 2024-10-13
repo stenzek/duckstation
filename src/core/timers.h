@@ -16,7 +16,7 @@ bool DoState(StateWrapper& sw);
 
 void SetGate(u32 timer, bool state);
 
-void DrawDebugStateWindow();
+void DrawDebugStateWindow(float scale);
 
 void CPUClocksChanged();
 

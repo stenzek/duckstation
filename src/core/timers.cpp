@@ -488,7 +488,7 @@ void Timers::UpdateSysClkEvent()
   s_state.sysclk_event.Schedule(GetTicksUntilNextInterrupt());
 }
 
-void Timers::DrawDebugStateWindow()
+void Timers::DrawDebugStateWindow(float scale)
 {
   static constexpr u32 NUM_COLUMNS = 10;
   static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
@@ -500,26 +500,17 @@ void Timers::DrawDebugStateWindow()
      {{"SysClk", "HBlank", "SysClk", "HBlank"}},
      {{"SysClk", "DotClk", "SysClk/8", "SysClk/8"}}}};
 
-  const float framebuffer_scale = ImGuiManager::GetGlobalScale();
-
-  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 115.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("Timer State", nullptr))
-  {
-    ImGui::End();
-    return;
-  }
-
   ImGui::Columns(NUM_COLUMNS);
-  ImGui::SetColumnWidth(0, 20.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(1, 50.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(2, 50.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(3, 100.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(4, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(5, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(6, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(7, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(8, 80.0f * framebuffer_scale);
-  ImGui::SetColumnWidth(9, 80.0f * framebuffer_scale);
+  ImGui::SetColumnWidth(0, 20.0f * scale);
+  ImGui::SetColumnWidth(1, 50.0f * scale);
+  ImGui::SetColumnWidth(2, 50.0f * scale);
+  ImGui::SetColumnWidth(3, 100.0f * scale);
+  ImGui::SetColumnWidth(4, 80.0f * scale);
+  ImGui::SetColumnWidth(5, 80.0f * scale);
+  ImGui::SetColumnWidth(6, 80.0f * scale);
+  ImGui::SetColumnWidth(7, 80.0f * scale);
+  ImGui::SetColumnWidth(8, 80.0f * scale);
+  ImGui::SetColumnWidth(9, 80.0f * scale);
 
   for (const char* title : column_names)
   {
@@ -557,5 +548,4 @@ void Timers::DrawDebugStateWindow()
   }
 
   ImGui::Columns(1);
-  ImGui::End();
 }

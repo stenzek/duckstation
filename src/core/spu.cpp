@@ -2516,27 +2516,18 @@ void SPU::UpdateEventInterval()
   s_state.tick_event.Schedule(downcount);
 }
 
-void SPU::DrawDebugStateWindow()
+void SPU::DrawDebugStateWindow(float scale)
 {
   static const ImVec4 active_color{1.0f, 1.0f, 1.0f, 1.0f};
   static const ImVec4 inactive_color{0.4f, 0.4f, 0.4f, 1.0f};
-  const float framebuffer_scale = ImGuiManager::GetGlobalScale();
-
-  ImGui::SetNextWindowSize(ImVec2(800.0f * framebuffer_scale, 800.0f * framebuffer_scale), ImGuiCond_FirstUseEver);
-  if (!ImGui::Begin("SPU State", nullptr))
-  {
-    ImGui::End();
-    return;
-  }
 
   // status
   if (ImGui::CollapsingHeader("Status", ImGuiTreeNodeFlags_DefaultOpen))
   {
     static constexpr std::array<const char*, 4> transfer_modes = {
       {"Transfer Stopped", "Manual Write", "DMA Write", "DMA Read"}};
-    const std::array<float, 6> offsets = {{100.0f * framebuffer_scale, 200.0f * framebuffer_scale,
-                                           300.0f * framebuffer_scale, 420.0f * framebuffer_scale,
-                                           500.0f * framebuffer_scale, 600.0f * framebuffer_scale}};
+    const std::array<float, 6> offsets = {
+      {100.0f * scale, 200.0f * scale, 300.0f * scale, 420.0f * scale, 500.0f * scale, 600.0f * scale}};
 
     ImGui::Text("Control: ");
     ImGui::SameLine(offsets[0]);
@@ -2698,6 +2689,4 @@ void SPU::DrawDebugStateWindow()
       }
     }
   }
-
-  ImGui::End();
 }
