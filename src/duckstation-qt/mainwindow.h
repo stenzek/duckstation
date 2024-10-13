@@ -10,6 +10,7 @@
 
 #include "core/types.h"
 
+#include "util/imgui_manager.h"
 #include "util/window_info.h"
 
 #include <QtCore/QThread>
@@ -144,6 +145,11 @@ private Q_SLOTS:
   void onMediaCaptureStopped();
   void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
   void onAchievementsChallengeModeChanged(bool enabled);
+  bool onCreateAuxiliaryRenderWindow(qint32 x, qint32 y, quint32 width, quint32 height, const QString& title,
+                                     const QString& icon_name, Host::AuxiliaryRenderWindowUserData userdata,
+                                     Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error);
+  void onDestroyAuxiliaryRenderWindow(Host::AuxiliaryRenderWindowHandle handle, QPoint* pos, QSize* size);
+
   void onApplicationStateChanged(Qt::ApplicationState state);
 
   void onStartFileActionTriggered();

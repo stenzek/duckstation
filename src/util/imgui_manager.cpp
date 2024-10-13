@@ -9,6 +9,9 @@
 #include "imgui_glyph_ranges.inl"
 #include "input_manager.h"
 
+// TODO: Remove me when GPUDevice config is also cleaned up.
+#include "core/host.h"
+
 #include "common/assert.h"
 #include "common/easing.h"
 #include "common/error.h"
@@ -64,7 +67,7 @@ struct OSDMessage
 static_assert(std::is_same_v<WCharType, ImWchar>);
 
 static void UpdateScale();
-static void SetStyle();
+static void SetStyle(ImGuiStyle& style, float scale);
 static void SetKeyMap();
 static bool LoadFontData();
 static void ReloadFontDataIfActive();
@@ -91,6 +94,7 @@ static std::string s_font_path;
 static std::vector<WCharType> s_font_range;
 static std::vector<WCharType> s_emoji_range;
 
+static ImGuiContext* s_imgui_context;
 static ImFont* s_standard_font;
 static ImFont* s_osd_font;
 static ImFont* s_fixed_font;
@@ -235,9 +239,9 @@ bool ImGuiManager::Initialize(float global_scale, Error* error)
     (g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f) * global_scale, 1.0f);
   s_scale_changed = false;
 
-  ImGui::CreateContext();
+  s_imgui_context = ImGui::CreateContext();
 
-  ImGuiIO& io = ImGui::GetIO();
+  ImGuiIO& io = s_imgui_context->IO;
   io.IniFilename = nullptr;
   io.BackendFlags |= ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_RendererHasVtxOffset;
   io.BackendUsingLegacyKeyArrays = 0;
@@ -259,7 +263,7 @@ bool ImGuiManager::Initialize(float global_scale, Error* error)
   io.DisplaySize = ImVec2(s_window_width, s_window_height);
 
   SetKeyMap();
-  SetStyle();
+  SetStyle(s_imgui_context->Style, s_global_scale);
 
   if (!AddImGuiFonts(false) || !g_gpu_device->UpdateImGuiFontTexture())
   {
@@ -269,7 +273,7 @@ bool ImGuiManager::Initialize(float global_scale, Error* error)
   }
 
   // don't need the font data anymore, save some memory
-  ImGui::GetIO().Fonts->ClearTexData();
+  io.Fonts->ClearTexData();
 
   NewFrame();
 
@@ -281,14 +285,22 @@ void ImGuiManager::Shutdown()
 {
   DestroySoftwareCursorTextures();
 
-  if (ImGui::GetCurrentContext())
-    ImGui::DestroyContext();
+  if (s_imgui_context)
+  {
+    ImGui::DestroyContext(s_imgui_context);
+    s_imgui_context = nullptr;
+  }
 
   s_standard_font = nullptr;
   s_fixed_font = nullptr;
   s_medium_font = nullptr;
   s_large_font = nullptr;
   ImGuiFullscreen::SetFonts(nullptr, nullptr);
+}
+
+ImGuiContext* ImGuiManager::GetMainContext()
+{
+  return s_imgui_context;
 }
 
 float ImGuiManager::GetWindowWidth()
@@ -327,11 +339,7 @@ void ImGuiManager::UpdateScale()
     return;
 
   s_global_scale = scale;
-
-  ImGui::GetStyle() = ImGuiStyle();
-  ImGui::GetStyle().WindowMinSize = ImVec2(1.0f, 1.0f);
-  SetStyle();
-  ImGui::GetStyle().ScaleAllSizes(scale);
+  SetStyle(s_imgui_context->Style, s_global_scale);
 
   if (!AddImGuiFonts(HasFullscreenFonts()))
     Panic("Failed to create ImGui font text");
@@ -360,9 +368,8 @@ void ImGuiManager::NewFrame()
   s_imgui_wants_mouse.store(io.WantCaptureMouse, std::memory_order_release);
 }
 
-void ImGuiManager::SetStyle()
+void ImGuiManager::SetStyle(ImGuiStyle& style, float scale)
 {
-  ImGuiStyle& style = ImGui::GetStyle();
   style = ImGuiStyle();
   style.WindowMinSize = ImVec2(1.0f, 1.0f);
 
@@ -416,7 +423,7 @@ void ImGuiManager::SetStyle()
   colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
   colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
-  style.ScaleAllSizes(s_global_scale);
+  style.ScaleAllSizes(scale);
 }
 
 void ImGuiManager::SetKeyMap()
@@ -713,7 +720,7 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
 
 void ImGuiManager::ReloadFontDataIfActive()
 {
-  if (!ImGui::GetCurrentContext())
+  if (!s_imgui_context)
     return;
 
   ImGui::EndFrame();
@@ -1054,43 +1061,43 @@ bool ImGuiManager::WantsMouseInput()
 
 void ImGuiManager::AddTextInput(std::string str)
 {
-  if (!ImGui::GetCurrentContext())
+  if (!s_imgui_context)
     return;
 
   if (!s_imgui_wants_keyboard.load(std::memory_order_acquire))
     return;
 
-  ImGui::GetIO().AddInputCharactersUTF8(str.c_str());
+  s_imgui_context->IO.AddInputCharactersUTF8(str.c_str());
 }
 
 void ImGuiManager::UpdateMousePosition(float x, float y)
 {
-  if (!ImGui::GetCurrentContext())
+  if (!s_imgui_context)
     return;
 
-  ImGui::GetIO().MousePos = ImVec2(x, y);
+  s_imgui_context->IO.MousePos = ImVec2(x, y);
   std::atomic_thread_fence(std::memory_order_release);
 }
 
 bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 {
-  if (!ImGui::GetCurrentContext() || key.data >= std::size(ImGui::GetIO().MouseDown))
+  if (!s_imgui_context || key.data >= std::size(ImGui::GetIO().MouseDown))
     return false;
 
   // still update state anyway
-  ImGui::GetIO().AddMouseButtonEvent(key.data, value != 0.0f);
+  s_imgui_context->IO.AddMouseButtonEvent(key.data, value != 0.0f);
 
   return s_imgui_wants_mouse.load(std::memory_order_acquire);
 }
 
 bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 {
-  if (!ImGui::GetCurrentContext() || key.data < static_cast<u32>(InputPointerAxis::WheelX))
+  if (!s_imgui_context || key.data < static_cast<u32>(InputPointerAxis::WheelX))
     return false;
 
   // still update state anyway
   const bool horizontal = (key.data == static_cast<u32>(InputPointerAxis::WheelX));
-  ImGui::GetIO().AddMouseWheelEvent(horizontal ? value : 0.0f, horizontal ? 0.0f : value);
+  s_imgui_context->IO.AddMouseWheelEvent(horizontal ? value : 0.0f, horizontal ? 0.0f : value);
 
   return s_imgui_wants_mouse.load(std::memory_order_acquire);
 }
@@ -1098,11 +1105,11 @@ bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
 {
   decltype(s_imgui_key_map)::iterator iter;
-  if (!ImGui::GetCurrentContext() || (iter = s_imgui_key_map.find(key.data)) == s_imgui_key_map.end())
+  if (!s_imgui_context || (iter = s_imgui_key_map.find(key.data)) == s_imgui_key_map.end())
     return false;
 
   // still update state anyway
-  ImGui::GetIO().AddKeyEvent(iter->second, value != 0.0);
+  s_imgui_context->IO.AddKeyEvent(iter->second, value != 0.0);
 
   return s_imgui_wants_keyboard.load(std::memory_order_acquire);
 }
@@ -1138,13 +1145,13 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
     ImGuiKey_GamepadL2,        // R2
   };
 
-  if (!ImGui::GetCurrentContext())
+  if (!s_imgui_context)
     return false;
 
   if (static_cast<u32>(key) >= std::size(key_map) || key_map[static_cast<u32>(key)] == ImGuiKey_None)
     return false;
 
-  ImGui::GetIO().AddKeyAnalogEvent(key_map[static_cast<u32>(key)], (value > 0.0f), value);
+  s_imgui_context->IO.AddKeyAnalogEvent(key_map[static_cast<u32>(key)], (value > 0.0f), value);
   return s_imgui_wants_keyboard.load(std::memory_order_acquire);
 }
 
@@ -1275,3 +1282,213 @@ std::string ImGuiManager::StripIconCharacters(std::string_view str)
 
   return result;
 }
+
+#ifndef __ANDROID__
+
+bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state, std::string_view title,
+                                               std::string_view icon_name, const char* config_section,
+                                               const char* config_prefix, u32 default_width, u32 default_height,
+                                               Error* error)
+{
+  constexpr s32 DEFAULT_POSITION = std::numeric_limits<s32>::min();
+
+  // figure out where to position it
+  s32 pos_x = DEFAULT_POSITION;
+  s32 pos_y = DEFAULT_POSITION;
+  u32 width = default_width;
+  u32 height = default_height;
+  if (config_prefix)
+  {
+    pos_x = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
+                                         DEFAULT_POSITION);
+    pos_y = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
+                                         DEFAULT_POSITION);
+    width =
+      Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), default_width);
+    height =
+      Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), default_height);
+  }
+
+  WindowInfo wi;
+  if (!Host::CreateAuxiliaryRenderWindow(pos_x, pos_y, width, height, title, icon_name, state, &state->window_handle,
+                                         &wi, error))
+  {
+    return false;
+  }
+
+  state->swap_chain = g_gpu_device->CreateSwapChain(wi, GPUVSyncMode::Disabled, false, nullptr, std::nullopt, error);
+  if (!state->swap_chain)
+  {
+    Host::DestroyAuxiliaryRenderWindow(state->window_handle);
+    state->window_handle = nullptr;
+    return false;
+  }
+
+  state->imgui_context = ImGui::CreateContext(s_imgui_context->IO.Fonts);
+  state->imgui_context->IO.DisplaySize =
+    ImVec2(static_cast<float>(state->swap_chain->GetWidth()), static_cast<float>(state->swap_chain->GetHeight()));
+  state->imgui_context->IO.IniFilename = nullptr;
+  state->imgui_context->IO.BackendFlags |= ImGuiBackendFlags_HasGamepad;
+  state->imgui_context->IO.BackendUsingLegacyKeyArrays = 0;
+  state->imgui_context->IO.BackendUsingLegacyNavInputArray = 0;
+  state->imgui_context->IO.KeyRepeatDelay = 0.5f;
+  state->imgui_context->IO.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+
+  SetStyle(state->imgui_context->Style, state->swap_chain->GetScale());
+  state->imgui_context->Style.WindowBorderSize = 0.0f;
+
+  state->close_request = false;
+  return true;
+}
+
+void ImGuiManager::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state, const char* config_section,
+                                                const char* config_prefix)
+{
+  constexpr s32 DEFAULT_POSITION = std::numeric_limits<s32>::min();
+
+  if (!state->window_handle)
+    return;
+
+  s32 old_pos_x = DEFAULT_POSITION, old_pos_y = DEFAULT_POSITION;
+  u32 old_width = 0, old_height = 0;
+  if (config_section)
+  {
+    old_pos_x = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix),
+                                             DEFAULT_POSITION);
+    old_pos_y = Host::GetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix),
+                                             DEFAULT_POSITION);
+    old_width = Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), 0);
+    old_height = Host::GetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), 0);
+  }
+
+  ImGui::DestroyContext(state->imgui_context);
+  state->imgui_context = nullptr;
+  state->swap_chain.reset();
+  state->close_request = false;
+
+  // store positioning for config
+  s32 new_pos_x = old_pos_x, new_pos_y = old_pos_y;
+  u32 new_width = old_width, new_height = old_height;
+  Host::DestroyAuxiliaryRenderWindow(std::exchange(state->window_handle, nullptr), &new_pos_x, &new_pos_y, &new_width,
+                                     &new_height);
+
+  if (config_section)
+  {
+    // update config if the window was moved
+    if (old_pos_x != new_pos_x || old_pos_y != new_pos_y || old_width != new_width || old_height != new_height)
+    {
+      Host::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionX", config_prefix), new_pos_x);
+      Host::SetBaseIntSettingValue(config_section, TinyString::from_format("{}PositionY", config_prefix), new_pos_y);
+      Host::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Width", config_prefix), new_width);
+      Host::SetBaseUIntSettingValue(config_section, TinyString::from_format("{}Height", config_prefix), new_height);
+      Host::CommitBaseSettingChanges();
+    }
+  }
+}
+
+bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state, void (*draw_callback)(float scale))
+{
+  DebugAssert(state->window_handle);
+  if (state->close_request)
+    return false;
+
+  ImGui::SetCurrentContext(state->imgui_context);
+
+  ImGui::NewFrame();
+  ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
+  ImGui::SetNextWindowSize(state->imgui_context->IO.DisplaySize, ImGuiCond_Always);
+  if (ImGui::Begin("AuxRenderWindowMain", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoCollapse))
+  {
+    draw_callback(state->swap_chain->GetScale());
+  }
+
+  ImGui::End();
+
+  const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(state->swap_chain.get());
+  if (pres == GPUDevice::PresentResult::OK)
+  {
+    g_gpu_device->RenderImGui(state->swap_chain.get());
+    g_gpu_device->EndPresent(state->swap_chain.get(), false);
+  }
+  else
+  {
+    ImGui::EndFrame();
+  }
+
+  ImGui::SetCurrentContext(GetMainContext());
+  return true;
+}
+
+void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindowUserData userdata,
+                                                          Host::AuxiliaryRenderWindowEvent event,
+                                                          Host::AuxiliaryRenderWindowEventParam param1,
+                                                          Host::AuxiliaryRenderWindowEventParam param2,
+                                                          Host::AuxiliaryRenderWindowEventParam param3)
+{
+  // we can get bogus events here after the user closes it, so check we're not being destroyed
+  AuxiliaryRenderWindowState* state = static_cast<AuxiliaryRenderWindowState*>(userdata);
+  if (!state->window_handle) [[unlikely]]
+    return;
+
+  ImGuiIO& io = state->imgui_context->IO;
+
+  switch (event)
+  {
+    case Host::AuxiliaryRenderWindowEvent::CloseRequest:
+    {
+      state->close_request = true;
+    }
+    break;
+
+    case Host::AuxiliaryRenderWindowEvent::Resized:
+    {
+      Error error;
+      if (!state->swap_chain->ResizeBuffers(param1.uint_param, param2.uint_param, param3.float_param, &error))
+      {
+        ERROR_LOG("Failed to resize aux window swap chain to {}x{}: {}", param1.uint_param, param2.uint_param,
+                  error.GetDescription());
+        return;
+      }
+
+      state->imgui_context->IO.DisplaySize.x = static_cast<float>(param1.uint_param);
+      state->imgui_context->IO.DisplaySize.y = static_cast<float>(param2.uint_param);
+    }
+    break;
+
+    case Host::AuxiliaryRenderWindowEvent::KeyPressed:
+    case Host::AuxiliaryRenderWindowEvent::KeyReleased:
+    {
+      const auto iter = s_imgui_key_map.find(param1.uint_param);
+      if (iter != s_imgui_key_map.end())
+        io.AddKeyEvent(iter->second, (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
+    }
+    break;
+
+    case Host::AuxiliaryRenderWindowEvent::MouseMoved:
+    {
+      io.MousePos.x = param1.float_param;
+      io.MousePos.y = param2.float_param;
+    }
+    break;
+
+    case Host::AuxiliaryRenderWindowEvent::MousePressed:
+    case Host::AuxiliaryRenderWindowEvent::MouseReleased:
+    {
+      io.AddMouseButtonEvent(param1.uint_param, (event == Host::AuxiliaryRenderWindowEvent::MousePressed));
+    }
+    break;
+
+    case Host::AuxiliaryRenderWindowEvent::MouseWheel:
+    {
+      io.AddMouseWheelEvent(param1.float_param, param2.float_param);
+    }
+    break;
+
+    default:
+      break;
+  }
+}
+
+#endif // __ANDROID__

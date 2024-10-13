@@ -465,3 +465,177 @@ bool DisplayContainer::event(QEvent* event)
 
   return res;
 }
+
+AuxiliaryDisplayWidget::AuxiliaryDisplayWidget(QWidget* parent, u32 width, u32 height, const QString& title,
+                                               void* userdata)
+  : QWidget(parent), m_userdata(userdata)
+{
+  // We want a native window for both D3D and OpenGL.
+  setAutoFillBackground(false);
+  setAttribute(Qt::WA_NativeWindow, true);
+  setAttribute(Qt::WA_NoSystemBackground, true);
+  setAttribute(Qt::WA_PaintOnScreen, true);
+  setAttribute(Qt::WA_KeyCompression, false);
+  setFocusPolicy(Qt::StrongFocus);
+  setMouseTracking(true);
+  setWindowTitle(title);
+  resize(width, height);
+}
+
+AuxiliaryDisplayWidget::~AuxiliaryDisplayWidget() = default;
+
+QPaintEngine* AuxiliaryDisplayWidget::paintEngine() const
+{
+  return nullptr;
+}
+
+bool AuxiliaryDisplayWidget::event(QEvent* event)
+{
+  const QEvent::Type type = event->type();
+  switch (type)
+  {
+    case QEvent::KeyPress:
+    case QEvent::KeyRelease:
+    {
+      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+        m_userdata,
+        (type == QEvent::KeyPress) ? Host::AuxiliaryRenderWindowEvent::KeyPressed :
+                                     Host::AuxiliaryRenderWindowEvent::KeyReleased,
+        Host::AuxiliaryRenderWindowEventParam{.uint_param =
+                                                static_cast<u32>(static_cast<const QKeyEvent*>(event)->key())});
+
+      return true;
+    }
+
+    case QEvent::MouseMove:
+    {
+      const qreal dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+      const QPoint mouse_pos = static_cast<QMouseEvent*>(event)->pos();
+      const float scaled_x = static_cast<float>(static_cast<qreal>(mouse_pos.x()) * dpr);
+      const float scaled_y = static_cast<float>(static_cast<qreal>(mouse_pos.y()) * dpr);
+
+      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+        m_userdata, Host::AuxiliaryRenderWindowEvent::MouseMoved,
+        Host::AuxiliaryRenderWindowEventParam{.float_param = scaled_x},
+        Host::AuxiliaryRenderWindowEventParam{.float_param = scaled_y});
+
+      return true;
+    }
+
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseButtonRelease:
+    {
+      const u32 button_index = CountTrailingZeros(static_cast<u32>(static_cast<const QMouseEvent*>(event)->button()));
+      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+        m_userdata,
+        (type == QEvent::MouseButtonRelease) ? Host::AuxiliaryRenderWindowEvent::MouseReleased :
+                                               Host::AuxiliaryRenderWindowEvent::MousePressed,
+        Host::AuxiliaryRenderWindowEventParam{.uint_param = button_index},
+        Host::AuxiliaryRenderWindowEventParam{.uint_param = BoolToUInt32(type == QEvent::MouseButtonRelease)});
+
+      return true;
+    }
+
+    case QEvent::Wheel:
+    {
+      const QWheelEvent* wheel_event = static_cast<QWheelEvent*>(event);
+      const QPoint delta = wheel_event->angleDelta();
+      if (delta.x() != 0 || delta.y())
+      {
+        g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+          m_userdata, Host::AuxiliaryRenderWindowEvent::MouseWheel,
+          Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(delta.x())},
+          Host::AuxiliaryRenderWindowEventParam{.float_param = static_cast<float>(delta.y())});
+      }
+
+      return true;
+    }
+
+    case QEvent::Close:
+    {
+      if (m_destroying)
+        return QWidget::event(event);
+
+      g_emu_thread->queueAuxiliaryRenderWindowInputEvent(m_userdata, Host::AuxiliaryRenderWindowEvent::CloseRequest);
+      event->ignore();
+      return true;
+    }
+
+    case QEvent::Paint:
+    case QEvent::Resize:
+    {
+      QWidget::event(event);
+
+      const float dpr = QtUtils::GetDevicePixelRatioForWidget(this);
+      const u32 scaled_width =
+        static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(width()) * dpr)), 1));
+      const u32 scaled_height =
+        static_cast<u32>(std::max(static_cast<int>(std::ceil(static_cast<qreal>(height()) * dpr)), 1));
+
+      // avoid spamming resize events for paint events (sent on move on windows)
+      if (m_last_window_width != scaled_width || m_last_window_height != scaled_height || m_last_window_scale != dpr)
+      {
+        m_last_window_width = scaled_width;
+        m_last_window_height = scaled_height;
+        m_last_window_scale = dpr;
+        g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+          m_userdata, Host::AuxiliaryRenderWindowEvent::Resized,
+          Host::AuxiliaryRenderWindowEventParam{.uint_param = scaled_width},
+          Host::AuxiliaryRenderWindowEventParam{.uint_param = scaled_height},
+          Host::AuxiliaryRenderWindowEventParam{.float_param = dpr});
+      }
+
+      return true;
+    }
+
+    default:
+      return QWidget::event(event);
+  }
+}
+
+AuxiliaryDisplayWidget* AuxiliaryDisplayWidget::create(s32 pos_x, s32 pos_y, u32 width, u32 height,
+                                                       const QString& title, const QString& icon_name, void* userdata)
+{
+  QStackedWidget* parent = nullptr;
+  if (DisplayContainer::isNeeded(false, false))
+  {
+    parent = new QStackedWidget(nullptr);
+    parent->resize(width, height);
+    parent->setWindowTitle(title);
+  }
+
+  AuxiliaryDisplayWidget* widget = new AuxiliaryDisplayWidget(parent, width, height, title, userdata);
+  if (parent)
+    parent->addWidget(widget);
+
+  QWidget* window = parent ? static_cast<QWidget*>(parent) : static_cast<QWidget*>(widget);
+  if (!icon_name.isEmpty())
+  {
+    if (const QIcon icon(icon_name); !icon.isNull())
+      window->setWindowIcon(icon);
+    else
+      window->setWindowIcon(QtHost::GetAppIcon());
+  }
+  else
+  {
+    window->setWindowIcon(QtHost::GetAppIcon());
+  }
+
+  if (pos_x != std::numeric_limits<s32>::min() && pos_y != std::numeric_limits<s32>::min())
+    window->move(pos_x, pos_y);
+
+  window->show();
+  return widget;
+}
+
+void AuxiliaryDisplayWidget::destroy()
+{
+  m_destroying = true;
+
+  QWidget* container = static_cast<QWidget*>(parent());
+  if (!container)
+    container = this;
+  container->close();
+  container->deleteLater();
+}

@@ -89,3 +89,28 @@ protected:
 private:
   DisplayWidget* m_display_widget = nullptr;
 };
+
+class AuxiliaryDisplayWidget final : public QWidget
+{
+  Q_OBJECT
+
+public:
+  explicit AuxiliaryDisplayWidget(QWidget* parent, u32 width, u32 height, const QString& title, void* userdata);
+  ~AuxiliaryDisplayWidget();
+
+  QPaintEngine* paintEngine() const override;
+
+  static AuxiliaryDisplayWidget* create(s32 pos_x, s32 pos_y, u32 width, u32 height, const QString& title,
+                                        const QString& icon_name, void* userdata);
+  void destroy();
+
+protected:
+  bool event(QEvent* event) override;
+
+private:
+  void* m_userdata = nullptr;
+  u32 m_last_window_width = 0;
+  u32 m_last_window_height = 0;
+  float m_last_window_scale = 1.0f;
+  bool m_destroying = false;
+};

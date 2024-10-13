@@ -1700,6 +1700,58 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
   });
 }
 
+bool Host::CreateAuxiliaryRenderWindow(s32 x, s32 y, u32 width, u32 height, std::string_view title,
+                                       std::string_view icon_name, AuxiliaryRenderWindowUserData userdata,
+                                       AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error)
+{
+  return emit g_emu_thread->onCreateAuxiliaryRenderWindow(x, y, width, height, QtUtils::StringViewToQString(title),
+                                                          QtUtils::StringViewToQString(icon_name), userdata, handle, wi,
+                                                          error);
+}
+
+void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32* pos_x, s32* pos_y, u32* width,
+                                        u32* height)
+{
+  QPoint pos;
+  QSize size;
+  emit g_emu_thread->onDestroyAuxiliaryRenderWindow(handle, &pos, &size);
+
+  if (pos_x)
+    *pos_x = pos.x();
+  if (pos_y)
+    *pos_y = pos.y();
+  if (width)
+    *width = size.width();
+  if (height)
+    *height = size.height();
+
+  // eat all pending events, to make sure we're not going to write input events back to a dead pointer
+  g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
+}
+
+void EmuThread::queueAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindowUserData userdata,
+                                                     Host::AuxiliaryRenderWindowEvent event,
+                                                     Host::AuxiliaryRenderWindowEventParam param1,
+                                                     Host::AuxiliaryRenderWindowEventParam param2,
+                                                     Host::AuxiliaryRenderWindowEventParam param3)
+{
+  DebugAssert(isOnUIThread());
+  QMetaObject::invokeMethod(this, "processAuxiliaryRenderWindowInputEvent", Qt::QueuedConnection,
+                            Q_ARG(void*, userdata), Q_ARG(quint32, static_cast<quint32>(event)),
+                            Q_ARG(quint32, param1.uint_param), Q_ARG(quint32, param2.uint_param),
+                            Q_ARG(quint32, param3.uint_param));
+}
+
+void EmuThread::processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 event, quint32 param1, quint32 param2,
+                                                       quint32 param3)
+{
+  DebugAssert(isOnThread());
+  ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(userdata, static_cast<Host::AuxiliaryRenderWindowEvent>(event),
+                                                       Host::AuxiliaryRenderWindowEventParam{.uint_param = param1},
+                                                       Host::AuxiliaryRenderWindowEventParam{.uint_param = param2},
+                                                       Host::AuxiliaryRenderWindowEventParam{.uint_param = param3});
+}
+
 void EmuThread::doBackgroundControllerPoll()
 {
   System::Internal::IdlePollUpdate();
