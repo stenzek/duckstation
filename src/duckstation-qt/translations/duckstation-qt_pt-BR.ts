@@ -3402,7 +3402,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="49"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por padrão, os revólveres usarão o ponteiro do mouse. Para usar o mouse,&lt;span style=&quot; font-weight:700;&quot;&gt;não é preciso&lt;/span&gt;configurar quaisquer vínculos além do gatilho e dos botões. A mira só precisa ser configurada quando quiser usar vários mouses.&lt;/p&gt;&lt;p&gt;Se você quiser usar um controle ou arma que simule um controle em vez de um mouse, você deve vinculá-lo à Mira Relativa. Caso contrário, a Mira Relativa deve ser&lt;span style=&quot; font-weight:700;&quot;&gt;deixada sem nenhum vínculo&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por padrão, as pistolas de luz o ponteiro do mouse. Para usar o mouse,&lt;span style=&quot; font-weight:700;&quot;&gt;não é preciso&lt;/span&gt;configurar quaisquer vínculos além do gatilho e dos botões. A mira só precisa ser configurada quando quiser usar vários mouses.&lt;/p&gt;&lt;p&gt;Se você quiser usar um controle ou arma que simule um controle em vez de um mouse, você deve vinculá-lo à Mira Relativa. Caso contrário, a Mira Relativa deve ser&lt;span style=&quot; font-weight:700;&quot;&gt;deixada sem nenhum vínculo&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_guncon.ui" line="71"/>
@@ -3488,7 +3488,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_justifier.ui" line="49"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;By default, lightguns will use the mouse pointer. To use the mouse, you &lt;span style=&quot; font-weight:700;&quot;&gt;do not&lt;/span&gt; need to configure any bindings apart from the trigger and buttons. Aiming only needs to be set when you want to use multiple mice.&lt;/p&gt;&lt;p&gt;If you want to use a controller, or lightgun which simulates a controller instead of a mouse, then you should bind it to Relative Aiming. Otherwise, Relative Aiming should be &lt;span style=&quot; font-weight:700;&quot;&gt;left unbound&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por padrão, os revólveres usarão o ponteiro do mouse. Para usar o mouse,&lt;span style=&quot; font-weight:700;&quot;&gt;não é preciso&lt;/span&gt;configurar quaisquer vínculos além do gatilho e dos botões. A mira só precisa ser configurada quando quiser usar vários mouses.&lt;/p&gt;&lt;p&gt;Se você quiser usar um controle ou arma que simule um controle em vez de um mouse, você deve vinculá-lo à Mira Relativa. Caso contrário, a Mira Relativa deve ser&lt;span style=&quot; font-weight:700;&quot;&gt;deixada sem nenhum vínculo&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Por padrão, as pistolas de luz usarão o ponteiro do mouse. Para usar o mouse,&lt;span style=&quot; font-weight:700;&quot;&gt;não é preciso&lt;/span&gt;configurar quaisquer vínculos além do gatilho e dos botões. A mira só precisa ser configurada quando quiser usar vários mouses.&lt;/p&gt;&lt;p&gt;Se você quiser usar um controle ou arma que simule um controle em vez de um mouse, você deve vinculá-lo à Mira Relativa. Caso contrário, a Mira Relativa deve ser&lt;span style=&quot; font-weight:700;&quot;&gt;deixada sem nenhum vínculo&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_justifier.ui" line="332"/>
@@ -3987,7 +3987,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="35"/>
         <source>Select the buttons which you want to trigger with this macro. All buttons are activated concurrently.</source>
-        <translation>Selecione os botões que você deseja acionar o macro. Todos os botões são ativados simultaneamente.</translation>
+        <translation>Selecione os botões que você deseja acionar com este macro. Todos os botões são ativados simultaneamente.</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="51"/>
@@ -14523,7 +14523,7 @@ Esta ação não poderá ser desfeita.</translation>
         <location filename="../mainwindow.cpp" line="2617"/>
         <location filename="../mainwindow.cpp" line="2626"/>
         <source>Memory card &apos;%1&apos; could not be found. Try starting the game and saving to create it.</source>
-        <translation>Cartão de memória &apos;%1&apos; não encotrado. Experimente iniciar o jogo e salvá-lo para que ele seja criado.</translation>
+        <translation>Cartão de memória &apos;%1&apos; não encontrado. Experimente iniciar o jogo e salvá-lo para que ele seja criado.</translation>
     </message>
     <message>
         <source>Using cheats can have unpredictable effects on games, causing crashes, graphical glitches, and corrupted saves. By using the cheat manager, you agree that it is an unsupported configuration, and we will not provide you with any assistance when games break.
@@ -18224,7 +18224,7 @@ Once dumped, this BIOS image should be placed in the bios folder within the data
 
 DuckStation exige um BIOS PS1 ou PS2 para ser executado.
 
-Por motivos legais, você DEVE obter um BIOS de uma unidade PS1 que seja seu(o empréstimo não conta).
+Por motivos legais, você DEVE obter uma imagem do BIOS de uma unidade PS1 que seja seu (pegar emprestado não conta).
 
 Após o despejo, essa imagem de BIOS deve ser colocada na pasta bios dentro do diretório de dados (Menu ferramentas &gt; Abrir diretório de dados).</translation>
     </message>
