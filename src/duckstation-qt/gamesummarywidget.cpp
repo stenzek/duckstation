@@ -83,17 +83,17 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
 
   if (entry)
   {
-    m_ui.title->setText(QString::fromStdString(entry->title));
+    m_ui.title->setText(QtUtils::StringViewToQString(entry->title));
     m_ui.compatibility->setCurrentIndex(static_cast<int>(entry->compatibility));
-    m_ui.genre->setText(entry->genre.empty() ? tr("Unknown") : QString::fromStdString(entry->genre));
+    m_ui.genre->setText(entry->genre.empty() ? tr("Unknown") : QtUtils::StringViewToQString(entry->genre));
     if (!entry->developer.empty() && !entry->publisher.empty() && entry->developer != entry->publisher)
       m_ui.developer->setText(tr("%1 (Published by %2)")
-                                .arg(QString::fromStdString(entry->developer))
-                                .arg(QString::fromStdString(entry->publisher)));
+                                .arg(QtUtils::StringViewToQString(entry->developer))
+                                .arg(QtUtils::StringViewToQString(entry->publisher)));
     else if (!entry->developer.empty())
-      m_ui.developer->setText(QString::fromStdString(entry->developer));
+      m_ui.developer->setText(QtUtils::StringViewToQString(entry->developer));
     else if (!entry->publisher.empty())
-      m_ui.developer->setText(tr("Published by %1").arg(QString::fromStdString(entry->publisher)));
+      m_ui.developer->setText(tr("Published by %1").arg(QtUtils::StringViewToQString(entry->publisher)));
     else
       m_ui.developer->setText(tr("Unknown"));
 

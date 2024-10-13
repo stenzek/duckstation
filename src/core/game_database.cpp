@@ -147,6 +147,7 @@ static constexpr const char* DISCDB_YAML_FILENAME = "discdb.yaml";
 static bool s_loaded = false;
 static bool s_track_hashes_loaded = false;
 
+static DynamicHeapArray<u8> s_db_data; // we take strings from the data, so store a copy
 static std::vector<GameDatabase::Entry> s_entries;
 static PreferUnorderedStringMap<u32> s_code_lookup;
 
@@ -167,8 +168,15 @@ void GameDatabase::EnsureLoaded()
     s_entries = {};
     s_code_lookup = {};
 
-    LoadGameDBYaml();
-    SaveToCache();
+    if (LoadGameDBYaml())
+    {
+      SaveToCache();
+    }
+    else
+    {
+      s_entries = {};
+      s_code_lookup = {};
+    }
   }
 
   INFO_LOG("Database load of {} entries took {:.0f}ms.", s_entries.size(), timer.GetTimeMilliseconds());
@@ -848,14 +856,15 @@ static std::string GetCacheFile()
 
 bool GameDatabase::LoadFromCache()
 {
-  auto fp = FileSystem::OpenManagedCFile(GetCacheFile().c_str(), "rb");
-  if (!fp)
+  Error error;
+  std::optional<DynamicHeapArray<u8>> db_data = FileSystem::ReadBinaryFile(GetCacheFile().c_str(), &error);
+  if (!db_data.has_value())
   {
-    DEV_LOG("Cache does not exist, loading full database.");
+    DEV_LOG("Failed to read cache, loading full database: {}", error.GetDescription());
     return false;
   }
 
-  BinaryFileReader reader(fp.get());
+  BinarySpanReader reader(db_data->cspan());
   const u64 gamedb_ts = Host::GetResourceFileTimestamp("gamedb.yaml", false).value_or(0);
 
   u32 signature, version, num_entries, num_codes;
@@ -950,6 +959,7 @@ bool GameDatabase::LoadFromCache()
     s_code_lookup.emplace(std::move(code), index);
   }
 
+  s_db_data = std::move(db_data.value());
   return true;
 }
 
@@ -1051,7 +1061,7 @@ void GameDatabase::SetRymlCallbacks()
 
 bool GameDatabase::LoadGameDBYaml()
 {
-  const std::optional<std::string> gamedb_data = Host::ReadResourceFileToString(GAMEDB_YAML_FILENAME, false);
+  std::optional<DynamicHeapArray<u8>> gamedb_data = Host::ReadResourceFile(GAMEDB_YAML_FILENAME, false);
   if (!gamedb_data.has_value())
   {
     ERROR_LOG("Failed to read game database");
@@ -1060,7 +1070,9 @@ bool GameDatabase::LoadGameDBYaml()
 
   SetRymlCallbacks();
 
-  const ryml::Tree tree = ryml::parse_in_arena(to_csubstr(GAMEDB_YAML_FILENAME), to_csubstr(gamedb_data.value()));
+  const ryml::Tree tree =
+    ryml::parse_in_arena(to_csubstr(GAMEDB_YAML_FILENAME),
+                         c4::csubstr(reinterpret_cast<const char*>(gamedb_data->data()), gamedb_data->size()));
   const ryml::ConstNodeRef root = tree.rootref();
   s_entries.reserve(root.num_children());
 
@@ -1108,7 +1120,14 @@ bool GameDatabase::LoadGameDBYaml()
       ERROR_LOG("Failed to insert code {}", code);
   }
 
-  return !s_entries.empty();
+  if (s_entries.empty())
+  {
+    ERROR_LOG("Game database is empty.");
+    return false;
+  }
+
+  s_db_data = std::move(gamedb_data.value());
+  return true;
 }
 
 bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)

@@ -415,24 +415,22 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
       switch (index.column())
       {
         case Column_Serial:
-          return QString::fromStdString(ge->serial);
+          return QtUtils::StringViewToQString(ge->serial);
 
         case Column_Title:
-          return QString::fromStdString(ge->title);
+          return QtUtils::StringViewToQString(ge->title);
 
         case Column_FileTitle:
           return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
 
         case Column_Developer:
-          return (ge->dbentry && !ge->dbentry->developer.empty()) ? QString::fromStdString(ge->dbentry->developer) :
-                                                                    QString();
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->developer) : QString();
 
         case Column_Publisher:
-          return (ge->dbentry && !ge->dbentry->publisher.empty()) ? QString::fromStdString(ge->dbentry->publisher) :
-                                                                    QString();
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->publisher) : QString();
 
         case Column_Genre:
-          return (ge->dbentry && !ge->dbentry->genre.empty()) ? QString::fromStdString(ge->dbentry->genre) : QString();
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->genre) : QString();
 
         case Column_Year:
         {
@@ -505,15 +503,13 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
           return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
 
         case Column_Developer:
-          return (ge->dbentry && !ge->dbentry->developer.empty()) ? QString::fromStdString(ge->dbentry->developer) :
-                                                                    QString();
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->developer) : QString();
 
         case Column_Publisher:
-          return (ge->dbentry && !ge->dbentry->publisher.empty()) ? QString::fromStdString(ge->dbentry->publisher) :
-                                                                    QString();
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->publisher) : QString();
 
         case Column_Genre:
-          return (ge->dbentry && !ge->dbentry->genre.empty()) ? QString::fromStdString(ge->dbentry->genre) : QString();
+          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->genre) : QString();
 
         case Column_Year:
           return ge->dbentry ? QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge->dbentry->release_date), Qt::UTC)

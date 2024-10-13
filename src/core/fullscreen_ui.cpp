@@ -6418,12 +6418,13 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (selected_entry->dbentry && !selected_entry->dbentry->developer.empty())
       {
         text_width =
-          ImGui::CalcTextSize(selected_entry->dbentry->developer.c_str(),
-                              selected_entry->dbentry->developer.c_str() + selected_entry->dbentry->developer.length(),
+          ImGui::CalcTextSize(selected_entry->dbentry->developer.data(),
+                              selected_entry->dbentry->developer.data() + selected_entry->dbentry->developer.length(),
                               false, work_width)
             .x;
         ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
-        ImGui::TextWrapped("%s", selected_entry->dbentry->developer.c_str());
+        ImGui::TextWrapped("%.*s", static_cast<int>(selected_entry->dbentry->developer.size()),
+                           selected_entry->dbentry->developer.data());
       }
 
       // code
@@ -6452,7 +6453,10 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       // genre
       if (selected_entry->dbentry && !selected_entry->dbentry->genre.empty())
-        ImGui::Text(FSUI_CSTR("Genre: %s"), selected_entry->dbentry->genre.c_str());
+      {
+        ImGui::Text(FSUI_CSTR("Genre: %.*s"), static_cast<int>(selected_entry->dbentry->genre.size()),
+                    selected_entry->dbentry->genre.data());
+      }
 
       // release date
       ImGui::Text(FSUI_CSTR("Release Date: %s"), selected_entry->GetReleaseDateString().c_str());
