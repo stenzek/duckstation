@@ -181,10 +181,16 @@ void Host::SetBaseBoolSettingValue(const char* section, const char* key, bool va
   s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetBoolValue(section, key, value);
 }
 
-void Host::SetBaseIntSettingValue(const char* section, const char* key, int value)
+void Host::SetBaseIntSettingValue(const char* section, const char* key, s32 value)
 {
   std::unique_lock lock(s_settings_mutex);
   s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetIntValue(section, key, value);
+}
+
+void Host::SetBaseUIntSettingValue(const char* section, const char* key, u32 value)
+{
+  std::unique_lock lock(s_settings_mutex);
+  s_layered_settings_interface.GetLayer(LayeredSettingsInterface::LAYER_BASE)->SetUIntValue(section, key, value);
 }
 
 void Host::SetBaseFloatSettingValue(const char* section, const char* key, float value)
