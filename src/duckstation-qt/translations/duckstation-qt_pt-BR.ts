@@ -425,7 +425,7 @@ Token gerado %2.</translation>
     <message>
         <location filename="../../core/achievements.cpp" line="1309"/>
         <source>Leaderboard attempt started.</source>
-        <translation>Placar de líderes inciada.</translation>
+        <translation>Placar de líderes inciado.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1324"/>
@@ -1788,7 +1788,7 @@ Mensagens não lidas: {}</translation>
         <location filename="../audiosettingswidget.cpp" line="109"/>
         <location filename="../audiosettingswidget.cpp" line="112"/>
         <source>Resets volume back to the default, i.e. full.</source>
-        <translation>Redefine o volume de volta para o padrão, ex .completo.</translation>
+        <translation>Redefine o volume de volta para o padrão, ou seja, no máximo.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.ui" line="298"/>
@@ -2748,7 +2748,7 @@ Mensagens não lidas: {}</translation>
         <location filename="../consolesettingswidget.cpp" line="92"/>
         <location filename="../consolesettingswidget.cpp" line="108"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some cases also eliminates stutter when games initiate audio track playback.</source>
-        <translation>Carrega o jogo na memória RAM. útil para evitar certas instabilidades durante o jogo.</translation>
+        <translation>Carrega o jogo na memória RAM. útil para evitar certas instabilidades durante o jogo. Também pode evitar certas instabilidades de áudio.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="96"/>
