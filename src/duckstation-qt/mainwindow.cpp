@@ -2044,6 +2044,10 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::achievementsChallengeModeChanged, this,
           &MainWindow::onAchievementsChallengeModeChanged);
   connect(g_emu_thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
+  connect(g_emu_thread, &EmuThread::onCreateAuxiliaryRenderWindow, this, &MainWindow::onCreateAuxiliaryRenderWindow,
+          Qt::BlockingQueuedConnection);
+  connect(g_emu_thread, &EmuThread::onDestroyAuxiliaryRenderWindow, this, &MainWindow::onDestroyAuxiliaryRenderWindow,
+          Qt::BlockingQueuedConnection);
 
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::refreshProgress, this, &MainWindow::onGameListRefreshProgress);
@@ -2640,6 +2644,36 @@ void MainWindow::onAchievementsChallengeModeChanged(bool enabled)
   }
 
   updateEmulationActions(false, System::IsValid(), enabled);
+}
+
+bool MainWindow::onCreateAuxiliaryRenderWindow(qint32 x, qint32 y, quint32 width, quint32 height, const QString& title,
+                                               const QString& icon_name, Host::AuxiliaryRenderWindowUserData userdata,
+                                               Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error)
+{
+  AuxiliaryDisplayWidget* widget = AuxiliaryDisplayWidget::create(x, y, width, height, title, icon_name, userdata);
+  if (!widget)
+    return false;
+
+  const std::optional<WindowInfo> owi = QtUtils::GetWindowInfoForWidget(widget, error);
+  if (!owi.has_value())
+  {
+    widget->destroy();
+    return false;
+  }
+
+  *handle = widget;
+  *wi = owi.value();
+  return true;
+}
+
+void MainWindow::onDestroyAuxiliaryRenderWindow(Host::AuxiliaryRenderWindowHandle handle, QPoint* pos, QSize* size)
+{
+  AuxiliaryDisplayWidget* widget = static_cast<AuxiliaryDisplayWidget*>(handle);
+  DebugAssert(widget);
+
+  *pos = widget->pos();
+  *size = widget->size();
+  widget->destroy();
 }
 
 void MainWindow::onToolsMemoryCardEditorTriggered()

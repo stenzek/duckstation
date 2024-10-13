@@ -11,6 +11,7 @@
 #include "core/types.h"
 
 #include "util/gpu_device.h"
+#include "util/imgui_manager.h"
 #include "util/input_manager.h"
 
 #include <QtCore/QByteArray>
@@ -119,6 +120,13 @@ public:
   /// This version is **only** for the system thread. UI thread should use the MainWindow variant.
   SystemLock pauseAndLockSystem();
 
+  /// Queues an input event for an additional render window to the emu thread.
+  void queueAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindowUserData userdata,
+                                            Host::AuxiliaryRenderWindowEvent event,
+                                            Host::AuxiliaryRenderWindowEventParam param1 = {},
+                                            Host::AuxiliaryRenderWindowEventParam param2 = {},
+                                            Host::AuxiliaryRenderWindowEventParam param3 = {});
+
 Q_SIGNALS:
   void errorReported(const QString& title, const QString& message);
   bool messageConfirmed(const QString& title, const QString& message);
@@ -150,6 +158,11 @@ Q_SIGNALS:
   void cheatEnabled(quint32 index, bool enabled);
   void mediaCaptureStarted();
   void mediaCaptureStopped();
+
+  bool onCreateAuxiliaryRenderWindow(qint32 x, qint32 y, quint32 width, quint32 height, const QString& title,
+                                     const QString& icon_name, Host::AuxiliaryRenderWindowUserData userdata,
+                                     Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error);
+  void onDestroyAuxiliaryRenderWindow(Host::AuxiliaryRenderWindowHandle handle, QPoint* pos, QSize* size);
 
   /// Big Picture UI requests.
   void onCoverDownloaderOpenRequested();
@@ -210,6 +223,8 @@ private Q_SLOTS:
   void onDisplayWindowTextEntered(const QString& text);
   void doBackgroundControllerPoll();
   void runOnEmuThread(std::function<void()> callback);
+  void processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 event, quint32 param1, quint32 param2,
+                                              quint32 param3);
 
 protected:
   void run() override;
