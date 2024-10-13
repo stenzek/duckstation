@@ -4801,7 +4801,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <location filename="../debuggermodels.cpp" line="481"/>
         <location filename="../qtutils.cpp" line="182"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation>Endereço inválido! valores devem ser: hexa (0x12345678 ou 12345678)</translation>
+        <translation>Endereço inválido! Valores devem ser em hexadecimal (0x12345678 ou 12345678)</translation>
     </message>
 </context>
 <context>
