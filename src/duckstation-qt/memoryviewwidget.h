@@ -51,6 +51,7 @@ private:
   void updateSelectedByte(const QPoint& pos);
   void setSelection(size_t new_selection, bool new_ascii);
   void expandCurrentDataToInclude(size_t offset);
+  void adjustScrollToInclude(size_t offset);
 
   void* m_data;
   size_t m_data_size;

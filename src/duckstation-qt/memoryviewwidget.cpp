@@ -120,9 +120,9 @@ void MemoryViewWidget::mouseMoveEvent(QMouseEvent* event)
 
 void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
 {
+  const int key = event->key();
   if (m_selected_address < m_data_size && m_data_editable)
   {
-    const int key = event->key();
     if (key == Qt::Key_Backspace)
     {
       if (m_selected_address > 0)
@@ -189,6 +189,43 @@ void MemoryViewWidget::keyPressEvent(QKeyEvent* event)
         }
       }
     }
+  }
+
+  if (m_data_size > 0 &&
+      ((key >= Qt::Key_Left && key <= Qt::Key_Down) || key == Qt::Key_PageUp || key == Qt::Key_PageDown))
+  {
+    if (key == Qt::Key_Left)
+    {
+      m_selected_address = (m_selected_address > 0) ? (m_selected_address - 1) : 0;
+    }
+    else if (key == Qt::Key_Right)
+    {
+      m_selected_address = std::min(m_selected_address + 1, m_data_size - 1);
+    }
+    else if (key == Qt::Key_Up)
+    {
+      m_selected_address = (m_selected_address < 16) ? m_selected_address : (m_selected_address - 16);
+    }
+    else if (key == Qt::Key_Down)
+    {
+      m_selected_address = ((m_selected_address + 16) < m_data_size) ? (m_selected_address + 16) : m_selected_address;
+    }
+    else if (key == Qt::Key_PageUp)
+    {
+      m_selected_address = (m_selected_address >= (m_rows_visible * m_bytes_per_line)) ?
+                             (m_selected_address - (m_rows_visible * m_bytes_per_line)) :
+                             0;
+    }
+    else if (key == Qt::Key_PageDown)
+    {
+      m_selected_address = std::min((m_selected_address + (m_rows_visible * m_bytes_per_line)), m_data_size - 1);
+    }
+
+    m_editing_nibble = -1;
+    forceRefresh();
+    expandCurrentDataToInclude(m_selected_address);
+    adjustScrollToInclude(m_selected_address);
+    return;
   }
 
   QAbstractScrollArea::keyPressEvent(event);
@@ -437,6 +474,18 @@ void MemoryViewWidget::expandCurrentDataToInclude(size_t offset)
   }
 }
 
+void MemoryViewWidget::adjustScrollToInclude(size_t offset)
+{
+  const int row = static_cast<int>(offset / m_bytes_per_line);
+  const int scroll_row = verticalScrollBar()->value();
+  ;
+  const int last_visible_row = scroll_row + m_rows_visible;
+  if (row < scroll_row)
+    verticalScrollBar()->setValue(row);
+  else if (row >= last_visible_row)
+    verticalScrollBar()->setValue(row - m_rows_visible + 1);
+}
+
 void MemoryViewWidget::saveCurrentData()
 {
   if (!m_data)
@@ -471,7 +520,7 @@ void MemoryViewWidget::adjustContent()
   horizontalScrollBar()->setRange(0, w - viewport()->width());
   horizontalScrollBar()->setPageStep(viewport()->width());
 
-  m_rows_visible = viewport()->height() / m_char_height;
+  m_rows_visible = (viewport()->height() - m_char_height) / m_char_height; // -1 for the header
   int val = verticalScrollBar()->value();
   m_start_offset = (size_t)val * m_bytes_per_line;
   m_end_offset = m_start_offset + m_rows_visible * m_bytes_per_line - 1;
