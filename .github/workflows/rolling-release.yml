@@ -81,6 +81,13 @@ jobs:
         cd ..\..
         git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc
 
+    - name: Download Patch Archives
+      shell: cmd
+      run: |
+        cd data/resources
+        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+
     - name: Compile x64 Release Build
       shell: cmd
       run: |
@@ -171,6 +178,13 @@ jobs:
         call update_rc_version.bat
         cd ..\..
         git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc
+
+    - name: Download Patch Archives
+      shell: cmd
+      run: |
+        cd data/resources
+        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
     - name: Compile x64 Release Build
       shell: cmd
@@ -264,6 +278,13 @@ jobs:
         cd ..\..
         git update-index --assume-unchanged src/duckstation-qt/duckstation-qt.rc
 
+    - name: Download Patch Archives
+      shell: cmd
+      run: |
+        cd data/resources
+        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        aria2c -Z "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+
     - name: Compile ARM64 Release Build
       shell: cmd
       run: |
@@ -340,6 +361,13 @@ jobs:
       run: |
         echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
 
+    - name: Download Patch Archives
+      shell: bash
+      run: |
+        cd data/resources
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+
     - name: Compile Build
       shell: bash
       run: |
@@ -404,6 +432,13 @@ jobs:
       run: |
         echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
 
+    - name: Download Patch Archives
+      shell: bash
+      run: |
+        cd data/resources
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+
     - name: Compile Build
       shell: bash
       run: |
@@ -457,6 +492,13 @@ jobs:
       if: github.ref == 'refs/heads/dev'
       run: |
         echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
+
+    - name: Download Patch Archives
+      shell: bash
+      run: |
+        cd data/resources
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
     - name: Generate AppStream XML
       run: |
@@ -551,6 +593,13 @@ jobs:
       if: github.ref == 'refs/heads/dev'
       run: |
         echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
+
+    - name: Download Patch Archives
+      shell: bash
+      run: |
+        cd data/resources
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 
     - name: Compile and Zip .app
       shell: bash
