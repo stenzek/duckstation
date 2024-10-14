@@ -3296,12 +3296,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   DebugAssert(bounds.right <= static_cast<s32>(VRAM_WIDTH) && bounds.bottom <= static_cast<s32>(VRAM_HEIGHT));
   AddWrittenRectangle(bounds);
 
-  // We want to dump *before* the write goes through, otherwise we dump bad data.
-  if (m_use_texture_cache)
-  {
-    GPUTextureCache::WriteVRAM(x, y, width, height, data, set_mask, check_mask, bounds);
-  }
-  else if (m_sw_renderer)
+  if (m_sw_renderer)
   {
     const u32 num_words = width * height;
     GPUBackendUpdateVRAMCommand* cmd = m_sw_renderer->NewUpdateVRAMCommand(num_words);
@@ -3314,6 +3309,10 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
     cmd->height = static_cast<u16>(height);
     std::memcpy(cmd->data, data, sizeof(u16) * num_words);
     m_sw_renderer->PushCommand(cmd);
+  }
+  else
+  {
+    GPUTextureCache::WriteVRAM(x, y, width, height, data, set_mask, check_mask, bounds);
   }
 
   if (check_mask)
