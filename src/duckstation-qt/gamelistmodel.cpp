@@ -447,7 +447,9 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
         case Column_Players:
         {
-          if (ge->dbentry->min_players == ge->dbentry->max_players)
+          if (!ge->dbentry || ge->dbentry->min_players == 0)
+            return QString();
+          else if (ge->dbentry->min_players == ge->dbentry->max_players)
             return QStringLiteral("%1").arg(ge->dbentry->min_players);
           else
             return QStringLiteral("%1-%2").arg(ge->dbentry->min_players).arg(ge->dbentry->max_players);
