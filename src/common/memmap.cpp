@@ -36,6 +36,11 @@
 #include <unistd.h>
 #endif
 
+#if defined(__linux__) && !defined(MAP_FIXED_NOREPLACE)
+// Compatibility with old libc.
+#define MAP_FIXED_NOREPLACE 0x100000
+#endif
+
 LOG_CHANNEL(MemMap);
 
 namespace MemMap {
