@@ -4417,6 +4417,21 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.cdrom_readahead_sectors != old_settings.cdrom_readahead_sectors)
       CDROM::SetReadaheadSectors(g_settings.cdrom_readahead_sectors);
 
+    bool controllers_updated = false;
+    for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+    {
+      if (g_settings.controller_types[i] != old_settings.controller_types[i])
+      {
+        UpdateControllers();
+        ResetControllers();
+        controllers_updated = true;
+        break;
+      }
+    }
+
+    if (!controllers_updated)
+      UpdateControllerSettings();
+
     if (g_settings.memory_card_types != old_settings.memory_card_types ||
         g_settings.memory_card_paths != old_settings.memory_card_paths ||
         (g_settings.memory_card_use_playlist_title != old_settings.memory_card_use_playlist_title))
@@ -4486,23 +4501,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.display_osd_scale != old_settings.display_osd_scale)
       ImGuiManager::SetGlobalScale(g_settings.display_osd_scale / 100.0f);
   }
-
-  bool controllers_updated = false;
-  for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
-  {
-    if (g_settings.controller_types[i] != old_settings.controller_types[i])
-    {
-      if (IsValid() && !controllers_updated)
-      {
-        UpdateControllers();
-        ResetControllers();
-        controllers_updated = true;
-      }
-    }
-  }
-
-  if (IsValid() && !controllers_updated)
-    UpdateControllerSettings();
 
   if (g_settings.multitap_mode != old_settings.multitap_mode)
     UpdateMultitaps();
