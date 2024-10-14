@@ -1461,7 +1461,7 @@ bool Cheats::ImportPCSXFile(CodeInfoList* dst, const std::string_view file_conte
 
     if (linev.front() == '[')
     {
-      if (linev.size() < 3 || linev.back() != ']')
+      if (linev.size() < 3 || linev.back() != ']' || (linev[1] == '*' && linev.size() < 4))
       {
         if (!reader.LogError(error, stop_on_error, "Malformed code at line {}: {}", reader.GetCurrentLineNumber(),
                              line))
@@ -1477,7 +1477,7 @@ bool Cheats::ImportPCSXFile(CodeInfoList* dst, const std::string_view file_conte
         return false;
 
       current_code = CodeInfo();
-      current_code.name = linev.substr(1, linev.length() - 2);
+      current_code.name = (linev[1] == '*') ? linev.substr(2, linev.length() - 3) : linev.substr(1, linev.length() - 2);
       current_code.file_offset_start = static_cast<u32>(reader.GetCurrentLineOffset());
       current_code.file_offset_end = current_code.file_offset_start;
       current_code.file_offset_body_start = current_code.file_offset_start;
