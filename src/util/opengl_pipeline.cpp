@@ -757,12 +757,12 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
 {
   DebugAssert(!m_pipeline_disk_cache_file);
 
-  m_pipeline_disk_cache_file = FileSystem::OpenCFile(path.c_str(), "r+b", error);
-  if (!m_pipeline_disk_cache_file)
+  std::FILE* fp = FileSystem::OpenCFile(path.c_str(), "r+b", error);
+  if (!fp)
     return false;
 
   // Read footer.
-  const s64 size = FileSystem::FSize64(m_pipeline_disk_cache_file);
+  const s64 size = FileSystem::FSize64(fp);
   if (size < static_cast<s64>(sizeof(PipelineDiskCacheFooter)) ||
       size >= static_cast<s64>(std::numeric_limits<u32>::max()))
   {
@@ -771,10 +771,11 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
   }
 
   PipelineDiskCacheFooter file_footer;
-  if (FileSystem::FSeek64(m_pipeline_disk_cache_file, size - sizeof(PipelineDiskCacheFooter), SEEK_SET) != 0 ||
-      std::fread(&file_footer, sizeof(file_footer), 1, m_pipeline_disk_cache_file) != 1)
+  if (FileSystem::FSeek64(fp, size - sizeof(PipelineDiskCacheFooter), SEEK_SET) != 0 ||
+      std::fread(&file_footer, sizeof(file_footer), 1, fp) != 1)
   {
     Error::SetStringView(error, "Invalid cache file footer.");
+    std::fclose(fp);
     return false;
   }
 
@@ -790,15 +791,16 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
         0)
   {
     Error::SetStringView(error, "Cache does not match expected driver/version.");
+    std::fclose(fp);
     return false;
   }
 
   m_pipeline_disk_cache_data_end = static_cast<u32>(size) - sizeof(PipelineDiskCacheFooter) -
                                    (sizeof(PipelineDiskCacheIndexEntry) * file_footer.num_programs);
-  if (m_pipeline_disk_cache_data_end < 0 ||
-      FileSystem::FSeek64(m_pipeline_disk_cache_file, m_pipeline_disk_cache_data_end, SEEK_SET) != 0)
+  if (m_pipeline_disk_cache_data_end < 0 || FileSystem::FSeek64(fp, m_pipeline_disk_cache_data_end, SEEK_SET) != 0)
   {
     Error::SetStringView(error, "Failed to seek to start of index entries.");
+    std::fclose(fp);
     return false;
   }
 
@@ -806,11 +808,12 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
   for (u32 i = 0; i < file_footer.num_programs; i++)
   {
     PipelineDiskCacheIndexEntry entry;
-    if (std::fread(&entry, sizeof(entry), 1, m_pipeline_disk_cache_file) != 1 ||
+    if (std::fread(&entry, sizeof(entry), 1, fp) != 1 ||
         (static_cast<s64>(entry.offset) + static_cast<s64>(entry.compressed_size)) >= size)
     {
       Error::SetStringView(error, "Failed to read disk cache entry.");
       m_program_cache.clear();
+      std::fclose(fp);
       return false;
     }
 
@@ -818,6 +821,7 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
     {
       Error::SetStringView(error, "Duplicate program in disk cache.");
       m_program_cache.clear();
+      std::fclose(fp);
       return false;
     }
 
@@ -832,6 +836,7 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
   }
 
   VERBOSE_LOG("Read {} programs from disk cache.", m_program_cache.size());
+  m_pipeline_disk_cache_file = fp;
   return true;
 }
 
