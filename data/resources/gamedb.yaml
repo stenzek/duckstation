@@ -2268,6 +2268,7 @@ SLPS-00061:
   codes:
     - SLPS-00061
     - SLPS-91005
+    - HASH-7FB5C7872264681F
   metadata:
     publisher: "Namco"
     developer: "Namco"
@@ -165735,6 +165736,7 @@ SLPS-00321:
   codes:
     - SLPS-00321
     - SLPS-91036
+    - HASH-C78EAA9D3C5AFC7D
   metadata:
     publisher: "Bullet Proof Software"
     developer: "Bullet Proof Software"
@@ -185264,6 +185266,8 @@ SCES-01565:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185290,6 +185294,8 @@ SCES-11565:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185316,6 +185322,8 @@ SCES-21565:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185342,6 +185350,8 @@ SCES-31565:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185368,6 +185378,8 @@ SCES-01566:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185394,6 +185406,8 @@ SCES-11566:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185420,6 +185434,8 @@ SCES-21566:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185446,6 +185462,8 @@ SCES-31566:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185472,6 +185490,8 @@ SCES-01567:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185498,6 +185518,8 @@ SCES-11567:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185524,6 +185546,8 @@ SCES-21567:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185550,6 +185574,8 @@ SCES-31567:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185576,6 +185602,8 @@ SCES-01568:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185602,6 +185630,8 @@ SCES-11568:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185628,6 +185658,8 @@ SCES-21568:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185654,6 +185686,8 @@ SCES-31568:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185680,6 +185714,8 @@ SCES-01569:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185706,6 +185742,8 @@ SCES-11569:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185732,6 +185770,8 @@ SCES-21569:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185758,6 +185798,8 @@ SCES-31569:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185788,6 +185830,8 @@ SLUS-00915:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185814,6 +185858,8 @@ SLUS-00949:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185840,6 +185886,8 @@ SLUS-00950:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
@@ -185866,6 +185914,8 @@ SLUS-00951:
   controllers:
     - AnalogController
     - DigitalController
+  traits:
+    - DisableUpscaling
   metadata:
     publisher: "Fox Interactive"
     developer: "HyperBole Studios"
