@@ -21,7 +21,12 @@ enum : u32
   NUM_BLOCKS = DATA_SIZE / BLOCK_SIZE,
   NUM_FRAMES = DATA_SIZE / FRAME_SIZE,
   ICON_WIDTH = 16,
-  ICON_HEIGHT = 16
+  ICON_HEIGHT = 16,
+
+  FILE_REGION_LENGTH = 2,
+  FILE_SERIAL_LENGTH = 10,
+  FILE_FILENAME_LENGTH = 8,
+  FILE_TOTAL_LENGTH = FILE_REGION_LENGTH + FILE_SERIAL_LENGTH + FILE_FILENAME_LENGTH,
 };
 
 using DataArray = std::array<u8, DATA_SIZE>;
@@ -55,6 +60,7 @@ bool ReadFile(const DataArray& data, const FileInfo& fi, std::vector<u8>* buffer
 bool WriteFile(DataArray* data, std::string_view filename, std::span<const u8> buffer, Error* error);
 bool DeleteFile(DataArray* data, const FileInfo& fi, bool clear_sectors);
 bool UndeleteFile(DataArray* data, const FileInfo& fi);
+bool RenameFile(DataArray* data, const FileInfo& fi, std::string_view new_filename, Error* error);
 bool ImportCard(DataArray* data, const char* filename, Error* error);
 bool ImportCard(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error);
 bool ExportSave(DataArray* data, const FileInfo& fi, const char* filename, Error* error);

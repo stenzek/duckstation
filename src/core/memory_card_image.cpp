@@ -3,6 +3,7 @@
 
 #include "memory_card_image.h"
 #include "gpu_types.h"
+#include "host.h"
 #include "system.h"
 
 #include "util/shiftjis.h"
@@ -36,7 +37,7 @@ struct DirectoryFrame
   u32 block_allocation_state;
   u32 file_size;
   u16 next_block_number;
-  char filename[FILE_NAME_LENGTH + 1];
+  char filename[FILE_TOTAL_LENGTH + 1];
   u8 zero_pad_1;
   u8 pad_2[95];
   u8 checksum;
@@ -324,11 +325,12 @@ bool MemoryCardImage::ReadFile(const DataArray& data, const FileInfo& fi, std::v
   return true;
 }
 
-bool MemoryCardImage::WriteFile(DataArray* data, std::string_view filename, const std::span<const u8> buffer, Error* error)
+bool MemoryCardImage::WriteFile(DataArray* data, std::string_view filename, const std::span<const u8> buffer,
+                                Error* error)
 {
   if (buffer.empty())
   {
-    Error::SetStringView(error, "Buffer is empty.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "Buffer is empty."));
     return false;
   }
 
@@ -336,8 +338,9 @@ bool MemoryCardImage::WriteFile(DataArray* data, std::string_view filename, cons
   const u32 num_blocks = (static_cast<u32>(buffer.size()) + (BLOCK_SIZE - 1)) / BLOCK_SIZE;
   if (free_block_count < num_blocks)
   {
-    Error::SetStringFmt(error, "Insufficient free blocks, {} blocks are needed, but only have {}.", num_blocks,
-                        free_block_count);
+    Error::SetStringFmt(error,
+                        TRANSLATE_FS("MemoryCard", "Insufficient free blocks, {} blocks are needed, but only have {}."),
+                        num_blocks, free_block_count);
     return false;
   }
 
@@ -481,12 +484,41 @@ bool MemoryCardImage::UndeleteFile(DataArray* data, const FileInfo& fi)
   return true;
 }
 
+bool MemoryCardImage::RenameFile(DataArray* data, const FileInfo& fi, std::string_view new_filename, Error* error)
+{
+  if (new_filename.length() > FILE_TOTAL_LENGTH)
+  {
+    Error::SetStringFmt(error, TRANSLATE_FS("MemoryCard", "File name must be at maximum {} characters long."),
+                        static_cast<unsigned>(FILE_TOTAL_LENGTH));
+    return false;
+  }
+
+  for (const FileInfo& other_file : EnumerateFiles(*data, false))
+  {
+    if (other_file.filename == new_filename)
+    {
+      Error::SetStringFmt(
+        error, TRANSLATE_FS("MemoryCard", "Save file with the same name '{}' already exists in memory card."),
+        new_filename);
+      return false;
+    }
+  }
+
+  DirectoryFrame* df = GetFramePtr<DirectoryFrame>(data, 0, fi.first_block);
+  for (size_t i = 0; i < new_filename.length(); i++)
+    df->filename[i] = new_filename[i];
+  for (size_t i = new_filename.length(); i < FILE_TOTAL_LENGTH; i++)
+    df->filename[i] = '\0';
+  UpdateChecksum(df);
+  return true;
+}
+
 bool MemoryCardImage::ImportCardMCD(DataArray* data, const char* filename, std::span<const u8> file_data, Error* error)
 {
   if (file_data.size() != DATA_SIZE)
   {
-    Error::SetStringFmt(error, "File is incorrect size, expected {} bytes, got {} bytes.", static_cast<u32>(DATA_SIZE),
-                        file_data.size());
+    Error::SetStringFmt(error, TRANSLATE_FS("MemoryCard", "File is incorrect size, expected {} bytes, got {} bytes."),
+                        static_cast<u32>(DATA_SIZE), file_data.size());
     return false;
   }
 
@@ -518,8 +550,9 @@ bool MemoryCardImage::ImportCardGME(DataArray* data, const char* filename, std::
 
   if (file_data.size() < MIN_SIZE)
   {
-    Error::SetStringFmt(error, "File is incorrect size, expected at least {} bytes, got {} bytes.", MIN_SIZE,
-                        file_data.size());
+    Error::SetStringFmt(error,
+                        TRANSLATE_FS("MemoryCard", "File is incorrect size, expected at least {} bytes, got {} bytes."),
+                        MIN_SIZE, file_data.size());
     return false;
   }
 
@@ -556,15 +589,15 @@ bool MemoryCardImage::ImportCardVGS(DataArray* data, const char* filename, std::
 
   if (file_data.size() != EXPECTED_SIZE)
   {
-    Error::SetStringFmt(error, "File is incorrect size, expected {} bytes, got {} bytes.", EXPECTED_SIZE,
-                        file_data.size());
+    Error::SetStringFmt(error, TRANSLATE_FS("MemoryCard", "File is incorrect size, expected {} bytes, got {} bytes."),
+                        EXPECTED_SIZE, file_data.size());
     return false;
   }
 
   // Connectix Virtual Game Station format (.MEM): "VgsM", 64 bytes
   if (file_data[0] != 'V' || file_data[1] != 'g' || file_data[2] != 's' || file_data[3] != 'M')
   {
-    Error::SetStringView(error, "Incorrect header.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "Incorrect header."));
     return false;
   }
 
@@ -579,15 +612,15 @@ bool MemoryCardImage::ImportCardPSX(DataArray* data, const char* filename, std::
 
   if (file_data.size() != EXPECTED_SIZE)
   {
-    Error::SetStringFmt(error, "File is incorrect size, expected {} bytes, got {} bytes.", EXPECTED_SIZE,
-                        file_data.size());
+    Error::SetStringFmt(error, TRANSLATE_FS("MemoryCard", "File is incorrect size, expected {} bytes, got {} bytes."),
+                        EXPECTED_SIZE, file_data.size());
     return false;
   }
 
   // Connectix Virtual Game Station format (.MEM): "VgsM", 64 bytes
   if (file_data[0] != 'P' || file_data[1] != 'S' || file_data[2] != 'V')
   {
-    Error::SetStringView(error, "Incorrect header.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "Incorrect header."));
     return false;
   }
 
@@ -600,7 +633,7 @@ bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, std::spa
   const std::string_view extension = Path::GetExtension(filename);
   if (extension.empty())
   {
-    Error::SetStringFmt(error, "File must have an extension.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "File must have an extension."));
     return false;
   }
 
@@ -625,7 +658,7 @@ bool MemoryCardImage::ImportCard(DataArray* data, const char* filename, std::spa
   }
   else
   {
-    Error::SetStringFmt(error, "Unknown extension '{}'.", extension);
+    Error::SetStringFmt(error, TRANSLATE_FS("MemoryCard", "Unknown extension '{}'."), extension);
     return false;
   }
 }
@@ -668,7 +701,7 @@ bool MemoryCardImage::ImportSaveWithDirectoryFrame(DataArray* data, const char* 
   // Make sure the size of the actual file is valid
   if (sd.Size <= FRAME_SIZE || (sd.Size - FRAME_SIZE) % BLOCK_SIZE != 0u || (sd.Size - FRAME_SIZE) / BLOCK_SIZE > 15u)
   {
-    Error::SetStringView(error, "Invalid size for save file.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "Invalid size for save file."));
     return false;
   }
 
@@ -679,28 +712,29 @@ bool MemoryCardImage::ImportSaveWithDirectoryFrame(DataArray* data, const char* 
   DirectoryFrame df;
   if (std::fread(&df, sizeof(df), 1, fp.get()) != 1)
   {
-    Error::SetErrno(error, "Failed to read directory frame: ", errno);
+    Error::SetErrno(error, TRANSLATE_SV("MemoryCard", "Failed to read directory frame: "), errno);
     return false;
   }
 
   // Make sure the size reported by the directory frame is valid
   if (df.file_size < BLOCK_SIZE || df.file_size % BLOCK_SIZE != 0 || df.file_size / BLOCK_SIZE > 15u)
   {
-    Error::SetStringFmt(error, "Invalid size ({} bytes) reported by directory frame.", df.file_size);
+    Error::SetStringFmt(error, TRANSLATE_FS("MemoryCard", "Invalid size ({} bytes) reported by directory frame."),
+                        df.file_size);
     return false;
   }
 
   std::vector<u8> blocks = std::vector<u8>(static_cast<size_t>(df.file_size));
   if (std::fread(blocks.data(), df.file_size, 1, fp.get()) != 1)
   {
-    Error::SetErrno(error, "Failed to read block bytes: ", errno);
+    Error::SetErrno(error, TRANSLATE_SV("MemoryCard", "Failed to read block bytes: "), errno);
     return false;
   }
 
   const u32 num_blocks = (static_cast<u32>(blocks.size()) + (BLOCK_SIZE - 1)) / BLOCK_SIZE;
   if (GetFreeBlockCount(*data) < num_blocks)
   {
-    Error::SetStringView(error, "Insufficient free blocks.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "Insufficient free blocks."));
     return false;
   }
 
@@ -712,7 +746,9 @@ bool MemoryCardImage::ImportSaveWithDirectoryFrame(DataArray* data, const char* 
     {
       if (!fi.deleted)
       {
-        Error::SetStringFmt(error, "Save file with the same name '{}' already exists in memory card", fi.filename);
+        Error::SetStringFmt(
+          error, TRANSLATE_FS("MemoryCard", "Save file with the same name '{}' already exists in memory card."),
+          fi.filename);
         return false;
       }
 
@@ -729,7 +765,7 @@ bool MemoryCardImage::ImportRawSave(DataArray* data, const char* filename, const
   std::string save_name(Path::GetFileTitle(filename));
   if (save_name.length() == 0)
   {
-    Error::SetStringView(error, "Invalid filename.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "Invalid filename."));
     return false;
   }
 
@@ -744,8 +780,9 @@ bool MemoryCardImage::ImportRawSave(DataArray* data, const char* filename, const
   const u32 num_blocks = (static_cast<u32>(blocks->size()) + (BLOCK_SIZE - 1)) / BLOCK_SIZE;
   if (free_block_count < num_blocks)
   {
-    Error::SetStringFmt(error, "Insufficient free blocks, needs {} blocks, but only have {}.", num_blocks,
-                        free_block_count);
+    Error::SetStringFmt(error,
+                        TRANSLATE_FS("MemoryCard", "Insufficient free blocks, needs {} blocks, but only have {}."),
+                        num_blocks, free_block_count);
     return false;
   }
 
@@ -757,7 +794,9 @@ bool MemoryCardImage::ImportRawSave(DataArray* data, const char* filename, const
     {
       if (!fi.deleted)
       {
-        Error::SetStringFmt(error, "Save file with the same name '{}' already exists in memory card.", fi.filename);
+        Error::SetStringFmt(
+          error, TRANSLATE_FS("MemoryCard", "Save file with the same name '{}' already exists in memory card."),
+          fi.filename);
         return false;
       }
 
@@ -774,7 +813,7 @@ bool MemoryCardImage::ImportSave(DataArray* data, const char* filename, Error* e
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(filename, &sd) || sd.Size == 0)
   {
-    Error::SetStringView(error, "File does not exist, or is empty.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "File does not exist, or is empty."));
     return false;
   }
 
@@ -788,7 +827,7 @@ bool MemoryCardImage::ImportSave(DataArray* data, const char* filename, Error* e
   }
   else
   {
-    Error::SetStringView(error, "Unknown save format.");
+    Error::SetStringView(error, TRANSLATE_SV("MemoryCard", "Unknown save format."));
     return false;
   }
 }
