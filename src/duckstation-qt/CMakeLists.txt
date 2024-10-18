@@ -116,6 +116,7 @@ set(SRCS
   memorycardeditorwindow.cpp
   memorycardeditorwindow.h
   memorycardeditorwindow.ui
+  memorycardrenamefiledialog.ui
   memorycardsettingswidget.cpp
   memorycardsettingswidget.h
   memoryscannerwindow.cpp

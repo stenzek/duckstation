@@ -288,6 +288,7 @@
     <QtUi Include="gamecheatsettingswidget.ui" />
     <QtUi Include="gamepatchdetailswidget.ui" />
     <QtUi Include="gamecheatcodechoiceeditordialog.ui" />
+    <QtUi Include="memorycardrenamefiledialog.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />

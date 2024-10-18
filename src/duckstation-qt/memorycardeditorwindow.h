@@ -4,6 +4,7 @@
 #pragma once
 
 #include "ui_memorycardeditorwindow.h"
+#include "ui_memorycardrenamefiledialog.h"
 
 #include "core/memory_card_image.h"
 
@@ -36,6 +37,7 @@ protected:
 private Q_SLOTS:
   void onCardASelectionChanged();
   void onCardBSelectionChanged();
+  void onCardContextMenuRequested(const QPoint& pos);
   void doCopyFile();
   void doDeleteFile();
   void doUndeleteFile();
@@ -76,6 +78,7 @@ private:
   void importCard(Card* card);
   void formatCard(Card* card);
 
+  void doRenameSaveFile();
   void doExportSaveFile();
   void importSaveFile(Card* card);
 
@@ -85,10 +88,30 @@ private:
   Ui::MemoryCardEditorDialog m_ui;
   QPushButton* m_deleteFile;
   QPushButton* m_undeleteFile;
+  QPushButton* m_renameFile;
   QPushButton* m_exportFile;
   QPushButton* m_moveLeft;
   QPushButton* m_moveRight;
 
   Card m_card_a;
   Card m_card_b;
+};
+
+class MemoryCardRenameFileDialog final : public QDialog
+{
+  Q_OBJECT
+public:
+  MemoryCardRenameFileDialog(QWidget* parent, std::string_view old_name);
+  ~MemoryCardRenameFileDialog() override;
+
+  static std::string promptForNewName(QWidget* parent, std::string_view old_name);
+
+private Q_SLOTS:
+  void updateSimplifiedFieldsFromFullName();
+  void updateFullNameFromSimplifiedFields();
+
+private:
+  void setupAdditionalUi();
+
+  Ui::MemoryCardRenameFileDialog m_ui;
 };

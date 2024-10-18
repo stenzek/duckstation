@@ -14,17 +14,20 @@
    <string>Memory Card Editor</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="resources/resources.qrc">
+   <iconset resource="resources/duckstation-qt.qrc">
     <normaloff>:/icons/duck.png</normaloff>:/icons/duck.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
     <widget class="QTableWidget" name="cardA">
+     <property name="contextMenuPolicy">
+      <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
+     </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
+      <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
      </property>
      <property name="iconSize">
       <size>
@@ -82,7 +85,7 @@
         <string>New...</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
+        <iconset resource="resources/duckstation-qt.qrc">
          <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
        </property>
       </widget>
@@ -93,7 +96,7 @@
         <string>Open...</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
+        <iconset resource="resources/duckstation-qt.qrc">
          <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
        </property>
       </widget>
@@ -112,7 +115,7 @@
      <item>
       <widget class="QDialogButtonBox" name="buttonBoxB">
        <property name="standardButtons">
-        <set>QDialogButtonBox::NoButton</set>
+        <set>QDialogButtonBox::StandardButton::NoButton</set>
        </property>
       </widget>
      </item>
@@ -130,7 +133,7 @@
      <item>
       <widget class="QDialogButtonBox" name="buttonBoxA">
        <property name="standardButtons">
-        <set>QDialogButtonBox::NoButton</set>
+        <set>QDialogButtonBox::StandardButton::NoButton</set>
        </property>
       </widget>
      </item>
@@ -154,7 +157,7 @@
         <string>New...</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
+        <iconset resource="resources/duckstation-qt.qrc">
          <normaloff>:/icons/document-new.png</normaloff>:/icons/document-new.png</iconset>
        </property>
       </widget>
@@ -165,7 +168,7 @@
         <string>Open...</string>
        </property>
        <property name="icon">
-        <iconset resource="resources/resources.qrc">
+        <iconset resource="resources/duckstation-qt.qrc">
          <normaloff>:/icons/document-open.png</normaloff>:/icons/document-open.png</iconset>
        </property>
       </widget>
@@ -174,11 +177,14 @@
    </item>
    <item row="1" column="3">
     <widget class="QTableWidget" name="cardB">
+     <property name="contextMenuPolicy">
+      <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
+     </property>
      <property name="selectionMode">
-      <enum>QAbstractItemView::SingleSelection</enum>
+      <enum>QAbstractItemView::SelectionMode::SingleSelection</enum>
      </property>
      <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectRows</enum>
+      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
      </property>
      <property name="iconSize">
       <size>
@@ -217,17 +223,17 @@
    <item row="1" column="1">
     <widget class="QDialogButtonBox" name="centerButtonBox">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="standardButtons">
-      <set>QDialogButtonBox::NoButton</set>
+      <set>QDialogButtonBox::StandardButton::NoButton</set>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

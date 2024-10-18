@@ -15,6 +15,7 @@
 
 #include <QtCore/QFileInfo>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
@@ -23,6 +24,11 @@ static constexpr char MEMORY_CARD_IMPORT_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardEditorWindow", "All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)");
 static constexpr char SINGLE_SAVEFILE_FILTER[] =
   TRANSLATE_NOOP("MemoryCardEditorWindow", "Single Save Files (*.mcs);;All Files (*.*)");
+static constexpr std::array<std::pair<ConsoleRegion, const char*>, 3> MEMORY_CARD_FILE_REGION_PREFIXES = {{
+  {ConsoleRegion::NTSC_U, "BA"},
+  {ConsoleRegion::NTSC_J, "BI"},
+  {ConsoleRegion::PAL, "BE"},
+}};
 
 MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
 {
@@ -31,6 +37,7 @@ MemoryCardEditorWindow::MemoryCardEditorWindow() : QWidget()
 
   m_deleteFile = m_ui.centerButtonBox->addButton(tr("Delete File"), QDialogButtonBox::ActionRole);
   m_undeleteFile = m_ui.centerButtonBox->addButton(tr("Undelete File"), QDialogButtonBox::ActionRole);
+  m_renameFile = m_ui.centerButtonBox->addButton(tr("Rename File"), QDialogButtonBox::ActionRole);
   m_exportFile = m_ui.centerButtonBox->addButton(tr("Export File"), QDialogButtonBox::ActionRole);
   m_moveLeft = m_ui.centerButtonBox->addButton(tr("<<"), QDialogButtonBox::ActionRole);
   m_moveRight = m_ui.centerButtonBox->addButton(tr(">>"), QDialogButtonBox::ActionRole);
@@ -135,7 +142,11 @@ void MemoryCardEditorWindow::connectCardUi(Card* card, QDialogButtonBox* buttonB
 void MemoryCardEditorWindow::connectUi()
 {
   connect(m_ui.cardA, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorWindow::onCardASelectionChanged);
+  connect(m_ui.cardA, &QTableWidget::customContextMenuRequested, this,
+          &MemoryCardEditorWindow::onCardContextMenuRequested);
   connect(m_ui.cardB, &QTableWidget::itemSelectionChanged, this, &MemoryCardEditorWindow::onCardBSelectionChanged);
+  connect(m_ui.cardB, &QTableWidget::customContextMenuRequested, this,
+          &MemoryCardEditorWindow::onCardContextMenuRequested);
   connect(m_moveLeft, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
   connect(m_moveRight, &QPushButton::clicked, this, &MemoryCardEditorWindow::doCopyFile);
   connect(m_deleteFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doDeleteFile);
@@ -149,6 +160,7 @@ void MemoryCardEditorWindow::connectUi()
   connect(m_ui.newCardB, &QPushButton::clicked, [this]() { newCard(&m_card_b); });
   connect(m_ui.openCardA, &QPushButton::clicked, [this]() { openCard(&m_card_a); });
   connect(m_ui.openCardB, &QPushButton::clicked, [this]() { openCard(&m_card_b); });
+  connect(m_renameFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doRenameSaveFile);
   connect(m_exportFile, &QPushButton::clicked, this, &MemoryCardEditorWindow::doExportSaveFile);
 }
 
@@ -522,6 +534,33 @@ void MemoryCardEditorWindow::doExportSaveFile()
   }
 }
 
+void MemoryCardEditorWindow::doRenameSaveFile()
+{
+  const auto [card, fi] = getSelectedFile();
+  if (!fi)
+    return;
+
+  const std::string new_name = MemoryCardRenameFileDialog::promptForNewName(this, fi->filename);
+  if (new_name.empty())
+    return;
+
+  Error error;
+  if (!MemoryCardImage::RenameFile(&card->data, *fi, new_name, &error))
+  {
+    QMessageBox::critical(this, tr("Error"),
+                          tr("Failed to rename save file %1:\n%2")
+                            .arg(QString::fromStdString(fi->filename))
+                            .arg(QString::fromStdString(error.GetDescription())));
+    return;
+  }
+
+  clearSelection();
+  setCardDirty(card);
+  updateCardTable(card);
+  updateCardBlocksFree(card);
+  updateButtonState();
+}
+
 void MemoryCardEditorWindow::importCard(Card* card)
 {
   promptForSave(card);
@@ -597,6 +636,35 @@ void MemoryCardEditorWindow::importSaveFile(Card* card)
   updateCardBlocksFree(card);
 }
 
+void MemoryCardEditorWindow::onCardContextMenuRequested(const QPoint& pos)
+{
+  QTableWidget* table = qobject_cast<QTableWidget*>(sender());
+  if (!table)
+    return;
+
+  const auto& [card, fi] = getSelectedFile();
+  if (!card)
+    return;
+
+  QMenu menu(table);
+  QAction* action = menu.addAction(tr("Delete File"));
+  action->setEnabled(fi && !fi->deleted);
+  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doDeleteFile);
+  action = menu.addAction(tr("Undelete File"));
+  action->setEnabled(fi && fi->deleted);
+  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doUndeleteFile);
+  action = menu.addAction(tr("Rename File"));
+  action->setEnabled(fi != nullptr);
+  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doRenameSaveFile);
+  action = menu.addAction(tr("Export File"));
+  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doExportSaveFile);
+  action = menu.addAction(tr("Copy File"));
+  action->setEnabled(fi && !m_card_a.filename.empty() && !m_card_b.filename.empty());
+  connect(action, &QAction::triggered, this, &MemoryCardEditorWindow::doCopyFile);
+
+  menu.exec(table->mapToGlobal(pos));
+}
+
 std::tuple<MemoryCardEditorWindow::Card*, const MemoryCardImage::FileInfo*> MemoryCardEditorWindow::getSelectedFile()
 {
   QList<QTableWidgetSelectionRange> sel = m_card_a.table->selectedRanges();
@@ -629,8 +697,115 @@ void MemoryCardEditorWindow::updateButtonState()
   m_deleteFile->setEnabled(has_selection);
   m_undeleteFile->setEnabled(is_deleted);
   m_exportFile->setEnabled(has_selection);
+  m_renameFile->setEnabled(has_selection);
   m_moveLeft->setEnabled(both_cards_present && has_selection && is_card_b);
   m_moveRight->setEnabled(both_cards_present && has_selection && !is_card_b);
   m_ui.buttonBoxA->setEnabled(card_a_present);
   m_ui.buttonBoxB->setEnabled(card_b_present);
+}
+
+MemoryCardRenameFileDialog::MemoryCardRenameFileDialog(QWidget* parent, std::string_view old_name) : QDialog(parent)
+{
+  m_ui.setupUi(this);
+  setupAdditionalUi();
+
+  const QString original_name = QtUtils::StringViewToQString(old_name);
+  m_ui.originalName->setText(original_name);
+  m_ui.fullFilename->setText(original_name);
+  updateSimplifiedFieldsFromFullName();
+}
+
+MemoryCardRenameFileDialog::~MemoryCardRenameFileDialog() = default;
+
+std::string MemoryCardRenameFileDialog::promptForNewName(QWidget* parent, std::string_view old_name)
+{
+  MemoryCardRenameFileDialog dlg(parent, old_name);
+
+  std::string ret;
+  if (dlg.exec() != 1)
+    return ret;
+
+  ret = dlg.m_ui.fullFilename->text().toStdString();
+  return ret;
+}
+
+void MemoryCardRenameFileDialog::setupAdditionalUi()
+{
+  m_ui.icon->setPixmap(QIcon::fromTheme(QStringLiteral("memcard-line")).pixmap(32, 32));
+
+  for (const auto& [region, prefix] : MEMORY_CARD_FILE_REGION_PREFIXES)
+  {
+    m_ui.region->addItem(QtUtils::GetIconForRegion(region), Settings::GetConsoleRegionDisplayName(region),
+                         QVariant(QString::fromUtf8(prefix)));
+  }
+
+  connect(m_ui.region, &QComboBox::currentIndexChanged, this,
+          &MemoryCardRenameFileDialog::updateFullNameFromSimplifiedFields);
+  connect(m_ui.serial, &QLineEdit::textChanged, this, &MemoryCardRenameFileDialog::updateFullNameFromSimplifiedFields);
+  connect(m_ui.filename, &QLineEdit::textChanged, this,
+          &MemoryCardRenameFileDialog::updateFullNameFromSimplifiedFields);
+
+  connect(m_ui.fullFilename, &QLineEdit::textChanged, this,
+          &MemoryCardRenameFileDialog::updateSimplifiedFieldsFromFullName);
+
+  connect(m_ui.buttonBox, &QDialogButtonBox::accepted, this, &MemoryCardRenameFileDialog::accept);
+  connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &MemoryCardRenameFileDialog::reject);
+
+  m_ui.fullFilename->setFocus();
+}
+
+void MemoryCardRenameFileDialog::updateSimplifiedFieldsFromFullName()
+{
+  const QString full_name = m_ui.fullFilename->text();
+
+  const QString region = full_name.mid(0, MemoryCardImage::FILE_REGION_LENGTH);
+  const QString serial = full_name.mid(MemoryCardImage::FILE_REGION_LENGTH, MemoryCardImage::FILE_SERIAL_LENGTH);
+  const QString filename = full_name.mid(MemoryCardImage::FILE_REGION_LENGTH + MemoryCardImage::FILE_SERIAL_LENGTH);
+
+  {
+    QSignalBlocker sb(m_ui.region);
+
+    while (m_ui.region->count() > static_cast<int>(MEMORY_CARD_FILE_REGION_PREFIXES.size()))
+      m_ui.region->removeItem(m_ui.region->count() - 1);
+
+    const std::string regionStr = region.toStdString();
+    size_t i;
+    for (i = 0; i < MEMORY_CARD_FILE_REGION_PREFIXES.size(); i++)
+    {
+      if (regionStr == MEMORY_CARD_FILE_REGION_PREFIXES[i].second)
+      {
+        m_ui.region->setCurrentIndex(static_cast<int>(i));
+        break;
+      }
+    }
+    if (i == MEMORY_CARD_FILE_REGION_PREFIXES.size())
+    {
+      m_ui.region->addItem(tr("Unknown (%1)").arg(region), region);
+      m_ui.region->setCurrentIndex(m_ui.region->count() - 1);
+    }
+  }
+
+  {
+    QSignalBlocker sb(m_ui.serial);
+    m_ui.serial->setText(serial);
+  }
+
+  {
+    QSignalBlocker sb(m_ui.filename);
+    m_ui.filename->setText(filename);
+  }
+}
+
+void MemoryCardRenameFileDialog::updateFullNameFromSimplifiedFields()
+{
+  const QString region = m_ui.region->currentData().toString();
+  const QString serial = m_ui.serial->text()
+                           .left(MemoryCardImage::FILE_SERIAL_LENGTH)
+                           .leftJustified(MemoryCardImage::FILE_SERIAL_LENGTH, QChar(' '));
+  const QString filename = m_ui.filename->text()
+                             .left(MemoryCardImage::FILE_FILENAME_LENGTH)
+                             .leftJustified(MemoryCardImage::FILE_FILENAME_LENGTH, QChar(' '));
+
+  const QSignalBlocker sb(m_ui.fullFilename);
+  m_ui.fullFilename->setText(QStringLiteral("%1%2%3").arg(region).arg(serial).arg(filename));
 }
