@@ -556,8 +556,8 @@ bool OpenGLSwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_sca
   if (m_window_info.surface_width == new_width && m_window_info.surface_height == new_height)
     return true;
 
-  m_window_info.surface_width = new_width;
-  m_window_info.surface_height = new_height;
+  m_window_info.surface_width = static_cast<u16>(new_width);
+  m_window_info.surface_height = static_cast<u16>(new_height);
 
   OpenGLDevice::GetContext()->ResizeSurface(m_window_info, m_surface_handle);
   return true;
