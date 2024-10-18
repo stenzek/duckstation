@@ -1470,9 +1470,14 @@ void System::ApplySettings(bool display_osd_messages)
   LoadSettings(display_osd_messages);
 
   // If we've disabled/enabled game settings, we need to reload without it.
-  if (g_settings.apply_game_settings != old_config.apply_game_settings)
+  // Also reload cheats when safe mode is toggled, because patches might change.
+  if (g_settings.apply_game_settings != old_config.apply_game_settings ||
+      g_settings.disable_all_enhancements != old_config.disable_all_enhancements)
   {
-    UpdateGameSettingsLayer();
+    if (g_settings.apply_game_settings != old_config.apply_game_settings)
+      UpdateGameSettingsLayer();
+    else
+      Cheats::ReloadCheats(false, true, false, true);
     LoadSettings(display_osd_messages);
   }
 
