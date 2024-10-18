@@ -151,6 +151,8 @@ static bool ShouldStartPaused();
 
 /// Checks for settings changes, std::move() the old settings away for comparing beforehand.
 static void CheckForSettingsChanges(const Settings& old_settings);
+static void SetTaintsFromSettings();
+static void WarnAboutStateTaints(u32 state_taints);
 static void WarnAboutUnsafeSettings();
 static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
@@ -251,6 +253,7 @@ static u32 s_frame_number = 1;
 static u32 s_internal_frame_number = 1;
 static const BIOS::ImageInfo* s_bios_image_info = nullptr;
 static BIOS::ImageInfo::Hash s_bios_hash = {};
+static u32 s_taints = 0;
 
 static std::string s_running_game_path;
 static std::string s_running_game_serial;
@@ -658,6 +661,49 @@ DiscRegion System::GetDiscRegion()
 bool System::IsPALRegion()
 {
   return s_region == ConsoleRegion::PAL;
+}
+
+const char* System::GetTaintDisplayName(Taint taint)
+{
+  static constexpr const std::array<const char*, static_cast<size_t>(Taint::MaxCount)> names = {{
+    TRANSLATE_DISAMBIG_NOOP("System", "CPU Overclock", "Taint"),
+    TRANSLATE_DISAMBIG_NOOP("System", "CD-ROM Read Speedup", "Taint"),
+    TRANSLATE_DISAMBIG_NOOP("System", "CD-ROM Seek Speedup", "Taint"),
+    TRANSLATE_DISAMBIG_NOOP("System", "Force Frame Timings", "Taint"),
+    TRANSLATE_DISAMBIG_NOOP("System", "8MB RAM", "Taint"),
+    TRANSLATE_DISAMBIG_NOOP("System", "Cheats", "Taint"),
+    TRANSLATE_DISAMBIG_NOOP("System", "Game Patches", "Taint"),
+  }};
+
+  return names[static_cast<size_t>(taint)];
+}
+
+const char* System::GetTaintName(Taint taint)
+{
+  static constexpr const std::array<const char*, static_cast<size_t>(Taint::MaxCount)> names = {{
+    "CPUOverclock",
+    "CDROMReadSpeedup",
+    "CDROMSeekSpeedup",
+    "ForceFrameTimings",
+    "RAM8MB",
+    "Cheats",
+    "Patches",
+  }};
+
+  return names[static_cast<size_t>(taint)];
+}
+
+bool System::HasTaint(Taint taint)
+{
+  return (s_taints & (1u << static_cast<u8>(taint))) != 0u;
+}
+
+void System::SetTaint(Taint taint)
+{
+  if (!HasTaint(taint))
+    WARNING_LOG("Setting system taint: {}", GetTaintName(taint));
+
+  s_taints |= (1u << static_cast<u8>(taint));
 }
 
 TickCount System::GetMaxSliceTicks()
@@ -2039,6 +2085,7 @@ void System::DestroySystem()
     Host::ReleaseGPUDevice();
   }
 
+  s_taints = 0;
   s_bios_hash = {};
   s_bios_image_info = nullptr;
   s_exe_override = {};
@@ -2464,6 +2511,11 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
     sw.Do(&s_region);
   }
 
+  u32 state_taints = s_taints;
+  sw.DoEx(&state_taints, 75, static_cast<u32>(0));
+  if (state_taints != s_taints) [[unlikely]]
+    WarnAboutStateTaints(state_taints);
+
   sw.Do(&s_frame_number);
   sw.Do(&s_internal_frame_number);
 
@@ -2599,6 +2651,9 @@ void System::InternalReset()
 {
   if (IsShutdown())
     return;
+
+  // reset and clear taints
+  SetTaintsFromSettings();
 
   TimingEvents::Reset();
   CPU::Reset();
@@ -4578,6 +4633,54 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   {
     g_settings.UpdateLogSettings();
   }
+}
+
+void System::SetTaintsFromSettings()
+{
+  s_taints = 0;
+
+  if (g_settings.cdrom_read_speedup > 1)
+    SetTaint(Taint::CDROMReadSpeedup);
+  if (g_settings.cdrom_seek_speedup > 1)
+    SetTaint(Taint::CDROMSeekSpeedup);
+  if (g_settings.cpu_overclock_active)
+    SetTaint(Taint::CPUOverclock);
+  if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+    SetTaint(Taint::ForceFrameTimings);
+  if (g_settings.enable_8mb_ram)
+    SetTaint(Taint::RAM8MB);
+  if (Cheats::GetActivePatchCount() > 0)
+    SetTaint(Taint::Patches);
+  if (Cheats::GetActiveCheatCount() > 0)
+    SetTaint(Taint::Cheats);
+}
+
+void System::WarnAboutStateTaints(u32 state_taints)
+{
+  const u32 taints_active_in_file = state_taints & ~s_taints;
+  if (taints_active_in_file == 0)
+    return;
+
+  LargeString messages;
+  for (u32 i = 0; i < static_cast<u32>(Taint::MaxCount); i++)
+  {
+    if (!(taints_active_in_file & (1u << i)))
+      continue;
+
+    if (messages.empty())
+    {
+      messages.append_format(
+        "{} {}\n", ICON_EMOJI_WARNING,
+        TRANSLATE_SV("System", "This save state was created with the following tainted options, and may\n"
+                               "       be unstable. You will need to reset the system to clear any effects."));
+    }
+
+    messages.append("        \u2022 ");
+    messages.append(GetTaintDisplayName(static_cast<Taint>(i)));
+    messages.append('\n');
+  }
+
+  Host::AddKeyedOSDWarning("SystemTaintsFromState", std::string(messages.view()), Host::OSD_WARNING_DURATION);
 }
 
 void System::WarnAboutUnsafeSettings()

@@ -237,6 +237,8 @@ static EnableCodeList s_enabled_patches;
 
 static ActiveCodeList s_frame_end_codes;
 
+static u32 s_active_patch_count = 0;
+static u32 s_active_cheat_count = 0;
 static bool s_patches_enabled = false;
 static bool s_cheats_enabled = false;
 static bool s_database_cheat_codes_enabled = false;
@@ -828,6 +830,8 @@ void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verb
 
 void Cheats::UnloadAll()
 {
+  s_active_cheat_count = 0;
+  s_active_patch_count = 0;
   s_frame_end_codes = ActiveCodeList();
   s_enabled_patches = EnableCodeList();
   s_enabled_cheats = EnableCodeList();
@@ -862,14 +866,15 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
   const size_t prev_count = s_frame_end_codes.size();
   s_frame_end_codes.clear();
 
-  u32 patch_count = 0;
-  u32 cheat_count = 0;
+  s_active_patch_count = 0;
+  s_active_cheat_count = 0;
 
   if (!g_settings.disable_all_enhancements)
   {
     const bool hc_mode_active = Achievements::IsHardcoreModeActive();
-    patch_count = EnableCheats(s_patch_codes, s_enabled_patches, "Patches", hc_mode_active);
-    cheat_count = AreCheatsEnabled() ? EnableCheats(s_cheat_codes, s_enabled_cheats, "Cheats", hc_mode_active) : 0;
+    s_active_patch_count = EnableCheats(s_patch_codes, s_enabled_patches, "Patches", hc_mode_active);
+    s_active_cheat_count =
+      AreCheatsEnabled() ? EnableCheats(s_cheat_codes, s_enabled_cheats, "Cheats", hc_mode_active) : 0;
   }
 
   // Display message on first boot when we load patches.
@@ -877,20 +882,23 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
   const size_t new_count = s_frame_end_codes.size();
   if (verbose || (verbose_if_changed && prev_count != new_count))
   {
-    if (patch_count > 0)
+    if (s_active_patch_count > 0)
     {
-      Host::AddIconOSDMessage("LoadPatches", ICON_FA_BAND_AID,
-                              TRANSLATE_PLURAL_STR("Cheats", "%n game patches are active.", "OSD Message", patch_count),
-                              Host::OSD_INFO_DURATION);
-    }
-    if (cheat_count > 0)
-    {
+      System::SetTaint(System::Taint::Patches);
       Host::AddIconOSDMessage(
-        "LoadCheats", ICON_EMOJI_WARNING,
-        TRANSLATE_PLURAL_STR("Cheats", "%n cheats are enabled. This may crash games.", "OSD Message", cheat_count),
-        Host::OSD_WARNING_DURATION);
+        "LoadPatches", ICON_FA_BAND_AID,
+        TRANSLATE_PLURAL_STR("Cheats", "%n game patches are active.", "OSD Message", s_active_patch_count),
+        Host::OSD_INFO_DURATION);
     }
-    else if (patch_count == 0)
+    if (s_active_cheat_count > 0)
+    {
+      System::SetTaint(System::Taint::Cheats);
+      Host::AddIconOSDMessage("LoadCheats", ICON_EMOJI_WARNING,
+                              TRANSLATE_PLURAL_STR("Cheats", "%n cheats are enabled. This may crash games.",
+                                                   "OSD Message", s_active_cheat_count),
+                              Host::OSD_WARNING_DURATION);
+    }
+    else if (s_active_patch_count == 0)
     {
       Host::RemoveKeyedOSDMessage("LoadPatches");
       Host::AddIconOSDMessage("LoadCheats", ICON_FA_BAND_AID,
@@ -934,6 +942,16 @@ bool Cheats::ApplyManualCode(const std::string_view name)
   }
 
   return false;
+}
+
+u32 Cheats::GetActivePatchCount()
+{
+  return s_active_patch_count;
+}
+
+u32 Cheats::GetActiveCheatCount()
+{
+  return s_active_cheat_count;
 }
 
 //////////////////////////////////////////////////////////////////////////

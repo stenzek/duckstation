@@ -104,6 +104,18 @@ enum class BootMode
   BootPSF,
 };
 
+enum class Taint : u8
+{
+  CPUOverclock,
+  CDROMReadSpeedup,
+  CDROMSeekSpeedup,
+  ForceFrameTimings,
+  RAM8MB,
+  Cheats,
+  Patches,
+  MaxCount,
+};
+
 extern TickCount g_ticks_per_second;
 
 /// Returns true if the filename is a PlayStation executable we can inject.
@@ -155,6 +167,12 @@ void InterruptExecution();
 ConsoleRegion GetRegion();
 DiscRegion GetDiscRegion();
 bool IsPALRegion();
+
+/// Taints - flags that are set on the system and only cleared on reset.
+const char* GetTaintDisplayName(Taint taint);
+const char* GetTaintName(Taint taint);
+bool HasTaint(Taint taint);
+void SetTaint(Taint taint);
 
 ALWAYS_INLINE TickCount GetTicksPerSecond()
 {

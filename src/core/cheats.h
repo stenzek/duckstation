@@ -143,6 +143,12 @@ extern bool EnumerateManualCodes(std::function<bool(const std::string& name)> ca
 /// Invokes/applies the specified manually-activated code.
 extern bool ApplyManualCode(const std::string_view name);
 
+/// Returns the number of active patches.
+extern u32 GetActivePatchCount();
+
+/// Returns the number of active cheats.
+extern u32 GetActiveCheatCount();
+
 // Config sections/keys to use to enable patches.
 extern const char* PATCHES_CONFIG_SECTION;
 extern const char* CHEATS_CONFIG_SECTION;
