@@ -963,7 +963,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   // fast forward boot requires fast boot
   g_settings.bios_fast_forward_boot = g_settings.bios_patch_fast_boot && g_settings.bios_fast_forward_boot;
 
-  if (g_settings.pcdrv_enable && g_settings.pcdrv_root.empty())
+  if (g_settings.pcdrv_enable && g_settings.pcdrv_root.empty() && display_osd_messages)
   {
     Host::AddKeyedOSDMessage("pcdrv_disabled_no_root",
                              TRANSLATE_STR("OSDMessage", "Disabling PCDrv because no root directory is specified."),
@@ -971,18 +971,15 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.pcdrv_enable = false;
   }
 
-  if (g_settings.gpu_pgxp_enable)
+  if (g_settings.gpu_pgxp_enable && g_settings.gpu_renderer == GPURenderer::Software)
   {
-    if (g_settings.gpu_renderer == GPURenderer::Software)
+    if (display_osd_messages)
     {
-      if (display_osd_messages)
-      {
-        Host::AddKeyedOSDMessage(
-          "pgxp_disabled_sw",
-          TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
-      }
-      g_settings.gpu_pgxp_enable = false;
+      Host::AddKeyedOSDMessage(
+        "pgxp_disabled_sw",
+        TRANSLATE_STR("OSDMessage", "PGXP is incompatible with the software renderer, disabling PGXP."), 10.0f);
     }
+    g_settings.gpu_pgxp_enable = false;
   }
   else
   {
@@ -1004,27 +1001,14 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   }
 #endif
 
-#if defined(__ANDROID__) && defined(__arm__) && !defined(__aarch64__) && !defined(_M_ARM64)
-  if (g_settings.rewind_enable)
-  {
-    Host::AddKeyedOSDMessage("rewind_disabled_android",
-                             TRANSLATE_STR("OSDMessage", "Rewind is not supported on 32-bit ARM for Android."), 30.0f);
-    g_settings.rewind_enable = false;
-  }
-  if (g_settings.IsRunaheadEnabled())
-  {
-    Host::AddKeyedOSDMessage("rewind_disabled_android",
-                             TRANSLATE_STR("OSDMessage", "Runahead is not supported on 32-bit ARM for Android."),
-                             30.0f);
-    g_settings.runahead_frames = 0;
-  }
-#endif
-
   if (g_settings.IsRunaheadEnabled() && g_settings.rewind_enable)
   {
-    Host::AddKeyedOSDMessage("rewind_disabled",
-                             TRANSLATE_STR("OSDMessage", "Rewind is disabled because runahead is enabled."),
-                             Host::OSD_WARNING_DURATION);
+    if (display_osd_messages)
+    {
+      Host::AddKeyedOSDMessage("rewind_disabled",
+                               TRANSLATE_STR("OSDMessage", "Rewind is disabled because runahead is enabled."),
+                               Host::OSD_WARNING_DURATION);
+    }
     g_settings.rewind_enable = false;
   }
 

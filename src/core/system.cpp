@@ -1277,7 +1277,8 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
-  WarnAboutUnsafeSettings();
+  if (IsValidOrInitializing())
+    WarnAboutUnsafeSettings();
 
   // apply compatibility settings
   if (g_settings.apply_compatibility_settings && !s_running_game_serial.empty())
