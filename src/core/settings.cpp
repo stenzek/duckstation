@@ -172,15 +172,15 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   enable_discord_presence = si.GetBoolValue("Main", "EnableDiscordPresence", false);
   rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
   rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
-  rewind_save_slots = static_cast<u32>(si.GetIntValue("Main", "RewindSaveSlots", 10));
-  runahead_frames = static_cast<u32>(si.GetIntValue("Main", "RunaheadFrameCount", 0));
+  rewind_save_slots = static_cast<u8>(si.GetUIntValue("Main", "RewindSaveSlots", 10u));
+  runahead_frames = static_cast<u8>(si.GetUIntValue("Main", "RunaheadFrameCount", 0u));
 
   cpu_execution_mode =
     ParseCPUExecutionMode(
       si.GetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(DEFAULT_CPU_EXECUTION_MODE)).c_str())
       .value_or(DEFAULT_CPU_EXECUTION_MODE);
-  cpu_overclock_numerator = std::max(si.GetIntValue("CPU", "OverclockNumerator", 1), 1);
-  cpu_overclock_denominator = std::max(si.GetIntValue("CPU", "OverclockDenominator", 1), 1);
+  cpu_overclock_numerator = std::max(si.GetUIntValue("CPU", "OverclockNumerator", 1u), 1u);
+  cpu_overclock_denominator = std::max(si.GetUIntValue("CPU", "OverclockDenominator", 1u), 1u);
   cpu_overclock_enable = si.GetBoolValue("CPU", "OverclockEnable", false);
   UpdateOverclockActive();
   cpu_recompiler_memory_exceptions = si.GetBoolValue("CPU", "RecompilerMemoryExceptions", false);
@@ -193,8 +193,8 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   gpu_renderer = ParseRendererName(si.GetStringValue("GPU", "Renderer", GetRendererName(DEFAULT_GPU_RENDERER)).c_str())
                    .value_or(DEFAULT_GPU_RENDERER);
   gpu_adapter = si.GetStringValue("GPU", "Adapter", "");
-  gpu_resolution_scale = static_cast<u8>(si.GetIntValue("GPU", "ResolutionScale", 1));
-  gpu_multisamples = static_cast<u8>(si.GetIntValue("GPU", "Multisamples", 1));
+  gpu_resolution_scale = static_cast<u8>(si.GetUIntValue("GPU", "ResolutionScale", 1u));
+  gpu_multisamples = static_cast<u8>(si.GetUIntValue("GPU", "Multisamples", 1u));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_disable_shader_cache = si.GetBoolValue("GPU", "DisableShaderCache", false);
   gpu_disable_dual_source_blend = si.GetBoolValue("GPU", "DisableDualSourceBlend", false);
@@ -520,8 +520,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Main", "DisableAllEnhancements", disable_all_enhancements);
   si.SetBoolValue("Main", "RewindEnable", rewind_enable);
   si.SetFloatValue("Main", "RewindFrequency", rewind_save_frequency);
-  si.SetIntValue("Main", "RewindSaveSlots", rewind_save_slots);
-  si.SetIntValue("Main", "RunaheadFrameCount", runahead_frames);
+  si.SetUIntValue("Main", "RewindSaveSlots", rewind_save_slots);
+  si.SetUIntValue("Main", "RunaheadFrameCount", runahead_frames);
 
   si.SetStringValue("CPU", "ExecutionMode", GetCPUExecutionModeName(cpu_execution_mode));
   si.SetBoolValue("CPU", "OverclockEnable", cpu_overclock_enable);
@@ -534,8 +534,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
 
   si.SetStringValue("GPU", "Renderer", GetRendererName(gpu_renderer));
   si.SetStringValue("GPU", "Adapter", gpu_adapter.c_str());
-  si.SetIntValue("GPU", "ResolutionScale", static_cast<long>(gpu_resolution_scale));
-  si.SetIntValue("GPU", "Multisamples", static_cast<long>(gpu_multisamples));
+  si.SetUIntValue("GPU", "ResolutionScale", gpu_resolution_scale);
+  si.SetUIntValue("GPU", "Multisamples", gpu_multisamples);
 
   if (!ignore_base)
   {
