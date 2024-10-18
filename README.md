@@ -142,6 +142,12 @@ For example, if your disc image was named `Spyro3.cue`, you would place the SBI 
 
 CHD images with built-in subchannel information are also supported.
 
+### Cheats and patch database
+
+DuckStation ships with a built-in cheat and patch database, both provided by the community. Contributions to these are welcome at https://github.com/duckstation/chtdb.
+
+Each release includes the latest version of the database, however you are free to manually update to the latest version as well.
+
 ## Building
 
 ### Windows
