@@ -169,7 +169,7 @@ DiscRegion GetDiscRegion();
 bool IsPALRegion();
 
 /// Taints - flags that are set on the system and only cleared on reset.
-const char* GetTaintDisplayName(Taint taint);
+std::string_view GetTaintDisplayName(Taint taint);
 const char* GetTaintName(Taint taint);
 bool HasTaint(Taint taint);
 void SetTaint(Taint taint);

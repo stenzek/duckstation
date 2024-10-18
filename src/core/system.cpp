@@ -663,7 +663,7 @@ bool System::IsPALRegion()
   return s_region == ConsoleRegion::PAL;
 }
 
-const char* System::GetTaintDisplayName(Taint taint)
+std::string_view System::GetTaintDisplayName(Taint taint)
 {
   static constexpr const std::array<const char*, static_cast<size_t>(Taint::MaxCount)> names = {{
     TRANSLATE_DISAMBIG_NOOP("System", "CPU Overclock", "Taint"),
@@ -675,7 +675,7 @@ const char* System::GetTaintDisplayName(Taint taint)
     TRANSLATE_DISAMBIG_NOOP("System", "Game Patches", "Taint"),
   }};
 
-  return names[static_cast<size_t>(taint)];
+  return Host::TranslateToStringView("System", names[static_cast<size_t>(taint)], "Taint");
 }
 
 const char* System::GetTaintName(Taint taint)
