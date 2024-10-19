@@ -30,7 +30,9 @@ public:
     TransparentAndOpaque,
     OnlyOpaque,
     OnlyTransparent,
-    ShaderBlend
+    ShaderBlend,
+
+    MaxCount,
   };
 
   enum class BatchTextureMode : u8

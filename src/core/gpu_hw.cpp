@@ -55,13 +55,15 @@ static constexpr const std::array s_transparency_modes = {
 };
 
 static constexpr const std::array s_batch_texture_modes = {
-  "Palette4Bit",       "Palette8Bit",       "Direct16Bit",       "Disabled",
-  "SpritePalette4Bit", "SpritePalette8Bit", "SpriteDirect16Bit",
+  "Palette4Bit", "Palette8Bit",       "Direct16Bit",       "PageTexture",
+  "Disabled",    "SpritePalette4Bit", "SpritePalette8Bit", "SpriteDirect16Bit",
 };
+static_assert(s_batch_texture_modes.size() == static_cast<size_t>(GPU_HW::BatchTextureMode::MaxCount));
 
 static constexpr const std::array s_batch_render_modes = {
   "TransparencyDisabled", "TransparentAndOpaque", "OnlyOpaque", "OnlyTransparent", "ShaderBlend",
 };
+static_assert(s_batch_render_modes.size() == static_cast<size_t>(GPU_HW::BatchRenderMode::MaxCount));
 
 #endif
 
@@ -3616,7 +3618,10 @@ void GPU_HW::DispatchRenderCommand()
 
   DebugAssert((rc.IsTexturingEnabled() && (texture_mode == BatchTextureMode::PageTexture &&
                                            texture_cache_key.mode == m_draw_mode.mode_reg.texture_mode) ||
-               texture_mode == static_cast<BatchTextureMode>(m_draw_mode.mode_reg.texture_mode.GetValue())) ||
+               texture_mode == static_cast<BatchTextureMode>(
+                                 (m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit) ?
+                                   GPUTextureMode::Direct16Bit :
+                                   m_draw_mode.mode_reg.texture_mode)) ||
               (!rc.IsTexturingEnabled() && texture_mode == BatchTextureMode::Disabled));
   DebugAssert(!(m_texpage_dirty & TEXPAGE_DIRTY_PAGE_RECT) || texture_mode == BatchTextureMode::PageTexture ||
               !rc.IsTexturingEnabled());
