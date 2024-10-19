@@ -467,7 +467,13 @@ void DebuggerWindow::setupAdditionalUi()
   fixedFont.setStyleHint(QFont::TypeWriter);
   fixedFont.setPointSize(10);
 #else
-  const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+  QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+
+#ifdef __linux__
+  // Fonts on Linux tend to be wider, so reduce the size.
+  // Otherwise the memory view gets cut off.
+  fixedFont.setPointSize(9);
+#endif
 #endif
   m_ui.codeView->setFont(fixedFont);
   m_ui.registerView->setFont(fixedFont);

@@ -749,8 +749,11 @@ void MainWindow::recreate()
 
   // Recreate log window as well. Then make sure we're still on top.
   LogWindow::updateSettings();
-  new_main_window->raise();
-  new_main_window->activateWindow();
+
+  // Qt+XCB will ignore the raise request of the settings window if we raise the main window.
+  // So skip that if we're going to be re-opening the settings window.
+  if (!settings_window_pos.has_value())
+    QtUtils::ShowOrRaiseWindow(new_main_window);
 
   // Reload the sources we just closed.
   g_emu_thread->reloadInputSources();
@@ -762,18 +765,18 @@ void MainWindow::recreate()
     g_main_window->onFullscreenUIStateChange(g_emu_thread->isRunningFullscreenUI());
   }
 
-  if (settings_window_pos.has_value())
-  {
-    SettingsWindow* dlg = g_main_window->getSettingsWindow();
-    dlg->move(settings_window_pos.value());
-    dlg->setCategoryRow(settings_window_row);
-    QtUtils::ShowOrRaiseWindow(dlg);
-  }
   if (controller_settings_window_pos.has_value())
   {
     ControllerSettingsWindow* dlg = g_main_window->getControllerSettingsWindow();
     dlg->move(controller_settings_window_pos.value());
     dlg->setCategory(controller_settings_window_row);
+    dlg->show();
+  }
+  if (settings_window_pos.has_value())
+  {
+    SettingsWindow* dlg = g_main_window->getSettingsWindow();
+    dlg->move(settings_window_pos.value());
+    dlg->setCategoryRow(settings_window_row);
     QtUtils::ShowOrRaiseWindow(dlg);
   }
 }
