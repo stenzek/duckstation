@@ -987,10 +987,14 @@ void GPU_HW::DestroyBuffers()
 bool GPU_HW::CompilePipelines(Error* error)
 {
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
-  const bool per_sample_shading = g_settings.gpu_per_sample_shading && features.per_sample_shading;
-  const bool force_round_texcoords = (m_resolution_scale > 1 && m_texture_filtering == GPUTextureFilter::Nearest &&
-                                      g_settings.gpu_force_round_texcoords);
+  const bool upscaled = (m_resolution_scale > 1);
+  const bool msaa = (m_multisamples > 1);
+  const bool per_sample_shading = (msaa && g_settings.gpu_per_sample_shading && features.per_sample_shading);
+  const bool force_round_texcoords =
+    (upscaled && m_texture_filtering == GPUTextureFilter::Nearest && g_settings.gpu_force_round_texcoords);
   const bool true_color = g_settings.gpu_true_color;
+  const bool scaled_dithering = (!m_true_color && upscaled && g_settings.gpu_scaled_dithering);
+  const bool disable_color_perspective = ShouldDisableColorPerspective();
 
   // Determine when to use shader blending.
   // FBFetch is free, we need it for filtering without DSB, or when accurate blending is forced.
@@ -1029,10 +1033,8 @@ bool GPU_HW::CompilePipelines(Error* error)
   INFO_LOG("Using feedback loops: {}", needs_feedback_loop ? "YES" : "NO");
 
   // Start generating shaders.
-  GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_resolution_scale, m_multisamples, per_sample_shading,
-                             m_true_color, (m_resolution_scale > 1 && g_settings.gpu_scaled_dithering),
-                             m_write_mask_as_depth, ShouldDisableColorPerspective(), m_supports_dual_source_blend,
-                             m_supports_framebuffer_fetch);
+  const GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_supports_dual_source_blend,
+                                   m_supports_framebuffer_fetch);
 
   const u32 active_texture_modes =
     m_allow_sprite_mode ? NUM_TEXTURE_MODES :
@@ -1085,7 +1087,8 @@ bool GPU_HW::CompilePipelines(Error* error)
 
         const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
         const std::string vs = shadergen.GenerateBatchVertexShader(
-          textured != 0, palette == 1, palette == 2, uv_limits, !sprite && force_round_texcoords, m_pgxp_depth_buffer);
+          upscaled, msaa, per_sample_shading, textured != 0, palette == 1, palette == 2, uv_limits,
+          !sprite && force_round_texcoords, m_pgxp_depth_buffer, disable_color_perspective);
         if (!(batch_vertex_shaders[textured][palette][sprite] =
                 g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs, error)))
         {
@@ -1157,10 +1160,11 @@ bool GPU_HW::CompilePipelines(Error* error)
                   (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) && m_use_rov_for_shader_blend);
                 const std::string fs = shadergen.GenerateBatchFragmentShader(
                   static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
-                  shader_texmode, sprite ? m_sprite_texture_filtering : m_texture_filtering, uv_limits,
-                  !sprite && force_round_texcoords, ConvertToBoolUnchecked(dithering),
-                  ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask), use_rov, needs_rov_depth,
-                  (depth_test != 0));
+                  shader_texmode, sprite ? m_sprite_texture_filtering : m_texture_filtering, upscaled, msaa,
+                  per_sample_shading, uv_limits, !sprite && force_round_texcoords, true_color,
+                  ConvertToBoolUnchecked(dithering), scaled_dithering, disable_color_perspective,
+                  ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask), m_write_mask_as_depth,
+                  use_rov, needs_rov_depth, (depth_test != 0));
 
                 if (!(batch_fragment_shaders[depth_test][render_mode][transparency_mode][texture_mode][check_mask]
                                             [dithering][interlacing] = g_gpu_device->CreateShader(
@@ -1433,7 +1437,8 @@ bool GPU_HW::CompilePipelines(Error* error)
     {
       std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
         GPUShaderStage::Fragment, shadergen.GetLanguage(),
-        shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced)),
+        shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced),
+                                                 m_write_mask_as_depth),
         error);
       if (!fs)
         return false;
@@ -1451,8 +1456,9 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM copy
   {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateVRAMCopyFragmentShader(), error);
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(),
+      shadergen.GenerateVRAMCopyFragmentShader(m_resolution_scale, m_write_mask_as_depth), error);
     if (!fs)
       return false;
 
@@ -1479,9 +1485,10 @@ bool GPU_HW::CompilePipelines(Error* error)
   {
     const bool use_buffer = features.supports_texture_buffers;
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                 shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo), error);
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(),
+      shadergen.GenerateVRAMWriteFragmentShader(m_resolution_scale, use_buffer, use_ssbo, m_write_mask_as_depth),
+      error);
     if (!fs)
       return false;
 
@@ -1527,7 +1534,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   if (m_write_mask_as_depth)
   {
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateVRAMUpdateDepthFragmentShader(), error);
+      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateVRAMUpdateDepthFragmentShader(msaa), error);
     if (!fs)
       return false;
 
@@ -1553,8 +1560,9 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM read
   {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateVRAMReadFragmentShader(), error);
+    std::unique_ptr<GPUShader> fs =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                 shadergen.GenerateVRAMReadFragmentShader(m_resolution_scale, m_multisamples), error);
     if (!fs)
       return false;
 
@@ -1577,9 +1585,10 @@ bool GPU_HW::CompilePipelines(Error* error)
       if (depth_extract && !m_pgxp_depth_buffer)
         continue;
 
-      std::unique_ptr<GPUShader> fs =
-        g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                   shadergen.GenerateVRAMExtractFragmentShader(color_24bit, depth_extract), error);
+      std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+        GPUShaderStage::Fragment, shadergen.GetLanguage(),
+        shadergen.GenerateVRAMExtractFragmentShader(m_resolution_scale, m_multisamples, color_24bit, depth_extract),
+        error);
       if (!fs)
         return false;
 

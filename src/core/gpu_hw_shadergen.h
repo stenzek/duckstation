@@ -10,48 +10,41 @@
 class GPU_HW_ShaderGen : public ShaderGen
 {
 public:
-  GPU_HW_ShaderGen(RenderAPI render_api, u32 resolution_scale, u32 multisamples, bool per_sample_shading,
-                   bool true_color, bool scaled_dithering, bool write_mask_as_depth, bool disable_color_perspective,
-                   bool supports_dual_source_blend, bool supports_framebuffer_fetch);
+  GPU_HW_ShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~GPU_HW_ShaderGen();
 
-  std::string GenerateBatchVertexShader(bool textured, bool palette, bool page_texture, bool uv_limits,
-                                        bool force_round_texcoords, bool pgxp_depth);
+  std::string GenerateBatchVertexShader(bool upscaled, bool msaa, bool per_sample_shading, bool textured, bool palette,
+                                        bool page_texture, bool uv_limits, bool force_round_texcoords, bool pgxp_depth,
+                                        bool disable_color_perspective) const;
   std::string GenerateBatchFragmentShader(GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency,
                                           GPU_HW::BatchTextureMode texture_mode, GPUTextureFilter texture_filtering,
-                                          bool uv_limits, bool force_round_texcoords, bool dithering, bool interlacing,
-                                          bool check_mask, bool use_rov, bool use_rov_depth, bool rov_depth_test);
-  std::string GenerateWireframeGeometryShader();
-  std::string GenerateWireframeFragmentShader();
-  std::string GenerateVRAMReadFragmentShader();
-  std::string GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo);
-  std::string GenerateVRAMCopyFragmentShader();
-  std::string GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced);
-  std::string GenerateVRAMUpdateDepthFragmentShader();
-  std::string GenerateVRAMExtractFragmentShader(bool color_24bit, bool depth_buffer);
+                                          bool upscaled, bool msaa, bool per_sample_shading, bool uv_limits,
+                                          bool force_round_texcoords, bool true_color, bool dithering,
+                                          bool scaled_dithering, bool disable_color_perspective, bool interlacing,
+                                          bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth,
+                                          bool rov_depth_test) const;
+  std::string GenerateWireframeGeometryShader() const;
+  std::string GenerateWireframeFragmentShader() const;
+  std::string GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const;
+  std::string GenerateVRAMWriteFragmentShader(u32 resolution_scale, bool use_buffer, bool use_ssbo,
+                                              bool write_mask_as_depth) const;
+  std::string GenerateVRAMCopyFragmentShader(u32 resolution_scale, bool write_mask_as_depth) const;
+  std::string GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced, bool write_mask_as_depth) const;
+  std::string GenerateVRAMUpdateDepthFragmentShader(bool msaa) const;
+  std::string GenerateVRAMExtractFragmentShader(u32 resolution_scale, u32 multisamples, bool color_24bit,
+                                                bool depth_buffer) const;
 
-  std::string GenerateAdaptiveDownsampleVertexShader();
-  std::string GenerateAdaptiveDownsampleMipFragmentShader();
-  std::string GenerateAdaptiveDownsampleBlurFragmentShader();
-  std::string GenerateAdaptiveDownsampleCompositeFragmentShader();
-  std::string GenerateBoxSampleDownsampleFragmentShader(u32 factor);
+  std::string GenerateAdaptiveDownsampleVertexShader() const;
+  std::string GenerateAdaptiveDownsampleMipFragmentShader() const;
+  std::string GenerateAdaptiveDownsampleBlurFragmentShader() const;
+  std::string GenerateAdaptiveDownsampleCompositeFragmentShader() const;
+  std::string GenerateBoxSampleDownsampleFragmentShader(u32 factor) const;
 
-  std::string GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter);
+  std::string GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter) const;
 
 private:
-  ALWAYS_INLINE bool UsingMSAA() const { return m_multisamples > 1; }
-  ALWAYS_INLINE bool UsingPerSampleShading() const { return m_multisamples > 1 && m_per_sample_shading; }
-
-  void WriteColorConversionFunctions(std::stringstream& ss);
-  void WriteBatchUniformBuffer(std::stringstream& ss);
-  void WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter);
-  void WriteAdaptiveDownsampleUniformBuffer(std::stringstream& ss);
-
-  u32 m_resolution_scale;
-  u32 m_multisamples;
-  bool m_per_sample_shading;
-  bool m_true_color;
-  bool m_scaled_dithering;
-  bool m_write_mask_as_depth;
-  bool m_disable_color_perspective;
+  void WriteColorConversionFunctions(std::stringstream& ss) const;
+  void WriteBatchUniformBuffer(std::stringstream& ss) const;
+  void WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter) const;
+  void WriteAdaptiveDownsampleUniformBuffer(std::stringstream& ss) const;
 };

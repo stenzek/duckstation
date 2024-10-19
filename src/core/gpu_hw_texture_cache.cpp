@@ -765,8 +765,8 @@ bool GPUTextureCache::CompilePipelines()
 
   // Most flags don't matter here.
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
-  GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), 1, 1, false, false, false, false, false,
-                             features.dual_source_blend, features.framebuffer_fetch);
+  const GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), features.dual_source_blend,
+                                   features.framebuffer_fetch);
   std::unique_ptr<GPUShader> fullscreen_quad_vertex_shader = g_gpu_device->CreateShader(
     GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateScreenQuadVertexShader());
   if (!fullscreen_quad_vertex_shader)

@@ -11,17 +11,17 @@ public:
   GPUShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~GPUShaderGen();
 
-  std::string GenerateDisplayVertexShader();
-  std::string GenerateDisplayFragmentShader(bool clamp_uv, bool nearest);
-  std::string GenerateDisplaySharpBilinearFragmentShader();
+  std::string GenerateDisplayVertexShader() const;
+  std::string GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const;
+  std::string GenerateDisplaySharpBilinearFragmentShader() const;
 
-  std::string GenerateInterleavedFieldExtractFragmentShader();
-  std::string GenerateDeinterlaceWeaveFragmentShader();
-  std::string GenerateDeinterlaceBlendFragmentShader();
-  std::string GenerateFastMADReconstructFragmentShader();
+  std::string GenerateInterleavedFieldExtractFragmentShader() const;
+  std::string GenerateDeinterlaceWeaveFragmentShader() const;
+  std::string GenerateDeinterlaceBlendFragmentShader() const;
+  std::string GenerateFastMADReconstructFragmentShader() const;
 
-  std::string GenerateChromaSmoothingFragmentShader();
+  std::string GenerateChromaSmoothingFragmentShader() const;
 
 private:
-  void WriteDisplayUniformBuffer(std::stringstream& ss);
+  void WriteDisplayUniformBuffer(std::stringstream& ss) const;
 };
