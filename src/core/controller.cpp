@@ -27,9 +27,17 @@ static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        Controller::VibrationCapabilities::NoVibration};
 
 static const Controller::ControllerInfo* s_controller_info[] = {
-  &s_none_info,     &DigitalController::INFO, &AnalogController::INFO, &AnalogJoystick::INFO,
-  &NeGcon::INFO,    &NeGconRumble::INFO,      &GunCon::INFO,           &PlayStationMouse::INFO,
+  &s_none_info,
+  &DigitalController::INFO,
+  &AnalogController::INFO,
+  &AnalogJoystick::INFO,
+  &NeGcon::INFO,
+  &NeGconRumble::INFO,
+  &GunCon::INFO,
+  &PlayStationMouse::INFO,
   &Justifier::INFO,
+  &DigitalController::INFO_POPN,
+  &DigitalController::INFO_DDGO,
 };
 
 const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> Controller::PortDisplayOrder = {{0, 2, 3, 4, 1, 5, 6, 7}};
@@ -102,7 +110,9 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
   switch (type)
   {
     case ControllerType::DigitalController:
-      return DigitalController::Create(index);
+    case ControllerType::PopnController:
+    case ControllerType::DDGoController:
+      return DigitalController::Create(index, type);
 
     case ControllerType::AnalogController:
       return AnalogController::Create(index);

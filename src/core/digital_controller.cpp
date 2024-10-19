@@ -12,7 +12,7 @@
 #include "common/assert.h"
 #include "common/bitutils.h"
 
-DigitalController::DigitalController(u32 index) : Controller(index)
+DigitalController::DigitalController(u32 index, u16 button_mask) : Controller(index), m_button_mask(button_mask)
 {
 }
 
@@ -127,13 +127,13 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::ButtonsLSB:
     {
-      *data_out = Truncate8(m_button_state) & GetButtonsLSBMask();
+      *data_out = Truncate8(m_button_state & m_button_mask);
       m_transfer_state = TransferState::ButtonsMSB;
       return true;
     }
 
     case TransferState::ButtonsMSB:
-      *data_out = Truncate8(m_button_state >> 8);
+      *data_out = Truncate8((m_button_state & m_button_mask) >> 8);
       m_transfer_state = TransferState::Idle;
       return false;
 
@@ -142,9 +142,24 @@ bool DigitalController::Transfer(const u8 data_in, u8* data_out)
   }
 }
 
-std::unique_ptr<DigitalController> DigitalController::Create(u32 index)
+std::unique_ptr<DigitalController> DigitalController::Create(u32 index, ControllerType type)
 {
-  return std::make_unique<DigitalController>(index);
+  // popn controller - right/down/left grounded
+  static constexpr u16 POPN_BUTTON_MASK =
+    static_cast<u16>(~((1u << static_cast<u8>(Button::Right)) | (1u << static_cast<u8>(Button::Down)) |
+                       (1u << static_cast<u8>(Button::Left))));
+
+  // densha de go! controller - up/down grounded
+  static constexpr u16 DDGO_BUTTON_MASK =
+    static_cast<u16>(~((1u << static_cast<u8>(Button::Up)) | (1u << static_cast<u8>(Button::Down))));
+
+  u16 mask = 0xFFFFu;
+  if (type == ControllerType::PopnController)
+    mask = POPN_BUTTON_MASK;
+  else if (type == ControllerType::DDGoController)
+    mask = DDGO_BUTTON_MASK;
+
+  return std::make_unique<DigitalController>(index, mask);
 }
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
@@ -173,30 +188,72 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
-static const SettingInfo s_settings[] = {
-  {SettingInfo::Type::Boolean, "ForcePopnControllerMode",
-   TRANSLATE_NOOP("DigitalController", "Force Pop'n Controller Mode"),
-   TRANSLATE_NOOP("DigitalController", "Forces the Digital Controller to act as a Pop'n Controller."), "false", nullptr,
-   nullptr, nullptr, nullptr, nullptr, 0.0f}};
-
 const Controller::ControllerInfo DigitalController::INFO = {ControllerType::DigitalController,
                                                             "DigitalController",
                                                             TRANSLATE_NOOP("ControllerType", "Digital Controller"),
                                                             ICON_PF_GAMEPAD_ALT,
                                                             s_binding_info,
-                                                            s_settings,
+                                                            {},
                                                             Controller::VibrationCapabilities::NoVibration};
 
-void DigitalController::LoadSettings(SettingsInterface& si, const char* section, bool initial)
-{
-  Controller::LoadSettings(si, section, initial);
-  m_popn_controller_mode = si.GetBoolValue(section, "ForcePopnControllerMode", false);
-}
+static const Controller::ControllerBindingInfo s_popn_binding_info[] = {
+#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
+  {                                                                                                                    \
+    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
+  }
 
-u8 DigitalController::GetButtonsLSBMask() const
-{
-  constexpr u8 popn_controller_mask =
-    static_cast<u8>(~(u8(1) << static_cast<u8>(Button::Right) | u8(1) << static_cast<u8>(Button::Down) |
-                      u8(1) << static_cast<u8>(Button::Left)));
-  return m_popn_controller_mode ? popn_controller_mask : 0xFF;
-}
+  // clang-format off
+  BUTTON("LeftWhite", TRANSLATE_NOOP("DigitalController", "Left White"), ICON_PF_BUTTON_TRIANGLE, DigitalController::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("LeftYellow", TRANSLATE_NOOP("DigitalController", "Left Yellow"), ICON_PF_BUTTON_CIRCLE, DigitalController::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("LeftGreen", TRANSLATE_NOOP("DigitalController", "Left Green"), ICON_PF_RIGHT_SHOULDER_R1, DigitalController::Button::R1, GenericInputBinding::R1),
+  BUTTON("LeftBlue", TRANSLATE_NOOP("DigitalController", "Left Blue/Sel"), ICON_PF_BUTTON_CROSS, DigitalController::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("MiddleRed", TRANSLATE_NOOP("DigitalController", "Middle Red/Okay"), ICON_PF_LEFT_SHOULDER_L1, DigitalController::Button::L1, GenericInputBinding::L1),
+  BUTTON("RightBlue", TRANSLATE_NOOP("DigitalController", "Right Blue/Sel"), ICON_PF_BUTTON_SQUARE, DigitalController::Button::Square, GenericInputBinding::Square),
+  BUTTON("RightGreen", TRANSLATE_NOOP("DigitalController", "Right Green"), ICON_PF_RIGHT_TRIGGER_R2, DigitalController::Button::R2, GenericInputBinding::R2),
+  BUTTON("RightYellow", TRANSLATE_NOOP("DigitalController", "Right Yellow"), ICON_PF_DPAD_UP, DigitalController::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("RightWhite", TRANSLATE_NOOP("DigitalController", "Right White"), ICON_PF_LEFT_TRIGGER_L2, DigitalController::Button::L2, GenericInputBinding::L2),
+// clang-format on
+
+#undef BUTTON
+};
+
+const Controller::ControllerInfo DigitalController::INFO_POPN = {ControllerType::PopnController,
+                                                                 "PopnController",
+                                                                 TRANSLATE_NOOP("ControllerType", "Pop'n Controller"),
+                                                                 ICON_PF_GAMEPAD_ALT,
+                                                                 s_popn_binding_info,
+                                                                 {},
+                                                                 Controller::VibrationCapabilities::NoVibration};
+
+static const Controller::ControllerBindingInfo s_ddgo_binding_info[] = {
+#define BUTTON(name, display_name, icon_name, button, genb)                                                            \
+  {                                                                                                                    \
+    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
+  }
+
+  // clang-format off
+  BUTTON("Select", TRANSLATE_NOOP("DigitalController", "Select"), ICON_PF_SELECT_SHARE, DigitalController::Button::Select, GenericInputBinding::Select),
+  BUTTON("Start", TRANSLATE_NOOP("DigitalController", "Start"), ICON_PF_START, DigitalController::Button::Start, GenericInputBinding::Start),
+  BUTTON("A", TRANSLATE_NOOP("DigitalController", "A"), ICON_PF_BUTTON_SQUARE, DigitalController::Button::Square, GenericInputBinding::Square),
+  BUTTON("B", TRANSLATE_NOOP("DigitalController", "B"), ICON_PF_BUTTON_CROSS, DigitalController::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("C", TRANSLATE_NOOP("DigitalController", "C"), ICON_PF_BUTTON_CIRCLE, DigitalController::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("Power1", TRANSLATE_NOOP("DigitalController", "Power 1"), ICON_PF_BUTTON_TRIANGLE, DigitalController::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("Power2", TRANSLATE_NOOP("DigitalController", "Power 2"), ICON_PF_DPAD_LEFT, DigitalController::Button::Left, GenericInputBinding::DPadLeft),
+  BUTTON("Power3", TRANSLATE_NOOP("DigitalController", "Power 3"), ICON_PF_DPAD_RIGHT, DigitalController::Button::Right, GenericInputBinding::DPadRight),
+  BUTTON("Brake1", TRANSLATE_NOOP("DigitalController", "Brake 1"), ICON_PF_LEFT_SHOULDER_L1, DigitalController::Button::L1, GenericInputBinding::L1),
+  BUTTON("Brake2", TRANSLATE_NOOP("DigitalController", "Brake 3"), ICON_PF_RIGHT_SHOULDER_R1, DigitalController::Button::R1, GenericInputBinding::R1),
+  BUTTON("Brake3", TRANSLATE_NOOP("DigitalController", "Brake 2"), ICON_PF_LEFT_TRIGGER_L2, DigitalController::Button::L2, GenericInputBinding::L2),
+  BUTTON("Brake4", TRANSLATE_NOOP("DigitalController", "Brake 4"), ICON_PF_RIGHT_TRIGGER_R2, DigitalController::Button::R2, GenericInputBinding::R2),
+// clang-format on
+
+#undef BUTTON
+};
+
+const Controller::ControllerInfo DigitalController::INFO_DDGO = {
+  ControllerType::DDGoController,
+  "DDGoController",
+  TRANSLATE_NOOP("ControllerType", "Densha de Go! Controller"),
+  ICON_PF_GAMEPAD_ALT,
+  s_ddgo_binding_info,
+  {},
+  Controller::VibrationCapabilities::NoVibration};

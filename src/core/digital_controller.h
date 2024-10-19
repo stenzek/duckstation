@@ -32,11 +32,13 @@ public:
   };
 
   static const Controller::ControllerInfo INFO;
+  static const Controller::ControllerInfo INFO_POPN;
+  static const Controller::ControllerInfo INFO_DDGO;
 
-  DigitalController(u32 index);
+  DigitalController(u32 index, u16 button_mask);
   ~DigitalController() override;
 
-  static std::unique_ptr<DigitalController> Create(u32 index);
+  static std::unique_ptr<DigitalController> Create(u32 index, ControllerType type);
 
   ControllerType GetType() const override;
 
@@ -50,8 +52,6 @@ public:
   void ResetTransferState() override;
   bool Transfer(const u8 data_in, u8* data_out) override;
 
-  void LoadSettings(SettingsInterface& si, const char* section, bool initial) override;
-
 private:
   enum class TransferState : u8
   {
@@ -64,10 +64,7 @@ private:
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
+  u16 m_button_mask = UINT16_C(0xFFFF);
 
   TransferState m_transfer_state = TransferState::Idle;
-
-  bool m_popn_controller_mode = false;
-
-  u8 GetButtonsLSBMask() const;
 };
