@@ -168,12 +168,10 @@ if(ENABLE_VULKAN)
   target_link_libraries(util PUBLIC vulkan-headers)
 endif()
 
-if(ENABLE_VULKAN OR APPLE)
-  # shaderc/spirv-cross is loaded dynamically to reduce module loads on startup.
-  get_target_property(SHADERC_INCLUDE_DIR Shaderc::shaderc_shared INTERFACE_INCLUDE_DIRECTORIES)
-  get_target_property(SPIRV_CROSS_INCLUDE_DIR spirv-cross-c-shared INTERFACE_INCLUDE_DIRECTORIES)
-  target_include_directories(util PUBLIC ${SHADERC_INCLUDE_DIR} ${SPIRV_CROSS_INCLUDE_DIR})
-endif()
+# shaderc/spirv-cross is loaded dynamically to reduce module loads on startup.
+get_target_property(SHADERC_INCLUDE_DIR Shaderc::shaderc_shared INTERFACE_INCLUDE_DIRECTORIES)
+get_target_property(SPIRV_CROSS_INCLUDE_DIR spirv-cross-c-shared INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(util PUBLIC ${SHADERC_INCLUDE_DIR} ${SPIRV_CROSS_INCLUDE_DIR})
 
 if(NOT ANDROID)
   target_sources(util PRIVATE
