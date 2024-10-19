@@ -81,7 +81,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "ForceSoftwareRendererForReadbacks",
   "ForceRoundTextureCoordinates",
   "ForceAccurateBlending",
-  "ForceInterlacing",
+  "ForceDeinterlacing",
   "DisableAutoAnalogMode",
   "DisableTrueColor",
   "DisableUpscaling",
@@ -111,7 +111,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer For Readbacks", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Round Texture Coordinates", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Accurate Blending", "GameDatabase::Trait"),
-  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Interlacing", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Deinterlacing", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable True Color", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaling", "GameDatabase::Trait"),
@@ -143,6 +143,7 @@ static constexpr std::array<const char*, static_cast<size_t>(Language::MaxCount)
 
 static constexpr const char* GAMEDB_YAML_FILENAME = "gamedb.yaml";
 static constexpr const char* DISCDB_YAML_FILENAME = "discdb.yaml";
+static DisplayDeinterlacingMode DEFAULT_DEINTERLACING_MODE = DisplayDeinterlacingMode::Adaptive;
 
 static bool s_loaded = false;
 static bool s_track_hashes_loaded = false;
@@ -425,20 +426,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.display_crop_mode = display_crop_mode.value();
   }
 
-  // Don't set to optimal if disable-all-enhancements is enabled.
-  if (display_deinterlacing_mode.has_value() &&
-      (display_deinterlacing_mode.value() != DisplayDeinterlacingMode::Progressive ||
-       !g_settings.disable_all_enhancements))
-  {
-    if (display_osd_messages && settings.display_deinterlacing_mode != display_deinterlacing_mode.value())
-    {
-      APPEND_MESSAGE_FMT(TRANSLATE_FS("GameDatabase", "Deinterlacing set to {}."),
-                         Settings::GetDisplayDeinterlacingModeDisplayName(display_deinterlacing_mode.value()));
-    }
-
-    settings.display_deinterlacing_mode = display_deinterlacing_mode.value();
-  }
-
   if (HasTrait(Trait::ForceInterpreter))
   {
     if (display_osd_messages && settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
@@ -476,12 +463,30 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.gpu_accurate_blending = true;
   }
 
-  if (HasTrait(Trait::ForceInterlacing) && settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
+  if (HasTrait(Trait::ForceDeinterlacing))
   {
-    if (display_osd_messages)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Interlaced rendering enabled."));
+    const DisplayDeinterlacingMode new_mode = display_deinterlacing_mode.value_or(DEFAULT_DEINTERLACING_MODE);
+    if (display_osd_messages && settings.display_deinterlacing_mode != new_mode)
+    {
+      APPEND_MESSAGE_FMT(TRANSLATE_FS("GameDatabase", "Deinterlacing set to {}."),
+                         Settings::GetDisplayDeinterlacingModeDisplayName(display_deinterlacing_mode.value()));
+    }
 
-    settings.display_deinterlacing_mode = DisplayDeinterlacingMode::Adaptive;
+    settings.display_deinterlacing_mode = new_mode;
+  }
+  else if (display_deinterlacing_mode.has_value())
+  {
+    // If the user has it set to progressive, then preserve that.
+    if (settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Progressive)
+    {
+      if (display_osd_messages && settings.display_deinterlacing_mode != display_deinterlacing_mode.value())
+      {
+        APPEND_MESSAGE_FMT(TRANSLATE_FS("GameDatabase", "Deinterlacing set to {}."),
+                           Settings::GetDisplayDeinterlacingModeDisplayName(display_deinterlacing_mode.value()));
+      }
+
+      settings.display_deinterlacing_mode = display_deinterlacing_mode.value();
+    }
   }
 
   if (HasTrait(Trait::DisableTrueColor))
