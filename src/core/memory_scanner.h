@@ -80,7 +80,7 @@ private:
 
   u32 m_value = 0;
   MemoryAccessSize m_size = MemoryAccessSize::HalfWord;
-  Operator m_operator = Operator::Equal;
+  Operator m_operator = Operator::Any;
   PhysicalMemoryAddress m_start_address = 0;
   PhysicalMemoryAddress m_end_address = 0x200000;
   ResultVector m_results;

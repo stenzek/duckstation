@@ -106,6 +106,8 @@ void MemoryScannerWindow::connectUi()
 {
   m_ui.scanStartAddress->setText(formatHexValue(m_scanner.GetStartAddress(), 8));
   m_ui.scanEndAddress->setText(formatHexValue(m_scanner.GetEndAddress(), 8));
+  m_ui.scanOperator->setCurrentIndex(static_cast<int>(m_scanner.GetOperator()));
+  m_ui.scanSize->setCurrentIndex(static_cast<int>(m_scanner.GetSize()));
 
   connect(m_ui.scanValue, &QLineEdit::textChanged, this, &MemoryScannerWindow::updateScanValue);
   connect(m_ui.scanValueBase, QOverload<int>::of(&QComboBox::currentIndexChanged),
