@@ -1015,22 +1015,22 @@ void MainWindow::populateCheatsMenu(QMenu* menu)
     if (!System::IsValid())
       return;
 
-    if (!Cheats::AreCheatsEnabled())
-    {
-      QAction* action = menu->addAction(tr("Cheats are not enabled."));
-      action->setEnabled(false);
-      return;
-    }
-
     QStringList names;
     Cheats::EnumerateManualCodes([&names](const std::string& name) {
       names.append(QString::fromStdString(name));
       return true;
     });
-    if (names.empty())
+    if (Cheats::AreCheatsEnabled() && names.empty())
       return;
 
     QtHost::RunOnUIThread([menu, names = std::move(names)]() {
+      if (names.empty())
+      {
+        QAction* action = menu->addAction(tr("Cheats are not enabled."));
+        action->setEnabled(false);
+        return;
+      }
+
       QMenu* apply_submenu = menu->addMenu(tr("&Apply Cheat"));
       for (const QString& name : names)
       {
