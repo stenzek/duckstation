@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glad", "dep\glad\glad.vcxproj", "{43540154-9E1E-409C-834F-B84BE5621388}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{BA490C0E-497D-4634-A21E-E65012006385}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "duckstation-qt", "src\duckstation-qt\duckstation-qt.vcxproj", "{28F14272-0EC4-41BB-849F-182ADB81AF70}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glad", "dep\glad\glad.vcxproj", "{43540154-9E1E-409C-834F-B84BE5621388}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imgui", "dep\imgui\imgui.vcxproj", "{BB08260F-6FBC-46AF-8924-090EE71360C6}"
 EndProject
@@ -15,16 +17,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "src\core\core.vcxpr
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "simpleini", "dep\simpleini\simpleini.vcxproj", "{3773F4CC-614E-4028-8595-22E08CA649E3}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "duckstation-qt", "src\duckstation-qt\duckstation-qt.vcxproj", "{28F14272-0EC4-41BB-849F-182ADB81AF70}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cubeb", "dep\cubeb\cubeb.vcxproj", "{72F9423C-91EE-4487-AAC6-555ED6F61AA1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "minizip", "dep\minizip\minizip.vcxproj", "{8BDA439C-6358-45FB-9994-2FF083BABE06}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libchdr", "dep\libchdr\libchdr.vcxproj", "{425D6C99-D1C8-43C2-B8AC-4D7B1D941017}"
-	ProjectSection(ProjectDependencies) = postProject
-		{DD944834-7899-4C1C-A4C1-064B5009D239} = {DD944834-7899-4C1C-A4C1-064B5009D239}
-	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lzma", "dep\lzma\lzma.vcxproj", "{DD944834-7899-4C1C-A4C1-064B5009D239}"
 EndProject
