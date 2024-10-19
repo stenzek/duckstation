@@ -1456,9 +1456,9 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM copy
   {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
-      GPUShaderStage::Fragment, shadergen.GetLanguage(),
-      shadergen.GenerateVRAMCopyFragmentShader(m_resolution_scale, m_write_mask_as_depth), error);
+    std::unique_ptr<GPUShader> fs =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                 shadergen.GenerateVRAMCopyFragmentShader(m_write_mask_as_depth), error);
     if (!fs)
       return false;
 
@@ -1487,8 +1487,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
       GPUShaderStage::Fragment, shadergen.GetLanguage(),
-      shadergen.GenerateVRAMWriteFragmentShader(m_resolution_scale, use_buffer, use_ssbo, m_write_mask_as_depth),
-      error);
+      shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, m_write_mask_as_depth), error);
     if (!fs)
       return false;
 
@@ -3371,19 +3370,27 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
 
   struct VRAMWriteUBOData
   {
-    u32 u_dst_x;
-    u32 u_dst_y;
-    u32 u_end_x;
-    u32 u_end_y;
-    u32 u_width;
-    u32 u_height;
+    float u_dst_x;
+    float u_dst_y;
+    float u_end_x;
+    float u_end_y;
+    float u_width;
+    float u_height;
+    float u_resolution_scale;
     u32 u_buffer_base_offset;
     u32 u_mask_or_bits;
     float u_depth_value;
   };
-  const VRAMWriteUBOData uniforms = {
-    (x % VRAM_WIDTH), (y % VRAM_HEIGHT), ((x + width) % VRAM_WIDTH),  ((y + height) % VRAM_HEIGHT),     width,
-    height,           map_index,         (set_mask) ? 0x8000u : 0x00, GetCurrentNormalizedVertexDepth()};
+  const VRAMWriteUBOData uniforms = {static_cast<float>(x % VRAM_WIDTH),
+                                     static_cast<float>(y % VRAM_HEIGHT),
+                                     static_cast<float>((x + width) % VRAM_WIDTH),
+                                     static_cast<float>((y + height) % VRAM_HEIGHT),
+                                     static_cast<float>(width),
+                                     static_cast<float>(height),
+                                     static_cast<float>(m_resolution_scale),
+                                     map_index,
+                                     (set_mask) ? 0x8000u : 0x00,
+                                     GetCurrentNormalizedVertexDepth()};
 
   // the viewport should already be set to the full vram, so just adjust the scissor
   const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
@@ -3453,25 +3460,27 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
 
     struct VRAMCopyUBOData
     {
-      u32 u_src_x;
-      u32 u_src_y;
-      u32 u_dst_x;
-      u32 u_dst_y;
-      u32 u_end_x;
-      u32 u_end_y;
-      u32 u_width;
-      u32 u_height;
+      float u_src_x;
+      float u_src_y;
+      float u_dst_x;
+      float u_dst_y;
+      float u_end_x;
+      float u_end_y;
+      float u_vram_width;
+      float u_vram_height;
+      float u_resolution_scale;
       u32 u_set_mask_bit;
       float u_depth_value;
     };
-    const VRAMCopyUBOData uniforms = {(src_x % VRAM_WIDTH) * m_resolution_scale,
-                                      (src_y % VRAM_HEIGHT) * m_resolution_scale,
-                                      (dst_x % VRAM_WIDTH) * m_resolution_scale,
-                                      (dst_y % VRAM_HEIGHT) * m_resolution_scale,
-                                      ((dst_x + width) % VRAM_WIDTH) * m_resolution_scale,
-                                      ((dst_y + height) % VRAM_HEIGHT) * m_resolution_scale,
-                                      width * m_resolution_scale,
-                                      height * m_resolution_scale,
+    const VRAMCopyUBOData uniforms = {static_cast<float>((src_x % VRAM_WIDTH) * m_resolution_scale),
+                                      static_cast<float>((src_y % VRAM_HEIGHT) * m_resolution_scale),
+                                      static_cast<float>((dst_x % VRAM_WIDTH) * m_resolution_scale),
+                                      static_cast<float>((dst_y % VRAM_HEIGHT) * m_resolution_scale),
+                                      static_cast<float>(((dst_x + width) % VRAM_WIDTH) * m_resolution_scale),
+                                      static_cast<float>(((dst_y + height) % VRAM_HEIGHT) * m_resolution_scale),
+                                      static_cast<float>(m_vram_texture->GetWidth()),
+                                      static_cast<float>(m_vram_texture->GetHeight()),
+                                      static_cast<float>(m_resolution_scale),
                                       m_GPUSTAT.set_mask_while_drawing ? 1u : 0u,
                                       GetCurrentNormalizedVertexDepth()};
 
@@ -3918,8 +3927,16 @@ void GPU_HW::UpdateDisplay()
                reinterpret_start_x + scaled_display_width, scaled_vram_offset_y + read_height, scaled_display_width,
                read_height);
 
-    const u32 uniforms[4] = {reinterpret_start_x, scaled_vram_offset_y, skip_x, line_skip};
-    g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+    struct ExtractUniforms
+    {
+      u32 vram_offset_x;
+      u32 vram_offset_y;
+      float skip_x;
+      float line_skip;
+    };
+    const ExtractUniforms uniforms = {reinterpret_start_x, scaled_vram_offset_y, static_cast<float>(skip_x),
+                                      static_cast<float>(line_skip ? 2 : 1)};
+    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
     g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, read_height);
     g_gpu_device->Draw(3, 0);

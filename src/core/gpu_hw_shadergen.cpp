@@ -1194,7 +1194,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMExtractFragmentShader(u32 resolution_s
   ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
   ss << "CONSTANT uint MULTISAMPLES = " << multisamples << "u;\n";
 
-  DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "uint u_skip_x", "uint u_line_skip"}, true);
+  DeclareUniformBuffer(ss, {"uint2 u_vram_offset", "float u_skip_x", "float u_line_skip"}, true);
   DeclareTexture(ss, "samp0", 0, msaa);
   if (depth_buffer)
     DeclareTexture(ss, "samp1", 1, msaa);
@@ -1251,7 +1251,7 @@ float3 SampleVRAM24(uint2 icoords)
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, depth_buffer ? 2 : 1);
   ss << R"(
 {
-  uint2 icoords = uint2(uint(v_pos.x) + u_skip_x, uint(v_pos.y) << u_line_skip);
+  uint2 icoords = uint2(v_pos.x + u_skip_x, v_pos.y * u_line_skip);
   int2 wrapped_coords = int2((icoords + u_vram_offset) % VRAM_SIZE);
 
   #if COLOR_24BIT
@@ -1422,7 +1422,7 @@ uint SampleVRAM(uint2 coords)
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(u32 resolution_scale, bool use_buffer, bool use_ssbo,
+std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo,
                                                               bool write_mask_as_depth) const
 {
   std::stringstream ss;
@@ -1432,12 +1432,11 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(u32 resolution_sca
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
   DefineMacro(ss, "USE_BUFFER", use_buffer);
 
-  ss << "CONSTANT uint RESOLUTION_SCALE = " << resolution_scale << "u;\n";
   ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ");\n";
 
   DeclareUniformBuffer(ss,
-                       {"uint2 u_base_coords", "uint2 u_end_coords", "uint2 u_size", "uint u_buffer_base_offset",
-                        "uint u_mask_or_bits", "float u_depth_value"},
+                       {"float2 u_base_coords", "float2 u_end_coords", "float2 u_size", "float u_resolution_scale",
+                        "uint u_buffer_base_offset", "uint u_mask_or_bits", "float u_depth_value"},
                        true);
 
   if (!use_buffer)
@@ -1469,7 +1468,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(u32 resolution_sca
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, write_mask_as_depth);
   ss << R"(
 {
-  uint2 coords = uint2(v_pos.xy) / uint2(RESOLUTION_SCALE, RESOLUTION_SCALE);
+  float2 coords = floor(v_pos.xy / u_resolution_scale);
 
   // make sure it's not oversized and out of range
   if ((coords.x < u_base_coords.x && coords.x >= u_end_coords.x) ||
@@ -1479,14 +1478,14 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(u32 resolution_sca
   }
 
   // find offset from the start of the row/column
-  uint2 offset;
+  float2 offset;
   offset.x = (coords.x < u_base_coords.x) ? (VRAM_SIZE.x - u_base_coords.x + coords.x) : (coords.x - u_base_coords.x);
   offset.y = (coords.y < u_base_coords.y) ? (VRAM_SIZE.y - u_base_coords.y + coords.y) : (coords.y - u_base_coords.y);
 
 #if !USE_BUFFER
   uint value = LOAD_TEXTURE(samp0, int2(offset), 0).x;
 #else
-  uint buffer_offset = u_buffer_base_offset + (offset.y * u_size.x) + offset.x;
+  uint buffer_offset = u_buffer_base_offset + uint((offset.y * u_size.x) + offset.x);
   uint value = GET_VALUE(buffer_offset) | u_mask_or_bits;
 #endif
 
@@ -1499,7 +1498,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(u32 resolution_sca
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(u32 resolution_scale, bool write_mask_as_depth) const
+std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth) const
 {
   // TODO: This won't currently work because we can't bind the texture to both the shader and framebuffer.
   const bool msaa = false;
@@ -1509,19 +1508,16 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(u32 resolution_scal
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
   DefineMacro(ss, "MSAA_COPY", msaa);
 
-  ss << "CONSTANT uint RESOLUTION_SCALE = " << resolution_scale << "u;\n";
-  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ") * RESOLUTION_SCALE;\n";
-
   DeclareUniformBuffer(ss,
-                       {"uint2 u_src_coords", "uint2 u_dst_coords", "uint2 u_end_coords", "uint2 u_size",
-                        "bool u_set_mask_bit", "float u_depth_value"},
+                       {"float2 u_src_coords", "float2 u_dst_coords", "float2 u_end_coords", "float2 u_vram_size",
+                        "float u_resolution_scale", "bool u_set_mask_bit", "float u_depth_value"},
                        true);
 
   DeclareTexture(ss, "samp0", 0, msaa);
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, write_mask_as_depth, false, false, msaa);
   ss << R"(
 {
-  uint2 dst_coords = uint2(v_pos.xy);
+  float2 dst_coords = floor(v_pos.xy);
 
   // make sure it's not oversized and out of range
   if ((dst_coords.x < u_dst_coords.x && dst_coords.x >= u_end_coords.x) ||
@@ -1531,12 +1527,13 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(u32 resolution_scal
   }
 
   // find offset from the start of the row/column
-  uint2 offset;
-  offset.x = (dst_coords.x < u_dst_coords.x) ? (VRAM_SIZE.x - u_dst_coords.x + dst_coords.x) : (dst_coords.x - u_dst_coords.x);
-  offset.y = (dst_coords.y < u_dst_coords.y) ? (VRAM_SIZE.y - u_dst_coords.y + dst_coords.y) : (dst_coords.y - u_dst_coords.y);
+  float2 offset;
+  offset.x = (dst_coords.x < u_dst_coords.x) ? (u_vram_size.x - u_dst_coords.x + dst_coords.x) : (dst_coords.x - u_dst_coords.x);
+  offset.y = (dst_coords.y < u_dst_coords.y) ? (u_vram_size.y - u_dst_coords.y + dst_coords.y) : (dst_coords.y - u_dst_coords.y);
 
   // find the source coordinates to copy from
-  uint2 src_coords = (u_src_coords + offset) % VRAM_SIZE;
+  float2 offset_coords = u_src_coords + offset;
+  float2 src_coords = offset_coords - (floor(offset_coords / u_vram_size) * u_vram_size);
 
   // sample and apply mask bit
 #if MSAA_COPY
