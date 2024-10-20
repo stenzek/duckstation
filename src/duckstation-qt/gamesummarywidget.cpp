@@ -18,6 +18,7 @@
 
 #include <QtCore/QDateTime>
 #include <QtCore/QFuture>
+#include <QtCore/QSignalBlocker>
 #include <QtCore/QStringBuilder>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QDialogButtonBox>
@@ -71,6 +72,28 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
 }
 
 GameSummaryWidget::~GameSummaryWidget() = default;
+
+void GameSummaryWidget::reloadGameSettings()
+{
+  if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
+  {
+    const QSignalBlocker sb(m_ui.inputProfile);
+    m_ui.inputProfile->setCurrentIndex(1);
+  }
+  else if (const std::optional<std::string> profile_name =
+             m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt);
+           profile_name.has_value() && !profile_name->empty())
+  {
+    const QSignalBlocker sb(m_ui.inputProfile);
+    m_ui.inputProfile->setCurrentIndex(m_ui.inputProfile->findText(QString::fromStdString(profile_name.value())));
+  }
+  else
+  {
+    const QSignalBlocker sb(m_ui.inputProfile);
+    m_ui.inputProfile->setCurrentIndex(0);
+  }
+  m_ui.editInputProfile->setEnabled(m_ui.inputProfile->currentIndex() >= 1);
+}
 
 void GameSummaryWidget::populateUi(const std::string& path, const std::string& serial, DiscRegion region,
                                    const GameDatabase::Entry* entry)
@@ -167,22 +190,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
   for (const std::string& name : InputManager::GetInputProfileNames())
     m_ui.inputProfile->addItem(QString::fromStdString(name));
 
-  if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
-  {
-    m_ui.inputProfile->setCurrentIndex(1);
-  }
-  else if (const std::optional<std::string> profile_name =
-             m_dialog->getStringValue("ControllerPorts", "InputProfileName", std::nullopt);
-           profile_name.has_value() && !profile_name->empty())
-  {
-    m_ui.inputProfile->setCurrentIndex(m_ui.inputProfile->findText(QString::fromStdString(profile_name.value())));
-  }
-  else
-  {
-    m_ui.inputProfile->setCurrentIndex(0);
-  }
-  m_ui.editInputProfile->setEnabled(m_ui.inputProfile->currentIndex() >= 1);
-
+  reloadGameSettings();
   populateCustomAttributes();
   populateTracksInfo();
   updateWindowTitle();

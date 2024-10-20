@@ -55,8 +55,8 @@ SettingsWindow::SettingsWindow(const std::string& path, std::string serial, Game
   m_ui.setupUi(this);
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-  addWidget(new GameSummaryWidget(path, serial, region, entry, this, m_ui.settingsContainer), tr("Summary"),
-            QStringLiteral("file-list-line"),
+  addWidget(m_game_summary = new GameSummaryWidget(path, serial, region, entry, this, m_ui.settingsContainer),
+            tr("Summary"), QStringLiteral("file-list-line"),
             tr("<strong>Summary</strong><hr>This page shows information about the selected game, and allows you to "
                "validate your disc was dumped correctly."));
   addPages();
@@ -209,7 +209,11 @@ void SettingsWindow::reloadPages()
     delete widget;
   }
 
-  m_ui.safeMode->disconnect();
+  if (isPerGameSettings())
+  {
+    m_game_summary->reloadGameSettings();
+    m_ui.safeMode->disconnect();
+  }
 
   addPages();
 }

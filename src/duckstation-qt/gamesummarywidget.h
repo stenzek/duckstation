@@ -24,6 +24,8 @@ public:
                     const GameDatabase::Entry* entry, SettingsWindow* dialog, QWidget* parent);
   ~GameSummaryWidget();
 
+  void reloadGameSettings();
+
 private Q_SLOTS:
   void onCompatibilityCommentsClicked();
   void onInputProfileChanged(int index);

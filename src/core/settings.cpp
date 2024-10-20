@@ -762,14 +762,11 @@ void Settings::Clear(SettingsInterface& si)
   si.ClearSection("PCDrv");
   si.ClearSection("BIOS");
 
+  si.ClearSection("ControllerPorts");
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     si.ClearSection(Controller::GetSettingsSection(i).c_str());
 
   si.ClearSection("MemoryCards");
-
-  // Can't wipe out this section, because input profiles.
-  si.DeleteValue("ControllerPorts", "MultitapMode");
-
   si.ClearSection("Cheevos");
   si.ClearSection("Logging");
   si.ClearSection("Debug");
