@@ -107,6 +107,7 @@ static void DoTransfer(TickCount ticks_late);
 static void DoACK();
 static void EndTransfer();
 static void ResetDeviceTransferState();
+static void TriggerIRQ(const char* type);
 
 static bool DoStateController(StateWrapper& sw, u32 i);
 static bool DoStateMemcard(StateWrapper& sw, u32 i, bool is_memory_state);
@@ -550,6 +551,13 @@ Multitap* Pad::GetMultitap(u32 slot)
   return &s_state.multitaps[slot];
 }
 
+void Pad::TriggerIRQ(const char* type)
+{
+  DEBUG_LOG("Triggering {} interrupt", type);
+  s_state.JOY_STAT.INTR = true;
+  InterruptController::SetLineState(InterruptController::IRQ::PAD, true);
+}
+
 u32 Pad::ReadRegister(u32 offset)
 {
   switch (offset)
@@ -606,6 +614,9 @@ void Pad::WriteRegister(u32 offset, u32 value)
 
       s_state.transmit_buffer = Truncate8(value);
       s_state.transmit_buffer_full = true;
+
+      if (s_state.JOY_CTRL.TXINTEN)
+        TriggerIRQ("TX");
 
       if (!IsTransmitting() && CanTransfer())
         BeginTransfer();
@@ -842,6 +853,8 @@ void Pad::DoTransfer(TickCount ticks_late)
 
   s_state.receive_buffer = data_in;
   s_state.receive_buffer_full = true;
+  if (s_state.JOY_CTRL.RXINTEN)
+    TriggerIRQ("TX");
 
   // device no longer active?
   if (!ack)
@@ -869,11 +882,7 @@ void Pad::DoACK()
   s_state.JOY_STAT.ACKINPUT = true;
 
   if (s_state.JOY_CTRL.ACKINTEN)
-  {
-    DEBUG_LOG("Triggering ACK interrupt");
-    s_state.JOY_STAT.INTR = true;
-    InterruptController::SetLineState(InterruptController::IRQ::PAD, true);
-  }
+    TriggerIRQ("ACK");
 
   EndTransfer();
   UpdateJoyStat();
