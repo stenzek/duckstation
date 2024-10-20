@@ -378,10 +378,19 @@ void Host::UpdateDisplayWindow(bool fullscreen)
   g_gpu_device->DestroyMainSwapChain();
 
   Error error;
-  std::optional<WindowInfo> wi;
-  if (!(wi = Host::AcquireRenderWindow(g_gpu_device->GetRenderAPI(), fullscreen, fullscreen_mode.has_value(), &error))
-         .has_value() ||
-      !g_gpu_device->RecreateMainSwapChain(wi.value(), vsync_mode, allow_present_throttle,
+  std::optional<WindowInfo> wi =
+    Host::AcquireRenderWindow(g_gpu_device->GetRenderAPI(), fullscreen, fullscreen_mode.has_value(), &error);
+  if (!wi.has_value())
+  {
+    Host::ReportFatalError("Failed to get render window after update", error.GetDescription());
+    return;
+  }
+
+  // if surfaceless, just leave it
+  if (wi->IsSurfaceless())
+    return;
+
+  if (!g_gpu_device->RecreateMainSwapChain(wi.value(), vsync_mode, allow_present_throttle,
                                            fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
                                            exclusive_fullscreen_control, &error))
   {
