@@ -2054,9 +2054,6 @@ bool System::Initialize(bool force_software_renderer, bool fullscreen, Error* er
 
   s_cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
-  if (g_settings.display_show_gpu_usage)
-    g_gpu_device->SetGPUTimingEnabled(true);
-
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
   return true;
@@ -2538,6 +2535,9 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen,
       return false;
     }
   }
+
+  if (g_settings.display_show_gpu_usage)
+    g_gpu_device->SetGPUTimingEnabled(true);
 
   return true;
 }
