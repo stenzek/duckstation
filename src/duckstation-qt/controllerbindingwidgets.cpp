@@ -413,7 +413,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
         axis_layout = new QGridLayout(axis_gbox);
       }
 
-      QGroupBox* gbox = new QGroupBox(qApp->translate("USB", bi.display_name), axis_gbox);
+      QGroupBox* gbox = new QGroupBox(QString::fromUtf8(m_controller_info->GetBindingDisplayName(bi)), axis_gbox);
       QVBoxLayout* temp = new QVBoxLayout(gbox);
       InputBindingWidget* widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
       temp->addWidget(widget);
@@ -441,7 +441,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
         button_layout = new QGridLayout(button_gbox);
       }
 
-      QGroupBox* gbox = new QGroupBox(qApp->translate("USB", bi.display_name), button_gbox);
+      QGroupBox* gbox = new QGroupBox(QString::fromUtf8(m_controller_info->GetBindingDisplayName(bi)), button_gbox);
       QVBoxLayout* temp = new QVBoxLayout(gbox);
       InputBindingWidget* widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
       temp->addWidget(widget);
@@ -599,7 +599,7 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
       continue;
 
     QListWidgetItem* item = new QListWidgetItem();
-    item->setText(qApp->translate(cinfo->name, bi.display_name));
+    item->setText(QString::fromUtf8(cinfo->GetBindingDisplayName(bi)));
     item->setCheckState((std::find(m_binds.begin(), m_binds.end(), &bi) != m_binds.end()) ? Qt::Checked :
                                                                                             Qt::Unchecked);
     m_ui.bindList->addItem(item);

@@ -3795,10 +3795,7 @@ void FullscreenUI::DrawControllerSettingsPage()
     }
 
     for (const Controller::ControllerBindingInfo& bi : ci->bindings)
-    {
-      DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name,
-                             Host::TranslateToCString(ci->name, bi.display_name), bi.icon_name, true);
-    }
+      DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, ci->GetBindingDisplayName(bi), bi.icon_name, true);
 
     MenuHeading(
       SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {} Macros")),
@@ -3834,7 +3831,7 @@ void FullscreenUI::DrawControllerSettingsPage()
           {
             if (bind == bi.name)
             {
-              dispname = bi.icon_name ? bi.icon_name : Host::TranslateToCString(ci->name, bi.display_name);
+              dispname = bi.icon_name ? bi.icon_name : ci->GetBindingDisplayName(bi);
               break;
             }
           }
@@ -3855,7 +3852,7 @@ void FullscreenUI::DrawControllerSettingsPage()
           {
             continue;
           }
-          options.emplace_back(Host::TranslateToString(ci->name, bi.display_name),
+          options.emplace_back(ci->GetBindingDisplayName(bi),
                                std::any_of(buttons_split.begin(), buttons_split.end(),
                                            [bi](const std::string_view& it) { return (it == bi.name); }));
         }
@@ -3867,7 +3864,7 @@ void FullscreenUI::DrawControllerSettingsPage()
             std::string_view to_modify;
             for (const Controller::ControllerBindingInfo& bi : ci->bindings)
             {
-              if (title == Host::TranslateToStringView(ci->name, bi.display_name))
+              if (title == ci->GetBindingDisplayName(bi))
               {
                 to_modify = bi.name;
                 break;

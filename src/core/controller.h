@@ -53,6 +53,9 @@ public:
 
     /// Returns localized controller type name.
     const char* GetDisplayName() const;
+
+    /// Returns localized controller type name.
+    const char* GetBindingDisplayName(const ControllerBindingInfo& bi) const;
   };
 
   /// Default stick deadzone/sensitivity.

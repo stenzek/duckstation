@@ -47,6 +47,11 @@ const char* Controller::ControllerInfo::GetDisplayName() const
   return Host::TranslateToCString("ControllerType", display_name);
 }
 
+const char* Controller::ControllerInfo::GetBindingDisplayName(const ControllerBindingInfo& bi) const
+{
+  return Host::TranslateToCString(name, bi.display_name);
+}
+
 Controller::Controller(u32 index) : m_index(index)
 {
 }
