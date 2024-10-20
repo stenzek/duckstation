@@ -4601,6 +4601,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   {
     if (g_settings.display_osd_scale != old_settings.display_osd_scale)
       ImGuiManager::SetGlobalScale(g_settings.display_osd_scale / 100.0f);
+    if (g_settings.display_osd_margin != old_settings.display_osd_margin)
+      ImGuiManager::SetScreenMargin(g_settings.display_osd_margin);
   }
 
   if (g_settings.multitap_mode != old_settings.multitap_mode)

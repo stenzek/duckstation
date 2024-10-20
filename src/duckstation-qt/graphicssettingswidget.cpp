@@ -11,6 +11,7 @@
 #include "core/gpu.h"
 #include "core/settings.h"
 
+#include "util/imgui_manager.h"
 #include "util/ini_settings_interface.h"
 #include "util/media_capture.h"
 
@@ -182,6 +183,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   // OSD Tab
 
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdScale, "Display", "OSDScale", 100);
+  SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, "Display", "OSDMargin",
+                                                ImGuiManager::DEFAULT_SCREEN_MARGIN);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showOSDMessages, "Display", "ShowOSDMessages", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFPS, "Display", "ShowFPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeed, "Display", "ShowSpeed", false);

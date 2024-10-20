@@ -276,7 +276,7 @@ void ImGuiManager::RenderTextOverlays()
   if (state != System::State::Shutdown)
   {
     const float scale = ImGuiManager::GetGlobalScale();
-    const float margin = std::ceil(10.0f * scale);
+    const float margin = std::ceil(ImGuiManager::GetScreenMargin() * scale);
     const float spacing = std::ceil(5.0f * scale);
     float position_y = margin;
     DrawPerformanceOverlay(position_y, scale, margin, spacing);
@@ -558,7 +558,7 @@ void ImGuiManager::DrawEnhancementsOverlay()
 
   const float scale = ImGuiManager::GetGlobalScale();
   const float shadow_offset = 1.0f * scale;
-  const float margin = 10.0f * scale;
+  const float margin = ImGuiManager::GetScreenMargin() * scale;
   ImFont* font = ImGuiManager::GetFixedFont();
   const float position_y = ImGui::GetIO().DisplaySize.y - margin - font->FontSize;
 
@@ -686,7 +686,7 @@ void ImGuiManager::DrawInputsOverlay()
 {
   const float scale = ImGuiManager::GetGlobalScale();
   const float shadow_offset = 1.0f * scale;
-  const float margin = 10.0f * scale;
+  const float margin = ImGuiManager::GetScreenMargin() * scale;
   const float spacing = 5.0f * scale;
   ImFont* font = ImGuiManager::GetOSDFont();
 

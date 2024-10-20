@@ -53,6 +53,9 @@ namespace ImGuiManager {
 
 using WCharType = u32;
 
+/// Default size for screen margins.
+static constexpr float DEFAULT_SCREEN_MARGIN = 10.0f;
+
 /// Sets the path to the font to use. Empty string means to use the default.
 void SetFontPathAndRange(std::string path, std::vector<WCharType> range);
 
@@ -71,13 +74,16 @@ bool IsShowingOSDMessages();
 void SetShowOSDMessages(bool enable);
 
 /// Initializes ImGui, creates fonts, etc.
-bool Initialize(float global_scale, Error* error);
+bool Initialize(float global_scale, float screen_margin, Error* error);
 
 /// Frees all ImGui resources.
 void Shutdown();
 
 /// Returns main ImGui context.
 ImGuiContext* GetMainContext();
+
+/// Sets the size of the screen margins, or "safe zone".
+void SetScreenMargin(float margin);
 
 /// Returns the size of the display window. Can be safely called from any thread.
 float GetWindowWidth();
@@ -97,6 +103,9 @@ void RenderOSDMessages();
 
 /// Returns the scale of all on-screen elements.
 float GetGlobalScale();
+
+/// Returns the screen margins, or "safe zone".
+float GetScreenMargin();
 
 /// Returns true if fullscreen fonts are present.
 bool HasFullscreenFonts();

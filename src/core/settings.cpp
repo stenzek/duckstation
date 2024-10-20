@@ -102,6 +102,7 @@ const MediaCaptureBackend Settings::DEFAULT_MEDIA_CAPTURE_BACKEND = MediaCapture
 
 Settings::Settings()
 {
+  display_osd_margin = ImGuiManager::DEFAULT_SCREEN_MARGIN;
   controller_types[0] = DEFAULT_CONTROLLER_1_TYPE;
   memory_card_types[0] = DEFAULT_MEMORY_CARD_1_TYPE;
   for (u32 i = 1; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
@@ -321,6 +322,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
   display_auto_resize_window = si.GetBoolValue("Display", "AutoResizeWindow", false);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
+  display_osd_margin = si.GetFloatValue("Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN);
 
   save_state_compression = ParseSaveStateCompressionModeName(
                              si.GetStringValue("Main", "SaveStateCompression",
@@ -608,6 +610,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("Display", "ShowInputs", display_show_inputs);
     si.SetBoolValue("Display", "ShowEnhancements", display_show_enhancements);
     si.SetFloatValue("Display", "OSDScale", display_osd_scale);
+    si.SetFloatValue("Display", "OSDMargin", display_osd_margin);
   }
 
   si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);

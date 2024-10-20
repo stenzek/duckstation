@@ -3161,6 +3161,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "OSD Scale"),
                         FSUI_CSTR("Determines how large the on-screen messages and monitor are."), "Display",
                         "OSDScale", 100, 25, 500, 1, "%d%%");
+  DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_RULER, "Screen Margins"),
+                          FSUI_CSTR("Determines the margin between the edge of the screen and on-screen messages."),
+                          "Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN, 0.0f, 100.0f, 1.0f, 1.0f,
+                          "%.0fpx");
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Show OSD Messages"),
                     FSUI_CSTR("Shows on-screen-display messages when events occur."), "Display", "ShowOSDMessages",
                     true);
@@ -3170,7 +3174,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
       "Shows the current emulation speed of the system in the top-right corner of the display as a percentage."),
     "Display", "ShowSpeed", false);
   DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_RULER, "Show FPS"),
+    bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Show FPS"),
     FSUI_CSTR("Shows the number of frames (or v-syncs) displayed per second by the system in the top-right "
               "corner of the display."),
     "Display", "ShowFPS", false);
@@ -3178,7 +3182,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     FSUI_CSTR("Shows information about the emulated GPU in the top-right corner of the display."),
                     "Display", "ShowGPUStatistics", false);
   DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Show Latency Statistics"),
+    bsi, FSUI_ICONSTR(ICON_FA_COGS, "Show Latency Statistics"),
     FSUI_CSTR("Shows information about input and audio latency in the top-right corner of the display."), "Display",
     "ShowLatencyStatistics", false);
   DrawToggleSetting(
@@ -7452,7 +7456,7 @@ TRANSLATE_NOOP("FullscreenUI", "Change Selection");
 TRANSLATE_NOOP("FullscreenUI", "Change View");
 TRANSLATE_NOOP("FullscreenUI", "Changes settings for the application.");
 TRANSLATE_NOOP("FullscreenUI", "Changes the aspect ratio used to display the console's output to the screen.");
-TRANSLATE_NOOP("FullscreenUI", "Cheat List");
+TRANSLATE_NOOP("FullscreenUI", "Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the backend to use for rendering the console/game visuals.");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the language used for UI elements.");
 TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
@@ -7515,6 +7519,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines that field that the game list will be
 TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the emulated hardware type.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the format that screenshots will be saved/compressed with.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the margin between the edge of the screen and on-screen messages.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the position on the screen when black borders must be added.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the rotation of the simulated TV screen.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the size of screenshots created by DuckStation.");
@@ -7572,8 +7577,10 @@ TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a tot
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables caching of guest textures, required for texture replacement.");
 TRANSLATE_NOOP("FullscreenUI", "Enables dumping of textures to image files, which can be replaced. Not compatible with all games.");
+TRANSLATE_NOOP("FullscreenUI", "Enables loading of cheats for this game from DuckStation's database.");
 TRANSLATE_NOOP("FullscreenUI", "Enables loading of replacement textures. Not compatible with all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables smooth scrolling of menus in Big Picture UI.");
+TRANSLATE_NOOP("FullscreenUI", "Enables the cheats that are selected below.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
 TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
@@ -7617,6 +7624,7 @@ TRANSLATE_NOOP("FullscreenUI", "GPU adapter will be applied after restarting.");
 TRANSLATE_NOOP("FullscreenUI", "Game Grid");
 TRANSLATE_NOOP("FullscreenUI", "Game List");
 TRANSLATE_NOOP("FullscreenUI", "Game List Settings");
+TRANSLATE_NOOP("FullscreenUI", "Game Patches");
 TRANSLATE_NOOP("FullscreenUI", "Game Properties");
 TRANSLATE_NOOP("FullscreenUI", "Game Quick Save");
 TRANSLATE_NOOP("FullscreenUI", "Game Slot {0}##game_slot_{0}");
@@ -7630,7 +7638,7 @@ TRANSLATE_NOOP("FullscreenUI", "Game settings initialized with global settings f
 TRANSLATE_NOOP("FullscreenUI", "Game title copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game type copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game: {} ({})");
-TRANSLATE_NOOP("FullscreenUI", "Genre: %s");
+TRANSLATE_NOOP("FullscreenUI", "Genre: %.*s");
 TRANSLATE_NOOP("FullscreenUI", "Geometry Tolerance");
 TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0} - {1}##global_slot_{0}");
@@ -7655,6 +7663,7 @@ TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Integration");
 TRANSLATE_NOOP("FullscreenUI", "Interface Settings");
 TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
+TRANSLATE_NOOP("FullscreenUI", "Language: ");
 TRANSLATE_NOOP("FullscreenUI", "Last Played");
 TRANSLATE_NOOP("FullscreenUI", "Last Played: %s");
 TRANSLATE_NOOP("FullscreenUI", "Latency Control");
@@ -7667,6 +7676,7 @@ TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards are not enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Line Detection");
 TRANSLATE_NOOP("FullscreenUI", "List Settings");
+TRANSLATE_NOOP("FullscreenUI", "Load Database Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Load Devices From Save States");
 TRANSLATE_NOOP("FullscreenUI", "Load Global State");
 TRANSLATE_NOOP("FullscreenUI", "Load Profile");
@@ -7714,8 +7724,9 @@ TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
 TRANSLATE_NOOP("FullscreenUI", "Navigate");
 TRANSLATE_NOOP("FullscreenUI", "No Binding");
 TRANSLATE_NOOP("FullscreenUI", "No Game Selected");
-TRANSLATE_NOOP("FullscreenUI", "No cheats found for {}.");
+TRANSLATE_NOOP("FullscreenUI", "No cheats are available for this game.");
 TRANSLATE_NOOP("FullscreenUI", "No input profiles available.");
+TRANSLATE_NOOP("FullscreenUI", "No patches are available for this game.");
 TRANSLATE_NOOP("FullscreenUI", "No resume save state found.");
 TRANSLATE_NOOP("FullscreenUI", "No save present in this slot.");
 TRANSLATE_NOOP("FullscreenUI", "No save states found.");
@@ -7831,6 +7842,7 @@ TRANSLATE_NOOP("FullscreenUI", "Scales the dithering pattern with the internal r
 TRANSLATE_NOOP("FullscreenUI", "Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");
 TRANSLATE_NOOP("FullscreenUI", "Scanning Subdirectories");
+TRANSLATE_NOOP("FullscreenUI", "Screen Margins");
 TRANSLATE_NOOP("FullscreenUI", "Screen Position");
 TRANSLATE_NOOP("FullscreenUI", "Screen Rotation");
 TRANSLATE_NOOP("FullscreenUI", "Screenshot Format");
@@ -7957,6 +7969,7 @@ TRANSLATE_NOOP("FullscreenUI", "UI Language");
 TRANSLATE_NOOP("FullscreenUI", "Uncompressed Size");
 TRANSLATE_NOOP("FullscreenUI", "Uncompressed Size: %.2f MB");
 TRANSLATE_NOOP("FullscreenUI", "Undo Load State");
+TRANSLATE_NOOP("FullscreenUI", "Ungrouped");
 TRANSLATE_NOOP("FullscreenUI", "Unknown");
 TRANSLATE_NOOP("FullscreenUI", "Unknown File Size");
 TRANSLATE_NOOP("FullscreenUI", "Unlimited");
@@ -7982,6 +7995,8 @@ TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum:
 TRANSLATE_NOOP("FullscreenUI", "Version: %s");
 TRANSLATE_NOOP("FullscreenUI", "Vertex Cache");
 TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");
+TRANSLATE_NOOP("FullscreenUI", "WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.");
+TRANSLATE_NOOP("FullscreenUI", "WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.");
 TRANSLATE_NOOP("FullscreenUI", "WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.\n\nDo you want to {0} anyway?");
 TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, DuckStation will scan for achievements on startup.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.");

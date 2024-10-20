@@ -339,7 +339,7 @@ bool Host::CreateGPUDevice(RenderAPI api, bool fullscreen, Error* error)
     return false;
   }
 
-  if (!ImGuiManager::Initialize(g_settings.display_osd_scale / 100.0f, &create_error))
+  if (!ImGuiManager::Initialize(g_settings.display_osd_scale / 100.0f, g_settings.display_osd_margin, &create_error))
   {
     ERROR_LOG("Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     Error::SetStringFmt(error, "Failed to initialize ImGuiManager: {}", create_error.GetDescription());

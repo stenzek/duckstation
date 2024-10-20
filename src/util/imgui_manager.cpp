@@ -85,8 +85,9 @@ static void UpdateSoftwareCursorTexture(u32 index);
 static void DestroySoftwareCursorTextures();
 static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, float>& pos);
 
-static float s_global_prescale = 1.0f; // before window scale
-static float s_global_scale = 1.0f;
+static float s_global_prescale = 0.0f; // before window scale
+static float s_global_scale = 0.0f;
+static float s_screen_margin = 0.0f;
 
 static constexpr std::array<ImWchar, 4> s_ascii_font_range = {{0x20, 0x7F, 0x00, 0x00}};
 
@@ -226,7 +227,7 @@ void ImGuiManager::SetShowOSDMessages(bool enable)
     Host::ClearOSDMessages(false);
 }
 
-bool ImGuiManager::Initialize(float global_scale, Error* error)
+bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* error)
 {
   if (!LoadFontData())
   {
@@ -237,6 +238,7 @@ bool ImGuiManager::Initialize(float global_scale, Error* error)
   s_global_prescale = global_scale;
   s_global_scale = std::max(
     (g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f) * global_scale, 1.0f);
+  s_screen_margin = std::max(screen_margin, 0.0f);
   s_scale_changed = false;
 
   s_imgui_context = ImGui::CreateContext();
@@ -301,6 +303,11 @@ void ImGuiManager::Shutdown()
 ImGuiContext* ImGuiManager::GetMainContext()
 {
   return s_imgui_context;
+}
+
+void ImGuiManager::SetScreenMargin(float margin)
+{
+  s_screen_margin = std::max(margin, 0.0f);
 }
 
 float ImGuiManager::GetWindowWidth()
@@ -885,7 +892,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
   ImFont* const font = s_osd_font;
   const float scale = s_global_scale;
   const float spacing = std::ceil(6.0f * scale);
-  const float margin = std::ceil(11.0f * scale);
+  const float margin = std::ceil(s_screen_margin * scale);
   const float padding = std::ceil(9.0f * scale);
   const float rounding = std::ceil(6.0f * scale);
   const float max_width = s_window_width - (margin + padding) * 2.0f;
@@ -1020,6 +1027,11 @@ void Host::ClearOSDMessages(bool clear_warnings)
 float ImGuiManager::GetGlobalScale()
 {
   return s_global_scale;
+}
+
+float ImGuiManager::GetScreenMargin()
+{
+  return s_screen_margin;
 }
 
 ImFont* ImGuiManager::GetStandardFont()
