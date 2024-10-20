@@ -9,7 +9,7 @@ endif()
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 
-find_package(SDL2 2.30.7 REQUIRED)
+find_package(SDL2 2.30.8 REQUIRED)
 find_package(Zstd 1.5.6 REQUIRED)
 find_package(WebP REQUIRED) # v1.4.0, spews an error on Linux because no pkg-config.
 find_package(ZLIB REQUIRED) # 1.3, but Mac currently doesn't use it.
@@ -36,6 +36,10 @@ if(ENABLE_WAYLAND)
   find_package(ECM REQUIRED NO_MODULE)
   list(APPEND CMAKE_MODULE_PATH "${ECM_MODULE_PATH}")
   find_package(Wayland REQUIRED Egl)
+endif()
+
+if(BUILD_QT_FRONTEND)
+  find_package(Qt6 6.8.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
 endif()
 
 find_package(Shaderc REQUIRED)

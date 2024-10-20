@@ -294,7 +294,7 @@ void LogWindow::logCallback(void* pUserParam, const char* channelName, const cha
 
   const QLatin1StringView qchannel((level <= Log::Level::Warning) ? functionName : channelName);
 
-  if (g_emu_thread->isOnUIThread())
+  if (QThread::isMainThread())
   {
     this_ptr->appendMessage(qchannel, static_cast<u32>(level), qmessage);
   }

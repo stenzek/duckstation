@@ -89,9 +89,6 @@ public:
   static void start();
   static void stop();
 
-  ALWAYS_INLINE bool isOnThread() const { return QThread::currentThread() == this; }
-  ALWAYS_INLINE bool isOnUIThread() const { return QThread::currentThread() == m_ui_thread; }
-
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
   ALWAYS_INLINE bool isFullscreen() const { return m_is_fullscreen; }

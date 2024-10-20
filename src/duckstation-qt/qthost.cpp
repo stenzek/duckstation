@@ -655,7 +655,7 @@ void Host::CheckForSettingsChanges(const Settings& old_settings)
 
 void EmuThread::setDefaultSettings(bool system /* = true */, bool controller /* = true */)
 {
-  if (isOnThread())
+  if (isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "setDefaultSettings", Qt::QueuedConnection);
     return;
@@ -718,7 +718,7 @@ void Host::RequestResizeHostDisplay(s32 new_window_width, s32 new_window_height)
 
 void EmuThread::applySettings(bool display_osd_messages /* = false */)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "applySettings", Qt::QueuedConnection, Q_ARG(bool, display_osd_messages));
     return;
@@ -729,7 +729,7 @@ void EmuThread::applySettings(bool display_osd_messages /* = false */)
 
 void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "reloadGameSettings", Qt::QueuedConnection, Q_ARG(bool, display_osd_messages));
     return;
@@ -740,7 +740,7 @@ void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
 
 void EmuThread::updateEmuFolders()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::updateEmuFolders, Qt::QueuedConnection);
     return;
@@ -751,7 +751,7 @@ void EmuThread::updateEmuFolders()
 
 void EmuThread::updateControllerSettings()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::updateControllerSettings, Qt::QueuedConnection);
     return;
@@ -765,7 +765,7 @@ void EmuThread::updateControllerSettings()
 
 void EmuThread::startFullscreenUI()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::startFullscreenUI, Qt::QueuedConnection);
     return;
@@ -799,7 +799,7 @@ void EmuThread::startFullscreenUI()
 
 void EmuThread::stopFullscreenUI()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::stopFullscreenUI, Qt::QueuedConnection);
 
@@ -825,7 +825,7 @@ void EmuThread::stopFullscreenUI()
 
 void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "bootSystem", Qt::QueuedConnection,
                               Q_ARG(std::shared_ptr<SystemBootParameters>, std::move(params)));
@@ -848,7 +848,7 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
 
 void EmuThread::bootOrLoadState(std::string path)
 {
-  DebugAssert(isOnThread());
+  DebugAssert(isCurrentThread());
 
   if (System::IsValid())
   {
@@ -869,7 +869,7 @@ void EmuThread::bootOrLoadState(std::string path)
 
 void EmuThread::resumeSystemFromMostRecentState()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::resumeSystemFromMostRecentState, Qt::QueuedConnection);
     return;
@@ -891,7 +891,7 @@ void EmuThread::resumeSystemFromMostRecentState()
 
 void EmuThread::onDisplayWindowKeyEvent(int key, bool pressed)
 {
-  DebugAssert(isOnThread());
+  DebugAssert(isCurrentThread());
 
   InputManager::InvokeEvents(InputManager::MakeHostKeyboardKey(key), static_cast<float>(pressed),
                              GenericInputBinding::Unknown);
@@ -899,14 +899,14 @@ void EmuThread::onDisplayWindowKeyEvent(int key, bool pressed)
 
 void EmuThread::onDisplayWindowTextEntered(const QString& text)
 {
-  DebugAssert(isOnThread());
+  DebugAssert(isCurrentThread());
 
   ImGuiManager::AddTextInput(text.toStdString());
 }
 
 void EmuThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 {
-  DebugAssert(isOnThread());
+  DebugAssert(isCurrentThread());
 
   InputManager::InvokeEvents(InputManager::MakePointerButtonKey(0, button), static_cast<float>(pressed),
                              GenericInputBinding::Unknown);
@@ -914,7 +914,7 @@ void EmuThread::onDisplayWindowMouseButtonEvent(int button, bool pressed)
 
 void EmuThread::onDisplayWindowMouseWheelEvent(const QPoint& delta_angle)
 {
-  DebugAssert(isOnThread());
+  DebugAssert(isCurrentThread());
 
   const float dx = std::clamp(static_cast<float>(delta_angle.x()) / QtUtils::MOUSE_WHEEL_DELTA, -1.0f, 1.0f);
   if (dx != 0.0f)
@@ -932,7 +932,7 @@ void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 
 void EmuThread::redrawDisplayWindow()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "redrawDisplayWindow", Qt::QueuedConnection);
     return;
@@ -946,7 +946,7 @@ void EmuThread::redrawDisplayWindow()
 
 void EmuThread::toggleFullscreen()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "toggleFullscreen", Qt::QueuedConnection);
     return;
@@ -957,7 +957,7 @@ void EmuThread::toggleFullscreen()
 
 void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "setFullscreen", Qt::QueuedConnection, Q_ARG(bool, fullscreen),
                               Q_ARG(bool, allow_render_to_main));
@@ -988,7 +988,7 @@ void Host::SetFullscreen(bool enabled)
 
 void EmuThread::setSurfaceless(bool surfaceless)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "setSurfaceless", Qt::QueuedConnection, Q_ARG(bool, surfaceless));
     return;
@@ -1003,7 +1003,7 @@ void EmuThread::setSurfaceless(bool surfaceless)
 
 void EmuThread::requestDisplaySize(float scale)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "requestDisplaySize", Qt::QueuedConnection, Q_ARG(float, scale));
     return;
@@ -1089,7 +1089,7 @@ void Host::OnIdleStateChanged()
 
 void EmuThread::reloadInputSources()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::reloadInputSources, Qt::QueuedConnection);
     return;
@@ -1100,7 +1100,7 @@ void EmuThread::reloadInputSources()
 
 void EmuThread::reloadInputBindings()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::reloadInputBindings, Qt::QueuedConnection);
     return;
@@ -1111,7 +1111,7 @@ void EmuThread::reloadInputBindings()
 
 void EmuThread::reloadInputDevices()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::reloadInputDevices, Qt::QueuedConnection);
     return;
@@ -1122,7 +1122,7 @@ void EmuThread::reloadInputDevices()
 
 void EmuThread::closeInputSources()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::reloadInputDevices, Qt::BlockingQueuedConnection);
     return;
@@ -1133,7 +1133,7 @@ void EmuThread::closeInputSources()
 
 void EmuThread::enumerateInputDevices()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::enumerateInputDevices, Qt::QueuedConnection);
     return;
@@ -1144,7 +1144,7 @@ void EmuThread::enumerateInputDevices()
 
 void EmuThread::enumerateVibrationMotors()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, &EmuThread::enumerateVibrationMotors, Qt::QueuedConnection);
     return;
@@ -1162,7 +1162,7 @@ void EmuThread::enumerateVibrationMotors()
 void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel_resume_on_accept,
                                               std::function<void(bool)> callback) const
 {
-  DebugAssert(isOnThread());
+  DebugAssert(isCurrentThread());
 
   if (!System::IsValid() || !System::IsSavingMemoryCards())
   {
@@ -1189,7 +1189,7 @@ void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel
 
 void EmuThread::shutdownSystem(bool save_state, bool check_memcard_busy)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     System::CancelPendingStartup();
     QMetaObject::invokeMethod(this, "shutdownSystem", Qt::QueuedConnection, Q_ARG(bool, save_state),
@@ -1213,7 +1213,7 @@ void EmuThread::shutdownSystem(bool save_state, bool check_memcard_busy)
 
 void EmuThread::resetSystem(bool check_memcard_busy)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "resetSystem", Qt::QueuedConnection, Q_ARG(bool, check_memcard_busy));
     return;
@@ -1233,7 +1233,7 @@ void EmuThread::resetSystem(bool check_memcard_busy)
 
 void EmuThread::setSystemPaused(bool paused, bool wait_until_paused /* = false */)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "setSystemPaused",
                               wait_until_paused ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
@@ -1246,7 +1246,7 @@ void EmuThread::setSystemPaused(bool paused, bool wait_until_paused /* = false *
 
 void EmuThread::changeDisc(const QString& new_disc_filename, bool reset_system, bool check_memcard_busy)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "changeDisc", Qt::QueuedConnection, Q_ARG(const QString&, new_disc_filename),
                               Q_ARG(bool, reset_system), Q_ARG(bool, check_memcard_busy));
@@ -1276,7 +1276,7 @@ void EmuThread::changeDisc(const QString& new_disc_filename, bool reset_system, 
 
 void EmuThread::changeDiscFromPlaylist(quint32 index)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "changeDiscFromPlaylist", Qt::QueuedConnection, Q_ARG(quint32, index));
     return;
@@ -1291,7 +1291,7 @@ void EmuThread::changeDiscFromPlaylist(quint32 index)
 
 void EmuThread::reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "reloadCheats", Qt::QueuedConnection, Q_ARG(bool, reload_files),
                               Q_ARG(bool, reload_enabled_list), Q_ARG(bool, verbose), Q_ARG(bool, verbose_if_changed));
@@ -1309,7 +1309,7 @@ void EmuThread::reloadCheats(bool reload_files, bool reload_enabled_list, bool v
 
 void EmuThread::applyCheat(const QString& name)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "applyCheat", Qt::QueuedConnection, Q_ARG(const QString&, name));
     return;
@@ -1321,7 +1321,7 @@ void EmuThread::applyCheat(const QString& name)
 
 void EmuThread::reloadPostProcessingShaders()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "reloadPostProcessingShaders", Qt::QueuedConnection);
     return;
@@ -1333,7 +1333,7 @@ void EmuThread::reloadPostProcessingShaders()
 
 void EmuThread::updatePostProcessingSettings()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "updatePostProcessingSettings", Qt::QueuedConnection);
     return;
@@ -1345,7 +1345,7 @@ void EmuThread::updatePostProcessingSettings()
 
 void EmuThread::clearInputBindStateFromSource(InputBindingKey key)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "clearInputBindStateFromSource", Qt::QueuedConnection, Q_ARG(InputBindingKey, key));
     return;
@@ -1356,7 +1356,7 @@ void EmuThread::clearInputBindStateFromSource(InputBindingKey key)
 
 void EmuThread::reloadTextureReplacements()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "reloadTextureReplacements", Qt::QueuedConnection);
     return;
@@ -1373,7 +1373,7 @@ void EmuThread::runOnEmuThread(std::function<void()> callback)
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
 {
-  const bool self = g_emu_thread->isOnThread();
+  const bool self = g_emu_thread->isCurrentThread();
 
   QMetaObject::invokeMethod(g_emu_thread, "runOnEmuThread",
                             (block && !self) ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
@@ -1399,7 +1399,7 @@ void Host::CancelGameListRefresh()
 
 void EmuThread::loadState(const QString& filename)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "loadState", Qt::QueuedConnection, Q_ARG(const QString&, filename));
     return;
@@ -1410,7 +1410,7 @@ void EmuThread::loadState(const QString& filename)
 
 void EmuThread::loadState(bool global, qint32 slot)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "loadState", Qt::QueuedConnection, Q_ARG(bool, global), Q_ARG(qint32, slot));
     return;
@@ -1426,7 +1426,7 @@ void EmuThread::loadState(bool global, qint32 slot)
 
 void EmuThread::saveState(const QString& filename, bool block_until_done /* = false */)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "saveState", block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
                               Q_ARG(const QString&, filename), Q_ARG(bool, block_until_done));
@@ -1443,7 +1443,7 @@ void EmuThread::saveState(const QString& filename, bool block_until_done /* = fa
 
 void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = false */)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "saveState", block_until_done ? Qt::BlockingQueuedConnection : Qt::QueuedConnection,
                               Q_ARG(bool, global), Q_ARG(qint32, slot), Q_ARG(bool, block_until_done));
@@ -1465,7 +1465,7 @@ void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = f
 
 void EmuThread::undoLoadState()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "undoLoadState", Qt::QueuedConnection);
     return;
@@ -1476,7 +1476,7 @@ void EmuThread::undoLoadState()
 
 void EmuThread::setAudioOutputVolume(int volume, int fast_forward_volume)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "setAudioOutputVolume", Qt::QueuedConnection, Q_ARG(int, volume),
                               Q_ARG(int, fast_forward_volume));
@@ -1490,7 +1490,7 @@ void EmuThread::setAudioOutputVolume(int volume, int fast_forward_volume)
 
 void EmuThread::setAudioOutputMuted(bool muted)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "setAudioOutputMuted", Qt::QueuedConnection, Q_ARG(bool, muted));
     return;
@@ -1502,7 +1502,7 @@ void EmuThread::setAudioOutputMuted(bool muted)
 
 void EmuThread::startDumpingAudio()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "startDumpingAudio", Qt::QueuedConnection);
     return;
@@ -1513,7 +1513,7 @@ void EmuThread::startDumpingAudio()
 
 void EmuThread::stopDumpingAudio()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "stopDumpingAudio", Qt::QueuedConnection);
     return;
@@ -1524,7 +1524,7 @@ void EmuThread::stopDumpingAudio()
 
 void EmuThread::singleStepCPU()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "singleStepCPU", Qt::BlockingQueuedConnection);
     return;
@@ -1538,7 +1538,7 @@ void EmuThread::singleStepCPU()
 
 void EmuThread::dumpRAM(const QString& filename)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "dumpRAM", Qt::QueuedConnection, Q_ARG(const QString&, filename));
     return;
@@ -1553,7 +1553,7 @@ void EmuThread::dumpRAM(const QString& filename)
 
 void EmuThread::dumpVRAM(const QString& filename)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "dumpVRAM", Qt::QueuedConnection, Q_ARG(const QString&, filename));
     return;
@@ -1568,7 +1568,7 @@ void EmuThread::dumpVRAM(const QString& filename)
 
 void EmuThread::dumpSPURAM(const QString& filename)
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "dumpSPURAM", Qt::QueuedConnection, Q_ARG(const QString&, filename));
     return;
@@ -1583,7 +1583,7 @@ void EmuThread::dumpSPURAM(const QString& filename)
 
 void EmuThread::saveScreenshot()
 {
-  if (!isOnThread())
+  if (!isCurrentThread())
   {
     QMetaObject::invokeMethod(this, "saveScreenshot", Qt::QueuedConnection);
     return;
@@ -1660,7 +1660,7 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
                                      FileSelectorFilters filters /* = FileSelectorFilters() */,
                                      std::string_view initial_directory /* = std::string_view() */)
 {
-  const bool from_cpu_thread = g_emu_thread->isOnThread();
+  const bool from_cpu_thread = g_emu_thread->isCurrentThread();
 
   QString filters_str;
   if (!filters.empty())
@@ -1735,7 +1735,7 @@ void EmuThread::queueAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindow
                                                      Host::AuxiliaryRenderWindowEventParam param2,
                                                      Host::AuxiliaryRenderWindowEventParam param3)
 {
-  DebugAssert(isOnUIThread());
+  DebugAssert(QThread::isMainThread());
   QMetaObject::invokeMethod(this, "processAuxiliaryRenderWindowInputEvent", Qt::QueuedConnection,
                             Q_ARG(void*, userdata), Q_ARG(quint32, static_cast<quint32>(event)),
                             Q_ARG(quint32, param1.uint_param), Q_ARG(quint32, param2.uint_param),
@@ -1745,7 +1745,7 @@ void EmuThread::queueAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindow
 void EmuThread::processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 event, quint32 param1, quint32 param2,
                                                        quint32 param3)
 {
-  DebugAssert(isOnThread());
+  DebugAssert(isCurrentThread());
   ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(userdata, static_cast<Host::AuxiliaryRenderWindowEvent>(event),
                                                        Host::AuxiliaryRenderWindowEventParam{.uint_param = param1},
                                                        Host::AuxiliaryRenderWindowEventParam{.uint_param = param2},
@@ -1807,7 +1807,7 @@ void EmuThread::start()
 void EmuThread::stop()
 {
   AssertMsg(g_emu_thread, "Emu thread exists");
-  AssertMsg(!g_emu_thread->isOnThread(), "Not called on the emu thread");
+  AssertMsg(!g_emu_thread->isCurrentThread(), "Not called on the emu thread");
 
   QMetaObject::invokeMethod(g_emu_thread, &EmuThread::stopInThread, Qt::QueuedConnection);
   QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return (g_emu_thread->isRunning()); });
@@ -1885,7 +1885,7 @@ void Host::FrameDone()
 
 void EmuThread::wakeThread()
 {
-  if (isOnThread())
+  if (isCurrentThread())
     m_event_loop->quit();
   else
     QMetaObject::invokeMethod(m_event_loop, "quit", Qt::QueuedConnection);
@@ -2048,7 +2048,7 @@ std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filen
 
 void Host::CommitBaseSettingChanges()
 {
-  if (g_emu_thread->isOnThread())
+  if (g_emu_thread->isCurrentThread())
     QtHost::RunOnUIThread([]() { QtHost::QueueSettingsSave(); });
   else
     QtHost::QueueSettingsSave();
@@ -2171,7 +2171,7 @@ void Host::PumpMessagesOnCPUThread()
 
 void QtHost::SaveSettings()
 {
-  AssertMsg(!g_emu_thread->isOnThread(), "Saving should happen on the UI thread.");
+  AssertMsg(!g_emu_thread->isCurrentThread(), "Saving should happen on the UI thread.");
 
   {
     Error error;
@@ -2189,7 +2189,7 @@ void QtHost::SaveSettings()
 
 void QtHost::QueueSettingsSave()
 {
-  if (g_emu_thread->isOnThread())
+  if (g_emu_thread->isCurrentThread())
   {
     QtHost::RunOnUIThread(QueueSettingsSave);
     return;
