@@ -129,6 +129,7 @@ namespace MinizipHelpers {
     }
   }
 
+  unzCloseCurrentFile(zf);
   return ret;
 }
 
