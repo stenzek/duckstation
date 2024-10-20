@@ -228,6 +228,7 @@ const char* PATCHES_CONFIG_SECTION = "Patches";
 const char* CHEATS_CONFIG_SECTION = "Cheats";
 const char* PATCH_ENABLE_CONFIG_KEY = "Enable";
 
+static std::mutex s_zip_mutex;
 static CheatArchive s_patches_zip;
 static CheatArchive s_cheats_zip;
 static CheatCodeList s_patch_codes;
@@ -365,6 +366,7 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
   // Prefer files on disk over the zip, so we have to load the zip first.
   if (load_from_database)
   {
+    const std::unique_lock lock(s_zip_mutex);
     CheatArchive& archive = cheats ? s_cheats_zip : s_patches_zip;
     if (!archive.IsOpen())
     {
