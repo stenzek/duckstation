@@ -455,95 +455,95 @@ jobs:
         name: "linux-x64-sse2-appimage"
         path: "DuckStation-x64-SSE2.AppImage"
 
-
-  linux-flatpak-build:
-    name: Linux Flatpak Build
-    runs-on: ubuntu-22.04
-    container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.7
-      options: --privileged
-    timeout-minutes: 120
-    steps:
-    - uses: actions/checkout@v4.1.6
-      with:
-        fetch-depth: 0
-        set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
-
-    # Work around container ownership issue
-    - name: Set Safe Directory
-      shell: bash
-      run: git config --global --add safe.directory "*"
-
-    - name: Initialize Build Tag
-      run: |
-        echo '#pragma once' > src/scmversion/tag.h
-
-    - name: Set Build Tags
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
-      run: |
-        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
-
-    - name: Tag as Preview Release
-      if: github.ref == 'refs/heads/master'
-      run: |
-        echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
-
-    - name: Tag as Rolling Release
-      if: github.ref == 'refs/heads/dev'
-      run: |
-        echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
-
-    - name: Download Patch Archives
-      shell: bash
-      run: |
-        cd data/resources
-        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
-        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
-
-    - name: Generate AppStream XML
-      run: |
-        scripts/generate-metainfo.sh scripts/flatpak
-        cat scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
-
-    - name: Validate AppStream XML
-      run: flatpak-builder-lint appstream scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
-
-    - name: Validate Manifest
-      run: flatpak-builder-lint manifest scripts/flatpak/org.duckstation.DuckStation.yaml
-
-    - name: Build Flatpak
-      uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
-      with:
-        bundle: duckstation-x64.flatpak
-        upload-artifact: false
-        manifest-path: scripts/flatpak/org.duckstation.DuckStation.yaml
-        arch: x86_64
-        build-bundle: true
-        verbose: true
-        mirror-screenshots-url: https://dl.flathub.org/media
-        branch: stable
-        cache: true
-        restore-cache: true
-        cache-key: flatpak-x64-${{ hashFiles('scripts/flatpak/**/*.yaml') }}
-
-    - name: Validate Build
-      run: |
-        flatpak-builder-lint repo repo
-
-    - name: Push To Flathub Stable
-      if: github.ref == 'refs/heads/dev'
-      uses: flathub-infra/flatpak-github-actions/flat-manager@b6c92176b7f578aedd80cac74cd8f0336f618e89
-      with:
-        flat-manager-url: https://hub.flathub.org/
-        repository: stable
-        token: ${{ secrets.FLATHUB_STABLE_TOKEN }}
-        build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-
-    - name: Upload Flatpak
-      uses: actions/upload-artifact@v4.3.3
-      with:
-        name: "linux-flatpak"
-        path: "duckstation-x64.flatpak"
+  # Disabled until KDE release the Qt 6.8 SDK
+  #linux-flatpak-build:
+  #  name: Linux Flatpak Build
+  #  runs-on: ubuntu-22.04
+  #  container:
+  #    image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.7
+  #    options: --privileged
+  #  timeout-minutes: 120
+  #  steps:
+  #  - uses: actions/checkout@v4.1.6
+  #    with:
+  #      fetch-depth: 0
+  #      set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
+  #
+  #  # Work around container ownership issue
+  #  - name: Set Safe Directory
+  #    shell: bash
+  #    run: git config --global --add safe.directory "*"
+  #
+  #  - name: Initialize Build Tag
+  #    run: |
+  #      echo '#pragma once' > src/scmversion/tag.h
+  #
+  #  - name: Set Build Tags
+  #    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+  #    run: |
+  #      echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
+  #
+  #  - name: Tag as Preview Release
+  #    if: github.ref == 'refs/heads/master'
+  #    run: |
+  #      echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
+  #
+  #  - name: Tag as Rolling Release
+  #    if: github.ref == 'refs/heads/dev'
+  #    run: |
+  #      echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
+  #
+  #  - name: Download Patch Archives
+  #    shell: bash
+  #    run: |
+  #      cd data/resources
+  #      curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+  #      curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+  #
+  #  - name: Generate AppStream XML
+  #    run: |
+  #      scripts/generate-metainfo.sh scripts/flatpak
+  #      cat scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
+  #
+  #  - name: Validate AppStream XML
+  #    run: flatpak-builder-lint appstream scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
+  #
+  #  - name: Validate Manifest
+  #    run: flatpak-builder-lint manifest scripts/flatpak/org.duckstation.DuckStation.yaml
+  #
+  #  - name: Build Flatpak
+  #    uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
+  #    with:
+  #      bundle: duckstation-x64.flatpak
+  #      upload-artifact: false
+  #      manifest-path: scripts/flatpak/org.duckstation.DuckStation.yaml
+  #      arch: x86_64
+  #      build-bundle: true
+  #      verbose: true
+  #      mirror-screenshots-url: https://dl.flathub.org/media
+  #      branch: stable
+  #      cache: true
+  #      restore-cache: true
+  #      cache-key: flatpak-x64-${{ hashFiles('scripts/flatpak/**/*.yaml') }}
+  #
+  #  - name: Validate Build
+  #    run: |
+  #      flatpak-builder-lint repo repo
+  #
+  #  - name: Push To Flathub Stable
+  #    if: github.ref == 'refs/heads/dev'
+  #    uses: flathub-infra/flatpak-github-actions/flat-manager@b6c92176b7f578aedd80cac74cd8f0336f618e89
+  #    with:
+  #      flat-manager-url: https://hub.flathub.org/
+  #      repository: stable
+  #      token: ${{ secrets.FLATHUB_STABLE_TOKEN }}
+  #      build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+  #
+  #  - name: Upload Flatpak
+  #    uses: actions/upload-artifact@v4.3.3
+  #    with:
+  #      name: "linux-flatpak"
+  #      path: "duckstation-x64.flatpak"
 
 
   macos-build:
@@ -622,7 +622,8 @@ jobs:
 
   create-release:
     name: Create Release
-    needs: [windows-x64-build, windows-x64-sse2-build, windows-arm64-build, linux-x64-appimage-build, linux-x64-sse2-appimage-build, linux-flatpak-build, macos-build]
+    #needs: [windows-x64-build, windows-x64-sse2-build, windows-arm64-build, linux-x64-appimage-build, linux-x64-sse2-appimage-build, linux-flatpak-build, macos-build]
+    needs: [windows-x64-build, windows-x64-sse2-build, windows-arm64-build, linux-x64-appimage-build, linux-x64-sse2-appimage-build, macos-build]
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
@@ -651,7 +652,7 @@ jobs:
             ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/linux-x64-appimage/DuckStation-x64.AppImage
             ./artifacts/linux-x64-sse2-appimage/DuckStation-x64-SSE2.AppImage
-            ./artifacts/linux-flatpak/duckstation-x64.flatpak
+            #./artifacts/linux-flatpak/duckstation-x64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
 
       - name: Create Rolling Release
@@ -671,6 +672,6 @@ jobs:
             ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/linux-x64-appimage/DuckStation-x64.AppImage
             ./artifacts/linux-x64-sse2-appimage/DuckStation-x64-SSE2.AppImage
-            ./artifacts/linux-flatpak/duckstation-x64.flatpak
+            #./artifacts/linux-flatpak/duckstation-x64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
 
