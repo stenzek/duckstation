@@ -38,6 +38,8 @@ static constexpr const char* GLOBAL_VALUE_PROPERTY = "SettingWidgetBinder_global
 template<typename T>
 struct SettingAccessor
 {
+  static void addOption(T* widget, const char* value_name);
+
   static bool getBoolValue(const T* widget);
   static void setBoolValue(T* widget, bool value);
   static void makeNullableBool(T* widget, bool globalValue);
@@ -69,6 +71,8 @@ struct SettingAccessor
 template<>
 struct SettingAccessor<QLineEdit>
 {
+  static void addOption(QLineEdit* widget, const char* value_name) {}
+
   static bool getBoolValue(const QLineEdit* widget) { return widget->text().toInt() != 0; }
   static void setBoolValue(QLineEdit* widget, bool value)
   {
@@ -118,6 +122,8 @@ struct SettingAccessor<QLineEdit>
 template<>
 struct SettingAccessor<QComboBox>
 {
+  static void addOption(QComboBox* widget, const char* value_name) { widget->addItem(QString::fromUtf8(value_name)); }
+
   static bool isNullValue(const QComboBox* widget) { return (widget->currentIndex() == 0); }
 
   static bool getBoolValue(const QComboBox* widget) { return widget->currentIndex() > 0; }
@@ -205,6 +211,8 @@ struct SettingAccessor<QComboBox>
 template<>
 struct SettingAccessor<QCheckBox>
 {
+  static void addOption(QCheckBox* widget, const char* value_name) {}
+
   static bool getBoolValue(const QCheckBox* widget) { return widget->isChecked(); }
   static void setBoolValue(QCheckBox* widget, bool value) { widget->setChecked(value); }
   static void makeNullableBool(QCheckBox* widget, bool globalValue) { widget->setTristate(true); }
@@ -273,6 +281,8 @@ struct SettingAccessor<QCheckBox>
 template<>
 struct SettingAccessor<QSlider>
 {
+  static void addOption(QSlider* widget, const char* value_name) {}
+
   static bool isNullable(const QSlider* widget) { return widget->property(NULLABLE_PROPERTY).toBool(); }
 
   static bool getBoolValue(const QSlider* widget) { return widget->value() > 0; }
@@ -380,6 +390,8 @@ struct SettingAccessor<QSlider>
 template<>
 struct SettingAccessor<QSpinBox>
 {
+  static void addOption(QSpinBox* widget, const char* value_name) {}
+
   static bool isNullable(const QSpinBox* widget) { return widget->property(NULLABLE_PROPERTY).toBool(); }
 
   static void updateFont(QSpinBox* widget, bool isNull)
@@ -510,6 +522,8 @@ struct SettingAccessor<QSpinBox>
 template<>
 struct SettingAccessor<QDoubleSpinBox>
 {
+  static void addOption(QDoubleSpinBox* widget, const char* value_name) {}
+
   static bool isNullable(const QDoubleSpinBox* widget) { return widget->property(NULLABLE_PROPERTY).toBool(); }
 
   static void updateFont(QDoubleSpinBox* widget, bool isNull)
@@ -641,6 +655,8 @@ struct SettingAccessor<QDoubleSpinBox>
 template<>
 struct SettingAccessor<QAction>
 {
+  static void addOption(QAction* widget, const char* value_name) {}
+
   static bool getBoolValue(const QAction* widget) { return widget->isChecked(); }
   static void setBoolValue(QAction* widget, bool value) { widget->setChecked(value); }
   static void makeNullableBool(QAction* widget, bool globalSetting) { widget->setEnabled(false); }
@@ -987,6 +1003,77 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
 {
   using Accessor = SettingAccessor<WidgetType>;
   using UnderlyingType = std::underlying_type_t<DataType>;
+
+  const std::string value(
+    Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
+  const std::optional<DataType> typed_value = from_string_function(value.c_str());
+
+  if (sif)
+  {
+    Accessor::makeNullableInt(
+      widget, typed_value.has_value() ? static_cast<int>(static_cast<UnderlyingType>(typed_value.value())) : 0);
+
+    std::string sif_value;
+    if (sif->GetStringValue(section.c_str(), key.c_str(), &sif_value))
+    {
+      const std::optional<DataType> old_setting_value = from_string_function(sif_value.c_str());
+      if (old_setting_value.has_value())
+        Accessor::setNullableIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(old_setting_value.value())));
+      else
+        Accessor::setNullableIntValue(widget, std::nullopt);
+    }
+    else
+    {
+      Accessor::setNullableIntValue(widget, std::nullopt);
+    }
+
+    Accessor::connectValueChanged(
+      widget, [sif, widget, section = std::move(section), key = std::move(key), to_string_function]() {
+        if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
+        {
+          const char* string_value =
+            to_string_function(static_cast<DataType>(static_cast<UnderlyingType>(new_value.value())));
+          sif->SetStringValue(section.c_str(), key.c_str(), string_value);
+        }
+        else
+        {
+          sif->DeleteValue(section.c_str(), key.c_str());
+        }
+
+        QtHost::SaveGameSettings(sif, true);
+        g_emu_thread->reloadGameSettings();
+      });
+  }
+  else
+  {
+    if (typed_value.has_value())
+      Accessor::setIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(typed_value.value())));
+    else
+      Accessor::setIntValue(widget, static_cast<int>(static_cast<UnderlyingType>(default_value)));
+
+    Accessor::connectValueChanged(
+      widget, [widget, section = std::move(section), key = std::move(key), to_string_function]() {
+        const DataType value = static_cast<DataType>(static_cast<UnderlyingType>(Accessor::getIntValue(widget)));
+        const char* string_value = to_string_function(value);
+        Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), string_value);
+        Host::CommitBaseSettingChanges();
+        g_emu_thread->applySettings();
+      });
+  }
+}
+
+template<typename WidgetType, typename DataType, typename ValueCountType>
+static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+                                    std::optional<DataType> (*from_string_function)(const char* str),
+                                    const char* (*to_string_function)(DataType value),
+                                    const char* (*to_display_name_function)(DataType value), DataType default_value,
+                                    ValueCountType value_count)
+{
+  using Accessor = SettingAccessor<WidgetType>;
+  using UnderlyingType = std::underlying_type_t<DataType>;
+
+  for (UnderlyingType i = 0; i < static_cast<UnderlyingType>(value_count); i++)
+    Accessor::addOption(widget, to_display_name_function(static_cast<DataType>(i)));
 
   const std::string value(
     Host::GetBaseStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)));
