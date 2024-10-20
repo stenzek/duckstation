@@ -1298,6 +1298,32 @@
         </widget>
        </item>
        <item>
+        <widget class="QGroupBox" name="gpuDumpGroup">
+         <property name="title">
+          <string>GPU Dump Recording/Playback</string>
+         </property>
+         <layout class="QFormLayout" name="formLayout_12">
+          <item row="0" column="0">
+           <widget class="QLabel" name="groupDumpCompressionModeLabel">
+            <property name="text">
+             <string>Dump Compression Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="gpuDumpCompressionMode"/>
+          </item>
+          <item row="1" column="0" colspan="2">
+           <widget class="QCheckBox" name="gpuDumpFastReplayMode">
+            <property name="text">
+             <string>Fast Dump Playback</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QGroupBox" name="groupBox_9">
          <property name="title">
           <string>Device Options</string>

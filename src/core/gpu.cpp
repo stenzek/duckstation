@@ -3,6 +3,7 @@
 
 #include "gpu.h"
 #include "dma.h"
+#include "gpu_dump.h"
 #include "gpu_shadergen.h"
 #include "gpu_sw_rasterizer.h"
 #include "host.h"
@@ -10,6 +11,7 @@
 #include "settings.h"
 #include "system.h"
 #include "timers.h"
+#include "timing_event.h"
 
 #include "util/gpu_device.h"
 #include "util/image.h"
@@ -72,6 +74,7 @@ static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string fil
                                           u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
                                           u32 texture_data_stride, GPUTexture::Format texture_format,
                                           bool display_osd_message, bool use_thread);
+static void RemoveSelfFromScreenshotThreads();
 static void JoinScreenshotThreads();
 
 GPU::GPU()
@@ -86,6 +89,7 @@ GPU::~GPU()
   s_crtc_tick_event.Deactivate();
   s_frame_done_event.Deactivate();
 
+  StopRecordingGPUDump();
   JoinScreenshotThreads();
   DestroyDeinterlaceTextures();
   g_gpu_device->RecycleTexture(std::move(m_chroma_smoothing_texture));
@@ -93,9 +97,11 @@ GPU::~GPU()
 
 bool GPU::Initialize()
 {
+  if (!System::IsReplayingGPUDump())
+    s_crtc_tick_event.Activate();
+
   m_force_progressive_scan = (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive);
   m_force_frame_timings = g_settings.gpu_force_video_timing;
-  s_crtc_tick_event.Activate();
   m_fifo_size = g_settings.gpu_fifo_size;
   m_max_run_ahead = g_settings.gpu_max_run_ahead;
   m_console_is_pal = System::IsPALRegion();
@@ -226,7 +232,7 @@ void GPU::SoftReset()
   m_GPUSTAT.display_area_color_depth_24 = false;
   m_GPUSTAT.vertical_interlace = false;
   m_GPUSTAT.display_disable = true;
-  m_GPUSTAT.dma_direction = DMADirection::Off;
+  m_GPUSTAT.dma_direction = GPUDMADirection::Off;
   m_drawing_area = {};
   m_drawing_area_changed = true;
   m_drawing_offset = {};
@@ -420,19 +426,19 @@ void GPU::UpdateDMARequest()
   bool dma_request;
   switch (m_GPUSTAT.dma_direction)
   {
-    case DMADirection::Off:
+    case GPUDMADirection::Off:
       dma_request = false;
       break;
 
-    case DMADirection::FIFO:
+    case GPUDMADirection::FIFO:
       dma_request = m_GPUSTAT.ready_to_recieve_dma;
       break;
 
-    case DMADirection::CPUtoGP0:
+    case GPUDMADirection::CPUtoGP0:
       dma_request = m_GPUSTAT.ready_to_recieve_dma;
       break;
 
-    case DMADirection::GPUREADtoCPU:
+    case GPUDMADirection::GPUREADtoCPU:
       dma_request = m_GPUSTAT.ready_to_send_vram;
       break;
 
@@ -479,23 +485,35 @@ void GPU::WriteRegister(u32 offset, u32 value)
   switch (offset)
   {
     case 0x00:
+    {
+      if (m_gpu_dump) [[unlikely]]
+        m_gpu_dump->WriteGP0Packet(value);
+
       m_fifo.Push(value);
       ExecuteCommands();
       return;
+    }
 
     case 0x04:
+    {
+      if (m_gpu_dump) [[unlikely]]
+        m_gpu_dump->WriteGP1Packet(value);
+
       WriteGP1(value);
       return;
+    }
 
     default:
+    {
       ERROR_LOG("Unhandled register write: {:02X} <- {:08X}", offset, value);
       return;
+    }
   }
 }
 
 void GPU::DMARead(u32* words, u32 word_count)
 {
-  if (m_GPUSTAT.dma_direction != DMADirection::GPUREADtoCPU)
+  if (m_GPUSTAT.dma_direction != GPUDMADirection::GPUREADtoCPU)
   {
     ERROR_LOG("Invalid DMA direction from GPU DMA read");
     std::fill_n(words, word_count, UINT32_C(0xFFFFFFFF));
@@ -877,6 +895,11 @@ TickCount GPU::GetPendingCommandTicks() const
   return SystemTicksToGPUTicks(s_command_tick_event.GetTicksSinceLastExecution());
 }
 
+TickCount GPU::GetRemainingCommandTicks() const
+{
+  return std::max<TickCount>(m_pending_command_ticks - GetPendingCommandTicks(), 0);
+}
+
 void GPU::UpdateCRTCTickEvent()
 {
   // figure out how many GPU ticks until the next vblank or event
@@ -931,7 +954,8 @@ void GPU::UpdateCRTCTickEvent()
     ticks_until_event = std::min(ticks_until_event, ticks_until_hblank_start_or_end);
   }
 
-  s_crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, m_crtc_state.fractional_ticks));
+  if (!System::IsReplayingGPUDump()) [[likely]]
+    s_crtc_tick_event.Schedule(CRTCTicksToSystemTicks(ticks_until_event, m_crtc_state.fractional_ticks));
 }
 
 bool GPU::IsCRTCScanlinePending() const
@@ -1029,6 +1053,13 @@ void GPU::CRTCTickEvent(TickCount ticks)
       if (new_vblank)
       {
         DEBUG_LOG("Now in v-blank");
+
+        if (m_gpu_dump) [[unlikely]]
+        {
+          m_gpu_dump->WriteVSync(System::GetGlobalTickCounter());
+          if (m_gpu_dump->IsFinished()) [[unlikely]]
+            StopRecordingGPUDump();
+        }
 
         // flush any pending draws and "scan out" the image
         // TODO: move present in here I guess
@@ -1273,7 +1304,7 @@ void GPU::WriteGP1(u32 value)
   const u32 param = value & UINT32_C(0x00FFFFFF);
   switch (command)
   {
-    case 0x00: // Reset GPU
+    case static_cast<u8>(GP1Command::ResetGPU):
     {
       DEBUG_LOG("GP1 reset GPU");
       s_command_tick_event.InvokeEarly();
@@ -1282,7 +1313,7 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x01: // Clear FIFO
+    case static_cast<u8>(GP1Command::ClearFIFO):
     {
       DEBUG_LOG("GP1 clear FIFO");
       s_command_tick_event.InvokeEarly();
@@ -1305,7 +1336,7 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x02: // Acknowledge Interrupt
+    case static_cast<u8>(GP1Command::AcknowledgeInterrupt):
     {
       DEBUG_LOG("Acknowledge interrupt");
       m_GPUSTAT.interrupt_request = false;
@@ -1313,7 +1344,7 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x03: // Display on/off
+    case static_cast<u8>(GP1Command::SetDisplayDisable):
     {
       const bool disable = ConvertToBoolUnchecked(value & 0x01);
       DEBUG_LOG("Display {}", disable ? "disabled" : "enabled");
@@ -1326,18 +1357,18 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x04: // DMA Direction
+    case static_cast<u8>(GP1Command::SetDMADirection):
     {
       DEBUG_LOG("DMA direction <- 0x{:02X}", static_cast<u32>(param));
-      if (m_GPUSTAT.dma_direction != static_cast<DMADirection>(param))
+      if (m_GPUSTAT.dma_direction != static_cast<GPUDMADirection>(param))
       {
-        m_GPUSTAT.dma_direction = static_cast<DMADirection>(param);
+        m_GPUSTAT.dma_direction = static_cast<GPUDMADirection>(param);
         UpdateDMARequest();
       }
     }
     break;
 
-    case 0x05: // Set display start address
+    case static_cast<u8>(GP1Command::SetDisplayStartAddress):
     {
       const u32 new_value = param & CRTCState::Regs::DISPLAY_ADDRESS_START_MASK;
       DEBUG_LOG("Display address start <- 0x{:08X}", new_value);
@@ -1353,7 +1384,7 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x06: // Set horizontal display range
+    case static_cast<u8>(GP1Command::SetHorizontalDisplayRange):
     {
       const u32 new_value = param & CRTCState::Regs::HORIZONTAL_DISPLAY_RANGE_MASK;
       DEBUG_LOG("Horizontal display range <- 0x{:08X}", new_value);
@@ -1367,7 +1398,7 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x07: // Set vertical display range
+    case static_cast<u8>(GP1Command::SetVerticalDisplayRange):
     {
       const u32 new_value = param & CRTCState::Regs::VERTICAL_DISPLAY_RANGE_MASK;
       DEBUG_LOG("Vertical display range <- 0x{:08X}", new_value);
@@ -1381,22 +1412,9 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x08: // Set display mode
+    case static_cast<u8>(GP1Command::SetDisplayMode):
     {
-      union GP1_08h
-      {
-        u32 bits;
-
-        BitField<u32, u8, 0, 2> horizontal_resolution_1;
-        BitField<u32, bool, 2, 1> vertical_resolution;
-        BitField<u32, bool, 3, 1> pal_mode;
-        BitField<u32, bool, 4, 1> display_area_color_depth;
-        BitField<u32, bool, 5, 1> vertical_interlace;
-        BitField<u32, bool, 6, 1> horizontal_resolution_2;
-        BitField<u32, bool, 7, 1> reverse_flag;
-      };
-
-      const GP1_08h dm{param};
+      const GP1SetDisplayMode dm{param};
       GPUSTAT new_GPUSTAT{m_GPUSTAT.bits};
       new_GPUSTAT.horizontal_resolution_1 = dm.horizontal_resolution_1;
       new_GPUSTAT.vertical_resolution = dm.vertical_resolution;
@@ -1425,7 +1443,7 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-    case 0x09: // Allow texture disable
+    case static_cast<u8>(GP1Command::SetAllowTextureDisable):
     {
       m_set_texture_disable_mask = ConvertToBoolUnchecked(param & 0x01);
       DEBUG_LOG("Set texture disable mask <- {}", m_set_texture_disable_mask ? "allowed" : "ignored");
@@ -2471,20 +2489,7 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
     }
 
     if (use_thread)
-    {
-      // remove ourselves from the list, if the GS thread is waiting for us, we won't be in there
-      const auto this_id = std::this_thread::get_id();
-      std::unique_lock lock(s_screenshot_threads_mutex);
-      for (auto it = s_screenshot_threads.begin(); it != s_screenshot_threads.end(); ++it)
-      {
-        if (it->get_id() == this_id)
-        {
-          it->detach();
-          s_screenshot_threads.erase(it);
-          break;
-        }
-      }
-    }
+      RemoveSelfFromScreenshotThreads();
 
     return result;
   };
@@ -2500,6 +2505,21 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
                      std::move(texture_data), texture_data_stride, texture_format, std::move(osd_key), use_thread);
   s_screenshot_threads.push_back(std::move(thread));
   return true;
+}
+
+void RemoveSelfFromScreenshotThreads()
+{
+  const auto this_id = std::this_thread::get_id();
+  std::unique_lock lock(s_screenshot_threads_mutex);
+  for (auto it = s_screenshot_threads.begin(); it != s_screenshot_threads.end(); ++it)
+  {
+    if (it->get_id() == this_id)
+    {
+      it->detach();
+      s_screenshot_threads.erase(it);
+      break;
+    }
+  }
 }
 
 void JoinScreenshotThreads()
@@ -2885,4 +2905,210 @@ void GPU::UpdateStatistics(u32 frame_count)
 #undef UPDATE_COUNTER
 
   ResetStatistics();
+}
+
+bool GPU::StartRecordingGPUDump(const char* path, u32 num_frames /* = 1 */)
+{
+  if (m_gpu_dump)
+    StopRecordingGPUDump();
+
+  // if we're not dumping forever, compute the frame count based on the internal fps
+  // +1 because we want to actually see the buffer swap...
+  if (num_frames != 0)
+  {
+    num_frames = std::max(num_frames, static_cast<u32>(static_cast<float>(num_frames + 1) *
+                                                       std::ceil(System::GetVPS() / System::GetFPS())));
+  }
+
+  // ensure vram is up to date
+  ReadVRAM(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+
+  std::string osd_key = fmt::format("GPUDump_{}", Path::GetFileName(path));
+  Error error;
+  m_gpu_dump = GPUDump::Recorder::Create(path, System::GetGameSerial(), num_frames, &error);
+  if (!m_gpu_dump)
+  {
+    Host::AddIconOSDWarning(
+      std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+      fmt::format("{}\n{}", TRANSLATE_SV("GPU", "Failed to start GPU trace:"), error.GetDescription()),
+      Host::OSD_ERROR_DURATION);
+    return false;
+  }
+
+  Host::AddIconOSDMessage(
+    std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+    (num_frames != 0) ?
+      fmt::format(TRANSLATE_FS("GPU", "Saving {0} frame GPU trace to '{1}'."), num_frames, Path::GetFileName(path)) :
+      fmt::format(TRANSLATE_FS("GPU", "Saving multi-frame frame GPU trace to '{1}'."), num_frames,
+                  Path::GetFileName(path)),
+    Host::OSD_QUICK_DURATION);
+
+  // save screenshot to same location to identify it
+  RenderScreenshotToFile(Path::ReplaceExtension(path, "png"), DisplayScreenshotMode::ScreenResolution, 85, true, false);
+  return true;
+}
+
+void GPU::StopRecordingGPUDump()
+{
+  if (!m_gpu_dump)
+    return;
+
+  Error error;
+  if (!m_gpu_dump->Close(&error))
+  {
+    Host::AddIconOSDWarning(
+      "GPUDump", ICON_EMOJI_CAMERA_WITH_FLASH,
+      fmt::format("{}\n{}", TRANSLATE_SV("GPU", "Failed to close GPU trace:"), error.GetDescription()),
+      Host::OSD_ERROR_DURATION);
+    m_gpu_dump.reset();
+  }
+
+  // Are we compressing the dump?
+  const GPUDumpCompressionMode compress_mode =
+    Settings::ParseGPUDumpCompressionMode(Host::GetTinyStringSettingValue("GPU", "DumpCompressionMode"))
+      .value_or(Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE);
+  std::string osd_key = fmt::format("GPUDump_{}", Path::GetFileName(m_gpu_dump->GetPath()));
+  if (compress_mode == GPUDumpCompressionMode::Disabled)
+  {
+    Host::AddIconOSDMessage(
+      "GPUDump", ICON_EMOJI_CAMERA_WITH_FLASH,
+      fmt::format(TRANSLATE_FS("GPU", "Saved GPU trace to '{}'."), Path::GetFileName(m_gpu_dump->GetPath())),
+      Host::OSD_QUICK_DURATION);
+    m_gpu_dump.reset();
+    return;
+  }
+
+  std::string source_path = m_gpu_dump->GetPath();
+  m_gpu_dump.reset();
+
+  // Use a 60 second timeout to give it plenty of time to actually save.
+  Host::AddIconOSDMessage(
+    osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
+    fmt::format(TRANSLATE_FS("GPU", "Compressing GPU trace '{}'..."), Path::GetFileName(source_path)), 60.0f);
+  std::unique_lock screenshot_lock(s_screenshot_threads_mutex);
+  s_screenshot_threads.emplace_back(
+    [compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
+      Error error;
+      if (GPUDump::Recorder::Compress(source_path, compress_mode, &error))
+      {
+        Host::AddIconOSDMessage(
+          std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+          fmt::format(TRANSLATE_FS("GPU", "Saved GPU trace to '{}'."), Path::GetFileName(source_path)),
+          Host::OSD_QUICK_DURATION);
+      }
+      else
+      {
+        Host::AddIconOSDWarning(
+          std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+          fmt::format("{}\n{}",
+                      SmallString::from_format(TRANSLATE_FS("GPU", "Failed to save GPU trace to '{}':"),
+                                               Path::GetFileName(source_path)),
+                      error.GetDescription()),
+          Host::OSD_ERROR_DURATION);
+      }
+
+      RemoveSelfFromScreenshotThreads();
+    });
+}
+
+void GPU::WriteCurrentVideoModeToDump(GPUDump::Recorder* dump) const
+{
+  // display disable
+  dump->WriteGP1Command(GP1Command::SetDisplayDisable, BoolToUInt32(m_GPUSTAT.display_disable));
+  dump->WriteGP1Command(GP1Command::SetDisplayStartAddress, m_crtc_state.regs.display_address_start);
+  dump->WriteGP1Command(GP1Command::SetHorizontalDisplayRange, m_crtc_state.regs.horizontal_display_range);
+  dump->WriteGP1Command(GP1Command::SetVerticalDisplayRange, m_crtc_state.regs.vertical_display_range);
+  dump->WriteGP1Command(GP1Command::SetAllowTextureDisable, BoolToUInt32(m_set_texture_disable_mask));
+
+  // display mode
+  GP1SetDisplayMode dispmode = {};
+  dispmode.horizontal_resolution_1 = m_GPUSTAT.horizontal_resolution_1.GetValue();
+  dispmode.vertical_resolution = m_GPUSTAT.vertical_resolution.GetValue();
+  dispmode.pal_mode = m_GPUSTAT.pal_mode.GetValue();
+  dispmode.display_area_color_depth = m_GPUSTAT.display_area_color_depth_24.GetValue();
+  dispmode.vertical_interlace = m_GPUSTAT.vertical_interlace.GetValue();
+  dispmode.horizontal_resolution_2 = m_GPUSTAT.horizontal_resolution_2.GetValue();
+  dispmode.reverse_flag = m_GPUSTAT.reverse_flag.GetValue();
+  dump->WriteGP1Command(GP1Command::SetDisplayMode, dispmode.bits);
+}
+
+void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u32> data)
+{
+  switch (type)
+  {
+    case GPUDump::PacketType::GPUPort0Data:
+    {
+      if (data.empty()) [[unlikely]]
+      {
+        WARNING_LOG("Empty GPU dump GP0 packet!");
+        return;
+      }
+
+      // ensure it doesn't block
+      m_pending_command_ticks = 0;
+      UpdateCommandTickEvent();
+
+      if (data.size() == 1) [[unlikely]]
+      {
+        // direct GP0 write
+        WriteRegister(0, data[0]);
+      }
+      else
+      {
+        // don't overflow the fifo...
+        size_t current_word = 0;
+        while (current_word < data.size())
+        {
+          const u32 block_size = std::min(m_fifo_size - m_fifo.GetSize(), static_cast<u32>(data.size() - current_word));
+          if (block_size == 0)
+          {
+            ERROR_LOG("FIFO overflow while processing dump packet of {} words", data.size());
+            break;
+          }
+
+          for (u32 i = 0; i < block_size; i++)
+            m_fifo.Push(ZeroExtend64(data[current_word++]));
+          ExecuteCommands();
+        }
+      }
+    }
+    break;
+
+    case GPUDump::PacketType::GPUPort1Data:
+    {
+      if (data.size() != 1) [[unlikely]]
+      {
+        WARNING_LOG("Incorrectly-sized GPU dump GP1 packet: {} words", data.size());
+        return;
+      }
+
+      WriteRegister(4, data[0]);
+    }
+    break;
+
+    case GPUDump::PacketType::VSyncEvent:
+    {
+      // don't play silly buggers with events
+      m_pending_command_ticks = 0;
+      UpdateCommandTickEvent();
+
+      // we _should_ be using the tick count for the event, but it breaks with looping.
+      // instead, just add a fixed amount
+      const TickCount crtc_ticks_per_frame =
+        static_cast<TickCount>(m_crtc_state.horizontal_total) * static_cast<TickCount>(m_crtc_state.vertical_total);
+      const TickCount system_ticks_per_frame =
+        CRTCTicksToSystemTicks(crtc_ticks_per_frame, m_crtc_state.fractional_ticks);
+      SystemTicksToCRTCTicks(system_ticks_per_frame, &m_crtc_state.fractional_ticks);
+      TimingEvents::SetGlobalTickCounter(TimingEvents::GetGlobalTickCounter() +
+                                         static_cast<GlobalTicks>(system_ticks_per_frame));
+
+      FlushRender();
+      UpdateDisplay();
+      System::FrameDone();
+    }
+    break;
+
+    default:
+      break;
+  }
 }

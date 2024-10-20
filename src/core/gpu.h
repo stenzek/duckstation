@@ -5,7 +5,6 @@
 
 #include "gpu_types.h"
 #include "timers.h"
-#include "timing_event.h"
 #include "types.h"
 
 #include "util/gpu_device.h"
@@ -20,9 +19,11 @@
 #include <deque>
 #include <memory>
 #include <string>
+#include <span>
 #include <tuple>
 #include <vector>
 
+class Error;
 class SmallStringBase;
 
 class StateWrapper;
@@ -32,6 +33,11 @@ class GPUTexture;
 class GPUPipeline;
 class MediaCapture;
 
+namespace GPUDump {
+enum class PacketType : u8;
+class Recorder;
+class Player;
+}
 struct Settings;
 
 namespace Threading {
@@ -47,14 +53,6 @@ public:
     ReadingVRAM,
     WritingVRAM,
     DrawingPolyLine
-  };
-
-  enum class DMADirection : u32
-  {
-    Off = 0,
-    FIFO = 1,
-    CPUtoGP0 = 2,
-    GPUREADtoCPU = 3
   };
 
   enum : u32
@@ -120,13 +118,20 @@ public:
 
   ALWAYS_INLINE bool BeginDMAWrite() const
   {
-    return (m_GPUSTAT.dma_direction == DMADirection::CPUtoGP0 || m_GPUSTAT.dma_direction == DMADirection::FIFO);
+    return (m_GPUSTAT.dma_direction == GPUDMADirection::CPUtoGP0 || m_GPUSTAT.dma_direction == GPUDMADirection::FIFO);
   }
   ALWAYS_INLINE void DMAWrite(u32 address, u32 value)
   {
     m_fifo.Push((ZeroExtend64(address) << 32) | ZeroExtend64(value));
   }
   void EndDMAWrite();
+
+  /// Writing to GPU dump.
+  GPUDump::Recorder* GetGPUDump() const { return m_gpu_dump.get(); }
+  bool StartRecordingGPUDump(const char* path, u32 num_frames = 1);
+  void StopRecordingGPUDump();
+  void WriteCurrentVideoModeToDump(GPUDump::Recorder* dump) const;
+  void ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u32> data);
 
   /// Returns true if no data is being sent from VRAM to the DAC or that no portion of VRAM would be visible on screen.
   ALWAYS_INLINE bool IsDisplayDisabled() const
@@ -152,6 +157,7 @@ public:
   /// Returns the number of pending GPU ticks.
   TickCount GetPendingCRTCTicks() const;
   TickCount GetPendingCommandTicks() const;
+  TickCount GetRemainingCommandTicks() const;
 
   /// Returns true if enough ticks have passed for the raster to be on the next line.
   bool IsCRTCScanlinePending() const;
@@ -414,54 +420,7 @@ protected:
     AddCommandTicks(std::max(drawn_width, drawn_height));
   }
 
-  union GPUSTAT
-  {
-    // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
-
-    u32 bits;
-    BitField<u32, u8, 0, 4> texture_page_x_base;
-    BitField<u32, u8, 4, 1> texture_page_y_base;
-    BitField<u32, GPUTransparencyMode, 5, 2> semi_transparency_mode;
-    BitField<u32, GPUTextureMode, 7, 2> texture_color_mode;
-    BitField<u32, bool, 9, 1> dither_enable;
-    BitField<u32, bool, 10, 1> draw_to_displayed_field;
-    BitField<u32, bool, 11, 1> set_mask_while_drawing;
-    BitField<u32, bool, 12, 1> check_mask_before_draw;
-    BitField<u32, u8, 13, 1> interlaced_field;
-    BitField<u32, bool, 14, 1> reverse_flag;
-    BitField<u32, bool, 15, 1> texture_disable;
-    BitField<u32, u8, 16, 1> horizontal_resolution_2;
-    BitField<u32, u8, 17, 2> horizontal_resolution_1;
-    BitField<u32, bool, 19, 1> vertical_resolution;
-    BitField<u32, bool, 20, 1> pal_mode;
-    BitField<u32, bool, 21, 1> display_area_color_depth_24;
-    BitField<u32, bool, 22, 1> vertical_interlace;
-    BitField<u32, bool, 23, 1> display_disable;
-    BitField<u32, bool, 24, 1> interrupt_request;
-    BitField<u32, bool, 25, 1> dma_data_request;
-    BitField<u32, bool, 26, 1> gpu_idle;
-    BitField<u32, bool, 27, 1> ready_to_send_vram;
-    BitField<u32, bool, 28, 1> ready_to_recieve_dma;
-    BitField<u32, DMADirection, 29, 2> dma_direction;
-    BitField<u32, bool, 31, 1> display_line_lsb;
-
-    ALWAYS_INLINE bool IsMaskingEnabled() const
-    {
-      static constexpr u32 MASK = ((1 << 11) | (1 << 12));
-      return ((bits & MASK) != 0);
-    }
-    ALWAYS_INLINE bool SkipDrawingToActiveField() const
-    {
-      static constexpr u32 MASK = (1 << 19) | (1 << 22) | (1 << 10);
-      static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
-      return ((bits & MASK) == ACTIVE);
-    }
-    ALWAYS_INLINE bool InInterleaved480iMode() const
-    {
-      static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
-      return ((bits & ACTIVE) == ACTIVE);
-    }
-  } m_GPUSTAT = {};
+  GPUSTAT m_GPUSTAT = {};
 
   struct DrawMode
   {
@@ -605,6 +564,8 @@ protected:
   std::vector<u32> m_blit_buffer;
   u32 m_blit_remaining_words;
   GPURenderCommand m_render_command{};
+
+  std::unique_ptr<GPUDump::Recorder> m_gpu_dump;
 
   ALWAYS_INLINE u32 FifoPop() { return Truncate32(m_fifo.Pop()); }
   ALWAYS_INLINE u32 FifoPeek() { return Truncate32(m_fifo.Peek()); }

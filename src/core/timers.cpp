@@ -5,6 +5,7 @@
 #include "gpu.h"
 #include "interrupt_controller.h"
 #include "system.h"
+#include "timing_event.h"
 
 #include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
@@ -74,7 +75,7 @@ static void UpdateSysClkEvent();
 namespace {
 struct TimersState
 {
-  TimingEvent sysclk_event{ "Timer SysClk Interrupt", 1, 1, &Timers::AddSysClkTicks, nullptr };
+  TimingEvent sysclk_event{"Timer SysClk Interrupt", 1, 1, &Timers::AddSysClkTicks, nullptr};
 
   std::array<CounterState, NUM_TIMERS> counters{};
   TickCount sysclk_ticks_carry = 0; // 0 unless overclocking is enabled

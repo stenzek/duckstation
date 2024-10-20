@@ -94,4 +94,7 @@ void UpdateCPUDowncount();
 
 TimingEvent** GetHeadEventPtr();
 
+// Tick counter injection, only for GPU dump replayer.
+void SetGlobalTickCounter(GlobalTicks ticks);
+
 } // namespace TimingEvents

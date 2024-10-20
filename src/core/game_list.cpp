@@ -165,7 +165,7 @@ bool GameList::IsScannableFilename(std::string_view path)
   if (StringUtil::EndsWithNoCase(path, ".bin"))
     return false;
 
-  return System::IsLoadableFilename(path);
+  return System::IsLoadablePath(path);
 }
 
 bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
@@ -317,9 +317,9 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
 
 bool GameList::PopulateEntryFromPath(const std::string& path, Entry* entry)
 {
-  if (System::IsExeFileName(path))
+  if (System::IsExePath(path))
     return GetExeListEntry(path, entry);
-  if (System::IsPsfFileName(path.c_str()))
+  if (System::IsPsfPath(path.c_str()))
     return GetPsfListEntry(path, entry);
   return GetDiscListEntry(path, entry);
 }

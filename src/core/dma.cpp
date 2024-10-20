@@ -6,12 +6,14 @@
 #include "cdrom.h"
 #include "cpu_core.h"
 #include "gpu.h"
+#include "gpu_dump.h"
 #include "imgui.h"
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
 #include "spu.h"
 #include "system.h"
+#include "timing_event.h"
 
 #include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
@@ -802,6 +804,28 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
     {
       if (g_gpu->BeginDMAWrite()) [[likely]]
       {
+        if (GPUDump::Recorder* dump = g_gpu->GetGPUDump()) [[unlikely]]
+        {
+          // No wraparound?
+          dump->BeginGP0Packet(word_count);
+          if (((address + (increment * (word_count - 1))) & mask) >= address) [[likely]]
+          {
+            dump->WriteWords(reinterpret_cast<const u32*>(&Bus::g_ram[address]), word_count);
+          }
+          else
+          {
+            u32 dump_address = address;
+            for (u32 i = 0; i < word_count; i++)
+            {
+              u32 value;
+              std::memcpy(&value, &Bus::g_ram[dump_address], sizeof(u32));
+              dump->WriteWord(value);
+              dump_address = (dump_address + increment) & mask;
+            }
+          }
+          dump->EndGP0Packet();
+        }
+
         u8* ram_pointer = Bus::g_ram;
         for (u32 i = 0; i < word_count; i++)
         {

@@ -88,6 +88,11 @@ TimingEvent** TimingEvents::GetHeadEventPtr()
   return &s_state.active_events_head;
 }
 
+void TimingEvents::SetGlobalTickCounter(GlobalTicks ticks)
+{
+  s_state.global_tick_counter = ticks;
+}
+
 void TimingEvents::SortEvent(TimingEvent* event)
 {
   const GlobalTicks event_runtime = event->m_next_run_time;

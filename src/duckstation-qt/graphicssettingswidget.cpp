@@ -294,6 +294,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
 
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.gpuDumpCompressionMode, "GPU", "DumpCompressionMode", &Settings::ParseGPUDumpCompressionMode,
+    &Settings::GetGPUDumpCompressionModeName, &Settings::GetGPUDumpCompressionModeDisplayName,
+    Settings::DEFAULT_GPU_DUMP_COMPRESSION_MODE, GPUDumpCompressionMode::MaxCount);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDumpFastReplayMode, "GPU", "DumpFastReplayMode", false);
+
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "GPU", "UseDebugDevice", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableShaderCache, "GPU", "DisableShaderCache", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDualSource, "GPU", "DisableDualSourceBlend", false);

@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu.h"
+#include "gpu_dump.h"
 #include "gpu_hw_texture_cache.h"
 #include "interrupt_controller.h"
 #include "system.h"
@@ -604,6 +605,11 @@ bool GPU::HandleCopyRectangleVRAMToCPUCommand()
   m_counters.num_reads++;
   m_blitter_state = BlitterState::ReadingVRAM;
   m_command_total_words = 0;
+
+  // toss the entire read in the recorded trace. we might want to change this to mirroring GPUREAD in the future..
+  if (m_gpu_dump) [[unlikely]]
+    m_gpu_dump->WriteDiscardVRAMRead(m_vram_transfer.width, m_vram_transfer.height);
+
   return true;
 }
 

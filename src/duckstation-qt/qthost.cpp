@@ -1366,6 +1366,18 @@ void EmuThread::reloadTextureReplacements()
     GPUTextureCache::ReloadTextureReplacements(true);
 }
 
+void EmuThread::captureGPUFrameDump()
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, "captureGPUFrameDump", Qt::QueuedConnection);
+    return;
+  }
+
+  if (System::IsValid())
+    System::StartRecordingGPUDump();
+}
+
 void EmuThread::runOnEmuThread(std::function<void()> callback)
 {
   callback();

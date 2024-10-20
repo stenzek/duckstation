@@ -16,6 +16,7 @@
 #include "game_database.h"
 #include "game_list.h"
 #include "gpu.h"
+#include "gpu_dump.h"
 #include "gpu_hw_texture_cache.h"
 #include "gte.h"
 #include "host.h"
@@ -167,6 +168,7 @@ static bool CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen, 
 static bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
 static void HandleHostGPUDeviceLost();
 static void HandleExclusiveFullscreenLost();
+static std::string GetScreenshotPath(const char* extension);
 
 /// Returns true if boot is being fast forwarded.
 static bool IsFastForwardingBoot();
@@ -223,6 +225,9 @@ static void DoRewind();
 
 static void SaveRunaheadState();
 static bool DoRunahead();
+
+static bool OpenGPUDump(std::string path, Error* error);
+static bool ChangeGPUDump(std::string new_path);
 
 static void UpdateSessionTime(const std::string& prev_serial);
 
@@ -320,6 +325,7 @@ static Common::Timer s_frame_timer;
 static Threading::ThreadHandle s_cpu_thread_handle;
 
 static std::unique_ptr<MediaCapture> s_media_capture;
+static std::unique_ptr<GPUDump::Player> s_gpu_dump_player;
 
 // temporary save state, created when loading, used to undo load state
 static std::optional<System::SaveStateBuffer> s_undo_load_state;
@@ -631,6 +637,11 @@ bool System::IsExecuting()
   return s_system_executing;
 }
 
+bool System::IsReplayingGPUDump()
+{
+  return static_cast<bool>(s_gpu_dump_player);
+}
+
 bool System::IsStartupCancelled()
 {
   return s_startup_cancelled.load();
@@ -845,24 +856,30 @@ u32 System::GetFrameTimeHistoryPos()
   return s_frame_time_history_pos;
 }
 
-bool System::IsExeFileName(std::string_view path)
+bool System::IsExePath(std::string_view path)
 {
   return (StringUtil::EndsWithNoCase(path, ".exe") || StringUtil::EndsWithNoCase(path, ".psexe") ||
           StringUtil::EndsWithNoCase(path, ".ps-exe") || StringUtil::EndsWithNoCase(path, ".psx"));
 }
 
-bool System::IsPsfFileName(std::string_view path)
+bool System::IsPsfPath(std::string_view path)
 {
   return (StringUtil::EndsWithNoCase(path, ".psf") || StringUtil::EndsWithNoCase(path, ".minipsf"));
 }
 
-bool System::IsLoadableFilename(std::string_view path)
+bool System::IsGPUDumpPath(std::string_view path)
+{
+  return (StringUtil::EndsWithNoCase(path, ".psxgpu") || StringUtil::EndsWithNoCase(path, ".psxgpu.zst"));
+}
+
+bool System::IsLoadablePath(std::string_view path)
 {
   static constexpr const std::array extensions = {
-    ".bin", ".cue",     ".img",    ".iso", ".chd", ".ecm", ".mds", // discs
-    ".exe", ".psexe",   ".ps-exe", ".psx",                         // exes
-    ".psf", ".minipsf",                                            // psf
-    ".m3u",                                                        // playlists
+    ".bin",    ".cue",        ".img",    ".iso", ".chd", ".ecm", ".mds", // discs
+    ".exe",    ".psexe",      ".ps-exe", ".psx",                         // exes
+    ".psf",    ".minipsf",                                               // psf
+    ".psxgpu", ".psxgpu.zst",                                            // gpu dump
+    ".m3u",                                                              // playlists
     ".pbp",
   };
 
@@ -875,7 +892,7 @@ bool System::IsLoadableFilename(std::string_view path)
   return false;
 }
 
-bool System::IsSaveStateFilename(std::string_view path)
+bool System::IsSaveStatePath(std::string_view path)
 {
   return StringUtil::EndsWithNoCase(path, ".sav");
 }
@@ -1556,7 +1573,8 @@ bool System::UpdateGameSettingsLayer()
   s_input_settings_interface = std::move(input_interface);
   s_input_profile_name = std::move(input_profile_name);
 
-  Cheats::ReloadCheats(false, true, false, true);
+  if (!IsReplayingGPUDump())
+    Cheats::ReloadCheats(false, true, false, true);
 
   return true;
 }
@@ -1693,16 +1711,29 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   std::string exe_override;
   if (!parameters.filename.empty())
   {
-    if (IsExeFileName(parameters.filename))
+    if (IsExePath(parameters.filename))
     {
       boot_mode = BootMode::BootEXE;
       exe_override = parameters.filename;
     }
-    else if (IsPsfFileName(parameters.filename))
+    else if (IsPsfPath(parameters.filename))
     {
       boot_mode = BootMode::BootPSF;
       exe_override = parameters.filename;
     }
+    else if (IsGPUDumpPath(parameters.filename))
+    {
+      if (!OpenGPUDump(parameters.filename, error))
+      {
+        s_state = State::Shutdown;
+        Host::OnSystemDestroyed();
+        Host::OnIdleStateChanged();
+        return false;
+      }
+
+      boot_mode = BootMode::ReplayGPUDump;
+    }
+
     if (boot_mode == BootMode::BootEXE || boot_mode == BootMode::BootPSF)
     {
       if (s_region == ConsoleRegion::Auto)
@@ -1714,7 +1745,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
         s_region = GetConsoleRegionForDiscRegion(file_region);
       }
     }
-    else
+    else if (boot_mode != BootMode::ReplayGPUDump)
     {
       INFO_LOG("Loading CD image '{}'...", Path::GetFileName(parameters.filename));
       disc = CDImage::Open(parameters.filename.c_str(), g_settings.cdrom_load_image_patches, error);
@@ -1770,6 +1801,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     Error::AddPrefixFmt(error, "Failed to switch to subimage {} in '{}':\n", parameters.media_playlist_index,
                         Path::GetFileName(parameters.filename));
     s_state = State::Shutdown;
+    s_gpu_dump_player.reset();
     Host::OnSystemDestroyed();
     Host::OnIdleStateChanged();
     return false;
@@ -1781,11 +1813,12 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Get boot EXE override.
   if (!parameters.override_exe.empty())
   {
-    if (!FileSystem::FileExists(parameters.override_exe.c_str()) || !IsExeFileName(parameters.override_exe))
+    if (!FileSystem::FileExists(parameters.override_exe.c_str()) || !IsExePath(parameters.override_exe))
     {
       Error::SetStringFmt(error, "File '{}' is not a valid executable to boot.",
                           Path::GetFileName(parameters.override_exe));
       s_state = State::Shutdown;
+      s_gpu_dump_player.reset();
       Cheats::UnloadAll();
       ClearRunningGame();
       Host::OnSystemDestroyed();
@@ -1802,6 +1835,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (!CheckForSBIFile(disc.get(), error))
   {
     s_state = State::Shutdown;
+    s_gpu_dump_player.reset();
     Cheats::UnloadAll();
     ClearRunningGame();
     Host::OnSystemDestroyed();
@@ -1840,6 +1874,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     if (cancelled)
     {
       s_state = State::Shutdown;
+      s_gpu_dump_player.reset();
       Cheats::UnloadAll();
       ClearRunningGame();
       Host::OnSystemDestroyed();
@@ -1854,6 +1889,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (!SetBootMode(boot_mode, disc_region, error))
   {
     s_state = State::Shutdown;
+    s_gpu_dump_player.reset();
     Cheats::UnloadAll();
     ClearRunningGame();
     Host::OnSystemDestroyed();
@@ -1867,6 +1903,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   {
     s_boot_mode = System::BootMode::None;
     s_state = State::Shutdown;
+    s_gpu_dump_player.reset();
     Cheats::UnloadAll();
     ClearRunningGame();
     Host::OnSystemDestroyed();
@@ -2038,6 +2075,8 @@ void System::DestroySystem()
 
   ImGuiManager::DestroyAllDebugWindows();
 
+  s_gpu_dump_player.reset();
+
   s_undo_load_state.reset();
 
 #ifdef ENABLE_GDB_SERVER
@@ -2133,7 +2172,9 @@ void System::Execute()
         g_gpu->RestoreDeviceContext();
         TimingEvents::CommitLeftoverTicks();
 
-        if (s_rewind_load_counter >= 0)
+        if (s_gpu_dump_player) [[unlikely]]
+          s_gpu_dump_player->Execute();
+        else if (s_rewind_load_counter >= 0)
           DoRewind();
         else
           CPU::Execute();
@@ -2164,12 +2205,15 @@ void System::FrameDone()
 
   // Generate any pending samples from the SPU before sleeping, this way we reduce the chances of underruns.
   // TODO: when running ahead, we can skip this (and the flush above)
-  SPU::GeneratePendingSamples();
+  if (!IsReplayingGPUDump()) [[likely]]
+  {
+    SPU::GeneratePendingSamples();
 
-  Cheats::ApplyFrameEndCodes();
+    Cheats::ApplyFrameEndCodes();
 
-  if (Achievements::IsActive())
-    Achievements::FrameUpdate();
+    if (Achievements::IsActive())
+      Achievements::FrameUpdate();
+  }
 
 #ifdef ENABLE_DISCORD_PRESENCE
   PollDiscordPresence();
@@ -2697,7 +2741,7 @@ bool System::SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* 
     return true;
 
   // Need to reload the BIOS to wipe out the patching.
-  if (!LoadBIOS(error))
+  if (new_boot_mode != BootMode::ReplayGPUDump && !LoadBIOS(error))
     return false;
 
   // Handle the case of BIOSes not being able to full boot.
@@ -2745,9 +2789,9 @@ std::string System::GetMediaPathFromSaveState(const char* path)
 
 bool System::LoadState(const char* path, Error* error, bool save_undo_state)
 {
-  if (!IsValid())
+  if (!IsValid() || IsReplayingGPUDump())
   {
-    Error::SetStringView(error, "System is not booted.");
+    Error::SetStringView(error, TRANSLATE_SV("System", "System is not in correct state."));
     return false;
   }
 
@@ -3067,7 +3111,12 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
 
 bool System::SaveState(const char* path, Error* error, bool backup_existing_save)
 {
-  if (IsSavingMemoryCards())
+  if (!IsValid() || IsReplayingGPUDump())
+  {
+    Error::SetStringView(error, TRANSLATE_SV("System", "System is not in correct state."));
+    return false;
+  }
+  else if (IsSavingMemoryCards())
   {
     Error::SetStringView(error, TRANSLATE_SV("System", "Cannot save state while memory card is being saved."));
     return false;
@@ -3780,7 +3829,7 @@ void System::ResetControllers()
 std::unique_ptr<MemoryCard> System::GetMemoryCardForSlot(u32 slot, MemoryCardType type)
 {
   // Disable memory cards when running PSFs.
-  const bool is_running_psf = !s_running_game_path.empty() && IsPsfFileName(s_running_game_path.c_str());
+  const bool is_running_psf = !s_running_game_path.empty() && IsPsfPath(s_running_game_path.c_str());
   if (is_running_psf)
     return nullptr;
 
@@ -4070,6 +4119,9 @@ std::string System::GetMediaFileName()
 
 bool System::InsertMedia(const char* path)
 {
+  if (IsGPUDumpPath(path)) [[unlikely]]
+    return ChangeGPUDump(path);
+
   Error error;
   std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
   if (!image)
@@ -4130,7 +4182,7 @@ void System::UpdateRunningGame(const std::string_view path, CDImage* image, bool
     s_running_game_title = GameList::GetCustomTitleForPath(s_running_game_path);
     s_running_game_custom_title = !s_running_game_title.empty();
 
-    if (IsExeFileName(path))
+    if (IsExePath(path))
     {
       if (s_running_game_title.empty())
         s_running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
@@ -4139,11 +4191,27 @@ void System::UpdateRunningGame(const std::string_view path, CDImage* image, bool
       if (s_running_game_hash != 0)
         s_running_game_serial = GetGameHashId(s_running_game_hash);
     }
-    else if (IsPsfFileName(path))
+    else if (IsPsfPath(path))
     {
       // TODO: We could pull the title from the PSF.
       if (s_running_game_title.empty())
         s_running_game_title = Path::GetFileTitle(path);
+    }
+    else if (IsGPUDumpPath(path))
+    {
+      DebugAssert(s_gpu_dump_player);
+      if (s_gpu_dump_player)
+      {
+        s_running_game_serial = s_gpu_dump_player->GetSerial();
+        if (!s_running_game_serial.empty())
+        {
+          s_running_game_entry = GameDatabase::GetEntryForSerial(s_running_game_serial);
+          if (s_running_game_entry && s_running_game_title.empty())
+            s_running_game_title = s_running_game_entry->title;
+          else if (s_running_game_title.empty())
+            s_running_game_title = s_running_game_serial;
+        }
+      }
     }
     // Check for an audio CD. Those shouldn't set any title.
     else if (image && image->GetTrack(1).mode != CDImage::TrackMode::Audio)
@@ -4180,13 +4248,17 @@ void System::UpdateRunningGame(const std::string_view path, CDImage* image, bool
   if (!booting)
     GPUTextureCache::SetGameID(s_running_game_serial);
 
-  if (booting)
-    Achievements::ResetHardcoreMode(true);
+  if (!IsReplayingGPUDump())
+  {
+    if (booting)
+      Achievements::ResetHardcoreMode(true);
 
-  Achievements::GameChanged(s_running_game_path, image);
+    Achievements::GameChanged(s_running_game_path, image);
 
-  // game layer reloads cheats, but only the active list, we need new files
-  Cheats::ReloadCheats(true, false, false, true);
+    // game layer reloads cheats, but only the active list, we need new files
+    Cheats::ReloadCheats(true, false, false, true);
+  }
+
   UpdateGameSettingsLayer();
 
   ApplySettings(true);
@@ -4879,6 +4951,14 @@ void System::UpdateMemorySaveStateSettings()
 {
   ClearMemorySaveStates();
 
+  if (IsReplayingGPUDump()) [[unlikely]]
+  {
+    s_memory_saves_enabled = false;
+    s_rewind_save_counter = -1;
+    s_runahead_frames = 0;
+    return;
+  }
+
   s_memory_saves_enabled = g_settings.rewind_enable;
 
   if (g_settings.rewind_enable)
@@ -5259,38 +5339,60 @@ void System::UpdateVolume()
   SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
 }
 
-bool System::SaveScreenshot(const char* filename, DisplayScreenshotMode mode, DisplayScreenshotFormat format,
-                            u8 quality, bool compress_on_thread)
+std::string System::GetScreenshotPath(const char* extension)
 {
-  if (!System::IsValid())
-    return false;
+  const std::string sanitized_name = Path::SanitizeFileName(System::GetGameTitle());
+  std::string basename;
+  if (sanitized_name.empty())
+    basename = fmt::format("{}", GetTimestampStringForFileName());
+  else
+    basename = fmt::format("{} {}", sanitized_name, GetTimestampStringForFileName());
 
-  std::string auto_filename;
-  if (!filename)
+  std::string path = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.{}", EmuFolders::Screenshots, basename, extension);
+
+  // handle quick screenshots to the same filename
+  u32 next_suffix = 1;
+  while (FileSystem::FileExists(path.c_str()))
   {
-    const std::string sanitized_name = Path::SanitizeFileName(System::GetGameTitle());
-    const char* extension = Settings::GetDisplayScreenshotFormatExtension(format);
-    std::string basename;
-    if (sanitized_name.empty())
-      basename = fmt::format("{}", GetTimestampStringForFileName());
-    else
-      basename = fmt::format("{} {}", sanitized_name, GetTimestampStringForFileName());
-
-    auto_filename = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.{}", EmuFolders::Screenshots, basename, extension);
-
-    // handle quick screenshots to the same filename
-    u32 next_suffix = 1;
-    while (FileSystem::FileExists(auto_filename.c_str()))
-    {
-      auto_filename = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{} ({}).{}", EmuFolders::Screenshots, basename,
-                                  next_suffix, extension);
-      next_suffix++;
-    }
-
-    filename = auto_filename.c_str();
+    path =
+      fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{} ({}).{}", EmuFolders::Screenshots, basename, next_suffix, extension);
+    next_suffix++;
   }
 
-  return g_gpu->RenderScreenshotToFile(filename, mode, quality, compress_on_thread, true);
+  return path;
+}
+
+bool System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, DisplayScreenshotFormat format, u8 quality,
+                            bool compress_on_thread)
+{
+  if (!IsValid())
+    return false;
+
+  std::string auto_path;
+  if (!path)
+    path = (auto_path = GetScreenshotPath(Settings::GetDisplayScreenshotFormatExtension(format))).c_str();
+
+  return g_gpu->RenderScreenshotToFile(path, mode, quality, compress_on_thread, true);
+}
+
+bool System::StartRecordingGPUDump(const char* path /*= nullptr*/, u32 num_frames /*= 0*/)
+{
+  if (!IsValid() || IsReplayingGPUDump())
+    return false;
+
+  std::string auto_path;
+  if (!path)
+    path = (auto_path = GetScreenshotPath("psxgpu")).c_str();
+
+  return g_gpu->StartRecordingGPUDump(path, num_frames);
+}
+
+void System::StopRecordingGPUDump()
+{
+  if (!IsValid())
+    return;
+
+  g_gpu->StopRecordingGPUDump();
 }
 
 static std::string_view GetCaptureTypeForMessage(bool capture_video, bool capture_audio)
@@ -5831,6 +5933,34 @@ void System::InvalidateDisplay()
 
   if (g_gpu)
     g_gpu->RestoreDeviceContext();
+}
+
+bool System::OpenGPUDump(std::string path, Error* error)
+{
+  std::unique_ptr<GPUDump::Player> new_dump = GPUDump::Player::Open(std::move(path), error);
+  if (!new_dump)
+    return false;
+
+  // set properties
+  s_gpu_dump_player = std::move(new_dump);
+  s_region = s_gpu_dump_player->GetRegion();
+  return true;
+}
+
+bool System::ChangeGPUDump(std::string new_path)
+{
+  Error error;
+  if (!OpenGPUDump(std::move(new_path), &error))
+  {
+    Host::ReportErrorAsync("Error", fmt::format(TRANSLATE_FS("Failed to change GPU dump: {}", error.GetDescription())));
+    return false;
+  }
+
+  UpdateRunningGame(s_gpu_dump_player->GetPath(), nullptr, false);
+
+  // current player object has been changed out, toss call stack
+  InterruptExecution();
+  return true;
 }
 
 void System::UpdateSessionTime(const std::string& prev_serial)

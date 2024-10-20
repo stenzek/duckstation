@@ -44,6 +44,14 @@ enum : s32
   MAX_PRIMITIVE_HEIGHT = 512,
 };
 
+enum class GPUDMADirection : u8
+{
+  Off = 0,
+  FIFO = 1,
+  CPUtoGP0 = 2,
+  GPUREADtoCPU = 3
+};
+
 enum class GPUPrimitive : u8
 {
   Reserved = 0,
@@ -90,6 +98,20 @@ enum class GPUInterlacedDisplayMode : u8
   None,
   InterleavedFields,
   SeparateFields
+};
+
+enum class GP1Command : u8
+{
+  ResetGPU = 0x00,
+  ClearFIFO = 0x01,
+  AcknowledgeInterrupt = 0x02,
+  SetDisplayDisable = 0x03,
+  SetDMADirection = 0x04,
+  SetDisplayStartAddress = 0x05,
+  SetHorizontalDisplayRange = 0x06,
+  SetVerticalDisplayRange = 0x07,
+  SetDisplayMode = 0x08,
+  SetAllowTextureDisable = 0x09,
 };
 
 // NOTE: Inclusive, not exclusive on the upper bounds.
@@ -139,6 +161,68 @@ union GPURenderCommand
       default:
         return false;
     }
+  }
+};
+
+union GP1SetDisplayMode
+{
+  u32 bits;
+
+  BitField<u32, u8, 0, 2> horizontal_resolution_1;
+  BitField<u32, bool, 2, 1> vertical_resolution;
+  BitField<u32, bool, 3, 1> pal_mode;
+  BitField<u32, bool, 4, 1> display_area_color_depth;
+  BitField<u32, bool, 5, 1> vertical_interlace;
+  BitField<u32, bool, 6, 1> horizontal_resolution_2;
+  BitField<u32, bool, 7, 1> reverse_flag;
+};
+
+union GPUSTAT
+{
+  // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
+
+  u32 bits;
+  BitField<u32, u8, 0, 4> texture_page_x_base;
+  BitField<u32, u8, 4, 1> texture_page_y_base;
+  BitField<u32, GPUTransparencyMode, 5, 2> semi_transparency_mode;
+  BitField<u32, GPUTextureMode, 7, 2> texture_color_mode;
+  BitField<u32, bool, 9, 1> dither_enable;
+  BitField<u32, bool, 10, 1> draw_to_displayed_field;
+  BitField<u32, bool, 11, 1> set_mask_while_drawing;
+  BitField<u32, bool, 12, 1> check_mask_before_draw;
+  BitField<u32, u8, 13, 1> interlaced_field;
+  BitField<u32, bool, 14, 1> reverse_flag;
+  BitField<u32, bool, 15, 1> texture_disable;
+  BitField<u32, u8, 16, 1> horizontal_resolution_2;
+  BitField<u32, u8, 17, 2> horizontal_resolution_1;
+  BitField<u32, bool, 19, 1> vertical_resolution;
+  BitField<u32, bool, 20, 1> pal_mode;
+  BitField<u32, bool, 21, 1> display_area_color_depth_24;
+  BitField<u32, bool, 22, 1> vertical_interlace;
+  BitField<u32, bool, 23, 1> display_disable;
+  BitField<u32, bool, 24, 1> interrupt_request;
+  BitField<u32, bool, 25, 1> dma_data_request;
+  BitField<u32, bool, 26, 1> gpu_idle;
+  BitField<u32, bool, 27, 1> ready_to_send_vram;
+  BitField<u32, bool, 28, 1> ready_to_recieve_dma;
+  BitField<u32, GPUDMADirection, 29, 2> dma_direction;
+  BitField<u32, bool, 31, 1> display_line_lsb;
+
+  ALWAYS_INLINE bool IsMaskingEnabled() const
+  {
+    static constexpr u32 MASK = ((1 << 11) | (1 << 12));
+    return ((bits & MASK) != 0);
+  }
+  ALWAYS_INLINE bool SkipDrawingToActiveField() const
+  {
+    static constexpr u32 MASK = (1 << 19) | (1 << 22) | (1 << 10);
+    static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
+    return ((bits & MASK) == ACTIVE);
+  }
+  ALWAYS_INLINE bool InInterleaved480iMode() const
+  {
+    static constexpr u32 ACTIVE = (1 << 19) | (1 << 22);
+    return ((bits & ACTIVE) == ACTIVE);
   }
 };
 

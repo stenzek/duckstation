@@ -214,6 +214,7 @@
     <addaction name="actionMemoryScanner"/>
     <addaction name="separator"/>
     <addaction name="actionMediaCapture"/>
+    <addaction name="actionCaptureGPUFrame"/>
     <addaction name="separator"/>
     <addaction name="actionOpenTextureDirectory"/>
     <addaction name="actionReloadTextureReplacements"/>
@@ -910,6 +911,11 @@
   <action name="actionReloadTextureReplacements">
    <property name="text">
     <string>Reload Texture Replacements</string>
+   </property>
+  </action>
+  <action name="actionCaptureGPUFrame">
+   <property name="text">
+    <string>Capture GPU Frame</string>
    </property>
   </action>
  </widget>

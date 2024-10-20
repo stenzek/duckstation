@@ -126,6 +126,16 @@ enum class GPULineDetectMode : u8
   Count
 };
 
+enum class GPUDumpCompressionMode : u8
+{
+  Disabled,
+  ZstLow,
+  ZstDefault,
+  ZstHigh,
+  // TODO: XZ
+  MaxCount
+};
+
 enum class DisplayCropMode : u8
 {
   None,

@@ -248,6 +248,7 @@ void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
   gpu_pgxp_depth_buffer = si.GetBoolValue("GPU", "PGXPDepthBuffer", false);
   gpu_pgxp_disable_2d = si.GetBoolValue("GPU", "PGXPDisableOn2DPolygons", false);
   SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthClearThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
+  gpu_dump_fast_replay_mode = si.GetBoolValue("GPU", "DumpFastReplayMode", false);
 
   display_deinterlacing_mode =
     ParseDisplayDeinterlacingMode(
@@ -570,6 +571,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
   si.SetBoolValue("GPU", "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
   si.SetFloatValue("GPU", "PGXPDepthClearThreshold", GetPGXPDepthClearThreshold());
+  si.SetBoolValue("GPU", "DumpFastReplayMode", gpu_dump_fast_replay_mode);
 
   si.SetStringValue("GPU", "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
   si.SetStringValue("Display", "CropMode", GetDisplayCropModeName(display_crop_mode));
@@ -1517,6 +1519,42 @@ const char* Settings::GetGPUWireframeModeDisplayName(GPUWireframeMode mode)
 {
   return Host::TranslateToCString("Settings", s_wireframe_mode_display_names[static_cast<size_t>(mode)],
                                   "GPUWireframeMode");
+}
+
+static constexpr const std::array s_gpu_dump_compression_mode_names = {"Disabled", "ZstLow", "ZstDefault", "ZstHigh"};
+static constexpr const std::array s_gpu_dump_compression_mode_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "GPUDumpCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (Low)", "GPUDumpCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (Default)", "GPUDumpCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (High)", "GPUDumpCompressionMode"),
+};
+static_assert(s_gpu_dump_compression_mode_names.size() == static_cast<size_t>(GPUDumpCompressionMode::MaxCount));
+static_assert(s_gpu_dump_compression_mode_display_names.size() ==
+              static_cast<size_t>(GPUDumpCompressionMode::MaxCount));
+
+std::optional<GPUDumpCompressionMode> Settings::ParseGPUDumpCompressionMode(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_gpu_dump_compression_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<GPUDumpCompressionMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetGPUDumpCompressionModeName(GPUDumpCompressionMode mode)
+{
+  return s_gpu_dump_compression_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetGPUDumpCompressionModeDisplayName(GPUDumpCompressionMode mode)
+{
+  return Host::TranslateToCString("Settings", s_gpu_dump_compression_mode_display_names[static_cast<size_t>(mode)],
+                                  "GPUDumpCompressionMode");
 }
 
 static constexpr const std::array s_display_deinterlacing_mode_names = {

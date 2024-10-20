@@ -2,8 +2,11 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
+
 #include "bus.h"
 #include "cpu_core.h"
+
+struct fastjmp_buf;
 
 namespace CPU {
 
@@ -27,6 +30,9 @@ ALWAYS_INLINE static void CheckForPendingInterrupt()
 }
 
 void DispatchInterrupt();
+
+// access to execution jump buffer, use with care!
+fastjmp_buf* GetExecutionJmpBuf();
 
 // icache stuff
 ALWAYS_INLINE static bool IsCachedAddress(VirtualMemoryAddress address)

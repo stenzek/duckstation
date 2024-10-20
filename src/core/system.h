@@ -102,6 +102,7 @@ enum class BootMode
   FastBoot,
   BootEXE,
   BootPSF,
+  ReplayGPUDump,
 };
 
 enum class Taint : u8
@@ -118,17 +119,20 @@ enum class Taint : u8
 
 extern TickCount g_ticks_per_second;
 
-/// Returns true if the filename is a PlayStation executable we can inject.
-bool IsExeFileName(std::string_view path);
+/// Returns true if the path is a PlayStation executable we can inject.
+bool IsExePath(std::string_view path);
 
-/// Returns true if the filename is a Portable Sound Format file we can uncompress/load.
-bool IsPsfFileName(std::string_view path);
+/// Returns true if the path is a Portable Sound Format file we can uncompress/load.
+bool IsPsfPath(std::string_view path);
 
-/// Returns true if the filename is one we can load.
-bool IsLoadableFilename(std::string_view path);
+/// Returns true if the path is a GPU dump that we can replay.
+bool IsGPUDumpPath(std::string_view path);
 
-/// Returns true if the filename is a save state.
-bool IsSaveStateFilename(std::string_view path);
+/// Returns true if the path is one we can load.
+bool IsLoadablePath(std::string_view path);
+
+/// Returns true if the path is a save state.
+bool IsSaveStatePath(std::string_view path);
 
 /// Returns the preferred console type for a disc.
 ConsoleRegion GetConsoleRegionForDiscRegion(DiscRegion region);
@@ -159,6 +163,7 @@ bool IsShutdown();
 bool IsValid();
 bool IsValidOrInitializing();
 bool IsExecuting();
+bool IsReplayingGPUDump();
 
 bool IsStartupCancelled();
 void CancelPendingStartup();
@@ -390,9 +395,13 @@ s32 GetAudioOutputVolume();
 void UpdateVolume();
 
 /// Saves a screenshot to the specified file. If no file name is provided, one will be generated automatically.
-bool SaveScreenshot(const char* filename = nullptr, DisplayScreenshotMode mode = g_settings.display_screenshot_mode,
+bool SaveScreenshot(const char* path = nullptr, DisplayScreenshotMode mode = g_settings.display_screenshot_mode,
                     DisplayScreenshotFormat format = g_settings.display_screenshot_format,
                     u8 quality = g_settings.display_screenshot_quality, bool compress_on_thread = true);
+
+/// Starts/stops GPU dump/trace recording.
+bool StartRecordingGPUDump(const char* path = nullptr, u32 num_frames = 1);
+void StopRecordingGPUDump();
 
 /// Returns the path that a new media capture would be saved to by default. Safe to call from any thread.
 std::string GetNewMediaCapturePath(const std::string_view title, const std::string_view container);

@@ -279,6 +279,7 @@ struct Settings
   bool bios_patch_fast_boot : 1 = DEFAULT_FAST_BOOT_VALUE;
   bool bios_fast_forward_boot : 1 = false;
   bool enable_8mb_ram : 1 = false;
+  bool gpu_dump_fast_replay_mode : 1 = false;
 
   std::array<ControllerType, NUM_CONTROLLER_AND_CARD_PORTS> controller_types{};
   std::array<MemoryCardType, NUM_CONTROLLER_AND_CARD_PORTS> memory_card_types{};
@@ -423,6 +424,10 @@ struct Settings
   static const char* GetGPUWireframeModeName(GPUWireframeMode mode);
   static const char* GetGPUWireframeModeDisplayName(GPUWireframeMode mode);
 
+  static std::optional<GPUDumpCompressionMode> ParseGPUDumpCompressionMode(const char* str);
+  static const char* GetGPUDumpCompressionModeName(GPUDumpCompressionMode mode);
+  static const char* GetGPUDumpCompressionModeDisplayName(GPUDumpCompressionMode mode);
+
   static std::optional<DisplayDeinterlacingMode> ParseDisplayDeinterlacingMode(const char* str);
   static const char* GetDisplayDeinterlacingModeName(DisplayDeinterlacingMode mode);
   static const char* GetDisplayDeinterlacingModeDisplayName(DisplayDeinterlacingMode mode);
@@ -485,6 +490,7 @@ struct Settings
   static constexpr GPULineDetectMode DEFAULT_GPU_LINE_DETECT_MODE = GPULineDetectMode::Disabled;
   static constexpr GPUDownsampleMode DEFAULT_GPU_DOWNSAMPLE_MODE = GPUDownsampleMode::Disabled;
   static constexpr GPUWireframeMode DEFAULT_GPU_WIREFRAME_MODE = GPUWireframeMode::Disabled;
+  static constexpr GPUDumpCompressionMode DEFAULT_GPU_DUMP_COMPRESSION_MODE = GPUDumpCompressionMode::ZstDefault;
   static constexpr ConsoleRegion DEFAULT_CONSOLE_REGION = ConsoleRegion::Auto;
   static constexpr float DEFAULT_GPU_PGXP_DEPTH_THRESHOLD = 300.0f;
   static constexpr float GPU_PGXP_DEPTH_THRESHOLD_SCALE = 4096.0f;

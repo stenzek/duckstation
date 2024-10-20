@@ -659,7 +659,7 @@ SettingsWindow* SettingsWindow::openGamePropertiesDialog(const std::string& path
                                                          const char* category /* = nullptr */)
 {
   const GameDatabase::Entry* dentry = nullptr;
-  if (!System::IsExeFileName(path) && !System::IsPsfFileName(path))
+  if (!System::IsExePath(path) && !System::IsPsfPath(path))
   {
     // Need to resolve hash games.
     Error error;

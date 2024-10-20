@@ -2492,6 +2492,11 @@ void CPU::ExecuteInterpreter()
   }
 }
 
+fastjmp_buf* CPU::GetExecutionJmpBuf()
+{
+  return &s_jmp_buf;
+}
+
 void CPU::Execute()
 {
   CheckForExecutionModeChange();

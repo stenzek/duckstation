@@ -210,6 +210,7 @@ public Q_SLOTS:
   void updatePostProcessingSettings();
   void clearInputBindStateFromSource(InputBindingKey key);
   void reloadTextureReplacements();
+  void captureGPUFrameDump();
 
 private Q_SLOTS:
   void stopInThread();

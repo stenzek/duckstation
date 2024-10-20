@@ -61,12 +61,11 @@
 LOG_CHANNEL(MainWindow);
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
-  "MainWindow",
-  "All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf "
-  "*.m3u);;Single-Track "
-  "Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images "
-  "(*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe "
-  "*.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u)");
+  "MainWindow", "All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psx *.psf "
+                "*.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD "
+                "Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images "
+                "(*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.exe *.psexe *.ps-exe, "
+                "*.psx);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u);;PSX GPU Dumps (*.psxgpu)");
 
 MainWindow* g_main_window = nullptr;
 
@@ -1158,7 +1157,7 @@ void MainWindow::promptForDiscChange(const QString& path)
   SystemLock lock(pauseAndLockSystem());
 
   bool reset_system = false;
-  if (!m_was_disc_change_request)
+  if (!m_was_disc_change_request && !System::IsGPUDumpPath(path.toStdString()))
   {
     QMessageBox mb(QMessageBox::Question, tr("Confirm Disc Change"),
                    tr("Do you want to swap discs or boot the new image (via system reset)?"), QMessageBox::NoButton,
@@ -2002,6 +2001,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionMediaCapture, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
+  connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_emu_thread, &EmuThread::captureGPUFrameDump);
   connect(m_ui.actionCPUDebugger, &QAction::triggered, this, &MainWindow::openCPUDebugger);
   connect(m_ui.actionOpenDataDirectory, &QAction::triggered, this, &MainWindow::onToolsOpenDataDirectoryTriggered);
   connect(m_ui.actionOpenTextureDirectory, &QAction::triggered, this,
@@ -2416,7 +2416,7 @@ static QString getFilenameFromMimeData(const QMimeData* md)
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 {
   const std::string filename(getFilenameFromMimeData(event->mimeData()).toStdString());
-  if (!System::IsLoadableFilename(filename) && !System::IsSaveStateFilename(filename))
+  if (!System::IsLoadablePath(filename) && !System::IsSaveStatePath(filename))
     return;
 
   event->acceptProposedAction();
@@ -2426,12 +2426,12 @@ void MainWindow::dropEvent(QDropEvent* event)
 {
   const QString qfilename(getFilenameFromMimeData(event->mimeData()));
   const std::string filename(qfilename.toStdString());
-  if (!System::IsLoadableFilename(filename) && !System::IsSaveStateFilename(filename))
+  if (!System::IsLoadablePath(filename) && !System::IsSaveStatePath(filename))
     return;
 
   event->acceptProposedAction();
 
-  if (System::IsSaveStateFilename(filename))
+  if (System::IsSaveStatePath(filename))
   {
     g_emu_thread->loadState(qfilename);
     return;
