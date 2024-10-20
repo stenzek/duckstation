@@ -190,6 +190,9 @@ void SettingsWindow::addPages()
 
   connect(m_advanced_settings, &AdvancedSettingsWidget::onShowDebugOptionsChanged, m_graphics_settings,
           &GraphicsSettingsWidget::onShowDebugSettingsChanged);
+
+  if (isPerGameSettings())
+    SettingWidgetBinder::BindWidgetToBoolSetting(m_sif.get(), m_ui.safeMode, "Main", "DisableAllEnhancements", false);
 }
 
 void SettingsWindow::reloadPages()
@@ -205,6 +208,8 @@ void SettingsWindow::reloadPages()
     m_ui.settingsContainer->removeWidget(widget);
     delete widget;
   }
+
+  m_ui.safeMode->disconnect();
 
   addPages();
 }
@@ -241,7 +246,6 @@ void SettingsWindow::connectUi()
   if (m_ui.clearGameSettings)
     connect(m_ui.clearGameSettings, &QPushButton::clicked, this, &SettingsWindow::onClearSettingsClicked);
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(m_sif.get(), m_ui.safeMode, "Main", "DisableAllEnhancements", false);
   registerWidgetHelp(m_ui.safeMode, tr("Safe Mode"), tr("Unchecked"),
                      tr("Disables all enhancement options, simulating the system as accurately as possible. Use to "
                         "quickly determine whether an enhancement is responsible for game bugs."));
