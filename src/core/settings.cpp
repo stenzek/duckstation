@@ -774,6 +774,10 @@ void Settings::Clear(SettingsInterface& si)
   si.ClearSection("Logging");
   si.ClearSection("Debug");
   si.ClearSection("TextureReplacements");
+
+  // Cheats/patches have to be removed too.
+  si.ClearSection("Cheats");
+  si.ClearSection("Patches");
 }
 
 bool Settings::TextureReplacementSettings::Configuration::operator==(const Configuration& rhs) const
