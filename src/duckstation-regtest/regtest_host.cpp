@@ -349,16 +349,28 @@ void Host::SetFullscreen(bool enabled)
   //
 }
 
-std::optional<WindowInfo> Host::AcquireRenderWindow(bool recreate_window)
+std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
+                                                    Error* error)
 {
-  WindowInfo wi;
-  wi.SetSurfaceless();
-  return wi;
+  return WindowInfo();
 }
 
 void Host::ReleaseRenderWindow()
 {
   //
+}
+
+bool Host::CreateAuxiliaryRenderWindow(s32 x, s32 y, u32 width, u32 height, std::string_view title,
+                                       std::string_view icon_name, AuxiliaryRenderWindowUserData userdata,
+                                       AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error)
+{
+  return false;
+}
+
+void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32* pos_x /* = nullptr */,
+                                        s32* pos_y /* = nullptr */, u32* width /* = nullptr */,
+                                        u32* height /* = nullptr */)
+{
 }
 
 void Host::FrameDone()
@@ -714,10 +726,11 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
     // Switch to file logging.
     INFO_LOG("Dumping frames to '{}'...", dump_directory);
     EmuFolders::DataRoot = std::move(dump_directory);
-    s_base_settings_interface->SetBoolValue("Logging", "LogToConsole", false);
     s_base_settings_interface->SetBoolValue("Logging", "LogToFile", true);
     s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
-    System::ApplySettings(false);
+    g_settings.log_to_file = true;
+    g_settings.log_level = Log::Level::Dev;
+    g_settings.UpdateLogSettings();
   }
 
   return true;
@@ -730,6 +743,14 @@ std::string RegTestHost::GetFrameDumpFilename(u32 frame)
 
 int main(int argc, char* argv[])
 {
+  Error startup_error;
+  if (!System::Internal::PerformEarlyHardwareChecks(&startup_error) ||
+      !System::Internal::ProcessStartup(&startup_error))
+  {
+    ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
+    return EXIT_FAILURE;
+  }
+
   RegTestHost::InitializeEarlyConsole();
 
   if (!RegTestHost::InitializeConfig())
@@ -748,14 +769,10 @@ int main(int argc, char* argv[])
   if (!RegTestHost::SetNewDataRoot(autoboot->filename))
     return EXIT_FAILURE;
 
+  if (!System::Internal::CPUThreadInitialize(&startup_error))
   {
-    Error startup_error;
-    if (!System::Internal::PerformEarlyHardwareChecks(&startup_error) ||
-        !System::Internal::ProcessStartup(&startup_error) || !System::Internal::CPUThreadInitialize(&startup_error))
-    {
-      ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
-      return EXIT_FAILURE;
-    }
+    ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
+    return EXIT_FAILURE;
   }
 
   RegTestHost::HookSignals();
