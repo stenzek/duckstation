@@ -1723,9 +1723,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     {
       if (!OpenGPUDump(parameters.filename, error))
       {
-        s_state = State::Shutdown;
-        Host::OnSystemDestroyed();
-        Host::OnIdleStateChanged();
+        DestroySystem();
         return false;
       }
 
@@ -1750,9 +1748,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       if (!disc)
       {
         Error::AddPrefixFmt(error, "Failed to open CD image '{}':\n", Path::GetFileName(parameters.filename));
-        s_state = State::Shutdown;
-        Host::OnSystemDestroyed();
-        Host::OnIdleStateChanged();
+        DestroySystem();
         return false;
       }
 
@@ -1798,10 +1794,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   {
     Error::AddPrefixFmt(error, "Failed to switch to subimage {} in '{}':\n", parameters.media_playlist_index,
                         Path::GetFileName(parameters.filename));
-    s_state = State::Shutdown;
-    s_gpu_dump_player.reset();
-    Host::OnSystemDestroyed();
-    Host::OnIdleStateChanged();
+    DestroySystem();
     return false;
   }
 
@@ -1815,12 +1808,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     {
       Error::SetStringFmt(error, "File '{}' is not a valid executable to boot.",
                           Path::GetFileName(parameters.override_exe));
-      s_state = State::Shutdown;
-      s_gpu_dump_player.reset();
-      Cheats::UnloadAll();
-      ClearRunningGame();
-      Host::OnSystemDestroyed();
-      Host::OnIdleStateChanged();
+      DestroySystem();
       return false;
     }
 
@@ -1832,12 +1820,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Check for SBI.
   if (!CheckForSBIFile(disc.get(), error))
   {
-    s_state = State::Shutdown;
-    s_gpu_dump_player.reset();
-    Cheats::UnloadAll();
-    ClearRunningGame();
-    Host::OnSystemDestroyed();
-    Host::OnIdleStateChanged();
+    DestroySystem();
     return false;
   }
 
@@ -1871,14 +1854,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
     if (cancelled)
     {
-      s_state = State::Shutdown;
-      s_gpu_dump_player.reset();
-      Cheats::UnloadAll();
-      ClearRunningGame();
-      Host::OnSystemDestroyed();
-      Host::OnIdleStateChanged();
-
       // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
+      DestroySystem();
       return true;
     }
   }
@@ -1886,12 +1863,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Load BIOS image.
   if (!SetBootMode(boot_mode, disc_region, error))
   {
-    s_state = State::Shutdown;
-    s_gpu_dump_player.reset();
-    Cheats::UnloadAll();
-    ClearRunningGame();
-    Host::OnSystemDestroyed();
-    Host::OnIdleStateChanged();
+    DestroySystem();
     return false;
   }
 
@@ -1899,13 +1871,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (!Initialize(parameters.force_software_renderer, parameters.override_fullscreen.value_or(ShouldStartFullscreen()),
                   error))
   {
-    s_boot_mode = System::BootMode::None;
-    s_state = State::Shutdown;
-    s_gpu_dump_player.reset();
-    Cheats::UnloadAll();
-    ClearRunningGame();
-    Host::OnSystemDestroyed();
-    Host::OnIdleStateChanged();
+    DestroySystem();
     return false;
   }
 
@@ -2018,11 +1984,7 @@ bool System::Initialize(bool force_software_renderer, bool fullscreen, Error* er
   CPU::Initialize();
 
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, fullscreen, error))
-  {
-    CPU::Shutdown();
-    Bus::Shutdown();
     return false;
-  }
 
   GTE::UpdateAspectRatio();
 
@@ -2031,16 +1993,7 @@ bool System::Initialize(bool force_software_renderer, bool fullscreen, Error* er
 
   // Was startup cancelled? (e.g. shading compilers took too long and the user closed the application)
   if (IsStartupCancelled())
-  {
-    g_gpu.reset();
-    if (!s_keep_gpu_device_on_shutdown)
-      Host::ReleaseGPUDevice();
-    if (g_settings.gpu_pgxp_enable)
-      CPU::PGXP::Shutdown();
-    CPU::Shutdown();
-    Bus::Shutdown();
     return false;
-  }
 
   DMA::Initialize();
   CDROM::Initialize();
