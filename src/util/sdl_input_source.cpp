@@ -161,7 +161,7 @@ SDLInputSource::~SDLInputSource()
   Assert(m_controllers.empty());
 }
 
-bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+bool SDLInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
   LoadSettings(si);
   settings_lock.unlock();
@@ -171,7 +171,7 @@ bool SDLInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mut
   return result;
 }
 
-void SDLInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void SDLInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
   const bool old_controller_enhanced_mode = m_controller_enhanced_mode;
   const bool old_controller_ps5_player_led = m_controller_ps5_player_led;
@@ -213,7 +213,7 @@ void SDLInputSource::Shutdown()
   ShutdownSubsystem();
 }
 
-void SDLInputSource::LoadSettings(SettingsInterface& si)
+void SDLInputSource::LoadSettings(const SettingsInterface& si)
 {
   for (u32 i = 0; i < MAX_LED_COLORS; i++)
   {
@@ -240,7 +240,7 @@ void SDLInputSource::LoadSettings(SettingsInterface& si)
 #endif
 }
 
-u32 SDLInputSource::GetRGBForPlayerId(SettingsInterface& si, u32 player_id)
+u32 SDLInputSource::GetRGBForPlayerId(const SettingsInterface& si, u32 player_id)
 {
   return ParseRGBForPlayerId(
     si.GetStringValue("SDLExtra", fmt::format("Player{}LED", player_id).c_str(), s_sdl_default_led_colors[player_id]),

@@ -37,7 +37,7 @@ public:
   void Reset() override;
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 
-  void LoadSettings(SettingsInterface& si, const char* section, bool initial) override;
+  void LoadSettings(const SettingsInterface& si, const char* section, bool initial) override;
 
   float GetBindState(u32 index) const override;
   void SetBindState(u32 index, float value) override;

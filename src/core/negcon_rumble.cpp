@@ -777,7 +777,7 @@ const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRum
                                                        s_settings,
                                                        Controller::VibrationCapabilities::LargeSmallMotors};
 
-void NeGconRumble::LoadSettings(SettingsInterface& si, const char* section, bool initial)
+void NeGconRumble::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
   Controller::LoadSettings(si, section, initial);
   m_steering_deadzone = si.GetFloatValue(section, "SteeringDeadzone", 0.10f);

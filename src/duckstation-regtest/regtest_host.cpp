@@ -204,7 +204,7 @@ SmallString Host::TranslatePluralToSmallString(const char* context, const char* 
   return ret;
 }
 
-void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
+void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
 }
 
@@ -450,7 +450,7 @@ const char* InputManager::ConvertHostKeyboardCodeToIcon(u32 code)
   return nullptr;
 }
 
-void Host::AddFixedInputBindings(SettingsInterface& si)
+void Host::AddFixedInputBindings(const SettingsInterface& si)
 {
   // noop
 }

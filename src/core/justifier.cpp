@@ -396,7 +396,7 @@ const Controller::ControllerInfo Justifier::INFO = {ControllerType::Justifier,
                                                     s_settings,
                                                     Controller::VibrationCapabilities::NoVibration};
 
-void Justifier::LoadSettings(SettingsInterface& si, const char* section, bool initial)
+void Justifier::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
   Controller::LoadSettings(si, section, initial);
 

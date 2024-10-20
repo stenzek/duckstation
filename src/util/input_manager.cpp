@@ -113,8 +113,8 @@ static void UpdatePointerCount();
 static bool IsAxisHandler(const InputEventHandler& handler);
 static float ApplySingleBindingScale(float sensitivity, float deadzone, float value);
 
-static void AddHotkeyBindings(SettingsInterface& si);
-static void AddPadBindings(SettingsInterface& si, const std::string& section, u32 pad,
+static void AddHotkeyBindings(const SettingsInterface& si);
+static void AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad,
                            const Controller::ControllerInfo* cinfo);
 static void UpdateContinuedVibration();
 static void GenerateRelativeMouseEvents();
@@ -123,12 +123,12 @@ static bool DoEventHook(InputBindingKey key, float value);
 static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBinding generic_key);
 static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers);
 
-static void LoadMacroButtonConfig(SettingsInterface& si, const std::string& section, u32 pad,
+static void LoadMacroButtonConfig(const SettingsInterface& si, const std::string& section, u32 pad,
                                   const Controller::ControllerInfo* cinfo);
 static void ApplyMacroButton(u32 pad, const MacroButton& mb);
 static void UpdateMacroButtons();
 
-static void UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
+static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
 } // namespace InputManager
 
@@ -809,7 +809,7 @@ std::vector<const HotkeyInfo*> InputManager::GetHotkeyList()
   return ret;
 }
 
-void InputManager::AddHotkeyBindings(SettingsInterface& si)
+void InputManager::AddHotkeyBindings(const SettingsInterface& si)
 {
   for (const HotkeyInfo* hotkey_list : s_hotkey_list)
   {
@@ -824,7 +824,7 @@ void InputManager::AddHotkeyBindings(SettingsInterface& si)
   }
 }
 
-void InputManager::AddPadBindings(SettingsInterface& si, const std::string& section, u32 pad_index,
+void InputManager::AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad_index,
                                   const Controller::ControllerInfo* cinfo)
 {
   for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
@@ -1669,7 +1669,7 @@ void InputManager::UpdateContinuedVibration()
 // Macros
 // ------------------------------------------------------------------------
 
-void InputManager::LoadMacroButtonConfig(SettingsInterface& si, const std::string& section, u32 pad,
+void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std::string& section, u32 pad,
                                          const Controller::ControllerInfo* cinfo)
 {
   s_macro_buttons[pad] = {};
@@ -1816,7 +1816,7 @@ bool InputManager::DoEventHook(InputBindingKey key, float value)
 // Binding Updater
 // ------------------------------------------------------------------------
 
-void InputManager::ReloadBindings(SettingsInterface& binding_si, SettingsInterface& hotkey_binding_si)
+void InputManager::ReloadBindings(const SettingsInterface& binding_si, const SettingsInterface& hotkey_binding_si)
 {
   PauseVibration();
 
@@ -2002,7 +2002,7 @@ GenericInputBindingMapping InputManager::GetGenericBindingMapping(std::string_vi
   return mapping;
 }
 
-bool InputManager::IsInputSourceEnabled(SettingsInterface& si, InputSourceType type)
+bool InputManager::IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type)
 {
 #ifdef __ANDROID__
   // Force Android source to always be enabled so nobody accidentally breaks it via ini.
@@ -2013,7 +2013,7 @@ bool InputManager::IsInputSourceEnabled(SettingsInterface& si, InputSourceType t
   return si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), GetInputSourceDefaultEnabled(type));
 }
 
-void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
+void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
                                           InputSourceType type, std::unique_ptr<InputSource> (*factory_function)())
 {
   const bool enabled = IsInputSourceEnabled(si, type);
@@ -2045,7 +2045,7 @@ void InputManager::UpdateInputSourceState(SettingsInterface& si, std::unique_loc
   }
 }
 
-void InputManager::ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void InputManager::ReloadSources(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 #ifdef _WIN32
   UpdateInputSourceState(si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);

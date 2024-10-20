@@ -368,7 +368,7 @@ struct Settings
     DEFAULT_GPU_MAX_RUN_AHEAD = 128,
   };
 
-  void Load(SettingsInterface& si, SettingsInterface& controller_si);
+  void Load(const SettingsInterface& si, const SettingsInterface& controller_si);
   void Save(SettingsInterface& si, bool ignore_base) const;
   static void Clear(SettingsInterface& si);
 

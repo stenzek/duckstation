@@ -71,7 +71,7 @@ struct AudioStreamParameters
   static constexpr bool DEFAULT_STRETCH_USE_QUICKSEEK = false;
   static constexpr bool DEFAULT_STRETCH_USE_AA_FILTER = false;
 
-  void Load(SettingsInterface& si, const char* section);
+  void Load(const SettingsInterface& si, const char* section);
   void Save(SettingsInterface& si, const char* section) const;
   void Clear(SettingsInterface& si, const char* section);
 

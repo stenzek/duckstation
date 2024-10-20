@@ -473,7 +473,7 @@ void IdlePollUpdate();
 
 namespace Host {
 /// Called with the settings lock held, when system settings are being loaded (should load input sources, etc).
-void LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock);
+void LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock);
 
 /// Called after settings are updated.
 void CheckForSettingsChanges(const Settings& old_settings);

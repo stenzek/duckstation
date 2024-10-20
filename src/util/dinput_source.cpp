@@ -59,7 +59,7 @@ std::string DInputSource::GetDeviceIdentifier(u32 index)
 static constexpr std::array<const char*, DInputSource::NUM_HAT_DIRECTIONS> s_hat_directions = {
   {"Up", "Down", "Left", "Right"}};
 
-bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+bool DInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
   m_dinput_module = LoadLibraryW(L"dinput8");
   if (!m_dinput_module)
@@ -103,7 +103,7 @@ bool DInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
   return true;
 }
 
-void DInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void DInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
   // noop
 }

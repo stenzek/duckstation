@@ -182,7 +182,7 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
   }
 }
 
-void PlayStationMouse::LoadSettings(SettingsInterface& si, const char* section, bool initial)
+void PlayStationMouse::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
   Controller::LoadSettings(si, section, initial);
 

@@ -31,7 +31,7 @@ AudioStream::DeviceInfo::DeviceInfo(std::string name_, std::string display_name_
 
 AudioStream::DeviceInfo::~DeviceInfo() = default;
 
-void AudioStreamParameters::Load(SettingsInterface& si, const char* section)
+void AudioStreamParameters::Load(const SettingsInterface& si, const char* section)
 {
   stretch_mode =
     AudioStream::ParseStretchMode(

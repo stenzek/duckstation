@@ -22,8 +22,8 @@ public:
   InputSource();
   virtual ~InputSource();
 
-  virtual bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
-  virtual void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
+  virtual bool Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
+  virtual void UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) = 0;
   virtual bool ReloadDevices() = 0;
   virtual void Shutdown() = 0;
 

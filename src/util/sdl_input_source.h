@@ -21,8 +21,8 @@ public:
   SDLInputSource();
   ~SDLInputSource();
 
-  bool Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
-  void UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
+  bool Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
+  void UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock) override;
   bool ReloadDevices() override;
   void Shutdown() override;
 
@@ -42,7 +42,7 @@ public:
 
   SDL_Joystick* GetJoystickForDevice(std::string_view device);
 
-  static u32 GetRGBForPlayerId(SettingsInterface& si, u32 player_id);
+  static u32 GetRGBForPlayerId(const SettingsInterface& si, u32 player_id);
   static u32 ParseRGBForPlayerId(std::string_view str, u32 player_id);
 
   static bool IsHandledInputEvent(const SDL_Event* ev);
@@ -73,7 +73,7 @@ private:
 
   bool InitializeSubsystem();
   void ShutdownSubsystem();
-  void LoadSettings(SettingsInterface& si);
+  void LoadSettings(const SettingsInterface& si);
   void SetHints();
 
   ControllerDataVector::iterator GetControllerDataForJoystickId(int id);

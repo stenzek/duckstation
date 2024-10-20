@@ -113,7 +113,7 @@ XInputSource::XInputSource() = default;
 
 XInputSource::~XInputSource() = default;
 
-bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+bool XInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
   // xinput1_3.dll is flawed and obsolete, but it's also commonly used by wrappers.
   // For this reason, try to load it *only* from the application directory, and not system32.
@@ -155,7 +155,7 @@ bool XInputSource::Initialize(SettingsInterface& si, std::unique_lock<std::mutex
   return true;
 }
 
-void XInputSource::UpdateSettings(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
+void XInputSource::UpdateSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
 }
 

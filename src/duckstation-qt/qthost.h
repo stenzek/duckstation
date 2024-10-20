@@ -105,7 +105,6 @@ public:
   void wakeThread();
 
   bool shouldRenderToMain() const;
-  void loadSettings(SettingsInterface& si);
   void checkForSettingsChanges(const Settings& old_settings);
 
   void bootOrLoadState(std::string path);

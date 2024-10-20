@@ -615,14 +615,8 @@ bool QtHost::SetDataDirectory()
   return true;
 }
 
-void Host::LoadSettings(SettingsInterface& si, std::unique_lock<std::mutex>& lock)
+void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock)
 {
-  g_emu_thread->loadSettings(si);
-}
-
-void EmuThread::loadSettings(SettingsInterface& si)
-{
-  //
 }
 
 void EmuThread::checkForSettingsChanges(const Settings& old_settings)
@@ -1972,7 +1966,7 @@ void Host::ReportDebuggerMessage(std::string_view message)
   emit g_emu_thread->debuggerMessageReported(QString::fromUtf8(message));
 }
 
-void Host::AddFixedInputBindings(SettingsInterface& si)
+void Host::AddFixedInputBindings(const SettingsInterface& si)
 {
 }
 

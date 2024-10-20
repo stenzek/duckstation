@@ -146,7 +146,7 @@ void Settings::UpdateOverclockActive()
   cpu_overclock_active = (cpu_overclock_enable && (cpu_overclock_numerator != 1 || cpu_overclock_denominator != 1));
 }
 
-void Settings::Load(SettingsInterface& si, SettingsInterface& controller_si)
+void Settings::Load(const SettingsInterface& si, const SettingsInterface& controller_si)
 {
   region =
     ParseConsoleRegionName(

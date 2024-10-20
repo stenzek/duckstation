@@ -251,13 +251,13 @@ std::vector<InputBindingKey> EnumerateMotors();
 GenericInputBindingMapping GetGenericBindingMapping(std::string_view device);
 
 /// Returns true if the specified input source is enabled.
-bool IsInputSourceEnabled(SettingsInterface& si, InputSourceType type);
+bool IsInputSourceEnabled(const SettingsInterface& si, InputSourceType type);
 
 /// Re-parses the config and registers all hotkey and pad bindings.
-void ReloadBindings(SettingsInterface& si, SettingsInterface& hotkey_binding_si);
+void ReloadBindings(const SettingsInterface& si, const SettingsInterface& hotkey_binding_si);
 
 /// Re-parses the sources part of the config and initializes any backends.
-void ReloadSources(SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock);
+void ReloadSources(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock);
 
 /// Called when a device change is triggered by the system (DBT_DEVNODES_CHANGED on Windows).
 /// Returns true if any device changes are detected.
@@ -364,7 +364,7 @@ void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 
 namespace Host {
 /// Adds any fixed bindings from the host.
-void AddFixedInputBindings(SettingsInterface& si);
+void AddFixedInputBindings(const SettingsInterface& si);
 
 /// Called when a new input device is connected.
 void OnInputDeviceConnected(std::string_view identifier, std::string_view device_name);
