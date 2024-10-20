@@ -469,7 +469,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (display_osd_messages && settings.display_deinterlacing_mode != new_mode)
     {
       APPEND_MESSAGE_FMT(TRANSLATE_FS("GameDatabase", "Deinterlacing set to {}."),
-                         Settings::GetDisplayDeinterlacingModeDisplayName(display_deinterlacing_mode.value()));
+                         Settings::GetDisplayDeinterlacingModeDisplayName(new_mode));
     }
 
     settings.display_deinterlacing_mode = new_mode;
