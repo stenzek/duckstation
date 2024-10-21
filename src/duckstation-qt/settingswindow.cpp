@@ -191,8 +191,7 @@ void SettingsWindow::addPages()
   connect(m_advanced_settings, &AdvancedSettingsWidget::onShowDebugOptionsChanged, m_graphics_settings,
           &GraphicsSettingsWidget::onShowDebugSettingsChanged);
 
-  if (isPerGameSettings())
-    SettingWidgetBinder::BindWidgetToBoolSetting(m_sif.get(), m_ui.safeMode, "Main", "DisableAllEnhancements", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(m_sif.get(), m_ui.safeMode, "Main", "DisableAllEnhancements", false);
 }
 
 void SettingsWindow::reloadPages()
