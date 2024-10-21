@@ -207,6 +207,9 @@ static u32 EnableCheats(const CheatCodeList& patches, const EnableCodeList& enab
 static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed);
 
 template<typename F>
+bool SearchCheatArchive(CheatArchive& archive, std::string_view serial, std::optional<GameHash> hash, const F& f);
+
+template<typename F>
 static void EnumerateChtFiles(const std::string_view serial, std::optional<GameHash> hash, bool cheats, bool for_ui,
                               bool load_from_disk, bool load_from_database, const F& f);
 
@@ -360,6 +363,28 @@ std::vector<std::string> Cheats::FindChtFilesOnDisk(const std::string_view seria
 }
 
 template<typename F>
+bool Cheats::SearchCheatArchive(CheatArchive& archive, std::string_view serial, std::optional<GameHash> hash,
+                                const F& f)
+{
+  // Prefer filename with hash.
+  std::string zip_filename = GetChtTemplate(serial, hash, false);
+  std::optional<std::string> data = archive.ReadFile(zip_filename.c_str());
+  if (!data.has_value() && hash.has_value())
+  {
+    // Try without the hash.
+    zip_filename = GetChtTemplate(serial, std::nullopt, false);
+    data = archive.ReadFile(zip_filename.c_str());
+  }
+  if (data.has_value())
+  {
+    f(std::move(zip_filename), std::move(data.value()), true);
+    return true;
+  }
+
+  return false;
+}
+
+template<typename F>
 void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<GameHash> hash, bool cheats, bool for_ui,
                                bool load_from_files, bool load_from_database, const F& f)
 {
@@ -376,17 +401,21 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
 
     if (archive.IsOpen())
     {
-      // Prefer filename with hash.
-      std::string zip_filename = GetChtTemplate(serial, hash, false);
-      std::optional<std::string> data = archive.ReadFile(zip_filename.c_str());
-      if (!data.has_value() && hash.has_value())
+      if (!SearchCheatArchive(archive, serial, hash, f))
       {
-        // Try without the hash.
-        zip_filename = GetChtTemplate(serial, std::nullopt, false);
-        data = archive.ReadFile(zip_filename.c_str());
+        // Is this game part of a disc set? Try codes for the other discs.
+        const GameDatabase::Entry* gentry = GameDatabase::GetEntryForSerial(serial);
+        if (gentry && gentry->disc_set_serials.size() > 1)
+        {
+          for (const std::string& set_serial : gentry->disc_set_serials)
+          {
+            if (set_serial == serial)
+              continue;
+            else if (SearchCheatArchive(archive, set_serial, std::nullopt, f))
+              break;
+          }
+        }
       }
-      if (data.has_value())
-        f(std::move(zip_filename), std::move(data.value()), true);
     }
   }
 
