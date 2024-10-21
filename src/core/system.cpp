@@ -1352,6 +1352,11 @@ void System::LoadSettings(bool display_osd_messages)
   g_settings.Load(si, controller_si);
   g_settings.UpdateLogSettings();
 
+  // Global safe mode overrides game settings.
+  g_settings.disable_all_enhancements =
+    (g_settings.disable_all_enhancements ||
+     Host::Internal::GetBaseSettingsLayer()->GetBoolValue("Main", "DisableAllEnhancements", false));
+
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
