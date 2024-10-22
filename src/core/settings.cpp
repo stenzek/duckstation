@@ -1522,12 +1522,16 @@ const char* Settings::GetGPUWireframeModeDisplayName(GPUWireframeMode mode)
                                   "GPUWireframeMode");
 }
 
-static constexpr const std::array s_gpu_dump_compression_mode_names = {"Disabled", "ZstLow", "ZstDefault", "ZstHigh"};
+static constexpr const std::array s_gpu_dump_compression_mode_names = {"Disabled", "ZstLow",    "ZstDefault", "ZstHigh",
+                                                                       "XZLow",    "XZDefault", "XZHigh"};
 static constexpr const std::array s_gpu_dump_compression_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "GPUDumpCompressionMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (Low)", "GPUDumpCompressionMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (Default)", "GPUDumpCompressionMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Zstandard (High)", "GPUDumpCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "XZ (Low)", "GPUDumpCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "XZ (Default)", "GPUDumpCompressionMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "XZ (High)", "GPUDumpCompressionMode"),
 };
 static_assert(s_gpu_dump_compression_mode_names.size() == static_cast<size_t>(GPUDumpCompressionMode::MaxCount));
 static_assert(s_gpu_dump_compression_mode_display_names.size() ==

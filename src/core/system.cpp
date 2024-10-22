@@ -869,17 +869,18 @@ bool System::IsPsfPath(std::string_view path)
 
 bool System::IsGPUDumpPath(std::string_view path)
 {
-  return (StringUtil::EndsWithNoCase(path, ".psxgpu") || StringUtil::EndsWithNoCase(path, ".psxgpu.zst"));
+  return (StringUtil::EndsWithNoCase(path, ".psxgpu") || StringUtil::EndsWithNoCase(path, ".psxgpu.zst") ||
+          StringUtil::EndsWithNoCase(path, ".psxgpu.xz"));
 }
 
 bool System::IsLoadablePath(std::string_view path)
 {
   static constexpr const std::array extensions = {
-    ".bin",    ".cue",        ".img",    ".iso", ".chd", ".ecm", ".mds", // discs
-    ".exe",    ".psexe",      ".ps-exe", ".psx",                         // exes
-    ".psf",    ".minipsf",                                               // psf
-    ".psxgpu", ".psxgpu.zst",                                            // gpu dump
-    ".m3u",                                                              // playlists
+    ".bin",    ".cue",        ".img",       ".iso", ".chd", ".ecm", ".mds", // discs
+    ".exe",    ".psexe",      ".ps-exe",    ".psx",                         // exes
+    ".psf",    ".minipsf",                                                  // psf
+    ".psxgpu", ".psxgpu.zst", ".psxgpu.xz",                                 // gpu dump
+    ".m3u",                                                                 // playlists
     ".pbp",
   };
 

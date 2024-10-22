@@ -111,6 +111,16 @@ bool GPUDump::Recorder::Compress(const std::string& source_path, GPUDumpCompress
       return false;
     }
   }
+  if (mode >= GPUDumpCompressionMode::XZLow && mode <= GPUDumpCompressionMode::XZHigh)
+  {
+    const int clevel =
+      ((mode == GPUDumpCompressionMode::XZLow) ? 3 : ((mode == GPUDumpCompressionMode::ZstHigh) ? 9 : 5));
+    if (!CompressHelpers::CompressToFile(fmt::format("{}.xz", source_path).c_str(), std::move(data.value()), clevel,
+                                         true, error))
+    {
+      return false;
+    }
+  }
   else
   {
     Error::SetStringView(error, "Unknown compression mode.");
@@ -313,7 +323,7 @@ std::unique_ptr<GPUDump::Player> GPUDump::Player::Open(std::string path, Error* 
   Common::Timer timer;
 
   std::optional<DynamicHeapArray<u8>> data;
-  if (StringUtil::EndsWithNoCase(path, ".psxgpu.zst"))
+  if (StringUtil::EndsWithNoCase(path, ".psxgpu.zst") || StringUtil::EndsWithNoCase(path, ".psxgpu.xz"))
     data = CompressHelpers::DecompressFile(path.c_str(), std::nullopt, error);
   else
     data = FileSystem::ReadBinaryFile(path.c_str(), error);

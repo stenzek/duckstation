@@ -132,7 +132,9 @@ enum class GPUDumpCompressionMode : u8
   ZstLow,
   ZstDefault,
   ZstHigh,
-  // TODO: XZ
+  XZLow,
+  XZDefault,
+  XZHigh,
   MaxCount
 };
 
