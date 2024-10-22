@@ -16,10 +16,10 @@
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
-#include "common/minizip_helpers.h"
 #include "common/path.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
+#include "common/zip_helpers.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
@@ -99,29 +99,31 @@ class CheatArchive
 public:
   ~CheatArchive()
   {
-    if (m_unz_file)
-      unzClose(m_unz_file);
+    // zip has to be destroyed before data
+    m_zip.reset();
+    m_data.deallocate();
   }
 
-  ALWAYS_INLINE bool IsOpen() const { return (m_unz_file != nullptr); }
+  ALWAYS_INLINE bool IsOpen() const { return static_cast<bool>(m_zip); }
 
   bool Open(const char* name)
   {
-    if (m_unz_file)
+    if (m_zip)
       return true;
 
-    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(name, false);
+    Error error;
+    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(name, false, &error);
     if (!data.has_value())
     {
-      ERROR_LOG("Failed to read cheat archive {}.", name);
+      ERROR_LOG("Failed to read cheat archive {}: {}", name, error.GetDescription());
       return false;
     }
 
     m_data = std::move(data.value());
-    m_unz_file = MinizipHelpers::OpenUnzMemoryFile(m_data.data(), m_data.size());
-    if (!m_unz_file) [[unlikely]]
+    m_zip = ZipHelpers::OpenManagedZipBuffer(m_data.data(), m_data.size(), 0, false, &error);
+    if (!m_zip) [[unlikely]]
     {
-      ERROR_LOG("Failed to open cheat archive {}.", name);
+      ERROR_LOG("Failed to open cheat archive {}: {}", name, error.GetDescription());
       return false;
     }
 
@@ -131,7 +133,7 @@ public:
   std::optional<std::string> ReadFile(const char* name) const
   {
     Error error;
-    std::optional<std::string> ret = MinizipHelpers::ReadZipFileToString(m_unz_file, name, false, &error);
+    std::optional<std::string> ret = ZipHelpers::ReadFileInZipToString(m_zip.get(), name, true, &error);
     if (!ret.has_value())
       DEV_LOG("Failed to read {} from zip: {}", name, error.GetDescription());
     return ret;
@@ -141,7 +143,7 @@ private:
   // Maybe counter-intuitive, but it ends up faster for reading a single game's cheats if we keep a
   // copy of the archive in memory, as opposed to reading from disk.
   DynamicHeapArray<u8> m_data;
-  unzFile m_unz_file = nullptr;
+  ZipHelpers::ManagedZipT m_zip;
 };
 
 } // namespace

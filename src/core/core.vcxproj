@@ -174,9 +174,6 @@
     <ProjectReference Include="..\..\dep\imgui\imgui.vcxproj">
       <Project>{bb08260f-6fbc-46af-8924-090ee71360c6}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\minizip\minizip.vcxproj">
-      <Project>{8bda439c-6358-45fb-9994-2ff083babe06}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\dep\rainterface\rainterface.vcxproj" Condition="'$(Platform)'!='ARM64'">
       <Project>{e4357877-d459-45c7-b8f6-dcbb587bb528}</Project>
     </ProjectReference>
@@ -214,7 +211,6 @@
     <ClCompile>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">ZYDIS_DISABLE_ENCODER;ZYDIS_DISABLE_AVX512;ZYDIS_DISABLE_KNC;ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">%(AdditionalIncludeDirectories);$(SolutionDir)dep\zydis\include;$(SolutionDir)dep\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\minizip\include</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
