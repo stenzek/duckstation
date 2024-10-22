@@ -15,6 +15,7 @@ enum class CompressType
 {
   Uncompressed,
   Zstandard,
+  XZ,
   Count
 };
 
@@ -44,4 +45,7 @@ bool CompressToFile(const char* path, std::span<const u8> data, int clevel = -1,
                     Error* error = nullptr);
 bool CompressToFile(CompressType type, const char* path, std::span<const u8> data, int clevel = -1,
                     bool atomic_write = true, Error* error = nullptr);
+
+const char* SZErrorToString(int res);
+
 } // namespace CompressHelpers

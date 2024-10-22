@@ -217,6 +217,9 @@
     <ProjectReference Include="..\..\dep\libchdr\libchdr.vcxproj">
       <Project>{425d6c99-d1c8-43c2-b8ac-4d7b1d941017}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\dep\lzma\lzma.vcxproj">
+      <Project>{dd944834-7899-4c1c-a4c1-064b5009d239}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\dep\reshadefx\reshadefx.vcxproj">
       <Project>{27b8d4bb-4f01-4432-bc14-9bf6ca458eee}</Project>
     </ProjectReference>
@@ -250,7 +253,7 @@
   <Import Project="util.props" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\reshadefx\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(SolutionDir)dep\reshadefx\include;$(SolutionDir)dep\lzma\include</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
