@@ -51,6 +51,7 @@ set QT=6.8.0
 set QTMINOR=6.8
 set SDL2=2.30.8
 set WEBP=1.4.0
+set LIBZIP=1.11.1
 set ZLIB=1.3.1
 set ZLIBSHORT=131
 set ZSTD=1.5.6
@@ -75,6 +76,7 @@ call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/offic
 call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 3f813f49d6d28c532dc4b104084f60ff382337f184698fcd6e70ab9efad977c1 || goto error
 call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 91c33d9946279c9c613b02e52a33df610cc01d13ea6e321b4c4d8ee708b9a03e || goto error
 call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5 || goto error
+call :downloadfile "libzip-%LIBZIP%.tar.gz" "https://github.com/nih-at/libzip/releases/download/v%LIBZIP%/libzip-%LIBZIP%.tar.gz" c0e6fa52a62ba11efd30262290dc6970947aef32e0cc294ee50e9005ceac092a || goto error
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 3b1c3b46e416d36931efd34663122d7f51b550c87f74de2d38249516fe7d8be5 || goto error
 call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https://github.com/facebook/zstd/commit/fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch 675f144b11f8ab2424b64bed8ccdca5d3f35b9326046fa7a883925dd180f0651 || goto error
@@ -126,6 +128,34 @@ cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error
 
+echo Building Zstandard...
+rmdir /S /Q "zstd-%ZSTD%"
+%SEVENZIP% x "-x^!zstd-1.5.6\tests\cli-tests\bin" "zstd-%ZSTD%.zip" || goto error
+cd "zstd-%ZSTD%"
+%PATCH% -p1 < "..\zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" || goto error
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_PROGRAMS=OFF -B build -G Ninja build/cmake
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+echo Building WebP...
+rmdir /S /Q "libwebp-%WEBP%"
+tar -xf "libwebp-%WEBP%.tar.gz" || goto error
+cd "libwebp-%WEBP%" || goto error
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
+echo Building libzip...
+rmdir /S /Q "libzip-%LIBZIP%"
+tar -xf "libzip-%LIBZIP%.tar.gz" || goto error
+cd "libzip-%LIBZIP%" || goto error
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DENABLE_COMMONCRYPTO=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_WINDOWS_CRYPTO=OFF -DENABLE_BZIP2=OFF -DENABLE_LZMA=OFF -DENABLE_ZSTD=ON -DBUILD_SHARED_LIBS=ON -DLIBZIP_DO_INSTALL=ON -DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF -DBUILD_OSSFUZZ=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF -G Ninja || goto error
+cmake --build build --parallel || goto error
+ninja -C build install || goto error
+cd .. || goto error
+
 echo Building FreeType without HarfBuzz...
 rmdir /S /Q "freetype-%FREETYPE%"
 tar -xf "freetype-%FREETYPE%.tar.gz" || goto error
@@ -149,25 +179,6 @@ rmdir /S /Q "freetype-%FREETYPE%"
 tar -xf "freetype-%FREETYPE%.tar.gz" || goto error
 cd "freetype-%FREETYPE%" || goto error
 cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=TRUE -DFT_REQUIRE_PNG=TRUE -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build -G Ninja || goto error
-cmake --build build --parallel || goto error
-ninja -C build install || goto error
-cd .. || goto error
-
-echo Building Zstandard...
-rmdir /S /Q "zstd-%ZSTD%"
-%SEVENZIP% x "-x^!zstd-1.5.6\tests\cli-tests\bin" "zstd-%ZSTD%.zip" || goto error
-cd "zstd-%ZSTD%"
-%PATCH% -p1 < "..\zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" || goto error
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DZSTD_BUILD_SHARED=ON -DZSTD_BUILD_STATIC=OFF -DZSTD_BUILD_PROGRAMS=OFF -B build -G Ninja build/cmake
-cmake --build build --parallel || goto error
-ninja -C build install || goto error
-cd .. || goto error
-
-echo Building WebP...
-rmdir /S /Q "libwebp-%WEBP%"
-tar -xf "libwebp-%WEBP%.tar.gz" || goto error
-cd "libwebp-%WEBP%" || goto error
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="%INSTALLDIR%" -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
 cd .. || goto error

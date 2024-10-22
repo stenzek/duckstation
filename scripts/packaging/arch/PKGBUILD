@@ -27,6 +27,7 @@ depends=('libjpeg.so' # libjpeg or libjpeg-turbo
 	'libwebp'
 	'libx11'
 	'libxrandr'
+	'libzip'
 	'qt6-base>=6.8.0'
 	'qt6-imageformats>=6.8.0'
 	'qt6-svg>=6.8.0'
@@ -85,7 +86,8 @@ prepare() {
 		echo "Building dependencies to ${_depsdir}..."
 		./scripts/deps/build-dependencies-linux.sh \
 			-system-freetype -system-harfbuzz -system-libjpeg \
-			-system-libpng -system-libwebp -system-zstd -system-qt \
+			-system-libpng -system-libwebp -system-libzip \
+			-system-zstd -system-qt \
 			"${_depsdir}"
 	fi
 }

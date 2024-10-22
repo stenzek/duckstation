@@ -43,6 +43,7 @@ ZSTD=1.5.6
 LIBPNG=1.6.44
 LIBJPEGTURBO=3.0.4
 LIBWEBP=1.4.0
+LIBZIP=1.11.1
 FFMPEG=7.0.2
 MOLTENVK=1.2.9
 QT=6.8.0
@@ -78,6 +79,7 @@ e7358ea86fe10fb9261931af6f010d4358dac64f7074420ca9bc94aae2bdd542  harfbuzz-$HARF
 60c4da1d5b7f0aa8d158da48e8f8afa9773c1c8baa5d21974df61f1886b8ce8e  libpng-$LIBPNG.tar.xz
 99130559e7d62e8d695f2c0eaeef912c5828d5b84a0537dcb24c9678c9d5b76b  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
+721e0e4e851073b508c243fd75eda04e4c5006158a900441de10ce274cc3b633  libzip-$LIBZIP.tar.xz
 380c295ea76b9bd72d90075793971c8bcb232ba0a69a9b14da4ae8f603350058  SDL2-$SDL2.tar.gz
 8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
 8646515b638a3ad303e23af6a3587734447cb8fc0a0c064ecdb8e95c4fd8b389  ffmpeg-$FFMPEG.tar.xz
@@ -100,6 +102,7 @@ curl -L \
 	-O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz" \
 	-O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz" \
 	-O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz" \
+	-O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.xz" \
 	-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL2/SDL2-$SDL2.tar.gz" \
 	-O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz" \
 	-O "https://ffmpeg.org/releases/ffmpeg-$FFMPEG.tar.xz" \
@@ -158,6 +161,34 @@ merge_binaries $(realpath build-dir) $(realpath build-dir-arm64)
 make -C build-dir install
 cd ..
 
+echo "Installing WebP..."
+rm -fr "libwebp-$LIBWEBP"
+tar xf "libwebp-$LIBWEBP.tar.gz"
+cd "libwebp-$LIBWEBP"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -B build \
+	-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
+	-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
+make -C build "-j$NPROCS"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -B build-arm64 \
+	-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
+	-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
+make -C build-arm64 "-j$NPROCS"
+merge_binaries $(realpath build) $(realpath build-arm64)
+make -C build install
+cd ..
+
+echo "Installing libzip..."
+rm -fr "libzip-$LIBZIP"
+tar xf "libzip-$LIBZIP.tar.xz"
+cd "libzip-$LIBZIP"
+cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -B build \
+	-DENABLE_COMMONCRYPTO=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_WINDOWS_CRYPTO=OFF \
+	-DENABLE_BZIP2=OFF -DENABLE_LZMA=OFF -DENABLE_ZSTD=ON -DBUILD_SHARED_LIBS=ON -DLIBZIP_DO_INSTALL=ON \
+	-DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF -DBUILD_OSSFUZZ=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF
+cmake --build build --parallel
+cmake --install build
+cd ..
+
 echo "Building FreeType without HarfBuzz..."
 rm -fr "freetype-$FREETYPE"
 tar xf "freetype-$FREETYPE.tar.xz"
@@ -183,22 +214,6 @@ cd "freetype-$FREETYPE"
 cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DBUILD_SHARED_LIBS=ON -DFT_REQUIRE_ZLIB=ON -DFT_REQUIRE_PNG=ON -DFT_DISABLE_BZIP2=TRUE -DFT_DISABLE_BROTLI=TRUE -DFT_REQUIRE_HARFBUZZ=TRUE -B build
 cmake --build build --parallel
 cmake --install build
-cd ..
-
-echo "Installing WebP..."
-rm -fr "libwebp-$LIBWEBP"
-tar xf "libwebp-$LIBWEBP.tar.gz"
-cd "libwebp-$LIBWEBP"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_X64" -B build \
-	-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
-	-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
-make -C build "-j$NPROCS"
-cmake "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_ARM64" -B build-arm64 \
-	-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
-	-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
-make -C build-arm64 "-j$NPROCS"
-merge_binaries $(realpath build) $(realpath build-arm64)
-make -C build install
 cd ..
 
 echo "Installing SDL2..."

@@ -6,7 +6,7 @@
 set -e
 
 if [ "$#" -lt 1 ]; then
-    echo "Syntax: $0 [-system-freetype] [-system-harfbuzz] [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-zstd] [-system-qt] [-skip-download] [-skip-cleanup] <output directory>"
+    echo "Syntax: $0 [-system-freetype] [-system-harfbuzz] [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-libzip] [-system-zstd] [-system-qt] [-skip-download] [-skip-cleanup] <output directory>"
     exit 1
 fi
 
@@ -30,6 +30,10 @@ for arg in "$@"; do
 	elif [ "$arg" == "-system-libwebp" ]; then
 		echo "Skipping building libwebp."
 		SKIP_LIBWEBP=true
+		shift
+	elif [ "$arg" == "-system-libzip" ]; then
+		echo "Skipping building libzip."
+		SKIP_LIBZIP=true
 		shift
 	elif [ "$arg" == "-system-zstd" ]; then
 		echo "Skipping building zstd."
@@ -63,6 +67,7 @@ LIBBACKTRACE=86885d14049fab06ef8a33aac51664230ca09200
 LIBJPEGTURBO=3.0.4
 LIBPNG=1.6.44
 LIBWEBP=1.4.0
+LIBZIP=1.11.1
 SDL2=2.30.8
 QT=6.8.0
 ZSTD=1.5.6
@@ -136,6 +141,14 @@ if [ "$SKIP_LIBWEBP" != true ]; then
 	fi
 	cat >> SHASUMS <<EOF
 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
+EOF
+fi
+if [ "$SKIP_LIBZIP" != true ]; then
+	if [ "$SKIP_DOWNLOAD" != true ]; then
+		curl -C - -L -O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.xz"
+	fi
+	cat >> SHASUMS <<EOF
+721e0e4e851073b508c243fd75eda04e4c5006158a900441de10ce274cc3b633  libzip-$LIBZIP.tar.xz
 EOF
 fi
 if [ "$SKIP_ZSTD" != true ]; then
@@ -225,6 +238,20 @@ if [ "$SKIP_LIBWEBP" != true ]; then
 	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -B build -G Ninja \
 		-DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF \
 		-DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF -DBUILD_SHARED_LIBS=ON
+	cmake --build build --parallel
+	ninja -C build install
+	cd ..
+fi
+
+if [ "$SKIP_LIBZIP" != true ]; then
+	echo "Building libzip..."
+	rm -fr "libzip-$LIBZIP"
+	tar xf "libzip-$LIBZIP.tar.xz"
+	cd "libzip-$LIBZIP"
+	cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -B build -G Ninja \
+		-DENABLE_COMMONCRYPTO=OFF -DENABLE_GNUTLS=OFF -DENABLE_MBEDTLS=OFF -DENABLE_OPENSSL=OFF -DENABLE_WINDOWS_CRYPTO=OFF \
+		-DENABLE_BZIP2=OFF -DENABLE_LZMA=OFF -DENABLE_ZSTD=ON -DBUILD_SHARED_LIBS=ON -DLIBZIP_DO_INSTALL=ON \
+		-DBUILD_TOOLS=OFF -DBUILD_REGRESS=OFF -DBUILD_OSSFUZZ=OFF -DBUILD_EXAMPLES=OFF -DBUILD_DOC=OFF
 	cmake --build build --parallel
 	ninja -C build install
 	cd ..

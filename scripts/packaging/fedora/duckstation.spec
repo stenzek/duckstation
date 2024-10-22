@@ -14,11 +14,11 @@ BuildRequires: alsa-lib-devel, clang, cmake, dbus-devel, egl-wayland-devel, extr
 BuildRequires: extra-cmake-modules, freetype-devel, libavcodec-free-devel, libavformat-free-devel
 BuildRequires: libavutil-free-devel, libcurl-devel, libevdev-devel, libswresample-free-devel
 BuildRequires: libswscale-free-devel, libpng-devel, libwebp-devel, libX11-devel, libXrandr-devel
-BuildRequires: libzstd-devel, lld, llvm, make, mesa-libEGL-devel, mesa-libGL-devel, ninja-build
-BuildRequires: patch, pipewire-devel pulseaudio-libs-devel, wayland-devel, zlib-devel
+BuildRequires: libzip-devel, libzstd-devel, lld, llvm, make, mesa-libEGL-devel, mesa-libGL-devel
+BuildRequires: ninja-build, patch, pipewire-devel pulseaudio-libs-devel, wayland-devel, zlib-devel
 BuildRequires: qt6-qtbase-devel, qt6-qtbase-private-devel, qt6-qttools, qt6-qttools-devel
 
-Requires: bash curl dbus freetype libpng libwebp libzstd
+Requires: bash curl dbus freetype libpng libwebp libzip libzstd
 Requires: qt6-qtbase qt6-qtbase-gui qt6-qtimageformats qt6-qtsvg
 
 # Don't want extra flags producing a slower build than our other formats.
@@ -52,7 +52,7 @@ fi
 %build
 
 if [ ! -d "${PWD}/deps" ]; then
-  scripts/deps/build-dependencies-linux.sh -system-freetype -system-harfbuzz -system-libjpeg -system-libpng -system-libwebp -system-zstd -system-qt "${PWD}/deps"
+  scripts/deps/build-dependencies-linux.sh -system-freetype -system-harfbuzz -system-libjpeg -system-libpng -system-libwebp -system-libzip -system-zstd -system-qt "${PWD}/deps"
 fi
 
 rm -fr build
