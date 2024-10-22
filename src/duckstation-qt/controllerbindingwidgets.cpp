@@ -605,6 +605,17 @@ ControllerMacroEditWidget::ControllerMacroEditWidget(ControllerMacroWidget* pare
     m_ui.bindList->addItem(item);
   }
 
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
+    dialog->getEditingSettingsInterface(), m_ui.pressure, section, fmt::format("Macro{}Pressure", index + 1u), 100.0f,
+    1.0f);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(
+    dialog->getEditingSettingsInterface(), m_ui.deadzone, section, fmt::format("Macro{}Deadzone", index + 1u), 100.0f,
+    0.0f);
+  connect(m_ui.pressure, &QSlider::valueChanged, this, &ControllerMacroEditWidget::onPressureChanged);
+  connect(m_ui.deadzone, &QSlider::valueChanged, this, &ControllerMacroEditWidget::onDeadzoneChanged);
+  onPressureChanged();
+  onDeadzoneChanged();
+
   m_frequency = dialog->getIntValue(section.c_str(), TinyString::from_format("Macro{}Frequency", index + 1u), 0);
   ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(dialog->getEditingSettingsInterface(), m_ui.triggerToggle,
                                                               section.c_str(), fmt::format("Macro{}Toggle", index + 1u),
@@ -632,6 +643,16 @@ QString ControllerMacroEditWidget::getSummary() const
     str.append(bi->name);
   }
   return str.empty() ? tr("Not Configured") : QString::fromUtf8(str.c_str(), static_cast<int>(str.length()));
+}
+
+void ControllerMacroEditWidget::onPressureChanged()
+{
+  m_ui.pressureValue->setText(tr("%1%").arg(m_ui.pressure->value()));
+}
+
+void ControllerMacroEditWidget::onDeadzoneChanged()
+{
+  m_ui.deadzoneValue->setText(tr("%1%").arg(m_ui.deadzone->value()));
 }
 
 void ControllerMacroEditWidget::onSetFrequencyClicked()

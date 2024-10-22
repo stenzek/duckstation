@@ -103,6 +103,8 @@ public:
   QString getSummary() const;
 
 private Q_SLOTS:
+  void onPressureChanged();
+  void onDeadzoneChanged();
   void onSetFrequencyClicked();
   void updateBinds();
 

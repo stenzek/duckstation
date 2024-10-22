@@ -92,6 +92,7 @@ struct MacroButton
   bool toggle_state;        ///< Current state for turbo.
   bool trigger_state;       ///< Whether the macro button is active.
   bool trigger_toggle;      ///< Whether the macro is trigged by holding or press.
+  u8 trigger_pressure;      ///< Pressure to apply when macro is active.
 };
 
 } // namespace
@@ -898,10 +899,13 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
       si.GetStringList(section.c_str(), fmt::format("Macro{}", macro_button_index + 1u).c_str()));
     if (!bindings.empty())
     {
-      AddBindings(bindings, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
+      const float deadzone =
+        si.GetFloatValue(section.c_str(), fmt::format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
+      AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](float value) {
                     if (!System::IsValid())
                       return;
 
+                    const bool state = (value > deadzone);
                     SetMacroButtonState(pad_index, macro_button_index, state);
                   }});
     }
@@ -1417,6 +1421,7 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
       {
         dest_si->CopyStringListValue(src_si, section.c_str(), TinyString::from_format("Macro{}", i + 1));
         dest_si->CopyStringValue(src_si, section.c_str(), TinyString::from_format("Macro{}Binds", i + 1));
+        dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("Macro{}Pressure", i + 1));
         dest_si->CopyUIntValue(src_si, section.c_str(), TinyString::from_format("Macro{}Frequency", i + 1));
         dest_si->CopyBoolValue(src_si, section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1));
       }
@@ -1685,6 +1690,10 @@ void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std:
     const u32 frequency =
       std::min<u32>(si.GetUIntValue(section.c_str(), TinyString::from_format("Macro{}Frequency", i + 1u), 0u),
                     std::numeric_limits<u16>::max());
+    const u8 pressure = static_cast<u8>(
+      std::clamp(si.GetFloatValue(section.c_str(), TinyString::from_format("Macro{}Pressure", i + 1u), 1.0f), 0.0f,
+                 1.0f) *
+      255.0f);
     const bool toggle = si.GetBoolValue(section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1u), false);
 
     // convert binds
@@ -1714,9 +1723,11 @@ void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std:
     if (bind_indices.empty())
       continue;
 
-    s_macro_buttons[pad][i].buttons = std::move(bind_indices);
-    s_macro_buttons[pad][i].toggle_frequency = static_cast<u16>(frequency);
-    s_macro_buttons[pad][i].trigger_toggle = toggle;
+    MacroButton& macro = s_macro_buttons[pad][i];
+    macro.buttons = std::move(bind_indices);
+    macro.toggle_frequency = static_cast<u16>(frequency);
+    macro.trigger_toggle = toggle;
+    macro.trigger_pressure = pressure;
   }
 }
 
@@ -1748,7 +1759,7 @@ void InputManager::ApplyMacroButton(u32 pad, const MacroButton& mb)
   if (!controller)
     return;
 
-  const float value = mb.toggle_state ? 1.0f : 0.0f;
+  const float value = static_cast<float>(mb.toggle_state ? mb.trigger_pressure : 0) * (1.0f / 255.0f);
   for (const u32 btn : mb.buttons)
     controller->SetBindState(btn, value);
 }

@@ -3815,16 +3815,10 @@ void FullscreenUI::DrawControllerSettingsPage()
         continue;
 
       DrawInputBindingButton(bsi, InputBindingInfo::Type::Macro, section.c_str(),
-                             TinyString::from_format("Macro{}", macro_index + 1),
-                             TinyString::from_format(FSUI_FSTR("Macro {} Trigger"), macro_index + 1), nullptr);
-      DrawToggleSetting(bsi,
-                        TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Macro {} Press To Toggle")),
-                                                macro_index + 1),
-                        nullptr, section.c_str(), TinyString::from_format("Macro{}Toggle", macro_index + 1), false,
-                        true, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+                             TinyString::from_format("Macro{}", macro_index + 1), FSUI_CSTR("Trigger"), nullptr, true);
 
       SmallString binds_string =
-        bsi->GetSmallStringValue(section.c_str(), fmt::format("Macro{}Binds", macro_index + 1).c_str());
+        bsi->GetSmallStringValue(section.c_str(), TinyString::from_format("Macro{}Binds", macro_index + 1).c_str());
       TinyString pretty_binds_string;
       if (!binds_string.empty())
       {
@@ -3842,10 +3836,9 @@ void FullscreenUI::DrawControllerSettingsPage()
           pretty_binds_string.append_format("{}{}", pretty_binds_string.empty() ? "" : " ", dispname);
         }
       }
-      if (MenuButtonWithValue(
-            TinyString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Macro {} Buttons")), macro_index + 1),
-            nullptr, pretty_binds_string.empty() ? FSUI_CSTR("-") : pretty_binds_string.c_str(), true,
-            LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+      if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_KEYBOARD, "Buttons"), nullptr,
+                              pretty_binds_string.empty() ? FSUI_CSTR("-") : pretty_binds_string.c_str(), true,
+                              LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
       {
         std::vector<std::string_view> buttons_split(StringUtil::SplitString(binds_string, '&', true));
         ImGuiFullscreen::ChoiceDialogOptions options;
@@ -3906,19 +3899,37 @@ void FullscreenUI::DrawControllerSettingsPage()
           });
       }
 
+      DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Press To Toggle"),
+                        FSUI_CSTR("Toggles the macro when the button is pressed, instead of held."), section.c_str(),
+                        TinyString::from_format("Macro{}Toggle", macro_index + 1), false, true, false);
+
       const TinyString freq_key = TinyString::from_format("Macro{}Frequency", macro_index + 1);
-      const SmallString freq_title =
-        SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Macro {} Frequency")), macro_index + 1);
+      const TinyString freq_label =
+        TinyString::from_format(ICON_FA_CLOCK " {}##macro_{}_frequency", FSUI_VSTR("Frequency"), macro_index + 1);
       s32 frequency = bsi->GetIntValue(section.c_str(), freq_key.c_str(), 0);
-      SmallString freq_summary;
-      if (frequency == 0)
-        freq_summary = FSUI_VSTR("Disabled");
-      else
-        freq_summary.format(FSUI_FSTR("{} Frames"), frequency);
-      if (MenuButtonWithValue(freq_title, nullptr, freq_summary, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
-        ImGui::OpenPopup(freq_title);
+      const TinyString freq_summary = ((frequency == 0) ? TinyString(FSUI_VSTR("Disabled")) :
+                                                          TinyString::from_format(FSUI_FSTR("{} Frames"), frequency));
+      if (MenuButtonWithValue(
+            freq_label,
+            FSUI_CSTR(
+              "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire)."),
+            freq_summary, true))
+      {
+        ImGui::OpenPopup(freq_label.c_str());
+      }
+
+      DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Pressure"),
+                              FSUI_CSTR("Determines how much pressure is simulated when macro is active."), section,
+                              TinyString::from_format("Macro{}Pressure", macro_index + 1), 1.0f, 0.01f, 1.0f, 0.01f,
+                              100.0f, "%.0f%%");
+
+      DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SKULL, "Deadzone"),
+                              FSUI_CSTR("Determines how much button pressure is ignored before activating the macro."),
+                              section, TinyString::from_format("Macro{}Deadzone", macro_index + 1).c_str(), 0.0f, 0.00f,
+                              1.0f, 0.01f, 100.0f, "%.0f%%");
 
       ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
+      ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
       ImGui::PushFont(g_large_font);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
@@ -3926,7 +3937,7 @@ void FullscreenUI::DrawControllerSettingsPage()
                                                                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
       ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
-      if (ImGui::BeginPopupModal(freq_title, nullptr,
+      if (ImGui::BeginPopupModal(freq_label, nullptr,
                                  ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
       {
         ImGui::SetNextItemWidth(LayoutScale(450.0f));
@@ -7445,6 +7456,7 @@ TRANSLATE_NOOP("FullscreenUI", "Backend Settings");
 TRANSLATE_NOOP("FullscreenUI", "Behavior");
 TRANSLATE_NOOP("FullscreenUI", "Borderless Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
+TRANSLATE_NOOP("FullscreenUI", "Buttons");
 TRANSLATE_NOOP("FullscreenUI", "CD-ROM Emulation");
 TRANSLATE_NOOP("FullscreenUI", "CPU Emulation");
 TRANSLATE_NOOP("FullscreenUI", "CPU Mode");
@@ -7496,6 +7508,7 @@ TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
 TRANSLATE_NOOP("FullscreenUI", "Crop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
 TRANSLATE_NOOP("FullscreenUI", "Current Game");
+TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Debugging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Default");
 TRANSLATE_NOOP("FullscreenUI", "Default Boot");
@@ -7510,8 +7523,10 @@ TRANSLATE_NOOP("FullscreenUI", "Desktop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Details");
 TRANSLATE_NOOP("FullscreenUI", "Details unavailable for game not scanned in game list.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how large the on-screen messages and monitor are.");
+TRANSLATE_NOOP("FullscreenUI", "Determines how much button pressure is ignored before activating the macro.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much latency there is between the audio being picked up by the host API, and played through speakers.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how much of the area typically not visible on a consumer TV set to crop/hide.");
+TRANSLATE_NOOP("FullscreenUI", "Determines how much pressure is simulated when macro is active.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how the emulated CPU executes instructions.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Determines quality of audio when not running at 100% speed.");
@@ -7519,6 +7534,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines that field that the game list will be
 TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the emulated hardware type.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the format that screenshots will be saved/compressed with.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).");
 TRANSLATE_NOOP("FullscreenUI", "Determines the margin between the edge of the screen and on-screen messages.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the position on the screen when black borders must be added.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the rotation of the simulated TV screen.");
@@ -7616,6 +7632,7 @@ TRANSLATE_NOOP("FullscreenUI", "Forces blending to be done in the shader at 16-b
 TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Frame Time Buffer");
+TRANSLATE_NOOP("FullscreenUI", "Frequency");
 TRANSLATE_NOOP("FullscreenUI", "From File...");
 TRANSLATE_NOOP("FullscreenUI", "Fullscreen Resolution");
 TRANSLATE_NOOP("FullscreenUI", "GPU Adapter");
@@ -7700,10 +7717,6 @@ TRANSLATE_NOOP("FullscreenUI", "Logs messages to the console window.");
 TRANSLATE_NOOP("FullscreenUI", "Logs messages to the debug console where supported.");
 TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Macro Button {}");
-TRANSLATE_NOOP("FullscreenUI", "Macro {} Buttons");
-TRANSLATE_NOOP("FullscreenUI", "Macro {} Frequency");
-TRANSLATE_NOOP("FullscreenUI", "Macro {} Press To Toggle");
-TRANSLATE_NOOP("FullscreenUI", "Macro {} Trigger");
 TRANSLATE_NOOP("FullscreenUI", "Makes games run closer to their console framerate, at a small cost to performance.");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Busy");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
@@ -7773,6 +7786,8 @@ TRANSLATE_NOOP("FullscreenUI", "Post-processing shaders reloaded.");
 TRANSLATE_NOOP("FullscreenUI", "Preload Images to RAM");
 TRANSLATE_NOOP("FullscreenUI", "Preload Replacement Textures");
 TRANSLATE_NOOP("FullscreenUI", "Preserve Projection Precision");
+TRANSLATE_NOOP("FullscreenUI", "Press To Toggle");
+TRANSLATE_NOOP("FullscreenUI", "Pressure");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the emulator from producing any audible sound.");
 TRANSLATE_NOOP("FullscreenUI", "Prevents the screen saver from activating and the host from sleeping while emulation is running.");
 TRANSLATE_NOOP("FullscreenUI", "Provides vibration and LED control support over Bluetooth.");
@@ -7962,6 +7977,8 @@ TRANSLATE_NOOP("FullscreenUI", "Toggle Analog");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Fast Forward");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
+TRANSLATE_NOOP("FullscreenUI", "Toggles the macro when the button is pressed, instead of held.");
+TRANSLATE_NOOP("FullscreenUI", "Trigger");
 TRANSLATE_NOOP("FullscreenUI", "True Color Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");
