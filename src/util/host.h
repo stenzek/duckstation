@@ -12,22 +12,27 @@
 #include <string>
 #include <string_view>
 
+class Error;
+
 namespace Host {
 /// Returns true if the specified resource file exists.
 bool ResourceFileExists(std::string_view filename, bool allow_override);
 
 /// Reads a file from the resources directory of the application.
 /// This may be outside of the "normal" filesystem on platforms such as Mac.
-std::optional<DynamicHeapArray<u8>> ReadResourceFile(std::string_view filename, bool allow_override);
+std::optional<DynamicHeapArray<u8>> ReadResourceFile(std::string_view filename, bool allow_override,
+                                                     Error* error = nullptr);
 
 /// Reads a resource file file from the resources directory as a string.
-std::optional<std::string> ReadResourceFileToString(std::string_view filename, bool allow_override);
+std::optional<std::string> ReadResourceFileToString(std::string_view filename, bool allow_override,
+                                                    Error* error = nullptr);
 
 /// Returns the modified time of a resource.
 std::optional<std::time_t> GetResourceFileTimestamp(std::string_view filename, bool allow_override);
 
 /// Reads a potentially-compressed file from the resources directory of the application.
-std::optional<DynamicHeapArray<u8>> ReadCompressedResourceFile(std::string_view filename, bool allow_override);
+std::optional<DynamicHeapArray<u8>> ReadCompressedResourceFile(std::string_view filename, bool allow_override,
+                                                               Error* error = nullptr);
 
 /// Reports a fatal error on the main thread. This does not assume that the main window exists,
 /// unlike ReportErrorAsync(), and will exit the application after the popup is closed.

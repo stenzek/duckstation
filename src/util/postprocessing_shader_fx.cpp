@@ -1128,7 +1128,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
       {
         // Might be a base file/resource instead.
         const std::string resource_name = Path::Combine("shaders/reshade/Textures", source);
-        if (std::optional<DynamicHeapArray<u8>> resdata = Host::ReadResourceFile(resource_name.c_str(), true);
+        if (std::optional<DynamicHeapArray<u8>> resdata = Host::ReadResourceFile(resource_name.c_str(), true, error);
             !resdata.has_value() || !image.LoadFromBuffer(resource_name.c_str(), resdata->cspan(), error))
         {
           Error::AddPrefixFmt(error, "Failed to load image '{}' (from '{}'): ", source, image_path);

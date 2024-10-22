@@ -309,7 +309,7 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
     if (Path::IsAbsolute(path))
       svg_data = FileSystem::ReadBinaryFile(std::string(path).c_str(), &error);
     else
-      svg_data = Host::ReadResourceFile(path, true);
+      svg_data = Host::ReadResourceFile(path, true, &error);
 
     if (svg_data.has_value())
     {
@@ -345,7 +345,7 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
   }
   else
   {
-    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(path, true);
+    std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(path, true, &error);
     if (data.has_value())
     {
       image = RGBA8Image();
@@ -357,7 +357,7 @@ std::optional<RGBA8Image> ImGuiFullscreen::LoadTextureImage(std::string_view pat
     }
     else
     {
-      ERROR_LOG("Failed to open texture resource '{}'", path);
+      ERROR_LOG("Failed to open texture resource '{}: {}'", path, error.GetDescription());
     }
   }
 

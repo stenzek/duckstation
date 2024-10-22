@@ -2020,22 +2020,16 @@ bool Host::ResourceFileExists(std::string_view filename, bool allow_override)
   return FileSystem::FileExists(path.c_str());
 }
 
-std::optional<DynamicHeapArray<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override)
+std::optional<DynamicHeapArray<u8>> Host::ReadResourceFile(std::string_view filename, bool allow_override, Error* error)
 {
   const std::string path = QtHost::GetResourcePath(filename, allow_override);
-  std::optional<DynamicHeapArray<u8>> ret(FileSystem::ReadBinaryFile(path.c_str()));
-  if (!ret.has_value())
-    ERROR_LOG("Failed to read resource file '{}'", filename);
-  return ret;
+  return FileSystem::ReadBinaryFile(path.c_str(), error);
 }
 
-std::optional<std::string> Host::ReadResourceFileToString(std::string_view filename, bool allow_override)
+std::optional<std::string> Host::ReadResourceFileToString(std::string_view filename, bool allow_override, Error* error)
 {
   const std::string path = QtHost::GetResourcePath(filename, allow_override);
-  std::optional<std::string> ret(FileSystem::ReadFileToString(path.c_str()));
-  if (!ret.has_value())
-    ERROR_LOG("Failed to read resource file to string '{}'", filename);
-  return ret;
+  return FileSystem::ReadFileToString(path.c_str(), error);
 }
 
 std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filename, bool allow_override)

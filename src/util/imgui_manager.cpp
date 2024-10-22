@@ -69,7 +69,7 @@ static_assert(std::is_same_v<WCharType, ImWchar>);
 static void UpdateScale();
 static void SetStyle(ImGuiStyle& style, float scale);
 static void SetKeyMap();
-static bool LoadFontData();
+static bool LoadFontData(Error* error);
 static void ReloadFontDataIfActive();
 static bool AddImGuiFonts(bool fullscreen_fonts);
 static ImFont* AddTextFont(float size, bool full_glyph_range);
@@ -229,9 +229,9 @@ void ImGuiManager::SetShowOSDMessages(bool enable)
 
 bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* error)
 {
-  if (!LoadFontData())
+  if (!LoadFontData(error))
   {
-    Error::SetString(error, "Failed to load font data");
+    Error::AddPrefix(error, "Failed to load font data: ");
     return false;
   }
 
@@ -558,13 +558,13 @@ void ImGuiManager::SetKeyMap()
   }
 }
 
-bool ImGuiManager::LoadFontData()
+bool ImGuiManager::LoadFontData(Error* error)
 {
   if (s_standard_font_data.empty())
   {
     std::optional<DynamicHeapArray<u8>> font_data = s_font_path.empty() ?
-                                                      Host::ReadResourceFile("fonts/Roboto-Regular.ttf", true) :
-                                                      FileSystem::ReadBinaryFile(s_font_path.c_str());
+                                                      Host::ReadResourceFile("fonts/Roboto-Regular.ttf", true, error) :
+                                                      FileSystem::ReadBinaryFile(s_font_path.c_str(), error);
     if (!font_data.has_value())
       return false;
 
@@ -573,7 +573,7 @@ bool ImGuiManager::LoadFontData()
 
   if (s_fixed_font_data.empty())
   {
-    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/RobotoMono-Medium.ttf", true);
+    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/RobotoMono-Medium.ttf", true, error);
     if (!font_data.has_value())
       return false;
 
@@ -582,7 +582,7 @@ bool ImGuiManager::LoadFontData()
 
   if (s_icon_fa_font_data.empty())
   {
-    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/fa-solid-900.ttf", true);
+    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/fa-solid-900.ttf", true, error);
     if (!font_data.has_value())
       return false;
 
@@ -591,7 +591,7 @@ bool ImGuiManager::LoadFontData()
 
   if (s_icon_pf_font_data.empty())
   {
-    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/promptfont.otf", true);
+    std::optional<DynamicHeapArray<u8>> font_data = Host::ReadResourceFile("fonts/promptfont.otf", true, error);
     if (!font_data.has_value())
       return false;
 
@@ -601,7 +601,7 @@ bool ImGuiManager::LoadFontData()
   if (s_emoji_font_data.empty())
   {
     std::optional<DynamicHeapArray<u8>> font_data =
-      Host::ReadCompressedResourceFile("fonts/TwitterColorEmoji-SVGinOT.ttf.zst", true);
+      Host::ReadCompressedResourceFile("fonts/TwitterColorEmoji-SVGinOT.ttf.zst", true, error);
     if (!font_data.has_value())
       return false;
 
@@ -732,7 +732,7 @@ void ImGuiManager::ReloadFontDataIfActive()
 
   ImGui::EndFrame();
 
-  if (!LoadFontData())
+  if (!LoadFontData(nullptr))
     Panic("Failed to load font data");
 
   if (!AddImGuiFonts(HasFullscreenFonts()))

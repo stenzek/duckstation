@@ -1066,10 +1066,11 @@ void GameDatabase::SetRymlCallbacks()
 
 bool GameDatabase::LoadGameDBYaml()
 {
-  std::optional<DynamicHeapArray<u8>> gamedb_data = Host::ReadResourceFile(GAMEDB_YAML_FILENAME, false);
+  Error error;
+  std::optional<DynamicHeapArray<u8>> gamedb_data = Host::ReadResourceFile(GAMEDB_YAML_FILENAME, false, &error);
   if (!gamedb_data.has_value())
   {
-    ERROR_LOG("Failed to read game database");
+    ERROR_LOG("Failed to read game database: {}", error.GetDescription());
     return false;
   }
 
@@ -1384,10 +1385,11 @@ bool GameDatabase::LoadTrackHashes()
 {
   Common::Timer load_timer;
 
-  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false));
+  Error error;
+  std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false, &error));
   if (!gamedb_data.has_value())
   {
-    ERROR_LOG("Failed to read game database");
+    ERROR_LOG("Failed to read disc database: {}", error.GetDescription());
     return false;
   }
 

@@ -725,7 +725,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
 
   filename =
     fmt::format("shaders/reshade" FS_OSPATH_SEPARATOR_STR "Shaders" FS_OSPATH_SEPARATOR_STR "{}.fx", shader_name);
-  resource_str = Host::ReadResourceFileToString(filename.c_str(), true);
+  resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
   if (resource_str.has_value())
   {
     std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
@@ -737,7 +737,7 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
   }
 
   filename = fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name);
-  resource_str = Host::ReadResourceFileToString(filename.c_str(), true);
+  resource_str = Host::ReadResourceFileToString(filename.c_str(), true, error);
   if (resource_str.has_value())
   {
     std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();

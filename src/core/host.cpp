@@ -44,16 +44,12 @@ SettingsInterface* Host::GetSettingsInterface()
   return &s_layered_settings_interface;
 }
 
-std::optional<DynamicHeapArray<u8>> Host::ReadCompressedResourceFile(std::string_view filename, bool allow_override)
+std::optional<DynamicHeapArray<u8>> Host::ReadCompressedResourceFile(std::string_view filename, bool allow_override,
+                                                                     Error* error)
 {
-  std::optional<DynamicHeapArray<u8>> ret = Host::ReadResourceFile(filename, allow_override);
+  std::optional<DynamicHeapArray<u8>> ret = Host::ReadResourceFile(filename, allow_override, error);
   if (ret.has_value())
-  {
-    Error error;
-    ret = CompressHelpers::DecompressFile(filename, std::move(ret), std::nullopt, &error);
-    if (!ret.has_value())
-      ERROR_LOG("Failed to decompress '{}': {}", Path::GetFileName(filename), error.GetDescription());
-  }
+    ret = CompressHelpers::DecompressFile(filename, std::move(ret), std::nullopt, error);
 
   return ret;
 }
