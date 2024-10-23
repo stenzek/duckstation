@@ -1187,8 +1187,11 @@ bool Bus::SideloadEXE(const std::string& path, Error* error)
     return false;
   }
 
+  // Stupid Android...
+  std::string filename = FileSystem::GetDisplayNameFromPath(path);
+
   bool okay = true;
-  if (StringUtil::EndsWithNoCase(path, ".cpe"))
+  if (StringUtil::EndsWithNoCase(filename, ".cpe"))
   {
     okay = InjectCPE(exe_data->cspan(), true, error);
   }

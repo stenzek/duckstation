@@ -179,10 +179,13 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
   if (entry->file_size < 0)
     return false;
 
-  entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+  // Stupid Android...
+  const std::string filename = FileSystem::GetDisplayNameFromPath(path);
+
+  entry->title = Path::GetFileTitle(filename);
   entry->type = EntryType::PSExe;
 
-  if (StringUtil::EndsWithNoCase(path, ".cpe"))
+  if (StringUtil::EndsWithNoCase(filename, ".cpe"))
   {
     u32 magic;
     if (std::fread(&magic, sizeof(magic), 1, fp.get()) != 1 || magic != BIOS::CPE_MAGIC)
@@ -207,7 +210,14 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
     entry->region = BIOS::GetPSExeDiscRegion(header);
   }
 
-  const GameHash hash = System::GetGameHashFromFile(path.c_str());
+  const auto data = FileSystem::ReadBinaryFile(fp.get());
+  if (!data.has_value())
+  {
+    WARNING_LOG("Failed to read {}", path);
+    return false;
+  }
+
+  const GameHash hash = System::GetGameHashFromBuffer(filename, data->cspan());
   entry->serial = hash ? System::GetGameHashId(hash) : std::string();
   return true;
 }

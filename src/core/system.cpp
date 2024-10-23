@@ -997,8 +997,12 @@ GameHash System::GetGameHashFromFile(const char* path)
   if (!data)
     return 0;
 
-  const std::string display_name = FileSystem::GetDisplayNameFromPath(path);
-  return GetGameHashFromBuffer(display_name, data->cspan(), IsoReader::ISOPrimaryVolumeDescriptor{}, 0);
+  return GetGameHashFromBuffer(FileSystem::GetDisplayNameFromPath(path), data->cspan());
+}
+
+GameHash System::GetGameHashFromBuffer(const std::string_view filename, const std::span<const u8> data)
+{
+  return GetGameHashFromBuffer(filename, data, IsoReader::ISOPrimaryVolumeDescriptor{}, 0);
 }
 
 std::string System::GetExecutableNameForImage(IsoReader& iso, bool strip_subdirectories)
