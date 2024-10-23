@@ -859,7 +859,8 @@ u32 System::GetFrameTimeHistoryPos()
 bool System::IsExePath(std::string_view path)
 {
   return (StringUtil::EndsWithNoCase(path, ".exe") || StringUtil::EndsWithNoCase(path, ".psexe") ||
-          StringUtil::EndsWithNoCase(path, ".ps-exe") || StringUtil::EndsWithNoCase(path, ".psx"));
+          StringUtil::EndsWithNoCase(path, ".ps-exe") || StringUtil::EndsWithNoCase(path, ".psx") ||
+          StringUtil::EndsWithNoCase(path, ".cpe"));
 }
 
 bool System::IsPsfPath(std::string_view path)
@@ -877,7 +878,7 @@ bool System::IsLoadablePath(std::string_view path)
 {
   static constexpr const std::array extensions = {
     ".bin",    ".cue",        ".img",       ".iso", ".chd", ".ecm", ".mds", // discs
-    ".exe",    ".psexe",      ".ps-exe",    ".psx",                         // exes
+    ".exe",    ".psexe",      ".ps-exe",    ".psx", ".cpe",                 // exes
     ".psf",    ".minipsf",                                                  // psf
     ".psxgpu", ".psxgpu.zst", ".psxgpu.xz",                                 // gpu dump
     ".m3u",                                                                 // playlists

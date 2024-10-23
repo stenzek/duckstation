@@ -27,12 +27,14 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/binary_reader_writer.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/intrin.h"
 #include "common/log.h"
 #include "common/memmap.h"
 #include "common/path.h"
+#include "common/string_util.h"
 
 #include <cstdio>
 #include <tuple>
@@ -167,6 +169,7 @@ static void SetRAMPageWritable(u32 page_index, bool writable);
 
 static void KernelInitializedHook();
 static bool SideloadEXE(const std::string& path, Error* error);
+static bool InjectCPE(std::span<const u8> buffer, bool set_pc, Error* error);
 
 static void SetHandlers();
 static void UpdateMappedRAMSize();
@@ -1009,6 +1012,139 @@ bool Bus::InjectExecutable(std::span<const u8> buffer, bool set_pc, Error* error
   return true;
 }
 
+bool Bus::InjectCPE(std::span<const u8> buffer, bool set_pc, Error* error)
+{
+  // https://psx-spx.consoledev.net/cdromfileformats/#cdrom-file-psyq-cpe-files-debug-executables
+  BinarySpanReader reader(buffer);
+  if (reader.ReadU32() != BIOS::CPE_MAGIC)
+  {
+    Error::SetStringView(error, "Invalid CPE signature.");
+    return false;
+  }
+
+  static constexpr auto set_register = [](u32 reg, u32 value) {
+    if (reg == 0x90)
+    {
+      CPU::SetPC(value);
+    }
+    else
+    {
+      WARNING_LOG("Ignoring set register 0x{:X} to 0x{:X}", reg, value);
+    }
+  };
+
+  for (;;)
+  {
+    if (!reader.CheckRemaining(1))
+    {
+      Error::SetStringView(error, "End of file reached before EOF chunk.");
+      return false;
+    }
+
+    // Little error checking on chunk sizes, because if any of them run out of buffer,
+    // it'll loop around and hit the EOF if above.
+    const u8 chunk = reader.ReadU8();
+    switch (chunk)
+    {
+      case 0x00:
+      {
+        // End of file
+        return true;
+      }
+
+      case 0x01:
+      {
+        // Load data
+        const u32 addr = reader.ReadU32();
+        const u32 size = reader.ReadU32();
+        if (size > 0)
+        {
+          if (!reader.CheckRemaining(size))
+          {
+            Error::SetStringFmt(error, "EOF reached in the middle of load to 0x{:08X}", addr);
+            return false;
+          }
+
+          if (const auto data = reader.GetRemainingSpan(size); !CPU::SafeWriteMemoryBytes(addr, data))
+          {
+            Error::SetStringFmt(error, "Failed to write {} bytes to address 0x{:08X}", size, addr);
+            return false;
+          }
+
+          reader.IncrementPosition(size);
+        }
+      }
+      break;
+
+      case 0x02:
+      {
+        // Run address, ignored
+        DEV_LOG("Ignoring run address 0x{:X}", reader.ReadU32());
+      }
+      break;
+
+      case 0x03:
+      {
+        // Set register 32-bit
+        const u16 reg = reader.ReadU16();
+        const u32 value = reader.ReadU32();
+        set_register(reg, value);
+      }
+      break;
+
+      case 0x04:
+      {
+        // Set register 16-bit
+        const u16 reg = reader.ReadU16();
+        const u16 value = reader.ReadU16();
+        set_register(reg, value);
+      }
+      break;
+
+      case 0x05:
+      {
+        // Set register 8-bit
+        const u16 reg = reader.ReadU16();
+        const u8 value = reader.ReadU8();
+        set_register(reg, value);
+      }
+      break;
+
+      case 0x06:
+      {
+        // Set register 24-bit
+        const u16 reg = reader.ReadU16();
+        const u16 low = reader.ReadU16();
+        const u8 high = reader.ReadU8();
+        set_register(reg, ZeroExtend32(low) | (ZeroExtend32(high) << 16));
+      }
+      break;
+
+      case 0x07:
+      {
+        // Select workspace
+        DEV_LOG("Ignoring set workspace 0x{:X}", reader.ReadU32());
+      }
+      break;
+
+      case 0x08:
+      {
+        // Select unit
+        DEV_LOG("Ignoring select unit 0x{:X}", reader.ReadU8());
+      }
+      break;
+
+      default:
+      {
+        WARNING_LOG("Unknown chunk 0x{:02X} in CPE file, parsing will probably fail now.", chunk);
+      }
+      break;
+    }
+  }
+
+  return true;
+}
+
 void Bus::KernelInitializedHook()
 {
   if (s_kernel_initialize_hook_run)
@@ -1043,23 +1179,40 @@ void Bus::KernelInitializedHook()
 
 bool Bus::SideloadEXE(const std::string& path, Error* error)
 {
-  // look for a libps.exe next to the exe, if it exists, load it
-  bool okay = true;
-  if (const std::string libps_path = Path::BuildRelativePath(path, "libps.exe");
-      FileSystem::FileExists(libps_path.c_str()))
+  const std::optional<DynamicHeapArray<u8>> exe_data =
+    FileSystem::ReadBinaryFile(System::GetExeOverride().c_str(), error);
+  if (!exe_data.has_value())
   {
-    const std::optional<DynamicHeapArray<u8>> exe_data = FileSystem::ReadBinaryFile(libps_path.c_str(), error);
-    okay = (exe_data.has_value() && InjectExecutable(exe_data->cspan(), false, error));
-    if (!okay)
-      Error::AddPrefix(error, "Failed to load libps.exe: ");
+    Error::AddPrefixFmt(error, "Failed to read {}: ", Path::GetFileName(path));
+    return false;
   }
-  if (okay)
+
+  bool okay = true;
+  if (StringUtil::EndsWithNoCase(path, ".cpe"))
   {
-    const std::optional<DynamicHeapArray<u8>> exe_data =
-      FileSystem::ReadBinaryFile(System::GetExeOverride().c_str(), error);
-    okay = (exe_data.has_value() && InjectExecutable(exe_data->cspan(), true, error));
-    if (!okay)
-      Error::AddPrefixFmt(error, "Failed to load {}: ", Path::GetFileName(path));
+    okay = InjectCPE(exe_data->cspan(), true, error);
+  }
+  else
+  {
+    // look for a libps.exe next to the exe, if it exists, load it
+    if (const std::string libps_path = Path::BuildRelativePath(path, "libps.exe");
+        FileSystem::FileExists(libps_path.c_str()))
+    {
+      const std::optional<DynamicHeapArray<u8>> libps_data = FileSystem::ReadBinaryFile(libps_path.c_str(), error);
+      if (!libps_data.has_value() || !InjectExecutable(libps_data->cspan(), false, error))
+      {
+        Error::AddPrefix(error, "Failed to load libps.exe: ");
+        return false;
+      }
+    }
+
+    okay = InjectExecutable(exe_data->cspan(), true, error);
+  }
+
+  if (!okay)
+  {
+    Error::AddPrefixFmt(error, "Failed to load {}: ", Path::GetFileName(path));
+    return false;
   }
 
   return okay;

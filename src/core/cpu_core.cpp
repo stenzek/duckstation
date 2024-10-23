@@ -3207,6 +3207,11 @@ bool CPU::SafeWriteMemoryBytes(VirtualMemoryAddress addr, const void* data, u32 
   return true;
 }
 
+bool CPU::SafeWriteMemoryBytes(VirtualMemoryAddress addr, const std::span<const u8> data)
+{
+  return SafeWriteMemoryBytes(addr, data.data(), static_cast<u32>(data.size()));
+}
+
 void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
 {
   using namespace Bus;

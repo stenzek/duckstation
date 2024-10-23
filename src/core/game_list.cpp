@@ -170,38 +170,45 @@ bool GameList::IsScannableFilename(std::string_view path)
 
 bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
 {
-  std::FILE* fp = FileSystem::OpenCFile(path.c_str(), "rb");
+  const auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb");
   if (!fp)
     return false;
 
-  std::fseek(fp, 0, SEEK_END);
-  const u32 file_size = static_cast<u32>(std::ftell(fp));
-  std::fseek(fp, 0, SEEK_SET);
-
-  BIOS::PSEXEHeader header;
-  if (std::fread(&header, sizeof(header), 1, fp) != 1)
-  {
-    std::fclose(fp);
+  entry->file_size = FileSystem::FSize64(fp.get());
+  entry->uncompressed_size = entry->file_size;
+  if (entry->file_size < 0)
     return false;
+
+  entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+  entry->type = EntryType::PSExe;
+
+  if (StringUtil::EndsWithNoCase(path, ".cpe"))
+  {
+    u32 magic;
+    if (std::fread(&magic, sizeof(magic), 1, fp.get()) != 1 || magic != BIOS::CPE_MAGIC)
+    {
+      WARNING_LOG("{} is not a valid CPE", path);
+      return false;
+    }
+
+    // Who knows
+    entry->region = DiscRegion::Other;
   }
-
-  std::fclose(fp);
-
-  if (!BIOS::IsValidPSExeHeader(header, file_size))
+  else
   {
-    WARNING_LOG("{} is not a valid PS-EXE", path);
-    return false;
+    BIOS::PSEXEHeader header;
+    if (std::fread(&header, sizeof(header), 1, fp.get()) != 1 ||
+        !BIOS::IsValidPSExeHeader(header, static_cast<size_t>(entry->file_size)))
+    {
+      WARNING_LOG("{} is not a valid PS-EXE", path);
+      return false;
+    }
+
+    entry->region = BIOS::GetPSExeDiscRegion(header);
   }
 
   const GameHash hash = System::GetGameHashFromFile(path.c_str());
-
   entry->serial = hash ? System::GetGameHashId(hash) : std::string();
-  entry->title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
-  entry->region = BIOS::GetPSExeDiscRegion(header);
-  entry->file_size = ZeroExtend64(file_size);
-  entry->uncompressed_size = entry->file_size;
-  entry->type = EntryType::PSExe;
-
   return true;
 }
 
