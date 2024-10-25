@@ -30,23 +30,23 @@ const char* cdrom_get_subtype_string(uint32_t subtype)
 	}
 }
 
-bool cdrom_parse_subtype_string(const char* typestring, uint32_t* subtype, uint32_t* subsize)
+int cdrom_parse_subtype_string(const char* typestring, uint32_t* subtype, uint32_t* subsize)
 {
 	// https://github.com/mamedev/mame/blob/d2d54fb8ed53a2e86d308067da8414f85b5929b0/src/lib/util/cdrom.cpp#L767
-  if (!strcmp(typestring, "RW"))
-  {
-    *subtype = CD_SUB_RAW;
-    *subsize = 96;
-		return true;
-  }
-  else if (!strcmp(typestring, "RW_RAW"))
-  {
-    *subtype = CD_SUB_RAW_INTERLEAVED;
-    *subsize = 96;
-		return true;
-  }
+	if (!strcmp(typestring, "RW"))
+	{
+		*subtype = CD_SUB_RAW;
+		*subsize = 96;
+		return 1;
+	}
+	else if (!strcmp(typestring, "RW_RAW"))
+	{
+		*subtype = CD_SUB_RAW_INTERLEAVED;
+		*subsize = 96;
+		return 1;
+	}
 
-	return false;
+	return 0;
 }
 
 #ifdef WANT_RAW_DATA_SECTOR
@@ -475,16 +475,16 @@ static const uint32_t edc_table[256] = {
 
 uint32_t edc_compute(const uint8_t* data, uint32_t length)
 {
-  uint32_t edc = 0;
-  for (uint32_t i = 0; i < length; i++)
-    edc = (edc >> 8) ^ edc_table[(edc ^ (*data++)) & 0xFF];
-  return edc;
+	uint32_t edc = 0;
+	for (uint32_t i = 0; i < length; i++)
+		edc = (edc >> 8) ^ edc_table[(edc ^ (*data++)) & 0xFF];
+	return edc;
 }
 
 void edc_set(uint8_t* dst, uint32_t edc)
 {
-  // store in little-endian byte order
-  memcpy(dst, &edc, sizeof(edc));
+	// store in little-endian byte order
+	memcpy(dst, &edc, sizeof(edc));
 }
 
 #endif /* WANT_RAW_DATA_SECTOR */

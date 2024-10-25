@@ -10,12 +10,13 @@
 
 #pragma once
 
+#ifndef __CDROM_H__
+#define __CDROM_H__
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <libchdr/chdconfig.h>
 
 /***************************************************************************
@@ -55,7 +56,7 @@ enum
 };
 
 const char* cdrom_get_subtype_string(uint32_t subtype);
-bool cdrom_parse_subtype_string(const char* typestring, uint32_t* subtype, uint32_t* subsize);
+int cdrom_parse_subtype_string(const char* typestring, uint32_t* subtype, uint32_t* subsize);
 
 
 #define CD_FLAG_GDROM   0x00000001  /* disc is a GD-ROM, all tracks should be stored with GD-ROM metadata */
@@ -118,3 +119,4 @@ static inline uint32_t lba_to_msf_alt(int lba)
 #ifdef __cplusplus
 } // extern "C"
 #endif
+#endif  /* __CDROM_H__ */
