@@ -12,7 +12,7 @@ public:
   ~GPUShaderGen();
 
   std::string GenerateDisplayVertexShader();
-  std::string GenerateDisplayFragmentShader(bool clamp_uv);
+  std::string GenerateDisplayFragmentShader(bool clamp_uv, bool nearest);
   std::string GenerateDisplaySharpBilinearFragmentShader();
 
   std::string GenerateInterleavedFieldExtractFragmentShader();

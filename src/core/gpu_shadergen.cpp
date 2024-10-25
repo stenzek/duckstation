@@ -48,17 +48,27 @@ std::string GPUShaderGen::GenerateDisplayVertexShader()
   return ss.str();
 }
 
-std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv)
+std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool nearest)
 {
   std::stringstream ss;
   WriteHeader(ss);
   WriteDisplayUniformBuffer(ss);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1);
+  ss << "{\n";
+
   if (clamp_uv)
-    ss << "{\n  o_col0 = float4(SAMPLE_TEXTURE(samp0, ClampUV(v_tex0)).rgb, 1.0f);\n }";
+    ss << "  float2 uv = ClampUV(v_tex0);\n";
   else
-    ss << "{\n  o_col0 = float4(SAMPLE_TEXTURE(samp0, v_tex0).rgb, 1.0f);\n }";
+    ss << "  float2 uv = v_tex0;\n";
+
+  // Work around nearest sampling precision issues on AMD graphics cards by adding 1/128 to UVs.
+  if (nearest)
+    ss << "  o_col0 = float4(LOAD_TEXTURE(samp0, int2((uv * u_src_size.xy) + (1.0 / 128.0)), 0).rgb, 1.0f);\n";
+  else
+    ss << "  o_col0 = float4(SAMPLE_TEXTURE(samp0, ClampUV(v_tex0)).rgb, 1.0f);\n";
+
+  ss << "}\n";
 
   return ss.str();
 }

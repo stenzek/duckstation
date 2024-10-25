@@ -1683,13 +1683,13 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
 
       case DisplayScalingMode::BilinearSmooth:
       case DisplayScalingMode::BilinearInteger:
-        fs = shadergen.GenerateDisplayFragmentShader(true);
+        fs = shadergen.GenerateDisplayFragmentShader(true, false);
         break;
 
       case DisplayScalingMode::Nearest:
       case DisplayScalingMode::NearestInteger:
       default:
-        fs = shadergen.GenerateDisplayFragmentShader(false);
+        fs = shadergen.GenerateDisplayFragmentShader(false, true);
         break;
     }
 
