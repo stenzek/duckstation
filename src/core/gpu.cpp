@@ -95,7 +95,7 @@ GPU::~GPU()
   g_gpu_device->RecycleTexture(std::move(m_chroma_smoothing_texture));
 }
 
-bool GPU::Initialize()
+bool GPU::Initialize(Error* error)
 {
   if (!System::IsReplayingGPUDump())
     s_crtc_tick_event.Activate();
@@ -107,11 +107,8 @@ bool GPU::Initialize()
   m_console_is_pal = System::IsPALRegion();
   UpdateCRTCConfig();
 
-  if (!CompileDisplayPipelines(true, true, g_settings.display_24bit_chroma_smoothing))
-  {
-    Host::ReportErrorAsync("Error", "Failed to compile base GPU pipelines.");
+  if (!CompileDisplayPipelines(true, true, g_settings.display_24bit_chroma_smoothing, error))
     return false;
-  }
 
 #ifdef PSX_GPU_STATS
   s_active_gpu_cycles = 0;
@@ -152,7 +149,7 @@ void GPU::UpdateSettings(const Settings& old_settings)
     if (!CompileDisplayPipelines(g_settings.display_scaling != old_settings.display_scaling,
                                  g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
                                  g_settings.display_24bit_chroma_smoothing !=
-                                   old_settings.display_24bit_chroma_smoothing))
+                                   old_settings.display_24bit_chroma_smoothing, nullptr))
     {
       Panic("Failed to compile display pipeline on settings change.");
     }
@@ -1650,7 +1647,7 @@ void GPU::ReadCLUT(u16* dest, GPUTexturePaletteReg reg, bool clut_is_8bit)
   }
 }
 
-bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing)
+bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error)
 {
   GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
                          g_gpu_device->GetFeatures().framebuffer_fetch);
@@ -1693,8 +1690,10 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
         break;
     }
 
-    std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs);
-    std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), fs);
+    std::unique_ptr<GPUShader> vso =
+      g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs, error);
+    std::unique_ptr<GPUShader> fso =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), fs, error);
     if (!vso || !fso)
       return false;
     GL_OBJECT_NAME(vso, "Display Vertex Shader");
@@ -1702,7 +1701,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
                        Settings::GetDisplayScalingName(g_settings.display_scaling));
     plconfig.vertex_shader = vso.get();
     plconfig.fragment_shader = fso.get();
-    if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
     GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
                        Settings::GetDisplayScalingName(g_settings.display_scaling));
@@ -1713,14 +1712,14 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
     plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
 
     std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                                shadergen.GenerateScreenQuadVertexShader());
+                                                                shadergen.GenerateScreenQuadVertexShader(), error);
     if (!vso)
       return false;
     GL_OBJECT_NAME(vso, "Deinterlace Vertex Shader");
 
     std::unique_ptr<GPUShader> fso;
     if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                           shadergen.GenerateInterleavedFieldExtractFragmentShader())))
+                                           shadergen.GenerateInterleavedFieldExtractFragmentShader(), error)))
     {
       return false;
     }
@@ -1730,7 +1729,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
     plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
     plconfig.vertex_shader = vso.get();
     plconfig.fragment_shader = fso.get();
-    if (!(m_deinterlace_extract_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    if (!(m_deinterlace_extract_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
     GL_OBJECT_NAME(m_deinterlace_extract_pipeline, "Deinterlace Field Extract Pipeline");
@@ -1744,7 +1743,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
       case DisplayDeinterlacingMode::Weave:
       {
         if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                               shadergen.GenerateDeinterlaceWeaveFragmentShader())))
+                                               shadergen.GenerateDeinterlaceWeaveFragmentShader(), error)))
         {
           return false;
         }
@@ -1754,7 +1753,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
         plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
         plconfig.vertex_shader = vso.get();
         plconfig.fragment_shader = fso.get();
-        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
           return false;
 
         GL_OBJECT_NAME(m_deinterlace_pipeline, "Weave Deinterlace Pipeline");
@@ -1764,7 +1763,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
       case DisplayDeinterlacingMode::Blend:
       {
         if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                               shadergen.GenerateDeinterlaceBlendFragmentShader())))
+                                               shadergen.GenerateDeinterlaceBlendFragmentShader(), error)))
         {
           return false;
         }
@@ -1774,7 +1773,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
         plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
         plconfig.vertex_shader = vso.get();
         plconfig.fragment_shader = fso.get();
-        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
           return false;
 
         GL_OBJECT_NAME(m_deinterlace_pipeline, "Blend Deinterlace Pipeline");
@@ -1784,7 +1783,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
       case DisplayDeinterlacingMode::Adaptive:
       {
         fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                         shadergen.GenerateFastMADReconstructFragmentShader());
+                                         shadergen.GenerateFastMADReconstructFragmentShader(), error);
         if (!fso)
           return false;
 
@@ -1792,7 +1791,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
 
         plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
         plconfig.fragment_shader = fso.get();
-        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
           return false;
 
         GL_OBJECT_NAME(m_deinterlace_pipeline, "FastMAD Reconstruct Pipeline");
@@ -1815,9 +1814,9 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
       plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
 
       std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                                  shadergen.GenerateScreenQuadVertexShader());
-      std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                                  shadergen.GenerateChromaSmoothingFragmentShader());
+                                                                  shadergen.GenerateScreenQuadVertexShader(), error);
+      std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(
+        GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateChromaSmoothingFragmentShader(), error);
       if (!vso || !fso)
         return false;
       GL_OBJECT_NAME(vso, "Chroma Smoothing Vertex Shader");
@@ -1825,7 +1824,7 @@ bool GPU::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_sm
 
       plconfig.vertex_shader = vso.get();
       plconfig.fragment_shader = fso.get();
-      if (!(m_chroma_smoothing_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+      if (!(m_chroma_smoothing_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
       GL_OBJECT_NAME(m_chroma_smoothing_pipeline, "Chroma Smoothing Pipeline");
     }

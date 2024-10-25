@@ -36,9 +36,9 @@ bool GPU_SW::IsHardwareRenderer() const
   return false;
 }
 
-bool GPU_SW::Initialize()
+bool GPU_SW::Initialize(Error* error)
 {
-  if (!GPU::Initialize() || !m_backend.Initialize(g_settings.gpu_use_thread))
+  if (!GPU::Initialize(error) || !m_backend.Initialize(g_settings.gpu_use_thread))
     return false;
 
   static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551,
@@ -810,11 +810,11 @@ void GPU_SW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
   m_backend.PushCommand(cmd);
 }
 
-std::unique_ptr<GPU> GPU::CreateSoftwareRenderer()
+std::unique_ptr<GPU> GPU::CreateSoftwareRenderer(Error* error)
 {
   std::unique_ptr<GPU_SW> gpu(std::make_unique<GPU_SW>());
-  if (!gpu->Initialize())
-    return nullptr;
+  if (!gpu->Initialize(error))
+    gpu.reset();
 
   return gpu;
 }

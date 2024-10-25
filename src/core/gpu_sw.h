@@ -29,7 +29,7 @@ public:
   const Threading::Thread* GetSWThread() const override;
   bool IsHardwareRenderer() const override;
 
-  bool Initialize() override;
+  bool Initialize(Error* error) override;
   bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display) override;
   void Reset(bool clear_vram) override;
   void UpdateSettings(const Settings& old_settings) override;

@@ -92,7 +92,7 @@ public:
   virtual const Threading::Thread* GetSWThread() const = 0;
   virtual bool IsHardwareRenderer() const = 0;
 
-  virtual bool Initialize();
+  virtual bool Initialize(Error* error);
   virtual void Reset(bool clear_vram);
   virtual bool DoState(StateWrapper& sw, GPUTexture** save_to_texture, bool update_display);
 
@@ -184,8 +184,8 @@ public:
   float ComputeVerticalFrequency() const;
   float ComputeDisplayAspectRatio() const;
 
-  static std::unique_ptr<GPU> CreateHardwareRenderer();
-  static std::unique_ptr<GPU> CreateSoftwareRenderer();
+  static std::unique_ptr<GPU> CreateHardwareRenderer(Error* error);
+  static std::unique_ptr<GPU> CreateSoftwareRenderer(Error* error);
 
   // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
   void ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
@@ -631,7 +631,7 @@ protected:
   Stats m_stats = {};
 
 private:
-  bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing);
+  bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error);
 
   using GP0CommandHandler = bool (GPU::*)();
   using GP0CommandHandlerTable = std::array<GP0CommandHandler, 256>;

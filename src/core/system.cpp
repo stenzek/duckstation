@@ -2466,9 +2466,9 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen,
   }
 
   if (renderer == GPURenderer::Software)
-    g_gpu = GPU::CreateSoftwareRenderer();
+    g_gpu = GPU::CreateSoftwareRenderer(error);
   else
-    g_gpu = GPU::CreateHardwareRenderer();
+    g_gpu = GPU::CreateHardwareRenderer(error);
 
   if (!g_gpu)
   {
@@ -2479,7 +2479,7 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen,
                   Settings::GetRendererName(renderer)),
       Host::OSD_CRITICAL_ERROR_DURATION);
     g_gpu.reset();
-    g_gpu = GPU::CreateSoftwareRenderer();
+    g_gpu = GPU::CreateSoftwareRenderer(error);
     if (!g_gpu)
     {
       ERROR_LOG("Failed to create fallback software renderer.");

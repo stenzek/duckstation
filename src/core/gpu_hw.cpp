@@ -245,9 +245,9 @@ bool GPU_HW::IsHardwareRenderer() const
   return true;
 }
 
-bool GPU_HW::Initialize()
+bool GPU_HW::Initialize(Error* error)
 {
-  if (!GPU::Initialize())
+  if (!GPU::Initialize(error))
     return false;
 
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
@@ -275,16 +275,12 @@ bool GPU_HW::Initialize()
 
   PrintSettingsToLog();
 
-  Error error;
-  if (!CompilePipelines(&error))
-  {
-    ERROR_LOG("Failed to compile pipelines: {}", error.GetDescription());
+  if (!CompilePipelines(error))
     return false;
-  }
 
   if (!CreateBuffers())
   {
-    ERROR_LOG("Failed to create framebuffer");
+    Error::SetStringView(error, "Failed to create framebuffer");
     return false;
   }
 
@@ -4214,11 +4210,11 @@ void GPU_HW::DrawRendererStats()
   }
 }
 
-std::unique_ptr<GPU> GPU::CreateHardwareRenderer()
+std::unique_ptr<GPU> GPU::CreateHardwareRenderer(Error* error)
 {
   std::unique_ptr<GPU_HW> gpu(std::make_unique<GPU_HW>());
-  if (!gpu->Initialize())
-    return nullptr;
+  if (!gpu->Initialize(error))
+    gpu.reset();
 
   return gpu;
 }
