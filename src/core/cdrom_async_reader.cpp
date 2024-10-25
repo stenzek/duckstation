@@ -70,8 +70,6 @@ bool CDROMAsyncReader::Precache(ProgressCallback* callback)
   else if (m_media->IsPrecached())
     return true;
 
-  EmptyBuffers();
-
   const CDImage::PrecacheResult res = m_media->Precache(callback);
   if (res == CDImage::PrecacheResult::Unsupported)
   {
