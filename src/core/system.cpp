@@ -2803,7 +2803,6 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
 {
   Assert(IsValid());
 
-  std::string_view media_path = buffer.media_path;
   u32 media_subimage_index = (buffer.version >= 51) ? buffer.media_subimage_index : 0;
   if (!buffer.media_path.empty())
   {
