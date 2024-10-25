@@ -276,9 +276,10 @@ void ImGuiManager::RenderTextOverlays()
   if (state != System::State::Shutdown)
   {
     const float scale = ImGuiManager::GetGlobalScale();
-    const float margin = std::ceil(ImGuiManager::GetScreenMargin() * scale);
-    const float spacing = std::ceil(5.0f * scale);
-    float position_y = margin;
+    const float f_margin = ImGuiManager::GetScreenMargin() * scale;
+    const float margin = ImCeil(ImGuiManager::GetScreenMargin() * scale);
+    const float spacing = ImCeil(5.0f * scale);
+    float position_y = ImFloor(f_margin);
     DrawPerformanceOverlay(position_y, scale, margin, spacing);
     DrawFrameTimeOverlay(position_y, scale, margin, spacing);
     DrawMediaCaptureOverlay(position_y, scale, margin, spacing);
@@ -593,8 +594,8 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
                                                         -1.0f, text_msg.c_str(), text_msg.end_ptr(), nullptr);
 
   const float box_margin = 5.0f * scale;
-  const ImVec2 box_size = ImVec2(icon_size.x + shadow_offset + text_size.x + box_margin * 2.0f,
-                                 std::max(icon_size.x, text_size.y) + box_margin * 2.0f);
+  const ImVec2 box_size = ImVec2(ImCeil(icon_size.x + shadow_offset + text_size.x + box_margin * 2.0f),
+                                 ImCeil(std::max(icon_size.x, text_size.y) + box_margin * 2.0f));
   const ImVec2 box_pos = ImVec2(ImGui::GetIO().DisplaySize.x - margin - box_size.x, position_y);
   dl->AddRectFilled(box_pos, box_pos + box_size, IM_COL32(0, 0, 0, 64), box_margin);
 
@@ -620,7 +621,7 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
   const float shadow_offset = std::ceil(1.0f * scale);
   ImFont* fixed_font = ImGuiManager::GetFixedFont();
 
-  const ImVec2 history_size(200.0f * scale, 50.0f * scale);
+  const ImVec2 history_size(ImCeil(200.0f * scale), ImCeil(50.0f * scale));
   ImGui::SetNextWindowSize(ImVec2(history_size.x, history_size.y));
   ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x - margin - history_size.x, position_y));
   ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.25f));
@@ -685,9 +686,9 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
 void ImGuiManager::DrawInputsOverlay()
 {
   const float scale = ImGuiManager::GetGlobalScale();
-  const float shadow_offset = 1.0f * scale;
+  const float shadow_offset = ImCeil(1.0f * scale);
   const float margin = ImGuiManager::GetScreenMargin() * scale;
-  const float spacing = 5.0f * scale;
+  const float spacing = ImCeil(5.0f * scale);
   ImFont* font = ImGuiManager::GetOSDFont();
 
   static constexpr u32 text_color = IM_COL32(0xff, 0xff, 0xff, 255);
@@ -703,10 +704,14 @@ void ImGuiManager::DrawInputsOverlay()
       num_ports++;
   }
 
-  float current_x = margin;
-  float current_y = display_size.y - margin - ((static_cast<float>(num_ports) * (font->FontSize + spacing)) - spacing);
+  float current_x = ImFloor(margin);
+  float current_y =
+    ImFloor(display_size.y - margin - ((static_cast<float>(num_ports) * (font->FontSize + spacing)) - spacing));
 
-  const ImVec4 clip_rect(current_x, current_y, display_size.x - margin, display_size.y - margin);
+  // This is a bit of a pain. Some of the glyphs slightly overhang/overshoot past the baseline, resulting
+  // in the glyphs getting clipped if we use the text height/margin as a clip point. Instead, just clamp it
+  // to the display size, the margin should be enough to allow for overshooting.
+  const ImVec4 clip_rect(current_x, current_y, display_size.x - margin, display_size.y);
 
   SmallString text;
 
