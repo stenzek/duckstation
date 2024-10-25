@@ -285,9 +285,9 @@ static void DoToggleAnalogMode();
 static constexpr double INPUT_BINDING_TIMEOUT_SECONDS = 5.0;
 
 static void SwitchToSettings();
-static void SwitchToGameSettings();
+static bool SwitchToGameSettings();
 static void SwitchToGameSettings(const GameList::Entry* entry);
-static void SwitchToGameSettingsForPath(const std::string& path);
+static bool SwitchToGameSettingsForPath(const std::string& path);
 static void SwitchToGameSettingsForSerial(std::string_view serial);
 static void DrawSettingsWindow();
 static void DrawSummarySettingsPage();
@@ -706,6 +706,20 @@ void FullscreenUI::OpenPauseMenu()
   s_current_main_window = MainWindowType::PauseMenu;
   s_current_pause_submenu = PauseSubMenu::None;
   QueueResetFocus(FocusResetType::ViewChanged);
+  ForceKeyNavEnabled();
+  FixStateIfPaused();
+}
+
+void FullscreenUI::OpenCheatsMenu()
+{
+  if (!System::IsValid())
+    return;
+
+  if (!Initialize() || s_current_main_window != MainWindowType::None || !SwitchToGameSettings())
+    return;
+
+  s_settings_page = SettingsPage::Cheats;
+  PauseForMenuOpen(true);
   ForceKeyNavEnabled();
   FixStateIfPaused();
 }
@@ -2715,28 +2729,34 @@ void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
   QueueResetFocus(FocusResetType::ViewChanged);
 }
 
-void FullscreenUI::SwitchToGameSettings()
+bool FullscreenUI::SwitchToGameSettings()
 {
   if (System::GetGameSerial().empty())
-    return;
+    return false;
 
   auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(System::GetDiscPath());
   if (!entry)
   {
     SwitchToGameSettingsForSerial(System::GetGameSerial());
-    return;
+    return true;
   }
-
-  SwitchToGameSettings(entry);
+  else
+  {
+    SwitchToGameSettings(entry);
+    return true;
+  }
 }
 
-void FullscreenUI::SwitchToGameSettingsForPath(const std::string& path)
+bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path)
 {
   auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(path);
-  if (entry)
-    SwitchToGameSettings(entry);
+  if (!entry)
+    return false;
+
+  SwitchToGameSettings(entry);
+  return true;
 }
 
 void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)

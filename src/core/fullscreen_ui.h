@@ -28,6 +28,7 @@ void OnRunningGameChanged();
 
 #ifndef __ANDROID__
 void OpenPauseMenu();
+void OpenCheatsMenu();
 void OpenAchievementsWindow();
 bool IsAchievementsWindowOpen();
 void OpenLeaderboardsWindow();

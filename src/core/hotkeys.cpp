@@ -165,13 +165,6 @@ static bool CanPause()
 #endif
 
 BEGIN_HOTKEY_LIST(g_common_hotkeys)
-#ifndef __ANDROID__
-DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
-              [](s32 pressed) {
-                if (!pressed && CanPause())
-                  FullscreenUI::OpenPauseMenu();
-              })
-#endif
 
 DEFINE_HOTKEY("FastForward", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Fast Forward"),
               [](s32 pressed) {
@@ -215,6 +208,18 @@ DEFINE_HOTKEY("PowerOff", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("
               [](s32 pressed) {
                 if (!pressed && CanPause())
                   Host::RequestSystemShutdown(true, g_settings.save_state_on_exit);
+              })
+
+DEFINE_HOTKEY("OpenPauseMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Open Pause Menu"),
+              [](s32 pressed) {
+                if (!pressed && CanPause())
+                  FullscreenUI::OpenPauseMenu();
+              })
+
+DEFINE_HOTKEY("OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Open Cheat Settings"),
+              [](s32 pressed) {
+                if (!pressed && CanPause())
+                  FullscreenUI::OpenCheatsMenu();
               })
 #endif
 
