@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
-#include "cd_subchannel_replacement.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -27,8 +26,6 @@ public:
 
   bool Open(const char* filename, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
   s64 GetSizeOnDisk() const override;
 
 protected:
@@ -74,8 +71,6 @@ private:
   DataMap m_data_map;
   std::vector<u8> m_chunk_buffer;
   u32 m_chunk_start = 0;
-
-  CDSubChannelReplacement m_sbi;
 };
 
 } // namespace
@@ -260,8 +255,6 @@ bool CDImageEcm::Open(const char* filename, Error* error)
 
   AddLeadOutIndex();
 
-  m_sbi.LoadFromImagePath(filename);
-
   m_chunk_buffer.reserve(RAW_SECTOR_SIZE * 2);
   return Seek(1, Position{0, 0, 0});
 }
@@ -367,19 +360,6 @@ bool CDImageEcm::ReadChunks(u32 disc_offset, u32 size)
   }
 
   return true;
-}
-
-bool CDImageEcm::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
-    return true;
-
-  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-}
-
-bool CDImageEcm::HasNonStandardSubchannel() const
-{
-  return (m_sbi.GetReplacementSectorCount() > 0);
 }
 
 bool CDImageEcm::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)

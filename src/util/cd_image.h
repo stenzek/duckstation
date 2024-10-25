@@ -259,7 +259,7 @@ public:
                                                   ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 
   // Accessors.
-  const std::string& GetFileName() const { return m_filename; }
+  const std::string& GetPath() const { return m_filename; }
   LBA GetPositionOnDisc() const { return m_position_on_disc; }
   Position GetMSFPositionOnDisc() const { return Position::FromLBA(m_position_on_disc); }
   LBA GetPositionInTrack() const { return m_position_in_track; }
@@ -311,7 +311,7 @@ public:
   virtual bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index);
 
   // Returns true if the image has replacement subchannel data.
-  virtual bool HasNonStandardSubchannel() const;
+  virtual bool HasSubchannelData() const;
 
   // Reads a single sector from an index.
   virtual bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) = 0;

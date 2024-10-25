@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
-#include "cd_subchannel_replacement.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -28,7 +27,7 @@ public:
   bool Open(const char* path, bool apply_patches, Error* Error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
+  bool HasSubchannelData() const override;
 
   bool HasSubImages() const override;
   u32 GetSubImageCount() const override;
@@ -115,9 +114,9 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
   return !m_entries.empty() && SwitchSubImage(0, error);
 }
 
-bool CDImageM3u::HasNonStandardSubchannel() const
+bool CDImageM3u::HasSubchannelData() const
 {
-  return m_current_image->HasNonStandardSubchannel();
+  return m_current_image->HasSubchannelData();
 }
 
 bool CDImageM3u::HasSubImages() const

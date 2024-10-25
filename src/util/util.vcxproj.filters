@@ -5,7 +5,6 @@
     <ClInclude Include="audio_stream.h" />
     <ClInclude Include="iso_reader.h" />
     <ClInclude Include="cd_image.h" />
-    <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="wav_writer.h" />
     <ClInclude Include="cd_image_hasher.h" />
     <ClInclude Include="shiftjis.h" />
@@ -81,7 +80,6 @@
     <ClCompile Include="cd_image_cue.cpp" />
     <ClCompile Include="cd_image_bin.cpp" />
     <ClCompile Include="iso_reader.cpp" />
-    <ClCompile Include="cd_subchannel_replacement.cpp" />
     <ClCompile Include="cd_image_chd.cpp" />
     <ClCompile Include="wav_writer.cpp" />
     <ClCompile Include="cd_image_hasher.cpp" />

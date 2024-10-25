@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
-#include "cd_subchannel_replacement.h"
 
 #include "common/assert.h"
 #include "common/file_system.h"
@@ -24,9 +23,6 @@ public:
 
   bool CopyImage(CDImage* image, ProgressCallback* progress);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
-
   bool IsPrecached() const override;
 
 protected:
@@ -35,7 +31,6 @@ protected:
 private:
   u8* m_memory = nullptr;
   u32 m_memory_sectors = 0;
-  CDSubChannelReplacement m_sbi;
 };
 
 } // namespace
@@ -119,25 +114,10 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
   }
 
   Assert(current_offset == m_memory_sectors);
-  m_filename = image->GetFileName();
+  m_filename = image->GetPath();
   m_lba_count = image->GetLBACount();
 
-  m_sbi.LoadFromImagePath(m_filename);
-
   return Seek(1, Position{0, 0, 0});
-}
-
-bool CDImageMemory::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
-    return true;
-
-  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-}
-
-bool CDImageMemory::HasNonStandardSubchannel() const
-{
-  return (m_sbi.GetReplacementSectorCount() > 0);
 }
 
 bool CDImageMemory::IsPrecached() const

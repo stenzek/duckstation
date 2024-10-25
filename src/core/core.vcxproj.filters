@@ -69,6 +69,7 @@
     <ClCompile Include="gpu_hw_texture_cache.cpp" />
     <ClCompile Include="memory_scanner.cpp" />
     <ClCompile Include="gpu_dump.cpp" />
+    <ClCompile Include="cdrom_subq_replacement.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -144,6 +145,7 @@
     <ClInclude Include="gpu_hw_texture_cache.h" />
     <ClInclude Include="memory_scanner.h" />
     <ClInclude Include="gpu_dump.h" />
+    <ClInclude Include="cdrom_subq_replacement.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

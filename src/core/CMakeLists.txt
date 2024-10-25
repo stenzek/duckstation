@@ -14,6 +14,8 @@ add_library(core
   cdrom.h
   cdrom_async_reader.cpp
   cdrom_async_reader.h
+  cdrom_subq_replacement.cpp
+  cdrom_subq_replacement.h
   cheats.cpp
   cheats.h
   controller.cpp

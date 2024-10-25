@@ -361,7 +361,7 @@ bool CDImage::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_
   return true;
 }
 
-bool CDImage::HasNonStandardSubchannel() const
+bool CDImage::HasSubchannelData() const
 {
   return false;
 }

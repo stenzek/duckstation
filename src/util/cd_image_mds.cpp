@@ -3,7 +3,6 @@
 
 #include "assert.h"
 #include "cd_image.h"
-#include "cd_subchannel_replacement.h"
 
 #include "common/error.h"
 #include "common/file_system.h"
@@ -46,8 +45,6 @@ public:
 
   bool OpenAndParse(const char* filename, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
   s64 GetSizeOnDisk() const override;
 
 protected:
@@ -56,7 +53,6 @@ protected:
 private:
   std::FILE* m_mdf_file = nullptr;
   u64 m_mdf_file_position = 0;
-  CDSubChannelReplacement m_sbi;
 };
 
 } // namespace
@@ -243,22 +239,7 @@ bool CDImageMds::OpenAndParse(const char* filename, Error* error)
   m_lba_count = m_tracks.back().start_lba + m_tracks.back().length;
   AddLeadOutIndex();
 
-  m_sbi.LoadFromImagePath(filename);
-
   return Seek(1, Position{0, 0, 0});
-}
-
-bool CDImageMds::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
-    return true;
-
-  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-}
-
-bool CDImageMds::HasNonStandardSubchannel() const
-{
-  return (m_sbi.GetReplacementSectorCount() > 0);
 }
 
 bool CDImageMds::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)

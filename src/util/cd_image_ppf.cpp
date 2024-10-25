@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
-#include "cd_subchannel_replacement.h"
 
 #include "common/assert.h"
 #include "common/file_system.h"
@@ -33,7 +32,7 @@ public:
   bool Open(const char* filename, std::unique_ptr<CDImage> parent_image);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
+  bool HasSubchannelData() const override;
   s64 GetSizeOnDisk() const override;
 
   std::string GetMetadata(std::string_view type) const override;
@@ -89,7 +88,7 @@ bool CDImagePPF::Open(const char* filename, std::unique_ptr<CDImage> parent_imag
     m_replacement_offset = parent_image->GetIndex(1).start_lba_on_disc;
 
   // copy all the stuff from the parent image
-  m_filename = parent_image->GetFileName();
+  m_filename = parent_image->GetPath();
   m_tracks = parent_image->GetTracks();
   m_indices = parent_image->GetIndices();
   m_parent_image = std::move(parent_image);
@@ -416,9 +415,9 @@ bool CDImagePPF::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
   return m_parent_image->ReadSubChannelQ(subq, index, lba_in_index);
 }
 
-bool CDImagePPF::HasNonStandardSubchannel() const
+bool CDImagePPF::HasSubchannelData() const
 {
-  return m_parent_image->HasNonStandardSubchannel();
+  return m_parent_image->HasSubchannelData();
 }
 
 std::string CDImagePPF::GetMetadata(std::string_view type) const

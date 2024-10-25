@@ -37,7 +37,7 @@ public:
   bool HasMedia() const { return static_cast<bool>(m_media); }
   const CDImage* GetMedia() const { return m_media.get(); }
   CDImage* GetMedia() { return m_media.get(); }
-  const std::string& GetMediaFileName() const { return m_media->GetFileName(); }
+  const std::string& GetMediaPath() const { return m_media->GetPath(); }
 
   bool IsUsingThread() const { return m_read_thread.joinable(); }
   void StartThread(u32 readahead_count = 8);

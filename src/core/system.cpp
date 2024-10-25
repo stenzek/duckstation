@@ -157,7 +157,8 @@ static void WarnAboutStateTaints(u32 state_taints);
 static void WarnAboutUnsafeSettings();
 static void LogUnsafeSettingsToConsole(const SmallStringBase& messages);
 
-static bool Initialize(bool force_software_renderer, bool fullscreen, Error* error);
+static bool Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bool force_software_renderer,
+                       bool fullscreen, Error* error);
 static bool LoadBIOS(Error* error);
 static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* error);
 static void InternalReset();
@@ -187,7 +188,7 @@ static void ResetPerformanceCounters();
 
 static bool UpdateGameSettingsLayer();
 static void UpdateRunningGame(const std::string_view path, CDImage* image, bool booting);
-static bool CheckForSBIFile(CDImage* image, Error* error);
+static bool CheckForRequiredSubQ(Error* error);
 
 static void UpdateControllers();
 static void ResetControllers();
@@ -1810,7 +1811,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Update running game, this will apply settings as well.
-  UpdateRunningGame(disc ? disc->GetFileName().c_str() : parameters.filename.c_str(), disc.get(), true);
+  UpdateRunningGame(disc ? disc->GetPath().c_str() : parameters.filename.c_str(), disc.get(), true);
 
   // Get boot EXE override.
   if (!parameters.override_exe.empty())
@@ -1826,13 +1827,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     INFO_LOG("Overriding boot executable: '{}'", parameters.override_exe);
     boot_mode = BootMode::BootEXE;
     exe_override = std::move(parameters.override_exe);
-  }
-
-  // Check for SBI.
-  if (!CheckForSBIFile(disc.get(), error))
-  {
-    DestroySystem();
-    return false;
   }
 
   // Check for resuming with hardcore mode.
@@ -1871,24 +1865,15 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     }
   }
 
-  // Load BIOS image.
-  if (!SetBootMode(boot_mode, disc_region, error))
+  // Load BIOS image, component setup, check for subchannel in games that need it.
+  if (!SetBootMode(boot_mode, disc_region, error) ||
+      !Initialize(std::move(disc), disc_region, parameters.force_software_renderer,
+                  parameters.override_fullscreen.value_or(ShouldStartFullscreen()), error) ||
+      !CheckForRequiredSubQ(error))
   {
     DestroySystem();
     return false;
   }
-
-  // Component setup.
-  if (!Initialize(parameters.force_software_renderer, parameters.override_fullscreen.value_or(ShouldStartFullscreen()),
-                  error))
-  {
-    DestroySystem();
-    return false;
-  }
-
-  // Insert disc.
-  if (disc)
-    CDROM::InsertMedia(std::move(disc), disc_region);
 
   s_exe_override = std::move(exe_override);
 
@@ -1944,7 +1929,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   return true;
 }
 
-bool System::Initialize(bool force_software_renderer, bool fullscreen, Error* error)
+bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bool force_software_renderer,
+                        bool fullscreen, Error* error)
 {
   g_ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
   s_max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
@@ -1993,6 +1979,11 @@ bool System::Initialize(bool force_software_renderer, bool fullscreen, Error* er
 
   Bus::Initialize();
   CPU::Initialize();
+  CDROM::Initialize();
+
+  // CDROM before GPU, that way we don't modeswitch.
+  if (disc && !CDROM::InsertMedia(std::move(disc), disc_region, s_running_game_serial, s_running_game_title, error))
+    return false;
 
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, fullscreen, error))
     return false;
@@ -2004,10 +1995,12 @@ bool System::Initialize(bool force_software_renderer, bool fullscreen, Error* er
 
   // Was startup cancelled? (e.g. shading compilers took too long and the user closed the application)
   if (IsStartupCancelled())
+  {
+    Error::SetStringView(error, TRANSLATE_SV("System", "Startup was cancelled."));
     return false;
+  }
 
   DMA::Initialize();
-  CDROM::Initialize();
   Pad::Initialize();
   Timers::Initialize();
   SPU::Initialize();
@@ -2810,71 +2803,57 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
 {
   Assert(IsValid());
 
-  std::unique_ptr<CDImage> media;
-  std::unique_ptr<CDImage> old_media = CDROM::RemoveMedia(false);
   std::string_view media_path = buffer.media_path;
-  u32 media_subimage_index = buffer.media_subimage_index;
-  if (old_media && old_media->GetFileName() == buffer.media_path)
+  u32 media_subimage_index = (buffer.version >= 51) ? buffer.media_subimage_index : 0;
+  if (!buffer.media_path.empty())
   {
-    INFO_LOG("Re-using same media '{}'", buffer.media_path);
-    media = std::move(old_media);
-  }
-  else if (!buffer.media_path.empty())
-  {
-    Error local_error;
-    media = CDImage::Open(buffer.media_path.c_str(), g_settings.cdrom_load_image_patches, error ? error : &local_error);
-    if (!media)
+    if (CDROM::HasMedia() && CDROM::GetMediaPath() == buffer.media_path &&
+        CDROM::GetCurrentSubImage() == media_subimage_index)
     {
-      if (old_media)
-      {
-        Host::AddOSDMessage(
-          fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open CD image from save state '{}': {}.\nUsing "
-                                                 "existing image '{}', this may result in instability."),
-                      buffer.media_path, error ? error->GetDescription() : local_error.GetDescription(),
-                      old_media->GetFileName()),
-          Host::OSD_CRITICAL_ERROR_DURATION);
-        media = std::move(old_media);
-        media_path = media->GetFileName();
-        media_subimage_index = media->GetCurrentSubImage();
-      }
-      else
-      {
-        Error::AddPrefixFmt(error, TRANSLATE_FS("System", "Failed to open CD image '{}' used by save state:\n"),
-                            Path::GetFileName(buffer.media_path));
-        return false;
-      }
-    }
-  }
-
-  if (media && buffer.version >= 51)
-  {
-    const u32 num_subimages = media->HasSubImages() ? media->GetSubImageCount() : 1;
-    if (media_subimage_index >= num_subimages ||
-        (media->HasSubImages() && media->GetCurrentSubImage() != media_subimage_index &&
-         !media->SwitchSubImage(media_subimage_index, error)))
-    {
-      Error::AddPrefixFmt(
-        error, TRANSLATE_FS("System", "Failed to switch to subimage {} in CD image '{}' used by save state:\n"),
-        media_subimage_index + 1u, Path::GetFileName(media_path));
-      return false;
+      INFO_LOG("Re-using same media '{}'", CDROM::GetMediaPath());
     }
     else
     {
-      INFO_LOG("Switched to subimage {} in '{}'", media_subimage_index, buffer.media_path.c_str());
+      // needs new image
+      Error local_error;
+      std::unique_ptr<CDImage> new_disc =
+        CDImage::Open(buffer.media_path.c_str(), g_settings.cdrom_load_image_patches, error ? error : &local_error);
+      const DiscRegion new_disc_region =
+        new_disc ? GameList::GetCustomRegionForPath(buffer.media_path).value_or(GetRegionForImage(new_disc.get())) :
+                   DiscRegion::NonPS1;
+      if (!new_disc ||
+          (media_subimage_index != 0 && new_disc->HasSubImages() &&
+           !new_disc->SwitchSubImage(media_subimage_index, error ? error : &local_error)) ||
+          (UpdateRunningGame(buffer.media_path, new_disc.get(), false),
+           !CDROM::InsertMedia(std::move(new_disc), new_disc_region, s_running_game_serial, s_running_game_title,
+                               error ? error : &local_error)))
+      {
+        if (CDROM::HasMedia())
+        {
+          Host::AddOSDMessage(
+            fmt::format(TRANSLATE_FS("OSDMessage", "Failed to open CD image from save state '{}': {}.\nUsing "
+                                                   "existing image '{}', this may result in instability."),
+                        buffer.media_path, error ? error->GetDescription() : local_error.GetDescription(),
+                        Path::GetFileName(CDROM::GetMediaPath())),
+            Host::OSD_CRITICAL_ERROR_DURATION);
+        }
+        else
+        {
+          Error::AddPrefixFmt(error, TRANSLATE_FS("System", "Failed to open CD image '{}' used by save state:\n"),
+                              Path::GetFileName(buffer.media_path));
+          return false;
+        }
+      }
+      else if (g_settings.cdrom_load_image_to_ram)
+      {
+        CDROM::PrecacheMedia();
+      }
     }
   }
-
-  // Skip updating media if there is none, and none in the state. That way we don't wipe out EXE boot.
-  if (media)
-    UpdateRunningGame(media_path, media.get(), false);
-
-  CDROM::Reset();
-  if (media)
+  else
   {
-    const DiscRegion region = GameList::GetCustomRegionForPath(media_path).value_or(GetRegionForImage(media.get()));
-    CDROM::InsertMedia(std::move(media), region);
-    if (g_settings.cdrom_load_image_to_ram)
-      CDROM::PrecacheMedia();
+    // state has no disc
+    CDROM::RemoveMedia(false);
   }
 
   // ensure the correct card is loaded
@@ -3141,7 +3120,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
 
   if (CDROM::HasMedia())
   {
-    buffer->media_path = CDROM::GetMediaFileName();
+    buffer->media_path = CDROM::GetMediaPath();
     buffer->media_subimage_index = CDROM::GetMedia()->HasSubImages() ? CDROM::GetMedia()->GetCurrentSubImage() : 0;
   }
 
@@ -4076,7 +4055,7 @@ std::string System::GetMediaFileName()
   if (!CDROM::HasMedia())
     return {};
 
-  return CDROM::GetMediaFileName();
+  return CDROM::GetMediaPath();
 }
 
 bool System::InsertMedia(const char* path)
@@ -4086,7 +4065,10 @@ bool System::InsertMedia(const char* path)
 
   Error error;
   std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
-  if (!image)
+  const DiscRegion region =
+    image ? GameList::GetCustomRegionForPath(path).value_or(GetRegionForImage(image.get())) : DiscRegion::NonPS1;
+  if (!image || (UpdateRunningGame(path, image.get(), false),
+                 !CDROM::InsertMedia(std::move(image), region, s_running_game_serial, s_running_game_title, &error)))
   {
     Host::AddIconOSDWarning(
       "DiscInserted", ICON_FA_COMPACT_DISC,
@@ -4095,9 +4077,6 @@ bool System::InsertMedia(const char* path)
     return false;
   }
 
-  const DiscRegion region = GameList::GetCustomRegionForPath(path).value_or(GetRegionForImage(image.get()));
-  UpdateRunningGame(path, image.get(), false);
-  CDROM::InsertMedia(std::move(image), region);
   INFO_LOG("Inserted media from {} ({}, {})", s_running_game_path, s_running_game_serial, s_running_game_title);
   if (g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
@@ -4238,10 +4217,10 @@ void System::UpdateRunningGame(const std::string_view path, CDImage* image, bool
   Host::OnGameChanged(s_running_game_path, s_running_game_serial, s_running_game_title);
 }
 
-bool System::CheckForSBIFile(CDImage* image, Error* error)
+bool System::CheckForRequiredSubQ(Error* error)
 {
-  if (!s_running_game_entry || !s_running_game_entry->HasTrait(GameDatabase::Trait::IsLibCryptProtected) || !image ||
-      image->HasNonStandardSubchannel())
+  if (!s_running_game_entry || !s_running_game_entry->HasTrait(GameDatabase::Trait::IsLibCryptProtected) ||
+      CDROM::HasNonStandardOrReplacementSubQ())
   {
     return true;
   }
@@ -4328,25 +4307,36 @@ bool System::SwitchMediaSubImage(u32 index)
   Assert(image);
 
   Error error;
-  if (!image->SwitchSubImage(index, &error))
+  bool okay = image->SwitchSubImage(index, &error);
+  std::string title, subimage_title;
+  if (okay)
+  {
+    const DiscRegion region =
+      GameList::GetCustomRegionForPath(image->GetPath()).value_or(GetRegionForImage(image.get()));
+    subimage_title = image->GetSubImageMetadata(index, "title");
+    title = image->GetMetadata("title");
+    UpdateRunningGame(image->GetPath(), image.get(), false);
+    okay = CDROM::InsertMedia(std::move(image), region, s_running_game_serial, s_running_game_title, &error);
+  }
+  if (!okay)
   {
     Host::AddIconOSDMessage("MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
                             fmt::format(TRANSLATE_FS("System", "Failed to switch to subimage {} in '{}': {}."),
-                                        index + 1u, Path::GetFileName(image->GetFileName()), error.GetDescription()),
+                                        index + 1u, Path::GetFileName(image->GetPath()), error.GetDescription()),
                             Host::OSD_INFO_DURATION);
 
-    const DiscRegion region = GetRegionForImage(image.get());
-    CDROM::InsertMedia(std::move(image), region);
+    // restore old disc
+    const DiscRegion region =
+      GameList::GetCustomRegionForPath(image->GetPath()).value_or(GetRegionForImage(image.get()));
+    UpdateRunningGame(image->GetPath(), image.get(), false);
+    CDROM::InsertMedia(std::move(image), region, s_running_game_serial, s_running_game_title, nullptr);
     return false;
   }
 
   Host::AddIconOSDMessage("MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
-                          fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."),
-                                      image->GetSubImageMetadata(index, "title"), index + 1u,
-                                      image->GetMetadata("title")),
+                          fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."), subimage_title,
+                                      title, index + 1u, Path::GetFileName(CDROM::GetMediaPath())),
                           Host::OSD_INFO_DURATION);
-  const DiscRegion region = GetRegionForImage(image.get());
-  CDROM::InsertMedia(std::move(image), region);
 
   ClearMemorySaveStates();
   return true;

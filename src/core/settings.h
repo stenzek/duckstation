@@ -578,6 +578,7 @@ extern std::string Resources;
 extern std::string SaveStates;
 extern std::string Screenshots;
 extern std::string Shaders;
+extern std::string Subchannels;
 extern std::string Textures;
 extern std::string UserResources;
 extern std::string Videos;

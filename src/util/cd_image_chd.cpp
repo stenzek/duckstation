@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
-#include "cd_subchannel_replacement.h"
 
 #include "common/align.h"
 #include "common/assert.h"
@@ -65,7 +64,7 @@ public:
   bool Open(const char* filename, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
+  bool HasSubchannelData() const override;
   PrecacheResult Precache(ProgressCallback* progress) override;
   bool IsPrecached() const override;
   s64 GetSizeOnDisk() const override;
@@ -90,8 +89,6 @@ private:
   DynamicHeapArray<u8, 16> m_hunk_buffer;
   u32 m_current_hunk_index = static_cast<u32>(-1);
   bool m_precached = false;
-
-  CDSubChannelReplacement m_sbi;
 };
 } // namespace
 
@@ -415,16 +412,11 @@ bool CDImageCHD::Open(const char* filename, Error* error)
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
-  m_sbi.LoadFromImagePath(filename);
-
   return Seek(1, Position{0, 0, 0});
 }
 
 bool CDImageCHD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
 {
-  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
-    return true;
-
   if (index.submode == CDImage::SubchannelMode::None)
     return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
 
@@ -446,10 +438,10 @@ bool CDImageCHD::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
   return true;
 }
 
-bool CDImageCHD::HasNonStandardSubchannel() const
+bool CDImageCHD::HasSubchannelData() const
 {
   // Just look at the first track for in-CHD subq.
-  return (m_sbi.GetReplacementSectorCount() > 0 || m_tracks.front().submode != CDImage::SubchannelMode::None);
+  return (m_tracks.front().submode != CDImage::SubchannelMode::None);
 }
 
 CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)

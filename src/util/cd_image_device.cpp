@@ -213,7 +213,7 @@ public:
   bool Open(const char* filename, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
+  bool HasSubchannelData() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -441,7 +441,7 @@ bool CDImageDeviceWin32::ReadSubChannelQ(SubChannelQ* subq, const Index& index, 
   }
 }
 
-bool CDImageDeviceWin32::HasNonStandardSubchannel() const
+bool CDImageDeviceWin32::HasSubchannelData() const
 {
   return m_has_valid_subcode;
 }
@@ -704,7 +704,7 @@ public:
   bool Open(const char* filename, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
+  bool HasSubchannelData() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -932,7 +932,7 @@ bool CDImageDeviceLinux::ReadSubChannelQ(SubChannelQ* subq, const Index& index, 
   }
 }
 
-bool CDImageDeviceLinux::HasNonStandardSubchannel() const
+bool CDImageDeviceLinux::HasSubchannelData() const
 {
   // Can only read subchannel through SPTD.
   return m_scsi_read_mode >= SCSIReadMode::Full;
@@ -1165,7 +1165,7 @@ public:
   bool Open(const char* filename, Error* error);
 
   bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
+  bool HasSubchannelData() const override;
 
 protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
@@ -1440,7 +1440,7 @@ bool CDImageDeviceMacOS::ReadSubChannelQ(SubChannelQ* subq, const Index& index, 
   }
 }
 
-bool CDImageDeviceMacOS::HasNonStandardSubchannel() const
+bool CDImageDeviceMacOS::HasSubchannelData() const
 {
   // Can only read subchannel through SPTD.
   return m_read_mode >= SCSIReadMode::Full;

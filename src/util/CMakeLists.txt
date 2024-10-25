@@ -15,8 +15,6 @@ add_library(util
   cd_image_mds.cpp
   cd_image_pbp.cpp
   cd_image_ppf.cpp
-  cd_subchannel_replacement.cpp
-  cd_subchannel_replacement.h
   compress_helpers.cpp
   compress_helpers.h
   cue_parser.cpp

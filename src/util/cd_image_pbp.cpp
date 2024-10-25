@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
-#include "cd_subchannel_replacement.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -134,8 +133,6 @@ public:
 
   bool Open(const char* filename, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
   s64 GetSizeOnDisk() const override;
 
   bool HasSubImages() const override;
@@ -197,8 +194,6 @@ private:
   std::vector<u8> m_compressed_block;
 
   z_stream m_inflate_stream;
-
-  CDSubChannelReplacement m_sbi;
 };
 } // namespace
 
@@ -738,20 +733,6 @@ bool CDImagePBP::OpenDisc(u32 index, Error* error)
     return false;
   }
 
-  if (m_disc_offsets.size() > 1)
-  {
-    // Gross. Have to use the SBI suffix here, otherwise Android won't resolve content URIs...
-    // Which means that LSD won't be usable with PBP on Android. Oh well.
-    const std::string display_name = FileSystem::GetDisplayNameFromPath(m_filename);
-    const std::string offset_path =
-      Path::BuildRelativePath(m_filename, fmt::format("{}_{}.sbi", Path::StripExtension(display_name), index + 1));
-    m_sbi.LoadFromImagePath(offset_path);
-  }
-  else
-  {
-    m_sbi.LoadFromImagePath(m_filename);
-  }
-
   m_current_disc = index;
   return Seek(1, Position{0, 0, 0});
 }
@@ -815,19 +796,6 @@ bool CDImagePBP::DecompressBlock(const BlockInfo& block_info)
   }
 
   return true;
-}
-
-bool CDImagePBP::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
-    return true;
-
-  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-}
-
-bool CDImagePBP::HasNonStandardSubchannel() const
-{
-  return (m_sbi.GetReplacementSectorCount() > 0);
 }
 
 bool CDImagePBP::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)

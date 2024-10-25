@@ -2142,6 +2142,7 @@ std::string EmuFolders::Resources;
 std::string EmuFolders::SaveStates;
 std::string EmuFolders::Screenshots;
 std::string EmuFolders::Shaders;
+std::string EmuFolders::Subchannels;
 std::string EmuFolders::Textures;
 std::string EmuFolders::UserResources;
 std::string EmuFolders::Videos;
@@ -2160,6 +2161,7 @@ void EmuFolders::SetDefaults()
   SaveStates = Path::Combine(DataRoot, "savestates");
   Screenshots = Path::Combine(DataRoot, "screenshots");
   Shaders = Path::Combine(DataRoot, "shaders");
+  Subchannels = Path::Combine(DataRoot, "subchannels");
   Textures = Path::Combine(DataRoot, "textures");
   UserResources = Path::Combine(DataRoot, "resources");
   Videos = Path::Combine(DataRoot, "videos");
@@ -2191,6 +2193,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   SaveStates = LoadPathFromSettings(si, DataRoot, "Folders", "SaveStates", "savestates");
   Screenshots = LoadPathFromSettings(si, DataRoot, "Folders", "Screenshots", "screenshots");
   Shaders = LoadPathFromSettings(si, DataRoot, "Folders", "Shaders", "shaders");
+  Subchannels = LoadPathFromSettings(si, DataRoot, "Folders", "Subchannels", "subchannels");
   Textures = LoadPathFromSettings(si, DataRoot, "Folders", "Textures", "textures");
   UserResources = LoadPathFromSettings(si, DataRoot, "Folders", "UserResources", "resources");
   Videos = LoadPathFromSettings(si, DataRoot, "Folders", "Videos", "videos");
@@ -2208,6 +2211,7 @@ void EmuFolders::LoadConfig(SettingsInterface& si)
   DEV_LOG("SaveStates Directory: {}", SaveStates);
   DEV_LOG("Screenshots Directory: {}", Screenshots);
   DEV_LOG("Shaders Directory: {}", Shaders);
+  DEV_LOG("Subchannels Directory: {}", Subchannels);
   DEV_LOG("Textures Directory: {}", Textures);
   DEV_LOG("User Resources Directory: {}", UserResources);
   DEV_LOG("Videos Directory: {}", Videos);
@@ -2228,6 +2232,7 @@ void EmuFolders::Save(SettingsInterface& si)
   si.SetStringValue("Folders", "SaveStates", Path::MakeRelative(SaveStates, DataRoot).c_str());
   si.SetStringValue("Folders", "Screenshots", Path::MakeRelative(Screenshots, DataRoot).c_str());
   si.SetStringValue("Folders", "Shaders", Path::MakeRelative(Shaders, DataRoot).c_str());
+  si.SetStringValue("Folders", "Subchannels", Path::MakeRelative(Subchannels, DataRoot).c_str());
   si.SetStringValue("Folders", "Textures", Path::MakeRelative(Textures, DataRoot).c_str());
   si.SetStringValue("Folders", "UserResources", Path::MakeRelative(UserResources, DataRoot).c_str());
   si.SetStringValue("Folders", "Videos", Path::MakeRelative(Videos, DataRoot).c_str());
@@ -2275,6 +2280,7 @@ bool EmuFolders::EnsureFoldersExist()
   result = FileSystem::EnsureDirectoryExists(
              Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures").c_str(), false) &&
            result;
+  result = FileSystem::EnsureDirectoryExists(Subchannels.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(UserResources.c_str(), false) && result;
   result = FileSystem::EnsureDirectoryExists(Videos.c_str(), false) && result;

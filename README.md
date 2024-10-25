@@ -142,6 +142,8 @@ For example, if your disc image was named `Spyro3.cue`, you would place the SBI 
 
 CHD images with built-in subchannel information are also supported.
 
+If you are playing directly from a disc and your CD/DVD drive does not support subchannel reading, or has a skew with the returned SubQ, you can place the SBI file in the `subchannel` directory under the user directory, with the serial or title of the game.
+
 ### Cheats and patch database
 
 DuckStation ships with a built-in cheat and patch database, both provided by the community. Contributions to these are welcome at https://github.com/duckstation/chtdb.

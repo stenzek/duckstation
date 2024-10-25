@@ -78,7 +78,6 @@
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="page_fault_handler.h" />
-    <ClInclude Include="cd_subchannel_replacement.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="platform_misc.h" />
     <ClInclude Include="postprocessing.h" />
@@ -148,7 +147,6 @@
     <ClCompile Include="input_manager.cpp" />
     <ClCompile Include="input_source.cpp" />
     <ClCompile Include="iso_reader.cpp" />
-    <ClCompile Include="cd_subchannel_replacement.cpp" />
     <ClCompile Include="media_capture.cpp" />
     <ClCompile Include="opengl_context.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>

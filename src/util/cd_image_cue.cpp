@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cd_image.h"
-#include "cd_subchannel_replacement.h"
 #include "cue_parser.h"
 
 #include "common/assert.h"
@@ -29,8 +28,6 @@ public:
 
   bool OpenAndParse(const char* filename, Error* error);
 
-  bool ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index) override;
-  bool HasNonStandardSubchannel() const override;
   s64 GetSizeOnDisk() const override;
 
 protected:
@@ -45,7 +42,6 @@ private:
   };
 
   std::vector<TrackFile> m_files;
-  CDSubChannelReplacement m_sbi;
 };
 
 } // namespace
@@ -293,22 +289,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
   m_lba_count = disc_lba;
   AddLeadOutIndex();
 
-  m_sbi.LoadFromImagePath(filename);
-
   return Seek(1, Position{0, 0, 0});
-}
-
-bool CDImageCueSheet::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_in_index)
-{
-  if (m_sbi.GetReplacementSubChannelQ(index.start_lba_on_disc + lba_in_index, subq))
-    return true;
-
-  return CDImage::ReadSubChannelQ(subq, index, lba_in_index);
-}
-
-bool CDImageCueSheet::HasNonStandardSubchannel() const
-{
-  return (m_sbi.GetReplacementSectorCount() > 0);
 }
 
 bool CDImageCueSheet::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index)
