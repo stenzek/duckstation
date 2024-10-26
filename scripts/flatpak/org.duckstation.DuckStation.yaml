@@ -30,14 +30,15 @@ finish-args:
 
 modules:
   # Dependencies.
+  - "modules/10-libbacktrace.yaml"
+  - "modules/11-libzip.yaml"
   - "modules/20-sdl2.yaml"
-  - "modules/21-libbacktrace.yaml"
-  - "modules/22-shaderc.yaml"
-  - "modules/23-spirv-cross.yaml"
-  - "modules/24-cpuinfo.yaml"
-  - "modules/25-discord-rpc.yaml"
-  - "modules/26-soundtouch.yaml"
-  - "modules/27-lunasvg.yaml"
+  - "modules/21-shaderc.yaml"
+  - "modules/22-spirv-cross.yaml"
+  - "modules/23-cpuinfo.yaml"
+  - "modules/24-discord-rpc.yaml"
+  - "modules/25-soundtouch.yaml"
+  - "modules/26-lunasvg.yaml"
 
   # Main module.
   - name: duckstation

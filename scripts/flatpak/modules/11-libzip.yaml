@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-License-Identifier: CC-BY-NC-ND-4.0
+
+name: libzip
+buildsystem: cmake-ninja
+builddir: true
+config-opts:
+  - "-DCMAKE_BUILD_TYPE=Release"
+  - "-DBUILD_SHARED_LIBS=ON"
+  - "-DENABLE_COMMONCRYPTO=OFF"
+  - "-DENABLE_GNUTLS=OFF"
+  - "-DENABLE_MBEDTLS=OFF"
+  - "-DENABLE_OPENSSL=OFF"
+  - "-DENABLE_WINDOWS_CRYPTO=OFF"
+  - "-DENABLE_BZIP2=OFF"
+  - "-DENABLE_LZMA=OFF"
+  - "-DENABLE_ZSTD=ON"
+  - "-DLIBZIP_DO_INSTALL=ON"
+  - "-DBUILD_TOOLS=OFF"
+  - "-DBUILD_REGRESS=OFF"
+  - "-DBUILD_OSSFUZZ=OFF"
+  - "-DBUILD_EXAMPLES=OFF"
+  - "-DBUILD_DOC=OFF"
+build-options:
+  strip: true
+sources:
+  - type: git
+    url: "https://github.com/nih-at/libzip.git"
+    commit: "9c8b818a1de143a4a8ee445351fb8f92115e33e1"
+cleanup:
+  - /bin
+  - /include
+  - /lib/*.a
+  - /lib/*.la
+  - /lib/cmake
+  - /lib/pkgconfig
+  - /share
