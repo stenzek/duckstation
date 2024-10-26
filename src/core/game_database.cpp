@@ -465,7 +465,11 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
   if (HasTrait(Trait::ForceDeinterlacing))
   {
-    const DisplayDeinterlacingMode new_mode = display_deinterlacing_mode.value_or(DEFAULT_DEINTERLACING_MODE);
+    const DisplayDeinterlacingMode new_mode = display_deinterlacing_mode.value_or(
+      (settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Disabled &&
+       settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Progressive) ?
+        settings.display_deinterlacing_mode :
+        DEFAULT_DEINTERLACING_MODE);
     if (display_osd_messages && settings.display_deinterlacing_mode != new_mode)
     {
       APPEND_MESSAGE_FMT(TRANSLATE_FS("GameDatabase", "Deinterlacing set to {}."),
