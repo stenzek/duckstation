@@ -129,6 +129,20 @@ EmuThread::EmuThread(QThread* ui_thread) : QThread(), m_ui_thread(ui_thread)
 
 EmuThread::~EmuThread() = default;
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+
+bool EmuThread::isMainThread()
+{
+  return (QThread::currentThread() == g_emu_thread->m_ui_thread);
+}
+
+bool EmuThread::isCurrentThread() const
+{
+  return QThread::currentThread() == this;
+}
+
+#endif
+
 void QtHost::RegisterTypes()
 {
   // Register any standard types we need elsewhere
@@ -1741,7 +1755,7 @@ void EmuThread::queueAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindow
                                                      Host::AuxiliaryRenderWindowEventParam param2,
                                                      Host::AuxiliaryRenderWindowEventParam param3)
 {
-  DebugAssert(QThread::isMainThread());
+  DebugAssert(isMainThread());
   QMetaObject::invokeMethod(this, "processAuxiliaryRenderWindowInputEvent", Qt::QueuedConnection,
                             Q_ARG(void*, userdata), Q_ARG(quint32, static_cast<quint32>(event)),
                             Q_ARG(quint32, param1.uint_param), Q_ARG(quint32, param2.uint_param),

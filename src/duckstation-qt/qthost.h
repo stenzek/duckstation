@@ -89,6 +89,11 @@ public:
   static void start();
   static void stop();
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+  static bool isMainThread();
+  bool isCurrentThread() const;
+#endif
+
   ALWAYS_INLINE QEventLoop* getEventLoop() const { return m_event_loop; }
 
   ALWAYS_INLINE bool isFullscreen() const { return m_is_fullscreen; }
