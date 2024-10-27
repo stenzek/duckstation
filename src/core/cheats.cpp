@@ -1371,8 +1371,10 @@ bool Cheats::ParseOptionRange(const std::string_view value, u16* out_range_start
   // OptionRange = 0:255
   if (const std::string_view::size_type pos = value.rfind(':'); pos != std::string_view::npos)
   {
-    const std::optional<u32> start = StringUtil::FromChars<u32>(StringUtil::StripWhitespace(value.substr(0, pos)));
-    const std::optional<u32> end = StringUtil::FromChars<u32>(StringUtil::StripWhitespace(value.substr(pos + 1)));
+    const std::optional<u32> start =
+      StringUtil::FromCharsWithOptionalBase<u32>(StringUtil::StripWhitespace(value.substr(0, pos)));
+    const std::optional<u32> end =
+      StringUtil::FromCharsWithOptionalBase<u32>(StringUtil::StripWhitespace(value.substr(pos + 1)));
     if (start.has_value() && end.has_value() && start.value() <= std::numeric_limits<u16>::max() &&
         end.value() <= std::numeric_limits<u16>::max() && end.value() > start.value())
     {
@@ -1961,7 +1963,7 @@ std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(Me
     }
 
     size_t next_offset = 0;
-    while (next_offset < next.size() && !StringUtil::IsHexDigit(next[next_offset]))
+    while (next_offset < next.size() && next[next_offset] != '?' && !StringUtil::IsHexDigit(next[next_offset]))
       next_offset++;
     next = (next_offset < next.size()) ? next.substr(next_offset) : std::string_view();
 
