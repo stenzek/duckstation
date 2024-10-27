@@ -27,6 +27,13 @@ void IncrementFrameNumber();
 void IncrementInternalFrameNumber();
 void FrameDone();
 
+/// Returns true if vsync should be used.
+GPUVSyncMode GetEffectiveVSyncMode();
+bool ShouldAllowPresentThrottle();
+
+/// Call when host display size changes, use with "match display" aspect ratio setting.
+void DisplayWindowResized(u32 width, u32 height);
+
 /// Performs mandatory hardware checks.
 bool PerformEarlyHardwareChecks(Error* error);
 

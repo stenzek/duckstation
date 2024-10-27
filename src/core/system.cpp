@@ -1898,7 +1898,8 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, fullscreen, error))
     return false;
 
-  GTE::UpdateAspectRatio();
+  if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
+    GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
 
   if (g_settings.gpu_pgxp_enable)
     CPU::PGXP::Initialize();
@@ -4347,7 +4348,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
          (g_settings.display_aspect_ratio_custom_numerator != old_settings.display_aspect_ratio_custom_numerator ||
           g_settings.display_aspect_ratio_custom_denominator != old_settings.display_aspect_ratio_custom_denominator)))
     {
-      GTE::UpdateAspectRatio();
+      if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
+        GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
     }
 
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
@@ -5604,7 +5606,8 @@ void System::ToggleWidescreen()
                   Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio), 5.0f));
   }
 
-  GTE::UpdateAspectRatio();
+  if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
+    GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
 }
 
 void System::ToggleSoftwareRendering()
@@ -5650,16 +5653,25 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
 }
 
-void System::HostDisplayResized()
+void System::DisplayWindowResized(u32 width, u32 height)
 {
   if (!IsValid())
     return;
 
   if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
-    GTE::UpdateAspectRatio();
+    GTE::UpdateAspectRatio(width, height);
 
   g_gpu->RestoreDeviceContext();
   g_gpu->UpdateResolutionScale();
+
+  // If we're paused, re-present the current frame at the new window size.
+  if (IsPaused())
+  {
+    // Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
+    // displayed. Two seems to be good enough. Maybe something to do with direct scanout.
+    InvalidateDisplay();
+    InvalidateDisplay();
+  }
 }
 
 bool System::PresentDisplay(bool explicit_present, u64 present_time)

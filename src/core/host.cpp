@@ -7,6 +7,7 @@
 #include "imgui_overlays.h"
 #include "shader_cache_version.h"
 #include "system.h"
+#include "system_private.h"
 
 #include "scmversion/scmversion.h"
 
@@ -354,10 +355,8 @@ void Host::UpdateDisplayWindow(bool fullscreen)
   if (!g_gpu_device)
     return;
 
-  const GPUVSyncMode vsync_mode =
-    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetVSyncMode() : GPUVSyncMode::Disabled;
-  const bool allow_present_throttle =
-    g_gpu_device->HasMainSwapChain() && g_gpu_device->GetMainSwapChain()->IsPresentThrottleAllowed();
+  const GPUVSyncMode vsync_mode = System::GetEffectiveVSyncMode();
+  const bool allow_present_throttle = System::ShouldAllowPresentThrottle();
   std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode;
   if (fullscreen && g_gpu_device->SupportsExclusiveFullscreen())
   {
@@ -394,21 +393,13 @@ void Host::UpdateDisplayWindow(bool fullscreen)
     return;
   }
 
-  const float f_width = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth());
-  const float f_height = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
+  const u32 new_width = g_gpu_device->GetMainSwapChain()->GetWidth();
+  const u32 new_height = g_gpu_device->GetMainSwapChain()->GetHeight();
+  const float f_width = static_cast<float>(new_width);
+  const float f_height = static_cast<float>(new_height);
   ImGuiManager::WindowResized(f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
-  System::HostDisplayResized();
-
-  if (System::IsValid())
-  {
-    // Fix up vsync etc.
-    System::UpdateSpeedLimiterState();
-
-    // If we're paused, re-present the current frame at the new window size.
-    if (System::IsPaused())
-      System::InvalidateDisplay();
-  }
+  System::DisplayWindowResized(new_width, new_height);
 }
 
 void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
@@ -426,24 +417,13 @@ void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
     return;
   }
 
-  const float f_width = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth());
-  const float f_height = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
+  const u32 new_width = g_gpu_device->GetMainSwapChain()->GetWidth();
+  const u32 new_height = g_gpu_device->GetMainSwapChain()->GetHeight();
+  const float f_width = static_cast<float>(new_width);
+  const float f_height = static_cast<float>(new_height);
   ImGuiManager::WindowResized(f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
-
-  // If we're paused, re-present the current frame at the new window size.
-  if (System::IsValid())
-  {
-    if (System::IsPaused())
-    {
-      // Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
-      // displayed. Two seems to be good enough. Maybe something to do with direct scanout.
-      System::InvalidateDisplay();
-      System::InvalidateDisplay();
-    }
-
-    System::HostDisplayResized();
-  }
+  System::DisplayWindowResized(new_width, new_height);
 }
 
 void Host::ReleaseGPUDevice()

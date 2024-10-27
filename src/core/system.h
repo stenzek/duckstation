@@ -397,19 +397,12 @@ void StopMediaCapture();
 /// Toggle Widescreen Hack and Aspect Ratio
 void ToggleWidescreen();
 
-/// Returns true if vsync should be used.
-GPUVSyncMode GetEffectiveVSyncMode();
-bool ShouldAllowPresentThrottle();
-
 /// Quick switch between software and hardware rendering.
 void ToggleSoftwareRendering();
 
 /// Resizes the render window to the display size, with an optional scale.
 /// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 void RequestDisplaySize(float scale = 0.0f);
-
-/// Call when host display size changes, use with "match display" aspect ratio setting.
-void HostDisplayResized();
 
 /// Renders the display.
 bool PresentDisplay(bool explicit_present, u64 present_time);

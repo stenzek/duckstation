@@ -8,7 +8,6 @@
 #include "cpu_pgxp.h"
 #include "settings.h"
 
-#include "util/gpu_device.h"
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
@@ -228,7 +227,7 @@ bool GTE::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-void GTE::UpdateAspectRatio()
+void GTE::UpdateAspectRatio(u32 window_width, u32 window_height)
 {
   if (!g_settings.gpu_widescreen_hack)
   {
@@ -243,14 +242,8 @@ void GTE::UpdateAspectRatio()
   {
     case DisplayAspectRatio::MatchWindow:
     {
-      if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
-      {
-        s_config.aspect_ratio = DisplayAspectRatio::R4_3;
-        return;
-      }
-
-      num = g_gpu_device->GetMainSwapChain()->GetWidth();
-      denom = g_gpu_device->GetMainSwapChain()->GetHeight();
+      num = window_width;
+      denom = window_height;
     }
     break;
 
