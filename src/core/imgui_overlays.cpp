@@ -203,10 +203,11 @@ void Host::DisplayLoadingScreen(const char* message, int progress_min /*= -1*/, 
   ImGui::NewFrame();
 }
 
-void ImGuiManager::UpdateDebugWindowConfig()
+bool ImGuiManager::UpdateDebugWindowConfig()
 {
 #ifndef __ANDROID__
   const bool block_all = Achievements::IsHardcoreModeActive();
+  bool was_changed = false;
 
   for (size_t i = 0; i < NUM_DEBUG_WINDOWS; i++)
   {
@@ -230,8 +231,16 @@ void ImGuiManager::UpdateDebugWindowConfig()
       {
         ERROR_LOG("Failed to create aux render window for {}: {}", info.name, error.GetDescription());
       }
+      else
+      {
+        was_changed = true;
+      }
     }
   }
+
+  return was_changed;
+#else
+  return false;
 #endif
 }
 

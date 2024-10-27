@@ -10,7 +10,7 @@
 namespace ImGuiManager {
 void RenderTextOverlays();
 void RenderDebugWindows();
-void UpdateDebugWindowConfig();
+bool UpdateDebugWindowConfig();
 void DestroyAllDebugWindows();
 
 void RenderOverlayWindows();

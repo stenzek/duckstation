@@ -1298,7 +1298,10 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   }
 
   if (force_recreate_device)
+  {
     ImGuiManager::UpdateDebugWindowConfig();
+    InvalidateDisplay();
+  }
 
   // fix up vsync etc
   UpdateSpeedLimiterState();
@@ -4596,7 +4599,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     PostProcessing::UpdateSettings();
 
-    ImGuiManager::UpdateDebugWindowConfig();
+    if (ImGuiManager::UpdateDebugWindowConfig())
+      InvalidateDisplay();
 
 #ifdef ENABLE_GDB_SERVER
     if (g_settings.debugging.enable_gdb_server != old_settings.debugging.enable_gdb_server ||
