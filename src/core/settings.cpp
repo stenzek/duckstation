@@ -2311,7 +2311,6 @@ static const char* s_log_filters[] = {
   "AutoUpdaterDialog",
   "BIOS",
   "Bus",
-  "ByteStream",
   "CDImage",
   "CDImageBin",
   "CDImageCHD",

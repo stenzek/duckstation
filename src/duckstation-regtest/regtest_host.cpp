@@ -8,6 +8,7 @@
 #include "core/gpu.h"
 #include "core/host.h"
 #include "core/system.h"
+#include "core/system_private.h"
 
 #include "scmversion/scmversion.h"
 
@@ -738,8 +739,7 @@ std::string RegTestHost::GetFrameDumpFilename(u32 frame)
 int main(int argc, char* argv[])
 {
   Error startup_error;
-  if (!System::Internal::PerformEarlyHardwareChecks(&startup_error) ||
-      !System::Internal::ProcessStartup(&startup_error))
+  if (!System::PerformEarlyHardwareChecks(&startup_error) || !System::ProcessStartup(&startup_error))
   {
     ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
     return EXIT_FAILURE;
@@ -763,7 +763,7 @@ int main(int argc, char* argv[])
   if (!RegTestHost::SetNewDataRoot(autoboot->filename))
     return EXIT_FAILURE;
 
-  if (!System::Internal::CPUThreadInitialize(&startup_error))
+  if (!System::CPUThreadInitialize(&startup_error))
   {
     ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
     return EXIT_FAILURE;
@@ -810,7 +810,7 @@ int main(int argc, char* argv[])
   result = 0;
 
 cleanup:
-  System::Internal::CPUThreadShutdown();
-  System::Internal::ProcessShutdown();
+  System::CPUThreadShutdown();
+  System::ProcessShutdown();
   return result;
 }

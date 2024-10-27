@@ -4,6 +4,7 @@
 #include "performance_counters.h"
 #include "gpu.h"
 #include "system.h"
+#include "system_private.h"
 
 #include "util/media_capture.h"
 
@@ -148,7 +149,7 @@ void PerformanceCounters::Reset()
 
   s_state.last_frame_number = System::GetFrameNumber();
   s_state.last_internal_frame_number = System::GetInternalFrameNumber();
-  s_state.last_cpu_time = System::Internal::GetCPUThreadHandle().GetCPUTime();
+  s_state.last_cpu_time = System::GetCPUThreadHandle().GetCPUTime();
   if (const Threading::Thread* sw_thread = g_gpu->GetSWThread(); sw_thread)
     s_state.last_sw_time = sw_thread->GetCPUTime();
   else
@@ -202,7 +203,7 @@ void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
   s_state.speed = (s_state.vps / System::GetVideoFrameRate()) * 100.0f;
 
   const Threading::Thread* sw_thread = g_gpu->GetSWThread();
-  const u64 cpu_time = System::Internal::GetCPUThreadHandle().GetCPUTime();
+  const u64 cpu_time = System::GetCPUThreadHandle().GetCPUTime();
   const u64 sw_time = sw_thread ? sw_thread->GetCPUTime() : 0;
   const u64 cpu_delta = cpu_time - s_state.last_cpu_time;
   const u64 sw_delta = sw_time - s_state.last_sw_time;

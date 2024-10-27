@@ -16,7 +16,6 @@
 #include <span>
 #include <string>
 
-class ByteStream;
 class ProgressCallback;
 
 struct SystemBootParameters;

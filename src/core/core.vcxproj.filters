@@ -148,6 +148,7 @@
     <ClInclude Include="gpu_dump.h" />
     <ClInclude Include="cdrom_subq_replacement.h" />
     <ClInclude Include="performance_counters.h" />
+    <ClInclude Include="system_private.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

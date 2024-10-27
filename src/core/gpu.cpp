@@ -11,6 +11,7 @@
 #include "performance_counters.h"
 #include "settings.h"
 #include "system.h"
+#include "system_private.h"
 #include "timers.h"
 #include "timing_event.h"
 
@@ -1063,6 +1064,7 @@ void GPU::CRTCTickEvent(TickCount ticks)
         // TODO: move present in here I guess
         FlushRender();
         UpdateDisplay();
+        System::IncrementFrameNumber();
         frame_done = true;
 
         // switch fields early. this is needed so we draw to the correct one.
@@ -3105,6 +3107,7 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
 
       FlushRender();
       UpdateDisplay();
+      System::IncrementFrameNumber();
       System::FrameDone();
     }
     break;

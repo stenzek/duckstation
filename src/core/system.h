@@ -217,8 +217,6 @@ void UpdateOverclock();
 GlobalTicks GetGlobalTickCounter();
 u32 GetFrameNumber();
 u32 GetInternalFrameNumber();
-void IncrementInternalFrameNumber();
-void FrameDone();
 
 const std::string& GetDiscPath();
 const std::string& GetGameSerial();
@@ -437,72 +435,11 @@ void ReleaseSocketMultiplexer();
 /// Called when rich presence changes.
 void UpdateRichPresence(bool update_session_time);
 
-namespace Internal {
-/// Performs mandatory hardware checks.
-bool PerformEarlyHardwareChecks(Error* error);
-
-/// Called on process startup, as early as possible.
-bool ProcessStartup(Error* error);
-
-/// Called on process shutdown.
-void ProcessShutdown();
-
-/// Called on CPU thread initialization.
-bool CPUThreadInitialize(Error* error);
-
-/// Called on CPU thread shutdown.
-void CPUThreadShutdown();
-
-/// Returns a handle to the CPU thread.
-const Threading::ThreadHandle& GetCPUThreadHandle();
-
-/// Polls input, updates subsystems which are present while paused/inactive.
-void IdlePollUpdate();
-} // namespace Internal
-
 } // namespace System
 
 namespace Host {
-/// Called with the settings lock held, when system settings are being loaded (should load input sources, etc).
-void LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex>& lock);
-
-/// Called after settings are updated.
-void CheckForSettingsChanges(const Settings& old_settings);
-
-/// Called when the VM is starting initialization, but has not been completed yet.
-void OnSystemStarting();
-
-/// Called when the VM is created.
-void OnSystemStarted();
-
-/// Called when the VM is shut down or destroyed.
-void OnSystemDestroyed();
-
-/// Called when the VM is paused.
-void OnSystemPaused();
-
-/// Called when the VM is resumed after being paused.
-void OnSystemResumed();
-
-/// Called when the pause state changes, or fullscreen UI opens.
-void OnIdleStateChanged();
-
-/// Called when performance metrics are updated, approximately once a second.
-void OnPerformanceCountersUpdated();
-
-/// Provided by the host; called when the running executable changes.
-void OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name);
-
-/// Called when media capture starts/stops.
-void OnMediaCaptureStarted();
-void OnMediaCaptureStopped();
-
-/// Provided by the host; called once per frame at guest vsync.
-void PumpMessagesOnCPUThread();
-
-/// Requests a specific display window size.
-void RequestResizeHostDisplay(s32 width, s32 height);
 
 /// Requests shut down of the current virtual machine.
 void RequestSystemShutdown(bool allow_confirm, bool save_state);
+
 } // namespace Host

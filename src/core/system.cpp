@@ -33,6 +33,7 @@
 #include "save_state_version.h"
 #include "sio.h"
 #include "spu.h"
+#include "system_private.h"
 #include "timers.h"
 
 #include "scmversion/scmversion.h"
@@ -113,7 +114,6 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
 
-/// Memory save states - only for internal use.
 namespace {
 
 struct SaveStateBuffer
@@ -126,14 +126,6 @@ struct SaveStateBuffer
   RGBA8Image screenshot;
   DynamicHeapArray<u8> state_data;
   size_t state_size;
-};
-struct MemorySaveState
-{
-  std::unique_ptr<GPUTexture> vram_texture;
-  DynamicHeapArray<u8> state_data;
-#ifdef PROFILE_MEMORY_SAVE_STATES
-  size_t state_size;
-#endif
 };
 
 } // namespace
@@ -197,15 +189,10 @@ static void UpdatePerGameMemoryCards();
 static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
 static void UpdateMultitaps();
 
-/// Returns the maximum size of a save state, considering the current configuration.
-static size_t GetMaxSaveStateSize();
-
 static std::string GetMediaPathFromSaveState(const char* path);
 static bool SaveUndoLoadState();
 static void UpdateMemorySaveStateSettings();
 static bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
-static bool SaveMemoryState(MemorySaveState* mss);
-static bool LoadMemoryState(const MemorySaveState& mss);
 static bool LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display);
 static bool LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Error* error, bool read_title,
                                     bool read_media_path, bool read_screenshot, bool read_data);
@@ -216,7 +203,6 @@ static bool SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, 
                                   SaveStateCompressionMode compression_mode);
 static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompressionMode method,
                                      u32* header_type, Error* error);
-static bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 
 static bool IsExecutionInterrupted();
 static void CheckForAndExitExecution();
@@ -337,7 +323,7 @@ static TinyString GetTimestampStringForFileName()
   return TinyString::from_format("{:%Y-%m-%d-%H-%M-%S}", fmt::localtime(std::time(nullptr)));
 }
 
-bool System::Internal::PerformEarlyHardwareChecks(Error* error)
+bool System::PerformEarlyHardwareChecks(Error* error)
 {
   // This shouldn't fail... if it does, just hope for the best.
   cpuinfo_initialize();
@@ -457,7 +443,7 @@ void System::LogStartupInformation()
 #endif
 }
 
-bool System::Internal::ProcessStartup(Error* error)
+bool System::ProcessStartup(Error* error)
 {
   Common::Timer timer;
 
@@ -482,13 +468,13 @@ bool System::Internal::ProcessStartup(Error* error)
   return true;
 }
 
-void System::Internal::ProcessShutdown()
+void System::ProcessShutdown()
 {
   Bus::ReleaseMemory();
   CPU::CodeCache::ProcessShutdown();
 }
 
-bool System::Internal::CPUThreadInitialize(Error* error)
+bool System::CPUThreadInitialize(Error* error)
 {
   Threading::SetNameOfCurrentThread("CPU Thread");
 
@@ -520,7 +506,7 @@ bool System::Internal::CPUThreadInitialize(Error* error)
   return true;
 }
 
-void System::Internal::CPUThreadShutdown()
+void System::CPUThreadShutdown()
 {
 #ifdef ENABLE_DISCORD_PRESENCE
   ShutdownDiscordPresence();
@@ -535,12 +521,12 @@ void System::Internal::CPUThreadShutdown()
 #endif
 }
 
-const Threading::ThreadHandle& System::Internal::GetCPUThreadHandle()
+const Threading::ThreadHandle& System::GetCPUThreadHandle()
 {
   return s_cpu_thread_handle;
 }
 
-void System::Internal::IdlePollUpdate()
+void System::IdlePollUpdate()
 {
   InputManager::PollSources();
 
@@ -2048,8 +2034,6 @@ void System::Execute()
 
 void System::FrameDone()
 {
-  s_frame_number++;
-
   // Vertex buffer is shared, need to flush what we have.
   g_gpu->FlushRender();
 
@@ -2328,6 +2312,11 @@ void System::SingleStepCPU()
   // If this gets called when the system is executing, we're not going to end up here..
   if (IsPaused())
     PauseSystem(false);
+}
+
+void System::IncrementFrameNumber()
+{
+  s_frame_number++;
 }
 
 void System::IncrementInternalFrameNumber()
@@ -4886,7 +4875,7 @@ void System::DoRewind()
 
   InvalidateDisplay();
   Host::PumpMessagesOnCPUThread();
-  Internal::IdlePollUpdate();
+  IdlePollUpdate();
 
   Throttle(Common::Timer::GetCurrentValue());
 }

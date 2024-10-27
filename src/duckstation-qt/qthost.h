@@ -32,8 +32,6 @@
 #include <utility>
 #include <vector>
 
-class ByteStream;
-
 class QActionGroup;
 class QEventLoop;
 class QMenu;

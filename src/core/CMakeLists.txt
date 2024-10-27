@@ -118,6 +118,7 @@ add_library(core
   spu.h
   system.cpp
   system.h
+  system_private.h
   timers.cpp
   timers.h
   timing_event.cpp

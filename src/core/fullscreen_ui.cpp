@@ -11,6 +11,7 @@
 #include "host.h"
 #include "settings.h"
 #include "system.h"
+#include "system_private.h"
 
 #include "scmversion/scmversion.h"
 

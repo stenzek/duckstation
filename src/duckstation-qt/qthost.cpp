@@ -26,6 +26,7 @@
 #include "core/performance_counters.h"
 #include "core/spu.h"
 #include "core/system.h"
+#include "core/system_private.h"
 
 #include "common/assert.h"
 #include "common/crash_handler.h"
@@ -162,7 +163,7 @@ void QtHost::RegisterTypes()
 bool QtHost::PerformEarlyHardwareChecks()
 {
   Error error;
-  const bool okay = System::Internal::PerformEarlyHardwareChecks(&error);
+  const bool okay = System::PerformEarlyHardwareChecks(&error);
   if (okay && !error.IsValid()) [[likely]]
     return true;
 
@@ -189,7 +190,7 @@ bool QtHost::EarlyProcessStartup()
 #endif
 
   Error error;
-  if (System::Internal::ProcessStartup(&error)) [[likely]]
+  if (System::ProcessStartup(&error)) [[likely]]
     return true;
 
   QMessageBox::critical(nullptr, QStringLiteral("Process Startup Failed"),
@@ -1775,7 +1776,7 @@ void EmuThread::processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 e
 
 void EmuThread::doBackgroundControllerPoll()
 {
-  System::Internal::IdlePollUpdate();
+  System::IdlePollUpdate();
 }
 
 void EmuThread::createBackgroundControllerPollTimer()
@@ -1850,7 +1851,7 @@ void EmuThread::run()
   // input source setup must happen on emu thread
   {
     Error startup_error;
-    if (!System::Internal::CPUThreadInitialize(&startup_error))
+    if (!System::CPUThreadInitialize(&startup_error))
     {
       moveToThread(m_ui_thread);
       Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());
@@ -1880,7 +1881,7 @@ void EmuThread::run()
       }
 
       m_event_loop->processEvents(QEventLoop::AllEvents);
-      System::Internal::IdlePollUpdate();
+      System::IdlePollUpdate();
       if (g_gpu_device && g_gpu_device->HasMainSwapChain())
       {
         System::PresentDisplay(false, 0);
@@ -1894,7 +1895,7 @@ void EmuThread::run()
     System::ShutdownSystem(false);
 
   destroyBackgroundControllerPollTimer();
-  System::Internal::CPUThreadShutdown();
+  System::CPUThreadShutdown();
 
   // move back to UI thread
   moveToThread(m_ui_thread);
@@ -2724,7 +2725,7 @@ shutdown_and_exit:
   // Ensure log is flushed.
   Log::SetFileOutputParams(false, nullptr);
 
-  System::Internal::ProcessShutdown();
+  System::ProcessShutdown();
 
   return result;
 }
