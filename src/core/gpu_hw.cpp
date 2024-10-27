@@ -3468,12 +3468,15 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   GL_SCOPE_FMT("CopyVRAM({}x{} @ {},{} => {},{}", width, height, src_x, src_y, dst_x, dst_y);
 
   // masking enabled, oversized, or overlapping
+  const GSVector4i src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
+  const GSVector4i dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
+  const bool intersect_with_draw = m_vram_dirty_draw_rect.rintersects(src_bounds);
+  const bool intersect_with_write = m_vram_dirty_write_rect.rintersects(src_bounds);
   const bool use_shader =
     (m_GPUSTAT.IsMaskingEnabled() || ((src_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
      ((src_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT || ((dst_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
-     ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT);
-  const GSVector4i src_bounds = GetVRAMTransferBounds(src_x, src_y, width, height);
-  const GSVector4i dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
+     ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT) ||
+    (!intersect_with_draw && !intersect_with_write);
 
   // If we're copying a region that hasn't been drawn to, and we're using the TC, we can do it in local memory.
   if (m_use_texture_cache && !GPUTextureCache::IsRectDrawn(src_bounds))
@@ -3499,8 +3502,6 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     m_sw_renderer->PushCommand(cmd);
   }
 
-  const bool intersect_with_draw = m_vram_dirty_draw_rect.rintersects(src_bounds);
-  const bool intersect_with_write = m_vram_dirty_write_rect.rintersects(src_bounds);
   if (use_shader || IsUsingMultisampling())
   {
     if (intersect_with_draw || intersect_with_write)
