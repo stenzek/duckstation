@@ -22,25 +22,41 @@ namespace Common {
 static double s_counter_frequency;
 static bool s_counter_initialized = false;
 
-// This gets leaked... oh well.
-static thread_local HANDLE s_sleep_timer;
-static thread_local bool s_sleep_timer_created = false;
+namespace {
+
+struct SleepTimerHandle
+{
+  SleepTimerHandle() = default;
+  ~SleepTimerHandle()
+  {
+    if (handle != NULL)
+      CloseHandle(handle);
+  }
+
+  HANDLE handle = NULL;
+  bool created = false;
+};
+
+}; // namespace
+
+static thread_local SleepTimerHandle s_sleep_timer;
 
 static HANDLE GetSleepTimer()
 {
-  if (s_sleep_timer_created)
-    return s_sleep_timer;
+  if (s_sleep_timer.created)
+    return s_sleep_timer.handle;
 
-  s_sleep_timer_created = true;
-  s_sleep_timer = CreateWaitableTimerEx(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
-  if (!s_sleep_timer)
+  s_sleep_timer.created = true;
+  s_sleep_timer.handle =
+    CreateWaitableTimerEx(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+  if (!s_sleep_timer.handle)
   {
-    s_sleep_timer = CreateWaitableTimer(nullptr, TRUE, nullptr);
-    if (!s_sleep_timer)
+    s_sleep_timer.handle = CreateWaitableTimer(nullptr, TRUE, nullptr);
+    if (!s_sleep_timer.handle)
       std::fprintf(stderr, "CreateWaitableTimer() failed, falling back to Sleep()\n");
   }
 
-  return s_sleep_timer;
+  return s_sleep_timer.handle;
 }
 
 double Timer::GetFrequency()
