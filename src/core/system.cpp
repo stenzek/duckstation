@@ -317,7 +317,6 @@ static System::FrameTimeHistory s_frame_time_history;
 static u32 s_frame_time_history_pos = 0;
 static u32 s_last_frame_number = 0;
 static u32 s_last_internal_frame_number = 0;
-static GlobalTicks s_last_global_tick_counter = 0;
 static u64 s_last_cpu_time = 0;
 static u64 s_last_sw_time = 0;
 static u32 s_presents_since_last_update = 0;
@@ -1970,7 +1969,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   s_gpu_usage = 0.0f;
   s_last_frame_number = 0;
   s_last_internal_frame_number = 0;
-  s_last_global_tick_counter = 0;
   s_presents_since_last_update = 0;
   s_last_cpu_time = 0;
   s_fps_timer.Reset();
@@ -3361,7 +3359,6 @@ void System::UpdatePerformanceCounters()
 
   const u32 frames_run = s_frame_number - s_last_frame_number;
   const float frames_runf = static_cast<float>(frames_run);
-  const GlobalTicks global_tick_counter = GetGlobalTickCounter();
 
   // TODO: Make the math here less rubbish
   const double pct_divider =
@@ -3378,10 +3375,7 @@ void System::UpdatePerformanceCounters()
   s_last_frame_number = s_frame_number;
   s_fps = static_cast<float>(s_internal_frame_number - s_last_internal_frame_number) / time;
   s_last_internal_frame_number = s_internal_frame_number;
-  s_speed = static_cast<float>(static_cast<double>(global_tick_counter - s_last_global_tick_counter) /
-                               (static_cast<double>(g_ticks_per_second) * time)) *
-            100.0f;
-  s_last_global_tick_counter = global_tick_counter;
+  s_speed = (s_vps / s_throttle_frequency) * 100.0f;
 
   const Threading::Thread* sw_thread = g_gpu->GetSWThread();
   const u64 cpu_time = s_cpu_thread_handle ? s_cpu_thread_handle.GetCPUTime() : 0;
@@ -3425,7 +3419,6 @@ void System::ResetPerformanceCounters()
 {
   s_last_frame_number = s_frame_number;
   s_last_internal_frame_number = s_internal_frame_number;
-  s_last_global_tick_counter = GetGlobalTickCounter();
   s_last_cpu_time = s_cpu_thread_handle ? s_cpu_thread_handle.GetCPUTime() : 0;
   if (const Threading::Thread* sw_thread = g_gpu->GetSWThread(); sw_thread)
     s_last_sw_time = sw_thread->GetCPUTime();
