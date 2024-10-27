@@ -275,7 +275,7 @@ bool GPU_HW::Initialize(Error* error)
 
   PrintSettingsToLog();
 
-  if (!CompilePipelines(error))
+  if (!CompileCommonShaders(error) || !CompilePipelines(error))
     return false;
 
   if (!CreateBuffers())
@@ -423,24 +423,29 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
                                     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
                                     (!old_settings.gpu_texture_cache && g_settings.gpu_texture_cache));
   const bool shaders_changed =
-    (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
+    ((m_resolution_scale > 1) != (resolution_scale > 1) || (m_multisamples > 1) != (multisamples > 1) ||
      m_true_color != g_settings.gpu_true_color || prev_force_progressive_scan != m_force_progressive_scan ||
-     (multisamples > 0 && g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
+     (multisamples > 1 && g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
      (resolution_scale > 1 && g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering) ||
      (resolution_scale > 1 && g_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
       g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords) ||
      g_settings.IsUsingAccurateBlending() != old_settings.IsUsingAccurateBlending() ||
      m_texture_filtering != g_settings.gpu_texture_filter ||
      m_sprite_texture_filtering != g_settings.gpu_sprite_texture_filter || m_clamp_uvs != clamp_uvs ||
-     (resolution_scale > 1 && (g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
-                               (m_downsample_mode == GPUDownsampleMode::Box &&
-                                g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale))) ||
      (features.geometry_shaders && g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode) ||
      m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
      (features.noperspective_interpolation && g_settings.gpu_pgxp_enable &&
       g_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction) ||
      m_allow_sprite_mode !=
        ShouldAllowSpriteMode(m_resolution_scale, g_settings.gpu_texture_filter, g_settings.gpu_sprite_texture_filter));
+  const bool resolution_dependent_shaders_changed =
+    (m_resolution_scale != resolution_scale || m_multisamples != multisamples);
+  const bool downsampling_shaders_changed =
+    ((m_resolution_scale > 1) != (resolution_scale > 1) ||
+     (resolution_scale > 1 && (g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
+                               (m_downsample_mode == GPUDownsampleMode::Box &&
+                                (resolution_scale != m_resolution_scale ||
+                                 g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale)))));
 
   if (m_resolution_scale != resolution_scale)
   {
@@ -508,13 +513,21 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
 
   if (shaders_changed)
   {
-    DestroyPipelines();
-
     Error error;
     if (!CompilePipelines(&error))
     {
       ERROR_LOG("Failed to recompile pipelines: {}", error.GetDescription());
       Panic("Failed to recompile pipelines.");
+    }
+  }
+  else if (resolution_dependent_shaders_changed || downsampling_shaders_changed)
+  {
+    Error error;
+    if ((resolution_dependent_shaders_changed && !CompileResolutionDependentPipelines(&error)) ||
+        (downsampling_shaders_changed && !CompileDownsamplePipelines(&error)))
+    {
+      ERROR_LOG("Failed to recompile resolution dependent pipelines: {}", error.GetDescription());
+      Panic("Failed to recompile resolution dependent pipelines.");
     }
   }
 
@@ -984,6 +997,20 @@ void GPU_HW::DestroyBuffers()
   g_gpu_device->RecycleTexture(std::move(m_vram_readback_texture));
 }
 
+bool GPU_HW::CompileCommonShaders(Error* error)
+{
+  const GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_supports_dual_source_blend,
+                                   m_supports_framebuffer_fetch);
+
+  // use a depth of 1, that way writes will reset the depth
+  m_fullscreen_quad_vertex_shader = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                               shadergen.GenerateScreenQuadVertexShader(1.0f), error);
+  if (!m_fullscreen_quad_vertex_shader)
+    return false;
+
+  return true;
+}
+
 bool GPU_HW::CompilePipelines(Error* error)
 {
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
@@ -1039,27 +1066,35 @@ bool GPU_HW::CompilePipelines(Error* error)
   const u32 active_texture_modes =
     m_allow_sprite_mode ? NUM_TEXTURE_MODES :
                           (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart)));
-  const u32 total_vertex_shaders = (m_allow_sprite_mode ? 7 : 3);
-  const u32 total_fragment_shaders =
-    ((needs_rov_depth ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
-     (1 + BoolToUInt32(!m_force_progressive_scan)) * (1 + BoolToUInt32(needs_rov_depth)));
+  const u32 total_vertex_shaders = (m_allow_sprite_mode ? 7 : 4);
+  const u32 total_fragment_shaders = ((1 + BoolToUInt32(needs_rov_depth)) * 5 * 5 * active_texture_modes * 2 *
+                                      (1 + BoolToUInt32(!true_color)) * (1 + BoolToUInt32(!m_force_progressive_scan)));
   const u32 total_items =
     total_vertex_shaders + total_fragment_shaders +
     ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
-     (1 + BoolToUInt32(!m_force_progressive_scan))) +             // batch pipelines
-    ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) +  // wireframe
-    1 +                                                           // fullscreen quad VS
-    (2 * 2) +                                                     // vram fill
-    (1 + BoolToUInt32(m_write_mask_as_depth)) +                   // vram copy
-    (1 + BoolToUInt32(m_write_mask_as_depth)) +                   // vram write
-    1 +                                                           // vram write replacement
-    (m_write_mask_as_depth ? 1 : 0) +                             // mask -> depth
-    1 +                                                           // vram read
-    2 +                                                           // extract/display
-    ((m_downsample_mode != GPUDownsampleMode::Disabled) ? 1 : 0); // downsample
+     (1 + BoolToUInt32(!m_force_progressive_scan))) +            // batch pipelines
+    ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) + // wireframe
+    (2 * 2) +                                                    // vram fill
+    (1 + BoolToUInt32(m_write_mask_as_depth)) +                  // vram copy
+    (1 + BoolToUInt32(m_write_mask_as_depth)) +                  // vram write
+    1 +                                                          // vram write replacement
+    (m_write_mask_as_depth ? 1 : 0) +                            // mask -> depth
+    1;                                                           // resolution dependent shaders
 
   INFO_LOG("Compiling {} vertex shaders, {} fragment shaders, and {} pipelines.", total_vertex_shaders,
            total_fragment_shaders, total_items);
+
+  // destroy old pipelines, if any
+  m_wireframe_pipeline.reset();
+  m_batch_pipelines.enumerate([](std::unique_ptr<GPUPipeline>& p) { p.reset(); });
+  m_vram_fill_pipelines.enumerate([](std::unique_ptr<GPUPipeline>& p) { p.reset(); });
+  for (std::unique_ptr<GPUPipeline>& p : m_vram_write_pipelines)
+    p.reset();
+  for (std::unique_ptr<GPUPipeline>& p : m_vram_copy_pipelines)
+    p.reset();
+  m_vram_update_depth_pipeline.reset();
+  m_vram_write_replacement_pipeline.reset();
+  m_copy_depth_pipeline.reset();
 
   ShaderCompileProgressTracker progress("Compiling Pipelines", total_items);
 
@@ -1413,21 +1448,13 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   batch_shader_guard.Run();
 
-  // use a depth of 1, that way writes will reset the depth
-  std::unique_ptr<GPUShader> fullscreen_quad_vertex_shader = g_gpu_device->CreateShader(
-    GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GenerateScreenQuadVertexShader(1.0f), error);
-  if (!fullscreen_quad_vertex_shader)
-    return false;
-
-  progress.Increment();
-
   // common state
   plconfig.input_layout.vertex_attributes = {};
   plconfig.input_layout.vertex_stride = 0;
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
   plconfig.per_sample_shading = false;
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.vertex_shader = fullscreen_quad_vertex_shader.get();
+  plconfig.vertex_shader = m_fullscreen_quad_vertex_shader.get();
   plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTexture::Format::Unknown;
 
   // VRAM fill
@@ -1557,6 +1584,55 @@ bool GPU_HW::CompilePipelines(Error* error)
   plconfig.samples = 1;
   plconfig.per_sample_shading = false;
 
+  if (m_pgxp_depth_buffer)
+  {
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                                               shadergen.GenerateCopyFragmentShader(), error);
+    if (!fs)
+      return false;
+
+    plconfig.fragment_shader = fs.get();
+    plconfig.SetTargetFormats(VRAM_DS_COLOR_FORMAT);
+    if (!(m_copy_depth_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+      return false;
+  }
+
+  if (!CompileResolutionDependentPipelines(error) || !CompileDownsamplePipelines(error))
+    return false;
+
+  progress.Increment();
+
+#undef UPDATE_PROGRESS
+
+  INFO_LOG("Pipeline creation took {:.2f} ms.", progress.GetElapsedMilliseconds());
+  return true;
+}
+
+bool GPU_HW::CompileResolutionDependentPipelines(Error* error)
+{
+  Common::Timer timer;
+
+  m_vram_readback_pipeline.reset();
+  for (std::unique_ptr<GPUPipeline>& p : m_vram_extract_pipeline)
+    p.reset();
+
+  const GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_supports_dual_source_blend,
+                                   m_supports_framebuffer_fetch);
+
+  GPUPipeline::GraphicsConfig plconfig = {};
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  plconfig.input_layout.vertex_attributes = {};
+  plconfig.input_layout.vertex_stride = 0;
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+  plconfig.primitive = GPUPipeline::Primitive::Triangles;
+  plconfig.geometry_shader = nullptr;
+  plconfig.samples = 1;
+  plconfig.per_sample_shading = false;
+  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
+  plconfig.vertex_shader = m_fullscreen_quad_vertex_shader.get();
+  plconfig.SetTargetFormats(VRAM_RT_FORMAT);
+
   // VRAM read
   {
     std::unique_ptr<GPUShader> fs =
@@ -1571,7 +1647,6 @@ bool GPU_HW::CompilePipelines(Error* error)
       return false;
 
     GL_OBJECT_NAME(m_vram_readback_pipeline, "VRAM Read Pipeline");
-    progress.Increment();
   }
 
   // Display
@@ -1600,25 +1675,38 @@ bool GPU_HW::CompilePipelines(Error* error)
       if (!(m_vram_extract_pipeline[shader] = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
 
-      progress.Increment();
+      GL_OBJECT_NAME_FMT(m_vram_readback_pipeline, "VRAM Extract Pipeline 24bit={} Depth={}", color_24bit,
+                         depth_extract);
     }
   }
 
+  INFO_LOG("Compiling resolution dependent pipelines took {:.2f} ms.", timer.GetTimeMilliseconds());
+  return true;
+}
+
+bool GPU_HW::CompileDownsamplePipelines(Error* error)
+{
+  m_downsample_pass_pipeline.reset();
+  m_downsample_blur_pipeline.reset();
+  m_downsample_composite_pipeline.reset();
+  m_downsample_lod_sampler.reset();
+  m_downsample_composite_sampler.reset();
+
+  const GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_supports_dual_source_blend,
+                                   m_supports_framebuffer_fetch);
+
+  GPUPipeline::GraphicsConfig plconfig = {};
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-
-  if (m_pgxp_depth_buffer)
-  {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateCopyFragmentShader(), error);
-    if (!fs)
-      return false;
-
-    plconfig.fragment_shader = fs.get();
-    plconfig.SetTargetFormats(VRAM_DS_COLOR_FORMAT);
-    if (!(m_copy_depth_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-      return false;
-  }
-
+  plconfig.input_layout.vertex_attributes = {};
+  plconfig.input_layout.vertex_stride = 0;
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+  plconfig.primitive = GPUPipeline::Primitive::Triangles;
+  plconfig.geometry_shader = nullptr;
+  plconfig.samples = 1;
+  plconfig.per_sample_shading = false;
+  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
+  plconfig.vertex_shader = m_fullscreen_quad_vertex_shader.get();
   plconfig.SetTargetFormats(VRAM_RT_FORMAT);
 
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
@@ -1677,7 +1765,6 @@ bool GPU_HW::CompilePipelines(Error* error)
       return false;
     }
     GL_OBJECT_NAME(m_downsample_composite_sampler, "Downsample Trilinear Sampler");
-    progress.Increment();
   }
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
@@ -1689,52 +1776,16 @@ bool GPU_HW::CompilePipelines(Error* error)
     if (!fs)
       return false;
 
-    GL_OBJECT_NAME(fs, "Downsample First Pass Fragment Shader");
+    GL_OBJECT_NAME(fs, "Box Downsample Fragment Shader");
     plconfig.fragment_shader = fs.get();
 
     if (!(m_downsample_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
-    GL_OBJECT_NAME(m_downsample_pass_pipeline, "Downsample First Pass Pipeline");
-    progress.Increment();
+    GL_OBJECT_NAME(m_downsample_pass_pipeline, "Box Downsample Pipeline");
   }
 
-#undef UPDATE_PROGRESS
-
-  INFO_LOG("Pipeline creation took {:.2f} ms.", progress.GetElapsedMilliseconds());
   return true;
-}
-
-void GPU_HW::DestroyPipelines()
-{
-  static constexpr auto destroy = [](std::unique_ptr<GPUPipeline>& p) { p.reset(); };
-
-  m_wireframe_pipeline.reset();
-
-  m_batch_pipelines.enumerate(destroy);
-
-  m_vram_fill_pipelines.enumerate(destroy);
-
-  for (std::unique_ptr<GPUPipeline>& p : m_vram_write_pipelines)
-    destroy(p);
-
-  for (std::unique_ptr<GPUPipeline>& p : m_vram_copy_pipelines)
-    destroy(p);
-
-  for (std::unique_ptr<GPUPipeline>& p : m_vram_extract_pipeline)
-    destroy(p);
-
-  destroy(m_vram_readback_pipeline);
-  destroy(m_vram_update_depth_pipeline);
-  destroy(m_vram_write_replacement_pipeline);
-
-  destroy(m_downsample_pass_pipeline);
-  destroy(m_downsample_blur_pipeline);
-  destroy(m_downsample_composite_pipeline);
-  m_downsample_lod_sampler.reset();
-  m_downsample_composite_sampler.reset();
-
-  m_copy_depth_pipeline.reset();
 }
 
 GPU_HW::BatchRenderMode GPU_HW::BatchConfig::GetRenderMode() const

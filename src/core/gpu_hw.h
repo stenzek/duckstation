@@ -159,8 +159,10 @@ private:
   void ClearFramebuffer();
   void DestroyBuffers();
 
+  bool CompileCommonShaders(Error* error);
   bool CompilePipelines(Error* error);
-  void DestroyPipelines();
+  bool CompileResolutionDependentPipelines(Error* error);
+  bool CompileDownsamplePipelines(Error* error);
 
   void LoadVertices();
 
@@ -345,4 +347,7 @@ private:
 
   // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
   DimensionalArray<std::unique_ptr<GPUPipeline>, 2, 2, 2, NUM_TEXTURE_MODES, 5, 5, 2> m_batch_pipelines{};
+
+  // common shaders
+  std::unique_ptr<GPUShader> m_fullscreen_quad_vertex_shader;
 };
