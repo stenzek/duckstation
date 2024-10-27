@@ -18,8 +18,8 @@
 #include <array>
 #include <deque>
 #include <memory>
-#include <string>
 #include <span>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -37,7 +37,7 @@ namespace GPUDump {
 enum class PacketType : u8;
 class Recorder;
 class Player;
-}
+} // namespace GPUDump
 struct Settings;
 
 namespace Threading {
@@ -229,7 +229,7 @@ public:
                                GSVector4i* draw_rect) const;
 
   /// Helper function to save current display texture to PNG.
-  bool WriteDisplayTextureToFile(std::string filename, bool compress_on_thread = false);
+  bool WriteDisplayTextureToFile(std::string path);
 
   /// Renders the display, optionally with postprocessing to the specified image.
   bool RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect, const GSVector4i draw_rect,
@@ -237,7 +237,7 @@ public:
                                 GPUTexture::Format* out_format);
 
   /// Helper function to save screenshot to PNG.
-  bool RenderScreenshotToFile(std::string filename, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread,
+  bool RenderScreenshotToFile(std::string path, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread,
                               bool show_osd_message);
 
   /// Draws the current display texture, with any post-processing.

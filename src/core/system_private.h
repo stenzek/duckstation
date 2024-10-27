@@ -5,6 +5,8 @@
 
 #include "system.h"
 
+#include <functional>
+
 namespace System {
 
 /// Memory save states - only for internal use.
@@ -54,6 +56,10 @@ const Threading::ThreadHandle& GetCPUThreadHandle();
 
 /// Polls input, updates subsystems which are present while paused/inactive.
 void IdlePollUpdate();
+
+/// Task threads, asynchronous work which will block system shutdown.
+void QueueTaskOnThread(std::function<void()> task);
+void RemoveSelfFromTaskThreads();
 
 } // namespace System
 

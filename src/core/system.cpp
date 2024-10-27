@@ -165,6 +165,7 @@ static bool SetBootMode(BootMode new_boot_mode, DiscRegion disc_region, Error* e
 static void InternalReset();
 static void ClearRunningGame();
 static void DestroySystem();
+static void JoinTaskThreads();
 
 static bool CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen, Error* error);
 static bool RecreateGPU(GPURenderer renderer, bool force_recreate_device = false, bool update_display = true);
@@ -319,6 +320,9 @@ struct ALIGN_TO_CACHE_LINE StateVars
 
   // Used to track play time. We use a monotonic timer here, in case of clock changes.
   u64 session_start_time = 0;
+
+  std::deque<std::thread> task_threads;
+  std::mutex task_threads_mutex;
 
 #ifdef ENABLE_SOCKET_MULTIPLEXER
   std::unique_ptr<SocketMultiplexer> socket_multiplexer;
@@ -1935,6 +1939,8 @@ void System::DestroySystem()
   DebugAssert(!s_state.system_executing);
   if (s_state.state == State::Shutdown)
     return;
+
+  JoinTaskThreads();
 
   if (s_state.media_capture)
     StopMediaCapture();
@@ -5777,6 +5783,40 @@ u64 System::GetSessionPlayedTime()
 {
   const u64 ctime = Common::Timer::GetCurrentValue();
   return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_state.session_start_time)));
+}
+
+void System::QueueTaskOnThread(std::function<void()> task)
+{
+  const std::unique_lock lock(s_state.task_threads_mutex);
+  s_state.task_threads.emplace_back(std::move(task));
+}
+
+void System::RemoveSelfFromTaskThreads()
+{
+  const auto this_id = std::this_thread::get_id();
+  const std::unique_lock lock(s_state.task_threads_mutex);
+  for (auto it = s_state.task_threads.begin(); it != s_state.task_threads.end(); ++it)
+  {
+    if (it->get_id() == this_id)
+    {
+      it->detach();
+      s_state.task_threads.erase(it);
+      break;
+    }
+  }
+}
+
+void System::JoinTaskThreads()
+{
+  std::unique_lock lock(s_state.task_threads_mutex);
+  while (!s_state.task_threads.empty())
+  {
+    std::thread save_thread(std::move(s_state.task_threads.front()));
+    s_state.task_threads.pop_front();
+    lock.unlock();
+    save_thread.join();
+    lock.lock();
+  }
 }
 
 SocketMultiplexer* System::GetSocketMultiplexer()
