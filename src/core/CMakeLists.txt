@@ -102,6 +102,8 @@ add_library(core
   pad.h
   pcdrv.cpp
   pcdrv.h
+  performance_counters.cpp
+  performance_counters.h
   playstation_mouse.cpp
   playstation_mouse.h
   psf_loader.cpp

@@ -23,6 +23,7 @@
 #include "core/host.h"
 #include "core/imgui_overlays.h"
 #include "core/memory_card.h"
+#include "core/performance_counters.h"
 #include "core/spu.h"
 #include "core/system.h"
 
@@ -2111,7 +2112,7 @@ void EmuThread::updatePerformanceCounters()
     m_last_render_height = render_height;
   }
 
-  const float gfps = System::GetFPS();
+  const float gfps = PerformanceCounters::GetFPS();
   if (gfps != m_last_game_fps)
   {
     QMetaObject::invokeMethod(g_main_window->getStatusFPSWidget(), "setText", Qt::QueuedConnection,
@@ -2119,8 +2120,8 @@ void EmuThread::updatePerformanceCounters()
     m_last_game_fps = gfps;
   }
 
-  const float speed = System::GetEmulationSpeed();
-  const float vfps = System::GetVPS();
+  const float speed = PerformanceCounters::GetEmulationSpeed();
+  const float vfps = PerformanceCounters::GetVPS();
   if (speed != m_last_speed || vfps != m_last_video_fps)
   {
     QMetaObject::invokeMethod(

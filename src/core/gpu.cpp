@@ -8,6 +8,7 @@
 #include "gpu_sw_rasterizer.h"
 #include "host.h"
 #include "interrupt_controller.h"
+#include "performance_counters.h"
 #include "settings.h"
 #include "system.h"
 #include "timers.h"
@@ -146,10 +147,10 @@ void GPU::UpdateSettings(const Settings& old_settings)
     if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode)
       DestroyDeinterlaceTextures();
 
-    if (!CompileDisplayPipelines(g_settings.display_scaling != old_settings.display_scaling,
-                                 g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
-                                 g_settings.display_24bit_chroma_smoothing !=
-                                   old_settings.display_24bit_chroma_smoothing, nullptr))
+    if (!CompileDisplayPipelines(
+          g_settings.display_scaling != old_settings.display_scaling,
+          g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
+          g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing, nullptr))
     {
       Panic("Failed to compile display pipeline on settings change.");
     }
@@ -707,7 +708,7 @@ void GPU::UpdateCRTCConfig()
 
   cs.current_scanline %= cs.vertical_total;
 
-  System::SetThrottleFrequency(ComputeVerticalFrequency());
+  System::SetVideoFrameRate(ComputeVerticalFrequency());
 
   UpdateCRTCDisplayParameters();
   UpdateCRTCTickEvent();
@@ -2915,8 +2916,9 @@ bool GPU::StartRecordingGPUDump(const char* path, u32 num_frames /* = 1 */)
   // +1 because we want to actually see the buffer swap...
   if (num_frames != 0)
   {
-    num_frames = std::max(num_frames, static_cast<u32>(static_cast<float>(num_frames + 1) *
-                                                       std::ceil(System::GetVPS() / System::GetFPS())));
+    num_frames =
+      std::max(num_frames, static_cast<u32>(static_cast<float>(num_frames + 1) *
+                                            std::ceil(PerformanceCounters::GetVPS() / PerformanceCounters::GetFPS())));
   }
 
   // ensure vram is up to date

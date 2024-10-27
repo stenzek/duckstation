@@ -70,6 +70,7 @@
     <ClCompile Include="memory_scanner.cpp" />
     <ClCompile Include="gpu_dump.cpp" />
     <ClCompile Include="cdrom_subq_replacement.cpp" />
+    <ClCompile Include="performance_counters.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -146,6 +147,7 @@
     <ClInclude Include="memory_scanner.h" />
     <ClInclude Include="gpu_dump.h" />
     <ClInclude Include="cdrom_subq_replacement.h" />
+    <ClInclude Include="performance_counters.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

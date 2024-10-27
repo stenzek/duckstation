@@ -28,6 +28,7 @@
 #include "multitap.h"
 #include "pad.h"
 #include "pcdrv.h"
+#include "performance_counters.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
@@ -111,8 +112,10 @@ SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std
 SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
+
 /// Memory save states - only for internal use.
 namespace {
+
 struct SaveStateBuffer
 {
   std::string serial;
@@ -132,6 +135,7 @@ struct MemorySaveState
   size_t state_size;
 #endif
 };
+
 } // namespace
 
 static void CheckCacheLineSize();
@@ -180,11 +184,8 @@ static void ResetThrottler();
 
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
 static void Throttle(Common::Timer::Value current_time);
-static void UpdatePerformanceCounters();
-static void AccumulatePreFrameSleepTime();
-static void UpdatePreFrameSleepTime();
+static void AccumulatePreFrameSleepTime(Common::Timer::Value current_time);
 static void UpdateDisplayVSync();
-static void ResetPerformanceCounters();
 
 static bool UpdateGameSettingsLayer();
 static void UpdateRunningGame(const std::string_view path, CDImage* image, bool booting);
@@ -239,7 +240,7 @@ static void PollDiscordPresence();
 #endif
 } // namespace System
 
-static constexpr const float PERFORMANCE_COUNTER_UPDATE_INTERVAL = 1.0f;
+static constexpr float PRE_FRAME_SLEEP_UPDATE_INTERVAL = 1.0f;
 static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
 static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAME_COUNT = 2; // 20fps minimum
 static constexpr u32 MAX_SKIPPED_TIMEOUT_FRAME_COUNT = 1;   // 30fps minimum
@@ -285,7 +286,7 @@ static bool s_skip_presenting_duplicate_frames = false;
 static u32 s_skipped_frame_count = 0;
 static u32 s_last_presented_internal_frame_number = 0;
 
-static float s_throttle_frequency = 0.0f;
+static float s_video_frame_rate = 0.0f;
 static float s_target_speed = 0.0f;
 
 static Common::Timer::Value s_frame_period = 0;
@@ -295,33 +296,8 @@ static Common::Timer::Value s_frame_start_time = 0;
 static Common::Timer::Value s_last_active_frame_time = 0;
 static Common::Timer::Value s_pre_frame_sleep_time = 0;
 static Common::Timer::Value s_max_active_frame_time = 0;
+static Common::Timer::Value s_last_pre_frame_sleep_update_time = 0;
 
-static float s_average_frame_time_accumulator = 0.0f;
-static float s_minimum_frame_time_accumulator = 0.0f;
-static float s_maximum_frame_time_accumulator = 0.0f;
-
-static float s_vps = 0.0f;
-static float s_fps = 0.0f;
-static float s_speed = 0.0f;
-static float s_minimum_frame_time = 0.0f;
-static float s_maximum_frame_time = 0.0f;
-static float s_average_frame_time = 0.0f;
-static float s_cpu_thread_usage = 0.0f;
-static float s_cpu_thread_time = 0.0f;
-static float s_sw_thread_usage = 0.0f;
-static float s_sw_thread_time = 0.0f;
-static float s_average_gpu_time = 0.0f;
-static float s_accumulated_gpu_time = 0.0f;
-static float s_gpu_usage = 0.0f;
-static System::FrameTimeHistory s_frame_time_history;
-static u32 s_frame_time_history_pos = 0;
-static u32 s_last_frame_number = 0;
-static u32 s_last_internal_frame_number = 0;
-static u64 s_last_cpu_time = 0;
-static u64 s_last_sw_time = 0;
-static u32 s_presents_since_last_update = 0;
-static Common::Timer s_fps_timer;
-static Common::Timer s_frame_timer;
 static Threading::ThreadHandle s_cpu_thread_handle;
 
 static std::unique_ptr<MediaCapture> s_media_capture;
@@ -559,6 +535,11 @@ void System::Internal::CPUThreadShutdown()
 #endif
 }
 
+const Threading::ThreadHandle& System::Internal::GetCPUThreadHandle()
+{
+  return s_cpu_thread_handle;
+}
+
 void System::Internal::IdlePollUpdate()
 {
   InputManager::PollSources();
@@ -793,67 +774,6 @@ System::BootMode System::GetBootMode()
 const BIOS::ImageInfo* System::GetBIOSImageInfo()
 {
   return s_bios_image_info;
-}
-
-float System::GetFPS()
-{
-  return s_fps;
-}
-float System::GetVPS()
-{
-  return s_vps;
-}
-float System::GetEmulationSpeed()
-{
-  return s_speed;
-}
-float System::GetAverageFrameTime()
-{
-  return s_average_frame_time;
-}
-float System::GetMinimumFrameTime()
-{
-  return s_minimum_frame_time;
-}
-float System::GetMaximumFrameTime()
-{
-  return s_maximum_frame_time;
-}
-float System::GetThrottleFrequency()
-{
-  return s_throttle_frequency;
-}
-float System::GetCPUThreadUsage()
-{
-  return s_cpu_thread_usage;
-}
-float System::GetCPUThreadAverageTime()
-{
-  return s_cpu_thread_time;
-}
-float System::GetSWThreadUsage()
-{
-  return s_sw_thread_usage;
-}
-float System::GetSWThreadAverageTime()
-{
-  return s_sw_thread_time;
-}
-float System::GetGPUUsage()
-{
-  return s_gpu_usage;
-}
-float System::GetGPUAverageTime()
-{
-  return s_average_gpu_time;
-}
-const System::FrameTimeHistory& System::GetFrameTimeHistory()
-{
-  return s_frame_time_history;
-}
-u32 System::GetFrameTimeHistoryPos()
-{
-  return s_frame_time_history_pos;
 }
 
 bool System::IsExePath(std::string_view path)
@@ -1622,7 +1542,8 @@ void System::ResetSystem()
   Host::AddIconOSDMessage("SystemReset", ICON_FA_POWER_OFF, TRANSLATE_STR("OSDMessage", "System reset."),
                           Host::OSD_QUICK_DURATION);
 
-  ResetPerformanceCounters();
+  PerformanceCounters::Reset();
+  ResetThrottler();
   InterruptExecution();
 }
 
@@ -1677,7 +1598,7 @@ void System::PauseSystem(bool paused)
     Host::OnIdleStateChanged();
 
     UpdateDisplayVSync();
-    ResetPerformanceCounters();
+    PerformanceCounters::Reset();
     ResetThrottler();
   }
 }
@@ -1927,7 +1848,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   UpdateSpeedLimiterState();
   ImGuiManager::UpdateDebugWindowConfig();
-  ResetPerformanceCounters();
+  PerformanceCounters::Reset();
+  ResetThrottler();
   return true;
 }
 
@@ -1940,7 +1862,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   s_internal_frame_number = 0;
 
   s_target_speed = g_settings.emulation_speed;
-  s_throttle_frequency = 60.0f;
+  s_video_frame_rate = 60.0f;
   s_frame_period = 0;
   s_next_frame_time = 0;
   s_turbo_enabled = false;
@@ -1949,32 +1871,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   s_rewind_load_frequency = -1;
   s_rewind_load_counter = -1;
   s_rewinding_first_save = true;
-
-  s_average_frame_time_accumulator = 0.0f;
-  s_minimum_frame_time_accumulator = 0.0f;
-  s_maximum_frame_time_accumulator = 0.0f;
-
-  s_vps = 0.0f;
-  s_fps = 0.0f;
-  s_speed = 0.0f;
-  s_minimum_frame_time = 0.0f;
-  s_maximum_frame_time = 0.0f;
-  s_average_frame_time = 0.0f;
-  s_cpu_thread_usage = 0.0f;
-  s_cpu_thread_time = 0.0f;
-  s_sw_thread_usage = 0.0f;
-  s_sw_thread_time = 0.0f;
-  s_average_gpu_time = 0.0f;
-  s_accumulated_gpu_time = 0.0f;
-  s_gpu_usage = 0.0f;
-  s_last_frame_number = 0;
-  s_last_internal_frame_number = 0;
-  s_presents_since_last_update = 0;
-  s_last_cpu_time = 0;
-  s_fps_timer.Reset();
-  s_frame_timer.Reset();
-  s_frame_time_history.fill(0.0f);
-  s_frame_time_history_pos = 0;
 
   TimingEvents::Initialize();
 
@@ -2014,6 +1910,9 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
 
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
+
+  PerformanceCounters::Clear();
+
   return true;
 }
 
@@ -2049,8 +1948,6 @@ void System::DestroySystem()
 
   if (g_settings.inhibit_screensaver)
     PlatformMisc::ResumeScreensaver();
-
-  s_cpu_thread_usage = {};
 
   ClearMemorySaveStates();
 
@@ -2224,7 +2121,7 @@ void System::FrameDone()
   // Kick off media capture early, might take a while.
   if (s_media_capture && s_media_capture->IsCapturingVideo()) [[unlikely]]
   {
-    if (s_media_capture->GetVideoFPS() != GetThrottleFrequency()) [[unlikely]]
+    if (s_media_capture->GetVideoFPS() != s_video_frame_rate) [[unlikely]]
     {
       const std::string next_capture_path = s_media_capture->GetNextCapturePath();
       INFO_LOG("Video frame rate changed, switching to new capture file {}", Path::GetFileName(next_capture_path));
@@ -2250,7 +2147,7 @@ void System::FrameDone()
   const Common::Timer::Value pre_frame_sleep_until = s_next_frame_time + s_pre_frame_sleep_time;
   s_last_active_frame_time = current_time - s_frame_start_time;
   if (s_pre_frame_sleep)
-    AccumulatePreFrameSleepTime();
+    AccumulatePreFrameSleepTime(current_time);
 
   // explicit present (frame pacing)
   const bool is_unique_frame = (s_last_presented_internal_frame_number != s_internal_frame_number);
@@ -2328,15 +2225,20 @@ void System::FrameDone()
   // Update perf counters *after* throttling, we want to measure from start-of-frame
   // to start-of-frame, not end-of-frame to end-of-frame (will be noisy due to different
   // amounts of computation happening in each frame).
-  System::UpdatePerformanceCounters();
+  PerformanceCounters::Update(s_frame_number, s_internal_frame_number);
 }
 
-void System::SetThrottleFrequency(float frequency)
+float System::GetVideoFrameRate()
 {
-  if (s_throttle_frequency == frequency)
+  return s_video_frame_rate;
+}
+
+void System::SetVideoFrameRate(float frequency)
+{
+  if (s_video_frame_rate == frequency)
     return;
 
-  s_throttle_frequency = frequency;
+  s_video_frame_rate = frequency;
   UpdateThrottlePeriod();
 }
 
@@ -2346,7 +2248,7 @@ void System::UpdateThrottlePeriod()
   {
     const double target_speed = std::max(static_cast<double>(s_target_speed), std::numeric_limits<double>::epsilon());
     s_frame_period =
-      Common::Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(s_throttle_frequency) * target_speed));
+      Common::Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(s_video_frame_rate) * target_speed));
   }
   else
   {
@@ -2790,17 +2692,11 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
     return false;
   }
 
-  ResetPerformanceCounters();
-  ResetThrottler();
-
-  if (IsPaused())
-    InvalidateDisplay();
-
   VERBOSE_LOG("Loading state took {:.2f} msec", load_timer.GetTimeMilliseconds());
   return true;
 }
 
-bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display)
+bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display_if_paused)
 {
   Assert(IsValid());
 
@@ -2866,15 +2762,20 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   Achievements::DisableHardcoreMode();
 
   StateWrapper sw(buffer.state_data.cspan(0, buffer.state_size), StateWrapper::Mode::Read, buffer.version);
-  if (!DoState(sw, nullptr, update_display, false))
+  if (!DoState(sw, nullptr, update_display_if_paused && IsPaused(), false))
   {
     Error::SetStringView(error, "Save state stream is corrupted.");
     return false;
   }
 
   InterruptExecution();
-  ResetPerformanceCounters();
+
+  PerformanceCounters::Reset();
   ResetThrottler();
+
+  if (update_display_if_paused && IsPaused())
+    InvalidateDisplay();
+
   return true;
 }
 
@@ -3340,100 +3241,7 @@ float System::GetAudioNominalRate()
   return (s_throttler_enabled || s_syncing_to_host_with_vsync) ? s_target_speed : 1.0f;
 }
 
-void System::UpdatePerformanceCounters()
-{
-  const float frame_time = static_cast<float>(s_frame_timer.GetTimeMillisecondsAndReset());
-  s_minimum_frame_time_accumulator =
-    (s_minimum_frame_time_accumulator == 0.0f) ? frame_time : std::min(s_minimum_frame_time_accumulator, frame_time);
-  s_average_frame_time_accumulator += frame_time;
-  s_maximum_frame_time_accumulator = std::max(s_maximum_frame_time_accumulator, frame_time);
-  s_frame_time_history[s_frame_time_history_pos] = frame_time;
-  s_frame_time_history_pos = (s_frame_time_history_pos + 1) % NUM_FRAME_TIME_SAMPLES;
-
-  // update fps counter
-  const Common::Timer::Value now_ticks = Common::Timer::GetCurrentValue();
-  const Common::Timer::Value ticks_diff = now_ticks - s_fps_timer.GetStartValue();
-  const float time = static_cast<float>(Common::Timer::ConvertValueToSeconds(ticks_diff));
-  if (time < PERFORMANCE_COUNTER_UPDATE_INTERVAL)
-    return;
-
-  const u32 frames_run = s_frame_number - s_last_frame_number;
-  const float frames_runf = static_cast<float>(frames_run);
-
-  // TODO: Make the math here less rubbish
-  const double pct_divider =
-    100.0 * (1.0 / ((static_cast<double>(ticks_diff) * static_cast<double>(Threading::GetThreadTicksPerSecond())) /
-                    Common::Timer::GetFrequency() / 1000000000.0));
-  const double time_divider = 1000.0 * (1.0 / static_cast<double>(Threading::GetThreadTicksPerSecond())) *
-                              (1.0 / static_cast<double>(frames_runf));
-
-  s_minimum_frame_time = std::exchange(s_minimum_frame_time_accumulator, 0.0f);
-  s_average_frame_time = std::exchange(s_average_frame_time_accumulator, 0.0f) / frames_runf;
-  s_maximum_frame_time = std::exchange(s_maximum_frame_time_accumulator, 0.0f);
-
-  s_vps = static_cast<float>(frames_runf / time);
-  s_last_frame_number = s_frame_number;
-  s_fps = static_cast<float>(s_internal_frame_number - s_last_internal_frame_number) / time;
-  s_last_internal_frame_number = s_internal_frame_number;
-  s_speed = (s_vps / s_throttle_frequency) * 100.0f;
-
-  const Threading::Thread* sw_thread = g_gpu->GetSWThread();
-  const u64 cpu_time = s_cpu_thread_handle ? s_cpu_thread_handle.GetCPUTime() : 0;
-  const u64 sw_time = sw_thread ? sw_thread->GetCPUTime() : 0;
-  const u64 cpu_delta = cpu_time - s_last_cpu_time;
-  const u64 sw_delta = sw_time - s_last_sw_time;
-  s_last_cpu_time = cpu_time;
-  s_last_sw_time = sw_time;
-
-  s_cpu_thread_usage = static_cast<float>(static_cast<double>(cpu_delta) * pct_divider);
-  s_cpu_thread_time = static_cast<float>(static_cast<double>(cpu_delta) * time_divider);
-  s_sw_thread_usage = static_cast<float>(static_cast<double>(sw_delta) * pct_divider);
-  s_sw_thread_time = static_cast<float>(static_cast<double>(sw_delta) * time_divider);
-
-  if (s_media_capture)
-    s_media_capture->UpdateCaptureThreadUsage(pct_divider, time_divider);
-
-  s_fps_timer.ResetTo(now_ticks);
-
-  if (g_gpu_device->IsGPUTimingEnabled())
-  {
-    s_average_gpu_time = s_accumulated_gpu_time / static_cast<float>(std::max(s_presents_since_last_update, 1u));
-    s_gpu_usage = s_accumulated_gpu_time / (time * 10.0f);
-  }
-  s_accumulated_gpu_time = 0.0f;
-  s_presents_since_last_update = 0;
-
-  if (g_settings.display_show_gpu_stats)
-    g_gpu->UpdateStatistics(frames_run);
-
-  if (s_pre_frame_sleep)
-    UpdatePreFrameSleepTime();
-
-  VERBOSE_LOG("FPS: {:.2f} VPS: {:.2f} CPU: {:.2f} GPU: {:.2f} Average: {:.2f}ms Min: {:.2f}ms Max: {:.2f}ms", s_fps,
-              s_vps, s_cpu_thread_usage, s_gpu_usage, s_average_frame_time, s_minimum_frame_time, s_maximum_frame_time);
-
-  Host::OnPerformanceCountersUpdated();
-}
-
-void System::ResetPerformanceCounters()
-{
-  s_last_frame_number = s_frame_number;
-  s_last_internal_frame_number = s_internal_frame_number;
-  s_last_cpu_time = s_cpu_thread_handle ? s_cpu_thread_handle.GetCPUTime() : 0;
-  if (const Threading::Thread* sw_thread = g_gpu->GetSWThread(); sw_thread)
-    s_last_sw_time = sw_thread->GetCPUTime();
-  else
-    s_last_sw_time = 0;
-
-  s_average_frame_time_accumulator = 0.0f;
-  s_minimum_frame_time_accumulator = 0.0f;
-  s_maximum_frame_time_accumulator = 0.0f;
-  s_frame_timer.Reset();
-  s_fps_timer.Reset();
-  ResetThrottler();
-}
-
-void System::AccumulatePreFrameSleepTime()
+void System::AccumulatePreFrameSleepTime(Common::Timer::Value current_time)
 {
   DebugAssert(s_pre_frame_sleep);
 
@@ -3450,21 +3258,22 @@ void System::AccumulatePreFrameSleepTime()
             Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
             Common::Timer::ConvertValueToMilliseconds(s_last_active_frame_time));
   }
-}
 
-void System::UpdatePreFrameSleepTime()
-{
-  DebugAssert(s_pre_frame_sleep);
+  if (Common::Timer::ConvertValueToSeconds(current_time - s_last_pre_frame_sleep_update_time) >=
+      PRE_FRAME_SLEEP_UPDATE_INTERVAL)
+  {
+    s_last_pre_frame_sleep_update_time = current_time;
 
-  const Common::Timer::Value expected_frame_time =
-    s_max_active_frame_time + Common::Timer::ConvertMillisecondsToValue(g_settings.display_pre_frame_sleep_buffer);
-  s_pre_frame_sleep_time = Common::AlignDown(s_frame_period - std::min(expected_frame_time, s_frame_period),
-                                             static_cast<unsigned int>(Common::Timer::ConvertMillisecondsToValue(1)));
-  DEV_LOG("Set pre-frame time to {} ms (expected frame time of {} ms)",
-          Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
-          Common::Timer::ConvertValueToMilliseconds(expected_frame_time));
+    const Common::Timer::Value expected_frame_time =
+      s_max_active_frame_time + Common::Timer::ConvertMillisecondsToValue(g_settings.display_pre_frame_sleep_buffer);
+    s_pre_frame_sleep_time = Common::AlignDown(s_frame_period - std::min(expected_frame_time, s_frame_period),
+                                               static_cast<unsigned int>(Common::Timer::ConvertMillisecondsToValue(1)));
+    DEV_LOG("Set pre-frame time to {} ms (expected frame time of {} ms)",
+            Common::Timer::ConvertValueToMilliseconds(s_pre_frame_sleep_time),
+            Common::Timer::ConvertValueToMilliseconds(expected_frame_time));
 
-  s_max_active_frame_time = 0;
+    s_max_active_frame_time = 0;
+  }
 }
 
 void System::FormatLatencyStats(SmallStringBase& str)
@@ -3505,10 +3314,10 @@ void System::UpdateSpeedLimiterState()
     const float host_refresh_rate = g_gpu_device->GetMainSwapChain()->GetWindowInfo().surface_refresh_rate;
     if (host_refresh_rate > 0.0f)
     {
-      const float ratio = host_refresh_rate / System::GetThrottleFrequency();
+      const float ratio = host_refresh_rate / s_video_frame_rate;
       s_can_sync_to_host = (ratio >= 0.95f && ratio <= 1.05f);
-      INFO_LOG("Refresh rate: Host={}hz Guest={}hz Ratio={} - {}", host_refresh_rate, System::GetThrottleFrequency(),
-               ratio, s_can_sync_to_host ? "can sync" : "can't sync");
+      INFO_LOG("Refresh rate: Host={}hz Guest={}hz Ratio={} - {}", host_refresh_rate, s_video_frame_rate, ratio,
+               s_can_sync_to_host ? "can sync" : "can't sync");
 
       s_syncing_to_host = (s_can_sync_to_host && g_settings.sync_to_host_refresh_rate && s_target_speed == 1.0f);
       if (s_syncing_to_host)
@@ -4911,7 +4720,7 @@ void System::UpdateMemorySaveStateSettings()
 
   if (g_settings.rewind_enable)
   {
-    s_rewind_save_frequency = static_cast<s32>(std::ceil(g_settings.rewind_save_frequency * s_throttle_frequency));
+    s_rewind_save_frequency = static_cast<s32>(std::ceil(g_settings.rewind_save_frequency * s_video_frame_rate));
     s_rewind_save_counter = 0;
 
     u64 ram_usage, vram_usage;
@@ -5024,6 +4833,9 @@ bool System::LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true 
   if (consume_state)
     s_rewind_states.pop_back();
 
+  // back in time, need to reset perf counters
+  PerformanceCounters::Reset();
+
 #ifdef PROFILE_MEMORY_SAVE_STATES
   DEV_LOG("Rewind load took {:.4f} ms", load_timer.GetTimeMilliseconds());
 #endif
@@ -5044,7 +4856,7 @@ void System::SetRewinding(bool enabled)
 
     // Try to rewind at the replay speed, or one per second maximum.
     const float load_frequency = std::min(g_settings.rewind_save_frequency, 1.0f);
-    s_rewind_load_frequency = static_cast<s32>(std::ceil(load_frequency * s_throttle_frequency));
+    s_rewind_load_frequency = static_cast<s32>(std::ceil(load_frequency * s_video_frame_rate));
     s_rewind_load_counter = 0;
 
     if (!was_enabled && s_system_executing)
@@ -5065,7 +4877,6 @@ void System::DoRewind()
     const u32 skip_saves = BoolToUInt32(!s_rewinding_first_save);
     s_rewinding_first_save = false;
     LoadRewindState(skip_saves, false);
-    ResetPerformanceCounters();
     s_rewind_load_counter = s_rewind_load_frequency;
   }
   else
@@ -5394,7 +5205,6 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
     Host::GetUIntSettingValue("MediaCapture", "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
   const GPUTexture::Format capture_format =
     g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
-  const float fps = System::GetThrottleFrequency();
   if (capture_video)
   {
     // TODO: This will be a mess with GPU thread.
@@ -5429,8 +5239,8 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
   s_media_capture = MediaCapture::Create(backend, &error);
   if (!s_media_capture ||
       !s_media_capture->BeginCapture(
-        fps, aspect, capture_width, capture_height, capture_format, SPU::SAMPLE_RATE, std::move(path), capture_video,
-        Host::GetSmallStringSettingValue("MediaCapture", "VideoCodec"),
+        s_video_frame_rate, aspect, capture_width, capture_height, capture_format, SPU::SAMPLE_RATE, std::move(path),
+        capture_video, Host::GetSmallStringSettingValue("MediaCapture", "VideoCodec"),
         Host::GetUIntSettingValue("MediaCapture", "VideoBitrate", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_BITRATE),
         Host::GetBoolSettingValue("MediaCapture", "VideoCodecUseArgs", false) ?
           Host::GetStringSettingValue("MediaCapture", "AudioCodecArgs") :
@@ -5779,11 +5589,8 @@ void System::ToggleSoftwareRendering()
                           Host::OSD_QUICK_DURATION);
   RecreateGPU(new_renderer);
 
-  // Might have a thread change.
-  if (const Threading::Thread* sw_thread = g_gpu->GetSWThread(); sw_thread)
-    s_last_sw_time = sw_thread->GetCPUTime();
-  else
-    s_last_sw_time = 0;
+  // TODO: GPU-THREAD: Drop this
+  PerformanceCounters::Reset();
 
   g_gpu->UpdateResolutionScale();
 }
@@ -5852,10 +5659,7 @@ bool System::PresentDisplay(bool explicit_present, u64 present_time)
     g_gpu_device->EndPresent(g_gpu_device->GetMainSwapChain(), explicit_present, present_time);
 
     if (g_gpu_device->IsGPUTimingEnabled())
-    {
-      s_accumulated_gpu_time += g_gpu_device->GetAndResetAccumulatedGPUTime();
-      s_presents_since_last_update++;
-    }
+      PerformanceCounters::AccumulateGPUTime();
   }
   else
   {

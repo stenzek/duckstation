@@ -11,6 +11,7 @@
 #include "gpu.h"
 #include "host.h"
 #include "mdec.h"
+#include "performance_counters.h"
 #include "settings.h"
 #include "spu.h"
 #include "system.h"
@@ -346,9 +347,9 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
   const System::State state = System::GetState();
   if (state == System::State::Running)
   {
-    const float speed = System::GetEmulationSpeed();
+    const float speed = PerformanceCounters::GetEmulationSpeed();
     if (g_settings.display_show_fps)
-      text.append_format("G: {:.2f} | V: {:.2f}", System::GetFPS(), System::GetVPS());
+      text.append_format("G: {:.2f} | V: {:.2f}", PerformanceCounters::GetFPS(), PerformanceCounters::GetVPS());
     if (g_settings.display_show_speed)
     {
       text.append_format("{}{}%", text.empty() ? "" : " | ", static_cast<u32>(std::round(speed)));
@@ -400,8 +401,8 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
 
     if (g_settings.display_show_cpu_usage)
     {
-      text.format("{:.2f}ms | {:.2f}ms | {:.2f}ms", System::GetMinimumFrameTime(), System::GetAverageFrameTime(),
-                  System::GetMaximumFrameTime());
+      text.format("{:.2f}ms | {:.2f}ms | {:.2f}ms", PerformanceCounters::GetMinimumFrameTime(),
+                  PerformanceCounters::GetAverageFrameTime(), PerformanceCounters::GetMaximumFrameTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
       if (g_settings.cpu_overclock_active || CPU::g_state.using_interpreter ||
@@ -450,13 +451,15 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
       {
         text.assign("CPU: ");
       }
-      FormatProcessorStat(text, System::GetCPUThreadUsage(), System::GetCPUThreadAverageTime());
+      FormatProcessorStat(text, PerformanceCounters::GetCPUThreadUsage(),
+                          PerformanceCounters::GetCPUThreadAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
 
       if (g_gpu->GetSWThread())
       {
         text.assign("SW: ");
-        FormatProcessorStat(text, System::GetSWThreadUsage(), System::GetSWThreadAverageTime());
+        FormatProcessorStat(text, PerformanceCounters::GetSWThreadUsage(),
+                            PerformanceCounters::GetSWThreadAverageTime());
         DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
       }
 
@@ -473,7 +476,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
     if (g_settings.display_show_gpu_usage && g_gpu_device->IsGPUTimingEnabled())
     {
       text.assign("GPU: ");
-      FormatProcessorStat(text, System::GetGPUUsage(), System::GetGPUAverageTime());
+      FormatProcessorStat(text, PerformanceCounters::GetGPUUsage(), PerformanceCounters::GetGPUAverageTime());
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));
     }
 
@@ -645,7 +648,7 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
   {
     ImGui::PushFont(fixed_font);
 
-    auto [min, max] = GetMinMax(System::GetFrameTimeHistory());
+    auto [min, max] = GetMinMax(PerformanceCounters::GetFrameTimeHistory());
 
     // add a little bit of space either side, so we're not constantly resizing
     if ((max - min) < 4.0f)
@@ -659,10 +662,10 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
     ImGui::PlotEx(
       ImGuiPlotType_Lines, "##frame_times",
       [](void*, int idx) -> float {
-        return System::GetFrameTimeHistory()[((System::GetFrameTimeHistoryPos() + idx) %
-                                              System::NUM_FRAME_TIME_SAMPLES)];
+        return PerformanceCounters::GetFrameTimeHistory()[((PerformanceCounters::GetFrameTimeHistoryPos() + idx) %
+                                                           PerformanceCounters::NUM_FRAME_TIME_SAMPLES)];
       },
-      nullptr, System::NUM_FRAME_TIME_SAMPLES, 0, nullptr, min, max, history_size);
+      nullptr, PerformanceCounters::NUM_FRAME_TIME_SAMPLES, 0, nullptr, min, max, history_size);
 
     ImDrawList* win_dl = ImGui::GetCurrentWindow()->DrawList;
     const ImVec2 wpos(ImGui::GetCurrentWindow()->Pos);

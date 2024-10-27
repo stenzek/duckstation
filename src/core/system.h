@@ -13,7 +13,10 @@
 #include <span>
 #include <string>
 
-class ByteStream;
+namespace Threading {
+class ThreadHandle;
+}
+
 class CDImage;
 class Error;
 class SmallStringBase;
@@ -231,24 +234,6 @@ u64 GetSessionPlayedTime();
 
 const BIOS::ImageInfo* GetBIOSImageInfo();
 
-static constexpr u32 NUM_FRAME_TIME_SAMPLES = 150;
-using FrameTimeHistory = std::array<float, NUM_FRAME_TIME_SAMPLES>;
-
-float GetFPS();
-float GetVPS();
-float GetEmulationSpeed();
-float GetAverageFrameTime();
-float GetMinimumFrameTime();
-float GetMaximumFrameTime();
-float GetThrottleFrequency();
-float GetCPUThreadUsage();
-float GetCPUThreadAverageTime();
-float GetSWThreadUsage();
-float GetSWThreadAverageTime();
-float GetGPUUsage();
-float GetGPUAverageTime();
-const FrameTimeHistory& GetFrameTimeHistory();
-u32 GetFrameTimeHistoryPos();
 void FormatLatencyStats(SmallStringBase& str);
 
 /// Loads global settings (i.e. EmuConfig).
@@ -292,7 +277,8 @@ float GetAudioNominalRate();
 bool IsRunningAtNonStandardSpeed();
 
 /// Adjusts the throttle frequency, i.e. how many times we should sleep per second.
-void SetThrottleFrequency(float frequency);
+float GetVideoFrameRate();
+void SetVideoFrameRate(float frequency);
 
 // Access controllers for simulating input.
 Controller* GetController(u32 slot);
@@ -466,6 +452,9 @@ bool CPUThreadInitialize(Error* error);
 
 /// Called on CPU thread shutdown.
 void CPUThreadShutdown();
+
+/// Returns a handle to the CPU thread.
+const Threading::ThreadHandle& GetCPUThreadHandle();
 
 /// Polls input, updates subsystems which are present while paused/inactive.
 void IdlePollUpdate();
