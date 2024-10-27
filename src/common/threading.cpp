@@ -610,10 +610,15 @@ Threading::KernelSemaphore::KernelSemaphore()
 {
 #ifdef _WIN32
   m_sema = CreateSemaphore(nullptr, 0, LONG_MAX, nullptr);
+  if (m_sema == NULL) [[unlikely]]
+    Panic("CreateSemaphore() failed");
 #elif defined(__APPLE__)
-  semaphore_create(mach_task_self(), &m_sema, SYNC_POLICY_FIFO, 0);
+  const kern_return_t kr = semaphore_create(mach_task_self(), &m_sema, SYNC_POLICY_FIFO, 0);
+  if (kr != KERN_SUCCESS) [[unlikely]]
+    Panic("CreateSemaphore() failed");
 #else
-  sem_init(&m_sema, false, 0);
+  if (sem_init(&m_sema, false, 0) != 0) [[unlikely]]
+    Panic("sem_init() failed");
 #endif
 }
 

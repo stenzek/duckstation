@@ -107,10 +107,21 @@ protected:
   u32 m_stack_size = 0;
 };
 
-/// A semaphore that may not have a fast userspace path
-/// (Used in other semaphore-based algorithms where the semaphore is just used for its thread sleep/wake ability)
+/// A semaphore that requires a system call to wake/sleep.
 class KernelSemaphore
 {
+public:
+  KernelSemaphore();
+  KernelSemaphore(const KernelSemaphore&) = delete;
+  ~KernelSemaphore();
+
+  KernelSemaphore& operator=(const KernelSemaphore&) = delete;
+
+  void Post();
+  void Wait();
+  bool TryWait();
+
+private:
 #if defined(_WIN32)
   void* m_sema;
 #elif defined(__APPLE__)
@@ -118,12 +129,6 @@ class KernelSemaphore
 #else
   sem_t m_sema;
 #endif
-public:
-  KernelSemaphore();
-  ~KernelSemaphore();
-  void Post();
-  void Wait();
-  bool TryWait();
 };
 
 } // namespace Threading
