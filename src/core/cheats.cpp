@@ -1994,7 +1994,7 @@ std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(Me
     code->instructions.push_back(inst);
   }
 
-  if (code->instructions.empty())
+  if (code && code->instructions.empty())
   {
     Error::SetStringFmt(error, "No instructions in code.");
     code.reset();
