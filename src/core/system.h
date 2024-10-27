@@ -90,7 +90,7 @@ enum : TickCount
   MASTER_CLOCK = 44100 * 0x300 // 33868800Hz or 33.8688MHz, also used as CPU clock
 };
 
-enum class State
+enum class State : u8
 {
   Shutdown,
   Starting,
@@ -99,7 +99,7 @@ enum class State
   Stopping,
 };
 
-enum class BootMode
+enum class BootMode : u8
 {
   None,
   FullBoot,
@@ -120,8 +120,6 @@ enum class Taint : u8
   Patches,
   MaxCount,
 };
-
-extern TickCount g_ticks_per_second;
 
 /// Returns true if the path is a PlayStation executable we can inject.
 bool IsExePath(std::string_view path);
@@ -184,11 +182,6 @@ const char* GetTaintName(Taint taint);
 bool HasTaint(Taint taint);
 void SetTaint(Taint taint);
 
-ALWAYS_INLINE TickCount GetTicksPerSecond()
-{
-  return g_ticks_per_second;
-}
-
 ALWAYS_INLINE_RELEASE TickCount ScaleTicksToOverclock(TickCount ticks)
 {
   if (!g_settings.cpu_overclock_active)
@@ -211,6 +204,7 @@ ALWAYS_INLINE_RELEASE TickCount UnscaleTicksToOverclock(TickCount ticks, TickCou
   return t;
 }
 
+TickCount GetTicksPerSecond();
 TickCount GetMaxSliceTicks();
 void UpdateOverclock();
 
