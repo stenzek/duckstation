@@ -1432,7 +1432,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
   DefineMacro(ss, "USE_BUFFER", use_buffer);
 
-  ss << "CONSTANT uint2 VRAM_SIZE = uint2(" << VRAM_WIDTH << ", " << VRAM_HEIGHT << ");\n";
+  ss << "CONSTANT float2 VRAM_SIZE = float2(" << VRAM_WIDTH << ".0, " << VRAM_HEIGHT << ".0);\n";
 
   DeclareUniformBuffer(ss,
                        {"float2 u_base_coords", "float2 u_end_coords", "float2 u_size", "float u_resolution_scale",
