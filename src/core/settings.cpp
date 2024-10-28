@@ -1025,7 +1025,11 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
       g_settings.cpu_overclock_enable = false;
       g_settings.UpdateOverclockActive();
     }
+
+#ifndef __ANDROID__
     g_settings.debugging.enable_gdb_server = false;
+#endif
+
     g_settings.debugging.show_vram = false;
     g_settings.debugging.dump_cpu_to_vram_copies = false;
     g_settings.debugging.dump_vram_to_cpu_copies = false;

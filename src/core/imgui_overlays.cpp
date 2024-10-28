@@ -76,6 +76,8 @@ static void DrawFrameTimeOverlay(float& position_y, float scale, float margin, f
 static void DrawEnhancementsOverlay();
 static void DrawInputsOverlay();
 
+#ifndef __ANDROID__
+
 static constexpr size_t NUM_DEBUG_WINDOWS = 6;
 static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
@@ -87,6 +89,8 @@ static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_wi
   {"Timers", "Timers State", ":icons/applications-system.png", &Timers::DrawDebugStateWindow, 800, 95},
 }};
 static std::array<ImGuiManager::AuxiliaryRenderWindowState, NUM_DEBUG_WINDOWS> s_debug_window_state = {};
+
+#endif
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)

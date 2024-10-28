@@ -47,6 +47,9 @@ void TimeToPrintableString(SmallStringBase* str, time_t t);
 
 // Host UI triggers from Big Picture mode.
 namespace Host {
+
+#ifndef __ANDROID__
+
 /// Requests shut down and exit of the hosting application. This may not actually exit,
 /// if the user cancels the shutdown confirmation.
 void RequestExitApplication(bool allow_confirm);
@@ -56,4 +59,7 @@ void RequestExitBigPicture();
 
 /// Requests the cover downloader be opened.
 void OnCoverDownloaderOpenRequested();
+
+#endif
+
 } // namespace Host
