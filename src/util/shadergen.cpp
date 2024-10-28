@@ -151,8 +151,14 @@ TinyString ShaderGen::GetGLSLVersionString(RenderAPI render_api, u32 version)
                                  (glsl_es && major_version >= 3) ? " es" : "");
 }
 
-void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */) const
+void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */,
+                            bool enable_framebuffer_fetch /* = false */,
+                            bool enable_dual_source_blend /* = false */) const
 {
+  DebugAssert((!enable_rov && !enable_framebuffer_fetch && !enable_dual_source_blend) ||
+              (enable_rov && !enable_framebuffer_fetch && !enable_dual_source_blend) ||
+              (enable_rov && !enable_framebuffer_fetch && !enable_dual_source_blend) ||
+              (!enable_rov && !enable_framebuffer_fetch && enable_dual_source_blend));
   if (m_shader_language == GPUShaderLanguage::GLSL || m_shader_language == GPUShaderLanguage::GLSLES)
     ss << m_glsl_version_string << "\n\n";
   else if (m_spirv)
@@ -169,7 +175,8 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
 
 #ifdef ENABLE_OPENGL
   // Extension enabling for OpenGL.
-  if (m_shader_language == GPUShaderLanguage::GLSL || m_shader_language == GPUShaderLanguage::GLSLES)
+  if (enable_framebuffer_fetch &&
+      (m_shader_language == GPUShaderLanguage::GLSL || m_shader_language == GPUShaderLanguage::GLSLES))
   {
     if (GLAD_GL_EXT_shader_framebuffer_fetch)
       ss << "#extension GL_EXT_shader_framebuffer_fetch : require\n";
@@ -180,10 +187,13 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
   if (m_shader_language == GPUShaderLanguage::GLSLES)
   {
     // Enable EXT_blend_func_extended for dual-source blend on OpenGL ES.
-    if (GLAD_GL_EXT_blend_func_extended)
-      ss << "#extension GL_EXT_blend_func_extended : require\n";
-    if (GLAD_GL_ARB_blend_func_extended)
-      ss << "#extension GL_ARB_blend_func_extended : require\n";
+    if (enable_dual_source_blend)
+    {
+      if (GLAD_GL_EXT_blend_func_extended)
+        ss << "#extension GL_EXT_blend_func_extended : require\n";
+      if (GLAD_GL_ARB_blend_func_extended)
+        ss << "#extension GL_ARB_blend_func_extended : require\n";
+    }
 
     // Test for V3D driver - we have to fudge coordinates slightly.
     if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_VENDOR)), "Broadcom") &&

@@ -731,7 +731,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
                                  texture_filtering != GPUTextureFilter::Nearest));
 
   std::stringstream ss;
-  WriteHeader(ss, use_rov);
+  WriteHeader(ss, use_rov, shader_blending && !use_rov, use_dual_source);
   DefineMacro(ss, "TRANSPARENCY", render_mode != GPU_HW::BatchRenderMode::TransparencyDisabled);
   DefineMacro(ss, "TRANSPARENCY_ONLY_OPAQUE", render_mode == GPU_HW::BatchRenderMode::OnlyOpaque);
   DefineMacro(ss, "TRANSPARENCY_ONLY_TRANSPARENT", render_mode == GPU_HW::BatchRenderMode::OnlyTransparent);

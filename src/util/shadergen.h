@@ -42,7 +42,8 @@ protected:
 
   void DefineMacro(std::stringstream& ss, const char* name, bool enabled) const;
   void DefineMacro(std::stringstream& ss, const char* name, s32 value) const;
-  void WriteHeader(std::stringstream& ss, bool enable_rov = false) const;
+  void WriteHeader(std::stringstream& ss, bool enable_rov = false, bool enable_framebuffer_fetch = false,
+                   bool enable_dual_source_blend = false) const;
   void WriteUniformBufferDeclaration(std::stringstream& ss, bool push_constant_on_vulkan) const;
   void DeclareUniformBuffer(std::stringstream& ss, const std::initializer_list<const char*>& members,
                             bool push_constant_on_vulkan) const;
