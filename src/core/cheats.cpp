@@ -268,7 +268,7 @@ void Cheats::CheatCode::ApplySettingOverrides()
             Settings::GetDisplayAspectRatioName(m_metadata.override_aspect_ratio.value()), GetName());
     g_settings.display_aspect_ratio = m_metadata.override_aspect_ratio.value();
   }
-  if (m_metadata.override_cpu_overclock.has_value())
+  if (m_metadata.override_cpu_overclock.has_value() && !g_settings.cpu_overclock_active)
   {
     DEV_LOG("Setting CPU overclock to {} from {} patch.", m_metadata.override_cpu_overclock.value(), GetName());
     g_settings.SetCPUOverclockPercent(m_metadata.override_cpu_overclock.value());
