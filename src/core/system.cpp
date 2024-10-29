@@ -1717,16 +1717,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
                       Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(s_state.region));
         }
       }
-
-      const bool wants_fast_boot =
-        parameters.override_fast_boot.value_or(static_cast<bool>(g_settings.bios_patch_fast_boot));
-      if (wants_fast_boot)
-      {
-        if (disc_region == DiscRegion::NonPS1)
-          ERROR_LOG("Not fast booting non-PS1 disc.");
-        else
-          boot_mode = BootMode::FastBoot;
-      }
     }
   }
   else
@@ -1800,6 +1790,13 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       DestroySystem();
       return true;
     }
+  }
+
+  // Are we fast booting? Must be checked after updating game settings.
+  if (boot_mode == BootMode::FullBoot && disc_region != DiscRegion::NonPS1 &&
+      parameters.override_fast_boot.value_or(static_cast<bool>(g_settings.bios_patch_fast_boot)))
+  {
+    boot_mode = BootMode::FastBoot;
   }
 
   // Load BIOS image, component setup, check for subchannel in games that need it.
