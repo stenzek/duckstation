@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 17,
+  GAME_DATABASE_CACHE_VERSION = 18,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -82,6 +82,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "ForceRoundTextureCoordinates",
   "ForceAccurateBlending",
   "ForceDeinterlacing",
+  "ForceFullBoot",
   "DisableAutoAnalogMode",
   "DisableTrueColor",
   "DisableUpscaling",
@@ -112,6 +113,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Round Texture Coordinates", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Accurate Blending", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Deinterlacing", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Full Boot", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable True Color", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaling", "GameDatabase::Trait"),
@@ -491,6 +493,14 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
       settings.display_deinterlacing_mode = display_deinterlacing_mode.value();
     }
+  }
+
+  if (HasTrait(Trait::ForceFullBoot))
+  {
+    if (display_osd_messages && settings.bios_patch_fast_boot)
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Fast boot disabled."));
+
+    settings.bios_patch_fast_boot = false;
   }
 
   if (HasTrait(Trait::DisableTrueColor))
