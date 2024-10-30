@@ -706,42 +706,56 @@ void GPU_SW::DispatchRenderCommand()
       {
         const u32 num_vertices = GetPolyLineVertexCount();
 
-        GPUBackendDrawLineCommand* cmd = m_backend.NewDrawLineCommand(num_vertices);
+        GPUBackendDrawLineCommand* cmd = m_backend.NewDrawLineCommand((num_vertices - 1) * 2);
         FillDrawCommand(cmd, m_render_command);
 
         u32 buffer_pos = 0;
         const GPUVertexPosition start_vp{m_blit_buffer[buffer_pos++]};
-        cmd->vertices[0].x = start_vp.x + m_drawing_offset.x;
-        cmd->vertices[0].y = start_vp.y + m_drawing_offset.y;
-        cmd->vertices[0].color = m_render_command.color_for_first_vertex;
+        const GSVector2i draw_offset = GSVector2i::load(&m_drawing_offset.x);
+        GSVector2i start_pos = GSVector2i(start_vp.x, start_vp.y).add32(draw_offset);
+        u32 start_color = m_render_command.color_for_first_vertex;
 
         const bool shaded = m_render_command.shading_enable;
+        u32 out_vertex_count = 0;
         for (u32 i = 1; i < num_vertices; i++)
         {
-          cmd->vertices[i].color =
+          const u32 end_color =
             shaded ? (m_blit_buffer[buffer_pos++] & UINT32_C(0x00FFFFFF)) : m_render_command.color_for_first_vertex;
           const GPUVertexPosition vp{m_blit_buffer[buffer_pos++]};
-          cmd->vertices[i].x = m_drawing_offset.x + vp.x;
-          cmd->vertices[i].y = m_drawing_offset.y + vp.y;
+          const GSVector2i end_pos = GSVector2i(vp.x, vp.y).add32(draw_offset);
 
-          const GSVector4i v0 = GSVector4i::loadl(&cmd->vertices[0].x);
-          const GSVector4i v1 = GSVector4i::loadl(&cmd->vertices[1].x);
-          const GSVector4i rect = v0.min_s32(v1).xyxy(v0.max_s32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+          const GSVector4i rect = GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos))
+                                    .add32(GSVector4i::cxpr(0, 0, 1, 1));
           const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
 
           if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
           {
             DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", cmd->vertices[i - 1].x,
                       cmd->vertices[i - 1].y, cmd->vertices[i].x, cmd->vertices[i].y);
-            return;
           }
           else
           {
             AddDrawLineTicks(clamped_rect, rc.shading_enable);
+
+            GPUBackendDrawLineCommand::Vertex* out_vertex = &cmd->vertices[out_vertex_count];
+            out_vertex_count += 2;
+
+            GSVector2i::store(&out_vertex[0].x, start_pos);
+            out_vertex[0].color = start_color;
+            GSVector2i::store(&out_vertex[1].x, end_pos);
+            out_vertex[1].color = end_color;
           }
+
+          start_pos = end_pos;
+          start_color = end_color;
         }
 
-        m_backend.PushCommand(cmd);
+        if (out_vertex_count > 0)
+        {
+          DebugAssert(out_vertex_count <= cmd->num_vertices);
+          cmd->num_vertices = Truncate16(out_vertex_count);
+          m_backend.PushCommand(cmd);
+        }
       }
     }
     break;
