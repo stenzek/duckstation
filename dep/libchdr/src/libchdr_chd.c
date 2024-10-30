@@ -715,6 +715,7 @@ static chd_error cdlz_codec_decompress(void *codec, const uint8_t *src, uint32_t
 	uint32_t framenum;
 	cdlz_codec_data* cdlz = (cdlz_codec_data*)codec;
 	chd_error decomp_err;
+	uint32_t complen_base;
 
 	/* determine header bytes */
 	const uint32_t frames = destlen / CD_FRAME_SIZE;
@@ -722,19 +723,20 @@ static chd_error cdlz_codec_decompress(void *codec, const uint8_t *src, uint32_t
 	const uint32_t ecc_bytes = (frames + 7) / 8;
 	const uint32_t header_bytes = ecc_bytes + complen_bytes;
 
-	/* input may be truncated, double-check. both bytes, plus at least one input byte, or the third */
-	if ((ecc_bytes + 2) > complen)
+	/* input may be truncated, double-check */
+	if (complen < (ecc_bytes + 2))
 		return CHDERR_DECOMPRESSION_ERROR;
 
 	/* extract compressed length of base */
-	uint32_t complen_base = (src[ecc_bytes + 0] << 8) | src[ecc_bytes + 1];
+	complen_base = (src[ecc_bytes + 0] << 8) | src[ecc_bytes + 1];
 	if (complen_bytes > 2)
 	{
-		complen_base = (complen_base << 8) | src[ecc_bytes + 2];
-		if ((ecc_bytes + 3) > complen)
+		if (complen < (ecc_bytes + 3))
 			return CHDERR_DECOMPRESSION_ERROR;
+
+		complen_base = (complen_base << 8) | src[ecc_bytes + 2];
 	}
-	if ((header_bytes + complen_base) > complen)
+	if (complen < (header_bytes + complen_base))
 		return CHDERR_DECOMPRESSION_ERROR;
 
 	/* reset and decode */
@@ -813,6 +815,7 @@ static chd_error cdzl_codec_decompress(void *codec, const uint8_t *src, uint32_t
 	uint32_t framenum;
 	cdzl_codec_data* cdzl = (cdzl_codec_data*)codec;
 	chd_error decomp_err;
+	uint32_t complen_base;
 
 	/* determine header bytes */
 	const uint32_t frames = destlen / CD_FRAME_SIZE;
@@ -820,19 +823,20 @@ static chd_error cdzl_codec_decompress(void *codec, const uint8_t *src, uint32_t
 	const uint32_t ecc_bytes = (frames + 7) / 8;
 	const uint32_t header_bytes = ecc_bytes + complen_bytes;
 
-	/* input may be truncated, double-check. both bytes, plus at least one input byte, or the third */
-	if ((ecc_bytes + 2) > complen)
+	/* input may be truncated, double-check */
+	if (complen < (ecc_bytes + 2))
 		return CHDERR_DECOMPRESSION_ERROR;
 
 	/* extract compressed length of base */
-	uint32_t complen_base = (src[ecc_bytes + 0] << 8) | src[ecc_bytes + 1];
+	complen_base = (src[ecc_bytes + 0] << 8) | src[ecc_bytes + 1];
 	if (complen_bytes > 2)
 	{
-		complen_base = (complen_base << 8) | src[ecc_bytes + 2];
-		if ((ecc_bytes + 3) > complen)
+		if (complen < (ecc_bytes + 3))
 			return CHDERR_DECOMPRESSION_ERROR;
+
+		complen_base = (complen_base << 8) | src[ecc_bytes + 2];
 	}
-	if ((header_bytes + complen_base) > complen)
+	if (complen < (header_bytes + complen_base))
 		return CHDERR_DECOMPRESSION_ERROR;
 
 	/* reset and decode */
@@ -1188,6 +1192,7 @@ static chd_error cdzs_codec_decompress(void *codec, const uint8_t *src, uint32_t
 	uint32_t framenum;
 	cdzs_codec_data* cdzs = (cdzs_codec_data*)codec;
 	chd_error decomp_err;
+	uint32_t complen_base;
 
 	/* determine header bytes */
 	const uint32_t frames = destlen / CD_FRAME_SIZE;
@@ -1195,19 +1200,20 @@ static chd_error cdzs_codec_decompress(void *codec, const uint8_t *src, uint32_t
 	const uint32_t ecc_bytes = (frames + 7) / 8;
 	const uint32_t header_bytes = ecc_bytes + complen_bytes;
 
-	/* input may be truncated, double-check. both bytes, plus at least one input byte, or the third */
-	if ((ecc_bytes + 2) > complen)
+	/* input may be truncated, double-check */
+	if (complen < (ecc_bytes + 2))
 		return CHDERR_DECOMPRESSION_ERROR;
 
 	/* extract compressed length of base */
-	uint32_t complen_base = (src[ecc_bytes + 0] << 8) | src[ecc_bytes + 1];
+	complen_base = (src[ecc_bytes + 0] << 8) | src[ecc_bytes + 1];
 	if (complen_bytes > 2)
 	{
-		complen_base = (complen_base << 8) | src[ecc_bytes + 2];
-		if ((ecc_bytes + 3) > complen)
+		if (complen < (ecc_bytes + 3))
 			return CHDERR_DECOMPRESSION_ERROR;
+
+		complen_base = (complen_base << 8) | src[ecc_bytes + 2];
 	}
-	if ((header_bytes + complen_base) > complen)
+	if (complen < (header_bytes + complen_base))
 		return CHDERR_DECOMPRESSION_ERROR;
 
 	/* reset and decode */
