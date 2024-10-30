@@ -6119,18 +6119,20 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
   if (IsGamepadInputSource())
   {
-    SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select State")),
-                                       std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Delete State")),
-                                       std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Load State")),
-                                       std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
+    SetFullscreenFooterText(
+      std::array{std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select State")),
+                 std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Delete State")),
+                 std::make_pair(ICON_PF_BUTTON_A, is_loading ? FSUI_VSTR("Load State") : FSUI_VSTR("Save State")),
+                 std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))});
   }
   else
   {
-    SetFullscreenFooterText(std::array{
-      std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
-                     FSUI_VSTR("Select State")),
-      std::make_pair(ICON_PF_F1, FSUI_VSTR("Delete State")), std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Load State")),
-      std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
+    SetFullscreenFooterText(
+      std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
+                                FSUI_VSTR("Select State")),
+                 std::make_pair(ICON_PF_F1, FSUI_VSTR("Delete State")),
+                 std::make_pair(ICON_PF_ENTER, is_loading ? FSUI_VSTR("Load State") : FSUI_VSTR("Save State")),
+                 std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
   }
 
   if ((!ignore_close_request && WantsToCloseMenu()) || closed)
