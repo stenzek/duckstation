@@ -936,22 +936,22 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
 
 void DMA::DrawDebugStateWindow(float scale)
 {
-  static constexpr u32 NUM_COLUMNS = 10;
-  static constexpr std::array<const char*, NUM_COLUMNS> column_names = {
-    {"#", "Req", "Direction", "Chopping", "Mode", "Busy", "Enable", "Priority", "IRQ", "Flag"}};
-  static constexpr std::array<const char*, 4> sync_mode_names = {{"Manual", "Request", "LinkedList", "Reserved"}};
+  static constexpr std::array column_names = {"#",    "Req",    "Addr",     "Direction", "Chopping", "Mode",
+                                              "Busy", "Enable", "Priority", "IRQ",       "Flag"};
+  static constexpr std::array sync_mode_names = {"Manual", "Request", "LinkedList", "Reserved"};
 
-  ImGui::Columns(NUM_COLUMNS);
-  ImGui::SetColumnWidth(0, 100.0f * scale);
+  ImGui::Columns(static_cast<int>(column_names.size()));
+  ImGui::SetColumnWidth(0, 80.0f * scale);
   ImGui::SetColumnWidth(1, 50.0f * scale);
-  ImGui::SetColumnWidth(2, 100.0f * scale);
-  ImGui::SetColumnWidth(3, 150.0f * scale);
-  ImGui::SetColumnWidth(4, 80.0f * scale);
+  ImGui::SetColumnWidth(2, 80.0f * scale);
+  ImGui::SetColumnWidth(3, 110.0f * scale);
+  ImGui::SetColumnWidth(4, 100.0f * scale);
   ImGui::SetColumnWidth(5, 80.0f * scale);
   ImGui::SetColumnWidth(6, 80.0f * scale);
   ImGui::SetColumnWidth(7, 80.0f * scale);
-  ImGui::SetColumnWidth(8, 80.0f * scale);
+  ImGui::SetColumnWidth(8, 60.0f * scale);
   ImGui::SetColumnWidth(9, 80.0f * scale);
+  ImGui::SetColumnWidth(10, 80.0f * scale);
 
   for (const char* title : column_names)
   {
@@ -969,6 +969,8 @@ void DMA::DrawDebugStateWindow(float scale)
     ImGui::TextColored(cs.channel_control.enable_busy ? active : inactive, "%u[%s]", i, s_channel_names[i]);
     ImGui::NextColumn();
     ImGui::TextColored(cs.request ? active : inactive, cs.request ? "Yes" : "No");
+    ImGui::NextColumn();
+    ImGui::TextColored(cs.request ? active : inactive, "%08X", cs.base_address);
     ImGui::NextColumn();
     ImGui::Text("%s%s", cs.channel_control.copy_to_device ? "FromRAM" : "ToRAM",
                 cs.channel_control.address_step_reverse ? " Addr+" : " Addr-");
