@@ -13,9 +13,11 @@
 #include "common/assert.h"
 #include "common/file_system.h"
 #include "common/path.h"
+#include "common/small_string.h"
 
 #include <QtCore/QtCore>
 #include <QtGui/QAction>
+#include <QtGui/QActionGroup>
 #include <QtWidgets/QAbstractButton>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QComboBox>
@@ -27,6 +29,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
+#include <memory>
 #include <optional>
 #include <type_traits>
 
@@ -1130,6 +1133,43 @@ static void BindWidgetToEnumSetting(SettingsInterface* sif, WidgetType* widget, 
         Host::CommitBaseSettingChanges();
         g_emu_thread->applySettings();
       });
+  }
+}
+
+template<typename DataType, typename ValueCountType>
+static void BindMenuToEnumSetting(QMenu* menu, std::string section, std::string key,
+                                  std::optional<DataType> (*from_string_function)(const char* str),
+                                  const char* (*to_string_function)(DataType value),
+                                  const char* (*to_display_name_function)(DataType value), DataType default_value,
+                                  ValueCountType value_count)
+{
+  QActionGroup* group = new QActionGroup(menu);
+
+  const std::optional<DataType> typed_value = from_string_function(
+    Host::GetBaseSmallStringSettingValue(section.c_str(), key.c_str(), to_string_function(default_value)).c_str());
+
+  // need a shared pointer, otherwise we dupe it a ton...
+  struct CallbackData
+  {
+    std::string section;
+    std::string key;
+  };
+  std::shared_ptr<CallbackData> data = std::make_shared<CallbackData>();
+  data->section = std::move(section);
+  data->key = std::move(key);
+
+  for (u32 i = 0; i < static_cast<u32>(value_count); i++)
+  {
+    QAction* action = group->addAction(QString::fromUtf8(to_display_name_function(static_cast<DataType>(i))));
+    action->setCheckable(true);
+    action->setChecked(typed_value.has_value() && typed_value.value() == static_cast<DataType>(i));
+    menu->addAction(action);
+    QObject::connect(action, &QAction::triggered, menu, [data, to_string_function, i]() {
+      Host::SetBaseStringSettingValue(data->section.c_str(), data->key.c_str(),
+                                      to_string_function(static_cast<DataType>(i)));
+      Host::CommitBaseSettingChanges();
+      g_emu_thread->applySettings();
+    });
   }
 }
 

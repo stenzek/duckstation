@@ -194,6 +194,7 @@ private Q_SLOTS:
 
   void onUpdateCheckComplete();
 
+  void onDebugLogChannelsMenuAboutToShow();
   void openCPUDebugger();
 
 protected:
@@ -247,9 +248,6 @@ private:
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
   void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
 
-  void updateDebugMenuCPUExecutionMode();
-  void updateDebugMenuGPURenderer();
-  void updateDebugMenuCropMode();
   std::string getDeviceDiscPath(const QString& title);
   void setGameListEntryCoverImage(const GameList::Entry* entry);
   void clearGameListEntryPlayTime(const GameList::Entry* entry);

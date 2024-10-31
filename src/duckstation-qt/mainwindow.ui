@@ -153,10 +153,23 @@
       <string>Switch Crop Mode</string>
      </property>
     </widget>
+    <widget class="QMenu" name="menuLogLevel">
+     <property name="title">
+      <string>Log Level</string>
+     </property>
+    </widget>
+    <widget class="QMenu" name="menuLogChannels">
+     <property name="title">
+      <string>Log Channels</string>
+     </property>
+    </widget>
     <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
     <addaction name="menuCropMode"/>
     <addaction name="actionDisableAllEnhancements"/>
+    <addaction name="separator"/>
+    <addaction name="menuLogLevel"/>
+    <addaction name="menuLogChannels"/>
     <addaction name="separator"/>
     <addaction name="actionCPUDebugger"/>
     <addaction name="separator"/>
@@ -916,6 +929,16 @@
   <action name="actionCaptureGPUFrame">
    <property name="text">
     <string>Capture GPU Frame</string>
+   </property>
+  </action>
+  <action name="actionasdf">
+   <property name="text">
+    <string>asdf</string>
+   </property>
+  </action>
+  <action name="actionaaa">
+   <property name="text">
+    <string>aaa</string>
    </property>
   </action>
  </widget>

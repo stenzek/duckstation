@@ -1617,57 +1617,13 @@ void MainWindow::setupAdditionalUi()
 
   m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->isShowingGridCoverTitles());
 
-  updateDebugMenuVisibility();
-
-  for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
-  {
-    const CPUExecutionMode mode = static_cast<CPUExecutionMode>(i);
-    QAction* action =
-      m_ui.menuCPUExecutionMode->addAction(QString::fromUtf8(Settings::GetCPUExecutionModeDisplayName(mode)));
-    action->setCheckable(true);
-    connect(action, &QAction::triggered, [this, mode]() {
-      Host::SetBaseStringSettingValue("CPU", "ExecutionMode", Settings::GetCPUExecutionModeName(mode));
-      Host::CommitBaseSettingChanges();
-      g_emu_thread->applySettings();
-      updateDebugMenuCPUExecutionMode();
-    });
-  }
-  updateDebugMenuCPUExecutionMode();
-
-  for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
-  {
-    const GPURenderer renderer = static_cast<GPURenderer>(i);
-    QAction* action = m_ui.menuRenderer->addAction(QString::fromUtf8(Settings::GetRendererDisplayName(renderer)));
-    action->setCheckable(true);
-    connect(action, &QAction::triggered, [this, renderer]() {
-      Host::SetBaseStringSettingValue("GPU", "Renderer", Settings::GetRendererName(renderer));
-      Host::CommitBaseSettingChanges();
-      g_emu_thread->applySettings();
-      updateDebugMenuGPURenderer();
-    });
-  }
-  updateDebugMenuGPURenderer();
-
-  for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
-  {
-    const DisplayCropMode crop_mode = static_cast<DisplayCropMode>(i);
-    QAction* action =
-      m_ui.menuCropMode->addAction(QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(crop_mode)));
-    action->setCheckable(true);
-    connect(action, &QAction::triggered, [this, crop_mode]() {
-      Host::SetBaseStringSettingValue("Display", "CropMode", Settings::GetDisplayCropModeName(crop_mode));
-      Host::CommitBaseSettingChanges();
-      g_emu_thread->applySettings();
-      updateDebugMenuCropMode();
-    });
-  }
-  updateDebugMenuCropMode();
-
   for (u32 scale = 1; scale <= 10; scale++)
   {
     QAction* action = m_ui.menuWindowSize->addAction(tr("%1x Scale").arg(scale));
     connect(action, &QAction::triggered, [scale]() { g_emu_thread->requestDisplaySize(scale); });
   }
+
+  updateDebugMenuVisibility();
 
 #ifdef ENABLE_RAINTEGRATION
   if (Achievements::IsUsingRAIntegration())
@@ -2064,6 +2020,21 @@ void MainWindow::connectSignals()
   connect(m_game_list_widget, &GameListWidget::addGameDirectoryRequested, this,
           [this]() { getSettingsWindow()->getGameListSettingsWidget()->addSearchDirectory(this); });
 
+  SettingWidgetBinder::BindMenuToEnumSetting(m_ui.menuCPUExecutionMode, "CPU", "ExecutionMode",
+                                             &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
+                                             &Settings::GetCPUExecutionModeDisplayName,
+                                             Settings::DEFAULT_CPU_EXECUTION_MODE, CPUExecutionMode::Count);
+  SettingWidgetBinder::BindMenuToEnumSetting(m_ui.menuRenderer, "GPU", "Renderer", &Settings::ParseRendererName,
+                                             &Settings::GetRendererName, &Settings::GetRendererDisplayName,
+                                             Settings::DEFAULT_GPU_RENDERER, GPURenderer::Count);
+  SettingWidgetBinder::BindMenuToEnumSetting(
+    m_ui.menuCropMode, "Display", "CropMode", &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
+    &Settings::GetDisplayCropModeDisplayName, Settings::DEFAULT_DISPLAY_CROP_MODE, DisplayCropMode::Count);
+  SettingWidgetBinder::BindMenuToEnumSetting(m_ui.menuLogLevel, "Logging", "LogLevel", &Settings::ParseLogLevelName,
+                                             &Settings::GetLogLevelName, &Settings::GetLogLevelDisplayName,
+                                             Settings::DEFAULT_LOG_LEVEL, Log::Level::MaxCount);
+  connect(m_ui.menuLogChannels, &QMenu::aboutToShow, this, &MainWindow::onDebugLogChannelsMenuAboutToShow);
+
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDisableAllEnhancements, "Main",
                                                "DisableAllEnhancements", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionDebugDumpCPUtoVRAMCopies, "Debug",
@@ -2155,9 +2126,6 @@ void MainWindow::onSettingsResetToDefault(bool system, bool controller)
       doControllerSettings(ControllerSettingsWindow::Category::GlobalSettings);
   }
 
-  updateDebugMenuCPUExecutionMode();
-  updateDebugMenuGPURenderer();
-  updateDebugMenuCropMode();
   updateDebugMenuVisibility();
 }
 
@@ -2290,58 +2258,6 @@ void MainWindow::openInputProfileEditor(const std::string_view name)
   ControllerSettingsWindow* dlg = getControllerSettingsWindow();
   QtUtils::ShowOrRaiseWindow(dlg);
   dlg->switchProfile(name);
-}
-
-void MainWindow::updateDebugMenuCPUExecutionMode()
-{
-  std::optional<CPUExecutionMode> current_mode =
-    Settings::ParseCPUExecutionMode(Host::GetBaseStringSettingValue("CPU", "ExecutionMode").c_str());
-  if (!current_mode.has_value())
-    return;
-
-  const QString current_mode_display_name =
-    QString::fromUtf8(Settings::GetCPUExecutionModeDisplayName(current_mode.value()));
-  for (QObject* obj : m_ui.menuCPUExecutionMode->children())
-  {
-    QAction* action = qobject_cast<QAction*>(obj);
-    if (action)
-      action->setChecked(action->text() == current_mode_display_name);
-  }
-}
-
-void MainWindow::updateDebugMenuGPURenderer()
-{
-  // update the menu with the new selected renderer
-  std::optional<GPURenderer> current_renderer =
-    Settings::ParseRendererName(Host::GetBaseStringSettingValue("GPU", "Renderer").c_str());
-  if (!current_renderer.has_value())
-    return;
-
-  const QString current_renderer_display_name =
-    QString::fromUtf8(Settings::GetRendererDisplayName(current_renderer.value()));
-  for (QObject* obj : m_ui.menuRenderer->children())
-  {
-    QAction* action = qobject_cast<QAction*>(obj);
-    if (action)
-      action->setChecked(action->text() == current_renderer_display_name);
-  }
-}
-
-void MainWindow::updateDebugMenuCropMode()
-{
-  std::optional<DisplayCropMode> current_crop_mode =
-    Settings::ParseDisplayCropMode(Host::GetBaseStringSettingValue("Display", "CropMode").c_str());
-  if (!current_crop_mode.has_value())
-    return;
-
-  const QString current_crop_mode_display_name =
-    QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(current_crop_mode.value()));
-  for (QObject* obj : m_ui.menuCropMode->children())
-  {
-    QAction* action = qobject_cast<QAction*>(obj);
-    if (action)
-      action->setChecked(action->text() == current_crop_mode_display_name);
-  }
 }
 
 void MainWindow::showEvent(QShowEvent* event)
@@ -2831,6 +2747,12 @@ void MainWindow::onUpdateCheckComplete()
 
   m_auto_updater_dialog->deleteLater();
   m_auto_updater_dialog = nullptr;
+}
+
+void MainWindow::onDebugLogChannelsMenuAboutToShow()
+{
+  m_ui.menuLogChannels->clear();
+  LogWindow::populateFilterMenu(m_ui.menuLogChannels);
 }
 
 MainWindow::SystemLock MainWindow::pauseAndLockSystem()
