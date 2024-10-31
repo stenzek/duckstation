@@ -106,8 +106,8 @@ const char* Vulkan::VkResultToString(VkResult res)
 
 void Vulkan::LogVulkanResult(const char* func_name, VkResult res, std::string_view msg)
 {
-  Log::FastWrite("VulkanDevice", func_name, Log::Level::Error, "{} (0x{:08X}: {})", msg, static_cast<unsigned>(res),
-                 VkResultToString(res));
+  Log::FastWrite(Log::Channel::GPUDevice, func_name, Log::Level::Error, "{} (0x{:08X}: {})", msg,
+                 static_cast<unsigned>(res), VkResultToString(res));
 }
 
 void Vulkan::SetErrorObject(Error* errptr, std::string_view prefix, VkResult res)

@@ -1292,13 +1292,13 @@ void System::LoadSettings(bool display_osd_messages)
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
   const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
   g_settings.Load(si, controller_si);
-  g_settings.UpdateLogSettings();
 
   // Global safe mode overrides game settings.
   g_settings.disable_all_enhancements =
     (g_settings.disable_all_enhancements ||
      Host::Internal::GetBaseSettingsLayer()->GetBoolValue("Main", "DisableAllEnhancements", false));
 
+  Settings::UpdateLogConfig(si);
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
@@ -1399,10 +1399,7 @@ void System::SetDefaultSettings(SettingsInterface& si)
   si.SetBoolValue("Main", "StartPaused", false);
   si.SetBoolValue("Main", "StartFullscreen", false);
 
-#if !defined(_WIN32) && !defined(__ANDROID__)
-  // On Linux, default the console to whether standard input is currently available.
-  si.SetBoolValue("Logging", "LogToConsole", Log::IsConsoleOutputCurrentlyAvailable());
-#endif
+  Settings::SetDefaultLogConfig(si);
 
 #ifndef __ANDROID__
   si.SetStringValue("MediaCapture", "Backend", MediaCapture::GetBackendName(Settings::DEFAULT_MEDIA_CAPTURE_BACKEND));
@@ -4492,15 +4489,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       ERROR_LOG(error.GetDescription());
       Panic("Failed to reallocate memory map. The log may contain more information.");
     }
-  }
-
-  if (g_settings.log_level != old_settings.log_level || g_settings.log_filter != old_settings.log_filter ||
-      g_settings.log_timestamps != old_settings.log_timestamps ||
-      g_settings.log_to_console != old_settings.log_to_console ||
-      g_settings.log_to_debug != old_settings.log_to_debug || g_settings.log_to_window != old_settings.log_to_window ||
-      g_settings.log_to_file != old_settings.log_to_file)
-  {
-    g_settings.UpdateLogSettings();
   }
 }
 

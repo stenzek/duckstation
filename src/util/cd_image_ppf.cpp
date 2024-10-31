@@ -13,7 +13,7 @@
 #include <map>
 #include <unordered_map>
 
-LOG_CHANNEL(CDImagePPF);
+LOG_CHANNEL(CDImage);
 
 namespace {
 

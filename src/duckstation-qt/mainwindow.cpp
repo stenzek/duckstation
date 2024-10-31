@@ -58,7 +58,7 @@
 #include <VersionHelpers.h>
 #endif
 
-LOG_CHANNEL(MainWindow);
+LOG_CHANNEL(Host);
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "MainWindow", "All File Types (*.bin *.img *.iso *.cue *.chd *.ecm *.mds *.pbp *.exe *.psexe *.ps-exe *.psx *.psf "

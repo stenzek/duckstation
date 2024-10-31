@@ -19,7 +19,7 @@
 #include <climits>
 #include <cmath>
 
-LOG_CHANNEL(CPU::PGXP);
+LOG_CHANNEL(CPU);
 
 // #define LOG_VALUES 1
 // #define LOG_LOOKUPS 1

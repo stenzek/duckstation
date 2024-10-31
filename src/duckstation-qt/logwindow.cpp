@@ -19,8 +19,7 @@
 LogWindow* g_log_window;
 
 LogWindow::LogWindow(bool attach_to_main)
-  : QMainWindow(), m_filter_names(Settings::GetLogFilters()), m_is_dark_theme(QtHost::IsDarkApplicationTheme()),
-    m_attached_to_main_window(attach_to_main)
+  : QMainWindow(), m_is_dark_theme(QtHost::IsDarkApplicationTheme()), m_attached_to_main_window(attach_to_main)
 {
   restoreSize();
   createUi();
@@ -158,7 +157,7 @@ void LogWindow::createUi()
   settings_menu->addSeparator();
 
   m_level_menu = settings_menu->addMenu(tr("&Log Level"));
-  for (u32 i = 0; i < static_cast<u32>(Log::Level::Count); i++)
+  for (u32 i = 0; i < static_cast<u32>(Log::Level::MaxCount); i++)
   {
     action = m_level_menu->addAction(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<Log::Level>(i))));
     action->setCheckable(true);
@@ -166,8 +165,11 @@ void LogWindow::createUi()
   }
   updateLogLevelUi();
 
-  QMenu* filters_menu = menu->addMenu(tr("&Filters"));
-  populateFilters(filters_menu);
+  QMenu* filters_menu = menu->addMenu(tr("&Channels"));
+  connect(filters_menu, &QMenu::aboutToShow, this, [filters_menu]() {
+    filters_menu->clear();
+    populateFilterMenu(filters_menu);
+  });
 
   m_text = new QPlainTextEdit(this);
   m_text->setReadOnly(true);
@@ -208,50 +210,23 @@ void LogWindow::setLogLevel(Log::Level level)
   g_emu_thread->applySettings(false);
 }
 
-void LogWindow::populateFilters(QMenu* filter_menu)
+void LogWindow::populateFilterMenu(QMenu* filter_menu)
 {
-  const std::string filters = Host::GetBaseStringSettingValue("Logging", "LogFilter", "");
-  for (size_t i = 0; i < m_filter_names.size(); i++)
+  const auto settings_Lock = Host::GetSettingsLock();
+  const INISettingsInterface* si = QtHost::GetBaseSettingsInterface();
+
+  for (const char* channel_name : Log::GetChannelNames())
   {
-    const char* filter = m_filter_names[i];
-    const bool is_currently_filtered = (filters.find(filter) == std::string::npos);
-    QAction* action = filter_menu->addAction(QString::fromUtf8(filter));
-    action->setCheckable(action);
-    action->setChecked(is_currently_filtered);
-    connect(action, &QAction::triggered, this, [this, i](bool checked) { setChannelFiltered(i, !checked); });
+    const bool enabled = si->GetBoolValue("Logging", channel_name, true);
+    QAction* action = filter_menu->addAction(QString::fromUtf8(channel_name));
+    action->setCheckable(true);
+    action->setChecked(enabled);
+    connect(action, &QAction::triggered, action, [channel_name](bool checked) {
+      Host::SetBaseBoolSettingValue("Logging", channel_name, checked);
+      Host::CommitBaseSettingChanges();
+      g_emu_thread->applySettings(false);
+    });
   }
-}
-
-void LogWindow::setChannelFiltered(size_t index, bool enabled)
-{
-  const char* filter = m_filter_names[index];
-  const size_t filter_len = std::strlen(filter);
-
-  std::string filters = Host::GetBaseStringSettingValue("Logging", "LogFilter", "");
-  const std::string::size_type pos = filters.find(filter);
-
-  if (!enabled)
-  {
-    if (pos == std::string::npos)
-      return;
-
-    const size_t erase_count =
-      filter_len + (((pos + filter_len) < filters.length() && filters[pos + filter_len] == ' ') ? 1 : 0);
-    filters.erase(pos, erase_count);
-  }
-  else
-  {
-    if (pos != std::string::npos)
-      return;
-
-    if (!filters.empty() && filters.back() != ' ')
-      filters.push_back(' ');
-    filters.append(filter);
-  }
-
-  Host::SetBaseStringSettingValue("Logging", "LogFilter", filters.c_str());
-  Host::CommitBaseSettingChanges();
-  g_emu_thread->applySettings(false);
 }
 
 void LogWindow::onClearTriggered()
@@ -339,9 +314,9 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
   temp_cursor.movePosition(QTextCursor::End);
 
   {
-    static constexpr const QChar level_characters[static_cast<size_t>(Log::Level::Count)] = {'X', 'E', 'W', 'I',
-                                                                                             'V', 'D', 'B', 'T'};
-    static constexpr const QColor level_colors[2][static_cast<size_t>(Log::Level::Count)] = {
+    static constexpr const QChar level_characters[static_cast<size_t>(Log::Level::MaxCount)] = {'X', 'E', 'W', 'I',
+                                                                                                'V', 'D', 'B', 'T'};
+    static constexpr const QColor level_colors[2][static_cast<size_t>(Log::Level::MaxCount)] = {
       {
         // Light theme
         QColor(0, 0, 0),          // NONE
@@ -371,7 +346,7 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
     QTextCharFormat format = temp_cursor.charFormat();
     const size_t dark = static_cast<size_t>(m_is_dark_theme);
 
-    if (g_settings.log_timestamps)
+    if (Log::AreTimestampsEnabled())
     {
       const float message_time = Log::GetCurrentMessageTime();
       const QString qtimestamp = QStringLiteral("[%1] ").arg(message_time, 10, 'f', 4);

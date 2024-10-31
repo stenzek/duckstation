@@ -24,6 +24,7 @@
     <ClInclude Include="intrin.h" />
     <ClInclude Include="layered_settings_interface.h" />
     <ClInclude Include="log.h" />
+    <ClInclude Include="log_channels.h" />
     <ClInclude Include="lru_cache.h" />
     <ClInclude Include="memmap.h" />
     <ClInclude Include="memory_settings_interface.h" />

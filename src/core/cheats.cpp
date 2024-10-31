@@ -77,7 +77,8 @@ public:
   {
     if (!stop_on_error)
     {
-      Log::WriteFmtArgs(___LogChannel___, Log::Level::Warning, fmt, fmt::make_format_args(args...));
+      Log::WriteFmtArgs(Log::PackChannelAndLevel(Log::Channel::Cheats, Log::Level::Warning), fmt,
+                        fmt::make_format_args(args...));
       return true;
     }
 

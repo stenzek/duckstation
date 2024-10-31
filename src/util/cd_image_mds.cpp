@@ -13,7 +13,7 @@
 #include <cerrno>
 #include <map>
 
-LOG_CHANNEL(CDImageMds);
+LOG_CHANNEL(CDImage);
 
 namespace {
 

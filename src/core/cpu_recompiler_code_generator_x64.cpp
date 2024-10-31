@@ -16,7 +16,7 @@
 
 #ifdef CPU_ARCH_X64
 
-LOG_CHANNEL(Recompiler::CodeGenerator);
+LOG_CHANNEL(Recompiler);
 
 #ifdef ENABLE_HOST_DISASSEMBLY
 #include "Zycore/Format.h"
@@ -260,8 +260,7 @@ void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
         else
           hex.append("   ");
       }
-      Log::FastWrite("HostCode", "", Log::Level::Debug, "  {:016X} {} {}",
-                     static_cast<u64>(reinterpret_cast<uintptr_t>(ptr)), hex, buffer);
+      DEBUG_LOG("  {:016X} {} {}", static_cast<u64>(reinterpret_cast<uintptr_t>(ptr)), hex, buffer);
     }
 
     ptr += disas_instruction.length;

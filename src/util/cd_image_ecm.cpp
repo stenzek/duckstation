@@ -14,7 +14,7 @@
 #include <array>
 #include <map>
 
-LOG_CHANNEL(CDImageEcm);
+LOG_CHANNEL(CDImage);
 
 namespace {
 

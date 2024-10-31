@@ -69,7 +69,7 @@
 #include <cstdlib>
 #include <memory>
 
-LOG_CHANNEL(QtHost);
+LOG_CHANNEL(Host);
 
 #ifdef _WIN32
 #include "common/windows_headers.h"

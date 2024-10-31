@@ -30,7 +30,7 @@
 #include "common/windows_headers.h"
 #endif
 
-LOG_CHANNEL(DisplayWidget);
+LOG_CHANNEL(Host);
 
 DisplayWidget::DisplayWidget(QWidget* parent) : QWidget(parent)
 {

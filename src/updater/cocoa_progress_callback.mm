@@ -6,7 +6,7 @@
 #include "common/cocoa_tools.h"
 #include "common/log.h"
 
-LOG_CHANNEL(CocoaProgressCallback);
+LOG_CHANNEL(Host);
 
 CocoaProgressCallback::CocoaProgressCallback() : ProgressCallback()
 {

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>973</width>
-    <height>507</height>
+    <width>560</width>
+    <height>358</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -39,17 +39,21 @@
          </widget>
         </item>
         <item row="0" column="1">
-         <widget class="QComboBox" name="logLevel"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Log Filters:</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QLineEdit" name="logFilter"/>
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QComboBox" name="logLevel"/>
+          </item>
+          <item>
+           <widget class="QToolButton" name="logChannels">
+            <property name="toolTip">
+             <string>Log Channels</string>
+            </property>
+            <property name="icon">
+             <iconset theme="filter-line"/>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </item>
@@ -158,7 +162,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

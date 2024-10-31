@@ -423,15 +423,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_leaderboard_duration =
     si.GetIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
 
-  log_level = ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
-                .value_or(DEFAULT_LOG_LEVEL);
-  log_filter = si.GetStringValue("Logging", "LogFilter", "");
-  log_timestamps = si.GetBoolValue("Logging", "LogTimestamps", true);
-  log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
-  log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
-  log_to_window = si.GetBoolValue("Logging", "LogToWindow", false);
-  log_to_file = si.GetBoolValue("Logging", "LogToFile", false);
-
   debugging.show_vram = si.GetBoolValue("Debug", "ShowVRAM");
   debugging.dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
   debugging.dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
@@ -694,14 +685,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
 
   if (!ignore_base)
   {
-    si.SetStringValue("Logging", "LogLevel", GetLogLevelName(log_level));
-    si.SetStringValue("Logging", "LogFilter", log_filter.c_str());
-    si.SetBoolValue("Logging", "LogTimestamps", log_timestamps);
-    si.SetBoolValue("Logging", "LogToConsole", log_to_console);
-    si.SetBoolValue("Logging", "LogToDebug", log_to_debug);
-    si.SetBoolValue("Logging", "LogToWindow", log_to_window);
-    si.SetBoolValue("Logging", "LogToFile", log_to_file);
-
     si.SetBoolValue("Debug", "ShowVRAM", debugging.show_vram);
     si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", debugging.dump_cpu_to_vram_copies);
     si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", debugging.dump_vram_to_cpu_copies);
@@ -1036,11 +1019,40 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   }
 }
 
-void Settings::UpdateLogSettings()
+void Settings::SetDefaultLogConfig(SettingsInterface& si)
 {
+  si.SetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL));
+  si.SetBoolValue("Logging", "LogTimestamps", true);
+
+#if !defined(_WIN32) && !defined(__ANDROID__)
+  // On Linux, default the console to whether standard input is currently available.
+  si.SetBoolValue("Logging", "LogToConsole", Log::IsConsoleOutputCurrentlyAvailable());
+#else
+  si.SetBoolValue("Logging", "LogToConsole", false);
+#endif
+
+  si.SetBoolValue("Logging", "LogToDebug", false);
+  si.SetBoolValue("Logging", "LogToWindow", false);
+  si.SetBoolValue("Logging", "LogToFile", false);
+
+  for (const char* channel_name : Log::GetChannelNames())
+    si.SetBoolValue("Logging", channel_name, true);
+}
+
+void Settings::UpdateLogConfig(const SettingsInterface& si)
+{
+  const Log::Level log_level =
+    ParseLogLevelName(si.GetStringValue("Logging", "LogLevel", GetLogLevelName(DEFAULT_LOG_LEVEL)).c_str())
+      .value_or(DEFAULT_LOG_LEVEL);
+  const bool log_timestamps = si.GetBoolValue("Logging", "LogTimestamps", true);
+  const bool log_to_console = si.GetBoolValue("Logging", "LogToConsole", false);
+  const bool log_to_debug = si.GetBoolValue("Logging", "LogToDebug", false);
+  const bool log_to_window = si.GetBoolValue("Logging", "LogToWindow", false);
+  const bool log_to_file = si.GetBoolValue("Logging", "LogToFile", false);
+
   const bool any_logs_enabled = (log_to_console || log_to_debug || log_to_window || log_to_file);
   Log::SetLogLevel(any_logs_enabled ? log_level : Log::Level::None);
-  Log::SetLogFilter(any_logs_enabled ? std::string_view(log_filter) : std::string_view());
+
   Log::SetConsoleOutputParams(log_to_console, log_timestamps);
   Log::SetDebugOutputParams(log_to_debug);
 
@@ -1053,6 +1065,10 @@ void Settings::UpdateLogSettings()
   {
     Log::SetFileOutputParams(false, nullptr);
   }
+
+  const auto channel_names = Log::GetChannelNames();
+  for (size_t i = 0; i < channel_names.size(); i++)
+    Log::SetLogChannelEnabled(static_cast<Log::Channel>(i), si.GetBoolValue("Logging", channel_names[i], true));
 }
 
 void Settings::SetDefaultControllerConfig(SettingsInterface& si)
@@ -2305,132 +2321,4 @@ std::string EmuFolders::GetOverridableResourcePath(std::string_view name)
   }
 
   return upath;
-}
-
-static const char* s_log_filters[] = {
-  "Achievements",
-  "AnalogController",
-  "AnalogJoystick",
-  "AudioStream",
-  "AutoUpdaterDialog",
-  "BIOS",
-  "Bus",
-  "CDImage",
-  "CDImageBin",
-  "CDImageCHD",
-  "CDImageCueSheet",
-  "CDImageDevice",
-  "CDImageEcm",
-  "CDImageMds",
-  "CDImageMemory",
-  "CDImagePBP",
-  "CDImagePPF",
-  "CDROM",
-  "CDROMAsyncReader",
-  "CDSubChannelReplacement",
-  "CPU::CodeCache",
-  "CPU::Core",
-  "CPU::Recompiler",
-  "Common::PageFaultHandler",
-  "ControllerBindingWidget",
-  "CueParser",
-  "Cheats",
-  "DMA",
-  "DisplayWidget",
-  "FileSystem",
-  "FullscreenUI",
-  "GDBConnection",
-  "GDBProtocol",
-  "GDBServer",
-  "GPU",
-  "GPUBackend",
-  "GPUDevice",
-  "GPUShaderCache",
-  "GPUTexture",
-  "GPU_HW",
-  "GPU_SW",
-  "GameDatabase",
-  "GameList",
-  "GunCon",
-  "HTTPDownloader",
-  "Host",
-  "HostInterfaceProgressCallback",
-  "INISettingsInterface",
-  "ISOReader",
-  "ImGuiFullscreen",
-  "ImGuiManager",
-  "Image",
-  "InputManager",
-  "InterruptController",
-  "JitCodeBuffer",
-  "MDEC",
-  "MainWindow",
-  "MemoryArena",
-  "MemoryCard",
-  "Multitap",
-  "NoGUIHost",
-  "PCDrv",
-  "PGXP",
-  "PSFLoader",
-  "Pad",
-  "PlatformMisc",
-  "PlayStationMouse",
-  "PostProcessing",
-  "ProgressCallback",
-  "QTTranslations",
-  "QtHost",
-  "ReShadeFXShader",
-  "Recompiler::CodeGenerator",
-  "RegTestHost",
-  "SDLInputSource",
-  "SIO",
-  "SPIRVCompiler",
-  "SPU",
-  "Settings",
-  "ShaderGen",
-  "StateWrapper",
-  "System",
-  "TextureReplacements",
-  "Timers",
-  "TimingEvents",
-  "WAVWriter",
-  "WindowInfo",
-
-#ifndef __ANDROID__
-  "CubebAudioStream",
-  "SDLAudioStream",
-#endif
-
-#ifdef ENABLE_OPENGL
-  "OpenGLContext",
-  "OpenGLDevice",
-#endif
-
-#ifdef ENABLE_VULKAN
-  "VulkanDevice",
-#endif
-
-#if defined(_WIN32)
-  "D3D11Device",
-  "D3D12Device",
-  "D3D12StreamBuffer",
-  "D3DCommon",
-  "DInputSource",
-  "Win32ProgressCallback",
-  "Win32RawInputSource",
-  "XAudio2AudioStream",
-  "XInputSource",
-#elif defined(__APPLE__)
-  "CocoaNoGUIPlatform",
-  "CocoaProgressCallback",
-  "MetalDevice",
-#else
-  "X11NoGUIPlatform",
-  "WaylandNoGUIPlatform",
-#endif
-};
-
-std::span<const char*> Settings::GetLogFilters()
-{
-  return s_log_filters;
 }

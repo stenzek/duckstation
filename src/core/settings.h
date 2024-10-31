@@ -291,14 +291,6 @@ struct Settings
   std::string pcdrv_root;
   bool pcdrv_enable_writes = false;
 
-  Log::Level log_level = DEFAULT_LOG_LEVEL;
-  std::string log_filter;
-  bool log_timestamps : 1 = true;
-  bool log_to_console : 1 = false;
-  bool log_to_debug : 1 = false;
-  bool log_to_window : 1 = false;
-  bool log_to_file : 1 = false;
-
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
   ALWAYS_INLINE bool IsUsingAccurateBlending() const { return (gpu_accurate_blending && !gpu_true_color); }
   ALWAYS_INLINE bool IsRunaheadEnabled() const { return (runahead_frames > 0); }
@@ -375,7 +367,8 @@ struct Settings
   void FixIncompatibleSettings(bool display_osd_messages);
 
   /// Initializes configuration.
-  void UpdateLogSettings();
+  static void SetDefaultLogConfig(SettingsInterface& si);
+  static void UpdateLogConfig(const SettingsInterface& si);
 
   static void SetDefaultControllerConfig(SettingsInterface& si);
   static void SetDefaultHotkeyConfig(SettingsInterface& si);
@@ -383,7 +376,6 @@ struct Settings
   static std::optional<Log::Level> ParseLogLevelName(const char* str);
   static const char* GetLogLevelName(Log::Level level);
   static const char* GetLogLevelDisplayName(Log::Level level);
-  static std::span<const char*> GetLogFilters();
 
   static std::optional<ConsoleRegion> ParseConsoleRegionName(const char* str);
   static const char* GetConsoleRegionName(ConsoleRegion region);

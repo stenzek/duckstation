@@ -16,7 +16,7 @@
 
 #ifdef CPU_ARCH_ARM32
 
-LOG_CHANNEL(CPU::Recompiler);
+LOG_CHANNEL(Recompiler);
 
 #ifdef ENABLE_HOST_DISASSEMBLY
 #include "vixl/aarch32/disasm-aarch32.h"

@@ -19,7 +19,7 @@
 
 #ifdef CPU_ARCH_ARM64
 
-LOG_CHANNEL(CPU::NewRec);
+LOG_CHANNEL(Recompiler);
 
 #define PTR(x) vixl::aarch64::MemOperand(RSTATE, (((u8*)(x)) - ((u8*)&g_state)))
 

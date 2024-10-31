@@ -15,7 +15,7 @@
 #include <cstdint>
 #include <limits>
 
-LOG_CHANNEL(NewRec::Compiler);
+LOG_CHANNEL(Recompiler);
 
 // TODO: direct link skip delay slot check
 // TODO: speculative constants

@@ -40,7 +40,7 @@
 #include "common/windows_headers.h"
 #endif
 
-LOG_CHANNEL(QtUtils);
+LOG_CHANNEL(Host);
 
 QFrame* QtUtils::CreateHorizontalLine(QWidget* parent)
 {

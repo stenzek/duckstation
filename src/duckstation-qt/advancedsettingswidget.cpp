@@ -2,11 +2,16 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "advancedsettingswidget.h"
-#include "core/gpu_types.h"
+#include "logwindow.h"
 #include "mainwindow.h"
 #include "qtutils.h"
 #include "settingswindow.h"
 #include "settingwidgetbinder.h"
+
+#include "core/gpu_types.h"
+
+#include <QtGui/QCursor>
+#include <QtWidgets/QMenu>
 
 static QCheckBox* addBooleanTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name, std::string section,
                                         std::string key, bool default_value)
@@ -162,12 +167,11 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   m_ui.setupUi(this);
 
-  for (u32 i = 0; i < static_cast<u32>(Log::Level::Count); i++)
+  for (u32 i = 0; i < static_cast<u32>(Log::Level::MaxCount); i++)
     m_ui.logLevel->addItem(QString::fromUtf8(Settings::GetLogLevelDisplayName(static_cast<Log::Level>(i))));
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.logLevel, "Logging", "LogLevel", &Settings::ParseLogLevelName,
                                                &Settings::GetLogLevelName, Settings::DEFAULT_LOG_LEVEL);
-  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.logFilter, "Logging", "LogFilter");
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToConsole, "Logging", "LogToConsole", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToDebug, "Logging", "LogToDebug", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.logToWindow, "Logging", "LogToWindow", false);
@@ -175,6 +179,7 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showDebugMenu, "Main", "ShowDebugMenu", false);
 
+  connect(m_ui.logChannels, &QToolButton::clicked, this, &AdvancedSettingsWidget::onLogChannelsButtonClicked);
   connect(m_ui.resetToDefaultButton, &QPushButton::clicked, this, &AdvancedSettingsWidget::onResetToDefaultClicked);
   connect(m_ui.showDebugMenu, &QCheckBox::checkStateChanged, g_main_window, &MainWindow::updateDebugMenuVisibility,
           Qt::QueuedConnection);
@@ -201,6 +206,13 @@ AdvancedSettingsWidget::AdvancedSettingsWidget(SettingsWindow* dialog, QWidget* 
 }
 
 AdvancedSettingsWidget::~AdvancedSettingsWidget() = default;
+
+void AdvancedSettingsWidget::onLogChannelsButtonClicked()
+{
+  QMenu menu;
+  LogWindow::populateFilterMenu(&menu);
+  menu.exec(QCursor::pos());
+}
 
 void AdvancedSettingsWidget::onShowDebugOptionsStateChanged()
 {

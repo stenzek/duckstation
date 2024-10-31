@@ -21,7 +21,7 @@
 #include <variant>
 #include <vector>
 
-LOG_CHANNEL(CDImagePBP);
+LOG_CHANNEL(CDImage);
 
 namespace {
 

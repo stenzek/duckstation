@@ -20,7 +20,7 @@
 
 #ifdef CPU_ARCH_X64
 
-LOG_CHANNEL(CPU::NewRec);
+LOG_CHANNEL(Recompiler);
 
 #define RMEMBASE cg->rbx
 #define RSTATE cg->rbp

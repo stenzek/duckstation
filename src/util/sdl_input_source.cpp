@@ -23,7 +23,7 @@
 #include <dispatch/dispatch.h>
 #endif
 
-LOG_CHANNEL(SDLInputSource);
+LOG_CHANNEL(SDL);
 
 static constexpr const char* CONTROLLER_DB_FILENAME = "gamecontrollerdb.txt";
 
@@ -149,7 +149,7 @@ static void SDLLogCallback(void* userdata, int category, SDL_LogPriority priorit
     Log::Level::Error,   // SDL_LOG_PRIORITY_CRITICAL
   };
 
-  Log::Write("SDL", "SDL", priority_map[priority], message);
+  Log::FastWrite(Log::Channel::SDL, priority_map[priority], message);
 }
 
 bool SDLInputSource::ALLOW_EVENT_POLLING = true;

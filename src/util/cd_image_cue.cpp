@@ -16,7 +16,7 @@
 #include <cinttypes>
 #include <map>
 
-LOG_CHANNEL(CDImageCueSheet);
+LOG_CHANNEL(CDImage);
 
 namespace {
 

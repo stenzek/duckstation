@@ -21,7 +21,7 @@
 #include "common/log.h"
 #include "common/memmap.h"
 
-LOG_CHANNEL(CPU::CodeCache);
+LOG_CHANNEL(CodeCache);
 
 // Enable dumping of recompiled block code size statistics.
 // #define DUMP_CODE_SIZE_STATS 1

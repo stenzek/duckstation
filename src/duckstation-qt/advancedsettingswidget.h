@@ -21,6 +21,7 @@ Q_SIGNALS:
   void onShowDebugOptionsChanged(bool enabled);
 
 private Q_SLOTS:
+  void onLogChannelsButtonClicked();
   void onShowDebugOptionsStateChanged();
 
 private:

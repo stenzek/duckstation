@@ -75,9 +75,9 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
 
 static void LogNSError(NSError* error, std::string_view message)
 {
-  Log::FastWrite("MetalDevice", Log::Level::Error, message);
-  Log::FastWrite("MetalDevice", Log::Level::Error, "  NSError Code: {}", static_cast<u32>(error.code));
-  Log::FastWrite("MetalDevice", Log::Level::Error, "  NSError Description: {}", [error.description UTF8String]);
+  Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, message);
+  Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, "  NSError Code: {}", static_cast<u32>(error.code));
+  Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, "  NSError Description: {}", [error.description UTF8String]);
 }
 
 static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)

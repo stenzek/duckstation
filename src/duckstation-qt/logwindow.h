@@ -25,12 +25,12 @@ public:
 
   void updateWindowTitle();
 
+  static void populateFilterMenu(QMenu* menu);
+
 private:
   void createUi();
   void updateLogLevelUi();
   void setLogLevel(Log::Level level);
-  void populateFilters(QMenu* filter_menu);
-  void setChannelFiltered(size_t index, bool state);
 
   static void logCallback(void* pUserParam, const char* channelName, const char* functionName, Log::Level level,
                           std::string_view message);
@@ -53,7 +53,6 @@ private:
 
   QPlainTextEdit* m_text;
   QMenu* m_level_menu;
-  std::span<const char*> m_filter_names;
 
   bool m_is_dark_theme = false;
   bool m_attached_to_main_window = true;
