@@ -48,7 +48,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   fillComboBoxWithEmulationSpeeds(m_ui.fastForwardSpeed, effective_fast_forward_speed);
   if (m_dialog->isPerGameSettings() && !m_dialog->getFloatValue("Main", "FastForwardSpeed", std::nullopt).has_value())
   {
-    m_ui.emulationSpeed->setCurrentIndex(0);
+    m_ui.fastForwardSpeed->setCurrentIndex(0);
   }
   else
   {
@@ -63,7 +63,7 @@ EmulationSettingsWidget::EmulationSettingsWidget(SettingsWindow* dialog, QWidget
   fillComboBoxWithEmulationSpeeds(m_ui.turboSpeed, effective_turbo_speed);
   if (m_dialog->isPerGameSettings() && !m_dialog->getFloatValue("Main", "TurboSpeed", std::nullopt).has_value())
   {
-    m_ui.emulationSpeed->setCurrentIndex(0);
+    m_ui.turboSpeed->setCurrentIndex(0);
   }
   else
   {

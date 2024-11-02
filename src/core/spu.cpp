@@ -1737,7 +1737,7 @@ void SPU::VolumeEnvelope::Reset(u8 rate_, u8 rate_mask_, bool decreasing_, bool 
     counter_increment >>= ((rate >> 2) - 11);
 
     // Rate of 0x7F (or more specifically all bits set, for decay/release) is a special case that never ticks.
-    if ((rate_ & rate_mask_) != rate_mask_)
+    if ((rate & rate_mask_) != rate_mask_)
       counter_increment = std::max<u16>(counter_increment, 1u);
   }
 }
