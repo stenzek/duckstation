@@ -2255,6 +2255,7 @@ struct ImGuiContext
     ImGuiComboPreviewData   ComboPreviewData;
     ImRect                  WindowResizeBorderExpectedRect;     // Expected border rect, switch to relative edit if moving
     bool                    WindowResizeRelativeMode;
+    unsigned char           ScrollbarHeld;                      // Is the scrollbar scrolling the window?
     short                   ScrollbarSeekMode;                  // 0: relative, -1/+1: prev/next page.
     float                   ScrollbarClickDeltaToGrabCenter;    // Distance between mouse and center of grab box, normalized in parent space. Use storage?
     float                   SliderGrabClickOffset;
@@ -2478,6 +2479,7 @@ struct ImGuiContext
         ColorEditSavedHue = ColorEditSavedSat = 0.0f;
         ColorEditSavedColor = 0;
         WindowResizeRelativeMode = false;
+        ScrollbarHeld = false;
         ScrollbarSeekMode = 0;
         ScrollbarClickDeltaToGrabCenter = 0.0f;
         SliderGrabClickOffset = 0.0f;

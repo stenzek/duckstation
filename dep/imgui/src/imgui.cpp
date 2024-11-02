@@ -4792,6 +4792,7 @@ void ImGui::NewFrame()
     g.HoveredId = 0;
     g.HoveredIdAllowOverlap = false;
     g.HoveredIdIsDisabled = false;
+    g.ScrollbarHeld >>= 1;
 
     // Clear ActiveID if the item is not alive anymore.
     // In 1.87, the common most call to KeepAliveID() was moved from GetID() to ItemAdd().
@@ -10802,7 +10803,7 @@ static ImVec2 CalcNextScrollFromScrollTargetAndClamp(ImGuiWindow* window)
             else
                 scroll[axis] -= ImMin(-diff, (-diff / (style.ScrollSmooth * multiplier)));
 
-            scroll[axis] = window->Appearing ? window->ScrollExpected[axis] : scroll[axis];
+            scroll[axis] = (window->Appearing || g.ScrollbarHeld & 1) ? window->ScrollExpected[axis] : scroll[axis];
         }
     }
     return scroll;

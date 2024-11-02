@@ -1001,7 +1001,7 @@ bool ImGui::ScrollbarEx(const ImRect& bb_frame, ImGuiID id, ImGuiAxis axis, ImS6
         {
             // On initial click calculate the distance between mouse and the center of the grab
             g.ScrollbarSeekMode = (short)held_dir;
-            g.ScrollbarClickDeltaToGrabCenter = (g.ScrollbarSeekMode == 0.0f) ? clicked_v_norm - grab_v_norm - grab_h_norm * 0.5f : 0.0f;
+            g.ScrollbarClickDeltaToGrabCenter = (g.ScrollbarSeekMode == 0) ? clicked_v_norm - grab_v_norm - grab_h_norm * 0.5f : 0.0f;
         }
 
         // Apply scroll (p_scroll_v will generally point on one member of window->Scroll)
@@ -1025,6 +1025,7 @@ bool ImGui::ScrollbarEx(const ImRect& bb_frame, ImGuiID id, ImGuiAxis axis, ImS6
         // Update values for rendering
         scroll_ratio = ImSaturate((float)*p_scroll_v / (float)scroll_max);
         grab_v_norm = scroll_ratio * (scrollbar_size_v - grab_h_pixels) / scrollbar_size_v;
+        g.ScrollbarHeld |= 2;
 
         // Update distance to grab now that we have seek'ed and saturated
         //if (seek_absolute)
