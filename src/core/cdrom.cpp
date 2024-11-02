@@ -1745,15 +1745,6 @@ void CDROM::EndCommand()
 void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 {
   const CommandInfo& ci = s_command_info[static_cast<u8>(s_state.command)];
-  if (Log::IsLogVisible(Log::Level::Dev, ___LogChannel___)) [[unlikely]]
-  {
-    SmallString params;
-    for (u32 i = 0; i < s_state.param_fifo.GetSize(); i++)
-      params.append_format("{}0x{:02X}", (i == 0) ? "" : ", ", s_state.param_fifo.Peek(i));
-    DEV_LOG("CDROM executing command 0x{:02X} ({}), stat = 0x{:02X}, params = [{}]", static_cast<u8>(s_state.command),
-            ci.name, s_state.secondary_status.bits, params);
-  }
-
   if (s_state.param_fifo.GetSize() < ci.min_parameters || s_state.param_fifo.GetSize() > ci.max_parameters) [[unlikely]]
   {
     WARNING_LOG("Incorrect parameters for command 0x{:02X} ({}), expecting {}-{} got {}",
@@ -1777,7 +1768,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
   {
     case Command::Getstat:
     {
-      DEBUG_LOG("CDROM Getstat command");
+      DEV_COLOR_LOG(StrongOrange, "Getstat    Stat=0x{:02X}", s_state.secondary_status.bits);
 
       // if bit 0 or 2 is set, send an additional byte
       SendACKAndStat();
@@ -1799,7 +1790,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::GetID:
     {
-      DEBUG_LOG("CDROM GetID command");
+      DEV_COLOR_LOG(StrongOrange, "GetID");
       ClearCommandSecondResponse();
 
       if (!CanReadMedia())
@@ -1818,7 +1809,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::ReadTOC:
     {
-      DEBUG_LOG("CDROM ReadTOC command");
+      DEV_COLOR_LOG(StrongOrange, "ReadTOC");
       ClearCommandSecondResponse();
 
       if (!CanReadMedia())
@@ -1840,7 +1831,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       const u8 file = s_state.param_fifo.Peek(0);
       const u8 channel = s_state.param_fifo.Peek(1);
-      DEBUG_LOG("CDROM setfilter command 0x{:02X} 0x{:02X}", ZeroExtend32(file), ZeroExtend32(channel));
+      DEV_COLOR_LOG(StrongOrange, "Setfilter  File=0x{:02X} Channel=0x{:02X}", ZeroExtend32(file),
+                    ZeroExtend32(channel));
       s_state.xa_filter_file_number = file;
       s_state.xa_filter_channel_number = channel;
       s_state.xa_current_set = false;
@@ -1853,7 +1845,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       const u8 mode = s_state.param_fifo.Peek(0);
       const bool speed_change = (mode & 0x80) != (s_state.mode.bits & 0x80);
-      DEV_LOG("CDROM setmode command 0x{:02X}", ZeroExtend32(mode));
+      DEV_COLOR_LOG(StrongOrange, "Setmode    0x{:02X}", ZeroExtend32(mode));
 
       s_state.mode.bits = mode;
       SendACKAndStat();
@@ -1904,7 +1896,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       const u8 mm = s_state.param_fifo.Peek(0);
       const u8 ss = s_state.param_fifo.Peek(1);
       const u8 ff = s_state.param_fifo.Peek(2);
-      DEV_LOG("CDROM setloc command ({:02X}, {:02X}, {:02X})", mm, ss, ff);
+      DEV_COLOR_LOG(StrongOrange, "Setloc     {:02X}:{:02X}:{:02X}", mm, ss, ff);
 
       // MM must be BCD, SS must be BCD and <0x60, FF must be BCD and <0x75
       if (((mm & 0x0F) > 0x09) || (mm > 0x99) || ((ss & 0x0F) > 0x09) || (ss >= 0x60) || ((ff & 0x0F) > 0x09) ||
@@ -1931,7 +1923,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::SeekP:
     {
       const bool logical = (s_state.command == Command::SeekL);
-      DEBUG_LOG("CDROM {} command", logical ? "SeekL" : "SeekP");
+      DEV_COLOR_LOG(StrongOrange, "{}      {:02d}:{:02d}:{:02d}", logical ? "SeekL" : "SeekP",
+                    s_state.setloc_position.minute, s_state.setloc_position.second, s_state.setloc_position.frame);
 
       if (!CanReadMedia())
       {
@@ -1950,7 +1943,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::ReadT:
     {
       const u8 session = s_state.param_fifo.Peek(0);
-      DEBUG_LOG("CDROM ReadT command, session={}", session);
+      DEV_COLOR_LOG(StrongOrange, "ReadT      Session={}", session);
 
       if (!CanReadMedia() || s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing)
       {
@@ -1977,7 +1970,9 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::ReadN:
     case Command::ReadS:
     {
-      DEBUG_LOG("CDROM read command");
+      DEV_COLOR_LOG(StrongOrange, "{}      {:02d}:{:02d}:{:02d}",
+                    (s_state.command == Command::ReadN) ? "ReadN" : "ReadS", s_state.setloc_position.minute,
+                    s_state.setloc_position.second, s_state.setloc_position.frame);
       if (!CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
@@ -2010,7 +2005,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     case Command::Play:
     {
       const u8 track = s_state.param_fifo.IsEmpty() ? 0 : PackedBCDToBinary(s_state.param_fifo.Peek(0));
-      DEBUG_LOG("CDROM play command, track={}", track);
+      DEV_COLOR_LOG(StrongOrange, "Play       Track={}", track);
 
       if (!CanReadMedia())
       {
@@ -2039,6 +2034,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Forward:
     {
+      DEV_COLOR_LOG(StrongOrange, "Forward");
       if (s_state.drive_state != DriveState::Playing || !CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
@@ -2060,6 +2056,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Backward:
     {
+      DEV_COLOR_LOG(StrongOrange, "Backward");
       if (s_state.drive_state != DriveState::Playing || !CanReadMedia())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
@@ -2081,6 +2078,11 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Pause:
     {
+      if (IsReadingOrPlaying())
+        DEV_COLOR_LOG(StrongOrange, "Pause");
+      else
+        DEV_COLOR_LOG(StrongRed, "Pause      Not Reading");
+
       const bool was_reading =
         (s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing);
       const TickCount pause_time = was_reading ? (s_state.mode.double_speed ? 2000000 : 1000000) : 7000;
@@ -2122,6 +2124,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Stop:
     {
+      DEV_COLOR_LOG(StrongOrange, "Stop");
+
       const TickCount stop_time = GetTicksForStop(IsMotorOn());
       ClearAsyncInterrupt();
       ClearCommandSecondResponse();
@@ -2136,15 +2140,15 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Init:
     {
-      DEBUG_LOG("CDROM init command");
-
       if (s_state.command_second_response == Command::Init)
       {
         // still pending
+        DEV_COLOR_LOG(StrongRed, "Init");
         EndCommand();
         return;
       }
 
+      DEV_COLOR_LOG(StrongOrange, "Init");
       SendACKAndStat();
 
       const TickCount reset_ticks = SoftReset(ticks_late);
@@ -2155,7 +2159,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::MotorOn:
     {
-      DEBUG_LOG("CDROM motor on command");
+      DEV_COLOR_LOG(StrongOrange, "MotorOn");
       if (IsMotorOn())
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INCORRECT_NUMBER_OF_PARAMETERS);
@@ -2183,7 +2187,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Mute:
     {
-      DEBUG_LOG("CDROM mute command");
+      DEV_COLOR_LOG(StrongOrange, "Mute");
       s_state.muted = true;
       SendACKAndStat();
       EndCommand();
@@ -2192,7 +2196,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Demute:
     {
-      DEBUG_LOG("CDROM demute command");
+      DEV_COLOR_LOG(StrongOrange, "Demute");
       s_state.muted = false;
       SendACKAndStat();
       EndCommand();
@@ -2203,15 +2207,15 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       if (!s_state.last_sector_header_valid)
       {
-        DEV_LOG("CDROM GetlocL command - header invalid, status 0x{:02X}", s_state.secondary_status.bits);
+        DEV_COLOR_LOG(StrongRed, "GetlocL    Header invalid, status 0x{:02X}", s_state.secondary_status.bits);
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
       {
         UpdateSubQPosition(true);
 
-        DEBUG_LOG("CDROM GetlocL command - [{:02X}:{:02X}:{:02X}]", s_state.last_sector_header.minute,
-                  s_state.last_sector_header.second, s_state.last_sector_header.frame);
+        DEV_COLOR_LOG(StrongOrange, "GetlocL    {:02X}:{:02X}:{:02X}", s_state.last_sector_header.minute,
+                      s_state.last_sector_header.second, s_state.last_sector_header.frame);
 
         s_state.response_fifo.PushRange(reinterpret_cast<const u8*>(&s_state.last_sector_header),
                                         sizeof(s_state.last_sector_header));
@@ -2228,7 +2232,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
     {
       if (!CanReadMedia())
       {
-        DEBUG_LOG("CDROM GetlocP command - not ready");
+        DEV_COLOR_LOG(StrongOrange, "GetlocP    Not Ready");
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
       else
@@ -2238,11 +2242,11 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         else
           UpdateSubQPosition(false);
 
-        DEV_LOG("CDROM GetlocP command - T{:02x} I{:02x} R[{:02x}:{:02x}:{:02x}] A[{:02x}:{:02x}:{:02x}]",
-                s_state.last_subq.track_number_bcd, s_state.last_subq.index_number_bcd,
-                s_state.last_subq.relative_minute_bcd, s_state.last_subq.relative_second_bcd,
-                s_state.last_subq.relative_frame_bcd, s_state.last_subq.absolute_minute_bcd,
-                s_state.last_subq.absolute_second_bcd, s_state.last_subq.absolute_frame_bcd);
+        DEV_COLOR_LOG(StrongOrange, "GetlocP    T{:02x} I{:02x} R[{:02x}:{:02x}:{:02x}] A[{:02x}:{:02x}:{:02x}]",
+                      s_state.last_subq.track_number_bcd, s_state.last_subq.index_number_bcd,
+                      s_state.last_subq.relative_minute_bcd, s_state.last_subq.relative_second_bcd,
+                      s_state.last_subq.relative_frame_bcd, s_state.last_subq.absolute_minute_bcd,
+                      s_state.last_subq.absolute_second_bcd, s_state.last_subq.absolute_frame_bcd);
 
         s_state.response_fifo.Push(s_state.last_subq.track_number_bcd);
         s_state.response_fifo.Push(s_state.last_subq.index_number_bcd);
@@ -2261,11 +2265,10 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::GetTN:
     {
-      DEBUG_LOG("CDROM GetTN command");
       if (CanReadMedia())
       {
-        DEV_LOG("GetTN -> {} {}", s_reader.GetMedia()->GetFirstTrackNumber(),
-                s_reader.GetMedia()->GetLastTrackNumber());
+        DEV_COLOR_LOG(StrongRed, "GetTN      {}, {}", s_reader.GetMedia()->GetFirstTrackNumber(),
+                      s_reader.GetMedia()->GetLastTrackNumber());
 
         s_state.response_fifo.Push(s_state.secondary_status.bits);
         s_state.response_fifo.Push(BinaryToBCD(Truncate8(s_reader.GetMedia()->GetFirstTrackNumber())));
@@ -2274,6 +2277,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       }
       else
       {
+        DEV_COLOR_LOG(StrongRed, "GetTN      Not Ready");
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
 
@@ -2283,11 +2287,11 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::GetTD:
     {
-      DEBUG_LOG("CDROM GetTD command");
       Assert(s_state.param_fifo.GetSize() >= 1);
 
       if (!CanReadMedia())
       {
+        DEV_COLOR_LOG(StrongRed, "GetTD      Not Ready");
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
         EndCommand();
         return;
@@ -2296,7 +2300,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       const u8 track_bcd = s_state.param_fifo.Peek();
       if (!IsValidPackedBCD(track_bcd))
       {
-        ERROR_LOG("Invalid track number in GetTD: {:02X}", track_bcd);
+        DEV_COLOR_LOG(StrongRed, "GetTD      Invalid Track {:02X}", track_bcd);
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
         EndCommand();
         return;
@@ -2305,6 +2309,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       const u8 track = PackedBCDToBinary(track_bcd);
       if (track > s_reader.GetMedia()->GetTrackCount())
       {
+        DEV_COLOR_LOG(StrongRed, "GetTD      Out-of-range Track {:02d}", track);
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_ARGUMENT);
       }
       else
@@ -2318,7 +2323,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
         s_state.response_fifo.Push(s_state.secondary_status.bits);
         s_state.response_fifo.Push(BinaryToBCD(Truncate8(pos.minute)));
         s_state.response_fifo.Push(BinaryToBCD(Truncate8(pos.second)));
-        DEV_LOG("GetTD {} -> {} {}", track, pos.minute, pos.second);
+        DEV_COLOR_LOG(StrongRed, "GetTD      Track {:02d}: {:02d}:{:02d}", track, pos.minute, pos.second);
 
         SetInterrupt(Interrupt::ACK);
       }
@@ -2329,7 +2334,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Getmode:
     {
-      DEBUG_LOG("CDROM Getmode command");
+      DEV_COLOR_LOG(StrongRed, "Getmode      {:02X} {:02X} {:02X} {:02X}", s_state.secondary_status.bits,
+                    s_state.mode.bits, s_state.xa_filter_file_number, s_state.xa_filter_channel_number);
 
       s_state.response_fifo.Push(s_state.secondary_status.bits);
       s_state.response_fifo.Push(s_state.mode.bits);
@@ -2343,7 +2349,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Sync:
     {
-      DEBUG_LOG("CDROM sync command");
+      ERROR_LOG("Invalid sync command");
 
       SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
       EndCommand();
@@ -2352,7 +2358,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::VideoCD:
     {
-      DEBUG_LOG("CDROM VideoCD command");
+      ERROR_LOG("Invalid VideoCD command");
       SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
 
       // According to nocash this doesn't clear the parameter FIFO.
@@ -3256,9 +3262,9 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSectorHeader(const u8* raw_sector)
 ALWAYS_INLINE_RELEASE void CDROM::ProcessDataSector(const u8* raw_sector, const CDImage::SubChannelQ& subq)
 {
   const u32 sb_num = (s_state.current_write_sector_buffer + 1) % NUM_SECTOR_BUFFERS;
-  DEV_LOG("Read sector {} [{}]: mode {} submode 0x{:02X} into buffer {}", s_state.current_lba,
-          LBAToMSFString(s_state.current_lba), s_state.last_sector_header.sector_mode,
-          ZeroExtend32(s_state.last_sector_subheader.submode.bits), sb_num);
+  DEV_COLOR_LOG(StrongMagenta, "DataSector {} LBA={} Mode={} Submode=0x{:02X} Buffer={}",
+                LBAToMSFString(s_state.current_lba), s_state.current_lba, s_state.last_sector_header.sector_mode,
+                ZeroExtend32(s_state.last_sector_subheader.submode.bits), sb_num);
 
   if (s_state.mode.xa_enable && s_state.last_sector_header.sector_mode == 2)
   {
@@ -3700,7 +3706,9 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
                                                     bool subq_valid)
 {
   // For CDDA sectors, the whole sector contains the audio data.
-  DEV_LOG("Read sector {} as CDDA", s_state.current_lba);
+  DEV_COLOR_LOG(StrongMagenta, "CDDASector {} LBA={} Track={:02x} Index={:02x} Rel={:02x}:{:02x}:{:02x} Ctrl={:02x}",
+                LBAToMSFString(s_state.current_lba), s_state.current_lba, subq.track_number_bcd, subq.index_number_bcd,
+                subq.relative_minute_bcd, subq.relative_second_bcd, subq.relative_frame_bcd, subq.control_bits);
 
   // The reporting doesn't happen if we're reading with the CDDA mode bit set.
   if (s_state.drive_state == DriveState::Playing && s_state.mode.report_audio && subq_valid)
@@ -3738,8 +3746,8 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
         s_state.async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
         SetAsyncInterrupt(Interrupt::DataReady);
 
-        DEV_LOG(
-          "CDDA report at track[{:02x}] index[{:02x}] rel[{:02x}:{:02x}:{:02x}] abs[{:02x}:{:02x}:{:02x}] peak[{}:{}]",
+        DEV_COLOR_LOG(StrongCyan,
+          "Report     Track[{:02x}] Index[{:02x}] Rel[{:02x}:{:02x}:{:02x}] Abs[{:02x}:{:02x}:{:02x}] Peak[{}:{}]",
           subq.track_number_bcd, subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
           subq.relative_frame_bcd, subq.absolute_minute_bcd, subq.absolute_second_bcd, subq.absolute_frame_bcd, channel,
           peak_volume);
