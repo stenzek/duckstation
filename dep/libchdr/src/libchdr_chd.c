@@ -3201,7 +3201,8 @@ static chd_error metadata_find_entry(chd_file *chd, uint32_t metatag, uint32_t m
 		uint32_t	count;
 
 		/* read the raw header */
-		core_fseek(chd->file, metaentry->offset, SEEK_SET);
+		if (core_fseek(chd->file, metaentry->offset, SEEK_SET) != 0)
+			break;
 		count = core_fread(chd->file, raw_meta_header, sizeof(raw_meta_header));
 		if (count != sizeof(raw_meta_header))
 			break;
