@@ -5265,7 +5265,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
     if (!cheats)
       title = std::string_view(ci.name);
     else
-      title = ci.GetNamePart();
+      title.format("{}##{}", ci.GetNamePart(), ci.name);
 
     // TODO: Handle ranges.
     bool state = (enable_it != enable_list.end());
