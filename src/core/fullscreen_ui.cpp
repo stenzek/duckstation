@@ -1958,7 +1958,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
@@ -2016,7 +2016,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
@@ -2082,7 +2082,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
     manual_input = false;
   }
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
@@ -2334,7 +2334,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
     manual_input = false;
   }
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
+  ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(g_large_font);
@@ -5267,7 +5267,6 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
     else
       title.format("{}##{}", ci.GetNamePart(), ci.name);
 
-    // TODO: Handle ranges.
     bool state = (enable_it != enable_list.end());
 
     if (ci.HasOptionChoices())
@@ -5323,6 +5322,115 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
                            CloseChoiceDialog();
                          });
       }
+    }
+    else if (ci.HasOptionRange())
+    {
+      TinyString visible_value(FSUI_VSTR("Disabled"));
+      s32 range_value = static_cast<s32>(ci.option_range_start) - 1;
+      if (state)
+      {
+        const std::optional<s32> value =
+          bsi->GetOptionalIntValue(section, ci.name.c_str(), std::nullopt).value_or(ci.option_range_start);
+        if (value.has_value())
+        {
+          range_value = value.value();
+          visible_value.format("{}", value.value());
+        }
+      }
+
+      constexpr s32 step_value = 1;
+
+      if (MenuButtonWithValue(title.c_str(), ci.description.c_str(), visible_value.c_str()))
+        ImGui::OpenPopup(title);
+
+      ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
+      ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+      ImGui::PushFont(g_large_font);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+      ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
+                                                                  ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
+      ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+
+      bool is_open = true;
+      if (ImGui::BeginPopupModal(title, &is_open,
+                                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+      {
+        BeginMenuButtons();
+
+        bool range_value_changed = false;
+
+        const ImVec2& padding(ImGui::GetStyle().FramePadding);
+        ImVec2 button_pos(ImGui::GetCursorPos());
+
+        // Align value text in middle.
+        ImGui::SetCursorPosY(
+          button_pos.y +
+          ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+        ImGui::TextUnformatted(visible_value.c_str(), visible_value.end_ptr());
+
+        s32 step = 0;
+        if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font,
+                           &button_pos, true))
+        {
+          step = step_value;
+        }
+        if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f,
+                           true, g_large_font, &button_pos, true))
+        {
+          step = -step_value;
+        }
+        if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                           g_large_font, &button_pos))
+        {
+          range_value = ci.option_range_start - 1;
+          range_value_changed = true;
+        }
+
+        if (step != 0)
+        {
+          range_value += step;
+          range_value_changed = true;
+        }
+
+        ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) +
+                             LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+
+        if (range_value_changed)
+        {
+          const auto it = std::find(enable_list.begin(), enable_list.end(), ci.name);
+          range_value =
+            std::clamp(range_value, static_cast<s32>(ci.option_range_start) - 1, static_cast<s32>(ci.option_range_end));
+          if (range_value < static_cast<s32>(ci.option_range_start))
+          {
+            bsi->RemoveFromStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci.name.c_str());
+            if (it != enable_list.end())
+              enable_list.erase(it);
+          }
+          else
+          {
+            bsi->AddToStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci.name.c_str());
+            bsi->SetIntValue(section, ci.name.c_str(), range_value);
+            if (it == enable_list.end())
+              enable_list.push_back(ci.name);
+          }
+
+          SetSettingsChanged(bsi);
+        }
+
+        if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+                                     ImVec2(0.5f, 0.0f)))
+        {
+          ImGui::CloseCurrentPopup();
+        }
+        EndMenuButtons();
+
+        ImGui::EndPopup();
+      }
+
+      ImGui::PopStyleVar(4);
+      ImGui::PopFont();
     }
     else
     {
