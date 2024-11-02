@@ -32,7 +32,7 @@ private:
   void updateLogLevelUi();
   void setLogLevel(Log::Level level);
 
-  static void logCallback(void* pUserParam, const char* channelName, const char* functionName, Log::Level level,
+  static void logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
                           std::string_view message);
 
 protected:
@@ -42,7 +42,7 @@ protected:
 private Q_SLOTS:
   void onClearTriggered();
   void onSaveTriggered();
-  void appendMessage(const QLatin1StringView& channel, quint32 level, const QString& message);
+  void appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message);
 
 private:
   static constexpr int DEFAULT_WIDTH = 750;

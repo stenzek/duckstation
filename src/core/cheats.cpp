@@ -77,7 +77,7 @@ public:
   {
     if (!stop_on_error)
     {
-      Log::WriteFmtArgs(Log::PackChannelAndLevel(Log::Channel::Cheats, Log::Level::Warning), fmt,
+      Log::WriteFmtArgs(Log::PackCategory(Log::Channel::Cheats, Log::Level::Warning, Log::Color::StrongOrange), fmt,
                         fmt::make_format_args(args...));
       return true;
     }

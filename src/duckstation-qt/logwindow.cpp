@@ -254,7 +254,7 @@ void LogWindow::onSaveTriggered()
                 tr("Log was written to %1.\n").arg(path));
 }
 
-void LogWindow::logCallback(void* pUserParam, const char* channelName, const char* functionName, Log::Level level,
+void LogWindow::logCallback(void* pUserParam, Log::MessageCategory cat, const char* functionName,
                             std::string_view message)
 {
   LogWindow* this_ptr = static_cast<LogWindow*>(pUserParam);
@@ -267,16 +267,17 @@ void LogWindow::logCallback(void* pUserParam, const char* channelName, const cha
   qmessage.append(QUtf8StringView(message.data(), message.length()));
   qmessage.append(QChar('\n'));
 
-  const QLatin1StringView qchannel((level <= Log::Level::Warning) ? functionName : channelName);
+  const QLatin1StringView qchannel(
+    (Log::UnpackLevel(cat) <= Log::Level::Warning) ? functionName : Log::GetChannelName(Log::UnpackChannel(cat)));
 
   if (QThread::isMainThread())
   {
-    this_ptr->appendMessage(qchannel, static_cast<u32>(level), qmessage);
+    this_ptr->appendMessage(qchannel, static_cast<u32>(cat), qmessage);
   }
   else
   {
     QMetaObject::invokeMethod(this_ptr, "appendMessage", Qt::QueuedConnection,
-                              Q_ARG(const QLatin1StringView&, qchannel), Q_ARG(quint32, static_cast<u32>(level)),
+                              Q_ARG(const QLatin1StringView&, qchannel), Q_ARG(quint32, static_cast<u32>(cat)),
                               Q_ARG(const QString&, qmessage));
   }
 }
@@ -304,7 +305,7 @@ void LogWindow::changeEvent(QEvent* event)
   QMainWindow::changeEvent(event);
 }
 
-void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, const QString& message)
+void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message)
 {
   QTextCursor temp_cursor = m_text->textCursor();
   QScrollBar* scrollbar = m_text->verticalScrollBar();
@@ -316,28 +317,50 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
   {
     static constexpr const QChar level_characters[static_cast<size_t>(Log::Level::MaxCount)] = {'X', 'E', 'W', 'I',
                                                                                                 'V', 'D', 'B', 'T'};
-    static constexpr const QColor level_colors[2][static_cast<size_t>(Log::Level::MaxCount)] = {
+    static constexpr const QColor message_colors[2][static_cast<size_t>(Log::Color::MaxCount)] = {
+      // Light theme
       {
-        // Light theme
-        QColor(0, 0, 0),          // NONE
-        QColor(0x80, 0x00, 0x00), // ERROR, Red Intensity
-        QColor(0xb4, 0xb4, 0x00), // WARNING, Yellow Intensity
-        QColor(0x0d, 0x0d, 0x0d), // INFO, White Intensity
-        QColor(0x00, 0x80, 0x00), // VERBOSE, Green Intensity
-        QColor(0x70, 0x70, 0x70), // DEV, White
-        QColor(0xec, 0x5e, 0xf1), // DEBUG, Green
-        QColor(0xe9, 0x39, 0xf3), // TRACE, Blue
+        QColor(0x00, 0x00, 0x00), // Default
+        QColor(0x00, 0x00, 0x00), // Black
+        QColor(0x70, 0x00, 0x00), // Red
+        QColor(0xec, 0x5e, 0xf1), // Green
+        QColor(0xe9, 0x39, 0xf3), // Blue
+        QColor(0xA0, 0x00, 0xA0), // Magenta
+        QColor(0xA0, 0x78, 0x00), // Orange
+        QColor(0x80, 0xB4, 0xB4), // Cyan
+        QColor(0xB4, 0xB4, 0x80), // Yellow
+        QColor(0x70, 0x70, 0x70), // White
+        QColor(0x00, 0x00, 0x00), // StrongBlack
+        QColor(0x80, 0x00, 0x00), // StrongRed
+        QColor(0x00, 0x80, 0x00), // StrongGreen
+        QColor(0x00, 0x00, 0x80), // StrongBlue
+        QColor(0xA0, 0x00, 0xA0), // StrongMagenta
+        QColor(0xA0, 0x78, 0x00), // StrongOrange
+        QColor(0x80, 0xB4, 0xB4), // StrongCyan
+        QColor(0xb4, 0xb4, 0x00), // StrongYellow
+        QColor(0x0D, 0x0d, 0x0D)  // StrongWhite
       },
+      // Dark theme
       {
-        // Dark theme
-        QColor(255, 255, 255),    // NONE
-        QColor(0xE7, 0x48, 0x56), // ERROR, Red Intensity
-        QColor(0xF9, 0xF1, 0xA5), // WARNING, Yellow Intensity
-        QColor(0xF2, 0xF2, 0xF2), // INFO, White Intensity
-        QColor(0x16, 0xC6, 0x0C), // VERBOSE, Green Intensity
-        QColor(0xCC, 0xCC, 0xCC), // DEV, White
-        QColor(0x13, 0xA1, 0x0E), // DEBUG, Green
-        QColor(0x00, 0x37, 0xDA), // TRACE, Blue
+        QColor(0xD0, 0xD0, 0xD0), // Default
+        QColor(0xFF, 0xFF, 0xFF), // Black
+        QColor(0xB4, 0x00, 0x00), // Red
+        QColor(0x13, 0xA1, 0x0E), // Green
+        QColor(0x00, 0x37, 0xDA), // Blue
+        QColor(0xA0, 0x00, 0xA0), // Magenta
+        QColor(0xA0, 0x78, 0x00), // Orange
+        QColor(0x80, 0xB4, 0xB4), // Cyan
+        QColor(0xB4, 0xB4, 0x80), // Yellow
+        QColor(0xCC, 0xCC, 0xCC), // White
+        QColor(0xFF, 0xFF, 0xFF), // StrongBlack
+        QColor(0xE7, 0x48, 0x56), // StrongRed
+        QColor(0x16, 0xC6, 0x0C), // StrongGreen
+        QColor(0x20, 0x20, 0xCC), // StrongBlue
+        QColor(0xA0, 0x00, 0xA0), // StrongMagenta
+        QColor(0xB4, 0x96, 0x00), // StrongOrange
+        QColor(0x80, 0xB4, 0xB4), // StrongCyan
+        QColor(0xF9, 0xF1, 0xA5), // StrongYellow
+        QColor(0xFF, 0xFF, 0xFF), // StrongWhite
       },
     };
     static constexpr const QColor timestamp_color[2] = {QColor(0x60, 0x60, 0x60), QColor(0xcc, 0xcc, 0xcc)};
@@ -355,15 +378,20 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 level, c
       temp_cursor.insertText(qtimestamp);
     }
 
-    const QString qchannel = (level <= static_cast<u32>(Log::Level::Warning)) ?
-                               QStringLiteral("%1(%2): ").arg(level_characters[level]).arg(channel) :
-                               QStringLiteral("%1/%2: ").arg(level_characters[level]).arg(channel);
+    const Log::Level level = Log::UnpackLevel(static_cast<Log::MessageCategory>(cat));
+    const Log::Color color = (Log::UnpackColor(static_cast<Log::MessageCategory>(cat)) == Log::Color::Default) ?
+                               Log::GetColorForLevel(level) :
+                               Log::UnpackColor(static_cast<Log::MessageCategory>(cat));
+    const QString qchannel =
+      (level <= Log::Level::Warning) ?
+        QStringLiteral("%1(%2): ").arg(level_characters[static_cast<size_t>(level)]).arg(channel) :
+        QStringLiteral("%1/%2: ").arg(level_characters[static_cast<size_t>(level)]).arg(channel);
     format.setForeground(QBrush(channel_color[dark]));
     temp_cursor.setCharFormat(format);
     temp_cursor.insertText(qchannel);
 
     // message has \n already
-    format.setForeground(QBrush(level_colors[dark][level]));
+    format.setForeground(QBrush(message_colors[dark][static_cast<size_t>(color)]));
     temp_cursor.setCharFormat(format);
     temp_cursor.insertText(message);
   }
