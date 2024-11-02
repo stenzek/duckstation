@@ -1497,8 +1497,51 @@ TickCount CDROM::GetTicksForRead()
 
 u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
 {
-  return static_cast<CDImage::LBA>(9.0f +
-                                   2.5440497f * std::log(static_cast<float>(lba / CDImage::FRAMES_PER_MINUTE) + 1u));
+  using SPTTable = std::array<u8, 80>;
+
+  static constexpr const SPTTable spt_table = []() constexpr -> SPTTable {
+    // Based on mech behaviour, thanks rama for these numbers!
+    // Note that minutes beyond 71 are buggy on the real mech, it uses the 71 minute table
+    // regardless of the disc size. This matches the 71 minute table.
+    SPTTable table = {};
+    for (size_t mm = 0; mm < table.size(); mm++)
+    {
+      if (mm == 0) // 00 = 8
+        table[mm] = 8;
+      else if (mm <= 4) // 01-04 = 9
+        table[mm] = 9;
+      else if (mm <= 7) // 05-07 = 10
+        table[mm] = 10;
+      else if (mm <= 11) // 08-11 = 11
+        table[mm] = 11;
+      else if (mm <= 16) // 12-16 = 12
+        table[mm] = 12;
+      else if (mm <= 23) // 17-23 = 13
+        table[mm] = 13;
+      else if (mm <= 27) // 24-27 = 14
+        table[mm] = 14;
+      else if (mm <= 32) // 28-32 = 15
+        table[mm] = 15;
+      else if (mm <= 39) // 32-39 = 16
+        table[mm] = 16;
+      else if (mm <= 44) // 40-44 = 17
+        table[mm] = 17;
+      else if (mm <= 52) // 45-52 = 18
+        table[mm] = 18;
+      else if (mm <= 60) // 53-60 = 19
+        table[mm] = 19;
+      else if (mm <= 67) // 61-66 = 20
+        table[mm] = 20;
+      else if (mm <= 74) // 67-74 = 21
+        table[mm] = 21;
+      else // 75-80 = 22
+        table[mm] = 22;
+    }
+    return table;
+  }();
+
+  const u32 mm = lba / CDImage::FRAMES_PER_MINUTE;
+  return spt_table[std::min(mm, static_cast<u32>(spt_table.size()))];
 }
 
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
