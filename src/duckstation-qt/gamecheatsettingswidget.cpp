@@ -545,7 +545,8 @@ void GameCheatSettingsWidget::removeCode(const std::string_view code_name, bool 
 
   if (QMessageBox::question(this, tr("Confirm Removal"),
                             tr("You are removing the code named '%1'. You cannot undo this action, are you sure you "
-                               "wish to delete this code?")) != QMessageBox::Yes)
+                               "wish to delete this code?")
+                              .arg(QtUtils::StringViewToQString(code_name))) != QMessageBox::Yes)
   {
     return;
   }
