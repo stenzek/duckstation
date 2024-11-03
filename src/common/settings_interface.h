@@ -107,35 +107,35 @@ public:
   }
 
   ALWAYS_INLINE std::optional<s32> GetOptionalIntValue(const char* section, const char* key,
-                                                       std::optional<s32> default_value = std::nullopt)
+                                                       std::optional<s32> default_value = std::nullopt) const
   {
     s32 ret;
     return GetIntValue(section, key, &ret) ? std::optional<s32>(ret) : default_value;
   }
 
   ALWAYS_INLINE std::optional<u32> GetOptionalUIntValue(const char* section, const char* key,
-                                                        std::optional<u32> default_value = std::nullopt)
+                                                        std::optional<u32> default_value = std::nullopt) const
   {
     u32 ret;
     return GetUIntValue(section, key, &ret) ? std::optional<u32>(ret) : default_value;
   }
 
   ALWAYS_INLINE std::optional<float> GetOptionalFloatValue(const char* section, const char* key,
-                                                           std::optional<float> default_value = std::nullopt)
+                                                           std::optional<float> default_value = std::nullopt) const
   {
     float ret;
     return GetFloatValue(section, key, &ret) ? std::optional<float>(ret) : default_value;
   }
 
   ALWAYS_INLINE std::optional<double> GetOptionalDoubleValue(const char* section, const char* key,
-                                                             std::optional<double> default_value = std::nullopt)
+                                                             std::optional<double> default_value = std::nullopt) const
   {
     double ret;
     return GetDoubleValue(section, key, &ret) ? std::optional<double>(ret) : default_value;
   }
 
   ALWAYS_INLINE std::optional<bool> GetOptionalBoolValue(const char* section, const char* key,
-                                                         std::optional<bool> default_value = std::nullopt)
+                                                         std::optional<bool> default_value = std::nullopt) const
   {
     bool ret;
     return GetBoolValue(section, key, &ret) ? std::optional<bool>(ret) : default_value;
