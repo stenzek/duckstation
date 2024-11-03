@@ -350,7 +350,7 @@ void GameSummaryWidget::onInputProfileChanged(int index)
       {
         const auto lock = Host::GetSettingsLock();
         SettingsInterface* base_sif = Host::Internal::GetBaseSettingsLayer();
-        InputManager::CopyConfiguration(sif, *base_sif, true, true, false);
+        InputManager::CopyConfiguration(sif, *base_sif, true, true, true, false);
 
         QWidget* dlg_parent = QtUtils::GetRootWidget(this);
         QMessageBox::information(dlg_parent, dlg_parent->windowTitle(),

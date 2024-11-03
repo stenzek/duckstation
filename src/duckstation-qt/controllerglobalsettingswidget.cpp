@@ -18,16 +18,16 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 
   SettingsInterface* sif = dialog->getEditingSettingsInterface();
 
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLEnhancedMode, "InputSources",
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources",
                                                "SDLControllerEnhancedMode", false);
   connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
           &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
 
 #ifdef __APPLE__
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLIOKitDriver, "InputSources", "SDLIOKitDriver", true);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableSDLMFIDriver, "InputSources", "SDLMFIDriver", true);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLIOKitDriver, "InputSources", "SDLIOKitDriver", true);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLMFIDriver, "InputSources", "SDLMFIDriver", true);
 #else
   m_ui.sdlGridLayout->removeWidget(m_ui.enableSDLIOKitDriver);
   delete m_ui.enableSDLIOKitDriver;
@@ -38,9 +38,9 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 #endif
 
 #ifdef _WIN32
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableRawInput, "InputSources", "RawInput", false);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableDInputSource, "InputSources", "DInput", false);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableXInputSource, "InputSources", "XInput", false);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableRawInput, "InputSources", "RawInput", false);
 #else
   m_ui.mainLayout->removeWidget(m_ui.xinputGroup);
   delete m_ui.xinputGroup;

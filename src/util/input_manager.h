@@ -346,7 +346,7 @@ void ClearPortBindings(SettingsInterface& si, u32 port);
 
 /// Copies pad configuration from one interface (ini) to another.
 void CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si, bool copy_pad_config = true,
-                       bool copy_pad_bindings = true, bool copy_hotkey_bindings = true);
+                       bool copy_source_config = true, bool copy_pad_bindings = true, bool copy_hotkey_bindings = true);
 
 /// Performs automatic controller mapping with the provided list of generic mappings.
 bool MapController(SettingsInterface& si, u32 controller,

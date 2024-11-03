@@ -3607,7 +3607,7 @@ void FullscreenUI::DoLoadInputProfile()
 
                      auto lock = Host::GetSettingsLock();
                      SettingsInterface* dsi = GetEditingSettingsInterface();
-                     InputManager::CopyConfiguration(dsi, ssi, true, true, IsEditingGameSettings(dsi));
+                     InputManager::CopyConfiguration(dsi, ssi, true, true, true, IsEditingGameSettings(dsi));
                      SetSettingsChanged(dsi);
                      ShowToast(std::string(), fmt::format(FSUI_FSTR("Input profile '{}' loaded."), title));
                      CloseChoiceDialog();
@@ -3620,7 +3620,7 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
 
   auto lock = Host::GetSettingsLock();
   SettingsInterface* ssi = GetEditingSettingsInterface();
-  InputManager::CopyConfiguration(&dsi, *ssi, true, true, IsEditingGameSettings(ssi));
+  InputManager::CopyConfiguration(&dsi, *ssi, true, true, true, IsEditingGameSettings(ssi));
   if (dsi.Save())
     ShowToast(std::string(), fmt::format(FSUI_FSTR("Input profile '{}' saved."), name));
   else

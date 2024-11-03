@@ -196,7 +196,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
 
       // from global
       auto lock = Host::GetSettingsLock();
-      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true,
+      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), true, true, true,
                                       copy_hotkey_bindings);
     }
     else
@@ -205,8 +205,16 @@ void ControllerSettingsWindow::onNewProfileClicked()
       const bool copy_hotkey_bindings =
         m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
       temp_si.SetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", copy_hotkey_bindings);
-      InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, true, true, copy_hotkey_bindings);
+      InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, true, true, true, copy_hotkey_bindings);
     }
+  }
+  else
+  {
+    // still need to copy the source config
+    if (!m_editing_settings_interface)
+      InputManager::CopyConfiguration(&temp_si, *Host::Internal::GetBaseSettingsLayer(), false, true, false, false);
+    else
+      InputManager::CopyConfiguration(&temp_si, *m_editing_settings_interface, false, true, false, false);
   }
 
   if (!temp_si.Save())
@@ -237,7 +245,7 @@ void ControllerSettingsWindow::onApplyProfileClicked()
       m_editing_settings_interface->GetBoolValue("ControllerPorts", "UseProfileHotkeyBindings", false);
     auto lock = Host::GetSettingsLock();
     InputManager::CopyConfiguration(Host::Internal::GetBaseSettingsLayer(), *m_editing_settings_interface, true, true,
-                                    copy_hotkey_bindings);
+                                    true, copy_hotkey_bindings);
     QtHost::QueueSettingsSave();
   }
   g_emu_thread->applySettings();
@@ -293,7 +301,7 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
   {
     const auto lock = Host::GetSettingsLock();
     InputManager::CopyConfiguration(m_editing_settings_interface, *Host::Internal::GetBaseSettingsLayer(), true, true,
-                                    false);
+                                    true, false);
   }
 
   m_editing_settings_interface->Save();

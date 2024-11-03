@@ -1388,11 +1388,20 @@ void InputManager::ClearPortBindings(SettingsInterface& si, u32 port)
 }
 
 void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_si,
-                                     bool copy_pad_config /*= true*/, bool copy_pad_bindings /*= true*/,
-                                     bool copy_hotkey_bindings /*= true*/)
+                                     bool copy_pad_config /*= true*/, bool copy_source_config /*= true*/,
+                                     bool copy_pad_bindings /*= true*/, bool copy_hotkey_bindings /*= true*/)
 {
   if (copy_pad_config)
     dest_si->CopyStringValue(src_si, "ControllerPorts", "MultitapMode");
+
+  if (copy_source_config)
+  {
+    for (u32 type = 0; type < static_cast<u32>(InputSourceType::Count); type++)
+    {
+      dest_si->CopyBoolValue(src_si, "InputSources",
+                             InputManager::InputSourceToString(static_cast<InputSourceType>(type)));
+    }
+  }
 
   for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
   {
@@ -2021,7 +2030,7 @@ bool InputManager::IsInputSourceEnabled(const SettingsInterface& si, InputSource
     return true;
 #endif
 
-  return si.GetBoolValue("InputSources", InputManager::InputSourceToString(type), GetInputSourceDefaultEnabled(type));
+  return si.GetBoolValue("InputSources", InputSourceToString(type), GetInputSourceDefaultEnabled(type));
 }
 
 void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
@@ -2039,7 +2048,7 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::uniq
       std::unique_ptr<InputSource> source(factory_function());
       if (!source->Initialize(si, settings_lock))
       {
-        ERROR_LOG("Source '{}' failed to initialize.", InputManager::InputSourceToString(type));
+        ERROR_LOG("Source '{}' failed to initialize.", InputSourceToString(type));
         return;
       }
 
