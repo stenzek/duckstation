@@ -45,11 +45,11 @@ class SettingsWindow final : public QWidget
 
 public:
   SettingsWindow();
-  SettingsWindow(const std::string& path, std::string serial, GameHash hash, DiscRegion region,
+  SettingsWindow(const std::string& path, std::string title, std::string serial, GameHash hash, DiscRegion region,
                  const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif);
   ~SettingsWindow();
 
-  static SettingsWindow* openGamePropertiesDialog(const std::string& path, const std::string& title, std::string serial,
+  static SettingsWindow* openGamePropertiesDialog(const std::string& path, std::string title, std::string serial,
                                                   GameHash hash, DiscRegion region, const char* category = nullptr);
   static void closeGamePropertiesDialogs();
 
@@ -60,6 +60,7 @@ public:
 
   ALWAYS_INLINE bool isPerGameSettings() const { return static_cast<bool>(m_sif); }
   ALWAYS_INLINE INISettingsInterface* getSettingsInterface() const { return m_sif.get(); }
+  ALWAYS_INLINE const std::string& getGameTitle() const { return m_title; }
   ALWAYS_INLINE const std::string& getGameSerial() const { return m_serial; }
   ALWAYS_INLINE const std::optional<GameHash>& getGameHash() const { return m_hash; }
 
@@ -100,6 +101,7 @@ public:
   void removeSettingValue(const char* section, const char* key);
   void saveAndReloadGameSettings();
 
+  void setGameTitle(std::string title);
   bool hasGameTrait(GameDatabase::Trait trait);
 
 Q_SIGNALS:
@@ -158,6 +160,7 @@ private:
   QObject* m_current_help_widget = nullptr;
   QMap<QObject*, QString> m_widget_help_text_map;
 
+  std::string m_title;
   std::string m_serial;
   std::optional<GameHash> m_hash;
 };

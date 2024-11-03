@@ -218,8 +218,7 @@ void GameSummaryWidget::populateCustomAttributes()
 
 void GameSummaryWidget::updateWindowTitle()
 {
-  const QString window_title = tr("%1 [%2]").arg(m_ui.title->text()).arg(m_ui.serial->text());
-  m_dialog->setWindowTitle(window_title);
+  m_dialog->setGameTitle(m_ui.title->text().toStdString());
 }
 
 void GameSummaryWidget::setCustomTitle(const std::string& text)

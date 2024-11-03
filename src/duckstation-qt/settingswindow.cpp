@@ -48,14 +48,17 @@ SettingsWindow::SettingsWindow() : QWidget()
   connectUi();
 }
 
-SettingsWindow::SettingsWindow(const std::string& path, std::string serial, GameHash hash, DiscRegion region,
-                               const GameDatabase::Entry* entry, std::unique_ptr<INISettingsInterface> sif)
-  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry), m_serial(serial), m_hash(hash)
+SettingsWindow::SettingsWindow(const std::string& path, std::string title, std::string serial, GameHash hash,
+                               DiscRegion region, const GameDatabase::Entry* entry,
+                               std::unique_ptr<INISettingsInterface> sif)
+  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry), m_title(std::move(title)), m_serial(std::move(serial)),
+    m_hash(hash)
 {
   m_ui.setupUi(this);
+  setGameTitle(std::move(title));
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-  addWidget(m_game_summary = new GameSummaryWidget(path, serial, region, entry, this, m_ui.settingsContainer),
+  addWidget(m_game_summary = new GameSummaryWidget(path, m_serial, region, entry, this, m_ui.settingsContainer),
             tr("Summary"), QStringLiteral("file-list-line"),
             tr("<strong>Summary</strong><hr>This page shows information about the selected game, and allows you to "
                "validate your disc was dumped correctly."));
@@ -655,14 +658,22 @@ void SettingsWindow::saveAndReloadGameSettings()
   g_emu_thread->reloadGameSettings(false);
 }
 
+void SettingsWindow::setGameTitle(std::string title)
+{
+  m_title = std::move(title);
+
+  const QString window_title = tr("%1 [%2]").arg(QString::fromStdString(m_title)).arg(QString::fromStdString(m_serial));
+  setWindowTitle(window_title);
+}
+
 bool SettingsWindow::hasGameTrait(GameDatabase::Trait trait)
 {
   return (m_database_entry && m_database_entry->HasTrait(trait) &&
           m_sif->GetBoolValue("Main", "ApplyCompatibilitySettings", true));
 }
 
-SettingsWindow* SettingsWindow::openGamePropertiesDialog(const std::string& path, const std::string& title,
-                                                         std::string serial, GameHash hash, DiscRegion region,
+SettingsWindow* SettingsWindow::openGamePropertiesDialog(const std::string& path, std::string title, std::string serial,
+                                                         GameHash hash, DiscRegion region,
                                                          const char* category /* = nullptr */)
 {
   const GameDatabase::Entry* dentry = nullptr;
@@ -706,7 +717,8 @@ SettingsWindow* SettingsWindow::openGamePropertiesDialog(const std::string& path
   if (FileSystem::FileExists(sif->GetFileName().c_str()))
     sif->Load();
 
-  SettingsWindow* dialog = new SettingsWindow(path, std::move(real_serial), hash, region, dentry, std::move(sif));
+  SettingsWindow* dialog =
+    new SettingsWindow(path, std::move(title), std::move(real_serial), hash, region, dentry, std::move(sif));
   dialog->show();
   if (category)
     dialog->setCategory(category);

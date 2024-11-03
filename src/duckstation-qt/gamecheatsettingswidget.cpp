@@ -11,6 +11,7 @@
 #include "core/cheats.h"
 
 #include "common/error.h"
+#include "common/log.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -19,6 +20,8 @@
 #include <QtGui/QPainter>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QStyledItemDelegate>
+
+LOG_CHANNEL(Cheats);
 
 namespace {
 class CheatListOptionDelegate : public QStyledItemDelegate
@@ -195,6 +198,7 @@ GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget
   connect(m_ui.reloadCheats, &QToolButton::clicked, this, &GameCheatSettingsWidget::onReloadClicked);
   connect(m_ui.importCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onImportClicked);
   connect(m_ui.exportCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onExportClicked);
+  connect(m_ui.clearCheats, &QPushButton::clicked, this, &GameCheatSettingsWidget::onClearClicked);
 }
 
 GameCheatSettingsWidget::~GameCheatSettingsWidget() = default;
@@ -576,6 +580,49 @@ void GameCheatSettingsWidget::onExportClicked()
     QMessageBox::critical(this, tr("Error"),
                           tr("Failed to save cheat file:\n%1").arg(QString::fromStdString(error.GetDescription())));
   }
+}
+
+void GameCheatSettingsWidget::onClearClicked()
+{
+  if (QMessageBox::question(this, tr("Confirm Removal"),
+                            tr("You are removing all cheats manually added for this game. This action cannot be "
+                               "reversed.\n\nAny database cheats will still be loaded and present unless you uncheck "
+                               "the \"Load Database Cheats\" option.\n\nAre you sure you want to continue?")) !=
+      QMessageBox::Yes)
+  {
+    return;
+  }
+
+  disableAllCheats();
+
+  Error error;
+  std::string path = Cheats::GetChtFilename(m_dialog->getGameSerial(), std::nullopt, true);
+  if (FileSystem::FileExists(path.c_str()))
+  {
+    if (!FileSystem::DeleteFile(path.c_str(), &error))
+      ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+  }
+
+  // check for a non-hashed path and remove that too
+  path = Cheats::GetChtFilename(m_dialog->getGameSerial(), m_dialog->getGameHash(), true);
+  if (FileSystem::FileExists(path.c_str()))
+  {
+    if (!FileSystem::DeleteFile(path.c_str(), &error))
+      ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+  }
+
+  // and a legacy cht file with the game title
+  if (const std::string& title = m_dialog->getGameTitle(); !title.empty())
+  {
+    path = Path::Combine(EmuFolders::Cheats, Path::SanitizeFileName(title));
+    if (FileSystem::FileExists(path.c_str()))
+    {
+      if (!FileSystem::DeleteFile(path.c_str(), &error))
+        ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+    }
+  }
+
+  reloadList();
 }
 
 QTreeWidgetItem* GameCheatSettingsWidget::getTreeWidgetParent(const std::string_view parent)

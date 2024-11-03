@@ -55,6 +55,7 @@ private Q_SLOTS:
   void onImportFromFileTriggered();
   void onImportFromTextTriggered();
   void onExportClicked();
+  void onClearClicked();
   void reloadList();
 
 private:
