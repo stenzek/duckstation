@@ -345,7 +345,7 @@ void GameCheatSettingsWidget::checkForMasterDisable()
   if (m_dialog->getSettingsInterface()->GetBoolValue("Cheats", "EnableCheats", false) || m_master_enable_ignored)
     return;
 
-  QMessageBox mbox;
+  QMessageBox mbox(this);
   mbox.setIcon(QMessageBox::Warning);
   mbox.setWindowTitle(tr("Confirm Cheat Enable"));
   mbox.setWindowIcon(QtHost::GetAppIcon());
@@ -626,7 +626,7 @@ void GameCheatSettingsWidget::onClearClicked()
   disableAllCheats();
 
   Error error;
-  std::string path = Cheats::GetChtFilename(m_dialog->getGameSerial(), std::nullopt, true);
+  std::string path = Cheats::GetChtFilename(m_dialog->getGameSerial(), m_dialog->getGameHash(), true);
   if (FileSystem::FileExists(path.c_str()))
   {
     if (!FileSystem::DeleteFile(path.c_str(), &error))
@@ -634,7 +634,7 @@ void GameCheatSettingsWidget::onClearClicked()
   }
 
   // check for a non-hashed path and remove that too
-  path = Cheats::GetChtFilename(m_dialog->getGameSerial(), m_dialog->getGameHash(), true);
+  path = Cheats::GetChtFilename(m_dialog->getGameSerial(), std::nullopt, true);
   if (FileSystem::FileExists(path.c_str()))
   {
     if (!FileSystem::DeleteFile(path.c_str(), &error))
@@ -644,7 +644,7 @@ void GameCheatSettingsWidget::onClearClicked()
   // and a legacy cht file with the game title
   if (const std::string& title = m_dialog->getGameTitle(); !title.empty())
   {
-    path = Path::Combine(EmuFolders::Cheats, Path::SanitizeFileName(title));
+    path = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.cht", EmuFolders::Cheats, Path::SanitizeFileName(title));
     if (FileSystem::FileExists(path.c_str()))
     {
       if (!FileSystem::DeleteFile(path.c_str(), &error))
