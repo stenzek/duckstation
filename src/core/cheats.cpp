@@ -1666,8 +1666,10 @@ bool Cheats::ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_cont
         return false;
     }
 
-    current_code.body =
-      std::string_view(file_contents).substr(current_code.file_offset_body_start, current_code.file_offset_end);
+    current_code.body = std::string_view(file_contents)
+                          .substr(current_code.file_offset_body_start,
+                                  current_code.file_offset_end - current_code.file_offset_body_start);
+    StringUtil::StripWhitespace(&current_code.body);
 
     AppendCheatToList(dst, std::move(current_code));
     return true;
@@ -1699,7 +1701,7 @@ bool Cheats::ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_cont
       // new code.
       current_code = CodeInfo();
       current_code.name = linev.substr(1);
-      current_code.file_offset_start = static_cast<u32>(reader.GetCurrentLineOffset());
+      current_code.file_offset_start = static_cast<u32>(reader.GetCurrentOffset());
       current_code.file_offset_end = current_code.file_offset_start;
       current_code.file_offset_body_start = current_code.file_offset_start;
       current_code.type = CodeType::Gameshark;
