@@ -60,6 +60,7 @@ private Q_SLOTS:
 
 private:
   bool shouldLoadFromDatabase() const;
+  void checkForMasterDisable();
 
   Cheats::CodeInfo* getSelectedCode();
   QTreeWidgetItem* getTreeWidgetParent(const std::string_view parent);
@@ -78,6 +79,8 @@ private:
   UnorderedStringMap<QTreeWidgetItem*> m_parent_map;
   Cheats::CodeInfoList m_codes;
   std::vector<std::string> m_enabled_codes;
+
+  bool m_master_enable_ignored = false;
 };
 
 class CheatCodeEditorDialog : public QDialog

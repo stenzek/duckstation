@@ -288,6 +288,9 @@ void GameCheatSettingsWidget::onCheatListItemChanged(QTreeWidgetItem* item, int 
   if (current_enabled == current_checked)
     return;
 
+  if (current_checked)
+    checkForMasterDisable();
+
   setCheatEnabled(std::move(cheat_name), current_checked, true);
 }
 
@@ -335,6 +338,33 @@ void GameCheatSettingsWidget::onReloadClicked()
 bool GameCheatSettingsWidget::shouldLoadFromDatabase() const
 {
   return m_dialog->getSettingsInterface()->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true);
+}
+
+void GameCheatSettingsWidget::checkForMasterDisable()
+{
+  if (m_dialog->getSettingsInterface()->GetBoolValue("Cheats", "EnableCheats", false) || m_master_enable_ignored)
+    return;
+
+  QMessageBox mbox;
+  mbox.setIcon(QMessageBox::Warning);
+  mbox.setWindowTitle(tr("Confirm Cheat Enable"));
+  mbox.setWindowIcon(QtHost::GetAppIcon());
+  mbox.setTextFormat(Qt::RichText);
+  mbox.setText(tr("<h3>Cheats are not currently enabled for this game.</h3><p>Enabling this cheat will not have any "
+                  "effect until cheats are enabled for this game. Do you want to do this now?"));
+
+  mbox.addButton(QMessageBox::Yes);
+  mbox.addButton(QMessageBox::No);
+
+  QCheckBox* cb = new QCheckBox(&mbox);
+  cb->setText(tr("Do not show again"));
+  mbox.setCheckBox(cb);
+
+  const int res = mbox.exec();
+  if (res == QMessageBox::No)
+    m_master_enable_ignored = cb->isChecked();
+  else
+    m_ui.enableCheats->setChecked(true);
 }
 
 Cheats::CodeInfo* GameCheatSettingsWidget::getSelectedCode()
