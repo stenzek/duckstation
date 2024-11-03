@@ -488,8 +488,7 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
     return;
   }
 
-  Cheats::MergeCheatList(&m_codes, std::move(new_codes));
-  if (!Cheats::SaveCodesToFile(getPathForSavingCheats().c_str(), m_codes, &error))
+  if (!Cheats::SaveCodesToFile(getPathForSavingCheats().c_str(), new_codes, &error))
   {
     QMessageBox::critical(this, tr("Error"),
                           tr("Failed to save file:\n%1").arg(QString::fromStdString(error.GetDescription())));

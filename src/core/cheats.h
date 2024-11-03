@@ -116,9 +116,6 @@ extern bool UpdateCodeInFile(const char* path, const std::string_view name, cons
 /// Updates or adds multiple codes to the file, rewriting it.
 extern bool SaveCodesToFile(const char* path, const CodeInfoList& codes, Error* error);
 
-/// Merges two cheat lists, with any duplicates in the new list taking precedence.
-extern void MergeCheatList(CodeInfoList* dst, CodeInfoList src);
-
 /// Returns the path to a new cheat/patch cht for the specified serial and hash.
 extern std::string GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats);
 

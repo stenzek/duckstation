@@ -581,7 +581,7 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
     fmt::format_to(appender, "OptionRange = {}:{}\n", code.option_range_start, code.option_range_end);
   }
 
-  fmt::format_to(appender, "{}\n", code.body);
+  fmt::format_to(appender, "{}\n\n", code.body, code.body.ends_with('\n') ? "\n" : "");
   return std::string(buf.begin(), buf.end());
 }
 
@@ -698,18 +698,6 @@ bool Cheats::SaveCodesToFile(const char* path, const CodeInfoList& codes, Error*
   }
 
   return true;
-}
-
-void Cheats::MergeCheatList(CodeInfoList* dst, CodeInfoList src)
-{
-  for (CodeInfo& code : src)
-  {
-    CodeInfo* existing_code = FindCodeInInfoList(*dst, code.name);
-    if (existing_code)
-      *existing_code = std::move(code);
-    else
-      dst->push_back(std::move(code));
-  }
 }
 
 std::string Cheats::GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats)
