@@ -391,7 +391,39 @@ void Timers::WriteRegister(u32 offset, u32 value)
 
       DEBUG_LOG("Timer {} write mode register 0x{:04X}", timer_index, value);
       cs.mode.bits = (value & WRITE_MASK) | (cs.mode.bits & ~WRITE_MASK);
-      cs.use_external_clock = (cs.mode.clock_source & (timer_index == 2 ? 2 : 1)) != 0;
+
+      // Why is this extra assignment here? MSVC compiler bugs it seems.
+      // Without the copy in the local variable, when compiling with LTCG, it generates:
+      //
+      // 00007FF7BAF721E1 41 C1 EA 08          shr         r10d,8
+      // 00007FF7BAF721E5 41 83 E2 01          and         r10d,1
+      // 00007FF7BAF721E9 0F 95 C0             setne       al
+      //
+      // and without LTCG, or with the copy:
+      //
+      // 00007FF7C1859732 C1 EA 08             shr         edx,8
+      // 00007FF7C1859735 83 FB 02             cmp         ebx,2
+      // 00007FF7C1859738 0F 94 C0             sete        al
+      // 00007FF7C185973B FF C0                inc         eax
+      // 00007FF7C185973D 84 D0                test        al,dl
+      // 00007FF7C185973F 0F 95 C0             setne       al
+      //
+      // In other words, we get:
+      //   use_external_clock = (clock_source & 1) != 0
+      // and
+      //   use_external_clock = (clock_source & ((timer_index == 2) + 1)) != 0
+      //
+      // The entire "timer_index == 2" sub-expression is ignored. Furthermore, the
+      // and r10d, 1; setne al sequence doesn't make sense to me either, since r10d & 1 is going
+      // to always be equal to !ZF...
+      //
+      // I can't seem to make a minimal repro case for it, and if you do _anything_ inbetween
+      // the statements (e.g. printf), it doesn't generate the bad code. But at least this works
+      // around it for now.
+      //
+      const u8 clock_source = cs.mode.clock_source;
+      cs.use_external_clock = (clock_source & (timer_index == 2 ? 2 : 1)) != 0;
+
       cs.counter = 0;
       cs.irq_done = false;
       InterruptController::SetLineState(

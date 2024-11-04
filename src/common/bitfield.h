@@ -2,14 +2,10 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "types.h"
-#include <type_traits>
 
-// Disable MSVC warnings that we actually handle
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4800) // warning C4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
-#endif
+#include "types.h"
+
+#include <type_traits>
 
 template<typename BackingDataType, typename DataType, unsigned BitIndex, unsigned BitCount>
 struct BitField
@@ -138,7 +134,3 @@ struct BitField
 
   BackingDataType data;
 };
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
