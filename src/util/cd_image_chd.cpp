@@ -453,8 +453,9 @@ CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)
   progress->SetProgressRange(100);
 
   auto callback = [](size_t pos, size_t total, void* param) {
-    const u32 percent = static_cast<u32>((pos * 100) / total);
-    static_cast<ProgressCallback*>(param)->SetProgressValue(std::min<u32>(percent, 100));
+    constexpr size_t one_mb = 1048576;
+    static_cast<ProgressCallback*>(param)->SetProgressRange(static_cast<u32>((total + (one_mb - 1)) / one_mb));
+    static_cast<ProgressCallback*>(param)->SetProgressValue(static_cast<u32>((pos + (one_mb - 1)) / one_mb));
   };
 
   if (chd_precache_progress(m_chd, callback, progress) != CHDERR_NONE)
