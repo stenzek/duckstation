@@ -21,7 +21,7 @@ public:
   using const_reference = const T&;
   using pointer = T*;
   using const_pointer = const T*;
-  using this_type = FixedHeapArray<T, SIZE>;
+  using this_type = FixedHeapArray<T, SIZE, ALIGNMENT>;
 
   FixedHeapArray() { allocate(); }
 
@@ -164,7 +164,7 @@ public:
   using const_reference = const T&;
   using pointer = T*;
   using const_pointer = const T*;
-  using this_type = DynamicHeapArray<T>;
+  using this_type = DynamicHeapArray<T, alignment>;
 
   DynamicHeapArray() : m_data(nullptr), m_size(0) {}
   DynamicHeapArray(size_t size) { internal_resize(size, nullptr, 0); }
