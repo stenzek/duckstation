@@ -158,6 +158,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
   DebugAssert((!enable_rov && !enable_framebuffer_fetch && !enable_dual_source_blend) ||
               (enable_rov && !enable_framebuffer_fetch && !enable_dual_source_blend) ||
               (enable_rov && !enable_framebuffer_fetch && !enable_dual_source_blend) ||
+              (!enable_rov && enable_framebuffer_fetch && !enable_dual_source_blend) ||
               (!enable_rov && !enable_framebuffer_fetch && enable_dual_source_blend));
   if (m_shader_language == GPUShaderLanguage::GLSL || m_shader_language == GPUShaderLanguage::GLSLES)
     ss << m_glsl_version_string << "\n\n";
