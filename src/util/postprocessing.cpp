@@ -703,6 +703,9 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
 {
   std::string filename;
   std::optional<std::string> resource_str;
+  Error local_error;
+  if (!error)
+    error = &local_error;
 
   // Try reshade first.
   filename = Path::Combine(
@@ -711,16 +714,25 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
   if (FileSystem::FileExists(filename.c_str()))
   {
     std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
-    if (shader->LoadFromFile(std::string(shader_name), filename.c_str(), only_config, error))
-      return shader;
+    if (!shader->LoadFromFile(shader_name, filename.c_str(), only_config, error))
+    {
+      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+      shader.reset();
+    }
+    return shader;
   }
 
   filename = Path::Combine(EmuFolders::Shaders, fmt::format("{}.glsl", shader_name));
   if (FileSystem::FileExists(filename.c_str()))
   {
     std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();
-    if (shader->LoadFromFile(std::string(shader_name), filename.c_str(), error))
-      return shader;
+    if (!shader->LoadFromFile(shader_name, filename.c_str(), error))
+    {
+      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+      shader.reset();
+    }
+
+    return shader;
   }
 
   filename =
@@ -729,11 +741,13 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
   if (resource_str.has_value())
   {
     std::unique_ptr<ReShadeFXShader> shader = std::make_unique<ReShadeFXShader>();
-    if (shader->LoadFromString(std::string(shader_name), std::move(filename), std::move(resource_str.value()),
-                               only_config, error))
+    if (!shader->LoadFromString(shader_name, std::move(filename), std::move(resource_str.value()), only_config, error))
     {
-      return shader;
+      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+      shader.reset();
     }
+
+    return shader;
   }
 
   filename = fmt::format("shaders" FS_OSPATH_SEPARATOR_STR "{}.glsl", shader_name);
@@ -741,11 +755,16 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
   if (resource_str.has_value())
   {
     std::unique_ptr<GLSLShader> shader = std::make_unique<GLSLShader>();
-    if (shader->LoadFromString(std::string(shader_name), std::move(resource_str.value()), error))
-      return shader;
+    if (!shader->LoadFromString(shader_name, std::move(resource_str.value()), error))
+    {
+      ERROR_LOG("Failed to load shader '{}': {}", shader_name, error->GetDescription());
+      shader.reset();
+    }
+
+    return shader;
   }
 
-  ERROR_LOG("Failed to load shader '{}'", shader_name);
+  Error::SetStringFmt(error, "Failed to locate shader '{}'", shader_name);
   return {};
 }
 
