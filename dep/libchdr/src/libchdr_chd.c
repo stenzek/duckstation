@@ -220,9 +220,9 @@ struct _zlib_codec_data
 typedef struct _lzma_allocator lzma_allocator;
 struct _lzma_allocator
 {
-	void *(*Alloc)(void *p, size_t size);
- 	void (*Free)(void *p, void *address); /* address can be 0 */
-	void (*FreeSz)(void *p, void *address, size_t size); /* address can be 0 */
+	void *(*Alloc)(ISzAllocPtr p, size_t size);
+	void (*Free)(ISzAllocPtr p, void *address); /* address can be 0 */
+	void (*FreeSz)(ISzAllocPtr p, void *address, size_t size); /* address can be 0 */
 	uint32_t*	allocptr[MAX_LZMA_ALLOCS];
 	uint32_t*	allocptr2[MAX_LZMA_ALLOCS];
 };
@@ -429,8 +429,8 @@ static chd_error cdzs_codec_decompress(void *codec, const uint8_t *src, uint32_t
  ***************************************************************************
  */
 
-static void *lzma_fast_alloc(void *p, size_t size);
-static void lzma_fast_free(void *p, void *address);
+static void *lzma_fast_alloc(ISzAllocPtr p, size_t size);
+static void lzma_fast_free(ISzAllocPtr p, void *address);
 
 /*-------------------------------------------------
  *  lzma_allocator_init
@@ -498,7 +498,7 @@ static void lzma_allocator_free_unused(lzma_allocator *codec)
 #define LZMA_MIN_ALIGNMENT_BITS 512
 #define LZMA_MIN_ALIGNMENT_BYTES (LZMA_MIN_ALIGNMENT_BITS / 8)
 
-static void *lzma_fast_alloc(void *p, size_t size)
+static void *lzma_fast_alloc(ISzAllocPtr p, size_t size)
 {
 	int scan;
 	uint32_t *addr        = NULL;
@@ -554,7 +554,7 @@ static void *lzma_fast_alloc(void *p, size_t size)
  *-------------------------------------------------
  */
 
-static void lzma_fast_free(void *p, void *address)
+static void lzma_fast_free(ISzAllocPtr p, void *address)
 {
 	int scan;
 	uint32_t *ptr = NULL;
@@ -1989,7 +1989,7 @@ CHD_EXPORT chd_error chd_open_core_file(core_file *file, int mode, chd_file *par
 				if (codec_interfaces[i].compression == newchd->header.compression[decompnum])
 				{
 					/* ensure we don't try to initialize the same codec twice */
-					for (j = 0; j < i; j++)
+					for (j = 0; j < decompnum; j++)
 					{
 						if (newchd->codecintf[j] == &codec_interfaces[i])
 							EARLY_EXIT(err = CHDERR_UNSUPPORTED_FORMAT);
