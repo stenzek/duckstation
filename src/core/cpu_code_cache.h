@@ -28,6 +28,9 @@ void ProcessShutdown();
 /// Flushes the code cache, forcing all blocks to be recompiled.
 void Reset();
 
+/// Free all non-persistent resources for the code cache.
+void Shutdown();
+
 /// Invalidates all blocks which are in the range of the specified code page.
 void InvalidateBlocksWithPageIndex(u32 page_index);
 

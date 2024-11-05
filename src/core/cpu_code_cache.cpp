@@ -225,6 +225,11 @@ void CPU::CodeCache::Reset()
   }
 }
 
+void CPU::CodeCache::Shutdown()
+{
+  ClearBlocks();
+}
+
 void CPU::CodeCache::Execute()
 {
   if (IsUsingAnyRecompiler())

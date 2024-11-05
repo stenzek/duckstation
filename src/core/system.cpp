@@ -1975,6 +1975,7 @@ void System::DestroySystem()
   CDROM::Shutdown();
   g_gpu.reset();
   DMA::Shutdown();
+  CPU::CodeCache::Shutdown();
   CPU::PGXP::Shutdown();
   CPU::Shutdown();
   Bus::Shutdown();
