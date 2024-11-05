@@ -331,8 +331,25 @@ void AnalogController::ProcessAnalogModeToggle()
     SetAnalogMode(!m_analog_mode, true);
     ResetRumbleConfig();
 
+    // Set status byte to 0 if we were previously in configuration mode, so that the game knows about the mode change.
     if (m_dualshock_enabled)
-      m_status_byte = 0x00;
+    {
+      // However, the problem with doing this unconditionally is that games like Tomb Raider have the loader menu
+      // put the pad into configuration mode, but not analog mode. So if the user toggles analog mode, the status
+      // byte ends up stuck at 0x00. As a workaround, clear out config/dualshock mode when the game isn't flagged
+      // as supporting the dualshock.
+      if (!m_analog_mode && !CanStartInAnalogMode(ControllerType::AnalogController))
+      {
+        WARNING_LOG("Resetting pad on digital->analog switch.");
+        m_configuration_mode = false;
+        m_dualshock_enabled = false;
+        m_status_byte = 0x5A;
+      }
+      else
+      {
+        m_status_byte = 0x00;
+      }
+    }
   }
 }
 
