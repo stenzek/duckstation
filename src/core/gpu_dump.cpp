@@ -111,7 +111,7 @@ bool GPUDump::Recorder::Compress(const std::string& source_path, GPUDumpCompress
       return false;
     }
   }
-  if (mode >= GPUDumpCompressionMode::XZLow && mode <= GPUDumpCompressionMode::XZHigh)
+  else if (mode >= GPUDumpCompressionMode::XZLow && mode <= GPUDumpCompressionMode::XZHigh)
   {
     const int clevel =
       ((mode == GPUDumpCompressionMode::XZLow) ? 3 : ((mode == GPUDumpCompressionMode::ZstHigh) ? 9 : 5));
