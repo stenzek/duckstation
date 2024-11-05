@@ -20,7 +20,7 @@ find_package(lunasvg 2.4.1 REQUIRED)
 find_package(cpuinfo REQUIRED)
 find_package(DiscordRPC 3.4.0 REQUIRED)
 find_package(SoundTouch 2.3.3 REQUIRED)
-find_package(libzip 1.10.1 REQUIRED)
+find_package(libzip 1.11.1 REQUIRED)
 
 if(NOT WIN32)
   find_package(CURL REQUIRED)
@@ -40,7 +40,7 @@ if(ENABLE_WAYLAND)
 endif()
 
 if(BUILD_QT_FRONTEND)
-  find_package(Qt6 6.7.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
+  find_package(Qt6 6.8.0 COMPONENTS Core Gui Widgets LinguistTools REQUIRED)
 endif()
 
 find_package(Shaderc REQUIRED)
