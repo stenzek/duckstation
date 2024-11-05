@@ -2975,7 +2975,6 @@ void GPU::StopRecordingGPUDump()
 
 void GPU::WriteCurrentVideoModeToDump(GPUDump::Recorder* dump) const
 {
-  // display disable
   dump->WriteGP1Command(GP1Command::SetDisplayDisable, BoolToUInt32(m_GPUSTAT.display_disable));
   dump->WriteGP1Command(GP1Command::SetDisplayStartAddress, m_crtc_state.regs.display_address_start);
   dump->WriteGP1Command(GP1Command::SetHorizontalDisplayRange, m_crtc_state.regs.horizontal_display_range);
@@ -2992,6 +2991,24 @@ void GPU::WriteCurrentVideoModeToDump(GPUDump::Recorder* dump) const
   dispmode.horizontal_resolution_2 = m_GPUSTAT.horizontal_resolution_2.GetValue();
   dispmode.reverse_flag = m_GPUSTAT.reverse_flag.GetValue();
   dump->WriteGP1Command(GP1Command::SetDisplayMode, dispmode.bits);
+
+  // texture window/texture page
+  dump->WriteGP0Packet((0xE1u << 24) | ZeroExtend32(m_draw_mode.mode_reg.bits));
+  dump->WriteGP0Packet((0xE2u << 24) | m_draw_mode.texture_window_value);
+
+  // drawing area
+  dump->WriteGP0Packet((0xE3u << 24) | static_cast<u32>(m_drawing_area.left) |
+                       (static_cast<u32>(m_drawing_area.top) << 10));
+  dump->WriteGP0Packet((0xE4u << 24) | static_cast<u32>(m_drawing_area.right) |
+                       (static_cast<u32>(m_drawing_area.bottom) << 10));
+
+  // drawing offset
+  dump->WriteGP0Packet((0xE5u << 24) | (static_cast<u32>(m_drawing_offset.x) & 0x7FFu) |
+                       ((static_cast<u32>(m_drawing_offset.y) & 0x7FFu) << 11));
+
+  // mask bit
+  dump->WriteGP0Packet((0xE6u << 24) | BoolToUInt32(m_GPUSTAT.set_mask_while_drawing) |
+                       (BoolToUInt32(m_GPUSTAT.check_mask_before_draw) << 1));
 }
 
 void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u32> data)
