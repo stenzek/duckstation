@@ -112,6 +112,13 @@ void ReleaseGPUDevice();
 void FrameDone();
 
 namespace Internal {
+
+/// Returns true if the host should use portable mode.
+bool ShouldUsePortableMode();
+
+/// Based on the current configuration, determines what the data directory is.
+std::string ComputeDataDirectory();
+
 /// Retrieves the base settings layer. Must call with lock held.
 SettingsInterface* GetBaseSettingsLayer();
 
@@ -129,5 +136,7 @@ void SetGameSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& 
 
 /// Sets the input profile settings layer. Called by VMManager when the game changes.
 void SetInputSettingsLayer(SettingsInterface* sif, std::unique_lock<std::mutex>& lock);
+
 } // namespace Internal
+
 } // namespace Host

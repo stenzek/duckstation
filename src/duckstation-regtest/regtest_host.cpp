@@ -34,7 +34,7 @@
 #include <csignal>
 #include <cstdio>
 
-LOG_CHANNEL(RegTestHost);
+LOG_CHANNEL(Host);
 
 namespace RegTestHost {
 static bool ParseCommandLineParameters(int argc, char* argv[], std::optional<SystemBootParameters>& autoboot);
@@ -58,19 +58,10 @@ static std::string s_dump_base_directory;
 bool RegTestHost::SetFolders()
 {
   std::string program_path(FileSystem::GetProgramPath());
-  INFO_LOG("Program Path: {}", program_path);
+  DEV_LOG("Program Path: {}", program_path);
 
   EmuFolders::AppRoot = Path::Canonicalize(Path::GetDirectory(program_path));
-  EmuFolders::DataRoot = EmuFolders::AppRoot;
-
-#ifdef __APPLE__
-  static constexpr char MAC_DATA_DIR[] = "Library/Application Support/DuckStation";
-  const char* home_dir = getenv("HOME");
-  if (home_dir)
-    EmuFolders::DataRoot = Path::Combine(home_dir, MAC_DATA_DIR);
-#endif
-
-  // On Windows/Linux, these are in the binary directory.
+  EmuFolders::DataRoot = Host::Internal::ComputeDataDirectory();
   EmuFolders::Resources = Path::Combine(EmuFolders::AppRoot, "resources");
 
   DEV_LOG("AppRoot Directory: {}", EmuFolders::AppRoot);
@@ -84,6 +75,12 @@ bool RegTestHost::SetFolders()
   if (!FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
   {
     ERROR_LOG("Resources directory is missing, your installation is incomplete.");
+    return false;
+  }
+
+  if (EmuFolders::DataRoot.empty() || !FileSystem::EnsureDirectoryExists(EmuFolders::DataRoot.c_str(), false))
+  {
+    ERROR_LOG("Failed to create data directory '{}'", EmuFolders::DataRoot);
     return false;
   }
 
@@ -500,7 +497,10 @@ void RegTestHost::InitializeEarlyConsole()
 {
   const bool was_console_enabled = Log::IsConsoleOutputEnabled();
   if (!was_console_enabled)
+  {
     Log::SetConsoleOutputParams(true);
+    Log::SetLogLevel(Log::Level::Info);
+  }
 }
 
 void RegTestHost::PrintCommandLineVersion()
@@ -723,9 +723,7 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
     EmuFolders::DataRoot = std::move(dump_directory);
     s_base_settings_interface->SetBoolValue("Logging", "LogToFile", true);
     s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Dev));
-    g_settings.log_to_file = true;
-    g_settings.log_level = Log::Level::Dev;
-    g_settings.UpdateLogSettings();
+    Settings::UpdateLogConfig(*s_base_settings_interface);
   }
 
   return true;

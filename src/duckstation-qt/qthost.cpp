@@ -71,11 +71,6 @@
 
 LOG_CHANNEL(Host);
 
-#ifdef _WIN32
-#include "common/windows_headers.h"
-#include <ShlObj.h>
-#endif
-
 static constexpr u32 SETTINGS_VERSION = 3;
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
@@ -96,7 +91,6 @@ static bool PerformEarlyHardwareChecks();
 static bool EarlyProcessStartup();
 static void RegisterTypes();
 static bool InitializeConfig(std::string settings_filename);
-static bool ShouldUsePortableMode();
 static void SetAppRoot();
 static void SetResourcesDirectory();
 static bool SetDataDirectory();
@@ -516,13 +510,6 @@ bool QtHost::SetCriticalFolders()
   return true;
 }
 
-bool QtHost::ShouldUsePortableMode()
-{
-  // Check whether portable.ini exists in the program directory.
-  return (FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "portable.txt").c_str()) ||
-          FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "settings.ini").c_str()));
-}
-
 void QtHost::SetAppRoot()
 {
   const std::string program_path = FileSystem::GetProgramPath();
@@ -545,54 +532,11 @@ void QtHost::SetResourcesDirectory()
 bool QtHost::SetDataDirectory()
 {
   // Already set, e.g. by -portable.
-  if (!EmuFolders::DataRoot.empty())
-    return true;
-
-  if (ShouldUsePortableMode())
-  {
-    EmuFolders::DataRoot = EmuFolders::AppRoot;
-    return true;
-  }
-
-#if defined(_WIN32)
-  // On Windows, use My Documents\DuckStation.
-  PWSTR documents_directory;
-  if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
-  {
-    if (std::wcslen(documents_directory) > 0)
-      EmuFolders::DataRoot = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "DuckStation");
-    CoTaskMemFree(documents_directory);
-  }
-#elif defined(__linux__) || defined(__FreeBSD__)
-  // Use $XDG_CONFIG_HOME/duckstation if it exists.
-  const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
-  if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
-  {
-    EmuFolders::DataRoot = Path::RealPath(Path::Combine(xdg_config_home, "duckstation"));
-  }
-  else
-  {
-    // Use ~/.local/share/duckstation otherwise.
-    const char* home_dir = getenv("HOME");
-    if (home_dir)
-    {
-      // ~/.local/share should exist, but just in case it doesn't and this is a fresh profile..
-      const std::string local_dir(Path::Combine(home_dir, ".local"));
-      const std::string share_dir(Path::Combine(local_dir, "share"));
-      FileSystem::EnsureDirectoryExists(local_dir.c_str(), false);
-      FileSystem::EnsureDirectoryExists(share_dir.c_str(), false);
-      EmuFolders::DataRoot = Path::RealPath(Path::Combine(share_dir, "duckstation"));
-    }
-  }
-#elif defined(__APPLE__)
-  static constexpr char MAC_DATA_DIR[] = "Library/Application Support/DuckStation";
-  const char* home_dir = getenv("HOME");
-  if (home_dir)
-    EmuFolders::DataRoot = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
-#endif
+  if (EmuFolders::DataRoot.empty())
+    EmuFolders::DataRoot = Host::Internal::ComputeDataDirectory();
 
   // make sure it exists
-  if (!EmuFolders::DataRoot.empty() && !FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
+  if (!FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
   {
     // we're in trouble if we fail to create this directory... but try to hobble on with portable
     Error error;
@@ -609,10 +553,6 @@ bool QtHost::SetDataDirectory()
       return false;
     }
   }
-
-  // couldn't determine the data directory? fallback to portable.
-  if (EmuFolders::DataRoot.empty())
-    EmuFolders::DataRoot = EmuFolders::AppRoot;
 
   return true;
 }

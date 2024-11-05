@@ -18,6 +18,7 @@
 
 #include "common/assert.h"
 #include "common/error.h"
+#include "common/file_system.h"
 #include "common/layered_settings_interface.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -26,7 +27,13 @@
 #include "fmt/format.h"
 
 #include <cstdarg>
+#include <cstdlib>
 #include <limits>
+
+#ifdef _WIN32
+#include "common/windows_headers.h"
+#include <ShlObj.h>
+#endif
 
 LOG_CHANNEL(Host);
 
@@ -34,6 +41,71 @@ namespace Host {
 static std::mutex s_settings_mutex;
 static LayeredSettingsInterface s_layered_settings_interface;
 } // namespace Host
+
+bool Host::Internal::ShouldUsePortableMode()
+{
+#ifndef __ANDROID__
+  // Check whether portable.ini exists in the program directory.
+  return (FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "portable.txt").c_str()) ||
+          FileSystem::FileExists(Path::Combine(EmuFolders::AppRoot, "settings.ini").c_str()));
+#else
+  return false;
+#endif
+}
+
+std::string Host::Internal::ComputeDataDirectory()
+{
+  std::string ret;
+
+  if (ShouldUsePortableMode())
+  {
+    ret = EmuFolders::AppRoot;
+    return ret;
+  }
+
+#if defined(_WIN32)
+  // On Windows, use My Documents\DuckStation.
+  PWSTR documents_directory;
+  if (SUCCEEDED(SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, &documents_directory)))
+  {
+    if (std::wcslen(documents_directory) > 0)
+      ret = Path::Combine(StringUtil::WideStringToUTF8String(documents_directory), "DuckStation");
+    CoTaskMemFree(documents_directory);
+  }
+#elif (defined(__linux__) || defined(__FreeBSD__)) && !defined(__ANDROID__)
+  // Use $XDG_CONFIG_HOME/duckstation if it exists.
+  const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+  if (xdg_config_home && Path::IsAbsolute(xdg_config_home))
+  {
+    ret = Path::RealPath(Path::Combine(xdg_config_home, "duckstation"));
+  }
+  else
+  {
+    // Use ~/.local/share/duckstation otherwise.
+    const char* home_dir = getenv("HOME");
+    if (home_dir)
+    {
+      // ~/.local/share should exist, but just in case it doesn't and this is a fresh profile..
+      const std::string local_dir(Path::Combine(home_dir, ".local"));
+      const std::string share_dir(Path::Combine(local_dir, "share"));
+      FileSystem::EnsureDirectoryExists(local_dir.c_str(), false);
+      FileSystem::EnsureDirectoryExists(share_dir.c_str(), false);
+      ret = Path::RealPath(Path::Combine(share_dir, "duckstation"));
+    }
+  }
+#elif defined(__APPLE__)
+  static constexpr char MAC_DATA_DIR[] = "Library/Application Support/DuckStation";
+  const char* home_dir = getenv("HOME");
+  if (home_dir)
+    ret = Path::RealPath(Path::Combine(home_dir, MAC_DATA_DIR));
+#endif
+
+  // Couldn't find anything? Fall back to portable.
+  if (ret.empty())
+    ret = EmuFolders::AppRoot;
+
+  return ret;
+}
 
 std::unique_lock<std::mutex> Host::GetSettingsLock()
 {

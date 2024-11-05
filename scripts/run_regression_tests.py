@@ -26,8 +26,9 @@ def run_regression_test(runner, destdir, dump_interval, frames, renderer, cargs,
     args += cargs
     args += ["--", gamepath]
 
-    print("Running '%s'" % (" ".join(args)))
+    #print("Running '%s'" % (" ".join(args)))
     subprocess.run(args)
+    return os.path.basename(gamepath)
 
 
 def run_regression_tests(runner, gamedir, destdir, dump_interval, frames, parallel, renderer, cargs):
@@ -50,6 +51,11 @@ def run_regression_tests(runner, gamedir, destdir, dump_interval, frames, parall
         print("Processing %u games on %u processors" % (len(gamepaths), parallel))
         func = partial(run_regression_test, runner, destdir, dump_interval, frames, renderer, cargs)
         pool = multiprocessing.Pool(parallel)
+        completed = 0
+        for filename in pool.imap_unordered(func, gamepaths, chunksize=1):
+            completed += 1
+            print("[%u%% %u/%u] %s" % ((completed * 100) // len(gamepaths), completed, len(gamepaths), filename))
+
         pool.map(func, gamepaths, chunksize=1)
         pool.close()
 
