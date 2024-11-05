@@ -776,9 +776,12 @@ void EmuThread::startFullscreenUI()
   m_is_rendering_to_main = shouldRenderToMain();
   m_run_fullscreen_ui = true;
 
+  // borrow the game start fullscreen flag
+  const bool start_fullscreen =
+    (s_start_fullscreen_ui_fullscreen || Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
+
   Error error;
-  if (!Host::CreateGPUDevice(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer),
-                             s_start_fullscreen_ui_fullscreen, &error) ||
+  if (!Host::CreateGPUDevice(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer), start_fullscreen, &error) ||
       !FullscreenUI::Initialize())
   {
     Host::ReportErrorAsync("Error", error.GetDescription());
