@@ -3,6 +3,7 @@
   <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
   <ItemGroup>
     <ClInclude Include="compress_helpers.h" />
+    <ClInclude Include="elf_file.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="imgui_animated.h" />
     <ClInclude Include="audio_stream.h" />
@@ -131,6 +132,7 @@
     <ClCompile Include="d3d12_texture.cpp" />
     <ClCompile Include="d3d_common.cpp" />
     <ClCompile Include="dinput_source.cpp" />
+    <ClCompile Include="elf_file.cpp" />
     <ClCompile Include="gpu_device.cpp" />
     <ClCompile Include="gpu_shader_cache.cpp" />
     <ClCompile Include="gpu_texture.cpp" />

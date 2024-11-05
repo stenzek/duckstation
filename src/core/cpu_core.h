@@ -185,6 +185,7 @@ bool SafeWriteMemoryHalfWord(VirtualMemoryAddress addr, u16 value);
 bool SafeWriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 bool SafeWriteMemoryBytes(VirtualMemoryAddress addr, const void* data, u32 length);
 bool SafeWriteMemoryBytes(VirtualMemoryAddress addr, const std::span<const u8> data);
+bool SafeZeroMemoryBytes(VirtualMemoryAddress addr, u32 length);
 
 // External IRQs
 void SetIRQRequest(bool state);

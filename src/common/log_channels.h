@@ -22,6 +22,7 @@
   X(DInputSource)                                                                                                      \
   X(DMA)                                                                                                               \
   X(DynamicLibrary)                                                                                                    \
+  X(FileLoader)                                                                                                        \
   X(FileSystem)                                                                                                        \
   X(FullscreenUI)                                                                                                      \
   X(GDBProtocol)                                                                                                       \
@@ -55,7 +56,6 @@
   X(Multitap)                                                                                                          \
   X(NeGconRumble)                                                                                                      \
   X(PCDrv)                                                                                                             \
-  X(PSFLoader)                                                                                                         \
   X(Pad)                                                                                                               \
   X(PerfMon)                                                                                                           \
   X(PlatformMisc)                                                                                                      \

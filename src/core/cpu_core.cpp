@@ -3212,6 +3212,47 @@ bool CPU::SafeWriteMemoryBytes(VirtualMemoryAddress addr, const std::span<const 
   return SafeWriteMemoryBytes(addr, data.data(), static_cast<u32>(data.size()));
 }
 
+bool CPU::SafeZeroMemoryBytes(VirtualMemoryAddress addr, u32 length)
+{
+  using namespace Bus;
+
+  const u32 seg = (addr >> 29);
+  if ((seg != 0 && seg != 4 && seg != 5) || (((addr + length) & PHYSICAL_MEMORY_ADDRESS_MASK) >= RAM_MIRROR_END) ||
+      (((addr & g_ram_mask) + length) > g_ram_size))
+  {
+    while ((addr & 3u) != 0 && length > 0)
+    {
+      if (!CPU::SafeWriteMemoryByte(addr, 0)) [[unlikely]]
+        return false;
+
+      addr++;
+      length--;
+    }
+    while (length >= 4)
+    {
+      if (!CPU::SafeWriteMemoryWord(addr, 0)) [[unlikely]]
+        return false;
+
+      addr += 4;
+      length -= 4;
+    }
+    while (length > 0)
+    {
+      if (!CPU::SafeWriteMemoryByte(addr, 0)) [[unlikely]]
+        return false;
+
+      addr++;
+      length--;
+    }
+
+    return true;
+  }
+
+  // Fast path: all in RAM, no wraparound.
+  std::memset(&g_ram[addr & g_ram_mask], 0, length);
+  return true;
+}
+
 void* CPU::GetDirectReadMemoryPointer(VirtualMemoryAddress address, MemoryAccessSize size, TickCount* read_ticks)
 {
   using namespace Bus;

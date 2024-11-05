@@ -23,6 +23,7 @@
 #include "timing_event.h"
 
 #include "util/cd_image.h"
+#include "util/elf_file.h"
 #include "util/state_wrapper.h"
 
 #include "common/align.h"
@@ -170,6 +171,7 @@ static void SetRAMPageWritable(u32 page_index, bool writable);
 static void KernelInitializedHook();
 static bool SideloadEXE(const std::string& path, Error* error);
 static bool InjectCPE(std::span<const u8> buffer, bool set_pc, Error* error);
+static bool InjectELF(const ELFFile& elf, bool set_pc, Error* error);
 
 static void SetHandlers();
 static void UpdateMappedRAMSize();
@@ -972,15 +974,12 @@ bool Bus::InjectExecutable(std::span<const u8> buffer, bool set_pc, Error* error
     return false;
   }
 
-  if (header.memfill_size > 0)
+  if (header.memfill_size > 0 &&
+      !CPU::SafeZeroMemoryBytes(header.memfill_start & ~UINT32_C(3), Common::AlignDownPow2(header.memfill_size, 4)))
   {
-    const u32 words_to_write = header.memfill_size / 4;
-    u32 address = header.memfill_start & ~UINT32_C(3);
-    for (u32 i = 0; i < words_to_write; i++)
-    {
-      CPU::SafeWriteMemoryWord(address, 0);
-      address += sizeof(u32);
-    }
+    Error::SetStringFmt(error, "Failed to zero {} bytes of memory at address 0x{:08X}.", header.memfill_start,
+                        header.memfill_size);
+    return false;
   }
 
   const u32 data_load_size =
@@ -1145,6 +1144,34 @@ bool Bus::InjectCPE(std::span<const u8> buffer, bool set_pc, Error* error)
   return true;
 }
 
+bool Bus::InjectELF(const ELFFile& elf, bool set_pc, Error* error)
+{
+  const bool okay = elf.LoadExecutableSections(
+    [](std::span<const u8> data, u32 dest_addr, u32 dest_size, Error* error) {
+      if (!data.empty() && !CPU::SafeWriteMemoryBytes(dest_addr, data))
+      {
+        Error::SetStringFmt(error, "Failed to load {} bytes to 0x{:08X}", data.size(), dest_addr);
+        return false;
+      }
+
+      const u32 zero_addr = dest_addr + static_cast<u32>(data.size());
+      const u32 zero_bytes = dest_size - static_cast<u32>(data.size());
+      if (zero_bytes > 0 && !CPU::SafeZeroMemoryBytes(zero_addr, zero_bytes))
+      {
+        Error::SetStringFmt(error, "Failed to zero {} bytes at 0x{:08X}", zero_bytes, zero_addr);
+        return false;
+      }
+
+      return true;
+    },
+    error);
+
+  if (okay && set_pc)
+    CPU::SetPC(elf.GetEntryPoint());
+
+  return okay;
+}
+
 void Bus::KernelInitializedHook()
 {
   if (s_kernel_initialize_hook_run)
@@ -1179,8 +1206,7 @@ void Bus::KernelInitializedHook()
 
 bool Bus::SideloadEXE(const std::string& path, Error* error)
 {
-  const std::optional<DynamicHeapArray<u8>> exe_data =
-    FileSystem::ReadBinaryFile(System::GetExeOverride().c_str(), error);
+  std::optional<DynamicHeapArray<u8>> exe_data = FileSystem::ReadBinaryFile(path.c_str(), error);
   if (!exe_data.has_value())
   {
     Error::AddPrefixFmt(error, "Failed to read {}: ", Path::GetFileName(path));
@@ -1194,6 +1220,14 @@ bool Bus::SideloadEXE(const std::string& path, Error* error)
   if (StringUtil::EndsWithNoCase(filename, ".cpe"))
   {
     okay = InjectCPE(exe_data->cspan(), true, error);
+  }
+  else if (StringUtil::EndsWithNoCase(filename, ".elf"))
+  {
+    ELFFile elf;
+    if (!elf.Open(std::move(exe_data.value()), error))
+      return false;
+
+    okay = InjectELF(elf, true, error);
   }
   else
   {

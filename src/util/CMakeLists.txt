@@ -19,6 +19,8 @@ add_library(util
   compress_helpers.h
   cue_parser.cpp
   cue_parser.h
+  elf_file.cpp
+  elf_file.h
   gpu_device.cpp
   gpu_device.h
   gpu_framebuffer_manager.h
