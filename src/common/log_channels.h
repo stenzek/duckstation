@@ -78,7 +78,6 @@
   X(Timers)                                                                                                            \
   X(TimingEvents)                                                                                                      \
   X(Ungrouped)                                                                                                         \
-  X(WAVWriter)                                                                                                         \
   X(Win32RawInputSource)                                                                                               \
   X(WindowInfo)                                                                                                        \
   X(XInputSource)

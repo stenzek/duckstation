@@ -67,8 +67,8 @@ add_library(util
   sockets.h
   state_wrapper.cpp
   state_wrapper.h
-  wav_writer.cpp
-  wav_writer.h
+  wav_reader_writer.cpp
+  wav_reader_writer.h
   window_info.cpp
   window_info.h
 )

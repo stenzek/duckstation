@@ -14,7 +14,7 @@
 #include "util/imgui_manager.h"
 #include "util/media_capture.h"
 #include "util/state_wrapper.h"
-#include "util/wav_writer.h"
+#include "util/wav_reader_writer.h"
 
 #include "common/bitfield.h"
 #include "common/bitutils.h"

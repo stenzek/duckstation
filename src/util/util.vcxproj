@@ -98,7 +98,7 @@
     <ClInclude Include="vulkan_stream_buffer.h" />
     <ClInclude Include="vulkan_swap_chain.h" />
     <ClInclude Include="vulkan_texture.h" />
-    <ClInclude Include="wav_writer.h" />
+    <ClInclude Include="wav_reader_writer.h" />
     <ClInclude Include="win32_raw_input_source.h" />
     <ClInclude Include="window_info.h" />
     <ClInclude Include="xinput_source.h" />
@@ -199,7 +199,7 @@
     <ClCompile Include="vulkan_stream_buffer.cpp" />
     <ClCompile Include="vulkan_swap_chain.cpp" />
     <ClCompile Include="vulkan_texture.cpp" />
-    <ClCompile Include="wav_writer.cpp" />
+    <ClCompile Include="wav_reader_writer.cpp" />
     <ClCompile Include="win32_raw_input_source.cpp" />
     <ClCompile Include="window_info.cpp" />
     <ClCompile Include="xinput_source.cpp" />
