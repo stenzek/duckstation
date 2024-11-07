@@ -1979,22 +1979,16 @@ CHD_EXPORT chd_error chd_open_core_file(core_file *file, int mode, chd_file *par
 	}
 	else
 	{
-		int decompnum;
+		int decompnum, needsinit;
+
 		/* verify the compression types and initialize the codecs */
 		for (decompnum = 0; decompnum < ARRAY_LENGTH(newchd->header.compression); decompnum++)
 		{
-			int i, j;
+			int i;
 			for (i = 0 ; i < ARRAY_LENGTH(codec_interfaces) ; i++)
 			{
 				if (codec_interfaces[i].compression == newchd->header.compression[decompnum])
 				{
-					/* ensure we don't try to initialize the same codec twice */
-					for (j = 0; j < decompnum; j++)
-					{
-						if (newchd->codecintf[j] == &codec_interfaces[i])
-							EARLY_EXIT(err = CHDERR_UNSUPPORTED_FORMAT);
-					}
-
 					newchd->codecintf[decompnum] = &codec_interfaces[i];
 					break;
 				}
@@ -2003,8 +1997,21 @@ CHD_EXPORT chd_error chd_open_core_file(core_file *file, int mode, chd_file *par
 			if (newchd->codecintf[decompnum] == NULL && newchd->header.compression[decompnum] != 0)
 				EARLY_EXIT(err = CHDERR_UNSUPPORTED_FORMAT);
 
+			/* ensure we don't try to initialize the same codec twice */
+			/* this is "normal" for chds where the user overrides the codecs, it'll have none repeated */
+			needsinit = (newchd->codecintf[decompnum]->init != NULL);
+			for (i = 0; i < decompnum; i++)
+			{
+				if (newchd->codecintf[decompnum] == newchd->codecintf[i])
+				{
+					/* already initialized */
+					needsinit = 0;
+					break;
+				}
+      }
+
 			/* initialize the codec */
-			if (newchd->codecintf[decompnum]->init != NULL)
+			if (needsinit)
 			{
 				void* codec = NULL;
 				switch (newchd->header.compression[decompnum])
@@ -2189,8 +2196,22 @@ CHD_EXPORT void chd_close(chd_file *chd)
 		for (i = 0 ; i < ARRAY_LENGTH(chd->codecintf); i++)
 		{
 			void* codec = NULL;
+			int j, needsfree;
 
 			if (chd->codecintf[i] == NULL)
+				continue;
+
+			/* only free each codec at max once */
+			needsfree = 1;
+			for (j = 0; j < i; j++)
+			{
+				if (chd->codecintf[i] == chd->codecintf[j])
+				{
+					needsfree = 0;
+					break;
+				}
+			}
+			if (!needsfree)
 				continue;
 
 			switch (chd->codecintf[i]->compression)
