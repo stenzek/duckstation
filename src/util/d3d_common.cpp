@@ -99,12 +99,15 @@ D3D_FEATURE_LEVEL D3DCommon::GetDeviceMaxFeatureLevel(IDXGIAdapter1* adapter)
     D3D_FEATURE_LEVEL_12_2, D3D_FEATURE_LEVEL_12_1, D3D_FEATURE_LEVEL_12_0, D3D_FEATURE_LEVEL_11_1,
     D3D_FEATURE_LEVEL_11_0, D3D_FEATURE_LEVEL_10_1, D3D_FEATURE_LEVEL_10_0};
 
-  D3D_FEATURE_LEVEL max_supported_level = requested_feature_levels.back();
+  D3D_FEATURE_LEVEL max_supported_level;
   HRESULT hr = D3D11CreateDevice(adapter, adapter ? D3D_DRIVER_TYPE_UNKNOWN : D3D_DRIVER_TYPE_HARDWARE, nullptr, 0,
                                  requested_feature_levels.data(), static_cast<UINT>(requested_feature_levels.size()),
                                  D3D11_SDK_VERSION, nullptr, &max_supported_level, nullptr);
   if (FAILED(hr))
+  {
     WARNING_LOG("D3D11CreateDevice() for getting max feature level failed: 0x{:08X}", static_cast<unsigned>(hr));
+    max_supported_level = requested_feature_levels.back();
+  }
 
   return max_supported_level;
 }

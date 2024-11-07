@@ -96,6 +96,9 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
     return false;
   }
 
+  // just in case the max query failed, apparently happens for some people...
+  m_max_feature_level = std::max(m_max_feature_level, m_device->GetFeatureLevel());
+
   // we re-grab these later, see below
   dxgi_adapter.Reset();
   temp_context.Reset();
