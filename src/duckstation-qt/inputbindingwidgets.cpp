@@ -199,7 +199,7 @@ bool InputBindingWidget::event(QEvent* event)
 
 void InputBindingWidget::mouseReleaseEvent(QMouseEvent* e)
 {
-  if (e->button() == Qt::RightButton)
+  if (!isListeningForInput() && e->button() == Qt::RightButton)
   {
     clearBinding();
     return;
