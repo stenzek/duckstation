@@ -229,6 +229,4 @@ void OpenGLContextAGL::UpdateSurfaceSize(WindowInfo& wi, NSOpenGLContext* contex
     block();
   else
     dispatch_sync(dispatch_get_main_queue(), block);
-
-  return true;
 }
