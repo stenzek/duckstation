@@ -319,7 +319,7 @@ bool DisplayWidget::event(QEvent* event)
       if (event->type() == QEvent::MouseButtonDblClick &&
           static_cast<const QMouseEvent*>(event)->button() == Qt::LeftButton && QtHost::IsSystemValid() &&
           !FullscreenUI::HasActiveWindow() &&
-          ((!QtHost::IsSystemPaused() &&
+          ((!QtHost::IsSystemPaused() && !m_relative_mouse_enabled &&
             !InputManager::HasAnyBindingsForKey(InputManager::MakePointerButtonKey(0, 0))) ||
            (QtHost::IsSystemPaused() && !ImGuiManager::WantsMouseInput())) &&
           Host::GetBoolSettingValue("Main", "DoubleClickTogglesFullscreen", true))
