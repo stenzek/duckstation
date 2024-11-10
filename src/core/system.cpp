@@ -1256,21 +1256,38 @@ void System::HandleHostGPUDeviceLost()
   }
   s_last_gpu_reset_time = current_time;
 
-  // Little bit janky, but because the device is lost, the VRAM readback is going to give us garbage.
-  // So back up what we have, it's probably missing bits, but whatever...
-  DynamicHeapArray<u8> vram_backup(VRAM_SIZE);
-  std::memcpy(vram_backup.data(), g_vram, VRAM_SIZE);
-
-  // Device lost, something went really bad.
-  // Let's just toss out everything, and try to hobble on.
-  if (!RecreateGPU(g_gpu->IsHardwareRenderer() ? g_settings.gpu_renderer : GPURenderer::Software, true, false))
+  if (g_gpu)
   {
-    Panic("Failed to recreate GS device after loss.");
-    return;
-  }
+    // Little bit janky, but because the device is lost, the VRAM readback is going to give us garbage.
+    // So back up what we have, it's probably missing bits, but whatever...
+    DynamicHeapArray<u8> vram_backup(VRAM_SIZE);
+    std::memcpy(vram_backup.data(), g_vram, VRAM_SIZE);
 
-  // Restore backed-up VRAM.
-  std::memcpy(g_vram, vram_backup.data(), VRAM_SIZE);
+    // Device lost, something went really bad.
+    // Let's just toss out everything, and try to hobble on.
+    if (!RecreateGPU(g_gpu->IsHardwareRenderer() ? g_settings.gpu_renderer : GPURenderer::Software, true, false))
+    {
+      Panic("Failed to recreate GPU device after loss.");
+      return;
+    }
+
+    // Restore backed-up VRAM.
+    std::memcpy(g_vram, vram_backup.data(), VRAM_SIZE);
+  }
+  else
+  {
+    // Only big picture mode was running.
+    const bool fsui_running = FullscreenUI::IsInitialized();
+    const bool fullscreen = Host::IsFullscreen();
+    const RenderAPI api = g_gpu_device->GetRenderAPI();
+    Host::ReleaseGPUDevice();
+    Host::ReleaseRenderWindow();
+    if (!Host::CreateGPUDevice(api, fullscreen, nullptr) || (fsui_running && !FullscreenUI::Initialize()))
+    {
+      Panic("Failed to recreate GPU device after loss.");
+      return;
+    }
+  }
 
   // First frame after reopening is definitely going to be trash, so skip it.
   Host::AddIconOSDWarning(
