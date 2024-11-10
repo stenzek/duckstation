@@ -123,10 +123,21 @@ bool OpenGLContextEGL::Initialize(WindowInfo& wi, SurfaceHandle* surface, std::s
   if (!GLAD_EGL_KHR_surfaceless_context)
     WARNING_LOG("EGL implementation does not support surfaceless contexts, emulating with pbuffers");
 
+  Error context_error;
   for (const Version& cv : versions_to_try)
   {
-    if (CreateContextAndSurface(wi, surface, cv, nullptr, true, error))
+    if (CreateContextAndSurface(wi, surface, cv, nullptr, true, &context_error))
+    {
       return true;
+    }
+    else
+    {
+      WARNING_LOG("Failed to create {}.{} ({}) context: {}", cv.major_version, cv.minor_version,
+                  cv.profile == OpenGLContext::Profile::ES ?
+                    "ES" :
+                    (cv.profile == OpenGLContext::Profile::Core ? "Core" : "None"),
+                  context_error.GetDescription());
+    }
   }
 
   Error::SetStringView(error, "Failed to create any context versions");
