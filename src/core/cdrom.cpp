@@ -1670,7 +1670,7 @@ TickCount CDROM::GetTicksForTOCRead()
 
 CDImage::LBA CDROM::GetNextSectorToBeRead()
 {
-  if (!IsReadingOrPlaying())
+  if (!IsReadingOrPlaying() && !IsSeeking())
     return s_state.current_lba;
 
   s_reader.WaitForReadToComplete();
