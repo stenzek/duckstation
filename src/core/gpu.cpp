@@ -45,8 +45,13 @@ LOG_CHANNEL(GPU);
 std::unique_ptr<GPU> g_gpu;
 
 // aligning VRAM to 4K is fine, since the ARM64 instructions compute 4K page aligned addresses
-// TOOD: REMOVE ME
-alignas(4096) u16 g_vram[VRAM_SIZE / sizeof(u16)];
+// or it would be, except we want to import the memory for readbacks on metal..
+#ifdef DYNAMIC_HOST_PAGE_SIZE
+#define VRAM_STORAGE_ALIGNMENT MIN_HOST_PAGE_SIZE
+#else
+#define VRAM_STORAGE_ALIGNMENT HOST_PAGE_SIZE
+#endif
+alignas(VRAM_STORAGE_ALIGNMENT) u16 g_vram[VRAM_SIZE / sizeof(u16)];
 u16 g_gpu_clut[GPU_CLUT_SIZE];
 
 const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
