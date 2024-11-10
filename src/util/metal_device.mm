@@ -1290,6 +1290,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
       }
 
       map_ptr = static_cast<u8*>(memory);
+      memory_offset = page_offset;
     }
 
     return std::unique_ptr<MetalDownloadTexture>(new MetalDownloadTexture(
