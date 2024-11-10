@@ -1266,6 +1266,16 @@ void VulkanDevice::WaitForFenceCounter(u64 fence_counter)
   WaitForCommandBufferCompletion(index);
 }
 
+void VulkanDevice::WaitForAllFences()
+{
+  u32 index = (m_current_frame + 1) % NUM_COMMAND_BUFFERS;
+  for (u32 i = 0; i < (NUM_COMMAND_BUFFERS - 1); i++)
+  {
+    WaitForCommandBufferCompletion(index);
+    index = (index + 1) % NUM_COMMAND_BUFFERS;
+  }
+}
+
 float VulkanDevice::GetAndResetAccumulatedGPUTime()
 {
   const float time = m_accumulated_gpu_time;
@@ -1418,6 +1428,8 @@ void VulkanDevice::EndAndSubmitCommandBuffer(VulkanSwapChain* present_swap_chain
     return;
   }
 
+  BeginCommandBuffer((m_current_frame + 1) % NUM_COMMAND_BUFFERS);
+
   if (present_swap_chain && !explicit_present)
     QueuePresent(present_swap_chain);
 }
@@ -1436,32 +1448,20 @@ void VulkanDevice::QueuePresent(VulkanSwapChain* present_swap_chain)
   present_swap_chain->ResetImageAcquireResult();
 
   const VkResult res = vkQueuePresentKHR(m_present_queue, &present_info);
-  if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
+  if (res != VK_SUCCESS)
   {
-    // VK_ERROR_OUT_OF_DATE_KHR is not fatal, just means we need to recreate our swap chain.
-    if (res == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-      Error error;
-      if (!present_swap_chain->ResizeBuffers(0, 0, present_swap_chain->GetScale(), &error)) [[unlikely]]
-        WARNING_LOG("Failed to reszie swap chain: {}", error.GetDescription());
-    }
-    else
+    VkResult handled_res = res;
+    if (!present_swap_chain->HandleAcquireOrPresentError(handled_res, true))
     {
       LOG_VULKAN_ERROR(res, "vkQueuePresentKHR failed: ");
+      return;
     }
-
-    return;
   }
 
   // Grab the next image as soon as possible, that way we spend less time blocked on the next
   // submission. Don't care if it fails, we'll deal with that at the presentation call site.
   // Credit to dxvk for the idea.
-  present_swap_chain->AcquireNextImage();
-}
-
-void VulkanDevice::MoveToNextCommandBuffer()
-{
-  BeginCommandBuffer((m_current_frame + 1) % NUM_COMMAND_BUFFERS);
+  present_swap_chain->AcquireNextImage(false);
 }
 
 void VulkanDevice::BeginCommandBuffer(u32 index)
@@ -1521,7 +1521,6 @@ void VulkanDevice::SubmitCommandBuffer(bool wait_for_completion)
 
   const u32 current_frame = m_current_frame;
   EndAndSubmitCommandBuffer(nullptr, false);
-  MoveToNextCommandBuffer();
 
   if (wait_for_completion)
     WaitForCommandBufferCompletion(current_frame);
@@ -2281,40 +2280,16 @@ GPUDevice::PresentResult VulkanDevice::BeginPresent(GPUSwapChain* swap_chain, u3
     return PresentResult::DeviceLost;
 
   VulkanSwapChain* const SC = static_cast<VulkanSwapChain*>(swap_chain);
-  VkResult res = SC->AcquireNextImage();
-  if (res != VK_SUCCESS)
+  VkResult res = SC->AcquireNextImage(true);
+
+  // This can happen when multiple resize events happen in quick succession.
+  // In this case, just wait until the next frame to try again.
+  if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
   {
-    LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
-    SC->ReleaseCurrentImage();
-
-    if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-      Error error;
-      if (!SC->ResizeBuffers(0, 0, SC->GetScale(), &error)) [[unlikely]]
-        WARNING_LOG("Failed to resize buffers: {}", error.GetDescription());
-      else
-        res = SC->AcquireNextImage();
-    }
-    else if (res == VK_ERROR_SURFACE_LOST_KHR)
-    {
-      WARNING_LOG("Surface lost, attempting to recreate");
-
-      Error error;
-      if (!SC->RecreateSurface(&error))
-        ERROR_LOG("Failed to recreate surface after loss: {}", error.GetDescription());
-      else
-        res = SC->AcquireNextImage();
-    }
-
-    // This can happen when multiple resize events happen in quick succession.
-    // In this case, just wait until the next frame to try again.
-    if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR)
-    {
-      // Still submit the command buffer, otherwise we'll end up with several frames waiting.
-      SubmitCommandBuffer(false);
-      TrimTexturePool();
-      return PresentResult::SkipPresent;
-    }
+    // Still submit the command buffer, otherwise we'll end up with several frames waiting.
+    SubmitCommandBuffer(false);
+    TrimTexturePool();
+    return PresentResult::SkipPresent;
   }
 
   BeginSwapChainRenderPass(SC, clear_color);
@@ -2337,7 +2312,6 @@ void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u
                                                 1, VulkanTexture::Layout::ColorAttachment,
                                                 VulkanTexture::Layout::PresentSrc);
   EndAndSubmitCommandBuffer(SC, explicit_present);
-  MoveToNextCommandBuffer();
   InvalidateCachedState();
   TrimTexturePool();
 }
@@ -2999,7 +2973,7 @@ void VulkanDevice::DestroyPersistentDescriptorSets()
 
 void VulkanDevice::RenderBlankFrame(VulkanSwapChain* swap_chain)
 {
-  VkResult res = swap_chain->AcquireNextImage();
+  VkResult res = swap_chain->AcquireNextImage(true);
   if (res != VK_SUCCESS)
   {
     ERROR_LOG("Failed to acquire image for blank frame present");
@@ -3018,7 +2992,6 @@ void VulkanDevice::RenderBlankFrame(VulkanSwapChain* swap_chain)
                                                 VulkanTexture::Layout::TransferDst, VulkanTexture::Layout::PresentSrc);
 
   EndAndSubmitCommandBuffer(swap_chain, false);
-  MoveToNextCommandBuffer();
 
   InvalidateCachedState();
 }

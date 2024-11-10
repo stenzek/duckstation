@@ -53,11 +53,10 @@ public:
   bool CreateSwapChainImages(VulkanDevice& dev, Error* error);
   void Destroy(VulkanDevice& dev, bool wait_for_idle);
 
-  VkResult AcquireNextImage();
+  VkResult AcquireNextImage(bool handle_errors);
   void ReleaseCurrentImage();
   void ResetImageAcquireResult();
-
-  bool RecreateSurface(Error* error);
+  bool HandleAcquireOrPresentError(VkResult& res, bool is_present_error);
 
   bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
   bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
@@ -74,6 +73,10 @@ private:
   void DestroySwapChainImages();
   void DestroySwapChain();
   void DestroySurface();
+
+  // Assumes the command buffer has been flushed.
+  bool RecreateSurface(VulkanDevice& dev, Error* error);
+  bool RecreateSwapChain(VulkanDevice& dev, Error* error);
 
   struct Image
   {

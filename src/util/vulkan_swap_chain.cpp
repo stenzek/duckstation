@@ -631,10 +631,16 @@ void VulkanSwapChain::DestroySwapChain()
   }
 }
 
-VkResult VulkanSwapChain::AcquireNextImage()
+VkResult VulkanSwapChain::AcquireNextImage(bool handle_errors)
 {
   if (m_image_acquire_result.has_value())
-    return m_image_acquire_result.value();
+  {
+    if (m_image_acquire_result.value() == VK_SUCCESS || !handle_errors ||
+        !HandleAcquireOrPresentError(m_image_acquire_result.value(), false))
+    {
+      return m_image_acquire_result.value();
+    }
+  }
 
   if (!m_swap_chain)
     return VK_ERROR_SURFACE_LOST_KHR;
@@ -642,11 +648,65 @@ VkResult VulkanSwapChain::AcquireNextImage()
   // Use a different semaphore for each image.
   m_current_semaphore = (m_current_semaphore + 1) % static_cast<u32>(m_semaphores.size());
 
-  const VkResult res =
+  VkResult res =
     vkAcquireNextImageKHR(VulkanDevice::GetInstance().GetVulkanDevice(), m_swap_chain, UINT64_MAX,
                           m_semaphores[m_current_semaphore].available_semaphore, VK_NULL_HANDLE, &m_current_image);
+  if (res != VK_SUCCESS && HandleAcquireOrPresentError(res, false))
+  {
+    res =
+      vkAcquireNextImageKHR(VulkanDevice::GetInstance().GetVulkanDevice(), m_swap_chain, UINT64_MAX,
+                            m_semaphores[m_current_semaphore].available_semaphore, VK_NULL_HANDLE, &m_current_image);
+  }
+
+  if (res != VK_SUCCESS)
+    LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR() failed: ");
+
   m_image_acquire_result = res;
   return res;
+}
+
+bool VulkanSwapChain::HandleAcquireOrPresentError(VkResult& res, bool is_present_error)
+{
+  if (res == VK_SUBOPTIMAL_KHR || res == VK_ERROR_OUT_OF_DATE_KHR)
+  {
+    VulkanDevice& dev = VulkanDevice::GetInstance();
+    if (is_present_error)
+      dev.WaitForAllFences();
+    else
+      dev.SubmitCommandBuffer(true);
+
+    Error error;
+    if (!RecreateSwapChain(dev, &error))
+    {
+      DestroySwapChain();
+      ERROR_LOG("Failed to recreate suboptimal swapchain: {}", error.GetDescription());
+      res = VK_ERROR_SURFACE_LOST_KHR;
+      return false;
+    }
+
+    return true;
+  }
+  else if (res == VK_ERROR_SURFACE_LOST_KHR)
+  {
+    VulkanDevice& dev = VulkanDevice::GetInstance();
+    if (is_present_error)
+      dev.WaitForAllFences();
+    else
+      dev.SubmitCommandBuffer(true);
+
+    Error error;
+    if (!RecreateSurface(dev, &error))
+    {
+      DestroySwapChain();
+      ERROR_LOG("Failed to recreate surface: {}", error.GetDescription());
+      res = VK_ERROR_SURFACE_LOST_KHR;
+      return false;
+    }
+
+    return true;
+  }
+
+  return false;
 }
 
 void VulkanSwapChain::ReleaseCurrentImage()
@@ -687,16 +747,52 @@ bool VulkanSwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_sca
     dev.EndRenderPass();
   dev.SubmitCommandBuffer(true);
 
-  ReleaseCurrentImage();
-  DestroySwapChainImages();
-
   if (new_width != 0 && new_height != 0)
   {
     m_window_info.surface_width = static_cast<u16>(new_width);
     m_window_info.surface_height = static_cast<u16>(new_height);
   }
 
-  if (!CreateSwapChain(VulkanDevice::GetInstance(), error) || !CreateSwapChainImages(dev, error))
+  return RecreateSwapChain(dev, error);
+}
+
+bool VulkanSwapChain::RecreateSurface(VulkanDevice& dev, Error* error)
+{
+  // Destroy the old swap chain, images, and surface.
+  DestroySwapChain();
+  DestroySurface();
+
+  // Re-create the surface with the new native handle
+  if (!CreateSurface(dev.GetVulkanInstance(), dev.GetVulkanPhysicalDevice(), error))
+    return false;
+
+  // The validation layers get angry at us if we don't call this before creating the swapchain.
+  VkBool32 present_supported = VK_TRUE;
+  VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(dev.GetVulkanPhysicalDevice(), dev.GetPresentQueueFamilyIndex(),
+                                                      m_surface, &present_supported);
+  if (res != VK_SUCCESS)
+  {
+    Vulkan::SetErrorObject(error, "vkGetPhysicalDeviceSurfaceSupportKHR failed: ", res);
+    return false;
+  }
+  AssertMsg(present_supported, "Recreated surface does not support presenting.");
+
+  // Finally re-create the swap chain
+  if (!CreateSwapChain(dev, error) || !CreateSwapChainImages(dev, error))
+  {
+    DestroySwapChain();
+    return false;
+  }
+
+  return true;
+}
+
+bool VulkanSwapChain::RecreateSwapChain(VulkanDevice& dev, Error* error)
+{
+  ReleaseCurrentImage();
+  DestroySwapChainImages();
+
+  if (!CreateSwapChain(dev, error) || !CreateSwapChainImages(dev, error))
   {
     DestroySwapChain();
     return false;
@@ -729,42 +825,6 @@ bool VulkanSwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttl
   VERBOSE_LOG("Recreating swap chain to change present mode.");
   ReleaseCurrentImage();
   DestroySwapChainImages();
-  if (!CreateSwapChain(dev, error) || !CreateSwapChainImages(dev, error))
-  {
-    DestroySwapChain();
-    return false;
-  }
-
-  return true;
-}
-
-bool VulkanSwapChain::RecreateSurface(Error* error)
-{
-  VulkanDevice& dev = VulkanDevice::GetInstance();
-  if (dev.InRenderPass())
-    dev.EndRenderPass();
-  dev.SubmitCommandBuffer(true);
-
-  // Destroy the old swap chain, images, and surface.
-  DestroySwapChain();
-  DestroySurface();
-
-  // Re-create the surface with the new native handle
-  if (!CreateSurface(dev.GetVulkanInstance(), dev.GetVulkanPhysicalDevice(), error))
-    return false;
-
-  // The validation layers get angry at us if we don't call this before creating the swapchain.
-  VkBool32 present_supported = VK_TRUE;
-  VkResult res = vkGetPhysicalDeviceSurfaceSupportKHR(dev.GetVulkanPhysicalDevice(), dev.GetPresentQueueFamilyIndex(),
-                                                      m_surface, &present_supported);
-  if (res != VK_SUCCESS)
-  {
-    Vulkan::SetErrorObject(error, "vkGetPhysicalDeviceSurfaceSupportKHR failed: ", res);
-    return false;
-  }
-  AssertMsg(present_supported, "Recreated surface does not support presenting.");
-
-  // Finally re-create the swap chain
   if (!CreateSwapChain(dev, error) || !CreateSwapChainImages(dev, error))
   {
     DestroySwapChain();
