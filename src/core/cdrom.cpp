@@ -286,6 +286,7 @@ static bool CanReadMedia();
 static bool IsDriveIdle();
 static bool IsMotorOn();
 static bool IsSeeking();
+static bool IsReading();
 static bool IsReadingOrPlaying();
 static bool HasPendingCommand();
 static bool HasPendingInterrupt();
@@ -312,6 +313,7 @@ static TickCount GetTicksForSpinUp();
 static TickCount GetTicksForIDRead();
 static TickCount GetTicksForRead();
 static TickCount GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change = false);
+static TickCount GetTicksForPause();
 static TickCount GetTicksForStop(bool motor_was_on);
 static TickCount GetTicksForSpeedChange();
 static TickCount GetTicksForTOCRead();
@@ -887,6 +889,11 @@ bool CDROM::IsSeeking()
 {
   return (s_state.drive_state == DriveState::SeekingLogical || s_state.drive_state == DriveState::SeekingPhysical ||
           s_state.drive_state == DriveState::SeekingImplicit);
+}
+
+bool CDROM::IsReading()
+{
+  return (s_state.drive_state == DriveState::Reading);
 }
 
 bool CDROM::IsReadingOrPlaying()
@@ -1581,10 +1588,10 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     // If we're behind the current sector, and within a small distance, the mech just waits for the sector to come up
     // by reading normally. This timing is actually needed for Transformers - Beast Wars Transmetals, it gets very
     // unstable during loading if seeks are too fast.
-    ticks += ticks_per_sector * std::max(lba_diff, 1u);
+    ticks += ticks_per_sector * std::max(lba_diff, 2u);
     seek_type = "forward";
   }
-  else if (current_lba > new_lba && tjump_position <= new_lba)
+  else if (current_lba >= new_lba && tjump_position <= new_lba)
   {
     // Track jump back. We cap this at 8 sectors (~53ms), so it doesn't take longer than the medium seek below.
     ticks += ticks_per_sector * std::max(new_lba - tjump_position, 1u);
@@ -1640,6 +1647,25 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   }
 
   return System::ScaleTicksToOverclock(static_cast<TickCount>(ticks));
+}
+
+TickCount CDROM::GetTicksForPause()
+{
+  if (!IsReadingOrPlaying())
+    return 7000;
+
+  const u32 sectors_per_track = GetSectorsPerTrack(s_state.current_lba);
+  const TickCount ticks_per_read = GetTicksForRead();
+
+  // Jump backwards one track, then the time to reach the target again.
+  // Subtract another 2 in data mode, because holding is based on subq, not data.
+  const TickCount ticks_to_reach_target =
+    (static_cast<TickCount>(sectors_per_track - (IsReading() ? 2 : 0)) * ticks_per_read) -
+    s_state.drive_event.GetTicksSinceLastExecution();
+
+  // Clamp to a minimum time of 4 sectors or so, because otherwise read speedup is going to break things...
+  const TickCount min_ticks = (s_state.mode.double_speed ? 1000000 : 2000000);
+  return std::max(ticks_to_reach_target, min_ticks);
 }
 
 TickCount CDROM::GetTicksForStop(bool motor_was_on)
@@ -2077,8 +2103,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       else
         DEV_COLOR_LOG(StrongRed, "Pause      Not Reading");
 
-      const TickCount pause_time = IsReadingOrPlaying() ? (s_state.mode.double_speed ? 2000000 : 1000000) : 7000;
-      if (s_state.drive_state == DriveState::Reading && s_state.last_subq.IsData())
+      const TickCount pause_time = GetTicksForPause();
+      if (IsReading() && s_state.last_subq.IsData())
       {
         // Hit target, immediately jump back in data mode.
         const u32 spt = GetSectorsPerTrack(s_state.current_lba);
