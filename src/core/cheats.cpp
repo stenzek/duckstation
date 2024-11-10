@@ -1817,6 +1817,7 @@ private:
     ExtDecrement32 = 0x61,
     ExtConstantWriteIfMatch16 = 0xA6,
     ExtConstantWriteIfMatchWithRestore16 = 0xA7,
+    ExtConstantWriteIfMatchWithRestore8 = 0xA8,
     ExtConstantForceRange8 = 0xF0,
     ExtConstantForceRangeLimits16 = 0xF1,
     ExtConstantForceRangeRollRound16 = 0xF2,
@@ -2359,7 +2360,19 @@ void Cheats::GamesharkCheatCode::Apply() const
         index++;
       }
       break;
+      
+      case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
+      {
+        const u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 comparevalue = Truncate8(inst.value16 >> 8);
+        const u8 newvalue = Truncate8(inst.value16 & 0xFFu);
+        if (value == comparevalue)
+          DoMemoryWrite<u8>(inst.address, newvalue);
 
+        index++;
+      }
+      break;
+      
       case InstructionCode::ExtConstantForceRange8:
       {
         const u8 value = DoMemoryRead<u8>(inst.address);
@@ -3926,6 +3939,18 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable() const
       }
       break;
 
+      case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
+      {
+        const u8 value = DoMemoryRead<u8>(inst.address);
+        const u8 comparevalue = Truncate8(inst.value16 >> 8);
+        const u8 newvalue = Truncate8(inst.value16 & 0xFFu);
+        if (value == newvalue)
+          DoMemoryWrite<u8>(inst.address, comparevalue);
+
+        index++;
+      }
+      break;
+      
         [[unlikely]] default:
         {
           ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
