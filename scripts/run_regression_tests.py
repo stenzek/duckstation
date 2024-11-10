@@ -55,8 +55,6 @@ def run_regression_tests(runner, gamedir, destdir, dump_interval, frames, parall
         for filename in pool.imap_unordered(func, gamepaths, chunksize=1):
             completed += 1
             print("[%u%% %u/%u] %s" % ((completed * 100) // len(gamepaths), completed, len(gamepaths), filename))
-
-        pool.map(func, gamepaths, chunksize=1)
         pool.close()
 
 

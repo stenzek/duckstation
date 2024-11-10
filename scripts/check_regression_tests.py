@@ -310,27 +310,25 @@ def check_regression_test(baselinedir, testdir, name):
 
         has_any = True
         if not compare_frames(path1, path2):
-            diff_frames.append(framenum)
+            diff_frames.append((framenum, path1, path2))
 
-            if first_fail:
-                write("<div class=\"item\">")
-                write("<h1>{}</h1>".format(name))
-                write("<table width=\"100%\">")
-                first_fail = False
+    for (framenum, path1, path2) in diff_frames[-MAX_DIFF_FRAMES:]:
+        if first_fail:
+            write("<div class=\"item\">")
+            write("<h1>{}</h1>".format(name))
+            write("<table width=\"100%\">")
+            first_fail = False
 
-            imguri1 = Path(path1).as_uri()
-            imguri2 = Path(path2).as_uri()
-            write("<tr><td colspan=\"2\">Frame %d</td></tr>" % (framenum))
-            write("<tr><td><img class=\"before\" src=\"%s\" /></td><td><img class=\"after\" src=\"%s\" /></td></tr>" % (imguri1, imguri2))
-
-            if len(diff_frames) == MAX_DIFF_FRAMES:
-                break
+        imguri1 = Path(path1).as_uri()
+        imguri2 = Path(path2).as_uri()
+        write("<tr><td colspan=\"2\">Frame %d</td></tr>" % (framenum))
+        write("<tr><td><img class=\"before\" src=\"%s\" /></td><td><img class=\"after\" src=\"%s\" /></td></tr>" % (imguri1, imguri2))
 
     if not first_fail:
         write("</table>")
-        write("<pre>Difference in frames [%s] for %s</pre>" % (",".join(map(str, diff_frames)), name))
+        write("<pre>Difference in frames [%s] for %s</pre>" % (",".join(map(lambda x: str(x[0]), diff_frames)), name))
         write("</div>")
-        print("*** Difference in frames [%s] for %s" % (",".join(map(str, diff_frames)), name))
+        print("*** Difference in frames [%s] for %s" % (",".join(map(lambda x: str(x[0]), diff_frames)), name))
         #assert has_any
 
     return len(diff_frames) == 0
