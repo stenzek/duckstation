@@ -164,6 +164,7 @@ set(TS_FILES
   translations/duckstation-qt_pt-BR.ts
   translations/duckstation-qt_pt-PT.ts
   translations/duckstation-qt_ru.ts
+  translations/duckstation-qt_sv.ts
   translations/duckstation-qt_tr.ts
   translations/duckstation-qt_zh-CN.ts
 )

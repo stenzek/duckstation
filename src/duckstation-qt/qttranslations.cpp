@@ -215,6 +215,7 @@ std::span<const std::pair<const char*, const char*>> Host::GetAvailableLanguageL
                                                                             {"Português (Pt)", "pt-PT"},
                                                                             {"Português (Br)", "pt-BR"},
                                                                             {"Русский", "ru"},
+                                                                            {"Svenska", "sv"},
                                                                             {"Türkçe", "tr"},
                                                                             {"简体中文", "zh-CN"}};
 
