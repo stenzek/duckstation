@@ -349,7 +349,7 @@ static void StopMotor();
 static void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
 static void UpdateSubQPositionWhileSeeking();
 static void UpdateSubQPosition(bool update_logical);
-static void SetHoldPosition(CDImage::LBA lba, bool update_subq);
+static void SetHoldPosition(CDImage::LBA lba, CDImage::LBA subq_lba, bool update_subq);
 static void ResetCurrentXAFile();
 static void ResetAudioDecoder();
 static void ClearSectorBuffers();
@@ -602,7 +602,7 @@ void CDROM::Reset()
 
   UpdateStatusRegister();
 
-  SetHoldPosition(0, true);
+  SetHoldPosition(0, 0, true);
 }
 
 TickCount CDROM::SoftReset(TickCount ticks_late)
@@ -916,7 +916,7 @@ bool CDROM::InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region, std::
   s_state.subq_replacement = std::move(subq);
   s_state.disc_region = region;
   s_reader.SetMedia(std::move(media));
-  SetHoldPosition(0, true);
+  SetHoldPosition(0, 0, true);
 
   // motor automatically spins up
   if (s_state.drive_state != DriveState::ShellOpening)
@@ -1571,30 +1571,24 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
       ClearDriveState();
   }
 
-  float seconds;
+  const TickCount ticks_per_sector =
+    s_state.mode.double_speed ? (System::MASTER_CLOCK / 150) : (System::MASTER_CLOCK / 75);
+  const CDImage::LBA sectors_per_track = GetSectorsPerTrack(current_lba);
+  const CDImage::LBA tjump_position = (current_lba >= sectors_per_track) ? (current_lba - sectors_per_track) : 0;
   std::string_view seek_type;
-  if (lba_diff < 10)
+  if (current_lba < new_lba && lba_diff <= sectors_per_track)
   {
-    seconds = 0.0f;
-
-    const TickCount ticks_per_sector =
-      s_state.mode.double_speed ? (System::MASTER_CLOCK / 150) : (System::MASTER_CLOCK / 75);
-    if (current_lba < new_lba)
-    {
-      // If we're behind the current sector, and within a small distance, the mech just waits for the sector to come up
-      // by reading normally (or apparently moves the lens according to some?). This timing is actually needed for
-      // Transformers - Beast Wars Transmetals, it gets very unstable during loading if seeks are too fast.
-      ticks += ticks_per_sector * std::min(8u, lba_diff);
-      seek_type = "forward";
-    }
-    else
-    {
-      // Track jump back. We cap this at 8 sectors (~53ms), so it doesn't take longer than the medium seek below.
-      const CDImage::LBA sectors_per_track = GetSectorsPerTrack(current_lba);
-      const CDImage::LBA tjump_position = (current_lba >= sectors_per_track) ? (current_lba - sectors_per_track) : 0;
-      ticks += ticks_per_sector * std::clamp((new_lba - std::min(new_lba, tjump_position)), 1u, 8u);
-      seek_type = "1T back+forward";
-    }
+    // If we're behind the current sector, and within a small distance, the mech just waits for the sector to come up
+    // by reading normally. This timing is actually needed for Transformers - Beast Wars Transmetals, it gets very
+    // unstable during loading if seeks are too fast.
+    ticks += ticks_per_sector * std::max(lba_diff, 1u);
+    seek_type = "forward";
+  }
+  else if (current_lba > new_lba && tjump_position <= new_lba)
+  {
+    // Track jump back. We cap this at 8 sectors (~53ms), so it doesn't take longer than the medium seek below.
+    ticks += ticks_per_sector * std::max(new_lba - tjump_position, 1u);
+    seek_type = "1T back+forward";
   }
   else if (lba_diff < 7200)
   {
@@ -1604,7 +1598,8 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
       330.0f +
       (-63.1333f * std::log(std::clamp(static_cast<float>(current_lba) / static_cast<float>(CDImage::FRAMES_PER_MINUTE),
                                        1.0f, 72.0f))));
-    seconds = (lba_diff < switch_point) ? 0.05f : 0.1f;
+    const float seconds = (lba_diff < switch_point) ? 0.05f : 0.1f;
+    ticks += static_cast<u32>(seconds * static_cast<float>(System::MASTER_CLOCK));
     seek_type = (new_lba > current_lba) ? "NT forward" : "NT backward";
   }
   else
@@ -1615,15 +1610,13 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     constexpr float SLED_VARIABLE_COST = 0.9f - SLED_FIXED_COST;
     constexpr float LOG_WEIGHT = 0.4f;
     constexpr float MAX_SLED_LBA = static_cast<float>(72 * CDImage::FRAMES_PER_MINUTE);
-    seconds =
+    const float seconds =
       SLED_FIXED_COST +
       (((SLED_VARIABLE_COST * (std::log(static_cast<float>(lba_diff)) / std::log(MAX_SLED_LBA)))) * LOG_WEIGHT) +
       ((SLED_VARIABLE_COST * (lba_diff / MAX_SLED_LBA)) * (1.0f - LOG_WEIGHT));
+    ticks += static_cast<u32>(seconds * static_cast<float>(System::MASTER_CLOCK));
     seek_type = (new_lba > current_lba) ? "2N/sled forward" : "2N/sled backward";
   }
-
-  constexpr u32 ticks_per_second = static_cast<u32>(System::MASTER_CLOCK);
-  ticks += static_cast<u32>(seconds * static_cast<float>(ticks_per_second));
 
   if (g_settings.cdrom_seek_speedup > 1)
     ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_TICKS);
@@ -1636,13 +1629,14 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 
     DEV_LOG("Seek time for {}->{} ({} LBA): {} ({:.3f} ms) ({} for speed change/init) ({})",
             LBAToMSFString(current_lba), LBAToMSFString(new_lba), lba_diff, ticks,
-            (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f, remaining_change_ticks,
+            (static_cast<float>(ticks) / static_cast<float>(System::MASTER_CLOCK)) * 1000.0f, remaining_change_ticks,
             seek_type);
   }
   else
   {
     DEV_LOG("Seek time for {}->{} ({} LBA): {} ({:.3f} ms) ({})", LBAToMSFString(current_lba), LBAToMSFString(new_lba),
-            lba_diff, ticks, (static_cast<float>(ticks) / static_cast<float>(ticks_per_second)) * 1000.0f, seek_type);
+            lba_diff, ticks, (static_cast<float>(ticks) / static_cast<float>(System::MASTER_CLOCK)) * 1000.0f,
+            seek_type);
   }
 
   return System::ScaleTicksToOverclock(static_cast<TickCount>(ticks));
@@ -1819,7 +1813,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       else
       {
         SendACKAndStat();
-        SetHoldPosition(0, true);
+        SetHoldPosition(0, 0, true);
         QueueCommandSecondResponse(Command::ReadTOC, GetTicksForTOCRead());
       }
 
@@ -2083,9 +2077,13 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       else
         DEV_COLOR_LOG(StrongRed, "Pause      Not Reading");
 
-      const bool was_reading =
-        (s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing);
-      const TickCount pause_time = was_reading ? (s_state.mode.double_speed ? 2000000 : 1000000) : 7000;
+      const TickCount pause_time = IsReadingOrPlaying() ? (s_state.mode.double_speed ? 2000000 : 1000000) : 7000;
+      if (s_state.drive_state == DriveState::Reading && s_state.last_subq.IsData())
+      {
+        // Hit target, immediately jump back in data mode.
+        const u32 spt = GetSectorsPerTrack(s_state.current_lba);
+        SetHoldPosition(s_state.current_lba, (spt <= s_state.current_lba) ? (s_state.current_lba - spt) : 0, true);
+      }
 
       ClearCommandSecondResponse();
       SendACKAndStat();
@@ -2833,7 +2831,7 @@ void CDROM::UpdateSubQPosition(bool update_logical)
     {
       WARNING_LOG("Jumping to hold position [{}->{}] while {} first sector", s_state.current_subq_lba,
                   s_state.current_lba, (s_state.drive_state == DriveState::Reading) ? "reading" : "playing");
-      SetHoldPosition(s_state.current_lba, true);
+      SetHoldPosition(s_state.current_lba, s_state.current_lba, true);
     }
 
     // Otherwise, this gets updated by the read event.
@@ -2885,21 +2883,21 @@ void CDROM::UpdateSubQPosition(bool update_logical)
   }
 }
 
-void CDROM::SetHoldPosition(CDImage::LBA lba, bool update_subq)
+void CDROM::SetHoldPosition(CDImage::LBA lba, CDImage::LBA subq_lba, bool update_subq)
 {
-  if (update_subq && s_state.current_subq_lba != lba && CanReadMedia())
+  if (update_subq && s_state.current_subq_lba != subq_lba && CanReadMedia())
   {
     CDImage::SubChannelQ real_subq = {};
-    if (!s_reader.ReadSectorUncached(lba, &real_subq, nullptr))
+    if (!s_reader.ReadSectorUncached(subq_lba, &real_subq, nullptr))
       ERROR_LOG("Failed to read subq for sector {} for subq position", lba);
 
-    const CDImage::SubChannelQ& subq = GetSectorSubQ(lba, real_subq);
+    const CDImage::SubChannelQ& subq = GetSectorSubQ(subq_lba, real_subq);
     if (subq.IsCRCValid())
       s_state.last_subq = subq;
   }
 
   s_state.current_lba = lba;
-  s_state.current_subq_lba = lba;
+  s_state.current_subq_lba = subq_lba;
   s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
   s_state.subq_lba_update_carry = 0;
 }
@@ -2919,6 +2917,11 @@ bool CDROM::CompleteSeek()
   ClearDriveState();
 
   bool seek_okay = s_reader.WaitForReadToComplete();
+
+  s_state.current_subq_lba = s_reader.GetLastReadSector();
+  s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
+  s_state.subq_lba_update_carry = 0;
+
   if (seek_okay)
   {
     const CDImage::SubChannelQ& subq = GetSectorSubQ(s_reader.GetLastReadSector(), s_reader.GetSectorSubQ());
@@ -2938,6 +2941,14 @@ bool CDROM::CompleteSeek()
             ProcessDataSectorHeader(s_reader.GetSectorBuffer().data());
             seek_okay = (s_state.last_sector_header.minute == seek_mm && s_state.last_sector_header.second == seek_ss &&
                          s_state.last_sector_header.frame == seek_ff);
+
+            if (seek_okay)
+            {
+              // after reading the target, the mech immediately does a 1T reverse
+              const u32 spt = GetSectorsPerTrack(s_state.current_subq_lba);
+              SetHoldPosition(s_state.current_subq_lba,
+                              (spt <= s_state.current_subq_lba) ? (s_state.current_subq_lba - spt) : 0, true);
+            }
           }
         }
         else
@@ -2967,9 +2978,6 @@ bool CDROM::CompleteSeek()
     s_state.current_lba = s_reader.GetLastReadSector();
   }
 
-  s_state.current_subq_lba = s_state.current_lba;
-  s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
-  s_state.subq_lba_update_carry = 0;
   return seek_okay;
 }
 
@@ -3136,7 +3144,7 @@ void CDROM::StopMotor()
   s_state.secondary_status.ClearActiveBits();
   s_state.secondary_status.motor_on = false;
   ClearDriveState();
-  SetHoldPosition(0, false);
+  SetHoldPosition(0, 0, false);
   s_state.last_sector_header_valid = false; // TODO: correct?
 }
 
