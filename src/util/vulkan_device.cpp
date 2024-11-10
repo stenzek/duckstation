@@ -272,8 +272,12 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
   // Needed for exclusive fullscreen control.
   SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false);
 
-  oe->vk_ext_swapchain_maintenance1 =
+  oe->vk_khr_get_surface_capabilities2 = (wi.type != WindowInfo::Type::Surfaceless &&
+                                          SupportsExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME, false));
+  oe->vk_ext_surface_maintenance1 =
     (wi.type != WindowInfo::Type::Surfaceless && SupportsExtension(VK_EXT_SURFACE_MAINTENANCE_1_EXTENSION_NAME, false));
+  oe->vk_ext_swapchain_maintenance1 = (wi.type != WindowInfo::Type::Surfaceless &&
+                                       SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false));
   oe->vk_khr_get_physical_device_properties2 =
     SupportsExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
@@ -468,8 +472,7 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
   m_optional_extensions.vk_ext_external_memory_host =
     SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, false);
   m_optional_extensions.vk_ext_swapchain_maintenance1 =
-    m_optional_extensions.vk_ext_swapchain_maintenance1 &&
-    SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
+    enable_surface && SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
 
   // Dynamic rendering isn't strictly needed for FSI, but we want it with framebufferless rendering.
   m_optional_extensions.vk_ext_fragment_shader_interlock =
@@ -797,16 +800,19 @@ void VulkanDevice::ProcessDeviceExtensions()
 #define LOG_EXT(name, field) INFO_LOG(name " is {}", m_optional_extensions.field ? "supported" : "NOT supported")
 
   LOG_EXT("VK_EXT_external_memory_host", vk_ext_external_memory_host);
-  LOG_EXT("VK_EXT_memory_budget", vk_ext_memory_budget);
   LOG_EXT("VK_EXT_fragment_shader_interlock", vk_ext_fragment_shader_interlock);
+  LOG_EXT("VK_EXT_memory_budget", vk_ext_memory_budget);
   LOG_EXT("VK_EXT_rasterization_order_attachment_access", vk_ext_rasterization_order_attachment_access);
+  LOG_EXT("VK_EXT_surface_maintenance1", vk_ext_surface_maintenance1);
   LOG_EXT("VK_EXT_swapchain_maintenance1", vk_ext_swapchain_maintenance1);
   LOG_EXT("VK_KHR_get_memory_requirements2", vk_khr_get_memory_requirements2);
   LOG_EXT("VK_KHR_bind_memory2", vk_khr_bind_memory2);
   LOG_EXT("VK_KHR_get_physical_device_properties2", vk_khr_get_physical_device_properties2);
   LOG_EXT("VK_KHR_dedicated_allocation", vk_khr_dedicated_allocation);
+  LOG_EXT("VK_KHR_driver_properties", vk_khr_driver_properties);
   LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
   LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
+  LOG_EXT("VK_KHR_get_surface_capabilities2", vk_khr_get_surface_capabilities2);
   LOG_EXT("VK_KHR_maintenance4", vk_khr_maintenance4);
   LOG_EXT("VK_KHR_maintenance5", vk_khr_maintenance5);
   LOG_EXT("VK_KHR_push_descriptor", vk_khr_push_descriptor);

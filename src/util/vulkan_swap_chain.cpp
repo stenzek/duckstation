@@ -321,25 +321,48 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
     return false;
 
   // Look up surface properties to determine image count and dimensions
-  VkSurfaceCapabilitiesKHR surface_capabilities;
-  VkResult res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physdev, m_surface, &surface_capabilities);
+  VkSurfaceCapabilities2KHR surface_caps = {
+    .sType = VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR, .pNext = nullptr, .surfaceCapabilities = {}};
+  VkResult res = VK_NOT_READY;
+
+  // The present mode can alter the number of images required. Use VK_KHR_get_surface_capabilities2 to confirm it.
+  if (dev.GetOptionalExtensions().vk_khr_get_surface_capabilities2 &&
+      dev.GetOptionalExtensions().vk_ext_surface_maintenance1)
+  {
+    VkPhysicalDeviceSurfaceInfo2KHR dsi = {
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR, .pNext = nullptr, .surface = m_surface};
+    VkSurfacePresentModeEXT dsi_pm = {
+      .sType = VK_STRUCTURE_TYPE_SURFACE_PRESENT_MODE_EXT, .pNext = nullptr, .presentMode = present_mode.value()};
+    Vulkan::AddPointerToChain(&dsi, &dsi_pm);
+    res = vkGetPhysicalDeviceSurfaceCapabilities2KHR(physdev, &dsi, &surface_caps);
+    if (res != VK_SUCCESS)
+      LOG_VULKAN_ERROR(res, "vkGetPhysicalDeviceSurfaceCapabilities2KHR() failed: ");
+  }
+
   if (res != VK_SUCCESS)
   {
-    Vulkan::SetErrorObject(error, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed: ", res);
-    return false;
+    DEV_LOG("VK_EXT_surface_maintenance1 not supported, image count may be sub-optimal.");
+
+    res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physdev, m_surface, &surface_caps.surfaceCapabilities);
+    if (res != VK_SUCCESS)
+    {
+      Vulkan::SetErrorObject(error, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR failed: ", res);
+      return false;
+    }
   }
 
   // Select number of images in swap chain, we prefer one buffer in the background to work on in triple-buffered mode.
   // maxImageCount can be zero, in which case there isn't an upper limit on the number of buffers.
   u32 image_count = std::clamp<u32>(
-    (present_mode.value() == VK_PRESENT_MODE_MAILBOX_KHR) ? 3 : 2, surface_capabilities.minImageCount,
-    (surface_capabilities.maxImageCount == 0) ? std::numeric_limits<u32>::max() : surface_capabilities.maxImageCount);
+    (present_mode.value() == VK_PRESENT_MODE_MAILBOX_KHR) ? 3 : 2, surface_caps.surfaceCapabilities.minImageCount,
+    (surface_caps.surfaceCapabilities.maxImageCount == 0) ? std::numeric_limits<u32>::max() :
+                                                            surface_caps.surfaceCapabilities.maxImageCount);
   DEV_LOG("Creating a swap chain with {} images in present mode {}", image_count,
           PresentModeToString(present_mode.value()));
 
   // Determine the dimensions of the swap chain. Values of -1 indicate the size we specify here
   // determines window size? Android sometimes lags updating currentExtent, so don't use it.
-  VkExtent2D size = surface_capabilities.currentExtent;
+  VkExtent2D size = surface_caps.surfaceCapabilities.currentExtent;
 #ifndef __ANDROID__
   if (size.width == UINT32_MAX)
 #endif
@@ -347,27 +370,27 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
     size.width = m_window_info.surface_width;
     size.height = m_window_info.surface_height;
   }
-  size.width =
-    std::clamp(size.width, surface_capabilities.minImageExtent.width, surface_capabilities.maxImageExtent.width);
-  size.height =
-    std::clamp(size.height, surface_capabilities.minImageExtent.height, surface_capabilities.maxImageExtent.height);
+  size.width = std::clamp(size.width, surface_caps.surfaceCapabilities.minImageExtent.width,
+                          surface_caps.surfaceCapabilities.maxImageExtent.width);
+  size.height = std::clamp(size.height, surface_caps.surfaceCapabilities.minImageExtent.height,
+                           surface_caps.surfaceCapabilities.maxImageExtent.height);
 
   // Prefer identity transform if possible
   VkSurfaceTransformFlagBitsKHR transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-  if (!(surface_capabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR))
-    transform = surface_capabilities.currentTransform;
+  if (!(surface_caps.surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR))
+    transform = surface_caps.surfaceCapabilities.currentTransform;
 
   VkCompositeAlphaFlagBitsKHR alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  if (!(surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR))
+  if (!(surface_caps.surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR))
   {
     // If we only support pre-multiplied/post-multiplied... :/
-    if (surface_capabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
+    if (surface_caps.surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR)
       alpha = VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR;
   }
 
   // Select swap chain flags, we only need a colour attachment
   VkImageUsageFlags image_usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-  if ((surface_capabilities.supportedUsageFlags & image_usage) != image_usage)
+  if ((surface_caps.surfaceCapabilities.supportedUsageFlags & image_usage) != image_usage)
   {
     Error::SetStringView(error, "Swap chain does not support usage as color attachment");
     return false;

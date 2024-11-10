@@ -47,6 +47,7 @@ public:
     bool vk_ext_full_screen_exclusive : 1;
     bool vk_ext_memory_budget : 1;
     bool vk_ext_rasterization_order_attachment_access : 1;
+    bool vk_ext_surface_maintenance1 : 1;
     bool vk_ext_swapchain_maintenance1 : 1;
     bool vk_khr_get_memory_requirements2 : 1;
     bool vk_khr_bind_memory2 : 1;
@@ -55,6 +56,7 @@ public:
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_dynamic_rendering_local_read : 1;
+    bool vk_khr_get_surface_capabilities2 : 1;
     bool vk_khr_maintenance4 : 1;
     bool vk_khr_maintenance5 : 1;
     bool vk_khr_push_descriptor : 1;
