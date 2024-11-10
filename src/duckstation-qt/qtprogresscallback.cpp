@@ -15,7 +15,7 @@ QtModalProgressCallback::QtModalProgressCallback(QWidget* parent_widget, float s
   : QObject(parent_widget), m_dialog(QString(), QString(), 0, 1, parent_widget), m_show_delay(show_delay)
 {
   m_dialog.setWindowTitle(tr("DuckStation"));
-  m_dialog.setMinimumSize(QSize(500, 0));
+  m_dialog.setMinimumSize(QSize(500, 100));
   m_dialog.setModal(parent_widget != nullptr);
   m_dialog.setAutoClose(false);
   m_dialog.setAutoReset(false);
