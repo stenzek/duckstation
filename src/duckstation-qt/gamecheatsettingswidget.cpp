@@ -529,7 +529,7 @@ void GameCheatSettingsWidget::importCodes(const std::string& file_contents)
   }
 
   reloadList();
-  g_emu_thread->reloadCheats(true, true, false, true);
+  g_emu_thread->reloadCheats(true, false, false, true);
 }
 
 void GameCheatSettingsWidget::newCode()
@@ -544,7 +544,7 @@ void GameCheatSettingsWidget::newCode()
 
   // no need to reload cheats yet, it's not active. just refresh the list
   reloadList();
-  g_emu_thread->reloadCheats(true, true, false, true);
+  g_emu_thread->reloadCheats(true, false, false, true);
 }
 
 void GameCheatSettingsWidget::editCode(const std::string_view code_name)
