@@ -1000,9 +1000,10 @@ void CodeGenerator::BlockPrologue()
 
   if (g_settings.bios_tty_logging)
   {
-    if (m_pc == 0xa0)
+    const u32 masked_pc = (m_pc & PHYSICAL_MEMORY_ADDRESS_MASK);
+    if (masked_pc == 0xa0)
       EmitFunctionCall(nullptr, &CPU::HandleA0Syscall);
-    else if (m_pc == 0xb0)
+    else if (masked_pc == 0xb0)
       EmitFunctionCall(nullptr, &CPU::HandleB0Syscall);
   }
 

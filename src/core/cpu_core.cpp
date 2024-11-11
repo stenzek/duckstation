@@ -2422,9 +2422,11 @@ template<PGXPMode pgxp_mode, bool debug>
         if (s_trace_to_log)
           LogInstruction(g_state.current_instruction.bits, g_state.current_instruction_pc, true);
 
-        if (g_state.current_instruction_pc == 0xA0) [[unlikely]]
+        // handle all mirrors of the syscall trampoline
+        const u32 masked_pc = (g_state.current_instruction_pc & PHYSICAL_MEMORY_ADDRESS_MASK);
+        if (masked_pc == 0xA0) [[unlikely]]
           HandleA0Syscall();
-        else if (g_state.current_instruction_pc == 0xB0) [[unlikely]]
+        else if (masked_pc == 0xB0) [[unlikely]]
           HandleB0Syscall();
       }
 
