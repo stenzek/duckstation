@@ -41,6 +41,7 @@ class QTranslator;
 
 class INISettingsInterface;
 
+enum class RenderAPI : u8;
 class GPUDevice;
 
 class MainWindow;
@@ -94,7 +95,8 @@ public:
   ALWAYS_INLINE bool isSurfaceless() const { return m_is_surfaceless; }
   ALWAYS_INLINE bool isRunningFullscreenUI() const { return m_run_fullscreen_ui; }
 
-  std::optional<WindowInfo> acquireRenderWindow(bool fullscreen, bool exclusive_fullscreen, Error* error);
+  std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
+                                                Error* error);
   void connectDisplaySignals(DisplayWidget* widget);
   void releaseRenderWindow();
 
@@ -137,8 +139,8 @@ Q_SIGNALS:
   void systemPaused();
   void systemResumed();
   void gameListRefreshed();
-  std::optional<WindowInfo> onAcquireRenderWindowRequested(bool fullscreen, bool render_to_main, bool surfaceless,
-                                                           bool use_main_window_pos, Error* error);
+  std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen, bool render_to_main,
+                                                           bool surfaceless, bool use_main_window_pos, Error* error);
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
   void onReleaseRenderWindowRequested();
   void focusDisplayWidgetRequested();
@@ -153,8 +155,9 @@ Q_SIGNALS:
   void mediaCaptureStarted();
   void mediaCaptureStopped();
 
-  bool onCreateAuxiliaryRenderWindow(qint32 x, qint32 y, quint32 width, quint32 height, const QString& title,
-                                     const QString& icon_name, Host::AuxiliaryRenderWindowUserData userdata,
+  bool onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height,
+                                     const QString& title, const QString& icon_name,
+                                     Host::AuxiliaryRenderWindowUserData userdata,
                                      Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error);
   void onDestroyAuxiliaryRenderWindow(Host::AuxiliaryRenderWindowHandle handle, QPoint* pos, QSize* size);
 

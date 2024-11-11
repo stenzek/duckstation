@@ -40,12 +40,10 @@ VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfacePresentModesKHR, false)
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateWin32SurfaceKHR, false)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceWin32PresentationSupportKHR, false)
 #endif
 
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-VULKAN_INSTANCE_ENTRY_POINT(vkCreateXlibSurfaceKHR, false)
-VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceXlibPresentationSupportKHR, false)
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+VULKAN_INSTANCE_ENTRY_POINT(vkCreateXcbSurfaceKHR, false)
 #endif
 
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)

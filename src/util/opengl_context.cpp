@@ -27,7 +27,8 @@
 #include "opengl_context_egl_wayland.h"
 #endif
 #ifdef ENABLE_X11
-#include "opengl_context_egl_x11.h"
+#include "opengl_context_egl_xcb.h"
+#include "opengl_context_egl_xlib.h"
 #endif
 #endif
 #endif
@@ -154,8 +155,10 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
   context = OpenGLContextEGLAndroid::Create(wi, surface, versions_to_try, error);
 #else
 #if defined(ENABLE_X11)
-  if (wi.type == WindowInfo::Type::X11)
-    context = OpenGLContextEGLX11::Create(wi, surface, versions_to_try, error);
+  if (wi.type == WindowInfo::Type::Xlib)
+    context = OpenGLContextEGLXlib::Create(wi, surface, versions_to_try, error);
+  else if (wi.type == WindowInfo::Type::XCB)
+    context = OpenGLContextEGLXCB::Create(wi, surface, versions_to_try, error);
 #endif
 #if defined(ENABLE_WAYLAND)
   if (wi.type == WindowInfo::Type::Wayland)

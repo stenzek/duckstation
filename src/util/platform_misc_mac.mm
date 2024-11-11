@@ -129,12 +129,12 @@ void CocoaTools::DestroyMetalLayer(const WindowInfo& wi, void* layer)
   [clayer release];
 }
 
-std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi)
+std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi, Error* error)
 {
   if (![NSThread isMainThread])
   {
     std::optional<float> ret;
-    dispatch_sync(dispatch_get_main_queue(), [&ret, wi] { ret = GetViewRefreshRate(wi); });
+    dispatch_sync(dispatch_get_main_queue(), [&ret, wi, error] { ret = GetViewRefreshRate(wi, error); });
     return ret;
   }
 
@@ -145,6 +145,10 @@ std::optional<float> CocoaTools::GetViewRefreshRate(const WindowInfo& wi)
   {
     ret = CGDisplayModeGetRefreshRate(mode);
     CGDisplayModeRelease(mode);
+  }
+  else
+  {
+    Error::SetStringView(error, "CGDisplayCopyDisplayMode() failed");
   }
 
   return ret;

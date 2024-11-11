@@ -221,8 +221,8 @@ bool MainWindow::nativeEvent(const QByteArray& eventType, void* message, qintptr
 
 #endif
 
-std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool fullscreen, bool render_to_main, bool surfaceless,
-                                                          bool use_main_window_pos, Error* error)
+std::optional<WindowInfo> MainWindow::acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool render_to_main,
+                                                          bool surfaceless, bool use_main_window_pos, Error* error)
 {
   DEV_LOG("acquireRenderWindow() fullscreen={} render_to_main={} surfaceless={} use_main_window_pos={}",
           fullscreen ? "true" : "false", render_to_main ? "true" : "false", surfaceless ? "true" : "false",
@@ -265,7 +265,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool fullscreen, bool 
     updateWindowState();
 
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
-    return m_display_widget->getWindowInfo(error);
+    return m_display_widget->getWindowInfo(render_api, error);
   }
 
   destroyDisplayWidget(surfaceless);
@@ -277,7 +277,7 @@ std::optional<WindowInfo> MainWindow::acquireRenderWindow(bool fullscreen, bool 
 
   createDisplayWidget(fullscreen, render_to_main, use_main_window_pos);
 
-  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo(error);
+  std::optional<WindowInfo> wi = m_display_widget->getWindowInfo(render_api, error);
   if (!wi.has_value())
   {
     QMessageBox::critical(this, tr("Error"), tr("Failed to get window info from widget"));
@@ -2483,9 +2483,9 @@ void MainWindow::checkForSettingChanges()
 std::optional<WindowInfo> MainWindow::getWindowInfo()
 {
   if (!m_display_widget || isRenderingToMain())
-    return QtUtils::GetWindowInfoForWidget(this);
+    return QtUtils::GetWindowInfoForWidget(this, RenderAPI::None);
   else if (QWidget* widget = getDisplayContainer())
-    return QtUtils::GetWindowInfoForWidget(widget);
+    return QtUtils::GetWindowInfoForWidget(widget, RenderAPI::None);
   else
     return std::nullopt;
 }
@@ -2565,7 +2565,7 @@ void MainWindow::onAchievementsChallengeModeChanged(bool enabled)
   updateEmulationActions(false, System::IsValid(), enabled);
 }
 
-bool MainWindow::onCreateAuxiliaryRenderWindow(qint32 x, qint32 y, quint32 width, quint32 height, const QString& title,
+bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height, const QString& title,
                                                const QString& icon_name, Host::AuxiliaryRenderWindowUserData userdata,
                                                Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error)
 {
@@ -2573,7 +2573,7 @@ bool MainWindow::onCreateAuxiliaryRenderWindow(qint32 x, qint32 y, quint32 width
   if (!widget)
     return false;
 
-  const std::optional<WindowInfo> owi = QtUtils::GetWindowInfoForWidget(widget, error);
+  const std::optional<WindowInfo> owi = QtUtils::GetWindowInfoForWidget(widget, render_api, error);
   if (!owi.has_value())
   {
     widget->destroy();

@@ -18,7 +18,7 @@ class Error;
 #define VK_USE_PLATFORM_ANDROID_KHR
 #else
 #ifdef ENABLE_X11
-#define VK_USE_PLATFORM_XLIB_KHR
+#define VK_USE_PLATFORM_XCB_KHR
 #endif
 
 #ifdef ENABLE_WAYLAND
@@ -27,48 +27,6 @@ class Error;
 #endif
 
 #include "vulkan/vulkan.h"
-
-#if defined(ENABLE_X11)
-
-// This breaks a bunch of our code. They shouldn't be #defines in the first place.
-#ifdef None
-#undef None
-#endif
-#ifdef Always
-#undef Always
-#endif
-#ifdef Status
-#undef Status
-#endif
-#ifdef CursorShape
-#undef CursorShape
-#endif
-#ifdef KeyPress
-#undef KeyPress
-#endif
-#ifdef KeyRelease
-#undef KeyRelease
-#endif
-#ifdef FocusIn
-#undef FocusIn
-#endif
-#ifdef FocusOut
-#undef FocusOut
-#endif
-#ifdef FontChange
-#undef FontChange
-#endif
-#ifdef Expose
-#undef Expose
-#endif
-#ifdef Unsorted
-#undef Unsorted
-#endif
-#ifdef Bool
-#undef Bool
-#endif
-
-#endif
 
 #include "vulkan_entry_points.h"
 

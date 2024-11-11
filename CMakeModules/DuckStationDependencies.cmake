@@ -28,8 +28,8 @@ endif()
 
 if(ENABLE_X11)
   find_package(X11 REQUIRED)
-  if (NOT X11_Xrandr_FOUND)
-    message(FATAL_ERROR "XRandR extension is required")
+  if (NOT X11_xcb_FOUND OR NOT X11_xcb_randr_FOUND OR NOT X11_X11_xcb_FOUND)
+    message(FATAL_ERROR "XCB, XCB-randr and X11-xcb are required")
   endif()
 endif()
 

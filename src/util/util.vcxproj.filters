@@ -66,13 +66,15 @@
     <ClInclude Include="opengl_context_agl.h" />
     <ClInclude Include="opengl_context_egl.h" />
     <ClInclude Include="opengl_context_egl_wayland.h" />
-    <ClInclude Include="opengl_context_egl_x11.h" />
+    <ClInclude Include="opengl_context_egl_xcb.h" />
     <ClInclude Include="opengl_context_wgl.h" />
     <ClInclude Include="image.h" />
     <ClInclude Include="sockets.h" />
     <ClInclude Include="media_capture.h" />
     <ClInclude Include="compress_helpers.h" />
     <ClInclude Include="elf_file.h" />
+    <ClInclude Include="x11_tools.h" />
+    <ClInclude Include="opengl_context_egl_xlib.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -146,7 +148,7 @@
     <ClCompile Include="opengl_context.cpp" />
     <ClCompile Include="opengl_context_egl.cpp" />
     <ClCompile Include="opengl_context_egl_wayland.cpp" />
-    <ClCompile Include="opengl_context_egl_x11.cpp" />
+    <ClCompile Include="opengl_context_egl_xcb.cpp" />
     <ClCompile Include="opengl_context_wgl.cpp" />
     <ClCompile Include="image.cpp" />
     <ClCompile Include="sdl_audio_stream.cpp" />
@@ -154,6 +156,8 @@
     <ClCompile Include="media_capture.cpp" />
     <ClCompile Include="compress_helpers.cpp" />
     <ClCompile Include="elf_file.cpp" />
+    <ClCompile Include="x11_tools.cpp" />
+    <ClCompile Include="opengl_context_egl_xlib.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />

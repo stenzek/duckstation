@@ -4,19 +4,31 @@
 #pragma once
 
 #include "opengl_context_egl.h"
+#include "x11_tools.h"
 
-class OpenGLContextEGLX11 final : public OpenGLContextEGL
+#include <unordered_map>
+
+class OpenGLContextEGLXCB final : public OpenGLContextEGL
 {
 public:
-  OpenGLContextEGLX11();
-  ~OpenGLContextEGLX11() override;
+  OpenGLContextEGLXCB();
+  ~OpenGLContextEGLXCB() override;
 
   static std::unique_ptr<OpenGLContext> Create(WindowInfo& wi, SurfaceHandle* surface,
                                                std::span<const Version> versions_to_try, Error* error);
 
   std::unique_ptr<OpenGLContext> CreateSharedContext(WindowInfo& wi, SurfaceHandle* surface, Error* error) override;
 
+  void ResizeSurface(WindowInfo& wi, SurfaceHandle handle) override;
+
 protected:
   EGLDisplay GetPlatformDisplay(const WindowInfo& wi, Error* error) override;
   EGLSurface CreatePlatformSurface(EGLConfig config, const WindowInfo& wi, Error* error) override;
+  void DestroyPlatformSurface(EGLSurface surface) override;
+
+private:
+  using X11WindowMap = std::unordered_map<EGLSurface, X11Window>;
+
+  X11WindowMap m_x11_windows;
+  bool m_using_platform_display = false;
 };

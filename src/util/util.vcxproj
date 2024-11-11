@@ -57,7 +57,10 @@
     <ClInclude Include="opengl_context_egl_wayland.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="opengl_context_egl_x11.h">
+    <ClInclude Include="opengl_context_egl_xcb.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="opengl_context_egl_xlib.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="opengl_context_wgl.h">
@@ -101,6 +104,9 @@
     <ClInclude Include="wav_reader_writer.h" />
     <ClInclude Include="win32_raw_input_source.h" />
     <ClInclude Include="window_info.h" />
+    <ClInclude Include="x11_tools.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="xinput_source.h" />
   </ItemGroup>
   <ItemGroup>
@@ -159,7 +165,10 @@
     <ClCompile Include="opengl_context_egl_wayland.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="opengl_context_egl_x11.cpp">
+    <ClCompile Include="opengl_context_egl_xcb.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="opengl_context_egl_xlib.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="opengl_context_wgl.cpp">
@@ -202,6 +211,9 @@
     <ClCompile Include="wav_reader_writer.cpp" />
     <ClCompile Include="win32_raw_input_source.cpp" />
     <ClCompile Include="window_info.cpp" />
+    <ClCompile Include="x11_tools.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="xinput_source.cpp" />
   </ItemGroup>
   <ItemGroup>

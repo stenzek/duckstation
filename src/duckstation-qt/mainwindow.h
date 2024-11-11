@@ -35,6 +35,7 @@ class MemoryScannerWindow;
 
 struct SystemBootParameters;
 
+enum class RenderAPI : u8;
 class GPUDevice;
 namespace Achievements {
 enum class LoginRequestReason;
@@ -127,8 +128,8 @@ private Q_SLOTS:
   bool confirmMessage(const QString& title, const QString& message);
   void onStatusMessage(const QString& message);
 
-  std::optional<WindowInfo> acquireRenderWindow(bool fullscreen, bool render_to_main, bool surfaceless,
-                                                bool use_main_window_pos, Error* error);
+  std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool render_to_main,
+                                                bool surfaceless, bool use_main_window_pos, Error* error);
   void displayResizeRequested(qint32 width, qint32 height);
   void releaseRenderWindow();
   void focusDisplayWidget();
@@ -145,8 +146,9 @@ private Q_SLOTS:
   void onMediaCaptureStopped();
   void onAchievementsLoginRequested(Achievements::LoginRequestReason reason);
   void onAchievementsChallengeModeChanged(bool enabled);
-  bool onCreateAuxiliaryRenderWindow(qint32 x, qint32 y, quint32 width, quint32 height, const QString& title,
-                                     const QString& icon_name, Host::AuxiliaryRenderWindowUserData userdata,
+  bool onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height,
+                                     const QString& title, const QString& icon_name,
+                                     Host::AuxiliaryRenderWindowUserData userdata,
                                      Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error);
   void onDestroyAuxiliaryRenderWindow(Host::AuxiliaryRenderWindowHandle handle, QPoint* pos, QSize* size);
 

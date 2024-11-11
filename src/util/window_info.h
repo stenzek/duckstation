@@ -8,6 +8,8 @@
 
 #include <optional>
 
+class Error;
+
 // Contains the information required to create a graphics context in a window.
 struct WindowInfo
 {
@@ -15,7 +17,8 @@ struct WindowInfo
   {
     Surfaceless,
     Win32,
-    X11,
+    Xlib,
+    XCB,
     Wayland,
     MacOS,
     Android,
@@ -32,5 +35,5 @@ struct WindowInfo
 
   ALWAYS_INLINE bool IsSurfaceless() const { return type == Type::Surfaceless; }
 
-  static std::optional<float> QueryRefreshRateForWindow(const WindowInfo& wi);
+  static std::optional<float> QueryRefreshRateForWindow(const WindowInfo& wi, Error* error = nullptr);
 };

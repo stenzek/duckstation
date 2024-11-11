@@ -133,6 +133,7 @@ void QtHost::RegisterTypes()
   qRegisterMetaType<std::function<void()>>("std::function<void()>");
   qRegisterMetaType<std::shared_ptr<SystemBootParameters>>();
   qRegisterMetaType<const GameList::Entry*>();
+  qRegisterMetaType<RenderAPI>("RenderAPI");
   qRegisterMetaType<GPURenderer>("GPURenderer");
   qRegisterMetaType<InputBindingKey>("InputBindingKey");
   qRegisterMetaType<std::string>("std::string");
@@ -954,7 +955,8 @@ void EmuThread::requestDisplaySize(float scale)
   System::RequestDisplaySize(scale);
 }
 
-std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool fullscreen, bool exclusive_fullscreen, Error* error)
+std::optional<WindowInfo> EmuThread::acquireRenderWindow(RenderAPI render_api, bool fullscreen,
+                                                         bool exclusive_fullscreen, Error* error)
 {
   DebugAssert(g_gpu_device);
 
@@ -964,8 +966,8 @@ std::optional<WindowInfo> EmuThread::acquireRenderWindow(bool fullscreen, bool e
   const bool render_to_main = !fullscreen && m_is_rendering_to_main;
   const bool use_main_window_pos = shouldRenderToMain();
 
-  return emit onAcquireRenderWindowRequested(window_fullscreen, render_to_main, m_is_surfaceless, use_main_window_pos,
-                                             error);
+  return emit onAcquireRenderWindowRequested(render_api, window_fullscreen, render_to_main, m_is_surfaceless,
+                                             use_main_window_pos, error);
 }
 
 void EmuThread::releaseRenderWindow()
@@ -1655,9 +1657,9 @@ bool Host::CreateAuxiliaryRenderWindow(s32 x, s32 y, u32 width, u32 height, std:
                                        std::string_view icon_name, AuxiliaryRenderWindowUserData userdata,
                                        AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error)
 {
-  return emit g_emu_thread->onCreateAuxiliaryRenderWindow(x, y, width, height, QtUtils::StringViewToQString(title),
-                                                          QtUtils::StringViewToQString(icon_name), userdata, handle, wi,
-                                                          error);
+  return emit g_emu_thread->onCreateAuxiliaryRenderWindow(
+    g_gpu_device->GetRenderAPI(), x, y, width, height, QtUtils::StringViewToQString(title),
+    QtUtils::StringViewToQString(icon_name), userdata, handle, wi, error);
 }
 
 void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32* pos_x, s32* pos_y, u32* width,
@@ -2002,7 +2004,7 @@ void Host::CommitBaseSettingChanges()
 std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                                     Error* error)
 {
-  return g_emu_thread->acquireRenderWindow(fullscreen, exclusive_fullscreen, error);
+  return g_emu_thread->acquireRenderWindow(render_api, fullscreen, exclusive_fullscreen, error);
 }
 
 void Host::ReleaseRenderWindow()

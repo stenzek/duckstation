@@ -80,8 +80,12 @@ target_link_libraries(util PUBLIC common simpleini imgui)
 target_link_libraries(util PRIVATE libchdr lzma JPEG::JPEG PNG::PNG WebP::libwebp lunasvg::lunasvg ZLIB::ZLIB SoundTouch::SoundTouchDLL xxhash Zstd::Zstd reshadefx)
 
 if(ENABLE_X11)
+  target_sources(util PRIVATE
+    x11_tools.cpp
+    x11_tools.h
+  )
   target_compile_definitions(util PRIVATE "-DENABLE_X11=1")
-  target_link_libraries(util PRIVATE X11::X11 X11::Xrandr)
+  target_link_libraries(util PRIVATE X11::xcb X11::xcb_randr X11::X11_xcb)
 endif()
 
 if(ENABLE_WAYLAND)
@@ -121,8 +125,10 @@ if(ENABLE_OPENGL)
 
     if(ENABLE_X11)
       target_sources(util PRIVATE
-        opengl_context_egl_x11.cpp
-        opengl_context_egl_x11.h
+        opengl_context_egl_xcb.cpp
+        opengl_context_egl_xcb.h
+        opengl_context_egl_xlib.cpp
+        opengl_context_egl_xlib.h
       )
     endif()
     if(ENABLE_WAYLAND)

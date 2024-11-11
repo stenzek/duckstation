@@ -32,6 +32,8 @@ class QVariant;
 class QWidget;
 class QUrl;
 
+enum class RenderAPI : u8;
+
 enum class ConsoleRegion : u8;
 enum class DiscRegion : u8;
 namespace GameDatabase {
@@ -116,7 +118,7 @@ QIcon GetIconForCompatibility(GameDatabase::CompatibilityRating rating);
 qreal GetDevicePixelRatioForWidget(const QWidget* widget);
 
 /// Returns the common window info structure for a Qt widget.
-std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, Error* error = nullptr);
+std::optional<WindowInfo> GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error = nullptr);
 
 /// Saves a window's geometry to configuration. Returns false if the configuration was changed.
 bool SaveWindowGeometry(std::string_view window_name, QWidget* widget, bool auto_commit_changes = true);

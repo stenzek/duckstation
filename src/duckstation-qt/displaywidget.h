@@ -13,6 +13,8 @@
 
 class Error;
 
+enum class RenderAPI : u8;
+
 class QCloseEvent;
 
 class DisplayWidget final : public QWidget
@@ -28,7 +30,7 @@ public:
   int scaledWindowWidth() const;
   int scaledWindowHeight() const;
 
-  std::optional<WindowInfo> getWindowInfo(Error* error);
+  std::optional<WindowInfo> getWindowInfo(RenderAPI render_api, Error* error);
 
   void updateRelativeMode(bool enabled);
   void updateCursor(bool hidden);

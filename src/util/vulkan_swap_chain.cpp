@@ -138,17 +138,17 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
   }
 #endif
 
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-  if (m_window_info.type == WindowInfo::Type::X11)
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+  if (m_window_info.type == WindowInfo::Type::XCB)
   {
-    const VkXlibSurfaceCreateInfoKHR surface_create_info = {
-      .sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR,
-      .dpy = static_cast<Display*>(m_window_info.display_connection),
-      .window = reinterpret_cast<Window>(m_window_info.window_handle)};
-    const VkResult res = vkCreateXlibSurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
+    const VkXcbSurfaceCreateInfoKHR surface_create_info = {
+      .sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
+      .connection = static_cast<xcb_connection_t*>(m_window_info.display_connection),
+      .window = static_cast<xcb_window_t>(reinterpret_cast<uintptr_t>(m_window_info.window_handle))};
+    const VkResult res = vkCreateXcbSurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
     {
-      Vulkan::SetErrorObject(error, "vkCreateXlibSurfaceKHR failed: ", res);
+      Vulkan::SetErrorObject(error, "vkCreateXcbSurfaceKHR failed: ", res);
       return false;
     }
 

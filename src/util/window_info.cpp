@@ -16,13 +16,13 @@ LOG_CHANNEL(WindowInfo);
 #include "common/windows_headers.h"
 #include <dwmapi.h>
 
-static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
+static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd, Error* error)
 {
   // Partially based on Chromium ui/display/win/display_config_helper.cc.
   const HMONITOR monitor = MonitorFromWindow(hwnd, 0);
   if (!monitor) [[unlikely]]
   {
-    ERROR_LOG("{}() failed: {}", "MonitorFromWindow", Error::CreateWin32(GetLastError()).GetDescription());
+    Error::SetWin32(error, "MonitorFromWindow() failed: ", GetLastError());
     return std::nullopt;
   }
 
@@ -30,7 +30,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
   mi.cbSize = sizeof(mi);
   if (!GetMonitorInfoW(monitor, &mi))
   {
-    ERROR_LOG("{}() failed: {}", "GetMonitorInfoW", Error::CreateWin32(GetLastError()).GetDescription());
+    Error::SetWin32(error, "GetMonitorInfoW() failed: ", GetLastError());
     return std::nullopt;
   }
 
@@ -44,7 +44,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
     LONG res = GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &path_size, &mode_size);
     if (res != ERROR_SUCCESS)
     {
-      ERROR_LOG("{}() failed: {}", "GetDisplayConfigBufferSizes", Error::CreateWin32(res).GetDescription());
+      Error::SetWin32(error, "GetDisplayConfigBufferSizes() failed: ", res);
       return std::nullopt;
     }
 
@@ -56,7 +56,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
       break;
     if (res != ERROR_INSUFFICIENT_BUFFER)
     {
-      ERROR_LOG("{}() failed: {}", "QueryDisplayConfig", Error::CreateWin32(res).GetDescription());
+      Error::SetWin32(error, "QueryDisplayConfig() failed: ", res);
       return std::nullopt;
     }
   }
@@ -70,7 +70,7 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
     LONG res = DisplayConfigGetDeviceInfo(&sdn.header);
     if (res != ERROR_SUCCESS)
     {
-      ERROR_LOG("{}() failed: {}", "DisplayConfigGetDeviceInfo", Error::CreateWin32(res).GetDescription());
+      Error::SetWin32(error, "DisplayConfigGetDeviceInfo() failed: ", res);
       continue;
     }
 
@@ -85,15 +85,19 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd)
   return std::nullopt;
 }
 
-static std::optional<float> GetRefreshRateFromDWM(HWND hwnd)
+static std::optional<float> GetRefreshRateFromDWM(HWND hwnd, Error* error)
 {
   BOOL composition_enabled;
-  if (FAILED(DwmIsCompositionEnabled(&composition_enabled)))
+  HRESULT hr = DwmIsCompositionEnabled(&composition_enabled);
+  if (FAILED(hr))
+  {
+    Error::SetHResult(error, "DwmIsCompositionEnabled() failed: ", hr);
     return std::nullopt;
+  }
 
   DWM_TIMING_INFO ti = {};
   ti.cbSize = sizeof(ti);
-  HRESULT hr = DwmGetCompositionTimingInfo(nullptr, &ti);
+  hr = DwmGetCompositionTimingInfo(nullptr, &ti);
   if (SUCCEEDED(hr))
   {
     if (ti.rateRefresh.uiNumerator == 0 || ti.rateRefresh.uiDenominator == 0)
@@ -101,15 +105,21 @@ static std::optional<float> GetRefreshRateFromDWM(HWND hwnd)
 
     return static_cast<float>(ti.rateRefresh.uiNumerator) / static_cast<float>(ti.rateRefresh.uiDenominator);
   }
-
-  return std::nullopt;
+  else
+  {
+    Error::SetHResult(error, "DwmGetCompositionTimingInfo() failed: ", hr);
+    return std::nullopt;
+  }
 }
 
-static std::optional<float> GetRefreshRateFromMonitor(HWND hwnd)
+static std::optional<float> GetRefreshRateFromMonitor(HWND hwnd, Error* error)
 {
   HMONITOR mon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
   if (!mon)
+  {
+    Error::SetWin32(error, "MonitorFromWindow() failed: ", GetLastError());
     return std::nullopt;
+  }
 
   MONITORINFOEXW mi = {};
   mi.cbSize = sizeof(mi);
@@ -120,26 +130,46 @@ static std::optional<float> GetRefreshRateFromMonitor(HWND hwnd)
 
     // 0/1 are reserved for "defaults".
     if (EnumDisplaySettingsW(mi.szDevice, ENUM_CURRENT_SETTINGS, &dm) && dm.dmDisplayFrequency > 1)
+    {
       return static_cast<float>(dm.dmDisplayFrequency);
+    }
+    else
+    {
+      Error::SetWin32(error, "EnumDisplaySettingsW() failed: ", GetLastError());
+      return std::nullopt;
+    }
   }
-
-  return std::nullopt;
+  else
+  {
+    Error::SetWin32(error, "GetMonitorInfoW() failed: ", GetLastError());
+    return std::nullopt;
+  }
 }
 
-std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi)
+std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, Error* error)
 {
   std::optional<float> ret;
   if (wi.type != Type::Win32 || !wi.window_handle)
+  {
+    Error::SetStringView(error, "Invalid window type.");
     return ret;
+  }
 
   // Try DWM first, then fall back to integer values.
   const HWND hwnd = static_cast<HWND>(wi.window_handle);
-  ret = GetRefreshRateFromDisplayConfig(hwnd);
+  Error local_error;
+  ret = GetRefreshRateFromDisplayConfig(hwnd, &local_error);
   if (!ret.has_value())
   {
-    ret = GetRefreshRateFromDWM(hwnd);
+    WARNING_LOG("GetRefreshRateFromDisplayConfig() failed: {}", local_error.GetDescription());
+
+    ret = GetRefreshRateFromDWM(hwnd, &local_error);
     if (!ret.has_value())
-      ret = GetRefreshRateFromMonitor(hwnd);
+    {
+      WARNING_LOG("GetRefreshRateFromDWM() failed: {}", local_error.GetDescription());
+
+      ret = GetRefreshRateFromMonitor(hwnd, error);
+    }
   }
 
   return ret;
@@ -149,157 +179,29 @@ std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi)
 
 #include "util/platform_misc.h"
 
-std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi)
+std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, Error* error)
 {
   if (wi.type == WindowInfo::Type::MacOS)
-    return CocoaTools::GetViewRefreshRate(wi);
+    return CocoaTools::GetViewRefreshRate(wi, error);
 
+  Error::SetStringView(error, "Invalid window type.");
   return std::nullopt;
 }
 
 #else
 
 #ifdef ENABLE_X11
-
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/Xrandr.h>
-
-// Helper class for managing X errors
-namespace {
-class X11InhibitErrors;
-
-static X11InhibitErrors* s_current_error_inhibiter;
-
-class X11InhibitErrors
-{
-public:
-  X11InhibitErrors()
-  {
-    Assert(!s_current_error_inhibiter);
-    m_old_handler = XSetErrorHandler(ErrorHandler);
-    s_current_error_inhibiter = this;
-  }
-
-  ~X11InhibitErrors()
-  {
-    Assert(s_current_error_inhibiter == this);
-    s_current_error_inhibiter = nullptr;
-    XSetErrorHandler(m_old_handler);
-  }
-
-  ALWAYS_INLINE bool HadError() const { return m_had_error; }
-
-private:
-  static int ErrorHandler(Display* display, XErrorEvent* ee)
-  {
-    char error_string[256] = {};
-    XGetErrorText(display, ee->error_code, error_string, sizeof(error_string));
-    WARNING_LOG("X11 Error: {} (Error {} Minor {} Request {})", error_string, ee->error_code, ee->minor_code,
-                ee->request_code);
-
-    s_current_error_inhibiter->m_had_error = true;
-    return 0;
-  }
-
-  XErrorHandler m_old_handler = {};
-  bool m_had_error = false;
-};
-} // namespace
-
-static std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi)
-{
-  Display* display = static_cast<Display*>(wi.display_connection);
-  Window window = static_cast<Window>(reinterpret_cast<uintptr_t>(wi.window_handle));
-  if (!display || !window)
-    return std::nullopt;
-
-  X11InhibitErrors inhibiter;
-
-  XRRScreenResources* res = XRRGetScreenResources(display, window);
-  if (!res)
-  {
-    ERROR_LOG("XRRGetScreenResources() failed");
-    return std::nullopt;
-  }
-
-  ScopedGuard res_guard([res]() { XRRFreeScreenResources(res); });
-
-  int num_monitors;
-  XRRMonitorInfo* mi = XRRGetMonitors(display, window, True, &num_monitors);
-  if (num_monitors < 0)
-  {
-    ERROR_LOG("XRRGetMonitors() failed");
-    return std::nullopt;
-  }
-  else if (num_monitors > 1)
-  {
-    WARNING_LOG("XRRGetMonitors() returned {} monitors, using first", num_monitors);
-  }
-
-  ScopedGuard mi_guard([mi]() { XRRFreeMonitors(mi); });
-  if (mi->noutput <= 0)
-  {
-    ERROR_LOG("Monitor has no outputs");
-    return std::nullopt;
-  }
-  else if (mi->noutput > 1)
-  {
-    WARNING_LOG("Monitor has {} outputs, using first", mi->noutput);
-  }
-
-  XRROutputInfo* oi = XRRGetOutputInfo(display, res, mi->outputs[0]);
-  if (!oi)
-  {
-    ERROR_LOG("XRRGetOutputInfo() failed");
-    return std::nullopt;
-  }
-
-  ScopedGuard oi_guard([oi]() { XRRFreeOutputInfo(oi); });
-
-  XRRCrtcInfo* ci = XRRGetCrtcInfo(display, res, oi->crtc);
-  if (!ci)
-  {
-    ERROR_LOG("XRRGetCrtcInfo() failed");
-    return std::nullopt;
-  }
-
-  ScopedGuard ci_guard([ci]() { XRRFreeCrtcInfo(ci); });
-
-  XRRModeInfo* mode = nullptr;
-  for (int i = 0; i < res->nmode; i++)
-  {
-    if (res->modes[i].id == ci->mode)
-    {
-      mode = &res->modes[i];
-      break;
-    }
-  }
-  if (!mode)
-  {
-    ERROR_LOG("Failed to look up mode {} (of {})", static_cast<int>(ci->mode), res->nmode);
-    return std::nullopt;
-  }
-
-  if (mode->dotClock == 0 || mode->hTotal == 0 || mode->vTotal == 0)
-  {
-    ERROR_LOG("Modeline is invalid: {}/{}/{}", mode->dotClock, mode->hTotal, mode->vTotal);
-    return std::nullopt;
-  }
-
-  return static_cast<float>(static_cast<double>(mode->dotClock) /
-                            (static_cast<double>(mode->hTotal) * static_cast<double>(mode->vTotal)));
-}
-
-#endif // ENABLE_X11
-
-std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi)
-{
-#if defined(ENABLE_X11)
-  if (wi.type == WindowInfo::Type::X11)
-    return GetRefreshRateFromXRandR(wi);
+#include "x11_tools.h"
 #endif
 
+std::optional<float> WindowInfo::QueryRefreshRateForWindow(const WindowInfo& wi, Error* error)
+{
+#if defined(ENABLE_X11)
+  if (wi.type == WindowInfo::Type::Xlib || wi.type == WindowInfo::Type::XCB)
+    return GetRefreshRateFromXRandR(wi, error);
+#endif
+
+  Error::SetStringView(error, "Invalid window type.");
   return std::nullopt;
 }
 

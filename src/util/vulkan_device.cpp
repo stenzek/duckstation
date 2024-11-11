@@ -248,8 +248,8 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
   if (wi.type == WindowInfo::Type::Win32 && !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-  if (wi.type == WindowInfo::Type::X11 && !SupportsExtension(VK_KHR_XLIB_SURFACE_EXTENSION_NAME, true))
+#if defined(VK_USE_PLATFORM_XCB_KHR)
+  if (wi.type == WindowInfo::Type::XCB && !SupportsExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME, true))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)

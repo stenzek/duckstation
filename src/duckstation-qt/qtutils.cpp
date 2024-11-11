@@ -7,6 +7,8 @@
 #include "core/game_list.h"
 #include "core/system.h"
 
+#include "util/gpu_device.h"
+
 #include "common/error.h"
 #include "common/log.h"
 
@@ -30,6 +32,8 @@
 #include <QtWidgets/QTreeView>
 #include <algorithm>
 #include <array>
+#include <cstdlib>
+#include <cstring>
 #include <map>
 
 #if !defined(_WIN32) && !defined(APPLE)
@@ -317,7 +321,7 @@ qreal QtUtils::GetDevicePixelRatioForWidget(const QWidget* widget)
   return screen_for_ratio ? screen_for_ratio->devicePixelRatio() : static_cast<qreal>(1);
 }
 
-std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Error* error)
+std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, RenderAPI render_api, Error* error)
 {
   WindowInfo wi;
 
@@ -333,8 +337,20 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Error
   const QString platform_name = QGuiApplication::platformName();
   if (platform_name == QStringLiteral("xcb"))
   {
-    wi.type = WindowInfo::Type::X11;
-    wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
+    // This is fucking ridiculous. NVIDIA+XWayland doesn't support Xlib, and NVIDIA+Xorg doesn't support XCB.
+    // Use Xlib if we're not running under Wayland, or we're not requesting OpenGL. Vulkan+XCB seems fine.
+    const char* xdg_session_type = std::getenv("XDG_SESSION_TYPE");
+    const bool is_running_on_xwayland = (xdg_session_type && std::strstr(xdg_session_type, "wayland"));
+    if (is_running_on_xwayland || render_api == RenderAPI::Vulkan)
+    {
+      wi.type = WindowInfo::Type::XCB;
+      wi.display_connection = pni->nativeResourceForWindow("connection", widget->windowHandle());
+    }
+    else
+    {
+      wi.type = WindowInfo::Type::Xlib;
+      wi.display_connection = pni->nativeResourceForWindow("display", widget->windowHandle());
+    }
     wi.window_handle = reinterpret_cast<void*>(widget->winId());
   }
   else if (platform_name == QStringLiteral("wayland"))
@@ -356,9 +372,12 @@ std::optional<WindowInfo> QtUtils::GetWindowInfoForWidget(QWidget* widget, Error
   wi.surface_scale = static_cast<float>(dpr);
 
   // Query refresh rate, we need it for sync.
-  std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi);
+  Error refresh_rate_error;
+  std::optional<float> surface_refresh_rate = WindowInfo::QueryRefreshRateForWindow(wi, &refresh_rate_error);
   if (!surface_refresh_rate.has_value())
   {
+    WARNING_LOG("Failed to get refresh rate for window, falling back to Qt: {}", refresh_rate_error.GetDescription());
+
     // Fallback to using the screen, getting the rate for Wayland is an utter mess otherwise.
     const QScreen* widget_screen = widget->screen();
     if (!widget_screen)
