@@ -292,8 +292,11 @@ void OpenGLContextEGL::DestroySurface(SurfaceHandle handle)
     return;
 
   EGLSurface surface = (EGLSurface)handle;
-  if (eglGetCurrentSurface(EGL_DRAW) == surface)
+  if (m_current_surface == surface)
+  {
     eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    m_current_surface = EGL_NO_SURFACE;
+  }
 
   DestroyPlatformSurface(surface);
 }
