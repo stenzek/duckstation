@@ -783,7 +783,7 @@ void CPU::HandlePutsSyscall()
 {
   const auto& regs = g_state.regs;
 
-  u32 addr = regs.a1;
+  u32 addr = regs.a0;
   for (u32 i = 0; i < 1024; i++)
   {
     u8 value;
