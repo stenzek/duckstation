@@ -1,0 +1,87 @@
+name: Automated Builds
+
+on:
+  pull_request:
+    paths-ignore:
+      - '**.md'
+      - 'appveyor.yml'
+      - 'scripts/*'
+      - '.github/ISSUE_TEMPLATE/*'
+  push:
+    branches:
+      - master
+      - dev
+    paths-ignore:
+      - '**.md'
+      - 'appveyor.yml'
+      - 'scripts/*'
+      - '.github/ISSUE_TEMPLATE/*'
+
+jobs:
+  windows:
+    name: Windows
+    uses: "./.github/workflows/windows-build.yml"
+  linux-appimage:
+    name: Linux AppImage
+    uses: "./.github/workflows/linux-appimage-build.yml"
+  linux-flatpak:
+    name: Linux Flatpak
+    uses: "./.github/workflows/linux-flatpak-build.yml"
+  macos:
+    name: MacOS
+    uses: "./.github/workflows/macos-build.yml"
+
+  create-release:
+    name: Create Release
+    needs: [windows, linux-appimage, linux-flatpak, macos]
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4.1.7
+        with:
+          path: ./artifacts/
+
+      - name: Display Downloaded Artifacts
+        run: find ./artifacts/
+
+      - name: Create Preview Release
+        if: github.ref == 'refs/heads/master'
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "preview"
+          prerelease: true
+          title: "Latest Preview Build"
+          files: |
+            ./artifacts/windows-x64/duckstation-windows-x64-release.zip
+            ./artifacts/windows-x64/duckstation-windows-x64-release-symbols.zip
+            ./artifacts/windows-x64-sse2/duckstation-windows-x64-sse2-release.zip
+            ./artifacts/windows-x64-sse2/duckstation-windows-x64-sse2-release-symbols.zip
+            ./artifacts/windows-arm64/duckstation-windows-arm64-release.zip
+            ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
+            ./artifacts/linux-x64-appimage/DuckStation-x64.AppImage
+            ./artifacts/linux-x64-sse2-appimage/DuckStation-x64-SSE2.AppImage
+            ./artifacts/linux-flatpak/duckstation-x64.flatpak
+            ./artifacts/macos/duckstation-mac-release.zip
+
+      - name: Create Rolling Release
+        if: github.ref == 'refs/heads/dev'
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: false
+          title: "Latest Rolling Release"
+          files: |
+            ./artifacts/windows-x64/duckstation-windows-x64-release.zip
+            ./artifacts/windows-x64/duckstation-windows-x64-release-symbols.zip
+            ./artifacts/windows-x64-sse2/duckstation-windows-x64-sse2-release.zip
+            ./artifacts/windows-x64-sse2/duckstation-windows-x64-sse2-release-symbols.zip
+            ./artifacts/windows-arm64/duckstation-windows-arm64-release.zip
+            ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
+            ./artifacts/linux-x64-appimage/DuckStation-x64.AppImage
+            ./artifacts/linux-x64-sse2-appimage/DuckStation-x64-SSE2.AppImage
+            ./artifacts/linux-flatpak/duckstation-x64.flatpak
+            ./artifacts/macos/duckstation-mac-release.zip
+

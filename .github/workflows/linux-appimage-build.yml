@@ -1,0 +1,146 @@
+name: 🐧 Linux AppImage
+
+on:
+  workflow_call:
+
+jobs:
+  linux-x64-appimage-build:
+    name: "x64"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v4.1.6
+      with:
+        fetch-depth: 0
+
+    - name: Install Packages
+      run: scripts/appimage/install-packages.sh      
+
+    - name: Cache Dependencies
+      id: cache-deps
+      uses: actions/cache@v4.0.2
+      with:
+        path: ~/deps
+        key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh') }}
+
+    - name: Build Dependencies
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: scripts/deps/build-dependencies-linux.sh "$HOME/deps"
+
+    - name: Build FFmpeg
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: scripts/deps/build-ffmpeg-linux.sh "$HOME/deps"
+
+    - name: Initialize Build Tag
+      run: |
+        echo '#pragma once' > src/scmversion/tag.h
+
+    - name: Set Build Tag Asset
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      run: |
+        echo '#define SCM_RELEASE_ASSET "DuckStation-x64.AppImage"' >> src/scmversion/tag.h
+        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
+
+    - name: Tag as Preview Release
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
+
+    - name: Tag as Rolling Release
+      if: github.ref == 'refs/heads/dev'
+      run: |
+        echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
+
+    - name: Download Patch Archives
+      shell: bash
+      run: |
+        cd data/resources
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+
+    - name: Compile Build
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" ..
+        cmake --build . --parallel
+        cd ..
+        scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
+
+    - name: Upload Qt AppImage
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: "linux-x64-appimage"
+        path: "DuckStation-x64.AppImage"
+
+
+  linux-x64-sse2-appimage-build:
+    name: "x64 SSE2"
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v4.1.6
+      with:
+        fetch-depth: 0
+
+    - name: Install Packages
+      run: scripts/appimage/install-packages.sh      
+
+    - name: Cache Dependencies
+      id: cache-deps
+      uses: actions/cache@v4.0.2
+      with:
+        path: ~/deps
+        key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh') }}
+
+    - name: Build Dependencies
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: scripts/deps/build-dependencies-linux.sh "$HOME/deps"
+
+    - name: Build FFmpeg
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: scripts/deps/build-ffmpeg-linux.sh "$HOME/deps"
+
+    - name: Initialize Build Tag
+      run: |
+        echo '#pragma once' > src/scmversion/tag.h
+
+    - name: Set Build Tag Asset
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      run: |
+        echo '#define SCM_RELEASE_ASSET "DuckStation-x64-SSE2.AppImage"' >> src/scmversion/tag.h
+        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
+
+    - name: Tag as Preview Release
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
+
+    - name: Tag as Rolling Release
+      if: github.ref == 'refs/heads/dev'
+      run: |
+        echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
+
+    - name: Download Patch Archives
+      shell: bash
+      run: |
+        cd data/resources
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+
+    - name: Compile Build
+      shell: bash
+      run: |
+        mkdir build
+        cd build
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DDISABLE_SSE4=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17 -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" ..
+        cmake --build . --parallel
+        cd ..
+        scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64-SSE2
+
+    - name: Upload Qt AppImage
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: "linux-x64-sse2-appimage"
+        path: "DuckStation-x64-SSE2.AppImage"

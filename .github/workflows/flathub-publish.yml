@@ -1,0 +1,22 @@
+name: Flathub Publish
+
+on:
+  workflow_dispatch:
+    inputs:
+      flathub_branch:
+        description: "Flathub branch to push to"
+        required: true
+        default: "stable"
+        type: "choice"
+        options:
+          - "stable"
+          - "beta"
+
+jobs:
+  linux-flatpak:
+    name: Build Flatpak
+    uses: "./.github/workflows/linux-flatpak-build.yml"
+    with:
+      flathub_publish: true
+      flathub_branch: ${{ inputs.flathub_branch }}
+    secrets: inherit
