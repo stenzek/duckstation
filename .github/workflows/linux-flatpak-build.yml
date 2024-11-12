@@ -21,10 +21,6 @@ jobs:
       options: --privileged
     timeout-minutes: 120
     steps:
-    - name: Set Upload Token
-      if: inputs.flathub_publish
-      run: |
-        
     - uses: actions/checkout@v4.1.6
       with:
         fetch-depth: 0

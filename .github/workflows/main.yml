@@ -19,20 +19,20 @@ on:
 
 jobs:
   windows:
-    name: Windows
+    name: 💻 Windows
     uses: "./.github/workflows/windows-build.yml"
   linux-appimage:
-    name: Linux AppImage
+    name: 🐧 Linux AppImage
     uses: "./.github/workflows/linux-appimage-build.yml"
   linux-flatpak:
-    name: Linux Flatpak
+    name: 📦 Linux Flatpak
     uses: "./.github/workflows/linux-flatpak-build.yml"
   macos:
-    name: MacOS
+    name: 🍎 MacOS
     uses: "./.github/workflows/macos-build.yml"
 
   create-release:
-    name: Create Release
+    name: 📤 Create Release
     needs: [windows, linux-appimage, linux-flatpak, macos]
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
