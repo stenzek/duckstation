@@ -677,17 +677,9 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
   SetPipeline(m_imgui_pipeline.get());
   SetViewportAndScissor(0, 0, swap_chain->GetWidth(), swap_chain->GetHeight());
 
-  const float L = 0.0f;
-  const float R = static_cast<float>(swap_chain->GetWidth());
-  const float T = 0.0f;
-  const float B = static_cast<float>(swap_chain->GetHeight());
-  const float ortho_projection[4][4] = {
-    {2.0f / (R - L), 0.0f, 0.0f, 0.0f},
-    {0.0f, 2.0f / (T - B), 0.0f, 0.0f},
-    {0.0f, 0.0f, 0.5f, 0.0f},
-    {(R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f},
-  };
-  PushUniformBuffer(ortho_projection, sizeof(ortho_projection));
+  const GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(
+    0.0f, 0.0f, static_cast<float>(swap_chain->GetWidth()), static_cast<float>(swap_chain->GetHeight()), 0.0f, 1.0f);
+  PushUniformBuffer(&mproj, sizeof(mproj));
 
   // Render command lists
   const bool flip = UsesLowerLeftOrigin();
@@ -708,20 +700,11 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
       if (pcmd->ElemCount == 0 || pcmd->ClipRect.z <= pcmd->ClipRect.x || pcmd->ClipRect.w <= pcmd->ClipRect.y)
         continue;
 
+      GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
       if (flip)
-      {
-        const s32 height = static_cast<s32>(pcmd->ClipRect.w - pcmd->ClipRect.y);
-        const s32 flipped_y = static_cast<s32>(swap_chain->GetHeight()) - static_cast<s32>(pcmd->ClipRect.y) - height;
-        SetScissor(static_cast<s32>(pcmd->ClipRect.x), flipped_y, static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                   height);
-      }
-      else
-      {
-        SetScissor(static_cast<s32>(pcmd->ClipRect.x), static_cast<s32>(pcmd->ClipRect.y),
-                   static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                   static_cast<s32>(pcmd->ClipRect.w - pcmd->ClipRect.y));
-      }
+        clip = FlipToLowerLeft(clip, swap_chain->GetHeight());
 
+      SetScissor(clip);
       SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler.get());
       DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
     }

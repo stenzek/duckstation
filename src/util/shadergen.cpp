@@ -357,20 +357,20 @@ void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_c
   {
     if (m_render_api == RenderAPI::Vulkan && push_constant_on_vulkan)
     {
-      ss << "layout(push_constant) uniform PushConstants\n";
+      ss << "layout(push_constant, row_major) uniform PushConstants\n";
     }
     else
     {
-      ss << "layout(std140, set = 0, binding = 0) uniform UBOBlock\n";
+      ss << "layout(std140, row_major, set = 0, binding = 0) uniform UBOBlock\n";
       m_has_uniform_buffer = true;
     }
   }
   else if (m_glsl)
   {
     if (m_use_glsl_binding_layout)
-      ss << "layout(std140, binding = 0) uniform UBOBlock\n";
+      ss << "layout(std140, row_major, binding = 0) uniform UBOBlock\n";
     else
-      ss << "layout(std140) uniform UBOBlock\n";
+      ss << "layout(std140, row_major) uniform UBOBlock\n";
 
     m_has_uniform_buffer = true;
   }

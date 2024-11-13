@@ -475,8 +475,9 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShaderWithFXC(u32 shader_m
       return {};
   }
 
-  static constexpr UINT flags_non_debug = D3DCOMPILE_OPTIMIZATION_LEVEL3;
-  static constexpr UINT flags_debug = D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_DEBUG;
+  static constexpr UINT flags_non_debug = D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_OPTIMIZATION_LEVEL3;
+  static constexpr UINT flags_debug =
+    D3DCOMPILE_PACK_MATRIX_ROW_MAJOR | D3DCOMPILE_SKIP_OPTIMIZATION | D3DCOMPILE_DEBUG;
 
   Microsoft::WRL::ComPtr<ID3DBlob> blob;
   Microsoft::WRL::ComPtr<ID3DBlob> error_blob;
@@ -556,12 +557,14 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShaderWithDXC(u32 shader_m
   static constexpr const wchar_t* nondebug_arguments[] = {
     L"-Qstrip_reflect",
     L"-Qstrip_debug",
+    DXC_ARG_PACK_MATRIX_ROW_MAJOR,
     DXC_ARG_OPTIMIZATION_LEVEL3,
   };
   static constexpr const wchar_t* debug_arguments[] = {
     L"-Qstrip_reflect",
     DXC_ARG_DEBUG,
     L"-Qembed_debug",
+    DXC_ARG_PACK_MATRIX_ROW_MAJOR,
     DXC_ARG_SKIP_OPTIMIZATIONS,
   };
   const wchar_t* const* arguments = debug_device ? debug_arguments : nondebug_arguments;
