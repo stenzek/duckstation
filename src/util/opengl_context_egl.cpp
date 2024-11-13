@@ -443,6 +443,9 @@ void OpenGLContextEGL::UpdateWindowInfoSize(WindowInfo& wi, EGLSurface surface) 
   {
     wi.surface_width = static_cast<u16>(surface_width);
     wi.surface_height = static_cast<u16>(surface_height);
+
+    if (WindowInfo::ShouldSwapDimensionsForPreRotation(wi.surface_prerotation))
+      std::swap(wi.surface_width, wi.surface_height);
   }
   else
   {

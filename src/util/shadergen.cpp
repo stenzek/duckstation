@@ -791,6 +791,40 @@ void ShaderGen::DeclareFragmentEntryPoint(
   }
 }
 
+std::string ShaderGen::GenerateRotateVertexShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, { "float2 u_rotation_matrix0", "float2 u_rotation_matrix1" }, true);
+  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
+  ss << "{\n";
+  ss << "  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));\n";
+  ss << "  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);\n";
+  ss << "  v_pos.xy = float2(dot(u_rotation_matrix0, v_pos.xy), dot(u_rotation_matrix1, v_pos.xy));\n";
+  ss << "  #if API_OPENGL || API_OPENGL_ES || API_VULKAN\n";
+  ss << "    v_pos.y = -v_pos.y;\n";
+  ss << "  #endif\n";
+  ss << "}\n";
+
+  return ss.str();
+}
+
+std::string ShaderGen::GenerateRotateFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1);
+
+  ss << R"(
+{
+  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);
+}
+)";
+
+  return ss.str();
+}
+
 std::string ShaderGen::GenerateScreenQuadVertexShader(float z /* = 0.0f */) const
 {
   std::stringstream ss;

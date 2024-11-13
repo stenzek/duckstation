@@ -13,6 +13,7 @@
 
 class Timer;
 
+class GPUPipeline;
 class GPUSampler;
 class GPUTexture;
 
@@ -117,6 +118,9 @@ public:
   ALWAYS_INLINE GPUTexture* GetInputTexture() const { return m_input_texture.get(); }
   ALWAYS_INLINE GPUTexture* GetOutputTexture() const { return m_output_texture.get(); }
 
+  /// Returns either the input or output texture, whichever isn't the destination after the final pass.
+  GPUTexture* GetTextureUnusedAtEndOfChain() const;
+
   bool IsActive() const;
   bool IsInternalChain() const;
 
@@ -125,6 +129,7 @@ public:
   void LoadStages();
   void ClearStages();
   void DestroyTextures();
+  void DestroyPipelines();
 
   /// Temporarily toggles post-processing on/off.
   void Toggle();
@@ -151,6 +156,7 @@ private:
   std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
   std::unique_ptr<GPUTexture> m_input_texture;
   std::unique_ptr<GPUTexture> m_output_texture;
+  std::unique_ptr<GPUPipeline> m_rotated_copy_pipeline;
 };
 
 // [display_name, filename]

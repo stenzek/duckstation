@@ -3406,7 +3406,7 @@ void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 cle
     const VkRenderingInfoKHR ri = {VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
                                    nullptr,
                                    0u,
-                                   {{}, {swap_chain->GetWidth(), swap_chain->GetHeight()}},
+                                   {{}, {swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight()}},
                                    1u,
                                    0u,
                                    1u,
@@ -3427,7 +3427,7 @@ void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 cle
                                       nullptr,
                                       m_current_render_pass,
                                       swap_chain->GetCurrentFramebuffer(),
-                                      {{0, 0}, {swap_chain->GetWidth(), swap_chain->GetHeight()}},
+                                      {{0, 0}, {swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight()}},
                                       1u,
                                       &clear_value};
     vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);
