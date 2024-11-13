@@ -9,6 +9,14 @@
 #include <string_view>
 #include <vector>
 
+#ifdef _WIN32
+#define FS_OSPATH_SEPARATOR_CHARACTER '\\'
+#define FS_OSPATH_SEPARATOR_STR "\\"
+#else
+#define FS_OSPATH_SEPARATOR_CHARACTER '/'
+#define FS_OSPATH_SEPARATOR_STR "/"
+#endif
+
 namespace Path {
 /// Converts any forward slashes to backslashes on Win32.
 std::string ToNativePath(std::string_view path);
