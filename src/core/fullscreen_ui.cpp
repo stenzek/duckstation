@@ -1625,7 +1625,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
                                           const char* name, const char* display_name, const char* icon_name,
                                           bool show_type)
 {
-  if (type == InputBindingInfo::Type::Pointer)
+  if (type == InputBindingInfo::Type::Pointer || type == InputBindingInfo::Type::RelativePointer)
     return;
 
   TinyString title;

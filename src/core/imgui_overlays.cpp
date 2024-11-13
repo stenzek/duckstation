@@ -791,6 +791,7 @@ void ImGuiManager::DrawInputsOverlay()
         case InputBindingInfo::Type::Macro:
         case InputBindingInfo::Type::Unknown:
         case InputBindingInfo::Type::Pointer:
+        case InputBindingInfo::Type::RelativePointer:
         default:
           break;
       }

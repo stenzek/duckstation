@@ -303,7 +303,7 @@ bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindi
 
 std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
-  if (binding_type == InputBindingInfo::Type::Pointer)
+  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer)
   {
     // pointer and device bindings don't have a data part
     if (key.source_type == InputSourceType::Pointer)
@@ -356,7 +356,7 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
                                                           const InputBindingKey* keys, size_t num_keys)
 {
   // can't have a chord of devices/pointers
-  if (binding_type == InputBindingInfo::Type::Pointer)
+  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::Pointer)
   {
     // so only take the first
     if (num_keys > 0)
@@ -857,7 +857,7 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
       }
       break;
 
-      case InputBindingInfo::Type::Pointer:
+      case InputBindingInfo::Type::RelativePointer:
       {
         auto cb = [pad_index, base = bi.bind_index](InputBindingKey key, float value) {
           if (!System::IsValid())
@@ -886,6 +886,9 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
         }
       }
       break;
+
+      case InputBindingInfo::Type::Pointer:
+        break;
 
       default:
         ERROR_LOG("Unhandled binding info type {}", static_cast<u32>(bi.type));
@@ -1309,7 +1312,8 @@ void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, 
 void InputManager::UpdateRelativeMouseMode()
 {
   // Check for relative mode bindings, and enable if there's anything using it.
-  bool has_relative_mode_bindings = !s_pointer_move_callbacks.empty();
+  // Raw input needs to force relative mode/clipping, because it's now disconnected from the system pointer.
+  bool has_relative_mode_bindings = !s_pointer_move_callbacks.empty() || IsUsingRawInput();
   if (!has_relative_mode_bindings)
   {
     for (const auto& it : s_binding_map)

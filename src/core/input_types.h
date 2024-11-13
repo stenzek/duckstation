@@ -15,7 +15,8 @@ struct InputBindingInfo
     Axis,
     HalfAxis,
     Motor,
-    Pointer, // Receive relative mouse movement events, bind_index is offset by the axis.
+    Pointer,         // Absolute pointer, does not receive any events, but is queryable.
+    RelativePointer, // Receive relative mouse movement events, bind_index is offset by the axis.
     Macro,
   };
 
