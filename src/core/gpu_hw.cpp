@@ -1021,7 +1021,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     (upscaled && m_texture_filtering == GPUTextureFilter::Nearest && g_settings.gpu_force_round_texcoords);
   const bool true_color = g_settings.gpu_true_color;
   const bool scaled_dithering = (!m_true_color && upscaled && g_settings.gpu_scaled_dithering);
-  const bool disable_color_perspective = ShouldDisableColorPerspective();
+  const bool disable_color_perspective = (features.noperspective_interpolation && ShouldDisableColorPerspective());
 
   // Determine when to use shader blending.
   // FBFetch is free, we need it for filtering without DSB, or when accurate blending is forced.
