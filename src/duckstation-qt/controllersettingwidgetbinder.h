@@ -38,7 +38,7 @@ static void BindWidgetToInputProfileBool(SettingsInterface* sif, WidgetType* wid
       const bool new_value = Accessor::getBoolValue(widget);
       sif->SetBoolValue(section.c_str(), key.c_str(), new_value);
       QtHost::SaveGameSettings(sif, false);
-      g_emu_thread->reloadGameSettings();
+      g_emu_thread->reloadInputProfile();
     });
   }
   else
@@ -52,6 +52,41 @@ static void BindWidgetToInputProfileBool(SettingsInterface* sif, WidgetType* wid
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
+  }
+}
+
+/// Interface specific method of BindWidgetToIntSetting().
+template<typename WidgetType>
+static void BindWidgetToInputProfileInt(SettingsInterface* sif, WidgetType* widget, std::string section,
+                                        std::string key, int default_value, int option_offset = 0)
+{
+  using Accessor = SettingWidgetBinder::SettingAccessor<WidgetType>;
+
+  if (sif)
+  {
+    const int value = sif->GetIntValue(section.c_str(), key.c_str(), default_value) - option_offset;
+    Accessor::setIntValue(widget, value);
+
+    Accessor::connectValueChanged(widget,
+                                  [sif, widget, section = std::move(section), key = std::move(key), option_offset]() {
+                                    const int new_value = Accessor::getIntValue(widget);
+                                    sif->SetIntValue(section.c_str(), key.c_str(), new_value + option_offset);
+                                    QtHost::SaveGameSettings(sif, false);
+                                    g_emu_thread->reloadInputProfile();
+                                  });
+  }
+  else
+  {
+    const int value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), default_value) - option_offset;
+    Accessor::setIntValue(widget, value);
+
+    Accessor::connectValueChanged(
+      widget, [widget, section = std::move(section), key = std::move(key), option_offset]() {
+        const int new_value = Accessor::getIntValue(widget);
+        Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), new_value + option_offset);
+        Host::CommitBaseSettingChanges();
+        g_emu_thread->applySettings();
+      });
   }
 }
 
@@ -71,7 +106,7 @@ static void BindWidgetToInputProfileFloat(SettingsInterface* sif, WidgetType* wi
       const float new_value = Accessor::getFloatValue(widget);
       sif->SetFloatValue(section.c_str(), key.c_str(), new_value);
       QtHost::SaveGameSettings(sif, false);
-      g_emu_thread->reloadGameSettings();
+      g_emu_thread->reloadInputProfile();
     });
   }
   else
@@ -104,7 +139,7 @@ static void BindWidgetToInputProfileNormalized(SettingsInterface* sif, WidgetTyp
       const int new_value = Accessor::getIntValue(widget);
       sif->SetFloatValue(section.c_str(), key.c_str(), static_cast<float>(new_value) / range);
       QtHost::SaveGameSettings(sif, false);
-      g_emu_thread->reloadGameSettings();
+      g_emu_thread->reloadInputProfile();
     });
   }
   else
@@ -138,7 +173,7 @@ static void BindWidgetToInputProfileString(SettingsInterface* sif, WidgetType* w
     Accessor::connectValueChanged(widget, [widget, sif, section = std::move(section), key = std::move(key)]() {
       sif->SetStringValue(section.c_str(), key.c_str(), Accessor::getStringValue(widget).toUtf8().constData());
       QtHost::SaveGameSettings(sif, false);
-      g_emu_thread->reloadGameSettings();
+      g_emu_thread->reloadInputProfile();
     });
   }
   else
@@ -185,19 +220,11 @@ static void BindWidgetToInputProfileEnumSetting(SettingsInterface* sif, WidgetTy
   {
     Accessor::connectValueChanged(
       widget, [sif, widget, section = std::move(section), key = std::move(key), to_string_function]() {
-        if (std::optional<int> new_value = Accessor::getIntValue(widget); new_value.has_value())
-        {
-          const char* string_value =
-            to_string_function(static_cast<DataType>(static_cast<UnderlyingType>(new_value.value())));
-          sif->SetStringValue(section.c_str(), key.c_str(), string_value);
-        }
-        else
-        {
-          sif->DeleteValue(section.c_str(), key.c_str());
-        }
-
+        const DataType value = static_cast<DataType>(static_cast<UnderlyingType>(Accessor::getIntValue(widget)));
+        const char* string_value = to_string_function(value);
+        sif->SetStringValue(section.c_str(), key.c_str(), string_value);
         QtHost::SaveGameSettings(sif, true);
-        g_emu_thread->reloadGameSettings();
+        g_emu_thread->reloadInputProfile();
       });
   }
   else

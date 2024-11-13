@@ -236,7 +236,10 @@ void SetDefaultSettings(SettingsInterface& si);
 void ApplySettings(bool display_osd_messages);
 
 /// Reloads game specific settings, and applys any changes present.
-bool ReloadGameSettings(bool display_osd_messages);
+void ReloadGameSettings(bool display_osd_messages);
+
+/// Reloads input profile, depending on whether it is a specific profile or game configuration.
+void ReloadInputProfile(bool display_osd_messages);
 
 /// Reloads input sources.
 void ReloadInputSources();

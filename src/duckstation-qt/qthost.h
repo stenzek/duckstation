@@ -168,6 +168,7 @@ public Q_SLOTS:
   void setDefaultSettings(bool system = true, bool controller = true);
   void applySettings(bool display_osd_messages = false);
   void reloadGameSettings(bool display_osd_messages = false);
+  void reloadInputProfile(bool display_osd_messages = false);
   void reloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
   void updateEmuFolders();
   void updateControllerSettings();

@@ -186,6 +186,7 @@ static void AccumulatePreFrameSleepTime(Common::Timer::Value current_time);
 static void UpdateDisplayVSync();
 
 static bool UpdateGameSettingsLayer();
+static void UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<std::mutex>& lock);
 static void UpdateRunningGame(const std::string_view path, CDImage* image, bool booting);
 static bool CheckForRequiredSubQ(Error* error);
 
@@ -1461,13 +1462,35 @@ void System::ApplySettings(bool display_osd_messages)
   Host::CheckForSettingsChanges(old_config);
 }
 
-bool System::ReloadGameSettings(bool display_osd_messages)
+void System::ReloadGameSettings(bool display_osd_messages)
 {
   if (!IsValid() || !UpdateGameSettingsLayer())
-    return false;
+    return;
 
   ApplySettings(display_osd_messages);
-  return true;
+}
+
+void System::ReloadInputProfile(bool display_osd_messages)
+{
+  if (!IsValid() || !s_state.game_settings_interface)
+    return;
+
+  // per-game configuration?
+  if (s_state.game_settings_interface->GetBoolValue("ControllerPorts", "UseGameSettingsForController", false))
+  {
+    // update the whole game settings layer.
+    UpdateGameSettingsLayer();
+  }
+  else if (std::string profile_name =
+             s_state.game_settings_interface->GetStringValue("ControllerPorts", "InputProfileName");
+           !profile_name.empty())
+  {
+    // only have to reload the input layer
+    auto lock = Host::GetSettingsLock();
+    UpdateInputSettingsLayer(std::move(profile_name), lock);
+  }
+
+  ApplySettings(display_osd_messages);
 }
 
 bool System::UpdateGameSettingsLayer()
@@ -1506,6 +1529,16 @@ bool System::UpdateGameSettingsLayer()
   Host::Internal::SetGameSettingsLayer(new_interface.get(), lock);
   s_state.game_settings_interface = std::move(new_interface);
 
+  UpdateInputSettingsLayer(std::move(input_profile_name), lock);
+
+  if (!IsReplayingGPUDump())
+    Cheats::ReloadCheats(false, true, false, true);
+
+  return true;
+}
+
+void System::UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<std::mutex>& lock)
+{
   std::unique_ptr<INISettingsInterface> input_interface;
   if (!input_profile_name.empty())
   {
@@ -1531,11 +1564,6 @@ bool System::UpdateGameSettingsLayer()
   Host::Internal::SetInputSettingsLayer(input_interface.get(), lock);
   s_state.input_settings_interface = std::move(input_interface);
   s_state.input_profile_name = std::move(input_profile_name);
-
-  if (!IsReplayingGPUDump())
-    Cheats::ReloadCheats(false, true, false, true);
-
-  return true;
 }
 
 void System::ResetSystem()

@@ -801,7 +801,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
         sb->setMinimum(si.IntegerMinValue());
         sb->setMaximum(si.IntegerMaxValue());
         sb->setSingleStep(si.IntegerStepValue());
-        SettingWidgetBinder::BindWidgetToIntSetting(sif, sb, section, std::move(key_name), si.IntegerDefaultValue());
+        ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(sif, sb, section, std::move(key_name),
+                                                                   si.IntegerDefaultValue());
         layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
         current_row++;
@@ -814,8 +815,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
         cb->setObjectName(QString::fromUtf8(si.name));
         for (u32 j = 0; si.options[j] != nullptr; j++)
           cb->addItem(qApp->translate(cinfo->name, si.options[j]));
-        SettingWidgetBinder::BindWidgetToIntSetting(sif, cb, section, std::move(key_name), si.IntegerDefaultValue(),
-                                                    si.IntegerMinValue());
+        ControllerSettingWidgetBinder::BindWidgetToInputProfileInt(sif, cb, section, std::move(key_name),
+                                                                   si.IntegerDefaultValue(), si.IntegerMinValue());
         layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addWidget(cb, current_row, 1, 1, 3);
         current_row++;
@@ -838,8 +839,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
             sb->setSuffix(QStringLiteral("%"));
           }
 
-          SettingWidgetBinder::BindWidgetToNormalizedSetting(sif, sb, section, std::move(key_name), si.multiplier,
-                                                             si.FloatDefaultValue());
+          ControllerSettingWidgetBinder::BindWidgetToInputProfileNormalized(sif, sb, section, std::move(key_name),
+                                                                            si.multiplier, si.FloatDefaultValue());
         }
         else
         {
@@ -847,7 +848,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
           sb->setMaximum(si.FloatMaxValue());
           sb->setSingleStep(si.FloatStepValue());
 
-          SettingWidgetBinder::BindWidgetToFloatSetting(sif, sb, section, std::move(key_name), si.FloatDefaultValue());
+          ControllerSettingWidgetBinder::BindWidgetToInputProfileFloat(sif, sb, section, std::move(key_name),
+                                                                       si.FloatDefaultValue());
         }
         layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addWidget(sb, current_row, 1, 1, 3);
@@ -859,7 +861,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
       {
         QLineEdit* le = new QLineEdit(this);
         le->setObjectName(QString::fromUtf8(si.name));
-        SettingWidgetBinder::BindWidgetToStringSetting(sif, le, section, std::move(key_name), si.StringDefaultValue());
+        ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
+                                                                      si.StringDefaultValue());
         layout->addWidget(new QLabel(qApp->translate(cinfo->name, si.display_name), this), current_row, 0);
         layout->addWidget(le, current_row, 1, 1, 3);
         current_row++;
@@ -871,7 +874,8 @@ void ControllerCustomSettingsWidget::createSettingWidgets(ControllerBindingWidge
         QLineEdit* le = new QLineEdit(this);
         le->setObjectName(QString::fromUtf8(si.name));
         QPushButton* browse_button = new QPushButton(tr("Browse..."), this);
-        SettingWidgetBinder::BindWidgetToStringSetting(sif, le, section, std::move(key_name), si.StringDefaultValue());
+        ControllerSettingWidgetBinder::BindWidgetToInputProfileString(sif, le, section, std::move(key_name),
+                                                                      si.StringDefaultValue());
         connect(browse_button, &QPushButton::clicked, [this, le]() {
           QString path = QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select File")));
           if (!path.isEmpty())

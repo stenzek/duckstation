@@ -675,6 +675,17 @@ void EmuThread::reloadGameSettings(bool display_osd_messages /* = false */)
   System::ReloadGameSettings(display_osd_messages);
 }
 
+void EmuThread::reloadInputProfile(bool display_osd_messages /*= false*/)
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, "reloadInputProfile", Qt::QueuedConnection, Q_ARG(bool, display_osd_messages));
+    return;
+  }
+
+  System::ReloadInputProfile(display_osd_messages);
+}
+
 void EmuThread::updateEmuFolders()
 {
   if (!isCurrentThread())
