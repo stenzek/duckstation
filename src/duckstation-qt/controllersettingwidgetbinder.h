@@ -136,12 +136,7 @@ static void BindWidgetToInputProfileString(SettingsInterface* sif, WidgetType* w
     Accessor::setStringValue(widget, value);
 
     Accessor::connectValueChanged(widget, [widget, sif, section = std::move(section), key = std::move(key)]() {
-      const QString new_value = Accessor::getStringValue(widget);
-      if (!new_value.isEmpty())
-        sif->SetStringValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
-      else
-        sif->DeleteValue(section.c_str(), key.c_str());
-
+      sif->SetStringValue(section.c_str(), key.c_str(), Accessor::getStringValue(widget).toUtf8().constData());
       QtHost::SaveGameSettings(sif, false);
       g_emu_thread->reloadGameSettings();
     });
@@ -154,11 +149,8 @@ static void BindWidgetToInputProfileString(SettingsInterface* sif, WidgetType* w
     Accessor::setStringValue(widget, value);
 
     Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key)]() {
-      const QString new_value = Accessor::getStringValue(widget);
-      if (!new_value.isEmpty())
-        Host::SetBaseStringSettingValue(section.c_str(), key.c_str(), new_value.toUtf8().constData());
-      else
-        Host::DeleteBaseSettingValue(section.c_str(), key.c_str());
+      Host::SetBaseStringSettingValue(section.c_str(), key.c_str(),
+                                      Accessor::getStringValue(widget).toUtf8().constData());
       Host::CommitBaseSettingChanges();
       g_emu_thread->applySettings();
     });
