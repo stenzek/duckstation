@@ -351,10 +351,16 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 #undef BUTTON
 };
 
+#ifndef __ANDROID__
+static constexpr const char* DEFAULT_CROSSHAIR_PATH = "images" FS_OSPATH_SEPARATOR_STR "crosshair.png";
+#else
+static constexpr const char* DEFAULT_CROSSHAIR_PATH = "";
+#endif
+
 static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Path, "CrosshairImagePath", TRANSLATE_NOOP("Justifier", "Crosshair Image Path"),
-   TRANSLATE_NOOP("Justifier", "Path to an image to use as a crosshair/cursor."), nullptr, nullptr, nullptr, nullptr,
-   nullptr, nullptr, 0.0f},
+   TRANSLATE_NOOP("Justifier", "Path to an image to use as a crosshair/cursor."), DEFAULT_CROSSHAIR_PATH, nullptr,
+   nullptr, nullptr, nullptr, nullptr, 0.0f},
   {SettingInfo::Type::Float, "CrosshairScale", TRANSLATE_NOOP("Justifier", "Crosshair Image Scale"),
    TRANSLATE_NOOP("Justifier", "Scale of crosshair image on screen."), "1.0", "0.0001", "100.0", "0.10", "%.0f%%",
    nullptr, 100.0f},
@@ -402,7 +408,7 @@ void Justifier::LoadSettings(const SettingsInterface& si, const char* section, b
 
   m_x_scale = si.GetFloatValue(section, "XScale", 1.0f);
 
-  std::string cursor_path = si.GetStringValue(section, "CrosshairImagePath");
+  std::string cursor_path = si.GetStringValue(section, "CrosshairImagePath", DEFAULT_CROSSHAIR_PATH);
   const float cursor_scale = si.GetFloatValue(section, "CrosshairScale", 1.0f);
   u32 cursor_color = 0xFFFFFF;
   if (std::string cursor_color_str = si.GetStringValue(section, "CrosshairColor", ""); !cursor_color_str.empty())
@@ -414,11 +420,6 @@ void Justifier::LoadSettings(const SettingsInterface& si, const char* section, b
     if (cursor_color_opt.has_value())
       cursor_color = cursor_color_opt.value();
   }
-
-#ifndef __ANDROID__
-  if (cursor_path.empty())
-    cursor_path = Path::Combine(EmuFolders::Resources, "images/crosshair.png");
-#endif
 
   const s32 prev_pointer_index = GetSoftwarePointerIndex();
 
@@ -439,7 +440,7 @@ void Justifier::LoadSettings(const SettingsInterface& si, const char* section, b
     }
 
     // Pointer changed, so need to update software cursor.
-    const bool had_software_cursor = m_cursor_path.empty();
+    const bool had_software_cursor = !m_cursor_path.empty();
     m_cursor_path = std::move(cursor_path);
     m_cursor_scale = cursor_scale;
     m_cursor_color = cursor_color;
@@ -447,7 +448,17 @@ void Justifier::LoadSettings(const SettingsInterface& si, const char* section, b
     {
       if (!m_cursor_path.empty())
       {
-        ImGuiManager::SetSoftwareCursor(new_pointer_index, m_cursor_path, m_cursor_scale, m_cursor_color);
+        std::string image_path;
+#ifndef __ANDROID__
+        if (!Path::IsAbsolute(m_cursor_path))
+          image_path = Path::Combine(EmuFolders::Resources, m_cursor_path);
+        else
+          image_path = m_cursor_path;
+#else
+        image_path = m_cursor_path;
+#endif
+
+        ImGuiManager::SetSoftwareCursor(new_pointer_index, std::move(image_path), m_cursor_scale, m_cursor_color);
         if (m_has_relative_binds)
           UpdateSoftwarePointerPosition();
       }
