@@ -2574,6 +2574,17 @@ public:
 
 #endif
 
+  ALWAYS_INLINE float dot(const GSVector4& v) const
+  {
+#ifdef CPU_ARCH_ARM64
+    return vaddvq_f32(vmulq_f32(v4s, v.v4s));
+#else
+    const float32x4_t dp = vmulq_f32(v4s, v.v4s);
+    float32x2_t tmp = vadd_f32(vget_low_f32(dp), vget_high_f32(dp)); // (x+z, y+w)
+    return vget_lane_f32(vadd_f32(tmp, vdup_lane_f32(tmp, 1)), 0);
+#endif
+  }
+
   ALWAYS_INLINE GSVector4 sat(const GSVector4& a, const GSVector4& b) const { return max(a).min(b); }
 
   ALWAYS_INLINE GSVector4 sat(const GSVector4& a) const

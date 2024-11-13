@@ -2007,10 +2007,16 @@ public:
 
   ALWAYS_INLINE GSVector4 hsub(const GSVector4& v) const { return GSVector4(_mm_hsub_ps(m, v.m)); }
 
-  template<int i>
-  ALWAYS_INLINE GSVector4 dp(const GSVector4& v) const
+  ALWAYS_INLINE float dot(const GSVector4& v) const
   {
-    return GSVector4(_mm_dp_ps(m, v.m, i));
+#ifdef CPU_ARCH_SSE41
+    return _mm_cvtss_f32(_mm_dp_ps(m, v.m, 0xf1));
+#else
+    __m128 tmp = _mm_mul_ps(m, v.m);
+    tmp = _mm_add_ps(tmp, _mm_unpackhi_ps(tmp, tmp)); // (x+z, y+w, ..., ...)
+    tmp = _mm_add_ss(tmp, _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(3, 2, 1, 1)));
+    return _mm_cvtss_f32(tmp);
+#endif
   }
 
   ALWAYS_INLINE GSVector4 sat(const GSVector4& min, const GSVector4& max) const
@@ -2392,6 +2398,11 @@ public:
   ALWAYS_INLINE GSVector2 xy() const { return GSVector2(m); }
 
   ALWAYS_INLINE GSVector2 zw() const { return GSVector2(_mm_shuffle_ps(m, m, _MM_SHUFFLE(3, 2, 3, 2))); }
+
+  ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l, const GSVector2& h)
+  {
+    return GSVector4(_mm_movelh_ps(l.m, h.m));
+  }
 
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
   ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const                                                                       \

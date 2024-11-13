@@ -37,3 +37,33 @@ public:
 
   alignas(8) float E[2][2];
 };
+
+class alignas(VECTOR_ALIGNMENT) GSMatrix4x4
+{
+public:
+  GSMatrix4x4() = default;
+  GSMatrix4x4(float e00, float e01, float e02, float e03, float e10, float e11, float e12, float e13, float e20,
+              float e21, float e22, float e23, float e30, float e31, float e32, float e33);
+  GSMatrix4x4(const GSMatrix2x2& m);
+
+  GSMatrix4x4 operator*(const GSMatrix4x4& m) const;
+
+  GSVector4 operator*(const GSVector4& v) const;
+
+  static GSMatrix4x4 Identity();
+
+  static GSMatrix4x4 RotationX(float angle_in_radians);
+  static GSMatrix4x4 RotationY(float angle_in_radians);
+  static GSMatrix4x4 RotationZ(float angle_in_radians);
+
+  static GSMatrix4x4 OffCenterOrthographicProjection(float left, float top, float right, float bottom, float zNear,
+                                                     float zFar);
+  static GSMatrix4x4 OffCenterOrthographicProjection(float width, float height, float zNear, float zFar);
+
+  GSVector4 row(size_t i) const;
+  GSVector4 col(size_t i) const;
+
+  void store(void* m);
+
+  float E[4][4];
+};

@@ -1845,20 +1845,9 @@ public:
 
   GSVector4 hsub(const GSVector4& v) const { return GSVector4(x - y, z - w, v.x - v.y, v.z - v.w); }
 
-  template<int i>
-  GSVector4 dp(const GSVector4& v) const
+  ALWAYS_INLINE float dot(const GSVector4& v) const
   {
-    float res = 0.0f;
-    if constexpr (i & 0x10)
-      res += x * v.x;
-    if constexpr (i & 0x20)
-      res += y * v.y;
-    if constexpr (i & 0x40)
-      res += z * v.z;
-    if constexpr (i & 0x80)
-      res += w * v.w;
-    return GSVector4((i & 0x01) ? res : 0.0f, (i & 0x02) ? res : 0.0f, (i & 0x04) ? res : 0.0f,
-                     (i & 0x08) ? res : 0.0f);
+    return (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w);
   }
 
   GSVector4 sat(const GSVector4& min, const GSVector4& max) const
