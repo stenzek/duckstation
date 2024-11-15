@@ -671,9 +671,17 @@ bool VulkanSwapChain::HandleAcquireOrPresentError(VkResult& res, bool is_present
   {
     VulkanDevice& dev = VulkanDevice::GetInstance();
     if (is_present_error)
+    {
+      // Older NVIDIA drivers completely lock up if there is no device idle wait prior to waiting of the command
+      // buffer's fences. I'm guessing it's something due to the failed present, but regardless, it shouldn't hurt
+      // anything doing this here. But don't remove it for this reason.
+      vkDeviceWaitIdle(dev.GetVulkanDevice());
       dev.WaitForAllFences();
+    }
     else
+    {
       dev.SubmitCommandBuffer(true);
+    }
 
     Error error;
     if (!RecreateSwapChain(dev, &error))
@@ -690,9 +698,15 @@ bool VulkanSwapChain::HandleAcquireOrPresentError(VkResult& res, bool is_present
   {
     VulkanDevice& dev = VulkanDevice::GetInstance();
     if (is_present_error)
+    {
+      // See above.
+      vkDeviceWaitIdle(dev.GetVulkanDevice());
       dev.WaitForAllFences();
+    }
     else
+    {
       dev.SubmitCommandBuffer(true);
+    }
 
     Error error;
     if (!RecreateSurface(dev, &error))
