@@ -3497,26 +3497,27 @@ void FullscreenUI::DrawEmulationSettingsPage()
               "such as GSync/FreeSync. Disable if you are having speed or sound issues."),
     "Display", "OptimalFramePacing", false);
 
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Skip Duplicate Frame Display"),
+    FSUI_CSTR("Skips the presentation/display of frames that are not unique. Can result in worse frame pacing."),
+    "Display", "SkipPresentingDuplicateFrames", false);
+
   const bool optimal_frame_pacing_active = GetEffectiveBoolSetting(bsi, "Display", "OptimalFramePacing", false);
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Reduce Input Latency"),
     FSUI_CSTR("Reduces input latency by delaying the start of frame until closer to the presentation time."), "Display",
     "PreFrameSleep", false, optimal_frame_pacing_active);
 
-  DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Skip Duplicate Frame Display"),
-    FSUI_CSTR("Skips the presentation/display of frames that are not unique. Can result in worse frame pacing."),
-    "Display", "SkipPresentingDuplicateFrames", false,
-    !(GetEffectiveBoolSetting(bsi, "Display", "VSync", false) &&
-      GetEffectiveBoolSetting(bsi, "Main", "SyncToHostRefreshRate", false)));
-
   const bool pre_frame_sleep_active =
     (optimal_frame_pacing_active && GetEffectiveBoolSetting(bsi, "Display", "PreFrameSleep", false));
-  DrawFloatRangeSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_BATTERY_FULL, "Frame Time Buffer"),
-    FSUI_CSTR("Specifies the amount of buffer time added, which reduces the additional sleep time introduced."),
-    "Display", "PreFrameSleepBuffer", Settings::DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER, 0.0f, 20.0f, "%.1f", 1.0f,
-    pre_frame_sleep_active);
+  if (pre_frame_sleep_active)
+  {
+    DrawFloatRangeSetting(
+      bsi, FSUI_ICONSTR(ICON_FA_BATTERY_FULL, "Frame Time Buffer"),
+      FSUI_CSTR("Specifies the amount of buffer time added, which reduces the additional sleep time introduced."),
+      "Display", "PreFrameSleepBuffer", Settings::DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER, 0.0f, 20.0f,
+      FSUI_CSTR("%.1f ms"), 1.0f, pre_frame_sleep_active);
+  }
 
   MenuHeading(FSUI_CSTR("Runahead/Rewind"));
 
@@ -7480,6 +7481,7 @@ bool FullscreenUI::IsLeaderboardsWindowOpen()
 
 #if 0
 // TRANSLATION-STRING-AREA-BEGIN
+TRANSLATE_NOOP("FullscreenUI", "%.1f ms");
 TRANSLATE_NOOP("FullscreenUI", "%.2f Seconds");
 TRANSLATE_NOOP("FullscreenUI", "%d Frames");
 TRANSLATE_NOOP("FullscreenUI", "%d ms");
