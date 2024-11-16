@@ -35,6 +35,10 @@ private Q_SLOTS:
   void dialogCancelled();
 
 private:
+  static constexpr int MINIMUM_WIDTH = 500;
+  static constexpr int MINIMUM_HEIGHT_WITHOUT_CANCEL = 70;
+  static constexpr int MINIMUM_HEIGHT_WITH_CANCEL = 100;
+
   void checkForDelayedShow();
 
   QProgressDialog m_dialog;

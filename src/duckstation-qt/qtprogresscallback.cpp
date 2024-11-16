@@ -15,7 +15,7 @@ QtModalProgressCallback::QtModalProgressCallback(QWidget* parent_widget, float s
   : QObject(parent_widget), m_dialog(QString(), QString(), 0, 1, parent_widget), m_show_delay(show_delay)
 {
   m_dialog.setWindowTitle(tr("DuckStation"));
-  m_dialog.setMinimumSize(QSize(500, 100));
+  m_dialog.setMinimumSize(MINIMUM_WIDTH, MINIMUM_HEIGHT_WITHOUT_CANCEL);
   m_dialog.setModal(parent_widget != nullptr);
   m_dialog.setAutoClose(false);
   m_dialog.setAutoReset(false);
@@ -33,6 +33,7 @@ void QtModalProgressCallback::SetCancellable(bool cancellable)
 
   ProgressCallback::SetCancellable(cancellable);
   m_dialog.setWindowFlag(Qt::WindowCloseButtonHint, cancellable);
+  m_dialog.setMinimumHeight(cancellable ? MINIMUM_HEIGHT_WITH_CANCEL : MINIMUM_HEIGHT_WITHOUT_CANCEL);
   m_dialog.setCancelButtonText(cancellable ? tr("Cancel") : QString());
 }
 
