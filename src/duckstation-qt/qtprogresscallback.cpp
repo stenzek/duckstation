@@ -19,6 +19,7 @@ QtModalProgressCallback::QtModalProgressCallback(QWidget* parent_widget, float s
   m_dialog.setModal(parent_widget != nullptr);
   m_dialog.setAutoClose(false);
   m_dialog.setAutoReset(false);
+  m_dialog.setWindowFlag(Qt::WindowCloseButtonHint, false);
   connect(&m_dialog, &QProgressDialog::canceled, this, &QtModalProgressCallback::dialogCancelled);
   checkForDelayedShow();
 }
@@ -31,6 +32,7 @@ void QtModalProgressCallback::SetCancellable(bool cancellable)
     return;
 
   ProgressCallback::SetCancellable(cancellable);
+  m_dialog.setWindowFlag(Qt::WindowCloseButtonHint, cancellable);
   m_dialog.setCancelButtonText(cancellable ? tr("Cancel") : QString());
 }
 
