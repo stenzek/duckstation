@@ -193,7 +193,7 @@ enum class SettingsPage
   Controller,
   Hotkey,
   MemoryCards,
-  Display,
+  Graphics,
   PostProcessing,
   Audio,
   Achievements,
@@ -296,7 +296,7 @@ static void DrawInterfaceSettingsPage();
 static void DrawBIOSSettingsPage();
 static void DrawConsoleSettingsPage();
 static void DrawEmulationSettingsPage();
-static void DrawDisplaySettingsPage();
+static void DrawGraphicsSettingsPage();
 static void DrawPostProcessingSettingsPage();
 static void DrawAudioSettingsPage();
 static void DrawMemoryCardSettingsPage();
@@ -2855,11 +2855,11 @@ void FullscreenUI::DrawSettingsWindow()
 
     static constexpr const SettingsPage global_pages[] = {
       SettingsPage::Interface, SettingsPage::Console,        SettingsPage::Emulation,    SettingsPage::BIOS,
-      SettingsPage::Display,   SettingsPage::PostProcessing, SettingsPage::Audio,        SettingsPage::Controller,
+      SettingsPage::Graphics,  SettingsPage::PostProcessing, SettingsPage::Audio,        SettingsPage::Controller,
       SettingsPage::Hotkey,    SettingsPage::MemoryCards,    SettingsPage::Achievements, SettingsPage::Advanced};
     static constexpr const SettingsPage per_game_pages[] = {
       SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation, SettingsPage::Patches,
-      SettingsPage::Cheats,      SettingsPage::Display,      SettingsPage::Audio,     SettingsPage::Controller,
+      SettingsPage::Cheats,      SettingsPage::Graphics,     SettingsPage::Audio,     SettingsPage::Controller,
       SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
     static constexpr std::array<std::pair<const char*, const char*>, static_cast<u32>(SettingsPage::Count)> titles = {
       {{FSUI_NSTR("Summary"), ICON_FA_PARAGRAPH},
@@ -2979,8 +2979,8 @@ void FullscreenUI::DrawSettingsWindow()
         DrawConsoleSettingsPage();
         break;
 
-      case SettingsPage::Display:
-        DrawDisplaySettingsPage();
+      case SettingsPage::Graphics:
+        DrawGraphicsSettingsPage();
         break;
 
       case SettingsPage::PostProcessing:
@@ -3257,14 +3257,15 @@ void FullscreenUI::DrawBIOSSettingsPage()
       continue;
 
     TinyString title;
-    title.format(FSUI_FSTR("BIOS for {}"), Settings::GetConsoleRegionDisplayName(region));
+    title.assign(ICON_FA_MICROCHIP " ");
+    title.append_format(FSUI_FSTR("BIOS for {}"), Settings::GetConsoleRegionDisplayName(region));
 
     const std::optional<SmallString> filename(bsi->GetOptionalSmallStringValue(
       "BIOS", config_keys[i], game_settings ? std::nullopt : std::optional<const char*>("")));
 
     if (MenuButtonWithValue(title,
-                            SmallString::from_format(FSUI_FSTR("BIOS to use when emulating {} consoles."),
-                                                     Settings::GetConsoleRegionDisplayName(region)),
+                            TinyString::from_format(FSUI_FSTR("BIOS to use when emulating {} consoles."),
+                                                    Settings::GetConsoleRegionDisplayName(region)),
                             filename.has_value() ? (filename->empty() ? FSUI_CSTR("Auto-Detect") : filename->c_str()) :
                                                    FSUI_CSTR("Use Global Setting")))
     {
@@ -3297,19 +3298,19 @@ void FullscreenUI::DrawBIOSSettingsPage()
     }
   }
 
-  DrawFolderSetting(bsi, FSUI_CSTR("BIOS Directory"), "BIOS", "SearchDirectory", EmuFolders::Bios);
+  DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER, "BIOS Directory"), "BIOS", "SearchDirectory", EmuFolders::Bios);
 
   MenuHeading(FSUI_CSTR("Patches"));
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable Fast Boot"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BOLT, "Enable Fast Boot"),
                     FSUI_CSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
                     Settings::DEFAULT_FAST_BOOT_VALUE);
-  DrawToggleSetting(bsi, FSUI_CSTR("Fast Forward Boot"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Fast Forward Boot"),
                     FSUI_CSTR("Fast forwards through the early loading process when fast booting, saving time. Results "
                               "may vary between games."),
                     "BIOS", "FastForwardBoot", false,
                     GetEffectiveBoolSetting(bsi, "BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE));
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable TTY Logging"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SCROLL, "Enable TTY Logging"),
                     FSUI_CSTR("Logs BIOS calls to printf(). Not all games contain debugging messages."), "BIOS",
                     "TTYLogging", false);
 
@@ -4158,7 +4159,7 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
   EndMenuButtons();
 }
 
-void FullscreenUI::DrawDisplaySettingsPage()
+void FullscreenUI::DrawGraphicsSettingsPage()
 {
   static constexpr const std::array resolution_scales = {
     FSUI_NSTR("Automatic based on window size"),
@@ -4188,7 +4189,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   MenuHeading(FSUI_CSTR("Device Settings"));
 
-  DrawEnumSetting(bsi, FSUI_CSTR("GPU Renderer"),
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_PF_PICTURE, "GPU Renderer"),
                   FSUI_CSTR("Chooses the backend to use for rendering the console/game visuals."), "GPU", "Renderer",
                   Settings::DEFAULT_GPU_RENDERER, &Settings::ParseRendererName, &Settings::GetRendererName,
                   &Settings::GetRendererDisplayName, GPURenderer::Count);
@@ -4203,10 +4204,10 @@ void FullscreenUI::DrawDisplaySettingsPage()
   std::optional<SmallString> current_adapter =
     bsi->GetOptionalSmallStringValue("GPU", "Adapter", game_settings ? std::nullopt : std::optional<const char*>(""));
 
-  if (MenuButtonWithValue(FSUI_CSTR("GPU Adapter"), FSUI_CSTR("Selects the GPU to use for rendering."),
-                          current_adapter.has_value() ?
-                            (current_adapter->empty() ? FSUI_CSTR("Default") : current_adapter->c_str()) :
-                            FSUI_CSTR("Use Global Setting")))
+  if (MenuButtonWithValue(
+        FSUI_ICONSTR(ICON_FA_MICROCHIP, "GPU Adapter"), FSUI_CSTR("Selects the GPU to use for rendering."),
+        current_adapter.has_value() ? (current_adapter->empty() ? FSUI_CSTR("Default") : current_adapter->c_str()) :
+                                      FSUI_CSTR("Use Global Setting")))
   {
     ImGuiFullscreen::ChoiceDialogOptions options;
     options.reserve(s_graphics_adapter_list_cache.size() + 2);
@@ -4240,7 +4241,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
       ShowToast(std::string(), FSUI_STR("GPU adapter will be applied after restarting."), 10.0f);
       CloseChoiceDialog();
     };
-    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "GPU Adapter"), false, std::move(options), std::move(callback));
+    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_MICROCHIP, "GPU Adapter"), false, std::move(options), std::move(callback));
   }
 
   const bool true_color_enabled = (is_hardware && GetEffectiveBoolSetting(bsi, "GPU", "TrueColor", false));
@@ -4253,11 +4254,11 @@ void FullscreenUI::DrawDisplaySettingsPage()
   if (is_hardware)
   {
     DrawIntListSetting(
-      bsi, FSUI_CSTR("Internal Resolution"),
+      bsi, FSUI_ICONSTR(ICON_FA_EXPAND_ALT, "Internal Resolution"),
       FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
       "GPU", "ResolutionScale", 1, resolution_scales.data(), resolution_scales.size(), true, 0);
 
-    DrawEnumSetting(bsi, FSUI_CSTR("Downsampling"),
+    DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPRESS_ALT, "Downsampling"),
                     FSUI_CSTR("Downsamples the rendered image prior to displaying it. Can improve "
                               "overall image quality in mixed 2D/3D games."),
                     "GPU", "DownsampleMode", Settings::DEFAULT_GPU_DOWNSAMPLE_MODE, &Settings::ParseDownsampleModeName,
@@ -4269,49 +4270,49 @@ void FullscreenUI::DrawDisplaySettingsPage()
             .c_str())
           .value_or(Settings::DEFAULT_GPU_DOWNSAMPLE_MODE) == GPUDownsampleMode::Box)
     {
-      DrawIntRangeSetting(bsi, FSUI_CSTR("Downsampling Display Scale"),
+      DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPRESS_ARROWS_ALT, "Downsampling Display Scale"),
                           FSUI_CSTR("Selects the resolution scale that will be applied to the final image. 1x will "
                                     "downsample to the original console resolution."),
                           "GPU", "DownsampleScale", 1, 1, GPU::MAX_RESOLUTION_SCALE, "%dx");
     }
 
-    DrawEnumSetting(bsi, FSUI_CSTR("Texture Filtering"),
+    DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_EXTERNAL_LINK_ALT, "Texture Filtering"),
                     FSUI_CSTR("Smooths out the blockiness of magnified textures on 3D objects."), "GPU",
                     "TextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
                     &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
 
-    DrawEnumSetting(bsi, FSUI_CSTR("Sprite Texture Filtering"),
+    DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_EXTERNAL_LINK_SQUARE_ALT, "Sprite Texture Filtering"),
                     FSUI_CSTR("Smooths out the blockiness of magnified textures on 2D objects."), "GPU",
                     "SpriteTextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
                     &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
   }
 
-  DrawEnumSetting(bsi, FSUI_CSTR("Aspect Ratio"),
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_SHAPES, "Aspect Ratio"),
                   FSUI_CSTR("Changes the aspect ratio used to display the console's output to the screen."), "Display",
                   "AspectRatio", Settings::DEFAULT_DISPLAY_ASPECT_RATIO, &Settings::ParseDisplayAspectRatio,
                   &Settings::GetDisplayAspectRatioName, &Settings::GetDisplayAspectRatioDisplayName,
                   DisplayAspectRatio::Count);
 
   DrawEnumSetting(
-    bsi, FSUI_CSTR("Deinterlacing Mode"),
+    bsi, FSUI_ICONSTR(ICON_FA_GRIP_LINES, "Deinterlacing Mode"),
     FSUI_CSTR(
       "Determines which algorithm is used to convert interlaced frames to progressive for display on your system."),
     "Display", "DeinterlacingMode", Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE,
     &Settings::ParseDisplayDeinterlacingMode, &Settings::GetDisplayDeinterlacingModeName,
     &Settings::GetDisplayDeinterlacingModeDisplayName, DisplayDeinterlacingMode::Count);
 
-  DrawEnumSetting(bsi, FSUI_CSTR("Crop Mode"),
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_CROP_ALT, "Crop Mode"),
                   FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
                   "Display", "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
                   &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::Count);
 
   DrawEnumSetting(
-    bsi, FSUI_CSTR("Scaling"),
+    bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Scaling"),
     FSUI_CSTR("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."),
     "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
     &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
 
-  DrawEnumSetting(bsi, FSUI_CSTR("Force Video Timing"),
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Force Video Timing"),
                   FSUI_CSTR("Utilizes the chosen video timing regardless of the game's setting."), "GPU",
                   "ForceVideoTiming", Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE, &Settings::ParseForceVideoTimingName,
                   &Settings::GetForceVideoTimingName, &Settings::GetForceVideoTimingDisplayName,
@@ -4319,34 +4320,34 @@ void FullscreenUI::DrawDisplaySettingsPage()
 
   if (is_hardware)
   {
-    DrawToggleSetting(bsi, FSUI_CSTR("True Color Rendering"),
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PALETTE, "True Color Rendering"),
                       FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
                       "TrueColor", true);
   }
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Widescreen Rendering"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EXCHANGE_ALT, "Widescreen Rendering"),
                     FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
                     "GPU", "WidescreenHack", false);
 
   if (is_hardware)
   {
     DrawToggleSetting(
-      bsi, FSUI_CSTR("PGXP Geometry Correction"),
+      bsi, FSUI_ICONSTR(ICON_FA_BEZIER_CURVE, "PGXP Geometry Correction"),
       FSUI_CSTR("Reduces \"wobbly\" polygons by attempting to preserve the fractional component through memory "
                 "transfers."),
       "GPU", "PGXPEnable", false);
 
-    DrawToggleSetting(bsi, FSUI_CSTR("PGXP Depth Buffer"),
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SITEMAP, "PGXP Depth Buffer"),
                       FSUI_CSTR("Reduces polygon Z-fighting through depth testing. Low compatibility with games."),
                       "GPU", "PGXPDepthBuffer", false, pgxp_enabled && texture_correction_enabled);
   }
 
   DrawToggleSetting(
-    bsi, FSUI_CSTR("Force 4:3 For FMVs"),
+    bsi, FSUI_ICONSTR(ICON_FA_COMPRESS, "Force 4:3 For FMVs"),
     FSUI_CSTR("Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs."), "Display",
     "Force4_3For24Bit", false);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("FMV Chroma Smoothing"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BRUSH, "FMV Chroma Smoothing"),
                     FSUI_CSTR("Smooths out blockyness between colour transitions in 24-bit content, usually FMVs."),
                     "GPU", "ChromaSmoothing24Bit", false);
 
@@ -4355,10 +4356,11 @@ void FullscreenUI::DrawDisplaySettingsPage()
   std::optional<SmallString> strvalue = bsi->GetOptionalSmallStringValue(
     "GPU", "FullscreenMode", game_settings ? std::nullopt : std::optional<const char*>(""));
 
-  if (MenuButtonWithValue(
-        FSUI_CSTR("Fullscreen Resolution"), FSUI_CSTR("Selects the resolution to use in fullscreen modes."),
-        strvalue.has_value() ? (strvalue->empty() ? FSUI_CSTR("Borderless Fullscreen") : strvalue->c_str()) :
-                               FSUI_CSTR("Use Global Setting")))
+  if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_TV, "Fullscreen Resolution"),
+                          FSUI_CSTR("Selects the resolution to use in fullscreen modes."),
+                          strvalue.has_value() ?
+                            (strvalue->empty() ? FSUI_CSTR("Borderless Fullscreen") : strvalue->c_str()) :
+                            FSUI_CSTR("Use Global Setting")))
   {
     const GPUDevice::AdapterInfo* selected_adapter = nullptr;
     if (current_adapter.has_value())
@@ -4417,19 +4419,20 @@ void FullscreenUI::DrawDisplaySettingsPage()
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "Fullscreen Resolution"), false, std::move(options), std::move(callback));
   }
 
-  DrawEnumSetting(bsi, FSUI_CSTR("Screen Position"),
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROWS_ALT, "Screen Position"),
                   FSUI_CSTR("Determines the position on the screen when black borders must be added."), "Display",
                   "Alignment", Settings::DEFAULT_DISPLAY_ALIGNMENT, &Settings::ParseDisplayAlignment,
                   &Settings::GetDisplayAlignmentName, &Settings::GetDisplayAlignmentDisplayName,
                   DisplayAlignment::Count);
 
-  DrawEnumSetting(bsi, FSUI_CSTR("Screen Rotation"), FSUI_CSTR("Determines the rotation of the simulated TV screen."),
-                  "Display", "Rotation", Settings::DEFAULT_DISPLAY_ROTATION, &Settings::ParseDisplayRotation,
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_SYNC_ALT, "Screen Rotation"),
+                  FSUI_CSTR("Determines the rotation of the simulated TV screen."), "Display", "Rotation",
+                  Settings::DEFAULT_DISPLAY_ROTATION, &Settings::ParseDisplayRotation,
                   &Settings::GetDisplayRotationName, &Settings::GetDisplayRotationDisplayName, DisplayRotation::Count);
 
   if (is_hardware)
   {
-    DrawEnumSetting(bsi, FSUI_CSTR("Line Detection"),
+    DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_GRIP_LINES_VERTICAL, "Line Detection"),
                     FSUI_CSTR("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
                               "behavior, filling in gaps introduced by upscaling."),
                     "GPU", "LineDetectMode", Settings::DEFAULT_GPU_LINE_DETECT_MODE, &Settings::ParseLineDetectModeName,
@@ -4437,12 +4440,12 @@ void FullscreenUI::DrawDisplaySettingsPage()
                     resolution_scale > 1);
 
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Scaled Dithering"),
+      bsi, FSUI_ICONSTR(ICON_FA_TINT_SLASH, "Scaled Dithering"),
       FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
                 "Usually safe to enable."),
       "GPU", "ScaledDithering", true, !true_color_enabled);
 
-    DrawToggleSetting(bsi, FSUI_CSTR("Accurate Blending"),
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILL, "Accurate Blending"),
                       FSUI_CSTR("Forces blending to be done in the shader at 16-bit precision, when not using true "
                                 "color. Non-trivial performance impact, and unnecessary for most games."),
                       "GPU", "AccurateBlending", false, !true_color_enabled);
@@ -4454,30 +4457,30 @@ void FullscreenUI::DrawDisplaySettingsPage()
         .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
 
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Round Upscaled Texture Coordinates"),
+      bsi, FSUI_ICONSTR(ICON_FA_EYE_DROPPER, "Round Upscaled Texture Coordinates"),
       FSUI_CSTR("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned "
                 "textures in some games, but break others, and is incompatible with texture filtering."),
       "GPU", "ForceRoundTextureCoordinates", false,
       resolution_scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
 
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Use Software Renderer For Readbacks"),
+      bsi, FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Use Software Renderer For Readbacks"),
       FSUI_CSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result "
                 "in greater performance."),
       "GPU", "UseSoftwareRendererForReadbacks", false);
   }
 
   DrawToggleSetting(
-    bsi, FSUI_CSTR("Stretch Display Vertically"),
+    bsi, FSUI_ICONSTR(ICON_FA_ARROWS_ALT_V, "Stretch Display Vertically"),
     FSUI_CSTR("Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally."),
     "Display", "StretchVertically", false);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Automatically Resize Window"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND_ARROWS_ALT, "Automatically Resize Window"),
                     FSUI_CSTR("Automatically resizes the window to match the internal resolution."), "Display",
                     "AutoResizeWindow", false);
 
   DrawToggleSetting(
-    bsi, FSUI_CSTR("Disable Mailbox Presentation"),
+    bsi, FSUI_ICONSTR(ICON_FA_ENVELOPE, "Disable Mailbox Presentation"),
     FSUI_CSTR("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
               "Usually results in worse frame pacing."),
     "Display", "DisableMailboxPresentation", false);
@@ -4486,7 +4489,7 @@ void FullscreenUI::DrawDisplaySettingsPage()
   if (renderer == GPURenderer::HardwareD3D11 || renderer == GPURenderer::Software)
   {
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Use Blit Swap Chain"),
+      bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Use Blit Swap Chain"),
       FSUI_CSTR("Uses a blit presentation model instead of flipping. This may be needed on some systems."), "Display",
       "UseBlitSwapChain", false);
   }
@@ -4497,60 +4500,60 @@ void FullscreenUI::DrawDisplaySettingsPage()
     MenuHeading(FSUI_CSTR("PGXP (Precision Geometry Transform Pipeline)"));
 
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Perspective Correct Textures"),
+      bsi, FSUI_ICONSTR(ICON_FA_IMAGES, "Perspective Correct Textures"),
       FSUI_CSTR("Uses perspective-correct interpolation for texture coordinates, straightening out warped textures."),
       "GPU", "PGXPTextureCorrection", true, pgxp_enabled);
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Perspective Correct Colors"),
+      bsi, FSUI_ICONSTR(ICON_FA_PAINT_ROLLER, "Perspective Correct Colors"),
       FSUI_CSTR("Uses perspective-correct interpolation for colors, which can improve visuals in some games."), "GPU",
       "PGXPColorCorrection", false, pgxp_enabled);
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Culling Correction"),
+      bsi, FSUI_ICONSTR(ICON_FA_REMOVE_FORMAT, "Culling Correction"),
       FSUI_CSTR("Increases the precision of polygon culling, reducing the number of holes in geometry."), "GPU",
       "PGXPCulling", true, pgxp_enabled);
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Preserve Projection Precision"),
+      bsi, FSUI_ICONSTR(ICON_FA_DRAW_POLYGON, "Preserve Projection Precision"),
       FSUI_CSTR("Adds additional precision to PGXP data post-projection. May improve visuals in some games."), "GPU",
       "PGXPPreserveProjFP", false, pgxp_enabled);
 
-    DrawToggleSetting(bsi, FSUI_CSTR("CPU Mode"),
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MICROCHIP, "CPU Mode"),
                       FSUI_CSTR("Uses PGXP for all instructions, not just memory operations."), "GPU", "PGXPCPU", false,
                       pgxp_enabled);
 
-    DrawToggleSetting(bsi, FSUI_CSTR("Vertex Cache"),
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VECTOR_SQUARE, "Vertex Cache"),
                       FSUI_CSTR("Uses screen positions to resolve PGXP data. May improve visuals in some games."),
                       "GPU", "PGXPVertexCache", pgxp_enabled);
 
     DrawToggleSetting(
-      bsi, FSUI_CSTR("Disable on 2D Polygons"),
+      bsi, FSUI_ICONSTR(ICON_FA_MINUS_SQUARE, "Disable on 2D Polygons"),
       FSUI_CSTR("Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can "
                 "fix misaligned UI in some games, but otherwise should be left disabled."),
       "GPU", "PGXPDisableOn2DPolygons", false, pgxp_enabled);
 
     DrawFloatRangeSetting(
-      bsi, FSUI_CSTR("Geometry Tolerance"),
+      bsi, FSUI_ICONSTR(ICON_FA_STAR, "Geometry Tolerance"),
       FSUI_CSTR("Sets a threshold for discarding precise values when exceeded. May help with glitches in some games."),
       "GPU", "PGXPTolerance", -1.0f, -1.0f, 10.0f, "%.1f", pgxp_enabled);
 
     DrawFloatRangeSetting(
-      bsi, FSUI_CSTR("Depth Clear Threshold"),
+      bsi, FSUI_ICONSTR(ICON_FA_MINUS_CIRCLE, "Depth Clear Threshold"),
       FSUI_CSTR("Sets a threshold for discarding the emulated depth buffer. May help in some games."), "GPU",
       "PGXPDepthBuffer", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, 4096.0f, "%.1f", pgxp_enabled);
   }
 
   MenuHeading(FSUI_CSTR("Capture"));
 
-  DrawEnumSetting(bsi, FSUI_CSTR("Screenshot Size"),
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_CAMERA, "Screenshot Size"),
                   FSUI_CSTR("Determines the size of screenshots created by DuckStation."), "Display", "ScreenshotMode",
                   Settings::DEFAULT_DISPLAY_SCREENSHOT_MODE, &Settings::ParseDisplayScreenshotMode,
                   &Settings::GetDisplayScreenshotModeName, &Settings::GetDisplayScreenshotModeDisplayName,
                   DisplayScreenshotMode::Count);
-  DrawEnumSetting(bsi, FSUI_CSTR("Screenshot Format"),
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_IMAGE, "Screenshot Format"),
                   FSUI_CSTR("Determines the format that screenshots will be saved/compressed with."), "Display",
                   "ScreenshotFormat", Settings::DEFAULT_DISPLAY_SCREENSHOT_FORMAT,
                   &Settings::ParseDisplayScreenshotFormat, &Settings::GetDisplayScreenshotFormatName,
                   &Settings::GetDisplayScreenshotFormatDisplayName, DisplayScreenshotFormat::Count);
-  DrawIntRangeSetting(bsi, FSUI_CSTR("Screenshot Quality"),
+  DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_CAMERA_RETRO, "Screenshot Quality"),
                       FSUI_CSTR("Selects the quality at which screenshots will be compressed."), "Display",
                       "ScreenshotQuality", Settings::DEFAULT_DISPLAY_SCREENSHOT_QUALITY, 1, 100, "%d%%");
 
@@ -4559,43 +4562,44 @@ void FullscreenUI::DrawDisplaySettingsPage()
   ActiveButton(FSUI_CSTR("The texture cache is currently experimental, and may cause rendering errors in some games."),
                false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable Texture Cache"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ID_BADGE, "Enable Texture Cache"),
                     FSUI_CSTR("Enables caching of guest textures, required for texture replacement."), "GPU",
                     "EnableTextureCache", false);
-  DrawToggleSetting(bsi, FSUI_CSTR("Use Old MDEC Routines"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Use Old MDEC Routines"),
                     FSUI_CSTR("Enables the older, less accurate MDEC decoding routines. May be required for old "
                               "replacement backgrounds to match/load."),
                     "Hacks", "UseOldMDECRoutines", false);
 
   const bool texture_cache_enabled = GetEffectiveBoolSetting(bsi, "GPU", "EnableTextureCache", false);
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable Texture Replacements"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_IMPORT, "Enable Texture Replacements"),
                     FSUI_CSTR("Enables loading of replacement textures. Not compatible with all games."),
                     "TextureReplacements", "EnableTextureReplacements", false, texture_cache_enabled);
   DrawToggleSetting(
-    bsi, FSUI_CSTR("Enable Texture Dumping"),
+    bsi, FSUI_ICONSTR(ICON_FA_FILE_EXPORT, "Enable Texture Dumping"),
     FSUI_CSTR("Enables dumping of textures to image files, which can be replaced. Not compatible with all games."),
     "TextureReplacements", "DumpTextures", false, texture_cache_enabled);
   DrawToggleSetting(
-    bsi, FSUI_CSTR("Dump Replaced Textures"), FSUI_CSTR("Dumps textures that have replacements already loaded."),
-    "TextureReplacements", "DumpReplacedTextures", false,
-    texture_cache_enabled && GetEffectiveBoolSetting(bsi, "TextureReplacements", "DumpTextures", false));
+    bsi, FSUI_ICONSTR(ICON_FA_FILE, "Dump Replaced Textures"),
+    FSUI_CSTR("Dumps textures that have replacements already loaded."), "TextureReplacements", "DumpReplacedTextures",
+    false, texture_cache_enabled && GetEffectiveBoolSetting(bsi, "TextureReplacements", "DumpTextures", false));
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Texture Replacement"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ALT, "Enable VRAM Write Texture Replacement"),
                     FSUI_CSTR("Enables the replacement of background textures in supported games."),
                     "TextureReplacements", "EnableVRAMWriteReplacements", false);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Enable VRAM Write Dumping"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_INVOICE, "Enable VRAM Write Dumping"),
                     FSUI_CSTR("Writes backgrounds that can be replaced to the dump directory."), "TextureReplacements",
                     "DumpVRAMWrites", false);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Preload Replacement Textures"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TASKS, "Preload Replacement Textures"),
                     FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
                     "TextureReplacements", "PreloadTextures", false,
                     ((texture_cache_enabled &&
                       GetEffectiveBoolSetting(bsi, "TextureReplacements", "EnableTextureReplacements", false)) ||
                      GetEffectiveBoolSetting(bsi, "TextureReplacements", "EnableVRAMWriteReplacements", false)));
 
-  DrawFolderSetting(bsi, FSUI_CSTR("Textures Directory"), "Folders", "Textures", EmuFolders::Textures);
+  DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER, "Textures Directory"), "Folders", "Textures",
+                    EmuFolders::Textures);
 
   EndMenuButtons();
 }
@@ -4999,16 +5003,16 @@ void FullscreenUI::DrawAudioSettingsPage()
 
   MenuHeading(FSUI_CSTR("Audio Control"));
 
-  DrawIntRangeSetting(bsi, FSUI_CSTR("Output Volume"),
+  DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_VOLUME_UP, "Output Volume"),
                       FSUI_CSTR("Controls the volume of the audio played on the host."), "Audio", "OutputVolume", 100,
                       0, 200, "%d%%");
-  DrawIntRangeSetting(bsi, FSUI_CSTR("Fast Forward Volume"),
+  DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Fast Forward Volume"),
                       FSUI_CSTR("Controls the volume of the audio played on the host when fast forwarding."), "Audio",
                       "FastForwardVolume", 200, 0, 100, "%d%%");
-  DrawToggleSetting(bsi, FSUI_CSTR("Mute All Sound"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VOLUME_MUTE, "Mute All Sound"),
                     FSUI_CSTR("Prevents the emulator from producing any audible sound."), "Audio", "OutputMuted",
                     false);
-  DrawToggleSetting(bsi, FSUI_CSTR("Mute CD Audio"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Mute CD Audio"),
                     FSUI_CSTR("Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to "
                               "disable background music in some games."),
                     "CDROM", "MuteCDAudio", false);
@@ -5016,27 +5020,27 @@ void FullscreenUI::DrawAudioSettingsPage()
   MenuHeading(FSUI_CSTR("Backend Settings"));
 
   DrawEnumSetting(
-    bsi, FSUI_CSTR("Audio Backend"),
+    bsi, FSUI_ICONSTR(ICON_FA_VOLUME_OFF, "Audio Backend"),
     FSUI_CSTR("The audio backend determines how frames produced by the emulator are submitted to the host."), "Audio",
     "Backend", AudioStream::DEFAULT_BACKEND, &AudioStream::ParseBackendName, &AudioStream::GetBackendName,
     &AudioStream::GetBackendDisplayName, AudioBackend::Count);
-  DrawEnumSetting(bsi, FSUI_CSTR("Stretch Mode"),
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_SYNC, "Stretch Mode"),
                   FSUI_CSTR("Determines quality of audio when not running at 100% speed."), "Audio", "StretchMode",
                   AudioStreamParameters::DEFAULT_STRETCH_MODE, &AudioStream::ParseStretchMode,
                   &AudioStream::GetStretchModeName, &AudioStream::GetStretchModeDisplayName, AudioStretchMode::Count);
-  DrawIntRangeSetting(bsi, FSUI_CSTR("Buffer Size"),
+  DrawIntRangeSetting(bsi, FSUI_ICONSTR(ICON_FA_RULER, "Buffer Size"),
                       FSUI_CSTR("Determines the amount of audio buffered before being pulled by the host API."),
                       "Audio", "BufferMS", AudioStreamParameters::DEFAULT_BUFFER_MS, 10, 500, FSUI_CSTR("%d ms"));
   if (!GetEffectiveBoolSetting(bsi, "Audio", "OutputLatencyMinimal",
                                AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL))
   {
     DrawIntRangeSetting(
-      bsi, FSUI_CSTR("Output Latency"),
+      bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH_20, "Output Latency"),
       FSUI_CSTR("Determines how much latency there is between the audio being picked up by the host API, and "
                 "played through speakers."),
       "Audio", "OutputLatencyMS", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MS, 1, 500, FSUI_CSTR("%d ms"));
   }
-  DrawToggleSetting(bsi, FSUI_CSTR("Minimal Output Latency"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Minimal Output Latency"),
                     FSUI_CSTR("When enabled, the minimum supported output latency will be used for the host API."),
                     "Audio", "OutputLatencyMinimal", AudioStreamParameters::DEFAULT_OUTPUT_LATENCY_MINIMAL);
 
