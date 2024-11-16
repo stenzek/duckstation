@@ -66,7 +66,8 @@ static std::optional<float> GetRefreshRateFromDisplayConfig(HWND hwnd, Error* er
     DISPLAYCONFIG_SOURCE_DEVICE_NAME sdn = {.header = {.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME,
                                                        .size = sizeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME),
                                                        .adapterId = pi.sourceInfo.adapterId,
-                                                       .id = pi.sourceInfo.id}};
+                                                       .id = pi.sourceInfo.id},
+                                            .viewGdiDeviceName = {}};
     LONG res = DisplayConfigGetDeviceInfo(&sdn.header);
     if (res != ERROR_SUCCESS)
     {

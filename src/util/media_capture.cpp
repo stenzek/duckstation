@@ -1386,7 +1386,8 @@ bool MediaCaptureMF::SendFrame(const PendingFrame& pf, Error* error)
     }
 
     DWORD status;
-    MFT_OUTPUT_DATA_BUFFER yuv_buf = {.pSample = m_video_yuv_sample.Get()};
+    MFT_OUTPUT_DATA_BUFFER yuv_buf = {
+      .dwStreamID = 0, .pSample = m_video_yuv_sample.Get(), .dwStatus = 0, .pEvents = nullptr};
     hr = m_video_yuv_transform->ProcessOutput(0, 1, &yuv_buf, &status);
     if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT)
       break;
@@ -1453,7 +1454,8 @@ bool MediaCaptureMF::ProcessVideoOutputSamples(Error* error)
       }
     }
 
-    MFT_OUTPUT_DATA_BUFFER video_buf = {.pSample = m_video_output_sample.Get()};
+    MFT_OUTPUT_DATA_BUFFER video_buf = {
+      .dwStreamID = 0, .pSample = m_video_output_sample.Get(), .dwStatus = 0, .pEvents = nullptr};
     DWORD status;
     hr = m_video_encode_transform->ProcessOutput(0, 1, &video_buf, &status);
     if (hr == MF_E_TRANSFORM_NEED_MORE_INPUT)
@@ -1570,7 +1572,8 @@ bool MediaCaptureMF::ProcessVideoEvents(Error* error)
           }
         }
 
-        MFT_OUTPUT_DATA_BUFFER video_buf = {.pSample = m_video_output_sample.Get()};
+        MFT_OUTPUT_DATA_BUFFER video_buf = {
+          .dwStreamID = 0, .pSample = m_video_output_sample.Get(), .dwStatus = 0, .pEvents = nullptr};
         DWORD status;
         if (FAILED(hr = m_video_encode_transform->ProcessOutput(0, 1, &video_buf, &status))) [[unlikely]]
         {
@@ -2883,12 +2886,13 @@ static constexpr const std::array<const char*, static_cast<size_t>(MediaCaptureB
   "FFmpeg",
 #endif
 };
-static constexpr const std::array<const char*, static_cast<size_t>(MediaCaptureBackend::MaxCount)> s_backend_display_names = {
+static constexpr const std::array<const char*, static_cast<size_t>(MediaCaptureBackend::MaxCount)>
+  s_backend_display_names = {
 #ifdef _WIN32
-  TRANSLATE_DISAMBIG_NOOP("Settings", "Media Foundation", "MediaCaptureBackend"),
+    TRANSLATE_DISAMBIG_NOOP("Settings", "Media Foundation", "MediaCaptureBackend"),
 #endif
 #ifndef __ANDROID__
-  TRANSLATE_DISAMBIG_NOOP("Settings", "FFmpeg", "MediaCaptureBackend"),
+    TRANSLATE_DISAMBIG_NOOP("Settings", "FFmpeg", "MediaCaptureBackend"),
 #endif
 };
 static_assert(s_backend_names.size() == static_cast<size_t>(MediaCaptureBackend::MaxCount));

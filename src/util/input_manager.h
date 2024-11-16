@@ -72,7 +72,7 @@ union InputBindingKey
     InputSubclass source_subtype : 3; ///< if 1, binding is for an axis and not a button (used for controllers)
     InputModifier modifier : 2;
     u32 invert : 1; ///< if 1, value is inverted prior to being sent to the sink
-    u32 unused : 14;
+    u32 : 14;
     u32 data;
   };
 

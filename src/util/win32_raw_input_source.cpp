@@ -236,6 +236,7 @@ bool Win32RawInputSource::OpenDevices()
       RID_DEVICE_INFO devinfo = {
         .cbSize = sizeof(devinfo),
         .dwType = RIM_TYPEMOUSE,
+        .mouse = {},
       };
       UINT devinfo_size = sizeof(devinfo);
       if (GetRawInputDeviceInfoW(rid.hDevice, RIDI_DEVICEINFO, &devinfo, &devinfo_size) <= 0 ||

@@ -444,10 +444,12 @@ void XInputSource::HandleControllerDisconnection(u32 index)
 {
   INFO_LOG("XInput controller {} disconnected.", index);
 
-  InputManager::OnInputDeviceDisconnected({{
-                                            .source_type = InputSourceType::XInput,
+  InputManager::OnInputDeviceDisconnected({{.source_type = InputSourceType::XInput,
                                             .source_index = index,
-                                          }},
+                                            .source_subtype = InputSubclass::None,
+                                            .modifier = InputModifier::None,
+                                            .invert = 0,
+                                            .data = 0}},
                                           fmt::format("XInput-{}", index));
   m_controllers[index] = {};
 }

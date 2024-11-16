@@ -1630,7 +1630,10 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
         const spvc_hlsl_resource_binding rb = {.stage = execmodel,
                                                .desc_set = UBO_DESCRIPTOR_SET,
                                                .binding = 0,
-                                               .cbv = {.register_space = 0, .register_binding = 0}};
+                                               .cbv = {.register_space = 0, .register_binding = 0},
+                                               .uav = {},
+                                               .srv = {},
+                                               .sampler = {}};
         if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
         {
           Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
@@ -1645,6 +1648,8 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
           const spvc_hlsl_resource_binding rb = {.stage = execmodel,
                                                  .desc_set = TEXTURE_DESCRIPTOR_SET,
                                                  .binding = i,
+                                                 .cbv = {},
+                                                 .uav = {},
                                                  .srv = {.register_space = 0, .register_binding = i},
                                                  .sampler = {.register_space = 0, .register_binding = i}};
           if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)

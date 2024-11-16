@@ -386,7 +386,7 @@ public:
 #undef RELATIONAL_OPERATOR
 
 private:
-  void internal_resize(size_t size, T* prev_ptr, size_t prev_size)
+  void internal_resize(size_t size, T* prev_ptr, [[maybe_unused]] size_t prev_size)
   {
     if constexpr (alignment > 0)
     {

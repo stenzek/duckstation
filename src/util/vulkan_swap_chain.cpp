@@ -89,6 +89,9 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
   if (m_window_info.type == WindowInfo::Type::Win32)
   {
     const VkWin32SurfaceCreateInfoKHR surface_create_info = {.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+                                                             .pNext = nullptr,
+                                                             .flags = 0,
+                                                             .hinstance = NULL,
                                                              .hwnd = static_cast<HWND>(m_window_info.window_handle)};
     const VkResult res = vkCreateWin32SurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
@@ -109,6 +112,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
       return false;
 
     const VkMetalSurfaceCreateInfoEXT surface_create_info = {.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT,
+                                                             .pNext = nullptr,
+                                                             .flags = 0,
                                                              .pLayer = static_cast<const CAMetalLayer*>(m_metal_layer)};
     const VkResult res = vkCreateMetalSurfaceEXT(instance, &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
@@ -126,6 +131,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
   {
     const VkAndroidSurfaceCreateInfoKHR surface_create_info = {
       .sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR,
+      .pNext = nullptr,
+      .flags = 0,
       .window = static_cast<ANativeWindow*>(m_window_info.window_handle)};
     const VkResult res = vkCreateAndroidSurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
@@ -143,6 +150,8 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
   {
     const VkXcbSurfaceCreateInfoKHR surface_create_info = {
       .sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
+      .pNext = nullptr,
+      .flags = 0,
       .connection = static_cast<xcb_connection_t*>(m_window_info.display_connection),
       .window = static_cast<xcb_window_t>(reinterpret_cast<uintptr_t>(m_window_info.window_handle))};
     const VkResult res = vkCreateXcbSurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
@@ -160,9 +169,11 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
   if (m_window_info.type == WindowInfo::Type::Wayland)
   {
     const VkWaylandSurfaceCreateInfoKHR surface_create_info = {
-      VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR, nullptr, 0,
-      static_cast<struct wl_display*>(m_window_info.display_connection),
-      static_cast<struct wl_surface*>(m_window_info.window_handle)};
+      .sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR,
+      .pNext = nullptr,
+      .flags = 0,
+      .display = static_cast<struct wl_display*>(m_window_info.display_connection),
+      .surface = static_cast<struct wl_surface*>(m_window_info.window_handle)};
     VkResult res = vkCreateWaylandSurfaceKHR(instance, &surface_create_info, nullptr, &m_surface);
     if (res != VK_SUCCESS)
     {
@@ -403,6 +414,8 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
 
   // Now we can actually create the swap chain
   VkSwapchainCreateInfoKHR swap_chain_info = {.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+                                              .pNext = nullptr,
+                                              .flags = 0,
                                               .surface = m_surface,
                                               .minImageCount = image_count,
                                               .imageFormat = surface_format->format,
@@ -411,6 +424,8 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
                                               .imageArrayLayers = 1u,
                                               .imageUsage = image_usage,
                                               .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
+                                              .queueFamilyIndexCount = 0,
+                                              .pQueueFamilyIndices = nullptr,
                                               .preTransform = transform,
                                               .compositeAlpha = alpha,
                                               .presentMode = present_mode.value(),
@@ -529,6 +544,8 @@ bool VulkanSwapChain::CreateSwapChainImages(VulkanDevice& dev, Error* error)
 
     const VkImageViewCreateInfo view_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .pNext = nullptr,
+      .flags = 0,
       .image = images[i],
       .viewType = VK_IMAGE_VIEW_TYPE_2D,
       .format = VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(m_window_info.surface_format)],
@@ -734,6 +751,7 @@ void VulkanSwapChain::ReleaseCurrentImage()
     VulkanDevice::GetInstance().WaitForGPUIdle();
 
     const VkReleaseSwapchainImagesInfoEXT info = {.sType = VK_STRUCTURE_TYPE_RELEASE_SWAPCHAIN_IMAGES_INFO_EXT,
+                                                  .pNext = nullptr,
                                                   .swapchain = m_swap_chain,
                                                   .imageIndexCount = 1,
                                                   .pImageIndices = &m_current_image};

@@ -826,9 +826,13 @@ bool SDLInputSource::CloseDevice(int joystick_index)
   if (it == m_controllers.end())
     return false;
 
-  InputManager::OnInputDeviceDisconnected(
-    InputBindingKey{{.source_type = InputSourceType::SDL, .source_index = static_cast<u32>(it->player_id)}},
-    fmt::format("SDL-{}", it->player_id));
+  InputManager::OnInputDeviceDisconnected(InputBindingKey{{.source_type = InputSourceType::SDL,
+                                                           .source_index = static_cast<u32>(it->player_id),
+                                                           .source_subtype = InputSubclass::None,
+                                                           .modifier = InputModifier::None,
+                                                           .invert = 0,
+                                                           .data = 0}},
+                                          fmt::format("SDL-{}", it->player_id));
 
   if (it->haptic)
     SDL_HapticClose(it->haptic);

@@ -165,9 +165,13 @@ void DInputSource::Shutdown()
   while (!m_controllers.empty())
   {
     const u32 index = static_cast<u32>(m_controllers.size() - 1);
-    InputManager::OnInputDeviceDisconnected(
-      InputBindingKey{{.source_type = InputSourceType::DInput, .source_index = index}},
-      GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
+    InputManager::OnInputDeviceDisconnected(InputBindingKey{{.source_type = InputSourceType::DInput,
+                                                             .source_index = index,
+                                                             .source_subtype = InputSubclass::None,
+                                                             .modifier = InputModifier::None,
+                                                             .invert = 0,
+                                                             .data = 0}},
+                                            GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
     m_controllers.pop_back();
   }
 }
@@ -270,9 +274,13 @@ void DInputSource::PollEvents()
 
       if (hr != DI_OK)
       {
-        InputManager::OnInputDeviceDisconnected(
-          InputBindingKey{{.source_type = InputSourceType::DInput, .source_index = static_cast<u32>(i)}},
-          GetDeviceIdentifier(static_cast<u32>(i)));
+        InputManager::OnInputDeviceDisconnected(InputBindingKey{{.source_type = InputSourceType::DInput,
+                                                                 .source_index = static_cast<u32>(i),
+                                                                 .source_subtype = InputSubclass::None,
+                                                                 .modifier = InputModifier::None,
+                                                                 .invert = 0,
+                                                                 .data = 0}},
+                                                GetDeviceIdentifier(static_cast<u32>(i)));
         m_controllers.erase(m_controllers.begin() + i);
         continue;
       }

@@ -664,6 +664,8 @@ bool JPEGFileLoader(RGBA8Image* image, std::string_view filename, std::FILE* fp,
 
   FileCallback cb = {
     .mgr = {
+      .next_input_byte = nullptr,
+      .bytes_in_buffer = 0,
       .init_source = [](j_decompress_ptr cinfo) {},
       .fill_input_buffer = [](j_decompress_ptr cinfo) -> boolean {
         FileCallback* cb = BASE_FROM_RECORD_FIELD(cinfo->src, FileCallback, mgr);
@@ -821,6 +823,8 @@ bool JPEGFileSaver(const RGBA8Image& image, std::string_view filename, std::FILE
 
   FileCallback cb = {
     .mgr = {
+      .next_output_byte = nullptr,
+      .free_in_buffer = 0,
       .init_destination =
         [](j_compress_ptr cinfo) {
           FileCallback* cb = BASE_FROM_RECORD_FIELD(cinfo->dest, FileCallback, mgr);
