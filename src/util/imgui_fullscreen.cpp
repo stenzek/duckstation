@@ -639,8 +639,6 @@ bool ImGuiFullscreen::ResetFocusHere()
   if (ImGui::FindBlockingModal(window))
     return false;
 
-  s_focus_reset_queued = FocusResetType::None;
-
   // Set the flag that we drew an active/hovered item active for a frame, because otherwise there's one frame where
   // there'll be no frame drawn, which will cancel the animation. Also set the appearing flag, so that the default
   // focus set does actually go through.
@@ -651,7 +649,12 @@ bool ImGuiFullscreen::ResetFocusHere()
   }
 
   ImGui::SetWindowFocus();
-  ImGui::NavInitWindow(window, true);
+
+  // If this is a popup closing, we don't want to reset the current nav item, since we were presumably opened by one.
+  if (s_focus_reset_queued != FocusResetType::PopupClosed)
+    ImGui::NavInitWindow(window, true);
+
+  s_focus_reset_queued = FocusResetType::None;
 
   // only do the active selection magic when we're using keyboard/gamepad
   return (GImGui->NavInputSource == ImGuiInputSource_Keyboard || GImGui->NavInputSource == ImGuiInputSource_Gamepad);
