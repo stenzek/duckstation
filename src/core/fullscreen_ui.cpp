@@ -1798,6 +1798,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
           bsi->SetStringValue(s_input_binding_section.c_str(), s_input_binding_key.c_str(), new_binding.c_str());
           SetSettingsChanged(bsi);
           ClearInputBindingVariables();
+          QueueResetFocus(FocusResetType::PopupClosed);
           return InputInterceptHook::CallbackResult::RemoveHookAndStopProcessingEvent;
         }
 
@@ -1828,6 +1829,7 @@ void FullscreenUI::DrawInputBindingWindow()
   {
     InputManager::RemoveHook();
     ClearInputBindingVariables();
+    QueueResetFocus(FocusResetType::PopupClosed);
     return;
   }
 
@@ -1844,7 +1846,8 @@ void FullscreenUI::DrawInputBindingWindow()
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   if (ImGui::BeginPopupModal(title, nullptr,
-                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs))
+                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse |
+                               ImGuiWindowFlags_NoCollapse))
   {
     ImGui::TextWrapped("%s", SmallString::from_format(FSUI_FSTR("Setting {} binding {}."), s_input_binding_section,
                                                       s_input_binding_display_name)
