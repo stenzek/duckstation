@@ -403,6 +403,7 @@ void GameSummaryWidget::onComputeHashClicked()
   }
 
   QtModalProgressCallback progress_callback(this);
+  progress_callback.SetCancellable(true);
   progress_callback.SetProgressRange(image->GetTrackCount());
 
   std::vector<CDImageHasher::Hash> track_hashes;
@@ -419,6 +420,10 @@ void GameSummaryWidget::onComputeHashClicked()
     if (!CDImageHasher::GetTrackHash(image.get(), track, &hash, &progress_callback))
     {
       progress_callback.PopState();
+
+      if (progress_callback.IsCancelled())
+        return;
+
       calculate_hash_success = false;
       break;
     }

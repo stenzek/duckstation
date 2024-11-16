@@ -40,6 +40,9 @@ bool CDImageHasher::ReadIndex(CDImage* image, u8 track, u8 index, MD5Digest* dig
     if ((lba % update_interval) == 0)
       progress_callback->SetProgressValue(lba);
 
+    if (progress_callback->IsCancelled())
+      return false;
+
     if (!image->ReadRawSector(sector.data(), nullptr))
     {
       progress_callback->FormatModalError("Failed to read sector {} from image", image->GetPositionOnDisc());
@@ -112,6 +115,7 @@ bool CDImageHasher::GetImageHash(CDImage* image, Hash* out_hash,
 {
   MD5Digest digest;
 
+  progress_callback->SetCancellable(true);
   progress_callback->SetProgressRange(image->GetTrackCount());
   progress_callback->SetProgressValue(0);
   progress_callback->PushState();
