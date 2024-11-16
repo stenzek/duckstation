@@ -10001,7 +10001,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../gamesummarywidget.ui" line="88"/>
         <source>Image Path:</source>
-        <translation>Bildsökväg:</translation>
+        <translation>Avbildssökväg:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="134"/>
