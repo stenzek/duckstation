@@ -1749,16 +1749,19 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
   const bool game_settings = IsEditingGameSettings(bsi);
 
   InputManager::SetHook([game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
+    // shouldn't happen, just in case
     if (s_input_binding_type == InputBindingInfo::Type::Unknown)
-      return InputInterceptHook::CallbackResult::StopProcessingEvent;
+      return InputInterceptHook::CallbackResult::RemoveHookAndContinueProcessingEvent;
 
     // holding the settings lock here will protect the input binding list
     auto lock = Host::GetSettingsLock();
 
     float initial_value = value;
     float min_value = value;
-    auto it = std::find_if(s_input_binding_value_ranges.begin(), s_input_binding_value_ranges.end(),
-                           [key](const auto& it) { return it.first.bits == key.bits; });
+    InputInterceptHook::CallbackResult default_action = InputInterceptHook::CallbackResult::StopProcessingEvent;
+    const auto it = std::find_if(s_input_binding_value_ranges.begin(), s_input_binding_value_ranges.end(),
+                                 [key](const auto& it) { return it.first.bits == key.bits; });
+
     if (it != s_input_binding_value_ranges.end())
     {
       initial_value = it->second.first;
@@ -1767,6 +1770,11 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
     else
     {
       s_input_binding_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
+
+      // forward the event to imgui if it's a new key and a release, because this is what triggered the binding to start
+      // if we don't do this, imgui thinks the activate button is held down
+      default_action = (value == 0.0f) ? InputInterceptHook::CallbackResult::ContinueProcessingEvent :
+                                         InputInterceptHook::CallbackResult::StopProcessingEvent;
     }
 
     const float abs_value = std::abs(value);
@@ -1794,7 +1802,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
         }
 
         // otherwise, keep waiting
-        return InputInterceptHook::CallbackResult::StopProcessingEvent;
+        return default_action;
       }
     }
 
@@ -1807,7 +1815,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
       s_input_binding_new_bindings.push_back(key_to_add);
     }
 
-    return InputInterceptHook::CallbackResult::StopProcessingEvent;
+    return default_action;
   });
 }
 
