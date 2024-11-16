@@ -3200,6 +3200,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Show OSD Messages"),
                     FSUI_CSTR("Shows on-screen-display messages when events occur."), "Display", "ShowOSDMessages",
                     true);
+  DrawToggleSetting(bsi, FSUI_CSTR("Show Status Indicators"),
+                    FSUI_CSTR("Shows persistent icons when turbo is active or when paused."), "Display",
+                    "ShowStatusIndicators", true);
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Show Speed"),
     FSUI_CSTR(
@@ -3235,6 +3238,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Show Controller Input"),
     FSUI_CSTR("Shows the current controller state of the system in the bottom-left corner of the display."), "Display",
     "ShowInputs", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHART_LINE, "Show Enhancement Settings"),
+                    FSUI_CSTR("Shows enhancement settings in the bottom-right corner of the screen."), "Display",
+                    "ShowEnhancements", false);
 
   EndMenuButtons();
 }
@@ -5221,12 +5227,6 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                   &Settings::GetSaveStateCompressionModeDisplayName, SaveStateCompressionMode::Count);
 
   MenuHeading(FSUI_CSTR("Display Settings"));
-  DrawToggleSetting(bsi, FSUI_CSTR("Show Status Indicators"),
-                    FSUI_CSTR("Shows persistent icons when turbo is active or when paused."), "Display",
-                    "ShowStatusIndicators", true);
-  DrawToggleSetting(bsi, FSUI_CSTR("Show Enhancement Settings"),
-                    FSUI_CSTR("Shows enhancement settings in the bottom-right corner of the screen."), "Display",
-                    "ShowEnhancements", false);
   DrawToggleSetting(bsi, FSUI_CSTR("Threaded Rendering"),
                     FSUI_CSTR("Uses a second thread for drawing graphics. Speed boost, and safe to use."), "GPU",
                     "UseThread", true);
