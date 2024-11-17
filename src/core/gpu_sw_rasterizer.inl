@@ -1143,9 +1143,9 @@ struct TriangleVectors : PixelVectors<texture_enable>
 } // namespace
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
-                     const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep,
-                     const TriangleVectors<shading_enable, texture_enable>& tv)
+ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound,
+                                           UVStepper uv, const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep,
+                                           const TriangleVectors<shading_enable, texture_enable>& tv)
 {
   s32 width = x_bound - x_start;
   s32 current_x = TruncateGPUVertexPosition(x_start);

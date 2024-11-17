@@ -12,13 +12,6 @@
 
 LOG_CHANNEL(GPU_SW_Rasterizer);
 
-// Disable 256-bit. We emit that path in a separate file.
-// TODO: For those who are compiling with -march=native, probably only want to compile the 256-bit renderer.
-// Once it's done, anyway....
-#ifdef GSVECTOR_HAS_256
-#undef GSVECTOR_HAS_256
-#endif
-
 namespace GPU_SW_Rasterizer {
 constinit const DitherLUT g_dither_lut = []() constexpr {
   DitherLUT lut = {};

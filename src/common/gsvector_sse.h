@@ -2541,12 +2541,12 @@ public:
 
   ALWAYS_INLINE operator __m256i() const { return m; }
 
-  ALWAYS_INLINE GSVector8i min_i8(const GSVector8i& v) const { return GSVector8i(_mm256_min_epi8(m, v)); }
-  ALWAYS_INLINE GSVector8i max_i8(const GSVector8i& v) const { return GSVector8i(_mm256_max_epi8(m, v)); }
-  ALWAYS_INLINE GSVector8i min_i16(const GSVector8i& v) const { return GSVector8i(_mm256_min_epi16(m, v)); }
-  ALWAYS_INLINE GSVector8i max_i16(const GSVector8i& v) const { return GSVector8i(_mm256_max_epi16(m, v)); }
-  ALWAYS_INLINE GSVector8i min_i32(const GSVector8i& v) const { return GSVector8i(_mm256_min_epi32(m, v)); }
-  ALWAYS_INLINE GSVector8i max_i32(const GSVector8i& v) const { return GSVector8i(_mm256_max_epi32(m, v)); }
+  ALWAYS_INLINE GSVector8i min_s8(const GSVector8i& v) const { return GSVector8i(_mm256_min_epi8(m, v)); }
+  ALWAYS_INLINE GSVector8i max_s8(const GSVector8i& v) const { return GSVector8i(_mm256_max_epi8(m, v)); }
+  ALWAYS_INLINE GSVector8i min_s16(const GSVector8i& v) const { return GSVector8i(_mm256_min_epi16(m, v)); }
+  ALWAYS_INLINE GSVector8i max_s16(const GSVector8i& v) const { return GSVector8i(_mm256_max_epi16(m, v)); }
+  ALWAYS_INLINE GSVector8i min_s32(const GSVector8i& v) const { return GSVector8i(_mm256_min_epi32(m, v)); }
+  ALWAYS_INLINE GSVector8i max_s32(const GSVector8i& v) const { return GSVector8i(_mm256_max_epi32(m, v)); }
 
   ALWAYS_INLINE GSVector8i min_u8(const GSVector8i& v) const { return GSVector8i(_mm256_min_epu8(m, v)); }
   ALWAYS_INLINE GSVector8i max_u8(const GSVector8i& v) const { return GSVector8i(_mm256_max_epu8(m, v)); }
@@ -2849,7 +2849,7 @@ public:
     return _mm256_extract_epi64(m, i);
   }
 
-  ALWAYS_INLINE static GSVector8i zext32(s32 v) { return GSVector8i(_mm256_castsi128_si256(GSVector4i::zext32(v))); }
+  ALWAYS_INLINE static GSVector8i zext32(s32 v) { return GSVector8i(_mm256_zextsi128_si256(GSVector4i::zext32(v))); }
 
   ALWAYS_INLINE static GSVector8i loadnt(const void* p)
   {
