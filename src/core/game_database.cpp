@@ -291,7 +291,8 @@ const char* GameDatabase::GetCompatibilityRatingName(CompatibilityRating rating)
 const char* GameDatabase::GetCompatibilityRatingDisplayName(CompatibilityRating rating)
 {
   return (rating >= CompatibilityRating::Unknown && rating < CompatibilityRating::Count) ?
-           Host::TranslateToCString("GameDatabase", s_compatibility_rating_display_names[static_cast<size_t>(rating)]) :
+           Host::TranslateToCString("GameDatabase", s_compatibility_rating_display_names[static_cast<size_t>(rating)],
+                                    "CompatibilityRating") :
            "";
 }
 

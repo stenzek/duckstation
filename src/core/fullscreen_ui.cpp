@@ -6790,16 +6790,11 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       // compatibility
       ImGui::TextUnformatted(FSUI_CSTR("Compatibility: "));
       ImGui::SameLine();
-      if (selected_entry->dbentry &&
-          selected_entry->dbentry->compatibility != GameDatabase::CompatibilityRating::Unknown)
-      {
-        ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), 88, 16),
-                     LayoutScale(88.0f, 16.0f));
-        ImGui::SameLine();
-      }
+      ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), 88, 16), LayoutScale(88.0f, 16.0f));
+      ImGui::SameLine();
       ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(
-                             selected_entry->dbentry ? selected_entry->dbentry->compatibility :
-                                                       GameDatabase::CompatibilityRating::Unknown));
+                             (selected_entry && selected_entry->dbentry) ? selected_entry->dbentry->compatibility :
+                                                                           GameDatabase::CompatibilityRating::Unknown));
 
       // play time
       ImGui::Text(FSUI_CSTR("Time Played: %s"), GameList::FormatTimespan(selected_entry->total_played_time).c_str());
