@@ -28,3 +28,4 @@
 #define ICON_EMOJI_LOCKED "\xf0\x9f\x94\x92"
 #define ICON_EMOJI_UNLOCKED "\xf0\x9f\x94\x93"
 #define ICON_EMOJI_REFRESH "\xf0\x9f\x94\x84"
+#define ICON_EMOJI_PROHIBITED "\xf0\x9f\x9a\xab"

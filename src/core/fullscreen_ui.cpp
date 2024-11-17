@@ -31,6 +31,7 @@
 #include "common/string_util.h"
 #include "common/timer.h"
 
+#include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
 #include "IconsPromptFont.h"
 #include "fmt/chrono.h"
@@ -2868,7 +2869,7 @@ void FullscreenUI::DrawSettingsWindow()
       SettingsPage::Cheats,      SettingsPage::Graphics,     SettingsPage::Audio,     SettingsPage::Controller,
       SettingsPage::MemoryCards, SettingsPage::Achievements, SettingsPage::Advanced};
     static constexpr std::array<std::pair<const char*, const char*>, static_cast<u32>(SettingsPage::Count)> titles = {
-      {{FSUI_NSTR("Summary"), ICON_FA_PARAGRAPH},
+      {{FSUI_NSTR("Summary"), ICON_FA_FILE_ALT},
        {FSUI_NSTR("Interface Settings"), ICON_FA_TV},
        {FSUI_NSTR("Console Settings"), ICON_FA_DICE_D20},
        {FSUI_NSTR("Emulation Settings"), ICON_FA_COGS},
@@ -2887,7 +2888,7 @@ void FullscreenUI::DrawSettingsWindow()
     const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
     const u32 count =
       (game_settings ? static_cast<u32>(std::size(per_game_pages)) : static_cast<u32>(std::size(global_pages))) -
-      BoolToUInt32(ShouldShowAdvancedSettings());
+      BoolToUInt32(!ShouldShowAdvancedSettings());
     const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
     u32 index = 0;
     for (u32 i = 0; i < count; i++)
@@ -5479,15 +5480,16 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
   if (cheats)
   {
     ActiveButton(
-      FSUI_CSTR(
+      FSUI_ICONSTR(
+        ICON_EMOJI_WARNING,
         "WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games."),
       false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     MenuHeading(FSUI_CSTR("Settings"));
 
     bool enable_cheats = bsi->GetBoolValue("Cheats", "EnableCheats", false);
-    if (ToggleButton(FSUI_CSTR("Enable Cheats"), FSUI_CSTR("Enables the cheats that are selected below."),
-                     &enable_cheats))
+    if (ToggleButton(FSUI_ICONSTR(ICON_FA_FLASK, "Enable Cheats"),
+                     FSUI_CSTR("Enables the cheats that are selected below."), &enable_cheats))
     {
       if (enable_cheats)
         bsi->SetBoolValue("Cheats", "EnableCheats", true);
@@ -5497,7 +5499,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
     }
 
     bool load_database_cheats = bsi->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true);
-    if (ToggleButton(FSUI_CSTR("Load Database Cheats"),
+    if (ToggleButton(FSUI_ICONSTR(ICON_FA_DATABASE, "Load Database Cheats"),
                      FSUI_CSTR("Enables loading of cheats for this game from DuckStation's database."),
                      &load_database_cheats))
     {
@@ -5512,7 +5514,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
     if (code_list.empty())
     {
-      ActiveButton(FSUI_CSTR("No cheats are available for this game."), false, false,
+      ActiveButton(FSUI_ICONSTR(ICON_FA_STORE_ALT_SLASH, "No cheats are available for this game."), false, false,
                    ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     }
     else
@@ -5537,13 +5539,14 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
   else
   {
     ActiveButton(
-      FSUI_CSTR("WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken "
-                "saved games."),
+      FSUI_ICONSTR(ICON_EMOJI_WARNING,
+                   "WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken "
+                   "saved games."),
       false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
     if (code_list.empty())
     {
-      ActiveButton(FSUI_CSTR("No patches are available for this game."), false, false,
+      ActiveButton(FSUI_ICONSTR(ICON_FA_STORE_ALT_SLASH, "No patches are available for this game."), false, false,
                    ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
     }
     else
