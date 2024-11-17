@@ -306,6 +306,7 @@ static void DrawAchievementsSettingsPage();
 static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
+static bool ShouldShowAdvancedSettings();
 static bool IsEditingGameSettings(SettingsInterface* bsi);
 static SettingsInterface* GetEditingSettingsInterface();
 static SettingsInterface* GetEditingSettingsInterface(bool game_settings);
@@ -1526,6 +1527,11 @@ void FullscreenUI::DrawExitWindow()
   ImGui::PopStyleColor();
 
   SetStandardSelectionFooterText(true);
+}
+
+bool FullscreenUI::ShouldShowAdvancedSettings()
+{
+  return Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
 }
 
 bool FullscreenUI::IsEditingGameSettings(SettingsInterface* bsi)
@@ -2880,7 +2886,8 @@ void FullscreenUI::DrawSettingsWindow()
 
     const bool game_settings = IsEditingGameSettings(GetEditingSettingsInterface());
     const u32 count =
-      game_settings ? static_cast<u32>(std::size(per_game_pages)) : static_cast<u32>(std::size(global_pages));
+      (game_settings ? static_cast<u32>(std::size(per_game_pages)) : static_cast<u32>(std::size(global_pages))) -
+      BoolToUInt32(ShouldShowAdvancedSettings());
     const SettingsPage* pages = game_settings ? per_game_pages : global_pages;
     u32 index = 0;
     for (u32 i = 0; i < count; i++)
@@ -3128,6 +3135,9 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then "
                               "resume directly from where you left off next time."),
                     "Main", "SaveStateOnExit", true);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_EXPORT, "Create Save State Backups"),
+                    FSUI_CSTR("Renames existing save states when saving to a backup file."), "Main",
+                    "CreateSaveStateBackups", false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Start Fullscreen"),
                     FSUI_CSTR("Automatically switches to fullscreen mode when the program is started."), "Main",
                     "StartFullscreen", false);
@@ -5213,9 +5223,6 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                     FSUI_CSTR("Allows loading protected games without subchannel information."), "CDROM",
                     "AllowBootingWithoutSBIFile", false);
 
-  DrawToggleSetting(bsi, FSUI_CSTR("Create Save State Backups"),
-                    FSUI_CSTR("Renames existing save states when saving to a backup file."), "Main",
-                    "CreateSaveStateBackups", false);
   DrawToggleSetting(
     bsi, FSUI_CSTR("Load Devices From Save States"),
     FSUI_CSTR("When enabled, memory cards and controllers will be overwritten when save states are loaded."), "Main",
