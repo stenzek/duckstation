@@ -109,13 +109,13 @@ void Shutdown();
 
 void Invalidate();
 
-void AddWrittenRectangle(const GSVector4i rect, bool update_vram_writes = false);
+void AddWrittenRectangle(const GSVector4i rect, bool update_vram_writes = false, bool remove_from_hash_cache = false);
 void AddDrawnRectangle(const GSVector4i rect, const GSVector4i clip_rect);
 
 void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask, bool check_mask,
               const GSVector4i src_bounds, const GSVector4i dst_bounds);
 void WriteVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask,
-                const GSVector4i bounds);
+               const GSVector4i bounds);
 
 const Source* LookupSource(SourceKey key, const GSVector4i uv_rect, PaletteRecordFlags flags);
 

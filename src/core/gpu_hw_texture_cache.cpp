@@ -246,16 +246,18 @@ static void DestroyPipelines();
 static const Source* ReturnSource(Source* source, const GSVector4i uv_rect, PaletteRecordFlags flags);
 static Source* CreateSource(SourceKey key);
 
+static HashCacheKey GetHashCacheKey(SourceKey key, HashType tex_hash, HashType pal_hash);
 static HashCacheEntry* LookupHashCache(SourceKey key, HashType tex_hash, HashType pal_hash);
 static void ApplyTextureReplacements(SourceKey key, HashType tex_hash, HashType pal_hash, HashCacheEntry* entry);
+static void RemoveFromHashCache(HashCacheEntry* entry, SourceKey key, HashType tex_hash, HashType pal_hash);
 static void RemoveFromHashCache(HashCache::iterator it);
 static void ClearHashCache();
 
 static bool IsPageDrawn(u32 page_index, const GSVector4i rect);
 static void InvalidatePageSources(u32 pn);
-static void InvalidatePageSources(u32 pn, const GSVector4i rc);
+static void InvalidatePageSources(u32 pn, const GSVector4i rc, bool remove_from_hash_cache = false);
 static void InvalidateSources();
-static void DestroySource(Source* src);
+static void DestroySource(Source* src, bool remove_from_hash_cache = false);
 
 static HashType HashPage(u8 page, GPUTextureMode mode);
 static HashType HashPalette(GPUTexturePaletteReg palette, GPUTextureMode mode);
@@ -902,7 +904,7 @@ void GPUTextureCache::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 w
 
   // copy and invalidate
   GPU_SW_Rasterizer::CopyVRAM(src_x, src_y, dst_x, dst_y, width, height, check_mask, set_mask);
-  AddWrittenRectangle(dst_bounds, convert_copies_to_writes);
+  AddWrittenRectangle(dst_bounds, convert_copies_to_writes, true);
 }
 
 void GPUTextureCache::WriteVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask,
@@ -931,11 +933,11 @@ void GPUTextureCache::WriteVRAM(u32 x, u32 y, u32 width, u32 height, const void*
   s_last_vram_write = it;
 }
 
-void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect, bool update_vram_writes)
+void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect, bool update_vram_writes, bool remove_from_hash_cache)
 {
-  LoopRectPages(rect, [&rect, &update_vram_writes](u32 pn) {
+  LoopRectPages(rect, [&rect, &update_vram_writes, &remove_from_hash_cache](u32 pn) {
     PageEntry& page = s_pages[pn];
-    InvalidatePageSources(pn, rect);
+    InvalidatePageSources(pn, rect, remove_from_hash_cache);
 
     if (page.num_draw_rects > 0)
     {
@@ -1372,7 +1374,7 @@ void GPUTextureCache::InvalidatePageSources(u32 pn)
   DebugAssert(!ps.head && !ps.tail);
 }
 
-void GPUTextureCache::InvalidatePageSources(u32 pn, const GSVector4i rc)
+void GPUTextureCache::InvalidatePageSources(u32 pn, const GSVector4i rc, bool remove_from_hash_cache)
 {
   DebugAssert(pn < NUM_VRAM_PAGES);
 
@@ -1390,11 +1392,11 @@ void GPUTextureCache::InvalidatePageSources(u32 pn, const GSVector4i rc)
     }
 
     GL_INS_FMT("Invalidate source {} in page {} due to overlapping with {}", SourceToString(src), pn, rc);
-    DestroySource(src);
+    DestroySource(src, remove_from_hash_cache);
   }
 }
 
-void GPUTextureCache::DestroySource(Source* src)
+void GPUTextureCache::DestroySource(Source* src, bool remove_from_hash_cache)
 {
   GL_INS_FMT("Invalidate source {}", SourceToString(src));
 
@@ -1420,9 +1422,13 @@ void GPUTextureCache::DestroySource(Source* src)
   for (u32 i = 0; i < src->num_page_refs; i++)
     ListUnlink(src->page_refs[i]);
 
-  DebugAssert(src->from_hash_cache && src->from_hash_cache->ref_count > 0);
+  HashCacheEntry* hcentry = src->from_hash_cache;
+  DebugAssert(hcentry && hcentry->ref_count > 0);
   ListUnlink(src->hash_cache_ref);
-  src->from_hash_cache->ref_count--;
+  hcentry->ref_count--;
+  if (hcentry->ref_count == 0 && remove_from_hash_cache)
+    RemoveFromHashCache(hcentry, src->key, src->texture_hash, src->palette_hash);
+
   delete src;
 }
 
@@ -2013,9 +2019,14 @@ void GPUTextureCache::InitializeVRAMWritePaletteRecord(VRAMWrite::PaletteRecord*
   }
 }
 
+GPUTextureCache::HashCacheKey GPUTextureCache::GetHashCacheKey(SourceKey key, HashType tex_hash, HashType pal_hash)
+{
+  return HashCacheKey{tex_hash, pal_hash, static_cast<HashType>(key.mode)};
+}
+
 GPUTextureCache::HashCacheEntry* GPUTextureCache::LookupHashCache(SourceKey key, HashType tex_hash, HashType pal_hash)
 {
-  const HashCacheKey hkey = {tex_hash, pal_hash, static_cast<HashType>(key.mode)};
+  const HashCacheKey hkey = GetHashCacheKey(key, tex_hash, pal_hash);
 
   const auto it = s_hash_cache.find(hkey);
   if (it != s_hash_cache.end())
@@ -2046,6 +2057,14 @@ GPUTextureCache::HashCacheEntry* GPUTextureCache::LookupHashCache(SourceKey key,
   s_hash_cache_memory_usage += entry.texture->GetVRAMUsage();
 
   return &s_hash_cache.emplace(hkey, std::move(entry)).first->second;
+}
+
+void GPUTextureCache::RemoveFromHashCache(HashCacheEntry* entry, SourceKey key, HashType tex_hash, HashType pal_hash)
+{
+  const HashCacheKey hckey = GetHashCacheKey(key, tex_hash, pal_hash);
+  const auto iter = s_hash_cache.find(hckey);
+  Assert(iter != s_hash_cache.end() && &iter->second == entry);
+  RemoveFromHashCache(iter);
 }
 
 void GPUTextureCache::RemoveFromHashCache(HashCache::iterator it)
