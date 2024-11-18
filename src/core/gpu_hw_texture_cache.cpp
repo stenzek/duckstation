@@ -544,6 +544,9 @@ ALIGN_TO_CACHE_LINE GPUTextureCacheState s_state;
 
 bool GPUTextureCache::ShouldTrackVRAMWrites()
 {
+  if (!g_settings.gpu_texture_cache)
+    return false;
+
 #ifdef ALWAYS_TRACK_VRAM_WRITES
   return true;
 #else
