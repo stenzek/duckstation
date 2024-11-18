@@ -500,41 +500,45 @@ ALWAYS_INLINE static float RectDistance(const GSVector4i& lhs, const GSVector4i&
   return clhs.dot(crhs);
 }
 
-// TODO: Pack in struct
+namespace {
+struct GPUTextureCacheState
+{
+  Settings::TextureReplacementSettings::Configuration config;
+  size_t hash_cache_memory_usage = 0;
+  size_t max_hash_cache_memory_usage = 1ULL * 1024ULL * 1024ULL * 1024ULL; // 2GB
+  VRAMWrite* last_vram_write = nullptr;
+  bool track_vram_writes = false;
 
-static HashCache s_hash_cache;
-static size_t s_hash_cache_memory_usage = 0;
-static size_t s_max_hash_cache_memory_usage = 1ULL * 1024ULL * 1024ULL * 1024ULL; // 2GB
+  HashCache hash_cache;
 
-static std::array<PageEntry, NUM_VRAM_PAGES> s_pages = {};
-static VRAMWrite* s_last_vram_write = nullptr;
+  /// List of candidates for purging when the hash cache gets too large.
+  std::vector<std::pair<HashCache::iterator, s32>> hash_cache_purge_list;
 
-/// List of candidates for purging when the hash cache gets too large.
-static std::vector<std::pair<HashCache::iterator, s32>> s_hash_cache_purge_list;
+  /// List of VRAM writes collected when saving state.
+  std::vector<VRAMWrite*> temp_vram_write_list;
 
-/// List of VRAM writes collected when saving state.
-static std::vector<VRAMWrite*> s_temp_vram_write_list;
+  std::unique_ptr<GPUTexture> replacement_texture_render_target;
+  std::unique_ptr<GPUPipeline> replacement_draw_pipeline;                 // copies alpha as-is
+  std::unique_ptr<GPUPipeline> replacement_semitransparent_draw_pipeline; // inverts alpha (i.e. semitransparent)
 
-static std::unique_ptr<GPUTexture> s_replacement_texture_render_target;
-static std::unique_ptr<GPUPipeline> s_replacement_draw_pipeline;                 // copies alpha as-is
-static std::unique_ptr<GPUPipeline> s_replacement_semitransparent_draw_pipeline; // inverts alpha (i.e. semitransparent)
+  std::string game_id;
+  VRAMReplacementMap vram_replacements;
 
-static bool s_track_vram_writes = false;
+  // TODO: Combine these into one map?
+  TextureReplacementMap vram_write_texture_replacements;
+  TextureReplacementMap texture_page_texture_replacements;
 
-static std::string s_game_id;
-static Settings::TextureReplacementSettings::Configuration s_config;
+  // TODO: Check the size, purge some when it gets too large.
+  TextureCache replacement_image_cache;
 
-// TODO: Check the size, purge some when it gets too large.
-static TextureCache s_replacement_image_cache;
+  std::unordered_set<VRAMReplacementName, VRAMReplacementNameHash> dumped_vram_writes;
+  std::unordered_set<DumpedTextureKey, DumpedTextureKeyHash> dumped_textures;
 
-static VRAMReplacementMap s_vram_replacements;
+  ALIGN_TO_CACHE_LINE std::array<PageEntry, NUM_VRAM_PAGES> pages = {};
+};
+} // namespace
 
-// TODO: Combine these into one map?
-static TextureReplacementMap s_vram_write_texture_replacements;
-static TextureReplacementMap s_texture_page_texture_replacements;
-
-static std::unordered_set<VRAMReplacementName, VRAMReplacementNameHash> s_dumped_vram_writes;
-static std::unordered_set<DumpedTextureKey, DumpedTextureKeyHash> s_dumped_textures;
+ALIGN_TO_CACHE_LINE GPUTextureCacheState s_state;
 
 } // namespace GPUTextureCache
 
@@ -550,7 +554,7 @@ bool GPUTextureCache::ShouldTrackVRAMWrites()
 
 bool GPUTextureCache::IsDumpingVRAMWriteTextures()
 {
-  return (g_settings.texture_replacements.dump_textures && !s_config.dump_texture_pages);
+  return (g_settings.texture_replacements.dump_textures && !s_state.config.dump_texture_pages);
 }
 
 bool GPUTextureCache::Initialize()
@@ -581,7 +585,7 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const Settings& old
   }
 
   // Reload textures if configuration changes.
-  const bool old_replacement_scale_linear_filter = s_config.replacement_scale_linear_filter;
+  const bool old_replacement_scale_linear_filter = s_state.config.replacement_scale_linear_filter;
   if (LoadLocalConfiguration(false, false) ||
       g_settings.texture_replacements.enable_texture_replacements !=
         old_settings.texture_replacements.enable_texture_replacements ||
@@ -590,7 +594,7 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const Settings& old
   {
     if (use_texture_cache)
     {
-      if (s_config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
+      if (s_state.config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
       {
         if (!CompilePipelines()) [[unlikely]]
           Panic("Failed to compile pipelines on TC replacement settings change");
@@ -623,7 +627,7 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
     u32 num_vram_writes = 0;
     sw.Do(&num_vram_writes);
 
-    const bool skip_writes = (skip || !s_track_vram_writes);
+    const bool skip_writes = (skip || !s_state.track_vram_writes);
 
     for (u32 i = 0; i < num_vram_writes; i++)
     {
@@ -677,7 +681,7 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
         vrw->num_page_refs = 0;
         LoopRectPages(vrw->active_rect, [vrw](u32 pn) {
           DebugAssert(vrw->num_page_refs < MAX_PAGE_REFS_PER_WRITE);
-          ListAppend(&s_pages[pn].writes, vrw, &vrw->page_refs[vrw->num_page_refs++]);
+          ListAppend(&s_state.pages[pn].writes, vrw, &vrw->page_refs[vrw->num_page_refs++]);
           return true;
         });
       }
@@ -685,15 +689,15 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
   }
   else
   {
-    s_temp_vram_write_list.clear();
+    s_state.temp_vram_write_list.clear();
 
-    if (!skip && s_track_vram_writes)
+    if (!skip && s_state.track_vram_writes)
     {
-      for (PageEntry& page : s_pages)
+      for (PageEntry& page : s_state.pages)
       {
         ListIterate(page.writes, [](VRAMWrite* vrw) {
-          if (std::find(s_temp_vram_write_list.begin(), s_temp_vram_write_list.end(), vrw) !=
-              s_temp_vram_write_list.end())
+          if (std::find(s_state.temp_vram_write_list.begin(), s_state.temp_vram_write_list.end(), vrw) !=
+              s_state.temp_vram_write_list.end())
           {
             return;
           }
@@ -702,14 +706,14 @@ bool GPUTextureCache::DoState(StateWrapper& sw, bool skip)
           if (g_settings.texture_replacements.dump_textures)
             SyncVRAMWritePaletteRecords(vrw);
 
-          s_temp_vram_write_list.push_back(vrw);
+          s_state.temp_vram_write_list.push_back(vrw);
         });
       }
     }
 
-    u32 num_vram_writes = static_cast<u32>(s_temp_vram_write_list.size());
+    u32 num_vram_writes = static_cast<u32>(s_state.temp_vram_write_list.size());
     sw.Do(&num_vram_writes);
-    for (VRAMWrite* vrw : s_temp_vram_write_list)
+    for (VRAMWrite* vrw : s_state.temp_vram_write_list)
     {
       DoStateVector(sw, &vrw->active_rect);
       DoStateVector(sw, &vrw->write_rect);
@@ -736,17 +740,17 @@ void GPUTextureCache::Shutdown()
   Invalidate();
   ClearHashCache();
   DestroyPipelines();
-  s_replacement_texture_render_target.reset();
-  s_hash_cache_purge_list = {};
-  s_temp_vram_write_list = {};
-  s_track_vram_writes = false;
+  s_state.replacement_texture_render_target.reset();
+  s_state.hash_cache_purge_list = {};
+  s_state.temp_vram_write_list = {};
+  s_state.track_vram_writes = false;
 
-  s_replacement_image_cache.clear();
-  s_vram_replacements.clear();
-  s_vram_write_texture_replacements.clear();
-  s_texture_page_texture_replacements.clear();
-  s_dumped_textures.clear();
-  s_game_id = {};
+  s_state.replacement_image_cache.clear();
+  s_state.vram_replacements.clear();
+  s_state.vram_write_texture_replacements.clear();
+  s_state.texture_page_texture_replacements.clear();
+  s_state.dumped_textures.clear();
+  s_state.game_id = {};
 }
 
 bool GPUTextureCache::CompilePipelines()
@@ -778,21 +782,21 @@ bool GPUTextureCache::CompilePipelines()
 
   std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
     GPUShaderStage::Fragment, shadergen.GetLanguage(),
-    shadergen.GenerateReplacementMergeFragmentShader(false, s_config.replacement_scale_linear_filter));
+    shadergen.GenerateReplacementMergeFragmentShader(false, s_state.config.replacement_scale_linear_filter));
   if (!fs)
     return false;
   plconfig.fragment_shader = fs.get();
-  if (!(s_replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+  if (!(s_state.replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
 
   fs = g_gpu_device->CreateShader(
     GPUShaderStage::Fragment, shadergen.GetLanguage(),
-    shadergen.GenerateReplacementMergeFragmentShader(true, s_config.replacement_scale_linear_filter));
+    shadergen.GenerateReplacementMergeFragmentShader(true, s_state.config.replacement_scale_linear_filter));
   if (!fs)
     return false;
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.fragment_shader = fs.get();
-  if (!(s_replacement_semitransparent_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+  if (!(s_state.replacement_semitransparent_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
 
   return true;
@@ -800,15 +804,15 @@ bool GPUTextureCache::CompilePipelines()
 
 void GPUTextureCache::DestroyPipelines()
 {
-  s_replacement_draw_pipeline.reset();
-  s_replacement_semitransparent_draw_pipeline.reset();
+  s_state.replacement_draw_pipeline.reset();
+  s_state.replacement_semitransparent_draw_pipeline.reset();
 }
 
 void GPUTextureCache::AddDrawnRectangle(const GSVector4i rect, const GSVector4i clip_rect)
 {
   // TODO: This might be a bit slow...
   LoopRectPages(rect, [&rect, &clip_rect](u32 pn) {
-    PageEntry& page = s_pages[pn];
+    PageEntry& page = s_state.pages[pn];
 
     for (TListNode<VRAMWrite>* n = page.writes.head; n;)
     {
@@ -883,13 +887,13 @@ void GPUTextureCache::AddDrawnRectangle(const GSVector4i rect, const GSVector4i 
 void GPUTextureCache::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool check_mask,
                                bool set_mask, const GSVector4i src_bounds, const GSVector4i dst_bounds)
 {
-  const bool convert_copies_to_writes = s_config.convert_copies_to_writes;
+  const bool convert_copies_to_writes = s_state.config.convert_copies_to_writes;
 
   // first dump out any overlapping writes with the old data
   if (convert_copies_to_writes)
   {
     LoopRectPages(dst_bounds, [&dst_bounds](u32 pn) {
-      PageEntry& page = s_pages[pn];
+      PageEntry& page = s_state.pages[pn];
       for (TListNode<VRAMWrite>* n = page.writes.head; n; n = n->next)
       {
         VRAMWrite* it = n->ref;
@@ -912,10 +916,10 @@ void GPUTextureCache::WriteVRAM(u32 x, u32 y, u32 width, u32 height, const void*
 {
   GPU_SW_Rasterizer::WriteVRAM(x, y, width, height, data, set_mask, check_mask);
 
-  if (!s_track_vram_writes)
+  if (!s_state.track_vram_writes)
     return;
 
-  if (s_last_vram_write && TryMergeVRAMWrite(s_last_vram_write, bounds))
+  if (s_state.last_vram_write && TryMergeVRAMWrite(s_state.last_vram_write, bounds))
     return;
 
   VRAMWrite* it = new VRAMWrite();
@@ -925,18 +929,18 @@ void GPUTextureCache::WriteVRAM(u32 x, u32 y, u32 width, u32 height, const void*
   it->num_page_refs = 0;
   LoopRectPages(bounds, [it](u32 pn) {
     DebugAssert(it->num_page_refs < MAX_PAGE_REFS_PER_WRITE);
-    ListAppend(&s_pages[pn].writes, it, &it->page_refs[it->num_page_refs++]);
+    ListAppend(&s_state.pages[pn].writes, it, &it->page_refs[it->num_page_refs++]);
     return true;
   });
 
   DEV_LOG("New VRAM write {:016X} at {} touching {} pages", it->hash, bounds, it->num_page_refs);
-  s_last_vram_write = it;
+  s_state.last_vram_write = it;
 }
 
 void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect, bool update_vram_writes, bool remove_from_hash_cache)
 {
   LoopRectPages(rect, [&rect, &update_vram_writes, &remove_from_hash_cache](u32 pn) {
-    PageEntry& page = s_pages[pn];
+    PageEntry& page = s_state.pages[pn];
     InvalidatePageSources(pn, rect, remove_from_hash_cache);
 
     if (page.num_draw_rects > 0)
@@ -994,7 +998,7 @@ void GPUTextureCache::AddWrittenRectangle(const GSVector4i rect, bool update_vra
           DEV_LOG("New VRAM write hash {:016X} => {:016X}", it->hash, new_hash);
           it->hash = new_hash;
         }
-        else if (it->num_splits < s_config.max_vram_write_splits && !it->active_rect.eq(intersection))
+        else if (it->num_splits < s_state.config.max_vram_write_splits && !it->active_rect.eq(intersection))
         {
           SplitVRAMWrite(it, intersection);
         }
@@ -1204,7 +1208,7 @@ const GPUTextureCache::Source* GPUTextureCache::LookupSource(SourceKey key, cons
 {
   GL_SCOPE_FMT("TC: Lookup source {}", SourceKeyToString(key));
 
-  TList<Source>& list = s_pages[key.page].sources;
+  TList<Source>& list = s_state.pages[key.page].sources;
   for (TListNode<Source>* n = list.head; n; n = n->next)
   {
     if (n->ref->key == key)
@@ -1227,7 +1231,7 @@ const GPUTextureCache::Source* GPUTextureCache::ReturnSource(Source* source, con
   if (!uv_rect.eq(INVALID_RECT))
   {
     LoopXWrappedPages(source->key.page, TexturePageCountForMode(source->key.mode), [&uv_rect](u32 pn) {
-      const PageEntry& pe = s_pages[pn];
+      const PageEntry& pe = s_state.pages[pn];
       ListIterate(pe.writes, [&uv_rect](const VRAMWrite* vrw) {
         if (const GSVector4i intersection = uv_rect.rintersect(vrw->write_rect); !intersection.rempty())
           GL_INS_FMT("TC: VRAM write was {:016X} ({})", vrw->hash, intersection);
@@ -1253,7 +1257,7 @@ const GPUTextureCache::Source* GPUTextureCache::ReturnSource(Source* source, con
 
 bool GPUTextureCache::IsPageDrawn(u32 page_index, const GSVector4i rect)
 {
-  const PageEntry& page = s_pages[page_index];
+  const PageEntry& page = s_state.pages[page_index];
   if (page.num_draw_rects == 0 || !page.total_draw_rect.rintersects(rect))
     return false;
 
@@ -1287,7 +1291,7 @@ bool GPUTextureCache::AreSourcePagesDrawn(SourceKey key, const GSVector4i rect)
       if (IsPageDrawn(wrapped_page, rect))
       {
         GL_INS_FMT("UV rect {} intersects page [{}] dirty rect {}, disabling TC", rect, wrapped_page,
-                   s_pages[wrapped_page].total_draw_rect);
+                   s_state.pages[wrapped_page].total_draw_rect);
       }
     }
   }
@@ -1327,7 +1331,7 @@ void GPUTextureCache::Invalidate()
   {
     InvalidatePageSources(i);
 
-    PageEntry& page = s_pages[i];
+    PageEntry& page = s_state.pages[i];
     page.num_draw_rects = 0;
     page.total_draw_rect = GSVector4i::zero();
     std::memset(page.draw_rects.data(), 0, sizeof(page.draw_rects));
@@ -1339,8 +1343,8 @@ void GPUTextureCache::Invalidate()
   // should all be null
 #ifdef _DEBUG
   for (u32 i = 0; i < NUM_VRAM_PAGES; i++)
-    DebugAssert(!s_pages[i].sources.head && !s_pages[i].sources.tail);
-  DebugAssert(!s_last_vram_write);
+    DebugAssert(!s_state.pages[i].sources.head && !s_state.pages[i].sources.tail);
+  DebugAssert(!s_state.last_vram_write);
 #endif
 
   ClearHashCache();
@@ -1359,7 +1363,7 @@ void GPUTextureCache::InvalidatePageSources(u32 pn)
 {
   DebugAssert(pn < NUM_VRAM_PAGES);
 
-  TList<Source>& ps = s_pages[pn].sources;
+  TList<Source>& ps = s_state.pages[pn].sources;
   if (ps.head)
     GL_INS_FMT("Invalidate page {} sources", pn);
 
@@ -1378,7 +1382,7 @@ void GPUTextureCache::InvalidatePageSources(u32 pn, const GSVector4i rc, bool re
 {
   DebugAssert(pn < NUM_VRAM_PAGES);
 
-  TList<Source>& ps = s_pages[pn].sources;
+  TList<Source>& ps = s_state.pages[pn].sources;
   for (TListNode<Source>* n = ps.head; n;)
   {
     Source* src = n->ref;
@@ -1402,11 +1406,11 @@ void GPUTextureCache::DestroySource(Source* src, bool remove_from_hash_cache)
 
   if (g_settings.texture_replacements.dump_textures && !src->active_uv_rect.eq(INVALID_RECT))
   {
-    if (!s_config.dump_texture_pages)
+    if (!s_state.config.dump_texture_pages)
     {
       // Find VRAM writes that overlap with this source
       LoopRectPages(src->active_uv_rect, [src](const u32 pn) {
-        PageEntry& pg = s_pages[pn];
+        PageEntry& pg = s_state.pages[pn];
         ListIterate(pg.writes, [src](VRAMWrite* vw) {
           UpdateVRAMWriteSources(vw, src->key, src->active_uv_rect, src->palette_record_flags);
         });
@@ -1469,7 +1473,7 @@ GPUTextureCache::Source* GPUTextureCache::CreateSource(SourceKey key)
     const u32 ri = src->num_page_refs++;
     page_refns[ri] = pn;
 
-    ListPrepend(&s_pages[pn].sources, src, &src->page_refs[ri]);
+    ListPrepend(&s_state.pages[pn].sources, src, &src->page_refs[ri]);
   };
   const auto add_page_ref_back = [src, &page_refns](u32 pn) {
     // Don't double up references
@@ -1482,7 +1486,7 @@ GPUTextureCache::Source* GPUTextureCache::CreateSource(SourceKey key)
     const u32 ri = src->num_page_refs++;
     page_refns[ri] = pn;
 
-    ListAppend(&s_pages[pn].sources, src, &src->page_refs[ri]);
+    ListAppend(&s_state.pages[pn].sources, src, &src->page_refs[ri]);
   };
 
   src->texture_rect = GetTextureRect(key.page, key.mode);
@@ -1501,7 +1505,7 @@ GPUTextureCache::Source* GPUTextureCache::CreateSource(SourceKey key)
 
 void GPUTextureCache::UpdateVRAMTrackingState()
 {
-  s_track_vram_writes = ShouldTrackVRAMWrites();
+  s_state.track_vram_writes = ShouldTrackVRAMWrites();
 }
 
 std::pair<u32, u32> GPUTextureCache::ReducePaletteBounds(const GSVector4i rect, GPUTextureMode mode,
@@ -1592,7 +1596,7 @@ void GPUTextureCache::SyncVRAMWritePaletteRecords(VRAMWrite* entry)
   if (IsDumpingVRAMWriteTextures())
   {
     LoopRectPages(entry->active_rect, [entry](const u32 pn) {
-      const PageEntry& page = s_pages[pn];
+      const PageEntry& page = s_state.pages[pn];
       ListIterate(page.sources, [entry](const Source* src) {
         if (!src->active_uv_rect.eq(INVALID_RECT))
           UpdateVRAMWriteSources(entry, src->key, src->active_uv_rect, src->palette_record_flags);
@@ -1687,7 +1691,7 @@ void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_
 
     LoopRectPages(splitr, [it](u32 pn) {
       DebugAssert(it->num_page_refs < MAX_PAGE_REFS_PER_WRITE);
-      ListAppend(&s_pages[pn].writes, it, &it->page_refs[it->num_page_refs++]);
+      ListAppend(&s_state.pages[pn].writes, it, &it->page_refs[it->num_page_refs++]);
       return true;
     });
 
@@ -1703,27 +1707,27 @@ void GPUTextureCache::SplitVRAMWrite(VRAMWrite* entry, const GSVector4i written_
 bool GPUTextureCache::TryMergeVRAMWrite(VRAMWrite* entry, const GSVector4i written_rect)
 {
   // It shouldn't have been split. Don't want to update after it has been.
-  if (s_last_vram_write->num_splits != 0)
+  if (s_state.last_vram_write->num_splits != 0)
     return false;
 
   // Check coalesce bounds/config.
-  const u32 coalesce_width = s_config.max_vram_write_coalesce_width;
-  const u32 coalesce_height = s_config.max_vram_write_coalesce_height;
+  const u32 coalesce_width = s_state.config.max_vram_write_coalesce_width;
+  const u32 coalesce_height = s_state.config.max_vram_write_coalesce_height;
   const bool merge_vertical = (static_cast<u32>(written_rect.height()) <= coalesce_height &&
-                               s_last_vram_write->write_rect.left == written_rect.left &&
-                               s_last_vram_write->write_rect.right == written_rect.right &&
-                               s_last_vram_write->write_rect.bottom == written_rect.top);
+                               s_state.last_vram_write->write_rect.left == written_rect.left &&
+                               s_state.last_vram_write->write_rect.right == written_rect.right &&
+                               s_state.last_vram_write->write_rect.bottom == written_rect.top);
   const bool merge_horizontal = (static_cast<u32>(written_rect.width()) <= coalesce_width &&
-                                 s_last_vram_write->write_rect.top == written_rect.top &&
-                                 s_last_vram_write->write_rect.bottom == written_rect.bottom &&
-                                 s_last_vram_write->write_rect.right == written_rect.left);
+                                 s_state.last_vram_write->write_rect.top == written_rect.top &&
+                                 s_state.last_vram_write->write_rect.bottom == written_rect.bottom &&
+                                 s_state.last_vram_write->write_rect.right == written_rect.left);
   if (!merge_vertical && !merge_horizontal)
     return false;
 
   // Double-check that nothing has used this write as a source yet (i.e. drawn).
   // Don't want to merge textures that are already completely uploaded...
   if (!LoopRectPagesWithEarlyExit(entry->active_rect, [entry](const u32 pn) {
-        return ListIterateWithEarlyExit(s_pages[pn].sources, [entry](const Source* src) {
+        return ListIterateWithEarlyExit(s_state.pages[pn].sources, [entry](const Source* src) {
           return (!src->active_uv_rect.eq(INVALID_RECT) || !src->active_uv_rect.rintersects(entry->active_rect));
         });
       }))
@@ -1746,7 +1750,7 @@ bool GPUTextureCache::TryMergeVRAMWrite(VRAMWrite* entry, const GSVector4i writt
   // Re-add to pages.
   LoopRectPages(new_rect, [entry](u32 pn) {
     DebugAssert(entry->num_page_refs < MAX_PAGE_REFS_PER_WRITE);
-    ListAppend(&s_pages[pn].writes, entry, &entry->page_refs[entry->num_page_refs++]);
+    ListAppend(&s_state.pages[pn].writes, entry, &entry->page_refs[entry->num_page_refs++]);
     return true;
   });
 
@@ -1764,7 +1768,7 @@ void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
     // Combine palette records with another write.
     VRAMWrite* other_write = nullptr;
     LoopRectPagesWithEarlyExit(entry->write_rect, [&entry, &other_write](u32 pn) {
-      PageEntry& pg = s_pages[pn];
+      PageEntry& pg = s_state.pages[pn];
       ListIterateWithEarlyExit(pg.writes, [&entry, &other_write](VRAMWrite* cur) {
         if (cur->hash != entry->hash)
           return true;
@@ -1796,17 +1800,17 @@ void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
 
   DumpTexturesFromVRAMWrite(entry);
 
-  s_last_vram_write = (s_last_vram_write == entry) ? nullptr : s_last_vram_write;
+  s_state.last_vram_write = (s_state.last_vram_write == entry) ? nullptr : s_state.last_vram_write;
   delete entry;
 }
 
 void GPUTextureCache::DumpTexturesFromVRAMWrite(VRAMWrite* entry)
 {
-  if (g_settings.texture_replacements.dump_textures && !s_config.dump_texture_pages)
+  if (g_settings.texture_replacements.dump_textures && !s_state.config.dump_texture_pages)
   {
     for (const VRAMWrite::PaletteRecord& prec : entry->palette_records)
     {
-      if (prec.key.mode == GPUTextureMode::Direct16Bit && !s_config.dump_c16_textures)
+      if (prec.key.mode == GPUTextureMode::Direct16Bit && !s_state.config.dump_c16_textures)
         continue;
 
       HashType pal_hash =
@@ -1814,7 +1818,7 @@ void GPUTextureCache::DumpTexturesFromVRAMWrite(VRAMWrite* entry)
 
       // If it's 8-bit, try reducing the range of the palette.
       u32 pal_min = 0, pal_max = prec.key.HasPalette() ? (GetPaletteWidth(prec.key.mode) - 1) : 0;
-      if (prec.key.HasPalette() && s_config.reduce_palette_range)
+      if (prec.key.HasPalette() && s_state.config.reduce_palette_range)
       {
         std::tie(pal_min, pal_max) = ReducePaletteBounds(prec.rect, prec.key.mode, prec.key.palette);
         pal_hash = HashPartialPalette(prec.palette, pal_min, pal_max);
@@ -1833,10 +1837,10 @@ void GPUTextureCache::DumpTexturesFromVRAMWrite(VRAMWrite* entry)
 void GPUTextureCache::DumpTextureFromPage(const Source* src)
 {
   // C16 filter
-  if (!s_config.dump_c16_textures && src->key.mode >= GPUTextureMode::Direct16Bit)
+  if (!s_state.config.dump_c16_textures && src->key.mode >= GPUTextureMode::Direct16Bit)
     return;
 
-  const bool dump_full_page = s_config.dump_full_texture_pages;
+  const bool dump_full_page = s_state.config.dump_full_texture_pages;
 
   // Dump active area from page
   HashType pal_hash = src->palette_hash;
@@ -1860,7 +1864,7 @@ void GPUTextureCache::DumpTextureFromPage(const Source* src)
 
   // If it's 8-bit, try reducing the range of the palette.
   u32 pal_min = 0, pal_max = src->key.HasPalette() ? (GetPaletteWidth(src->key.mode) - 1) : 0;
-  if (src->key.HasPalette() && s_config.reduce_palette_range)
+  if (src->key.HasPalette() && s_state.config.reduce_palette_range)
   {
     std::tie(pal_min, pal_max) = ReducePaletteBounds(dump_rect, src->key.mode, src->key.palette);
     pal_hash = HashPartialPalette(pal_ptr, pal_min, pal_max);
@@ -2028,8 +2032,8 @@ GPUTextureCache::HashCacheEntry* GPUTextureCache::LookupHashCache(SourceKey key,
 {
   const HashCacheKey hkey = GetHashCacheKey(key, tex_hash, pal_hash);
 
-  const auto it = s_hash_cache.find(hkey);
-  if (it != s_hash_cache.end())
+  const auto it = s_state.hash_cache.find(hkey);
+  if (it != s_state.hash_cache.end())
   {
     GL_INS_FMT("TC: Hash cache hit {:X} {:X}", hkey.texture_hash, hkey.palette_hash);
     return &it->second;
@@ -2054,16 +2058,16 @@ GPUTextureCache::HashCacheEntry* GPUTextureCache::LookupHashCache(SourceKey key,
   if (g_settings.texture_replacements.enable_texture_replacements)
     ApplyTextureReplacements(key, tex_hash, pal_hash, &entry);
 
-  s_hash_cache_memory_usage += entry.texture->GetVRAMUsage();
+  s_state.hash_cache_memory_usage += entry.texture->GetVRAMUsage();
 
-  return &s_hash_cache.emplace(hkey, std::move(entry)).first->second;
+  return &s_state.hash_cache.emplace(hkey, std::move(entry)).first->second;
 }
 
 void GPUTextureCache::RemoveFromHashCache(HashCacheEntry* entry, SourceKey key, HashType tex_hash, HashType pal_hash)
 {
   const HashCacheKey hckey = GetHashCacheKey(key, tex_hash, pal_hash);
-  const auto iter = s_hash_cache.find(hckey);
-  Assert(iter != s_hash_cache.end() && &iter->second == entry);
+  const auto iter = s_state.hash_cache.find(hckey);
+  Assert(iter != s_state.hash_cache.end() && &iter->second == entry);
   RemoveFromHashCache(iter);
 }
 
@@ -2072,17 +2076,17 @@ void GPUTextureCache::RemoveFromHashCache(HashCache::iterator it)
   ListIterate(it->second.sources, [](Source* source) { DestroySource(source); });
 
   const size_t vram_usage = it->second.texture->GetVRAMUsage();
-  DebugAssert(s_hash_cache_memory_usage >= vram_usage);
-  s_hash_cache_memory_usage -= vram_usage;
+  DebugAssert(s_state.hash_cache_memory_usage >= vram_usage);
+  s_state.hash_cache_memory_usage -= vram_usage;
 
   g_gpu_device->RecycleTexture(std::move(it->second.texture));
-  s_hash_cache.erase(it);
+  s_state.hash_cache.erase(it);
 }
 
 void GPUTextureCache::ClearHashCache()
 {
-  while (!s_hash_cache.empty())
-    RemoveFromHashCache(s_hash_cache.begin());
+  while (!s_state.hash_cache.empty())
+    RemoveFromHashCache(s_state.hash_cache.begin());
 }
 
 void GPUTextureCache::Compact()
@@ -2093,15 +2097,15 @@ void GPUTextureCache::Compact()
   // Maximum number of textures which are permitted in the hash cache at the end of the frame.
   static constexpr u32 MAX_HASH_CACHE_SIZE = 500;
 
-  bool might_need_cache_purge =
-    (s_hash_cache.size() > MAX_HASH_CACHE_SIZE || s_hash_cache_memory_usage >= s_max_hash_cache_memory_usage);
+  bool might_need_cache_purge = (s_state.hash_cache.size() > MAX_HASH_CACHE_SIZE ||
+                                 s_state.hash_cache_memory_usage >= s_state.max_hash_cache_memory_usage);
   if (might_need_cache_purge)
-    s_hash_cache_purge_list.clear();
+    s_state.hash_cache_purge_list.clear();
 
   const u32 frame_number = System::GetFrameNumber();
   const u32 min_frame_number = ((frame_number > MAX_HASH_CACHE_AGE) ? (frame_number - MAX_HASH_CACHE_AGE) : 0);
 
-  for (auto it = s_hash_cache.begin(); it != s_hash_cache.end();)
+  for (auto it = s_state.hash_cache.begin(); it != s_state.hash_cache.end();)
   {
     HashCacheEntry& e = it->second;
     if (e.ref_count == 0 && e.last_used_frame < min_frame_number)
@@ -2113,10 +2117,10 @@ void GPUTextureCache::Compact()
     // We might free up enough just with "normal" removals above.
     if (might_need_cache_purge)
     {
-      might_need_cache_purge =
-        (s_hash_cache.size() > MAX_HASH_CACHE_SIZE || s_hash_cache_memory_usage >= s_max_hash_cache_memory_usage);
+      might_need_cache_purge = (s_state.hash_cache.size() > MAX_HASH_CACHE_SIZE ||
+                                s_state.hash_cache_memory_usage >= s_state.max_hash_cache_memory_usage);
       if (might_need_cache_purge)
-        s_hash_cache_purge_list.emplace_back(it, static_cast<s32>(e.last_used_frame));
+        s_state.hash_cache_purge_list.emplace_back(it, static_cast<s32>(e.last_used_frame));
     }
 
     ++it;
@@ -2125,20 +2129,21 @@ void GPUTextureCache::Compact()
   // Pushing to a list, sorting, and removing ends up faster than re-iterating the map.
   if (might_need_cache_purge)
   {
-    std::sort(s_hash_cache_purge_list.begin(), s_hash_cache_purge_list.end(),
+    std::sort(s_state.hash_cache_purge_list.begin(), s_state.hash_cache_purge_list.end(),
               [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 
     size_t purge_index = 0;
-    while (s_hash_cache.size() > MAX_HASH_CACHE_SIZE || s_hash_cache_memory_usage >= s_max_hash_cache_memory_usage)
+    while (s_state.hash_cache.size() > MAX_HASH_CACHE_SIZE ||
+           s_state.hash_cache_memory_usage >= s_state.max_hash_cache_memory_usage)
     {
-      if (purge_index == s_hash_cache_purge_list.size())
+      if (purge_index == s_state.hash_cache_purge_list.size())
       {
         WARNING_LOG("Cannot find hash cache entries to purge, current hash cache size is {} MB in {} textures.",
-                    static_cast<double>(s_hash_cache_memory_usage) / 1048576.0, s_hash_cache.size());
+                    static_cast<double>(s_state.hash_cache_memory_usage) / 1048576.0, s_state.hash_cache.size());
         break;
       }
 
-      RemoveFromHashCache(s_hash_cache_purge_list[purge_index++].first);
+      RemoveFromHashCache(s_state.hash_cache_purge_list[purge_index++].first);
     }
   }
 }
@@ -2447,10 +2452,10 @@ size_t GPUTextureCache::DumpedTextureKeyHash::operator()(const DumpedTextureKey&
 
 void GPUTextureCache::SetGameID(std::string game_id)
 {
-  if (s_game_id == game_id)
+  if (s_state.game_id == game_id)
     return;
 
-  s_game_id = game_id;
+  s_state.game_id = game_id;
   ReloadTextureReplacements(false);
 }
 
@@ -2459,8 +2464,8 @@ const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetVRAMReplacem
 {
   const VRAMReplacementName hash = GetVRAMWriteHash(width, height, pixels);
 
-  const auto it = s_vram_replacements.find(hash);
-  if (it == s_vram_replacements.end())
+  const auto it = s_state.vram_replacements.find(hash);
+  if (it == s_state.vram_replacements.end())
     return nullptr;
 
   return GetTextureReplacementImage(it->second);
@@ -2468,17 +2473,17 @@ const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetVRAMReplacem
 
 bool GPUTextureCache::ShouldDumpVRAMWrite(u32 width, u32 height)
 {
-  return (g_settings.texture_replacements.dump_vram_writes && width >= s_config.vram_write_dump_width_threshold &&
-          height >= s_config.vram_write_dump_height_threshold);
+  return (g_settings.texture_replacements.dump_vram_writes && width >= s_state.config.vram_write_dump_width_threshold &&
+          height >= s_state.config.vram_write_dump_height_threshold);
 }
 
 void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
 {
   const VRAMReplacementName name = GetVRAMWriteHash(width, height, pixels);
-  if (s_dumped_vram_writes.find(name) != s_dumped_vram_writes.end())
+  if (s_state.dumped_vram_writes.find(name) != s_state.dumped_vram_writes.end())
     return;
 
-  s_dumped_vram_writes.insert(name);
+  s_state.dumped_vram_writes.insert(name);
 
   const std::string filename = GetVRAMWriteDumpFilename(name);
   if (filename.empty() || FileSystem::FileExists(filename.c_str()))
@@ -2498,7 +2503,7 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
     }
   }
 
-  if (s_config.dump_vram_write_force_alpha_channel)
+  if (s_state.config.dump_vram_write_force_alpha_channel)
   {
     for (u32 y = 0; y < height; y++)
     {
@@ -2520,11 +2525,11 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
   const u32 width = ApplyTextureModeShift(mode, rect.width());
   const u32 height = rect.height();
 
-  if (width < s_config.texture_dump_width_threshold || height < s_config.texture_dump_height_threshold)
+  if (width < s_state.config.texture_dump_width_threshold || height < s_state.config.texture_dump_height_threshold)
     return;
 
   const bool semitransparent = ((flags & PaletteRecordFlags::HasSemiTransparentDraws) != PaletteRecordFlags::None &&
-                                !s_config.dump_texture_force_alpha_channel);
+                                !s_state.config.dump_texture_force_alpha_channel);
   const u8 dumped_texture_mode = static_cast<u8>(mode) | (semitransparent ? 4 : 0);
 
   const DumpedTextureKey key = {src_hash,
@@ -2536,7 +2541,7 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
                                 type,
                                 dumped_texture_mode,
                                 {}};
-  if (s_dumped_textures.find(key) != s_dumped_textures.end())
+  if (s_state.dumped_textures.find(key) != s_state.dumped_textures.end())
     return;
 
   if (!EnsureGameDirectoryExists())
@@ -2546,7 +2551,7 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
   if (!FileSystem::EnsureDirectoryExists(dump_directory.c_str(), false))
     return;
 
-  s_dumped_textures.insert(key);
+  s_state.dumped_textures.insert(key);
 
   const TextureReplacementName name = {
     .src_hash = src_hash,
@@ -2567,8 +2572,8 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
   if (!g_settings.texture_replacements.dump_replaced_textures)
   {
     const TextureReplacementMap& map = (type == TextureReplacementType::TextureFromPage) ?
-                                         s_texture_page_texture_replacements :
-                                         s_vram_write_texture_replacements;
+                                         s_state.texture_page_texture_replacements :
+                                         s_state.vram_write_texture_replacements;
     const auto& [begin, end] = map.equal_range(name.GetIndex());
     for (auto it = begin; it != end; ++it)
     {
@@ -2596,7 +2601,7 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
 
   u32* image_pixels = image.GetPixels();
   const u32* image_pixels_end = image.GetPixels() + (width * height);
-  if (s_config.dump_texture_force_alpha_channel)
+  if (s_state.config.dump_texture_force_alpha_channel)
   {
     for (u32* pixel = image_pixels; pixel != image_pixels_end; pixel++)
       *pixel |= 0xFF000000u;
@@ -2650,7 +2655,7 @@ bool GPUTextureCache::IsMatchingReplacementPalette(HashType full_palette_hash, G
 
 bool GPUTextureCache::HasVRAMWriteTextureReplacements()
 {
-  return !s_vram_write_texture_replacements.empty();
+  return !s_state.vram_write_texture_replacements.empty();
 }
 
 void GPUTextureCache::GetVRAMWriteTextureReplacements(std::vector<TextureReplacementSubImage>& replacements,
@@ -2659,7 +2664,7 @@ void GPUTextureCache::GetVRAMWriteTextureReplacements(std::vector<TextureReplace
                                                       const GSVector2i& offset_to_page)
 {
   const TextureReplacementIndex index = {vram_write_hash, mode};
-  const auto& [begin, end] = s_vram_write_texture_replacements.equal_range(index);
+  const auto& [begin, end] = s_state.vram_write_texture_replacements.equal_range(index);
   if (begin == end)
     return;
 
@@ -2702,7 +2707,7 @@ void GPUTextureCache::GetVRAMWriteTextureReplacements(std::vector<TextureReplace
 
 bool GPUTextureCache::HasTexturePageTextureReplacements()
 {
-  return !s_texture_page_texture_replacements.empty();
+  return !s_state.texture_page_texture_replacements.empty();
 }
 
 void GPUTextureCache::GetTexturePageTextureReplacements(std::vector<TextureReplacementSubImage>& replacements,
@@ -2717,8 +2722,8 @@ void GPUTextureCache::GetTexturePageTextureReplacements(std::vector<TextureRepla
   const GSVector4i page_start_in_vram =
     GSVector4i(GSVector2i(VRAMPageStartX(start_page_number), VRAMPageStartY(start_page_number))).xyxy();
 
-  for (TextureReplacementMap::const_iterator it = s_texture_page_texture_replacements.begin();
-       it != s_texture_page_texture_replacements.end(); ++it)
+  for (TextureReplacementMap::const_iterator it = s_state.texture_page_texture_replacements.begin();
+       it != s_state.texture_page_texture_replacements.end(); ++it)
   {
     if (it->first.mode != mode)
       continue;
@@ -2811,14 +2816,14 @@ void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements,
         if (!load_vram_write_replacements || !name.Parse(file_title))
           continue;
 
-        if (const auto it = s_vram_replacements.find(name); it != s_vram_replacements.end())
+        if (const auto it = s_state.vram_replacements.find(name); it != s_state.vram_replacements.end())
         {
           WARNING_LOG("Duplicate VRAM replacement: '{}' and '{}'", Path::GetFileName(it->second),
                       Path::GetFileName(fd.FileName));
           continue;
         }
 
-        s_vram_replacements.emplace(name, std::move(fd.FileName));
+        s_state.vram_replacements.emplace(name, std::move(fd.FileName));
       }
       break;
 
@@ -2833,8 +2838,8 @@ void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements,
 
         const TextureReplacementIndex index = name.GetIndex();
         TextureReplacementMap& dest_map = (type.value() == TextureReplacementType::TextureFromVRAMWrite) ?
-                                            s_vram_write_texture_replacements :
-                                            s_texture_page_texture_replacements;
+                                            s_state.vram_write_texture_replacements :
+                                            s_state.texture_page_texture_replacements;
 
         // Multiple replacements in the same write are fine. But they should have different rects.
         const auto range = dest_map.equal_range(index);
@@ -2861,12 +2866,14 @@ void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements,
 
   if (g_settings.texture_replacements.enable_texture_replacements)
   {
-    INFO_LOG("Found {} replacement upload textures for '{}'", s_vram_write_texture_replacements.size(), s_game_id);
-    INFO_LOG("Found {} replacement page textures for '{}'", s_texture_page_texture_replacements.size(), s_game_id);
+    INFO_LOG("Found {} replacement upload textures for '{}'", s_state.vram_write_texture_replacements.size(),
+             s_state.game_id);
+    INFO_LOG("Found {} replacement page textures for '{}'", s_state.texture_page_texture_replacements.size(),
+             s_state.game_id);
   }
 
   if (g_settings.texture_replacements.enable_vram_write_replacements)
-    INFO_LOG("Found {} replacement VRAM for '{}'", s_vram_replacements.size(), s_game_id);
+    INFO_LOG("Found {} replacement VRAM for '{}'", s_state.vram_replacements.size(), s_state.game_id);
 }
 
 void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& root,
@@ -2898,14 +2905,14 @@ void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& ro
         if (!load_vram_write_replacement_aliases || !name.Parse(key))
           continue;
 
-        if (const auto it = s_vram_replacements.find(name); it != s_vram_replacements.end())
+        if (const auto it = s_state.vram_replacements.find(name); it != s_state.vram_replacements.end())
         {
           WARNING_LOG("Duplicate VRAM replacement alias: '{}' and '{}'", Path::GetFileName(it->second),
                       replacement_filename);
           continue;
         }
 
-        s_vram_replacements.emplace(name, std::move(replacement_path));
+        s_state.vram_replacements.emplace(name, std::move(replacement_path));
       }
       break;
 
@@ -2920,8 +2927,8 @@ void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& ro
 
         const TextureReplacementIndex index = name.GetIndex();
         TextureReplacementMap& dest_map = (type.value() == TextureReplacementType::TextureFromVRAMWrite) ?
-                                            s_vram_write_texture_replacements :
-                                            s_texture_page_texture_replacements;
+                                            s_state.vram_write_texture_replacements :
+                                            s_state.texture_page_texture_replacements;
 
         // Multiple replacements in the same write are fine. But they should have different rects.
         const auto range = dest_map.equal_range(index);
@@ -2949,19 +2956,20 @@ void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& ro
   if (g_settings.texture_replacements.enable_texture_replacements)
   {
     INFO_LOG("Found {} replacement upload textures after applying aliases for '{}'",
-             s_vram_write_texture_replacements.size(), s_game_id);
+             s_state.vram_write_texture_replacements.size(), s_state.game_id);
     INFO_LOG("Found {} replacement page textures after applying aliases for '{}'",
-             s_texture_page_texture_replacements.size(), s_game_id);
+             s_state.texture_page_texture_replacements.size(), s_state.game_id);
   }
 
   if (g_settings.texture_replacements.enable_vram_write_replacements)
-    INFO_LOG("Found {} replacement VRAM after applying aliases for '{}'", s_vram_replacements.size(), s_game_id);
+    INFO_LOG("Found {} replacement VRAM after applying aliases for '{}'", s_state.vram_replacements.size(),
+             s_state.game_id);
 }
 
 const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetTextureReplacementImage(const std::string& filename)
 {
-  auto it = s_replacement_image_cache.find(filename);
-  if (it != s_replacement_image_cache.end())
+  auto it = s_state.replacement_image_cache.find(filename);
+  if (it != s_state.replacement_image_cache.end())
     return &it->second;
 
   RGBA8Image image;
@@ -2972,7 +2980,7 @@ const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetTextureRepla
   }
 
   VERBOSE_LOG("Loaded '{}': {}x{}", Path::GetFileName(filename), image.GetWidth(), image.GetHeight());
-  it = s_replacement_image_cache.emplace(filename, std::move(image)).first;
+  it = s_state.replacement_image_cache.emplace(filename, std::move(image)).first;
   return &it->second;
 }
 
@@ -2982,8 +2990,8 @@ void GPUTextureCache::PreloadReplacementTextures()
 
   Common::Timer last_update_time;
   u32 num_textures_loaded = 0;
-  const size_t total_textures =
-    s_vram_replacements.size() + s_vram_write_texture_replacements.size() + s_texture_page_texture_replacements.size();
+  const size_t total_textures = s_state.vram_replacements.size() + s_state.vram_write_texture_replacements.size() +
+                                s_state.texture_page_texture_replacements.size();
 
 #define UPDATE_PROGRESS()                                                                                              \
   if (last_update_time.GetTimeSeconds() >= UPDATE_INTERVAL)                                                            \
@@ -2993,7 +3001,7 @@ void GPUTextureCache::PreloadReplacementTextures()
     last_update_time.Reset();                                                                                          \
   }
 
-  for (const auto& it : s_vram_replacements)
+  for (const auto& it : s_state.vram_replacements)
   {
     UPDATE_PROGRESS();
     GetTextureReplacementImage(it.second);
@@ -3008,18 +3016,18 @@ void GPUTextureCache::PreloadReplacementTextures()
     num_textures_loaded++;                                                                                             \
   }
 
-  PROCESS_MAP(s_vram_write_texture_replacements);
-  PROCESS_MAP(s_texture_page_texture_replacements);
+  PROCESS_MAP(s_state.vram_write_texture_replacements);
+  PROCESS_MAP(s_state.texture_page_texture_replacements);
 #undef PROCESS_MAP
 #undef UPDATE_PROGRESS
 }
 
 bool GPUTextureCache::EnsureGameDirectoryExists()
 {
-  if (s_game_id.empty())
+  if (s_state.game_id.empty())
     return false;
 
-  const std::string game_directory = Path::Combine(EmuFolders::Textures, s_game_id);
+  const std::string game_directory = Path::Combine(EmuFolders::Textures, s_state.game_id);
   if (FileSystem::DirectoryExists(game_directory.c_str()))
     return true;
 
@@ -3057,12 +3065,13 @@ bool GPUTextureCache::EnsureGameDirectoryExists()
 std::string GPUTextureCache::GetTextureReplacementDirectory()
 {
   return Path::Combine(EmuFolders::Textures,
-                       SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "replacements", s_game_id));
+                       SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "replacements", s_state.game_id));
 }
 
 std::string GPUTextureCache::GetTextureDumpDirectory()
 {
-  return Path::Combine(EmuFolders::Textures, SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "dumps", s_game_id));
+  return Path::Combine(EmuFolders::Textures,
+                       SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "dumps", s_state.game_id));
 }
 
 GPUTextureCache::VRAMReplacementName GPUTextureCache::GetVRAMWriteHash(u32 width, u32 height, const void* pixels)
@@ -3087,59 +3096,61 @@ std::string GPUTextureCache::GetVRAMWriteDumpFilename(const VRAMReplacementName&
 bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_aliases,
                                              bool load_texture_replacement_aliases)
 {
-  const Settings::TextureReplacementSettings::Configuration old_config = s_config;
+  const Settings::TextureReplacementSettings::Configuration old_config = s_state.config;
 
   // load settings from ini
-  s_config = g_settings.texture_replacements.config;
+  s_state.config = g_settings.texture_replacements.config;
 
-  if (s_game_id.empty())
-    return (s_config != old_config);
+  if (s_state.game_id.empty())
+    return (s_state.config != old_config);
 
   const std::optional<std::string> ini_data = FileSystem::ReadFileToString(
     Path::Combine(EmuFolders::Textures,
-                  SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "{}", s_game_id, LOCAL_CONFIG_FILENAME))
+                  SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "{}", s_state.game_id, LOCAL_CONFIG_FILENAME))
       .c_str());
   if (!ini_data.has_value() || ini_data->empty())
-    return (s_config != old_config);
+    return (s_state.config != old_config);
 
   const ryml::Tree tree = ryml::parse_in_arena(LOCAL_CONFIG_FILENAME, to_csubstr(ini_data.value()));
   const ryml::ConstNodeRef root = tree.rootref();
 
   // This is false if all we have are comments
   if (!root.is_map())
-    return (s_config != old_config);
+    return (s_state.config != old_config);
 
-  s_config.dump_texture_pages =
-    GetOptionalTFromObject<bool>(root, "DumpTexturePages").value_or(static_cast<bool>(s_config.dump_texture_pages));
-  s_config.dump_full_texture_pages = GetOptionalTFromObject<bool>(root, "DumpFullTexturePages")
-                                       .value_or(static_cast<bool>(s_config.dump_full_texture_pages));
-  s_config.dump_texture_force_alpha_channel = GetOptionalTFromObject<bool>(root, "DumpTextureForceAlphaChannel")
-                                                .value_or(static_cast<bool>(s_config.dump_texture_force_alpha_channel));
-  s_config.dump_vram_write_force_alpha_channel =
+  s_state.config.dump_texture_pages = GetOptionalTFromObject<bool>(root, "DumpTexturePages")
+                                        .value_or(static_cast<bool>(s_state.config.dump_texture_pages));
+  s_state.config.dump_full_texture_pages = GetOptionalTFromObject<bool>(root, "DumpFullTexturePages")
+                                             .value_or(static_cast<bool>(s_state.config.dump_full_texture_pages));
+  s_state.config.dump_texture_force_alpha_channel =
+    GetOptionalTFromObject<bool>(root, "DumpTextureForceAlphaChannel")
+      .value_or(static_cast<bool>(s_state.config.dump_texture_force_alpha_channel));
+  s_state.config.dump_vram_write_force_alpha_channel =
     GetOptionalTFromObject<bool>(root, "DumpVRAMWriteForceAlphaChannel")
-      .value_or(static_cast<bool>(s_config.dump_vram_write_force_alpha_channel));
-  s_config.dump_c16_textures =
-    GetOptionalTFromObject<bool>(root, "DumpC16Textures").value_or(static_cast<bool>(s_config.dump_c16_textures));
-  s_config.reduce_palette_range =
-    GetOptionalTFromObject<bool>(root, "ReducePaletteRange").value_or(static_cast<bool>(s_config.reduce_palette_range));
-  s_config.convert_copies_to_writes = GetOptionalTFromObject<bool>(root, "ConvertCopiesToWrites")
-                                        .value_or(static_cast<bool>(s_config.convert_copies_to_writes));
-  s_config.replacement_scale_linear_filter = GetOptionalTFromObject<bool>(root, "ReplacementScaleLinearFilter")
-                                               .value_or(static_cast<bool>(s_config.replacement_scale_linear_filter));
-  s_config.max_vram_write_splits =
-    GetOptionalTFromObject<bool>(root, "MaxVRAMWriteSplits").value_or(s_config.max_vram_write_splits);
-  s_config.max_vram_write_coalesce_width =
-    GetOptionalTFromObject<u32>(root, "MaxVRAMWriteCoalesceWidth").value_or(s_config.max_vram_write_coalesce_width);
-  s_config.max_vram_write_coalesce_height =
-    GetOptionalTFromObject<u32>(root, "MaxVRAMWriteCoalesceHeight").value_or(s_config.max_vram_write_coalesce_height);
-  s_config.texture_dump_width_threshold =
-    GetOptionalTFromObject<u32>(root, "DumpTextureWidthThreshold").value_or(s_config.texture_dump_width_threshold);
-  s_config.texture_dump_height_threshold =
-    GetOptionalTFromObject<u32>(root, "DumpTextureHeightThreshold").value_or(s_config.texture_dump_height_threshold);
-  s_config.vram_write_dump_width_threshold =
-    GetOptionalTFromObject<u32>(root, "DumpVRAMWriteWidthThreshold").value_or(s_config.vram_write_dump_width_threshold);
-  s_config.vram_write_dump_height_threshold = GetOptionalTFromObject<u32>(root, "DumpVRAMWriteHeightThreshold")
-                                                .value_or(s_config.vram_write_dump_height_threshold);
+      .value_or(static_cast<bool>(s_state.config.dump_vram_write_force_alpha_channel));
+  s_state.config.dump_c16_textures =
+    GetOptionalTFromObject<bool>(root, "DumpC16Textures").value_or(static_cast<bool>(s_state.config.dump_c16_textures));
+  s_state.config.reduce_palette_range = GetOptionalTFromObject<bool>(root, "ReducePaletteRange")
+                                          .value_or(static_cast<bool>(s_state.config.reduce_palette_range));
+  s_state.config.convert_copies_to_writes = GetOptionalTFromObject<bool>(root, "ConvertCopiesToWrites")
+                                              .value_or(static_cast<bool>(s_state.config.convert_copies_to_writes));
+  s_state.config.replacement_scale_linear_filter =
+    GetOptionalTFromObject<bool>(root, "ReplacementScaleLinearFilter")
+      .value_or(static_cast<bool>(s_state.config.replacement_scale_linear_filter));
+  s_state.config.max_vram_write_splits =
+    GetOptionalTFromObject<bool>(root, "MaxVRAMWriteSplits").value_or(s_state.config.max_vram_write_splits);
+  s_state.config.max_vram_write_coalesce_width = GetOptionalTFromObject<u32>(root, "MaxVRAMWriteCoalesceWidth")
+                                                   .value_or(s_state.config.max_vram_write_coalesce_width);
+  s_state.config.max_vram_write_coalesce_height = GetOptionalTFromObject<u32>(root, "MaxVRAMWriteCoalesceHeight")
+                                                    .value_or(s_state.config.max_vram_write_coalesce_height);
+  s_state.config.texture_dump_width_threshold = GetOptionalTFromObject<u32>(root, "DumpTextureWidthThreshold")
+                                                  .value_or(s_state.config.texture_dump_width_threshold);
+  s_state.config.texture_dump_height_threshold = GetOptionalTFromObject<u32>(root, "DumpTextureHeightThreshold")
+                                                   .value_or(s_state.config.texture_dump_height_threshold);
+  s_state.config.vram_write_dump_width_threshold = GetOptionalTFromObject<u32>(root, "DumpVRAMWriteWidthThreshold")
+                                                     .value_or(s_state.config.vram_write_dump_width_threshold);
+  s_state.config.vram_write_dump_height_threshold = GetOptionalTFromObject<u32>(root, "DumpVRAMWriteHeightThreshold")
+                                                      .value_or(s_state.config.vram_write_dump_height_threshold);
 
   if (load_vram_write_replacement_aliases || load_texture_replacement_aliases)
   {
@@ -3149,14 +3160,14 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
   }
 
   // Any change?
-  return (s_config != old_config);
+  return (s_state.config != old_config);
 }
 
 void GPUTextureCache::ReloadTextureReplacements(bool show_info)
 {
-  s_vram_replacements.clear();
-  s_vram_write_texture_replacements.clear();
-  s_texture_page_texture_replacements.clear();
+  s_state.vram_replacements.clear();
+  s_state.vram_write_texture_replacements.clear();
+  s_state.texture_page_texture_replacements.clear();
 
   const bool load_vram_write_replacements = (g_settings.texture_replacements.enable_vram_write_replacements);
   const bool load_texture_replacements =
@@ -3177,8 +3188,9 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info)
 
   if (show_info)
   {
-    const int total = static_cast<int>(s_vram_replacements.size() + s_vram_write_texture_replacements.size() +
-                                       s_texture_page_texture_replacements.size());
+    const int total =
+      static_cast<int>(s_state.vram_replacements.size() + s_state.vram_write_texture_replacements.size() +
+                       s_state.texture_page_texture_replacements.size());
     Host::AddIconOSDMessage("ReloadTextureReplacements", ICON_EMOJI_REFRESH,
                             (total > 0) ? TRANSLATE_PLURAL_STR("GPU_HW", "%n replacement textures found.",
                                                                "Replacement texture count", total) :
@@ -3189,27 +3201,27 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info)
 
 void GPUTextureCache::PurgeUnreferencedTexturesFromCache()
 {
-  TextureCache old_map = std::move(s_replacement_image_cache);
-  s_replacement_image_cache = {};
+  TextureCache old_map = std::move(s_state.replacement_image_cache);
+  s_state.replacement_image_cache = {};
 
-  for (const auto& it : s_vram_replacements)
+  for (const auto& it : s_state.vram_replacements)
   {
     const auto it2 = old_map.find(it.second);
     if (it2 != old_map.end())
     {
-      s_replacement_image_cache[it.second] = std::move(it2->second);
+      s_state.replacement_image_cache[it.second] = std::move(it2->second);
       old_map.erase(it2);
     }
   }
 
-  for (const auto& map : {s_vram_write_texture_replacements, s_texture_page_texture_replacements})
+  for (const auto& map : {s_state.vram_write_texture_replacements, s_state.texture_page_texture_replacements})
   {
     for (const auto& it : map)
     {
       const auto it2 = old_map.find(it.second.second);
       if (it2 != old_map.end())
       {
-        s_replacement_image_cache[it.second.second] = std::move(it2->second);
+        s_state.replacement_image_cache[it.second.second] = std::move(it2->second);
         old_map.erase(it2);
       }
     }
@@ -3229,7 +3241,7 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   {
     const GSVector4i page_rect = VRAMPageRect(key.page);
     LoopRectPages(page_rect, [&key, &pal_hash, &subimages, &page_rect](u32 pn) {
-      const PageEntry& page = s_pages[pn];
+      const PageEntry& page = s_state.pages[pn];
       ListIterate(page.writes, [&key, &pal_hash, &subimages, &page_rect](const VRAMWrite* vrw) {
         // TODO: Is this needed?
         if (!vrw->write_rect.rintersects(page_rect))
@@ -3265,12 +3277,12 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   const GSVector4 max_scale_v = GSVector4(max_scale_x, max_scale_y).xyxy();
   const u32 new_width = static_cast<u32>(std::ceil(static_cast<float>(TEXTURE_PAGE_WIDTH) * max_scale_x));
   const u32 new_height = static_cast<u32>(std::ceil(static_cast<float>(TEXTURE_PAGE_HEIGHT) * max_scale_y));
-  if (!s_replacement_texture_render_target || s_replacement_texture_render_target->GetWidth() < new_width ||
-      s_replacement_texture_render_target->GetHeight() < new_height)
+  if (!s_state.replacement_texture_render_target || s_state.replacement_texture_render_target->GetWidth() < new_width ||
+      s_state.replacement_texture_render_target->GetHeight() < new_height)
   {
     // NOTE: Not recycled, it's unlikely to be reused.
-    s_replacement_texture_render_target.reset();
-    if (!(s_replacement_texture_render_target = g_gpu_device->CreateTexture(
+    s_state.replacement_texture_render_target.reset();
+    if (!(s_state.replacement_texture_render_target = g_gpu_device->CreateTexture(
             new_width, new_height, 1, 1, 1, GPUTexture::Type::RenderTarget, REPLACEMENT_TEXTURE_FORMAT)))
     {
       ERROR_LOG("Failed to create {}x{} render target.", new_width, new_height);
@@ -3292,10 +3304,10 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   GSVector2 texture_size = GSVector2(GSVector2i(entry->texture->GetWidth(), entry->texture->GetHeight()));
   GSVector2::store(&uniforms[0], texture_size);
   GSVector2::store(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
-  g_gpu_device->InvalidateRenderTarget(s_replacement_texture_render_target.get());
-  g_gpu_device->SetRenderTarget(s_replacement_texture_render_target.get());
+  g_gpu_device->InvalidateRenderTarget(s_state.replacement_texture_render_target.get());
+  g_gpu_device->SetRenderTarget(s_state.replacement_texture_render_target.get());
   g_gpu_device->SetViewportAndScissor(0, 0, new_width, new_height);
-  g_gpu_device->SetPipeline(s_replacement_draw_pipeline.get());
+  g_gpu_device->SetPipeline(s_state.replacement_draw_pipeline.get());
   g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->SetTextureSampler(0, entry->texture.get(), g_gpu_device->GetNearestSampler());
   g_gpu_device->Draw(3, 0);
@@ -3314,13 +3326,13 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
     GSVector2::store(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
     g_gpu_device->SetViewportAndScissor(dst_rect);
     g_gpu_device->SetTextureSampler(0, temp_texture.get(), g_gpu_device->GetNearestSampler());
-    g_gpu_device->SetPipeline(si.invert_alpha ? s_replacement_semitransparent_draw_pipeline.get() :
-                                                s_replacement_draw_pipeline.get());
+    g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :
+                                                s_state.replacement_draw_pipeline.get());
     g_gpu_device->Draw(3, 0);
   }
 
-  g_gpu_device->CopyTextureRegion(replacement_tex.get(), 0, 0, 0, 0, s_replacement_texture_render_target.get(), 0, 0, 0,
-                                  0, new_width, new_height);
+  g_gpu_device->CopyTextureRegion(replacement_tex.get(), 0, 0, 0, 0, s_state.replacement_texture_render_target.get(), 0,
+                                  0, 0, 0, new_width, new_height);
   g_gpu_device->RecycleTexture(std::move(entry->texture));
   entry->texture = std::move(replacement_tex);
 
