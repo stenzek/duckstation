@@ -3211,11 +3211,11 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Show OSD Messages"),
                     FSUI_CSTR("Shows on-screen-display messages when events occur."), "Display", "ShowOSDMessages",
                     true);
-  DrawToggleSetting(bsi, FSUI_CSTR("Show Status Indicators"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PLAY_CIRCLE, "Show Status Indicators"),
                     FSUI_CSTR("Shows persistent icons when turbo is active or when paused."), "Display",
                     "ShowStatusIndicators", true);
   DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_CLOCK, "Show Speed"),
+    bsi, FSUI_ICONSTR(ICON_FA_SIGNAL, "Show Speed"),
     FSUI_CSTR(
       "Shows the current emulation speed of the system in the top-right corner of the display as a percentage."),
     "Display", "ShowSpeed", false);
