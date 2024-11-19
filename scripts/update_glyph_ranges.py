@@ -10,8 +10,8 @@ languages_to_update = [
     "zh-cn",
 ]
 
-src_path = os.path.join(os.path.dirname(__file__), "..", "qttranslations.cpp")
-ts_dir = os.path.join(os.path.dirname(__file__))
+src_path = os.path.join(os.path.dirname(__file__), "..", "src", "duckstation-qt", "qttranslations.cpp")
+ts_dir = os.path.join(os.path.dirname(__file__), "..", "src", "duckstation-qt", "translations")
 
 def parse_xml(path):
     tree = ET.parse(path)
