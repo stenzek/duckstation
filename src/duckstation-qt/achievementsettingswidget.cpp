@@ -34,8 +34,6 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.spectatorMode, "Cheevos", "SpectatorMode", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.unofficialAchievements, "Cheevos", "UnofficialTestMode",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useFirstDiscFromPlaylist, "Cheevos",
-                                               "UseFirstDiscFromPlaylist", true);
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.achievementNotificationsDuration, "Cheevos",
                                                 "NotificationsDuration",
                                                 Settings::DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
@@ -68,16 +66,15 @@ AchievementSettingsWidget::AchievementSettingsWidget(SettingsWindow* dialog, QWi
     m_ui.unofficialAchievements, tr("Test Unofficial Achievements"), tr("Unchecked"),
     tr("When enabled, DuckStation will list achievements from unofficial sets. Please note that these achievements are "
        "not tracked by RetroAchievements, so they unlock every time."));
-  dialog->registerWidgetHelp(
-    m_ui.useFirstDiscFromPlaylist, tr("Use First Disc From Playlist"), tr("Unchecked"),
-    tr(
-      "When enabled, the first disc in a playlist will be used for achievements, regardless of which disc is active."));
 
   connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::onHardcoreModeStateChanged);
-  connect(m_ui.achievementNotifications, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
-  connect(m_ui.leaderboardNotifications, &QCheckBox::checkStateChanged, this, &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.hardcoreMode, &QCheckBox::checkStateChanged, this,
+          &AchievementSettingsWidget::onHardcoreModeStateChanged);
+  connect(m_ui.achievementNotifications, &QCheckBox::checkStateChanged, this,
+          &AchievementSettingsWidget::updateEnableState);
+  connect(m_ui.leaderboardNotifications, &QCheckBox::checkStateChanged, this,
+          &AchievementSettingsWidget::updateEnableState);
   connect(m_ui.achievementNotificationsDuration, &QSlider::valueChanged, this,
           &AchievementSettingsWidget::onAchievementsNotificationDurationSliderChanged);
   connect(m_ui.leaderboardNotificationsDuration, &QSlider::valueChanged, this,
@@ -128,7 +125,6 @@ void AchievementSettingsWidget::updateEnableState()
   m_ui.encoreMode->setEnabled(enabled);
   m_ui.spectatorMode->setEnabled(enabled);
   m_ui.unofficialAchievements->setEnabled(enabled);
-  m_ui.useFirstDiscFromPlaylist->setEnabled(enabled);
 }
 
 void AchievementSettingsWidget::onHardcoreModeStateChanged()

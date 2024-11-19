@@ -213,7 +213,6 @@ struct Settings
   bool achievements_encore_mode : 1 = false;
   bool achievements_spectator_mode : 1 = false;
   bool achievements_unofficial_test_mode : 1 = false;
-  bool achievements_use_first_disc_from_playlist : 1 = true;
   bool achievements_use_raintegration : 1 = false;
   s32 achievements_notification_duration = DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME;
   s32 achievements_leaderboard_duration = DEFAULT_LEADERBOARD_NOTIFICATION_TIME;

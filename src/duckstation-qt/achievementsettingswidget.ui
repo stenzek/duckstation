@@ -64,13 +64,6 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="useFirstDiscFromPlaylist">
-        <property name="text">
-         <string>Use First Disc From Playlist</string>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -97,13 +90,13 @@
            <number>5</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="invertedAppearance">
            <bool>false</bool>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
+           <enum>QSlider::TickPosition::TicksBelow</enum>
           </property>
           <property name="tickInterval">
            <number>1</number>
@@ -143,13 +136,13 @@
            <number>5</number>
           </property>
           <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+           <enum>Qt::Orientation::Horizontal</enum>
           </property>
           <property name="invertedAppearance">
            <bool>false</bool>
           </property>
           <property name="tickPosition">
-           <enum>QSlider::TicksBelow</enum>
+           <enum>QSlider::TickPosition::TicksBelow</enum>
           </property>
           <property name="tickInterval">
            <number>1</number>
@@ -202,7 +195,7 @@
 Login token generated at:</string>
         </property>
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
         </property>
        </widget>
       </item>
@@ -242,7 +235,7 @@ Login token generated at:</string>
       <item row="0" column="0">
        <widget class="QLabel" name="gameInfo">
         <property name="alignment">
-         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignTop</set>
         </property>
        </widget>
       </item>
@@ -252,7 +245,7 @@ Login token generated at:</string>
    <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
-      <enum>Qt::Vertical</enum>
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -265,7 +258,7 @@ Login token generated at:</string>
   </layout>
  </widget>
  <resources>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>

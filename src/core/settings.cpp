@@ -416,7 +416,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_encore_mode = si.GetBoolValue("Cheevos", "EncoreMode", false);
   achievements_spectator_mode = si.GetBoolValue("Cheevos", "SpectatorMode", false);
   achievements_unofficial_test_mode = si.GetBoolValue("Cheevos", "UnofficialTestMode", false);
-  achievements_use_first_disc_from_playlist = si.GetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", true);
   achievements_use_raintegration = si.GetBoolValue("Cheevos", "UseRAIntegration", false);
   achievements_notification_duration =
     si.GetIntValue("Cheevos", "NotificationsDuration", DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME);
@@ -678,7 +677,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("Cheevos", "EncoreMode", achievements_encore_mode);
   si.SetBoolValue("Cheevos", "SpectatorMode", achievements_spectator_mode);
   si.SetBoolValue("Cheevos", "UnofficialTestMode", achievements_unofficial_test_mode);
-  si.SetBoolValue("Cheevos", "UseFirstDiscFromPlaylist", achievements_use_first_disc_from_playlist);
   si.SetBoolValue("Cheevos", "UseRAIntegration", achievements_use_raintegration);
   si.SetIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
   si.SetIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);

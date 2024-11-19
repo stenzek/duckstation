@@ -955,8 +955,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   }
 
   std::unique_ptr<CDImage> temp_image;
-  if (!path.empty() && (!image || (g_settings.achievements_use_first_disc_from_playlist && image->HasSubImages() &&
-                                   image->GetCurrentSubImage() != 0)))
+  if (!path.empty() && !image)
   {
     temp_image = CDImage::Open(path.c_str(), g_settings.cdrom_load_image_patches, nullptr);
     image = temp_image.get();
