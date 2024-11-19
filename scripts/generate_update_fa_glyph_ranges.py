@@ -56,9 +56,9 @@ with open(emoji_file, "r") as f:
             continue
         u8_encodings[match[1]] = bytes.fromhex(match[2].replace("\\x", ""))
 
-out_pattern = "(static constexpr ImWchar FA_ICON_RANGE\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
-out_pf_pattern = "(static constexpr ImWchar PF_ICON_RANGE\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
-out_emoji_pattern = "(static constexpr ImWchar EMOJI_ICON_RANGE\[\] = \{)[0-9A-Z_a-z, \n]+(\};)"
+out_pattern = "(static constexpr ImWchar FA_ICON_RANGE\\[\\] = \\{)[0-9A-Z_a-z, \n]+(\\};)"
+out_pf_pattern = "(static constexpr ImWchar PF_ICON_RANGE\\[\\] = \\{)[0-9A-Z_a-z, \n]+(\\};)"
+out_emoji_pattern = "(static constexpr ImWchar EMOJI_ICON_RANGE\\[\\] = \\{)[0-9A-Z_a-z, \n]+(\\};)"
 
 def get_pairs(tokens):
     codepoints = list()
