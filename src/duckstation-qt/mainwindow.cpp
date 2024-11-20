@@ -2565,8 +2565,9 @@ void MainWindow::onAchievementsChallengeModeChanged(bool enabled)
   updateEmulationActions(false, System::IsValid(), enabled);
 }
 
-bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height, const QString& title,
-                                               const QString& icon_name, Host::AuxiliaryRenderWindowUserData userdata,
+bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, qint32 y, quint32 width, quint32 height,
+                                               const QString& title, const QString& icon_name,
+                                               Host::AuxiliaryRenderWindowUserData userdata,
                                                Host::AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error)
 {
   AuxiliaryDisplayWidget* widget = AuxiliaryDisplayWidget::create(x, y, width, height, title, icon_name, userdata);
@@ -2798,7 +2799,7 @@ MainWindow::SystemLock MainWindow::pauseAndLockSystem()
   }
 
   // Now we'll either have a borderless window, or a regular window (if we were exclusive fullscreen).
-  QWidget* dialog_parent = getDisplayContainer();
+  QWidget* dialog_parent = s_system_valid ? getDisplayContainer() : this;
 
   return SystemLock(dialog_parent, was_paused, was_fullscreen);
 }
