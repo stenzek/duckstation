@@ -2012,11 +2012,8 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
     m_main_swap_chain = std::move(swap_chain);
   }
 
-  if (!CreateNullTexture())
-  {
-    Error::SetStringView(error, "Failed to create dummy texture");
+  if (!CreateNullTexture(error))
     return false;
-  }
 
   if (!CreateBuffers() || !CreatePersistentDescriptorSets())
   {
@@ -2762,12 +2759,15 @@ void VulkanDevice::UnmapUniformBuffer(u32 size)
   m_dirty_flags |= DIRTY_FLAG_DYNAMIC_OFFSETS;
 }
 
-bool VulkanDevice::CreateNullTexture()
+bool VulkanDevice::CreateNullTexture(Error* error)
 {
-  m_null_texture = VulkanTexture::Create(1, 1, 1, 1, 1, GPUTexture::Type::RWTexture, GPUTexture::Format::RGBA8,
-                                         VK_FORMAT_R8G8B8A8_UNORM);
+  m_null_texture = VulkanTexture::Create(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+                                         GPUTexture::Flags::AllowBindAsImage, VK_FORMAT_R8G8B8A8_UNORM, error);
   if (!m_null_texture)
+  {
+    Error::AddPrefix(error, "Failed to create null texture: ");
     return false;
+  }
 
   const VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
   const VkImageSubresourceRange srr{VK_IMAGE_ASPECT_COLOR_BIT, 0u, 1u, 0u, 1u};
@@ -2779,9 +2779,12 @@ bool VulkanDevice::CreateNullTexture()
   Vulkan::SetObjectName(m_device, m_null_texture->GetView(), "Null texture view");
 
   // Bind null texture and point sampler state to all.
-  const VkSampler point_sampler = GetSampler(GPUSampler::GetNearestConfig());
+  const VkSampler point_sampler = GetSampler(GPUSampler::GetNearestConfig(), error);
   if (point_sampler == VK_NULL_HANDLE)
+  {
+    Error::AddPrefix(error, "Failed to get nearest sampler for init bind: ");
     return false;
+  }
 
   for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
     m_current_samplers[i] = point_sampler;
@@ -3010,10 +3013,14 @@ void VulkanDevice::RenderBlankFrame(VulkanSwapChain* swap_chain)
 }
 
 bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsageFlags buffer_usage,
-                                       VkDeviceMemory* out_memory, VkBuffer* out_buffer, VkDeviceSize* out_offset)
+                                       VkDeviceMemory* out_memory, VkBuffer* out_buffer, VkDeviceSize* out_offset,
+                                       Error* error)
 {
   if (!m_optional_extensions.vk_ext_external_memory_host)
+  {
+    Error::SetStringView(error, "VK_EXT_external_memory_host is not supported.");
     return false;
+  }
 
   // Align to the nearest page
   void* data_aligned =
@@ -3031,7 +3038,7 @@ bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsa
                                                      data_aligned, &pointer_properties);
   if (res != VK_SUCCESS || pointer_properties.memoryTypeBits == 0)
   {
-    LOG_VULKAN_ERROR(res, "vkGetMemoryHostPointerPropertiesEXT() failed: ");
+    Vulkan::SetErrorObject(error, "vkGetMemoryHostPointerPropertiesEXT() failed: ", res);
     return false;
   }
 
@@ -3044,7 +3051,7 @@ bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsa
   res = vmaFindMemoryTypeIndex(m_allocator, pointer_properties.memoryTypeBits, &vma_alloc_info, &memory_index);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vmaFindMemoryTypeIndex() failed: ");
+    Vulkan::SetErrorObject(error, "vmaFindMemoryTypeIndex() failed: ", res);
     return false;
   }
 
@@ -3060,7 +3067,7 @@ bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsa
   res = vkAllocateMemory(m_device, &alloc_info, nullptr, &imported_memory);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkAllocateMemory() failed: ");
+    Vulkan::SetErrorObject(error, "vkAllocateMemory() failed: ", res);
     return false;
   }
 
@@ -3080,7 +3087,7 @@ bool VulkanDevice::TryImportHostMemory(void* data, size_t data_size, VkBufferUsa
   res = vkCreateBuffer(m_device, &buffer_info, nullptr, &imported_buffer);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkCreateBuffer() failed: ");
+    Vulkan::SetErrorObject(error, "vkCreateBuffer() failed: ", res);
     if (imported_memory != VK_NULL_HANDLE)
       vkFreeMemory(m_device, imported_memory, nullptr);
 
@@ -3125,14 +3132,13 @@ void VulkanDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUText
     if (InRenderPass())
       EndRenderPass();
 
+    m_current_framebuffer = VK_NULL_HANDLE;
     if (m_num_current_render_targets == 0 && !m_current_depth_target)
-    {
-      m_current_framebuffer = VK_NULL_HANDLE;
       return;
-    }
 
-    if (!m_optional_extensions.vk_khr_dynamic_rendering ||
-        ((flags & GPUPipeline::ColorFeedbackLoop) && !m_optional_extensions.vk_khr_dynamic_rendering_local_read))
+    if (!(flags & GPUPipeline::BindRenderTargetsAsImages) &&
+        (!m_optional_extensions.vk_khr_dynamic_rendering ||
+         ((flags & GPUPipeline::ColorFeedbackLoop) && !m_optional_extensions.vk_khr_dynamic_rendering_local_read)))
     {
       m_current_framebuffer = m_framebuffer_manager.Lookup(
         (m_num_current_render_targets > 0) ? reinterpret_cast<GPUTexture**>(m_current_render_targets.data()) : nullptr,
@@ -3594,7 +3600,7 @@ void VulkanDevice::UnbindTexture(VulkanTexture* tex)
     }
   }
 
-  if (tex->IsRenderTarget() || tex->IsRWTexture())
+  if (tex->IsRenderTarget())
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {

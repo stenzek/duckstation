@@ -38,7 +38,7 @@ public:
   ~VulkanTexture() override;
 
   static std::unique_ptr<VulkanTexture> Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-                                               Format format, VkFormat vk_format);
+                                               Format format, Flags flags, VkFormat vk_format, Error* error);
   void Destroy(bool defer);
 
   ALWAYS_INLINE VkImage GetImage() const { return m_image; }
@@ -54,6 +54,7 @@ public:
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
   void Unmap() override;
   void MakeReadyForSampling() override;
+  void GenerateMipmaps() override;
 
   void SetDebugName(std::string_view name) override;
 
@@ -80,8 +81,8 @@ public:
   VkDescriptorSet GetDescriptorSetWithSampler(VkSampler sampler);
 
 private:
-  VulkanTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, VkImage image,
-                VmaAllocation allocation, VkImageView view, VkFormat vk_format);
+  VulkanTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
+                VkImage image, VmaAllocation allocation, VkImageView view, VkFormat vk_format);
 
   VkCommandBuffer GetCommandBufferForUpdate();
   void CopyTextureDataForUpload(void* dst, const void* src, u32 width, u32 height, u32 pitch, u32 upload_pitch) const;
@@ -159,7 +160,7 @@ public:
   ~VulkanDownloadTexture() override;
 
   static std::unique_ptr<VulkanDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
-                                                       size_t memory_size, u32 memory_stride);
+                                                       size_t memory_size, u32 memory_stride, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;

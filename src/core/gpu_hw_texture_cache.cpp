@@ -2048,8 +2048,9 @@ GPUTextureCache::HashCacheEntry* GPUTextureCache::LookupHashCache(SourceKey key,
   entry.ref_count = 0;
   entry.last_used_frame = 0;
   entry.sources = {};
-  entry.texture = g_gpu_device->FetchTexture(TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT, 1, 1, 1,
-                                             GPUTexture::Type::Texture, GPUTexture::Format::RGBA8);
+  entry.texture =
+    g_gpu_device->FetchTexture(TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT, 1, 1, 1, GPUTexture::Type::Texture,
+                               GPUTexture::Format::RGBA8, GPUTexture::Flags::None);
   if (!entry.texture)
   {
     ERROR_LOG("Failed to create texture.");
@@ -3285,8 +3286,9 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   {
     // NOTE: Not recycled, it's unlikely to be reused.
     s_state.replacement_texture_render_target.reset();
-    if (!(s_state.replacement_texture_render_target = g_gpu_device->CreateTexture(
-            new_width, new_height, 1, 1, 1, GPUTexture::Type::RenderTarget, REPLACEMENT_TEXTURE_FORMAT)))
+    if (!(s_state.replacement_texture_render_target =
+            g_gpu_device->CreateTexture(new_width, new_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                        REPLACEMENT_TEXTURE_FORMAT, GPUTexture::Flags::None)))
     {
       ERROR_LOG("Failed to create {}x{} render target.", new_width, new_height);
       return;
@@ -3294,8 +3296,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   }
 
   // Grab the actual texture beforehand, in case we OOM.
-  std::unique_ptr<GPUTexture> replacement_tex =
-    g_gpu_device->FetchTexture(new_width, new_height, 1, 1, 1, GPUTexture::Type::Texture, REPLACEMENT_TEXTURE_FORMAT);
+  std::unique_ptr<GPUTexture> replacement_tex = g_gpu_device->FetchTexture(
+    new_width, new_height, 1, 1, 1, GPUTexture::Type::Texture, REPLACEMENT_TEXTURE_FORMAT, GPUTexture::Flags::None);
   if (!replacement_tex)
   {
     ERROR_LOG("Failed to create {}x{} texture.", new_width, new_height);
@@ -3319,7 +3321,7 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   {
     const auto temp_texture = g_gpu_device->FetchAutoRecycleTexture(
       si.image.GetWidth(), si.image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture, REPLACEMENT_TEXTURE_FORMAT,
-      si.image.GetPixels(), si.image.GetPitch());
+      GPUTexture::Flags::None, si.image.GetPixels(), si.image.GetPitch());
     if (!temp_texture)
       continue;
 

@@ -50,15 +50,18 @@ public:
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                            GPUTexture::Type type, GPUTexture::Format format,
-                                            const void* data = nullptr, u32 data_stride = 0) override;
-  std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) override;
-  std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements) override;
+                                            GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                            const void* data = nullptr, u32 data_stride = 0,
+                                            Error* error = nullptr) override;
+  std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) override;
+  std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
+                                                        Error* error = nullptr) override;
 
-  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format) override;
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
-                                                            void* memory, size_t memory_size,
-                                                            u32 memory_stride) override;
+                                                            Error* error = nullptr) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                            void* memory, size_t memory_size, u32 memory_stride,
+                                                            Error* error = nullptr) override;
 
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
@@ -141,7 +144,7 @@ private:
 
   void SetFeatures(FeatureMask disabled_features);
 
-  bool CreateBuffers();
+  bool CreateBuffers(Error* error);
   void DestroyBuffers();
   void BindUniformBuffer(u32 offset, u32 size);
   void UnbindComputePipeline();

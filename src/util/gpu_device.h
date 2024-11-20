@@ -693,27 +693,28 @@ public:
 
   virtual std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Type type, GPUTexture::Format format,
-                                                    const void* data = nullptr, u32 data_stride = 0) = 0;
-  virtual std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) = 0;
-  virtual std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format,
-                                                                u32 size_in_elements) = 0;
+                                                    GPUTexture::Flags flags, const void* data = nullptr,
+                                                    u32 data_stride = 0, Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
+                                                                Error* error = nullptr) = 0;
 
   // Texture pooling.
   std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                           GPUTexture::Type type, GPUTexture::Format format, const void* data = nullptr,
-                                           u32 data_stride = 0);
+                                           GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                           const void* data = nullptr, u32 data_stride = 0, Error* error = nullptr);
   std::unique_ptr<GPUTexture, PooledTextureDeleter>
   FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
-                          GPUTexture::Format format, const void* data = nullptr, u32 data_stride = 0,
-                          bool dynamic = false);
+                          GPUTexture::Format format, GPUTexture::Flags flags, const void* data = nullptr,
+                          u32 data_stride = 0, Error* error = nullptr);
   void RecycleTexture(std::unique_ptr<GPUTexture> texture);
   void PurgeTexturePool();
 
-  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height,
-                                                                    GPUTexture::Format format) = 0;
   virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
-                                                                    void* memory, size_t memory_size,
-                                                                    u32 memory_stride) = 0;
+                                                                    Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                    void* memory, size_t memory_size, u32 memory_stride,
+                                                                    Error* error = nullptr) = 0;
 
   virtual void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                                  u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) = 0;
@@ -789,7 +790,7 @@ public:
   bool UsesLowerLeftOrigin() const;
   static GSVector4i FlipToLowerLeft(GSVector4i rc, s32 target_height);
   bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                     GPUTexture::Format format, bool preserve = true);
+                     GPUTexture::Format format, GPUTexture::Flags flags, bool preserve = true);
 
   virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
 
@@ -863,7 +864,7 @@ private:
     u8 samples;
     GPUTexture::Type type;
     GPUTexture::Format format;
-    u8 pad;
+    GPUTexture::Flags flags;
 
     ALWAYS_INLINE bool operator==(const TexturePoolKey& rhs) const
     {

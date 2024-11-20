@@ -46,7 +46,6 @@ enum : u32
   FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024,
   TEXTURE_BUFFER_SIZE = 64 * 1024 * 1024,
 
-  // UNIFORM_PUSH_CONSTANTS_STAGES = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
   UNIFORM_PUSH_CONSTANTS_SIZE = 128,
 
   MAX_UNIFORM_BUFFER_SIZE = 1024,
@@ -64,6 +63,55 @@ static DynamicHeapArray<u8> s_pipeline_cache_data;
 #include "WinPixEventRuntime/pix3.h"
 static u32 s_debug_scope_depth = 0;
 #endif
+
+static constexpr const u32 s_mipmap_blit_vs[] = {
+  0x43425844, 0xe0f571cf, 0x51234ef3, 0x3a6beab4, 0x141cd2ef, 0x00000001, 0x000003ac, 0x00000005, 0x00000034,
+  0x00000144, 0x00000178, 0x000001d0, 0x00000310, 0x46454452, 0x00000108, 0x00000001, 0x00000068, 0x00000001,
+  0x0000003c, 0xfffe0500, 0x00008100, 0x000000e0, 0x31314452, 0x0000003c, 0x00000018, 0x00000020, 0x00000028,
+  0x00000024, 0x0000000c, 0x00000000, 0x0000005c, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000001, 0x00000001, 0x424f4255, 0x6b636f6c, 0xababab00, 0x0000005c, 0x00000001, 0x00000080, 0x00000010,
+  0x00000000, 0x00000000, 0x000000a8, 0x00000000, 0x00000010, 0x00000002, 0x000000bc, 0x00000000, 0xffffffff,
+  0x00000000, 0xffffffff, 0x00000000, 0x72735f75, 0x65725f63, 0x66007463, 0x74616f6c, 0xabab0034, 0x00030001,
+  0x00040001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x000000b3, 0x7263694d,
+  0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168, 0x6f432072, 0x6c69706d, 0x31207265, 0x00312e30,
+  0x4e475349, 0x0000002c, 0x00000001, 0x00000008, 0x00000020, 0x00000000, 0x00000006, 0x00000001, 0x00000000,
+  0x00000101, 0x565f5653, 0x65747265, 0x00444978, 0x4e47534f, 0x00000050, 0x00000002, 0x00000008, 0x00000038,
+  0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000c03, 0x00000041, 0x00000000, 0x00000001, 0x00000003,
+  0x00000001, 0x0000000f, 0x43584554, 0x44524f4f, 0x5f565300, 0x69736f50, 0x6e6f6974, 0xababab00, 0x58454853,
+  0x00000138, 0x00010050, 0x0000004e, 0x0100086a, 0x04000059, 0x00208e46, 0x00000000, 0x00000001, 0x04000060,
+  0x00101012, 0x00000000, 0x00000006, 0x03000065, 0x00102032, 0x00000000, 0x04000067, 0x001020f2, 0x00000001,
+  0x00000001, 0x02000068, 0x00000001, 0x0b00008c, 0x00100012, 0x00000000, 0x00004001, 0x00000001, 0x00004001,
+  0x00000001, 0x0010100a, 0x00000000, 0x00004001, 0x00000000, 0x07000001, 0x00100042, 0x00000000, 0x0010100a,
+  0x00000000, 0x00004001, 0x00000002, 0x05000056, 0x00100032, 0x00000000, 0x00100086, 0x00000000, 0x0b000032,
+  0x00102032, 0x00000000, 0x00100046, 0x00000000, 0x00208ae6, 0x00000000, 0x00000000, 0x00208046, 0x00000000,
+  0x00000000, 0x0f000032, 0x00102032, 0x00000001, 0x00100046, 0x00000000, 0x00004002, 0x40000000, 0xc0000000,
+  0x00000000, 0x00000000, 0x00004002, 0xbf800000, 0x3f800000, 0x00000000, 0x00000000, 0x08000036, 0x001020c2,
+  0x00000001, 0x00004002, 0x00000000, 0x00000000, 0x00000000, 0x3f800000, 0x0100003e, 0x54415453, 0x00000094,
+  0x00000007, 0x00000001, 0x00000000, 0x00000003, 0x00000002, 0x00000000, 0x00000001, 0x00000001, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000001, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000};
+
+static constexpr const u32 s_mipmap_blit_ps[] = {
+  0x43425844, 0x25500f77, 0x71f24271, 0x5f83f8b8, 0x3f405943, 0x00000001, 0x0000026c, 0x00000005, 0x00000034,
+  0x000000f0, 0x00000124, 0x00000158, 0x000001d0, 0x46454452, 0x000000b4, 0x00000000, 0x00000000, 0x00000002,
+  0x0000003c, 0xffff0500, 0x00008100, 0x0000008b, 0x31314452, 0x0000003c, 0x00000018, 0x00000020, 0x00000028,
+  0x00000024, 0x0000000c, 0x00000000, 0x0000007c, 0x00000003, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000001, 0x00000001, 0x00000085, 0x00000002, 0x00000005, 0x00000004, 0xffffffff, 0x00000000, 0x00000001,
+  0x0000000d, 0x706d6173, 0x73735f30, 0x6d617300, 0x4d003070, 0x6f726369, 0x74666f73, 0x29522820, 0x534c4820,
+  0x6853204c, 0x72656461, 0x6d6f4320, 0x656c6970, 0x30312072, 0xab00312e, 0x4e475349, 0x0000002c, 0x00000001,
+  0x00000008, 0x00000020, 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000303, 0x43584554, 0x44524f4f,
+  0xababab00, 0x4e47534f, 0x0000002c, 0x00000001, 0x00000008, 0x00000020, 0x00000000, 0x00000000, 0x00000003,
+  0x00000000, 0x0000000f, 0x545f5653, 0x65677261, 0xabab0074, 0x58454853, 0x00000070, 0x00000050, 0x0000001c,
+  0x0100086a, 0x0300005a, 0x00106000, 0x00000000, 0x04001858, 0x00107000, 0x00000000, 0x00005555, 0x03001062,
+  0x00101032, 0x00000000, 0x03000065, 0x001020f2, 0x00000000, 0x8b000045, 0x800000c2, 0x00155543, 0x001020f2,
+  0x00000000, 0x00101046, 0x00000000, 0x00107e46, 0x00000000, 0x00106000, 0x00000000, 0x0100003e, 0x54415453,
+  0x00000094, 0x00000002, 0x00000000, 0x00000000, 0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000001,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+  0x00000000, 0x00000000};
 
 D3D12Device::D3D12Device()
 {
@@ -523,7 +571,9 @@ bool D3D12Device::CreateDescriptorHeaps(Error* error)
   m_device->CreateUnorderedAccessView(nullptr, nullptr, &null_uav_desc, m_null_uav_descriptor.cpu_handle);
 
   // Same for samplers.
-  m_point_sampler = GetSampler(GPUSampler::GetNearestConfig());
+  m_point_sampler = GetSampler(GPUSampler::GetNearestConfig(), error);
+  if (!m_point_sampler) [[unlikely]]
+    return false;
   for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
     m_current_samplers[i] = m_point_sampler;
   return true;
@@ -2100,7 +2150,7 @@ void D3D12Device::UnbindTexture(D3D12Texture* tex)
     }
   }
 
-  if (tex->IsRenderTarget() || tex->IsRWTexture())
+  if (tex->IsRenderTarget() || tex->HasFlag(GPUTexture::Flags::AllowBindAsImage))
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
@@ -2132,6 +2182,137 @@ void D3D12Device::UnbindTextureBuffer(D3D12TextureBuffer* buf)
 
   if (m_current_pipeline_layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
     m_dirty_flags |= DIRTY_FLAG_TEXTURES;
+}
+
+void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 dst_width, u32 dst_height,
+                                      u32 src_level, u32 src_width, u32 src_height)
+{
+  ID3D12RootSignature* rootsig =
+    m_root_signatures[0][static_cast<size_t>(GPUPipeline::Layout::SingleTextureAndPushConstants)].Get();
+  ComPtr<ID3D12PipelineState>& pipeline = m_mipmap_render_pipelines[static_cast<size_t>(texture->GetFormat())];
+  if (!pipeline)
+  {
+    D3D12::GraphicsPipelineBuilder gpb;
+    gpb.SetRootSignature(rootsig);
+    gpb.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
+    gpb.SetRenderTarget(0, texture->GetDXGIFormat());
+    gpb.SetVertexShader(s_mipmap_blit_vs, std::size(s_mipmap_blit_vs));
+    gpb.SetPixelShader(s_mipmap_blit_ps, std::size(s_mipmap_blit_ps));
+    gpb.SetRasterizationState(D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE_NONE, false);
+    gpb.SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
+    gpb.SetBlendState(0, false, D3D12_BLEND_ZERO, D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD, D3D12_BLEND_ZERO,
+                      D3D12_BLEND_ONE, D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_ALL);
+
+    const std::wstring name = StringUtil::UTF8StringToWideString(
+      TinyString::from_format("MipmapRender-{}", GPUTexture::GetFormatName(texture->GetFormat())));
+    Error error;
+    if (m_pipeline_library)
+    {
+      HRESULT hr =
+        m_pipeline_library->LoadGraphicsPipeline(name.c_str(), gpb.GetDesc(), IID_PPV_ARGS(pipeline.GetAddressOf()));
+      if (FAILED(hr))
+      {
+        // E_INVALIDARG = not found.
+        if (hr != E_INVALIDARG)
+          ERROR_LOG("LoadGraphicsPipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+
+        // Need to create it normally.
+        pipeline = gpb.Create(m_device.Get(), &error, false);
+
+        // Store if it wasn't an OOM or something else.
+        if (pipeline && hr == E_INVALIDARG)
+        {
+          hr = m_pipeline_library->StorePipeline(name.c_str(), pipeline.Get());
+          if (FAILED(hr))
+            ERROR_LOG("StorePipeline() failed with HRESULT {:08X}", static_cast<unsigned>(hr));
+        }
+      }
+    }
+    else
+    {
+      pipeline = gpb.Create(m_device.Get(), &error, false);
+    }
+    if (!pipeline)
+    {
+      ERROR_LOG("Failed to compile mipmap render pipeline for {}: {}", GPUTexture::GetFormatName(texture->GetFormat()),
+                error.GetDescription());
+      return;
+    }
+  }
+
+  EndRenderPass();
+
+  // we need a temporary SRV and RTV for each mip level
+  // Safe to use the init buffer after exec, because everything will be done with the texture.
+  D3D12DescriptorHandle rtv_handle;
+  while (!GetRTVHeapManager().Allocate(&rtv_handle))
+    SubmitCommandList(false, "Allocate RTV for RenderTextureMipmap()");
+
+  D3D12DescriptorHandle srv_handle;
+  while (!GetDescriptorHeapManager().Allocate(&srv_handle))
+    SubmitCommandList(false, "Allocate SRV for RenderTextureMipmap()");
+
+  // Setup views. This will be a partial view for the SRV.
+  D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {texture->GetDXGIFormat(), D3D12_RTV_DIMENSION_TEXTURE2D};
+  rtv_desc.Texture2D = {dst_level, 0u};
+  m_device->CreateRenderTargetView(texture->GetResource(), &rtv_desc, rtv_handle);
+
+  D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {texture->GetDXGIFormat(), D3D12_SRV_DIMENSION_TEXTURE2D,
+                                              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
+  srv_desc.Texture2D = {src_level, 1u, 0u, 0.0f};
+  m_device->CreateShaderResourceView(texture->GetResource(), &srv_desc, srv_handle);
+
+  // *now* we don't have to worry about running out of anything.
+  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
+  if (texture->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
+  {
+    texture->TransitionSubresourceToState(cmdlist, src_level, texture->GetResourceState(),
+                                          D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  }
+  if (texture->GetResourceState() != D3D12_RESOURCE_STATE_RENDER_TARGET)
+  {
+    texture->TransitionSubresourceToState(cmdlist, dst_level, texture->GetResourceState(),
+                                          D3D12_RESOURCE_STATE_RENDER_TARGET);
+  }
+
+  const D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {.cpuDescriptor = rtv_handle,
+                                                        .BeginningAccess =
+                                                          D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD,
+                                                        .EndingAccess = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE};
+  cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
+
+  const D3D12_VIEWPORT vp = {0.0f, 0.0f, static_cast<float>(dst_width), static_cast<float>(dst_height), 0.0f, 1.0f};
+  cmdlist->RSSetViewports(1, &vp);
+
+  const D3D12_RECT scissor = {0, 0, static_cast<LONG>(dst_width), static_cast<LONG>(dst_height)};
+  cmdlist->RSSetScissorRects(1, &scissor);
+
+  cmdlist->SetPipelineState(pipeline.Get());
+  cmdlist->SetGraphicsRootDescriptorTable(0, srv_handle);
+  cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12Sampler*>(m_linear_sampler.get())->GetDescriptor());
+  cmdlist->DrawInstanced(3, 1, 0, 0);
+
+  cmdlist->EndRenderPass();
+
+  if (texture->GetResourceState() != D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE)
+  {
+    texture->TransitionSubresourceToState(cmdlist, src_level, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE,
+                                          texture->GetResourceState());
+  }
+  if (texture->GetResourceState() != D3D12_RESOURCE_STATE_RENDER_TARGET)
+  {
+    texture->TransitionSubresourceToState(cmdlist, dst_level, D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                          texture->GetResourceState());
+  }
+
+  // Must destroy after current cmdlist.
+  DeferDescriptorDestruction(m_descriptor_heap_manager, &srv_handle);
+  DeferDescriptorDestruction(m_rtv_heap_manager, &rtv_handle);
+
+  // Restore for next normal draw.
+  SetViewport(GetCommandList());
+  SetScissor(GetCommandList());
+  m_dirty_flags |= LAYOUT_DEPENDENT_DIRTY_STATE;
 }
 
 void D3D12Device::SetViewport(const GSVector4i rc)

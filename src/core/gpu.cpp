@@ -1470,7 +1470,8 @@ void GPU::WriteGP1(u32 value)
     }
     break;
 
-      [[unlikely]] default : ERROR_LOG("Unimplemented GP1 command 0x{:02X}", command);
+    [[unlikely]] default:
+      ERROR_LOG("Unimplemented GP1 command 0x{:02X}", command);
       break;
   }
 }
@@ -1518,7 +1519,8 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
     }
     break;
 
-      [[unlikely]] default : WARNING_LOG("Unhandled GetGPUInfo(0x{:02X})", subcommand);
+    [[unlikely]] default:
+      WARNING_LOG("Unhandled GetGPUInfo(0x{:02X})", subcommand);
       break;
   }
 }
@@ -2213,7 +2215,7 @@ bool GPU::DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y,
       m_deinterlace_buffers[dst_bufidx]->GetHeight() != height)
   {
     if (!g_gpu_device->ResizeTexture(&m_deinterlace_buffers[dst_bufidx], width, height, GPUTexture::Type::RenderTarget,
-                                     GPUTexture::Format::RGBA8, false)) [[unlikely]]
+                                     GPUTexture::Format::RGBA8, GPUTexture::Flags::None, false)) [[unlikely]]
     {
       return false;
     }
@@ -2258,7 +2260,7 @@ bool GPU::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve)
       m_deinterlace_texture->GetHeight() != height)
   {
     if (!g_gpu_device->ResizeTexture(&m_deinterlace_texture, width, height, GPUTexture::Type::RenderTarget,
-                                     GPUTexture::Format::RGBA8, preserve)) [[unlikely]]
+                                     GPUTexture::Format::RGBA8, GPUTexture::Flags::None, preserve)) [[unlikely]]
     {
       return false;
     }
@@ -2279,7 +2281,7 @@ bool GPU::ApplyChromaSmoothing()
       m_chroma_smoothing_texture->GetHeight() != height)
   {
     if (!g_gpu_device->ResizeTexture(&m_chroma_smoothing_texture, width, height, GPUTexture::Type::RenderTarget,
-                                     GPUTexture::Format::RGBA8, false))
+                                     GPUTexture::Format::RGBA8, GPUTexture::Flags::None, false))
     {
       ClearDisplayTexture();
       return false;
@@ -2540,8 +2542,8 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i displ
   const GPUTexture::Format hdformat =
     g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
 
-  auto render_texture =
-    g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget, hdformat);
+  auto render_texture = g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                                              hdformat, GPUTexture::Flags::None);
   if (!render_texture)
     return false;
 

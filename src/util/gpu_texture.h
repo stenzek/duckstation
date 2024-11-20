@@ -11,6 +11,8 @@
 #include <string_view>
 #include <vector>
 
+class Error;
+
 class GPUTexture
 {
 public:
@@ -25,12 +27,9 @@ public:
 
   enum class Type : u8
   {
-    Unknown,
+    Texture,
     RenderTarget,
     DepthStencil,
-    Texture,
-    DynamicTexture,
-    RWTexture,
   };
 
   enum class Format : u8
@@ -70,6 +69,15 @@ public:
     Invalidated
   };
 
+  enum class Flags : u8
+  {
+    None = 0,
+    AllowMap = (1 << 0),
+    AllowBindAsImage = (1 << 2),
+    AllowGenerateMipmaps = (1 << 3),
+    AllowMSAAResolveTarget = (1 << 4),
+  };
+
   union ClearValue
   {
     u32 color;
@@ -81,20 +89,22 @@ public:
   virtual ~GPUTexture();
 
   static const char* GetFormatName(Format format);
-  static u32 GetPixelSize(GPUTexture::Format format);
-  static bool IsDepthFormat(GPUTexture::Format format);
-  static bool IsDepthStencilFormat(GPUTexture::Format format);
+  static u32 GetPixelSize(Format format);
+  static bool IsDepthFormat(Format format);
+  static bool IsDepthStencilFormat(Format format);
   static bool IsCompressedFormat(Format format);
   static u32 GetCompressedBytesPerBlock(Format format);
   static u32 GetCompressedBlockSize(Format format);
   static u32 CalcUploadPitch(Format format, u32 width);
   static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
   static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
+  static u32 GetFullMipmapCount(u32 width, u32 height);
 
-  static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format);
+  static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
+                             Flags flags, Error* error);
 
   static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,
-                                        GPUTexture::Format format);
+                                        Format format);
   static void FlipTextureDataRGBA8(u32 width, u32 height, u8* texture_data, u32 texture_data_stride);
 
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
@@ -104,6 +114,8 @@ public:
   ALWAYS_INLINE u32 GetSamples() const { return m_samples; }
   ALWAYS_INLINE Type GetType() const { return m_type; }
   ALWAYS_INLINE Format GetFormat() const { return m_format; }
+  ALWAYS_INLINE Flags GetFlags() const { return m_flags; }
+  ALWAYS_INLINE bool HasFlag(Flags flag) const { return ((static_cast<u8>(m_flags) & static_cast<u8>(flag)) != 0); }
   ALWAYS_INLINE GSVector4i GetRect() const
   {
     return GSVector4i(0, 0, static_cast<s32>(m_width), static_cast<s32>(m_height));
@@ -121,15 +133,13 @@ public:
   ALWAYS_INLINE bool IsDirty() const { return (m_state == State::Dirty); }
   ALWAYS_INLINE bool IsClearedOrInvalidated() const { return (m_state != State::Dirty); }
 
+  ALWAYS_INLINE bool IsTexture() const { return (m_type == Type::Texture); }
+  ALWAYS_INLINE bool IsRenderTarget() const { return (m_type == Type::RenderTarget); }
+  ALWAYS_INLINE bool IsDepthStencil() const { return (m_type == Type::DepthStencil); }
   ALWAYS_INLINE bool IsRenderTargetOrDepthStencil() const
   {
     return (m_type >= Type::RenderTarget && m_type <= Type::DepthStencil);
   }
-  ALWAYS_INLINE bool IsRenderTarget() const { return (m_type == Type::RenderTarget); }
-  ALWAYS_INLINE bool IsDepthStencil() const { return (m_type == Type::DepthStencil); }
-  ALWAYS_INLINE bool IsTexture() const { return (m_type == Type::Texture || m_type == Type::DynamicTexture); }
-  ALWAYS_INLINE bool IsDynamicTexture() const { return (m_type == Type::DynamicTexture); }
-  ALWAYS_INLINE bool IsRWTexture() const { return (m_type == Type::RWTexture); }
 
   ALWAYS_INLINE const ClearValue& GetClearValue() const { return m_clear_value; }
   ALWAYS_INLINE u32 GetClearColor() const { return m_clear_value.color; }
@@ -162,26 +172,31 @@ public:
   virtual bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) = 0;
   virtual void Unmap() = 0;
 
+  virtual void GenerateMipmaps() = 0;
+
   // Instructs the backend that we're finished rendering to this texture. It may transition it to a new layout.
   virtual void MakeReadyForSampling();
 
   virtual void SetDebugName(std::string_view name) = 0;
 
 protected:
-  GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format);
+  GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format, Flags flags);
 
   u16 m_width = 0;
   u16 m_height = 0;
   u8 m_layers = 0;
   u8 m_levels = 0;
   u8 m_samples = 0;
-  Type m_type = Type::Unknown;
+  Type m_type = Type::Texture;
   Format m_format = Format::Unknown;
+  Flags m_flags = Flags::None;
 
   State m_state = State::Dirty;
 
   ClearValue m_clear_value = {};
 };
+
+IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUTexture::Flags);
 
 class GPUDownloadTexture
 {

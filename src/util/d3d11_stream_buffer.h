@@ -9,6 +9,8 @@
 #include <d3d11_1.h>
 #include <wrl/client.h>
 
+class Error;
+
 class D3D11StreamBuffer
 {
 public:
@@ -26,7 +28,7 @@ public:
   ALWAYS_INLINE bool IsMapped() const { return m_mapped; }
   ALWAYS_INLINE bool IsUsingMapNoOverwrite() const { return m_use_map_no_overwrite; }
 
-  bool Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max_size);
+  bool Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max_size, Error* error);
   void Destroy();
 
   struct MappingResult

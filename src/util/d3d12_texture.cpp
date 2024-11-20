@@ -18,12 +18,12 @@
 LOG_CHANNEL(GPUDevice);
 
 D3D12Texture::D3D12Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                           DXGI_FORMAT dxgi_format, ComPtr<ID3D12Resource> resource,
+                           Flags flags, DXGI_FORMAT dxgi_format, ComPtr<ID3D12Resource> resource,
                            ComPtr<D3D12MA::Allocation> allocation, const D3D12DescriptorHandle& srv_descriptor,
                            const D3D12DescriptorHandle& write_descriptor, const D3D12DescriptorHandle& uav_descriptor,
                            WriteDescriptorType wdtype, D3D12_RESOURCE_STATES resource_state)
   : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
-               static_cast<u8>(samples), type, format),
+               static_cast<u8>(samples), type, format, flags),
     m_resource(std::move(resource)), m_allocation(std::move(allocation)), m_srv_descriptor(srv_descriptor),
     m_write_descriptor(write_descriptor), m_uav_descriptor(uav_descriptor), m_dxgi_format(dxgi_format),
     m_resource_state(resource_state), m_write_descriptor_type(wdtype)
@@ -37,9 +37,10 @@ D3D12Texture::~D3D12Texture()
 
 std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,
-                                                       const void* data /* = nullptr */, u32 data_stride /* = 0 */)
+                                                       GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                                       u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
-  if (!GPUTexture::ValidateConfig(width, height, layers, levels, samples, type, format))
+  if (!GPUTexture::ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
     return {};
 
   const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(format);
@@ -64,7 +65,6 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
   switch (type)
   {
     case GPUTexture::Type::Texture:
-    case GPUTexture::Type::DynamicTexture:
     {
       desc.Flags = D3D12_RESOURCE_FLAG_NONE;
       state = D3D12_RESOURCE_STATE_COPY_DEST;
@@ -92,18 +92,20 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
     }
     break;
 
-    case GPUTexture::Type::RWTexture:
-    {
-      DebugAssert(levels == 1);
-      allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
-      desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-      optimized_clear_value.Format = fm.rtv_format;
-      state = D3D12_RESOURCE_STATE_UNORDERED_ACCESS;
-    }
-    break;
+      DefaultCaseIsUnreachable();
+  }
 
-    default:
-      return {};
+  if ((flags & GPUTexture::Flags::AllowBindAsImage) != GPUTexture::Flags::None)
+  {
+    DebugAssert(levels == 1);
+    allocationDesc.Flags |= D3D12MA::ALLOCATION_FLAG_COMMITTED;
+    desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+  }
+
+  if ((flags & GPUTexture::Flags::AllowGenerateMipmaps) != GPUTexture::Flags::None)
+  {
+    // requires RTs since we need to draw the mips
+    desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
   }
 
   ComPtr<ID3D12Resource> resource;
@@ -115,10 +117,7 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
     allocation.GetAddressOf(), IID_PPV_ARGS(resource.GetAddressOf()));
   if (FAILED(hr)) [[unlikely]]
   {
-    // OOM isn't fatal.
-    if (hr != E_OUTOFMEMORY)
-      ERROR_LOG("Create texture failed: 0x{:08X}", static_cast<unsigned>(hr));
-
+    Error::SetHResult(error, "CreateResource() failed: ", hr);
     return {};
   }
 
@@ -126,16 +125,19 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
   D3D12Texture::WriteDescriptorType write_descriptor_type = D3D12Texture::WriteDescriptorType::None;
   if (fm.srv_format != DXGI_FORMAT_UNKNOWN)
   {
-    if (!CreateSRVDescriptor(resource.Get(), layers, levels, samples, fm.srv_format, &srv_descriptor))
+    if (!CreateSRVDescriptor(resource.Get(), layers, levels, samples, fm.srv_format, &srv_descriptor, error))
       return {};
   }
 
   switch (type)
   {
+    case GPUTexture::Type::Texture:
+      break;
+
     case GPUTexture::Type::RenderTarget:
     {
       write_descriptor_type = D3D12Texture::WriteDescriptorType::RTV;
-      if (!CreateRTVDescriptor(resource.Get(), samples, fm.rtv_format, &write_descriptor))
+      if (!CreateRTVDescriptor(resource.Get(), samples, fm.rtv_format, &write_descriptor, error))
       {
         m_descriptor_heap_manager.Free(&srv_descriptor);
         return {};
@@ -146,7 +148,7 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
     case GPUTexture::Type::DepthStencil:
     {
       write_descriptor_type = D3D12Texture::WriteDescriptorType::DSV;
-      if (!CreateDSVDescriptor(resource.Get(), samples, fm.dsv_format, &write_descriptor))
+      if (!CreateDSVDescriptor(resource.Get(), samples, fm.dsv_format, &write_descriptor, error))
       {
         m_descriptor_heap_manager.Free(&srv_descriptor);
         return {};
@@ -154,30 +156,23 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
     }
     break;
 
-    case GPUTexture::Type::RWTexture:
+      DefaultCaseIsUnreachable();
+  }
+
+  if ((flags & GPUTexture::Flags::AllowBindAsImage) != GPUTexture::Flags::None)
+  {
+    if (!CreateUAVDescriptor(resource.Get(), samples, fm.srv_format, &uav_descriptor, error))
     {
-      write_descriptor_type = D3D12Texture::WriteDescriptorType::RTV;
-      if (!CreateRTVDescriptor(resource.Get(), samples, fm.rtv_format, &write_descriptor))
-      {
-        m_descriptor_heap_manager.Free(&srv_descriptor);
-        return {};
-      }
-
-      if (!CreateUAVDescriptor(resource.Get(), samples, fm.srv_format, &uav_descriptor))
-      {
+      if (write_descriptor_type != D3D12Texture::WriteDescriptorType::None)
         m_descriptor_heap_manager.Free(&write_descriptor);
-        m_descriptor_heap_manager.Free(&srv_descriptor);
-        return {};
-      }
-    }
-    break;
 
-    default:
-      break;
+      m_descriptor_heap_manager.Free(&srv_descriptor);
+      return {};
+    }
   }
 
   std::unique_ptr<D3D12Texture> tex(new D3D12Texture(
-    width, height, layers, levels, samples, type, format, fm.resource_format, std::move(resource),
+    width, height, layers, levels, samples, type, format, flags, fm.resource_format, std::move(resource),
     std::move(allocation), srv_descriptor, write_descriptor, uav_descriptor, write_descriptor_type, state));
 
   if (data)
@@ -190,11 +185,11 @@ std::unique_ptr<GPUTexture> D3D12Device::CreateTexture(u32 width, u32 height, u3
 }
 
 bool D3D12Device::CreateSRVDescriptor(ID3D12Resource* resource, u32 layers, u32 levels, u32 samples, DXGI_FORMAT format,
-                                      D3D12DescriptorHandle* dh)
+                                      D3D12DescriptorHandle* dh, Error* error)
 {
   if (!m_descriptor_heap_manager.Allocate(dh))
   {
-    ERROR_LOG("Failed to allocate SRV descriptor");
+    Error::SetStringView(error, "Failed to allocate SRV descriptor");
     return false;
   }
 
@@ -233,11 +228,11 @@ bool D3D12Device::CreateSRVDescriptor(ID3D12Resource* resource, u32 layers, u32 
 }
 
 bool D3D12Device::CreateRTVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format,
-                                      D3D12DescriptorHandle* dh)
+                                      D3D12DescriptorHandle* dh, Error* error)
 {
   if (!m_rtv_heap_manager.Allocate(dh))
   {
-    ERROR_LOG("Failed to allocate SRV descriptor");
+    Error::SetStringView(error, "Failed to allocate SRV descriptor");
     return false;
   }
 
@@ -248,11 +243,11 @@ bool D3D12Device::CreateRTVDescriptor(ID3D12Resource* resource, u32 samples, DXG
 }
 
 bool D3D12Device::CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format,
-                                      D3D12DescriptorHandle* dh)
+                                      D3D12DescriptorHandle* dh, Error* error)
 {
   if (!m_dsv_heap_manager.Allocate(dh))
   {
-    ERROR_LOG("Failed to allocate SRV descriptor");
+    Error::SetStringView(error, "Failed to allocate SRV descriptor");
     return false;
   }
 
@@ -263,11 +258,11 @@ bool D3D12Device::CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXG
 }
 
 bool D3D12Device::CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format,
-                                      D3D12DescriptorHandle* dh)
+                                      D3D12DescriptorHandle* dh, Error* error)
 {
   if (!m_descriptor_heap_manager.Allocate(dh))
   {
-    ERROR_LOG("Failed to allocate UAV descriptor");
+    Error::SetStringView(error, "Failed to allocate UAV descriptor");
     return false;
   }
 
@@ -334,9 +329,9 @@ void D3D12Texture::Destroy(bool defer)
 ID3D12GraphicsCommandList4* D3D12Texture::GetCommandBufferForUpdate()
 {
   D3D12Device& dev = D3D12Device::GetInstance();
-  if ((m_type != Type::Texture && m_type != Type::DynamicTexture) || m_use_fence_counter == dev.GetCurrentFenceValue())
+  if (m_type != Type::Texture || m_use_fence_counter == dev.GetCurrentFenceValue())
   {
-    // Console.WriteLn("Texture update within frame, can't use do beforehand");
+    // DEV_LOG("Texture update within frame, can't use do beforehand");
     if (dev.InRenderPass())
       dev.EndRenderPass();
     return dev.GetCommandList();
@@ -562,6 +557,28 @@ void D3D12Texture::Unmap()
   m_map_level = 0;
 }
 
+void D3D12Texture::GenerateMipmaps()
+{
+  Panic("Not implemented");
+
+  for (u32 layer = 0; layer < m_layers; layer++)
+  {
+    for (u32 dst_level = 1; dst_level < m_levels; dst_level++)
+    {
+      const u32 src_level = dst_level - 1;
+      const u32 src_width = std::max<u32>(m_width >> src_level, 1u);
+      const u32 src_height = std::max<u32>(m_height >> src_level, 1u);
+      const u32 dst_width = std::max<u32>(m_width >> dst_level, 1u);
+      const u32 dst_height = std::max<u32>(m_height >> dst_level, 1u);
+
+      D3D12Device::GetInstance().RenderTextureMipmap(this, dst_level, dst_width, dst_height, src_level, src_width,
+                                                     src_height);
+    }
+  }
+
+  SetUseFenceValue(D3D12Device::GetInstance().GetCurrentFenceValue());
+}
+
 void D3D12Texture::CommitClear()
 {
   if (m_state != GPUTexture::State::Cleared)
@@ -685,7 +702,7 @@ void D3D12Sampler::SetDebugName(std::string_view name)
 {
 }
 
-D3D12DescriptorHandle D3D12Device::GetSampler(const GPUSampler::Config& config)
+D3D12DescriptorHandle D3D12Device::GetSampler(const GPUSampler::Config& config, Error* error)
 {
   const auto it = m_sampler_map.find(config.key);
   if (it != m_sampler_map.end())
@@ -730,8 +747,10 @@ D3D12DescriptorHandle D3D12Device::GetSampler(const GPUSampler::Config& config)
   }
 
   D3D12DescriptorHandle handle;
-  if (m_sampler_heap_manager.Allocate(&handle))
+  if (m_sampler_heap_manager.Allocate(&handle)) [[likely]]
     m_device->CreateSampler(&desc, handle);
+  else
+    Error::SetStringView(error, "Failed to allocate sampler handle.");
 
   m_sampler_map.emplace(config.key, handle);
   return handle;
@@ -747,9 +766,9 @@ void D3D12Device::DestroySamplers()
   m_sampler_map.clear();
 }
 
-std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config& config)
+std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
 {
-  const D3D12DescriptorHandle handle = GetSampler(config);
+  const D3D12DescriptorHandle handle = GetSampler(config, error);
   if (!handle)
     return {};
 
@@ -765,21 +784,20 @@ D3D12TextureBuffer::~D3D12TextureBuffer()
   Destroy(true);
 }
 
-bool D3D12TextureBuffer::Create(D3D12Device& dev)
+bool D3D12TextureBuffer::Create(D3D12Device& dev, Error* error)
 {
   static constexpr std::array<DXGI_FORMAT, static_cast<u8>(GPUTextureBuffer::Format::MaxCount)> format_mapping = {{
     DXGI_FORMAT_R16_UINT, // R16UI
   }};
 
-  Error error;
-  if (!m_buffer.Create(GetSizeInBytes(), &error)) [[unlikely]]
-  {
-    ERROR_LOG("Failed to create stream buffer: {}", error.GetDescription());
+  if (!m_buffer.Create(GetSizeInBytes(), error)) [[unlikely]]
     return false;
-  }
 
   if (!dev.GetDescriptorHeapManager().Allocate(&m_descriptor)) [[unlikely]]
+  {
+    Error::SetStringView(error, "Failed to allocate descriptor.");
     return {};
+  }
 
   D3D12_SHADER_RESOURCE_VIEW_DESC desc = {format_mapping[static_cast<u8>(m_format)],
                                           D3D12_SRV_DIMENSION_BUFFER,
@@ -831,11 +849,11 @@ void D3D12TextureBuffer::SetDebugName(std::string_view name)
 }
 
 std::unique_ptr<GPUTextureBuffer> D3D12Device::CreateTextureBuffer(GPUTextureBuffer::Format format,
-                                                                   u32 size_in_elements)
+                                                                   u32 size_in_elements, Error* error /* = nullptr */)
 {
 
   std::unique_ptr<D3D12TextureBuffer> tb = std::make_unique<D3D12TextureBuffer>(format, size_in_elements);
-  if (!tb->Create(*this))
+  if (!tb->Create(*this, error))
     tb.reset();
 
   return tb;
@@ -858,7 +876,8 @@ D3D12DownloadTexture::~D3D12DownloadTexture()
     D3D12Device::GetInstance().DeferResourceDestruction(m_allocation.Get(), m_buffer.Get());
 }
 
-std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format)
+std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+                                                                   Error* error)
 {
   const u32 buffer_size = GetBufferSize(width, height, format, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
 
@@ -879,12 +898,12 @@ std::unique_ptr<D3D12DownloadTexture> D3D12DownloadTexture::Create(u32 width, u3
   ComPtr<D3D12MA::Allocation> allocation;
   ComPtr<ID3D12Resource> buffer;
 
-  HRESULT hr = D3D12Device::GetInstance().GetAllocator()->CreateResource(
+  const HRESULT hr = D3D12Device::GetInstance().GetAllocator()->CreateResource(
     &allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_COPY_DEST, nullptr, allocation.GetAddressOf(),
     IID_PPV_ARGS(buffer.GetAddressOf()));
   if (FAILED(hr))
   {
-    ERROR_LOG("CreateResource() failed with HRESULT {:08X}", hr);
+    Error::SetHResult(error, "CreateResource() failed: ", hr);
     return {};
   }
 
@@ -1015,15 +1034,16 @@ void D3D12DownloadTexture::SetDebugName(std::string_view name)
   D3D12::SetObjectName(m_buffer.Get(), name);
 }
 
-std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format)
+std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                       Error* error /* = nullptr */)
 {
-  return D3D12DownloadTexture::Create(width, height, format);
+  return D3D12DownloadTexture::Create(width, height, format, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
                                                                        void* memory, size_t memory_size,
-                                                                       u32 memory_stride)
+                                                                       u32 memory_stride, Error* error /* = nullptr */)
 {
-  ERROR_LOG("D3D12 cannot import memory for download textures");
+  Error::SetStringView(error, "D3D12 cannot import memory for download textures");
   return {};
 }

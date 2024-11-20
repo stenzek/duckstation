@@ -8,6 +8,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/log.h"
 
 LOG_CHANNEL(GPUDevice);
@@ -42,9 +43,9 @@ static VkImageLayout GetVkImageLayout(VulkanTexture::Layout layout)
 }
 
 VulkanTexture::VulkanTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                             VkImage image, VmaAllocation allocation, VkImageView view, VkFormat vk_format)
+                             Flags flags, VkImage image, VmaAllocation allocation, VkImageView view, VkFormat vk_format)
   : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
-               static_cast<u8>(samples), type, format),
+               static_cast<u8>(samples), type, format, flags),
     m_image(image), m_allocation(allocation), m_view(view), m_vk_format(vk_format)
 {
 }
@@ -55,9 +56,10 @@ VulkanTexture::~VulkanTexture()
 }
 
 std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                                     Type type, Format format, VkFormat vk_format)
+                                                     Type type, Format format, Flags flags, VkFormat vk_format,
+                                                     Error* error)
 {
-  if (!ValidateConfig(width, height, layers, levels, samples, type, format))
+  if (!ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
     return {};
 
   VulkanDevice& dev = VulkanDevice::GetInstance();
@@ -92,11 +94,9 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
                                s_identity_swizzle,
                                {VK_IMAGE_ASPECT_COLOR_BIT, 0, static_cast<u32>(levels), 0, 1}};
 
-  // TODO: Don't need the feedback loop stuff yet.
   switch (type)
   {
     case Type::Texture:
-    case Type::DynamicTexture:
     {
       ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     }
@@ -120,17 +120,13 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
     }
     break;
 
-    case Type::RWTexture:
-    {
-      DebugAssert(levels == 1);
-      ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_STORAGE_BIT |
-                  VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
-                  VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-    }
-    break;
+      DefaultCaseIsUnreachable();
+  }
 
-    default:
-      return {};
+  if ((flags & Flags::AllowBindAsImage) != Flags::None)
+  {
+    DebugAssert(levels == 1);
+    ici.usage |= VK_IMAGE_USAGE_STORAGE_BIT;
   }
 
   // Use dedicated allocations for typical RT size
@@ -146,14 +142,9 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
     aci.flags &= ~VMA_ALLOCATION_CREATE_DEDICATED_MEMORY_BIT;
     res = vmaCreateImage(dev.GetAllocator(), &ici, &aci, &image, &allocation, nullptr);
   }
-  if (res == VK_ERROR_OUT_OF_DEVICE_MEMORY)
+  if (res != VK_SUCCESS)
   {
-    ERROR_LOG("Failed to allocate device memory for {}x{} texture", width, height);
-    return {};
-  }
-  else if (res != VK_SUCCESS)
-  {
-    LOG_VULKAN_ERROR(res, "vmaCreateImage failed: ");
+    Vulkan::SetErrorObject(error, "vmaCreateImage failed: ", res);
     return {};
   }
 
@@ -162,13 +153,13 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
   res = vkCreateImageView(dev.GetVulkanDevice(), &vci, nullptr, &view);
   if (res != VK_SUCCESS)
   {
-    LOG_VULKAN_ERROR(res, "vkCreateImageView failed: ");
+    Vulkan::SetErrorObject(error, "vkCreateImageView failed: ", res);
     vmaDestroyImage(dev.GetAllocator(), image, allocation);
     return {};
   }
 
   return std::unique_ptr<VulkanTexture>(
-    new VulkanTexture(width, height, layers, levels, samples, type, format, image, allocation, view, vk_format));
+    new VulkanTexture(width, height, layers, levels, samples, type, format, flags, image, allocation, view, vk_format));
 }
 
 void VulkanTexture::Destroy(bool defer)
@@ -228,10 +219,9 @@ VkClearDepthStencilValue VulkanTexture::GetClearDepthValue() const
 VkCommandBuffer VulkanTexture::GetCommandBufferForUpdate()
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
-  if ((m_type != Type::Texture && m_type != Type::DynamicTexture) ||
-      m_use_fence_counter == dev.GetCurrentFenceCounter())
+  if (m_type != Type::Texture || m_use_fence_counter == dev.GetCurrentFenceCounter())
   {
-    // Console.WriteLn("Texture update within frame, can't use do beforehand");
+    // DEV_LOG("Texture update within frame, can't use do beforehand");
     if (dev.InRenderPass())
       dev.EndRenderPass();
     return dev.GetCurrentCommandBuffer();
@@ -730,13 +720,52 @@ void VulkanTexture::MakeReadyForSampling()
   TransitionToLayout(Layout::ShaderReadOnly);
 }
 
+void VulkanTexture::GenerateMipmaps()
+{
+  DebugAssert(HasFlag(Flags::AllowGenerateMipmaps));
+
+  const VkCommandBuffer cmdbuf = GetCommandBufferForUpdate();
+
+  if (m_layout == Layout::Undefined)
+    TransitionToLayout(cmdbuf, Layout::TransferSrc);
+
+  for (u32 layer = 0; layer < m_layers; layer++)
+  {
+    for (u32 dst_level = 1; dst_level < m_levels; dst_level++)
+    {
+      const u32 src_level = dst_level - 1;
+      const u32 src_width = std::max<u32>(m_width >> src_level, 1u);
+      const u32 src_height = std::max<u32>(m_height >> src_level, 1u);
+      const u32 dst_width = std::max<u32>(m_width >> dst_level, 1u);
+      const u32 dst_height = std::max<u32>(m_height >> dst_level, 1u);
+
+      TransitionSubresourcesToLayout(cmdbuf, layer, 1, src_level, 1, m_layout, Layout::TransferSrc);
+      TransitionSubresourcesToLayout(cmdbuf, layer, 1, dst_level, 1, m_layout, Layout::TransferDst);
+
+      const VkImageBlit blit = {
+        {VK_IMAGE_ASPECT_COLOR_BIT, src_level, 0u, 1u},                              // srcSubresource
+        {{0, 0, 0}, {static_cast<s32>(src_width), static_cast<s32>(src_height), 1}}, // srcOffsets
+        {VK_IMAGE_ASPECT_COLOR_BIT, dst_level, 0u, 1u},                              // dstSubresource
+        {{0, 0, 0}, {static_cast<s32>(dst_width), static_cast<s32>(dst_height), 1}}  // dstOffsets
+      };
+
+      vkCmdBlitImage(cmdbuf, m_image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, m_image,
+                     VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_LINEAR);
+
+      TransitionSubresourcesToLayout(cmdbuf, layer, 1, src_level, 1, Layout::TransferSrc, m_layout);
+      TransitionSubresourcesToLayout(cmdbuf, layer, 1, dst_level, 1, Layout::TransferDst, m_layout);
+    }
+  }
+}
+
 std::unique_ptr<GPUTexture> VulkanDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                         GPUTexture::Type type, GPUTexture::Format format,
-                                                        const void* data /* = nullptr */, u32 data_stride /* = 0 */)
+                                                        GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                                        u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
   const VkFormat vk_format = VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(format)];
   std::unique_ptr<VulkanTexture> tex =
-    VulkanTexture::Create(width, height, layers, levels, samples, type, format, vk_format);
+    VulkanTexture::Create(width, height, layers, levels, samples, type, format, flags, vk_format, error);
   if (tex && data)
     tex->Update(0, 0, width, height, data, data_stride);
 
@@ -757,7 +786,7 @@ void VulkanSampler::SetDebugName(std::string_view name)
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_sampler, name);
 }
 
-VkSampler VulkanDevice::GetSampler(const GPUSampler::Config& config)
+VkSampler VulkanDevice::GetSampler(const GPUSampler::Config& config, Error* error)
 {
   const auto it = m_sampler_map.find(config.key);
   if (it != m_sampler_map.end())
@@ -833,7 +862,10 @@ VkSampler VulkanDevice::GetSampler(const GPUSampler::Config& config)
   VkSampler sampler = VK_NULL_HANDLE;
   VkResult res = vkCreateSampler(m_device, &ci, nullptr, &sampler);
   if (res != VK_SUCCESS)
+  {
     LOG_VULKAN_ERROR(res, "vkCreateSampler() failed: ");
+    Vulkan::SetErrorObject(error, "vkCreateSampler() failed: ", res);
+  }
 
   m_sampler_map.emplace(config.key, sampler);
   return sampler;
@@ -849,9 +881,9 @@ void VulkanDevice::DestroySamplers()
   m_sampler_map.clear();
 }
 
-std::unique_ptr<GPUSampler> VulkanDevice::CreateSampler(const GPUSampler::Config& config)
+std::unique_ptr<GPUSampler> VulkanDevice::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
 {
-  const VkSampler vsampler = GetSampler(config);
+  const VkSampler vsampler = GetSampler(config, error);
   if (vsampler == VK_NULL_HANDLE)
     return {};
 
@@ -925,7 +957,7 @@ void VulkanTextureBuffer::SetDebugName(std::string_view name)
 }
 
 std::unique_ptr<GPUTextureBuffer> VulkanDevice::CreateTextureBuffer(GPUTextureBuffer::Format format,
-                                                                    u32 size_in_elements)
+                                                                    u32 size_in_elements, Error* error)
 {
   static constexpr std::array<VkFormat, static_cast<u8>(GPUTextureBuffer::Format::MaxCount)> format_mapping = {{
     VK_FORMAT_R16_UINT, // R16UI
@@ -939,7 +971,7 @@ std::unique_ptr<GPUTextureBuffer> VulkanDevice::CreateTextureBuffer(GPUTextureBu
   tb->m_descriptor_set = AllocatePersistentDescriptorSet(m_single_texture_buffer_ds_layout);
   if (tb->m_descriptor_set == VK_NULL_HANDLE)
   {
-    ERROR_LOG("Failed to allocate persistent descriptor set for texture buffer.");
+    Error::SetStringView(error, "Failed to allocate persistent descriptor set for texture buffer.");
     tb->Destroy(false);
     return {};
   }
@@ -996,7 +1028,7 @@ VulkanDownloadTexture::~VulkanDownloadTexture()
 
 std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
                                                                      void* memory, size_t memory_size,
-                                                                     u32 memory_stride)
+                                                                     u32 memory_stride, Error* error)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   VmaAllocation allocation = VK_NULL_HANDLE;
@@ -1031,7 +1063,7 @@ std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, 
     VkResult res = vmaCreateBuffer(VulkanDevice::GetInstance().GetAllocator(), &bci, &aci, &buffer, &allocation, &ai);
     if (res != VK_SUCCESS)
     {
-      LOG_VULKAN_ERROR(res, "vmaCreateBuffer() failed: ");
+      Vulkan::SetErrorObject(error, "vmaCreateBuffer() failed: ", res);
       return {};
     }
 
@@ -1045,7 +1077,7 @@ std::unique_ptr<VulkanDownloadTexture> VulkanDownloadTexture::Create(u32 width, 
     Assert(buffer_size <= memory_size);
 
     if (!dev.TryImportHostMemory(memory, memory_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, &dev_memory, &buffer,
-                                 &memory_offset))
+                                 &memory_offset, error))
     {
       return {};
     }
@@ -1177,15 +1209,16 @@ void VulkanDownloadTexture::SetDebugName(std::string_view name)
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_buffer, name);
 }
 
-std::unique_ptr<GPUDownloadTexture> VulkanDevice::CreateDownloadTexture(u32 width, u32 height,
-                                                                        GPUTexture::Format format)
+std::unique_ptr<GPUDownloadTexture>
+VulkanDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format, Error* error /* = nullptr */)
 {
-  return VulkanDownloadTexture::Create(width, height, format, nullptr, 0, 0);
+  return VulkanDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> VulkanDevice::CreateDownloadTexture(u32 width, u32 height,
                                                                         GPUTexture::Format format, void* memory,
-                                                                        size_t memory_size, u32 memory_stride)
+                                                                        size_t memory_size, u32 memory_stride,
+                                                                        Error* error /* = nullptr */)
 {
-  return VulkanDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride);
+  return VulkanDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);
 }

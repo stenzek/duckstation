@@ -290,9 +290,9 @@ const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
 
 std::unique_ptr<GPUTexture> ImGuiFullscreen::CreateTextureFromImage(const RGBA8Image& image)
 {
-  std::unique_ptr<GPUTexture> ret =
-    g_gpu_device->CreateTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+  std::unique_ptr<GPUTexture> ret = g_gpu_device->CreateTexture(
+    image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+    GPUTexture::Flags::None, image.GetPixels(), image.GetPitch());
   if (!ret) [[unlikely]]
     ERROR_LOG("Failed to upload {}x{} RGBA8Image to GPU", image.GetWidth(), image.GetHeight());
   return ret;
@@ -368,7 +368,7 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(std::string_view path
 {
   std::unique_ptr<GPUTexture> texture =
     g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                               GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+                               GPUTexture::Format::RGBA8, GPUTexture::Flags::None, image.GetPixels(), image.GetPitch());
   if (!texture)
   {
     ERROR_LOG("Failed to create {}x{} texture for resource", image.GetWidth(), image.GetHeight());

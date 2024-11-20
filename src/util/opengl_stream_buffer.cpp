@@ -5,9 +5,9 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/error.h"
 
 #include <array>
-#include <cstdio>
 
 OpenGLStreamBuffer::OpenGLStreamBuffer(GLenum target, GLuint buffer_id, u32 size)
   : m_target(target), m_buffer_id(buffer_id), m_size(size)
@@ -65,7 +65,7 @@ public:
 
   u32 GetChunkSize() const override { return m_size; }
 
-  static std::unique_ptr<OpenGLStreamBuffer> Create(GLenum target, u32 size)
+  static std::unique_ptr<OpenGLStreamBuffer> Create(GLenum target, u32 size, Error* error)
   {
     glGetError();
 
@@ -74,9 +74,10 @@ public:
     glBindBuffer(target, buffer_id);
     glBufferData(target, size, nullptr, GL_STREAM_DRAW);
 
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR)
+    const GLenum err = glGetError();
+    if (err != GL_NO_ERROR) [[unlikely]]
     {
+      Error::SetStringFmt(error, "Failed to create buffer: 0x{:X}", err);
       glBindBuffer(target, 0);
       glDeleteBuffers(1, &buffer_id);
       return {};
@@ -119,7 +120,7 @@ public:
 
   u32 GetChunkSize() const override { return m_size; }
 
-  static std::unique_ptr<OpenGLStreamBuffer> Create(GLenum target, u32 size)
+  static std::unique_ptr<OpenGLStreamBuffer> Create(GLenum target, u32 size, Error* error)
   {
     glGetError();
 
@@ -128,9 +129,10 @@ public:
     glBindBuffer(target, buffer_id);
     glBufferData(target, size, nullptr, GL_STREAM_DRAW);
 
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR)
+    const GLenum err = glGetError();
+    if (err != GL_NO_ERROR) [[unlikely]]
     {
+      Error::SetStringFmt(error, "Failed to create buffer: 0x{:X}", err);
       glBindBuffer(target, 0);
       glDeleteBuffers(1, &buffer_id);
       return {};
@@ -283,7 +285,7 @@ public:
     return prev_position;
   }
 
-  static std::unique_ptr<OpenGLStreamBuffer> Create(GLenum target, u32 size, bool coherent = true)
+  static std::unique_ptr<OpenGLStreamBuffer> Create(GLenum target, u32 size, Error* error, bool coherent = true)
   {
     glGetError();
 
@@ -298,9 +300,10 @@ public:
     else if (GLAD_GL_EXT_buffer_storage)
       glBufferStorageEXT(target, size, nullptr, flags);
 
-    GLenum err = glGetError();
-    if (err != GL_NO_ERROR)
+    const GLenum err = glGetError();
+    if (err != GL_NO_ERROR) [[unlikely]]
     {
+      Error::SetStringFmt(error, "Failed to create buffer: 0x{:X}", err);
       glBindBuffer(target, 0);
       glDeleteBuffers(1, &buffer_id);
       return {};
@@ -325,12 +328,12 @@ private:
 
 } // namespace
 
-std::unique_ptr<OpenGLStreamBuffer> OpenGLStreamBuffer::Create(GLenum target, u32 size)
+std::unique_ptr<OpenGLStreamBuffer> OpenGLStreamBuffer::Create(GLenum target, u32 size, Error* error /* = nullptr */)
 {
   std::unique_ptr<OpenGLStreamBuffer> buf;
   if (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage)
   {
-    buf = BufferStorageStreamBuffer::Create(target, size);
+    buf = BufferStorageStreamBuffer::Create(target, size, error);
     if (buf)
       return buf;
   }
@@ -341,11 +344,11 @@ std::unique_ptr<OpenGLStreamBuffer> OpenGLStreamBuffer::Create(GLenum target, u3
   if (std::strcmp(vendor, "ARM") == 0 || std::strcmp(vendor, "Qualcomm") == 0)
   {
     // Mali and Adreno drivers can't do sub-buffer tracking...
-    return BufferDataStreamBuffer::Create(target, size);
+    return BufferDataStreamBuffer::Create(target, size, error);
   }
 
-  return BufferSubDataStreamBuffer::Create(target, size);
+  return BufferSubDataStreamBuffer::Create(target, size, error);
 #else
-  return BufferDataStreamBuffer::Create(target, size);
+  return BufferDataStreamBuffer::Create(target, size, error);
 #endif
 }

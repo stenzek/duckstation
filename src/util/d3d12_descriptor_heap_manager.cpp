@@ -83,7 +83,6 @@ bool D3D12DescriptorHeapManager::Allocate(D3D12DescriptorHandle* handle)
     return true;
   }
 
-  Panic("Out of fixed descriptors");
   return false;
 }
 

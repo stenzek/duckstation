@@ -347,11 +347,8 @@ bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
       return false;
     }
 
-    if (!CreateBuffers())
-    {
-      Error::SetStringView(error, "Failed to create buffers.");
+    if (!CreateBuffers(error))
       return false;
-    }
 
     return true;
   }
@@ -575,13 +572,14 @@ std::string MetalDevice::GetDriverInfo() const
   }
 }
 
-bool MetalDevice::CreateBuffers()
+bool MetalDevice::CreateBuffers(Error* error)
 {
-  if (!m_vertex_buffer.Create(m_device, VERTEX_BUFFER_SIZE) || !m_index_buffer.Create(m_device, INDEX_BUFFER_SIZE) ||
-      !m_uniform_buffer.Create(m_device, UNIFORM_BUFFER_SIZE) ||
-      !m_texture_upload_buffer.Create(m_device, TEXTURE_STREAM_BUFFER_SIZE))
+  if (!m_vertex_buffer.Create(m_device, VERTEX_BUFFER_SIZE, error) ||
+      !m_index_buffer.Create(m_device, INDEX_BUFFER_SIZE, error) ||
+      !m_uniform_buffer.Create(m_device, UNIFORM_BUFFER_SIZE, error) ||
+      !m_texture_upload_buffer.Create(m_device, TEXTURE_STREAM_BUFFER_SIZE, error))
   {
-    ERROR_LOG("Failed to create vertex/index/uniform buffers.");
+    Error::AddPrefix(error, "Failed to create vertex/index/uniform buffers: ");
     return false;
   }
 
@@ -980,8 +978,8 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Comp
 }
 
 MetalTexture::MetalTexture(id<MTLTexture> texture, u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type,
-                           Format format)
-  : GPUTexture(width, height, layers, levels, samples, type, format), m_texture(texture)
+                           Format format, Flags flags)
+  : GPUTexture(width, height, layers, levels, samples, type, format, flags), m_texture(texture)
 {
 }
 
@@ -1141,6 +1139,15 @@ void MetalTexture::MakeReadyForSampling()
     dev.EndRenderPass();
 }
 
+void MetalTexture::GenerateMipmaps()
+{
+  DebugAssert(HasFlag(Flags::AllowGenerateMipmaps));
+  MetalDevice& dev = MetalDevice::GetInstance();
+  const bool is_inline = (m_use_fence_counter == dev.GetCurrentFenceCounter());
+  id<MTLBlitCommandEncoder> encoder = dev.GetBlitEncoder(is_inline);
+  [encoder generateMipmapsForTexture:m_texture];
+}
+
 void MetalTexture::SetDebugName(std::string_view name)
 {
   @autoreleasepool
@@ -1151,14 +1158,18 @@ void MetalTexture::SetDebugName(std::string_view name)
 
 std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,
-                                                       const void* data, u32 data_stride)
+                                                       GPUTexture::Flags flags, const void* data, u32 data_stride,
+                                                       Error* error)
 {
-  if (!GPUTexture::ValidateConfig(width, height, layers, layers, samples, type, format))
+  if (!GPUTexture::ValidateConfig(width, height, layers, layers, samples, type, format, flags, error))
     return {};
 
   const MTLPixelFormat pixel_format = s_pixel_format_mapping[static_cast<u8>(format)];
   if (pixel_format == MTLPixelFormatInvalid)
+  {
+    Error::SetStringFmt(error, "Pixel format {} is not supported.", GPUTexture::GetFormatName(format));
     return {};
+  }
 
   @autoreleasepool
   {
@@ -1183,7 +1194,6 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
     switch (type)
     {
       case GPUTexture::Type::Texture:
-      case GPUTexture::Type::DynamicTexture:
         desc.usage = MTLTextureUsageShaderRead;
         break;
 
@@ -1192,25 +1202,25 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
         desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
         break;
 
-      case GPUTexture::Type::RWTexture:
-        desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite;
-        break;
+        DefaultCaseIsUnreachable();
+    }
 
-      default:
-        UnreachableCode();
-        break;
+    if ((flags & (GPUTexture::Flags::AllowBindAsImage | GPUTexture::Flags::AllowMSAAResolveTarget)) !=
+        GPUTexture::Flags::None)
+    {
+      desc.usage |= MTLTextureUsageShaderWrite;
     }
 
     id<MTLTexture> tex = [m_device newTextureWithDescriptor:desc];
     if (tex == nil)
     {
-      ERROR_LOG("Failed to create {}x{} texture.", width, height);
+      Error::SetStringView(error, "newTextureWithDescriptor() failed");
       return {};
     }
 
     // This one can *definitely* go on the upload buffer.
     std::unique_ptr<GPUTexture> gtex(
-      new MetalTexture([tex retain], width, height, layers, levels, samples, type, format));
+      new MetalTexture([tex retain], width, height, layers, levels, samples, type, format, flags));
     if (data)
     {
       // TODO: handle multi-level uploads...
@@ -1236,7 +1246,8 @@ MetalDownloadTexture::~MetalDownloadTexture()
 }
 
 std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
-                                                                   void* memory, size_t memory_size, u32 memory_stride)
+                                                                   void* memory, size_t memory_size, u32 memory_stride,
+                                                                   Error* error)
 {
   @autoreleasepool
   {
@@ -1257,7 +1268,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
       buffer = [[dev.m_device newBufferWithLength:buffer_size options:options] retain];
       if (buffer == nil)
       {
-        ERROR_LOG("Failed to create {} byte buffer", buffer_size);
+        Error::SetStringFmt(error, "Failed to create {} byte buffer", buffer_size);
         return {};
       }
 
@@ -1282,7 +1293,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
                                            deallocator:nil] retain];
       if (buffer == nil)
       {
-        ERROR_LOG("Failed to import {} byte buffer", page_aligned_size);
+        Error::SetStringFmt(error, "Failed to import {} byte buffer", page_aligned_size);
         return {};
       }
 
@@ -1369,16 +1380,17 @@ void MetalDownloadTexture::SetDebugName(std::string_view name)
   }
 }
 
-std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format)
+std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                       Error* error)
 {
-  return MetalDownloadTexture::Create(width, height, format, nullptr, 0, 0);
+  return MetalDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
                                                                        void* memory, size_t memory_size,
-                                                                       u32 memory_stride)
+                                                                       u32 memory_stride, Error* error)
 {
-  return MetalDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride);
+  return MetalDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);
 }
 
 MetalSampler::MetalSampler(id<MTLSamplerState> ss) : m_ss(ss)
@@ -1392,7 +1404,7 @@ void MetalSampler::SetDebugName(std::string_view name)
   // lame.. have to put it on the descriptor :/
 }
 
-std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config& config)
+std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config& config, Error* error)
 {
   @autoreleasepool
   {
@@ -1448,7 +1460,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
       }
       if (i == std::size(border_color_mapping))
       {
-        ERROR_LOG("Unsupported border color: {:08X}", config.border_color.GetValue());
+        Error::SetStringFmt(error, "Unsupported border color: {:08X}", config.border_color.GetValue());
         return {};
       }
 
@@ -1459,7 +1471,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
     id<MTLSamplerState> ss = [m_device newSamplerStateWithDescriptor:desc];
     if (ss == nil)
     {
-      ERROR_LOG("Failed to create sampler state.");
+      Error::SetStringView(error, "newSamplerStateWithDescriptor failed");
       return {};
     }
 
@@ -1550,6 +1562,7 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
   DebugAssert((dst_x + width) <= dst->GetMipWidth(dst_level));
   DebugAssert((dst_y + height) <= dst->GetMipHeight(dst_level));
   DebugAssert(!dst->IsMultisampled() && src->IsMultisampled());
+  DebugAssert(dst->HasFlag(GPUTexture::Flags::AllowMSAAResolveTarget));
 
   // Only does first level for now..
   DebugAssert(dst_level == 0 && dst_layer == 0);
@@ -1767,9 +1780,9 @@ MetalTextureBuffer::~MetalTextureBuffer()
   m_buffer.Destroy();
 }
 
-bool MetalTextureBuffer::CreateBuffer(id<MTLDevice> device)
+bool MetalTextureBuffer::CreateBuffer(id<MTLDevice> device, Error* error)
 {
-  return m_buffer.Create(device, GetSizeInBytes());
+  return m_buffer.Create(device, GetSizeInBytes(), error);
 }
 
 void* MetalTextureBuffer::Map(u32 required_elements)
@@ -1804,10 +1817,10 @@ void MetalTextureBuffer::SetDebugName(std::string_view name)
 }
 
 std::unique_ptr<GPUTextureBuffer> MetalDevice::CreateTextureBuffer(GPUTextureBuffer::Format format,
-                                                                   u32 size_in_elements)
+                                                                   u32 size_in_elements, Error* error)
 {
   std::unique_ptr<MetalTextureBuffer> tb = std::make_unique<MetalTextureBuffer>(format, size_in_elements);
-  if (!tb->CreateBuffer(m_device))
+  if (!tb->CreateBuffer(m_device, error))
     tb.reset();
 
   return tb;

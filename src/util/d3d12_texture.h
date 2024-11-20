@@ -40,6 +40,7 @@ public:
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
   void Unmap() override;
+  void GenerateMipmaps() override;
   void MakeReadyForSampling() override;
 
   void SetDebugName(std::string_view name) override;
@@ -71,7 +72,7 @@ private:
     DSV
   };
 
-  D3D12Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
+  D3D12Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
                DXGI_FORMAT dxgi_format, ComPtr<ID3D12Resource> resource, ComPtr<D3D12MA::Allocation> allocation,
                const D3D12DescriptorHandle& srv_descriptor, const D3D12DescriptorHandle& write_descriptor,
                const D3D12DescriptorHandle& uav_descriptor, WriteDescriptorType wdtype,
@@ -133,7 +134,7 @@ public:
 
   ALWAYS_INLINE const D3D12DescriptorHandle& GetDescriptor() const { return m_descriptor; }
 
-  bool Create(D3D12Device& dev);
+  bool Create(D3D12Device& dev, Error* error);
   void Destroy(bool defer);
 
   // Inherited via GPUTextureBuffer
@@ -155,7 +156,7 @@ public:
 
   ~D3D12DownloadTexture() override;
 
-  static std::unique_ptr<D3D12DownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format);
+  static std::unique_ptr<D3D12DownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;

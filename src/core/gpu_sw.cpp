@@ -99,8 +99,8 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format 
   {
     ClearDisplayTexture();
     g_gpu_device->RecycleTexture(std::move(m_upload_texture));
-    m_upload_texture =
-      g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::DynamicTexture, format, nullptr, 0);
+    m_upload_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, format,
+                                                  GPUTexture::Flags::AllowMap, nullptr, 0);
     if (!m_upload_texture) [[unlikely]]
       ERROR_LOG("Failed to create {}x{} {} texture", width, height, static_cast<u32>(format));
   }

@@ -120,6 +120,7 @@ public:
   void Unmap() override;
 
   void MakeReadyForSampling() override;
+  void GenerateMipmaps() override;
 
   void SetDebugName(std::string_view name) override;
 
@@ -128,7 +129,7 @@ public:
 
 private:
   MetalTexture(id<MTLTexture> texture, u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type,
-               Format format);
+               Format format, Flags flags);
 
   id<MTLTexture> m_texture;
 
@@ -150,7 +151,7 @@ public:
   ~MetalDownloadTexture() override;
 
   static std::unique_ptr<MetalDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
-                                                      size_t memory_size, u32 memory_stride);
+                                                      size_t memory_size, u32 memory_stride, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;
@@ -180,7 +181,7 @@ public:
 
   ALWAYS_INLINE id<MTLBuffer> GetMTLBuffer() const { return m_buffer.GetBuffer(); }
 
-  bool CreateBuffer(id<MTLDevice> device);
+  bool CreateBuffer(id<MTLDevice> device, Error* error);
 
   // Inherited via GPUTextureBuffer
   void* Map(u32 required_elements) override;
@@ -234,15 +235,18 @@ public:
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                            GPUTexture::Type type, GPUTexture::Format format,
-                                            const void* data = nullptr, u32 data_stride = 0) override;
-  std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) override;
-  std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements) override;
+                                            GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                            const void* data = nullptr, u32 data_stride = 0,
+                                            Error* error = nullptr) override;
+  std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) override;
+  std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
+                                                        Error* error = nullptr) override;
 
-  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format) override;
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
-                                                            void* memory, size_t memory_size,
-                                                            u32 memory_stride) override;
+                                                            Error* error = nullptr) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                            void* memory, size_t memory_size, u32 memory_stride,
+                                                            Error* error = nullptr) override;
 
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
@@ -325,7 +329,7 @@ private:
   static constexpr u32 INDEX_BUFFER_SIZE = 4 * 1024 * 1024;
   static constexpr u32 UNIFORM_BUFFER_SIZE = 2 * 1024 * 1024;
   static constexpr u32 UNIFORM_BUFFER_ALIGNMENT = 256;
-  static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 32 /*16*/ * 1024 * 1024; // TODO reduce after separate allocations
+  static constexpr u32 TEXTURE_STREAM_BUFFER_SIZE = 64 * 1024 * 1024; // TODO reduce after separate allocations
   static constexpr u8 NUM_TIMESTAMP_QUERIES = 3;
 
   using DepthStateMap = std::unordered_map<u8, id<MTLDepthStencilState>>;
@@ -377,7 +381,7 @@ private:
 
   void RenderBlankFrame(MetalSwapChain* swap_chain);
 
-  bool CreateBuffers();
+  bool CreateBuffers(Error* error);
   void DestroyBuffers();
 
   bool IsRenderTargetBound(const GPUTexture* tex) const;

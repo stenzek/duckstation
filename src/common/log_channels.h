@@ -31,7 +31,6 @@
   X(GPUDevice)                                                                                                         \
   X(GPUDump)                                                                                                           \
   X(GPUShaderCache)                                                                                                    \
-  X(GPUTexture)                                                                                                        \
   X(GPUTextureCache)                                                                                                   \
   X(GPU_HW)                                                                                                            \
   X(GPU_SW)                                                                                                            \

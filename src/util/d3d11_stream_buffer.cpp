@@ -8,6 +8,7 @@
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/log.h"
+#include "common/small_string.h"
 
 LOG_CHANNEL(GPUDevice);
 
@@ -27,7 +28,7 @@ D3D11StreamBuffer::~D3D11StreamBuffer()
   Destroy();
 }
 
-bool D3D11StreamBuffer::Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max_size)
+bool D3D11StreamBuffer::Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max_size, Error* error)
 {
   D3D11_FEATURE_DATA_D3D11_OPTIONS options = {};
   HRESULT hr = D3D11Device::GetD3DDevice()->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS, &options, sizeof(options));
@@ -72,7 +73,7 @@ bool D3D11StreamBuffer::Create(D3D11_BIND_FLAG bind_flags, u32 min_size, u32 max
   hr = D3D11Device::GetD3DDevice()->CreateBuffer(&desc, nullptr, &buffer);
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("Creating buffer failed: {}", Error::CreateHResult(hr).GetDescription());
+    Error::SetHResult(error, TinyString::from_format("CreateBuffer({}) failed: ", create_size), hr);
     return false;
   }
 

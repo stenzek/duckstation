@@ -139,11 +139,8 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
       return false;
   }
 
-  if (!CreateBuffers())
-  {
-    Error::SetStringView(error, "Failed to create buffers");
+  if (!CreateBuffers(error))
     return false;
-  }
 
   return true;
 }
@@ -514,11 +511,11 @@ void D3D11Device::WaitForGPUIdle()
   TrimTexturePool();
 }
 
-bool D3D11Device::CreateBuffers()
+bool D3D11Device::CreateBuffers(Error* error)
 {
-  if (!m_vertex_buffer.Create(D3D11_BIND_VERTEX_BUFFER, VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE) ||
-      !m_index_buffer.Create(D3D11_BIND_INDEX_BUFFER, INDEX_BUFFER_SIZE, INDEX_BUFFER_SIZE) ||
-      !m_uniform_buffer.Create(D3D11_BIND_CONSTANT_BUFFER, MIN_UNIFORM_BUFFER_SIZE, MAX_UNIFORM_BUFFER_SIZE))
+  if (!m_vertex_buffer.Create(D3D11_BIND_VERTEX_BUFFER, VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE, error) ||
+      !m_index_buffer.Create(D3D11_BIND_INDEX_BUFFER, INDEX_BUFFER_SIZE, INDEX_BUFFER_SIZE, error) ||
+      !m_uniform_buffer.Create(D3D11_BIND_CONSTANT_BUFFER, MIN_UNIFORM_BUFFER_SIZE, MAX_UNIFORM_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to create vertex/index/uniform buffers.");
     return false;
@@ -612,7 +609,7 @@ void D3D11Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
 
 bool D3D11Device::IsRenderTargetBound(const D3D11Texture* tex) const
 {
-  if (tex->IsRenderTarget() || tex->IsRWTexture())
+  if (tex->IsRenderTarget() || tex->HasFlag(GPUTexture::Flags::AllowBindAsImage))
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
@@ -1053,7 +1050,7 @@ void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
 
   // Runtime will null these if we don't...
   DebugAssert(!texture ||
-              !((texture->IsRenderTarget() || texture->IsRWTexture()) &&
+              !((texture->IsRenderTarget() || texture->HasFlag(GPUTexture::Flags::AllowBindAsImage)) &&
                 IsRenderTargetBound(static_cast<D3D11Texture*>(texture))) ||
               !(texture->IsDepthStencil() &&
                 (!m_current_depth_target || m_current_depth_target != static_cast<D3D11Texture*>(texture))));
@@ -1100,7 +1097,7 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
     }
   }
 
-  if (tex->IsRenderTarget() || tex->IsRWTexture())
+  if (tex->IsRenderTarget() || tex->HasFlag(GPUTexture::Flags::AllowBindAsImage))
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {

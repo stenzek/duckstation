@@ -60,9 +60,10 @@ void OpenGLDevice::SetErrorObject(Error* errptr, std::string_view prefix, GLenum
 
 std::unique_ptr<GPUTexture> OpenGLDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                         GPUTexture::Type type, GPUTexture::Format format,
-                                                        const void* data, u32 data_stride)
+                                                        GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                                        u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
-  return OpenGLTexture::Create(width, height, layers, levels, samples, type, format, data, data_stride);
+  return OpenGLTexture::Create(width, height, layers, levels, samples, type, format, flags, data, data_stride, error);
 }
 
 bool OpenGLDevice::SupportsTextureFormat(GPUTexture::Format format) const

@@ -28,11 +28,13 @@ public:
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
   void Unmap() override;
+  void GenerateMipmaps() override;
 
   void SetDebugName(std::string_view name) override;
 
   static std::unique_ptr<OpenGLTexture> Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
-                                               Format format, const void* data = nullptr, u32 data_pitch = 0);
+                                               Format format, Flags flags, const void* data, u32 data_pitch,
+                                               Error* error);
 
   bool UseTextureStorage() const;
 
@@ -46,7 +48,8 @@ public:
   OpenGLTexture& operator=(const OpenGLTexture&) = delete;
 
 private:
-  OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, GLuint id);
+  OpenGLTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
+                GLuint id);
 
   GLuint m_id = 0;
 
@@ -108,7 +111,7 @@ public:
   ~OpenGLDownloadTexture() override;
 
   static std::unique_ptr<OpenGLDownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, void* memory,
-                                                       size_t memory_size, u32 memory_pitch);
+                                                       size_t memory_size, u32 memory_pitch, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;

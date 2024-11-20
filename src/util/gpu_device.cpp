@@ -590,10 +590,10 @@ bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 
 bool GPUDevice::CreateResources(Error* error)
 {
-  if (!(m_nearest_sampler = CreateSampler(GPUSampler::GetNearestConfig())) ||
-      !(m_linear_sampler = CreateSampler(GPUSampler::GetLinearConfig())))
+  if (!(m_nearest_sampler = CreateSampler(GPUSampler::GetNearestConfig(), error)) ||
+      !(m_linear_sampler = CreateSampler(GPUSampler::GetLinearConfig(), error)))
   {
-    Error::SetStringView(error, "Failed to create samplers");
+    Error::AddPrefix(error, "Failed to create samplers: ");
     return false;
   }
 
@@ -922,10 +922,15 @@ bool GPUDevice::UpdateImGuiFontTexture()
     return true;
   }
 
+  Error error;
   std::unique_ptr<GPUTexture> new_font =
-    FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8, pixels, pitch);
-  if (!new_font)
+    FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8, GPUTexture::Flags::None,
+                 pixels, pitch, &error);
+  if (!new_font) [[unlikely]]
+  {
+    ERROR_LOG("Failed to create new ImGui font texture: {}", error.GetDescription());
     return false;
+  }
 
   RecycleTexture(std::move(m_imgui_font_texture));
   m_imgui_font_texture = std::move(new_font);
@@ -950,12 +955,13 @@ GSVector4i GPUDevice::FlipToLowerLeft(GSVector4i rc, s32 target_height)
 
 bool GPUDevice::IsTexturePoolType(GPUTexture::Type type)
 {
-  return (type == GPUTexture::Type::Texture || type == GPUTexture::Type::DynamicTexture);
+  return (type == GPUTexture::Type::Texture);
 }
 
 std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Type type, GPUTexture::Format format,
-                                                    const void* data /*= nullptr*/, u32 data_stride /*= 0*/)
+                                                    GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                                    u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
   std::unique_ptr<GPUTexture> ret;
 
@@ -966,7 +972,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
                               static_cast<u8>(samples),
                               type,
                               format,
-                              0u};
+                              flags};
 
   const bool is_texture = IsTexturePoolType(type);
   TexturePool& pool = is_texture ? m_texture_pool : m_target_pool;
@@ -1018,17 +1024,29 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
     }
   }
 
-  ret = CreateTexture(width, height, layers, levels, samples, type, format, data, data_stride);
+  Error create_error;
+  ret = CreateTexture(width, height, layers, levels, samples, type, format, flags, data, data_stride, &create_error);
+  if (!ret) [[unlikely]]
+  {
+    Error::SetStringFmt(
+      error ? error : &create_error, "Failed to create {}x{} {} {}: {}", width, height,
+      GPUTexture::GetFormatName(format),
+      ((type == GPUTexture::Type::RenderTarget) ? "RT" : (type == GPUTexture::Type::DepthStencil ? "DS" : "Texture")),
+      create_error.TakeDescription());
+    if (!error)
+      ERROR_LOG(create_error.GetDescription());
+  }
+
   return ret;
 }
 
 std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter>
 GPUDevice::FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
-                                   GPUTexture::Format format, const void* data /*= nullptr*/, u32 data_stride /*= 0*/,
-                                   bool dynamic /*= false*/)
+                                   GPUTexture::Format format, GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                   u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
   std::unique_ptr<GPUTexture> ret =
-    FetchTexture(width, height, layers, levels, samples, type, format, data, data_stride);
+    FetchTexture(width, height, layers, levels, samples, type, format, flags, data, data_stride, error);
   return std::unique_ptr<GPUTexture, PooledTextureDeleter>(ret.release());
 }
 
@@ -1044,7 +1062,7 @@ void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
                               static_cast<u8>(texture->GetSamples()),
                               texture->GetType(),
                               texture->GetFormat(),
-                              0u};
+                              texture->GetFlags()};
 
   const bool is_texture = IsTexturePoolType(texture->GetType());
   TexturePool& pool = is_texture ? m_texture_pool : m_target_pool;
@@ -1118,11 +1136,11 @@ void GPUDevice::TrimTexturePool()
 }
 
 bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                              GPUTexture::Format format, bool preserve /* = true */)
+                              GPUTexture::Format format, GPUTexture::Flags flags, bool preserve /* = true */)
 {
   GPUTexture* old_tex = tex->get();
   DebugAssert(!old_tex || (old_tex->GetLayers() == 1 && old_tex->GetLevels() == 1 && old_tex->GetSamples() == 1));
-  std::unique_ptr<GPUTexture> new_tex = FetchTexture(new_width, new_height, 1, 1, 1, type, format);
+  std::unique_ptr<GPUTexture> new_tex = FetchTexture(new_width, new_height, 1, 1, 1, type, format, flags);
   if (!new_tex) [[unlikely]]
   {
     ERROR_LOG("Failed to create new {}x{} texture", new_width, new_height);

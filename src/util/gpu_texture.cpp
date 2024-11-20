@@ -7,14 +7,12 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/bitutils.h"
-#include "common/log.h"
+#include "common/error.h"
 #include "common/string_util.h"
 
-LOG_CHANNEL(GPUTexture);
-
-GPUTexture::GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format)
+GPUTexture::GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format, Flags flags)
   : m_width(width), m_height(height), m_layers(layers), m_levels(levels), m_samples(samples), m_type(type),
-    m_format(format)
+    m_format(format), m_flags(flags)
 {
   GPUDevice::s_total_vram_usage += GetVRAMUsage();
 }
@@ -119,6 +117,12 @@ u32 GPUTexture::CalcUploadSize(Format format, u32 height, u32 pitch)
   return pitch * ((static_cast<u32>(height) + (block_size - 1)) / block_size);
 }
 
+u32 GPUTexture::GetFullMipmapCount(u32 width, u32 height)
+{
+  const u32 max_dim = Common::PreviousPow2(std::max(width, height));
+  return (std::countr_zero(max_dim) + 1);
+}
+
 std::array<float, 4> GPUTexture::GetUNormClearColor() const
 {
   return GPUDevice::RGBA8ToFloat(m_clear_value.color);
@@ -192,25 +196,28 @@ bool GPUTexture::IsCompressedFormat(Format format)
   return false;
 }
 
-bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format)
+bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
+                                Flags flags, Error* error)
 {
-  if (width > MAX_WIDTH || height > MAX_HEIGHT || layers > MAX_LAYERS || levels > MAX_LEVELS || samples > MAX_SAMPLES)
+  if (width == 0 || width > MAX_WIDTH || height == 0 || height > MAX_HEIGHT || layers == 0 || layers > MAX_LAYERS ||
+      levels == 0 || levels > MAX_LEVELS || samples == 0 || samples > MAX_SAMPLES)
   {
-    ERROR_LOG("Invalid dimensions: {}x{}x{} {} {}.", width, height, layers, levels, samples);
+    Error::SetStringFmt(error, "Invalid dimensions: {}x{}x{} {} {}.", width, height, layers, levels, samples);
     return false;
   }
 
   const u32 max_texture_size = g_gpu_device->GetMaxTextureSize();
   if (width > max_texture_size || height > max_texture_size)
   {
-    ERROR_LOG("Texture width ({}) or height ({}) exceeds max texture size ({}).", width, height, max_texture_size);
+    Error::SetStringFmt(error, "Texture width ({}) or height ({}) exceeds max texture size ({}).", width, height,
+                        max_texture_size);
     return false;
   }
 
   const u32 max_samples = g_gpu_device->GetMaxMultisamples();
   if (samples > max_samples)
   {
-    ERROR_LOG("Texture samples ({}) exceeds max samples ({}).", samples, max_samples);
+    Error::SetStringFmt(error, "Texture samples ({}) exceeds max samples ({}).", samples, max_samples);
     return false;
   }
 
@@ -218,25 +225,45 @@ bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u
   {
     if (levels > 1)
     {
-      ERROR_LOG("Multisampled textures can't have mip levels.");
+      Error::SetStringView(error, "Multisampled textures can't have mip levels.");
       return false;
     }
     else if (type != Type::RenderTarget && type != Type::DepthStencil)
     {
-      ERROR_LOG("Multisampled textures must be render targets or depth stencil targets.");
+      Error::SetStringView(error, "Multisampled textures must be render targets or depth stencil targets.");
       return false;
     }
   }
 
-  if (layers > 1 && type != Type::Texture && type != Type::DynamicTexture)
+  if (layers > 1 && type != Type::Texture)
   {
-    ERROR_LOG("Texture arrays are not supported on targets.");
+    Error::SetStringView(error, "Texture arrays are not supported on targets.");
     return false;
   }
 
-  if (levels > 1 && type != Type::Texture && type != Type::DynamicTexture)
+  if (levels > 1 && type != Type::Texture)
   {
-    ERROR_LOG("Mipmaps are not supported on targets.");
+    Error::SetStringView(error, "Mipmaps are not supported on targets.");
+    return false;
+  }
+
+  if ((flags & Flags::AllowGenerateMipmaps) != Flags::None && levels <= 1)
+  {
+    Error::SetStringView(error, "Allow generate mipmaps requires >1 level.");
+    return false;
+  }
+
+  if ((flags & Flags::AllowBindAsImage) != Flags::None &&
+      ((type != Type::Texture && type != Type::RenderTarget) || levels > 1))
+  {
+    Error::SetStringView(error, "Bind as image is not allowed on depth or mipmapped targets.");
+    return false;
+  }
+
+  if ((flags & Flags::AllowMap) != Flags::None &&
+      (type != Type::Texture || (flags & Flags::AllowGenerateMipmaps) != Flags::None))
+  {
+    Error::SetStringView(error, "Allow map is not supported on targets.");
     return false;
   }
 
@@ -331,7 +358,6 @@ bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u3
     }
 
     default:
-      [[unlikely]] ERROR_LOG("Unknown pixel format {}", static_cast<u32>(format));
       return false;
   }
 }

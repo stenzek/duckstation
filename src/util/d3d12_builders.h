@@ -80,21 +80,14 @@ public:
 
   void SetMultisamples(u32 multisamples);
 
-  void SetNoCullRasterizationState();
-
   void SetDepthState(bool depth_test, bool depth_write, D3D12_COMPARISON_FUNC compare_op);
   void SetStencilState(bool stencil_test, u8 read_mask, u8 write_mask, const D3D12_DEPTH_STENCILOP_DESC& front,
                        const D3D12_DEPTH_STENCILOP_DESC& back);
-
-  void SetNoDepthTestState();
   void SetNoStencilState();
 
   void SetBlendState(u32 rt, bool blend_enable, D3D12_BLEND src_factor, D3D12_BLEND dst_factor, D3D12_BLEND_OP op,
                      D3D12_BLEND alpha_src_factor, D3D12_BLEND alpha_dst_factor, D3D12_BLEND_OP alpha_op,
                      u8 write_mask = D3D12_COLOR_WRITE_ENABLE_ALL);
-  void SetColorWriteMask(u32 rt, u8 write_mask = D3D12_COLOR_WRITE_ENABLE_ALL);
-
-  void SetNoBlendingState();
 
   void ClearRenderTargets();
 
