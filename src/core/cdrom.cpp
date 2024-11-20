@@ -351,7 +351,8 @@ static void StopMotor();
 static void BeginSeeking(bool logical, bool read_after_seek, bool play_after_seek);
 static void UpdateSubQPositionWhileSeeking();
 static void UpdateSubQPosition(bool update_logical);
-static void SetHoldPosition(CDImage::LBA lba, CDImage::LBA subq_lba, bool update_subq);
+static void EnsureLastSubQValid();
+static void SetHoldPosition(CDImage::LBA lba, CDImage::LBA subq_lba);
 static void ResetCurrentXAFile();
 static void ResetAudioDecoder();
 static void ClearSectorBuffers();
@@ -434,6 +435,7 @@ struct CDROMState
   CDImage::SectorHeader last_sector_header = {};
   XASubHeader last_sector_subheader = {};
   bool last_sector_header_valid = false; // TODO: Rename to "logical pause" or something.
+  bool last_subq_needs_update = false;
 
   u8 cdda_report_start_delay = 0;
   u8 last_cdda_report_frame_nibble = 0xFF;
@@ -604,7 +606,7 @@ void CDROM::Reset()
 
   UpdateStatusRegister();
 
-  SetHoldPosition(0, 0, true);
+  SetHoldPosition(0, 0);
 }
 
 TickCount CDROM::SoftReset(TickCount ticks_late)
@@ -808,6 +810,7 @@ bool CDROM::DoState(StateWrapper& sw)
 
   if (sw.IsReading())
   {
+    s_state.last_subq_needs_update = true;
     if (s_reader.HasMedia())
       s_reader.QueueReadSector(s_state.requested_lba);
     UpdateCommandEvent();
@@ -923,7 +926,7 @@ bool CDROM::InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region, std::
   s_state.subq_replacement = std::move(subq);
   s_state.disc_region = region;
   s_reader.SetMedia(std::move(media));
-  SetHoldPosition(0, 0, true);
+  SetHoldPosition(0, 0);
 
   // motor automatically spins up
   if (s_state.drive_state != DriveState::ShellOpening)
@@ -1839,7 +1842,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       else
       {
         SendACKAndStat();
-        SetHoldPosition(0, 0, true);
+        SetHoldPosition(0, 0);
         QueueCommandSecondResponse(Command::ReadTOC, GetTicksForTOCRead());
       }
 
@@ -2108,7 +2111,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
       {
         // Hit target, immediately jump back in data mode.
         const u32 spt = GetSectorsPerTrack(s_state.current_lba);
-        SetHoldPosition(s_state.current_lba, (spt <= s_state.current_lba) ? (s_state.current_lba - spt) : 0, true);
+        SetHoldPosition(s_state.current_lba, (spt <= s_state.current_lba) ? (s_state.current_lba - spt) : 0);
       }
 
       ClearCommandSecondResponse();
@@ -2265,6 +2268,8 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
           UpdateSubQPositionWhileSeeking();
         else
           UpdateSubQPosition(false);
+
+        EnsureLastSubQValid();
 
         DEV_COLOR_LOG(StrongOrange, "GetlocP    T{:02x} I{:02x} R[{:02x}:{:02x}:{:02x}] A[{:02x}:{:02x}:{:02x}]",
                       s_state.last_subq.track_number_bcd, s_state.last_subq.index_number_bcd,
@@ -2829,16 +2834,8 @@ void CDROM::UpdateSubQPositionWhileSeeking()
   DEV_LOG("Update position while seeking from {} to {} - {} ({:.2f})", s_state.seek_start_lba, s_state.seek_end_lba,
           current_lba, completed_frac);
 
-  // access the image directly since we want to preserve the cached data for the seek complete
-  CDImage::SubChannelQ real_subq = {};
-  if (!s_reader.ReadSectorUncached(current_lba, &real_subq, nullptr))
-    ERROR_LOG("Failed to read subq for sector {} for subq position", current_lba);
-
-  const CDImage::SubChannelQ& subq = GetSectorSubQ(current_lba, real_subq);
-  if (subq.IsCRCValid())
-    s_state.last_subq = subq;
-
-  s_state.current_lba = current_lba;
+  s_state.last_subq_needs_update = (s_state.current_subq_lba != current_lba);
+  s_state.current_lba = current_lba; // TODO: This is probably wrong... hold position shouldn't change.
   s_state.current_subq_lba = current_lba;
   s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
   s_state.subq_lba_update_carry = 0;
@@ -2857,7 +2854,7 @@ void CDROM::UpdateSubQPosition(bool update_logical)
     {
       WARNING_LOG("Jumping to hold position [{}->{}] while {} first sector", s_state.current_subq_lba,
                   s_state.current_lba, (s_state.drive_state == DriveState::Reading) ? "reading" : "playing");
-      SetHoldPosition(s_state.current_lba, s_state.current_lba, true);
+      SetHoldPosition(s_state.current_lba, s_state.current_lba);
     }
 
     // Otherwise, this gets updated by the read event.
@@ -2885,47 +2882,58 @@ void CDROM::UpdateSubQPosition(bool update_logical)
 #endif
     if (s_state.current_subq_lba != new_subq_lba)
     {
+      // we can defer this if we don't need the new sector header
       s_state.current_subq_lba = new_subq_lba;
-
-      CDImage::SubChannelQ real_subq = {};
-      CDROMAsyncReader::SectorBuffer raw_sector;
-      if (!s_reader.ReadSectorUncached(new_subq_lba, &real_subq, update_logical ? &raw_sector : nullptr))
-      {
-        ERROR_LOG("Failed to read subq for sector {} for subq position", new_subq_lba);
-      }
-      else
-      {
-        const CDImage::SubChannelQ& subq = GetSectorSubQ(new_subq_lba, real_subq);
-        if (subq.IsCRCValid())
-          s_state.last_subq = subq;
-
-        if (update_logical)
-          ProcessDataSectorHeader(raw_sector.data());
-      }
-
+      s_state.last_subq_needs_update = true;
       s_state.subq_lba_update_tick = ticks;
       s_state.subq_lba_update_carry = carry;
+
+      if (update_logical)
+      {
+        CDImage::SubChannelQ real_subq = {};
+        CDROMAsyncReader::SectorBuffer raw_sector;
+        if (!s_reader.ReadSectorUncached(new_subq_lba, &real_subq, &raw_sector))
+        {
+          ERROR_LOG("Failed to read subq for sector {} for subq position", new_subq_lba);
+        }
+        else
+        {
+          s_state.last_subq_needs_update = false;
+
+          const CDImage::SubChannelQ& subq = GetSectorSubQ(new_subq_lba, real_subq);
+          if (subq.IsCRCValid())
+            s_state.last_subq = subq;
+
+          ProcessDataSectorHeader(raw_sector.data());
+        }
+      }
     }
   }
 }
 
-void CDROM::SetHoldPosition(CDImage::LBA lba, CDImage::LBA subq_lba, bool update_subq)
+void CDROM::SetHoldPosition(CDImage::LBA lba, CDImage::LBA subq_lba)
 {
-  if (update_subq && s_state.current_subq_lba != subq_lba && CanReadMedia())
-  {
-    CDImage::SubChannelQ real_subq = {};
-    if (!s_reader.ReadSectorUncached(subq_lba, &real_subq, nullptr))
-      ERROR_LOG("Failed to read subq for sector {} for subq position", lba);
-
-    const CDImage::SubChannelQ& subq = GetSectorSubQ(subq_lba, real_subq);
-    if (subq.IsCRCValid())
-      s_state.last_subq = subq;
-  }
-
+  s_state.last_subq_needs_update |= (s_state.current_subq_lba != subq_lba);
   s_state.current_lba = lba;
   s_state.current_subq_lba = subq_lba;
   s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
   s_state.subq_lba_update_carry = 0;
+}
+
+void CDROM::EnsureLastSubQValid()
+{
+  if (!s_state.last_subq_needs_update)
+    return;
+
+  s_state.last_subq_needs_update = false;
+
+  CDImage::SubChannelQ real_subq = {};
+  if (!s_reader.ReadSectorUncached(s_state.current_subq_lba, &real_subq, nullptr))
+    ERROR_LOG("Failed to read subq for sector {} for subq position", s_state.current_subq_lba);
+
+  const CDImage::SubChannelQ& subq = GetSectorSubQ(s_state.current_subq_lba, real_subq);
+  if (subq.IsCRCValid())
+    s_state.last_subq = subq;
 }
 
 void CDROM::DoShellOpenComplete(TickCount ticks_late)
@@ -2945,6 +2953,7 @@ bool CDROM::CompleteSeek()
   bool seek_okay = s_reader.WaitForReadToComplete();
 
   s_state.current_subq_lba = s_reader.GetLastReadSector();
+  s_state.last_subq_needs_update = false;
   s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
   s_state.subq_lba_update_carry = 0;
 
@@ -2973,7 +2982,7 @@ bool CDROM::CompleteSeek()
               // after reading the target, the mech immediately does a 1T reverse
               const u32 spt = GetSectorsPerTrack(s_state.current_subq_lba);
               SetHoldPosition(s_state.current_subq_lba,
-                              (spt <= s_state.current_subq_lba) ? (s_state.current_subq_lba - spt) : 0, true);
+                              (spt <= s_state.current_subq_lba) ? (s_state.current_subq_lba - spt) : 0);
             }
           }
         }
@@ -3170,7 +3179,7 @@ void CDROM::StopMotor()
   s_state.secondary_status.ClearActiveBits();
   s_state.secondary_status.motor_on = false;
   ClearDriveState();
-  SetHoldPosition(0, 0, false);
+  SetHoldPosition(0, 0);
   s_state.last_sector_header_valid = false; // TODO: correct?
 }
 
@@ -3183,6 +3192,7 @@ void CDROM::DoSectorRead()
 
   s_state.current_lba = s_reader.GetLastReadSector();
   s_state.current_subq_lba = s_state.current_lba;
+  s_state.last_subq_needs_update = false;
   s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
   s_state.subq_lba_update_carry = 0;
 
@@ -3780,7 +3790,8 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
         s_state.async_response_fifo.Push(Truncate8(peak_value >> 8)); // peak high
         SetAsyncInterrupt(Interrupt::DataReady);
 
-        DEV_COLOR_LOG(StrongCyan,
+        DEV_COLOR_LOG(
+          StrongCyan,
           "Report     Track[{:02x}] Index[{:02x}] Rel[{:02x}:{:02x}:{:02x}] Abs[{:02x}:{:02x}:{:02x}] Peak[{}:{}]",
           subq.track_number_bcd, subq.index_number_bcd, subq.relative_minute_bcd, subq.relative_second_bcd,
           subq.relative_frame_bcd, subq.absolute_minute_bcd, subq.absolute_second_bcd, subq.absolute_frame_bcd, channel,
