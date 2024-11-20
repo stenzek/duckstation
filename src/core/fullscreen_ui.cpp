@@ -244,6 +244,7 @@ static bool s_tried_to_initialize = false;
 static bool s_pause_menu_was_open = false;
 static bool s_was_paused_on_quick_menu_open = false;
 static bool s_about_window_open = false;
+static bool s_achievements_login_window_open = false;
 
 //////////////////////////////////////////////////////////////////////////
 // Resources
@@ -304,6 +305,7 @@ static void DrawMemoryCardSettingsPage();
 static void DrawControllerSettingsPage();
 static void DrawHotkeySettingsPage();
 static void DrawAchievementsSettingsPage();
+static void DrawAchievementsLoginWindow();
 static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
@@ -5150,7 +5152,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
 
       if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Logout"), FSUI_CSTR("Logs out of RetroAchievements.")))
       {
-        Host::RunOnCPUThread([]() { Achievements::Logout(); });
+        Host::RunOnCPUThread(&Achievements::Logout);
       }
     }
     else
@@ -5159,7 +5161,13 @@ void FullscreenUI::DrawAchievementsSettingsPage()
                    ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 
       if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), FSUI_CSTR("Logs in to RetroAchievements.")))
-        Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason::UserInitiated);
+      {
+        s_achievements_login_window_open = true;
+        QueueResetFocus(FocusResetType::PopupOpened);
+      }
+
+      if (s_achievements_login_window_open)
+        DrawAchievementsLoginWindow();
     }
 
     MenuHeading(FSUI_CSTR("Current Game"));
@@ -5194,6 +5202,107 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   }
 
   EndMenuButtons();
+}
+
+void FullscreenUI::DrawAchievementsLoginWindow()
+{
+  static constexpr const char* LOGIN_PROGRESS_NAME = "AchievementsLogin";
+
+  static char username[256] = {};
+  static char password[256] = {};
+
+  static constexpr auto actually_close_popup = []() {
+    std::memset(username, 0, sizeof(username));
+    std::memset(password, 0, sizeof(password));
+    s_achievements_login_window_open = false;
+    QueueResetFocus(FocusResetType::PopupClosed);
+  };
+
+  ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
+  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+  ImGui::PushFont(g_large_font);
+
+  const char* popup_title = FSUI_CSTR("RetroAchievements Login");
+  bool popup_closed = false;
+  ImGui::OpenPopup(popup_title);
+  if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  {
+    ImGui::TextWrapped(
+      FSUI_CSTR("Please enter your user name and password for retroachievements.org below. Your password will "
+                "not be saved in DuckStation, an access token will be generated and used instead."));
+
+    ImGui::NewLine();
+
+    const bool is_logging_in = ImGuiFullscreen::IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
+    ResetFocusHere();
+
+    ImGui::Text(FSUI_CSTR("User Name: "));
+    ImGui::SameLine(LayoutScale(200.0f));
+    ImGui::InputText("##username", username, sizeof(username), is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+
+    ImGui::Text(FSUI_CSTR("Password: "));
+    ImGui::SameLine(LayoutScale(200.0f));
+    ImGui::InputText("##password", password, sizeof(password),
+                     is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
+                                     ImGuiInputTextFlags_Password);
+
+    ImGui::NewLine();
+
+    BeginMenuButtons();
+
+    const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
+
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), false, login_enabled))
+    {
+      ImGuiFullscreen::OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."),
+                                                    0, 0, 0);
+
+      Host::RunOnCPUThread([username = std::string(username), password = std::string(password)]() {
+        ImGuiFullscreen::CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
+
+        Error error;
+        if (Achievements::Login(username.c_str(), password.c_str(), &error))
+        {
+          // TODO-GPU-THREAD: Synchronize access to s_achievements_login_window_open.
+          actually_close_popup();
+          return;
+        }
+
+        // keep popup open on failure
+        // because of the whole popup stack thing, we need to hide the dialog while this popup is visible
+        s_achievements_login_window_open = false;
+        ImGuiFullscreen::OpenInfoMessageDialog(
+          FSUI_STR("Login Error"),
+          fmt::format(FSUI_FSTR("Login Failed.\nError: {}\nPlease check your username and password, and try again."),
+                      error.GetDescription()),
+          []() {
+            s_achievements_login_window_open = true;
+            QueueResetFocus(FocusResetType::PopupOpened);
+          },
+          FSUI_ICONSTR(ICON_FA_TIMES, "Close"));
+      });
+    }
+
+    if (ActiveButton(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), false, !is_logging_in))
+      popup_closed = true;
+
+    popup_closed = popup_closed || (!is_logging_in && WantsToCloseMenu());
+    if (popup_closed)
+      ImGui::CloseCurrentPopup();
+
+    EndMenuButtons();
+
+    ImGui::EndPopup();
+  }
+
+  ImGui::PopFont();
+  ImGui::PopStyleVar(2);
+
+  if (popup_closed)
+    actually_close_popup();
 }
 
 void FullscreenUI::DrawAdvancedSettingsPage()

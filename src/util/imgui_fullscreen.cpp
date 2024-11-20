@@ -2858,6 +2858,21 @@ void ImGuiFullscreen::CloseBackgroundProgressDialog(const char* str_id)
   Panic("Closing unknown progress entry.");
 }
 
+bool ImGuiFullscreen::IsBackgroundProgressDialogOpen(const char* str_id)
+{
+  const ImGuiID id = GetBackgroundProgressID(str_id);
+
+  std::unique_lock<std::mutex> lock(s_background_progress_lock);
+
+  for (auto it = s_background_progress_dialogs.begin(); it != s_background_progress_dialogs.end(); ++it)
+  {
+    if (it->id == id)
+      return true;
+  }
+
+  return false;
+}
+
 void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
 {
   std::unique_lock<std::mutex> lock(s_background_progress_lock);
