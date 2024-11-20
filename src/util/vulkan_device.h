@@ -113,6 +113,7 @@ public:
                                                     std::string_view source, const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
+  std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
 
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
@@ -136,6 +137,8 @@ public:
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
+  void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                u32 group_size_z) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
@@ -373,6 +376,7 @@ private:
   VkPipelineLayout GetCurrentVkPipelineLayout() const;
   void SetInitialPipelineState();
   void PreDrawCheck();
+  void PreDispatchCheck();
 
   template<GPUPipeline::Layout layout>
   bool UpdateDescriptorSetsForLayout(u32 dirty);
@@ -435,7 +439,7 @@ private:
   VkDescriptorSetLayout m_single_texture_buffer_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_multi_texture_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_feedback_loop_ds_layout = VK_NULL_HANDLE;
-  VkDescriptorSetLayout m_rov_ds_layout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout m_image_ds_layout = VK_NULL_HANDLE;
   DimensionalArray<VkPipelineLayout, static_cast<size_t>(GPUPipeline::Layout::MaxCount),
                    static_cast<size_t>(PipelineLayoutType::MaxCount)>
     m_pipeline_layouts = {};

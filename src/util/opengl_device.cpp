@@ -207,6 +207,12 @@ void OpenGLDevice::InvalidateRenderTarget(GPUTexture* t)
   }
 }
 
+std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
+{
+  ERROR_LOG("Compute shaders are not yet supported.");
+  return {};
+}
+
 void OpenGLDevice::PushDebugGroup(const char* name)
 {
 #ifdef _DEBUG
@@ -488,6 +494,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
 
   m_features.geometry_shaders =
     !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
+  m_features.compute_shaders = false;
 
   m_features.gpu_timing = !(m_gl_context->IsGLES() &&
                             (!GLAD_GL_EXT_disjoint_timer_query || !glGetQueryObjectivEXT || !glGetQueryObjectui64vEXT));
@@ -1076,6 +1083,12 @@ void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 void OpenGLDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
   Panic("Barriers are not supported");
+}
+
+void OpenGLDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                            u32 group_size_z)
+{
+  Panic("Compute shaders are not supported");
 }
 
 void OpenGLDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,

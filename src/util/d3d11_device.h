@@ -75,6 +75,7 @@ public:
                                                     std::string_view source, const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
+  std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
 
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
@@ -98,6 +99,8 @@ public:
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
+  void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                u32 group_size_z) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
@@ -140,6 +143,8 @@ private:
 
   bool CreateBuffers();
   void DestroyBuffers();
+  void BindUniformBuffer(u32 offset, u32 size);
+  void UnbindComputePipeline();
 
   bool IsRenderTargetBound(const D3D11Texture* tex) const;
 
@@ -180,6 +185,7 @@ private:
   ID3D11VertexShader* m_current_vertex_shader = nullptr;
   ID3D11GeometryShader* m_current_geometry_shader = nullptr;
   ID3D11PixelShader* m_current_pixel_shader = nullptr;
+  ID3D11ComputeShader* m_current_compute_shader = nullptr;
   ID3D11RasterizerState* m_current_rasterizer_state = nullptr;
   ID3D11DepthStencilState* m_current_depth_state = nullptr;
   ID3D11BlendState* m_current_blend_state = nullptr;

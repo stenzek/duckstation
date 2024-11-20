@@ -275,3 +275,16 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
   return std::unique_ptr<GPUPipeline>(
     new VulkanPipeline(pipeline, config.layout, static_cast<u8>(vertices_per_primitive), config.render_pass_flags));
 }
+
+std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
+{
+  Vulkan::ComputePipelineBuilder cpb;
+  cpb.SetShader(static_cast<const VulkanShader*>(config.compute_shader)->GetModule(), "main");
+  cpb.SetPipelineLayout(m_pipeline_layouts[0][static_cast<size_t>(config.layout)]);
+
+  const VkPipeline pipeline = cpb.Create(m_device, m_pipeline_cache, false, error);
+  if (!pipeline)
+    return {};
+
+  return std::unique_ptr<GPUPipeline>(new VulkanPipeline(pipeline, config.layout, 0, GPUPipeline::NoRenderPassFlags));
+}

@@ -3,6 +3,7 @@
 
 #include "d3d11_pipeline.h"
 #include "d3d11_device.h"
+#include "d3d11_texture.h"
 #include "d3d_common.h"
 
 #include "common/assert.h"
@@ -121,10 +122,10 @@ std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromSource(GPUShaderStage st
 
 D3D11Pipeline::D3D11Pipeline(ComPtr<ID3D11RasterizerState> rs, ComPtr<ID3D11DepthStencilState> ds,
                              ComPtr<ID3D11BlendState> bs, ComPtr<ID3D11InputLayout> il, ComPtr<ID3D11VertexShader> vs,
-                             ComPtr<ID3D11GeometryShader> gs, ComPtr<ID3D11PixelShader> ps,
+                             ComPtr<ID3D11GeometryShader> gs, ComPtr<ID3D11DeviceChild> ps_or_cs,
                              D3D11_PRIMITIVE_TOPOLOGY topology, u32 vertex_stride, u32 blend_factor)
   : m_rs(std::move(rs)), m_ds(std::move(ds)), m_bs(std::move(bs)), m_il(std::move(il)), m_vs(std::move(vs)),
-    m_gs(std::move(gs)), m_ps(std::move(ps)), m_topology(topology), m_vertex_stride(vertex_stride),
+    m_gs(std::move(gs)), m_ps_or_cs(std::move(ps_or_cs)), m_topology(topology), m_vertex_stride(vertex_stride),
     m_blend_factor(blend_factor), m_blend_factor_float(GPUDevice::RGBA8ToFloat(blend_factor))
 {
 }
@@ -215,7 +216,8 @@ size_t D3D11Device::BlendStateMapHash::operator()(const BlendStateMapKey& key) c
   return h;
 }
 
-D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeline::BlendState& bs, u32 num_rts, Error* error)
+D3D11Device::ComPtr<ID3D11BlendState> D3D11Device::GetBlendState(const GPUPipeline::BlendState& bs, u32 num_rts,
+                                                                 Error* error)
 {
   ComPtr<ID3D11BlendState> dbs;
 
@@ -365,69 +367,124 @@ std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::Grap
     primitives[static_cast<u8>(config.primitive)], vertex_stride, config.blend.constant));
 }
 
+std::unique_ptr<GPUPipeline> D3D11Device::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
+{
+  if (!config.compute_shader) [[unlikely]]
+  {
+    Error::SetStringView(error, "Missing compute shader.");
+    return {};
+  }
+
+  return std::unique_ptr<GPUPipeline>(
+    new D3D11Pipeline(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                      static_cast<const D3D11Shader*>(config.compute_shader)->GetComputeShader(),
+                      D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED, 0, 0));
+}
+
 void D3D11Device::SetPipeline(GPUPipeline* pipeline)
 {
   if (m_current_pipeline == pipeline)
     return;
 
+  const bool was_compute = m_current_pipeline && m_current_pipeline->IsComputePipeline();
   D3D11Pipeline* const PL = static_cast<D3D11Pipeline*>(pipeline);
   m_current_pipeline = PL;
 
-  if (ID3D11InputLayout* il = PL->GetInputLayout(); m_current_input_layout != il)
+  if (!PL->IsComputePipeline())
   {
-    m_current_input_layout = il;
-    m_context->IASetInputLayout(il);
-  }
+    if (was_compute)
+      UnbindComputePipeline();
 
-  if (const u32 vertex_stride = PL->GetVertexStride(); m_current_vertex_stride != vertex_stride)
-  {
-    const UINT offset = 0;
-    m_current_vertex_stride = PL->GetVertexStride();
-    m_context->IASetVertexBuffers(0, 1, m_vertex_buffer.GetD3DBufferArray(), &m_current_vertex_stride, &offset);
-  }
+    if (ID3D11InputLayout* il = PL->GetInputLayout(); m_current_input_layout != il)
+    {
+      m_current_input_layout = il;
+      m_context->IASetInputLayout(il);
+    }
 
-  if (D3D_PRIMITIVE_TOPOLOGY topology = PL->GetPrimitiveTopology(); m_current_primitive_topology != topology)
-  {
-    m_current_primitive_topology = topology;
-    m_context->IASetPrimitiveTopology(topology);
-  }
+    if (const u32 vertex_stride = PL->GetVertexStride(); m_current_vertex_stride != vertex_stride)
+    {
+      const UINT offset = 0;
+      m_current_vertex_stride = PL->GetVertexStride();
+      m_context->IASetVertexBuffers(0, 1, m_vertex_buffer.GetD3DBufferArray(), &m_current_vertex_stride, &offset);
+    }
 
-  if (ID3D11VertexShader* vs = PL->GetVertexShader(); m_current_vertex_shader != vs)
-  {
-    m_current_vertex_shader = vs;
-    m_context->VSSetShader(vs, nullptr, 0);
-  }
+    if (D3D_PRIMITIVE_TOPOLOGY topology = PL->GetPrimitiveTopology(); m_current_primitive_topology != topology)
+    {
+      m_current_primitive_topology = topology;
+      m_context->IASetPrimitiveTopology(topology);
+    }
 
-  if (ID3D11GeometryShader* gs = PL->GetGeometryShader(); m_current_geometry_shader != gs)
-  {
-    m_current_geometry_shader = gs;
-    m_context->GSSetShader(gs, nullptr, 0);
-  }
+    if (ID3D11VertexShader* vs = PL->GetVertexShader(); m_current_vertex_shader != vs)
+    {
+      m_current_vertex_shader = vs;
+      m_context->VSSetShader(vs, nullptr, 0);
+    }
 
-  if (ID3D11PixelShader* ps = PL->GetPixelShader(); m_current_pixel_shader != ps)
-  {
-    m_current_pixel_shader = ps;
-    m_context->PSSetShader(ps, nullptr, 0);
-  }
+    if (ID3D11GeometryShader* gs = PL->GetGeometryShader(); m_current_geometry_shader != gs)
+    {
+      m_current_geometry_shader = gs;
+      m_context->GSSetShader(gs, nullptr, 0);
+    }
 
-  if (ID3D11RasterizerState* rs = PL->GetRasterizerState(); m_current_rasterizer_state != rs)
-  {
-    m_current_rasterizer_state = rs;
-    m_context->RSSetState(rs);
-  }
+    if (ID3D11PixelShader* ps = PL->GetPixelShader(); m_current_pixel_shader != ps)
+    {
+      m_current_pixel_shader = ps;
+      m_context->PSSetShader(ps, nullptr, 0);
+    }
 
-  if (ID3D11DepthStencilState* ds = PL->GetDepthStencilState(); m_current_depth_state != ds)
-  {
-    m_current_depth_state = ds;
-    m_context->OMSetDepthStencilState(ds, 0);
-  }
+    if (ID3D11RasterizerState* rs = PL->GetRasterizerState(); m_current_rasterizer_state != rs)
+    {
+      m_current_rasterizer_state = rs;
+      m_context->RSSetState(rs);
+    }
 
-  if (ID3D11BlendState* bs = PL->GetBlendState();
-      m_current_blend_state != bs || m_current_blend_factor != PL->GetBlendFactor())
+    if (ID3D11DepthStencilState* ds = PL->GetDepthStencilState(); m_current_depth_state != ds)
+    {
+      m_current_depth_state = ds;
+      m_context->OMSetDepthStencilState(ds, 0);
+    }
+
+    if (ID3D11BlendState* bs = PL->GetBlendState();
+        m_current_blend_state != bs || m_current_blend_factor != PL->GetBlendFactor())
+    {
+      m_current_blend_state = bs;
+      m_current_blend_factor = PL->GetBlendFactor();
+      m_context->OMSetBlendState(bs, RGBA8ToFloat(m_current_blend_factor).data(), 0xFFFFFFFFu);
+    }
+  }
+  else
   {
-    m_current_blend_state = bs;
-    m_current_blend_factor = PL->GetBlendFactor();
-    m_context->OMSetBlendState(bs, RGBA8ToFloat(m_current_blend_factor).data(), 0xFFFFFFFFu);
+    if (ID3D11ComputeShader* cs = m_current_pipeline->GetComputeShader(); cs != m_current_compute_shader)
+    {
+      m_current_compute_shader = cs;
+      m_context->CSSetShader(cs, nullptr, 0);
+    }
+
+    if (!was_compute)
+    {
+      // need to bind all SRVs/samplers
+      u32 count;
+      for (count = 0; count < MAX_TEXTURE_SAMPLERS; count++)
+      {
+        if (!m_current_textures[count])
+          break;
+      }
+      if (count > 0)
+      {
+        m_context->CSSetShaderResources(0, count, m_current_textures.data());
+        m_context->CSSetSamplers(0, count, m_current_samplers.data());
+      }
+
+      if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
+      {
+        ID3D11UnorderedAccessView* uavs[MAX_TEXTURE_SAMPLERS];
+        for (u32 i = 0; i < m_num_current_render_targets; i++)
+          uavs[i] = m_current_render_targets[i]->GetD3DUAV();
+
+        m_context->OMSetRenderTargets(0, nullptr, nullptr);
+        m_context->CSSetUnorderedAccessViews(0, m_num_current_render_targets, uavs, nullptr);
+      }
+    }
   }
 }
 
@@ -436,6 +493,23 @@ void D3D11Device::UnbindPipeline(D3D11Pipeline* pl)
   if (m_current_pipeline != pl)
     return;
 
+  if (pl->IsComputePipeline())
+    UnbindComputePipeline();
+
   // Let the runtime deal with the dead objects...
   m_current_pipeline = nullptr;
+}
+
+void D3D11Device::UnbindComputePipeline()
+{
+  m_current_compute_shader = nullptr;
+
+  ID3D11ShaderResourceView* null_srvs[MAX_TEXTURE_SAMPLERS] = {};
+  ID3D11SamplerState* null_samplers[MAX_TEXTURE_SAMPLERS] = {};
+  ID3D11UnorderedAccessView* null_uavs[MAX_RENDER_TARGETS] = {};
+  m_context->CSSetShader(nullptr, nullptr, 0);
+  m_context->CSSetShaderResources(0, MAX_TEXTURE_SAMPLERS, null_srvs);
+  m_context->CSSetSamplers(0, MAX_TEXTURE_SAMPLERS, null_samplers);
+  if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
+    m_context->CSSetUnorderedAccessViews(0, m_num_current_render_targets, null_uavs, nullptr);
 }

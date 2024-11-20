@@ -1579,11 +1579,13 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
 
   // Need to know if there's UBOs for mapping.
   const spvc_reflected_resource *ubos, *textures;
-  size_t ubos_count, textures_count;
+  size_t ubos_count, textures_count, images_count;
   if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &ubos,
                                                                   &ubos_count)) != SPVC_SUCCESS ||
       (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE,
-                                                                  &textures, &textures_count)) != SPVC_SUCCESS)
+                                                                  &textures, &textures_count)) != SPVC_SUCCESS ||
+      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STORAGE_IMAGE,
+                                                                  &textures, &images_count)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_resources_get_resource_list_for_type() failed: {}", static_cast<int>(sres));
     return {};
@@ -1592,6 +1594,7 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
   [[maybe_unused]] const SpvExecutionModel execmodel = dyn_libs::spvc_compiler_get_execution_model(scompiler);
   [[maybe_unused]] static constexpr u32 UBO_DESCRIPTOR_SET = 0;
   [[maybe_unused]] static constexpr u32 TEXTURE_DESCRIPTOR_SET = 1;
+  [[maybe_unused]] static constexpr u32 IMAGE_DESCRIPTOR_SET = 2;
 
   switch (target_language)
   {
@@ -1652,6 +1655,25 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                                                  .uav = {},
                                                  .srv = {.register_space = 0, .register_binding = i},
                                                  .sampler = {.register_space = 0, .register_binding = i}};
+          if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
+          {
+            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
+            return {};
+          }
+        }
+      }
+
+      if (stage == GPUShaderStage::Compute)
+      {
+        for (u32 i = 0; i < images_count; i++)
+        {
+          const spvc_hlsl_resource_binding rb = {.stage = execmodel,
+                                                 .desc_set = IMAGE_DESCRIPTOR_SET,
+                                                 .binding = i,
+                                                 .cbv = {},
+                                                 .uav = {.register_space = 0, .register_binding = i},
+                                                 .srv = {},
+                                                 .sampler = {}};
           if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
             Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
@@ -1727,12 +1749,25 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
         return {};
       }
 
-      if (stage == GPUShaderStage::Fragment)
+      const spvc_msl_resource_binding pc_rb = {.stage = execmodel,
+                                               .desc_set = SPVC_MSL_PUSH_CONSTANT_DESC_SET,
+                                               .binding = SPVC_MSL_PUSH_CONSTANT_BINDING,
+                                               .msl_buffer = 0,
+                                               .msl_texture = 0,
+                                               .msl_sampler = 0};
+      if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &pc_rb)) != SPVC_SUCCESS)
+      {
+        Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for push constant failed: {}",
+                            static_cast<int>(sres));
+        return {};
+      }
+
+      if (stage == GPUShaderStage::Fragment || stage == GPUShaderStage::Compute)
       {
         for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
         {
-          const spvc_msl_resource_binding rb = {.stage = SpvExecutionModelFragment,
-                                                .desc_set = 1,
+          const spvc_msl_resource_binding rb = {.stage = execmodel,
+                                                .desc_set = TEXTURE_DESCRIPTOR_SET,
                                                 .binding = i,
                                                 .msl_buffer = i,
                                                 .msl_texture = i,
@@ -1744,16 +1779,31 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
             return {};
           }
         }
+      }
 
-        if (!m_features.framebuffer_fetch)
+      if (stage == GPUShaderStage::Fragment && !m_features.framebuffer_fetch)
+      {
+        const spvc_msl_resource_binding rb = {
+          .stage = execmodel, .desc_set = 2, .binding = 0, .msl_texture = MAX_TEXTURE_SAMPLERS};
+
+        if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for FB failed: {}",
+                              static_cast<int>(sres));
+          return {};
+        }
+      }
+
+      if (stage == GPUShaderStage::Compute)
+      {
+        for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
         {
           const spvc_msl_resource_binding rb = {
-            .stage = SpvExecutionModelFragment, .desc_set = 2, .binding = 0, .msl_texture = MAX_TEXTURE_SAMPLERS};
+            .stage = execmodel, .desc_set = 2, .binding = i, .msl_buffer = i, .msl_texture = i, .msl_sampler = i};
 
           if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
-            Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for FB failed: {}",
-                                static_cast<int>(sres));
+            Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
             return {};
           }
         }

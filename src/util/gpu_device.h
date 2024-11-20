@@ -160,6 +160,9 @@ public:
     // Multiple textures, 128 byte UBO via push constants.
     MultiTextureAndPushConstants,
 
+    // 128 byte UBO via push constants, 1 texture, compute shader.
+    ComputeSingleTextureAndPushConstants,
+
     MaxCount
   };
 
@@ -416,6 +419,12 @@ public:
     u32 GetRenderTargetCount() const;
   };
 
+  struct ComputeConfig
+  {
+    Layout layout;
+    GPUShader* compute_shader;
+  };
+
   GPUPipeline();
   virtual ~GPUPipeline();
 
@@ -501,9 +510,10 @@ public:
     FEATURE_MASK_FRAMEBUFFER_FETCH = (1 << 2),
     FEATURE_MASK_TEXTURE_BUFFERS = (1 << 3),
     FEATURE_MASK_GEOMETRY_SHADERS = (1 << 4),
-    FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 5),
-    FEATURE_MASK_MEMORY_IMPORT = (1 << 6),
-    FEATURE_MASK_RASTER_ORDER_VIEWS = (1 << 7),
+    FEATURE_MASK_COMPUTE_SHADERS = (1 << 5),
+    FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 6),
+    FEATURE_MASK_MEMORY_IMPORT = (1 << 7),
+    FEATURE_MASK_RASTER_ORDER_VIEWS = (1 << 8),
   };
 
   enum class DrawBarrier : u32
@@ -532,6 +542,7 @@ public:
     bool texture_buffers_emulated_with_ssbo : 1;
     bool feedback_loops : 1;
     bool geometry_shaders : 1;
+    bool compute_shaders : 1;
     bool partial_msaa_resolve : 1;
     bool memory_import : 1;
     bool explicit_present : 1;
@@ -625,9 +636,18 @@ public:
       0,                    // SingleTextureBufferAndPushConstants
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndPushConstants
+      1,                    // ComputeSingleTextureAndPushConstants
     };
 
     return counts[static_cast<u8>(layout)];
+  }
+
+  /// Returns the number of thread groups to dispatch for a given total count and local size.
+  static constexpr std::tuple<u32, u32, u32> GetDispatchCount(u32 count_x, u32 count_y, u32 count_z, u32 local_size_x,
+                                                              u32 local_size_y, u32 local_size_z)
+  {
+    return std::make_tuple((count_x + (local_size_x - 1)) / local_size_x, (count_y + (local_size_y - 1)) / local_size_y,
+                           (count_z + (local_size_z - 1)) / local_size_z);
   }
 
   ALWAYS_INLINE const Features& GetFeatures() const { return m_features; }
@@ -638,10 +658,6 @@ public:
 
   ALWAYS_INLINE GPUSwapChain* GetMainSwapChain() const { return m_main_swap_chain.get(); }
   ALWAYS_INLINE bool HasMainSwapChain() const { return static_cast<bool>(m_main_swap_chain); }
-  // ALWAYS_INLINE u32 GetMainSwapChainWidth() const { return m_main_swap_chain->GetWidth(); }
-  // ALWAYS_INLINE u32 GetMainSwapChainHeight() const { return m_main_swap_chain->GetHeight(); }
-  // ALWAYS_INLINE float GetWindowScale() const { return m_window_info.surface_scale; }
-  // ALWAYS_INLINE GPUTexture::Format GetWindowFormat() const { return m_window_info.surface_format; }
 
   ALWAYS_INLINE GPUSampler* GetLinearSampler() const { return m_linear_sampler.get(); }
   ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler.get(); }
@@ -712,6 +728,8 @@ public:
                                           Error* error = nullptr, const char* entry_point = "main");
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config,
                                                       Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config,
+                                                      Error* error = nullptr) = 0;
 
   /// Debug messaging.
   virtual void PushDebugGroup(const char* name) = 0;
@@ -753,6 +771,8 @@ public:
   virtual void Draw(u32 vertex_count, u32 base_vertex) = 0;
   virtual void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) = 0;
   virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
+  virtual void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                        u32 group_size_z) = 0;
 
   /// Returns false if the window was completely occluded.
   virtual PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;

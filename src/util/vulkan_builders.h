@@ -197,7 +197,7 @@ public:
 
   void Clear();
 
-  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache = VK_NULL_HANDLE, bool clear = true);
+  VkPipeline Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear, Error* error);
 
   void SetShader(VkShaderModule module, const char* entry_point);
 

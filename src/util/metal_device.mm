@@ -77,7 +77,8 @@ static void LogNSError(NSError* error, std::string_view message)
 {
   Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, message);
   Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, "  NSError Code: {}", static_cast<u32>(error.code));
-  Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, "  NSError Description: {}", [error.description UTF8String]);
+  Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, "  NSError Description: {}",
+                 [error.description UTF8String]);
 }
 
 static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
@@ -503,28 +504,6 @@ id<MTLFunction> MetalDevice::GetFunctionFromLibrary(id<MTLLibrary> library, NSSt
   return function;
 }
 
-id<MTLComputePipelineState> MetalDevice::CreateComputePipeline(id<MTLFunction> function, NSString* name)
-{
-  MTLComputePipelineDescriptor* desc = [MTLComputePipelineDescriptor new];
-  if (name != nil)
-    [desc setLabel:name];
-  [desc setComputeFunction:function];
-
-  NSError* err = nil;
-  id<MTLComputePipelineState> pipeline = [m_device newComputePipelineStateWithDescriptor:desc
-                                                                                 options:MTLPipelineOptionNone
-                                                                              reflection:nil
-                                                                                   error:&err];
-  [desc release];
-  if (pipeline == nil)
-  {
-    LogNSError(err, "Create compute pipeline failed:");
-    return nil;
-  }
-
-  return pipeline;
-}
-
 void MetalDevice::DestroyDevice()
 {
   WaitForPreviousCommandBuffers();
@@ -564,11 +543,6 @@ void MetalDevice::DestroyDevice()
       [it.second release];
   }
   m_depth_states.clear();
-  for (auto& it : m_resolve_pipelines)
-  {
-    if (it.second != nil)
-      [it.second release];
-  }
   m_resolve_pipelines.clear();
   for (auto& it : m_clear_pipelines)
   {
@@ -755,7 +729,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   return CreateShaderFromMSL(stage, source, entry_point, error);
 }
 
-MetalPipeline::MetalPipeline(id<MTLRenderPipelineState> pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,
+MetalPipeline::MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,
                              MTLPrimitiveType primitive)
   : m_pipeline(pipeline), m_depth(depth), m_cull_mode(cull_mode), m_primitive(primitive)
 {
@@ -979,6 +953,29 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
     }
 
     return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, depth, cull_mode, primitive));
+  }
+}
+
+std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
+{
+  @autoreleasepool
+  {
+    MTLComputePipelineDescriptor* desc = [[MTLComputePipelineDescriptor new] autorelease];
+    [desc setComputeFunction:static_cast<MetalShader*>(config.compute_shader)->GetFunction()];
+
+    NSError* nserror = nil;
+    id<MTLComputePipelineState> pipeline = [m_device newComputePipelineStateWithDescriptor:desc
+                                                                                   options:MTLPipelineOptionNone
+                                                                                reflection:nil
+                                                                                     error:&nserror];
+    if (pipeline == nil)
+    {
+      LogNSError(nserror, "Failed to create compute pipeline state");
+      CocoaTools::NSErrorToErrorObject(error, "newComputePipelineStateWithDescriptor failed: ", nserror);
+      return {};
+    }
+
+    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, nil, MTLCullModeNone, MTLPrimitiveTypePoint));
   }
 }
 
@@ -1559,14 +1556,14 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
 
   const GPUTexture::Format src_format = dst->GetFormat();
   const GPUTexture::Format dst_format = dst->GetFormat();
-  id<MTLComputePipelineState> resolve_pipeline = nil;
+  GPUPipeline* resolve_pipeline;
   if (auto iter = std::find_if(m_resolve_pipelines.begin(), m_resolve_pipelines.end(),
                                [src_format, dst_format](const auto& it) {
                                  return it.first.first == src_format && it.first.second == dst_format;
                                });
       iter != m_resolve_pipelines.end())
   {
-    resolve_pipeline = iter->second;
+    resolve_pipeline = iter->second.get();
   }
   else
   {
@@ -1579,32 +1576,41 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
       if (function == nil)
         Panic("Failed to get resolve kernel");
 
-      resolve_pipeline = [CreateComputePipeline(function, is_depth ? @"Depth Resolve" : @"Color Resolve") autorelease];
-      if (resolve_pipeline != nil)
-        [resolve_pipeline retain];
-      m_resolve_pipelines.emplace_back(std::make_pair(src_format, dst_format), resolve_pipeline);
+      MetalShader temp_shader(GPUShaderStage::Compute, m_shaders, function);
+      GPUPipeline::ComputeConfig config;
+      config.layout = GPUPipeline::Layout::ComputeSingleTextureAndPushConstants;
+      config.compute_shader = &temp_shader;
+
+      std::unique_ptr<GPUPipeline> pipeline = CreatePipeline(config, nullptr);
+      if (!pipeline)
+        Panic("Failed to create resolve pipeline");
+
+      GL_OBJECT_NAME(pipeline, is_depth ? "Depth Resolve" : "Color Resolve");
+      resolve_pipeline =
+        m_resolve_pipelines.emplace_back(std::make_pair(src_format, dst_format), std::move(pipeline)).second.get();
     }
   }
-  if (resolve_pipeline == nil)
-    Panic("Failed to get resolve pipeline");
 
   if (InRenderPass())
     EndRenderPass();
 
   s_stats.num_copies++;
 
-  const u32 threadgroupHeight = resolve_pipeline.maxTotalThreadsPerThreadgroup / resolve_pipeline.threadExecutionWidth;
-  const MTLSize intrinsicThreadgroupSize = MTLSizeMake(resolve_pipeline.threadExecutionWidth, threadgroupHeight, 1);
+  const id<MTLComputePipelineState> mtl_pipeline =
+    static_cast<MetalPipeline*>(resolve_pipeline)->GetComputePipelineState();
+  const u32 threadgroupHeight = mtl_pipeline.maxTotalThreadsPerThreadgroup / mtl_pipeline.threadExecutionWidth;
+  const MTLSize intrinsicThreadgroupSize = MTLSizeMake(mtl_pipeline.threadExecutionWidth, threadgroupHeight, 1);
   const MTLSize threadgroupsInGrid =
     MTLSizeMake((src->GetWidth() + intrinsicThreadgroupSize.width - 1) / intrinsicThreadgroupSize.width,
                 (src->GetHeight() + intrinsicThreadgroupSize.height - 1) / intrinsicThreadgroupSize.height, 1);
 
-  id<MTLComputeCommandEncoder> computeEncoder = [m_render_cmdbuf computeCommandEncoder];
-  [computeEncoder setComputePipelineState:resolve_pipeline];
-  [computeEncoder setTexture:static_cast<MetalTexture*>(src)->GetMTLTexture() atIndex:0];
-  [computeEncoder setTexture:static_cast<MetalTexture*>(dst)->GetMTLTexture() atIndex:1];
-  [computeEncoder dispatchThreadgroups:threadgroupsInGrid threadsPerThreadgroup:intrinsicThreadgroupSize];
-  [computeEncoder endEncoding];
+  // Set up manually to not disturb state.
+  BeginComputePass();
+  [m_compute_encoder setComputePipelineState:mtl_pipeline];
+  [m_compute_encoder setTexture:static_cast<MetalTexture*>(src)->GetMTLTexture() atIndex:0];
+  [m_compute_encoder setTexture:static_cast<MetalTexture*>(dst)->GetMTLTexture() atIndex:1];
+  [m_compute_encoder dispatchThreadgroups:threadgroupsInGrid threadsPerThreadgroup:intrinsicThreadgroupSize];
+  EndComputePass();
 }
 
 void MetalDevice::ClearRenderTarget(GPUTexture* t, u32 c)
@@ -1645,7 +1651,7 @@ void MetalDevice::ClearDepth(GPUTexture* t, float d)
 
     [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
     if (m_current_pipeline)
-      [m_render_encoder setRenderPipelineState:m_current_pipeline->GetPipelineState()];
+      [m_render_encoder setRenderPipelineState:m_current_pipeline->GetRenderPipelineState()];
     if (m_current_cull_mode != MTLCullModeNone)
       [m_render_encoder setCullMode:m_current_cull_mode];
     if (depth != m_current_depth_state)
@@ -1674,6 +1680,8 @@ void MetalDevice::CommitClear(MetalTexture* tex)
     // TODO: We could combine it with the current render pass.
     if (InRenderPass())
       EndRenderPass();
+    else if (InComputePass())
+      EndComputePass();
 
     @autoreleasepool
     {
@@ -1896,11 +1904,13 @@ void MetalDevice::UnmapUniformBuffer(u32 size)
 }
 
 void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
-                                   GPUPipeline::RenderPassFlag feedback_loop)
+                                   GPUPipeline::RenderPassFlag flags)
 {
   bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds ||
-                  (!m_features.framebuffer_fetch && ((feedback_loop & GPUPipeline::ColorFeedbackLoop) !=
-                                                     (m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop))));
+                  ((flags & GPUPipeline::BindRenderTargetsAsImages) !=
+                   (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)) ||
+                  (!m_features.framebuffer_fetch && ((flags & GPUPipeline::ColorFeedbackLoop) !=
+                                                     (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop))));
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;
 
@@ -1915,12 +1925,19 @@ void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
   for (u32 i = num_rts; i < m_num_current_render_targets; i++)
     m_current_render_targets[i] = nullptr;
   m_num_current_render_targets = static_cast<u8>(num_rts);
-  m_current_feedback_loop = feedback_loop;
+  m_current_render_pass_flags = flags;
 
   if (changed || needs_rt_clear || needs_ds_clear)
   {
     if (InRenderPass())
+    {
       EndRenderPass();
+    }
+    else if (InComputePass() && (flags & GPUPipeline::BindRenderTargetsAsImages) != GPUPipeline::NoRenderPassFlags)
+    {
+      CommitRenderTargetClears();
+      BindRenderTargetsAsComputeImages();
+    }
   }
 }
 
@@ -1931,26 +1948,34 @@ void MetalDevice::SetPipeline(GPUPipeline* pipeline)
     return;
 
   m_current_pipeline = static_cast<MetalPipeline*>(pipeline);
-  if (InRenderPass())
+  if (!m_current_pipeline->IsComputePipeline())
   {
-    [m_render_encoder setRenderPipelineState:m_current_pipeline->GetPipelineState()];
+    if (InRenderPass())
+    {
+      [m_render_encoder setRenderPipelineState:m_current_pipeline->GetRenderPipelineState()];
 
-    if (m_current_depth_state != m_current_pipeline->GetDepthState())
-    {
-      m_current_depth_state = m_current_pipeline->GetDepthState();
-      [m_render_encoder setDepthStencilState:m_current_depth_state];
+      if (m_current_depth_state != m_current_pipeline->GetDepthState())
+      {
+        m_current_depth_state = m_current_pipeline->GetDepthState();
+        [m_render_encoder setDepthStencilState:m_current_depth_state];
+      }
+      if (m_current_cull_mode != m_current_pipeline->GetCullMode())
+      {
+        m_current_cull_mode = m_current_pipeline->GetCullMode();
+        [m_render_encoder setCullMode:m_current_cull_mode];
+      }
     }
-    if (m_current_cull_mode != m_current_pipeline->GetCullMode())
+    else
     {
+      // Still need to set depth state before the draw begins.
+      m_current_depth_state = m_current_pipeline->GetDepthState();
       m_current_cull_mode = m_current_pipeline->GetCullMode();
-      [m_render_encoder setCullMode:m_current_cull_mode];
     }
   }
   else
   {
-    // Still need to set depth state before the draw begins.
-    m_current_depth_state = m_current_pipeline->GetDepthState();
-    m_current_cull_mode = m_current_pipeline->GetCullMode();
+    if (InComputePass())
+      [m_compute_encoder setComputePipelineState:m_current_pipeline->GetComputePipelineState()];
   }
 }
 
@@ -1979,6 +2004,8 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
     m_current_textures[slot] = T;
     if (InRenderPass())
       [m_render_encoder setFragmentTexture:T atIndex:slot];
+    else if (InComputePass())
+      [m_compute_encoder setTexture:T atIndex:slot];
   }
 
   id<MTLSamplerState> S = sampler ? static_cast<MetalSampler*>(sampler)->GetSamplerState() : nil;
@@ -1987,6 +2014,8 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
     m_current_samplers[slot] = S;
     if (InRenderPass())
       [m_render_encoder setFragmentSamplerState:S atIndex:slot];
+    else if (InComputePass())
+      [m_compute_encoder setTexture:T atIndex:slot];
   }
 }
 
@@ -2011,6 +2040,8 @@ void MetalDevice::UnbindTexture(MetalTexture* tex)
       m_current_textures[i] = nil;
       if (InRenderPass())
         [m_render_encoder setFragmentTexture:nil atIndex:i];
+      else if (InComputePass())
+        [m_compute_encoder setTexture:nil atIndex:0];
     }
   }
 
@@ -2070,7 +2101,7 @@ void MetalDevice::SetScissor(const GSVector4i rc)
 
 void MetalDevice::BeginRenderPass()
 {
-  DebugAssert(m_render_encoder == nil);
+  DebugAssert(m_render_encoder == nil && !InComputePass());
 
   // Inline writes :(
   if (m_inline_upload_encoder != nil)
@@ -2180,10 +2211,55 @@ void MetalDevice::BeginRenderPass()
 
 void MetalDevice::EndRenderPass()
 {
-  DebugAssert(InRenderPass() && !IsInlineUploading());
+  DebugAssert(InRenderPass() && !IsInlineUploading() && !InComputePass());
   [m_render_encoder endEncoding];
   [m_render_encoder release];
   m_render_encoder = nil;
+}
+
+void MetalDevice::BeginComputePass()
+{
+  DebugAssert(!InRenderPass() && !IsInlineUploading() && !InComputePass());
+
+  if ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) != GPUPipeline::NoRenderPassFlags)
+    CommitRenderTargetClears();
+
+  m_compute_encoder = [[m_render_cmdbuf computeCommandEncoder] retain];
+  [m_compute_encoder setTextures:m_current_textures.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
+  [m_compute_encoder setSamplerStates:m_current_samplers.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
+
+  if ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) != GPUPipeline::NoRenderPassFlags)
+    BindRenderTargetsAsComputeImages();
+
+  if (m_current_pipeline && m_current_pipeline->IsComputePipeline())
+    [m_compute_encoder setComputePipelineState:m_current_pipeline->GetComputePipelineState()];
+}
+
+void MetalDevice::CommitRenderTargetClears()
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  {
+    MetalTexture* rt = m_current_render_targets[i];
+    if (rt->GetState() == GPUTexture::State::Invalidated)
+      rt->SetState(GPUTexture::State::Dirty);
+    else if (rt->GetState() == GPUTexture::State::Cleared)
+      CommitClear(rt);
+  }
+}
+
+void MetalDevice::BindRenderTargetsAsComputeImages()
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+    [m_compute_encoder setTexture:m_current_render_targets[i]->GetMTLTexture() atIndex:MAX_TEXTURE_SAMPLERS + i];
+}
+
+void MetalDevice::EndComputePass()
+{
+  DebugAssert(InComputePass());
+
+  [m_compute_encoder endEncoding];
+  [m_compute_encoder release];
+  m_compute_encoder = nil;
 }
 
 void MetalDevice::EndInlineUploading()
@@ -2198,6 +2274,8 @@ void MetalDevice::EndAnyEncoding()
 {
   if (InRenderPass())
     EndRenderPass();
+  else if (InComputePass())
+    EndComputePass();
   else if (IsInlineUploading())
     EndInlineUploading();
 }
@@ -2213,14 +2291,14 @@ void MetalDevice::SetInitialEncoderState()
   [m_render_encoder setCullMode:m_current_cull_mode];
   if (m_current_depth_state != nil)
     [m_render_encoder setDepthStencilState:m_current_depth_state];
-  if (m_current_pipeline != nil)
-    [m_render_encoder setRenderPipelineState:m_current_pipeline->GetPipelineState()];
+  if (m_current_pipeline && m_current_pipeline->IsRenderPipeline())
+    [m_render_encoder setRenderPipelineState:m_current_pipeline->GetRenderPipelineState()];
   [m_render_encoder setFragmentTextures:m_current_textures.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
   [m_render_encoder setFragmentSamplerStates:m_current_samplers.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
   if (m_current_ssbo)
     [m_render_encoder setFragmentBuffer:m_current_ssbo offset:0 atIndex:1];
 
-  if (!m_features.framebuffer_fetch && (m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop))
+  if (!m_features.framebuffer_fetch && (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop))
   {
     DebugAssert(m_current_render_targets[0]);
     [m_render_encoder setFragmentTexture:m_current_render_targets[0]->GetMTLTexture() atIndex:MAX_TEXTURE_SAMPLERS];
@@ -2249,7 +2327,12 @@ void MetalDevice::SetScissorInRenderEncoder()
 void MetalDevice::PreDrawCheck()
 {
   if (!InRenderPass())
+  {
+    if (InComputePass())
+      EndComputePass();
+
     BeginRenderPass();
+  }
 }
 
 void MetalDevice::Draw(u32 vertex_count, u32 base_vertex)
@@ -2392,6 +2475,25 @@ void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 ba
   }
 }
 
+void MetalDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                           u32 group_size_z)
+{
+  if (!InComputePass())
+  {
+    if (InRenderPass())
+      EndRenderPass();
+
+    BeginComputePass();
+  }
+
+  DebugAssert(m_current_pipeline && m_current_pipeline->IsComputePipeline());
+  id<MTLComputePipelineState> pipeline = m_current_pipeline->GetComputePipelineState();
+
+  // TODO: We could remap to the optimal group size..
+  [m_compute_encoder dispatchThreads:MTLSizeMake(threads_x, threads_y, threads_z)
+               threadsPerThreadgroup:MTLSizeMake(group_size_x, group_size_y, group_size_z)];
+}
+
 id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
 {
   @autoreleasepool
@@ -2450,7 +2552,7 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32
     s_stats.num_render_passes++;
     std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
     m_num_current_render_targets = 0;
-    m_current_feedback_loop = GPUPipeline::NoRenderPassFlags;
+    m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
     m_current_depth_target = nullptr;
     m_current_pipeline = nullptr;
     m_current_depth_state = nil;

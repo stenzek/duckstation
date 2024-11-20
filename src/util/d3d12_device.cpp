@@ -1298,6 +1298,7 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.feedback_loops = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
+  m_features.compute_shaders = !(disabled_features & FEATURE_MASK_COMPUTE_SHADERS);
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = false;
   m_features.explicit_present = true;
@@ -1552,6 +1553,7 @@ void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
     1, // SingleTextureBufferAndPushConstants
     0, // MultiTextureAndUBO
     2, // MultiTextureAndPushConstants
+    2, // ComputeSingleTextureAndPushConstants
   };
 
   DebugAssert(data_size < UNIFORM_PUSH_CONSTANTS_SIZE);
@@ -1565,7 +1567,11 @@ void D3D12Device::PushUniformBuffer(const void* data, u32 data_size)
 
   const u32 push_param =
     push_parameters[static_cast<u8>(m_current_pipeline_layout)] + BoolToUInt8(IsUsingROVRootSignature());
-  GetCommandList()->SetGraphicsRoot32BitConstants(push_param, data_size / 4u, data, 0);
+  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
+  if (!IsUsingComputeRootSignature())
+    cmdlist->SetGraphicsRoot32BitConstants(push_param, data_size / 4u, data, 0);
+  else
+    cmdlist->SetComputeRoot32BitConstants(push_param, data_size / 4u, data, 0);
 }
 
 void* D3D12Device::MapUniformBuffer(u32 size)
@@ -1685,6 +1691,18 @@ bool D3D12Device::CreateRootSignatures(Error* error)
         return false;
       D3D12::SetObjectName(rs.Get(), "Multi Texture Pipeline Layout");
     }
+  }
+
+  {
+    auto& rs = m_root_signatures[0][static_cast<u8>(GPUPipeline::Layout::ComputeSingleTextureAndPushConstants)];
+
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_ALL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_SAMPLER, 0, MAX_TEXTURE_SAMPLERS, D3D12_SHADER_VISIBILITY_ALL);
+    rsb.AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, MAX_IMAGE_RENDER_TARGETS, D3D12_SHADER_VISIBILITY_ALL);
+    rsb.Add32BitConstants(0, UNIFORM_PUSH_CONSTANTS_SIZE / sizeof(u32), D3D12_SHADER_VISIBILITY_ALL);
+    if (!(rs = rsb.Create(error, true)))
+      return false;
+    D3D12::SetObjectName(rs.Get(), "Compute Single Texture Pipeline Layout");
   }
 
   return true;
@@ -1810,6 +1828,7 @@ void D3D12Device::BeginRenderPass()
         rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         rt->SetUseFenceValue(GetCurrentFenceValue());
         rt->CommitClear(cmdlist);
+        rt->SetState(GPUTexture::State::Dirty);
       }
     }
     if (m_current_depth_target)
@@ -2174,15 +2193,88 @@ void D3D12Device::PreDrawCheck()
     BeginRenderPass();
 }
 
+void D3D12Device::PreDispatchCheck()
+{
+  if (InRenderPass())
+    EndRenderPass();
+
+  // Transition images.
+  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
+
+  // All textures should be in shader read only optimal already, but just in case..
+  const u32 num_textures = GetActiveTexturesForLayout(m_current_pipeline_layout);
+  for (u32 i = 0; i < num_textures; i++)
+  {
+    if (m_current_textures[i])
+      m_current_textures[i]->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+  }
+
+  if (m_num_current_render_targets > 0 && (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages))
+  {
+    // Still need to clear the RTs.
+    for (u32 i = 0; i < m_num_current_render_targets; i++)
+    {
+      D3D12Texture* const rt = m_current_render_targets[i];
+      rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+      rt->SetUseFenceValue(GetCurrentFenceValue());
+      rt->CommitClear(cmdlist);
+      rt->SetState(GPUTexture::State::Dirty);
+    }
+  }
+
+  // If this is a new command buffer, bind the pipeline and such.
+  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
+    SetInitialPipelineState();
+
+  // TODO: Flushing cmdbuffer because of descriptor OOM will lose push constants.
+  DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
+  const u32 dirty = std::exchange(m_dirty_flags, 0);
+  if (dirty != 0)
+  {
+    if (dirty & DIRTY_FLAG_PIPELINE_LAYOUT)
+    {
+      UpdateRootSignature();
+      if (!UpdateRootParameters(dirty))
+      {
+        SubmitCommandList(false, "out of descriptors");
+        PreDispatchCheck();
+        return;
+      }
+    }
+    else if (dirty & (DIRTY_FLAG_CONSTANT_BUFFER | DIRTY_FLAG_TEXTURES | DIRTY_FLAG_SAMPLERS | DIRTY_FLAG_RT_UAVS))
+    {
+      if (!UpdateRootParameters(dirty))
+      {
+        SubmitCommandList(false, "out of descriptors");
+        PreDispatchCheck();
+        return;
+      }
+    }
+  }
+}
+
 bool D3D12Device::IsUsingROVRootSignature() const
 {
   return ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) != 0);
 }
 
+bool D3D12Device::IsUsingComputeRootSignature() const
+{
+  return (m_current_pipeline_layout >= GPUPipeline::Layout::ComputeSingleTextureAndPushConstants);
+}
+
 void D3D12Device::UpdateRootSignature()
 {
-  GetCommandList()->SetGraphicsRootSignature(
-    m_root_signatures[BoolToUInt8(IsUsingROVRootSignature())][static_cast<u8>(m_current_pipeline_layout)].Get());
+  ID3D12GraphicsCommandList4* cmdlist = GetCommandList();
+  if (!IsUsingComputeRootSignature())
+  {
+    cmdlist->SetGraphicsRootSignature(
+      m_root_signatures[BoolToUInt8(IsUsingROVRootSignature())][static_cast<u8>(m_current_pipeline_layout)].Get());
+  }
+  else
+  {
+    cmdlist->SetComputeRootSignature(m_root_signatures[0][static_cast<u8>(m_current_pipeline_layout)].Get());
+  }
 }
 
 template<GPUPipeline::Layout layout>
@@ -2223,7 +2315,10 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
                                 D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     }
 
-    cmdlist->SetGraphicsRootDescriptorTable(0, gpu_handle);
+    if constexpr (layout < GPUPipeline::Layout::ComputeSingleTextureAndPushConstants)
+      cmdlist->SetGraphicsRootDescriptorTable(0, gpu_handle);
+    else
+      cmdlist->SetComputeRootDescriptorTable(0, gpu_handle);
   }
 
   if (dirty & DIRTY_FLAG_SAMPLERS && num_textures > 0)
@@ -2241,7 +2336,10 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
         return false;
     }
 
-    cmdlist->SetGraphicsRootDescriptorTable(1, gpu_handle);
+    if constexpr (layout < GPUPipeline::Layout::ComputeSingleTextureAndPushConstants)
+      cmdlist->SetGraphicsRootDescriptorTable(1, gpu_handle);
+    else
+      cmdlist->SetComputeRootDescriptorTable(1, gpu_handle);
   }
 
   if (dirty & DIRTY_FLAG_TEXTURES && layout == GPUPipeline::Layout::SingleTextureBufferAndPushConstants)
@@ -2283,7 +2381,10 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
         1 :
         ((layout == GPUPipeline::Layout::SingleTextureAndUBO || layout == GPUPipeline::Layout::MultiTextureAndUBO) ? 3 :
                                                                                                                      2);
-    cmdlist->SetGraphicsRootDescriptorTable(rov_param, gpu_handle);
+    if constexpr (layout < GPUPipeline::Layout::ComputeSingleTextureAndPushConstants)
+      cmdlist->SetGraphicsRootDescriptorTable(rov_param, gpu_handle);
+    else
+      cmdlist->SetComputeRootDescriptorTable(rov_param, gpu_handle);
   }
 
   return true;
@@ -2308,6 +2409,9 @@ bool D3D12Device::UpdateRootParameters(u32 dirty)
     case GPUPipeline::Layout::MultiTextureAndPushConstants:
       return UpdateParametersForLayout<GPUPipeline::Layout::MultiTextureAndPushConstants>(dirty);
 
+    case GPUPipeline::Layout::ComputeSingleTextureAndPushConstants:
+      return UpdateParametersForLayout<GPUPipeline::Layout::ComputeSingleTextureAndPushConstants>(dirty);
+
     default:
       UnreachableCode();
   }
@@ -2330,4 +2434,16 @@ void D3D12Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 void D3D12Device::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
   Panic("Barriers are not supported");
+}
+
+void D3D12Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                           u32 group_size_z)
+{
+  PreDispatchCheck();
+  s_stats.num_draws++;
+
+  const u32 groups_x = threads_x / group_size_x;
+  const u32 groups_y = threads_y / group_size_y;
+  const u32 groups_z = threads_z / group_size_z;
+  GetCommandList()->Dispatch(groups_x, groups_y, groups_z);
 }
