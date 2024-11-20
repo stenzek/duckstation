@@ -2447,6 +2447,7 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDe
     WARNING_LOG("Emulating texture buffers with SSBOs.");
 
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && vk_features.geometryShader;
+  m_features.compute_shaders = !(disabled_features & FEATURE_MASK_COMPUTE_SHADERS);
 
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = m_optional_extensions.vk_ext_external_memory_host;
@@ -2802,7 +2803,8 @@ bool VulkanDevice::CreatePipelineLayouts()
   }
 
   {
-    dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+    dslb.AddBinding(0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
+                    VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT);
     if ((m_single_texture_ds_layout = dslb.Create(m_device)) == VK_NULL_HANDLE)
       return false;
     Vulkan::SetObjectName(m_device, m_single_texture_ds_layout, "Single Texture Descriptor Set Layout");
@@ -2822,7 +2824,8 @@ bool VulkanDevice::CreatePipelineLayouts()
     if (m_optional_extensions.vk_khr_push_descriptor)
       dslb.SetPushFlag();
     for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
-      dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
+      dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1,
+                      VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT);
     if ((m_multi_texture_ds_layout = dslb.Create(m_device)) == VK_NULL_HANDLE)
       return false;
     Vulkan::SetObjectName(m_device, m_multi_texture_ds_layout, "Multi Texture Descriptor Set Layout");
@@ -2837,14 +2840,13 @@ bool VulkanDevice::CreatePipelineLayouts()
     Vulkan::SetObjectName(m_device, m_feedback_loop_ds_layout, "Feedback Loop Descriptor Set Layout");
   }
 
-  if (m_features.raster_order_views)
+  for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
   {
-    for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
-      dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT);
-    if ((m_rov_ds_layout = dslb.Create(m_device)) == VK_NULL_HANDLE)
-      return false;
-    Vulkan::SetObjectName(m_device, m_feedback_loop_ds_layout, "ROV Descriptor Set Layout");
+    dslb.AddBinding(i, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1, VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT);
   }
+  if ((m_image_ds_layout = dslb.Create(m_device)) == VK_NULL_HANDLE)
+    return false;
+  Vulkan::SetObjectName(m_device, m_image_ds_layout, "ROV Descriptor Set Layout");
 
   for (u32 type = 0; type < 3; type++)
   {
@@ -2860,7 +2862,7 @@ bool VulkanDevice::CreatePipelineLayouts()
       if (feedback_loop)
         plb.AddDescriptorSet(m_feedback_loop_ds_layout);
       else if (rov)
-        plb.AddDescriptorSet(m_rov_ds_layout);
+        plb.AddDescriptorSet(m_image_ds_layout);
       if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
         return false;
       Vulkan::SetObjectName(m_device, pl, "Single Texture + UBO Pipeline Layout");
@@ -2873,7 +2875,7 @@ bool VulkanDevice::CreatePipelineLayouts()
       if (feedback_loop)
         plb.AddDescriptorSet(m_feedback_loop_ds_layout);
       else if (rov)
-        plb.AddDescriptorSet(m_rov_ds_layout);
+        plb.AddDescriptorSet(m_image_ds_layout);
       plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
       if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
         return false;
@@ -2887,7 +2889,7 @@ bool VulkanDevice::CreatePipelineLayouts()
       if (feedback_loop)
         plb.AddDescriptorSet(m_feedback_loop_ds_layout);
       else if (rov)
-        plb.AddDescriptorSet(m_rov_ds_layout);
+        plb.AddDescriptorSet(m_image_ds_layout);
       plb.AddPushConstants(UNIFORM_PUSH_CONSTANTS_STAGES, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
       if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
         return false;
@@ -2901,7 +2903,7 @@ bool VulkanDevice::CreatePipelineLayouts()
       if (feedback_loop)
         plb.AddDescriptorSet(m_feedback_loop_ds_layout);
       else if (rov)
-        plb.AddDescriptorSet(m_rov_ds_layout);
+        plb.AddDescriptorSet(m_image_ds_layout);
       if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
         return false;
       Vulkan::SetObjectName(m_device, pl, "Multi Texture + UBO Pipeline Layout");
@@ -2915,11 +2917,22 @@ bool VulkanDevice::CreatePipelineLayouts()
       if (feedback_loop)
         plb.AddDescriptorSet(m_feedback_loop_ds_layout);
       else if (rov)
-        plb.AddDescriptorSet(m_rov_ds_layout);
+        plb.AddDescriptorSet(m_image_ds_layout);
       if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
         return false;
       Vulkan::SetObjectName(m_device, pl, "Multi Texture Pipeline Layout");
     }
+  }
+
+  {
+    VkPipelineLayout& pl =
+      m_pipeline_layouts[0][static_cast<u8>(GPUPipeline::Layout::ComputeSingleTextureAndPushConstants)];
+    plb.AddDescriptorSet(m_single_texture_ds_layout);
+    plb.AddDescriptorSet(m_image_ds_layout);
+    plb.AddPushConstants(VK_SHADER_STAGE_COMPUTE_BIT, 0, UNIFORM_PUSH_CONSTANTS_SIZE);
+    if ((pl = plb.Create(m_device)) == VK_NULL_HANDLE)
+      return false;
+    Vulkan::SetObjectName(m_device, pl, "Compute Single Texture Pipeline Layout");
   }
 
   return true;
@@ -2942,7 +2955,7 @@ void VulkanDevice::DestroyPipelineLayouts()
       l = VK_NULL_HANDLE;
     }
   };
-  destroy_dsl(m_rov_ds_layout);
+  destroy_dsl(m_image_ds_layout);
   destroy_dsl(m_feedback_loop_ds_layout);
   destroy_dsl(m_multi_texture_ds_layout);
   destroy_dsl(m_single_texture_buffer_ds_layout);
@@ -3674,12 +3687,56 @@ void VulkanDevice::PreDrawCheck()
   }
 }
 
+void VulkanDevice::PreDispatchCheck()
+{
+  // All textures should be in shader read only optimal already, but just in case..
+  const u32 num_textures = GetActiveTexturesForLayout(m_current_pipeline_layout);
+  for (u32 i = 0; i < num_textures; i++)
+  {
+    if (m_current_textures[i])
+      m_current_textures[i]->TransitionToLayout(VulkanTexture::Layout::ShaderReadOnly);
+  }
+
+  // Binding as image, but we still need to clear it.
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  {
+    VulkanTexture* rt = m_current_render_targets[i];
+    if (rt->GetState() == GPUTexture::State::Cleared)
+      rt->CommitClear(m_current_command_buffer);
+    rt->SetState(GPUTexture::State::Dirty);
+    rt->TransitionToLayout(VulkanTexture::Layout::ReadWriteImage);
+    rt->SetUseFenceCounter(GetCurrentFenceCounter());
+  }
+
+  // If this is a new command buffer, bind the pipeline and such.
+  if (m_dirty_flags & DIRTY_FLAG_INITIAL)
+    SetInitialPipelineState();
+
+  DebugAssert(!(m_dirty_flags & DIRTY_FLAG_INITIAL));
+  const u32 update_mask = (m_current_render_pass_flags ? ~0u : ~DIRTY_FLAG_INPUT_ATTACHMENT);
+  const u32 dirty = m_dirty_flags & update_mask;
+  m_dirty_flags = m_dirty_flags & ~update_mask;
+
+  if (dirty != 0)
+  {
+    if (!UpdateDescriptorSets(dirty))
+    {
+      SubmitCommandBuffer(false, "out of descriptor sets");
+      PreDispatchCheck();
+      return;
+    }
+  }
+}
+
 template<GPUPipeline::Layout layout>
 bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
 {
   [[maybe_unused]] bool new_dynamic_offsets = false;
 
-  VkPipelineLayout const vk_pipeline_layout = GetCurrentVkPipelineLayout();
+  constexpr VkPipelineBindPoint vk_bind_point =
+    ((layout < GPUPipeline::Layout::ComputeSingleTextureAndPushConstants) ? VK_PIPELINE_BIND_POINT_GRAPHICS :
+                                                                            VK_PIPELINE_BIND_POINT_COMPUTE);
+  const VkPipelineLayout vk_pipeline_layout = GetCurrentVkPipelineLayout();
   std::array<VkDescriptorSet, 3> ds;
   u32 first_ds = 0;
   u32 num_ds = 0;
@@ -3700,7 +3757,8 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   }
 
   if constexpr (layout == GPUPipeline::Layout::SingleTextureAndUBO ||
-                layout == GPUPipeline::Layout::SingleTextureAndPushConstants)
+                layout == GPUPipeline::Layout::SingleTextureAndPushConstants ||
+                layout == GPUPipeline::Layout::ComputeSingleTextureAndPushConstants)
   {
     VulkanTexture* const tex = m_current_textures[0] ? m_current_textures[0] : m_null_texture.get();
     DebugAssert(tex && m_current_samplers[0] != VK_NULL_HANDLE);
@@ -3727,7 +3785,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
       }
 
       const u32 set = (layout == GPUPipeline::Layout::MultiTextureAndUBO) ? 1 : 0;
-      dsub.PushUpdate(GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout, set);
+      dsub.PushUpdate(GetCurrentCommandBuffer(), vk_bind_point, vk_pipeline_layout, set);
       if (num_ds == 0)
         return true;
     }
@@ -3757,7 +3815,7 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   {
     if (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)
     {
-      VkDescriptorSet ids = AllocateDescriptorSet(m_rov_ds_layout);
+      VkDescriptorSet ids = AllocateDescriptorSet(m_image_ds_layout);
       if (ids == VK_NULL_HANDLE)
         return false;
 
@@ -3792,8 +3850,8 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
   }
 
   DebugAssert(num_ds > 0);
-  vkCmdBindDescriptorSets(GetCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, vk_pipeline_layout, first_ds,
-                          num_ds, ds.data(), static_cast<u32>(new_dynamic_offsets),
+  vkCmdBindDescriptorSets(GetCurrentCommandBuffer(), vk_bind_point, vk_pipeline_layout, first_ds, num_ds, ds.data(),
+                          static_cast<u32>(new_dynamic_offsets),
                           new_dynamic_offsets ? &m_uniform_buffer_position : nullptr);
 
   return true;
@@ -3817,6 +3875,9 @@ bool VulkanDevice::UpdateDescriptorSets(u32 dirty)
 
     case GPUPipeline::Layout::MultiTextureAndPushConstants:
       return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::MultiTextureAndPushConstants>(dirty);
+
+    case GPUPipeline::Layout::ComputeSingleTextureAndPushConstants:
+      return UpdateDescriptorSetsForLayout<GPUPipeline::Layout::ComputeSingleTextureAndPushConstants>(dirty);
 
     default:
       UnreachableCode();
@@ -3910,4 +3971,11 @@ void VulkanDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 b
 
       DefaultCaseIsUnreachable();
   }
+}
+
+void VulkanDevice::Dispatch(u32 thread_groups_x, u32 thread_groups_y, u32 thread_groups_z)
+{
+  PreDispatchCheck();
+  s_stats.num_draws++;
+  vkCmdDispatch(GetCurrentCommandBuffer(), thread_groups_x, thread_groups_y, thread_groups_z);
 }

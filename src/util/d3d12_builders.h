@@ -115,6 +115,8 @@ public:
   ComputePipelineBuilder();
   ~ComputePipelineBuilder() = default;
 
+  ALWAYS_INLINE const D3D12_COMPUTE_PIPELINE_STATE_DESC* GetDesc() const { return &m_desc; }
+
   void Clear();
 
   Microsoft::WRL::ComPtr<ID3D12PipelineState> Create(ID3D12Device* device, Error* error, bool clear);
