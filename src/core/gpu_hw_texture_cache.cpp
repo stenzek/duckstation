@@ -240,7 +240,8 @@ static bool ShouldTrackVRAMWrites();
 static bool IsDumpingVRAMWriteTextures();
 static void UpdateVRAMTrackingState();
 
-static bool CompilePipelines();
+static bool CompileReplacementPipelines();
+static bool CompileTextureScalingPipeline();
 static void DestroyPipelines();
 
 static const Source* ReturnSource(Source* source, const GSVector4i uv_rect, PaletteRecordFlags flags);
@@ -284,6 +285,7 @@ static void DecodeTexture4(const u16* page, const u16* palette, u32 width, u32 h
 static void DecodeTexture8(const u16* page, const u16* palette, u32 width, u32 height, u32* dest, u32 dest_stride);
 static void DecodeTexture16(const u16* page, u32 width, u32 height, u32* dest, u32 dest_stride);
 static void DecodeTexture(u8 page, GPUTexturePaletteReg palette, GPUTextureMode mode, GPUTexture* texture);
+static std::unique_ptr<GPUTexture> ScaleTexture(std::unique_ptr<GPUTexture> texture);
 
 static std::optional<TextureReplacementType> GetTextureReplacementTypeFromFileTitle(const std::string_view file_title);
 static bool HasValidReplacementExtension(const std::string_view path);
@@ -501,6 +503,20 @@ ALWAYS_INLINE static float RectDistance(const GSVector4i& lhs, const GSVector4i&
 }
 
 namespace {
+enum TextureScaler
+{
+  None,
+  XBR,
+};
+struct TextureScalerInfo
+{
+  u32 scale;
+  u32 compute_local_size;
+  const char* vertex_shader_path;
+  const char* fragment_shader_path;
+
+  ALWAYS_INLINE bool IsComputeShader() const { return (compute_local_size > 0); }
+};
 struct GPUTextureCacheState
 {
   Settings::TextureReplacementSettings::Configuration config;
@@ -509,6 +525,7 @@ struct GPUTextureCacheState
   VRAMWrite* last_vram_write = nullptr;
   bool track_vram_writes = false;
 
+  const TextureScalerInfo* texture_scaler;
   HashCache hash_cache;
 
   /// List of candidates for purging when the hash cache gets too large.
@@ -516,6 +533,8 @@ struct GPUTextureCacheState
 
   /// List of VRAM writes collected when saving state.
   std::vector<VRAMWrite*> temp_vram_write_list;
+
+  std::unique_ptr<GPUPipeline> texture_scaler_pipeline;
 
   std::unique_ptr<GPUTexture> replacement_texture_render_target;
   std::unique_ptr<GPUPipeline> replacement_draw_pipeline;                 // copies alpha as-is
@@ -540,6 +559,15 @@ struct GPUTextureCacheState
 
 ALIGN_TO_CACHE_LINE GPUTextureCacheState s_state;
 
+static constexpr const TextureScalerInfo s_texture_scalers[] = {
+  {2, 0, "shaders/system/texscale.vert", "shaders/system/texscale-hq2x.frag"},    // HQ2x
+  {3, 0, "shaders/system/texscale.vert", "shaders/system/texscale-hq3x.frag"},    // HQ3x
+  {4, 0, "shaders/system/texscale.vert", "shaders/system/texscale-hq4x.frag"},    // HQ4x
+  {2, 8, nullptr, "shaders/system/texscale-mmpx.comp"},                           // MMPX
+  {2, 8, "shaders/system/texscale.vert", "shaders/system/texscale-scale2x.comp"}, // Scale2x
+  {2, 0, "shaders/system/texscale.vert", "shaders/system/texscale-xbr.frag"},     // XBR
+};
+
 } // namespace GPUTextureCache
 
 bool GPUTextureCache::ShouldTrackVRAMWrites()
@@ -562,10 +590,17 @@ bool GPUTextureCache::IsDumpingVRAMWriteTextures()
 
 bool GPUTextureCache::Initialize()
 {
+  s_state.texture_scaler = (g_settings.gpu_texture_scaling == GPUTextureScaling::Disabled) ?
+                             nullptr :
+                             &s_texture_scalers[static_cast<size_t>(g_settings.gpu_texture_scaling) - 1];
+
   LoadLocalConfiguration(false, false);
   UpdateVRAMTrackingState();
-  if (!CompilePipelines())
+  if (!CompileReplacementPipelines())
     return false;
+
+  if (s_state.texture_scaler && !CompileTextureScalingPipeline()) [[unlikely]]
+    s_state.texture_scaler = nullptr;
 
   return true;
 }
@@ -582,10 +617,15 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const Settings& old
       Invalidate();
 
       DestroyPipelines();
-      if (!CompilePipelines()) [[unlikely]]
+      if (!CompileReplacementPipelines()) [[unlikely]]
         Panic("Failed to compile pipelines on TC settings change");
     }
   }
+
+  const TextureScalerInfo* old_scaler = s_state.texture_scaler;
+  s_state.texture_scaler = (!use_texture_cache || g_settings.gpu_texture_scaling == GPUTextureScaling::Disabled) ?
+                             nullptr :
+                             &s_texture_scalers[static_cast<size_t>(g_settings.gpu_texture_scaling) - 1];
 
   // Reload textures if configuration changes.
   const bool old_replacement_scale_linear_filter = s_state.config.replacement_scale_linear_filter;
@@ -599,12 +639,20 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const Settings& old
     {
       if (s_state.config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
       {
-        if (!CompilePipelines()) [[unlikely]]
+        if (!CompileReplacementPipelines()) [[unlikely]]
           Panic("Failed to compile pipelines on TC replacement settings change");
       }
     }
 
     ReloadTextureReplacements(false);
+  }
+
+  if (use_texture_cache && s_state.texture_scaler != old_scaler)
+  {
+    if (!CompileTextureScalingPipeline()) [[unlikely]]
+      s_state.texture_scaler = nullptr;
+
+    Invalidate();
   }
 }
 
@@ -756,7 +804,7 @@ void GPUTextureCache::Shutdown()
   s_state.game_id = {};
 }
 
-bool GPUTextureCache::CompilePipelines()
+bool GPUTextureCache::CompileReplacementPipelines()
 {
   if (!g_settings.texture_replacements.enable_texture_replacements)
     return true;
@@ -807,6 +855,7 @@ bool GPUTextureCache::CompilePipelines()
 
 void GPUTextureCache::DestroyPipelines()
 {
+  s_state.texture_scaler_pipeline.reset();
   s_state.replacement_draw_pipeline.reset();
   s_state.replacement_semitransparent_draw_pipeline.reset();
 }
@@ -2057,6 +2106,8 @@ GPUTextureCache::HashCacheEntry* GPUTextureCache::LookupHashCache(SourceKey key,
   }
 
   DecodeTexture(key.page, key.palette, key.mode, entry.texture.get());
+  if (s_state.texture_scaler)
+    entry.texture = ScaleTexture(std::move(entry.texture));
 
   if (g_settings.texture_replacements.enable_texture_replacements)
     ApplyTextureReplacements(key, tex_hash, pal_hash, &entry);
@@ -3340,4 +3391,197 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   entry->texture = std::move(replacement_tex);
 
   g_gpu->RestoreDeviceContext();
+}
+
+bool GPUTextureCache::CompileTextureScalingPipeline()
+{
+  s_state.texture_scaler_pipeline.reset();
+
+  const TextureScalerInfo* const info = s_state.texture_scaler;
+  if (!info)
+    return true;
+
+  static constexpr auto add_defines = [](std::string& source) {
+    std::string::size_type pos = source.find("#version ");
+    if (pos == std::string::npos)
+      return;
+
+    pos = source.find('\n', pos);
+    if (pos == std::string::npos)
+      return;
+
+    const RenderAPI render_api = g_gpu_device->GetRenderAPI();
+    const bool vulkan = (render_api == RenderAPI::Vulkan);
+    const std::string macros =
+      fmt::format("#define API_D3D11 {}\n"
+                  "#define API_D3D12 {}\n"
+                  "#define API_OPENGL {}\n"
+                  "#define API_OPENGL_ES {}\n"
+                  "#define API_VULKAN {}\n"
+                  "#define API_METAL {}\n"
+                  "#define UNIFORM_BLOCK_LAYOUT layout(push_constant)\n"
+                  "#define TEXTURE_LAYOUT(index) layout(set = {}, binding = index)\n"
+                  "#define IMAGE_LAYOUT(index, format) layout(set = {}, binding = index, format)\n",
+                  BoolToUInt32(render_api == RenderAPI::D3D11), BoolToUInt32(render_api == RenderAPI::D3D12),
+                  BoolToUInt32(render_api == RenderAPI::OpenGL), BoolToUInt32(render_api == RenderAPI::OpenGLES),
+                  BoolToUInt32(render_api == RenderAPI::Vulkan), BoolToUInt32(render_api == RenderAPI::Metal),
+                  vulkan ? 0 : 1, vulkan ? 1 : 2);
+
+    source.insert(pos + 1, macros);
+  };
+
+  Error error;
+  std::optional<std::string> source;
+  if (!info->IsComputeShader())
+  {
+    source = Host::ReadResourceFileToString(info->vertex_shader_path, true, &error);
+    if (!source.has_value())
+    {
+      ERROR_LOG("Failed to read scaling vertex shader '{}': {}", info->vertex_shader_path, error.GetDescription());
+      return false;
+    }
+
+    add_defines(source.value());
+
+    std::unique_ptr<GPUShader> vertex_shader =
+      g_gpu_device->CreateShader(GPUShaderStage::Vertex, GPUShaderLanguage::GLSLVK, source.value(), &error);
+    if (!vertex_shader)
+    {
+      ERROR_LOG("Failed to compile scaling vertex shader '{}': {}", info->vertex_shader_path, error.GetDescription());
+      return false;
+    }
+
+    source = Host::ReadResourceFileToString(info->fragment_shader_path, true, &error);
+    if (!source.has_value())
+    {
+      ERROR_LOG("Failed to read scaling fragment shader '{}': {}", info->fragment_shader_path, error.GetDescription());
+      return false;
+    }
+
+    add_defines(source.value());
+
+    std::unique_ptr<GPUShader> fragment_shader =
+      g_gpu_device->CreateShader(GPUShaderStage::Fragment, GPUShaderLanguage::GLSLVK, source.value(), &error);
+    if (!fragment_shader)
+    {
+      ERROR_LOG("Failed to compile scaling fragment shader '{}': {}", info->fragment_shader_path,
+                error.GetDescription());
+      return false;
+    }
+
+    GPUPipeline::GraphicsConfig config;
+    config.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+    config.primitive = GPUPipeline::Primitive::Triangles;
+    config.input_layout = {};
+    config.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+    config.depth = GPUPipeline::DepthState::GetNoTestsState();
+    config.blend = GPUPipeline::BlendState::GetNoBlendingState();
+    config.vertex_shader = vertex_shader.get();
+    config.fragment_shader = fragment_shader.get();
+    config.geometry_shader = nullptr;
+    config.SetTargetFormats(GPUTexture::Format::RGBA8);
+    config.samples = 1;
+    config.per_sample_shading = false;
+    config.render_pass_flags = GPUPipeline::NoRenderPassFlags;
+
+    s_state.texture_scaler_pipeline = g_gpu_device->CreatePipeline(config, &error);
+    if (!s_state.texture_scaler_pipeline)
+    {
+      ERROR_LOG("Failed to compile scaling pipeline {}", error.GetDescription());
+      return false;
+    }
+  }
+  else
+  {
+    source = Host::ReadResourceFileToString(info->fragment_shader_path, true, &error);
+    if (!source.has_value())
+    {
+      ERROR_LOG("Failed to read scaling compute shader '{}': {}", info->fragment_shader_path, error.GetDescription());
+      return false;
+    }
+
+    add_defines(source.value());
+
+    std::unique_ptr<GPUShader> compute_shader =
+      g_gpu_device->CreateShader(GPUShaderStage::Compute, GPUShaderLanguage::GLSLVK, source.value(), &error);
+    if (!compute_shader)
+    {
+      ERROR_LOG("Failed to compile scaling compute shader '{}': {}", info->fragment_shader_path,
+                error.GetDescription());
+      return false;
+    }
+
+    GPUPipeline::ComputeConfig config;
+    config.layout = GPUPipeline::Layout::ComputeSingleTextureAndPushConstants;
+    config.compute_shader = compute_shader.get();
+
+    s_state.texture_scaler_pipeline = g_gpu_device->CreatePipeline(config, &error);
+    if (!s_state.texture_scaler_pipeline)
+    {
+      ERROR_LOG("Failed to compile scaling pipeline {}", error.GetDescription());
+      return false;
+    }
+  }
+
+  return true;
+}
+
+std::unique_ptr<GPUTexture> GPUTextureCache::ScaleTexture(std::unique_ptr<GPUTexture> texture)
+{
+  const TextureScalerInfo* const info = s_state.texture_scaler;
+
+  // TODO: rounds
+  const u32 new_width = texture->GetWidth() * info->scale;
+  const u32 new_height = texture->GetHeight() * info->scale;
+  const GPUTexture::Type rt_type =
+    info->IsComputeShader() ? GPUTexture::Type::RWTexture : GPUTexture::Type::RenderTarget;
+  auto rt = g_gpu_device->FetchAutoRecycleTexture(new_width, new_height, 1, 1, 1, rt_type, texture->GetFormat());
+  if (!rt) [[unlikely]]
+  {
+    WARNING_LOG("Failed to create {}x{} RT for scaling", new_width, new_height);
+    return texture;
+  }
+
+  g_gpu_device->SetPipeline(s_state.texture_scaler_pipeline.get());
+  g_gpu_device->SetRenderTarget(rt.get(), nullptr,
+                                info->IsComputeShader() ? GPUPipeline::BindRenderTargetsAsImages :
+                                                          GPUPipeline::NoRenderPassFlags);
+  g_gpu_device->SetTextureSampler(0, texture.get(), g_gpu_device->GetNearestSampler());
+  if (!info->IsComputeShader())
+  {
+    g_gpu_device->InvalidateRenderTarget(rt.get());
+    g_gpu_device->SetViewportAndScissor(rt->GetRect());
+    g_gpu_device->Draw(3, 0);
+  }
+  else
+  {
+    struct ComputeUBO
+    {
+      u32 src_size[2];
+      u32 dst_size[2];
+    };
+
+    const ComputeUBO uniforms = {.src_size = {texture->GetWidth(), texture->GetHeight()},
+                                 .dst_size = {new_width, new_height}};
+    const auto& [dispatch_x, dispatch_y, dispatch_z] = GPUDevice::GetDispatchCount(
+      texture->GetWidth(), texture->GetHeight(), 1, info->compute_local_size, info->compute_local_size, 1);
+    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
+    g_gpu_device->Dispatch(dispatch_x, dispatch_y, dispatch_z);
+  }
+
+  std::unique_ptr<GPUTexture> new_texture =
+    g_gpu_device->CreateTexture(new_width, new_height, 1, 1, 1, GPUTexture::Type::Texture, rt->GetFormat());
+  if (!new_texture)
+  {
+    WARNING_LOG("Failed to create {}x{} texture for scaling", new_width, new_height);
+    return texture;
+  }
+
+  rt->MakeReadyForSampling();
+  g_gpu_device->CopyTextureRegion(new_texture.get(), 0, 0, 0, 0, rt.get(), 0, 0, 0, 0, new_width, new_height);
+  g_gpu_device->RecycleTexture(std::move(texture));
+
+  g_gpu->RestoreDeviceContext();
+
+  return new_texture;
 }

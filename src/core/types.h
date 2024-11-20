@@ -138,6 +138,18 @@ enum class GPUDumpCompressionMode : u8
   MaxCount
 };
 
+enum class GPUTextureScaling : u8
+{
+  Disabled,
+  HQ2X,
+  HQ3X,
+  HQ4X,
+  MMPX,
+  Scale2X,
+  XBR,
+  MaxCount
+};
+
 enum class DisplayCropMode : u8
 {
   None,
@@ -298,6 +310,6 @@ enum class ForceVideoTimingMode : u8
   Disabled,
   NTSC,
   PAL,
-  
+
   Count,
 };

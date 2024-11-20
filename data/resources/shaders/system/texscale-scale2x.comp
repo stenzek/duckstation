@@ -1,0 +1,55 @@
+#version 460 core
+
+// EPX.glc 
+// Copyright 2020 Morgan McGuire & Mara Gagiu, 
+// provided under the Open Source MIT license https://opensource.org/licenses/MIT
+
+// Implementation of Eric Johnston and Andrea Mazzoleni's
+// EPX aka Scale2X algorithm based on https://www.scale2x.it/algorithm
+
+#define ABGR8 uint
+
+UNIFORM_BLOCK_LAYOUT uniform UBOBlock {
+  ivec2 src_size;
+  ivec2 dst_size;
+};
+
+TEXTURE_LAYOUT(0) uniform sampler2D samp0;
+IMAGE_LAYOUT(0, rgba8) uniform restrict writeonly image2D dst_image;
+
+ABGR8 src(int x, int y) {
+  return packUnorm4x8(texelFetch(samp0, ivec2(x, y), 0));
+}
+
+void dst(int x, int y, ABGR8 value) {
+  imageStore(dst_image, ivec2(x, y), unpackUnorm4x8(value));
+}
+
+layout(local_size_x = 8, local_size_y = 8) in;
+
+void main () { 
+    // EPX first falls back to Nearest Neighbour
+    int srcX = int(gl_GlobalInvocationID.x);
+    int srcY = int(gl_GlobalInvocationID.y);
+    if (srcX >= src_size.x || srcY >= src_size.y)
+      return;
+
+    ABGR8 E = src(srcX, srcY);
+    ABGR8 J = E, K = E, L = E, M = E;
+
+    ABGR8 B = src(srcX + 0, srcY - 1);
+    ABGR8 D = src(srcX - 1, srcY + 0);
+    ABGR8 F = src(srcX + 1, srcY + 0);
+    ABGR8 H = src(srcX + 0, srcY + 1);
+
+    if (D == B && B != F && D != H) J = D;
+    if (B == F && D != F && H != F) K = F;
+    if (H == D && F != D && B != D) L = D;
+    if (H == F && D != H && B != F) M = F;
+
+    // Write four pixels at once
+    dst(srcX * 2, srcY * 2, J);
+    dst(srcX * 2 + 1, srcY * 2, K);
+    dst(srcX * 2, srcY * 2 + 1, L);
+    dst(srcX * 2 + 1, srcY * 2 + 1, M);
+}

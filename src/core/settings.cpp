@@ -217,6 +217,10 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     ParseTextureFilterName(
       si.GetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_texture_filter)).c_str())
       .value_or(gpu_texture_filter);
+  gpu_texture_scaling =
+    ParseGPUTextureScalingName(
+      si.GetStringValue("GPU", "TextureScaling", GetGPUTextureScalingName(gpu_texture_scaling)).c_str())
+      .value_or(gpu_texture_scaling);
   gpu_line_detect_mode =
     ParseLineDetectModeName(
       si.GetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(DEFAULT_GPU_LINE_DETECT_MODE)).c_str())
@@ -542,6 +546,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetStringValue(
     "GPU", "SpriteTextureFilter",
     (gpu_sprite_texture_filter != gpu_texture_filter) ? GetTextureFilterName(gpu_sprite_texture_filter) : "");
+  si.SetStringValue("GPU", "TextureScaling", GetGPUTextureScalingName(gpu_texture_scaling));
   si.SetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(gpu_line_detect_mode));
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
@@ -991,6 +996,10 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
       g_settings.cpu_recompiler_block_linking = false;
     }
   }
+
+  // scaling depends on TC
+  g_settings.gpu_texture_scaling =
+    g_settings.gpu_texture_cache ? g_settings.gpu_texture_scaling : GPUTextureScaling::Disabled;
 
   // if challenge mode is enabled, disable things like rewind since they use save states
   if (Achievements::IsHardcoreModeActive())
@@ -1578,6 +1587,46 @@ const char* Settings::GetGPUDumpCompressionModeDisplayName(GPUDumpCompressionMod
 {
   return Host::TranslateToCString("Settings", s_gpu_dump_compression_mode_display_names[static_cast<size_t>(mode)],
                                   "GPUDumpCompressionMode");
+}
+
+static constexpr const std::array s_texture_scaling_names = {
+  "Disabled", "HQ2x", "HQ3x", "HQ4x", "MMPX", "Scale2x", "xBR",
+};
+static constexpr const std::array s_texture_scaling_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "GPUTextureScaling"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "HQ2x", "GPUTextureScaling"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "HQ3x", "GPUTextureScaling"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "HQ4x", "GPUTextureScaling"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "MMPX", "GPUTextureScaling"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Scale2x", "GPUTextureScaling"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "xBR", "GPUTextureScaling"),
+};
+static_assert(s_texture_scaling_names.size() == static_cast<size_t>(GPUTextureScaling::MaxCount));
+static_assert(s_texture_scaling_display_names.size() == static_cast<size_t>(GPUTextureScaling::MaxCount));
+
+std::optional<GPUTextureScaling> Settings::ParseGPUTextureScalingName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_texture_scaling_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<GPUTextureScaling>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetGPUTextureScalingName(GPUTextureScaling scaler)
+{
+  return s_texture_scaling_names[static_cast<size_t>(scaler)];
+}
+
+const char* Settings::GetGPUTextureScalingDisplayName(GPUTextureScaling scaler)
+{
+  return Host::TranslateToCString("Settings", s_texture_scaling_display_names[static_cast<size_t>(scaler)],
+                                  "GPUTextureScaling");
 }
 
 static constexpr const std::array s_display_deinterlacing_mode_names = {

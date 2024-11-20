@@ -372,7 +372,9 @@ private:
 
   /// Applies any changed state.
   static PipelineLayoutType GetPipelineLayoutType(GPUPipeline::RenderPassFlag flags);
+  bool IsCurrentPipelineCompute() const;
   VkPipelineLayout GetCurrentVkPipelineLayout() const;
+  VkPipelineBindPoint GetCurrentVkPipelineBindPoint() const;
   void SetInitialPipelineState();
   void PreDrawCheck();
   void PreDispatchCheck();

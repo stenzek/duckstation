@@ -2736,7 +2736,8 @@ void VulkanDevice::PushUniformBuffer(const void* data, u32 data_size)
 {
   DebugAssert(data_size < UNIFORM_PUSH_CONSTANTS_SIZE);
   s_stats.buffer_streamed += data_size;
-  vkCmdPushConstants(GetCurrentCommandBuffer(), GetCurrentVkPipelineLayout(), UNIFORM_PUSH_CONSTANTS_STAGES, 0,
+  vkCmdPushConstants(GetCurrentCommandBuffer(), GetCurrentVkPipelineLayout(),
+                     IsCurrentPipelineCompute() ? VK_SHADER_STAGE_COMPUTE_BIT : UNIFORM_PUSH_CONSTANTS_STAGES, 0,
                      data_size, data);
 }
 
@@ -3472,13 +3473,13 @@ void VulkanDevice::SetPipeline(GPUPipeline* pipeline)
 
   m_current_pipeline = static_cast<VulkanPipeline*>(pipeline);
 
-  vkCmdBindPipeline(m_current_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, m_current_pipeline->GetPipeline());
-
   if (m_current_pipeline_layout != m_current_pipeline->GetLayout())
   {
     m_current_pipeline_layout = m_current_pipeline->GetLayout();
     m_dirty_flags |= DIRTY_FLAG_PIPELINE_LAYOUT;
   }
+
+  vkCmdBindPipeline(m_current_command_buffer, GetCurrentVkPipelineBindPoint(), m_current_pipeline->GetPipeline());
 }
 
 void VulkanDevice::UnbindPipeline(VulkanPipeline* pl)
@@ -3516,10 +3517,22 @@ VulkanDevice::PipelineLayoutType VulkanDevice::GetPipelineLayoutType(GPUPipeline
                                                        PipelineLayoutType::Normal);
 }
 
+bool VulkanDevice::IsCurrentPipelineCompute() const
+{
+  return (m_current_pipeline_layout >= GPUPipeline::Layout::ComputeSingleTextureAndPushConstants);
+}
+
 VkPipelineLayout VulkanDevice::GetCurrentVkPipelineLayout() const
 {
-  return m_pipeline_layouts[static_cast<size_t>(GetPipelineLayoutType(m_current_render_pass_flags))]
+  return m_pipeline_layouts[IsCurrentPipelineCompute() ?
+                              0 :
+                              static_cast<size_t>(GetPipelineLayoutType(m_current_render_pass_flags))]
                            [static_cast<size_t>(m_current_pipeline_layout)];
+}
+
+VkPipelineBindPoint VulkanDevice::GetCurrentVkPipelineBindPoint() const
+{
+  return IsCurrentPipelineCompute() ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS;
 }
 
 void VulkanDevice::SetInitialPipelineState()
@@ -3533,7 +3546,7 @@ void VulkanDevice::SetInitialPipelineState()
   vkCmdBindIndexBuffer(cmdbuf, m_index_buffer.GetBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
   m_current_pipeline_layout = m_current_pipeline->GetLayout();
-  vkCmdBindPipeline(cmdbuf, VK_PIPELINE_BIND_POINT_GRAPHICS, m_current_pipeline->GetPipeline());
+  vkCmdBindPipeline(cmdbuf, GetCurrentVkPipelineBindPoint(), m_current_pipeline->GetPipeline());
 
   const VkViewport vp = {static_cast<float>(m_current_viewport.left),
                          static_cast<float>(m_current_viewport.top),
@@ -3733,9 +3746,9 @@ bool VulkanDevice::UpdateDescriptorSetsForLayout(u32 dirty)
 {
   [[maybe_unused]] bool new_dynamic_offsets = false;
 
+  constexpr bool is_compute = (layout >= GPUPipeline::Layout::ComputeSingleTextureAndPushConstants);
   constexpr VkPipelineBindPoint vk_bind_point =
-    ((layout < GPUPipeline::Layout::ComputeSingleTextureAndPushConstants) ? VK_PIPELINE_BIND_POINT_GRAPHICS :
-                                                                            VK_PIPELINE_BIND_POINT_COMPUTE);
+    (is_compute ? VK_PIPELINE_BIND_POINT_COMPUTE : VK_PIPELINE_BIND_POINT_GRAPHICS);
   const VkPipelineLayout vk_pipeline_layout = GetCurrentVkPipelineLayout();
   std::array<VkDescriptorSet, 3> ds;
   u32 first_ds = 0;

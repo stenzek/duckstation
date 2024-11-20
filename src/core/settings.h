@@ -127,6 +127,7 @@ struct Settings
   ForceVideoTimingMode gpu_force_video_timing = DEFAULT_FORCE_VIDEO_TIMING_MODE;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPUTextureFilter gpu_sprite_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
+  GPUTextureScaling gpu_texture_scaling = GPUTextureScaling::Disabled;
   GPULineDetectMode gpu_line_detect_mode = DEFAULT_GPU_LINE_DETECT_MODE;
   GPUDownsampleMode gpu_downsample_mode = DEFAULT_GPU_DOWNSAMPLE_MODE;
   u8 gpu_downsample_scale = 1;
@@ -418,6 +419,10 @@ struct Settings
   static std::optional<GPUDumpCompressionMode> ParseGPUDumpCompressionMode(const char* str);
   static const char* GetGPUDumpCompressionModeName(GPUDumpCompressionMode mode);
   static const char* GetGPUDumpCompressionModeDisplayName(GPUDumpCompressionMode mode);
+
+  static std::optional<GPUTextureScaling> ParseGPUTextureScalingName(const char* str);
+  static const char* GetGPUTextureScalingName(GPUTextureScaling scaler);
+  static const char* GetGPUTextureScalingDisplayName(GPUTextureScaling scaler);
 
   static std::optional<DisplayDeinterlacingMode> ParseDisplayDeinterlacingMode(const char* str);
   static const char* GetDisplayDeinterlacingModeName(DisplayDeinterlacingMode mode);

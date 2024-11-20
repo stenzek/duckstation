@@ -245,6 +245,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTextureCache, "GPU", "EnableTextureCache", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useOldMDECRoutines, "Hacks", "UseOldMDECRoutines", false);
+  SettingWidgetBinder::BindWidgetToEnumSetting(
+    sif, m_ui.textureScaling, "GPU", "TextureScaling", &Settings::ParseGPUTextureScalingName,
+    &Settings::GetGPUTextureScalingName, &Settings::GetGPUTextureScalingDisplayName, GPUTextureScaling::Disabled,
+    GPUTextureScaling::MaxCount);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTextureReplacements, "TextureReplacements",
                                                "EnableTextureReplacements", false);
@@ -582,6 +586,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.useOldMDECRoutines, tr("Use Old MDEC Routines"), tr("Unchecked"),
                              tr("Enables the older, less accurate MDEC decoding routines. May be required for old "
                                 "replacement backgrounds to match/load."));
+  dialog->registerWidgetHelp(m_ui.textureScaling, tr("Texture Scaling"), tr("Disabled"),
+                             tr("Applies a texture scaling filter to textures as a pre-processing step."));
 
   dialog->registerWidgetHelp(m_ui.enableTextureReplacements, tr("Enable Texture Replacements"), tr("Unchecked"),
                              tr("Enables loading of replacement textures. Not compatible with all games."));
@@ -1146,6 +1152,7 @@ void GraphicsSettingsWidget::onMediaCaptureAudioEnabledChanged()
 void GraphicsSettingsWidget::onEnableTextureCacheChanged()
 {
   const bool tc_enabled = m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false);
+  m_ui.textureScaling->setEnabled(tc_enabled);
   m_ui.enableTextureReplacements->setEnabled(tc_enabled);
   m_ui.enableTextureDumping->setEnabled(tc_enabled);
   onEnableTextureDumpingChanged();
