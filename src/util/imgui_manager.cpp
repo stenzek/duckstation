@@ -75,6 +75,10 @@ static bool AddImGuiFonts(bool fullscreen_fonts);
 static ImFont* AddTextFont(float size, bool full_glyph_range);
 static ImFont* AddFixedFont(float size);
 static bool AddIconFonts(float size);
+static void SetCommonIOOptions(ImGuiIO& io);
+static void SetImKeyState(ImGuiIO& io, u32 key, bool pressed);
+static const char* GetClipboardTextImpl(void* userdata);
+static void SetClipboardTextImpl(void* userdata, const char* text);
 static void AddOSDMessage(std::string key, std::string message, float duration, bool is_warning);
 static void RemoveKeyedOSDMessage(std::string key, bool is_warning);
 static void ClearOSDMessages(bool clear_warnings);
@@ -246,9 +250,6 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   ImGuiIO& io = s_imgui_context->IO;
   io.IniFilename = nullptr;
   io.BackendFlags |= ImGuiBackendFlags_HasGamepad | ImGuiBackendFlags_RendererHasVtxOffset;
-  io.BackendUsingLegacyKeyArrays = 0;
-  io.BackendUsingLegacyNavInputArray = 0;
-  io.KeyRepeatDelay = 0.5f;
 #ifndef __ANDROID__
   // Android has no keyboard, nor are we using ImGui for any actual user-interactable windows.
   io.ConfigFlags |=
@@ -256,6 +257,7 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
 #else
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard | ImGuiConfigFlags_NavEnableGamepad;
 #endif
+  SetCommonIOOptions(io);
 
   s_window_width =
     g_gpu_device->HasMainSwapChain() ? static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) : 0.0f;
@@ -456,11 +458,11 @@ void ImGuiManager::SetKeyMap()
                                            {ImGuiKey_Space, "Space", nullptr},
                                            {ImGuiKey_Enter, "Return", nullptr},
                                            {ImGuiKey_Escape, "Escape", nullptr},
-                                           {ImGuiKey_LeftCtrl, "LeftCtrl", "Ctrl"},
+                                           {ImGuiKey_LeftCtrl, "LeftControl", "Control"},
                                            {ImGuiKey_LeftShift, "LeftShift", "Shift"},
                                            {ImGuiKey_LeftAlt, "LeftAlt", "Alt"},
                                            {ImGuiKey_LeftSuper, "LeftSuper", "Super"},
-                                           {ImGuiKey_RightCtrl, "RightCtrl", nullptr},
+                                           {ImGuiKey_RightCtrl, "RightControl", nullptr},
                                            {ImGuiKey_RightShift, "RightShift", nullptr},
                                            {ImGuiKey_RightAlt, "RightAlt", nullptr},
                                            {ImGuiKey_RightSuper, "RightSuper", nullptr},
@@ -1091,6 +1093,15 @@ void ImGuiManager::UpdateMousePosition(float x, float y)
   std::atomic_thread_fence(std::memory_order_release);
 }
 
+void ImGuiManager::SetCommonIOOptions(ImGuiIO& io)
+{
+  io.BackendUsingLegacyKeyArrays = 0;
+  io.BackendUsingLegacyNavInputArray = 0;
+  io.KeyRepeatDelay = 0.5f;
+  io.GetClipboardTextFn = GetClipboardTextImpl;
+  io.SetClipboardTextFn = SetClipboardTextImpl;
+}
+
 bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
 {
   if (!s_imgui_context || key.data >= std::size(ImGui::GetIO().MouseDown))
@@ -1116,14 +1127,31 @@ bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 
 bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
 {
-  decltype(s_imgui_key_map)::iterator iter;
-  if (!s_imgui_context || (iter = s_imgui_key_map.find(key.data)) == s_imgui_key_map.end())
+  if (!s_imgui_context)
     return false;
 
   // still update state anyway
-  s_imgui_context->IO.AddKeyEvent(iter->second, value != 0.0);
+  SetImKeyState(s_imgui_context->IO, key.data, (value != 0.0f));
 
   return s_imgui_wants_keyboard.load(std::memory_order_acquire);
+}
+
+void ImGuiManager::SetImKeyState(ImGuiIO& io, u32 key, bool pressed)
+{
+  const auto iter = s_imgui_key_map.find(key);
+  if (iter == s_imgui_key_map.end())
+    return;
+
+  const ImGuiKey imkey = iter->second;
+  s_imgui_context->IO.AddKeyEvent(imkey, pressed);
+
+  // modifier keys need to be handled separately
+  if ((imkey >= ImGuiKey_LeftCtrl && imkey <= ImGuiKey_LeftSuper) ||
+      (imkey >= ImGuiKey_RightCtrl && imkey <= ImGuiKey_RightSuper))
+  {
+    const u32 idx = imkey - ((imkey >= ImGuiKey_RightCtrl) ? ImGuiKey_RightCtrl : ImGuiKey_LeftCtrl);
+    s_imgui_context->IO.AddKeyEvent(static_cast<ImGuiKey>(static_cast<u32>(ImGuiMod_Ctrl) << idx), pressed);
+  }
 }
 
 bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value)
@@ -1165,6 +1193,28 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
 
   s_imgui_context->IO.AddKeyAnalogEvent(key_map[static_cast<u32>(key)], (value > 0.0f), value);
   return s_imgui_wants_keyboard.load(std::memory_order_acquire);
+}
+
+const char* ImGuiManager::GetClipboardTextImpl(void* userdata)
+{
+  const std::string text = Host::GetClipboardText();
+  if (text.empty() || text.length() >= std::numeric_limits<int>::max())
+    return nullptr;
+
+  const size_t length = text.length();
+  GImGui->ClipboardHandlerData.resize(static_cast<int>(length + 1));
+  std::memcpy(GImGui->ClipboardHandlerData.Data, text.data(), length);
+  GImGui->ClipboardHandlerData.Data[length] = 0;
+  return GImGui->ClipboardHandlerData.Data;
+}
+
+void ImGuiManager::SetClipboardTextImpl(void* userdata, const char* text)
+{
+  const size_t length = std::strlen(text);
+  if (length == 0)
+    return;
+
+  Host::CopyTextToClipboard(std::string_view(text, length));
 }
 
 void ImGuiManager::CreateSoftwareCursorTextures()
@@ -1341,10 +1391,8 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
     ImVec2(static_cast<float>(state->swap_chain->GetWidth()), static_cast<float>(state->swap_chain->GetHeight()));
   state->imgui_context->IO.IniFilename = nullptr;
   state->imgui_context->IO.BackendFlags |= ImGuiBackendFlags_HasGamepad;
-  state->imgui_context->IO.BackendUsingLegacyKeyArrays = 0;
-  state->imgui_context->IO.BackendUsingLegacyNavInputArray = 0;
-  state->imgui_context->IO.KeyRepeatDelay = 0.5f;
   state->imgui_context->IO.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+  SetCommonIOOptions(state->imgui_context->IO);
 
   SetStyle(state->imgui_context->Style, state->swap_chain->GetScale());
   state->imgui_context->Style.WindowBorderSize = 0.0f;
@@ -1472,9 +1520,7 @@ void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderW
     case Host::AuxiliaryRenderWindowEvent::KeyPressed:
     case Host::AuxiliaryRenderWindowEvent::KeyReleased:
     {
-      const auto iter = s_imgui_key_map.find(param1.uint_param);
-      if (iter != s_imgui_key_map.end())
-        io.AddKeyEvent(iter->second, (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
+      SetImKeyState(io, param1.uint_param, (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
     }
     break;
 

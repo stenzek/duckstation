@@ -1909,6 +1909,18 @@ void Host::OpenURL(std::string_view url)
   QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() { QtUtils::OpenURL(g_main_window, QUrl(url)); });
 }
 
+std::string Host::GetClipboardText()
+{
+  // Hope this doesn't deadlock...
+  std::string ret;
+  QtHost::RunOnUIThread([&ret]() {
+    QClipboard* clipboard = QGuiApplication::clipboard();
+    if (clipboard)
+      ret = clipboard->text().toStdString();
+  }, true);
+  return ret;
+}
+
 bool Host::CopyTextToClipboard(std::string_view text)
 {
   QtHost::RunOnUIThread([text = QtUtils::StringViewToQString(text)]() {

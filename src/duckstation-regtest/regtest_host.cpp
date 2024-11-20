@@ -380,6 +380,11 @@ void Host::OpenURL(std::string_view url)
   //
 }
 
+std::string Host::GetClipboardText()
+{
+  return std::string();
+}
+
 bool Host::CopyTextToClipboard(std::string_view text)
 {
   return false;

@@ -50,7 +50,10 @@ std::string GetHTTPUserAgent();
 /// Opens a URL, using the default application.
 void OpenURL(std::string_view url);
 
-/// Copies the provided text to the host's clipboard, if present.
+/// Returns the current contents of the clipboard as UTF-8 text, if any.
+std::string GetClipboardText();
+
+/// Copies the provided UTF-8 text to the host's clipboard, if present.
 bool CopyTextToClipboard(std::string_view text);
 
 /// Returns a localized version of the specified string within the specified context.
