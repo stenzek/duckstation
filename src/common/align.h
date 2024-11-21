@@ -58,14 +58,17 @@ constexpr T PreviousPow2(T value)
   value |= (value >> 1);
   value |= (value >> 2);
   value |= (value >> 4);
-  if constexpr (sizeof(T) >= 16)
+  if constexpr (sizeof(T) >= 2)
     value |= (value >> 8);
-  if constexpr (sizeof(T) >= 32)
+  if constexpr (sizeof(T) >= 4)
     value |= (value >> 16);
-  if constexpr (sizeof(T) >= 64)
+  if constexpr (sizeof(T) >= 8)
     value |= (value >> 32);
-  return value - (value >> 1);
+
+  return (value >> 1) + 1;
 }
+
+/// NOTE: Undefined for values greater than (1 << BITS-1), i.e. 0x80000000 for 32-bit.
 template<typename T>
 constexpr T NextPow2(T value)
 {
@@ -77,11 +80,11 @@ constexpr T NextPow2(T value)
   value |= (value >> 1);
   value |= (value >> 2);
   value |= (value >> 4);
-  if constexpr (sizeof(T) >= 16)
+  if constexpr (sizeof(T) >= 2)
     value |= (value >> 8);
-  if constexpr (sizeof(T) >= 32)
+  if constexpr (sizeof(T) >= 4)
     value |= (value >> 16);
-  if constexpr (sizeof(T) >= 64)
+  if constexpr (sizeof(T) >= 8)
     value |= (value >> 32);
   value++;
   return value;
