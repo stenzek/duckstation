@@ -11,7 +11,7 @@
 
 #include "vixl/aarch64/assembler-aarch64.h"
 
-namespace CPU::Recompiler {
+namespace CPU {
 
 class ARM64Recompiler final : public Recompiler
 {
@@ -166,6 +166,6 @@ private:
 #endif
 };
 
-} // namespace CPU::Recompiler
+} // namespace CPU
 
 #endif // CPU_ARCH_ARM64

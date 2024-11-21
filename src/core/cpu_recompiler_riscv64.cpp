@@ -5,7 +5,6 @@
 #include "cpu_code_cache_private.h"
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
-#include "cpu_recompiler_thunks.h"
 #include "gte.h"
 #include "settings.h"
 #include "timing_event.h"
@@ -33,42 +32,53 @@ extern "C" {
 
 static constexpr u32 BLOCK_LINK_SIZE = 8; // auipc+jr
 
-namespace CPU::Recompiler {
+#define RRET biscuit::a0
+#define RARG1 biscuit::a0
+#define RARG2 biscuit::a1
+#define RARG3 biscuit::a2
+#define RSCRATCH biscuit::t6
+#define RSTATE biscuit::s10
+#define RMEMBASE biscuit::s11
+
+static bool rvIsCallerSavedRegister(u32 id);
+static bool rvIsValidSExtITypeImm(u32 imm);
+static std::pair<s32, s32> rvGetAddressImmediates(const void* cur, const void* target);
+static void rvMoveAddressToReg(biscuit::Assembler* armAsm, const biscuit::GPR& reg, const void* addr);
+static void rvEmitMov(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, u32 imm);
+static void rvEmitMov64(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& scratch, u64 imm);
+static u32 rvEmitJmp(biscuit::Assembler* rvAsm, const void* ptr, const biscuit::GPR& link_reg = biscuit::zero);
+static u32 rvEmitCall(biscuit::Assembler* rvAsm, const void* ptr);
+static void rvEmitFarLoad(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr,
+                          bool sign_extend_word = false);
+static void rvEmitFarStore(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr,
+                           const biscuit::GPR& tempreg = RSCRATCH);
+static void rvEmitSExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
+static void rvEmitUExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
+static void rvEmitSExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
+static void rvEmitUExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs);  // -> word
+static void rvEmitDSExtW(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs); // -> doubleword
+static void rvEmitDUExtW(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs); // -> doubleword
+
+namespace CPU {
 
 using namespace biscuit;
-
-using CPU::Recompiler::rvEmitCall;
-using CPU::Recompiler::rvEmitDSExtW;
-using CPU::Recompiler::rvEmitDUExtW;
-using CPU::Recompiler::rvEmitFarLoad;
-using CPU::Recompiler::rvEmitJmp;
-using CPU::Recompiler::rvEmitMov;
-using CPU::Recompiler::rvEmitMov64;
-using CPU::Recompiler::rvEmitSExtB;
-using CPU::Recompiler::rvEmitSExtH;
-using CPU::Recompiler::rvEmitUExtB;
-using CPU::Recompiler::rvEmitUExtH;
-using CPU::Recompiler::rvGetAddressImmediates;
-using CPU::Recompiler::rvIsCallerSavedRegister;
-using CPU::Recompiler::rvIsValidSExtITypeImm;
-using CPU::Recompiler::rvMoveAddressToReg;
 
 RISCV64Recompiler s_instance;
 Recompiler* g_compiler = &s_instance;
 
 } // namespace CPU::Recompiler
 
-bool CPU::Recompiler::rvIsCallerSavedRegister(u32 id)
+bool rvIsCallerSavedRegister(u32 id)
 {
   return (id == 1 || (id >= 3 && id < 8) || (id >= 10 && id <= 17) || (id >= 28 && id <= 31));
 }
 
-bool CPU::Recompiler::rvIsValidSExtITypeImm(u32 imm)
+bool rvIsValidSExtITypeImm(u32 imm)
 {
   return (static_cast<u32>((static_cast<s32>(imm) << 20) >> 20) == imm);
 }
 
-std::pair<s32, s32> CPU::Recompiler::rvGetAddressImmediates(const void* cur, const void* target)
+std::pair<s32, s32> rvGetAddressImmediates(const void* cur, const void* target)
 {
   const s64 disp = static_cast<s64>(reinterpret_cast<intptr_t>(target) - reinterpret_cast<intptr_t>(cur));
   Assert(disp >= static_cast<s64>(std::numeric_limits<s32>::min()) &&
@@ -79,14 +89,14 @@ std::pair<s32, s32> CPU::Recompiler::rvGetAddressImmediates(const void* cur, con
   return std::make_pair(static_cast<s32>(hi >> 12), static_cast<s32>((lo << 52) >> 52));
 }
 
-void CPU::Recompiler::rvMoveAddressToReg(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr)
+void rvMoveAddressToReg(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr)
 {
   const auto [hi, lo] = rvGetAddressImmediates(rvAsm->GetCursorPointer(), addr);
   rvAsm->AUIPC(reg, hi);
   rvAsm->ADDI(reg, reg, lo);
 }
 
-void CPU::Recompiler::rvEmitMov(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, u32 imm)
+void rvEmitMov(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, u32 imm)
 {
   // Borrowed from biscuit, but doesn't emit an ADDI if the lower 12 bits are zero.
   const u32 lower = imm & 0xFFF;
@@ -105,8 +115,7 @@ void CPU::Recompiler::rvEmitMov(biscuit::Assembler* rvAsm, const biscuit::GPR& r
   }
 }
 
-void CPU::Recompiler::rvEmitMov64(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& scratch,
-                                  u64 imm)
+void rvEmitMov64(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& scratch, u64 imm)
 {
   // TODO: Make better..
   rvEmitMov(rvAsm, rd, static_cast<u32>(imm >> 32));
@@ -117,7 +126,7 @@ void CPU::Recompiler::rvEmitMov64(biscuit::Assembler* rvAsm, const biscuit::GPR&
   rvAsm->ADD(rd, rd, scratch);
 }
 
-u32 CPU::Recompiler::rvEmitJmp(biscuit::Assembler* rvAsm, const void* ptr, const biscuit::GPR& link_reg)
+u32 rvEmitJmp(biscuit::Assembler* rvAsm, const void* ptr, const biscuit::GPR& link_reg)
 {
   // TODO: use J if displacement is <1MB,  needs a bool because backpatch must be 8 bytes
   const auto [hi, lo] = rvGetAddressImmediates(rvAsm->GetCursorPointer(), ptr);
@@ -126,13 +135,12 @@ u32 CPU::Recompiler::rvEmitJmp(biscuit::Assembler* rvAsm, const void* ptr, const
   return 8;
 }
 
-u32 CPU::Recompiler::rvEmitCall(biscuit::Assembler* rvAsm, const void* ptr)
+u32 rvEmitCall(biscuit::Assembler* rvAsm, const void* ptr)
 {
   return rvEmitJmp(rvAsm, ptr, biscuit::ra);
 }
 
-void CPU::Recompiler::rvEmitFarLoad(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr,
-                                    bool sign_extend_word)
+void rvEmitFarLoad(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr, bool sign_extend_word)
 {
   const auto [hi, lo] = rvGetAddressImmediates(rvAsm->GetCursorPointer(), addr);
   rvAsm->AUIPC(reg, hi);
@@ -142,43 +150,42 @@ void CPU::Recompiler::rvEmitFarLoad(biscuit::Assembler* rvAsm, const biscuit::GP
     rvAsm->LWU(reg, lo, reg);
 }
 
-void CPU::Recompiler::rvEmitFarStore(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr,
-                                     const biscuit::GPR& tempreg)
+[[maybe_unused]] void rvEmitFarStore(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr, const biscuit::GPR& tempreg)
 {
   const auto [hi, lo] = rvGetAddressImmediates(rvAsm->GetCursorPointer(), addr);
   rvAsm->AUIPC(tempreg, hi);
   rvAsm->SW(reg, lo, tempreg);
 }
 
-void CPU::Recompiler::rvEmitSExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
+void rvEmitSExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvAsm->SLLI(rd, rs, 24);
   rvAsm->SRAIW(rd, rd, 24);
 }
 
-void CPU::Recompiler::rvEmitUExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
+void rvEmitUExtB(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvAsm->ANDI(rd, rs, 0xFF);
 }
 
-void CPU::Recompiler::rvEmitSExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
+void rvEmitSExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvAsm->SLLI(rd, rs, 16);
   rvAsm->SRAIW(rd, rd, 16);
 }
 
-void CPU::Recompiler::rvEmitUExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
+void rvEmitUExtH(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvAsm->SLLI(rd, rs, 16);
   rvAsm->SRLI(rd, rd, 16);
 }
 
-void CPU::Recompiler::rvEmitDSExtW(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
+void rvEmitDSExtW(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvAsm->ADDIW(rd, rs, 0);
 }
 
-void CPU::Recompiler::rvEmitDUExtW(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
+void rvEmitDUExtW(biscuit::Assembler* rvAsm, const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvAsm->SLLI64(rd, rs, 32);
   rvAsm->SRLI64(rd, rd, 32);
@@ -227,7 +234,6 @@ u32 CPU::CodeCache::GetHostInstructionCount(const void* start, u32 size)
 
 u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 {
-  using namespace CPU::Recompiler;
   using namespace biscuit;
 
   Assembler actual_asm(static_cast<u8*>(code), code_size);
@@ -245,12 +251,6 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     // Fastmem setup
     if (IsUsingFastmem())
       rvAsm->LD(RMEMBASE, PTR(&g_state.fastmem_base));
-
-    // Downcount isn't set on entry, so we need to initialize it
-    rvMoveAddressToReg(rvAsm, RARG1, TimingEvents::GetHeadEventPtr());
-    rvAsm->LD(RARG1, 0, RARG1);
-    rvAsm->LW(RARG1, OFFSETOF(TimingEvent, m_downcount), RARG1);
-    rvAsm->SW(RARG1, PTR(&g_state.downcount));
 
     // Fall through to event dispatcher
   }
@@ -319,7 +319,7 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
   // TODO: get rid of assembler construction here
   {
     biscuit::Assembler assembler(static_cast<u8*>(code), BLOCK_LINK_SIZE);
-    CPU::Recompiler::rvEmitCall(&assembler, dst);
+    rvEmitCall(&assembler, dst);
 
     DebugAssert(assembler.GetCodeBuffer().GetSizeInBytes() <= BLOCK_LINK_SIZE);
     if (assembler.GetCodeBuffer().GetRemainingBytes() > 0)
@@ -332,17 +332,17 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
   return BLOCK_LINK_SIZE;
 }
 
-CPU::Recompiler::RISCV64Recompiler::RISCV64Recompiler() = default;
+CPU::RISCV64Recompiler::RISCV64Recompiler() = default;
 
-CPU::Recompiler::RISCV64Recompiler::~RISCV64Recompiler() = default;
+CPU::RISCV64Recompiler::~RISCV64Recompiler() = default;
 
-const void* CPU::Recompiler::RISCV64Recompiler::GetCurrentCodePointer()
+const void* CPU::RISCV64Recompiler::GetCurrentCodePointer()
 {
   return rvAsm->GetCursorPointer();
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space,
-                                               u8* far_code_buffer, u32 far_code_space)
+void CPU::RISCV64Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space, u8* far_code_buffer,
+                                   u32 far_code_space)
 {
   Recompiler::Reset(block, code_buffer, code_buffer_space, far_code_buffer, far_code_space);
 
@@ -370,10 +370,11 @@ void CPU::Recompiler::RISCV64Recompiler::Reset(CodeCache::Block* block, u8* code
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SwitchToFarCode(
-  bool emit_jump,
-  void (biscuit::Assembler::*inverted_cond)(biscuit::GPR, biscuit::GPR, biscuit::Label*) /* = nullptr */,
-  const biscuit::GPR& rs1 /* = biscuit::zero */, const biscuit::GPR& rs2 /* = biscuit::zero */)
+void CPU::RISCV64Recompiler::SwitchToFarCode(bool emit_jump,
+                                             void (biscuit::Assembler::*inverted_cond)(biscuit::GPR, biscuit::GPR,
+                                                                                       biscuit::Label*) /* = nullptr */,
+                                             const biscuit::GPR& rs1 /* = biscuit::zero */,
+                                             const biscuit::GPR& rs2 /* = biscuit::zero */)
 {
   DebugAssert(rvAsm == m_emitter.get());
   if (emit_jump)
@@ -394,7 +395,7 @@ void CPU::Recompiler::RISCV64Recompiler::SwitchToFarCode(
   rvAsm = m_far_emitter.get();
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SwitchToNearCode(bool emit_jump)
+void CPU::RISCV64Recompiler::SwitchToNearCode(bool emit_jump)
 {
   DebugAssert(rvAsm == m_far_emitter.get());
   if (emit_jump)
@@ -402,19 +403,19 @@ void CPU::Recompiler::RISCV64Recompiler::SwitchToNearCode(bool emit_jump)
   rvAsm = m_emitter.get();
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EmitMov(const biscuit::GPR& dst, u32 val)
+void CPU::RISCV64Recompiler::EmitMov(const biscuit::GPR& dst, u32 val)
 {
   rvEmitMov(rvAsm, dst, val);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EmitCall(const void* ptr)
+void CPU::RISCV64Recompiler::EmitCall(const void* ptr)
 {
   rvEmitCall(rvAsm, ptr);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeImmSExtIType(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm,
-                                                          void (biscuit::Assembler::*iop)(GPR, GPR, u32),
-                                                          void (biscuit::Assembler::*rop)(GPR, GPR, GPR))
+void CPU::RISCV64Recompiler::SafeImmSExtIType(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm,
+                                              void (biscuit::Assembler::*iop)(GPR, GPR, u32),
+                                              void (biscuit::Assembler::*rop)(GPR, GPR, GPR))
 {
   DebugAssert(rd != RSCRATCH && rs != RSCRATCH);
 
@@ -428,83 +429,83 @@ void CPU::Recompiler::RISCV64Recompiler::SafeImmSExtIType(const biscuit::GPR& rd
   (rvAsm->*rop)(rd, rs, RSCRATCH);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeADDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::RISCV64Recompiler::SafeADDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::ADDI),
                    &Assembler::ADD);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeADDIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::RISCV64Recompiler::SafeADDIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::ADDIW),
                    &Assembler::ADDW);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeSUBIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::RISCV64Recompiler::SafeSUBIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   const u32 nimm = static_cast<u32>(-static_cast<s32>(imm));
   SafeImmSExtIType(rd, rs, nimm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::ADDIW),
                    &Assembler::ADDW);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeANDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::RISCV64Recompiler::SafeANDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, &Assembler::ANDI, &Assembler::AND);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::RISCV64Recompiler::SafeORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, &Assembler::ORI, &Assembler::OR);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeXORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::RISCV64Recompiler::SafeXORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, &Assembler::XORI, &Assembler::XOR);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeSLTI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::RISCV64Recompiler::SafeSLTI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::SLTI),
                    &Assembler::SLT);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::SafeSLTIU(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::RISCV64Recompiler::SafeSLTIU(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::SLTIU),
                    &Assembler::SLTU);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EmitSExtB(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::RISCV64Recompiler::EmitSExtB(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitSExtB(rvAsm, rd, rs);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EmitUExtB(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::RISCV64Recompiler::EmitUExtB(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitUExtB(rvAsm, rd, rs);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EmitSExtH(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::RISCV64Recompiler::EmitSExtH(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitSExtH(rvAsm, rd, rs);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EmitUExtH(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::RISCV64Recompiler::EmitUExtH(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitUExtH(rvAsm, rd, rs);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EmitDSExtW(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::RISCV64Recompiler::EmitDSExtW(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitDSExtW(rvAsm, rd, rs);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EmitDUExtW(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::RISCV64Recompiler::EmitDUExtW(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitDUExtW(rvAsm, rd, rs);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
+void CPU::RISCV64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
 {
   // store it first to reduce code size, because we can offset
   // TODO: 64-bit displacement is needed :/
@@ -543,7 +544,7 @@ void CPU::Recompiler::RISCV64Recompiler::GenerateBlockProtectCheck(const u8* ram
   rvAsm->Bind(&block_unchanged);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
+void CPU::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
 {
   if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
@@ -599,8 +600,8 @@ void CPU::Recompiler::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s32 arg2reg /*= -1*/,
-                                                      s32 arg3reg /*= -1*/)
+void CPU::RISCV64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s32 arg2reg /*= -1*/,
+                                          s32 arg3reg /*= -1*/)
 {
   if (arg1reg >= 0 && arg1reg != static_cast<s32>(RARG1.Index()))
     rvAsm->MV(RARG1, GPR(arg1reg));
@@ -611,7 +612,7 @@ void CPU::Recompiler::RISCV64Recompiler::GenerateCall(const void* func, s32 arg1
   EmitCall(func);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
+void CPU::RISCV64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
 {
   if (newpc.has_value())
   {
@@ -628,7 +629,7 @@ void CPU::Recompiler::RISCV64Recompiler::EndBlock(const std::optional<u32>& newp
   EndAndLinkBlock(newpc, do_event_test, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EndBlockWithException(Exception excode)
+void CPU::RISCV64Recompiler::EndBlockWithException(Exception excode)
 {
   // flush regs, but not pc, it's going to get overwritten
   // flush cycles because of the GTE instruction stuff...
@@ -646,8 +647,7 @@ void CPU::Recompiler::RISCV64Recompiler::EndBlockWithException(Exception excode)
   EndAndLinkBlock(std::nullopt, true, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test,
-                                                         bool force_run_events)
+void CPU::RISCV64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test, bool force_run_events)
 {
   // event test
   // pc should've been flushed
@@ -711,7 +711,7 @@ void CPU::Recompiler::RISCV64Recompiler::EndAndLinkBlock(const std::optional<u32
   }
 }
 
-const void* CPU::Recompiler::RISCV64Recompiler::EndCompile(u32* code_size, u32* far_code_size)
+const void* CPU::RISCV64Recompiler::EndCompile(u32* code_size, u32* far_code_size)
 {
   u8* const code = m_emitter->GetBufferPointer(0);
   *code_size = static_cast<u32>(m_emitter->GetCodeBuffer().GetSizeInBytes());
@@ -722,7 +722,7 @@ const void* CPU::Recompiler::RISCV64Recompiler::EndCompile(u32* code_size, u32* 
   return code;
 }
 
-const char* CPU::Recompiler::RISCV64Recompiler::GetHostRegName(u32 reg) const
+const char* CPU::RISCV64Recompiler::GetHostRegName(u32 reg) const
 {
   static constexpr std::array<const char*, 32> reg64_names = {
     {"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0",  "a1",  "a2", "a3", "a4", "a5",
@@ -730,22 +730,22 @@ const char* CPU::Recompiler::RISCV64Recompiler::GetHostRegName(u32 reg) const
   return (reg < reg64_names.size()) ? reg64_names[reg] : "UNKNOWN";
 }
 
-void CPU::Recompiler::RISCV64Recompiler::LoadHostRegWithConstant(u32 reg, u32 val)
+void CPU::RISCV64Recompiler::LoadHostRegWithConstant(u32 reg, u32 val)
 {
   EmitMov(GPR(reg), val);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::LoadHostRegFromCPUPointer(u32 reg, const void* ptr)
+void CPU::RISCV64Recompiler::LoadHostRegFromCPUPointer(u32 reg, const void* ptr)
 {
   rvAsm->LW(GPR(reg), PTR(ptr));
 }
 
-void CPU::Recompiler::RISCV64Recompiler::StoreHostRegToCPUPointer(u32 reg, const void* ptr)
+void CPU::RISCV64Recompiler::StoreHostRegToCPUPointer(u32 reg, const void* ptr)
 {
   rvAsm->SW(GPR(reg), PTR(ptr));
 }
 
-void CPU::Recompiler::RISCV64Recompiler::StoreConstantToCPUPointer(u32 val, const void* ptr)
+void CPU::RISCV64Recompiler::StoreConstantToCPUPointer(u32 val, const void* ptr)
 {
   if (val == 0)
   {
@@ -757,23 +757,23 @@ void CPU::Recompiler::RISCV64Recompiler::StoreConstantToCPUPointer(u32 val, cons
   rvAsm->SW(RSCRATCH, PTR(ptr));
 }
 
-void CPU::Recompiler::RISCV64Recompiler::CopyHostReg(u32 dst, u32 src)
+void CPU::RISCV64Recompiler::CopyHostReg(u32 dst, u32 src)
 {
   if (src != dst)
     rvAsm->MV(GPR(dst), GPR(src));
 }
 
-void CPU::Recompiler::RISCV64Recompiler::AssertRegOrConstS(CompileFlags cf) const
+void CPU::RISCV64Recompiler::AssertRegOrConstS(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_s || cf.const_s);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::AssertRegOrConstT(CompileFlags cf) const
+void CPU::RISCV64Recompiler::AssertRegOrConstT(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_t || cf.const_t);
 }
 
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetSafeRegS(CompileFlags cf, const biscuit::GPR& temp_reg)
+biscuit::GPR CPU::RISCV64Recompiler::CFGetSafeRegS(CompileFlags cf, const biscuit::GPR& temp_reg)
 {
   if (cf.valid_host_s)
   {
@@ -795,7 +795,7 @@ biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetSafeRegS(CompileFlags cf, 
   }
 }
 
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetSafeRegT(CompileFlags cf, const biscuit::GPR& temp_reg)
+biscuit::GPR CPU::RISCV64Recompiler::CFGetSafeRegT(CompileFlags cf, const biscuit::GPR& temp_reg)
 {
   if (cf.valid_host_t)
   {
@@ -817,37 +817,37 @@ biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetSafeRegT(CompileFlags cf, 
   }
 }
 
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegD(CompileFlags cf) const
+biscuit::GPR CPU::RISCV64Recompiler::CFGetRegD(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_d);
   return GPR(cf.host_d);
 }
 
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegS(CompileFlags cf) const
+biscuit::GPR CPU::RISCV64Recompiler::CFGetRegS(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_s);
   return GPR(cf.host_s);
 }
 
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegT(CompileFlags cf) const
+biscuit::GPR CPU::RISCV64Recompiler::CFGetRegT(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_t);
   return GPR(cf.host_t);
 }
 
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegLO(CompileFlags cf) const
+biscuit::GPR CPU::RISCV64Recompiler::CFGetRegLO(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_lo);
   return GPR(cf.host_lo);
 }
 
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegHI(CompileFlags cf) const
+biscuit::GPR CPU::RISCV64Recompiler::CFGetRegHI(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_hi);
   return GPR(cf.host_hi);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::MoveSToReg(const biscuit::GPR& dst, CompileFlags cf)
+void CPU::RISCV64Recompiler::MoveSToReg(const biscuit::GPR& dst, CompileFlags cf)
 {
   if (cf.valid_host_s)
   {
@@ -865,7 +865,7 @@ void CPU::Recompiler::RISCV64Recompiler::MoveSToReg(const biscuit::GPR& dst, Com
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::MoveTToReg(const biscuit::GPR& dst, CompileFlags cf)
+void CPU::RISCV64Recompiler::MoveTToReg(const biscuit::GPR& dst, CompileFlags cf)
 {
   if (cf.valid_host_t)
   {
@@ -883,7 +883,7 @@ void CPU::Recompiler::RISCV64Recompiler::MoveTToReg(const biscuit::GPR& dst, Com
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::MoveMIPSRegToReg(const biscuit::GPR& dst, Reg reg)
+void CPU::RISCV64Recompiler::MoveMIPSRegToReg(const biscuit::GPR& dst, Reg reg)
 {
   DebugAssert(reg < Reg::count);
   if (const std::optional<u32> hreg = CheckHostReg(0, Recompiler::HR_TYPE_CPU_REG, reg))
@@ -894,9 +894,8 @@ void CPU::Recompiler::RISCV64Recompiler::MoveMIPSRegToReg(const biscuit::GPR& ds
     rvAsm->LW(dst, PTR(&g_state.regs.r[static_cast<u8>(reg)]));
 }
 
-void CPU::Recompiler::RISCV64Recompiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val,
-                                                                      Reg arg2reg /* = Reg::count */,
-                                                                      Reg arg3reg /* = Reg::count */)
+void CPU::RISCV64Recompiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val, Reg arg2reg /* = Reg::count */,
+                                                          Reg arg3reg /* = Reg::count */)
 {
   DebugAssert(g_settings.gpu_pgxp_enable);
 
@@ -911,7 +910,7 @@ void CPU::Recompiler::RISCV64Recompiler::GeneratePGXPCallWithMIPSRegs(const void
   EmitCall(func);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Flush(u32 flags)
+void CPU::RISCV64Recompiler::Flush(u32 flags)
 {
   Recompiler::Flush(flags);
 
@@ -1000,14 +999,14 @@ void CPU::Recompiler::RISCV64Recompiler::Flush(u32 flags)
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_Fallback()
+void CPU::RISCV64Recompiler::Compile_Fallback()
 {
   WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", iinfo->pc, inst->bits);
 
   Flush(FLUSH_FOR_INTERPRETER);
 
 #if 0
-  cg->call(&CPU::Recompiler::Thunks::InterpretInstruction);
+  cg->call(&CPU::RecompilerThunks::InterpretInstruction);
 
   // TODO: make me less garbage
   // TODO: this is wrong, it flushes the load delay on the same cycle when we return.
@@ -1028,7 +1027,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_Fallback()
 #endif
 }
 
-void CPU::Recompiler::RISCV64Recompiler::CheckBranchTarget(const biscuit::GPR& pcreg)
+void CPU::RISCV64Recompiler::CheckBranchTarget(const biscuit::GPR& pcreg)
 {
   if (!g_settings.cpu_recompiler_memory_exceptions)
     return;
@@ -1044,7 +1043,7 @@ void CPU::Recompiler::RISCV64Recompiler::CheckBranchTarget(const biscuit::GPR& p
   SwitchToNearCode(false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_jr(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_jr(CompileFlags cf)
 {
   const GPR pcreg = CFGetRegS(cf);
   CheckBranchTarget(pcreg);
@@ -1055,7 +1054,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_jr(CompileFlags cf)
   EndBlock(std::nullopt, true);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_jalr(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_jalr(CompileFlags cf)
 {
   const GPR pcreg = CFGetRegS(cf);
   if (MipsD() != Reg::zero)
@@ -1068,7 +1067,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_jalr(CompileFlags cf)
   EndBlock(std::nullopt, true);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
+void CPU::RISCV64Recompiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
 {
   AssertRegOrConstS(cf);
 
@@ -1146,7 +1145,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_bxx(CompileFlags cf, BranchCond
   EndBlock(taken_pc, true);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_addi(CompileFlags cf, bool overflow)
+void CPU::RISCV64Recompiler::Compile_addi(CompileFlags cf, bool overflow)
 {
   const GPR rs = CFGetRegS(cf);
   const GPR rt = CFGetRegT(cf);
@@ -1169,27 +1168,27 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_addi(CompileFlags cf, bool over
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_addi(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_addi(CompileFlags cf)
 {
   Compile_addi(cf, g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_addiu(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_addiu(CompileFlags cf)
 {
   Compile_addi(cf, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_slti(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_slti(CompileFlags cf)
 {
   Compile_slti(cf, true);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_sltiu(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_sltiu(CompileFlags cf)
 {
   Compile_slti(cf, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_slti(CompileFlags cf, bool sign)
+void CPU::RISCV64Recompiler::Compile_slti(CompileFlags cf, bool sign)
 {
   if (sign)
     SafeSLTI(CFGetRegT(cf), CFGetRegS(cf), inst->i.imm_sext32());
@@ -1197,7 +1196,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_slti(CompileFlags cf, bool sign
     SafeSLTIU(CFGetRegT(cf), CFGetRegS(cf), inst->i.imm_sext32());
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_andi(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_andi(CompileFlags cf)
 {
   const GPR rt = CFGetRegT(cf);
   if (const u32 imm = inst->i.imm_zext32(); imm != 0)
@@ -1206,7 +1205,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_andi(CompileFlags cf)
     EmitMov(rt, 0);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_ori(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_ori(CompileFlags cf)
 {
   const GPR rt = CFGetRegT(cf);
   const GPR rs = CFGetRegS(cf);
@@ -1216,7 +1215,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_ori(CompileFlags cf)
     rvAsm->MV(rt, rs);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_xori(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_xori(CompileFlags cf)
 {
   const GPR rt = CFGetRegT(cf);
   const GPR rs = CFGetRegS(cf);
@@ -1226,9 +1225,9 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_xori(CompileFlags cf)
     rvAsm->MV(rt, rs);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_shift(
-  CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
-  void (biscuit::Assembler::*op_const)(biscuit::GPR, biscuit::GPR, unsigned))
+void CPU::RISCV64Recompiler::Compile_shift(CompileFlags cf,
+                                           void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
+                                           void (biscuit::Assembler::*op_const)(biscuit::GPR, biscuit::GPR, unsigned))
 {
   const GPR rd = CFGetRegD(cf);
   const GPR rt = CFGetRegT(cf);
@@ -1238,22 +1237,22 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_shift(
     rvAsm->MV(rd, rt);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_sll(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_sll(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::SLLW, &Assembler::SLLIW);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_srl(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_srl(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::SRLW, &Assembler::SRLIW);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_sra(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_sra(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::SRAW, &Assembler::SRAIW);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_variable_shift(
+void CPU::RISCV64Recompiler::Compile_variable_shift(
   CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
   void (biscuit::Assembler::*op_const)(biscuit::GPR, biscuit::GPR, unsigned))
 {
@@ -1279,22 +1278,22 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_variable_shift(
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_sllv(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_sllv(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::SLLW, &Assembler::SLLIW);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_srlv(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_srlv(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::SRLW, &Assembler::SRLIW);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_srav(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_srav(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::SRAW, &Assembler::SRAIW);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_mult(CompileFlags cf, bool sign)
+void CPU::RISCV64Recompiler::Compile_mult(CompileFlags cf, bool sign)
 {
   const GPR rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
   if (!cf.valid_host_s)
@@ -1325,17 +1324,17 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_mult(CompileFlags cf, bool sign
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_mult(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_mult(CompileFlags cf)
 {
   Compile_mult(cf, true);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_multu(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_multu(CompileFlags cf)
 {
   Compile_mult(cf, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_div(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_div(CompileFlags cf)
 {
   // 36 Volume I: RISC-V User-Level ISA V2.2
   const GPR rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
@@ -1375,7 +1374,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_div(CompileFlags cf)
   rvAsm->Bind(&done);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_divu(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_divu(CompileFlags cf)
 {
   const GPR rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
   if (!cf.valid_host_s)
@@ -1393,8 +1392,8 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_divu(CompileFlags cf)
   rvAsm->REMUW(rhi, rs, rt);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::TestOverflow(const biscuit::GPR& long_res, const biscuit::GPR& res,
-                                                      const biscuit::GPR& reg_to_discard)
+void CPU::RISCV64Recompiler::TestOverflow(const biscuit::GPR& long_res, const biscuit::GPR& res,
+                                          const biscuit::GPR& reg_to_discard)
 {
   SwitchToFarCode(true, &Assembler::BEQ, long_res, res);
 
@@ -1410,7 +1409,7 @@ void CPU::Recompiler::RISCV64Recompiler::TestOverflow(const biscuit::GPR& long_r
   SwitchToNearCode(false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_dst_op(
+void CPU::RISCV64Recompiler::Compile_dst_op(
   CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
   void (RISCV64Recompiler::*op_const)(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm),
   void (biscuit::Assembler::*op_long)(biscuit::GPR, biscuit::GPR, biscuit::GPR), bool commutative, bool overflow)
@@ -1476,29 +1475,29 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_dst_op(
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_add(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_add(CompileFlags cf)
 {
   Compile_dst_op(cf, &Assembler::ADDW, &RISCV64Recompiler::SafeADDIW, &Assembler::ADD, true,
                  g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_addu(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_addu(CompileFlags cf)
 {
   Compile_dst_op(cf, &Assembler::ADDW, &RISCV64Recompiler::SafeADDIW, &Assembler::ADD, true, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_sub(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_sub(CompileFlags cf)
 {
   Compile_dst_op(cf, &Assembler::SUBW, &RISCV64Recompiler::SafeSUBIW, &Assembler::SUB, false,
                  g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_subu(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_subu(CompileFlags cf)
 {
   Compile_dst_op(cf, &Assembler::SUBW, &RISCV64Recompiler::SafeSUBIW, &Assembler::SUB, false, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_and(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_and(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1519,7 +1518,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_and(CompileFlags cf)
   Compile_dst_op(cf, &Assembler::AND, &RISCV64Recompiler::SafeANDI, &Assembler::AND, true, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_or(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_or(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1535,7 +1534,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_or(CompileFlags cf)
   Compile_dst_op(cf, &Assembler::OR, &RISCV64Recompiler::SafeORI, &Assembler::OR, true, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_xor(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_xor(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1557,23 +1556,23 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_xor(CompileFlags cf)
   Compile_dst_op(cf, &Assembler::XOR, &RISCV64Recompiler::SafeXORI, &Assembler::XOR, true, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_nor(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_nor(CompileFlags cf)
 {
   Compile_or(cf);
   rvAsm->NOT(CFGetRegD(cf), CFGetRegD(cf));
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_slt(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_slt(CompileFlags cf)
 {
   Compile_slt(cf, true);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_sltu(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_sltu(CompileFlags cf)
 {
   Compile_slt(cf, false);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_slt(CompileFlags cf, bool sign)
+void CPU::RISCV64Recompiler::Compile_slt(CompileFlags cf, bool sign)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1598,8 +1597,9 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_slt(CompileFlags cf, bool sign)
   }
 }
 
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::ComputeLoadStoreAddressArg(
-  CompileFlags cf, const std::optional<VirtualMemoryAddress>& address, const std::optional<const biscuit::GPR>& reg)
+biscuit::GPR CPU::RISCV64Recompiler::ComputeLoadStoreAddressArg(CompileFlags cf,
+                                                                const std::optional<VirtualMemoryAddress>& address,
+                                                                const std::optional<const biscuit::GPR>& reg)
 {
   const u32 imm = inst->i.imm_sext32();
   if (cf.valid_host_s && imm == 0 && !reg.has_value())
@@ -1639,9 +1639,8 @@ biscuit::GPR CPU::Recompiler::RISCV64Recompiler::ComputeLoadStoreAddressArg(
 }
 
 template<typename RegAllocFn>
-biscuit::GPR CPU::Recompiler::RISCV64Recompiler::GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size,
-                                                              bool sign, bool use_fastmem,
-                                                              const RegAllocFn& dst_reg_alloc)
+biscuit::GPR CPU::RISCV64Recompiler::GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign,
+                                                  bool use_fastmem, const RegAllocFn& dst_reg_alloc)
 {
   if (use_fastmem)
   {
@@ -1698,20 +1697,20 @@ biscuit::GPR CPU::Recompiler::RISCV64Recompiler::GenerateLoad(const biscuit::GPR
   {
     case MemoryAccessSize::Byte:
     {
-      EmitCall(checked ? reinterpret_cast<const void*>(&Recompiler::Thunks::ReadMemoryByte) :
-                         reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedReadMemoryByte));
+      EmitCall(checked ? reinterpret_cast<const void*>(&RecompilerThunks::ReadMemoryByte) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryByte));
     }
     break;
     case MemoryAccessSize::HalfWord:
     {
-      EmitCall(checked ? reinterpret_cast<const void*>(&Recompiler::Thunks::ReadMemoryHalfWord) :
-                         reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedReadMemoryHalfWord));
+      EmitCall(checked ? reinterpret_cast<const void*>(&RecompilerThunks::ReadMemoryHalfWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryHalfWord));
     }
     break;
     case MemoryAccessSize::Word:
     {
-      EmitCall(checked ? reinterpret_cast<const void*>(&Recompiler::Thunks::ReadMemoryWord) :
-                         reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedReadMemoryWord));
+      EmitCall(checked ? reinterpret_cast<const void*>(&RecompilerThunks::ReadMemoryWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryWord));
     }
     break;
   }
@@ -1770,8 +1769,8 @@ biscuit::GPR CPU::Recompiler::RISCV64Recompiler::GenerateLoad(const biscuit::GPR
   return dst_reg;
 }
 
-void CPU::Recompiler::RISCV64Recompiler::GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg,
-                                                       MemoryAccessSize size, bool use_fastmem)
+void CPU::RISCV64Recompiler::GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg,
+                                           MemoryAccessSize size, bool use_fastmem)
 {
   if (use_fastmem)
   {
@@ -1826,20 +1825,20 @@ void CPU::Recompiler::RISCV64Recompiler::GenerateStore(const biscuit::GPR& addr_
   {
     case MemoryAccessSize::Byte:
     {
-      EmitCall(checked ? reinterpret_cast<const void*>(&Recompiler::Thunks::WriteMemoryByte) :
-                         reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedWriteMemoryByte));
+      EmitCall(checked ? reinterpret_cast<const void*>(&RecompilerThunks::WriteMemoryByte) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryByte));
     }
     break;
     case MemoryAccessSize::HalfWord:
     {
-      EmitCall(checked ? reinterpret_cast<const void*>(&Recompiler::Thunks::WriteMemoryHalfWord) :
-                         reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedWriteMemoryHalfWord));
+      EmitCall(checked ? reinterpret_cast<const void*>(&RecompilerThunks::WriteMemoryHalfWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryHalfWord));
     }
     break;
     case MemoryAccessSize::Word:
     {
-      EmitCall(checked ? reinterpret_cast<const void*>(&Recompiler::Thunks::WriteMemoryWord) :
-                         reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedWriteMemoryWord));
+      EmitCall(checked ? reinterpret_cast<const void*>(&RecompilerThunks::WriteMemoryWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryWord));
     }
     break;
   }
@@ -1870,9 +1869,8 @@ void CPU::Recompiler::RISCV64Recompiler::GenerateStore(const biscuit::GPR& addr_
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
-                                                     bool use_fastmem,
-                                                     const std::optional<VirtualMemoryAddress>& address)
+void CPU::RISCV64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                         const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<GPR> addr_reg = (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero) ?
                                         std::optional<GPR>(GPR(AllocateTempHostReg(HR_CALLEE_SAVED))) :
@@ -1899,9 +1897,8 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_lxx(CompileFlags cf, MemoryAcce
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
-                                                     bool use_fastmem,
-                                                     const std::optional<VirtualMemoryAddress>& address)
+void CPU::RISCV64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                         const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
@@ -1994,9 +1991,8 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_lwx(CompileFlags cf, MemoryAcce
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
-                                                      bool use_fastmem,
-                                                      const std::optional<VirtualMemoryAddress>& address)
+void CPU::RISCV64Recompiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                          const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -2080,9 +2076,8 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_lwc2(CompileFlags cf, MemoryAcc
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
-                                                     bool use_fastmem,
-                                                     const std::optional<VirtualMemoryAddress>& address)
+void CPU::RISCV64Recompiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                         const std::optional<VirtualMemoryAddress>& address)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -2108,9 +2103,8 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_sxx(CompileFlags cf, MemoryAcce
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
-                                                     bool use_fastmem,
-                                                     const std::optional<VirtualMemoryAddress>& address)
+void CPU::RISCV64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                         const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
@@ -2183,9 +2177,8 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_swx(CompileFlags cf, MemoryAcce
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
-                                                      bool use_fastmem,
-                                                      const std::optional<VirtualMemoryAddress>& address)
+void CPU::RISCV64Recompiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                          const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, false);
@@ -2241,7 +2234,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_swc2(CompileFlags cf, MemoryAcc
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_mtc0(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_mtc0(CompileFlags cf)
 {
   // TODO: we need better constant setting here.. which will need backprop
   AssertRegOrConstT(cf);
@@ -2321,7 +2314,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_mtc0(CompileFlags cf)
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_rfe(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_rfe(CompileFlags cf)
 {
   // shift mode bits right two, preserving upper bits
   rvAsm->LW(RARG1, PTR(&g_state.cop0_regs.sr.bits));
@@ -2334,7 +2327,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_rfe(CompileFlags cf)
   TestInterrupts(RARG1);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::TestInterrupts(const biscuit::GPR& sr)
+void CPU::RISCV64Recompiler::TestInterrupts(const biscuit::GPR& sr)
 {
   DebugAssert(sr != RSCRATCH);
 
@@ -2387,7 +2380,7 @@ void CPU::Recompiler::RISCV64Recompiler::TestInterrupts(const biscuit::GPR& sr)
   rvAsm->Bind(&no_interrupt);
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_mfc2(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_mfc2(CompileFlags cf)
 {
   const u32 index = inst->cop.Cop2Index();
   const Reg rt = inst->r.rt;
@@ -2427,7 +2420,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_mfc2(CompileFlags cf)
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_mtc2(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_mtc2(CompileFlags cf)
 {
   const u32 index = inst->cop.Cop2Index();
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -2489,7 +2482,7 @@ void CPU::Recompiler::RISCV64Recompiler::Compile_mtc2(CompileFlags cf)
   }
 }
 
-void CPU::Recompiler::RISCV64Recompiler::Compile_cop2(CompileFlags cf)
+void CPU::RISCV64Recompiler::Compile_cop2(CompileFlags cf)
 {
   TickCount func_ticks;
   GTE::InstructionImpl func = GTE::GetInstructionImpl(inst->bits, &func_ticks);
@@ -2559,20 +2552,20 @@ u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, vo
   {
     case MemoryAccessSize::Byte:
     {
-      rvEmitCall(rvAsm, is_load ? reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedReadMemoryByte) :
-                                  reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedWriteMemoryByte));
+      rvEmitCall(rvAsm, is_load ? reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryByte) :
+                                  reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryByte));
     }
     break;
     case MemoryAccessSize::HalfWord:
     {
-      rvEmitCall(rvAsm, is_load ? reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedReadMemoryHalfWord) :
-                                  reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedWriteMemoryHalfWord));
+      rvEmitCall(rvAsm, is_load ? reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryHalfWord) :
+                                  reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryHalfWord));
     }
     break;
     case MemoryAccessSize::Word:
     {
-      rvEmitCall(rvAsm, is_load ? reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedReadMemoryWord) :
-                                  reinterpret_cast<const void*>(&Recompiler::Thunks::UncheckedWriteMemoryWord));
+      rvEmitCall(rvAsm, is_load ? reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryWord) :
+                                  reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryWord));
     }
     break;
   }

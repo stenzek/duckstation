@@ -9,7 +9,15 @@
 
 #ifdef CPU_ARCH_X64
 
-namespace CPU::Recompiler {
+// We need to include windows.h before xbyak does..
+#ifdef _WIN32
+#include "common/windows_headers.h"
+#endif
+
+#define XBYAK_NO_OP_NAMES 1
+#include "xbyak.h"
+
+namespace CPU {
 
 class X64Recompiler final : public Recompiler
 {
@@ -141,6 +149,6 @@ private:
   Xbyak::CodeGenerator* cg;
 };
 
-} // namespace CPU::Recompiler
+} // namespace CPU
 
 #endif // CPU_ARCH_X64

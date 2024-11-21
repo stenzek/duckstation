@@ -5,8 +5,6 @@
 #include "cpu_code_cache_private.h"
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
-#include "cpu_recompiler_thunks.h"
-#include "cpu_recompiler_types.h"
 #include "gte.h"
 #include "settings.h"
 #include "timing_event.h"
@@ -37,25 +35,58 @@ LOG_CHANNEL(Recompiler);
 // PGXP TODO: LWL etc, MFC0
 // PGXP TODO: Spyro 1 level gates have issues.
 
-namespace CPU::Recompiler {
-
-using namespace Xbyak;
-
 static constexpr u32 BACKPATCH_JMP_SIZE = 5;
 
+static bool IsCallerSavedRegister(u32 id);
+
+// ABI selection
+#if defined(_WIN32)
+
+#define RWRET Xbyak::Reg32(Xbyak::Operand::EAX)
+#define RWARG1 Xbyak::Reg32(Xbyak::Operand::RCX)
+#define RWARG2 Xbyak::Reg32(Xbyak::Operand::RDX)
+#define RWARG3 Xbyak::Reg32(Xbyak::Operand::R8D)
+#define RWARG4 Xbyak::Reg32(Xbyak::Operand::R9D)
+#define RXRET Xbyak::Reg64(Xbyak::Operand::RAX)
+#define RXARG1 Xbyak::Reg64(Xbyak::Operand::RCX)
+#define RXARG2 Xbyak::Reg64(Xbyak::Operand::RDX)
+#define RXARG3 Xbyak::Reg64(Xbyak::Operand::R8)
+#define RXARG4 Xbyak::Reg64(Xbyak::Operand::R9)
+
 // on win32, we need to reserve an additional 32 bytes shadow space when calling out to C
-#ifdef _WIN32
 static constexpr u32 STACK_SHADOW_SIZE = 32;
-#else
+
+#elif defined(__linux__) || defined(__ANDROID__) || defined(__APPLE__) || defined(__FreeBSD__)
+
+#define RWRET Xbyak::Reg32(Xbyak::Operand::EAX)
+#define RWARG1 Xbyak::Reg32(Xbyak::Operand::EDI)
+#define RWARG2 Xbyak::Reg32(Xbyak::Operand::ESI)
+#define RWARG3 Xbyak::Reg32(Xbyak::Operand::EDX)
+#define RWARG4 Xbyak::Reg32(Xbyak::Operand::ECX)
+#define RXRET Xbyak::Reg64(Xbyak::Operand::RAX)
+#define RXARG1 Xbyak::Reg64(Xbyak::Operand::RDI)
+#define RXARG2 Xbyak::Reg64(Xbyak::Operand::RSI)
+#define RXARG3 Xbyak::Reg64(Xbyak::Operand::RDX)
+#define RXARG4 Xbyak::Reg64(Xbyak::Operand::RCX)
+
 static constexpr u32 STACK_SHADOW_SIZE = 0;
+
+#else
+
+#error Unknown ABI.
+
 #endif
+
+namespace CPU {
+
+using namespace Xbyak;
 
 static X64Recompiler s_instance;
 Recompiler* g_compiler = &s_instance;
 
-} // namespace CPU::Recompiler
+} // namespace CPU
 
-bool CPU::Recompiler::IsCallerSavedRegister(u32 id)
+bool IsCallerSavedRegister(u32 id)
 {
 #ifdef _WIN32
   // The x64 ABI considers the registers RAX, RCX, RDX, R8, R9, R10, R11, and XMM0-XMM5 volatile.
@@ -330,12 +361,12 @@ u32 CPU::CodeCache::GetHostInstructionCount(const void* start, u32 size)
 
 #endif // ENABLE_HOST_DISASSEMBLY
 
-CPU::Recompiler::X64Recompiler::X64Recompiler() = default;
+CPU::X64Recompiler::X64Recompiler() = default;
 
-CPU::Recompiler::X64Recompiler::~X64Recompiler() = default;
+CPU::X64Recompiler::~X64Recompiler() = default;
 
-void CPU::Recompiler::X64Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space,
-                                           u8* far_code_buffer, u32 far_code_space)
+void CPU::X64Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space, u8* far_code_buffer,
+                               u32 far_code_space)
 {
   Recompiler::Reset(block, code_buffer, code_buffer_space, far_code_buffer, far_code_space);
 
@@ -366,7 +397,7 @@ void CPU::Recompiler::X64Recompiler::Reset(CodeCache::Block* block, u8* code_buf
   }
 }
 
-void CPU::Recompiler::X64Recompiler::SwitchToFarCode(bool emit_jump, void (Xbyak::CodeGenerator::*jump_op)(const void*))
+void CPU::X64Recompiler::SwitchToFarCode(bool emit_jump, void (Xbyak::CodeGenerator::*jump_op)(const void*))
 {
   DebugAssert(cg == m_emitter.get());
   if (emit_jump)
@@ -377,8 +408,7 @@ void CPU::Recompiler::X64Recompiler::SwitchToFarCode(bool emit_jump, void (Xbyak
   cg = m_far_emitter.get();
 }
 
-void CPU::Recompiler::X64Recompiler::SwitchToNearCode(bool emit_jump,
-                                                      void (Xbyak::CodeGenerator::*jump_op)(const void*))
+void CPU::X64Recompiler::SwitchToNearCode(bool emit_jump, void (Xbyak::CodeGenerator::*jump_op)(const void*))
 {
   DebugAssert(cg == m_far_emitter.get());
   if (emit_jump)
@@ -389,7 +419,7 @@ void CPU::Recompiler::X64Recompiler::SwitchToNearCode(bool emit_jump,
   cg = m_emitter.get();
 }
 
-void CPU::Recompiler::X64Recompiler::BeginBlock()
+void CPU::X64Recompiler::BeginBlock()
 {
   Recompiler::BeginBlock();
 
@@ -408,7 +438,7 @@ void CPU::Recompiler::X64Recompiler::BeginBlock()
 #endif
 }
 
-void CPU::Recompiler::X64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
+void CPU::X64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
 {
   // store it first to reduce code size, because we can offset
   cg->mov(RXARG1, static_cast<size_t>(reinterpret_cast<uintptr_t>(ram_ptr)));
@@ -459,7 +489,7 @@ void CPU::Recompiler::X64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr
   DebugAssert(size == 0);
 }
 
-void CPU::Recompiler::X64Recompiler::GenerateICacheCheckAndUpdate()
+void CPU::X64Recompiler::GenerateICacheCheckAndUpdate()
 {
   if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
@@ -500,8 +530,8 @@ void CPU::Recompiler::X64Recompiler::GenerateICacheCheckAndUpdate()
   }
 }
 
-void CPU::Recompiler::X64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s32 arg2reg /*= -1*/,
-                                                  s32 arg3reg /*= -1*/)
+void CPU::X64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s32 arg2reg /*= -1*/,
+                                      s32 arg3reg /*= -1*/)
 {
   if (arg1reg >= 0 && arg1reg != static_cast<s32>(RXARG1.getIdx()))
     cg->mov(RXARG1, Reg64(arg1reg));
@@ -512,7 +542,7 @@ void CPU::Recompiler::X64Recompiler::GenerateCall(const void* func, s32 arg1reg 
   cg->call(func);
 }
 
-void CPU::Recompiler::X64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
+void CPU::X64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
 {
   if (newpc.has_value())
   {
@@ -526,7 +556,7 @@ void CPU::Recompiler::X64Recompiler::EndBlock(const std::optional<u32>& newpc, b
   EndAndLinkBlock(newpc, do_event_test, false);
 }
 
-void CPU::Recompiler::X64Recompiler::EndBlockWithException(Exception excode)
+void CPU::X64Recompiler::EndBlockWithException(Exception excode)
 {
   // flush regs, but not pc, it's going to get overwritten
   // flush cycles because of the GTE instruction stuff...
@@ -544,8 +574,7 @@ void CPU::Recompiler::X64Recompiler::EndBlockWithException(Exception excode)
   EndAndLinkBlock(std::nullopt, true, false);
 }
 
-void CPU::Recompiler::X64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test,
-                                                     bool force_run_events)
+void CPU::X64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test, bool force_run_events)
 {
   // event test
   // pc should've been flushed
@@ -614,7 +643,7 @@ void CPU::Recompiler::X64Recompiler::EndAndLinkBlock(const std::optional<u32>& n
   }
 }
 
-const void* CPU::Recompiler::X64Recompiler::EndCompile(u32* code_size, u32* far_code_size)
+const void* CPU::X64Recompiler::EndCompile(u32* code_size, u32* far_code_size)
 {
   const void* code = m_emitter->getCode();
   *code_size = static_cast<u32>(m_emitter->getSize());
@@ -625,81 +654,81 @@ const void* CPU::Recompiler::X64Recompiler::EndCompile(u32* code_size, u32* far_
   return code;
 }
 
-const void* CPU::Recompiler::X64Recompiler::GetCurrentCodePointer()
+const void* CPU::X64Recompiler::GetCurrentCodePointer()
 {
   return cg->getCurr();
 }
 
-const char* CPU::Recompiler::X64Recompiler::GetHostRegName(u32 reg) const
+const char* CPU::X64Recompiler::GetHostRegName(u32 reg) const
 {
   static constexpr std::array<const char*, 16> reg64_names = {
     {"rax", "rcx", "rdx", "rbx", "rsp", "rbp", "rsi", "rdi", "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15"}};
   return (reg < reg64_names.size()) ? reg64_names[reg] : "UNKNOWN";
 }
 
-void CPU::Recompiler::X64Recompiler::LoadHostRegWithConstant(u32 reg, u32 val)
+void CPU::X64Recompiler::LoadHostRegWithConstant(u32 reg, u32 val)
 {
   cg->mov(Reg32(reg), val);
 }
 
-void CPU::Recompiler::X64Recompiler::LoadHostRegFromCPUPointer(u32 reg, const void* ptr)
+void CPU::X64Recompiler::LoadHostRegFromCPUPointer(u32 reg, const void* ptr)
 {
   cg->mov(Reg32(reg), cg->dword[PTR(ptr)]);
 }
 
-void CPU::Recompiler::X64Recompiler::StoreHostRegToCPUPointer(u32 reg, const void* ptr)
+void CPU::X64Recompiler::StoreHostRegToCPUPointer(u32 reg, const void* ptr)
 {
   cg->mov(cg->dword[PTR(ptr)], Reg32(reg));
 }
 
-void CPU::Recompiler::X64Recompiler::StoreConstantToCPUPointer(u32 val, const void* ptr)
+void CPU::X64Recompiler::StoreConstantToCPUPointer(u32 val, const void* ptr)
 {
   cg->mov(cg->dword[PTR(ptr)], val);
 }
 
-void CPU::Recompiler::X64Recompiler::CopyHostReg(u32 dst, u32 src)
+void CPU::X64Recompiler::CopyHostReg(u32 dst, u32 src)
 {
   if (src != dst)
     cg->mov(Reg32(dst), Reg32(src));
 }
 
-Xbyak::Address CPU::Recompiler::X64Recompiler::MipsPtr(Reg r) const
+Xbyak::Address CPU::X64Recompiler::MipsPtr(Reg r) const
 {
   DebugAssert(r < Reg::count);
   return cg->dword[PTR(&g_state.regs.r[static_cast<u32>(r)])];
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::CFGetRegD(CompileFlags cf) const
+Xbyak::Reg32 CPU::X64Recompiler::CFGetRegD(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_d);
   return Reg32(cf.host_d);
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::CFGetRegS(CompileFlags cf) const
+Xbyak::Reg32 CPU::X64Recompiler::CFGetRegS(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_s);
   return Reg32(cf.host_s);
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::CFGetRegT(CompileFlags cf) const
+Xbyak::Reg32 CPU::X64Recompiler::CFGetRegT(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_t);
   return Reg32(cf.host_t);
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::CFGetRegLO(CompileFlags cf) const
+Xbyak::Reg32 CPU::X64Recompiler::CFGetRegLO(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_lo);
   return Reg32(cf.host_lo);
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::CFGetRegHI(CompileFlags cf) const
+Xbyak::Reg32 CPU::X64Recompiler::CFGetRegHI(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_hi);
   return Reg32(cf.host_hi);
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::MoveSToD(CompileFlags cf)
+Xbyak::Reg32 CPU::X64Recompiler::MoveSToD(CompileFlags cf)
 {
   DebugAssert(cf.valid_host_d);
   DebugAssert(!cf.valid_host_t || cf.host_t != cf.host_d);
@@ -710,7 +739,7 @@ Xbyak::Reg32 CPU::Recompiler::X64Recompiler::MoveSToD(CompileFlags cf)
   return rd;
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::MoveSToT(CompileFlags cf)
+Xbyak::Reg32 CPU::X64Recompiler::MoveSToT(CompileFlags cf)
 {
   DebugAssert(cf.valid_host_t);
 
@@ -736,7 +765,7 @@ Xbyak::Reg32 CPU::Recompiler::X64Recompiler::MoveSToT(CompileFlags cf)
   return rt;
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::MoveTToD(CompileFlags cf)
+Xbyak::Reg32 CPU::X64Recompiler::MoveTToD(CompileFlags cf)
 {
   DebugAssert(cf.valid_host_d);
   DebugAssert(!cf.valid_host_s || cf.host_s != cf.host_d);
@@ -746,7 +775,7 @@ Xbyak::Reg32 CPU::Recompiler::X64Recompiler::MoveTToD(CompileFlags cf)
   return rd;
 }
 
-void CPU::Recompiler::X64Recompiler::MoveSToReg(const Xbyak::Reg32& dst, CompileFlags cf)
+void CPU::X64Recompiler::MoveSToReg(const Xbyak::Reg32& dst, CompileFlags cf)
 {
   if (cf.valid_host_s)
   {
@@ -767,7 +796,7 @@ void CPU::Recompiler::X64Recompiler::MoveSToReg(const Xbyak::Reg32& dst, Compile
   }
 }
 
-void CPU::Recompiler::X64Recompiler::MoveTToReg(const Xbyak::Reg32& dst, CompileFlags cf)
+void CPU::X64Recompiler::MoveTToReg(const Xbyak::Reg32& dst, CompileFlags cf)
 {
   if (cf.valid_host_t)
   {
@@ -788,7 +817,7 @@ void CPU::Recompiler::X64Recompiler::MoveTToReg(const Xbyak::Reg32& dst, Compile
   }
 }
 
-void CPU::Recompiler::X64Recompiler::MoveMIPSRegToReg(const Xbyak::Reg32& dst, Reg reg)
+void CPU::X64Recompiler::MoveMIPSRegToReg(const Xbyak::Reg32& dst, Reg reg)
 {
   DebugAssert(reg < Reg::count);
   if (const std::optional<u32> hreg = CheckHostReg(0, Recompiler::HR_TYPE_CPU_REG, reg))
@@ -799,9 +828,8 @@ void CPU::Recompiler::X64Recompiler::MoveMIPSRegToReg(const Xbyak::Reg32& dst, R
     cg->mov(dst, MipsPtr(reg));
 }
 
-void CPU::Recompiler::X64Recompiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val,
-                                                                  Reg arg2reg /* = Reg::count */,
-                                                                  Reg arg3reg /* = Reg::count */)
+void CPU::X64Recompiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val, Reg arg2reg /* = Reg::count */,
+                                                      Reg arg3reg /* = Reg::count */)
 {
   DebugAssert(g_settings.gpu_pgxp_enable);
 
@@ -816,7 +844,7 @@ void CPU::Recompiler::X64Recompiler::GeneratePGXPCallWithMIPSRegs(const void* fu
   cg->call(func);
 }
 
-void CPU::Recompiler::X64Recompiler::Flush(u32 flags)
+void CPU::X64Recompiler::Flush(u32 flags)
 {
   Recompiler::Flush(flags);
 
@@ -899,13 +927,13 @@ void CPU::Recompiler::X64Recompiler::Flush(u32 flags)
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_Fallback()
+void CPU::X64Recompiler::Compile_Fallback()
 {
   WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", iinfo->pc, inst->bits);
 
   Flush(FLUSH_FOR_INTERPRETER);
 
-  cg->call(&CPU::Recompiler::Thunks::InterpretInstruction);
+  cg->call(&CPU::RecompilerThunks::InterpretInstruction);
 
   // TODO: make me less garbage
   // TODO: this is wrong, it flushes the load delay on the same cycle when we return.
@@ -923,7 +951,7 @@ void CPU::Recompiler::X64Recompiler::Compile_Fallback()
   m_load_delay_dirty = EMULATE_LOAD_DELAYS;
 }
 
-void CPU::Recompiler::X64Recompiler::CheckBranchTarget(const Xbyak::Reg32& pcreg)
+void CPU::X64Recompiler::CheckBranchTarget(const Xbyak::Reg32& pcreg)
 {
   if (!g_settings.cpu_recompiler_memory_exceptions)
     return;
@@ -938,7 +966,7 @@ void CPU::Recompiler::X64Recompiler::CheckBranchTarget(const Xbyak::Reg32& pcreg
   SwitchToNearCode(false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_jr(CompileFlags cf)
+void CPU::X64Recompiler::Compile_jr(CompileFlags cf)
 {
   if (!cf.valid_host_s)
     cg->mov(RWARG1, MipsPtr(cf.MipsS()));
@@ -952,7 +980,7 @@ void CPU::Recompiler::X64Recompiler::Compile_jr(CompileFlags cf)
   EndBlock(std::nullopt, true);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_jalr(CompileFlags cf)
+void CPU::X64Recompiler::Compile_jalr(CompileFlags cf)
 {
   if (!cf.valid_host_s)
     cg->mov(RWARG1, MipsPtr(cf.MipsS()));
@@ -969,7 +997,7 @@ void CPU::Recompiler::X64Recompiler::Compile_jalr(CompileFlags cf)
   EndBlock(std::nullopt, true);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
+void CPU::X64Recompiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
 {
   const u32 taken_pc = GetConditionalBranchTarget(cf);
 
@@ -1045,7 +1073,7 @@ void CPU::Recompiler::X64Recompiler::Compile_bxx(CompileFlags cf, BranchConditio
   EndBlock(taken_pc, true);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_addi(CompileFlags cf)
+void CPU::X64Recompiler::Compile_addi(CompileFlags cf)
 {
   const Reg32 rt = MoveSToT(cf);
   if (const u32 imm = inst->i.imm_sext32(); imm != 0)
@@ -1059,24 +1087,24 @@ void CPU::Recompiler::X64Recompiler::Compile_addi(CompileFlags cf)
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_addiu(CompileFlags cf)
+void CPU::X64Recompiler::Compile_addiu(CompileFlags cf)
 {
   const Reg32 rt = MoveSToT(cf);
   if (const u32 imm = inst->i.imm_sext32(); imm != 0)
     cg->add(rt, imm);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_slti(CompileFlags cf)
+void CPU::X64Recompiler::Compile_slti(CompileFlags cf)
 {
   Compile_slti(cf, true);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_sltiu(CompileFlags cf)
+void CPU::X64Recompiler::Compile_sltiu(CompileFlags cf)
 {
   Compile_slti(cf, false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_slti(CompileFlags cf, bool sign)
+void CPU::X64Recompiler::Compile_slti(CompileFlags cf, bool sign)
 {
   const Reg32 rt = cf.valid_host_t ? CFGetRegT(cf) : RWARG1;
 
@@ -1098,7 +1126,7 @@ void CPU::Recompiler::X64Recompiler::Compile_slti(CompileFlags cf, bool sign)
     cg->mov(MipsPtr(cf.MipsT()), rt);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_andi(CompileFlags cf)
+void CPU::X64Recompiler::Compile_andi(CompileFlags cf)
 {
   if (const u32 imm = inst->i.imm_zext32(); imm != 0)
   {
@@ -1112,44 +1140,45 @@ void CPU::Recompiler::X64Recompiler::Compile_andi(CompileFlags cf)
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_ori(CompileFlags cf)
+void CPU::X64Recompiler::Compile_ori(CompileFlags cf)
 {
   const Reg32 rt = MoveSToT(cf);
   if (const u32 imm = inst->i.imm_zext32(); imm != 0)
     cg->or_(rt, imm);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_xori(CompileFlags cf)
+void CPU::X64Recompiler::Compile_xori(CompileFlags cf)
 {
   const Reg32 rt = MoveSToT(cf);
   if (const u32 imm = inst->i.imm_zext32(); imm != 0)
     cg->xor_(rt, imm);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_sll(CompileFlags cf)
+void CPU::X64Recompiler::Compile_sll(CompileFlags cf)
 {
   const Reg32 rd = MoveTToD(cf);
   if (inst->r.shamt > 0)
     cg->shl(rd, inst->r.shamt);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_srl(CompileFlags cf)
+void CPU::X64Recompiler::Compile_srl(CompileFlags cf)
 {
   const Reg32 rd = MoveTToD(cf);
   if (inst->r.shamt > 0)
     cg->shr(rd, inst->r.shamt);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_sra(CompileFlags cf)
+void CPU::X64Recompiler::Compile_sra(CompileFlags cf)
 {
   const Reg32 rd = MoveTToD(cf);
   if (inst->r.shamt > 0)
     cg->sar(rd, inst->r.shamt);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_variable_shift(
-  CompileFlags cf, void (Xbyak::CodeGenerator::*op)(const Xbyak::Operand&, const Xbyak::Reg8&),
-  void (Xbyak::CodeGenerator::*op_const)(const Xbyak::Operand&, int))
+void CPU::X64Recompiler::Compile_variable_shift(CompileFlags cf,
+                                                void (Xbyak::CodeGenerator::*op)(const Xbyak::Operand&,
+                                                                                 const Xbyak::Reg8&),
+                                                void (Xbyak::CodeGenerator::*op_const)(const Xbyak::Operand&, int))
 {
   const Reg32 rd = CFGetRegD(cf);
   if (!cf.const_s)
@@ -1165,22 +1194,22 @@ void CPU::Recompiler::X64Recompiler::Compile_variable_shift(
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_sllv(CompileFlags cf)
+void CPU::X64Recompiler::Compile_sllv(CompileFlags cf)
 {
   Compile_variable_shift(cf, &CodeGenerator::shl, &CodeGenerator::shl);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_srlv(CompileFlags cf)
+void CPU::X64Recompiler::Compile_srlv(CompileFlags cf)
 {
   Compile_variable_shift(cf, &CodeGenerator::shr, &CodeGenerator::shr);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_srav(CompileFlags cf)
+void CPU::X64Recompiler::Compile_srav(CompileFlags cf)
 {
   Compile_variable_shift(cf, &CodeGenerator::sar, &CodeGenerator::sar);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_mult(CompileFlags cf, bool sign)
+void CPU::X64Recompiler::Compile_mult(CompileFlags cf, bool sign)
 {
   // RAX/RDX shouldn't be allocatable..
   DebugAssert(!(m_host_regs[Xbyak::Operand::RAX].flags & HR_USABLE) &&
@@ -1212,17 +1241,17 @@ void CPU::Recompiler::X64Recompiler::Compile_mult(CompileFlags cf, bool sign)
     cg->mov(MipsPtr(Reg::hi), cg->edx);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_mult(CompileFlags cf)
+void CPU::X64Recompiler::Compile_mult(CompileFlags cf)
 {
   Compile_mult(cf, true);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_multu(CompileFlags cf)
+void CPU::X64Recompiler::Compile_multu(CompileFlags cf)
 {
   Compile_mult(cf, false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_div(CompileFlags cf)
+void CPU::X64Recompiler::Compile_div(CompileFlags cf)
 {
   // not supported without registers for now..
   DebugAssert(cf.valid_host_lo && cf.valid_host_hi);
@@ -1268,7 +1297,7 @@ void CPU::Recompiler::X64Recompiler::Compile_div(CompileFlags cf)
   cg->L(done);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_divu(CompileFlags cf)
+void CPU::X64Recompiler::Compile_divu(CompileFlags cf)
 {
   // not supported without registers for now..
   DebugAssert(cf.valid_host_lo && cf.valid_host_hi);
@@ -1299,7 +1328,7 @@ void CPU::Recompiler::X64Recompiler::Compile_divu(CompileFlags cf)
   cg->L(done);
 }
 
-void CPU::Recompiler::X64Recompiler::TestOverflow(const Xbyak::Reg32& result)
+void CPU::X64Recompiler::TestOverflow(const Xbyak::Reg32& result)
 {
   SwitchToFarCode(true, &Xbyak::CodeGenerator::jo);
 
@@ -1315,9 +1344,10 @@ void CPU::Recompiler::X64Recompiler::TestOverflow(const Xbyak::Reg32& result)
   SwitchToNearCode(false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_dst_op(
-  CompileFlags cf, void (Xbyak::CodeGenerator::*op)(const Xbyak::Operand&, const Xbyak::Operand&),
-  void (Xbyak::CodeGenerator::*op_const)(const Xbyak::Operand&, u32), bool commutative, bool overflow)
+void CPU::X64Recompiler::Compile_dst_op(CompileFlags cf,
+                                        void (Xbyak::CodeGenerator::*op)(const Xbyak::Operand&, const Xbyak::Operand&),
+                                        void (Xbyak::CodeGenerator::*op_const)(const Xbyak::Operand&, u32),
+                                        bool commutative, bool overflow)
 {
   if (cf.valid_host_s && cf.valid_host_t)
   {
@@ -1401,27 +1431,27 @@ void CPU::Recompiler::X64Recompiler::Compile_dst_op(
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_add(CompileFlags cf)
+void CPU::X64Recompiler::Compile_add(CompileFlags cf)
 {
   Compile_dst_op(cf, &CodeGenerator::add, &CodeGenerator::add, true, g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_addu(CompileFlags cf)
+void CPU::X64Recompiler::Compile_addu(CompileFlags cf)
 {
   Compile_dst_op(cf, &CodeGenerator::add, &CodeGenerator::add, true, false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_sub(CompileFlags cf)
+void CPU::X64Recompiler::Compile_sub(CompileFlags cf)
 {
   Compile_dst_op(cf, &CodeGenerator::sub, &CodeGenerator::sub, false, g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_subu(CompileFlags cf)
+void CPU::X64Recompiler::Compile_subu(CompileFlags cf)
 {
   Compile_dst_op(cf, &CodeGenerator::sub, &CodeGenerator::sub, false, false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_and(CompileFlags cf)
+void CPU::X64Recompiler::Compile_and(CompileFlags cf)
 {
   // special cases - and with self -> self, and with 0 -> 0
   const Reg32 regd = CFGetRegD(cf);
@@ -1439,7 +1469,7 @@ void CPU::Recompiler::X64Recompiler::Compile_and(CompileFlags cf)
   Compile_dst_op(cf, &CodeGenerator::and_, &CodeGenerator::and_, true, false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_or(CompileFlags cf)
+void CPU::X64Recompiler::Compile_or(CompileFlags cf)
 {
   // or/nor with 0 -> no effect
   const Reg32 regd = CFGetRegD(cf);
@@ -1452,7 +1482,7 @@ void CPU::Recompiler::X64Recompiler::Compile_or(CompileFlags cf)
   Compile_dst_op(cf, &CodeGenerator::or_, &CodeGenerator::or_, true, false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_xor(CompileFlags cf)
+void CPU::X64Recompiler::Compile_xor(CompileFlags cf)
 {
   const Reg32 regd = CFGetRegD(cf);
   if (cf.MipsS() == cf.MipsT())
@@ -1471,23 +1501,23 @@ void CPU::Recompiler::X64Recompiler::Compile_xor(CompileFlags cf)
   Compile_dst_op(cf, &CodeGenerator::xor_, &CodeGenerator::xor_, true, false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_nor(CompileFlags cf)
+void CPU::X64Recompiler::Compile_nor(CompileFlags cf)
 {
   Compile_or(cf);
   cg->not_(CFGetRegD(cf));
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_slt(CompileFlags cf)
+void CPU::X64Recompiler::Compile_slt(CompileFlags cf)
 {
   Compile_slt(cf, true);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_sltu(CompileFlags cf)
+void CPU::X64Recompiler::Compile_sltu(CompileFlags cf)
 {
   Compile_slt(cf, false);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_slt(CompileFlags cf, bool sign)
+void CPU::X64Recompiler::Compile_slt(CompileFlags cf, bool sign)
 {
   const Reg32 rd = CFGetRegD(cf);
   const Reg32 rs = cf.valid_host_s ? CFGetRegS(cf) : RWARG1;
@@ -1513,9 +1543,9 @@ void CPU::Recompiler::X64Recompiler::Compile_slt(CompileFlags cf, bool sign)
   sign ? cg->setl(rd.cvt8()) : cg->setb(rd.cvt8());
 }
 
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::ComputeLoadStoreAddressArg(
-  CompileFlags cf, const std::optional<VirtualMemoryAddress>& address,
-  const std::optional<const Xbyak::Reg32>& reg /* = std::nullopt */)
+Xbyak::Reg32
+CPU::X64Recompiler::ComputeLoadStoreAddressArg(CompileFlags cf, const std::optional<VirtualMemoryAddress>& address,
+                                               const std::optional<const Xbyak::Reg32>& reg /* = std::nullopt */)
 {
   const u32 imm = inst->i.imm_sext32();
   if (cf.valid_host_s && imm == 0 && !reg.has_value())
@@ -1546,8 +1576,8 @@ Xbyak::Reg32 CPU::Recompiler::X64Recompiler::ComputeLoadStoreAddressArg(
 }
 
 template<typename RegAllocFn>
-Xbyak::Reg32 CPU::Recompiler::X64Recompiler::GenerateLoad(const Xbyak::Reg32& addr_reg, MemoryAccessSize size,
-                                                          bool sign, bool use_fastmem, const RegAllocFn& dst_reg_alloc)
+Xbyak::Reg32 CPU::X64Recompiler::GenerateLoad(const Xbyak::Reg32& addr_reg, MemoryAccessSize size, bool sign,
+                                              bool use_fastmem, const RegAllocFn& dst_reg_alloc)
 {
   if (use_fastmem)
   {
@@ -1608,20 +1638,20 @@ Xbyak::Reg32 CPU::Recompiler::X64Recompiler::GenerateLoad(const Xbyak::Reg32& ad
   {
     case MemoryAccessSize::Byte:
     {
-      cg->call(checked ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::ReadMemoryByte) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedReadMemoryByte));
+      cg->call(checked ? reinterpret_cast<const void*>(&RecompilerThunks::ReadMemoryByte) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryByte));
     }
     break;
     case MemoryAccessSize::HalfWord:
     {
-      cg->call(checked ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::ReadMemoryHalfWord) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedReadMemoryHalfWord));
+      cg->call(checked ? reinterpret_cast<const void*>(&RecompilerThunks::ReadMemoryHalfWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryHalfWord));
     }
     break;
     case MemoryAccessSize::Word:
     {
-      cg->call(checked ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::ReadMemoryWord) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedReadMemoryWord));
+      cg->call(checked ? reinterpret_cast<const void*>(&RecompilerThunks::ReadMemoryWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryWord));
     }
     break;
   }
@@ -1677,8 +1707,8 @@ Xbyak::Reg32 CPU::Recompiler::X64Recompiler::GenerateLoad(const Xbyak::Reg32& ad
   return dst_reg;
 }
 
-void CPU::Recompiler::X64Recompiler::GenerateStore(const Xbyak::Reg32& addr_reg, const Xbyak::Reg32& value_reg,
-                                                   MemoryAccessSize size, bool use_fastmem)
+void CPU::X64Recompiler::GenerateStore(const Xbyak::Reg32& addr_reg, const Xbyak::Reg32& value_reg,
+                                       MemoryAccessSize size, bool use_fastmem)
 {
   if (use_fastmem)
   {
@@ -1729,20 +1759,20 @@ void CPU::Recompiler::X64Recompiler::GenerateStore(const Xbyak::Reg32& addr_reg,
   {
     case MemoryAccessSize::Byte:
     {
-      cg->call(checked ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::WriteMemoryByte) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedWriteMemoryByte));
+      cg->call(checked ? reinterpret_cast<const void*>(&RecompilerThunks::WriteMemoryByte) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryByte));
     }
     break;
     case MemoryAccessSize::HalfWord:
     {
-      cg->call(checked ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::WriteMemoryHalfWord) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedWriteMemoryHalfWord));
+      cg->call(checked ? reinterpret_cast<const void*>(&RecompilerThunks::WriteMemoryHalfWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryHalfWord));
     }
     break;
     case MemoryAccessSize::Word:
     {
-      cg->call(checked ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::WriteMemoryWord) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedWriteMemoryWord));
+      cg->call(checked ? reinterpret_cast<const void*>(&RecompilerThunks::WriteMemoryWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryWord));
     }
     break;
   }
@@ -1774,8 +1804,8 @@ void CPU::Recompiler::X64Recompiler::GenerateStore(const Xbyak::Reg32& addr_reg,
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                 const std::optional<VirtualMemoryAddress>& address)
+void CPU::X64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                     const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<Reg32> addr_reg = g_settings.gpu_pgxp_enable ?
                                           std::optional<Reg32>(Reg32(AllocateTempHostReg(HR_CALLEE_SAVED))) :
@@ -1803,8 +1833,8 @@ void CPU::Recompiler::X64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSi
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                 const std::optional<VirtualMemoryAddress>& address)
+void CPU::X64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                     const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
@@ -1907,8 +1937,8 @@ void CPU::Recompiler::X64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSi
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                  const std::optional<VirtualMemoryAddress>& address)
+void CPU::X64Recompiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                      const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -1993,8 +2023,8 @@ void CPU::Recompiler::X64Recompiler::Compile_lwc2(CompileFlags cf, MemoryAccessS
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                 const std::optional<VirtualMemoryAddress>& address)
+void CPU::X64Recompiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                     const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<Reg32> addr_reg = g_settings.gpu_pgxp_enable ?
                                           std::optional<Reg32>(Reg32(AllocateTempHostReg(HR_CALLEE_SAVED))) :
@@ -2018,8 +2048,8 @@ void CPU::Recompiler::X64Recompiler::Compile_sxx(CompileFlags cf, MemoryAccessSi
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                 const std::optional<VirtualMemoryAddress>& address)
+void CPU::X64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                     const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
@@ -2098,8 +2128,8 @@ void CPU::Recompiler::X64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSi
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                  const std::optional<VirtualMemoryAddress>& address)
+void CPU::X64Recompiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                      const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, false);
@@ -2154,7 +2184,7 @@ void CPU::Recompiler::X64Recompiler::Compile_swc2(CompileFlags cf, MemoryAccessS
   FreeHostReg(data_backup.getIdx());
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_mtc0(CompileFlags cf)
+void CPU::X64Recompiler::Compile_mtc0(CompileFlags cf)
 {
   const Cop0Reg reg = static_cast<Cop0Reg>(MipsD());
   const u32* ptr = GetCop0RegPtr(reg);
@@ -2238,7 +2268,7 @@ void CPU::Recompiler::X64Recompiler::Compile_mtc0(CompileFlags cf)
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_rfe(CompileFlags cf)
+void CPU::X64Recompiler::Compile_rfe(CompileFlags cf)
 {
   // shift mode bits right two, preserving upper bits
   static constexpr u32 mode_bits_mask = UINT32_C(0b1111);
@@ -2253,7 +2283,7 @@ void CPU::Recompiler::X64Recompiler::Compile_rfe(CompileFlags cf)
   TestInterrupts(RWARG1);
 }
 
-void CPU::Recompiler::X64Recompiler::TestInterrupts(const Xbyak::Reg32& sr)
+void CPU::X64Recompiler::TestInterrupts(const Xbyak::Reg32& sr)
 {
   // if Iec == 0 then goto no_interrupt
   Label no_interrupt;
@@ -2301,7 +2331,7 @@ void CPU::Recompiler::X64Recompiler::TestInterrupts(const Xbyak::Reg32& sr)
   cg->L(no_interrupt);
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_mfc2(CompileFlags cf)
+void CPU::X64Recompiler::Compile_mfc2(CompileFlags cf)
 {
   const u32 index = inst->cop.Cop2Index();
   const Reg rt = inst->r.rt;
@@ -2342,7 +2372,7 @@ void CPU::Recompiler::X64Recompiler::Compile_mfc2(CompileFlags cf)
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_mtc2(CompileFlags cf)
+void CPU::X64Recompiler::Compile_mtc2(CompileFlags cf)
 {
   const u32 index = inst->cop.Cop2Index();
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -2416,7 +2446,7 @@ void CPU::Recompiler::X64Recompiler::Compile_mtc2(CompileFlags cf)
   }
 }
 
-void CPU::Recompiler::X64Recompiler::Compile_cop2(CompileFlags cf)
+void CPU::X64Recompiler::Compile_cop2(CompileFlags cf)
 {
   TickCount func_ticks;
   GTE::InstructionImpl func = GTE::GetInstructionImpl(inst->bits, &func_ticks);
@@ -2480,20 +2510,20 @@ u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, vo
   {
     case MemoryAccessSize::Byte:
     {
-      cg->call(is_load ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedReadMemoryByte) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedWriteMemoryByte));
+      cg->call(is_load ? reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryByte) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryByte));
     }
     break;
     case MemoryAccessSize::HalfWord:
     {
-      cg->call(is_load ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedReadMemoryHalfWord) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedWriteMemoryHalfWord));
+      cg->call(is_load ? reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryHalfWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryHalfWord));
     }
     break;
     case MemoryAccessSize::Word:
     {
-      cg->call(is_load ? reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedReadMemoryWord) :
-                         reinterpret_cast<const void*>(&CPU::Recompiler::Thunks::UncheckedWriteMemoryWord));
+      cg->call(is_load ? reinterpret_cast<const void*>(&RecompilerThunks::UncheckedReadMemoryWord) :
+                         reinterpret_cast<const void*>(&RecompilerThunks::UncheckedWriteMemoryWord));
     }
     break;
   }

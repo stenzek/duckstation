@@ -129,8 +129,6 @@ add_library(core
 set(RECOMPILER_SRCS
   cpu_recompiler.cpp
   cpu_recompiler.h
-  cpu_recompiler_thunks.h
-  cpu_recompiler_types.h
 )
 
 target_precompile_headers(core PRIVATE "pch.h")

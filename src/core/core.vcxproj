@@ -106,8 +106,6 @@
     <ClInclude Include="cpu_recompiler_x64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="cpu_recompiler_thunks.h" />
-    <ClInclude Include="cpu_recompiler_types.h" />
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="game_database.h" />

@@ -9,7 +9,9 @@
 
 #ifdef CPU_ARCH_RISCV64
 
-namespace CPU::Recompiler {
+#include "biscuit/assembler.hpp"
+
+namespace CPU {
 
 class RISCV64Recompiler final : public Recompiler
 {
@@ -171,6 +173,6 @@ private:
   biscuit::Assembler* rvAsm;
 };
 
-} // namespace CPU::Recompiler
+} // namespace CPU
 
 #endif // CPU_ARCH_RISCV64

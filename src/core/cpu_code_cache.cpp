@@ -6,7 +6,6 @@
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
-#include "cpu_recompiler_types.h"
 #include "host.h"
 #include "settings.h"
 #include "system.h"
@@ -1564,7 +1563,7 @@ bool CPU::CodeCache::CompileBlock(Block* block)
 
 #ifdef ENABLE_RECOMPILER
   if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
-    host_code = Recompiler::g_compiler->CompileBlock(block, &host_code_size, &host_far_code_size);
+    host_code = g_compiler->CompileBlock(block, &host_code_size, &host_far_code_size);
 #endif
 
   block->host_code = host_code;

@@ -90,9 +90,7 @@
     <ClInclude Include="gpu_sw.h" />
     <ClInclude Include="gpu_hw_shadergen.h" />
     <ClInclude Include="bios.h" />
-    <ClInclude Include="cpu_recompiler_types.h" />
     <ClInclude Include="cpu_code_cache.h" />
-    <ClInclude Include="cpu_recompiler_thunks.h" />
     <ClInclude Include="sio.h" />
     <ClInclude Include="controller.h" />
     <ClInclude Include="analog_controller.h" />

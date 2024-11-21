@@ -12,7 +12,7 @@
 #include "vixl/aarch32/assembler-aarch32.h"
 #include "vixl/aarch32/operands-aarch32.h"
 
-namespace CPU::Recompiler {
+namespace CPU {
 
 class ARM32Recompiler final : public Recompiler
 {
@@ -165,6 +165,6 @@ private:
 #endif
 };
 
-} // namespace CPU::Recompiler
+} // namespace CPU
 
 #endif // CPU_ARCH_ARM32

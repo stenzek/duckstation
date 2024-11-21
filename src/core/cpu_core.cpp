@@ -7,7 +7,6 @@
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
 #include "cpu_pgxp.h"
-#include "cpu_recompiler_thunks.h"
 #include "gte.h"
 #include "host.h"
 #include "pcdrv.h"
@@ -2628,13 +2627,13 @@ template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::Disabled>();
 template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::Memory>();
 template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::CPU>();
 
-bool CPU::Recompiler::Thunks::InterpretInstruction()
+bool CPU::RecompilerThunks::InterpretInstruction()
 {
   ExecuteInstruction<PGXPMode::Disabled, false>();
   return g_state.exception_raised;
 }
 
-bool CPU::Recompiler::Thunks::InterpretInstructionPGXP()
+bool CPU::RecompilerThunks::InterpretInstructionPGXP()
 {
   ExecuteInstruction<PGXPMode::Memory, false>();
   return g_state.exception_raised;
@@ -3477,7 +3476,7 @@ bool CPU::WriteMemoryWord(VirtualMemoryAddress addr, u32 value)
   return true;
 }
 
-u64 CPU::Recompiler::Thunks::ReadMemoryByte(u32 address)
+u64 CPU::RecompilerThunks::ReadMemoryByte(u32 address)
 {
   const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::Byte)(address);
   if (g_state.bus_error) [[unlikely]]
@@ -3490,7 +3489,7 @@ u64 CPU::Recompiler::Thunks::ReadMemoryByte(u32 address)
   return ZeroExtend64(value);
 }
 
-u64 CPU::Recompiler::Thunks::ReadMemoryHalfWord(u32 address)
+u64 CPU::RecompilerThunks::ReadMemoryHalfWord(u32 address)
 {
   if (!Common::IsAlignedPow2(address, 2)) [[unlikely]]
   {
@@ -3509,7 +3508,7 @@ u64 CPU::Recompiler::Thunks::ReadMemoryHalfWord(u32 address)
   return ZeroExtend64(value);
 }
 
-u64 CPU::Recompiler::Thunks::ReadMemoryWord(u32 address)
+u64 CPU::RecompilerThunks::ReadMemoryWord(u32 address)
 {
   if (!Common::IsAlignedPow2(address, 4)) [[unlikely]]
   {
@@ -3528,7 +3527,7 @@ u64 CPU::Recompiler::Thunks::ReadMemoryWord(u32 address)
   return ZeroExtend64(value);
 }
 
-u32 CPU::Recompiler::Thunks::WriteMemoryByte(u32 address, u32 value)
+u32 CPU::RecompilerThunks::WriteMemoryByte(u32 address, u32 value)
 {
   MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Byte, address, value);
 
@@ -3542,7 +3541,7 @@ u32 CPU::Recompiler::Thunks::WriteMemoryByte(u32 address, u32 value)
   return 0;
 }
 
-u32 CPU::Recompiler::Thunks::WriteMemoryHalfWord(u32 address, u32 value)
+u32 CPU::RecompilerThunks::WriteMemoryHalfWord(u32 address, u32 value)
 {
   MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::HalfWord, address, value);
 
@@ -3562,7 +3561,7 @@ u32 CPU::Recompiler::Thunks::WriteMemoryHalfWord(u32 address, u32 value)
   return 0;
 }
 
-u32 CPU::Recompiler::Thunks::WriteMemoryWord(u32 address, u32 value)
+u32 CPU::RecompilerThunks::WriteMemoryWord(u32 address, u32 value)
 {
   MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Word, address, value);
 
@@ -3582,40 +3581,40 @@ u32 CPU::Recompiler::Thunks::WriteMemoryWord(u32 address, u32 value)
   return 0;
 }
 
-u32 CPU::Recompiler::Thunks::UncheckedReadMemoryByte(u32 address)
+u32 CPU::RecompilerThunks::UncheckedReadMemoryByte(u32 address)
 {
   const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::Byte)(address);
   MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::Byte, address, value);
   return value;
 }
 
-u32 CPU::Recompiler::Thunks::UncheckedReadMemoryHalfWord(u32 address)
+u32 CPU::RecompilerThunks::UncheckedReadMemoryHalfWord(u32 address)
 {
   const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::HalfWord)(address);
   MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::HalfWord, address, value);
   return value;
 }
 
-u32 CPU::Recompiler::Thunks::UncheckedReadMemoryWord(u32 address)
+u32 CPU::RecompilerThunks::UncheckedReadMemoryWord(u32 address)
 {
   const u32 value = GetMemoryReadHandler(address, MemoryAccessSize::Word)(address);
   MEMORY_BREAKPOINT(MemoryAccessType::Read, MemoryAccessSize::Word, address, value);
   return value;
 }
 
-void CPU::Recompiler::Thunks::UncheckedWriteMemoryByte(u32 address, u32 value)
+void CPU::RecompilerThunks::UncheckedWriteMemoryByte(u32 address, u32 value)
 {
   MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Byte, address, value);
   GetMemoryWriteHandler(address, MemoryAccessSize::Byte)(address, value);
 }
 
-void CPU::Recompiler::Thunks::UncheckedWriteMemoryHalfWord(u32 address, u32 value)
+void CPU::RecompilerThunks::UncheckedWriteMemoryHalfWord(u32 address, u32 value)
 {
   MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::HalfWord, address, value);
   GetMemoryWriteHandler(address, MemoryAccessSize::HalfWord)(address, value);
 }
 
-void CPU::Recompiler::Thunks::UncheckedWriteMemoryWord(u32 address, u32 value)
+void CPU::RecompilerThunks::UncheckedWriteMemoryWord(u32 address, u32 value)
 {
   MEMORY_BREAKPOINT(MemoryAccessType::Write, MemoryAccessSize::Word, address, value);
   GetMemoryWriteHandler(address, MemoryAccessSize::Word)(address, value);

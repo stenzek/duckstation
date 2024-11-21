@@ -4,7 +4,6 @@
 #pragma once
 
 #include "cpu_code_cache_private.h"
-#include "cpu_recompiler_types.h"
 #include "cpu_types.h"
 
 #include <array>
@@ -13,35 +12,71 @@
 #include <utility>
 #include <vector>
 
-namespace CPU::Recompiler {
-
-// Global options
-static constexpr bool EMULATE_LOAD_DELAYS = true;
-static constexpr bool SWAP_BRANCH_DELAY_SLOTS = true;
-
-// Arch-specific options
-#if defined(CPU_ARCH_X64)
-static constexpr u32 NUM_HOST_REGS = 16;
-static constexpr bool HAS_MEMORY_OPERANDS = true;
-#elif defined(CPU_ARCH_ARM32)
-static constexpr u32 NUM_HOST_REGS = 16;
-static constexpr bool HAS_MEMORY_OPERANDS = false;
-#elif defined(CPU_ARCH_ARM64)
-static constexpr u32 NUM_HOST_REGS = 32;
-static constexpr bool HAS_MEMORY_OPERANDS = false;
-#elif defined(CPU_ARCH_RISCV64)
-static constexpr u32 NUM_HOST_REGS = 32;
-static constexpr bool HAS_MEMORY_OPERANDS = false;
-#endif
+namespace CPU {
 
 // TODO: Get rid of the virtuals... somehow.
 class Recompiler
 {
 public:
+  // Global options
+  static constexpr bool EMULATE_LOAD_DELAYS = true;
+  static constexpr bool SWAP_BRANCH_DELAY_SLOTS = true;
+
+  // Arch-specific options
+#if defined(CPU_ARCH_X64)
+
+  // A reasonable "maximum" number of bytes per instruction.
+  static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
+  static constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+
+  // Number of host registers.
+  static constexpr u32 NUM_HOST_REGS = 16;
+  static constexpr bool HAS_MEMORY_OPERANDS = true;
+
+#elif defined(CPU_ARCH_ARM32)
+
+  // A reasonable "maximum" number of bytes per instruction.
+  static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
+  static constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+
+  // Number of host registers.
+  static constexpr u32 NUM_HOST_REGS = 16;
+  static constexpr bool HAS_MEMORY_OPERANDS = false;
+
+#elif defined(CPU_ARCH_ARM64)
+
+  // Number of host registers.
+  static constexpr u32 NUM_HOST_REGS = 32;
+  static constexpr bool HAS_MEMORY_OPERANDS = false;
+
+  // A reasonable "maximum" number of bytes per instruction.
+  static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
+  static constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+
+#elif defined(CPU_ARCH_RISCV64)
+
+  // Number of host registers.
+  static constexpr u32 NUM_HOST_REGS = 32;
+  static constexpr bool HAS_MEMORY_OPERANDS = false;
+
+  // A reasonable "maximum" number of bytes per instruction.
+  static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
+  static constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+
+#endif
+
+public:
   Recompiler();
   virtual ~Recompiler();
 
   const void* CompileBlock(CodeCache::Block* block, u32* host_code_size, u32* host_far_code_size);
+
+  static void BackpatchLoadStore(void* exception_pc, const CodeCache::LoadstoreBackpatchInfo& info);
+
+  static u32 CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* code_address, u32 code_size,
+                                   TickCount cycles_to_add, TickCount cycles_to_remove, u32 gpr_bitmask,
+                                   u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed,
+                                   bool is_load);
 
 protected:
   enum FlushFlags : u32
@@ -274,7 +309,7 @@ protected:
   void CompileTemplate(void (Recompiler::*const_func)(CompileFlags), void (Recompiler::*func)(CompileFlags),
                        const void* pgxp_cpu_func, u32 tflags);
   void CompileLoadStoreTemplate(void (Recompiler::*func)(CompileFlags, MemoryAccessSize, bool, bool,
-                                                       const std::optional<VirtualMemoryAddress>&),
+                                                         const std::optional<VirtualMemoryAddress>&),
                                 MemoryAccessSize size, bool store, bool sign, u32 tflags);
   void FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store, bool use_fastmem);
   void CompileMoveRegTemplate(Reg dst, Reg src, bool pgxp_move);
@@ -533,11 +568,5 @@ protected:
   static const std::array<const void*, 3> s_pgxp_mem_store_functions;
 };
 
-void BackpatchLoadStore(void* exception_pc, const CodeCache::LoadstoreBackpatchInfo& info);
-
-u32 CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* code_address, u32 code_size, TickCount cycles_to_add,
-                          TickCount cycles_to_remove, u32 gpr_bitmask, u8 address_register, u8 data_register,
-                          MemoryAccessSize size, bool is_signed, bool is_load);
-
 extern Recompiler* g_compiler;
-} // namespace CPU::Recompiler
+} // namespace CPU
