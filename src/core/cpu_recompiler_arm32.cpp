@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "cpu_newrec_compiler_aarch32.h"
+#include "cpu_recompiler_arm32.h"
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
 #include "cpu_recompiler_thunks.h"
@@ -13,52 +13,327 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/memmap.h"
 #include "common/string_util.h"
 
 #include <limits>
 
 #ifdef CPU_ARCH_ARM32
 
+#ifdef ENABLE_HOST_DISASSEMBLY
+#include "vixl/aarch32/disasm-aarch32.h"
+#include <iostream>
+#endif
+
 LOG_CHANNEL(Recompiler);
 
 #define PTR(x) vixl::aarch32::MemOperand(RSTATE, (((u8*)(x)) - ((u8*)&g_state)))
 #define RMEMBASE vixl::aarch32::r3
 
-namespace CPU::NewRec {
+namespace CPU::Recompiler {
 
 using namespace vixl::aarch32;
 
-using CPU::Recompiler::armEmitCall;
-using CPU::Recompiler::armEmitCondBranch;
-using CPU::Recompiler::armEmitFarLoad;
-using CPU::Recompiler::armEmitJmp;
-using CPU::Recompiler::armEmitMov;
-using CPU::Recompiler::armGetJumpTrampoline;
-using CPU::Recompiler::armGetPCDisplacement;
-using CPU::Recompiler::armIsCallerSavedRegister;
-using CPU::Recompiler::armIsPCDisplacementInImmediateRange;
-using CPU::Recompiler::armMoveAddressToReg;
+constexpr u32 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
+constexpr u32 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 bytes
+constexpr u32 FUNCTION_STACK_SIZE = FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE;
 
-AArch32Compiler s_instance;
-Compiler* g_compiler = &s_instance;
+static constexpr u32 TRAMPOLINE_AREA_SIZE = 4 * 1024;
+static std::unordered_map<const void*, u32> s_trampoline_targets;
+static u8* s_trampoline_start_ptr = nullptr;
+static u32 s_trampoline_used = 0;
 
-} // namespace CPU::NewRec
+static ARM32Recompiler s_instance;
+Recompiler* g_compiler = &s_instance;
 
-CPU::NewRec::AArch32Compiler::AArch32Compiler() : m_emitter(A32), m_far_emitter(A32)
+} // namespace CPU::Recompiler
+
+bool CPU::Recompiler::armIsCallerSavedRegister(u32 id)
+{
+  return ((id >= 0 && id <= 3) ||  // r0-r3
+          (id == 12 || id == 14)); // sp, pc
+}
+
+s32 CPU::Recompiler::armGetPCDisplacement(const void* current, const void* target)
+{
+  Assert(Common::IsAlignedPow2(reinterpret_cast<size_t>(current), 4));
+  Assert(Common::IsAlignedPow2(reinterpret_cast<size_t>(target), 4));
+  return static_cast<s32>((reinterpret_cast<ptrdiff_t>(target) - reinterpret_cast<ptrdiff_t>(current)));
+}
+
+bool CPU::Recompiler::armIsPCDisplacementInImmediateRange(s32 displacement)
+{
+  return (displacement >= -33554432 && displacement <= 33554428);
+}
+
+void CPU::Recompiler::armEmitMov(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& rd, u32 imm)
+{
+  if (vixl::IsUintN(16, imm))
+  {
+    armAsm->mov(al, rd, imm & 0xffff);
+    return;
+  }
+
+  armAsm->mov(al, rd, imm & 0xffff);
+  armAsm->movt(al, rd, imm >> 16);
+}
+
+void CPU::Recompiler::armMoveAddressToReg(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg,
+                                          const void* addr)
+{
+  armEmitMov(armAsm, reg, static_cast<u32>(reinterpret_cast<uintptr_t>(addr)));
+}
+
+void CPU::Recompiler::armEmitJmp(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline)
+{
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  s32 displacement = armGetPCDisplacement(cur, ptr);
+  bool use_bx = !armIsPCDisplacementInImmediateRange(displacement);
+  if (use_bx && !force_inline)
+  {
+    if (u8* trampoline = armGetJumpTrampoline(ptr); trampoline)
+    {
+      displacement = armGetPCDisplacement(cur, trampoline);
+      use_bx = !armIsPCDisplacementInImmediateRange(displacement);
+    }
+  }
+
+  if (use_bx)
+  {
+    armMoveAddressToReg(armAsm, RSCRATCH, ptr);
+    armAsm->bx(RSCRATCH);
+  }
+  else
+  {
+    Label label(displacement + armAsm->GetCursorOffset());
+    armAsm->b(&label);
+  }
+}
+
+void CPU::Recompiler::armEmitCall(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_inline)
+{
+  const void* cur = armAsm->GetCursorAddress<const void*>();
+  s32 displacement = armGetPCDisplacement(cur, ptr);
+  bool use_blx = !armIsPCDisplacementInImmediateRange(displacement);
+  if (use_blx && !force_inline)
+  {
+    if (u8* trampoline = armGetJumpTrampoline(ptr); trampoline)
+    {
+      displacement = armGetPCDisplacement(cur, trampoline);
+      use_blx = !armIsPCDisplacementInImmediateRange(displacement);
+    }
+  }
+
+  if (use_blx)
+  {
+    armMoveAddressToReg(armAsm, RSCRATCH, ptr);
+    armAsm->blx(RSCRATCH);
+  }
+  else
+  {
+    Label label(displacement + armAsm->GetCursorOffset());
+    armAsm->bl(&label);
+  }
+}
+
+void CPU::Recompiler::armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::aarch32::Condition cond,
+                                        const void* ptr)
+{
+  const s32 displacement = armGetPCDisplacement(armAsm->GetCursorAddress<const void*>(), ptr);
+  if (!armIsPCDisplacementInImmediateRange(displacement))
+  {
+    armMoveAddressToReg(armAsm, RSCRATCH, ptr);
+    armAsm->blx(cond, RSCRATCH);
+  }
+  else
+  {
+    Label label(displacement + armAsm->GetCursorOffset());
+    armAsm->b(cond, &label);
+  }
+}
+
+void CPU::Recompiler::armEmitFarLoad(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg,
+                                     const void* addr)
+{
+  armMoveAddressToReg(armAsm, reg, addr);
+  armAsm->ldr(reg, MemOperand(reg));
+}
+
+void CPU::Recompiler::armEmitFarStore(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg,
+                                      const void* addr, const vixl::aarch32::Register& tempreg)
+{
+  armMoveAddressToReg(armAsm, tempreg, addr);
+  armAsm->str(reg, MemOperand(tempreg));
+}
+
+void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
+{
+#ifdef ENABLE_HOST_DISASSEMBLY
+  vixl::aarch32::PrintDisassembler dis(std::cout, 0);
+  dis.SetCodeAddress(reinterpret_cast<uintptr_t>(start));
+  dis.DisassembleA32Buffer(static_cast<const u32*>(start), size);
+#else
+  ERROR_LOG("Not compiled with ENABLE_HOST_DISASSEMBLY.");
+#endif
+}
+
+u32 CPU::CodeCache::GetHostInstructionCount(const void* start, u32 size)
+{
+  return size / vixl::aarch32::kA32InstructionSizeInBytes;
+}
+
+u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
+{
+  using namespace vixl::aarch32;
+  using namespace CPU::Recompiler;
+
+  const s32 disp = armGetPCDisplacement(code, dst);
+  DebugAssert(armIsPCDisplacementInImmediateRange(disp));
+
+  // A32 jumps are silly.
+  {
+    Assembler emit(static_cast<vixl::byte*>(code), kA32InstructionSizeInBytes, A32);
+    Label label(disp);
+    emit.b(&label);
+  }
+
+  if (flush_icache)
+    MemMap::FlushInstructionCache(code, kA32InstructionSizeInBytes);
+
+  return kA32InstructionSizeInBytes;
+}
+
+u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
+{
+  auto it = s_trampoline_targets.find(target);
+  if (it != s_trampoline_targets.end())
+    return s_trampoline_start_ptr + it->second;
+
+  // align to 16 bytes?
+  const u32 offset = s_trampoline_used; // Common::AlignUpPow2(s_trampoline_used, 16);
+
+  // 4 movs plus a jump
+  if (TRAMPOLINE_AREA_SIZE - offset < 20)
+  {
+    Panic("Ran out of space in constant pool");
+    return nullptr;
+  }
+
+  u8* start = s_trampoline_start_ptr + offset;
+  Assembler armAsm(start, TRAMPOLINE_AREA_SIZE - offset);
+  armMoveAddressToReg(&armAsm, RSCRATCH, target);
+  armAsm.bx(RSCRATCH);
+
+  const u32 size = static_cast<u32>(armAsm.GetSizeOfCodeGenerated());
+  DebugAssert(size < 20);
+  s_trampoline_targets.emplace(target, offset);
+  s_trampoline_used = offset + static_cast<u32>(size);
+
+  MemMap::FlushInstructionCache(start, size);
+  return start;
+}
+
+u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
+{
+  using namespace vixl::aarch32;
+  using namespace CPU::Recompiler;
+
+  Assembler actual_asm(static_cast<u8*>(code), code_size);
+  Assembler* armAsm = &actual_asm;
+
+#ifdef VIXL_DEBUG
+  vixl::CodeBufferCheckScope asm_check(armAsm, code_size, vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
+#endif
+
+  Label dispatch;
+
+  g_enter_recompiler = armAsm->GetCursorAddress<decltype(g_enter_recompiler)>();
+  {
+    // reserve some space for saving caller-saved registers
+    armAsm->sub(sp, sp, FUNCTION_STACK_SIZE);
+
+    // Need the CPU state for basically everything :-)
+    armMoveAddressToReg(armAsm, RSTATE, &g_state);
+  }
+
+  // check events then for frame done
+  g_check_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
+  {
+    Label skip_event_check;
+    armAsm->ldr(RARG1, PTR(&g_state.pending_ticks));
+    armAsm->ldr(RARG2, PTR(&g_state.downcount));
+    armAsm->cmp(RARG1, RARG2);
+    armAsm->b(lt, &skip_event_check);
+
+    g_run_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
+    armEmitCall(armAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents), true);
+
+    armAsm->bind(&skip_event_check);
+  }
+
+  // TODO: align?
+  g_dispatcher = armAsm->GetCursorAddress<const void*>();
+  {
+    armAsm->bind(&dispatch);
+
+    // x9 <- s_fast_map[pc >> 16]
+    armAsm->ldr(RARG1, PTR(&g_state.pc));
+    armMoveAddressToReg(armAsm, RARG3, g_code_lut.data());
+    armAsm->lsr(RARG2, RARG1, 16);
+    armAsm->ldr(RARG2, MemOperand(RARG3, RARG2, LSL, 2));
+
+    // blr(x9[pc * 2]) (fast_map[pc >> 2])
+    armAsm->ldr(RARG1, MemOperand(RARG2, RARG1));
+    armAsm->blx(RARG1);
+  }
+
+  g_compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
+  {
+    armAsm->ldr(RARG1, PTR(&g_state.pc));
+    armEmitCall(armAsm, reinterpret_cast<const void*>(&CompileOrRevalidateBlock), true);
+    armAsm->b(&dispatch);
+  }
+
+  g_discard_and_recompile_block = armAsm->GetCursorAddress<const void*>();
+  {
+    armAsm->ldr(RARG1, PTR(&g_state.pc));
+    armEmitCall(armAsm, reinterpret_cast<const void*>(&DiscardAndRecompileBlock), true);
+    armAsm->b(&dispatch);
+  }
+
+  g_interpret_block = armAsm->GetCursorAddress<const void*>();
+  {
+    armEmitCall(armAsm, reinterpret_cast<const void*>(GetInterpretUncachedBlockFunction()), true);
+    armAsm->b(&dispatch);
+  }
+
+  armAsm->FinalizeCode();
+
+#if 0
+  // TODO: align?
+  s_trampoline_targets.clear();
+  s_trampoline_start_ptr = static_cast<u8*>(code) + armAsm->GetCursorOffset();
+  s_trampoline_used = 0;
+#endif
+
+  return static_cast<u32>(armAsm->GetCursorOffset()) /* + TRAMPOLINE_AREA_SIZE*/;
+}
+
+CPU::Recompiler::ARM32Recompiler::ARM32Recompiler() : m_emitter(A32), m_far_emitter(A32)
 {
 }
 
-CPU::NewRec::AArch32Compiler::~AArch32Compiler() = default;
+CPU::Recompiler::ARM32Recompiler::~ARM32Recompiler() = default;
 
-const void* CPU::NewRec::AArch32Compiler::GetCurrentCodePointer()
+const void* CPU::Recompiler::ARM32Recompiler::GetCurrentCodePointer()
 {
   return armAsm->GetCursorAddress<const void*>();
 }
 
-void CPU::NewRec::AArch32Compiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space,
-                                         u8* far_code_buffer, u32 far_code_space)
+void CPU::Recompiler::ARM32Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space,
+                                             u8* far_code_buffer, u32 far_code_space)
 {
-  Compiler::Reset(block, code_buffer, code_buffer_space, far_code_buffer, far_code_space);
+  Recompiler::Reset(block, code_buffer, code_buffer_space, far_code_buffer, far_code_space);
 
   // TODO: don't recreate this every time..
   DebugAssert(!armAsm);
@@ -94,7 +369,7 @@ void CPU::NewRec::AArch32Compiler::Reset(CodeCache::Block* block, u8* code_buffe
   }
 }
 
-void CPU::NewRec::AArch32Compiler::SwitchToFarCode(bool emit_jump, vixl::aarch32::ConditionType cond)
+void CPU::Recompiler::ARM32Recompiler::SwitchToFarCode(bool emit_jump, vixl::aarch32::ConditionType cond)
 {
   DebugAssert(armAsm == &m_emitter);
   if (emit_jump)
@@ -120,7 +395,7 @@ void CPU::NewRec::AArch32Compiler::SwitchToFarCode(bool emit_jump, vixl::aarch32
   armAsm = &m_far_emitter;
 }
 
-void CPU::NewRec::AArch32Compiler::SwitchToFarCodeIfBitSet(const vixl::aarch32::Register& reg, u32 bit)
+void CPU::Recompiler::ARM32Recompiler::SwitchToFarCodeIfBitSet(const vixl::aarch32::Register& reg, u32 bit)
 {
   armAsm->tst(reg, 1u << bit);
 
@@ -141,7 +416,8 @@ void CPU::NewRec::AArch32Compiler::SwitchToFarCodeIfBitSet(const vixl::aarch32::
   armAsm = &m_far_emitter;
 }
 
-void CPU::NewRec::AArch32Compiler::SwitchToFarCodeIfRegZeroOrNonZero(const vixl::aarch32::Register& reg, bool nonzero)
+void CPU::Recompiler::ARM32Recompiler::SwitchToFarCodeIfRegZeroOrNonZero(const vixl::aarch32::Register& reg,
+                                                                         bool nonzero)
 {
   armAsm->cmp(reg, 0);
 
@@ -162,7 +438,7 @@ void CPU::NewRec::AArch32Compiler::SwitchToFarCodeIfRegZeroOrNonZero(const vixl:
   armAsm = &m_far_emitter;
 }
 
-void CPU::NewRec::AArch32Compiler::SwitchToNearCode(bool emit_jump, vixl::aarch32::ConditionType cond)
+void CPU::Recompiler::ARM32Recompiler::SwitchToNearCode(bool emit_jump, vixl::aarch32::ConditionType cond)
 {
   DebugAssert(armAsm == &m_far_emitter);
   if (emit_jump)
@@ -188,17 +464,17 @@ void CPU::NewRec::AArch32Compiler::SwitchToNearCode(bool emit_jump, vixl::aarch3
   armAsm = &m_emitter;
 }
 
-void CPU::NewRec::AArch32Compiler::EmitMov(const vixl::aarch32::Register& dst, u32 val)
+void CPU::Recompiler::ARM32Recompiler::EmitMov(const vixl::aarch32::Register& dst, u32 val)
 {
   armEmitMov(armAsm, dst, val);
 }
 
-void CPU::NewRec::AArch32Compiler::EmitCall(const void* ptr, bool force_inline /*= false*/)
+void CPU::Recompiler::ARM32Recompiler::EmitCall(const void* ptr, bool force_inline /*= false*/)
 {
   armEmitCall(armAsm, ptr, force_inline);
 }
 
-vixl::aarch32::Operand CPU::NewRec::AArch32Compiler::armCheckAddSubConstant(s32 val)
+vixl::aarch32::Operand CPU::Recompiler::ARM32Recompiler::armCheckAddSubConstant(s32 val)
 {
   if (ImmediateA32::IsImmediateA32(static_cast<u32>(val)))
     return vixl::aarch32::Operand(static_cast<int32_t>(val));
@@ -207,27 +483,27 @@ vixl::aarch32::Operand CPU::NewRec::AArch32Compiler::armCheckAddSubConstant(s32 
   return vixl::aarch32::Operand(RSCRATCH);
 }
 
-vixl::aarch32::Operand CPU::NewRec::AArch32Compiler::armCheckAddSubConstant(u32 val)
+vixl::aarch32::Operand CPU::Recompiler::ARM32Recompiler::armCheckAddSubConstant(u32 val)
 {
   return armCheckAddSubConstant(static_cast<s32>(val));
 }
 
-vixl::aarch32::Operand CPU::NewRec::AArch32Compiler::armCheckCompareConstant(s32 val)
+vixl::aarch32::Operand CPU::Recompiler::ARM32Recompiler::armCheckCompareConstant(s32 val)
 {
   return armCheckAddSubConstant(val);
 }
 
-vixl::aarch32::Operand CPU::NewRec::AArch32Compiler::armCheckLogicalConstant(u32 val)
+vixl::aarch32::Operand CPU::Recompiler::ARM32Recompiler::armCheckLogicalConstant(u32 val)
 {
   return armCheckAddSubConstant(val);
 }
 
-void CPU::NewRec::AArch32Compiler::BeginBlock()
+void CPU::Recompiler::ARM32Recompiler::BeginBlock()
 {
-  Compiler::BeginBlock();
+  Recompiler::BeginBlock();
 }
 
-void CPU::NewRec::AArch32Compiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
+void CPU::Recompiler::ARM32Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
 {
   // store it first to reduce code size, because we can offset
   armMoveAddressToReg(armAsm, RARG1, ram_ptr);
@@ -303,7 +579,7 @@ bool foo(const void* a, const void* b)
   armAsm->bind(&block_unchanged);
 }
 
-void CPU::NewRec::AArch32Compiler::GenerateICacheCheckAndUpdate()
+void CPU::Recompiler::ARM32Recompiler::GenerateICacheCheckAndUpdate()
 {
   if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
@@ -359,8 +635,8 @@ void CPU::NewRec::AArch32Compiler::GenerateICacheCheckAndUpdate()
   }
 }
 
-void CPU::NewRec::AArch32Compiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s32 arg2reg /*= -1*/,
-                                                s32 arg3reg /*= -1*/)
+void CPU::Recompiler::ARM32Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s32 arg2reg /*= -1*/,
+                                                    s32 arg3reg /*= -1*/)
 {
   if (arg1reg >= 0 && arg1reg != static_cast<s32>(RARG1.GetCode()))
     armAsm->mov(RARG1, Register(arg1reg));
@@ -371,7 +647,7 @@ void CPU::NewRec::AArch32Compiler::GenerateCall(const void* func, s32 arg1reg /*
   EmitCall(func);
 }
 
-void CPU::NewRec::AArch32Compiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
+void CPU::Recompiler::ARM32Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
 {
   if (newpc.has_value())
   {
@@ -388,7 +664,7 @@ void CPU::NewRec::AArch32Compiler::EndBlock(const std::optional<u32>& newpc, boo
   EndAndLinkBlock(newpc, do_event_test, false);
 }
 
-void CPU::NewRec::AArch32Compiler::EndBlockWithException(Exception excode)
+void CPU::Recompiler::ARM32Recompiler::EndBlockWithException(Exception excode)
 {
   // flush regs, but not pc, it's going to get overwritten
   // flush cycles because of the GTE instruction stuff...
@@ -406,8 +682,8 @@ void CPU::NewRec::AArch32Compiler::EndBlockWithException(Exception excode)
   EndAndLinkBlock(std::nullopt, true, false);
 }
 
-void CPU::NewRec::AArch32Compiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test,
-                                                   bool force_run_events)
+void CPU::Recompiler::ARM32Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test,
+                                                       bool force_run_events)
 {
   // event test
   // pc should've been flushed
@@ -464,7 +740,7 @@ void CPU::NewRec::AArch32Compiler::EndAndLinkBlock(const std::optional<u32>& new
   }
 }
 
-const void* CPU::NewRec::AArch32Compiler::EndCompile(u32* code_size, u32* far_code_size)
+const void* CPU::Recompiler::ARM32Recompiler::EndCompile(u32* code_size, u32* far_code_size)
 {
 #ifdef VIXL_DEBUG
   m_emitter_check.reset();
@@ -481,7 +757,7 @@ const void* CPU::NewRec::AArch32Compiler::EndCompile(u32* code_size, u32* far_co
   return code;
 }
 
-const char* CPU::NewRec::AArch32Compiler::GetHostRegName(u32 reg) const
+const char* CPU::Recompiler::ARM32Recompiler::GetHostRegName(u32 reg) const
 {
   static constexpr std::array<const char*, 32> reg64_names = {
     {"x0",  "x1",  "x2",  "x3",  "x4",  "x5",  "x6",  "x7",  "x8",  "x9",  "x10", "x11", "x12", "x13", "x14", "x15",
@@ -489,80 +765,80 @@ const char* CPU::NewRec::AArch32Compiler::GetHostRegName(u32 reg) const
   return (reg < reg64_names.size()) ? reg64_names[reg] : "UNKNOWN";
 }
 
-void CPU::NewRec::AArch32Compiler::LoadHostRegWithConstant(u32 reg, u32 val)
+void CPU::Recompiler::ARM32Recompiler::LoadHostRegWithConstant(u32 reg, u32 val)
 {
   EmitMov(Register(reg), val);
 }
 
-void CPU::NewRec::AArch32Compiler::LoadHostRegFromCPUPointer(u32 reg, const void* ptr)
+void CPU::Recompiler::ARM32Recompiler::LoadHostRegFromCPUPointer(u32 reg, const void* ptr)
 {
   armAsm->ldr(Register(reg), PTR(ptr));
 }
 
-void CPU::NewRec::AArch32Compiler::StoreHostRegToCPUPointer(u32 reg, const void* ptr)
+void CPU::Recompiler::ARM32Recompiler::StoreHostRegToCPUPointer(u32 reg, const void* ptr)
 {
   armAsm->str(Register(reg), PTR(ptr));
 }
 
-void CPU::NewRec::AArch32Compiler::StoreConstantToCPUPointer(u32 val, const void* ptr)
+void CPU::Recompiler::ARM32Recompiler::StoreConstantToCPUPointer(u32 val, const void* ptr)
 {
   EmitMov(RSCRATCH, val);
   armAsm->str(RSCRATCH, PTR(ptr));
 }
 
-void CPU::NewRec::AArch32Compiler::CopyHostReg(u32 dst, u32 src)
+void CPU::Recompiler::ARM32Recompiler::CopyHostReg(u32 dst, u32 src)
 {
   if (src != dst)
     armAsm->mov(Register(dst), Register(src));
 }
 
-void CPU::NewRec::AArch32Compiler::AssertRegOrConstS(CompileFlags cf) const
+void CPU::Recompiler::ARM32Recompiler::AssertRegOrConstS(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_s || cf.const_s);
 }
 
-void CPU::NewRec::AArch32Compiler::AssertRegOrConstT(CompileFlags cf) const
+void CPU::Recompiler::ARM32Recompiler::AssertRegOrConstT(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_t || cf.const_t);
 }
 
-vixl::aarch32::MemOperand CPU::NewRec::AArch32Compiler::MipsPtr(Reg r) const
+vixl::aarch32::MemOperand CPU::Recompiler::ARM32Recompiler::MipsPtr(Reg r) const
 {
   DebugAssert(r < Reg::count);
   return PTR(&g_state.regs.r[static_cast<u32>(r)]);
 }
 
-vixl::aarch32::Register CPU::NewRec::AArch32Compiler::CFGetRegD(CompileFlags cf) const
+vixl::aarch32::Register CPU::Recompiler::ARM32Recompiler::CFGetRegD(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_d);
   return Register(cf.host_d);
 }
 
-vixl::aarch32::Register CPU::NewRec::AArch32Compiler::CFGetRegS(CompileFlags cf) const
+vixl::aarch32::Register CPU::Recompiler::ARM32Recompiler::CFGetRegS(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_s);
   return Register(cf.host_s);
 }
 
-vixl::aarch32::Register CPU::NewRec::AArch32Compiler::CFGetRegT(CompileFlags cf) const
+vixl::aarch32::Register CPU::Recompiler::ARM32Recompiler::CFGetRegT(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_t);
   return Register(cf.host_t);
 }
 
-vixl::aarch32::Register CPU::NewRec::AArch32Compiler::CFGetRegLO(CompileFlags cf) const
+vixl::aarch32::Register CPU::Recompiler::ARM32Recompiler::CFGetRegLO(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_lo);
   return Register(cf.host_lo);
 }
 
-vixl::aarch32::Register CPU::NewRec::AArch32Compiler::CFGetRegHI(CompileFlags cf) const
+vixl::aarch32::Register CPU::Recompiler::ARM32Recompiler::CFGetRegHI(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_hi);
   return Register(cf.host_hi);
 }
 
-vixl::aarch32::Register CPU::NewRec::AArch32Compiler::GetMembaseReg()
+vixl::aarch32::Register CPU::Recompiler::ARM32Recompiler::GetMembaseReg()
 {
   const u32 code = RMEMBASE.GetCode();
   if (!IsHostRegAllocated(code))
@@ -576,7 +852,7 @@ vixl::aarch32::Register CPU::NewRec::AArch32Compiler::GetMembaseReg()
   return RMEMBASE;
 }
 
-void CPU::NewRec::AArch32Compiler::MoveSToReg(const vixl::aarch32::Register& dst, CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::MoveSToReg(const vixl::aarch32::Register& dst, CompileFlags cf)
 {
   if (cf.valid_host_s)
   {
@@ -595,7 +871,7 @@ void CPU::NewRec::AArch32Compiler::MoveSToReg(const vixl::aarch32::Register& dst
   }
 }
 
-void CPU::NewRec::AArch32Compiler::MoveTToReg(const vixl::aarch32::Register& dst, CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::MoveTToReg(const vixl::aarch32::Register& dst, CompileFlags cf)
 {
   if (cf.valid_host_t)
   {
@@ -614,10 +890,10 @@ void CPU::NewRec::AArch32Compiler::MoveTToReg(const vixl::aarch32::Register& dst
   }
 }
 
-void CPU::NewRec::AArch32Compiler::MoveMIPSRegToReg(const vixl::aarch32::Register& dst, Reg reg)
+void CPU::Recompiler::ARM32Recompiler::MoveMIPSRegToReg(const vixl::aarch32::Register& dst, Reg reg)
 {
   DebugAssert(reg < Reg::count);
-  if (const std::optional<u32> hreg = CheckHostReg(0, Compiler::HR_TYPE_CPU_REG, reg))
+  if (const std::optional<u32> hreg = CheckHostReg(0, Recompiler::HR_TYPE_CPU_REG, reg))
     armAsm->mov(dst, Register(hreg.value()));
   else if (HasConstantReg(reg))
     EmitMov(dst, GetConstantRegU32(reg));
@@ -625,9 +901,9 @@ void CPU::NewRec::AArch32Compiler::MoveMIPSRegToReg(const vixl::aarch32::Registe
     armAsm->ldr(dst, MipsPtr(reg));
 }
 
-void CPU::NewRec::AArch32Compiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val,
-                                                                Reg arg2reg /* = Reg::count */,
-                                                                Reg arg3reg /* = Reg::count */)
+void CPU::Recompiler::ARM32Recompiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val,
+                                                                    Reg arg2reg /* = Reg::count */,
+                                                                    Reg arg3reg /* = Reg::count */)
 {
   DebugAssert(g_settings.gpu_pgxp_enable);
 
@@ -642,9 +918,9 @@ void CPU::NewRec::AArch32Compiler::GeneratePGXPCallWithMIPSRegs(const void* func
   EmitCall(func);
 }
 
-void CPU::NewRec::AArch32Compiler::Flush(u32 flags)
+void CPU::Recompiler::ARM32Recompiler::Flush(u32 flags)
 {
-  Compiler::Flush(flags);
+  Recompiler::Flush(flags);
 
   if (flags & FLUSH_PC && m_dirty_pc)
   {
@@ -734,7 +1010,7 @@ void CPU::NewRec::AArch32Compiler::Flush(u32 flags)
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_Fallback()
+void CPU::Recompiler::ARM32Recompiler::Compile_Fallback()
 {
   WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", iinfo->pc, inst->bits);
 
@@ -759,7 +1035,7 @@ void CPU::NewRec::AArch32Compiler::Compile_Fallback()
   m_load_delay_dirty = EMULATE_LOAD_DELAYS;
 }
 
-void CPU::NewRec::AArch32Compiler::CheckBranchTarget(const vixl::aarch32::Register& pcreg)
+void CPU::Recompiler::ARM32Recompiler::CheckBranchTarget(const vixl::aarch32::Register& pcreg)
 {
   if (!g_settings.cpu_recompiler_memory_exceptions)
     return;
@@ -774,7 +1050,7 @@ void CPU::NewRec::AArch32Compiler::CheckBranchTarget(const vixl::aarch32::Regist
   SwitchToNearCode(false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_jr(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_jr(CompileFlags cf)
 {
   const Register pcreg = CFGetRegS(cf);
   CheckBranchTarget(pcreg);
@@ -785,7 +1061,7 @@ void CPU::NewRec::AArch32Compiler::Compile_jr(CompileFlags cf)
   EndBlock(std::nullopt, true);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_jalr(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_jalr(CompileFlags cf)
 {
   const Register pcreg = CFGetRegS(cf);
   if (MipsD() != Reg::zero)
@@ -798,7 +1074,7 @@ void CPU::NewRec::AArch32Compiler::Compile_jalr(CompileFlags cf)
   EndBlock(std::nullopt, true);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
+void CPU::Recompiler::ARM32Recompiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
 {
   AssertRegOrConstS(cf);
 
@@ -872,7 +1148,7 @@ void CPU::NewRec::AArch32Compiler::Compile_bxx(CompileFlags cf, BranchCondition 
   EndBlock(taken_pc, true);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_addi(CompileFlags cf, bool overflow)
+void CPU::Recompiler::ARM32Recompiler::Compile_addi(CompileFlags cf, bool overflow)
 {
   const Register rs = CFGetRegS(cf);
   const Register rt = CFGetRegT(cf);
@@ -894,27 +1170,27 @@ void CPU::NewRec::AArch32Compiler::Compile_addi(CompileFlags cf, bool overflow)
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_addi(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_addi(CompileFlags cf)
 {
   Compile_addi(cf, g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_addiu(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_addiu(CompileFlags cf)
 {
   Compile_addi(cf, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_slti(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_slti(CompileFlags cf)
 {
   Compile_slti(cf, true);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_sltiu(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_sltiu(CompileFlags cf)
 {
   Compile_slti(cf, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_slti(CompileFlags cf, bool sign)
+void CPU::Recompiler::ARM32Recompiler::Compile_slti(CompileFlags cf, bool sign)
 {
   const Register rs = CFGetRegS(cf);
   const Register rt = CFGetRegT(cf);
@@ -923,7 +1199,7 @@ void CPU::NewRec::AArch32Compiler::Compile_slti(CompileFlags cf, bool sign)
   armAsm->mov(sign ? lt : lo, rt, 1);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_andi(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_andi(CompileFlags cf)
 {
   const Register rt = CFGetRegT(cf);
   if (const u32 imm = inst->i.imm_zext32(); imm != 0)
@@ -932,7 +1208,7 @@ void CPU::NewRec::AArch32Compiler::Compile_andi(CompileFlags cf)
     EmitMov(rt, 0);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_ori(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_ori(CompileFlags cf)
 {
   const Register rt = CFGetRegT(cf);
   const Register rs = CFGetRegS(cf);
@@ -942,7 +1218,7 @@ void CPU::NewRec::AArch32Compiler::Compile_ori(CompileFlags cf)
     armAsm->mov(rt, rs);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_xori(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_xori(CompileFlags cf)
 {
   const Register rt = CFGetRegT(cf);
   const Register rs = CFGetRegS(cf);
@@ -952,10 +1228,10 @@ void CPU::NewRec::AArch32Compiler::Compile_xori(CompileFlags cf)
     armAsm->mov(rt, rs);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_shift(CompileFlags cf,
-                                                 void (vixl::aarch32::Assembler::*op)(vixl::aarch32::Register,
-                                                                                      vixl::aarch32::Register,
-                                                                                      const Operand&))
+void CPU::Recompiler::ARM32Recompiler::Compile_shift(CompileFlags cf,
+                                                     void (vixl::aarch32::Assembler::*op)(vixl::aarch32::Register,
+                                                                                          vixl::aarch32::Register,
+                                                                                          const Operand&))
 {
   const Register rd = CFGetRegD(cf);
   const Register rt = CFGetRegT(cf);
@@ -965,25 +1241,24 @@ void CPU::NewRec::AArch32Compiler::Compile_shift(CompileFlags cf,
     armAsm->mov(rd, rt);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_sll(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_sll(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::lsl);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_srl(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_srl(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::lsr);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_sra(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_sra(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::asr);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_variable_shift(CompileFlags cf,
-                                                          void (vixl::aarch32::Assembler::*op)(vixl::aarch32::Register,
-                                                                                               vixl::aarch32::Register,
-                                                                                               const Operand&))
+void CPU::Recompiler::ARM32Recompiler::Compile_variable_shift(
+  CompileFlags cf,
+  void (vixl::aarch32::Assembler::*op)(vixl::aarch32::Register, vixl::aarch32::Register, const Operand&))
 {
   const Register rd = CFGetRegD(cf);
 
@@ -1008,22 +1283,22 @@ void CPU::NewRec::AArch32Compiler::Compile_variable_shift(CompileFlags cf,
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_sllv(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_sllv(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::lsl);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_srlv(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_srlv(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::lsr);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_srav(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_srav(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::asr);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_mult(CompileFlags cf, bool sign)
+void CPU::Recompiler::ARM32Recompiler::Compile_mult(CompileFlags cf, bool sign)
 {
   const Register rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
   if (!cf.valid_host_s)
@@ -1040,17 +1315,17 @@ void CPU::NewRec::AArch32Compiler::Compile_mult(CompileFlags cf, bool sign)
   (sign) ? armAsm->smull(lo, hi, rs, rt) : armAsm->umull(lo, hi, rs, rt);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_mult(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_mult(CompileFlags cf)
 {
   Compile_mult(cf, true);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_multu(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_multu(CompileFlags cf)
 {
   Compile_mult(cf, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_div(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_div(CompileFlags cf)
 {
   const Register rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
   if (!cf.valid_host_s)
@@ -1096,7 +1371,7 @@ void CPU::NewRec::AArch32Compiler::Compile_div(CompileFlags cf)
   armAsm->bind(&done);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_divu(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_divu(CompileFlags cf)
 {
   const Register rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
   if (!cf.valid_host_s)
@@ -1127,7 +1402,7 @@ void CPU::NewRec::AArch32Compiler::Compile_divu(CompileFlags cf)
   armAsm->bind(&done);
 }
 
-void CPU::NewRec::AArch32Compiler::TestOverflow(const vixl::aarch32::Register& result)
+void CPU::Recompiler::ARM32Recompiler::TestOverflow(const vixl::aarch32::Register& result)
 {
   SwitchToFarCode(true, vs);
 
@@ -1143,11 +1418,11 @@ void CPU::NewRec::AArch32Compiler::TestOverflow(const vixl::aarch32::Register& r
   SwitchToNearCode(false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_dst_op(CompileFlags cf,
-                                                  void (vixl::aarch32::Assembler::*op)(vixl::aarch32::Register,
-                                                                                       vixl::aarch32::Register,
-                                                                                       const Operand&),
-                                                  bool commutative, bool logical, bool overflow)
+void CPU::Recompiler::ARM32Recompiler::Compile_dst_op(CompileFlags cf,
+                                                      void (vixl::aarch32::Assembler::*op)(vixl::aarch32::Register,
+                                                                                           vixl::aarch32::Register,
+                                                                                           const Operand&),
+                                                      bool commutative, bool logical, bool overflow)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1195,7 +1470,7 @@ void CPU::NewRec::AArch32Compiler::Compile_dst_op(CompileFlags cf,
     TestOverflow(rd);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_add(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_add(CompileFlags cf)
 {
   if (g_settings.cpu_recompiler_memory_exceptions)
     Compile_dst_op(cf, &Assembler::adds, true, false, true);
@@ -1203,12 +1478,12 @@ void CPU::NewRec::AArch32Compiler::Compile_add(CompileFlags cf)
     Compile_dst_op(cf, &Assembler::add, true, false, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_addu(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_addu(CompileFlags cf)
 {
   Compile_dst_op(cf, &Assembler::add, true, false, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_sub(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_sub(CompileFlags cf)
 {
   if (g_settings.cpu_recompiler_memory_exceptions)
     Compile_dst_op(cf, &Assembler::subs, false, false, true);
@@ -1216,12 +1491,12 @@ void CPU::NewRec::AArch32Compiler::Compile_sub(CompileFlags cf)
     Compile_dst_op(cf, &Assembler::sub, false, false, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_subu(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_subu(CompileFlags cf)
 {
   Compile_dst_op(cf, &Assembler::sub, false, false, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_and(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_and(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1242,7 +1517,7 @@ void CPU::NewRec::AArch32Compiler::Compile_and(CompileFlags cf)
   Compile_dst_op(cf, &Assembler::and_, true, true, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_or(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_or(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1258,7 +1533,7 @@ void CPU::NewRec::AArch32Compiler::Compile_or(CompileFlags cf)
   Compile_dst_op(cf, &Assembler::orr, true, true, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_xor(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_xor(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1280,23 +1555,23 @@ void CPU::NewRec::AArch32Compiler::Compile_xor(CompileFlags cf)
   Compile_dst_op(cf, &Assembler::eor, true, true, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_nor(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_nor(CompileFlags cf)
 {
   Compile_or(cf);
   armAsm->mvn(CFGetRegD(cf), CFGetRegD(cf));
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_slt(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_slt(CompileFlags cf)
 {
   Compile_slt(cf, true);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_sltu(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_sltu(CompileFlags cf)
 {
   Compile_slt(cf, false);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_slt(CompileFlags cf, bool sign)
+void CPU::Recompiler::ARM32Recompiler::Compile_slt(CompileFlags cf, bool sign)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1322,9 +1597,9 @@ void CPU::NewRec::AArch32Compiler::Compile_slt(CompileFlags cf, bool sign)
 }
 
 vixl::aarch32::Register
-CPU::NewRec::AArch32Compiler::ComputeLoadStoreAddressArg(CompileFlags cf,
-                                                         const std::optional<VirtualMemoryAddress>& address,
-                                                         const std::optional<const vixl::aarch32::Register>& reg)
+CPU::Recompiler::ARM32Recompiler::ComputeLoadStoreAddressArg(CompileFlags cf,
+                                                             const std::optional<VirtualMemoryAddress>& address,
+                                                             const std::optional<const vixl::aarch32::Register>& reg)
 {
   const u32 imm = inst->i.imm_sext32();
   if (cf.valid_host_s && imm == 0 && !reg.has_value())
@@ -1364,9 +1639,9 @@ CPU::NewRec::AArch32Compiler::ComputeLoadStoreAddressArg(CompileFlags cf,
 }
 
 template<typename RegAllocFn>
-vixl::aarch32::Register CPU::NewRec::AArch32Compiler::GenerateLoad(const vixl::aarch32::Register& addr_reg,
-                                                                   MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                                   const RegAllocFn& dst_reg_alloc)
+vixl::aarch32::Register
+CPU::Recompiler::ARM32Recompiler::GenerateLoad(const vixl::aarch32::Register& addr_reg, MemoryAccessSize size,
+                                               bool sign, bool use_fastmem, const RegAllocFn& dst_reg_alloc)
 {
   if (use_fastmem)
   {
@@ -1476,9 +1751,9 @@ vixl::aarch32::Register CPU::NewRec::AArch32Compiler::GenerateLoad(const vixl::a
   return dst_reg;
 }
 
-void CPU::NewRec::AArch32Compiler::GenerateStore(const vixl::aarch32::Register& addr_reg,
-                                                 const vixl::aarch32::Register& value_reg, MemoryAccessSize size,
-                                                 bool use_fastmem)
+void CPU::Recompiler::ARM32Recompiler::GenerateStore(const vixl::aarch32::Register& addr_reg,
+                                                     const vixl::aarch32::Register& value_reg, MemoryAccessSize size,
+                                                     bool use_fastmem)
 {
   if (use_fastmem)
   {
@@ -1562,8 +1837,8 @@ void CPU::NewRec::AArch32Compiler::GenerateStore(const vixl::aarch32::Register& 
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                               const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::ARM32Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                                   const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<Register> addr_reg = g_settings.gpu_pgxp_enable ?
                                              std::optional<Register>(Register(AllocateTempHostReg(HR_CALLEE_SAVED))) :
@@ -1590,8 +1865,8 @@ void CPU::NewRec::AArch32Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                               const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::ARM32Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                                   const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
@@ -1684,8 +1959,8 @@ void CPU::NewRec::AArch32Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::ARM32Recompiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                                    const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -1770,8 +2045,8 @@ void CPU::NewRec::AArch32Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                               const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::ARM32Recompiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                                   const std::optional<VirtualMemoryAddress>& address)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1798,8 +2073,8 @@ void CPU::NewRec::AArch32Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                               const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::ARM32Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                                   const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
@@ -1872,8 +2147,8 @@ void CPU::NewRec::AArch32Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::ARM32Recompiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
+                                                    const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, false);
@@ -1928,7 +2203,7 @@ void CPU::NewRec::AArch32Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_mtc0(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_mtc0(CompileFlags cf)
 {
   // TODO: we need better constant setting here.. which will need backprop
   AssertRegOrConstT(cf);
@@ -2006,7 +2281,7 @@ void CPU::NewRec::AArch32Compiler::Compile_mtc0(CompileFlags cf)
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_rfe(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_rfe(CompileFlags cf)
 {
   // shift mode bits right two, preserving upper bits
   armAsm->ldr(RARG1, PTR(&g_state.cop0_regs.sr.bits));
@@ -2018,7 +2293,7 @@ void CPU::NewRec::AArch32Compiler::Compile_rfe(CompileFlags cf)
   TestInterrupts(RARG1);
 }
 
-void CPU::NewRec::AArch32Compiler::TestInterrupts(const vixl::aarch32::Register& sr)
+void CPU::Recompiler::ARM32Recompiler::TestInterrupts(const vixl::aarch32::Register& sr)
 {
   // if Iec == 0 then goto no_interrupt
   Label no_interrupt;
@@ -2069,7 +2344,7 @@ void CPU::NewRec::AArch32Compiler::TestInterrupts(const vixl::aarch32::Register&
   armAsm->bind(&no_interrupt);
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_mfc2(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_mfc2(CompileFlags cf)
 {
   const u32 index = inst->cop.Cop2Index();
   const Reg rt = inst->r.rt;
@@ -2110,7 +2385,7 @@ void CPU::NewRec::AArch32Compiler::Compile_mfc2(CompileFlags cf)
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_mtc2(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_mtc2(CompileFlags cf)
 {
   const u32 index = inst->cop.Cop2Index();
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -2172,7 +2447,7 @@ void CPU::NewRec::AArch32Compiler::Compile_mtc2(CompileFlags cf)
   }
 }
 
-void CPU::NewRec::AArch32Compiler::Compile_cop2(CompileFlags cf)
+void CPU::Recompiler::ARM32Recompiler::Compile_cop2(CompileFlags cf)
 {
   TickCount func_ticks;
   GTE::InstructionImpl func = GTE::GetInstructionImpl(inst->bits, &func_ticks);
@@ -2184,10 +2459,10 @@ void CPU::NewRec::AArch32Compiler::Compile_cop2(CompileFlags cf)
   AddGTETicks(func_ticks);
 }
 
-u32 CPU::NewRec::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* code_address, u32 code_size,
-                                       TickCount cycles_to_add, TickCount cycles_to_remove, u32 gpr_bitmask,
-                                       u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed,
-                                       bool is_load)
+u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* code_address, u32 code_size,
+                                           TickCount cycles_to_add, TickCount cycles_to_remove, u32 gpr_bitmask,
+                                           u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed,
+                                           bool is_load)
 {
   Assembler arm_asm(static_cast<u8*>(thunk_code), thunk_space);
   Assembler* armAsm = &arm_asm;

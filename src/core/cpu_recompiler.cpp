@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "cpu_newrec_compiler.h"
+#include "cpu_recompiler.h"
 #include "cpu_code_cache.h"
 #include "cpu_core_private.h"
 #include "cpu_disasm.h"
@@ -21,20 +21,20 @@ LOG_CHANNEL(Recompiler);
 // TODO: speculative constants
 // TODO: std::bitset in msvc has bounds checks even in release...
 
-const std::array<std::array<const void*, 2>, 3> CPU::NewRec::Compiler::s_pgxp_mem_load_functions = {
+const std::array<std::array<const void*, 2>, 3> CPU::Recompiler::Recompiler::s_pgxp_mem_load_functions = {
   {{{reinterpret_cast<const void*>(&PGXP::CPU_LBx), reinterpret_cast<const void*>(&PGXP::CPU_LBx)}},
    {{reinterpret_cast<const void*>(&PGXP::CPU_LHU), reinterpret_cast<const void*>(&PGXP::CPU_LH)}},
    {{reinterpret_cast<const void*>(&PGXP::CPU_LW)}}}};
-const std::array<const void*, 3> CPU::NewRec::Compiler::s_pgxp_mem_store_functions = {
+const std::array<const void*, 3> CPU::Recompiler::Recompiler::s_pgxp_mem_store_functions = {
   {reinterpret_cast<const void*>(&PGXP::CPU_SB), reinterpret_cast<const void*>(&PGXP::CPU_SH),
    reinterpret_cast<const void*>(&PGXP::CPU_SW)}};
 
-CPU::NewRec::Compiler::Compiler() = default;
+CPU::Recompiler::Recompiler::Recompiler() = default;
 
-CPU::NewRec::Compiler::~Compiler() = default;
+CPU::Recompiler::Recompiler::~Recompiler() = default;
 
-void CPU::NewRec::Compiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space, u8* far_code_buffer,
-                                  u32 far_code_space)
+void CPU::Recompiler::Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space,
+                                      u8* far_code_buffer, u32 far_code_space)
 {
   m_block = block;
   m_compiler_pc = block->pc;
@@ -66,7 +66,7 @@ void CPU::NewRec::Compiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 
   InitSpeculativeRegs();
 }
 
-void CPU::NewRec::Compiler::BeginBlock()
+void CPU::Recompiler::Recompiler::BeginBlock()
 {
 #if 0
   GenerateCall(reinterpret_cast<const void*>(&CPU::CodeCache::LogCurrentState));
@@ -100,7 +100,8 @@ void CPU::NewRec::Compiler::BeginBlock()
   m_dirty_instruction_bits = true;
 }
 
-const void* CPU::NewRec::Compiler::CompileBlock(CodeCache::Block* block, u32* host_code_size, u32* host_far_code_size)
+const void* CPU::Recompiler::Recompiler::CompileBlock(CodeCache::Block* block, u32* host_code_size,
+                                                    u32* host_far_code_size)
 {
   Reset(block, CPU::CodeCache::GetFreeCodePointer(), CPU::CodeCache::GetFreeCodeSpace(),
         CPU::CodeCache::GetFreeFarCodePointer(), CPU::CodeCache::GetFreeFarCodeSpace());
@@ -149,7 +150,7 @@ const void* CPU::NewRec::Compiler::CompileBlock(CodeCache::Block* block, u32* ho
   return code;
 }
 
-void CPU::NewRec::Compiler::SetConstantReg(Reg r, u32 v)
+void CPU::Recompiler::Recompiler::SetConstantReg(Reg r, u32 v)
 {
   DebugAssert(r < Reg::count && r != Reg::zero);
 
@@ -175,7 +176,7 @@ void CPU::NewRec::Compiler::SetConstantReg(Reg r, u32 v)
   }
 }
 
-void CPU::NewRec::Compiler::CancelLoadDelaysToReg(Reg reg)
+void CPU::Recompiler::Recompiler::CancelLoadDelaysToReg(Reg reg)
 {
   if (m_load_delay_register != reg)
     return;
@@ -186,7 +187,7 @@ void CPU::NewRec::Compiler::CancelLoadDelaysToReg(Reg reg)
     ClearHostReg(m_load_delay_value_register);
 }
 
-void CPU::NewRec::Compiler::UpdateLoadDelay()
+void CPU::Recompiler::Recompiler::UpdateLoadDelay()
 {
   if (m_load_delay_dirty)
   {
@@ -250,7 +251,7 @@ void CPU::NewRec::Compiler::UpdateLoadDelay()
   }
 }
 
-void CPU::NewRec::Compiler::FinishLoadDelay()
+void CPU::Recompiler::Recompiler::FinishLoadDelay()
 {
   DebugAssert(!m_load_delay_dirty);
   if (!HasLoadDelay())
@@ -284,7 +285,7 @@ void CPU::NewRec::Compiler::FinishLoadDelay()
   m_load_delay_value_register = NUM_HOST_REGS;
 }
 
-void CPU::NewRec::Compiler::FinishLoadDelayToReg(Reg reg)
+void CPU::Recompiler::Recompiler::FinishLoadDelayToReg(Reg reg)
 {
   if (m_load_delay_dirty)
   {
@@ -299,12 +300,12 @@ void CPU::NewRec::Compiler::FinishLoadDelayToReg(Reg reg)
   FinishLoadDelay();
 }
 
-u32 CPU::NewRec::Compiler::GetFlagsForNewLoadDelayedReg() const
+u32 CPU::Recompiler::Recompiler::GetFlagsForNewLoadDelayedReg() const
 {
   return g_settings.gpu_pgxp_enable ? (HR_MODE_WRITE | HR_CALLEE_SAVED) : (HR_MODE_WRITE);
 }
 
-void CPU::NewRec::Compiler::ClearConstantReg(Reg r)
+void CPU::Recompiler::Recompiler::ClearConstantReg(Reg r)
 {
   DebugAssert(r < Reg::count && r != Reg::zero);
   m_constant_reg_values[static_cast<u32>(r)] = 0;
@@ -312,7 +313,7 @@ void CPU::NewRec::Compiler::ClearConstantReg(Reg r)
   m_constant_regs_dirty.reset(static_cast<u32>(r));
 }
 
-void CPU::NewRec::Compiler::FlushConstantRegs(bool invalidate)
+void CPU::Recompiler::Recompiler::FlushConstantRegs(bool invalidate)
 {
   for (u32 i = 1; i < static_cast<u32>(Reg::count); i++)
   {
@@ -323,25 +324,25 @@ void CPU::NewRec::Compiler::FlushConstantRegs(bool invalidate)
   }
 }
 
-CPU::Reg CPU::NewRec::Compiler::MipsD() const
+CPU::Reg CPU::Recompiler::Recompiler::MipsD() const
 {
   return inst->r.rd;
 }
 
-u32 CPU::NewRec::Compiler::GetConditionalBranchTarget(CompileFlags cf) const
+u32 CPU::Recompiler::Recompiler::GetConditionalBranchTarget(CompileFlags cf) const
 {
   // compiler pc has already been advanced when swapping branch delay slots
   const u32 current_pc = m_compiler_pc - (cf.delay_slot_swapped ? sizeof(Instruction) : 0);
   return current_pc + (inst->i.imm_sext32() << 2);
 }
 
-u32 CPU::NewRec::Compiler::GetBranchReturnAddress(CompileFlags cf) const
+u32 CPU::Recompiler::Recompiler::GetBranchReturnAddress(CompileFlags cf) const
 {
   // compiler pc has already been advanced when swapping branch delay slots
   return m_compiler_pc + (cf.delay_slot_swapped ? 0 : sizeof(Instruction));
 }
 
-bool CPU::NewRec::Compiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
+bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
 {
   if constexpr (!SWAP_BRANCH_DELAY_SLOTS)
     return false;
@@ -510,13 +511,13 @@ is_unsafe:
   return false;
 }
 
-void CPU::NewRec::Compiler::SetCompilerPC(u32 newpc)
+void CPU::Recompiler::Recompiler::SetCompilerPC(u32 newpc)
 {
   m_compiler_pc = newpc;
   m_dirty_pc = true;
 }
 
-u32 CPU::NewRec::Compiler::GetFreeHostReg(u32 flags)
+u32 CPU::Recompiler::Recompiler::GetFreeHostReg(u32 flags)
 {
   const u32 req_flags = HR_USABLE | (flags & HR_CALLEE_SAVED);
 
@@ -637,7 +638,7 @@ u32 CPU::NewRec::Compiler::GetFreeHostReg(u32 flags)
   return lowest;
 }
 
-const char* CPU::NewRec::Compiler::GetReadWriteModeString(u32 flags)
+const char* CPU::Recompiler::Recompiler::GetReadWriteModeString(u32 flags)
 {
   if ((flags & (HR_MODE_READ | HR_MODE_WRITE)) == (HR_MODE_READ | HR_MODE_WRITE))
     return "read-write";
@@ -649,8 +650,8 @@ const char* CPU::NewRec::Compiler::GetReadWriteModeString(u32 flags)
     return "UNKNOWN";
 }
 
-u32 CPU::NewRec::Compiler::AllocateHostReg(u32 flags, HostRegAllocType type /* = HR_TYPE_TEMP */,
-                                           Reg reg /* = Reg::count */)
+u32 CPU::Recompiler::Recompiler::AllocateHostReg(u32 flags, HostRegAllocType type /* = HR_TYPE_TEMP */,
+                                               Reg reg /* = Reg::count */)
 {
   // Cancel any load delays before booting anything out
   if (flags & HR_MODE_WRITE && (type == HR_TYPE_CPU_REG || type == HR_TYPE_NEXT_LOAD_DELAY_VALUE))
@@ -751,8 +752,8 @@ u32 CPU::NewRec::Compiler::AllocateHostReg(u32 flags, HostRegAllocType type /* =
   return hreg;
 }
 
-std::optional<u32> CPU::NewRec::Compiler::CheckHostReg(u32 flags, HostRegAllocType type /* = HR_TYPE_TEMP */,
-                                                       Reg reg /* = Reg::count */)
+std::optional<u32> CPU::Recompiler::Recompiler::CheckHostReg(u32 flags, HostRegAllocType type /* = HR_TYPE_TEMP */,
+                                                           Reg reg /* = Reg::count */)
 {
   for (u32 i = 0; i < NUM_HOST_REGS; i++)
   {
@@ -799,12 +800,12 @@ std::optional<u32> CPU::NewRec::Compiler::CheckHostReg(u32 flags, HostRegAllocTy
   return std::nullopt;
 }
 
-u32 CPU::NewRec::Compiler::AllocateTempHostReg(u32 flags)
+u32 CPU::Recompiler::Recompiler::AllocateTempHostReg(u32 flags)
 {
   return AllocateHostReg(flags, HR_TYPE_TEMP);
 }
 
-void CPU::NewRec::Compiler::SwapHostRegAlloc(u32 lhs, u32 rhs)
+void CPU::Recompiler::Recompiler::SwapHostRegAlloc(u32 lhs, u32 rhs)
 {
   HostRegAlloc& lra = m_host_regs[lhs];
   HostRegAlloc& rra = m_host_regs[rhs];
@@ -817,7 +818,7 @@ void CPU::NewRec::Compiler::SwapHostRegAlloc(u32 lhs, u32 rhs)
   std::swap(lra.counter, rra.counter);
 }
 
-void CPU::NewRec::Compiler::FlushHostReg(u32 reg)
+void CPU::Recompiler::Recompiler::FlushHostReg(u32 reg)
 {
   HostRegAlloc& ra = m_host_regs[reg];
   if (ra.flags & HR_MODE_WRITE)
@@ -862,7 +863,7 @@ void CPU::NewRec::Compiler::FlushHostReg(u32 reg)
   }
 }
 
-void CPU::NewRec::Compiler::FreeHostReg(u32 reg)
+void CPU::Recompiler::Recompiler::FreeHostReg(u32 reg)
 {
   DebugAssert(IsHostRegAllocated(reg));
   DEBUG_LOG("Freeing host register {}", GetHostRegName(reg));
@@ -870,7 +871,7 @@ void CPU::NewRec::Compiler::FreeHostReg(u32 reg)
   ClearHostReg(reg);
 }
 
-void CPU::NewRec::Compiler::ClearHostReg(u32 reg)
+void CPU::Recompiler::Recompiler::ClearHostReg(u32 reg)
 {
   HostRegAlloc& ra = m_host_regs[reg];
   ra.flags &= IMMUTABLE_HR_FLAGS;
@@ -879,7 +880,7 @@ void CPU::NewRec::Compiler::ClearHostReg(u32 reg)
   ra.reg = Reg::count;
 }
 
-void CPU::NewRec::Compiler::MarkRegsNeeded(HostRegAllocType type, Reg reg)
+void CPU::Recompiler::Recompiler::MarkRegsNeeded(HostRegAllocType type, Reg reg)
 {
   for (u32 i = 0; i < NUM_HOST_REGS; i++)
   {
@@ -889,7 +890,7 @@ void CPU::NewRec::Compiler::MarkRegsNeeded(HostRegAllocType type, Reg reg)
   }
 }
 
-void CPU::NewRec::Compiler::RenameHostReg(u32 reg, u32 new_flags, HostRegAllocType new_type, Reg new_reg)
+void CPU::Recompiler::Recompiler::RenameHostReg(u32 reg, u32 new_flags, HostRegAllocType new_type, Reg new_reg)
 {
   // only supported for cpu regs for now
   DebugAssert(new_type == HR_TYPE_TEMP || new_type == HR_TYPE_CPU_REG || new_type == HR_TYPE_NEXT_LOAD_DELAY_VALUE);
@@ -928,7 +929,7 @@ void CPU::NewRec::Compiler::RenameHostReg(u32 reg, u32 new_flags, HostRegAllocTy
   ra.reg = new_reg;
 }
 
-void CPU::NewRec::Compiler::ClearHostRegNeeded(u32 reg)
+void CPU::Recompiler::Recompiler::ClearHostRegNeeded(u32 reg)
 {
   DebugAssert(reg < NUM_HOST_REGS && IsHostRegAllocated(reg));
   HostRegAlloc& ra = m_host_regs[reg];
@@ -938,7 +939,7 @@ void CPU::NewRec::Compiler::ClearHostRegNeeded(u32 reg)
   ra.flags &= ~HR_NEEDED;
 }
 
-void CPU::NewRec::Compiler::ClearHostRegsNeeded()
+void CPU::Recompiler::Recompiler::ClearHostRegsNeeded()
 {
   for (u32 i = 0; i < NUM_HOST_REGS; i++)
   {
@@ -956,7 +957,7 @@ void CPU::NewRec::Compiler::ClearHostRegsNeeded()
   }
 }
 
-void CPU::NewRec::Compiler::DeleteMIPSReg(Reg reg, bool flush)
+void CPU::Recompiler::Recompiler::DeleteMIPSReg(Reg reg, bool flush)
 {
   DebugAssert(reg != Reg::zero);
 
@@ -978,7 +979,7 @@ void CPU::NewRec::Compiler::DeleteMIPSReg(Reg reg, bool flush)
   ClearConstantReg(reg);
 }
 
-bool CPU::NewRec::Compiler::TryRenameMIPSReg(Reg to, Reg from, u32 fromhost, Reg other)
+bool CPU::Recompiler::Recompiler::TryRenameMIPSReg(Reg to, Reg from, u32 fromhost, Reg other)
 {
   // can't rename when in form Rd = Rs op Rt and Rd == Rs or Rd == Rt
   if (to == from || to == other || !iinfo->RenameTest(from))
@@ -999,7 +1000,7 @@ bool CPU::NewRec::Compiler::TryRenameMIPSReg(Reg to, Reg from, u32 fromhost, Reg
   return true;
 }
 
-void CPU::NewRec::Compiler::UpdateHostRegCounters()
+void CPU::Recompiler::Recompiler::UpdateHostRegCounters()
 {
   const CodeCache::InstructionInfo* const info_end = m_block->InstructionsInfo() + m_block->size;
 
@@ -1037,7 +1038,7 @@ void CPU::NewRec::Compiler::UpdateHostRegCounters()
   }
 }
 
-void CPU::NewRec::Compiler::Flush(u32 flags)
+void CPU::Recompiler::Recompiler::Flush(u32 flags)
 {
   // TODO: Flush unneeded caller-saved regs (backup/replace calle-saved needed with caller-saved)
   if (flags &
@@ -1088,7 +1089,7 @@ void CPU::NewRec::Compiler::Flush(u32 flags)
     InvalidateSpeculativeValues();
 }
 
-void CPU::NewRec::Compiler::FlushConstantReg(Reg r)
+void CPU::Recompiler::Recompiler::FlushConstantReg(Reg r)
 {
   DebugAssert(m_constant_regs_valid.test(static_cast<u32>(r)));
   DEBUG_LOG("Writing back register {} with constant value 0x{:08X}", GetRegName(r),
@@ -1097,7 +1098,7 @@ void CPU::NewRec::Compiler::FlushConstantReg(Reg r)
   m_constant_regs_dirty.reset(static_cast<u32>(r));
 }
 
-void CPU::NewRec::Compiler::BackupHostState()
+void CPU::Recompiler::Recompiler::BackupHostState()
 {
   DebugAssert(m_host_state_backup_count < m_host_state_backup.size());
 
@@ -1127,7 +1128,7 @@ void CPU::NewRec::Compiler::BackupHostState()
   m_host_state_backup_count++;
 }
 
-void CPU::NewRec::Compiler::RestoreHostState()
+void CPU::Recompiler::Recompiler::RestoreHostState()
 {
   DebugAssert(m_host_state_backup_count > 0);
   m_host_state_backup_count--;
@@ -1156,8 +1157,8 @@ void CPU::NewRec::Compiler::RestoreHostState()
   m_cycles = bu.cycles;
 }
 
-void CPU::NewRec::Compiler::AddLoadStoreInfo(void* code_address, u32 code_size, u32 address_register, u32 data_register,
-                                             MemoryAccessSize size, bool is_signed, bool is_load)
+void CPU::Recompiler::Recompiler::AddLoadStoreInfo(void* code_address, u32 code_size, u32 address_register,
+                                                 u32 data_register, MemoryAccessSize size, bool is_signed, bool is_load)
 {
   DebugAssert(CodeCache::IsUsingFastmem());
   DebugAssert(address_register < NUM_HOST_REGS);
@@ -1175,7 +1176,7 @@ void CPU::NewRec::Compiler::AddLoadStoreInfo(void* code_address, u32 code_size, 
                                    is_signed, is_load);
 }
 
-void CPU::NewRec::Compiler::CompileInstruction()
+void CPU::Recompiler::Recompiler::CompileInstruction()
 {
 #ifdef _DEBUG
   TinyString str;
@@ -1203,34 +1204,34 @@ void CPU::NewRec::Compiler::CompileInstruction()
     {
       switch (inst->r.funct)
       {
-        case InstructionFunct::sll: CompileTemplate(&Compiler::Compile_sll_const, &Compiler::Compile_sll, PGXPFN(CPU_SLL), TF_WRITES_D | TF_READS_T); SpecExec_sll(); break;
-        case InstructionFunct::srl: CompileTemplate(&Compiler::Compile_srl_const, &Compiler::Compile_srl, PGXPFN(CPU_SRL), TF_WRITES_D | TF_READS_T); SpecExec_srl(); break;
-        case InstructionFunct::sra: CompileTemplate(&Compiler::Compile_sra_const, &Compiler::Compile_sra, PGXPFN(CPU_SRA), TF_WRITES_D | TF_READS_T); SpecExec_sra(); break;
-        case InstructionFunct::sllv: CompileTemplate(&Compiler::Compile_sllv_const, &Compiler::Compile_sllv, PGXPFN(CPU_SLLV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_sllv(); break;
-        case InstructionFunct::srlv: CompileTemplate(&Compiler::Compile_srlv_const, &Compiler::Compile_srlv, PGXPFN(CPU_SRLV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_srlv(); break;
-        case InstructionFunct::srav: CompileTemplate(&Compiler::Compile_srav_const, &Compiler::Compile_srav, PGXPFN(CPU_SRAV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_srav(); break;
-        case InstructionFunct::jr: CompileTemplate(&Compiler::Compile_jr_const, &Compiler::Compile_jr, nullptr, TF_READS_S); break;
-        case InstructionFunct::jalr: CompileTemplate(&Compiler::Compile_jalr_const, &Compiler::Compile_jalr, nullptr, /*TF_WRITES_D |*/ TF_READS_S | TF_NO_NOP); SpecExec_jalr(); break;
+        case InstructionFunct::sll: CompileTemplate(&Recompiler::Compile_sll_const, &Recompiler::Compile_sll, PGXPFN(CPU_SLL), TF_WRITES_D | TF_READS_T); SpecExec_sll(); break;
+        case InstructionFunct::srl: CompileTemplate(&Recompiler::Compile_srl_const, &Recompiler::Compile_srl, PGXPFN(CPU_SRL), TF_WRITES_D | TF_READS_T); SpecExec_srl(); break;
+        case InstructionFunct::sra: CompileTemplate(&Recompiler::Compile_sra_const, &Recompiler::Compile_sra, PGXPFN(CPU_SRA), TF_WRITES_D | TF_READS_T); SpecExec_sra(); break;
+        case InstructionFunct::sllv: CompileTemplate(&Recompiler::Compile_sllv_const, &Recompiler::Compile_sllv, PGXPFN(CPU_SLLV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_sllv(); break;
+        case InstructionFunct::srlv: CompileTemplate(&Recompiler::Compile_srlv_const, &Recompiler::Compile_srlv, PGXPFN(CPU_SRLV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_srlv(); break;
+        case InstructionFunct::srav: CompileTemplate(&Recompiler::Compile_srav_const, &Recompiler::Compile_srav, PGXPFN(CPU_SRAV), TF_WRITES_D | TF_READS_S | TF_READS_T); SpecExec_srav(); break;
+        case InstructionFunct::jr: CompileTemplate(&Recompiler::Compile_jr_const, &Recompiler::Compile_jr, nullptr, TF_READS_S); break;
+        case InstructionFunct::jalr: CompileTemplate(&Recompiler::Compile_jalr_const, &Recompiler::Compile_jalr, nullptr, /*TF_WRITES_D |*/ TF_READS_S | TF_NO_NOP); SpecExec_jalr(); break;
         case InstructionFunct::syscall: Compile_syscall(); break;
         case InstructionFunct::break_: Compile_break(); break;
         case InstructionFunct::mfhi: SpecCopyReg(inst->r.rd, Reg::hi); CompileMoveRegTemplate(inst->r.rd, Reg::hi, g_settings.gpu_pgxp_cpu); break;
         case InstructionFunct::mthi: SpecCopyReg(Reg::hi, inst->r.rs); CompileMoveRegTemplate(Reg::hi, inst->r.rs, g_settings.gpu_pgxp_cpu); break;
         case InstructionFunct::mflo: SpecCopyReg(inst->r.rd, Reg::lo); CompileMoveRegTemplate(inst->r.rd, Reg::lo, g_settings.gpu_pgxp_cpu); break;
         case InstructionFunct::mtlo: SpecCopyReg(Reg::lo, inst->r.rs); CompileMoveRegTemplate(Reg::lo, inst->r.rs, g_settings.gpu_pgxp_cpu); break;
-        case InstructionFunct::mult: CompileTemplate(&Compiler::Compile_mult_const, &Compiler::Compile_mult, PGXPFN(CPU_MULT), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI | TF_COMMUTATIVE); SpecExec_mult(); break;
-        case InstructionFunct::multu: CompileTemplate(&Compiler::Compile_multu_const, &Compiler::Compile_multu, PGXPFN(CPU_MULTU), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI | TF_COMMUTATIVE); SpecExec_multu(); break;
-        case InstructionFunct::div: CompileTemplate(&Compiler::Compile_div_const, &Compiler::Compile_div, PGXPFN(CPU_DIV), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI); SpecExec_div(); break;
-        case InstructionFunct::divu: CompileTemplate(&Compiler::Compile_divu_const, &Compiler::Compile_divu, PGXPFN(CPU_DIVU), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI); SpecExec_divu(); break;
-        case InstructionFunct::add: CompileTemplate(&Compiler::Compile_add_const, &Compiler::Compile_add, PGXPFN(CPU_ADD), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_T); SpecExec_add(); break;
-        case InstructionFunct::addu: CompileTemplate(&Compiler::Compile_addu_const, &Compiler::Compile_addu, PGXPFN(CPU_ADD), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_addu(); break;
-        case InstructionFunct::sub: CompileTemplate(&Compiler::Compile_sub_const, &Compiler::Compile_sub, PGXPFN(CPU_SUB), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_T); SpecExec_sub(); break;
-        case InstructionFunct::subu: CompileTemplate(&Compiler::Compile_subu_const, &Compiler::Compile_subu, PGXPFN(CPU_SUB), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_RENAME_WITH_ZERO_T); SpecExec_subu(); break;
-        case InstructionFunct::and_: CompileTemplate(&Compiler::Compile_and_const, &Compiler::Compile_and, PGXPFN(CPU_AND_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); SpecExec_and(); break;
-        case InstructionFunct::or_: CompileTemplate(&Compiler::Compile_or_const, &Compiler::Compile_or, PGXPFN(CPU_OR_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_or(); break;
-        case InstructionFunct::xor_: CompileTemplate(&Compiler::Compile_xor_const, &Compiler::Compile_xor, PGXPFN(CPU_XOR_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_xor(); break;
-        case InstructionFunct::nor: CompileTemplate(&Compiler::Compile_nor_const, &Compiler::Compile_nor, PGXPFN(CPU_NOR), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); SpecExec_nor(); break;
-        case InstructionFunct::slt: CompileTemplate(&Compiler::Compile_slt_const, &Compiler::Compile_slt, PGXPFN(CPU_SLT), TF_WRITES_D | TF_READS_T | TF_READS_S); SpecExec_slt(); break;
-        case InstructionFunct::sltu: CompileTemplate(&Compiler::Compile_sltu_const, &Compiler::Compile_sltu, PGXPFN(CPU_SLTU), TF_WRITES_D | TF_READS_T | TF_READS_S); SpecExec_sltu(); break;
+        case InstructionFunct::mult: CompileTemplate(&Recompiler::Compile_mult_const, &Recompiler::Compile_mult, PGXPFN(CPU_MULT), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI | TF_COMMUTATIVE); SpecExec_mult(); break;
+        case InstructionFunct::multu: CompileTemplate(&Recompiler::Compile_multu_const, &Recompiler::Compile_multu, PGXPFN(CPU_MULTU), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI | TF_COMMUTATIVE); SpecExec_multu(); break;
+        case InstructionFunct::div: CompileTemplate(&Recompiler::Compile_div_const, &Recompiler::Compile_div, PGXPFN(CPU_DIV), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI); SpecExec_div(); break;
+        case InstructionFunct::divu: CompileTemplate(&Recompiler::Compile_divu_const, &Recompiler::Compile_divu, PGXPFN(CPU_DIVU), TF_READS_S | TF_READS_T | TF_WRITES_LO | TF_WRITES_HI); SpecExec_divu(); break;
+        case InstructionFunct::add: CompileTemplate(&Recompiler::Compile_add_const, &Recompiler::Compile_add, PGXPFN(CPU_ADD), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_T); SpecExec_add(); break;
+        case InstructionFunct::addu: CompileTemplate(&Recompiler::Compile_addu_const, &Recompiler::Compile_addu, PGXPFN(CPU_ADD), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_addu(); break;
+        case InstructionFunct::sub: CompileTemplate(&Recompiler::Compile_sub_const, &Recompiler::Compile_sub, PGXPFN(CPU_SUB), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_T); SpecExec_sub(); break;
+        case InstructionFunct::subu: CompileTemplate(&Recompiler::Compile_subu_const, &Recompiler::Compile_subu, PGXPFN(CPU_SUB), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_RENAME_WITH_ZERO_T); SpecExec_subu(); break;
+        case InstructionFunct::and_: CompileTemplate(&Recompiler::Compile_and_const, &Recompiler::Compile_and, PGXPFN(CPU_AND_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); SpecExec_and(); break;
+        case InstructionFunct::or_: CompileTemplate(&Recompiler::Compile_or_const, &Recompiler::Compile_or, PGXPFN(CPU_OR_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_or(); break;
+        case InstructionFunct::xor_: CompileTemplate(&Recompiler::Compile_xor_const, &Recompiler::Compile_xor, PGXPFN(CPU_XOR_), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_T); SpecExec_xor(); break;
+        case InstructionFunct::nor: CompileTemplate(&Recompiler::Compile_nor_const, &Recompiler::Compile_nor, PGXPFN(CPU_NOR), TF_WRITES_D | TF_READS_S | TF_READS_T | TF_COMMUTATIVE); SpecExec_nor(); break;
+        case InstructionFunct::slt: CompileTemplate(&Recompiler::Compile_slt_const, &Recompiler::Compile_slt, PGXPFN(CPU_SLT), TF_WRITES_D | TF_READS_T | TF_READS_S); SpecExec_slt(); break;
+        case InstructionFunct::sltu: CompileTemplate(&Recompiler::Compile_sltu_const, &Recompiler::Compile_sltu, PGXPFN(CPU_SLTU), TF_WRITES_D | TF_READS_T | TF_READS_S); SpecExec_sltu(); break;
         default: Compile_Fallback(); InvalidateSpeculativeValues(); TruncateBlock(); break;
       }
     }
@@ -1239,33 +1240,33 @@ void CPU::NewRec::Compiler::CompileInstruction()
     case InstructionOp::j: Compile_j(); break;
     case InstructionOp::jal: Compile_jal(); SpecExec_jal(); break;
 
-    case InstructionOp::b: CompileTemplate(&Compiler::Compile_b_const, &Compiler::Compile_b, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); SpecExec_b(); break;
-    case InstructionOp::blez: CompileTemplate(&Compiler::Compile_blez_const, &Compiler::Compile_blez, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); break;
-    case InstructionOp::bgtz: CompileTemplate(&Compiler::Compile_bgtz_const, &Compiler::Compile_bgtz, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); break;
-    case InstructionOp::beq: CompileTemplate(&Compiler::Compile_beq_const, &Compiler::Compile_beq, nullptr, TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_SWAP_DELAY_SLOT); break;
-    case InstructionOp::bne: CompileTemplate(&Compiler::Compile_bne_const, &Compiler::Compile_bne, nullptr, TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_SWAP_DELAY_SLOT); break;
+    case InstructionOp::b: CompileTemplate(&Recompiler::Compile_b_const, &Recompiler::Compile_b, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); SpecExec_b(); break;
+    case InstructionOp::blez: CompileTemplate(&Recompiler::Compile_blez_const, &Recompiler::Compile_blez, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); break;
+    case InstructionOp::bgtz: CompileTemplate(&Recompiler::Compile_bgtz_const, &Recompiler::Compile_bgtz, nullptr, TF_READS_S | TF_CAN_SWAP_DELAY_SLOT); break;
+    case InstructionOp::beq: CompileTemplate(&Recompiler::Compile_beq_const, &Recompiler::Compile_beq, nullptr, TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_SWAP_DELAY_SLOT); break;
+    case InstructionOp::bne: CompileTemplate(&Recompiler::Compile_bne_const, &Recompiler::Compile_bne, nullptr, TF_READS_S | TF_READS_T | TF_COMMUTATIVE | TF_CAN_SWAP_DELAY_SLOT); break;
 
-    case InstructionOp::addi: CompileTemplate(&Compiler::Compile_addi_const, &Compiler::Compile_addi, PGXPFN(CPU_ADDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_IMM); SpecExec_addi(); break;
-    case InstructionOp::addiu: CompileTemplate(&Compiler::Compile_addiu_const, &Compiler::Compile_addiu, PGXPFN(CPU_ADDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_addiu(); break;
-    case InstructionOp::slti: CompileTemplate(&Compiler::Compile_slti_const, &Compiler::Compile_slti, PGXPFN(CPU_SLTI), TF_WRITES_T | TF_READS_S); SpecExec_slti(); break;
-    case InstructionOp::sltiu: CompileTemplate(&Compiler::Compile_sltiu_const, &Compiler::Compile_sltiu, PGXPFN(CPU_SLTIU), TF_WRITES_T | TF_READS_S); SpecExec_sltiu(); break;
-    case InstructionOp::andi: CompileTemplate(&Compiler::Compile_andi_const, &Compiler::Compile_andi, PGXPFN(CPU_ANDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE); SpecExec_andi(); break;
-    case InstructionOp::ori: CompileTemplate(&Compiler::Compile_ori_const, &Compiler::Compile_ori, PGXPFN(CPU_ORI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_ori(); break;
-    case InstructionOp::xori: CompileTemplate(&Compiler::Compile_xori_const, &Compiler::Compile_xori, PGXPFN(CPU_XORI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_xori(); break;
+    case InstructionOp::addi: CompileTemplate(&Recompiler::Compile_addi_const, &Recompiler::Compile_addi, PGXPFN(CPU_ADDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_CAN_OVERFLOW | TF_RENAME_WITH_ZERO_IMM); SpecExec_addi(); break;
+    case InstructionOp::addiu: CompileTemplate(&Recompiler::Compile_addiu_const, &Recompiler::Compile_addiu, PGXPFN(CPU_ADDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_addiu(); break;
+    case InstructionOp::slti: CompileTemplate(&Recompiler::Compile_slti_const, &Recompiler::Compile_slti, PGXPFN(CPU_SLTI), TF_WRITES_T | TF_READS_S); SpecExec_slti(); break;
+    case InstructionOp::sltiu: CompileTemplate(&Recompiler::Compile_sltiu_const, &Recompiler::Compile_sltiu, PGXPFN(CPU_SLTIU), TF_WRITES_T | TF_READS_S); SpecExec_sltiu(); break;
+    case InstructionOp::andi: CompileTemplate(&Recompiler::Compile_andi_const, &Recompiler::Compile_andi, PGXPFN(CPU_ANDI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE); SpecExec_andi(); break;
+    case InstructionOp::ori: CompileTemplate(&Recompiler::Compile_ori_const, &Recompiler::Compile_ori, PGXPFN(CPU_ORI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_ori(); break;
+    case InstructionOp::xori: CompileTemplate(&Recompiler::Compile_xori_const, &Recompiler::Compile_xori, PGXPFN(CPU_XORI), TF_WRITES_T | TF_READS_S | TF_COMMUTATIVE | TF_RENAME_WITH_ZERO_IMM); SpecExec_xori(); break;
     case InstructionOp::lui: Compile_lui(); SpecExec_lui(); break;
 
-    case InstructionOp::lb: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Byte, false, true, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Byte, true); break;
-    case InstructionOp::lbu: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Byte, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Byte, false); break;
-    case InstructionOp::lh: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::HalfWord, false, true, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::HalfWord, true); break;
-    case InstructionOp::lhu: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::HalfWord, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::HalfWord, false); break;
-    case InstructionOp::lw: CompileLoadStoreTemplate(&Compiler::Compile_lxx, MemoryAccessSize::Word, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Word, false); break;
-    case InstructionOp::lwl: CompileLoadStoreTemplate(&Compiler::Compile_lwx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_lwx(false); break;
-    case InstructionOp::lwr: CompileLoadStoreTemplate(&Compiler::Compile_lwx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_lwx(true); break;
-    case InstructionOp::sb: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::Byte, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::Byte); break;
-    case InstructionOp::sh: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::HalfWord, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::HalfWord); break;
-    case InstructionOp::sw: CompileLoadStoreTemplate(&Compiler::Compile_sxx, MemoryAccessSize::Word, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::Word); break;
-    case InstructionOp::swl: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S /*| TF_READS_T*/); SpecExec_swx(false); break;
-    case InstructionOp::swr: CompileLoadStoreTemplate(&Compiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S /*| TF_READS_T*/); SpecExec_swx(true); break;
+    case InstructionOp::lb: CompileLoadStoreTemplate(&Recompiler::Compile_lxx, MemoryAccessSize::Byte, false, true, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Byte, true); break;
+    case InstructionOp::lbu: CompileLoadStoreTemplate(&Recompiler::Compile_lxx, MemoryAccessSize::Byte, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Byte, false); break;
+    case InstructionOp::lh: CompileLoadStoreTemplate(&Recompiler::Compile_lxx, MemoryAccessSize::HalfWord, false, true, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::HalfWord, true); break;
+    case InstructionOp::lhu: CompileLoadStoreTemplate(&Recompiler::Compile_lxx, MemoryAccessSize::HalfWord, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::HalfWord, false); break;
+    case InstructionOp::lw: CompileLoadStoreTemplate(&Recompiler::Compile_lxx, MemoryAccessSize::Word, false, false, TF_READS_S | TF_WRITES_T | TF_LOAD_DELAY); SpecExec_lxx(MemoryAccessSize::Word, false); break;
+    case InstructionOp::lwl: CompileLoadStoreTemplate(&Recompiler::Compile_lwx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_lwx(false); break;
+    case InstructionOp::lwr: CompileLoadStoreTemplate(&Recompiler::Compile_lwx, MemoryAccessSize::Word, false, false, TF_READS_S | /*TF_READS_T | TF_WRITES_T | */TF_LOAD_DELAY); SpecExec_lwx(true); break;
+    case InstructionOp::sb: CompileLoadStoreTemplate(&Recompiler::Compile_sxx, MemoryAccessSize::Byte, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::Byte); break;
+    case InstructionOp::sh: CompileLoadStoreTemplate(&Recompiler::Compile_sxx, MemoryAccessSize::HalfWord, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::HalfWord); break;
+    case InstructionOp::sw: CompileLoadStoreTemplate(&Recompiler::Compile_sxx, MemoryAccessSize::Word, true, false, TF_READS_S | TF_READS_T); SpecExec_sxx(MemoryAccessSize::Word); break;
+    case InstructionOp::swl: CompileLoadStoreTemplate(&Recompiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S /*| TF_READS_T*/); SpecExec_swx(false); break;
+    case InstructionOp::swr: CompileLoadStoreTemplate(&Recompiler::Compile_swx, MemoryAccessSize::Word, false, false, TF_READS_S /*| TF_READS_T*/); SpecExec_swx(true); break;
 
     case InstructionOp::cop0:
       {
@@ -1273,8 +1274,8 @@ void CPU::NewRec::Compiler::CompileInstruction()
         {
           switch (inst->cop.CommonOp())
           {
-            case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Compiler::Compile_mfc0, PGXPFN(CPU_MFC0), TF_WRITES_T | TF_LOAD_DELAY); } SpecExec_mfc0(); break;
-            case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Compiler::Compile_mtc0, PGXPFN(CPU_MTC0), TF_READS_T); SpecExec_mtc0(); break;
+            case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Recompiler::Compile_mfc0, PGXPFN(CPU_MFC0), TF_WRITES_T | TF_LOAD_DELAY); } SpecExec_mfc0(); break;
+            case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Recompiler::Compile_mtc0, PGXPFN(CPU_MTC0), TF_READS_T); SpecExec_mtc0(); break;
             default: Compile_Fallback(); break;
           }
         }
@@ -1282,7 +1283,7 @@ void CPU::NewRec::Compiler::CompileInstruction()
         {
           switch (inst->cop.Cop0Op())
           {
-            case Cop0Instruction::rfe: CompileTemplate(nullptr, &Compiler::Compile_rfe, nullptr, 0); SpecExec_rfe(); break;
+            case Cop0Instruction::rfe: CompileTemplate(nullptr, &Recompiler::Compile_rfe, nullptr, 0); SpecExec_rfe(); break;
             default: Compile_Fallback(); break;
           }
         }
@@ -1295,23 +1296,23 @@ void CPU::NewRec::Compiler::CompileInstruction()
         {
           switch (inst->cop.CommonOp())
           {
-            case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Compiler::Compile_mfc2, nullptr, TF_GTE_STALL); } break;
-            case CopCommonInstruction::cfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Compiler::Compile_mfc2, nullptr, TF_GTE_STALL); } break;
-            case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Compiler::Compile_mtc2, PGXPFN(CPU_MTC2), TF_GTE_STALL | TF_READS_T | TF_PGXP_WITHOUT_CPU); break;
-            case CopCommonInstruction::ctcn: CompileTemplate(nullptr, &Compiler::Compile_mtc2, PGXPFN(CPU_MTC2), TF_GTE_STALL | TF_READS_T | TF_PGXP_WITHOUT_CPU); break;
+            case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Recompiler::Compile_mfc2, nullptr, TF_GTE_STALL); } break;
+            case CopCommonInstruction::cfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Recompiler::Compile_mfc2, nullptr, TF_GTE_STALL); } break;
+            case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Recompiler::Compile_mtc2, PGXPFN(CPU_MTC2), TF_GTE_STALL | TF_READS_T | TF_PGXP_WITHOUT_CPU); break;
+            case CopCommonInstruction::ctcn: CompileTemplate(nullptr, &Recompiler::Compile_mtc2, PGXPFN(CPU_MTC2), TF_GTE_STALL | TF_READS_T | TF_PGXP_WITHOUT_CPU); break;
             default: Compile_Fallback(); break;
           }
         }
         else
         {
           // GTE ops
-          CompileTemplate(nullptr, &Compiler::Compile_cop2, nullptr, TF_GTE_STALL);
+          CompileTemplate(nullptr, &Recompiler::Compile_cop2, nullptr, TF_GTE_STALL);
         }
       }
       break;
 
-    case InstructionOp::lwc2: CompileLoadStoreTemplate(&Compiler::Compile_lwc2, MemoryAccessSize::Word, false, false, TF_GTE_STALL | TF_READS_S | TF_LOAD_DELAY); break;
-    case InstructionOp::swc2: CompileLoadStoreTemplate(&Compiler::Compile_swc2, MemoryAccessSize::Word, true, false, TF_GTE_STALL | TF_READS_S); SpecExec_swc2(); break;
+    case InstructionOp::lwc2: CompileLoadStoreTemplate(&Recompiler::Compile_lwc2, MemoryAccessSize::Word, false, false, TF_GTE_STALL | TF_READS_S | TF_LOAD_DELAY); break;
+    case InstructionOp::swc2: CompileLoadStoreTemplate(&Recompiler::Compile_swc2, MemoryAccessSize::Word, true, false, TF_GTE_STALL | TF_READS_S); SpecExec_swc2(); break;
 
       // swc0/lwc0/cop1/cop3 are essentially no-ops
     case InstructionOp::cop1:
@@ -1343,7 +1344,7 @@ void CPU::NewRec::Compiler::CompileInstruction()
 #endif
 }
 
-void CPU::NewRec::Compiler::CompileBranchDelaySlot(bool dirty_pc /* = true */)
+void CPU::Recompiler::Recompiler::CompileBranchDelaySlot(bool dirty_pc /* = true */)
 {
   // Update load delay at the end of the previous instruction.
   UpdateLoadDelay();
@@ -1365,8 +1366,9 @@ void CPU::NewRec::Compiler::CompileBranchDelaySlot(bool dirty_pc /* = true */)
   m_current_instruction_branch_delay_slot = false;
 }
 
-void CPU::NewRec::Compiler::CompileTemplate(void (Compiler::*const_func)(CompileFlags),
-                                            void (Compiler::*func)(CompileFlags), const void* pgxp_cpu_func, u32 tflags)
+void CPU::Recompiler::Recompiler::CompileTemplate(void (Recompiler::*const_func)(CompileFlags),
+                                                void (Recompiler::*func)(CompileFlags), const void* pgxp_cpu_func,
+                                                u32 tflags)
 {
   // TODO: This is where we will do memory operand optimization. Remember to kill constants!
   // TODO: Swap S and T if commutative
@@ -1600,9 +1602,9 @@ void CPU::NewRec::Compiler::CompileTemplate(void (Compiler::*const_func)(Compile
   }
 }
 
-void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(CompileFlags, MemoryAccessSize, bool, bool,
-                                                                            const std::optional<VirtualMemoryAddress>&),
-                                                     MemoryAccessSize size, bool store, bool sign, u32 tflags)
+void CPU::Recompiler::Recompiler::CompileLoadStoreTemplate(
+  void (Recompiler::*func)(CompileFlags, MemoryAccessSize, bool, bool, const std::optional<VirtualMemoryAddress>&),
+  MemoryAccessSize size, bool store, bool sign, u32 tflags)
 {
   const Reg rs = inst->i.rs;
   const Reg rt = inst->i.rt;
@@ -1716,13 +1718,13 @@ void CPU::NewRec::Compiler::CompileLoadStoreTemplate(void (Compiler::*func)(Comp
   }
 }
 
-void CPU::NewRec::Compiler::TruncateBlock()
+void CPU::Recompiler::Recompiler::TruncateBlock()
 {
   m_block->size = ((m_current_instruction_pc - m_block->pc) / sizeof(Instruction)) + 1;
   iinfo->is_last_instruction = true;
 }
 
-const TickCount* CPU::NewRec::Compiler::GetFetchMemoryAccessTimePtr() const
+const TickCount* CPU::Recompiler::Recompiler::GetFetchMemoryAccessTimePtr() const
 {
   const TickCount* ptr =
     Bus::GetMemoryAccessTimePtr(m_block->pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word);
@@ -1730,8 +1732,8 @@ const TickCount* CPU::NewRec::Compiler::GetFetchMemoryAccessTimePtr() const
   return ptr;
 }
 
-void CPU::NewRec::Compiler::FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store,
-                                              bool use_fastmem)
+void CPU::Recompiler::Recompiler::FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store,
+                                                  bool use_fastmem)
 {
   if (use_fastmem)
     return;
@@ -1740,7 +1742,7 @@ void CPU::NewRec::Compiler::FlushForLoadStore(const std::optional<VirtualMemoryA
   Flush(FLUSH_FOR_C_CALL | FLUSH_FOR_LOADSTORE);
 }
 
-void CPU::NewRec::Compiler::CompileMoveRegTemplate(Reg dst, Reg src, bool pgxp_move)
+void CPU::Recompiler::Recompiler::CompileMoveRegTemplate(Reg dst, Reg src, bool pgxp_move)
 {
   if (dst == src || dst == Reg::zero)
     return;
@@ -1770,7 +1772,7 @@ void CPU::NewRec::Compiler::CompileMoveRegTemplate(Reg dst, Reg src, bool pgxp_m
   }
 }
 
-void CPU::NewRec::Compiler::Compile_j()
+void CPU::Recompiler::Recompiler::Compile_j()
 {
   const u32 newpc = (m_compiler_pc & UINT32_C(0xF0000000)) | (inst->j.target << 2);
 
@@ -1780,7 +1782,7 @@ void CPU::NewRec::Compiler::Compile_j()
   EndBlock(newpc, true);
 }
 
-void CPU::NewRec::Compiler::Compile_jr_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_jr_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
   const u32 newpc = GetConstantRegU32(cf.MipsS());
@@ -1794,7 +1796,7 @@ void CPU::NewRec::Compiler::Compile_jr_const(CompileFlags cf)
   EndBlock(newpc, true);
 }
 
-void CPU::NewRec::Compiler::Compile_jal()
+void CPU::Recompiler::Recompiler::Compile_jal()
 {
   const u32 newpc = (m_compiler_pc & UINT32_C(0xF0000000)) | (inst->j.target << 2);
   SetConstantReg(Reg::ra, GetBranchReturnAddress({}));
@@ -1802,7 +1804,7 @@ void CPU::NewRec::Compiler::Compile_jal()
   EndBlock(newpc, true);
 }
 
-void CPU::NewRec::Compiler::Compile_jalr_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_jalr_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
   const u32 newpc = GetConstantRegU32(cf.MipsS());
@@ -1813,17 +1815,17 @@ void CPU::NewRec::Compiler::Compile_jalr_const(CompileFlags cf)
   EndBlock(newpc, true);
 }
 
-void CPU::NewRec::Compiler::Compile_syscall()
+void CPU::Recompiler::Recompiler::Compile_syscall()
 {
   EndBlockWithException(Exception::Syscall);
 }
 
-void CPU::NewRec::Compiler::Compile_break()
+void CPU::Recompiler::Recompiler::Compile_break()
 {
   EndBlockWithException(Exception::BP);
 }
 
-void CPU::NewRec::Compiler::Compile_b_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_b_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
 
@@ -1842,7 +1844,7 @@ void CPU::NewRec::Compiler::Compile_b_const(CompileFlags cf)
   EndBlock(taken ? taken_pc : m_compiler_pc, true);
 }
 
-void CPU::NewRec::Compiler::Compile_b(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_b(CompileFlags cf)
 {
   const u8 irt = static_cast<u8>(inst->i.rt.GetValue());
   const bool bgez = ConvertToBoolUnchecked(irt & u8(1));
@@ -1854,47 +1856,47 @@ void CPU::NewRec::Compiler::Compile_b(CompileFlags cf)
   Compile_bxx(cf, bgez ? BranchCondition::GreaterEqualZero : BranchCondition::LessThanZero);
 }
 
-void CPU::NewRec::Compiler::Compile_blez(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_blez(CompileFlags cf)
 {
   Compile_bxx(cf, BranchCondition::LessEqualZero);
 }
 
-void CPU::NewRec::Compiler::Compile_blez_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_blez_const(CompileFlags cf)
 {
   Compile_bxx_const(cf, BranchCondition::LessEqualZero);
 }
 
-void CPU::NewRec::Compiler::Compile_bgtz(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_bgtz(CompileFlags cf)
 {
   Compile_bxx(cf, BranchCondition::GreaterThanZero);
 }
 
-void CPU::NewRec::Compiler::Compile_bgtz_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_bgtz_const(CompileFlags cf)
 {
   Compile_bxx_const(cf, BranchCondition::GreaterThanZero);
 }
 
-void CPU::NewRec::Compiler::Compile_beq(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_beq(CompileFlags cf)
 {
   Compile_bxx(cf, BranchCondition::Equal);
 }
 
-void CPU::NewRec::Compiler::Compile_beq_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_beq_const(CompileFlags cf)
 {
   Compile_bxx_const(cf, BranchCondition::Equal);
 }
 
-void CPU::NewRec::Compiler::Compile_bne(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_bne(CompileFlags cf)
 {
   Compile_bxx(cf, BranchCondition::NotEqual);
 }
 
-void CPU::NewRec::Compiler::Compile_bne_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_bne_const(CompileFlags cf)
 {
   Compile_bxx_const(cf, BranchCondition::NotEqual);
 }
 
-void CPU::NewRec::Compiler::Compile_bxx_const(CompileFlags cf, BranchCondition cond)
+void CPU::Recompiler::Recompiler::Compile_bxx_const(CompileFlags cf, BranchCondition cond)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
 
@@ -1935,79 +1937,79 @@ void CPU::NewRec::Compiler::Compile_bxx_const(CompileFlags cf, BranchCondition c
   EndBlock(taken ? taken_pc : m_compiler_pc, true);
 }
 
-void CPU::NewRec::Compiler::Compile_sll_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_sll_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsT()) << inst->r.shamt);
 }
 
-void CPU::NewRec::Compiler::Compile_srl_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_srl_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsT()) >> inst->r.shamt);
 }
 
-void CPU::NewRec::Compiler::Compile_sra_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_sra_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), static_cast<u32>(GetConstantRegS32(cf.MipsT()) >> inst->r.shamt));
 }
 
-void CPU::NewRec::Compiler::Compile_sllv_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_sllv_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsT()) << (GetConstantRegU32(cf.MipsS()) & 0x1Fu));
 }
 
-void CPU::NewRec::Compiler::Compile_srlv_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_srlv_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsT()) >> (GetConstantRegU32(cf.MipsS()) & 0x1Fu));
 }
 
-void CPU::NewRec::Compiler::Compile_srav_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_srav_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), static_cast<u32>(GetConstantRegS32(cf.MipsT()) >> (GetConstantRegU32(cf.MipsS()) & 0x1Fu)));
 }
 
-void CPU::NewRec::Compiler::Compile_and_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_and_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) & GetConstantRegU32(cf.MipsT()));
 }
 
-void CPU::NewRec::Compiler::Compile_or_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_or_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) | GetConstantRegU32(cf.MipsT()));
 }
 
-void CPU::NewRec::Compiler::Compile_xor_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_xor_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) ^ GetConstantRegU32(cf.MipsT()));
 }
 
-void CPU::NewRec::Compiler::Compile_nor_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_nor_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), ~(GetConstantRegU32(cf.MipsS()) | GetConstantRegU32(cf.MipsT())));
 }
 
-void CPU::NewRec::Compiler::Compile_slt_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_slt_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), BoolToUInt32(GetConstantRegS32(cf.MipsS()) < GetConstantRegS32(cf.MipsT())));
 }
 
-void CPU::NewRec::Compiler::Compile_sltu_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_sltu_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), BoolToUInt32(GetConstantRegU32(cf.MipsS()) < GetConstantRegU32(cf.MipsT())));
 }
 
-void CPU::NewRec::Compiler::Compile_mult_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_mult_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
 
@@ -2017,7 +2019,7 @@ void CPU::NewRec::Compiler::Compile_mult_const(CompileFlags cf)
   SetConstantReg(Reg::lo, static_cast<u32>(res));
 }
 
-void CPU::NewRec::Compiler::Compile_multu_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_multu_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
 
@@ -2026,7 +2028,7 @@ void CPU::NewRec::Compiler::Compile_multu_const(CompileFlags cf)
   SetConstantReg(Reg::lo, static_cast<u32>(res));
 }
 
-void CPU::NewRec::Compiler::MIPSSignedDivide(s32 num, s32 denom, u32* lo, u32* hi)
+void CPU::Recompiler::Recompiler::MIPSSignedDivide(s32 num, s32 denom, u32* lo, u32* hi)
 {
   if (denom == 0)
   {
@@ -2047,7 +2049,7 @@ void CPU::NewRec::Compiler::MIPSSignedDivide(s32 num, s32 denom, u32* lo, u32* h
   }
 }
 
-void CPU::NewRec::Compiler::MIPSUnsignedDivide(u32 num, u32 denom, u32* lo, u32* hi)
+void CPU::Recompiler::Recompiler::MIPSUnsignedDivide(u32 num, u32 denom, u32* lo, u32* hi)
 {
   if (denom == 0)
   {
@@ -2062,7 +2064,7 @@ void CPU::NewRec::Compiler::MIPSUnsignedDivide(u32 num, u32 denom, u32* lo, u32*
   }
 }
 
-void CPU::NewRec::Compiler::Compile_div_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_div_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
 
@@ -2076,7 +2078,7 @@ void CPU::NewRec::Compiler::Compile_div_const(CompileFlags cf)
   SetConstantReg(Reg::lo, lo);
 }
 
-void CPU::NewRec::Compiler::Compile_divu_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_divu_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
 
@@ -2090,7 +2092,7 @@ void CPU::NewRec::Compiler::Compile_divu_const(CompileFlags cf)
   SetConstantReg(Reg::lo, lo);
 }
 
-void CPU::NewRec::Compiler::Compile_add_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_add_const(CompileFlags cf)
 {
   // TODO: Overflow
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
@@ -2098,13 +2100,13 @@ void CPU::NewRec::Compiler::Compile_add_const(CompileFlags cf)
     SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) + GetConstantRegU32(cf.MipsT()));
 }
 
-void CPU::NewRec::Compiler::Compile_addu_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_addu_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) + GetConstantRegU32(cf.MipsT()));
 }
 
-void CPU::NewRec::Compiler::Compile_sub_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_sub_const(CompileFlags cf)
 {
   // TODO: Overflow
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
@@ -2112,13 +2114,13 @@ void CPU::NewRec::Compiler::Compile_sub_const(CompileFlags cf)
     SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) - GetConstantRegU32(cf.MipsT()));
 }
 
-void CPU::NewRec::Compiler::Compile_subu_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_subu_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()) && HasConstantReg(cf.MipsT()));
   SetConstantReg(MipsD(), GetConstantRegU32(cf.MipsS()) - GetConstantRegU32(cf.MipsT()));
 }
 
-void CPU::NewRec::Compiler::Compile_addi_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_addi_const(CompileFlags cf)
 {
   // TODO: Overflow
   DebugAssert(HasConstantReg(cf.MipsS()));
@@ -2126,43 +2128,43 @@ void CPU::NewRec::Compiler::Compile_addi_const(CompileFlags cf)
     SetConstantReg(cf.MipsT(), GetConstantRegU32(cf.MipsS()) + inst->i.imm_sext32());
 }
 
-void CPU::NewRec::Compiler::Compile_addiu_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_addiu_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
   SetConstantReg(cf.MipsT(), GetConstantRegU32(cf.MipsS()) + inst->i.imm_sext32());
 }
 
-void CPU::NewRec::Compiler::Compile_slti_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_slti_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
   SetConstantReg(cf.MipsT(), BoolToUInt32(GetConstantRegS32(cf.MipsS()) < static_cast<s32>(inst->i.imm_sext32())));
 }
 
-void CPU::NewRec::Compiler::Compile_sltiu_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_sltiu_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
   SetConstantReg(cf.MipsT(), GetConstantRegU32(cf.MipsS()) < inst->i.imm_sext32());
 }
 
-void CPU::NewRec::Compiler::Compile_andi_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_andi_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
   SetConstantReg(cf.MipsT(), GetConstantRegU32(cf.MipsS()) & inst->i.imm_zext32());
 }
 
-void CPU::NewRec::Compiler::Compile_ori_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_ori_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
   SetConstantReg(cf.MipsT(), GetConstantRegU32(cf.MipsS()) | inst->i.imm_zext32());
 }
 
-void CPU::NewRec::Compiler::Compile_xori_const(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_xori_const(CompileFlags cf)
 {
   DebugAssert(HasConstantReg(cf.MipsS()));
   SetConstantReg(cf.MipsT(), GetConstantRegU32(cf.MipsS()) ^ inst->i.imm_zext32());
 }
 
-void CPU::NewRec::Compiler::Compile_lui()
+void CPU::Recompiler::Recompiler::Compile_lui()
 {
   if (inst->i.rt == Reg::zero)
     return;
@@ -2191,17 +2193,17 @@ static constexpr const std::array<std::pair<u32*, u32>, 16> s_cop0_table = {
    {&CPU::g_state.cop0_regs.EPC, 0x00000000u},
    {&CPU::g_state.cop0_regs.PRID, 0x00000000u}}};
 
-u32* CPU::NewRec::Compiler::GetCop0RegPtr(Cop0Reg reg)
+u32* CPU::Recompiler::Recompiler::GetCop0RegPtr(Cop0Reg reg)
 {
   return (static_cast<u8>(reg) < s_cop0_table.size()) ? s_cop0_table[static_cast<u8>(reg)].first : nullptr;
 }
 
-u32 CPU::NewRec::Compiler::GetCop0RegWriteMask(Cop0Reg reg)
+u32 CPU::Recompiler::Recompiler::GetCop0RegWriteMask(Cop0Reg reg)
 {
   return (static_cast<u8>(reg) < s_cop0_table.size()) ? s_cop0_table[static_cast<u8>(reg)].second : 0;
 }
 
-void CPU::NewRec::Compiler::Compile_mfc0(CompileFlags cf)
+void CPU::Recompiler::Recompiler::Compile_mfc0(CompileFlags cf)
 {
   const Cop0Reg r = static_cast<Cop0Reg>(MipsD());
   const u32* ptr = GetCop0RegPtr(r);
@@ -2216,8 +2218,8 @@ void CPU::NewRec::Compiler::Compile_mfc0(CompileFlags cf)
   LoadHostRegFromCPUPointer(cf.host_t, ptr);
 }
 
-std::pair<u32*, CPU::NewRec::Compiler::GTERegisterAccessAction>
-CPU::NewRec::Compiler::GetGTERegisterPointer(u32 index, bool writing)
+std::pair<u32*, CPU::Recompiler::Recompiler::GTERegisterAccessAction>
+CPU::Recompiler::Recompiler::GetGTERegisterPointer(u32 index, bool writing)
 {
   if (!writing)
   {
@@ -2309,14 +2311,14 @@ CPU::NewRec::Compiler::GetGTERegisterPointer(u32 index, bool writing)
   }
 }
 
-void CPU::NewRec::Compiler::AddGTETicks(TickCount ticks)
+void CPU::Recompiler::Recompiler::AddGTETicks(TickCount ticks)
 {
   // TODO: check, int has +1 here
   m_gte_done_cycle = m_cycles + ticks;
   DEBUG_LOG("Adding {} GTE ticks", ticks);
 }
 
-void CPU::NewRec::Compiler::StallUntilGTEComplete()
+void CPU::Recompiler::Recompiler::StallUntilGTEComplete()
 {
   // TODO: hack to match old rec.. this may or may not be correct behavior
   // it's the difference between stalling before and after the current instruction's cycle
@@ -2342,7 +2344,7 @@ void CPU::NewRec::Compiler::StallUntilGTEComplete()
   m_cycles++;
 }
 
-void CPU::NewRec::BackpatchLoadStore(void* exception_pc, const CodeCache::LoadstoreBackpatchInfo& info)
+void CPU::Recompiler::BackpatchLoadStore(void* exception_pc, const CodeCache::LoadstoreBackpatchInfo& info)
 {
   // remove the cycles we added for the memory read, then take them off again after the backpatch
   // the normal rec path will add the ram read ticks later, so we need to take them off at the end
@@ -2367,7 +2369,7 @@ void CPU::NewRec::BackpatchLoadStore(void* exception_pc, const CodeCache::Loadst
   CPU::CodeCache::CommitFarCode(thunk_size);
 }
 
-void CPU::NewRec::Compiler::InitSpeculativeRegs()
+void CPU::Recompiler::Recompiler::InitSpeculativeRegs()
 {
   for (u8 i = 0; i < static_cast<u8>(Reg::count); i++)
     m_speculative_constants.regs[i] = g_state.regs.r[i];
@@ -2376,19 +2378,19 @@ void CPU::NewRec::Compiler::InitSpeculativeRegs()
   m_speculative_constants.memory.clear();
 }
 
-void CPU::NewRec::Compiler::InvalidateSpeculativeValues()
+void CPU::Recompiler::Recompiler::InvalidateSpeculativeValues()
 {
   m_speculative_constants.regs.fill(std::nullopt);
   m_speculative_constants.memory.clear();
   m_speculative_constants.cop0_sr.reset();
 }
 
-CPU::NewRec::Compiler::SpecValue CPU::NewRec::Compiler::SpecReadReg(Reg reg)
+CPU::Recompiler::Recompiler::SpecValue CPU::Recompiler::Recompiler::SpecReadReg(Reg reg)
 {
   return m_speculative_constants.regs[static_cast<u8>(reg)];
 }
 
-void CPU::NewRec::Compiler::SpecWriteReg(Reg reg, SpecValue value)
+void CPU::Recompiler::Recompiler::SpecWriteReg(Reg reg, SpecValue value)
 {
   if (reg == Reg::zero)
     return;
@@ -2396,7 +2398,7 @@ void CPU::NewRec::Compiler::SpecWriteReg(Reg reg, SpecValue value)
   m_speculative_constants.regs[static_cast<u8>(reg)] = value;
 }
 
-void CPU::NewRec::Compiler::SpecInvalidateReg(Reg reg)
+void CPU::Recompiler::Recompiler::SpecInvalidateReg(Reg reg)
 {
   if (reg == Reg::zero)
     return;
@@ -2404,7 +2406,7 @@ void CPU::NewRec::Compiler::SpecInvalidateReg(Reg reg)
   m_speculative_constants.regs[static_cast<u8>(reg)].reset();
 }
 
-void CPU::NewRec::Compiler::SpecCopyReg(Reg dst, Reg src)
+void CPU::Recompiler::Recompiler::SpecCopyReg(Reg dst, Reg src)
 {
   if (dst == Reg::zero)
     return;
@@ -2412,7 +2414,7 @@ void CPU::NewRec::Compiler::SpecCopyReg(Reg dst, Reg src)
   m_speculative_constants.regs[static_cast<u8>(dst)] = m_speculative_constants.regs[static_cast<u8>(src)];
 }
 
-CPU::NewRec::Compiler::SpecValue CPU::NewRec::Compiler::SpecReadMem(VirtualMemoryAddress address)
+CPU::Recompiler::Recompiler::SpecValue CPU::Recompiler::Recompiler::SpecReadMem(VirtualMemoryAddress address)
 {
   auto it = m_speculative_constants.memory.find(address);
   if (it != m_speculative_constants.memory.end())
@@ -2437,7 +2439,7 @@ CPU::NewRec::Compiler::SpecValue CPU::NewRec::Compiler::SpecReadMem(VirtualMemor
   return std::nullopt;
 }
 
-void CPU::NewRec::Compiler::SpecWriteMem(u32 address, SpecValue value)
+void CPU::Recompiler::Recompiler::SpecWriteMem(u32 address, SpecValue value)
 {
   auto it = m_speculative_constants.memory.find(address);
   if (it != m_speculative_constants.memory.end())
@@ -2451,12 +2453,12 @@ void CPU::NewRec::Compiler::SpecWriteMem(u32 address, SpecValue value)
     m_speculative_constants.memory.emplace(address, value);
 }
 
-void CPU::NewRec::Compiler::SpecInvalidateMem(VirtualMemoryAddress address)
+void CPU::Recompiler::Recompiler::SpecInvalidateMem(VirtualMemoryAddress address)
 {
   SpecWriteMem(address, std::nullopt);
 }
 
-bool CPU::NewRec::Compiler::SpecIsCacheIsolated()
+bool CPU::Recompiler::Recompiler::SpecIsCacheIsolated()
 {
   if (!m_speculative_constants.cop0_sr.has_value())
     return false;
@@ -2465,24 +2467,24 @@ bool CPU::NewRec::Compiler::SpecIsCacheIsolated()
   return sr.Isc;
 }
 
-void CPU::NewRec::Compiler::SpecExec_b()
+void CPU::Recompiler::Recompiler::SpecExec_b()
 {
   const bool link = (static_cast<u8>(inst->i.rt.GetValue()) & u8(0x1E)) == u8(0x10);
   if (link)
     SpecWriteReg(Reg::ra, m_compiler_pc);
 }
 
-void CPU::NewRec::Compiler::SpecExec_jal()
+void CPU::Recompiler::Recompiler::SpecExec_jal()
 {
   SpecWriteReg(Reg::ra, m_compiler_pc);
 }
 
-void CPU::NewRec::Compiler::SpecExec_jalr()
+void CPU::Recompiler::Recompiler::SpecExec_jalr()
 {
   SpecWriteReg(inst->r.rd, m_compiler_pc);
 }
 
-void CPU::NewRec::Compiler::SpecExec_sll()
+void CPU::Recompiler::Recompiler::SpecExec_sll()
 {
   const SpecValue rt = SpecReadReg(inst->r.rt);
   if (rt.has_value())
@@ -2491,7 +2493,7 @@ void CPU::NewRec::Compiler::SpecExec_sll()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_srl()
+void CPU::Recompiler::Recompiler::SpecExec_srl()
 {
   const SpecValue rt = SpecReadReg(inst->r.rt);
   if (rt.has_value())
@@ -2500,7 +2502,7 @@ void CPU::NewRec::Compiler::SpecExec_srl()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_sra()
+void CPU::Recompiler::Recompiler::SpecExec_sra()
 {
   const SpecValue rt = SpecReadReg(inst->r.rt);
   if (rt.has_value())
@@ -2509,7 +2511,7 @@ void CPU::NewRec::Compiler::SpecExec_sra()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_sllv()
+void CPU::Recompiler::Recompiler::SpecExec_sllv()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2519,7 +2521,7 @@ void CPU::NewRec::Compiler::SpecExec_sllv()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_srlv()
+void CPU::Recompiler::Recompiler::SpecExec_srlv()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2529,7 +2531,7 @@ void CPU::NewRec::Compiler::SpecExec_srlv()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_srav()
+void CPU::Recompiler::Recompiler::SpecExec_srav()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2539,7 +2541,7 @@ void CPU::NewRec::Compiler::SpecExec_srav()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_mult()
+void CPU::Recompiler::Recompiler::SpecExec_mult()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2557,7 +2559,7 @@ void CPU::NewRec::Compiler::SpecExec_mult()
   }
 }
 
-void CPU::NewRec::Compiler::SpecExec_multu()
+void CPU::Recompiler::Recompiler::SpecExec_multu()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2574,7 +2576,7 @@ void CPU::NewRec::Compiler::SpecExec_multu()
   }
 }
 
-void CPU::NewRec::Compiler::SpecExec_div()
+void CPU::Recompiler::Recompiler::SpecExec_div()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2592,7 +2594,7 @@ void CPU::NewRec::Compiler::SpecExec_div()
   }
 }
 
-void CPU::NewRec::Compiler::SpecExec_divu()
+void CPU::Recompiler::Recompiler::SpecExec_divu()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2610,12 +2612,12 @@ void CPU::NewRec::Compiler::SpecExec_divu()
   }
 }
 
-void CPU::NewRec::Compiler::SpecExec_add()
+void CPU::Recompiler::Recompiler::SpecExec_add()
 {
   SpecExec_addu();
 }
 
-void CPU::NewRec::Compiler::SpecExec_addu()
+void CPU::Recompiler::Recompiler::SpecExec_addu()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2625,12 +2627,12 @@ void CPU::NewRec::Compiler::SpecExec_addu()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_sub()
+void CPU::Recompiler::Recompiler::SpecExec_sub()
 {
   SpecExec_subu();
 }
 
-void CPU::NewRec::Compiler::SpecExec_subu()
+void CPU::Recompiler::Recompiler::SpecExec_subu()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2640,7 +2642,7 @@ void CPU::NewRec::Compiler::SpecExec_subu()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_and()
+void CPU::Recompiler::Recompiler::SpecExec_and()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2650,7 +2652,7 @@ void CPU::NewRec::Compiler::SpecExec_and()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_or()
+void CPU::Recompiler::Recompiler::SpecExec_or()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2660,7 +2662,7 @@ void CPU::NewRec::Compiler::SpecExec_or()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_xor()
+void CPU::Recompiler::Recompiler::SpecExec_xor()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2670,7 +2672,7 @@ void CPU::NewRec::Compiler::SpecExec_xor()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_nor()
+void CPU::Recompiler::Recompiler::SpecExec_nor()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2680,7 +2682,7 @@ void CPU::NewRec::Compiler::SpecExec_nor()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_slt()
+void CPU::Recompiler::Recompiler::SpecExec_slt()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2690,7 +2692,7 @@ void CPU::NewRec::Compiler::SpecExec_slt()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_sltu()
+void CPU::Recompiler::Recompiler::SpecExec_sltu()
 {
   const SpecValue rs = SpecReadReg(inst->r.rs);
   const SpecValue rt = SpecReadReg(inst->r.rt);
@@ -2700,12 +2702,12 @@ void CPU::NewRec::Compiler::SpecExec_sltu()
     SpecInvalidateReg(inst->r.rd);
 }
 
-void CPU::NewRec::Compiler::SpecExec_addi()
+void CPU::Recompiler::Recompiler::SpecExec_addi()
 {
   SpecExec_addiu();
 }
 
-void CPU::NewRec::Compiler::SpecExec_addiu()
+void CPU::Recompiler::Recompiler::SpecExec_addiu()
 {
   const SpecValue rs = SpecReadReg(inst->i.rs);
   if (rs.has_value())
@@ -2714,7 +2716,7 @@ void CPU::NewRec::Compiler::SpecExec_addiu()
     SpecInvalidateReg(inst->i.rt);
 }
 
-void CPU::NewRec::Compiler::SpecExec_slti()
+void CPU::Recompiler::Recompiler::SpecExec_slti()
 {
   const SpecValue rs = SpecReadReg(inst->i.rs);
   if (rs.has_value())
@@ -2723,7 +2725,7 @@ void CPU::NewRec::Compiler::SpecExec_slti()
     SpecInvalidateReg(inst->i.rt);
 }
 
-void CPU::NewRec::Compiler::SpecExec_sltiu()
+void CPU::Recompiler::Recompiler::SpecExec_sltiu()
 {
   const SpecValue rs = SpecReadReg(inst->i.rs);
   if (rs.has_value())
@@ -2732,7 +2734,7 @@ void CPU::NewRec::Compiler::SpecExec_sltiu()
     SpecInvalidateReg(inst->i.rt);
 }
 
-void CPU::NewRec::Compiler::SpecExec_andi()
+void CPU::Recompiler::Recompiler::SpecExec_andi()
 {
   const SpecValue rs = SpecReadReg(inst->i.rs);
   if (rs.has_value())
@@ -2741,7 +2743,7 @@ void CPU::NewRec::Compiler::SpecExec_andi()
     SpecInvalidateReg(inst->i.rt);
 }
 
-void CPU::NewRec::Compiler::SpecExec_ori()
+void CPU::Recompiler::Recompiler::SpecExec_ori()
 {
   const SpecValue rs = SpecReadReg(inst->i.rs);
   if (rs.has_value())
@@ -2750,7 +2752,7 @@ void CPU::NewRec::Compiler::SpecExec_ori()
     SpecInvalidateReg(inst->i.rt);
 }
 
-void CPU::NewRec::Compiler::SpecExec_xori()
+void CPU::Recompiler::Recompiler::SpecExec_xori()
 {
   const SpecValue rs = SpecReadReg(inst->i.rs);
   if (rs.has_value())
@@ -2759,18 +2761,18 @@ void CPU::NewRec::Compiler::SpecExec_xori()
     SpecInvalidateReg(inst->i.rt);
 }
 
-void CPU::NewRec::Compiler::SpecExec_lui()
+void CPU::Recompiler::Recompiler::SpecExec_lui()
 {
   SpecWriteReg(inst->i.rt, inst->i.imm_zext32() << 16);
 }
 
-CPU::NewRec::Compiler::SpecValue CPU::NewRec::Compiler::SpecExec_LoadStoreAddr()
+CPU::Recompiler::Recompiler::SpecValue CPU::Recompiler::Recompiler::SpecExec_LoadStoreAddr()
 {
   const SpecValue rs = SpecReadReg(inst->i.rs);
   return rs.has_value() ? (rs.value() + inst->i.imm_sext32()) : rs;
 }
 
-void CPU::NewRec::Compiler::SpecExec_lxx(MemoryAccessSize size, bool sign)
+void CPU::Recompiler::Recompiler::SpecExec_lxx(MemoryAccessSize size, bool sign)
 {
   const SpecValue addr = SpecExec_LoadStoreAddr();
   SpecValue val;
@@ -2800,13 +2802,13 @@ void CPU::NewRec::Compiler::SpecExec_lxx(MemoryAccessSize size, bool sign)
   SpecWriteReg(inst->r.rt, val);
 }
 
-void CPU::NewRec::Compiler::SpecExec_lwx(bool lwr)
+void CPU::Recompiler::Recompiler::SpecExec_lwx(bool lwr)
 {
   // TODO
   SpecInvalidateReg(inst->i.rt);
 }
 
-void CPU::NewRec::Compiler::SpecExec_sxx(MemoryAccessSize size)
+void CPU::Recompiler::Recompiler::SpecExec_sxx(MemoryAccessSize size)
 {
   const SpecValue addr = SpecExec_LoadStoreAddr();
   if (!addr.has_value())
@@ -2836,21 +2838,21 @@ void CPU::NewRec::Compiler::SpecExec_sxx(MemoryAccessSize size)
   SpecWriteMem(addr.value(), rt);
 }
 
-void CPU::NewRec::Compiler::SpecExec_swx(bool swr)
+void CPU::Recompiler::Recompiler::SpecExec_swx(bool swr)
 {
   const SpecValue addr = SpecExec_LoadStoreAddr();
   if (addr.has_value())
     SpecInvalidateMem(addr.value() & ~3u);
 }
 
-void CPU::NewRec::Compiler::SpecExec_swc2()
+void CPU::Recompiler::Recompiler::SpecExec_swc2()
 {
   const SpecValue addr = SpecExec_LoadStoreAddr();
   if (addr.has_value())
     SpecInvalidateMem(addr.value());
 }
 
-void CPU::NewRec::Compiler::SpecExec_mfc0()
+void CPU::Recompiler::Recompiler::SpecExec_mfc0()
 {
   const Cop0Reg rd = static_cast<Cop0Reg>(inst->r.rd.GetValue());
   if (rd != Cop0Reg::SR)
@@ -2862,7 +2864,7 @@ void CPU::NewRec::Compiler::SpecExec_mfc0()
   SpecWriteReg(inst->r.rt, m_speculative_constants.cop0_sr);
 }
 
-void CPU::NewRec::Compiler::SpecExec_mtc0()
+void CPU::Recompiler::Recompiler::SpecExec_mtc0()
 {
   const Cop0Reg rd = static_cast<Cop0Reg>(inst->r.rd.GetValue());
   if (rd != Cop0Reg::SR || !m_speculative_constants.cop0_sr.has_value())
@@ -2878,7 +2880,7 @@ void CPU::NewRec::Compiler::SpecExec_mtc0()
   m_speculative_constants.cop0_sr = val;
 }
 
-void CPU::NewRec::Compiler::SpecExec_rfe()
+void CPU::Recompiler::Recompiler::SpecExec_rfe()
 {
   if (!m_speculative_constants.cop0_sr.has_value())
     return;

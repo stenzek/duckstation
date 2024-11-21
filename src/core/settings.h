@@ -486,11 +486,11 @@ struct Settings
   static constexpr float DEFAULT_GPU_PGXP_DEPTH_THRESHOLD = 300.0f;
   static constexpr float GPU_PGXP_DEPTH_THRESHOLD_SCALE = 4096.0f;
 
-  // Prefer oldrec over newrec for now. Except on RISC-V, where there is no oldrec.
-#if defined(CPU_ARCH_RISCV64)
-  static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::NewRec;
-#else
+  // Prefer recompiler when supported.
+#ifdef ENABLE_RECOMPILER
   static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::Recompiler;
+#else
+  static constexpr CPUExecutionMode DEFAULT_CPU_EXECUTION_MODE = CPUExecutionMode::CachedInterpreter;
 #endif
 
   // LUT still ends up faster on Apple Silicon for now, because of 16K pages.

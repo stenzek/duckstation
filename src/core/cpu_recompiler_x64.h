@@ -3,19 +3,19 @@
 
 #pragma once
 
-#include "cpu_newrec_compiler.h"
+#include "cpu_recompiler.h"
 
 #include <memory>
 
 #ifdef CPU_ARCH_X64
 
-namespace CPU::NewRec {
+namespace CPU::Recompiler {
 
-class X64Compiler final : public Compiler
+class X64Recompiler final : public Recompiler
 {
 public:
-  X64Compiler();
-  ~X64Compiler() override;
+  X64Recompiler();
+  ~X64Recompiler() override;
 
 protected:
   const char* GetHostRegName(u32 reg) const override;
@@ -141,6 +141,6 @@ private:
   Xbyak::CodeGenerator* cg;
 };
 
-} // namespace CPU::NewRec
+} // namespace CPU::Recompiler
 
 #endif // CPU_ARCH_X64

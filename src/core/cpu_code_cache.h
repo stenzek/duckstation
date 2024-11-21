@@ -11,7 +11,7 @@ class Error;
 namespace CPU::CodeCache {
 
 /// Returns true if any recompiler is in use.
-bool IsUsingAnyRecompiler();
+bool IsUsingRecompiler();
 
 /// Returns true if any recompiler and fastmem is in use.
 bool IsUsingFastmem();

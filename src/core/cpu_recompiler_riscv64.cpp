@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "cpu_newrec_compiler_riscv64.h"
+#include "cpu_recompiler_riscv64.h"
 #include "cpu_code_cache_private.h"
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
@@ -33,7 +33,7 @@ extern "C" {
 
 static constexpr u32 BLOCK_LINK_SIZE = 8; // auipc+jr
 
-namespace CPU::NewRec {
+namespace CPU::Recompiler {
 
 using namespace biscuit;
 
@@ -53,10 +53,10 @@ using CPU::Recompiler::rvIsCallerSavedRegister;
 using CPU::Recompiler::rvIsValidSExtITypeImm;
 using CPU::Recompiler::rvMoveAddressToReg;
 
-RISCV64Compiler s_instance;
-Compiler* g_compiler = &s_instance;
+RISCV64Recompiler s_instance;
+Recompiler* g_compiler = &s_instance;
 
-} // namespace CPU::NewRec
+} // namespace CPU::Recompiler
 
 bool CPU::Recompiler::rvIsCallerSavedRegister(u32 id)
 {
@@ -332,19 +332,19 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
   return BLOCK_LINK_SIZE;
 }
 
-CPU::NewRec::RISCV64Compiler::RISCV64Compiler() = default;
+CPU::Recompiler::RISCV64Recompiler::RISCV64Recompiler() = default;
 
-CPU::NewRec::RISCV64Compiler::~RISCV64Compiler() = default;
+CPU::Recompiler::RISCV64Recompiler::~RISCV64Recompiler() = default;
 
-const void* CPU::NewRec::RISCV64Compiler::GetCurrentCodePointer()
+const void* CPU::Recompiler::RISCV64Recompiler::GetCurrentCodePointer()
 {
   return rvAsm->GetCursorPointer();
 }
 
-void CPU::NewRec::RISCV64Compiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space,
-                                         u8* far_code_buffer, u32 far_code_space)
+void CPU::Recompiler::RISCV64Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space,
+                                               u8* far_code_buffer, u32 far_code_space)
 {
-  Compiler::Reset(block, code_buffer, code_buffer_space, far_code_buffer, far_code_space);
+  Recompiler::Reset(block, code_buffer, code_buffer_space, far_code_buffer, far_code_space);
 
   // TODO: don't recreate this every time..
   DebugAssert(!m_emitter && !m_far_emitter && !rvAsm);
@@ -370,7 +370,7 @@ void CPU::NewRec::RISCV64Compiler::Reset(CodeCache::Block* block, u8* code_buffe
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::SwitchToFarCode(
+void CPU::Recompiler::RISCV64Recompiler::SwitchToFarCode(
   bool emit_jump,
   void (biscuit::Assembler::*inverted_cond)(biscuit::GPR, biscuit::GPR, biscuit::Label*) /* = nullptr */,
   const biscuit::GPR& rs1 /* = biscuit::zero */, const biscuit::GPR& rs2 /* = biscuit::zero */)
@@ -394,7 +394,7 @@ void CPU::NewRec::RISCV64Compiler::SwitchToFarCode(
   rvAsm = m_far_emitter.get();
 }
 
-void CPU::NewRec::RISCV64Compiler::SwitchToNearCode(bool emit_jump)
+void CPU::Recompiler::RISCV64Recompiler::SwitchToNearCode(bool emit_jump)
 {
   DebugAssert(rvAsm == m_far_emitter.get());
   if (emit_jump)
@@ -402,19 +402,19 @@ void CPU::NewRec::RISCV64Compiler::SwitchToNearCode(bool emit_jump)
   rvAsm = m_emitter.get();
 }
 
-void CPU::NewRec::RISCV64Compiler::EmitMov(const biscuit::GPR& dst, u32 val)
+void CPU::Recompiler::RISCV64Recompiler::EmitMov(const biscuit::GPR& dst, u32 val)
 {
   rvEmitMov(rvAsm, dst, val);
 }
 
-void CPU::NewRec::RISCV64Compiler::EmitCall(const void* ptr)
+void CPU::Recompiler::RISCV64Recompiler::EmitCall(const void* ptr)
 {
   rvEmitCall(rvAsm, ptr);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeImmSExtIType(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm,
-                                                    void (biscuit::Assembler::*iop)(GPR, GPR, u32),
-                                                    void (biscuit::Assembler::*rop)(GPR, GPR, GPR))
+void CPU::Recompiler::RISCV64Recompiler::SafeImmSExtIType(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm,
+                                                          void (biscuit::Assembler::*iop)(GPR, GPR, u32),
+                                                          void (biscuit::Assembler::*rop)(GPR, GPR, GPR))
 {
   DebugAssert(rd != RSCRATCH && rs != RSCRATCH);
 
@@ -428,83 +428,83 @@ void CPU::NewRec::RISCV64Compiler::SafeImmSExtIType(const biscuit::GPR& rd, cons
   (rvAsm->*rop)(rd, rs, RSCRATCH);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeADDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::Recompiler::RISCV64Recompiler::SafeADDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::ADDI),
                    &Assembler::ADD);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeADDIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::Recompiler::RISCV64Recompiler::SafeADDIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::ADDIW),
                    &Assembler::ADDW);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeSUBIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::Recompiler::RISCV64Recompiler::SafeSUBIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   const u32 nimm = static_cast<u32>(-static_cast<s32>(imm));
   SafeImmSExtIType(rd, rs, nimm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::ADDIW),
                    &Assembler::ADDW);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeANDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::Recompiler::RISCV64Recompiler::SafeANDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, &Assembler::ANDI, &Assembler::AND);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::Recompiler::RISCV64Recompiler::SafeORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, &Assembler::ORI, &Assembler::OR);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeXORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::Recompiler::RISCV64Recompiler::SafeXORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, &Assembler::XORI, &Assembler::XOR);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeSLTI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::Recompiler::RISCV64Recompiler::SafeSLTI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::SLTI),
                    &Assembler::SLT);
 }
 
-void CPU::NewRec::RISCV64Compiler::SafeSLTIU(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
+void CPU::Recompiler::RISCV64Recompiler::SafeSLTIU(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm)
 {
   SafeImmSExtIType(rd, rs, imm, reinterpret_cast<void (biscuit::Assembler::*)(GPR, GPR, u32)>(&Assembler::SLTIU),
                    &Assembler::SLTU);
 }
 
-void CPU::NewRec::RISCV64Compiler::EmitSExtB(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::Recompiler::RISCV64Recompiler::EmitSExtB(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitSExtB(rvAsm, rd, rs);
 }
 
-void CPU::NewRec::RISCV64Compiler::EmitUExtB(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::Recompiler::RISCV64Recompiler::EmitUExtB(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitUExtB(rvAsm, rd, rs);
 }
 
-void CPU::NewRec::RISCV64Compiler::EmitSExtH(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::Recompiler::RISCV64Recompiler::EmitSExtH(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitSExtH(rvAsm, rd, rs);
 }
 
-void CPU::NewRec::RISCV64Compiler::EmitUExtH(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::Recompiler::RISCV64Recompiler::EmitUExtH(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitUExtH(rvAsm, rd, rs);
 }
 
-void CPU::NewRec::RISCV64Compiler::EmitDSExtW(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::Recompiler::RISCV64Recompiler::EmitDSExtW(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitDSExtW(rvAsm, rd, rs);
 }
 
-void CPU::NewRec::RISCV64Compiler::EmitDUExtW(const biscuit::GPR& rd, const biscuit::GPR& rs)
+void CPU::Recompiler::RISCV64Recompiler::EmitDUExtW(const biscuit::GPR& rd, const biscuit::GPR& rs)
 {
   rvEmitDUExtW(rvAsm, rd, rs);
 }
 
-void CPU::NewRec::RISCV64Compiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
+void CPU::Recompiler::RISCV64Recompiler::GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size)
 {
   // store it first to reduce code size, because we can offset
   // TODO: 64-bit displacement is needed :/
@@ -543,7 +543,7 @@ void CPU::NewRec::RISCV64Compiler::GenerateBlockProtectCheck(const u8* ram_ptr, 
   rvAsm->Bind(&block_unchanged);
 }
 
-void CPU::NewRec::RISCV64Compiler::GenerateICacheCheckAndUpdate()
+void CPU::Recompiler::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
 {
   if (!m_block->HasFlag(CodeCache::BlockFlags::IsUsingICache))
   {
@@ -599,8 +599,8 @@ void CPU::NewRec::RISCV64Compiler::GenerateICacheCheckAndUpdate()
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s32 arg2reg /*= -1*/,
-                                                s32 arg3reg /*= -1*/)
+void CPU::Recompiler::RISCV64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s32 arg2reg /*= -1*/,
+                                                      s32 arg3reg /*= -1*/)
 {
   if (arg1reg >= 0 && arg1reg != static_cast<s32>(RARG1.Index()))
     rvAsm->MV(RARG1, GPR(arg1reg));
@@ -611,7 +611,7 @@ void CPU::NewRec::RISCV64Compiler::GenerateCall(const void* func, s32 arg1reg /*
   EmitCall(func);
 }
 
-void CPU::NewRec::RISCV64Compiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
+void CPU::Recompiler::RISCV64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
 {
   if (newpc.has_value())
   {
@@ -628,7 +628,7 @@ void CPU::NewRec::RISCV64Compiler::EndBlock(const std::optional<u32>& newpc, boo
   EndAndLinkBlock(newpc, do_event_test, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::EndBlockWithException(Exception excode)
+void CPU::Recompiler::RISCV64Recompiler::EndBlockWithException(Exception excode)
 {
   // flush regs, but not pc, it's going to get overwritten
   // flush cycles because of the GTE instruction stuff...
@@ -646,8 +646,8 @@ void CPU::NewRec::RISCV64Compiler::EndBlockWithException(Exception excode)
   EndAndLinkBlock(std::nullopt, true, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test,
-                                                   bool force_run_events)
+void CPU::Recompiler::RISCV64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool do_event_test,
+                                                         bool force_run_events)
 {
   // event test
   // pc should've been flushed
@@ -711,7 +711,7 @@ void CPU::NewRec::RISCV64Compiler::EndAndLinkBlock(const std::optional<u32>& new
   }
 }
 
-const void* CPU::NewRec::RISCV64Compiler::EndCompile(u32* code_size, u32* far_code_size)
+const void* CPU::Recompiler::RISCV64Recompiler::EndCompile(u32* code_size, u32* far_code_size)
 {
   u8* const code = m_emitter->GetBufferPointer(0);
   *code_size = static_cast<u32>(m_emitter->GetCodeBuffer().GetSizeInBytes());
@@ -722,7 +722,7 @@ const void* CPU::NewRec::RISCV64Compiler::EndCompile(u32* code_size, u32* far_co
   return code;
 }
 
-const char* CPU::NewRec::RISCV64Compiler::GetHostRegName(u32 reg) const
+const char* CPU::Recompiler::RISCV64Recompiler::GetHostRegName(u32 reg) const
 {
   static constexpr std::array<const char*, 32> reg64_names = {
     {"zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0",  "a1",  "a2", "a3", "a4", "a5",
@@ -730,22 +730,22 @@ const char* CPU::NewRec::RISCV64Compiler::GetHostRegName(u32 reg) const
   return (reg < reg64_names.size()) ? reg64_names[reg] : "UNKNOWN";
 }
 
-void CPU::NewRec::RISCV64Compiler::LoadHostRegWithConstant(u32 reg, u32 val)
+void CPU::Recompiler::RISCV64Recompiler::LoadHostRegWithConstant(u32 reg, u32 val)
 {
   EmitMov(GPR(reg), val);
 }
 
-void CPU::NewRec::RISCV64Compiler::LoadHostRegFromCPUPointer(u32 reg, const void* ptr)
+void CPU::Recompiler::RISCV64Recompiler::LoadHostRegFromCPUPointer(u32 reg, const void* ptr)
 {
   rvAsm->LW(GPR(reg), PTR(ptr));
 }
 
-void CPU::NewRec::RISCV64Compiler::StoreHostRegToCPUPointer(u32 reg, const void* ptr)
+void CPU::Recompiler::RISCV64Recompiler::StoreHostRegToCPUPointer(u32 reg, const void* ptr)
 {
   rvAsm->SW(GPR(reg), PTR(ptr));
 }
 
-void CPU::NewRec::RISCV64Compiler::StoreConstantToCPUPointer(u32 val, const void* ptr)
+void CPU::Recompiler::RISCV64Recompiler::StoreConstantToCPUPointer(u32 val, const void* ptr)
 {
   if (val == 0)
   {
@@ -757,23 +757,23 @@ void CPU::NewRec::RISCV64Compiler::StoreConstantToCPUPointer(u32 val, const void
   rvAsm->SW(RSCRATCH, PTR(ptr));
 }
 
-void CPU::NewRec::RISCV64Compiler::CopyHostReg(u32 dst, u32 src)
+void CPU::Recompiler::RISCV64Recompiler::CopyHostReg(u32 dst, u32 src)
 {
   if (src != dst)
     rvAsm->MV(GPR(dst), GPR(src));
 }
 
-void CPU::NewRec::RISCV64Compiler::AssertRegOrConstS(CompileFlags cf) const
+void CPU::Recompiler::RISCV64Recompiler::AssertRegOrConstS(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_s || cf.const_s);
 }
 
-void CPU::NewRec::RISCV64Compiler::AssertRegOrConstT(CompileFlags cf) const
+void CPU::Recompiler::RISCV64Recompiler::AssertRegOrConstT(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_t || cf.const_t);
 }
 
-biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetSafeRegS(CompileFlags cf, const biscuit::GPR& temp_reg)
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetSafeRegS(CompileFlags cf, const biscuit::GPR& temp_reg)
 {
   if (cf.valid_host_s)
   {
@@ -795,7 +795,7 @@ biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetSafeRegS(CompileFlags cf, const 
   }
 }
 
-biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetSafeRegT(CompileFlags cf, const biscuit::GPR& temp_reg)
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetSafeRegT(CompileFlags cf, const biscuit::GPR& temp_reg)
 {
   if (cf.valid_host_t)
   {
@@ -817,37 +817,37 @@ biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetSafeRegT(CompileFlags cf, const 
   }
 }
 
-biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetRegD(CompileFlags cf) const
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegD(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_d);
   return GPR(cf.host_d);
 }
 
-biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetRegS(CompileFlags cf) const
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegS(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_s);
   return GPR(cf.host_s);
 }
 
-biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetRegT(CompileFlags cf) const
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegT(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_t);
   return GPR(cf.host_t);
 }
 
-biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetRegLO(CompileFlags cf) const
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegLO(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_lo);
   return GPR(cf.host_lo);
 }
 
-biscuit::GPR CPU::NewRec::RISCV64Compiler::CFGetRegHI(CompileFlags cf) const
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::CFGetRegHI(CompileFlags cf) const
 {
   DebugAssert(cf.valid_host_hi);
   return GPR(cf.host_hi);
 }
 
-void CPU::NewRec::RISCV64Compiler::MoveSToReg(const biscuit::GPR& dst, CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::MoveSToReg(const biscuit::GPR& dst, CompileFlags cf)
 {
   if (cf.valid_host_s)
   {
@@ -865,7 +865,7 @@ void CPU::NewRec::RISCV64Compiler::MoveSToReg(const biscuit::GPR& dst, CompileFl
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::MoveTToReg(const biscuit::GPR& dst, CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::MoveTToReg(const biscuit::GPR& dst, CompileFlags cf)
 {
   if (cf.valid_host_t)
   {
@@ -883,10 +883,10 @@ void CPU::NewRec::RISCV64Compiler::MoveTToReg(const biscuit::GPR& dst, CompileFl
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::MoveMIPSRegToReg(const biscuit::GPR& dst, Reg reg)
+void CPU::Recompiler::RISCV64Recompiler::MoveMIPSRegToReg(const biscuit::GPR& dst, Reg reg)
 {
   DebugAssert(reg < Reg::count);
-  if (const std::optional<u32> hreg = CheckHostReg(0, Compiler::HR_TYPE_CPU_REG, reg))
+  if (const std::optional<u32> hreg = CheckHostReg(0, Recompiler::HR_TYPE_CPU_REG, reg))
     rvAsm->MV(dst, GPR(hreg.value()));
   else if (HasConstantReg(reg))
     EmitMov(dst, GetConstantRegU32(reg));
@@ -894,9 +894,9 @@ void CPU::NewRec::RISCV64Compiler::MoveMIPSRegToReg(const biscuit::GPR& dst, Reg
     rvAsm->LW(dst, PTR(&g_state.regs.r[static_cast<u8>(reg)]));
 }
 
-void CPU::NewRec::RISCV64Compiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val,
-                                                                Reg arg2reg /* = Reg::count */,
-                                                                Reg arg3reg /* = Reg::count */)
+void CPU::Recompiler::RISCV64Recompiler::GeneratePGXPCallWithMIPSRegs(const void* func, u32 arg1val,
+                                                                      Reg arg2reg /* = Reg::count */,
+                                                                      Reg arg3reg /* = Reg::count */)
 {
   DebugAssert(g_settings.gpu_pgxp_enable);
 
@@ -911,9 +911,9 @@ void CPU::NewRec::RISCV64Compiler::GeneratePGXPCallWithMIPSRegs(const void* func
   EmitCall(func);
 }
 
-void CPU::NewRec::RISCV64Compiler::Flush(u32 flags)
+void CPU::Recompiler::RISCV64Recompiler::Flush(u32 flags)
 {
-  Compiler::Flush(flags);
+  Recompiler::Flush(flags);
 
   if (flags & FLUSH_PC && m_dirty_pc)
   {
@@ -1000,7 +1000,7 @@ void CPU::NewRec::RISCV64Compiler::Flush(u32 flags)
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_Fallback()
+void CPU::Recompiler::RISCV64Recompiler::Compile_Fallback()
 {
   WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", iinfo->pc, inst->bits);
 
@@ -1028,7 +1028,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_Fallback()
 #endif
 }
 
-void CPU::NewRec::RISCV64Compiler::CheckBranchTarget(const biscuit::GPR& pcreg)
+void CPU::Recompiler::RISCV64Recompiler::CheckBranchTarget(const biscuit::GPR& pcreg)
 {
   if (!g_settings.cpu_recompiler_memory_exceptions)
     return;
@@ -1044,7 +1044,7 @@ void CPU::NewRec::RISCV64Compiler::CheckBranchTarget(const biscuit::GPR& pcreg)
   SwitchToNearCode(false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_jr(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_jr(CompileFlags cf)
 {
   const GPR pcreg = CFGetRegS(cf);
   CheckBranchTarget(pcreg);
@@ -1055,7 +1055,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_jr(CompileFlags cf)
   EndBlock(std::nullopt, true);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_jalr(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_jalr(CompileFlags cf)
 {
   const GPR pcreg = CFGetRegS(cf);
   if (MipsD() != Reg::zero)
@@ -1068,7 +1068,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_jalr(CompileFlags cf)
   EndBlock(std::nullopt, true);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
+void CPU::Recompiler::RISCV64Recompiler::Compile_bxx(CompileFlags cf, BranchCondition cond)
 {
   AssertRegOrConstS(cf);
 
@@ -1098,7 +1098,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_bxx(CompileFlags cf, BranchCondition 
         const GPR rt = cf.valid_host_t ? CFGetRegT(cf) : RARG1;
         if (!cf.valid_host_t)
           MoveTToReg(RARG1, cf);
-        if (cond == Compiler::BranchCondition::Equal)
+        if (cond == Recompiler::BranchCondition::Equal)
           rvAsm->BEQ(rs, rt, &taken);
         else
           rvAsm->BNE(rs, rt, &taken);
@@ -1146,7 +1146,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_bxx(CompileFlags cf, BranchCondition 
   EndBlock(taken_pc, true);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_addi(CompileFlags cf, bool overflow)
+void CPU::Recompiler::RISCV64Recompiler::Compile_addi(CompileFlags cf, bool overflow)
 {
   const GPR rs = CFGetRegS(cf);
   const GPR rt = CFGetRegT(cf);
@@ -1169,27 +1169,27 @@ void CPU::NewRec::RISCV64Compiler::Compile_addi(CompileFlags cf, bool overflow)
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_addi(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_addi(CompileFlags cf)
 {
   Compile_addi(cf, g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_addiu(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_addiu(CompileFlags cf)
 {
   Compile_addi(cf, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_slti(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_slti(CompileFlags cf)
 {
   Compile_slti(cf, true);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_sltiu(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_sltiu(CompileFlags cf)
 {
   Compile_slti(cf, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_slti(CompileFlags cf, bool sign)
+void CPU::Recompiler::RISCV64Recompiler::Compile_slti(CompileFlags cf, bool sign)
 {
   if (sign)
     SafeSLTI(CFGetRegT(cf), CFGetRegS(cf), inst->i.imm_sext32());
@@ -1197,7 +1197,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_slti(CompileFlags cf, bool sign)
     SafeSLTIU(CFGetRegT(cf), CFGetRegS(cf), inst->i.imm_sext32());
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_andi(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_andi(CompileFlags cf)
 {
   const GPR rt = CFGetRegT(cf);
   if (const u32 imm = inst->i.imm_zext32(); imm != 0)
@@ -1206,7 +1206,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_andi(CompileFlags cf)
     EmitMov(rt, 0);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_ori(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_ori(CompileFlags cf)
 {
   const GPR rt = CFGetRegT(cf);
   const GPR rs = CFGetRegS(cf);
@@ -1216,7 +1216,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_ori(CompileFlags cf)
     rvAsm->MV(rt, rs);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_xori(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_xori(CompileFlags cf)
 {
   const GPR rt = CFGetRegT(cf);
   const GPR rs = CFGetRegS(cf);
@@ -1226,7 +1226,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_xori(CompileFlags cf)
     rvAsm->MV(rt, rs);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_shift(
+void CPU::Recompiler::RISCV64Recompiler::Compile_shift(
   CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
   void (biscuit::Assembler::*op_const)(biscuit::GPR, biscuit::GPR, unsigned))
 {
@@ -1238,22 +1238,22 @@ void CPU::NewRec::RISCV64Compiler::Compile_shift(
     rvAsm->MV(rd, rt);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_sll(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_sll(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::SLLW, &Assembler::SLLIW);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_srl(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_srl(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::SRLW, &Assembler::SRLIW);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_sra(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_sra(CompileFlags cf)
 {
   Compile_shift(cf, &Assembler::SRAW, &Assembler::SRAIW);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_variable_shift(
+void CPU::Recompiler::RISCV64Recompiler::Compile_variable_shift(
   CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
   void (biscuit::Assembler::*op_const)(biscuit::GPR, biscuit::GPR, unsigned))
 {
@@ -1279,22 +1279,22 @@ void CPU::NewRec::RISCV64Compiler::Compile_variable_shift(
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_sllv(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_sllv(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::SLLW, &Assembler::SLLIW);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_srlv(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_srlv(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::SRLW, &Assembler::SRLIW);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_srav(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_srav(CompileFlags cf)
 {
   Compile_variable_shift(cf, &Assembler::SRAW, &Assembler::SRAIW);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_mult(CompileFlags cf, bool sign)
+void CPU::Recompiler::RISCV64Recompiler::Compile_mult(CompileFlags cf, bool sign)
 {
   const GPR rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
   if (!cf.valid_host_s)
@@ -1325,17 +1325,17 @@ void CPU::NewRec::RISCV64Compiler::Compile_mult(CompileFlags cf, bool sign)
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_mult(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_mult(CompileFlags cf)
 {
   Compile_mult(cf, true);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_multu(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_multu(CompileFlags cf)
 {
   Compile_mult(cf, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_div(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_div(CompileFlags cf)
 {
   // 36 Volume I: RISC-V User-Level ISA V2.2
   const GPR rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
@@ -1375,7 +1375,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_div(CompileFlags cf)
   rvAsm->Bind(&done);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_divu(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_divu(CompileFlags cf)
 {
   const GPR rs = cf.valid_host_s ? CFGetRegS(cf) : RARG1;
   if (!cf.valid_host_s)
@@ -1393,8 +1393,8 @@ void CPU::NewRec::RISCV64Compiler::Compile_divu(CompileFlags cf)
   rvAsm->REMUW(rhi, rs, rt);
 }
 
-void CPU::NewRec::RISCV64Compiler::TestOverflow(const biscuit::GPR& long_res, const biscuit::GPR& res,
-                                                const biscuit::GPR& reg_to_discard)
+void CPU::Recompiler::RISCV64Recompiler::TestOverflow(const biscuit::GPR& long_res, const biscuit::GPR& res,
+                                                      const biscuit::GPR& reg_to_discard)
 {
   SwitchToFarCode(true, &Assembler::BEQ, long_res, res);
 
@@ -1410,9 +1410,9 @@ void CPU::NewRec::RISCV64Compiler::TestOverflow(const biscuit::GPR& long_res, co
   SwitchToNearCode(false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_dst_op(
+void CPU::Recompiler::RISCV64Recompiler::Compile_dst_op(
   CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
-  void (RISCV64Compiler::*op_const)(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm),
+  void (RISCV64Recompiler::*op_const)(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm),
   void (biscuit::Assembler::*op_long)(biscuit::GPR, biscuit::GPR, biscuit::GPR), bool commutative, bool overflow)
 {
   AssertRegOrConstS(cf);
@@ -1476,29 +1476,29 @@ void CPU::NewRec::RISCV64Compiler::Compile_dst_op(
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_add(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_add(CompileFlags cf)
 {
-  Compile_dst_op(cf, &Assembler::ADDW, &RISCV64Compiler::SafeADDIW, &Assembler::ADD, true,
+  Compile_dst_op(cf, &Assembler::ADDW, &RISCV64Recompiler::SafeADDIW, &Assembler::ADD, true,
                  g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_addu(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_addu(CompileFlags cf)
 {
-  Compile_dst_op(cf, &Assembler::ADDW, &RISCV64Compiler::SafeADDIW, &Assembler::ADD, true, false);
+  Compile_dst_op(cf, &Assembler::ADDW, &RISCV64Recompiler::SafeADDIW, &Assembler::ADD, true, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_sub(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_sub(CompileFlags cf)
 {
-  Compile_dst_op(cf, &Assembler::SUBW, &RISCV64Compiler::SafeSUBIW, &Assembler::SUB, false,
+  Compile_dst_op(cf, &Assembler::SUBW, &RISCV64Recompiler::SafeSUBIW, &Assembler::SUB, false,
                  g_settings.cpu_recompiler_memory_exceptions);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_subu(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_subu(CompileFlags cf)
 {
-  Compile_dst_op(cf, &Assembler::SUBW, &RISCV64Compiler::SafeSUBIW, &Assembler::SUB, false, false);
+  Compile_dst_op(cf, &Assembler::SUBW, &RISCV64Recompiler::SafeSUBIW, &Assembler::SUB, false, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_and(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_and(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1516,10 +1516,10 @@ void CPU::NewRec::RISCV64Compiler::Compile_and(CompileFlags cf)
     return;
   }
 
-  Compile_dst_op(cf, &Assembler::AND, &RISCV64Compiler::SafeANDI, &Assembler::AND, true, false);
+  Compile_dst_op(cf, &Assembler::AND, &RISCV64Recompiler::SafeANDI, &Assembler::AND, true, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_or(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_or(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1532,10 +1532,10 @@ void CPU::NewRec::RISCV64Compiler::Compile_or(CompileFlags cf)
     return;
   }
 
-  Compile_dst_op(cf, &Assembler::OR, &RISCV64Compiler::SafeORI, &Assembler::OR, true, false);
+  Compile_dst_op(cf, &Assembler::OR, &RISCV64Recompiler::SafeORI, &Assembler::OR, true, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_xor(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_xor(CompileFlags cf)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1554,26 +1554,26 @@ void CPU::NewRec::RISCV64Compiler::Compile_xor(CompileFlags cf)
     return;
   }
 
-  Compile_dst_op(cf, &Assembler::XOR, &RISCV64Compiler::SafeXORI, &Assembler::XOR, true, false);
+  Compile_dst_op(cf, &Assembler::XOR, &RISCV64Recompiler::SafeXORI, &Assembler::XOR, true, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_nor(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_nor(CompileFlags cf)
 {
   Compile_or(cf);
   rvAsm->NOT(CFGetRegD(cf), CFGetRegD(cf));
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_slt(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_slt(CompileFlags cf)
 {
   Compile_slt(cf, true);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_sltu(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_sltu(CompileFlags cf)
 {
   Compile_slt(cf, false);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_slt(CompileFlags cf, bool sign)
+void CPU::Recompiler::RISCV64Recompiler::Compile_slt(CompileFlags cf, bool sign)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -1598,7 +1598,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_slt(CompileFlags cf, bool sign)
   }
 }
 
-biscuit::GPR CPU::NewRec::RISCV64Compiler::ComputeLoadStoreAddressArg(
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::ComputeLoadStoreAddressArg(
   CompileFlags cf, const std::optional<VirtualMemoryAddress>& address, const std::optional<const biscuit::GPR>& reg)
 {
   const u32 imm = inst->i.imm_sext32();
@@ -1639,8 +1639,9 @@ biscuit::GPR CPU::NewRec::RISCV64Compiler::ComputeLoadStoreAddressArg(
 }
 
 template<typename RegAllocFn>
-biscuit::GPR CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign,
-                                                        bool use_fastmem, const RegAllocFn& dst_reg_alloc)
+biscuit::GPR CPU::Recompiler::RISCV64Recompiler::GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size,
+                                                              bool sign, bool use_fastmem,
+                                                              const RegAllocFn& dst_reg_alloc)
 {
   if (use_fastmem)
   {
@@ -1769,8 +1770,8 @@ biscuit::GPR CPU::NewRec::RISCV64Compiler::GenerateLoad(const biscuit::GPR& addr
   return dst_reg;
 }
 
-void CPU::NewRec::RISCV64Compiler::GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg,
-                                                 MemoryAccessSize size, bool use_fastmem)
+void CPU::Recompiler::RISCV64Recompiler::GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg,
+                                                       MemoryAccessSize size, bool use_fastmem)
 {
   if (use_fastmem)
   {
@@ -1869,8 +1870,9 @@ void CPU::NewRec::RISCV64Compiler::GenerateStore(const biscuit::GPR& addr_reg, c
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                               const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::RISCV64Recompiler::Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+                                                     bool use_fastmem,
+                                                     const std::optional<VirtualMemoryAddress>& address)
 {
   const std::optional<GPR> addr_reg = (g_settings.gpu_pgxp_enable && cf.MipsT() != Reg::zero) ?
                                         std::optional<GPR>(GPR(AllocateTempHostReg(HR_CALLEE_SAVED))) :
@@ -1897,8 +1899,9 @@ void CPU::NewRec::RISCV64Compiler::Compile_lxx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                               const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::RISCV64Recompiler::Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign,
+                                                     bool use_fastmem,
+                                                     const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
@@ -1991,8 +1994,9 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::RISCV64Recompiler::Compile_lwc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+                                                      bool use_fastmem,
+                                                      const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -2076,8 +2080,9 @@ void CPU::NewRec::RISCV64Compiler::Compile_lwc2(CompileFlags cf, MemoryAccessSiz
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                               const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::RISCV64Recompiler::Compile_sxx(CompileFlags cf, MemoryAccessSize size, bool sign,
+                                                     bool use_fastmem,
+                                                     const std::optional<VirtualMemoryAddress>& address)
 {
   AssertRegOrConstS(cf);
   AssertRegOrConstT(cf);
@@ -2103,8 +2108,9 @@ void CPU::NewRec::RISCV64Compiler::Compile_sxx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                               const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::RISCV64Recompiler::Compile_swx(CompileFlags cf, MemoryAccessSize size, bool sign,
+                                                     bool use_fastmem,
+                                                     const std::optional<VirtualMemoryAddress>& address)
 {
   DebugAssert(size == MemoryAccessSize::Word && !sign);
 
@@ -2177,8 +2183,9 @@ void CPU::NewRec::RISCV64Compiler::Compile_swx(CompileFlags cf, MemoryAccessSize
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
-                                                const std::optional<VirtualMemoryAddress>& address)
+void CPU::Recompiler::RISCV64Recompiler::Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign,
+                                                      bool use_fastmem,
+                                                      const std::optional<VirtualMemoryAddress>& address)
 {
   const u32 index = static_cast<u32>(inst->r.rt.GetValue());
   const auto [ptr, action] = GetGTERegisterPointer(index, false);
@@ -2234,7 +2241,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_swc2(CompileFlags cf, MemoryAccessSiz
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_mtc0(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_mtc0(CompileFlags cf)
 {
   // TODO: we need better constant setting here.. which will need backprop
   AssertRegOrConstT(cf);
@@ -2314,7 +2321,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_mtc0(CompileFlags cf)
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_rfe(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_rfe(CompileFlags cf)
 {
   // shift mode bits right two, preserving upper bits
   rvAsm->LW(RARG1, PTR(&g_state.cop0_regs.sr.bits));
@@ -2327,7 +2334,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_rfe(CompileFlags cf)
   TestInterrupts(RARG1);
 }
 
-void CPU::NewRec::RISCV64Compiler::TestInterrupts(const biscuit::GPR& sr)
+void CPU::Recompiler::RISCV64Recompiler::TestInterrupts(const biscuit::GPR& sr)
 {
   DebugAssert(sr != RSCRATCH);
 
@@ -2380,7 +2387,7 @@ void CPU::NewRec::RISCV64Compiler::TestInterrupts(const biscuit::GPR& sr)
   rvAsm->Bind(&no_interrupt);
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_mfc2(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_mfc2(CompileFlags cf)
 {
   const u32 index = inst->cop.Cop2Index();
   const Reg rt = inst->r.rt;
@@ -2420,7 +2427,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_mfc2(CompileFlags cf)
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_mtc2(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_mtc2(CompileFlags cf)
 {
   const u32 index = inst->cop.Cop2Index();
   const auto [ptr, action] = GetGTERegisterPointer(index, true);
@@ -2482,7 +2489,7 @@ void CPU::NewRec::RISCV64Compiler::Compile_mtc2(CompileFlags cf)
   }
 }
 
-void CPU::NewRec::RISCV64Compiler::Compile_cop2(CompileFlags cf)
+void CPU::Recompiler::RISCV64Recompiler::Compile_cop2(CompileFlags cf)
 {
   TickCount func_ticks;
   GTE::InstructionImpl func = GTE::GetInstructionImpl(inst->bits, &func_ticks);
@@ -2494,10 +2501,10 @@ void CPU::NewRec::RISCV64Compiler::Compile_cop2(CompileFlags cf)
   AddGTETicks(func_ticks);
 }
 
-u32 CPU::NewRec::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* code_address, u32 code_size,
-                                       TickCount cycles_to_add, TickCount cycles_to_remove, u32 gpr_bitmask,
-                                       u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed,
-                                       bool is_load)
+u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* code_address, u32 code_size,
+                                           TickCount cycles_to_add, TickCount cycles_to_remove, u32 gpr_bitmask,
+                                           u8 address_register, u8 data_register, MemoryAccessSize size, bool is_signed,
+                                           bool is_load)
 {
   Assembler arm_asm(static_cast<u8*>(thunk_code), thunk_space);
   Assembler* rvAsm = &arm_asm;

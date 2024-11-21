@@ -30,11 +30,7 @@ LOG_CHANNEL(CodeCache);
 // #define ENABLE_RECOMPILER_PROFILING 1
 
 #ifdef ENABLE_RECOMPILER
-#include "cpu_recompiler_code_generator.h"
-#endif
-
-#ifdef ENABLE_NEWREC
-#include "cpu_newrec_compiler.h"
+#include "cpu_recompiler.h"
 #endif
 
 #include <map>
@@ -165,15 +161,14 @@ static u32 s_total_host_instructions_emitted = 0;
 #endif
 } // namespace CPU::CodeCache
 
-bool CPU::CodeCache::IsUsingAnyRecompiler()
+bool CPU::CodeCache::IsUsingRecompiler()
 {
-  return (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler ||
-          g_settings.cpu_execution_mode == CPUExecutionMode::NewRec);
+  return (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler);
 }
 
 bool CPU::CodeCache::IsUsingFastmem()
 {
-  return g_settings.cpu_fastmem_mode != CPUFastmemMode::Disabled;
+  return (g_settings.cpu_fastmem_mode != CPUFastmemMode::Disabled);
 }
 
 bool CPU::CodeCache::ProcessStartup(Error* error)
@@ -217,7 +212,7 @@ void CPU::CodeCache::Reset()
 {
   ClearBlocks();
 
-  if (IsUsingAnyRecompiler())
+  if (IsUsingRecompiler())
   {
     ResetCodeBuffer();
     CompileASMFunctions();
@@ -232,7 +227,7 @@ void CPU::CodeCache::Shutdown()
 
 void CPU::CodeCache::Execute()
 {
-  if (IsUsingAnyRecompiler())
+  if (IsUsingRecompiler())
   {
     g_enter_recompiler();
     UnreachableCode();
@@ -500,9 +495,8 @@ CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructio
     return block;
   }
 
-  // Old rec doesn't use backprop info, don't waste time filling it.
-  if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
-    FillBlockRegInfo(block);
+  // populate backpropogation information for liveness queries
+  FillBlockRegInfo(block);
 
   // add it to the tracking list for its page
   AddBlockToPageList(block);
@@ -1316,7 +1310,7 @@ void CPU::CodeCache::FillBlockRegInfo(Block* block)
 void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
 {
   // TODO: this doesn't currently handle when the cache overflows...
-  DebugAssert(IsUsingAnyRecompiler());
+  DebugAssert(IsUsingRecompiler());
   MemMap::BeginCodeWrite();
 
   Block* block = LookupBlock(start_pc);
@@ -1450,11 +1444,9 @@ void CPU::CodeCache::ResetCodeBuffer()
   s_code_size = RECOMPILER_CODE_CACHE_SIZE - RECOMPILER_FAR_CODE_CACHE_SIZE;
   s_code_used = 0;
 
-  // Use half the far code size when using newrec and memory exceptions aren't enabled. It's only used for backpatching.
-  const u32 far_code_size =
-    (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec && !g_settings.cpu_recompiler_memory_exceptions) ?
-      (RECOMPILER_FAR_CODE_CACHE_SIZE / 2) :
-      RECOMPILER_FAR_CODE_CACHE_SIZE;
+  // Use half the far code size when memory exceptions aren't enabled. It's only used for backpatching.
+  const u32 far_code_size = (!g_settings.cpu_recompiler_memory_exceptions) ? (RECOMPILER_FAR_CODE_CACHE_SIZE / 2) :
+                                                                             RECOMPILER_FAR_CODE_CACHE_SIZE;
   s_far_code_size = far_code_size;
   s_far_code_ptr = (far_code_size > 0) ? (static_cast<u8*>(s_code_ptr) + s_code_size) : nullptr;
   s_free_far_code_ptr = s_far_code_ptr;
@@ -1572,14 +1564,7 @@ bool CPU::CodeCache::CompileBlock(Block* block)
 
 #ifdef ENABLE_RECOMPILER
   if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
-  {
-    Recompiler::CodeGenerator codegen;
-    host_code = codegen.CompileBlock(block, &host_code_size, &host_far_code_size);
-  }
-#endif
-#ifdef ENABLE_NEWREC
-  if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
-    host_code = NewRec::g_compiler->CompileBlock(block, &host_code_size, &host_far_code_size);
+    host_code = Recompiler::g_compiler->CompileBlock(block, &host_code_size, &host_far_code_size);
 #endif
 
   block->host_code = host_code;
@@ -1715,20 +1700,17 @@ PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exc
   BackpatchLoadStore(exception_pc, info);
 
   // queue block for recompilation later
-  if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
+  Block* block = LookupBlock(info.guest_block);
+  if (block)
   {
-    Block* block = LookupBlock(info.guest_block);
-    if (block)
-    {
-      // This is a bit annoying, we have to remove it from the page list if it's a RAM block.
-      DEV_LOG("Queuing block {:08X} for recompilation due to backpatch", block->pc);
-      RemoveBlockFromPageList(block);
-      InvalidateBlock(block, BlockState::NeedsRecompile);
+    // This is a bit annoying, we have to remove it from the page list if it's a RAM block.
+    DEV_LOG("Queuing block {:08X} for recompilation due to backpatch", block->pc);
+    RemoveBlockFromPageList(block);
+    InvalidateBlock(block, BlockState::NeedsRecompile);
 
-      // Need to reset the recompile count, otherwise it'll get trolled into an interpreter fallback.
-      block->compile_frame = System::GetFrameNumber();
-      block->compile_count = 1;
-    }
+    // Need to reset the recompile count, otherwise it'll get trolled into an interpreter fallback.
+    block->compile_frame = System::GetFrameNumber();
+    block->compile_count = 1;
   }
 
   MemMap::EndCodeWrite();
@@ -1748,11 +1730,7 @@ void CPU::CodeCache::BackpatchLoadStore(void* host_pc, const LoadstoreBackpatchI
 {
 #ifdef ENABLE_RECOMPILER
   if (g_settings.cpu_execution_mode == CPUExecutionMode::Recompiler)
-    Recompiler::CodeGenerator::BackpatchLoadStore(host_pc, info);
-#endif
-#ifdef ENABLE_NEWREC
-  if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
-    NewRec::BackpatchLoadStore(host_pc, info);
+    Recompiler::BackpatchLoadStore(host_pc, info);
 #endif
 }
 

@@ -1207,13 +1207,11 @@ static constexpr const std::array s_cpu_execution_mode_names = {
   "Interpreter",
   "CachedInterpreter",
   "Recompiler",
-  "NewRec",
 };
 static constexpr const std::array s_cpu_execution_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Interpreter (Slowest)", "CPUExecutionMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Cached Interpreter (Faster)", "CPUExecutionMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Recompiler (Fastest)", "CPUExecutionMode"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "New Recompiler (Experimental)", "CPUExecutionMode"),
 };
 
 std::optional<CPUExecutionMode> Settings::ParseCPUExecutionMode(const char* str)

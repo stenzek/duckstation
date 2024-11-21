@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-namespace CPU::NewRec {
+namespace CPU::Recompiler {
 
 // Global options
 static constexpr bool EMULATE_LOAD_DELAYS = true;
@@ -35,11 +35,11 @@ static constexpr bool HAS_MEMORY_OPERANDS = false;
 #endif
 
 // TODO: Get rid of the virtuals... somehow.
-class Compiler
+class Recompiler
 {
 public:
-  Compiler();
-  virtual ~Compiler();
+  Recompiler();
+  virtual ~Recompiler();
 
   const void* CompileBlock(CodeCache::Block* block, u32* host_code_size, u32* host_far_code_size);
 
@@ -271,9 +271,9 @@ protected:
   void CompileInstruction();
   void CompileBranchDelaySlot(bool dirty_pc = true);
 
-  void CompileTemplate(void (Compiler::*const_func)(CompileFlags), void (Compiler::*func)(CompileFlags),
+  void CompileTemplate(void (Recompiler::*const_func)(CompileFlags), void (Recompiler::*func)(CompileFlags),
                        const void* pgxp_cpu_func, u32 tflags);
-  void CompileLoadStoreTemplate(void (Compiler::*func)(CompileFlags, MemoryAccessSize, bool, bool,
+  void CompileLoadStoreTemplate(void (Recompiler::*func)(CompileFlags, MemoryAccessSize, bool, bool,
                                                        const std::optional<VirtualMemoryAddress>&),
                                 MemoryAccessSize size, bool store, bool sign, u32 tflags);
   void FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store, bool use_fastmem);
@@ -539,5 +539,5 @@ u32 CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, void* code_address,
                           TickCount cycles_to_remove, u32 gpr_bitmask, u8 address_register, u8 data_register,
                           MemoryAccessSize size, bool is_signed, bool is_load);
 
-extern Compiler* g_compiler;
-} // namespace CPU::NewRec
+extern Recompiler* g_compiler;
+} // namespace CPU::Recompiler

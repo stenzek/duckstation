@@ -3,19 +3,21 @@
 
 #pragma once
 
-#include "cpu_newrec_compiler.h"
+#include "cpu_recompiler.h"
 
 #include <memory>
 
-#ifdef CPU_ARCH_RISCV64
+#ifdef CPU_ARCH_ARM64
 
-namespace CPU::NewRec {
+#include "vixl/aarch64/assembler-aarch64.h"
 
-class RISCV64Compiler final : public Compiler
+namespace CPU::Recompiler {
+
+class ARM64Recompiler final : public Recompiler
 {
 public:
-  RISCV64Compiler();
-  ~RISCV64Compiler() override;
+  ARM64Recompiler();
+  ~ARM64Recompiler() override;
 
 protected:
   const char* GetHostRegName(u32 reg) const override;
@@ -30,6 +32,7 @@ protected:
 
   void Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space, u8* far_code_buffer,
              u32 far_code_space) override;
+  void BeginBlock() override;
   void GenerateBlockProtectCheck(const u8* ram_ptr, const u8* shadow_ptr, u32 size) override;
   void GenerateICacheCheckAndUpdate() override;
   void GenerateCall(const void* func, s32 arg1reg = -1, s32 arg2reg = -1, s32 arg3reg = -1) override;
@@ -42,7 +45,7 @@ protected:
 
   void Compile_Fallback() override;
 
-  void CheckBranchTarget(const biscuit::GPR& pcreg);
+  void CheckBranchTarget(const vixl::aarch64::Register& pcreg);
   void Compile_jr(CompileFlags cf) override;
   void Compile_jalr(CompileFlags cf) override;
   void Compile_bxx(CompileFlags cf, BranchCondition cond) override;
@@ -57,13 +60,17 @@ protected:
   void Compile_ori(CompileFlags cf) override;
   void Compile_xori(CompileFlags cf) override;
 
-  void Compile_shift(CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
-                     void (biscuit::Assembler::*op_const)(biscuit::GPR, biscuit::GPR, unsigned));
+  void Compile_shift(CompileFlags cf, void (vixl::aarch64::Assembler::*op)(const vixl::aarch64::Register&,
+                                                                           const vixl::aarch64::Register&, unsigned));
   void Compile_sll(CompileFlags cf) override;
   void Compile_srl(CompileFlags cf) override;
   void Compile_sra(CompileFlags cf) override;
-  void Compile_variable_shift(CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
-                              void (biscuit::Assembler::*op_const)(biscuit::GPR, biscuit::GPR, unsigned));
+  void Compile_variable_shift(CompileFlags cf,
+                              void (vixl::aarch64::Assembler::*op)(const vixl::aarch64::Register&,
+                                                                   const vixl::aarch64::Register&,
+                                                                   const vixl::aarch64::Register&),
+                              void (vixl::aarch64::Assembler::*op_const)(const vixl::aarch64::Register&,
+                                                                         const vixl::aarch64::Register&, unsigned));
   void Compile_sllv(CompileFlags cf) override;
   void Compile_srlv(CompileFlags cf) override;
   void Compile_srav(CompileFlags cf) override;
@@ -72,11 +79,12 @@ protected:
   void Compile_multu(CompileFlags cf) override;
   void Compile_div(CompileFlags cf) override;
   void Compile_divu(CompileFlags cf) override;
-  void TestOverflow(const biscuit::GPR& long_res, const biscuit::GPR& res, const biscuit::GPR& reg_to_discard);
-  void Compile_dst_op(CompileFlags cf, void (biscuit::Assembler::*op)(biscuit::GPR, biscuit::GPR, biscuit::GPR),
-                      void (RISCV64Compiler::*op_const)(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm),
-                      void (biscuit::Assembler::*op_long)(biscuit::GPR, biscuit::GPR, biscuit::GPR), bool commutative,
-                      bool overflow);
+  void TestOverflow(const vixl::aarch64::Register& result);
+  void Compile_dst_op(CompileFlags cf,
+                      void (vixl::aarch64::Assembler::*op)(const vixl::aarch64::Register&,
+                                                           const vixl::aarch64::Register&,
+                                                           const vixl::aarch64::Operand&),
+                      bool commutative, bool logical, bool overflow);
   void Compile_add(CompileFlags cf) override;
   void Compile_addu(CompileFlags cf) override;
   void Compile_sub(CompileFlags cf) override;
@@ -89,13 +97,14 @@ protected:
   void Compile_slt(CompileFlags cf) override;
   void Compile_sltu(CompileFlags cf) override;
 
-  biscuit::GPR ComputeLoadStoreAddressArg(CompileFlags cf, const std::optional<VirtualMemoryAddress>& address,
-                                          const std::optional<const biscuit::GPR>& reg = std::nullopt);
+  vixl::aarch64::Register
+  ComputeLoadStoreAddressArg(CompileFlags cf, const std::optional<VirtualMemoryAddress>& address,
+                             const std::optional<const vixl::aarch64::Register>& reg = std::nullopt);
   template<typename RegAllocFn>
-  biscuit::GPR GenerateLoad(const biscuit::GPR& addr_reg, MemoryAccessSize size, bool sign, bool use_fastmem,
-                            const RegAllocFn& dst_reg_alloc);
-  void GenerateStore(const biscuit::GPR& addr_reg, const biscuit::GPR& value_reg, MemoryAccessSize size,
-                     bool use_fastmem);
+  vixl::aarch64::Register GenerateLoad(const vixl::aarch64::Register& addr_reg, MemoryAccessSize size, bool sign,
+                                       bool use_fastmem, const RegAllocFn& dst_reg_alloc);
+  void GenerateStore(const vixl::aarch64::Register& addr_reg, const vixl::aarch64::Register& value_reg,
+                     MemoryAccessSize size, bool use_fastmem);
   void Compile_lxx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                    const std::optional<VirtualMemoryAddress>& address) override;
   void Compile_lwx(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
@@ -109,7 +118,7 @@ protected:
   void Compile_swc2(CompileFlags cf, MemoryAccessSize size, bool sign, bool use_fastmem,
                     const std::optional<VirtualMemoryAddress>& address) override;
 
-  void TestInterrupts(const biscuit::GPR& sr);
+  void TestInterrupts(const vixl::aarch64::Register& sr);
   void Compile_mtc0(CompileFlags cf) override;
   void Compile_rfe(CompileFlags cf) override;
 
@@ -121,56 +130,42 @@ protected:
                                     Reg arg3reg = Reg::count) override;
 
 private:
-  void EmitMov(const biscuit::GPR& dst, u32 val);
-  void EmitCall(const void* ptr);
+  void EmitMov(const vixl::aarch64::Register& dst, u32 val);
+  void EmitCall(const void* ptr, bool force_inline = false);
 
-  void SwitchToFarCode(bool emit_jump,
-                       void (biscuit::Assembler::*inverted_cond)(biscuit::GPR, biscuit::GPR, biscuit::Label*) = nullptr,
-                       const biscuit::GPR& rs1 = biscuit::zero, const biscuit::GPR& rs2 = biscuit::zero);
-  void SwitchToNearCode(bool emit_jump);
+  vixl::aarch64::Operand armCheckAddSubConstant(s32 val);
+  vixl::aarch64::Operand armCheckAddSubConstant(u32 val);
+  vixl::aarch64::Operand armCheckCompareConstant(s32 val);
+  vixl::aarch64::Operand armCheckLogicalConstant(u32 val);
+
+  void SwitchToFarCode(bool emit_jump, vixl::aarch64::Condition cond = vixl::aarch64::Condition::al);
+  void SwitchToFarCodeIfBitSet(const vixl::aarch64::Register& reg, u32 bit);
+  void SwitchToFarCodeIfRegZeroOrNonZero(const vixl::aarch64::Register& reg, bool nonzero);
+  void SwitchToNearCode(bool emit_jump, vixl::aarch64::Condition cond = vixl::aarch64::Condition::al);
 
   void AssertRegOrConstS(CompileFlags cf) const;
   void AssertRegOrConstT(CompileFlags cf) const;
-  // vixl::aarch64::MemOperand MipsPtr(Reg r) const;
+  vixl::aarch64::MemOperand MipsPtr(Reg r) const;
+  vixl::aarch64::Register CFGetRegD(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegS(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegT(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegLO(CompileFlags cf) const;
+  vixl::aarch64::Register CFGetRegHI(CompileFlags cf) const;
 
-  void SafeImmSExtIType(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm,
-                        void (biscuit::Assembler::*iop)(biscuit::GPR, biscuit::GPR, u32),
-                        void (biscuit::Assembler::*rop)(biscuit::GPR, biscuit::GPR, biscuit::GPR));
+  void MoveSToReg(const vixl::aarch64::Register& dst, CompileFlags cf);
+  void MoveTToReg(const vixl::aarch64::Register& dst, CompileFlags cf);
+  void MoveMIPSRegToReg(const vixl::aarch64::Register& dst, Reg reg);
 
-  void SafeADDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm);
-  void SafeADDIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm);
-  void SafeSUBIW(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm);
-  void SafeANDI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm);
-  void SafeORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm);
-  void SafeXORI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm);
-  void SafeSLTI(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm);
-  void SafeSLTIU(const biscuit::GPR& rd, const biscuit::GPR& rs, u32 imm);
+  vixl::aarch64::Assembler m_emitter;
+  vixl::aarch64::Assembler m_far_emitter;
+  vixl::aarch64::Assembler* armAsm;
 
-  void EmitSExtB(const biscuit::GPR& rd, const biscuit::GPR& rs);
-  void EmitUExtB(const biscuit::GPR& rd, const biscuit::GPR& rs);
-  void EmitSExtH(const biscuit::GPR& rd, const biscuit::GPR& rs);
-  void EmitUExtH(const biscuit::GPR& rd, const biscuit::GPR& rs);
-  void EmitDSExtW(const biscuit::GPR& rd, const biscuit::GPR& rs);
-  void EmitDUExtW(const biscuit::GPR& rd, const biscuit::GPR& rs);
-
-  biscuit::GPR CFGetSafeRegS(CompileFlags cf, const biscuit::GPR& temp_reg);
-  biscuit::GPR CFGetSafeRegT(CompileFlags cf, const biscuit::GPR& temp_reg);
-
-  biscuit::GPR CFGetRegD(CompileFlags cf) const;
-  biscuit::GPR CFGetRegS(CompileFlags cf) const;
-  biscuit::GPR CFGetRegT(CompileFlags cf) const;
-  biscuit::GPR CFGetRegLO(CompileFlags cf) const;
-  biscuit::GPR CFGetRegHI(CompileFlags cf) const;
-
-  void MoveSToReg(const biscuit::GPR& dst, CompileFlags cf);
-  void MoveTToReg(const biscuit::GPR& dst, CompileFlags cf);
-  void MoveMIPSRegToReg(const biscuit::GPR& dst, Reg reg);
-
-  std::unique_ptr<biscuit::Assembler> m_emitter;
-  std::unique_ptr<biscuit::Assembler> m_far_emitter;
-  biscuit::Assembler* rvAsm;
+#ifdef VIXL_DEBUG
+  std::unique_ptr<vixl::CodeBufferCheckScope> m_emitter_check;
+  std::unique_ptr<vixl::CodeBufferCheckScope> m_far_emitter_check;
+#endif
 };
 
-} // namespace CPU::NewRec
+} // namespace CPU::Recompiler
 
-#endif // CPU_ARCH_RISCV64
+#endif // CPU_ARCH_ARM64

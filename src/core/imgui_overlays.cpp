@@ -430,11 +430,6 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
           text.append_format("{}{}", first ? "" : "/", "CI");
           first = false;
         }
-        else if (g_settings.cpu_execution_mode == CPUExecutionMode::NewRec)
-        {
-          text.append_format("{}{}", first ? "" : "/", "NR");
-          first = false;
-        }
         else
         {
           if (g_settings.cpu_recompiler_icache)

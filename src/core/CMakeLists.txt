@@ -127,18 +127,10 @@ add_library(core
 )
 
 set(RECOMPILER_SRCS
-  cpu_recompiler_code_generator.cpp
-  cpu_recompiler_code_generator.h
-  cpu_recompiler_code_generator_generic.cpp
-  cpu_recompiler_register_cache.cpp
-  cpu_recompiler_register_cache.h
+  cpu_recompiler.cpp
+  cpu_recompiler.h
   cpu_recompiler_thunks.h
   cpu_recompiler_types.h
-)
-
-set(NEWREC_SOURCES
-  cpu_newrec_compiler.cpp
-  cpu_newrec_compiler.h
 )
 
 target_precompile_headers(core PRIVATE "pch.h")
@@ -148,11 +140,11 @@ target_link_libraries(core PUBLIC Threads::Threads common util)
 target_link_libraries(core PRIVATE xxhash imgui rapidyaml rcheevos cpuinfo::cpuinfo ZLIB::ZLIB Zstd::Zstd libzip::zip)
 
 if(CPU_ARCH_X64)
-  target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_NEWREC=1" "ENABLE_MMAP_FASTMEM=1")
-  target_sources(core PRIVATE ${RECOMPILER_SRCS} ${NEWREC_SOURCES}
-    cpu_recompiler_code_generator_x64.cpp
-    cpu_newrec_compiler_x64.cpp
-    cpu_newrec_compiler_x64.h
+  target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_MMAP_FASTMEM=1")
+  target_sources(core PRIVATE
+    ${RECOMPILER_SRCS}
+    cpu_recompiler_x64.cpp
+    cpu_recompiler_x64.h
   )
   target_link_libraries(core PRIVATE xbyak)
   if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
@@ -161,33 +153,34 @@ if(CPU_ARCH_X64)
   message(STATUS "Building x64 recompiler.")
 endif()
 if(CPU_ARCH_ARM32)
-  target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_NEWREC=1")
-  target_sources(core PRIVATE ${RECOMPILER_SRCS} ${NEWREC_SOURCES}
-    cpu_recompiler_code_generator_aarch32.cpp
-    cpu_newrec_compiler_aarch32.cpp
-    cpu_newrec_compiler_aarch32.h
+  target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1")
+  target_sources(core PRIVATE
+    ${RECOMPILER_SRCS}
+    cpu_recompiler_arm32.cpp
+    cpu_recompiler_arm32.h
   )
   target_link_libraries(core PUBLIC vixl)
-  message(STATUS "Building AArch32 recompiler.")
+  message(STATUS "Building ARM32 recompiler.")
 endif()
 if(CPU_ARCH_ARM64)
-  target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_NEWREC=1" "ENABLE_MMAP_FASTMEM=1")
-  target_sources(core PRIVATE ${RECOMPILER_SRCS} ${NEWREC_SOURCES}
-    cpu_recompiler_code_generator_aarch64.cpp
-    cpu_newrec_compiler_aarch64.cpp
-    cpu_newrec_compiler_aarch64.h
+  target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_MMAP_FASTMEM=1")
+  target_sources(core PRIVATE
+    ${RECOMPILER_SRCS}
+    cpu_recompiler_arm64.cpp
+    cpu_recompiler_arm64.h
   )
   target_link_libraries(core PUBLIC vixl)
-  message(STATUS "Building AArch64 recompiler.")
+  message(STATUS "Building ARM64 recompiler.")
 endif()
 if(CPU_ARCH_RISCV64)
-  target_compile_definitions(core PUBLIC "ENABLE_NEWREC=1" "ENABLE_MMAP_FASTMEM=1")
-  target_sources(core PRIVATE ${NEWREC_SOURCES}
-    cpu_newrec_compiler_riscv64.cpp
-    cpu_newrec_compiler_riscv64.h
+  target_compile_definitions(core PUBLIC "ENABLE_RECOMPILER=1" "ENABLE_MMAP_FASTMEM=1")
+  target_sources(core PRIVATE
+    ${RECOMPILER_SRCS}
+    cpu_recompiler_riscv64.cpp
+    cpu_recompiler_riscv64.h
   )
   target_link_libraries(core PUBLIC biscuit::biscuit riscv-disas)
-  message(STATUS "Building RISC-V 64-bit recompiler.")
+  message(STATUS "Building RISC-V-64 recompiler.")
 endif()
 
 # Copy the provided data directory to the output directory. Borrowed from PCSX2.
