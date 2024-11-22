@@ -252,7 +252,7 @@ void RGBA8Image::SwapBGRAToRGBA(void* pixels, u32 width, u32 height, u32 pitch)
     }
 #endif
 
-    for (; x < width; x++)
+    for (x = 0; x < width; x++)
     {
       u32 pixel;
       std::memcpy(&pixel, row_pixels_ptr, sizeof(pixel));
