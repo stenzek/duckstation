@@ -60,10 +60,29 @@ static constexpr u32 WAVE_VALUE = 0x45564157; // 0x57415645
 
 WAVReader::WAVReader() = default;
 
+WAVReader::WAVReader(WAVReader&& move)
+{
+  m_file = std::exchange(move.m_file, nullptr);
+  m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_sample_rate = std::exchange(move.m_sample_rate, 0);
+  m_num_channels = std::exchange(move.m_num_channels, 0);
+  m_num_frames = std::exchange(move.m_num_frames, 0);
+}
+
 WAVReader::~WAVReader()
 {
   if (IsOpen())
     Close();
+}
+
+WAVReader& WAVReader::operator=(WAVReader&& move)
+{
+  m_file = std::exchange(move.m_file, nullptr);
+  m_frames_start = std::exchange(move.m_frames_start, 0);
+  m_sample_rate = std::exchange(move.m_sample_rate, 0);
+  m_num_channels = std::exchange(move.m_num_channels, 0);
+  m_num_frames = std::exchange(move.m_num_frames, 0);
+  return *this;
 }
 
 template<typename T>
@@ -180,13 +199,28 @@ void WAVReader::Close()
   m_num_frames = 0;
 }
 
+std::FILE* WAVReader::TakeFile()
+{
+  std::FILE* ret = std::exchange(m_file, nullptr);
+  m_sample_rate = 0;
+  m_frames_start = 0;
+  m_num_channels = 0;
+  m_num_frames = 0;
+  return ret;
+}
+
+u64 WAVReader::GetFileSize()
+{
+  return static_cast<u64>(std::max<s64>(FileSystem::FSize64(m_file), 1));
+}
+
 bool WAVReader::SeekToFrame(u32 num, Error* error)
 {
   const s64 offset = m_frames_start + (static_cast<s64>(num) * (sizeof(s16) * m_num_channels));
   return FileSystem::FSeek64(m_file, offset, SEEK_SET, error);
 }
 
-bool WAVReader::ReadFrames(s16* samples, u32 num_frames, Error* error /*= nullptr*/)
+bool WAVReader::ReadFrames(void* samples, u32 num_frames, Error* error /*= nullptr*/)
 {
   if (std::fread(samples, sizeof(s16) * m_num_channels, num_frames, m_file) != num_frames)
   {
@@ -199,10 +233,27 @@ bool WAVReader::ReadFrames(s16* samples, u32 num_frames, Error* error /*= nullpt
 
 WAVWriter::WAVWriter() = default;
 
+WAVWriter::WAVWriter(WAVWriter&& move)
+{
+  m_file = std::exchange(move.m_file, nullptr);
+  m_sample_rate = std::exchange(move.m_sample_rate, 0);
+  m_num_channels = std::exchange(move.m_num_channels, 0);
+  m_num_frames = std::exchange(move.m_num_frames, 0);
+}
+
 WAVWriter::~WAVWriter()
 {
   if (IsOpen())
     Close(nullptr);
+}
+
+WAVWriter& WAVWriter::operator=(WAVWriter&& move)
+{
+  m_file = std::exchange(move.m_file, nullptr);
+  m_sample_rate = std::exchange(move.m_sample_rate, 0);
+  m_num_channels = std::exchange(move.m_num_channels, 0);
+  m_num_frames = std::exchange(move.m_num_frames, 0);
+  return *this;
 }
 
 bool WAVWriter::Open(const char* path, u32 sample_rate, u32 num_channels, Error* error)

@@ -224,13 +224,22 @@ bool CueParser::File::HandleFileCommand(const char* line, u32 line_number, Error
     return false;
   }
 
-  if (!TokenMatch(mode, "BINARY"))
+  FileFormat format;
+  if (TokenMatch(mode, "BINARY"))
   {
-    SetError(line_number, error, "Only BINARY modes are supported");
+    format = FileFormat::Binary;
+  }
+  else if (TokenMatch(mode, "WAVE"))
+  {
+    format = FileFormat::Wave;
+  }
+  else
+  {
+    SetError(line_number, error, "Only BINARY and WAVE modes are supported");
     return false;
   }
 
-  m_current_file = filename;
+  m_current_file = {std::string(filename), format};
   DEBUG_LOG("File '{}'", filename);
   return true;
 }
@@ -285,8 +294,9 @@ bool CueParser::File::HandleTrackCommand(const char* line, u32 line_number, Erro
   }
 
   m_current_track = Track();
-  m_current_track->number = static_cast<u32>(track_number.value());
-  m_current_track->file = m_current_file.value();
+  m_current_track->number = static_cast<u8>(track_number.value());
+  m_current_track->file = m_current_file->first;
+  m_current_track->file_format = m_current_file->second;
   m_current_track->mode = mode;
   return true;
 }

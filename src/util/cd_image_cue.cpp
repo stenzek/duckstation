@@ -3,7 +3,9 @@
 
 #include "cd_image.h"
 #include "cue_parser.h"
+#include "wav_reader_writer.h"
 
+#include "common/align.h"
 #include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -34,24 +36,157 @@ protected:
   bool ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_in_index) override;
 
 private:
-  struct TrackFile
+  class TrackFileInterface
   {
-    std::string filename;
-    std::FILE* file;
-    u64 file_position;
+  public:
+    TrackFileInterface(std::string filename);
+    virtual ~TrackFileInterface();
+
+    ALWAYS_INLINE const std::string& GetFilename() const { return m_filename; }
+
+    virtual u64 GetSize() = 0;
+    virtual u64 GetDiskSize() = 0;
+
+    virtual bool Read(void* buffer, u64 offset, u32 size, Error* error) = 0;
+
+  private:
+    std::string m_filename;
   };
 
-  std::vector<TrackFile> m_files;
+  struct BinaryTrackFileInterface final : public TrackFileInterface
+  {
+  public:
+    BinaryTrackFileInterface(std::string filename, FileSystem::ManagedCFilePtr file);
+    ~BinaryTrackFileInterface() override;
+
+    u64 GetSize() override;
+    u64 GetDiskSize() override;
+
+    bool Read(void* buffer, u64 offset, u32 size, Error* error) override;
+
+  private:
+    FileSystem::ManagedCFilePtr m_file;
+    u64 m_file_position = 0;
+  };
+
+  struct WaveTrackFileInterface final : public TrackFileInterface
+  {
+  public:
+    WaveTrackFileInterface(std::string filename, WAVReader reader);
+    ~WaveTrackFileInterface() override;
+
+    u64 GetSize() override;
+    u64 GetDiskSize() override;
+
+    bool Read(void* buffer, u64 offset, u32 size, Error* error) override;
+
+  private:
+    WAVReader m_reader;
+  };
+
+  std::vector<std::unique_ptr<TrackFileInterface>> m_files;
 };
 
 } // namespace
 
+CDImageCueSheet::TrackFileInterface::TrackFileInterface(std::string filename) : m_filename(std::move(filename))
+{
+}
+
+CDImageCueSheet::TrackFileInterface::~TrackFileInterface() = default;
+
+CDImageCueSheet::BinaryTrackFileInterface::BinaryTrackFileInterface(std::string filename,
+                                                                    FileSystem::ManagedCFilePtr file)
+  : TrackFileInterface(std::move(filename)), m_file(std::move(file))
+{
+}
+
+CDImageCueSheet::BinaryTrackFileInterface::~BinaryTrackFileInterface() = default;
+
+bool CDImageCueSheet::BinaryTrackFileInterface::Read(void* buffer, u64 offset, u32 size, Error* error)
+{
+  if (m_file_position != offset)
+  {
+    if (!FileSystem::FSeek64(m_file.get(), static_cast<s64>(offset), SEEK_SET, error)) [[unlikely]]
+      return false;
+
+    m_file_position = offset;
+  }
+
+  if (std::fread(buffer, size, 1, m_file.get()) != 1) [[unlikely]]
+  {
+    Error::SetErrno(error, "fread() failed: ", errno);
+
+    // position is indeterminate now
+    m_file_position = std::numeric_limits<decltype(m_file_position)>::max();
+    return false;
+  }
+
+  m_file_position += size;
+  return true;
+}
+
+u64 CDImageCueSheet::BinaryTrackFileInterface::GetSize()
+{
+  return static_cast<u64>(std::max<s64>(FileSystem::FSize64(m_file.get()), 0));
+}
+
+u64 CDImageCueSheet::BinaryTrackFileInterface::GetDiskSize()
+{
+  return static_cast<u64>(std::max<s64>(FileSystem::FSize64(m_file.get()), 0));
+}
+
+CDImageCueSheet::WaveTrackFileInterface::WaveTrackFileInterface(std::string filename, WAVReader reader)
+  : TrackFileInterface(std::move(filename)), m_reader(std::move(reader))
+{
+}
+
+CDImageCueSheet::WaveTrackFileInterface::~WaveTrackFileInterface() = default;
+
+bool CDImageCueSheet::WaveTrackFileInterface::Read(void* buffer, u64 offset, u32 size, Error* error)
+{
+  // Should always be a multiple of 4 (sizeof frame).
+  if ((offset & 3) != 0 || (size & 3) != 0) [[unlikely]]
+    return false;
+
+  // We shouldn't have any extra CD frames.
+  const u32 frame_number = Truncate32(offset / 4);
+  if (frame_number >= m_reader.GetNumFrames()) [[unlikely]]
+  {
+    Error::SetStringView(error, "Attempted read past end of WAV file");
+    return false;
+  }
+
+  // Do we need to pad the read?
+  const u32 num_frames = size / 4;
+  const u32 num_frames_to_read = std::min(num_frames, m_reader.GetNumFrames() - frame_number);
+  if (num_frames_to_read > 0)
+  {
+    if (!m_reader.SeekToFrame(frame_number, error) || !m_reader.ReadFrames(buffer, num_frames_to_read, error))
+      return false;
+  }
+
+  // Padding.
+  const u32 padding = num_frames - num_frames_to_read;
+  if (padding > 0)
+    std::memset(static_cast<u8*>(buffer) + (num_frames_to_read * 4), 0, 4 * padding);
+
+  return true;
+}
+
+u64 CDImageCueSheet::WaveTrackFileInterface::GetSize()
+{
+  return Common::AlignUp(static_cast<u64>(m_reader.GetNumFrames()) * 4, 2352);
+}
+
+u64 CDImageCueSheet::WaveTrackFileInterface::GetDiskSize()
+{
+  return m_reader.GetFileSize();
+}
+
 CDImageCueSheet::CDImageCueSheet() = default;
 
-CDImageCueSheet::~CDImageCueSheet()
-{
-  std::for_each(m_files.begin(), m_files.end(), [](TrackFile& t) { std::fclose(t.file); });
-}
+CDImageCueSheet::~CDImageCueSheet() = default;
 
 bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
 {
@@ -88,30 +223,53 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
     u32 track_file_index = 0;
     for (; track_file_index < m_files.size(); track_file_index++)
     {
-      const TrackFile& t = m_files[track_file_index];
-      if (t.filename == track_filename)
+      if (m_files[track_file_index]->GetFilename() == track_filename)
         break;
     }
     if (track_file_index == m_files.size())
     {
-      const std::string track_full_filename(
-        !Path::IsAbsolute(track_filename) ? Path::BuildRelativePath(m_filename, track_filename) : track_filename);
+      std::string track_full_filename =
+        !Path::IsAbsolute(track_filename) ? Path::BuildRelativePath(m_filename, track_filename) : track_filename;
       Error track_error;
-      std::FILE* track_fp = FileSystem::OpenCFile(track_full_filename.c_str(), "rb", &track_error);
-      if (!track_fp && track_file_index == 0)
+      std::unique_ptr<TrackFileInterface> track_file;
+
+      if (track->file_format == CueParser::FileFormat::Binary)
       {
-        // many users have bad cuesheets, or they're renamed the files without updating the cuesheet.
-        // so, try searching for a bin with the same name as the cue, but only for the first referenced file.
-        const std::string alternative_filename(Path::ReplaceExtension(filename, "bin"));
-        track_fp = FileSystem::OpenCFile(alternative_filename.c_str(), "rb");
-        if (track_fp)
+        FileSystem::ManagedCFilePtr track_fp =
+          FileSystem::OpenManagedCFile(track_full_filename.c_str(), "rb", &track_error);
+        if (!track_fp && track_file_index == 0)
         {
-          WARNING_LOG("Your cue sheet references an invalid file '{}', but this was found at '{}' instead.",
-                      track_filename, alternative_filename);
+          // many users have bad cuesheets, or they're renamed the files without updating the cuesheet.
+          // so, try searching for a bin with the same name as the cue, but only for the first referenced file.
+          std::string alternative_filename = Path::ReplaceExtension(filename, "bin");
+          track_fp = FileSystem::OpenManagedCFile(alternative_filename.c_str(), "rb");
+          if (track_fp)
+          {
+            WARNING_LOG("Your cue sheet references an invalid file '{}', but this was found at '{}' instead.",
+                        track_filename, alternative_filename);
+            track_full_filename = std::move(alternative_filename);
+          }
+        }
+        if (track_fp)
+          track_file = std::make_unique<BinaryTrackFileInterface>(std::move(track_full_filename), std::move(track_fp));
+      }
+      else if (track->file_format == CueParser::FileFormat::Wave)
+      {
+        // Since all the frames are packed tightly in the wave file, we only need to get the start offset.
+        WAVReader reader;
+        if (reader.Open(track_full_filename.c_str(), &track_error))
+        {
+          if (reader.GetNumChannels() != AUDIO_CHANNELS || reader.GetSampleRate() != AUDIO_SAMPLE_RATE)
+          {
+            Error::SetStringFmt(error, "WAV files must be stereo and use a sample rate of 44100hz.");
+            return false;
+          }
+
+          track_file = std::make_unique<WaveTrackFileInterface>(std::move(track_full_filename), std::move(reader));
         }
       }
 
-      if (!track_fp)
+      if (!track_file)
       {
         ERROR_LOG("Failed to open track filename '{}' (from '{}' and '{}'): {}", track_full_filename, track_filename,
                   filename, track_error.GetDescription());
@@ -120,7 +278,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
         return false;
       }
 
-      m_files.push_back(TrackFile{track_filename, track_fp, 0});
+      m_files.push_back(std::move(track_file));
     }
 
     // data type determines the sector size
@@ -138,9 +296,7 @@ bool CDImageCueSheet::OpenAndParse(const char* filename, Error* error)
     LBA track_length;
     if (!track->length.has_value())
     {
-      FileSystem::FSeek64(m_files[track_file_index].file, 0, SEEK_END);
-      u64 file_size = static_cast<u64>(FileSystem::FTell64(m_files[track_file_index].file));
-      FileSystem::FSeek64(m_files[track_file_index].file, 0, SEEK_SET);
+      u64 file_size = m_files[track_file_index]->GetSize();
 
       file_size /= track_sector_size;
       if (track_start >= file_size)
@@ -296,23 +452,15 @@ bool CDImageCueSheet::ReadSectorFromIndex(void* buffer, const Index& index, LBA 
 {
   DebugAssert(index.file_index < m_files.size());
 
-  TrackFile& tf = m_files[index.file_index];
+  TrackFileInterface* tf = m_files[index.file_index].get();
   const u64 file_position = index.file_offset + (static_cast<u64>(lba_in_index) * index.file_sector_size);
-  if (tf.file_position != file_position)
+  Error error;
+  if (!tf->Read(buffer, file_position, index.file_sector_size, &error)) [[unlikely]]
   {
-    if (std::fseek(tf.file, static_cast<long>(file_position), SEEK_SET) != 0)
-      return false;
-
-    tf.file_position = file_position;
-  }
-
-  if (std::fread(buffer, index.file_sector_size, 1, tf.file) != 1)
-  {
-    std::fseek(tf.file, static_cast<long>(tf.file_position), SEEK_SET);
+    ERROR_LOG("Failed to read LBA {}: {}", lba_in_index, error.GetDescription());
     return false;
   }
 
-  tf.file_position += index.file_sector_size;
   return true;
 }
 
@@ -320,8 +468,8 @@ s64 CDImageCueSheet::GetSizeOnDisk() const
 {
   // Doesn't include the cue.. but they're tiny anyway, whatever.
   u64 size = 0;
-  for (const TrackFile& tf : m_files)
-    size += FileSystem::FSize64(tf.file);
+  for (const std::unique_ptr<TrackFileInterface>& tf : m_files)
+    size += tf->GetDiskSize();
   return size;
 }
 
