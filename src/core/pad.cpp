@@ -45,7 +45,7 @@ enum class ActiveDevice : u8
   Multitap
 };
 
-union JOY_CTRL
+union JOYCTRLRegister
 {
   u16 bits;
 
@@ -61,7 +61,7 @@ union JOY_CTRL
   BitField<u16, u8, 13, 1> SLOT;
 };
 
-union JOY_STAT
+union JOYSTATRegister
 {
   u32 bits;
 
@@ -73,7 +73,7 @@ union JOY_STAT
   BitField<u32, u32, 11, 21> TMR;
 };
 
-union JOY_MODE
+union JOYMODERegister
 {
   u16 bits;
 
@@ -127,9 +127,9 @@ struct PadState
   TimingEvent transfer_event{"Pad Serial Transfer", 1, 1, &Pad::TransferEvent, nullptr};
   State state = State::Idle;
 
-  JOY_STAT JOY_STAT = {};
-  JOY_CTRL JOY_CTRL = {};
-  JOY_MODE JOY_MODE = {};
+  JOYSTATRegister JOY_STAT = {};
+  JOYCTRLRegister JOY_CTRL = {};
+  JOYMODERegister JOY_MODE = {};
   u16 JOY_BAUD = 0;
 
   ActiveDevice active_device = ActiveDevice::None;
