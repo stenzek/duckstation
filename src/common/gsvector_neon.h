@@ -690,7 +690,16 @@ public:
 
   ALWAYS_INLINE static GSVector2i zext32(s32 v) { return GSVector2i(vset_lane_s32(v, vdup_n_s32(0), 0)); }
 
-  ALWAYS_INLINE static GSVector2i load(const void* p) { return GSVector2i(vld1_s32((const int32_t*)p)); }
+  template<bool aligned>
+  ALWAYS_INLINE static GSVector2i load(const void* p)
+  {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+      return GSVector2i(vreinterpret_s32_s8(vld1_s8((const int8_t*)p)));
+#endif
+
+    return GSVector2i(vld1_s32((const int32_t*)p));
+  }
 
   ALWAYS_INLINE static void store32(void* p, const GSVector2i& v)
   {
@@ -698,7 +707,19 @@ public:
     std::memcpy(p, &val, sizeof(s32));
   }
 
-  ALWAYS_INLINE static void store(void* p, const GSVector2i& v) { vst1_s32((int32_t*)p, v.v2s); }
+  template<bool aligned>
+  ALWAYS_INLINE static void store(void* p, const GSVector2i& v)
+  {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+    {
+      vst1_s8((int8_t*)p, vreinterpret_s8_s32(v.v2s));
+      return;
+    }
+#endif
+
+    vst1_s32((int32_t*)p, v.v2s);
+  }
 
   ALWAYS_INLINE void operator&=(const GSVector2i& v)
   {
@@ -903,9 +924,30 @@ public:
 
   ALWAYS_INLINE static GSVector2 xffffffff() { return GSVector2(vreinterpret_f32_u32(vdup_n_u32(0xFFFFFFFFu))); }
 
-  ALWAYS_INLINE static GSVector2 load(const void* p) { return GSVector2(vld1_f32(static_cast<const float*>(p))); }
+  template<bool aligned>
+  ALWAYS_INLINE static GSVector2 load(const void* p)
+  {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+      return GSVector2(vreinterpret_f32_s8(vld1_s8((const int8_t*)p)));
+#endif
 
-  ALWAYS_INLINE static void store(void* p, const GSVector2& v) { vst1_f32(static_cast<float*>(p), v.v2s); }
+    return GSVector2(vld1_f32(static_cast<const float*>(p)));
+  }
+
+  template<bool aligned>
+  ALWAYS_INLINE static void store(void* p, const GSVector2& v)
+  {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+    {
+      vst1_s8(static_cast<int8_t*>(p), vreinterpret_s8_f32(v.v2s));
+      return;
+    }
+#endif
+
+    vst1_f32(static_cast<float*>(p), v.v2s);
+  }
 
   ALWAYS_INLINE GSVector2 operator-() const { return neg(); }
 
@@ -2134,13 +2176,25 @@ public:
 
   ALWAYS_INLINE static GSVector4i zext32(s32 v) { return GSVector4i(vsetq_lane_s32(v, vdupq_n_s32(0), 0)); }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadl(const void* p)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+      return GSVector4i(vcombine_s32(vreinterpret_s32_s8(vld1_s8((int8_t*)p)), vcreate_s32(0)));
+#endif
+
     return GSVector4i(vcombine_s32(vld1_s32((const int32_t*)p), vcreate_s32(0)));
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const void* p)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+      return GSVector4i(vreinterpretq_s32_s8(vcombine_s8(vdup_n_s8(0), vld1_s8((int8_t*)p))));
+#endif
+
     return GSVector4i(vreinterpretq_s32_s64(vcombine_s64(vdup_n_s64(0), vld1_s64((int64_t*)p))));
   }
 
@@ -2149,6 +2203,11 @@ public:
   template<bool aligned>
   ALWAYS_INLINE static GSVector4i load(const void* p)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+      return GSVector4i(vreinterpretq_s32_s8(vld1q_s8((int8_t*)p)));
+#endif
+
     return GSVector4i(vreinterpretq_s32_s64(vld1q_s64((int64_t*)p)));
   }
 
@@ -2167,19 +2226,45 @@ public:
     std::memcpy(p, &val, sizeof(u32));
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static void storel(void* p, const GSVector4i& v)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+    {
+      vst1_s8((int8_t*)p, vget_low_s8(vreinterpretq_s8_s32(v.v4s)));
+      return;
+    }
+#endif
+
     vst1_s64((int64_t*)p, vget_low_s64(vreinterpretq_s64_s32(v.v4s)));
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static void storeh(void* p, const GSVector4i& v)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+    {
+      vst1_s8((int8_t*)p, vget_high_s8(vreinterpretq_s8_s32(v.v4s)));
+      return;
+    }
+#endif
+
     vst1_s64((int64_t*)p, vget_high_s64(vreinterpretq_s64_s32(v.v4s)));
   }
 
   template<bool aligned>
   ALWAYS_INLINE static void store(void* p, const GSVector4i& v)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+    {
+      vst1q_s8((int8_t*)p, vreinterpretq_s8_s32(v.v4s));
+      return;
+    }
+#endif
+
     vst1q_s64((int64_t*)p, vreinterpretq_s64_s32(v.v4s));
   }
 
@@ -2652,8 +2737,14 @@ public:
 
   ALWAYS_INLINE static GSVector4 xffffffff() { return GSVector4(vreinterpretq_f32_u32(vdupq_n_u32(0xFFFFFFFFu))); }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4 loadl(const void* p)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+      return GSVector4(vcombine_f32(vreinterpret_f32_s8(vld1_s8((int8_t*)p)), vcreate_f32(0)));
+#endif
+
     return GSVector4(vcombine_f32(vld1_f32((const float*)p), vcreate_f32(0)));
   }
 
@@ -2662,32 +2753,55 @@ public:
   template<bool aligned>
   ALWAYS_INLINE static GSVector4 load(const void* p)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+      return GSVector4(vreinterpretq_f32_s8(vld1q_s8((int8_t*)p)));
+#endif
+
     return GSVector4(vld1q_f32((const float*)p));
   }
 
   ALWAYS_INLINE static void storent(void* p, const GSVector4& v) { vst1q_f32((float*)p, v.v4s); }
 
+  template<bool aligned>
   ALWAYS_INLINE static void storel(void* p, const GSVector4& v)
   {
-#ifdef CPU_ARCH_ARM64
-    vst1_f64((double*)p, vget_low_f64(vreinterpretq_f64_f32(v.v4s)));
-#else
-    vst1_s64((s64*)p, vget_low_s64(vreinterpretq_s64_f32(v.v4s)));
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+    {
+      vst1_s8((int8_t*)p, vreinterpret_s8_f32(vget_low_f32(v.v4s)));
+      return;
+    }
 #endif
+
+    vst1_f32((float*)p, vget_low_f32(v.v4s));
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static void storeh(void* p, const GSVector4& v)
   {
-#ifdef CPU_ARCH_ARM64
-    vst1_f64((double*)p, vget_high_f64(vreinterpretq_f64_f32(v.v4s)));
-#else
-    vst1_s64((s64*)p, vget_high_s64(vreinterpretq_s64_f32(v.v4s)));
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+    {
+      vst1_s8((int8_t*)p, vreinterpret_s8_f32(vget_high_f32(v.v4s)));
+      return;
+    }
 #endif
+
+    vst1_f32((float*)p, vget_high_f32(v.v4s));
   }
 
   template<bool aligned>
   ALWAYS_INLINE static void store(void* p, const GSVector4& v)
   {
+#ifdef CPU_ARCH_ARM32
+    if constexpr (!aligned)
+    {
+      vst1q_s8((int8_t*)p, vreinterpretq_s8_f32(v.v4s));
+      return;
+    }
+#endif
+
     vst1q_f32((float*)p, v.v4s);
   }
 

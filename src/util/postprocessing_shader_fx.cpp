@@ -1683,7 +1683,7 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
 
         case SourceOptionType::ViewportOffset:
         {
-          GSVector4::storel(dst, GSVector4(final_rect));
+          GSVector4::storel<false>(dst, GSVector4(final_rect));
         }
         break;
 

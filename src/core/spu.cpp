@@ -2318,7 +2318,7 @@ void SPU::ProcessReverb(s32 left_in, s32 right_in, s32* left_out, s32* right_out
       srcs = GSVector4i::load<false>(&src[8]);
       acc = acc.add32(GSVector4i::load<true>(&resample_coeff[8]).mul32l(srcs.s16to32()));
       acc = acc.add32(GSVector4i::load<true>(&resample_coeff[12]).mul32l(srcs.uph64().s16to32()));
-      srcs = GSVector4i::loadl(&src[16]);
+      srcs = GSVector4i::loadl<false>(&src[16]);
       acc = acc.add32(GSVector4i::load<true>(&resample_coeff[16]).mul32l(srcs.s16to32()));
 
       out[channel] = std::clamp<s32>(acc.addv_s32() >> 14, -32768, 32767);

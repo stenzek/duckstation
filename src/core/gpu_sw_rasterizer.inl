@@ -397,7 +397,7 @@ ALWAYS_INLINE_RELEASE static GSVector4i LoadVector(u32 x, u32 y)
 {
   if (x <= (VRAM_WIDTH - 4))
   {
-    return GSVector4i::loadl(&g_vram[y * VRAM_WIDTH + x]).u16to32();
+    return GSVector4i::loadl<false>(&g_vram[y * VRAM_WIDTH + x]).u16to32();
   }
   else
   {
@@ -415,7 +415,7 @@ ALWAYS_INLINE_RELEASE static void StoreVector(u32 x, u32 y, GSVector4i color)
   const GSVector4i packed_color = color.pu32();
   if (x <= (VRAM_WIDTH - 4))
   {
-    GSVector4i::storel(&g_vram[y * VRAM_WIDTH + x], packed_color);
+    GSVector4i::storel<false>(&g_vram[y * VRAM_WIDTH + x], packed_color);
   }
   else
   {

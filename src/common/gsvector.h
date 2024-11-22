@@ -35,5 +35,5 @@ public:
 
   void store(void* m);
 
-  float E[2][2];
+  alignas(8) float E[2][2];
 };

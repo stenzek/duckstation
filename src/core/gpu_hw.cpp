@@ -2570,9 +2570,9 @@ void GPU_HW::LoadVertices()
       }
 
       // Cull polygons which are too large.
-      const GSVector2 v0f = GSVector2::load(&vertices[0].x);
-      const GSVector2 v1f = GSVector2::load(&vertices[1].x);
-      const GSVector2 v2f = GSVector2::load(&vertices[2].x);
+      const GSVector2 v0f = GSVector2::load<false>(&vertices[0].x);
+      const GSVector2 v1f = GSVector2::load<false>(&vertices[1].x);
+      const GSVector2 v2f = GSVector2::load<false>(&vertices[2].x);
       const GSVector2 min_pos_12 = v1f.min(v2f);
       const GSVector2 max_pos_12 = v1f.max(v2f);
       const GSVector4i draw_rect_012 = GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f))))
@@ -2617,7 +2617,7 @@ void GPU_HW::LoadVertices()
       // quads
       if (rc.quad_polygon)
       {
-        const GSVector2 v3f = GSVector2::load(&vertices[3].x);
+        const GSVector2 v3f = GSVector2::load<false>(&vertices[3].x);
         const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
                                            .add32(GSVector4i::cxpr(0, 0, 1, 1));
         const GSVector4i clamped_draw_rect_123 = draw_rect_123.rintersect(m_clamped_drawing_area);
@@ -2845,9 +2845,9 @@ void GPU_HW::LoadVertices()
         {
           GPUBackendDrawLineCommand* cmd = m_sw_renderer->NewDrawLineCommand(2);
           FillDrawCommand(cmd, rc);
-          GSVector4i::storel(&cmd->vertices[0], bounds);
+          GSVector4i::storel<false>(&cmd->vertices[0], bounds);
           cmd->vertices[0].color = start_color;
-          GSVector4i::storeh(&cmd->vertices[1], bounds);
+          GSVector4i::storeh<false>(&cmd->vertices[1], bounds);
           cmd->vertices[1].color = end_color;
           m_sw_renderer->PushCommand(cmd);
         }
@@ -2870,7 +2870,7 @@ void GPU_HW::LoadVertices()
         {
           cmd = m_sw_renderer->NewDrawLineCommand(num_vertices);
           FillDrawCommand(cmd, rc);
-          GSVector2i::store(&cmd->vertices[0].x, start_pos);
+          GSVector2i::store<false>(&cmd->vertices[0].x, start_pos);
           cmd->vertices[0].color = start_color;
         }
         else
@@ -2905,7 +2905,7 @@ void GPU_HW::LoadVertices()
 
           if (cmd)
           {
-            GSVector2i::store(&cmd->vertices[i], end_pos);
+            GSVector2i::store<false>(&cmd->vertices[i], end_pos);
             cmd->vertices[i].color = end_color;
           }
         }
@@ -2978,7 +2978,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(GSVector4i uv_rect)
 
   const GPUTextureMode tmode = m_draw_mode.mode_reg.texture_mode;
   const u32 xshift = (tmode >= GPUTextureMode::Direct16Bit) ? 0 : (2 - static_cast<u8>(tmode));
-  const GSVector4i page_offset = GSVector4i::loadl(m_current_texture_page_offset).xyxy();
+  const GSVector4i page_offset = GSVector4i::loadl<true>(m_current_texture_page_offset).xyxy();
 
   uv_rect = uv_rect.blend32<5>(uv_rect.srl32(xshift));   // shift only goes on the x
   uv_rect = uv_rect.add32(page_offset);                  // page offset

@@ -585,12 +585,19 @@ public:
 
   ALWAYS_INLINE static GSVector2i load32(const void* p) { return GSVector2i(_mm_loadu_si32(p)); }
   ALWAYS_INLINE static GSVector2i set32(s32 v) { return GSVector2i(_mm_cvtsi32_si128(v)); }
+
+  template<bool aligned>
   ALWAYS_INLINE static GSVector2i load(const void* p)
   {
     return GSVector2i(_mm_loadl_epi64(static_cast<const __m128i*>(p)));
   }
 
-  ALWAYS_INLINE static void store(void* p, const GSVector2i& v) { _mm_storel_epi64(static_cast<__m128i*>(p), v.m); }
+  template<bool aligned>
+  ALWAYS_INLINE static void store(void* p, const GSVector2i& v)
+  {
+    _mm_storel_epi64(static_cast<__m128i*>(p), v.m);
+  }
+
   ALWAYS_INLINE static void store32(void* p, const GSVector2i& v) { _mm_storeu_si32(p, v); }
 
   ALWAYS_INLINE GSVector2i& operator&=(const GSVector2i& v)
@@ -806,11 +813,13 @@ public:
 
   ALWAYS_INLINE static GSVector2 xffffffff() { return zero() == zero(); }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector2 load(const void* p)
   {
     return GSVector2(_mm_castpd_ps(_mm_load_sd(static_cast<const double*>(p))));
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static void store(void* p, const GSVector2& v)
   {
     _mm_store_sd(static_cast<double*>(p), _mm_castps_pd(v.m));
@@ -1711,16 +1720,19 @@ public:
   ALWAYS_INLINE static GSVector4i load32(const void* p) { return GSVector4i(_mm_loadu_si32(p)); }
   ALWAYS_INLINE static GSVector4i zext32(s32 v) { return GSVector4i(_mm_cvtsi32_si128(v)); }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadl(const void* p)
   {
     return GSVector4i(_mm_loadl_epi64(static_cast<const __m128i*>(p)));
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const void* p)
   {
     return GSVector4i(_mm_castps_si128(_mm_loadh_pi(_mm_setzero_ps(), static_cast<const __m64*>(p))));
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const GSVector2i& v)
   {
     return GSVector4i(_mm_unpacklo_epi64(_mm_setzero_si128(), v.m));
@@ -1734,7 +1746,14 @@ public:
   }
 
   ALWAYS_INLINE static void storent(void* p, const GSVector4i& v) { _mm_stream_si128(static_cast<__m128i*>(p), v.m); }
-  ALWAYS_INLINE static void storel(void* p, const GSVector4i& v) { _mm_storel_epi64(static_cast<__m128i*>(p), v.m); }
+
+  template<bool aligned>
+  ALWAYS_INLINE static void storel(void* p, const GSVector4i& v)
+  {
+    _mm_storel_epi64(static_cast<__m128i*>(p), v.m);
+  }
+
+  template<bool aligned>
   ALWAYS_INLINE static void storeh(void* p, const GSVector4i& v)
   {
     _mm_storeh_pi(static_cast<__m64*>(p), _mm_castsi128_ps(v.m));
@@ -2115,6 +2134,7 @@ public:
 
   ALWAYS_INLINE static GSVector4 xffffffff() { return zero() == zero(); }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4 loadl(const void* p)
   {
     return GSVector4(_mm_castpd_ps(_mm_load_sd(static_cast<const double*>(p))));
@@ -2127,10 +2147,14 @@ public:
   }
 
   ALWAYS_INLINE static void storent(void* p, const GSVector4& v) { _mm_stream_ps(static_cast<float*>(p), v.m); }
+
+  template<bool aligned>
   ALWAYS_INLINE static void storel(void* p, const GSVector4& v)
   {
     _mm_store_sd(static_cast<double*>(p), _mm_castps_pd(v.m));
   }
+
+  template<bool aligned>
   ALWAYS_INLINE static void storeh(void* p, const GSVector4& v)
   {
     _mm_storeh_pd(static_cast<double*>(p), _mm_castps_pd(v.m));

@@ -53,7 +53,7 @@ GSMatrix2x2 GSMatrix2x2::Rotation(float angle_in_radians)
 
 GSVector2 GSMatrix2x2::row(size_t i) const
 {
-  return GSVector2::load(&E[i][0]);
+  return GSVector2::load<true>(&E[i][0]);
 }
 
 GSVector2 GSMatrix2x2::col(size_t i) const

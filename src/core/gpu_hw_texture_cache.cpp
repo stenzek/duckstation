@@ -3305,8 +3305,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   // TODO: Use rects instead of fullscreen tris, maybe avoid the copy..
   alignas(VECTOR_ALIGNMENT) float uniforms[4];
   GSVector2 texture_size = GSVector2(GSVector2i(entry->texture->GetWidth(), entry->texture->GetHeight()));
-  GSVector2::store(&uniforms[0], texture_size);
-  GSVector2::store(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
+  GSVector2::store<true>(&uniforms[0], texture_size);
+  GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
   g_gpu_device->InvalidateRenderTarget(s_state.replacement_texture_render_target.get());
   g_gpu_device->SetRenderTarget(s_state.replacement_texture_render_target.get());
   g_gpu_device->SetViewportAndScissor(0, 0, new_width, new_height);
@@ -3325,8 +3325,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
 
     const GSVector4i dst_rect = GSVector4i(GSVector4(si.dst_rect) * max_scale_v);
     texture_size = GSVector2(GSVector2i(temp_texture->GetWidth(), temp_texture->GetHeight()));
-    GSVector2::store(&uniforms[0], texture_size);
-    GSVector2::store(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
+    GSVector2::store<true>(&uniforms[0], texture_size);
+    GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
     g_gpu_device->SetViewportAndScissor(dst_rect);
     g_gpu_device->SetTextureSampler(0, temp_texture.get(), g_gpu_device->GetNearestSampler());
     g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :

@@ -711,10 +711,10 @@ void MDEC::CopyOutBlock(void* param, TickCount ticks, TickCount ticks_late)
 
       for (u32 index = 0; index < s_state.block_rgb.size(); index += 16)
       {
-        const GSVector4i rgbx0 = GSVector4i::load<false>(&s_state.block_rgb[index]);
-        const GSVector4i rgbx1 = GSVector4i::load<false>(&s_state.block_rgb[index + 4]);
-        const GSVector4i rgbx2 = GSVector4i::load<false>(&s_state.block_rgb[index + 8]);
-        const GSVector4i rgbx3 = GSVector4i::load<false>(&s_state.block_rgb[index + 12]);
+        const GSVector4i rgbx0 = GSVector4i::load<true>(&s_state.block_rgb[index]);
+        const GSVector4i rgbx1 = GSVector4i::load<true>(&s_state.block_rgb[index + 4]);
+        const GSVector4i rgbx2 = GSVector4i::load<true>(&s_state.block_rgb[index + 8]);
+        const GSVector4i rgbx3 = GSVector4i::load<true>(&s_state.block_rgb[index + 12]);
 
         GSVector4i::store<true>(&rgbp[0], rgbx0.shuffle8(mask00) | rgbx1.shuffle8(mask01));
         GSVector4i::store<true>(&rgbp[4], rgbx1.shuffle8(mask11) | rgbx2.shuffle8(mask12));
@@ -1048,8 +1048,8 @@ void MDEC::YUVToRGB_New(u32 xx, u32 yy, const std::array<s16, 64>& Crblk, const 
   const GSVector4i addval = s_state.status.data_output_signed ? GSVector4i::cxpr(0) : GSVector4i::cxpr(0x80808080);
   for (u32 y = 0; y < 8; y++)
   {
-    const GSVector4i Cr = GSVector4i::loadl(&Crblk[(xx / 2) + ((y + yy) / 2) * 8]).s16to32();
-    const GSVector4i Cb = GSVector4i::loadl(&Cbblk[(xx / 2) + ((y + yy) / 2) * 8]).s16to32();
+    const GSVector4i Cr = GSVector4i::loadl<false>(&Crblk[(xx / 2) + ((y + yy) / 2) * 8]).s16to32();
+    const GSVector4i Cb = GSVector4i::loadl<false>(&Cbblk[(xx / 2) + ((y + yy) / 2) * 8]).s16to32();
     const GSVector4i Y = GSVector4i::load<true>(&Yblk[y * 8]);
 
     // BT.601 YUV->RGB coefficients, rounding formula from Mednafen.

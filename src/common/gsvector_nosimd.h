@@ -467,6 +467,7 @@ public:
 
   ALWAYS_INLINE static GSVector2i set32(s32 v) { return GSVector2i(v, 0); }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector2i load(const void* p)
   {
     GSVector2i ret;
@@ -474,7 +475,11 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE static void store(void* p, const GSVector2i& v) { std::memcpy(p, v.S32, sizeof(S32)); }
+  template<bool aligned>
+  ALWAYS_INLINE static void store(void* p, const GSVector2i& v)
+  {
+    std::memcpy(p, v.S32, sizeof(S32));
+  }
 
   ALWAYS_INLINE static void store32(void* p, const GSVector2i& v) { std::memcpy(p, &v.x, sizeof(s32)); }
 
@@ -658,6 +663,7 @@ public:
     return ret;
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector2 load(const void* p)
   {
     GSVector2 ret;
@@ -665,7 +671,11 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE static void store(void* p, const GSVector2& v) { std::memcpy(p, &v.F32, sizeof(F32)); }
+  template<bool aligned>
+  ALWAYS_INLINE static void store(void* p, const GSVector2& v)
+  {
+    std::memcpy(p, &v.F32, sizeof(F32));
+  }
 
   ALWAYS_INLINE GSVector2 operator-() const { return neg(); }
 
@@ -1530,6 +1540,7 @@ public:
 
   ALWAYS_INLINE static GSVector4i zext32(s32 v) { return GSVector4i(v, 0, 0, 0); }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadl(const void* p)
   {
     GSVector4i ret;
@@ -1538,6 +1549,7 @@ public:
     return ret;
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const void* p)
   {
     GSVector4i ret;
@@ -1546,7 +1558,11 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE static GSVector4i loadh(const GSVector2i& v) { return loadh(&v); }
+  template<bool aligned>
+  ALWAYS_INLINE static GSVector4i loadh(const GSVector2i& v)
+  {
+    return loadh<true>(&v);
+  }
 
   template<bool aligned>
   ALWAYS_INLINE static GSVector4i load(const void* p)
@@ -1558,9 +1574,17 @@ public:
 
   ALWAYS_INLINE static void storent(void* p, const GSVector4i& v) { std::memcpy(p, v.S32, sizeof(v.S32)); }
 
-  ALWAYS_INLINE static void storel(void* p, const GSVector4i& v) { std::memcpy(p, &v.S32[0], sizeof(s32) * 2); }
+  template<bool aligned>
+  ALWAYS_INLINE static void storel(void* p, const GSVector4i& v)
+  {
+    std::memcpy(p, &v.S32[0], sizeof(s32) * 2);
+  }
 
-  ALWAYS_INLINE static void storeh(void* p, const GSVector4i& v) { std::memcpy(p, &v.S32[2], sizeof(s32) * 2); }
+  template<bool aligned>
+  ALWAYS_INLINE static void storeh(void* p, const GSVector4i& v)
+  {
+    std::memcpy(p, &v.S32[2], sizeof(s32) * 2);
+  }
 
   template<bool aligned>
   ALWAYS_INLINE static void store(void* p, const GSVector4i& v)
@@ -1958,6 +1982,7 @@ public:
     return ret;
   }
 
+  template<bool aligned>
   ALWAYS_INLINE static GSVector4 loadl(const void* p)
   {
     GSVector4 ret;
@@ -1977,9 +2002,17 @@ public:
 
   ALWAYS_INLINE static void storent(void* p, const GSVector4& v) { std::memcpy(p, &v, sizeof(v)); }
 
-  ALWAYS_INLINE static void storel(void* p, const GSVector4& v) { std::memcpy(p, &v.x, sizeof(float) * 2); }
+  template<bool aligned>
+  ALWAYS_INLINE static void storel(void* p, const GSVector4& v)
+  {
+    std::memcpy(p, &v.x, sizeof(float) * 2);
+  }
 
-  ALWAYS_INLINE static void storeh(void* p, const GSVector4& v) { std::memcpy(p, &v.z, sizeof(float) * 2); }
+  template<bool aligned>
+  ALWAYS_INLINE static void storeh(void* p, const GSVector4& v)
+  {
+    std::memcpy(p, &v.z, sizeof(float) * 2);
+  }
 
   template<bool aligned>
   ALWAYS_INLINE static void store(void* p, const GSVector4& v)

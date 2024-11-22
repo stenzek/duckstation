@@ -537,7 +537,7 @@ void GPU_SW::DispatchRenderCommand()
         vert->x = m_drawing_offset.x + vp.x;
         vert->y = m_drawing_offset.y + vp.y;
         vert->texcoord = textured ? Truncate16(FifoPop()) : 0;
-        positions[i] = GSVector2i::load(&vert->x);
+        positions[i] = GSVector2i::load<false>(&vert->x);
       }
 
       // Cull polygons which are too large.
@@ -686,8 +686,8 @@ void GPU_SW::DispatchRenderCommand()
           cmd->vertices[1].y = m_drawing_offset.y + end_pos.y;
         }
 
-        const GSVector4i v0 = GSVector4i::loadl(&cmd->vertices[0].x);
-        const GSVector4i v1 = GSVector4i::loadl(&cmd->vertices[1].x);
+        const GSVector4i v0 = GSVector4i::loadl<false>(&cmd->vertices[0].x);
+        const GSVector4i v1 = GSVector4i::loadl<false>(&cmd->vertices[1].x);
         const GSVector4i rect = v0.min_s32(v1).xyxy(v0.max_s32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
         const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
 
@@ -711,7 +711,7 @@ void GPU_SW::DispatchRenderCommand()
 
         u32 buffer_pos = 0;
         const GPUVertexPosition start_vp{m_blit_buffer[buffer_pos++]};
-        const GSVector2i draw_offset = GSVector2i::load(&m_drawing_offset.x);
+        const GSVector2i draw_offset = GSVector2i::load<false>(&m_drawing_offset.x);
         GSVector2i start_pos = GSVector2i(start_vp.x, start_vp.y).add32(draw_offset);
         u32 start_color = m_render_command.color_for_first_vertex;
 
@@ -740,9 +740,9 @@ void GPU_SW::DispatchRenderCommand()
             GPUBackendDrawLineCommand::Vertex* out_vertex = &cmd->vertices[out_vertex_count];
             out_vertex_count += 2;
 
-            GSVector2i::store(&out_vertex[0].x, start_pos);
+            GSVector2i::store<false>(&out_vertex[0].x, start_pos);
             out_vertex[0].color = start_color;
-            GSVector2i::store(&out_vertex[1].x, end_pos);
+            GSVector2i::store<false>(&out_vertex[1].x, end_pos);
             out_vertex[1].color = end_color;
           }
 

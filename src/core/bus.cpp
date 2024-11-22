@@ -549,7 +549,9 @@ u8* Bus::GetLUTFastmemPointer(u32 address, u8* ram_ptr)
 
 void Bus::MapFastmemViews()
 {
+#ifdef ENABLE_MMAP_FASTMEM
   Assert(s_fastmem_ram_views.empty());
+#endif
 
   const CPUFastmemMode mode = g_settings.cpu_fastmem_mode;
   if (mode == CPUFastmemMode::MMap)
