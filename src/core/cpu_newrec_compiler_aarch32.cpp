@@ -997,13 +997,14 @@ void CPU::NewRec::AArch32Compiler::Compile_variable_shift(CompileFlags cf,
   if (cf.const_s)
   {
     if (const u32 shift = GetConstantRegU32(cf.MipsS()); shift != 0)
-      (armAsm->*op)(rd, rt, shift);
+      (armAsm->*op)(rd, rt, shift & 0x1Fu);
     else if (rd.GetCode() != rt.GetCode())
       armAsm->mov(rd, rt);
   }
   else
   {
-    (armAsm->*op)(rd, rt, CFGetRegS(cf));
+    armAsm->and_(RSCRATCH, CFGetRegS(cf), 0x1Fu);
+    (armAsm->*op)(rd, rt, RSCRATCH);
   }
 }
 
