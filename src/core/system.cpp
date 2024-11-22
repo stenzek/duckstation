@@ -187,7 +187,7 @@ static void UpdateDisplayVSync();
 
 static bool UpdateGameSettingsLayer();
 static void UpdateInputSettingsLayer(std::string input_profile_name, std::unique_lock<std::mutex>& lock);
-static void UpdateRunningGame(const std::string_view path, CDImage* image, bool booting);
+static void UpdateRunningGame(const std::string& path, CDImage* image, bool booting);
 static bool CheckForRequiredSubQ(Error* error);
 
 static void UpdateControllers();
@@ -1780,7 +1780,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   }
 
   // Update running game, this will apply settings as well.
-  UpdateRunningGame(disc ? disc->GetPath().c_str() : parameters.filename.c_str(), disc.get(), true);
+  UpdateRunningGame(disc ? disc->GetPath() : parameters.filename, disc.get(), true);
 
   // Get boot EXE override.
   if (!parameters.override_exe.empty())
@@ -3981,7 +3981,7 @@ void System::RemoveMedia()
   ClearMemorySaveStates();
 }
 
-void System::UpdateRunningGame(const std::string_view path, CDImage* image, bool booting)
+void System::UpdateRunningGame(const std::string& path, CDImage* image, bool booting)
 {
   if (!booting && s_state.running_game_path == path)
     return;
@@ -4032,34 +4032,45 @@ void System::UpdateRunningGame(const std::string_view path, CDImage* image, bool
         }
       }
     }
-    // Check for an audio CD. Those shouldn't set any title.
-    else if (image && image->GetTrack(1).mode != CDImage::TrackMode::Audio)
+    else if (image)
     {
-      std::string id;
-      GetGameDetailsFromImage(image, &id, &s_state.running_game_hash);
-
-      s_state.running_game_entry = GameDatabase::GetEntryForGameDetails(id, s_state.running_game_hash);
-      if (s_state.running_game_entry)
+      // Data discs should try to pull the title from the serial.
+      if (image->GetTrack(1).mode != CDImage::TrackMode::Audio)
       {
-        s_state.running_game_serial = s_state.running_game_entry->serial;
-        if (s_state.running_game_title.empty())
-          s_state.running_game_title = s_state.running_game_entry->title;
+        std::string id;
+        GetGameDetailsFromImage(image, &id, &s_state.running_game_hash);
+
+        s_state.running_game_entry = GameDatabase::GetEntryForGameDetails(id, s_state.running_game_hash);
+        if (s_state.running_game_entry)
+        {
+          s_state.running_game_serial = s_state.running_game_entry->serial;
+          if (s_state.running_game_title.empty())
+            s_state.running_game_title = s_state.running_game_entry->title;
+        }
+        else
+        {
+          s_state.running_game_serial = std::move(id);
+
+          // Don't display device names for unknown physical discs.
+          if (s_state.running_game_title.empty() && !CDImage::IsDeviceName(path.c_str()))
+            s_state.running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
+        }
+
+        if (image->HasSubImages())
+        {
+          std::string image_title = image->GetMetadata("title");
+          if (!image_title.empty())
+          {
+            s_state.running_game_title = std::move(image_title);
+            s_state.running_game_custom_title = false;
+          }
+        }
       }
       else
       {
-        s_state.running_game_serial = std::move(id);
-        if (s_state.running_game_title.empty())
+        // Audio CDs can get the path from the filename, assuming it's not a physical disc.
+        if (!CDImage::IsDeviceName(path.c_str()))
           s_state.running_game_title = Path::GetFileTitle(FileSystem::GetDisplayNameFromPath(path));
-      }
-
-      if (image->HasSubImages())
-      {
-        std::string image_title = image->GetMetadata("title");
-        if (!image_title.empty())
-        {
-          s_state.running_game_title = std::move(image_title);
-          s_state.running_game_custom_title = false;
-        }
       }
     }
   }
