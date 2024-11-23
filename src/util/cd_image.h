@@ -247,10 +247,9 @@ public:
 
   // Opening disc image.
   static std::unique_ptr<CDImage> Open(const char* filename, bool allow_patches, Error* error);
-  static std::unique_ptr<CDImage> OpenBinImage(const char* filename, Error* error);
-  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* filename, Error* error);
+  static std::unique_ptr<CDImage> OpenBinImage(const char* path, Error* error);
+  static std::unique_ptr<CDImage> OpenCueSheetImage(const char* path, Error* error);
   static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, Error* error);
-  static std::unique_ptr<CDImage> OpenEcmImage(const char* filename, Error* error);
   static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Error* error);
   static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Error* error);
   static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, bool apply_patches, Error* error);

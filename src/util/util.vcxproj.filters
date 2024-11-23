@@ -81,7 +81,6 @@
     <ClCompile Include="cd_image.cpp" />
     <ClCompile Include="audio_stream.cpp" />
     <ClCompile Include="cd_image_cue.cpp" />
-    <ClCompile Include="cd_image_bin.cpp" />
     <ClCompile Include="iso_reader.cpp" />
     <ClCompile Include="cd_image_chd.cpp" />
     <ClCompile Include="wav_reader_writer.cpp" />
@@ -89,7 +88,6 @@
     <ClCompile Include="cd_image_memory.cpp" />
     <ClCompile Include="shiftjis.cpp" />
     <ClCompile Include="page_fault_handler.cpp" />
-    <ClCompile Include="cd_image_ecm.cpp" />
     <ClCompile Include="cd_image_mds.cpp" />
     <ClCompile Include="cd_image_pbp.cpp" />
     <ClCompile Include="cd_image_m3u.cpp" />

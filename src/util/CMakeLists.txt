@@ -3,11 +3,9 @@ add_library(util
   audio_stream.h
   cd_image.cpp
   cd_image.h
-  cd_image_bin.cpp
   cd_image_cue.cpp
   cd_image_chd.cpp
   cd_image_device.cpp
-  cd_image_ecm.cpp
   cd_image_hasher.cpp
   cd_image_hasher.h
   cd_image_m3u.cpp

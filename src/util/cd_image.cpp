@@ -83,17 +83,13 @@ std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches,
     image = OpenCueSheetImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".bin") == 0 || StringUtil::Strcasecmp(extension, ".img") == 0 ||
-           StringUtil::Strcasecmp(extension, ".iso") == 0)
+           StringUtil::Strcasecmp(extension, ".iso") == 0 || StringUtil::Strcasecmp(extension, ".ecm") == 0)
   {
     image = OpenBinImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".chd") == 0)
   {
     image = OpenCHDImage(filename, error);
-  }
-  else if (StringUtil::Strcasecmp(extension, ".ecm") == 0)
-  {
-    image = OpenEcmImage(filename, error);
   }
   else if (StringUtil::Strcasecmp(extension, ".mds") == 0)
   {
