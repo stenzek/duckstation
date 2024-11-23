@@ -8,6 +8,7 @@
 #include "game_database.h"
 #include "guncon.h"
 #include "host.h"
+#include "jogcon.h"
 #include "justifier.h"
 #include "negcon.h"
 #include "negcon_rumble.h"
@@ -38,6 +39,7 @@ static const Controller::ControllerInfo* s_controller_info[] = {
   &Justifier::INFO,
   &DigitalController::INFO_POPN,
   &DigitalController::INFO_DDGO,
+  &JogCon::INFO,
 };
 
 const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> Controller::PortDisplayOrder = {{0, 2, 3, 4, 1, 5, 6, 7}};
@@ -139,6 +141,9 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 
     case ControllerType::NeGconRumble:
       return NeGconRumble::Create(index);
+
+    case ControllerType::JogCon:
+      return JogCon::Create(index);
 
     case ControllerType::None:
     default:
