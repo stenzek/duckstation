@@ -46,7 +46,6 @@
   X(Image)                                                                                                             \
   X(InputManager)                                                                                                      \
   X(InterruptController)                                                                                               \
-  X(IsoReader)                                                                                                         \
   X(Justifier)                                                                                                         \
   X(Log)                                                                                                               \
   X(MDEC)                                                                                                              \
