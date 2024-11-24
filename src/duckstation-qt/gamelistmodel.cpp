@@ -294,7 +294,7 @@ const QPixmap& GameListModel::getFlagPixmapForEntry(const GameList::Entry* ge) c
   if (it != m_flag_pixmap_cache.end())
     return it->second;
 
-  const QIcon icon(QString::fromStdString(QtHost::GetResourcePath(ge->GetLanguageIconFileName(), true)));
+  const QIcon icon(QString::fromStdString(QtHost::GetResourcePath(ge->GetLanguageIconName(), true)));
   it = m_flag_pixmap_cache.emplace(name, icon.pixmap(FLAG_PIXMAP_WIDTH, FLAG_PIXMAP_HEIGHT)).first;
   return it->second;
 }

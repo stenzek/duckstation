@@ -117,6 +117,8 @@ static PlayedTimeEntry UpdatePlayedTimeFile(const std::string& path, const std::
                                             std::time_t add_time);
 
 static std::string GetCustomPropertiesFile();
+static bool PutCustomPropertiesField(INISettingsInterface& ini, const std::string& path, const char* field,
+                                     const char* value);
 
 static FileSystem::ManagedCFilePtr OpenMemoryCardTimestampCache(bool for_write);
 static bool UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& entry);
@@ -627,6 +629,21 @@ void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
       WARNING_LOG("Invalid region '{}' in custom attributes for '{}'", custom_region_str.value(), path);
     }
   }
+  const std::optional<TinyString> custom_language_str =
+    custom_attributes_ini.GetOptionalTinyStringValue(path.c_str(), "Language");
+  if (custom_language_str.has_value())
+  {
+    const std::optional<GameDatabase::Language> custom_region =
+      GameDatabase::ParseLanguageName(custom_region_str.value());
+    if (custom_region.has_value())
+    {
+      entry->custom_language = custom_region.value();
+    }
+    else
+    {
+      WARNING_LOG("Invalid language '{}' in custom attributes for '{}'", custom_region_str.value(), path);
+    }
+  }
 }
 
 std::unique_lock<std::recursive_mutex> GameList::GetLock()
@@ -990,26 +1007,20 @@ std::string GameList::GetNewCoverImagePathForEntry(const Entry* entry, const cha
 
 std::string_view GameList::Entry::GetLanguageIcon() const
 {
-  // If there's only one language, this is the flag we want to use.
-  // Except if it's English, then we want to use the disc region's flag.
   std::string_view ret;
-  if (dbentry && dbentry->languages.count() == 1 &&
-      !dbentry->languages.test(static_cast<size_t>(GameDatabase::Language::English)))
-  {
-    ret = GameDatabase::GetLanguageName(
-      static_cast<GameDatabase::Language>(std::countr_zero(dbentry->languages.to_ulong())));
-  }
+  if (custom_language != GameDatabase::Language::MaxCount)
+    ret = GameDatabase::GetLanguageName(custom_language);
+  else if (dbentry)
+    ret = dbentry->GetLanguageFlagName(region);
   else
-  {
     ret = Settings::GetDiscRegionName(region);
-  }
 
   return ret;
 }
 
-TinyString GameList::Entry::GetLanguageIconFileName() const
+TinyString GameList::Entry::GetLanguageIconName() const
 {
-  return TinyString::from_format("images/flags/{}.svg", GetLanguageIcon());
+  return GameDatabase::GetLanguageFlagResourceName(GetLanguageIcon());
 }
 
 TinyString GameList::Entry::GetCompatibilityIconFileName() const
@@ -1518,27 +1529,36 @@ std::string GameList::GetCustomPropertiesFile()
   return Path::Combine(EmuFolders::DataRoot, "custom_properties.ini");
 }
 
-void GameList::SaveCustomTitleForPath(const std::string& path, const std::string& custom_title)
+bool GameList::PutCustomPropertiesField(INISettingsInterface& ini, const std::string& path, const char* field,
+                                        const char* value)
 {
-  INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
-  custom_attributes_ini.Load();
+  ini.Load();
 
-  if (!custom_title.empty())
+  if (value && *value != '\0')
   {
-    custom_attributes_ini.SetStringValue(path.c_str(), "Title", custom_title.c_str());
+    ini.SetStringValue(path.c_str(), field, value);
   }
   else
   {
-    custom_attributes_ini.DeleteValue(path.c_str(), "Title");
-    custom_attributes_ini.RemoveEmptySections();
+    ini.DeleteValue(path.c_str(), field);
+    ini.RemoveEmptySections();
   }
 
   Error error;
-  if (!custom_attributes_ini.Save(&error))
+  if (!ini.Save(&error))
   {
     ERROR_LOG("Failed to save custom attributes: {}", error.GetDescription());
-    return;
+    return false;
   }
+
+  return true;
+}
+
+bool GameList::SaveCustomTitleForPath(const std::string& path, const std::string& custom_title)
+{
+  INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
+  if (!PutCustomPropertiesField(custom_attributes_ini, path, "Title", custom_title.c_str()))
+    return false;
 
   if (!custom_title.empty())
   {
@@ -1556,28 +1576,18 @@ void GameList::SaveCustomTitleForPath(const std::string& path, const std::string
     // Let the cache update by rescanning. Only need to do this on deletion, to get the original value.
     RescanCustomAttributesForPath(path, custom_attributes_ini);
   }
+
+  return true;
 }
 
-void GameList::SaveCustomRegionForPath(const std::string& path, const std::optional<DiscRegion> custom_region)
+bool GameList::SaveCustomRegionForPath(const std::string& path, const std::optional<DiscRegion> custom_region)
 {
   INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
-  custom_attributes_ini.Load();
-
-  if (custom_region.has_value())
+  if (!PutCustomPropertiesField(custom_attributes_ini, path, "Region",
+                                custom_region.has_value() ? Settings::GetDiscRegionName(custom_region.value()) :
+                                                            nullptr))
   {
-    custom_attributes_ini.SetStringValue(path.c_str(), "Region", Settings::GetDiscRegionName(custom_region.value()));
-  }
-  else
-  {
-    custom_attributes_ini.DeleteValue(path.c_str(), "Region");
-    custom_attributes_ini.RemoveEmptySections();
-  }
-
-  Error error;
-  if (!custom_attributes_ini.Save(&error))
-  {
-    ERROR_LOG("Failed to save custom attributes: {}", error.GetDescription());
-    return;
+    return false;
   }
 
   if (custom_region.has_value())
@@ -1596,6 +1606,28 @@ void GameList::SaveCustomRegionForPath(const std::string& path, const std::optio
     // Let the cache update by rescanning. Only need to do this on deletion, to get the original value.
     RescanCustomAttributesForPath(path, custom_attributes_ini);
   }
+
+  return true;
+}
+
+bool GameList::SaveCustomLanguageForPath(const std::string& path,
+                                         const std::optional<GameDatabase::Language> custom_language)
+{
+  INISettingsInterface custom_attributes_ini(GetCustomPropertiesFile());
+  if (!PutCustomPropertiesField(custom_attributes_ini, path, "Language",
+                                custom_language.has_value() ? GameDatabase::GetLanguageName(custom_language.value()) :
+                                                              nullptr))
+  {
+    return false;
+  }
+
+  // Don't need to rescan, since there's no original value to restore.
+  auto lock = GetLock();
+  Entry* entry = GetMutableEntryForPath(path);
+  if (entry)
+    entry->custom_language = custom_language.value_or(GameDatabase::Language::MaxCount);
+
+  return true;
 }
 
 std::string GameList::GetCustomTitleForPath(const std::string_view path)

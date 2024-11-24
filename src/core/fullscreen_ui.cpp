@@ -6882,7 +6882,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         const bool display_as_language = (selected_entry->dbentry && selected_entry->dbentry->HasAnyLanguage());
         ImGui::TextUnformatted(display_as_language ? FSUI_CSTR("Language: ") : FSUI_CSTR("Region: "));
         ImGui::SameLine();
-        ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconFileName(), 23, 16), LayoutScale(23.0f, 16.0f));
+        ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconName(), 23, 16), LayoutScale(23.0f, 16.0f));
         ImGui::SameLine();
         if (display_as_language)
         {

@@ -40,6 +40,7 @@ struct Entry
   bool disc_set_member = false;
   bool has_custom_title = false;
   bool has_custom_region = false;
+  GameDatabase::Language custom_language = GameDatabase::Language::MaxCount;
 
   std::string path;
   std::string serial;
@@ -57,13 +58,14 @@ struct Entry
 
   std::string_view GetLanguageIcon() const;
 
-  TinyString GetLanguageIconFileName() const;
+  TinyString GetLanguageIconName() const;
   TinyString GetCompatibilityIconFileName() const;
 
   TinyString GetReleaseDateString() const;
 
   ALWAYS_INLINE bool IsDisc() const { return (type == EntryType::Disc); }
   ALWAYS_INLINE bool IsDiscSet() const { return (type == EntryType::DiscSet); }
+  ALWAYS_INLINE bool HasCustomLanguage() const { return (custom_language != GameDatabase::Language::MaxCount); }
   ALWAYS_INLINE EntryType GetSortType() const { return (type == EntryType::DiscSet) ? EntryType::Disc : type; }
 };
 
@@ -128,8 +130,9 @@ bool DownloadCovers(const std::vector<std::string>& url_templates, bool use_seri
                     std::function<void(const Entry*, std::string)> save_callback = {});
 
 // Custom properties support
-void SaveCustomTitleForPath(const std::string& path, const std::string& custom_title);
-void SaveCustomRegionForPath(const std::string& path, const std::optional<DiscRegion> custom_region);
+bool SaveCustomTitleForPath(const std::string& path, const std::string& custom_title);
+bool SaveCustomRegionForPath(const std::string& path, const std::optional<DiscRegion> custom_region);
+bool SaveCustomLanguageForPath(const std::string& path, const std::optional<GameDatabase::Language> custom_language);
 std::string GetCustomTitleForPath(const std::string_view path);
 std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 

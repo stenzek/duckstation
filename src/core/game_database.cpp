@@ -21,6 +21,7 @@
 
 #include "ryml.hpp"
 
+#include <bit>
 #include <iomanip>
 #include <memory>
 #include <optional>
@@ -310,6 +311,24 @@ std::optional<GameDatabase::Language> GameDatabase::ParseLanguageName(std::strin
   }
 
   return std::nullopt;
+}
+
+TinyString GameDatabase::GetLanguageFlagResourceName(std::string_view language_name)
+{
+  return TinyString::from_format("images/flags/{}.svg", language_name);
+}
+
+std::string_view GameDatabase::Entry::GetLanguageFlagName(DiscRegion region) const
+{
+  // If there's only one language, this is the flag we want to use.
+  // Except if it's English, then we want to use the disc region's flag.
+  std::string_view ret;
+  if (languages.count() == 1 && !languages.test(static_cast<size_t>(GameDatabase::Language::English)))
+    ret = GameDatabase::GetLanguageName(static_cast<GameDatabase::Language>(std::countr_zero(languages.to_ulong())));
+  else
+    ret = Settings::GetDiscRegionName(region);
+
+  return ret;
 }
 
 SmallString GameDatabase::Entry::GetLanguagesString() const
