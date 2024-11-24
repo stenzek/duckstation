@@ -395,7 +395,7 @@ void Timer::NanoSleep(std::uint64_t ns)
   // Round down to the next millisecond.
   usleep(static_cast<useconds_t>((ns / 1000000) * 1000));
 #else
-  const struct timespec ts = {0, static_cast<long>(ns)};
+  const struct timespec ts = {static_cast<long>(ns / 1000000000ULL), static_cast<long>(ns % 1000000000ULL)};
   nanosleep(&ts, nullptr);
 #endif
 }
