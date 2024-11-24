@@ -189,7 +189,7 @@ struct ADPCMBlock
     u8 bits;
 
     BitField<u8, u8, 0, 4> shift;
-    BitField<u8, u8, 4, 3> filter;
+    BitField<u8, u8, 4, 4> filter;
   } shift_filter;
   ADPCMFlags flags;
   u8 data[NUM_SAMPLES_PER_ADPCM_BLOCK / 2];
@@ -201,7 +201,7 @@ struct ADPCMBlock
     return (shift > 12) ? 9 : shift;
   }
 
-  u8 GetFilter() const { return std::min<u8>(shift_filter.filter, 4); }
+  u8 GetFilter() const { return shift_filter.filter; }
 
   u8 GetNibble(u32 index) const { return (data[index / 2] >> ((index % 2) * 4)) & 0x0F; }
 };
@@ -1877,8 +1877,8 @@ void SPU::Voice::TickADSR()
 
 void SPU::Voice::DecodeBlock(const ADPCMBlock& block)
 {
-  static constexpr std::array<s32, 5> filter_table_pos = {{0, 60, 115, 98, 122}};
-  static constexpr std::array<s32, 5> filter_table_neg = {{0, 0, -52, -55, -60}};
+  static constexpr std::array<s8, 16> filter_table_pos = {{0, 60, 115, 98, 122, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  static constexpr std::array<s8, 16> filter_table_neg = {{0, 0, -52, -55, -60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
   // store samples needed for interpolation
   current_block_samples[2] = current_block_samples[NUM_SAMPLES_FROM_LAST_ADPCM_BLOCK + NUM_SAMPLES_PER_ADPCM_BLOCK - 1];

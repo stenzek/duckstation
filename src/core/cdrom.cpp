@@ -263,7 +263,7 @@ union XA_ADPCMBlockHeader
   u8 bits;
 
   BitField<u8, u8, 0, 4> shift;
-  BitField<u8, u8, 4, 2> filter;
+  BitField<u8, u8, 4, 4> filter;
 
   // For both 4bit and 8bit ADPCM, reserved shift values 13..15 will act same as shift=9).
   u8 GetShift() const
@@ -3415,11 +3415,8 @@ s16 CDROM::SaturateVolume(s32 volume)
 template<bool IS_STEREO, bool IS_8BIT>
 void CDROM::DecodeXAADPCMChunks(const u8* chunk_ptr, s16* samples)
 {
-  static constexpr std::array<s8, 16> s_xa_adpcm_filter_table_pos = {
-    {0, 60, 115, 98, 122, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
-
-  static constexpr std::array<s8, 16> s_xa_adpcm_filter_table_neg = {
-    {0, 0, -52, -55, -60, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  static constexpr std::array<s8, 16> filter_table_pos = {{0, 60, 115, 98, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+  static constexpr std::array<s8, 16> filter_table_neg = {{0, 0, -52, -55, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
 
   // The data layout is annoying here. Each word of data is interleaved with the other blocks, requiring multiple
   // passes to decode the whole chunk.
@@ -3440,8 +3437,8 @@ void CDROM::DecodeXAADPCMChunks(const u8* chunk_ptr, s16* samples)
       const XA_ADPCMBlockHeader block_header{headers_ptr[block]};
       const u8 shift = block_header.GetShift();
       const u8 filter = block_header.GetFilter();
-      const s32 filter_pos = s_xa_adpcm_filter_table_pos[filter];
-      const s32 filter_neg = s_xa_adpcm_filter_table_neg[filter];
+      const s32 filter_pos = filter_table_pos[filter];
+      const s32 filter_neg = filter_table_neg[filter];
 
       s16* out_samples_ptr =
         IS_STEREO ? &samples[(block / 2) * (WORDS_PER_BLOCK * 2) + (block % 2)] : &samples[block * WORDS_PER_BLOCK];
