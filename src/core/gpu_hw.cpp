@@ -417,7 +417,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
                                     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
                                     (!old_settings.gpu_texture_cache && g_settings.gpu_texture_cache));
   const bool shaders_changed =
-    ((m_resolution_scale > 1) != (resolution_scale > 1) || (m_multisamples > 1) != (multisamples > 1) ||
+    ((m_resolution_scale > 1) != (resolution_scale > 1) || m_multisamples != multisamples ||
      m_true_color != g_settings.gpu_true_color || prev_force_progressive_scan != m_force_progressive_scan ||
      (multisamples > 1 && g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
      (resolution_scale > 1 && g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering) ||
