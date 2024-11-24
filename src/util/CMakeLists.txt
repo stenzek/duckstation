@@ -65,6 +65,8 @@ add_library(util
   sockets.h
   state_wrapper.cpp
   state_wrapper.h
+  texture_decompress.cpp
+  texture_decompress.h
   wav_reader_writer.cpp
   wav_reader_writer.h
   window_info.cpp

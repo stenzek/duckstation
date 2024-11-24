@@ -93,6 +93,7 @@
     <ClInclude Include="shiftjis.h" />
     <ClInclude Include="sockets.h" />
     <ClInclude Include="state_wrapper.h" />
+    <ClInclude Include="texture_decompress.h" />
     <ClInclude Include="vulkan_builders.h" />
     <ClInclude Include="vulkan_device.h" />
     <ClInclude Include="vulkan_entry_points.h" />
@@ -199,6 +200,7 @@
     <ClCompile Include="page_fault_handler.cpp" />
     <ClCompile Include="sockets.cpp" />
     <ClCompile Include="state_wrapper.cpp" />
+    <ClCompile Include="texture_decompress.cpp" />
     <ClCompile Include="vulkan_builders.cpp" />
     <ClCompile Include="vulkan_device.cpp" />
     <ClCompile Include="vulkan_loader.cpp" />
