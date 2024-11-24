@@ -340,24 +340,24 @@ ID3D12GraphicsCommandList4* D3D12Texture::GetCommandBufferForUpdate()
   return dev.GetInitCommandList();
 }
 
-void D3D12Texture::CopyTextureDataForUpload(void* dst, const void* src, u32 width, u32 height, u32 pitch,
-                                            u32 upload_pitch) const
-{
-  StringUtil::StrideMemCpy(dst, upload_pitch, src, pitch, GetPixelSize() * width, height);
-}
-
 ID3D12Resource* D3D12Texture::AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 width,
-                                                          u32 height) const
+                                                          u32 height, u32 buffer_size) const
 {
-  const u32 size = upload_pitch * height;
   ComPtr<ID3D12Resource> resource;
   ComPtr<D3D12MA::Allocation> allocation;
 
   const D3D12MA::ALLOCATION_DESC allocation_desc = {D3D12MA::ALLOCATION_FLAG_NONE, D3D12_HEAP_TYPE_UPLOAD,
                                                     D3D12_HEAP_FLAG_NONE, nullptr, nullptr};
-  const D3D12_RESOURCE_DESC resource_desc = {
-    D3D12_RESOURCE_DIMENSION_BUFFER, 0, size, 1, 1, 1, DXGI_FORMAT_UNKNOWN, {1, 0}, D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
-    D3D12_RESOURCE_FLAG_NONE};
+  const D3D12_RESOURCE_DESC resource_desc = {D3D12_RESOURCE_DIMENSION_BUFFER,
+                                             0,
+                                             buffer_size,
+                                             1,
+                                             1,
+                                             1,
+                                             DXGI_FORMAT_UNKNOWN,
+                                             {1, 0},
+                                             D3D12_TEXTURE_LAYOUT_ROW_MAJOR,
+                                             D3D12_RESOURCE_FLAG_NONE};
   HRESULT hr = D3D12Device::GetInstance().GetAllocator()->CreateResource(
     &allocation_desc, &resource_desc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, allocation.GetAddressOf(),
     IID_PPV_ARGS(resource.GetAddressOf()));
@@ -375,9 +375,9 @@ ID3D12Resource* D3D12Texture::AllocateUploadStagingBuffer(const void* data, u32 
     return nullptr;
   }
 
-  CopyTextureDataForUpload(map_ptr, data, width, height, pitch, upload_pitch);
+  CopyTextureDataForUpload(width, height, m_format, map_ptr, upload_pitch, data, pitch);
 
-  const D3D12_RANGE write_range = {0, size};
+  const D3D12_RANGE write_range = {0, buffer_size};
   resource->Unmap(0, &write_range);
 
   // Immediately queue it for freeing after the command buffer finishes, since it's only needed for the copy.
@@ -395,8 +395,8 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
   D3D12Device& dev = D3D12Device::GetInstance();
   D3D12StreamBuffer& sbuffer = dev.GetTextureUploadBuffer();
 
-  const u32 upload_pitch = Common::AlignUpPow2<u32>(pitch, D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-  const u32 required_size = height * upload_pitch;
+  const u32 upload_pitch = Common::AlignUpPow2<u32>(CalcUploadPitch(width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 required_size = CalcUploadSize(height, upload_pitch);
 
   D3D12_TEXTURE_COPY_LOCATION srcloc;
   srcloc.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
@@ -410,7 +410,7 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
   // Otherwise allocation will either fail, or require lots of cmdbuffer submissions.
   if (required_size > (sbuffer.GetSize() / 2))
   {
-    srcloc.pResource = AllocateUploadStagingBuffer(data, pitch, upload_pitch, width, height);
+    srcloc.pResource = AllocateUploadStagingBuffer(data, pitch, upload_pitch, width, height, required_size);
     if (!srcloc.pResource)
       return false;
 
@@ -431,7 +431,7 @@ bool D3D12Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
 
     srcloc.pResource = sbuffer.GetBuffer();
     srcloc.PlacedFootprint.Offset = sbuffer.GetCurrentOffset();
-    CopyTextureDataForUpload(sbuffer.GetCurrentHostPointer(), data, width, height, pitch, upload_pitch);
+    CopyTextureDataForUpload(width, height, m_format, sbuffer.GetCurrentHostPointer(), upload_pitch, data, pitch);
     sbuffer.CommitMemory(required_size);
   }
 
@@ -482,8 +482,8 @@ bool D3D12Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
     CommitClear(GetCommandBufferForUpdate());
 
   // see note in Update() for the reason why.
-  const u32 aligned_pitch = Common::AlignUpPow2(width * GetPixelSize(), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-  const u32 req_size = height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(m_height, aligned_pitch);
   D3D12StreamBuffer& buffer = dev.GetTextureUploadBuffer();
   if (req_size >= (buffer.GetSize() / 2))
     return false;
@@ -512,8 +512,8 @@ void D3D12Texture::Unmap()
 {
   D3D12Device& dev = D3D12Device::GetInstance();
   D3D12StreamBuffer& sb = dev.GetTextureUploadBuffer();
-  const u32 aligned_pitch = Common::AlignUpPow2(m_map_width * GetPixelSize(), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
-  const u32 req_size = m_map_height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_width), D3D12_TEXTURE_DATA_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(m_map_height, aligned_pitch);
   const u32 offset = sb.GetCurrentOffset();
   sb.CommitMemory(req_size);
 

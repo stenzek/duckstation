@@ -1057,8 +1057,22 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchAndUploadTextureImage(const Image& i
 {
   const Image* image_to_upload = &image;
   GPUTexture::Format gpu_format = GPUTexture::GetTextureFormatForImageFormat(image.GetFormat());
+  bool gpu_format_supported;
+
+  // avoid device query for compressed formats that we've already pretested
+  if (gpu_format >= GPUTexture::Format::BC1 && gpu_format <= GPUTexture::Format::BC3)
+    gpu_format_supported = m_features.dxt_textures;
+  else if (gpu_format == GPUTexture::Format::BC7)
+    gpu_format_supported = m_features.bptc_textures;
+  else if (gpu_format == GPUTexture::Format::RGBA8) // always supported
+    gpu_format_supported = true;
+  else if (gpu_format != GPUTexture::Format::Unknown)
+    gpu_format_supported = SupportsTextureFormat(gpu_format);
+  else
+    gpu_format_supported = false;
+
   std::optional<Image> converted_image;
-  if (!SupportsTextureFormat(gpu_format))
+  if (!gpu_format_supported)
   {
     converted_image = image.ConvertToRGBA8(error);
     if (!converted_image.has_value())

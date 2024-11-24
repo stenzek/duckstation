@@ -200,6 +200,13 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
       (SUCCEEDED(m_device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &data, sizeof(data))) &&
        data.ROVsSupported);
   }
+
+  m_features.dxt_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) &&
+     (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
+      SupportsTextureFormat(GPUTexture::Format::BC3)));
+  m_features.bptc_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && SupportsTextureFormat(GPUTexture::Format::BC7));
 }
 
 D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,

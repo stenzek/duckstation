@@ -96,6 +96,10 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
   VK_FORMAT_R16G16B16A16_SFLOAT,      // RGBA16F
   VK_FORMAT_R32G32B32A32_SFLOAT,      // RGBA32F
   VK_FORMAT_A2R10G10B10_UNORM_PACK32, // RGB10A2
+  VK_FORMAT_BC1_RGBA_UNORM_BLOCK,     // BC1
+  VK_FORMAT_BC2_UNORM_BLOCK,          // BC2
+  VK_FORMAT_BC3_UNORM_BLOCK,          // BC3
+  VK_FORMAT_BC7_UNORM_BLOCK,          // BC7
 };
 
 // Handles are always 64-bit, even on 32-bit platforms.
@@ -640,6 +644,7 @@ bool VulkanDevice::CreateDevice(VkSurfaceKHR surface, bool enable_validation_lay
   enabled_features.sampleRateShading = available_features.sampleRateShading;
   enabled_features.geometryShader = available_features.geometryShader;
   enabled_features.fragmentStoresAndAtomics = available_features.fragmentStoresAndAtomics;
+  enabled_features.textureCompressionBC = available_features.textureCompressionBC;
   device_info.pEnabledFeatures = &enabled_features;
 
   VkPhysicalDeviceRasterizationOrderAttachmentAccessFeaturesEXT rasterization_order_access_feature = {
@@ -2456,6 +2461,10 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDe
   m_features.raster_order_views =
     (!(disabled_features & FEATURE_MASK_RASTER_ORDER_VIEWS) && vk_features.fragmentStoresAndAtomics &&
      m_optional_extensions.vk_ext_fragment_shader_interlock);
+
+  // Same feature bit for both.
+  m_features.dxt_textures = m_features.bptc_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && vk_features.textureCompressionBC);
 }
 
 void VulkanDevice::CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level,

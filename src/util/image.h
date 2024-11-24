@@ -21,6 +21,7 @@ enum class ImageFormat : u8
   BGRA8,
   RGB565,
   RGBA5551,
+  BGR8,
   BC1,
   BC2,
   BC3,

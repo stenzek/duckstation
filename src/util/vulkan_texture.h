@@ -85,8 +85,8 @@ private:
                 VkImage image, VmaAllocation allocation, VkImageView view, VkFormat vk_format);
 
   VkCommandBuffer GetCommandBufferForUpdate();
-  void CopyTextureDataForUpload(void* dst, const void* src, u32 width, u32 height, u32 pitch, u32 upload_pitch) const;
-  VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 width, u32 height) const;
+  VkBuffer AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 width, u32 height,
+                                       u32 buffer_size) const;
   void UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 x, u32 y, u32 width, u32 height, u32 layer, u32 level, u32 pitch,
                         VkBuffer buffer, u32 buffer_offset);
 

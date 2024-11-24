@@ -230,20 +230,13 @@ VkCommandBuffer VulkanTexture::GetCommandBufferForUpdate()
   return dev.GetCurrentInitCommandBuffer();
 }
 
-void VulkanTexture::CopyTextureDataForUpload(void* dst, const void* src, u32 width, u32 height, u32 pitch,
-                                             u32 upload_pitch) const
-{
-  StringUtil::StrideMemCpy(dst, upload_pitch, src, pitch, GetPixelSize() * width, height);
-}
-
 VkBuffer VulkanTexture::AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 width,
-                                                    u32 height) const
+                                                    u32 height, u32 buffer_size) const
 {
-  const u32 size = upload_pitch * height;
   const VkBufferCreateInfo bci = {VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
                                   nullptr,
                                   0,
-                                  static_cast<VkDeviceSize>(size),
+                                  static_cast<VkDeviceSize>(buffer_size),
                                   VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
                                   VK_SHARING_MODE_EXCLUSIVE,
                                   0,
@@ -270,8 +263,8 @@ VkBuffer VulkanTexture::AllocateUploadStagingBuffer(const void* data, u32 pitch,
   VulkanDevice::GetInstance().DeferBufferDestruction(buffer, allocation);
 
   // And write the data.
-  CopyTextureDataForUpload(ai.pMappedData, data, width, height, pitch, upload_pitch);
-  vmaFlushAllocation(VulkanDevice::GetInstance().GetAllocator(), allocation, 0, size);
+  CopyTextureDataForUpload(width, height, m_format, ai.pMappedData, upload_pitch, data, pitch);
+  vmaFlushAllocation(VulkanDevice::GetInstance().GetAllocator(), allocation, 0, buffer_size);
   return buffer;
 }
 
@@ -282,7 +275,7 @@ void VulkanTexture::UpdateFromBuffer(VkCommandBuffer cmdbuf, u32 x, u32 y, u32 w
   if (old_layout != Layout::TransferDst)
     TransitionSubresourcesToLayout(cmdbuf, layer, 1, level, 1, old_layout, Layout::TransferDst);
 
-  const u32 row_length = pitch / GetPixelSize();
+  const u32 row_length = CalcUploadRowLengthFromPitch(pitch);
 
   const VkBufferImageCopy bic = {static_cast<VkDeviceSize>(buffer_offset),
                                  row_length,
@@ -302,8 +295,9 @@ bool VulkanTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   DebugAssert(layer < m_layers && level < m_levels);
   DebugAssert((x + width) <= GetMipWidth(level) && (y + height) <= GetMipHeight(level));
 
-  const u32 upload_pitch = Common::AlignUpPow2(pitch, VulkanDevice::GetInstance().GetBufferCopyRowPitchAlignment());
-  const u32 required_size = height * upload_pitch;
+  const u32 upload_pitch =
+    Common::AlignUpPow2(CalcUploadPitch(width), VulkanDevice::GetInstance().GetBufferCopyRowPitchAlignment());
+  const u32 required_size = CalcUploadSize(height, upload_pitch);
   VulkanDevice& dev = VulkanDevice::GetInstance();
   VulkanStreamBuffer& sbuffer = dev.GetTextureUploadBuffer();
 
@@ -314,7 +308,7 @@ bool VulkanTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
   if (required_size > (sbuffer.GetCurrentSize() / 2))
   {
     buffer_offset = 0;
-    buffer = AllocateUploadStagingBuffer(data, pitch, upload_pitch, width, height);
+    buffer = AllocateUploadStagingBuffer(data, pitch, upload_pitch, width, height, required_size);
     if (buffer == VK_NULL_HANDLE)
       return false;
   }
@@ -332,7 +326,7 @@ bool VulkanTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data
 
     buffer = sbuffer.GetBuffer();
     buffer_offset = sbuffer.GetCurrentOffset();
-    CopyTextureDataForUpload(sbuffer.GetCurrentHostPointer(), data, width, height, pitch, upload_pitch);
+    CopyTextureDataForUpload(width, height, m_format, sbuffer.GetCurrentHostPointer(), upload_pitch, data, pitch);
     sbuffer.CommitMemory(required_size);
   }
 
@@ -372,8 +366,8 @@ bool VulkanTexture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u3
     CommitClear(GetCommandBufferForUpdate());
 
   // see note in Update() for the reason why.
-  const u32 aligned_pitch = Common::AlignUpPow2(width * GetPixelSize(), dev.GetBufferCopyRowPitchAlignment());
-  const u32 req_size = height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(width), dev.GetBufferCopyRowPitchAlignment());
+  const u32 req_size = CalcUploadSize(height, aligned_pitch);
   VulkanStreamBuffer& buffer = dev.GetTextureUploadBuffer();
   if (req_size >= (buffer.GetCurrentSize() / 2))
     return false;
@@ -402,8 +396,8 @@ void VulkanTexture::Unmap()
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   VulkanStreamBuffer& sb = dev.GetTextureUploadBuffer();
-  const u32 aligned_pitch = Common::AlignUpPow2(m_map_width * GetPixelSize(), dev.GetBufferCopyRowPitchAlignment());
-  const u32 req_size = m_map_height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_width), dev.GetBufferCopyRowPitchAlignment());
+  const u32 req_size = CalcUploadSize(m_map_height, aligned_pitch);
   const u32 offset = sb.GetCurrentOffset();
   sb.CommitMemory(req_size);
 

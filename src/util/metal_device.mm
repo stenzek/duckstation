@@ -71,6 +71,11 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatRGBA16Float,           // RGBA16F
   MTLPixelFormatRGBA32Float,           // RGBA32F
   MTLPixelFormatBGR10A2Unorm,          // RGB10A2
+  MTLPixelFormatBC1_RGBA,              // BC1
+  MTLPixelFormatBC2_RGBA,              // BC2
+  MTLPixelFormatBC3_RGBA,              // BC3
+  MTLPixelFormatBC7_RGBAUnorm,         // BC7
+
 };
 
 static void LogNSError(NSError* error, std::string_view message)
@@ -384,6 +389,10 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;
+
+  // Same feature bit for both.
+  m_features.dxt_textures = m_features.bptc_textures =
+    !(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && m_device.supportsBCTextureCompression;
 
   // Disable pipeline cache on Intel, apparently it's buggy.
   if ([[m_device name] containsString:@"Intel"])
@@ -995,8 +1004,8 @@ MetalTexture::~MetalTexture()
 bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer /*= 0*/,
                           u32 level /*= 0*/)
 {
-  const u32 aligned_pitch = Common::AlignUpPow2(width * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
-  const u32 req_size = height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(height, aligned_pitch);
 
   GPUDevice::GetStatistics().buffer_streamed += req_size;
   GPUDevice::GetStatistics().num_uploads++;
@@ -1013,7 +1022,7 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
     actual_buffer = [dev.GetMTLDevice() newBufferWithBytes:data length:upload_size options:options];
     actual_offset = 0;
     actual_pitch = pitch;
-    if (actual_buffer == nil)
+    if (actual_buffer == nil) [[unlikely]]
     {
       Panic("Failed to allocate temporary buffer.");
       return false;
@@ -1026,7 +1035,7 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
     if (!sb.ReserveMemory(req_size, TEXTURE_UPLOAD_ALIGNMENT))
     {
       dev.SubmitCommandBuffer();
-      if (!sb.ReserveMemory(req_size, TEXTURE_UPLOAD_ALIGNMENT))
+      if (!sb.ReserveMemory(req_size, TEXTURE_UPLOAD_ALIGNMENT)) [[unlikely]]
       {
         Panic("Failed to reserve texture upload space.");
         return false;
@@ -1034,7 +1043,7 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
     }
 
     actual_offset = sb.GetCurrentOffset();
-    StringUtil::StrideMemCpy(sb.GetCurrentHostPointer(), aligned_pitch, data, pitch, width * GetPixelSize(), height);
+    CopyTextureDataForUpload(width, height, m_format, sb.GetCurrentHostPointer(), aligned_pitch, data, pitch);
     sb.CommitMemory(req_size);
     actual_buffer = sb.GetBuffer();
     actual_pitch = aligned_pitch;
@@ -1065,8 +1074,8 @@ bool MetalTexture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
   if ((x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) || layer > m_layers || level > m_levels)
     return false;
 
-  const u32 aligned_pitch = Common::AlignUpPow2(width * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
-  const u32 req_size = height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(height, aligned_pitch);
 
   MetalDevice& dev = MetalDevice::GetInstance();
   if (m_state == GPUTexture::State::Cleared && (x != 0 || y != 0 || width != m_width || height != m_height))
@@ -1097,8 +1106,8 @@ bool MetalTexture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
 
 void MetalTexture::Unmap()
 {
-  const u32 aligned_pitch = Common::AlignUpPow2(m_map_width * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
-  const u32 req_size = m_map_height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_map_width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(m_map_height, aligned_pitch);
 
   GPUDevice::GetStatistics().buffer_streamed += req_size;
   GPUDevice::GetStatistics().num_uploads++;
@@ -1486,6 +1495,11 @@ bool MetalDevice::SupportsTextureFormat(GPUTexture::Format format) const
     // These formats require an Apple Silicon GPU.
     // See https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
     if (![m_device supportsFamily:MTLGPUFamilyApple2])
+      return false;
+  }
+  else if (format >= GPUTexture::Format::BC1 && format <= GPUTexture::Format::BC7)
+  {
+    if (!m_device.supportsBCTextureCompression)
       return false;
   }
 

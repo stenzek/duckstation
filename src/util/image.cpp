@@ -46,6 +46,10 @@ static bool WebPBufferSaver(const Image& image, DynamicHeapArray<u8>* data, u8 q
 static bool WebPFileLoader(Image* image, std::string_view filename, std::FILE* fp, Error* error);
 static bool WebPFileSaver(const Image& image, std::string_view filename, std::FILE* fp, u8 quality, Error* error);
 
+static bool DDSBufferLoader(Image* image, std::span<const u8> data, Error* error);
+static bool DDSFileLoader(Image* image, std::string_view filename, std::FILE* fp, Error* error);
+
+namespace {
 struct FormatHandler
 {
   const char* extension;
@@ -54,12 +58,14 @@ struct FormatHandler
   bool (*file_loader)(Image*, std::string_view, std::FILE*, Error*);
   bool (*file_saver)(const Image&, std::string_view, std::FILE*, u8, Error*);
 };
+} // namespace
 
 static constexpr FormatHandler s_format_handlers[] = {
   {"png", PNGBufferLoader, PNGBufferSaver, PNGFileLoader, PNGFileSaver},
   {"jpg", JPEGBufferLoader, JPEGBufferSaver, JPEGFileLoader, JPEGFileSaver},
   {"jpeg", JPEGBufferLoader, JPEGBufferSaver, JPEGFileLoader, JPEGFileSaver},
   {"webp", WebPBufferLoader, WebPBufferSaver, WebPFileLoader, WebPFileSaver},
+  {"dds", DDSBufferLoader, nullptr, DDSFileLoader, nullptr},
 };
 
 static const FormatHandler* GetFormatHandler(std::string_view extension)
@@ -155,17 +161,19 @@ Image& Image::operator=(Image&& move)
 
 const char* Image::GetFormatName(ImageFormat format)
 {
-  static constexpr std::array<const char*, static_cast<size_t>(ImageFormat::MaxCount)> names = {
+  static constexpr std::array names = {
     "None",    // None
     "RGBA8",   // RGBA8
     "BGRA8",   // BGRA8
     "RGB565",  // RGB565
     "RGB5551", // RGBA5551
+    "BGR8",    // BGR8
     "BC1",     // BC1
     "BC2",     // BC2
     "BC3",     // BC3
     "BC7",     // BC7
   };
+  static_assert(names.size() == static_cast<size_t>(ImageFormat::MaxCount));
 
   return names[static_cast<size_t>(format)];
 }
@@ -178,6 +186,7 @@ u32 Image::GetPixelSize(ImageFormat format)
     4,  // BGRA8
     2,  // RGB565
     2,  // RGBA5551
+    3,  // BGR8
     8,  // BC1 - 16 pixels in 64 bits
     16, // BC2 - 16 pixels in 128 bits
     16, // BC3 - 16 pixels in 128 bits
@@ -560,6 +569,27 @@ std::optional<Image> Image::ConvertToRGBA8(Error* error) const
                             (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (a1 ? 0xFF000000u : 0u);
           std::memcpy(pixels_out, &rgba8, sizeof(u32));
           pixels_out += sizeof(u32);
+        }
+      }
+    }
+    break;
+
+    case ImageFormat::BGR8:
+    {
+      ret = Image(m_width, m_height, ImageFormat::RGBA8);
+      for (u32 y = 0; y < m_height; y++)
+      {
+        const u8* pixels_in = GetRowPixels(y);
+        u8* pixels_out = ret->GetRowPixels(y);
+
+        for (u32 x = 0; x < m_width; x++)
+        {
+          // Set alpha channel to full intensity.
+          const u32 rgba = (ZeroExtend32(pixels_in[0]) | (ZeroExtend32(pixels_in[2]) << 8) |
+                            (ZeroExtend32(pixels_in[2]) << 16) | 0xFF000000u);
+          std::memcpy(pixels_out, &rgba, sizeof(rgba));
+          pixels_in += 3;
+          pixels_out += sizeof(rgba);
         }
       }
     }
@@ -1217,6 +1247,418 @@ bool WebPFileSaver(const Image& image, std::string_view filename, std::FILE* fp,
     Error::SetErrno(error, "fwrite() failed: ", errno);
     return false;
   }
+
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DDS Handler
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// From https://raw.githubusercontent.com/Microsoft/DirectXTex/master/DirectXTex/DDS.h
+//
+// This header defines constants and structures that are useful when parsing
+// DDS files.  DDS files were originally designed to use several structures
+// and constants that are native to DirectDraw and are defined in ddraw.h,
+// such as DDSURFACEDESC2 and DDSCAPS2.  This file defines similar
+// (compatible) constants and structures so that one can use DDS files
+// without needing to include ddraw.h.
+//
+// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
+// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
+// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
+// PARTICULAR PURPOSE.
+//
+// Copyright (c) Microsoft Corporation. All rights reserved.
+//
+// http://go.microsoft.com/fwlink/?LinkId=248926
+
+#pragma pack(push, 1)
+
+static constexpr uint32_t DDS_MAGIC = 0x20534444; // "DDS "
+
+struct DDS_PIXELFORMAT
+{
+  uint32_t dwSize;
+  uint32_t dwFlags;
+  uint32_t dwFourCC;
+  uint32_t dwRGBBitCount;
+  uint32_t dwRBitMask;
+  uint32_t dwGBitMask;
+  uint32_t dwBBitMask;
+  uint32_t dwABitMask;
+};
+
+#define DDS_FOURCC 0x00000004     // DDPF_FOURCC
+#define DDS_RGB 0x00000040        // DDPF_RGB
+#define DDS_RGBA 0x00000041       // DDPF_RGB | DDPF_ALPHAPIXELS
+#define DDS_LUMINANCE 0x00020000  // DDPF_LUMINANCE
+#define DDS_LUMINANCEA 0x00020001 // DDPF_LUMINANCE | DDPF_ALPHAPIXELS
+#define DDS_ALPHA 0x00000002      // DDPF_ALPHA
+#define DDS_PAL8 0x00000020       // DDPF_PALETTEINDEXED8
+#define DDS_PAL8A 0x00000021      // DDPF_PALETTEINDEXED8 | DDPF_ALPHAPIXELS
+#define DDS_BUMPDUDV 0x00080000   // DDPF_BUMPDUDV
+
+#ifndef MAKEFOURCC
+#define MAKEFOURCC(ch0, ch1, ch2, ch3)                                                                                 \
+  ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) | ((uint32_t)(uint8_t)(ch2) << 16) |                     \
+   ((uint32_t)(uint8_t)(ch3) << 24))
+#endif /* defined(MAKEFOURCC) */
+
+#define DDS_HEADER_FLAGS_TEXTURE 0x00001007    // DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT
+#define DDS_HEADER_FLAGS_MIPMAP 0x00020000     // DDSD_MIPMAPCOUNT
+#define DDS_HEADER_FLAGS_VOLUME 0x00800000     // DDSD_DEPTH
+#define DDS_HEADER_FLAGS_PITCH 0x00000008      // DDSD_PITCH
+#define DDS_HEADER_FLAGS_LINEARSIZE 0x00080000 // DDSD_LINEARSIZE
+#define DDS_MAX_TEXTURE_SIZE 32768
+
+// Subset here matches D3D10_RESOURCE_DIMENSION and D3D11_RESOURCE_DIMENSION
+enum DDS_RESOURCE_DIMENSION
+{
+  DDS_DIMENSION_TEXTURE1D = 2,
+  DDS_DIMENSION_TEXTURE2D = 3,
+  DDS_DIMENSION_TEXTURE3D = 4,
+};
+
+struct DDS_HEADER
+{
+  uint32_t dwSize;
+  uint32_t dwFlags;
+  uint32_t dwHeight;
+  uint32_t dwWidth;
+  uint32_t dwPitchOrLinearSize;
+  uint32_t dwDepth; // only if DDS_HEADER_FLAGS_VOLUME is set in dwFlags
+  uint32_t dwMipMapCount;
+  uint32_t dwReserved1[11];
+  DDS_PIXELFORMAT ddspf;
+  uint32_t dwCaps;
+  uint32_t dwCaps2;
+  uint32_t dwCaps3;
+  uint32_t dwCaps4;
+  uint32_t dwReserved2;
+};
+
+struct DDS_HEADER_DXT10
+{
+  uint32_t dxgiFormat;
+  uint32_t resourceDimension;
+  uint32_t miscFlag; // see DDS_RESOURCE_MISC_FLAG
+  uint32_t arraySize;
+  uint32_t miscFlags2; // see DDS_MISC_FLAGS2
+};
+
+#pragma pack(pop)
+
+static_assert(sizeof(DDS_HEADER) == 124, "DDS Header size mismatch");
+static_assert(sizeof(DDS_HEADER_DXT10) == 20, "DDS DX10 Extended Header size mismatch");
+
+constexpr DDS_PIXELFORMAT DDSPF_A8R8G8B8 = {
+  sizeof(DDS_PIXELFORMAT), DDS_RGBA, 0, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000};
+constexpr DDS_PIXELFORMAT DDSPF_X8R8G8B8 = {
+  sizeof(DDS_PIXELFORMAT), DDS_RGB, 0, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000};
+constexpr DDS_PIXELFORMAT DDSPF_A8B8G8R8 = {
+  sizeof(DDS_PIXELFORMAT), DDS_RGBA, 0, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000};
+constexpr DDS_PIXELFORMAT DDSPF_X8B8G8R8 = {
+  sizeof(DDS_PIXELFORMAT), DDS_RGB, 0, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000};
+constexpr DDS_PIXELFORMAT DDSPF_R8G8B8 = {
+  sizeof(DDS_PIXELFORMAT), DDS_RGB, 0, 24, 0x00ff0000, 0x0000ff00, 0x000000ff, 0x00000000};
+
+// End of Microsoft code from DDS.h.
+
+static bool DDSPixelFormatMatches(const DDS_PIXELFORMAT& pf1, const DDS_PIXELFORMAT& pf2)
+{
+  return std::tie(pf1.dwSize, pf1.dwFlags, pf1.dwFourCC, pf1.dwRGBBitCount, pf1.dwRBitMask, pf1.dwGBitMask,
+                  pf1.dwGBitMask, pf1.dwBBitMask,
+                  pf1.dwABitMask) == std::tie(pf2.dwSize, pf2.dwFlags, pf2.dwFourCC, pf2.dwRGBBitCount, pf2.dwRBitMask,
+                                              pf2.dwGBitMask, pf2.dwGBitMask, pf2.dwBBitMask, pf2.dwABitMask);
+}
+
+struct DDSLoadInfo
+{
+  u32 block_size = 1;
+  u32 bytes_per_block = 4;
+  u32 width = 0;
+  u32 height = 0;
+  u32 mip_count = 0;
+  ImageFormat format = ImageFormat::RGBA8;
+  s64 base_image_offset = 0;
+  u32 base_image_size = 0;
+  u32 base_image_pitch = 0;
+  bool clear_alpha = false;
+};
+
+template<typename ReadFunction>
+static bool ParseDDSHeader(const ReadFunction& RF, DDSLoadInfo* info, Error* error)
+{
+  u32 magic;
+  if (!RF(&magic, sizeof(magic), error) || magic != DDS_MAGIC)
+  {
+    Error::AddPrefix(error, "Failed to read magic: ");
+    return false;
+  }
+
+  DDS_HEADER header;
+  u32 header_size = sizeof(header);
+  if (!RF(&header, header_size, error) || header.dwSize < header_size)
+  {
+    Error::AddPrefix(error, "Failed to read header: ");
+    return false;
+  }
+
+  // We should check for DDS_HEADER_FLAGS_TEXTURE here, but some tools don't seem
+  // to set it (e.g. compressonator). But we can still validate the size.
+  if (header.dwWidth == 0 || header.dwWidth >= DDS_MAX_TEXTURE_SIZE || header.dwHeight == 0 ||
+      header.dwHeight >= DDS_MAX_TEXTURE_SIZE)
+  {
+    Error::SetStringFmt(error, "Size is invalid: {}x{}", header.dwWidth, header.dwHeight);
+    return false;
+  }
+
+  // Image should be 2D.
+  if (header.dwFlags & DDS_HEADER_FLAGS_VOLUME)
+  {
+    Error::SetStringView(error, "Volume textures are not supported.");
+    return false;
+  }
+
+  // Presence of width/height fields is already tested by DDS_HEADER_FLAGS_TEXTURE.
+  info->width = header.dwWidth;
+  info->height = header.dwHeight;
+
+  // Check for mip levels.
+  if (header.dwFlags & DDS_HEADER_FLAGS_MIPMAP)
+  {
+    info->mip_count = header.dwMipMapCount;
+    if (header.dwMipMapCount != 0)
+    {
+      info->mip_count = header.dwMipMapCount;
+    }
+    else
+    {
+      const u32 max_dim = Common::PreviousPow2(std::max(header.dwWidth, header.dwHeight));
+      info->mip_count = (std::countr_zero(max_dim) + 1);
+    }
+  }
+  else
+  {
+    info->mip_count = 1;
+  }
+
+  // Handle fourcc formats vs uncompressed formats.
+  const bool has_fourcc = (header.ddspf.dwFlags & DDS_FOURCC) != 0;
+  if (has_fourcc)
+  {
+    // Handle DX10 extension header.
+    u32 dxt10_format = 0;
+    if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', '1', '0'))
+    {
+      DDS_HEADER_DXT10 dxt10_header;
+      if (!RF(&dxt10_header, sizeof(dxt10_header), error))
+      {
+        Error::AddPrefix(error, "Failed to read DXT10 header: ");
+        return false;
+      }
+
+      // Can't handle array textures here. Doesn't make sense to use them, anyway.
+      if (dxt10_header.resourceDimension != DDS_DIMENSION_TEXTURE2D || dxt10_header.arraySize != 1)
+      {
+        Error::SetStringView(error, "Only 2D textures are supported.");
+        return false;
+      }
+
+      header_size += sizeof(dxt10_header);
+      dxt10_format = dxt10_header.dxgiFormat;
+    }
+
+    if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '1') || dxt10_format == 71)
+    {
+      info->format = ImageFormat::BC1;
+      info->block_size = 4;
+      info->bytes_per_block = 8;
+    }
+    else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '2') ||
+             header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '3') || dxt10_format == 74)
+    {
+      info->format = ImageFormat::BC2;
+      info->block_size = 4;
+      info->bytes_per_block = 16;
+    }
+    else if (header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '4') ||
+             header.ddspf.dwFourCC == MAKEFOURCC('D', 'X', 'T', '5') || dxt10_format == 77)
+    {
+      info->format = ImageFormat::BC3;
+      info->block_size = 4;
+      info->bytes_per_block = 16;
+    }
+    else if (dxt10_format == 98)
+    {
+      info->format = ImageFormat::BC7;
+      info->block_size = 4;
+      info->bytes_per_block = 16;
+    }
+    else
+    {
+      Error::SetStringFmt(error, "Unknown format with FOURCC 0x{:08X} / DXT10 format {}", header.ddspf.dwFourCC,
+                          dxt10_format);
+      return false;
+    }
+  }
+  else
+  {
+    if (DDSPixelFormatMatches(header.ddspf, DDSPF_A8R8G8B8))
+    {
+      info->format = ImageFormat::BGRA8;
+    }
+    else if (DDSPixelFormatMatches(header.ddspf, DDSPF_X8R8G8B8))
+    {
+      info->format = ImageFormat::BGRA8;
+      info->clear_alpha = true;
+    }
+    else if (DDSPixelFormatMatches(header.ddspf, DDSPF_X8B8G8R8))
+    {
+      info->format = ImageFormat::RGBA8;
+      info->clear_alpha = true;
+    }
+    else if (DDSPixelFormatMatches(header.ddspf, DDSPF_R8G8B8))
+    {
+      info->format = ImageFormat::BGR8;
+      info->clear_alpha = true;
+    }
+    else if (DDSPixelFormatMatches(header.ddspf, DDSPF_A8B8G8R8))
+    {
+      info->format = ImageFormat::RGBA8;
+    }
+    else
+    {
+      Error::SetStringFmt(error, "Unhandled format with FOURCC 0x{:08X}", header.ddspf.dwFourCC);
+      return false;
+    }
+
+    // All these formats are RGBA, just with byte swapping.
+    info->block_size = 1;
+    info->bytes_per_block = header.ddspf.dwRGBBitCount / 8;
+  }
+
+  // Mip levels smaller than the block size are padded to multiples of the block size.
+  const u32 blocks_wide = Common::AlignUpPow2(info->width, info->block_size) / info->block_size;
+  const u32 blocks_high = Common::AlignUpPow2(info->height, info->block_size) / info->block_size;
+
+  // Pitch can be specified in the header, otherwise we can derive it from the dimensions. For
+  // compressed formats, both DDS_HEADER_FLAGS_LINEARSIZE and DDS_HEADER_FLAGS_PITCH should be
+  // set. See https://msdn.microsoft.com/en-us/library/windows/desktop/bb943982(v=vs.85).aspx
+  if (header.dwFlags & DDS_HEADER_FLAGS_PITCH && header.dwFlags & DDS_HEADER_FLAGS_LINEARSIZE)
+  {
+    // Convert pitch (in bytes) to texels/row length.
+    if (header.dwPitchOrLinearSize < info->bytes_per_block)
+    {
+      // Likely a corrupted or invalid file.
+      Error::SetStringFmt(error, "Invalid pitch: {}", header.dwPitchOrLinearSize);
+      return false;
+    }
+
+    info->base_image_pitch = header.dwPitchOrLinearSize;
+    info->base_image_size = info->base_image_pitch * blocks_high;
+  }
+  else
+  {
+    // Assume no padding between rows of blocks.
+    info->base_image_pitch = blocks_wide * info->bytes_per_block;
+    info->base_image_size = info->base_image_pitch * blocks_high;
+  }
+
+  info->base_image_offset = sizeof(magic) + header_size;
+
+#if 0
+  // D3D11 cannot handle block compressed textures where the first mip level is not a multiple of the block size.
+  if (mip_level == 0 && info.block_size > 1 && ((width % info.block_size) != 0 || (height % info.block_size) != 0))
+  {
+    Error::SetStringFmt(error,
+                        "Invalid dimensions for DDS texture. For compressed textures of this format, "
+                        "the width/height of the first mip level must be a multiple of {}.",
+                        info.block_size);
+    return false;
+  }
+#endif
+
+  return true;
+}
+
+bool DDSFileLoader(Image* image, std::string_view path, std::FILE* fp, Error* error)
+{
+  const auto header_reader = [fp](void* buffer, size_t size, Error* error) {
+    if (std::fread(buffer, size, 1, fp) == 1)
+      return true;
+
+    Error::SetErrno(error, "fread() failed: ", errno);
+    return false;
+  };
+
+  DDSLoadInfo info;
+  if (!ParseDDSHeader(header_reader, &info, error))
+    return false;
+
+  // always load the base image
+  if (!FileSystem::FSeek64(fp, info.base_image_offset, SEEK_SET, error))
+    return false;
+
+  image->Resize(info.width, info.height, info.format, false);
+  const u32 blocks = image->GetBlockYCount();
+  if (image->GetPitch() != info.base_image_pitch)
+  {
+    for (u32 y = 0; y < blocks; y++)
+    {
+      if (std::fread(image->GetRowPixels(y), info.base_image_pitch, 1, fp) != 1)
+      {
+        Error::SetErrno(error, "fread() failed: ", errno);
+        return false;
+      }
+    }
+  }
+  else
+  {
+    if (std::fread(image->GetPixels(), info.base_image_pitch * blocks, 1, fp) != 1)
+    {
+      Error::SetErrno(error, "fread() failed: ", errno);
+      return false;
+    }
+  }
+
+  if (info.clear_alpha)
+    image->SetAllPixelsOpaque();
+
+  return true;
+}
+
+bool DDSBufferLoader(Image* image, std::span<const u8> data, Error* error)
+{
+  size_t data_pos = 0;
+  const auto header_reader = [&data, &data_pos](void* buffer, size_t size, Error* error) {
+    if ((data_pos + size) > data.size())
+    {
+      Error::SetStringView(error, "Buffer does not contain sufficient data.");
+      return false;
+    }
+
+    std::memcpy(buffer, &data[data_pos], size);
+    data_pos += size;
+    return true;
+  };
+
+  DDSLoadInfo info;
+  if (!ParseDDSHeader(header_reader, &info, error))
+    return false;
+
+  if ((static_cast<u64>(info.base_image_offset) + info.base_image_size) > data.size())
+  {
+    Error::SetStringFmt(error, "Buffer does not contain complete base image.");
+    return false;
+  }
+
+  image->SetPixels(info.width, info.height, info.format, &data[static_cast<size_t>(info.base_image_offset)],
+                   info.base_image_pitch);
+
+  if (info.clear_alpha)
+    image->SetAllPixelsOpaque();
 
   return true;
 }

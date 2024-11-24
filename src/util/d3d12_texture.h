@@ -80,8 +80,7 @@ private:
 
   ID3D12GraphicsCommandList4* GetCommandBufferForUpdate();
   ID3D12Resource* AllocateUploadStagingBuffer(const void* data, u32 pitch, u32 upload_pitch, u32 width,
-                                              u32 height) const;
-  void CopyTextureDataForUpload(void* dst, const void* src, u32 width, u32 height, u32 pitch, u32 upload_pitch) const;
+                                              u32 height, u32 buffer_size) const;
   void ActuallyCommitClear(ID3D12GraphicsCommandList* cmdlist);
 
   ComPtr<ID3D12Resource> m_resource;

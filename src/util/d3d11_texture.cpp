@@ -147,23 +147,24 @@ bool D3D11Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
   if (HasFlag(Flags::AllowMap))
   {
     void* map;
-    u32 map_stride;
-    if (!Map(&map, &map_stride, x, y, width, height, layer, level))
+    u32 map_pitch;
+    if (!Map(&map, &map_pitch, x, y, width, height, layer, level))
       return false;
 
-    StringUtil::StrideMemCpy(map, map_stride, data, pitch, GetPixelSize() * width, height);
+    CopyTextureDataForUpload(width, height, m_format, map, map_pitch, data, pitch);
     Unmap();
     return true;
   }
 
-  const CD3D11_BOX box(static_cast<LONG>(x), static_cast<LONG>(y), 0, static_cast<LONG>(x + width),
-                       static_cast<LONG>(y + height), 1);
+  const u32 bs = GetBlockSize();
+  const D3D11_BOX box = {Common::AlignDownPow2(x, bs),       Common::AlignDownPow2(y, bs),        0U,
+                         Common::AlignUpPow2(x + width, bs), Common::AlignUpPow2(y + height, bs), 1U};
   const u32 srnum = D3D11CalcSubresource(level, layer, m_levels);
 
   ID3D11DeviceContext1* context = D3D11Device::GetD3DContext();
   CommitClear(context);
 
-  GPUDevice::GetStatistics().buffer_streamed += height * pitch;
+  GPUDevice::GetStatistics().buffer_streamed += CalcUploadSize(height, pitch);
   GPUDevice::GetStatistics().num_uploads++;
 
   context->UpdateSubresource(m_texture.Get(), srnum, &box, data, pitch, 0);
@@ -194,10 +195,18 @@ bool D3D11Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
     return false;
   }
 
-  GPUDevice::GetStatistics().buffer_streamed += height * sr.RowPitch;
+  GPUDevice::GetStatistics().buffer_streamed += CalcUploadSize(height, sr.RowPitch);
   GPUDevice::GetStatistics().num_uploads++;
 
-  *map = static_cast<u8*>(sr.pData) + (y * sr.RowPitch) + (x * GetPixelSize());
+  if (IsCompressedFormat(m_format))
+  {
+    *map = static_cast<u8*>(sr.pData) + ((y / GetBlockSize()) * sr.RowPitch) +
+           ((x / GetBlockSize()) * GetPixelSize());
+  }
+  else
+  {
+    *map = static_cast<u8*>(sr.pData) + (y * sr.RowPitch) + (x * GetPixelSize());
+  }
   *map_stride = sr.RowPitch;
   m_mapped_subresource = srnum;
   m_state = GPUTexture::State::Dirty;
@@ -294,7 +303,7 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
 
   if (initial_data)
   {
-    GPUDevice::GetStatistics().buffer_streamed += height * initial_data_stride;
+    GPUDevice::GetStatistics().buffer_streamed += CalcUploadSize(format, height, initial_data_stride);
     GPUDevice::GetStatistics().num_uploads++;
   }
 

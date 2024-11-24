@@ -61,7 +61,11 @@ public:
     RGBA16F,
     RGBA32F,
     RGB10A2,
-    MaxCount
+    BC1, ///< BC1, aka DXT1 compressed texture
+    BC2, ///< BC2, aka DXT2/3 compressed texture
+    BC3, ///< BC3, aka DXT4/5 compressed texture
+    BC7, ///< BC7, aka BPTC compressed texture
+    MaxCount,
   };
 
   enum class State : u8
@@ -95,12 +99,13 @@ public:
   static bool IsDepthFormat(Format format);
   static bool IsDepthStencilFormat(Format format);
   static bool IsCompressedFormat(Format format);
-  static u32 GetCompressedBytesPerBlock(Format format);
-  static u32 GetCompressedBlockSize(Format format);
+  static u32 GetBlockSize(Format format);
   static u32 CalcUploadPitch(Format format, u32 width);
   static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
   static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
   static u32 GetFullMipmapCount(u32 width, u32 height);
+  static void CopyTextureDataForUpload(u32 width, u32 height, Format format, void* dst, u32 dst_pitch, const void* src,
+                                       u32 src_pitch);
 
   static Format GetTextureFormatForImageFormat(ImageFormat format);
   static ImageFormat GetImageFormatForTextureFormat(Format format);
@@ -160,8 +165,8 @@ public:
 
   size_t GetVRAMUsage() const;
 
-  u32 GetCompressedBytesPerBlock() const;
-  u32 GetCompressedBlockSize() const;
+  bool IsCompressedFormat() const;
+  u32 GetBlockSize() const;
   u32 CalcUploadPitch(u32 width) const;
   u32 CalcUploadRowLengthFromPitch(u32 pitch) const;
   u32 CalcUploadSize(u32 height, u32 pitch) const;

@@ -515,6 +515,7 @@ public:
     FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 6),
     FEATURE_MASK_MEMORY_IMPORT = (1 << 7),
     FEATURE_MASK_RASTER_ORDER_VIEWS = (1 << 8),
+    FEATURE_MASK_COMPRESSED_TEXTURES = (1 << 9),
   };
 
   enum class DrawBarrier : u32
@@ -553,6 +554,8 @@ public:
     bool pipeline_cache : 1;
     bool prefer_unused_textures : 1;
     bool raster_order_views : 1;
+    bool dxt_textures : 1;
+    bool bptc_textures : 1;
   };
 
   struct Statistics

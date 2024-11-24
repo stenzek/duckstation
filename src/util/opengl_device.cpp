@@ -506,6 +506,12 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
 
   m_features.shader_cache = false;
 
+  m_features.dxt_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && GLAD_GL_EXT_texture_compression_s3tc);
+  m_features.bptc_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) &&
+     (GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc));
+
   m_features.pipeline_cache = m_gl_context->IsGLES() || GLAD_GL_ARB_get_program_binary;
   if (m_features.pipeline_cache)
   {
