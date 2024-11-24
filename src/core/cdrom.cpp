@@ -3460,7 +3460,7 @@ void CDROM::DecodeXAADPCMChunks(const u8* chunk_ptr, s16* samples)
         // mix in previous values
         s32* prev = IS_STEREO ? &s_state.xa_last_samples[(block & 1) * 2] : &s_state.xa_last_samples[0];
         const s32 interp_sample = std::clamp<s32>(
-          static_cast<s32>(sample) + ((prev[0] * filter_pos) >> 6) + ((prev[1] * filter_neg) >> 6), -32767, 32768);
+          static_cast<s32>(sample) + ((prev[0] * filter_pos) >> 6) + ((prev[1] * filter_neg) >> 6), -32768, 32767);
 
         // update previous values
         prev[1] = prev[0];
