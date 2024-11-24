@@ -1969,6 +1969,15 @@ std::string Achievements::GetLoggedInUserBadgePath()
   return badge_path;
 }
 
+u32 Achievements::GetPauseThrottleFrames()
+{
+  if (!IsActive() || !IsHardcoreModeActive() || IsUsingRAIntegration())
+    return 0;
+
+  u32 frames_remaining = 0;
+  return rc_client_can_pause(s_client, &frames_remaining) ? 0 : frames_remaining;
+}
+
 void Achievements::Logout()
 {
   if (IsActive())
