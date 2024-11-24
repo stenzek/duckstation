@@ -1242,7 +1242,7 @@ void ImGuiManager::UpdateSoftwareCursorTexture(u32 index)
   }
 
   Error error;
-  RGBA8Image image;
+  Image image;
   if (!image.LoadFromFile(sc.image_path.c_str(), &error))
   {
     ERROR_LOG("Failed to load software cursor {} image '{}': {}", index, sc.image_path, error.GetDescription());

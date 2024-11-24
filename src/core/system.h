@@ -74,7 +74,7 @@ struct ExtendedSaveStateInfo
   std::string media_path;
   std::time_t timestamp;
 
-  RGBA8Image screenshot;
+  Image screenshot;
 };
 
 namespace System {

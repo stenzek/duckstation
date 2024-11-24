@@ -3,6 +3,7 @@
 
 #include "gpu_texture.h"
 #include "gpu_device.h"
+#include "image.h"
 
 #include "common/align.h"
 #include "common/assert.h"
@@ -121,6 +122,56 @@ u32 GPUTexture::GetFullMipmapCount(u32 width, u32 height)
 {
   const u32 max_dim = Common::PreviousPow2(std::max(width, height));
   return (std::countr_zero(max_dim) + 1);
+}
+
+GPUTexture::Format GPUTexture::GetTextureFormatForImageFormat(ImageFormat format)
+{
+  static constexpr const std::array<Format, static_cast<size_t>(ImageFormat::MaxCount)> mapping = {{
+    Format::Unknown, // None
+    Format::RGBA8,   // RGBA8
+    Format::BGRA8,   // BGRA8
+    Format::RGB565,  // RGB565
+    Format::Unknown, // RGBA5551
+    Format::Unknown, // BC1
+    Format::Unknown, // BC2
+    Format::Unknown, // BC3
+    Format::Unknown, // BC7
+  }};
+
+  return mapping[static_cast<size_t>(format)];
+}
+
+ImageFormat GPUTexture::GetImageFormatForTextureFormat(Format format)
+{
+  static constexpr const std::array<ImageFormat, static_cast<size_t>(Format::MaxCount)> mapping = {{
+    ImageFormat::None,     // Unknown
+    ImageFormat::RGBA8,    // RGBA8
+    ImageFormat::BGRA8,    // BGRA8
+    ImageFormat::RGB565,   // RGB565
+    ImageFormat::RGBA5551, // RGBA5551
+    ImageFormat::None,     // R8
+    ImageFormat::None,     // D16
+    ImageFormat::None,     // D24S8
+    ImageFormat::None,     // D32F
+    ImageFormat::None,     // D32FS8
+    ImageFormat::None,     // R16
+    ImageFormat::None,     // R16I
+    ImageFormat::None,     // R16U
+    ImageFormat::None,     // R16F
+    ImageFormat::None,     // R32I
+    ImageFormat::None,     // R32U
+    ImageFormat::None,     // R32F
+    ImageFormat::None,     // RG8
+    ImageFormat::None,     // RG16
+    ImageFormat::None,     // RG16F
+    ImageFormat::None,     // RG32F
+    ImageFormat::None,     // RGBA16
+    ImageFormat::None,     // RGBA16F
+    ImageFormat::None,     // RGBA32F
+    ImageFormat::None,     // RGB10A2
+  }};
+
+  return mapping[static_cast<size_t>(format)];
 }
 
 std::array<float, 4> GPUTexture::GetUNormClearColor() const
@@ -268,111 +319,6 @@ bool GPUTexture::ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u
   }
 
   return true;
-}
-
-bool GPUTexture::ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data,
-                                           u32& texture_data_stride, GPUTexture::Format format)
-{
-  switch (format)
-  {
-    case Format::BGRA8:
-    {
-      for (u32 y = 0; y < height; y++)
-      {
-        u8* pixels = reinterpret_cast<u8*>(texture_data.data()) + (y * texture_data_stride);
-        for (u32 x = 0; x < width; x++)
-        {
-          u32 pixel;
-          std::memcpy(&pixel, pixels, sizeof(pixel));
-          pixel = (pixel & 0xFF00FF00) | ((pixel & 0xFF) << 16) | ((pixel >> 16) & 0xFF);
-          std::memcpy(pixels, &pixel, sizeof(pixel));
-          pixels += sizeof(pixel);
-        }
-      }
-
-      return true;
-    }
-
-    case Format::RGBA8:
-      return true;
-
-    case Format::RGB565:
-    {
-      std::vector<u32> temp(width * height);
-
-      for (u32 y = 0; y < height; y++)
-      {
-        const u8* pixels_in = reinterpret_cast<const u8*>(texture_data.data()) + (y * texture_data_stride);
-        u8* pixels_out = reinterpret_cast<u8*>(temp.data()) + (y * width * sizeof(u32));
-
-        for (u32 x = 0; x < width; x++)
-        {
-          // RGB565 -> RGBA8
-          u16 pixel_in;
-          std::memcpy(&pixel_in, pixels_in, sizeof(u16));
-          pixels_in += sizeof(u16);
-          const u8 r5 = Truncate8(pixel_in >> 11);
-          const u8 g6 = Truncate8((pixel_in >> 5) & 0x3F);
-          const u8 b5 = Truncate8(pixel_in & 0x1F);
-          const u32 rgba8 = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 2) | (g6 & 3)) << 8) |
-                            (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (0xFF000000u);
-          std::memcpy(pixels_out, &rgba8, sizeof(u32));
-          pixels_out += sizeof(u32);
-        }
-      }
-
-      texture_data = std::move(temp);
-      texture_data_stride = sizeof(u32) * width;
-      return true;
-    }
-
-    case Format::RGBA5551:
-    {
-      std::vector<u32> temp(width * height);
-
-      for (u32 y = 0; y < height; y++)
-      {
-        const u8* pixels_in = reinterpret_cast<const u8*>(texture_data.data()) + (y * texture_data_stride);
-        u8* pixels_out = reinterpret_cast<u8*>(temp.data()) + (y * width * sizeof(u32));
-
-        for (u32 x = 0; x < width; x++)
-        {
-          // RGBA5551 -> RGBA8
-          u16 pixel_in;
-          std::memcpy(&pixel_in, pixels_in, sizeof(u16));
-          pixels_in += sizeof(u16);
-          const u8 a1 = Truncate8(pixel_in >> 15);
-          const u8 r5 = Truncate8((pixel_in >> 10) & 0x1F);
-          const u8 g6 = Truncate8((pixel_in >> 5) & 0x1F);
-          const u8 b5 = Truncate8(pixel_in & 0x1F);
-          const u32 rgba8 = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 3) | (g6 & 7)) << 8) |
-                            (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (a1 ? 0xFF000000u : 0u);
-          std::memcpy(pixels_out, &rgba8, sizeof(u32));
-          pixels_out += sizeof(u32);
-        }
-      }
-
-      texture_data = std::move(temp);
-      texture_data_stride = sizeof(u32) * width;
-      return true;
-    }
-
-    default:
-      return false;
-  }
-}
-
-void GPUTexture::FlipTextureDataRGBA8(u32 width, u32 height, u8* texture_data, u32 texture_data_stride)
-{
-  std::unique_ptr<u8[]> temp = std::make_unique<u8[]>(texture_data_stride);
-  for (u32 flip_row = 0; flip_row < (height / 2); flip_row++)
-  {
-    u8* top_ptr = &texture_data[flip_row * texture_data_stride];
-    u8* bottom_ptr = &texture_data[((height - 1) - flip_row) * texture_data_stride];
-    std::memcpy(temp.get(), top_ptr, texture_data_stride);
-    std::memcpy(top_ptr, bottom_ptr, texture_data_stride);
-    std::memcpy(bottom_ptr, temp.get(), texture_data_stride);
-  }
 }
 
 void GPUTexture::MakeReadyForSampling()

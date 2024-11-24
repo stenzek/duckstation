@@ -24,6 +24,7 @@
 #include <vector>
 
 class Error;
+class Image;
 class SmallStringBase;
 
 class StateWrapper;
@@ -233,8 +234,7 @@ public:
 
   /// Renders the display, optionally with postprocessing to the specified image.
   bool RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect, const GSVector4i draw_rect,
-                                bool postfx, std::vector<u32>* out_pixels, u32* out_stride,
-                                GPUTexture::Format* out_format);
+                                bool postfx, Image* out_image);
 
   /// Helper function to save screenshot to PNG.
   bool RenderScreenshotToFile(std::string path, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread,

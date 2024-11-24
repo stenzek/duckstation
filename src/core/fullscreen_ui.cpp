@@ -112,7 +112,6 @@ using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::CloseChoiceDialog;
 using ImGuiFullscreen::CloseFileSelector;
-using ImGuiFullscreen::CreateTextureFromImage;
 using ImGuiFullscreen::DefaultActiveButton;
 using ImGuiFullscreen::DrawShadowedText;
 using ImGuiFullscreen::EndFullscreenColumns;
@@ -5966,7 +5965,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
   li->path = std::move(path);
   li->global = global;
   if (ssi->screenshot.IsValid())
-    li->preview_texture = CreateTextureFromImage(ssi->screenshot);
+    li->preview_texture = g_gpu_device->FetchAndUploadTextureImage(ssi->screenshot);
 
   return true;
 }
@@ -5994,7 +5993,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
       li.title = FSUI_STR("Undo Load State");
       li.summary = FSUI_STR("Restores the state of the system prior to the last state loaded.");
       if (ssi->screenshot.IsValid())
-        li.preview_texture = CreateTextureFromImage(ssi->screenshot);
+        li.preview_texture = g_gpu_device->FetchAndUploadTextureImage(ssi->screenshot);
       s_save_state_selector_slots.push_back(std::move(li));
     }
   }

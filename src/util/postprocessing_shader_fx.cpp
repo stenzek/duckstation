@@ -1121,7 +1121,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         return false;
       }
 
-      RGBA8Image image;
+      Image image;
       if (const std::string image_path =
             Path::Combine(EmuFolders::Shaders, Path::Combine("reshade" FS_OSPATH_SEPARATOR_STR "Textures", source));
           !image.LoadFromFile(image_path.c_str()))

@@ -74,10 +74,8 @@ static u32 s_active_gpu_cycles_frames = 0;
 
 static constexpr GPUTexture::Format DISPLAY_INTERNAL_POSTFX_FORMAT = GPUTexture::Format::RGBA8;
 
-static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
-                                          u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
-                                          u32 texture_data_stride, GPUTexture::Format texture_format,
-                                          std::string osd_key);
+static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string path, FileSystem::ManagedCFilePtr fp,
+                                          u8 quality, bool clear_alpha, bool flip_y, Image image, std::string osd_key);
 
 GPU::GPU()
 {
@@ -2423,48 +2421,38 @@ void GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rota
     GSVector4(left_padding, top_padding, left_padding + display_width * scale, top_padding + display_height * scale));
 }
 
-bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, FileSystem::ManagedCFilePtr fp,
-                                   u8 quality, bool clear_alpha, bool flip_y, std::vector<u32> texture_data,
-                                   u32 texture_data_stride, GPUTexture::Format texture_format, std::string osd_key)
+bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string path, FileSystem::ManagedCFilePtr fp, u8 quality,
+                                   bool clear_alpha, bool flip_y, Image image, std::string osd_key)
 {
-  bool result;
+  Error error;
 
-  const char* extension = std::strrchr(filename.c_str(), '.');
-  if (extension)
+  if (flip_y)
+    image.FlipY();
+
+  if (image.GetFormat() != ImageFormat::RGBA8)
   {
-    if (GPUTexture::ConvertTextureDataToRGBA8(width, height, texture_data, texture_data_stride, texture_format))
+    std::optional<Image> convert_image = image.ConvertToRGBA8(&error);
+    if (!convert_image.has_value())
     {
-      if (clear_alpha)
-      {
-        for (u32& pixel : texture_data)
-          pixel |= 0xFF000000u;
-      }
-
-      if (flip_y)
-        GPUTexture::FlipTextureDataRGBA8(width, height, reinterpret_cast<u8*>(texture_data.data()),
-                                         texture_data_stride);
-
-      Assert(texture_data_stride == sizeof(u32) * width);
-      RGBA8Image image(width, height, std::move(texture_data));
-      if (image.SaveToFile(filename.c_str(), fp.get(), quality))
-      {
-        result = true;
-      }
-      else
-      {
-        ERROR_LOG("Unknown extension in filename '{}' or save error: '{}'", filename, extension);
-        result = false;
-      }
+      ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}", Image::GetFormatName(image.GetFormat()),
+                error.GetDescription());
+      image.Invalidate();
     }
     else
     {
-      result = false;
+      image = std::move(convert_image.value());
     }
   }
-  else
+
+  bool result = false;
+  if (image.IsValid())
   {
-    ERROR_LOG("Unable to determine file extension for '{}'", filename);
-    result = false;
+    if (clear_alpha)
+      image.SetAllPixelsOpaque();
+
+    result = image.SaveToFile(path.c_str(), fp.get(), quality, &error);
+    if (!result)
+      ERROR_LOG("Failed to save screenshot to '{}': '{}'", Path::GetFileName(path), error.GetDescription());
   }
 
   if (!osd_key.empty())
@@ -2472,7 +2460,7 @@ bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string filename, 
     Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_CAMERA,
                             fmt::format(result ? TRANSLATE_FS("GPU", "Saved screenshot to '{}'.") :
                                                  TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
-                                        Path::GetFileName(filename),
+                                        Path::GetFileName(path),
                                         result ? Host::OSD_INFO_DURATION : Host::OSD_ERROR_DURATION));
   }
 
@@ -2488,17 +2476,16 @@ bool GPU::WriteDisplayTextureToFile(std::string filename)
   const u32 read_y = static_cast<u32>(m_display_texture_view_y);
   const u32 read_width = static_cast<u32>(m_display_texture_view_width);
   const u32 read_height = static_cast<u32>(m_display_texture_view_height);
+  const ImageFormat read_format = GPUTexture::GetImageFormatForTextureFormat(m_display_texture->GetFormat());
+  if (read_format == ImageFormat::None)
+    return false;
 
-  const u32 texture_data_stride =
-    Common::AlignUpPow2(GPUTexture::GetPixelSize(m_display_texture->GetFormat()) * read_width, 4);
-  std::vector<u32> texture_data((texture_data_stride * read_height) / sizeof(u32));
-
+  Image image(read_width, read_height, read_format);
   std::unique_ptr<GPUDownloadTexture> dltex;
   if (g_gpu_device->GetFeatures().memory_import)
   {
-    dltex =
-      g_gpu_device->CreateDownloadTexture(read_width, read_height, m_display_texture->GetFormat(), texture_data.data(),
-                                          texture_data.size() * sizeof(u32), texture_data_stride);
+    dltex = g_gpu_device->CreateDownloadTexture(read_width, read_height, m_display_texture->GetFormat(),
+                                                image.GetPixels(), image.GetStorageSize(), image.GetPitch());
   }
   if (!dltex)
   {
@@ -2511,7 +2498,7 @@ bool GPU::WriteDisplayTextureToFile(std::string filename)
   }
 
   dltex->CopyFromTexture(0, 0, m_display_texture, read_x, read_y, read_width, read_height, 0, 0, !dltex->IsImported());
-  if (!dltex->ReadTexels(0, 0, read_width, read_height, texture_data.data(), texture_data_stride))
+  if (!dltex->ReadTexels(0, 0, read_width, read_height, image.GetPixels(), image.GetPitch()))
   {
     RestoreDeviceContext();
     return false;
@@ -2530,17 +2517,19 @@ bool GPU::WriteDisplayTextureToFile(std::string filename)
   constexpr bool clear_alpha = true;
   const bool flip_y = g_gpu_device->UsesLowerLeftOrigin();
 
-  return CompressAndWriteTextureToFile(
-    read_width, read_height, std::move(filename), std::move(fp), g_settings.display_screenshot_quality, clear_alpha,
-    flip_y, std::move(texture_data), texture_data_stride, m_display_texture->GetFormat(), std::string());
+  return CompressAndWriteTextureToFile(read_width, read_height, std::move(filename), std::move(fp),
+                                       g_settings.display_screenshot_quality, clear_alpha, flip_y, std::move(image),
+                                       std::string());
 }
 
 bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect, const GSVector4i draw_rect,
-                                   bool postfx, std::vector<u32>* out_pixels, u32* out_stride,
-                                   GPUTexture::Format* out_format)
+                                   bool postfx, Image* out_image)
 {
   const GPUTexture::Format hdformat =
     g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
+  const ImageFormat image_format = GPUTexture::GetImageFormatForTextureFormat(hdformat);
+  if (image_format == ImageFormat::None)
+    return false;
 
   auto render_texture = g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget,
                                                               hdformat, GPUTexture::Flags::None);
@@ -2552,34 +2541,33 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i displ
   // TODO: this should use copy shader instead.
   RenderDisplay(render_texture.get(), display_rect, draw_rect, postfx);
 
-  const u32 stride = Common::AlignUpPow2(GPUTexture::GetPixelSize(hdformat) * width, sizeof(u32));
-  out_pixels->resize((height * stride) / sizeof(u32));
+  Image image(width, height, image_format);
 
+  Error error;
   std::unique_ptr<GPUDownloadTexture> dltex;
   if (g_gpu_device->GetFeatures().memory_import)
   {
-    dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat, out_pixels->data(),
-                                                out_pixels->size() * sizeof(u32), stride);
+    dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat, image.GetPixels(), image.GetStorageSize(),
+                                                image.GetPitch(), &error);
   }
   if (!dltex)
   {
-    if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat)))
+    if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat, &error)))
     {
-      ERROR_LOG("Failed to create {}x{} download texture", width, height);
+      ERROR_LOG("Failed to create {}x{} download texture: {}", width, height, error.GetDescription());
       return false;
     }
   }
 
   dltex->CopyFromTexture(0, 0, render_texture.get(), 0, 0, width, height, 0, 0, false);
-  if (!dltex->ReadTexels(0, 0, width, height, out_pixels->data(), stride))
+  if (!dltex->ReadTexels(0, 0, width, height, image.GetPixels(), image.GetPitch()))
   {
     RestoreDeviceContext();
     return false;
   }
 
-  *out_stride = stride;
-  *out_format = hdformat;
   RestoreDeviceContext();
+  *out_image = std::move(image);
   return true;
 }
 
@@ -2656,11 +2644,8 @@ bool GPU::RenderScreenshotToFile(std::string path, DisplayScreenshotMode mode, u
   if (width == 0 || height == 0)
     return false;
 
-  std::vector<u32> pixels;
-  u32 pixels_stride;
-  GPUTexture::Format pixels_format;
-  if (!RenderScreenshotToBuffer(width, height, display_rect, draw_rect, !internal_resolution, &pixels, &pixels_stride,
-                                &pixels_format))
+  Image image;
+  if (!RenderScreenshotToBuffer(width, height, display_rect, draw_rect, !internal_resolution, &image))
   {
     ERROR_LOG("Failed to render {}x{} screenshot", width, height);
     return false;
@@ -2687,10 +2672,10 @@ bool GPU::RenderScreenshotToFile(std::string path, DisplayScreenshotMode mode, u
   if (compress_on_thread)
   {
     System::QueueTaskOnThread([width, height, path = std::move(path), fp = fp.release(), quality,
-                               flip_y = g_gpu_device->UsesLowerLeftOrigin(), pixels = std::move(pixels), pixels_stride,
-                               pixels_format, osd_key = std::move(osd_key)]() mutable {
+                               flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
+                               osd_key = std::move(osd_key)]() mutable {
       CompressAndWriteTextureToFile(width, height, std::move(path), FileSystem::ManagedCFilePtr(fp), quality, true,
-                                    flip_y, std::move(pixels), pixels_stride, pixels_format, std::move(osd_key));
+                                    flip_y, std::move(image), std::move(osd_key));
       System::RemoveSelfFromTaskThreads();
     });
 
@@ -2699,8 +2684,7 @@ bool GPU::RenderScreenshotToFile(std::string path, DisplayScreenshotMode mode, u
   else
   {
     return CompressAndWriteTextureToFile(width, height, std::move(path), std::move(fp), quality, true,
-                                         g_gpu_device->UsesLowerLeftOrigin(), std::move(pixels), pixels_stride,
-                                         pixels_format, std::move(osd_key));
+                                         g_gpu_device->UsesLowerLeftOrigin(), std::move(image), std::move(osd_key));
   }
 }
 
@@ -2726,20 +2710,23 @@ bool GPU::DumpVRAMToFile(const char* filename)
 
 bool GPU::DumpVRAMToFile(const char* filename, u32 width, u32 height, u32 stride, const void* buffer, bool remove_alpha)
 {
-  RGBA8Image image(width, height);
+  Image image(width, height, ImageFormat::RGBA8);
 
   const char* ptr_in = static_cast<const char*>(buffer);
   for (u32 row = 0; row < height; row++)
   {
     const char* row_ptr_in = ptr_in;
-    u32* ptr_out = image.GetRowPixels(row);
+    u8* ptr_out = image.GetRowPixels(row);
 
     for (u32 col = 0; col < width; col++)
     {
       u16 src_col;
       std::memcpy(&src_col, row_ptr_in, sizeof(u16));
       row_ptr_in += sizeof(u16);
-      *(ptr_out++) = VRAMRGBA5551ToRGBA8888(remove_alpha ? (src_col | u16(0x8000)) : src_col);
+
+      const u32 pixel32 = VRAMRGBA5551ToRGBA8888(remove_alpha ? (src_col | u16(0x8000)) : src_col);
+      std::memcpy(ptr_out, &pixel32, sizeof(pixel32));
+      ptr_out += sizeof(pixel32);
     }
 
     ptr_in += stride;

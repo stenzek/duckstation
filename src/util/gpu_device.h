@@ -24,6 +24,7 @@
 #include <vector>
 
 class Error;
+class Image;
 
 enum class RenderAPI : u8
 {
@@ -707,6 +708,9 @@ public:
   FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
                           GPUTexture::Format format, GPUTexture::Flags flags, const void* data = nullptr,
                           u32 data_stride = 0, Error* error = nullptr);
+  std::unique_ptr<GPUTexture> FetchAndUploadTextureImage(const Image& image,
+                                                         GPUTexture::Flags flags = GPUTexture::Flags::None,
+                                                         Error* error = nullptr);
   void RecycleTexture(std::unique_ptr<GPUTexture> texture);
   void PurgeTexturePool();
 

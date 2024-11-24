@@ -13,6 +13,8 @@
 
 class Error;
 
+enum class ImageFormat : u8;
+
 class GPUTexture
 {
 public:
@@ -100,12 +102,11 @@ public:
   static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
   static u32 GetFullMipmapCount(u32 width, u32 height);
 
+  static Format GetTextureFormatForImageFormat(ImageFormat format);
+  static ImageFormat GetImageFormatForTextureFormat(Format format);
+
   static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
                              Flags flags, Error* error);
-
-  static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,
-                                        Format format);
-  static void FlipTextureDataRGBA8(u32 width, u32 height, u8* texture_data, u32 texture_data_stride);
 
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }

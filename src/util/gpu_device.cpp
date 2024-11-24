@@ -4,6 +4,7 @@
 #include "gpu_device.h"
 #include "compress_helpers.h"
 #include "gpu_framebuffer_manager.h"
+#include "image.h"
 #include "shadergen.h"
 
 #include "common/assert.h"
@@ -1048,6 +1049,27 @@ GPUDevice::FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels
   std::unique_ptr<GPUTexture> ret =
     FetchTexture(width, height, layers, levels, samples, type, format, flags, data, data_stride, error);
   return std::unique_ptr<GPUTexture, PooledTextureDeleter>(ret.release());
+}
+
+std::unique_ptr<GPUTexture> GPUDevice::FetchAndUploadTextureImage(const Image& image,
+                                                                  GPUTexture::Flags flags /*= GPUTexture::Flags::None*/,
+                                                                  Error* error /*= nullptr*/)
+{
+  const Image* image_to_upload = &image;
+  GPUTexture::Format gpu_format = GPUTexture::GetTextureFormatForImageFormat(image.GetFormat());
+  std::optional<Image> converted_image;
+  if (!SupportsTextureFormat(gpu_format))
+  {
+    converted_image = image.ConvertToRGBA8(error);
+    if (!converted_image.has_value())
+      return nullptr;
+
+    image_to_upload = &converted_image.value();
+    gpu_format = GPUTexture::GetTextureFormatForImageFormat(converted_image->GetFormat());
+  }
+
+  return FetchTexture(image_to_upload->GetWidth(), image_to_upload->GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
+                      gpu_format, flags, image_to_upload->GetPixels(), image_to_upload->GetPitch(), error);
 }
 
 void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)

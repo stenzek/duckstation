@@ -128,7 +128,7 @@ struct SaveStateBuffer
   std::string media_path;
   u32 media_subimage_index;
   u32 version;
-  RGBA8Image screenshot;
+  Image screenshot;
   DynamicHeapArray<u8> state_data;
   size_t state_size;
 };
@@ -2916,15 +2916,14 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
   // Read screenshot if requested.
   if (read_screenshot)
   {
-    buffer->screenshot.SetSize(header.screenshot_width, header.screenshot_height);
-    const u32 uncompressed_size = buffer->screenshot.GetPitch() * buffer->screenshot.GetHeight();
-    const u32 compressed_size = (header.version >= 69) ? header.screenshot_compressed_size : uncompressed_size;
+    buffer->screenshot.Resize(header.screenshot_width, header.screenshot_height, ImageFormat::RGBA8, true);
+    const u32 compressed_size =
+      (header.version >= 69) ? header.screenshot_compressed_size : buffer->screenshot.GetStorageSize();
     const SAVE_STATE_HEADER::CompressionType compression_type =
       (header.version >= 69) ? static_cast<SAVE_STATE_HEADER::CompressionType>(header.screenshot_compression_type) :
                                SAVE_STATE_HEADER::CompressionType::None;
-    if (!ReadAndDecompressStateData(
-          fp, std::span<u8>(reinterpret_cast<u8*>(buffer->screenshot.GetPixels()), uncompressed_size),
-          header.offset_to_screenshot, compressed_size, compression_type, error)) [[unlikely]]
+    if (!ReadAndDecompressStateData(fp, buffer->screenshot.GetPixelsSpan(), header.offset_to_screenshot,
+                                    compressed_size, compression_type, error)) [[unlikely]]
     {
       return false;
     }
@@ -3104,29 +3103,27 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
     screenshot_display_rect = screenshot_display_rect.sub32(screenshot_display_rect.xyxy());
     VERBOSE_LOG("Saving {}x{} screenshot for state", screenshot_width, screenshot_height);
 
-    std::vector<u32> screenshot_buffer;
-    u32 screenshot_stride;
-    GPUTexture::Format screenshot_format;
     if (g_gpu->RenderScreenshotToBuffer(screenshot_width, screenshot_height, screenshot_display_rect,
-                                        screenshot_draw_rect, false, &screenshot_buffer, &screenshot_stride,
-                                        &screenshot_format) &&
-        GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
-                                              screenshot_format))
+                                        screenshot_draw_rect, false, &buffer->screenshot))
     {
-      if (screenshot_stride != (screenshot_width * sizeof(u32)))
-      {
-        WARNING_LOG("Failed to save {}x{} screenshot for save state due to incorrect stride({})", screenshot_width,
-                    screenshot_height, screenshot_stride);
-      }
-      else
-      {
-        if (g_gpu_device->UsesLowerLeftOrigin())
-        {
-          GPUTexture::FlipTextureDataRGBA8(screenshot_width, screenshot_height,
-                                           reinterpret_cast<u8*>(screenshot_buffer.data()), screenshot_stride);
-        }
+      if (g_gpu_device->UsesLowerLeftOrigin())
+        buffer->screenshot.FlipY();
 
-        buffer->screenshot.SetPixels(screenshot_width, screenshot_height, std::move(screenshot_buffer));
+      // Ensure it's RGBA8.
+      if (buffer->screenshot.GetFormat() != ImageFormat::RGBA8)
+      {
+        Error convert_error;
+        std::optional<Image> screenshot_rgba8 = buffer->screenshot.ConvertToRGBA8(&convert_error);
+        if (!screenshot_rgba8.has_value())
+        {
+          ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}",
+                    Image::GetFormatName(buffer->screenshot.GetFormat()), convert_error.GetDescription());
+          buffer->screenshot.Invalidate();
+        }
+        else
+        {
+          buffer->screenshot = std::move(screenshot_rgba8.value());
+        }
       }
     }
     else

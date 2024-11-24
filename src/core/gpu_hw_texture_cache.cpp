@@ -303,7 +303,7 @@ static void FindTextureReplacements(bool load_vram_write_replacements, bool load
 static void LoadTextureReplacementAliases(const ryml::ConstNodeRef& root, bool load_vram_write_replacement_aliases,
                                           bool load_texture_replacement_aliases);
 
-static const TextureReplacementImage* GetTextureReplacementImage(const std::string& filename);
+static const TextureReplacementImage* GetTextureReplacementImage(const std::string& path);
 static void PreloadReplacementTextures();
 static void PurgeUnreferencedTexturesFromCache();
 
@@ -2493,28 +2493,23 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
   if (filename.empty() || FileSystem::FileExists(filename.c_str()))
     return;
 
-  RGBA8Image image;
-  image.SetSize(width, height);
+  Image image(width, height, ImageFormat::RGBA8);
 
   const u16* src_pixels = reinterpret_cast<const u16*>(pixels);
 
   for (u32 y = 0; y < height; y++)
   {
+    u8* row_ptr = image.GetPixels();
     for (u32 x = 0; x < width; x++)
     {
-      image.SetPixel(x, y, VRAMRGBA5551ToRGBA8888(*src_pixels));
-      src_pixels++;
+      const u32 pixel32 = VRAMRGBA5551ToRGBA8888(*(src_pixels++));
+      std::memcpy(row_ptr, &pixel32, sizeof(pixel32));
+      row_ptr += sizeof(pixel32);
     }
   }
 
   if (s_state.config.dump_vram_write_force_alpha_channel)
-  {
-    for (u32 y = 0; y < height; y++)
-    {
-      for (u32 x = 0; x < width; x++)
-        image.SetPixel(x, y, image.GetPixel(x, y) | 0xFF000000u);
-    }
-  }
+    image.SetAllPixelsOpaque();
 
   INFO_LOG("Dumping {}x{} VRAM write to '{}'", width, height, Path::GetFileName(filename));
   if (!image.SaveToFile(filename.c_str())) [[unlikely]]
@@ -2599,12 +2594,13 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
 
   DEV_LOG("Dumping VRAM write {:016X} [{}x{}] at {}", src_hash, width, height, rect);
 
-  RGBA8Image image(width, height);
-  GPUTextureCache::DecodeTexture(mode, &g_vram[rect.top * VRAM_WIDTH + rect.left], palette_data, image.GetPixels(),
-                                 image.GetPitch(), width, height);
+  Image image(width, height, ImageFormat::RGBA8);
+  GPUTextureCache::DecodeTexture(mode, &g_vram[rect.top * VRAM_WIDTH + rect.left], palette_data,
+                                 reinterpret_cast<u32*>(image.GetPixels()), image.GetPitch(), width, height);
 
-  u32* image_pixels = image.GetPixels();
-  const u32* image_pixels_end = image.GetPixels() + (width * height);
+  // TODO: Vectorize this.
+  u32* image_pixels = reinterpret_cast<u32*>(image.GetPixels());
+  const u32* image_pixels_end = image_pixels + (width * height);
   if (s_state.config.dump_texture_force_alpha_channel)
   {
     for (u32* pixel = image_pixels; pixel != image_pixels_end; pixel++)
@@ -2970,21 +2966,23 @@ void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& ro
              s_state.game_id);
 }
 
-const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetTextureReplacementImage(const std::string& filename)
+const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetTextureReplacementImage(const std::string& path)
 {
-  auto it = s_state.replacement_image_cache.find(filename);
+  auto it = s_state.replacement_image_cache.find(path);
   if (it != s_state.replacement_image_cache.end())
     return &it->second;
 
-  RGBA8Image image;
-  if (!image.LoadFromFile(filename.c_str()))
+  Image image;
+  Error error;
+  if (!image.LoadFromFile(path.c_str(), &error))
   {
-    ERROR_LOG("Failed to load '{}'", Path::GetFileName(filename));
+    ERROR_LOG("Failed to load '{}': {}", Path::GetFileName(path), error.GetDescription());
     return nullptr;
   }
 
-  VERBOSE_LOG("Loaded '{}': {}x{}", Path::GetFileName(filename), image.GetWidth(), image.GetHeight());
-  it = s_state.replacement_image_cache.emplace(filename, std::move(image)).first;
+  VERBOSE_LOG("Loaded '{}': {}x{} {}", Path::GetFileName(path), image.GetWidth(), image.GetHeight(),
+              Image::GetFormatName(image.GetFormat()));
+  it = s_state.replacement_image_cache.emplace(path, std::move(image)).first;
   return &it->second;
 }
 
@@ -3206,14 +3204,14 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info)
 void GPUTextureCache::PurgeUnreferencedTexturesFromCache()
 {
   TextureCache old_map = std::move(s_state.replacement_image_cache);
-  s_state.replacement_image_cache = {};
+  s_state.replacement_image_cache = TextureCache();
 
   for (const auto& it : s_state.vram_replacements)
   {
     const auto it2 = old_map.find(it.second);
     if (it2 != old_map.end())
     {
-      s_state.replacement_image_cache[it.second] = std::move(it2->second);
+      s_state.replacement_image_cache.emplace(it.second, std::move(it2->second));
       old_map.erase(it2);
     }
   }
@@ -3225,7 +3223,7 @@ void GPUTextureCache::PurgeUnreferencedTexturesFromCache()
       const auto it2 = old_map.find(it.second.second);
       if (it2 != old_map.end())
       {
-        s_state.replacement_image_cache[it.second.second] = std::move(it2->second);
+        s_state.replacement_image_cache.emplace(it.second.second, std::move(it2->second));
         old_map.erase(it2);
       }
     }
@@ -3319,9 +3317,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
 
   for (const TextureReplacementSubImage& si : subimages)
   {
-    const auto temp_texture = g_gpu_device->FetchAutoRecycleTexture(
-      si.image.GetWidth(), si.image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture, REPLACEMENT_TEXTURE_FORMAT,
-      GPUTexture::Flags::None, si.image.GetPixels(), si.image.GetPitch());
+    std::unique_ptr<GPUTexture> temp_texture =
+      g_gpu_device->FetchAndUploadTextureImage(si.image, GPUTexture::Flags::None);
     if (!temp_texture)
       continue;
 
@@ -3334,6 +3331,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
     g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :
                                                 s_state.replacement_draw_pipeline.get());
     g_gpu_device->Draw(3, 0);
+
+    g_gpu_device->RecycleTexture(std::move(temp_texture));
   }
 
   g_gpu_device->CopyTextureRegion(replacement_tex.get(), 0, 0, 0, 0, s_state.replacement_texture_render_target.get(), 0,

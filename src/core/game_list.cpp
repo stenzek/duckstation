@@ -1778,7 +1778,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
         INFO_LOG("Extracting memory card icon from {} ({}) to {}", fi.filename, Path::GetFileTitle(memcard_path),
                  Path::GetFileTitle(ret));
 
-        RGBA8Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT);
+        Image image(MemoryCardImage::ICON_WIDTH, MemoryCardImage::ICON_HEIGHT, ImageFormat::RGBA8);
         std::memcpy(image.GetPixels(), &fi.icon_frames.front().pixels,
                     MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
         serial_entry->icon_was_extracted = image.SaveToFile(ret.c_str());
