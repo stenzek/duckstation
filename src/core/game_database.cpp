@@ -138,9 +138,9 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
 }};
 
 static constexpr std::array<const char*, static_cast<size_t>(Language::MaxCount)> s_language_names = {{
-  "Catalan", "Chinese",   "Czech",  "Danish",     "Dutch",   "English", "Finnish",
-  "French",  "German",    "Greek",  "Hebrew",     "Iranian", "Italian", "Japanese",
-  "Korean",  "Norwegian", "Polish", "Portuguese", "Russian", "Spanish", "Swedish",
+  "Catalan", "Chinese",    "Czech",   "Danish",  "Dutch",   "English",  "Finnish", "French",
+  "German",  "Greek",      "Hebrew",  "Iranian", "Italian", "Japanese", "Korean",  "Norwegian",
+  "Polish",  "Portuguese", "Russian", "Spanish", "Swedish", "Turkish",
 }};
 
 static constexpr const char* GAMEDB_YAML_FILENAME = "gamedb.yaml";

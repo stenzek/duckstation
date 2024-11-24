@@ -88,6 +88,7 @@ enum class Language : u8
   Russian,
   Spanish,
   Swedish,
+  Turkish,
   MaxCount,
 };
 
