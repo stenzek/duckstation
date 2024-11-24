@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "image.h"
+#include "texture_decompress.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -126,7 +127,7 @@ void Image::Resize(u32 new_width, u32 new_height, ImageFormat format, bool prese
   if (!preserve)
     m_pixels.reset();
 
-  const u32 old_blocks_y = GetBlockYCount();
+  const u32 old_blocks_y = GetBlocksHigh();
   const u32 old_pitch = m_pitch;
   PixelStorage old_pixels =
     std::exchange(m_pixels, Common::make_unique_aligned_for_overwrite<u8[]>(
@@ -139,7 +140,7 @@ void Image::Resize(u32 new_width, u32 new_height, ImageFormat format, bool prese
   if (preserve && old_pixels)
   {
     StringUtil::StrideMemCpy(m_pixels.get(), m_pitch, old_pixels.get(), old_pitch, std::min(old_pitch, m_pitch),
-                             std::min(old_blocks_y, GetBlockYCount()));
+                             std::min(old_blocks_y, GetBlocksHigh()));
   }
 }
 
@@ -229,19 +230,19 @@ u32 Image::CalculateStorageSize(u32 width, u32 height, u32 pitch, ImageFormat fo
   return pitch * height;
 }
 
-u32 Image::GetBlockXCount() const
+u32 Image::GetBlocksWide() const
 {
   return IsCompressedFormat(m_format) ? (Common::AlignUpPow2(m_width, 4) / 4) : m_width;
 }
 
-u32 Image::GetBlockYCount() const
+u32 Image::GetBlocksHigh() const
 {
   return IsCompressedFormat(m_format) ? (Common::AlignUpPow2(m_height, 4) / 4) : m_height;
 }
 
 u32 Image::GetStorageSize() const
 {
-  return GetBlockYCount() * m_pitch;
+  return GetBlocksHigh() * m_pitch;
 }
 
 std::span<const u8> Image::GetPixelsSpan() const
@@ -272,7 +273,7 @@ void Image::SetPixels(u32 width, u32 height, ImageFormat format, const void* pix
 {
   Resize(width, height, format, false);
   if (m_pixels)
-    StringUtil::StrideMemCpy(m_pixels.get(), m_pitch, pixels, pitch, m_pitch, GetBlockYCount());
+    StringUtil::StrideMemCpy(m_pixels.get(), m_pitch, pixels, pitch, m_pitch, GetBlocksHigh());
 }
 
 void Image::SetPixels(u32 width, u32 height, ImageFormat format, PixelStorage pixels, u32 pitch)
@@ -496,6 +497,62 @@ void SwapBGRAToRGBA(void* pixels_out, u32 pixels_out_pitch, const void* pixels_i
   }
 }
 
+template<ImageFormat format>
+static void DecompressBC(Image& image_out, const Image& image_in)
+{
+  constexpr u32 BC_BLOCK_SIZE = 4;
+  constexpr u32 BC_BLOCK_BYTES = 16;
+
+  const u32 blocks_wide = image_in.GetBlocksWide();
+  const u32 blocks_high = image_in.GetBlocksHigh();
+  for (u32 y = 0; y < blocks_high; y++)
+  {
+    const u8* block_in = image_in.GetRowPixels(y);
+    for (u32 x = 0; x < blocks_wide; x++, block_in += BC_BLOCK_BYTES)
+    {
+      // decompress block
+      switch (format)
+      {
+        case ImageFormat::BC1:
+        {
+          DecompressBlockBC1(x * BC_BLOCK_SIZE, y * BC_BLOCK_SIZE, image_out.GetPitch(), block_in,
+                             image_out.GetPixels());
+        }
+        break;
+        case ImageFormat::BC2:
+        {
+          DecompressBlockBC2(x * BC_BLOCK_SIZE, y * BC_BLOCK_SIZE, image_out.GetPitch(), block_in,
+                             image_out.GetPixels());
+        }
+        break;
+        case ImageFormat::BC3:
+        {
+          DecompressBlockBC3(x * BC_BLOCK_SIZE, y * BC_BLOCK_SIZE, image_out.GetPitch(), block_in,
+                             image_out.GetPixels());
+        }
+        break;
+
+        case ImageFormat::BC7:
+        {
+          u32 block_pixels_out[BC_BLOCK_SIZE * BC_BLOCK_SIZE];
+          bc7decomp::unpack_bc7(block_in, reinterpret_cast<bc7decomp::color_rgba*>(block_pixels_out));
+
+          // and write it to the new image
+          const u32* copy_in_ptr = block_pixels_out;
+          u8* copy_out_ptr = image_out.GetRowPixels(y * BC_BLOCK_SIZE) + (x * BC_BLOCK_SIZE * sizeof(u32));
+          for (u32 sy = 0; sy < 4; sy++)
+          {
+            std::memcpy(copy_out_ptr, copy_in_ptr, sizeof(u32) * BC_BLOCK_SIZE);
+            copy_in_ptr += BC_BLOCK_SIZE;
+            copy_out_ptr += image_out.GetPitch();
+          }
+        }
+        break;
+      }
+    }
+  }
+}
+
 std::optional<Image> Image::ConvertToRGBA8(Error* error) const
 {
   std::optional<Image> ret;
@@ -595,7 +652,33 @@ std::optional<Image> Image::ConvertToRGBA8(Error* error) const
     }
     break;
 
-      // TODO: Block format decompression
+    case ImageFormat::BC1:
+    {
+      ret = Image(m_width, m_height, ImageFormat::RGBA8);
+      DecompressBC<ImageFormat::BC1>(ret.value(), *this);
+    }
+    break;
+
+    case ImageFormat::BC2:
+    {
+      ret = Image(m_width, m_height, ImageFormat::RGBA8);
+      DecompressBC<ImageFormat::BC2>(ret.value(), *this);
+    }
+    break;
+
+    case ImageFormat::BC3:
+    {
+      ret = Image(m_width, m_height, ImageFormat::RGBA8);
+      DecompressBC<ImageFormat::BC3>(ret.value(), *this);
+    }
+    break;
+
+    case ImageFormat::BC7:
+    {
+      ret = Image(m_width, m_height, ImageFormat::RGBA8);
+      DecompressBC<ImageFormat::BC7>(ret.value(), *this);
+    }
+    break;
 
     default:
     {
@@ -1602,7 +1685,7 @@ bool DDSFileLoader(Image* image, std::string_view path, std::FILE* fp, Error* er
     return false;
 
   image->Resize(info.width, info.height, info.format, false);
-  const u32 blocks = image->GetBlockYCount();
+  const u32 blocks = image->GetBlocksHigh();
   if (image->GetPitch() != info.base_image_pitch)
   {
     for (u32 y = 0; y < blocks; y++)

@@ -66,8 +66,8 @@ public:
   // ALWAYS_INLINE void SetPixel(u32 x, u32 y, PixelType pixel) { m_pixels[y * m_width + x] = pixel; }
   // ALWAYS_INLINE PixelType GetPixel(u32 x, u32 y) const { return m_pixels[y * m_width + x]; }
 
-  u32 GetBlockXCount() const;
-  u32 GetBlockYCount() const;
+  u32 GetBlocksWide() const;
+  u32 GetBlocksHigh() const;
   u32 GetStorageSize() const;
 
   std::span<const u8> GetPixelsSpan() const;
