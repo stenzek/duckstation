@@ -6107,7 +6107,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7567"/>
         <source>Adjusts the emulation speed so the console&apos;s refresh rate matches the host when VSync is enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Justerar emuleringshastigheten så att konsolens uppdateringsfrekvens matchar värdens när VSync är aktiverat.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7570"/>
@@ -6122,7 +6122,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7572"/>
         <source>Allows loading protected games without subchannel information.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillåt att läsa in skyddade spel utan underkanalsinformation.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7573"/>
@@ -6146,7 +6146,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7576"/>
         <source>Are you sure you want to clear the current post-processing chain? All configuration will be lost.</source>
-        <translation type="unfinished"></translation>
+        <translation>Är du säker på att du vill tömma aktuell efterbehandlingskedja? All konfiguration kommer att förloras.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7578"/>
@@ -6156,7 +6156,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7579"/>
         <source>Attempts to map the selected port to a chosen controller.</source>
-        <translation type="unfinished"></translation>
+        <translation>Försöker att mappa vald port till en vald handkontroller.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7580"/>
@@ -6206,17 +6206,17 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7590"/>
         <source>Automatically applies patches to disc images when they are present, currently only PPF is supported.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tillämpar automatiskt patchar till skivavbilder när de finns tillgängliga. Endast PPF stöds för närvarande.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7591"/>
         <source>Automatically loads and applies cheats on game start. Cheats can break games and saves.</source>
-        <translation type="unfinished"></translation>
+        <translation>Läser automatiskt in och tillämpar fusk på startat spel. Fusk kan göra sönder spel och sparningar.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7592"/>
         <source>Automatically resizes the window to match the internal resolution.</source>
-        <translation type="unfinished"></translation>
+        <translation>Storleksändrar automatiskt fönstret för att matcha interna upplösningen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7593"/>
@@ -6226,12 +6226,12 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7594"/>
         <source>Automatically switches to fullscreen mode when the program is started.</source>
-        <translation type="unfinished"></translation>
+        <translation>Växlar automatiskt till helskärmsläge när programmet startas.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7595"/>
         <source>Avoids calls to C++ code, significantly speeding up the recompiler.</source>
-        <translation type="unfinished"></translation>
+        <translation>Undviker anrop till C++-kod, snabbar upp omkompileraren avsevärt.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7596"/>
@@ -6301,12 +6301,12 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7618"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ändrar bildförhållandet som används för att visa konsolens utmatning på skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7620"/>
         <source>Chooses the backend to use for rendering the console/game visuals.</source>
-        <translation type="unfinished"></translation>
+        <translation>Väljer bakänden att använda för rendering av konsolen/spelets visuella del.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7621"/>
@@ -6341,12 +6341,12 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7630"/>
         <source>Compatibility Rating</source>
-        <translation type="unfinished"></translation>
+        <translation>Kompatibilitetsbetyg</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7632"/>
         <source>Completely exits the application, returning you to your desktop.</source>
-        <translation type="unfinished"></translation>
+        <translation>Avslutar programmet helt och återvänder till ditt skrivbord.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7634"/>
@@ -6366,17 +6366,17 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7637"/>
         <source>Controller Port {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollerport {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7638"/>
         <source>Controller Port {} Macros</source>
-        <translation type="unfinished"></translation>
+        <translation>Makron för kontrollerport {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7639"/>
         <source>Controller Port {} Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Inställningar för kontrollerport {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7640"/>
@@ -6391,7 +6391,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7642"/>
         <source>Controller settings reset to default.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kontrollerinställningar nollställda till standardvärden.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7643"/>
@@ -6401,12 +6401,12 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7644"/>
         <source>Controls the volume of the audio played on the host when fast forwarding.</source>
-        <translation type="unfinished"></translation>
+        <translation>Styr volymen för ljudet som spelas på värden vid snabbspolning.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7645"/>
         <source>Controls the volume of the audio played on the host.</source>
-        <translation type="unfinished"></translation>
+        <translation>Styr volymen för ljudet som spelas på värden.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7646"/>
@@ -6416,7 +6416,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7647"/>
         <source>Copies the global controller configuration to this game.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kopierar global kontrollerkonfiguration till detta spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7648"/>
@@ -6431,7 +6431,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7650"/>
         <source>Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.</source>
-        <translation type="unfinished"></translation>
+        <translation>Kunde inte hitta några cd/dvd-rom-enheter. Försäkra dig om att du har en enhet ansluten och tillräcklig behörighet att komma åt den.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7651"/>
@@ -6516,12 +6516,12 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7673"/>
         <source>Determines how large the on-screen messages and monitor are.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer hur stora OSD-meddelanden och skärmen är.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7674"/>
         <source>Determines how much button pressure is ignored before activating the macro.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer hur hårt knapptryck som ignoreras innan makrot aktiveras.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7675"/>
@@ -6536,7 +6536,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7677"/>
         <source>Determines how much pressure is simulated when macro is active.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer hur hårt tryck som simuleras när makrot är aktivt.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7678"/>
@@ -6556,7 +6556,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7681"/>
         <source>Determines that field that the game list will be sorted by.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer fältet som spellistan ska sorteras efter.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7682"/>
@@ -6566,7 +6566,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7683"/>
         <source>Determines the emulated hardware type.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer emulerad hårdvarutyp.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7684"/>
@@ -6581,12 +6581,12 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7686"/>
         <source>Determines the margin between the edge of the screen and on-screen messages.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer marginalen mellan kanten av skärmen och OSD-meddelanden.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7687"/>
         <source>Determines the position on the screen when black borders must be added.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer positionen på skärmen när svarta sorgkanter måste läggas till.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7688"/>
@@ -6596,12 +6596,12 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7689"/>
         <source>Determines the size of screenshots created by DuckStation.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer storleken för skärmbilder som skapas av DuckStation.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7690"/>
         <source>Determines whether a prompt will be displayed to confirm shutting down the emulator/game when the hotkey is pressed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Bestämmer huruvida en prompt ska visas för att bekräfta avstängning av emulatorn/spelet när snabbtangenten trycks ner.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7691"/>
@@ -6621,7 +6621,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7694"/>
         <source>Disable Subdirectory Scanning</source>
-        <translation type="unfinished"></translation>
+        <translation>Inaktivera inläsning av underkataloger</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7695"/>
@@ -6666,7 +6666,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7705"/>
         <source>Downloads covers from a user-specified URL template.</source>
-        <translation type="unfinished"></translation>
+        <translation>Hämtar omslagsbilder från en användarangiven URL-mall.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7706"/>
@@ -6696,7 +6696,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7711"/>
         <source>Dump Replaced Textures</source>
-        <translation type="unfinished"></translation>
+        <translation>Dumpa ersatta texturer</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7712"/>
@@ -6776,7 +6776,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7729"/>
         <source>Enable Subdirectory Scanning</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera sökning i underkataloger</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7730"/>
@@ -6811,7 +6811,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7736"/>
         <source>Enable XInput Input Source</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktivera inmatningskälla för XInput</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7737"/>
@@ -6841,7 +6841,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7742"/>
         <source>Enables caching of guest textures, required for texture replacement.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiverar cachning av gästtexturer, krävs för texturersättning.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7743"/>
@@ -6851,22 +6851,22 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7744"/>
         <source>Enables loading of cheats for this game from DuckStation&apos;s database.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiverar inläsning av fusk för detta spel från Duckstations databas.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7745"/>
         <source>Enables loading of replacement textures. Not compatible with all games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiverar inläsning av ersättningstexturer. Inte kompatibelt med alla spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7746"/>
         <source>Enables smooth scrolling of menus in Big Picture UI.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiverar mjuk rullning i menyer i storbildsläget.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7747"/>
         <source>Enables the cheats that are selected below.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiverar fusken som väljs nedan.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7748"/>
@@ -6876,7 +6876,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7749"/>
         <source>Enables the replacement of background textures in supported games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Aktiverar ersättning av bakgrundstexturer i spel som stöds.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7750"/>
@@ -6891,7 +6891,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7753"/>
         <source>Enter the name of the input profile you wish to create.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ange namnet för inmatningsprofilen som du vill skapa.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7755"/>
@@ -6916,7 +6916,7 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7760"/>
         <source>Exits Big Picture mode, returning to the desktop interface.</source>
-        <translation type="unfinished"></translation>
+        <translation>Avslutar storbildsläget och återvänder till skrivbordsgränssnittet.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7761"/>
@@ -6947,12 +6947,13 @@ Vill du läsa in detta tillstånd och fortsätta?</translation>
         <location filename="../../core/fullscreen_ui.cpp" line="7766"/>
         <source>Failed to load shader {}. It may be invalid.
 Error was:</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att läsa in shadern {}. Den kan vara ogiltig.
+Felet var:</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7767"/>
         <source>Failed to save input profile &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att spara inmatningsprofilen &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7768"/>
@@ -7052,7 +7053,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7788"/>
         <source>GPU adapter will be applied after restarting.</source>
-        <translation type="unfinished"></translation>
+        <translation>GPU-adaptern kommer att tillämpas efter omstart.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7789"/>
@@ -7077,12 +7078,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7795"/>
         <source>Game Slot {0}##game_slot_{0}</source>
-        <translation type="unfinished"></translation>
+        <translation>Spelplats {0}##game_slot_{0}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7796"/>
         <source>Game compatibility rating copied to clipboard.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spelets kompatibilitetsbetyg kopierat till urklipp.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7797"/>
@@ -7097,22 +7098,22 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7799"/>
         <source>Game region copied to clipboard.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spelets region kopierat till urklipp.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7800"/>
         <source>Game serial copied to clipboard.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spelets serienummer kopierat till urklipp.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7801"/>
         <source>Game settings have been cleared for &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spelinställningar har tömts för &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7802"/>
         <source>Game settings initialized with global settings for &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spelinställningar initierades med globala inställningar för &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7803"/>
@@ -7122,7 +7123,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7804"/>
         <source>Game type copied to clipboard.</source>
-        <translation type="unfinished"></translation>
+        <translation>Speltypen kopierad till urklipp.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7805"/>
@@ -7142,12 +7143,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7809"/>
         <source>Global Slot {0} - {1}##global_slot_{0}</source>
-        <translation type="unfinished"></translation>
+        <translation>Global plats {0} - {1}##global_slot_{0}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7810"/>
         <source>Global Slot {0}##global_slot_{0}</source>
-        <translation type="unfinished"></translation>
+        <translation>Global plats {0}##global_slot_{0}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7811"/>
@@ -7172,7 +7173,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7815"/>
         <source>Hides the mouse pointer/cursor when the emulator is in fullscreen mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Döljer muspekaren/markören när emulatorn är i helskärmsläge.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7816"/>
@@ -7192,7 +7193,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7819"/>
         <source>Identifies any new files added to the game directories.</source>
-        <translation type="unfinished"></translation>
+        <translation>Identifierar alla nya filer som lagts till i spelkatalogerna.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7820"/>
@@ -7287,7 +7288,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7846"/>
         <source>Load Global State</source>
-        <translation type="unfinished"></translation>
+        <translation>Läs in globalt tillstånd</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7848"/>
@@ -7362,7 +7363,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7865"/>
         <source>Logs messages to the debug console where supported.</source>
-        <translation type="unfinished"></translation>
+        <translation>Loggar meddelanden till felsökningskonsollen där det stöds.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7867"/>
@@ -7407,7 +7408,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7875"/>
         <source>Merges multi-disc games into one item in the game list.</source>
-        <translation type="unfinished"></translation>
+        <translation>Slår samman flerskivsspel till ett objekt i spellistan.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7876"/>
@@ -7632,7 +7633,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7923"/>
         <source>Pauses the emulator when you minimize the window or switch to another application, and unpauses when you switch back.</source>
-        <translation type="unfinished"></translation>
+        <translation>Pausar emulatorn när du minimerar fönstret eller byter till ett annat program samt avpausar när du byter tillbaka.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7924"/>
@@ -7677,7 +7678,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7932"/>
         <source>Post-processing chain cleared.</source>
-        <translation type="unfinished"></translation>
+        <translation>Efterbehandlingskedja tömd.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7933"/>
@@ -7687,7 +7688,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7934"/>
         <source>Preload Images to RAM</source>
-        <translation type="unfinished"></translation>
+        <translation>Förinläs avbilder till RAM</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7935"/>
@@ -7712,12 +7713,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7939"/>
         <source>Prevents the emulator from producing any audible sound.</source>
-        <translation type="unfinished"></translation>
+        <translation>Förhindrar att emulatorn skapar någon form av ljud.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7940"/>
         <source>Prevents the screen saver from activating and the host from sleeping while emulation is running.</source>
-        <translation type="unfinished"></translation>
+        <translation>Förhindrar att skärmsläckaren aktiveras och värden från att gå i viloläge när emuleringen körs.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7941"/>
@@ -7737,7 +7738,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7944"/>
         <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
-        <translation type="unfinished"></translation>
+        <translation>RAIntegration används istället för den inbyggda prestationsimplementationen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7945"/>
@@ -7817,17 +7818,17 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7961"/>
         <source>Removed stage {} ({}).</source>
-        <translation type="unfinished"></translation>
+        <translation>Tog bort steg {} ({}).</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7962"/>
         <source>Removes this shader from the chain.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tar bort denna shader från kedjan.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7963"/>
         <source>Renames existing save states when saving to a backup file.</source>
-        <translation type="unfinished"></translation>
+        <translation>Byter namn på befintliga sparade tillstånd vid sparning till en säkerhetskopiefil.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7964"/>
@@ -7837,17 +7838,17 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7965"/>
         <source>Replaces these settings with a previously saved input profile.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ersätter dessa inställningar med en tidigare sparad inmatningsprofil.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7967"/>
         <source>Reset Memory Card Directory</source>
-        <translation type="unfinished"></translation>
+        <translation>Nollställ minneskortskatalog</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7971"/>
         <source>Resets all configuration to defaults (including bindings).</source>
-        <translation type="unfinished"></translation>
+        <translation>Nollställer all konfiguration till standardvärden (inklusive bindningar).</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7972"/>
@@ -7857,7 +7858,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7973"/>
         <source>Resolution change will be applied after restarting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Upplösningsändringar kommer att verkställas efter omstart.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7974"/>
@@ -8042,7 +8043,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8026"/>
         <source>Selects the quality at which screenshots will be compressed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Väljer kvaliteten för vilken skärmbilder ska komprimeras med.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8027"/>
@@ -8052,12 +8053,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8028"/>
         <source>Selects the resolution to use in fullscreen modes.</source>
-        <translation type="unfinished"></translation>
+        <translation>Väljer upplösningen att använda i helskärmslägen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8029"/>
         <source>Selects the view that the game list will open to.</source>
-        <translation type="unfinished"></translation>
+        <translation>Väljer vyn som spellistan ska öppnas med.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8031"/>
@@ -8097,17 +8098,17 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8038"/>
         <source>Sets the verbosity of messages logged. Higher levels will log more messages.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ställer in verbositeten för loggade meddelanden. Högre nivåer kommer att logga fler meddelanden.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8039"/>
         <source>Sets which sort of memory card image will be used for slot {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Anger vilken typ av minneskortsavbild som ska användas för plats {}.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8040"/>
         <source>Setting {} binding {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ställer in {} bindning {}.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8042"/>
@@ -8117,7 +8118,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8043"/>
         <source>Shader {} added as stage {}.</source>
-        <translation type="unfinished"></translation>
+        <translation>Shader {} lades till som steg {}.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8044"/>
@@ -8127,17 +8128,17 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8046"/>
         <source>Show Controller Input</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa kontrollerinmatning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8047"/>
         <source>Show Enhancement Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa förbättringsinställningar</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8049"/>
         <source>Show Frame Times</source>
-        <translation type="unfinished"></translation>
+        <translation>Visa bildrutetider</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8050"/>
@@ -8157,12 +8158,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8057"/>
         <source>Shows a visual history of frame times in the upper-left corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar en visuell historik över bildrutetider i övre vänstra hörnet på skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8058"/>
         <source>Shows enhancement settings in the bottom-right corner of the screen.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar förbättringsinställningar i nedre högra hörnet av skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8059"/>
@@ -8172,57 +8173,57 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8060"/>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar information om inmatnings- och ljudlatens i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8061"/>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar information om emulerad GPU i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8062"/>
         <source>Shows on-screen-display messages when events occur.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar OSD-meddelanden när händelser sker.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8063"/>
         <source>Shows persistent icons when turbo is active or when paused.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar bestående ikoner när turbo är aktivt eller när pausat.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8064"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar aktuellt tillstånd för handkontroller för systemet i nedre vänstra hörnet av skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8065"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar aktuell emuleringshastighet för systemet i övre högra hörnet av skärmen som ett procenttal.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8066"/>
         <source>Shows the current rendering resolution of the system in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar aktuell renderingsupplösning för systemet i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8067"/>
         <source>Shows the game you are currently playing as part of your profile in Discord.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar spelet som du för närvarande spelar som en del av din profil i Discord.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8068"/>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar värdens CPU-användning för varje systemtråd i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8069"/>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar värdens GPU-användning i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8070"/>
         <source>Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.</source>
-        <translation type="unfinished"></translation>
+        <translation>Visar antalet bildrutor (eller v-syncs) som visas per sekund av systemet i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8071"/>
@@ -8257,7 +8258,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8077"/>
         <source>Smooth Scrolling</source>
-        <translation type="unfinished"></translation>
+        <translation>Mjuk rullning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8078"/>
@@ -8277,7 +8278,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8082"/>
         <source>Sort Reversed</source>
-        <translation type="unfinished"></translation>
+        <translation>Omvänd sortering</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8084"/>
@@ -8287,7 +8288,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8085"/>
         <source>Spectator Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Åskådarläge</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8087"/>
@@ -8312,7 +8313,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8098"/>
         <source>Stores the current settings to an input profile.</source>
-        <translation type="unfinished"></translation>
+        <translation>Lagrar aktuella inställningar till en inmatningsprofil.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8099"/>
@@ -8337,12 +8338,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8104"/>
         <source>Switches between full screen and windowed when the window is double-clicked.</source>
-        <translation type="unfinished"></translation>
+        <translation>Växlar mellan helskärm och fönsterläge när fönstret dubbelklickas.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8105"/>
         <source>Sync To Host Refresh Rate</source>
-        <translation type="unfinished"></translation>
+        <translation>Synka till värdens uppdateringsfrekvens</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8106"/>
@@ -8407,7 +8408,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8119"/>
         <source>Threaded Rendering</source>
-        <translation type="unfinished"></translation>
+        <translation>Trådad rendering</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8120"/>
@@ -8437,7 +8438,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8127"/>
         <source>Toggle every %d frames</source>
-        <translation type="unfinished"></translation>
+        <translation>Växla var %d bildruta</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8128"/>
@@ -8452,7 +8453,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8130"/>
         <source>True Color Rendering</source>
-        <translation type="unfinished"></translation>
+        <translation>True Color-rendering</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8131"/>
@@ -8592,12 +8593,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8163"/>
         <source>WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation type="unfinished"></translation>
+        <translation>VARNING: Aktivering av fusk kan orsaka oförutsett beteende, krascher, mjuklåsningar eller trasiga sparade spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8164"/>
         <source>WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.</source>
-        <translation type="unfinished"></translation>
+        <translation>VARNING: Aktivering av spelpatchar kan orsaka oförutsett beteende, krascher, mjuklåsningar eller trasiga sparade spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8165"/>
