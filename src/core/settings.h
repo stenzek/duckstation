@@ -245,6 +245,8 @@ struct Settings
       bool convert_copies_to_writes : 1 = false;
       bool replacement_scale_linear_filter = false;
 
+      u32 max_replacement_cache_vram_usage_mb = 512;
+
       u32 max_vram_write_splits = 0;
       u32 max_vram_write_coalesce_width = 0;
       u32 max_vram_write_coalesce_height = 0;

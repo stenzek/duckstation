@@ -32,6 +32,7 @@ public:
   std::string GenerateVRAMUpdateDepthFragmentShader(bool msaa) const;
   std::string GenerateVRAMExtractFragmentShader(u32 resolution_scale, u32 multisamples, bool color_24bit,
                                                 bool depth_buffer) const;
+  std::string GenerateVRAMReplacementBlitFragmentShader() const;
 
   std::string GenerateAdaptiveDownsampleVertexShader() const;
   std::string GenerateAdaptiveDownsampleMipFragmentShader() const;

@@ -1284,6 +1284,22 @@ float3 SampleVRAM24(uint2 icoords)
   return ss.str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateVRAMReplacementBlitFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1);
+
+  ss << R"(
+{
+  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);
+}
+)";
+
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateWireframeGeometryShader() const
 {
   std::stringstream ss;

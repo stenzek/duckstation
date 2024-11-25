@@ -16,6 +16,7 @@
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/gsvector_formatter.h"
+#include "common/heterogeneous_containers.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
@@ -128,7 +129,7 @@ struct TextureReplacementSubImage
 {
   GSVector4i dst_rect;
   GSVector4i src_rect;
-  const TextureReplacementImage& image;
+  GPUTexture* texture;
   float scale_x;
   float scale_y;
   bool invert_alpha;
@@ -229,7 +230,8 @@ struct DumpedTextureKeyHash
 } // namespace
 
 using HashCache = std::unordered_map<HashCacheKey, HashCacheEntry, HashCacheKeyHash>;
-using TextureCache = std::unordered_map<std::string, TextureReplacementImage>;
+using ReplacementImageCache = PreferUnorderedStringMap<TextureReplacementImage>;
+using GPUReplacementImageCache = PreferUnorderedStringMap<std::pair<std::unique_ptr<GPUTexture>, u32>>;
 
 using VRAMReplacementMap = std::unordered_map<VRAMReplacementName, std::string, VRAMReplacementNameHash>;
 using TextureReplacementMap =
@@ -304,6 +306,8 @@ static void LoadTextureReplacementAliases(const ryml::ConstNodeRef& root, bool l
                                           bool load_texture_replacement_aliases);
 
 static const TextureReplacementImage* GetTextureReplacementImage(const std::string& path);
+static GPUTexture* GetTextureReplacementGPUImage(const std::string& path);
+static void CompactTextureReplacementGPUImages();
 static void PreloadReplacementTextures();
 static void PurgeUnreferencedTexturesFromCache();
 
@@ -529,7 +533,10 @@ struct GPUTextureCacheState
   TextureReplacementMap texture_page_texture_replacements;
 
   // TODO: Check the size, purge some when it gets too large.
-  TextureCache replacement_image_cache;
+  ReplacementImageCache replacement_image_cache;
+  GPUReplacementImageCache gpu_replacement_image_cache;
+  size_t gpu_replacement_image_cache_vram_usage = 0;
+  std::vector<std::pair<GPUReplacementImageCache::iterator, s32>> gpu_replacement_image_cache_purge_list;
 
   std::unordered_set<VRAMReplacementName, VRAMReplacementNameHash> dumped_vram_writes;
   std::unordered_set<DumpedTextureKey, DumpedTextureKeyHash> dumped_textures;
@@ -744,9 +751,17 @@ void GPUTextureCache::Shutdown()
   ClearHashCache();
   DestroyPipelines();
   s_state.replacement_texture_render_target.reset();
+  s_state.gpu_replacement_image_cache_purge_list = {};
   s_state.hash_cache_purge_list = {};
   s_state.temp_vram_write_list = {};
   s_state.track_vram_writes = false;
+
+  for (auto it = s_state.gpu_replacement_image_cache.begin(); it != s_state.gpu_replacement_image_cache.end();)
+  {
+    g_gpu_device->RecycleTexture(std::move(it->second.first));
+    it = s_state.gpu_replacement_image_cache.erase(it);
+  }
+  s_state.gpu_replacement_image_cache_vram_usage = 0;
 
   s_state.replacement_image_cache.clear();
   s_state.vram_replacements.clear();
@@ -2150,6 +2165,8 @@ void GPUTextureCache::Compact()
       RemoveFromHashCache(s_state.hash_cache_purge_list[purge_index++].first);
     }
   }
+
+  CompactTextureReplacementGPUImages();
 }
 
 size_t GPUTextureCache::HashCacheKeyHash::operator()(const HashCacheKey& k) const
@@ -2463,8 +2480,7 @@ void GPUTextureCache::SetGameID(std::string game_id)
   ReloadTextureReplacements(false);
 }
 
-const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetVRAMReplacement(u32 width, u32 height,
-                                                                                    const void* pixels)
+GPUTexture* GPUTextureCache::GetVRAMReplacement(u32 width, u32 height, const void* pixels)
 {
   const VRAMReplacementName hash = GetVRAMWriteHash(width, height, pixels);
 
@@ -2472,7 +2488,7 @@ const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetVRAMReplacem
   if (it == s_state.vram_replacements.end())
     return nullptr;
 
-  return GetTextureReplacementImage(it->second);
+  return GetTextureReplacementGPUImage(it->second);
 }
 
 bool GPUTextureCache::ShouldDumpVRAMWrite(u32 width, u32 height)
@@ -2675,12 +2691,7 @@ void GPUTextureCache::GetVRAMWriteTextureReplacements(std::vector<TextureReplace
     if (!IsMatchingReplacementPalette(palette_hash, mode, palette, it->second.first))
       continue;
 
-    const TextureReplacementImage* image = GetTextureReplacementImage(it->second.second);
-    if (!image)
-      continue;
-
     const TextureReplacementName& name = it->second.first;
-    const GSVector2 scale = GSVector2(GSVector2i(image->GetWidth(), image->GetHeight())) / GSVector2(name.GetSizeVec());
     const GSVector4i rect_in_write_space = name.GetDestRect();
     const GSVector4i rect_in_page_space = rect_in_write_space.sub32(offset_to_page_v);
 
@@ -2700,7 +2711,12 @@ void GPUTextureCache::GetVRAMWriteTextureReplacements(std::vector<TextureReplace
     DebugAssert(rect_in_page_space.width() <= static_cast<s32>(TEXTURE_PAGE_WIDTH));
     DebugAssert(rect_in_page_space.height() <= static_cast<s32>(TEXTURE_PAGE_HEIGHT));
 
-    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::zero(), *image, scale.x, scale.y,
+    GPUTexture* texture = GetTextureReplacementGPUImage(it->second.second);
+    if (!texture)
+      continue;
+
+    const GSVector2 scale = GSVector2(texture->GetSizeVec()) / GSVector2(name.GetSizeVec());
+    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::zero(), texture, scale.x, scale.y,
                                                       name.IsSemitransparent()});
   }
 }
@@ -2755,12 +2771,12 @@ void GPUTextureCache::GetTexturePageTextureReplacements(std::vector<TextureRepla
         continue;
     }
 
-    const TextureReplacementImage* image = GetTextureReplacementImage(it->second.second);
-    if (!image)
+    GPUTexture* texture = GetTextureReplacementGPUImage(it->second.second);
+    if (!texture)
       continue;
 
-    const GSVector2 scale = GSVector2(GSVector2i(image->GetWidth(), image->GetHeight())) / GSVector2(name.GetSizeVec());
-    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::zero(), *image, scale.x, scale.y,
+    const GSVector2 scale = GSVector2(texture->GetSizeVec()) / GSVector2(name.GetSizeVec());
+    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::zero(), texture, scale.x, scale.y,
                                                       name.IsSemitransparent()});
   }
 }
@@ -2986,6 +3002,95 @@ const GPUTextureCache::TextureReplacementImage* GPUTextureCache::GetTextureRepla
   return &it->second;
 }
 
+GPUTexture* GPUTextureCache::GetTextureReplacementGPUImage(const std::string& path)
+{
+  // Already in cache?
+  const auto git = s_state.gpu_replacement_image_cache.find(path);
+  if (git != s_state.gpu_replacement_image_cache.end())
+  {
+    git->second.second = System::GetFrameNumber();
+    return git->second.first.get();
+  }
+
+  // Need to upload it.
+  Error error;
+  std::unique_ptr<GPUTexture> tex;
+
+  // Check CPU cache first.
+  const auto it = s_state.replacement_image_cache.find(path);
+  if (it != s_state.replacement_image_cache.end())
+  {
+    tex = g_gpu_device->FetchAndUploadTextureImage(it->second, GPUTexture::Flags::None, &error);
+  }
+  else
+  {
+    // Need to load it.
+    Image cpu_image;
+    if (cpu_image.LoadFromFile(path.c_str(), &error))
+      tex = g_gpu_device->FetchAndUploadTextureImage(cpu_image, GPUTexture::Flags::None, &error);
+  }
+
+  if (!tex)
+  {
+    ERROR_LOG("Failed to load/upload '{}': {}", Path::GetFileName(path), error.GetDescription());
+    return nullptr;
+  }
+
+  const size_t vram_usage = tex->GetVRAMUsage();
+  s_state.gpu_replacement_image_cache_vram_usage += vram_usage;
+
+  VERBOSE_LOG("Uploaded '{}': {}x{} {} {:.2f} KB", Path::GetFileName(path), tex->GetWidth(), tex->GetHeight(),
+              GPUTexture::GetFormatName(tex->GetFormat()), static_cast<float>(vram_usage) / 1024.0f);
+
+  return s_state.gpu_replacement_image_cache.emplace(path, std::make_pair(std::move(tex), System::GetFrameNumber()))
+    .first->second.first.get();
+}
+
+void GPUTextureCache::CompactTextureReplacementGPUImages()
+{
+  // Instead of compacting to exactly the maximum, let's go down to the maximum less 16MB.
+  // That way we can hopefully avoid compacting again for a few frames.
+  static constexpr size_t EXTRA_COMPACT_SIZE = 16 * 1024 * 1024;
+
+  const size_t max_usage = static_cast<size_t>(s_state.config.max_replacement_cache_vram_usage_mb) * 1048576;
+  if (s_state.gpu_replacement_image_cache_vram_usage <= max_usage)
+    return;
+
+  VERBOSE_LOG("Compacting replacement GPU image cache, count = {}, size = {:.1f} MB",
+              s_state.gpu_replacement_image_cache.size(),
+              static_cast<float>(s_state.gpu_replacement_image_cache_vram_usage) / 1048576.0f);
+
+  const u32 frame_number = System::GetFrameNumber();
+  s_state.gpu_replacement_image_cache_purge_list.reserve(s_state.gpu_replacement_image_cache.size());
+  for (auto it = s_state.gpu_replacement_image_cache.begin(); it != s_state.gpu_replacement_image_cache.end(); ++it)
+    s_state.gpu_replacement_image_cache_purge_list.emplace_back(it, frame_number - it->second.second);
+
+  // Reverse sort, put the oldest on the end.
+  std::sort(s_state.gpu_replacement_image_cache_purge_list.begin(),
+            s_state.gpu_replacement_image_cache_purge_list.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs.second > rhs.second; });
+
+  // See first comment above.
+  const size_t target_size = (max_usage < EXTRA_COMPACT_SIZE) ? max_usage : (max_usage - EXTRA_COMPACT_SIZE);
+  while (s_state.gpu_replacement_image_cache_vram_usage > target_size &&
+         !s_state.gpu_replacement_image_cache_purge_list.empty())
+  {
+    GPUReplacementImageCache::iterator iter = s_state.gpu_replacement_image_cache_purge_list.back().first;
+    s_state.gpu_replacement_image_cache_purge_list.pop_back();
+
+    std::unique_ptr<GPUTexture> tex = std::move(iter->second.first);
+    s_state.gpu_replacement_image_cache.erase(iter);
+    s_state.gpu_replacement_image_cache_vram_usage -= tex->GetVRAMUsage();
+    g_gpu_device->RecycleTexture(std::move(tex));
+  }
+
+  s_state.gpu_replacement_image_cache_purge_list.clear();
+
+  VERBOSE_LOG("Finished compacting replacement GPU image cache, count = {}, size = {:.1f} MB",
+              s_state.gpu_replacement_image_cache.size(),
+              static_cast<float>(s_state.gpu_replacement_image_cache_vram_usage) / 1048576.0f);
+}
+
 void GPUTextureCache::PreloadReplacementTextures()
 {
   static constexpr float UPDATE_INTERVAL = 1.0f;
@@ -3203,31 +3308,35 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info)
 
 void GPUTextureCache::PurgeUnreferencedTexturesFromCache()
 {
-  TextureCache old_map = std::move(s_state.replacement_image_cache);
-  s_state.replacement_image_cache = TextureCache();
+  ReplacementImageCache old_map = std::move(s_state.replacement_image_cache);
+  GPUReplacementImageCache old_gpu_map = std::move(s_state.gpu_replacement_image_cache);
+  s_state.replacement_image_cache = ReplacementImageCache();
+  s_state.gpu_replacement_image_cache = GPUReplacementImageCache();
 
-  for (const auto& it : s_state.vram_replacements)
-  {
-    const auto it2 = old_map.find(it.second);
+  const auto reinsert_texture = [&old_map, &old_gpu_map](const std::string& name) {
+    const auto it2 = old_map.find(name);
     if (it2 != old_map.end())
     {
-      s_state.replacement_image_cache.emplace(it.second, std::move(it2->second));
+      s_state.replacement_image_cache.emplace(name, std::move(it2->second));
       old_map.erase(it2);
     }
-  }
 
-  for (const auto& map : {s_state.vram_write_texture_replacements, s_state.texture_page_texture_replacements})
-  {
-    for (const auto& it : map)
+    const auto it3 = old_gpu_map.find(name);
+    if (it3 != old_gpu_map.end())
     {
-      const auto it2 = old_map.find(it.second.second);
-      if (it2 != old_map.end())
-      {
-        s_state.replacement_image_cache.emplace(it.second.second, std::move(it2->second));
-        old_map.erase(it2);
-      }
+      s_state.gpu_replacement_image_cache.emplace(name, std::move(it3->second));
+      old_gpu_map.erase(it3);
     }
-  }
+  };
+
+  for (const auto& it : s_state.vram_replacements)
+    reinsert_texture(it.second);
+
+  for (const auto& it : s_state.vram_write_texture_replacements)
+    reinsert_texture(it.second.second);
+
+  for (const auto& it : s_state.texture_page_texture_replacements)
+    reinsert_texture(it.second.second);
 }
 
 void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash, HashType pal_hash,
@@ -3317,22 +3426,15 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
 
   for (const TextureReplacementSubImage& si : subimages)
   {
-    std::unique_ptr<GPUTexture> temp_texture =
-      g_gpu_device->FetchAndUploadTextureImage(si.image, GPUTexture::Flags::None);
-    if (!temp_texture)
-      continue;
-
     const GSVector4i dst_rect = GSVector4i(GSVector4(si.dst_rect) * max_scale_v);
-    texture_size = GSVector2(GSVector2i(temp_texture->GetWidth(), temp_texture->GetHeight()));
+    texture_size = GSVector2(si.texture->GetSizeVec());
     GSVector2::store<true>(&uniforms[0], texture_size);
     GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
     g_gpu_device->SetViewportAndScissor(dst_rect);
-    g_gpu_device->SetTextureSampler(0, temp_texture.get(), g_gpu_device->GetNearestSampler());
+    g_gpu_device->SetTextureSampler(0, si.texture, g_gpu_device->GetNearestSampler());
     g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :
                                                 s_state.replacement_draw_pipeline.get());
     g_gpu_device->Draw(3, 0);
-
-    g_gpu_device->RecycleTexture(std::move(temp_texture));
   }
 
   g_gpu_device->CopyTextureRegion(replacement_tex.get(), 0, 0, 0, 0, s_state.replacement_texture_render_target.get(), 0,

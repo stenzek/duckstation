@@ -1545,8 +1545,8 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM write replacement
   {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateCopyFragmentShader(), error);
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateVRAMReplacementBlitFragmentShader(), error);
     if (!fs)
       return false;
 
@@ -2924,41 +2924,14 @@ void GPU_HW::LoadVertices()
   }
 }
 
-bool GPU_HW::BlitVRAMReplacementTexture(const GPUTextureCache::TextureReplacementImage* tex, u32 dst_x, u32 dst_y,
-                                        u32 width, u32 height)
+bool GPU_HW::BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  if (!m_vram_replacement_texture || m_vram_replacement_texture->GetWidth() < tex->GetWidth() ||
-      m_vram_replacement_texture->GetHeight() < tex->GetHeight() || g_gpu_device->GetFeatures().prefer_unused_textures)
-  {
-    g_gpu_device->RecycleTexture(std::move(m_vram_replacement_texture));
-
-    if (!(m_vram_replacement_texture = g_gpu_device->FetchTexture(
-            tex->GetWidth(), tex->GetHeight(), 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-            GPUTexture::Flags::None, tex->GetPixels(), tex->GetPitch())))
-    {
-      return false;
-    }
-  }
-  else
-  {
-    if (!m_vram_replacement_texture->Update(0, 0, tex->GetWidth(), tex->GetHeight(), tex->GetPixels(), tex->GetPitch()))
-    {
-      ERROR_LOG("Update {}x{} texture failed.", width, height);
-      return false;
-    }
-  }
-
   GL_SCOPE_FMT("BlitVRAMReplacementTexture() {}x{} to {},{} => {},{} ({}x{})", tex->GetWidth(), tex->GetHeight(), dst_x,
                dst_y, dst_x + width, dst_y + height, width, height);
 
-  const float src_rect[4] = {
-    0.0f, 0.0f, static_cast<float>(tex->GetWidth()) / static_cast<float>(m_vram_replacement_texture->GetWidth()),
-    static_cast<float>(tex->GetHeight()) / static_cast<float>(m_vram_replacement_texture->GetHeight())};
-
-  g_gpu_device->SetTextureSampler(0, m_vram_replacement_texture.get(), g_gpu_device->GetLinearSampler());
+  g_gpu_device->SetTextureSampler(0, tex, g_gpu_device->GetLinearSampler());
   g_gpu_device->SetPipeline(m_vram_write_replacement_pipeline.get());
   g_gpu_device->SetViewportAndScissor(dst_x, dst_y, width, height);
-  g_gpu_device->PushUniformBuffer(src_rect, sizeof(src_rect));
   g_gpu_device->Draw(3, 0);
 
   RestoreDeviceContext();
@@ -3381,7 +3354,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   }
   else
   {
-    const GPUTextureCache::TextureReplacementImage* rtex = GPUTextureCache::GetVRAMReplacement(width, height, data);
+    GPUTexture* rtex = GPUTextureCache::GetVRAMReplacement(width, height, data);
     if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
                                            width * m_resolution_scale, height * m_resolution_scale))
     {

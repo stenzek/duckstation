@@ -228,8 +228,7 @@ private:
 
   void UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
                        bool check_mask, const GSVector4i bounds);
-  bool BlitVRAMReplacementTexture(const GPUTextureCache::TextureReplacementImage* tex, u32 dst_x, u32 dst_y, u32 width,
-                                  u32 height);
+  bool BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
   /// Expands a line into two triangles.
   void DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth);
@@ -259,7 +258,6 @@ private:
   std::unique_ptr<GPUTexture> m_vram_read_texture;
   std::unique_ptr<GPUTexture> m_vram_readback_texture;
   std::unique_ptr<GPUDownloadTexture> m_vram_readback_download_texture;
-  std::unique_ptr<GPUTexture> m_vram_replacement_texture;
 
   std::unique_ptr<GPUTextureBuffer> m_vram_upload_buffer;
   std::unique_ptr<GPUTexture> m_vram_write_texture;

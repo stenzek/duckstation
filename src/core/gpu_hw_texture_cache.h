@@ -128,7 +128,7 @@ void SetGameID(std::string game_id);
 void ReloadTextureReplacements(bool show_info);
 
 // VRAM Write Replacements
-const TextureReplacementImage* GetVRAMReplacement(u32 width, u32 height, const void* pixels);
+GPUTexture* GetVRAMReplacement(u32 width, u32 height, const void* pixels);
 void DumpVRAMWrite(u32 width, u32 height, const void* pixels);
 bool ShouldDumpVRAMWrite(u32 width, u32 height);
 

@@ -454,6 +454,9 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   texture_replacements.config.replacement_scale_linear_filter =
     si.GetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter", false);
 
+  texture_replacements.config.max_replacement_cache_vram_usage_mb =
+    si.GetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage", 512);
+
   texture_replacements.config.max_vram_write_splits = si.GetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", 0u);
   texture_replacements.config.max_vram_write_coalesce_width =
     si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth", 0u);
@@ -713,6 +716,9 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("TextureReplacements", "ConvertCopiesToWrites", texture_replacements.config.convert_copies_to_writes);
   si.SetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter",
                   texture_replacements.config.replacement_scale_linear_filter);
+
+  si.SetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
+                  texture_replacements.config.max_replacement_cache_vram_usage_mb);
 
   si.SetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", texture_replacements.config.max_vram_write_splits);
   si.SetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth",
