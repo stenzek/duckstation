@@ -2551,7 +2551,7 @@ void GPU_HW::LoadVertices()
       if (m_resolution_scale > 1 && !is_3d && rc.quad_polygon)
         HandleFlippedQuadTextureCoordinates(vertices.data());
       else if (m_allow_sprite_mode)
-        SetBatchSpriteMode((pgxp && !is_3d) || IsPossibleSpritePolygon(vertices.data()));
+        SetBatchSpriteMode(pgxp ? !is_3d : IsPossibleSpritePolygon(vertices.data()));
 
       if (m_sw_renderer)
       {
