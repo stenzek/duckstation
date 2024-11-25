@@ -2260,13 +2260,16 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
     SubmitCommandList(false, "Allocate SRV for RenderTextureMipmap()");
 
   // Setup views. This will be a partial view for the SRV.
-  D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {texture->GetDXGIFormat(), D3D12_RTV_DIMENSION_TEXTURE2D};
-  rtv_desc.Texture2D = {dst_level, 0u};
+  const D3D12_RENDER_TARGET_VIEW_DESC rtv_desc = {.Format = texture->GetDXGIFormat(),
+                                                  .ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D,
+                                                  .Texture2D = {.MipSlice = dst_level, .PlaneSlice = 0}};
   m_device->CreateRenderTargetView(texture->GetResource(), &rtv_desc, rtv_handle);
 
-  D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {texture->GetDXGIFormat(), D3D12_SRV_DIMENSION_TEXTURE2D,
-                                              D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING};
-  srv_desc.Texture2D = {src_level, 1u, 0u, 0.0f};
+  const D3D12_SHADER_RESOURCE_VIEW_DESC srv_desc = {
+    .Format = texture->GetDXGIFormat(),
+    .ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D,
+    .Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING,
+    .Texture2D = {.MostDetailedMip = src_level, .MipLevels = 1, .PlaneSlice = 0, .ResourceMinLODClamp = 0.0f}};
   m_device->CreateShaderResourceView(texture->GetResource(), &srv_desc, srv_handle);
 
   // *now* we don't have to worry about running out of anything.
@@ -2282,10 +2285,10 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
                                           D3D12_RESOURCE_STATE_RENDER_TARGET);
   }
 
-  const D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {.cpuDescriptor = rtv_handle,
-                                                        .BeginningAccess =
-                                                          D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD,
-                                                        .EndingAccess = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE};
+  const D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {
+    .cpuDescriptor = rtv_handle,
+    .BeginningAccess = {.Type = D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD, .Clear = {}},
+    .EndingAccess = {.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, .Resolve = {}}};
   cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
 
   const D3D12_VIEWPORT vp = {0.0f, 0.0f, static_cast<float>(dst_width), static_cast<float>(dst_height), 0.0f, 1.0f};
