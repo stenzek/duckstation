@@ -822,11 +822,34 @@ uint2 FloatToIntegerCoords(float2 coords)
   return uint2((UPSCALED == 0 || FORCE_ROUND_TEXCOORDS != 0) ? roundEven(coords) : floor(coords));
 }
 
-#if !PAGE_TEXTURE
+#if PAGE_TEXTURE
+
+float4 SampleFromPageTexture(float2 coords)
+{
+  // Cached textures.
+  uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
+#if UPSCALED
+  float2 fpart = frac(coords);
+  coords = (float2(icoord) + fpart);
+#else
+  // Drop fractional part.
+  coords = float2(icoord);
+#endif
+
+  // Normalize.
+  coords = coords * (1.0f / 256.0f);
+  return SAMPLE_TEXTURE(samp0, coords);
+}
+
+#endif
+
+#if !PAGE_TEXTURE || TEXTURE_FILTERING
 
 float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 {
-  #if PALETTE
+  #if PAGE_TEXTURE
+    return SampleFromPageTexture(coords);
+  #elif PALETTE
     uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
 
     uint2 vicoord;
@@ -875,26 +898,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
   #endif
 }
 
-#else
-
-float4 SampleFromPageTexture(float2 coords)
-{
-  // Cached textures.
-  uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
-#if UPSCALED
-  float2 fpart = frac(coords);
-  coords = (float2(icoord) + fpart);
-#else
-  // Drop fractional part.
-  coords = float2(icoord);
-#endif
-
-  // Normalize.
-  coords = coords * (1.0f / 256.0f);
-  return SAMPLE_TEXTURE(samp0, coords);
-}
-
-#endif
+#endif // !PAGE_TEXTURE || TEXTURE_FILTERING
 
 #endif // TEXTURED
 )";
@@ -902,6 +906,9 @@ float4 SampleFromPageTexture(float2 coords)
   const u32 num_fragment_outputs = use_rov ? 0 : (use_dual_source ? 2 : 1);
   if (textured && page_texture)
   {
+    if (texture_filtering != GPUTextureFilter::Nearest)
+      WriteBatchTextureFilter(ss, texture_filtering);
+
     if (uv_limits)
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "float4 v_uv_limits"}}, true, num_fragment_outputs,
@@ -960,7 +967,7 @@ float4 SampleFromPageTexture(float2 coords)
 
   #if TEXTURED
     float4 texcol;
-    #if PAGE_TEXTURE
+    #if PAGE_TEXTURE && !TEXTURE_FILTERING
       #if UV_LIMITS
         texcol = SampleFromPageTexture(clamp(v_tex0, v_uv_limits.xy, v_uv_limits.zw));
       #else
@@ -971,7 +978,11 @@ float4 SampleFromPageTexture(float2 coords)
 
       ialpha = 1.0;
     #elif TEXTURE_FILTERING
-      FilteredSampleFromVRAM(v_texpage, v_tex0, v_uv_limits, texcol, ialpha);
+      #if PAGE_TEXTURE
+        FilteredSampleFromVRAM(int2(0, 0), v_tex0, v_uv_limits, texcol, ialpha);
+      #else
+        FilteredSampleFromVRAM(v_texpage, v_tex0, v_uv_limits, texcol, ialpha);
+      #endif
       if (ialpha < 0.5)
         discard;
     #else
