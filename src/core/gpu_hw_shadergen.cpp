@@ -880,13 +880,17 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 float4 SampleFromPageTexture(float2 coords)
 {
   // Cached textures.
-#if UPSCALED == 0
-  float2 fpart = coords - roundEven(coords);
-#else
-  float2 fpart = frac(coords);
-#endif
   uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
-  coords = (float2(icoord) + fpart) * (1.0f / 256.0f);
+#if UPSCALED
+  float2 fpart = frac(coords);
+  coords = (float2(icoord) + fpart);
+#else
+  // Drop fractional part.
+  coords = float2(icoord);
+#endif
+
+  // Normalize.
+  coords = coords * (1.0f / 256.0f);
   return SAMPLE_TEXTURE(samp0, coords);
 }
 
