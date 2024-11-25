@@ -594,45 +594,62 @@ float GPU::ComputeVerticalFrequency() const
 float GPU::ComputeDisplayAspectRatio() const
 {
   if (g_settings.debugging.show_vram)
-  {
     return static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT);
-  }
-  else if (g_settings.display_force_4_3_for_24bit && m_GPUSTAT.display_area_color_depth_24)
-  {
+
+  // Display off => Doesn't matter.
+  if (m_crtc_state.display_width == 0 || m_crtc_state.display_height == 0)
     return 4.0f / 3.0f;
-  }
-  else if (g_settings.display_aspect_ratio == DisplayAspectRatio::Auto)
+
+  // PAR 1:1 is not corrected.
+  if (g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1)
+    return static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
+
+  float ar = 4.0f / 3.0f;
+  if (!g_settings.display_force_4_3_for_24bit || !m_GPUSTAT.display_area_color_depth_24)
   {
-    const CRTCState& cs = m_crtc_state;
-    float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
-    float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
-
-    if (relative_width <= 0 || relative_height <= 0)
-      return 4.0f / 3.0f;
-
-    if (m_GPUSTAT.pal_mode)
+    if (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow && g_gpu_device->HasMainSwapChain())
     {
-      relative_width /= static_cast<float>(PAL_HORIZONTAL_ACTIVE_END - PAL_HORIZONTAL_ACTIVE_START);
-      relative_height /= static_cast<float>(PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START);
+      // Match window has already been corrected.
+      return static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) /
+             static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
+    }
+    else if (g_settings.display_aspect_ratio == DisplayAspectRatio::Custom)
+    {
+      ar = static_cast<float>(g_settings.display_aspect_ratio_custom_numerator) /
+           static_cast<float>(g_settings.display_aspect_ratio_custom_denominator);
     }
     else
     {
-      relative_width /= static_cast<float>(NTSC_HORIZONTAL_ACTIVE_END - NTSC_HORIZONTAL_ACTIVE_START);
-      relative_height /= static_cast<float>(NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START);
+      ar = g_settings.GetDisplayAspectRatioValue();
     }
-    return (relative_width / relative_height) * (4.0f / 3.0f);
   }
-  else if (g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1)
-  {
-    if (m_crtc_state.display_width == 0 || m_crtc_state.display_height == 0)
-      return 4.0f / 3.0f;
 
-    return static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
+  return ComputeAspectRatioCorrection() * ar;
+}
+
+float GPU::ComputeAspectRatioCorrection() const
+{
+  const CRTCState& cs = m_crtc_state;
+  float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
+  float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
+  if (relative_width <= 0 || relative_height <= 0 ||
+      g_settings.display_crop_mode == DisplayCropMode::OverscanUncorrected)
+  {
+    return 1.0f;
+  }
+
+  if (m_GPUSTAT.pal_mode)
+  {
+    relative_width /= static_cast<float>(PAL_HORIZONTAL_ACTIVE_END - PAL_HORIZONTAL_ACTIVE_START);
+    relative_height /= static_cast<float>(PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START);
   }
   else
   {
-    return g_settings.GetDisplayAspectRatioValue();
+    relative_width /= static_cast<float>(NTSC_HORIZONTAL_ACTIVE_END - NTSC_HORIZONTAL_ACTIVE_START);
+    relative_height /= static_cast<float>(NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START);
   }
+
+  return (relative_width / relative_height);
 }
 
 void GPU::UpdateCRTCConfig()
@@ -725,6 +742,10 @@ void GPU::UpdateCRTCDisplayParameters()
     (std::min<u16>(cs.regs.X2, horizontal_total) / cs.dot_clock_divider) * cs.dot_clock_divider;
   const u16 vertical_display_start = std::min<u16>(cs.regs.Y1, vertical_total);
   const u16 vertical_display_end = std::min<u16>(cs.regs.Y2, vertical_total);
+  const u16 old_horizontal_visible_start = cs.horizontal_visible_start;
+  const u16 old_horizontal_visible_end = cs.horizontal_visible_end;
+  const u16 old_vertical_visible_start = cs.vertical_visible_start;
+  const u16 old_vertical_visible_end = cs.vertical_visible_end;
 
   if (m_GPUSTAT.pal_mode)
   {
@@ -739,6 +760,7 @@ void GPU::UpdateCRTCDisplayParameters()
         break;
 
       case DisplayCropMode::Overscan:
+      case DisplayCropMode::OverscanUncorrected:
         cs.horizontal_visible_start = static_cast<u16>(std::max<int>(0, 628 + g_settings.display_active_start_offset));
         cs.horizontal_visible_end =
           static_cast<u16>(std::max<int>(cs.horizontal_visible_start, 3188 + g_settings.display_active_end_offset));
@@ -776,6 +798,7 @@ void GPU::UpdateCRTCDisplayParameters()
         break;
 
       case DisplayCropMode::Overscan:
+      case DisplayCropMode::OverscanUncorrected:
         cs.horizontal_visible_start = static_cast<u16>(std::max<int>(0, 608 + g_settings.display_active_start_offset));
         cs.horizontal_visible_end =
           static_cast<u16>(std::max<int>(cs.horizontal_visible_start, 3168 + g_settings.display_active_end_offset));
@@ -870,6 +893,13 @@ void GPU::UpdateCRTCDisplayParameters()
       (cs.vertical_visible_end -
        std::min(cs.vertical_visible_end, std::max(vertical_display_start, cs.vertical_visible_start)))
       << height_shift;
+  }
+
+  if (old_horizontal_visible_start != cs.horizontal_visible_start ||
+      old_horizontal_visible_end != cs.horizontal_visible_end ||
+      old_vertical_visible_start != cs.vertical_visible_start || old_vertical_visible_end != cs.vertical_visible_end)
+  {
+    System::UpdateGTEAspectRatio();
   }
 
   if (cs.display_vram_width != old_vram_width || cs.display_vram_height != old_vram_height)

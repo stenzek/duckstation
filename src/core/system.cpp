@@ -1941,9 +1941,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, fullscreen, error))
     return false;
 
-  if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
-    GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
-
   if (g_settings.gpu_pgxp_enable)
     CPU::PGXP::Initialize();
 
@@ -1965,6 +1962,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
 
   s_state.cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
+  UpdateGTEAspectRatio();
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
 
@@ -4402,8 +4400,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
          (g_settings.display_aspect_ratio_custom_numerator != old_settings.display_aspect_ratio_custom_numerator ||
           g_settings.display_aspect_ratio_custom_denominator != old_settings.display_aspect_ratio_custom_denominator)))
     {
-      if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
-        GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
+      UpdateGTEAspectRatio();
     }
 
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
@@ -5651,8 +5648,7 @@ void System::ToggleWidescreen()
                   Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio), 5.0f));
   }
 
-  if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
-    GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
+  UpdateGTEAspectRatio();
 }
 
 void System::ToggleSoftwareRendering()
@@ -5698,13 +5694,12 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
 }
 
-void System::DisplayWindowResized(u32 width, u32 height)
+void System::DisplayWindowResized()
 {
   if (!IsValid())
     return;
 
-  if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
-    GTE::UpdateAspectRatio(width, height);
+  UpdateGTEAspectRatio();
 
   g_gpu->RestoreDeviceContext();
   g_gpu->UpdateResolutionScale();
@@ -5717,6 +5712,47 @@ void System::DisplayWindowResized(u32 width, u32 height)
     InvalidateDisplay();
     InvalidateDisplay();
   }
+}
+
+void System::UpdateGTEAspectRatio()
+{
+  if (!IsValid())
+    return;
+
+  DisplayAspectRatio gte_ar = g_settings.display_aspect_ratio;
+  u32 custom_num = 0;
+  u32 custom_denom = 0;
+  if (!g_settings.gpu_widescreen_hack)
+  {
+    // No WS hack => no correction.
+    gte_ar = DisplayAspectRatio::R4_3;
+  }
+  else if (gte_ar == DisplayAspectRatio::Custom)
+  {
+    // Custom AR => use values.
+    custom_num = g_settings.display_aspect_ratio_custom_numerator;
+    custom_denom = g_settings.display_aspect_ratio_custom_denominator;
+  }
+  else if (gte_ar == DisplayAspectRatio::MatchWindow)
+  {
+    if (const GPUSwapChain* main_swap_chain = g_gpu_device->GetMainSwapChain())
+    {
+      // Pre-apply the native aspect ratio correction to the window size.
+      // MatchWindow does not correct the display aspect ratio, so we need to apply it here.
+      const float correction = g_gpu->ComputeAspectRatioCorrection();
+      custom_num =
+        static_cast<u32>(std::max(std::round(static_cast<float>(main_swap_chain->GetWidth()) / correction), 1.0f));
+      custom_denom = std::max<u32>(main_swap_chain->GetHeight(), 1u);
+      gte_ar = DisplayAspectRatio::Custom;
+    }
+    else
+    {
+      // Assume 4:3 until we get a window.
+      gte_ar = DisplayAspectRatio::R4_3;
+    }
+  }
+
+  GTE::SetAspectRatio(gte_ar, custom_num, custom_denom);
 }
 
 bool System::PresentDisplay(bool explicit_present, u64 present_time)

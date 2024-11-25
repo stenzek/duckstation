@@ -184,6 +184,7 @@ public:
   float ComputeHorizontalFrequency() const;
   float ComputeVerticalFrequency() const;
   float ComputeDisplayAspectRatio() const;
+  float ComputeAspectRatioCorrection() const;
 
   static std::unique_ptr<GPU> CreateHardwareRenderer(Error* error);
   static std::unique_ptr<GPU> CreateSoftwareRenderer(Error* error);

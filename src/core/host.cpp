@@ -465,13 +465,11 @@ void Host::UpdateDisplayWindow(bool fullscreen)
     return;
   }
 
-  const u32 new_width = g_gpu_device->GetMainSwapChain()->GetWidth();
-  const u32 new_height = g_gpu_device->GetMainSwapChain()->GetHeight();
-  const float f_width = static_cast<float>(new_width);
-  const float f_height = static_cast<float>(new_height);
+  const float f_width = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth());
+  const float f_height = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
   ImGuiManager::WindowResized(f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
-  System::DisplayWindowResized(new_width, new_height);
+  System::DisplayWindowResized();
 }
 
 void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
@@ -489,13 +487,11 @@ void Host::ResizeDisplayWindow(s32 width, s32 height, float scale)
     return;
   }
 
-  const u32 new_width = g_gpu_device->GetMainSwapChain()->GetWidth();
-  const u32 new_height = g_gpu_device->GetMainSwapChain()->GetHeight();
-  const float f_width = static_cast<float>(new_width);
-  const float f_height = static_cast<float>(new_height);
+  const float f_width = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth());
+  const float f_height = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
   ImGuiManager::WindowResized(f_width, f_height);
   InputManager::SetDisplayWindowSize(f_width, f_height);
-  System::DisplayWindowResized(new_width, new_height);
+  System::DisplayWindowResized();
 }
 
 void Host::ReleaseGPUDevice()

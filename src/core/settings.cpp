@@ -1614,10 +1614,11 @@ const char* Settings::GetDisplayDeinterlacingModeDisplayName(DisplayDeinterlacin
                                   "DisplayDeinterlacingMode");
 }
 
-static constexpr const std::array s_display_crop_mode_names = {"None", "Overscan", "Borders"};
+static constexpr const std::array s_display_crop_mode_names = {"None", "Overscan", "OverscanUncorrected", "Borders"};
 static constexpr const std::array s_display_crop_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "None", "DisplayCropMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Only Overscan Area", "DisplayCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Only Overscan Area (Aspect Uncorrected)", "DisplayCropMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "All Borders", "DisplayCropMode"),
 };
 
@@ -1662,7 +1663,7 @@ static constexpr const std::array s_display_aspect_ratio_names = {
   "20:9",
   "PAR 1:1"};
 static constexpr const std::array s_display_aspect_ratio_values = {
-  -1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f};
+  4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {
@@ -1691,28 +1692,7 @@ const char* Settings::GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar)
 
 float Settings::GetDisplayAspectRatioValue() const
 {
-  switch (display_aspect_ratio)
-  {
-    case DisplayAspectRatio::MatchWindow:
-    {
-      if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
-        return s_display_aspect_ratio_values[static_cast<size_t>(DEFAULT_DISPLAY_ASPECT_RATIO)];
-
-      return static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) /
-             static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
-    }
-
-    case DisplayAspectRatio::Custom:
-    {
-      return static_cast<float>(display_aspect_ratio_custom_numerator) /
-             static_cast<float>(display_aspect_ratio_custom_denominator);
-    }
-
-    default:
-    {
-      return s_display_aspect_ratio_values[static_cast<size_t>(display_aspect_ratio)];
-    }
-  }
+  return s_display_aspect_ratio_values[static_cast<size_t>(display_aspect_ratio)];
 }
 
 static constexpr const std::array s_display_alignment_names = {"LeftOrTop", "Center", "RightOrBottom"};

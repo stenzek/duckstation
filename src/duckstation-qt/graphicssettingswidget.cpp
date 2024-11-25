@@ -671,7 +671,7 @@ void GraphicsSettingsWidget::setupAdditionalUi()
       QString::fromUtf8(Settings::GetDisplayDeinterlacingModeDisplayName(static_cast<DisplayDeinterlacingMode>(i))));
   }
 
-  for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::Count); i++)
+  for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::MaxCount); i++)
   {
     m_ui.displayCropMode->addItem(
       QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
