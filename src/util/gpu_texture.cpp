@@ -68,7 +68,7 @@ u32 GPUTexture::GetBlockSize() const
 u32 GPUTexture::GetBlockSize(Format format)
 {
   if (format >= Format::BC1 && format <= Format::BC7)
-    return 4;
+    return COMPRESSED_TEXTURE_BLOCK_SIZE;
   else
     return 1;
 }
@@ -77,7 +77,7 @@ u32 GPUTexture::CalcUploadPitch(Format format, u32 width)
 {
   // convert to blocks
   if (format >= Format::BC1 && format <= Format::BC7)
-    width = Common::AlignUpPow2(width, 4) / 4;
+    width = Common::AlignUpPow2(width, COMPRESSED_TEXTURE_BLOCK_SIZE) / COMPRESSED_TEXTURE_BLOCK_SIZE;
 
   return width * GetPixelSize(format);
 }
@@ -96,7 +96,7 @@ u32 GPUTexture::CalcUploadRowLengthFromPitch(Format format, u32 pitch)
 {
   const u32 pixel_size = GetPixelSize(format);
   if (IsCompressedFormat(format))
-    return (Common::AlignUpPow2(pitch, pixel_size) / pixel_size) * 4;
+    return (Common::AlignUpPow2(pitch, pixel_size) / pixel_size) * COMPRESSED_TEXTURE_BLOCK_SIZE;
   else
     return pitch / pixel_size;
 }
@@ -133,8 +133,8 @@ void GPUTexture::CopyTextureDataForUpload(u32 width, u32 height, Format format, 
 {
   if (IsCompressedFormat(format))
   {
-    const u32 blocks_wide = Common::AlignUpPow2(width, 4) / 4;
-    const u32 blocks_high = Common::AlignUpPow2(height, 4) / 4;
+    const u32 blocks_wide = Common::AlignUpPow2(width, COMPRESSED_TEXTURE_BLOCK_SIZE) / COMPRESSED_TEXTURE_BLOCK_SIZE;
+    const u32 blocks_high = Common::AlignUpPow2(height, COMPRESSED_TEXTURE_BLOCK_SIZE) / COMPRESSED_TEXTURE_BLOCK_SIZE;
     const u32 block_size = GetPixelSize(format);
     StringUtil::StrideMemCpy(dst, dst_pitch, src, src_pitch, block_size * blocks_wide, blocks_high);
   }
@@ -208,21 +208,41 @@ std::array<float, 4> GPUTexture::GetUNormClearColor() const
 
 size_t GPUTexture::GetVRAMUsage() const
 {
-  if (m_levels == 1) [[likely]]
-    return ((static_cast<size_t>(m_width * m_height) * GetPixelSize(m_format)) * m_layers * m_samples);
-
   const size_t ps = GetPixelSize(m_format) * m_layers * m_samples;
-  u32 width = m_width;
-  u32 height = m_height;
-  size_t ts = 0;
-  for (u32 i = 0; i < m_levels; i++)
+  size_t mem;
+
+  // Max width/height is 65535, 65535*65535 as u32 is okay.
+  if (IsCompressedFormat())
   {
-    width = (width > 1) ? (width / 2) : width;
-    height = (height > 1) ? (height / 2) : height;
-    ts += static_cast<size_t>(width * height) * ps;
+#define COMPRESSED_SIZE(width, height)                                                                                 \
+  (static_cast<size_t>((Common::AlignUpPow2(width, COMPRESSED_TEXTURE_BLOCK_SIZE) / COMPRESSED_TEXTURE_BLOCK_SIZE) *   \
+                       (Common::AlignUpPow2(height, COMPRESSED_TEXTURE_BLOCK_SIZE) / COMPRESSED_TEXTURE_BLOCK_SIZE)) * \
+   ps)
+
+    u32 width = m_width, height = m_height;
+    mem = COMPRESSED_SIZE(width, height);
+    for (u32 i = 1; i < m_levels; i++)
+    {
+      width = (width > 1) ? (width / 2) : width;
+      height = (height > 1) ? (height / 2) : height;
+      mem += COMPRESSED_SIZE(width, height);
+    }
+
+#undef COMPRESSED_SIZE
+  }
+  else
+  {
+    u32 width = m_width, height = m_height;
+    mem = static_cast<size_t>(width * height) * ps;
+    for (u32 i = 1; i < m_levels; i++)
+    {
+      width = (width > 1) ? (width / 2) : width;
+      height = (height > 1) ? (height / 2) : height;
+      mem += static_cast<size_t>(width * height) * ps;
+    }
   }
 
-  return ts;
+  return mem;
 }
 
 u32 GPUTexture::GetPixelSize(GPUTexture::Format format)

@@ -188,6 +188,8 @@ public:
 protected:
   GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format, Flags flags);
 
+  static constexpr u32 COMPRESSED_TEXTURE_BLOCK_SIZE = 4;
+
   u16 m_width = 0;
   u16 m_height = 0;
   u8 m_layers = 0;
