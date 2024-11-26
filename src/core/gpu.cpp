@@ -609,9 +609,8 @@ float GPU::ComputeDisplayAspectRatio() const
   {
     if (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow && g_gpu_device->HasMainSwapChain())
     {
-      // Match window has already been corrected.
-      return static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) /
-             static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
+      ar = static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) /
+           static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
     }
     else if (g_settings.display_aspect_ratio == DisplayAspectRatio::Custom)
     {
@@ -624,7 +623,19 @@ float GPU::ComputeDisplayAspectRatio() const
     }
   }
 
-  return ComputeAspectRatioCorrection() * ar;
+  return ar;
+}
+
+float GPU::ComputeSourceAspectRatio() const
+{
+  const float source_aspect_ratio =
+    static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
+
+  // Correction is applied to the GTE for stretch to fit, that way it fills the window.
+  const float source_aspect_ratio_correction =
+    (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow) ? 1.0f : ComputeAspectRatioCorrection();
+
+  return source_aspect_ratio / source_aspect_ratio_correction;
 }
 
 float GPU::ComputeAspectRatioCorrection() const
@@ -632,8 +643,9 @@ float GPU::ComputeAspectRatioCorrection() const
   const CRTCState& cs = m_crtc_state;
   float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
   float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
-  if (relative_width <= 0 || relative_height <= 0 ||
-      g_settings.display_crop_mode == DisplayCropMode::OverscanUncorrected)
+  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1 ||
+      g_settings.display_crop_mode == DisplayCropMode::OverscanUncorrected ||
+      g_settings.display_crop_mode == DisplayCropMode::BordersUncorrected)
   {
     return 1.0f;
   }
@@ -650,6 +662,24 @@ float GPU::ComputeAspectRatioCorrection() const
   }
 
   return (relative_width / relative_height);
+}
+
+void GPU::ApplyPixelAspectRatioToSize(float* width, float* height) const
+{
+  const float dar = ComputeDisplayAspectRatio();
+  const float sar = ComputeSourceAspectRatio();
+  const float par = dar / sar;
+
+  if (par < 1.0f)
+  {
+    // stretch height, preserve width
+    *height = std::ceil(*height / par);
+  }
+  else
+  {
+    // stretch width, preserve height
+    *width = std::ceil(*width * par);
+  }
 }
 
 void GPU::UpdateCRTCConfig()
@@ -770,6 +800,7 @@ void GPU::UpdateCRTCDisplayParameters()
         break;
 
       case DisplayCropMode::Borders:
+      case DisplayCropMode::BordersUncorrected:
       default:
         cs.horizontal_visible_start = horizontal_display_start;
         cs.horizontal_visible_end = horizontal_display_end;
@@ -808,6 +839,7 @@ void GPU::UpdateCRTCDisplayParameters()
         break;
 
       case DisplayCropMode::Borders:
+      case DisplayCropMode::BordersUncorrected:
       default:
         cs.horizontal_visible_start = horizontal_display_start;
         cs.horizontal_visible_end = horizontal_display_end;
@@ -2341,20 +2373,20 @@ void GPU::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rota
   const bool integer_scale = (g_settings.display_scaling == DisplayScalingMode::NearestInteger ||
                               g_settings.display_scaling == DisplayScalingMode::BilinearInteger);
   const bool show_vram = g_settings.debugging.show_vram;
-  const float display_aspect_ratio = ComputeDisplayAspectRatio();
   const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
   const float crtc_display_width = static_cast<float>(show_vram ? VRAM_WIDTH : m_crtc_state.display_width);
   const float crtc_display_height = static_cast<float>(show_vram ? VRAM_HEIGHT : m_crtc_state.display_height);
-  const float x_scale =
-    apply_aspect_ratio ?
-      (display_aspect_ratio / (static_cast<float>(crtc_display_width) / static_cast<float>(crtc_display_height))) :
-      1.0f;
+  const float display_aspect_ratio = ComputeDisplayAspectRatio();
+  const float source_aspect_ratio = ComputeSourceAspectRatio();
+  const float pixel_aspect_ratio = display_aspect_ratio / source_aspect_ratio;
+  const float x_scale = apply_aspect_ratio ? pixel_aspect_ratio : 1.0f;
   float display_width = crtc_display_width;
   float display_height = crtc_display_height;
   float active_left = static_cast<float>(show_vram ? 0 : m_crtc_state.display_origin_left);
   float active_top = static_cast<float>(show_vram ? 0 : m_crtc_state.display_origin_top);
   float active_width = static_cast<float>(show_vram ? VRAM_WIDTH : m_crtc_state.display_vram_width);
   float active_height = static_cast<float>(show_vram ? VRAM_HEIGHT : m_crtc_state.display_vram_height);
+
   if (!g_settings.display_stretch_vertically)
   {
     display_width *= x_scale;
@@ -2604,52 +2636,30 @@ bool GPU::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i displ
 void GPU::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height, GSVector4i* display_rect,
                                   GSVector4i* draw_rect) const
 {
-  *width = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetWidth() : 1;
-  *height = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetHeight() : 1;
-  CalculateDrawRect(*width, *height, true, !g_settings.debugging.show_vram, display_rect, draw_rect);
-
   const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_settings.debugging.show_vram);
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
   {
     if (mode == DisplayScreenshotMode::InternalResolution)
     {
-      const u32 draw_width = static_cast<u32>(display_rect->width());
-      const u32 draw_height = static_cast<u32>(display_rect->height());
-
-      // If internal res, scale the computed draw rectangle to the internal res.
-      // We re-use the draw rect because it's already been AR corrected.
-      const float sar =
-        static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_texture_view_height);
-      const float dar = static_cast<float>(draw_width) / static_cast<float>(draw_height);
-      if (sar >= dar)
-      {
-        // stretch height, preserve width
-        const float scale = static_cast<float>(m_display_texture_view_width) / static_cast<float>(draw_width);
-        *width = m_display_texture_view_width;
-        *height = static_cast<u32>(std::round(static_cast<float>(draw_height) * scale));
-      }
-      else
-      {
-        // stretch width, preserve height
-        const float scale = static_cast<float>(m_display_texture_view_height) / static_cast<float>(draw_height);
-        *width = static_cast<u32>(std::round(static_cast<float>(draw_width) * scale));
-        *height = m_display_texture_view_height;
-      }
+      float f_width = static_cast<float>(m_display_texture_view_width);
+      float f_height = static_cast<float>(m_display_texture_view_height);
+      ApplyPixelAspectRatioToSize(&f_width, &f_height);
 
       // DX11 won't go past 16K texture size.
-      const u32 max_texture_size = g_gpu_device->GetMaxTextureSize();
-      if (*width > max_texture_size)
+      const float max_texture_size = static_cast<float>(g_gpu_device->GetMaxTextureSize());
+      if (f_width > max_texture_size)
       {
-        *height = static_cast<u32>(static_cast<float>(*height) /
-                                   (static_cast<float>(*width) / static_cast<float>(max_texture_size)));
-        *width = max_texture_size;
+        f_height = f_height / (f_width / max_texture_size);
+        f_width = max_texture_size;
       }
-      if (*height > max_texture_size)
+      if (f_height > max_texture_size)
       {
-        *height = max_texture_size;
-        *width = static_cast<u32>(static_cast<float>(*width) /
-                                  (static_cast<float>(*height) / static_cast<float>(max_texture_size)));
+        f_height = max_texture_size;
+        f_width = f_width / (f_height / max_texture_size);
       }
+
+      *width = static_cast<u32>(std::ceil(f_width));
+      *height = static_cast<u32>(std::ceil(f_height));
     }
     else // if (mode == DisplayScreenshotMode::UncorrectedInternalResolution)
     {
@@ -2660,6 +2670,12 @@ void GPU::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* h
     // Remove padding, it's not part of the framebuffer.
     *draw_rect = GSVector4i(0, 0, static_cast<s32>(*width), static_cast<s32>(*height));
     *display_rect = *draw_rect;
+  }
+  else
+  {
+    *width = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetWidth() : 1;
+    *height = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetHeight() : 1;
+    CalculateDrawRect(*width, *height, true, !g_settings.debugging.show_vram, display_rect, draw_rect);
   }
 }
 

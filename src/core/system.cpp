@@ -5678,20 +5678,18 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   if (scale == 0.0f)
     scale = g_gpu->IsHardwareRenderer() ? static_cast<float>(g_settings.gpu_resolution_scale) : 1.0f;
 
-  const float y_scale =
-    (static_cast<float>(g_gpu->GetCRTCDisplayWidth()) / static_cast<float>(g_gpu->GetCRTCDisplayHeight())) /
-    g_gpu->ComputeDisplayAspectRatio();
-
-  u32 requested_width =
-    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayWidth()) * scale)), 1);
-  u32 requested_height =
-    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * y_scale * scale)), 1);
+  float requested_width = static_cast<float>(g_gpu->GetCRTCDisplayWidth()) * scale;
+  float requested_height = static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * scale;
+  g_gpu->ApplyPixelAspectRatioToSize(&requested_width, &requested_height);
 
   if (g_settings.display_rotation == DisplayRotation::Rotate90 ||
       g_settings.display_rotation == DisplayRotation::Rotate270)
+  {
     std::swap(requested_width, requested_height);
+  }
 
-  Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
+  Host::RequestResizeHostDisplay(static_cast<s32>(std::ceil(requested_width)),
+                                 static_cast<s32>(std::ceil(requested_height)));
 }
 
 void System::DisplayWindowResized()

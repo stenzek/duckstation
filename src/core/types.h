@@ -143,6 +143,7 @@ enum class DisplayCropMode : u8
   Overscan,
   OverscanUncorrected,
   Borders,
+  BordersUncorrected,
   MaxCount
 };
 

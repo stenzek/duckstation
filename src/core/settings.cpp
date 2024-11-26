@@ -1620,12 +1620,15 @@ const char* Settings::GetDisplayDeinterlacingModeDisplayName(DisplayDeinterlacin
                                   "DisplayDeinterlacingMode");
 }
 
-static constexpr const std::array s_display_crop_mode_names = {"None", "Overscan", "OverscanUncorrected", "Borders"};
+static constexpr const std::array s_display_crop_mode_names = {
+  "None", "Overscan", "OverscanUncorrected", "Borders", "BordersUncorrected",
+};
 static constexpr const std::array s_display_crop_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "None", "DisplayCropMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Only Overscan Area", "DisplayCropMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Only Overscan Area (Aspect Uncorrected)", "DisplayCropMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "All Borders", "DisplayCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "All Borders (Aspect Uncorrected)", "DisplayCropMode"),
 };
 
 std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(const char* str)

@@ -184,7 +184,14 @@ public:
   float ComputeHorizontalFrequency() const;
   float ComputeVerticalFrequency() const;
   float ComputeDisplayAspectRatio() const;
+  float ComputeSourceAspectRatio() const;
+
+  /// Computes aspect ratio correction, i.e. the scale to apply to the source aspect ratio to preserve
+  /// the original pixel aspect ratio regardless of how much cropping has been applied.
   float ComputeAspectRatioCorrection() const;
+
+  /// Applies the pixel aspect ratio to a given size, preserving the larger dimension.
+  void ApplyPixelAspectRatioToSize(float* width, float* height) const;
 
   static std::unique_ptr<GPU> CreateHardwareRenderer();
   static std::unique_ptr<GPU> CreateSoftwareRenderer();
