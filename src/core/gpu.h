@@ -186,8 +186,8 @@ public:
   float ComputeDisplayAspectRatio() const;
   float ComputeAspectRatioCorrection() const;
 
-  static std::unique_ptr<GPU> CreateHardwareRenderer(Error* error);
-  static std::unique_ptr<GPU> CreateSoftwareRenderer(Error* error);
+  static std::unique_ptr<GPU> CreateHardwareRenderer();
+  static std::unique_ptr<GPU> CreateSoftwareRenderer();
 
   // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
   void ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,

@@ -2432,11 +2432,11 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen,
   }
 
   if (renderer == GPURenderer::Software)
-    g_gpu = GPU::CreateSoftwareRenderer(error);
+    g_gpu = GPU::CreateSoftwareRenderer();
   else
-    g_gpu = GPU::CreateHardwareRenderer(error);
+    g_gpu = GPU::CreateHardwareRenderer();
 
-  if (!g_gpu)
+  if (!g_gpu->Initialize(error))
   {
     ERROR_LOG("Failed to initialize {} renderer, falling back to software renderer",
               Settings::GetRendererName(renderer));
@@ -2445,8 +2445,8 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen,
                   Settings::GetRendererName(renderer)),
       Host::OSD_CRITICAL_ERROR_DURATION);
     g_gpu.reset();
-    g_gpu = GPU::CreateSoftwareRenderer(error);
-    if (!g_gpu)
+    g_gpu = GPU::CreateSoftwareRenderer();
+    if (!g_gpu->Initialize(error))
     {
       ERROR_LOG("Failed to create fallback software renderer.");
       if (!s_state.keep_gpu_device_on_shutdown)

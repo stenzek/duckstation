@@ -4265,11 +4265,7 @@ void GPU_HW::DrawRendererStats()
   }
 }
 
-std::unique_ptr<GPU> GPU::CreateHardwareRenderer(Error* error)
+std::unique_ptr<GPU> GPU::CreateHardwareRenderer()
 {
-  std::unique_ptr<GPU_HW> gpu(std::make_unique<GPU_HW>());
-  if (!gpu->Initialize(error))
-    gpu.reset();
-
-  return gpu;
+  return std::make_unique<GPU_HW>();
 }

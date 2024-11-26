@@ -824,11 +824,7 @@ void GPU_SW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
   m_backend.PushCommand(cmd);
 }
 
-std::unique_ptr<GPU> GPU::CreateSoftwareRenderer(Error* error)
+std::unique_ptr<GPU> GPU::CreateSoftwareRenderer()
 {
-  std::unique_ptr<GPU_SW> gpu(std::make_unique<GPU_SW>());
-  if (!gpu->Initialize(error))
-    gpu.reset();
-
-  return gpu;
+  return std::make_unique<GPU_SW>();
 }
