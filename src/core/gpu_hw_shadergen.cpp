@@ -1842,6 +1842,9 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitr
   #else
     // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
     o_col0.a = color.a;
+
+    // Map anything with an alpha below 0.5 to transparent.
+    o_col0 = lerp(o_col0, float4(0.0, 0.0, 0.0, 0.0), float(o_col0.a < 0.5));
   #endif
 }
 )";
