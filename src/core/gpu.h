@@ -24,6 +24,7 @@
 #include <vector>
 
 class Error;
+class Image;
 class SmallStringBase;
 
 class StateWrapper;
@@ -183,9 +184,17 @@ public:
   float ComputeHorizontalFrequency() const;
   float ComputeVerticalFrequency() const;
   float ComputeDisplayAspectRatio() const;
+  float ComputeSourceAspectRatio() const;
 
-  static std::unique_ptr<GPU> CreateHardwareRenderer(Error* error);
-  static std::unique_ptr<GPU> CreateSoftwareRenderer(Error* error);
+  /// Computes aspect ratio correction, i.e. the scale to apply to the source aspect ratio to preserve
+  /// the original pixel aspect ratio regardless of how much cropping has been applied.
+  float ComputeAspectRatioCorrection() const;
+
+  /// Applies the pixel aspect ratio to a given size, preserving the larger dimension.
+  void ApplyPixelAspectRatioToSize(float* width, float* height) const;
+
+  static std::unique_ptr<GPU> CreateHardwareRenderer();
+  static std::unique_ptr<GPU> CreateSoftwareRenderer();
 
   // Converts window coordinates into horizontal ticks and scanlines. Returns false if out of range. Used for lightguns.
   void ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float window_y, float* display_x,
@@ -233,8 +242,7 @@ public:
 
   /// Renders the display, optionally with postprocessing to the specified image.
   bool RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect, const GSVector4i draw_rect,
-                                bool postfx, std::vector<u32>* out_pixels, u32* out_stride,
-                                GPUTexture::Format* out_format);
+                                bool postfx, Image* out_image);
 
   /// Helper function to save screenshot to PNG.
   bool RenderScreenshotToFile(std::string path, DisplayScreenshotMode mode, u8 quality, bool compress_on_thread,

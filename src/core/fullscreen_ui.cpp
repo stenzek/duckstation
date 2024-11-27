@@ -112,7 +112,6 @@ using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::CloseChoiceDialog;
 using ImGuiFullscreen::CloseFileSelector;
-using ImGuiFullscreen::CreateTextureFromImage;
 using ImGuiFullscreen::DefaultActiveButton;
 using ImGuiFullscreen::DrawShadowedText;
 using ImGuiFullscreen::EndFullscreenColumns;
@@ -4324,7 +4323,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_CROP_ALT, "Crop Mode"),
                   FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
                   "Display", "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
-                  &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::Count);
+                  &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::MaxCount);
 
   DrawEnumSetting(
     bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Scaling"),
@@ -5966,7 +5965,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
   li->path = std::move(path);
   li->global = global;
   if (ssi->screenshot.IsValid())
-    li->preview_texture = CreateTextureFromImage(ssi->screenshot);
+    li->preview_texture = g_gpu_device->FetchAndUploadTextureImage(ssi->screenshot);
 
   return true;
 }
@@ -5994,7 +5993,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& title, const s
       li.title = FSUI_STR("Undo Load State");
       li.summary = FSUI_STR("Restores the state of the system prior to the last state loaded.");
       if (ssi->screenshot.IsValid())
-        li.preview_texture = CreateTextureFromImage(ssi->screenshot);
+        li.preview_texture = g_gpu_device->FetchAndUploadTextureImage(ssi->screenshot);
       s_save_state_selector_slots.push_back(std::move(li));
     }
   }
@@ -6883,7 +6882,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         const bool display_as_language = (selected_entry->dbentry && selected_entry->dbentry->HasAnyLanguage());
         ImGui::TextUnformatted(display_as_language ? FSUI_CSTR("Language: ") : FSUI_CSTR("Region: "));
         ImGui::SameLine();
-        ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconFileName(), 23, 16), LayoutScale(23.0f, 16.0f));
+        ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconName(), 23, 16), LayoutScale(23.0f, 16.0f));
         ImGui::SameLine();
         if (display_as_language)
         {

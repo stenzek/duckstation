@@ -19,6 +19,8 @@
 #include <deque>
 #include <memory>
 
+class Error;
+
 class MetalStreamBuffer
 {
 public:
@@ -38,7 +40,7 @@ public:
   ALWAYS_INLINE u32 GetCurrentSpace() const { return m_current_space; }
   ALWAYS_INLINE u32 GetCurrentOffset() const { return m_current_offset; }
 
-  bool Create(id<MTLDevice> device, u32 size);
+  bool Create(id<MTLDevice> device, u32 size, Error* error);
   void Destroy();
 
   bool ReserveMemory(u32 num_bytes, u32 alignment);

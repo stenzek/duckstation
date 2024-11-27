@@ -88,15 +88,18 @@ public:
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                            GPUTexture::Type type, GPUTexture::Format format,
-                                            const void* data = nullptr, u32 data_stride = 0) override;
-  std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) override;
-  std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements) override;
+                                            GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                            const void* data = nullptr, u32 data_stride = 0,
+                                            Error* error = nullptr) override;
+  std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) override;
+  std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
+                                                        Error* error = nullptr) override;
 
-  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format) override;
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
-                                                            void* memory, size_t memory_size,
-                                                            u32 memory_stride) override;
+                                                            Error* error = nullptr) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                            void* memory, size_t memory_size, u32 memory_stride,
+                                                            Error* error = nullptr) override;
 
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
@@ -113,6 +116,7 @@ public:
                                                     std::string_view source, const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
+  std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
 
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
@@ -136,6 +140,8 @@ public:
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
+  void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                u32 group_size_z) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
@@ -348,20 +354,20 @@ private:
   void DestroyCommandBuffers();
   bool CreatePersistentDescriptorPool();
   void DestroyPersistentDescriptorPool();
-  bool CreateNullTexture();
+  bool CreateNullTexture(Error* error);
   bool CreateBuffers();
   void DestroyBuffers();
   bool CreatePipelineLayouts();
   void DestroyPipelineLayouts();
   bool CreatePersistentDescriptorSets();
   void DestroyPersistentDescriptorSets();
-  VkSampler GetSampler(const GPUSampler::Config& config);
+  VkSampler GetSampler(const GPUSampler::Config& config, Error* error = nullptr);
   void DestroySamplers();
 
   void RenderBlankFrame(VulkanSwapChain* swap_chain);
 
   bool TryImportHostMemory(void* data, size_t data_size, VkBufferUsageFlags buffer_usage, VkDeviceMemory* out_memory,
-                           VkBuffer* out_buffer, VkDeviceSize* out_offset);
+                           VkBuffer* out_buffer, VkDeviceSize* out_offset, Error* error);
 
   /// Set dirty flags on everything to force re-bind at next draw time.
   void InvalidateCachedState();
@@ -373,6 +379,7 @@ private:
   VkPipelineLayout GetCurrentVkPipelineLayout() const;
   void SetInitialPipelineState();
   void PreDrawCheck();
+  void PreDispatchCheck();
 
   template<GPUPipeline::Layout layout>
   bool UpdateDescriptorSetsForLayout(u32 dirty);
@@ -435,7 +442,7 @@ private:
   VkDescriptorSetLayout m_single_texture_buffer_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_multi_texture_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_feedback_loop_ds_layout = VK_NULL_HANDLE;
-  VkDescriptorSetLayout m_rov_ds_layout = VK_NULL_HANDLE;
+  VkDescriptorSetLayout m_image_ds_layout = VK_NULL_HANDLE;
   DimensionalArray<VkPipelineLayout, static_cast<size_t>(GPUPipeline::Layout::MaxCount),
                    static_cast<size_t>(PipelineLayoutType::MaxCount)>
     m_pipeline_layouts = {};

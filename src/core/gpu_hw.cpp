@@ -275,14 +275,8 @@ bool GPU_HW::Initialize(Error* error)
 
   PrintSettingsToLog();
 
-  if (!CompileCommonShaders(error) || !CompilePipelines(error))
+  if (!CompileCommonShaders(error) || !CompilePipelines(error) || !CreateBuffers(error))
     return false;
-
-  if (!CreateBuffers())
-  {
-    Error::SetStringView(error, "Failed to create framebuffer");
-    return false;
-  }
 
   if (m_use_texture_cache)
   {
@@ -366,7 +360,7 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
                 ->FetchTexture(
                   m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
                   m_vram_texture->IsMultisampled() ? GPUTexture::Type::RenderTarget : GPUTexture::Type::Texture,
-                  GPUTexture::Format::RGBA8, nullptr, 0)
+                  GPUTexture::Format::RGBA8, GPUTexture::Flags::None)
                 .release();
         *host_texture = tex;
         if (!tex)
@@ -423,7 +417,7 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
                                     m_pgxp_depth_buffer != g_settings.UsingPGXPDepthBuffer() ||
                                     (!old_settings.gpu_texture_cache && g_settings.gpu_texture_cache));
   const bool shaders_changed =
-    ((m_resolution_scale > 1) != (resolution_scale > 1) || (m_multisamples > 1) != (multisamples > 1) ||
+    ((m_resolution_scale > 1) != (resolution_scale > 1) || m_multisamples != multisamples ||
      m_true_color != g_settings.gpu_true_color || prev_force_progressive_scan != m_force_progressive_scan ||
      (multisamples > 1 && g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
      (resolution_scale > 1 && g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering) ||
@@ -538,8 +532,12 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
     g_gpu_device->PurgeTexturePool();
     g_gpu_device->WaitForGPUIdle();
 
-    if (!CreateBuffers())
+    Error error;
+    if (!CreateBuffers(&error))
+    {
+      ERROR_LOG("Failed to recreate buffers: {}", error.GetDescription());
       Panic("Failed to recreate buffers.");
+    }
 
     UpdateDownsamplingLevels();
     RestoreDeviceContext();
@@ -849,7 +847,7 @@ GPUTexture::Format GPU_HW::GetDepthBufferFormat() const
                                VRAM_DS_FORMAT;
 }
 
-bool GPU_HW::CreateBuffers()
+bool GPU_HW::CreateBuffers(Error* error)
 {
   DestroyBuffers();
 
@@ -859,28 +857,30 @@ bool GPU_HW::CreateBuffers()
   const u8 samples = static_cast<u8>(m_multisamples);
   const bool needs_depth_buffer = m_write_mask_as_depth || m_pgxp_depth_buffer;
 
-  // Needed for Metal resolve.
-  const GPUTexture::Type read_texture_type = (g_gpu_device->GetRenderAPI() == RenderAPI::Metal && m_multisamples > 1) ?
-                                               GPUTexture::Type::RWTexture :
-                                               GPUTexture::Type::Texture;
-  const GPUTexture::Type vram_texture_type =
-    m_use_rov_for_shader_blend ? GPUTexture::Type::RWTexture : GPUTexture::Type::RenderTarget;
+  const GPUTexture::Flags read_texture_flags =
+    (m_multisamples > 1) ? GPUTexture::Flags::AllowMSAAResolveTarget : GPUTexture::Flags::None;
+  const GPUTexture::Flags vram_texture_flags =
+    m_use_rov_for_shader_blend ? GPUTexture::Flags::AllowBindAsImage : GPUTexture::Flags::None;
   const GPUTexture::Type depth_texture_type =
-    m_use_rov_for_shader_blend ? GPUTexture::Type::RWTexture : GPUTexture::Type::DepthStencil;
+    m_use_rov_for_shader_blend ? GPUTexture::Type::RenderTarget : GPUTexture::Type::DepthStencil;
 
-  if (!(m_vram_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, samples, vram_texture_type,
-                                                    VRAM_RT_FORMAT)) ||
-      (needs_depth_buffer &&
-       !(m_vram_depth_texture = g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, samples,
-                                                           depth_texture_type, GetDepthBufferFormat()))) ||
-      (m_pgxp_depth_buffer && !(m_vram_depth_copy_texture =
-                                  g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, samples,
-                                                             GPUTexture::Type::RenderTarget, VRAM_DS_COLOR_FORMAT))) ||
+  if (!(m_vram_texture =
+          g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, samples, GPUTexture::Type::RenderTarget,
+                                     VRAM_RT_FORMAT, vram_texture_flags, nullptr, 0, error)) ||
+      (needs_depth_buffer && !(m_vram_depth_texture = g_gpu_device->FetchTexture(
+                                 texture_width, texture_height, 1, 1, samples, depth_texture_type,
+                                 GetDepthBufferFormat(), vram_texture_flags, nullptr, 0, error))) ||
+      (m_pgxp_depth_buffer && !(m_vram_depth_copy_texture = g_gpu_device->FetchTexture(
+                                  texture_width, texture_height, 1, 1, samples, GPUTexture::Type::RenderTarget,
+                                  VRAM_DS_COLOR_FORMAT, GPUTexture::Flags::None, nullptr, 0, error))) ||
       !(m_vram_read_texture =
-          g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, 1, read_texture_type, VRAM_RT_FORMAT)) ||
-      !(m_vram_readback_texture = g_gpu_device->FetchTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1,
-                                                             GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT)))
+          g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, 1, GPUTexture::Type::Texture, VRAM_RT_FORMAT,
+                                     read_texture_flags, nullptr, 0, error)) ||
+      !(m_vram_readback_texture =
+          g_gpu_device->FetchTexture(VRAM_WIDTH / 2, VRAM_HEIGHT, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                     VRAM_RT_FORMAT, GPUTexture::Flags::None, nullptr, 0, error)))
   {
+    Error::AddPrefix(error, "Failed to create VRAM textures: ");
     return false;
   }
 
@@ -895,26 +895,28 @@ bool GPU_HW::CreateBuffers()
     DEV_LOG("Trying to import guest VRAM buffer for downloads...");
     m_vram_readback_download_texture = g_gpu_device->CreateDownloadTexture(
       m_vram_readback_texture->GetWidth(), m_vram_readback_texture->GetHeight(), m_vram_readback_texture->GetFormat(),
-      g_vram, sizeof(g_vram), VRAM_WIDTH * sizeof(u16));
+      g_vram, sizeof(g_vram), VRAM_WIDTH * sizeof(u16), error);
     if (!m_vram_readback_download_texture)
       ERROR_LOG("Failed to create imported readback buffer");
   }
   if (!m_vram_readback_download_texture)
   {
-    m_vram_readback_download_texture = g_gpu_device->CreateDownloadTexture(
-      m_vram_readback_texture->GetWidth(), m_vram_readback_texture->GetHeight(), m_vram_readback_texture->GetFormat());
+    m_vram_readback_download_texture =
+      g_gpu_device->CreateDownloadTexture(m_vram_readback_texture->GetWidth(), m_vram_readback_texture->GetHeight(),
+                                          m_vram_readback_texture->GetFormat(), error);
     if (!m_vram_readback_download_texture)
     {
-      ERROR_LOG("Failed to create readback download texture");
+      Error::AddPrefix(error, "Failed to create readback download texture: ");
       return false;
     }
   }
 
   if (g_gpu_device->GetFeatures().supports_texture_buffers)
   {
-    if (!(m_vram_upload_buffer =
-            g_gpu_device->CreateTextureBuffer(GPUTextureBuffer::Format::R16UI, GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS)))
+    if (!(m_vram_upload_buffer = g_gpu_device->CreateTextureBuffer(GPUTextureBuffer::Format::R16UI,
+                                                                   GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS, error)))
     {
+      Error::AddPrefix(error, "Failed to create texture buffer: ");
       return false;
     }
 
@@ -1465,7 +1467,7 @@ bool GPU_HW::CompilePipelines(Error* error)
       std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
         GPUShaderStage::Fragment, shadergen.GetLanguage(),
         shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced),
-                                                 m_write_mask_as_depth),
+                                                 m_write_mask_as_depth, needs_rov_depth),
         error);
       if (!fs)
         return false;
@@ -1483,9 +1485,9 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM copy
   {
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                 shadergen.GenerateVRAMCopyFragmentShader(m_write_mask_as_depth), error);
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(),
+      shadergen.GenerateVRAMCopyFragmentShader(m_write_mask_as_depth, needs_rov_depth), error);
     if (!fs)
       return false;
 
@@ -1514,7 +1516,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
       GPUShaderStage::Fragment, shadergen.GetLanguage(),
-      shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, m_write_mask_as_depth), error);
+      shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, m_write_mask_as_depth, needs_rov_depth), error);
     if (!fs)
       return false;
 
@@ -1543,8 +1545,8 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM write replacement
   {
-    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                               shadergen.GenerateCopyFragmentShader(), error);
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateVRAMReplacementBlitFragmentShader(), error);
     if (!fs)
       return false;
 
@@ -2549,7 +2551,7 @@ void GPU_HW::LoadVertices()
       if (m_resolution_scale > 1 && !is_3d && rc.quad_polygon)
         HandleFlippedQuadTextureCoordinates(vertices.data());
       else if (m_allow_sprite_mode)
-        SetBatchSpriteMode((pgxp && !is_3d) || IsPossibleSpritePolygon(vertices.data()));
+        SetBatchSpriteMode(pgxp ? !is_3d : IsPossibleSpritePolygon(vertices.data()));
 
       if (m_sw_renderer)
       {
@@ -2922,41 +2924,14 @@ void GPU_HW::LoadVertices()
   }
 }
 
-bool GPU_HW::BlitVRAMReplacementTexture(const GPUTextureCache::TextureReplacementImage* tex, u32 dst_x, u32 dst_y,
-                                        u32 width, u32 height)
+bool GPU_HW::BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height)
 {
-  if (!m_vram_replacement_texture || m_vram_replacement_texture->GetWidth() < tex->GetWidth() ||
-      m_vram_replacement_texture->GetHeight() < tex->GetHeight() || g_gpu_device->GetFeatures().prefer_unused_textures)
-  {
-    g_gpu_device->RecycleTexture(std::move(m_vram_replacement_texture));
-
-    if (!(m_vram_replacement_texture =
-            g_gpu_device->FetchTexture(tex->GetWidth(), tex->GetHeight(), 1, 1, 1, GPUTexture::Type::DynamicTexture,
-                                       GPUTexture::Format::RGBA8, tex->GetPixels(), tex->GetPitch())))
-    {
-      return false;
-    }
-  }
-  else
-  {
-    if (!m_vram_replacement_texture->Update(0, 0, tex->GetWidth(), tex->GetHeight(), tex->GetPixels(), tex->GetPitch()))
-    {
-      ERROR_LOG("Update {}x{} texture failed.", width, height);
-      return false;
-    }
-  }
-
   GL_SCOPE_FMT("BlitVRAMReplacementTexture() {}x{} to {},{} => {},{} ({}x{})", tex->GetWidth(), tex->GetHeight(), dst_x,
                dst_y, dst_x + width, dst_y + height, width, height);
 
-  const float src_rect[4] = {
-    0.0f, 0.0f, static_cast<float>(tex->GetWidth()) / static_cast<float>(m_vram_replacement_texture->GetWidth()),
-    static_cast<float>(tex->GetHeight()) / static_cast<float>(m_vram_replacement_texture->GetHeight())};
-
-  g_gpu_device->SetTextureSampler(0, m_vram_replacement_texture.get(), g_gpu_device->GetLinearSampler());
+  g_gpu_device->SetTextureSampler(0, tex, g_gpu_device->GetLinearSampler());
   g_gpu_device->SetPipeline(m_vram_write_replacement_pipeline.get());
   g_gpu_device->SetViewportAndScissor(dst_x, dst_y, width, height);
-  g_gpu_device->PushUniformBuffer(src_rect, sizeof(src_rect));
   g_gpu_device->Draw(3, 0);
 
   RestoreDeviceContext();
@@ -3379,7 +3354,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   }
   else
   {
-    const GPUTextureCache::TextureReplacementImage* rtex = GPUTextureCache::GetVRAMReplacement(width, height, data);
+    GPUTexture* rtex = GPUTextureCache::GetVRAMReplacement(width, height, data);
     if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
                                            width * m_resolution_scale, height * m_resolution_scale))
     {
@@ -3402,7 +3377,7 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
   {
     map_index = 0;
     upload_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture,
-                                                GPUTexture::Format::R16U, data, data_pitch);
+                                                GPUTexture::Format::R16U, GPUTexture::Flags::None, data, data_pitch);
     if (!upload_texture)
     {
       ERROR_LOG("Failed to get {}x{} upload texture. Things are gonna break.", width, height);
@@ -3938,7 +3913,8 @@ void GPU_HW::UpdateDisplay()
         m_vram_extract_texture->GetHeight() != read_height)
     {
       if (!g_gpu_device->ResizeTexture(&m_vram_extract_texture, scaled_display_width, read_height,
-                                       GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8)) [[unlikely]]
+                                       GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8,
+                                       GPUTexture::Flags::None)) [[unlikely]]
       {
         ClearDisplayTexture();
         return;
@@ -3952,7 +3928,7 @@ void GPU_HW::UpdateDisplay()
         ((m_vram_extract_depth_texture && m_vram_extract_depth_texture->GetWidth() == scaled_display_width &&
           m_vram_extract_depth_texture->GetHeight() == scaled_display_height) ||
          !g_gpu_device->ResizeTexture(&m_vram_extract_depth_texture, scaled_display_width, scaled_display_height,
-                                      GPUTexture::Type::RenderTarget, VRAM_DS_COLOR_FORMAT)))
+                                      GPUTexture::Type::RenderTarget, VRAM_DS_COLOR_FORMAT, GPUTexture::Flags::None)))
     {
       depth_source->MakeReadyForSampling();
       g_gpu_device->InvalidateRenderTarget(m_vram_extract_depth_texture.get());
@@ -4090,15 +4066,16 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
   if (!m_downsample_texture || m_downsample_texture->GetWidth() != width || m_downsample_texture->GetHeight() != height)
   {
     g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
-    m_downsample_texture =
-      g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT);
+    m_downsample_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                                      VRAM_RT_FORMAT, GPUTexture::Flags::None);
   }
-  std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter> level_texture = g_gpu_device->FetchAutoRecycleTexture(
-    width, height, 1, m_downsample_scale_or_levels, 1, GPUTexture::Type::Texture, VRAM_RT_FORMAT);
-  std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter> weight_texture =
-    g_gpu_device->FetchAutoRecycleTexture(std::max(width >> (m_downsample_scale_or_levels - 1), 1u),
-                                          std::max(height >> (m_downsample_scale_or_levels - 1), 1u), 1, 1, 1,
-                                          GPUTexture::Type::RenderTarget, GPUTexture::Format::R8);
+  std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter> level_texture =
+    g_gpu_device->FetchAutoRecycleTexture(width, height, 1, m_downsample_scale_or_levels, 1, GPUTexture::Type::Texture,
+                                          VRAM_RT_FORMAT, GPUTexture::Flags::None);
+  std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter> weight_texture = g_gpu_device->FetchAutoRecycleTexture(
+    std::max(width >> (m_downsample_scale_or_levels - 1), 1u),
+    std::max(height >> (m_downsample_scale_or_levels - 1), 1u), 1, 1, 1, GPUTexture::Type::RenderTarget,
+    GPUTexture::Format::R8, GPUTexture::Flags::None);
   if (!m_downsample_texture || !level_texture || !weight_texture)
   {
     ERROR_LOG("Failed to create {}x{} RTs for adaptive downsampling", width, height);
@@ -4205,8 +4182,8 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
       m_downsample_texture->GetHeight() != ds_height)
   {
     g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
-    m_downsample_texture =
-      g_gpu_device->FetchTexture(ds_width, ds_height, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT);
+    m_downsample_texture = g_gpu_device->FetchTexture(ds_width, ds_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                                      VRAM_RT_FORMAT, GPUTexture::Flags::None);
   }
   if (!m_downsample_texture)
   {
@@ -4288,11 +4265,7 @@ void GPU_HW::DrawRendererStats()
   }
 }
 
-std::unique_ptr<GPU> GPU::CreateHardwareRenderer(Error* error)
+std::unique_ptr<GPU> GPU::CreateHardwareRenderer()
 {
-  std::unique_ptr<GPU_HW> gpu(std::make_unique<GPU_HW>());
-  if (!gpu->Initialize(error))
-    gpu.reset();
-
-  return gpu;
+  return std::make_unique<GPU_HW>();
 }

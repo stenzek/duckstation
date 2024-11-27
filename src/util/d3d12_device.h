@@ -71,15 +71,18 @@ public:
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                            GPUTexture::Type type, GPUTexture::Format format,
-                                            const void* data = nullptr, u32 data_stride = 0) override;
-  std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) override;
-  std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements) override;
+                                            GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                            const void* data = nullptr, u32 data_stride = 0,
+                                            Error* error = nullptr) override;
+  std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) override;
+  std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
+                                                        Error* error = nullptr) override;
 
-  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format) override;
   std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
-                                                            void* memory, size_t memory_size,
-                                                            u32 memory_stride) override;
+                                                            Error* error = nullptr) override;
+  std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                            void* memory, size_t memory_size, u32 memory_stride,
+                                                            Error* error = nullptr) override;
 
   bool SupportsTextureFormat(GPUTexture::Format format) const override;
   void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
@@ -96,6 +99,7 @@ public:
                                                     std::string_view source, const char* entry_point,
                                                     DynamicHeapArray<u8>* out_binary, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
+  std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
 
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
@@ -119,6 +123,8 @@ public:
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
+  void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                u32 group_size_z) override;
 
   bool SetGPUTimingEnabled(bool enabled) override;
   float GetAndResetAccumulatedGPUTime() override;
@@ -188,6 +194,9 @@ public:
   void UnbindTexture(D3D12Texture* tex);
   void UnbindTextureBuffer(D3D12TextureBuffer* buf);
 
+  void RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 dst_width, u32 dst_height, u32 src_level,
+                           u32 src_width, u32 src_height);
+
 protected:
   bool CreateDeviceAndMainSwapChain(std::string_view adapter, FeatureMask disabled_features, const WindowInfo& wi,
                                     GPUVSyncMode vsync_mode, bool allow_present_throttle,
@@ -250,7 +259,7 @@ private:
   void DestroyDescriptorHeaps();
   bool CreateTimestampQuery();
   void DestroyTimestampQuery();
-  D3D12DescriptorHandle GetSampler(const GPUSampler::Config& config);
+  D3D12DescriptorHandle GetSampler(const GPUSampler::Config& config, Error* error);
   void DestroySamplers();
   void DestroyDeferredObjects(u64 fence_value);
 
@@ -258,10 +267,13 @@ private:
   void MoveToNextCommandList();
 
   bool CreateSRVDescriptor(ID3D12Resource* resource, u32 layers, u32 levels, u32 samples, DXGI_FORMAT format,
-                           D3D12DescriptorHandle* dh);
-  bool CreateRTVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
-  bool CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
-  bool CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh);
+                           D3D12DescriptorHandle* dh, Error* error);
+  bool CreateRTVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh,
+                           Error* error);
+  bool CreateDSVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh,
+                           Error* error);
+  bool CreateUAVDescriptor(ID3D12Resource* resource, u32 samples, DXGI_FORMAT format, D3D12DescriptorHandle* dh,
+                           Error* error);
 
   bool IsRenderTargetBound(const GPUTexture* tex) const;
 
@@ -275,8 +287,10 @@ private:
   ID3D12RootSignature* GetCurrentRootSignature() const;
   void SetInitialPipelineState();
   void PreDrawCheck();
+  void PreDispatchCheck();
 
   bool IsUsingROVRootSignature() const;
+  bool IsUsingComputeRootSignature() const;
   void UpdateRootSignature();
   template<GPUPipeline::Layout layout>
   bool UpdateParametersForLayout(u32 dirty);
@@ -349,6 +363,9 @@ private:
   GSVector4i m_current_scissor = {};
 
   D3D12SwapChain* m_current_swap_chain = nullptr;
+
+  std::array<ComPtr<ID3D12PipelineState>, static_cast<size_t>(GPUTexture::Format::MaxCount)> m_mipmap_render_pipelines =
+    {};
 };
 
 class D3D12SwapChain : public GPUSwapChain

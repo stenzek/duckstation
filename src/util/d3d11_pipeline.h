@@ -51,13 +51,18 @@ public:
 
   void SetDebugName(std::string_view name) override;
 
+  ALWAYS_INLINE bool IsComputePipeline() const { return !m_vs; }
   ALWAYS_INLINE ID3D11RasterizerState* GetRasterizerState() const { return m_rs.Get(); }
   ALWAYS_INLINE ID3D11DepthStencilState* GetDepthStencilState() const { return m_ds.Get(); }
   ALWAYS_INLINE ID3D11BlendState* GetBlendState() const { return m_bs.Get(); }
   ALWAYS_INLINE ID3D11InputLayout* GetInputLayout() const { return m_il.Get(); }
   ALWAYS_INLINE ID3D11VertexShader* GetVertexShader() const { return m_vs.Get(); }
   ALWAYS_INLINE ID3D11GeometryShader* GetGeometryShader() const { return m_gs.Get(); }
-  ALWAYS_INLINE ID3D11PixelShader* GetPixelShader() const { return m_ps.Get(); }
+  ALWAYS_INLINE ID3D11PixelShader* GetPixelShader() const { return static_cast<ID3D11PixelShader*>(m_ps_or_cs.Get()); }
+  ALWAYS_INLINE ID3D11ComputeShader* GetComputeShader() const
+  {
+    return static_cast<ID3D11ComputeShader*>(m_ps_or_cs.Get());
+  }
   ALWAYS_INLINE D3D11_PRIMITIVE_TOPOLOGY GetPrimitiveTopology() const { return m_topology; }
   ALWAYS_INLINE u32 GetVertexStride() const { return m_vertex_stride; }
   ALWAYS_INLINE u32 GetBlendFactor() const { return m_blend_factor; }
@@ -66,7 +71,8 @@ public:
 private:
   D3D11Pipeline(ComPtr<ID3D11RasterizerState> rs, ComPtr<ID3D11DepthStencilState> ds, ComPtr<ID3D11BlendState> bs,
                 ComPtr<ID3D11InputLayout> il, ComPtr<ID3D11VertexShader> vs, ComPtr<ID3D11GeometryShader> gs,
-                ComPtr<ID3D11PixelShader> ps, D3D11_PRIMITIVE_TOPOLOGY topology, u32 vertex_stride, u32 blend_factor);
+                ComPtr<ID3D11DeviceChild> ps_or_cs, D3D11_PRIMITIVE_TOPOLOGY topology, u32 vertex_stride,
+                u32 blend_factor);
 
   ComPtr<ID3D11RasterizerState> m_rs;
   ComPtr<ID3D11DepthStencilState> m_ds;
@@ -74,7 +80,7 @@ private:
   ComPtr<ID3D11InputLayout> m_il;
   ComPtr<ID3D11VertexShader> m_vs;
   ComPtr<ID3D11GeometryShader> m_gs;
-  ComPtr<ID3D11PixelShader> m_ps;
+  ComPtr<ID3D11DeviceChild> m_ps_or_cs;
   D3D11_PRIMITIVE_TOPOLOGY m_topology;
   u32 m_vertex_stride;
   u32 m_blend_factor;

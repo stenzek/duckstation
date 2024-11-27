@@ -139,27 +139,16 @@ static void HotkeyToggleOSD()
 
 static bool CanPause()
 {
-  static constexpr const float PAUSE_INTERVAL = 3.0f;
-  static Common::Timer::Value s_last_pause_time = 0;
-
-  if (!Achievements::IsHardcoreModeActive() || System::IsPaused())
+  const u32 frames_until_pause_allowed = Achievements::GetPauseThrottleFrames();
+  if (frames_until_pause_allowed == 0)
     return true;
 
-  const Common::Timer::Value time = Common::Timer::GetCurrentValue();
-  const float delta = static_cast<float>(Common::Timer::ConvertValueToSeconds(time - s_last_pause_time));
-  if (delta < PAUSE_INTERVAL)
-  {
-    Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
-                            TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
-                                                 "", static_cast<int>(std::ceil(PAUSE_INTERVAL - delta))),
-                            Host::OSD_QUICK_DURATION);
-    return false;
-  }
-
-  Host::RemoveKeyedOSDMessage("PauseCooldown");
-  s_last_pause_time = time;
-
-  return true;
+  const float seconds = static_cast<float>(frames_until_pause_allowed) / System::GetVideoFrameRate();
+  Host::AddIconOSDMessage("PauseCooldown", ICON_FA_CLOCK,
+                          TRANSLATE_PLURAL_STR("Hotkeys", "You cannot pause until another %n second(s) have passed.",
+                                               "", static_cast<int>(std::ceil(seconds))),
+                          std::max(seconds, Host::OSD_QUICK_DURATION));
+  return false;
 }
 
 #endif

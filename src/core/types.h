@@ -141,8 +141,10 @@ enum class DisplayCropMode : u8
 {
   None,
   Overscan,
+  OverscanUncorrected,
   Borders,
-  Count
+  BordersUncorrected,
+  MaxCount
 };
 
 enum class DisplayAspectRatio : u8

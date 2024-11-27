@@ -2030,7 +2030,7 @@ void MainWindow::connectSignals()
                                              Settings::DEFAULT_GPU_RENDERER, GPURenderer::Count);
   SettingWidgetBinder::BindMenuToEnumSetting(
     m_ui.menuCropMode, "Display", "CropMode", &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
-    &Settings::GetDisplayCropModeDisplayName, Settings::DEFAULT_DISPLAY_CROP_MODE, DisplayCropMode::Count);
+    &Settings::GetDisplayCropModeDisplayName, Settings::DEFAULT_DISPLAY_CROP_MODE, DisplayCropMode::MaxCount);
   SettingWidgetBinder::BindMenuToEnumSetting(m_ui.menuLogLevel, "Logging", "LogLevel", &Settings::ParseLogLevelName,
                                              &Settings::GetLogLevelName, &Settings::GetLogLevelDisplayName,
                                              Settings::DEFAULT_LOG_LEVEL, Log::Level::MaxCount);

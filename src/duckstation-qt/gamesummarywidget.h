@@ -27,6 +27,7 @@ public:
   void reloadGameSettings();
 
 private Q_SLOTS:
+  void onCustomLanguageChanged(int language);
   void onCompatibilityCommentsClicked();
   void onInputProfileChanged(int index);
   void onEditInputProfileClicked();

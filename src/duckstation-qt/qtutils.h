@@ -113,6 +113,7 @@ QIcon GetIconForRegion(DiscRegion region);
 /// Returns icon for entry type.
 QIcon GetIconForEntryType(GameList::EntryType type);
 QIcon GetIconForCompatibility(GameDatabase::CompatibilityRating rating);
+QIcon GetIconForLanguage(std::string_view language_name);
 
 /// Returns the pixel ratio/scaling factor for a widget.
 qreal GetDevicePixelRatioForWidget(const QWidget* widget);

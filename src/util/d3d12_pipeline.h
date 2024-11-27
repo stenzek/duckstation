@@ -51,6 +51,7 @@ public:
   void SetDebugName(std::string_view name) override;
 
   static std::string GetPipelineName(const GraphicsConfig& config);
+  static std::string GetPipelineName(const ComputeConfig& config);
 
 private:
   D3D12Pipeline(Microsoft::WRL::ComPtr<ID3D12PipelineState> pipeline, Layout layout, D3D12_PRIMITIVE_TOPOLOGY topology,

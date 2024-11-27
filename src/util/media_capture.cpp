@@ -244,7 +244,7 @@ GPUTexture* MediaCaptureBase::GetRenderTexture()
     return m_render_texture.get();
 
   m_render_texture = g_gpu_device->CreateTexture(m_video_width, m_video_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                                 m_video_render_texture_format);
+                                                 m_video_render_texture_format, GPUTexture::Flags::None);
   if (!m_render_texture) [[unlikely]]
   {
     ERROR_LOG("Failed to create {}x{} render texture.", m_video_width, m_video_height);

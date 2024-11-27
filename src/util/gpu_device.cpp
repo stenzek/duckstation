@@ -4,6 +4,7 @@
 #include "gpu_device.h"
 #include "compress_helpers.h"
 #include "gpu_framebuffer_manager.h"
+#include "image.h"
 #include "shadergen.h"
 
 #include "common/assert.h"
@@ -590,10 +591,10 @@ bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 
 bool GPUDevice::CreateResources(Error* error)
 {
-  if (!(m_nearest_sampler = CreateSampler(GPUSampler::GetNearestConfig())) ||
-      !(m_linear_sampler = CreateSampler(GPUSampler::GetLinearConfig())))
+  if (!(m_nearest_sampler = CreateSampler(GPUSampler::GetNearestConfig(), error)) ||
+      !(m_linear_sampler = CreateSampler(GPUSampler::GetLinearConfig(), error)))
   {
-    Error::SetStringView(error, "Failed to create samplers");
+    Error::AddPrefix(error, "Failed to create samplers: ");
     return false;
   }
 
@@ -922,10 +923,15 @@ bool GPUDevice::UpdateImGuiFontTexture()
     return true;
   }
 
+  Error error;
   std::unique_ptr<GPUTexture> new_font =
-    FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8, pixels, pitch);
-  if (!new_font)
+    FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8, GPUTexture::Flags::None,
+                 pixels, pitch, &error);
+  if (!new_font) [[unlikely]]
+  {
+    ERROR_LOG("Failed to create new ImGui font texture: {}", error.GetDescription());
     return false;
+  }
 
   RecycleTexture(std::move(m_imgui_font_texture));
   m_imgui_font_texture = std::move(new_font);
@@ -950,12 +956,13 @@ GSVector4i GPUDevice::FlipToLowerLeft(GSVector4i rc, s32 target_height)
 
 bool GPUDevice::IsTexturePoolType(GPUTexture::Type type)
 {
-  return (type == GPUTexture::Type::Texture || type == GPUTexture::Type::DynamicTexture);
+  return (type == GPUTexture::Type::Texture);
 }
 
 std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Type type, GPUTexture::Format format,
-                                                    const void* data /*= nullptr*/, u32 data_stride /*= 0*/)
+                                                    GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                                    u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
   std::unique_ptr<GPUTexture> ret;
 
@@ -966,7 +973,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
                               static_cast<u8>(samples),
                               type,
                               format,
-                              0u};
+                              flags};
 
   const bool is_texture = IsTexturePoolType(type);
   TexturePool& pool = is_texture ? m_texture_pool : m_target_pool;
@@ -1018,18 +1025,65 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
     }
   }
 
-  ret = CreateTexture(width, height, layers, levels, samples, type, format, data, data_stride);
+  Error create_error;
+  ret = CreateTexture(width, height, layers, levels, samples, type, format, flags, data, data_stride, &create_error);
+  if (!ret) [[unlikely]]
+  {
+    Error::SetStringFmt(
+      error ? error : &create_error, "Failed to create {}x{} {} {}: {}", width, height,
+      GPUTexture::GetFormatName(format),
+      ((type == GPUTexture::Type::RenderTarget) ? "RT" : (type == GPUTexture::Type::DepthStencil ? "DS" : "Texture")),
+      create_error.TakeDescription());
+    if (!error)
+      ERROR_LOG(create_error.GetDescription());
+  }
+
   return ret;
 }
 
 std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter>
 GPUDevice::FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
-                                   GPUTexture::Format format, const void* data /*= nullptr*/, u32 data_stride /*= 0*/,
-                                   bool dynamic /*= false*/)
+                                   GPUTexture::Format format, GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                   u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
   std::unique_ptr<GPUTexture> ret =
-    FetchTexture(width, height, layers, levels, samples, type, format, data, data_stride);
+    FetchTexture(width, height, layers, levels, samples, type, format, flags, data, data_stride, error);
   return std::unique_ptr<GPUTexture, PooledTextureDeleter>(ret.release());
+}
+
+std::unique_ptr<GPUTexture> GPUDevice::FetchAndUploadTextureImage(const Image& image,
+                                                                  GPUTexture::Flags flags /*= GPUTexture::Flags::None*/,
+                                                                  Error* error /*= nullptr*/)
+{
+  const Image* image_to_upload = &image;
+  GPUTexture::Format gpu_format = GPUTexture::GetTextureFormatForImageFormat(image.GetFormat());
+  bool gpu_format_supported;
+
+  // avoid device query for compressed formats that we've already pretested
+  if (gpu_format >= GPUTexture::Format::BC1 && gpu_format <= GPUTexture::Format::BC3)
+    gpu_format_supported = m_features.dxt_textures;
+  else if (gpu_format == GPUTexture::Format::BC7)
+    gpu_format_supported = m_features.bptc_textures;
+  else if (gpu_format == GPUTexture::Format::RGBA8) // always supported
+    gpu_format_supported = true;
+  else if (gpu_format != GPUTexture::Format::Unknown)
+    gpu_format_supported = SupportsTextureFormat(gpu_format);
+  else
+    gpu_format_supported = false;
+
+  std::optional<Image> converted_image;
+  if (!gpu_format_supported)
+  {
+    converted_image = image.ConvertToRGBA8(error);
+    if (!converted_image.has_value())
+      return nullptr;
+
+    image_to_upload = &converted_image.value();
+    gpu_format = GPUTexture::GetTextureFormatForImageFormat(converted_image->GetFormat());
+  }
+
+  return FetchTexture(image_to_upload->GetWidth(), image_to_upload->GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
+                      gpu_format, flags, image_to_upload->GetPixels(), image_to_upload->GetPitch(), error);
 }
 
 void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
@@ -1044,7 +1098,7 @@ void GPUDevice::RecycleTexture(std::unique_ptr<GPUTexture> texture)
                               static_cast<u8>(texture->GetSamples()),
                               texture->GetType(),
                               texture->GetFormat(),
-                              0u};
+                              texture->GetFlags()};
 
   const bool is_texture = IsTexturePoolType(texture->GetType());
   TexturePool& pool = is_texture ? m_texture_pool : m_target_pool;
@@ -1118,11 +1172,11 @@ void GPUDevice::TrimTexturePool()
 }
 
 bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                              GPUTexture::Format format, bool preserve /* = true */)
+                              GPUTexture::Format format, GPUTexture::Flags flags, bool preserve /* = true */)
 {
   GPUTexture* old_tex = tex->get();
   DebugAssert(!old_tex || (old_tex->GetLayers() == 1 && old_tex->GetLevels() == 1 && old_tex->GetSamples() == 1));
-  std::unique_ptr<GPUTexture> new_tex = FetchTexture(new_width, new_height, 1, 1, 1, type, format);
+  std::unique_ptr<GPUTexture> new_tex = FetchTexture(new_width, new_height, 1, 1, 1, type, format, flags);
   if (!new_tex) [[unlikely]]
   {
     ERROR_LOG("Failed to create new {}x{} texture", new_width, new_height);
@@ -1579,11 +1633,13 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
 
   // Need to know if there's UBOs for mapping.
   const spvc_reflected_resource *ubos, *textures;
-  size_t ubos_count, textures_count;
+  size_t ubos_count, textures_count, images_count;
   if ((sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_UNIFORM_BUFFER, &ubos,
                                                                   &ubos_count)) != SPVC_SUCCESS ||
       (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_SAMPLED_IMAGE,
-                                                                  &textures, &textures_count)) != SPVC_SUCCESS)
+                                                                  &textures, &textures_count)) != SPVC_SUCCESS ||
+      (sres = dyn_libs::spvc_resources_get_resource_list_for_type(resources, SPVC_RESOURCE_TYPE_STORAGE_IMAGE,
+                                                                  &textures, &images_count)) != SPVC_SUCCESS)
   {
     Error::SetStringFmt(error, "spvc_resources_get_resource_list_for_type() failed: {}", static_cast<int>(sres));
     return {};
@@ -1592,6 +1648,7 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
   [[maybe_unused]] const SpvExecutionModel execmodel = dyn_libs::spvc_compiler_get_execution_model(scompiler);
   [[maybe_unused]] static constexpr u32 UBO_DESCRIPTOR_SET = 0;
   [[maybe_unused]] static constexpr u32 TEXTURE_DESCRIPTOR_SET = 1;
+  [[maybe_unused]] static constexpr u32 IMAGE_DESCRIPTOR_SET = 2;
 
   switch (target_language)
   {
@@ -1652,6 +1709,25 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
                                                  .uav = {},
                                                  .srv = {.register_space = 0, .register_binding = i},
                                                  .sampler = {.register_space = 0, .register_binding = i}};
+          if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
+          {
+            Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
+            return {};
+          }
+        }
+      }
+
+      if (stage == GPUShaderStage::Compute)
+      {
+        for (u32 i = 0; i < images_count; i++)
+        {
+          const spvc_hlsl_resource_binding rb = {.stage = execmodel,
+                                                 .desc_set = IMAGE_DESCRIPTOR_SET,
+                                                 .binding = i,
+                                                 .cbv = {},
+                                                 .uav = {.register_space = 0, .register_binding = i},
+                                                 .srv = {},
+                                                 .sampler = {}};
           if ((sres = dyn_libs::spvc_compiler_hlsl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
             Error::SetStringFmt(error, "spvc_compiler_hlsl_add_resource_binding() failed: {}", static_cast<int>(sres));
@@ -1727,12 +1803,25 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
         return {};
       }
 
-      if (stage == GPUShaderStage::Fragment)
+      const spvc_msl_resource_binding pc_rb = {.stage = execmodel,
+                                               .desc_set = SPVC_MSL_PUSH_CONSTANT_DESC_SET,
+                                               .binding = SPVC_MSL_PUSH_CONSTANT_BINDING,
+                                               .msl_buffer = 0,
+                                               .msl_texture = 0,
+                                               .msl_sampler = 0};
+      if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &pc_rb)) != SPVC_SUCCESS)
+      {
+        Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for push constant failed: {}",
+                            static_cast<int>(sres));
+        return {};
+      }
+
+      if (stage == GPUShaderStage::Fragment || stage == GPUShaderStage::Compute)
       {
         for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
         {
-          const spvc_msl_resource_binding rb = {.stage = SpvExecutionModelFragment,
-                                                .desc_set = 1,
+          const spvc_msl_resource_binding rb = {.stage = execmodel,
+                                                .desc_set = TEXTURE_DESCRIPTOR_SET,
                                                 .binding = i,
                                                 .msl_buffer = i,
                                                 .msl_texture = i,
@@ -1744,16 +1833,31 @@ bool GPUDevice::TranslateVulkanSpvToLanguage(const std::span<const u8> spirv, GP
             return {};
           }
         }
+      }
 
-        if (!m_features.framebuffer_fetch)
+      if (stage == GPUShaderStage::Fragment && !m_features.framebuffer_fetch)
+      {
+        const spvc_msl_resource_binding rb = {
+          .stage = execmodel, .desc_set = 2, .binding = 0, .msl_texture = MAX_TEXTURE_SAMPLERS};
+
+        if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
+        {
+          Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for FB failed: {}",
+                              static_cast<int>(sres));
+          return {};
+        }
+      }
+
+      if (stage == GPUShaderStage::Compute)
+      {
+        for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
         {
           const spvc_msl_resource_binding rb = {
-            .stage = SpvExecutionModelFragment, .desc_set = 2, .binding = 0, .msl_texture = MAX_TEXTURE_SAMPLERS};
+            .stage = execmodel, .desc_set = 2, .binding = i, .msl_buffer = i, .msl_texture = i, .msl_sampler = i};
 
           if ((sres = dyn_libs::spvc_compiler_msl_add_resource_binding(scompiler, &rb)) != SPVC_SUCCESS)
           {
-            Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() for FB failed: {}",
-                                static_cast<int>(sres));
+            Error::SetStringFmt(error, "spvc_compiler_msl_add_resource_binding() failed: {}", static_cast<int>(sres));
             return {};
           }
         }

@@ -71,13 +71,19 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatRGBA16Float,           // RGBA16F
   MTLPixelFormatRGBA32Float,           // RGBA32F
   MTLPixelFormatBGR10A2Unorm,          // RGB10A2
+  MTLPixelFormatBC1_RGBA,              // BC1
+  MTLPixelFormatBC2_RGBA,              // BC2
+  MTLPixelFormatBC3_RGBA,              // BC3
+  MTLPixelFormatBC7_RGBAUnorm,         // BC7
+
 };
 
 static void LogNSError(NSError* error, std::string_view message)
 {
   Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, message);
   Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, "  NSError Code: {}", static_cast<u32>(error.code));
-  Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, "  NSError Description: {}", [error.description UTF8String]);
+  Log::FastWrite(Log::Channel::GPUDevice, Log::Level::Error, "  NSError Description: {}",
+                 [error.description UTF8String]);
 }
 
 static GPUTexture::Format GetTextureFormatForMTLFormat(MTLPixelFormat fmt)
@@ -346,11 +352,8 @@ bool MetalDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
       return false;
     }
 
-    if (!CreateBuffers())
-    {
-      Error::SetStringView(error, "Failed to create buffers.");
+    if (!CreateBuffers(error))
       return false;
-    }
 
     return true;
   }
@@ -386,6 +389,10 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.shader_cache = true;
   m_features.pipeline_cache = true;
   m_features.prefer_unused_textures = true;
+
+  // Same feature bit for both.
+  m_features.dxt_textures = m_features.bptc_textures =
+    !(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && m_device.supportsBCTextureCompression;
 
   // Disable pipeline cache on Intel, apparently it's buggy.
   if ([[m_device name] containsString:@"Intel"])
@@ -503,28 +510,6 @@ id<MTLFunction> MetalDevice::GetFunctionFromLibrary(id<MTLLibrary> library, NSSt
   return function;
 }
 
-id<MTLComputePipelineState> MetalDevice::CreateComputePipeline(id<MTLFunction> function, NSString* name)
-{
-  MTLComputePipelineDescriptor* desc = [MTLComputePipelineDescriptor new];
-  if (name != nil)
-    [desc setLabel:name];
-  [desc setComputeFunction:function];
-
-  NSError* err = nil;
-  id<MTLComputePipelineState> pipeline = [m_device newComputePipelineStateWithDescriptor:desc
-                                                                                 options:MTLPipelineOptionNone
-                                                                              reflection:nil
-                                                                                   error:&err];
-  [desc release];
-  if (pipeline == nil)
-  {
-    LogNSError(err, "Create compute pipeline failed:");
-    return nil;
-  }
-
-  return pipeline;
-}
-
 void MetalDevice::DestroyDevice()
 {
   WaitForPreviousCommandBuffers();
@@ -564,11 +549,6 @@ void MetalDevice::DestroyDevice()
       [it.second release];
   }
   m_depth_states.clear();
-  for (auto& it : m_resolve_pipelines)
-  {
-    if (it.second != nil)
-      [it.second release];
-  }
   m_resolve_pipelines.clear();
   for (auto& it : m_clear_pipelines)
   {
@@ -601,13 +581,14 @@ std::string MetalDevice::GetDriverInfo() const
   }
 }
 
-bool MetalDevice::CreateBuffers()
+bool MetalDevice::CreateBuffers(Error* error)
 {
-  if (!m_vertex_buffer.Create(m_device, VERTEX_BUFFER_SIZE) || !m_index_buffer.Create(m_device, INDEX_BUFFER_SIZE) ||
-      !m_uniform_buffer.Create(m_device, UNIFORM_BUFFER_SIZE) ||
-      !m_texture_upload_buffer.Create(m_device, TEXTURE_STREAM_BUFFER_SIZE))
+  if (!m_vertex_buffer.Create(m_device, VERTEX_BUFFER_SIZE, error) ||
+      !m_index_buffer.Create(m_device, INDEX_BUFFER_SIZE, error) ||
+      !m_uniform_buffer.Create(m_device, UNIFORM_BUFFER_SIZE, error) ||
+      !m_texture_upload_buffer.Create(m_device, TEXTURE_STREAM_BUFFER_SIZE, error))
   {
-    ERROR_LOG("Failed to create vertex/index/uniform buffers.");
+    Error::AddPrefix(error, "Failed to create vertex/index/uniform buffers: ");
     return false;
   }
 
@@ -755,7 +736,7 @@ std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromSource(GPUShaderStage st
   return CreateShaderFromMSL(stage, source, entry_point, error);
 }
 
-MetalPipeline::MetalPipeline(id<MTLRenderPipelineState> pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,
+MetalPipeline::MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode,
                              MTLPrimitiveType primitive)
   : m_pipeline(pipeline), m_depth(depth), m_cull_mode(cull_mode), m_primitive(primitive)
 {
@@ -982,9 +963,32 @@ std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::Grap
   }
 }
 
+std::unique_ptr<GPUPipeline> MetalDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
+{
+  @autoreleasepool
+  {
+    MTLComputePipelineDescriptor* desc = [[MTLComputePipelineDescriptor new] autorelease];
+    [desc setComputeFunction:static_cast<MetalShader*>(config.compute_shader)->GetFunction()];
+
+    NSError* nserror = nil;
+    id<MTLComputePipelineState> pipeline = [m_device newComputePipelineStateWithDescriptor:desc
+                                                                                   options:MTLPipelineOptionNone
+                                                                                reflection:nil
+                                                                                     error:&nserror];
+    if (pipeline == nil)
+    {
+      LogNSError(nserror, "Failed to create compute pipeline state");
+      CocoaTools::NSErrorToErrorObject(error, "newComputePipelineStateWithDescriptor failed: ", nserror);
+      return {};
+    }
+
+    return std::unique_ptr<GPUPipeline>(new MetalPipeline(pipeline, nil, MTLCullModeNone, MTLPrimitiveTypePoint));
+  }
+}
+
 MetalTexture::MetalTexture(id<MTLTexture> texture, u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type,
-                           Format format)
-  : GPUTexture(width, height, layers, levels, samples, type, format), m_texture(texture)
+                           Format format, Flags flags)
+  : GPUTexture(width, height, layers, levels, samples, type, format, flags), m_texture(texture)
 {
 }
 
@@ -1000,8 +1004,8 @@ MetalTexture::~MetalTexture()
 bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer /*= 0*/,
                           u32 level /*= 0*/)
 {
-  const u32 aligned_pitch = Common::AlignUpPow2(width * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
-  const u32 req_size = height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(height, aligned_pitch);
 
   GPUDevice::GetStatistics().buffer_streamed += req_size;
   GPUDevice::GetStatistics().num_uploads++;
@@ -1018,7 +1022,7 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
     actual_buffer = [dev.GetMTLDevice() newBufferWithBytes:data length:upload_size options:options];
     actual_offset = 0;
     actual_pitch = pitch;
-    if (actual_buffer == nil)
+    if (actual_buffer == nil) [[unlikely]]
     {
       Panic("Failed to allocate temporary buffer.");
       return false;
@@ -1031,7 +1035,7 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
     if (!sb.ReserveMemory(req_size, TEXTURE_UPLOAD_ALIGNMENT))
     {
       dev.SubmitCommandBuffer();
-      if (!sb.ReserveMemory(req_size, TEXTURE_UPLOAD_ALIGNMENT))
+      if (!sb.ReserveMemory(req_size, TEXTURE_UPLOAD_ALIGNMENT)) [[unlikely]]
       {
         Panic("Failed to reserve texture upload space.");
         return false;
@@ -1039,7 +1043,7 @@ bool MetalTexture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
     }
 
     actual_offset = sb.GetCurrentOffset();
-    StringUtil::StrideMemCpy(sb.GetCurrentHostPointer(), aligned_pitch, data, pitch, width * GetPixelSize(), height);
+    CopyTextureDataForUpload(width, height, m_format, sb.GetCurrentHostPointer(), aligned_pitch, data, pitch);
     sb.CommitMemory(req_size);
     actual_buffer = sb.GetBuffer();
     actual_pitch = aligned_pitch;
@@ -1070,8 +1074,8 @@ bool MetalTexture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
   if ((x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) || layer > m_layers || level > m_levels)
     return false;
 
-  const u32 aligned_pitch = Common::AlignUpPow2(width * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
-  const u32 req_size = height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(height, aligned_pitch);
 
   MetalDevice& dev = MetalDevice::GetInstance();
   if (m_state == GPUTexture::State::Cleared && (x != 0 || y != 0 || width != m_width || height != m_height))
@@ -1102,8 +1106,8 @@ bool MetalTexture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
 
 void MetalTexture::Unmap()
 {
-  const u32 aligned_pitch = Common::AlignUpPow2(m_map_width * GetPixelSize(), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
-  const u32 req_size = m_map_height * aligned_pitch;
+  const u32 aligned_pitch = Common::AlignUpPow2(CalcUploadPitch(m_map_width), TEXTURE_UPLOAD_PITCH_ALIGNMENT);
+  const u32 req_size = CalcUploadSize(m_map_height, aligned_pitch);
 
   GPUDevice::GetStatistics().buffer_streamed += req_size;
   GPUDevice::GetStatistics().num_uploads++;
@@ -1144,6 +1148,15 @@ void MetalTexture::MakeReadyForSampling()
     dev.EndRenderPass();
 }
 
+void MetalTexture::GenerateMipmaps()
+{
+  DebugAssert(HasFlag(Flags::AllowGenerateMipmaps));
+  MetalDevice& dev = MetalDevice::GetInstance();
+  const bool is_inline = (m_use_fence_counter == dev.GetCurrentFenceCounter());
+  id<MTLBlitCommandEncoder> encoder = dev.GetBlitEncoder(is_inline);
+  [encoder generateMipmapsForTexture:m_texture];
+}
+
 void MetalTexture::SetDebugName(std::string_view name)
 {
   @autoreleasepool
@@ -1154,14 +1167,18 @@ void MetalTexture::SetDebugName(std::string_view name)
 
 std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,
-                                                       const void* data, u32 data_stride)
+                                                       GPUTexture::Flags flags, const void* data, u32 data_stride,
+                                                       Error* error)
 {
-  if (!GPUTexture::ValidateConfig(width, height, layers, layers, samples, type, format))
+  if (!GPUTexture::ValidateConfig(width, height, layers, layers, samples, type, format, flags, error))
     return {};
 
   const MTLPixelFormat pixel_format = s_pixel_format_mapping[static_cast<u8>(format)];
   if (pixel_format == MTLPixelFormatInvalid)
+  {
+    Error::SetStringFmt(error, "Pixel format {} is not supported.", GPUTexture::GetFormatName(format));
     return {};
+  }
 
   @autoreleasepool
   {
@@ -1186,7 +1203,6 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
     switch (type)
     {
       case GPUTexture::Type::Texture:
-      case GPUTexture::Type::DynamicTexture:
         desc.usage = MTLTextureUsageShaderRead;
         break;
 
@@ -1195,25 +1211,25 @@ std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u3
         desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
         break;
 
-      case GPUTexture::Type::RWTexture:
-        desc.usage = MTLTextureUsageShaderRead | MTLTextureUsageShaderWrite;
-        break;
+        DefaultCaseIsUnreachable();
+    }
 
-      default:
-        UnreachableCode();
-        break;
+    if ((flags & (GPUTexture::Flags::AllowBindAsImage | GPUTexture::Flags::AllowMSAAResolveTarget)) !=
+        GPUTexture::Flags::None)
+    {
+      desc.usage |= MTLTextureUsageShaderWrite;
     }
 
     id<MTLTexture> tex = [m_device newTextureWithDescriptor:desc];
     if (tex == nil)
     {
-      ERROR_LOG("Failed to create {}x{} texture.", width, height);
+      Error::SetStringView(error, "newTextureWithDescriptor() failed");
       return {};
     }
 
     // This one can *definitely* go on the upload buffer.
     std::unique_ptr<GPUTexture> gtex(
-      new MetalTexture([tex retain], width, height, layers, levels, samples, type, format));
+      new MetalTexture([tex retain], width, height, layers, levels, samples, type, format, flags));
     if (data)
     {
       // TODO: handle multi-level uploads...
@@ -1239,7 +1255,8 @@ MetalDownloadTexture::~MetalDownloadTexture()
 }
 
 std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
-                                                                   void* memory, size_t memory_size, u32 memory_stride)
+                                                                   void* memory, size_t memory_size, u32 memory_stride,
+                                                                   Error* error)
 {
   @autoreleasepool
   {
@@ -1260,7 +1277,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
       buffer = [[dev.m_device newBufferWithLength:buffer_size options:options] retain];
       if (buffer == nil)
       {
-        ERROR_LOG("Failed to create {} byte buffer", buffer_size);
+        Error::SetStringFmt(error, "Failed to create {} byte buffer", buffer_size);
         return {};
       }
 
@@ -1285,7 +1302,7 @@ std::unique_ptr<MetalDownloadTexture> MetalDownloadTexture::Create(u32 width, u3
                                            deallocator:nil] retain];
       if (buffer == nil)
       {
-        ERROR_LOG("Failed to import {} byte buffer", page_aligned_size);
+        Error::SetStringFmt(error, "Failed to import {} byte buffer", page_aligned_size);
         return {};
       }
 
@@ -1372,16 +1389,17 @@ void MetalDownloadTexture::SetDebugName(std::string_view name)
   }
 }
 
-std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format)
+std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                       Error* error)
 {
-  return MetalDownloadTexture::Create(width, height, format, nullptr, 0, 0);
+  return MetalDownloadTexture::Create(width, height, format, nullptr, 0, 0, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
                                                                        void* memory, size_t memory_size,
-                                                                       u32 memory_stride)
+                                                                       u32 memory_stride, Error* error)
 {
-  return MetalDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride);
+  return MetalDownloadTexture::Create(width, height, format, memory, memory_size, memory_stride, error);
 }
 
 MetalSampler::MetalSampler(id<MTLSamplerState> ss) : m_ss(ss)
@@ -1395,7 +1413,7 @@ void MetalSampler::SetDebugName(std::string_view name)
   // lame.. have to put it on the descriptor :/
 }
 
-std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config& config)
+std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config& config, Error* error)
 {
   @autoreleasepool
   {
@@ -1451,7 +1469,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
       }
       if (i == std::size(border_color_mapping))
       {
-        ERROR_LOG("Unsupported border color: {:08X}", config.border_color.GetValue());
+        Error::SetStringFmt(error, "Unsupported border color: {:08X}", config.border_color.GetValue());
         return {};
       }
 
@@ -1462,7 +1480,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
     id<MTLSamplerState> ss = [m_device newSamplerStateWithDescriptor:desc];
     if (ss == nil)
     {
-      ERROR_LOG("Failed to create sampler state.");
+      Error::SetStringView(error, "newSamplerStateWithDescriptor failed");
       return {};
     }
 
@@ -1477,6 +1495,11 @@ bool MetalDevice::SupportsTextureFormat(GPUTexture::Format format) const
     // These formats require an Apple Silicon GPU.
     // See https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
     if (![m_device supportsFamily:MTLGPUFamilyApple2])
+      return false;
+  }
+  else if (format >= GPUTexture::Format::BC1 && format <= GPUTexture::Format::BC7)
+  {
+    if (!m_device.supportsBCTextureCompression)
       return false;
   }
 
@@ -1553,20 +1576,21 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
   DebugAssert((dst_x + width) <= dst->GetMipWidth(dst_level));
   DebugAssert((dst_y + height) <= dst->GetMipHeight(dst_level));
   DebugAssert(!dst->IsMultisampled() && src->IsMultisampled());
+  DebugAssert(dst->HasFlag(GPUTexture::Flags::AllowMSAAResolveTarget));
 
   // Only does first level for now..
   DebugAssert(dst_level == 0 && dst_layer == 0);
 
   const GPUTexture::Format src_format = dst->GetFormat();
   const GPUTexture::Format dst_format = dst->GetFormat();
-  id<MTLComputePipelineState> resolve_pipeline = nil;
+  GPUPipeline* resolve_pipeline;
   if (auto iter = std::find_if(m_resolve_pipelines.begin(), m_resolve_pipelines.end(),
                                [src_format, dst_format](const auto& it) {
                                  return it.first.first == src_format && it.first.second == dst_format;
                                });
       iter != m_resolve_pipelines.end())
   {
-    resolve_pipeline = iter->second;
+    resolve_pipeline = iter->second.get();
   }
   else
   {
@@ -1579,32 +1603,41 @@ void MetalDevice::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
       if (function == nil)
         Panic("Failed to get resolve kernel");
 
-      resolve_pipeline = [CreateComputePipeline(function, is_depth ? @"Depth Resolve" : @"Color Resolve") autorelease];
-      if (resolve_pipeline != nil)
-        [resolve_pipeline retain];
-      m_resolve_pipelines.emplace_back(std::make_pair(src_format, dst_format), resolve_pipeline);
+      MetalShader temp_shader(GPUShaderStage::Compute, m_shaders, function);
+      GPUPipeline::ComputeConfig config;
+      config.layout = GPUPipeline::Layout::ComputeSingleTextureAndPushConstants;
+      config.compute_shader = &temp_shader;
+
+      std::unique_ptr<GPUPipeline> pipeline = CreatePipeline(config, nullptr);
+      if (!pipeline)
+        Panic("Failed to create resolve pipeline");
+
+      GL_OBJECT_NAME(pipeline, is_depth ? "Depth Resolve" : "Color Resolve");
+      resolve_pipeline =
+        m_resolve_pipelines.emplace_back(std::make_pair(src_format, dst_format), std::move(pipeline)).second.get();
     }
   }
-  if (resolve_pipeline == nil)
-    Panic("Failed to get resolve pipeline");
 
   if (InRenderPass())
     EndRenderPass();
 
   s_stats.num_copies++;
 
-  const u32 threadgroupHeight = resolve_pipeline.maxTotalThreadsPerThreadgroup / resolve_pipeline.threadExecutionWidth;
-  const MTLSize intrinsicThreadgroupSize = MTLSizeMake(resolve_pipeline.threadExecutionWidth, threadgroupHeight, 1);
+  const id<MTLComputePipelineState> mtl_pipeline =
+    static_cast<MetalPipeline*>(resolve_pipeline)->GetComputePipelineState();
+  const u32 threadgroupHeight = mtl_pipeline.maxTotalThreadsPerThreadgroup / mtl_pipeline.threadExecutionWidth;
+  const MTLSize intrinsicThreadgroupSize = MTLSizeMake(mtl_pipeline.threadExecutionWidth, threadgroupHeight, 1);
   const MTLSize threadgroupsInGrid =
     MTLSizeMake((src->GetWidth() + intrinsicThreadgroupSize.width - 1) / intrinsicThreadgroupSize.width,
                 (src->GetHeight() + intrinsicThreadgroupSize.height - 1) / intrinsicThreadgroupSize.height, 1);
 
-  id<MTLComputeCommandEncoder> computeEncoder = [m_render_cmdbuf computeCommandEncoder];
-  [computeEncoder setComputePipelineState:resolve_pipeline];
-  [computeEncoder setTexture:static_cast<MetalTexture*>(src)->GetMTLTexture() atIndex:0];
-  [computeEncoder setTexture:static_cast<MetalTexture*>(dst)->GetMTLTexture() atIndex:1];
-  [computeEncoder dispatchThreadgroups:threadgroupsInGrid threadsPerThreadgroup:intrinsicThreadgroupSize];
-  [computeEncoder endEncoding];
+  // Set up manually to not disturb state.
+  BeginComputePass();
+  [m_compute_encoder setComputePipelineState:mtl_pipeline];
+  [m_compute_encoder setTexture:static_cast<MetalTexture*>(src)->GetMTLTexture() atIndex:0];
+  [m_compute_encoder setTexture:static_cast<MetalTexture*>(dst)->GetMTLTexture() atIndex:1];
+  [m_compute_encoder dispatchThreadgroups:threadgroupsInGrid threadsPerThreadgroup:intrinsicThreadgroupSize];
+  EndComputePass();
 }
 
 void MetalDevice::ClearRenderTarget(GPUTexture* t, u32 c)
@@ -1645,7 +1678,7 @@ void MetalDevice::ClearDepth(GPUTexture* t, float d)
 
     [m_render_encoder setVertexBuffer:m_uniform_buffer.GetBuffer() offset:m_current_uniform_buffer_position atIndex:0];
     if (m_current_pipeline)
-      [m_render_encoder setRenderPipelineState:m_current_pipeline->GetPipelineState()];
+      [m_render_encoder setRenderPipelineState:m_current_pipeline->GetRenderPipelineState()];
     if (m_current_cull_mode != MTLCullModeNone)
       [m_render_encoder setCullMode:m_current_cull_mode];
     if (depth != m_current_depth_state)
@@ -1674,6 +1707,8 @@ void MetalDevice::CommitClear(MetalTexture* tex)
     // TODO: We could combine it with the current render pass.
     if (InRenderPass())
       EndRenderPass();
+    else if (InComputePass())
+      EndComputePass();
 
     @autoreleasepool
     {
@@ -1759,9 +1794,9 @@ MetalTextureBuffer::~MetalTextureBuffer()
   m_buffer.Destroy();
 }
 
-bool MetalTextureBuffer::CreateBuffer(id<MTLDevice> device)
+bool MetalTextureBuffer::CreateBuffer(id<MTLDevice> device, Error* error)
 {
-  return m_buffer.Create(device, GetSizeInBytes());
+  return m_buffer.Create(device, GetSizeInBytes(), error);
 }
 
 void* MetalTextureBuffer::Map(u32 required_elements)
@@ -1796,10 +1831,10 @@ void MetalTextureBuffer::SetDebugName(std::string_view name)
 }
 
 std::unique_ptr<GPUTextureBuffer> MetalDevice::CreateTextureBuffer(GPUTextureBuffer::Format format,
-                                                                   u32 size_in_elements)
+                                                                   u32 size_in_elements, Error* error)
 {
   std::unique_ptr<MetalTextureBuffer> tb = std::make_unique<MetalTextureBuffer>(format, size_in_elements);
-  if (!tb->CreateBuffer(m_device))
+  if (!tb->CreateBuffer(m_device, error))
     tb.reset();
 
   return tb;
@@ -1896,11 +1931,13 @@ void MetalDevice::UnmapUniformBuffer(u32 size)
 }
 
 void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTexture* ds,
-                                   GPUPipeline::RenderPassFlag feedback_loop)
+                                   GPUPipeline::RenderPassFlag flags)
 {
   bool changed = (m_num_current_render_targets != num_rts || m_current_depth_target != ds ||
-                  (!m_features.framebuffer_fetch && ((feedback_loop & GPUPipeline::ColorFeedbackLoop) !=
-                                                     (m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop))));
+                  ((flags & GPUPipeline::BindRenderTargetsAsImages) !=
+                   (m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages)) ||
+                  (!m_features.framebuffer_fetch && ((flags & GPUPipeline::ColorFeedbackLoop) !=
+                                                     (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop))));
   bool needs_ds_clear = (ds && ds->IsClearedOrInvalidated());
   bool needs_rt_clear = false;
 
@@ -1915,12 +1952,19 @@ void MetalDevice::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
   for (u32 i = num_rts; i < m_num_current_render_targets; i++)
     m_current_render_targets[i] = nullptr;
   m_num_current_render_targets = static_cast<u8>(num_rts);
-  m_current_feedback_loop = feedback_loop;
+  m_current_render_pass_flags = flags;
 
   if (changed || needs_rt_clear || needs_ds_clear)
   {
     if (InRenderPass())
+    {
       EndRenderPass();
+    }
+    else if (InComputePass() && (flags & GPUPipeline::BindRenderTargetsAsImages) != GPUPipeline::NoRenderPassFlags)
+    {
+      CommitRenderTargetClears();
+      BindRenderTargetsAsComputeImages();
+    }
   }
 }
 
@@ -1931,26 +1975,34 @@ void MetalDevice::SetPipeline(GPUPipeline* pipeline)
     return;
 
   m_current_pipeline = static_cast<MetalPipeline*>(pipeline);
-  if (InRenderPass())
+  if (!m_current_pipeline->IsComputePipeline())
   {
-    [m_render_encoder setRenderPipelineState:m_current_pipeline->GetPipelineState()];
+    if (InRenderPass())
+    {
+      [m_render_encoder setRenderPipelineState:m_current_pipeline->GetRenderPipelineState()];
 
-    if (m_current_depth_state != m_current_pipeline->GetDepthState())
-    {
-      m_current_depth_state = m_current_pipeline->GetDepthState();
-      [m_render_encoder setDepthStencilState:m_current_depth_state];
+      if (m_current_depth_state != m_current_pipeline->GetDepthState())
+      {
+        m_current_depth_state = m_current_pipeline->GetDepthState();
+        [m_render_encoder setDepthStencilState:m_current_depth_state];
+      }
+      if (m_current_cull_mode != m_current_pipeline->GetCullMode())
+      {
+        m_current_cull_mode = m_current_pipeline->GetCullMode();
+        [m_render_encoder setCullMode:m_current_cull_mode];
+      }
     }
-    if (m_current_cull_mode != m_current_pipeline->GetCullMode())
+    else
     {
+      // Still need to set depth state before the draw begins.
+      m_current_depth_state = m_current_pipeline->GetDepthState();
       m_current_cull_mode = m_current_pipeline->GetCullMode();
-      [m_render_encoder setCullMode:m_current_cull_mode];
     }
   }
   else
   {
-    // Still need to set depth state before the draw begins.
-    m_current_depth_state = m_current_pipeline->GetDepthState();
-    m_current_cull_mode = m_current_pipeline->GetCullMode();
+    if (InComputePass())
+      [m_compute_encoder setComputePipelineState:m_current_pipeline->GetComputePipelineState()];
   }
 }
 
@@ -1979,6 +2031,8 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
     m_current_textures[slot] = T;
     if (InRenderPass())
       [m_render_encoder setFragmentTexture:T atIndex:slot];
+    else if (InComputePass())
+      [m_compute_encoder setTexture:T atIndex:slot];
   }
 
   id<MTLSamplerState> S = sampler ? static_cast<MetalSampler*>(sampler)->GetSamplerState() : nil;
@@ -1987,6 +2041,8 @@ void MetalDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
     m_current_samplers[slot] = S;
     if (InRenderPass())
       [m_render_encoder setFragmentSamplerState:S atIndex:slot];
+    else if (InComputePass())
+      [m_compute_encoder setTexture:T atIndex:slot];
   }
 }
 
@@ -2011,6 +2067,8 @@ void MetalDevice::UnbindTexture(MetalTexture* tex)
       m_current_textures[i] = nil;
       if (InRenderPass())
         [m_render_encoder setFragmentTexture:nil atIndex:i];
+      else if (InComputePass())
+        [m_compute_encoder setTexture:nil atIndex:0];
     }
   }
 
@@ -2070,7 +2128,7 @@ void MetalDevice::SetScissor(const GSVector4i rc)
 
 void MetalDevice::BeginRenderPass()
 {
-  DebugAssert(m_render_encoder == nil);
+  DebugAssert(m_render_encoder == nil && !InComputePass());
 
   // Inline writes :(
   if (m_inline_upload_encoder != nil)
@@ -2180,10 +2238,55 @@ void MetalDevice::BeginRenderPass()
 
 void MetalDevice::EndRenderPass()
 {
-  DebugAssert(InRenderPass() && !IsInlineUploading());
+  DebugAssert(InRenderPass() && !IsInlineUploading() && !InComputePass());
   [m_render_encoder endEncoding];
   [m_render_encoder release];
   m_render_encoder = nil;
+}
+
+void MetalDevice::BeginComputePass()
+{
+  DebugAssert(!InRenderPass() && !IsInlineUploading() && !InComputePass());
+
+  if ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) != GPUPipeline::NoRenderPassFlags)
+    CommitRenderTargetClears();
+
+  m_compute_encoder = [[m_render_cmdbuf computeCommandEncoder] retain];
+  [m_compute_encoder setTextures:m_current_textures.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
+  [m_compute_encoder setSamplerStates:m_current_samplers.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
+
+  if ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) != GPUPipeline::NoRenderPassFlags)
+    BindRenderTargetsAsComputeImages();
+
+  if (m_current_pipeline && m_current_pipeline->IsComputePipeline())
+    [m_compute_encoder setComputePipelineState:m_current_pipeline->GetComputePipelineState()];
+}
+
+void MetalDevice::CommitRenderTargetClears()
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+  {
+    MetalTexture* rt = m_current_render_targets[i];
+    if (rt->GetState() == GPUTexture::State::Invalidated)
+      rt->SetState(GPUTexture::State::Dirty);
+    else if (rt->GetState() == GPUTexture::State::Cleared)
+      CommitClear(rt);
+  }
+}
+
+void MetalDevice::BindRenderTargetsAsComputeImages()
+{
+  for (u32 i = 0; i < m_num_current_render_targets; i++)
+    [m_compute_encoder setTexture:m_current_render_targets[i]->GetMTLTexture() atIndex:MAX_TEXTURE_SAMPLERS + i];
+}
+
+void MetalDevice::EndComputePass()
+{
+  DebugAssert(InComputePass());
+
+  [m_compute_encoder endEncoding];
+  [m_compute_encoder release];
+  m_compute_encoder = nil;
 }
 
 void MetalDevice::EndInlineUploading()
@@ -2198,6 +2301,8 @@ void MetalDevice::EndAnyEncoding()
 {
   if (InRenderPass())
     EndRenderPass();
+  else if (InComputePass())
+    EndComputePass();
   else if (IsInlineUploading())
     EndInlineUploading();
 }
@@ -2213,14 +2318,14 @@ void MetalDevice::SetInitialEncoderState()
   [m_render_encoder setCullMode:m_current_cull_mode];
   if (m_current_depth_state != nil)
     [m_render_encoder setDepthStencilState:m_current_depth_state];
-  if (m_current_pipeline != nil)
-    [m_render_encoder setRenderPipelineState:m_current_pipeline->GetPipelineState()];
+  if (m_current_pipeline && m_current_pipeline->IsRenderPipeline())
+    [m_render_encoder setRenderPipelineState:m_current_pipeline->GetRenderPipelineState()];
   [m_render_encoder setFragmentTextures:m_current_textures.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
   [m_render_encoder setFragmentSamplerStates:m_current_samplers.data() withRange:NSMakeRange(0, MAX_TEXTURE_SAMPLERS)];
   if (m_current_ssbo)
     [m_render_encoder setFragmentBuffer:m_current_ssbo offset:0 atIndex:1];
 
-  if (!m_features.framebuffer_fetch && (m_current_feedback_loop & GPUPipeline::ColorFeedbackLoop))
+  if (!m_features.framebuffer_fetch && (m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop))
   {
     DebugAssert(m_current_render_targets[0]);
     [m_render_encoder setFragmentTexture:m_current_render_targets[0]->GetMTLTexture() atIndex:MAX_TEXTURE_SAMPLERS];
@@ -2249,7 +2354,12 @@ void MetalDevice::SetScissorInRenderEncoder()
 void MetalDevice::PreDrawCheck()
 {
   if (!InRenderPass())
+  {
+    if (InComputePass())
+      EndComputePass();
+
     BeginRenderPass();
+  }
 }
 
 void MetalDevice::Draw(u32 vertex_count, u32 base_vertex)
@@ -2392,6 +2502,25 @@ void MetalDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 ba
   }
 }
 
+void MetalDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                           u32 group_size_z)
+{
+  if (!InComputePass())
+  {
+    if (InRenderPass())
+      EndRenderPass();
+
+    BeginComputePass();
+  }
+
+  DebugAssert(m_current_pipeline && m_current_pipeline->IsComputePipeline());
+  id<MTLComputePipelineState> pipeline = m_current_pipeline->GetComputePipelineState();
+
+  // TODO: We could remap to the optimal group size..
+  [m_compute_encoder dispatchThreads:MTLSizeMake(threads_x, threads_y, threads_z)
+               threadsPerThreadgroup:MTLSizeMake(group_size_x, group_size_y, group_size_z)];
+}
+
 id<MTLBlitCommandEncoder> MetalDevice::GetBlitEncoder(bool is_inline)
 {
   @autoreleasepool
@@ -2450,7 +2579,7 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32
     s_stats.num_render_passes++;
     std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
     m_num_current_render_targets = 0;
-    m_current_feedback_loop = GPUPipeline::NoRenderPassFlags;
+    m_current_render_pass_flags = GPUPipeline::NoRenderPassFlags;
     m_current_depth_target = nullptr;
     m_current_pipeline = nullptr;
     m_current_depth_state = nil;

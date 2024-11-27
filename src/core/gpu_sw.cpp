@@ -99,8 +99,8 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format 
   {
     ClearDisplayTexture();
     g_gpu_device->RecycleTexture(std::move(m_upload_texture));
-    m_upload_texture =
-      g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::DynamicTexture, format, nullptr, 0);
+    m_upload_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, format,
+                                                  GPUTexture::Flags::AllowMap, nullptr, 0);
     if (!m_upload_texture) [[unlikely]]
       ERROR_LOG("Failed to create {}x{} {} texture", width, height, static_cast<u32>(format));
   }
@@ -824,11 +824,7 @@ void GPU_SW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
   m_backend.PushCommand(cmd);
 }
 
-std::unique_ptr<GPU> GPU::CreateSoftwareRenderer(Error* error)
+std::unique_ptr<GPU> GPU::CreateSoftwareRenderer()
 {
-  std::unique_ptr<GPU_SW> gpu(std::make_unique<GPU_SW>());
-  if (!gpu->Initialize(error))
-    gpu.reset();
-
-  return gpu;
+  return std::make_unique<GPU_SW>();
 }

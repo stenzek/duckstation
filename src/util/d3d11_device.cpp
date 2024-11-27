@@ -139,11 +139,8 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
       return false;
   }
 
-  if (!CreateBuffers())
-  {
-    Error::SetStringView(error, "Failed to create buffers");
+  if (!CreateBuffers(error))
     return false;
-  }
 
   return true;
 }
@@ -185,6 +182,8 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.feedback_loops = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
+  m_features.compute_shaders =
+    (!(disabled_features & FEATURE_MASK_COMPUTE_SHADERS) && feature_level >= D3D_FEATURE_LEVEL_11_0);
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = false;
   m_features.explicit_present = false;
@@ -201,6 +200,13 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
       (SUCCEEDED(m_device->CheckFeatureSupport(D3D11_FEATURE_D3D11_OPTIONS2, &data, sizeof(data))) &&
        data.ROVsSupported);
   }
+
+  m_features.dxt_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) &&
+     (SupportsTextureFormat(GPUTexture::Format::BC1) && SupportsTextureFormat(GPUTexture::Format::BC2) &&
+      SupportsTextureFormat(GPUTexture::Format::BC3)));
+  m_features.bptc_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && SupportsTextureFormat(GPUTexture::Format::BC7));
 }
 
 D3D11SwapChain::D3D11SwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
@@ -512,11 +518,11 @@ void D3D11Device::WaitForGPUIdle()
   TrimTexturePool();
 }
 
-bool D3D11Device::CreateBuffers()
+bool D3D11Device::CreateBuffers(Error* error)
 {
-  if (!m_vertex_buffer.Create(D3D11_BIND_VERTEX_BUFFER, VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE) ||
-      !m_index_buffer.Create(D3D11_BIND_INDEX_BUFFER, INDEX_BUFFER_SIZE, INDEX_BUFFER_SIZE) ||
-      !m_uniform_buffer.Create(D3D11_BIND_CONSTANT_BUFFER, MIN_UNIFORM_BUFFER_SIZE, MAX_UNIFORM_BUFFER_SIZE))
+  if (!m_vertex_buffer.Create(D3D11_BIND_VERTEX_BUFFER, VERTEX_BUFFER_SIZE, VERTEX_BUFFER_SIZE, error) ||
+      !m_index_buffer.Create(D3D11_BIND_INDEX_BUFFER, INDEX_BUFFER_SIZE, INDEX_BUFFER_SIZE, error) ||
+      !m_uniform_buffer.Create(D3D11_BIND_CONSTANT_BUFFER, MIN_UNIFORM_BUFFER_SIZE, MAX_UNIFORM_BUFFER_SIZE, error))
   {
     ERROR_LOG("Failed to create vertex/index/uniform buffers.");
     return false;
@@ -610,7 +616,7 @@ void D3D11Device::ResolveTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u3
 
 bool D3D11Device::IsRenderTargetBound(const D3D11Texture* tex) const
 {
-  if (tex->IsRenderTarget() || tex->IsRWTexture())
+  if (tex->IsRenderTarget() || tex->HasFlag(GPUTexture::Flags::AllowBindAsImage))
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
@@ -896,19 +902,7 @@ void D3D11Device::PushUniformBuffer(const void* data, u32 data_size)
   m_uniform_buffer.Unmap(m_context.Get(), req_size);
   s_stats.buffer_streamed += data_size;
 
-  if (m_uniform_buffer.IsUsingMapNoOverwrite())
-  {
-    const UINT first_constant = (res.index_aligned * UNIFORM_BUFFER_ALIGNMENT) / 16u;
-    const UINT num_constants = req_size / 16u;
-    m_context->VSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
-    m_context->PSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
-  }
-  else
-  {
-    DebugAssert(res.index_aligned == 0);
-    m_context->VSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
-    m_context->PSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
-  }
+  BindUniformBuffer(res.index_aligned * UNIFORM_BUFFER_ALIGNMENT, req_size);
 }
 
 void* D3D11Device::MapUniformBuffer(u32 size)
@@ -930,18 +924,37 @@ void D3D11Device::UnmapUniformBuffer(u32 size)
   m_uniform_buffer.Unmap(m_context.Get(), req_size);
   s_stats.buffer_streamed += size;
 
+  BindUniformBuffer(pos, req_size);
+}
+
+void D3D11Device::BindUniformBuffer(u32 offset, u32 size)
+{
   if (m_uniform_buffer.IsUsingMapNoOverwrite())
   {
-    const UINT first_constant = pos / 16u;
-    const UINT num_constants = req_size / 16u;
-    m_context->VSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
-    m_context->PSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+    const UINT first_constant = offset / 16u;
+    const UINT num_constants = size / 16u;
+    if (m_current_compute_shader)
+    {
+      m_context->CSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+    }
+    else
+    {
+      m_context->VSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+      m_context->PSSetConstantBuffers1(0, 1, m_uniform_buffer.GetD3DBufferArray(), &first_constant, &num_constants);
+    }
   }
   else
   {
-    DebugAssert(pos == 0);
-    m_context->VSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
-    m_context->PSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
+    DebugAssert(offset == 0);
+    if (m_current_compute_shader)
+    {
+      m_context->CSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
+    }
+    else
+    {
+      m_context->VSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
+      m_context->PSSetConstantBuffers(0, 1, m_uniform_buffer.GetD3DBufferArray());
+    }
   }
 }
 
@@ -1004,9 +1017,16 @@ void D3D11Device::SetRenderTargets(GPUTexture* const* rts, u32 num_rts, GPUTextu
     for (u32 i = 0; i < m_num_current_render_targets; i++)
       uavs[i] = m_current_render_targets[i]->GetD3DUAV();
 
-    m_context->OMSetRenderTargetsAndUnorderedAccessViews(
-      0, nullptr, m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr, 0,
-      m_num_current_render_targets, uavs.data(), nullptr);
+    if (!m_current_compute_shader)
+    {
+      m_context->OMSetRenderTargetsAndUnorderedAccessViews(
+        0, nullptr, m_current_depth_target ? m_current_depth_target->GetD3DDSV() : nullptr, 0,
+        m_num_current_render_targets, uavs.data(), nullptr);
+    }
+    else
+    {
+      m_context->CSSetUnorderedAccessViews(0, m_num_current_render_targets, uavs.data(), nullptr);
+    }
   }
   else
   {
@@ -1037,7 +1057,7 @@ void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
 
   // Runtime will null these if we don't...
   DebugAssert(!texture ||
-              !((texture->IsRenderTarget() || texture->IsRWTexture()) &&
+              !((texture->IsRenderTarget() || texture->HasFlag(GPUTexture::Flags::AllowBindAsImage)) &&
                 IsRenderTargetBound(static_cast<D3D11Texture*>(texture))) ||
               !(texture->IsDepthStencil() &&
                 (!m_current_depth_target || m_current_depth_target != static_cast<D3D11Texture*>(texture))));
@@ -1046,11 +1066,15 @@ void D3D11Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   {
     m_current_textures[slot] = T;
     m_context->PSSetShaderResources(slot, 1, &T);
+    if (m_current_compute_shader)
+      m_context->CSSetShaderResources(slot, 1, &T);
   }
   if (m_current_samplers[slot] != S)
   {
     m_current_samplers[slot] = S;
     m_context->PSSetSamplers(slot, 1, &S);
+    if (m_current_compute_shader)
+      m_context->CSSetSamplers(slot, 1, &S);
   }
 }
 
@@ -1060,6 +1084,8 @@ void D3D11Device::SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer)
   if (m_current_textures[slot] != B)
   {
     m_current_textures[slot] = B;
+
+    // Compute doesn't support texture buffers, yet...
     m_context->PSSetShaderResources(slot, 1, &B);
   }
 }
@@ -1078,7 +1104,7 @@ void D3D11Device::UnbindTexture(D3D11Texture* tex)
     }
   }
 
-  if (tex->IsRenderTarget() || tex->IsRWTexture())
+  if (tex->IsRenderTarget() || tex->HasFlag(GPUTexture::Flags::AllowBindAsImage))
   {
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
@@ -1113,14 +1139,14 @@ void D3D11Device::SetScissor(const GSVector4i rc)
 
 void D3D11Device::Draw(u32 vertex_count, u32 base_vertex)
 {
-  DebugAssert(!m_vertex_buffer.IsMapped() && !m_index_buffer.IsMapped());
+  DebugAssert(!m_vertex_buffer.IsMapped() && !m_index_buffer.IsMapped() && !m_current_compute_shader);
   s_stats.num_draws++;
   m_context->Draw(vertex_count, base_vertex);
 }
 
 void D3D11Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 {
-  DebugAssert(!m_vertex_buffer.IsMapped() && !m_index_buffer.IsMapped());
+  DebugAssert(!m_vertex_buffer.IsMapped() && !m_index_buffer.IsMapped() && !m_current_compute_shader);
   s_stats.num_draws++;
   m_context->DrawIndexed(index_count, base_index, base_vertex);
 }
@@ -1128,4 +1154,16 @@ void D3D11Device::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 void D3D11Device::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
   Panic("Barriers are not supported");
+}
+
+void D3D11Device::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                           u32 group_size_z)
+{
+  DebugAssert(m_current_compute_shader);
+  s_stats.num_draws++;
+
+  const u32 groups_x = threads_x / group_size_x;
+  const u32 groups_y = threads_y / group_size_y;
+  const u32 groups_z = threads_z / group_size_z;
+  m_context->Dispatch(groups_x, groups_y, groups_z);
 }

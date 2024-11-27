@@ -904,13 +904,32 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
     {
       const float deadzone =
         si.GetFloatValue(section.c_str(), fmt::format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
-      AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](float value) {
-                    if (!System::IsValid())
-                      return;
+      for (const std::string& binding : bindings)
+      {
+        // We currently can't use chords with a deadzone.
+        if (binding.find('&') != std::string::npos || deadzone == 0.0f)
+        {
+          if (deadzone != 0.0f)
+            WARNING_LOG("Chord binding {} not supported with trigger deadzone {}.", binding, deadzone);
 
-                    const bool state = (value > deadzone);
-                    SetMacroButtonState(pad_index, macro_button_index, state);
-                  }});
+          AddBinding(binding, InputButtonEventHandler{[pad_index, macro_button_index](bool state) {
+                       if (!System::IsValid())
+                         return;
+
+                       SetMacroButtonState(pad_index, macro_button_index, state);
+                     }});
+        }
+        else
+        {
+          AddBindings(bindings, InputAxisEventHandler{[pad_index, macro_button_index, deadzone](float value) {
+                        if (!System::IsValid())
+                          return;
+
+                        const bool state = (value > deadzone);
+                        SetMacroButtonState(pad_index, macro_button_index, state);
+                      }});
+        }
+      }
     }
   }
 

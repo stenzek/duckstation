@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gte.h"
-
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
@@ -227,47 +226,22 @@ bool GTE::DoState(StateWrapper& sw)
   return !sw.HasError();
 }
 
-void GTE::UpdateAspectRatio(u32 window_width, u32 window_height)
+void GTE::SetAspectRatio(DisplayAspectRatio aspect, u32 custom_num, u32 custom_denom)
 {
-  if (!g_settings.gpu_widescreen_hack)
-  {
-    s_config.aspect_ratio = DisplayAspectRatio::R4_3;
+  s_config.aspect_ratio = aspect;
+  if (aspect != DisplayAspectRatio::Custom)
     return;
-  }
-
-  s_config.aspect_ratio = g_settings.display_aspect_ratio;
-
-  u32 num, denom;
-  switch (s_config.aspect_ratio)
-  {
-    case DisplayAspectRatio::MatchWindow:
-    {
-      num = window_width;
-      denom = window_height;
-    }
-    break;
-
-    case DisplayAspectRatio::Custom:
-    {
-      num = g_settings.display_aspect_ratio_custom_numerator;
-      denom = g_settings.display_aspect_ratio_custom_denominator;
-    }
-    break;
-
-    default:
-      return;
-  }
 
   // (4 / 3) / (num / denom) => gcd((4 * denom) / (3 * num))
-  const u32 x = 4u * denom;
-  const u32 y = 3u * num;
+  const u32 x = 4u * custom_denom;
+  const u32 y = 3u * custom_num;
   const u32 gcd = std::gcd(x, y);
 
   s_config.custom_aspect_ratio_numerator = x / gcd;
   s_config.custom_aspect_ratio_denominator = y / gcd;
 
   s_config.custom_aspect_ratio_f =
-    static_cast<float>((4.0 / 3.0) / (static_cast<double>(num) / static_cast<double>(denom)));
+    static_cast<float>((4.0 / 3.0) / (static_cast<double>(custom_num) / static_cast<double>(custom_denom)));
 }
 
 u32 GTE::ReadRegister(u32 index)
@@ -709,7 +683,6 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
       break;
 
     case DisplayAspectRatio::Custom:
-    case DisplayAspectRatio::MatchWindow:
       Sx = ((((s64(result) * s64(REGS.IR1)) * s64(s_config.custom_aspect_ratio_numerator)) /
              s64(s_config.custom_aspect_ratio_denominator)) +
             s64(REGS.OFX));
@@ -764,7 +737,6 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
 
     switch (s_config.aspect_ratio)
     {
-      case DisplayAspectRatio::MatchWindow:
       case DisplayAspectRatio::Custom:
         precise_x = precise_x * s_config.custom_aspect_ratio_f;
         break;

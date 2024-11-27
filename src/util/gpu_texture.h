@@ -11,6 +11,10 @@
 #include <string_view>
 #include <vector>
 
+class Error;
+
+enum class ImageFormat : u8;
+
 class GPUTexture
 {
 public:
@@ -25,12 +29,9 @@ public:
 
   enum class Type : u8
   {
-    Unknown,
+    Texture,
     RenderTarget,
     DepthStencil,
-    Texture,
-    DynamicTexture,
-    RWTexture,
   };
 
   enum class Format : u8
@@ -60,7 +61,11 @@ public:
     RGBA16F,
     RGBA32F,
     RGB10A2,
-    MaxCount
+    BC1, ///< BC1, aka DXT1 compressed texture
+    BC2, ///< BC2, aka DXT2/3 compressed texture
+    BC3, ///< BC3, aka DXT4/5 compressed texture
+    BC7, ///< BC7, aka BPTC compressed texture
+    MaxCount,
   };
 
   enum class State : u8
@@ -68,6 +73,15 @@ public:
     Dirty,
     Cleared,
     Invalidated
+  };
+
+  enum class Flags : u8
+  {
+    None = 0,
+    AllowMap = (1 << 0),
+    AllowBindAsImage = (1 << 2),
+    AllowGenerateMipmaps = (1 << 3),
+    AllowMSAAResolveTarget = (1 << 4),
   };
 
   union ClearValue
@@ -81,21 +95,23 @@ public:
   virtual ~GPUTexture();
 
   static const char* GetFormatName(Format format);
-  static u32 GetPixelSize(GPUTexture::Format format);
-  static bool IsDepthFormat(GPUTexture::Format format);
-  static bool IsDepthStencilFormat(GPUTexture::Format format);
+  static u32 GetPixelSize(Format format);
+  static bool IsDepthFormat(Format format);
+  static bool IsDepthStencilFormat(Format format);
   static bool IsCompressedFormat(Format format);
-  static u32 GetCompressedBytesPerBlock(Format format);
-  static u32 GetCompressedBlockSize(Format format);
+  static u32 GetBlockSize(Format format);
   static u32 CalcUploadPitch(Format format, u32 width);
   static u32 CalcUploadRowLengthFromPitch(Format format, u32 pitch);
   static u32 CalcUploadSize(Format format, u32 height, u32 pitch);
+  static u32 GetFullMipmapCount(u32 width, u32 height);
+  static void CopyTextureDataForUpload(u32 width, u32 height, Format format, void* dst, u32 dst_pitch, const void* src,
+                                       u32 src_pitch);
 
-  static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format);
+  static Format GetTextureFormatForImageFormat(ImageFormat format);
+  static ImageFormat GetImageFormatForTextureFormat(Format format);
 
-  static bool ConvertTextureDataToRGBA8(u32 width, u32 height, std::vector<u32>& texture_data, u32& texture_data_stride,
-                                        GPUTexture::Format format);
-  static void FlipTextureDataRGBA8(u32 width, u32 height, u8* texture_data, u32 texture_data_stride);
+  static bool ValidateConfig(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
+                             Flags flags, Error* error);
 
   ALWAYS_INLINE u32 GetWidth() const { return m_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
@@ -104,6 +120,9 @@ public:
   ALWAYS_INLINE u32 GetSamples() const { return m_samples; }
   ALWAYS_INLINE Type GetType() const { return m_type; }
   ALWAYS_INLINE Format GetFormat() const { return m_format; }
+  ALWAYS_INLINE Flags GetFlags() const { return m_flags; }
+  ALWAYS_INLINE bool HasFlag(Flags flag) const { return ((static_cast<u8>(m_flags) & static_cast<u8>(flag)) != 0); }
+  ALWAYS_INLINE GSVector2i GetSizeVec() const { return GSVector2i(m_width, m_height); }
   ALWAYS_INLINE GSVector4i GetRect() const
   {
     return GSVector4i(0, 0, static_cast<s32>(m_width), static_cast<s32>(m_height));
@@ -121,15 +140,13 @@ public:
   ALWAYS_INLINE bool IsDirty() const { return (m_state == State::Dirty); }
   ALWAYS_INLINE bool IsClearedOrInvalidated() const { return (m_state != State::Dirty); }
 
+  ALWAYS_INLINE bool IsTexture() const { return (m_type == Type::Texture); }
+  ALWAYS_INLINE bool IsRenderTarget() const { return (m_type == Type::RenderTarget); }
+  ALWAYS_INLINE bool IsDepthStencil() const { return (m_type == Type::DepthStencil); }
   ALWAYS_INLINE bool IsRenderTargetOrDepthStencil() const
   {
     return (m_type >= Type::RenderTarget && m_type <= Type::DepthStencil);
   }
-  ALWAYS_INLINE bool IsRenderTarget() const { return (m_type == Type::RenderTarget); }
-  ALWAYS_INLINE bool IsDepthStencil() const { return (m_type == Type::DepthStencil); }
-  ALWAYS_INLINE bool IsTexture() const { return (m_type == Type::Texture || m_type == Type::DynamicTexture); }
-  ALWAYS_INLINE bool IsDynamicTexture() const { return (m_type == Type::DynamicTexture); }
-  ALWAYS_INLINE bool IsRWTexture() const { return (m_type == Type::RWTexture); }
 
   ALWAYS_INLINE const ClearValue& GetClearValue() const { return m_clear_value; }
   ALWAYS_INLINE u32 GetClearColor() const { return m_clear_value.color; }
@@ -149,8 +166,8 @@ public:
 
   size_t GetVRAMUsage() const;
 
-  u32 GetCompressedBytesPerBlock() const;
-  u32 GetCompressedBlockSize() const;
+  bool IsCompressedFormat() const;
+  u32 GetBlockSize() const;
   u32 CalcUploadPitch(u32 width) const;
   u32 CalcUploadRowLengthFromPitch(u32 pitch) const;
   u32 CalcUploadSize(u32 height, u32 pitch) const;
@@ -162,26 +179,33 @@ public:
   virtual bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) = 0;
   virtual void Unmap() = 0;
 
+  virtual void GenerateMipmaps() = 0;
+
   // Instructs the backend that we're finished rendering to this texture. It may transition it to a new layout.
   virtual void MakeReadyForSampling();
 
   virtual void SetDebugName(std::string_view name) = 0;
 
 protected:
-  GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format);
+  GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format, Flags flags);
+
+  static constexpr u32 COMPRESSED_TEXTURE_BLOCK_SIZE = 4;
 
   u16 m_width = 0;
   u16 m_height = 0;
   u8 m_layers = 0;
   u8 m_levels = 0;
   u8 m_samples = 0;
-  Type m_type = Type::Unknown;
+  Type m_type = Type::Texture;
   Format m_format = Format::Unknown;
+  Flags m_flags = Flags::None;
 
   State m_state = State::Dirty;
 
   ClearValue m_clear_value = {};
 };
+
+IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(GPUTexture::Flags);
 
 class GPUDownloadTexture
 {

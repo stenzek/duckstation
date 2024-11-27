@@ -77,8 +77,8 @@ public:
   ALWAYS_INLINE operator bool() const { return static_cast<bool>(m_texture); }
 
   static std::unique_ptr<D3D11Texture> Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels,
-                                              u32 samples, Type type, Format format, const void* initial_data = nullptr,
-                                              u32 initial_data_stride = 0);
+                                              u32 samples, Type type, Format format, Flags flags,
+                                              const void* initial_data, u32 initial_data_stride, Error* error);
 
   D3D11_TEXTURE2D_DESC GetDesc() const;
   void CommitClear(ID3D11DeviceContext1* context);
@@ -86,11 +86,12 @@ public:
   bool Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer = 0, u32 level = 0) override;
   bool Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer = 0, u32 level = 0) override;
   void Unmap() override;
+  void GenerateMipmaps() override;
 
   void SetDebugName(std::string_view name) override;
 
 private:
-  D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
+  D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
                ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv, ComPtr<ID3D11View> rtv_dsv,
                ComPtr<ID3D11UnorderedAccessView> uav);
 
@@ -111,7 +112,7 @@ public:
   ALWAYS_INLINE ID3D11ShaderResourceView* GetSRV() const { return m_srv.Get(); }
   ALWAYS_INLINE ID3D11ShaderResourceView* const* GetSRVArray() const { return m_srv.GetAddressOf(); }
 
-  bool CreateBuffer();
+  bool CreateBuffer(Error* error);
 
   // Inherited via GPUTextureBuffer
   void* Map(u32 required_elements) override;
@@ -129,7 +130,7 @@ class D3D11DownloadTexture final : public GPUDownloadTexture
 public:
   ~D3D11DownloadTexture() override;
 
-  static std::unique_ptr<D3D11DownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format);
+  static std::unique_ptr<D3D11DownloadTexture> Create(u32 width, u32 height, GPUTexture::Format format, Error* error);
 
   void CopyFromTexture(u32 dst_x, u32 dst_y, GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height,
                        u32 src_layer, u32 src_level, bool use_transfer_pitch) override;

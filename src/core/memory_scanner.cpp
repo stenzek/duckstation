@@ -340,6 +340,14 @@ bool MemoryWatchList::AddEntry(std::string description, u32 address, MemoryAcces
   return true;
 }
 
+bool MemoryWatchList::GetEntryFreeze(u32 index) const
+{
+  if (index >= m_entries.size())
+    return false;
+
+  return m_entries[index].freeze;
+}
+
 void MemoryWatchList::RemoveEntry(u32 index)
 {
   if (index >= m_entries.size())

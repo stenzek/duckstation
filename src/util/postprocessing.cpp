@@ -564,10 +564,12 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
   // In case any allocs fail.
   DestroyTextures();
 
-  if (!(m_input_texture = g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1,
-                                                     GPUTexture::Type::RenderTarget, target_format)) ||
-      !(m_output_texture = g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1,
-                                                      GPUTexture::Type::RenderTarget, target_format)))
+  if (!(m_input_texture =
+          g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                     target_format, GPUTexture::Flags::None)) ||
+      !(m_output_texture =
+          g_gpu_device->FetchTexture(target_width, target_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
+                                     target_format, GPUTexture::Flags::None)))
   {
     DestroyTextures();
     return false;
@@ -806,7 +808,7 @@ GPUTexture* PostProcessing::GetDummyTexture()
 
   const u32 zero = 0;
   s_dummy_texture = g_gpu_device->FetchTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-                                               &zero, sizeof(zero));
+                                               GPUTexture::Flags::None, &zero, sizeof(zero));
   if (!s_dummy_texture)
     ERROR_LOG("Failed to create dummy texture.");
 

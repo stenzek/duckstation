@@ -6,6 +6,7 @@
 #include "d3d_common.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -17,9 +18,11 @@ LOG_CHANNEL(GPUDevice);
 
 std::unique_ptr<GPUTexture> D3D11Device::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,
-                                                       const void* data, u32 data_stride)
+                                                       GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                                       u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
-  return D3D11Texture::Create(m_device.Get(), width, height, layers, levels, samples, type, format, data, data_stride);
+  return D3D11Texture::Create(m_device.Get(), width, height, layers, levels, samples, type, format, flags, data,
+                              data_stride, error);
 }
 
 bool D3D11Device::SupportsTextureFormat(GPUTexture::Format format) const
@@ -44,7 +47,7 @@ void D3D11Sampler::SetDebugName(std::string_view name)
   SetD3DDebugObjectName(m_ss.Get(), name);
 }
 
-std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config& config)
+std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config& config, Error* error)
 {
   static constexpr std::array<D3D11_TEXTURE_ADDRESS_MODE, static_cast<u8>(GPUSampler::AddressMode::MaxCount)> ta = {{
     D3D11_TEXTURE_ADDRESS_WRAP,   // Repeat
@@ -87,7 +90,7 @@ std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config&
   const HRESULT hr = m_device->CreateSamplerState(&desc, ss.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("CreateSamplerState() failed: {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateSamplerState() failed: ", hr);
     return {};
   }
 
@@ -95,10 +98,10 @@ std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config&
 }
 
 D3D11Texture::D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format,
-                           ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
+                           Flags flags, ComPtr<ID3D11Texture2D> texture, ComPtr<ID3D11ShaderResourceView> srv,
                            ComPtr<ID3D11View> rtv_dsv, ComPtr<ID3D11UnorderedAccessView> uav)
   : GPUTexture(static_cast<u16>(width), static_cast<u16>(height), static_cast<u8>(layers), static_cast<u8>(levels),
-               static_cast<u8>(samples), type, format),
+               static_cast<u8>(samples), type, format, flags),
     m_texture(std::move(texture)), m_srv(std::move(srv)), m_rtv_dsv(std::move(rtv_dsv)), m_uav(std::move(uav))
 {
 }
@@ -127,7 +130,7 @@ void D3D11Texture::CommitClear(ID3D11DeviceContext1* context)
     else
       context->ClearDepthStencilView(GetD3DDSV(), D3D11_CLEAR_DEPTH, GetClearDepth(), 0);
   }
-  else if (IsRenderTarget() || IsRWTexture())
+  else if (IsRenderTarget())
   {
     if (m_state == GPUTexture::State::Invalidated)
       context->DiscardView(GetD3DRTV());
@@ -141,26 +144,27 @@ void D3D11Texture::CommitClear(ID3D11DeviceContext1* context)
 bool D3D11Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data, u32 pitch, u32 layer /*= 0*/,
                           u32 level /*= 0*/)
 {
-  if (m_type == Type::DynamicTexture)
+  if (HasFlag(Flags::AllowMap))
   {
     void* map;
-    u32 map_stride;
-    if (!Map(&map, &map_stride, x, y, width, height, layer, level))
+    u32 map_pitch;
+    if (!Map(&map, &map_pitch, x, y, width, height, layer, level))
       return false;
 
-    StringUtil::StrideMemCpy(map, map_stride, data, pitch, GetPixelSize() * width, height);
+    CopyTextureDataForUpload(width, height, m_format, map, map_pitch, data, pitch);
     Unmap();
     return true;
   }
 
-  const CD3D11_BOX box(static_cast<LONG>(x), static_cast<LONG>(y), 0, static_cast<LONG>(x + width),
-                       static_cast<LONG>(y + height), 1);
+  const u32 bs = GetBlockSize();
+  const D3D11_BOX box = {Common::AlignDownPow2(x, bs),       Common::AlignDownPow2(y, bs),        0U,
+                         Common::AlignUpPow2(x + width, bs), Common::AlignUpPow2(y + height, bs), 1U};
   const u32 srnum = D3D11CalcSubresource(level, layer, m_levels);
 
   ID3D11DeviceContext1* context = D3D11Device::GetD3DContext();
   CommitClear(context);
 
-  GPUDevice::GetStatistics().buffer_streamed += height * pitch;
+  GPUDevice::GetStatistics().buffer_streamed += CalcUploadSize(height, pitch);
   GPUDevice::GetStatistics().num_uploads++;
 
   context->UpdateSubresource(m_texture.Get(), srnum, &box, data, pitch, 0);
@@ -171,7 +175,7 @@ bool D3D11Texture::Update(u32 x, u32 y, u32 width, u32 height, const void* data,
 bool D3D11Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32 height, u32 layer /*= 0*/,
                        u32 level /*= 0*/)
 {
-  if (m_type != Type::DynamicTexture || (x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) ||
+  if (!HasFlag(Flags::AllowMap) || (x + width) > GetMipWidth(level) || (y + height) > GetMipHeight(level) ||
       layer > m_layers || level > m_levels)
   {
     return false;
@@ -191,10 +195,18 @@ bool D3D11Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
     return false;
   }
 
-  GPUDevice::GetStatistics().buffer_streamed += height * sr.RowPitch;
+  GPUDevice::GetStatistics().buffer_streamed += CalcUploadSize(height, sr.RowPitch);
   GPUDevice::GetStatistics().num_uploads++;
 
-  *map = static_cast<u8*>(sr.pData) + (y * sr.RowPitch) + (x * GetPixelSize());
+  if (IsCompressedFormat(m_format))
+  {
+    *map = static_cast<u8*>(sr.pData) + ((y / GetBlockSize()) * sr.RowPitch) +
+           ((x / GetBlockSize()) * GetPixelSize());
+  }
+  else
+  {
+    *map = static_cast<u8*>(sr.pData) + (y * sr.RowPitch) + (x * GetPixelSize());
+  }
   *map_stride = sr.RowPitch;
   m_mapped_subresource = srnum;
   m_state = GPUTexture::State::Dirty;
@@ -205,6 +217,12 @@ void D3D11Texture::Unmap()
 {
   D3D11Device::GetD3DContext()->Unmap(m_texture.Get(), m_mapped_subresource);
   m_mapped_subresource = 0;
+}
+
+void D3D11Texture::GenerateMipmaps()
+{
+  DebugAssert(HasFlag(Flags::AllowGenerateMipmaps));
+  D3D11Device::GetD3DContext()->GenerateMips(m_srv.Get());
 }
 
 void D3D11Texture::SetDebugName(std::string_view name)
@@ -218,43 +236,57 @@ DXGI_FORMAT D3D11Texture::GetDXGIFormat() const
 }
 
 std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 width, u32 height, u32 layers, u32 levels,
-                                                   u32 samples, Type type, Format format,
-                                                   const void* initial_data /* = nullptr */,
-                                                   u32 initial_data_stride /* = 0 */)
+                                                   u32 samples, Type type, Format format, Flags flags,
+                                                   const void* initial_data, u32 initial_data_stride, Error* error)
 {
-  if (!ValidateConfig(width, height, layers, layers, samples, type, format))
+  if (!ValidateConfig(width, height, layers, levels, samples, type, format, flags, error))
     return nullptr;
 
   u32 bind_flags = 0;
   D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
   u32 cpu_access = 0;
+  u32 misc = 0;
   switch (type)
   {
-    case Type::RenderTarget:
-      bind_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-      break;
-    case Type::DepthStencil:
-      bind_flags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-      break;
     case Type::Texture:
       bind_flags = D3D11_BIND_SHADER_RESOURCE;
       break;
-    case Type::DynamicTexture:
-      bind_flags = D3D11_BIND_SHADER_RESOURCE;
-      usage = D3D11_USAGE_DYNAMIC;
-      cpu_access = D3D11_CPU_ACCESS_WRITE;
+
+    case Type::RenderTarget:
+      bind_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
       break;
-    case Type::RWTexture:
-      bind_flags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE;
+
+    case Type::DepthStencil:
+      bind_flags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
       break;
-    default:
-      break;
+
+      DefaultCaseIsUnreachable();
+  }
+
+  if ((flags & Flags::AllowBindAsImage) != Flags::None)
+  {
+    DebugAssert(levels == 1);
+    bind_flags |= D3D11_BIND_UNORDERED_ACCESS;
+  }
+
+  if ((flags & Flags::AllowGenerateMipmaps) != Flags::None)
+  {
+    // Needs RT annoyingly.
+    bind_flags |= D3D11_BIND_RENDER_TARGET;
+    misc = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+  }
+
+  if ((flags & Flags::AllowMap) != Flags::None)
+  {
+    DebugAssert(type == Type::Texture);
+    usage = D3D11_USAGE_DYNAMIC;
+    cpu_access = D3D11_CPU_ACCESS_WRITE;
   }
 
   const D3DCommon::DXGIFormatMapping& fm = D3DCommon::GetFormatMapping(format);
 
   CD3D11_TEXTURE2D_DESC desc(fm.resource_format, width, height, layers, levels, bind_flags, usage, cpu_access, samples,
-                             0, 0);
+                             0, misc);
 
   D3D11_SUBRESOURCE_DATA srd;
   srd.pSysMem = initial_data;
@@ -265,15 +297,13 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
   const HRESULT tex_hr = device->CreateTexture2D(&desc, initial_data ? &srd : nullptr, texture.GetAddressOf());
   if (FAILED(tex_hr))
   {
-    ERROR_LOG("Create texture failed: 0x{:08X} ({}x{} levels:{} samples:{} format:{} bind_flags:{:X} initial_data:{})",
-              static_cast<unsigned>(tex_hr), width, height, levels, samples, static_cast<unsigned>(format), bind_flags,
-              initial_data);
+    Error::SetHResult(error, "CreateTexture2D() failed: ", tex_hr);
     return nullptr;
   }
 
   if (initial_data)
   {
-    GPUDevice::GetStatistics().buffer_streamed += height * initial_data_stride;
+    GPUDevice::GetStatistics().buffer_streamed += CalcUploadSize(format, height, initial_data_stride);
     GPUDevice::GetStatistics().num_uploads++;
   }
 
@@ -288,7 +318,7 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     const HRESULT hr = device->CreateShaderResourceView(texture.Get(), &srv_desc, srv.GetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      ERROR_LOG("Create SRV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      Error::SetHResult(error, "CreateShaderResourceView() failed: ", hr);
       return nullptr;
     }
   }
@@ -303,7 +333,7 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     const HRESULT hr = device->CreateRenderTargetView(texture.Get(), &rtv_desc, rtv.GetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      ERROR_LOG("Create RTV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      Error::SetHResult(error, "CreateRenderTargetView() failed: ", hr);
       return nullptr;
     }
 
@@ -318,7 +348,7 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     const HRESULT hr = device->CreateDepthStencilView(texture.Get(), &dsv_desc, dsv.GetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      ERROR_LOG("Create DSV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      Error::SetHResult(error, "CreateDepthStencilView() failed: ", hr);
       return nullptr;
     }
 
@@ -334,12 +364,12 @@ std::unique_ptr<D3D11Texture> D3D11Texture::Create(ID3D11Device* device, u32 wid
     const HRESULT hr = device->CreateUnorderedAccessView(texture.Get(), &uav_desc, uav.GetAddressOf());
     if (FAILED(hr)) [[unlikely]]
     {
-      ERROR_LOG("Create UAV for texture failed: 0x{:08X}", static_cast<unsigned>(hr));
+      Error::SetHResult(error, "CreateUnorderedAccessView() failed: ", hr);
       return nullptr;
     }
   }
 
-  return std::unique_ptr<D3D11Texture>(new D3D11Texture(width, height, layers, levels, samples, type, format,
+  return std::unique_ptr<D3D11Texture>(new D3D11Texture(width, height, layers, levels, samples, type, format, flags,
                                                         std::move(texture), std::move(srv), std::move(rtv_dsv),
                                                         std::move(uav)));
 }
@@ -350,10 +380,10 @@ D3D11TextureBuffer::D3D11TextureBuffer(Format format, u32 size_in_elements) : GP
 
 D3D11TextureBuffer::~D3D11TextureBuffer() = default;
 
-bool D3D11TextureBuffer::CreateBuffer()
+bool D3D11TextureBuffer::CreateBuffer(Error* error)
 {
   const u32 size_in_bytes = GetSizeInBytes();
-  if (!m_buffer.Create(D3D11_BIND_SHADER_RESOURCE, size_in_bytes, size_in_bytes))
+  if (!m_buffer.Create(D3D11_BIND_SHADER_RESOURCE, size_in_bytes, size_in_bytes, error))
     return false;
 
   static constexpr std::array<DXGI_FORMAT, static_cast<u32>(Format::MaxCount)> dxgi_formats = {{
@@ -366,7 +396,7 @@ bool D3D11TextureBuffer::CreateBuffer()
     D3D11Device::GetD3DDevice()->CreateShaderResourceView(m_buffer.GetD3DBuffer(), &srv_desc, m_srv.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
   {
-    ERROR_LOG("CreateShaderResourceView() failed: {:08X}", static_cast<unsigned>(hr));
+    Error::SetHResult(error, "CreateShaderResourceView() failed: ", hr);
     return false;
   }
 
@@ -395,10 +425,10 @@ void D3D11TextureBuffer::SetDebugName(std::string_view name)
 }
 
 std::unique_ptr<GPUTextureBuffer> D3D11Device::CreateTextureBuffer(GPUTextureBuffer::Format format,
-                                                                   u32 size_in_elements)
+                                                                   u32 size_in_elements, Error* error /* = nullptr */)
 {
   std::unique_ptr<D3D11TextureBuffer> tb = std::make_unique<D3D11TextureBuffer>(format, size_in_elements);
-  if (!tb->CreateBuffer())
+  if (!tb->CreateBuffer(error))
     tb.reset();
 
   return tb;
@@ -416,7 +446,8 @@ D3D11DownloadTexture::~D3D11DownloadTexture()
     D3D11DownloadTexture::Unmap();
 }
 
-std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format)
+std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u32 height, GPUTexture::Format format,
+                                                                   Error* error)
 {
   D3D11_TEXTURE2D_DESC desc = {};
   desc.Width = width;
@@ -433,7 +464,7 @@ std::unique_ptr<D3D11DownloadTexture> D3D11DownloadTexture::Create(u32 width, u3
   HRESULT hr = D3D11Device::GetD3DDevice()->CreateTexture2D(&desc, nullptr, tex.GetAddressOf());
   if (FAILED(hr))
   {
-    ERROR_LOG("CreateTexture2D() failed: {:08X}", hr);
+    Error::SetHResult(error, "CreateTexture2D() failed: ", hr);
     return {};
   }
 
@@ -520,15 +551,16 @@ void D3D11DownloadTexture::SetDebugName(std::string_view name)
   SetD3DDebugObjectName(m_texture.Get(), name);
 }
 
-std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format)
+std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                       Error* error /* = nullptr */)
 {
-  return D3D11DownloadTexture::Create(width, height, format);
+  return D3D11DownloadTexture::Create(width, height, format, error);
 }
 
 std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
                                                                        void* memory, size_t memory_size,
-                                                                       u32 memory_stride)
+                                                                       u32 memory_stride, Error* error /* = nullptr */)
 {
-  ERROR_LOG("D3D11 cannot import memory for download textures");
+  Error::SetStringView(error, "D3D11 cannot import memory for download textures");
   return {};
 }

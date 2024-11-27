@@ -118,11 +118,6 @@ void D3D12::GraphicsPipelineBuilder::SetMultisamples(u32 multisamples)
   m_desc.SampleDesc.Count = multisamples;
 }
 
-void D3D12::GraphicsPipelineBuilder::SetNoCullRasterizationState()
-{
-  SetRasterizationState(D3D12_FILL_MODE_SOLID, D3D12_CULL_MODE_NONE, false);
-}
-
 void D3D12::GraphicsPipelineBuilder::SetDepthState(bool depth_test, bool depth_write, D3D12_COMPARISON_FUNC compare_op)
 {
   m_desc.DepthStencilState.DepthEnable = depth_test;
@@ -139,11 +134,6 @@ void D3D12::GraphicsPipelineBuilder::SetStencilState(bool stencil_test, u8 read_
   m_desc.DepthStencilState.StencilWriteMask = write_mask;
   m_desc.DepthStencilState.FrontFace = front;
   m_desc.DepthStencilState.BackFace = back;
-}
-
-void D3D12::GraphicsPipelineBuilder::SetNoDepthTestState()
-{
-  SetDepthState(false, false, D3D12_COMPARISON_FUNC_ALWAYS);
 }
 
 void D3D12::GraphicsPipelineBuilder::SetNoStencilState()
@@ -168,18 +158,6 @@ void D3D12::GraphicsPipelineBuilder::SetBlendState(u32 rt, bool blend_enable, D3
 
   if (rt > 0)
     m_desc.BlendState.IndependentBlendEnable = TRUE;
-}
-
-void D3D12::GraphicsPipelineBuilder::SetColorWriteMask(u32 rt, u8 write_mask /* = D3D12_COLOR_WRITE_ENABLE_ALL */)
-{
-  m_desc.BlendState.RenderTarget[rt].RenderTargetWriteMask = write_mask;
-}
-
-void D3D12::GraphicsPipelineBuilder::SetNoBlendingState()
-{
-  SetBlendState(0, false, D3D12_BLEND_ONE, D3D12_BLEND_ZERO, D3D12_BLEND_OP_ADD, D3D12_BLEND_ONE, D3D12_BLEND_ZERO,
-                D3D12_BLEND_OP_ADD, D3D12_COLOR_WRITE_ENABLE_ALL);
-  m_desc.BlendState.IndependentBlendEnable = FALSE;
 }
 
 void D3D12::GraphicsPipelineBuilder::ClearRenderTargets()

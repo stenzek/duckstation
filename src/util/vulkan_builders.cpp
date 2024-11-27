@@ -627,14 +627,15 @@ void Vulkan::ComputePipelineBuilder::Clear()
   m_smap_constants = {};
 }
 
-VkPipeline Vulkan::ComputePipelineBuilder::Create(VkDevice device, VkPipelineCache pipeline_cache /*= VK_NULL_HANDLE*/,
-                                                  bool clear /*= true*/)
+VkPipeline Vulkan::ComputePipelineBuilder::Create(VkDevice device, VkPipelineCache pipeline_cache, bool clear,
+                                                  Error* error)
 {
   VkPipeline pipeline;
   VkResult res = vkCreateComputePipelines(device, pipeline_cache, 1, &m_ci, nullptr, &pipeline);
   if (res != VK_SUCCESS)
   {
     LOG_VULKAN_ERROR(res, "vkCreateComputePipelines() failed: ");
+    SetErrorObject(error, "vkCreateComputePipelines() failed: ", res);
     return VK_NULL_HANDLE;
   }
 

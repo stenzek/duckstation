@@ -92,7 +92,7 @@ template<typename FBOType, FBOType (*FactoryFunc)(GPUTexture* const* rts, u32 nu
          void (*DestroyFunc)(FBOType fbo)>
 void GPUFramebufferManager<FBOType, FactoryFunc, DestroyFunc>::RemoveRTReferences(const GPUTexture* tex)
 {
-  DebugAssert(tex->IsRenderTarget() || tex->IsRWTexture());
+  DebugAssert(tex->IsRenderTarget());
   for (auto it = m_map.begin(); it != m_map.end();)
   {
     if (!it->first.ContainsRT(tex))

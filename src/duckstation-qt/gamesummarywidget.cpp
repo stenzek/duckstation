@@ -52,6 +52,16 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
                                   static_cast<GameDatabase::CompatibilityRating>(i))));
   }
 
+  // I hate this so much.
+  const std::string_view default_language =
+    entry ? entry->GetLanguageFlagName(region) : Settings::GetDiscRegionName(region);
+  m_ui.customLanguage->addItem(QtUtils::GetIconForLanguage(default_language), tr("Show Default Flag"));
+  for (u32 i = 0; i < static_cast<u32>(GameDatabase::Language::MaxCount); i++)
+  {
+    const char* language_name = GameDatabase::GetLanguageName(static_cast<GameDatabase::Language>(i));
+    m_ui.customLanguage->addItem(QtUtils::GetIconForLanguage(language_name), QString::fromUtf8(language_name));
+  }
+
   populateUi(path, serial, region, entry);
 
   connect(m_ui.compatibilityComments, &QToolButton::clicked, this, &GameSummaryWidget::onCompatibilityCommentsClicked);
@@ -69,6 +79,7 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
   connect(m_ui.restoreTitle, &QAbstractButton::clicked, this, [this]() { setCustomTitle(std::string()); });
   connect(m_ui.region, &QComboBox::currentIndexChanged, this, [this](int index) { setCustomRegion(index); });
   connect(m_ui.restoreRegion, &QAbstractButton::clicked, this, [this]() { setCustomRegion(-1); });
+  connect(m_ui.customLanguage, &QComboBox::currentIndexChanged, this, &GameSummaryWidget::onCustomLanguageChanged);
 }
 
 GameSummaryWidget::~GameSummaryWidget() = default;
@@ -147,6 +158,8 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
     else
       m_ui.releaseInfo->setText(tr("Unknown"));
 
+    m_ui.languages->setText(QtUtils::StringViewToQString(entry->GetLanguagesString()));
+
     QString controllers;
     if (entry->supported_controllers != 0 && entry->supported_controllers != static_cast<u16>(-1))
     {
@@ -201,7 +214,10 @@ void GameSummaryWidget::populateCustomAttributes()
   auto lock = GameList::GetLock();
   const GameList::Entry* entry = GameList::GetEntryForPath(m_path);
   if (!entry || entry->IsDiscSet())
+  {
+    m_ui.customLanguage->setEnabled(false);
     return;
+  }
 
   {
     QSignalBlocker sb(m_ui.title);
@@ -213,6 +229,12 @@ void GameSummaryWidget::populateCustomAttributes()
     QSignalBlocker sb(m_ui.region);
     m_ui.region->setCurrentIndex(static_cast<int>(entry->region));
     m_ui.restoreRegion->setEnabled(entry->has_custom_region);
+  }
+
+  {
+    QSignalBlocker sb(m_ui.customLanguage);
+    m_ui.customLanguage->setCurrentIndex(entry->HasCustomLanguage() ? (static_cast<u32>(entry->custom_language) + 1) :
+                                                                      0);
   }
 }
 
@@ -238,7 +260,15 @@ void GameSummaryWidget::setCustomRegion(int region)
   GameList::SaveCustomRegionForPath(m_path, (region >= 0) ? std::optional<DiscRegion>(static_cast<DiscRegion>(region)) :
                                                             std::optional<DiscRegion>());
   populateCustomAttributes();
-  updateWindowTitle();
+  g_main_window->refreshGameListModel();
+}
+
+void GameSummaryWidget::onCustomLanguageChanged(int language)
+{
+  GameList::SaveCustomLanguageForPath(
+    m_path, (language > 0) ? std::optional<GameDatabase::Language>(static_cast<GameDatabase::Language>(language - 1)) :
+                             std::optional<GameDatabase::Language>());
+  populateCustomAttributes();
   g_main_window->refreshGameListModel();
 }
 

@@ -50,7 +50,7 @@ static RenderAPI GetRenderAPI()
 static bool PreprocessorFileExistsCallback(const std::string& path)
 {
   if (Path::IsAbsolute(path))
-    return FileSystem::FileExists(path.c_str());
+    return FileSystem::FileExists(Path::ToNativePath(path).c_str());
 
   return Host::ResourceFileExists(path.c_str(), true);
 }
@@ -59,7 +59,7 @@ static bool PreprocessorReadFileCallback(const std::string& path, std::string& d
 {
   std::optional<std::string> rdata;
   if (Path::IsAbsolute(path))
-    rdata = FileSystem::ReadFileToString(path.c_str());
+    rdata = FileSystem::ReadFileToString(Path::ToNativePath(path).c_str());
   else
     rdata = Host::ReadResourceFileToString(path.c_str(), true);
   if (!rdata.has_value())
@@ -1121,7 +1121,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         return false;
       }
 
-      RGBA8Image image;
+      Image image;
       if (const std::string image_path =
             Path::Combine(EmuFolders::Shaders, Path::Combine("reshade" FS_OSPATH_SEPARATOR_STR "Textures", source));
           !image.LoadFromFile(image_path.c_str()))
@@ -1138,12 +1138,10 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 
       tex.rt_scale = 0.0f;
       tex.texture = g_gpu_device->FetchTexture(image.GetWidth(), image.GetHeight(), 1, 1, 1, GPUTexture::Type::Texture,
-                                               GPUTexture::Format::RGBA8, image.GetPixels(), image.GetPitch());
+                                               GPUTexture::Format::RGBA8, GPUTexture::Flags::None, image.GetPixels(),
+                                               image.GetPitch(), error);
       if (!tex.texture)
-      {
-        Error::SetStringFmt(error, "Failed to create {}x{} texture ({})", image.GetWidth(), image.GetHeight(), source);
         return false;
-      }
 
       DEV_LOG("Loaded {}x{} texture ({})", image.GetWidth(), image.GetHeight(), source);
     }
@@ -1457,12 +1455,10 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
 
     const u32 t_width = std::max(static_cast<u32>(static_cast<float>(width) * tex.rt_scale), 1u);
     const u32 t_height = std::max(static_cast<u32>(static_cast<float>(height) * tex.rt_scale), 1u);
-    tex.texture = g_gpu_device->FetchTexture(t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format);
+    tex.texture = g_gpu_device->FetchTexture(t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format,
+                                             GPUTexture::Flags::None);
     if (!tex.texture)
-    {
-      ERROR_LOG("Failed to create {}x{} texture", t_width, t_height);
       return {};
-    }
   }
 
   m_valid = true;

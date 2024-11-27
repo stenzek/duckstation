@@ -312,6 +312,12 @@ QIcon QtUtils::GetIconForCompatibility(GameDatabase::CompatibilityRating rating)
     QtHost::GetResourcePath(TinyString::from_format("images/star-{}.svg", static_cast<u32>(rating)), true)));
 }
 
+QIcon QtUtils::GetIconForLanguage(std::string_view language_name)
+{
+  return QIcon(
+    QString::fromStdString(QtHost::GetResourcePath(GameDatabase::GetLanguageFlagResourceName(language_name), true)));
+}
+
 qreal QtUtils::GetDevicePixelRatioForWidget(const QWidget* widget)
 {
   const QScreen* screen_for_ratio = widget->screen();

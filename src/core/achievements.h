@@ -129,6 +129,9 @@ const char* GetLoggedInUserName();
 /// Should be called with the lock held.
 std::string GetLoggedInUserBadgePath();
 
+/// Returns 0 if pausing is allowed, otherwise the number of frames until pausing is allowed.
+u32 GetPauseThrottleFrames();
+
 /// Clears all cached state used to render the UI.
 void ClearUIState();
 

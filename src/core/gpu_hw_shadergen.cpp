@@ -822,11 +822,34 @@ uint2 FloatToIntegerCoords(float2 coords)
   return uint2((UPSCALED == 0 || FORCE_ROUND_TEXCOORDS != 0) ? roundEven(coords) : floor(coords));
 }
 
-#if !PAGE_TEXTURE
+#if PAGE_TEXTURE
+
+float4 SampleFromPageTexture(float2 coords)
+{
+  // Cached textures.
+  uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
+#if UPSCALED
+  float2 fpart = frac(coords);
+  coords = (float2(icoord) + fpart);
+#else
+  // Drop fractional part.
+  coords = float2(icoord);
+#endif
+
+  // Normalize.
+  coords = coords * (1.0f / 256.0f);
+  return SAMPLE_TEXTURE(samp0, coords);
+}
+
+#endif
+
+#if !PAGE_TEXTURE || TEXTURE_FILTERING
 
 float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 {
-  #if PALETTE
+  #if PAGE_TEXTURE
+    return SampleFromPageTexture(coords);
+  #elif PALETTE
     uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
 
     uint2 vicoord;
@@ -875,22 +898,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
   #endif
 }
 
-#else
-
-float4 SampleFromPageTexture(float2 coords)
-{
-  // Cached textures.
-#if UPSCALED == 0
-  float2 fpart = coords - roundEven(coords);
-#else
-  float2 fpart = frac(coords);
-#endif
-  uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
-  coords = (float2(icoord) + fpart) * (1.0f / 256.0f);
-  return SAMPLE_TEXTURE(samp0, coords);
-}
-
-#endif
+#endif // !PAGE_TEXTURE || TEXTURE_FILTERING
 
 #endif // TEXTURED
 )";
@@ -898,6 +906,9 @@ float4 SampleFromPageTexture(float2 coords)
   const u32 num_fragment_outputs = use_rov ? 0 : (use_dual_source ? 2 : 1);
   if (textured && page_texture)
   {
+    if (texture_filtering != GPUTextureFilter::Nearest)
+      WriteBatchTextureFilter(ss, texture_filtering);
+
     if (uv_limits)
     {
       DeclareFragmentEntryPoint(ss, 1, 1, {{"nointerpolation", "float4 v_uv_limits"}}, true, num_fragment_outputs,
@@ -956,7 +967,7 @@ float4 SampleFromPageTexture(float2 coords)
 
   #if TEXTURED
     float4 texcol;
-    #if PAGE_TEXTURE
+    #if PAGE_TEXTURE && !TEXTURE_FILTERING
       #if UV_LIMITS
         texcol = SampleFromPageTexture(clamp(v_tex0, v_uv_limits.xy, v_uv_limits.zw));
       #else
@@ -967,7 +978,11 @@ float4 SampleFromPageTexture(float2 coords)
 
       ialpha = 1.0;
     #elif TEXTURE_FILTERING
-      FilteredSampleFromVRAM(v_texpage, v_tex0, v_uv_limits, texcol, ialpha);
+      #if PAGE_TEXTURE
+        FilteredSampleFromVRAM(int2(0, 0), v_tex0, v_uv_limits, texcol, ialpha);
+      #else
+        FilteredSampleFromVRAM(v_texpage, v_tex0, v_uv_limits, texcol, ialpha);
+      #endif
       if (ialpha < 0.5)
         discard;
     #else
@@ -1269,6 +1284,22 @@ float3 SampleVRAM24(uint2 icoords)
   return ss.str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateVRAMReplacementBlitFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1);
+
+  ss << R"(
+{
+  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);
+}
+)";
+
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateWireframeGeometryShader() const
 {
   std::stringstream ss;
@@ -1422,14 +1453,17 @@ uint SampleVRAM(uint2 coords)
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo,
-                                                              bool write_mask_as_depth) const
+std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo, bool write_mask_as_depth,
+                                                              bool write_depth_as_rt) const
 {
+  Assert(!write_mask_as_depth || (write_mask_as_depth != write_depth_as_rt));
+
   std::stringstream ss;
   WriteHeader(ss);
   WriteColorConversionFunctions(ss);
 
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
+  DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
   DefineMacro(ss, "USE_BUFFER", use_buffer);
 
   ss << "CONSTANT float2 VRAM_SIZE = float2(" << VRAM_WIDTH << ".0, " << VRAM_HEIGHT << ".0);\n";
@@ -1465,7 +1499,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
     ss << "#define GET_VALUE(buffer_offset) (LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r)\n\n";
   }
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, write_mask_as_depth);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth);
   ss << R"(
 {
   float2 coords = floor(v_pos.xy / u_resolution_scale);
@@ -1492,20 +1526,25 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   o_col0 = RGBA5551ToRGBA8(value);
 #if WRITE_MASK_AS_DEPTH
   o_depth = (o_col0.a == 1.0) ? u_depth_value : 0.0;
+#elif WRITE_DEPTH_AS_RT
+  o_col1 = float4(1.0f, 0.0f, 0.0f, 0.0f);
 #endif
 })";
 
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth) const
+std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth, bool write_depth_as_rt) const
 {
+  Assert(!write_mask_as_depth || (write_mask_as_depth != write_depth_as_rt));
+
   // TODO: This won't currently work because we can't bind the texture to both the shader and framebuffer.
   const bool msaa = false;
 
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
+  DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
   DefineMacro(ss, "MSAA_COPY", msaa);
 
   DeclareUniformBuffer(ss,
@@ -1514,7 +1553,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
                        true);
 
   DeclareTexture(ss, "samp0", 0, msaa);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, write_mask_as_depth, false, false, msaa);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth, false,
+                            false, msaa);
   ss << R"(
 {
   float2 dst_coords = floor(v_pos.xy);
@@ -1544,25 +1584,31 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
   o_col0 = float4(color.xyz, u_set_mask_bit ? 1.0 : color.a);
 #if WRITE_MASK_AS_DEPTH
   o_depth = (u_set_mask_bit ? 1.0f : ((o_col0.a == 1.0) ? u_depth_value : 0.0));
+#elif WRITE_DEPTH_AS_RT
+  o_col1 = float4(1.0f, 0.0f, 0.0f, 0.0f);
 #endif
 })";
 
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced,
-                                                             bool write_mask_as_depth) const
+std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced, bool write_mask_as_depth,
+                                                             bool write_depth_as_rt) const
 {
+  Assert(!write_mask_as_depth || (write_mask_as_depth != write_depth_as_rt));
+
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
+  DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
   DefineMacro(ss, "WRAPPED", wrapped);
   DefineMacro(ss, "INTERLACED", interlaced);
 
   DeclareUniformBuffer(
     ss, {"uint2 u_dst_coords", "uint2 u_end_coords", "float4 u_fill_color", "uint u_interlaced_displayed_field"}, true);
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1, false, write_mask_as_depth, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1 + BoolToUInt32(write_depth_as_rt), false,
+                            write_mask_as_depth, false, false, false);
   ss << R"(
 {
 #if INTERLACED || WRAPPED
@@ -1586,6 +1632,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
   o_col0 = u_fill_color;
 #if WRITE_MASK_AS_DEPTH
   o_depth = u_fill_color.a;
+#elif WRITE_DEPTH_AS_RT
+  o_col1 = float4(1.0f, 0.0f, 0.0f, 0.0f);
 #endif
 })";
 
@@ -1811,6 +1859,9 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitr
   #else
     // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
     o_col0.a = color.a;
+
+    // Map anything with an alpha below 0.5 to transparent.
+    o_col0 = lerp(o_col0, float4(0.0, 0.0, 0.0, 0.0), float(o_col0.a < 0.5));
   #endif
 }
 )";

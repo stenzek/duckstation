@@ -60,9 +60,10 @@ void OpenGLDevice::SetErrorObject(Error* errptr, std::string_view prefix, GLenum
 
 std::unique_ptr<GPUTexture> OpenGLDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                         GPUTexture::Type type, GPUTexture::Format format,
-                                                        const void* data, u32 data_stride)
+                                                        GPUTexture::Flags flags, const void* data /* = nullptr */,
+                                                        u32 data_stride /* = 0 */, Error* error /* = nullptr */)
 {
-  return OpenGLTexture::Create(width, height, layers, levels, samples, type, format, data, data_stride);
+  return OpenGLTexture::Create(width, height, layers, levels, samples, type, format, flags, data, data_stride, error);
 }
 
 bool OpenGLDevice::SupportsTextureFormat(GPUTexture::Format format) const
@@ -205,6 +206,12 @@ void OpenGLDevice::InvalidateRenderTarget(GPUTexture* t)
     if (m_current_depth_target == t)
       CommitDSClearInFB(static_cast<OpenGLTexture*>(t));
   }
+}
+
+std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error)
+{
+  ERROR_LOG("Compute shaders are not yet supported.");
+  return {};
 }
 
 void OpenGLDevice::PushDebugGroup(const char* name)
@@ -488,6 +495,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
 
   m_features.geometry_shaders =
     !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS) && (GLAD_GL_VERSION_3_2 || GLAD_GL_ES_VERSION_3_2);
+  m_features.compute_shaders = false;
 
   m_features.gpu_timing = !(m_gl_context->IsGLES() &&
                             (!GLAD_GL_EXT_disjoint_timer_query || !glGetQueryObjectivEXT || !glGetQueryObjectui64vEXT));
@@ -497,6 +505,12 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
   m_features.timed_present = false;
 
   m_features.shader_cache = false;
+
+  m_features.dxt_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) && GLAD_GL_EXT_texture_compression_s3tc);
+  m_features.bptc_textures =
+    (!(disabled_features & FEATURE_MASK_COMPRESSED_TEXTURES) &&
+     (GLAD_GL_VERSION_4_2 || GLAD_GL_ARB_texture_compression_bptc || GLAD_GL_EXT_texture_compression_bptc));
 
   m_features.pipeline_cache = m_gl_context->IsGLES() || GLAD_GL_ARB_get_program_binary;
   if (m_features.pipeline_cache)
@@ -1076,6 +1090,12 @@ void OpenGLDevice::DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex)
 void OpenGLDevice::DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type)
 {
   Panic("Barriers are not supported");
+}
+
+void OpenGLDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                            u32 group_size_z)
+{
+  Panic("Compute shaders are not supported");
 }
 
 void OpenGLDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,

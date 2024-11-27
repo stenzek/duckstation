@@ -454,6 +454,16 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   texture_replacements.config.replacement_scale_linear_filter =
     si.GetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter", false);
 
+  texture_replacements.config.max_hash_cache_entries =
+    si.GetUIntValue("TextureReplacements", "MaxHashCacheEntries",
+                    TextureReplacementSettings::Configuration::DEFAULT_MAX_HASH_CACHE_ENTRIES);
+  texture_replacements.config.max_hash_cache_vram_usage_mb =
+    si.GetUIntValue("TextureReplacements", "MaxHashCacheVRAMUsageMB",
+                    TextureReplacementSettings::Configuration::DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB);
+  texture_replacements.config.max_replacement_cache_vram_usage_mb =
+    si.GetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
+                    TextureReplacementSettings::Configuration::DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB);
+
   texture_replacements.config.max_vram_write_splits = si.GetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", 0u);
   texture_replacements.config.max_vram_write_coalesce_width =
     si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth", 0u);
@@ -714,6 +724,12 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter",
                   texture_replacements.config.replacement_scale_linear_filter);
 
+  si.SetUIntValue("TextureReplacements", "MaxHashCacheEntries", texture_replacements.config.max_hash_cache_entries);
+  si.SetUIntValue("TextureReplacements", "MaxHashCacheVRAMUsageMB",
+                  texture_replacements.config.max_hash_cache_vram_usage_mb);
+  si.SetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
+                  texture_replacements.config.max_replacement_cache_vram_usage_mb);
+
   si.SetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", texture_replacements.config.max_vram_write_splits);
   si.SetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth",
                   texture_replacements.config.max_vram_write_coalesce_width);
@@ -864,6 +880,21 @@ std::string Settings::TextureReplacementSettings::Configuration::ExportToYAML(bo
 {}DumpVRAMWriteWidthThreshold: {}
 {}DumpVRAMWriteHeightThreshold: {}
 
+# Sets the maximum size of the hash cache that manages texture replacements.
+# Generally the default is sufficient, but some games may require increasing the
+# size. Do not set too high, otherwise mobile drivers will break.
+{}MaxHashCacheEntries: {}
+
+# Sets the maximum amount of VRAM in megabytes that the hash cache can utilize.
+# Keep in mind your target system requirements, using too much VRAM will result
+# in swapping and significantly decreased performance.
+{}MaxHashCacheVRAMUsageMB: {}
+
+# Sets the maximum amount of VRAM in megabytes that are reserved for the cache of
+# replacement textures. The cache usage for any given texture is approximately the
+# same size as the uncompressed source image on disk.
+{}MaxReplacementCacheVRAMUsage: {}
+
 # Enables the use of a bilinear filter when scaling replacement textures.
 # If more than one replacement texture in a 256x256 texture page has a different
 # scaling over the native resolution, or the texture page is not covered, a
@@ -895,6 +926,9 @@ std::string Settings::TextureReplacementSettings::Configuration::ExportToYAML(bo
                      comment_str, texture_dump_height_threshold,       // DumpTextureHeightThreshold
                      comment_str, vram_write_dump_width_threshold,     // DumpVRAMWriteWidthThreshold
                      comment_str, vram_write_dump_height_threshold,    // DumpVRAMWriteHeightThreshold
+                     comment_str, max_hash_cache_entries,              // MaxHashCacheEntries
+                     comment_str, max_hash_cache_vram_usage_mb,        // MaxHashCacheVRAMUsageMB
+                     comment_str, max_replacement_cache_vram_usage_mb, // MaxReplacementCacheVRAMUsage
                      comment_str, replacement_scale_linear_filter);    // ReplacementScaleLinearFilter
 }
 
@@ -1614,11 +1648,15 @@ const char* Settings::GetDisplayDeinterlacingModeDisplayName(DisplayDeinterlacin
                                   "DisplayDeinterlacingMode");
 }
 
-static constexpr const std::array s_display_crop_mode_names = {"None", "Overscan", "Borders"};
+static constexpr const std::array s_display_crop_mode_names = {
+  "None", "Overscan", "OverscanUncorrected", "Borders", "BordersUncorrected",
+};
 static constexpr const std::array s_display_crop_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "None", "DisplayCropMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Only Overscan Area", "DisplayCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Only Overscan Area (Aspect Uncorrected)", "DisplayCropMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "All Borders", "DisplayCropMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "All Borders (Aspect Uncorrected)", "DisplayCropMode"),
 };
 
 std::optional<DisplayCropMode> Settings::ParseDisplayCropMode(const char* str)
@@ -1662,7 +1700,7 @@ static constexpr const std::array s_display_aspect_ratio_names = {
   "20:9",
   "PAR 1:1"};
 static constexpr const std::array s_display_aspect_ratio_values = {
-  -1.0f, -1.0f, -1.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f};
+  4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 4.0f / 3.0f, 16.0f / 9.0f, 19.0f / 9.0f, 20.0f / 9.0f, -1.0f};
 
 std::optional<DisplayAspectRatio> Settings::ParseDisplayAspectRatio(const char* str)
 {
@@ -1691,28 +1729,7 @@ const char* Settings::GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar)
 
 float Settings::GetDisplayAspectRatioValue() const
 {
-  switch (display_aspect_ratio)
-  {
-    case DisplayAspectRatio::MatchWindow:
-    {
-      if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
-        return s_display_aspect_ratio_values[static_cast<size_t>(DEFAULT_DISPLAY_ASPECT_RATIO)];
-
-      return static_cast<float>(g_gpu_device->GetMainSwapChain()->GetWidth()) /
-             static_cast<float>(g_gpu_device->GetMainSwapChain()->GetHeight());
-    }
-
-    case DisplayAspectRatio::Custom:
-    {
-      return static_cast<float>(display_aspect_ratio_custom_numerator) /
-             static_cast<float>(display_aspect_ratio_custom_denominator);
-    }
-
-    default:
-    {
-      return s_display_aspect_ratio_values[static_cast<size_t>(display_aspect_ratio)];
-    }
-  }
+  return s_display_aspect_ratio_values[static_cast<size_t>(display_aspect_ratio)];
 }
 
 static constexpr const std::array s_display_alignment_names = {"LeftOrTop", "Center", "RightOrBottom"};

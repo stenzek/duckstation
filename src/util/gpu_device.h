@@ -24,6 +24,7 @@
 #include <vector>
 
 class Error;
+class Image;
 
 enum class RenderAPI : u8
 {
@@ -159,6 +160,9 @@ public:
 
     // Multiple textures, 128 byte UBO via push constants.
     MultiTextureAndPushConstants,
+
+    // 128 byte UBO via push constants, 1 texture, compute shader.
+    ComputeSingleTextureAndPushConstants,
 
     MaxCount
   };
@@ -416,6 +420,12 @@ public:
     u32 GetRenderTargetCount() const;
   };
 
+  struct ComputeConfig
+  {
+    Layout layout;
+    GPUShader* compute_shader;
+  };
+
   GPUPipeline();
   virtual ~GPUPipeline();
 
@@ -501,9 +511,11 @@ public:
     FEATURE_MASK_FRAMEBUFFER_FETCH = (1 << 2),
     FEATURE_MASK_TEXTURE_BUFFERS = (1 << 3),
     FEATURE_MASK_GEOMETRY_SHADERS = (1 << 4),
-    FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 5),
-    FEATURE_MASK_MEMORY_IMPORT = (1 << 6),
-    FEATURE_MASK_RASTER_ORDER_VIEWS = (1 << 7),
+    FEATURE_MASK_COMPUTE_SHADERS = (1 << 5),
+    FEATURE_MASK_TEXTURE_COPY_TO_SELF = (1 << 6),
+    FEATURE_MASK_MEMORY_IMPORT = (1 << 7),
+    FEATURE_MASK_RASTER_ORDER_VIEWS = (1 << 8),
+    FEATURE_MASK_COMPRESSED_TEXTURES = (1 << 9),
   };
 
   enum class DrawBarrier : u32
@@ -532,6 +544,7 @@ public:
     bool texture_buffers_emulated_with_ssbo : 1;
     bool feedback_loops : 1;
     bool geometry_shaders : 1;
+    bool compute_shaders : 1;
     bool partial_msaa_resolve : 1;
     bool memory_import : 1;
     bool explicit_present : 1;
@@ -541,6 +554,8 @@ public:
     bool pipeline_cache : 1;
     bool prefer_unused_textures : 1;
     bool raster_order_views : 1;
+    bool dxt_textures : 1;
+    bool bptc_textures : 1;
   };
 
   struct Statistics
@@ -625,9 +640,18 @@ public:
       0,                    // SingleTextureBufferAndPushConstants
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndUBO
       MAX_TEXTURE_SAMPLERS, // MultiTextureAndPushConstants
+      1,                    // ComputeSingleTextureAndPushConstants
     };
 
     return counts[static_cast<u8>(layout)];
+  }
+
+  /// Returns the number of thread groups to dispatch for a given total count and local size.
+  static constexpr std::tuple<u32, u32, u32> GetDispatchCount(u32 count_x, u32 count_y, u32 count_z, u32 local_size_x,
+                                                              u32 local_size_y, u32 local_size_z)
+  {
+    return std::make_tuple((count_x + (local_size_x - 1)) / local_size_x, (count_y + (local_size_y - 1)) / local_size_y,
+                           (count_z + (local_size_z - 1)) / local_size_z);
   }
 
   ALWAYS_INLINE const Features& GetFeatures() const { return m_features; }
@@ -638,10 +662,6 @@ public:
 
   ALWAYS_INLINE GPUSwapChain* GetMainSwapChain() const { return m_main_swap_chain.get(); }
   ALWAYS_INLINE bool HasMainSwapChain() const { return static_cast<bool>(m_main_swap_chain); }
-  // ALWAYS_INLINE u32 GetMainSwapChainWidth() const { return m_main_swap_chain->GetWidth(); }
-  // ALWAYS_INLINE u32 GetMainSwapChainHeight() const { return m_main_swap_chain->GetHeight(); }
-  // ALWAYS_INLINE float GetWindowScale() const { return m_window_info.surface_scale; }
-  // ALWAYS_INLINE GPUTexture::Format GetWindowFormat() const { return m_window_info.surface_format; }
 
   ALWAYS_INLINE GPUSampler* GetLinearSampler() const { return m_linear_sampler.get(); }
   ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler.get(); }
@@ -677,27 +697,31 @@ public:
 
   virtual std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                     GPUTexture::Type type, GPUTexture::Format format,
-                                                    const void* data = nullptr, u32 data_stride = 0) = 0;
-  virtual std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config) = 0;
-  virtual std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format,
-                                                                u32 size_in_elements) = 0;
+                                                    GPUTexture::Flags flags, const void* data = nullptr,
+                                                    u32 data_stride = 0, Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
+                                                                Error* error = nullptr) = 0;
 
   // Texture pooling.
   std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
-                                           GPUTexture::Type type, GPUTexture::Format format, const void* data = nullptr,
-                                           u32 data_stride = 0);
+                                           GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                           const void* data = nullptr, u32 data_stride = 0, Error* error = nullptr);
   std::unique_ptr<GPUTexture, PooledTextureDeleter>
   FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
-                          GPUTexture::Format format, const void* data = nullptr, u32 data_stride = 0,
-                          bool dynamic = false);
+                          GPUTexture::Format format, GPUTexture::Flags flags, const void* data = nullptr,
+                          u32 data_stride = 0, Error* error = nullptr);
+  std::unique_ptr<GPUTexture> FetchAndUploadTextureImage(const Image& image,
+                                                         GPUTexture::Flags flags = GPUTexture::Flags::None,
+                                                         Error* error = nullptr);
   void RecycleTexture(std::unique_ptr<GPUTexture> texture);
   void PurgeTexturePool();
 
-  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height,
-                                                                    GPUTexture::Format format) = 0;
   virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
-                                                                    void* memory, size_t memory_size,
-                                                                    u32 memory_stride) = 0;
+                                                                    Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUDownloadTexture> CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
+                                                                    void* memory, size_t memory_size, u32 memory_stride,
+                                                                    Error* error = nullptr) = 0;
 
   virtual void CopyTextureRegion(GPUTexture* dst, u32 dst_x, u32 dst_y, u32 dst_layer, u32 dst_level, GPUTexture* src,
                                  u32 src_x, u32 src_y, u32 src_layer, u32 src_level, u32 width, u32 height) = 0;
@@ -711,6 +735,8 @@ public:
   std::unique_ptr<GPUShader> CreateShader(GPUShaderStage stage, GPUShaderLanguage language, std::string_view source,
                                           Error* error = nullptr, const char* entry_point = "main");
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config,
+                                                      Error* error = nullptr) = 0;
+  virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config,
                                                       Error* error = nullptr) = 0;
 
   /// Debug messaging.
@@ -753,6 +779,8 @@ public:
   virtual void Draw(u32 vertex_count, u32 base_vertex) = 0;
   virtual void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) = 0;
   virtual void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) = 0;
+  virtual void Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 group_size_x, u32 group_size_y,
+                        u32 group_size_z) = 0;
 
   /// Returns false if the window was completely occluded.
   virtual PresentResult BeginPresent(GPUSwapChain* swap_chain, u32 clear_color = DEFAULT_CLEAR_COLOR) = 0;
@@ -769,7 +797,7 @@ public:
   bool UsesLowerLeftOrigin() const;
   static GSVector4i FlipToLowerLeft(GSVector4i rc, s32 target_height);
   bool ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u32 new_height, GPUTexture::Type type,
-                     GPUTexture::Format format, bool preserve = true);
+                     GPUTexture::Format format, GPUTexture::Flags flags, bool preserve = true);
 
   virtual bool SupportsTextureFormat(GPUTexture::Format format) const = 0;
 
@@ -843,7 +871,7 @@ private:
     u8 samples;
     GPUTexture::Type type;
     GPUTexture::Format format;
-    u8 pad;
+    GPUTexture::Flags flags;
 
     ALWAYS_INLINE bool operator==(const TexturePoolKey& rhs) const
     {

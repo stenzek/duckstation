@@ -5,8 +5,8 @@
 
 #include "gpu_types.h"
 
+class Image;
 class GPUTexture;
-class RGBA8Image;
 class StateWrapper;
 
 struct Settings;
@@ -29,7 +29,7 @@ enum class PaletteRecordFlags : u32
 IMPLEMENT_ENUM_CLASS_BITWISE_OPERATORS(PaletteRecordFlags);
 
 using HashType = u64;
-using TextureReplacementImage = RGBA8Image;
+using TextureReplacementImage = Image;
 
 struct Source;
 struct HashCacheEntry;
@@ -128,7 +128,7 @@ void SetGameID(std::string game_id);
 void ReloadTextureReplacements(bool show_info);
 
 // VRAM Write Replacements
-const TextureReplacementImage* GetVRAMReplacement(u32 width, u32 height, const void* pixels);
+GPUTexture* GetVRAMReplacement(u32 width, u32 height, const void* pixels);
 void DumpVRAMWrite(u32 width, u32 height, const void* pixels);
 bool ShouldDumpVRAMWrite(u32 width, u32 height);
 

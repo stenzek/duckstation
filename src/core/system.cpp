@@ -128,7 +128,7 @@ struct SaveStateBuffer
   std::string media_path;
   u32 media_subimage_index;
   u32 version;
-  RGBA8Image screenshot;
+  Image screenshot;
   DynamicHeapArray<u8> state_data;
   size_t state_size;
 };
@@ -1941,9 +1941,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   if (!CreateGPU(force_software_renderer ? GPURenderer::Software : g_settings.gpu_renderer, false, fullscreen, error))
     return false;
 
-  if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
-    GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
-
   if (g_settings.gpu_pgxp_enable)
     CPU::PGXP::Initialize();
 
@@ -1965,6 +1962,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
 
   s_state.cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
+  UpdateGTEAspectRatio();
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
 
@@ -2434,11 +2432,11 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen,
   }
 
   if (renderer == GPURenderer::Software)
-    g_gpu = GPU::CreateSoftwareRenderer(error);
+    g_gpu = GPU::CreateSoftwareRenderer();
   else
-    g_gpu = GPU::CreateHardwareRenderer(error);
+    g_gpu = GPU::CreateHardwareRenderer();
 
-  if (!g_gpu)
+  if (!g_gpu->Initialize(error))
   {
     ERROR_LOG("Failed to initialize {} renderer, falling back to software renderer",
               Settings::GetRendererName(renderer));
@@ -2447,8 +2445,8 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen,
                   Settings::GetRendererName(renderer)),
       Host::OSD_CRITICAL_ERROR_DURATION);
     g_gpu.reset();
-    g_gpu = GPU::CreateSoftwareRenderer(error);
-    if (!g_gpu)
+    g_gpu = GPU::CreateSoftwareRenderer();
+    if (!g_gpu->Initialize(error))
     {
       ERROR_LOG("Failed to create fallback software renderer.");
       if (!s_state.keep_gpu_device_on_shutdown)
@@ -2916,15 +2914,14 @@ bool System::LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Err
   // Read screenshot if requested.
   if (read_screenshot)
   {
-    buffer->screenshot.SetSize(header.screenshot_width, header.screenshot_height);
-    const u32 uncompressed_size = buffer->screenshot.GetPitch() * buffer->screenshot.GetHeight();
-    const u32 compressed_size = (header.version >= 69) ? header.screenshot_compressed_size : uncompressed_size;
+    buffer->screenshot.Resize(header.screenshot_width, header.screenshot_height, ImageFormat::RGBA8, true);
+    const u32 compressed_size =
+      (header.version >= 69) ? header.screenshot_compressed_size : buffer->screenshot.GetStorageSize();
     const SAVE_STATE_HEADER::CompressionType compression_type =
       (header.version >= 69) ? static_cast<SAVE_STATE_HEADER::CompressionType>(header.screenshot_compression_type) :
                                SAVE_STATE_HEADER::CompressionType::None;
-    if (!ReadAndDecompressStateData(
-          fp, std::span<u8>(reinterpret_cast<u8*>(buffer->screenshot.GetPixels()), uncompressed_size),
-          header.offset_to_screenshot, compressed_size, compression_type, error)) [[unlikely]]
+    if (!ReadAndDecompressStateData(fp, buffer->screenshot.GetPixelsSpan(), header.offset_to_screenshot,
+                                    compressed_size, compression_type, error)) [[unlikely]]
     {
       return false;
     }
@@ -3104,29 +3101,27 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
     screenshot_display_rect = screenshot_display_rect.sub32(screenshot_display_rect.xyxy());
     VERBOSE_LOG("Saving {}x{} screenshot for state", screenshot_width, screenshot_height);
 
-    std::vector<u32> screenshot_buffer;
-    u32 screenshot_stride;
-    GPUTexture::Format screenshot_format;
     if (g_gpu->RenderScreenshotToBuffer(screenshot_width, screenshot_height, screenshot_display_rect,
-                                        screenshot_draw_rect, false, &screenshot_buffer, &screenshot_stride,
-                                        &screenshot_format) &&
-        GPUTexture::ConvertTextureDataToRGBA8(screenshot_width, screenshot_height, screenshot_buffer, screenshot_stride,
-                                              screenshot_format))
+                                        screenshot_draw_rect, false, &buffer->screenshot))
     {
-      if (screenshot_stride != (screenshot_width * sizeof(u32)))
-      {
-        WARNING_LOG("Failed to save {}x{} screenshot for save state due to incorrect stride({})", screenshot_width,
-                    screenshot_height, screenshot_stride);
-      }
-      else
-      {
-        if (g_gpu_device->UsesLowerLeftOrigin())
-        {
-          GPUTexture::FlipTextureDataRGBA8(screenshot_width, screenshot_height,
-                                           reinterpret_cast<u8*>(screenshot_buffer.data()), screenshot_stride);
-        }
+      if (g_gpu_device->UsesLowerLeftOrigin())
+        buffer->screenshot.FlipY();
 
-        buffer->screenshot.SetPixels(screenshot_width, screenshot_height, std::move(screenshot_buffer));
+      // Ensure it's RGBA8.
+      if (buffer->screenshot.GetFormat() != ImageFormat::RGBA8)
+      {
+        Error convert_error;
+        std::optional<Image> screenshot_rgba8 = buffer->screenshot.ConvertToRGBA8(&convert_error);
+        if (!screenshot_rgba8.has_value())
+        {
+          ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}",
+                    Image::GetFormatName(buffer->screenshot.GetFormat()), convert_error.GetDescription());
+          buffer->screenshot.Invalidate();
+        }
+        else
+        {
+          buffer->screenshot = std::move(screenshot_rgba8.value());
+        }
       }
     }
     else
@@ -4405,8 +4400,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
          (g_settings.display_aspect_ratio_custom_numerator != old_settings.display_aspect_ratio_custom_numerator ||
           g_settings.display_aspect_ratio_custom_denominator != old_settings.display_aspect_ratio_custom_denominator)))
     {
-      if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
-        GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
+      UpdateGTEAspectRatio();
     }
 
     if (g_settings.gpu_pgxp_enable != old_settings.gpu_pgxp_enable ||
@@ -5654,8 +5648,7 @@ void System::ToggleWidescreen()
                   Settings::GetDisplayAspectRatioDisplayName(g_settings.display_aspect_ratio), 5.0f));
   }
 
-  if (GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain())
-    GTE::UpdateAspectRatio(swap_chain->GetWidth(), swap_chain->GetHeight());
+  UpdateGTEAspectRatio();
 }
 
 void System::ToggleSoftwareRendering()
@@ -5685,29 +5678,26 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
   if (scale == 0.0f)
     scale = g_gpu->IsHardwareRenderer() ? static_cast<float>(g_settings.gpu_resolution_scale) : 1.0f;
 
-  const float y_scale =
-    (static_cast<float>(g_gpu->GetCRTCDisplayWidth()) / static_cast<float>(g_gpu->GetCRTCDisplayHeight())) /
-    g_gpu->ComputeDisplayAspectRatio();
-
-  u32 requested_width =
-    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayWidth()) * scale)), 1);
-  u32 requested_height =
-    std::max<u32>(static_cast<u32>(std::ceil(static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * y_scale * scale)), 1);
+  float requested_width = static_cast<float>(g_gpu->GetCRTCDisplayWidth()) * scale;
+  float requested_height = static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * scale;
+  g_gpu->ApplyPixelAspectRatioToSize(&requested_width, &requested_height);
 
   if (g_settings.display_rotation == DisplayRotation::Rotate90 ||
       g_settings.display_rotation == DisplayRotation::Rotate270)
+  {
     std::swap(requested_width, requested_height);
+  }
 
-  Host::RequestResizeHostDisplay(static_cast<s32>(requested_width), static_cast<s32>(requested_height));
+  Host::RequestResizeHostDisplay(static_cast<s32>(std::ceil(requested_width)),
+                                 static_cast<s32>(std::ceil(requested_height)));
 }
 
-void System::DisplayWindowResized(u32 width, u32 height)
+void System::DisplayWindowResized()
 {
   if (!IsValid())
     return;
 
-  if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
-    GTE::UpdateAspectRatio(width, height);
+  UpdateGTEAspectRatio();
 
   g_gpu->RestoreDeviceContext();
   g_gpu->UpdateResolutionScale();
@@ -5720,6 +5710,47 @@ void System::DisplayWindowResized(u32 width, u32 height)
     InvalidateDisplay();
     InvalidateDisplay();
   }
+}
+
+void System::UpdateGTEAspectRatio()
+{
+  if (!IsValid())
+    return;
+
+  DisplayAspectRatio gte_ar = g_settings.display_aspect_ratio;
+  u32 custom_num = 0;
+  u32 custom_denom = 0;
+  if (!g_settings.gpu_widescreen_hack)
+  {
+    // No WS hack => no correction.
+    gte_ar = DisplayAspectRatio::R4_3;
+  }
+  else if (gte_ar == DisplayAspectRatio::Custom)
+  {
+    // Custom AR => use values.
+    custom_num = g_settings.display_aspect_ratio_custom_numerator;
+    custom_denom = g_settings.display_aspect_ratio_custom_denominator;
+  }
+  else if (gte_ar == DisplayAspectRatio::MatchWindow)
+  {
+    if (const GPUSwapChain* main_swap_chain = g_gpu_device->GetMainSwapChain())
+    {
+      // Pre-apply the native aspect ratio correction to the window size.
+      // MatchWindow does not correct the display aspect ratio, so we need to apply it here.
+      const float correction = g_gpu->ComputeAspectRatioCorrection();
+      custom_num =
+        static_cast<u32>(std::max(std::round(static_cast<float>(main_swap_chain->GetWidth()) / correction), 1.0f));
+      custom_denom = std::max<u32>(main_swap_chain->GetHeight(), 1u);
+      gte_ar = DisplayAspectRatio::Custom;
+    }
+    else
+    {
+      // Assume 4:3 until we get a window.
+      gte_ar = DisplayAspectRatio::R4_3;
+    }
+  }
+
+  GTE::SetAspectRatio(gte_ar, custom_num, custom_denom);
 }
 
 bool System::PresentDisplay(bool explicit_present, u64 present_time)

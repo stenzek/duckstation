@@ -88,6 +88,7 @@ enum class Language : u8
   Russian,
   Spanish,
   Swedish,
+  Turkish,
   MaxCount,
 };
 
@@ -129,8 +130,9 @@ struct Entry
 
   ALWAYS_INLINE bool HasTrait(Trait trait) const { return traits[static_cast<int>(trait)]; }
   ALWAYS_INLINE bool HasLanguage(Language language) const { return languages.test(static_cast<size_t>(language)); }
-  ALWAYS_INLINE bool HasAnyLanguage() const { return !languages.none(); }
+  ALWAYS_INLINE bool HasAnyLanguage() const { return languages.any(); }
 
+  std::string_view GetLanguageFlagName(DiscRegion region) const;
   SmallString GetLanguagesString() const;
 
   void ApplySettings(Settings& settings, bool display_osd_messages) const;
@@ -155,6 +157,7 @@ const char* GetCompatibilityRatingDisplayName(CompatibilityRating rating);
 
 const char* GetLanguageName(Language language);
 std::optional<Language> ParseLanguageName(std::string_view str);
+TinyString GetLanguageFlagResourceName(std::string_view language_name);
 
 /// Map of track hashes for image verification
 struct TrackData

@@ -33,8 +33,11 @@ void FrameDone();
 GPUVSyncMode GetEffectiveVSyncMode();
 bool ShouldAllowPresentThrottle();
 
-/// Call when host display size changes, use with "match display" aspect ratio setting.
-void DisplayWindowResized(u32 width, u32 height);
+/// Call when host display size changes.
+void DisplayWindowResized();
+
+/// Updates the internal GTE aspect ratio. Use with "match display" aspect ratio setting.
+void UpdateGTEAspectRatio();
 
 /// Performs mandatory hardware checks.
 bool PerformEarlyHardwareChecks(Error* error);
