@@ -437,12 +437,22 @@
         </widget>
        </item>
        <item>
+        <widget class="QPushButton" name="scanFreezeWatch">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Freeze Selected Entries</string>
+         </property>
+        </widget>
+       </item>
+       <item>
         <widget class="QPushButton" name="scanRemoveWatch">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Remove Selected Entries from Watch List</string>
+          <string>Remove Selected Entries</string>
          </property>
         </widget>
        </item>
