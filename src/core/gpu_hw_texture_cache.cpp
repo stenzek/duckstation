@@ -509,7 +509,6 @@ struct GPUTextureCacheState
 {
   Settings::TextureReplacementSettings::Configuration config;
   size_t hash_cache_memory_usage = 0;
-  size_t max_hash_cache_memory_usage = 1ULL * 1024ULL * 1024ULL * 1024ULL; // 2GB
   VRAMWrite* last_vram_write = nullptr;
   bool track_vram_writes = false;
 
@@ -2114,10 +2113,11 @@ void GPUTextureCache::Compact()
   static constexpr u32 MAX_HASH_CACHE_AGE = 600;
 
   // Maximum number of textures which are permitted in the hash cache at the end of the frame.
-  static constexpr u32 MAX_HASH_CACHE_SIZE = 500;
+  const u32 max_hash_cache_size = s_state.config.max_hash_cache_entries;
+  const size_t max_hash_cache_memory = static_cast<size_t>(s_state.config.max_hash_cache_vram_usage_mb) * 1048576;
 
-  bool might_need_cache_purge = (s_state.hash_cache.size() > MAX_HASH_CACHE_SIZE ||
-                                 s_state.hash_cache_memory_usage >= s_state.max_hash_cache_memory_usage);
+  bool might_need_cache_purge =
+    (s_state.hash_cache.size() > max_hash_cache_size || s_state.hash_cache_memory_usage >= max_hash_cache_memory);
   if (might_need_cache_purge)
     s_state.hash_cache_purge_list.clear();
 
@@ -2136,8 +2136,8 @@ void GPUTextureCache::Compact()
     // We might free up enough just with "normal" removals above.
     if (might_need_cache_purge)
     {
-      might_need_cache_purge = (s_state.hash_cache.size() > MAX_HASH_CACHE_SIZE ||
-                                s_state.hash_cache_memory_usage >= s_state.max_hash_cache_memory_usage);
+      might_need_cache_purge =
+        (s_state.hash_cache.size() > max_hash_cache_size || s_state.hash_cache_memory_usage >= max_hash_cache_memory);
       if (might_need_cache_purge)
         s_state.hash_cache_purge_list.emplace_back(it, static_cast<s32>(e.last_used_frame));
     }
@@ -2148,12 +2148,14 @@ void GPUTextureCache::Compact()
   // Pushing to a list, sorting, and removing ends up faster than re-iterating the map.
   if (might_need_cache_purge)
   {
+    DEV_LOG("Force compacting hash cache, count = {}, size = {:.1f} MB", s_state.hash_cache.size(),
+            static_cast<float>(s_state.hash_cache_memory_usage) / 1048576.0f);
+
     std::sort(s_state.hash_cache_purge_list.begin(), s_state.hash_cache_purge_list.end(),
               [](const auto& lhs, const auto& rhs) { return lhs.second < rhs.second; });
 
     size_t purge_index = 0;
-    while (s_state.hash_cache.size() > MAX_HASH_CACHE_SIZE ||
-           s_state.hash_cache_memory_usage >= s_state.max_hash_cache_memory_usage)
+    while (s_state.hash_cache.size() > max_hash_cache_size || s_state.hash_cache_memory_usage >= max_hash_cache_memory)
     {
       if (purge_index == s_state.hash_cache_purge_list.size())
       {
@@ -2164,6 +2166,9 @@ void GPUTextureCache::Compact()
 
       RemoveFromHashCache(s_state.hash_cache_purge_list[purge_index++].first);
     }
+
+    DEV_LOG("Finished compacting hash cache, count = {}, size = {:.1f} MB", s_state.hash_cache.size(),
+            static_cast<float>(s_state.hash_cache_memory_usage) / 1048576.0f);
   }
 
   CompactTextureReplacementGPUImages();
@@ -3056,9 +3061,9 @@ void GPUTextureCache::CompactTextureReplacementGPUImages()
   if (s_state.gpu_replacement_image_cache_vram_usage <= max_usage)
     return;
 
-  VERBOSE_LOG("Compacting replacement GPU image cache, count = {}, size = {:.1f} MB",
-              s_state.gpu_replacement_image_cache.size(),
-              static_cast<float>(s_state.gpu_replacement_image_cache_vram_usage) / 1048576.0f);
+  DEV_LOG("Compacting replacement GPU image cache, count = {}, size = {:.1f} MB",
+          s_state.gpu_replacement_image_cache.size(),
+          static_cast<float>(s_state.gpu_replacement_image_cache_vram_usage) / 1048576.0f);
 
   const u32 frame_number = System::GetFrameNumber();
   s_state.gpu_replacement_image_cache_purge_list.reserve(s_state.gpu_replacement_image_cache.size());
@@ -3086,9 +3091,9 @@ void GPUTextureCache::CompactTextureReplacementGPUImages()
 
   s_state.gpu_replacement_image_cache_purge_list.clear();
 
-  VERBOSE_LOG("Finished compacting replacement GPU image cache, count = {}, size = {:.1f} MB",
-              s_state.gpu_replacement_image_cache.size(),
-              static_cast<float>(s_state.gpu_replacement_image_cache_vram_usage) / 1048576.0f);
+  DEV_LOG("Finished compacting replacement GPU image cache, count = {}, size = {:.1f} MB",
+          s_state.gpu_replacement_image_cache.size(),
+          static_cast<float>(s_state.gpu_replacement_image_cache_vram_usage) / 1048576.0f);
 }
 
 void GPUTextureCache::PreloadReplacementTextures()
@@ -3241,9 +3246,6 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
                                           .value_or(static_cast<bool>(s_state.config.reduce_palette_range));
   s_state.config.convert_copies_to_writes = GetOptionalTFromObject<bool>(root, "ConvertCopiesToWrites")
                                               .value_or(static_cast<bool>(s_state.config.convert_copies_to_writes));
-  s_state.config.replacement_scale_linear_filter =
-    GetOptionalTFromObject<bool>(root, "ReplacementScaleLinearFilter")
-      .value_or(static_cast<bool>(s_state.config.replacement_scale_linear_filter));
   s_state.config.max_vram_write_splits =
     GetOptionalTFromObject<bool>(root, "MaxVRAMWriteSplits").value_or(s_state.config.max_vram_write_splits);
   s_state.config.max_vram_write_coalesce_width = GetOptionalTFromObject<u32>(root, "MaxVRAMWriteCoalesceWidth")
@@ -3258,6 +3260,15 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
                                                      .value_or(s_state.config.vram_write_dump_width_threshold);
   s_state.config.vram_write_dump_height_threshold = GetOptionalTFromObject<u32>(root, "DumpVRAMWriteHeightThreshold")
                                                       .value_or(s_state.config.vram_write_dump_height_threshold);
+  s_state.config.max_hash_cache_entries =
+    GetOptionalTFromObject<u32>(root, "MaxHashCacheEntries").value_or(s_state.config.max_hash_cache_entries);
+  s_state.config.max_hash_cache_vram_usage_mb =
+    GetOptionalTFromObject<u32>(root, "MaxHashCacheVRAMUsageMB").value_or(s_state.config.max_hash_cache_vram_usage_mb);
+  s_state.config.max_replacement_cache_vram_usage_mb = GetOptionalTFromObject<u32>(root, "MaxReplacementCacheVRAMUsage")
+                                                         .value_or(s_state.config.max_replacement_cache_vram_usage_mb);
+  s_state.config.replacement_scale_linear_filter =
+    GetOptionalTFromObject<bool>(root, "ReplacementScaleLinearFilter")
+      .value_or(static_cast<bool>(s_state.config.replacement_scale_linear_filter));
 
   if (load_vram_write_replacement_aliases || load_texture_replacement_aliases)
   {

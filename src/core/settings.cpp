@@ -454,8 +454,15 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   texture_replacements.config.replacement_scale_linear_filter =
     si.GetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter", false);
 
+  texture_replacements.config.max_hash_cache_entries =
+    si.GetUIntValue("TextureReplacements", "MaxHashCacheEntries",
+                    TextureReplacementSettings::Configuration::DEFAULT_MAX_HASH_CACHE_ENTRIES);
+  texture_replacements.config.max_hash_cache_vram_usage_mb =
+    si.GetUIntValue("TextureReplacements", "MaxHashCacheVRAMUsageMB",
+                    TextureReplacementSettings::Configuration::DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB);
   texture_replacements.config.max_replacement_cache_vram_usage_mb =
-    si.GetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage", 512);
+    si.GetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
+                    TextureReplacementSettings::Configuration::DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB);
 
   texture_replacements.config.max_vram_write_splits = si.GetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", 0u);
   texture_replacements.config.max_vram_write_coalesce_width =
@@ -717,6 +724,9 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("TextureReplacements", "ReplacementScaleLinearFilter",
                   texture_replacements.config.replacement_scale_linear_filter);
 
+  si.SetUIntValue("TextureReplacements", "MaxHashCacheEntries", texture_replacements.config.max_hash_cache_entries);
+  si.SetUIntValue("TextureReplacements", "MaxHashCacheVRAMUsageMB",
+                  texture_replacements.config.max_hash_cache_vram_usage_mb);
   si.SetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
                   texture_replacements.config.max_replacement_cache_vram_usage_mb);
 
@@ -870,6 +880,21 @@ std::string Settings::TextureReplacementSettings::Configuration::ExportToYAML(bo
 {}DumpVRAMWriteWidthThreshold: {}
 {}DumpVRAMWriteHeightThreshold: {}
 
+# Sets the maximum size of the hash cache that manages texture replacements.
+# Generally the default is sufficient, but some games may require increasing the
+# size. Do not set too high, otherwise mobile drivers will break.
+{}MaxHashCacheEntries: {}
+
+# Sets the maximum amount of VRAM in megabytes that the hash cache can utilize.
+# Keep in mind your target system requirements, using too much VRAM will result
+# in swapping and significantly decreased performance.
+{}MaxHashCacheVRAMUsageMB: {}
+
+# Sets the maximum amount of VRAM in megabytes that are reserved for the cache of
+# replacement textures. The cache usage for any given texture is approximately the
+# same size as the uncompressed source image on disk.
+{}MaxReplacementCacheVRAMUsage: {}
+
 # Enables the use of a bilinear filter when scaling replacement textures.
 # If more than one replacement texture in a 256x256 texture page has a different
 # scaling over the native resolution, or the texture page is not covered, a
@@ -901,6 +926,9 @@ std::string Settings::TextureReplacementSettings::Configuration::ExportToYAML(bo
                      comment_str, texture_dump_height_threshold,       // DumpTextureHeightThreshold
                      comment_str, vram_write_dump_width_threshold,     // DumpVRAMWriteWidthThreshold
                      comment_str, vram_write_dump_height_threshold,    // DumpVRAMWriteHeightThreshold
+                     comment_str, max_hash_cache_entries,              // MaxHashCacheEntries
+                     comment_str, max_hash_cache_vram_usage_mb,        // MaxHashCacheVRAMUsageMB
+                     comment_str, max_replacement_cache_vram_usage_mb, // MaxReplacementCacheVRAMUsage
                      comment_str, replacement_scale_linear_filter);    // ReplacementScaleLinearFilter
 }
 

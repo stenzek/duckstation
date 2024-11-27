@@ -234,6 +234,10 @@ struct Settings
   {
     struct Configuration
     {
+      static constexpr u32 DEFAULT_MAX_HASH_CACHE_ENTRIES = 500;
+      static constexpr u32 DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB = 2048;
+      static constexpr u32 DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB = 512;
+
       constexpr Configuration() = default;
 
       bool dump_texture_pages : 1 = false;
@@ -245,7 +249,9 @@ struct Settings
       bool convert_copies_to_writes : 1 = false;
       bool replacement_scale_linear_filter = false;
 
-      u32 max_replacement_cache_vram_usage_mb = 512;
+      u32 max_hash_cache_entries = DEFAULT_MAX_HASH_CACHE_ENTRIES;
+      u32 max_hash_cache_vram_usage_mb = DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB;
+      u32 max_replacement_cache_vram_usage_mb = DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB;
 
       u32 max_vram_write_splits = 0;
       u32 max_vram_write_coalesce_width = 0;
