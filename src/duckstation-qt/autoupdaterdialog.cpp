@@ -22,7 +22,7 @@
 #include "fmt/format.h"
 
 #include <QtCore/QCoreApplication>
-#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonDocument>
 #include <QtCore/QJsonObject>
@@ -44,6 +44,8 @@ static constexpr u32 HTTP_POLL_INTERVAL = 10;
 #include <shellapi.h>
 #elif defined(__APPLE__)
 #include "common/cocoa_tools.h"
+#else
+#include <sys/stat.h>
 #endif
 
 // Logic to detect whether we can use the auto updater.
@@ -602,8 +604,7 @@ static constexpr char UPDATER_ARCHIVE_NAME[] = "update.zip";
 
 bool AutoUpdaterDialog::doesUpdaterNeedElevation(const std::string& application_dir) const
 {
-  // Try to create a dummy text file in the PCSX2 updater directory. If it fails, we probably won't have write
-  // permission.
+  // Try to create a dummy text file in the updater directory. If it fails, we probably won't have write permission.
   const std::string dummy_path = Path::Combine(application_dir, "update.txt");
   auto fp = FileSystem::OpenManagedCFile(dummy_path.c_str(), "wb");
   if (!fp)
@@ -620,15 +621,16 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   const std::string update_zip_path = Path::Combine(EmuFolders::DataRoot, UPDATER_ARCHIVE_NAME);
   const std::string updater_path = Path::Combine(EmuFolders::DataRoot, UPDATER_EXECUTABLE);
 
-  if ((FileSystem::FileExists(update_zip_path.c_str()) && !FileSystem::DeleteFile(update_zip_path.c_str())))
+  Error error;
+  if ((FileSystem::FileExists(update_zip_path.c_str()) && !FileSystem::DeleteFile(update_zip_path.c_str(), &error)))
   {
-    reportError("Removing existing update zip failed");
+    reportError(fmt::format("Removing existing update zip failed:\n{}", error.GetDescription()));
     return false;
   }
 
-  if (!FileSystem::WriteBinaryFile(update_zip_path.c_str(), update_data.data(), update_data.size()))
+  if (!FileSystem::WriteAtomicRenamedFile(update_zip_path.c_str(), update_data, &error))
   {
-    reportError(fmt::format("Writing update zip to '{}' failed", update_zip_path));
+    reportError(fmt::format("Writing update zip to '{}' failed:\n{}", update_zip_path, error.GetDescription()));
     return false;
   }
 
@@ -686,7 +688,7 @@ bool AutoUpdaterDialog::extractUpdater(const std::string& zip_path, const std::s
 
     if (std::fwrite(chunk, size, 1, fp.get()) != 1)
     {
-      Error::SetString(error, "Failed to write updater exe");
+      Error::SetErrno(error, "Failed to write updater exe: fwrite() failed: ", errno);
       unzClose(zf);
       fp.reset();
       FileSystem::DeleteFile(destination_path.c_str());
@@ -742,9 +744,12 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
   if (!FileSystem::FileExists(updater_path.c_str()))
     return;
 
-  if (!FileSystem::DeleteFile(updater_path.c_str()))
+  Error error;
+  if (!FileSystem::DeleteFile(updater_path.c_str(), &error))
   {
-    QMessageBox::critical(nullptr, tr("Updater Error"), tr("Failed to remove updater exe after update."));
+    QMessageBox::critical(
+      nullptr, tr("Updater Error"),
+      tr("Failed to remove updater exe after update:\n%1").arg(QString::fromStdString(error.GetDescription())));
     return;
   }
 }
@@ -784,23 +789,18 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
   // We use the user data directory to temporarily store the update zip.
   const std::string zip_path = Path::Combine(EmuFolders::DataRoot, "update.zip");
   const std::string staging_directory = Path::Combine(EmuFolders::DataRoot, "UPDATE_STAGING");
-  if (FileSystem::FileExists(zip_path.c_str()) && !FileSystem::DeleteFile(zip_path.c_str()))
+  Error error;
+  if (FileSystem::FileExists(zip_path.c_str()) && !FileSystem::DeleteFile(zip_path.c_str(), &error))
   {
-    reportError("Failed to remove old update zip.");
+    reportError(fmt::format("Failed to remove old update zip:\n{}", error.GetDescription()));
     return false;
   }
 
   // Save update.
+  if (!FileSystem::WriteAtomicRenamedFile(zip_path.c_str(), update_data, &error))
   {
-    QFile zip_file(QString::fromStdString(zip_path));
-    if (!zip_file.open(QIODevice::WriteOnly) ||
-        zip_file.write(reinterpret_cast<const char*>(update_data.data()), static_cast<qint64>(update_data.size())) !=
-          static_cast<qint64>(update_data.size()))
-    {
-      reportError(fmt::format("Writing update zip to '{}' failed", zip_path));
-      return false;
-    }
-    zip_file.close();
+    reportError(fmt::format("Writing update zip to '{}' failed:\n{}", zip_path, error.GetDescription()));
+    return false;
   }
 
   INFO_LOG("Beginning update:\nUpdater path: {}\nZip path: {}\nStaging directory: {}\nOutput directory: {}",
@@ -832,66 +832,105 @@ bool AutoUpdaterDialog::processUpdate(const std::vector<u8>& update_data)
     return false;
   }
 
-  const QString qappimage_path(QString::fromUtf8(appimage_path));
-  if (!QFile::exists(qappimage_path))
+  if (!FileSystem::FileExists(appimage_path))
   {
     reportError(fmt::format("Current AppImage does not exist: {}", appimage_path));
     return false;
   }
 
-  const QString new_appimage_path(qappimage_path + QStringLiteral(".new"));
-  const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
+  const std::string new_appimage_path = fmt::format("{}.new", appimage_path);
+  const std::string backup_appimage_path = fmt::format("{}.backup", appimage_path);
   INFO_LOG("APPIMAGE = {}", appimage_path);
-  INFO_LOG("Backup AppImage path = {}", backup_appimage_path.toStdString());
-  INFO_LOG("New AppImage path = {}", new_appimage_path.toStdString());
+  INFO_LOG("Backup AppImage path = {}", backup_appimage_path);
+  INFO_LOG("New AppImage path = {}", new_appimage_path);
 
   // Remove old "new" appimage and existing backup appimage.
-  if (QFile::exists(new_appimage_path) && !QFile::remove(new_appimage_path))
+  Error error;
+  if (FileSystem::FileExists(new_appimage_path.c_str()) && !FileSystem::DeleteFile(new_appimage_path.c_str(), &error))
   {
-    reportError(fmt::format("Failed to remove old destination AppImage: {}", new_appimage_path.toStdString()));
+    reportError(
+      fmt::format("Failed to remove old destination AppImage: {}:\n{}", new_appimage_path, error.GetDescription()));
     return false;
   }
-  if (QFile::exists(backup_appimage_path) && !QFile::remove(backup_appimage_path))
+  if (FileSystem::FileExists(backup_appimage_path.c_str()) &&
+      !FileSystem::DeleteFile(backup_appimage_path.c_str(), &error))
   {
-    reportError(fmt::format("Failed to remove old backup AppImage: {}", new_appimage_path.toStdString()));
+    reportError(
+      fmt::format("Failed to remove old backup AppImage: {}:\n{}", backup_appimage_path, error.GetDescription()));
     return false;
   }
 
   // Write "new" appimage.
   {
     // We want to copy the permissions from the old appimage to the new one.
-    QFile old_file(qappimage_path);
-    const QFileDevice::Permissions old_permissions = old_file.permissions();
-    QFile new_file(new_appimage_path);
-    if (!new_file.open(QIODevice::WriteOnly) ||
-        new_file.write(reinterpret_cast<const char*>(update_data.data()), static_cast<qint64>(update_data.size())) !=
-          static_cast<qint64>(update_data.size()) ||
-        !new_file.setPermissions(old_permissions))
+    static constexpr int permission_mask = S_IRWXU | S_IRWXG | S_IRWXO;
+    struct stat old_stat;
+    if (!FileSystem::StatFile(appimage_path, &old_stat, &error))
     {
-      QFile::remove(new_appimage_path);
-      reportError(fmt::format("Failed to write new destination AppImage: {}", new_appimage_path.toStdString()));
+      reportError(fmt::format("Failed to get old AppImage {} permissions:\n{}", appimage_path, error.GetDescription()));
+      return false;
+    }
+
+    // We do this as a manual write here, rather than using WriteAtomicUpdatedFile(), because we want to write the file
+    // and set the permissions as one atomic operation.
+    FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(new_appimage_path.c_str(), "wb", &error);
+    bool success = static_cast<bool>(fp);
+    if (fp)
+    {
+      if (std::fwrite(update_data.data(), update_data.size(), 1, fp.get()) == 1 && std::fflush(fp.get()) == 0)
+      {
+        const int fd = fileno(fp.get());
+        if (fd >= 0)
+        {
+          if (fchmod(fd, old_stat.st_mode & permission_mask) != 0)
+          {
+            error.SetErrno("fchmod() failed: ", errno);
+            success = false;
+          }
+        }
+        else
+        {
+          error.SetErrno("fileno() failed: ", errno);
+          success = false;
+        }
+      }
+      else
+      {
+        error.SetErrno("fwrite() failed: ", errno);
+        success = false;
+      }
+
+      fp.reset();
+      if (!success)
+        FileSystem::DeleteFile(new_appimage_path.c_str());
+    }
+
+    if (!success)
+    {
+      reportError(
+        fmt::format("Failed to write new destination AppImage: {}:\n{}", new_appimage_path, error.GetDescription()));
       return false;
     }
   }
 
   // Rename "old" appimage.
-  if (!QFile::rename(qappimage_path, backup_appimage_path))
+  if (!FileSystem::RenamePath(appimage_path, backup_appimage_path.c_str(), &error))
   {
-    reportError(fmt::format("Failed to rename old AppImage to {}", backup_appimage_path.toStdString()));
-    QFile::remove(new_appimage_path);
+    reportError(fmt::format("Failed to rename old AppImage to {}:\n{}", backup_appimage_path, error.GetDescription()));
+    FileSystem::DeleteFile(new_appimage_path.c_str());
     return false;
   }
 
   // Rename "new" appimage.
-  if (!QFile::rename(new_appimage_path, qappimage_path))
+  if (!FileSystem::RenamePath(new_appimage_path.c_str(), appimage_path, &error))
   {
-    reportError(fmt::format("Failed to rename new AppImage to {}", qappimage_path.toStdString()));
+    reportError(fmt::format("Failed to rename new AppImage to {}:\n{}", appimage_path, error.GetDescription()));
     return false;
   }
 
   // Execute new appimage.
   QProcess* new_process = new QProcess();
-  new_process->setProgram(qappimage_path);
+  new_process->setProgram(QString::fromUtf8(appimage_path));
   new_process->setArguments(QStringList{QStringLiteral("-updatecleanup")});
   if (!new_process->startDetached())
   {
@@ -910,16 +949,14 @@ void AutoUpdaterDialog::cleanupAfterUpdate()
   if (!appimage_path)
     return;
 
-  const QString qappimage_path(QString::fromUtf8(appimage_path));
-  const QString backup_appimage_path(qappimage_path + QStringLiteral(".backup"));
-  if (!QFile::exists(backup_appimage_path))
+  const std::string backup_appimage_path = fmt::format("{}.backup", appimage_path);
+  if (!FileSystem::FileExists(backup_appimage_path.c_str()))
     return;
 
-  INFO_LOG(QStringLiteral("Removing backup AppImage %1").arg(backup_appimage_path).toStdString().c_str());
-  if (!QFile::remove(backup_appimage_path))
-  {
-    ERROR_LOG(QStringLiteral("Failed to remove backup AppImage %1").arg(backup_appimage_path).toStdString().c_str());
-  }
+  Error error;
+  INFO_LOG("Removing backup AppImage: {}", backup_appimage_path);
+  if (!FileSystem::DeleteFile(backup_appimage_path.c_str(), &error))
+    ERROR_LOG("Failed to remove backup AppImage {}: {}", backup_appimage_path, error.GetDescription());
 }
 
 #else
