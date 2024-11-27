@@ -608,14 +608,14 @@ std::string Path::ReplaceExtension(std::string_view path, std::string_view new_e
   return ret;
 }
 
-static std::string_view::size_type GetLastSeperatorPosition(std::string_view filename, bool include_separator)
+static std::string_view::size_type GetLastSeperatorPosition(std::string_view path, bool include_separator)
 {
-  std::string_view::size_type last_separator = filename.rfind('/');
+  std::string_view::size_type last_separator = path.rfind('/');
   if (include_separator && last_separator != std::string_view::npos)
     last_separator++;
 
 #if defined(_WIN32)
-  std::string_view::size_type other_last_separator = filename.rfind('\\');
+  std::string_view::size_type other_last_separator = path.rfind('\\');
   if (other_last_separator != std::string_view::npos)
   {
     if (include_separator)
@@ -845,13 +845,13 @@ std::vector<std::string> FileSystem::GetRootDirectoryList()
   return results;
 }
 
-std::string Path::BuildRelativePath(std::string_view filename, std::string_view new_filename)
+std::string Path::BuildRelativePath(std::string_view path, std::string_view new_filename)
 {
   std::string new_string;
 
-  std::string_view::size_type pos = GetLastSeperatorPosition(filename, true);
+  std::string_view::size_type pos = GetLastSeperatorPosition(path, true);
   if (pos != std::string_view::npos)
-    new_string.assign(filename, 0, pos);
+    new_string.assign(path, 0, pos);
   new_string.append(new_filename);
   return new_string;
 }
@@ -873,10 +873,10 @@ std::string Path::Combine(std::string_view base, std::string_view next)
   return ret;
 }
 
-std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* error)
+std::FILE* FileSystem::OpenCFile(const char* path, const char* mode, Error* error)
 {
 #ifdef _WIN32
-  const std::wstring wfilename = GetWin32Path(filename);
+  const std::wstring wfilename = GetWin32Path(path);
   const std::wstring wmode = StringUtil::UTF8StringToWideString(mode);
   if (!wfilename.empty() && !wmode.empty())
   {
@@ -892,7 +892,7 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
   }
 
   std::FILE* fp;
-  const errno_t err = fopen_s(&fp, filename, mode);
+  const errno_t err = fopen_s(&fp, path, mode);
   if (err != 0)
   {
     Error::SetErrno(error, err);
@@ -901,24 +901,24 @@ std::FILE* FileSystem::OpenCFile(const char* filename, const char* mode, Error* 
 
   return fp;
 #else
-  std::FILE* fp = std::fopen(filename, mode);
+  std::FILE* fp = std::fopen(path, mode);
   if (!fp)
     Error::SetErrno(error, errno);
   return fp;
 #endif
 }
 
-std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* filename, s32 retry_ms, Error* error /*= nullptr*/)
+std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* path, s32 retry_ms, Error* error /*= nullptr*/)
 {
 #ifdef _WIN32
-  const std::wstring wfilename = GetWin32Path(filename);
-  if (wfilename.empty())
+  const std::wstring wpath = GetWin32Path(path);
+  if (wpath.empty())
   {
     Error::SetStringView(error, "Invalid path.");
     return nullptr;
   }
 
-  HANDLE file = CreateFileW(wfilename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
+  HANDLE file = CreateFileW(wpath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
 
   // if there's a sharing violation, keep retrying
   if (file == INVALID_HANDLE_VALUE && GetLastError() == ERROR_SHARING_VIOLATION && retry_ms >= 0)
@@ -927,7 +927,7 @@ std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* filename, s32 retry
     while (retry_ms == 0 || timer.GetTimeMilliseconds() <= retry_ms)
     {
       Sleep(1);
-      file = CreateFileW(wfilename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
+      file = CreateFileW(wpath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
       if (file != INVALID_HANDLE_VALUE || GetLastError() != ERROR_SHARING_VIOLATION)
         break;
     }
@@ -936,11 +936,11 @@ std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* filename, s32 retry
   if (file == INVALID_HANDLE_VALUE && GetLastError() == ERROR_FILE_NOT_FOUND)
   {
     // try creating it
-    file = CreateFileW(wfilename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_NEW, 0, NULL);
+    file = CreateFileW(wpath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, CREATE_NEW, 0, NULL);
     if (file == INVALID_HANDLE_VALUE && GetLastError() == ERROR_FILE_EXISTS)
     {
       // someone else beat us in the race, try again with existing.
-      file = CreateFileW(wfilename.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
+      file = CreateFileW(wpath.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr, OPEN_EXISTING, 0, NULL);
     }
   }
 
@@ -970,7 +970,7 @@ std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* filename, s32 retry
 
   return cfile;
 #else
-  std::FILE* fp = std::fopen(filename, "r+b");
+  std::FILE* fp = std::fopen(path, "r+b");
   if (fp)
     return fp;
 
@@ -982,13 +982,13 @@ std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* filename, s32 retry
   }
 
   // try again, but create the file. mode "x" exists on all platforms.
-  fp = std::fopen(filename, "w+bx");
+  fp = std::fopen(path, "w+bx");
   if (fp)
     return fp;
 
   // if it already exists, someone else beat us in the race. try again with existing.
   if (errno == EEXIST)
-    fp = std::fopen(filename, "r+b");
+    fp = std::fopen(path, "r+b");
   if (!fp)
   {
     Error::SetErrno(error, errno);
@@ -999,28 +999,28 @@ std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* filename, s32 retry
 #endif
 }
 
-int FileSystem::OpenFDFile(const char* filename, int flags, int mode, Error* error)
+int FileSystem::OpenFDFile(const char* path, int flags, int mode, Error* error)
 {
 #ifdef _WIN32
-  const std::wstring wfilename(GetWin32Path(filename));
-  if (!wfilename.empty())
-    return _wopen(wfilename.c_str(), flags, mode);
+  const std::wstring wpath = GetWin32Path(path);
+  if (!wpath.empty())
+    return _wopen(wpath.c_str(), flags, mode);
 
   return -1;
 #else
-  const int fd = open(filename, flags, mode);
+  const int fd = open(path, flags, mode);
   if (fd < 0)
     Error::SetErrno(error, errno);
   return fd;
 #endif
 }
 
-std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error)
+std::FILE* FileSystem::OpenSharedCFile(const char* path, const char* mode, FileShareMode share_mode, Error* error)
 {
 #ifdef _WIN32
-  const std::wstring wfilename = GetWin32Path(filename);
+  const std::wstring wpath = GetWin32Path(path);
   const std::wstring wmode = StringUtil::UTF8StringToWideString(mode);
-  if (wfilename.empty() || wmode.empty())
+  if (wpath.empty() || wmode.empty())
     return nullptr;
 
   int share_flags = 0;
@@ -1041,14 +1041,14 @@ std::FILE* FileSystem::OpenSharedCFile(const char* filename, const char* mode, F
       break;
   }
 
-  std::FILE* fp = _wfsopen(wfilename.c_str(), wmode.c_str(), share_flags);
+  std::FILE* fp = _wfsopen(wpath.c_str(), wmode.c_str(), share_flags);
   if (fp)
     return fp;
 
   Error::SetErrno(error, errno);
   return nullptr;
 #else
-  std::FILE* fp = std::fopen(filename, mode);
+  std::FILE* fp = std::fopen(path, mode);
   if (!fp)
     Error::SetErrno(error, errno);
   return fp;
@@ -1165,8 +1165,8 @@ std::string Path::CreateFileURL(std::string_view path)
   return ret;
 }
 
-FileSystem::AtomicRenamedFileDeleter::AtomicRenamedFileDeleter(std::string temp_filename, std::string final_filename)
-  : m_temp_filename(std::move(temp_filename)), m_final_filename(std::move(final_filename))
+FileSystem::AtomicRenamedFileDeleter::AtomicRenamedFileDeleter(std::string temp_path, std::string final_path)
+  : m_temp_path(std::move(temp_path)), m_final_path(std::move(final_path))
 {
 }
 
@@ -1180,11 +1180,11 @@ void FileSystem::AtomicRenamedFileDeleter::operator()(std::FILE* fp)
   Error error;
 
   // final filename empty => discarded.
-  if (!m_final_filename.empty())
+  if (!m_final_path.empty())
   {
     if (!commit(fp, &error))
     {
-      ERROR_LOG("Failed to commit temporary file '{}', discarding. Error was {}.", Path::GetFileName(m_temp_filename),
+      ERROR_LOG("Failed to commit temporary file '{}', discarding. Error was {}.", Path::GetFileName(m_temp_path),
                 error.GetDescription());
     }
 
@@ -1194,8 +1194,8 @@ void FileSystem::AtomicRenamedFileDeleter::operator()(std::FILE* fp)
   // we're discarding the file, don't care if it fails.
   std::fclose(fp);
 
-  if (!DeleteFile(m_temp_filename.c_str(), &error))
-    ERROR_LOG("Failed to delete temporary file '{}': {}", Path::GetFileName(m_temp_filename), error.GetDescription());
+  if (!DeleteFile(m_temp_path.c_str(), &error))
+    ERROR_LOG("Failed to delete temporary file '{}': {}", Path::GetFileName(m_temp_path), error.GetDescription());
 }
 
 bool FileSystem::AtomicRenamedFileDeleter::commit(std::FILE* fp, Error* error)
@@ -1209,38 +1209,38 @@ bool FileSystem::AtomicRenamedFileDeleter::commit(std::FILE* fp, Error* error)
   if (std::fclose(fp) != 0)
   {
     Error::SetErrno(error, "fclose() failed: ", errno);
-    m_final_filename.clear();
+    m_final_path.clear();
   }
 
   // Should not have been discarded.
-  if (!m_final_filename.empty())
+  if (!m_final_path.empty())
   {
-    return RenamePath(m_temp_filename.c_str(), m_final_filename.c_str(), error);
+    return RenamePath(m_temp_path.c_str(), m_final_path.c_str(), error);
   }
   else
   {
     Error::SetStringView(error, "File has already been discarded.");
-    return DeleteFile(m_temp_filename.c_str(), error);
+    return DeleteFile(m_temp_path.c_str(), error);
   }
 }
 
 void FileSystem::AtomicRenamedFileDeleter::discard()
 {
-  m_final_filename = {};
+  m_final_path = {};
 }
 
-FileSystem::AtomicRenamedFile FileSystem::CreateAtomicRenamedFile(std::string filename, Error* error /*= nullptr*/)
+FileSystem::AtomicRenamedFile FileSystem::CreateAtomicRenamedFile(std::string path, Error* error /*= nullptr*/)
 {
-  std::string temp_filename;
+  std::string temp_path;
   std::FILE* fp = nullptr;
-  if (!filename.empty())
+  if (!path.empty())
   {
     // this is disgusting, but we need null termination, and std::string::data() does not guarantee it.
-    const size_t filename_length = filename.length();
-    const size_t name_buf_size = filename_length + 8;
+    const size_t path_length = path.length();
+    const size_t name_buf_size = path_length + 8;
     std::unique_ptr<char[]> name_buf = std::make_unique<char[]>(name_buf_size);
-    std::memcpy(name_buf.get(), filename.c_str(), filename_length);
-    StringUtil::Strlcpy(name_buf.get() + filename_length, ".XXXXXX", name_buf_size);
+    std::memcpy(name_buf.get(), path.c_str(), path_length);
+    StringUtil::Strlcpy(name_buf.get() + path_length, ".XXXXXX", name_buf_size);
 
 #ifdef _WIN32
     const errno_t err = _mktemp_s(name_buf.get(), name_buf_size);
@@ -1267,18 +1267,18 @@ FileSystem::AtomicRenamedFile FileSystem::CreateAtomicRenamedFile(std::string fi
 #endif
 
     if (fp)
-      temp_filename.assign(name_buf.get(), name_buf_size - 1);
+      temp_path.assign(name_buf.get(), name_buf_size - 1);
     else
-      filename.clear();
+      path.clear();
   }
 
-  return AtomicRenamedFile(fp, AtomicRenamedFileDeleter(std::move(temp_filename), std::move(filename)));
+  return AtomicRenamedFile(fp, AtomicRenamedFileDeleter(std::move(temp_path), std::move(path)));
 }
 
-bool FileSystem::WriteAtomicRenamedFile(std::string filename, const void* data, size_t data_length,
+bool FileSystem::WriteAtomicRenamedFile(std::string path, const void* data, size_t data_length,
                                         Error* error /*= nullptr*/)
 {
-  AtomicRenamedFile fp = CreateAtomicRenamedFile(std::move(filename), error);
+  AtomicRenamedFile fp = CreateAtomicRenamedFile(std::move(path), error);
   if (!fp)
     return false;
 
@@ -1290,6 +1290,11 @@ bool FileSystem::WriteAtomicRenamedFile(std::string filename, const void* data, 
   }
 
   return true;
+}
+
+bool FileSystem::WriteAtomicRenamedFile(std::string path, const std::span<const u8> data, Error* error /* = nullptr */)
+{
+  return WriteAtomicRenamedFile(std::move(path), data.empty() ? nullptr : data.data(), data.size(), error);
 }
 
 void FileSystem::DiscardAtomicRenamedFile(AtomicRenamedFile& file)
@@ -1306,21 +1311,20 @@ bool FileSystem::CommitAtomicRenamedFile(AtomicRenamedFile& file, Error* error)
   return false;
 }
 
-FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* filename, const char* mode, Error* error)
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedCFile(const char* path, const char* mode, Error* error)
 {
-  return ManagedCFilePtr(OpenCFile(filename, mode, error));
+  return ManagedCFilePtr(OpenCFile(path, mode, error));
 }
 
-FileSystem::ManagedCFilePtr FileSystem::OpenExistingOrCreateManagedCFile(const char* filename, s32 retry_ms,
-                                                                         Error* error)
+FileSystem::ManagedCFilePtr FileSystem::OpenExistingOrCreateManagedCFile(const char* path, s32 retry_ms, Error* error)
 {
-  return ManagedCFilePtr(OpenExistingOrCreateCFile(filename, retry_ms, error));
+  return ManagedCFilePtr(OpenExistingOrCreateCFile(path, retry_ms, error));
 }
 
-FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* filename, const char* mode,
+FileSystem::ManagedCFilePtr FileSystem::OpenManagedSharedCFile(const char* path, const char* mode,
                                                                FileShareMode share_mode, Error* error)
 {
-  return ManagedCFilePtr(OpenSharedCFile(filename, mode, share_mode, error));
+  return ManagedCFilePtr(OpenSharedCFile(path, mode, share_mode, error));
 }
 
 int FileSystem::FSeek64(std::FILE* fp, s64 offset, int whence)
@@ -1443,20 +1447,20 @@ bool FileSystem::FTruncate64(std::FILE* fp, s64 size, Error* error)
 #endif
 }
 
-s64 FileSystem::GetPathFileSize(const char* Path)
+s64 FileSystem::GetPathFileSize(const char* path)
 {
   FILESYSTEM_STAT_DATA sd;
-  if (!StatFile(Path, &sd))
+  if (!StatFile(path, &sd))
     return -1;
 
   return sd.Size;
 }
 
-std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(const char* filename, Error* error)
+std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(const char* path, Error* error)
 {
   std::optional<DynamicHeapArray<u8>> ret;
 
-  ManagedCFilePtr fp = OpenManagedCFile(filename, "rb", error);
+  ManagedCFilePtr fp = OpenManagedCFile(path, "rb", error);
   if (!fp)
     return ret;
 
@@ -1506,11 +1510,11 @@ std::optional<DynamicHeapArray<u8>> FileSystem::ReadBinaryFile(std::FILE* fp, Er
   return ret;
 }
 
-std::optional<std::string> FileSystem::ReadFileToString(const char* filename, Error* error)
+std::optional<std::string> FileSystem::ReadFileToString(const char* path, Error* error)
 {
   std::optional<std::string> ret;
 
-  ManagedCFilePtr fp = OpenManagedCFile(filename, "rb", error);
+  ManagedCFilePtr fp = OpenManagedCFile(path, "rb", error);
   if (!fp)
     return ret;
 
@@ -1562,9 +1566,9 @@ std::optional<std::string> FileSystem::ReadFileToString(std::FILE* fp, Error* er
   return ret;
 }
 
-bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t data_length, Error* error)
+bool FileSystem::WriteBinaryFile(const char* path, const void* data, size_t data_length, Error* error)
 {
-  ManagedCFilePtr fp = OpenManagedCFile(filename, "wb", error);
+  ManagedCFilePtr fp = OpenManagedCFile(path, "wb", error);
   if (!fp)
     return false;
 
@@ -1577,9 +1581,14 @@ bool FileSystem::WriteBinaryFile(const char* filename, const void* data, size_t 
   return true;
 }
 
-bool FileSystem::WriteStringToFile(const char* filename, std::string_view sv, Error* error)
+bool FileSystem::WriteBinaryFile(const char* path, const std::span<const u8> data, Error* error /*= nullptr*/)
 {
-  ManagedCFilePtr fp = OpenManagedCFile(filename, "wb", error);
+  return WriteBinaryFile(path, data.empty() ? nullptr : data.data(), data.size(), error);
+}
+
+bool FileSystem::WriteStringToFile(const char* path, std::string_view sv, Error* error)
+{
+  ManagedCFilePtr fp = OpenManagedCFile(path, "wb", error);
   if (!fp)
     return false;
 
@@ -2636,13 +2645,13 @@ bool FileSystem::DeleteDirectory(const char* path)
 std::string FileSystem::GetProgramPath()
 {
 #if defined(__linux__)
-  static const char* exeFileName = "/proc/self/exe";
+  static const char* exe_path = "/proc/self/exe";
 
   int curSize = PATH_MAX;
   char* buffer = static_cast<char*>(std::realloc(nullptr, curSize));
   for (;;)
   {
-    int len = readlink(exeFileName, buffer, curSize);
+    int len = readlink(exe_path, buffer, curSize);
     if (len < 0)
     {
       std::free(buffer);

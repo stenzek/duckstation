@@ -10,6 +10,7 @@
 #include <ctime>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <sys/stat.h>
 #include <vector>
@@ -67,8 +68,8 @@ bool FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArra
 /// Stat file
 bool StatFile(const char* path, struct stat* st);
 bool StatFile(std::FILE* fp, struct stat* st);
-bool StatFile(const char* path, FILESYSTEM_STAT_DATA* pStatData);
-bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* pStatData);
+bool StatFile(const char* path, FILESYSTEM_STAT_DATA* sd);
+bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd);
 s64 GetPathFileSize(const char* path);
 
 /// File exists?
@@ -99,14 +100,14 @@ struct FileDeleter
 
 /// open files
 using ManagedCFilePtr = std::unique_ptr<std::FILE, FileDeleter>;
-ManagedCFilePtr OpenManagedCFile(const char* filename, const char* mode, Error* error = nullptr);
-std::FILE* OpenCFile(const char* filename, const char* mode, Error* error = nullptr);
+ManagedCFilePtr OpenManagedCFile(const char* path, const char* mode, Error* error = nullptr);
+std::FILE* OpenCFile(const char* path, const char* mode, Error* error = nullptr);
 
 /// Atomically opens a file in read/write mode, and if the file does not exist, creates it.
 /// On Windows, if retry_ms is positive, this function will retry opening the file for this
 /// number of milliseconds. NOTE: The file is opened in binary mode.
-std::FILE* OpenExistingOrCreateCFile(const char* filename, s32 retry_ms = -1, Error* error = nullptr);
-ManagedCFilePtr OpenExistingOrCreateManagedCFile(const char* filename, s32 retry_ms = -1, Error* error = nullptr);
+std::FILE* OpenExistingOrCreateCFile(const char* path, s32 retry_ms = -1, Error* error = nullptr);
+ManagedCFilePtr OpenExistingOrCreateManagedCFile(const char* path, s32 retry_ms = -1, Error* error = nullptr);
 
 int FSeek64(std::FILE* fp, s64 offset, int whence);
 bool FSeek64(std::FILE* fp, s64 offset, int whence, Error* error);
@@ -114,7 +115,7 @@ s64 FTell64(std::FILE* fp);
 s64 FSize64(std::FILE* fp, Error* error = nullptr);
 bool FTruncate64(std::FILE* fp, s64 size, Error* error = nullptr);
 
-int OpenFDFile(const char* filename, int flags, int mode, Error* error = nullptr);
+int OpenFDFile(const char* path, int flags, int mode, Error* error = nullptr);
 
 /// Sharing modes for OpenSharedCFile().
 enum class FileShareMode
@@ -127,15 +128,15 @@ enum class FileShareMode
 
 /// Opens a file in shareable mode (where other processes can access it concurrently).
 /// Only has an effect on Windows systems.
-ManagedCFilePtr OpenManagedSharedCFile(const char* filename, const char* mode, FileShareMode share_mode,
+ManagedCFilePtr OpenManagedSharedCFile(const char* path, const char* mode, FileShareMode share_mode,
                                        Error* error = nullptr);
-std::FILE* OpenSharedCFile(const char* filename, const char* mode, FileShareMode share_mode, Error* error = nullptr);
+std::FILE* OpenSharedCFile(const char* path, const char* mode, FileShareMode share_mode, Error* error = nullptr);
 
 /// Atomically-updated file creation.
 class AtomicRenamedFileDeleter
 {
 public:
-  AtomicRenamedFileDeleter(std::string temp_filename, std::string final_filename);
+  AtomicRenamedFileDeleter(std::string temp_path, std::string final_path);
   ~AtomicRenamedFileDeleter();
 
   void operator()(std::FILE* fp);
@@ -143,12 +144,13 @@ public:
   void discard();
 
 private:
-  std::string m_temp_filename;
-  std::string m_final_filename;
+  std::string m_temp_path;
+  std::string m_final_path;
 };
 using AtomicRenamedFile = std::unique_ptr<std::FILE, AtomicRenamedFileDeleter>;
-AtomicRenamedFile CreateAtomicRenamedFile(std::string filename, Error* error = nullptr);
-bool WriteAtomicRenamedFile(std::string filename, const void* data, size_t data_length, Error* error = nullptr);
+AtomicRenamedFile CreateAtomicRenamedFile(std::string path, Error* error = nullptr);
+bool WriteAtomicRenamedFile(std::string path, const void* data, size_t data_length, Error* error = nullptr);
+bool WriteAtomicRenamedFile(std::string path, const std::span<const u8> data, Error* error = nullptr);
 bool CommitAtomicRenamedFile(AtomicRenamedFile& file, Error* error);
 void DiscardAtomicRenamedFile(AtomicRenamedFile& file);
 
@@ -166,12 +168,13 @@ private:
 };
 #endif
 
-std::optional<DynamicHeapArray<u8>> ReadBinaryFile(const char* filename, Error* error = nullptr);
+std::optional<DynamicHeapArray<u8>> ReadBinaryFile(const char* path, Error* error = nullptr);
 std::optional<DynamicHeapArray<u8>> ReadBinaryFile(std::FILE* fp, Error* error = nullptr);
-std::optional<std::string> ReadFileToString(const char* filename, Error* error = nullptr);
+std::optional<std::string> ReadFileToString(const char* path, Error* error = nullptr);
 std::optional<std::string> ReadFileToString(std::FILE* fp, Error* error = nullptr);
-bool WriteBinaryFile(const char* filename, const void* data, size_t data_length, Error* error = nullptr);
-bool WriteStringToFile(const char* filename, std::string_view sv, Error* error = nullptr);
+bool WriteBinaryFile(const char* path, const void* data, size_t data_length, Error* error = nullptr);
+bool WriteBinaryFile(const char* path, const std::span<const u8> data, Error* error = nullptr);
+bool WriteStringToFile(const char* path, std::string_view sv, Error* error = nullptr);
 
 /// creates a directory in the local filesystem
 /// if the directory already exists, the return value will be true.
