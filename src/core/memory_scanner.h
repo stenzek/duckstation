@@ -112,6 +112,8 @@ public:
   u32 GetEntryCount() const { return static_cast<u32>(m_entries.size()); }
 
   bool AddEntry(std::string description, u32 address, MemoryAccessSize size, bool is_signed, bool freeze);
+  bool GetEntryFreeze(u32 index) const;
+
   void RemoveEntry(u32 index);
   bool RemoveEntryByDescription(const char* description);
   bool RemoveEntryByAddress(u32 address);

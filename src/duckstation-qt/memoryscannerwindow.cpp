@@ -171,6 +171,7 @@ void MemoryScannerWindow::connectUi()
   });
   connect(m_ui.scanAddWatch, &QPushButton::clicked, this, &MemoryScannerWindow::addToWatchClicked);
   connect(m_ui.scanAddManualAddress, &QPushButton::clicked, this, &MemoryScannerWindow::addManualWatchAddressClicked);
+  connect(m_ui.scanFreezeWatch, &QPushButton::clicked, this, &MemoryScannerWindow::freezeWatchClicked);
   connect(m_ui.scanRemoveWatch, &QPushButton::clicked, this, &MemoryScannerWindow::removeWatchClicked);
   connect(m_ui.scanTable, &QTableWidget::currentItemChanged, this, &MemoryScannerWindow::scanCurrentItemChanged);
   connect(m_ui.watchTable, &QTableWidget::currentItemChanged, this, &MemoryScannerWindow::watchCurrentItemChanged);
@@ -208,6 +209,7 @@ void MemoryScannerWindow::enableUi(bool enabled)
   m_ui.scanAddWatch->setEnabled(enabled && !m_ui.scanTable->selectedItems().empty());
   m_ui.watchTable->setEnabled(enabled);
   m_ui.scanAddManualAddress->setEnabled(enabled);
+  m_ui.scanFreezeWatch->setEnabled(enabled && !m_ui.watchTable->selectedItems().empty());
   m_ui.scanRemoveWatch->setEnabled(enabled && !m_ui.watchTable->selectedItems().empty());
 }
 
@@ -330,6 +332,22 @@ void MemoryScannerWindow::addManualWatchAddressClicked()
   updateWatch();
 }
 
+void MemoryScannerWindow::freezeWatchClicked()
+{
+  const int indexFirst = getSelectedWatchIndexFirst();
+  const int indexLast = getSelectedWatchIndexLast();
+  if (indexFirst < 0)
+    return;
+
+  const bool freeze = m_watch.GetEntryFreeze(indexFirst);
+
+  for (int index = indexLast; index >= indexFirst; index--)
+  {
+    m_watch.SetEntryFreeze(static_cast<u32>(index), !freeze);
+    updateWatch();
+  }
+}
+
 void MemoryScannerWindow::removeWatchClicked()
 {
   const int indexFirst = getSelectedWatchIndexFirst();
@@ -351,6 +369,7 @@ void MemoryScannerWindow::scanCurrentItemChanged(QTableWidgetItem* current, QTab
 
 void MemoryScannerWindow::watchCurrentItemChanged(QTableWidgetItem* current, QTableWidgetItem* previous)
 {
+  m_ui.scanFreezeWatch->setEnabled((current != nullptr));
   m_ui.scanRemoveWatch->setEnabled((current != nullptr));
 }
 
@@ -569,6 +588,7 @@ void MemoryScannerWindow::updateWatch()
   }
 
   m_ui.scanSaveWatch->setEnabled(!entries.empty());
+  m_ui.scanFreezeWatch->setEnabled(false);
   m_ui.scanRemoveWatch->setEnabled(false);
 }
 
