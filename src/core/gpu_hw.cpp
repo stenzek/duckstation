@@ -1467,7 +1467,7 @@ bool GPU_HW::CompilePipelines(Error* error)
       std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
         GPUShaderStage::Fragment, shadergen.GetLanguage(),
         shadergen.GenerateVRAMFillFragmentShader(ConvertToBoolUnchecked(wrapped), ConvertToBoolUnchecked(interlaced),
-                                                 m_write_mask_as_depth),
+                                                 m_write_mask_as_depth, needs_rov_depth),
         error);
       if (!fs)
         return false;
@@ -1485,9 +1485,9 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM copy
   {
-    std::unique_ptr<GPUShader> fs =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                 shadergen.GenerateVRAMCopyFragmentShader(m_write_mask_as_depth), error);
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(),
+      shadergen.GenerateVRAMCopyFragmentShader(m_write_mask_as_depth, needs_rov_depth), error);
     if (!fs)
       return false;
 
@@ -1516,7 +1516,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
       GPUShaderStage::Fragment, shadergen.GetLanguage(),
-      shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, m_write_mask_as_depth), error);
+      shadergen.GenerateVRAMWriteFragmentShader(use_buffer, use_ssbo, m_write_mask_as_depth, needs_rov_depth), error);
     if (!fs)
       return false;
 

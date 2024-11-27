@@ -1453,14 +1453,17 @@ uint SampleVRAM(uint2 coords)
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo,
-                                                              bool write_mask_as_depth) const
+std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo, bool write_mask_as_depth,
+                                                              bool write_depth_as_rt) const
 {
+  Assert(!write_mask_as_depth || (write_mask_as_depth != write_depth_as_rt));
+
   std::stringstream ss;
   WriteHeader(ss);
   WriteColorConversionFunctions(ss);
 
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
+  DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
   DefineMacro(ss, "USE_BUFFER", use_buffer);
 
   ss << "CONSTANT float2 VRAM_SIZE = float2(" << VRAM_WIDTH << ".0, " << VRAM_HEIGHT << ".0);\n";
@@ -1496,7 +1499,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
     ss << "#define GET_VALUE(buffer_offset) (LOAD_TEXTURE_BUFFER(samp0, int(buffer_offset)).r)\n\n";
   }
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, write_mask_as_depth);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth);
   ss << R"(
 {
   float2 coords = floor(v_pos.xy / u_resolution_scale);
@@ -1523,20 +1526,25 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
   o_col0 = RGBA5551ToRGBA8(value);
 #if WRITE_MASK_AS_DEPTH
   o_depth = (o_col0.a == 1.0) ? u_depth_value : 0.0;
+#elif WRITE_DEPTH_AS_RT
+  o_col1 = float4(1.0f, 0.0f, 0.0f, 0.0f);
 #endif
 })";
 
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth) const
+std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth, bool write_depth_as_rt) const
 {
+  Assert(!write_mask_as_depth || (write_mask_as_depth != write_depth_as_rt));
+
   // TODO: This won't currently work because we can't bind the texture to both the shader and framebuffer.
   const bool msaa = false;
 
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
+  DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
   DefineMacro(ss, "MSAA_COPY", msaa);
 
   DeclareUniformBuffer(ss,
@@ -1545,7 +1553,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
                        true);
 
   DeclareTexture(ss, "samp0", 0, msaa);
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1, false, write_mask_as_depth, false, false, msaa);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true, 1 + BoolToUInt32(write_depth_as_rt), false, write_mask_as_depth, false,
+                            false, msaa);
   ss << R"(
 {
   float2 dst_coords = floor(v_pos.xy);
@@ -1575,25 +1584,31 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
   o_col0 = float4(color.xyz, u_set_mask_bit ? 1.0 : color.a);
 #if WRITE_MASK_AS_DEPTH
   o_depth = (u_set_mask_bit ? 1.0f : ((o_col0.a == 1.0) ? u_depth_value : 0.0));
+#elif WRITE_DEPTH_AS_RT
+  o_col1 = float4(1.0f, 0.0f, 0.0f, 0.0f);
 #endif
 })";
 
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced,
-                                                             bool write_mask_as_depth) const
+std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced, bool write_mask_as_depth,
+                                                             bool write_depth_as_rt) const
 {
+  Assert(!write_mask_as_depth || (write_mask_as_depth != write_depth_as_rt));
+
   std::stringstream ss;
   WriteHeader(ss);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
+  DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
   DefineMacro(ss, "WRAPPED", wrapped);
   DefineMacro(ss, "INTERLACED", interlaced);
 
   DeclareUniformBuffer(
     ss, {"uint2 u_dst_coords", "uint2 u_end_coords", "float4 u_fill_color", "uint u_interlaced_displayed_field"}, true);
 
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1, false, write_mask_as_depth, false, false, false);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, interlaced || wrapped, 1 + BoolToUInt32(write_depth_as_rt), false,
+                            write_mask_as_depth, false, false, false);
   ss << R"(
 {
 #if INTERLACED || WRAPPED
@@ -1617,6 +1632,8 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
   o_col0 = u_fill_color;
 #if WRITE_MASK_AS_DEPTH
   o_depth = u_fill_color.a;
+#elif WRITE_DEPTH_AS_RT
+  o_col1 = float4(1.0f, 0.0f, 0.0f, 0.0f);
 #endif
 })";
 
