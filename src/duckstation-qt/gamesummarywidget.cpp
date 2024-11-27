@@ -53,8 +53,9 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
   }
 
   // I hate this so much.
-  m_ui.customLanguage->addItem(QtUtils::GetIconForLanguage(entry->GetLanguageFlagName(region)),
-                               tr("Show Default Flag"));
+  const std::string_view default_language =
+    entry ? entry->GetLanguageFlagName(region) : Settings::GetDiscRegionName(region);
+  m_ui.customLanguage->addItem(QtUtils::GetIconForLanguage(default_language), tr("Show Default Flag"));
   for (u32 i = 0; i < static_cast<u32>(GameDatabase::Language::MaxCount); i++)
   {
     const char* language_name = GameDatabase::GetLanguageName(static_cast<GameDatabase::Language>(i));
