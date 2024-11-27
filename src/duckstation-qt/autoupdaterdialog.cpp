@@ -511,6 +511,11 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> resp
 void AutoUpdaterDialog::downloadUpdateClicked()
 {
 #ifdef AUTO_UPDATER_SUPPORTED
+  // Prevent multiple clicks of the button.
+  if (!m_ui.downloadAndInstall->isEnabled())
+    return;
+  m_ui.downloadAndInstall->setEnabled(false);
+
   m_display_messages = true;
 
   std::optional<bool> download_result;
