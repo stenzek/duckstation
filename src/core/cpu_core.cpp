@@ -605,7 +605,8 @@ ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
     }
     break;
 
-      [[unlikely]] default : DEV_LOG("Unknown COP0 reg write {} ({:08X})", static_cast<u8>(reg), value);
+    [[unlikely]] default:
+      DEV_LOG("Unknown COP0 reg write {} ({:08X})", static_cast<u8>(reg), value);
       break;
   }
 }
@@ -2840,10 +2841,7 @@ ALWAYS_INLINE_RELEASE bool CPU::FetchInstruction()
     case 0x07: // KSEG2
     default:
     {
-      CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE,
-                                                                      g_state.current_instruction_in_branch_delay_slot,
-                                                                      g_state.current_instruction_was_branch_taken, 0),
-                          address);
+      CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0), address);
       return false;
     }
   }
