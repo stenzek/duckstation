@@ -50,7 +50,7 @@ static RenderAPI GetRenderAPI()
 static bool PreprocessorFileExistsCallback(const std::string& path)
 {
   if (Path::IsAbsolute(path))
-    return FileSystem::FileExists(path.c_str());
+    return FileSystem::FileExists(Path::ToNativePath(path).c_str());
 
   return Host::ResourceFileExists(path.c_str(), true);
 }
@@ -59,7 +59,7 @@ static bool PreprocessorReadFileCallback(const std::string& path, std::string& d
 {
   std::optional<std::string> rdata;
   if (Path::IsAbsolute(path))
-    rdata = FileSystem::ReadFileToString(path.c_str());
+    rdata = FileSystem::ReadFileToString(Path::ToNativePath(path).c_str());
   else
     rdata = Host::ReadResourceFileToString(path.c_str(), true);
   if (!rdata.has_value())
