@@ -862,7 +862,7 @@ bool GPU_HW::CreateBuffers(Error* error)
   const GPUTexture::Flags vram_texture_flags =
     m_use_rov_for_shader_blend ? GPUTexture::Flags::AllowBindAsImage : GPUTexture::Flags::None;
   const GPUTexture::Type depth_texture_type =
-    m_use_rov_for_shader_blend ? GPUTexture::Type::Texture : GPUTexture::Type::DepthStencil;
+    m_use_rov_for_shader_blend ? GPUTexture::Type::RenderTarget : GPUTexture::Type::DepthStencil;
 
   if (!(m_vram_texture =
           g_gpu_device->FetchTexture(texture_width, texture_height, 1, 1, samples, GPUTexture::Type::RenderTarget,
