@@ -1874,12 +1874,15 @@ static void TranslateStat64(struct stat* st, const struct _stat64& st64)
   st->st_ctime = static_cast<time_t>(st64.st_ctime);
 }
 
-bool FileSystem::StatFile(const char* path, struct stat* st)
+bool FileSystem::StatFile(const char* path, struct stat* st, Error* error)
 {
   // convert to wide string
   const std::wstring wpath = GetWin32Path(path);
-  if (wpath.empty())
+  if (wpath.empty()) [[unlikely]]
+  {
+    Error::SetStringView(error, "Path is empty.");
     return false;
+  }
 
   struct _stat64 st64;
   if (_wstati64(wpath.c_str(), &st64) != 0)
@@ -1889,31 +1892,43 @@ bool FileSystem::StatFile(const char* path, struct stat* st)
   return true;
 }
 
-bool FileSystem::StatFile(std::FILE* fp, struct stat* st)
+bool FileSystem::StatFile(std::FILE* fp, struct stat* st, Error* error)
 {
   const int fd = _fileno(fp);
   if (fd < 0)
+  {
+    Error::SetErrno(error, "_fileno() failed: ", errno);
     return false;
+  }
 
   struct _stat64 st64;
   if (_fstati64(fd, &st64) != 0)
+  {
+    Error::SetErrno(error, "_fstati64() failed: ", errno);
     return false;
+  }
 
   TranslateStat64(st, st64);
   return true;
 }
 
-bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
+bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd, Error* error)
 {
   // convert to wide string
   const std::wstring wpath = GetWin32Path(path);
-  if (wpath.empty())
+  if (wpath.empty()) [[unlikely]]
+  {
+    Error::SetStringView(error, "Path is empty.");
     return false;
+  }
 
   // determine attributes for the path. if it's a directory, things have to be handled differently..
   DWORD fileAttributes = GetFileAttributesW(wpath.c_str());
   if (fileAttributes == INVALID_FILE_ATTRIBUTES)
+  {
+    Error::SetWin32(error, "GetFileAttributesW() failed: ", GetLastError());
     return false;
+  }
 
   // test if it is a directory
   HANDLE hFile;
@@ -1930,12 +1945,16 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
 
   // createfile succeded?
   if (hFile == INVALID_HANDLE_VALUE)
+  {
+    Error::SetWin32(error, "CreateFileW() failed: ", GetLastError());
     return false;
+  }
 
   // use GetFileInformationByHandle
   BY_HANDLE_FILE_INFORMATION bhfi;
   if (GetFileInformationByHandle(hFile, &bhfi) == FALSE)
   {
+    Error::SetWin32(error, "GetFileInformationByHandle() failed: ", GetLastError());
     CloseHandle(hFile);
     return false;
   }
@@ -1951,15 +1970,21 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
   return true;
 }
 
-bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
+bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd, Error* error)
 {
   const int fd = _fileno(fp);
   if (fd < 0)
+  {
+    Error::SetErrno(error, "_fileno() failed: ", errno);
     return false;
+  }
 
   struct _stat64 st;
   if (_fstati64(fd, &st) != 0)
+  {
+    Error::SetErrno(error, "_fstati64() failed: ", errno);
     return false;
+  }
 
   // parse attributes
   sd->CreationTime = st.st_ctime;
@@ -2420,26 +2445,44 @@ bool FileSystem::FindFiles(const char* path, const char* pattern, u32 flags, Fin
   return true;
 }
 
-bool FileSystem::StatFile(const char* path, struct stat* st)
+bool FileSystem::StatFile(const char* path, struct stat* st, Error* error)
 {
-  return stat(path, st) == 0;
+  if (stat(path, st) != 0)
+  {
+    Error::SetErrno(error, "stat() failed: ", errno);
+    return false;
+  }
+
+  return true;
 }
 
-bool FileSystem::StatFile(std::FILE* fp, struct stat* st)
+bool FileSystem::StatFile(std::FILE* fp, struct stat* st, Error* error)
 {
   const int fd = fileno(fp);
   if (fd < 0)
+  {
+    Error::SetErrno(error, "fileno() failed: ", errno);
     return false;
+  }
 
-  return fstat(fd, st) == 0;
+  if (fstat(fd, st) != 0)
+  {
+    Error::SetErrno(error, "fstat() failed: ", errno);
+    return false;
+  }
+
+  return true;
 }
 
-bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
+bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd, Error* error)
 {
   // stat file
   struct stat sysStatData;
   if (stat(path, &sysStatData) < 0)
+  {
+    Error::SetErrno(error, "stat() failed: ", errno);
     return false;
+  }
 
   // parse attributes
   sd->CreationTime = sysStatData.st_ctime;
@@ -2451,16 +2494,22 @@ bool FileSystem::StatFile(const char* path, FILESYSTEM_STAT_DATA* sd)
   return true;
 }
 
-bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd)
+bool FileSystem::StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd, Error* error)
 {
   const int fd = fileno(fp);
   if (fd < 0)
+  {
+    Error::SetErrno(error, "fileno() failed: ", errno);
     return false;
+  }
 
   // stat file
   struct stat sysStatData;
-  if (fstat(fd, &sysStatData) < 0)
+  if (fstat(fd, &sysStatData) != 0)
+  {
+    Error::SetErrno(error, "stat() failed: ", errno);
     return false;
+  }
 
   // parse attributes
   sd->CreationTime = sysStatData.st_ctime;

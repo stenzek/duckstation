@@ -66,10 +66,10 @@ std::vector<std::string> GetRootDirectoryList();
 bool FindFiles(const char* path, const char* pattern, u32 flags, FindResultsArray* results);
 
 /// Stat file
-bool StatFile(const char* path, struct stat* st);
-bool StatFile(std::FILE* fp, struct stat* st);
-bool StatFile(const char* path, FILESYSTEM_STAT_DATA* sd);
-bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd);
+bool StatFile(const char* path, struct stat* st, Error* error = nullptr);
+bool StatFile(std::FILE* fp, struct stat* st, Error* error = nullptr);
+bool StatFile(const char* path, FILESYSTEM_STAT_DATA* sd, Error* error = nullptr);
+bool StatFile(std::FILE* fp, FILESYSTEM_STAT_DATA* sd, Error* error = nullptr);
 s64 GetPathFileSize(const char* path);
 
 /// File exists?
