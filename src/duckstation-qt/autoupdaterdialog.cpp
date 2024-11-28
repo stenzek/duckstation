@@ -568,6 +568,11 @@ void AutoUpdaterDialog::downloadUpdateClicked()
     QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, true));
     done(0);
   }
+  else
+  {
+    // update failed, re-enable download button
+    m_ui.downloadAndInstall->setEnabled(true);
+  }
 #elif defined(UPDATE_CHECKER_SUPPORTED)
   QtUtils::OpenURL(this, fmt::format(fmt::runtime(DOWNLOAD_PAGE_URL), getCurrentUpdateTag()));
 #endif
