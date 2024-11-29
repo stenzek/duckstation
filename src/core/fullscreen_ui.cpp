@@ -4603,7 +4603,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     FSUI_CSTR("Dumps textures that have replacements already loaded."), "TextureReplacements", "DumpReplacedTextures",
     false, texture_cache_enabled && GetEffectiveBoolSetting(bsi, "TextureReplacements", "DumpTextures", false));
 
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ALT, "Enable VRAM Write Texture Replacement"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ALT, "Enable VRAM Write Replacement"),
                     FSUI_CSTR("Enables the replacement of background textures in supported games."),
                     "TextureReplacements", "EnableVRAMWriteReplacements", false);
 
