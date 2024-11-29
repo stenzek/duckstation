@@ -260,6 +260,27 @@ ALWAYS_INLINE static bool IsHexDigit(T ch)
           (ch >= static_cast<T>('0') && ch <= static_cast<T>('9')));
 }
 
+/// Returns a byte array from the provided hex string, computed at compile-time.
+template<size_t Length>
+static constexpr std::array<u8, Length> ParseFixedHexString(const char str[])
+{
+  std::array<u8, Length> h{};
+  for (int i = 0; str[i] != '\0'; i++)
+  {
+    u8 nibble = 0;
+    char ch = str[i];
+    if (ch >= '0' && ch <= '9')
+      nibble = str[i] - '0';
+    else if (ch >= 'a' && ch <= 'z')
+      nibble = 0xA + (str[i] - 'a');
+    else if (ch >= 'A' && ch <= 'Z')
+      nibble = 0xA + (str[i] - 'A');
+
+    h[i / 2] |= nibble << (((i & 1) ^ 1) * 4);
+  }
+  return h;
+}
+
 /// StartsWith/EndsWith variants which aren't case sensitive.
 ALWAYS_INLINE static bool StartsWithNoCase(const std::string_view str, const std::string_view prefix)
 {
