@@ -634,7 +634,7 @@ void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
   if (custom_language_str.has_value())
   {
     const std::optional<GameDatabase::Language> custom_region =
-      GameDatabase::ParseLanguageName(custom_region_str.value());
+      GameDatabase::ParseLanguageName(custom_language_str.value());
     if (custom_region.has_value())
     {
       entry->custom_language = custom_region.value();
