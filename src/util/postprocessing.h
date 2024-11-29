@@ -11,9 +11,7 @@
 #include <string_view>
 #include <vector>
 
-namespace Common {
 class Timer;
-}
 
 class GPUSampler;
 class GPUTexture;
@@ -171,7 +169,7 @@ void Shutdown();
 GPUSampler* GetSampler(const GPUSampler::Config& config);
 GPUTexture* GetDummyTexture();
 
-const Common::Timer& GetTimer();
+const Timer& GetTimer();
 
 extern Chain DisplayChain;
 extern Chain InternalChain;

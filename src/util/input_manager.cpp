@@ -66,7 +66,7 @@ struct PadVibrationBinding
   struct Motor
   {
     InputBindingKey binding;
-    u64 last_update_time;
+    Timer::Value last_update_time;
     InputSource* source;
     float last_intensity;
   };
@@ -1607,14 +1607,14 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single
       const float report_intensity = std::max(large_or_single_motor_intensity, small_motor_intensity);
       if (large_motor.source)
       {
-        large_motor.last_update_time = Common::Timer::GetCurrentValue();
+        large_motor.last_update_time = Timer::GetCurrentValue();
         large_motor.source->UpdateMotorState(large_motor.binding, report_intensity);
       }
     }
     else if (large_motor.source == small_motor.source)
     {
       // both motors are bound to the same source, do an optimal update
-      large_motor.last_update_time = Common::Timer::GetCurrentValue();
+      large_motor.last_update_time = Timer::GetCurrentValue();
       large_motor.source->UpdateMotorState(large_motor.binding, small_motor.binding, large_or_single_motor_intensity,
                                            small_motor_intensity);
     }
@@ -1623,12 +1623,12 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single
       // update motors independently
       if (large_motor.source && large_motor.last_intensity != large_or_single_motor_intensity)
       {
-        large_motor.last_update_time = Common::Timer::GetCurrentValue();
+        large_motor.last_update_time = Timer::GetCurrentValue();
         large_motor.source->UpdateMotorState(large_motor.binding, large_or_single_motor_intensity);
       }
       if (small_motor.source && small_motor.last_intensity != small_motor_intensity)
       {
-        small_motor.last_update_time = Common::Timer::GetCurrentValue();
+        small_motor.last_update_time = Timer::GetCurrentValue();
         small_motor.source->UpdateMotorState(small_motor.binding, small_motor_intensity);
       }
     }
@@ -1658,7 +1658,7 @@ void InputManager::PauseVibration()
 void InputManager::UpdateContinuedVibration()
 {
   // update vibration intensities, so if the game does a long effect, it continues
-  const u64 current_time = Common::Timer::GetCurrentValue();
+  const u64 current_time = Timer::GetCurrentValue();
   for (PadVibrationBinding& pad : s_pad_vibration_array)
   {
     if (pad.AreMotorsCombined())
@@ -1669,7 +1669,7 @@ void InputManager::UpdateContinuedVibration()
         continue;
 
       // so only check the first one
-      const double dt = Common::Timer::ConvertValueToSeconds(current_time - large_motor.last_update_time);
+      const double dt = Timer::ConvertValueToSeconds(current_time - large_motor.last_update_time);
       if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
         continue;
 
@@ -1690,7 +1690,7 @@ void InputManager::UpdateContinuedVibration()
         if (!motor.source || motor.last_intensity == 0.0f)
           continue;
 
-        const double dt = Common::Timer::ConvertValueToSeconds(current_time - motor.last_update_time);
+        const double dt = Timer::ConvertValueToSeconds(current_time - motor.last_update_time);
         if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
           continue;
 

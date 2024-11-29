@@ -320,7 +320,7 @@ std::unique_ptr<GPUDump::Player> GPUDump::Player::Open(std::string path, Error* 
 {
   std::unique_ptr<Player> ret;
 
-  Common::Timer timer;
+  Timer timer;
 
   std::optional<DynamicHeapArray<u8>> data;
   if (StringUtil::EndsWithNoCase(path, ".psxgpu.zst") || StringUtil::EndsWithNoCase(path, ".psxgpu.xz"))

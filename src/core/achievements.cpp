@@ -103,7 +103,7 @@ struct LeaderboardTrackerIndicator
 {
   u32 tracker_id;
   std::string text;
-  Common::Timer show_hide_time;
+  Timer show_hide_time;
   bool active;
 };
 
@@ -111,7 +111,7 @@ struct AchievementChallengeIndicator
 {
   const rc_client_achievement_t* achievement;
   std::string badge_path;
-  Common::Timer show_hide_time;
+  Timer show_hide_time;
   bool active;
 };
 
@@ -119,7 +119,7 @@ struct AchievementProgressIndicator
 {
   const rc_client_achievement_t* achievement;
   std::string badge_path;
-  Common::Timer show_hide_time;
+  Timer show_hide_time;
   bool active;
 };
 } // namespace
@@ -219,7 +219,7 @@ static bool s_has_achievements = false;
 static bool s_has_leaderboards = false;
 static bool s_has_rich_presence = false;
 static std::string s_rich_presence_string;
-static Common::Timer s_rich_presence_poll_time;
+static Timer s_rich_presence_poll_time;
 
 static rc_client_async_handle_t* s_login_request;
 static rc_client_async_handle_t* s_load_game_request;

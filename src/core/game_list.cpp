@@ -1690,7 +1690,7 @@ FileSystem::ManagedCFilePtr GameList::OpenMemoryCardTimestampCache(bool for_writ
   if (errno != EACCES)
     return nullptr;
 
-  Common::Timer timer;
+  Timer timer;
   while (timer.GetTimeMilliseconds() <= 100.0f)
   {
     fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);

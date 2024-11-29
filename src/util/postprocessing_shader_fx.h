@@ -144,7 +144,7 @@ private:
   bool m_valid = false;
   bool m_wants_depth_buffer = false;
 
-  Common::Timer m_frame_timer;
+  Timer m_frame_timer;
   u32 m_frame_count = 0;
 
   // Specifically using a fixed seed, so that it's consistent from run-to-run.

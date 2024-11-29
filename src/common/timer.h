@@ -4,8 +4,6 @@
 #pragma once
 #include <cstdint>
 
-namespace Common {
-
 class Timer
 {
 public:
@@ -47,5 +45,3 @@ public:
 private:
   Value m_tvStartValue;
 };
-
-} // namespace Common

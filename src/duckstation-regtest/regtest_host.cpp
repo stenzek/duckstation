@@ -788,12 +788,12 @@ int main(int argc, char* argv[])
   s_frames_remaining = s_frames_to_run;
 
   {
-    const Common::Timer::Value start_time = Common::Timer::GetCurrentValue();
+    const Timer::Value start_time = Timer::GetCurrentValue();
 
     System::Execute();
 
-    const Common::Timer::Value elapsed_time = Common::Timer::GetCurrentValue() - start_time;
-    const double elapsed_time_ms = Common::Timer::ConvertValueToMilliseconds(elapsed_time);
+    const Timer::Value elapsed_time = Timer::GetCurrentValue() - start_time;
+    const double elapsed_time_ms = Timer::ConvertValueToMilliseconds(elapsed_time);
     INFO_LOG("Total execution time: {:.2f}ms, average frame time {:.2f}ms, {:.2f} FPS", elapsed_time_ms,
              elapsed_time_ms / static_cast<double>(s_frames_to_run),
              static_cast<double>(s_frames_to_run) / elapsed_time_ms * 1000.0);

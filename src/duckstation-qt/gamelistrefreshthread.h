@@ -35,7 +35,7 @@ private:
   void fireUpdate();
 
   GameListRefreshThread* m_parent;
-  Common::Timer m_start_time;
+  Timer m_start_time;
   QString m_status_text;
   int m_last_range = 1;
   int m_last_value = 0;

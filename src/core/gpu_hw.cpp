@@ -152,8 +152,8 @@ class ShaderCompileProgressTracker
 {
 public:
   ShaderCompileProgressTracker(std::string title, u32 total)
-    : m_title(std::move(title)), m_min_time(Common::Timer::ConvertSecondsToValue(1.0)),
-      m_update_interval(Common::Timer::ConvertSecondsToValue(0.1)), m_start_time(Common::Timer::GetCurrentValue()),
+    : m_title(std::move(title)), m_min_time(Timer::ConvertSecondsToValue(1.0)),
+      m_update_interval(Timer::ConvertSecondsToValue(0.1)), m_start_time(Timer::GetCurrentValue()),
       m_last_update_time(0), m_progress(0), m_total(total)
   {
   }
@@ -161,14 +161,14 @@ public:
 
   double GetElapsedMilliseconds() const
   {
-    return Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - m_start_time);
+    return Timer::ConvertValueToMilliseconds(Timer::GetCurrentValue() - m_start_time);
   }
 
   void Increment(u32 progress = 1)
   {
     m_progress += progress;
 
-    const u64 tv = Common::Timer::GetCurrentValue();
+    const u64 tv = Timer::GetCurrentValue();
     if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
     {
       Host::DisplayLoadingScreen(m_title.c_str(), 0, static_cast<int>(m_total), static_cast<int>(m_progress));
@@ -178,10 +178,10 @@ public:
 
 private:
   std::string m_title;
-  Common::Timer::Value m_min_time;
-  Common::Timer::Value m_update_interval;
-  Common::Timer::Value m_start_time;
-  Common::Timer::Value m_last_update_time;
+  Timer::Value m_min_time;
+  Timer::Value m_update_interval;
+  Timer::Value m_start_time;
+  Timer::Value m_last_update_time;
   u32 m_progress;
   u32 m_total;
 };
@@ -1612,7 +1612,7 @@ bool GPU_HW::CompilePipelines(Error* error)
 
 bool GPU_HW::CompileResolutionDependentPipelines(Error* error)
 {
-  Common::Timer timer;
+  Timer timer;
 
   m_vram_readback_pipeline.reset();
   for (std::unique_ptr<GPUPipeline>& p : m_vram_extract_pipeline)

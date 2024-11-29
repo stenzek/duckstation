@@ -3100,7 +3100,7 @@ void GPUTextureCache::PreloadReplacementTextures()
 {
   static constexpr float UPDATE_INTERVAL = 1.0f;
 
-  Common::Timer last_update_time;
+  Timer last_update_time;
   u32 num_textures_loaded = 0;
   const size_t total_textures = s_state.vram_replacements.size() + s_state.vram_write_texture_replacements.size() +
                                 s_state.texture_page_texture_replacements.size();

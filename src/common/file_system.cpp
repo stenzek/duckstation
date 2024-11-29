@@ -923,7 +923,7 @@ std::FILE* FileSystem::OpenExistingOrCreateCFile(const char* path, s32 retry_ms,
   // if there's a sharing violation, keep retrying
   if (file == INVALID_HANDLE_VALUE && GetLastError() == ERROR_SHARING_VIOLATION && retry_ms >= 0)
   {
-    Common::Timer timer;
+    Timer timer;
     while (retry_ms == 0 || timer.GetTimeMilliseconds() <= retry_ms)
     {
       Sleep(1);

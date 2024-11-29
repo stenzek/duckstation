@@ -53,7 +53,7 @@ ALWAYS_INLINE void ForAllChains(const T& F)
 Chain DisplayChain(Config::DISPLAY_CHAIN_SECTION);
 Chain InternalChain(Config::INTERNAL_CHAIN_SECTION);
 
-static Common::Timer s_timer;
+static Timer s_timer;
 
 static std::unordered_map<u64, std::unique_ptr<GPUSampler>> s_samplers;
 static std::unique_ptr<GPUTexture> s_dummy_texture;
@@ -782,7 +782,7 @@ SettingsInterface& PostProcessing::GetLoadSettingsInterface(const char* section)
     return *Host::Internal::GetBaseSettingsLayer();
 }
 
-const Common::Timer& PostProcessing::GetTimer()
+const Timer& PostProcessing::GetTimer()
 {
   return s_timer;
 }

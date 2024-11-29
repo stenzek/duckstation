@@ -422,7 +422,7 @@ static std::string s_input_binding_key;
 static std::string s_input_binding_display_name;
 static std::vector<InputBindingKey> s_input_binding_new_bindings;
 static std::vector<std::pair<InputBindingKey, std::pair<float, float>>> s_input_binding_value_ranges;
-static Common::Timer s_input_binding_timer;
+static Timer s_input_binding_timer;
 static bool s_controller_macro_expanded[NUM_CONTROLLER_AND_CARD_PORTS][InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER] =
   {};
 
@@ -4323,7 +4323,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_CROP_ALT, "Crop Mode"),
                   FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
                   "Display", "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
-                  &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::MaxCount);
+                  &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName,
+                  DisplayCropMode::MaxCount);
 
   DrawEnumSetting(
     bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Scaling"),

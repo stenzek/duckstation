@@ -163,7 +163,7 @@ void GameDatabase::EnsureLoaded()
   if (s_loaded)
     return;
 
-  Common::Timer timer;
+  Timer timer;
 
   s_loaded = true;
 
@@ -1417,7 +1417,7 @@ void GameDatabase::EnsureTrackHashesMapLoaded()
 
 bool GameDatabase::LoadTrackHashes()
 {
-  Common::Timer load_timer;
+  Timer load_timer;
 
   Error error;
   std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false, &error));

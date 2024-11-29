@@ -81,7 +81,7 @@ struct State
   std::vector<RegisteredCallback> callbacks;
   std::mutex callbacks_mutex;
 
-  Common::Timer::Value start_timestamp = Common::Timer::GetCurrentValue();
+  Timer::Value start_timestamp = Timer::GetCurrentValue();
 
   FileSystem::ManagedCFilePtr file_handle;
 
@@ -146,8 +146,7 @@ const std::array<const char*, static_cast<size_t>(Log::Channel::MaxCount)>& Log:
 
 float Log::GetCurrentMessageTime()
 {
-  return static_cast<float>(
-    Common::Timer::ConvertValueToSeconds(Common::Timer::GetCurrentValue() - s_state.start_timestamp));
+  return static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.start_timestamp));
 }
 
 bool Log::AreTimestampsEnabled()

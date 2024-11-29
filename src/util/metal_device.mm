@@ -2593,8 +2593,8 @@ void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
   EndAnyEncoding();
 
-  Common::Timer::Value current_time;
-  if (present_time != 0 && (current_time = Common::Timer::GetCurrentValue()) < present_time)
+  Timer::Value current_time;
+  if (present_time != 0 && (current_time = Timer::GetCurrentValue()) < present_time)
   {
     // Need to convert to mach absolute time. Time values should already be in nanoseconds.
     const u64 mach_time_nanoseconds = CocoaTools::ConvertMachTimeBaseToNanoseconds(mach_absolute_time());

@@ -54,8 +54,8 @@ struct OSDMessage
 {
   std::string key;
   std::string text;
-  Common::Timer::Value start_time;
-  Common::Timer::Value move_time;
+  Timer::Value start_time;
+  Timer::Value move_time;
   float duration;
   float target_y;
   float last_y;
@@ -82,8 +82,8 @@ static void SetClipboardTextImpl(void* userdata, const char* text);
 static void AddOSDMessage(std::string key, std::string message, float duration, bool is_warning);
 static void RemoveKeyedOSDMessage(std::string key, bool is_warning);
 static void ClearOSDMessages(bool clear_warnings);
-static void AcquirePendingOSDMessages(Common::Timer::Value current_time);
-static void DrawOSDMessages(Common::Timer::Value current_time);
+static void AcquirePendingOSDMessages(Timer::Value current_time);
+static void DrawOSDMessages(Timer::Value current_time);
 static void CreateSoftwareCursorTextures();
 static void UpdateSoftwareCursorTexture(u32 index);
 static void DestroySoftwareCursorTextures();
@@ -114,7 +114,7 @@ static DynamicHeapArray<u8> s_emoji_font_data;
 
 static float s_window_width;
 static float s_window_height;
-static Common::Timer s_last_render_time;
+static Timer s_last_render_time;
 
 // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
 static std::atomic_bool s_imgui_wants_keyboard{false};
@@ -781,7 +781,7 @@ void ImGuiManager::AddOSDMessage(std::string key, std::string message, float dur
   if (!s_show_osd_messages && !is_warning)
     return;
 
-  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  const Timer::Value current_time = Timer::GetCurrentValue();
 
   OSDMessage msg;
   msg.key = std::move(key);
@@ -847,7 +847,7 @@ void ImGuiManager::ClearOSDMessages(bool clear_warnings)
   }
 }
 
-void ImGuiManager::AcquirePendingOSDMessages(Common::Timer::Value current_time)
+void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 {
   std::atomic_thread_fence(std::memory_order_consume);
   if (s_osd_posted_messages.empty())
@@ -870,9 +870,8 @@ void ImGuiManager::AcquirePendingOSDMessages(Common::Timer::Value current_time)
       iter->duration = new_msg.duration;
 
       // Don't fade it in again
-      const float time_passed =
-        static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - iter->start_time));
-      iter->start_time = current_time - Common::Timer::ConvertSecondsToValue(std::min(time_passed, OSD_FADE_IN_TIME));
+      const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - iter->start_time));
+      iter->start_time = current_time - Timer::ConvertSecondsToValue(std::min(time_passed, OSD_FADE_IN_TIME));
     }
     else
     {
@@ -887,7 +886,7 @@ void ImGuiManager::AcquirePendingOSDMessages(Common::Timer::Value current_time)
   }
 }
 
-void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
+void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 {
   static constexpr float MOVE_DURATION = 0.5f;
 
@@ -905,7 +904,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
   while (iter != s_osd_active_messages.end())
   {
     OSDMessage& msg = *iter;
-    const float time_passed = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - msg.start_time));
+    const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - msg.start_time));
     if (time_passed >= msg.duration)
     {
       iter = s_osd_active_messages.erase(iter);
@@ -934,8 +933,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
       else
       {
         // We got repositioned, probably due to another message above getting removed.
-        const float time_since_move =
-          static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - msg.move_time));
+        const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - msg.move_time));
         const float frac = Easing::OutExpo(time_since_move / MOVE_DURATION);
         msg.last_y = std::floor(msg.last_y - ((msg.last_y - msg.target_y) * frac));
       }
@@ -946,8 +944,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
     }
     else if (actual_y != expected_y)
     {
-      const float time_since_move =
-        static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - msg.move_time));
+      const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - msg.move_time));
       if (time_since_move >= MOVE_DURATION)
       {
         msg.move_time = current_time;
@@ -981,7 +978,7 @@ void ImGuiManager::DrawOSDMessages(Common::Timer::Value current_time)
 
 void ImGuiManager::RenderOSDMessages()
 {
-  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  const Timer::Value current_time = Timer::GetCurrentValue();
   AcquirePendingOSDMessages(current_time);
   DrawOSDMessages(current_time);
 }
