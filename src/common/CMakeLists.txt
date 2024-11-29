@@ -58,6 +58,8 @@ add_library(common
   string_util.h
   thirdparty/SmallVector.cpp
   thirdparty/SmallVector.h
+  thirdparty/aes.cpp
+  thirdparty/aes.h
   threading.cpp
   threading.h
   timer.cpp

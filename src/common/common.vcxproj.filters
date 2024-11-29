@@ -51,6 +51,7 @@
     <ClInclude Include="ryml_helpers.h" />
     <ClInclude Include="log_channels.h" />
     <ClInclude Include="sha256_digest.h" />
+    <ClInclude Include="thirdparty\aes.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -80,6 +81,7 @@
     <ClCompile Include="binary_reader_writer.cpp" />
     <ClCompile Include="gsvector.cpp" />
     <ClCompile Include="sha256_digest.cpp" />
+    <ClCompile Include="thirdparty\aes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

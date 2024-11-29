@@ -41,6 +41,7 @@
     <ClInclude Include="heterogeneous_containers.h" />
     <ClInclude Include="binary_reader_writer.h" />
     <ClInclude Include="string_util.h" />
+    <ClInclude Include="thirdparty\aes.h" />
     <ClInclude Include="thirdparty\SmallVector.h" />
     <ClInclude Include="thirdparty\StackWalker.h" />
     <ClInclude Include="threading.h" />
@@ -69,6 +70,7 @@
     <ClCompile Include="small_string.cpp" />
     <ClCompile Include="binary_reader_writer.cpp" />
     <ClCompile Include="string_util.cpp" />
+    <ClCompile Include="thirdparty\aes.cpp" />
     <ClCompile Include="thirdparty\SmallVector.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp" />
     <ClCompile Include="threading.cpp" />
