@@ -4,6 +4,7 @@
 #pragma once
 
 #include "types.h"
+#include <array>
 #include <charconv>
 #include <cstddef>
 #include <cstring>
@@ -269,6 +270,33 @@ static constexpr std::array<u8, Length> ParseFixedHexString(const char str[])
   }
   return h;
 }
+
+/// Encode/decode Base64 buffers.
+static constexpr size_t DecodedBase64Length(const std::string_view str)
+{
+  // Should be a multiple of 4.
+  const size_t str_length = str.length();
+  if ((str_length % 4) != 0)
+    return 0;
+
+  // Reverse padding.
+  size_t padding = 0;
+  if (str.length() >= 2)
+  {
+    padding += static_cast<size_t>(str[str_length - 1] == '=');
+    padding += static_cast<size_t>(str[str_length - 2] == '=');
+  }
+
+  return (str_length / 4) * 3 - padding;
+}
+static constexpr size_t EncodedBase64Length(const std::span<const u8> data)
+{
+  return ((data.size() + 2) / 3) * 4;
+}
+size_t DecodeBase64(const std::span<u8> data, const std::string_view str);
+size_t EncodeBase64(const std::span<char> dest, const std::span<const u8> data);
+std::string EncodeBase64(const std::span<u8> data);
+std::optional<std::vector<u8>> DecodeBase64(const std::string_view str);
 
 /// StartsWith/EndsWith variants which aren't case sensitive.
 ALWAYS_INLINE static bool StartsWithNoCase(const std::string_view str, const std::string_view prefix)
