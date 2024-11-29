@@ -36,6 +36,7 @@
     <ClInclude Include="scoped_guard.h" />
     <ClInclude Include="settings_interface.h" />
     <ClInclude Include="sha1_digest.h" />
+    <ClInclude Include="sha256_digest.h" />
     <ClInclude Include="small_string.h" />
     <ClInclude Include="heterogeneous_containers.h" />
     <ClInclude Include="binary_reader_writer.h" />
@@ -64,6 +65,7 @@
     <ClCompile Include="perf_scope.cpp" />
     <ClCompile Include="progress_callback.cpp" />
     <ClCompile Include="sha1_digest.cpp" />
+    <ClCompile Include="sha256_digest.cpp" />
     <ClCompile Include="small_string.cpp" />
     <ClCompile Include="binary_reader_writer.cpp" />
     <ClCompile Include="string_util.cpp" />

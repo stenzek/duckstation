@@ -50,6 +50,8 @@ add_library(common
   settings_interface.h
   sha1_digest.cpp
   sha1_digest.h
+  sha256_digest.cpp
+  sha256_digest.h
   small_string.cpp
   small_string.h
   string_util.cpp

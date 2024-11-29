@@ -7,6 +7,7 @@
     <ClCompile Include="file_system_tests.cpp" />
     <ClCompile Include="path_tests.cpp" />
     <ClCompile Include="rectangle_tests.cpp" />
+    <ClCompile Include="sha256_tests.cpp" />
     <ClCompile Include="string_tests.cpp" />
     <ClCompile Include="gsvector_yuvtorgb_test.cpp" />
   </ItemGroup>

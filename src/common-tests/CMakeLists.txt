@@ -4,6 +4,7 @@ add_executable(common-tests
   gsvector_yuvtorgb_test.cpp
   path_tests.cpp
   rectangle_tests.cpp
+  sha256_tests.cpp
   string_tests.cpp
 )
 
