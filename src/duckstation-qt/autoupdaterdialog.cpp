@@ -88,9 +88,10 @@ AutoUpdaterDialog::AutoUpdaterDialog(QWidget* parent /* = nullptr */) : QDialog(
   connect(m_ui.skipThisUpdate, &QPushButton::clicked, this, &AutoUpdaterDialog::skipThisUpdateClicked);
   connect(m_ui.remindMeLater, &QPushButton::clicked, this, &AutoUpdaterDialog::remindMeLaterClicked);
 
-  m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
+  Error error;
+  m_http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
   if (!m_http)
-    ERROR_LOG("Failed to create HTTP downloader, auto updater will not be available.");
+    ERROR_LOG("Failed to create HTTP downloader, auto updater will not be available:\n{}", error.GetDescription());
 }
 
 AutoUpdaterDialog::~AutoUpdaterDialog() = default;
@@ -277,7 +278,7 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
   }
 
   m_http->CreateRequest(LATEST_TAG_URL, std::bind(&AutoUpdaterDialog::getLatestTagComplete, this, std::placeholders::_1,
-                                                  std::placeholders::_3));
+                                                  std::placeholders::_2, std::placeholders::_4));
 #else
   emit updateCheckCompleted();
 #endif
@@ -294,11 +295,11 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 
   std::string url = fmt::format(fmt::runtime(LATEST_RELEASE_URL), getCurrentUpdateTag());
   m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterDialog::getLatestReleaseComplete, this,
-                                                  std::placeholders::_1, std::placeholders::_3));
+                                                  std::placeholders::_1, std::placeholders::_2, std::placeholders::_4));
 #endif
 }
 
-void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, std::vector<u8> response)
+void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
 #ifdef UPDATE_CHECKER_SUPPORTED
   const std::string selected_tag(getCurrentUpdateTag());
@@ -351,14 +352,14 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, std::vector<u8> re
   else
   {
     if (m_display_messages)
-      reportError(fmt::format("Failed to download latest tag info: HTTP {}", status_code));
+      reportError(fmt::format("Failed to download latest tag info: {}", error.GetDescription()));
   }
 
   emit updateCheckCompleted();
 #endif
 }
 
-void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8> response)
+void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
 #ifdef UPDATE_CHECKER_SUPPORTED
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
@@ -415,7 +416,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, std::vector<u8
   }
   else
   {
-    reportError(fmt::format("Failed to download latest release info: HTTP {}", status_code));
+    reportError(fmt::format("Failed to download latest release info: {}", error.GetDescription()));
   }
 
   emit updateCheckCompleted();
@@ -430,11 +431,11 @@ void AutoUpdaterDialog::queueGetChanges()
 
   std::string url = fmt::format(fmt::runtime(CHANGES_URL), g_scm_hash_str, getCurrentUpdateTag());
   m_http->CreateRequest(std::move(url), std::bind(&AutoUpdaterDialog::getChangesComplete, this, std::placeholders::_1,
-                                                  std::placeholders::_3));
+                                                  std::placeholders::_2, std::placeholders::_4));
 #endif
 }
 
-void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> response)
+void AutoUpdaterDialog::getChangesComplete(s32 status_code, const Error& error, std::vector<u8> response)
 {
 #ifdef UPDATE_CHECKER_SUPPORTED
   if (status_code == HTTPDownloader::HTTP_STATUS_OK)
@@ -503,7 +504,7 @@ void AutoUpdaterDialog::getChangesComplete(s32 status_code, std::vector<u8> resp
   }
   else
   {
-    reportError(fmt::format("Failed to download change list: HTTP {}", status_code));
+    reportError(fmt::format("Failed to download change list: {}", error.GetDescription()));
   }
 #endif
 }
@@ -527,13 +528,13 @@ void AutoUpdaterDialog::downloadUpdateClicked()
 
   m_http->CreateRequest(
     m_download_url.toStdString(),
-    [this, &download_result](s32 status_code, const std::string&, std::vector<u8> response) {
+    [this, &download_result](s32 status_code, const Error& error, const std::string&, std::vector<u8> response) {
       if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
         return;
 
       if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       {
-        reportError(fmt::format("Download failed: HTTP status code {}", status_code));
+        reportError(fmt::format("Download failed: {}", error.GetDescription()));
         download_result = false;
         return;
       }

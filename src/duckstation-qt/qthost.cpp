@@ -261,11 +261,13 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 {
   static constexpr u32 HTTP_POLL_INTERVAL = 10;
 
-  std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
+  Error error;
+  std::unique_ptr<HTTPDownloader> http = HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error);
   if (!http)
   {
     QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                          qApp->translate("QtHost", "Failed to create HTTPDownloader."));
+                          qApp->translate("QtHost", "Failed to create HTTPDownloader:\n%1")
+                            .arg(QString::fromStdString(error.GetDescription())));
     return false;
   }
 
@@ -281,14 +283,16 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
 
   http->CreateRequest(
     std::move(url),
-    [parent, data, &download_result](s32 status_code, const std::string&, std::vector<u8> hdata) {
+    [parent, data, &download_result](s32 status_code, const Error& error, const std::string&, std::vector<u8> hdata) {
       if (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED)
         return;
 
       if (status_code != HTTPDownloader::HTTP_STATUS_OK)
       {
         QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                              qApp->translate("QtHost", "Download failed with HTTP status code %1.").arg(status_code));
+                              qApp->translate("QtHost", "Download failed with HTTP status code %1:\n%2")
+                                .arg(status_code)
+                                .arg(QString::fromStdString(error.GetDescription())));
         download_result = false;
         return;
       }
@@ -1913,11 +1917,13 @@ std::string Host::GetClipboardText()
 {
   // Hope this doesn't deadlock...
   std::string ret;
-  QtHost::RunOnUIThread([&ret]() {
-    QClipboard* clipboard = QGuiApplication::clipboard();
-    if (clipboard)
-      ret = clipboard->text().toStdString();
-  }, true);
+  QtHost::RunOnUIThread(
+    [&ret]() {
+      QClipboard* clipboard = QGuiApplication::clipboard();
+      if (clipboard)
+        ret = clipboard->text().toStdString();
+    },
+    true);
   return ret;
 }
 

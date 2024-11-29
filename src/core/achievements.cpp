@@ -354,10 +354,13 @@ std::string Achievements::GetLocalImagePath(const std::string_view image_name, i
 
 void Achievements::DownloadImage(std::string url, std::string cache_filename)
 {
-  auto callback = [cache_filename](s32 status_code, const std::string& content_type,
+  auto callback = [cache_filename](s32 status_code, const Error& error, const std::string& content_type,
                                    HTTPDownloader::Request::Data data) {
     if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+    {
+      ERROR_LOG("Failed to download badge '{}': {}", Path::GetFileName(cache_filename), error.GetDescription());
       return;
+    }
 
     if (!FileSystem::WriteBinaryFile(cache_filename.c_str(), data.data(), data.size()))
     {
@@ -753,18 +756,22 @@ uint32_t Achievements::ClientReadMemory(uint32_t address, uint8_t* buffer, uint3
 void Achievements::ClientServerCall(const rc_api_request_t* request, rc_client_server_callback_t callback,
                                     void* callback_data, rc_client_t* client)
 {
-  HTTPDownloader::Request::Callback hd_callback =
-    [callback, callback_data](s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
-      rc_api_server_response_t rr;
-      rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
-                                                    RC_API_SERVER_RESPONSE_CLIENT_ERROR :
-                                                    RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
-                                                 status_code;
-      rr.body_length = data.size();
-      rr.body = reinterpret_cast<const char*>(data.data());
+  HTTPDownloader::Request::Callback hd_callback = [callback, callback_data](s32 status_code, const Error& error,
+                                                                            const std::string& content_type,
+                                                                            HTTPDownloader::Request::Data data) {
+    if (status_code != HTTPDownloader::HTTP_STATUS_OK)
+      ERROR_LOG("Server call failed: {}", error.GetDescription());
 
-      callback(&rr, callback_data);
-    };
+    rc_api_server_response_t rr;
+    rr.http_status_code = (status_code <= 0) ? (status_code == HTTPDownloader::HTTP_STATUS_CANCELLED ?
+                                                  RC_API_SERVER_RESPONSE_CLIENT_ERROR :
+                                                  RC_API_SERVER_RESPONSE_RETRYABLE_CLIENT_ERROR) :
+                                               status_code;
+    rr.body_length = data.size();
+    rr.body = reinterpret_cast<const char*>(data.data());
+
+    callback(&rr, callback_data);
+  };
 
   HTTPDownloader* http = static_cast<HTTPDownloader*>(rc_client_get_userdata(client));
 

@@ -58,11 +58,11 @@ private:
   bool updateNeeded() const;
   std::string getCurrentUpdateTag() const;
 
-  void getLatestTagComplete(s32 status_code, std::vector<u8> response);
-  void getLatestReleaseComplete(s32 status_code, std::vector<u8> response);
+  void getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response);
+  void getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response);
 
   void queueGetChanges();
-  void getChangesComplete(s32 status_code, std::vector<u8> response);
+  void getChangesComplete(s32 status_code, const Error& error, std::vector<u8> response);
 
   bool processUpdate(const std::vector<u8>& update_data);
 

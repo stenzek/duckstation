@@ -57,8 +57,6 @@
     <ClInclude Include="host.h" />
     <ClInclude Include="postprocessing_shader_fx.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="http_downloader_curl.h" />
-    <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="http_downloader.h" />
     <ClInclude Include="gpu_framebuffer_manager.h" />
     <ClInclude Include="imgui_animated.h" />
