@@ -1246,11 +1246,17 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
         continue;
       }
 
+      const std::string_view name = StringUtil::StripWhitespace(linev.substr(1, linev.length() - 2));
+      if (name.empty())
+      {
+        WARNING_LOG("Empty cheat code name at line {}: {}", reader.GetCurrentLineNumber(), line);
+        continue;
+      }
+
       if (!next_code_metadata.name.empty())
         finish_code();
 
       // new code.
-      const std::string_view name = linev.substr(1, linev.length() - 2);
       next_code_metadata.name =
         next_code_group.empty() ? std::string(name) : fmt::format("{}\\{}", next_code_group, name);
       continue;
@@ -1514,12 +1520,26 @@ bool Cheats::ImportPCSXFile(CodeInfoList* dst, const std::string_view file_conte
         continue;
       }
 
+      std::string_view name_part = StringUtil::StripWhitespace(linev.substr(1, linev.length() - 2));
+      if (!name_part.empty() && name_part.front() == '*')
+        name_part = name_part.substr(1);
+      if (name_part.empty())
+      {
+        if (!reader.LogError(error, stop_on_error, "Empty code name at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
+        continue;
+      }
+
       // new code.
       if (!current_code.name.empty() && !finish_code())
         return false;
 
       current_code = CodeInfo();
-      current_code.name = (linev[1] == '*') ? linev.substr(2, linev.length() - 3) : linev.substr(1, linev.length() - 2);
+      current_code.name = name_part;
       current_code.file_offset_start = static_cast<u32>(reader.GetCurrentLineOffset());
       current_code.file_offset_end = current_code.file_offset_start;
       current_code.file_offset_body_start = current_code.file_offset_start;
@@ -1683,12 +1703,24 @@ bool Cheats::ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_cont
         continue;
       }
 
+      const std::string_view name_part = StringUtil::StripWhitespace(linev.substr(1));
+      if (name_part.empty())
+      {
+        if (!reader.LogError(error, stop_on_error, "Empty code name at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
+        continue;
+      }
+
       if (!current_code.name.empty() && !finish_code())
         return false;
 
       // new code.
       current_code = CodeInfo();
-      current_code.name = linev.substr(1);
+      current_code.name = name_part;
       current_code.file_offset_start = static_cast<u32>(reader.GetCurrentOffset());
       current_code.file_offset_end = current_code.file_offset_start;
       current_code.file_offset_body_start = current_code.file_offset_start;
@@ -2360,7 +2392,7 @@ void Cheats::GamesharkCheatCode::Apply() const
         index++;
       }
       break;
-      
+
       case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
       {
         const u8 value = DoMemoryRead<u8>(inst.address);
@@ -2372,7 +2404,7 @@ void Cheats::GamesharkCheatCode::Apply() const
         index++;
       }
       break;
-      
+
       case InstructionCode::ExtConstantForceRange8:
       {
         const u8 value = DoMemoryRead<u8>(inst.address);
@@ -3950,14 +3982,14 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable() const
         index++;
       }
       break;
-      
-        [[unlikely]] default:
-        {
-          ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
-                    inst.first, inst.second);
-          index++;
-        }
-        break;
+
+      [[unlikely]] default:
+      {
+        ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
+                  inst.first, inst.second);
+        index++;
+      }
+      break;
     }
   }
 }
