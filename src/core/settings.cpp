@@ -2335,3 +2335,8 @@ std::string EmuFolders::GetOverridableResourcePath(std::string_view name)
 
   return upath;
 }
+
+bool EmuFolders::IsRunningInPortableMode()
+{
+  return (AppRoot == DataRoot);
+}

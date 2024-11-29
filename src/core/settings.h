@@ -593,4 +593,7 @@ void Update();
 
 /// Returns the path to a resource file, allowing the user to override it.
 std::string GetOverridableResourcePath(std::string_view name);
+
+/// Returns true if the application is running in portable mode.
+bool IsRunningInPortableMode();
 } // namespace EmuFolders
