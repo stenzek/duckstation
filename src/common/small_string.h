@@ -12,6 +12,7 @@
 #include <cstring>
 #include <iterator>
 #include <limits>
+#include <span>
 #include <string>
 #include <string_view>
 
@@ -207,10 +208,18 @@ public:
   std::wstring wstring() const;
 #endif
 
+  // span creators
+  std::span<const char> cspan() const;
+  std::span<char> span();
+  std::span<const u8> cbspan() const;
+  std::span<u8> bspan();
+
   // accessor operators
   ALWAYS_INLINE operator const char*() const { return c_str(); }
   ALWAYS_INLINE operator char*() { return data(); }
   ALWAYS_INLINE operator std::string_view() const { return view(); }
+  ALWAYS_INLINE operator std::span<const char>() const { return cspan(); }
+  ALWAYS_INLINE operator std::span<char>() { return span(); }
 
   // comparative operators
   ALWAYS_INLINE bool operator==(const char* str) const { return equals(str); }
