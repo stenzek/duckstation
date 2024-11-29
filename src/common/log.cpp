@@ -376,7 +376,7 @@ void Log::DebugOutputLogCallback(void* pUserParam, MessageCategory cat, const ch
   if (message.empty())
     return;
 
-  static constexpr int logPriority[static_cast<size_t>(Level::Count)] = {
+  static constexpr int logPriority[static_cast<size_t>(Level::MaxCount)] = {
     ANDROID_LOG_INFO,  // None
     ANDROID_LOG_ERROR, // Error
     ANDROID_LOG_WARN,  // Warning
