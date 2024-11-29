@@ -22,6 +22,7 @@
 #include "common/md5_digest.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
+#include "common/sha256_digest.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/timer.h"
@@ -143,6 +144,9 @@ static void UpdateGameSummary();
 static std::string GetLocalImagePath(const std::string_view image_name, int type);
 static void DownloadImage(std::string url, std::string cache_filename);
 static void UpdateGlyphRanges();
+
+static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
+static TinyString EncryptLoginToken(std::string_view token, std::string_view username);
 
 static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
 static void DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
@@ -569,8 +573,18 @@ bool Achievements::Initialize()
   if (!username.empty() && !api_token.empty())
   {
     INFO_LOG("Attempting login with user '{}'...", username);
-    s_login_request = rc_client_begin_login_with_token(s_client, username.c_str(), api_token.c_str(),
-                                                       ClientLoginWithTokenCallback, nullptr);
+
+    // If we can't decrypt the token, it was an old config and we need to re-login.
+    if (const TinyString decrypted_api_token = DecryptLoginToken(api_token, username); !decrypted_api_token.empty())
+    {
+      s_login_request = rc_client_begin_login_with_token(s_client, username.c_str(), decrypted_api_token.c_str(),
+                                                         ClientLoginWithTokenCallback, nullptr);
+    }
+    else
+    {
+      WARNING_LOG("Invalid encrypted login token, requesitng a new one.");
+      Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
+    }
   }
 
   // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
@@ -1884,7 +1898,7 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 
   // Store configuration.
   Host::SetBaseStringSettingValue("Cheevos", "Username", params->username);
-  Host::SetBaseStringSettingValue("Cheevos", "Token", user->token);
+  Host::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, params->username));
   Host::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
   Host::CommitBaseSettingChanges();
 
@@ -3333,6 +3347,164 @@ void Achievements::CloseLeaderboard()
 
   s_open_leaderboard = nullptr;
   ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);
+}
+
+#if defined(_WIN32)
+#include "common/windows_headers.h"
+#elif !defined(__ANDROID__)
+#include <unistd.h>
+#endif
+
+#include "common/thirdparty/SmallVector.h"
+#include "common/thirdparty/aes.h"
+
+#ifndef __ANDROID__
+
+static TinyString GetLoginEncryptionMachineKey()
+{
+  TinyString ret;
+
+#ifdef _WIN32
+
+  HKEY hKey;
+  DWORD error;
+  if ((error = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &hKey)) !=
+      ERROR_SUCCESS)
+  {
+    WARNING_LOG("Open SOFTWARE\\Microsoft\\Cryptography failed for machine key failed: {}", error);
+    return ret;
+  }
+
+  DWORD machine_guid_length;
+  if ((error = RegGetValueA(hKey, NULL, "MachineGuid", RRF_RT_REG_SZ, NULL, NULL, &machine_guid_length)) !=
+      ERROR_SUCCESS)
+  {
+    WARNING_LOG("Get MachineGuid failed: {}", error);
+    RegCloseKey(hKey);
+    return 0;
+  }
+
+  ret.resize(machine_guid_length);
+  if ((error = RegGetValueA(hKey, NULL, "MachineGuid", RRF_RT_REG_SZ, NULL, ret.data(), &machine_guid_length)) !=
+        ERROR_SUCCESS ||
+      machine_guid_length <= 1)
+  {
+    WARNING_LOG("Read MachineGuid failed: {}", error);
+    ret = {};
+    RegCloseKey(hKey);
+    return 0;
+  }
+
+  ret.resize(machine_guid_length);
+  RegCloseKey(hKey);
+#elif !defined(__ANDROID__)
+#ifdef __linux__
+  // use /etc/machine-id on Linux
+  std::optional<std::string> machine_id = FileSystem::ReadFileToString("/etc/machine-id");
+  if (machine_id.has_value())
+    ret = std::string_view(machine_id.value());
+#endif
+
+  if (ret.empty())
+  {
+    WARNING_LOG("Falling back to gethostid()");
+
+    // fallback to POSIX gethostid()
+    const long hostid = gethostid();
+    ret.format("{:08X}", hostid);
+  }
+#endif
+
+  return ret;
+}
+
+#endif
+
+static std::array<u8, 32> GetLoginEncryptionKey(std::string_view username)
+{
+  // super basic key stretching
+  static constexpr u32 EXTRA_ROUNDS = 100;
+
+  SHA256Digest digest;
+
+#ifndef __ANDROID__
+  // Only use machine key if we're not running in portable mode.
+  if (!EmuFolders::IsRunningInPortableMode())
+  {
+    const TinyString machine_key = GetLoginEncryptionMachineKey();
+    if (!machine_key.empty())
+      digest.Update(machine_key.cbspan());
+    else
+      WARNING_LOG("Failed to get machine key, token will be decipherable.");
+  }
+#endif
+
+  // salt with username
+  digest.Update(username.data(), username.length());
+
+  std::array<u8, 32> key = digest.Final();
+
+  for (u32 i = 0; i < EXTRA_ROUNDS; i++)
+    key = SHA256Digest::GetDigest(key);
+
+  return key;
+}
+
+TinyString Achievements::EncryptLoginToken(std::string_view token, std::string_view username)
+{
+  TinyString ret;
+  if (token.empty() || username.empty())
+    return ret;
+
+  const auto key = GetLoginEncryptionKey(username);
+  std::array<u32, AES_KEY_SCHEDULE_SIZE> key_schedule;
+  aes_key_setup(&key[0], key_schedule.data(), 128);
+
+  // has to be padded to the block size
+  llvm::SmallVector<u8, 64> data(reinterpret_cast<const u8*>(token.data()),
+                                 reinterpret_cast<const u8*>(token.data() + token.length()));
+  data.resize(Common::AlignUpPow2(token.length(), AES_BLOCK_SIZE), 0);
+  aes_encrypt_cbc(data.data(), data.size(), data.data(), key_schedule.data(), 128, &key[16]);
+
+  // base64 encode it
+  const std::span<const u8> data_span(data.data(), data.size());
+  ret.resize(static_cast<u32>(StringUtil::EncodedBase64Length(data_span)));
+  StringUtil::EncodeBase64(ret.span(), data_span);
+  return ret;
+}
+
+TinyString Achievements::DecryptLoginToken(std::string_view encrypted_token, std::string_view username)
+{
+  TinyString ret;
+  if (encrypted_token.empty() || username.empty())
+    return ret;
+
+  const size_t encrypted_data_length = StringUtil::DecodedBase64Length(encrypted_token);
+  if (encrypted_data_length == 0 || (encrypted_data_length % AES_BLOCK_SIZE) != 0)
+    return ret;
+
+  const auto key = GetLoginEncryptionKey(username);
+  std::array<u32, AES_KEY_SCHEDULE_SIZE> key_schedule;
+  aes_key_setup(&key[0], key_schedule.data(), 128);
+
+  // has to be padded to the block size
+  llvm::SmallVector<u8, 64> encrypted_data;
+  encrypted_data.resize(encrypted_data_length);
+  if (StringUtil::DecodeBase64(std::span<u8>(encrypted_data.data(), encrypted_data.size()), encrypted_token) !=
+      encrypted_data_length)
+  {
+    WARNING_LOG("Failed to base64 decode encrypted login token.");
+    return ret;
+  }
+
+  aes_decrypt_cbc(encrypted_data.data(), encrypted_data.size(), encrypted_data.data(), key_schedule.data(), 128,
+                  &key[16]);
+
+  // remove any trailing null bytes
+  const size_t real_length =
+    StringUtil::Strnlen(reinterpret_cast<const char*>(encrypted_data.data()), encrypted_data_length);
+  ret.append(reinterpret_cast<const char*>(encrypted_data.data()), static_cast<u32>(real_length));
+  return ret;
 }
 
 #ifdef ENABLE_RAINTEGRATION
