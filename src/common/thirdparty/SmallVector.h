@@ -183,7 +183,7 @@ protected:
   /// NewSize.
   bool isSafeToReferenceAfterResize(const void *Elt, size_t NewSize) {
     // Past the end.
-    if (LLVM_LIKELY(!isReferenceToStorage(Elt)))
+    if (!isReferenceToStorage(Elt)) [[likely]]
       return true;
 
     // Return false if Elt will be destroyed by shrinking.
@@ -946,7 +946,7 @@ public:
   }
 
   template <typename... ArgTypes> reference emplace_back(ArgTypes &&... Args) {
-    if (LLVM_UNLIKELY(this->size() >= this->capacity()))
+    if (this->size() >= this->capacity()) [[unlikely]]
       return this->growAndEmplaceBack(std::forward<ArgTypes>(Args)...);
 
     ::new ((void *)this->end()) T(std::forward<ArgTypes>(Args)...);
