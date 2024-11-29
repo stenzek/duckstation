@@ -629,7 +629,9 @@ float GPU::ComputeDisplayAspectRatio() const
 float GPU::ComputeSourceAspectRatio() const
 {
   const float source_aspect_ratio =
-    static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
+    (g_settings.debugging.show_vram ?
+       (static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT)) :
+       static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height));
 
   // Correction is applied to the GTE for stretch to fit, that way it fills the window.
   const float source_aspect_ratio_correction =
@@ -643,7 +645,8 @@ float GPU::ComputeAspectRatioCorrection() const
   const CRTCState& cs = m_crtc_state;
   float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
   float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
-  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1 ||
+  if (relative_width <= 0 || relative_height <= 0 || g_settings.debugging.show_vram ||
+      g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1 ||
       g_settings.display_crop_mode == DisplayCropMode::OverscanUncorrected ||
       g_settings.display_crop_mode == DisplayCropMode::BordersUncorrected)
   {
