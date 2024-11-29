@@ -700,22 +700,12 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
     return false;
   }
 
-  const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForDisc(image.get());
-  std::string_view game_name;
-  if (dbentry)
-  {
-    game_name = dbentry->title;
-    INFO_LOG("Game name from database: {}", game_name);
-  }
-  else
-  {
-    game_name = Path::GetFileTitle(filename);
-    WARNING_LOG("Game not found in database, using filename: {}", game_name);
-  }
-
   if (!s_dump_base_directory.empty())
   {
-    std::string dump_directory = Path::Combine(s_dump_base_directory, game_name);
+    std::string game_subdir = Path::SanitizeFileName(Path::GetFileTitle(filename));
+    INFO_LOG("Writing to subdirectory '{}'", game_subdir);
+
+    std::string dump_directory = Path::Combine(s_dump_base_directory, game_subdir);
     if (!FileSystem::DirectoryExists(dump_directory.c_str()))
     {
       INFO_LOG("Creating directory '{}'...", dump_directory);
