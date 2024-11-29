@@ -166,7 +166,7 @@
     <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
     <addaction name="menuCropMode"/>
-    <addaction name="actionDisableAllEnhancements"/>
+    <addaction name="actionEnableSafeMode"/>
     <addaction name="separator"/>
     <addaction name="menuLogLevel"/>
     <addaction name="menuLogChannels"/>
@@ -634,12 +634,12 @@
     <string>Dump VRAM to CPU Copies</string>
    </property>
   </action>
-  <action name="actionDisableAllEnhancements">
+  <action name="actionEnableSafeMode">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Disable All Enhancements</string>
+    <string>Enable Safe Mode</string>
    </property>
   </action>
   <action name="actionDumpRAM">

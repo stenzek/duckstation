@@ -109,7 +109,8 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
       lock.unlock();
 
-      req->callback(HTTP_STATUS_TIMEOUT, std::string(), Request::Data());
+      req->error.SetStringFmt("Request timed out after {} seconds.", m_timeout);
+      req->callback(HTTP_STATUS_TIMEOUT, req->error, std::string(), Request::Data());
 
       CloseRequest(req);
 
@@ -126,7 +127,8 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
       lock.unlock();
 
-      req->callback(HTTP_STATUS_CANCELLED, std::string(), Request::Data());
+      req->error.SetStringView("Request was cancelled.");
+      req->callback(HTTP_STATUS_CANCELLED, req->error, std::string(), Request::Data());
 
       CloseRequest(req);
 
@@ -159,7 +161,9 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
     // run callback with lock unheld
     lock.unlock();
-    req->callback(req->status_code, req->content_type, std::move(req->data));
+    if (req->status_code != HTTP_STATUS_OK)
+      req->error.SetStringFmt("Request failed with HTTP status code {}", req->status_code);
+    req->callback(req->status_code, req->error, req->content_type, std::move(req->data));
     CloseRequest(req);
     lock.lock();
   }
