@@ -37,6 +37,7 @@
 #include "common/path.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "util/audio_stream.h"
 #include "util/http_downloader.h"
@@ -1791,6 +1792,8 @@ void EmuThread::stopInThread()
 
 void EmuThread::run()
 {
+  Threading::SetNameOfCurrentThread("CPU Thread");
+
   m_event_loop = new QEventLoop();
   m_started_semaphore.release();
 

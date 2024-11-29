@@ -61,7 +61,6 @@
 #include "common/memmap.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "common/threading.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
@@ -499,8 +498,6 @@ void System::ProcessShutdown()
 
 bool System::CPUThreadInitialize(Error* error)
 {
-  Threading::SetNameOfCurrentThread("CPU Thread");
-
 #ifdef _WIN32
   // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
   // We need to initialize COM first, before anything else does, because otherwise they might
