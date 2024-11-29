@@ -22,9 +22,6 @@
 #if !defined(_MSC_VER)
 #include <locale>
 #include <sstream>
-#ifdef __APPLE__
-#include <Availability.h>
-#endif
 #endif
 
 namespace StringUtil {
@@ -175,8 +172,6 @@ inline std::optional<T> FromChars(const std::string_view str, std::string_view* 
 template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
 inline std::string ToChars(T value, int base = 10)
 {
-  // to_chars() requires macOS 10.15+.
-#if !defined(__APPLE__) || MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_15
   constexpr size_t MAX_SIZE = 32;
   char buf[MAX_SIZE];
   std::string ret;
@@ -186,12 +181,6 @@ inline std::string ToChars(T value, int base = 10)
     ret.append(buf, result.ptr - buf);
 
   return ret;
-#else
-  std::ostringstream ss;
-  ss.imbue(std::locale::classic());
-  ss << std::setbase(base) << value;
-  return ss.str();
-#endif
 }
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
