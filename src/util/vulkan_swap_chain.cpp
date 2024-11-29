@@ -534,13 +534,13 @@ bool VulkanSwapChain::CreateSwapChainImages(VulkanDevice& dev, Error* error)
     return false;
   }
 
-  Vulkan::FramebufferBuilder fbb;
   m_images.reserve(image_count);
   m_current_image = 0;
   for (u32 i = 0; i < image_count; i++)
   {
     Image& image = m_images.emplace_back();
     image.image = images[i];
+    image.framebuffer = VK_NULL_HANDLE;
 
     const VkImageViewCreateInfo view_info = {
       .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
@@ -560,15 +560,19 @@ bool VulkanSwapChain::CreateSwapChainImages(VulkanDevice& dev, Error* error)
       return false;
     }
 
-    fbb.AddAttachment(image.view);
-    fbb.SetRenderPass(render_pass);
-    fbb.SetSize(m_window_info.surface_width, m_window_info.surface_height, 1);
-    if ((image.framebuffer = fbb.Create(vkdev)) == VK_NULL_HANDLE)
+    if (!dev.GetOptionalExtensions().vk_khr_dynamic_rendering)
     {
-      Error::SetStringView(error, "Failed to create swap chain image framebuffer.");
-      vkDestroyImageView(vkdev, image.view, nullptr);
-      m_images.pop_back();
-      return false;
+      Vulkan::FramebufferBuilder fbb;
+      fbb.AddAttachment(image.view);
+      fbb.SetRenderPass(render_pass);
+      fbb.SetSize(m_window_info.surface_width, m_window_info.surface_height, 1);
+      if ((image.framebuffer = fbb.Create(vkdev)) == VK_NULL_HANDLE)
+      {
+        Error::SetStringView(error, "Failed to create swap chain image framebuffer.");
+        vkDestroyImageView(vkdev, image.view, nullptr);
+        m_images.pop_back();
+        return false;
+      }
     }
   }
 
@@ -621,7 +625,8 @@ void VulkanSwapChain::DestroySwapChainImages()
   for (const auto& it : m_images)
   {
     // don't defer view destruction, images are no longer valid
-    vkDestroyFramebuffer(vkdev, it.framebuffer, nullptr);
+    if (it.framebuffer != VK_NULL_HANDLE)
+      vkDestroyFramebuffer(vkdev, it.framebuffer, nullptr);
     vkDestroyImageView(vkdev, it.view, nullptr);
   }
   m_images.clear();
