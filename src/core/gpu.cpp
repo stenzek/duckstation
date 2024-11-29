@@ -171,7 +171,39 @@ void GPU::UpdateResolutionScale()
 
 std::tuple<u32, u32> GPU::GetFullDisplayResolution() const
 {
-  return std::tie(m_crtc_state.display_width, m_crtc_state.display_height);
+  u32 width, height;
+  if (IsDisplayDisabled())
+  {
+    width = 0;
+    height = 0;
+  }
+  else
+  {
+    s32 xmin, xmax, ymin, ymax;
+    if (!m_GPUSTAT.pal_mode)
+    {
+      xmin = NTSC_HORIZONTAL_ACTIVE_START;
+      xmax = NTSC_HORIZONTAL_ACTIVE_END;
+      ymin = NTSC_VERTICAL_ACTIVE_START;
+      ymax = NTSC_VERTICAL_ACTIVE_END;
+    }
+    else
+    {
+      xmin = PAL_HORIZONTAL_ACTIVE_START;
+      xmax = PAL_HORIZONTAL_ACTIVE_END;
+      ymin = PAL_VERTICAL_ACTIVE_START;
+      ymax = PAL_VERTICAL_ACTIVE_END;
+    }
+
+    width = static_cast<u32>(std::max<s32>(std::clamp<s32>(m_crtc_state.regs.X2, xmin, xmax) -
+                                             std::clamp<s32>(m_crtc_state.regs.X1, xmin, xmax),
+                                           0) /
+                             m_crtc_state.dot_clock_divider);
+    height = static_cast<u32>(std::max<s32>(
+      std::clamp<s32>(m_crtc_state.regs.Y2, ymin, ymax) - std::clamp<s32>(m_crtc_state.regs.Y1, ymin, ymax), 0));
+  }
+
+  return std::tie(width, height);
 }
 
 void GPU::Reset(bool clear_vram)
