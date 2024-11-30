@@ -234,7 +234,7 @@ struct Settings
   {
     struct Configuration
     {
-      static constexpr u32 DEFAULT_MAX_HASH_CACHE_ENTRIES = 500;
+      static constexpr u32 DEFAULT_MAX_HASH_CACHE_ENTRIES = 1200;
       static constexpr u32 DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB = 2048;
       static constexpr u32 DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB = 512;
 
