@@ -30,7 +30,7 @@ const char* GPUTexture::GetFormatName(Format format)
     "RGBA8",   // RGBA8
     "BGRA8",   // BGRA8
     "RGB565",  // RGB565
-    "RGB5551", // RGBA5551
+    "RGB5A1",  // RGB5A1
     "R8",      // R8
     "D16",     // D16
     "D24S8",   // D24S8
@@ -147,16 +147,16 @@ void GPUTexture::CopyTextureDataForUpload(u32 width, u32 height, Format format, 
 GPUTexture::Format GPUTexture::GetTextureFormatForImageFormat(ImageFormat format)
 {
   static constexpr const std::array mapping = {
-    Format::Unknown,  // None
-    Format::RGBA8,    // RGBA8
-    Format::BGRA8,    // BGRA8
-    Format::RGB565,   // RGB565
-    Format::RGBA5551, // RGBA5551
-    Format::Unknown,  // BGR8
-    Format::BC1,      // BC1
-    Format::BC2,      // BC2
-    Format::BC3,      // BC3
-    Format::BC7,      // BC7
+    Format::Unknown, // None
+    Format::RGBA8,   // RGBA8
+    Format::BGRA8,   // BGRA8
+    Format::RGB565,  // RGB565
+    Format::RGB5A1,  // RGB5A1
+    Format::Unknown, // BGR8
+    Format::BC1,     // BC1
+    Format::BC2,     // BC2
+    Format::BC3,     // BC3
+    Format::BC7,     // BC7
   };
   static_assert(mapping.size() == static_cast<size_t>(ImageFormat::MaxCount));
 
@@ -166,35 +166,35 @@ GPUTexture::Format GPUTexture::GetTextureFormatForImageFormat(ImageFormat format
 ImageFormat GPUTexture::GetImageFormatForTextureFormat(Format format)
 {
   static constexpr const std::array mapping = {
-    ImageFormat::None,     // Unknown
-    ImageFormat::RGBA8,    // RGBA8
-    ImageFormat::BGRA8,    // BGRA8
-    ImageFormat::RGB565,   // RGB565
-    ImageFormat::RGBA5551, // RGBA5551
-    ImageFormat::None,     // R8
-    ImageFormat::None,     // D16
-    ImageFormat::None,     // D24S8
-    ImageFormat::None,     // D32F
-    ImageFormat::None,     // D32FS8
-    ImageFormat::None,     // R16
-    ImageFormat::None,     // R16I
-    ImageFormat::None,     // R16U
-    ImageFormat::None,     // R16F
-    ImageFormat::None,     // R32I
-    ImageFormat::None,     // R32U
-    ImageFormat::None,     // R32F
-    ImageFormat::None,     // RG8
-    ImageFormat::None,     // RG16
-    ImageFormat::None,     // RG16F
-    ImageFormat::None,     // RG32F
-    ImageFormat::None,     // RGBA16
-    ImageFormat::None,     // RGBA16F
-    ImageFormat::None,     // RGBA32F
-    ImageFormat::None,     // RGB10A2
-    ImageFormat::BC1,      // BC1
-    ImageFormat::BC2,      // BC2
-    ImageFormat::BC3,      // BC3
-    ImageFormat::BC7,      // BC7
+    ImageFormat::None,   // Unknown
+    ImageFormat::RGBA8,  // RGBA8
+    ImageFormat::BGRA8,  // BGRA8
+    ImageFormat::RGB565, // RGB565
+    ImageFormat::RGB5A1, // RGB5A1
+    ImageFormat::None,   // R8
+    ImageFormat::None,   // D16
+    ImageFormat::None,   // D24S8
+    ImageFormat::None,   // D32F
+    ImageFormat::None,   // D32FS8
+    ImageFormat::None,   // R16
+    ImageFormat::None,   // R16I
+    ImageFormat::None,   // R16U
+    ImageFormat::None,   // R16F
+    ImageFormat::None,   // R32I
+    ImageFormat::None,   // R32U
+    ImageFormat::None,   // R32F
+    ImageFormat::None,   // RG8
+    ImageFormat::None,   // RG16
+    ImageFormat::None,   // RG16F
+    ImageFormat::None,   // RG32F
+    ImageFormat::None,   // RGBA16
+    ImageFormat::None,   // RGBA16F
+    ImageFormat::None,   // RGBA32F
+    ImageFormat::None,   // RGB10A2
+    ImageFormat::BC1,    // BC1
+    ImageFormat::BC2,    // BC2
+    ImageFormat::BC3,    // BC3
+    ImageFormat::BC7,    // BC7
   };
   static_assert(mapping.size() == static_cast<size_t>(Format::MaxCount));
 
@@ -252,7 +252,7 @@ u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
     4,  // RGBA8
     4,  // BGRA8
     2,  // RGB565
-    2,  // RGBA5551
+    2,  // RGB5A1
     1,  // R8
     2,  // D16
     4,  // D24S8

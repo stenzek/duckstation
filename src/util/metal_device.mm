@@ -50,7 +50,7 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatRGBA8Unorm,            // RGBA8
   MTLPixelFormatBGRA8Unorm,            // BGRA8
   MTLPixelFormatB5G6R5Unorm,           // RGB565
-  MTLPixelFormatA1BGR5Unorm,           // RGBA5551
+  MTLPixelFormatA1BGR5Unorm,           // RGB5A1
   MTLPixelFormatR8Unorm,               // R8
   MTLPixelFormatDepth16Unorm,          // D16
   MTLPixelFormatDepth24Unorm_Stencil8, // D24S8
@@ -1490,7 +1490,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
 
 bool MetalDevice::SupportsTextureFormat(GPUTexture::Format format) const
 {
-  if (format == GPUTexture::Format::RGB565 || format == GPUTexture::Format::RGBA5551)
+  if (format == GPUTexture::Format::RGB565 || format == GPUTexture::Format::RGB5A1)
   {
     // These formats require an Apple Silicon GPU.
     // See https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf

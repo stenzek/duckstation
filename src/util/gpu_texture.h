@@ -40,7 +40,7 @@ public:
     RGBA8,
     BGRA8,
     RGB565,
-    RGBA5551,
+    RGB5A1,
     R8,
     D16,
     D24S8,
