@@ -778,7 +778,6 @@ void GPUTextureCache::Shutdown()
 
 void GPUTextureCache::SetHashCacheTextureFormat()
 {
-#if 0
   // Prefer 16-bit texture formats where possible.
   if (g_gpu_device->SupportsTextureFormat(GPUTexture::Format::RGB5A1))
     s_state.hash_cache_texture_format = GPUTexture::Format::RGB5A1;
@@ -786,9 +785,6 @@ void GPUTextureCache::SetHashCacheTextureFormat()
     s_state.hash_cache_texture_format = GPUTexture::Format::RGBA8;
 
   INFO_LOG("Using {} format for hash cache entries.", GPUTexture::GetFormatName(s_state.hash_cache_texture_format));
-#else
-  s_state.hash_cache_texture_format = GPUTexture::Format::RGBA8;
-#endif
 }
 
 bool GPUTextureCache::CompilePipelines()
