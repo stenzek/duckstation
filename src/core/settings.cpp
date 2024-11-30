@@ -996,6 +996,11 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_pgxp_disable_2d = false;
   }
 
+  // texture replacements are not available without the TC or with the software renderer
+  g_settings.texture_replacements.enable_texture_replacements &=
+    (g_settings.gpu_renderer != GPURenderer::Software && g_settings.gpu_texture_cache);
+  g_settings.texture_replacements.enable_vram_write_replacements &= (g_settings.gpu_renderer != GPURenderer::Software);
+
 #ifndef ENABLE_MMAP_FASTMEM
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
