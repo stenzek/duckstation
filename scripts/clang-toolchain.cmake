@@ -1,5 +1,0 @@
-set(CMAKE_C_COMPILER /usr/bin/clang-16)
-set(CMAKE_CXX_COMPILER /usr/bin/clang++-16)
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=lld")
-set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=lld")
-set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=lld")
