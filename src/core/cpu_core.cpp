@@ -20,6 +20,7 @@
 #include "common/fastjmp.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 
 #include "fmt/format.h"
 
@@ -144,9 +145,9 @@ void CPU::StopTrace()
 
 void CPU::WriteToExecutionLog(const char* format, ...)
 {
-  if (!s_log_file_opened)
+  if (!s_log_file_opened) [[unlikely]]
   {
-    s_log_file = FileSystem::OpenCFile("cpu_log.txt", "wb");
+    s_log_file = FileSystem::OpenCFile(Path::Combine(EmuFolders::DataRoot, "cpu_log.txt").c_str(), "wb");
     s_log_file_opened = true;
   }
 
