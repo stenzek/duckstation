@@ -29,8 +29,8 @@ InputBindingWidget::InputBindingWidget(QWidget* parent, SettingsInterface* sif, 
                                        std::string section_name, std::string key_name)
   : QPushButton(parent)
 {
-  setMinimumWidth(225);
-  setMaximumWidth(225);
+  setMinimumWidth(220);
+  setMaximumWidth(220);
 
   connect(this, &QPushButton::clicked, this, &InputBindingWidget::onClicked);
 

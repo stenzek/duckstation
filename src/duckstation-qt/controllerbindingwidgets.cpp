@@ -426,6 +426,41 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
       }
     }
   }
+  if (m_controller_info->vibration_caps != Controller::VibrationCapabilities::NoVibration)
+  {
+    const bool dual_motors = (m_controller_info->vibration_caps == Controller::VibrationCapabilities::LargeSmallMotors);
+    if (!axis_gbox)
+    {
+      axis_gbox = new QGroupBox(tr("Axes"), scrollarea_widget);
+      axis_layout = new QGridLayout(axis_gbox);
+    }
+
+    QGroupBox* gbox = new QGroupBox(dual_motors ? tr("Large Motor") : tr("Vibration"), axis_gbox);
+    QVBoxLayout* temp = new QVBoxLayout(gbox);
+    InputVibrationBindingWidget* widget =
+      new InputVibrationBindingWidget(gbox, getDialog(), getConfigSection(), dual_motors ? "LargeMotor" : "Motor");
+    temp->addWidget(widget);
+    axis_layout->addWidget(gbox, row, column);
+    if ((++column) == NUM_AXIS_COLUMNS)
+    {
+      column = 0;
+      row++;
+    }
+
+    if (m_controller_info->vibration_caps == Controller::VibrationCapabilities::LargeSmallMotors)
+    {
+      gbox = new QGroupBox(tr("Small Motor"), axis_gbox);
+      temp = new QVBoxLayout(gbox);
+      widget = new InputVibrationBindingWidget(gbox, getDialog(), getConfigSection(), "SmallMotor");
+      temp->addWidget(widget);
+      axis_layout->addWidget(gbox, row, column);
+      if ((++column) == NUM_AXIS_COLUMNS)
+      {
+        column = 0;
+        row++;
+      }
+    }
+  }
   if (axis_gbox)
     axis_layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), ++row, 0);
 
@@ -467,10 +502,9 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
 
   QHBoxLayout* layout = new QHBoxLayout(scrollarea_widget);
   if (axis_gbox)
-    layout->addWidget(axis_gbox);
+    layout->addWidget(axis_gbox, 1);
   if (button_gbox)
-    layout->addWidget(button_gbox);
-  layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Expanding, QSizePolicy::Minimum));
+    layout->addWidget(button_gbox, 1);
 
   QHBoxLayout* main_layout = new QHBoxLayout(parent);
   main_layout->addWidget(scrollarea);
