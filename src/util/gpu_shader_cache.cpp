@@ -15,7 +15,7 @@
 
 #include "compress_helpers.h"
 
-LOG_CHANNEL(GPUShaderCache);
+LOG_CHANNEL(GPUDevice);
 
 #pragma pack(push, 1)
 struct CacheFileHeader

@@ -23,7 +23,7 @@
 
 #include <cmath>
 
-LOG_CHANNEL(NeGconRumble);
+LOG_CHANNEL(Controller);
 
 // Mapping of Button to index of corresponding bit in m_button_state
 static constexpr std::array<u8, static_cast<size_t>(NeGconRumble::Button::Count)> s_button_indices = {3, 4,  5,  6,

@@ -10,7 +10,7 @@
 #include "common/log.h"
 #include "common/string_util.h"
 
-LOG_CHANNEL(GPU_SW_Rasterizer);
+LOG_CHANNEL(GPU_SW);
 
 namespace GPU_SW_Rasterizer {
 constinit const DitherLUT g_dither_lut = []() constexpr {

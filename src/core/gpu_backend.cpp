@@ -9,7 +9,7 @@
 #include "common/log.h"
 #include "common/timer.h"
 
-LOG_CHANNEL(GPUBackend);
+LOG_CHANNEL(GPU);
 
 std::unique_ptr<GPUBackend> g_gpu_backend;
 

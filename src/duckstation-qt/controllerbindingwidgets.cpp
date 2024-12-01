@@ -39,7 +39,7 @@
 #include <QtWidgets/QSpinBox>
 #include <algorithm>
 
-LOG_CHANNEL(ControllerBindingWidget);
+LOG_CHANNEL(Host);
 
 ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSettingsWindow* dialog, u32 port)
   : QWidget(parent), m_dialog(dialog), m_config_section(Controller::GetSettingsSection(port)), m_port_number(port)

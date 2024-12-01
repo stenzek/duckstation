@@ -18,7 +18,7 @@
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 
-LOG_CHANNEL(AnalogController);
+LOG_CHANNEL(Controller);
 
 JogCon::JogCon(u32 index) : Controller(index)
 {

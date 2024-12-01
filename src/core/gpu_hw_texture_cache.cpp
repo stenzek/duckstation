@@ -37,7 +37,7 @@
 #include <numeric>
 #include <unordered_set>
 
-LOG_CHANNEL(GPUTextureCache);
+LOG_CHANNEL(GPU_HW);
 
 #include "common/ryml_helpers.h"
 
