@@ -1610,7 +1610,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
                                        1.0f, 72.0f))));
     const float seconds = (lba_diff < switch_point) ? 0.05f : 0.1f;
     ticks += static_cast<u32>(seconds * static_cast<float>(System::MASTER_CLOCK));
-    seek_type = (new_lba > current_lba) ? "NT forward" : "NT backward";
+    seek_type = (new_lba > current_lba) ? "2N forward" : "2N backward";
   }
   else
   {
@@ -1625,7 +1625,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
       (((SLED_VARIABLE_COST * (std::log(static_cast<float>(lba_diff)) / std::log(MAX_SLED_LBA)))) * LOG_WEIGHT) +
       ((SLED_VARIABLE_COST * (lba_diff / MAX_SLED_LBA)) * (1.0f - LOG_WEIGHT));
     ticks += static_cast<u32>(seconds * static_cast<float>(System::MASTER_CLOCK));
-    seek_type = (new_lba > current_lba) ? "2N/sled forward" : "2N/sled backward";
+    seek_type = (new_lba > current_lba) ? "sled forward" : "sled backward";
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
@@ -2101,11 +2101,6 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Pause:
     {
-      if (IsReadingOrPlaying())
-        DEV_COLOR_LOG(StrongOrange, "Pause");
-      else
-        DEV_COLOR_LOG(StrongRed, "Pause      Not Reading");
-
       const TickCount pause_time = GetTicksForPause();
       if (IsReading() && s_state.last_subq.IsData())
       {
@@ -2124,21 +2119,33 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
           ((s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing) &&
            s_state.secondary_status.seeking))
       {
-        WARNING_LOG("CDROM Pause command while seeking - sending error response");
+        if (Log::GetLogLevel() >= Log::Level::Dev)
+          DEV_COLOR_LOG(StrongRed, "Pause      Seeking => Error");
+        else
+          WARNING_LOG("CDROM Pause command while seeking - sending error response");
+
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
         EndCommand();
         return;
       }
-      else
-      {
-        // Small window of time when another INT1 could sneak in, don't let it.
-        ClearAsyncInterrupt();
 
-        // Stop reading.
-        s_state.drive_state = DriveState::Idle;
-        s_state.drive_event.Deactivate();
-        s_state.secondary_status.ClearActiveBits();
+      if (Log::GetLogLevel() >= Log::Level::Dev)
+      {
+        const double pause_time_ms =
+          static_cast<double>(pause_time) / (static_cast<double>(System::MASTER_CLOCK) / 1000.0);
+        if (IsReadingOrPlaying())
+          DEV_COLOR_LOG(StrongOrange, "Pause                  {:.2f}ms", pause_time_ms);
+        else
+          DEV_COLOR_LOG(Yellow, "Pause      Not Reading {:.2f}ms", pause_time_ms);
       }
+
+      // Small window of time when another INT1 could sneak in, don't let it.
+      ClearAsyncInterrupt();
+
+      // Stop reading.
+      s_state.drive_state = DriveState::Idle;
+      s_state.drive_event.Deactivate();
+      s_state.secondary_status.ClearActiveBits();
 
       // Reset audio buffer here - control room cutscene audio repeats in Dino Crisis otherwise.
       ResetAudioDecoder();
