@@ -782,6 +782,9 @@ bool Settings::TextureReplacementSettings::Configuration::operator==(const Confi
           dump_c16_textures == rhs.dump_c16_textures && reduce_palette_range == rhs.reduce_palette_range &&
           convert_copies_to_writes == rhs.convert_copies_to_writes &&
           replacement_scale_linear_filter == rhs.replacement_scale_linear_filter &&
+          max_hash_cache_entries == rhs.max_hash_cache_entries &&
+          max_hash_cache_vram_usage_mb == rhs.max_hash_cache_vram_usage_mb &&
+          max_replacement_cache_vram_usage_mb == rhs.max_replacement_cache_vram_usage_mb &&
           max_vram_write_splits == rhs.max_vram_write_splits &&
           max_vram_write_coalesce_width == rhs.max_vram_write_coalesce_width &&
           max_vram_write_coalesce_height == rhs.max_vram_write_coalesce_height &&
