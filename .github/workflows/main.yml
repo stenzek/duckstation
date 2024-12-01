@@ -1,6 +1,7 @@
 name: Automated Builds
 
 on:
+  workflow_dispatch:
   pull_request:
     paths-ignore:
       - '**.md'

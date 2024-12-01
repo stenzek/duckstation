@@ -2,6 +2,7 @@ name: 🐧 Linux AppImage
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   linux-x64-appimage-build:

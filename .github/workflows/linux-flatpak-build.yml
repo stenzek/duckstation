@@ -11,6 +11,7 @@ on:
         required: false
         type: string
         default: "stable"
+  workflow_dispatch:
 
 jobs:
   linux-flatpak-build:

@@ -2,6 +2,7 @@ name: 💻 Windows
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   windows-x64-build:

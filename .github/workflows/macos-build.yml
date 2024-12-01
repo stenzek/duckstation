@@ -2,6 +2,7 @@ name: 🍎 MacOS
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   macos-build:
