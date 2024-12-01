@@ -139,6 +139,7 @@ public:
 
   /// Returns a printable label for a given port.
   static const char* GetPortDisplayName(u32 port, u32 slot, bool mtap);
+  static const char* GetPortDisplayName(u32 index);
 
   /// List of controller indices in the order that they should be displayed.
   static const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> PortDisplayOrder;

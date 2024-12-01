@@ -238,6 +238,12 @@ const char* Controller::GetPortDisplayName(u32 port, u32 slot, bool mtap)
   return mtap ? mtap_labels[port][slot] : no_mtap_labels[port];
 }
 
+const char* Controller::GetPortDisplayName(u32 index)
+{
+  const auto& [port, slot] = ConvertPadToPortAndSlot(index);
+  return GetPortDisplayName(port, slot, g_settings.IsMultitapPortEnabled(port));
+}
+
 std::string Controller::GetSettingsSection(u32 pad)
 {
   return fmt::format("Pad{}", pad + 1u);
