@@ -310,7 +310,7 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE 
   return index;
 }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 
 void D3D12::SetObjectName(ID3D12Object* object, std::string_view name)
 {

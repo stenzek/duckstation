@@ -1265,7 +1265,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         pass.samplers.push_back(std::move(sampler));
       }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
       pass.name = std::move(pi.name);
 #endif
       m_passes.push_back(std::move(pass));

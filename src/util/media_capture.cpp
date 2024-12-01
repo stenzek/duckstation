@@ -285,8 +285,8 @@ bool MediaCaptureBase::DeliverVideoFrame(GPUTexture* stex)
       return false;
     }
 
-#ifdef _DEBUG
-    GL_OBJECT_NAME_FMT(pf.tex, "GSCapture {}x{} Download Texture", stex->GetWidth(), stex->GetHeight());
+#if defined(_DEBUG) || defined(_DEVEL)
+    GL_OBJECT_NAME_FMT(pf.tex, "MediaCapture {}x{} Download Texture", stex->GetWidth(), stex->GetHeight());
 #endif
   }
 

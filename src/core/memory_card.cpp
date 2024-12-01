@@ -88,7 +88,7 @@ void MemoryCard::ResetTransferState()
 bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
 {
   bool ack = false;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   const State old_state = m_state;
 #endif
 

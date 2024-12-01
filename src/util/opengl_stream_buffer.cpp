@@ -31,7 +31,7 @@ void OpenGLStreamBuffer::Unbind()
 
 void OpenGLStreamBuffer::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
   {
     glObjectLabel(GL_BUFFER, GetGLBufferId(), static_cast<GLsizei>(name.length()),

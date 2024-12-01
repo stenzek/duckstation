@@ -19,7 +19,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
     Y_OnAssertFailed("Assertion failed: '" msg "'", __FUNCTION__, __FILE__, __LINE__);                                 \
   }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 #define DebugAssert(expr)                                                                                              \
   if (!(expr))                                                                                                         \
   {                                                                                                                    \
@@ -41,7 +41,7 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
 // Kills the application, indicating a pure function call that should not have happened.
 #define PureCall() Y_OnPanicReached("PureCall encountered", __FUNCTION__, __FILE__, __LINE__)
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 // Kills the application, indicating that code that was never supposed to be reached has been executed.
 #define UnreachableCode() Y_OnPanicReached("Unreachable code reached", __FUNCTION__, __FILE__, __LINE__)
 #else

@@ -304,7 +304,7 @@ bool SDLInputSource::InitializeSubsystem()
   }
 
   SDL_LogSetOutputFunction(SDLLogCallback, nullptr);
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 #else
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);

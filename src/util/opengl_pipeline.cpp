@@ -80,7 +80,7 @@ OpenGLShader::~OpenGLShader()
 
 void OpenGLShader::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
   {
     if (m_id.has_value())
@@ -155,7 +155,7 @@ bool OpenGLShader::Compile(Error* error)
 
   m_id = shader;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel && !m_debug_name.empty())
   {
     glObjectLabel(GL_SHADER, shader, static_cast<GLsizei>(m_debug_name.length()),
@@ -586,7 +586,7 @@ OpenGLPipeline::~OpenGLPipeline()
 
 void OpenGLPipeline::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
     glObjectLabel(GL_PROGRAM, m_program, static_cast<u32>(name.length()), name.data());
 #endif

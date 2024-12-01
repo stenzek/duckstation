@@ -335,7 +335,7 @@ ALWAYS_INLINE_RELEASE void CPU::RaiseException(u32 CAUSE_bits, u32 EPC, u32 vect
   g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK) |
                                  (CAUSE_bits & Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK);
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (g_state.cop0_regs.cause.Excode != Exception::INT && g_state.cop0_regs.cause.Excode != Exception::Syscall &&
       g_state.cop0_regs.cause.Excode != Exception::BP)
   {

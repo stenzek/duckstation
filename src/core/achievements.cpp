@@ -624,7 +624,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
     return false;
   }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   rc_client_enable_logging(new_client, RC_CLIENT_LOG_LEVEL_VERBOSE, ClientMessageCallback);
 #else
   rc_client_enable_logging(new_client, RC_CLIENT_LOG_LEVEL_INFO, ClientMessageCallback);

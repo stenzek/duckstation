@@ -1413,7 +1413,7 @@ const GPUTextureCache::Source* GPUTextureCache::LookupSource(SourceKey key, cons
 const GPUTextureCache::Source* GPUTextureCache::ReturnSource(Source* source, const GSVector4i uv_rect,
                                                              PaletteRecordFlags flags)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   // GL_INS_FMT("Tex hash: {:016X}", source->texture_hash);
   // GL_INS_FMT("Palette hash: {:016X}", source->palette_hash);
   if (!uv_rect.eq(INVALID_RECT))
@@ -1471,7 +1471,7 @@ bool GPUTextureCache::IsRectDrawn(const GSVector4i rect)
 bool GPUTextureCache::AreSourcePagesDrawn(SourceKey key, const GSVector4i rect)
 {
   // NOTE: This doesn't handle VRAM wrapping. But neither does the caller. YOLO?
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   {
     for (u32 offset = 0; offset < TexturePageCountForMode(key.mode); offset++)
     {
@@ -1529,7 +1529,7 @@ void GPUTextureCache::Invalidate()
   }
 
   // should all be null
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   for (u32 i = 0; i < NUM_VRAM_PAGES; i++)
     DebugAssert(!s_state.pages[i].sources.head && !s_state.pages[i].sources.tail);
   DebugAssert(!s_state.last_vram_write);

@@ -941,7 +941,7 @@ void Bus::AddTTYCharacter(char ch)
     if (!s_tty_line_buffer.empty())
     {
       Log::FastWrite(Log::Channel::TTY, Log::Level::Info, "\033[1;34m{}\033[0m", s_tty_line_buffer);
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
       if (CPU::IsTraceEnabled())
         CPU::WriteToExecutionLog("TTY: %s\n", s_tty_line_buffer.c_str());
 #endif
@@ -2299,7 +2299,7 @@ void** Bus::GetMemoryHandlers(bool isolate_cache, bool swap_caches)
   if (!isolate_cache)
     return g_memory_handlers;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (swap_caches)
     WARNING_LOG("Cache isolated and swapped, icache will be written instead of scratchpad?");
 #endif

@@ -152,7 +152,7 @@ private:
     u16 size;
   };
 
-#if _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   static void PrintPBPHeaderInfo(const PBPHeader& pbp_header);
   static void PrintSFOHeaderInfo(const SFOHeader& sfo_header);
   static void PrintSFOIndexTableEntry(const SFOIndexTableEntry& sfo_index_table_entry, size_t i);
@@ -231,7 +231,7 @@ bool CDImagePBP::LoadPBPHeader()
     return false;
   }
 
-#if _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   PrintPBPHeaderInfo(m_pbp_header);
 #endif
 
@@ -252,7 +252,7 @@ bool CDImagePBP::LoadSFOHeader()
     return false;
   }
 
-#if _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   PrintSFOHeaderInfo(m_sfo_header);
 #endif
 
@@ -273,7 +273,7 @@ bool CDImagePBP::LoadSFOIndexTable()
     return false;
   }
 
-#if _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   for (size_t i = 0; i < static_cast<size_t>(m_sfo_header.num_table_entries); ++i)
     PrintSFOIndexTableEntry(m_sfo_index_table[i], i);
 #endif
@@ -346,7 +346,7 @@ bool CDImagePBP::LoadSFOTable()
     }
   }
 
-#if _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   PrintSFOTable(m_sfo_table);
 #endif
 
@@ -822,7 +822,7 @@ bool CDImagePBP::ReadSectorFromIndex(void* buffer, const Index& index, LBA lba_i
   return true;
 }
 
-#if _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 void CDImagePBP::PrintPBPHeaderInfo(const PBPHeader& pbp_header)
 {
   printf("PBP header info\n");

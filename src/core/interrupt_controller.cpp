@@ -51,7 +51,7 @@ void InterruptController::SetLineState(IRQ irq, bool state)
   if (s_interrupt_line_state == prev_state)
     return;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!(prev_state & bit) && state)
     DEBUG_LOG("{} IRQ triggered", s_irq_names[static_cast<size_t>(irq)]);
   else if ((prev_state & bit) && !state)
@@ -84,7 +84,7 @@ void InterruptController::WriteRegister(u32 offset, u32 value)
   {
     case 0x00: // I_STATUS
     {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
       const u32 cleared_bits = (s_interrupt_status_register & ~value);
       for (u32 i = 0; i < static_cast<u32>(IRQ::MaxCount); i++)
       {

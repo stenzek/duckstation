@@ -197,7 +197,9 @@ QString QtHost::GetAppNameAndVersion()
 
 QString QtHost::GetAppConfigSuffix()
 {
-#if defined(_DEBUGFAST)
+#if defined(_DEVEL)
+  return QStringLiteral(" [Devel]");
+#elif defined(_DEBUGFAST)
   return QStringLiteral(" [DebugFast]");
 #elif defined(_DEBUG)
   return QStringLiteral(" [Debug]");

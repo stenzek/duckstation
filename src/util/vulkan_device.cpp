@@ -105,7 +105,7 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
 // Handles are always 64-bit, even on 32-bit platforms.
 static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = ((VkRenderPass) static_cast<s64>(-1LL));
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 static u32 s_debug_scope_depth = 0;
 #endif
 
@@ -116,7 +116,7 @@ VulkanDevice::VulkanDevice()
 {
   m_render_api = RenderAPI::Vulkan;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   s_debug_scope_depth = 0;
 #endif
 }
@@ -2327,7 +2327,7 @@ void VulkanDevice::SubmitPresent(GPUSwapChain* swap_chain)
   QueuePresent(static_cast<VulkanSwapChain*>(swap_chain));
 }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 static std::array<float, 3> Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
                                     const std::array<float, 3>& c, const std::array<float, 3>& d)
 {
@@ -2341,7 +2341,7 @@ static std::array<float, 3> Palette(float phase, const std::array<float, 3>& a, 
 
 void VulkanDevice::PushDebugGroup(const char* name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!vkCmdBeginDebugUtilsLabelEXT || !m_debug_device)
     return;
 
@@ -2360,7 +2360,7 @@ void VulkanDevice::PushDebugGroup(const char* name)
 
 void VulkanDevice::PopDebugGroup()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!vkCmdEndDebugUtilsLabelEXT || !m_debug_device)
     return;
 
@@ -2372,7 +2372,7 @@ void VulkanDevice::PopDebugGroup()
 
 void VulkanDevice::InsertDebugMessage(const char* msg)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!vkCmdInsertDebugUtilsLabelEXT || !m_debug_device)
     return;
 

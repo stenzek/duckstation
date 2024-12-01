@@ -16,3 +16,17 @@ endif()
 if(APPLE)
   option(SKIP_POSTPROCESS_BUNDLE "Disable bundle post-processing, including Qt additions" OFF)
 endif()
+
+# Set _DEBUG macro for Debug builds.
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+
+# Create the Devel build type based on RelWithDebInfo.
+set(CMAKE_C_FLAGS_DEVEL "${CMAKE_C_FLAGS_RELWITHDEBINFO} -D_DEVEL" CACHE STRING "Flags used by the C compiler during DEVEL builds." FORCE)
+set(CMAKE_CXX_FLAGS_DEVEL "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -D_DEVEL" CACHE STRING "Flags used by the CXX compiler during DEVEL builds." FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEVEL "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}" CACHE STRING "Flags used for the linker during DEVEL builds." FORCE)
+set(CMAKE_MODULE_LINKER_FLAGS_DEVEL "${CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO}" CACHE STRING "Flags used by the linker during the creation of modules during DEVEL builds." FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_DEVEL "${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO}" CACHE STRING "Flags used by the linker during the creation of shared libraries during DEVEL builds." FORCE)
+set(CMAKE_STATIC_LINKER_FLAGS_DEVEL "${CMAKE_STATIC_LINKER_FLAGS_RELWITHDEBINFO}" CACHE STRING "Flags used by the linker during the creation of static libraries during DEVEL builds." FORCE)
+list(APPEND CMAKE_CONFIGURATION_TYPES "Devel")
+mark_as_advanced(CMAKE_C_FLAGS_DEVEL CMAKE_CXX_FLAGS_DEVEL CMAKE_EXE_LINKER_FLAGS_DEVEL CMAKE_MODULE_LINKER_FLAGS_DEVEL CMAKE_SHARED_LINKER_FLAGS_DEVEL CMAKE_STATIC_LINKER_FLAGS_DEVEL)

@@ -147,7 +147,7 @@ if(CPU_ARCH_X64)
     cpu_recompiler_x64.h
   )
   target_link_libraries(core PRIVATE xbyak)
-  if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
     target_link_libraries(core PRIVATE zydis)
   endif()
   message(STATUS "Building x64 recompiler.")

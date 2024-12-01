@@ -135,7 +135,7 @@ bool AutoUpdaterDialog::warnAboutUnofficialBuild()
   // Thanks, and I hope you understand.
   //
 
-#if !__has_include("scmversion/tag.h") && !defined(_DEBUG)
+#if !__has_include("scmversion/tag.h")
   constexpr const char* CONFIG_SECTION = "UI";
   constexpr const char* CONFIG_KEY = "UnofficialBuildWarningConfirmed";
   if (

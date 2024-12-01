@@ -59,7 +59,7 @@ static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RG
 // We just need to keep this alive, never reference it.
 static DynamicHeapArray<u8> s_pipeline_cache_data;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 #include "WinPixEventRuntime/pix3.h"
 static u32 s_debug_scope_depth = 0;
 #endif
@@ -117,7 +117,7 @@ D3D12Device::D3D12Device()
 {
   m_render_api = RenderAPI::D3D12;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   s_debug_scope_depth = 0;
 #endif
 }
@@ -1273,7 +1273,7 @@ void D3D12Device::SubmitPresent(GPUSwapChain* swap_chain)
   SC->GetSwapChain()->Present(sync_interval, flags);
 }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 static UINT64 Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
                       const std::array<float, 3>& c, const std::array<float, 3>& d)
 {
@@ -1290,7 +1290,7 @@ static UINT64 Palette(float phase, const std::array<float, 3>& a, const std::arr
 
 void D3D12Device::PushDebugGroup(const char* name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!m_debug_device)
     return;
 
@@ -1302,7 +1302,7 @@ void D3D12Device::PushDebugGroup(const char* name)
 
 void D3D12Device::PopDebugGroup()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!m_debug_device)
     return;
 
@@ -1313,7 +1313,7 @@ void D3D12Device::PopDebugGroup()
 
 void D3D12Device::InsertDebugMessage(const char* msg)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!m_debug_device)
     return;
 

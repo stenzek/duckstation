@@ -215,7 +215,7 @@ void InterpretUncachedBlock();
 
 void LogCurrentState();
 
-#if defined(_DEBUG) || false
+#if defined(_DEBUG) || defined(_DEVEL) || false
 // Enable disassembly of host assembly code.
 #define ENABLE_HOST_DISASSEMBLY 1
 #endif

@@ -18,7 +18,7 @@
 
 #include <array>
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 #include "common/log.h"
 LOG_CHANNEL(GunCon);
 #endif

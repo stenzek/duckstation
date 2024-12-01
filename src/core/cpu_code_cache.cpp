@@ -154,7 +154,7 @@ static u8* s_free_far_code_ptr = nullptr;
 static u32 s_far_code_size = 0;
 static u32 s_far_code_used = 0;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 static u32 s_total_instructions_compiled = 0;
 static u32 s_total_host_instructions_emitted = 0;
 #endif
@@ -1023,7 +1023,7 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
 
   instructions->back().second.is_last_instruction = true;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   SmallString disasm;
   DEBUG_LOG("Block at 0x{:08X}", start_pc);
   DEBUG_LOG(" Uncached fetch ticks: {}", metadata->uncached_fetch_ticks);
@@ -1540,7 +1540,7 @@ void CPU::CodeCache::CompileASMFunctions()
 {
   MemMap::BeginCodeWrite();
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   s_total_instructions_compiled = 0;
   s_total_host_instructions_emitted = 0;
 #endif

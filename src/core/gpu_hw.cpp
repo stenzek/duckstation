@@ -42,7 +42,7 @@ static constexpr GPUTexture::Format VRAM_DS_FORMAT = GPUTexture::Format::D16;
 static constexpr GPUTexture::Format VRAM_DS_DEPTH_FORMAT = GPUTexture::Format::D32F;
 static constexpr GPUTexture::Format VRAM_DS_COLOR_FORMAT = GPUTexture::Format::R32F;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 
 static u32 s_draw_number = 0;
 
@@ -189,7 +189,7 @@ private:
 
 GPU_HW::GPU_HW() : GPU()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   s_draw_number = 0;
 #endif
 }
@@ -3785,7 +3785,7 @@ void GPU_HW::FlushRender()
   if (index_count == 0)
     return;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   GL_SCOPE_FMT("Hardware Draw {}: {}", ++s_draw_number, m_current_draw_rect);
 #endif
 

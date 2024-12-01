@@ -122,7 +122,7 @@ private:
   D3D12_COMPUTE_PIPELINE_STATE_DESC m_desc;
 };
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 void SetObjectName(ID3D12Object* object, std::string_view name);
 #else
 static inline void SetObjectName(ID3D12Object* object, std::string_view name)

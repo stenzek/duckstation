@@ -487,7 +487,7 @@ void OpenGLTexture::GenerateMipmaps()
 
 void OpenGLTexture::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
     glObjectLabel(GL_TEXTURE, m_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
 #endif
@@ -512,7 +512,7 @@ OpenGLSampler::~OpenGLSampler()
 
 void OpenGLSampler::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
     glObjectLabel(GL_SAMPLER, m_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
 #endif
@@ -800,7 +800,7 @@ void OpenGLTextureBuffer::Unmap(u32 used_elements)
 
 void OpenGLTextureBuffer::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
   {
     glObjectLabel(GL_TEXTURE, m_buffer->GetGLBufferId(), static_cast<GLsizei>(name.length()),

@@ -32,7 +32,7 @@ static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RG
 
 void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   // WKPDID_D3DDebugObjectName
   static constexpr GUID guid = {0x429b8c22, 0x9188, 0x4b0c, {0x87, 0x42, 0xac, 0xb0, 0xbf, 0x85, 0xc2, 0x00}};
 
@@ -115,7 +115,7 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
     }
   }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (m_debug_device)
     m_context.As(&m_annotation);
 #endif
@@ -834,7 +834,7 @@ float D3D11Device::GetAndResetAccumulatedGPUTime()
 
 void D3D11Device::PushDebugGroup(const char* name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!m_annotation)
     return;
 
@@ -844,7 +844,7 @@ void D3D11Device::PushDebugGroup(const char* name)
 
 void D3D11Device::PopDebugGroup()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!m_annotation)
     return;
 
@@ -854,7 +854,7 @@ void D3D11Device::PopDebugGroup()
 
 void D3D11Device::InsertDebugMessage(const char* msg)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!m_annotation)
     return;
 

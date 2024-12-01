@@ -507,7 +507,7 @@ bool GPUDump::Player::FindFrameStarts(Error* error)
     return false;
   }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   for (size_t i = 0; i < m_frame_offsets.size(); i++)
     DEBUG_LOG("Frame {} starts at offset {}", i, m_frame_offsets[i]);
 #endif

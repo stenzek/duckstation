@@ -383,7 +383,7 @@ void SocketMultiplexer::RemoveOpenSocket(BaseSocket* socket)
   if (epoll_ctl(m_epoll_fd, EPOLL_CTL_DEL, socket->GetDescriptor(), nullptr) != 0) [[unlikely]]
     ERROR_LOG("epoll_ctl() to remove socket failed: {}", Error::CreateErrno(errno).GetDescription());
 #else
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   for (size_t i = 0; i < m_poll_array_active_size; i++)
   {
     pollfd& pfd = m_poll_array[i];

@@ -2882,7 +2882,7 @@ void CDROM::UpdateSubQPosition(bool update_logical)
     const CDImage::LBA old_offset = s_state.current_subq_lba - tjump_position;
     const CDImage::LBA new_offset = (old_offset + sector_diff) % sectors_per_track;
     const CDImage::LBA new_subq_lba = tjump_position + new_offset;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
     DEV_LOG("{} sectors @ {} SPT, old pos {}, hold pos {}, tjump pos {}, new pos {}", sector_diff, sectors_per_track,
             LBAToMSFString(s_state.current_subq_lba), LBAToMSFString(hold_position), LBAToMSFString(tjump_position),
             LBAToMSFString(new_subq_lba));

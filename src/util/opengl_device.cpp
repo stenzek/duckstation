@@ -216,7 +216,7 @@ std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::Com
 
 void OpenGLDevice::PushDebugGroup(const char* name)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!glPushDebugGroup)
     return;
 
@@ -226,7 +226,7 @@ void OpenGLDevice::PushDebugGroup(const char* name)
 
 void OpenGLDevice::PopDebugGroup()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!glPopDebugGroup)
     return;
 
@@ -236,7 +236,7 @@ void OpenGLDevice::PopDebugGroup()
 
 void OpenGLDevice::InsertDebugMessage(const char* msg)
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (!glDebugMessageInsert)
     return;
 

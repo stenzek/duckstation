@@ -2792,7 +2792,7 @@ void ImGuiFullscreen::OpenBackgroundProgressDialog(const char* str_id, std::stri
 
   std::unique_lock<std::mutex> lock(s_background_progress_lock);
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
   {
     DebugAssert(data.id != id);

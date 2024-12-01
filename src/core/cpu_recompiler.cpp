@@ -354,7 +354,7 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
   const Reg opcode_rt = next_instruction->r.rt;
   const Reg opcode_rd = next_instruction->r.rd;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   TinyString disasm;
   DisassembleInstruction(&disasm, m_current_instruction_pc + 4, next_instruction->bits);
 #endif
@@ -492,7 +492,7 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
   }
 
 is_safe:
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   DEBUG_LOG("Swapping delay slot {:08X} {}", m_current_instruction_pc + 4, disasm);
 #endif
 
@@ -504,7 +504,7 @@ is_safe:
   return true;
 
 is_unsafe:
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   DEBUG_LOG("NOT swapping delay slot {:08X} {}", m_current_instruction_pc + 4, disasm);
 #endif
 
@@ -1178,7 +1178,7 @@ void CPU::Recompiler::Recompiler::AddLoadStoreInfo(void* code_address, u32 code_
 
 void CPU::Recompiler::Recompiler::CompileInstruction()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   TinyString str;
   DisassembleInstruction(&str, m_current_instruction_pc, inst->bits);
   DEBUG_LOG("Compiling{} {:08X}: {}", m_current_instruction_branch_delay_slot ? " branch delay slot" : "",

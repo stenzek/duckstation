@@ -32,7 +32,7 @@ private:
   std::optional<GLuint> m_id;
   bool m_compile_tried = false;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   std::string m_debug_name;
 #endif
 };

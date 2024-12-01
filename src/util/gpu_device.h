@@ -929,7 +929,7 @@ ALWAYS_INLINE void GPUDevice::PooledTextureDeleter::operator()(GPUTexture* const
 }
 
 // Macros for debug messages.
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 struct GLAutoPop
 {
   GLAutoPop(int dummy) {}
