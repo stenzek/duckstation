@@ -836,16 +836,10 @@
    <property name="text">
     <string>Zoom &amp;In (Grid View)</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl++</string>
-   </property>
   </action>
   <action name="actionGridViewZoomOut">
    <property name="text">
     <string>Zoom &amp;Out (Grid View)</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+-</string>
    </property>
   </action>
   <action name="actionGridViewRefreshCovers">
@@ -929,16 +923,6 @@
   <action name="actionCaptureGPUFrame">
    <property name="text">
     <string>Capture GPU Frame</string>
-   </property>
-  </action>
-  <action name="actionasdf">
-   <property name="text">
-    <string>asdf</string>
-   </property>
-  </action>
-  <action name="actionaaa">
-   <property name="text">
-    <string>aaa</string>
    </property>
   </action>
  </widget>

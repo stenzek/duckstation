@@ -80,6 +80,7 @@ private Q_SLOTS:
   void onListViewItemActivated(const QModelIndex& index);
   void onListViewContextMenuRequested(const QPoint& point);
   void onCoverScaleChanged();
+  void onSearchReturnPressed();
 
 public Q_SLOTS:
   void showGameList();
@@ -91,6 +92,7 @@ public Q_SLOTS:
   void gridZoomOut();
   void gridIntScale(int int_scale);
   void refreshGridCovers();
+  void focusSearchWidget();
 
 protected:
   void resizeEvent(QResizeEvent* event);

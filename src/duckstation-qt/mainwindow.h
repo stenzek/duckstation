@@ -24,6 +24,7 @@
 class QLabel;
 class QThread;
 class QProgressBar;
+class QShortcut;
 
 class MainWindow;
 class GameListWidget;
@@ -169,12 +170,15 @@ private Q_SLOTS:
   void onStartFullscreenUITriggered();
   void onFullscreenUIStateChange(bool running);
   void onRemoveDiscActionTriggered();
+  void onScanForNewGamesTriggered();
   void onViewToolbarActionToggled(bool checked);
   void onViewLockToolbarActionToggled(bool checked);
   void onViewStatusBarActionToggled(bool checked);
   void onViewGameListActionTriggered();
   void onViewGameGridActionTriggered();
   void onViewSystemDisplayTriggered();
+  void onViewGameGridZoomInActionTriggered();
+  void onViewGameGridZoomOutActionTriggered();
   void onGitHubRepositoryActionTriggered();
   void onIssueTrackerActionTriggered();
   void onDiscordServerActionTriggered();
@@ -295,6 +299,15 @@ private:
   QLabel* m_status_resolution_widget = nullptr;
 
   QMenu* m_settings_toolbar_menu = nullptr;
+
+  struct
+  {
+    QShortcut* open_file = nullptr;
+    QShortcut* game_list_refresh = nullptr;
+    QShortcut* game_list_search = nullptr;
+    QShortcut* game_grid_zoom_in = nullptr;
+    QShortcut* game_grid_zoom_out = nullptr;
+  } m_shortcuts;
 
   SettingsWindow* m_settings_window = nullptr;
   ControllerSettingsWindow* m_controller_settings_window = nullptr;
