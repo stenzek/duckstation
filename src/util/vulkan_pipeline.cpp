@@ -22,10 +22,14 @@ VulkanShader::~VulkanShader()
   vkDestroyShaderModule(VulkanDevice::GetInstance().GetVulkanDevice(), m_module, nullptr);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void VulkanShader::SetDebugName(std::string_view name)
 {
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_module, name);
 }
+
+#endif
 
 std::unique_ptr<GPUShader> VulkanDevice::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
                                                                 Error* error)
@@ -107,10 +111,14 @@ VulkanPipeline::~VulkanPipeline()
   VulkanDevice::GetInstance().DeferPipelineDestruction(m_pipeline);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void VulkanPipeline::SetDebugName(std::string_view name)
 {
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_pipeline, name);
 }
+
+#endif
 
 std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {

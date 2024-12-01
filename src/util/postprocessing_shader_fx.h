@@ -132,7 +132,7 @@ private:
     llvm::SmallVector<Sampler, GPUDevice::MAX_TEXTURE_SAMPLERS> samplers;
     u32 num_vertices;
 
-#if defined(_DEBUG) || defined(_DEVEL)
+#ifdef ENABLE_GPU_OBJECT_NAMES
     std::string name;
 #endif
   };

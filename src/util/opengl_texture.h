@@ -30,7 +30,9 @@ public:
   void Unmap() override;
   void GenerateMipmaps() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
   static std::unique_ptr<OpenGLTexture> Create(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type,
                                                Format format, Flags flags, const void* data, u32 data_pitch,
@@ -78,7 +80,9 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   OpenGLTextureBuffer(Format format, u32 size_in_elements, std::unique_ptr<OpenGLStreamBuffer> buffer,
@@ -97,7 +101,9 @@ public:
 
   ALWAYS_INLINE GLuint GetID() const { return m_id; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   OpenGLSampler(GLuint id);
@@ -121,7 +127,9 @@ public:
 
   void Flush() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   OpenGLDownloadTexture(u32 width, u32 height, GPUTexture::Format format, bool imported, GLuint buffer_id,

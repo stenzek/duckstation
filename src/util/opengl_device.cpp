@@ -214,29 +214,26 @@ std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::Com
   return {};
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLDevice::PushDebugGroup(const char* name)
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (!glPushDebugGroup)
     return;
 
   glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0, static_cast<GLsizei>(std::strlen(name)), name);
-#endif
 }
 
 void OpenGLDevice::PopDebugGroup()
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (!glPopDebugGroup)
     return;
 
   glPopDebugGroup();
-#endif
 }
 
 void OpenGLDevice::InsertDebugMessage(const char* msg)
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (!glDebugMessageInsert)
     return;
 
@@ -245,8 +242,9 @@ void OpenGLDevice::InsertDebugMessage(const char* msg)
     glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, GL_DEBUG_TYPE_MARKER, 0, GL_DEBUG_SEVERITY_NOTIFICATION,
                          static_cast<GLsizei>(std::strlen(msg)), msg);
   }
-#endif
 }
+
+#endif
 
 static void GLAD_API_PTR GLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
                                          const GLchar* message, const void* userParam)

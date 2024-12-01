@@ -118,9 +118,11 @@ public:
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
   void InsertDebugMessage(const char* msg) override;
+#endif
 
   void MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
                        u32* map_base_vertex) override;

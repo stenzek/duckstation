@@ -30,7 +30,9 @@ public:
 
   ALWAYS_INLINE const std::vector<u8>& GetBytecode() const { return m_bytecode; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   D3D11Shader(GPUShaderStage stage, Microsoft::WRL::ComPtr<ID3D11DeviceChild> shader, std::vector<u8> bytecode);
@@ -49,7 +51,9 @@ class D3D11Pipeline final : public GPUPipeline
 public:
   ~D3D11Pipeline() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
   ALWAYS_INLINE bool IsComputePipeline() const { return !m_vs; }
   ALWAYS_INLINE ID3D11RasterizerState* GetRasterizerState() const { return m_rs.Get(); }

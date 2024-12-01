@@ -26,7 +26,9 @@ public:
   ALWAYS_INLINE ID3D11SamplerState* GetSamplerState() const { return m_ss.Get(); }
   ALWAYS_INLINE ID3D11SamplerState* const* GetSamplerStateArray() const { return m_ss.GetAddressOf(); }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   D3D11Sampler(ComPtr<ID3D11SamplerState> ss);
@@ -88,7 +90,9 @@ public:
   void Unmap() override;
   void GenerateMipmaps() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   D3D11Texture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, Type type, Format format, Flags flags,
@@ -118,7 +122,9 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   D3D11StreamBuffer m_buffer;
@@ -140,7 +146,9 @@ public:
 
   void Flush() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   D3D11DownloadTexture(Microsoft::WRL::ComPtr<ID3D11Texture2D> tex, u32 width, u32 height, GPUTexture::Format format);

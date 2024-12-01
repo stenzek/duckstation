@@ -310,7 +310,7 @@ u32 D3D12::RootSignatureBuilder::AddDescriptorTable(D3D12_DESCRIPTOR_RANGE_TYPE 
   return index;
 }
 
-#if defined(_DEBUG) || defined(_DEVEL)
+#ifdef ENABLE_GPU_OBJECT_NAMES
 
 void D3D12::SetObjectName(ID3D12Object* object, std::string_view name)
 {

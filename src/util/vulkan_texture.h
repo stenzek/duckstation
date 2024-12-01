@@ -56,7 +56,9 @@ public:
   void MakeReadyForSampling() override;
   void GenerateMipmaps() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
   void TransitionToLayout(Layout layout);
   void CommitClear();
@@ -120,7 +122,9 @@ public:
 
   ALWAYS_INLINE VkSampler GetSampler() const { return m_sampler; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   VulkanSampler(VkSampler sampler);
@@ -146,7 +150,9 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   VulkanStreamBuffer m_buffer;
@@ -170,7 +176,9 @@ public:
 
   void Flush() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   VulkanDownloadTexture(u32 width, u32 height, GPUTexture::Format format, VmaAllocation allocation,

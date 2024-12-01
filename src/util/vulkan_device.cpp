@@ -105,7 +105,7 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
 // Handles are always 64-bit, even on 32-bit platforms.
 static const VkRenderPass DYNAMIC_RENDERING_RENDER_PASS = ((VkRenderPass) static_cast<s64>(-1LL));
 
-#if defined(_DEBUG) || defined(_DEVEL)
+#ifdef ENABLE_GPU_OBJECT_NAMES
 static u32 s_debug_scope_depth = 0;
 #endif
 
@@ -116,7 +116,7 @@ VulkanDevice::VulkanDevice()
 {
   m_render_api = RenderAPI::Vulkan;
 
-#if defined(_DEBUG) || defined(_DEVEL)
+#ifdef ENABLE_GPU_OBJECT_NAMES
   s_debug_scope_depth = 0;
 #endif
 }
@@ -2327,7 +2327,7 @@ void VulkanDevice::SubmitPresent(GPUSwapChain* swap_chain)
   QueuePresent(static_cast<VulkanSwapChain*>(swap_chain));
 }
 
-#if defined(_DEBUG) || defined(_DEVEL)
+#ifdef ENABLE_GPU_OBJECT_NAMES
 static std::array<float, 3> Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
                                     const std::array<float, 3>& c, const std::array<float, 3>& d)
 {
@@ -2337,11 +2337,9 @@ static std::array<float, 3> Palette(float phase, const std::array<float, 3>& a, 
   result[2] = a[2] + b[2] * std::cos(6.28318f * (c[2] * phase + d[2]));
   return result;
 }
-#endif
 
 void VulkanDevice::PushDebugGroup(const char* name)
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (!vkCmdBeginDebugUtilsLabelEXT || !m_debug_device)
     return;
 
@@ -2355,31 +2353,28 @@ void VulkanDevice::PushDebugGroup(const char* name)
     {color[0], color[1], color[2], 1.0f},
   };
   vkCmdBeginDebugUtilsLabelEXT(GetCurrentCommandBuffer(), &label);
-#endif
 }
 
 void VulkanDevice::PopDebugGroup()
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (!vkCmdEndDebugUtilsLabelEXT || !m_debug_device)
     return;
 
   s_debug_scope_depth = (s_debug_scope_depth == 0) ? 0 : (s_debug_scope_depth - 1u);
 
   vkCmdEndDebugUtilsLabelEXT(GetCurrentCommandBuffer());
-#endif
 }
 
 void VulkanDevice::InsertDebugMessage(const char* msg)
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (!vkCmdInsertDebugUtilsLabelEXT || !m_debug_device)
     return;
 
   const VkDebugUtilsLabelEXT label = {VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT, nullptr, msg, {0.0f, 0.0f, 0.0f, 1.0f}};
   vkCmdInsertDebugUtilsLabelEXT(GetCurrentCommandBuffer(), &label);
-#endif
 }
+
+#endif
 
 u32 VulkanDevice::GetMaxMultisamples(VkPhysicalDevice physical_device, const VkPhysicalDeviceProperties& properties)
 {

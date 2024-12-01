@@ -47,10 +47,14 @@ ID3D11ComputeShader* D3D11Shader::GetComputeShader() const
   return static_cast<ID3D11ComputeShader*>(m_shader.Get());
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D11Shader::SetDebugName(std::string_view name)
 {
   SetD3DDebugObjectName(m_shader.Get(), name);
 }
+
+#endif
 
 std::unique_ptr<GPUShader> D3D11Device::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
                                                                Error* error)
@@ -135,10 +139,14 @@ D3D11Pipeline::~D3D11Pipeline()
   D3D11Device::GetInstance().UnbindPipeline(this);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D11Pipeline::SetDebugName(std::string_view name)
 {
   // can't label this directly
 }
+
+#endif
 
 D3D11Device::ComPtr<ID3D11RasterizerState> D3D11Device::GetRasterizationState(const GPUPipeline::RasterizationState& rs,
                                                                               Error* error)

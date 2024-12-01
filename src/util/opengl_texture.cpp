@@ -485,18 +485,14 @@ void OpenGLTexture::GenerateMipmaps()
   glBindTexture(target, 0);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLTexture::SetDebugName(std::string_view name)
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
     glObjectLabel(GL_TEXTURE, m_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
-#endif
 }
 
-#if 0
-// If we don't have border clamp.. too bad, just hope for the best.
-if (!m_gl_context->IsGLES() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_NV_texture_border_clamp ||
-  GLAD_GL_EXT_texture_border_clamp || GLAD_GL_OES_texture_border_clamp)
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -510,13 +506,15 @@ OpenGLSampler::~OpenGLSampler()
   OpenGLDevice::GetInstance().UnbindSampler(m_id);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLSampler::SetDebugName(std::string_view name)
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
     glObjectLabel(GL_SAMPLER, m_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
-#endif
 }
+
+#endif
 
 std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
 {
@@ -798,16 +796,18 @@ void OpenGLTextureBuffer::Unmap(u32 used_elements)
   m_buffer->Unmap(size);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLTextureBuffer::SetDebugName(std::string_view name)
 {
-#if defined(_DEBUG) || defined(_DEVEL)
   if (glObjectLabel)
   {
     glObjectLabel(GL_TEXTURE, m_buffer->GetGLBufferId(), static_cast<GLsizei>(name.length()),
                   static_cast<const GLchar*>(name.data()));
   }
-#endif
 }
+
+#endif
 
 std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBuffer::Format format,
                                                                     u32 size_in_elements, Error* error)
@@ -1037,6 +1037,8 @@ void OpenGLDownloadTexture::Flush()
   m_sync = {};
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLDownloadTexture::SetDebugName(std::string_view name)
 {
   if (name.empty())
@@ -1045,6 +1047,8 @@ void OpenGLDownloadTexture::SetDebugName(std::string_view name)
   if (glObjectLabel)
     glObjectLabel(GL_BUFFER, m_buffer_id, static_cast<GLsizei>(name.length()), name.data());
 }
+
+#endif
 
 std::unique_ptr<GPUDownloadTexture>
 OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format, Error* error /* = nullptr */)
