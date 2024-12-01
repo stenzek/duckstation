@@ -416,7 +416,7 @@ void AnalogController::UpdateHostVibration()
     hvalues[motor] = (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
   }
 
-  WARNING_LOG("Set small to {}, large to {}", hvalues[SmallMotor], hvalues[LargeMotor]);
+  DEV_LOG("Set small motor to {}, large motor to {}", hvalues[SmallMotor], hvalues[LargeMotor]);
   InputManager::SetPadVibrationIntensity(m_index, hvalues[LargeMotor], hvalues[SmallMotor]);
 }
 
