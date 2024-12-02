@@ -1585,32 +1585,31 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 
     case 0x02: // Get Texture Window
     {
-      DEBUG_LOG("Get texture window");
       m_GPUREAD_latch = m_draw_mode.texture_window_value;
+      DEBUG_LOG("Get texture window => 0x{:08X}", m_GPUREAD_latch);
     }
     break;
 
     case 0x03: // Get Draw Area Top Left
     {
-      DEBUG_LOG("Get drawing area top left");
-      m_GPUREAD_latch =
-        ((m_drawing_area.left & UINT32_C(0b1111111111)) | ((m_drawing_area.top & UINT32_C(0b1111111111)) << 10));
+      m_GPUREAD_latch = (m_drawing_area.left | (m_drawing_area.top << 10));
+      DEBUG_LOG("Get drawing area top left: ({}, {}) => 0x{:08X}", m_drawing_area.left, m_drawing_area.top,
+                m_GPUREAD_latch);
     }
     break;
 
     case 0x04: // Get Draw Area Bottom Right
     {
-      DEBUG_LOG("Get drawing area bottom right");
-      m_GPUREAD_latch =
-        ((m_drawing_area.right & UINT32_C(0b1111111111)) | ((m_drawing_area.bottom & UINT32_C(0b1111111111)) << 10));
+      m_GPUREAD_latch = (m_drawing_area.right | (m_drawing_area.bottom << 10));
+      DEBUG_LOG("Get drawing area bottom right: ({}, {}) => 0x{:08X}", m_drawing_area.bottom, m_drawing_area.right,
+                m_GPUREAD_latch);
     }
     break;
 
     case 0x05: // Get Drawing Offset
     {
-      DEBUG_LOG("Get drawing offset");
-      m_GPUREAD_latch =
-        ((m_drawing_offset.x & INT32_C(0b11111111111)) | ((m_drawing_offset.y & INT32_C(0b11111111111)) << 11));
+      m_GPUREAD_latch = (m_drawing_offset.x & 0x7FF) | ((m_drawing_offset.y & 0x7FF) << 11);
+      DEBUG_LOG("Get drawing offset: ({}, {}) => 0x{:08X}", m_drawing_offset.x, m_drawing_offset.y, m_GPUREAD_latch);
     }
     break;
 
