@@ -3199,7 +3199,8 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   GL_SCOPE_FMT("FillVRAM({},{} => {},{} ({}x{}) with 0x{:08X}", x, y, x + width, y + height, width, height, color);
   DeactivateROV();
 
-  if (m_sw_renderer)
+  const bool handle_with_tc = (m_use_texture_cache && !IsInterlacedRenderingEnabled());
+  if (m_sw_renderer && !handle_with_tc)
   {
     GPUBackendFillVRAMCommand* cmd = m_sw_renderer->NewFillVRAMCommand();
     FillBackendCommandParameters(cmd);
@@ -3216,7 +3217,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
 
   // If TC is enabled, we have to update local memory.
-  if (m_use_texture_cache && !IsInterlacedRenderingEnabled())
+  if (handle_with_tc)
   {
     AddWrittenRectangle(bounds);
     GPU_SW_Rasterizer::FillVRAM(x, y, width, height, color, false, 0);
@@ -3328,7 +3329,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   DebugAssert(bounds.right <= static_cast<s32>(VRAM_WIDTH) && bounds.bottom <= static_cast<s32>(VRAM_HEIGHT));
   AddWrittenRectangle(bounds);
 
-  if (m_sw_renderer)
+  if (m_sw_renderer && m_sw_renderer->IsUsingThread())
   {
     const u32 num_words = width * height;
     GPUBackendUpdateVRAMCommand* cmd = m_sw_renderer->NewUpdateVRAMCommand(num_words);
