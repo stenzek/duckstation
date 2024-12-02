@@ -6,6 +6,7 @@
 #include "gamelistrefreshthread.h"
 #include "qthost.h"
 #include "qtutils.h"
+#include "settingswindow.h"
 
 #include "core/game_list.h"
 #include "core/host.h"
@@ -181,6 +182,7 @@ void GameListWidget::initialize()
   });
   connect(m_ui.searchText, &QLineEdit::textChanged, this,
           [this](const QString& text) { m_sort_model->setFilterName(text); });
+  connect(m_ui.searchText, &QLineEdit::returnPressed, this, &GameListWidget::onSearchReturnPressed);
 
   m_table_view = new QTableView(m_ui.stack);
   m_table_view->setModel(m_sort_model);
@@ -368,7 +370,17 @@ void GameListWidget::onTableViewItemActivated(const QModelIndex& index)
   if (!source_index.isValid() || source_index.row() >= static_cast<int>(GameList::GetEntryCount()))
     return;
 
-  emit entryActivated();
+  if (qApp->keyboardModifiers().testFlag(Qt::AltModifier))
+  {
+    const auto lock = GameList::GetLock();
+    const GameList::Entry* entry = GameList::GetEntryByIndex(static_cast<u32>(source_index.row()));
+    if (entry)
+      SettingsWindow::openGamePropertiesDialog(entry->path, entry->title, entry->serial, entry->hash, entry->region);
+  }
+  else
+  {
+    emit entryActivated();
+  }
 }
 
 void GameListWidget::onTableViewContextMenuRequested(const QPoint& point)
@@ -464,6 +476,25 @@ void GameListWidget::gridIntScale(int int_scale)
 void GameListWidget::refreshGridCovers()
 {
   m_model->refreshCovers();
+}
+
+void GameListWidget::focusSearchWidget()
+{
+  m_ui.searchText->setFocus(Qt::ShortcutFocusReason);
+}
+
+void GameListWidget::onSearchReturnPressed()
+{
+  // Anything to switch focus to?
+  const int rows = m_sort_model->rowCount();
+  if (rows == 0)
+    return;
+
+  QAbstractItemView* const target =
+    isShowingGameGrid() ? static_cast<QAbstractItemView*>(m_list_view) : static_cast<QAbstractItemView*>(m_table_view);
+  target->selectionModel()->select(m_sort_model->index(0, 0),
+                                   QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+  target->setFocus(Qt::ShortcutFocusReason);
 }
 
 void GameListWidget::showGameList()

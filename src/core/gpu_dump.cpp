@@ -320,7 +320,7 @@ std::unique_ptr<GPUDump::Player> GPUDump::Player::Open(std::string path, Error* 
 {
   std::unique_ptr<Player> ret;
 
-  Common::Timer timer;
+  Timer timer;
 
   std::optional<DynamicHeapArray<u8>> data;
   if (StringUtil::EndsWithNoCase(path, ".psxgpu.zst") || StringUtil::EndsWithNoCase(path, ".psxgpu.xz"))
@@ -507,7 +507,7 @@ bool GPUDump::Player::FindFrameStarts(Error* error)
     return false;
   }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   for (size_t i = 0; i < m_frame_offsets.size(); i++)
     DEBUG_LOG("Frame {} starts at offset {}", i, m_frame_offsets[i]);
 #endif

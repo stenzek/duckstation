@@ -772,7 +772,7 @@ template<DMA::Channel channel>
 TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count)
 {
   const u32 mask = Bus::g_ram_mask;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if ((address & mask) != address)
     DEBUG_LOG("DMA TO {} from masked RAM address 0x{:08X} => 0x{:08X}", channel, address, (address & mask));
 #endif
@@ -862,7 +862,7 @@ template<DMA::Channel channel>
 TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count)
 {
   const u32 mask = Bus::g_ram_mask;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if ((address & mask) != address)
     DEBUG_LOG("DMA FROM {} to masked RAM address 0x{:08X} => 0x{:08X}", channel, address, (address & mask));
 #endif

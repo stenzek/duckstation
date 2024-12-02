@@ -616,10 +616,14 @@ void D3D12Texture::ActuallyCommitClear(ID3D12GraphicsCommandList* cmdlist)
   SetState(State::Dirty);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D12Texture::SetDebugName(std::string_view name)
 {
   D3D12::SetObjectName(m_resource.Get(), name);
 }
+
+#endif
 
 u32 D3D12Texture::CalculateSubresource(u32 layer, u32 level, u32 num_levels)
 {
@@ -698,9 +702,13 @@ D3D12Sampler::~D3D12Sampler()
   // Cleaned up by main class.
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D12Sampler::SetDebugName(std::string_view name)
 {
 }
+
+#endif
 
 D3D12DescriptorHandle D3D12Device::GetSampler(const GPUSampler::Config& config, Error* error)
 {
@@ -843,10 +851,14 @@ void D3D12TextureBuffer::Unmap(u32 used_elements)
   m_buffer.CommitMemory(size);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D12TextureBuffer::SetDebugName(std::string_view name)
 {
   D3D12::SetObjectName(m_buffer.GetBuffer(), name);
 }
+
+#endif
 
 std::unique_ptr<GPUTextureBuffer> D3D12Device::CreateTextureBuffer(GPUTextureBuffer::Format format,
                                                                    u32 size_in_elements, Error* error /* = nullptr */)
@@ -1026,6 +1038,8 @@ void D3D12DownloadTexture::Flush()
   }
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D12DownloadTexture::SetDebugName(std::string_view name)
 {
   if (name.empty())
@@ -1033,6 +1047,8 @@ void D3D12DownloadTexture::SetDebugName(std::string_view name)
 
   D3D12::SetObjectName(m_buffer.Get(), name);
 }
+
+#endif
 
 std::unique_ptr<GPUDownloadTexture> D3D12Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
                                                                        Error* error /* = nullptr */)

@@ -4,6 +4,7 @@
 #pragma once
 
 #include "types.h"
+#include <array>
 #include <charconv>
 #include <cstddef>
 #include <cstring>
@@ -22,9 +23,6 @@
 #if !defined(_MSC_VER)
 #include <locale>
 #include <sstream>
-#ifdef __APPLE__
-#include <Availability.h>
-#endif
 #endif
 
 namespace StringUtil {
@@ -175,8 +173,6 @@ inline std::optional<T> FromChars(const std::string_view str, std::string_view* 
 template<typename T, std::enable_if_t<std::is_integral<T>::value, bool> = true>
 inline std::string ToChars(T value, int base = 10)
 {
-  // to_chars() requires macOS 10.15+.
-#if !defined(__APPLE__) || MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_15
   constexpr size_t MAX_SIZE = 32;
   char buf[MAX_SIZE];
   std::string ret;
@@ -186,12 +182,6 @@ inline std::string ToChars(T value, int base = 10)
     ret.append(buf, result.ptr - buf);
 
   return ret;
-#else
-  std::ostringstream ss;
-  ss.imbue(std::locale::classic());
-  ss << std::setbase(base) << value;
-  return ss.str();
-#endif
 }
 
 template<typename T, std::enable_if_t<std::is_floating_point<T>::value, bool> = true>
@@ -259,6 +249,54 @@ ALWAYS_INLINE static bool IsHexDigit(T ch)
           (ch >= static_cast<T>('A') && ch <= static_cast<T>('F')) ||
           (ch >= static_cast<T>('0') && ch <= static_cast<T>('9')));
 }
+
+/// Returns a byte array from the provided hex string, computed at compile-time.
+template<size_t Length>
+static constexpr std::array<u8, Length> ParseFixedHexString(const char str[])
+{
+  std::array<u8, Length> h{};
+  for (int i = 0; str[i] != '\0'; i++)
+  {
+    u8 nibble = 0;
+    char ch = str[i];
+    if (ch >= '0' && ch <= '9')
+      nibble = str[i] - '0';
+    else if (ch >= 'a' && ch <= 'z')
+      nibble = 0xA + (str[i] - 'a');
+    else if (ch >= 'A' && ch <= 'Z')
+      nibble = 0xA + (str[i] - 'A');
+
+    h[i / 2] |= nibble << (((i & 1) ^ 1) * 4);
+  }
+  return h;
+}
+
+/// Encode/decode Base64 buffers.
+static constexpr size_t DecodedBase64Length(const std::string_view str)
+{
+  // Should be a multiple of 4.
+  const size_t str_length = str.length();
+  if ((str_length % 4) != 0)
+    return 0;
+
+  // Reverse padding.
+  size_t padding = 0;
+  if (str.length() >= 2)
+  {
+    padding += static_cast<size_t>(str[str_length - 1] == '=');
+    padding += static_cast<size_t>(str[str_length - 2] == '=');
+  }
+
+  return (str_length / 4) * 3 - padding;
+}
+static constexpr size_t EncodedBase64Length(const std::span<const u8> data)
+{
+  return ((data.size() + 2) / 3) * 4;
+}
+size_t DecodeBase64(const std::span<u8> data, const std::string_view str);
+size_t EncodeBase64(const std::span<char> dest, const std::span<const u8> data);
+std::string EncodeBase64(const std::span<u8> data);
+std::optional<std::vector<u8>> DecodeBase64(const std::string_view str);
 
 /// StartsWith/EndsWith variants which aren't case sensitive.
 ALWAYS_INLINE static bool StartsWithNoCase(const std::string_view str, const std::string_view prefix)

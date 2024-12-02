@@ -1639,8 +1639,6 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
 
 static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
 {
-  // TODO: Vector implementation
-
   // Fast path when the copy is not oversized.
   if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !set_mask && !check_mask)
   {
@@ -1661,10 +1659,49 @@ static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* data,
     const u16 mask_and = check_mask ? 0x8000u : 0x0000u;
     const u16 mask_or = set_mask ? 0x8000u : 0x0000u;
 
+#ifdef USE_VECTOR
+    constexpr u32 write_pixels_per_vec = sizeof(GSVectorNi) / sizeof(u16);
+    const u32 aligned_width = Common::AlignDownPow2(std::min(width, VRAM_WIDTH - x), write_pixels_per_vec);
+    const GSVectorNi mask_or_vec = GSVectorNi::cxpr16(mask_or);
+    const GSVectorNi mask_and_vec = GSVectorNi::cxpr16(mask_and);
+#endif
+
     for (u32 row = 0; row < height;)
     {
       u16* dst_row_ptr = &g_vram[((y + row++) % VRAM_HEIGHT) * VRAM_WIDTH];
-      for (u32 col = 0; col < width;)
+
+      u32 col = 0;
+
+#ifdef USE_VECTOR
+      // This doesn't do wraparound.
+      if (mask_and != 0)
+      {
+        for (; col < aligned_width; col += write_pixels_per_vec)
+        {
+          const GSVectorNi src = GSVectorNi::load<false>(src_ptr);
+          src_ptr += write_pixels_per_vec;
+
+          GSVectorNi dst = GSVectorNi::load<false>(&dst_row_ptr[x + col]);
+
+          const GSVectorNi mask = (dst & mask_and_vec).sra16<15>();
+          dst = (dst & mask) | src.andnot(mask) | mask_or_vec;
+
+          GSVectorNi::store<false>(&dst_row_ptr[x + col], dst);
+        }
+      }
+      else
+      {
+        for (; col < aligned_width; col += write_pixels_per_vec)
+        {
+          const GSVectorNi src = GSVectorNi::load<false>(src_ptr);
+          src_ptr += write_pixels_per_vec;
+
+          GSVectorNi::store<false>(&dst_row_ptr[x + col], src | mask_or_vec);
+        }
+      }
+#endif
+
+      for (; col < width;)
       {
         // TODO: Handle unaligned reads...
         u16* pixel_ptr = &dst_row_ptr[(x + col++) % VRAM_WIDTH];
@@ -1678,8 +1715,6 @@ static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* data,
 static void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask,
                          bool check_mask)
 {
-  // TODO: Vector implementation.
-
   // Break up oversized copies. This behavior has not been verified on console.
   if ((src_x + width) > VRAM_WIDTH || (dst_x + width) > VRAM_WIDTH)
   {
@@ -1698,8 +1733,8 @@ static void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, 
       {
         const u32 columns_to_copy =
           std::min<u32>(remaining_columns, std::min<u32>(VRAM_WIDTH - current_src_x, VRAM_WIDTH - current_dst_x));
-        CopyVRAM(current_src_x, current_src_y, current_dst_x, current_dst_y, columns_to_copy, rows_to_copy, set_mask,
-                 check_mask);
+        CopyVRAMImpl(current_src_x, current_src_y, current_dst_x, current_dst_y, columns_to_copy, rows_to_copy,
+                     set_mask, check_mask);
         current_src_x = (current_src_x + columns_to_copy) % VRAM_WIDTH;
         current_dst_x = (current_dst_x + columns_to_copy) % VRAM_WIDTH;
         remaining_columns -= columns_to_copy;
@@ -1735,12 +1770,47 @@ static void CopyVRAMImpl(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, 
   }
   else
   {
+#ifdef USE_VECTOR
+    constexpr u32 copy_pixels_per_vec = sizeof(GSVectorNi) / sizeof(u16);
+    const u32 aligned_width = Common::AlignDownPow2(
+      std::min(width, std::min<u32>(VRAM_WIDTH - src_x, VRAM_WIDTH - dst_x)), copy_pixels_per_vec);
+    const GSVectorNi mask_or_vec = GSVectorNi::cxpr16(mask_or);
+    const GSVectorNi mask_and_vec = GSVectorNi::cxpr16(mask_and);
+#endif
+
     for (u32 row = 0; row < height; row++)
     {
       const u16* src_row_ptr = &g_vram[((src_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
       u16* dst_row_ptr = &g_vram[((dst_y + row) % VRAM_HEIGHT) * VRAM_WIDTH];
 
-      for (u32 col = 0; col < width; col++)
+      u32 col = 0;
+
+#ifdef USE_VECTOR
+      // This doesn't do wraparound.
+      if (mask_and != 0)
+      {
+        for (; col < aligned_width; col += copy_pixels_per_vec)
+        {
+          const GSVectorNi src = GSVectorNi::load<false>(&src_row_ptr[src_x + col]);
+          GSVectorNi dst = GSVectorNi::load<false>(&dst_row_ptr[dst_x + col]);
+
+          const GSVectorNi mask = (dst & mask_and_vec).sra16<15>();
+          dst = (dst & mask) | src.andnot(mask) | mask_or_vec;
+
+          GSVectorNi::store<false>(&dst_row_ptr[dst_x + col], dst);
+        }
+      }
+      else
+      {
+        for (; col < aligned_width; col += copy_pixels_per_vec)
+        {
+          const GSVectorNi src = GSVectorNi::load<false>(&src_row_ptr[src_x + col]);
+          GSVectorNi::store<false>(&dst_row_ptr[dst_x + col], src | mask_or_vec);
+        }
+      }
+#endif
+
+      for (; col < width; col++)
       {
         const u16 src_pixel = src_row_ptr[(src_x + col) % VRAM_WIDTH];
         u16* dst_pixel_ptr = &dst_row_ptr[(dst_x + col) % VRAM_WIDTH];

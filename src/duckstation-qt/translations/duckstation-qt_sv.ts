@@ -1736,7 +1736,7 @@ Olästa meddelanden: {}</translation>
     <message>
         <location filename="../audiosettingswidget.cpp" line="98"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Tvingar både CD-DA och XA-ljud från cd-rom att vara tyst. Kan användas för att inaktivera bakgrundsmusik i vissa spel.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="101"/>
@@ -1757,7 +1757,7 @@ Olästa meddelanden: {}</translation>
         <location filename="../audiosettingswidget.cpp" line="108"/>
         <location filename="../audiosettingswidget.cpp" line="111"/>
         <source>Resets volume back to the global/inherited setting.</source>
-        <translation type="unfinished"></translation>
+        <translation>Nollställer volymen tillbaka till global/ärvd inställning.</translation>
     </message>
     <message>
         <location filename="../audiosettingswidget.cpp" line="109"/>
@@ -1954,7 +1954,8 @@ Olästa meddelanden: {}</translation>
         <location filename="../autoupdaterdialog.cpp" line="757"/>
         <source>Failed to remove updater exe after update:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att ta bort uppdateringsfil efter uppdatering:
+%1</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.cpp" line="405"/>
@@ -4309,7 +4310,7 @@ Du kan inte ångra denna åtgärd.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="339"/>
         <source>Step &amp;Over</source>
-        <translation type="unfinished"></translation>
+        <translation>Stega ö&amp;ver</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="353"/>
@@ -4335,7 +4336,7 @@ Du kan inte ångra denna åtgärd.</translation>
     <message>
         <location filename="../debuggerwindow.ui" line="372"/>
         <source>Step O&amp;ut</source>
-        <translation type="unfinished"></translation>
+        <translation>Stega &amp;ut</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="378"/>
@@ -4452,7 +4453,7 @@ Du kan inte ångra denna åtgärd.</translation>
         <location filename="../debuggermodels.cpp" line="481"/>
         <location filename="../qtutils.cpp" line="187"/>
         <source>Invalid address. It should be in hex (0x12345678 or 12345678)</source>
-        <translation type="unfinished"></translation>
+        <translation>Ogiltig adress. Den bör anges i hex (0x12345678 eller 12345678)</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="132"/>
@@ -4474,12 +4475,13 @@ Du kan inte ångra denna åtgärd.</translation>
         <location filename="../debuggerwindow.cpp" line="171"/>
         <source>Trace logging started to cpu_log.txt.
 This file can be several gigabytes, so be aware of SSD wear.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spårloggning startad till cpu_log.txt.
+Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="177"/>
         <source>Trace logging to cpu_log.txt stopped.</source>
-        <translation type="unfinished"></translation>
+        <translation>Spårloggning till cpu_log.txt stoppad.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="220"/>
@@ -4494,7 +4496,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="268"/>
         <source>Failed to add step-out breakpoint, are you in a valid function?</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att stega ut ur brytpunkt. Är du i en giltig funktion?</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="325"/>
@@ -4504,13 +4506,13 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="328"/>
         <source>&amp;Follow Load/Store</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Följ läs in/Lagra</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="380"/>
         <location filename="../debuggerwindow.cpp" line="407"/>
         <source>Invalid search pattern. It should contain hex digits or question marks.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ogiltigt sökmönster. Det bör innehålla hexadecimala siffror eller frågetecken.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="419"/>
@@ -4520,7 +4522,7 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="435"/>
         <source>Pattern found at 0x%1 (passed the end of memory).</source>
-        <translation type="unfinished"></translation>
+        <translation>Mönster hittades vid 0x%1 (passerat minnets slut).</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="441"/>
@@ -4530,12 +4532,12 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
     <message>
         <location filename="../debuggerwindow.cpp" line="750"/>
         <source>Failed to add breakpoint. A breakpoint may already exist at this address.</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att lägga till brytpunkt. En brytpunkt kanske redan finns på denna adress.</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.cpp" line="769"/>
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
-        <translation type="unfinished"></translation>
+        <translation>Misslyckades med att ta bort brytpunkt. Denna brytpunkt kanske inte finns.</translation>
     </message>
 </context>
 <context>
@@ -7387,7 +7389,7 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7986"/>
         <source>Memory Card {} Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Minneskort {} typ</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7987"/>
@@ -8017,7 +8019,7 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8135"/>
         <source>Select Macro {} Binds</source>
-        <translation type="unfinished"></translation>
+        <translation>Välj bindning för makro {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8137"/>
@@ -8057,7 +8059,7 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8145"/>
         <source>Set Input Binding</source>
-        <translation type="unfinished"></translation>
+        <translation>Ställ in inmatningsbindning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8146"/>
@@ -10302,7 +10304,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.ui" line="314"/>
         <source>Exclusive Fullscreen:</source>
-        <translation type="unfinished"></translation>
+        <translation>Exklusiv helskärm:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="331"/>
@@ -10369,7 +10371,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.ui" line="482"/>
         <source>Geometry Tolerance:</source>
-        <translation>Geometritolerans</translation>
+        <translation>Geometritolerans:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="511"/>
@@ -10511,7 +10513,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <location filename="../graphicssettingswidget.ui" line="1137"/>
         <location filename="../graphicssettingswidget.cpp" line="588"/>
         <source>Preload Texture Replacements</source>
-        <translation type="unfinished"></translation>
+        <translation>Förinläs texturersättningar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1149"/>
@@ -10576,7 +10578,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.ui" line="1309"/>
         <source>Dump Compression Mode:</source>
-        <translation type="unfinished"></translation>
+        <translation>Komprimeringsläge för dump:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1319"/>
@@ -10754,7 +10756,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <location filename="../graphicssettingswidget.ui" line="1372"/>
         <location filename="../graphicssettingswidget.cpp" line="614"/>
         <source>Disable Shader Cache</source>
-        <translation type="unfinished"></translation>
+        <translation>Inaktivera shadercache</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="655"/>
@@ -15177,12 +15179,12 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <message>
         <location filename="../../core/hotkeys.cpp" line="459"/>
         <source>PGXP Depth Buffer is now enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP Depth Buffer är nu aktiverad.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="460"/>
         <source>PGXP Depth Buffer is now disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP Depth Buffer är nu inaktiverad.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="480"/>
@@ -15209,12 +15211,12 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <message>
         <location filename="../../core/hotkeys.cpp" line="549"/>
         <source>CD Audio Muted.</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ljud tystat.</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="550"/>
         <source>CD Audio Unmuted.</source>
-        <translation type="unfinished"></translation>
+        <translation>CD-ljud aktiverat.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="1597"/>
@@ -16231,13 +16233,13 @@ Vill du skapa denna katalog?</translation>
         <location filename="../../core/settings.cpp" line="1484"/>
         <source>Triangles (Basic)</source>
         <comment>GPULineDetectMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Trianglar (Grundläggande)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1485"/>
         <source>Triangles (Aggressive)</source>
         <comment>GPULineDetectMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Trianglar (Aggressiv)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1515"/>
@@ -16381,7 +16383,7 @@ Vill du skapa denna katalog?</translation>
         <location filename="../../core/settings.cpp" line="1689"/>
         <source>Auto (Game Native)</source>
         <comment>DisplayAspectRatio</comment>
-        <translation type="unfinished"></translation>
+        <translation>Auto (Spelets egna)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1690"/>
@@ -16477,13 +16479,13 @@ Vill du skapa denna katalog?</translation>
         <location filename="../../core/settings.cpp" line="1844"/>
         <source>Bilinear (Sharp)</source>
         <comment>DisplayScalingMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Bilinjär (Skarp)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1845"/>
         <source>Bilinear (Integer)</source>
         <comment>DisplayScalingMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Bilinjär (Heltal)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1879"/>
@@ -17748,7 +17750,7 @@ Detta kan bero på att din GPU inte har stöd för vald renderare ({1}) eller p�
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="194"/>
         <source>Bilinear Replacement Scaling</source>
-        <translation type="unfinished"></translation>
+        <translation>Skalning för bilinjär ersättning</translation>
     </message>
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="206"/>

@@ -22,9 +22,13 @@ D3D12Shader::D3D12Shader(GPUShaderStage stage, Bytecode bytecode) : GPUShader(st
 
 D3D12Shader::~D3D12Shader() = default;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D12Shader::SetDebugName(std::string_view name)
 {
 }
+
+#endif
 
 std::unique_ptr<GPUShader> D3D12Device::CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
                                                                Error* error)
@@ -72,10 +76,14 @@ D3D12Pipeline::~D3D12Pipeline()
   D3D12Device::GetInstance().DeferObjectDestruction(std::move(m_pipeline));
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D12Pipeline::SetDebugName(std::string_view name)
 {
   D3D12::SetObjectName(m_pipeline.Get(), name);
 }
+
+#endif
 
 std::string D3D12Pipeline::GetPipelineName(const GraphicsConfig& config)
 {

@@ -11,6 +11,7 @@
 #include "system.h"
 
 #include "util/cd_image.h"
+#include "util/elf_file.h"
 #include "util/http_downloader.h"
 #include "util/image.h"
 #include "util/ini_settings_interface.h"
@@ -193,6 +194,18 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
     if (std::fread(&magic, sizeof(magic), 1, fp.get()) != 1 || magic != BIOS::CPE_MAGIC)
     {
       WARNING_LOG("{} is not a valid CPE", path);
+      return false;
+    }
+
+    // Who knows
+    entry->region = DiscRegion::Other;
+  }
+  else if (StringUtil::EndsWithNoCase(filename, ".elf"))
+  {
+    ELFFile::Elf32_Ehdr header;
+    if (std::fread(&header, sizeof(header), 1, fp.get()) != 1 || !ELFFile::IsValidElfHeader(header))
+    {
+      WARNING_LOG("{} is not a valid ELF.", path);
       return false;
     }
 
@@ -634,7 +647,7 @@ void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
   if (custom_language_str.has_value())
   {
     const std::optional<GameDatabase::Language> custom_region =
-      GameDatabase::ParseLanguageName(custom_region_str.value());
+      GameDatabase::ParseLanguageName(custom_language_str.value());
     if (custom_region.has_value())
     {
       entry->custom_language = custom_region.value();
@@ -1454,10 +1467,11 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
     return false;
   }
 
-  std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Host::GetHTTPUserAgent()));
+  Error error;
+  std::unique_ptr<HTTPDownloader> downloader(HTTPDownloader::Create(Host::GetHTTPUserAgent(), &error));
   if (!downloader)
   {
-    progress->DisplayError("Failed to create HTTP downloader.");
+    progress->DisplayError(fmt::format("Failed to create HTTP downloader:\n{}", error.GetDescription()));
     return false;
   }
 
@@ -1484,39 +1498,43 @@ bool GameList::DownloadCovers(const std::vector<std::string>& url_templates, boo
 
     // we could actually do a few in parallel here...
     std::string filename = Path::URLDecode(url);
-    downloader->CreateRequest(
-      std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path), filename = std::move(filename)](
-                        s32 status_code, const std::string& content_type, HTTPDownloader::Request::Data data) {
-        if (status_code != HTTPDownloader::HTTP_STATUS_OK || data.empty())
-          return;
+    downloader->CreateRequest(std::move(url), [use_serial, &save_callback, entry_path = std::move(entry_path),
+                                               filename = std::move(filename)](s32 status_code, const Error& error,
+                                                                               const std::string& content_type,
+                                                                               HTTPDownloader::Request::Data data) {
+      if (status_code != HTTPDownloader::HTTP_STATUS_OK || data.empty())
+      {
+        ERROR_LOG("Download for {} failed: {}", Path::GetFileName(filename), error.GetDescription());
+        return;
+      }
 
-        std::unique_lock lock(s_mutex);
-        const GameList::Entry* entry = GetEntryForPath(entry_path);
-        if (!entry || !GetCoverImagePathForEntry(entry).empty())
-          return;
+      std::unique_lock lock(s_mutex);
+      const GameList::Entry* entry = GetEntryForPath(entry_path);
+      if (!entry || !GetCoverImagePathForEntry(entry).empty())
+        return;
 
-        // prefer the content type from the response for the extension
-        // otherwise, if it's missing, and the request didn't have an extension.. fall back to jpegs.
-        std::string template_filename;
-        std::string content_type_extension(HTTPDownloader::GetExtensionForContentType(content_type));
+      // prefer the content type from the response for the extension
+      // otherwise, if it's missing, and the request didn't have an extension.. fall back to jpegs.
+      std::string template_filename;
+      std::string content_type_extension(HTTPDownloader::GetExtensionForContentType(content_type));
 
-        // don't treat the domain name as an extension..
-        const std::string::size_type last_slash = filename.find('/');
-        const std::string::size_type last_dot = filename.find('.');
-        if (!content_type_extension.empty())
-          template_filename = fmt::format("cover.{}", content_type_extension);
-        else if (last_slash != std::string::npos && last_dot != std::string::npos && last_dot > last_slash)
-          template_filename = Path::GetFileName(filename);
-        else
-          template_filename = "cover.jpg";
+      // don't treat the domain name as an extension..
+      const std::string::size_type last_slash = filename.find('/');
+      const std::string::size_type last_dot = filename.find('.');
+      if (!content_type_extension.empty())
+        template_filename = fmt::format("cover.{}", content_type_extension);
+      else if (last_slash != std::string::npos && last_dot != std::string::npos && last_dot > last_slash)
+        template_filename = Path::GetFileName(filename);
+      else
+        template_filename = "cover.jpg";
 
-        std::string write_path(GetNewCoverImagePathForEntry(entry, template_filename.c_str(), use_serial));
-        if (write_path.empty())
-          return;
+      std::string write_path(GetNewCoverImagePathForEntry(entry, template_filename.c_str(), use_serial));
+      if (write_path.empty())
+        return;
 
-        if (FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size()) && save_callback)
-          save_callback(entry, std::move(write_path));
-      });
+      if (FileSystem::WriteBinaryFile(write_path.c_str(), data.data(), data.size()) && save_callback)
+        save_callback(entry, std::move(write_path));
+    });
     downloader->WaitForAllRequests();
     progress->IncrementProgressValue();
   }
@@ -1685,7 +1703,7 @@ FileSystem::ManagedCFilePtr GameList::OpenMemoryCardTimestampCache(bool for_writ
   if (errno != EACCES)
     return nullptr;
 
-  Common::Timer timer;
+  Timer timer;
   while (timer.GetTimeMilliseconds() <= 100.0f)
   {
     fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);

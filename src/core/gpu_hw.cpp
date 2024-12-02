@@ -42,7 +42,7 @@ static constexpr GPUTexture::Format VRAM_DS_FORMAT = GPUTexture::Format::D16;
 static constexpr GPUTexture::Format VRAM_DS_DEPTH_FORMAT = GPUTexture::Format::D32F;
 static constexpr GPUTexture::Format VRAM_DS_COLOR_FORMAT = GPUTexture::Format::R32F;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 
 static u32 s_draw_number = 0;
 
@@ -152,8 +152,8 @@ class ShaderCompileProgressTracker
 {
 public:
   ShaderCompileProgressTracker(std::string title, u32 total)
-    : m_title(std::move(title)), m_min_time(Common::Timer::ConvertSecondsToValue(1.0)),
-      m_update_interval(Common::Timer::ConvertSecondsToValue(0.1)), m_start_time(Common::Timer::GetCurrentValue()),
+    : m_title(std::move(title)), m_min_time(Timer::ConvertSecondsToValue(1.0)),
+      m_update_interval(Timer::ConvertSecondsToValue(0.1)), m_start_time(Timer::GetCurrentValue()),
       m_last_update_time(0), m_progress(0), m_total(total)
   {
   }
@@ -161,14 +161,14 @@ public:
 
   double GetElapsedMilliseconds() const
   {
-    return Common::Timer::ConvertValueToMilliseconds(Common::Timer::GetCurrentValue() - m_start_time);
+    return Timer::ConvertValueToMilliseconds(Timer::GetCurrentValue() - m_start_time);
   }
 
   void Increment(u32 progress = 1)
   {
     m_progress += progress;
 
-    const u64 tv = Common::Timer::GetCurrentValue();
+    const u64 tv = Timer::GetCurrentValue();
     if ((tv - m_start_time) >= m_min_time && (tv - m_last_update_time) >= m_update_interval)
     {
       Host::DisplayLoadingScreen(m_title.c_str(), 0, static_cast<int>(m_total), static_cast<int>(m_progress));
@@ -178,10 +178,10 @@ public:
 
 private:
   std::string m_title;
-  Common::Timer::Value m_min_time;
-  Common::Timer::Value m_update_interval;
-  Common::Timer::Value m_start_time;
-  Common::Timer::Value m_last_update_time;
+  Timer::Value m_min_time;
+  Timer::Value m_update_interval;
+  Timer::Value m_start_time;
+  Timer::Value m_last_update_time;
   u32 m_progress;
   u32 m_total;
 };
@@ -189,7 +189,7 @@ private:
 
 GPU_HW::GPU_HW() : GPU()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   s_draw_number = 0;
 #endif
 }
@@ -1612,7 +1612,7 @@ bool GPU_HW::CompilePipelines(Error* error)
 
 bool GPU_HW::CompileResolutionDependentPipelines(Error* error)
 {
-  Common::Timer timer;
+  Timer timer;
 
   m_vram_readback_pipeline.reset();
   for (std::unique_ptr<GPUPipeline>& p : m_vram_extract_pipeline)
@@ -3199,7 +3199,8 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   GL_SCOPE_FMT("FillVRAM({},{} => {},{} ({}x{}) with 0x{:08X}", x, y, x + width, y + height, width, height, color);
   DeactivateROV();
 
-  if (m_sw_renderer)
+  const bool handle_with_tc = (m_use_texture_cache && !IsInterlacedRenderingEnabled());
+  if (m_sw_renderer && !handle_with_tc)
   {
     GPUBackendFillVRAMCommand* cmd = m_sw_renderer->NewFillVRAMCommand();
     FillBackendCommandParameters(cmd);
@@ -3216,7 +3217,7 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color)
   const GSVector4i bounds = GetVRAMTransferBounds(x, y, width, height);
 
   // If TC is enabled, we have to update local memory.
-  if (m_use_texture_cache && !IsInterlacedRenderingEnabled())
+  if (handle_with_tc)
   {
     AddWrittenRectangle(bounds);
     GPU_SW_Rasterizer::FillVRAM(x, y, width, height, color, false, 0);
@@ -3328,7 +3329,7 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   DebugAssert(bounds.right <= static_cast<s32>(VRAM_WIDTH) && bounds.bottom <= static_cast<s32>(VRAM_HEIGHT));
   AddWrittenRectangle(bounds);
 
-  if (m_sw_renderer)
+  if (m_sw_renderer && m_sw_renderer->IsUsingThread())
   {
     const u32 num_words = width * height;
     GPUBackendUpdateVRAMCommand* cmd = m_sw_renderer->NewUpdateVRAMCommand(num_words);
@@ -3785,7 +3786,7 @@ void GPU_HW::FlushRender()
   if (index_count == 0)
     return;
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   GL_SCOPE_FMT("Hardware Draw {}: {}", ++s_draw_number, m_current_draw_rect);
 #endif
 

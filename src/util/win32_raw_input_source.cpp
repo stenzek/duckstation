@@ -5,6 +5,7 @@
 #include "input_manager.h"
 
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
 
@@ -90,6 +91,11 @@ void Win32RawInputSource::UpdateMotorState(InputBindingKey large_key, InputBindi
 {
 }
 
+bool Win32RawInputSource::ContainsDevice(std::string_view device) const
+{
+  return false;
+}
+
 std::optional<InputBindingKey> Win32RawInputSource::ParseKeyString(std::string_view device, std::string_view binding)
 {
   return std::nullopt;
@@ -102,6 +108,13 @@ TinyString Win32RawInputSource::ConvertKeyToString(InputBindingKey key)
 
 TinyString Win32RawInputSource::ConvertKeyToIcon(InputBindingKey key)
 {
+  return {};
+}
+
+std::unique_ptr<ForceFeedbackDevice> Win32RawInputSource::CreateForceFeedbackDevice(std::string_view device,
+                                                                                    Error* error)
+{
+  Error::SetStringView(error, "Not supported on this input source.");
   return {};
 }
 

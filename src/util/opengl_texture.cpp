@@ -37,7 +37,7 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                                                    // RGBA8
       {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                                                    // BGRA8
       {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},                                             // RGB565
-      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},                                     // RGBA5551
+      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},                                     // RGB5A1
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                                                        // R8
       {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},                                     // D16
       {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT},                                 // D24S8
@@ -71,7 +71,7 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                                                    // RGBA8
       {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                                                    // BGRA8
       {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},                                             // RGB565
-      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},                                     // RGBA5551
+      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},                                     // RGB5A1
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                                                        // R8
       {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},                                     // D16
       {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT},                                 // D24S8
@@ -485,18 +485,14 @@ void OpenGLTexture::GenerateMipmaps()
   glBindTexture(target, 0);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLTexture::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
   if (glObjectLabel)
     glObjectLabel(GL_TEXTURE, m_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
-#endif
 }
 
-#if 0
-// If we don't have border clamp.. too bad, just hope for the best.
-if (!m_gl_context->IsGLES() || GLAD_GL_ES_VERSION_3_2 || GLAD_GL_NV_texture_border_clamp ||
-  GLAD_GL_EXT_texture_border_clamp || GLAD_GL_OES_texture_border_clamp)
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -510,13 +506,15 @@ OpenGLSampler::~OpenGLSampler()
   OpenGLDevice::GetInstance().UnbindSampler(m_id);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLSampler::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
   if (glObjectLabel)
     glObjectLabel(GL_SAMPLER, m_id, static_cast<GLsizei>(name.length()), static_cast<const GLchar*>(name.data()));
-#endif
 }
+
+#endif
 
 std::unique_ptr<GPUSampler> OpenGLDevice::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
 {
@@ -798,16 +796,18 @@ void OpenGLTextureBuffer::Unmap(u32 used_elements)
   m_buffer->Unmap(size);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLTextureBuffer::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
   if (glObjectLabel)
   {
     glObjectLabel(GL_TEXTURE, m_buffer->GetGLBufferId(), static_cast<GLsizei>(name.length()),
                   static_cast<const GLchar*>(name.data()));
   }
-#endif
 }
+
+#endif
 
 std::unique_ptr<GPUTextureBuffer> OpenGLDevice::CreateTextureBuffer(GPUTextureBuffer::Format format,
                                                                     u32 size_in_elements, Error* error)
@@ -1037,6 +1037,8 @@ void OpenGLDownloadTexture::Flush()
   m_sync = {};
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLDownloadTexture::SetDebugName(std::string_view name)
 {
   if (name.empty())
@@ -1045,6 +1047,8 @@ void OpenGLDownloadTexture::SetDebugName(std::string_view name)
   if (glObjectLabel)
     glObjectLabel(GL_BUFFER, m_buffer_id, static_cast<GLsizei>(name.length()), name.data());
 }
+
+#endif
 
 std::unique_ptr<GPUDownloadTexture>
 OpenGLDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format, Error* error /* = nullptr */)

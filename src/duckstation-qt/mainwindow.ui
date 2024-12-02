@@ -166,7 +166,7 @@
     <addaction name="menuCPUExecutionMode"/>
     <addaction name="menuRenderer"/>
     <addaction name="menuCropMode"/>
-    <addaction name="actionDisableAllEnhancements"/>
+    <addaction name="actionEnableSafeMode"/>
     <addaction name="separator"/>
     <addaction name="menuLogLevel"/>
     <addaction name="menuLogChannels"/>
@@ -634,12 +634,12 @@
     <string>Dump VRAM to CPU Copies</string>
    </property>
   </action>
-  <action name="actionDisableAllEnhancements">
+  <action name="actionEnableSafeMode">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Disable All Enhancements</string>
+    <string>Enable Safe Mode</string>
    </property>
   </action>
   <action name="actionDumpRAM">
@@ -836,16 +836,10 @@
    <property name="text">
     <string>Zoom &amp;In (Grid View)</string>
    </property>
-   <property name="shortcut">
-    <string>Ctrl++</string>
-   </property>
   </action>
   <action name="actionGridViewZoomOut">
    <property name="text">
     <string>Zoom &amp;Out (Grid View)</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+-</string>
    </property>
   </action>
   <action name="actionGridViewRefreshCovers">
@@ -929,16 +923,6 @@
   <action name="actionCaptureGPUFrame">
    <property name="text">
     <string>Capture GPU Frame</string>
-   </property>
-  </action>
-  <action name="actionasdf">
-   <property name="text">
-    <string>asdf</string>
-   </property>
-  </action>
-  <action name="actionaaa">
-   <property name="text">
-    <string>aaa</string>
    </property>
   </action>
  </widget>

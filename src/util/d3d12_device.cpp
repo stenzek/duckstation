@@ -59,7 +59,7 @@ static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RG
 // We just need to keep this alive, never reference it.
 static DynamicHeapArray<u8> s_pipeline_cache_data;
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
 #include "WinPixEventRuntime/pix3.h"
 static u32 s_debug_scope_depth = 0;
 #endif
@@ -117,7 +117,7 @@ D3D12Device::D3D12Device()
 {
   m_render_api = RenderAPI::D3D12;
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
   s_debug_scope_depth = 0;
 #endif
 }
@@ -1273,7 +1273,8 @@ void D3D12Device::SubmitPresent(GPUSwapChain* swap_chain)
   SC->GetSwapChain()->Present(sync_interval, flags);
 }
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 static UINT64 Palette(float phase, const std::array<float, 3>& a, const std::array<float, 3>& b,
                       const std::array<float, 3>& c, const std::array<float, 3>& d)
 {
@@ -1286,40 +1287,35 @@ static UINT64 Palette(float phase, const std::array<float, 3>& a, const std::arr
                    static_cast<BYTE>(std::clamp(result[1] * 255.0f, 0.0f, 255.0f)),
                    static_cast<BYTE>(std::clamp(result[2] * 255.0f, 0.0f, 255.0f)));
 }
-#endif
 
 void D3D12Device::PushDebugGroup(const char* name)
 {
-#ifdef _DEBUG
   if (!m_debug_device)
     return;
 
   const UINT64 color = Palette(static_cast<float>(++s_debug_scope_depth), {0.5f, 0.5f, 0.5f}, {0.5f, 0.5f, 0.5f},
                                {1.0f, 1.0f, 0.5f}, {0.8f, 0.90f, 0.30f});
   PIXBeginEvent(GetCommandList(), color, "%s", name);
-#endif
 }
 
 void D3D12Device::PopDebugGroup()
 {
-#ifdef _DEBUG
   if (!m_debug_device)
     return;
 
   s_debug_scope_depth = (s_debug_scope_depth == 0) ? 0 : (s_debug_scope_depth - 1u);
   PIXEndEvent(GetCommandList());
-#endif
 }
 
 void D3D12Device::InsertDebugMessage(const char* msg)
 {
-#ifdef _DEBUG
   if (!m_debug_device)
     return;
 
   PIXSetMarker(GetCommandList(), PIX_COLOR(0, 0, 0), "%s", msg);
-#endif
 }
+
+#endif
 
 void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disabled_features)
 {

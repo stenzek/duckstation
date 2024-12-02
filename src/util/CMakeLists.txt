@@ -224,7 +224,6 @@ if(WIN32)
     dinput_source.cpp
     dinput_source.h
     http_downloader_winhttp.cpp
-    http_downloader_winhttp.h
     platform_misc_win32.cpp
     win32_raw_input_source.cpp
     win32_raw_input_source.h
@@ -234,7 +233,7 @@ if(WIN32)
   target_link_libraries(util PRIVATE d3d12ma)
   target_link_libraries(util PRIVATE d3d11.lib d3d12.lib d3dcompiler.lib dxgi.lib winmm.lib Dwmapi.lib winhttp.lib)
 
-  if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+  if(CMAKE_BUILD_TYPE MATCHES "Debug|Devel")
     target_link_libraries(util PRIVATE WinPixEventRuntime::WinPixEventRuntime)
   endif()
 elseif(APPLE)
@@ -275,7 +274,6 @@ endif()
 if(NOT WIN32 AND NOT ANDROID)
   target_sources(util PRIVATE
     http_downloader_curl.cpp
-    http_downloader_curl.h
   )
   target_link_libraries(util PRIVATE
     CURL::libcurl

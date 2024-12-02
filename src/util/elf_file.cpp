@@ -9,6 +9,7 @@
 
 LOG_CHANNEL(FileLoader);
 
+static constexpr const u8 EXPECTED_ELF_HEADER[4] = {'\177', 'E', 'L', 'F'};
 static constexpr s64 MAX_ELF_FILE_SIZE = 32 * 1024 * 1024;
 
 ELFFile::ELFFile() = default;
@@ -113,9 +114,8 @@ bool ELFFile::Open(DataArray data, Error* error)
 {
   m_data = std::move(data);
 
-  static constexpr const u8 EXPECTED_HEADER[4] = {'\177', 'E', 'L', 'F'};
-
-  if (m_data.size() < sizeof(Elf32_Ehdr) || std::memcmp(m_data.data(), EXPECTED_HEADER, sizeof(EXPECTED_HEADER)) != 0)
+  if (m_data.size() < sizeof(Elf32_Ehdr) ||
+      std::memcmp(m_data.data(), EXPECTED_ELF_HEADER, sizeof(EXPECTED_ELF_HEADER)) != 0)
   {
     Error::SetStringView(error, "Invalid header.");
     return false;
@@ -200,5 +200,34 @@ bool ELFFile::LoadExecutableSections(const LoadExecutableSectionCallback& callba
     return false;
   }
 
+  return true;
+}
+
+bool ELFFile::IsValidElfHeader(const std::span<const u8> data, Error* error /*= nullptr*/)
+{
+  if (data.size() < sizeof(Elf32_Ehdr))
+  {
+    Error::SetStringView(error, "Invalid header.");
+    return false;
+  }
+
+  return IsValidElfHeader(reinterpret_cast<const Elf32_Ehdr&>(*data.data()), error);
+}
+
+bool ELFFile::IsValidElfHeader(const Elf32_Ehdr& header, Error* error /* = nullptr */)
+{
+  if (std::memcmp(header.e_ident, EXPECTED_ELF_HEADER, sizeof(EXPECTED_ELF_HEADER)) != 0)
+  {
+    Error::SetStringView(error, "Invalid header.");
+    return false;
+  }
+
+  if (header.e_machine != EM_MIPS)
+  {
+    Error::SetStringFmt(error, "Unsupported machine type {}.", header.e_machine);
+    return false;
+  }
+
+  // probably fine
   return true;
 }

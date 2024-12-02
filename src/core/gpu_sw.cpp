@@ -16,7 +16,7 @@
 
 #include <algorithm>
 
-LOG_CHANNEL(GPU_SW);
+LOG_CHANNEL(GPU);
 
 GPU_SW::GPU_SW() = default;
 
@@ -41,10 +41,10 @@ bool GPU_SW::Initialize(Error* error)
   if (!GPU::Initialize(error) || !m_backend.Initialize(g_settings.gpu_use_thread))
     return false;
 
-  static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551,
+  static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB565, GPUTexture::Format::RGB5A1,
                                                          GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8};
   static constexpr const std::array formats_for_24bit = {GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8,
-                                                         GPUTexture::Format::RGB565, GPUTexture::Format::RGBA5551};
+                                                         GPUTexture::Format::RGB565, GPUTexture::Format::RGB5A1};
   for (const GPUTexture::Format format : formats_for_16bit)
   {
     if (g_gpu_device->SupportsTextureFormat(format))
@@ -115,7 +115,7 @@ template<GPUTexture::Format out_format, typename out_type>
 static out_type VRAM16ToOutput(u16 value);
 
 template<>
-ALWAYS_INLINE u16 VRAM16ToOutput<GPUTexture::Format::RGBA5551, u16>(u16 value)
+ALWAYS_INLINE u16 VRAM16ToOutput<GPUTexture::Format::RGB5A1, u16>(u16 value)
 {
   return (value & 0x3E0) | ((value >> 10) & 0x1F) | ((value & 0x1F) << 10);
 }
@@ -148,7 +148,7 @@ ALWAYS_INLINE u32 VRAM16ToOutput<GPUTexture::Format::BGRA8, u32>(u16 value)
 }
 
 template<>
-ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGBA5551, u16>(const u16* src_ptr, u16* dst_ptr, u32 width)
+ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGB5A1, u16>(const u16* src_ptr, u16* dst_ptr, u32 width)
 {
   u32 col = 0;
 
@@ -167,7 +167,7 @@ ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGBA5551, u16>(const u16* sr
   }
 
   for (; col < width; col++)
-    *(dst_ptr++) = VRAM16ToOutput<GPUTexture::Format::RGBA5551, u16>(*(src_ptr++));
+    *(dst_ptr++) = VRAM16ToOutput<GPUTexture::Format::RGB5A1, u16>(*(src_ptr++));
 }
 
 template<>
@@ -317,7 +317,7 @@ ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x
           src_row_ptr += 3;
         }
       }
-      else if constexpr (display_format == GPUTexture::Format::RGBA5551)
+      else if constexpr (display_format == GPUTexture::Format::RGB5A1)
       {
         const u8* src_row_ptr = src_ptr;
         u16* dst_row_ptr = reinterpret_cast<u16*>(dst_ptr);
@@ -362,7 +362,7 @@ ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x
         {
           *(dst_row_ptr++) = ((rgb >> 3) & 0x1F) | (((rgb >> 10) << 5) & 0x7E0) | (((rgb >> 19) << 11) & 0x3E0000);
         }
-        else if constexpr (display_format == GPUTexture::Format::RGBA5551)
+        else if constexpr (display_format == GPUTexture::Format::RGB5A1)
         {
           *(dst_row_ptr++) = ((rgb >> 3) & 0x1F) | (((rgb >> 11) << 5) & 0x3E0) | (((rgb >> 19) << 10) & 0x1F0000);
         }
@@ -389,8 +389,8 @@ bool GPU_SW::CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u3
 
     switch (m_16bit_display_format)
     {
-      case GPUTexture::Format::RGBA5551:
-        return CopyOut15Bit<GPUTexture::Format::RGBA5551>(src_x, src_y, width, height, line_skip);
+      case GPUTexture::Format::RGB5A1:
+        return CopyOut15Bit<GPUTexture::Format::RGB5A1>(src_x, src_y, width, height, line_skip);
 
       case GPUTexture::Format::RGB565:
         return CopyOut15Bit<GPUTexture::Format::RGB565>(src_x, src_y, width, height, line_skip);
@@ -409,8 +409,8 @@ bool GPU_SW::CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u3
   {
     switch (m_24bit_display_format)
     {
-      case GPUTexture::Format::RGBA5551:
-        return CopyOut24Bit<GPUTexture::Format::RGBA5551>(src_x, src_y, skip_x, width, height, line_skip);
+      case GPUTexture::Format::RGB5A1:
+        return CopyOut24Bit<GPUTexture::Format::RGB5A1>(src_x, src_y, skip_x, width, height, line_skip);
 
       case GPUTexture::Format::RGB565:
         return CopyOut24Bit<GPUTexture::Format::RGB565>(src_x, src_y, skip_x, width, height, line_skip);

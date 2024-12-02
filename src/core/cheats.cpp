@@ -198,7 +198,8 @@ using EnableCodeList = std::vector<std::string>;
 static std::string GetChtTemplate(const std::string_view serial, std::optional<GameHash> hash, bool add_wildcard);
 static std::vector<std::string> FindChtFilesOnDisk(const std::string_view serial, std::optional<GameHash> hash,
                                                    bool cheats);
-static void ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bool from_database);
+static bool ExtractCodeInfo(CodeInfoList* dst, const std::string_view file_data, bool from_database, bool stop_on_error,
+                            Error* error);
 static void AppendCheatToList(CodeInfoList* dst, CodeInfo code);
 static std::string FormatCodeForFile(const CodeInfo& code);
 
@@ -511,7 +512,7 @@ Cheats::CodeInfoList Cheats::GetCodeInfoList(const std::string_view serial, std:
 
   EnumerateChtFiles(serial, hash, cheats, true, true, load_from_database,
                     [&ret](const std::string& filename, const std::string& data, bool from_database) {
-                      ExtractCodeInfo(&ret, data, from_database);
+                      ExtractCodeInfo(&ret, data, from_database, false, nullptr);
                     });
 
   if (sort_by_name)
@@ -605,7 +606,7 @@ bool Cheats::UpdateCodeInFile(const char* path, const std::string_view name, con
   if (!file_contents.empty() && !name.empty())
   {
     CodeInfoList existing_codes_in_file;
-    ExtractCodeInfo(&existing_codes_in_file, file_contents, false);
+    ExtractCodeInfo(&existing_codes_in_file, file_contents, false, false, nullptr);
 
     const CodeInfo* existing_code = FindCodeInInfoList(existing_codes_in_file, name);
     if (existing_code)
@@ -664,7 +665,7 @@ bool Cheats::SaveCodesToFile(const char* path, const CodeInfoList& codes, Error*
     if (!file_contents.empty())
     {
       CodeInfoList existing_codes_in_file;
-      ExtractCodeInfo(&existing_codes_in_file, file_contents, false);
+      ExtractCodeInfo(&existing_codes_in_file, file_contents, false, false, nullptr);
 
       const CodeInfo* existing_code = FindCodeInInfoList(existing_codes_in_file, code.name);
       if (existing_code)
@@ -980,7 +981,8 @@ u32 Cheats::GetActiveCheatCount()
 // File Parsing
 //////////////////////////////////////////////////////////////////////////
 
-void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bool from_database)
+bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool from_database, bool stop_on_error,
+                             Error* error)
 {
   CodeInfo current_code;
 
@@ -988,17 +990,24 @@ void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bo
   std::optional<CodeType> legacy_type;
   std::optional<CodeActivation> legacy_activation;
 
-  const auto finish_code = [&dst, &file_data, &current_code]() {
+  CheatFileReader reader(file_data);
+
+  const auto finish_code = [&dst, &file_data, &stop_on_error, &error, &current_code, &reader]() {
     if (current_code.file_offset_end > current_code.file_offset_body_start)
     {
-      current_code.body = std::string_view(file_data).substr(
-        current_code.file_offset_body_start, current_code.file_offset_end - current_code.file_offset_body_start);
+      current_code.body = file_data.substr(current_code.file_offset_body_start,
+                                           current_code.file_offset_end - current_code.file_offset_body_start);
+    }
+    else
+    {
+      if (!reader.LogError(error, stop_on_error, "Empty body for cheat '{}'", current_code.name))
+        return false;
     }
 
     AppendCheatToList(dst, std::move(current_code));
+    return true;
   };
 
-  CheatFileReader reader(file_data);
   std::string_view line;
   while (reader.GetLine(&line))
   {
@@ -1016,15 +1025,23 @@ void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bo
     {
       legacy_type = ParseTypeName(StringUtil::StripWhitespace(linev.substr(6)));
       if (!legacy_type.has_value()) [[unlikely]]
-        WARNING_LOG("Unknown type at line {}: {}", reader.GetCurrentLineNumber(), line);
-      continue;
+      {
+        if (!reader.LogError(error, stop_on_error, "Unknown type at line {}: {}", reader.GetCurrentLineNumber(), line))
+          return false;
+
+        continue;
+      }
     }
     else if (linev.starts_with("#activation="))
     {
       legacy_activation = ParseActivationName(StringUtil::StripWhitespace(linev.substr(12)));
       if (!legacy_activation.has_value()) [[unlikely]]
-        WARNING_LOG("Unknown type at line {}: {}", reader.GetCurrentLineNumber(), line);
-      continue;
+      {
+        if (!reader.LogError(error, stop_on_error, "Unknown type at line {}: {}", reader.GetCurrentLineNumber(), line))
+          return false;
+
+        continue;
+      }
     }
 
     // skip comments
@@ -1035,7 +1052,24 @@ void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bo
     {
       if (linev.size() < 3 || linev.back() != ']')
       {
-        WARNING_LOG("Malformed code at line {}: {}", reader.GetCurrentLineNumber(), line);
+        if (!reader.LogError(error, stop_on_error, "Malformed code at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
+        continue;
+      }
+
+      const std::string_view name = StringUtil::StripWhitespace(linev.substr(1, linev.length() - 2));
+      if (name.empty())
+      {
+        if (!reader.LogError(error, stop_on_error, "Empty code name at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
         continue;
       }
 
@@ -1047,7 +1081,6 @@ void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bo
         current_code = CodeInfo();
       }
 
-      const std::string_view name = linev.substr(1, linev.length() - 2);
       current_code.name =
         legacy_group.has_value() ? fmt::format("{}\\{}", legacy_group.value(), name) : std::string(name);
       current_code.type = legacy_type.value_or(CodeType::Gameshark);
@@ -1074,7 +1107,12 @@ void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bo
       std::string_view key, value;
       if (!StringUtil::ParseAssignmentString(linev, &key, &value))
       {
-        WARNING_LOG("Malformed code at line {}: {}", reader.GetCurrentLineNumber(), line);
+        if (!reader.LogError(error, stop_on_error, "Malformed code at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
         continue;
       }
 
@@ -1090,29 +1128,57 @@ void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bo
       {
         const std::optional<CodeType> type = ParseTypeName(value);
         if (type.has_value()) [[unlikely]]
+        {
           current_code.type = type.value();
+        }
         else
-          WARNING_LOG("Unknown code type at line {}: {}", reader.GetCurrentLineNumber(), line);
+        {
+          if (!reader.LogError(error, stop_on_error, "Unknown code type at line {}: {}", reader.GetCurrentLineNumber(),
+                               line))
+            return false;
+        }
       }
       else if (key == "Activation")
       {
         const std::optional<CodeActivation> activation = ParseActivationName(value);
         if (activation.has_value()) [[unlikely]]
+        {
           current_code.activation = activation.value();
+        }
         else
-          WARNING_LOG("Unknown code activation at line {}: {}", reader.GetCurrentLineNumber(), line);
+        {
+          if (!reader.LogError(error, stop_on_error, "Unknown code activation at line {}: {}",
+                               reader.GetCurrentLineNumber(), line))
+          {
+            return false;
+          }
+        }
       }
       else if (key == "Option")
       {
         if (std::optional<Cheats::CodeOption> opt = ParseOption(value))
+        {
           current_code.options.push_back(std::move(opt.value()));
+        }
         else
-          WARNING_LOG("Invalid option declaration at line {}: {}", reader.GetCurrentLineNumber(), line);
+        {
+          if (!reader.LogError(error, stop_on_error, "Invalid option declaration at line {}: {}",
+                               reader.GetCurrentLineNumber(), line))
+          {
+            return false;
+          }
+        }
       }
       else if (key == "OptionRange")
       {
         if (!ParseOptionRange(value, &current_code.option_range_start, &current_code.option_range_end))
-          WARNING_LOG("Invalid option range declaration at line {}: {}", reader.GetCurrentLineNumber(), line);
+        {
+          if (!reader.LogError(error, stop_on_error, "Invalid option range declaration at line {}: {}",
+                               reader.GetCurrentLineNumber(), line))
+          {
+            return false;
+          }
+        }
       }
 
       // ignore other keys when we're only grabbing info
@@ -1121,7 +1187,12 @@ void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bo
 
     if (current_code.name.empty())
     {
-      WARNING_LOG("Code data specified without name at line {}: {}", reader.GetCurrentLineNumber(), line);
+      if (!reader.LogError(error, stop_on_error, "Code data specified without name at line {}: {}",
+                           reader.GetCurrentLineNumber(), line))
+      {
+        return false;
+      }
+
       continue;
     }
 
@@ -1134,7 +1205,9 @@ void Cheats::ExtractCodeInfo(CodeInfoList* dst, const std::string& file_data, bo
 
   // last code.
   if (!current_code.name.empty())
-    finish_code();
+    return finish_code();
+  else
+    return true;
 }
 
 void Cheats::AppendCheatToList(CodeInfoList* dst, CodeInfo code)
@@ -1246,11 +1319,17 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
         continue;
       }
 
+      const std::string_view name = StringUtil::StripWhitespace(linev.substr(1, linev.length() - 2));
+      if (name.empty())
+      {
+        WARNING_LOG("Empty cheat code name at line {}: {}", reader.GetCurrentLineNumber(), line);
+        continue;
+      }
+
       if (!next_code_metadata.name.empty())
         finish_code();
 
       // new code.
-      const std::string_view name = linev.substr(1, linev.length() - 2);
       next_code_metadata.name =
         next_code_group.empty() ? std::string(name) : fmt::format("{}\\{}", next_code_group, name);
       continue;
@@ -1418,7 +1497,12 @@ bool Cheats::ImportCodesFromString(CodeInfoList* dst, const std::string_view fil
   if (file_format == FileFormat::Unknown)
     file_format = DetectFileFormat(file_contents);
 
-  if (file_format == FileFormat::PCSX)
+  if (file_format == FileFormat::DuckStation)
+  {
+    if (!ExtractCodeInfo(dst, file_contents, false, stop_on_error, error))
+      return false;
+  }
+  else if (file_format == FileFormat::PCSX)
   {
     if (!ImportPCSXFile(dst, file_contents, stop_on_error, error))
       return false;
@@ -1461,6 +1545,10 @@ Cheats::FileFormat Cheats::DetectFileFormat(const std::string_view file_contents
 
     if (linev.starts_with("cheats"))
       return FileFormat::Libretro;
+
+    // native if we see brackets and a type string
+    if (linev[0] == '[' && file_contents.find("\nType ="))
+      return FileFormat::DuckStation;
 
     // pcsxr if we see brackets
     if (linev[0] == '[')
@@ -1514,12 +1602,26 @@ bool Cheats::ImportPCSXFile(CodeInfoList* dst, const std::string_view file_conte
         continue;
       }
 
+      std::string_view name_part = StringUtil::StripWhitespace(linev.substr(1, linev.length() - 2));
+      if (!name_part.empty() && name_part.front() == '*')
+        name_part = name_part.substr(1);
+      if (name_part.empty())
+      {
+        if (!reader.LogError(error, stop_on_error, "Empty code name at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
+        continue;
+      }
+
       // new code.
       if (!current_code.name.empty() && !finish_code())
         return false;
 
       current_code = CodeInfo();
-      current_code.name = (linev[1] == '*') ? linev.substr(2, linev.length() - 3) : linev.substr(1, linev.length() - 2);
+      current_code.name = name_part;
       current_code.file_offset_start = static_cast<u32>(reader.GetCurrentLineOffset());
       current_code.file_offset_end = current_code.file_offset_start;
       current_code.file_offset_body_start = current_code.file_offset_start;
@@ -1683,12 +1785,24 @@ bool Cheats::ImportEPSXeFile(CodeInfoList* dst, const std::string_view file_cont
         continue;
       }
 
+      const std::string_view name_part = StringUtil::StripWhitespace(linev.substr(1));
+      if (name_part.empty())
+      {
+        if (!reader.LogError(error, stop_on_error, "Empty code name at line {}: {}", reader.GetCurrentLineNumber(),
+                             line))
+        {
+          return false;
+        }
+
+        continue;
+      }
+
       if (!current_code.name.empty() && !finish_code())
         return false;
 
       // new code.
       current_code = CodeInfo();
-      current_code.name = linev.substr(1);
+      current_code.name = name_part;
       current_code.file_offset_start = static_cast<u32>(reader.GetCurrentOffset());
       current_code.file_offset_end = current_code.file_offset_start;
       current_code.file_offset_body_start = current_code.file_offset_start;
@@ -2360,7 +2474,7 @@ void Cheats::GamesharkCheatCode::Apply() const
         index++;
       }
       break;
-      
+
       case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
       {
         const u8 value = DoMemoryRead<u8>(inst.address);
@@ -2372,7 +2486,7 @@ void Cheats::GamesharkCheatCode::Apply() const
         index++;
       }
       break;
-      
+
       case InstructionCode::ExtConstantForceRange8:
       {
         const u8 value = DoMemoryRead<u8>(inst.address);
@@ -3950,14 +4064,14 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable() const
         index++;
       }
       break;
-      
-        [[unlikely]] default:
-        {
-          ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
-                    inst.first, inst.second);
-          index++;
-        }
-        break;
+
+      [[unlikely]] default:
+      {
+        ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
+                  inst.first, inst.second);
+        index++;
+      }
+      break;
     }
   }
 }

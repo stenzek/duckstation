@@ -20,6 +20,7 @@
 #include "common/fastjmp.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/path.h"
 
 #include "fmt/format.h"
 
@@ -47,9 +48,6 @@ static void RaiseException(u32 CAUSE_bits, u32 EPC, u32 vector);
 static u32 ReadReg(Reg rs);
 static void WriteReg(Reg rd, u32 value);
 static void WriteRegDelayed(Reg rd, u32 value);
-
-static u32 ReadCop0Reg(Cop0Reg reg);
-static void WriteCop0Reg(Cop0Reg reg, u32 value);
 
 static void DispatchCop0Breakpoint();
 static bool IsCop0ExecutionBreakpointUnmasked();
@@ -147,9 +145,9 @@ void CPU::StopTrace()
 
 void CPU::WriteToExecutionLog(const char* format, ...)
 {
-  if (!s_log_file_opened)
+  if (!s_log_file_opened) [[unlikely]]
   {
-    s_log_file = FileSystem::OpenCFile("cpu_log.txt", "wb");
+    s_log_file = FileSystem::OpenCFile(Path::Combine(EmuFolders::DataRoot, "cpu_log.txt").c_str(), "wb");
     s_log_file_opened = true;
   }
 
@@ -338,7 +336,7 @@ ALWAYS_INLINE_RELEASE void CPU::RaiseException(u32 CAUSE_bits, u32 EPC, u32 vect
   g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK) |
                                  (CAUSE_bits & Cop0Registers::CAUSE::EXCEPTION_WRITE_MASK);
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (g_state.cop0_regs.cause.Excode != Exception::INT && g_state.cop0_regs.cause.Excode != Exception::Syscall &&
       g_state.cop0_regs.cause.Excode != Exception::BP)
   {
@@ -492,122 +490,6 @@ ALWAYS_INLINE_RELEASE void CPU::WriteRegDelayed(Reg rd, u32 value)
   // save the old value, if something else overwrites this reg we want to preserve it
   g_state.next_load_delay_reg = rd;
   g_state.next_load_delay_value = value;
-}
-
-ALWAYS_INLINE_RELEASE u32 CPU::ReadCop0Reg(Cop0Reg reg)
-{
-  switch (reg)
-  {
-    case Cop0Reg::BPC:
-      return g_state.cop0_regs.BPC;
-
-    case Cop0Reg::BPCM:
-      return g_state.cop0_regs.BPCM;
-
-    case Cop0Reg::BDA:
-      return g_state.cop0_regs.BDA;
-
-    case Cop0Reg::BDAM:
-      return g_state.cop0_regs.BDAM;
-
-    case Cop0Reg::DCIC:
-      return g_state.cop0_regs.dcic.bits;
-
-    case Cop0Reg::JUMPDEST:
-      return g_state.cop0_regs.TAR;
-
-    case Cop0Reg::BadVaddr:
-      return g_state.cop0_regs.BadVaddr;
-
-    case Cop0Reg::SR:
-      return g_state.cop0_regs.sr.bits;
-
-    case Cop0Reg::CAUSE:
-      return g_state.cop0_regs.cause.bits;
-
-    case Cop0Reg::EPC:
-      return g_state.cop0_regs.EPC;
-
-    case Cop0Reg::PRID:
-      return g_state.cop0_regs.PRID;
-
-    default:
-      return 0;
-  }
-}
-
-ALWAYS_INLINE_RELEASE void CPU::WriteCop0Reg(Cop0Reg reg, u32 value)
-{
-  switch (reg)
-  {
-    case Cop0Reg::BPC:
-    {
-      g_state.cop0_regs.BPC = value;
-      DEV_LOG("COP0 BPC <- {:08X}", value);
-    }
-    break;
-
-    case Cop0Reg::BPCM:
-    {
-      g_state.cop0_regs.BPCM = value;
-      DEV_LOG("COP0 BPCM <- {:08X}", value);
-      if (UpdateDebugDispatcherFlag())
-        ExitExecution();
-    }
-    break;
-
-    case Cop0Reg::BDA:
-    {
-      g_state.cop0_regs.BDA = value;
-      DEV_LOG("COP0 BDA <- {:08X}", value);
-    }
-    break;
-
-    case Cop0Reg::BDAM:
-    {
-      g_state.cop0_regs.BDAM = value;
-      DEV_LOG("COP0 BDAM <- {:08X}", value);
-    }
-    break;
-
-    case Cop0Reg::JUMPDEST:
-    {
-      WARNING_LOG("Ignoring write to Cop0 JUMPDEST");
-    }
-    break;
-
-    case Cop0Reg::DCIC:
-    {
-      g_state.cop0_regs.dcic.bits =
-        (g_state.cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) | (value & Cop0Registers::DCIC::WRITE_MASK);
-      DEV_LOG("COP0 DCIC <- {:08X} (now {:08X})", value, g_state.cop0_regs.dcic.bits);
-      if (UpdateDebugDispatcherFlag())
-        ExitExecution();
-    }
-    break;
-
-    case Cop0Reg::SR:
-    {
-      g_state.cop0_regs.sr.bits =
-        (g_state.cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) | (value & Cop0Registers::SR::WRITE_MASK);
-      DEBUG_LOG("COP0 SR <- {:08X} (now {:08X})", value, g_state.cop0_regs.sr.bits);
-      UpdateMemoryPointers();
-      CheckForPendingInterrupt();
-    }
-    break;
-
-    case Cop0Reg::CAUSE:
-    {
-      g_state.cop0_regs.cause.bits =
-        (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) | (value & Cop0Registers::CAUSE::WRITE_MASK);
-      DEBUG_LOG("COP0 CAUSE <- {:08X} (now {:08X})", value, g_state.cop0_regs.cause.bits);
-      CheckForPendingInterrupt();
-    }
-    break;
-
-      [[unlikely]] default : DEV_LOG("Unknown COP0 reg write {} ({:08X})", static_cast<u8>(reg), value);
-      break;
-  }
 }
 
 ALWAYS_INLINE_RELEASE bool CPU::IsCop0ExecutionBreakpointUnmasked()
@@ -1775,7 +1657,59 @@ restart_instruction:
         {
           case CopCommonInstruction::mfcn:
           {
-            const u32 value = ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()));
+            u32 value;
+
+            switch (static_cast<Cop0Reg>(inst.r.rd.GetValue()))
+            {
+              case Cop0Reg::BPC:
+                value = g_state.cop0_regs.BPC;
+                break;
+
+              case Cop0Reg::BPCM:
+                value = g_state.cop0_regs.BPCM;
+                break;
+
+              case Cop0Reg::BDA:
+                value = g_state.cop0_regs.BDA;
+                break;
+
+              case Cop0Reg::BDAM:
+                value = g_state.cop0_regs.BDAM;
+                break;
+
+              case Cop0Reg::DCIC:
+                value = g_state.cop0_regs.dcic.bits;
+                break;
+
+              case Cop0Reg::JUMPDEST:
+                value = g_state.cop0_regs.TAR;
+                break;
+
+              case Cop0Reg::BadVaddr:
+                value = g_state.cop0_regs.BadVaddr;
+                break;
+
+              case Cop0Reg::SR:
+                value = g_state.cop0_regs.sr.bits;
+                break;
+
+              case Cop0Reg::CAUSE:
+                value = g_state.cop0_regs.cause.bits;
+                break;
+
+              case Cop0Reg::EPC:
+                value = g_state.cop0_regs.EPC;
+                break;
+
+              case Cop0Reg::PRID:
+                value = g_state.cop0_regs.PRID;
+                break;
+
+              default:
+                RaiseException(Exception::RI);
+                return;
+            }
+
             WriteRegDelayed(inst.r.rt, value);
 
             if constexpr (pgxp_mode == PGXPMode::CPU)
@@ -1785,11 +1719,86 @@ restart_instruction:
 
           case CopCommonInstruction::mtcn:
           {
-            const u32 rtVal = ReadReg(inst.r.rt);
-            WriteCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue()), rtVal);
+            u32 value = ReadReg(inst.r.rt);
+            [[maybe_unused]] const u32 orig_value = value;
+
+            switch (static_cast<Cop0Reg>(inst.r.rd.GetValue()))
+            {
+              case Cop0Reg::BPC:
+              {
+                g_state.cop0_regs.BPC = value;
+                DEV_LOG("COP0 BPC <- {:08X}", value);
+              }
+              break;
+
+              case Cop0Reg::BPCM:
+              {
+                g_state.cop0_regs.BPCM = value;
+                DEV_LOG("COP0 BPCM <- {:08X}", value);
+                if (UpdateDebugDispatcherFlag())
+                  ExitExecution();
+              }
+              break;
+
+              case Cop0Reg::BDA:
+              {
+                g_state.cop0_regs.BDA = value;
+                DEV_LOG("COP0 BDA <- {:08X}", value);
+              }
+              break;
+
+              case Cop0Reg::BDAM:
+              {
+                g_state.cop0_regs.BDAM = value;
+                DEV_LOG("COP0 BDAM <- {:08X}", value);
+              }
+              break;
+
+              case Cop0Reg::JUMPDEST:
+              {
+                WARNING_LOG("Ignoring write to Cop0 JUMPDEST");
+              }
+              break;
+
+              case Cop0Reg::DCIC:
+              {
+                g_state.cop0_regs.dcic.bits = (g_state.cop0_regs.dcic.bits & ~Cop0Registers::DCIC::WRITE_MASK) |
+                                              (value & Cop0Registers::DCIC::WRITE_MASK);
+                DEV_LOG("COP0 DCIC <- {:08X} (now {:08X})", value, g_state.cop0_regs.dcic.bits);
+                value = g_state.cop0_regs.dcic.bits;
+                if (UpdateDebugDispatcherFlag())
+                  ExitExecution();
+              }
+              break;
+
+              case Cop0Reg::SR:
+              {
+                g_state.cop0_regs.sr.bits = (g_state.cop0_regs.sr.bits & ~Cop0Registers::SR::WRITE_MASK) |
+                                            (value & Cop0Registers::SR::WRITE_MASK);
+                DEBUG_LOG("COP0 SR <- {:08X} (now {:08X})", value, g_state.cop0_regs.sr.bits);
+                value = g_state.cop0_regs.sr.bits;
+                UpdateMemoryPointers();
+                CheckForPendingInterrupt();
+              }
+              break;
+
+              case Cop0Reg::CAUSE:
+              {
+                g_state.cop0_regs.cause.bits = (g_state.cop0_regs.cause.bits & ~Cop0Registers::CAUSE::WRITE_MASK) |
+                                               (value & Cop0Registers::CAUSE::WRITE_MASK);
+                DEBUG_LOG("COP0 CAUSE <- {:08X} (now {:08X})", value, g_state.cop0_regs.cause.bits);
+                value = g_state.cop0_regs.cause.bits;
+                CheckForPendingInterrupt();
+              }
+              break;
+
+              [[unlikely]] default:
+                RaiseException(Exception::RI);
+                return;
+            }
 
             if constexpr (pgxp_mode == PGXPMode::CPU)
-              PGXP::CPU_MTC0(inst, ReadCop0Reg(static_cast<Cop0Reg>(inst.r.rd.GetValue())), rtVal);
+              PGXP::CPU_MTC0(inst, value, orig_value);
           }
           break;
 
@@ -1817,7 +1826,7 @@ restart_instruction:
           case Cop0Instruction::tlbwr:
           case Cop0Instruction::tlbp:
             RaiseException(Exception::RI);
-            break;
+            return;
 
           default:
             [[unlikely]] ERROR_LOG("Unhandled instruction at {:08X}: {:08X}", g_state.current_instruction_pc,
@@ -2840,10 +2849,7 @@ ALWAYS_INLINE_RELEASE bool CPU::FetchInstruction()
     case 0x07: // KSEG2
     default:
     {
-      CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE,
-                                                                      g_state.current_instruction_in_branch_delay_slot,
-                                                                      g_state.current_instruction_was_branch_taken, 0),
-                          address);
+      CPU::RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0), address);
       return false;
     }
   }

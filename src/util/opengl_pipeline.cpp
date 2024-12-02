@@ -78,9 +78,10 @@ OpenGLShader::~OpenGLShader()
     glDeleteShader(m_id.value());
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLShader::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
   if (glObjectLabel)
   {
     if (m_id.has_value())
@@ -94,8 +95,9 @@ void OpenGLShader::SetDebugName(std::string_view name)
       m_debug_name = name;
     }
   }
-#endif
 }
+
+#endif
 
 bool OpenGLShader::Compile(Error* error)
 {
@@ -155,7 +157,7 @@ bool OpenGLShader::Compile(Error* error)
 
   m_id = shader;
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
   if (glObjectLabel && !m_debug_name.empty())
   {
     glObjectLabel(GL_SHADER, shader, static_cast<GLsizei>(m_debug_name.length()),
@@ -584,13 +586,15 @@ OpenGLPipeline::~OpenGLPipeline()
   dev.UnrefVAO(m_key.va_key);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void OpenGLPipeline::SetDebugName(std::string_view name)
 {
-#ifdef _DEBUG
   if (glObjectLabel)
     glObjectLabel(GL_PROGRAM, m_program, static_cast<u32>(name.length()), name.data());
-#endif
 }
+
+#endif
 
 std::unique_ptr<GPUPipeline> OpenGLDevice::CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error)
 {

@@ -103,13 +103,13 @@ private:
   static constexpr s16 DEFAULT_LARGE_MOTOR_VIBRATION_BIAS = 8;
 
   Command m_command = Command::Idle;
-  int m_command_step = 0;
+  u8 m_command_step = 0;
+  u8 m_response_length = 0;
 
   // Transmit and receive buffers, not including the first Hi-Z/ack response byte
   static constexpr u32 MAX_RESPONSE_LENGTH = 8;
   std::array<u8, MAX_RESPONSE_LENGTH> m_rx_buffer;
   std::array<u8, MAX_RESPONSE_LENGTH> m_tx_buffer;
-  u32 m_response_length = 0;
 
   // Get number of response halfwords (excluding the initial controller info halfword)
   u8 GetResponseNumHalfwords() const;
@@ -123,7 +123,7 @@ private:
   void UpdateHostVibration();
   u8 GetExtraButtonMaskLSB() const;
   void ResetRumbleConfig();
-  void SetMotorStateForConfigIndex(int index, u8 value);
+  void Poll();
 
   float m_analog_deadzone = 0.0f;
   float m_analog_sensitivity = 1.33f;
@@ -143,13 +143,11 @@ private:
 
   enum : u8
   {
-    LargeMotor = 0,
-    SmallMotor = 1
+    SmallMotor = 0,
+    LargeMotor = 1,
   };
 
   std::array<u8, 6> m_rumble_config{};
-  int m_rumble_config_large_motor_index = -1;
-  int m_rumble_config_small_motor_index = -1;
 
   bool m_analog_toggle_queued = false;
   u8 m_status_byte = 0;
@@ -164,8 +162,4 @@ private:
 
   // both directions of axis state, merged to m_axis_state
   std::array<u8, static_cast<u32>(HalfAxis::Count)> m_half_axis_state{};
-
-  // Member variables that are no longer used, but kept and serialized for compatibility with older save states
-  u8 m_command_param = 0;
-  bool m_legacy_rumble_unlocked = false;
 };

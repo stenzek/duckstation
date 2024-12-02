@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "http_downloader_curl.h"
+#include "http_downloader.h"
 
 #include "common/assert.h"
 #include "common/log.h"
@@ -9,11 +9,40 @@
 #include "common/timer.h"
 
 #include <algorithm>
+#include <curl/curl.h>
 #include <functional>
 #include <pthread.h>
 #include <signal.h>
 
 LOG_CHANNEL(HTTPDownloader);
+
+namespace {
+class HTTPDownloaderCurl final : public HTTPDownloader
+{
+public:
+  HTTPDownloaderCurl();
+  ~HTTPDownloaderCurl() override;
+
+  bool Initialize(std::string user_agent, Error* error);
+
+protected:
+  Request* InternalCreateRequest() override;
+  void InternalPollRequests() override;
+  bool StartRequest(HTTPDownloader::Request* request) override;
+  void CloseRequest(HTTPDownloader::Request* request) override;
+
+private:
+  struct Request : HTTPDownloader::Request
+  {
+    CURL* handle = nullptr;
+  };
+
+  static size_t WriteCallback(char* ptr, size_t size, size_t nmemb, void* userdata);
+
+  CURLM* m_multi_handle = nullptr;
+  std::string m_user_agent;
+};
+} // namespace
 
 HTTPDownloaderCurl::HTTPDownloaderCurl() : HTTPDownloader()
 {
@@ -25,11 +54,11 @@ HTTPDownloaderCurl::~HTTPDownloaderCurl()
     curl_multi_cleanup(m_multi_handle);
 }
 
-std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(std::string user_agent)
+std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(std::string user_agent, Error* error)
 {
-  std::unique_ptr<HTTPDownloaderCurl> instance(std::make_unique<HTTPDownloaderCurl>());
-  if (!instance->Initialize(std::move(user_agent)))
-    return {};
+  std::unique_ptr<HTTPDownloaderCurl> instance = std::make_unique<HTTPDownloaderCurl>();
+  if (!instance->Initialize(std::move(user_agent), error))
+    instance.reset();
 
   return instance;
 }
@@ -37,7 +66,7 @@ std::unique_ptr<HTTPDownloader> HTTPDownloader::Create(std::string user_agent)
 static bool s_curl_initialized = false;
 static std::once_flag s_curl_initialized_once_flag;
 
-bool HTTPDownloaderCurl::Initialize(std::string user_agent)
+bool HTTPDownloaderCurl::Initialize(std::string user_agent, Error* error)
 {
   if (!s_curl_initialized)
   {
@@ -53,7 +82,7 @@ bool HTTPDownloaderCurl::Initialize(std::string user_agent)
     });
     if (!s_curl_initialized)
     {
-      ERROR_LOG("curl_global_init() failed");
+      Error::SetStringView(error, "curl_global_init() failed");
       return false;
     }
   }
@@ -61,7 +90,7 @@ bool HTTPDownloaderCurl::Initialize(std::string user_agent)
   m_multi_handle = curl_multi_init();
   if (!m_multi_handle)
   {
-    ERROR_LOG("curl_multi_init() failed");
+    Error::SetStringView(error, "curl_multi_init() failed");
     return false;
   }
 
@@ -76,7 +105,7 @@ size_t HTTPDownloaderCurl::WriteCallback(char* ptr, size_t size, size_t nmemb, v
   const size_t transfer_size = size * nmemb;
   const size_t new_size = current_size + transfer_size;
   req->data.resize(new_size);
-  req->start_time = Common::Timer::GetCurrentValue();
+  req->start_time = Timer::GetCurrentValue();
   std::memcpy(&req->data[current_size], ptr, transfer_size);
 
   if (req->content_length == 0)
@@ -153,6 +182,7 @@ void HTTPDownloaderCurl::InternalPollRequests()
     else
     {
       ERROR_LOG("Request for '{}' returned error {}", req->url, static_cast<int>(msg->data.result));
+      req->error.SetStringFmt("Request failed: {}", curl_easy_strerror(msg->data.result));
     }
 
     req->state.store(Request::State::Complete, std::memory_order_release);
@@ -181,13 +211,14 @@ bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)
 
   DEV_LOG("Started HTTP request for '{}'", req->url);
   req->state.store(Request::State::Started, std::memory_order_release);
-  req->start_time = Common::Timer::GetCurrentValue();
+  req->start_time = Timer::GetCurrentValue();
 
   const CURLMcode err = curl_multi_add_handle(m_multi_handle, req->handle);
   if (err != CURLM_OK)
   {
     ERROR_LOG("curl_multi_add_handle() returned {}", static_cast<int>(err));
-    req->callback(HTTP_STATUS_ERROR, std::string(), req->data);
+    req->error.SetStringFmt("curl_multi_add_handle() failed: {}", curl_multi_strerror(err));
+    req->callback(HTTP_STATUS_ERROR, req->error, std::string(), req->data);
     curl_easy_cleanup(req->handle);
     delete req;
     return false;

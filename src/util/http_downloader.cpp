@@ -43,7 +43,7 @@ void HTTPDownloader::CreateRequest(std::string url, Request::Callback callback, 
   req->url = std::move(url);
   req->callback = std::move(callback);
   req->progress = progress;
-  req->start_time = Common::Timer::GetCurrentValue();
+  req->start_time = Timer::GetCurrentValue();
 
   std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
   if (LockedGetActiveRequestCount() < m_max_active_requests)
@@ -65,7 +65,7 @@ void HTTPDownloader::CreatePostRequest(std::string url, std::string post_data, R
   req->post_data = std::move(post_data);
   req->callback = std::move(callback);
   req->progress = progress;
-  req->start_time = Common::Timer::GetCurrentValue();
+  req->start_time = Timer::GetCurrentValue();
 
   std::unique_lock<std::mutex> lock(m_pending_http_request_lock);
   if (LockedGetActiveRequestCount() < m_max_active_requests)
@@ -84,7 +84,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
   InternalPollRequests();
 
-  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  const Timer::Value current_time = Timer::GetCurrentValue();
   u32 active_requests = 0;
   u32 unstarted_requests = 0;
 
@@ -99,8 +99,7 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
     }
 
     if ((req->state == Request::State::Started || req->state == Request::State::Receiving) &&
-        current_time >= req->start_time &&
-        Common::Timer::ConvertValueToSeconds(current_time - req->start_time) >= m_timeout)
+        current_time >= req->start_time && Timer::ConvertValueToSeconds(current_time - req->start_time) >= m_timeout)
     {
       // request timed out
       ERROR_LOG("Request for '{}' timed out", req->url);
@@ -109,7 +108,8 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
       lock.unlock();
 
-      req->callback(HTTP_STATUS_TIMEOUT, std::string(), Request::Data());
+      req->error.SetStringFmt("Request timed out after {} seconds.", m_timeout);
+      req->callback(HTTP_STATUS_TIMEOUT, req->error, std::string(), Request::Data());
 
       CloseRequest(req);
 
@@ -126,7 +126,8 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
       m_pending_http_requests.erase(m_pending_http_requests.begin() + index);
       lock.unlock();
 
-      req->callback(HTTP_STATUS_CANCELLED, std::string(), Request::Data());
+      req->error.SetStringView("Request was cancelled.");
+      req->callback(HTTP_STATUS_CANCELLED, req->error, std::string(), Request::Data());
 
       CloseRequest(req);
 
@@ -159,7 +160,9 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
     // run callback with lock unheld
     lock.unlock();
-    req->callback(req->status_code, req->content_type, std::move(req->data));
+    if (req->status_code != HTTP_STATUS_OK)
+      req->error.SetStringFmt("Request failed with HTTP status code {}", req->status_code);
+    req->callback(req->status_code, req->error, req->content_type, std::move(req->data));
     CloseRequest(req);
     lock.lock();
   }
@@ -203,7 +206,7 @@ void HTTPDownloader::WaitForAllRequests()
   while (!m_pending_http_requests.empty())
   {
     // Don't burn too much CPU.
-    Common::Timer::NanoSleep(1000000);
+    Timer::NanoSleep(1000000);
     LockedPollRequests(lock);
   }
 }

@@ -42,7 +42,7 @@ private:
   void checkForDelayedShow();
 
   QProgressDialog m_dialog;
-  Common::Timer m_show_timer;
+  Timer m_show_timer;
   float m_show_delay;
 };
 

@@ -175,8 +175,8 @@ struct Notification
   std::string title;
   std::string text;
   std::string badge_path;
-  Common::Timer::Value start_time;
-  Common::Timer::Value move_time;
+  Timer::Value start_time;
+  Timer::Value move_time;
   float duration;
   float target_y;
   float last_y;
@@ -187,7 +187,7 @@ static std::vector<Notification> s_notifications;
 
 static std::string s_toast_title;
 static std::string s_toast_message;
-static Common::Timer::Value s_toast_start_time;
+static Timer::Value s_toast_start_time;
 static float s_toast_duration;
 
 namespace {
@@ -357,7 +357,8 @@ std::optional<Image> ImGuiFullscreen::LoadTextureImage(std::string_view path, u3
 std::shared_ptr<GPUTexture> ImGuiFullscreen::UploadTexture(std::string_view path, const Image& image)
 {
   Error error;
-  std::unique_ptr<GPUTexture> texture = g_gpu_device->FetchAndUploadTextureImage(image, GPUTexture::Flags::None, &error);
+  std::unique_ptr<GPUTexture> texture =
+    g_gpu_device->FetchAndUploadTextureImage(image, GPUTexture::Flags::None, &error);
   if (!texture)
   {
     ERROR_LOG("Failed to upload texture '{}': {}", Path::GetFileTitle(path), error.GetDescription());
@@ -2791,7 +2792,7 @@ void ImGuiFullscreen::OpenBackgroundProgressDialog(const char* str_id, std::stri
 
   std::unique_lock<std::mutex> lock(s_background_progress_lock);
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   for (const BackgroundProgressDialogData& data : s_background_progress_dialogs)
   {
     DebugAssert(data.id != id);
@@ -2937,7 +2938,7 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
 void ImGuiFullscreen::AddNotification(std::string key, float duration, std::string title, std::string text,
                                       std::string image_path)
 {
-  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  const Timer::Value current_time = Timer::GetCurrentValue();
 
   if (!key.empty())
   {
@@ -2951,10 +2952,8 @@ void ImGuiFullscreen::AddNotification(std::string key, float duration, std::stri
         it->badge_path = std::move(image_path);
 
         // Don't fade it in again
-        const float time_passed =
-          static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - it->start_time));
-        it->start_time =
-          current_time - Common::Timer::ConvertSecondsToValue(std::min(time_passed, NOTIFICATION_FADE_IN_TIME));
+        const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - it->start_time));
+        it->start_time = current_time - Timer::ConvertSecondsToValue(std::min(time_passed, NOTIFICATION_FADE_IN_TIME));
         return;
       }
     }
@@ -2984,7 +2983,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     return;
 
   static constexpr float MOVE_DURATION = 0.5f;
-  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  const Timer::Value current_time = Timer::GetCurrentValue();
 
   const float horizontal_padding = ImGuiFullscreen::LayoutScale(20.0f);
   const float vertical_padding = ImGuiFullscreen::LayoutScale(10.0f);
@@ -3009,7 +3008,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
   for (u32 index = 0; index < static_cast<u32>(s_notifications.size());)
   {
     Notification& notif = s_notifications[index];
-    const float time_passed = static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - notif.start_time));
+    const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - notif.start_time));
     if (time_passed >= notif.duration)
     {
       s_notifications.erase(s_notifications.begin() + index);
@@ -3047,8 +3046,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     }
     else if (actual_y != expected_y)
     {
-      const float time_since_move =
-        static_cast<float>(Common::Timer::ConvertValueToSeconds(current_time - notif.move_time));
+      const float time_since_move = static_cast<float>(Timer::ConvertValueToSeconds(current_time - notif.move_time));
       if (time_since_move >= MOVE_DURATION)
       {
         notif.move_time = current_time;
@@ -3108,7 +3106,7 @@ void ImGuiFullscreen::ShowToast(std::string title, std::string message, float du
 {
   s_toast_title = std::move(title);
   s_toast_message = std::move(message);
-  s_toast_start_time = Common::Timer::GetCurrentValue();
+  s_toast_start_time = Timer::GetCurrentValue();
   s_toast_duration = duration;
 }
 
@@ -3125,8 +3123,7 @@ void ImGuiFullscreen::DrawToast()
   if (s_toast_title.empty() && s_toast_message.empty())
     return;
 
-  const float elapsed =
-    static_cast<float>(Common::Timer::ConvertValueToSeconds(Common::Timer::GetCurrentValue() - s_toast_start_time));
+  const float elapsed = static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_toast_start_time));
   if (elapsed >= s_toast_duration)
   {
     ClearToast();

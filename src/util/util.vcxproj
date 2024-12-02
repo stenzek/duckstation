@@ -28,10 +28,6 @@
     <ClInclude Include="gpu_texture.h" />
     <ClInclude Include="host.h" />
     <ClInclude Include="http_downloader.h" />
-    <ClInclude Include="http_downloader_curl.h">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClInclude>
-    <ClInclude Include="http_downloader_winhttp.h" />
     <ClInclude Include="imgui_fullscreen.h" />
     <ClInclude Include="imgui_manager.h" />
     <ClInclude Include="ini_settings_interface.h" />

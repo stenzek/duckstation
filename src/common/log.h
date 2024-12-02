@@ -195,7 +195,7 @@ ALWAYS_INLINE static void FastWrite(Channel channel, const char* functionName, L
 #define VERBOSE_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Verbose, __VA_ARGS__)
 #define DEV_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Dev, __VA_ARGS__)
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 #define DEBUG_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Debug, __VA_ARGS__)
 #define TRACE_LOG(...) Log::FastWrite(___LogChannel___, Log::Level::Trace, __VA_ARGS__)
 #else
@@ -216,7 +216,7 @@ ALWAYS_INLINE static void FastWrite(Channel channel, const char* functionName, L
 #define VERBOSE_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Verbose, Log::Color::colour, __VA_ARGS__)
 #define DEV_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Dev, Log::Color::colour, __VA_ARGS__)
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
 #define DEBUG_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Debug, Log::Color::colour, __VA_ARGS__)
 #define TRACE_COLOR_LOG(colour, ...) Log::FastWrite(___LogChannel___, Log::Level::Trace, Log::Color::colour,__VA_ARGS__)
 #else

@@ -11,6 +11,7 @@
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
+#include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
 
@@ -18,10 +19,7 @@
 
 #include <array>
 
-#ifdef _DEBUG
-#include "common/log.h"
-LOG_CHANNEL(GunCon);
-#endif
+LOG_CHANNEL(Controller);
 
 static constexpr std::array<u8, static_cast<size_t>(GunCon::Binding::ButtonCount)> s_button_indices = {{13, 3, 14}};
 
@@ -264,13 +262,9 @@ std::unique_ptr<GunCon> GunCon::Create(u32 index)
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, binding, genb)                                                           \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb                     \
-  }
+  {name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb}
 #define HALFAXIS(name, display_name, icon_name, binding, genb)                                                         \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb                   \
-  }
+  {name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb}
 
   // clang-format off
   {"Pointer", TRANSLATE_NOOP("GunCon", "Pointer/Aiming"), ICON_PF_MOUSE, static_cast<u32>(GunCon::Binding::ButtonCount), InputBindingInfo::Type::Pointer, GenericInputBinding::Unknown},

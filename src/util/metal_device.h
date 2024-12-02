@@ -44,7 +44,9 @@ public:
 
   ALWAYS_INLINE id<MTLSamplerState> GetSamplerState() const { return m_ss; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   MetalSampler(id<MTLSamplerState> ss);
@@ -62,7 +64,9 @@ public:
   ALWAYS_INLINE id<MTLLibrary> GetLibrary() const { return m_library; }
   ALWAYS_INLINE id<MTLFunction> GetFunction() const { return m_function; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   MetalShader(GPUShaderStage stage, id<MTLLibrary> library, id<MTLFunction> function);
@@ -92,7 +96,9 @@ public:
   ALWAYS_INLINE MTLCullMode GetCullMode() const { return m_cull_mode; }
   ALWAYS_INLINE MTLPrimitiveType GetPrimitive() const { return m_primitive; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   MetalPipeline(id pipeline, id<MTLDepthStencilState> depth, MTLCullMode cull_mode, MTLPrimitiveType primitive);
@@ -122,7 +128,9 @@ public:
   void MakeReadyForSampling() override;
   void GenerateMipmaps() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
   // Call when the texture is bound to the pipeline, or read from in a copy.
   ALWAYS_INLINE void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }
@@ -161,7 +169,9 @@ public:
 
   void Flush() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   MetalDownloadTexture(u32 width, u32 height, GPUTexture::Format format, u8* import_buffer, size_t buffer_offset,
@@ -187,7 +197,9 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   MetalStreamBuffer m_buffer;
@@ -265,9 +277,11 @@ public:
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
   void InsertDebugMessage(const char* msg) override;
+#endif
 
   void MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
                        u32* map_base_vertex) override;

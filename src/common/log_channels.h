@@ -3,8 +3,6 @@
 
 #define ENUMERATE_LOG_CHANNELS(X)                                                                                      \
   X(Achievements)                                                                                                      \
-  X(AnalogController)                                                                                                  \
-  X(AnalogJoystick)                                                                                                    \
   X(AudioStream)                                                                                                       \
   X(AutoUpdaterDialog)                                                                                                 \
   X(BIOS)                                                                                                              \
@@ -16,7 +14,7 @@
   X(Cheats)                                                                                                            \
   X(CodeCache)                                                                                                         \
   X(CompressHelpers)                                                                                                   \
-  X(ControllerBindingWidget)                                                                                           \
+  X(Controller)                                                                                                        \
   X(CubebAudioStream)                                                                                                  \
   X(CueParser)                                                                                                         \
   X(DInputSource)                                                                                                      \
@@ -27,17 +25,12 @@
   X(FullscreenUI)                                                                                                      \
   X(GDBProtocol)                                                                                                       \
   X(GPU)                                                                                                               \
-  X(GPUBackend)                                                                                                        \
   X(GPUDevice)                                                                                                         \
   X(GPUDump)                                                                                                           \
-  X(GPUShaderCache)                                                                                                    \
-  X(GPUTextureCache)                                                                                                   \
-  X(GPU_HW)                                                                                                            \
   X(GPU_SW)                                                                                                            \
-  X(GPU_SW_Rasterizer)                                                                                                 \
+  X(GPU_HW)                                                                                                            \
   X(GameDatabase)                                                                                                      \
   X(GameList)                                                                                                          \
-  X(GunCon)                                                                                                            \
   X(HTTPDownloader)                                                                                                    \
   X(Host)                                                                                                              \
   X(ImGuiFullscreen)                                                                                                   \
@@ -45,19 +38,16 @@
   X(Image)                                                                                                             \
   X(InputManager)                                                                                                      \
   X(InterruptController)                                                                                               \
-  X(Justifier)                                                                                                         \
   X(Log)                                                                                                               \
   X(MDEC)                                                                                                              \
   X(MediaCapture)                                                                                                      \
   X(MemMap)                                                                                                            \
   X(MemoryCard)                                                                                                        \
   X(Multitap)                                                                                                          \
-  X(NeGconRumble)                                                                                                      \
   X(PCDrv)                                                                                                             \
   X(Pad)                                                                                                               \
   X(PerfMon)                                                                                                           \
   X(PlatformMisc)                                                                                                      \
-  X(PlayStationMouse)                                                                                                  \
   X(PostProcessing)                                                                                                    \
   X(ProgressCallback)                                                                                                  \
   X(ReShadeFXShader)                                                                                                   \

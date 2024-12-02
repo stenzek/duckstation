@@ -281,7 +281,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>75</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -446,7 +446,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>40</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -583,7 +583,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>215</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -749,7 +749,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>164</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -1062,7 +1062,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>295</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -1127,7 +1127,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="enableTextureReplacements">
               <property name="text">
-               <string>Enable Texture Replacements</string>
+               <string>Enable Texture Replacement</string>
               </property>
              </widget>
             </item>
@@ -1246,7 +1246,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>40</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>
@@ -1400,7 +1400,7 @@
          <property name="sizeHint" stdset="0">
           <size>
            <width>20</width>
-           <height>244</height>
+           <height>0</height>
           </size>
          </property>
         </spacer>

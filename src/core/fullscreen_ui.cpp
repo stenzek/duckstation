@@ -422,7 +422,7 @@ static std::string s_input_binding_key;
 static std::string s_input_binding_display_name;
 static std::vector<InputBindingKey> s_input_binding_new_bindings;
 static std::vector<std::pair<InputBindingKey, std::pair<float, float>>> s_input_binding_value_ranges;
-static Common::Timer s_input_binding_timer;
+static Timer s_input_binding_timer;
 static bool s_controller_macro_expanded[NUM_CONTROLLER_AND_CARD_PORTS][InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER] =
   {};
 
@@ -1651,7 +1651,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   if (!visible)
     return;
 
-  if (oneline)
+  if (oneline && type != InputBindingInfo::Type::Pointer && type != InputBindingInfo::Type::Device)
     InputManager::PrettifyInputBinding(value);
 
   if (show_type)
@@ -1676,6 +1676,9 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
           break;
         case InputBindingInfo::Type::Macro:
           title.format(ICON_FA_PIZZA_SLICE " {}", display_name);
+          break;
+        case InputBindingInfo::Type::Device:
+          title.format(ICON_FA_GAMEPAD " {}", display_name);
           break;
         default:
           title = display_name;
@@ -4323,7 +4326,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_CROP_ALT, "Crop Mode"),
                   FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
                   "Display", "CropMode", Settings::DEFAULT_DISPLAY_CROP_MODE, &Settings::ParseDisplayCropMode,
-                  &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName, DisplayCropMode::MaxCount);
+                  &Settings::GetDisplayCropModeName, &Settings::GetDisplayCropModeDisplayName,
+                  DisplayCropMode::MaxCount);
 
   DrawEnumSetting(
     bsi, FSUI_ICONSTR(ICON_FA_EXPAND, "Scaling"),
@@ -4602,7 +4606,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     FSUI_CSTR("Dumps textures that have replacements already loaded."), "TextureReplacements", "DumpReplacedTextures",
     false, texture_cache_enabled && GetEffectiveBoolSetting(bsi, "TextureReplacements", "DumpTextures", false));
 
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ALT, "Enable VRAM Write Texture Replacement"),
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ALT, "Enable VRAM Write Replacement"),
                     FSUI_CSTR("Enables the replacement of background textures in supported games."),
                     "TextureReplacements", "EnableVRAMWriteReplacements", false);
 

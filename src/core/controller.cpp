@@ -8,6 +8,7 @@
 #include "game_database.h"
 #include "guncon.h"
 #include "host.h"
+#include "jogcon.h"
 #include "justifier.h"
 #include "negcon.h"
 #include "negcon_rumble.h"
@@ -38,6 +39,7 @@ static const Controller::ControllerInfo* s_controller_info[] = {
   &Justifier::INFO,
   &DigitalController::INFO_POPN,
   &DigitalController::INFO_DDGO,
+  &JogCon::INFO,
 };
 
 const std::array<u32, NUM_CONTROLLER_AND_CARD_PORTS> Controller::PortDisplayOrder = {{0, 2, 3, 4, 1, 5, 6, 7}};
@@ -140,6 +142,9 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
     case ControllerType::NeGconRumble:
       return NeGconRumble::Create(index);
 
+    case ControllerType::JogCon:
+      return JogCon::Create(index);
+
     case ControllerType::None:
     default:
       return {};
@@ -236,6 +241,12 @@ const char* Controller::GetPortDisplayName(u32 port, u32 slot, bool mtap)
 
   DebugAssert(port < 2 && slot < 4);
   return mtap ? mtap_labels[port][slot] : no_mtap_labels[port];
+}
+
+const char* Controller::GetPortDisplayName(u32 index)
+{
+  const auto& [port, slot] = ConvertPadToPortAndSlot(index);
+  return GetPortDisplayName(port, slot, g_settings.IsMultitapPortEnabled(port));
 }
 
 std::string Controller::GetSettingsSection(u32 pad)

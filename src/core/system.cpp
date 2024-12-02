@@ -61,7 +61,6 @@
 #include "common/memmap.h"
 #include "common/path.h"
 #include "common/string_util.h"
-#include "common/threading.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
@@ -181,8 +180,8 @@ static void UpdateThrottlePeriod();
 static void ResetThrottler();
 
 /// Throttles the system, i.e. sleeps until it's time to execute the next frame.
-static void Throttle(Common::Timer::Value current_time);
-static void AccumulatePreFrameSleepTime(Common::Timer::Value current_time);
+static void Throttle(Timer::Value current_time);
+static void AccumulatePreFrameSleepTime(Timer::Value current_time);
 static void UpdateDisplayVSync();
 
 static bool UpdateGameSettingsLayer();
@@ -270,14 +269,14 @@ struct ALIGN_TO_CACHE_LINE StateVars
   float video_frame_rate = 0.0f;
   float target_speed = 0.0f;
 
-  Common::Timer::Value frame_period = 0;
-  Common::Timer::Value next_frame_time = 0;
+  Timer::Value frame_period = 0;
+  Timer::Value next_frame_time = 0;
 
-  Common::Timer::Value frame_start_time = 0;
-  Common::Timer::Value last_active_frame_time = 0;
-  Common::Timer::Value pre_frame_sleep_time = 0;
-  Common::Timer::Value max_active_frame_time = 0;
-  Common::Timer::Value last_pre_frame_sleep_update_time = 0;
+  Timer::Value frame_start_time = 0;
+  Timer::Value last_active_frame_time = 0;
+  Timer::Value pre_frame_sleep_time = 0;
+  Timer::Value max_active_frame_time = 0;
+  Timer::Value last_pre_frame_sleep_update_time = 0;
 
   std::unique_ptr<MediaCapture> media_capture;
   std::unique_ptr<GPUDump::Player> gpu_dump_player;
@@ -468,7 +467,7 @@ void System::LogStartupInformation()
 
 bool System::ProcessStartup(Error* error)
 {
-  Common::Timer timer;
+  Timer timer;
 
   // Allocate JIT memory as soon as possible.
   if (!CPU::CodeCache::ProcessStartup(error))
@@ -499,8 +498,6 @@ void System::ProcessShutdown()
 
 bool System::CPUThreadInitialize(Error* error)
 {
-  Threading::SetNameOfCurrentThread("CPU Thread");
-
 #ifdef _WIN32
   // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
   // We need to initialize COM first, before anything else does, because otherwise they might
@@ -1243,15 +1240,15 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
 
 void System::HandleHostGPUDeviceLost()
 {
-  static Common::Timer::Value s_last_gpu_reset_time = 0;
+  static Timer::Value s_last_gpu_reset_time = 0;
   static constexpr float MIN_TIME_BETWEEN_RESETS = 15.0f;
 
   // If we're constantly crashing on something in particular, we don't want to end up in an
   // endless reset loop.. that'd probably end up leaking memory and/or crashing us for other
   // reasons. So just abort in such case.
-  const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  const Timer::Value current_time = Timer::GetCurrentValue();
   if (s_last_gpu_reset_time != 0 &&
-      Common::Timer::ConvertValueToSeconds(current_time - s_last_gpu_reset_time) < MIN_TIME_BETWEEN_RESETS)
+      Timer::ConvertValueToSeconds(current_time - s_last_gpu_reset_time) < MIN_TIME_BETWEEN_RESETS)
   {
     Panic("Host GPU lost too many times, device is probably completely wedged.");
   }
@@ -2197,10 +2194,10 @@ void System::FrameDone()
     }
   }
 
-  Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
+  Timer::Value current_time = Timer::GetCurrentValue();
 
   // pre-frame sleep accounting (input lag reduction)
-  const Common::Timer::Value pre_frame_sleep_until = s_state.next_frame_time + s_state.pre_frame_sleep_time;
+  const Timer::Value pre_frame_sleep_until = s_state.next_frame_time + s_state.pre_frame_sleep_time;
   s_state.last_active_frame_time = current_time - s_state.frame_start_time;
   if (s_state.pre_frame_sleep)
     AccumulatePreFrameSleepTime(current_time);
@@ -2255,15 +2252,15 @@ void System::FrameDone()
   }
 
   // pre-frame sleep (input lag reduction)
-  current_time = Common::Timer::GetCurrentValue();
+  current_time = Timer::GetCurrentValue();
   if (s_state.pre_frame_sleep)
   {
     // don't sleep if it's under 1ms, because we're just going to overshoot (or spin).
     if (pre_frame_sleep_until > current_time &&
-        Common::Timer::ConvertValueToMilliseconds(pre_frame_sleep_until - current_time) >= 1)
+        Timer::ConvertValueToMilliseconds(pre_frame_sleep_until - current_time) >= 1)
     {
-      Common::Timer::SleepUntil(pre_frame_sleep_until, true);
-      current_time = Common::Timer::GetCurrentValue();
+      Timer::SleepUntil(pre_frame_sleep_until, true);
+      current_time = Timer::GetCurrentValue();
     }
   }
 
@@ -2306,7 +2303,7 @@ void System::UpdateThrottlePeriod()
     const double target_speed =
       std::max(static_cast<double>(s_state.target_speed), std::numeric_limits<double>::epsilon());
     s_state.frame_period =
-      Common::Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(s_state.video_frame_rate) * target_speed));
+      Timer::ConvertSecondsToValue(1.0 / (static_cast<double>(s_state.video_frame_rate) * target_speed));
   }
   else
   {
@@ -2318,18 +2315,18 @@ void System::UpdateThrottlePeriod()
 
 void System::ResetThrottler()
 {
-  s_state.next_frame_time = Common::Timer::GetCurrentValue() + s_state.frame_period;
+  s_state.next_frame_time = Timer::GetCurrentValue() + s_state.frame_period;
   s_state.pre_frame_sleep_time = 0;
 }
 
-void System::Throttle(Common::Timer::Value current_time)
+void System::Throttle(Timer::Value current_time)
 {
   // If we're running too slow, advance the next frame time based on the time we lost. Effectively skips
   // running those frames at the intended time, because otherwise if we pause in the debugger, we'll run
   // hundreds of frames when we resume.
   if (current_time > s_state.next_frame_time)
   {
-    const Common::Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_state.next_frame_time);
+    const Timer::Value diff = static_cast<s64>(current_time) - static_cast<s64>(s_state.next_frame_time);
     s_state.next_frame_time += (diff / s_state.frame_period) * s_state.frame_period + s_state.frame_period;
     return;
   }
@@ -2339,13 +2336,13 @@ void System::Throttle(Common::Timer::Value current_time)
   // That way in a query->response->query->response chain, we don't process only one message per frame.
   if (s_state.socket_multiplexer && s_state.socket_multiplexer->HasAnyClientSockets())
   {
-    Common::Timer::Value poll_start_time = current_time;
+    Timer::Value poll_start_time = current_time;
     for (;;)
     {
       const u32 sleep_ms =
-        static_cast<u32>(Common::Timer::ConvertValueToMilliseconds(s_state.next_frame_time - poll_start_time));
+        static_cast<u32>(Timer::ConvertValueToMilliseconds(s_state.next_frame_time - poll_start_time));
       s_state.socket_multiplexer->PollEventsWithTimeout(sleep_ms);
-      poll_start_time = Common::Timer::GetCurrentValue();
+      poll_start_time = Timer::GetCurrentValue();
       if (poll_start_time >= s_state.next_frame_time || (!g_settings.display_optimal_frame_pacing && sleep_ms == 0))
         break;
     }
@@ -2355,25 +2352,25 @@ void System::Throttle(Common::Timer::Value current_time)
     // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
     // Linux also seems to do a much better job of waking up at the requested time.
 #if !defined(__linux__)
-    Common::Timer::SleepUntil(s_state.next_frame_time, g_settings.display_optimal_frame_pacing);
+    Timer::SleepUntil(s_state.next_frame_time, g_settings.display_optimal_frame_pacing);
 #else
-    Common::Timer::SleepUntil(s_state.next_frame_time, false);
+    Timer::SleepUntil(s_state.next_frame_time, false);
 #endif
   }
 #else
   // No spinwait on Android, see above.
-  Common::Timer::SleepUntil(s_state.next_frame_time, false);
+  Timer::SleepUntil(s_state.next_frame_time, false);
 #endif
 
 #if 0
-  const Common::Timer::Value time_after_sleep = Common::Timer::GetCurrentValue();
+  const Timer::Value time_after_sleep = Timer::GetCurrentValue();
   DEV_LOG("Asked for {:.2f} ms, slept for {:.2f} ms, {:.2f} ms {}",
-          Common::Timer::ConvertValueToMilliseconds(s_next_frame_time - current_time),
-          Common::Timer::ConvertValueToMilliseconds(time_after_sleep - current_time),
-          Common::Timer::ConvertValueToMilliseconds((time_after_sleep < s_next_frame_time) ?
-                                                      (s_next_frame_time - time_after_sleep) :
-                                                      (time_after_sleep - s_next_frame_time)),
-          (time_after_sleep < s_next_frame_time) ? "early" : "late");
+          Timer::ConvertValueToMilliseconds(s_state.next_frame_time - current_time),
+          Timer::ConvertValueToMilliseconds(time_after_sleep - current_time),
+          Timer::ConvertValueToMilliseconds((time_after_sleep < s_state.next_frame_time) ?
+                                              (s_state.next_frame_time - time_after_sleep) :
+                                              (time_after_sleep - s_state.next_frame_time)),
+          (time_after_sleep < s_state.next_frame_time) ? "early" : "late");
 #endif
 
   s_state.next_frame_time += s_state.frame_period;
@@ -2726,7 +2723,7 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
     return true;
   }
 
-  Common::Timer load_timer;
+  Timer load_timer;
 
   auto fp = FileSystem::OpenManagedCFile(path, "rb", error);
   if (!fp)
@@ -3026,7 +3023,7 @@ bool System::SaveState(const char* path, Error* error, bool backup_existing_save
     return false;
   }
 
-  Common::Timer save_timer;
+  Timer save_timer;
 
   SaveStateBuffer buffer;
   if (!SaveStateToBuffer(&buffer, error, 256))
@@ -3301,38 +3298,37 @@ float System::GetAudioNominalRate()
   return (s_state.throttler_enabled || s_state.syncing_to_host_with_vsync) ? s_state.target_speed : 1.0f;
 }
 
-void System::AccumulatePreFrameSleepTime(Common::Timer::Value current_time)
+void System::AccumulatePreFrameSleepTime(Timer::Value current_time)
 {
   DebugAssert(s_state.pre_frame_sleep);
 
   s_state.max_active_frame_time = std::max(s_state.max_active_frame_time, s_state.last_active_frame_time);
 
   // in case one frame runs over, adjust to compensate
-  const Common::Timer::Value max_sleep_time_for_this_frame =
+  const Timer::Value max_sleep_time_for_this_frame =
     s_state.frame_period - std::min(s_state.last_active_frame_time, s_state.frame_period);
   if (max_sleep_time_for_this_frame < s_state.pre_frame_sleep_time)
   {
-    s_state.pre_frame_sleep_time = Common::AlignDown(
-      max_sleep_time_for_this_frame, static_cast<unsigned int>(Common::Timer::ConvertMillisecondsToValue(1)));
+    s_state.pre_frame_sleep_time =
+      Common::AlignDown(max_sleep_time_for_this_frame, static_cast<unsigned int>(Timer::ConvertMillisecondsToValue(1)));
     DEV_LOG("Adjust pre-frame time to {} ms due to overrun of {} ms",
-            Common::Timer::ConvertValueToMilliseconds(s_state.pre_frame_sleep_time),
-            Common::Timer::ConvertValueToMilliseconds(s_state.last_active_frame_time));
+            Timer::ConvertValueToMilliseconds(s_state.pre_frame_sleep_time),
+            Timer::ConvertValueToMilliseconds(s_state.last_active_frame_time));
   }
 
-  if (Common::Timer::ConvertValueToSeconds(current_time - s_state.last_pre_frame_sleep_update_time) >=
+  if (Timer::ConvertValueToSeconds(current_time - s_state.last_pre_frame_sleep_update_time) >=
       PRE_FRAME_SLEEP_UPDATE_INTERVAL)
   {
     s_state.last_pre_frame_sleep_update_time = current_time;
 
-    const Common::Timer::Value expected_frame_time =
-      s_state.max_active_frame_time +
-      Common::Timer::ConvertMillisecondsToValue(g_settings.display_pre_frame_sleep_buffer);
+    const Timer::Value expected_frame_time =
+      s_state.max_active_frame_time + Timer::ConvertMillisecondsToValue(g_settings.display_pre_frame_sleep_buffer);
     s_state.pre_frame_sleep_time =
       Common::AlignDown(s_state.frame_period - std::min(expected_frame_time, s_state.frame_period),
-                        static_cast<unsigned int>(Common::Timer::ConvertMillisecondsToValue(1)));
+                        static_cast<unsigned int>(Timer::ConvertMillisecondsToValue(1)));
     DEV_LOG("Set pre-frame time to {} ms (expected frame time of {} ms)",
-            Common::Timer::ConvertValueToMilliseconds(s_state.pre_frame_sleep_time),
-            Common::Timer::ConvertValueToMilliseconds(expected_frame_time));
+            Timer::ConvertValueToMilliseconds(s_state.pre_frame_sleep_time),
+            Timer::ConvertValueToMilliseconds(expected_frame_time));
 
     s_state.max_active_frame_time = 0;
   }
@@ -3344,12 +3340,11 @@ void System::FormatLatencyStats(SmallStringBase& str)
   const u32 audio_latency =
     AudioStream::GetMSForBufferSize(audio_stream->GetSampleRate(), audio_stream->GetBufferedFramesRelaxed());
 
-  const double active_frame_time = std::ceil(Common::Timer::ConvertValueToMilliseconds(s_state.last_active_frame_time));
-  const double pre_frame_time = std::ceil(Common::Timer::ConvertValueToMilliseconds(s_state.pre_frame_sleep_time));
-  const double input_latency =
-    std::ceil(Common::Timer::ConvertValueToMilliseconds(s_state.frame_period - s_state.pre_frame_sleep_time) -
-              Common::Timer::ConvertValueToMilliseconds(static_cast<Common::Timer::Value>(s_state.runahead_frames) *
-                                                        s_state.frame_period));
+  const double active_frame_time = std::ceil(Timer::ConvertValueToMilliseconds(s_state.last_active_frame_time));
+  const double pre_frame_time = std::ceil(Timer::ConvertValueToMilliseconds(s_state.pre_frame_sleep_time));
+  const double input_latency = std::ceil(
+    Timer::ConvertValueToMilliseconds(s_state.frame_period - s_state.pre_frame_sleep_time) -
+    Timer::ConvertValueToMilliseconds(static_cast<Timer::Value>(s_state.runahead_frames) * s_state.frame_period));
 
   str.format("AF: {:.0f}ms | PF: {:.0f}ms | IL: {:.0f}ms | AL: {}ms", active_frame_time, pre_frame_time, input_latency,
              audio_latency);
@@ -4859,7 +4854,7 @@ bool System::SaveMemoryState(MemorySaveState* mss)
 bool System::SaveRewindState()
 {
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Common::Timer save_timer;
+  Timer save_timer;
 #endif
 
   // try to reuse the frontmost slot
@@ -4897,7 +4892,7 @@ bool System::LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true 
     return false;
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  Common::Timer load_timer;
+  Timer load_timer;
 #endif
 
   if (!LoadMemoryState(s_state.rewind_states.back()))
@@ -4961,7 +4956,7 @@ void System::DoRewind()
   Host::PumpMessagesOnCPUThread();
   IdlePollUpdate();
 
-  Throttle(Common::Timer::GetCurrentValue());
+  Throttle(Timer::GetCurrentValue());
 }
 
 void System::SaveRunaheadState()
@@ -4986,7 +4981,7 @@ void System::SaveRunaheadState()
 bool System::DoRunahead()
 {
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  static Common::Timer replay_timer;
+  static Timer replay_timer;
 #endif
 
   if (s_state.runahead_replay_pending)
@@ -5839,12 +5834,12 @@ bool System::ChangeGPUDump(std::string new_path)
 
 void System::UpdateSessionTime(const std::string& prev_serial)
 {
-  const u64 ctime = Common::Timer::GetCurrentValue();
+  const Timer::Value ctime = Timer::GetCurrentValue();
   if (!prev_serial.empty() && GameList::IsGameListLoaded())
   {
     // round up to seconds
     const std::time_t etime =
-      static_cast<std::time_t>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_state.session_start_time)));
+      static_cast<std::time_t>(std::round(Timer::ConvertValueToSeconds(ctime - s_state.session_start_time)));
     const std::time_t wtime = std::time(nullptr);
     GameList::AddPlayedTimeForSerial(prev_serial, wtime, etime);
   }
@@ -5854,8 +5849,8 @@ void System::UpdateSessionTime(const std::string& prev_serial)
 
 u64 System::GetSessionPlayedTime()
 {
-  const u64 ctime = Common::Timer::GetCurrentValue();
-  return static_cast<u64>(std::round(Common::Timer::ConvertValueToSeconds(ctime - s_state.session_start_time)));
+  const Timer::Value ctime = Timer::GetCurrentValue();
+  return static_cast<u64>(std::round(Timer::ConvertValueToSeconds(ctime - s_state.session_start_time)));
 }
 
 void System::QueueTaskOnThread(std::function<void()> task)

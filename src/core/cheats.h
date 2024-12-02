@@ -34,6 +34,7 @@ enum class CodeActivation : u8
 enum class FileFormat : u8
 {
   Unknown,
+  DuckStation,
   PCSX,
   Libretro,
   EPSXe,

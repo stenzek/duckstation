@@ -9,6 +9,7 @@
 
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
@@ -303,7 +304,7 @@ bool SDLInputSource::InitializeSubsystem()
   }
 
   SDL_LogSetOutputFunction(SDLLogCallback, nullptr);
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_VERBOSE);
 #else
   SDL_LogSetAllPriority(SDL_LOG_PRIORITY_INFO);
@@ -358,6 +359,11 @@ std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevice
   }
 
   return ret;
+}
+
+bool SDLInputSource::ContainsDevice(std::string_view device) const
+{
+  return device.starts_with("SDL-");
 }
 
 std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view device, std::string_view binding)
@@ -1091,4 +1097,127 @@ void SDLInputSource::SendRumbleUpdate(ControllerData* cd)
 std::unique_ptr<InputSource> InputSource::CreateSDLSource()
 {
   return std::make_unique<SDLInputSource>();
+}
+
+std::unique_ptr<ForceFeedbackDevice> SDLInputSource::CreateForceFeedbackDevice(std::string_view device, Error* error)
+{
+  SDL_Joystick* joystick = GetJoystickForDevice(device);
+  if (!joystick)
+  {
+    Error::SetStringFmt(error, "No SDL_Joystick for {}", device);
+    return nullptr;
+  }
+
+  SDL_Haptic* haptic = SDL_HapticOpenFromJoystick(joystick);
+  if (!haptic)
+  {
+    Error::SetStringFmt(error, "Haptic is not supported on {} ({})", device, SDL_JoystickName(joystick));
+    return nullptr;
+  }
+
+  return std::unique_ptr<SDLForceFeedbackDevice>(new SDLForceFeedbackDevice(joystick, haptic));
+}
+
+SDLForceFeedbackDevice::SDLForceFeedbackDevice(SDL_Joystick* joystick, SDL_Haptic* haptic) : m_haptic(haptic)
+{
+  std::memset(&m_constant_effect, 0, sizeof(m_constant_effect));
+}
+
+SDLForceFeedbackDevice::~SDLForceFeedbackDevice()
+{
+  if (m_haptic)
+  {
+    DestroyEffects();
+
+    SDL_HapticClose(m_haptic);
+    m_haptic = nullptr;
+  }
+}
+
+void SDLForceFeedbackDevice::CreateEffects(SDL_Joystick* joystick)
+{
+  constexpr u32 length = 10000; // 10 seconds since NFS games seem to not issue new commands while rotating.
+
+  const unsigned int supported = SDL_HapticQuery(m_haptic);
+  if (supported & SDL_HAPTIC_CONSTANT)
+  {
+    m_constant_effect.type = SDL_HAPTIC_CONSTANT;
+    m_constant_effect.constant.direction.type = SDL_HAPTIC_STEERING_AXIS;
+    m_constant_effect.constant.length = length;
+
+    m_constant_effect_id = SDL_HapticNewEffect(m_haptic, &m_constant_effect);
+    if (m_constant_effect_id < 0)
+      ERROR_LOG("SDL_HapticNewEffect() for constant failed: {}", SDL_GetError());
+  }
+  else
+  {
+    WARNING_LOG("Constant effect is not supported on '{}'", SDL_JoystickName(joystick));
+  }
+}
+
+void SDLForceFeedbackDevice::DestroyEffects()
+{
+  if (m_constant_effect_id >= 0)
+  {
+    if (m_constant_effect_running)
+    {
+      SDL_HapticStopEffect(m_haptic, m_constant_effect_id);
+      m_constant_effect_running = false;
+    }
+    SDL_HapticDestroyEffect(m_haptic, m_constant_effect_id);
+    m_constant_effect_id = -1;
+  }
+}
+
+template<typename T>
+[[maybe_unused]] static u16 ClampU16(T val)
+{
+  return static_cast<u16>(std::clamp<T>(val, 0, 65535));
+}
+
+template<typename T>
+[[maybe_unused]] static u16 ClampS16(T val)
+{
+  return static_cast<s16>(std::clamp<T>(val, -32768, 32767));
+}
+
+void SDLForceFeedbackDevice::SetConstantForce(s32 level)
+{
+  if (m_constant_effect_id < 0)
+    return;
+
+  const s16 new_level = ClampS16(level);
+  if (m_constant_effect.constant.level != new_level)
+  {
+    m_constant_effect.constant.level = new_level;
+    if (SDL_HapticUpdateEffect(m_haptic, m_constant_effect_id, &m_constant_effect) != 0)
+      ERROR_LOG("SDL_HapticUpdateEffect() for constant failed: {}", SDL_GetError());
+  }
+
+  if (!m_constant_effect_running)
+  {
+    if (SDL_HapticRunEffect(m_haptic, m_constant_effect_id, SDL_HAPTIC_INFINITY) == 0)
+      m_constant_effect_running = true;
+    else
+      ERROR_LOG("SDL_HapticRunEffect() for constant failed: {}", SDL_GetError());
+  }
+}
+
+void SDLForceFeedbackDevice::DisableForce(Effect force)
+{
+  switch (force)
+  {
+    case Effect::Constant:
+    {
+      if (m_constant_effect_running)
+      {
+        SDL_HapticStopEffect(m_haptic, m_constant_effect_id);
+        m_constant_effect_running = false;
+      }
+    }
+    break;
+
+    default:
+      break;
+  }
 }

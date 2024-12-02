@@ -6,6 +6,8 @@
 #include "common/types.h"
 #include "common/windows_headers.h"
 
+#include "gpu_device.h"
+
 #include <array>
 #include <d3d12.h>
 #include <string_view>
@@ -122,7 +124,7 @@ private:
   D3D12_COMPUTE_PIPELINE_STATE_DESC m_desc;
 };
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
 void SetObjectName(ID3D12Object* object, std::string_view name);
 #else
 static inline void SetObjectName(ID3D12Object* object, std::string_view name)

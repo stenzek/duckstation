@@ -187,7 +187,7 @@ bool CDROMAsyncReader::WaitForReadToComplete()
     return m_buffers[m_buffer_front.load()].result;
   }
 
-  Common::Timer wait_timer;
+  Timer wait_timer;
   DEBUG_LOG("Sector read pending, waiting");
 
   std::unique_lock<std::mutex> lock(m_mutex);
@@ -226,7 +226,7 @@ void CDROMAsyncReader::EmptyBuffers()
 
 bool CDROMAsyncReader::ReadSectorIntoBuffer(std::unique_lock<std::mutex>& lock)
 {
-  Common::Timer timer;
+  Timer timer;
 
   const u32 slot = m_buffer_back.load();
   m_buffer_back.store((slot + 1) % static_cast<u32>(m_buffers.size()));
@@ -259,7 +259,7 @@ bool CDROMAsyncReader::ReadSectorIntoBuffer(std::unique_lock<std::mutex>& lock)
 
 void CDROMAsyncReader::ReadSectorNonThreaded(CDImage::LBA lba)
 {
-  Common::Timer timer;
+  Timer timer;
 
   m_buffers.resize(1);
   m_seek_error.store(false);

@@ -141,6 +141,6 @@ private:
   void AddPrefixFmtArgs(fmt::string_view fmt, fmt::format_args args);
   void AddSuffixFmtArgs(fmt::string_view fmt, fmt::format_args args);
 
-  Type m_type = Type::None;
   std::string m_description;
+  Type m_type = Type::None;
 };

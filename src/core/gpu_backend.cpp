@@ -9,7 +9,7 @@
 #include "common/log.h"
 #include "common/timer.h"
 
-LOG_CHANNEL(GPUBackend);
+LOG_CHANNEL(GPU);
 
 std::unique_ptr<GPUBackend> g_gpu_backend;
 
@@ -217,7 +217,7 @@ void GPUBackend::Sync(bool allow_sleep)
 void GPUBackend::RunGPULoop()
 {
   static constexpr double SPIN_TIME_NS = 1 * 1000000;
-  Common::Timer::Value last_command_time = 0;
+  Timer::Value last_command_time = 0;
 
   for (;;)
   {
@@ -225,8 +225,8 @@ void GPUBackend::RunGPULoop()
     u32 read_ptr = m_command_fifo_read_ptr.load();
     if (read_ptr == write_ptr)
     {
-      const Common::Timer::Value current_time = Common::Timer::GetCurrentValue();
-      if (Common::Timer::ConvertValueToNanoseconds(current_time - last_command_time) < SPIN_TIME_NS)
+      const Timer::Value current_time = Timer::GetCurrentValue();
+      if (Timer::ConvertValueToNanoseconds(current_time - last_command_time) < SPIN_TIME_NS)
         continue;
 
       std::unique_lock<std::mutex> lock(m_sync_mutex);
@@ -273,7 +273,7 @@ void GPUBackend::RunGPULoop()
       }
     }
 
-    last_command_time = allow_sleep ? 0 : Common::Timer::GetCurrentValue();
+    last_command_time = allow_sleep ? 0 : Timer::GetCurrentValue();
     m_command_fifo_read_ptr.store(read_ptr);
   }
 }

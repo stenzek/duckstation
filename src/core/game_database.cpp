@@ -163,7 +163,7 @@ void GameDatabase::EnsureLoaded()
   if (s_loaded)
     return;
 
-  Common::Timer timer;
+  Timer timer;
 
   s_loaded = true;
 
@@ -646,7 +646,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 #else
       Host::AddIconOSDWarning("gamedb_force_pgxp_cpu", ICON_EMOJI_WARNING,
                               "This game requires PGXP CPU mode, which increases system requirements.\n"
-                              "      If the game runs too slow, disable PGXP for this game.",
+                              "       If the game runs too slow, disable PGXP for this game.",
                               Host::OSD_WARNING_DURATION);
 #endif
     }
@@ -1417,7 +1417,7 @@ void GameDatabase::EnsureTrackHashesMapLoaded()
 
 bool GameDatabase::LoadTrackHashes()
 {
-  Common::Timer load_timer;
+  Timer load_timer;
 
   Error error;
   std::optional<std::string> gamedb_data(Host::ReadResourceFileToString(DISCDB_YAML_FILENAME, false, &error));
