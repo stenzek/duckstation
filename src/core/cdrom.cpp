@@ -46,6 +46,7 @@ enum : u32
   SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
   MODE1_HEADER_SIZE = CDImage::MODE1_HEADER_SIZE,
   MODE2_HEADER_SIZE = CDImage::MODE2_HEADER_SIZE,
+  SUBQ_SECTOR_SKEW = 2,
   XA_ADPCM_SAMPLES_PER_SECTOR_4BIT = 4032, // 28 words * 8 nibbles per word * 18 chunks
   XA_ADPCM_SAMPLES_PER_SECTOR_8BIT = 2016, // 28 words * 4 bytes per word * 18 chunks
   XA_RESAMPLE_RING_BUFFER_SIZE = 32,
@@ -2967,10 +2968,13 @@ bool CDROM::CompleteSeek()
   if (seek_okay)
   {
     const CDImage::SubChannelQ& subq = GetSectorSubQ(s_reader.GetLastReadSector(), s_reader.GetSectorSubQ());
+    s_state.current_lba = s_reader.GetLastReadSector();
+
     if (subq.IsCRCValid())
     {
       // seek and update sub-q for ReadP command
       s_state.last_subq = subq;
+      s_state.last_subq_needs_update = false;
       const auto [seek_mm, seek_ss, seek_ff] = CDImage::Position::FromLBA(s_reader.GetLastReadSector()).ToBCD();
       seek_okay = (subq.absolute_minute_bcd == seek_mm && subq.absolute_second_bcd == seek_ss &&
                    subq.absolute_frame_bcd == seek_ff);
@@ -2984,12 +2988,16 @@ bool CDROM::CompleteSeek()
             seek_okay = (s_state.last_sector_header.minute == seek_mm && s_state.last_sector_header.second == seek_ss &&
                          s_state.last_sector_header.frame == seek_ff);
 
-            if (seek_okay)
+            if (seek_okay && !s_state.play_after_seek && !s_state.read_after_seek)
             {
-              // after reading the target, the mech immediately does a 1T reverse
-              const u32 spt = GetSectorsPerTrack(s_state.current_subq_lba);
-              SetHoldPosition(s_state.current_subq_lba,
-                              (spt <= s_state.current_subq_lba) ? (s_state.current_subq_lba - spt) : 0);
+              // This is pretty janky. The mech completes the seek when it "sees" a data header
+              // 2 sectors before the seek target, so that a subsequent ReadN can complete nearly
+              // immediately. Therefore when the seek completes, SubQ = Target, Data = Target - 2.
+              // Hack the SubQ back by 2 frames so that following seeks will read forward. If we
+              // ever properly handle SubQ versus data positions, this can be removed.
+              s_state.current_subq_lba =
+                (s_state.current_lba >= SUBQ_SECTOR_SKEW) ? (s_state.current_lba - SUBQ_SECTOR_SKEW) : 0;
+              s_state.last_subq_needs_update = true;
             }
           }
         }
@@ -3016,8 +3024,6 @@ bool CDROM::CompleteSeek()
         }
       }
     }
-
-    s_state.current_lba = s_reader.GetLastReadSector();
   }
 
   return seek_okay;
@@ -3234,7 +3240,7 @@ void CDROM::DoSectorRead()
       // so that multiple sectors could be read in one back, in which case we could just "look ahead" to grab the
       // subq, but I haven't got around to it. It'll break libcrypt, but CC doesn't use it. One day I'll get around to
       // doing the refactor.... but given this is the only game that relies on it, priorities.
-      s_reader.GetMedia()->GenerateSubChannelQ(&s_state.last_subq, s_state.current_lba + 2);
+      s_reader.GetMedia()->GenerateSubChannelQ(&s_state.last_subq, s_state.current_lba + SUBQ_SECTOR_SKEW);
     }
   }
   else
