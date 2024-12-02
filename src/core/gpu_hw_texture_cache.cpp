@@ -1958,7 +1958,7 @@ void GPUTextureCache::RemoveVRAMWrite(VRAMWrite* entry)
     LoopRectPagesWithEarlyExit(entry->write_rect, [&entry, &other_write](u32 pn) {
       PageEntry& pg = s_state.pages[pn];
       ListIterateWithEarlyExit(pg.writes, [&entry, &other_write](VRAMWrite* cur) {
-        if (cur->hash != entry->hash)
+        if (cur == entry || cur->hash != entry->hash)
           return true;
 
         other_write = cur;
