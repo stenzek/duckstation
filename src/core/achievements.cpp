@@ -2238,7 +2238,7 @@ void Achievements::DrawGameOverlays()
       s_state.active_progress_indicator.reset();
     }
 
-    position.y -= image_size.y - padding * 3.0f;
+    position.y -= image_size.y + padding * 3.0f;
   }
 
   if (!s_state.active_leaderboard_trackers.empty())
