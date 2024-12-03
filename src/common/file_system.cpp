@@ -2788,19 +2788,25 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
   return false;
 }
 
-static bool SetLock(int fd, bool lock)
+static bool SetLock(int fd, bool lock, bool block, Error* error)
 {
   // We want to lock the whole file.
   const off_t offs = lseek(fd, 0, SEEK_CUR);
   if (offs < 0)
   {
-    ERROR_LOG("lseek({}) failed: {}", fd, errno);
+    if (error)
+      error->SetErrno("lseek() failed: ", errno);
+    else
+      ERROR_LOG("lseek({}) failed: {}", fd, errno);
     return false;
   }
 
   if (offs != 0 && lseek(fd, 0, SEEK_SET) < 0)
   {
-    ERROR_LOG("lseek({}, 0) failed: {}", fd, errno);
+    if (error)
+      error->SetErrno("lseek(0) failed: ", errno);
+    else
+      ERROR_LOG("lseek({}, 0) failed: {}", fd, errno);
     return false;
   }
 
@@ -2808,18 +2814,23 @@ static bool SetLock(int fd, bool lock)
   bool res;
   for (;;)
   {
-    res = (lockf(fd, lock ? F_LOCK : F_ULOCK, 0) == 0);
+    res = (lockf(fd, lock ? (block ? F_TLOCK : F_LOCK) : F_ULOCK, 0) == 0);
     if (!res && errno == EINTR)
       continue;
     else
       break;
   }
 
+  if (!res)
+  {
+    if (error)
+      error->SetErrno("lockf() failed: ", errno);
+    else
+      ERROR_LOG("lockf() for {} failed: {}", lock ? "lock" : "unlock", errno);
+  }
+
   if (lseek(fd, offs, SEEK_SET) < 0)
     Panic("Repositioning file descriptor after lock failed.");
-
-  if (!res)
-    ERROR_LOG("lockf() for {} failed: {}", lock ? "lock" : "unlock", errno);
 
   return res;
 }
@@ -2828,15 +2839,15 @@ FileSystem::POSIXLock::POSIXLock() : m_fd(-1)
 {
 }
 
-FileSystem::POSIXLock::POSIXLock(int fd) : m_fd(fd)
+FileSystem::POSIXLock::POSIXLock(int fd, bool block, Error* error) : m_fd(fd)
 {
-  if (!SetLock(m_fd, true))
+  if (!SetLock(m_fd, true, block, error))
     m_fd = -1;
 }
 
-FileSystem::POSIXLock::POSIXLock(std::FILE* fp) : m_fd(fileno(fp))
+FileSystem::POSIXLock::POSIXLock(std::FILE* fp, bool block, Error* error) : m_fd(fileno(fp))
 {
-  if (!SetLock(m_fd, true))
+  if (!SetLock(m_fd, true, block, error))
     m_fd = -1;
 }
 
@@ -2847,8 +2858,16 @@ FileSystem::POSIXLock::POSIXLock(POSIXLock&& move)
 
 FileSystem::POSIXLock::~POSIXLock()
 {
+  Unlock();
+}
+
+void FileSystem::POSIXLock::Unlock()
+{
   if (m_fd >= 0)
-    SetLock(m_fd, false);
+  {
+    SetLock(m_fd, false, true, nullptr);
+    m_fd = -1;
+  }
 }
 
 FileSystem::POSIXLock& FileSystem::POSIXLock::operator=(POSIXLock&& move)
