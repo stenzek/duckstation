@@ -16,6 +16,7 @@
 #include <cstring>
 #include <limits>
 #include <numeric>
+#include <utility>
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -2823,6 +2824,10 @@ static bool SetLock(int fd, bool lock)
   return res;
 }
 
+FileSystem::POSIXLock::POSIXLock() : m_fd(-1)
+{
+}
+
 FileSystem::POSIXLock::POSIXLock(int fd) : m_fd(fd)
 {
   if (!SetLock(m_fd, true))
@@ -2835,10 +2840,21 @@ FileSystem::POSIXLock::POSIXLock(std::FILE* fp) : m_fd(fileno(fp))
     m_fd = -1;
 }
 
+FileSystem::POSIXLock::POSIXLock(POSIXLock&& move)
+{
+  m_fd = std::exchange(move.m_fd, -1);
+}
+
 FileSystem::POSIXLock::~POSIXLock()
 {
   if (m_fd >= 0)
     SetLock(m_fd, false);
+}
+
+FileSystem::POSIXLock& FileSystem::POSIXLock::operator=(POSIXLock&& move)
+{
+  m_fd = std::exchange(move.m_fd, -1);
+  return *this;
 }
 
 #endif

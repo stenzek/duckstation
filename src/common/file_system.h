@@ -159,9 +159,15 @@ void DiscardAtomicRenamedFile(AtomicRenamedFile& file);
 class POSIXLock
 {
 public:
+  POSIXLock();
   POSIXLock(int fd);
   POSIXLock(std::FILE* fp);
+  POSIXLock(POSIXLock&& move);
+  POSIXLock(const POSIXLock&) = delete;
   ~POSIXLock();
+
+  POSIXLock& operator=(POSIXLock&& move);
+  POSIXLock& operator=(const POSIXLock&) = delete;
 
 private:
   int m_fd;
