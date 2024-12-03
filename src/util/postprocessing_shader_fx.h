@@ -98,7 +98,8 @@ private:
     ShaderOption::ValueVector value;
   };
 
-  bool CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::codegen* cg, std::string code, Error* error);
+  bool CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::codegen* cg, GPUShaderLanguage cg_language,
+                    std::string code, Error* error);
   bool CreateOptions(const reshadefx::effect_module& mod, Error* error);
   bool GetSourceOption(const reshadefx::uniform& ui, SourceOptionType* si, Error* error);
   bool CreatePasses(GPUTexture::Format backbuffer_format, const reshadefx::effect_module& mod, Error* error);
