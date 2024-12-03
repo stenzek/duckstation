@@ -4338,6 +4338,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       // Reallocate fastmem area, even if it's not being used.
       Bus::RemapFastmemViews();
+      CPU::CodeCache::Reset();
+      InterruptExecution();
     }
 
     SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());

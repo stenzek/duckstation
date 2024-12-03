@@ -1012,7 +1012,7 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
   }
 #endif
 
-  // fastmem should be off if we're not using the intepreter, save the allocation
+  // fastmem should be off if we're not using the recompiler, save the allocation
   if (g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler)
     g_settings.cpu_fastmem_mode = CPUFastmemMode::Disabled;
 
