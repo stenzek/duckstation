@@ -50,7 +50,7 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatRGBA8Unorm,            // RGBA8
   MTLPixelFormatBGRA8Unorm,            // BGRA8
   MTLPixelFormatB5G6R5Unorm,           // RGB565
-  MTLPixelFormatA1BGR5Unorm,           // RGB5A1
+  MTLPixelFormatBGR5A1Unorm,           // RGB5A1
   MTLPixelFormatR8Unorm,               // R8
   MTLPixelFormatDepth16Unorm,          // D16
   MTLPixelFormatDepth24Unorm_Stencil8, // D24S8
