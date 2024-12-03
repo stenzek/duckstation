@@ -106,6 +106,25 @@ void GameSummaryWidget::reloadGameSettings()
   m_ui.editInputProfile->setEnabled(m_ui.inputProfile->currentIndex() >= 1);
 }
 
+void GameSummaryWidget::resizeEvent(QResizeEvent* event)
+{
+  QWidget::resizeEvent(event);
+  updateTracksInfoColumnSizes();
+}
+
+void GameSummaryWidget::showEvent(QShowEvent* event)
+{
+  QWidget::showEvent(event);
+
+  // Need to put this on show as well, otherwise it lags behind the vertical scrollbar being enabled.
+  updateTracksInfoColumnSizes();
+}
+
+void GameSummaryWidget::updateTracksInfoColumnSizes()
+{
+  QtUtils::ResizeColumnsForTableView(m_ui.tracks, {70, 75, 70, 70, -1, 40});
+}
+
 void GameSummaryWidget::populateUi(const std::string& path, const std::string& serial, DiscRegion region,
                                    const GameDatabase::Entry* entry)
 {
@@ -287,13 +306,12 @@ void GameSummaryWidget::setRevisionText(const QString& text)
   m_ui.revision->setVisible(true);
 }
 
-static QString MSFTotString(const CDImage::Position& position)
+static QString MSFToString(const CDImage::Position& position)
 {
-  return QStringLiteral("%1:%2:%3 (LBA %4)")
+  return QStringLiteral("%1:%2:%3")
     .arg(static_cast<uint>(position.minute), 2, 10, static_cast<QChar>('0'))
     .arg(static_cast<uint>(position.second), 2, 10, static_cast<QChar>('0'))
-    .arg(static_cast<uint>(position.frame), 2, 10, static_cast<QChar>('0'))
-    .arg(static_cast<ulong>(position.ToLBA()));
+    .arg(static_cast<uint>(position.frame), 2, 10, static_cast<QChar>('0'));
 }
 
 void GameSummaryWidget::populateTracksInfo()
@@ -302,7 +320,6 @@ void GameSummaryWidget::populateTracksInfo()
     {"Audio", "Mode 1", "Mode 1/Raw", "Mode 2", "Mode 2/Form 1", "Mode 2/Form 2", "Mode 2/Mix", "Mode 2/Raw"}};
 
   m_ui.tracks->clearContents();
-  QtUtils::ResizeColumnsForTableView(m_ui.tracks, {70, 75, 95, 95, 215, 40});
 
   std::unique_ptr<CDImage> image = CDImage::Open(m_path.c_str(), false, nullptr);
   if (!image)
@@ -327,9 +344,12 @@ void GameSummaryWidget::populateTracksInfo()
     m_ui.tracks->insertRow(row);
     m_ui.tracks->setItem(row, 0, num);
     m_ui.tracks->setItem(row, 1, new QTableWidgetItem(track_mode_strings[static_cast<u32>(mode)]));
-    m_ui.tracks->setItem(row, 2, new QTableWidgetItem(MSFTotString(position)));
-    m_ui.tracks->setItem(row, 3, new QTableWidgetItem(MSFTotString(length)));
+    m_ui.tracks->setItem(row, 2, new QTableWidgetItem(MSFToString(position)));
+    m_ui.tracks->setItem(row, 3, new QTableWidgetItem(MSFToString(length)));
     m_ui.tracks->setItem(row, 4, new QTableWidgetItem(tr("<not computed>")));
+
+    for (int i = 1; i <= 4; i++)
+      m_ui.tracks->item(row, i)->setTextAlignment(Qt::AlignCenter);
 
     QTableWidgetItem* status = new QTableWidgetItem(QString());
     status->setTextAlignment(Qt::AlignCenter);
