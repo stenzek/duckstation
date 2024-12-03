@@ -154,9 +154,10 @@ static u8* s_free_far_code_ptr = nullptr;
 static u32 s_far_code_size = 0;
 static u32 s_far_code_used = 0;
 
-#if defined(_DEBUG) || defined(_DEVEL)
+#ifdef DUMP_CODE_SIZE_STATS
 static u32 s_total_instructions_compiled = 0;
 static u32 s_total_host_instructions_emitted = 0;
+static u32 s_total_host_code_used_by_instructions = 0;
 #endif
 } // namespace CPU::CodeCache
 
@@ -691,7 +692,6 @@ void CPU::CodeCache::InvalidateAllRAMBlocks()
 
 void CPU::CodeCache::ClearBlocks()
 {
-
   for (u32 i = 0; i < Bus::RAM_8MB_CODE_PAGE_COUNT; i++)
   {
     PageProtectionInfo& ppi = s_page_protection[i];
@@ -1345,10 +1345,13 @@ void CPU::CodeCache::CompileOrRevalidateBlock(u32 start_pc)
   }
 
   // Ensure we're not going to run out of space while compiling this block.
-  // We could definitely do better here... TODO: far code is no longer needed for newrec
+  // We could definitely do better here...
   const u32 block_size = static_cast<u32>(s_block_instructions.size());
-  if (GetFreeCodeSpace() < (block_size * Recompiler::MAX_NEAR_HOST_BYTES_PER_INSTRUCTION) ||
-      GetFreeFarCodeSpace() < (block_size * Recompiler::MAX_FAR_HOST_BYTES_PER_INSTRUCTION))
+  const u32 free_code_space = GetFreeCodeSpace();
+  const u32 free_far_code_space = GetFreeFarCodeSpace();
+  if (free_code_space < (block_size * Recompiler::MAX_NEAR_HOST_BYTES_PER_INSTRUCTION) ||
+      free_code_space < Recompiler::MIN_CODE_RESERVE_FOR_BLOCK ||
+      free_far_code_space < Recompiler::MIN_CODE_RESERVE_FOR_BLOCK)
   {
     ERROR_LOG("Out of code space while compiling {:08X}. Resetting code cache.", start_pc);
     CodeCache::Reset();
@@ -1540,9 +1543,10 @@ void CPU::CodeCache::CompileASMFunctions()
 {
   MemMap::BeginCodeWrite();
 
-#if defined(_DEBUG) || defined(_DEVEL)
+#ifdef DUMP_CODE_SIZE_STATS
   s_total_instructions_compiled = 0;
   s_total_host_instructions_emitted = 0;
+  s_total_host_code_used_by_instructions = 0;
 #endif
 
   const u32 asm_size = EmitASMFunctions(GetFreeCodePointer(), GetFreeCodeSpace());
@@ -1580,14 +1584,18 @@ bool CPU::CodeCache::CompileBlock(Block* block)
   const u32 host_instructions = GetHostInstructionCount(host_code, host_code_size);
   s_total_instructions_compiled += block->size;
   s_total_host_instructions_emitted += host_instructions;
+  s_total_host_code_used_by_instructions += host_code_size;
 
-  DEV_LOG("0x{:08X}: {}/{}b for {}b ({}i), blowup: {:.2f}x, cache: {:.2f}%/{:.2f}%, ipi: {:.2f}/{:.2f}", block->pc,
-          host_code_size, host_far_code_size, block->size * 4, block->size,
-          static_cast<float>(host_code_size) / static_cast<float>(block->size * 4),
-          (static_cast<float>(s_code_used) / static_cast<float>(s_code_size)) * 100.0f,
-          (static_cast<float>(s_far_code_used) / static_cast<float>(s_far_code_size)) * 100.0f,
-          static_cast<float>(host_instructions) / static_cast<float>(block->size),
-          static_cast<float>(s_total_host_instructions_emitted) / static_cast<float>(s_total_instructions_compiled));
+  DEV_LOG(
+    "0x{:08X}: {}/{}b for {}b ({}i), blowup: {:.2f}x, cache: {:.2f}%/{:.2f}%, ipi: {:.2f}/{:.2f}, bpi: {:.2f}/{:.2f}",
+    block->pc, host_code_size, host_far_code_size, block->size * 4, block->size,
+    static_cast<float>(host_code_size) / static_cast<float>(block->size * 4),
+    (static_cast<float>(s_code_used) / static_cast<float>(s_code_size)) * 100.0f,
+    (static_cast<float>(s_far_code_used) / static_cast<float>(s_far_code_size)) * 100.0f,
+    static_cast<float>(host_instructions) / static_cast<float>(block->size),
+    static_cast<float>(s_total_host_instructions_emitted) / static_cast<float>(s_total_instructions_compiled),
+    static_cast<float>(block->host_code_size) / static_cast<float>(block->size),
+    static_cast<float>(s_total_host_code_used_by_instructions) / static_cast<float>(s_total_instructions_compiled));
 #endif
 
 #if 0

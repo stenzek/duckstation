@@ -14,7 +14,6 @@
 
 namespace CPU {
 
-// TODO: Get rid of the virtuals... somehow.
 class Recompiler
 {
 public:
@@ -26,8 +25,10 @@ public:
 #if defined(CPU_ARCH_X64)
 
   // A reasonable "maximum" number of bytes per instruction.
-  static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
-  static constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+  // Seems to hover around ~21 bytes without PGXP, and ~26 bytes with.
+  // Use an upper bound of 32 bytes to be safe.
+  static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 32;
+  static constexpr u32 MIN_CODE_RESERVE_FOR_BLOCK = 512;
 
   // Number of host registers.
   static constexpr u32 NUM_HOST_REGS = 16;
@@ -37,7 +38,7 @@ public:
 
   // A reasonable "maximum" number of bytes per instruction.
   static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
-  static constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+  static constexpr u32 MIN_CODE_RESERVE_FOR_BLOCK = 512;
 
   // Number of host registers.
   static constexpr u32 NUM_HOST_REGS = 16;
@@ -45,13 +46,15 @@ public:
 
 #elif defined(CPU_ARCH_ARM64)
 
+  // A reasonable "maximum" number of bytes per instruction.
+  // Seems to hover around ~24 bytes without PGXP, and ~40 bytes with.
+  // Use an upper bound of 48 bytes to be safe.
+  static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 48;
+  static constexpr u32 MIN_CODE_RESERVE_FOR_BLOCK = 512;
+
   // Number of host registers.
   static constexpr u32 NUM_HOST_REGS = 32;
   static constexpr bool HAS_MEMORY_OPERANDS = false;
-
-  // A reasonable "maximum" number of bytes per instruction.
-  static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
-  static constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
 
 #elif defined(CPU_ARCH_RISCV64)
 
@@ -61,7 +64,7 @@ public:
 
   // A reasonable "maximum" number of bytes per instruction.
   static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
-  static constexpr u32 MAX_FAR_HOST_BYTES_PER_INSTRUCTION = 128;
+  static constexpr u32 MIN_CODE_RESERVE_FOR_BLOCK = 512;
 
 #endif
 
