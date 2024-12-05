@@ -4698,6 +4698,10 @@ void System::WarnAboutUnsafeSettings()
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
       if (g_settings.gpu_widescreen_hack)
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
+      if (g_settings.gpu_pgxp_enable)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PGXP disabled."));
+      if (g_settings.gpu_texture_cache)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "GPU texture cache disabled."));
       if (g_settings.display_24bit_chroma_smoothing)
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
       if (g_settings.cdrom_read_speedup != 1)
