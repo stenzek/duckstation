@@ -5,6 +5,7 @@
 
 #include "common/types.h"
 
+#include <cstdio>
 #include <memory>
 #include <optional>
 #include <string>
@@ -13,6 +14,7 @@
 class CDImage;
 
 class Error;
+class ProgressCallback;
 
 class IsoReader
 {
@@ -104,6 +106,8 @@ public:
     u8 minute;
     u8 second;
     s8 gmt_offset;
+
+    std::string GetFormattedTime() const;
   };
 
   enum ISODirectoryEntryFlags : u8
@@ -160,6 +164,11 @@ public:
   bool DirectoryExists(std::string_view path, Error* error = nullptr);
   bool ReadFile(std::string_view path, std::vector<u8>* data, Error* error = nullptr);
   bool ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Error* error = nullptr);
+
+  bool WriteFileToStream(std::string_view path, std::FILE* fp, Error* error = nullptr,
+                         ProgressCallback* progress = nullptr);
+  bool WriteFileToStream(const ISODirectoryEntry& de, std::FILE* fp, Error* error = nullptr,
+                         ProgressCallback* progress = nullptr);
 
 private:
   static std::string_view GetDirectoryEntryFileName(const u8* sector, u32 de_sector_offset);
