@@ -47,9 +47,7 @@ void QtModalProgressCallback::SetStatusText(const std::string_view text)
 {
   ProgressCallback::SetStatusText(text);
   checkForDelayedShow();
-
-  if (m_dialog.isVisible())
-    m_dialog.setLabelText(QtUtils::StringViewToQString(text));
+  m_dialog.setLabelText(QtUtils::StringViewToQString(text));
 }
 
 void QtModalProgressCallback::SetProgressRange(u32 range)
