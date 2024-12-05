@@ -1041,7 +1041,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
   return ret;
 }
 
-std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter>
+GPUDevice::AutoRecycleTexture
 GPUDevice::FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
                                    GPUTexture::Format format, GPUTexture::Flags flags, const void* data /* = nullptr */,
                                    u32 data_stride /* = 0 */, Error* error /* = nullptr */)

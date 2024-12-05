@@ -630,6 +630,7 @@ public:
   {
     void operator()(GPUTexture* const tex);
   };
+  using AutoRecycleTexture = std::unique_ptr<GPUTexture, PooledTextureDeleter>;
 
   static constexpr u32 MAX_TEXTURE_SAMPLERS = 8;
   static constexpr u32 MIN_TEXEL_BUFFER_ELEMENTS = 4 * 1024 * 512;
@@ -742,10 +743,9 @@ public:
   std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                            GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
                                            const void* data = nullptr, u32 data_stride = 0, Error* error = nullptr);
-  std::unique_ptr<GPUTexture, PooledTextureDeleter>
-  FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
-                          GPUTexture::Format format, GPUTexture::Flags flags, const void* data = nullptr,
-                          u32 data_stride = 0, Error* error = nullptr);
+  AutoRecycleTexture FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                             GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                             const void* data = nullptr, u32 data_stride = 0, Error* error = nullptr);
   std::unique_ptr<GPUTexture> FetchAndUploadTextureImage(const Image& image,
                                                          GPUTexture::Flags flags = GPUTexture::Flags::None,
                                                          Error* error = nullptr);
