@@ -223,10 +223,16 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
   INISettingsInterface* ini = static_cast<INISettingsInterface*>(sif);
   Error error;
 
+
   // if there's no keys, just toss the whole thing out
   if (delete_if_empty && ini->IsEmpty())
   {
     INFO_LOG("Removing empty gamesettings ini {}", Path::GetFileName(ini->GetFileName()));
+
+    // grab the settings lock while we're writing the file, that way the CPU thread doesn't try
+    // to read it at the same time.
+    const auto lock = Host::GetSettingsLock();
+
     if (FileSystem::FileExists(ini->GetFileName().c_str()) &&
         !FileSystem::DeleteFile(ini->GetFileName().c_str(), &error))
     {
@@ -242,6 +248,9 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 
   // clean unused sections, stops the file being bloated
   sif->RemoveEmptySections();
+
+  // see above
+  const auto lock = Host::GetSettingsLock();
 
   if (!sif->Save(&error))
   {
