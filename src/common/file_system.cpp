@@ -2788,6 +2788,10 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
   return false;
 }
 
+#endif
+
+#ifndef _WIN32
+
 static bool SetLock(int fd, bool lock, bool block, Error* error)
 {
   // We want to lock the whole file.
