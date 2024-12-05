@@ -98,7 +98,8 @@ private:
     ShaderOption::ValueVector value;
   };
 
-  bool CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::codegen* cg, std::string code, Error* error);
+  bool CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::codegen* cg, GPUShaderLanguage cg_language,
+                    std::string code, Error* error);
   bool CreateOptions(const reshadefx::effect_module& mod, Error* error);
   bool GetSourceOption(const reshadefx::uniform& ui, SourceOptionType* si, Error* error);
   bool CreatePasses(GPUTexture::Format backbuffer_format, const reshadefx::effect_module& mod, Error* error);
@@ -132,7 +133,7 @@ private:
     llvm::SmallVector<Sampler, GPUDevice::MAX_TEXTURE_SAMPLERS> samplers;
     u32 num_vertices;
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
     std::string name;
 #endif
   };
@@ -144,7 +145,7 @@ private:
   bool m_valid = false;
   bool m_wants_depth_buffer = false;
 
-  Common::Timer m_frame_timer;
+  Timer m_frame_timer;
   u32 m_frame_count = 0;
 
   // Specifically using a fixed seed, so that it's consistent from run-to-run.

@@ -51,6 +51,7 @@
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="imgui_overlays.cpp" />
     <ClCompile Include="interrupt_controller.cpp" />
+    <ClCompile Include="jogcon.cpp" />
     <ClCompile Include="justifier.cpp" />
     <ClCompile Include="mdec.cpp" />
     <ClCompile Include="memory_card.cpp" />
@@ -131,6 +132,7 @@
     <ClInclude Include="imgui_overlays.h" />
     <ClInclude Include="input_types.h" />
     <ClInclude Include="interrupt_controller.h" />
+    <ClInclude Include="jogcon.h" />
     <ClInclude Include="justifier.h" />
     <ClInclude Include="mdec.h" />
     <ClInclude Include="memory_card.h" />
@@ -178,7 +180,7 @@
     <ProjectReference Include="..\..\dep\xxhash\xxhash.vcxproj">
       <Project>{09553c96-9f39-49bf-8ae6-7acbd07c410c}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\dep\zydis\zydis.vcxproj" Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">
+    <ProjectReference Include="..\..\dep\zydis\zydis.vcxproj" Condition="'$(Platform)'=='x64' And ($(Configuration.Contains('Debug')) Or $(Configuration.Contains('Devel')))">
       <Project>{c51a346a-86b2-46df-9bb3-d0aa7e5d8699}</Project>
     </ProjectReference>
     <ProjectReference Include="..\scmversion\scmversion.vcxproj">
@@ -198,8 +200,8 @@
   <Import Project="core.props" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <PreprocessorDefinitions Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">ZYDIS_DISABLE_ENCODER;ZYDIS_DISABLE_AVX512;ZYDIS_DISABLE_KNC;ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64' And $(Configuration.Contains('Debug'))">%(AdditionalIncludeDirectories);$(SolutionDir)dep\zydis\include;$(SolutionDir)dep\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64' And ($(Configuration.Contains('Debug')) Or $(Configuration.Contains('Devel')))">ZYDIS_DISABLE_ENCODER;ZYDIS_DISABLE_AVX512;ZYDIS_DISABLE_KNC;ZYDIS_STATIC_BUILD;ZYCORE_STATIC_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories Condition="'$(Platform)'=='x64' And ($(Configuration.Contains('Debug')) Or $(Configuration.Contains('Devel')))">%(AdditionalIncludeDirectories);$(SolutionDir)dep\zydis\include;$(SolutionDir)dep\zydis\dependencies\zycore\include</AdditionalIncludeDirectories>
       <ObjectFileName>$(IntDir)/%(RelativeDir)/</ObjectFileName>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>

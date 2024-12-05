@@ -26,7 +26,7 @@ build-options:
 sources:
   - type: git
     url: "https://github.com/nih-at/libzip.git"
-    commit: "9c8b818a1de143a4a8ee445351fb8f92115e33e1"
+    commit: "64b62d6b1a686a1b0bac1b6b9dcb635be0499afb"
 cleanup:
   - /bin
   - /include

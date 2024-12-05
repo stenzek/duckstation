@@ -8,5 +8,6 @@
     <ClCompile Include="path_tests.cpp" />
     <ClCompile Include="string_tests.cpp" />
     <ClCompile Include="gsvector_yuvtorgb_test.cpp" />
+    <ClCompile Include="sha256_tests.cpp" />
   </ItemGroup>
 </Project>

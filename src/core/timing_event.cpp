@@ -387,7 +387,7 @@ void TimingEvents::RunEvents()
 
 void TimingEvents::CommitLeftoverTicks()
 {
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   if (s_state.event_run_tick_counter > s_state.global_tick_counter)
     DEV_LOG("Late-running {} ticks before execution", s_state.event_run_tick_counter - s_state.global_tick_counter);
 #endif

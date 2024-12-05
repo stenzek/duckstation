@@ -423,7 +423,7 @@ bool OpenGLContextEGL::CheckConfigSurfaceFormat(EGLConfig config, GPUTexture::Fo
     case GPUTexture::Format::RGB565:
       return (red_size == 5 && green_size == 6 && blue_size == 5);
 
-    case GPUTexture::Format::RGBA5551:
+    case GPUTexture::Format::RGB5A1:
       return (red_size == 5 && green_size == 5 && blue_size == 5 && alpha_size == 1);
 
     case GPUTexture::Format::Unknown:
@@ -461,7 +461,7 @@ void OpenGLContextEGL::UpdateWindowInfoSize(WindowInfo& wi, EGLSurface surface) 
   }
   else if (red_size == 5 && green_size == 5 && blue_size == 5 && alpha_size == 1)
   {
-    wi.surface_format = GPUTexture::Format::RGBA5551;
+    wi.surface_format = GPUTexture::Format::RGB5A1;
   }
   else if (red_size == 8 && green_size == 8 && blue_size == 8 && alpha_size == 8)
   {

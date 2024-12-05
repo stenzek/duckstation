@@ -37,6 +37,7 @@
 #include "common/path.h"
 #include "common/scoped_guard.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 
 #include "util/audio_stream.h"
 #include "util/http_downloader.h"
@@ -196,7 +197,9 @@ QString QtHost::GetAppNameAndVersion()
 
 QString QtHost::GetAppConfigSuffix()
 {
-#if defined(_DEBUGFAST)
+#if defined(_DEVEL)
+  return QStringLiteral(" [Devel]");
+#elif defined(_DEBUGFAST)
   return QStringLiteral(" [DebugFast]");
 #elif defined(_DEBUG)
   return QStringLiteral(" [Debug]");
@@ -500,12 +503,7 @@ bool QtHost::SetCriticalFolders()
   // the resources directory should exist, bail out if not
   const std::string rcc_path = Path::Combine(EmuFolders::Resources, "duckstation-qt.rcc");
   if (!FileSystem::FileExists(rcc_path.c_str()) || !QResource::registerResource(QString::fromStdString(rcc_path)) ||
-#if defined(_WIN32) || defined(__APPLE__)
-      !FileSystem::DirectoryExists(EmuFolders::Resources.c_str())
-#else
-      !FileSystem::IsRealDirectory(EmuFolders::Resources.c_str())
-#endif
-  )
+      !FileSystem::DirectoryExists(EmuFolders::Resources.c_str()))
   {
     QMessageBox::critical(nullptr, QStringLiteral("Error"),
                           QStringLiteral("Resources are missing, your installation is incomplete."));
@@ -1791,6 +1789,8 @@ void EmuThread::stopInThread()
 
 void EmuThread::run()
 {
+  Threading::SetNameOfCurrentThread("CPU Thread");
+
   m_event_loop = new QEventLoop();
   m_started_semaphore.release();
 

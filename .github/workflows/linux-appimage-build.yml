@@ -2,6 +2,7 @@ name: 🐧 Linux AppImage
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   linux-x64-appimage-build:
@@ -14,7 +15,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install Packages
-      run: scripts/appimage/install-packages.sh      
+      run: scripts/packaging/appimage/install-packages.sh
 
     - name: Cache Dependencies
       id: cache-deps
@@ -66,7 +67,7 @@ jobs:
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" ..
         cmake --build . --parallel
         cd ..
-        scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
+        scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
 
     - name: Upload Qt AppImage
       uses: actions/upload-artifact@v4.3.3
@@ -85,7 +86,7 @@ jobs:
         fetch-depth: 0
 
     - name: Install Packages
-      run: scripts/appimage/install-packages.sh      
+      run: scripts/packaging/appimage/install-packages.sh
 
     - name: Cache Dependencies
       id: cache-deps
@@ -137,7 +138,7 @@ jobs:
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DDISABLE_SSE4=ON -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_PREFIX_PATH="$HOME/deps" -DCMAKE_C_COMPILER=clang-18 -DCMAKE_CXX_COMPILER=clang++-18 -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" ..
         cmake --build . --parallel
         cd ..
-        scripts/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64-SSE2
+        scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64-SSE2
 
     - name: Upload Qt AppImage
       uses: actions/upload-artifact@v4.3.3

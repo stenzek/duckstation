@@ -163,16 +163,16 @@ Image& Image::operator=(Image&& move)
 const char* Image::GetFormatName(ImageFormat format)
 {
   static constexpr std::array names = {
-    "None",    // None
-    "RGBA8",   // RGBA8
-    "BGRA8",   // BGRA8
-    "RGB565",  // RGB565
-    "RGB5551", // RGBA5551
-    "BGR8",    // BGR8
-    "BC1",     // BC1
-    "BC2",     // BC2
-    "BC3",     // BC3
-    "BC7",     // BC7
+    "None",   // None
+    "RGBA8",  // RGBA8
+    "BGRA8",  // BGRA8
+    "RGB565", // RGB565
+    "RGB5A1", // RGB5A1
+    "BGR8",   // BGR8
+    "BC1",    // BC1
+    "BC2",    // BC2
+    "BC3",    // BC3
+    "BC7",    // BC7
   };
   static_assert(names.size() == static_cast<size_t>(ImageFormat::MaxCount));
 
@@ -186,7 +186,7 @@ u32 Image::GetPixelSize(ImageFormat format)
     4,  // RGBA8
     4,  // BGRA8
     2,  // RGB565
-    2,  // RGBA5551
+    2,  // RGB5A1
     3,  // BGR8
     8,  // BC1 - 16 pixels in 64 bits
     16, // BC2 - 16 pixels in 128 bits
@@ -298,7 +298,7 @@ bool Image::SetAllPixelsOpaque()
 
     return true;
   }
-  else if (m_format == ImageFormat::RGBA5551)
+  else if (m_format == ImageFormat::RGB5A1)
   {
     for (u32 y = 0; y < m_height; y++)
     {
@@ -604,7 +604,7 @@ std::optional<Image> Image::ConvertToRGBA8(Error* error) const
     }
     break;
 
-    case ImageFormat::RGBA5551:
+    case ImageFormat::RGB5A1:
     {
       ret = Image(m_width, m_height, ImageFormat::RGBA8);
       for (u32 y = 0; y < m_height; y++)
@@ -614,7 +614,7 @@ std::optional<Image> Image::ConvertToRGBA8(Error* error) const
 
         for (u32 x = 0; x < m_width; x++)
         {
-          // RGBA5551 -> RGBA8
+          // RGB5A1 -> RGBA8
           u16 pixel_in;
           std::memcpy(&pixel_in, pixels_in, sizeof(u16));
           pixels_in += sizeof(u16);

@@ -43,7 +43,9 @@ public:
   void GenerateMipmaps() override;
   void MakeReadyForSampling() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
   void TransitionToState(D3D12_RESOURCE_STATES state);
   void CommitClear();
@@ -115,7 +117,9 @@ public:
 
   ALWAYS_INLINE const D3D12DescriptorHandle& GetDescriptor() const { return m_descriptor; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   D3D12Sampler(D3D12DescriptorHandle descriptor);
@@ -140,7 +144,9 @@ public:
   void* Map(u32 required_elements) override;
   void Unmap(u32 used_elements) override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   D3D12StreamBuffer m_buffer;
@@ -165,7 +171,9 @@ public:
 
   void Flush() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   D3D12DownloadTexture(u32 width, u32 height, GPUTexture::Format format, ComPtr<D3D12MA::Allocation> allocation,

@@ -11,6 +11,7 @@ on:
         required: false
         type: string
         default: "stable"
+  workflow_dispatch:
 
 jobs:
   linux-flatpak-build:
@@ -59,21 +60,21 @@ jobs:
 
     - name: Generate AppStream XML
       run: |
-        scripts/generate-metainfo.sh scripts/flatpak
-        cat scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
+        scripts/packaging/generate-metainfo.sh scripts/packaging/flatpak
+        cat scripts/packaging/flatpak/org.duckstation.DuckStation.metainfo.xml
 
     - name: Validate AppStream XML
-      run: flatpak-builder-lint appstream scripts/flatpak/org.duckstation.DuckStation.metainfo.xml
+      run: flatpak-builder-lint appstream scripts/packaging/flatpak/org.duckstation.DuckStation.metainfo.xml
 
     - name: Validate Manifest
-      run: flatpak-builder-lint manifest scripts/flatpak/org.duckstation.DuckStation.yaml
+      run: flatpak-builder-lint manifest scripts/packaging/flatpak/org.duckstation.DuckStation.yaml
 
     - name: Build Flatpak
       uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
       with:
         bundle: duckstation-x64.flatpak
         upload-artifact: false
-        manifest-path: scripts/flatpak/org.duckstation.DuckStation.yaml
+        manifest-path: scripts/packaging/flatpak/org.duckstation.DuckStation.yaml
         arch: x86_64
         build-bundle: true
         verbose: true
@@ -81,7 +82,7 @@ jobs:
         branch: stable
         cache: true
         restore-cache: true
-        cache-key: flatpak-x64-${{ hashFiles('scripts/flatpak/**/*.yaml') }}
+        cache-key: flatpak-x64-${{ hashFiles('scripts/packaging/flatpak/**/*.yaml') }}
 
     - name: Validate Build
       run: |

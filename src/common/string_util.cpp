@@ -197,6 +197,107 @@ std::string StringUtil::EncodeHex(const void* data, size_t length)
   return ret;
 }
 
+size_t StringUtil::EncodeBase64(const std::span<char> dest, const std::span<const u8> data)
+{
+  const size_t expected_length = EncodedBase64Length(data);
+  Assert(dest.size() <= expected_length);
+
+  static constexpr std::array<char, 64> table = {
+    {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V',
+     'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r',
+     's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '+', '/'}};
+
+  const size_t dataLength = data.size();
+  size_t dest_pos = 0;
+
+  for (size_t i = 0; i < dataLength;)
+  {
+    const size_t bytes_in_sequence = std::min<size_t>(dataLength - i, 3);
+    switch (bytes_in_sequence)
+    {
+      case 1:
+        dest[dest_pos++] = table[(data[i] >> 2) & 63];
+        dest[dest_pos++] = table[(data[i] & 3) << 4];
+        dest[dest_pos++] = '=';
+        dest[dest_pos++] = '=';
+        break;
+
+      case 2:
+        dest[dest_pos++] = table[(data[i] >> 2) & 63];
+        dest[dest_pos++] = table[((data[i] & 3) << 4) | ((data[i + 1] >> 4) & 15)];
+        dest[dest_pos++] = table[(data[i + 1] & 15) << 2];
+        dest[dest_pos++] = '=';
+        break;
+
+      case 3:
+        dest[dest_pos++] = table[(data[i] >> 2) & 63];
+        dest[dest_pos++] = table[((data[i] & 3) << 4) | ((data[i + 1] >> 4) & 15)];
+        dest[dest_pos++] = table[((data[i + 1] & 15) << 2) | ((data[i + 2] >> 6) & 3)];
+        dest[dest_pos++] = table[data[i + 2] & 63];
+        break;
+
+        DefaultCaseIsUnreachable();
+    }
+
+    i += bytes_in_sequence;
+  }
+
+  DebugAssert(dest_pos == expected_length);
+  return dest_pos;
+}
+
+size_t StringUtil::DecodeBase64(const std::span<u8> data, const std::string_view str)
+{
+  static constexpr std::array<u8, 128> table = {
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+    64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 62, 64, 64, 64, 63, 52, 53, 54, 55,
+    56, 57, 58, 59, 60, 61, 64, 64, 64, 0,  64, 64, 64, 0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12,
+    13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 64, 64, 64, 64, 64, 64, 26, 27, 28, 29, 30, 31, 32,
+    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 64, 64, 64, 64, 64};
+
+  const size_t str_length = str.length();
+  if ((str_length % 4) != 0)
+    return 0;
+
+  size_t data_pos = 0;
+  for (size_t i = 0; i < str_length;)
+  {
+    const u8 byte1 = table[str[i++] & 0x7F];
+    const u8 byte2 = table[str[i++] & 0x7F];
+    const u8 byte3 = table[str[i++] & 0x7F];
+    const u8 byte4 = table[str[i++] & 0x7F];
+
+    if (byte1 == 64 || byte2 == 64 || byte3 == 64 || byte4 == 64)
+      break;
+
+    data[data_pos++] = (byte1 << 2) | (byte2 >> 4);
+    if (str[i - 2] != '=')
+      data[data_pos++] = ((byte2 << 4) | (byte3 >> 2));
+    if (str[i - 1] != '=')
+      data[data_pos++] = ((byte3 << 6) | byte4);
+  }
+
+  return data_pos;
+}
+
+std::optional<std::vector<u8>> StringUtil::DecodeBase64(const std::string_view str)
+{
+  std::vector<u8> ret;
+  const size_t len = DecodedBase64Length(str);
+  ret.resize(len);
+  if (DecodeBase64(ret, str) != len)
+    ret = {};
+  return ret;
+}
+
+std::string StringUtil::EncodeBase64(const std::span<u8> data)
+{
+  std::string ret;
+  ret.resize(EncodedBase64Length(data));
+  ret.resize(EncodeBase64(ret, data));
+  return ret;
+}
+
 std::string_view StringUtil::StripWhitespace(const std::string_view str)
 {
   std::string_view::size_type start = 0;

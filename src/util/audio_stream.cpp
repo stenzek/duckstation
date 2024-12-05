@@ -788,9 +788,9 @@ void AudioStream::UpdateStretchTempo()
     static int iterations = 0;
     static u64 last_log_time = 0;
 
-    const u64 now = Common::Timer::GetCurrentValue();
+    const u64 now = Timer::GetCurrentValue();
 
-    if (Common::Timer::ConvertValueToSeconds(now - last_log_time) > 1.0f)
+    if (Timer::ConvertValueToSeconds(now - last_log_time) > 1.0f)
     {
       VERBOSE_LOG("buffers: {:4d} ms ({:3.0f}%), tempo: {}, comp: {:2.3f}, iters: {}, reset:{}",
                   (ibuffer_usage * 1000u) / m_sample_rate, 100.0f * buffer_usage / base_target_usage, tempo,

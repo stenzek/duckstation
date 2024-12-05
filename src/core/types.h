@@ -224,6 +224,7 @@ enum class ControllerType : u8
   Justifier,
   PopnController,
   DDGoController,
+  JogCon,
   Count
 };
 

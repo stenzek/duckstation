@@ -3,6 +3,7 @@
 
 #include "sha1_digest.h"
 #include "assert.h"
+#include "string_util.h"
 
 #include <cstring>
 
@@ -162,22 +163,7 @@ void SHA1Digest::Reset()
 
 std::string SHA1Digest::DigestToString(const std::span<const u8, DIGEST_SIZE> digest)
 {
-  std::string ret;
-  ret.reserve(DIGEST_SIZE * 2);
-  for (u32 i = 0; i < DIGEST_SIZE; i++)
-  {
-    u8 nibble = digest[i] >> 4;
-    if (nibble >= 0xA)
-      ret.push_back('A' + (nibble - 0xA));
-    else
-      ret.push_back('0' + nibble);
-    nibble = digest[i] & 0xF;
-    if (nibble >= 0xA)
-      ret.push_back('A' + (nibble - 0xA));
-    else
-      ret.push_back('0' + nibble);
-  }
-  return ret;
+  return StringUtil::EncodeHex<u8>(digest);
 }
 
 std::array<u8, SHA1Digest::DIGEST_SIZE> SHA1Digest::GetDigest(const void* data, size_t len)

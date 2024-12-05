@@ -28,7 +28,7 @@ public:
 private:
   void Redraw(bool force);
 
-  Common::Timer m_open_time;
+  Timer m_open_time;
   float m_open_delay = 1.0f;
   int m_last_progress_percent = -1;
 };

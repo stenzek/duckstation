@@ -15,8 +15,6 @@
 #include <unistd.h>
 #endif
 
-namespace Common {
-
 #ifdef _WIN32
 
 static double s_counter_frequency;
@@ -399,5 +397,3 @@ void Timer::NanoSleep(std::uint64_t ns)
   nanosleep(&ts, nullptr);
 #endif
 }
-
-} // namespace Common

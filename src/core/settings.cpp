@@ -782,6 +782,9 @@ bool Settings::TextureReplacementSettings::Configuration::operator==(const Confi
           dump_c16_textures == rhs.dump_c16_textures && reduce_palette_range == rhs.reduce_palette_range &&
           convert_copies_to_writes == rhs.convert_copies_to_writes &&
           replacement_scale_linear_filter == rhs.replacement_scale_linear_filter &&
+          max_hash_cache_entries == rhs.max_hash_cache_entries &&
+          max_hash_cache_vram_usage_mb == rhs.max_hash_cache_vram_usage_mb &&
+          max_replacement_cache_vram_usage_mb == rhs.max_replacement_cache_vram_usage_mb &&
           max_vram_write_splits == rhs.max_vram_write_splits &&
           max_vram_write_coalesce_width == rhs.max_vram_write_coalesce_width &&
           max_vram_write_coalesce_height == rhs.max_vram_write_coalesce_height &&
@@ -996,6 +999,11 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.gpu_pgxp_disable_2d = false;
   }
 
+  // texture replacements are not available without the TC or with the software renderer
+  g_settings.texture_replacements.enable_texture_replacements &=
+    (g_settings.gpu_renderer != GPURenderer::Software && g_settings.gpu_texture_cache);
+  g_settings.texture_replacements.enable_vram_write_replacements &= (g_settings.gpu_renderer != GPURenderer::Software);
+
 #ifndef ENABLE_MMAP_FASTMEM
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
@@ -1003,6 +1011,10 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 #endif
+
+  // fastmem should be off if we're not using the recompiler, save the allocation
+  if (g_settings.cpu_execution_mode != CPUExecutionMode::Recompiler)
+    g_settings.cpu_fastmem_mode = CPUFastmemMode::Disabled;
 
   if (g_settings.IsRunaheadEnabled() && g_settings.rewind_enable)
   {
@@ -2334,4 +2346,9 @@ std::string EmuFolders::GetOverridableResourcePath(std::string_view name)
   }
 
   return upath;
+}
+
+bool EmuFolders::IsRunningInPortableMode()
+{
+  return (AppRoot == DataRoot);
 }

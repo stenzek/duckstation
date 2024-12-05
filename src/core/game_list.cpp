@@ -11,6 +11,7 @@
 #include "system.h"
 
 #include "util/cd_image.h"
+#include "util/elf_file.h"
 #include "util/http_downloader.h"
 #include "util/image.h"
 #include "util/ini_settings_interface.h"
@@ -193,6 +194,18 @@ bool GameList::GetExeListEntry(const std::string& path, GameList::Entry* entry)
     if (std::fread(&magic, sizeof(magic), 1, fp.get()) != 1 || magic != BIOS::CPE_MAGIC)
     {
       WARNING_LOG("{} is not a valid CPE", path);
+      return false;
+    }
+
+    // Who knows
+    entry->region = DiscRegion::Other;
+  }
+  else if (StringUtil::EndsWithNoCase(filename, ".elf"))
+  {
+    ELFFile::Elf32_Ehdr header;
+    if (std::fread(&header, sizeof(header), 1, fp.get()) != 1 || !ELFFile::IsValidElfHeader(header))
+    {
+      WARNING_LOG("{} is not a valid ELF.", path);
       return false;
     }
 
@@ -1690,7 +1703,7 @@ FileSystem::ManagedCFilePtr GameList::OpenMemoryCardTimestampCache(bool for_writ
   if (errno != EACCES)
     return nullptr;
 
-  Common::Timer timer;
+  Timer timer;
   while (timer.GetTimeMilliseconds() <= 100.0f)
   {
     fp = FileSystem::OpenManagedSharedCFile(filename.c_str(), mode, share_mode, nullptr);

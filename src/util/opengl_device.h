@@ -11,10 +11,17 @@
 #include "opengl_pipeline.h"
 #include "opengl_texture.h"
 
-#include <cstdio>
+#include "common/file_system.h"
+
 #include <memory>
 #include <string_view>
 #include <tuple>
+
+// Unix doesn't prevent concurrent write access, need to explicitly lock the pipeline cache.
+// Don't worry about Android, it's not like you can run one more than one instance of the app there...
+#if !defined(_WIN32) && !defined(__ANDROID__)
+#define OPENGL_PIPELINE_CACHE_NEEDS_LOCK 1
+#endif
 
 class OpenGLPipeline;
 class OpenGLStreamBuffer;
@@ -82,9 +89,11 @@ public:
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::GraphicsConfig& config, Error* error) override;
   std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config, Error* error) override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void PushDebugGroup(const char* name) override;
   void PopDebugGroup() override;
   void InsertDebugMessage(const char* msg) override;
+#endif
 
   void MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
                        u32* map_base_vertex) override;
@@ -230,6 +239,9 @@ private:
   bool m_timestamp_query_started = false;
 
   std::FILE* m_pipeline_disk_cache_file = nullptr;
+#ifdef OPENGL_PIPELINE_CACHE_NEEDS_LOCK
+  FileSystem::POSIXLock m_pipeline_disk_cache_file_lock;
+#endif
   u32 m_pipeline_disk_cache_data_end = 0;
   bool m_pipeline_disk_cache_changed = false;
 

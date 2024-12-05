@@ -80,21 +80,21 @@ modules:
         - "-DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld"
     sources:
       - type: dir
-        path: ../..
+        path: ../../..
 
     post-install:
       # Manually copy desktop file/metadata, it's not done as part of the regular build.
       - >-
         install -Dm644
-        "${FLATPAK_BUILDER_BUILDDIR}/scripts/org.duckstation.DuckStation.png"
+        "${FLATPAK_BUILDER_BUILDDIR}/scripts/packaging/org.duckstation.DuckStation.png"
         "${FLATPAK_DEST}/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png"
       - >-
         install -Dm644
-        "${FLATPAK_BUILDER_BUILDDIR}/scripts/org.duckstation.DuckStation.desktop"
+        "${FLATPAK_BUILDER_BUILDDIR}/scripts/packaging/org.duckstation.DuckStation.desktop"
         "${FLATPAK_DEST}/share/applications/org.duckstation.DuckStation.desktop"
       - >-
         install -Dm644
-        "${FLATPAK_BUILDER_BUILDDIR}/scripts/flatpak/org.duckstation.DuckStation.metainfo.xml"
+        "${FLATPAK_BUILDER_BUILDDIR}/scripts/packaging/flatpak/org.duckstation.DuckStation.metainfo.xml"
         "${FLATPAK_DEST}/share/metainfo/org.duckstation.DuckStation.metainfo.xml"
 
       # Ensure ffmpeg-full mount point exists.

@@ -13,6 +13,8 @@
 #include "common/small_string.h"
 #include "common/types.h"
 
+#include "fmt/base.h"
+
 #include <cstring>
 #include <deque>
 #include <memory>
@@ -25,6 +27,11 @@
 
 class Error;
 class Image;
+
+// Enables debug event generation and object names for graphics debuggers.
+#if defined(_DEBUG) || defined(_DEVEL)
+#define ENABLE_GPU_OBJECT_NAMES
+#endif
 
 enum class RenderAPI : u8
 {
@@ -97,7 +104,14 @@ public:
   GPUSampler();
   virtual ~GPUSampler();
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   virtual void SetDebugName(std::string_view name) = 0;
+  template<typename... T>
+  void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
+  {
+    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+#endif
 
   static Config GetNearestConfig();
   static Config GetLinearConfig();
@@ -135,7 +149,14 @@ public:
 
   ALWAYS_INLINE GPUShaderStage GetStage() const { return m_stage; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   virtual void SetDebugName(std::string_view name) = 0;
+  template<typename... T>
+  void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
+  {
+    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+#endif
 
 protected:
   GPUShaderStage m_stage;
@@ -429,7 +450,14 @@ public:
   GPUPipeline();
   virtual ~GPUPipeline();
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   virtual void SetDebugName(std::string_view name) = 0;
+  template<typename... T>
+  void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
+  {
+    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+#endif
 };
 
 class GPUTextureBuffer
@@ -455,7 +483,14 @@ public:
   virtual void* Map(u32 required_elements) = 0;
   virtual void Unmap(u32 used_elements) = 0;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   virtual void SetDebugName(std::string_view name) = 0;
+  template<typename... T>
+  void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
+  {
+    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+#endif
 
 protected:
   Format m_format;
@@ -739,10 +774,24 @@ public:
   virtual std::unique_ptr<GPUPipeline> CreatePipeline(const GPUPipeline::ComputeConfig& config,
                                                       Error* error = nullptr) = 0;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   /// Debug messaging.
   virtual void PushDebugGroup(const char* name) = 0;
   virtual void PopDebugGroup() = 0;
   virtual void InsertDebugMessage(const char* msg) = 0;
+
+  /// Formatted debug variants.
+  template<typename... T>
+  void PushDebugGroup(fmt::format_string<T...> fmt, T&&... args)
+  {
+    PushDebugGroup(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+  template<typename... T>
+  void InsertDebugMessage(fmt::format_string<T...> fmt, T&&... args)
+  {
+    InsertDebugMessage(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+#endif
 
   /// Vertex/index buffer abstraction.
   virtual void MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
@@ -929,24 +978,74 @@ ALWAYS_INLINE void GPUDevice::PooledTextureDeleter::operator()(GPUTexture* const
 }
 
 // Macros for debug messages.
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
 struct GLAutoPop
 {
-  GLAutoPop(int dummy) {}
-  ~GLAutoPop() { g_gpu_device->PopDebugGroup(); }
+  GLAutoPop(const char* name)
+  {
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]
+      g_gpu_device->PushDebugGroup(name);
+  }
+
+  template<typename... T>
+  GLAutoPop(fmt::format_string<T...> fmt, T&&... args)
+  {
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]
+      g_gpu_device->PushDebugGroup(SmallString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+
+  ~GLAutoPop()
+  {
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]
+      g_gpu_device->PopDebugGroup();
+  }
 };
 
-#define GL_SCOPE(name) GLAutoPop gl_auto_pop((g_gpu_device->PushDebugGroup(name), 0))
-#define GL_PUSH(name) g_gpu_device->PushDebugGroup(name)
-#define GL_POP() g_gpu_device->PopDebugGroup()
-#define GL_INS(msg) g_gpu_device->InsertDebugMessage(msg)
-#define GL_OBJECT_NAME(obj, name) (obj)->SetDebugName(name)
+#define GL_SCOPE(name) GLAutoPop gl_auto_pop(name)
+#define GL_PUSH(name)                                                                                                  \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
+      g_gpu_device->PushDebugGroup(name);                                                                              \
+  } while (0)
+#define GL_POP()                                                                                                       \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
+      g_gpu_device->PopDebugGroup();                                                                                   \
+  } while (0)
+#define GL_INS(msg)                                                                                                    \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
+      g_gpu_device->InsertDebugMessage(msg);                                                                           \
+  } while (0)
+#define GL_OBJECT_NAME(obj, name)                                                                                      \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
+      (obj)->SetDebugName(name);                                                                                       \
+  } while (0)
 
-#define GL_SCOPE_FMT(...)                                                                                              \
-  GLAutoPop gl_auto_pop((g_gpu_device->PushDebugGroup(SmallString::from_format(__VA_ARGS__)), 0))
-#define GL_PUSH_FMT(...) g_gpu_device->PushDebugGroup(SmallString::from_format(__VA_ARGS__))
-#define GL_INS_FMT(...) g_gpu_device->InsertDebugMessage(SmallString::from_format(__VA_ARGS__))
-#define GL_OBJECT_NAME_FMT(obj, ...) (obj)->SetDebugName(SmallString::from_format(__VA_ARGS__))
+#define GL_SCOPE_FMT(...) GLAutoPop gl_auto_pop(__VA_ARGS__)
+#define GL_PUSH_FMT(...)                                                                                               \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
+      g_gpu_device->PushDebugGroup(__VA_ARGS__);                                                                       \
+  } while (0)
+#define GL_INS_FMT(...)                                                                                                \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
+      g_gpu_device->InsertDebugMessage(__VA_ARGS__);                                                                   \
+  } while (0)
+#define GL_OBJECT_NAME_FMT(obj, ...)                                                                                   \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
+      (obj)->SetDebugName(__VA_ARGS__);                                                                                \
+  } while (0)
 #else
 #define GL_SCOPE(name) (void)0
 #define GL_PUSH(name) (void)0

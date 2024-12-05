@@ -111,6 +111,7 @@ void LogWindow::createUi()
   QIcon icon;
   icon.addFile(QString::fromUtf8(":/icons/duck.png"), QSize(), QIcon::Normal, QIcon::Off);
   setWindowIcon(icon);
+  setWindowFlag(Qt::CustomizeWindowHint, true);
   setWindowFlag(Qt::WindowCloseButtonHint, false);
   updateWindowTitle();
 

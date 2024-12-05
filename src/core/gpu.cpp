@@ -171,7 +171,39 @@ void GPU::UpdateResolutionScale()
 
 std::tuple<u32, u32> GPU::GetFullDisplayResolution() const
 {
-  return std::tie(m_crtc_state.display_width, m_crtc_state.display_height);
+  u32 width, height;
+  if (IsDisplayDisabled())
+  {
+    width = 0;
+    height = 0;
+  }
+  else
+  {
+    s32 xmin, xmax, ymin, ymax;
+    if (!m_GPUSTAT.pal_mode)
+    {
+      xmin = NTSC_HORIZONTAL_ACTIVE_START;
+      xmax = NTSC_HORIZONTAL_ACTIVE_END;
+      ymin = NTSC_VERTICAL_ACTIVE_START;
+      ymax = NTSC_VERTICAL_ACTIVE_END;
+    }
+    else
+    {
+      xmin = PAL_HORIZONTAL_ACTIVE_START;
+      xmax = PAL_HORIZONTAL_ACTIVE_END;
+      ymin = PAL_VERTICAL_ACTIVE_START;
+      ymax = PAL_VERTICAL_ACTIVE_END;
+    }
+
+    width = static_cast<u32>(std::max<s32>(std::clamp<s32>(m_crtc_state.regs.X2, xmin, xmax) -
+                                             std::clamp<s32>(m_crtc_state.regs.X1, xmin, xmax),
+                                           0) /
+                             m_crtc_state.dot_clock_divider);
+    height = static_cast<u32>(std::max<s32>(
+      std::clamp<s32>(m_crtc_state.regs.Y2, ymin, ymax) - std::clamp<s32>(m_crtc_state.regs.Y1, ymin, ymax), 0));
+  }
+
+  return std::tie(width, height);
 }
 
 void GPU::Reset(bool clear_vram)
@@ -629,7 +661,9 @@ float GPU::ComputeDisplayAspectRatio() const
 float GPU::ComputeSourceAspectRatio() const
 {
   const float source_aspect_ratio =
-    static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height);
+    (g_settings.debugging.show_vram ?
+       (static_cast<float>(VRAM_WIDTH) / static_cast<float>(VRAM_HEIGHT)) :
+       static_cast<float>(m_crtc_state.display_width) / static_cast<float>(m_crtc_state.display_height));
 
   // Correction is applied to the GTE for stretch to fit, that way it fills the window.
   const float source_aspect_ratio_correction =
@@ -643,7 +677,8 @@ float GPU::ComputeAspectRatioCorrection() const
   const CRTCState& cs = m_crtc_state;
   float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
   float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
-  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1 ||
+  if (relative_width <= 0 || relative_height <= 0 || g_settings.debugging.show_vram ||
+      g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1 ||
       g_settings.display_crop_mode == DisplayCropMode::OverscanUncorrected ||
       g_settings.display_crop_mode == DisplayCropMode::BordersUncorrected)
   {
@@ -1550,32 +1585,31 @@ void GPU::HandleGetGPUInfoCommand(u32 value)
 
     case 0x02: // Get Texture Window
     {
-      DEBUG_LOG("Get texture window");
       m_GPUREAD_latch = m_draw_mode.texture_window_value;
+      DEBUG_LOG("Get texture window => 0x{:08X}", m_GPUREAD_latch);
     }
     break;
 
     case 0x03: // Get Draw Area Top Left
     {
-      DEBUG_LOG("Get drawing area top left");
-      m_GPUREAD_latch =
-        ((m_drawing_area.left & UINT32_C(0b1111111111)) | ((m_drawing_area.top & UINT32_C(0b1111111111)) << 10));
+      m_GPUREAD_latch = (m_drawing_area.left | (m_drawing_area.top << 10));
+      DEBUG_LOG("Get drawing area top left: ({}, {}) => 0x{:08X}", m_drawing_area.left, m_drawing_area.top,
+                m_GPUREAD_latch);
     }
     break;
 
     case 0x04: // Get Draw Area Bottom Right
     {
-      DEBUG_LOG("Get drawing area bottom right");
-      m_GPUREAD_latch =
-        ((m_drawing_area.right & UINT32_C(0b1111111111)) | ((m_drawing_area.bottom & UINT32_C(0b1111111111)) << 10));
+      m_GPUREAD_latch = (m_drawing_area.right | (m_drawing_area.bottom << 10));
+      DEBUG_LOG("Get drawing area bottom right: ({}, {}) => 0x{:08X}", m_drawing_area.bottom, m_drawing_area.right,
+                m_GPUREAD_latch);
     }
     break;
 
     case 0x05: // Get Drawing Offset
     {
-      DEBUG_LOG("Get drawing offset");
-      m_GPUREAD_latch =
-        ((m_drawing_offset.x & INT32_C(0b11111111111)) | ((m_drawing_offset.y & INT32_C(0b11111111111)) << 11));
+      m_GPUREAD_latch = (m_drawing_offset.x & 0x7FF) | ((m_drawing_offset.y & 0x7FF) << 11);
+      DEBUG_LOG("Get drawing offset: ({}, {}) => 0x{:08X}", m_drawing_offset.x, m_drawing_offset.y, m_GPUREAD_latch);
     }
     break;
 

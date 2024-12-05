@@ -20,7 +20,7 @@
 
 #include <cmath>
 
-LOG_CHANNEL(AnalogController);
+LOG_CHANNEL(Controller);
 
 AnalogController::AnalogController(u32 index) : Controller(index)
 {
@@ -416,7 +416,7 @@ void AnalogController::UpdateHostVibration()
     hvalues[motor] = (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
   }
 
-  WARNING_LOG("Set small to {}, large to {}", hvalues[SmallMotor], hvalues[LargeMotor]);
+  DEV_LOG("Set small motor to {}, large motor to {}", hvalues[SmallMotor], hvalues[LargeMotor]);
   InputManager::SetPadVibrationIntensity(m_index, hvalues[LargeMotor], hvalues[SmallMotor]);
 }
 
@@ -621,7 +621,7 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
           m_status_byte = 0x5A;
         }
 
-        DEV_LOG("0x{:02x}({}) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
+        DEBUG_LOG("0x{:02x}({}) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
       }
     }
     break;
@@ -706,9 +706,9 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         m_rumble_config[index] = data_in;
 
         if (data_in == LargeMotor)
-          WARNING_LOG("Large mapped to byte index {}", index);
+          DEBUG_LOG("Large motor mapped to byte index {}", index);
         else if (data_in == SmallMotor)
-          WARNING_LOG("Small mapped to byte index {}", index);
+          DEBUG_LOG("Small motor mapped to byte index {}", index);
       }
       else if (m_command_step == 7)
       {

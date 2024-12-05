@@ -5,7 +5,9 @@
 #include "cd_image.h"
 
 #include "common/error.h"
+#include "common/file_system.h"
 #include "common/log.h"
+#include "common/progress_callback.h"
 #include "common/string_util.h"
 
 #include "fmt/format.h"
@@ -384,4 +386,98 @@ bool IsoReader::ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Err
   // Might not be sector aligned, so reduce it back.
   data->resize(de.length_le);
   return true;
+}
+
+bool IsoReader::WriteFileToStream(std::string_view path, std::FILE* fp, Error* error /* = nullptr */,
+                                  ProgressCallback* progress /* = nullptr */)
+{
+  auto de = LocateFile(path, error);
+  if (!de)
+    return false;
+
+  return WriteFileToStream(de.value(), fp, error, progress);
+}
+
+bool IsoReader::WriteFileToStream(const ISODirectoryEntry& de, std::FILE* fp, Error* error /* = nullptr */,
+                                  ProgressCallback* progress /* = nullptr */)
+{
+  if (de.flags & ISODirectoryEntryFlag_Directory)
+  {
+    Error::SetString(error, "File is a directory");
+    return false;
+  }
+
+  if (!FileSystem::FSeek64(fp, 0, SEEK_SET, error))
+    return false;
+
+  if (de.length_le == 0)
+    return FileSystem::FTruncate64(fp, 0, error);
+
+  const u32 num_sectors = (de.length_le + (SECTOR_SIZE - 1)) / SECTOR_SIZE;
+  u32 file_pos = 0;
+  u8 sector_buffer[SECTOR_SIZE];
+
+  if (progress)
+  {
+    progress->SetProgressRange(de.length_le);
+    progress->SetProgressValue(0);
+  }
+
+  for (u32 i = 0, lsn = de.location_le; i < num_sectors; i++, lsn++)
+  {
+    if (!ReadSector(sector_buffer, lsn, error))
+      return false;
+
+    const u32 write_size = std::min<u32>(de.length_le - file_pos, SECTOR_SIZE);
+    if (std::fwrite(sector_buffer, write_size, 1, fp) != 1)
+    {
+      Error::SetErrno(error, "fwrite() failed: ", errno);
+      return false;
+    }
+
+    file_pos += write_size;
+    if (progress)
+    {
+      progress->SetProgressValue(file_pos);
+      if (progress->IsCancelled())
+      {
+        Error::SetStringView(error, "Operation was cancelled.");
+        return false;
+      }
+    }
+  }
+
+  if (std::fflush(fp) != 0)
+  {
+    Error::SetErrno(error, "fflush() failed: ", errno);
+    return false;
+  }
+
+  return true;
+}
+
+std::string IsoReader::ISODirectoryEntryDateTime::GetFormattedTime() const
+{
+  // need to apply the UTC offset, so first convert to unix time
+  struct tm utime;
+  utime.tm_year = years_since_1900;
+  utime.tm_mon = (month > 0) ? (month - 1) : 0;
+  utime.tm_mday = (day > 0) ? (day - 1) : 0;
+  utime.tm_hour = hour;
+  utime.tm_min = minute;
+  utime.tm_sec = second;
+
+  const s32 uts_offset = static_cast<s32>(gmt_offset) * 3600;
+  const time_t uts = std::mktime(&utime) + uts_offset;
+
+  struct tm ltime;
+#ifdef _MSC_VER
+  localtime_s(&ltime, &uts);
+#else
+  localtime_r(&uts, &ltime);
+#endif
+
+  char buf[128];
+  const size_t len = std::strftime(buf, std::size(buf), "%c", &ltime);
+  return std::string(buf, len);
 }

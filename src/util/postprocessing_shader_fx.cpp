@@ -37,16 +37,6 @@ LOG_CHANNEL(ReShadeFXShader);
 static constexpr s32 DEFAULT_BUFFER_WIDTH = 3840;
 static constexpr s32 DEFAULT_BUFFER_HEIGHT = 2160;
 
-static RenderAPI GetRenderAPI()
-{
-#ifdef _WIN32
-  static constexpr RenderAPI DEFAULT_RENDER_API = RenderAPI::D3D11;
-#else
-  static constexpr RenderAPI DEFAULT_RENDER_API = RenderAPI::D3D12;
-#endif
-  return g_gpu_device ? g_gpu_device->GetRenderAPI() : DEFAULT_RENDER_API;
-}
-
 static bool PreprocessorFileExistsCallback(const std::string& path)
 {
   if (Path::IsAbsolute(path))
@@ -69,12 +59,24 @@ static bool PreprocessorReadFileCallback(const std::string& path, std::string& d
   return true;
 }
 
-static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> CreateRFXCodegen()
+static std::tuple<std::unique_ptr<reshadefx::codegen>, GPUShaderLanguage> CreateRFXCodegen(bool only_config)
 {
-  const bool debug_info = g_gpu_device ? g_gpu_device->IsDebugDevice() : false;
-  const bool uniforms_to_spec_constants = false;
-  const RenderAPI rapi = GetRenderAPI();
-  [[maybe_unused]] const u32 rapi_version = g_gpu_device ? g_gpu_device->GetRenderAPIVersion() : 0;
+  constexpr bool uniforms_to_spec_constants = false;
+
+  if (only_config)
+  {
+    // Use SPIR-V for obtaining config, it's the fastest to generate.
+    return std::make_tuple(std::unique_ptr<reshadefx::codegen>(
+                             reshadefx::create_codegen_spirv(true, false, uniforms_to_spec_constants, false, false)),
+                           GPUShaderLanguage::SPV);
+  }
+
+  // Should have a GPU device and be on the GPU thread.
+  Assert(g_gpu_device);
+
+  const bool debug_info = g_gpu_device->IsDebugDevice();
+  const RenderAPI rapi = g_gpu_device->GetRenderAPI();
+  [[maybe_unused]] const u32 rapi_version = g_gpu_device->GetRenderAPIVersion();
 
   switch (rapi)
   {
@@ -331,11 +333,11 @@ bool PostProcessing::ReShadeFXShader::LoadFromString(std::string name, std::stri
     code.push_back('\n');
 
   // TODO: This could use spv, it's probably fastest.
-  const auto& [cg, cg_language] = CreateRFXCodegen();
+  const auto& [cg, cg_language] = CreateRFXCodegen(only_config);
 
   if (!CreateModule(only_config ? DEFAULT_BUFFER_WIDTH : g_gpu_device->GetMainSwapChain()->GetWidth(),
                     only_config ? DEFAULT_BUFFER_HEIGHT : g_gpu_device->GetMainSwapChain()->GetHeight(), cg.get(),
-                    std::move(code), error))
+                    cg_language, std::move(code), error))
   {
     return false;
   }
@@ -401,7 +403,7 @@ bool PostProcessing::ReShadeFXShader::WantsDepthBuffer() const
 }
 
 bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_height, reshadefx::codegen* cg,
-                                                   std::string code, Error* error)
+                                                   GPUShaderLanguage cg_language, std::string code, Error* error)
 {
   reshadefx::preprocessor pp;
   pp.set_include_callbacks(PreprocessorFileExistsCallback, PreprocessorReadFileCallback);
@@ -433,17 +435,17 @@ bool PostProcessing::ReShadeFXShader::CreateModule(s32 buffer_width, s32 buffer_
   pp.add_macro_definition("RESHADE_DEPTH_LINEARIZATION_FAR_PLANE", "1000.0");
   pp.add_macro_definition("RESHADE_DEPTH_INPUT_IS_REVERSED", "0");
 
-  switch (GetRenderAPI())
+  switch (cg_language)
   {
-    case RenderAPI::D3D11:
-    case RenderAPI::D3D12:
+    case GPUShaderLanguage::HLSL:
       pp.add_macro_definition("__RENDERER__", "0x0B000");
       break;
 
-    case RenderAPI::OpenGL:
-    case RenderAPI::OpenGLES:
-    case RenderAPI::Vulkan:
-    case RenderAPI::Metal:
+    case GPUShaderLanguage::GLSL:
+    case GPUShaderLanguage::GLSLES:
+    case GPUShaderLanguage::GLSLVK:
+    case GPUShaderLanguage::MSL:
+    case GPUShaderLanguage::SPV:
       pp.add_macro_definition("__RENDERER__", "0x14300");
       break;
 
@@ -1265,7 +1267,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
         pass.samplers.push_back(std::move(sampler));
       }
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
       pass.name = std::move(pi.name);
 #endif
       m_passes.push_back(std::move(pass));
@@ -1338,10 +1340,10 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   if (fxcode.empty() || fxcode.back() != '\n')
     fxcode.push_back('\n');
 
-  const auto& [cg, cg_language] = CreateRFXCodegen();
+  const auto& [cg, cg_language] = CreateRFXCodegen(false);
 
   Error error;
-  if (!CreateModule(width, height, cg.get(), std::move(fxcode), &error))
+  if (!CreateModule(width, height, cg.get(), cg_language, std::move(fxcode), &error))
   {
     ERROR_LOG("Failed to create module for '{}': {}", m_name, error.GetDescription());
     return false;

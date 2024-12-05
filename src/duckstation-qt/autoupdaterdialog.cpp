@@ -135,11 +135,17 @@ bool AutoUpdaterDialog::warnAboutUnofficialBuild()
   // Thanks, and I hope you understand.
   //
 
-#if !__has_include("scmversion/tag.h") && !defined(_DEBUG)
+#if !__has_include("scmversion/tag.h")
   constexpr const char* CONFIG_SECTION = "UI";
   constexpr const char* CONFIG_KEY = "UnofficialBuildWarningConfirmed";
-  if (Host::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
+  if (
+#ifndef _WIN32
+    !StringUtil::StartsWithNoCase(EmuFolders::AppRoot, "/usr") &&
+#endif
+    Host::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
+  {
     return true;
+  }
 
   constexpr int DELAY_SECONDS = 5;
 
@@ -155,6 +161,8 @@ bool AutoUpdaterDialog::warnAboutUnofficialBuild()
   mbox.setIcon(QMessageBox::Warning);
   mbox.setWindowTitle(QStringLiteral("Unofficial Build Warning"));
   mbox.setWindowIcon(QtHost::GetAppIcon());
+  mbox.setWindowFlag(Qt::CustomizeWindowHint, true);
+  mbox.setWindowFlag(Qt::WindowCloseButtonHint, false);
   mbox.setTextFormat(Qt::RichText);
   mbox.setText(message);
 

@@ -121,7 +121,7 @@ bool RegTestHost::InitializeConfig()
   EmuFolders::EnsureFoldersExist();
 
   // imgui setup, make sure it doesn't bug out
-  ImGuiManager::SetFontPathAndRange(std::string(), {0x0020, 0x00FF, 0, 0});
+  ImGuiManager::SetFontPathAndRange(std::string(), {0x0020, 0x00FF, 0x2022, 0x2022, 0, 0});
 
   return true;
 }
@@ -700,22 +700,12 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
     return false;
   }
 
-  const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForDisc(image.get());
-  std::string_view game_name;
-  if (dbentry)
-  {
-    game_name = dbentry->title;
-    INFO_LOG("Game name from database: {}", game_name);
-  }
-  else
-  {
-    game_name = Path::GetFileTitle(filename);
-    WARNING_LOG("Game not found in database, using filename: {}", game_name);
-  }
-
   if (!s_dump_base_directory.empty())
   {
-    std::string dump_directory = Path::Combine(s_dump_base_directory, game_name);
+    std::string game_subdir = Path::SanitizeFileName(Path::GetFileTitle(filename));
+    INFO_LOG("Writing to subdirectory '{}'", game_subdir);
+
+    std::string dump_directory = Path::Combine(s_dump_base_directory, game_subdir);
     if (!FileSystem::DirectoryExists(dump_directory.c_str()))
     {
       INFO_LOG("Creating directory '{}'...", dump_directory);
@@ -798,12 +788,12 @@ int main(int argc, char* argv[])
   s_frames_remaining = s_frames_to_run;
 
   {
-    const Common::Timer::Value start_time = Common::Timer::GetCurrentValue();
+    const Timer::Value start_time = Timer::GetCurrentValue();
 
     System::Execute();
 
-    const Common::Timer::Value elapsed_time = Common::Timer::GetCurrentValue() - start_time;
-    const double elapsed_time_ms = Common::Timer::ConvertValueToMilliseconds(elapsed_time);
+    const Timer::Value elapsed_time = Timer::GetCurrentValue() - start_time;
+    const double elapsed_time_ms = Timer::ConvertValueToMilliseconds(elapsed_time);
     INFO_LOG("Total execution time: {:.2f}ms, average frame time {:.2f}ms, {:.2f} FPS", elapsed_time_ms,
              elapsed_time_ms / static_cast<double>(s_frames_to_run),
              static_cast<double>(s_frames_to_run) / elapsed_time_ms * 1000.0);

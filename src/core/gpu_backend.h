@@ -25,6 +25,7 @@ public:
   virtual ~GPUBackend();
 
   ALWAYS_INLINE const Threading::Thread* GetThread() const { return m_use_gpu_thread ? &m_gpu_thread : nullptr; }
+  ALWAYS_INLINE bool IsUsingThread() const { return m_use_gpu_thread; }
 
   virtual bool Initialize(bool use_thread);
   virtual void Reset();

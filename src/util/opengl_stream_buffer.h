@@ -26,7 +26,9 @@ public:
   void Bind();
   void Unbind();
 
+#if defined(_DEBUG) || defined(_DEVEL)
   void SetDebugName(std::string_view name);
+#endif
 
   struct MappingResult
   {

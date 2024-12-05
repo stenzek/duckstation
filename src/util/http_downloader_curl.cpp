@@ -105,7 +105,7 @@ size_t HTTPDownloaderCurl::WriteCallback(char* ptr, size_t size, size_t nmemb, v
   const size_t transfer_size = size * nmemb;
   const size_t new_size = current_size + transfer_size;
   req->data.resize(new_size);
-  req->start_time = Common::Timer::GetCurrentValue();
+  req->start_time = Timer::GetCurrentValue();
   std::memcpy(&req->data[current_size], ptr, transfer_size);
 
   if (req->content_length == 0)
@@ -211,7 +211,7 @@ bool HTTPDownloaderCurl::StartRequest(HTTPDownloader::Request* request)
 
   DEV_LOG("Started HTTP request for '{}'", req->url);
   req->state.store(Request::State::Started, std::memory_order_release);
-  req->start_time = Common::Timer::GetCurrentValue();
+  req->start_time = Timer::GetCurrentValue();
 
   const CURLMcode err = curl_multi_add_handle(m_multi_handle, req->handle);
   if (err != CURLM_OK)

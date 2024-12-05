@@ -19,6 +19,7 @@ QtModalProgressCallback::QtModalProgressCallback(QWidget* parent_widget, float s
   m_dialog.setModal(parent_widget != nullptr);
   m_dialog.setAutoClose(false);
   m_dialog.setAutoReset(false);
+  m_dialog.setWindowFlag(Qt::CustomizeWindowHint, true);
   m_dialog.setWindowFlag(Qt::WindowCloseButtonHint, false);
   connect(&m_dialog, &QProgressDialog::canceled, this, &QtModalProgressCallback::dialogCancelled);
   checkForDelayedShow();
@@ -46,9 +47,7 @@ void QtModalProgressCallback::SetStatusText(const std::string_view text)
 {
   ProgressCallback::SetStatusText(text);
   checkForDelayedShow();
-
-  if (m_dialog.isVisible())
-    m_dialog.setLabelText(QtUtils::StringViewToQString(text));
+  m_dialog.setLabelText(QtUtils::StringViewToQString(text));
 }
 
 void QtModalProgressCallback::SetProgressRange(u32 range)

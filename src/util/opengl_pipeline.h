@@ -16,7 +16,9 @@ class OpenGLShader final : public GPUShader
 public:
   ~OpenGLShader() override;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
   bool Compile(Error* error);
 
@@ -32,7 +34,7 @@ private:
   std::optional<GLuint> m_id;
   bool m_compile_tried = false;
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
   std::string m_debug_name;
 #endif
 };
@@ -104,7 +106,9 @@ public:
   ALWAYS_INLINE const BlendState& GetBlendState() const { return m_blend_state; }
   ALWAYS_INLINE GLenum GetTopology() const { return m_topology; }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
   void SetDebugName(std::string_view name) override;
+#endif
 
 private:
   OpenGLPipeline(const ProgramCacheKey& key, GLuint program, VertexArrayCache::const_iterator vao,

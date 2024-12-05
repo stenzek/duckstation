@@ -17,6 +17,7 @@ struct InputBindingInfo
     Motor,
     Pointer,         // Absolute pointer, does not receive any events, but is queryable.
     RelativePointer, // Receive relative mouse movement events, bind_index is offset by the axis.
+    Device,          // Used for special-purpose device selection, e.g. force feedback.
     Macro,
   };
 

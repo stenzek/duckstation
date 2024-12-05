@@ -32,7 +32,7 @@ static constexpr GPUTexture::Format s_swap_chain_format = GPUTexture::Format::RG
 
 void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
 {
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
   // WKPDID_D3DDebugObjectName
   static constexpr GUID guid = {0x429b8c22, 0x9188, 0x4b0c, {0x87, 0x42, 0xac, 0xb0, 0xbf, 0x85, 0xc2, 0x00}};
 
@@ -115,7 +115,7 @@ bool D3D11Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
     }
   }
 
-#ifdef _DEBUG
+#ifdef ENABLE_GPU_OBJECT_NAMES
   if (m_debug_device)
     m_context.As(&m_annotation);
 #endif
@@ -832,35 +832,33 @@ float D3D11Device::GetAndResetAccumulatedGPUTime()
   return value;
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D11Device::PushDebugGroup(const char* name)
 {
-#ifdef _DEBUG
   if (!m_annotation)
     return;
 
   m_annotation->BeginEvent(StringUtil::UTF8StringToWideString(name).c_str());
-#endif
 }
 
 void D3D11Device::PopDebugGroup()
 {
-#ifdef _DEBUG
   if (!m_annotation)
     return;
 
   m_annotation->EndEvent();
-#endif
 }
 
 void D3D11Device::InsertDebugMessage(const char* msg)
 {
-#ifdef _DEBUG
   if (!m_annotation)
     return;
 
   m_annotation->SetMarker(StringUtil::UTF8StringToWideString(msg).c_str());
-#endif
 }
+
+#endif
 
 void D3D11Device::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
                                   u32* map_base_vertex)

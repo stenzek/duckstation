@@ -267,7 +267,7 @@ bool GPU::HandleSetDrawingAreaBottomRightCommand()
 
   const u32 right = param & DRAWING_AREA_COORD_MASK;
   const u32 bottom = (param >> 10) & DRAWING_AREA_COORD_MASK;
-  DEBUG_LOG("Set drawing area bottom-right: ({}, {})", m_drawing_area.right, m_drawing_area.bottom);
+  DEBUG_LOG("Set drawing area bottom-right: ({}, {})", right, bottom);
   if (m_drawing_area.right != right || m_drawing_area.bottom != bottom)
   {
     FlushRender();
@@ -288,7 +288,7 @@ bool GPU::HandleSetDrawingOffsetCommand()
   const u32 param = FifoPop() & 0x00FFFFFFu;
   const s32 x = SignExtendN<11, s32>(param & 0x7FFu);
   const s32 y = SignExtendN<11, s32>((param >> 11) & 0x7FFu);
-  DEBUG_LOG("Set drawing offset ({}, {})", m_drawing_offset.x, m_drawing_offset.y);
+  DEBUG_LOG("Set drawing offset ({}, {})", x, y);
   if (m_drawing_offset.x != x || m_drawing_offset.y != y)
   {
     FlushRender();

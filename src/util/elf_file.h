@@ -94,6 +94,9 @@ public:
   ELFFile();
   ~ELFFile();
 
+  static bool IsValidElfHeader(const std::span<const u8> data, Error* error = nullptr);
+  static bool IsValidElfHeader(const Elf32_Ehdr& header, Error* error = nullptr);
+
   const Elf32_Ehdr& GetELFHeader() const;
   u32 GetEntryPoint() const;
 

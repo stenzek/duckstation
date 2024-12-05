@@ -22,6 +22,7 @@
 #include "common/md5_digest.h"
 #include "common/path.h"
 #include "common/scoped_guard.h"
+#include "common/sha256_digest.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/timer.h"
@@ -102,7 +103,7 @@ struct LeaderboardTrackerIndicator
 {
   u32 tracker_id;
   std::string text;
-  Common::Timer show_hide_time;
+  Timer show_hide_time;
   bool active;
 };
 
@@ -110,7 +111,7 @@ struct AchievementChallengeIndicator
 {
   const rc_client_achievement_t* achievement;
   std::string badge_path;
-  Common::Timer show_hide_time;
+  Timer show_hide_time;
   bool active;
 };
 
@@ -118,7 +119,7 @@ struct AchievementProgressIndicator
 {
   const rc_client_achievement_t* achievement;
   std::string badge_path;
-  Common::Timer show_hide_time;
+  Timer show_hide_time;
   bool active;
 };
 } // namespace
@@ -143,6 +144,9 @@ static void UpdateGameSummary();
 static std::string GetLocalImagePath(const std::string_view image_name, int type);
 static void DownloadImage(std::string url, std::string cache_filename);
 static void UpdateGlyphRanges();
+
+static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
+static TinyString EncryptLoginToken(std::string_view token, std::string_view username);
 
 static bool CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
 static void DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http);
@@ -192,62 +196,72 @@ static void DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, boo
                                  float name_column_width, float time_column_width, float column_spacing);
 #endif
 
-static bool s_hardcore_mode = false;
+struct State
+{
+  rc_client_t* client = nullptr;
+  bool hardcore_mode = false;
+  bool has_achievements = false;
+  bool has_leaderboards = false;
+  bool has_rich_presence = false;
 
 #ifdef ENABLE_RAINTEGRATION
-static bool s_using_raintegration = false;
+  bool using_raintegration = false;
 #endif
 
-static std::recursive_mutex s_achievements_mutex;
-static rc_client_t* s_client;
-static std::unique_ptr<HTTPDownloader> s_http_downloader;
+  std::recursive_mutex mutex; // large
 
-static std::string s_game_path;
-static std::string s_game_hash;
-static std::string s_game_title;
-static std::string s_game_icon;
-static std::string s_game_icon_url;
-static rc_client_user_game_summary_t s_game_summary;
-static u32 s_game_id = 0;
-static DynamicHeapArray<u8> s_state_buffer;
+  std::string rich_presence_string;
+  Timer::Value rich_presence_poll_time = 0;
 
-static bool s_has_achievements = false;
-static bool s_has_leaderboards = false;
-static bool s_has_rich_presence = false;
-static std::string s_rich_presence_string;
-static Common::Timer s_rich_presence_poll_time;
+  std::vector<LeaderboardTrackerIndicator> active_leaderboard_trackers;
+  std::vector<AchievementChallengeIndicator> active_challenge_indicators;
+  std::optional<AchievementProgressIndicator> active_progress_indicator;
 
-static rc_client_async_handle_t* s_login_request;
-static rc_client_async_handle_t* s_load_game_request;
+  rc_client_user_game_summary_t game_summary = {};
+  u32 game_id = 0;
 
-static rc_client_achievement_list_t* s_achievement_list;
-static rc_client_leaderboard_list_t* s_leaderboard_list;
-static std::vector<std::pair<const void*, std::string>> s_achievement_badge_paths;
-static const rc_client_leaderboard_t* s_open_leaderboard = nullptr;
-static rc_client_async_handle_t* s_leaderboard_fetch_handle = nullptr;
-static std::vector<rc_client_leaderboard_entry_list_t*> s_leaderboard_entry_lists;
-static rc_client_leaderboard_entry_list_t* s_leaderboard_nearby_entries;
-static std::vector<std::pair<const rc_client_leaderboard_entry_t*, std::string>> s_leaderboard_user_icon_paths;
-static bool s_is_showing_all_leaderboard_entries = false;
+  std::unique_ptr<HTTPDownloader> http_downloader;
 
-static std::vector<LeaderboardTrackerIndicator> s_active_leaderboard_trackers;
-static std::vector<AchievementChallengeIndicator> s_active_challenge_indicators;
-static std::optional<AchievementProgressIndicator> s_active_progress_indicator;
+  std::string game_path;
+  std::string game_hash;
+  std::string game_title;
+  std::string game_icon;
+  std::string game_icon_url;
+
+  DynamicHeapArray<u8> state_buffer;
+
+  rc_client_async_handle_t* login_request = nullptr;
+  rc_client_async_handle_t* load_game_request = nullptr;
+
+  rc_client_achievement_list_t* achievement_list = nullptr;
+  std::vector<std::pair<const void*, std::string>> achievement_badge_paths;
+
+  rc_client_leaderboard_list_t* leaderboard_list = nullptr;
+  const rc_client_leaderboard_t* open_leaderboard = nullptr;
+  rc_client_async_handle_t* leaderboard_fetch_handle = nullptr;
+  std::vector<rc_client_leaderboard_entry_list_t*> leaderboard_entry_lists;
+  std::vector<std::pair<const rc_client_leaderboard_entry_t*, std::string>> leaderboard_user_icon_paths;
+  rc_client_leaderboard_entry_list_t* leaderboard_nearby_entries;
+  bool is_showing_all_leaderboard_entries = false;
+};
+
+ALIGN_TO_CACHE_LINE static State s_state;
+
 } // namespace Achievements
 
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 {
-  return std::unique_lock(s_achievements_mutex);
+  return std::unique_lock(s_state.mutex);
 }
 
 rc_client_t* Achievements::GetClient()
 {
-  return s_client;
+  return s_state.client;
 }
 
 const rc_client_user_game_summary_t& Achievements::GetGameSummary()
 {
-  return s_game_summary;
+  return s_state.game_summary;
 }
 
 void Achievements::ReportError(std::string_view sv)
@@ -371,7 +385,7 @@ void Achievements::DownloadImage(std::string url, std::string cache_filename)
     ImGuiFullscreen::InvalidateCachedTexture(cache_filename);
   };
 
-  s_http_downloader->CreateRequest(std::move(url), std::move(callback));
+  s_state.http_downloader->CreateRequest(std::move(url), std::move(callback));
 }
 
 void Achievements::UpdateGlyphRanges()
@@ -393,7 +407,7 @@ void Achievements::UpdateGlyphRanges()
     }
   };
 
-  if (rc_client_has_rich_presence(s_client))
+  if (rc_client_has_rich_presence(s_state.client))
   {
     std::vector<const char*> rp_strings;
     for (;;)
@@ -401,7 +415,7 @@ void Achievements::UpdateGlyphRanges()
       rp_strings.resize(std::max<size_t>(rp_strings.size() * 2, 512));
 
       size_t count;
-      const int err = rc_client_get_rich_presence_strings(s_client, rp_strings.data(), rp_strings.size(), &count);
+      const int err = rc_client_get_rich_presence_strings(s_state.client, rp_strings.data(), rp_strings.size(), &count);
       if (err == RC_INSUFFICIENT_BUFFER)
         continue;
       else if (err != RC_OK)
@@ -416,10 +430,10 @@ void Achievements::UpdateGlyphRanges()
       add_string(str, codepoints);
   }
 
-  if (rc_client_has_achievements(s_client))
+  if (rc_client_has_achievements(s_state.client))
   {
     rc_client_achievement_list_t* const achievements =
-      rc_client_create_achievement_list(s_client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL, 0);
+      rc_client_create_achievement_list(s_state.client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL, 0);
     if (achievements)
     {
       for (u32 i = 0; i < achievements->num_buckets; i++)
@@ -438,10 +452,10 @@ void Achievements::UpdateGlyphRanges()
     }
   }
 
-  if (rc_client_has_leaderboards(s_client))
+  if (rc_client_has_leaderboards(s_state.client))
   {
     rc_client_leaderboard_list_t* const leaderboards =
-      rc_client_create_leaderboard_list(s_client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
+      rc_client_create_leaderboard_list(s_state.client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
     if (leaderboards)
     {
       for (u32 i = 0; i < leaderboards->num_buckets; i++)
@@ -472,9 +486,9 @@ void Achievements::UpdateGlyphRanges()
 bool Achievements::IsActive()
 {
 #ifdef ENABLE_RAINTEGRATION
-  return (s_client != nullptr) || s_using_raintegration;
+  return (s_state.client != nullptr) || s_state.using_raintegration;
 #else
-  return (s_client != nullptr);
+  return (s_state.client != nullptr);
 #endif
 }
 
@@ -485,57 +499,57 @@ bool Achievements::IsHardcoreModeActive()
     return RA_HardcoreModeIsActive() != 0;
 #endif
 
-  return s_hardcore_mode;
+  return s_state.hardcore_mode;
 }
 
 bool Achievements::HasActiveGame()
 {
-  return s_game_id != 0;
+  return s_state.game_id != 0;
 }
 
 u32 Achievements::GetGameID()
 {
-  return s_game_id;
+  return s_state.game_id;
 }
 
 bool Achievements::HasAchievementsOrLeaderboards()
 {
-  return s_has_achievements || s_has_leaderboards;
+  return s_state.has_achievements || s_state.has_leaderboards;
 }
 
 bool Achievements::HasAchievements()
 {
-  return s_has_achievements;
+  return s_state.has_achievements;
 }
 
 bool Achievements::HasLeaderboards()
 {
-  return s_has_leaderboards;
+  return s_state.has_leaderboards;
 }
 
 bool Achievements::HasRichPresence()
 {
-  return s_has_rich_presence;
+  return s_state.has_rich_presence;
 }
 
 const std::string& Achievements::GetGameTitle()
 {
-  return s_game_title;
+  return s_state.game_title;
 }
 
 const std::string& Achievements::GetGameIconPath()
 {
-  return s_game_icon;
+  return s_state.game_icon;
 }
 
 const std::string& Achievements::GetGameIconURL()
 {
-  return s_game_icon_url;
+  return s_state.game_icon_url;
 }
 
 const std::string& Achievements::GetRichPresenceString()
 {
-  return s_rich_presence_string;
+  return s_state.rich_presence_string;
 }
 
 bool Achievements::Initialize()
@@ -545,20 +559,20 @@ bool Achievements::Initialize()
 
   auto lock = GetLock();
   AssertMsg(g_settings.achievements_enabled, "Achievements are enabled");
-  Assert(!s_client && !s_http_downloader);
+  Assert(!s_state.client && !s_state.http_downloader);
 
-  if (!CreateClient(&s_client, &s_http_downloader))
+  if (!CreateClient(&s_state.client, &s_state.http_downloader))
     return false;
 
   // Hardcore starts off. We enable it on first boot.
-  s_hardcore_mode = false;
+  s_state.hardcore_mode = false;
 
-  rc_client_set_event_handler(s_client, ClientEventHandler);
+  rc_client_set_event_handler(s_state.client, ClientEventHandler);
 
-  rc_client_set_hardcore_enabled(s_client, s_hardcore_mode);
-  rc_client_set_encore_mode_enabled(s_client, g_settings.achievements_encore_mode);
-  rc_client_set_unofficial_enabled(s_client, g_settings.achievements_unofficial_test_mode);
-  rc_client_set_spectator_mode_enabled(s_client, g_settings.achievements_spectator_mode);
+  rc_client_set_hardcore_enabled(s_state.client, s_state.hardcore_mode);
+  rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
+  rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
+  rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
 
   // Begin disc identification early, before the login finishes.
   if (System::IsValid())
@@ -569,8 +583,18 @@ bool Achievements::Initialize()
   if (!username.empty() && !api_token.empty())
   {
     INFO_LOG("Attempting login with user '{}'...", username);
-    s_login_request = rc_client_begin_login_with_token(s_client, username.c_str(), api_token.c_str(),
-                                                       ClientLoginWithTokenCallback, nullptr);
+
+    // If we can't decrypt the token, it was an old config and we need to re-login.
+    if (const TinyString decrypted_api_token = DecryptLoginToken(api_token, username); !decrypted_api_token.empty())
+    {
+      s_state.login_request = rc_client_begin_login_with_token(
+        s_state.client, username.c_str(), decrypted_api_token.c_str(), ClientLoginWithTokenCallback, nullptr);
+    }
+    else
+    {
+      WARNING_LOG("Invalid encrypted login token, requesitng a new one.");
+      Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
+    }
   }
 
   // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
@@ -600,7 +624,7 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
     return false;
   }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
   rc_client_enable_logging(new_client, RC_CLIENT_LOG_LEVEL_VERBOSE, ClientMessageCallback);
 #else
   rc_client_enable_logging(new_client, RC_CLIENT_LOG_LEVEL_INFO, ClientMessageCallback);
@@ -644,11 +668,11 @@ void Achievements::UpdateSettings(const Settings& old_config)
   if (g_settings.achievements_hardcore_mode != old_config.achievements_hardcore_mode)
   {
     // Hardcore mode can only be enabled through reset (ResetChallengeMode()).
-    if (s_hardcore_mode && !g_settings.achievements_hardcore_mode)
+    if (s_state.hardcore_mode && !g_settings.achievements_hardcore_mode)
     {
       ResetHardcoreMode(false);
     }
-    else if (!s_hardcore_mode && g_settings.achievements_hardcore_mode)
+    else if (!s_state.hardcore_mode && g_settings.achievements_hardcore_mode)
     {
       if (HasActiveGame())
         DisplayHardcoreDeferredMessage();
@@ -670,11 +694,11 @@ void Achievements::UpdateSettings(const Settings& old_config)
   else
   {
     if (g_settings.achievements_encore_mode != old_config.achievements_encore_mode)
-      rc_client_set_encore_mode_enabled(s_client, g_settings.achievements_encore_mode);
+      rc_client_set_encore_mode_enabled(s_state.client, g_settings.achievements_encore_mode);
     if (g_settings.achievements_spectator_mode != old_config.achievements_spectator_mode)
-      rc_client_set_spectator_mode_enabled(s_client, g_settings.achievements_spectator_mode);
+      rc_client_set_spectator_mode_enabled(s_state.client, g_settings.achievements_spectator_mode);
     if (g_settings.achievements_unofficial_test_mode != old_config.achievements_unofficial_test_mode)
-      rc_client_set_unofficial_enabled(s_client, g_settings.achievements_unofficial_test_mode);
+      rc_client_set_unofficial_enabled(s_state.client, g_settings.achievements_unofficial_test_mode);
   }
 }
 
@@ -696,26 +720,26 @@ bool Achievements::Shutdown(bool allow_cancel)
     return true;
 
   auto lock = GetLock();
-  Assert(s_client && s_http_downloader);
+  Assert(s_state.client && s_state.http_downloader);
 
   ClearGameInfo();
   ClearGameHash();
   DisableHardcoreMode();
   UpdateGlyphRanges();
 
-  if (s_load_game_request)
+  if (s_state.load_game_request)
   {
-    rc_client_abort_async(s_client, s_load_game_request);
-    s_load_game_request = nullptr;
+    rc_client_abort_async(s_state.client, s_state.load_game_request);
+    s_state.load_game_request = nullptr;
   }
-  if (s_login_request)
+  if (s_state.login_request)
   {
-    rc_client_abort_async(s_client, s_login_request);
-    s_login_request = nullptr;
+    rc_client_abort_async(s_state.client, s_state.login_request);
+    s_state.login_request = nullptr;
   }
 
-  s_hardcore_mode = false;
-  DestroyClient(&s_client, &s_http_downloader);
+  s_state.hardcore_mode = false;
+  DestroyClient(&s_state.client, &s_state.http_downloader);
 
   Host::OnAchievementsRefreshed();
   return true;
@@ -800,8 +824,8 @@ void Achievements::IdleUpdate()
 
   const auto lock = GetLock();
 
-  s_http_downloader->PollRequests();
-  rc_client_idle(s_client);
+  s_state.http_downloader->PollRequests();
+  rc_client_idle(s_state.client);
 }
 
 bool Achievements::NeedsIdleUpdate()
@@ -810,7 +834,7 @@ bool Achievements::NeedsIdleUpdate()
     return false;
 
   const auto lock = GetLock();
-  return (s_http_downloader && s_http_downloader->HasAnyRequests());
+  return (s_state.http_downloader && s_state.http_downloader->HasAnyRequests());
 }
 
 void Achievements::FrameUpdate()
@@ -828,8 +852,8 @@ void Achievements::FrameUpdate()
 
   auto lock = GetLock();
 
-  s_http_downloader->PollRequests();
-  rc_client_do_frame(s_client);
+  s_state.http_downloader->PollRequests();
+  rc_client_do_frame(s_state.client);
 
   UpdateRichPresence(lock);
 }
@@ -918,24 +942,30 @@ void Achievements::ClientEventHandler(const rc_client_event_t* event, rc_client_
 
 void Achievements::UpdateGameSummary()
 {
-  rc_client_get_user_game_summary(s_client, &s_game_summary);
+  rc_client_get_user_game_summary(s_state.client, &s_state.game_summary);
 }
 
 void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lock)
 {
   // Limit rich presence updates to once per second, since it could change per frame.
-  if (!s_has_rich_presence || !s_rich_presence_poll_time.ResetIfSecondsPassed(1.0))
+  if (!s_state.has_rich_presence)
     return;
+
+  const Timer::Value now = Timer::GetCurrentValue();
+  if (Timer::ConvertValueToSeconds(now - s_state.rich_presence_poll_time) < 1)
+    return;
+
+  s_state.rich_presence_poll_time = now;
 
   char buffer[512];
-  const size_t res = rc_client_get_rich_presence_message(s_client, buffer, std::size(buffer));
+  const size_t res = rc_client_get_rich_presence_message(s_state.client, buffer, std::size(buffer));
   const std::string_view sv(buffer, res);
-  if (s_rich_presence_string == sv)
+  if (s_state.rich_presence_string == sv)
     return;
 
-  s_rich_presence_string.assign(sv);
+  s_state.rich_presence_string.assign(sv);
 
-  INFO_LOG("Rich presence updated: {}", s_rich_presence_string);
+  INFO_LOG("Rich presence updated: {}", s_state.rich_presence_string);
   Host::OnAchievementsRefreshed();
 
   lock.unlock();
@@ -945,7 +975,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
 
 void Achievements::GameChanged(const std::string& path, CDImage* image)
 {
-  std::unique_lock lock(s_achievements_mutex);
+  std::unique_lock lock(s_state.mutex);
 
   if (!IsActive())
     return;
@@ -955,7 +985,7 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
 
 void Achievements::IdentifyGame(const std::string& path, CDImage* image)
 {
-  if (s_game_path == path)
+  if (s_state.game_path == path)
   {
     WARNING_LOG("Game path is unchanged.");
     return;
@@ -974,18 +1004,18 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   if (image)
     game_hash = GetGameHash(image);
 
-  if (s_game_hash == game_hash)
+  if (s_state.game_hash == game_hash)
   {
     // only the path has changed - different format/save state/etc.
-    INFO_LOG("Detected path change from '{}' to '{}'", s_game_path, path);
-    s_game_path = path;
+    INFO_LOG("Detected path change from '{}' to '{}'", s_state.game_path, path);
+    s_state.game_path = path;
     return;
   }
 
   ClearGameHash();
-  s_game_path = path;
-  s_game_hash = std::move(game_hash);
-  s_state_buffer.deallocate();
+  s_state.game_path = path;
+  s_state.game_hash = std::move(game_hash);
+  s_state.state_buffer.deallocate();
 
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
@@ -996,7 +1026,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
 #endif
 
   // shouldn't have a load game request when we're not logged in.
-  Assert(IsLoggedInOrLoggingIn() || !s_load_game_request);
+  Assert(IsLoggedInOrLoggingIn() || !s_state.load_game_request);
 
   // bail out if we're not logged in, just save the hash
   if (!IsLoggedInOrLoggingIn())
@@ -1006,7 +1036,7 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
     return;
   }
 
-  if (!rc_client_is_game_loaded(s_client))
+  if (!rc_client_is_game_loaded(s_state.client))
     BeginLoadGame();
   else
     BeginChangeDisc();
@@ -1016,10 +1046,10 @@ void Achievements::BeginLoadGame()
 {
   ClearGameInfo();
 
-  if (s_game_hash.empty())
+  if (s_state.game_hash.empty())
   {
     // when we're booting the bios, this will fail
-    if (!s_game_path.empty())
+    if (!s_state.game_path.empty())
     {
       Host::AddKeyedOSDMessage(
         "retroachievements_disc_read_failed",
@@ -1032,22 +1062,23 @@ void Achievements::BeginLoadGame()
     return;
   }
 
-  s_load_game_request = rc_client_begin_load_game(s_client, s_game_hash.c_str(), ClientLoadGameCallback, nullptr);
+  s_state.load_game_request =
+    rc_client_begin_load_game(s_state.client, s_state.game_hash.c_str(), ClientLoadGameCallback, nullptr);
 }
 
 void Achievements::BeginChangeDisc()
 {
   // cancel previous requests
-  if (s_load_game_request)
+  if (s_state.load_game_request)
   {
-    rc_client_abort_async(s_client, s_load_game_request);
-    s_load_game_request = nullptr;
+    rc_client_abort_async(s_state.client, s_state.load_game_request);
+    s_state.load_game_request = nullptr;
   }
 
-  if (s_game_hash.empty())
+  if (s_state.game_hash.empty())
   {
     // when we're booting the bios, this will fail
-    if (!s_game_path.empty())
+    if (!s_state.game_path.empty())
     {
       Host::AddKeyedOSDMessage(
         "retroachievements_disc_read_failed",
@@ -1061,21 +1092,22 @@ void Achievements::BeginChangeDisc()
     return;
   }
 
-  s_load_game_request = rc_client_begin_change_media_from_hash(s_client, s_game_hash.c_str(), ClientLoadGameCallback,
-                                                               reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
+  s_state.load_game_request =
+    rc_client_begin_change_media_from_hash(s_state.client, s_state.game_hash.c_str(), ClientLoadGameCallback,
+                                           reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
 }
 
 void Achievements::ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata)
 {
   const bool was_disc_change = (userdata != nullptr);
 
-  s_load_game_request = nullptr;
-  s_state_buffer.deallocate();
+  s_state.load_game_request = nullptr;
+  s_state.state_buffer.deallocate();
 
   if (result == RC_NO_GAME_LOADED)
   {
     // Unknown game.
-    INFO_LOG("Unknown game '{}', disabling achievements.", s_game_hash);
+    INFO_LOG("Unknown game '{}', disabling achievements.", s_state.game_hash);
     if (was_disc_change)
     {
       ClearGameInfo();
@@ -1111,7 +1143,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     DisableHardcoreMode();
   }
 
-  const rc_client_game_t* info = rc_client_get_game_info(s_client);
+  const rc_client_game_t* info = rc_client_get_game_info(s_state.client);
   if (!info)
   {
     ReportError("rc_client_get_game_info() returned NULL");
@@ -1129,7 +1161,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   const bool has_leaderboards = rc_client_has_leaderboards(client);
 
   // Only display summary if the game title has changed across discs.
-  const bool display_summary = (s_game_id != info->id || s_game_title != info->title);
+  const bool display_summary = (s_state.game_id != info->id || s_state.game_title != info->title);
 
   // If the game has a RetroAchievements entry but no achievements or leaderboards,
   // enforcing hardcore mode is pointless.
@@ -1137,13 +1169,13 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
     DisableHardcoreMode();
 
   // We should have matched hardcore mode state.
-  Assert(s_hardcore_mode == (rc_client_get_hardcore_enabled(client) != 0));
+  Assert(s_state.hardcore_mode == (rc_client_get_hardcore_enabled(client) != 0));
 
-  s_game_id = info->id;
-  s_game_title = info->title;
-  s_has_achievements = has_achievements;
-  s_has_leaderboards = has_leaderboards;
-  s_has_rich_presence = rc_client_has_rich_presence(client);
+  s_state.game_id = info->id;
+  s_state.game_title = info->title;
+  s_state.has_achievements = has_achievements;
+  s_state.has_leaderboards = has_leaderboards;
+  s_state.has_rich_presence = rc_client_has_rich_presence(client);
 
   // update ranges before initializing fsui
   UpdateGlyphRanges();
@@ -1154,13 +1186,14 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
 
   char url_buf[URL_BUFFER_SIZE];
   if (int err = rc_client_game_get_image_url(info, url_buf, std::size(url_buf)); err == RC_OK)
-    s_game_icon_url = url_buf;
+    s_state.game_icon_url = url_buf;
   else
     ReportRCError(err, "rc_client_game_get_image_url() failed: ");
 
-  s_game_icon = GetLocalImagePath(info->badge_name, RC_IMAGE_TYPE_GAME);
-  if (!s_game_icon.empty() && !s_game_icon_url.empty() && !FileSystem::FileExists(s_game_icon.c_str()))
-    DownloadImage(s_game_icon_url, s_game_icon);
+  s_state.game_icon = GetLocalImagePath(info->badge_name, RC_IMAGE_TYPE_GAME);
+  if (!s_state.game_icon.empty() && !s_state.game_icon_url.empty() &&
+      !FileSystem::FileExists(s_state.game_icon.c_str()))
+    DownloadImage(s_state.game_icon_url, s_state.game_icon);
 
   UpdateGameSummary();
   if (display_summary)
@@ -1173,34 +1206,34 @@ void Achievements::ClearGameInfo()
 {
   ClearUIState();
 
-  if (s_load_game_request)
+  if (s_state.load_game_request)
   {
-    rc_client_abort_async(s_client, s_load_game_request);
-    s_load_game_request = nullptr;
+    rc_client_abort_async(s_state.client, s_state.load_game_request);
+    s_state.load_game_request = nullptr;
   }
-  rc_client_unload_game(s_client);
+  rc_client_unload_game(s_state.client);
 
-  s_active_leaderboard_trackers = {};
-  s_active_challenge_indicators = {};
-  s_active_progress_indicator.reset();
-  s_game_id = 0;
-  s_game_title = {};
-  s_game_icon = {};
-  s_game_icon_url = {};
-  s_state_buffer.deallocate();
-  s_has_achievements = false;
-  s_has_leaderboards = false;
-  s_has_rich_presence = false;
-  s_rich_presence_string = {};
-  s_game_summary = {};
+  s_state.active_leaderboard_trackers = {};
+  s_state.active_challenge_indicators = {};
+  s_state.active_progress_indicator.reset();
+  s_state.game_id = 0;
+  s_state.game_title = {};
+  s_state.game_icon = {};
+  s_state.game_icon_url = {};
+  s_state.state_buffer.deallocate();
+  s_state.has_achievements = false;
+  s_state.has_leaderboards = false;
+  s_state.has_rich_presence = false;
+  s_state.rich_presence_string = {};
+  s_state.game_summary = {};
 
   Host::OnAchievementsRefreshed();
 }
 
 void Achievements::ClearGameHash()
 {
-  s_game_path = {};
-  std::string().swap(s_game_hash);
+  s_state.game_path = {};
+  std::string().swap(s_state.game_hash);
 }
 
 void Achievements::DisplayAchievementSummary()
@@ -1209,21 +1242,21 @@ void Achievements::DisplayAchievementSummary()
   {
     std::string title;
     if (IsHardcoreModeActive())
-      title = fmt::format(TRANSLATE_FS("Achievements", "{} (Hardcore Mode)"), s_game_title);
+      title = fmt::format(TRANSLATE_FS("Achievements", "{} (Hardcore Mode)"), s_state.game_title);
     else
-      title = s_game_title;
+      title = s_state.game_title;
 
     std::string summary;
-    if (s_game_summary.num_core_achievements > 0)
+    if (s_state.game_summary.num_core_achievements > 0)
     {
       summary = fmt::format(
         TRANSLATE_FS("Achievements", "{0}, {1}."),
         SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "You have unlocked {} of %n achievements",
-                                                     "Achievement popup", s_game_summary.num_core_achievements),
-                                 s_game_summary.num_unlocked_achievements),
+                                                     "Achievement popup", s_state.game_summary.num_core_achievements),
+                                 s_state.game_summary.num_unlocked_achievements),
         SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "and earned {} of %n points", "Achievement popup",
-                                                     s_game_summary.points_core),
-                                 s_game_summary.points_unlocked));
+                                                     s_state.game_summary.points_core),
+                                 s_state.game_summary.points_unlocked));
     }
     else
     {
@@ -1231,7 +1264,7 @@ void Achievements::DisplayAchievementSummary()
     }
 
     ImGuiFullscreen::AddNotification("achievement_summary", ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME, std::move(title),
-                                     std::move(summary), s_game_icon);
+                                     std::move(summary), s_state.game_icon);
   }
 
   // Technically not going through the resource API, but since we're passing this to something else, we can't.
@@ -1241,7 +1274,8 @@ void Achievements::DisplayAchievementSummary()
 
 void Achievements::DisplayHardcoreDeferredMessage()
 {
-  if (g_settings.achievements_hardcore_mode && !s_hardcore_mode && System::IsValid() && FullscreenUI::Initialize())
+  if (g_settings.achievements_hardcore_mode && !s_state.hardcore_mode && System::IsValid() &&
+      FullscreenUI::Initialize())
   {
     ImGuiFullscreen::ShowToast(std::string(),
                                TRANSLATE_STR("Achievements", "Hardcore mode will be enabled on system reset."),
@@ -1253,7 +1287,7 @@ void Achievements::HandleResetEvent(const rc_client_event_t* event)
 {
   // We handle system resets ourselves, but still need to reset the client's state.
   INFO_LOG("Resetting runtime due to reset event");
-  rc_client_reset(s_client);
+  rc_client_reset(s_state.client);
 
   if (HasActiveGame())
     UpdateGameSummary();
@@ -1264,7 +1298,7 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
   const rc_client_achievement_t* cheevo = event->achievement;
   DebugAssert(cheevo);
 
-  INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->title, cheevo->id, s_game_id);
+  INFO_LOG("Achievement {} ({}) for game {} unlocked", cheevo->title, cheevo->id, s_state.game_id);
   UpdateGameSummary();
 
   if (g_settings.achievements_notifications && FullscreenUI::Initialize())
@@ -1288,20 +1322,20 @@ void Achievements::HandleUnlockEvent(const rc_client_event_t* event)
 
 void Achievements::HandleGameCompleteEvent(const rc_client_event_t* event)
 {
-  INFO_LOG("Game {} complete", s_game_id);
+  INFO_LOG("Game {} complete", s_state.game_id);
   UpdateGameSummary();
 
   if (g_settings.achievements_notifications && FullscreenUI::Initialize())
   {
-    std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), s_game_title);
+    std::string title = fmt::format(TRANSLATE_FS("Achievements", "Mastered {}"), s_state.game_title);
     std::string message = fmt::format(
       TRANSLATE_FS("Achievements", "{0}, {1}"),
       TRANSLATE_PLURAL_STR("Achievements", "%n achievements", "Mastery popup",
-                           s_game_summary.num_unlocked_achievements),
-      TRANSLATE_PLURAL_STR("Achievements", "%n points", "Achievement points", s_game_summary.points_unlocked));
+                           s_state.game_summary.num_unlocked_achievements),
+      TRANSLATE_PLURAL_STR("Achievements", "%n points", "Achievement points", s_state.game_summary.points_unlocked));
 
     ImGuiFullscreen::AddNotification("achievement_mastery", GAME_COMPLETE_NOTIFICATION_TIME, std::move(title),
-                                     std::move(message), s_game_icon);
+                                     std::move(message), s_state.game_icon);
   }
 }
 
@@ -1316,7 +1350,7 @@ void Achievements::HandleLeaderboardStartedEvent(const rc_client_event_t* event)
 
     ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
                                      LEADERBOARD_STARTED_NOTIFICATION_TIME, std::move(title), std::move(message),
-                                     s_game_icon);
+                                     s_state.game_icon);
   }
 }
 
@@ -1331,7 +1365,7 @@ void Achievements::HandleLeaderboardFailedEvent(const rc_client_event_t* event)
 
     ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
                                      LEADERBOARD_FAILED_NOTIFICATION_TIME, std::move(title), std::move(message),
-                                     s_game_icon);
+                                     s_state.game_icon);
   }
 }
 
@@ -1357,7 +1391,7 @@ void Achievements::HandleLeaderboardSubmittedEvent(const rc_client_event_t* even
 
     ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
                                      static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
-                                     std::move(message), s_game_icon);
+                                     std::move(message), s_state.game_icon);
   }
 
   if (g_settings.achievements_sound_effects)
@@ -1388,7 +1422,7 @@ void Achievements::HandleLeaderboardScoreboardEvent(const rc_client_event_t* eve
 
     ImGuiFullscreen::AddNotification(fmt::format("leaderboard_{}", event->leaderboard->id),
                                      static_cast<float>(g_settings.achievements_leaderboard_duration), std::move(title),
-                                     std::move(message), s_game_icon);
+                                     std::move(message), s_state.game_icon);
   }
 }
 
@@ -1406,15 +1440,15 @@ void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* ev
   indicator.tracker_id = event->leaderboard_tracker->id;
   indicator.text = event->leaderboard_tracker->display;
   indicator.active = true;
-  s_active_leaderboard_trackers.push_back(std::move(indicator));
+  s_state.active_leaderboard_trackers.push_back(std::move(indicator));
 }
 
 void Achievements::HandleLeaderboardTrackerHideEvent(const rc_client_event_t* event)
 {
   const u32 id = event->leaderboard_tracker->id;
-  auto it = std::find_if(s_active_leaderboard_trackers.begin(), s_active_leaderboard_trackers.end(),
+  auto it = std::find_if(s_state.active_leaderboard_trackers.begin(), s_state.active_leaderboard_trackers.end(),
                          [id](const auto& it) { return it.tracker_id == id; });
-  if (it == s_active_leaderboard_trackers.end())
+  if (it == s_state.active_leaderboard_trackers.end())
     return;
 
   DEV_LOG("Hiding leaderboard tracker: {}", id);
@@ -1425,9 +1459,9 @@ void Achievements::HandleLeaderboardTrackerHideEvent(const rc_client_event_t* ev
 void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* event)
 {
   const u32 id = event->leaderboard_tracker->id;
-  auto it = std::find_if(s_active_leaderboard_trackers.begin(), s_active_leaderboard_trackers.end(),
+  auto it = std::find_if(s_state.active_leaderboard_trackers.begin(), s_state.active_leaderboard_trackers.end(),
                          [id](const auto& it) { return it.tracker_id == id; });
-  if (it == s_active_leaderboard_trackers.end())
+  if (it == s_state.active_leaderboard_trackers.end())
     return;
 
   DEV_LOG("Updating leaderboard tracker: {}: {}", event->leaderboard_tracker->id, event->leaderboard_tracker->display);
@@ -1439,9 +1473,9 @@ void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* 
 void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_event_t* event)
 {
   if (auto it =
-        std::find_if(s_active_challenge_indicators.begin(), s_active_challenge_indicators.end(),
+        std::find_if(s_state.active_challenge_indicators.begin(), s_state.active_challenge_indicators.end(),
                      [event](const AchievementChallengeIndicator& it) { return it.achievement == event->achievement; });
-      it != s_active_challenge_indicators.end())
+      it != s_state.active_challenge_indicators.end())
   {
     it->show_hide_time.Reset();
     it->active = true;
@@ -1452,7 +1486,7 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
   indicator.achievement = event->achievement;
   indicator.badge_path = GetAchievementBadgePath(event->achievement, RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
   indicator.active = true;
-  s_active_challenge_indicators.push_back(std::move(indicator));
+  s_state.active_challenge_indicators.push_back(std::move(indicator));
 
   DEV_LOG("Show challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
 }
@@ -1460,9 +1494,9 @@ void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_
 void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_event_t* event)
 {
   auto it =
-    std::find_if(s_active_challenge_indicators.begin(), s_active_challenge_indicators.end(),
+    std::find_if(s_state.active_challenge_indicators.begin(), s_state.active_challenge_indicators.end(),
                  [event](const AchievementChallengeIndicator& it) { return it.achievement == event->achievement; });
-  if (it == s_active_challenge_indicators.end())
+  if (it == s_state.active_challenge_indicators.end())
     return;
 
   DEV_LOG("Hide challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
@@ -1475,33 +1509,33 @@ void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_e
   DEV_LOG("Showing progress indicator: {} ({}): {}", event->achievement->id, event->achievement->title,
           event->achievement->measured_progress);
 
-  if (!s_active_progress_indicator.has_value())
-    s_active_progress_indicator.emplace();
+  if (!s_state.active_progress_indicator.has_value())
+    s_state.active_progress_indicator.emplace();
   else
-    s_active_progress_indicator->show_hide_time.Reset();
+    s_state.active_progress_indicator->show_hide_time.Reset();
 
-  s_active_progress_indicator->achievement = event->achievement;
-  s_active_progress_indicator->badge_path =
+  s_state.active_progress_indicator->achievement = event->achievement;
+  s_state.active_progress_indicator->badge_path =
     GetAchievementBadgePath(event->achievement, RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
-  s_active_progress_indicator->active = true;
+  s_state.active_progress_indicator->active = true;
 }
 
 void Achievements::HandleAchievementProgressIndicatorHideEvent(const rc_client_event_t* event)
 {
-  if (!s_active_progress_indicator.has_value())
+  if (!s_state.active_progress_indicator.has_value())
     return;
 
   DEV_LOG("Hiding progress indicator");
-  s_active_progress_indicator->show_hide_time.Reset();
-  s_active_progress_indicator->active = false;
+  s_state.active_progress_indicator->show_hide_time.Reset();
+  s_state.active_progress_indicator->active = false;
 }
 
 void Achievements::HandleAchievementProgressIndicatorUpdateEvent(const rc_client_event_t* event)
 {
   DEV_LOG("Updating progress indicator: {} ({}): {}", event->achievement->id, event->achievement->title,
           event->achievement->measured_progress);
-  s_active_progress_indicator->achievement = event->achievement;
-  s_active_progress_indicator->active = true;
+  s_state.active_progress_indicator->achievement = event->achievement;
+  s_state.active_progress_indicator->active = true;
 }
 
 void Achievements::HandleServerErrorEvent(const rc_client_event_t* event)
@@ -1554,7 +1588,7 @@ void Achievements::ResetClient()
     return;
 
   DEV_LOG("Reset client");
-  rc_client_reset(s_client);
+  rc_client_reset(s_state.client);
 }
 
 void Achievements::OnSystemPaused(bool paused)
@@ -1580,7 +1614,7 @@ void Achievements::DisableHardcoreMode()
   }
 #endif
 
-  if (!s_hardcore_mode)
+  if (!s_state.hardcore_mode)
     return;
 
   SetHardcoreMode(false, true);
@@ -1596,8 +1630,8 @@ bool Achievements::ResetHardcoreMode(bool is_booting)
   // If we're not logged in, don't apply hardcore mode restrictions.
   // If we later log in, we'll start with it off anyway.
   const bool wanted_hardcore_mode =
-    (IsLoggedInOrLoggingIn() || s_load_game_request) && g_settings.achievements_hardcore_mode;
-  if (s_hardcore_mode == wanted_hardcore_mode)
+    (IsLoggedInOrLoggingIn() || s_state.load_game_request) && g_settings.achievements_hardcore_mode;
+  if (s_state.hardcore_mode == wanted_hardcore_mode)
     return false;
 
   if (!is_booting && wanted_hardcore_mode && !CanEnableHardcoreMode())
@@ -1609,11 +1643,11 @@ bool Achievements::ResetHardcoreMode(bool is_booting)
 
 void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 {
-  if (enabled == s_hardcore_mode)
+  if (enabled == s_state.hardcore_mode)
     return;
 
   // new mode
-  s_hardcore_mode = enabled;
+  s_state.hardcore_mode = enabled;
 
   if (System::IsValid() && (HasActiveGame() || force_display_message) && FullscreenUI::Initialize())
   {
@@ -1623,8 +1657,8 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
                                Host::OSD_INFO_DURATION);
   }
 
-  rc_client_set_hardcore_enabled(s_client, enabled);
-  DebugAssert((rc_client_get_hardcore_enabled(s_client) != 0) == enabled);
+  rc_client_set_hardcore_enabled(s_state.client, enabled);
+  DebugAssert((rc_client_get_hardcore_enabled(s_state.client) != 0) == enabled);
   if (HasActiveGame())
   {
     UpdateGameSummary();
@@ -1654,16 +1688,16 @@ bool Achievements::DoState(StateWrapper& sw)
     return !sw.HasError();
   }
 
-  std::unique_lock lock(s_achievements_mutex);
+  std::unique_lock lock(s_state.mutex);
 
   if (sw.IsReading())
   {
     // if we're active, make sure we've downloaded and activated all the achievements
     // before deserializing, otherwise that state's going to get lost.
-    if (!IsUsingRAIntegration() && s_load_game_request)
+    if (!IsUsingRAIntegration() && s_state.load_game_request)
     {
       Host::DisplayLoadingScreen("Downloading achievements data...");
-      s_http_downloader->WaitForAllRequests();
+      s_state.http_downloader->WaitForAllRequests();
     }
 
     u32 data_size = 0;
@@ -1676,33 +1710,33 @@ bool Achievements::DoState(StateWrapper& sw)
       if (IsUsingRAIntegration())
         RA_OnReset();
       else
-        rc_client_reset(s_client);
+        rc_client_reset(s_state.client);
 #else
-      rc_client_reset(s_client);
+      rc_client_reset(s_state.client);
 #endif
 
       return !sw.HasError();
     }
 
-    if (data_size > s_state_buffer.size())
-      s_state_buffer.resize(data_size);
+    if (data_size > s_state.state_buffer.size())
+      s_state.state_buffer.resize(data_size);
     if (data_size > 0)
-      sw.DoBytes(s_state_buffer.data(), data_size);
+      sw.DoBytes(s_state.state_buffer.data(), data_size);
     if (sw.HasError())
       return false;
 
 #ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
     {
-      RA_RestoreState(reinterpret_cast<const char*>(s_state_buffer.data()));
+      RA_RestoreState(reinterpret_cast<const char*>(s_state.state_buffer.data()));
     }
     else
     {
-      const int result = rc_client_deserialize_progress_sized(s_client, s_state_buffer.data(), data_size);
+      const int result = rc_client_deserialize_progress_sized(s_state.client, s_state.state_buffer.data(), data_size);
       if (result != RC_OK)
       {
         WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
-        rc_client_reset(s_client);
+        rc_client_reset(s_state.client);
       }
     }
 #endif
@@ -1719,11 +1753,12 @@ bool Achievements::DoState(StateWrapper& sw)
       const int size = RA_CaptureState(nullptr, 0);
 
       data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-      s_state_buffer.resize(data_size);
+      s_state.state_buffer.resize(data_size);
 
       if (data_size > 0)
       {
-        const int result = RA_CaptureState(reinterpret_cast<char*>(s_state_buffer.data()), static_cast<int>(data_size));
+        const int result =
+          RA_CaptureState(reinterpret_cast<char*>(s_state.state_buffer.data()), static_cast<int>(data_size));
         if (result != static_cast<int>(data_size))
         {
           WARNING_LOG("Failed to serialize cheevos state from RAIntegration.");
@@ -1734,13 +1769,13 @@ bool Achievements::DoState(StateWrapper& sw)
     else
 #endif
     {
-      data_size = rc_client_progress_size(s_client);
+      data_size = rc_client_progress_size(s_state.client);
       if (data_size > 0)
       {
-        if (s_state_buffer.size() < data_size)
-          s_state_buffer.resize(data_size);
+        if (s_state.state_buffer.size() < data_size)
+          s_state.state_buffer.resize(data_size);
 
-        const int result = rc_client_serialize_progress_sized(s_client, s_state_buffer.data(), data_size);
+        const int result = rc_client_serialize_progress_sized(s_state.client, s_state.state_buffer.data(), data_size);
         if (result != RC_OK)
         {
           // set data to zero, effectively serializing nothing
@@ -1752,7 +1787,7 @@ bool Achievements::DoState(StateWrapper& sw)
 
     sw.Do(&data_size);
     if (data_size > 0)
-      sw.DoBytes(s_state_buffer.data(), data_size);
+      sw.DoBytes(s_state.state_buffer.data(), data_size);
 
     return !sw.HasError();
   }
@@ -1797,12 +1832,12 @@ std::string Achievements::GetLeaderboardUserBadgePath(const rc_client_leaderboar
 
 bool Achievements::IsLoggedInOrLoggingIn()
 {
-  return (rc_client_get_user_info(s_client) != nullptr || s_login_request);
+  return (rc_client_get_user_info(s_state.client) != nullptr || s_state.login_request);
 }
 
 bool Achievements::CanEnableHardcoreMode()
 {
-  return (s_load_game_request || s_has_achievements || s_has_leaderboards);
+  return (s_state.load_game_request || s_state.has_achievements || s_state.has_leaderboards);
 }
 
 bool Achievements::Login(const char* username, const char* password, Error* error)
@@ -1810,8 +1845,8 @@ bool Achievements::Login(const char* username, const char* password, Error* erro
   auto lock = GetLock();
 
   // We need to use a temporary client if achievements aren't currently active.
-  rc_client_t* client = s_client;
-  HTTPDownloader* http = s_http_downloader.get();
+  rc_client_t* client = s_state.client;
+  HTTPDownloader* http = s_state.http_downloader.get();
   const bool is_temporary_client = (client == nullptr);
   std::unique_ptr<HTTPDownloader> temporary_downloader;
   ScopedGuard temporary_client_guard = [&client, is_temporary_client, &temporary_downloader]() {
@@ -1884,7 +1919,7 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 
   // Store configuration.
   Host::SetBaseStringSettingValue("Cheevos", "Username", params->username);
-  Host::SetBaseStringSettingValue("Cheevos", "Token", user->token);
+  Host::SetBaseStringSettingValue("Cheevos", "Token", EncryptLoginToken(user->token, params->username));
   Host::SetBaseStringSettingValue("Cheevos", "LoginTimestamp", fmt::format("{}", std::time(nullptr)).c_str());
   Host::CommitBaseSettingChanges();
 
@@ -1894,7 +1929,7 @@ void Achievements::ClientLoginWithPasswordCallback(int result, const char* error
 void Achievements::ClientLoginWithTokenCallback(int result, const char* error_message, rc_client_t* client,
                                                 void* userdata)
 {
-  s_login_request = nullptr;
+  s_state.login_request = nullptr;
 
   if (result != RC_OK)
   {
@@ -1920,14 +1955,14 @@ void Achievements::ShowLoginSuccess(const rc_client_t* client)
   if (System::IsValid())
   {
     const auto lock = GetLock();
-    if (s_client == client)
+    if (s_state.client == client)
       Host::RunOnCPUThread(ShowLoginNotification);
   }
 }
 
 void Achievements::ShowLoginNotification()
 {
-  const rc_client_user_t* user = rc_client_get_user_info(s_client);
+  const rc_client_user_t* user = rc_client_get_user_info(s_state.client);
   if (!user)
     return;
 
@@ -1947,7 +1982,7 @@ void Achievements::ShowLoginNotification()
 
 const char* Achievements::GetLoggedInUserName()
 {
-  const rc_client_user_t* user = rc_client_get_user_info(s_client);
+  const rc_client_user_t* user = rc_client_get_user_info(s_state.client);
   if (!user) [[unlikely]]
     return nullptr;
 
@@ -1958,7 +1993,7 @@ std::string Achievements::GetLoggedInUserBadgePath()
 {
   std::string badge_path;
 
-  const rc_client_user_t* user = rc_client_get_user_info(s_client);
+  const rc_client_user_t* user = rc_client_get_user_info(s_state.client);
   if (!user) [[unlikely]]
     return badge_path;
 
@@ -1982,7 +2017,7 @@ u32 Achievements::GetPauseThrottleFrames()
     return 0;
 
   u32 frames_remaining = 0;
-  return rc_client_can_pause(s_client, &frames_remaining) ? 0 : frames_remaining;
+  return rc_client_can_pause(s_state.client, &frames_remaining) ? 0 : frames_remaining;
 }
 
 void Achievements::Logout()
@@ -1998,7 +2033,7 @@ void Achievements::Logout()
     }
 
     INFO_LOG("Logging out...");
-    rc_client_logout(s_client);
+    rc_client_logout(s_state.client);
   }
 
   INFO_LOG("Clearing credentials...");
@@ -2090,20 +2125,20 @@ void Achievements::ClearUIState()
   CloseLeaderboard();
 #endif
 
-  s_achievement_badge_paths = {};
+  s_state.achievement_badge_paths = {};
 
-  s_leaderboard_user_icon_paths = {};
-  s_leaderboard_entry_lists = {};
-  if (s_leaderboard_list)
+  s_state.leaderboard_user_icon_paths = {};
+  s_state.leaderboard_entry_lists = {};
+  if (s_state.leaderboard_list)
   {
-    rc_client_destroy_leaderboard_list(s_leaderboard_list);
-    s_leaderboard_list = nullptr;
+    rc_client_destroy_leaderboard_list(s_state.leaderboard_list);
+    s_state.leaderboard_list = nullptr;
   }
 
-  if (s_achievement_list)
+  if (s_state.achievement_list)
   {
-    rc_client_destroy_achievement_list(s_achievement_list);
-    s_achievement_list = nullptr;
+    rc_client_destroy_achievement_list(s_state.achievement_list);
+    s_state.achievement_list = nullptr;
   }
 }
 
@@ -2134,12 +2169,12 @@ void Achievements::DrawGameOverlays()
   ImVec2 position = ImVec2(io.DisplaySize.x - padding, io.DisplaySize.y - padding);
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-  if (!s_active_challenge_indicators.empty())
+  if (!s_state.active_challenge_indicators.empty())
   {
     const float x_advance = image_size.x + spacing;
     ImVec2 current_position = ImVec2(position.x - image_size.x, position.y - image_size.y);
 
-    for (auto it = s_active_challenge_indicators.begin(); it != s_active_challenge_indicators.end();)
+    for (auto it = s_state.active_challenge_indicators.begin(); it != s_state.active_challenge_indicators.end();)
     {
       const AchievementChallengeIndicator& indicator = *it;
       const float opacity = IndicatorOpacity(indicator);
@@ -2156,7 +2191,7 @@ void Achievements::DrawGameOverlays()
       if (!indicator.active && opacity <= 0.01f)
       {
         DEV_LOG("Remove challenge indicator");
-        it = s_active_challenge_indicators.erase(it);
+        it = s_state.active_challenge_indicators.erase(it);
       }
       else
       {
@@ -2167,13 +2202,13 @@ void Achievements::DrawGameOverlays()
     position.y -= image_size.y + padding;
   }
 
-  if (s_active_progress_indicator.has_value())
+  if (s_state.active_progress_indicator.has_value())
   {
-    const AchievementProgressIndicator& indicator = s_active_progress_indicator.value();
+    const AchievementProgressIndicator& indicator = s_state.active_progress_indicator.value();
     const float opacity = IndicatorOpacity(indicator);
     const u32 col = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity));
 
-    const char* text_start = s_active_progress_indicator->achievement->measured_progress;
+    const char* text_start = s_state.active_progress_indicator->achievement->measured_progress;
     const char* text_end = text_start + std::strlen(text_start);
     const ImVec2 text_size = g_medium_font->CalcTextSizeA(g_medium_font->FontSize, FLT_MAX, 0.0f, text_start, text_end);
 
@@ -2200,15 +2235,15 @@ void Achievements::DrawGameOverlays()
     if (!indicator.active && opacity <= 0.01f)
     {
       DEV_LOG("Remove progress indicator");
-      s_active_progress_indicator.reset();
+      s_state.active_progress_indicator.reset();
     }
 
-    position.y -= image_size.y - padding * 3.0f;
+    position.y -= image_size.y + padding * 3.0f;
   }
 
-  if (!s_active_leaderboard_trackers.empty())
+  if (!s_state.active_leaderboard_trackers.empty())
   {
-    for (auto it = s_active_leaderboard_trackers.begin(); it != s_active_leaderboard_trackers.end();)
+    for (auto it = s_state.active_leaderboard_trackers.begin(); it != s_state.active_leaderboard_trackers.end();)
     {
       const LeaderboardTrackerIndicator& indicator = *it;
       const float opacity = IndicatorOpacity(indicator);
@@ -2243,7 +2278,7 @@ void Achievements::DrawGameOverlays()
       if (!indicator.active && opacity <= 0.01f)
       {
         DEV_LOG("Remove tracker indicator");
-        it = s_active_leaderboard_trackers.erase(it);
+        it = s_state.active_leaderboard_trackers.erase(it);
       }
       else
       {
@@ -2271,7 +2306,7 @@ void Achievements::DrawPauseMenuOverlays()
 
   const auto lock = GetLock();
 
-  if (s_active_challenge_indicators.empty() && !s_active_progress_indicator.has_value())
+  if (s_state.active_challenge_indicators.empty() && !s_state.active_progress_indicator.has_value())
     return;
 
   const ImGuiIO& io = ImGui::GetIO();
@@ -2288,12 +2323,12 @@ void Achievements::DrawPauseMenuOverlays()
   const float row_width = max_text_width + padding + padding + image_size.x + spacing;
   const float title_height = padding + font->FontSize + padding;
 
-  if (!s_active_challenge_indicators.empty())
+  if (!s_state.active_challenge_indicators.empty())
   {
     const ImVec2 box_min(io.DisplaySize.x - row_width - margin, start_y + margin);
     const ImVec2 box_max(box_min.x + row_width,
                          box_min.y + title_height +
-                           (static_cast<float>(s_active_challenge_indicators.size()) * (image_size.y + padding)));
+                           (static_cast<float>(s_state.active_challenge_indicators.size()) * (image_size.y + padding)));
 
     ImDrawList* dl = ImGui::GetBackgroundDrawList();
     dl->AddRectFilled(box_min, box_max, IM_COL32(0x21, 0x21, 0x21, 200), LayoutScale(10.0f));
@@ -2305,7 +2340,7 @@ void Achievements::DrawPauseMenuOverlays()
     const float max_non_ellipised_text_width = max_text_width - LayoutScale(10.0f);
     ImVec2 position(box_min.x + padding, box_min.y + title_height);
 
-    for (const AchievementChallengeIndicator& indicator : s_active_challenge_indicators)
+    for (const AchievementChallengeIndicator& indicator : s_state.active_challenge_indicators)
     {
       GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(indicator.badge_path);
       if (!badge)
@@ -2345,14 +2380,14 @@ bool Achievements::PrepareAchievementsWindow()
 {
   auto lock = Achievements::GetLock();
 
-  s_achievement_badge_paths = {};
+  s_state.achievement_badge_paths = {};
 
-  if (s_achievement_list)
-    rc_client_destroy_achievement_list(s_achievement_list);
-  s_achievement_list = rc_client_create_achievement_list(
-    s_client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
+  if (s_state.achievement_list)
+    rc_client_destroy_achievement_list(s_state.achievement_list);
+  s_state.achievement_list = rc_client_create_achievement_list(
+    s_state.client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE_AND_UNOFFICIAL,
     RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_PROGRESS /*RC_CLIENT_ACHIEVEMENT_LIST_GROUPING_LOCK_STATE*/);
-  if (!s_achievement_list)
+  if (!s_state.achievement_list)
   {
     ERROR_LOG("rc_client_create_achievement_list() returned null");
     return false;
@@ -2367,7 +2402,7 @@ void Achievements::DrawAchievementsWindow()
   using ImGuiFullscreen::g_medium_font;
   using ImGuiFullscreen::LayoutScale;
 
-  if (!s_achievement_list)
+  if (!s_state.achievement_list)
     return;
 
   auto lock = Achievements::GetLock();
@@ -2399,9 +2434,9 @@ void Achievements::DrawAchievementsWindow()
       const ImVec2 icon_min(bb.Min + ImVec2(padding, padding));
       const ImVec2 icon_max(icon_min + ImVec2(image_height, image_height));
 
-      if (!s_game_icon.empty())
+      if (!s_state.game_icon.empty())
       {
-        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_game_icon.c_str());
+        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon.c_str());
         if (badge)
         {
           ImGui::GetWindowDrawList()->AddImage(badge, icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
@@ -2421,9 +2456,9 @@ void Achievements::DrawAchievementsWindow()
                       ImGuiFullscreen::WantsToCloseMenu());
 
       const ImRect title_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
-      text.assign(s_game_title);
+      text.assign(s_state.game_title);
 
-      if (s_hardcore_mode)
+      if (s_state.hardcore_mode)
         text.append(TRANSLATE_SV("Achievements", " (Hardcore Mode)"));
 
       top += g_large_font->FontSize + spacing;
@@ -2434,19 +2469,19 @@ void Achievements::DrawAchievementsWindow()
       ImGui::PopFont();
 
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + g_medium_font->FontSize));
-      if (s_game_summary.num_core_achievements > 0)
+      if (s_state.game_summary.num_core_achievements > 0)
       {
-        if (s_game_summary.num_unlocked_achievements == s_game_summary.num_core_achievements)
+        if (s_state.game_summary.num_unlocked_achievements == s_state.game_summary.num_core_achievements)
         {
           text = TRANSLATE_PLURAL_SSTR("Achievements", "You have unlocked all achievements and earned %n points!",
-                                       "Point count", s_game_summary.points_unlocked);
+                                       "Point count", s_state.game_summary.points_unlocked);
         }
         else
         {
           text.format(TRANSLATE_FS("Achievements",
                                    "You have unlocked {0} of {1} achievements, earning {2} of {3} possible points."),
-                      s_game_summary.num_unlocked_achievements, s_game_summary.num_core_achievements,
-                      s_game_summary.points_unlocked, s_game_summary.points_core);
+                      s_state.game_summary.num_unlocked_achievements, s_state.game_summary.num_core_achievements,
+                      s_state.game_summary.points_unlocked, s_state.game_summary.points_core);
         }
       }
       else
@@ -2461,12 +2496,12 @@ void Achievements::DrawAchievementsWindow()
                                ImVec2(0.0f, 0.0f), &summary_bb);
       ImGui::PopFont();
 
-      if (s_game_summary.num_core_achievements > 0)
+      if (s_state.game_summary.num_core_achievements > 0)
       {
         const float progress_height = ImGuiFullscreen::LayoutScale(20.0f);
         const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
-        const float fraction = static_cast<float>(s_game_summary.num_unlocked_achievements) /
-                               static_cast<float>(s_game_summary.num_core_achievements);
+        const float fraction = static_cast<float>(s_state.game_summary.num_unlocked_achievements) /
+                               static_cast<float>(s_state.game_summary.num_core_achievements);
         dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIPrimaryDarkColor));
         dl->AddRectFilled(progress_bb.Min,
                           ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
@@ -2512,9 +2547,9 @@ void Achievements::DrawAchievementsWindow()
                             RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE, RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
                             RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL, RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED})
     {
-      for (u32 bucket_idx = 0; bucket_idx < s_achievement_list->num_buckets; bucket_idx++)
+      for (u32 bucket_idx = 0; bucket_idx < s_state.achievement_list->num_buckets; bucket_idx++)
       {
-        const rc_client_achievement_bucket_t& bucket = s_achievement_list->buckets[bucket_idx];
+        const rc_client_achievement_bucket_t& bucket = s_state.achievement_list->buckets[bucket_idx];
         if (bucket.bucket_type != bucket_type)
           continue;
 
@@ -2592,16 +2627,16 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
     return;
 
   std::string* badge_path;
-  if (const auto badge_it = std::find_if(s_achievement_badge_paths.begin(), s_achievement_badge_paths.end(),
+  if (const auto badge_it = std::find_if(s_state.achievement_badge_paths.begin(), s_state.achievement_badge_paths.end(),
                                          [cheevo](const auto& it) { return (it.first == cheevo); });
-      badge_it != s_achievement_badge_paths.end())
+      badge_it != s_state.achievement_badge_paths.end())
   {
     badge_path = &badge_it->second;
   }
   else
   {
     std::string new_badge_path = Achievements::GetAchievementBadgePath(cheevo, cheevo->state);
-    badge_path = &s_achievement_badge_paths.emplace_back(cheevo, std::move(new_badge_path)).second;
+    badge_path = &s_state.achievement_badge_paths.emplace_back(cheevo, std::move(new_badge_path)).second;
   }
 
   const ImVec2 image_size(
@@ -2716,14 +2751,14 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 bool Achievements::PrepareLeaderboardsWindow()
 {
   auto lock = Achievements::GetLock();
-  rc_client_t* const client = s_client;
+  rc_client_t* const client = s_state.client;
 
-  s_achievement_badge_paths = {};
+  s_state.achievement_badge_paths = {};
   CloseLeaderboard();
-  if (s_leaderboard_list)
-    rc_client_destroy_leaderboard_list(s_leaderboard_list);
-  s_leaderboard_list = rc_client_create_leaderboard_list(client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
-  if (!s_leaderboard_list)
+  if (s_state.leaderboard_list)
+    rc_client_destroy_leaderboard_list(s_state.leaderboard_list);
+  s_state.leaderboard_list = rc_client_create_leaderboard_list(client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
+  if (!s_state.leaderboard_list)
   {
     ERROR_LOG("rc_client_create_leaderboard_list() returned null");
     return false;
@@ -2745,7 +2780,7 @@ void Achievements::DrawLeaderboardsWindow()
 
   auto lock = Achievements::GetLock();
 
-  const bool is_leaderboard_open = (s_open_leaderboard != nullptr);
+  const bool is_leaderboard_open = (s_state.open_leaderboard != nullptr);
   bool close_leaderboard_on_exit = false;
 
   ImRect bb;
@@ -2792,9 +2827,9 @@ void Achievements::DrawLeaderboardsWindow()
       const ImVec2 icon_min(bb.Min + ImVec2(padding, padding));
       const ImVec2 icon_max(icon_min + ImVec2(image_height, image_height));
 
-      if (!s_game_icon.empty())
+      if (!s_state.game_icon.empty())
       {
-        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_game_icon.c_str());
+        GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(s_state.game_icon.c_str());
         if (badge)
         {
           ImGui::GetWindowDrawList()->AddImage(badge, icon_min, icon_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
@@ -2839,7 +2874,7 @@ void Achievements::DrawLeaderboardsWindow()
       if (is_leaderboard_open)
       {
         const ImRect subtitle_bb(ImVec2(left, top), ImVec2(right, top + g_large_font->FontSize));
-        text.assign(s_open_leaderboard->title);
+        text.assign(s_state.open_leaderboard->title);
 
         top += g_large_font->FontSize + spacing_small;
 
@@ -2848,13 +2883,13 @@ void Achievements::DrawLeaderboardsWindow()
                                  ImVec2(0.0f, 0.0f), &subtitle_bb);
         ImGui::PopFont();
 
-        text.assign(s_open_leaderboard->description);
+        text.assign(s_state.open_leaderboard->description);
       }
       else
       {
         u32 count = 0;
-        for (u32 i = 0; i < s_leaderboard_list->num_buckets; i++)
-          count += s_leaderboard_list->buckets[i].num_leaderboards;
+        for (u32 i = 0; i < s_state.leaderboard_list->num_buckets; i++)
+          count += s_state.leaderboard_list->buckets[i].num_leaderboards;
         text = TRANSLATE_PLURAL_SSTR("Achievements", "This game has %n leaderboards.", "Leaderboard count", count);
       }
 
@@ -2889,7 +2924,7 @@ void Achievements::DrawLeaderboardsWindow()
             ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false) || ImGui::IsKeyPressed(ImGuiKey_GamepadDpadRight, false) ||
             ImGui::IsKeyPressed(ImGuiKey_NavGamepadTweakFast, false) || ImGui::IsKeyPressed(ImGuiKey_RightArrow, false))
         {
-          s_is_showing_all_leaderboard_entries = !s_is_showing_all_leaderboard_entries;
+          s_state.is_showing_all_leaderboard_entries = !s_state.is_showing_all_leaderboard_entries;
           ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);
         }
 
@@ -2897,10 +2932,10 @@ void Achievements::DrawLeaderboardsWindow()
         {
           const char* title =
             show_all ? TRANSLATE("Achievements", "Show Best") : TRANSLATE("Achievements", "Show Nearby");
-          if (ImGuiFullscreen::NavTab(title, s_is_showing_all_leaderboard_entries == show_all, true, tab_width,
+          if (ImGuiFullscreen::NavTab(title, s_state.is_showing_all_leaderboard_entries == show_all, true, tab_width,
                                       tab_height_unscaled, heading_background))
           {
-            s_is_showing_all_leaderboard_entries = show_all;
+            s_state.is_showing_all_leaderboard_entries = show_all;
           }
         }
 
@@ -2944,7 +2979,7 @@ void Achievements::DrawLeaderboardsWindow()
           score_bb.Min, score_bb.Max,
           Host::TranslateToCString(
             "Achievements",
-            value_headings[std::min<u8>(s_open_leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)]),
+            value_headings[std::min<u8>(s_state.open_leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)]),
           nullptr, nullptr, ImVec2(0.0f, 0.0f), &score_bb);
         text_start_x += time_column_width + column_spacing;
 
@@ -2979,9 +3014,9 @@ void Achievements::DrawLeaderboardsWindow()
       ImGuiFullscreen::ResetFocusHere();
       ImGuiFullscreen::BeginMenuButtons();
 
-      for (u32 bucket_index = 0; bucket_index < s_leaderboard_list->num_buckets; bucket_index++)
+      for (u32 bucket_index = 0; bucket_index < s_state.leaderboard_list->num_buckets; bucket_index++)
       {
-        const rc_client_leaderboard_bucket_t& bucket = s_leaderboard_list->buckets[bucket_index];
+        const rc_client_leaderboard_bucket_t& bucket = s_state.leaderboard_list->buckets[bucket_index];
         for (u32 i = 0; i < bucket.num_leaderboards; i++)
           DrawLeaderboardListEntry(bucket.leaderboards[i]);
       }
@@ -3007,23 +3042,23 @@ void Achievements::DrawLeaderboardsWindow()
           "leaderboard", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
     {
       // Defer focus reset until loading finishes.
-      if (!s_is_showing_all_leaderboard_entries ||
-          (ImGuiFullscreen::IsFocusResetFromWindowChange() && !s_leaderboard_entry_lists.empty()))
+      if (!s_state.is_showing_all_leaderboard_entries ||
+          (ImGuiFullscreen::IsFocusResetFromWindowChange() && !s_state.leaderboard_entry_lists.empty()))
       {
         ImGuiFullscreen::ResetFocusHere();
       }
 
       ImGuiFullscreen::BeginMenuButtons();
 
-      if (!s_is_showing_all_leaderboard_entries)
+      if (!s_state.is_showing_all_leaderboard_entries)
       {
-        if (s_leaderboard_nearby_entries)
+        if (s_state.leaderboard_nearby_entries)
         {
-          for (u32 i = 0; i < s_leaderboard_nearby_entries->num_entries; i++)
+          for (u32 i = 0; i < s_state.leaderboard_nearby_entries->num_entries; i++)
           {
-            DrawLeaderboardEntry(s_leaderboard_nearby_entries->entries[i],
-                                 static_cast<s32>(i) == s_leaderboard_nearby_entries->user_index, rank_column_width,
-                                 name_column_width, time_column_width, column_spacing);
+            DrawLeaderboardEntry(s_state.leaderboard_nearby_entries->entries[i],
+                                 static_cast<s32>(i) == s_state.leaderboard_nearby_entries->user_index,
+                                 rank_column_width, name_column_width, time_column_width, column_spacing);
           }
         }
         else
@@ -3041,7 +3076,7 @@ void Achievements::DrawLeaderboardsWindow()
       }
       else
       {
-        for (const rc_client_leaderboard_entry_list_t* list : s_leaderboard_entry_lists)
+        for (const rc_client_leaderboard_entry_list_t* list : s_state.leaderboard_entry_lists)
         {
           for (u32 i = 0; i < list->num_entries; i++)
           {
@@ -3065,7 +3100,7 @@ void Achievements::DrawLeaderboardsWindow()
                                    nullptr, ImVec2(0, 0), &title_bb);
           ImGui::PopFont();
 
-          if (!s_leaderboard_fetch_handle)
+          if (!s_state.leaderboard_fetch_handle)
             FetchNextLeaderboardEntries();
         }
       }
@@ -3127,9 +3162,9 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
   const float icon_size = bb.Max.y - bb.Min.y;
   const ImRect icon_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
   GPUTexture* icon_tex = nullptr;
-  if (auto it = std::find_if(s_leaderboard_user_icon_paths.begin(), s_leaderboard_user_icon_paths.end(),
+  if (auto it = std::find_if(s_state.leaderboard_user_icon_paths.begin(), s_state.leaderboard_user_icon_paths.end(),
                              [&entry](const auto& it) { return it.first == &entry; });
-      it != s_leaderboard_user_icon_paths.end())
+      it != s_state.leaderboard_user_icon_paths.end())
   {
     if (!it->second.empty())
       icon_tex = ImGuiFullscreen::GetCachedTextureAsync(it->second);
@@ -3140,7 +3175,7 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
     if (!path.empty())
     {
       icon_tex = ImGuiFullscreen::GetCachedTextureAsync(path);
-      s_leaderboard_user_icon_paths.emplace_back(&entry, std::move(path));
+      s_state.leaderboard_user_icon_paths.emplace_back(&entry, std::move(path));
     }
   }
   if (icon_tex)
@@ -3222,16 +3257,16 @@ void Achievements::OpenLeaderboard(const rc_client_leaderboard_t* lboard)
 
   CloseLeaderboard();
 
-  s_open_leaderboard = lboard;
-  s_is_showing_all_leaderboard_entries = false;
-  s_leaderboard_fetch_handle = rc_client_begin_fetch_leaderboard_entries_around_user(
-    s_client, lboard->id, LEADERBOARD_NEARBY_ENTRIES_TO_FETCH, LeaderboardFetchNearbyCallback, nullptr);
+  s_state.open_leaderboard = lboard;
+  s_state.is_showing_all_leaderboard_entries = false;
+  s_state.leaderboard_fetch_handle = rc_client_begin_fetch_leaderboard_entries_around_user(
+    s_state.client, lboard->id, LEADERBOARD_NEARBY_ENTRIES_TO_FETCH, LeaderboardFetchNearbyCallback, nullptr);
   ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);
 }
 
 bool Achievements::OpenLeaderboardById(u32 leaderboard_id)
 {
-  const rc_client_leaderboard_t* lb = rc_client_get_leaderboard_info(s_client, leaderboard_id);
+  const rc_client_leaderboard_t* lb = rc_client_get_leaderboard_info(s_state.client, leaderboard_id);
   if (!lb)
     return false;
 
@@ -3241,22 +3276,22 @@ bool Achievements::OpenLeaderboardById(u32 leaderboard_id)
 
 u32 Achievements::GetOpenLeaderboardId()
 {
-  return s_open_leaderboard ? s_open_leaderboard->id : 0;
+  return s_state.open_leaderboard ? s_state.open_leaderboard->id : 0;
 }
 
 bool Achievements::IsShowingAllLeaderboardEntries()
 {
-  return s_is_showing_all_leaderboard_entries;
+  return s_state.is_showing_all_leaderboard_entries;
 }
 
 const std::vector<rc_client_leaderboard_entry_list_t*>& Achievements::GetLeaderboardEntryLists()
 {
-  return s_leaderboard_entry_lists;
+  return s_state.leaderboard_entry_lists;
 }
 
 const rc_client_leaderboard_entry_list_t* Achievements::GetLeaderboardNearbyEntries()
 {
-  return s_leaderboard_nearby_entries;
+  return s_state.leaderboard_nearby_entries;
 }
 
 void Achievements::LeaderboardFetchNearbyCallback(int result, const char* error_message,
@@ -3265,7 +3300,7 @@ void Achievements::LeaderboardFetchNearbyCallback(int result, const char* error_
 {
   const auto lock = GetLock();
 
-  s_leaderboard_fetch_handle = nullptr;
+  s_state.leaderboard_fetch_handle = nullptr;
 
   if (result != RC_OK)
   {
@@ -3274,9 +3309,9 @@ void Achievements::LeaderboardFetchNearbyCallback(int result, const char* error_
     return;
   }
 
-  if (s_leaderboard_nearby_entries)
-    rc_client_destroy_leaderboard_entry_list(s_leaderboard_nearby_entries);
-  s_leaderboard_nearby_entries = list;
+  if (s_state.leaderboard_nearby_entries)
+    rc_client_destroy_leaderboard_entry_list(s_state.leaderboard_nearby_entries);
+  s_state.leaderboard_nearby_entries = list;
 }
 
 void Achievements::LeaderboardFetchAllCallback(int result, const char* error_message,
@@ -3285,7 +3320,7 @@ void Achievements::LeaderboardFetchAllCallback(int result, const char* error_mes
 {
   const auto lock = GetLock();
 
-  s_leaderboard_fetch_handle = nullptr;
+  s_state.leaderboard_fetch_handle = nullptr;
 
   if (result != RC_OK)
   {
@@ -3294,45 +3329,204 @@ void Achievements::LeaderboardFetchAllCallback(int result, const char* error_mes
     return;
   }
 
-  s_leaderboard_entry_lists.push_back(list);
+  s_state.leaderboard_entry_lists.push_back(list);
 }
 
 void Achievements::FetchNextLeaderboardEntries()
 {
   u32 start = 1;
-  for (rc_client_leaderboard_entry_list_t* list : s_leaderboard_entry_lists)
+  for (rc_client_leaderboard_entry_list_t* list : s_state.leaderboard_entry_lists)
     start += list->num_entries;
 
   DEV_LOG("Fetching entries {} to {}", start, start + LEADERBOARD_ALL_FETCH_SIZE);
 
-  if (s_leaderboard_fetch_handle)
-    rc_client_abort_async(s_client, s_leaderboard_fetch_handle);
-  s_leaderboard_fetch_handle = rc_client_begin_fetch_leaderboard_entries(
-    s_client, s_open_leaderboard->id, start, LEADERBOARD_ALL_FETCH_SIZE, LeaderboardFetchAllCallback, nullptr);
+  if (s_state.leaderboard_fetch_handle)
+    rc_client_abort_async(s_state.client, s_state.leaderboard_fetch_handle);
+  s_state.leaderboard_fetch_handle =
+    rc_client_begin_fetch_leaderboard_entries(s_state.client, s_state.open_leaderboard->id, start,
+                                              LEADERBOARD_ALL_FETCH_SIZE, LeaderboardFetchAllCallback, nullptr);
 }
 
 void Achievements::CloseLeaderboard()
 {
-  s_leaderboard_user_icon_paths.clear();
+  s_state.leaderboard_user_icon_paths.clear();
 
-  for (auto iter = s_leaderboard_entry_lists.rbegin(); iter != s_leaderboard_entry_lists.rend(); ++iter)
+  for (auto iter = s_state.leaderboard_entry_lists.rbegin(); iter != s_state.leaderboard_entry_lists.rend(); ++iter)
     rc_client_destroy_leaderboard_entry_list(*iter);
-  s_leaderboard_entry_lists.clear();
+  s_state.leaderboard_entry_lists.clear();
 
-  if (s_leaderboard_nearby_entries)
+  if (s_state.leaderboard_nearby_entries)
   {
-    rc_client_destroy_leaderboard_entry_list(s_leaderboard_nearby_entries);
-    s_leaderboard_nearby_entries = nullptr;
+    rc_client_destroy_leaderboard_entry_list(s_state.leaderboard_nearby_entries);
+    s_state.leaderboard_nearby_entries = nullptr;
   }
 
-  if (s_leaderboard_fetch_handle)
+  if (s_state.leaderboard_fetch_handle)
   {
-    rc_client_abort_async(s_client, s_leaderboard_fetch_handle);
-    s_leaderboard_fetch_handle = nullptr;
+    rc_client_abort_async(s_state.client, s_state.leaderboard_fetch_handle);
+    s_state.leaderboard_fetch_handle = nullptr;
   }
 
-  s_open_leaderboard = nullptr;
+  s_state.open_leaderboard = nullptr;
   ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);
+}
+
+#if defined(_WIN32)
+#include "common/windows_headers.h"
+#elif !defined(__ANDROID__)
+#include <unistd.h>
+#endif
+
+#include "common/thirdparty/SmallVector.h"
+#include "common/thirdparty/aes.h"
+
+#ifndef __ANDROID__
+
+static TinyString GetLoginEncryptionMachineKey()
+{
+  TinyString ret;
+
+#ifdef _WIN32
+
+  HKEY hKey;
+  DWORD error;
+  if ((error = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_READ, &hKey)) !=
+      ERROR_SUCCESS)
+  {
+    WARNING_LOG("Open SOFTWARE\\Microsoft\\Cryptography failed for machine key failed: {}", error);
+    return ret;
+  }
+
+  DWORD machine_guid_length;
+  if ((error = RegGetValueA(hKey, NULL, "MachineGuid", RRF_RT_REG_SZ, NULL, NULL, &machine_guid_length)) !=
+      ERROR_SUCCESS)
+  {
+    WARNING_LOG("Get MachineGuid failed: {}", error);
+    RegCloseKey(hKey);
+    return 0;
+  }
+
+  ret.resize(machine_guid_length);
+  if ((error = RegGetValueA(hKey, NULL, "MachineGuid", RRF_RT_REG_SZ, NULL, ret.data(), &machine_guid_length)) !=
+        ERROR_SUCCESS ||
+      machine_guid_length <= 1)
+  {
+    WARNING_LOG("Read MachineGuid failed: {}", error);
+    ret = {};
+    RegCloseKey(hKey);
+    return 0;
+  }
+
+  ret.resize(machine_guid_length);
+  RegCloseKey(hKey);
+#elif !defined(__ANDROID__)
+#ifdef __linux__
+  // use /etc/machine-id on Linux
+  std::optional<std::string> machine_id = FileSystem::ReadFileToString("/etc/machine-id");
+  if (machine_id.has_value())
+    ret = std::string_view(machine_id.value());
+#endif
+
+  if (ret.empty())
+  {
+    WARNING_LOG("Falling back to gethostid()");
+
+    // fallback to POSIX gethostid()
+    const long hostid = gethostid();
+    ret.format("{:08X}", hostid);
+  }
+#endif
+
+  return ret;
+}
+
+#endif
+
+static std::array<u8, 32> GetLoginEncryptionKey(std::string_view username)
+{
+  // super basic key stretching
+  static constexpr u32 EXTRA_ROUNDS = 100;
+
+  SHA256Digest digest;
+
+#ifndef __ANDROID__
+  // Only use machine key if we're not running in portable mode.
+  if (!EmuFolders::IsRunningInPortableMode())
+  {
+    const TinyString machine_key = GetLoginEncryptionMachineKey();
+    if (!machine_key.empty())
+      digest.Update(machine_key.cbspan());
+    else
+      WARNING_LOG("Failed to get machine key, token will be decipherable.");
+  }
+#endif
+
+  // salt with username
+  digest.Update(username.data(), username.length());
+
+  std::array<u8, 32> key = digest.Final();
+
+  for (u32 i = 0; i < EXTRA_ROUNDS; i++)
+    key = SHA256Digest::GetDigest(key);
+
+  return key;
+}
+
+TinyString Achievements::EncryptLoginToken(std::string_view token, std::string_view username)
+{
+  TinyString ret;
+  if (token.empty() || username.empty())
+    return ret;
+
+  const auto key = GetLoginEncryptionKey(username);
+  std::array<u32, AES_KEY_SCHEDULE_SIZE> key_schedule;
+  aes_key_setup(&key[0], key_schedule.data(), 128);
+
+  // has to be padded to the block size
+  llvm::SmallVector<u8, 64> data(reinterpret_cast<const u8*>(token.data()),
+                                 reinterpret_cast<const u8*>(token.data() + token.length()));
+  data.resize(Common::AlignUpPow2(token.length(), AES_BLOCK_SIZE), 0);
+  aes_encrypt_cbc(data.data(), data.size(), data.data(), key_schedule.data(), 128, &key[16]);
+
+  // base64 encode it
+  const std::span<const u8> data_span(data.data(), data.size());
+  ret.resize(static_cast<u32>(StringUtil::EncodedBase64Length(data_span)));
+  StringUtil::EncodeBase64(ret.span(), data_span);
+  return ret;
+}
+
+TinyString Achievements::DecryptLoginToken(std::string_view encrypted_token, std::string_view username)
+{
+  TinyString ret;
+  if (encrypted_token.empty() || username.empty())
+    return ret;
+
+  const size_t encrypted_data_length = StringUtil::DecodedBase64Length(encrypted_token);
+  if (encrypted_data_length == 0 || (encrypted_data_length % AES_BLOCK_SIZE) != 0)
+    return ret;
+
+  const auto key = GetLoginEncryptionKey(username);
+  std::array<u32, AES_KEY_SCHEDULE_SIZE> key_schedule;
+  aes_key_setup(&key[0], key_schedule.data(), 128);
+
+  // has to be padded to the block size
+  llvm::SmallVector<u8, 64> encrypted_data;
+  encrypted_data.resize(encrypted_data_length);
+  if (StringUtil::DecodeBase64(std::span<u8>(encrypted_data.data(), encrypted_data.size()), encrypted_token) !=
+      encrypted_data_length)
+  {
+    WARNING_LOG("Failed to base64 decode encrypted login token.");
+    return ret;
+  }
+
+  aes_decrypt_cbc(encrypted_data.data(), encrypted_data.size(), encrypted_data.data(), key_schedule.data(), 128,
+                  &key[16]);
+
+  // remove any trailing null bytes
+  const size_t real_length =
+    StringUtil::Strnlen(reinterpret_cast<const char*>(encrypted_data.data()), encrypted_data_length);
+  ret.append(reinterpret_cast<const char*>(encrypted_data.data()), static_cast<u32>(real_length));
+  return ret;
 }
 
 #ifdef ENABLE_RAINTEGRATION
@@ -3341,7 +3535,7 @@ void Achievements::CloseLeaderboard()
 
 bool Achievements::IsUsingRAIntegration()
 {
-  return s_using_raintegration;
+  return s_state.using_raintegration;
 }
 
 namespace Achievements::RAIntegration {
@@ -3366,7 +3560,7 @@ static bool s_raintegration_initialized = false;
 
 void Achievements::SwitchToRAIntegration()
 {
-  s_using_raintegration = true;
+  s_state.using_raintegration = true;
 }
 
 void Achievements::RAIntegration::InitializeRAIntegration(void* main_window_handle)
@@ -3407,8 +3601,8 @@ void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
 
 void Achievements::RAIntegration::GameChanged()
 {
-  s_game_id = s_game_hash.empty() ? 0 : RA_IdentifyHash(s_game_hash.c_str());
-  RA_ActivateGame(s_game_id);
+  s_state.game_id = s_state.game_hash.empty() ? 0 : RA_IdentifyHash(s_state.game_hash.c_str());
+  RA_ActivateGame(s_state.game_id);
 }
 
 std::vector<std::tuple<int, std::string, bool>> Achievements::RAIntegration::GetMenuItems()

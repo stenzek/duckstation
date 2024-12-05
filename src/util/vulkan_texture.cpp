@@ -459,12 +459,16 @@ void VulkanTexture::OverrideImageLayout(Layout new_layout)
   m_layout = new_layout;
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void VulkanTexture::SetDebugName(std::string_view name)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
   Vulkan::SetObjectName(dev.GetVulkanDevice(), m_image, name);
   Vulkan::SetObjectName(dev.GetVulkanDevice(), m_view, name);
 }
+
+#endif
 
 void VulkanTexture::TransitionToLayout(Layout layout)
 {
@@ -775,10 +779,14 @@ VulkanSampler::~VulkanSampler()
   // Cleaned up by main class.
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void VulkanSampler::SetDebugName(std::string_view name)
 {
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_sampler, name);
 }
+
+#endif
 
 VkSampler VulkanDevice::GetSampler(const GPUSampler::Config& config, Error* error)
 {
@@ -942,6 +950,8 @@ void VulkanTextureBuffer::Unmap(u32 used_elements)
   m_buffer.CommitMemory(size);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void VulkanTextureBuffer::SetDebugName(std::string_view name)
 {
   VulkanDevice& dev = VulkanDevice::GetInstance();
@@ -949,6 +959,8 @@ void VulkanTextureBuffer::SetDebugName(std::string_view name)
   if (m_buffer_view != VK_NULL_HANDLE)
     Vulkan::SetObjectName(dev.GetVulkanDevice(), m_buffer_view, name);
 }
+
+#endif
 
 std::unique_ptr<GPUTextureBuffer> VulkanDevice::CreateTextureBuffer(GPUTextureBuffer::Format format,
                                                                     u32 size_in_elements, Error* error)
@@ -1195,6 +1207,8 @@ void VulkanDownloadTexture::Flush()
   }
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void VulkanDownloadTexture::SetDebugName(std::string_view name)
 {
   if (name.empty())
@@ -1202,6 +1216,8 @@ void VulkanDownloadTexture::SetDebugName(std::string_view name)
 
   Vulkan::SetObjectName(VulkanDevice::GetInstance().GetVulkanDevice(), m_buffer, name);
 }
+
+#endif
 
 std::unique_ptr<GPUDownloadTexture>
 VulkanDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format, Error* error /* = nullptr */)

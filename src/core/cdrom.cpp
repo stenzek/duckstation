@@ -46,6 +46,7 @@ enum : u32
   SECTOR_HEADER_SIZE = CDImage::SECTOR_HEADER_SIZE,
   MODE1_HEADER_SIZE = CDImage::MODE1_HEADER_SIZE,
   MODE2_HEADER_SIZE = CDImage::MODE2_HEADER_SIZE,
+  SUBQ_SECTOR_SKEW = 2,
   XA_ADPCM_SAMPLES_PER_SECTOR_4BIT = 4032, // 28 words * 8 nibbles per word * 18 chunks
   XA_ADPCM_SAMPLES_PER_SECTOR_8BIT = 2016, // 28 words * 4 bytes per word * 18 chunks
   XA_RESAMPLE_RING_BUFFER_SIZE = 32,
@@ -1610,7 +1611,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
                                        1.0f, 72.0f))));
     const float seconds = (lba_diff < switch_point) ? 0.05f : 0.1f;
     ticks += static_cast<u32>(seconds * static_cast<float>(System::MASTER_CLOCK));
-    seek_type = (new_lba > current_lba) ? "NT forward" : "NT backward";
+    seek_type = (new_lba > current_lba) ? "2N forward" : "2N backward";
   }
   else
   {
@@ -1625,7 +1626,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
       (((SLED_VARIABLE_COST * (std::log(static_cast<float>(lba_diff)) / std::log(MAX_SLED_LBA)))) * LOG_WEIGHT) +
       ((SLED_VARIABLE_COST * (lba_diff / MAX_SLED_LBA)) * (1.0f - LOG_WEIGHT));
     ticks += static_cast<u32>(seconds * static_cast<float>(System::MASTER_CLOCK));
-    seek_type = (new_lba > current_lba) ? "2N/sled forward" : "2N/sled backward";
+    seek_type = (new_lba > current_lba) ? "sled forward" : "sled backward";
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
@@ -2101,11 +2102,6 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
 
     case Command::Pause:
     {
-      if (IsReadingOrPlaying())
-        DEV_COLOR_LOG(StrongOrange, "Pause");
-      else
-        DEV_COLOR_LOG(StrongRed, "Pause      Not Reading");
-
       const TickCount pause_time = GetTicksForPause();
       if (IsReading() && s_state.last_subq.IsData())
       {
@@ -2124,21 +2120,33 @@ void CDROM::ExecuteCommand(void*, TickCount ticks, TickCount ticks_late)
           ((s_state.drive_state == DriveState::Reading || s_state.drive_state == DriveState::Playing) &&
            s_state.secondary_status.seeking))
       {
-        WARNING_LOG("CDROM Pause command while seeking - sending error response");
+        if (Log::GetLogLevel() >= Log::Level::Dev)
+          DEV_COLOR_LOG(StrongRed, "Pause      Seeking => Error");
+        else
+          WARNING_LOG("CDROM Pause command while seeking - sending error response");
+
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
         EndCommand();
         return;
       }
-      else
-      {
-        // Small window of time when another INT1 could sneak in, don't let it.
-        ClearAsyncInterrupt();
 
-        // Stop reading.
-        s_state.drive_state = DriveState::Idle;
-        s_state.drive_event.Deactivate();
-        s_state.secondary_status.ClearActiveBits();
+      if (Log::GetLogLevel() >= Log::Level::Dev)
+      {
+        const double pause_time_ms =
+          static_cast<double>(pause_time) / (static_cast<double>(System::MASTER_CLOCK) / 1000.0);
+        if (IsReadingOrPlaying())
+          DEV_COLOR_LOG(StrongOrange, "Pause                  {:.2f}ms", pause_time_ms);
+        else
+          DEV_COLOR_LOG(Yellow, "Pause      Not Reading {:.2f}ms", pause_time_ms);
       }
+
+      // Small window of time when another INT1 could sneak in, don't let it.
+      ClearAsyncInterrupt();
+
+      // Stop reading.
+      s_state.drive_state = DriveState::Idle;
+      s_state.drive_event.Deactivate();
+      s_state.secondary_status.ClearActiveBits();
 
       // Reset audio buffer here - control room cutscene audio repeats in Dino Crisis otherwise.
       ResetAudioDecoder();
@@ -2875,7 +2883,7 @@ void CDROM::UpdateSubQPosition(bool update_logical)
     const CDImage::LBA old_offset = s_state.current_subq_lba - tjump_position;
     const CDImage::LBA new_offset = (old_offset + sector_diff) % sectors_per_track;
     const CDImage::LBA new_subq_lba = tjump_position + new_offset;
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(_DEVEL)
     DEV_LOG("{} sectors @ {} SPT, old pos {}, hold pos {}, tjump pos {}, new pos {}", sector_diff, sectors_per_track,
             LBAToMSFString(s_state.current_subq_lba), LBAToMSFString(hold_position), LBAToMSFString(tjump_position),
             LBAToMSFString(new_subq_lba));
@@ -2960,10 +2968,13 @@ bool CDROM::CompleteSeek()
   if (seek_okay)
   {
     const CDImage::SubChannelQ& subq = GetSectorSubQ(s_reader.GetLastReadSector(), s_reader.GetSectorSubQ());
+    s_state.current_lba = s_reader.GetLastReadSector();
+
     if (subq.IsCRCValid())
     {
       // seek and update sub-q for ReadP command
       s_state.last_subq = subq;
+      s_state.last_subq_needs_update = false;
       const auto [seek_mm, seek_ss, seek_ff] = CDImage::Position::FromLBA(s_reader.GetLastReadSector()).ToBCD();
       seek_okay = (subq.absolute_minute_bcd == seek_mm && subq.absolute_second_bcd == seek_ss &&
                    subq.absolute_frame_bcd == seek_ff);
@@ -2977,12 +2988,16 @@ bool CDROM::CompleteSeek()
             seek_okay = (s_state.last_sector_header.minute == seek_mm && s_state.last_sector_header.second == seek_ss &&
                          s_state.last_sector_header.frame == seek_ff);
 
-            if (seek_okay)
+            if (seek_okay && !s_state.play_after_seek && !s_state.read_after_seek)
             {
-              // after reading the target, the mech immediately does a 1T reverse
-              const u32 spt = GetSectorsPerTrack(s_state.current_subq_lba);
-              SetHoldPosition(s_state.current_subq_lba,
-                              (spt <= s_state.current_subq_lba) ? (s_state.current_subq_lba - spt) : 0);
+              // This is pretty janky. The mech completes the seek when it "sees" a data header
+              // 2 sectors before the seek target, so that a subsequent ReadN can complete nearly
+              // immediately. Therefore when the seek completes, SubQ = Target, Data = Target - 2.
+              // Hack the SubQ back by 2 frames so that following seeks will read forward. If we
+              // ever properly handle SubQ versus data positions, this can be removed.
+              s_state.current_subq_lba =
+                (s_state.current_lba >= SUBQ_SECTOR_SKEW) ? (s_state.current_lba - SUBQ_SECTOR_SKEW) : 0;
+              s_state.last_subq_needs_update = true;
             }
           }
         }
@@ -3009,8 +3024,6 @@ bool CDROM::CompleteSeek()
         }
       }
     }
-
-    s_state.current_lba = s_reader.GetLastReadSector();
   }
 
   return seek_okay;
@@ -3227,7 +3240,7 @@ void CDROM::DoSectorRead()
       // so that multiple sectors could be read in one back, in which case we could just "look ahead" to grab the
       // subq, but I haven't got around to it. It'll break libcrypt, but CC doesn't use it. One day I'll get around to
       // doing the refactor.... but given this is the only game that relies on it, priorities.
-      s_reader.GetMedia()->GenerateSubChannelQ(&s_state.last_subq, s_state.current_lba + 2);
+      s_reader.GetMedia()->GenerateSubChannelQ(&s_state.last_subq, s_state.current_lba + SUBQ_SECTOR_SKEW);
     }
   }
   else

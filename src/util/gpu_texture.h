@@ -4,7 +4,10 @@
 #pragma once
 
 #include "common/gsvector.h"
+#include "common/small_string.h"
 #include "common/types.h"
+
+#include "fmt/format.h"
 
 #include <algorithm>
 #include <array>
@@ -40,7 +43,7 @@ public:
     RGBA8,
     BGRA8,
     RGB565,
-    RGBA5551,
+    RGB5A1,
     R8,
     D16,
     D24S8,
@@ -184,7 +187,14 @@ public:
   // Instructs the backend that we're finished rendering to this texture. It may transition it to a new layout.
   virtual void MakeReadyForSampling();
 
+#if defined(_DEBUG) || defined(_DEVEL)
   virtual void SetDebugName(std::string_view name) = 0;
+  template<typename... T>
+  void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
+  {
+    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+#endif
 
 protected:
   GPUTexture(u16 width, u16 height, u8 layers, u8 levels, u8 samples, Type type, Format format, Flags flags);
@@ -252,8 +262,15 @@ public:
   /// call to CopyFromTexture() and the Flush() call.
   virtual void Flush() = 0;
 
+#if defined(_DEBUG) || defined(_DEVEL)
   /// Sets object name that will be displayed in graphics debuggers.
   virtual void SetDebugName(std::string_view name) = 0;
+  template<typename... T>
+  void SetDebugName(fmt::format_string<T...> fmt, T&&... args)
+  {
+    SetDebugName(TinyString::from_vformat(fmt, fmt::make_format_args(args...)));
+  }
+#endif
 
   /// Reads the specified rectangle from the staging texture to out_ptr, with the specified stride
   /// (length in bytes of each row). CopyFromTexture() must be called first. The contents of any

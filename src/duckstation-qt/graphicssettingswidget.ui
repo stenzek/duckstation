@@ -1127,7 +1127,7 @@
             <item row="0" column="0">
              <widget class="QCheckBox" name="enableTextureReplacements">
               <property name="text">
-               <string>Enable Texture Replacements</string>
+               <string>Enable Texture Replacement</string>
               </property>
              </widget>
             </item>

@@ -21,21 +21,7 @@ namespace BIOS {
 
 static constexpr ImageInfo::Hash MakeHashFromString(const char str[])
 {
-  ImageInfo::Hash h{};
-  for (int i = 0; str[i] != '\0'; i++)
-  {
-    u8 nibble = 0;
-    char ch = str[i];
-    if (ch >= '0' && ch <= '9')
-      nibble = str[i] - '0';
-    else if (ch >= 'a' && ch <= 'z')
-      nibble = 0xA + (str[i] - 'a');
-    else if (ch >= 'A' && ch <= 'Z')
-      nibble = 0xA + (str[i] - 'A');
-
-    h[i / 2] |= nibble << (((i & 1) ^ 1) * 4);
-  }
-  return h;
+  return StringUtil::ParseFixedHexString<ImageInfo::HASH_SIZE>(str);
 }
 
 // clang-format off

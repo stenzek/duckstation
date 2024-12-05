@@ -2,17 +2,20 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "input_manager.h"
+#include "imgui_manager.h"
+#include "input_source.h"
+
+#include "core/controller.h"
+#include "core/host.h"
+#include "core/system.h"
+
 #include "common/assert.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
 #include "common/string_util.h"
 #include "common/timer.h"
-#include "core/controller.h"
-#include "core/host.h"
-#include "core/system.h"
-#include "imgui_manager.h"
-#include "input_source.h"
 
 #include "IconsPromptFont.h"
 
@@ -66,7 +69,7 @@ struct PadVibrationBinding
   struct Motor
   {
     InputBindingKey binding;
-    u64 last_update_time;
+    Timer::Value last_update_time;
     InputSource* source;
     float last_intensity;
   };
@@ -303,7 +306,8 @@ bool InputManager::ParseBindingAndGetSource(std::string_view binding, InputBindi
 
 std::string InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type binding_type, InputBindingKey key)
 {
-  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer)
+  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
+      binding_type == InputBindingInfo::Type::Device)
   {
     // pointer and device bindings don't have a data part
     if (key.source_type == InputSourceType::Pointer)
@@ -356,7 +360,8 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
                                                           const InputBindingKey* keys, size_t num_keys)
 {
   // can't have a chord of devices/pointers
-  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::Pointer)
+  if (binding_type == InputBindingInfo::Type::Pointer || binding_type == InputBindingInfo::Type::RelativePointer ||
+      binding_type == InputBindingInfo::Type::Device)
   {
     // so only take the first
     if (num_keys > 0)
@@ -888,6 +893,8 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
       break;
 
       case InputBindingInfo::Type::Pointer:
+      case InputBindingInfo::Type::Device:
+        // handled in device
         break;
 
       default:
@@ -1583,6 +1590,19 @@ void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_vi
   Host::OnInputDeviceDisconnected(key, identifier);
 }
 
+std::unique_ptr<ForceFeedbackDevice> InputManager::CreateForceFeedbackDevice(const std::string_view device,
+                                                                             Error* error)
+{
+  for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
+  {
+    if (s_input_sources[i] && s_input_sources[i]->ContainsDevice(device))
+      return s_input_sources[i]->CreateForceFeedbackDevice(device, error);
+  }
+
+  Error::SetStringFmt(error, "No input source matched device '{}'", device);
+  return {};
+}
+
 // ------------------------------------------------------------------------
 // Vibration
 // ------------------------------------------------------------------------
@@ -1607,14 +1627,14 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single
       const float report_intensity = std::max(large_or_single_motor_intensity, small_motor_intensity);
       if (large_motor.source)
       {
-        large_motor.last_update_time = Common::Timer::GetCurrentValue();
+        large_motor.last_update_time = Timer::GetCurrentValue();
         large_motor.source->UpdateMotorState(large_motor.binding, report_intensity);
       }
     }
     else if (large_motor.source == small_motor.source)
     {
       // both motors are bound to the same source, do an optimal update
-      large_motor.last_update_time = Common::Timer::GetCurrentValue();
+      large_motor.last_update_time = Timer::GetCurrentValue();
       large_motor.source->UpdateMotorState(large_motor.binding, small_motor.binding, large_or_single_motor_intensity,
                                            small_motor_intensity);
     }
@@ -1623,12 +1643,12 @@ void InputManager::SetPadVibrationIntensity(u32 pad_index, float large_or_single
       // update motors independently
       if (large_motor.source && large_motor.last_intensity != large_or_single_motor_intensity)
       {
-        large_motor.last_update_time = Common::Timer::GetCurrentValue();
+        large_motor.last_update_time = Timer::GetCurrentValue();
         large_motor.source->UpdateMotorState(large_motor.binding, large_or_single_motor_intensity);
       }
       if (small_motor.source && small_motor.last_intensity != small_motor_intensity)
       {
-        small_motor.last_update_time = Common::Timer::GetCurrentValue();
+        small_motor.last_update_time = Timer::GetCurrentValue();
         small_motor.source->UpdateMotorState(small_motor.binding, small_motor_intensity);
       }
     }
@@ -1658,7 +1678,7 @@ void InputManager::PauseVibration()
 void InputManager::UpdateContinuedVibration()
 {
   // update vibration intensities, so if the game does a long effect, it continues
-  const u64 current_time = Common::Timer::GetCurrentValue();
+  const u64 current_time = Timer::GetCurrentValue();
   for (PadVibrationBinding& pad : s_pad_vibration_array)
   {
     if (pad.AreMotorsCombined())
@@ -1669,7 +1689,7 @@ void InputManager::UpdateContinuedVibration()
         continue;
 
       // so only check the first one
-      const double dt = Common::Timer::ConvertValueToSeconds(current_time - large_motor.last_update_time);
+      const double dt = Timer::ConvertValueToSeconds(current_time - large_motor.last_update_time);
       if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
         continue;
 
@@ -1690,7 +1710,7 @@ void InputManager::UpdateContinuedVibration()
         if (!motor.source || motor.last_intensity == 0.0f)
           continue;
 
-        const double dt = Common::Timer::ConvertValueToSeconds(current_time - motor.last_update_time);
+        const double dt = Timer::ConvertValueToSeconds(current_time - motor.last_update_time);
         if (dt < VIBRATION_UPDATE_INTERVAL_SECONDS)
           continue;
 
@@ -2103,4 +2123,8 @@ void InputManager::ReloadSources(const SettingsInterface& si, std::unique_lock<s
 #endif
 
   UpdatePointerCount();
+}
+
+ForceFeedbackDevice::~ForceFeedbackDevice()
+{
 }

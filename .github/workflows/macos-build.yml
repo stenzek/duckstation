@@ -2,6 +2,7 @@ name: 🍎 MacOS
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   macos-build:
@@ -13,8 +14,8 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Use Xcode 15.4
-      run: sudo xcode-select -s /Applications/Xcode_15.4.app
+    - name: Use Xcode 16.1
+      run: sudo xcode-select -s /Applications/Xcode_16.1.app
 
     - name: Install packages
       shell: bash

@@ -12,6 +12,7 @@
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "interfacesettingswidget.h"
+#include "isobrowserwindow.h"
 #include "logwindow.h"
 #include "memorycardeditorwindow.h"
 #include "memoryscannerwindow.h"
@@ -44,6 +45,7 @@
 #include <QtCore/QUrl>
 #include <QtGui/QActionGroup>
 #include <QtGui/QCursor>
+#include <QtGui/QShortcut>
 #include <QtGui/QWindowStateChangeEvent>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QInputDialog>
@@ -1263,6 +1265,11 @@ void MainWindow::onRemoveDiscActionTriggered()
   g_emu_thread->changeDisc(QString(), false, true);
 }
 
+void MainWindow::onScanForNewGamesTriggered()
+{
+  refreshGameList(false);
+}
+
 void MainWindow::onViewToolbarActionToggled(bool checked)
 {
   Host::SetBaseBoolSettingValue("UI", "ShowToolbar", checked);
@@ -1300,6 +1307,18 @@ void MainWindow::onViewSystemDisplayTriggered()
 {
   if (m_display_created)
     switchToEmulationView();
+}
+
+void MainWindow::onViewGameGridZoomInActionTriggered()
+{
+  if (isShowingGameList())
+    m_game_list_widget->gridZoomIn();
+}
+
+void MainWindow::onViewGameGridZoomOutActionTriggered()
+{
+  if (isShowingGameList())
+    m_game_list_widget->gridZoomOut();
 }
 
 void MainWindow::onGitHubRepositoryActionTriggered()
@@ -1403,6 +1422,18 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         const QFileInfo fi(QString::fromStdString(entry->path));
         QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
       });
+
+      if (entry->IsDisc())
+      {
+        connect(menu.addAction(tr("Browse ISO...")), &QAction::triggered, [this, entry]() {
+          ISOBrowserWindow* ib = ISOBrowserWindow::createAndOpenFile(this, QString::fromStdString(entry->path));
+          if (ib)
+          {
+            ib->setAttribute(Qt::WA_DeleteOnClose);
+            ib->show();
+          }
+        });
+      }
 
       connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered,
               [this, entry]() { setGameListEntryCoverImage(entry); });
@@ -1626,6 +1657,17 @@ void MainWindow::setupAdditionalUi()
 
   updateDebugMenuVisibility();
 
+  m_shortcuts.open_file =
+    new QShortcut(Qt::ControlModifier | Qt::Key_O, this, this, &MainWindow::onStartFileActionTriggered);
+  m_shortcuts.game_list_refresh = new QShortcut(Qt::Key_F5, this, this, &MainWindow::onScanForNewGamesTriggered);
+  m_shortcuts.game_list_search = new QShortcut(this);
+  m_shortcuts.game_list_search->setKeys({Qt::ControlModifier | Qt::Key_F, Qt::Key_F3});
+  connect(m_shortcuts.game_list_search, &QShortcut::activated, m_game_list_widget, &GameListWidget::focusSearchWidget);
+  m_shortcuts.game_grid_zoom_in =
+    new QShortcut(Qt::ControlModifier | Qt::Key_Plus, this, this, &MainWindow::onViewGameGridZoomInActionTriggered);
+  m_shortcuts.game_grid_zoom_out =
+    new QShortcut(Qt::ControlModifier | Qt::Key_Minus, this, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
+
 #ifdef ENABLE_RAINTEGRATION
   if (Achievements::IsUsingRAIntegration())
   {
@@ -1690,6 +1732,12 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   m_ui.menuWindowSize->setDisabled(starting_or_not_running);
 
   m_ui.actionViewGameProperties->setDisabled(starting_or_not_running);
+
+  m_shortcuts.open_file->setEnabled(!starting_or_running);
+  m_shortcuts.game_list_refresh->setEnabled(!starting_or_running);
+  m_shortcuts.game_list_search->setEnabled(!starting_or_running);
+  m_shortcuts.game_grid_zoom_in->setEnabled(!starting_or_running);
+  m_shortcuts.game_grid_zoom_out->setEnabled(!starting_or_running);
 
   if (starting_or_running)
   {
@@ -1916,7 +1964,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionReset, &QAction::triggered, this, []() { g_emu_thread->resetSystem(true); });
   connect(m_ui.actionPause, &QAction::toggled, this, [](bool active) { g_emu_thread->setSystemPaused(active); });
   connect(m_ui.actionScreenshot, &QAction::triggered, g_emu_thread, &EmuThread::saveScreenshot);
-  connect(m_ui.actionScanForNewGames, &QAction::triggered, this, [this]() { refreshGameList(false); });
+  connect(m_ui.actionScanForNewGames, &QAction::triggered, this, &MainWindow::onScanForNewGamesTriggered);
   connect(m_ui.actionRescanAllGames, &QAction::triggered, this, [this]() { refreshGameList(true); });
   connect(m_ui.actionLoadState, &QAction::triggered, this, [this]() { m_ui.menuLoadState->exec(QCursor::pos()); });
   connect(m_ui.actionSaveState, &QAction::triggered, this, [this]() { m_ui.menuSaveState->exec(QCursor::pos()); });
@@ -1968,14 +2016,8 @@ void MainWindow::connectSignals()
   connect(m_ui.actionMergeDiscSets, &QAction::triggered, m_game_list_widget, &GameListWidget::setMergeDiscSets);
   connect(m_ui.actionShowGameIcons, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowGameIcons);
   connect(m_ui.actionGridViewShowTitles, &QAction::triggered, m_game_list_widget, &GameListWidget::setShowCoverTitles);
-  connect(m_ui.actionGridViewZoomIn, &QAction::triggered, m_game_list_widget, [this]() {
-    if (isShowingGameList())
-      m_game_list_widget->gridZoomIn();
-  });
-  connect(m_ui.actionGridViewZoomOut, &QAction::triggered, m_game_list_widget, [this]() {
-    if (isShowingGameList())
-      m_game_list_widget->gridZoomOut();
-  });
+  connect(m_ui.actionGridViewZoomIn, &QAction::triggered, this, &MainWindow::onViewGameGridZoomInActionTriggered);
+  connect(m_ui.actionGridViewZoomOut, &QAction::triggered, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
   connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
           &GameListWidget::refreshGridCovers);
 

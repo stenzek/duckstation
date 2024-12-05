@@ -234,7 +234,7 @@ struct Settings
   {
     struct Configuration
     {
-      static constexpr u32 DEFAULT_MAX_HASH_CACHE_ENTRIES = 500;
+      static constexpr u32 DEFAULT_MAX_HASH_CACHE_ENTRIES = 1200;
       static constexpr u32 DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB = 2048;
       static constexpr u32 DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB = 512;
 
@@ -593,4 +593,7 @@ void Update();
 
 /// Returns the path to a resource file, allowing the user to override it.
 std::string GetOverridableResourcePath(std::string_view name);
+
+/// Returns true if the application is running in portable mode.
+bool IsRunningInPortableMode();
 } // namespace EmuFolders

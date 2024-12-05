@@ -42,10 +42,14 @@ D3D11Sampler::D3D11Sampler(ComPtr<ID3D11SamplerState> ss) : m_ss(std::move(ss))
 
 D3D11Sampler::~D3D11Sampler() = default;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D11Sampler::SetDebugName(std::string_view name)
 {
   SetD3DDebugObjectName(m_ss.Get(), name);
 }
+
+#endif
 
 std::unique_ptr<GPUSampler> D3D11Device::CreateSampler(const GPUSampler::Config& config, Error* error)
 {
@@ -200,8 +204,7 @@ bool D3D11Texture::Map(void** map, u32* map_stride, u32 x, u32 y, u32 width, u32
 
   if (IsCompressedFormat(m_format))
   {
-    *map = static_cast<u8*>(sr.pData) + ((y / GetBlockSize()) * sr.RowPitch) +
-           ((x / GetBlockSize()) * GetPixelSize());
+    *map = static_cast<u8*>(sr.pData) + ((y / GetBlockSize()) * sr.RowPitch) + ((x / GetBlockSize()) * GetPixelSize());
   }
   else
   {
@@ -225,10 +228,14 @@ void D3D11Texture::GenerateMipmaps()
   D3D11Device::GetD3DContext()->GenerateMips(m_srv.Get());
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D11Texture::SetDebugName(std::string_view name)
 {
   SetD3DDebugObjectName(m_texture.Get(), name);
 }
+
+#endif
 
 DXGI_FORMAT D3D11Texture::GetDXGIFormat() const
 {
@@ -419,10 +426,14 @@ void D3D11TextureBuffer::Unmap(u32 used_elements)
   m_buffer.Unmap(D3D11Device::GetD3DContext(), size);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D11TextureBuffer::SetDebugName(std::string_view name)
 {
   SetD3DDebugObjectName(m_buffer.GetD3DBuffer(), name);
 }
+
+#endif
 
 std::unique_ptr<GPUTextureBuffer> D3D11Device::CreateTextureBuffer(GPUTextureBuffer::Format format,
                                                                    u32 size_in_elements, Error* error /* = nullptr */)
@@ -543,6 +554,8 @@ void D3D11DownloadTexture::Flush()
   // Handled when mapped.
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void D3D11DownloadTexture::SetDebugName(std::string_view name)
 {
   if (name.empty())
@@ -550,6 +563,8 @@ void D3D11DownloadTexture::SetDebugName(std::string_view name)
 
   SetD3DDebugObjectName(m_texture.Get(), name);
 }
+
+#endif
 
 std::unique_ptr<GPUDownloadTexture> D3D11Device::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
                                                                        Error* error /* = nullptr */)

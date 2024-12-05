@@ -50,7 +50,7 @@ static constexpr std::array<MTLPixelFormat, static_cast<u32>(GPUTexture::Format:
   MTLPixelFormatRGBA8Unorm,            // RGBA8
   MTLPixelFormatBGRA8Unorm,            // BGRA8
   MTLPixelFormatB5G6R5Unorm,           // RGB565
-  MTLPixelFormatA1BGR5Unorm,           // RGBA5551
+  MTLPixelFormatBGR5A1Unorm,           // RGB5A1
   MTLPixelFormatR8Unorm,               // R8
   MTLPixelFormatDepth16Unorm,          // D16
   MTLPixelFormatDepth24Unorm_Stencil8, // D24S8
@@ -643,6 +643,8 @@ MetalShader::~MetalShader()
   MetalDevice::DeferRelease(m_library);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void MetalShader::SetDebugName(std::string_view name)
 {
   @autoreleasepool
@@ -650,6 +652,8 @@ void MetalShader::SetDebugName(std::string_view name)
     [m_function setLabel:CocoaTools::StringViewToNSString(name)];
   }
 }
+
+#endif
 
 std::unique_ptr<GPUShader> MetalDevice::CreateShaderFromMSL(GPUShaderStage stage, std::string_view source,
                                                             std::string_view entry_point, Error* error)
@@ -747,10 +751,14 @@ MetalPipeline::~MetalPipeline()
   MetalDevice::DeferRelease(m_pipeline);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void MetalPipeline::SetDebugName(std::string_view name)
 {
   // readonly property :/
 }
+
+#endif
 
 id<MTLDepthStencilState> MetalDevice::GetDepthState(const GPUPipeline::DepthState& ds)
 {
@@ -1157,6 +1165,8 @@ void MetalTexture::GenerateMipmaps()
   [encoder generateMipmapsForTexture:m_texture];
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void MetalTexture::SetDebugName(std::string_view name)
 {
   @autoreleasepool
@@ -1164,6 +1174,8 @@ void MetalTexture::SetDebugName(std::string_view name)
     [m_texture setLabel:CocoaTools::StringViewToNSString(name)];
   }
 }
+
+#endif
 
 std::unique_ptr<GPUTexture> MetalDevice::CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                                        GPUTexture::Type type, GPUTexture::Format format,
@@ -1381,6 +1393,8 @@ void MetalDownloadTexture::Flush()
     dev.WaitForFenceCounter(m_copy_fence_counter);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void MetalDownloadTexture::SetDebugName(std::string_view name)
 {
   @autoreleasepool
@@ -1388,6 +1402,8 @@ void MetalDownloadTexture::SetDebugName(std::string_view name)
     [m_buffer setLabel:CocoaTools::StringViewToNSString(name)];
   }
 }
+
+#endif
 
 std::unique_ptr<GPUDownloadTexture> MetalDevice::CreateDownloadTexture(u32 width, u32 height, GPUTexture::Format format,
                                                                        Error* error)
@@ -1408,10 +1424,14 @@ MetalSampler::MetalSampler(id<MTLSamplerState> ss) : m_ss(ss)
 
 MetalSampler::~MetalSampler() = default;
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void MetalSampler::SetDebugName(std::string_view name)
 {
   // lame.. have to put it on the descriptor :/
 }
+
+#endif
 
 std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config& config, Error* error)
 {
@@ -1490,7 +1510,7 @@ std::unique_ptr<GPUSampler> MetalDevice::CreateSampler(const GPUSampler::Config&
 
 bool MetalDevice::SupportsTextureFormat(GPUTexture::Format format) const
 {
-  if (format == GPUTexture::Format::RGB565 || format == GPUTexture::Format::RGBA5551)
+  if (format == GPUTexture::Format::RGB565 || format == GPUTexture::Format::RGB5A1)
   {
     // These formats require an Apple Silicon GPU.
     // See https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf
@@ -1822,6 +1842,8 @@ void MetalTextureBuffer::Unmap(u32 used_elements)
   m_buffer.CommitMemory(size);
 }
 
+#ifdef ENABLE_GPU_OBJECT_NAMES
+
 void MetalTextureBuffer::SetDebugName(std::string_view name)
 {
   @autoreleasepool
@@ -1829,6 +1851,8 @@ void MetalTextureBuffer::SetDebugName(std::string_view name)
     [m_buffer.GetBuffer() setLabel:CocoaTools::StringViewToNSString(name)];
   }
 }
+
+#endif
 
 std::unique_ptr<GPUTextureBuffer> MetalDevice::CreateTextureBuffer(GPUTextureBuffer::Format format,
                                                                    u32 size_in_elements, Error* error)
@@ -1839,6 +1863,8 @@ std::unique_ptr<GPUTextureBuffer> MetalDevice::CreateTextureBuffer(GPUTextureBuf
 
   return tb;
 }
+
+#ifdef ENABLE_GPU_OBJECT_NAMES
 
 void MetalDevice::PushDebugGroup(const char* name)
 {
@@ -1851,6 +1877,8 @@ void MetalDevice::PopDebugGroup()
 void MetalDevice::InsertDebugMessage(const char* msg)
 {
 }
+
+#endif
 
 void MetalDevice::MapVertexBuffer(u32 vertex_size, u32 vertex_count, void** map_ptr, u32* map_space,
                                   u32* map_base_vertex)
@@ -2514,7 +2542,6 @@ void MetalDevice::Dispatch(u32 threads_x, u32 threads_y, u32 threads_z, u32 grou
   }
 
   DebugAssert(m_current_pipeline && m_current_pipeline->IsComputePipeline());
-  id<MTLComputePipelineState> pipeline = m_current_pipeline->GetComputePipelineState();
 
   // TODO: We could remap to the optimal group size..
   [m_compute_encoder dispatchThreads:MTLSizeMake(threads_x, threads_y, threads_z)
@@ -2594,8 +2621,8 @@ void MetalDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
   EndAnyEncoding();
 
-  Common::Timer::Value current_time;
-  if (present_time != 0 && (current_time = Common::Timer::GetCurrentValue()) < present_time)
+  Timer::Value current_time;
+  if (present_time != 0 && (current_time = Timer::GetCurrentValue()) < present_time)
   {
     // Need to convert to mach absolute time. Time values should already be in nanoseconds.
     const u64 mach_time_nanoseconds = CocoaTools::ConvertMachTimeBaseToNanoseconds(mach_absolute_time());

@@ -16,7 +16,7 @@
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 
-LOG_CHANNEL(AnalogJoystick);
+LOG_CHANNEL(Controller);
 
 AnalogJoystick::AnalogJoystick(u32 index) : Controller(index)
 {

@@ -1,6 +1,7 @@
 // SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "common/intrin.h"
 #include "common/windows_headers.h"
 #include <shellapi.h>
 
@@ -15,10 +16,48 @@
 static constexpr DWORD64 MIN_VERSION = MAKE_VERSION64(14, 38, 33135, 0);
 static constexpr const char* DOWNLOAD_URL = "https://aka.ms/vs/17/release/vc_redist.x64.exe";
 
+#ifdef CPU_ARCH_SSE41
+
+// Can't rely on IsProcessorFeaturePresent(PF_SSE4_1_INSTRUCTIONS_AVAILABLE) because that was only added in Win10 2004,
+// and you can bet that people with such ancient CPUs probably aren't running the latest OS versions either.
+ALWAYS_INLINE static bool CheckCPUIDForSSE4()
+{
+  int result[4] = {};
+
+  __cpuid(result, 0);
+  const int max_function_id = result[0];
+  if (max_function_id >= 1)
+  {
+    __cpuid(result, 1);
+
+    // The presence of SSE4.1 is indicated by bit 19 of ECX.
+    return (result[2] & (1 << 19)) != 0;
+  }
+
+  // Function 1 is not supported, so SSE4.1 cannot be present.
+  return false;
+}
+
+#endif
+
 struct VCRuntimeCheckObject
 {
   VCRuntimeCheckObject()
   {
+#ifdef CPU_ARCH_SSE41
+    // We could end up using SSE4 instructions in fmt etc too. Gotta check for it first.
+    if (!CheckCPUIDForSSE4())
+    {
+      MessageBoxW(nullptr,
+                  L"Your CPU does not support the SSE4.1 instruction set. SSE4.1 is required for this version of "
+                  L"DuckStation. Please download and switch to the legacy SSE2 version. You can download this from "
+                  L"www.duckstation.org under \"Other Platforms\".",
+                  L"Hardware Check Failed", MB_OK);
+      TerminateProcess(GetCurrentProcess(), 0xFFFFFFFF);
+      return;
+    }
+#endif
+
     const HMODULE crt_handle = GetModuleHandleW(L"msvcp140.dll");
     if (!crt_handle)
       return;

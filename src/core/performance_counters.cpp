@@ -22,8 +22,8 @@ namespace {
 
 struct State
 {
-  Common::Timer::Value last_update_time;
-  Common::Timer::Value last_frame_time;
+  Timer::Value last_update_time;
+  Timer::Value last_frame_time;
 
   u32 last_frame_number;
   u32 last_internal_frame_number;
@@ -142,7 +142,7 @@ void PerformanceCounters::Clear()
 
 void PerformanceCounters::Reset()
 {
-  const Common::Timer::Value now_ticks = Common::Timer::GetCurrentValue();
+  const Timer::Value now_ticks = Timer::GetCurrentValue();
 
   s_state.last_frame_time = now_ticks;
   s_state.last_update_time = now_ticks;
@@ -162,10 +162,10 @@ void PerformanceCounters::Reset()
 
 void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
 {
-  const Common::Timer::Value now_ticks = Common::Timer::GetCurrentValue();
+  const Timer::Value now_ticks = Timer::GetCurrentValue();
 
   const float frame_time = static_cast<float>(
-    Common::Timer::ConvertValueToMilliseconds(now_ticks - std::exchange(s_state.last_frame_time, now_ticks)));
+    Timer::ConvertValueToMilliseconds(now_ticks - std::exchange(s_state.last_frame_time, now_ticks)));
   s_state.minimum_frame_time_accumulator = (s_state.minimum_frame_time_accumulator == 0.0f) ?
                                              frame_time :
                                              std::min(s_state.minimum_frame_time_accumulator, frame_time);
@@ -175,8 +175,8 @@ void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
   s_state.frame_time_history_pos = (s_state.frame_time_history_pos + 1) % NUM_FRAME_TIME_SAMPLES;
 
   // update fps counter
-  const Common::Timer::Value ticks_diff = now_ticks - s_state.last_update_time;
-  const float time = static_cast<float>(Common::Timer::ConvertValueToSeconds(ticks_diff));
+  const Timer::Value ticks_diff = now_ticks - s_state.last_update_time;
+  const float time = static_cast<float>(Timer::ConvertValueToSeconds(ticks_diff));
   if (time < PERFORMANCE_COUNTER_UPDATE_INTERVAL)
     return;
 
@@ -190,7 +190,7 @@ void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
   // TODO: Make the math here less rubbish
   const double pct_divider =
     100.0 * (1.0 / ((static_cast<double>(ticks_diff) * static_cast<double>(Threading::GetThreadTicksPerSecond())) /
-                    Common::Timer::GetFrequency() / 1000000000.0));
+                    Timer::GetFrequency() / 1000000000.0));
   const double time_divider = 1000.0 * (1.0 / static_cast<double>(Threading::GetThreadTicksPerSecond())) *
                               (1.0 / static_cast<double>(frames_runf));
 
@@ -230,8 +230,8 @@ void PerformanceCounters::Update(u32 frame_number, u32 internal_frame_number)
   if (g_settings.display_show_gpu_stats)
     g_gpu->UpdateStatistics(frames_run);
 
-  VERBOSE_LOG("FPS: {:.2f} VPS: {:.2f} CPU: {:.2f} GPU: {:.2f} Avg: {:.2f}ms Min: {:.2f}ms Max: {:.2f}ms",
-              s_state.fps, s_state.vps, s_state.cpu_thread_usage, s_state.gpu_usage, s_state.average_frame_time,
+  VERBOSE_LOG("FPS: {:.2f} VPS: {:.2f} CPU: {:.2f} GPU: {:.2f} Avg: {:.2f}ms Min: {:.2f}ms Max: {:.2f}ms", s_state.fps,
+              s_state.vps, s_state.cpu_thread_usage, s_state.gpu_usage, s_state.average_frame_time,
               s_state.minimum_frame_time, s_state.maximum_frame_time);
 
   Host::OnPerformanceCountersUpdated();

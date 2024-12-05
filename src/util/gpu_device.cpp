@@ -242,8 +242,8 @@ bool GPUSwapChain::ShouldSkipPresentingFrame()
   const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
   const float throttle_period = 1.0f / throttle_rate;
 
-  const u64 now = Common::Timer::GetCurrentValue();
-  const double diff = Common::Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
+  const u64 now = Timer::GetCurrentValue();
+  const double diff = Timer::ConvertValueToSeconds(now - m_last_frame_displayed_time);
   if (diff < throttle_period)
     return true;
 
@@ -255,8 +255,8 @@ void GPUSwapChain::ThrottlePresentation()
 {
   const float throttle_rate = (m_window_info.surface_refresh_rate > 0.0f) ? m_window_info.surface_refresh_rate : 60.0f;
 
-  const u64 sleep_period = Common::Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
-  const u64 current_ts = Common::Timer::GetCurrentValue();
+  const u64 sleep_period = Timer::ConvertNanosecondsToValue(1e+9f / static_cast<double>(throttle_rate));
+  const u64 current_ts = Timer::GetCurrentValue();
 
   // Allow it to fall behind/run ahead up to 2*period. Sleep isn't that precise, plus we need to
   // allow time for the actual rendering.
@@ -266,7 +266,7 @@ void GPUSwapChain::ThrottlePresentation()
   else
     m_last_frame_displayed_time += sleep_period;
 
-  Common::Timer::SleepUntil(m_last_frame_displayed_time, false);
+  Timer::SleepUntil(m_last_frame_displayed_time, false);
 }
 
 GPUDevice::GPUDevice()
