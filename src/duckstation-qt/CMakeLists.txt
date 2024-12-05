@@ -106,6 +106,9 @@ set(SRCS
   interfacesettingswidget.cpp
   interfacesettingswidget.h
   interfacesettingswidget.ui
+  isobrowserwindow.cpp
+  isobrowserwindow.h
+  isobrowserwindow.ui
   logwindow.cpp
   logwindow.h
   mainwindow.cpp

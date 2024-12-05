@@ -175,6 +175,10 @@
     <ClCompile Include="$(IntDir)moc_gamecheatsettingswidget.cpp">
       <Filter>moc</Filter>
     </ClCompile>
+    <ClCompile Include="isobrowserwindow.cpp" />
+    <ClCompile Include="$(IntDir)moc_isobrowserwindow.cpp">
+      <Filter>moc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="qtutils.h" />
@@ -237,6 +241,7 @@
     <QtMoc Include="selectdiscdialog.h" />
     <QtMoc Include="gamecheatsettingswidget.h" />
     <QtMoc Include="gamepatchsettingswidget.h" />
+    <QtMoc Include="isobrowserwindow.h" />
   </ItemGroup>
   <ItemGroup>
     <QtUi Include="consolesettingswidget.ui" />
@@ -289,6 +294,7 @@
     <QtUi Include="gamepatchdetailswidget.ui" />
     <QtUi Include="gamecheatcodechoiceeditordialog.ui" />
     <QtUi Include="memorycardrenamefiledialog.ui" />
+    <QtUi Include="isobrowserwindow.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />

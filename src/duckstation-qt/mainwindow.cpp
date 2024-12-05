@@ -12,6 +12,7 @@
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "interfacesettingswidget.h"
+#include "isobrowserwindow.h"
 #include "logwindow.h"
 #include "memorycardeditorwindow.h"
 #include "memoryscannerwindow.h"
@@ -1421,6 +1422,18 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
         const QFileInfo fi(QString::fromStdString(entry->path));
         QtUtils::OpenURL(this, QUrl::fromLocalFile(fi.absolutePath()));
       });
+
+      if (entry->IsDisc())
+      {
+        connect(menu.addAction(tr("Browse ISO...")), &QAction::triggered, [this, entry]() {
+          ISOBrowserWindow* ib = ISOBrowserWindow::createAndOpenFile(this, QString::fromStdString(entry->path));
+          if (ib)
+          {
+            ib->setAttribute(Qt::WA_DeleteOnClose);
+            ib->show();
+          }
+        });
+      }
 
       connect(menu.addAction(tr("Set Cover Image...")), &QAction::triggered,
               [this, entry]() { setGameListEntryCoverImage(entry); });

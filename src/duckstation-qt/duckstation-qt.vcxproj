@@ -27,6 +27,7 @@
     <ClCompile Include="hotkeysettingswidget.cpp" />
     <ClCompile Include="inputbindingdialog.cpp" />
     <ClCompile Include="inputbindingwidgets.cpp" />
+    <ClCompile Include="isobrowserwindow.cpp" />
     <ClCompile Include="logwindow.cpp" />
     <ClCompile Include="memoryscannerwindow.cpp" />
     <ClCompile Include="memoryviewwidget.cpp" />
@@ -85,6 +86,7 @@
     <QtMoc Include="memoryscannerwindow.h" />
     <QtMoc Include="gamecheatsettingswidget.h" />
     <QtMoc Include="gamepatchsettingswidget.h" />
+    <QtMoc Include="isobrowserwindow.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
     <QtMoc Include="selectdiscdialog.h" />
@@ -242,6 +244,7 @@
     <ClCompile Include="$(IntDir)moc_inputbindingdialog.cpp" />
     <ClCompile Include="$(IntDir)moc_inputbindingwidgets.cpp" />
     <ClCompile Include="$(IntDir)moc_interfacesettingswidget.cpp" />
+    <ClCompile Include="$(IntDir)moc_isobrowserwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_logwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_mainwindow.cpp" />
     <ClCompile Include="$(IntDir)moc_memorycardsettingswidget.cpp" />
@@ -352,6 +355,9 @@
       <FileType>Document</FileType>
     </QtUi>
     <QtUi Include="memorycardrenamefiledialog.ui">
+      <FileType>Document</FileType>
+    </QtUi>
+    <QtUi Include="isobrowserwindow.ui">
       <FileType>Document</FileType>
     </QtUi>
     <None Include="translations\duckstation-qt_es-es.ts" />
