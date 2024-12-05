@@ -121,7 +121,7 @@ void PostProcessing::GLSLShader::FillUniformBuffer(void* buffer, s32 viewport_x,
   }
 }
 
-bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height,
+bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
                                                  ProgressCallback* progress)
 {
   if (m_pipeline)
@@ -130,10 +130,10 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   PostProcessingGLSLShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
                                         g_gpu_device->GetFeatures().framebuffer_fetch);
 
-  std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                             shadergen.GeneratePostProcessingVertexShader(*this));
-  std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                             shadergen.GeneratePostProcessingFragmentShader(*this));
+  std::unique_ptr<GPUShader> vs = g_gpu_device->CreateShader(
+    GPUShaderStage::Vertex, shadergen.GetLanguage(), shadergen.GeneratePostProcessingVertexShader(*this), error);
+  std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+    GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GeneratePostProcessingFragmentShader(*this), error);
   if (!vs || !fs)
     return false;
 
@@ -151,7 +151,7 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
   plconfig.fragment_shader = fs.get();
   plconfig.geometry_shader = nullptr;
 
-  if (!(m_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+  if (!(m_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
     return false;
 
   if (!m_sampler)
@@ -160,7 +160,7 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
     config.address_u = GPUSampler::AddressMode::ClampToBorder;
     config.address_v = GPUSampler::AddressMode::ClampToBorder;
     config.border_color = 0xFF000000u;
-    if (!(m_sampler = g_gpu_device->CreateSampler(config)))
+    if (!(m_sampler = g_gpu_device->CreateSampler(config, error)))
       return false;
   }
 
@@ -201,7 +201,7 @@ GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* input_col
   return GPUDevice::PresentResult::OK;
 }
 
-bool PostProcessing::GLSLShader::ResizeOutput(GPUTexture::Format format, u32 width, u32 height)
+bool PostProcessing::GLSLShader::ResizeOutput(GPUTexture::Format format, u32 width, u32 height, Error* error)
 {
   return true;
 }

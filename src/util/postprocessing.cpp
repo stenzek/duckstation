@@ -583,16 +583,17 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
 
   m_wants_depth_buffer = false;
 
+  Error error;
   for (size_t i = 0; i < m_stages.size(); i++)
   {
     Shader* const shader = m_stages[i].get();
 
     progress->FormatStatusText("Compiling {}...", shader->GetName());
 
-    if (!shader->CompilePipeline(target_format, target_width, target_height, progress) ||
-        !shader->ResizeOutput(target_format, target_width, target_height))
+    if (!shader->CompilePipeline(target_format, target_width, target_height, &error, progress) ||
+        !shader->ResizeOutput(target_format, target_width, target_height, &error))
     {
-      ERROR_LOG("Failed to compile one or more post-processing shaders, disabling.");
+      ERROR_LOG("Failed to compile post-processing shader '{}':\n{}", shader->GetName(), error.GetDescription());
       Host::AddIconOSDMessage(
         "PostProcessLoadFail", ICON_FA_EXCLAMATION_TRIANGLE,
         fmt::format("Failed to compile post-processing shader '{}'. Disabling post-processing.", shader->GetName()));
