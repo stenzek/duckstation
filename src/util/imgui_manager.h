@@ -54,7 +54,11 @@ namespace ImGuiManager {
 using WCharType = u32;
 
 /// Default size for screen margins.
+#ifndef __ANDROID__
 static constexpr float DEFAULT_SCREEN_MARGIN = 10.0f;
+#else
+static constexpr float DEFAULT_SCREEN_MARGIN = 16.0f;
+#endif
 
 /// Sets the path to the font to use. Empty string means to use the default.
 void SetFontPathAndRange(std::string path, std::vector<WCharType> range);

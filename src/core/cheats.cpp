@@ -107,10 +107,16 @@ public:
 
   ALWAYS_INLINE bool IsOpen() const { return static_cast<bool>(m_zip); }
 
-  bool Open(const char* name)
+  bool Open(bool cheats)
   {
     if (m_zip)
       return true;
+
+#ifndef __ANDROID__
+    const char* name = cheats ? "cheats.zip" : "patches.zip";
+#else
+    const char* name = cheats ? "patchcodes.zip" : "patches.zip";
+#endif
 
     Error error;
     std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(name, false, &error);
@@ -398,10 +404,7 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
     const std::unique_lock lock(s_zip_mutex);
     CheatArchive& archive = cheats ? s_cheats_zip : s_patches_zip;
     if (!archive.IsOpen())
-    {
-      const char* archive_name = cheats ? "cheats.zip" : "patches.zip";
-      archive.Open(archive_name);
-    }
+      archive.Open(cheats);
 
     if (archive.IsOpen())
     {
@@ -699,6 +702,36 @@ bool Cheats::SaveCodesToFile(const char* path, const CodeInfoList& codes, Error*
   }
 
   return true;
+}
+
+void Cheats::RemoveAllCodes(const std::string_view serial, const std::string_view title, std::optional<GameHash> hash)
+{
+  Error error;
+  std::string path = GetChtFilename(serial, hash, true);
+  if (FileSystem::FileExists(path.c_str()))
+  {
+    if (!FileSystem::DeleteFile(path.c_str(), &error))
+      ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+  }
+
+  // check for a non-hashed path and remove that too
+  path = GetChtFilename(serial, std::nullopt, true);
+  if (FileSystem::FileExists(path.c_str()))
+  {
+    if (!FileSystem::DeleteFile(path.c_str(), &error))
+      ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+  }
+
+  // and a legacy cht file with the game title
+  if (!title.empty())
+  {
+    path = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.cht", EmuFolders::Cheats, Path::SanitizeFileName(title));
+    if (FileSystem::FileExists(path.c_str()))
+    {
+      if (!FileSystem::DeleteFile(path.c_str(), &error))
+        ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+    }
+  }
 }
 
 std::string Cheats::GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats)

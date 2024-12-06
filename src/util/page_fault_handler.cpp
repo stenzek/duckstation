@@ -15,7 +15,7 @@
 
 #if defined(_WIN32)
 #include "common/windows_headers.h"
-#elif defined(__linux__)
+#elif defined(__linux__) && !defined(__ANDROID__)
 #include <signal.h>
 #include <ucontext.h>
 #include <unistd.h>
@@ -136,7 +136,7 @@ bool PageFaultHandler::Install(Error* error)
   return true;
 }
 
-#else
+#elif !defined(__ANDROID__)
 
 namespace PageFaultHandler {
 static void SignalHandler(int sig, siginfo_t* info, void* ctx);

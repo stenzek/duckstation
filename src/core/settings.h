@@ -170,7 +170,7 @@ struct Settings
   bool display_stretch_vertically : 1 = false;
   bool display_auto_resize_window : 1 = false;
   float display_pre_frame_sleep_buffer = DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER;
-  float display_osd_scale = 100.0f;
+  float display_osd_scale = DEFAULT_OSD_SCALE;
   float display_osd_margin = 0.0f;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD / GPU_PGXP_DEPTH_THRESHOLD_SCALE;

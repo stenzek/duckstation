@@ -117,6 +117,9 @@ extern bool UpdateCodeInFile(const char* path, const std::string_view name, cons
 /// Updates or adds multiple codes to the file, rewriting it.
 extern bool SaveCodesToFile(const char* path, const CodeInfoList& codes, Error* error);
 
+/// Removes any .cht files for the specified game.
+extern void RemoveAllCodes(const std::string_view serial, const std::string_view title, std::optional<GameHash> hash);
+
 /// Returns the path to a new cheat/patch cht for the specified serial and hash.
 extern std::string GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats);
 
