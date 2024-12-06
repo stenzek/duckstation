@@ -2340,8 +2340,6 @@ bool GPU::DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y,
     g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
     g_gpu_device->SetViewportAndScissor(0, 0, width, height);
     g_gpu_device->Draw(3, 0);
-
-    GL_POP();
   }
 
   dst->MakeReadyForSampling();
