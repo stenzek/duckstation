@@ -168,6 +168,7 @@ const char* Image::GetFormatName(ImageFormat format)
     "BGRA8",  // BGRA8
     "RGB565", // RGB565
     "RGB5A1", // RGB5A1
+    "A1BGR5", // A1BGR5
     "BGR8",   // BGR8
     "BC1",    // BC1
     "BC2",    // BC2
@@ -187,6 +188,7 @@ u32 Image::GetPixelSize(ImageFormat format)
     4,  // BGRA8
     2,  // RGB565
     2,  // RGB5A1
+    2,  // A1BGR5
     3,  // BGR8
     8,  // BC1 - 16 pixels in 64 bits
     16, // BC2 - 16 pixels in 128 bits

@@ -44,6 +44,7 @@ public:
     BGRA8,
     RGB565,
     RGB5A1,
+    A1BGR5,
     R8,
     D16,
     D24S8,

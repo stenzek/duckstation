@@ -37,7 +37,8 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                                                    // RGBA8
       {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                                                    // BGRA8
       {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},                                             // RGB565
-      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},                                     // RGB5A1
+      {},                                                                                       // RGB5A1
+      {GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1},                                         // A1BGR5
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                                                        // R8
       {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},                                     // D16
       {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT},                                 // D24S8
@@ -71,7 +72,8 @@ const std::tuple<GLenum, GLenum, GLenum>& OpenGLTexture::GetPixelFormatMapping(G
       {GL_RGBA8, GL_RGBA, GL_UNSIGNED_BYTE},                                                    // RGBA8
       {GL_RGBA8, GL_BGRA, GL_UNSIGNED_BYTE},                                                    // BGRA8
       {GL_RGB565, GL_RGB, GL_UNSIGNED_SHORT_5_6_5},                                             // RGB565
-      {GL_RGB5_A1, GL_BGRA, GL_UNSIGNED_SHORT_1_5_5_5_REV},                                     // RGB5A1
+      {},                                                                                       // RGB5A1
+      {GL_RGB5_A1, GL_RGBA, GL_UNSIGNED_SHORT_5_5_5_1},                                         // A1BGR5
       {GL_R8, GL_RED, GL_UNSIGNED_BYTE},                                                        // R8
       {GL_DEPTH_COMPONENT16, GL_DEPTH_COMPONENT, GL_SHORT},                                     // D16
       {GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT},                                 // D24S8
