@@ -202,6 +202,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_disable_texture_copy_to_self = si.GetBoolValue("GPU", "DisableTextureCopyToSelf", false);
   gpu_disable_memory_import = si.GetBoolValue("GPU", "DisableMemoryImport", false);
   gpu_disable_raster_order_views = si.GetBoolValue("GPU", "DisableRasterOrderViews", false);
+  gpu_disable_compute_shaders = si.GetBoolValue("GPU", "DisableComputeShaders", false);
+  gpu_disable_compressed_textures = si.GetBoolValue("GPU", "DisableCompressedTextures", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
@@ -539,6 +541,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("GPU", "DisableTextureCopyToSelf", gpu_disable_texture_copy_to_self);
     si.SetBoolValue("GPU", "DisableMemoryImport", gpu_disable_memory_import);
     si.SetBoolValue("GPU", "DisableRasterOrderViews", gpu_disable_raster_order_views);
+    si.SetBoolValue("GPU", "DisableComputeShaders", gpu_disable_compute_shaders);
+    si.SetBoolValue("GPU", "DisableCompressedTextures", gpu_disable_compressed_textures);
   }
 
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);

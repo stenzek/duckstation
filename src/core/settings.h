@@ -108,6 +108,8 @@ struct Settings
   bool gpu_disable_texture_copy_to_self : 1 = false;
   bool gpu_disable_memory_import : 1 = false;
   bool gpu_disable_raster_order_views : 1 = false;
+  bool gpu_disable_compute_shaders : 1 = false;
+  bool gpu_disable_compressed_textures : 1 = false;
   bool gpu_per_sample_shading : 1 = false;
   bool gpu_true_color : 1 = true;
   bool gpu_scaled_dithering : 1 = true;

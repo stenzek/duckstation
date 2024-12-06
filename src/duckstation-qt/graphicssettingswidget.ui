@@ -1331,31 +1331,10 @@
          <layout class="QFormLayout" name="formLayout_10">
           <item row="0" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_8">
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="disableTextureCopyToSelf">
-              <property name="text">
-               <string>Disable Texture Copy To Self</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="useDebugDevice">
               <property name="text">
                <string>Use Debug Device</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="disableDualSource">
-              <property name="text">
-               <string>Disable Dual-Source Blending</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="disableFramebufferFetch">
-              <property name="text">
-               <string>Disable Framebuffer Fetch</string>
               </property>
              </widget>
             </item>
@@ -1366,10 +1345,31 @@
               </property>
              </widget>
             </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="disableDualSource">
+              <property name="text">
+               <string>Disable Dual-Source Blending</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="1">
              <widget class="QCheckBox" name="disableShaderCache">
               <property name="text">
                <string>Disable Shader Cache</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="disableFramebufferFetch">
+              <property name="text">
+               <string>Disable Framebuffer Fetch</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="disableTextureCopyToSelf">
+              <property name="text">
+               <string>Disable Texture Copy To Self</string>
               </property>
              </widget>
             </item>
@@ -1384,6 +1384,20 @@
              <widget class="QCheckBox" name="disableRasterOrderViews">
               <property name="text">
                <string>Disable Rasterizer Order Views</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="disableComputeShaders">
+              <property name="text">
+               <string>Disable Compute Shaders</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="disableCompressedTextures">
+              <property name="text">
+               <string>Disable Compressed Textures</string>
               </property>
              </widget>
             </item>

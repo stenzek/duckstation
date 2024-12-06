@@ -374,6 +374,10 @@ bool Host::CreateGPUDevice(RenderAPI api, bool fullscreen, Error* error)
     disabled_features |= GPUDevice::FEATURE_MASK_MEMORY_IMPORT;
   if (g_settings.gpu_disable_raster_order_views)
     disabled_features |= GPUDevice::FEATURE_MASK_RASTER_ORDER_VIEWS;
+  if (g_settings.gpu_disable_compute_shaders)
+    disabled_features |= GPUDevice::FEATURE_MASK_COMPUTE_SHADERS;
+  if (g_settings.gpu_disable_compressed_textures)
+    disabled_features |= GPUDevice::FEATURE_MASK_COMPRESSED_TEXTURES;
 
     // Don't dump shaders on debug builds for Android, users will complain about storage...
 #if !defined(__ANDROID__) || defined(_DEBUG)

@@ -308,6 +308,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableTextureBuffers, "GPU", "DisableTextureBuffers", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableTextureCopyToSelf, "GPU", "DisableTextureCopyToSelf",
                                                false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMemoryImport, "GPU", "DisableMemoryImport", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableRasterOrderViews, "GPU", "DisableRasterOrderViews",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableComputeShaders, "GPU", "DisableComputeShaders", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableCompressedTextures, "GPU", "DisableCompressedTextures",
+                                               false);
 
   // Init all dependent options.
   updateRendererDependentOptions();
@@ -632,6 +638,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.disableRasterOrderViews, tr("Disable Rasterizer Order Views"), tr("Unchecked"),
                              tr("Disables the use of rasterizer order views. Useful for testing broken graphics "
                                 "drivers. <strong>Only for developer use.</strong>"));
+  dialog->registerWidgetHelp(m_ui.disableComputeShaders, tr("Disable Compute Shaders"), tr("Unchecked"),
+                             tr("Disables the use of compute shaders. Useful for testing broken graphics drivers. "
+                                "<strong>Only for developer use.</strong>"));
+  dialog->registerWidgetHelp(m_ui.disableCompressedTextures, tr("Disable Compressed Textures"), tr("Unchecked"),
+                             tr("Disables the use of compressed textures. Useful for testing broken graphics drivers. "
+                                "<strong>Only for developer use.</strong>"));
 }
 
 GraphicsSettingsWidget::~GraphicsSettingsWidget() = default;
