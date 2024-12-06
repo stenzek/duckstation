@@ -41,10 +41,8 @@ bool GPU_SW::Initialize(Error* error)
   if (!GPU::Initialize(error) || !m_backend.Initialize(g_settings.gpu_use_thread))
     return false;
 
-  static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB565, GPUTexture::Format::RGB5A1,
-                                                         GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8};
-  static constexpr const std::array formats_for_24bit = {GPUTexture::Format::RGBA8, GPUTexture::Format::BGRA8,
-                                                         GPUTexture::Format::RGB565, GPUTexture::Format::RGB5A1};
+  static constexpr const std::array formats_for_16bit = {GPUTexture::Format::RGB5A1, GPUTexture::Format::A1BGR5,
+                                                         GPUTexture::Format::RGB565, GPUTexture::Format::RGBA8};
   for (const GPUTexture::Format format : formats_for_16bit)
   {
     if (g_gpu_device->SupportsTextureFormat(format))
@@ -53,15 +51,10 @@ bool GPU_SW::Initialize(Error* error)
       break;
     }
   }
-  for (const GPUTexture::Format format : formats_for_24bit)
-  {
-    if (g_gpu_device->SupportsTextureFormat(format))
-    {
-      m_24bit_display_format = format;
-      break;
-    }
-  }
 
+  // RGBA8 will always be supported, hence we'll find one.
+  INFO_LOG("Using {} format for 16-bit display", GPUTexture::GetFormatName(m_16bit_display_format));
+  Assert(m_16bit_display_format != GPUTexture::Format::Unknown);
   return true;
 }
 
@@ -108,129 +101,43 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format 
   return m_upload_texture.get();
 }
 
-template<GPUTexture::Format out_format, typename out_type>
-static void CopyOutRow16(const u16* src_ptr, out_type* dst_ptr, u32 width);
-
-template<GPUTexture::Format out_format, typename out_type>
-static out_type VRAM16ToOutput(u16 value);
-
-template<>
-ALWAYS_INLINE u16 VRAM16ToOutput<GPUTexture::Format::RGB5A1, u16>(u16 value)
-{
-  return (value & 0x3E0) | ((value >> 10) & 0x1F) | ((value & 0x1F) << 10);
-}
-
-template<>
-ALWAYS_INLINE u16 VRAM16ToOutput<GPUTexture::Format::RGB565, u16>(u16 value)
-{
-  return ((value & 0x3E0) << 1) | ((value & 0x20) << 1) | ((value >> 10) & 0x1F) | ((value & 0x1F) << 11);
-}
-
-template<>
-ALWAYS_INLINE u32 VRAM16ToOutput<GPUTexture::Format::RGBA8, u32>(u16 value)
-{
-  const u32 value32 = ZeroExtend32(value);
-  const u32 r = (value32 & 31u) << 3;
-  const u32 g = ((value32 >> 5) & 31u) << 3;
-  const u32 b = ((value32 >> 10) & 31u) << 3;
-  const u32 a = ((value >> 15) != 0) ? 255 : 0;
-  return ZeroExtend32(r) | (ZeroExtend32(g) << 8) | (ZeroExtend32(b) << 16) | (ZeroExtend32(a) << 24);
-}
-
-template<>
-ALWAYS_INLINE u32 VRAM16ToOutput<GPUTexture::Format::BGRA8, u32>(u16 value)
-{
-  const u32 value32 = ZeroExtend32(value);
-  const u32 r = (value32 & 31u) << 3;
-  const u32 g = ((value32 >> 5) & 31u) << 3;
-  const u32 b = ((value32 >> 10) & 31u) << 3;
-  return ZeroExtend32(b) | (ZeroExtend32(g) << 8) | (ZeroExtend32(r) << 16) | (0xFF000000u);
-}
-
-template<>
-ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGB5A1, u16>(const u16* src_ptr, u16* dst_ptr, u32 width)
-{
-  u32 col = 0;
-
-  const u32 aligned_width = Common::AlignDownPow2(width, 8);
-  for (; col < aligned_width; col += 8)
-  {
-    constexpr GSVector4i single_mask = GSVector4i::cxpr16(0x1F);
-    GSVector4i value = GSVector4i::load<false>(src_ptr);
-    src_ptr += 8;
-    GSVector4i a = value & GSVector4i::cxpr16(0x3E0);
-    GSVector4i b = value.srl16<10>() & single_mask;
-    GSVector4i c = (value & single_mask).sll16<10>();
-    value = (a | b) | c;
-    GSVector4i::store<false>(dst_ptr, value);
-    dst_ptr += 8;
-  }
-
-  for (; col < width; col++)
-    *(dst_ptr++) = VRAM16ToOutput<GPUTexture::Format::RGB5A1, u16>(*(src_ptr++));
-}
-
-template<>
-ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGB565, u16>(const u16* src_ptr, u16* dst_ptr, u32 width)
-{
-  u32 col = 0;
-
-  const u32 aligned_width = Common::AlignDownPow2(width, 8);
-  for (; col < aligned_width; col += 8)
-  {
-    constexpr GSVector4i single_mask = GSVector4i::cxpr16(0x1F);
-    GSVector4i value = GSVector4i::load<false>(src_ptr);
-    src_ptr += 8;
-    GSVector4i a = (value & GSVector4i::cxpr16(0x3E0)).sll16<1>(); // (value & 0x3E0) << 1
-    GSVector4i b = (value & GSVector4i::cxpr16(0x20)).sll16<1>();  // (value & 0x20) << 1
-    GSVector4i c = (value.srl16<10>() & single_mask);              // ((value >> 10) & 0x1F)
-    GSVector4i d = (value & single_mask).sll16<11>();              // ((value & 0x1F) << 11)
-    value = (((a | b) | c) | d);
-    GSVector4i::store<false>(dst_ptr, value);
-    dst_ptr += 8;
-  }
-
-  for (; col < width; col++)
-    *(dst_ptr++) = VRAM16ToOutput<GPUTexture::Format::RGB565, u16>(*(src_ptr++));
-}
-
-template<>
-ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::RGBA8, u32>(const u16* src_ptr, u32* dst_ptr, u32 width)
-{
-  for (u32 col = 0; col < width; col++)
-    *(dst_ptr++) = VRAM16ToOutput<GPUTexture::Format::RGBA8, u32>(*(src_ptr++));
-}
-
-template<>
-ALWAYS_INLINE void CopyOutRow16<GPUTexture::Format::BGRA8, u32>(const u16* src_ptr, u32* dst_ptr, u32 width)
-{
-  for (u32 col = 0; col < width; col++)
-    *(dst_ptr++) = VRAM16ToOutput<GPUTexture::Format::BGRA8, u32>(*(src_ptr++));
-}
-
 template<GPUTexture::Format display_format>
 ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip)
 {
-  using OutputPixelType =
-    std::conditional_t<display_format == GPUTexture::Format::RGBA8 || display_format == GPUTexture::Format::BGRA8, u32,
-                       u16>;
-
   GPUTexture* texture = GetDisplayTexture(width, height, display_format);
   if (!texture) [[unlikely]]
     return false;
 
-  u32 dst_stride = width * sizeof(OutputPixelType);
+  u32 dst_stride = Common::AlignUpPow2(width * texture->GetPixelSize(), 4);
   u8* dst_ptr = m_upload_buffer.data();
   const bool mapped = texture->Map(reinterpret_cast<void**>(&dst_ptr), &dst_stride, 0, 0, width, height);
 
   // Fast path when not wrapping around.
   if ((src_x + width) <= VRAM_WIDTH && (src_y + height) <= VRAM_HEIGHT)
   {
+    [[maybe_unused]] constexpr u32 pixels_per_vec = 8;
+    [[maybe_unused]] const u32 aligned_width = Common::AlignDownPow2(width, pixels_per_vec);
+
     const u16* src_ptr = &g_vram[src_y * VRAM_WIDTH + src_x];
     const u32 src_step = VRAM_WIDTH << line_skip;
+
     for (u32 row = 0; row < height; row++)
     {
-      CopyOutRow16<display_format>(src_ptr, reinterpret_cast<OutputPixelType*>(dst_ptr), width);
+      const u16* src_row_ptr = src_ptr;
+      u8* dst_row_ptr = dst_ptr;
+      u32 x = 0;
+
+#ifdef CPU_ARCH_SIMD
+      for (; x < aligned_width; x += pixels_per_vec)
+      {
+        ConvertVRAMPixels<display_format>(dst_row_ptr, GSVector4i::load<false>(src_row_ptr));
+        src_row_ptr += pixels_per_vec;
+      }
+#endif
+
+      for (; x < width; x++)
+        ConvertVRAMPixel<display_format>(dst_row_ptr, *(src_row_ptr++));
+
       src_ptr += src_step;
       dst_ptr += dst_stride;
     }
@@ -242,10 +149,10 @@ ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width,
     for (u32 row = 0; row < height; row++)
     {
       const u16* src_row_ptr = &g_vram[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
-      OutputPixelType* dst_row_ptr = reinterpret_cast<OutputPixelType*>(dst_ptr);
+      u8* dst_row_ptr = dst_ptr;
 
       for (u32 col = src_x; col < end_x; col++)
-        *(dst_row_ptr++) = VRAM16ToOutput<display_format, OutputPixelType>(src_row_ptr[col % VRAM_WIDTH]);
+        ConvertVRAMPixel<display_format>(dst_row_ptr, src_row_ptr[col % VRAM_WIDTH]);
 
       src_y += y_step;
       dst_ptr += dst_stride;
@@ -260,18 +167,13 @@ ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut15Bit(u32 src_x, u32 src_y, u32 width,
   return true;
 }
 
-template<GPUTexture::Format display_format>
 ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip)
 {
-  using OutputPixelType =
-    std::conditional_t<display_format == GPUTexture::Format::RGBA8 || display_format == GPUTexture::Format::BGRA8, u32,
-                       u16>;
-
-  GPUTexture* texture = GetDisplayTexture(width, height, display_format);
+  GPUTexture* texture = GetDisplayTexture(width, height, FORMAT_FOR_24BIT);
   if (!texture) [[unlikely]]
     return false;
 
-  u32 dst_stride = Common::AlignUpPow2<u32>(width * sizeof(OutputPixelType), 4);
+  u32 dst_stride = width * sizeof(u32);
   u8* dst_ptr = m_upload_buffer.data();
   const bool mapped = texture->Map(reinterpret_cast<void**>(&dst_ptr), &dst_stride, 0, 0, width, height);
 
@@ -281,52 +183,14 @@ ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x
     const u32 src_stride = (VRAM_WIDTH << line_skip) * sizeof(u16);
     for (u32 row = 0; row < height; row++)
     {
-      if constexpr (display_format == GPUTexture::Format::RGBA8)
+      const u8* src_row_ptr = src_ptr;
+      u8* dst_row_ptr = reinterpret_cast<u8*>(dst_ptr);
+      for (u32 col = 0; col < width; col++)
       {
-        const u8* src_row_ptr = src_ptr;
-        u8* dst_row_ptr = reinterpret_cast<u8*>(dst_ptr);
-        for (u32 col = 0; col < width; col++)
-        {
-          *(dst_row_ptr++) = *(src_row_ptr++);
-          *(dst_row_ptr++) = *(src_row_ptr++);
-          *(dst_row_ptr++) = *(src_row_ptr++);
-          *(dst_row_ptr++) = 0xFF;
-        }
-      }
-      else if constexpr (display_format == GPUTexture::Format::BGRA8)
-      {
-        const u8* src_row_ptr = src_ptr;
-        u8* dst_row_ptr = reinterpret_cast<u8*>(dst_ptr);
-        for (u32 col = 0; col < width; col++)
-        {
-          *(dst_row_ptr++) = src_row_ptr[2];
-          *(dst_row_ptr++) = src_row_ptr[1];
-          *(dst_row_ptr++) = src_row_ptr[0];
-          *(dst_row_ptr++) = 0xFF;
-          src_row_ptr += 3;
-        }
-      }
-      else if constexpr (display_format == GPUTexture::Format::RGB565)
-      {
-        const u8* src_row_ptr = src_ptr;
-        u16* dst_row_ptr = reinterpret_cast<u16*>(dst_ptr);
-        for (u32 col = 0; col < width; col++)
-        {
-          *(dst_row_ptr++) = ((static_cast<u16>(src_row_ptr[0]) >> 3) << 11) |
-                             ((static_cast<u16>(src_row_ptr[1]) >> 2) << 5) | (static_cast<u16>(src_row_ptr[2]) >> 3);
-          src_row_ptr += 3;
-        }
-      }
-      else if constexpr (display_format == GPUTexture::Format::RGB5A1)
-      {
-        const u8* src_row_ptr = src_ptr;
-        u16* dst_row_ptr = reinterpret_cast<u16*>(dst_ptr);
-        for (u32 col = 0; col < width; col++)
-        {
-          *(dst_row_ptr++) = ((static_cast<u16>(src_row_ptr[0]) >> 3) << 10) |
-                             ((static_cast<u16>(src_row_ptr[1]) >> 3) << 5) | (static_cast<u16>(src_row_ptr[2]) >> 3);
-          src_row_ptr += 3;
-        }
+        *(dst_row_ptr++) = *(src_row_ptr++);
+        *(dst_row_ptr++) = *(src_row_ptr++);
+        *(dst_row_ptr++) = *(src_row_ptr++);
+        *(dst_row_ptr++) = 0xFF;
       }
 
       src_ptr += src_stride;
@@ -340,7 +204,7 @@ ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x
     for (u32 row = 0; row < height; row++)
     {
       const u16* src_row_ptr = &g_vram[(src_y % VRAM_HEIGHT) * VRAM_WIDTH];
-      OutputPixelType* dst_row_ptr = reinterpret_cast<OutputPixelType*>(dst_ptr);
+      u32* dst_row_ptr = reinterpret_cast<u32*>(dst_ptr);
 
       for (u32 col = 0; col < width; col++)
       {
@@ -350,22 +214,7 @@ ALWAYS_INLINE_RELEASE bool GPU_SW::CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x
         const u8 shift = static_cast<u8>(col & 1u) * 8;
         const u32 rgb = (((ZeroExtend32(s1) << 16) | ZeroExtend32(s0)) >> shift);
 
-        if constexpr (display_format == GPUTexture::Format::RGBA8)
-        {
-          *(dst_row_ptr++) = rgb | 0xFF000000u;
-        }
-        else if constexpr (display_format == GPUTexture::Format::BGRA8)
-        {
-          *(dst_row_ptr++) = (rgb & 0x00FF00) | ((rgb & 0xFF) << 16) | ((rgb >> 16) & 0xFF) | 0xFF000000u;
-        }
-        else if constexpr (display_format == GPUTexture::Format::RGB565)
-        {
-          *(dst_row_ptr++) = ((rgb >> 3) & 0x1F) | (((rgb >> 10) << 5) & 0x7E0) | (((rgb >> 19) << 11) & 0x3E0000);
-        }
-        else if constexpr (display_format == GPUTexture::Format::RGB5A1)
-        {
-          *(dst_row_ptr++) = ((rgb >> 3) & 0x1F) | (((rgb >> 11) << 5) & 0x3E0) | (((rgb >> 19) << 10) & 0x1F0000);
-        }
+        *(dst_row_ptr++) = rgb | 0xFF000000u;
       }
 
       src_y += y_step;
@@ -392,6 +241,9 @@ bool GPU_SW::CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u3
       case GPUTexture::Format::RGB5A1:
         return CopyOut15Bit<GPUTexture::Format::RGB5A1>(src_x, src_y, width, height, line_skip);
 
+      case GPUTexture::Format::A1BGR5:
+        return CopyOut15Bit<GPUTexture::Format::A1BGR5>(src_x, src_y, width, height, line_skip);
+
       case GPUTexture::Format::RGB565:
         return CopyOut15Bit<GPUTexture::Format::RGB565>(src_x, src_y, width, height, line_skip);
 
@@ -407,23 +259,7 @@ bool GPU_SW::CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u3
   }
   else
   {
-    switch (m_24bit_display_format)
-    {
-      case GPUTexture::Format::RGB5A1:
-        return CopyOut24Bit<GPUTexture::Format::RGB5A1>(src_x, src_y, skip_x, width, height, line_skip);
-
-      case GPUTexture::Format::RGB565:
-        return CopyOut24Bit<GPUTexture::Format::RGB565>(src_x, src_y, skip_x, width, height, line_skip);
-
-      case GPUTexture::Format::RGBA8:
-        return CopyOut24Bit<GPUTexture::Format::RGBA8>(src_x, src_y, skip_x, width, height, line_skip);
-
-      case GPUTexture::Format::BGRA8:
-        return CopyOut24Bit<GPUTexture::Format::BGRA8>(src_x, src_y, skip_x, width, height, line_skip);
-
-      default:
-        UnreachableCode();
-    }
+    return CopyOut24Bit(src_x, src_y, skip_x, width, height, line_skip);
   }
 }
 

@@ -5,6 +5,8 @@
 
 #include "types.h"
 
+#include "util/gpu_texture.h"
+
 #include "common/bitfield.h"
 #include "common/bitutils.h"
 #include "common/gsvector.h"
@@ -247,6 +249,101 @@ ALWAYS_INLINE static constexpr u16 VRAMRGBA8888ToRGBA5551(u32 color)
   const u32 b = ((color >> 16) & 0xFFu) >> 3;
   const u32 a = ((color >> 24) & 0x01u);
   return Truncate16(r | (g << 5) | (b << 10) | (a << 15));
+}
+
+#ifdef CPU_ARCH_SIMD
+
+ALWAYS_INLINE static GSVector4i VRAM5BitTo8Bit(GSVector4i val)
+{
+  return val.mul32l(GSVector4i::cxpr(527)).add32(GSVector4i::cxpr(23)).srl32<6>();
+}
+
+ALWAYS_INLINE static GSVector4i VRAMRGB5A1ToRGBA8888(GSVector4i val)
+{
+  static constexpr GSVector4i cmask = GSVector4i::cxpr(0x1F);
+
+  const GSVector4i r = VRAM5BitTo8Bit(val & cmask);
+  const GSVector4i g = VRAM5BitTo8Bit((val.srl32<5>() & cmask));
+  const GSVector4i b = VRAM5BitTo8Bit((val.srl32<10>() & cmask));
+  const GSVector4i a = val.srl32<15>().sll32<31>().sra32<7>();
+
+  return r | g.sll32<8>() | b.sll32<16>() | a;
+}
+
+template<GPUTexture::Format format>
+ALWAYS_INLINE static void ConvertVRAMPixels(u8*& dest, GSVector4i c16)
+{
+  if constexpr (format == GPUTexture::Format::RGBA8)
+  {
+    const GSVector4i low = VRAMRGB5A1ToRGBA8888(c16.upl16());
+    const GSVector4i high = VRAMRGB5A1ToRGBA8888(c16.uph16());
+
+    GSVector4i::store<false>(dest, low);
+    dest += sizeof(GSVector4i);
+
+    GSVector4i::store<false>(dest, high);
+    dest += sizeof(GSVector4i);
+  }
+  else if constexpr (format == GPUTexture::Format::RGB5A1)
+  {
+    static constexpr GSVector4i cmask = GSVector4i::cxpr16(0x1F);
+
+    const GSVector4i repacked =
+      (c16 & GSVector4i::cxpr16(static_cast<s16>(0x83E0))) | (c16.srl16<10>() & cmask) | (c16 & cmask).sll16<10>();
+
+    GSVector4i::store<false>(dest, repacked);
+    dest += sizeof(GSVector4i);
+  }
+  else if constexpr (format == GPUTexture::Format::A1BGR5)
+  {
+    const GSVector4i repacked = (c16 & GSVector4i::cxpr16(static_cast<s16>(0x3E0))).sll16<1>() |
+                                (c16.srl16<9>() & GSVector4i::cxpr16(0x3E)) |
+                                (c16 & GSVector4i::cxpr16(0x1F)).sll16<11>() | c16.srl16<15>();
+
+    GSVector4i::store<false>(dest, repacked);
+    dest += sizeof(GSVector4i);
+  }
+  else if constexpr (format == GPUTexture::Format::RGB565)
+  {
+    constexpr GSVector4i single_mask = GSVector4i::cxpr16(0x1F);
+    const GSVector4i a = (c16 & GSVector4i::cxpr16(0x3E0)).sll16<1>(); // (value & 0x3E0) << 1
+    const GSVector4i b = (c16 & GSVector4i::cxpr16(0x20)).sll16<1>();  // (value & 0x20) << 1
+    const GSVector4i c = (c16.srl16<10>() & single_mask);              // ((value >> 10) & 0x1F)
+    const GSVector4i d = (c16 & single_mask).sll16<11>();              // ((value & 0x1F) << 11)
+    GSVector4i::store<false>(dest, (((a | b) | c) | d));
+    dest += sizeof(GSVector4i);
+  }
+}
+
+#endif
+
+template<GPUTexture::Format format>
+ALWAYS_INLINE static void ConvertVRAMPixel(u8*& dest, u16 c16)
+{
+  if constexpr (format == GPUTexture::Format::RGBA8)
+  {
+    const u32 c32 = VRAMRGBA5551ToRGBA8888(c16);
+    std::memcpy(std::assume_aligned<sizeof(c32)>(dest), &c32, sizeof(c32));
+    dest += sizeof(c32);
+  }
+  else if constexpr (format == GPUTexture::Format::RGB5A1)
+  {
+    const u16 repacked = (c16 & 0x83E0) | ((c16 >> 10) & 0x1F) | ((c16 & 0x1F) << 10);
+    std::memcpy(std::assume_aligned<sizeof(repacked)>(dest), &repacked, sizeof(repacked));
+    dest += sizeof(repacked);
+  }
+  else if constexpr (format == GPUTexture::Format::A1BGR5)
+  {
+    const u16 repacked = ((c16 & 0x3E0) << 1) | ((c16 >> 9) & 0x3E) | ((c16 & 0x1F) << 11) | (c16 >> 15);
+    std::memcpy(std::assume_aligned<sizeof(repacked)>(dest), &repacked, sizeof(repacked));
+    dest += sizeof(repacked);
+  }
+  else if constexpr (format == GPUTexture::Format::RGB565)
+  {
+    const u16 repacked = ((c16 & 0x3E0) << 1) | ((c16 & 0x20) << 1) | ((c16 >> 10) & 0x1F) | ((c16 & 0x1F) << 11);
+    std::memcpy(std::assume_aligned<sizeof(repacked)>(dest), &repacked, sizeof(repacked));
+    dest += sizeof(repacked);
+  }
 }
 
 union GPUVertexPosition

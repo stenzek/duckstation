@@ -781,6 +781,8 @@ void GPUTextureCache::SetHashCacheTextureFormat()
   // Prefer 16-bit texture formats where possible.
   if (g_gpu_device->SupportsTextureFormat(GPUTexture::Format::RGB5A1))
     s_state.hash_cache_texture_format = GPUTexture::Format::RGB5A1;
+  else if (g_gpu_device->SupportsTextureFormat(GPUTexture::Format::A1BGR5))
+    s_state.hash_cache_texture_format = GPUTexture::Format::A1BGR5;
   else
     s_state.hash_cache_texture_format = GPUTexture::Format::RGBA8;
 
@@ -1081,70 +1083,6 @@ ALWAYS_INLINE_RELEASE static const u16* VRAMPalettePointer(GPUTexturePaletteReg 
 }
 
 template<GPUTexture::Format format>
-ALWAYS_INLINE static void WriteDecodedTexel(u8*& dest, u16 c16)
-{
-  if constexpr (format == GPUTexture::Format::RGBA8)
-  {
-    const u32 c32 = VRAMRGBA5551ToRGBA8888(c16);
-    std::memcpy(std::assume_aligned<sizeof(c32)>(dest), &c32, sizeof(c32));
-    dest += sizeof(c32);
-  }
-  else if constexpr (format == GPUTexture::Format::RGB5A1)
-  {
-    const u16 repacked = (c16 & 0x83E0) | ((c16 >> 10) & 0x1F) | ((c16 & 0x1F) << 10);
-    std::memcpy(std::assume_aligned<sizeof(repacked)>(dest), &repacked, sizeof(repacked));
-    dest += sizeof(repacked);
-  }
-}
-
-#ifdef CPU_ARCH_SIMD
-
-ALWAYS_INLINE static GSVector4i VRAM5BitTo8Bit(GSVector4i val)
-{
-  return val.mul32l(GSVector4i::cxpr(527)).add32(GSVector4i::cxpr(23)).srl32<6>();
-}
-
-ALWAYS_INLINE static GSVector4i VRAMRGB5A1ToRGBA8888(GSVector4i val)
-{
-  static constexpr GSVector4i cmask = GSVector4i::cxpr(0x1F);
-
-  const GSVector4i r = VRAM5BitTo8Bit(val & cmask);
-  const GSVector4i g = VRAM5BitTo8Bit((val.srl32<5>() & cmask));
-  const GSVector4i b = VRAM5BitTo8Bit((val.srl32<10>() & cmask));
-  const GSVector4i a = val.srl32<15>().sll32<31>().sra32<7>();
-
-  return r | g.sll32<8>() | b.sll32<16>() | b.sll32<24>() | a;
-}
-
-template<GPUTexture::Format format>
-ALWAYS_INLINE static void WriteDecodedTexels(u8*& dest, GSVector4i c16)
-{
-  if constexpr (format == GPUTexture::Format::RGBA8)
-  {
-    const GSVector4i low = VRAMRGB5A1ToRGBA8888(c16.upl16());
-    const GSVector4i high = VRAMRGB5A1ToRGBA8888(c16.uph16());
-
-    GSVector4i::store<false>(dest, low);
-    dest += sizeof(GSVector4i);
-
-    GSVector4i::store<false>(dest, high);
-    dest += sizeof(GSVector4i);
-  }
-  else if constexpr (format == GPUTexture::Format::RGB5A1)
-  {
-    static constexpr GSVector4i cmask = GSVector4i::cxpr16(0x1F);
-
-    const GSVector4i repacked =
-      (c16 & GSVector4i::cxpr16(static_cast<s16>(0x83E0))) | (c16.srl16<10>() & cmask) | (c16 & cmask).sll16<10>();
-
-    GSVector4i::store<false>(dest, repacked);
-    dest += sizeof(GSVector4i);
-  }
-}
-
-#endif
-
-template<GPUTexture::Format format>
 void GPUTextureCache::DecodeTexture4(const u16* page, const u16* palette, u32 width, u32 height, u8* dest,
                                      u32 dest_stride)
 {
@@ -1175,17 +1113,17 @@ void GPUTextureCache::DecodeTexture4(const u16* page, const u16* palette, u32 wi
         c16[5] = palette[(pp >> 4) & 0x0F];
         c16[6] = palette[(pp >> 8) & 0x0F];
         c16[7] = palette[pp >> 12];
-        WriteDecodedTexels<format>(dest_ptr, GSVector4i::load<true>(c16));
+        ConvertVRAMPixels<format>(dest_ptr, GSVector4i::load<true>(c16));
       }
 #endif
 
       for (; x < vram_width; x++)
       {
         const u32 pp = *(page_ptr++);
-        WriteDecodedTexel<format>(dest_ptr, palette[pp & 0x0F]);
-        WriteDecodedTexel<format>(dest_ptr, palette[(pp >> 4) & 0x0F]);
-        WriteDecodedTexel<format>(dest_ptr, palette[(pp >> 8) & 0x0F]);
-        WriteDecodedTexel<format>(dest_ptr, palette[pp >> 12]);
+        ConvertVRAMPixel<format>(dest_ptr, palette[pp & 0x0F]);
+        ConvertVRAMPixel<format>(dest_ptr, palette[(pp >> 4) & 0x0F]);
+        ConvertVRAMPixel<format>(dest_ptr, palette[(pp >> 8) & 0x0F]);
+        ConvertVRAMPixel<format>(dest_ptr, palette[pp >> 12]);
       }
 
       page += VRAM_WIDTH;
@@ -1206,7 +1144,7 @@ void GPUTextureCache::DecodeTexture4(const u16* page, const u16* palette, u32 wi
         if (offs == 0)
           texel = *(page_ptr++);
 
-        WriteDecodedTexel<format>(dest_ptr, palette[texel & 0x0F]);
+        ConvertVRAMPixel<format>(dest_ptr, palette[texel & 0x0F]);
         texel >>= 4;
 
         offs = (offs + 1) % 4;
@@ -1251,15 +1189,15 @@ void GPUTextureCache::DecodeTexture8(const u16* page, const u16* palette, u32 wi
         pp = *(page_ptr++);
         c16[6] = palette[pp & 0xFF];
         c16[7] = palette[(pp >> 8) & 0xFF];
-        WriteDecodedTexels<format>(dest_ptr, GSVector4i::load<true>(c16));
+        ConvertVRAMPixels<format>(dest_ptr, GSVector4i::load<true>(c16));
       }
 #endif
 
       for (; x < vram_width; x++)
       {
         const u32 pp = *(page_ptr++);
-        WriteDecodedTexel<format>(dest_ptr, palette[pp & 0xFF]);
-        WriteDecodedTexel<format>(dest_ptr, palette[pp >> 8]);
+        ConvertVRAMPixel<format>(dest_ptr, palette[pp & 0xFF]);
+        ConvertVRAMPixel<format>(dest_ptr, palette[pp >> 8]);
       }
 
       page += VRAM_WIDTH;
@@ -1280,7 +1218,7 @@ void GPUTextureCache::DecodeTexture8(const u16* page, const u16* palette, u32 wi
         if (offs == 0)
           texel = *(page_ptr++);
 
-        WriteDecodedTexel<format>(dest_ptr, palette[texel & 0xFF]);
+        ConvertVRAMPixel<format>(dest_ptr, palette[texel & 0xFF]);
         texel >>= 8;
 
         offs ^= 1;
@@ -1307,13 +1245,13 @@ void GPUTextureCache::DecodeTexture16(const u16* page, u32 width, u32 height, u8
 #ifdef CPU_ARCH_SIMD
     for (; x < aligned_width; x += pixels_per_vec)
     {
-      WriteDecodedTexels<format>(dest_ptr, GSVector4i::load<false>(page_ptr));
+      ConvertVRAMPixels<format>(dest_ptr, GSVector4i::load<false>(page_ptr));
       page_ptr += pixels_per_vec;
     }
 #endif
 
     for (; x < width; x++)
-      WriteDecodedTexel<format>(dest_ptr, *(page_ptr++));
+      ConvertVRAMPixel<format>(dest_ptr, *(page_ptr++));
 
     page += VRAM_WIDTH;
     dest += dest_stride;
@@ -1354,6 +1292,24 @@ void GPUTextureCache::DecodeTexture(GPUTextureMode mode, const u16* page_ptr, co
       case GPUTextureMode::Direct16Bit:
       case GPUTextureMode::Reserved_Direct16Bit:
         DecodeTexture16<GPUTexture::Format::RGB5A1>(page_ptr, width, height, dest, dest_stride);
+        break;
+
+        DefaultCaseIsUnreachable()
+    }
+  }
+  else if (dest_format == GPUTexture::Format::A1BGR5)
+  {
+    switch (mode)
+    {
+      case GPUTextureMode::Palette4Bit:
+        DecodeTexture4<GPUTexture::Format::A1BGR5>(page_ptr, palette, width, height, dest, dest_stride);
+        break;
+      case GPUTextureMode::Palette8Bit:
+        DecodeTexture8<GPUTexture::Format::A1BGR5>(page_ptr, palette, width, height, dest, dest_stride);
+        break;
+      case GPUTextureMode::Direct16Bit:
+      case GPUTextureMode::Reserved_Direct16Bit:
+        DecodeTexture16<GPUTexture::Format::A1BGR5>(page_ptr, width, height, dest, dest_stride);
         break;
 
         DefaultCaseIsUnreachable()
