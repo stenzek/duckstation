@@ -120,8 +120,8 @@ package() {
 	install -Dm755 scripts/packaging/duckstation-qt "${pkgdir}/usr/bin/duckstation-qt"
 
 	# install desktop file and icon
-	install -Dm644 scripts/${_desktopname}.desktop "${pkgdir}/usr/share/applications/${_desktopname}.desktop"
-	install -Dm644 scripts/${_desktopname}.png "${pkgdir}/usr/share/icons/hicolor/512x512/apps/${_desktopname}.png"
+	install -Dm644 scripts/packaging/${_desktopname}.desktop "${pkgdir}/usr/share/applications/${_desktopname}.desktop"
+	install -Dm644 scripts/packaging/${_desktopname}.png "${pkgdir}/usr/share/icons/hicolor/512x512/apps/${_desktopname}.png"
 
 	# install license
 	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
