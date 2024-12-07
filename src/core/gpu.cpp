@@ -285,16 +285,8 @@ void GPU::SoftReset()
   UpdateGPUIdle();
 }
 
-bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
+bool GPU::DoState(StateWrapper& sw, bool update_display)
 {
-  FlushRender();
-
-  if (sw.IsReading())
-  {
-    // perform a reset to discard all pending draws/fb state
-    Reset(host_texture == nullptr);
-  }
-
   sw.Do(&m_GPUSTAT.bits);
 
   sw.Do(&m_draw_mode.mode_reg.bits);
@@ -390,32 +382,74 @@ bool GPU::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_displ
   sw.Do(&m_max_run_ahead);
   sw.Do(&m_fifo_size);
 
+  if (!sw.DoMarker("GPU-VRAM"))
+    return false;
+
+  sw.DoBytes(g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+
   if (sw.IsReading())
   {
     m_draw_mode.texture_page_changed = true;
     m_drawing_area_changed = true;
     SetClampedDrawingArea();
     UpdateDMARequest();
-  }
-
-  if (!host_texture)
-  {
-    if (!sw.DoMarker("GPU-VRAM"))
-      return false;
-
-    sw.DoBytes(g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
-  }
-
-  if (sw.IsReading())
-  {
     UpdateCRTCConfig();
+    UpdateCommandTickEvent();
+
+    // If we're paused, need to update the display FB.
     if (update_display)
       UpdateDisplay();
-
-    UpdateCommandTickEvent();
   }
 
   return !sw.HasError();
+}
+
+bool GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool update_display)
+{
+  sw.Do(&m_GPUSTAT.bits);
+
+  sw.DoBytes(&m_draw_mode, sizeof(m_draw_mode));
+  sw.DoBytes(&m_drawing_area, sizeof(m_drawing_area));
+  sw.DoBytes(&m_drawing_offset, sizeof(m_drawing_offset));
+
+  sw.Do(&m_console_is_pal);
+  sw.Do(&m_set_texture_disable_mask);
+
+  sw.DoBytes(&m_crtc_state, sizeof(m_crtc_state));
+
+  sw.Do(&m_blitter_state);
+  sw.Do(&m_pending_command_ticks);
+  sw.Do(&m_command_total_words);
+  sw.Do(&m_GPUREAD_latch);
+
+  sw.Do(&m_current_clut_reg_bits);
+  sw.Do(&m_current_clut_is_8bit);
+  sw.DoBytes(g_gpu_clut, sizeof(g_gpu_clut));
+
+  sw.DoBytes(&m_vram_transfer, sizeof(m_vram_transfer));
+
+  sw.Do(&m_fifo);
+  sw.Do(&m_blit_buffer);
+  sw.Do(&m_blit_remaining_words);
+  sw.Do(&m_render_command.bits);
+
+  sw.Do(&m_max_run_ahead);
+  sw.Do(&m_fifo_size);
+
+  if (sw.IsReading())
+  {
+    m_draw_mode.texture_page_changed = true;
+    m_drawing_area_changed = true;
+    SetClampedDrawingArea();
+    UpdateDMARequest();
+    UpdateCRTCConfig();
+    UpdateCommandTickEvent();
+
+    if (update_display)
+      UpdateDisplay();
+  }
+
+  return true;
 }
 
 void GPU::RestoreDeviceContext()

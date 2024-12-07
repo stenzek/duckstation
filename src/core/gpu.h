@@ -45,6 +45,10 @@ namespace Threading {
 class Thread;
 }
 
+namespace System {
+struct MemorySaveState;
+}
+
 class GPU
 {
 public:
@@ -95,7 +99,8 @@ public:
 
   virtual bool Initialize(Error* error);
   virtual void Reset(bool clear_vram);
-  virtual bool DoState(StateWrapper& sw, GPUTexture** save_to_texture, bool update_display);
+  virtual bool DoState(StateWrapper& sw, bool update_display);
+  virtual bool DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool update_display);
 
   // Graphics API state reset/restore - call when drawing the UI etc.
   // TODO: replace with "invalidate cached state"

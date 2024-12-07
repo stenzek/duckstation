@@ -58,9 +58,9 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
   if (System::IsValid())
   {
+    System::ClearMemorySaveStates(true);
     g_gpu->RestoreDeviceContext();
     g_gpu->UpdateSettings(old_settings);
-    System::ClearMemorySaveStates();
   }
 }
 
@@ -375,11 +375,12 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
               [](s32 pressed) {
                 if (!pressed && System::IsValid())
                 {
+                  System::ClearMemorySaveStates(true);
+
                   Settings old_settings = g_settings;
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                   g_gpu->RestoreDeviceContext();
                   g_gpu->UpdateSettings(old_settings);
-                  System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXP",
                                            g_settings.gpu_pgxp_enable ?
                                              TRANSLATE_STR("OSDMessage", "PGXP is now enabled.") :
@@ -448,12 +449,13 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   if (!g_settings.gpu_pgxp_enable)
                     return;
 
+                  System::ClearMemorySaveStates(true);
+
                   const Settings old_settings = g_settings;
                   g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
 
                   g_gpu->RestoreDeviceContext();
                   g_gpu->UpdateSettings(old_settings);
-                  System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPDepth",
                                            g_settings.gpu_pgxp_depth_buffer ?
                                              TRANSLATE_STR("OSDMessage", "PGXP Depth Buffer is now enabled.") :
@@ -469,12 +471,13 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
                   if (!g_settings.gpu_pgxp_enable)
                     return;
 
+                  System::ClearMemorySaveStates(true);
+
                   const Settings old_settings = g_settings;
                   g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
 
                   g_gpu->RestoreDeviceContext();
                   g_gpu->UpdateSettings(old_settings);
-                  System::ClearMemorySaveStates();
                   Host::AddKeyedOSDMessage("TogglePGXPCPU",
                                            g_settings.gpu_pgxp_cpu ?
                                              TRANSLATE_STR("OSDMessage", "PGXP CPU mode is now enabled.") :

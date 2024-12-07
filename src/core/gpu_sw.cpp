@@ -7,6 +7,7 @@
 #include "system.h"
 
 #include "util/gpu_device.h"
+#include "util/state_wrapper.h"
 
 #include "common/align.h"
 #include "common/assert.h"
@@ -58,17 +59,24 @@ bool GPU_SW::Initialize(Error* error)
   return true;
 }
 
-bool GPU_SW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
+bool GPU_SW::DoState(StateWrapper& sw, bool update_display)
 {
   // need to ensure the worker thread is done
   m_backend.Sync(true);
 
   // ignore the host texture for software mode, since we want to save vram here
-  if (!GPU::DoState(sw, nullptr, update_display))
+  if (!GPU::DoState(sw, update_display))
     return false;
 
   // need to still call the TC, to toss any data in the state
   return GPUTextureCache::DoState(sw, true);
+}
+
+bool GPU_SW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool update_display)
+{
+  m_backend.Sync(true);
+  sw.DoBytes(g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+  return GPU::DoMemoryState(sw, mss, update_display);
 }
 
 void GPU_SW::Reset(bool clear_vram)
