@@ -968,6 +968,8 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.use_old_mdec_routines = false;
     g_settings.pcdrv_enable = false;
     g_settings.bios_patch_fast_boot = false;
+    g_settings.runahead_frames = 0;
+    g_settings.rewind_enable = false;
   }
 
   // fast forward boot requires fast boot
