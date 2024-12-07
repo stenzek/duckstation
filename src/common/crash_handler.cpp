@@ -367,7 +367,7 @@ void CrashHandler::WriteDumpForCaller()
   LogCallstack(0, nullptr);
 }
 
-#else
+#elif !defined(__ANDROID__)
 
 bool CrashHandler::Install(CleanupHandler cleanup_handler)
 {

@@ -9,27 +9,31 @@ void Y_OnAssertFailed(const char* szMessage, const char* szFunction, const char*
 [[noreturn]] void Y_OnPanicReached(const char* szMessage, const char* szFunction, const char* szFile, unsigned uLine);
 
 #define Assert(expr)                                                                                                   \
-  if (!(expr))                                                                                                         \
+  do                                                                                                                   \
   {                                                                                                                    \
-    Y_OnAssertFailed("Assertion failed: '" #expr "'", __FUNCTION__, __FILE__, __LINE__);                               \
-  }
+    if (!(expr))                                                                                                       \
+      Y_OnAssertFailed("Assertion failed: '" #expr "'", __FUNCTION__, __FILE__, __LINE__);                             \
+  } while (0)
 #define AssertMsg(expr, msg)                                                                                           \
-  if (!(expr))                                                                                                         \
+  do                                                                                                                   \
   {                                                                                                                    \
-    Y_OnAssertFailed("Assertion failed: '" msg "'", __FUNCTION__, __FILE__, __LINE__);                                 \
-  }
+    if (!(expr))                                                                                                       \
+      Y_OnAssertFailed("Assertion failed: '" msg "'", __FUNCTION__, __FILE__, __LINE__);                               \
+  } while (0)
 
 #if defined(_DEBUG) || defined(_DEVEL)
 #define DebugAssert(expr)                                                                                              \
-  if (!(expr))                                                                                                         \
+  do                                                                                                                   \
   {                                                                                                                    \
-    Y_OnAssertFailed("Debug assertion failed: '" #expr "'", __FUNCTION__, __FILE__, __LINE__);                         \
-  }
+    if (!(expr))                                                                                                       \
+      Y_OnAssertFailed("Debug assertion failed: '" #expr "'", __FUNCTION__, __FILE__, __LINE__);                       \
+  } while (0)
 #define DebugAssertMsg(expr, msg)                                                                                      \
-  if (!(expr))                                                                                                         \
+  do                                                                                                                   \
   {                                                                                                                    \
-    Y_OnAssertFailed("Debug assertion failed: '" msg "'", __FUNCTION__, __FILE__, __LINE__);                           \
-  }
+    if (!(expr))                                                                                                       \
+      Y_OnAssertFailed("Debug assertion failed: '" msg "'", __FUNCTION__, __FILE__, __LINE__);                         \
+  } while (0)
 #else
 #define DebugAssert(expr)
 #define DebugAssertMsg(expr, msg)
