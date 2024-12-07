@@ -7,6 +7,7 @@
 #include <cctype>
 #include <codecvt>
 #include <cstdio>
+#include <memory>
 #include <sstream>
 
 #ifndef __APPLE__
@@ -442,7 +443,7 @@ bool StringUtil::ParseAssignmentString(const std::string_view str, std::string_v
 
 void StringUtil::EncodeAndAppendUTF8(std::string& s, char32_t ch)
 {
-  if (ch <= 0x7F)
+  if (ch <= 0x7F) [[likely]]
   {
     s.push_back(static_cast<char>(static_cast<u8>(ch)));
   }
@@ -472,17 +473,84 @@ void StringUtil::EncodeAndAppendUTF8(std::string& s, char32_t ch)
   }
 }
 
+size_t StringUtil::GetEncodedUTF8Length(char32_t ch)
+{
+  if (ch <= 0x7F) [[likely]]
+    return 1;
+  else if (ch <= 0x07FF)
+    return 2;
+  else if (ch <= 0xFFFF)
+    return 3;
+  else if (ch <= 0x10FFFF)
+    return 4;
+  else
+    return 3;
+}
+
+size_t StringUtil::EncodeAndAppendUTF8(void* utf8, size_t pos, size_t size, char32_t ch)
+{
+  u8* utf8_bytes = static_cast<u8*>(utf8) + pos;
+  if (ch <= 0x7F) [[likely]]
+  {
+    if (pos == size) [[unlikely]]
+      return 0;
+
+    utf8_bytes[0] = static_cast<u8>(ch);
+    return 1;
+  }
+  else if (ch <= 0x07FF)
+  {
+    if ((pos + 1) >= size) [[unlikely]]
+      return 0;
+
+    utf8_bytes[0] = static_cast<u8>(0xc0 | static_cast<u8>((ch >> 6) & 0x1f));
+    utf8_bytes[1] = static_cast<u8>(0x80 | static_cast<u8>((ch & 0x3f)));
+    return 2;
+  }
+  else if (ch <= 0xFFFF)
+  {
+    if ((pos + 3) >= size) [[unlikely]]
+      return 0;
+
+    utf8_bytes[0] = static_cast<u8>(0xe0 | static_cast<u8>(((ch >> 12) & 0x0f)));
+    utf8_bytes[1] = static_cast<u8>(0x80 | static_cast<u8>(((ch >> 6) & 0x3f)));
+    utf8_bytes[2] = static_cast<u8>(0x80 | static_cast<u8>((ch & 0x3f)));
+    return 3;
+  }
+  else if (ch <= 0x10FFFF)
+  {
+    if ((pos + 4) >= size) [[unlikely]]
+      return 0;
+
+    utf8_bytes[0] = static_cast<u8>(0xf0 | static_cast<u8>(((ch >> 18) & 0x07)));
+    utf8_bytes[1] = static_cast<u8>(0x80 | static_cast<u8>(((ch >> 12) & 0x3f)));
+    utf8_bytes[2] = static_cast<u8>(0x80 | static_cast<u8>(((ch >> 6) & 0x3f)));
+    utf8_bytes[3] = static_cast<u8>(0x80 | static_cast<u8>((ch & 0x3f)));
+    return 4;
+  }
+  else
+  {
+    if ((pos + 3) >= size) [[unlikely]]
+      return 0;
+
+    utf8_bytes[0] = 0xefu;
+    utf8_bytes[1] = 0xbfu;
+    utf8_bytes[2] = 0xbdu;
+    return 3;
+  }
+}
+
 size_t StringUtil::DecodeUTF8(const void* bytes, size_t length, char32_t* ch)
 {
   const u8* s = reinterpret_cast<const u8*>(bytes);
-  if (s[0] < 0x80)
+  if (s[0] < 0x80) [[likely]]
   {
     *ch = s[0];
     return 1;
   }
   else if ((s[0] & 0xe0) == 0xc0)
   {
-    if (length < 2)
+    if (length < 2) [[unlikely]]
       goto invalid;
 
     *ch = static_cast<char32_t>((static_cast<u32>(s[0] & 0x1f) << 6) | (static_cast<u32>(s[1] & 0x3f) << 0));
@@ -490,7 +558,7 @@ size_t StringUtil::DecodeUTF8(const void* bytes, size_t length, char32_t* ch)
   }
   else if ((s[0] & 0xf0) == 0xe0)
   {
-    if (length < 3)
+    if (length < 3) [[unlikely]]
       goto invalid;
 
     *ch = static_cast<char32_t>((static_cast<u32>(s[0] & 0x0f) << 12) | (static_cast<u32>(s[1] & 0x3f) << 6) |
@@ -499,7 +567,7 @@ size_t StringUtil::DecodeUTF8(const void* bytes, size_t length, char32_t* ch)
   }
   else if ((s[0] & 0xf8) == 0xf0 && (s[0] <= 0xf4))
   {
-    if (length < 4)
+    if (length < 4) [[unlikely]]
       goto invalid;
 
     *ch = static_cast<char32_t>((static_cast<u32>(s[0] & 0x07) << 18) | (static_cast<u32>(s[1] & 0x3f) << 12) |
@@ -510,6 +578,82 @@ size_t StringUtil::DecodeUTF8(const void* bytes, size_t length, char32_t* ch)
 invalid:
   *ch = UNICODE_REPLACEMENT_CHARACTER; // unicode replacement character
   return 1;
+}
+
+size_t StringUtil::EncodeAndAppendUTF16(void* utf16, size_t pos, size_t size, char32_t codepoint)
+{
+  u8* const utf16_bytes = std::assume_aligned<sizeof(u16)>(static_cast<u8*>(utf16)) + (pos * sizeof(u16));
+  if (codepoint <= 0xFFFF) [[likely]]
+  {
+    if (pos == size) [[unlikely]]
+      return 0;
+
+    // surrogates are invalid
+    const u16 codepoint16 =
+      static_cast<u16>((codepoint >= 0xD800 && codepoint <= 0xDFFF) ? UNICODE_REPLACEMENT_CHARACTER : codepoint);
+    std::memcpy(utf16_bytes, &codepoint16, sizeof(codepoint16));
+    return 1;
+  }
+  else if (codepoint <= 0x10FFFF)
+  {
+    if ((pos + 1) >= size) [[unlikely]]
+      return 0;
+
+    codepoint -= 0x010000;
+
+    const u16 low = static_cast<u16>(((static_cast<u32>(codepoint) >> 10) & 0x3FFu) + 0xD800);
+    const u16 high = static_cast<u16>((static_cast<u32>(codepoint) & 0x3FFu) + 0xDC00);
+    std::memcpy(utf16_bytes, &low, sizeof(high));
+    std::memcpy(utf16_bytes + sizeof(u16), &high, sizeof(high));
+    return 2;
+  }
+  else
+  {
+    // unrepresentable
+    constexpr u16 value = static_cast<u16>(UNICODE_REPLACEMENT_CHARACTER);
+    std::memcpy(utf16_bytes, &value, sizeof(value));
+    return 1;
+  }
+}
+
+size_t StringUtil::DecodeUTF16(const void* bytes, size_t pos, size_t length, char32_t* ch)
+{
+  const u8* const utf16_bytes = std::assume_aligned<sizeof(u16)>(static_cast<const u8*>(bytes)) + pos * sizeof(u16);
+
+  u16 high;
+  std::memcpy(&high, utf16_bytes, sizeof(high));
+
+  // High surrogate?
+  if (high >= 0xD800 && high <= 0xDBFF) [[unlikely]]
+  {
+    if (length < 2) [[unlikely]]
+    {
+      // Missing low surrogate.
+      *ch = UNICODE_REPLACEMENT_CHARACTER;
+      return 1;
+    }
+
+    u16 low;
+    std::memcpy(&low, utf16_bytes + sizeof(u16), sizeof(low));
+    if (low >= 0xDC00 && low <= 0xDFFF) [[likely]]
+    {
+      *ch = static_cast<char32_t>(((static_cast<u32>(high) - 0xD800u) << 10) + ((static_cast<u32>(low) - 0xDC00)) +
+                                  0x10000u);
+      return 2;
+    }
+    else
+    {
+      // Invalid high surrogate.
+      *ch = UNICODE_REPLACEMENT_CHARACTER;
+      return 2;
+    }
+  }
+  else
+  {
+    // Single 16-bit value.
+    *ch = static_cast<char32_t>(high);
+    return 1;
+  }
 }
 
 std::string StringUtil::Ellipsise(const std::string_view str, u32 max_length, const char* ellipsis /*= "..."*/)
