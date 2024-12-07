@@ -415,7 +415,7 @@ void InvalidateDisplay();
 // Memory Save States (Rewind and Runahead)
 //////////////////////////////////////////////////////////////////////////
 void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage);
-void ClearMemorySaveStates();
+void ClearMemorySaveStates(bool deallocate_resources);
 void SetRunaheadReplayFlag();
 
 /// Shared socket multiplexer, used by PINE/GDB/etc.

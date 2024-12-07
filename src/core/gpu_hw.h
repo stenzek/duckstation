@@ -68,7 +68,8 @@ public:
 
   bool Initialize(Error* error) override;
   void Reset(bool clear_vram) override;
-  bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display) override;
+  bool DoState(StateWrapper& sw, bool update_display) override;
+  bool DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool update_display) override;
 
   void RestoreDeviceContext() override;
 

@@ -75,8 +75,6 @@
 #include <cinttypes>
 #include <cmath>
 #include <cstdio>
-#include <deque>
-#include <fstream>
 #include <limits>
 #include <thread>
 #include <zlib.h>
@@ -198,7 +196,7 @@ static void UpdateMultitaps();
 static std::string GetMediaPathFromSaveState(const char* path);
 static bool SaveUndoLoadState();
 static void UpdateMemorySaveStateSettings();
-static bool LoadRewindState(u32 skip_saves = 0, bool consume_state = true);
+static bool LoadOneRewindState();
 static bool LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display);
 static bool LoadStateBufferFromFile(SaveStateBuffer* buffer, std::FILE* fp, Error* error, bool read_title,
                                     bool read_media_path, bool read_screenshot, bool read_data);
@@ -209,6 +207,8 @@ static bool SaveStateBufferToFile(const SaveStateBuffer& buffer, std::FILE* fp, 
                                   SaveStateCompressionMode compression_mode);
 static u32 CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, SaveStateCompressionMode method,
                                      u32* header_type, Error* error);
+static bool DoState(StateWrapper& sw, bool update_display);
+static bool DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_display);
 
 static bool IsExecutionInterrupted();
 static void CheckForAndExitExecution();
@@ -289,8 +289,9 @@ struct ALIGN_TO_CACHE_LINE StateVars
   s32 rewind_save_frequency = 0;
   s32 rewind_save_counter = 0;
 
-  std::deque<System::MemorySaveState> runahead_states;
-  std::deque<System::MemorySaveState> rewind_states;
+  std::vector<MemorySaveState> memory_save_states;
+  u32 memory_save_state_front = 0;
+  u32 memory_save_state_count = 0;
 
   const BIOS::ImageInfo* bios_image_info = nullptr;
   BIOS::ImageInfo::Hash bios_hash = {};
@@ -306,8 +307,6 @@ struct ALIGN_TO_CACHE_LINE StateVars
 
   bool keep_gpu_device_on_shutdown = false;
   std::atomic_bool startup_cancelled{false};
-
-  bool rewinding_first_save = false;
 
   std::unique_ptr<INISettingsInterface> game_settings_interface;
   std::unique_ptr<INISettingsInterface> input_settings_interface;
@@ -1186,14 +1185,14 @@ std::string System::GetInputProfilePath(std::string_view name)
 
 bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool update_display /* = true*/)
 {
-  ClearMemorySaveStates();
+  ClearMemorySaveStates(true);
   g_gpu->RestoreDeviceContext();
 
   // save current state
   DynamicHeapArray<u8> state_data(GetMaxSaveStateSize());
   {
     StateWrapper sw(state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-    if (!g_gpu->DoState(sw, nullptr, false) || !TimingEvents::DoState(sw))
+    if (!g_gpu->DoState(sw, update_display) || !TimingEvents::DoState(sw))
     {
       ERROR_LOG("Failed to save old GPU state when switching renderers");
       state_data.deallocate();
@@ -1223,7 +1222,7 @@ bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool 
   {
     StateWrapper sw(state_data.span(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
     g_gpu->RestoreDeviceContext();
-    g_gpu->DoState(sw, nullptr, update_display);
+    g_gpu->DoState(sw, update_display);
     TimingEvents::DoState(sw);
   }
 
@@ -1922,7 +1921,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   s_state.rewind_load_counter = -1;
   s_state.rewind_save_frequency = -1;
   s_state.rewind_save_counter = -1;
-  s_state.rewinding_first_save = true;
 
   TimingEvents::Initialize();
 
@@ -2003,7 +2001,7 @@ void System::DestroySystem()
   if (g_settings.inhibit_screensaver)
     PlatformMisc::ResumeScreensaver();
 
-  ClearMemorySaveStates();
+  ClearMemorySaveStates(true);
 
   Cheats::UnloadAll();
   PCDrv::Shutdown();
@@ -2462,7 +2460,7 @@ bool System::CreateGPU(GPURenderer renderer, bool is_switching, bool fullscreen,
   return true;
 }
 
-bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state)
+bool System::DoState(StateWrapper& sw, bool update_display)
 {
   if (!sw.DoMarker("System"))
     return false;
@@ -2486,20 +2484,16 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   sw.Do(&s_state.frame_number);
   sw.Do(&s_state.internal_frame_number);
 
-  // Don't bother checking this at all for memory states, since they won't have a different BIOS...
-  if (!is_memory_state)
+  BIOS::ImageInfo::Hash bios_hash = s_state.bios_hash;
+  sw.DoBytesEx(bios_hash.data(), BIOS::ImageInfo::HASH_SIZE, 58, s_state.bios_hash.data());
+  if (bios_hash != s_state.bios_hash)
   {
-    BIOS::ImageInfo::Hash bios_hash = s_state.bios_hash;
-    sw.DoBytesEx(bios_hash.data(), BIOS::ImageInfo::HASH_SIZE, 58, s_state.bios_hash.data());
-    if (bios_hash != s_state.bios_hash)
-    {
-      WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", BIOS::ImageInfo::GetHashString(s_state.bios_hash),
-                  BIOS::ImageInfo::GetHashString(bios_hash));
-      Host::AddIconOSDWarning(
-        "StateBIOSMismatch", ICON_FA_EXCLAMATION_TRIANGLE,
-        TRANSLATE_STR("System", "This save state was created with a different BIOS. This may cause stability issues."),
-        Host::OSD_WARNING_DURATION);
-    }
+    WARNING_LOG("BIOS hash mismatch: System: {} | State: {}", BIOS::ImageInfo::GetHashString(s_state.bios_hash),
+                BIOS::ImageInfo::GetHashString(bios_hash));
+    Host::AddIconOSDWarning(
+      "StateBIOSMismatch", ICON_FA_EXCLAMATION_TRIANGLE,
+      TRANSLATE_STR("System", "This save state was created with a different BIOS. This may cause stability issues."),
+      Host::OSD_WARNING_DURATION);
   }
 
   if (!sw.DoMarker("CPU") || !CPU::DoState(sw))
@@ -2507,16 +2501,10 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
 
   if (sw.IsReading())
   {
-    if (is_memory_state)
-      CPU::CodeCache::InvalidateAllRAMBlocks();
-    else
-      CPU::CodeCache::Reset();
+    CPU::CodeCache::Reset();
+    if (g_settings.gpu_pgxp_enable)
+      CPU::PGXP::Reset();
   }
-
-  // only reset pgxp if we're not runahead-rollbacking. the value checks will save us from broken rendering, and it
-  // saves using imprecise values for a frame in 30fps games.
-  if (sw.IsReading() && g_settings.gpu_pgxp_enable && !is_memory_state)
-    CPU::PGXP::Reset();
 
   if (!sw.DoMarker("Bus") || !Bus::DoState(sw))
     return false;
@@ -2528,13 +2516,13 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
     return false;
 
   g_gpu->RestoreDeviceContext();
-  if (!sw.DoMarker("GPU") || !g_gpu->DoState(sw, host_texture, update_display))
+  if (!sw.DoMarker("GPU") || !g_gpu->DoState(sw, update_display))
     return false;
 
   if (!sw.DoMarker("CDROM") || !CDROM::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("Pad") || !Pad::DoState(sw, is_memory_state))
+  if (!sw.DoMarker("Pad") || !Pad::DoState(sw, false))
     return false;
 
   if (!sw.DoMarker("Timers") || !Timers::DoState(sw))
@@ -2577,24 +2565,151 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
     UpdateOverclock();
   }
 
-  if (!is_memory_state)
+  if (sw.GetVersion() >= 56) [[unlikely]]
   {
-    if (sw.GetVersion() >= 56) [[unlikely]]
-    {
-      if (!sw.DoMarker("Cheevos"))
-        return false;
+    if (!sw.DoMarker("Cheevos"))
+      return false;
 
-      if (!Achievements::DoState(sw))
-        return false;
-    }
-    else
-    {
-      // loading an old state without cheevos, so reset the runtime
-      Achievements::ResetClient();
-    }
+    if (!Achievements::DoState(sw))
+      return false;
+  }
+  else
+  {
+    // loading an old state without cheevos, so reset the runtime
+    Achievements::ResetClient();
   }
 
   return !sw.HasError();
+}
+
+System::MemorySaveState& System::AllocateMemoryState()
+{
+  const u32 max_count = static_cast<u32>(s_state.memory_save_states.size());
+  DebugAssert(s_state.memory_save_state_count <= max_count);
+  if (s_state.memory_save_state_count < max_count)
+    s_state.memory_save_state_count++;
+
+  MemorySaveState& ret = s_state.memory_save_states[s_state.memory_save_state_front];
+  s_state.memory_save_state_front = (s_state.memory_save_state_front + 1) % max_count;
+  return ret;
+}
+
+System::MemorySaveState& System::GetFirstMemoryState()
+{
+  const u32 max_count = static_cast<u32>(s_state.memory_save_states.size());
+  DebugAssert(s_state.memory_save_state_count > 0);
+
+  const s32 front =
+    static_cast<s32>(s_state.memory_save_state_front) - static_cast<s32>(s_state.memory_save_state_count);
+  const u32 idx = static_cast<u32>((front < 0) ? (front + static_cast<s32>(max_count)) : front);
+  return s_state.memory_save_states[idx];
+}
+
+System::MemorySaveState& System::PopMemoryState()
+{
+  const u32 max_count = static_cast<u32>(s_state.memory_save_states.size());
+  DebugAssert(s_state.memory_save_state_count > 0);
+  s_state.memory_save_state_count--;
+
+  const s32 front = static_cast<s32>(s_state.memory_save_state_front) - 1;
+  s_state.memory_save_state_front = static_cast<u32>((front < 0) ? (front + static_cast<s32>(max_count)) : front);
+  return s_state.memory_save_states[s_state.memory_save_state_front];
+}
+
+void System::ClearMemorySaveStates(bool deallocate_resources)
+{
+  if (deallocate_resources)
+  {
+    for (MemorySaveState& mss : s_state.memory_save_states)
+    {
+      g_gpu_device->RecycleTexture(std::move(mss.vram_texture));
+      mss.state_data.deallocate();
+      mss.state_size = 0;
+    }
+  }
+
+  s_state.memory_save_state_front = 0;
+  s_state.memory_save_state_count = 0;
+}
+
+void System::FreeMemoryStateStorage()
+{
+  for (MemorySaveState& mss : s_state.memory_save_states)
+    g_gpu_device->RecycleTexture(std::move(mss.vram_texture));
+  s_state.memory_save_states = std::vector<MemorySaveState>();
+  s_state.memory_save_state_front = 0;
+  s_state.memory_save_state_count = 0;
+}
+
+void System::LoadMemoryState(MemorySaveState& mss, bool update_display)
+{
+  StateWrapper sw(mss.state_data.cspan(0, mss.state_size), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+  [[maybe_unused]] const bool res = DoMemoryState(sw, mss, update_display);
+  DebugAssert(res);
+
+  DEBUG_LOG("Loaded frame {} from memory state slot {}", s_state.frame_number,
+            &mss - s_state.memory_save_states.data());
+}
+
+bool System::SaveMemoryState(MemorySaveState& mss)
+{
+  DEBUG_LOG("Saving frame {} to memory state slot {}", s_state.frame_number, &mss - s_state.memory_save_states.data());
+
+  if (mss.state_data.empty())
+    mss.state_data.resize(GetMaxSaveStateSize());
+
+  StateWrapper sw(mss.state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  const bool res = DoMemoryState(sw, mss, false);
+  mss.state_size = sw.GetPosition();
+  return res;
+}
+
+bool System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_display)
+{
+#if defined(_DEBUG) || defined(_DEVEL)
+#define SAVE_COMPONENT(name, expr)                                                                                     \
+  do                                                                                                                   \
+  {                                                                                                                    \
+    Assert(sw.DoMarker(name));                                                                                         \
+    if (!(expr)) [[unlikely]]                                                                                          \
+      Panic("Failed to memory save " name);                                                                            \
+  } while (0)
+#else
+#define SAVE_COMPONENT(name, expr) expr
+#endif
+
+  sw.Do(&s_state.frame_number);
+  sw.Do(&s_state.internal_frame_number);
+
+  SAVE_COMPONENT("CPU", CPU::DoState(sw));
+
+  // don't need to reset pgxp because the value checks will save us from broken rendering, and it
+  // saves using imprecise values for a frame in 30fps games.
+  // TODO: Save PGXP state to memory state instead. It'll be 8MB, but potentially worth it.
+  if (sw.IsReading())
+    CPU::CodeCache::InvalidateAllRAMBlocks();
+
+  SAVE_COMPONENT("Bus", Bus::DoState(sw));
+  SAVE_COMPONENT("DMA", DMA::DoState(sw));
+  SAVE_COMPONENT("InterruptController", InterruptController::DoState(sw));
+
+  // GPU can fail due to running out of VRAM.
+  g_gpu->RestoreDeviceContext();
+  if (!g_gpu->DoMemoryState(sw, mss, update_display)) [[unlikely]]
+    return false;
+
+  SAVE_COMPONENT("CDROM", CDROM::DoState(sw));
+  SAVE_COMPONENT("Pad", Pad::DoState(sw, true));
+  SAVE_COMPONENT("Timers", Timers::DoState(sw));
+  SAVE_COMPONENT("SPU", SPU::DoState(sw));
+  SAVE_COMPONENT("MDEC", MDEC::DoState(sw));
+  SAVE_COMPONENT("SIO", SIO::DoState(sw));
+  SAVE_COMPONENT("Events", TimingEvents::DoState(sw));
+  SAVE_COMPONENT("Achievements", Achievements::DoState(sw));
+
+#undef SAVE_COMPONENT
+
+  return true;
 }
 
 bool System::LoadBIOS(Error* error)
@@ -2744,7 +2859,7 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
 
   SaveStateBuffer buffer;
   if (!LoadStateBufferFromFile(&buffer, fp.get(), error, false, true, false, true) ||
-      !LoadStateFromBuffer(buffer, error, true))
+      !LoadStateFromBuffer(buffer, error, IsPaused()))
   {
     if (save_undo_state)
       UndoLoadState();
@@ -2756,7 +2871,7 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
   return true;
 }
 
-bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display_if_paused)
+bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bool update_display)
 {
   Assert(IsValid());
 
@@ -2816,13 +2931,13 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   if (g_settings.HasAnyPerGameMemoryCards())
     UpdatePerGameMemoryCards();
 
-  ClearMemorySaveStates();
+  ClearMemorySaveStates(false);
 
   // Updating game/loading settings can turn on hardcore mode. Catch this.
   Achievements::DisableHardcoreMode();
 
   StateWrapper sw(buffer.state_data.cspan(0, buffer.state_size), StateWrapper::Mode::Read, buffer.version);
-  if (!DoState(sw, nullptr, update_display_if_paused && IsPaused(), false))
+  if (!DoState(sw, update_display))
   {
     Error::SetStringView(error, "Save state stream is corrupted.");
     return false;
@@ -2833,7 +2948,7 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   PerformanceCounters::Reset();
   ResetThrottler();
 
-  if (update_display_if_paused && IsPaused())
+  if (update_display)
     InvalidateDisplay();
 
   return true;
@@ -3156,7 +3271,7 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
 
   g_gpu->RestoreDeviceContext();
   StateWrapper sw(buffer->state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  if (!DoState(sw, nullptr, false, false))
+  if (!DoState(sw, false))
   {
     Error::SetStringView(error, "DoState() failed");
     return false;
@@ -3951,6 +4066,8 @@ bool System::InsertMedia(const char* path)
   if (IsGPUDumpPath(path)) [[unlikely]]
     return ChangeGPUDump(path);
 
+  ClearMemorySaveStates(true);
+
   Error error;
   std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
   const DiscRegion region =
@@ -3983,14 +4100,13 @@ bool System::InsertMedia(const char* path)
     UpdatePerGameMemoryCards();
   }
 
-  ClearMemorySaveStates();
   return true;
 }
 
 void System::RemoveMedia()
 {
+  ClearMemorySaveStates(true);
   CDROM::RemoveMedia(false);
-  ClearMemorySaveStates();
 }
 
 void System::UpdateRunningGame(const std::string& path, CDImage* image, bool booting)
@@ -4204,6 +4320,8 @@ bool System::SwitchMediaSubImage(u32 index)
   if (!CDROM::HasMedia())
     return false;
 
+  ClearMemorySaveStates(true);
+
   std::unique_ptr<CDImage> image = CDROM::RemoveMedia(true);
   Assert(image);
 
@@ -4239,8 +4357,6 @@ bool System::SwitchMediaSubImage(u32 index)
                           fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."), subimage_title,
                                       title, index + 1u, Path::GetFileName(CDROM::GetMediaPath())),
                           Host::OSD_INFO_DURATION);
-
-  ClearMemorySaveStates();
   return true;
 }
 
@@ -4294,7 +4410,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
   if (IsValid())
   {
-    ClearMemorySaveStates();
+    ClearMemorySaveStates(false);
 
     if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
         (g_settings.cpu_overclock_active &&
@@ -4412,6 +4528,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         g_settings.texture_replacements.dump_textures != old_settings.texture_replacements.dump_textures ||
         g_settings.texture_replacements.config != old_settings.texture_replacements.config)
     {
+      ClearMemorySaveStates(true);
       g_gpu->UpdateSettings(old_settings);
       if (IsPaused())
         InvalidateDisplay();
@@ -4800,15 +4917,9 @@ void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64
                 static_cast<u64>(g_settings.gpu_multisamples) * static_cast<u64>(num_saves);
 }
 
-void System::ClearMemorySaveStates()
-{
-  s_state.rewind_states.clear();
-  s_state.runahead_states.clear();
-}
-
 void System::UpdateMemorySaveStateSettings()
 {
-  ClearMemorySaveStates();
+  FreeMemoryStateStorage();
 
   if (IsReplayingGPUDump()) [[unlikely]]
   {
@@ -4817,11 +4928,13 @@ void System::UpdateMemorySaveStateSettings()
     return;
   }
 
-  if (g_settings.rewind_enable)
+  u32 num_slots = 0;
+  if (g_settings.rewind_enable && !g_settings.IsRunaheadEnabled())
   {
     s_state.rewind_save_frequency =
       static_cast<s32>(std::ceil(g_settings.rewind_save_frequency * s_state.video_frame_rate));
     s_state.rewind_save_counter = 0;
+    num_slots = g_settings.rewind_save_slots;
 
     u64 ram_usage, vram_usage;
     CalculateRewindMemoryUsage(g_settings.rewind_save_slots, g_settings.gpu_resolution_scale, &ram_usage, &vram_usage);
@@ -4841,46 +4954,20 @@ void System::UpdateMemorySaveStateSettings()
   s_state.runahead_frames = g_settings.runahead_frames;
   s_state.runahead_replay_pending = false;
   if (s_state.runahead_frames > 0)
+  {
     INFO_LOG("Runahead is active with {} frames", s_state.runahead_frames);
+    num_slots = s_state.runahead_frames;
+  }
+
+  // allocate storage for memory save states
+  if (num_slots > 0)
+  {
+    DEV_LOG("Allocating {} memory save state slots", num_slots);
+    s_state.memory_save_states.resize(num_slots);
+  }
 
   // reenter execution loop, don't want to try to save a state now if runahead was turned off
   InterruptExecution();
-}
-
-bool System::LoadMemoryState(const MemorySaveState& mss)
-{
-  StateWrapper sw(mss.state_data.cspan(), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
-  GPUTexture* host_texture = mss.vram_texture.get();
-  if (!DoState(sw, &host_texture, true, true)) [[unlikely]]
-  {
-    Host::ReportErrorAsync("Error", "Failed to load memory save state, resetting.");
-    ResetSystem();
-    return false;
-  }
-
-  return true;
-}
-
-bool System::SaveMemoryState(MemorySaveState* mss)
-{
-  if (mss->state_data.empty())
-    mss->state_data.resize(GetMaxSaveStateSize());
-
-  GPUTexture* host_texture = mss->vram_texture.release();
-  StateWrapper sw(mss->state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  if (!DoState(sw, &host_texture, false, true))
-  {
-    ERROR_LOG("Failed to create rewind state.");
-    delete host_texture;
-    return false;
-  }
-
-#ifdef PROFILE_MEMORY_SAVE_STATES
-  mss->state_size = sw.GetPosition();
-#endif
-
-  mss->vram_texture.reset(host_texture);
-  return true;
 }
 
 bool System::SaveRewindState()
@@ -4889,49 +4976,31 @@ bool System::SaveRewindState()
   Timer save_timer;
 #endif
 
-  // try to reuse the frontmost slot
-  const u32 save_slots = g_settings.rewind_save_slots;
-  MemorySaveState mss;
-  while (s_state.rewind_states.size() >= save_slots)
+  MemorySaveState& mss = AllocateMemoryState();
+  if (!SaveMemoryState(mss))
   {
-    mss = std::move(s_state.rewind_states.front());
-    s_state.rewind_states.pop_front();
+    PopMemoryState();
+    return false;
   }
 
-  if (!SaveMemoryState(&mss))
-    return false;
-
-  s_state.rewind_states.push_back(std::move(mss));
-
 #ifdef PROFILE_MEMORY_SAVE_STATES
-  DEV_LOG("Saved rewind state ({} bytes, took {:.4f} ms)", s_state.rewind_states.back().state_size,
-          save_timer.GetTimeMilliseconds());
+  DEV_LOG("Saved rewind state ({} bytes, took {:.4f} ms)", mss.state_size, save_timer.GetTimeMilliseconds());
 #endif
 
   return true;
 }
 
-bool System::LoadRewindState(u32 skip_saves /*= 0*/, bool consume_state /*=true */)
+bool System::LoadOneRewindState()
 {
-  while (skip_saves > 0 && !s_state.rewind_states.empty())
-  {
-    g_gpu_device->RecycleTexture(std::move(s_state.rewind_states.back().vram_texture));
-    s_state.rewind_states.pop_back();
-    skip_saves--;
-  }
-
-  if (s_state.rewind_states.empty())
+  if (s_state.memory_save_state_count == 0)
     return false;
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
   Timer load_timer;
 #endif
 
-  if (!LoadMemoryState(s_state.rewind_states.back()))
-    return false;
-
-  if (consume_state)
-    s_state.rewind_states.pop_back();
+  MemorySaveState& mss = PopMemoryState();
+  LoadMemoryState(mss, true);
 
   // back in time, need to reset perf counters
   PerformanceCounters::Reset();
@@ -4960,13 +5029,16 @@ void System::SetRewinding(bool enabled)
     s_state.rewind_load_counter = 0;
 
     if (!was_enabled && s_state.system_executing)
+    {
+      // Drop the save we just created, since we don't want to rewind to where we are.
+      PopMemoryState();
       s_state.system_interrupted = true;
+    }
   }
   else
   {
     s_state.rewind_load_frequency = -1;
     s_state.rewind_load_counter = -1;
-    s_state.rewinding_first_save = true;
   }
 }
 
@@ -4974,9 +5046,7 @@ void System::DoRewind()
 {
   if (s_state.rewind_load_counter == 0)
   {
-    const u32 skip_saves = BoolToUInt32(!s_state.rewinding_first_save);
-    s_state.rewinding_first_save = false;
-    LoadRewindState(skip_saves, false);
+    LoadOneRewindState();
     s_state.rewind_load_counter = s_state.rewind_load_frequency;
   }
   else
@@ -4994,20 +5064,9 @@ void System::DoRewind()
 void System::SaveRunaheadState()
 {
   // try to reuse the frontmost slot
-  MemorySaveState mss;
-  while (s_state.runahead_states.size() >= s_state.runahead_frames)
-  {
-    mss = std::move(s_state.runahead_states.front());
-    s_state.runahead_states.pop_front();
-  }
-
-  if (!SaveMemoryState(&mss))
-  {
-    ERROR_LOG("Failed to save runahead state.");
-    return;
-  }
-
-  s_state.runahead_states.push_back(std::move(mss));
+  MemorySaveState& mss = AllocateMemoryState();
+  if (!SaveMemoryState(mss))
+    PopMemoryState();
 }
 
 bool System::DoRunahead()
@@ -5019,23 +5078,22 @@ bool System::DoRunahead()
   if (s_state.runahead_replay_pending)
   {
 #ifdef PROFILE_MEMORY_SAVE_STATES
-    DEV_LOG("runahead starting at frame {}", s_state.frame_number);
+    DEBUG_LOG("runahead starting at frame {}", s_state.frame_number);
     replay_timer.Reset();
 #endif
 
     // we need to replay and catch up - load the state,
     s_state.runahead_replay_pending = false;
-    if (s_state.runahead_states.empty() || !LoadMemoryState(s_state.runahead_states.front()))
-    {
-      s_state.runahead_states.clear();
+    if (s_state.memory_save_state_count == 0)
       return false;
-    }
+
+    LoadMemoryState(GetFirstMemoryState(), false);
 
     // figure out how many frames we need to run to catch up
-    s_state.runahead_replay_frames = static_cast<u32>(s_state.runahead_states.size());
+    s_state.runahead_replay_frames = s_state.memory_save_state_count;
 
     // and throw away all the states, forcing us to catch up below
-    s_state.runahead_states.clear();
+    ClearMemorySaveStates(false);
 
     // run the frames with no audio
     SPU::SetAudioOutputMuted(true);
@@ -5080,7 +5138,7 @@ bool System::DoRunahead()
 
 void System::SetRunaheadReplayFlag()
 {
-  if (s_state.runahead_frames == 0 || s_state.runahead_states.empty())
+  if (s_state.runahead_frames == 0 || s_state.memory_save_state_count == 0)
     return;
 
 #ifdef PROFILE_MEMORY_SAVE_STATES
@@ -5140,7 +5198,7 @@ bool System::UndoLoadState()
   Assert(IsValid());
 
   Error error;
-  if (!LoadStateFromBuffer(s_state.undo_load_state.value(), &error, true))
+  if (!LoadStateFromBuffer(s_state.undo_load_state.value(), &error, IsPaused()))
   {
     Host::ReportErrorAsync("Error",
                            fmt::format("Failed to load undo state, resetting system:\n", error.GetDescription()));
