@@ -171,8 +171,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   enable_discord_presence = si.GetBoolValue("Main", "EnableDiscordPresence", false);
   rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
   rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
-  rewind_save_slots = static_cast<u8>(si.GetUIntValue("Main", "RewindSaveSlots", 10u));
-  runahead_frames = static_cast<u8>(si.GetUIntValue("Main", "RunaheadFrameCount", 0u));
+  rewind_save_slots = static_cast<u16>(std::min(si.GetUIntValue("Main", "RewindSaveSlots", 10u), 65535u));
+  runahead_frames = static_cast<u8>(std::min(si.GetUIntValue("Main", "RunaheadFrameCount", 0u), 255u));
 
   cpu_execution_mode =
     ParseCPUExecutionMode(

@@ -91,7 +91,7 @@ struct Settings
 
   bool rewind_enable : 1 = false;
   float rewind_save_frequency = 10.0f;
-  u8 rewind_save_slots = 10;
+  u16 rewind_save_slots = 10;
   u8 runahead_frames = 0;
 
   GPURenderer gpu_renderer = DEFAULT_GPU_RENDERER;
