@@ -9,7 +9,7 @@
 #include "gpu_sw_rasterizer.h"
 #include "host.h"
 #include "settings.h"
-#include "system.h"
+#include "system_private.h"
 
 #include "util/imgui_manager.h"
 #include "util/postprocessing.h"
@@ -315,14 +315,16 @@ void GPU_HW::Reset(bool clear_vram)
     ClearFramebuffer();
 }
 
-bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display)
+bool GPU_HW::DoState(StateWrapper& sw, bool update_display)
 {
+  FlushRender();
+
   // Need to download local VRAM copy before calling the base class, because it serializes this.
   if (m_sw_renderer)
   {
     m_sw_renderer->Sync(true);
   }
-  else if (sw.IsWriting() && !host_texture)
+  else if (sw.IsWriting())
   {
     // If SW renderer readbacks aren't enabled, the CLUT won't be populated, which means it'll be invalid if the user
     // loads this state with software instead of hardware renderers. So force-update the CLUT.
@@ -331,65 +333,107 @@ bool GPU_HW::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
       GPU::ReadCLUT(g_gpu_clut, GPUTexturePaletteReg{Truncate16(m_current_clut_reg_bits)}, m_current_clut_is_8bit);
   }
 
-  if (!GPU::DoState(sw, host_texture, update_display))
+  if (!GPU::DoState(sw, false))
     return false;
 
-  if (host_texture)
+  if (sw.IsReading())
   {
-    GPUTexture* tex = *host_texture;
-    if (sw.IsReading())
-    {
-      if (tex->GetWidth() != m_vram_texture->GetWidth() || tex->GetHeight() != m_vram_texture->GetHeight() ||
-          tex->GetSamples() != m_vram_texture->GetSamples())
-      {
-        return false;
-      }
+    // Wipe out state.
+    m_batch = {};
+    m_current_depth = 1;
+    SetClampedDrawingArea();
 
-      g_gpu_device->CopyTextureRegion(m_vram_texture.get(), 0, 0, 0, 0, tex, 0, 0, 0, 0, tex->GetWidth(),
-                                      tex->GetHeight());
-    }
-    else
-    {
-      if (!tex || tex->GetWidth() != m_vram_texture->GetWidth() || tex->GetHeight() != m_vram_texture->GetHeight() ||
-          tex->GetSamples() != m_vram_texture->GetSamples())
-      {
-        delete tex;
-
-        // We copy to/from the save state texture, but we can't have multisampled non-RTs.
-        tex = g_gpu_device
-                ->FetchTexture(
-                  m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
-                  m_vram_texture->IsMultisampled() ? GPUTexture::Type::RenderTarget : GPUTexture::Type::Texture,
-                  GPUTexture::Format::RGBA8, GPUTexture::Flags::None)
-                .release();
-        *host_texture = tex;
-        if (!tex)
-          return false;
-      }
-
-      g_gpu_device->CopyTextureRegion(tex, 0, 0, 0, 0, m_vram_texture.get(), 0, 0, 0, 0, tex->GetWidth(),
-                                      tex->GetHeight());
-    }
-  }
-  else if (sw.IsReading())
-  {
     // Need to update the VRAM copy on the GPU with the state data.
     // Would invalidate the TC, but base DoState() calls Reset().
     UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
-  }
 
-  // invalidate the whole VRAM read texture when loading state
-  if (sw.IsReading())
-  {
+    // invalidate the whole VRAM read texture when loading state
     DebugAssert(!m_batch_vertex_ptr && !m_batch_index_ptr);
     ClearVRAMDirtyRectangle();
     SetFullVRAMDirtyRectangle();
     UpdateVRAMReadTexture(true, false);
     ClearVRAMDirtyRectangle();
     ResetBatchVertexDepth();
+
+    // refresh display, has to be done here because of the upload above
+    if (update_display)
+      UpdateDisplay();
   }
 
   return GPUTextureCache::DoState(sw, !m_use_texture_cache);
+}
+
+bool GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool update_display)
+{
+  // sw-for-readbacks just makes a mess here
+  if (m_sw_renderer)
+    m_sw_renderer->Sync(true);
+  if (m_sw_renderer || m_use_texture_cache)
+    sw.DoBytes(g_vram, VRAM_WIDTH * VRAM_HEIGHT * sizeof(u16));
+
+  // This could be faster too.
+  if (m_use_texture_cache)
+    GPUTextureCache::DoState(sw, m_use_texture_cache);
+
+  // Base class never fails.
+  GPU::DoMemoryState(sw, mss, false);
+
+  if (sw.IsReading())
+  {
+    if (m_batch_vertex_ptr)
+      UnmapGPUBuffer(0, 0);
+
+    DebugAssert(mss.vram_texture->GetWidth() == m_vram_texture->GetWidth() &&
+                mss.vram_texture->GetHeight() == m_vram_texture->GetHeight() &&
+                mss.vram_texture->GetSamples() == m_vram_texture->GetSamples());
+    g_gpu_device->CopyTextureRegion(m_vram_texture.get(), 0, 0, 0, 0, mss.vram_texture.get(), 0, 0, 0, 0,
+                                    m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+
+    // Wipe out state.
+    DebugAssert(!m_batch_vertex_ptr && !m_batch_index_ptr);
+    m_batch = {};
+    SetClampedDrawingArea();
+    ClearVRAMDirtyRectangle();
+    SetFullVRAMDirtyRectangle();
+    UpdateVRAMReadTexture(true, false);
+    ClearVRAMDirtyRectangle();
+    ResetBatchVertexDepth();
+
+    if (update_display)
+      UpdateDisplay();
+  }
+  else
+  {
+    FlushRender();
+
+    // saving state
+    if (!mss.vram_texture || mss.vram_texture->GetWidth() != m_vram_texture->GetWidth() ||
+        mss.vram_texture->GetHeight() != m_vram_texture->GetHeight() ||
+        mss.vram_texture->GetSamples() != m_vram_texture->GetSamples()) [[unlikely]]
+    {
+      g_gpu_device->RecycleTexture(std::move(mss.vram_texture));
+      mss.vram_texture.reset();
+    }
+    if (!mss.vram_texture)
+    {
+      // We copy to/from the save state texture, but we can't have multisampled non-RTs.
+      Error error;
+      mss.vram_texture = g_gpu_device->FetchTexture(
+        m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
+        m_vram_texture->IsMultisampled() ? GPUTexture::Type::RenderTarget : GPUTexture::Type::Texture,
+        GPUTexture::Format::RGBA8, GPUTexture::Flags::None);
+      if (!mss.vram_texture) [[unlikely]]
+      {
+        ERROR_LOG("Failed to allocate VRAM texture for memory save state: {}", error.GetDescription());
+        return false;
+      }
+    }
+
+    g_gpu_device->CopyTextureRegion(mss.vram_texture.get(), 0, 0, 0, 0, m_vram_texture.get(), 0, 0, 0, 0,
+                                    m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+  }
+
+  return true;
 }
 
 void GPU_HW::RestoreDeviceContext()

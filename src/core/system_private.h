@@ -17,13 +17,15 @@ struct MemorySaveState
   size_t state_size;
 };
 
-bool SaveMemoryState(MemorySaveState* mss);
-bool LoadMemoryState(const MemorySaveState& mss);
+MemorySaveState& AllocateMemoryState();
+MemorySaveState& GetFirstMemoryState();
+MemorySaveState& PopMemoryState();
+void FreeMemoryStateStorage();
+void LoadMemoryState(MemorySaveState& mss, bool update_display);
+bool SaveMemoryState(MemorySaveState& mss);
 
 /// Returns the maximum size of a save state, considering the current configuration.
 size_t GetMaxSaveStateSize();
-
-bool DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_display, bool is_memory_state);
 
 void IncrementFrameNumber();
 void IncrementInternalFrameNumber();
