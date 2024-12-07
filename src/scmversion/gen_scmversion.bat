@@ -1,10 +1,12 @@
 @echo off
 
 SET VERSIONFILE="scmversion.cpp"
+PUSHD %~dp0
 FOR /F "tokens=* USEBACKQ" %%g IN (`git rev-parse HEAD`) do (SET "HASH=%%g")
 FOR /F "tokens=* USEBACKQ" %%g IN (`git rev-parse --abbrev-ref HEAD`) do (SET "BRANCH=%%g")
 FOR /F "tokens=* USEBACKQ" %%g IN (`git describe --dirty`) do (SET "TAG=%%g")
 FOR /F "tokens=* USEBACKQ" %%g IN (`git log -1 --date=iso8601-strict "--format=%%cd"`) do (SET "CDATE=%%g")
+POPD
 
 SET SIGNATURELINE=// %HASH% %BRANCH% %TAG% %CDATE%
 SET /P EXISTINGLINE=< %VERSIONFILE%
