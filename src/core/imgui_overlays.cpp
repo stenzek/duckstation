@@ -1277,7 +1277,7 @@ void SaveStateSelectorUI::SaveCurrentSlot()
   if (std::string path = GetCurrentSlotPath(); !path.empty())
   {
     Error error;
-    if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups))
+    if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups, false))
     {
       Host::AddIconOSDMessage("SaveState", ICON_EMOJI_WARNING,
                               fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),

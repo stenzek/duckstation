@@ -256,7 +256,7 @@ void ResetSystem();
 
 /// Loads state from the specified path.
 bool LoadState(const char* path, Error* error, bool save_undo_state);
-bool SaveState(const char* path, Error* error, bool backup_existing_save);
+bool SaveState(const char* path, Error* error, bool backup_existing_save, bool ignore_memcard_busy);
 bool SaveResumeState(Error* error);
 
 /// Runs the VM until the CPU execution is canceled.
