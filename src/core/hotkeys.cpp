@@ -111,7 +111,7 @@ static void HotkeySaveStateSlot(bool global, s32 slot)
   std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
                             System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
   Error error;
-  if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups))
+  if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups, false))
   {
     Host::AddIconOSDMessage(
       "SaveState", ICON_FA_EXCLAMATION_TRIANGLE,

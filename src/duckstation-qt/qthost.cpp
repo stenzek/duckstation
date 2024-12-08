@@ -1412,7 +1412,7 @@ void EmuThread::saveState(const QString& filename, bool block_until_done /* = fa
     return;
 
   Error error;
-  if (!System::SaveState(filename.toUtf8().data(), &error, g_settings.create_save_state_backups))
+  if (!System::SaveState(filename.toUtf8().data(), &error, g_settings.create_save_state_backups, false))
     emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
 }
 
@@ -1432,7 +1432,7 @@ void EmuThread::saveState(bool global, qint32 slot, bool block_until_done /* = f
   if (!System::SaveState((global ? System::GetGlobalSaveStateFileName(slot) :
                                    System::GetGameSaveStateFileName(System::GetGameSerial(), slot))
                            .c_str(),
-                         &error, g_settings.create_save_state_backups))
+                         &error, g_settings.create_save_state_backups, false))
   {
     emit errorReported(tr("Error"), tr("Failed to save state: %1").arg(QString::fromStdString(error.GetDescription())));
   }

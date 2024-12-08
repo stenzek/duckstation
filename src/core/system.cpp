@@ -1664,7 +1664,7 @@ bool System::SaveResumeState(Error* error)
   }
 
   const std::string path(GetGameSaveStateFileName(s_state.running_game_serial, -1));
-  return SaveState(path.c_str(), error, false);
+  return SaveState(path.c_str(), error, false, true);
 }
 
 bool System::BootSystem(SystemBootParameters parameters, Error* error)
@@ -3010,14 +3010,14 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
   }
 }
 
-bool System::SaveState(const char* path, Error* error, bool backup_existing_save)
+bool System::SaveState(const char* path, Error* error, bool backup_existing_save, bool ignore_memcard_busy)
 {
   if (!IsValid() || IsReplayingGPUDump())
   {
     Error::SetStringView(error, TRANSLATE_SV("System", "System is not in correct state."));
     return false;
   }
-  else if (IsSavingMemoryCards())
+  else if (!ignore_memcard_busy && IsSavingMemoryCards())
   {
     Error::SetStringView(error, TRANSLATE_SV("System", "Cannot save state while memory card is being saved."));
     return false;

@@ -6535,7 +6535,7 @@ void FullscreenUI::DoSaveState(s32 slot, bool global)
     std::string filename(global ? System::GetGlobalSaveStateFileName(slot) :
                                   System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
     Error error;
-    if (!System::SaveState(filename.c_str(), &error, g_settings.create_save_state_backups))
+    if (!System::SaveState(filename.c_str(), &error, g_settings.create_save_state_backups, false))
     {
       ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error.GetDescription()));
     }
