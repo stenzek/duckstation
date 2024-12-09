@@ -72,10 +72,6 @@ public:
 #define FSUI_NSTR(str) str
 
 using ImGuiFullscreen::FocusResetType;
-using ImGuiFullscreen::g_large_font;
-using ImGuiFullscreen::g_layout_padding_left;
-using ImGuiFullscreen::g_layout_padding_top;
-using ImGuiFullscreen::g_medium_font;
 using ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
@@ -85,21 +81,7 @@ using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
 using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
-using ImGuiFullscreen::UIBackgroundColor;
-using ImGuiFullscreen::UIBackgroundHighlightColor;
-using ImGuiFullscreen::UIBackgroundLineColor;
-using ImGuiFullscreen::UIBackgroundTextColor;
-using ImGuiFullscreen::UIDisabledColor;
-using ImGuiFullscreen::UIPrimaryColor;
-using ImGuiFullscreen::UIPrimaryDarkColor;
-using ImGuiFullscreen::UIPrimaryLightColor;
-using ImGuiFullscreen::UIPrimaryLineColor;
-using ImGuiFullscreen::UIPrimaryTextColor;
-using ImGuiFullscreen::UISecondaryColor;
-using ImGuiFullscreen::UISecondaryStrongColor;
-using ImGuiFullscreen::UISecondaryTextColor;
-using ImGuiFullscreen::UISecondaryWeakColor;
-using ImGuiFullscreen::UITextHighlightColor;
+using ImGuiFullscreen::UIStyle;
 
 using ImGuiFullscreen::ActiveButton;
 using ImGuiFullscreen::AddNotification;
@@ -331,33 +313,34 @@ static void DoSaveInputProfile(const std::string& name);
 
 static bool DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                               const char* key, bool default_value, bool enabled = true, bool allow_tristate = true,
-                              float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                              ImFont* summary_font = g_medium_font);
+                              float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                              ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 static void DrawIntListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                const char* key, int default_value, const char* const* options, size_t option_count,
                                bool translate_options, int option_offset = 0, bool enabled = true,
-                               float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                               ImFont* summary_font = g_medium_font, const char* tr_context = TR_CONTEXT);
+                               float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                               ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
+                               const char* tr_context = TR_CONTEXT);
 static void DrawIntRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                 const char* key, int default_value, int min_value, int max_value,
                                 const char* format = "%d", bool enabled = true,
-                                float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                                ImFont* summary_font = g_medium_font);
+                                float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                                ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 static void DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                   const char* key, int default_value, int min_value, int max_value, int step_value,
                                   const char* format = "%d", bool enabled = true,
                                   float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                                  ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                                  ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 static void DrawFloatRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                   const char* key, float default_value, float min_value, float max_value,
                                   const char* format = "%f", float multiplier = 1.0f, bool enabled = true,
                                   float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                                  ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                                  ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 static void DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                     const char* key, float default_value, float min_value, float max_value,
                                     float step_value, float multiplier, const char* format = "%f", bool enabled = true,
                                     float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                                    ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                                    ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 #if 0
 static void DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                const char* left_key, int default_left, const char* top_key, int default_top,
@@ -378,15 +361,15 @@ static void DrawEnumSetting(SettingsInterface* bsi, const char* title, const cha
                             const char* (*to_string_function)(DataType value),
                             const char* (*to_display_string_function)(DataType value), SizeType option_count,
                             bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                            ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                            ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 static void DrawFloatListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                  const char* key, float default_value, const char* const* options,
                                  const float* option_values, size_t option_count, bool translate_options,
                                  bool enabled = true, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                                 ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                                 ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const char* section, const char* key,
                               const std::string& runtime_var, float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                              ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                              ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
@@ -1293,14 +1276,14 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
   *menu_pos = ImVec2(0.0f, heading_size.y);
   *menu_size = ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT));
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading", UIPrimaryColor))
+  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading", UIStyle.PrimaryColor))
   {
-    ImFont* const heading_font = g_large_font;
+    ImFont* const heading_font = UIStyle.LargeFont;
     ImDrawList* const dl = ImGui::GetWindowDrawList();
     SmallString heading_str;
 
     ImGui::PushFont(heading_font);
-    ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
+    ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
 
     // draw branding
     {
@@ -1361,7 +1344,7 @@ void FullscreenUI::DrawLandingWindow()
   ImVec2 menu_pos, menu_size;
   DrawLandingTemplate(&menu_pos, &menu_size);
 
-  ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
   if (BeginHorizontalMenu("landing_window", menu_pos, menu_size, 4))
   {
@@ -1433,7 +1416,7 @@ void FullscreenUI::DrawStartGameWindow()
   ImVec2 menu_pos, menu_size;
   DrawLandingTemplate(&menu_pos, &menu_size);
 
-  ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
   if (BeginHorizontalMenu("start_game_window", menu_pos, menu_size, 4))
   {
@@ -1497,7 +1480,7 @@ void FullscreenUI::DrawExitWindow()
   ImVec2 menu_pos, menu_size;
   DrawLandingTemplate(&menu_pos, &menu_size);
 
-  ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
   if (BeginHorizontalMenu("exit_window", menu_pos, menu_size, 3))
   {
@@ -1687,11 +1670,11 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     }
   }
 
-  const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
+  const float midpoint = bb.Min.y + UIStyle.LargeFont->FontSize + LayoutScale(4.0f);
 
   if (oneline)
   {
-    ImGui::PushFont(g_large_font);
+    ImGui::PushFont(UIStyle.LargeFont);
 
     const ImVec2 value_size(ImGui::CalcTextSize(value.empty() ? FSUI_CSTR("-") : value.c_str(), nullptr));
     const float text_end = bb.Max.x - value_size.x;
@@ -1708,12 +1691,12 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
     const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
-    ImGui::PushFont(g_large_font);
+    ImGui::PushFont(UIStyle.LargeFont);
     ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, show_type ? title.c_str() : display_name, nullptr, nullptr,
                              ImVec2(0.0f, 0.0f), &title_bb);
     ImGui::PopFont();
 
-    ImGui::PushFont(g_medium_font);
+    ImGui::PushFont(UIStyle.MediumFont);
     ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, value.empty() ? FSUI_CSTR("No Binding") : value.c_str(),
                              nullptr, nullptr, ImVec2(0.0f, 0.0f), &summary_bb);
     ImGui::PopFont();
@@ -1849,7 +1832,7 @@ void FullscreenUI::DrawInputBindingWindow()
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(title);
 
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -1983,7 +1966,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -2010,7 +1993,7 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
     }
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                  ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
@@ -2041,7 +2024,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -2071,7 +2054,7 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
     }
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                  ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
@@ -2107,7 +2090,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -2154,27 +2137,27 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
       // Align value text in middle.
       ImGui::SetCursorPosY(
         button_pos.y +
-        ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+        ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFont->FontSize) * 0.5f);
       ImGui::TextUnformatted(str_value);
 
       float step = 0;
-      if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font,
+      if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, UIStyle.LargeFont,
                          &button_pos, true))
       {
         step = step_value;
       }
       if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         g_large_font, &button_pos, true))
+                         UIStyle.LargeFont, &button_pos, true))
       {
         step = -step_value;
       }
       if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         g_large_font, &button_pos))
+                         UIStyle.LargeFont, &button_pos))
       {
         manual_input = true;
       }
       if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         g_large_font, &button_pos))
+                         UIStyle.LargeFont, &button_pos))
       {
         dlg_value = default_value * multiplier;
         dlg_value_changed = true;
@@ -2201,7 +2184,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
       SetSettingsChanged(bsi);
     }
 
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                  ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
@@ -2359,7 +2342,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -2400,27 +2383,27 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
       // Align value text in middle.
       ImGui::SetCursorPosY(
         button_pos.y +
-        ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+        ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFont->FontSize) * 0.5f);
       ImGui::TextUnformatted(str_value);
 
       s32 step = 0;
-      if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font,
+      if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, UIStyle.LargeFont,
                          &button_pos, true))
       {
         step = step_value;
       }
       if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         g_large_font, &button_pos, true))
+                         UIStyle.LargeFont, &button_pos, true))
       {
         step = -step_value;
       }
       if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         g_large_font, &button_pos))
+                         UIStyle.LargeFont, &button_pos))
       {
         manual_input = true;
       }
       if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         g_large_font, &button_pos))
+                         UIStyle.LargeFont, &button_pos))
       {
         dlg_value = default_value;
         dlg_value_changed = true;
@@ -2447,7 +2430,7 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
       SetSettingsChanged(bsi);
     }
 
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                  ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
@@ -2860,7 +2843,7 @@ void FullscreenUI::DrawSettingsWindow()
   const float bg_alpha = System::IsValid() ? (s_settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
 
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
-                            ImVec4(UIPrimaryColor.x, UIPrimaryColor.y, UIPrimaryColor.z, bg_alpha)))
+                            ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z, bg_alpha)))
   {
     static constexpr float ITEM_WIDTH = 25.0f;
 
@@ -2959,7 +2942,7 @@ void FullscreenUI::DrawSettingsWindow()
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
         TinyString::from_format("settings_page_{}", static_cast<u32>(s_settings_page)).c_str(),
-        ImVec4(UIBackgroundColor.x, UIBackgroundColor.y, UIBackgroundColor.z, bg_alpha), 0.0f,
+        ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z, bg_alpha), 0.0f,
         ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
   {
     ResetFocusHere();
@@ -3597,7 +3580,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
                                "system requirements.");
   }
 
-  ActiveButton(rewind_summary, false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font);
+  ActiveButton(rewind_summary, false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont);
 
   EndMenuButtons();
 }
@@ -3986,7 +3969,7 @@ void FullscreenUI::DrawControllerSettingsPage()
       ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
       ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-      ImGui::PushFont(g_large_font);
+      ImGui::PushFont(UIStyle.LargeFont);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -4039,8 +4022,8 @@ void FullscreenUI::DrawControllerSettingsPage()
             break;
           case SettingInfo::Type::IntegerList:
             DrawIntListSetting(bsi, title, description, section.c_str(), si.name, si.IntegerDefaultValue(), si.options,
-                               0, true, si.IntegerMinValue(), true, LAYOUT_MENU_BUTTON_HEIGHT, g_large_font,
-                               g_medium_font, ci->name);
+                               0, true, si.IntegerMinValue(), true, LAYOUT_MENU_BUTTON_HEIGHT, UIStyle.LargeFont,
+                               UIStyle.MediumFont, ci->name);
             break;
           case SettingInfo::Type::Float:
             DrawFloatSpinBoxSetting(bsi, title, description, section.c_str(), si.name, si.FloatDefaultValue(),
@@ -4583,7 +4566,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   MenuHeading(FSUI_CSTR("Texture Replacements"));
 
   ActiveButton(FSUI_CSTR("The texture cache is currently experimental, and may cause rendering errors in some games."),
-               false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font);
+               false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont);
 
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ID_BADGE, "Enable Texture Cache"),
                     FSUI_CSTR("Enables caching of guest textures, required for texture replacement."), "GPU",
@@ -4791,7 +4774,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
           ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-          ImGui::PushFont(g_large_font);
+          ImGui::PushFont(UIStyle.LargeFont);
           ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -4864,7 +4847,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 #endif
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-            if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+            if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                          ImVec2(0.5f, 0.0f)))
             {
               ImGui::CloseCurrentPopup();
@@ -4890,7 +4873,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
           ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-          ImGui::PushFont(g_large_font);
+          ImGui::PushFont(UIStyle.LargeFont);
           ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -4962,7 +4945,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 #endif
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-            if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+            if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                          ImVec2(0.5f, 0.0f)))
             {
               ImGui::CloseCurrentPopup();
@@ -5226,7 +5209,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(UIStyle.LargeFont);
 
   const char* popup_title = FSUI_CSTR("RetroAchievements Login");
   bool popup_closed = false;
@@ -5482,7 +5465,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
       ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
       ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-      ImGui::PushFont(g_large_font);
+      ImGui::PushFont(UIStyle.LargeFont);
       ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -5501,24 +5484,24 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
         ImVec2 button_pos(ImGui::GetCursorPos());
 
         // Align value text in middle.
-        ImGui::SetCursorPosY(
-          button_pos.y +
-          ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - g_large_font->FontSize) * 0.5f);
+        ImGui::SetCursorPosY(button_pos.y + ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) -
+                                             UIStyle.LargeFont->FontSize) *
+                                              0.5f);
         ImGui::TextUnformatted(visible_value.c_str(), visible_value.end_ptr());
 
         s32 step = 0;
-        if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, g_large_font,
-                           &button_pos, true))
+        if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true,
+                           UIStyle.LargeFont, &button_pos, true))
         {
           step = step_value;
         }
         if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f,
-                           true, g_large_font, &button_pos, true))
+                           true, UIStyle.LargeFont, &button_pos, true))
         {
           step = -step_value;
         }
         if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                           g_large_font, &button_pos))
+                           UIStyle.LargeFont, &button_pos))
         {
           range_value = ci.option_range_start - 1;
           range_value_changed = true;
@@ -5555,7 +5538,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
           SetSettingsChanged(bsi);
         }
 
-        if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font,
+        if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                      ImVec2(0.5f, 0.0f)))
         {
           ImGui::CloseCurrentPopup();
@@ -5679,9 +5662,9 @@ void FullscreenUI::DrawPauseMenu()
 
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
   const ImVec2 display_size(ImGui::GetIO().DisplaySize);
-  const ImU32 text_color = ImGui::GetColorU32(UIBackgroundTextColor) | IM_COL32_A_MASK;
+  const ImU32 text_color = ImGui::GetColorU32(UIStyle.BackgroundTextColor) | IM_COL32_A_MASK;
   dl->AddRectFilled(ImVec2(0.0f, 0.0f), display_size,
-                    (ImGui::GetColorU32(UIBackgroundColor) & ~IM_COL32_A_MASK) | (200 << IM_COL32_A_SHIFT));
+                    (ImGui::GetColorU32(UIStyle.BackgroundColor) & ~IM_COL32_A_MASK) | (200 << IM_COL32_A_SHIFT));
 
   // title info
   {
@@ -5695,15 +5678,15 @@ void FullscreenUI::DrawPauseMenu()
     const float image_width = 60.0f;
     const float image_height = 60.0f;
 
-    const ImVec2 title_size(
-      g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f, title.c_str()));
-    const ImVec2 subtitle_size(
-      g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer.c_str()));
+    const ImVec2 title_size(UIStyle.LargeFont->CalcTextSizeA(UIStyle.LargeFont->FontSize,
+                                                             std::numeric_limits<float>::max(), -1.0f, title.c_str()));
+    const ImVec2 subtitle_size(UIStyle.MediumFont->CalcTextSizeA(
+      UIStyle.MediumFont->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer.c_str()));
 
     ImVec2 title_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - title_size.x,
                      display_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - LayoutScale(10.0f + image_height));
     ImVec2 subtitle_pos(display_size.x - LayoutScale(10.0f + image_width + 20.0f) - subtitle_size.x,
-                        title_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
+                        title_pos.y + UIStyle.LargeFont->FontSize + LayoutScale(4.0f));
 
     float rp_height = 0.0f;
     {
@@ -5713,24 +5696,25 @@ void FullscreenUI::DrawPauseMenu()
       if (!rp.empty())
       {
         const float wrap_width = LayoutScale(350.0f);
-        const ImVec2 rp_size = g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
-                                                            wrap_width, rp.data(), rp.data() + rp.length());
+        const ImVec2 rp_size =
+          UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, std::numeric_limits<float>::max(), wrap_width,
+                                            rp.data(), rp.data() + rp.length());
 
         // Add a small extra gap if any Rich Presence is displayed
-        rp_height = rp_size.y - g_medium_font->FontSize + LayoutScale(2.0f);
+        rp_height = rp_size.y - UIStyle.MediumFont->FontSize + LayoutScale(2.0f);
 
         const ImVec2 rp_pos(display_size.x - LayoutScale(20.0f + 50.0f + 20.0f) - rp_size.x,
-                            subtitle_pos.y + g_medium_font->FontSize + LayoutScale(4.0f) - rp_height);
+                            subtitle_pos.y + UIStyle.MediumFont->FontSize + LayoutScale(4.0f) - rp_height);
 
         title_pos.y -= rp_height;
         subtitle_pos.y -= rp_height;
 
-        DrawShadowedText(dl, g_medium_font, rp_pos, text_color, rp.data(), rp.data() + rp.length(), wrap_width);
+        DrawShadowedText(dl, UIStyle.MediumFont, rp_pos, text_color, rp.data(), rp.data() + rp.length(), wrap_width);
       }
     }
 
-    DrawShadowedText(dl, g_large_font, title_pos, text_color, title.c_str());
-    DrawShadowedText(dl, g_medium_font, subtitle_pos, text_color, buffer.c_str());
+    DrawShadowedText(dl, UIStyle.LargeFont, title_pos, text_color, title.c_str());
+    DrawShadowedText(dl, UIStyle.MediumFont, subtitle_pos, text_color, buffer.c_str());
 
     GPUTexture* const cover = GetCoverForCurrentGame();
     const ImVec2 image_min(display_size.x - LayoutScale(10.0f + image_width),
@@ -5746,10 +5730,10 @@ void FullscreenUI::DrawPauseMenu()
   {
     buffer.format("{:%X}", fmt::localtime(std::time(nullptr)));
 
-    const ImVec2 time_size(g_large_font->CalcTextSizeA(g_large_font->FontSize, std::numeric_limits<float>::max(), -1.0f,
-                                                       buffer.c_str(), buffer.end_ptr()));
+    const ImVec2 time_size(UIStyle.LargeFont->CalcTextSizeA(
+      UIStyle.LargeFont->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer.c_str(), buffer.end_ptr()));
     const ImVec2 time_pos(display_size.x - LayoutScale(10.0f) - time_size.x, LayoutScale(10.0f));
-    DrawShadowedText(dl, g_large_font, time_pos, text_color, buffer.c_str(), buffer.end_ptr());
+    DrawShadowedText(dl, UIStyle.LargeFont, time_pos, text_color, buffer.c_str(), buffer.end_ptr());
 
     const std::string& serial = System::GetGameSerial();
     if (!serial.empty())
@@ -5758,18 +5742,18 @@ void FullscreenUI::DrawPauseMenu()
       const std::time_t session_time = static_cast<std::time_t>(System::GetSessionPlayedTime());
 
       buffer.format(FSUI_FSTR("Session: {}"), GameList::FormatTimespan(session_time, true));
-      const ImVec2 session_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
-                                                             -1.0f, buffer.c_str(), buffer.end_ptr()));
+      const ImVec2 session_size(UIStyle.MediumFont->CalcTextSizeA(
+        UIStyle.MediumFont->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer.c_str(), buffer.end_ptr()));
       const ImVec2 session_pos(display_size.x - LayoutScale(10.0f) - session_size.x,
-                               time_pos.y + g_large_font->FontSize + LayoutScale(4.0f));
-      DrawShadowedText(dl, g_medium_font, session_pos, text_color, buffer.c_str(), buffer.end_ptr());
+                               time_pos.y + UIStyle.LargeFont->FontSize + LayoutScale(4.0f));
+      DrawShadowedText(dl, UIStyle.MediumFont, session_pos, text_color, buffer.c_str(), buffer.end_ptr());
 
       buffer.format(FSUI_FSTR("All Time: {}"), GameList::FormatTimespan(cached_played_time + session_time, true));
-      const ImVec2 total_size(g_medium_font->CalcTextSizeA(g_medium_font->FontSize, std::numeric_limits<float>::max(),
-                                                           -1.0f, buffer.c_str(), buffer.end_ptr()));
+      const ImVec2 total_size(UIStyle.MediumFont->CalcTextSizeA(
+        UIStyle.MediumFont->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer.c_str(), buffer.end_ptr()));
       const ImVec2 total_pos(display_size.x - LayoutScale(10.0f) - total_size.x,
-                             session_pos.y + g_medium_font->FontSize + LayoutScale(4.0f));
-      DrawShadowedText(dl, g_medium_font, total_pos, text_color, buffer.c_str(), buffer.end_ptr());
+                             session_pos.y + UIStyle.MediumFont->FontSize + LayoutScale(4.0f));
+      DrawShadowedText(dl, UIStyle.MediumFont, total_pos, text_color, buffer.c_str(), buffer.end_ptr());
     }
   }
 
@@ -6109,7 +6093,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIPrimaryColor, 0.9f));
+  ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIStyle.PrimaryColor, 0.9f));
 
   bool closed = false;
   bool was_close_not_back = false;
@@ -6126,7 +6110,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
   }
 
   ImGui::PopStyleColor();
-  ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIBackgroundColor, 0.9f));
+  ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIStyle.BackgroundColor, 0.9f));
   ImGui::SetCursorPos(ImVec2(0.0f, heading_size.y));
 
   if (IsFocusResetFromWindowChange())
@@ -6149,8 +6133,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
     const float image_width = item_width - (style.FramePadding.x * 2.0f);
     const float image_height = image_width / 1.33f;
     const ImVec2 image_size(image_width, image_height);
-    const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_large_font->FontSize +
-                              summary_spacing + g_medium_font->FontSize;
+    const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing +
+                              UIStyle.LargeFont->FontSize + summary_spacing + UIStyle.MediumFont->FontSize;
     const ImVec2 item_size(item_width, item_height);
     const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetWindowWidth() / item_width_with_spacing));
     const float start_x =
@@ -6166,18 +6150,18 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
       {
         // can't use a choice dialog here, because we're already in a modal...
         ImGuiFullscreen::PushResetLayout();
-        ImGui::PushFont(g_large_font);
+        ImGui::PushFont(UIStyle.LargeFont);
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                             LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
         ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-        ImGui::PushStyleColor(ImGuiCol_Text, UIPrimaryTextColor);
-        ImGui::PushStyleColor(ImGuiCol_TitleBg, UIPrimaryDarkColor);
-        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIPrimaryColor);
+        ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
+        ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
+        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
 
         const float width = LayoutScale(600.0f);
-        const float title_height =
-          g_large_font->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
+        const float title_height = UIStyle.LargeFont->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f +
+                                   ImGui::GetStyle().WindowPadding.y * 2.0f;
         const float height =
           title_height +
           ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f)) *
@@ -6190,7 +6174,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
         if (ImGui::BeginPopupModal(entry.title.c_str(), &is_open,
                                    ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
         {
-          ImGui::PushStyleColor(ImGuiCol_Text, UIBackgroundTextColor);
+          ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
           BeginMenuButtons();
 
@@ -6305,17 +6289,17 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
                                              ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
         const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
-        const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + g_large_font->FontSize));
-        ImGui::PushFont(g_large_font);
+        const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + UIStyle.LargeFont->FontSize));
+        ImGui::PushFont(UIStyle.LargeFont);
         ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f),
                                  &title_bb);
         ImGui::PopFont();
 
         if (!entry.summary.empty())
         {
-          const ImVec2 summary_pos(bb.Min.x, title_pos.y + g_large_font->FontSize + summary_spacing);
-          const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + g_medium_font->FontSize));
-          ImGui::PushFont(g_medium_font);
+          const ImVec2 summary_pos(bb.Min.x, title_pos.y + UIStyle.LargeFont->FontSize + summary_spacing);
+          const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + UIStyle.MediumFont->FontSize));
+          ImGui::PushFont(UIStyle.MediumFont);
           ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, entry.summary.c_str(), nullptr, nullptr,
                                    ImVec2(0.0f, 0.0f), &summary_bb);
           ImGui::PopFont();
@@ -6413,7 +6397,7 @@ void FullscreenUI::DrawResumeStateSelector()
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(FSUI_CSTR("Load Resume State"));
 
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
@@ -6660,7 +6644,8 @@ void FullscreenUI::DrawGameListWindow()
 
   const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view", MulAlpha(UIPrimaryColor, bg_alpha)))
+  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
+                            MulAlpha(UIStyle.PrimaryColor, bg_alpha)))
   {
     static constexpr float ITEM_WIDTH = 25.0f;
     static constexpr const char* icons[] = {ICON_FA_BORDER_ALL, ICON_FA_LIST};
@@ -6784,19 +6769,19 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::GetWindowDrawList()->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
                                            ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
 
-      const float midpoint = bb.Min.y + g_large_font->FontSize + LayoutScale(4.0f);
+      const float midpoint = bb.Min.y + UIStyle.LargeFont->FontSize + LayoutScale(4.0f);
       const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
       const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
       const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
 
-      ImGui::PushFont(g_large_font);
+      ImGui::PushFont(UIStyle.LargeFont);
       ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry->title.c_str(),
                                entry->title.c_str() + entry->title.size(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
       ImGui::PopFont();
 
       if (!summary.empty())
       {
-        ImGui::PushFont(g_medium_font);
+        ImGui::PushFont(UIStyle.MediumFont);
         ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary.c_str(), summary.end_ptr(), nullptr,
                                  ImVec2(0.0f, 0.0f), &summary_bb);
         ImGui::PopFont();
@@ -6824,7 +6809,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   }
   EndFullscreenColumnWindow();
 
-  if (BeginFullscreenColumnWindow(-530.0f, 0.0f, "game_list_info", UIPrimaryDarkColor))
+  if (BeginFullscreenColumnWindow(-530.0f, 0.0f, "game_list_info", UIStyle.PrimaryDarkColor))
   {
     const GPUTexture* cover_texture =
       selected_entry ? GetGameListCover(selected_entry) : GetTextureForGameListEntryType(GameList::EntryType::Count);
@@ -6854,13 +6839,13 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     if (selected_entry)
     {
       // title
-      ImGui::PushFont(g_large_font);
+      ImGui::PushFont(UIStyle.LargeFont);
       text_width = ImGui::CalcTextSize(selected_entry->title.c_str(), nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
       ImGui::TextWrapped("%s", selected_entry->title.c_str());
       ImGui::PopFont();
 
-      ImGui::PushFont(g_medium_font);
+      ImGui::PushFont(UIStyle.MediumFont);
 
       // developer
       if (selected_entry->dbentry && !selected_entry->dbentry->developer.empty())
@@ -6936,7 +6921,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     {
       // title
       const char* title = FSUI_CSTR("No Game Selected");
-      ImGui::PushFont(g_large_font);
+      ImGui::PushFont(UIStyle.LargeFont);
       text_width = ImGui::CalcTextSize(title, nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
       ImGui::TextWrapped("%s", title);
@@ -6961,7 +6946,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   if (!BeginFullscreenWindow(
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)), "game_grid",
-        UIBackgroundColor))
+        UIStyle.BackgroundColor))
   {
     EndFullscreenWindow();
     return;
@@ -6982,7 +6967,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   const float image_width = item_width - (style.FramePadding.x * 2.0f);
   const float image_height = image_width;
   const ImVec2 image_size(image_width, image_height);
-  const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + g_medium_font->FontSize;
+  const float item_height = (style.FramePadding.y * 2.0f) + image_height + title_spacing + UIStyle.MediumFont->FontSize;
   const ImVec2 item_size(item_width, item_height);
   const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetWindowWidth() / item_width_with_spacing));
   const float start_x =
@@ -7034,7 +7019,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       const std::string_view title(
         std::string_view(entry->title).substr(0, (entry->title.length() > 31) ? 31 : std::string_view::npos));
       draw_title.format("{}{}", title, (title.length() == entry->title.length()) ? "" : "...");
-      ImGui::PushFont(g_medium_font);
+      ImGui::PushFont(UIStyle.MediumFont);
       ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.end_ptr(), nullptr,
                                ImVec2(0.5f, 0.0f), &title_bb);
       ImGui::PopFont();
@@ -7209,7 +7194,8 @@ void FullscreenUI::DrawGameListSettingsWindow()
 
   const float bg_alpha = System::IsValid() ? 0.90f : 1.0f;
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view", MulAlpha(UIPrimaryColor, bg_alpha)))
+  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
+                            MulAlpha(UIStyle.PrimaryColor, bg_alpha)))
   {
     BeginNavBar();
 
@@ -7228,7 +7214,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
   if (!BeginFullscreenWindow(
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
-        "settings_parent", UIBackgroundColor, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
+        "settings_parent", UIStyle.BackgroundColor, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
   {
     EndFullscreenWindow();
     return;
@@ -7471,7 +7457,7 @@ void FullscreenUI::DrawAboutWindow()
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(FSUI_CSTR("About DuckStation"));
 
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(30.0f, 30.0f));
 
