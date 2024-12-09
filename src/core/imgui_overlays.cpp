@@ -827,66 +827,76 @@ static std::string GetCurrentSlotPath();
 static constexpr const char* DATE_TIME_FORMAT =
   TRANSLATE_NOOP("SaveStateSelectorUI", "Saved at {0:%H:%M} on {0:%a} {0:%Y/%m/%d}.");
 
-static std::shared_ptr<GPUTexture> s_placeholder_texture;
+namespace {
 
-static std::string s_load_legend;
-static std::string s_save_legend;
-static std::string s_prev_legend;
-static std::string s_next_legend;
+struct ALIGN_TO_CACHE_LINE State
+{
+  std::shared_ptr<GPUTexture> placeholder_texture;
 
-static llvm::SmallVector<ListEntry, System::PER_GAME_SAVE_STATE_SLOTS + System::GLOBAL_SAVE_STATE_SLOTS> s_slots;
-static s32 s_current_slot = 0;
-static bool s_current_slot_global = false;
+  std::string load_legend;
+  std::string save_legend;
+  std::string prev_legend;
+  std::string next_legend;
 
-static float s_open_time = 0.0f;
-static float s_close_time = 0.0f;
+  llvm::SmallVector<ListEntry, System::PER_GAME_SAVE_STATE_SLOTS + System::GLOBAL_SAVE_STATE_SLOTS> slots;
+  s32 current_slot = 0;
+  bool current_slot_global = false;
 
-static ImAnimatedFloat s_scroll_animated;
-static ImAnimatedFloat s_background_animated;
+  float open_time = 0.0f;
+  float close_time = 0.0f;
 
-static bool s_open = false;
+  ImAnimatedFloat scroll_animated;
+  ImAnimatedFloat background_animated;
+
+  bool is_open = false;
+};
+
+} // namespace
+
+static State s_state;
+
 } // namespace SaveStateSelectorUI
 
 bool SaveStateSelectorUI::IsOpen()
 {
-  return s_open;
+  return s_state.is_open;
 }
 
 void SaveStateSelectorUI::Open(float open_time /* = DEFAULT_OPEN_TIME */)
 {
   const std::string& serial = System::GetGameSerial();
 
-  s_open_time = 0.0f;
-  s_close_time = open_time;
+  s_state.open_time = 0.0f;
+  s_state.close_time = open_time;
 
-  if (s_open)
+  if (s_state.is_open)
     return;
 
-  if (!s_placeholder_texture)
-    s_placeholder_texture = ImGuiFullscreen::LoadTexture("no-save.png");
+  if (!s_state.placeholder_texture)
+    s_state.placeholder_texture = ImGuiFullscreen::LoadTexture("no-save.png");
 
-  s_open = true;
+  s_state.is_open = true;
   RefreshList(serial);
   RefreshHotkeyLegend();
 }
 
 void SaveStateSelectorUI::Close()
 {
-  s_open = false;
-  s_load_legend = {};
-  s_save_legend = {};
-  s_prev_legend = {};
-  s_next_legend = {};
+  s_state.is_open = false;
+  s_state.load_legend = {};
+  s_state.save_legend = {};
+  s_state.prev_legend = {};
+  s_state.next_legend = {};
 }
 
 void SaveStateSelectorUI::RefreshList(const std::string& serial)
 {
-  for (ListEntry& entry : s_slots)
+  for (ListEntry& entry : s_state.slots)
   {
     if (entry.preview_texture)
       g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
   }
-  s_slots.clear();
+  s_state.slots.clear();
 
   if (System::IsShutdown())
     return;
@@ -904,16 +914,16 @@ void SaveStateSelectorUI::RefreshList(const std::string& serial)
       else
         InitializePlaceholderListEntry(&li, std::move(path), i, false);
 
-      s_slots.push_back(std::move(li));
+      s_state.slots.push_back(std::move(li));
     }
   }
   else
   {
     // reset slot if it's not global
-    if (!s_current_slot_global)
+    if (!s_state.current_slot_global)
     {
-      s_current_slot = 0;
-      s_current_slot_global = true;
+      s_state.current_slot = 0;
+      s_state.current_slot_global = true;
     }
   }
 
@@ -928,7 +938,7 @@ void SaveStateSelectorUI::RefreshList(const std::string& serial)
     else
       InitializePlaceholderListEntry(&li, std::move(path), i, true);
 
-    s_slots.push_back(std::move(li));
+    s_state.slots.push_back(std::move(li));
   }
 }
 
@@ -938,33 +948,33 @@ void SaveStateSelectorUI::Clear()
   // big picture UI, in which case we have to delete them here...
   ClearList();
 
-  s_current_slot = 0;
-  s_current_slot_global = false;
-  s_scroll_animated.Reset(0.0f);
-  s_background_animated.Reset(0.0f);
+  s_state.current_slot = 0;
+  s_state.current_slot_global = false;
+  s_state.scroll_animated.Reset(0.0f);
+  s_state.background_animated.Reset(0.0f);
 }
 
 void SaveStateSelectorUI::ClearList()
 {
-  for (ListEntry& li : s_slots)
+  for (ListEntry& li : s_state.slots)
   {
     if (li.preview_texture)
       g_gpu_device->RecycleTexture(std::move(li.preview_texture));
   }
-  s_slots.clear();
+  s_state.slots.clear();
 }
 
 void SaveStateSelectorUI::DestroyTextures()
 {
   Close();
 
-  for (ListEntry& entry : s_slots)
+  for (ListEntry& entry : s_state.slots)
   {
     if (entry.preview_texture)
       g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
   }
 
-  s_placeholder_texture.reset();
+  s_state.placeholder_texture.reset();
 }
 
 void SaveStateSelectorUI::RefreshHotkeyLegend()
@@ -974,33 +984,34 @@ void SaveStateSelectorUI::RefreshHotkeyLegend()
     return fmt::format("{} - {}", binding, caption);
   };
 
-  s_load_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
-                                      TRANSLATE_SV("SaveStateSelectorUI", "Load"));
-  s_save_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
-                                      TRANSLATE_SV("SaveStateSelectorUI", "Save"));
-  s_prev_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
-                                      TRANSLATE_SV("SaveStateSelectorUI", "Select Previous"));
-  s_next_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
-                                      TRANSLATE_SV("SaveStateSelectorUI", "Select Next"));
+  s_state.load_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "LoadSelectedSaveState"),
+                                            TRANSLATE_SV("SaveStateSelectorUI", "Load"));
+  s_state.save_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SaveSelectedSaveState"),
+                                            TRANSLATE_SV("SaveStateSelectorUI", "Save"));
+  s_state.prev_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SelectPreviousSaveStateSlot"),
+                                            TRANSLATE_SV("SaveStateSelectorUI", "Select Previous"));
+  s_state.next_legend = format_legend_entry(Host::GetSmallStringSettingValue("Hotkeys", "SelectNextSaveStateSlot"),
+                                            TRANSLATE_SV("SaveStateSelectorUI", "Select Next"));
 }
 
 void SaveStateSelectorUI::SelectNextSlot(bool open_selector)
 {
-  const s32 total_slots = s_current_slot_global ? System::GLOBAL_SAVE_STATE_SLOTS : System::PER_GAME_SAVE_STATE_SLOTS;
-  s_current_slot++;
-  if (s_current_slot >= total_slots)
+  const s32 total_slots =
+    s_state.current_slot_global ? System::GLOBAL_SAVE_STATE_SLOTS : System::PER_GAME_SAVE_STATE_SLOTS;
+  s_state.current_slot++;
+  if (s_state.current_slot >= total_slots)
   {
     if (!System::GetGameSerial().empty())
-      s_current_slot_global ^= true;
-    s_current_slot -= total_slots;
+      s_state.current_slot_global ^= true;
+    s_state.current_slot -= total_slots;
   }
 
   if (open_selector)
   {
-    if (!s_open)
+    if (!s_state.is_open)
       Open();
 
-    s_open_time = 0.0f;
+    s_state.open_time = 0.0f;
   }
   else
   {
@@ -1010,20 +1021,21 @@ void SaveStateSelectorUI::SelectNextSlot(bool open_selector)
 
 void SaveStateSelectorUI::SelectPreviousSlot(bool open_selector)
 {
-  s_current_slot--;
-  if (s_current_slot < 0)
+  s_state.current_slot--;
+  if (s_state.current_slot < 0)
   {
     if (!System::GetGameSerial().empty())
-      s_current_slot_global ^= true;
-    s_current_slot += s_current_slot_global ? System::GLOBAL_SAVE_STATE_SLOTS : System::PER_GAME_SAVE_STATE_SLOTS;
+      s_state.current_slot_global ^= true;
+    s_state.current_slot +=
+      s_state.current_slot_global ? System::GLOBAL_SAVE_STATE_SLOTS : System::PER_GAME_SAVE_STATE_SLOTS;
   }
 
   if (open_selector)
   {
-    if (!s_open)
+    if (!s_state.is_open)
       Open();
 
-    s_open_time = 0.0f;
+    s_state.open_time = 0.0f;
   }
   else
   {
@@ -1103,9 +1115,9 @@ void SaveStateSelectorUI::Draw()
       const float item_height = std::floor(image_size.y + padding * 2.0f);
       const float text_indent = image_size.x + padding + padding;
 
-      for (size_t i = 0; i < s_slots.size(); i++)
+      for (size_t i = 0; i < s_state.slots.size(); i++)
       {
-        const ListEntry& entry = s_slots[i];
+        const ListEntry& entry = s_state.slots[i];
         const float y_start = item_height * static_cast<float>(i);
 
         if (entry.slot == current_slot && entry.global == current_slot_global)
@@ -1124,19 +1136,20 @@ void SaveStateSelectorUI::Draw()
             else if (item_rect.Max.y > window_rect.Max.y)
               scroll_target = (ImGui::GetScrollY() + (item_rect.Max.y - window_rect.Max.y));
 
-            if (scroll_target != s_scroll_animated.GetEndValue())
-              s_scroll_animated.Start(ImGui::GetScrollY(), scroll_target, SCROLL_ANIMATION_TIME);
+            if (scroll_target != s_state.scroll_animated.GetEndValue())
+              s_state.scroll_animated.Start(ImGui::GetScrollY(), scroll_target, SCROLL_ANIMATION_TIME);
           }
 
-          if (s_scroll_animated.IsActive())
-            ImGui::SetScrollY(s_scroll_animated.UpdateAndGetValue());
+          if (s_state.scroll_animated.IsActive())
+            ImGui::SetScrollY(s_state.scroll_animated.UpdateAndGetValue());
 
-          if (s_background_animated.GetEndValue() != p_start.y)
-            s_background_animated.Start(s_background_animated.UpdateAndGetValue(), p_start.y, BG_ANIMATION_TIME);
+          if (s_state.background_animated.GetEndValue() != p_start.y)
+            s_state.background_animated.Start(s_state.background_animated.UpdateAndGetValue(), p_start.y,
+                                              BG_ANIMATION_TIME);
 
           ImVec2 highlight_pos;
-          if (s_background_animated.IsActive())
-            highlight_pos = ImVec2(p_start.x, s_background_animated.UpdateAndGetValue());
+          if (s_state.background_animated.IsActive())
+            highlight_pos = ImVec2(p_start.x, s_state.background_animated.UpdateAndGetValue());
           else
             highlight_pos = p_start;
 
@@ -1146,7 +1159,7 @@ void SaveStateSelectorUI::Draw()
         }
 
         if (GPUTexture* preview_texture =
-              entry.preview_texture ? entry.preview_texture.get() : s_placeholder_texture.get())
+              entry.preview_texture ? entry.preview_texture.get() : s_state.placeholder_texture.get())
         {
           ImGui::SetCursorPosY(y_start + padding);
           ImGui::SetCursorPosX(padding);
@@ -1184,13 +1197,13 @@ void SaveStateSelectorUI::Draw()
       if (ImGui::BeginTable("table", 2))
       {
         ImGui::TableNextColumn();
-        ImGui::TextUnformatted(s_load_legend.c_str());
+        ImGui::TextUnformatted(s_state.load_legend.c_str());
         ImGui::TableNextColumn();
-        ImGui::TextUnformatted(s_prev_legend.c_str());
+        ImGui::TextUnformatted(s_state.prev_legend.c_str());
         ImGui::TableNextColumn();
-        ImGui::TextUnformatted(s_save_legend.c_str());
+        ImGui::TextUnformatted(s_state.save_legend.c_str());
         ImGui::TableNextColumn();
-        ImGui::TextUnformatted(s_next_legend.c_str());
+        ImGui::TextUnformatted(s_state.next_legend.c_str());
 
         ImGui::EndTable();
       }
@@ -1204,8 +1217,8 @@ void SaveStateSelectorUI::Draw()
   ImGui::PopStyleColor();
 
   // auto-close
-  s_open_time += io.DeltaTime;
-  if (s_open_time >= s_close_time)
+  s_state.open_time += io.DeltaTime;
+  if (s_state.open_time >= s_state.close_time)
   {
     Close();
   }
@@ -1219,25 +1232,25 @@ void SaveStateSelectorUI::Draw()
 
 s32 SaveStateSelectorUI::GetCurrentSlot()
 {
-  return s_current_slot + 1;
+  return s_state.current_slot + 1;
 }
 
 bool SaveStateSelectorUI::IsCurrentSlotGlobal()
 {
-  return s_current_slot_global;
+  return s_state.current_slot_global;
 }
 
 std::string SaveStateSelectorUI::GetCurrentSlotPath()
 {
   std::string filename;
-  if (!s_current_slot_global)
+  if (!s_state.current_slot_global)
   {
     if (const std::string& serial = System::GetGameSerial(); !serial.empty())
-      filename = System::GetGameSaveStateFileName(serial, s_current_slot + 1);
+      filename = System::GetGameSaveStateFileName(serial, s_state.current_slot + 1);
   }
   else
   {
-    filename = System::GetGlobalSaveStateFileName(s_current_slot + 1);
+    filename = System::GetGlobalSaveStateFileName(s_state.current_slot + 1);
   }
 
   return filename;
@@ -1312,7 +1325,7 @@ void ImGuiManager::RenderOverlayWindows()
   const System::State state = System::GetState();
   if (state != System::State::Shutdown)
   {
-    if (SaveStateSelectorUI::s_open)
+    if (SaveStateSelectorUI::s_state.is_open)
       SaveStateSelectorUI::Draw();
   }
 }
