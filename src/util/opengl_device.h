@@ -17,12 +17,6 @@
 #include <string_view>
 #include <tuple>
 
-// Unix doesn't prevent concurrent write access, need to explicitly lock the pipeline cache.
-// Don't worry about Android, it's not like you can run one more than one instance of the app there...
-#if !defined(_WIN32) && !defined(__ANDROID__)
-#define OPENGL_PIPELINE_CACHE_NEEDS_LOCK 1
-#endif
-
 class OpenGLPipeline;
 class OpenGLStreamBuffer;
 class OpenGLTexture;
@@ -239,7 +233,7 @@ private:
   bool m_timestamp_query_started = false;
 
   std::FILE* m_pipeline_disk_cache_file = nullptr;
-#ifdef OPENGL_PIPELINE_CACHE_NEEDS_LOCK
+#ifdef HAS_POSIX_FILE_LOCK
   FileSystem::POSIXLock m_pipeline_disk_cache_file_lock;
 #endif
   u32 m_pipeline_disk_cache_data_end = 0;

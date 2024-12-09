@@ -776,7 +776,7 @@ void GameList::Refresh(bool invalidate_cache, bool only_cache, ProgressCallback*
   if (!cache_file)
     ERROR_LOG("Failed to open game list cache: {}", error.GetDescription());
 
-#ifndef _WIN32
+#ifdef HAS_POSIX_FILE_LOCK
   // Lock cache file for multi-instance on Linux. Implicitly done on Windows.
   std::optional<FileSystem::POSIXLock> cache_file_lock;
   if (cache_file)
@@ -1122,7 +1122,7 @@ GameList::PlayedTimeMap GameList::LoadPlayedTimeMap(const std::string& path)
     return ret;
   }
 
-#ifndef _WIN32
+#ifdef HAS_POSIX_FILE_LOCK
   FileSystem::POSIXLock flock(fp.get());
 #endif
 
@@ -1159,7 +1159,7 @@ GameList::PlayedTimeEntry GameList::UpdatePlayedTimeFile(const std::string& path
     return new_entry;
   }
 
-#ifndef _WIN32
+#ifdef HAS_POSIX_FILE_LOCK
   FileSystem::POSIXLock flock(fp.get());
 #endif
 
@@ -1726,7 +1726,7 @@ void GameList::ReloadMemcardTimestampCache()
   if (!fp)
     return;
 
-#ifndef _WIN32
+#ifdef HAS_POSIX_FILE_LOCK
   FileSystem::POSIXLock lock(fp.get());
 #endif
 
@@ -1856,7 +1856,7 @@ bool GameList::UpdateMemcardTimestampCache(const MemcardTimestampCacheEntry& ent
   if (!fp)
     return false;
 
-#ifndef _WIN32
+#ifdef HAS_POSIX_FILE_LOCK
   FileSystem::POSIXLock lock(fp.get());
 #endif
 

@@ -2790,7 +2790,7 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
 
 #endif
 
-#ifndef _WIN32
+#ifdef HAS_POSIX_FILE_LOCK
 
 static bool SetLock(int fd, bool lock, bool block, Error* error)
 {

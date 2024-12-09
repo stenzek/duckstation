@@ -765,7 +765,7 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
   if (!fp)
     return false;
 
-#ifdef OPENGL_PIPELINE_CACHE_NEEDS_LOCK
+#ifdef HAS_POSIX_FILE_LOCK
   // Unix doesn't prevent concurrent write access, need to explicitly lock it.
   FileSystem::POSIXLock fp_lock(fp.get(), true, error);
   if (!fp_lock.IsLocked())
@@ -847,7 +847,7 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
 
   VERBOSE_LOG("Read {} programs from disk cache.", m_program_cache.size());
   m_pipeline_disk_cache_file = fp.release();
-#ifdef OPENGL_PIPELINE_CACHE_NEEDS_LOCK
+#ifdef HAS_POSIX_FILE_LOCK
   m_pipeline_disk_cache_file_lock = std::move(fp_lock);
 #endif
   return true;
@@ -855,7 +855,7 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
 
 bool OpenGLDevice::CreatePipelineCache(const std::string& path, Error* error)
 {
-#ifndef OPENGL_PIPELINE_CACHE_NEEDS_LOCK
+#ifndef HAS_POSIX_FILE_LOCK
   m_pipeline_disk_cache_file = FileSystem::OpenCFile(path.c_str(), "w+b", error);
   if (!m_pipeline_disk_cache_file)
     return false;
@@ -1015,7 +1015,7 @@ bool OpenGLDevice::DiscardPipelineCache()
   if (!FileSystem::FTruncate64(m_pipeline_disk_cache_file, 0, &error))
   {
     ERROR_LOG("Failed to truncate pipeline cache: {}", error.GetDescription());
-#ifdef OPENGL_PIPELINE_CACHE_NEEDS_LOCK
+#ifdef HAS_POSIX_FILE_LOCK
     m_pipeline_disk_cache_file_lock.Unlock();
 #endif
     std::fclose(m_pipeline_disk_cache_file);
@@ -1031,7 +1031,7 @@ bool OpenGLDevice::DiscardPipelineCache()
 bool OpenGLDevice::ClosePipelineCache(const std::string& filename, Error* error)
 {
   const auto close_cache = [this]() {
-#ifdef OPENGL_PIPELINE_CACHE_NEEDS_LOCK
+#ifdef HAS_POSIX_FILE_LOCK
     m_pipeline_disk_cache_file_lock.Unlock();
 #endif
     std::fclose(m_pipeline_disk_cache_file);

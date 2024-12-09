@@ -155,7 +155,12 @@ bool CommitAtomicRenamedFile(AtomicRenamedFile& file, Error* error);
 void DiscardAtomicRenamedFile(AtomicRenamedFile& file);
 
 /// Abstracts a POSIX file lock.
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__ANDROID__)
+#define HAS_POSIX_FILE_LOCK 1
+#endif
+
+#ifdef HAS_POSIX_FILE_LOCK
+
 class POSIXLock
 {
 public:
@@ -175,6 +180,7 @@ public:
 private:
   int m_fd;
 };
+
 #endif
 
 std::optional<DynamicHeapArray<u8>> ReadBinaryFile(const char* path, Error* error = nullptr);
