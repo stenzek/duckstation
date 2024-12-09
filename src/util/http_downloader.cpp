@@ -160,8 +160,11 @@ void HTTPDownloader::LockedPollRequests(std::unique_lock<std::mutex>& lock)
 
     // run callback with lock unheld
     lock.unlock();
-    if (req->status_code != HTTP_STATUS_OK)
+    if (req->status_code >= 0 && req->status_code != HTTP_STATUS_OK)
       req->error.SetStringFmt("Request failed with HTTP status code {}", req->status_code);
+    else if (req->status_code < 0)
+      DEV_LOG("Request failed with error {}", req->error.GetDescription());
+
     req->callback(req->status_code, req->error, req->content_type, std::move(req->data));
     CloseRequest(req);
     lock.lock();
