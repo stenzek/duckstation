@@ -123,8 +123,8 @@ std::unique_ptr<CDROMSubQReplacement> CDROMSubQReplacement::LoadLSD(const std::s
   return ret;
 }
 
-bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* ret, CDImage* image, std::string_view serial,
-                                   std::string_view title, Error* error)
+bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* ret, CDImage* image,
+                                        std::string_view serial, std::string_view title, Error* error)
 {
   struct FileLoader
   {
@@ -140,13 +140,19 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
   std::string path;
 
   // Try sbi/lsd in the directory first.
-  for (const FileLoader& loader : loaders)
+  if (!CDImage::IsDeviceName(image_path.c_str()))
   {
-    path = Path::ReplaceExtension(image_path, loader.extension);
-    if (FileSystem::FileExists(path.c_str()))
+    for (const FileLoader& loader : loaders)
     {
-      *ret = loader.func(path, error);
-      return static_cast<bool>(*ret);
+      path = Path::ReplaceExtension(image_path, loader.extension);
+      if (FileSystem::FileExists(path.c_str()))
+      {
+        *ret = loader.func(path, error);
+        if (!static_cast<bool>(*ret))
+          Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
+
+        return static_cast<bool>(*ret);
+      }
     }
   }
 
@@ -161,6 +167,9 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
       if (FileSystem::FileExists(path.c_str()))
       {
         *ret = loader.func(path, error);
+        if (!static_cast<bool>(*ret))
+          Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
+
         return static_cast<bool>(*ret);
       }
     }
@@ -175,6 +184,9 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
       if (FileSystem::FileExists(path.c_str()))
       {
         *ret = loader.func(path, error);
+        if (!static_cast<bool>(*ret))
+          Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
+
         return static_cast<bool>(*ret);
       }
     }
@@ -188,6 +200,9 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
       if (FileSystem::FileExists(path.c_str()))
       {
         *ret = loader.func(path, error);
+        if (!static_cast<bool>(*ret))
+          Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
+
         return static_cast<bool>(*ret);
       }
     }
