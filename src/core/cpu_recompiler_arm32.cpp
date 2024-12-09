@@ -92,12 +92,12 @@ void armEmitMov(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register&
 {
   if (vixl::IsUintN(16, imm))
   {
-    armAsm->mov(al, rd, imm & 0xffff);
+    armAsm->mov(vixl::aarch32::al, rd, imm & 0xffff);
     return;
   }
 
-  armAsm->mov(al, rd, imm & 0xffff);
-  armAsm->movt(al, rd, imm >> 16);
+  armAsm->mov(vixl::aarch32::al, rd, imm & 0xffff);
+  armAsm->movt(vixl::aarch32::al, rd, imm >> 16);
 }
 
 void armMoveAddressToReg(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg, const void* addr)
@@ -126,7 +126,7 @@ void armEmitJmp(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_in
   }
   else
   {
-    Label label(displacement + armAsm->GetCursorOffset());
+    vixl::aarch32::Label label(displacement + armAsm->GetCursorOffset());
     armAsm->b(&label);
   }
 }
@@ -152,7 +152,7 @@ void armEmitCall(vixl::aarch32::Assembler* armAsm, const void* ptr, bool force_i
   }
   else
   {
-    Label label(displacement + armAsm->GetCursorOffset());
+    vixl::aarch32::Label label(displacement + armAsm->GetCursorOffset());
     armAsm->bl(&label);
   }
 }
@@ -167,7 +167,7 @@ void armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::aarch32::Conditio
   }
   else
   {
-    Label label(displacement + armAsm->GetCursorOffset());
+    vixl::aarch32::Label label(displacement + armAsm->GetCursorOffset());
     armAsm->b(cond, &label);
   }
 }
@@ -175,14 +175,14 @@ void armEmitCondBranch(vixl::aarch32::Assembler* armAsm, vixl::aarch32::Conditio
 void armEmitFarLoad(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg, const void* addr)
 {
   armMoveAddressToReg(armAsm, reg, addr);
-  armAsm->ldr(reg, MemOperand(reg));
+  armAsm->ldr(reg, vixl::aarch32::MemOperand(reg));
 }
 
 void armEmitFarStore(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg, const void* addr,
                      const vixl::aarch32::Register& tempreg)
 {
   armMoveAddressToReg(armAsm, tempreg, addr);
-  armAsm->str(reg, MemOperand(tempreg));
+  armAsm->str(reg, vixl::aarch32::MemOperand(tempreg));
 }
 
 void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
@@ -204,7 +204,6 @@ u32 CPU::CodeCache::GetHostInstructionCount(const void* start, u32 size)
 u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
 {
   using namespace vixl::aarch32;
-  using namespace CPU::Recompiler;
 
   const s32 disp = armGetPCDisplacement(code, dst);
   DebugAssert(armIsPCDisplacementInImmediateRange(disp));
@@ -222,7 +221,7 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
   return kA32InstructionSizeInBytes;
 }
 
-u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
+u8* armGetJumpTrampoline(const void* target)
 {
   auto it = s_trampoline_targets.find(target);
   if (it != s_trampoline_targets.end())
@@ -239,7 +238,7 @@ u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
   }
 
   u8* start = s_trampoline_start_ptr + offset;
-  Assembler armAsm(start, TRAMPOLINE_AREA_SIZE - offset);
+  vixl::aarch32::Assembler armAsm(start, TRAMPOLINE_AREA_SIZE - offset);
   armMoveAddressToReg(&armAsm, RSCRATCH, target);
   armAsm.bx(RSCRATCH);
 
@@ -255,7 +254,6 @@ u8* CPU::Recompiler::armGetJumpTrampoline(const void* target)
 u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 {
   using namespace vixl::aarch32;
-  using namespace CPU::Recompiler;
 
   Assembler actual_asm(static_cast<u8*>(code), code_size);
   Assembler* armAsm = &actual_asm;
