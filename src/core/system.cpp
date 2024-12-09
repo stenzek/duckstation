@@ -1663,8 +1663,8 @@ bool System::SaveResumeState(Error* error)
     return false;
   }
 
-  const std::string path(GetGameSaveStateFileName(s_state.running_game_serial, -1));
-  return SaveState(path.c_str(), error, false, true);
+  std::string path(GetGameSaveStateFileName(s_state.running_game_serial, -1));
+  return SaveState(std::move(path), error, false, true);
 }
 
 bool System::BootSystem(SystemBootParameters parameters, Error* error)
@@ -3010,7 +3010,7 @@ bool System::ReadAndDecompressStateData(std::FILE* fp, std::span<u8> dst, u32 fi
   }
 }
 
-bool System::SaveState(const char* path, Error* error, bool backup_existing_save, bool ignore_memcard_busy)
+bool System::SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy)
 {
   if (!IsValid() || IsReplayingGPUDump())
   {
@@ -3029,40 +3029,62 @@ bool System::SaveState(const char* path, Error* error, bool backup_existing_save
   if (!SaveStateToBuffer(&buffer, error, 256))
     return false;
 
-  // TODO: Do this on a thread pool
+  VERBOSE_LOG("Preparing state save took {:.2f} msec", save_timer.GetTimeMilliseconds());
 
-  if (backup_existing_save && FileSystem::FileExists(path))
-  {
-    Error backup_error;
-    const std::string backup_filename = Path::ReplaceExtension(path, "bak");
-    if (!FileSystem::RenamePath(path, backup_filename.c_str(), &backup_error))
+  std::string osd_key = fmt::format("save_state_{}", path);
+  Host::AddIconOSDMessage(osd_key, ICON_EMOJI_FLOPPY_DISK,
+                          fmt::format(TRANSLATE_FS("System", "Saving state to '{}'."), Path::GetFileName(path)), 60.0f);
+
+  QueueTaskOnThread([path = std::move(path), buffer = std::move(buffer), osd_key = std::move(osd_key),
+                     backup_existing_save, compression = g_settings.save_state_compression]() {
+    INFO_LOG("Saving state to '{}'...", path);
+
+    Error lerror;
+    Timer lsave_timer;
+
+    if (backup_existing_save && FileSystem::FileExists(path.c_str()))
     {
-      ERROR_LOG("Failed to rename save state backup '{}': {}", Path::GetFileName(backup_filename),
-                backup_error.GetDescription());
+      const std::string backup_filename = Path::ReplaceExtension(path, "bak");
+      if (!FileSystem::RenamePath(path.c_str(), backup_filename.c_str(), &lerror))
+      {
+        ERROR_LOG("Failed to rename save state backup '{}': {}", Path::GetFileName(backup_filename),
+                  lerror.GetDescription());
+      }
     }
-  }
 
-  auto fp = FileSystem::CreateAtomicRenamedFile(path, error);
-  if (!fp)
-  {
-    Error::AddPrefixFmt(error, "Cannot open '{}': ", Path::GetFileName(path));
-    return false;
-  }
+    auto fp = FileSystem::CreateAtomicRenamedFile(path, &lerror);
+    bool result = false;
+    if (fp)
+    {
+      if (SaveStateBufferToFile(buffer, fp.get(), &lerror, compression))
+        result = FileSystem::CommitAtomicRenamedFile(fp, &lerror);
+      else
+        FileSystem::DiscardAtomicRenamedFile(fp);
+    }
+    else
+    {
+      lerror.AddPrefixFmt("Cannot open '{}': ", Path::GetFileName(path));
+    }
 
-  INFO_LOG("Saving state to '{}'...", path);
+    VERBOSE_LOG("Saving state took {:.2f} msec", lsave_timer.GetTimeMilliseconds());
+    if (result)
+    {
+      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_FLOPPY_DISK,
+                              fmt::format(TRANSLATE_FS("System", "State saved to '{}'."), Path::GetFileName(path)),
+                              Host::OSD_QUICK_DURATION);
+    }
+    else
+    {
+      Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_WARNING,
+                              fmt::format(TRANSLATE_FS("System", "Failed to save state to '{0}':\n{1}"),
+                                          Path::GetFileName(path), lerror.GetDescription()),
+                              Host::OSD_ERROR_DURATION);
+    }
 
-  if (!SaveStateBufferToFile(buffer, fp.get(), error, g_settings.save_state_compression))
-  {
-    FileSystem::DiscardAtomicRenamedFile(fp);
-    return false;
-  }
+    System::RemoveSelfFromTaskThreads();
+  });
 
-  Host::AddIconOSDMessage("save_state", ICON_EMOJI_FLOPPY_DISK,
-                          fmt::format(TRANSLATE_FS("OSDMessage", "State saved to '{}'."), Path::GetFileName(path)),
-                          5.0f);
-
-  VERBOSE_LOG("Saving state took {:.2f} msec", save_timer.GetTimeMilliseconds());
-  return FileSystem::CommitAtomicRenamedFile(fp, error);
+  return true;
 }
 
 bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size /* = 256 */)
@@ -3261,7 +3283,7 @@ u32 System::CompressAndWriteStateData(std::FILE* fp, std::span<const u8> src, Sa
     buffer.resize(buffer_size);
 
     const int level =
-      ((method == SaveStateCompressionMode::ZstLow) ? 1 : ((method == SaveStateCompressionMode::ZstHigh) ? 19 : 0));
+      ((method == SaveStateCompressionMode::ZstLow) ? 1 : ((method == SaveStateCompressionMode::ZstHigh) ? 18 : 0));
     const size_t compressed_size = ZSTD_compress(buffer.data(), buffer_size, src.data(), src.size(), level);
     if (ZSTD_isError(compressed_size)) [[unlikely]]
     {
@@ -5399,7 +5421,7 @@ std::string System::GetGlobalSaveStateFileName(s32 slot)
     return Path::Combine(EmuFolders::SaveStates, fmt::format("savestate_{}.sav", slot));
 }
 
-std::vector<SaveStateInfo> System::GetAvailableSaveStates(const char* serial)
+std::vector<SaveStateInfo> System::GetAvailableSaveStates(std::string_view serial)
 {
   std::vector<SaveStateInfo> si;
   std::string path;
@@ -5412,7 +5434,7 @@ std::vector<SaveStateInfo> System::GetAvailableSaveStates(const char* serial)
     si.push_back(SaveStateInfo{std::move(path), sd.ModificationTime, static_cast<s32>(slot), global});
   };
 
-  if (serial && std::strlen(serial) > 0)
+  if (!serial.empty())
   {
     add_path(GetGameSaveStateFileName(serial, -1), -1, false);
     for (s32 i = 1; i <= PER_GAME_SAVE_STATE_SLOTS; i++)
@@ -5425,9 +5447,9 @@ std::vector<SaveStateInfo> System::GetAvailableSaveStates(const char* serial)
   return si;
 }
 
-std::optional<SaveStateInfo> System::GetSaveStateInfo(const char* serial, s32 slot)
+std::optional<SaveStateInfo> System::GetSaveStateInfo(std::string_view serial, s32 slot)
 {
-  const bool global = (!serial || serial[0] == 0);
+  const bool global = serial.empty();
   std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(serial, slot);
 
   FILESYSTEM_STAT_DATA sd;
@@ -5468,7 +5490,7 @@ std::optional<ExtendedSaveStateInfo> System::GetExtendedSaveStateInfo(const char
   return ssi;
 }
 
-void System::DeleteSaveStates(const char* serial, bool resume)
+void System::DeleteSaveStates(std::string_view serial, bool resume)
 {
   const std::vector<SaveStateInfo> states(GetAvailableSaveStates(serial));
   for (const SaveStateInfo& si : states)

@@ -811,7 +811,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
 
     if (!entry->serial.empty())
     {
-      std::vector<SaveStateInfo> available_states(System::GetAvailableSaveStates(entry->serial.c_str()));
+      std::vector<SaveStateInfo> available_states(System::GetAvailableSaveStates(entry->serial));
       const QString timestamp_format = QLocale::system().dateTimeFormat(QLocale::ShortFormat);
       const bool challenge_mode = Achievements::IsHardcoreModeActive();
       for (SaveStateInfo& ssi : available_states)
@@ -869,7 +869,7 @@ void MainWindow::populateGameListContextMenu(const GameList::Entry* entry, QWidg
           return;
         }
 
-        System::DeleteSaveStates(entry->serial.c_str(), true);
+        System::DeleteSaveStates(entry->serial, true);
       });
     }
   }
@@ -881,10 +881,11 @@ static QString FormatTimestampForSaveStateMenu(u64 timestamp)
   return qtime.toString(QLocale::system().dateTimeFormat(QLocale::ShortFormat));
 }
 
-void MainWindow::populateLoadStateMenu(const char* game_serial, QMenu* menu)
+void MainWindow::populateLoadStateMenu(std::string_view game_serial, QMenu* menu)
 {
-  auto add_slot = [this, game_serial, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
-    std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(global ? nullptr : game_serial, slot);
+  auto add_slot = [this, menu](const QString& title, const QString& empty_title, const std::string_view& serial,
+                               s32 slot) {
+    std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(serial, slot);
 
     const QString menu_title =
       ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
@@ -913,28 +914,30 @@ void MainWindow::populateLoadStateMenu(const char* game_serial, QMenu* menu)
   connect(load_from_state, &QAction::triggered, g_emu_thread, &EmuThread::undoLoadState);
   menu->addSeparator();
 
-  if (game_serial && std::strlen(game_serial) > 0)
+  if (!game_serial.empty())
   {
     for (u32 slot = 1; slot <= System::PER_GAME_SAVE_STATE_SLOTS; slot++)
-      add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), false, static_cast<s32>(slot));
+      add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), game_serial, static_cast<s32>(slot));
 
     menu->addSeparator();
   }
 
+  std::string_view empty_serial;
   for (u32 slot = 1; slot <= System::GLOBAL_SAVE_STATE_SLOTS; slot++)
-    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), true, static_cast<s32>(slot));
+    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), empty_serial, static_cast<s32>(slot));
 }
 
-void MainWindow::populateSaveStateMenu(const char* game_serial, QMenu* menu)
+void MainWindow::populateSaveStateMenu(std::string_view game_serial, QMenu* menu)
 {
-  auto add_slot = [game_serial, menu](const QString& title, const QString& empty_title, bool global, s32 slot) {
-    std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(global ? nullptr : game_serial, slot);
+  auto add_slot = [menu](const QString& title, const QString& empty_title, const std::string_view& serial, s32 slot) {
+    std::optional<SaveStateInfo> ssi = System::GetSaveStateInfo(serial, slot);
 
     const QString menu_title =
       ssi.has_value() ? title.arg(slot).arg(FormatTimestampForSaveStateMenu(ssi->timestamp)) : empty_title.arg(slot);
 
     QAction* save_action = menu->addAction(menu_title);
-    connect(save_action, &QAction::triggered, [global, slot]() { g_emu_thread->saveState(global, slot); });
+    connect(save_action, &QAction::triggered,
+            [global = serial.empty(), slot]() { g_emu_thread->saveState(global, slot); });
   };
 
   menu->clear();
@@ -952,16 +955,17 @@ void MainWindow::populateSaveStateMenu(const char* game_serial, QMenu* menu)
   });
   menu->addSeparator();
 
-  if (game_serial && std::strlen(game_serial) > 0)
+  if (!game_serial.empty())
   {
     for (u32 slot = 1; slot <= System::PER_GAME_SAVE_STATE_SLOTS; slot++)
-      add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), false, static_cast<s32>(slot));
+      add_slot(tr("Game Save %1 (%2)"), tr("Game Save %1 (Empty)"), game_serial, static_cast<s32>(slot));
 
     menu->addSeparator();
   }
 
+  std::string_view empty_serial;
   for (u32 slot = 1; slot <= System::GLOBAL_SAVE_STATE_SLOTS; slot++)
-    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), true, static_cast<s32>(slot));
+    add_slot(tr("Global Save %1 (%2)"), tr("Global Save %1 (Empty)"), empty_serial, static_cast<s32>(slot));
 }
 
 void MainWindow::populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group)
@@ -1238,12 +1242,12 @@ void MainWindow::onChangeDiscMenuAboutToHide()
 
 void MainWindow::onLoadStateMenuAboutToShow()
 {
-  populateLoadStateMenu(s_current_game_serial.toUtf8().constData(), m_ui.menuLoadState);
+  populateLoadStateMenu(s_current_game_serial.toStdString(), m_ui.menuLoadState);
 }
 
 void MainWindow::onSaveStateMenuAboutToShow()
 {
-  populateSaveStateMenu(s_current_game_serial.toUtf8().constData(), m_ui.menuSaveState);
+  populateSaveStateMenu(s_current_game_serial.toStdString(), m_ui.menuSaveState);
 }
 
 void MainWindow::onStartFullscreenUITriggered()

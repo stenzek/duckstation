@@ -389,7 +389,7 @@ void ImGuiManager::DrawPerformanceOverlay(float& position_y, float scale, float 
     if (g_settings.display_show_resolution)
     {
       const u32 resolution_scale = g_gpu->GetResolutionScale();
-      const auto [display_width, display_height] = g_gpu->GetFullDisplayResolution();// wrong
+      const auto [display_width, display_height] = g_gpu->GetFullDisplayResolution(); // wrong
       const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
       const bool pal = g_gpu->IsInPALMode();
       text.format("{}x{} {} {} [{}x]", display_width * resolution_scale, display_height * resolution_scale,
@@ -1277,7 +1277,7 @@ void SaveStateSelectorUI::SaveCurrentSlot()
   if (std::string path = GetCurrentSlotPath(); !path.empty())
   {
     Error error;
-    if (!System::SaveState(path.c_str(), &error, g_settings.create_save_state_backups, false))
+    if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
     {
       Host::AddIconOSDMessage("SaveState", ICON_EMOJI_WARNING,
                               fmt::format(TRANSLATE_FS("OSDMessage", "Failed to save state to slot {0}:\n{1}"),
