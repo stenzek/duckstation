@@ -1917,6 +1917,18 @@ bool Host::ConfirmMessage(std::string_view title, std::string_view message)
                                              QString::fromUtf8(message.data(), message.size()));
 }
 
+void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback)
+{
+  QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
+                         callback = std::move(callback)]() mutable {
+    auto lock = g_main_window->pauseAndLockSystem();
+
+    const bool result = (QMessageBox::question(lock.getDialogParent(), title, message) != QMessageBox::No);
+
+    callback(result);
+  });
+}
+
 void Host::OpenURL(std::string_view url)
 {
   QtHost::RunOnUIThread([url = QtUtils::StringViewToQString(url)]() { QtUtils::OpenURL(g_main_window, QUrl(url)); });

@@ -8,6 +8,7 @@
 #include "common/types.h"
 
 #include <ctime>
+#include <functional>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -43,6 +44,11 @@ void ReportErrorAsync(std::string_view title, std::string_view message);
 
 /// Displays a synchronous confirmation on the UI thread, i.e. blocks the caller.
 bool ConfirmMessage(std::string_view title, std::string_view message);
+
+/// Displays an asynchronous confirmation on the UI thread, but does not block the caller.
+/// The callback may be executed on a different thread. Use RunOnCPUThread() in the callback to ensure safety.
+using ConfirmMessageAsyncCallback = std::function<void(bool)>;
+void ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback);
 
 /// Returns the user agent to use for HTTP requests.
 std::string GetHTTPUserAgent();
