@@ -350,15 +350,16 @@ std::vector<std::string> Cheats::FindChtFilesOnDisk(const std::string_view seria
   std::vector<std::string> ret;
   FileSystem::FindResultsArray files;
   FileSystem::FindFiles(cheats ? EmuFolders::Cheats.c_str() : EmuFolders::Patches.c_str(),
-                        GetChtTemplate(serial, hash, true).c_str(),
+                        GetChtTemplate(serial, std::nullopt, true).c_str(),
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
   ret.reserve(files.size());
+
   for (FILESYSTEM_FIND_DATA& fd : files)
   {
     // Skip mismatched hashes.
     if (hash.has_value())
     {
-      if (const std::string_view filename = Path::GetFileTitle(fd.FileName); filename.length() >= serial.length() + 18)
+      if (const std::string_view filename = Path::GetFileTitle(fd.FileName); filename.length() >= serial.length() + 17)
       {
         const std::string_view filename_hash = filename.substr(serial.length() + 1, 16);
         const std::optional filename_parsed_hash = StringUtil::FromChars<GameHash>(filename_hash, 16);
@@ -431,12 +432,12 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
     std::vector<std::string> disk_patch_files;
     if (for_ui || !Achievements::IsHardcoreModeActive())
     {
-      disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? hash : std::nullopt, cheats);
+      disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? std::nullopt : hash, cheats);
       if (cheats && disk_patch_files.empty())
       {
         // Check if there's an old-format titled file.
         if (ImportOldChtFile(serial))
-          disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? hash : std::nullopt, cheats);
+          disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? std::nullopt : hash, cheats);
       }
     }
 
