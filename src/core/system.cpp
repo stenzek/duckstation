@@ -2481,7 +2481,10 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   u32 state_taints = s_state.taints;
   sw.DoEx(&state_taints, 75, static_cast<u32>(0));
   if (state_taints != s_state.taints) [[unlikely]]
+  {
     WarnAboutStateTaints(state_taints);
+    s_state.taints |= state_taints;
+  }
 
   sw.Do(&s_state.frame_number);
   sw.Do(&s_state.internal_frame_number);
