@@ -958,7 +958,8 @@ public:
   ALWAYS_INLINE s32 width() const { return right - left; }
   ALWAYS_INLINE s32 height() const { return bottom - top; }
 
-  ALWAYS_INLINE bool rempty() const { return lt32(zwzw()).mask() != 0x00ff; }
+  ALWAYS_INLINE bool rempty() const { return (lt32(zwzw()).mask() != 0x00ff); }
+  ALWAYS_INLINE bool rvalid() const { return ((ge32(zwzw()).mask() & 0xff) == 0); }
 
   GSVector4i runion(const GSVector4i& v) const
   {
@@ -966,7 +967,7 @@ public:
   }
 
   ALWAYS_INLINE GSVector4i rintersect(const GSVector4i& v) const { return sat_s32(v); }
-  ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return !rintersect(v).rempty(); }
+  ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return rintersect(v).rvalid(); }
   ALWAYS_INLINE bool rcontains(const GSVector4i& v) const { return rintersect(v).eq(v); }
 
   ALWAYS_INLINE u32 rgba32() const { return static_cast<u32>(ps32().pu16().extract32<0>()); }

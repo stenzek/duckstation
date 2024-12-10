@@ -78,3 +78,59 @@ TEST(Rectangle, RelationalOperators)
   ASSERT_FALSE(r1.eq(r2));
 }
 
+TEST(Rectangle, ValidRectangles)
+{
+  static constexpr GSVector4i cases[] = {
+    GSVector4i::cxpr(1, 2, 3, 4),
+    GSVector4i::cxpr(-5, -10, -1, -2),
+    GSVector4i::cxpr(0, 0, 1, 1),
+    GSVector4i::cxpr(100, 200, 300, 400),
+    GSVector4i::cxpr(-1000, -2000, 500, 600),
+    GSVector4i::cxpr(5, 10, 6, 12),
+    GSVector4i::cxpr(-10, -20, -5, -15),
+    GSVector4i::cxpr(-5, 0, 5, 10),
+    GSVector4i::cxpr(-100, -200, 100, 200),
+    GSVector4i::cxpr(-1, -2, 0, 1),
+  };
+
+  for (GSVector4i tcase : cases)
+  {
+    ASSERT_TRUE(tcase.rvalid());
+    ASSERT_FALSE(tcase.rempty());
+  }
+}
+
+TEST(Rectangle, InvalidRectangles)
+{
+  static constexpr GSVector4i cases[] = {
+    // left < right but not top < bottom
+    GSVector4i::cxpr(1, 4, 3, 2),
+    GSVector4i::cxpr(-5, -2, -1, -10),
+    GSVector4i::cxpr(0, 1, 1, 0),
+    GSVector4i::cxpr(100, 400, 300, 200),
+    GSVector4i::cxpr(-1000, 600, 500, -2000),
+    GSVector4i::cxpr(5, 12, 6, 10),
+    GSVector4i::cxpr(-10, -15, -5, -20),
+    GSVector4i::cxpr(-5, 10, 5, 0),
+    GSVector4i::cxpr(-100, 200, 100, -200),
+    GSVector4i::cxpr(-1, 1, 0, -2),
+
+    // not left < right but top < bottom
+    GSVector4i::cxpr(3, 2, 1, 4),
+    GSVector4i::cxpr(-1, -10, -5, -2),
+    GSVector4i::cxpr(1, 0, 0, 1),
+    GSVector4i::cxpr(300, 200, 100, 400),
+    GSVector4i::cxpr(500, -2000, -1000, 600),
+    GSVector4i::cxpr(6, 10, 5, 12),
+    GSVector4i::cxpr(-5, -20, -10, -15),
+    GSVector4i::cxpr(5, 0, -5, 10),
+    GSVector4i::cxpr(100, -200, -100, 200),
+    GSVector4i::cxpr(0, -2, -1, 1),
+  };
+
+  for (GSVector4i tcase : cases)
+  {
+    ASSERT_FALSE(tcase.rvalid());
+    ASSERT_TRUE(tcase.rempty());
+  }
+}

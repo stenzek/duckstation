@@ -1171,17 +1171,21 @@ public:
 
   ALWAYS_INLINE bool rempty() const
   {
-#ifdef CPU_ARCH_ARM64
-    return (vminv_u32(vreinterpret_u32_s32(vget_low_s32(lt32(zwzw())))) == 0);
-#else
-    return (vget_lane_u64(vreinterpret_u64_u32(vreinterpret_u32_s32(vget_low_s32(lt32(zwzw())))), 0) == 0);
-#endif
+    // !any((x, y) < (z, w)) i.e. !not_empty
+    return (vget_lane_u64(vreinterpret_u64_u32(vclt_s32(vget_low_s32(v4s), vget_high_s32(v4s))), 0) !=
+            0xFFFFFFFFFFFFFFFFULL);
+  }
+
+  ALWAYS_INLINE bool rvalid() const
+  {
+    // !all((x, y) >= (z, w))
+    return (vget_lane_u64(vreinterpret_u64_u32(vcge_s32(vget_low_s32(v4s), vget_high_s32(v4s))), 0) == 0);
   }
 
   ALWAYS_INLINE GSVector4i runion(const GSVector4i& a) const { return min_s32(a).upl64(max_s32(a).srl<8>()); }
 
   ALWAYS_INLINE GSVector4i rintersect(const GSVector4i& a) const { return sat_s32(a); }
-  ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return !rintersect(v).rempty(); }
+  ALWAYS_INLINE bool rintersects(const GSVector4i& v) const { return rintersect(v).rvalid(); }
   ALWAYS_INLINE bool rcontains(const GSVector4i& v) const { return rintersect(v).eq(v); }
 
   ALWAYS_INLINE u32 rgba32() const { return static_cast<u32>(ps32().pu16().extract32<0>()); }
