@@ -767,7 +767,7 @@ bool OpenGLDevice::OpenPipelineCache(const std::string& path, Error* error)
 
 #ifdef HAS_POSIX_FILE_LOCK
   // Unix doesn't prevent concurrent write access, need to explicitly lock it.
-  FileSystem::POSIXLock fp_lock(fp.get(), true, error);
+  FileSystem::POSIXLock fp_lock(fp.get(), false, error);
   if (!fp_lock.IsLocked())
   {
     Error::AddPrefix(error, "Failed to lock cache file: ");
@@ -865,7 +865,7 @@ bool OpenGLDevice::CreatePipelineCache(const std::string& path, Error* error)
   if (!m_pipeline_disk_cache_file || !FileSystem::FSeek64(m_pipeline_disk_cache_file, 0, SEEK_SET, error))
     return false;
 
-  m_pipeline_disk_cache_file_lock = FileSystem::POSIXLock(m_pipeline_disk_cache_file, true, error);
+  m_pipeline_disk_cache_file_lock = FileSystem::POSIXLock(m_pipeline_disk_cache_file, false, error);
   if (!m_pipeline_disk_cache_file_lock.IsLocked())
   {
     Error::AddPrefix(error, "Failed to lock cache file: ");
