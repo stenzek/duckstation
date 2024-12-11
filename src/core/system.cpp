@@ -1863,6 +1863,15 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   s_state.state = State::Running;
   SPU::GetOutputStream()->SetPaused(false);
 
+  // try to load the state, if it fails, bail out
+  if (!parameters.save_state.empty() && !LoadState(parameters.save_state.c_str(), error, false))
+  {
+    Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
+                        Path::GetFileName(parameters.save_state));
+    DestroySystem();
+    return false;
+  }
+
   FullscreenUI::OnSystemStarted();
 
   InputManager::UpdateHostMouseMode();
@@ -1877,15 +1886,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   Host::OnSystemStarted();
   Host::OnIdleStateChanged();
-
-  // try to load the state, if it fails, bail out
-  if (!parameters.save_state.empty() && !LoadState(parameters.save_state.c_str(), error, false))
-  {
-    Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
-                        Path::GetFileName(parameters.save_state));
-    DestroySystem();
-    return false;
-  }
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
