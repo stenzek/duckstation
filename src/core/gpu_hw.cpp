@@ -3853,7 +3853,7 @@ void GPU_HW::UpdateDisplay()
   {
     if (IsUsingMultisampling())
     {
-      UpdateVRAMReadTexture(true, true);
+      UpdateVRAMReadTexture(!m_vram_dirty_draw_rect.eq(INVALID_RECT), !m_vram_dirty_write_rect.eq(INVALID_RECT));
       SetDisplayTexture(m_vram_read_texture.get(), nullptr, 0, 0, m_vram_read_texture->GetWidth(),
                         m_vram_read_texture->GetHeight());
     }
