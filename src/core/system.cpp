@@ -1321,12 +1321,8 @@ void System::LoadSettings(bool display_osd_messages)
     WarnAboutUnsafeSettings();
 
   // apply compatibility settings
-  if (g_settings.apply_compatibility_settings && !s_state.running_game_serial.empty())
-  {
-    const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_state.running_game_serial);
-    if (entry)
-      entry->ApplySettings(g_settings, display_osd_messages);
-  }
+  if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
+    s_state.running_game_entry->ApplySettings(g_settings, display_osd_messages);
 
   // patch overrides take precedence over compat settings
   Cheats::ApplySettingOverrides();
