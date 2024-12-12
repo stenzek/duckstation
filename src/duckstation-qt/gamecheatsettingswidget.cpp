@@ -626,34 +626,7 @@ void GameCheatSettingsWidget::onClearClicked()
   }
 
   disableAllCheats();
-
-  Error error;
-  std::string path = Cheats::GetChtFilename(m_dialog->getGameSerial(), m_dialog->getGameHash(), true);
-  if (FileSystem::FileExists(path.c_str()))
-  {
-    if (!FileSystem::DeleteFile(path.c_str(), &error))
-      ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
-  }
-
-  // check for a non-hashed path and remove that too
-  path = Cheats::GetChtFilename(m_dialog->getGameSerial(), std::nullopt, true);
-  if (FileSystem::FileExists(path.c_str()))
-  {
-    if (!FileSystem::DeleteFile(path.c_str(), &error))
-      ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
-  }
-
-  // and a legacy cht file with the game title
-  if (const std::string& title = m_dialog->getGameTitle(); !title.empty())
-  {
-    path = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.cht", EmuFolders::Cheats, Path::SanitizeFileName(title));
-    if (FileSystem::FileExists(path.c_str()))
-    {
-      if (!FileSystem::DeleteFile(path.c_str(), &error))
-        ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
-    }
-  }
-
+  Cheats::RemoveAllCodes(m_dialog->getGameSerial(), m_dialog->getGameTitle(), m_dialog->getGameHash());
   reloadList();
 }
 

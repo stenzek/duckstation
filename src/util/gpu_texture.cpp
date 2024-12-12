@@ -31,6 +31,7 @@ const char* GPUTexture::GetFormatName(Format format)
     "BGRA8",   // BGRA8
     "RGB565",  // RGB565
     "RGB5A1",  // RGB5A1
+    "A1BGR5",  // A1BGR5
     "R8",      // R8
     "D16",     // D16
     "D24S8",   // D24S8
@@ -152,6 +153,7 @@ GPUTexture::Format GPUTexture::GetTextureFormatForImageFormat(ImageFormat format
     Format::BGRA8,   // BGRA8
     Format::RGB565,  // RGB565
     Format::RGB5A1,  // RGB5A1
+    Format::A1BGR5,  // A1BGR5
     Format::Unknown, // BGR8
     Format::BC1,     // BC1
     Format::BC2,     // BC2
@@ -171,6 +173,7 @@ ImageFormat GPUTexture::GetImageFormatForTextureFormat(Format format)
     ImageFormat::BGRA8,  // BGRA8
     ImageFormat::RGB565, // RGB565
     ImageFormat::RGB5A1, // RGB5A1
+    ImageFormat::A1BGR5, // A1BGR5
     ImageFormat::None,   // R8
     ImageFormat::None,   // D16
     ImageFormat::None,   // D24S8
@@ -253,6 +256,7 @@ u32 GPUTexture::GetPixelSize(GPUTexture::Format format)
     4,  // BGRA8
     2,  // RGB565
     2,  // RGB5A1
+    2,  // A1BGR5
     1,  // R8
     2,  // D16
     4,  // D24S8

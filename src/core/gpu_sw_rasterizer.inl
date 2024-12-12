@@ -3,8 +3,10 @@
 
 #ifdef __INTELLISENSE__
 
-#include "common/gsvector.h"
 #include "gpu.h"
+
+#include "common/gsvector.h"
+
 #include <algorithm>
 
 #define USE_VECTOR 1

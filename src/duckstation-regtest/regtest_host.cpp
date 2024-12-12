@@ -150,6 +150,16 @@ bool Host::ConfirmMessage(std::string_view title, std::string_view message)
   return true;
 }
 
+void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback)
+{
+  if (!title.empty() && !message.empty())
+    ERROR_LOG("ConfirmMessage: {}: {}", title, message);
+  else if (!message.empty())
+    ERROR_LOG("ConfirmMessage: {}", message);
+
+  callback(true);
+}
+
 void Host::ReportDebuggerMessage(std::string_view message)
 {
   ERROR_LOG("ReportDebuggerMessage: {}", message);

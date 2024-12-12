@@ -1997,15 +1997,11 @@ GPUDevice::PresentResult GPU::RenderDisplay(GPUTexture* target, const GSVector4i
 
     // Now we can apply the post chain.
     GPUTexture* post_output_texture = PostProcessing::InternalChain.GetOutputTexture();
-    if (const GPUDevice::PresentResult pres = PostProcessing::InternalChain.Apply(
-          display_texture, m_display_depth_buffer, post_output_texture,
-          GSVector4i(0, 0, display_texture_view_width, display_texture_view_height), display_texture_view_width,
-          display_texture_view_height, m_crtc_state.display_width, m_crtc_state.display_height);
-        pres != GPUDevice::PresentResult::OK)
-    {
-      return pres;
-    }
-    else
+    if (PostProcessing::InternalChain.Apply(display_texture, m_display_depth_buffer, post_output_texture,
+                                            GSVector4i(0, 0, display_texture_view_width, display_texture_view_height),
+                                            display_texture_view_width, display_texture_view_height,
+                                            m_crtc_state.display_width,
+                                            m_crtc_state.display_height) == GPUDevice::PresentResult::OK)
     {
       display_texture_view_x = 0;
       display_texture_view_y = 0;
@@ -2020,8 +2016,13 @@ GPUDevice::PresentResult GPU::RenderDisplay(GPUTexture* target, const GSVector4i
   const bool really_postfx = (postfx && PostProcessing::DisplayChain.IsActive() && g_gpu_device->HasMainSwapChain() &&
                               hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
                               PostProcessing::DisplayChain.CheckTargets(hdformat, target_width, target_height));
-  const GSVector4i real_draw_rect =
-    g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(draw_rect, target_height) : draw_rect;
+  GSVector4i real_draw_rect = target ? draw_rect : g_gpu_device->GetMainSwapChain()->PreRotateClipRect(draw_rect);
+  if (g_gpu_device->UsesLowerLeftOrigin())
+  {
+    real_draw_rect = GPUDevice::FlipToLowerLeft(
+      real_draw_rect,
+      (target || really_postfx) ? target_height : g_gpu_device->GetMainSwapChain()->GetPostRotatedHeight());
+  }
   if (really_postfx)
   {
     g_gpu_device->ClearRenderTarget(PostProcessing::DisplayChain.GetInputTexture(), GPUDevice::DEFAULT_CLEAR_COLOR);
@@ -2106,16 +2107,22 @@ GPUDevice::PresentResult GPU::RenderDisplay(GPUTexture* target, const GSVector4i
     uniforms.src_size[2] = rcp_width;
     uniforms.src_size[3] = rcp_height;
 
-    if (g_settings.display_rotation != DisplayRotation::Normal)
+    const WindowInfo::PreRotation surface_prerotation = (target || really_postfx) ?
+                                                          WindowInfo::PreRotation::Identity :
+                                                          g_gpu_device->GetMainSwapChain()->GetPreRotation();
+    if (g_settings.display_rotation != DisplayRotation::Normal ||
+        surface_prerotation != WindowInfo::PreRotation::Identity)
     {
-      static constexpr const std::array<float, static_cast<size_t>(DisplayRotation::Count) - 1> rotation_radians = {{
+      static constexpr const std::array<float, static_cast<size_t>(DisplayRotation::Count)> rotation_radians = {{
+        0.0f,                                        // Disabled
         static_cast<float>(std::numbers::pi * 1.5f), // Rotate90
         static_cast<float>(std::numbers::pi),        // Rotate180
         static_cast<float>(std::numbers::pi / 2.0),  // Rotate270
       }};
 
-      GSMatrix2x2::Rotation(rotation_radians[static_cast<size_t>(g_settings.display_rotation) - 1])
-        .store(uniforms.rotation_matrix);
+      const u32 rotation_idx = (static_cast<u32>(g_settings.display_rotation) + static_cast<u32>(surface_prerotation)) %
+                               static_cast<u32>(rotation_radians.size());
+      GSMatrix2x2::Rotation(rotation_radians[rotation_idx]).store(uniforms.rotation_matrix);
     }
     else
     {
@@ -2340,8 +2347,6 @@ bool GPU::DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y,
     g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
     g_gpu_device->SetViewportAndScissor(0, 0, width, height);
     g_gpu_device->Draw(3, 0);
-
-    GL_POP();
   }
 
   dst->MakeReadyForSampling();

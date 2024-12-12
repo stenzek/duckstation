@@ -44,9 +44,10 @@ public:
   const ShaderOption* GetOptionByName(std::string_view name) const;
   ShaderOption* GetOptionByName(std::string_view name);
 
-  virtual bool ResizeOutput(GPUTexture::Format format, u32 width, u32 height) = 0;
+  virtual bool ResizeOutput(GPUTexture::Format format, u32 width, u32 height, Error* error) = 0;
 
-  virtual bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, ProgressCallback* progress) = 0;
+  virtual bool CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
+                               ProgressCallback* progress) = 0;
 
   virtual GPUDevice::PresentResult Apply(GPUTexture* input_color, GPUTexture* input_depth, GPUTexture* final_target,
                                          GSVector4i final_rect, s32 orig_width, s32 orig_height, s32 native_width,

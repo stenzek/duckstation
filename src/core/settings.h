@@ -91,7 +91,7 @@ struct Settings
 
   bool rewind_enable : 1 = false;
   float rewind_save_frequency = 10.0f;
-  u8 rewind_save_slots = 10;
+  u16 rewind_save_slots = 10;
   u8 runahead_frames = 0;
 
   GPURenderer gpu_renderer = DEFAULT_GPU_RENDERER;
@@ -108,6 +108,8 @@ struct Settings
   bool gpu_disable_texture_copy_to_self : 1 = false;
   bool gpu_disable_memory_import : 1 = false;
   bool gpu_disable_raster_order_views : 1 = false;
+  bool gpu_disable_compute_shaders : 1 = false;
+  bool gpu_disable_compressed_textures : 1 = false;
   bool gpu_per_sample_shading : 1 = false;
   bool gpu_true_color : 1 = true;
   bool gpu_scaled_dithering : 1 = true;
@@ -168,7 +170,7 @@ struct Settings
   bool display_stretch_vertically : 1 = false;
   bool display_auto_resize_window : 1 = false;
   float display_pre_frame_sleep_buffer = DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER;
-  float display_osd_scale = 100.0f;
+  float display_osd_scale = DEFAULT_OSD_SCALE;
   float display_osd_margin = 0.0f;
   float gpu_pgxp_tolerance = -1.0f;
   float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD / GPU_PGXP_DEPTH_THRESHOLD_SCALE;

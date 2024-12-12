@@ -2788,6 +2788,10 @@ bool FileSystem::SetPathCompression(const char* path, bool enable)
   return false;
 }
 
+#endif
+
+#ifdef HAS_POSIX_FILE_LOCK
+
 static bool SetLock(int fd, bool lock, bool block, Error* error)
 {
   // We want to lock the whole file.
@@ -2814,7 +2818,7 @@ static bool SetLock(int fd, bool lock, bool block, Error* error)
   bool res;
   for (;;)
   {
-    res = (lockf(fd, lock ? (block ? F_TLOCK : F_LOCK) : F_ULOCK, 0) == 0);
+    res = (lockf(fd, lock ? (block ? F_LOCK : F_TLOCK) : F_ULOCK, 0) == 0);
     if (!res && errno == EINTR)
       continue;
     else

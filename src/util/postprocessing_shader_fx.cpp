@@ -1321,7 +1321,7 @@ GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTex
   return m_textures[static_cast<size_t>(id)].texture.get();
 }
 
-bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height,
+bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format, u32 width, u32 height, Error* error,
                                                       ProgressCallback* progress)
 {
   m_valid = false;
@@ -1342,31 +1342,29 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
 
   const auto& [cg, cg_language] = CreateRFXCodegen(false);
 
-  Error error;
-  if (!CreateModule(width, height, cg.get(), cg_language, std::move(fxcode), &error))
+  if (!CreateModule(width, height, cg.get(), cg_language, std::move(fxcode), error))
   {
-    ERROR_LOG("Failed to create module for '{}': {}", m_name, error.GetDescription());
+    Error::AddPrefix(error, "Failed to create module: ");
     return false;
   }
 
   const reshadefx::effect_module& mod = cg->module();
   DebugAssert(!mod.techniques.empty());
 
-  if (!CreatePasses(format, mod, &error))
+  if (!CreatePasses(format, mod, error))
   {
-    ERROR_LOG("Failed to create passes for '{}': {}", m_name, error.GetDescription());
+    Error::AddPrefix(error, "Failed to create passes: ");
     return false;
   }
 
-  auto get_shader = [cg_language, &cg](const std::string& name, const std::span<Sampler> samplers,
-                                       GPUShaderStage stage) {
+  auto get_shader = [cg_language, &cg, error](const std::string& name, const std::span<Sampler> samplers,
+                                              GPUShaderStage stage) {
     const std::string real_code = cg->finalize_code_for_entry_point(name);
     const char* entry_point = (cg_language == GPUShaderLanguage::HLSL) ? name.c_str() : "main";
 
-    Error error;
-    std::unique_ptr<GPUShader> sshader = g_gpu_device->CreateShader(stage, cg_language, real_code, &error, entry_point);
+    std::unique_ptr<GPUShader> sshader = g_gpu_device->CreateShader(stage, cg_language, real_code, error, entry_point);
     if (!sshader)
-      ERROR_LOG("Failed to compile function '{}': {}", name, error.GetDescription());
+      Error::AddPrefixFmt(error, "Failed to compile function '{}': ", name);
 
     return sshader;
   };
@@ -1426,10 +1424,10 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
         return false;
       }
 
-      pass.pipeline = g_gpu_device->CreatePipeline(plconfig, &error);
+      pass.pipeline = g_gpu_device->CreatePipeline(plconfig, error);
       if (!pass.pipeline)
       {
-        ERROR_LOG("Failed to create pipeline for pass '{}': {}", info.name, error.GetDescription());
+        Error::AddPrefixFmt(error, "Failed to create pipeline for pass '{}': ", info.name);
         progress->PopState();
         return false;
       }
@@ -1444,7 +1442,7 @@ bool PostProcessing::ReShadeFXShader::CompilePipeline(GPUTexture::Format format,
   return true;
 }
 
-bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u32 width, u32 height)
+bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u32 width, u32 height, Error* error)
 {
   m_valid = false;
 
@@ -1458,7 +1456,7 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
     const u32 t_width = std::max(static_cast<u32>(static_cast<float>(width) * tex.rt_scale), 1u);
     const u32 t_height = std::max(static_cast<u32>(static_cast<float>(height) * tex.rt_scale), 1u);
     tex.texture = g_gpu_device->FetchTexture(t_width, t_height, 1, 1, 1, GPUTexture::Type::RenderTarget, tex.format,
-                                             GPUTexture::Flags::None);
+                                             GPUTexture::Flags::None, nullptr, 0, error);
     if (!tex.texture)
       return {};
   }

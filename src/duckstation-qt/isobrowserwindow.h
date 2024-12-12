@@ -25,6 +25,7 @@ protected:
 
 private Q_SLOTS:
   void onOpenFileClicked();
+  void onExtractClicked();
   void onDirectoryItemClicked(QTreeWidgetItem* item, int column);
   void onFileItemActivated(QTreeWidgetItem* item, int column);
   void onFileItemSelectionChanged();

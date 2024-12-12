@@ -233,6 +233,47 @@ GPUSwapChain::GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool a
 
 GPUSwapChain::~GPUSwapChain() = default;
 
+GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
+{
+  GSVector4i new_clip;
+  switch (m_window_info.surface_prerotation)
+  {
+    case WindowInfo::PreRotation::Identity:
+      new_clip = v;
+      break;
+
+    case WindowInfo::PreRotation::Rotate90Clockwise:
+    {
+      const s32 height = (v.w - v.y);
+      const s32 y = m_window_info.surface_height - v.y - height;
+      new_clip = GSVector4i(y, v.x, y + height, v.z);
+    }
+    break;
+
+    case WindowInfo::PreRotation::Rotate180Clockwise:
+    {
+      const s32 width = (v.z - v.x);
+      const s32 height = (v.w - v.y);
+      const s32 x = m_window_info.surface_width - v.x - width;
+      const s32 y = m_window_info.surface_height - v.y - height;
+      new_clip = GSVector4i(x, y, x + width, y + height);
+    }
+    break;
+
+    case WindowInfo::PreRotation::Rotate270Clockwise:
+    {
+      const s32 width = (v.z - v.x);
+      const s32 x = m_window_info.surface_width - v.x - width;
+      new_clip = GSVector4i(v.y, x, v.w, x + width);
+    }
+    break;
+
+      DefaultCaseIsUnreachable()
+  }
+
+  return new_clip;
+}
+
 bool GPUSwapChain::ShouldSkipPresentingFrame()
 {
   // Only needed with FIFO. But since we're so fast, we allow it always.
@@ -674,20 +715,18 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
   if (draw_data->CmdListsCount == 0 || !swap_chain)
     return;
 
+  const s32 post_rotated_height = swap_chain->GetPostRotatedHeight();
   SetPipeline(m_imgui_pipeline.get());
-  SetViewportAndScissor(0, 0, swap_chain->GetWidth(), swap_chain->GetHeight());
+  SetViewport(0, 0, swap_chain->GetPostRotatedWidth(), post_rotated_height);
 
-  const float L = 0.0f;
-  const float R = static_cast<float>(swap_chain->GetWidth());
-  const float T = 0.0f;
-  const float B = static_cast<float>(swap_chain->GetHeight());
-  const float ortho_projection[4][4] = {
-    {2.0f / (R - L), 0.0f, 0.0f, 0.0f},
-    {0.0f, 2.0f / (T - B), 0.0f, 0.0f},
-    {0.0f, 0.0f, 0.5f, 0.0f},
-    {(R + L) / (L - R), (T + B) / (B - T), 0.5f, 1.0f},
-  };
-  PushUniformBuffer(ortho_projection, sizeof(ortho_projection));
+  GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(
+    0.0f, 0.0f, static_cast<float>(swap_chain->GetWidth()), static_cast<float>(swap_chain->GetHeight()), 0.0f, 1.0f);
+  if (swap_chain->GetPreRotation() != WindowInfo::PreRotation::Identity)
+  {
+    mproj =
+      GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(swap_chain->GetPreRotation())) * mproj;
+  }
+  PushUniformBuffer(&mproj, sizeof(mproj));
 
   // Render command lists
   const bool flip = UsesLowerLeftOrigin();
@@ -708,20 +747,12 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
       if (pcmd->ElemCount == 0 || pcmd->ClipRect.z <= pcmd->ClipRect.x || pcmd->ClipRect.w <= pcmd->ClipRect.y)
         continue;
 
+      GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
+      clip = swap_chain->PreRotateClipRect(clip);
       if (flip)
-      {
-        const s32 height = static_cast<s32>(pcmd->ClipRect.w - pcmd->ClipRect.y);
-        const s32 flipped_y = static_cast<s32>(swap_chain->GetHeight()) - static_cast<s32>(pcmd->ClipRect.y) - height;
-        SetScissor(static_cast<s32>(pcmd->ClipRect.x), flipped_y, static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                   height);
-      }
-      else
-      {
-        SetScissor(static_cast<s32>(pcmd->ClipRect.x), static_cast<s32>(pcmd->ClipRect.y),
-                   static_cast<s32>(pcmd->ClipRect.z - pcmd->ClipRect.x),
-                   static_cast<s32>(pcmd->ClipRect.w - pcmd->ClipRect.y));
-      }
+        clip = FlipToLowerLeft(clip, post_rotated_height);
 
+      SetScissor(clip);
       SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler.get());
       DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
     }
@@ -1041,7 +1072,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
   return ret;
 }
 
-std::unique_ptr<GPUTexture, GPUDevice::PooledTextureDeleter>
+GPUDevice::AutoRecycleTexture
 GPUDevice::FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
                                    GPUTexture::Format format, GPUTexture::Flags flags, const void* data /* = nullptr */,
                                    u32 data_stride /* = 0 */, Error* error /* = nullptr */)
@@ -1396,7 +1427,7 @@ bool dyn_libs::OpenSpirvCross(Error* error)
   if (s_spirv_cross_library.IsOpen())
     return true;
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__ANDROID__)
   // SPVC's build on Windows doesn't spit out a versioned DLL.
   const std::string libname = DynamicLibrary::GetVersionedFilename("spirv-cross-c-shared");
 #else

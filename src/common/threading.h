@@ -53,6 +53,9 @@ public:
   /// Obviously, only works up to 64 processors.
   bool SetAffinity(u64 processor_mask) const;
 
+  /// Returns true if the calling thread matches this handle.
+  bool IsCallingThread() const;
+
 #ifdef __APPLE__
   /// Only available on MacOS, sets a period/maximum time for the scheduler.
   bool SetTimeConstraints(bool enabled, u64 period, u64 typical_time, u64 maximum_time);
@@ -62,8 +65,9 @@ protected:
   void* m_native_handle = nullptr;
 
   // We need the thread ID for affinity adjustments on Linux.
-#if defined(__linux__)
+#if defined(_WIN32) || defined(__linux__)
   unsigned int m_native_id = 0;
+  u32 m_stack_size = 0;
 #endif
 };
 
@@ -104,7 +108,10 @@ protected:
   static void* ThreadProc(void* param);
 #endif
 
+#if !defined(_WIN32) && !defined(__linux__)
+  // Stored in ThreadHandle to save 8 bytes.
   u32 m_stack_size = 0;
+#endif
 };
 
 /// A semaphore that requires a system call to wake/sleep.

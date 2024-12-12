@@ -10,6 +10,7 @@
 #include "core/host.h"
 
 #include "common/bitutils.h"
+#include "common/string_util.h"
 
 #include <QtCore/QTimer>
 #include <QtGui/QKeyEvent>
@@ -61,26 +62,22 @@ void InputBindingWidget::initialize(SettingsInterface* sif, InputBindingInfo::Ty
 
 void InputBindingWidget::updateText()
 {
+  static constexpr const char* help_text =
+    QT_TR_NOOP("Left-click to change binding.\nShift-click to set multiple bindings.");
+  static constexpr const char* help_clear_text = QT_TR_NOOP("Right-click to remove binding.");
+
   if (m_bindings.empty())
   {
     setText(QString());
+    setToolTip(QStringLiteral("%1\n\n%2").arg(tr("No binding set.")).arg(tr(help_text)));
   }
   else if (m_bindings.size() > 1)
   {
     setText(tr("%n bindings", "", static_cast<int>(m_bindings.size())));
 
     // keep the full thing for the tooltip
-    std::stringstream ss;
-    bool first = true;
-    for (const std::string& binding : m_bindings)
-    {
-      if (first)
-        first = false;
-      else
-        ss << "\n";
-      ss << binding;
-    }
-    setToolTip(QString::fromStdString(ss.str()));
+    const QString qss = QString::fromStdString(StringUtil::JoinString(m_bindings.begin(), m_bindings.end(), "\n"));
+    setToolTip(QStringLiteral("%1\n\n%2\n%3").arg(qss).arg(tr(help_text)).arg(help_clear_text));
   }
   else
   {
@@ -93,6 +90,7 @@ void InputBindingWidget::updateText()
     if (binding_text.length() > 35)
       binding_text = binding_text.left(35).append(QStringLiteral("..."));
     setText(binding_text);
+    setToolTip(QStringLiteral("%1\n\n%2\n%3").arg(binding_text).arg(tr(help_text)).arg(tr(help_clear_text)));
   }
 }
 

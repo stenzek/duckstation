@@ -71,8 +71,8 @@ ninja -C build %{?_smp_mflags}
 rm -fr %{buildroot}
 ninja -C build install
 install -Dm755 scripts/packaging/duckstation-qt %{buildroot}/usr/bin/duckstation-qt
-install -Dm644 scripts/org.duckstation.DuckStation.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png
-install -Dm644 scripts/org.duckstation.DuckStation.desktop %{buildroot}/usr/share/applications/org.duckstation.DuckStation.desktop
+install -Dm644 scripts/packaging/org.duckstation.DuckStation.png %{buildroot}/usr/share/icons/hicolor/512x512/apps/org.duckstation.DuckStation.png
+install -Dm644 scripts/packaging/org.duckstation.DuckStation.desktop %{buildroot}/usr/share/applications/org.duckstation.DuckStation.desktop
 
 %files
 %license LICENSE

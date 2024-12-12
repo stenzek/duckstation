@@ -28,6 +28,7 @@ ISOBrowserWindow::ISOBrowserWindow(QWidget* parent) : QWidget(parent)
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
   connect(m_ui.openFile, &QAbstractButton::clicked, this, &ISOBrowserWindow::onOpenFileClicked);
+  connect(m_ui.extract, &QAbstractButton::clicked, this, &ISOBrowserWindow::onExtractClicked);
   connect(m_ui.directoryView, &QTreeWidget::itemClicked, this, &ISOBrowserWindow::onDirectoryItemClicked);
   connect(m_ui.fileView, &QTreeWidget::itemActivated, this, &ISOBrowserWindow::onFileItemActivated);
   connect(m_ui.fileView, &QTreeWidget::itemSelectionChanged, this, &ISOBrowserWindow::onFileItemSelectionChanged);
@@ -100,6 +101,16 @@ void ISOBrowserWindow::onOpenFileClicked()
                           tr("Failed to open %1:\n%2").arg(path).arg(QString::fromStdString(error.GetDescription())));
     return;
   }
+}
+
+void ISOBrowserWindow::onExtractClicked()
+{
+  const QList<QTreeWidgetItem*> items = m_ui.fileView->selectedItems();
+  if (items.isEmpty())
+    return;
+
+  const QString path = items.front()->data(0, Qt::UserRole).toString();
+  extractFile(path);
 }
 
 void ISOBrowserWindow::onDirectoryItemClicked(QTreeWidgetItem* item, int column)
@@ -295,8 +306,6 @@ void ISOBrowserWindow::populateFiles(const QString& path)
   }
 
   const auto add_entry = [this](const std::string& full_path, const IsoReader::ISODirectoryEntry& entry) {
-    const std::string_view filename = Path::GetFileName(full_path);
-
     QTreeWidgetItem* item = new QTreeWidgetItem;
     item->setIcon(
       0, QIcon::fromTheme(entry.IsDirectory() ? QStringLiteral("folder-open-line") : QStringLiteral("file-line")));

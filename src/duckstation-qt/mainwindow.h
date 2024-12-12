@@ -268,8 +268,8 @@ private:
   /// Fills menu with save state info and handlers.
   void populateGameListContextMenu(const GameList::Entry* entry, QWidget* parent_window, QMenu* menu);
 
-  void populateLoadStateMenu(const char* game_serial, QMenu* menu);
-  void populateSaveStateMenu(const char* game_serial, QMenu* menu);
+  void populateLoadStateMenu(std::string_view game_serial, QMenu* menu);
+  void populateSaveStateMenu(std::string_view game_serial, QMenu* menu);
 
   /// Fills menu with the current playlist entries. The disc index is marked as checked.
   void populateChangeDiscSubImageMenu(QMenu* menu, QActionGroup* action_group);

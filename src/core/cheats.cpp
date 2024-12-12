@@ -107,10 +107,16 @@ public:
 
   ALWAYS_INLINE bool IsOpen() const { return static_cast<bool>(m_zip); }
 
-  bool Open(const char* name)
+  bool Open(bool cheats)
   {
     if (m_zip)
       return true;
+
+#ifndef __ANDROID__
+    const char* name = cheats ? "cheats.zip" : "patches.zip";
+#else
+    const char* name = cheats ? "patchcodes.zip" : "patches.zip";
+#endif
 
     Error error;
     std::optional<DynamicHeapArray<u8>> data = Host::ReadResourceFile(name, false, &error);
@@ -344,15 +350,16 @@ std::vector<std::string> Cheats::FindChtFilesOnDisk(const std::string_view seria
   std::vector<std::string> ret;
   FileSystem::FindResultsArray files;
   FileSystem::FindFiles(cheats ? EmuFolders::Cheats.c_str() : EmuFolders::Patches.c_str(),
-                        GetChtTemplate(serial, hash, true).c_str(),
+                        GetChtTemplate(serial, std::nullopt, true).c_str(),
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &files);
   ret.reserve(files.size());
+
   for (FILESYSTEM_FIND_DATA& fd : files)
   {
     // Skip mismatched hashes.
     if (hash.has_value())
     {
-      if (const std::string_view filename = Path::GetFileTitle(fd.FileName); filename.length() >= serial.length() + 18)
+      if (const std::string_view filename = Path::GetFileTitle(fd.FileName); filename.length() >= serial.length() + 17)
       {
         const std::string_view filename_hash = filename.substr(serial.length() + 1, 16);
         const std::optional filename_parsed_hash = StringUtil::FromChars<GameHash>(filename_hash, 16);
@@ -398,10 +405,7 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
     const std::unique_lock lock(s_zip_mutex);
     CheatArchive& archive = cheats ? s_cheats_zip : s_patches_zip;
     if (!archive.IsOpen())
-    {
-      const char* archive_name = cheats ? "cheats.zip" : "patches.zip";
-      archive.Open(archive_name);
-    }
+      archive.Open(cheats);
 
     if (archive.IsOpen())
     {
@@ -428,12 +432,12 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
     std::vector<std::string> disk_patch_files;
     if (for_ui || !Achievements::IsHardcoreModeActive())
     {
-      disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? hash : std::nullopt, cheats);
+      disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? std::nullopt : hash, cheats);
       if (cheats && disk_patch_files.empty())
       {
         // Check if there's an old-format titled file.
         if (ImportOldChtFile(serial))
-          disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? hash : std::nullopt, cheats);
+          disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? std::nullopt : hash, cheats);
       }
     }
 
@@ -699,6 +703,36 @@ bool Cheats::SaveCodesToFile(const char* path, const CodeInfoList& codes, Error*
   }
 
   return true;
+}
+
+void Cheats::RemoveAllCodes(const std::string_view serial, const std::string_view title, std::optional<GameHash> hash)
+{
+  Error error;
+  std::string path = GetChtFilename(serial, hash, true);
+  if (FileSystem::FileExists(path.c_str()))
+  {
+    if (!FileSystem::DeleteFile(path.c_str(), &error))
+      ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+  }
+
+  // check for a non-hashed path and remove that too
+  path = GetChtFilename(serial, std::nullopt, true);
+  if (FileSystem::FileExists(path.c_str()))
+  {
+    if (!FileSystem::DeleteFile(path.c_str(), &error))
+      ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+  }
+
+  // and a legacy cht file with the game title
+  if (!title.empty())
+  {
+    path = fmt::format("{}" FS_OSPATH_SEPARATOR_STR "{}.cht", EmuFolders::Cheats, Path::SanitizeFileName(title));
+    if (FileSystem::FileExists(path.c_str()))
+    {
+      if (!FileSystem::DeleteFile(path.c_str(), &error))
+        ERROR_LOG("Failed to remove cht file '{}': {}", Path::GetFileName(path), error.GetDescription());
+    }
+  }
 }
 
 std::string Cheats::GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats)

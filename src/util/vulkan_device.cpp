@@ -76,6 +76,7 @@ const std::array<VkFormat, static_cast<u32>(GPUTexture::Format::MaxCount)> Vulka
   VK_FORMAT_B8G8R8A8_UNORM,           // BGRA8
   VK_FORMAT_R5G6B5_UNORM_PACK16,      // RGB565
   VK_FORMAT_A1R5G5B5_UNORM_PACK16,    // RGB5A1
+  VK_FORMAT_B5G5R5A1_UNORM_PACK16,    // A1BGR5
   VK_FORMAT_R8_UNORM,                 // R8
   VK_FORMAT_D16_UNORM,                // D16
   VK_FORMAT_D24_UNORM_S8_UINT,        // D24S8
@@ -510,9 +511,12 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
   {
     // VK_KHR_dynamic_rendering_local_read appears to be broken on RDNA3, like everything else...
     // Just causes GPU resets when you actually use a feedback loop. Assume Mesa is fine.
+    // VK_EXT_fragment_shader_interlock is similar, random GPU hangs.
 #if defined(_WIN32) || defined(__ANDROID__)
+    m_optional_extensions.vk_ext_fragment_shader_interlock = false;
     m_optional_extensions.vk_khr_dynamic_rendering_local_read = false;
-    WARNING_LOG("Disabling VK_KHR_dynamic_rendering_local_read on broken AMD driver.");
+    WARNING_LOG(
+      "Disabling VK_EXT_fragment_shader_interlock and VK_KHR_dynamic_rendering_local_read on broken AMD driver.");
 #endif
   }
 
@@ -3406,7 +3410,7 @@ void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 cle
     const VkRenderingInfoKHR ri = {VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
                                    nullptr,
                                    0u,
-                                   {{}, {swap_chain->GetWidth(), swap_chain->GetHeight()}},
+                                   {{}, {swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight()}},
                                    1u,
                                    0u,
                                    1u,
@@ -3427,7 +3431,7 @@ void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 cle
                                       nullptr,
                                       m_current_render_pass,
                                       swap_chain->GetCurrentFramebuffer(),
-                                      {{0, 0}, {swap_chain->GetWidth(), swap_chain->GetHeight()}},
+                                      {{0, 0}, {swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight()}},
                                       1u,
                                       &clear_value};
     vkCmdBeginRenderPass(GetCurrentCommandBuffer(), &rp, VK_SUBPASS_CONTENTS_INLINE);

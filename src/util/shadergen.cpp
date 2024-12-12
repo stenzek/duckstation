@@ -357,20 +357,20 @@ void ShaderGen::WriteUniformBufferDeclaration(std::stringstream& ss, bool push_c
   {
     if (m_render_api == RenderAPI::Vulkan && push_constant_on_vulkan)
     {
-      ss << "layout(push_constant) uniform PushConstants\n";
+      ss << "layout(push_constant, row_major) uniform PushConstants\n";
     }
     else
     {
-      ss << "layout(std140, set = 0, binding = 0) uniform UBOBlock\n";
+      ss << "layout(std140, row_major, set = 0, binding = 0) uniform UBOBlock\n";
       m_has_uniform_buffer = true;
     }
   }
   else if (m_glsl)
   {
     if (m_use_glsl_binding_layout)
-      ss << "layout(std140, binding = 0) uniform UBOBlock\n";
+      ss << "layout(std140, row_major, binding = 0) uniform UBOBlock\n";
     else
-      ss << "layout(std140) uniform UBOBlock\n";
+      ss << "layout(std140, row_major) uniform UBOBlock\n";
 
     m_has_uniform_buffer = true;
   }
@@ -789,6 +789,40 @@ void ShaderGen::DeclareFragmentEntryPoint(
 
     ss << ")";
   }
+}
+
+std::string ShaderGen::GenerateRotateVertexShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, { "float2 u_rotation_matrix0", "float2 u_rotation_matrix1" }, true);
+  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
+  ss << "{\n";
+  ss << "  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));\n";
+  ss << "  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);\n";
+  ss << "  v_pos.xy = float2(dot(u_rotation_matrix0, v_pos.xy), dot(u_rotation_matrix1, v_pos.xy));\n";
+  ss << "  #if API_OPENGL || API_OPENGL_ES || API_VULKAN\n";
+  ss << "    v_pos.y = -v_pos.y;\n";
+  ss << "  #endif\n";
+  ss << "}\n";
+
+  return ss.str();
+}
+
+std::string ShaderGen::GenerateRotateFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareFragmentEntryPoint(ss, 0, 1);
+
+  ss << R"(
+{
+  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);
+}
+)";
+
+  return ss.str();
 }
 
 std::string ShaderGen::GenerateScreenQuadVertexShader(float z /* = 0.0f */) const

@@ -387,9 +387,50 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
                            surface_caps.surfaceCapabilities.maxImageExtent.height);
 
   // Prefer identity transform if possible
+  VkExtent2D window_size = size;
+  WindowInfo::PreRotation window_prerotation = WindowInfo::PreRotation::Identity;
   VkSurfaceTransformFlagBitsKHR transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-  if (!(surface_caps.surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR))
-    transform = surface_caps.surfaceCapabilities.currentTransform;
+  switch (surface_caps.surfaceCapabilities.currentTransform)
+  {
+    case VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR:
+      break;
+
+    case VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR:
+      transform = VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR;
+      window_prerotation = WindowInfo::PreRotation::Rotate90Clockwise;
+      std::swap(size.width, size.height);
+      DEV_LOG("Using VK_SURFACE_TRANSFORM_ROTATE_90_BIT_KHR pretransform.");
+      break;
+
+    case VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR:
+      transform = VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR;
+      window_prerotation = WindowInfo::PreRotation::Rotate180Clockwise;
+      DEV_LOG("Using VK_SURFACE_TRANSFORM_ROTATE_180_BIT_KHR pretransform.");
+      break;
+
+    case VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR:
+      transform = VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR;
+      window_prerotation = WindowInfo::PreRotation::Rotate270Clockwise;
+      std::swap(size.width, size.height);
+      DEV_LOG("Using VK_SURFACE_TRANSFORM_ROTATE_270_BIT_KHR pretransform.");
+      break;
+
+    default:
+    {
+      if (!(surface_caps.surfaceCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR))
+      {
+        WARNING_LOG("Unhandled surface transform 0x{:X}, identity unsupported.",
+                    static_cast<u32>(surface_caps.surfaceCapabilities.supportedTransforms));
+        transform = surface_caps.surfaceCapabilities.currentTransform;
+      }
+      else
+      {
+        WARNING_LOG("Unhandled surface transform 0x{:X}",
+                    static_cast<u32>(surface_caps.surfaceCapabilities.supportedTransforms));
+      }
+    }
+    break;
+  }
 
   VkCompositeAlphaFlagBitsKHR alpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   if (!(surface_caps.surfaceCapabilities.supportedCompositeAlpha & VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR))
@@ -486,17 +527,18 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
   if (old_swap_chain != VK_NULL_HANDLE)
     vkDestroySwapchainKHR(vkdev, old_swap_chain, nullptr);
 
-  if (size.width == 0 || size.width > std::numeric_limits<u16>::max() || size.height == 0 ||
-      size.height > std::numeric_limits<u16>::max())
+  if (window_size.width == 0 || window_size.width > std::numeric_limits<u16>::max() || window_size.height == 0 ||
+      window_size.height > std::numeric_limits<u16>::max())
   {
-    Error::SetStringFmt(error, "Invalid swap chain dimensions: {}x{}", size.width, size.height);
+    Error::SetStringFmt(error, "Invalid swap chain dimensions: {}x{}", window_size.width, window_size.height);
     return false;
   }
 
   m_present_mode = present_mode.value();
-  m_window_info.surface_width = static_cast<u16>(size.width);
-  m_window_info.surface_height = static_cast<u16>(size.height);
+  m_window_info.surface_width = static_cast<u16>(window_size.width);
+  m_window_info.surface_height = static_cast<u16>(window_size.height);
   m_window_info.surface_format = VulkanDevice::GetFormatForVkFormat(surface_format->format);
+  m_window_info.surface_prerotation = window_prerotation;
   if (m_window_info.surface_format == GPUTexture::Format::Unknown)
   {
     Error::SetStringFmt(error, "Unknown surface format {}", static_cast<u32>(surface_format->format));
@@ -534,6 +576,8 @@ bool VulkanSwapChain::CreateSwapChainImages(VulkanDevice& dev, Error* error)
     return false;
   }
 
+  const u32 fb_width = GetPostRotatedWidth();
+  const u32 fb_height = GetPostRotatedHeight();
   m_images.reserve(image_count);
   m_current_image = 0;
   for (u32 i = 0; i < image_count; i++)
@@ -565,7 +609,7 @@ bool VulkanSwapChain::CreateSwapChainImages(VulkanDevice& dev, Error* error)
       Vulkan::FramebufferBuilder fbb;
       fbb.AddAttachment(image.view);
       fbb.SetRenderPass(render_pass);
-      fbb.SetSize(m_window_info.surface_width, m_window_info.surface_height, 1);
+      fbb.SetSize(fb_width, fb_height, 1);
       if ((image.framebuffer = fbb.Create(vkdev)) == VK_NULL_HANDLE)
       {
         Error::SetStringView(error, "Failed to create swap chain image framebuffer.");

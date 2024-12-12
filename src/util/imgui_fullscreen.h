@@ -43,57 +43,62 @@ static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
 
-extern ImFont* g_medium_font;
-extern ImFont* g_large_font;
+struct ALIGN_TO_CACHE_LINE UIStyles
+{
+  ImVec4 BackgroundColor;
+  ImVec4 BackgroundTextColor;
+  ImVec4 BackgroundLineColor;
+  ImVec4 BackgroundHighlight;
+  ImVec4 PopupBackgroundColor;
+  ImVec4 DisabledColor;
+  ImVec4 PrimaryColor;
+  ImVec4 PrimaryLightColor;
+  ImVec4 PrimaryDarkColor;
+  ImVec4 PrimaryTextColor;
+  ImVec4 TextHighlightColor;
+  ImVec4 PrimaryLineColor;
+  ImVec4 SecondaryColor;
+  ImVec4 SecondaryWeakColor; // Not currently used.
+  ImVec4 SecondaryStrongColor;
+  ImVec4 SecondaryTextColor;
 
-extern float g_layout_scale;
-extern float g_rcp_layout_scale;
-extern float g_layout_padding_left;
-extern float g_layout_padding_top;
+  ImFont* MediumFont;
+  ImFont* LargeFont;
 
-extern ImVec4 UIBackgroundColor;
-extern ImVec4 UIBackgroundTextColor;
-extern ImVec4 UIBackgroundLineColor;
-extern ImVec4 UIBackgroundHighlightColor;
-extern ImVec4 UIPopupBackgroundColor;
-extern ImVec4 UIDisabledColor;
-extern ImVec4 UIPrimaryColor;
-extern ImVec4 UIPrimaryLightColor;
-extern ImVec4 UIPrimaryDarkColor;
-extern ImVec4 UIPrimaryTextColor;
-extern ImVec4 UITextHighlightColor;
-extern ImVec4 UIPrimaryLineColor;
-extern ImVec4 UISecondaryColor;
-extern ImVec4 UISecondaryWeakColor; // Not currently used.
-extern ImVec4 UISecondaryStrongColor;
-extern ImVec4 UISecondaryTextColor;
+  float LayoutScale;
+  float RcpLayoutScale;
+  float LayoutPaddingLeft;
+  float LayoutPaddingTop;
+};
+
+extern UIStyles UIStyle;
 
 ALWAYS_INLINE static float LayoutScale(float v)
 {
-  return ImCeil(g_layout_scale * v);
+  return ImCeil(UIStyle.LayoutScale * v);
 }
 
 ALWAYS_INLINE static ImVec2 LayoutScale(const ImVec2& v)
 {
-  return ImVec2(ImCeil(v.x * g_layout_scale), ImCeil(v.y * g_layout_scale));
+  return ImVec2(ImCeil(v.x * UIStyle.LayoutScale), ImCeil(v.y * UIStyle.LayoutScale));
 }
 
 ALWAYS_INLINE static ImVec2 LayoutScale(float x, float y)
 {
-  return ImVec2(ImCeil(x * g_layout_scale), ImCeil(y * g_layout_scale));
+  return ImVec2(ImCeil(x * UIStyle.LayoutScale), ImCeil(y * UIStyle.LayoutScale));
 }
 
 ALWAYS_INLINE static float LayoutUnscale(float v)
 {
-  return ImCeil(g_rcp_layout_scale * v);
+  return ImCeil(UIStyle.RcpLayoutScale * v);
 }
 ALWAYS_INLINE static ImVec2 LayoutUnscale(const ImVec2& v)
 {
-  return ImVec2(ImCeil(v.x * g_rcp_layout_scale), ImCeil(v.y * g_rcp_layout_scale));
+  return ImVec2(ImCeil(v.x * UIStyle.RcpLayoutScale), ImCeil(v.y * UIStyle.RcpLayoutScale));
 }
 ALWAYS_INLINE static ImVec2 LayoutUnscale(float x, float y)
 {
-  return ImVec2(ImCeil(x * g_rcp_layout_scale), ImCeil(y * g_rcp_layout_scale));
+  return ImVec2(ImCeil(x * UIStyle.RcpLayoutScale), ImCeil(y * UIStyle.RcpLayoutScale));
 }
 
 ALWAYS_INLINE static ImVec4 ModAlpha(const ImVec4& v, float a)
@@ -170,7 +175,7 @@ bool BeginFullscreenColumns(const char* title = nullptr, float pos_y = 0.0f, boo
 void EndFullscreenColumns();
 
 bool BeginFullscreenColumnWindow(float start, float end, const char* name,
-                                 const ImVec4& background = UIBackgroundColor);
+                                 const ImVec4& background = UIStyle.BackgroundColor);
 void EndFullscreenColumnWindow();
 
 bool BeginFullscreenWindow(float left, float top, float width, float height, const char* name,
@@ -200,39 +205,41 @@ void ResetMenuButtonFrame();
 void MenuHeading(const char* title, bool draw_line = true);
 bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
 bool ActiveButton(const char* title, bool is_active, bool enabled = true,
-                  float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+                  float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
 bool DefaultActiveButton(const char* title, bool is_active, bool enabled = true,
-                         float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+                         float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
 bool ActiveButtonWithRightText(const char* title, const char* right_title, bool is_active, bool enabled = true,
-                               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+                               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
 bool MenuButton(const char* title, const char* summary, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 bool MenuButtonWithoutSummary(const char* title, bool enabled = true,
-                              float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font,
+                              float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont,
                               const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuButtonWithValue(const char* title, const char* summary, const char* value, bool enabled = true,
-                         float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                         ImFont* summary_font = g_medium_font);
+                         float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = UIStyle.LargeFont,
+                         ImFont* summary_font = UIStyle.MediumFont);
 bool MenuImageButton(const char* title, const char* summary, ImTextureID user_texture_id, const ImVec2& image_size,
                      bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
                      const ImVec2& uv0 = ImVec2(0.0f, 0.0f), const ImVec2& uv1 = ImVec2(1.0f, 1.0f),
-                     ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
+                     ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 bool FloatingButton(const char* text, float x, float y, float width = -1.0f,
                     float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, float anchor_x = 0.0f, float anchor_y = 0.0f,
-                    bool enabled = true, ImFont* font = g_large_font, ImVec2* out_position = nullptr,
+                    bool enabled = true, ImFont* font = UIStyle.LargeFont, ImVec2* out_position = nullptr,
                     bool repeat_button = false);
 bool ToggleButton(const char* title, const char* summary, bool* v, bool enabled = true,
-                  float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                  ImFont* summary_font = g_medium_font);
+                  float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = UIStyle.LargeFont,
+                  ImFont* summary_font = UIStyle.MediumFont);
 bool ThreeWayToggleButton(const char* title, const char* summary, std::optional<bool>* v, bool enabled = true,
-                          float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                          ImFont* summary_font = g_medium_font);
+                          float height = LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = UIStyle.LargeFont,
+                          ImFont* summary_font = UIStyle.MediumFont);
 bool RangeButton(const char* title, const char* summary, s32* value, s32 min, s32 max, s32 increment,
                  const char* format = "%d", bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                 ImFont* font = g_large_font, ImFont* summary_font = g_medium_font, const char* ok_text = "OK");
+                 ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
+                 const char* ok_text = "OK");
 bool RangeButton(const char* title, const char* summary, float* value, float min, float max, float increment,
                  const char* format = "%f", bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                 ImFont* font = g_large_font, ImFont* summary_font = g_medium_font, const char* ok_text = "OK");
+                 ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
+                 const char* ok_text = "OK");
 bool EnumChoiceButtonImpl(const char* title, const char* summary, s32* value_pointer,
                           const char* (*to_display_name_function)(s32 value, void* opaque), void* opaque, u32 count,
                           bool enabled, float height, ImFont* font, ImFont* summary_font);
@@ -241,7 +248,7 @@ template<typename DataType, typename CountType>
 ALWAYS_INLINE static bool EnumChoiceButton(const char* title, const char* summary, DataType* value_pointer,
                                            const char* (*to_display_name_function)(DataType value), CountType count,
                                            bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                                           ImFont* font = g_large_font, ImFont* summary_font = g_medium_font)
+                                           ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont)
 {
   s32 value = static_cast<s32>(*value_pointer);
   auto to_display_name_wrapper = [](s32 value, void* opaque) -> const char* {
@@ -265,13 +272,13 @@ void DrawShadowedText(ImDrawList* dl, ImFont* font, const ImVec2& pos, u32 col, 
 
 void BeginNavBar(float x_padding = LAYOUT_MENU_BUTTON_X_PADDING, float y_padding = LAYOUT_MENU_BUTTON_Y_PADDING);
 void EndNavBar();
-void NavTitle(const char* title, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+void NavTitle(const char* title, float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
 void RightAlignNavButtons(u32 num_items = 0, float item_width = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
                           float item_height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
 bool NavButton(const char* title, bool is_active, bool enabled = true, float width = -1.0f,
-               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = g_large_font);
+               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
 bool NavTab(const char* title, bool is_active, bool enabled, float width, float height, const ImVec4& background,
-            ImFont* font = g_large_font);
+            ImFont* font = UIStyle.LargeFont);
 
 bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, u32 num_items);
 void EndHorizontalMenu();

@@ -507,7 +507,10 @@ public:
   ALWAYS_INLINE const WindowInfo& GetWindowInfo() const { return m_window_info; }
   ALWAYS_INLINE u32 GetWidth() const { return m_window_info.surface_width; }
   ALWAYS_INLINE u32 GetHeight() const { return m_window_info.surface_height; }
+  ALWAYS_INLINE u32 GetPostRotatedWidth() const { return m_window_info.GetPostRotatedWidth(); }
+  ALWAYS_INLINE u32 GetPostRotatedHeight() const { return m_window_info.GetPostRotatedHeight(); }
   ALWAYS_INLINE float GetScale() const { return m_window_info.surface_scale; }
+  ALWAYS_INLINE WindowInfo::PreRotation GetPreRotation() const { return m_window_info.surface_prerotation; }
   ALWAYS_INLINE GPUTexture::Format GetFormat() const { return m_window_info.surface_format; }
 
   ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
@@ -516,6 +519,8 @@ public:
 
   virtual bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) = 0;
   virtual bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) = 0;
+
+  GSVector4i PreRotateClipRect(const GSVector4i& v);
 
   bool ShouldSkipPresentingFrame();
   void ThrottlePresentation();
@@ -630,6 +635,7 @@ public:
   {
     void operator()(GPUTexture* const tex);
   };
+  using AutoRecycleTexture = std::unique_ptr<GPUTexture, PooledTextureDeleter>;
 
   static constexpr u32 MAX_TEXTURE_SAMPLERS = 8;
   static constexpr u32 MIN_TEXEL_BUFFER_ELEMENTS = 4 * 1024 * 512;
@@ -742,10 +748,9 @@ public:
   std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                            GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
                                            const void* data = nullptr, u32 data_stride = 0, Error* error = nullptr);
-  std::unique_ptr<GPUTexture, PooledTextureDeleter>
-  FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples, GPUTexture::Type type,
-                          GPUTexture::Format format, GPUTexture::Flags flags, const void* data = nullptr,
-                          u32 data_stride = 0, Error* error = nullptr);
+  AutoRecycleTexture FetchAutoRecycleTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
+                                             GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
+                                             const void* data = nullptr, u32 data_stride = 0, Error* error = nullptr);
   std::unique_ptr<GPUTexture> FetchAndUploadTextureImage(const Image& image,
                                                          GPUTexture::Flags flags = GPUTexture::Flags::None,
                                                          Error* error = nullptr);

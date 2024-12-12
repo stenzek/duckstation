@@ -171,8 +171,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   enable_discord_presence = si.GetBoolValue("Main", "EnableDiscordPresence", false);
   rewind_enable = si.GetBoolValue("Main", "RewindEnable", false);
   rewind_save_frequency = si.GetFloatValue("Main", "RewindFrequency", 10.0f);
-  rewind_save_slots = static_cast<u8>(si.GetUIntValue("Main", "RewindSaveSlots", 10u));
-  runahead_frames = static_cast<u8>(si.GetUIntValue("Main", "RunaheadFrameCount", 0u));
+  rewind_save_slots = static_cast<u16>(std::min(si.GetUIntValue("Main", "RewindSaveSlots", 10u), 65535u));
+  runahead_frames = static_cast<u8>(std::min(si.GetUIntValue("Main", "RunaheadFrameCount", 0u), 255u));
 
   cpu_execution_mode =
     ParseCPUExecutionMode(
@@ -202,6 +202,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_disable_texture_copy_to_self = si.GetBoolValue("GPU", "DisableTextureCopyToSelf", false);
   gpu_disable_memory_import = si.GetBoolValue("GPU", "DisableMemoryImport", false);
   gpu_disable_raster_order_views = si.GetBoolValue("GPU", "DisableRasterOrderViews", false);
+  gpu_disable_compute_shaders = si.GetBoolValue("GPU", "DisableComputeShaders", false);
+  gpu_disable_compressed_textures = si.GetBoolValue("GPU", "DisableCompressedTextures", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
@@ -539,6 +541,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetBoolValue("GPU", "DisableTextureCopyToSelf", gpu_disable_texture_copy_to_self);
     si.SetBoolValue("GPU", "DisableMemoryImport", gpu_disable_memory_import);
     si.SetBoolValue("GPU", "DisableRasterOrderViews", gpu_disable_raster_order_views);
+    si.SetBoolValue("GPU", "DisableComputeShaders", gpu_disable_compute_shaders);
+    si.SetBoolValue("GPU", "DisableCompressedTextures", gpu_disable_compressed_textures);
   }
 
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
@@ -964,6 +968,8 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.use_old_mdec_routines = false;
     g_settings.pcdrv_enable = false;
     g_settings.bios_patch_fast_boot = false;
+    g_settings.runahead_frames = 0;
+    g_settings.rewind_enable = false;
   }
 
   // fast forward boot requires fast boot

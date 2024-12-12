@@ -361,12 +361,21 @@ static constexpr char32_t UNICODE_REPLACEMENT_CHARACTER = 0xFFFD;
 
 /// Appends a UTF-16/UTF-32 codepoint to a UTF-8 string.
 void EncodeAndAppendUTF8(std::string& s, char32_t ch);
+size_t EncodeAndAppendUTF8(void* utf8, size_t pos, size_t size, char32_t ch);
+size_t GetEncodedUTF8Length(char32_t ch);
 
-/// Decodes UTF-8 to a single codepoint, updating the position parameter.
+/// Decodes UTF-8 to a single unicode codepoint.
 /// Returns the number of bytes the codepoint took in the original string.
 size_t DecodeUTF8(const void* bytes, size_t length, char32_t* ch);
 size_t DecodeUTF8(const std::string_view str, size_t offset, char32_t* ch);
 size_t DecodeUTF8(const std::string& str, size_t offset, char32_t* ch);
+
+/// Appends a unicode codepoint to a UTF-16 string.
+size_t EncodeAndAppendUTF16(void* utf16, size_t pos, size_t size, char32_t codepoint);
+
+/// Decodes UTF-16 to a single unicode codepoint.
+/// Returns the number of bytes the codepoint took in the original string.
+size_t DecodeUTF16(const void* bytes, size_t pos, size_t size, char32_t* codepoint);
 
 // Replaces the end of a string with ellipsis if it exceeds the specified length.
 std::string Ellipsise(const std::string_view str, u32 max_length, const char* ellipsis = "...");

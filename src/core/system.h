@@ -256,7 +256,7 @@ void ResetSystem();
 
 /// Loads state from the specified path.
 bool LoadState(const char* path, Error* error, bool save_undo_state);
-bool SaveState(const char* path, Error* error, bool backup_existing_save);
+bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy);
 bool SaveResumeState(Error* error);
 
 /// Runs the VM until the CPU execution is canceled.
@@ -358,16 +358,16 @@ std::optional<ExtendedSaveStateInfo> GetUndoSaveStateInfo();
 bool UndoLoadState();
 
 /// Returns a list of save states for the specified game code.
-std::vector<SaveStateInfo> GetAvailableSaveStates(const char* serial);
+std::vector<SaveStateInfo> GetAvailableSaveStates(std::string_view serial);
 
 /// Returns save state info if present. If serial is null or empty, assumes global state.
-std::optional<SaveStateInfo> GetSaveStateInfo(const char* serial, s32 slot);
+std::optional<SaveStateInfo> GetSaveStateInfo(std::string_view serial, s32 slot);
 
 /// Returns save state info from opened save state stream.
 std::optional<ExtendedSaveStateInfo> GetExtendedSaveStateInfo(const char* path);
 
 /// Deletes save states for the specified game code. If resume is set, the resume state is deleted too.
-void DeleteSaveStates(const char* serial, bool resume);
+void DeleteSaveStates(std::string_view serial, bool resume);
 
 /// Returns the path to the memory card for the specified game, considering game settings.
 std::string GetGameMemoryCardPath(std::string_view serial, std::string_view path, u32 slot,

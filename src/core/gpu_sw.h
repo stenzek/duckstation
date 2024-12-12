@@ -45,7 +45,6 @@ protected:
   template<GPUTexture::Format display_format>
   bool CopyOut15Bit(u32 src_x, u32 src_y, u32 width, u32 height, u32 line_skip);
 
-  template<GPUTexture::Format display_format>
   bool CopyOut24Bit(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip);
 
   bool CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u32 line_skip, bool is_24bit);
@@ -57,11 +56,13 @@ protected:
   void FillBackendCommandParameters(GPUBackendCommand* cmd) const;
   void FillDrawCommand(GPUBackendDrawCommand* cmd, GPURenderCommand rc) const;
 
+private:
+  static constexpr GPUTexture::Format FORMAT_FOR_24BIT = GPUTexture::Format::RGBA8; // RGBA8 always supported.
+
   GPUTexture* GetDisplayTexture(u32 width, u32 height, GPUTexture::Format format);
 
   FixedHeapArray<u8, GPU_MAX_DISPLAY_WIDTH * GPU_MAX_DISPLAY_HEIGHT * sizeof(u32)> m_upload_buffer;
-  GPUTexture::Format m_16bit_display_format = GPUTexture::Format::RGB565;
-  GPUTexture::Format m_24bit_display_format = GPUTexture::Format::RGBA8;
+  GPUTexture::Format m_16bit_display_format = GPUTexture::Format::Unknown;
   std::unique_ptr<GPUTexture> m_upload_texture;
 
   GPU_SW_Backend m_backend;

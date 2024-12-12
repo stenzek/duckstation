@@ -9,7 +9,30 @@
 #include "common/log.h"
 #include "common/scoped_guard.h"
 
+#include <numbers>
+#include <utility>
+
 LOG_CHANNEL(WindowInfo);
+
+void WindowInfo::SetPreRotated(PreRotation prerotation)
+{
+  if (ShouldSwapDimensionsForPreRotation(prerotation) != ShouldSwapDimensionsForPreRotation(surface_prerotation))
+    std::swap(surface_width, surface_height);
+
+  surface_prerotation = prerotation;
+}
+
+float WindowInfo::GetZRotationForPreRotation(PreRotation prerotation)
+{
+  static constexpr const std::array<float, 4> rotation_radians = {{
+    0.0f,                                        // Identity
+    static_cast<float>(std::numbers::pi * 1.5f), // Rotate90Clockwise
+    static_cast<float>(std::numbers::pi),        // Rotate180Clockwise
+    static_cast<float>(std::numbers::pi / 2.0),  // Rotate270Clockwise
+  }};
+
+  return rotation_radians[static_cast<size_t>(prerotation)];
+}
 
 #if defined(_WIN32)
 

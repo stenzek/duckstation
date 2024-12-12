@@ -25,6 +25,9 @@ public:
 
   ALWAYS_INLINE GPUShaderLanguage GetLanguage() const { return m_shader_language; }
 
+  std::string GenerateRotateVertexShader() const;
+  std::string GenerateRotateFragmentShader() const;
+
   std::string GenerateScreenQuadVertexShader(float z = 0.0f) const;
   std::string GenerateUVQuadVertexShader() const;
   std::string GenerateFillFragmentShader() const;

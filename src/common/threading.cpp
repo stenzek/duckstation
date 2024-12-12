@@ -7,6 +7,7 @@
 #include "log.h"
 
 #include <memory>
+#include <utility>
 
 #if !defined(_WIN32) && !defined(__APPLE__)
 #ifndef _GNU_SOURCE
@@ -164,8 +165,9 @@ Threading::ThreadHandle Threading::ThreadHandle::GetForCallingThread()
 {
   ThreadHandle ret;
 #ifdef _WIN32
+  ret.m_native_id = GetCurrentThreadId();
   ret.m_native_handle =
-    (void*)OpenThread(THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, GetCurrentThreadId());
+    (void*)OpenThread(THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, ret.m_native_id);
 #else
   ret.m_native_handle = (void*)pthread_self();
 #ifdef __linux__
@@ -181,7 +183,9 @@ Threading::ThreadHandle& Threading::ThreadHandle::operator=(ThreadHandle&& handl
   if (m_native_handle)
     CloseHandle((HANDLE)m_native_handle);
   m_native_handle = handle.m_native_handle;
+  m_native_id = handle.m_native_id;
   handle.m_native_handle = nullptr;
+  handle.m_native_id = 0;
 #else
   m_native_handle = handle.m_native_handle;
   handle.m_native_handle = nullptr;
@@ -207,6 +211,12 @@ Threading::ThreadHandle& Threading::ThreadHandle::operator=(const ThreadHandle& 
                       THREAD_QUERY_INFORMATION | THREAD_SET_LIMITED_INFORMATION, FALSE, 0))
   {
     m_native_handle = (void*)new_handle;
+    m_native_id = handle.m_native_id;
+  }
+  else
+  {
+    m_native_handle = nullptr;
+    m_native_id = 0;
   }
 #else
   m_native_handle = handle.m_native_handle;
@@ -275,6 +285,15 @@ bool Threading::ThreadHandle::SetAffinity(u64 processor_mask) const
 #endif
 }
 
+bool Threading::ThreadHandle::IsCallingThread() const
+{
+#ifdef _WIN32
+  return (GetCurrentThreadId() == m_native_id);
+#else
+  return pthread_equal(pthread_self(), (pthread_t)m_native_handle);
+#endif
+}
+
 #ifdef __APPLE__
 
 bool Threading::ThreadHandle::SetTimeConstraints(bool enabled, u64 period, u64 typical_time, u64 maximum_time)
@@ -317,9 +336,9 @@ bool Threading::ThreadHandle::SetTimeConstraints(bool enabled, u64 period, u64 t
 
 Threading::Thread::Thread() = default;
 
-Threading::Thread::Thread(Thread&& thread) : ThreadHandle(thread), m_stack_size(thread.m_stack_size)
+Threading::Thread::Thread(Thread&& thread) : ThreadHandle(thread)
 {
-  thread.m_stack_size = 0;
+  m_stack_size = std::exchange(thread.m_stack_size, 0);
 }
 
 Threading::Thread::Thread(EntryPoint func) : ThreadHandle()
