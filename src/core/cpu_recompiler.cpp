@@ -1707,7 +1707,7 @@ void CPU::Recompiler::Recompiler::CompileLoadStoreTemplate(
   {
     // Get rid of physical aliases.
     const u32 phys_spec_addr = VirtualAddressToPhysical(spec_addr.value());
-    if (phys_spec_addr >= VirtualAddressToPhysical(m_block->pc) &&
+    if (phys_spec_addr >= VirtualAddressToPhysical(m_compiler_pc) &&
         phys_spec_addr < VirtualAddressToPhysical(m_block->pc + (m_block->size * sizeof(Instruction))))
     {
       WARNING_LOG("Instruction {:08X} speculatively writes to {:08X} inside block {:08X}-{:08X}. Truncating block.",
