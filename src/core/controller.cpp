@@ -274,6 +274,9 @@ bool Controller::InCircularDeadzone(float deadzone, float pos_x, float pos_y)
 
 bool Controller::CanStartInAnalogMode(ControllerType ctype)
 {
+  if (!g_settings.apply_compatibility_settings)
+    return true;
+
   const GameDatabase::Entry* dbentry = System::GetGameDatabaseEntry();
   if (!dbentry)
     return false;
