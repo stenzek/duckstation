@@ -1421,6 +1421,22 @@ const void* CPU::CodeCache::CreateBlockLink(Block* block, void* code, u32 newpc)
   return dst;
 }
 
+const void* CPU::CodeCache::CreateSelfBlockLink(Block* block, void* code, const void* block_start)
+{
+  const void* dst = g_dispatcher;
+  if (g_settings.cpu_recompiler_block_linking)
+  {
+    dst = block_start;
+
+    BlockLinkMap::iterator iter = s_block_links.emplace(block->pc, code);
+    DebugAssert(block->num_exit_links < MAX_BLOCK_EXIT_LINKS);
+    block->exit_links[block->num_exit_links++] = iter;
+  }
+
+  DEBUG_LOG("Self linking {} with dst pc {:08X} to {}", code, block->pc, dst);
+  return dst;
+}
+
 void CPU::CodeCache::BacklinkBlocks(u32 pc, const void* dst)
 {
   if (!g_settings.cpu_recompiler_block_linking)

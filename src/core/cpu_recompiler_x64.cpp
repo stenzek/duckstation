@@ -629,17 +629,10 @@ void CPU::X64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool d
   }
   else
   {
-    if (newpc.value() == m_block->pc)
-    {
-      // Special case: ourselves! No need to backlink then.
-      DEBUG_LOG("Linking block at {:08X} to self", m_block->pc);
-      cg->jmp(cg->getCode());
-    }
-    else
-    {
-      const void* target = CodeCache::CreateBlockLink(m_block, cg->getCurr<void*>(), newpc.value());
-      cg->jmp(target, CodeGenerator::T_NEAR);
-    }
+    const void* target = (newpc.value() == m_block->pc) ?
+                           CodeCache::CreateSelfBlockLink(m_block, cg->getCurr<void*>(), cg->getCode()) :
+                           CodeCache::CreateBlockLink(m_block, cg->getCurr<void*>(), newpc.value());
+    cg->jmp(target, CodeGenerator::T_NEAR);
   }
 }
 

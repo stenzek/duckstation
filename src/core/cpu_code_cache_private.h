@@ -239,6 +239,7 @@ const void* GetInterpretUncachedBlockFunction();
 void CompileOrRevalidateBlock(u32 start_pc);
 void DiscardAndRecompileBlock(u32 start_pc);
 const void* CreateBlockLink(Block* from_block, void* code, u32 newpc);
+const void* CreateSelfBlockLink(Block* block, void* code, const void* block_start);
 
 void AddLoadStoreInfo(void* code_address, u32 code_size, u32 guest_pc, const void* thunk_address);
 void AddLoadStoreInfo(void* code_address, u32 code_size, u32 guest_pc, u32 guest_block, TickCount cycles,

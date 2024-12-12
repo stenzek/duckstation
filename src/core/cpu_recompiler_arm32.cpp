@@ -741,17 +741,11 @@ void CPU::ARM32Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bool
   }
   else
   {
-    if (newpc.value() == m_block->pc)
-    {
-      // Special case: ourselves! No need to backlink then.
-      DEBUG_LOG("Linking block at {:08X} to self", m_block->pc);
-      armEmitJmp(armAsm, armAsm->GetBuffer()->GetStartAddress<const void*>(), true);
-    }
-    else
-    {
-      const void* target = CodeCache::CreateBlockLink(m_block, armAsm->GetCursorAddress<void*>(), newpc.value());
-      armEmitJmp(armAsm, target, true);
-    }
+    const void* target = (newpc.value() == m_block->pc) ?
+                           CodeCache::CreateSelfBlockLink(m_block, armAsm->GetCursorAddress<void*>(),
+                                                          armAsm->GetBuffer()->GetStartAddress<const void*>()) :
+                           CodeCache::CreateBlockLink(m_block, armAsm->GetCursorAddress<void*>(), newpc.value());
+    armEmitJmp(armAsm, target, true);
   }
 }
 

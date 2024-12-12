@@ -66,7 +66,7 @@ using namespace biscuit;
 RISCV64Recompiler s_instance;
 Recompiler* g_compiler = &s_instance;
 
-} // namespace CPU::Recompiler
+} // namespace CPU
 
 bool rvIsCallerSavedRegister(u32 id)
 {
@@ -150,7 +150,8 @@ void rvEmitFarLoad(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const voi
     rvAsm->LWU(reg, lo, reg);
 }
 
-[[maybe_unused]] void rvEmitFarStore(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr, const biscuit::GPR& tempreg)
+[[maybe_unused]] void rvEmitFarStore(biscuit::Assembler* rvAsm, const biscuit::GPR& reg, const void* addr,
+                                     const biscuit::GPR& tempreg)
 {
   const auto [hi, lo] = rvGetAddressImmediates(rvAsm->GetCursorPointer(), addr);
   rvAsm->AUIPC(tempreg, hi);
@@ -697,17 +698,11 @@ void CPU::RISCV64Recompiler::EndAndLinkBlock(const std::optional<u32>& newpc, bo
   }
   else
   {
-    if (newpc.value() == m_block->pc)
-    {
-      // Special case: ourselves! No need to backlink then.
-      DEBUG_LOG("Linking block at {:08X} to self", m_block->pc);
-      rvEmitJmp(rvAsm, rvAsm->GetBufferPointer(0));
-    }
-    else
-    {
-      const void* target = CreateBlockLink(m_block, rvAsm->GetCursorPointer(), newpc.value());
-      rvEmitJmp(rvAsm, target);
-    }
+    const void* target =
+      (newpc.value() == m_block->pc) ?
+        CodeCache::CreateSelfBlockLink(m_block, rvAsm->GetCursorPointer(), rvAsm->GetBufferPointer(0)) :
+        CodeCache::CreateBlockLink(m_block, rvAsm->GetCursorPointer(), newpc.value());
+    rvEmitJmp(rvAsm, target);
   }
 }
 
