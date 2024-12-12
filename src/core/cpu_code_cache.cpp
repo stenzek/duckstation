@@ -752,11 +752,12 @@ template<PGXPMode pgxp_mode>
   if (g_state.pending_ticks >= g_state.downcount)                                                                      \
     break;
 
-  for (;;)
-  {
+  if (g_state.pending_ticks >= g_state.downcount)
     TimingEvents::RunEvents();
 
-    while (g_state.pending_ticks < g_state.downcount)
+  for (;;)
+  {
+    for (;;)
     {
 #if 0
       LogCurrentState();
@@ -830,6 +831,8 @@ template<PGXPMode pgxp_mode>
       CHECK_DOWNCOUNT();
       continue;
     }
+
+    TimingEvents::RunEvents();
   }
 }
 
