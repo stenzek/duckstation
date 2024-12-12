@@ -883,7 +883,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
     #if !UPSCALED
       uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
       uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
-      return LOAD_TEXTURE(samp0, int2(vicoord), 0);
+      return SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
     #else
       // Coordinates are already upscaled, we need to downscale them to apply the texture
       // window, then re-upscale/offset. We can't round here, because it could result in
@@ -979,7 +979,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       ialpha = 1.0;
     #elif TEXTURE_FILTERING
       #if PAGE_TEXTURE
-        FilteredSampleFromVRAM(int2(0, 0), v_tex0, v_uv_limits, texcol, ialpha);
+        FilteredSampleFromVRAM(VECTOR_BROADCAST(TEXPAGE_VALUE, 0u), v_tex0, v_uv_limits, texcol, ialpha);
       #else
         FilteredSampleFromVRAM(v_texpage, v_tex0, v_uv_limits, texcol, ialpha);
       #endif

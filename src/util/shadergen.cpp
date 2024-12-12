@@ -298,6 +298,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) texelFetch(name, index)\n";
     ss << "#define BEGIN_ARRAY(type, size) type[size](\n";
     ss << "#define END_ARRAY )\n";
+    ss << "#define VECTOR_BROADCAST(type, value) (type(value))\n";
 
     ss << "float saturate(float value) { return clamp(value, 0.0, 1.0); }\n";
     ss << "float2 saturate(float2 value) { return clamp(value, float2(0.0, 0.0), float2(1.0, 1.0)); }\n";
@@ -344,6 +345,7 @@ void ShaderGen::WriteHeader(std::stringstream& ss, bool enable_rov /* = false */
     ss << "#define LOAD_TEXTURE_BUFFER(name, index) name.Load(index)\n";
     ss << "#define BEGIN_ARRAY(type, size) {\n";
     ss << "#define END_ARRAY }\n";
+    ss << "#define VECTOR_BROADCAST(type, value) ((type)(value))\n";
   }
 
   ss << "\n";
