@@ -41,7 +41,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 18,
+  GAME_DATABASE_CACHE_VERSION = 19,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -85,6 +85,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "ForceDeinterlacing",
   "ForceFullBoot",
   "DisableAutoAnalogMode",
+  "DisableMultitap",
   "DisableTrueColor",
   "DisableUpscaling",
   "DisableTextureFiltering",
@@ -116,6 +117,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Deinterlacing", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Full Boot", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Multitap", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable True Color", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaling", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Texture Filtering", "GameDatabase::Trait"),
@@ -437,6 +439,30 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     messages.append_format(__VA_ARGS__);                                                                               \
   } while (0)
 
+  if (HasTrait(Trait::ForceInterpreter))
+  {
+    if (display_osd_messages && settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "CPU recompiler disabled."));
+
+    settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
+  }
+
+  if (HasTrait(Trait::ForceFullBoot))
+  {
+    if (display_osd_messages && settings.bios_patch_fast_boot)
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Fast boot disabled."));
+
+    settings.bios_patch_fast_boot = false;
+  }
+
+  if (HasTrait(Trait::DisableMultitap))
+  {
+    if (display_osd_messages && settings.multitap_mode != MultitapMode::Disabled)
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Multitap disabled."));
+
+    settings.multitap_mode = MultitapMode::Disabled;
+  }
+
   if (display_crop_mode.has_value())
   {
     if (display_osd_messages && settings.display_crop_mode != display_crop_mode.value())
@@ -446,14 +472,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.display_crop_mode = display_crop_mode.value();
-  }
-
-  if (HasTrait(Trait::ForceInterpreter))
-  {
-    if (display_osd_messages && settings.cpu_execution_mode != CPUExecutionMode::Interpreter)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "CPU recompiler disabled."));
-
-    settings.cpu_execution_mode = CPUExecutionMode::Interpreter;
   }
 
   if (HasTrait(Trait::ForceSoftwareRenderer))
@@ -513,14 +531,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
 
       settings.display_deinterlacing_mode = display_deinterlacing_mode.value();
     }
-  }
-
-  if (HasTrait(Trait::ForceFullBoot))
-  {
-    if (display_osd_messages && settings.bios_patch_fast_boot)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Fast boot disabled."));
-
-    settings.bios_patch_fast_boot = false;
   }
 
   if (HasTrait(Trait::DisableTrueColor))
@@ -749,15 +759,24 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
           supported_controller_string.append(Controller::GetControllerInfo(supported_ctype)->GetDisplayName());
         }
 
-        Host::AddKeyedOSDMessage(
-          "gamedb_controller_unsupported",
-          fmt::format(TRANSLATE_FS("GameDatabase",
-                                   "Controller in port {0} ({1}) is not supported for {2}.\nSupported controllers: "
-                                   "{3}\nPlease configure a supported controller from the list above."),
-                      i + 1u, Controller::GetControllerInfo(ctype)->GetDisplayName(), System::GetGameTitle(),
-                      supported_controller_string),
+        Host::AddIconOSDWarning(
+          fmt::format("GameDBController{}Unsupported", i), ICON_EMOJI_WARNING,
+          fmt::format(
+            TRANSLATE_FS("GameDatabase",
+                         "Controller in Port {0} ({1}) is not supported for this game.\nSupported controllers: "
+                         "{2}\nPlease configure a supported controller from the list above."),
+            i + 1u, Controller::GetControllerInfo(ctype)->GetDisplayName(), supported_controller_string),
           Host::OSD_CRITICAL_ERROR_DURATION);
       }
+    }
+
+    if (g_settings.multitap_mode != MultitapMode::Disabled && !(supported_controllers & SUPPORTS_MULTITAP_BIT))
+    {
+      Host::AddIconOSDMessage("GameDBMultitapUnsupported", ICON_EMOJI_WARNING,
+                              TRANSLATE_STR("GameDatabase",
+                                            "This game does not support multitap, but multitap is enabled.\n"
+                                            "       This may result in dropped controller inputs."),
+                              Host::OSD_CRITICAL_ERROR_DURATION);
     }
   }
 
@@ -840,6 +859,9 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
 
       ret.append_format(" - {}\n", Controller::GetControllerInfo(static_cast<ControllerType>(j))->GetDisplayName());
     }
+
+    if (supported_controllers & SUPPORTS_MULTITAP_BIT)
+      ret.append(" - Multitap\n");
 
     ret.append("\n");
   }
@@ -1303,11 +1325,25 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     if (const std::optional libcrypt_val = StringUtil::FromChars<bool>(to_stringview(libcrypt.val()));
         libcrypt_val.has_value())
     {
-      entry->traits[static_cast<size_t>(Trait::IsLibCryptProtected)] = true;
+      entry->traits[static_cast<size_t>(Trait::IsLibCryptProtected)] = libcrypt_val.value();
     }
     else
     {
       WARNING_LOG("Invalid libcrypt value in {}", entry->serial);
+    }
+  }
+
+  if (const ryml::ConstNodeRef& multitap = value.find_child(to_csubstr("multitap")); multitap.valid())
+  {
+    if (const std::optional multitap_val = StringUtil::FromChars<bool>(to_stringview(multitap.val()));
+        multitap_val.has_value())
+    {
+      if (multitap_val.value())
+        entry->supported_controllers |= Entry::SUPPORTS_MULTITAP_BIT;
+    }
+    else
+    {
+      WARNING_LOG("Invalid multitap value in {}", entry->serial);
     }
   }
 
