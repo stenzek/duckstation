@@ -170,6 +170,10 @@
     <addaction name="separator"/>
     <addaction name="menuLogLevel"/>
     <addaction name="menuLogChannels"/>
+    <addaction name="actionLogToSystemConsole"/>
+    <addaction name="actionLogToWindow"/>
+    <addaction name="actionLogToFile"/>
+    <addaction name="actionLogTimestamps"/>
     <addaction name="separator"/>
     <addaction name="actionCPUDebugger"/>
     <addaction name="separator"/>
@@ -923,6 +927,38 @@
   <action name="actionCaptureGPUFrame">
    <property name="text">
     <string>Capture GPU Frame</string>
+   </property>
+  </action>
+  <action name="actionLogTimestamps">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log Timestamps</string>
+   </property>
+  </action>
+  <action name="actionLogToSystemConsole">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log To System Console</string>
+   </property>
+  </action>
+  <action name="actionLogToWindow">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log To Window</string>
+   </property>
+  </action>
+  <action name="actionLogToFile">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Log To File</string>
    </property>
   </action>
  </widget>
