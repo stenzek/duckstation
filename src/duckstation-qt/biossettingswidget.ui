@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>529</width>
-    <height>330</height>
+    <width>732</width>
+    <height>470</height>
    </rect>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
@@ -178,6 +178,64 @@
     </widget>
    </item>
    <item>
+    <widget class="QGroupBox" name="pioGroupBox">
+     <property name="title">
+      <string>Parallel Port</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Device Type:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QComboBox" name="pioDeviceType"/>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0">
+        <item>
+         <widget class="QLabel" name="pioImagePathLabel">
+          <property name="text">
+           <string>Image Path:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="pioImagePath"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pioImagePathBrowse">
+          <property name="text">
+           <string>Browse...</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="2" column="0" colspan="2">
+       <layout class="QGridLayout" name="gridLayout_3">
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="pioSwitchActive">
+          <property name="text">
+           <string>Cartridge Switch On</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="pioImageWrites">
+          <property name="text">
+           <string>Allow Image Writes</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Orientation::Vertical</enum>
@@ -185,7 +243,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>1</height>
       </size>
      </property>
     </spacer>

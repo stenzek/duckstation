@@ -29,6 +29,7 @@
 #include "pad.h"
 #include "pcdrv.h"
 #include "performance_counters.h"
+#include "pio.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
@@ -1926,6 +1927,9 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   CPU::Initialize();
   CDROM::Initialize();
 
+  if (!PIO::Initialize(error))
+    return false;
+
   // CDROM before GPU, that way we don't modeswitch.
   if (disc &&
       !CDROM::InsertMedia(std::move(disc), disc_region, s_state.running_game_serial, s_state.running_game_title, error))
@@ -2011,6 +2015,7 @@ void System::DestroySystem()
   CDROM::Shutdown();
   g_gpu.reset();
   DMA::Shutdown();
+  PIO::Shutdown();
   CPU::CodeCache::Shutdown();
   CPU::PGXP::Shutdown();
   CPU::Shutdown();
@@ -2548,6 +2553,12 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("SIO") || !SIO::DoState(sw))
     return false;
 
+  if (sw.GetVersion() >= 77)
+  {
+    if (!sw.DoMarker("PIO") || !PIO::DoState(sw))
+      return false;
+  }
+
   if (!sw.DoMarker("Events") || !TimingEvents::DoState(sw))
     return false;
 
@@ -2628,6 +2639,7 @@ void System::InternalReset()
     CPU::PGXP::Initialize();
 
   Bus::Reset();
+  PIO::Reset();
   DMA::Reset();
   InterruptController::Reset();
   g_gpu->Reset(true);
@@ -4491,6 +4503,17 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       UpdateSpeedLimiterState();
     }
 
+    if (g_settings.multitap_mode != old_settings.multitap_mode)
+      UpdateMultitaps();
+
+    if (g_settings.pio_device_type != old_settings.pio_device_type ||
+        g_settings.pio_flash_image_path != old_settings.pio_flash_image_path ||
+        g_settings.pio_flash_write_enable != old_settings.pio_flash_write_enable ||
+        g_settings.pio_switch_active != old_settings.pio_switch_active)
+    {
+      PIO::UpdateSettings(old_settings);
+    }
+
     if (g_settings.display_show_gpu_usage != old_settings.display_show_gpu_usage)
       g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
 
@@ -4536,9 +4559,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.display_osd_margin != old_settings.display_osd_margin)
       ImGuiManager::SetScreenMargin(g_settings.display_osd_margin);
   }
-
-  if (g_settings.multitap_mode != old_settings.multitap_mode)
-    UpdateMultitaps();
 
   Achievements::UpdateSettings(old_settings);
 
@@ -4739,6 +4759,8 @@ void System::WarnAboutUnsafeSettings()
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
       if (g_settings.use_old_mdec_routines)
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
+      if (g_settings.pio_device_type != PIODeviceType::None)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));
       if (g_settings.pcdrv_enable)
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
       if (g_settings.bios_patch_fast_boot)

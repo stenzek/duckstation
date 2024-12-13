@@ -30,6 +30,8 @@ public:
 private Q_SLOTS:
   void refreshList();
   void onFastBootChanged();
+  void onPIODeviceTypeChanged();
+  void onPIOImagePathBrowseClicked();
 
 private:
   Ui::BIOSSettingsWidget m_ui;

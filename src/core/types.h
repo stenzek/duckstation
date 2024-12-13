@@ -303,3 +303,10 @@ enum class ForceVideoTimingMode : u8
   
   Count,
 };
+
+enum class PIODeviceType : u8
+{
+  None,
+  XplorerCart,
+  MaxCount,
+};

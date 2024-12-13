@@ -10,6 +10,7 @@
 #include "gte.h"
 #include "host.h"
 #include "pcdrv.h"
+#include "pio.h"
 #include "settings.h"
 #include "system.h"
 #include "timing_event.h"
@@ -2690,6 +2691,14 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
     std::memcpy(data, &g_bios[(address - BIOS_BASE) & BIOS_MASK], sizeof(u32) * word_count);
     if constexpr (add_ticks)
       g_state.pending_ticks += g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
+
+    return true;
+  }
+  else if (address >= EXP1_BASE && address < (EXP1_BASE + EXP1_SIZE))
+  {
+    g_pio_device->CodeReadHandler(address & EXP1_MASK, data, word_count);
+    if constexpr (add_ticks)
+      g_state.pending_ticks += g_exp1_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
 
     return true;
   }

@@ -66,6 +66,7 @@
     <ClCompile Include="cdrom_subq_replacement.cpp" />
     <ClCompile Include="performance_counters.cpp" />
     <ClCompile Include="jogcon.cpp" />
+    <ClCompile Include="pio.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -141,6 +142,7 @@
     <ClInclude Include="performance_counters.h" />
     <ClInclude Include="system_private.h" />
     <ClInclude Include="jogcon.h" />
+    <ClInclude Include="pio.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

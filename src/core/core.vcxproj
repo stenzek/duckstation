@@ -69,6 +69,7 @@
     </ClCompile>
     <ClCompile Include="cpu_pgxp.cpp" />
     <ClCompile Include="performance_counters.cpp" />
+    <ClCompile Include="pio.cpp" />
     <ClCompile Include="playstation_mouse.cpp" />
     <ClCompile Include="psf_loader.cpp" />
     <ClCompile Include="settings.cpp" />
@@ -148,6 +149,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="cpu_pgxp.h" />
     <ClInclude Include="performance_counters.h" />
+    <ClInclude Include="pio.h" />
     <ClInclude Include="playstation_mouse.h" />
     <ClInclude Include="psf_loader.h" />
     <ClInclude Include="save_state_version.h" />
