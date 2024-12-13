@@ -1476,10 +1476,10 @@ template<MemoryAccessSize size>
 u32 Bus::ICacheReadHandler(VirtualMemoryAddress address)
 {
   const u32 line = CPU::GetICacheLine(address);
-  const u8* line_data = &CPU::g_state.icache_data[line * CPU::ICACHE_LINE_SIZE];
+  const u32* line_data = &CPU::g_state.icache_data[line * CPU::ICACHE_WORDS_PER_LINE];
   const u32 offset = CPU::GetICacheLineOffset(address);
   u32 result;
-  std::memcpy(&result, &line_data[offset], sizeof(result));
+  std::memcpy(&result, reinterpret_cast<const u8*>(line_data) + offset, sizeof(result));
   return result;
 }
 
@@ -1487,14 +1487,15 @@ template<MemoryAccessSize size>
 void Bus::ICacheWriteHandler(VirtualMemoryAddress address, u32 value)
 {
   const u32 line = CPU::GetICacheLine(address);
+  u32* line_data = &CPU::g_state.icache_data[line * CPU::ICACHE_WORDS_PER_LINE];
   const u32 offset = CPU::GetICacheLineOffset(address);
   CPU::g_state.icache_tags[line] = CPU::GetICacheTagForAddress(address) | CPU::ICACHE_INVALID_BITS;
   if constexpr (size == MemoryAccessSize::Byte)
-    std::memcpy(&CPU::g_state.icache_data[line * CPU::ICACHE_LINE_SIZE + offset], &value, sizeof(u8));
+    std::memcpy(reinterpret_cast<u8*>(line_data) + offset, &value, sizeof(u8));
   else if constexpr (size == MemoryAccessSize::HalfWord)
-    std::memcpy(&CPU::g_state.icache_data[line * CPU::ICACHE_LINE_SIZE + offset], &value, sizeof(u16));
+    std::memcpy(reinterpret_cast<u8*>(line_data) + offset, &value, sizeof(u16));
   else
-    std::memcpy(&CPU::g_state.icache_data[line * CPU::ICACHE_LINE_SIZE + offset], &value, sizeof(u32));
+    std::memcpy(reinterpret_cast<u8*>(line_data) + offset, &value, sizeof(u32));
 }
 
 template<MemoryAccessSize size>

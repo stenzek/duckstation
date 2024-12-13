@@ -48,6 +48,10 @@ ALWAYS_INLINE static u32 GetICacheLineOffset(VirtualMemoryAddress address)
 {
   return (address & (ICACHE_LINE_SIZE - 1));
 }
+ALWAYS_INLINE static u32 GetICacheLineWordOffset(VirtualMemoryAddress address)
+{
+  return (address >> 2) & 0x03u;
+}
 ALWAYS_INLINE static u32 GetICacheTagForAddress(VirtualMemoryAddress address)
 {
   return (address & ICACHE_TAG_ADDRESS_MASK);

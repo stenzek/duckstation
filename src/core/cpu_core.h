@@ -32,7 +32,7 @@ enum : PhysicalMemoryAddress
   ICACHE_SLOTS = ICACHE_SIZE / sizeof(u32),
   ICACHE_LINE_SIZE = 16,
   ICACHE_LINES = ICACHE_SIZE / ICACHE_LINE_SIZE,
-  ICACHE_SLOTS_PER_LINE = ICACHE_SLOTS / ICACHE_LINES,
+  ICACHE_WORDS_PER_LINE = ICACHE_SLOTS / ICACHE_LINES,
   ICACHE_TAG_ADDRESS_MASK = 0xFFFFFFF0u,
   ICACHE_INVALID_BITS = 0x0Fu,
 };
@@ -117,7 +117,7 @@ struct State
   PGXPValue pgxp_gte[64] = {};
 
   std::array<u32, ICACHE_LINES> icache_tags = {};
-  std::array<u8, ICACHE_SIZE> icache_data = {};
+  std::array<u32, ICACHE_LINES * ICACHE_WORDS_PER_LINE> icache_data = {};
 
   std::array<u8, SCRATCHPAD_SIZE> scratchpad = {};
 
