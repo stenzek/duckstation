@@ -178,8 +178,8 @@ void armEmitFarLoad(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Regis
   armAsm->ldr(reg, vixl::aarch32::MemOperand(reg));
 }
 
-void armEmitFarStore(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg, const void* addr,
-                     const vixl::aarch32::Register& tempreg)
+[[maybe_unused]] void armEmitFarStore(vixl::aarch32::Assembler* armAsm, const vixl::aarch32::Register& reg,
+                                      const void* addr, const vixl::aarch32::Register& tempreg)
 {
   armMoveAddressToReg(armAsm, tempreg, addr);
   armAsm->str(reg, vixl::aarch32::MemOperand(tempreg));
@@ -634,12 +634,20 @@ void CPU::ARM32Recompiler::GenerateICacheCheckAndUpdate()
       const u32 line = GetICacheLine(current_pc);
       const u32 offset = OFFSETOF(State, icache_tags) + (line * sizeof(u32));
 
+      // Offsets must be <4K on ARM.
+      MemOperand line_addr = MemOperand(RSTATE, offset);
+      if (offset >= 4096)
+      {
+        armEmitMov(armAsm, RSCRATCH, offset);
+        line_addr = MemOperand(RSTATE, RSCRATCH);
+      }
+
       Label cache_hit;
-      armAsm->ldr(existing_tag_reg, MemOperand(RSTATE, offset));
+      armAsm->ldr(existing_tag_reg, line_addr);
       armAsm->cmp(existing_tag_reg, current_tag_reg);
       armAsm->b(eq, &cache_hit);
 
-      armAsm->str(current_tag_reg, MemOperand(RSTATE, offset));
+      armAsm->str(current_tag_reg, line_addr);
       armAsm->add(ticks_reg, ticks_reg, armCheckAddSubConstant(static_cast<u32>(fill_ticks)));
       armAsm->bind(&cache_hit);
 
