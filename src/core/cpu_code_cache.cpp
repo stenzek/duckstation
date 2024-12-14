@@ -253,15 +253,15 @@ static constexpr LUTRangeList GetLUTRanges()
 {
   const LUTRangeList ranges = {{
     {0x00000000, 0x00800000}, // RAM
-    {0x1F000000, 0x1F800000}, // EXP1
+    {0x1F000000, 0x1F060000}, // EXP1
     {0x1FC00000, 0x1FC80000}, // BIOS
 
     {0x80000000, 0x80800000}, // RAM
-    {0x9F000000, 0x9F800000}, // EXP1
+    {0x9F000000, 0x9F060000}, // EXP1
     {0x9FC00000, 0x9FC80000}, // BIOS
 
     {0xA0000000, 0xA0800000}, // RAM
-    {0xBF000000, 0xBF800000}, // EXP1
+    {0xBF000000, 0xBF060000}, // EXP1
     {0xBFC00000, 0xBFC80000}  // BIOS
   }};
   return ranges;
