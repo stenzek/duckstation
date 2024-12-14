@@ -63,6 +63,8 @@ public:
   static constexpr bool HAS_MEMORY_OPERANDS = false;
 
   // A reasonable "maximum" number of bytes per instruction.
+  // Seems to hover around ~36-48 bytes without PGXP, and ~48-64 bytes with.
+  // Use an upper bound of 64 bytes to be safe.
   static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
   static constexpr u32 MIN_CODE_RESERVE_FOR_BLOCK = 512;
 
