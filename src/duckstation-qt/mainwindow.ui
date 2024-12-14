@@ -229,6 +229,7 @@
     <addaction name="actionCoverDownloader"/>
     <addaction name="separator"/>
     <addaction name="actionMemoryScanner"/>
+    <addaction name="actionISOBrowser"/>
     <addaction name="separator"/>
     <addaction name="actionMediaCapture"/>
     <addaction name="actionCaptureGPUFrame"/>
@@ -959,6 +960,11 @@
    </property>
    <property name="text">
     <string>Log To File</string>
+   </property>
+  </action>
+  <action name="actionISOBrowser">
+   <property name="text">
+    <string>ISO Browser</string>
    </property>
   </action>
  </widget>

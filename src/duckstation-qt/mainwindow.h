@@ -186,6 +186,7 @@ private Q_SLOTS:
   void onCheckForUpdatesActionTriggered();
   void onToolsMemoryCardEditorTriggered();
   void onToolsMemoryScannerTriggered();
+  void onToolsISOBrowserTriggered();
   void onToolsCoverDownloaderTriggered();
   void onToolsMediaCaptureToggled(bool checked);
   void onToolsOpenDataDirectoryTriggered();

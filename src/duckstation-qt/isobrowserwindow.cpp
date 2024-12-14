@@ -26,6 +26,7 @@ ISOBrowserWindow::ISOBrowserWindow(QWidget* parent) : QWidget(parent)
   m_ui.setupUi(this);
   m_ui.splitter->setSizes({200, 600});
   setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
+  enableUi(false);
 
   connect(m_ui.openFile, &QAbstractButton::clicked, this, &ISOBrowserWindow::onOpenFileClicked);
   connect(m_ui.extract, &QAbstractButton::clicked, this, &ISOBrowserWindow::onExtractClicked);
@@ -69,6 +70,7 @@ bool ISOBrowserWindow::tryOpenFile(const QString& path, Error* error /*= nullptr
   m_iso = std::move(new_reader);
   m_ui.openPath->setText(QString::fromStdString(native_path));
   setWindowTitle(tr("ISO Browser - %1").arg(QtUtils::StringViewToQString(Path::GetFileName(native_path))));
+  enableUi(true);
   populateDirectories();
   populateFiles(QString());
   return true;
@@ -246,6 +248,15 @@ QTreeWidgetItem* ISOBrowserWindow::findDirectoryItemForPath(const QString& path,
   }
 
   return nullptr;
+}
+
+void ISOBrowserWindow::enableUi(bool enabled)
+{
+  m_ui.directoryView->setEnabled(enabled);
+  m_ui.fileView->setEnabled(enabled);
+
+  if (!enabled)
+    m_ui.extract->setEnabled(enabled);
 }
 
 void ISOBrowserWindow::populateDirectories()
