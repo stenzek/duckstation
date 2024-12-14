@@ -194,8 +194,6 @@ public Q_SLOTS:
   void undoLoadState();
   void setAudioOutputVolume(int volume, int fast_forward_volume);
   void setAudioOutputMuted(bool muted);
-  void startDumpingAudio();
-  void stopDumpingAudio();
   void singleStepCPU();
   void dumpRAM(const QString& filename);
   void dumpVRAM(const QString& filename);

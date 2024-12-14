@@ -1475,28 +1475,6 @@ void EmuThread::setAudioOutputMuted(bool muted)
   System::UpdateVolume();
 }
 
-void EmuThread::startDumpingAudio()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, "startDumpingAudio", Qt::QueuedConnection);
-    return;
-  }
-
-  // System::StartDumpingAudio();
-}
-
-void EmuThread::stopDumpingAudio()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, "stopDumpingAudio", Qt::QueuedConnection);
-    return;
-  }
-
-  // System::StopDumpingAudio();
-}
-
 void EmuThread::singleStepCPU()
 {
   if (!isCurrentThread())
