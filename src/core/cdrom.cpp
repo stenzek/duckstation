@@ -2724,6 +2724,8 @@ void CDROM::BeginReading(TickCount ticks_late /* = 0 */, bool after_seek /* = fa
   s_state.drive_event.Schedule(first_sector_ticks);
 
   s_state.requested_lba = s_state.current_lba;
+  s_state.seek_start_lba = 0;
+  s_state.seek_end_lba = 0;
   s_reader.QueueReadSector(s_state.requested_lba);
 }
 
@@ -2859,7 +2861,6 @@ void CDROM::UpdateSubQPositionWhileSeeking()
           current_lba, completed_frac);
 
   s_state.last_subq_needs_update = (s_state.current_subq_lba != current_lba);
-  s_state.current_lba = current_lba; // TODO: This is probably wrong... hold position shouldn't change.
   s_state.current_subq_lba = current_lba;
   s_state.subq_lba_update_tick = System::GetGlobalTickCounter();
   s_state.subq_lba_update_carry = 0;
