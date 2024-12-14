@@ -431,7 +431,8 @@ void GPU_HW::UpdateSettings(const Settings& old_settings)
      (features.noperspective_interpolation && g_settings.gpu_pgxp_enable &&
       g_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction) ||
      m_allow_sprite_mode !=
-       ShouldAllowSpriteMode(m_resolution_scale, g_settings.gpu_texture_filter, g_settings.gpu_sprite_texture_filter));
+       ShouldAllowSpriteMode(m_resolution_scale, g_settings.gpu_texture_filter, g_settings.gpu_sprite_texture_filter) ||
+     (!old_settings.gpu_texture_cache && g_settings.gpu_texture_cache));
   const bool resolution_dependent_shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples);
   const bool downsampling_shaders_changed =
@@ -1024,6 +1025,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   const bool true_color = g_settings.gpu_true_color;
   const bool scaled_dithering = (!m_true_color && upscaled && g_settings.gpu_scaled_dithering);
   const bool disable_color_perspective = (features.noperspective_interpolation && ShouldDisableColorPerspective());
+  const bool needs_page_texture = m_use_texture_cache;
 
   // Determine when to use shader blending.
   // FBFetch is free, we need it for filtering without DSB, or when accurate blending is forced.
@@ -1065,15 +1067,16 @@ bool GPU_HW::CompilePipelines(Error* error)
   const GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_supports_dual_source_blend,
                                    m_supports_framebuffer_fetch);
 
-  const u32 active_texture_modes =
-    m_allow_sprite_mode ? NUM_TEXTURE_MODES :
-                          (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart)));
-  const u32 total_vertex_shaders = (m_allow_sprite_mode ? 7 : 4);
-  const u32 total_fragment_shaders = ((1 + BoolToUInt32(needs_rov_depth)) * 5 * 5 * active_texture_modes * 2 *
+  const u32 max_active_texture_modes =
+    (m_allow_sprite_mode ? NUM_TEXTURE_MODES :
+                           (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart))));
+  const u32 num_active_texture_modes = (max_active_texture_modes - BoolToUInt32(!needs_page_texture));
+  const u32 total_vertex_shaders = ((m_allow_sprite_mode ? 7 : 4) - BoolToUInt32(!needs_page_texture));
+  const u32 total_fragment_shaders = ((1 + BoolToUInt32(needs_rov_depth)) * 5 * 5 * num_active_texture_modes * 2 *
                                       (1 + BoolToUInt32(!true_color)) * (1 + BoolToUInt32(!m_force_progressive_scan)));
   const u32 total_items =
     total_vertex_shaders + total_fragment_shaders +
-    ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
+    ((m_pgxp_depth_buffer ? 2 : 1) * 5 * 5 * num_active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
      (1 + BoolToUInt32(!m_force_progressive_scan))) +            // batch pipelines
     ((m_wireframe_mode != GPUWireframeMode::Disabled) ? 1 : 0) + // wireframe
     (2 * 2) +                                                    // vram fill
@@ -1115,6 +1118,8 @@ bool GPU_HW::CompilePipelines(Error* error)
     for (u8 palette = 0; palette < 3; palette++)
     {
       if (palette && !textured)
+        continue;
+      if (palette == 2 && !needs_page_texture)
         continue;
 
       for (u8 sprite = 0; sprite < 2; sprite++)
@@ -1161,13 +1166,16 @@ bool GPU_HW::CompilePipelines(Error* error)
           // If using ROV depth, we only draw with shader blending.
           (needs_rov_depth && render_mode != static_cast<u8>(BatchRenderMode::ShaderBlend)))
         {
-          progress.Increment(active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
+          progress.Increment(num_active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
                              (1 + BoolToUInt32(!m_force_progressive_scan)));
           continue;
         }
 
-        for (u8 texture_mode = 0; texture_mode < active_texture_modes; texture_mode++)
+        for (u8 texture_mode = 0; texture_mode < max_active_texture_modes; texture_mode++)
         {
+          if (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) && !needs_page_texture)
+            continue;
+
           for (u8 check_mask = 0; check_mask < 2; check_mask++)
           {
             if (check_mask && render_mode != static_cast<u8>(BatchRenderMode::ShaderBlend))
@@ -1268,13 +1276,16 @@ bool GPU_HW::CompilePipelines(Error* error)
           // If using ROV depth, we only draw with shader blending.
           (needs_rov_depth && render_mode != static_cast<u8>(BatchRenderMode::ShaderBlend)))
         {
-          progress.Increment(active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
+          progress.Increment(num_active_texture_modes * 2 * (1 + BoolToUInt32(!true_color)) *
                              (1 + BoolToUInt32(!m_force_progressive_scan)));
           continue;
         }
 
-        for (u8 texture_mode = 0; texture_mode < active_texture_modes; texture_mode++)
+        for (u8 texture_mode = 0; texture_mode < max_active_texture_modes; texture_mode++)
         {
+          if (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) && !needs_page_texture)
+            continue;
+
           for (u8 dithering = 0; dithering < 2; dithering++)
           {
             // Never going to draw with dithering on in true color.
