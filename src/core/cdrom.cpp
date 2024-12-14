@@ -74,6 +74,8 @@ enum : u32
 
 static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
 
+static constexpr TickCount MIN_SEEK_TICKS = 30000;
+
 enum class Interrupt : u8
 {
   DataReady = 0x01,
@@ -1557,10 +1559,8 @@ u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
 
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 {
-  static constexpr TickCount MIN_TICKS = 30000;
-
   if (g_settings.cdrom_seek_speedup == 0)
-    return MIN_TICKS;
+    return System::ScaleTicksToOverclock(MIN_SEEK_TICKS);
 
   u32 ticks = 0;
 
@@ -1630,7 +1630,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
-    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_TICKS);
+    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_SEEK_TICKS);
 
   if (s_state.drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
@@ -2789,7 +2789,23 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
             logical ? "logical" : "physical");
 
   const CDImage::LBA seek_lba = s_state.setloc_position.ToLBA();
-  const TickCount seek_time = GetTicksForSeek(seek_lba, play_after_seek);
+  TickCount seek_time;
+
+  // Yay for edge cases. If we repeatedly send SeekL to the same target before a new sector is read, it should complete
+  // nearly instantly, because it's looking for a valid target of -2. See the note in CompleteSeek(). We gate this with
+  // the seek target in case another read happened in the interim. Test case: Resident Evil 3.
+  if (logical && !read_after_seek && s_state.current_subq_lba == (seek_lba - SUBQ_SECTOR_SKEW) &&
+      s_state.seek_end_lba == seek_lba &&
+      (System::GetGlobalTickCounter() - s_state.subq_lba_update_tick) < static_cast<GlobalTicks>(GetTicksForRead()))
+  {
+    DEV_COLOR_LOG(StrongCyan, "Completing seek instantly due to not passing target {}.",
+                  LBAToMSFString(seek_lba - SUBQ_SECTOR_SKEW));
+    seek_time = MIN_SEEK_TICKS;
+  }
+  else
+  {
+    seek_time = GetTicksForSeek(seek_lba, play_after_seek);
+  }
 
   ClearCommandSecondResponse();
   ClearAsyncInterrupt();
