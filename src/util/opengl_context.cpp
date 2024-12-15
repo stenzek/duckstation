@@ -96,6 +96,14 @@ static void DisableBrokenExtensions(const char* gl_vendor, const char* gl_render
       VERBOSE_LOG("Keeping GL_EXT_shader_framebuffer_fetch on Adreno version {}", major_version);
     }
   }
+  else if (std::strstr(gl_vendor, "Imagination Technologies") && std::strstr(gl_renderer, "PowerVR"))
+  {
+    // Framebuffer fetch is apparently also broken on older PowerVR drivers.
+    // No clue what the range is, so just disable all of them...
+    GLAD_GL_EXT_shader_framebuffer_fetch = 0;
+    GLAD_GL_ARM_shader_framebuffer_fetch = 0;
+    VERBOSE_LOG("Disabling GL_EXT_shader_framebuffer_fetch on PowerVR driver.");
+  }
 
   // If we're missing GLES 3.2, but have OES_draw_elements_base_vertex, redirect the function pointers.
   if (!glad_glDrawElementsBaseVertex && GLAD_GL_OES_draw_elements_base_vertex && !GLAD_GL_ES_VERSION_3_2)
