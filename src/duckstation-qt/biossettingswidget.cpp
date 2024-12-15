@@ -92,13 +92,13 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
     }
   });
 
-  connect(m_ui.refresh, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
+  connect(m_ui.rescan, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
 
   if (!m_dialog->isPerGameSettings())
   {
     SettingWidgetBinder::BindWidgetToFolderSetting(
-      sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, tr("Select BIOS Directory"), m_ui.openSearchDirectory,
-      nullptr, "BIOS", "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
+      sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, tr("Select BIOS Directory"), m_ui.searchDirectoryOpen,
+      m_ui.searchDirectoryReset, "BIOS", "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
     connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);
   }
   else
