@@ -52,6 +52,7 @@ public:
                                                 const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                 std::optional<bool> exclusive_fullscreen_control,
                                                 Error* error) override;
+  bool SwitchToSurfacelessRendering(Error* error) override;
   std::unique_ptr<GPUTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
                                             GPUTexture::Type type, GPUTexture::Format format, GPUTexture::Flags flags,
                                             const void* data = nullptr, u32 data_stride = 0,

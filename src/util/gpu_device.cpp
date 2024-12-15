@@ -472,6 +472,12 @@ void GPUDevice::Destroy()
   DestroyDevice();
 }
 
+bool GPUDevice::SwitchToSurfacelessRendering(Error* error)
+{
+  // noop on everything except GL because of it's context nonsense
+  return true;
+}
+
 bool GPUDevice::RecreateMainSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
                                       const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                       std::optional<bool> exclusive_fullscreen_control, Error* error)
@@ -723,8 +729,7 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
     0.0f, 0.0f, static_cast<float>(swap_chain->GetWidth()), static_cast<float>(swap_chain->GetHeight()), 0.0f, 1.0f);
   if (swap_chain->GetPreRotation() != WindowInfo::PreRotation::Identity)
   {
-    mproj =
-      GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(swap_chain->GetPreRotation())) * mproj;
+    mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(swap_chain->GetPreRotation())) * mproj;
   }
   PushUniformBuffer(&mproj, sizeof(mproj));
 

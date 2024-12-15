@@ -5762,7 +5762,7 @@ void System::DisplayWindowResized()
 
 void System::UpdateGTEAspectRatio()
 {
-  if (!IsValid())
+  if (!IsValidOrInitializing())
     return;
 
   DisplayAspectRatio gte_ar = g_settings.display_aspect_ratio;
