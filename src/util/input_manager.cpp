@@ -1358,9 +1358,12 @@ void InputManager::UpdateRelativeMouseMode()
   if (s_relative_mouse_mode == has_relative_mode_bindings && s_hide_host_mouse_cursor == hide_mouse_cursor)
     return;
 
+#ifndef __ANDROID__
   s_relative_mouse_mode = has_relative_mode_bindings;
   s_hide_host_mouse_cursor = hide_mouse_cursor;
-  UpdateRelativeMouseMode();
+#endif
+
+  UpdateHostMouseMode();
 }
 
 void InputManager::UpdateHostMouseMode()
