@@ -637,6 +637,12 @@ std::unique_ptr<GPUSwapChain> OpenGLDevice::CreateSwapChain(const WindowInfo& wi
   return std::make_unique<OpenGLSwapChain>(wi_copy, vsync_mode, allow_present_throttle, surface_handle);
 }
 
+bool OpenGLDevice::SwitchToSurfacelessRendering(Error* error)
+{
+  // We need to switch to surfaceless if we're temporarily destroying, otherwise we can't issue GL commands.
+  return m_gl_context->MakeCurrent(nullptr, error);
+}
+
 std::string OpenGLDevice::GetDriverInfo() const
 {
   const char* gl_vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));

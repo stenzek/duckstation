@@ -459,7 +459,13 @@ void Host::UpdateDisplayWindow(bool fullscreen)
 
   // if surfaceless, just leave it
   if (wi->IsSurfaceless())
+  {
+    DEV_LOG("Switching to surfaceless device");
+    if (!g_gpu_device->SwitchToSurfacelessRendering(&error))
+      ERROR_LOG("Failed to switch to surfaceless, rendering commands may fail: {}", error.GetDescription());
+
     return;
+  }
 
   if (!g_gpu_device->RecreateMainSwapChain(wi.value(), vsync_mode, allow_present_throttle,
                                            fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,

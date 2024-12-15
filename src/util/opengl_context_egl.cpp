@@ -8,6 +8,8 @@
 #include "common/error.h"
 #include "common/log.h"
 
+#include "glad/gl.h"
+
 #include <atomic>
 #include <cstring>
 #include <optional>
@@ -164,7 +166,7 @@ EGLSurface OpenGLContextEGL::CreatePlatformSurface(EGLConfig config, const Windo
 
 bool OpenGLContextEGL::SupportsSurfaceless() const
 {
-  return GLAD_EGL_KHR_surfaceless_context;
+  return (!IsGLES() || GLAD_GL_OES_surfaceless_context) && GLAD_EGL_KHR_surfaceless_context;
 }
 
 EGLDisplay OpenGLContextEGL::TryGetPlatformDisplay(void* display, EGLenum platform, const char* platform_ext)
@@ -294,7 +296,7 @@ void OpenGLContextEGL::DestroySurface(SurfaceHandle handle)
   EGLSurface surface = (EGLSurface)handle;
   if (m_current_surface == surface)
   {
-    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, SupportsSurfaceless() ? m_context : EGL_NO_CONTEXT);
     m_current_surface = EGL_NO_SURFACE;
   }
 

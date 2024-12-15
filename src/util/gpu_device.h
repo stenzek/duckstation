@@ -720,6 +720,7 @@ public:
                                                         const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                                                         std::optional<bool> exclusive_fullscreen_control,
                                                         Error* error) = 0;
+  virtual bool SwitchToSurfacelessRendering(Error* error);
 
   bool RecreateMainSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool allow_present_throttle,
                              const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
