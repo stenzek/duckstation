@@ -221,7 +221,7 @@ void ControllerSettingsWindow::onNewProfileClicked()
   {
     QMessageBox::critical(
       this, tr("Error"),
-      tr("Failed to save the new profile to '%1'.").arg(QString::fromStdString(temp_si.GetFileName())));
+      tr("Failed to save the new profile to '%1'.").arg(QString::fromStdString(temp_si.GetPath())));
     return;
   }
 

@@ -19,7 +19,7 @@ LOG_CHANNEL(Settings);
 // we only allow one ini to be parsed at any point in time.
 static std::mutex s_ini_load_save_mutex;
 
-INISettingsInterface::INISettingsInterface(std::string filename) : m_filename(std::move(filename)), m_ini(true, true)
+INISettingsInterface::INISettingsInterface(std::string filename) : m_path(std::move(filename)), m_ini(true, true)
 {
 }
 
@@ -31,7 +31,7 @@ INISettingsInterface::~INISettingsInterface()
 
 bool INISettingsInterface::Load(Error* error /* = nullptr */)
 {
-  if (m_filename.empty())
+  if (m_path.empty())
   {
     Error::SetStringView(error, "Filename is not set.");
     return false;
@@ -39,7 +39,7 @@ bool INISettingsInterface::Load(Error* error /* = nullptr */)
 
   std::unique_lock lock(s_ini_load_save_mutex);
   SI_Error err = SI_FAIL;
-  auto fp = FileSystem::OpenManagedCFile(m_filename.c_str(), "rb", error);
+  auto fp = FileSystem::OpenManagedCFile(m_path.c_str(), "rb", error);
   if (fp)
   {
     err = m_ini.LoadFile(fp.get());
@@ -50,16 +50,23 @@ bool INISettingsInterface::Load(Error* error /* = nullptr */)
   return (err == SI_OK);
 }
 
+bool INISettingsInterface::Load(std::string new_path, Error* error /*= nullptr*/)
+{
+  m_path = std::move(new_path);
+  m_ini.Reset();
+  return Load(error);
+}
+
 bool INISettingsInterface::Save(Error* error /* = nullptr */)
 {
-  if (m_filename.empty())
+  if (m_path.empty())
   {
     Error::SetStringView(error, "Filename is not set.");
     return false;
   }
 
   std::unique_lock lock(s_ini_load_save_mutex);
-  FileSystem::AtomicRenamedFile fp = FileSystem::CreateAtomicRenamedFile(m_filename, error);
+  FileSystem::AtomicRenamedFile fp = FileSystem::CreateAtomicRenamedFile(m_path, error);
   SI_Error err = SI_FAIL;
   if (fp)
   {
@@ -78,7 +85,7 @@ bool INISettingsInterface::Save(Error* error /* = nullptr */)
 
   if (err != SI_OK)
   {
-    WARNING_LOG("Failed to save settings to '{}'.", m_filename);
+    WARNING_LOG("Failed to save settings to '{}'.", m_path);
     return false;
   }
 

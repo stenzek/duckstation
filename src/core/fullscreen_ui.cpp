@@ -441,6 +441,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   // Settings
   SettingsPage settings_page = SettingsPage::Interface;
   std::unique_ptr<INISettingsInterface> game_settings_interface;
+  const GameDatabase::Entry* game_settings_db_entry;
   std::unique_ptr<GameList::Entry> game_settings_entry;
   std::vector<std::pair<std::string, bool>> game_list_directories_cache;
   GPUDevice::AdapterInfoList graphics_adapter_list_cache;
@@ -870,8 +871,8 @@ void FullscreenUI::Render()
 
       if (s_state.game_settings_interface->IsEmpty())
       {
-        if (FileSystem::FileExists(s_state.game_settings_interface->GetFileName().c_str()) &&
-            !FileSystem::DeleteFile(s_state.game_settings_interface->GetFileName().c_str(), &error))
+        if (FileSystem::FileExists(s_state.game_settings_interface->GetPath().c_str()) &&
+            !FileSystem::DeleteFile(s_state.game_settings_interface->GetPath().c_str(), &error))
         {
           ImGuiFullscreen::OpenInfoMessageDialog(
             FSUI_STR("Error"), fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
@@ -2724,6 +2725,7 @@ void FullscreenUI::SwitchToSettings()
 {
   s_state.game_settings_entry.reset();
   s_state.game_settings_interface.reset();
+  s_state.game_settings_db_entry = nullptr;
   s_state.game_patch_list = {};
   s_state.enabled_game_patch_cache = {};
   s_state.game_cheats_list = {};
@@ -2740,8 +2742,9 @@ void FullscreenUI::SwitchToSettings()
 void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
 {
   s_state.game_settings_entry.reset();
-  s_state.game_settings_interface = std::make_unique<INISettingsInterface>(System::GetGameSettingsPath(serial));
-  s_state.game_settings_interface->Load();
+  s_state.game_settings_db_entry = GameDatabase::GetEntryForSerial(serial);
+  s_state.game_settings_interface =
+    System::GetGameSettingsInterface(s_state.game_settings_db_entry, serial, true, false);
   PopulatePatchesAndCheatsList(serial);
   s_state.current_main_window = MainWindowType::Settings;
   s_state.settings_page = SettingsPage::Summary;
@@ -2828,7 +2831,7 @@ void FullscreenUI::DoCopyGameSettings()
   SetSettingsChanged(s_state.game_settings_interface.get());
 
   ShowToast("Game Settings Copied", fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
-                                                Path::GetFileTitle(s_state.game_settings_interface->GetFileName())));
+                                                Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
 }
 
 void FullscreenUI::DoClearGameSettings()
@@ -2837,13 +2840,13 @@ void FullscreenUI::DoClearGameSettings()
     return;
 
   s_state.game_settings_interface->Clear();
-  if (!s_state.game_settings_interface->GetFileName().empty())
-    FileSystem::DeleteFile(s_state.game_settings_interface->GetFileName().c_str());
+  if (!s_state.game_settings_interface->GetPath().empty())
+    FileSystem::DeleteFile(s_state.game_settings_interface->GetPath().c_str());
 
   SetSettingsChanged(s_state.game_settings_interface.get());
 
   ShowToast("Game Settings Cleared", fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."),
-                                                 Path::GetFileTitle(s_state.game_settings_interface->GetFileName())));
+                                                 Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
 }
 
 void FullscreenUI::DrawSettingsWindow()
@@ -3097,6 +3100,18 @@ void FullscreenUI::DrawSummarySettingsPage()
   }
 
   MenuHeading(FSUI_CSTR("Options"));
+
+  if (s_state.game_settings_db_entry && !s_state.game_settings_db_entry->disc_set_serials.empty())
+  {
+    // only enable for first disc
+    const bool is_first_disc =
+      (s_state.game_settings_db_entry->serial == s_state.game_settings_db_entry->disc_set_serials.front());
+    DrawToggleSetting(
+      GetEditingSettingsInterface(), FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Use Separate Disc Settings"),
+      FSUI_CSTR(
+        "Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc."),
+      "Main", "UseSeparateConfigForDiscSet", !is_first_disc, is_first_disc, false);
+  }
 
   if (MenuButton(FSUI_ICONSTR(ICON_FA_COPY, "Copy Settings"),
                  FSUI_CSTR("Copies the current global settings to this game.")))

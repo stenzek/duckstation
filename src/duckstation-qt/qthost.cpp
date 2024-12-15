@@ -227,14 +227,14 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
   // if there's no keys, just toss the whole thing out
   if (delete_if_empty && ini->IsEmpty())
   {
-    INFO_LOG("Removing empty gamesettings ini {}", Path::GetFileName(ini->GetFileName()));
+    INFO_LOG("Removing empty gamesettings ini {}", Path::GetFileName(ini->GetPath()));
 
     // grab the settings lock while we're writing the file, that way the CPU thread doesn't try
     // to read it at the same time.
     const auto lock = Host::GetSettingsLock();
 
-    if (FileSystem::FileExists(ini->GetFileName().c_str()) &&
-        !FileSystem::DeleteFile(ini->GetFileName().c_str(), &error))
+    if (FileSystem::FileExists(ini->GetPath().c_str()) &&
+        !FileSystem::DeleteFile(ini->GetPath().c_str(), &error))
     {
       Host::ReportErrorAsync(
         TRANSLATE_SV("QtHost", "Error"),
@@ -472,7 +472,7 @@ bool QtHost::InitializeConfig(std::string settings_filename)
         QStringLiteral(
           "Failed to save configuration to\n\n%1\n\nThe error was: %2\n\nPlease ensure this directory is writable. You "
           "can also try portable mode by creating portable.txt in the same directory you installed DuckStation into.")
-          .arg(QString::fromStdString(s_base_settings_interface->GetFileName()))
+          .arg(QString::fromStdString(s_base_settings_interface->GetPath()))
           .arg(QString::fromStdString(error.GetDescription())));
       return false;
     }

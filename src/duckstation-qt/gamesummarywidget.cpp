@@ -86,6 +86,13 @@ GameSummaryWidget::~GameSummaryWidget() = default;
 
 void GameSummaryWidget::reloadGameSettings()
 {
+  if (m_ui.separateDiscSettings->isVisible() && m_ui.separateDiscSettings->isEnabled())
+  {
+    m_ui.separateDiscSettings->setCheckState(
+      m_dialog->getBoolValue("Main", "UseSeparateConfigForDiscSet", std::nullopt).value_or(false) ? Qt::Checked :
+                                                                                                    Qt::Unchecked);
+  }
+
   if (m_dialog->getBoolValue("ControllerPorts", "UseGameSettingsForController", std::nullopt).value_or(false))
   {
     const QSignalBlocker sb(m_ui.inputProfile);
@@ -214,6 +221,28 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
       m_ui.entryType->setCurrentIndex(static_cast<int>(gentry->type));
   }
 
+  if (entry && !entry->disc_set_serials.empty())
+  {
+    if (serial == entry->disc_set_serials.front())
+    {
+      m_ui.separateDiscSettings->setCheckState(
+        m_dialog->getBoolValue("Main", "UseSeparateConfigForDiscSet", std::nullopt).value_or(false) ? Qt::Checked :
+                                                                                                      Qt::Unchecked);
+      connect(m_ui.separateDiscSettings, &QCheckBox::checkStateChanged, this,
+              &GameSummaryWidget::onSeparateDiscSettingsChanged);
+    }
+    else
+    {
+      // set disabled+checked if not first disc
+      m_ui.separateDiscSettings->setCheckState(Qt::Checked);
+      m_ui.separateDiscSettings->setEnabled(false);
+    }
+  }
+  else
+  {
+    m_ui.separateDiscSettings->setVisible(false);
+  }
+
   m_ui.compatibilityComments->setVisible(!m_compatibility_comments.isEmpty());
 
   m_ui.inputProfile->addItem(QIcon::fromTheme(QStringLiteral("global-line")), tr("Use Global Settings"));
@@ -226,6 +255,19 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
   populateCustomAttributes();
   populateTracksInfo();
   updateWindowTitle();
+}
+
+void GameSummaryWidget::onSeparateDiscSettingsChanged(Qt::CheckState state)
+{
+  if (state == Qt::Checked)
+    m_dialog->setBoolSettingValue("Main", "UseSeparateConfigForDiscSet", true);
+  else
+    m_dialog->removeSettingValue("Main", "UseSeparateConfigForDiscSet");
+}
+
+void GameSummaryWidget::updateWindowTitle()
+{
+  m_dialog->setGameTitle(m_ui.title->text().toStdString());
 }
 
 void GameSummaryWidget::populateCustomAttributes()
@@ -255,11 +297,6 @@ void GameSummaryWidget::populateCustomAttributes()
     m_ui.customLanguage->setCurrentIndex(entry->HasCustomLanguage() ? (static_cast<u32>(entry->custom_language) + 1) :
                                                                       0);
   }
-}
-
-void GameSummaryWidget::updateWindowTitle()
-{
-  m_dialog->setGameTitle(m_ui.title->text().toStdString());
 }
 
 void GameSummaryWidget::setCustomTitle(const std::string& text)
