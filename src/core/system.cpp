@@ -29,6 +29,7 @@
 #include "pad.h"
 #include "pcdrv.h"
 #include "performance_counters.h"
+#include "pio.h"
 #include "psf_loader.h"
 #include "save_state_version.h"
 #include "sio.h"
@@ -1321,12 +1322,8 @@ void System::LoadSettings(bool display_osd_messages)
     WarnAboutUnsafeSettings();
 
   // apply compatibility settings
-  if (g_settings.apply_compatibility_settings && !s_state.running_game_serial.empty())
-  {
-    const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(s_state.running_game_serial);
-    if (entry)
-      entry->ApplySettings(g_settings, display_osd_messages);
-  }
+  if (g_settings.apply_compatibility_settings && s_state.running_game_entry)
+    s_state.running_game_entry->ApplySettings(g_settings, display_osd_messages);
 
   // patch overrides take precedence over compat settings
   Cheats::ApplySettingOverrides();
@@ -1863,6 +1860,15 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   s_state.state = State::Running;
   SPU::GetOutputStream()->SetPaused(false);
 
+  // try to load the state, if it fails, bail out
+  if (!parameters.save_state.empty() && !LoadState(parameters.save_state.c_str(), error, false))
+  {
+    Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
+                        Path::GetFileName(parameters.save_state));
+    DestroySystem();
+    return false;
+  }
+
   FullscreenUI::OnSystemStarted();
 
   InputManager::UpdateHostMouseMode();
@@ -1877,15 +1883,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   Host::OnSystemStarted();
   Host::OnIdleStateChanged();
-
-  // try to load the state, if it fails, bail out
-  if (!parameters.save_state.empty() && !LoadState(parameters.save_state.c_str(), error, false))
-  {
-    Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
-                        Path::GetFileName(parameters.save_state));
-    DestroySystem();
-    return false;
-  }
 
   if (parameters.load_image_to_ram || g_settings.cdrom_load_image_to_ram)
     CDROM::PrecacheMedia();
@@ -1929,6 +1926,9 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   Bus::Initialize();
   CPU::Initialize();
   CDROM::Initialize();
+
+  if (!PIO::Initialize(error))
+    return false;
 
   // CDROM before GPU, that way we don't modeswitch.
   if (disc &&
@@ -2015,6 +2015,7 @@ void System::DestroySystem()
   CDROM::Shutdown();
   g_gpu.reset();
   DMA::Shutdown();
+  PIO::Shutdown();
   CPU::CodeCache::Shutdown();
   CPU::PGXP::Shutdown();
   CPU::Shutdown();
@@ -2552,6 +2553,12 @@ bool System::DoState(StateWrapper& sw, GPUTexture** host_texture, bool update_di
   if (!sw.DoMarker("SIO") || !SIO::DoState(sw))
     return false;
 
+  if (sw.GetVersion() >= 77)
+  {
+    if (!sw.DoMarker("PIO") || !PIO::DoState(sw))
+      return false;
+  }
+
   if (!sw.DoMarker("Events") || !TimingEvents::DoState(sw))
     return false;
 
@@ -2632,6 +2639,7 @@ void System::InternalReset()
     CPU::PGXP::Initialize();
 
   Bus::Reset();
+  PIO::Reset();
   DMA::Reset();
   InterruptController::Reset();
   g_gpu->Reset(true);
@@ -4495,6 +4503,17 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       UpdateSpeedLimiterState();
     }
 
+    if (g_settings.multitap_mode != old_settings.multitap_mode)
+      UpdateMultitaps();
+
+    if (g_settings.pio_device_type != old_settings.pio_device_type ||
+        g_settings.pio_flash_image_path != old_settings.pio_flash_image_path ||
+        g_settings.pio_flash_write_enable != old_settings.pio_flash_write_enable ||
+        g_settings.pio_switch_active != old_settings.pio_switch_active)
+    {
+      PIO::UpdateSettings(old_settings);
+    }
+
     if (g_settings.display_show_gpu_usage != old_settings.display_show_gpu_usage)
       g_gpu_device->SetGPUTimingEnabled(g_settings.display_show_gpu_usage);
 
@@ -4540,9 +4559,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (g_settings.display_osd_margin != old_settings.display_osd_margin)
       ImGuiManager::SetScreenMargin(g_settings.display_osd_margin);
   }
-
-  if (g_settings.multitap_mode != old_settings.multitap_mode)
-    UpdateMultitaps();
 
   Achievements::UpdateSettings(old_settings);
 
@@ -4743,6 +4759,8 @@ void System::WarnAboutUnsafeSettings()
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
       if (g_settings.use_old_mdec_routines)
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
+      if (g_settings.pio_device_type != PIODeviceType::None)
+        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));
       if (g_settings.pcdrv_enable)
         APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
       if (g_settings.bios_patch_fast_boot)

@@ -14,6 +14,7 @@
 #include "interrupt_controller.h"
 #include "mdec.h"
 #include "pad.h"
+#include "pio.h"
 #include "psf_loader.h"
 #include "settings.h"
 #include "sio.h"
@@ -42,8 +43,6 @@
 #include <utility>
 
 LOG_CHANNEL(Bus);
-
-// TODO: Get rid of page code bits, instead use page faults to track SMC.
 
 // Exports for external debugger access
 #ifndef __ANDROID__
@@ -138,8 +137,6 @@ std::array<TickCount, 3> g_exp2_access_time = {};
 std::array<TickCount, 3> g_bios_access_time = {};
 std::array<TickCount, 3> g_cdrom_access_time = {};
 std::array<TickCount, 3> g_spu_access_time = {};
-
-static std::vector<u8> s_exp1_rom;
 
 static MEMCTRL s_MEMCTRL = {};
 static RAM_SIZE_REG s_RAM_SIZE = {};
@@ -518,6 +515,8 @@ void Bus::RecalculateMemoryTimings()
     CalculateMemoryTiming(s_MEMCTRL.cdrom_delay_size, s_MEMCTRL.common_delay);
   std::tie(g_spu_access_time[0], g_spu_access_time[1], g_spu_access_time[2]) =
     CalculateMemoryTiming(s_MEMCTRL.spu_delay_size, s_MEMCTRL.common_delay);
+  std::tie(g_exp1_access_time[0], g_exp1_access_time[1], g_exp1_access_time[2]) =
+    CalculateMemoryTiming(s_MEMCTRL.exp1_delay_size, s_MEMCTRL.common_delay);
 
   TRACE_LOG("BIOS Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
             s_MEMCTRL.bios_delay_size.data_bus_16bit ? 16 : 8, g_bios_access_time[0] + 1, g_bios_access_time[1] + 1,
@@ -526,6 +525,9 @@ void Bus::RecalculateMemoryTimings()
             s_MEMCTRL.cdrom_delay_size.data_bus_16bit ? 16 : 8, g_cdrom_access_time[0] + 1, g_cdrom_access_time[1] + 1,
             g_cdrom_access_time[2] + 1);
   TRACE_LOG("SPU Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
+            s_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, g_spu_access_time[0] + 1, g_spu_access_time[1] + 1,
+            g_spu_access_time[2] + 1);
+  TRACE_LOG("EXP1 Memory Timing: {} bit bus, byte={}, halfword={}, word={}",
             s_MEMCTRL.spu_delay_size.data_bus_16bit ? 16 : 8, g_spu_access_time[0] + 1, g_spu_access_time[1] + 1,
             g_spu_access_time[2] + 1);
 }
@@ -924,11 +926,6 @@ std::optional<PhysicalMemoryAddress> Bus::SearchMemory(PhysicalMemoryAddress sta
   }
 
   return std::nullopt;
-}
-
-void Bus::SetExpansionROM(std::vector<u8> data)
-{
-  s_exp1_rom = std::move(data);
 }
 
 void Bus::AddTTYCharacter(char ch)
@@ -1476,10 +1473,10 @@ template<MemoryAccessSize size>
 u32 Bus::ICacheReadHandler(VirtualMemoryAddress address)
 {
   const u32 line = CPU::GetICacheLine(address);
-  const u8* line_data = &CPU::g_state.icache_data[line * CPU::ICACHE_LINE_SIZE];
+  const u32* line_data = &CPU::g_state.icache_data[line * CPU::ICACHE_WORDS_PER_LINE];
   const u32 offset = CPU::GetICacheLineOffset(address);
   u32 result;
-  std::memcpy(&result, &line_data[offset], sizeof(result));
+  std::memcpy(&result, reinterpret_cast<const u8*>(line_data) + offset, sizeof(result));
   return result;
 }
 
@@ -1487,14 +1484,15 @@ template<MemoryAccessSize size>
 void Bus::ICacheWriteHandler(VirtualMemoryAddress address, u32 value)
 {
   const u32 line = CPU::GetICacheLine(address);
+  u32* line_data = &CPU::g_state.icache_data[line * CPU::ICACHE_WORDS_PER_LINE];
   const u32 offset = CPU::GetICacheLineOffset(address);
   CPU::g_state.icache_tags[line] = CPU::GetICacheTagForAddress(address) | CPU::ICACHE_INVALID_BITS;
   if constexpr (size == MemoryAccessSize::Byte)
-    std::memcpy(&CPU::g_state.icache_data[line * CPU::ICACHE_LINE_SIZE + offset], &value, sizeof(u8));
+    std::memcpy(reinterpret_cast<u8*>(line_data) + offset, &value, sizeof(u8));
   else if constexpr (size == MemoryAccessSize::HalfWord)
-    std::memcpy(&CPU::g_state.icache_data[line * CPU::ICACHE_LINE_SIZE + offset], &value, sizeof(u16));
+    std::memcpy(reinterpret_cast<u8*>(line_data) + offset, &value, sizeof(u16));
   else
-    std::memcpy(&CPU::g_state.icache_data[line * CPU::ICACHE_LINE_SIZE + offset], &value, sizeof(u32));
+    std::memcpy(reinterpret_cast<u8*>(line_data) + offset, &value, sizeof(u32));
 }
 
 template<MemoryAccessSize size>
@@ -1502,53 +1500,49 @@ u32 Bus::EXP1ReadHandler(VirtualMemoryAddress address)
 {
   BUS_CYCLES(g_exp1_access_time[static_cast<u32>(size)]);
 
+  // TODO: auto-increment should be handled elsewhere...
+
   const u32 offset = address & EXP1_MASK;
-  u32 value;
-  if (s_exp1_rom.empty())
+  u32 ret;
+
+  if constexpr (size >= MemoryAccessSize::HalfWord)
   {
-    // EXP1 not present.
-    value = UINT32_C(0xFFFFFFFF);
-  }
-  else if (offset == 0x20018)
-  {
-    // Bit 0 - Action Replay On/Off
-    value = UINT32_C(1);
+    ret = g_pio_device->ReadHandler(offset);
+    ret |= ZeroExtend32(g_pio_device->ReadHandler(offset + 1)) << 8;
+    if constexpr (size == MemoryAccessSize::Word)
+    {
+      ret |= ZeroExtend32(g_pio_device->ReadHandler(offset + 2)) << 16;
+      ret |= ZeroExtend32(g_pio_device->ReadHandler(offset + 3)) << 24;
+    }
   }
   else
   {
-    const u32 transfer_size = u32(1) << static_cast<u32>(size);
-    if ((offset + transfer_size) > s_exp1_rom.size())
-    {
-      value = UINT32_C(0);
-    }
-    else
-    {
-      if constexpr (size == MemoryAccessSize::Byte)
-      {
-        value = ZeroExtend32(s_exp1_rom[offset]);
-      }
-      else if constexpr (size == MemoryAccessSize::HalfWord)
-      {
-        u16 halfword;
-        std::memcpy(&halfword, &s_exp1_rom[offset], sizeof(halfword));
-        value = ZeroExtend32(halfword);
-      }
-      else
-      {
-        std::memcpy(&value, &s_exp1_rom[offset], sizeof(value));
-      }
-
-      // Log_DevPrintf("EXP1 read: 0x%08X -> 0x%08X", address, value);
-    }
+    ret = ZeroExtend32(g_pio_device->ReadHandler(offset));
   }
 
-  return value;
+  return ret;
 }
 
 template<MemoryAccessSize size>
 void Bus::EXP1WriteHandler(VirtualMemoryAddress address, u32 value)
 {
-  WARNING_LOG("EXP1 write: 0x{:08X} <- 0x{:08X}", address, value);
+  // TODO: auto-increment should be handled elsewhere...
+
+  const u32 offset = address & EXP1_MASK;
+  if constexpr (size >= MemoryAccessSize::HalfWord)
+  {
+    g_pio_device->WriteHandler(offset, Truncate8(value));
+    g_pio_device->WriteHandler(offset + 1, Truncate8(value >> 8));
+    if constexpr (size == MemoryAccessSize::Word)
+    {
+      g_pio_device->WriteHandler(offset + 2, Truncate8(value >> 16));
+      g_pio_device->WriteHandler(offset + 3, Truncate8(value >> 24));
+    }
+  }
+  else
+  {
+    g_pio_device->WriteHandler(offset, Truncate8(value));
+  }
 }
 
 template<MemoryAccessSize size>

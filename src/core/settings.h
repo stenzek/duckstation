@@ -297,6 +297,11 @@ struct Settings
 
   MultitapMode multitap_mode = DEFAULT_MULTITAP_MODE;
 
+  PIODeviceType pio_device_type = DEFAULT_PIO_DEVICE_TYPE;
+  std::string pio_flash_image_path;
+  bool pio_switch_active = true;
+  bool pio_flash_write_enable = false;
+
   std::string pcdrv_root;
   bool pcdrv_enable_writes = false;
 
@@ -486,6 +491,10 @@ struct Settings
   static const char* GetSaveStateCompressionModeName(SaveStateCompressionMode mode);
   static const char* GetSaveStateCompressionModeDisplayName(SaveStateCompressionMode mode);
 
+  static std::optional<PIODeviceType> ParsePIODeviceTypeName(const char* str);
+  static const char* GetPIODeviceTypeModeName(PIODeviceType type);
+  static const char* GetPIODeviceTypeModeDisplayName(PIODeviceType type);
+
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::Automatic;
   static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
   static constexpr GPULineDetectMode DEFAULT_GPU_LINE_DETECT_MODE = GPULineDetectMode::Disabled;
@@ -535,6 +544,7 @@ struct Settings
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_1_TYPE = MemoryCardType::PerGameTitle;
   static constexpr MemoryCardType DEFAULT_MEMORY_CARD_2_TYPE = MemoryCardType::None;
   static constexpr MultitapMode DEFAULT_MULTITAP_MODE = MultitapMode::Disabled;
+  static constexpr PIODeviceType DEFAULT_PIO_DEVICE_TYPE = PIODeviceType::None;
 
   static constexpr s32 DEFAULT_ACHIEVEMENT_NOTIFICATION_TIME = 5;
   static constexpr s32 DEFAULT_LEADERBOARD_NOTIFICATION_TIME = 10;

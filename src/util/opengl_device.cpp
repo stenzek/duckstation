@@ -282,20 +282,10 @@ bool OpenGLDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
     return false;
   }
 
-#if 0
-  // Is this needed?
-  m_window_info = m_gl_context->GetWindowInfo();
-  m_vsync_mode = ;
-#endif
-
-  const bool opengl_is_available =
-    ((!m_gl_context->IsGLES() && (GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_uniform_buffer_object)) ||
-     (m_gl_context->IsGLES() && GLAD_GL_ES_VERSION_3_1));
-  if (!opengl_is_available)
+  // Context version restrictions are mostly fine here, but we still need to check for UBO for GL3.0.
+  if (!m_gl_context->IsGLES() && !GLAD_GL_ARB_uniform_buffer_object)
   {
-    Host::ReportErrorAsync(TRANSLATE_SV("GPUDevice", "Error"),
-                           TRANSLATE_SV("GPUDevice", "OpenGL renderer unavailable, your driver or hardware is not "
-                                                     "recent enough. OpenGL 3.1 or OpenGL ES 3.1 is required."));
+    Error::SetStringView(error, "OpenGL 3.1 or GL_ARB_uniform_buffer_object is required.");
     m_gl_context.reset();
     return false;
   }
@@ -1040,17 +1030,6 @@ void OpenGLDevice::UnbindPipeline(const OpenGLPipeline* pl)
   {
     m_current_pipeline = nullptr;
     glUseProgram(0);
-  }
-}
-
-ALWAYS_INLINE_RELEASE void OpenGLDevice::SetVertexBufferOffsets(u32 base_vertex)
-{
-  const OpenGLPipeline::VertexArrayCacheKey& va = m_last_vao->first;
-  const size_t stride = va.vertex_attribute_stride;
-  for (u32 i = 0; i < va.num_vertex_attributes; i++)
-  {
-    glBindVertexBuffer(i, m_vertex_buffer->GetGLBufferId(), base_vertex * stride + va.vertex_attributes[i].offset,
-                       static_cast<GLsizei>(stride));
   }
 }
 

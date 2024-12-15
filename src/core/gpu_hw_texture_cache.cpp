@@ -2942,6 +2942,9 @@ bool GPUTextureCache::HasValidReplacementExtension(const std::string_view path)
 
 void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements, bool load_texture_replacements)
 {
+  if (s_state.game_id.empty())
+    return;
+
   FileSystem::FindResultsArray files;
   FileSystem::FindFiles(GetTextureReplacementDirectory().c_str(), "*",
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE, &files);
@@ -3028,6 +3031,9 @@ void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& ro
                                                     bool load_vram_write_replacement_aliases,
                                                     bool load_texture_replacement_aliases)
 {
+  if (s_state.game_id.empty())
+    return;
+
   const std::string source_dir = GetTextureReplacementDirectory();
 
   for (const ryml::ConstNodeRef& current : root.cchildren())
@@ -3303,8 +3309,18 @@ bool GPUTextureCache::EnsureGameDirectoryExists()
 
 std::string GPUTextureCache::GetTextureReplacementDirectory()
 {
-  return Path::Combine(EmuFolders::Textures,
-                       SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "replacements", s_state.game_id));
+  std::string dir = Path::Combine(
+    EmuFolders::Textures, SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "replacements", s_state.game_id));
+  if (!FileSystem::DirectoryExists(dir.c_str()))
+  {
+    // Check for the old directory structure without a replacements subdirectory.
+    std::string altdir = Path::Combine(EmuFolders::Textures, s_state.game_id);
+    if (FileSystem::DirectoryExists(altdir.c_str()))
+      WARNING_LOG("Using deprecated texture replacement directory {}", altdir);
+    dir = std::move(altdir);
+  }
+
+  return dir;
 }
 
 std::string GPUTextureCache::GetTextureDumpDirectory()

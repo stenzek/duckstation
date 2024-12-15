@@ -35,6 +35,7 @@ public:
   ALWAYS_INLINE bool IsWriting() const { return (m_mode == Mode::Write); }
   ALWAYS_INLINE u32 GetVersion() const { return m_version; }
   ALWAYS_INLINE size_t GetPosition() const { return m_pos; }
+  ALWAYS_INLINE void SetPosition(size_t pos) { m_pos = pos; }
 
   /// Overload for integral or floating-point types. Writes bytes as-is.
   template<typename T, std::enable_if_t<std::is_integral_v<T> || std::is_floating_point_v<T>, int> = 0>

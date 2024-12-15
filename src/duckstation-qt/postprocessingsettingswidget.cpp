@@ -284,16 +284,17 @@ PostProcessingShaderConfigWidget::~PostProcessingShaderConfigWidget() = default;
 
 void PostProcessingShaderConfigWidget::updateConfigForOption(const PostProcessing::ShaderOption& option)
 {
-  const auto lock = Host::GetSettingsLock();
+  auto lock = Host::GetSettingsLock();
   SettingsInterface& si = m_widget->getSettingsInterfaceToUpdate();
   PostProcessing::Config::SetStageOption(si, m_section, m_stage_index, option);
+  lock.unlock();
   m_widget->commitSettingsUpdate();
 }
 
 void PostProcessingShaderConfigWidget::onResetDefaultsClicked()
 {
   {
-    const auto lock = Host::GetSettingsLock();
+    auto lock = Host::GetSettingsLock();
     SettingsInterface& si = m_widget->getSettingsInterfaceToUpdate();
     for (PostProcessing::ShaderOption& option : m_options)
     {
@@ -303,6 +304,7 @@ void PostProcessingShaderConfigWidget::onResetDefaultsClicked()
       option.value = option.default_value;
       PostProcessing::Config::UnsetStageOption(si, m_section, m_stage_index, option);
     }
+    lock.unlock();
     m_widget->commitSettingsUpdate();
   }
 

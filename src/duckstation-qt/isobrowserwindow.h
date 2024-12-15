@@ -33,6 +33,7 @@ private Q_SLOTS:
   void resizeFileListColumns();
 
 private:
+  void enableUi(bool enabled);
   void populateDirectories();
   void populateSubdirectories(std::string_view dir, QTreeWidgetItem* parent);
   void populateFiles(const QString& path);

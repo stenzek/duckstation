@@ -361,9 +361,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
 
   use_old_mdec_routines = si.GetBoolValue("Hacks", "UseOldMDECRoutines", false);
   export_shared_memory = si.GetBoolValue("Hacks", "ExportSharedMemory", false);
-  pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
-  pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
-  pcdrv_root = si.GetStringValue("PCDrv", "Root");
 
   dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
   dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
@@ -481,6 +478,17 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   texture_replacements.config.vram_write_dump_height_threshold =
     si.GetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
 
+  pio_device_type = ParsePIODeviceTypeName(
+                      si.GetTinyStringValue("PIO", "DeviceType", GetPIODeviceTypeModeName(DEFAULT_PIO_DEVICE_TYPE)))
+                      .value_or(DEFAULT_PIO_DEVICE_TYPE);
+  pio_flash_image_path = si.GetStringValue("PIO", "FlashImagePath");
+  pio_flash_write_enable = si.GetBoolValue("PIO", "FlashImageWriteEnable", false);
+  pio_switch_active = si.GetBoolValue("PIO", "SwitchActive", true);
+
+  pcdrv_enable = si.GetBoolValue("PCDrv", "Enabled", false);
+  pcdrv_enable_writes = si.GetBoolValue("PCDrv", "EnableWrites", false);
+  pcdrv_root = si.GetStringValue("PCDrv", "Root");
+
 #ifdef __ANDROID__
   // Android users are incredibly silly and don't understand that stretch is in the aspect ratio list...
   if (si.GetBoolValue("Display", "Stretch", false))
@@ -553,9 +561,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
   si.SetBoolValue("GPU", "AccurateBlending", gpu_accurate_blending);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
-  si.SetStringValue(
-    "GPU", "SpriteTextureFilter",
-    (gpu_sprite_texture_filter != gpu_texture_filter) ? GetTextureFilterName(gpu_sprite_texture_filter) : "");
+  si.SetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_sprite_texture_filter));
   si.SetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(gpu_line_detect_mode));
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
@@ -651,10 +657,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetIntValue("Hacks", "GPUMaxRunAhead", gpu_max_run_ahead);
   }
 
-  si.SetBoolValue("PCDrv", "Enabled", pcdrv_enable);
-  si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);
-  si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
-
   si.SetBoolValue("BIOS", "TTYLogging", bios_tty_logging);
   si.SetBoolValue("BIOS", "PatchFastBoot", bios_patch_fast_boot);
   si.SetBoolValue("BIOS", "FastForwardBoot", bios_fast_forward_boot);
@@ -748,6 +750,15 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
                   texture_replacements.config.vram_write_dump_width_threshold);
   si.SetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold",
                   texture_replacements.config.vram_write_dump_height_threshold);
+
+  si.SetStringValue("PIO", "DeviceType", GetPIODeviceTypeModeName(pio_device_type));
+  si.SetStringValue("PIO", "FlashImagePath", pio_flash_image_path.c_str());
+  si.SetBoolValue("PIO", "FlashImageWriteEnable", pio_flash_write_enable);
+  si.SetBoolValue("PIO", "SwitchActive", pio_switch_active);
+
+  si.SetBoolValue("PCDrv", "Enabled", pcdrv_enable);
+  si.SetBoolValue("PCDrv", "EnableWrites", pcdrv_enable_writes);
+  si.SetStringValue("PCDrv", "Root", pcdrv_root.c_str());
 }
 
 void Settings::Clear(SettingsInterface& si)
@@ -966,10 +977,11 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.cdrom_mute_cd_audio = false;
     g_settings.texture_replacements.enable_vram_write_replacements = false;
     g_settings.use_old_mdec_routines = false;
-    g_settings.pcdrv_enable = false;
     g_settings.bios_patch_fast_boot = false;
     g_settings.runahead_frames = 0;
     g_settings.rewind_enable = false;
+    g_settings.pio_device_type = PIODeviceType::None;
+    g_settings.pcdrv_enable = false;
   }
 
   // fast forward boot requires fast boot
@@ -2176,6 +2188,42 @@ const char* Settings::GetSaveStateCompressionModeDisplayName(SaveStateCompressio
 {
   return Host::TranslateToCString("Settings", s_save_state_compression_mode_display_names[static_cast<size_t>(mode)],
                                   "SaveStateCompressionMode");
+}
+
+static constexpr const std::array s_pio_device_type_names = {
+  "None",
+  "XplorerCart",
+};
+static constexpr const std::array s_pio_device_type_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "None", "PIODeviceType"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Xplorer/Xploder Cartridge", "PIODeviceType"),
+};
+static_assert(s_pio_device_type_names.size() == static_cast<size_t>(PIODeviceType::MaxCount));
+static_assert(s_pio_device_type_display_names.size() == static_cast<size_t>(PIODeviceType::MaxCount));
+
+std::optional<PIODeviceType> Settings::ParsePIODeviceTypeName(const char* str)
+{
+  u32 index = 0;
+  for (const char* name : s_pio_device_type_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<PIODeviceType>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetPIODeviceTypeModeName(PIODeviceType type)
+{
+  return s_pio_device_type_names[static_cast<size_t>(type)];
+}
+
+const char* Settings::GetPIODeviceTypeModeDisplayName(PIODeviceType type)
+{
+  return Host::TranslateToCString("Settings", s_pio_device_type_display_names[static_cast<size_t>(type)],
+                                  "PIODeviceType");
 }
 
 std::string EmuFolders::AppRoot;

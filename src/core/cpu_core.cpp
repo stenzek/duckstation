@@ -10,6 +10,7 @@
 #include "gte.h"
 #include "host.h"
 #include "pcdrv.h"
+#include "pio.h"
 #include "settings.h"
 #include "system.h"
 #include "timing_event.h"
@@ -85,7 +86,7 @@ template<PGXPMode pgxp_mode, bool debug>
 static bool FetchInstruction();
 static bool FetchInstructionForInterpreterFallback();
 template<bool add_ticks, bool icache_read = false, u32 word_count = 1, bool raise_exceptions>
-static bool DoInstructionRead(PhysicalMemoryAddress address, void* data);
+static bool DoInstructionRead(PhysicalMemoryAddress address, u32* data);
 template<MemoryAccessType type, MemoryAccessSize size>
 static bool DoSafeMemoryAccess(VirtualMemoryAddress address, u32& value);
 template<MemoryAccessType type, MemoryAccessSize size>
@@ -2671,7 +2672,7 @@ void CPU::UpdateMemoryPointers()
 }
 
 template<bool add_ticks, bool icache_read, u32 word_count, bool raise_exceptions>
-ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address, void* data)
+ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address, u32* data)
 {
   using namespace Bus;
 
@@ -2690,6 +2691,14 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
     std::memcpy(data, &g_bios[(address - BIOS_BASE) & BIOS_MASK], sizeof(u32) * word_count);
     if constexpr (add_ticks)
       g_state.pending_ticks += g_bios_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
+
+    return true;
+  }
+  else if (address >= EXP1_BASE && address < (EXP1_BASE + EXP1_SIZE))
+  {
+    g_pio_device->CodeReadHandler(address & EXP1_MASK, data, word_count);
+    if constexpr (add_ticks)
+      g_state.pending_ticks += g_exp1_access_time[static_cast<u32>(MemoryAccessSize::Word)] * word_count;
 
     return true;
   }
@@ -2766,34 +2775,33 @@ void CPU::CheckAndUpdateICacheTags(u32 line_count)
 u32 CPU::FillICache(VirtualMemoryAddress address)
 {
   const u32 line = GetICacheLine(address);
-  u8* line_data = &g_state.icache_data[line * ICACHE_LINE_SIZE];
+  const u32 line_word_offset = GetICacheLineWordOffset(address);
+  u32* const line_data = g_state.icache_data.data() + (line * ICACHE_WORDS_PER_LINE);
+  u32* const offset_line_data = line_data + line_word_offset;
   u32 line_tag;
-  switch ((address >> 2) & 0x03u)
+  switch (line_word_offset)
   {
     case 0:
-      DoInstructionRead<true, true, 4, false>(address & ~(ICACHE_LINE_SIZE - 1u), line_data);
+      DoInstructionRead<true, true, 4, false>(address & ~(ICACHE_LINE_SIZE - 1u), offset_line_data);
       line_tag = GetICacheTagForAddress(address);
       break;
     case 1:
-      DoInstructionRead<true, true, 3, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x4), line_data + 0x4);
+      DoInstructionRead<true, true, 3, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x4), offset_line_data);
       line_tag = GetICacheTagForAddress(address) | 0x1;
       break;
     case 2:
-      DoInstructionRead<true, true, 2, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x8), line_data + 0x8);
+      DoInstructionRead<true, true, 2, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0x8), offset_line_data);
       line_tag = GetICacheTagForAddress(address) | 0x3;
       break;
     case 3:
     default:
-      DoInstructionRead<true, true, 1, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), line_data + 0xC);
+      DoInstructionRead<true, true, 1, false>(address & (~(ICACHE_LINE_SIZE - 1u) | 0xC), offset_line_data);
       line_tag = GetICacheTagForAddress(address) | 0x7;
       break;
   }
-  g_state.icache_tags[line] = line_tag;
 
-  const u32 offset = GetICacheLineOffset(address);
-  u32 result;
-  std::memcpy(&result, &line_data[offset], sizeof(result));
-  return result;
+  g_state.icache_tags[line] = line_tag;
+  return offset_line_data[0];
 }
 
 void CPU::ClearICache()
@@ -2806,11 +2814,9 @@ namespace CPU {
 ALWAYS_INLINE_RELEASE static u32 ReadICache(VirtualMemoryAddress address)
 {
   const u32 line = GetICacheLine(address);
-  const u8* line_data = &g_state.icache_data[line * ICACHE_LINE_SIZE];
-  const u32 offset = GetICacheLineOffset(address);
-  u32 result;
-  std::memcpy(&result, &line_data[offset], sizeof(result));
-  return result;
+  const u32 line_word_offset = GetICacheLineWordOffset(address);
+  const u32* const line_data = g_state.icache_data.data() + (line * ICACHE_WORDS_PER_LINE);
+  return line_data[line_word_offset];
 }
 } // namespace CPU
 

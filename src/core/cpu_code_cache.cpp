@@ -253,15 +253,15 @@ static constexpr LUTRangeList GetLUTRanges()
 {
   const LUTRangeList ranges = {{
     {0x00000000, 0x00800000}, // RAM
-    {0x1F000000, 0x1F800000}, // EXP1
+    {0x1F000000, 0x1F060000}, // EXP1
     {0x1FC00000, 0x1FC80000}, // BIOS
 
     {0x80000000, 0x80800000}, // RAM
-    {0x9F000000, 0x9F800000}, // EXP1
+    {0x9F000000, 0x9F060000}, // EXP1
     {0x9FC00000, 0x9FC80000}, // BIOS
 
     {0xA0000000, 0xA0800000}, // RAM
-    {0xBF000000, 0xBF800000}, // EXP1
+    {0xBF000000, 0xBF060000}, // EXP1
     {0xBFC00000, 0xBFC80000}  // BIOS
   }};
   return ranges;
@@ -752,11 +752,12 @@ template<PGXPMode pgxp_mode>
   if (g_state.pending_ticks >= g_state.downcount)                                                                      \
     break;
 
-  for (;;)
-  {
+  if (g_state.pending_ticks >= g_state.downcount)
     TimingEvents::RunEvents();
 
-    while (g_state.pending_ticks < g_state.downcount)
+  for (;;)
+  {
+    for (;;)
     {
 #if 0
       LogCurrentState();
@@ -830,6 +831,8 @@ template<PGXPMode pgxp_mode>
       CHECK_DOWNCOUNT();
       continue;
     }
+
+    TimingEvents::RunEvents();
   }
 }
 
@@ -1418,6 +1421,22 @@ const void* CPU::CodeCache::CreateBlockLink(Block* block, void* code, u32 newpc)
   return dst;
 }
 
+const void* CPU::CodeCache::CreateSelfBlockLink(Block* block, void* code, const void* block_start)
+{
+  const void* dst = g_dispatcher;
+  if (g_settings.cpu_recompiler_block_linking)
+  {
+    dst = block_start;
+
+    BlockLinkMap::iterator iter = s_block_links.emplace(block->pc, code);
+    DebugAssert(block->num_exit_links < MAX_BLOCK_EXIT_LINKS);
+    block->exit_links[block->num_exit_links++] = iter;
+  }
+
+  DEBUG_LOG("Self linking {} with dst pc {:08X} to {}", code, block->pc, dst);
+  return dst;
+}
+
 void CPU::CodeCache::BacklinkBlocks(u32 pc, const void* dst)
 {
   if (!g_settings.cpu_recompiler_block_linking)
@@ -1673,7 +1692,8 @@ PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exc
 
     // if we're writing to ram, let it go through a few times, and use manual block protection to sort it out
     // TODO: path for manual protection to return back to read-only pages
-    if (is_write && !g_state.cop0_regs.sr.Isc && AddressInRAM(guest_address))
+    if (is_write && !g_state.cop0_regs.sr.Isc && GetSegmentForAddress(guest_address) != CPU::Segment::KSEG2 &&
+        AddressInRAM(guest_address))
     {
       DEV_LOG("Ignoring fault due to RAM write @ 0x{:08X}", guest_address);
       InvalidateBlocksWithPageIndex(Bus::GetRAMCodePageIndex(guest_address));

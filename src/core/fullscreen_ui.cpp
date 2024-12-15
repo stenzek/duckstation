@@ -334,12 +334,12 @@ static void DrawIntRectSetting(SettingsInterface* bsi, const char* title, const 
                                int min_value, int max_value, const char* format = "%d", bool enabled = true,
                                float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
                                ImFont* summary_font = g_medium_font);
-static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
-                                  const char* key, const char* default_value, const char* const* options,
-                                  const char* const* option_values, size_t option_count, bool enabled = true,
-                                  float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                                  ImFont* font = g_large_font, ImFont* summary_font = g_medium_font);
 #endif
+static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+                                  const char* key, const char* default_value, std::span<const char* const> options,
+                                  std::span<const char* const> option_values, bool enabled = true,
+                                  float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                                  ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 template<typename DataType, typename SizeType>
 static void DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                             const char* key, DataType default_value,
@@ -2463,28 +2463,23 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
   ImGui::PopFont();
 }
 
-#if 0
-void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary,
-                                         const char* section, const char* key, const char* default_value,
-                                         const char* const* options, const char* const* option_values,
-                                         size_t option_count, bool enabled, float height, ImFont* font,
-                                         ImFont* summary_font)
+[[maybe_unused]] void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title,
+                                                          const char* summary, const char* section, const char* key,
+                                                          const char* default_value,
+                                                          std::span<const char* const> options,
+                                                          std::span<const char* const> option_values, bool enabled,
+                                                          float height, ImFont* font, ImFont* summary_font)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
     section, key, game_settings ? std::nullopt : std::optional<const char*>(default_value)));
 
-  if (option_count == 0)
-  {
-    // select from null entry
-    while (options && options[option_count] != nullptr)
-      option_count++;
-  }
+  DebugAssert(options.size() == option_values.size());
 
-  size_t index = option_count;
+  size_t index = options.size();
   if (value.has_value())
   {
-    for (size_t i = 0; i < option_count; i++)
+    for (size_t i = 0; i < options.size(); i++)
     {
       if (value == option_values[i])
       {
@@ -2495,15 +2490,15 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
   }
 
   if (MenuButtonWithValue(title, summary,
-                          value.has_value() ? ((index < option_count) ? options[index] : "Unknown") :
-                                              "Use Global Setting",
+                          value.has_value() ? ((index < options.size()) ? options[index] : FSUI_CSTR("Unknown")) :
+                                              FSUI_CSTR("Use Global Setting"),
                           enabled, height, font, summary_font))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
-    cd_options.reserve(option_count + 1);
+    cd_options.reserve(options.size() + 1);
     if (game_settings)
-      cd_options.emplace_back("Use Global Setting", !value.has_value());
-    for (size_t i = 0; i < option_count; i++)
+      cd_options.emplace_back(FSUI_CSTR("Use Global Setting"), !value.has_value());
+    for (size_t i = 0; i < options.size(); i++)
       cd_options.emplace_back(options[i], (value.has_value() && i == static_cast<size_t>(index)));
     OpenChoiceDialog(title, false, std::move(cd_options),
                      [game_settings, section, key, option_values](s32 index, const std::string& title, bool checked) {
@@ -2530,7 +2525,6 @@ void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* tit
                      });
   }
 }
-#endif
 
 template<typename DataType, typename SizeType>
 void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,

@@ -23,6 +23,8 @@
 
 LOG_CHANNEL(GPUDevice);
 
+namespace {
+
 struct PipelineDiskCacheFooter
 {
   u32 version;
@@ -42,6 +44,28 @@ struct PipelineDiskCacheIndexEntry
   u32 compressed_size;
 };
 static_assert(sizeof(PipelineDiskCacheIndexEntry) == 112); // No padding
+
+struct VAMapping
+{
+  GLenum type;
+  GLboolean normalized;
+  GLboolean integer;
+};
+
+} // namespace
+
+static constexpr const std::array<VAMapping, static_cast<u8>(GPUPipeline::VertexAttribute::Type::MaxCount)>
+  s_vao_format_mapping = {{
+    {GL_FLOAT, GL_FALSE, GL_FALSE},         // Float
+    {GL_UNSIGNED_BYTE, GL_FALSE, GL_TRUE},  // UInt8
+    {GL_BYTE, GL_FALSE, GL_TRUE},           // SInt8
+    {GL_UNSIGNED_BYTE, GL_TRUE, GL_FALSE},  // UNorm8
+    {GL_UNSIGNED_SHORT, GL_FALSE, GL_TRUE}, // UInt16
+    {GL_SHORT, GL_FALSE, GL_TRUE},          // SInt16
+    {GL_UNSIGNED_SHORT, GL_TRUE, GL_FALSE}, // UNorm16
+    {GL_UNSIGNED_INT, GL_FALSE, GL_TRUE},   // UInt32
+    {GL_INT, GL_FALSE, GL_TRUE},            // SInt32
+  }};
 
 static GLenum GetGLShaderType(GPUShaderStage stage)
 {
@@ -375,14 +399,25 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig,
       }
     }
 
-    glBindFragDataLocation(program_id, 0, "o_col0");
+    // Output colour is implicit in GLES.
+    const bool is_gles = m_gl_context->IsGLES();
+    if (!is_gles)
+      glBindFragDataLocation(program_id, 0, "o_col0");
 
     if (m_features.dual_source_blend)
     {
       if (GLAD_GL_VERSION_3_3 || GLAD_GL_ARB_blend_func_extended)
+      {
+        if (is_gles)
+          glBindFragDataLocationIndexed(program_id, 0, 0, "o_col0");
         glBindFragDataLocationIndexed(program_id, 1, 0, "o_col1");
+      }
       else if (GLAD_GL_EXT_blend_func_extended)
+      {
+        if (is_gles)
+          glBindFragDataLocationIndexedEXT(program_id, 0, 0, "o_col1");
         glBindFragDataLocationIndexedEXT(program_id, 1, 0, "o_col1");
+      }
     }
   }
 
@@ -515,29 +550,10 @@ GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> att
   m_vertex_buffer->Bind();
   m_index_buffer->Bind();
 
-  struct VAMapping
-  {
-    GLenum type;
-    GLboolean normalized;
-    GLboolean integer;
-  };
-  static constexpr const std::array<VAMapping, static_cast<u8>(GPUPipeline::VertexAttribute::Type::MaxCount)>
-    format_mapping = {{
-      {GL_FLOAT, GL_FALSE, GL_FALSE},         // Float
-      {GL_UNSIGNED_BYTE, GL_FALSE, GL_TRUE},  // UInt8
-      {GL_BYTE, GL_FALSE, GL_TRUE},           // SInt8
-      {GL_UNSIGNED_BYTE, GL_TRUE, GL_FALSE},  // UNorm8
-      {GL_UNSIGNED_SHORT, GL_FALSE, GL_TRUE}, // UInt16
-      {GL_SHORT, GL_FALSE, GL_TRUE},          // SInt16
-      {GL_UNSIGNED_SHORT, GL_TRUE, GL_FALSE}, // UNorm16
-      {GL_UNSIGNED_INT, GL_FALSE, GL_TRUE},   // UInt32
-      {GL_INT, GL_FALSE, GL_TRUE},            // SInt32
-    }};
-
   for (u32 i = 0; i < static_cast<u32>(attributes.size()); i++)
   {
     const GPUPipeline::VertexAttribute& va = attributes[i];
-    const VAMapping& m = format_mapping[static_cast<u8>(va.type.GetValue())];
+    const VAMapping& m = s_vao_format_mapping[static_cast<u8>(va.type.GetValue())];
     const void* ptr = reinterpret_cast<void*>(static_cast<uintptr_t>(va.offset.GetValue()));
     glEnableVertexAttribArray(i);
     if (m.integer)
@@ -550,6 +566,35 @@ GLuint OpenGLDevice::CreateVAO(std::span<const GPUPipeline::VertexAttribute> att
     glBindVertexArray(m_last_vao->second.vao_id);
 
   return vao;
+}
+
+void OpenGLDevice::SetVertexBufferOffsets(u32 base_vertex)
+{
+  const OpenGLPipeline::VertexArrayCacheKey& va = m_last_vao->first;
+  const u32 stride = va.vertex_attribute_stride;
+  const u32 base_vertex_start = base_vertex * stride;
+
+  if (glBindVertexBuffer) [[likely]]
+  {
+    for (u32 i = 0; i < va.num_vertex_attributes; i++)
+    {
+      glBindVertexBuffer(i, m_vertex_buffer->GetGLBufferId(), base_vertex_start + va.vertex_attributes[i].offset,
+                         static_cast<GLsizei>(stride));
+    }
+  }
+  else
+  {
+    for (u32 i = 0; i < va.num_vertex_attributes; i++)
+    {
+      const GPUPipeline::VertexAttribute& attrib = va.vertex_attributes[i];
+      const void* ptr = reinterpret_cast<void*>(static_cast<uintptr_t>(base_vertex_start + attrib.offset));
+      const VAMapping& m = s_vao_format_mapping[static_cast<u8>(attrib.type.GetValue())];
+      if (m.integer)
+        glVertexAttribIPointer(i, attrib.components, m.type, stride, ptr);
+      else
+        glVertexAttribPointer(i, attrib.components, m.type, m.normalized, stride, ptr);
+    }
+  }
 }
 
 void OpenGLDevice::UnrefVAO(const OpenGLPipeline::VertexArrayCacheKey& key)

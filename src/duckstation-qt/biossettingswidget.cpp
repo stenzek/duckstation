@@ -10,6 +10,7 @@
 #include "core/bios.h"
 #include "core/settings.h"
 
+#include <QtCore/QDir>
 #include <QtWidgets/QFileDialog>
 #include <algorithm>
 
@@ -25,13 +26,37 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &BIOSSettingsWidget::onFastBootChanged);
 
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.pioDeviceType, "PIO", "DeviceType",
+                                               &Settings::ParsePIODeviceTypeName, &Settings::GetPIODeviceTypeModeName,
+                                               &Settings::GetPIODeviceTypeModeDisplayName,
+                                               Settings::DEFAULT_PIO_DEVICE_TYPE, PIODeviceType::MaxCount);
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.pioImagePath, "PIO", "FlashImagePath");
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pioSwitchActive, "PIO", "SwitchActive", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pioImageWrites, "PIO", "FlashImageWriteEnable", false);
+  connect(m_ui.pioDeviceType, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &BIOSSettingsWidget::onPIODeviceTypeChanged);
+  connect(m_ui.pioImagePathBrowse, &QPushButton::clicked, this, &BIOSSettingsWidget::onPIOImagePathBrowseClicked);
+
   onFastBootChanged();
+  onPIODeviceTypeChanged();
 
   dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
                              tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
                                 "but usually safe to enable."));
   dialog->registerWidgetHelp(m_ui.enableTTYLogging, tr("Enable TTY Logging"), tr("Unchecked"),
                              tr("Logs BIOS calls to printf(). Not all games contain debugging messages."));
+  dialog->registerWidgetHelp(m_ui.pioDeviceType, tr("Device Type"), tr("None"),
+                             tr("Simulates a device plugged into the console's parallel port. Usually these are flash "
+                                "cartridges, and require some sort of image dump to function."));
+  dialog->registerWidgetHelp(m_ui.pioImagePath, tr("Image Path"), tr("Empty"),
+                             tr("Sets the path to the image used for flash cartridges."));
+  dialog->registerWidgetHelp(m_ui.pioSwitchActive, tr("Cartridge Switch On"), tr("Checked"),
+                             tr("Simulates the position of the switch on the cartridge. Most cartridges require the "
+                                "switch to be on for it to activate on startup."));
+  dialog->registerWidgetHelp(
+    m_ui.pioImageWrites, tr("Allow Image Writes"), tr("None"),
+    tr("Stores any images made to the cartridge's flash storage back to the host's file system. <strong>This will "
+       "overwrite your cartridge dump,</strong> you should ensure you have a backup first."));
 
   connect(m_ui.imageNTSCJ, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)
@@ -67,13 +92,13 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
     }
   });
 
-  connect(m_ui.refresh, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
+  connect(m_ui.rescan, &QPushButton::clicked, this, &BIOSSettingsWidget::refreshList);
 
   if (!m_dialog->isPerGameSettings())
   {
     SettingWidgetBinder::BindWidgetToFolderSetting(
-      sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, tr("Select BIOS Directory"), m_ui.openSearchDirectory,
-      nullptr, "BIOS", "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
+      sif, m_ui.searchDirectory, m_ui.browseSearchDirectory, tr("Select BIOS Directory"), m_ui.searchDirectoryOpen,
+      m_ui.searchDirectoryReset, "BIOS", "SearchDirectory", Path::Combine(EmuFolders::DataRoot, "bios"));
     connect(m_ui.searchDirectory, &QLineEdit::textChanged, this, &BIOSSettingsWidget::refreshList);
   }
   else
@@ -179,4 +204,32 @@ void BIOSSettingsWidget::setDropDownValue(QComboBox* cb, const std::optional<std
 
   cb->addItem(qname, QVariant(qname));
   cb->setCurrentIndex(cb->count() - 1);
+}
+
+void BIOSSettingsWidget::onPIODeviceTypeChanged()
+{
+  const PIODeviceType type =
+    Settings::ParsePIODeviceTypeName(
+      m_dialog
+        ->getEffectiveStringValue("PIO", "DeviceType",
+                                  Settings::GetPIODeviceTypeModeName(Settings::DEFAULT_PIO_DEVICE_TYPE))
+        .c_str())
+      .value_or(Settings::DEFAULT_PIO_DEVICE_TYPE);
+  const bool has_image = (type == PIODeviceType::XplorerCart);
+  const bool has_switch = (type == PIODeviceType::XplorerCart);
+  m_ui.pioImagePathLabel->setEnabled(has_image);
+  m_ui.pioImagePath->setEnabled(has_image);
+  m_ui.pioImagePathBrowse->setEnabled(has_image);
+  m_ui.pioImageWrites->setEnabled(has_image);
+  m_ui.pioSwitchActive->setEnabled(has_switch);
+}
+
+void BIOSSettingsWidget::onPIOImagePathBrowseClicked()
+{
+  const QString path = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select PIO Image"), m_ui.pioImagePath->text()));
+  if (path.isEmpty())
+    return;
+
+  m_ui.pioImagePath->setText(path);
 }

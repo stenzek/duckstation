@@ -41,6 +41,7 @@ enum class Trait : u32
   ForceDeinterlacing,
   ForceFullBoot,
   DisableAutoAnalogMode,
+  DisableMultitap,
   DisableTrueColor,
   DisableUpscaling,
   DisableTextureFiltering,
@@ -94,6 +95,8 @@ enum class Language : u8
 
 struct Entry
 {
+  static constexpr u16 SUPPORTS_MULTITAP_BIT = (1u << static_cast<u8>(ControllerType::Count));
+
   std::string_view serial;
   std::string_view title;
   std::string_view genre;

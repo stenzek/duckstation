@@ -5,15 +5,11 @@
 
 #include "types.h"
 
-#include "common/bitfield.h"
-
 #include <array>
 #include <bitset>
 #include <optional>
 #include <span>
-#include <string>
 #include <string_view>
-#include <vector>
 
 class Error;
 
@@ -147,8 +143,6 @@ ALWAYS_INLINE_RELEASE static FP* OffsetHandlerArray(void** handlers, MemoryAcces
 void* GetFastmemBase(bool isc);
 void RemapFastmemViews();
 bool CanUseFastmemForAddress(VirtualMemoryAddress address);
-
-void SetExpansionROM(std::vector<u8> data);
 
 extern std::bitset<RAM_8MB_CODE_PAGE_COUNT> g_ram_code_bits;
 extern u8* g_ram;             // 2MB-8MB RAM

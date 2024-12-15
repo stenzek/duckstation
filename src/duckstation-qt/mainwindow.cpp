@@ -2008,6 +2008,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionCheckForUpdates, &QAction::triggered, this, &MainWindow::onCheckForUpdatesActionTriggered);
   connect(m_ui.actionMemoryCardEditor, &QAction::triggered, this, &MainWindow::onToolsMemoryCardEditorTriggered);
   connect(m_ui.actionMemoryScanner, &QAction::triggered, this, &MainWindow::onToolsMemoryScannerTriggered);
+  connect(m_ui.actionISOBrowser, &QAction::triggered, this, &MainWindow::onToolsISOBrowserTriggered);
   connect(m_ui.actionCoverDownloader, &QAction::triggered, this, &MainWindow::onToolsCoverDownloaderTriggered);
   connect(m_ui.actionMediaCapture, &QAction::toggled, this, &MainWindow::onToolsMediaCaptureToggled);
   connect(m_ui.actionCaptureGPUFrame, &QAction::triggered, g_emu_thread, &EmuThread::captureGPUFrameDump);
@@ -2081,6 +2082,10 @@ void MainWindow::connectSignals()
                                              &Settings::GetLogLevelName, &Settings::GetLogLevelDisplayName,
                                              Settings::DEFAULT_LOG_LEVEL, Log::Level::MaxCount);
   connect(m_ui.menuLogChannels, &QMenu::aboutToShow, this, &MainWindow::onDebugLogChannelsMenuAboutToShow);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogToSystemConsole, "Logging", "LogToConsole",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogToWindow, "Logging", "LogToWindow", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionLogTimestamps, "Logging", "LogTimestamps", true);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.actionEnableSafeMode, "Main", "DisableAllEnhancements",
                                                false);
@@ -2704,6 +2709,13 @@ void MainWindow::onToolsMemoryScannerTriggered()
   }
 
   QtUtils::ShowOrRaiseWindow(m_memory_scanner_window);
+}
+
+void MainWindow::onToolsISOBrowserTriggered()
+{
+  ISOBrowserWindow* ib = new ISOBrowserWindow();
+  ib->setAttribute(Qt::WA_DeleteOnClose);
+  ib->show();
 }
 
 void MainWindow::openCPUDebugger()

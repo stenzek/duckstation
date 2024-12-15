@@ -1475,28 +1475,6 @@ void EmuThread::setAudioOutputMuted(bool muted)
   System::UpdateVolume();
 }
 
-void EmuThread::startDumpingAudio()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, "startDumpingAudio", Qt::QueuedConnection);
-    return;
-  }
-
-  // System::StartDumpingAudio();
-}
-
-void EmuThread::stopDumpingAudio()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, "stopDumpingAudio", Qt::QueuedConnection);
-    return;
-  }
-
-  // System::StopDumpingAudio();
-}
-
 void EmuThread::singleStepCPU()
 {
   if (!isCurrentThread())
@@ -2045,10 +2023,7 @@ std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filen
 
 void Host::CommitBaseSettingChanges()
 {
-  if (g_emu_thread->isCurrentThread())
-    QtHost::RunOnUIThread([]() { QtHost::QueueSettingsSave(); });
-  else
-    QtHost::QueueSettingsSave();
+  QtHost::QueueSettingsSave();
 }
 
 std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
@@ -2186,7 +2161,7 @@ void QtHost::SaveSettings()
 
 void QtHost::QueueSettingsSave()
 {
-  if (g_emu_thread->isCurrentThread())
+  if (!QThread::isMainThread())
   {
     QtHost::RunOnUIThread(QueueSettingsSave);
     return;
