@@ -617,13 +617,19 @@ void CPU::ARM32Recompiler::GenerateICacheCheckAndUpdate()
   }
   else if (m_block->icache_line_count > 0)
   {
+    VirtualMemoryAddress current_pc = m_block->pc & ICACHE_TAG_ADDRESS_MASK;
+    const TickCount fill_ticks = GetICacheFillTicks(current_pc);
+    if (fill_ticks <= 0)
+      return;
+
     const auto& ticks_reg = RARG1;
     const auto& current_tag_reg = RARG2;
     const auto& existing_tag_reg = RARG3;
+    const auto& fill_ticks_reg = r5;
 
-    VirtualMemoryAddress current_pc = m_block->pc & ICACHE_TAG_ADDRESS_MASK;
     armAsm->ldr(ticks_reg, PTR(&g_state.pending_ticks));
     armEmitMov(armAsm, current_tag_reg, current_pc);
+    armEmitMov(armAsm, fill_ticks_reg, fill_ticks);
 
     for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
     {
@@ -644,12 +650,9 @@ void CPU::ARM32Recompiler::GenerateICacheCheckAndUpdate()
 
       Label cache_hit;
       armAsm->ldr(existing_tag_reg, line_addr);
-      armAsm->cmp(existing_tag_reg, current_tag_reg);
-      armAsm->b(eq, &cache_hit);
-
       armAsm->str(current_tag_reg, line_addr);
-      armAsm->add(ticks_reg, ticks_reg, armCheckAddSubConstant(static_cast<u32>(fill_ticks)));
-      armAsm->bind(&cache_hit);
+      armAsm->cmp(existing_tag_reg, current_tag_reg);
+      armAsm->add(ne, ticks_reg, ticks_reg, fill_ticks_reg);
 
       if (i != (m_block->icache_line_count - 1))
         armAsm->add(current_tag_reg, current_tag_reg, armCheckAddSubConstant(ICACHE_LINE_SIZE));

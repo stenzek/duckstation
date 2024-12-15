@@ -506,27 +506,32 @@ void CPU::X64Recompiler::GenerateICacheCheckAndUpdate()
   }
   else if (m_block->icache_line_count > 0)
   {
+    // RAM to ROM is not contiguous, therefore the cost will be the same across the entire block.
+    VirtualMemoryAddress current_pc = m_block->pc & ICACHE_TAG_ADDRESS_MASK;
+    const TickCount fill_ticks = GetICacheFillTicks(current_pc);
+    if (fill_ticks <= 0)
+      return;
+
     cg->lea(RXARG1, cg->dword[PTR(&g_state.icache_tags)]);
+    cg->xor_(RWARG2, RWARG2);
+    cg->mov(RWARG4, fill_ticks);
 
     // TODO: Vectorize this...
-    VirtualMemoryAddress current_pc = m_block->pc & ICACHE_TAG_ADDRESS_MASK;
     for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
     {
       const VirtualMemoryAddress tag = GetICacheTagForAddress(current_pc);
-      const TickCount fill_ticks = GetICacheFillTicks(current_pc);
-      if (fill_ticks <= 0)
-        continue;
 
       const u32 line = GetICacheLine(current_pc);
       const u32 offset = (line * sizeof(u32));
-      Xbyak::Label cache_hit;
 
+      cg->xor_(RWARG3, RWARG3);
       cg->cmp(cg->dword[RXARG1 + offset], tag);
-      cg->je(cache_hit);
       cg->mov(cg->dword[RXARG1 + offset], tag);
-      cg->add(cg->dword[PTR(&g_state.pending_ticks)], static_cast<u32>(fill_ticks));
-      cg->L(cache_hit);
+      cg->cmovne(RWARG3, RWARG4);
+      cg->add(RWARG2, RWARG3);
     }
+
+    cg->add(cg->dword[PTR(&g_state.pending_ticks)], RWARG2);
   }
 }
 
