@@ -8277,6 +8277,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
 TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
 TRANSLATE_NOOP("FullscreenUI", "Use Old MDEC Routines");
+TRANSLATE_NOOP("FullscreenUI", "Use Separate Disc Settings");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
 TRANSLATE_NOOP("FullscreenUI", "User Name: ");
@@ -8290,6 +8291,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses native resolution coordinates for 2D polygo
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for colors, which can improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.");
 TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.");
 TRANSLATE_NOOP("FullscreenUI", "Utilizes the chosen video timing regardless of the game's setting.");
 TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum: {}");
 TRANSLATE_NOOP("FullscreenUI", "Version: %s");
