@@ -2023,10 +2023,7 @@ std::optional<std::time_t> Host::GetResourceFileTimestamp(std::string_view filen
 
 void Host::CommitBaseSettingChanges()
 {
-  if (g_emu_thread->isCurrentThread())
-    QtHost::RunOnUIThread([]() { QtHost::QueueSettingsSave(); });
-  else
-    QtHost::QueueSettingsSave();
+  QtHost::QueueSettingsSave();
 }
 
 std::optional<WindowInfo> Host::AcquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
@@ -2164,7 +2161,7 @@ void QtHost::SaveSettings()
 
 void QtHost::QueueSettingsSave()
 {
-  if (g_emu_thread->isCurrentThread())
+  if (!QThread::isMainThread())
   {
     QtHost::RunOnUIThread(QueueSettingsSave);
     return;
