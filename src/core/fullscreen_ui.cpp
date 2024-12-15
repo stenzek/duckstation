@@ -3374,10 +3374,6 @@ void FullscreenUI::DrawConsoleSettingsPage()
     bsi, FSUI_ICONSTR(ICON_FA_MEMORY, "Enable 8MB RAM"),
     FSUI_CSTR("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles."),
     "Console", "Enable8MBRAM", false);
-  DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_FROWN, "Enable Cheats"),
-    FSUI_CSTR("Automatically loads and applies cheats on game start. Cheats can break games and saves."), "Console",
-    "EnableCheats", false);
 
   MenuHeading(FSUI_CSTR("CPU Emulation"));
 
@@ -7706,7 +7702,6 @@ TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed for {}.");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping failed, no devices are available.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically Resize Window");
 TRANSLATE_NOOP("FullscreenUI", "Automatically applies patches to disc images when they are present, currently only PPF is supported.");
-TRANSLATE_NOOP("FullscreenUI", "Automatically loads and applies cheats on game start. Cheats can break games and saves.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically resizes the window to match the internal resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.");
 TRANSLATE_NOOP("FullscreenUI", "Automatically switches to fullscreen mode when the program is started.");
@@ -7850,7 +7845,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enable Texture Cache");
 TRANSLATE_NOOP("FullscreenUI", "Enable Texture Dumping");
 TRANSLATE_NOOP("FullscreenUI", "Enable Texture Replacements");
 TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Dumping");
-TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Texture Replacement");
+TRANSLATE_NOOP("FullscreenUI", "Enable VRAM Write Replacement");
 TRANSLATE_NOOP("FullscreenUI", "Enable XInput Input Source");
 TRANSLATE_NOOP("FullscreenUI", "Enable debugging when supported by the host's renderer API. Only for developer use.");
 TRANSLATE_NOOP("FullscreenUI", "Enable/Disable the Player LED on DualSense controllers.");
@@ -7973,7 +7968,10 @@ TRANSLATE_NOOP("FullscreenUI", "Log To File");
 TRANSLATE_NOOP("FullscreenUI", "Log To System Console");
 TRANSLATE_NOOP("FullscreenUI", "Logging");
 TRANSLATE_NOOP("FullscreenUI", "Logging Settings");
+TRANSLATE_NOOP("FullscreenUI", "Logging in to RetroAchievements...");
 TRANSLATE_NOOP("FullscreenUI", "Login");
+TRANSLATE_NOOP("FullscreenUI", "Login Error");
+TRANSLATE_NOOP("FullscreenUI", "Login Failed.\nError: {}\nPlease check your username and password, and try again.");
 TRANSLATE_NOOP("FullscreenUI", "Login token generated on {}");
 TRANSLATE_NOOP("FullscreenUI", "Logout");
 TRANSLATE_NOOP("FullscreenUI", "Logs BIOS calls to printf(). Not all games contain debugging messages.");
@@ -8030,6 +8028,7 @@ TRANSLATE_NOOP("FullscreenUI", "PGXP (Precision Geometry Transform Pipeline)");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Depth Buffer");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Correction");
 TRANSLATE_NOOP("FullscreenUI", "Parent Directory");
+TRANSLATE_NOOP("FullscreenUI", "Password: ");
 TRANSLATE_NOOP("FullscreenUI", "Patches");
 TRANSLATE_NOOP("FullscreenUI", "Patches the BIOS to skip the boot animation. Safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Path");
@@ -8045,6 +8044,7 @@ TRANSLATE_NOOP("FullscreenUI", "Performance enhancement - jumps directly between
 TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Colors");
 TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Textures");
 TRANSLATE_NOOP("FullscreenUI", "Plays sound effects for events such as achievement unlocks and leaderboard submissions.");
+TRANSLATE_NOOP("FullscreenUI", "Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.");
 TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
 TRANSLATE_NOOP("FullscreenUI", "Post-Processing Settings");
 TRANSLATE_NOOP("FullscreenUI", "Post-processing chain cleared.");
@@ -8092,6 +8092,7 @@ TRANSLATE_NOOP("FullscreenUI", "Resolution change will be applied after restarti
 TRANSLATE_NOOP("FullscreenUI", "Restores the state of the system prior to the last state loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Resume Game");
 TRANSLATE_NOOP("FullscreenUI", "Resume Last Session");
+TRANSLATE_NOOP("FullscreenUI", "RetroAchievements Login");
 TRANSLATE_NOOP("FullscreenUI", "Return To Game");
 TRANSLATE_NOOP("FullscreenUI", "Return to desktop mode, or exit the application.");
 TRANSLATE_NOOP("FullscreenUI", "Return to the previous menu.");
@@ -8263,6 +8264,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
 TRANSLATE_NOOP("FullscreenUI", "Use Old MDEC Routines");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
+TRANSLATE_NOOP("FullscreenUI", "User Name: ");
 TRANSLATE_NOOP("FullscreenUI", "Username: {}");
 TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");
