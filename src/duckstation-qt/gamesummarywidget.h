@@ -31,6 +31,7 @@ protected:
   void showEvent(QShowEvent* event) override;
 
 private Q_SLOTS:
+  void onSeparateDiscSettingsChanged(Qt::CheckState state);
   void onCustomLanguageChanged(int language);
   void onCompatibilityCommentsClicked();
   void onInputProfileChanged(int index);

@@ -1171,20 +1171,6 @@ DiscRegion System::GetRegionForPsf(const char* path)
   return psf.GetRegion();
 }
 
-std::string System::GetGameSettingsPath(std::string_view game_serial)
-{
-  // multi-disc games => always use the first disc
-  const GameDatabase::Entry* entry = GameDatabase::GetEntryForSerial(game_serial);
-  const std::string_view serial_for_path =
-    (entry && !entry->disc_set_serials.empty()) ? entry->disc_set_serials.front() : game_serial;
-  return Path::Combine(EmuFolders::GameSettings, fmt::format("{}.ini", Path::SanitizeFileName(serial_for_path)));
-}
-
-std::string System::GetInputProfilePath(std::string_view name)
-{
-  return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
-}
-
 bool System::RecreateGPU(GPURenderer renderer, bool force_recreate_device, bool update_display /* = true*/)
 {
   ClearMemorySaveStates();
@@ -1487,27 +1473,108 @@ void System::ReloadInputProfile(bool display_osd_messages)
   ApplySettings(display_osd_messages);
 }
 
-bool System::UpdateGameSettingsLayer()
+std::string System::GetInputProfilePath(std::string_view name)
 {
-  std::unique_ptr<INISettingsInterface> new_interface;
-  if (g_settings.apply_game_settings && !s_state.running_game_serial.empty())
+  return Path::Combine(EmuFolders::InputProfiles, fmt::format("{}.ini", name));
+}
+
+std::string System::GetGameSettingsPath(std::string_view game_serial, bool ignore_disc_set)
+{
+  // multi-disc games => always use the first disc
+  const GameDatabase::Entry* entry = ignore_disc_set ? nullptr : GameDatabase::GetEntryForSerial(game_serial);
+  const std::string_view serial_for_path =
+    (entry && !entry->disc_set_serials.empty()) ? entry->disc_set_serials.front() : game_serial;
+  return Path::Combine(EmuFolders::GameSettings, fmt::format("{}.ini", Path::SanitizeFileName(serial_for_path)));
+}
+
+std::unique_ptr<INISettingsInterface> System::GetGameSettingsInterface(const GameDatabase::Entry* dbentry,
+                                                                       std::string_view serial, bool create, bool quiet)
+{
+  std::unique_ptr<INISettingsInterface> ret;
+  std::string path = GetGameSettingsPath(serial, false);
+
+  if (FileSystem::FileExists(path.c_str()))
   {
-    std::string filename(GetGameSettingsPath(s_state.running_game_serial));
-    if (FileSystem::FileExists(filename.c_str()))
+    if (!quiet)
+      INFO_COLOR_LOG(StrongCyan, "Loading game settings from '{}'...", Path::GetFileName(path));
+
+    Error error;
+    ret = std::make_unique<INISettingsInterface>(std::move(path));
+    if (ret->Load(&error))
     {
-      INFO_LOG("Loading game settings from '{}'...", Path::GetFileName(filename));
-      new_interface = std::make_unique<INISettingsInterface>(std::move(filename));
-      if (!new_interface->Load())
+      // Check for separate disc configuration.
+      if (dbentry && !dbentry->disc_set_serials.empty() && dbentry->disc_set_serials.front() != serial)
       {
-        ERROR_LOG("Failed to parse game settings ini '{}'", new_interface->GetFileName());
-        new_interface.reset();
+        if (ret->GetBoolValue("Main", "UseSeparateConfigForDiscSet", false))
+        {
+          if (!quiet)
+          {
+            INFO_COLOR_LOG(StrongCyan, "Using separate disc game settings serial {} for disc set {}", serial,
+                           dbentry->disc_set_serials.front());
+          }
+
+          // Load the disc specific ini.
+          path = GetGameSettingsPath(serial, true);
+          if (FileSystem::FileExists(path.c_str()))
+          {
+            if (!ret->Load(std::move(path), &error))
+            {
+              if (!quiet)
+              {
+                ERROR_LOG("Failed to parse separate disc game settings ini '{}': {}", Path::GetFileName(ret->GetPath()),
+                          error.GetDescription());
+              }
+
+              if (create)
+                ret->Clear();
+              else
+                ret.reset();
+            }
+          }
+          else
+          {
+            if (!quiet)
+              INFO_COLOR_LOG(StrongCyan, "No separate disc game settings found (tried '{}')", Path::GetFileName(path));
+
+            ret.reset();
+
+            // return empty ini struct?
+            if (create)
+              ret = std::make_unique<INISettingsInterface>(std::move(path));
+          }
+        }
       }
     }
     else
     {
-      INFO_LOG("No game settings found (tried '{}')", Path::GetFileName(filename));
+      if (!quiet)
+      {
+        ERROR_LOG("Failed to parse game settings ini '{}': {}", Path::GetFileName(ret->GetPath()),
+                  error.GetDescription());
+      }
+
+      if (!create)
+        ret.reset();
     }
   }
+  else
+  {
+    if (!quiet)
+      INFO_COLOR_LOG(StrongCyan, "No game settings found (tried '{}')", Path::GetFileName(path));
+
+    // return empty ini struct?
+    if (create)
+      ret = std::make_unique<INISettingsInterface>(std::move(path));
+  }
+
+  return ret;
+}
+
+bool System::UpdateGameSettingsLayer()
+{
+  std::unique_ptr<INISettingsInterface> new_interface;
+  if (g_settings.apply_game_settings && !s_state.running_game_serial.empty())
+    new_interface = GetGameSettingsInterface(s_state.running_game_entry, s_state.running_game_serial, false, false);
 
   std::string input_profile_name;
   if (new_interface)
@@ -1543,7 +1610,7 @@ void System::UpdateInputSettingsLayer(std::string input_profile_name, std::uniqu
       input_interface = std::make_unique<INISettingsInterface>(std::move(filename));
       if (!input_interface->Load())
       {
-        ERROR_LOG("Failed to parse input profile ini '{}'", Path::GetFileName(input_interface->GetFileName()));
+        ERROR_LOG("Failed to parse input profile ini '{}'", Path::GetFileName(input_interface->GetPath()));
         input_interface.reset();
         input_profile_name = {};
       }
@@ -5543,20 +5610,12 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
   std::unique_ptr<INISettingsInterface> ini;
   if (!serial.empty())
   {
-    std::string game_settings_path = GetGameSettingsPath(serial);
-    if (FileSystem::FileExists(game_settings_path.c_str()))
+    ini = GetGameSettingsInterface(GameDatabase::GetEntryForSerial(serial), serial, false, true);
+    if (ini && ini->ContainsValue(section, type_key))
     {
-      ini = std::make_unique<INISettingsInterface>(std::move(game_settings_path));
-      if (!ini->Load())
-      {
-        ini.reset();
-      }
-      else if (ini->ContainsValue(section, type_key))
-      {
-        type = Settings::ParseMemoryCardTypeName(
-                 ini->GetTinyStringValue(section, type_key, Settings::GetMemoryCardTypeName(global_type)))
-                 .value_or(global_type);
-      }
+      type = Settings::ParseMemoryCardTypeName(
+               ini->GetTinyStringValue(section, type_key, Settings::GetMemoryCardTypeName(global_type)))
+               .value_or(global_type);
     }
   }
   else if (type == MemoryCardType::PerGame)

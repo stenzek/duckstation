@@ -28,6 +28,7 @@ enum class GPUVSyncMode : u8;
 class Controller;
 
 class GPUTexture;
+class INISettingsInterface;
 class MediaCapture;
 
 namespace BIOS {
@@ -153,7 +154,12 @@ DiscRegion GetRegionForExe(const char* path);
 DiscRegion GetRegionForPsf(const char* path);
 
 /// Returns the path for the game settings ini file for the specified serial.
-std::string GetGameSettingsPath(std::string_view game_serial);
+std::string GetGameSettingsPath(std::string_view game_serial, bool ignore_disc_set);
+
+/// Returns the loaded interface for the game settings ini file for the specified serial. If create is true, an empty
+/// ini reader will be returned if the file does not exist. If quit is true, no log messages will be emitted.
+std::unique_ptr<INISettingsInterface> GetGameSettingsInterface(const GameDatabase::Entry* dbentry,
+                                                               std::string_view serial, bool create, bool quiet);
 
 /// Returns the path for the input profile ini file with the specified name (may not exist).
 std::string GetInputProfilePath(std::string_view name);

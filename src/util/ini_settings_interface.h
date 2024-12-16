@@ -13,12 +13,13 @@
 class INISettingsInterface final : public SettingsInterface
 {
 public:
-  INISettingsInterface(std::string filename);
+  INISettingsInterface(std::string path);
   ~INISettingsInterface() override;
 
-  const std::string& GetFileName() const { return m_filename; }
+  const std::string& GetPath() const { return m_path; }
 
   bool Load(Error* error = nullptr);
+  bool Load(std::string new_path, Error* error = nullptr);
   bool Save(Error* error = nullptr) override;
 
   void Clear() override;
@@ -61,7 +62,7 @@ public:
   using SettingsInterface::GetUIntValue;
 
 private:
-  std::string m_filename;
+  std::string m_path;
   CSimpleIniA m_ini;
   bool m_dirty = false;
 };

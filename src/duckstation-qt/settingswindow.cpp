@@ -662,7 +662,10 @@ void SettingsWindow::setGameTitle(std::string title)
 {
   m_title = std::move(title);
 
-  const QString window_title = tr("%1 [%2]").arg(QString::fromStdString(m_title)).arg(QString::fromStdString(m_serial));
+  const QString window_title =
+    tr("%1 [%2]")
+      .arg(QString::fromStdString(m_title))
+      .arg(QtUtils::StringViewToQString(m_sif ? Path::GetFileName(m_sif->GetPath()) : std::string_view(m_serial)));
   setWindowTitle(window_title);
 }
 
@@ -695,13 +698,13 @@ SettingsWindow* SettingsWindow::openGamePropertiesDialog(const std::string& path
   }
 
   std::string real_serial = dentry ? std::string(dentry->serial) : std::move(serial);
-  std::string ini_filename = System::GetGameSettingsPath(real_serial);
+  std::unique_ptr<INISettingsInterface> sif = System::GetGameSettingsInterface(dentry, real_serial, true, false);
 
-  // check for an existing dialog with this crc
+  // check for an existing dialog with this serial
   for (SettingsWindow* dialog : s_open_game_properties_dialogs)
   {
     if (dialog->isPerGameSettings() &&
-        static_cast<INISettingsInterface*>(dialog->getSettingsInterface())->GetFileName() == ini_filename)
+        static_cast<INISettingsInterface*>(dialog->getSettingsInterface())->GetPath() == sif->GetPath())
     {
       dialog->show();
       dialog->raise();
@@ -712,10 +715,6 @@ SettingsWindow* SettingsWindow::openGamePropertiesDialog(const std::string& path
       return dialog;
     }
   }
-
-  std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(ini_filename));
-  if (FileSystem::FileExists(sif->GetFileName().c_str()))
-    sif->Load();
 
   SettingsWindow* dialog =
     new SettingsWindow(path, std::move(title), std::move(real_serial), hash, region, dentry, std::move(sif));
@@ -737,14 +736,14 @@ void SettingsWindow::closeGamePropertiesDialogs()
 bool SettingsWindow::setGameSettingsBoolForSerial(const std::string& serial, const char* section, const char* key,
                                                   bool value)
 {
-  std::string ini_filename = System::GetGameSettingsPath(serial);
-  if (ini_filename.empty())
+  if (serial.empty())
     return false;
 
-  INISettingsInterface sif(std::move(ini_filename));
-  if (FileSystem::FileExists(sif.GetFileName().c_str()))
-    sif.Load();
+  std::unique_ptr<INISettingsInterface> sif =
+    System::GetGameSettingsInterface(GameDatabase::GetEntryForSerial(serial), serial, true, false);
+  if (!sif)
+    return false;
 
-  sif.SetBoolValue(section, key, value);
-  return sif.Save();
+  sif->SetBoolValue(section, key, value);
+  return sif->Save();
 }

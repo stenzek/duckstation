@@ -155,22 +155,20 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::DeltaX:
     {
-      const float delta_x =
-        std::clamp(std::floor(m_delta_x * m_sensitivity_x), static_cast<float>(std::numeric_limits<s8>::min()),
-                   static_cast<float>(std::numeric_limits<s8>::max()));
+      const float delta_x = std::floor(m_delta_x * m_sensitivity_x);
       m_delta_x -= delta_x / m_sensitivity_x;
-      *data_out = static_cast<s8>(delta_x);
+      *data_out = static_cast<s8>(std::clamp(delta_x, static_cast<float>(std::numeric_limits<s8>::min()),
+                                             static_cast<float>(std::numeric_limits<s8>::max())));
       m_transfer_state = TransferState::DeltaY;
       return true;
     }
 
     case TransferState::DeltaY:
     {
-      const float delta_y =
-        std::clamp(std::floor(m_delta_y * m_sensitivity_y), static_cast<float>(std::numeric_limits<s8>::min()),
-                   static_cast<float>(std::numeric_limits<s8>::max()));
+      const float delta_y = std::floor(m_delta_y * m_sensitivity_y);
       m_delta_y -= delta_y / m_sensitivity_x;
-      *data_out = static_cast<s8>(delta_y);
+      *data_out = static_cast<s8>(std::clamp(delta_y, static_cast<float>(std::numeric_limits<s8>::min()),
+                                             static_cast<float>(std::numeric_limits<s8>::max())));
       m_transfer_state = TransferState::Idle;
       return false;
     }
@@ -197,9 +195,7 @@ std::unique_ptr<PlayStationMouse> PlayStationMouse::Create(u32 index)
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
-  }
+  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 
   // clang-format off
   { "Pointer", TRANSLATE_NOOP("PlaystationMouse", "Pointer"), ICON_PF_MOUSE_ANY, static_cast<u32>(PlayStationMouse::Binding::PointerX), InputBindingInfo::Type::RelativePointer, GenericInputBinding::Unknown },

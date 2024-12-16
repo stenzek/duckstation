@@ -208,13 +208,6 @@
      </property>
     </widget>
    </item>
-   <item row="5" column="1">
-    <widget class="QComboBox" name="entryType">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </item>
    <item row="8" column="1">
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
      <item>
@@ -341,6 +334,27 @@
      </item>
      <item>
       <widget class="QComboBox" name="customLanguage"/>
+     </item>
+    </layout>
+   </item>
+   <item row="5" column="1">
+    <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0">
+     <item>
+      <widget class="QComboBox" name="entryType">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="separateDiscSettings">
+       <property name="toolTip">
+        <string>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</string>
+       </property>
+       <property name="text">
+        <string>Use Separate Disc Settings</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
