@@ -941,7 +941,7 @@ std::string System::GetExecutableNameForImage(IsoReader& iso, bool strip_subdire
 {
   // Read SYSTEM.CNF
   std::vector<u8> system_cnf_data;
-  if (!iso.ReadFile("SYSTEM.CNF", &system_cnf_data))
+  if (!iso.ReadFile("SYSTEM.CNF", &system_cnf_data, IsoReader::ReadMode::Data))
     return FALLBACK_EXE_NAME;
 
   // Parse lines
@@ -1053,7 +1053,7 @@ bool System::ReadExecutableFromImage(IsoReader& iso, std::string* out_executable
   DEV_LOG("Executable path: '{}'", executable_path);
   if (!executable_path.empty() && out_executable_data)
   {
-    if (!iso.ReadFile(executable_path, out_executable_data))
+    if (!iso.ReadFile(executable_path, out_executable_data, IsoReader::ReadMode::Data))
     {
       ERROR_LOG("Failed to read executable '{}' from disc", executable_path);
       return false;
@@ -1104,9 +1104,11 @@ DiscRegion System::GetRegionForSerial(const std::string_view serial)
 DiscRegion System::GetRegionFromSystemArea(CDImage* cdi)
 {
   // The license code is on sector 4 of the disc.
-  u8 sector[CDImage::DATA_SECTOR_SIZE];
+  std::array<u8, CDImage::RAW_SECTOR_SIZE> sector;
+  std::span<const u8> sector_data;
   if (cdi->GetTrackMode(1) == CDImage::TrackMode::Audio || !cdi->Seek(1, 4) ||
-      cdi->Read(CDImage::ReadMode::DataOnly, 1, sector) != 1)
+      !cdi->ReadRawSector(sector.data(), nullptr) ||
+      (sector_data = IsoReader::ExtractSectorData(sector, IsoReader::ReadMode::Data, nullptr)).empty())
   {
     return DiscRegion::Other;
   }
@@ -1116,11 +1118,11 @@ DiscRegion System::GetRegionFromSystemArea(CDImage* cdi)
   static constexpr char pal_string[] = "          Licensed  by          Sony Computer Entertainment Euro pe";
 
   // subtract one for the terminating null
-  if (std::equal(ntsc_u_string, ntsc_u_string + countof(ntsc_u_string) - 1, sector))
+  if (std::memcmp(sector_data.data(), ntsc_u_string, std::size(ntsc_u_string) - 1) == 0)
     return DiscRegion::NTSC_U;
-  else if (std::equal(ntsc_j_string, ntsc_j_string + countof(ntsc_j_string) - 1, sector))
+  else if (std::memcmp(sector_data.data(), ntsc_j_string, std::size(ntsc_j_string) - 1) == 0)
     return DiscRegion::NTSC_J;
-  else if (std::equal(pal_string, pal_string + countof(pal_string) - 1, sector))
+  else if (std::memcmp(sector_data.data(), pal_string, std::size(pal_string) - 1) == 0)
     return DiscRegion::PAL;
   else
     return DiscRegion::Other;

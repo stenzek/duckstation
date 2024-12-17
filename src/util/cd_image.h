@@ -32,6 +32,7 @@ public:
     SECTOR_HEADER_SIZE = 4,
     MODE1_HEADER_SIZE = 4,
     MODE2_HEADER_SIZE = 12,
+    MODE2_DATA_SECTOR_SIZE = 2336, // header + edc
     FRAMES_PER_SECOND = 75, // "sectors", or "timecode frames" (not "channel frames")
     SECONDS_PER_MINUTE = 60,
     FRAMES_PER_MINUTE = FRAMES_PER_SECOND * SECONDS_PER_MINUTE,
@@ -45,13 +46,6 @@ public:
   enum : u8
   {
     LEAD_OUT_TRACK_NUMBER = 0xAA
-  };
-
-  enum class ReadMode : u8
-  {
-    DataOnly,  // 2048 bytes per sector.
-    RawSector, // 2352 bytes per sector.
-    RawNoSync, // 2340 bytes per sector.
   };
 
   enum class TrackMode : u8
@@ -295,9 +289,6 @@ public:
 
   // Seek to track and LBA.
   bool Seek(u32 track_number, LBA lba);
-
-  // Read from the current LBA. Returns the number of sectors read.
-  u32 Read(ReadMode read_mode, u32 sector_count, void* buffer);
 
   // Read a single raw sector, and subchannel from the current LBA.
   bool ReadRawSector(void* buffer, SubChannelQ* subq);

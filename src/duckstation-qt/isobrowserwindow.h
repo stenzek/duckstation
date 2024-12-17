@@ -25,7 +25,6 @@ protected:
 
 private Q_SLOTS:
   void onOpenFileClicked();
-  void onExtractClicked();
   void onDirectoryItemClicked(QTreeWidgetItem* item, int column);
   void onFileItemActivated(QTreeWidgetItem* item, int column);
   void onFileItemSelectionChanged();
@@ -34,10 +33,12 @@ private Q_SLOTS:
 
 private:
   void enableUi(bool enabled);
+  void enableExtractButtons(bool enabled);
   void populateDirectories();
   void populateSubdirectories(std::string_view dir, QTreeWidgetItem* parent);
   void populateFiles(const QString& path);
-  void extractFile(const QString& path);
+  void onExtractClicked(IsoReader::ReadMode mode);
+  void extractFile(const QString& path, IsoReader::ReadMode mode);
 
   QTreeWidgetItem* findDirectoryItemForPath(const QString& path, QTreeWidgetItem* parent = nullptr) const;
 

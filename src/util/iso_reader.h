@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <memory>
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -142,10 +143,20 @@ public:
 
 #pragma pack(pop)
 
+  enum class ReadMode : u8
+  {
+    Data,
+    Mode2,
+    Raw,
+  };
+
   IsoReader();
   ~IsoReader();
 
   static std::string_view RemoveVersionIdentifierFromPath(std::string_view path);
+
+  static u32 GetReadModeSectorSize(ReadMode mode);
+  static std::span<const u8> ExtractSectorData(std::span<const u8> raw_sector, ReadMode mode, Error* error);
 
   ALWAYS_INLINE const CDImage* GetImage() const { return m_image; }
   ALWAYS_INLINE u32 GetTrackNumber() const { return m_track_number; }
@@ -162,22 +173,22 @@ public:
 
   bool FileExists(std::string_view path, Error* error = nullptr);
   bool DirectoryExists(std::string_view path, Error* error = nullptr);
-  bool ReadFile(std::string_view path, std::vector<u8>* data, Error* error = nullptr);
-  bool ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, Error* error = nullptr);
+  bool ReadFile(std::string_view path, std::vector<u8>* data, ReadMode read_mode, Error* error = nullptr);
+  bool ReadFile(const ISODirectoryEntry& de, std::vector<u8>* data, ReadMode read_mode, Error* error = nullptr);
 
-  bool WriteFileToStream(std::string_view path, std::FILE* fp, Error* error = nullptr,
+  bool WriteFileToStream(std::string_view path, std::FILE* fp, ReadMode read_mode, Error* error = nullptr,
                          ProgressCallback* progress = nullptr);
-  bool WriteFileToStream(const ISODirectoryEntry& de, std::FILE* fp, Error* error = nullptr,
+  bool WriteFileToStream(const ISODirectoryEntry& de, std::FILE* fp, ReadMode read_mode, Error* error = nullptr,
                          ProgressCallback* progress = nullptr);
 
 private:
-  static std::string_view GetDirectoryEntryFileName(const u8* sector, u32 de_sector_offset);
+  static std::string_view GetDirectoryEntryFileName(std::span<const u8, SECTOR_SIZE> sector, u32 de_sector_offset);
 
-  bool ReadSector(u8* buf, u32 lsn, Error* error);
+  bool ReadSector(std::span<u8, SECTOR_SIZE> buf, u32 lsn, Error* error);
   bool ReadPVD(Error* error);
 
-  std::optional<ISODirectoryEntry> LocateFile(std::string_view path, u8* sector_buffer, u32 directory_record_lba,
-                                              u32 directory_record_size, Error* error);
+  std::optional<ISODirectoryEntry> LocateFile(std::string_view path, std::span<u8, SECTOR_SIZE> sector_buffer,
+                                              u32 directory_record_lba, u32 directory_record_size, Error* error);
 
   CDImage* m_image;
   u32 m_track_number;
