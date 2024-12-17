@@ -29,7 +29,10 @@ ISOBrowserWindow::ISOBrowserWindow(QWidget* parent) : QWidget(parent)
   enableUi(false);
 
   connect(m_ui.openFile, &QAbstractButton::clicked, this, &ISOBrowserWindow::onOpenFileClicked);
-  connect(m_ui.extract, &QAbstractButton::clicked, this, &ISOBrowserWindow::onExtractClicked);
+  connect(m_ui.extract, &QAbstractButton::clicked, this, [this]() { onExtractClicked(IsoReader::ReadMode::Data); });
+  connect(m_ui.extractMode2, &QAbstractButton::clicked, this,
+          [this]() { onExtractClicked(IsoReader::ReadMode::Mode2); });
+  connect(m_ui.extractRaw, &QAbstractButton::clicked, this, [this]() { onExtractClicked(IsoReader::ReadMode::Raw); });
   connect(m_ui.directoryView, &QTreeWidget::itemClicked, this, &ISOBrowserWindow::onDirectoryItemClicked);
   connect(m_ui.fileView, &QTreeWidget::itemActivated, this, &ISOBrowserWindow::onFileItemActivated);
   connect(m_ui.fileView, &QTreeWidget::itemSelectionChanged, this, &ISOBrowserWindow::onFileItemSelectionChanged);
@@ -105,14 +108,14 @@ void ISOBrowserWindow::onOpenFileClicked()
   }
 }
 
-void ISOBrowserWindow::onExtractClicked()
+void ISOBrowserWindow::onExtractClicked(IsoReader::ReadMode mode)
 {
   const QList<QTreeWidgetItem*> items = m_ui.fileView->selectedItems();
   if (items.isEmpty())
     return;
 
   const QString path = items.front()->data(0, Qt::UserRole).toString();
-  extractFile(path);
+  extractFile(path, mode);
 }
 
 void ISOBrowserWindow::onDirectoryItemClicked(QTreeWidgetItem* item, int column)
@@ -141,21 +144,16 @@ void ISOBrowserWindow::onFileItemActivated(QTreeWidgetItem* item, int column)
   }
 
   // file, go to extract
-  extractFile(item->data(0, Qt::UserRole).toString());
+  extractFile(item->data(0, Qt::UserRole).toString(), IsoReader::ReadMode::Data);
 }
 
 void ISOBrowserWindow::onFileItemSelectionChanged()
 {
   const QList<QTreeWidgetItem*> items = m_ui.fileView->selectedItems();
-  if (items.isEmpty())
-  {
-    m_ui.extract->setEnabled(false);
-    return;
-  }
 
   // directory?
-  const bool is_directory = items.front()->data(0, Qt::UserRole + 1).toBool();
-  m_ui.extract->setEnabled(!is_directory);
+  const bool enabled = (!items.isEmpty() && !items.front()->data(0, Qt::UserRole + 1).toBool());
+  enableExtractButtons(enabled);
 }
 
 void ISOBrowserWindow::onFileContextMenuRequested(const QPoint& pos)
@@ -176,7 +174,11 @@ void ISOBrowserWindow::onFileContextMenuRequested(const QPoint& pos)
   else
   {
     connect(menu.addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("&Extract")), &QAction::triggered,
-            this, [this, &path]() { extractFile(path); });
+            this, [this, &path]() { extractFile(path, IsoReader::ReadMode::Data); });
+    connect(menu.addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("Extract (&XA)")),
+            &QAction::triggered, this, [this, &path]() { extractFile(path, IsoReader::ReadMode::Mode2); });
+    connect(menu.addAction(QIcon::fromTheme(QIcon::ThemeIcon::DocumentSaveAs), tr("Extract (&Raw)")),
+            &QAction::triggered, this, [this, &path]() { extractFile(path, IsoReader::ReadMode::Raw); });
   }
 
   menu.exec(m_ui.fileView->mapToGlobal(pos));
@@ -187,7 +189,7 @@ void ISOBrowserWindow::resizeFileListColumns()
   QtUtils::ResizeColumnsForTreeView(m_ui.fileView, {-1, 200, 100});
 }
 
-void ISOBrowserWindow::extractFile(const QString& path)
+void ISOBrowserWindow::extractFile(const QString& path, IsoReader::ReadMode mode)
 {
   const std::string spath = path.toStdString();
   const QString filename = QtUtils::StringViewToQString(Path::GetFileName(spath));
@@ -207,7 +209,7 @@ void ISOBrowserWindow::extractFile(const QString& path)
       cb.SetCancellable(true);
       cb.SetTitle("ISO Browser");
       cb.SetStatusText(tr("Extracting %1...").arg(filename).toStdString());
-      if (m_iso.WriteFileToStream(de.value(), fp.get(), &error, &cb))
+      if (m_iso.WriteFileToStream(de.value(), fp.get(), mode, &error, &cb))
       {
         if (FileSystem::CommitAtomicRenamedFile(fp, &error))
           return;
@@ -256,13 +258,20 @@ void ISOBrowserWindow::enableUi(bool enabled)
   m_ui.fileView->setEnabled(enabled);
 
   if (!enabled)
-    m_ui.extract->setEnabled(enabled);
+    enableExtractButtons(enabled);
+}
+
+void ISOBrowserWindow::enableExtractButtons(bool enabled)
+{
+  m_ui.extract->setEnabled(enabled);
+  m_ui.extractMode2->setEnabled(enabled);
+  m_ui.extractRaw->setEnabled(enabled);
 }
 
 void ISOBrowserWindow::populateDirectories()
 {
   m_ui.directoryView->clear();
-  m_ui.extract->setEnabled(false);
+  enableExtractButtons(false);
 
   QTreeWidgetItem* root = new QTreeWidgetItem;
   root->setIcon(0, QIcon::fromTheme("disc-line"));

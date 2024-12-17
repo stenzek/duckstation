@@ -249,60 +249,6 @@ bool CDImage::Seek(u32 track_number, LBA lba)
   return Seek(track.start_lba + lba);
 }
 
-u32 CDImage::Read(ReadMode read_mode, u32 sector_count, void* buffer)
-{
-  u8* buffer_ptr = static_cast<u8*>(buffer);
-  u32 sectors_read = 0;
-  for (; sectors_read < sector_count; sectors_read++)
-  {
-    // get raw sector
-    u8 raw_sector[RAW_SECTOR_SIZE];
-    if (!ReadRawSector(raw_sector, nullptr))
-      break;
-
-    switch (read_mode)
-    {
-      case ReadMode::DataOnly:
-      {
-        const SectorHeader* header = reinterpret_cast<const SectorHeader*>(raw_sector + SECTOR_SYNC_SIZE);
-        if (header->sector_mode == 1)
-        {
-          std::memcpy(buffer_ptr, raw_sector + SECTOR_SYNC_SIZE + MODE1_HEADER_SIZE, DATA_SECTOR_SIZE);
-        }
-        else if (header->sector_mode == 2)
-        {
-          std::memcpy(buffer_ptr, raw_sector + SECTOR_SYNC_SIZE + MODE2_HEADER_SIZE, DATA_SECTOR_SIZE);
-        }
-        else
-        {
-          ERROR_LOG("Invalid sector mode {} at LBA {}", header->sector_mode,
-                    m_current_index->start_lba_on_disc + m_position_in_track);
-          break;
-        }
-
-        buffer_ptr += DATA_SECTOR_SIZE;
-      }
-      break;
-
-      case ReadMode::RawNoSync:
-        std::memcpy(buffer_ptr, raw_sector + SECTOR_SYNC_SIZE, RAW_SECTOR_SIZE - SECTOR_SYNC_SIZE);
-        buffer_ptr += RAW_SECTOR_SIZE - SECTOR_SYNC_SIZE;
-        break;
-
-      case ReadMode::RawSector:
-        std::memcpy(buffer_ptr, raw_sector, RAW_SECTOR_SIZE);
-        buffer_ptr += RAW_SECTOR_SIZE;
-        break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-  }
-
-  return sectors_read;
-}
-
 bool CDImage::ReadRawSector(void* buffer, SubChannelQ* subq)
 {
   if (m_position_in_index == m_current_index->length)

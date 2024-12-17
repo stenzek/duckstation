@@ -115,6 +115,20 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="extractMode2">
+       <property name="text">
+        <string>Extract (XA)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="extractRaw">
+       <property name="text">
+        <string>Extract (Raw)</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="close">
        <property name="text">
         <string>Close</string>

@@ -38,7 +38,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                                           .arg(i)
 
                                           .arg(static_cast<float>(i) * TIME_PER_SECTOR_DOUBLE_SPEED, 0, 'f', 0)
-                                          .arg(static_cast<float>(i * CDImage::DATA_SECTOR_SIZE) / 1024.0f));
+                                          .arg(static_cast<float>(i * CDImage::RAW_SECTOR_SIZE) / 1024.0f));
   }
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.region, "Console", "Region", &Settings::ParseConsoleRegionName,
