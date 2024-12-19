@@ -12,7 +12,6 @@
 #include "common/gsvector.h"
 
 #include <array>
-#include <string>
 
 enum : u32
 {
@@ -405,12 +404,17 @@ union GPUTexturePaletteReg
   ALWAYS_INLINE constexpr u32 GetYBase() const { return static_cast<u32>(y); }
 };
 
-struct GPUTextureWindow
+union GPUTextureWindow
 {
-  u8 and_x;
-  u8 and_y;
-  u8 or_x;
-  u8 or_y;
+  struct
+  {
+    u8 and_x;
+    u8 and_y;
+    u8 or_x;
+    u8 or_y;
+  };
+
+  u32 bits;
 
   ALWAYS_INLINE bool operator==(const GPUTextureWindow& rhs) const
   {
@@ -541,182 +545,3 @@ static constexpr s32 DITHER_MATRIX[DITHER_MATRIX_SIZE][DITHER_MATRIX_SIZE] = {{-
                                                                               {+2, -2, +3, -1},  // row 1
                                                                               {-3, +1, -4, +0},  // row 2
                                                                               {+3, -1, +2, -2}}; // row 3
-
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4200) // warning C4200: nonstandard extension used: zero-sized array in struct/union
-#endif
-
-enum class GPUBackendCommandType : u8
-{
-  Wraparound,
-  Sync,
-  FillVRAM,
-  UpdateVRAM,
-  CopyVRAM,
-  SetDrawingArea,
-  UpdateCLUT,
-  DrawPolygon,
-  DrawRectangle,
-  DrawLine,
-};
-
-union GPUBackendCommandParameters
-{
-  u8 bits;
-
-  BitField<u8, bool, 0, 1> interlaced_rendering;
-
-  /// Returns 0 if the currently-displayed field is on an even line in VRAM, otherwise 1.
-  BitField<u8, u8, 1, 1> active_line_lsb;
-
-  BitField<u8, bool, 2, 1> set_mask_while_drawing;
-  BitField<u8, bool, 3, 1> check_mask_before_draw;
-
-  // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
-  u16 GetMaskAND() const
-  {
-    // return check_mask_before_draw ? 0x8000 : 0x0000;
-    return Truncate16((bits << 12) & 0x8000);
-  }
-  u16 GetMaskOR() const
-  {
-    // return set_mask_while_drawing ? 0x8000 : 0x0000;
-    return Truncate16((bits << 13) & 0x8000);
-  }
-};
-
-struct GPUBackendCommand
-{
-  u32 size;
-  GPUBackendCommandType type;
-  GPUBackendCommandParameters params;
-};
-
-struct GPUBackendSyncCommand : public GPUBackendCommand
-{
-  bool allow_sleep;
-};
-
-struct GPUBackendFillVRAMCommand : public GPUBackendCommand
-{
-  u16 x;
-  u16 y;
-  u16 width;
-  u16 height;
-  u32 color;
-};
-
-struct GPUBackendUpdateVRAMCommand : public GPUBackendCommand
-{
-  u16 x;
-  u16 y;
-  u16 width;
-  u16 height;
-  u16 data[0];
-};
-
-struct GPUBackendCopyVRAMCommand : public GPUBackendCommand
-{
-  u16 src_x;
-  u16 src_y;
-  u16 dst_x;
-  u16 dst_y;
-  u16 width;
-  u16 height;
-};
-
-struct GPUBackendSetDrawingAreaCommand : public GPUBackendCommand
-{
-  GPUDrawingArea new_area;
-  s32 new_clamped_area[4];
-};
-
-struct GPUBackendUpdateCLUTCommand : public GPUBackendCommand
-{
-  GPUTexturePaletteReg reg;
-  bool clut_is_8bit;
-};
-
-struct GPUBackendDrawCommand : public GPUBackendCommand
-{
-  GPUDrawModeReg draw_mode;
-  GPURenderCommand rc;
-  GPUTexturePaletteReg palette;
-  GPUTextureWindow window;
-};
-
-struct GPUBackendDrawPolygonCommand : public GPUBackendDrawCommand
-{
-  u16 num_vertices;
-
-  struct Vertex
-  {
-    s32 x, y;
-    union
-    {
-      struct
-      {
-        u8 r, g, b, a;
-      };
-      u32 color;
-    };
-    union
-    {
-      struct
-      {
-        u8 u, v;
-      };
-      u16 texcoord;
-    };
-
-    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_, u16 texcoord_)
-    {
-      x = x_;
-      y = y_;
-      color = color_;
-      texcoord = texcoord_;
-    }
-  };
-
-  Vertex vertices[0];
-};
-
-struct GPUBackendDrawRectangleCommand : public GPUBackendDrawCommand
-{
-  s32 x, y;
-  u16 width, height;
-  u16 texcoord;
-  u32 color;
-};
-
-struct GPUBackendDrawLineCommand : public GPUBackendDrawCommand
-{
-  u16 num_vertices;
-
-  struct Vertex
-  {
-    s32 x, y;
-    union
-    {
-      struct
-      {
-        u8 r, g, b, a;
-      };
-      u32 color;
-    };
-
-    ALWAYS_INLINE void Set(s32 x_, s32 y_, u32 color_)
-    {
-      x = x_;
-      y = y_;
-      color = color_;
-    }
-  };
-
-  Vertex vertices[0];
-};
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif

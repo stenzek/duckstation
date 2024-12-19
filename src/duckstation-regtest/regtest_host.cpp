@@ -5,7 +5,8 @@
 #include "core/controller.h"
 #include "core/fullscreen_ui.h"
 #include "core/game_list.h"
-#include "core/gpu.h"
+#include "core/gpu_backend.h"
+#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/system.h"
 #include "core/system_private.h"
@@ -46,9 +47,11 @@ static void HookSignals();
 static bool SetFolders();
 static bool SetNewDataRoot(const std::string& filename);
 static std::string GetFrameDumpFilename(u32 frame);
+static void GPUThreadEntryPoint();
 } // namespace RegTestHost
 
 static std::unique_ptr<MemorySettingsInterface> s_base_settings_interface;
+static Threading::Thread s_gpu_thread;
 
 static u32 s_frames_to_run = 60 * 60;
 static u32 s_frames_remaining = 0;
@@ -281,12 +284,17 @@ void Host::OnSystemResumed()
   //
 }
 
-void Host::OnIdleStateChanged()
+void Host::OnGPUThreadRunIdleChanged(bool is_active)
 {
   //
 }
 
-void Host::OnPerformanceCountersUpdated()
+void Host::OnFullscreenUIStartedOrStopped(bool started)
+{
+  //
+}
+
+void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
 {
   //
 }
@@ -375,14 +383,10 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
 {
 }
 
-void Host::FrameDone()
+void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
 {
-  const u32 frame = System::GetFrameNumber();
-  if (s_frame_dump_interval > 0 && (s_frame_dump_interval == 1 || (frame % s_frame_dump_interval) == 0))
-  {
-    std::string dump_filename(RegTestHost::GetFrameDumpFilename(frame));
-    g_gpu->WriteDisplayTextureToFile(std::move(dump_filename));
-  }
+  if (s_frame_dump_interval > 0 && (s_frame_dump_interval == 1 || (frame_number % s_frame_dump_interval) == 0))
+    gpu_backend->WriteDisplayTextureToFile(RegTestHost::GetFrameDumpFilename(frame_number));
 }
 
 void Host::OpenURL(std::string_view url)
@@ -506,6 +510,12 @@ void RegTestHost::HookSignals()
 {
   std::signal(SIGINT, SignalHandler);
   std::signal(SIGTERM, SignalHandler);
+}
+
+void RegTestHost::GPUThreadEntryPoint()
+{
+  Threading::SetNameOfCurrentThread("CPU Thread");
+  GPUThread::Internal::GPUThreadEntryPoint();
 }
 
 void RegTestHost::InitializeEarlyConsole()
@@ -773,6 +783,7 @@ int main(int argc, char* argv[])
   }
 
   RegTestHost::HookSignals();
+  s_gpu_thread.Start(&RegTestHost::GPUThreadEntryPoint);
 
   Error error;
   int result = -1;
@@ -813,6 +824,12 @@ int main(int argc, char* argv[])
   result = 0;
 
 cleanup:
+  if (s_gpu_thread.Joinable())
+  {
+    GPUThread::Internal::RequestShutdown();
+    s_gpu_thread.Join();
+  }
+
   System::CPUThreadShutdown();
   System::ProcessShutdown();
   return result;

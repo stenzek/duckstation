@@ -52,6 +52,8 @@ static void DrawChoiceDialog();
 static void DrawInputDialog();
 static void DrawMessageDialog();
 static void DrawBackgroundProgressDialogs(ImVec2& position, float spacing);
+static void DrawLoadingScreen(std::string_view image, std::string_view message, s32 progress_min, s32 progress_max,
+                              s32 progress_value, bool is_persistent);
 static void DrawNotifications(ImVec2& position, float spacing);
 static void DrawToast();
 static bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImRect* bb,
@@ -171,6 +173,13 @@ struct ALIGN_TO_CACHE_LINE UIState
 
   std::vector<BackgroundProgressDialogData> background_progress_dialogs;
   std::mutex background_progress_lock;
+
+  std::string loading_screen_image;
+  std::string loading_screen_message;
+  s32 loading_screen_min = 0;
+  s32 loading_screen_max = 0;
+  s32 loading_screen_value = 0;
+  bool loading_screen_open = false;
 };
 
 } // namespace
@@ -2914,6 +2923,145 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
   ImGui::PopFont();
   ImGui::PopStyleVar(4);
   ImGui::PopStyleColor(2);
+}
+
+void ImGuiFullscreen::RenderLoadingScreen(std::string_view image, std::string_view message, s32 progress_min /*= -1*/,
+                                          s32 progress_max /*= -1*/, s32 progress_value /*= -1*/)
+{
+  if (progress_min < progress_max)
+    INFO_LOG("{}: {}/{}", message, progress_value, progress_max);
+
+  if (!g_gpu_device || !g_gpu_device->HasMainSwapChain())
+    return;
+
+  // eat the last imgui frame, it might've been partially rendered by the caller.
+  ImGui::EndFrame();
+  ImGui::NewFrame();
+
+  DrawLoadingScreen(image, message, progress_min, progress_max, progress_value, false);
+
+  ImGui::EndFrame();
+
+  GPUSwapChain* swap_chain = g_gpu_device->GetMainSwapChain();
+  if (g_gpu_device->BeginPresent(swap_chain) == GPUDevice::PresentResult::OK)
+  {
+    g_gpu_device->RenderImGui(swap_chain);
+    g_gpu_device->EndPresent(swap_chain, false);
+  }
+
+  ImGui::NewFrame();
+}
+
+void ImGuiFullscreen::OpenOrUpdateLoadingScreen(std::string_view image, std::string_view message,
+                                                s32 progress_min /*= -1*/, s32 progress_max /*= -1*/,
+                                                s32 progress_value /*= -1*/)
+{
+  if (s_state.loading_screen_image != image)
+    s_state.loading_screen_image = image;
+  if (s_state.loading_screen_message != message)
+    s_state.loading_screen_message = message;
+  s_state.loading_screen_min = progress_min;
+  s_state.loading_screen_max = progress_max;
+  s_state.loading_screen_value = progress_value;
+  s_state.loading_screen_open = true;
+}
+
+bool ImGuiFullscreen::IsLoadingScreenOpen()
+{
+  return s_state.loading_screen_open;
+}
+
+void ImGuiFullscreen::RenderLoadingScreen()
+{
+  if (!s_state.loading_screen_open)
+    return;
+
+  DrawLoadingScreen(s_state.loading_screen_image, s_state.loading_screen_message, s_state.loading_screen_min,
+                    s_state.loading_screen_max, s_state.loading_screen_value, true);
+}
+
+void ImGuiFullscreen::CloseLoadingScreen()
+{
+  s_state.loading_screen_image = {};
+  s_state.loading_screen_message = {};
+  s_state.loading_screen_min = 0;
+  s_state.loading_screen_max = 0;
+  s_state.loading_screen_value = 0;
+  s_state.loading_screen_open = false;
+}
+
+void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view message, s32 progress_min,
+                                        s32 progress_max, s32 progress_value, bool is_persistent)
+{
+  const auto& io = ImGui::GetIO();
+  const float scale = ImGuiManager::GetGlobalScale();
+  const float width = (400.0f * scale);
+  const bool has_progress = (progress_min < progress_max);
+
+  const float logo_width = 260.0f * scale;
+  const float logo_height = 260.0f * scale;
+
+  ImGui::SetNextWindowSize(ImVec2(logo_width, logo_height), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) - (50.0f * scale)),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+  if (ImGui::Begin("LoadingScreenLogo", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
+                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing |
+                     ImGuiWindowFlags_NoBackground))
+  {
+    GPUTexture* tex = GetCachedTexture(image);
+    if (tex)
+      ImGui::Image(tex, ImVec2(logo_width, logo_height));
+  }
+  ImGui::End();
+
+  const float padding_and_rounding = 18.0f * scale;
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
+  ImGui::SetNextWindowSize(ImVec2(width, ((has_progress || is_persistent) ? 90.0f : 55.0f) * scale), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
+                          ImGuiCond_Always, ImVec2(0.5f, 0.0f));
+  if (ImGui::Begin("LoadingScreen", nullptr,
+                   ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoInputs | ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoNav |
+                     ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoFocusOnAppearing))
+  {
+    if (has_progress || is_persistent)
+    {
+      if (!message.empty())
+        ImGui::TextUnformatted(message.data(), message.data() + message.size());
+
+      if (has_progress)
+      {
+        TinyString buf;
+        buf.format("{}/{}", progress_value, progress_max);
+
+        const ImVec2 prog_size = ImGui::CalcTextSize(buf.c_str(), buf.end_ptr());
+        ImGui::SameLine();
+        ImGui::SetCursorPosX(width - padding_and_rounding - prog_size.x);
+        ImGui::TextUnformatted(buf.c_str(), buf.end_ptr());
+      }
+
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+
+      ImGui::ProgressBar(has_progress ?
+                           (static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min)) :
+                           static_cast<float>(-ImGui::GetTime()),
+                         ImVec2(-1.0f, 0.0f), "");
+    }
+    else
+    {
+      if (!message.empty())
+      {
+        const ImVec2 text_size(ImGui::CalcTextSize(message.data(), message.data() + message.size()));
+        ImGui::SetCursorPosX((width - text_size.x) / 2.0f);
+        ImGui::TextUnformatted(message.data(), message.data() + message.size());
+      }
+    }
+  }
+  ImGui::End();
+  ImGui::PopStyleVar(2);
 }
 
 //////////////////////////////////////////////////////////////////////////

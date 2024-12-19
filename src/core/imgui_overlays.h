@@ -7,14 +7,23 @@
 
 #include <string>
 
+class SettingsInterface;
+
+class GPUBackend;
+
 namespace ImGuiManager {
-void RenderTextOverlays();
+
+static constexpr const char* LOGO_IMAGE_NAME = "images/duck.png";
+
+void RenderTextOverlays(const GPUBackend* gpu);
+bool AreAnyDebugWindowsEnabled(const SettingsInterface& si);
 void RenderDebugWindows();
 bool UpdateDebugWindowConfig();
 void DestroyAllDebugWindows();
 
 void RenderOverlayWindows();
 void DestroyOverlayTextures();
+
 } // namespace ImGuiManager
 
 namespace SaveStateSelectorUI {
@@ -23,7 +32,7 @@ static constexpr float DEFAULT_OPEN_TIME = 7.5f;
 
 bool IsOpen();
 void Open(float open_time = DEFAULT_OPEN_TIME);
-void RefreshList(const std::string& serial);
+void RefreshList();
 void Clear();
 void ClearList();
 void Close();

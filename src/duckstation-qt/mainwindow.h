@@ -168,7 +168,7 @@ private Q_SLOTS:
   void onCheatsActionTriggered();
   void onCheatsMenuAboutToShow();
   void onStartFullscreenUITriggered();
-  void onFullscreenUIStateChange(bool running);
+  void onFullscreenUIStartedOrStopped(bool running);
   void onRemoveDiscActionTriggered();
   void onScanForNewGamesTriggered();
   void onViewToolbarActionToggled(bool checked);

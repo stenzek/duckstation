@@ -98,6 +98,7 @@ struct Settings
   std::string gpu_adapter;
   u8 gpu_resolution_scale = 1;
   u8 gpu_multisamples = 1;
+  u8 gpu_max_queued_frames = DEFAULT_GPU_MAX_QUEUED_FRAMES;
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
   bool gpu_use_debug_device : 1 = false;
@@ -378,7 +379,9 @@ struct Settings
   void Save(SettingsInterface& si, bool ignore_base) const;
   static void Clear(SettingsInterface& si);
 
-  void FixIncompatibleSettings(bool display_osd_messages);
+  void FixIncompatibleSettings(const SettingsInterface& si, bool display_osd_messages);
+
+  bool AreGPUDeviceSettingsChanged(const Settings& old_settings) const;
 
   /// Initializes configuration.
   static void SetDefaultLogConfig(SettingsInterface& si);
@@ -565,13 +568,19 @@ struct Settings
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = true;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = false;
   static constexpr u16 DEFAULT_GDB_SERVER_PORT = 2345;
+
+  // TODO: Maybe lower? But that means fast CPU threads would always stall, could be a problem for power management.
+  static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 2;
 #else
   static constexpr bool DEFAULT_SAVE_STATE_BACKUPS = false;
   static constexpr bool DEFAULT_FAST_BOOT_VALUE = true;
+  static constexpr u8 DEFAULT_GPU_MAX_QUEUED_FRAMES = 3;
 #endif
 };
 
-extern Settings g_settings;
+// TODO: Use smaller copy for GPU thread copy.
+ALIGN_TO_CACHE_LINE extern Settings g_settings;     // CPU thread copy.
+ALIGN_TO_CACHE_LINE extern Settings g_gpu_settings; // GPU thread copy.
 
 namespace EmuFolders {
 extern std::string AppRoot;

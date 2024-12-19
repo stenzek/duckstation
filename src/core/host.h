@@ -75,10 +75,6 @@ std::span<const std::pair<const char*, const char*>> GetAvailableLanguageList();
 /// Refreshes the UI when the language is changed.
 bool ChangeLanguage(const char* new_language);
 
-/// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
-/// such as compiling shaders when starting up.
-void DisplayLoadingScreen(const char* message, int progress_min = -1, int progress_max = -1, int progress_value = -1);
-
 /// Safely executes a function on the VM thread.
 void RunOnCPUThread(std::function<void()> function, bool block = false);
 
@@ -95,21 +91,6 @@ bool IsFullscreen();
 
 /// Alters fullscreen state of hosting application.
 void SetFullscreen(bool enabled);
-
-/// Attempts to create the rendering device backend.
-bool CreateGPUDevice(RenderAPI api, bool fullscreen, Error* error);
-
-/// Handles fullscreen transitions and such.
-void UpdateDisplayWindow(bool fullscreen);
-
-/// Called when the window is resized.
-void ResizeDisplayWindow(s32 width, s32 height, float scale);
-
-/// Destroys any active rendering device.
-void ReleaseGPUDevice();
-
-/// Called at the end of the frame, before presentation.
-void FrameDone();
 
 namespace Internal {
 
