@@ -3641,39 +3641,6 @@ void System::DoFrameStep()
   PauseSystem(false);
 }
 
-#if 0
-// currently not used until EXP1 is implemented
-
-bool SetExpansionROM(const char* filename)
-{
-  std::FILE* fp = FileSystem::OpenCFile(filename, "rb");
-  if (!fp)
-  {
-    ERROR_LOG("Failed to open '{}'", Path::GetFileName(filename));
-    return false;
-  }
-
-  std::fseek(fp, 0, SEEK_END);
-  const u32 size = static_cast<u32>(std::ftell(fp));
-  std::fseek(fp, 0, SEEK_SET);
-
-  std::vector<u8> data(size);
-  if (std::fread(data.data(), size, 1, fp) != 1)
-  {
-    ERROR_LOG("Failed to read ROM data from '{}'", Path::GetFileName(filename))
-    std::fclose(fp);
-    return false;
-  }
-
-  std::fclose(fp);
-
-  INFO_LOG("Loaded expansion ROM from '{}': {} bytes", Path::GetFileName(filename), size);
-  Bus::SetExpansionROM(std::move(data));
-  return true;
-}
-
-#endif
-
 Controller* System::GetController(u32 slot)
 {
   return Pad::GetController(slot);
