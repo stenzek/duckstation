@@ -51,7 +51,7 @@ void GPU_SW_Backend::DrawLine(const GPUBackendDrawLineCommand* cmd)
   const GPU_SW_Rasterizer::DrawLineFunction DrawFunction =
     GPU_SW_Rasterizer::GetDrawLineFunction(cmd->rc.shading_enable, cmd->rc.transparency_enable);
 
-  for (u16 i = 1; i < cmd->num_vertices; i++)
+  for (u16 i = 1; i < cmd->num_vertices; i += 2)
     DrawFunction(cmd, &cmd->vertices[i - 1], &cmd->vertices[i]);
 }
 
