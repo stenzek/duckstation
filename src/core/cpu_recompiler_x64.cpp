@@ -2243,11 +2243,8 @@ void CPU::X64Recompiler::Compile_mtc0(CompileFlags cf)
 
     cg->test(changed_bits, 1u << 16);
     SwitchToFarCode(true, &CodeGenerator::jnz);
-    cg->mov(cg->dword[cg->rsp], RWARG2);
-    cg->sub(cg->rsp, STACK_SHADOW_SIZE + 8);
     cg->call(&CPU::UpdateMemoryPointers);
-    cg->add(cg->rsp, STACK_SHADOW_SIZE + 8);
-    cg->mov(RWARG2, cg->dword[cg->rsp]);
+    cg->mov(RWARG2, cg->dword[PTR(ptr)]); // reload value for interrupt test below
     cg->mov(RMEMBASE, cg->qword[PTR(&g_state.fastmem_base)]);
     SwitchToNearCode(true);
 
@@ -2475,7 +2472,7 @@ u32 CPU::Recompiler::CompileLoadStoreThunk(void* thunk_code, u32 thunk_space, vo
       num_gprs++;
   }
 
-  const u32 stack_size = (((num_gprs + 1) & ~1u) * GPR_SIZE) + STACK_SHADOW_SIZE;
+  const u32 stack_size = (((num_gprs + 1) & ~1u) * GPR_SIZE);
 
   if (stack_size > 0)
   {

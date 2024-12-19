@@ -2286,11 +2286,8 @@ void CPU::RISCV64Recompiler::Compile_mtc0(CompileFlags cf)
     rvAsm->SRLIW(RSCRATCH, changed_bits, 16);
     rvAsm->ANDI(RSCRATCH, RSCRATCH, 1);
     SwitchToFarCode(true, &Assembler::BEQ, RSCRATCH, zero);
-    rvAsm->ADDI(sp, sp, -16);
-    rvAsm->SW(RARG1, 0, sp);
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
-    rvAsm->LW(RARG1, 0, sp);
-    rvAsm->ADDI(sp, sp, 16);
+    rvAsm->LW(new_value, PTR(ptr));
     rvAsm->LD(RMEMBASE, PTR(&g_state.fastmem_base));
     SwitchToNearCode(true);
 
