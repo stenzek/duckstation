@@ -58,9 +58,6 @@ void FrameUpdate();
 /// Called when the system is paused, because FrameUpdate() won't be getting called.
 void IdleUpdate();
 
-/// Returns true if idle updates are necessary (e.g. outstanding requests).
-bool NeedsIdleUpdate();
-
 /// Saves/loads state.
 bool DoState(StateWrapper& sw);
 
