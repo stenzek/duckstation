@@ -2428,11 +2428,13 @@ void CPU::ARM64Recompiler::Compile_mtc0(CompileFlags cf)
     // We could just inline the whole thing..
     Flush(FLUSH_FOR_C_CALL);
 
-    SwitchToFarCodeIfBitSet(changed_bits, 16);
+    Label caches_unchanged;
+    armAsm->tbz(changed_bits, 16, &caches_unchanged);
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
     armAsm->ldr(RWARG1, PTR(ptr)); // reload value for interrupt test below
-    armAsm->ldr(RMEMBASE, PTR(&g_state.fastmem_base));
-    SwitchToNearCode(true);
+    if (CodeCache::IsUsingFastmem())
+      armAsm->ldr(RMEMBASE, PTR(&g_state.fastmem_base));
+    armAsm->bind(&caches_unchanged);
 
     TestInterrupts(RWARG1);
   }

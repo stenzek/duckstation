@@ -2283,13 +2283,15 @@ void CPU::RISCV64Recompiler::Compile_mtc0(CompileFlags cf)
     // We could just inline the whole thing..
     Flush(FLUSH_FOR_C_CALL);
 
+    Label caches_unchanged;
     rvAsm->SRLIW(RSCRATCH, changed_bits, 16);
     rvAsm->ANDI(RSCRATCH, RSCRATCH, 1);
-    SwitchToFarCode(true, &Assembler::BEQ, RSCRATCH, zero);
+    rvAsm->BEQ(RSCRATCH, zero, &caches_unchanged);
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
     rvAsm->LW(new_value, PTR(ptr));
-    rvAsm->LD(RMEMBASE, PTR(&g_state.fastmem_base));
-    SwitchToNearCode(true);
+    if (CodeCache::IsUsingFastmem())
+      rvAsm->LD(RMEMBASE, PTR(&g_state.fastmem_base));
+    rvAsm->Bind(&caches_unchanged);
 
     TestInterrupts(RARG1);
   }

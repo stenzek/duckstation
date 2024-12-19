@@ -2265,15 +2265,19 @@ void CPU::ARM32Recompiler::Compile_mtc0(CompileFlags cf)
     // We could just inline the whole thing..
     Flush(FLUSH_FOR_C_CALL);
 
-    SwitchToFarCodeIfBitSet(changed_bits, 16);
+    Label caches_unchanged;
+    armAsm->tst(changed_bits, 1u << 16);
+    armAsm->b(eq, &caches_unchanged);
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
     armAsm->ldr(RARG1, PTR(ptr)); // reload value for interrupt test below
+    armAsm->bind(&caches_unchanged);
+
+    // might need to reload fastmem base too
     if (CodeCache::IsUsingFastmem() && m_block->HasFlag(CodeCache::BlockFlags::ContainsLoadStoreInstructions) &&
         IsHostRegAllocated(RMEMBASE.GetCode()))
     {
       FreeHostReg(RMEMBASE.GetCode());
     }
-    SwitchToNearCode(true);
 
     TestInterrupts(RARG1);
   }

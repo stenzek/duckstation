@@ -2241,12 +2241,15 @@ void CPU::X64Recompiler::Compile_mtc0(CompileFlags cf)
     // We could just inline the whole thing..
     Flush(FLUSH_FOR_C_CALL);
 
+    Label caches_unchanged;
     cg->test(changed_bits, 1u << 16);
-    SwitchToFarCode(true, &CodeGenerator::jnz);
+    cg->jz(caches_unchanged);
     cg->call(&CPU::UpdateMemoryPointers);
     cg->mov(RWARG2, cg->dword[PTR(ptr)]); // reload value for interrupt test below
-    cg->mov(RMEMBASE, cg->qword[PTR(&g_state.fastmem_base)]);
-    SwitchToNearCode(true);
+    if (CodeCache::IsUsingFastmem())
+      cg->mov(RMEMBASE, cg->qword[PTR(&g_state.fastmem_base)]);
+
+    cg->L(caches_unchanged);
 
     TestInterrupts(RWARG2);
   }
