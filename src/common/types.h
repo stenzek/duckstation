@@ -93,6 +93,13 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
   } while (0)
 #endif
 
+// __restrict, potentially enables optimization by hinting the compiler that the object is unique.
+#ifdef _MSC_VER
+#define RESTRICT __restrict
+#else
+#define RESTRICT __restrict__
+#endif
+
 // disable warnings that show up at warning level 4
 // TODO: Move to build system instead
 #ifdef _MSC_VER
