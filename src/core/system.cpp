@@ -2067,12 +2067,6 @@ void System::FrameDone()
     s_state.socket_multiplexer->PollEventsWithTimeout(0);
 #endif
 
-  if (s_state.frame_step_request)
-  {
-    s_state.frame_step_request = false;
-    PauseSystem(true);
-  }
-
   // Save states for rewind and runahead.
   if (s_state.rewind_save_counter >= 0)
   {
@@ -2109,6 +2103,13 @@ void System::FrameDone()
     g_gpu->QueuePresentCurrentFrame();
 
     SaveMemoryState(AllocateMemoryState());
+  }
+
+  // Frame step after runahead, otherwise the pause takes precedence and the replay never happens.
+  if (s_state.frame_step_request)
+  {
+    s_state.frame_step_request = false;
+    PauseSystem(true);
   }
 
   Timer::Value current_time = Timer::GetCurrentValue();
