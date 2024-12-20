@@ -28,10 +28,6 @@ LOG_CHANNEL(Recompiler);
 
 #define PTR(x) vixl::aarch64::MemOperand(RSTATE, (((u8*)(x)) - ((u8*)&g_state)))
 
-static constexpr u64 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
-static constexpr u64 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 bytes
-static constexpr u64 FUNCTION_STACK_SIZE = FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE;
-
 #define RWRET vixl::aarch64::w0
 #define RXRET vixl::aarch64::x0
 #define RWARG1 vixl::aarch64::w0
@@ -448,9 +444,6 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
   g_enter_recompiler = armAsm->GetCursorAddress<decltype(g_enter_recompiler)>();
   {
-    // reserve some space for saving caller-saved registers
-    armAsm->sub(sp, sp, FUNCTION_STACK_SIZE);
-
     // Need the CPU state for basically everything :-)
     armMoveAddressToReg(armAsm, RSTATE, &g_state);
 
@@ -2435,14 +2428,13 @@ void CPU::ARM64Recompiler::Compile_mtc0(CompileFlags cf)
     // We could just inline the whole thing..
     Flush(FLUSH_FOR_C_CALL);
 
-    SwitchToFarCodeIfBitSet(changed_bits, 16);
-    armAsm->sub(sp, sp, 16);
-    armAsm->str(RWARG1, MemOperand(sp));
+    Label caches_unchanged;
+    armAsm->tbz(changed_bits, 16, &caches_unchanged);
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
-    armAsm->ldr(RWARG1, MemOperand(sp));
-    armAsm->add(sp, sp, 16);
-    armAsm->ldr(RMEMBASE, PTR(&g_state.fastmem_base));
-    SwitchToNearCode(true);
+    armAsm->ldr(RWARG1, PTR(ptr)); // reload value for interrupt test below
+    if (CodeCache::IsUsingFastmem())
+      armAsm->ldr(RMEMBASE, PTR(&g_state.fastmem_base));
+    armAsm->bind(&caches_unchanged);
 
     TestInterrupts(RWARG1);
   }

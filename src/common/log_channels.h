@@ -27,6 +27,7 @@
   X(GPU)                                                                                                               \
   X(GPUDevice)                                                                                                         \
   X(GPUDump)                                                                                                           \
+  X(GPUThread)                                                                                                         \
   X(GPU_SW)                                                                                                            \
   X(GPU_HW)                                                                                                            \
   X(GameDatabase)                                                                                                      \

@@ -327,6 +327,18 @@ void UpdateBackgroundProgressDialog(const char* str_id, std::string message, s32
 void CloseBackgroundProgressDialog(const char* str_id);
 bool IsBackgroundProgressDialogOpen(const char* str_id);
 
+/// Displays a loading screen with the logo, rendered with ImGui. Use when executing possibly-time-consuming tasks
+/// such as compiling shaders when starting up.
+void RenderLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
+                         s32 progress_value = -1);
+void OpenOrUpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1,
+                               s32 progress_max = -1, s32 progress_value = -1);
+bool IsLoadingScreenOpen();
+void CloseLoadingScreen();
+
+/// Renders a previously-configured loading screen.
+void RenderLoadingScreen();
+
 void AddNotification(std::string key, float duration, std::string title, std::string text, std::string image_path);
 void ClearNotifications();
 

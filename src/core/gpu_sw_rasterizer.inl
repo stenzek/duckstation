@@ -129,7 +129,7 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
     }
     else
     {
-      const bool dithering_enable = cmd->draw_mode.dither_enable;
+      const bool dithering_enable = cmd->dither_enable;
       const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
       const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
 
@@ -143,7 +143,7 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
   }
   else
   {
-    const bool dithering_enable = cmd->draw_mode.dither_enable;
+    const bool dithering_enable = cmd->dither_enable;
     const u32 dither_y = (dithering_enable) ? (y & 3u) : 2u;
     const u32 dither_x = (dithering_enable) ? (x & 3u) : 3u;
 
@@ -215,12 +215,12 @@ template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
     }
   }
 
-  const u16 mask_and = cmd->params.GetMaskAND();
+  const u16 mask_and = cmd->GetMaskAND();
   if ((bg_color & mask_and) != 0)
     return;
 
   DebugAssert(static_cast<u32>(x) < VRAM_WIDTH && static_cast<u32>(y) < VRAM_HEIGHT);
-  SetPixel(static_cast<u32>(x), static_cast<u32>(y), color | cmd->params.GetMaskOR());
+  SetPixel(static_cast<u32>(x), static_cast<u32>(y), color | cmd->GetMaskOR());
 }
 
 #ifndef USE_VECTOR
@@ -237,7 +237,8 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
   {
     const s32 y = origin_y + static_cast<s32>(offset_y);
     if (y < static_cast<s32>(g_drawing_area.top) || y > static_cast<s32>(g_drawing_area.bottom) ||
-        (cmd->params.interlaced_rendering && cmd->params.active_line_lsb == (Truncate8(static_cast<u32>(y)) & 1u)))
+        (cmd->interlaced_rendering &&
+         cmd->active_line_lsb == ConvertToBoolUnchecked(Truncate8(static_cast<u32>(y)) & 1u)))
     {
       continue;
     }
@@ -488,8 +489,8 @@ struct PixelVectors
     clip_left = GSVectorNi(g_drawing_area.left);
     clip_right = GSVectorNi(g_drawing_area.right);
 
-    mask_and = GSVectorNi(cmd->params.GetMaskAND());
-    mask_or = GSVectorNi(cmd->params.GetMaskOR());
+    mask_and = GSVectorNi(cmd->GetMaskAND());
+    mask_or = GSVectorNi(cmd->GetMaskOR());
 
     if constexpr (texture_enable)
     {
@@ -717,7 +718,8 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
   {
     const s32 y = origin_y + static_cast<s32>(offset_y);
     if (y >= static_cast<s32>(g_drawing_area.top) && y <= static_cast<s32>(g_drawing_area.bottom) &&
-        (!cmd->params.interlaced_rendering || cmd->params.active_line_lsb != (Truncate8(static_cast<u32>(y)) & 1u)))
+        (!cmd->interlaced_rendering ||
+         cmd->active_line_lsb != ConvertToBoolUnchecked(Truncate8(static_cast<u32>(y)) & 1u)))
     {
       const s32 draw_y = (y & VRAM_HEIGHT_MASK);
 
@@ -817,7 +819,8 @@ static void DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawL
     const s32 x = unfp_xy(curx);
     const s32 y = unfp_xy(cury);
 
-    if ((!cmd->params.interlaced_rendering || cmd->params.active_line_lsb != (Truncate8(static_cast<u32>(y)) & 1u)) &&
+    if ((!cmd->interlaced_rendering ||
+         cmd->active_line_lsb != ConvertToBoolUnchecked(Truncate8(static_cast<u32>(y)) & 1u)) &&
         x >= static_cast<s32>(g_drawing_area.left) && x <= static_cast<s32>(g_drawing_area.right) &&
         y >= static_cast<s32>(g_drawing_area.top) && y <= static_cast<s32>(g_drawing_area.bottom))
     {
@@ -968,7 +971,7 @@ struct TrianglePart
 #ifndef USE_VECTOR
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
+static void DrawSpan(const GPUBackendDrawCommand* cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
                      const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep)
 {
   s32 width = x_bound - x_start;
@@ -1008,7 +1011,7 @@ static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start
 }
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCommand* cmd, const TrianglePart& tp,
+ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* cmd, const TrianglePart& tp,
                                                    const UVStepper& uv, const UVSteps& uvstep, const RGBStepper& rgb,
                                                    const RGBSteps& rgbstep)
 {
@@ -1051,7 +1054,8 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
         lrgb.StepY<true>(rgbstep);
 
       if (y > static_cast<s32>(g_drawing_area.bottom) ||
-          (cmd->params.interlaced_rendering && cmd->params.active_line_lsb == (static_cast<u32>(current_y) & 1u)))
+          (cmd->interlaced_rendering &&
+           cmd->active_line_lsb == ConvertToBoolUnchecked(static_cast<u32>(current_y) & 1u)))
       {
         continue;
       }
@@ -1082,7 +1086,8 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
         break;
       }
       if (y >= static_cast<s32>(g_drawing_area.top) &&
-          (!cmd->params.interlaced_rendering || cmd->params.active_line_lsb != (static_cast<u32>(current_y) & 1u)))
+          (!cmd->interlaced_rendering ||
+           cmd->active_line_lsb != ConvertToBoolUnchecked(static_cast<u32>(current_y) & 1u)))
       {
         DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
           cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep);
@@ -1145,7 +1150,7 @@ struct TriangleVectors : PixelVectors<texture_enable>
 } // namespace
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawPolygonCommand* cmd, s32 y, s32 x_start, s32 x_bound,
+ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* cmd, s32 y, s32 x_start, s32 x_bound,
                                            UVStepper uv, const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep,
                                            const TriangleVectors<shading_enable, texture_enable>& tv)
 {
@@ -1195,7 +1200,7 @@ ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawPolygonCommand* c
     dv = GSVectorNi::zero();
   }
 
-  const GSVectorNi dither = cmd->draw_mode.dither_enable ?
+  const GSVectorNi dither = cmd->dither_enable ?
                               GSVectorNi::broadcast128<false>(
                                 &VECTOR_DITHER_MATRIX[static_cast<u32>(y) & 3][(static_cast<u32>(current_x) & 3) * 2]) :
                               GSVectorNi::zero();
@@ -1250,7 +1255,7 @@ ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawPolygonCommand* c
 }
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCommand* cmd, const TrianglePart& tp,
+ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* cmd, const TrianglePart& tp,
                                                    const UVStepper& uv, const UVSteps& uvstep, const RGBStepper& rgb,
                                                    const RGBSteps& rgbstep)
 {
@@ -1295,7 +1300,8 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
         lrgb.StepY<true>(rgbstep);
 
       if (y > static_cast<s32>(g_drawing_area.bottom) ||
-          (cmd->params.interlaced_rendering && cmd->params.active_line_lsb == (static_cast<u32>(current_y) & 1u)))
+          (cmd->interlaced_rendering &&
+           cmd->active_line_lsb == ConvertToBoolUnchecked(static_cast<u32>(current_y) & 1u)))
       {
         continue;
       }
@@ -1328,7 +1334,8 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
         break;
       }
       if (y >= static_cast<s32>(g_drawing_area.top) &&
-          (!cmd->params.interlaced_rendering || cmd->params.active_line_lsb != (static_cast<u32>(current_y) & 1u)))
+          (!cmd->interlaced_rendering ||
+           cmd->active_line_lsb != ConvertToBoolUnchecked(static_cast<u32>(current_y) & 1u)))
       {
         DrawSpan<shading_enable, texture_enable, raw_texture_enable, transparency_enable>(
           cmd, y & VRAM_HEIGHT_MASK, unfp_xy(left_x), unfp_xy(right_x), luv, uvstep, lrgb, rgbstep, tv);
@@ -1349,7 +1356,7 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawPolygonCo
 #endif // USE_VECTOR
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-static void DrawTriangle(const GPUBackendDrawPolygonCommand* cmd, const GPUBackendDrawPolygonCommand::Vertex* v0,
+static void DrawTriangle(const GPUBackendDrawCommand* cmd, const GPUBackendDrawPolygonCommand::Vertex* v0,
                          const GPUBackendDrawPolygonCommand::Vertex* v1, const GPUBackendDrawPolygonCommand::Vertex* v2)
 {
 #ifdef CHECK_VECTOR

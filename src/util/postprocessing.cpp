@@ -12,7 +12,7 @@
 
 // TODO: Remove me
 #include "core/host.h"
-#include "core/host_interface_progress_callback.h"
+#include "core/fullscreen_ui.h"
 #include "core/settings.h"
 
 #include "IconsFontAwesome5.h"
@@ -406,7 +406,7 @@ void PostProcessing::Chain::LoadStages()
     return;
 
   Error error;
-  HostInterfaceProgressCallback progress;
+  LoadingScreenProgressCallback progress;
   progress.SetProgressRange(stage_count);
 
   for (u32 i = 0; i < stage_count; i++)
@@ -476,7 +476,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   m_stages.resize(stage_count);
 
-  HostInterfaceProgressCallback progress;
+  LoadingScreenProgressCallback progress;
   progress.SetProgressRange(stage_count);
 
   const GPUTexture::Format prev_format = m_target_format;

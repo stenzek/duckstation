@@ -165,7 +165,6 @@ std::unique_ptr<INISettingsInterface> GetGameSettingsInterface(const GameDatabas
 std::string GetInputProfilePath(std::string_view name);
 
 State GetState();
-void SetState(State new_state);
 bool IsRunning();
 bool IsPaused();
 bool IsShutdown();
@@ -384,7 +383,7 @@ s32 GetAudioOutputVolume();
 void UpdateVolume();
 
 /// Saves a screenshot to the specified file. If no file name is provided, one will be generated automatically.
-bool SaveScreenshot(const char* path = nullptr, DisplayScreenshotMode mode = g_settings.display_screenshot_mode,
+void SaveScreenshot(const char* path = nullptr, DisplayScreenshotMode mode = g_settings.display_screenshot_mode,
                     DisplayScreenshotFormat format = g_settings.display_screenshot_format,
                     u8 quality = g_settings.display_screenshot_quality, bool compress_on_thread = true);
 
@@ -400,7 +399,6 @@ MediaCapture* GetMediaCapture();
 
 /// Media capture (video and/or audio). If no path is provided, one will be generated automatically.
 bool StartMediaCapture(std::string path = {});
-bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio);
 void StopMediaCapture();
 
 /// Toggle Widescreen Hack and Aspect Ratio
@@ -413,15 +411,11 @@ void ToggleSoftwareRendering();
 /// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 void RequestDisplaySize(float scale = 0.0f);
 
-/// Renders the display.
-bool PresentDisplay(bool explicit_present, u64 present_time);
-void InvalidateDisplay();
-
 //////////////////////////////////////////////////////////////////////////
 // Memory Save States (Rewind and Runahead)
 //////////////////////////////////////////////////////////////////////////
 void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage);
-void ClearMemorySaveStates();
+void ClearMemorySaveStates(bool reallocate_resources);
 void SetRunaheadReplayFlag();
 
 /// Shared socket multiplexer, used by PINE/GDB/etc.

@@ -376,6 +376,14 @@ bool JogCon::Transfer(const u8 data_in, u8* data_out)
         m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
         Poll();
       }
+      else if (m_configuration_mode && data_in == 0x44)
+      {
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::SetAnalogMode;
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+        ResetMotorConfig();
+      }
       else if (m_configuration_mode && data_in == 0x45)
       {
         m_response_length = (GetResponseNumHalfwords() + 1) * 2;
@@ -426,6 +434,25 @@ bool JogCon::Transfer(const u8 data_in, u8* data_out)
     case Command::GetAnalogMode:
     {
       // just send the byte, nothing special to do here
+    }
+    break;
+
+    case Command::SetAnalogMode:
+    {
+      if (m_command_step == 2)
+      {
+        DEV_LOG("analog mode val 0x{:02x}", data_in);
+
+        if (data_in == 0x00 || data_in == 0x01)
+          SetJogConMode(data_in == 0x01, true);
+      }
+      else if (m_command_step == 3)
+      {
+        DEV_LOG("analog mode lock 0x{:02x}", data_in);
+
+        if (data_in == 0x02 || data_in == 0x03)
+          WARNING_LOG("Unimplemented analog mode lock {}", (data_in == 0x03));
+      }
     }
     break;
 

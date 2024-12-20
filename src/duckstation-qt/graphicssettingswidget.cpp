@@ -293,6 +293,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   // Debugging Tab
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuThread, "GPU", "UseThread", true);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, "GPU", "MaxQueuedFrames",
+                                              Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
+  connect(m_ui.gpuThread, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onGPUThreadChanged);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(
     sif, m_ui.gpuDumpCompressionMode, "GPU", "DumpCompressionMode", &Settings::ParseGPUDumpCompressionMode,
@@ -325,6 +328,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   onMediaCaptureVideoEnabledChanged();
   onEnableTextureCacheChanged();
   onEnableAnyTextureReplacementsChanged();
+  onGPUThreadChanged();
   onShowDebugSettingsChanged(QtHost::ShouldShowDebugOptions());
 
   // Rendering Tab
@@ -610,8 +614,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Draws a wireframe outline of the triangles rendered by the console's GPU, either as a "
                                 "replacement or an overlay."));
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
-                             tr("Uses a second thread for drawing graphics. Currently only available for the software "
-                                "renderer, but can provide a significant speed improvement, and is safe to use."));
+                             tr("Uses a second thread for drawing graphics. Provides a significant speed improvement "
+                                "particularly with the software renderer, and is safe to use."));
 
   dialog->registerWidgetHelp(
     m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"),
@@ -818,8 +822,6 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
 #ifdef _WIN32
   m_ui.blitSwapChain->setEnabled(render_api == RenderAPI::D3D11);
 #endif
-
-  m_ui.gpuThread->setEnabled(!is_hardware);
 
   m_ui.exclusiveFullscreenLabel->setEnabled(render_api == RenderAPI::D3D11 || render_api == RenderAPI::D3D12 ||
                                             render_api == RenderAPI::Vulkan);
@@ -1179,6 +1181,13 @@ void GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged()
      (m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false) &&
       m_dialog->getEffectiveBoolValue("TextureReplacements", "EnableTextureReplacements", false)));
   m_ui.preloadTextureReplacements->setEnabled(any_replacements_enabled);
+}
+
+void GraphicsSettingsWidget::onGPUThreadChanged()
+{
+  const bool enabled = m_dialog->getEffectiveBoolValue("GPU", "UseThread", true);
+  m_ui.maxQueuedFrames->setEnabled(enabled);
+  m_ui.maxQueuedFramesLabel->setEnabled(enabled);
 }
 
 void GraphicsSettingsWidget::onTextureReplacementOptionsClicked()

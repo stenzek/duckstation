@@ -31,10 +31,6 @@ LOG_CHANNEL(Recompiler);
 #define PTR(x) vixl::aarch32::MemOperand(RSTATE, (((u8*)(x)) - ((u8*)&g_state)))
 #define RMEMBASE vixl::aarch32::r3
 
-static constexpr u32 FUNCTION_CALLEE_SAVED_SPACE_RESERVE = 80;  // 8 registers
-static constexpr u32 FUNCTION_CALLER_SAVED_SPACE_RESERVE = 144; // 18 registers -> 224 bytes
-static constexpr u32 FUNCTION_STACK_SIZE = FUNCTION_CALLEE_SAVED_SPACE_RESERVE + FUNCTION_CALLER_SAVED_SPACE_RESERVE;
-
 #define RRET vixl::aarch32::r0
 #define RRETHI vixl::aarch32::r1
 #define RARG1 vixl::aarch32::r0
@@ -266,9 +262,6 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
   g_enter_recompiler = armAsm->GetCursorAddress<decltype(g_enter_recompiler)>();
   {
-    // reserve some space for saving caller-saved registers
-    armAsm->sub(sp, sp, FUNCTION_STACK_SIZE);
-
     // Need the CPU state for basically everything :-)
     armMoveAddressToReg(armAsm, RSTATE, &g_state);
   }
@@ -2272,16 +2265,19 @@ void CPU::ARM32Recompiler::Compile_mtc0(CompileFlags cf)
     // We could just inline the whole thing..
     Flush(FLUSH_FOR_C_CALL);
 
-    SwitchToFarCodeIfBitSet(changed_bits, 16);
-    armAsm->push(RegisterList(RARG1));
+    Label caches_unchanged;
+    armAsm->tst(changed_bits, 1u << 16);
+    armAsm->b(eq, &caches_unchanged);
     EmitCall(reinterpret_cast<const void*>(&CPU::UpdateMemoryPointers));
-    armAsm->pop(RegisterList(RARG1));
+    armAsm->ldr(RARG1, PTR(ptr)); // reload value for interrupt test below
+    armAsm->bind(&caches_unchanged);
+
+    // might need to reload fastmem base too
     if (CodeCache::IsUsingFastmem() && m_block->HasFlag(CodeCache::BlockFlags::ContainsLoadStoreInstructions) &&
         IsHostRegAllocated(RMEMBASE.GetCode()))
     {
       FreeHostReg(RMEMBASE.GetCode());
     }
-    SwitchToNearCode(true);
 
     TestInterrupts(RARG1);
   }

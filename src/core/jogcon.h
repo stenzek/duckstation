@@ -71,6 +71,7 @@ private:
     ReadPad,
     SetMode,
     GetAnalogMode,
+    SetAnalogMode,
     GetSetRumble,
     Command46,
     Command47,

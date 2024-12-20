@@ -1286,11 +1286,29 @@
           <item row="1" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_4">
             <item row="0" column="0">
-             <widget class="QCheckBox" name="gpuThread">
-              <property name="text">
-               <string>Threaded Rendering</string>
-              </property>
-             </widget>
+             <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,0,0">
+              <item>
+               <widget class="QCheckBox" name="gpuThread">
+                <property name="text">
+                 <string>Threaded Rendering</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="maxQueuedFramesLabel">
+                <property name="text">
+                 <string>Max Queued Frames:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="maxQueuedFrames">
+                <property name="maximum">
+                 <number>10</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>

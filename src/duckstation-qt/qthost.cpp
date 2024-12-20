@@ -19,7 +19,9 @@
 #include "core/game_list.h"
 #include "core/gdb_server.h"
 #include "core/gpu.h"
+#include "core/gpu_backend.h"
 #include "core/gpu_hw_texture_cache.h"
+#include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/imgui_overlays.h"
 #include "core/memory_card.h"
@@ -222,7 +224,6 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
 {
   INISettingsInterface* ini = static_cast<INISettingsInterface*>(sif);
   Error error;
-
 
   // if there's no keys, just toss the whole thing out
   if (delete_if_empty && ini->IsEmpty())
@@ -576,12 +577,7 @@ void Host::LoadSettings(const SettingsInterface& si, std::unique_lock<std::mutex
 void EmuThread::checkForSettingsChanges(const Settings& old_settings)
 {
   if (g_main_window)
-  {
     QMetaObject::invokeMethod(g_main_window, &MainWindow::checkForSettingChanges, Qt::QueuedConnection);
-
-    if (System::IsValid())
-      updatePerformanceCounters();
-  }
 
   // don't mess with fullscreen while locked
   if (!QtHost::IsSystemLocked())
@@ -591,7 +587,7 @@ void EmuThread::checkForSettingsChanges(const Settings& old_settings)
     {
       m_is_rendering_to_main = render_to_main;
       if (g_gpu_device)
-        Host::UpdateDisplayWindow(m_is_fullscreen);
+        GPUThread::UpdateDisplayWindow(m_is_fullscreen);
     }
   }
 }
@@ -730,33 +726,24 @@ void EmuThread::startFullscreenUI()
     return;
   }
 
-  if (System::IsValid())
+  if (System::IsValid() || m_is_fullscreen_ui_started)
     return;
 
   // we want settings loaded so we choose the correct renderer
   // this also sorts out input sources.
   System::LoadSettings(false);
   m_is_rendering_to_main = shouldRenderToMain();
-  m_run_fullscreen_ui = true;
 
   // borrow the game start fullscreen flag
   const bool start_fullscreen =
     (s_start_fullscreen_ui_fullscreen || Host::GetBaseBoolSettingValue("Main", "StartFullscreen", false));
 
   Error error;
-  if (!Host::CreateGPUDevice(Settings::GetRenderAPIForRenderer(g_settings.gpu_renderer), start_fullscreen, &error) ||
-      !FullscreenUI::Initialize())
+  if (!GPUThread::StartFullscreenUI(start_fullscreen, &error))
   {
     Host::ReportErrorAsync("Error", error.GetDescription());
-    m_run_fullscreen_ui = false;
     return;
   }
-
-  emit fullscreenUIStateChange(true);
-
-  // poll more frequently so we don't lose events
-  stopBackgroundControllerPollTimer();
-  startBackgroundControllerPollTimer();
 }
 
 void EmuThread::stopFullscreenUI()
@@ -771,18 +758,8 @@ void EmuThread::stopFullscreenUI()
     return;
   }
 
-  setFullscreen(false, true);
-
-  if (m_run_fullscreen_ui)
-  {
-    m_run_fullscreen_ui = false;
-    emit fullscreenUIStateChange(false);
-  }
-
-  if (!g_gpu_device)
-    return;
-
-  Host::ReleaseGPUDevice();
+  if (m_is_fullscreen_ui_started)
+    GPUThread::StopFullscreenUI();
 }
 
 void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
@@ -889,7 +866,7 @@ void EmuThread::onDisplayWindowMouseWheelEvent(const QPoint& delta_angle)
 
 void EmuThread::onDisplayWindowResized(int width, int height, float scale)
 {
-  Host::ResizeDisplayWindow(width, height, scale);
+  GPUThread::ResizeDisplayWindow(width, height, scale);
 }
 
 void EmuThread::redrawDisplayWindow()
@@ -900,10 +877,10 @@ void EmuThread::redrawDisplayWindow()
     return;
   }
 
-  if (!g_gpu_device || System::IsShutdown())
+  if (System::IsShutdown())
     return;
 
-  System::InvalidateDisplay();
+  GPUThread::PresentCurrentFrame();
 }
 
 void EmuThread::toggleFullscreen()
@@ -931,7 +908,7 @@ void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
 
   m_is_fullscreen = fullscreen;
   m_is_rendering_to_main = allow_render_to_main && shouldRenderToMain();
-  Host::UpdateDisplayWindow(fullscreen);
+  GPUThread::UpdateDisplayWindow(fullscreen);
 }
 
 bool Host::IsFullscreen()
@@ -960,7 +937,7 @@ void EmuThread::setSurfaceless(bool surfaceless)
     return;
 
   m_is_surfaceless = surfaceless;
-  Host::UpdateDisplayWindow(false);
+  GPUThread::UpdateDisplayWindow(false);
 }
 
 void EmuThread::requestDisplaySize(float scale)
@@ -1017,6 +994,7 @@ void Host::OnSystemStarting()
 void Host::OnSystemStarted()
 {
   g_emu_thread->stopBackgroundControllerPollTimer();
+  g_emu_thread->wakeThread();
 
   emit g_emu_thread->systemStarted();
 }
@@ -1034,6 +1012,7 @@ void Host::OnSystemResumed()
     g_emu_thread->setSurfaceless(false);
 
   emit g_emu_thread->systemResumed();
+  g_emu_thread->wakeThread();
 
   g_emu_thread->stopBackgroundControllerPollTimer();
 }
@@ -1045,9 +1024,14 @@ void Host::OnSystemDestroyed()
   emit g_emu_thread->systemDestroyed();
 }
 
-void Host::OnIdleStateChanged()
+void Host::OnFullscreenUIStartedOrStopped(bool started)
 {
-  g_emu_thread->wakeThread();
+  g_emu_thread->setFullscreenUIStarted(started);
+}
+
+void Host::OnGPUThreadRunIdleChanged(bool is_active)
+{
+  g_emu_thread->setGPUThreadRunIdle(is_active);
 }
 
 void EmuThread::reloadInputSources()
@@ -1291,7 +1275,12 @@ void EmuThread::reloadPostProcessingShaders()
   }
 
   if (System::IsValid())
-    PostProcessing::ReloadShaders();
+  {
+    GPUThread::RunOnThread([]() {
+      if (GPUThread::HasGPUBackend())
+        PostProcessing::ReloadShaders();
+    });
+  }
 }
 
 void EmuThread::updatePostProcessingSettings()
@@ -1303,7 +1292,12 @@ void EmuThread::updatePostProcessingSettings()
   }
 
   if (System::IsValid())
-    PostProcessing::UpdateSettings();
+  {
+    GPUThread::RunOnThread([]() {
+      if (GPUThread::HasGPUBackend())
+        PostProcessing::UpdateSettings();
+    });
+  }
 }
 
 void EmuThread::clearInputBindStateFromSource(InputBindingKey key)
@@ -1326,7 +1320,7 @@ void EmuThread::reloadTextureReplacements()
   }
 
   if (System::IsValid())
-    GPUTextureCache::ReloadTextureReplacements(true);
+    GPUThread::RunOnThread([]() { GPUTextureCache::ReloadTextureReplacements(true); });
 }
 
 void EmuThread::captureGPUFrameDump()
@@ -1679,7 +1673,8 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
     *height = size.height();
 
   // eat all pending events, to make sure we're not going to write input events back to a dead pointer
-  g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
+  if (g_emu_thread->isCurrentThread())
+    g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
 }
 
 void EmuThread::queueAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderWindowUserData userdata,
@@ -1699,10 +1694,12 @@ void EmuThread::processAuxiliaryRenderWindowInputEvent(void* userdata, quint32 e
                                                        quint32 param3)
 {
   DebugAssert(isCurrentThread());
-  ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(userdata, static_cast<Host::AuxiliaryRenderWindowEvent>(event),
-                                                       Host::AuxiliaryRenderWindowEventParam{.uint_param = param1},
-                                                       Host::AuxiliaryRenderWindowEventParam{.uint_param = param2},
-                                                       Host::AuxiliaryRenderWindowEventParam{.uint_param = param3});
+  GPUThread::RunOnThread([userdata, event, param1, param2, param3]() {
+    ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(userdata, static_cast<Host::AuxiliaryRenderWindowEvent>(event),
+                                                         Host::AuxiliaryRenderWindowEventParam{.uint_param = param1},
+                                                         Host::AuxiliaryRenderWindowEventParam{.uint_param = param2},
+                                                         Host::AuxiliaryRenderWindowEventParam{.uint_param = param3});
+  });
 }
 
 void EmuThread::doBackgroundControllerPoll()
@@ -1731,7 +1728,7 @@ void EmuThread::startBackgroundControllerPollTimer()
     return;
 
   u32 poll_interval = BACKGROUND_CONTROLLER_POLLING_INTERVAL;
-  if (FullscreenUI::IsInitialized())
+  if (m_gpu_thread_run_idle)
     poll_interval = FULLSCREEN_UI_CONTROLLER_POLLING_INTERVAL;
   if (GDBServer::HasAnyClients())
     poll_interval = GDB_SERVER_POLLING_INTERVAL;
@@ -1745,6 +1742,37 @@ void EmuThread::stopBackgroundControllerPollTimer()
     return;
 
   m_background_controller_polling_timer->stop();
+}
+
+void EmuThread::setGPUThreadRunIdle(bool active)
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, "setGPUThreadRunIdle", Qt::QueuedConnection, Q_ARG(bool, active));
+    return;
+  }
+
+  m_gpu_thread_run_idle = active;
+
+  // break out of the event loop if we're not executing a system
+  if (active && !g_settings.gpu_use_thread && !System::IsRunning())
+    m_event_loop->quit();
+
+  // adjust the timer speed to pick up controller input faster
+  if (!m_background_controller_polling_timer->isActive())
+    return;
+
+  g_emu_thread->stopBackgroundControllerPollTimer();
+  g_emu_thread->startBackgroundControllerPollTimer();
+}
+
+void EmuThread::setFullscreenUIStarted(bool started)
+{
+  if (m_is_fullscreen_ui_started == started)
+    return;
+
+  m_is_fullscreen_ui_started = started;
+  emit fullscreenUIStartedOrStopped(started);
 }
 
 void EmuThread::start()
@@ -1776,8 +1804,6 @@ void EmuThread::stopInThread()
 
 void EmuThread::run()
 {
-  Threading::SetNameOfCurrentThread("CPU Thread");
-
   m_event_loop = new QEventLoop();
   m_started_semaphore.release();
 
@@ -1796,6 +1822,9 @@ void EmuThread::run()
   createBackgroundControllerPollTimer();
   startBackgroundControllerPollTimer();
 
+  // kick off GPU thread
+  Threading::Thread gpu_thread(&EmuThread::gpuThreadEntryPoint);
+
   // main loop
   while (!m_shutdown_flag)
   {
@@ -1803,24 +1832,17 @@ void EmuThread::run()
     {
       System::Execute();
     }
+    else if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
+    {
+      g_emu_thread->getEventLoop()->processEvents(QEventLoop::AllEvents);
+
+      // have to double-check the condition after processing events, because the events could shut us down
+      if (!GPUThread::IsUsingThread() && GPUThread::IsRunningIdle())
+        GPUThread::Internal::DoRunIdle();
+    }
     else
     {
-      // we want to keep rendering the UI when paused and fullscreen UI is enabled
-      if (!FullscreenUI::HasActiveWindow() && !System::IsRunning())
-      {
-        // wait until we have a system before running
-        m_event_loop->exec();
-        continue;
-      }
-
-      m_event_loop->processEvents(QEventLoop::AllEvents);
-      System::IdlePollUpdate();
-      if (g_gpu_device && g_gpu_device->HasMainSwapChain())
-      {
-        System::PresentDisplay(false, 0);
-        if (!g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
-          g_gpu_device->GetMainSwapChain()->ThrottlePresentation();
-      }
+      m_event_loop->exec();
     }
   }
 
@@ -1828,13 +1850,25 @@ void EmuThread::run()
     System::ShutdownSystem(false);
 
   destroyBackgroundControllerPollTimer();
+
+  // tell GPU thread to exit
+  GPUThread::Internal::RequestShutdown();
+  gpu_thread.Join();
+
+  // and tidy up everything left
   System::CPUThreadShutdown();
 
   // move back to UI thread
   moveToThread(m_ui_thread);
 }
 
-void Host::FrameDone()
+void EmuThread::gpuThreadEntryPoint()
+{
+  Threading::SetNameOfCurrentThread("GPU Thread");
+  GPUThread::Internal::GPUThreadEntryPoint();
+}
+
+void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
 {
 }
 
@@ -1949,7 +1983,7 @@ void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view 
 {
   emit g_emu_thread->onInputDeviceConnected(std::string(identifier), std::string(device_name));
 
-  if (System::IsValid() || g_emu_thread->isRunningFullscreenUI())
+  if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {
     Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("QtHost", "Controller {} connected."), identifier),
@@ -1975,7 +2009,7 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
     Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD, std::move(message),
                             Host::OSD_WARNING_DURATION);
   }
-  else if (System::IsValid() || g_emu_thread->isRunningFullscreenUI())
+  else if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {
     Host::AddIconOSDMessage(fmt::format("ControllerConnected{}", identifier), ICON_FA_GAMEPAD,
                             fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier),
@@ -2037,16 +2071,16 @@ void Host::ReleaseRenderWindow()
   g_emu_thread->releaseRenderWindow();
 }
 
-void EmuThread::updatePerformanceCounters()
+void EmuThread::updatePerformanceCounters(const GPUBackend* gpu_backend)
 {
-  const RenderAPI render_api = g_gpu_device ? g_gpu_device->GetRenderAPI() : RenderAPI::None;
-  const bool hardware_renderer = g_gpu && g_gpu->IsHardwareRenderer();
+  const RenderAPI render_api = g_gpu_device->GetRenderAPI();
+  const bool hardware_renderer = GPUBackend::IsUsingHardwareBackend();
   u32 render_width = 0;
   u32 render_height = 0;
 
-  if (g_gpu)
+  if (gpu_backend)
   {
-    const u32 render_scale = g_gpu->GetResolutionScale();
+    const u32 render_scale = gpu_backend->GetResolutionScale();
     std::tie(render_width, render_height) = g_gpu->GetFullDisplayResolution();
     render_width *= render_scale;
     render_height *= render_scale;
@@ -2110,9 +2144,9 @@ void EmuThread::resetPerformanceCounters()
                             Q_ARG(const QString&, blank));
 }
 
-void Host::OnPerformanceCountersUpdated()
+void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
 {
-  g_emu_thread->updatePerformanceCounters();
+  g_emu_thread->updatePerformanceCounters(gpu_backend);
 }
 
 void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name)
@@ -2209,8 +2243,8 @@ std::optional<WindowInfo> Host::GetTopLevelWindowInfo()
 
 EmuThread::SystemLock EmuThread::pauseAndLockSystem()
 {
-  const bool was_fullscreen = System::IsValid() && isFullscreen();
-  const bool was_paused = System::IsPaused();
+  const bool was_fullscreen = QtHost::IsSystemValid() && isFullscreen();
+  const bool was_paused = QtHost::IsSystemPaused();
 
   // We use surfaceless rather than switching out of fullscreen, because
   // we're paused, so we're not going to be rendering anyway.

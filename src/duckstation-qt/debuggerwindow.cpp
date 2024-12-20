@@ -241,14 +241,14 @@ void DebuggerWindow::onBreakpointListItemChanged(QTreeWidgetItem* item, int colu
 
 void DebuggerWindow::onStepIntoActionTriggered()
 {
-  Assert(System::IsPaused());
+  Assert(QtHost::IsSystemPaused());
   saveCurrentState();
   g_emu_thread->singleStepCPU();
 }
 
 void DebuggerWindow::onStepOverActionTriggered()
 {
-  Assert(System::IsPaused());
+  Assert(QtHost::IsSystemPaused());
   if (!CPU::AddStepOverBreakpoint())
   {
     onStepIntoActionTriggered();
@@ -262,7 +262,7 @@ void DebuggerWindow::onStepOverActionTriggered()
 
 void DebuggerWindow::onStepOutActionTriggered()
 {
-  Assert(System::IsPaused());
+  Assert(QtHost::IsSystemPaused());
   if (!CPU::AddStepOutBreakpoint())
   {
     QMessageBox::critical(this, tr("Debugger"), tr("Failed to add step-out breakpoint, are you in a valid function?"));

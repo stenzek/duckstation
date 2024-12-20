@@ -1707,15 +1707,12 @@ PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exc
     guest_address = std::numeric_limits<PhysicalMemoryAddress>::max();
   }
 
-  DEV_LOG("Page fault handler invoked at PC={} Address={} {}, fastmem offset {:08X}", exception_pc, fault_address,
-          is_write ? "(write)" : "(read)", guest_address);
-
   auto iter = s_fastmem_backpatch_info.find(exception_pc);
   if (iter == s_fastmem_backpatch_info.end())
-  {
-    ERROR_LOG("No backpatch info found for {}", exception_pc);
     return PageFaultHandler::HandlerResult::ExecuteNextHandler;
-  }
+
+  DEV_LOG("Page fault handler invoked at PC={} Address={} {}, fastmem offset {:08X}", exception_pc, fault_address,
+          is_write ? "(write)" : "(read)", guest_address);
 
   LoadstoreBackpatchInfo& info = iter->second;
   DEV_LOG("Backpatching {} at {}[{}] (pc {:08X} addr {:08X}): Bitmask {:08X} Addr {} Data {} Size {} Signed {:02X}",

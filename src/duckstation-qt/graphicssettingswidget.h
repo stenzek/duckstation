@@ -44,6 +44,8 @@ private Q_SLOTS:
   void onEnableAnyTextureReplacementsChanged();
   void onTextureReplacementOptionsClicked();
 
+  void onGPUThreadChanged();
+
 private:
   static constexpr int TAB_INDEX_RENDERING = 0;
   static constexpr int TAB_INDEX_ADVANCED = 1;

@@ -5,6 +5,7 @@
 #include "achievements.h"
 #include "controller.h"
 #include "host.h"
+#include "imgui_overlays.h"
 #include "system.h"
 
 #include "util/gpu_device.h"
@@ -28,7 +29,8 @@
 
 LOG_CHANNEL(Settings);
 
-Settings g_settings;
+ALIGN_TO_CACHE_LINE Settings g_settings;
+ALIGN_TO_CACHE_LINE Settings g_gpu_settings;
 
 const char* SettingInfo::StringDefaultValue() const
 {
@@ -206,6 +208,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_disable_compressed_textures = si.GetBoolValue("GPU", "DisableCompressedTextures", false);
   gpu_per_sample_shading = si.GetBoolValue("GPU", "PerSampleShading", false);
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
+  gpu_max_queued_frames = static_cast<u8>(si.GetUIntValue("GPU", "MaxQueuedFrames", DEFAULT_GPU_MAX_QUEUED_FRAMES));
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
   gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
   gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", true);
@@ -554,6 +557,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   }
 
   si.SetBoolValue("GPU", "PerSampleShading", gpu_per_sample_shading);
+  si.SetUIntValue("GPU", "MaxQueuedFrames", gpu_max_queued_frames);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
   si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
@@ -950,7 +954,7 @@ std::string Settings::TextureReplacementSettings::Configuration::ExportToYAML(bo
                      comment_str, replacement_scale_linear_filter);    // ReplacementScaleLinearFilter
 }
 
-void Settings::FixIncompatibleSettings(bool display_osd_messages)
+void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display_osd_messages)
 {
   if (g_settings.disable_all_enhancements)
   {
@@ -1022,6 +1026,13 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     (g_settings.gpu_renderer != GPURenderer::Software && g_settings.gpu_texture_cache);
   g_settings.texture_replacements.enable_vram_write_replacements &= (g_settings.gpu_renderer != GPURenderer::Software);
 
+  // GPU thread should be disabled if any debug windows are active, since they will be racing to read CPU thread state.
+  if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames > 0 && ImGuiManager::AreAnyDebugWindowsEnabled(si))
+  {
+    WARNING_LOG("Setting maximum queued frames to 0 because one or more debug windows are enabled.");
+    g_settings.gpu_max_queued_frames = 0;
+  }
+
 #ifndef ENABLE_MMAP_FASTMEM
   if (g_settings.cpu_fastmem_mode == CPUFastmemMode::MMap)
   {
@@ -1079,6 +1090,21 @@ void Settings::FixIncompatibleSettings(bool display_osd_messages)
     g_settings.debugging.dump_cpu_to_vram_copies = false;
     g_settings.debugging.dump_vram_to_cpu_copies = false;
   }
+}
+
+bool Settings::AreGPUDeviceSettingsChanged(const Settings& old_settings) const
+{
+  return (gpu_use_debug_device != old_settings.gpu_use_debug_device ||
+          gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
+          gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
+          gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
+          gpu_disable_texture_buffers != old_settings.gpu_disable_texture_buffers ||
+          gpu_disable_texture_copy_to_self != old_settings.gpu_disable_texture_copy_to_self ||
+          gpu_disable_memory_import != old_settings.gpu_disable_memory_import ||
+          gpu_disable_raster_order_views != old_settings.gpu_disable_raster_order_views ||
+          gpu_disable_compute_shaders != old_settings.gpu_disable_compute_shaders ||
+          gpu_disable_compressed_textures != old_settings.gpu_disable_compressed_textures ||
+          display_exclusive_fullscreen_control != old_settings.display_exclusive_fullscreen_control);
 }
 
 void Settings::SetDefaultLogConfig(SettingsInterface& si)
