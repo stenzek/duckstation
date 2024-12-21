@@ -12,6 +12,7 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/small_string.h"
 #include "common/string_util.h"
 
 #include <limits>

@@ -10,6 +10,7 @@
 
 #include "common/bitutils.h"
 #include "common/log.h"
+#include "common/settings_interface.h"
 #include "common/string_util.h"
 
 #include "IconsFontAwesome5.h"
@@ -340,14 +341,14 @@ std::unique_ptr<AnalogJoystick> AnalogJoystick::Create(u32 index)
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
-  }
+  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 #define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(AnalogJoystick::Button::Count) + static_cast<u32>(halfaxis),       \
-      InputBindingInfo::Type::HalfAxis, genb                                                                           \
-  }
+  {name,                                                                                                               \
+   display_name,                                                                                                       \
+   icon_name,                                                                                                          \
+   static_cast<u32>(AnalogJoystick::Button::Count) + static_cast<u32>(halfaxis),                                       \
+   InputBindingInfo::Type::HalfAxis,                                                                                   \
+   genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("AnalogJoystick", "D-Pad Up"), ICON_PF_DPAD_UP, AnalogJoystick::Button::Up, GenericInputBinding::DPadUp),

@@ -17,6 +17,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/settings_interface.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/zip_helpers.h"

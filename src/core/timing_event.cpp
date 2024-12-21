@@ -10,6 +10,7 @@
 
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/small_string.h"
 #include "common/thirdparty/SmallVector.h"
 
 LOG_CHANNEL(TimingEvents);

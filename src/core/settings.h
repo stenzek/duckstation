@@ -8,8 +8,6 @@
 #include "util/audio_stream.h"
 
 #include "common/log.h"
-#include "common/settings_interface.h"
-#include "common/small_string.h"
 
 #include <array>
 #include <optional>
@@ -17,6 +15,8 @@
 #include <string>
 #include <string_view>
 #include <vector>
+
+class SettingsInterface;
 
 enum class RenderAPI : u8;
 enum class MediaCaptureBackend : u8;
