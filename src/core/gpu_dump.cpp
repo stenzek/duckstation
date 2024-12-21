@@ -76,7 +76,7 @@ std::unique_ptr<GPUDump::Recorder> GPUDump::Recorder::Create(std::string path, s
 
   ret = std::unique_ptr<Recorder>(new Recorder(std::move(fp), num_frames, std::move(path)));
   ret->WriteHeaders(serial);
-  g_gpu->WriteCurrentVideoModeToDump(ret.get());
+  g_gpu.WriteCurrentVideoModeToDump(ret.get());
   ret->WriteCurrentVRAM();
 
   // Write start of stream.
@@ -285,7 +285,7 @@ void GPUDump::Recorder::WriteHeaders(std::string_view serial)
 
   // Write textual video mode.
   BeginPacket(PacketType::TextualVideoFormat);
-  WriteString(g_gpu->IsInPALMode() ? "PAL" : "NTSC");
+  WriteString(g_gpu.IsInPALMode() ? "PAL" : "NTSC");
   EndPacket();
 
   // Write DuckStation version.
@@ -520,7 +520,7 @@ void GPUDump::Player::ProcessPacket(const PacketRef& pkt)
   if (pkt.type <= PacketType::VSyncEvent)
   {
     // gp0/gp1/vsync => direct to gpu
-    g_gpu->ProcessGPUDumpPacket(pkt.type, pkt.data);
+    g_gpu.ProcessGPUDumpPacket(pkt.type, pkt.data);
     return;
   }
 }

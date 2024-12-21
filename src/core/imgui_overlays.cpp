@@ -85,7 +85,7 @@ static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
   {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 800, 915},
   {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 800, 540},
-  {"GPU", "GPU State", ":icons/applications-system.png", [](float sc) { g_gpu->DrawDebugStateWindow(sc); }, 450, 550},
+  {"GPU", "GPU State", ":icons/applications-system.png", [](float sc) { g_gpu.DrawDebugStateWindow(sc); }, 450, 550},
   {"DMA", "DMA State", ":icons/applications-system.png", &DMA::DrawDebugStateWindow, 860, 180},
   {"MDEC", "MDEC State", ":icons/applications-system.png", &MDEC::DrawDebugStateWindow, 300, 350},
   {"Timers", "Timers State", ":icons/applications-system.png", &Timers::DrawDebugStateWindow, 800, 95},
@@ -323,9 +323,9 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     if (g_gpu_settings.display_show_resolution)
     {
       const u32 resolution_scale = gpu->GetResolutionScale();
-      const auto [display_width, display_height] = g_gpu->GetFullDisplayResolution(); // NOTE: Racey read.
-      const bool interlaced = g_gpu->IsInterlacedDisplayEnabled();
-      const bool pal = g_gpu->IsInPALMode();
+      const auto [display_width, display_height] = g_gpu.GetFullDisplayResolution(); // NOTE: Racey read.
+      const bool interlaced = g_gpu.IsInterlacedDisplayEnabled();
+      const bool pal = g_gpu.IsInPALMode();
       text.format("{}x{} {} {} [{}x]", display_width * resolution_scale, display_height * resolution_scale,
                   pal ? "PAL" : "NTSC", interlaced ? "Interlaced" : "Progressive", resolution_scale);
       DRAW_LINE(fixed_font, text, IM_COL32(255, 255, 255, 255));

@@ -95,6 +95,7 @@ public:
   ~GPU();
 
   void Initialize();
+  void Shutdown();
   void Reset(bool clear_vram);
   bool DoState(StateWrapper& sw, bool update_display);
   void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool update_display);
@@ -561,6 +562,6 @@ private:
   static const GP0CommandHandlerTable s_GP0_command_handler_table;
 };
 
-extern std::unique_ptr<GPU> g_gpu;
+extern GPU g_gpu;
 extern u16 g_vram[VRAM_SIZE / sizeof(u16)];
 extern u16 g_gpu_clut[GPU_CLUT_SIZE];

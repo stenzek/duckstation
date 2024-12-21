@@ -3483,7 +3483,6 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info)
 
   PurgeUnreferencedTexturesFromCache();
 
-  DebugAssert(g_gpu);
   UpdateVRAMTrackingState();
   InvalidateSources();
 

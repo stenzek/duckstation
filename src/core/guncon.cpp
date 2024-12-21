@@ -207,12 +207,12 @@ void GunCon::UpdatePosition()
   float display_x, display_y;
   const auto& [window_x, window_y] = (m_has_relative_binds) ? GetAbsolutePositionFromRelativeAxes() :
                                                               InputManager::GetPointerAbsolutePosition(m_cursor_index);
-  g_gpu->ConvertScreenCoordinatesToDisplayCoordinates(window_x, window_y, &display_x, &display_y);
+  g_gpu.ConvertScreenCoordinatesToDisplayCoordinates(window_x, window_y, &display_x, &display_y);
 
   // are we within the active display area?
   u32 tick, line;
   if (display_x < 0 || display_y < 0 ||
-      !g_gpu->ConvertDisplayCoordinatesToBeamTicksAndLines(display_x, display_y, m_x_scale, &tick, &line) ||
+      !g_gpu.ConvertDisplayCoordinatesToBeamTicksAndLines(display_x, display_y, m_x_scale, &tick, &line) ||
       m_shoot_offscreen)
   {
     DEBUG_LOG("Lightgun out of range for window coordinates {:.0f},{:.0f}", window_x, window_y);
@@ -222,7 +222,7 @@ void GunCon::UpdatePosition()
   }
 
   // 8MHz units for X = 44100*768*11/7 = 53222400 / 8000000 = 6.6528
-  const double divider = static_cast<double>(g_gpu->GetCRTCFrequency()) / 8000000.0;
+  const double divider = static_cast<double>(g_gpu.GetCRTCFrequency()) / 8000000.0;
   m_position_x = static_cast<u16>(static_cast<float>(tick) / static_cast<float>(divider));
   m_position_y = static_cast<u16>(line);
   DEBUG_LOG("Lightgun window coordinates {:.0f},{:.0f} -> tick {} line {} 8mhz ticks {}", display_x, display_y, tick,

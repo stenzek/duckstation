@@ -1875,7 +1875,7 @@ template<MemoryAccessSize size>
 u32 Bus::HWHandlers::GPURead(PhysicalMemoryAddress address)
 {
   const u32 offset = address & GPU_MASK;
-  u32 value = g_gpu->ReadRegister(FIXUP_WORD_OFFSET(size, offset));
+  u32 value = g_gpu.ReadRegister(FIXUP_WORD_OFFSET(size, offset));
   value = FIXUP_WORD_READ_VALUE(size, offset, value);
   BUS_CYCLES(2);
   return value;
@@ -1885,7 +1885,7 @@ template<MemoryAccessSize size>
 void Bus::HWHandlers::GPUWrite(PhysicalMemoryAddress address, u32 value)
 {
   const u32 offset = address & GPU_MASK;
-  g_gpu->WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
+  g_gpu.WriteRegister(FIXUP_WORD_OFFSET(size, offset), FIXUP_WORD_WRITE_VALUE(size, offset, value));
 }
 
 template<MemoryAccessSize size>

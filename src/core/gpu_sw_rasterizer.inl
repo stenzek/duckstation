@@ -506,10 +506,11 @@ struct PixelVectors
 } // namespace
 
 template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void
-ShadePixel(const PixelVectors<texture_enable>& pv, GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode,
-           u32 start_x, u32 y, GSVectorNi vertex_color_rg, GSVectorNi vertex_color_ba, GSVectorNi texcoord_x,
-           GSVectorNi texcoord_y, GSVectorNi preserve_mask, GSVectorNi dither)
+ALWAYS_INLINE_RELEASE static void ShadePixel(const PixelVectors<texture_enable>& RESTRICT pv,
+                                             GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode,
+                                             u32 start_x, u32 y, GSVectorNi vertex_color_rg, GSVectorNi vertex_color_ba,
+                                             GSVectorNi texcoord_x, GSVectorNi texcoord_y, GSVectorNi preserve_mask,
+                                             GSVectorNi dither)
 {
   static constexpr GSVectorNi coord_mask_x = GSVectorNi::cxpr(VRAM_WIDTH_MASK);
   static constexpr GSVectorNi coord_mask_y = GSVectorNi::cxpr(VRAM_HEIGHT_MASK);
@@ -693,7 +694,7 @@ ShadePixel(const PixelVectors<texture_enable>& pv, GPUTextureMode texture_mode, 
 }
 
 template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
+static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
 {
   const s32 origin_x = cmd->x;
   const s32 origin_y = cmd->y;
@@ -765,8 +766,9 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* cmd)
 
 // TODO: Vectorize line draw.
 template<bool shading_enable, bool transparency_enable>
-static void DrawLine(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawLineCommand::Vertex* p0,
-                     const GPUBackendDrawLineCommand::Vertex* p1)
+static void DrawLine(const GPUBackendDrawLineCommand* RESTRICT cmd,
+                     const GPUBackendDrawLineCommand::Vertex* RESTRICT p0,
+                     const GPUBackendDrawLineCommand::Vertex* RESTRICT p1)
 {
   static constexpr u32 XY_SHIFT = 32;
   static constexpr u32 RGB_SHIFT = 12;
@@ -971,8 +973,8 @@ struct TrianglePart
 #ifndef USE_VECTOR
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-static void DrawSpan(const GPUBackendDrawCommand* cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
-                     const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep)
+static void DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bound, UVStepper uv,
+                     const UVSteps& RESTRICT uvstep, RGBStepper rgb, const RGBSteps& RESTRICT rgbstep)
 {
   s32 width = x_bound - x_start;
   s32 current_x = TruncateGPUVertexPosition(x_start);
@@ -1011,9 +1013,10 @@ static void DrawSpan(const GPUBackendDrawCommand* cmd, s32 y, s32 x_start, s32 x
 }
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* cmd, const TrianglePart& tp,
-                                                   const UVStepper& uv, const UVSteps& uvstep, const RGBStepper& rgb,
-                                                   const RGBSteps& rgbstep)
+ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* RESTRICT cmd,
+                                                   const TrianglePart& RESTRICT tp, const UVStepper& RESTRICT uv,
+                                                   const UVSteps& RESTRICT uvstep, const RGBStepper& RESTRICT rgb,
+                                                   const RGBSteps& RESTRICT rgbstep)
 {
   static constexpr auto unfp_xy = [](s64 xfp) -> s32 { return static_cast<s32>(static_cast<u64>(xfp) >> 32); };
 
@@ -1150,9 +1153,10 @@ struct TriangleVectors : PixelVectors<texture_enable>
 } // namespace
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* cmd, s32 y, s32 x_start, s32 x_bound,
-                                           UVStepper uv, const UVSteps& uvstep, RGBStepper rgb, const RGBSteps& rgbstep,
-                                           const TriangleVectors<shading_enable, texture_enable>& tv)
+ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* RESTRICT cmd, s32 y, s32 x_start, s32 x_bound,
+                                           UVStepper uv, const UVSteps& RESTRICT uvstep, RGBStepper rgb,
+                                           const RGBSteps& RESTRICT rgbstep,
+                                           const TriangleVectors<shading_enable, texture_enable>& RESTRICT tv)
 {
   s32 width = x_bound - x_start;
   s32 current_x = TruncateGPUVertexPosition(x_start);
@@ -1255,9 +1259,10 @@ ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* cmd, s32
 }
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* cmd, const TrianglePart& tp,
-                                                   const UVStepper& uv, const UVSteps& uvstep, const RGBStepper& rgb,
-                                                   const RGBSteps& rgbstep)
+ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* RESTRICT cmd,
+                                                   const TrianglePart& RESTRICT tp, const UVStepper& RESTRICT uv,
+                                                   const UVSteps& RESTRICT uvstep, const RGBStepper& RESTRICT rgb,
+                                                   const RGBSteps& RESTRICT rgbstep)
 {
   static constexpr auto unfp_xy = [](s64 xfp) -> s32 { return static_cast<s32>(static_cast<u64>(xfp) >> 32); };
 
@@ -1356,13 +1361,15 @@ ALWAYS_INLINE_RELEASE static void DrawTrianglePart(const GPUBackendDrawCommand* 
 #endif // USE_VECTOR
 
 template<bool shading_enable, bool texture_enable, bool raw_texture_enable, bool transparency_enable>
-static void DrawTriangle(const GPUBackendDrawCommand* cmd, const GPUBackendDrawPolygonCommand::Vertex* v0,
-                         const GPUBackendDrawPolygonCommand::Vertex* v1, const GPUBackendDrawPolygonCommand::Vertex* v2)
+static void DrawTriangle(const GPUBackendDrawCommand* RESTRICT cmd,
+                         const GPUBackendDrawPolygonCommand::Vertex* RESTRICT v0,
+                         const GPUBackendDrawPolygonCommand::Vertex* RESTRICT v1,
+                         const GPUBackendDrawPolygonCommand::Vertex* RESTRICT v2)
 {
 #ifdef CHECK_VECTOR
-  const GPUBackendDrawPolygonCommand::Vertex* orig_v0 = v0;
-  const GPUBackendDrawPolygonCommand::Vertex* orig_v1 = v1;
-  const GPUBackendDrawPolygonCommand::Vertex* orig_v2 = v2;
+  const GPUBackendDrawPolygonCommand::Vertex* RESTRICT orig_v0 = v0;
+  const GPUBackendDrawPolygonCommand::Vertex* RESTRICT orig_v1 = v1;
+  const GPUBackendDrawPolygonCommand::Vertex* RESTRICT orig_v2 = v2;
 #endif
 
   // Sort vertices so that v0 is the top vertex, v1 is the bottom vertex, and v2 is the side vertex.
@@ -1417,8 +1424,8 @@ static void DrawTriangle(const GPUBackendDrawCommand* cmd, const GPUBackendDrawP
   const u32 ofi = BoolToUInt32(!right_facing);
 
   TrianglePart triparts[2];
-  TrianglePart& tpo = triparts[vo];
-  TrianglePart& tpp = triparts[vo ^ 1];
+  TrianglePart& RESTRICT tpo = triparts[vo];
+  TrianglePart& RESTRICT tpp = triparts[vo ^ 1];
   tpo.start_y = vertices[0 ^ vo]->y;
   tpo.end_y = vertices[1 ^ vo]->y;
   tpp.start_y = vertices[1 ^ vp]->y;
@@ -1469,7 +1476,7 @@ static void DrawTriangle(const GPUBackendDrawCommand* cmd, const GPUBackendDrawP
   // Undo the start of the vertex, so that when we add the offset for each line, it starts at the beginning value.
   UVStepper uv;
   RGBStepper rgb;
-  const GPUBackendDrawPolygonCommand::Vertex* top_left_vertex = vertices[tl];
+  const GPUBackendDrawPolygonCommand::Vertex* RESTRICT top_left_vertex = vertices[tl];
   if constexpr (texture_enable)
   {
     uv.Init(top_left_vertex->u, top_left_vertex->v);
@@ -1542,7 +1549,7 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
 
-      u16* row_ptr = &g_vram[row * VRAM_WIDTH + x];
+      u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH + x];
       u32 xoffs = 0;
       for (; xoffs < aligned_width; xoffs += vector_width, row_ptr += vector_width)
         GSVector4i::store<false>(row_ptr, fill);
@@ -1563,7 +1570,7 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
         if ((row & u32(1)) == active_field)
           continue;
 
-        u16* row_ptr = &g_vram[row * VRAM_WIDTH + x];
+        u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH + x];
         u32 xoffs = 0;
         for (; xoffs < aligned_width; xoffs += vector_width, row_ptr += vector_width)
           GSVector4i::store<false>(row_ptr, fill);
@@ -1579,7 +1586,7 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
         if ((row & u32(1)) == active_field)
           continue;
 
-        u16* row_ptr = &g_vram[row * VRAM_WIDTH];
+        u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH];
         for (u32 xoffs = 0; xoffs < width; xoffs++)
         {
           const u32 col = (x + xoffs) % VRAM_WIDTH;
@@ -1593,7 +1600,7 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
-      u16* row_ptr = &g_vram[row * VRAM_WIDTH];
+      u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
         const u32 col = (x + xoffs) % VRAM_WIDTH;
@@ -1622,7 +1629,7 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
       if ((row & u32(1)) == active_field)
         continue;
 
-      u16* row_ptr = &g_vram[row * VRAM_WIDTH];
+      u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
         const u32 col = (x + xoffs) % VRAM_WIDTH;
@@ -1635,7 +1642,7 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
       const u32 row = (y + yoffs) % VRAM_HEIGHT;
-      u16* row_ptr = &g_vram[row * VRAM_WIDTH];
+      u16* RESTRICT row_ptr = &g_vram[row * VRAM_WIDTH];
       for (u32 xoffs = 0; xoffs < width; xoffs++)
       {
         const u32 col = (x + xoffs) % VRAM_WIDTH;
@@ -1646,12 +1653,13 @@ static void FillVRAMImpl(u32 x, u32 y, u32 width, u32 height, u32 color, bool in
 #endif
 }
 
-static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
+static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* RESTRICT data, bool set_mask,
+                          bool check_mask)
 {
   // Fast path when the copy is not oversized.
   if ((x + width) <= VRAM_WIDTH && (y + height) <= VRAM_HEIGHT && !set_mask && !check_mask)
   {
-    const u16* src_ptr = static_cast<const u16*>(data);
+    const u16* RESTRICT src_ptr = static_cast<const u16*>(data);
     u16* dst_ptr = &g_vram[y * VRAM_WIDTH + x];
     for (u32 yoffs = 0; yoffs < height; yoffs++)
     {
@@ -1664,7 +1672,7 @@ static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* data,
   {
     // Slow path when we need to handle wrap-around.
     // During transfer/render operations, if ((dst_pixel & mask_and) == 0) { pixel = src_pixel | mask_or }
-    const u16* src_ptr = static_cast<const u16*>(data);
+    const u16* RESTRICT src_ptr = static_cast<const u16*>(data);
     const u16 mask_and = check_mask ? 0x8000u : 0x0000u;
     const u16 mask_or = set_mask ? 0x8000u : 0x0000u;
 
@@ -1713,7 +1721,7 @@ static void WriteVRAMImpl(u32 x, u32 y, u32 width, u32 height, const void* data,
       for (; col < width;)
       {
         // TODO: Handle unaligned reads...
-        u16* pixel_ptr = &dst_row_ptr[(x + col++) % VRAM_WIDTH];
+        u16* RESTRICT pixel_ptr = &dst_row_ptr[(x + col++) % VRAM_WIDTH];
         if (((*pixel_ptr) & mask_and) == 0)
           *pixel_ptr = *(src_ptr++) | mask_or;
       }
