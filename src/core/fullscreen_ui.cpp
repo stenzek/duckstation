@@ -634,25 +634,7 @@ bool FullscreenUI::AreAnyDialogsOpen()
 
 void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
 {
-  // NOTE: Called on CPU thread.
-  if (!IsInitialized())
-    return;
-
-  // If achievements got disabled, we might have the menu open...
-  // That means we're going to be reading achievement state.
-  if (old_settings.achievements_enabled && !g_settings.achievements_enabled)
-  {
-    if (!IsInitialized())
-      return;
-
-    GPUThread::RunOnThread([]() {
-      if (s_state.current_main_window == MainWindowType::Achievements ||
-          s_state.current_main_window == MainWindowType::Leaderboards)
-      {
-        ReturnToPreviousWindow();
-      }
-    });
-  }
+  // NOTE: Called on GPU thread.
 }
 
 void FullscreenUI::UpdateRunIdleState()
@@ -7635,11 +7617,6 @@ void FullscreenUI::OpenAchievementsWindow()
   });
 }
 
-bool FullscreenUI::IsAchievementsWindowOpen()
-{
-  return (s_state.current_main_window == MainWindowType::Achievements);
-}
-
 void FullscreenUI::OpenLeaderboardsWindow()
 {
   if (!System::IsValid())
@@ -7672,11 +7649,6 @@ void FullscreenUI::OpenLeaderboardsWindow()
     UpdateRunIdleState();
     FixStateIfPaused();
   });
-}
-
-bool FullscreenUI::IsLeaderboardsWindowOpen()
-{
-  return (s_state.current_main_window == MainWindowType::Leaderboards);
 }
 
 #endif // __ANDROID__

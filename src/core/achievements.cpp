@@ -2185,12 +2185,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
 
 void Achievements::ClearUIState()
 {
-#ifndef __ANDROID__
-  if (FullscreenUI::IsAchievementsWindowOpen() || FullscreenUI::IsLeaderboardsWindowOpen())
-    FullscreenUI::ReturnToPreviousWindow();
-
   CloseLeaderboard();
-#endif
 
   s_state.achievement_badge_paths = {};
 
@@ -2470,10 +2465,14 @@ void Achievements::DrawAchievementsWindow()
   using ImGuiFullscreen::LayoutScale;
   using ImGuiFullscreen::UIStyle;
 
-  if (!s_state.achievement_list)
-    return;
-
   auto lock = Achievements::GetLock();
+
+  // achievements can get turned off via the main UI
+  if (!s_state.achievement_list)
+  {
+    FullscreenUI::ReturnToPreviousWindow();
+    return;
+  }
 
   static constexpr float alpha = 0.8f;
   static constexpr float heading_alpha = 0.95f;
@@ -2846,7 +2845,12 @@ void Achievements::DrawLeaderboardsWindow()
   static constexpr float heading_height_unscaled = 110.0f;
   static constexpr float tab_height_unscaled = 50.0f;
 
-  auto lock = Achievements::GetLock();
+  const auto lock = Achievements::GetLock();
+  if (!s_state.leaderboard_list)
+  {
+    FullscreenUI::ReturnToPreviousWindow();
+    return;
+  }
 
   const bool is_leaderboard_open = (s_state.open_leaderboard != nullptr);
   bool close_leaderboard_on_exit = false;
@@ -3437,7 +3441,6 @@ void Achievements::CloseLeaderboard()
   }
 
   s_state.open_leaderboard = nullptr;
-  ImGuiFullscreen::QueueResetFocus(ImGuiFullscreen::FocusResetType::Other);
 }
 
 #if defined(_WIN32)
