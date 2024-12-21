@@ -4364,6 +4364,17 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
 
+    // CPU side GPU settings
+    if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
+        g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
+        g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
+        g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing ||
+        g_settings.display_crop_mode != old_settings.display_crop_mode ||
+        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+    {
+      g_gpu.UpdateSettings(old_settings);
+    }
+
     if (g_settings.gpu_renderer != old_settings.gpu_renderer)
     {
       // RecreateGPU() also pushes new settings to the thread.
@@ -4380,8 +4391,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames ||
              g_settings.gpu_use_software_renderer_for_readbacks !=
                old_settings.gpu_use_software_renderer_for_readbacks ||
-             g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
-             g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
              g_settings.gpu_true_color != old_settings.gpu_true_color ||
              g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
              g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords ||
@@ -4389,14 +4398,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
              g_settings.gpu_sprite_texture_filter != old_settings.gpu_sprite_texture_filter ||
              g_settings.gpu_line_detect_mode != old_settings.gpu_line_detect_mode ||
-             g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing ||
              g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
              g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale ||
              g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode ||
              g_settings.gpu_texture_cache != old_settings.gpu_texture_cache ||
              g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
              g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing ||
-             g_settings.display_crop_mode != old_settings.display_crop_mode ||
              g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
              g_settings.display_scaling != old_settings.display_scaling ||
              g_settings.display_alignment != old_settings.display_alignment ||
