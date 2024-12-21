@@ -72,7 +72,7 @@ public:
   void RestoreDeviceContext() override;
 
 protected:
-  void UpdateSettings(const Settings& old_settings) override;
+  void UpdateSettings(const GPUSettings& old_settings) override;
 
   void UpdateResolutionScale() override;
 

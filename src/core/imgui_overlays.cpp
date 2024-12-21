@@ -453,29 +453,29 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
     text.append_format(" CDR={}x", g_settings.cdrom_read_speedup);
   if (g_settings.cdrom_seek_speedup != 1)
     text.append_format(" CDS={}x", g_settings.cdrom_seek_speedup);
-  if (g_settings.gpu_resolution_scale != 1)
-    text.append_format(" IR={}x", g_settings.gpu_resolution_scale);
-  if (g_settings.gpu_multisamples != 1)
+  if (g_gpu_settings.gpu_resolution_scale != 1)
+    text.append_format(" IR={}x", g_gpu_settings.gpu_resolution_scale);
+  if (g_gpu_settings.gpu_multisamples != 1)
   {
-    text.append_format(" {}x{}", g_settings.gpu_multisamples, g_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
+    text.append_format(" {}x{}", g_gpu_settings.gpu_multisamples, g_gpu_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
   }
-  if (g_settings.gpu_true_color)
+  if (g_gpu_settings.gpu_true_color)
     text.append(" TrueCol");
-  text.append_format(" DI={}", Settings::GetDisplayDeinterlacingModeName(g_settings.display_deinterlacing_mode));
+  text.append_format(" DI={}", Settings::GetDisplayDeinterlacingModeName(g_gpu_settings.display_deinterlacing_mode));
   if (g_settings.gpu_force_video_timing == ForceVideoTimingMode::NTSC && System::GetRegion() == ConsoleRegion::PAL)
     text.append(" PAL60");
   if (g_settings.gpu_force_video_timing == ForceVideoTimingMode::PAL && System::GetRegion() != ConsoleRegion::PAL)
     text.append(" NTSC50");
-  if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest)
+  if (g_gpu_settings.gpu_texture_filter != GPUTextureFilter::Nearest)
   {
-    if (g_settings.gpu_sprite_texture_filter != g_settings.gpu_texture_filter)
+    if (g_gpu_settings.gpu_sprite_texture_filter != g_gpu_settings.gpu_texture_filter)
     {
-      text.append_format(" {}/{}", Settings::GetTextureFilterName(g_settings.gpu_texture_filter),
-                         Settings::GetTextureFilterName(g_settings.gpu_sprite_texture_filter));
+      text.append_format(" {}/{}", Settings::GetTextureFilterName(g_gpu_settings.gpu_texture_filter),
+                         Settings::GetTextureFilterName(g_gpu_settings.gpu_sprite_texture_filter));
     }
     else
     {
-      text.append_format(" {}", Settings::GetTextureFilterName(g_settings.gpu_texture_filter));
+      text.append_format(" {}", Settings::GetTextureFilterName(g_gpu_settings.gpu_texture_filter));
     }
   }
   if (g_settings.gpu_widescreen_hack && g_settings.display_aspect_ratio != DisplayAspectRatio::Auto &&
@@ -483,8 +483,8 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
   {
     text.append(" WSHack");
   }
-  if (g_settings.gpu_line_detect_mode != GPULineDetectMode::Disabled)
-    text.append_format(" LD={}", Settings::GetLineDetectModeName(g_settings.gpu_line_detect_mode));
+  if (g_gpu_settings.gpu_line_detect_mode != GPULineDetectMode::Disabled)
+    text.append_format(" LD={}", Settings::GetLineDetectModeName(g_gpu_settings.gpu_line_detect_mode));
   if (g_settings.gpu_pgxp_enable)
   {
     text.append(" PGXP");

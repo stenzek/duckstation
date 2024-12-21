@@ -9,7 +9,7 @@ class Image;
 class GPUTexture;
 class StateWrapper;
 
-struct Settings;
+struct GPUSettings;
 class GPU_HW;
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,7 +104,7 @@ struct Source
 };
 
 bool Initialize(GPU_HW* backend);
-void UpdateSettings(bool use_texture_cache, const Settings& old_settings);
+void UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings);
 
 bool GetStateSize(StateWrapper& sw, u32* size);
 bool DoState(StateWrapper& sw, bool skip);

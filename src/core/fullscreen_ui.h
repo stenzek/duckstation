@@ -13,13 +13,13 @@
 
 class SmallStringBase;
 
-struct Settings;
+struct GPUSettings;
 
 namespace FullscreenUI {
 bool Initialize();
 bool IsInitialized();
 bool HasActiveWindow();
-void CheckForConfigChanges(const Settings& old_settings);
+void CheckForConfigChanges(const GPUSettings& old_settings);
 void OnSystemStarted();
 void OnSystemResumed();
 void OnSystemDestroyed();

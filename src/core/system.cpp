@@ -1827,8 +1827,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     PlatformMisc::SuspendScreensaver();
 
 #ifdef ENABLE_GDB_SERVER
-  if (g_settings.debugging.enable_gdb_server)
-    GDBServer::Initialize(g_settings.debugging.gdb_server_port);
+  if (g_settings.enable_gdb_server)
+    GDBServer::Initialize(g_settings.gdb_server_port);
 #endif
 
   Host::OnSystemStarted();
@@ -4413,7 +4413,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
              g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
              g_settings.display_line_end_offset != old_settings.display_line_end_offset ||
-             g_settings.debugging.show_vram != old_settings.debugging.show_vram ||
+             g_settings.gpu_show_vram != old_settings.gpu_show_vram ||
              g_settings.rewind_enable != old_settings.rewind_enable ||
              g_settings.runahead_frames != old_settings.runahead_frames ||
              g_settings.texture_replacements.enable_texture_replacements !=
@@ -4432,7 +4432,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         GPUThread::PresentCurrentFrame();
     }
     else if (const bool device_settings_changed = g_settings.AreGPUDeviceSettingsChanged(old_settings);
-      device_settings_changed || g_settings.display_show_fps != old_settings.display_show_fps ||
+             device_settings_changed || g_settings.display_show_fps != old_settings.display_show_fps ||
              g_settings.display_show_speed != old_settings.display_show_speed ||
              g_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats ||
              g_settings.display_show_resolution != old_settings.display_show_resolution ||
@@ -4550,12 +4550,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
 #ifdef ENABLE_GDB_SERVER
-    if (g_settings.debugging.enable_gdb_server != old_settings.debugging.enable_gdb_server ||
-        g_settings.debugging.gdb_server_port != old_settings.debugging.gdb_server_port)
+    if (g_settings.enable_gdb_server != old_settings.enable_gdb_server ||
+        g_settings.gdb_server_port != old_settings.gdb_server_port)
     {
       GDBServer::Shutdown();
-      if (g_settings.debugging.enable_gdb_server)
-        GDBServer::Initialize(g_settings.debugging.gdb_server_port);
+      if (g_settings.enable_gdb_server)
+        GDBServer::Initialize(g_settings.gdb_server_port);
     }
 #endif
   }
@@ -5678,7 +5678,7 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
     scale = GPUBackend::IsUsingHardwareBackend() ? static_cast<float>(g_settings.gpu_resolution_scale) : 1.0f;
 
   float requested_width, requested_height;
-  if (g_settings.debugging.show_vram)
+  if (g_settings.gpu_show_vram)
   {
     requested_width = static_cast<float>(VRAM_WIDTH) * scale;
     requested_height = static_cast<float>(VRAM_HEIGHT) * scale;

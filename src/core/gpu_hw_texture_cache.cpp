@@ -590,7 +590,7 @@ bool GPUTextureCache::Initialize(GPU_HW* backend)
   return true;
 }
 
-void GPUTextureCache::UpdateSettings(bool use_texture_cache, const Settings& old_settings)
+void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings)
 {
   if (use_texture_cache)
   {

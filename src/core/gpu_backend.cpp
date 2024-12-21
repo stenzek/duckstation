@@ -103,7 +103,7 @@ bool GPUBackend::Initialize(bool clear_vram, Error* error)
   return true;
 }
 
-void GPUBackend::UpdateSettings(const Settings& old_settings)
+void GPUBackend::UpdateSettings(const GPUSettings& old_settings)
 {
   FlushRender();
 
@@ -774,8 +774,8 @@ GPUDevice::PresentResult GPUBackend::PresentDisplay()
   GSVector4i display_rect;
   GSVector4i draw_rect;
   CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(), g_gpu_device->GetMainSwapChain()->GetHeight(),
-                    !g_gpu_settings.debugging.show_vram, true, &display_rect, &draw_rect);
-  return RenderDisplay(nullptr, display_rect, draw_rect, !g_gpu_settings.debugging.show_vram);
+                    !g_gpu_settings.gpu_show_vram, true, &display_rect, &draw_rect);
+  return RenderDisplay(nullptr, display_rect, draw_rect, !g_gpu_settings.gpu_show_vram);
 }
 
 GPUDevice::PresentResult GPUBackend::RenderDisplay(GPUTexture* target, const GSVector4i display_rect,
@@ -943,7 +943,7 @@ GPUDevice::PresentResult GPUBackend::RenderDisplay(GPUTexture* target, const GSV
 
   if (really_postfx)
   {
-    DebugAssert(!g_gpu_settings.debugging.show_vram);
+    DebugAssert(!g_gpu_settings.gpu_show_vram);
 
     // "original size" in postfx includes padding.
     const float upscale_x =
@@ -978,7 +978,7 @@ void GPUBackend::SendDisplayToMediaCapture(MediaCapture* cap)
     (g_gpu_settings.display_screenshot_mode != DisplayScreenshotMode::UncorrectedInternalResolution);
   const bool postfx = (g_gpu_settings.display_screenshot_mode != DisplayScreenshotMode::InternalResolution);
   GSVector4i display_rect, draw_rect;
-  CalculateDrawRect(target->GetWidth(), target->GetHeight(), !g_gpu_settings.debugging.show_vram, apply_aspect_ratio,
+  CalculateDrawRect(target->GetWidth(), target->GetHeight(), !g_gpu_settings.gpu_show_vram, apply_aspect_ratio,
                     &display_rect, &draw_rect);
 
   // Not cleared by RenderDisplay().
@@ -1228,7 +1228,7 @@ void GPUBackend::CalculateDrawRect(s32 window_width, s32 window_height, bool app
 {
   const bool integer_scale = (g_gpu_settings.display_scaling == DisplayScalingMode::NearestInteger ||
                               g_gpu_settings.display_scaling == DisplayScalingMode::BilinearInteger);
-  const bool show_vram = g_gpu_settings.debugging.show_vram;
+  const bool show_vram = g_gpu_settings.gpu_show_vram;
   const u32 display_width = show_vram ? VRAM_WIDTH : m_display_width;
   const u32 display_height = show_vram ? VRAM_HEIGHT : m_display_height;
   const s32 display_origin_left = show_vram ? 0 : m_display_origin_left;
@@ -1421,15 +1421,14 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4
 void GPUBackend::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height, GSVector4i* display_rect,
                                          GSVector4i* draw_rect) const
 {
-  const bool internal_resolution =
-    (mode != DisplayScreenshotMode::ScreenResolution || g_gpu_settings.debugging.show_vram);
+  const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_gpu_settings.gpu_show_vram);
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
   {
     if (mode == DisplayScreenshotMode::InternalResolution)
     {
       float f_width = static_cast<float>(m_display_texture_view_width);
       float f_height = static_cast<float>(m_display_texture_view_height);
-      if (!g_gpu_settings.debugging.show_vram)
+      if (!g_gpu_settings.gpu_show_vram)
         GPU::ApplyPixelAspectRatioToSize(m_display_pixel_aspect_ratio, &f_width, &f_height);
 
       // DX11 won't go past 16K texture size.
@@ -1462,7 +1461,7 @@ void GPUBackend::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width,
   {
     *width = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetWidth() : 1;
     *height = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetHeight() : 1;
-    CalculateDrawRect(*width, *height, true, !g_settings.debugging.show_vram, display_rect, draw_rect);
+    CalculateDrawRect(*width, *height, true, !g_settings.gpu_show_vram, display_rect, draw_rect);
   }
 }
 

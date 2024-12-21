@@ -632,7 +632,7 @@ bool FullscreenUI::AreAnyDialogsOpen()
           ImGuiFullscreen::IsFileSelectorOpen());
 }
 
-void FullscreenUI::CheckForConfigChanges(const Settings& old_settings)
+void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
 {
   // NOTE: Called on GPU thread.
 }
