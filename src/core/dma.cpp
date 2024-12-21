@@ -802,9 +802,9 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
   {
     case Channel::GPU:
     {
-      if (g_gpu->BeginDMAWrite()) [[likely]]
+      if (g_gpu.BeginDMAWrite()) [[likely]]
       {
-        if (GPUDump::Recorder* dump = g_gpu->GetGPUDump()) [[unlikely]]
+        if (GPUDump::Recorder* dump = g_gpu.GetGPUDump()) [[unlikely]]
         {
           // No wraparound?
           dump->BeginGP0Packet(word_count);
@@ -831,10 +831,10 @@ TickCount DMA::TransferMemoryToDevice(u32 address, u32 increment, u32 word_count
         {
           u32 value;
           std::memcpy(&value, &ram_pointer[address], sizeof(u32));
-          g_gpu->DMAWrite(address, value);
+          g_gpu.DMAWrite(address, value);
           address = (address + increment) & mask;
         }
-        g_gpu->EndDMAWrite();
+        g_gpu.EndDMAWrite();
       }
     }
     break;
@@ -900,7 +900,7 @@ TickCount DMA::TransferDeviceToMemory(u32 address, u32 increment, u32 word_count
   switch (channel)
   {
     case Channel::GPU:
-      g_gpu->DMARead(dest_pointer, word_count);
+      g_gpu.DMARead(dest_pointer, word_count);
       break;
 
     case Channel::CDROM:

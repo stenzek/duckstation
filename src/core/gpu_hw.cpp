@@ -439,7 +439,7 @@ void GPU_HW::RestoreDeviceContext()
   m_batch_ubo_dirty = true;
 }
 
-void GPU_HW::UpdateSettings(const Settings& old_settings)
+void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
 {
   GPUBackend::UpdateSettings(old_settings);
 
@@ -3669,7 +3669,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
   GPUTextureCache::Compact();
 
-  if (g_gpu_settings.debugging.show_vram)
+  if (g_gpu_settings.gpu_show_vram)
   {
     if (IsUsingMultisampling())
     {

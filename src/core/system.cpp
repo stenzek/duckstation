@@ -713,7 +713,7 @@ void System::UpdateOverclock()
   s_state.max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
   SPU::CPUClockChanged();
   CDROM::CPUClockChanged();
-  g_gpu->CPUClockChanged();
+  g_gpu.CPUClockChanged();
   Timers::CPUClocksChanged();
   UpdateThrottlePeriod();
 }
@@ -1827,8 +1827,8 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     PlatformMisc::SuspendScreensaver();
 
 #ifdef ENABLE_GDB_SERVER
-  if (g_settings.debugging.enable_gdb_server)
-    GDBServer::Initialize(g_settings.debugging.gdb_server_port);
+  if (g_settings.enable_gdb_server)
+    GDBServer::Initialize(g_settings.gdb_server_port);
 #endif
 
   Host::OnSystemStarted();
@@ -1882,9 +1882,8 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
       !CDROM::InsertMedia(std::move(disc), disc_region, s_state.running_game_serial, s_state.running_game_title, error))
     return false;
 
-  // TODO: Drop pointer
-  g_gpu = std::make_unique<GPU>();
-  g_gpu->Initialize();
+  // TODO: Drop class
+  g_gpu.Initialize();
 
   // This can fail due to the application being closed during startup.
   if (!GPUThread::CreateGPUBackend(s_state.running_game_serial,
@@ -1965,7 +1964,7 @@ void System::DestroySystem()
   Timers::Shutdown();
   Pad::Shutdown();
   CDROM::Shutdown();
-  g_gpu.reset();
+  g_gpu.Shutdown();
   DMA::Shutdown();
   PIO::Shutdown();
   CPU::CodeCache::Shutdown();
@@ -2100,7 +2099,7 @@ void System::FrameDone()
     }
 
     // Late submission of frame. This is needed because the input poll can determine whether we need to rewind.
-    g_gpu->QueuePresentCurrentFrame();
+    g_gpu.QueuePresentCurrentFrame();
 
     SaveMemoryState(AllocateMemoryState());
   }
@@ -2386,7 +2385,7 @@ bool System::DoState(StateWrapper& sw, bool update_display)
   if (!sw.DoMarker("InterruptController") || !InterruptController::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("GPU") || !g_gpu->DoState(sw, update_display))
+  if (!sw.DoMarker("GPU") || !g_gpu.DoState(sw, update_display))
     return false;
 
   if (!sw.DoMarker("CDROM") || !CDROM::DoState(sw))
@@ -2682,7 +2681,7 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
   SAVE_COMPONENT("DMA", DMA::DoState(sw));
   SAVE_COMPONENT("InterruptController", InterruptController::DoState(sw));
 
-  g_gpu->DoMemoryState(sw, mss, update_display);
+  g_gpu.DoMemoryState(sw, mss, update_display);
 
   SAVE_COMPONENT("CDROM", CDROM::DoState(sw));
   SAVE_COMPONENT("Pad", Pad::DoState(sw, true));
@@ -2731,7 +2730,7 @@ void System::InternalReset()
   PIO::Reset();
   DMA::Reset();
   InterruptController::Reset();
-  g_gpu->Reset(true);
+  g_gpu.Reset(true);
   CDROM::Reset();
   Pad::Reset();
   Timers::Reset();
@@ -3957,7 +3956,7 @@ bool System::DumpVRAM(const char* filename)
   if (!IsValid())
     return false;
 
-  return g_gpu->DumpVRAMToFile(filename);
+  return g_gpu.DumpVRAMToFile(filename);
 }
 
 bool System::DumpSPURAM(const char* filename)
@@ -4414,7 +4413,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_active_end_offset != old_settings.display_active_end_offset ||
              g_settings.display_line_start_offset != old_settings.display_line_start_offset ||
              g_settings.display_line_end_offset != old_settings.display_line_end_offset ||
-             g_settings.debugging.show_vram != old_settings.debugging.show_vram ||
+             g_settings.gpu_show_vram != old_settings.gpu_show_vram ||
              g_settings.rewind_enable != old_settings.rewind_enable ||
              g_settings.runahead_frames != old_settings.runahead_frames ||
              g_settings.texture_replacements.enable_texture_replacements !=
@@ -4433,7 +4432,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         GPUThread::PresentCurrentFrame();
     }
     else if (const bool device_settings_changed = g_settings.AreGPUDeviceSettingsChanged(old_settings);
-      device_settings_changed || g_settings.display_show_fps != old_settings.display_show_fps ||
+             device_settings_changed || g_settings.display_show_fps != old_settings.display_show_fps ||
              g_settings.display_show_speed != old_settings.display_show_speed ||
              g_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats ||
              g_settings.display_show_resolution != old_settings.display_show_resolution ||
@@ -4551,12 +4550,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
 
 #ifdef ENABLE_GDB_SERVER
-    if (g_settings.debugging.enable_gdb_server != old_settings.debugging.enable_gdb_server ||
-        g_settings.debugging.gdb_server_port != old_settings.debugging.gdb_server_port)
+    if (g_settings.enable_gdb_server != old_settings.enable_gdb_server ||
+        g_settings.gdb_server_port != old_settings.gdb_server_port)
     {
       GDBServer::Shutdown();
-      if (g_settings.debugging.enable_gdb_server)
-        GDBServer::Initialize(g_settings.debugging.gdb_server_port);
+      if (g_settings.enable_gdb_server)
+        GDBServer::Initialize(g_settings.gdb_server_port);
     }
 #endif
   }
@@ -5198,7 +5197,7 @@ bool System::StartRecordingGPUDump(const char* path /*= nullptr*/, u32 num_frame
   if (!path)
     path = (auto_path = GetScreenshotPath("psxgpu")).c_str();
 
-  return g_gpu->StartRecordingGPUDump(path, num_frames);
+  return g_gpu.StartRecordingGPUDump(path, num_frames);
 }
 
 void System::StopRecordingGPUDump()
@@ -5206,7 +5205,7 @@ void System::StopRecordingGPUDump()
   if (!IsValid())
     return;
 
-  g_gpu->StopRecordingGPUDump();
+  g_gpu.StopRecordingGPUDump();
 }
 
 static std::string_view GetCaptureTypeForMessage(bool capture_video, bool capture_audio)
@@ -5679,16 +5678,16 @@ void System::RequestDisplaySize(float scale /*= 0.0f*/)
     scale = GPUBackend::IsUsingHardwareBackend() ? static_cast<float>(g_settings.gpu_resolution_scale) : 1.0f;
 
   float requested_width, requested_height;
-  if (g_settings.debugging.show_vram)
+  if (g_settings.gpu_show_vram)
   {
     requested_width = static_cast<float>(VRAM_WIDTH) * scale;
     requested_height = static_cast<float>(VRAM_HEIGHT) * scale;
   }
   else
   {
-    requested_width = static_cast<float>(g_gpu->GetCRTCDisplayWidth()) * scale;
-    requested_height = static_cast<float>(g_gpu->GetCRTCDisplayHeight()) * scale;
-    g_gpu->ApplyPixelAspectRatioToSize(g_gpu->ComputePixelAspectRatio(), &requested_width, &requested_height);
+    requested_width = static_cast<float>(g_gpu.GetCRTCDisplayWidth()) * scale;
+    requested_height = static_cast<float>(g_gpu.GetCRTCDisplayHeight()) * scale;
+    g_gpu.ApplyPixelAspectRatioToSize(g_gpu.ComputePixelAspectRatio(), &requested_width, &requested_height);
   }
 
   if (g_settings.display_rotation == DisplayRotation::Rotate90 ||
@@ -5734,7 +5733,7 @@ void System::UpdateGTEAspectRatio()
     {
       // Pre-apply the native aspect ratio correction to the window size.
       // MatchWindow does not correct the display aspect ratio, so we need to apply it here.
-      const float correction = g_gpu->ComputeAspectRatioCorrection();
+      const float correction = g_gpu.ComputeAspectRatioCorrection();
       custom_num =
         static_cast<u32>(std::max(std::round(static_cast<float>(main_window_info.surface_width) / correction), 1.0f));
       custom_denom = std::max<u32>(main_window_info.surface_height, 1u);

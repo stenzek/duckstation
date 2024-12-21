@@ -22,7 +22,7 @@ class SmallStringBase;
 class GPUFramebuffer;
 class GPUPipeline;
 
-struct Settings;
+struct GPUSettings;
 class StateWrapper;
 
 namespace System {
@@ -77,7 +77,7 @@ public:
 
   virtual bool Initialize(bool upload_vram, Error* error);
 
-  virtual void UpdateSettings(const Settings& old_settings);
+  virtual void UpdateSettings(const GPUSettings& old_settings);
 
   /// Returns the current resolution scale.
   virtual u32 GetResolutionScale() const = 0;

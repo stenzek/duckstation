@@ -356,7 +356,7 @@ bool GPU_SW::CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u3
 
 void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 {
-  if (!g_settings.debugging.show_vram)
+  if (!g_settings.gpu_show_vram)
   {
     if (cmd->display_disabled)
     {

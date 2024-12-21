@@ -36,9 +36,6 @@
 
 LOG_CHANNEL(GPUThread);
 
-// TODO: Smaller settings struct.
-// TODO: Remove g_gpu pointer.
-
 namespace GPUThread {
 enum : u32
 {
@@ -83,7 +80,7 @@ static void ReconfigureOnThread(GPUThreadReconfigureCommand* cmd);
 static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Error* error);
 static void DestroyGPUBackendOnThread();
 
-static void UpdateSettingsOnThread(const Settings& old_settings);
+static void UpdateSettingsOnThread(const GPUSettings& old_settings);
 
 static void UpdateRunIdle();
 
@@ -932,7 +929,7 @@ void GPUThread::DestroyGPUBackendOnThread()
   s_state.gpu_backend.reset();
 }
 
-void GPUThread::UpdateSettingsOnThread(const Settings& old_settings)
+void GPUThread::UpdateSettingsOnThread(const GPUSettings& old_settings)
 {
   if (g_gpu_device)
   {
@@ -1008,7 +1005,7 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
     RunOnThread([settings = g_settings]() {
       VERBOSE_LOG("Updating GPU settings on thread...");
 
-      Settings old_settings = std::move(g_gpu_settings);
+      GPUSettings old_settings = std::move(g_gpu_settings);
       g_gpu_settings = std::move(settings);
 
       UpdateSettingsOnThread(old_settings);

@@ -30,7 +30,7 @@
 LOG_CHANNEL(Settings);
 
 ALIGN_TO_CACHE_LINE Settings g_settings;
-ALIGN_TO_CACHE_LINE Settings g_gpu_settings;
+ALIGN_TO_CACHE_LINE GPUSettings g_gpu_settings;
 
 const char* SettingInfo::StringDefaultValue() const
 {
@@ -87,6 +87,8 @@ float SettingInfo::FloatStepValue() const
   static constexpr float fallback_value = 0.1f;
   return step_value ? StringUtil::FromChars<float>(step_value).value_or(fallback_value) : fallback_value;
 }
+
+GPUSettings::GPUSettings() = default;
 
 #ifdef DYNAMIC_HOST_PAGE_SIZE
 // See note in settings.h - 16K ends up faster with LUT because of nearby code/data.
@@ -253,6 +255,9 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_pgxp_depth_buffer = si.GetBoolValue("GPU", "PGXPDepthBuffer", false);
   gpu_pgxp_disable_2d = si.GetBoolValue("GPU", "PGXPDisableOn2DPolygons", false);
   SetPGXPDepthClearThreshold(si.GetFloatValue("GPU", "PGXPDepthClearThreshold", DEFAULT_GPU_PGXP_DEPTH_THRESHOLD));
+  gpu_show_vram = si.GetBoolValue("Debug", "ShowVRAM");
+  gpu_dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
+  gpu_dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
   gpu_dump_fast_replay_mode = si.GetBoolValue("GPU", "DumpFastReplayMode", false);
 
   display_deinterlacing_mode =
@@ -424,13 +429,9 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   achievements_leaderboard_duration =
     si.GetIntValue("Cheevos", "LeaderboardsDuration", DEFAULT_LEADERBOARD_NOTIFICATION_TIME);
 
-  debugging.show_vram = si.GetBoolValue("Debug", "ShowVRAM");
-  debugging.dump_cpu_to_vram_copies = si.GetBoolValue("Debug", "DumpCPUToVRAMCopies");
-  debugging.dump_vram_to_cpu_copies = si.GetBoolValue("Debug", "DumpVRAMToCPUCopies");
-
 #ifndef __ANDROID__
-  debugging.enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
-  debugging.gdb_server_port = static_cast<u16>(si.GetUIntValue("Debug", "GDBServerPort", DEFAULT_GDB_SERVER_PORT));
+  enable_gdb_server = si.GetBoolValue("Debug", "EnableGDBServer");
+  gdb_server_port = static_cast<u16>(si.GetUIntValue("Debug", "GDBServerPort", DEFAULT_GDB_SERVER_PORT));
 #endif
 
   texture_replacements.enable_texture_replacements =
@@ -585,6 +586,9 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("GPU", "PGXPDepthBuffer", gpu_pgxp_depth_buffer);
   si.SetBoolValue("GPU", "PGXPDisableOn2DPolygons", gpu_pgxp_disable_2d);
   si.SetFloatValue("GPU", "PGXPDepthClearThreshold", GetPGXPDepthClearThreshold());
+  si.SetBoolValue("Debug", "ShowVRAM", gpu_show_vram);
+  si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", gpu_dump_cpu_to_vram_copies);
+  si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", gpu_dump_vram_to_cpu_copies);
   si.SetBoolValue("GPU", "DumpFastReplayMode", gpu_dump_fast_replay_mode);
 
   si.SetStringValue("GPU", "DeinterlacingMode", GetDisplayDeinterlacingModeName(display_deinterlacing_mode));
@@ -701,17 +705,10 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetIntValue("Cheevos", "NotificationsDuration", achievements_notification_duration);
   si.SetIntValue("Cheevos", "LeaderboardsDuration", achievements_leaderboard_duration);
 
-  if (!ignore_base)
-  {
-    si.SetBoolValue("Debug", "ShowVRAM", debugging.show_vram);
-    si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", debugging.dump_cpu_to_vram_copies);
-    si.SetBoolValue("Debug", "DumpVRAMToCPUCopies", debugging.dump_vram_to_cpu_copies);
-
 #ifndef __ANDROID__
-    si.SetBoolValue("Debug", "EnableGDBServer", debugging.enable_gdb_server);
-    si.SetUIntValue("Debug", "GDBServerPort", debugging.gdb_server_port);
+  si.SetBoolValue("Debug", "EnableGDBServer", enable_gdb_server);
+  si.SetUIntValue("Debug", "GDBServerPort", gdb_server_port);
 #endif
-  }
 
   si.SetBoolValue("TextureReplacements", "EnableTextureReplacements", texture_replacements.enable_texture_replacements);
   si.SetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements",
@@ -1083,12 +1080,12 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
     }
 
 #ifndef __ANDROID__
-    g_settings.debugging.enable_gdb_server = false;
+    g_settings.enable_gdb_server = false;
 #endif
 
-    g_settings.debugging.show_vram = false;
-    g_settings.debugging.dump_cpu_to_vram_copies = false;
-    g_settings.debugging.dump_vram_to_cpu_copies = false;
+    g_settings.gpu_show_vram = false;
+    g_settings.gpu_dump_cpu_to_vram_copies = false;
+    g_settings.gpu_dump_vram_to_cpu_copies = false;
   }
 }
 
@@ -1783,7 +1780,7 @@ const char* Settings::GetDisplayAspectRatioDisplayName(DisplayAspectRatio ar)
                                   "DisplayAspectRatio");
 }
 
-float Settings::GetDisplayAspectRatioValue() const
+float GPUSettings::GetDisplayAspectRatioValue() const
 {
   return s_display_aspect_ratio_values[static_cast<size_t>(display_aspect_ratio)];
 }

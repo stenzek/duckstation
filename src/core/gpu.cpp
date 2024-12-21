@@ -45,7 +45,7 @@
 
 LOG_CHANNEL(GPU);
 
-std::unique_ptr<GPU> g_gpu;
+ALIGN_TO_CACHE_LINE GPU g_gpu;
 
 // aligning VRAM to 4K is fine, since the ARM64 instructions compute 4K page aligned addresses
 // or it would be, except we want to import the memory for readbacks on metal..
@@ -60,13 +60,13 @@ u16 g_gpu_clut[GPU_CLUT_SIZE];
 const GPU::GP0CommandHandlerTable GPU::s_GP0_command_handler_table = GPU::GenerateGP0CommandHandlerTable();
 
 static TimingEvent s_crtc_tick_event(
-  "GPU CRTC Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu->CRTCTickEvent(ticks); },
+  "GPU CRTC Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.CRTCTickEvent(ticks); },
   nullptr);
 static TimingEvent s_command_tick_event(
-  "GPU Command Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu->CommandTickEvent(ticks); },
+  "GPU Command Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.CommandTickEvent(ticks); },
   nullptr);
 static TimingEvent s_frame_done_event(
-  "Frame Done", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu->FrameDoneEvent(ticks); },
+  "Frame Done", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.FrameDoneEvent(ticks); },
   nullptr);
 
 // #define PSX_GPU_STATS
@@ -77,14 +77,7 @@ static u32 s_active_gpu_cycles_frames = 0;
 
 GPU::GPU() = default;
 
-GPU::~GPU()
-{
-  s_command_tick_event.Deactivate();
-  s_crtc_tick_event.Deactivate();
-  s_frame_done_event.Deactivate();
-
-  StopRecordingGPUDump();
-}
+GPU::~GPU() = default;
 
 void GPU::Initialize()
 {
@@ -102,6 +95,15 @@ void GPU::Initialize()
   s_active_gpu_cycles = 0;
   s_active_gpu_cycles_frames = 0;
 #endif
+}
+
+void GPU::Shutdown()
+{
+  s_command_tick_event.Deactivate();
+  s_crtc_tick_event.Deactivate();
+  s_frame_done_event.Deactivate();
+
+  StopRecordingGPUDump();
 }
 
 void GPU::UpdateSettings(const Settings& old_settings)

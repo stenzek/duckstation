@@ -10,6 +10,7 @@
 
 #include "common/assert.h"
 #include "common/log.h"
+#include "common/settings_interface.h"
 
 #include "IconsPromptFont.h"
 
