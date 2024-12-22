@@ -415,7 +415,6 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool upd
 
   sw.Do(&m_current_clut_reg_bits);
   sw.Do(&m_current_clut_is_8bit);
-  sw.DoBytes(g_gpu_clut, sizeof(g_gpu_clut));
 
   sw.DoBytes(&m_vram_transfer, sizeof(m_vram_transfer));
 
@@ -423,9 +422,6 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool upd
   sw.Do(&m_blit_buffer);
   sw.Do(&m_blit_remaining_words);
   sw.Do(&m_render_command.bits);
-
-  sw.Do(&m_max_run_ahead);
-  sw.Do(&m_fifo_size);
 
   if (sw.IsReading())
   {
