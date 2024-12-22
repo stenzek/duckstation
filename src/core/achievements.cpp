@@ -832,6 +832,15 @@ void Achievements::IdleUpdate()
   rc_client_idle(s_state.client);
 }
 
+bool Achievements::NeedsIdleUpdate()
+{
+  if (!IsActive())
+    return false;
+
+  const auto lock = GetLock();
+  return (s_state.http_downloader && s_state.http_downloader->HasAnyRequests());
+}
+
 void Achievements::FrameUpdate()
 {
   if (!IsActive())
