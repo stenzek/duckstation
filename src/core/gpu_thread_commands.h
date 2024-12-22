@@ -294,8 +294,6 @@ struct GPUBackendDrawRectangleCommand : public GPUBackendDrawCommand
 
 struct GPUBackendDrawLineCommand : public GPUBackendDrawCommand
 {
-  u16 num_vertices;
-
   struct Vertex
   {
     s32 x, y;
