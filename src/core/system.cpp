@@ -2120,15 +2120,19 @@ void System::FrameDone()
     AccumulatePreFrameSleepTime(current_time);
 
   // pre-frame sleep (input lag reduction)
-  current_time = Timer::GetCurrentValue();
-  if (s_state.pre_frame_sleep)
+  // if we're running over, then fall through to the normal Throttle() case which will fix up next_frame_time.
+  if (s_state.pre_frame_sleep && pre_frame_sleep_until > current_time)
   {
     // don't sleep if it's under 1ms, because we're just going to overshoot (or spin).
-    if (pre_frame_sleep_until > current_time &&
-        Timer::ConvertValueToMilliseconds(pre_frame_sleep_until - current_time) >= 1)
+    if (Timer::ConvertValueToMilliseconds(pre_frame_sleep_until - current_time) >= 1)
     {
       Throttle(current_time, pre_frame_sleep_until);
       current_time = Timer::GetCurrentValue();
+    }
+    else
+    {
+      // still need to update next_frame_time
+      s_state.next_frame_time += s_state.frame_period;
     }
   }
   else
