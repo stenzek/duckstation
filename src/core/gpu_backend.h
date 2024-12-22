@@ -51,6 +51,7 @@ public:
   static GPUBackendDrawPrecisePolygonCommand* NewDrawPrecisePolygonCommand(u32 num_vertices);
   static GPUBackendDrawRectangleCommand* NewDrawRectangleCommand();
   static GPUBackendDrawLineCommand* NewDrawLineCommand(u32 num_vertices);
+  static GPUBackendDrawPreciseLineCommand* NewDrawPreciseLineCommand(u32 num_vertices);
   static void PushCommand(GPUThreadCommand* cmd);
   static void PushCommandAndWakeThread(GPUThreadCommand* cmd);
   static void PushCommandAndSync(GPUThreadCommand* cmd, bool spin);
@@ -125,6 +126,7 @@ protected:
   virtual void DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd) = 0;
   virtual void DrawSprite(const GPUBackendDrawRectangleCommand* cmd) = 0;
   virtual void DrawLine(const GPUBackendDrawLineCommand* cmd) = 0;
+  virtual void DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd) = 0;
 
   virtual void DrawingAreaChanged() = 0;
   virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;

@@ -54,6 +54,7 @@ enum class GPUBackendCommandType : u8
   DrawPrecisePolygon,
   DrawRectangle,
   DrawLine,
+  DrawPreciseLine,
 };
 
 struct GPUThreadCommand
@@ -312,6 +313,18 @@ struct GPUBackendDrawLineCommand : public GPUBackendDrawCommand
       y = y_;
       color = color_;
     }
+  };
+
+  Vertex vertices[0];
+};
+
+struct GPUBackendDrawPreciseLineCommand : public GPUBackendDrawCommand
+{
+  struct Vertex
+  {
+    float x, y, w;
+    s32 native_x, native_y;
+    u32 color;
   };
 
   Vertex vertices[0];

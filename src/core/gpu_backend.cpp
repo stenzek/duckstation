@@ -249,6 +249,16 @@ GPUBackendDrawLineCommand* GPUBackend::NewDrawLineCommand(u32 num_vertices)
   return cmd;
 }
 
+GPUBackendDrawPreciseLineCommand* GPUBackend::NewDrawPreciseLineCommand(u32 num_vertices)
+{
+  const u32 size =
+    sizeof(GPUBackendDrawPreciseLineCommand) + (num_vertices * sizeof(GPUBackendDrawPreciseLineCommand::Vertex));
+  GPUBackendDrawPreciseLineCommand* cmd = static_cast<GPUBackendDrawPreciseLineCommand*>(
+    GPUThread::AllocateCommand(GPUBackendCommandType::DrawPreciseLine, size));
+  cmd->num_vertices = Truncate16(num_vertices);
+  return cmd;
+}
+
 void GPUBackend::PushCommand(GPUThreadCommand* cmd)
 {
   GPUThread::PushCommand(cmd);
@@ -488,6 +498,15 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
       s_counters.num_vertices += ccmd->num_vertices;
       s_counters.num_primitives += ccmd->num_vertices / 2;
       DrawLine(ccmd);
+    }
+    break;
+
+    case GPUBackendCommandType::DrawPreciseLine:
+    {
+      const GPUBackendDrawPreciseLineCommand* ccmd = static_cast<const GPUBackendDrawPreciseLineCommand*>(cmd);
+      s_counters.num_vertices += ccmd->num_vertices;
+      s_counters.num_primitives += ccmd->num_vertices / 2;
+      DrawPreciseLine(ccmd);
     }
     break;
 

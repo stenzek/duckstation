@@ -36,6 +36,7 @@ protected:
   void DrawPolygon(const GPUBackendDrawPolygonCommand* cmd) override;
   void DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd) override;
   void DrawLine(const GPUBackendDrawLineCommand* cmd) override;
+  void DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd) override;
   void DrawSprite(const GPUBackendDrawRectangleCommand* cmd) override;
   void DrawingAreaChanged() override;
   void ClearCache() override;

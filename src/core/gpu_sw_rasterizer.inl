@@ -766,8 +766,7 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
 
 // TODO: Vectorize line draw.
 template<bool shading_enable, bool transparency_enable>
-static void DrawLine(const GPUBackendDrawLineCommand* RESTRICT cmd,
-                     const GPUBackendDrawLineCommand::Vertex* RESTRICT p0,
+static void DrawLine(const GPUBackendDrawCommand* RESTRICT cmd, const GPUBackendDrawLineCommand::Vertex* RESTRICT p0,
                      const GPUBackendDrawLineCommand::Vertex* RESTRICT p1)
 {
   static constexpr u32 XY_SHIFT = 32;

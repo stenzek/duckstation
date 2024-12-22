@@ -2500,6 +2500,54 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
   }
 }
 
+void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
+{
+  PrepareDraw(cmd);
+
+  const bool use_depth = m_pgxp_depth_buffer && cmd->valid_w;
+  SetBatchDepthBuffer(cmd, use_depth);
+
+  const u32 num_vertices = cmd->num_vertices;
+  DebugAssert(m_batch_vertex_space >= (num_vertices * 4) && m_batch_index_space >= (num_vertices * 6));
+
+  const float depth = GetCurrentNormalizedVertexDepth();
+
+  for (u32 i = 0; i < num_vertices; i += 2)
+  {
+    const GSVector2 start_pos = GSVector2::load<false>(&cmd->vertices[i].x);
+    const u32 start_color = cmd->vertices[i].color;
+    const GSVector2 end_pos = GSVector2::load<false>(&cmd->vertices[i + 1].x);
+    const u32 end_color = cmd->vertices[i + 1].color;
+
+    const GSVector4 bounds = GSVector4::xyxy(start_pos, end_pos);
+    const GSVector4i rect =
+      GSVector4i(GSVector4::xyxy(start_pos.min(end_pos), start_pos.max(end_pos))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+    const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
+    DebugAssert(rect.width() <= MAX_PRIMITIVE_WIDTH && rect.height() <= MAX_PRIMITIVE_HEIGHT && !clamped_rect.rempty());
+
+    AddDrawnRectangle(clamped_rect);
+    DrawLine(bounds, start_color, end_color, depth);
+  }
+
+  if (ShouldDrawWithSoftwareRenderer())
+  {
+    const GPU_SW_Rasterizer::DrawLineFunction DrawFunction =
+      GPU_SW_Rasterizer::GetDrawLineFunction(cmd->shading_enable, cmd->transparency_enable);
+
+    for (u32 i = 0; i < cmd->num_vertices; i += 2)
+    {
+      const GPUBackendDrawPreciseLineCommand::Vertex& RESTRICT start = cmd->vertices[i];
+      const GPUBackendDrawPreciseLineCommand::Vertex& RESTRICT end = cmd->vertices[i + 1];
+      const GPUBackendDrawLineCommand::Vertex vertices[2] = {
+        {.x = start.native_x, .y = start.native_y, .color = start.color},
+        {.x = end.native_x, .y = end.native_y, .color = end.color},
+      };
+
+      DrawFunction(cmd, &vertices[0], &vertices[1]);
+    }
+  }
+}
+
 void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
 {
   DebugAssert(m_batch_vertex_space >= 4 && m_batch_index_space >= 6);
@@ -3003,6 +3051,7 @@ void GPU_HW::EnsureVertexBufferSpaceForCommand(const GPUBackendDrawCommand* cmd)
       required_indices = MAX_VERTICES_FOR_RECTANGLE;
       break;
     case GPUBackendCommandType::DrawLine:
+    case GPUBackendCommandType::DrawPreciseLine:
     {
       // assume expansion
       const GPUBackendDrawLineCommand* lcmd = static_cast<const GPUBackendDrawLineCommand*>(cmd);

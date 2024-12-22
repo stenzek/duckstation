@@ -279,7 +279,7 @@ private:
   /// Returns the number of vertices in the buffered poly-line.
   ALWAYS_INLINE u32 GetPolyLineVertexCount() const
   {
-    return (static_cast<u32>(m_blit_buffer.size()) + BoolToUInt32(m_render_command.shading_enable)) >>
+    return (static_cast<u32>(m_polyline_buffer.size()) + BoolToUInt32(m_render_command.shading_enable)) >>
            BoolToUInt8(m_render_command.shading_enable);
   }
 
@@ -520,19 +520,19 @@ private:
     u16 row;
   } m_vram_transfer = {};
 
+  std::unique_ptr<GPUDump::Recorder> m_gpu_dump;
+
   HeapFIFOQueue<u64, MAX_FIFO_SIZE> m_fifo;
-  std::vector<u32> m_blit_buffer;
+  TickCount m_max_run_ahead = 128;
+  u32 m_fifo_size = 128;
   u32 m_blit_remaining_words;
   GPURenderCommand m_render_command{};
-
-  std::unique_ptr<GPUDump::Recorder> m_gpu_dump;
+  std::vector<u32> m_blit_buffer;
+  std::vector<u64> m_polyline_buffer;
 
   ALWAYS_INLINE u32 FifoPop() { return Truncate32(m_fifo.Pop()); }
   ALWAYS_INLINE u32 FifoPeek() { return Truncate32(m_fifo.Peek()); }
   ALWAYS_INLINE u32 FifoPeek(u32 i) { return Truncate32(m_fifo.Peek(i)); }
-
-  TickCount m_max_run_ahead = 128;
-  u32 m_fifo_size = 128;
 
 private:
   using GP0CommandHandler = bool (GPU::*)();

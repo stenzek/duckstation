@@ -2316,6 +2316,11 @@ public:
 
   ALWAYS_INLINE GSVector2 zw() const { return GSVector2(z, w); }
 
+  ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l, const GSVector2& h)
+  {
+    return GSVector4(l.x, l.y, h.x, h.y);
+  }
+
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
   ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const { return GSVector4(F32[xn], F32[yn], F32[zn], F32[wn]); }
 
