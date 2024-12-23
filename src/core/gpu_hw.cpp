@@ -616,6 +616,8 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
   // Need to reload CLUT if we're enabling SW rendering.
   if (g_gpu_settings.gpu_use_software_renderer_for_readbacks && !old_settings.gpu_use_software_renderer_for_readbacks)
   {
+    DownloadVRAMFromGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+
     if (m_draw_mode.mode_reg.texture_mode <= GPUTextureMode::Palette8Bit)
     {
       GPU_SW_Rasterizer::UpdateCLUT(m_draw_mode.palette_reg,
@@ -3094,9 +3096,9 @@ ALWAYS_INLINE float GPU_HW::GetCurrentNormalizedVertexDepth() const
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering, u8 active_line_lsb)
 {
   FlushRender();
+  DeactivateROV();
 
   GL_SCOPE_FMT("FillVRAM({},{} => {},{} ({}x{}) with 0x{:08X}", x, y, x + width, y + height, width, height, color);
-  DeactivateROV();
 
   GL_INS_FMT("Dirty draw area before: {}", m_vram_dirty_draw_rect);
 
@@ -3149,16 +3151,20 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
 
 void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
-  FlushRender();
-
-  GL_PUSH_FMT("ReadVRAM({},{} => {},{} ({}x{})", x, y, x + width, y + height, width, height);
+  GL_SCOPE_FMT("ReadVRAM({},{} => {},{} ({}x{})", x, y, x + width, y + height, width, height);
 
   if (ShouldDrawWithSoftwareRenderer())
   {
     GL_INS("VRAM is already up to date due to SW draws.");
-    GL_POP();
     return;
   }
+
+  DownloadVRAMFromGPU(x, y, width, height);
+}
+
+void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
+{
+  FlushRender();
 
   // TODO: Only read if it's in the drawn area
 

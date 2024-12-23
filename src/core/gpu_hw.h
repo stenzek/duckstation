@@ -239,6 +239,7 @@ private:
   /// Returns true if the draw is going to use shader blending/framebuffer fetch.
   bool NeedsShaderBlending(GPUTransparencyMode transparency, BatchTextureMode texture, bool check_mask) const;
 
+  void DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height);
   void UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
                        bool check_mask, const GSVector4i bounds);
   bool BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
