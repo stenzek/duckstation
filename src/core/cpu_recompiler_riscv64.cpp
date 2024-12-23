@@ -2300,11 +2300,17 @@ void CPU::RISCV64Recompiler::Compile_mtc0(CompileFlags cf)
     rvAsm->LW(RARG1, PTR(&g_state.cop0_regs.sr.bits));
     TestInterrupts(RARG1);
   }
-
-  if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)
+  else if (reg == Cop0Reg::DCIC || reg == Cop0Reg::BPCM)
   {
-    // TODO: DCIC handling for debug breakpoints
-    WARNING_LOG("TODO: DCIC handling for debug breakpoints");
+    // need to check whether we're switching to debug mode
+    Flush(FLUSH_FOR_C_CALL);
+    EmitCall(reinterpret_cast<const void*>(&CPU::UpdateDebugDispatcherFlag));
+    SwitchToFarCode(true, &Assembler::BEQ, RRET, zero);
+    BackupHostState();
+    Flush(FLUSH_FOR_EARLY_BLOCK_EXIT);
+    EmitCall(reinterpret_cast<const void*>(&CPU::ExitExecution)); // does not return
+    RestoreHostState();
+    SwitchToNearCode(false);
   }
 }
 

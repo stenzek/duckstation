@@ -2259,11 +2259,18 @@ void CPU::X64Recompiler::Compile_mtc0(CompileFlags cf)
     cg->mov(RWARG1, cg->dword[PTR(&g_state.cop0_regs.sr.bits)]);
     TestInterrupts(RWARG1);
   }
-
-  if (reg == Cop0Reg::DCIC && g_settings.cpu_recompiler_memory_exceptions)
+  else if (reg == Cop0Reg::DCIC || reg == Cop0Reg::BPCM)
   {
-    // TODO: DCIC handling for debug breakpoints
-    WARNING_LOG("TODO: DCIC handling for debug breakpoints");
+    // need to check whether we're switching to debug mode
+    Flush(FLUSH_FOR_C_CALL);
+    cg->call(&CPU::UpdateDebugDispatcherFlag);
+    cg->test(cg->al, cg->al);
+    SwitchToFarCode(true, &Xbyak::CodeGenerator::jnz);
+    BackupHostState();
+    Flush(FLUSH_FOR_EARLY_BLOCK_EXIT);
+    cg->call(&CPU::ExitExecution); // does not return
+    RestoreHostState();
+    SwitchToNearCode(false);
   }
 }
 
