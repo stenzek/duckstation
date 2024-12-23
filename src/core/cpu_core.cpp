@@ -300,6 +300,7 @@ bool CPU::DoState(StateWrapper& sw)
                                                                             g_settings.cpu_execution_mode);
     g_state.gte_completion_tick = 0;
     UpdateMemoryPointers();
+    UpdateDebugDispatcherFlag();
   }
 
   return !sw.HasError();
