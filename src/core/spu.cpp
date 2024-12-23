@@ -1616,8 +1616,7 @@ void SPU::InternalGeneratePendingSamples()
   }
   else
   {
-    frames_to_execute =
-      (s_state.tick_event.GetTicksSinceLastExecution() + s_state.ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK;
+    frames_to_execute = (ticks_pending + s_state.ticks_carry) / SYSCLK_TICKS_PER_SPU_TICK;
   }
 
   const bool force_exec = (frames_to_execute > 0);
@@ -2505,15 +2504,10 @@ void SPU::UpdateEventInterval()
   if (s_state.tick_event.IsActive() && s_state.tick_event.GetInterval() == interval_ticks)
     return;
 
-  // Ensure all pending ticks have been executed, since we won't get them back after rescheduling.
-  s_state.tick_event.InvokeEarly(true);
+  // Ticks remaining before execution should be retained, just adjust the interval/downcount.
+  const TickCount new_downcount = interval_ticks - s_state.ticks_carry;
   s_state.tick_event.SetInterval(interval_ticks);
-
-  TickCount downcount = interval_ticks;
-  if (!g_settings.cpu_overclock_active)
-    downcount -= s_state.ticks_carry;
-
-  s_state.tick_event.Schedule(downcount);
+  s_state.tick_event.Schedule(new_downcount);
 }
 
 void SPU::DrawDebugStateWindow(float scale)
