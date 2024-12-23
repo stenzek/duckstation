@@ -169,7 +169,7 @@ struct GPUSettings
       bool dump_c16_textures : 1 = false;
       bool reduce_palette_range : 1 = true;
       bool convert_copies_to_writes : 1 = false;
-      bool replacement_scale_linear_filter = false;
+      bool replacement_scale_linear_filter : 1 = false;
 
       u32 max_hash_cache_entries = DEFAULT_MAX_HASH_CACHE_ENTRIES;
       u32 max_hash_cache_vram_usage_mb = DEFAULT_MAX_HASH_CACHE_VRAM_USAGE_MB;
