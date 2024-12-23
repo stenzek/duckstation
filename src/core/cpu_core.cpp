@@ -221,14 +221,16 @@ void CPU::Reset()
   // This consumes cycles, so do it first.
   SetPC(RESET_VECTOR);
 
-  g_state.pending_ticks = 0;
   g_state.downcount = 0;
+  g_state.pending_ticks = 0;
+  g_state.gte_completion_tick = 0;
 }
 
 bool CPU::DoState(StateWrapper& sw)
 {
   sw.Do(&g_state.pending_ticks);
   sw.Do(&g_state.downcount);
+  sw.DoEx(&g_state.gte_completion_tick, 78, static_cast<u32>(0));
   sw.DoArray(g_state.regs.r, static_cast<u32>(Reg::count));
   sw.Do(&g_state.pc);
   sw.Do(&g_state.npc);
