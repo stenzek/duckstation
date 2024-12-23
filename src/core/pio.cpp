@@ -856,7 +856,7 @@ bool PIO::DoState(StateWrapper& sw)
     WARNING_LOG("State contains PIO device {}, expected {}", Settings::GetPIODeviceTypeModeName(device_type),
                 Settings::GetPIODeviceTypeModeName(g_settings.pio_device_type));
     g_pio_device->Reset();
-    sw.SkipBytes(pio_state_size);
+    sw.SkipBytes(pio_state_size - sizeof(pio_state_size));
   }
 
   return !sw.HasError();
