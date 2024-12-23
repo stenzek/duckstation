@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>584</width>
-    <height>477</height>
+    <width>655</width>
+    <height>526</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -86,6 +86,9 @@
           <string/>
          </property>
          <layout class="QFormLayout" name="formLayout_2">
+          <property name="topMargin">
+           <number>6</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="resolutionScaleLabel">
             <property name="text">
@@ -296,6 +299,9 @@
        <property name="leftMargin">
         <number>0</number>
        </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
        <property name="rightMargin">
         <number>0</number>
        </property>
@@ -403,9 +409,33 @@
           <item row="1" column="1">
            <widget class="QComboBox" name="gpuLineDetectMode"/>
           </item>
-          <item row="2" column="0" colspan="2">
+          <item row="2" column="0">
+           <widget class="QLabel" name="gpuWireframeModeLabel">
+            <property name="text">
+             <string>Wireframe Mode:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="gpuWireframeMode"/>
+          </item>
+          <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="0" column="1">
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="forceRoundedTexcoords">
+              <property name="text">
+               <string>Round Upscaled Texture Coordinates</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+              <property name="text">
+               <string>Software Renderer Readbacks</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
              <widget class="QCheckBox" name="scaledDithering">
               <property name="text">
                <string>Scaled Dithering</string>
@@ -413,25 +443,36 @@
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QCheckBox" name="forceRoundedTexcoords">
-              <property name="text">
-               <string>Round Upscaled Texture Coordinates</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
              <widget class="QCheckBox" name="accurateBlending">
               <property name="text">
                <string>Accurate Blending</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="gpuThread">
               <property name="text">
-               <string>Software Renderer Readbacks</string>
+               <string>Threaded Rendering</string>
               </property>
              </widget>
+            </item>
+            <item row="0" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="0,0">
+              <item>
+               <widget class="QLabel" name="maxQueuedFramesLabel">
+                <property name="text">
+                 <string>Max Queued Frames:</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="maxQueuedFrames">
+                <property name="maximum">
+                 <number>10</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
            </layout>
           </item>
@@ -476,6 +517,9 @@
           <string/>
          </property>
          <layout class="QFormLayout" name="formLayout_4">
+          <property name="topMargin">
+           <number>6</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="pgxpGeometryToleranceLabel">
             <property name="text">
@@ -613,6 +657,9 @@
           <string/>
          </property>
          <layout class="QFormLayout" name="formLayout_5">
+          <property name="topMargin">
+           <number>6</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_29">
             <property name="text">
@@ -763,6 +810,9 @@
       <layout class="QVBoxLayout" name="verticalLayout_8">
        <property name="leftMargin">
         <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>6</number>
        </property>
        <property name="rightMargin">
         <number>0</number>
@@ -1077,6 +1127,9 @@
        <property name="leftMargin">
         <number>0</number>
        </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
        <property name="rightMargin">
         <number>0</number>
        </property>
@@ -1258,60 +1311,15 @@
        <property name="leftMargin">
         <number>0</number>
        </property>
+       <property name="topMargin">
+        <number>6</number>
+       </property>
        <property name="rightMargin">
         <number>0</number>
        </property>
        <property name="bottomMargin">
         <number>0</number>
        </property>
-       <item>
-        <widget class="QGroupBox" name="groupBox_11">
-         <property name="title">
-          <string>Rendering Options</string>
-         </property>
-         <layout class="QFormLayout" name="formLayout_11">
-          <item row="0" column="0">
-           <widget class="QLabel" name="gpuWireframeModeLabel">
-            <property name="text">
-             <string>Wireframe Mode:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QComboBox" name="gpuWireframeMode"/>
-          </item>
-          <item row="1" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_4">
-            <item row="0" column="0">
-             <layout class="QHBoxLayout" name="horizontalLayout_7" stretch="1,0,0">
-              <item>
-               <widget class="QCheckBox" name="gpuThread">
-                <property name="text">
-                 <string>Threaded Rendering</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="maxQueuedFramesLabel">
-                <property name="text">
-                 <string>Max Queued Frames:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="maxQueuedFrames">
-                <property name="maximum">
-                 <number>10</number>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item>
         <widget class="QGroupBox" name="gpuDumpGroup">
          <property name="title">

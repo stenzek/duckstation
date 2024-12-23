@@ -4520,6 +4520,12 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                     &Settings::GetLineDetectModeName, &Settings::GetLineDetectModeDisplayName, GPULineDetectMode::Count,
                     resolution_scale > 1);
 
+    DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_BOX, "Wireframe Rendering"),
+                    FSUI_CSTR("Overlays or replaces normal triangle drawing with a wireframe/line view."), "GPU",
+                    "WireframeMode", GPUWireframeMode::Disabled, &Settings::ParseGPUWireframeMode,
+                    &Settings::GetGPUWireframeModeName, &Settings::GetGPUWireframeModeDisplayName,
+                    GPUWireframeMode::Count);
+
     DrawToggleSetting(
       bsi, FSUI_ICONSTR(ICON_FA_TINT_SLASH, "Scaled Dithering"),
       FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
@@ -4546,10 +4552,15 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
     DrawToggleSetting(
       bsi, FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Use Software Renderer For Readbacks"),
-      FSUI_CSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result "
-                "in greater performance."),
+      FSUI_CSTR("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in "
+                "greater performance when using graphical enhancements with the hardware renderer."),
       "GPU", "UseSoftwareRendererForReadbacks", false);
   }
+
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BOLT, "Threaded Rendering"),
+                    FSUI_CSTR("Uses a second thread for drawing graphics. Provides a significant speed improvement "
+                              "particularly with the software renderer, and is safe to use."),
+                    "GPU", "UseThread", true);
 
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_ARROWS_ALT_V, "Stretch Display Vertically"),
@@ -5404,22 +5415,8 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                   &Settings::ParseSaveStateCompressionModeName, &Settings::GetSaveStateCompressionModeName,
                   &Settings::GetSaveStateCompressionModeDisplayName, SaveStateCompressionMode::Count);
 
-  MenuHeading(FSUI_CSTR("Display Settings"));
-  DrawToggleSetting(bsi, FSUI_CSTR("Threaded Rendering"),
-                    FSUI_CSTR("Uses a second thread for drawing graphics. Speed boost, and safe to use."), "GPU",
-                    "UseThread", true);
-  DrawEnumSetting(bsi, FSUI_CSTR("Wireframe Rendering"),
-                  FSUI_CSTR("Overlays or replaces normal triangle drawing with a wireframe/line view."), "GPU",
-                  "WireframeMode", GPUWireframeMode::Disabled, &Settings::ParseGPUWireframeMode,
-                  &Settings::GetGPUWireframeModeName, &Settings::GetGPUWireframeModeDisplayName,
-                  GPUWireframeMode::Count);
-
   MenuHeading(FSUI_CSTR("CPU Emulation"));
 
-  DrawToggleSetting(
-    bsi, FSUI_CSTR("Enable Recompiler ICache"),
-    FSUI_CSTR("Simulates the CPU's instruction cache in the recompiler. Can help with games running too fast."), "CPU",
-    "RecompilerICache", false);
   DrawToggleSetting(bsi, FSUI_CSTR("Enable Recompiler Memory Exceptions"),
                     FSUI_CSTR("Enables alignment and bus exceptions. Not needed for any known games."), "CPU",
                     "RecompilerMemoryExceptions", false);
@@ -7898,6 +7895,7 @@ TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
 TRANSLATE_NOOP("FullscreenUI", "Allows loading protected games without subchannel information.");
+TRANSLATE_NOOP("FullscreenUI", "Always Track Uploads");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
@@ -8024,7 +8022,6 @@ TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Disables dithering and uses the full 8 bits per channel of color information.");
 TRANSLATE_NOOP("FullscreenUI", "Disc {} | {}");
 TRANSLATE_NOOP("FullscreenUI", "Discord Server");
-TRANSLATE_NOOP("FullscreenUI", "Display Settings");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
@@ -8104,6 +8101,7 @@ TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For FMVs");
 TRANSLATE_NOOP("FullscreenUI", "Force Video Timing");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
 TRANSLATE_NOOP("FullscreenUI", "Forces blending to be done in the shader at 16-bit precision, when not using true color. Non-trivial performance impact, and unnecessary for most games.");
+TRANSLATE_NOOP("FullscreenUI", "Forces texture upload tracking to be enabled regardless of whether it is needed.");
 TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Frame Time Buffer");
@@ -8321,7 +8319,7 @@ TRANSLATE_NOOP("FullscreenUI", "Round Upscaled Texture Coordinates");
 TRANSLATE_NOOP("FullscreenUI", "Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.");
 TRANSLATE_NOOP("FullscreenUI", "Runahead");
 TRANSLATE_NOOP("FullscreenUI", "Runahead/Rewind");
-TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance.");
+TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Player LED");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualShock 4 / DualSense Enhanced Mode");
 TRANSLATE_NOOP("FullscreenUI", "Safe Mode");
@@ -8401,7 +8399,6 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the game you are currently playing as part
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's CPU usage of each system thread in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's GPU usage in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.");
-TRANSLATE_NOOP("FullscreenUI", "Simulates the CPU's instruction cache in the recompiler. Can help with games running too fast.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the region check present in original, unmodified consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Skip Duplicate Frame Display");
@@ -8446,7 +8443,6 @@ TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers."
 TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.");
 TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced by the emulator are submitted to the host.");
 TRANSLATE_NOOP("FullscreenUI", "The selected memory card image will be used in shared mode for this slot.");
-TRANSLATE_NOOP("FullscreenUI", "The texture cache is currently experimental, and may cause rendering errors in some games.");
 TRANSLATE_NOOP("FullscreenUI", "This game has no achievements.");
 TRANSLATE_NOOP("FullscreenUI", "This game has no leaderboards.");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
@@ -8484,7 +8480,7 @@ TRANSLATE_NOOP("FullscreenUI", "Username: {}");
 TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a light coloured theme instead of the default dark theme.");
-TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for drawing graphics. Speed boost, and safe to use.");
+TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.");
 TRANSLATE_NOOP("FullscreenUI", "Uses game-specific settings for controllers for this game.");
 TRANSLATE_NOOP("FullscreenUI", "Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.");
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for colors, which can improve visuals in some games.");
