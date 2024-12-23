@@ -58,8 +58,8 @@ static constexpr const std::array s_transparency_modes = {
 };
 
 static constexpr const std::array s_batch_texture_modes = {
-  "Palette4Bit", "Palette8Bit",       "Direct16Bit",       "PageTexture",
-  "Disabled",    "SpritePalette4Bit", "SpritePalette8Bit", "SpriteDirect16Bit",
+  "Palette4Bit",       "Palette8Bit",       "Direct16Bit",       "PageTexture",       "Disabled",
+  "SpritePalette4Bit", "SpritePalette8Bit", "SpriteDirect16Bit", "SpritePageTexture",
 };
 static_assert(s_batch_texture_modes.size() == static_cast<size_t>(GPU_HW::BatchTextureMode::MaxCount));
 
@@ -1123,8 +1123,10 @@ bool GPU_HW::CompilePipelines(Error* error)
   const u32 max_active_texture_modes =
     (m_allow_sprite_mode ? NUM_TEXTURE_MODES :
                            (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart))));
-  const u32 num_active_texture_modes = (max_active_texture_modes - BoolToUInt32(!needs_page_texture));
-  const u32 total_vertex_shaders = ((m_allow_sprite_mode ? 7 : 4) - BoolToUInt32(!needs_page_texture));
+  const u32 num_active_texture_modes =
+    (max_active_texture_modes - (BoolToUInt32(!needs_page_texture) * (BoolToUInt32(m_allow_sprite_mode) + 1)));
+  const u32 total_vertex_shaders =
+    ((m_allow_sprite_mode ? 7 : 4) - (BoolToUInt32(!needs_page_texture) * (BoolToUInt32(m_allow_sprite_mode) + 1)));
   const u32 total_fragment_shaders = ((1 + BoolToUInt32(needs_rov_depth)) * 5 * 5 * num_active_texture_modes * 2 *
                                       (1 + BoolToUInt32(!true_color)) * (1 + BoolToUInt32(!force_progressive_scan)));
   const u32 total_items =
@@ -1232,8 +1234,11 @@ bool GPU_HW::CompilePipelines(Error* error)
 
         for (u8 texture_mode = 0; texture_mode < max_active_texture_modes; texture_mode++)
         {
-          if (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) && !needs_page_texture)
+          if (!needs_page_texture && (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) ||
+                                      texture_mode == static_cast<u8>(BatchTextureMode::SpritePageTexture)))
+          {
             continue;
+          }
 
           for (u8 check_mask = 0; check_mask < 2; check_mask++)
           {
@@ -1353,8 +1358,11 @@ bool GPU_HW::CompilePipelines(Error* error)
 
         for (u8 texture_mode = 0; texture_mode < max_active_texture_modes; texture_mode++)
         {
-          if (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) && !needs_page_texture)
+          if (!needs_page_texture && (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) ||
+                                      texture_mode == static_cast<u8>(BatchTextureMode::SpritePageTexture)))
+          {
             continue;
+          }
 
           for (u8 dithering = 0; dithering < 2; dithering++)
           {
@@ -1377,7 +1385,8 @@ bool GPU_HW::CompilePipelines(Error* error)
                    static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePalette4Bit ||
                    static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePalette8Bit);
                 const bool page_texture =
-                  (static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::PageTexture);
+                  (static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::PageTexture ||
+                   static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePageTexture);
                 const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
                 const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
                 const bool use_shader_blending = (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend));
@@ -2044,11 +2053,10 @@ ALWAYS_INLINE_RELEASE void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode
                                                      u32 base_vertex, const GPUTextureCache::Source* texture)
 {
   // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
-  const u8 texture_mode = texture ? static_cast<u8>(BatchTextureMode::PageTexture) :
-                                    (static_cast<u8>(m_batch.texture_mode) +
-                                     ((m_batch.texture_mode < BatchTextureMode::PageTexture && m_batch.sprite_mode) ?
-                                        static_cast<u8>(BatchTextureMode::SpriteStart) :
-                                        0));
+  const u8 texture_mode = (static_cast<u8>(m_batch.texture_mode) +
+                           ((m_batch.texture_mode < BatchTextureMode::Disabled && m_batch.sprite_mode) ?
+                              static_cast<u8>(BatchTextureMode::SpriteStart) :
+                              0));
   const u8 depth_test = BoolToUInt8(m_batch.use_depth_buffer);
   const u8 check_mask = BoolToUInt8(m_batch.check_mask_before_draw);
   g_gpu_device->SetPipeline(m_batch_pipelines[depth_test][static_cast<u8>(m_batch.transparency_mode)][static_cast<u8>(

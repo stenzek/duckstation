@@ -48,6 +48,7 @@ public:
     SpritePalette4Bit,
     SpritePalette8Bit,
     SpriteDirect16Bit,
+    SpritePageTexture,
 
     MaxCount,
 
