@@ -192,6 +192,7 @@ struct GPUSettings
 
     bool enable_texture_replacements : 1 = false;
     bool enable_vram_write_replacements : 1 = false;
+    bool always_track_uploads : 1 = false;
     bool preload_textures : 1 = false;
 
     bool dump_textures : 1 = false;

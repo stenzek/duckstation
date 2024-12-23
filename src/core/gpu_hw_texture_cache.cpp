@@ -564,6 +564,9 @@ bool GPUTextureCache::ShouldTrackVRAMWrites()
   if (!g_gpu_settings.gpu_texture_cache)
     return false;
 
+  if (g_gpu_settings.texture_replacements.always_track_uploads)
+    return true;
+
 #ifdef ALWAYS_TRACK_VRAM_WRITES
   return true;
 #else
@@ -592,20 +595,7 @@ bool GPUTextureCache::Initialize(GPU_HW* backend)
 
 void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings)
 {
-  if (use_texture_cache)
-  {
-    UpdateVRAMTrackingState();
-
-    if (g_gpu_settings.texture_replacements.enable_texture_replacements !=
-        old_settings.texture_replacements.enable_texture_replacements)
-    {
-      Invalidate();
-
-      DestroyPipelines();
-      if (!CompilePipelines()) [[unlikely]]
-        Panic("Failed to compile pipelines on TC settings change");
-    }
-  }
+  const bool prev_tracking_state = s_state.track_vram_writes;
 
   // Reload textures if configuration changes.
   const bool old_replacement_scale_linear_filter = s_state.config.replacement_scale_linear_filter;
@@ -617,8 +607,11 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
   {
     if (use_texture_cache)
     {
-      if (s_state.config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
+      if (g_gpu_settings.texture_replacements.enable_texture_replacements !=
+            old_settings.texture_replacements.enable_texture_replacements ||
+          s_state.config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
       {
+        DestroyPipelines();
         if (!CompilePipelines()) [[unlikely]]
           Panic("Failed to compile pipelines on TC replacement settings change");
       }
@@ -626,6 +619,11 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
 
     ReloadTextureReplacements(false);
   }
+
+  UpdateVRAMTrackingState();
+  
+  if (s_state.track_vram_writes != prev_tracking_state)
+    Invalidate();
 }
 
 bool GPUTextureCache::GetStateSize(StateWrapper& sw, u32* size)

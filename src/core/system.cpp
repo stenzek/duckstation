@@ -4431,6 +4431,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                old_settings.texture_replacements.enable_texture_replacements ||
              g_settings.texture_replacements.enable_vram_write_replacements !=
                old_settings.texture_replacements.enable_vram_write_replacements ||
+             g_settings.texture_replacements.always_track_uploads !=
+               old_settings.texture_replacements.always_track_uploads ||
              g_settings.texture_replacements.dump_textures != old_settings.texture_replacements.dump_textures ||
              g_settings.texture_replacements.config != old_settings.texture_replacements.config)
     {

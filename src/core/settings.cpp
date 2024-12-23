@@ -438,6 +438,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     si.GetBoolValue("TextureReplacements", "EnableTextureReplacements", false);
   texture_replacements.enable_vram_write_replacements =
     si.GetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements", false);
+  texture_replacements.always_track_uploads = si.GetBoolValue("TextureReplacements", "AlwaysTrackUploads", false);
   texture_replacements.preload_textures = si.GetBoolValue("TextureReplacements", "PreloadTextures", false);
   texture_replacements.dump_textures = si.GetBoolValue("TextureReplacements", "DumpTextures", false);
   texture_replacements.dump_replaced_textures = si.GetBoolValue("TextureReplacements", "DumpReplacedTextures", true);
@@ -713,6 +714,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("TextureReplacements", "EnableTextureReplacements", texture_replacements.enable_texture_replacements);
   si.SetBoolValue("TextureReplacements", "EnableVRAMWriteReplacements",
                   texture_replacements.enable_vram_write_replacements);
+  si.SetBoolValue("TextureReplacements", "AlwaysTrackUploads", texture_replacements.always_track_uploads);
   si.SetBoolValue("TextureReplacements", "PreloadTextures", texture_replacements.preload_textures);
   si.SetBoolValue("TextureReplacements", "DumpVRAMWrites", texture_replacements.dump_vram_writes);
   si.SetBoolValue("TextureReplacements", "DumpTextures", texture_replacements.dump_textures);
@@ -819,9 +821,9 @@ bool Settings::TextureReplacementSettings::operator==(const TextureReplacementSe
 {
   return (enable_texture_replacements == rhs.enable_texture_replacements &&
           enable_vram_write_replacements == rhs.enable_vram_write_replacements &&
-          preload_textures == rhs.preload_textures && dump_textures == rhs.dump_textures &&
-          dump_replaced_textures == rhs.dump_replaced_textures && dump_vram_writes == rhs.dump_vram_writes &&
-          config == rhs.config);
+          always_track_uploads == rhs.always_track_uploads && preload_textures == rhs.preload_textures &&
+          dump_textures == rhs.dump_textures && dump_replaced_textures == rhs.dump_replaced_textures &&
+          dump_vram_writes == rhs.dump_vram_writes && config == rhs.config);
 }
 
 bool Settings::TextureReplacementSettings::operator!=(const TextureReplacementSettings& rhs) const

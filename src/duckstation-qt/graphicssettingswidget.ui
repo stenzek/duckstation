@@ -1089,27 +1089,17 @@
           <string>General Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_9">
-          <item row="1" column="0">
+          <item row="0" column="0">
            <widget class="QCheckBox" name="enableTextureCache">
             <property name="text">
              <string>Enable Texture Cache</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="0" colspan="2">
-           <widget class="QLabel" name="label_4">
+          <item row="0" column="1">
+           <widget class="QCheckBox" name="preloadTextureReplacements">
             <property name="text">
-             <string>The texture cache is currently experimental, and may cause rendering errors in some games.</string>
-            </property>
-            <property name="wordWrap">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QCheckBox" name="useOldMDECRoutines">
-            <property name="text">
-             <string>Use Old MDEC Routines</string>
+             <string>Preload Texture Replacements</string>
             </property>
            </widget>
           </item>
@@ -1123,22 +1113,8 @@
          </property>
          <layout class="QFormLayout" name="formLayout_8">
           <item row="0" column="0" colspan="2">
-           <layout class="QGridLayout" name="gridLayout_6" columnstretch="1,1">
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="enableTextureReplacements">
-              <property name="text">
-               <string>Enable Texture Replacement</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="preloadTextureReplacements">
-              <property name="text">
-               <string>Preload Texture Replacements</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
+           <layout class="QGridLayout" name="gridLayout_6">
+            <item row="3" column="1">
              <layout class="QHBoxLayout" name="horizontalLayout_4"/>
             </item>
             <item row="0" column="1">
@@ -1159,10 +1135,24 @@
               </item>
              </layout>
             </item>
+            <item row="0" column="0">
+             <widget class="QCheckBox" name="enableTextureReplacements">
+              <property name="text">
+               <string>Enable Texture Replacement</string>
+              </property>
+             </widget>
+            </item>
             <item row="1" column="1">
              <widget class="QCheckBox" name="dumpReplacedTextures">
               <property name="text">
                <string>Dump Replaced Textures</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="alwaysTrackUploads">
+              <property name="text">
+               <string>Always Track Uploads</string>
               </property>
              </widget>
             </item>
@@ -1183,6 +1173,13 @@
              <widget class="QCheckBox" name="vramWriteReplacement">
               <property name="text">
                <string>Enable VRAM Write Replacement</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="useOldMDECRoutines">
+              <property name="text">
+               <string>Use Old MDEC Routines</string>
               </property>
              </widget>
             </item>

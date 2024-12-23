@@ -4640,21 +4640,23 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
   MenuHeading(FSUI_CSTR("Texture Replacements"));
 
-  ActiveButton(FSUI_CSTR("The texture cache is currently experimental, and may cause rendering errors in some games."),
-               false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont);
-
+  const bool texture_cache_enabled = GetEffectiveBoolSetting(bsi, "GPU", "EnableTextureCache", false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_ID_BADGE, "Enable Texture Cache"),
                     FSUI_CSTR("Enables caching of guest textures, required for texture replacement."), "GPU",
                     "EnableTextureCache", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Use Old MDEC Routines"),
-                    FSUI_CSTR("Enables the older, less accurate MDEC decoding routines. May be required for old "
-                              "replacement backgrounds to match/load."),
-                    "Hacks", "UseOldMDECRoutines", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TASKS, "Preload Replacement Textures"),
+                    FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
+                    "TextureReplacements", "PreloadTextures", false,
+                    ((texture_cache_enabled &&
+                      GetEffectiveBoolSetting(bsi, "TextureReplacements", "EnableTextureReplacements", false)) ||
+                     GetEffectiveBoolSetting(bsi, "TextureReplacements", "EnableVRAMWriteReplacements", false)));
 
-  const bool texture_cache_enabled = GetEffectiveBoolSetting(bsi, "GPU", "EnableTextureCache", false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_IMPORT, "Enable Texture Replacements"),
                     FSUI_CSTR("Enables loading of replacement textures. Not compatible with all games."),
                     "TextureReplacements", "EnableTextureReplacements", false, texture_cache_enabled);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Always Track Uploads"),
+                    FSUI_CSTR("Forces texture upload tracking to be enabled regardless of whether it is needed."),
+                    "TextureReplacements", "AlwaysTrackUploads", false, texture_cache_enabled);
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_FILE_EXPORT, "Enable Texture Dumping"),
     FSUI_CSTR("Enables dumping of textures to image files, which can be replaced. Not compatible with all games."),
@@ -4667,17 +4669,13 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_ALT, "Enable VRAM Write Replacement"),
                     FSUI_CSTR("Enables the replacement of background textures in supported games."),
                     "TextureReplacements", "EnableVRAMWriteReplacements", false);
-
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_INVOICE, "Enable VRAM Write Dumping"),
                     FSUI_CSTR("Writes backgrounds that can be replaced to the dump directory."), "TextureReplacements",
                     "DumpVRAMWrites", false);
-
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TASKS, "Preload Replacement Textures"),
-                    FSUI_CSTR("Loads all replacement texture to RAM, reducing stuttering at runtime."),
-                    "TextureReplacements", "PreloadTextures", false,
-                    ((texture_cache_enabled &&
-                      GetEffectiveBoolSetting(bsi, "TextureReplacements", "EnableTextureReplacements", false)) ||
-                     GetEffectiveBoolSetting(bsi, "TextureReplacements", "EnableVRAMWriteReplacements", false)));
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Use Old MDEC Routines"),
+                    FSUI_CSTR("Enables the older, less accurate MDEC decoding routines. May be required for old "
+                              "replacement backgrounds to match/load."),
+                    "Hacks", "UseOldMDECRoutines", false);
 
   DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER, "Textures Directory"), "Folders", "Textures",
                     EmuFolders::Textures);
