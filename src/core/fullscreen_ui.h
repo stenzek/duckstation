@@ -35,7 +35,7 @@ void ReturnToPreviousWindow();
 void SetStandardSelectionFooterText(bool back_instead_of_cancel);
 #endif
 
-void Shutdown();
+void Shutdown(bool clear_state);
 void Render();
 void InvalidateCoverCache();
 void TimeToPrintableString(SmallStringBase* str, time_t t);

@@ -68,8 +68,8 @@ static bool IsCommandFIFOEmpty();
 static void WakeGPUThread();
 static bool SleepGPUThread(bool allow_sleep);
 
-static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, Error* error);
-static void DestroyDeviceOnThread();
+static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_fsui_state_on_failure, Error* error);
+static void DestroyDeviceOnThread(bool clear_fsui_state);
 static void ResizeDisplayWindowOnThread(u32 width, u32 height, float scale);
 static void UpdateDisplayWindowOnThread(bool fullscreen);
 static void DisplayWindowResizedOnThread();
@@ -610,7 +610,7 @@ bool GPUThread::IsGPUBackendRequested()
   return s_state.requested_renderer.has_value();
 }
 
-bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, Error* error)
+bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_fsui_state_on_failure, Error* error)
 {
   DebugAssert(!g_gpu_device);
 
@@ -686,7 +686,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, Error* erro
   {
     ERROR_LOG("Failed to initialize ImGuiManager: {}", create_error.GetDescription());
     Error::SetStringFmt(error, "Failed to initialize ImGuiManager: {}", create_error.GetDescription());
-    FullscreenUI::Shutdown();
+    FullscreenUI::Shutdown(clear_fsui_state_on_failure);
     ImGuiManager::Shutdown();
     g_gpu_device->Destroy();
     g_gpu_device.reset();
@@ -707,14 +707,14 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, Error* erro
   return true;
 }
 
-void GPUThread::DestroyDeviceOnThread()
+void GPUThread::DestroyDeviceOnThread(bool clear_fsui_state)
 {
   if (!g_gpu_device)
     return;
 
   const bool has_window = g_gpu_device->HasMainSwapChain();
 
-  FullscreenUI::Shutdown();
+  FullscreenUI::Shutdown(clear_fsui_state);
   ImGuiManager::Shutdown();
 
   INFO_LOG("Destroying {} GPU device...", GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()));
@@ -749,12 +749,12 @@ void GPUThread::HandleGPUDeviceLost()
   // Device lost, something went really bad.
   // Let's just toss out everything, and try to hobble on.
   DestroyGPUBackendOnThread();
-  DestroyDeviceOnThread();
+  DestroyDeviceOnThread(false);
 
   Error error;
   if (!CreateDeviceOnThread(
         Settings::GetRenderAPIForRenderer(s_state.requested_renderer.value_or(g_gpu_settings.gpu_renderer)),
-        is_fullscreen, &error) ||
+        is_fullscreen, true, &error) ||
       (s_state.requested_renderer.has_value() &&
        !CreateGPUBackendOnThread(s_state.requested_renderer.value(), true, &error)))
   {
@@ -832,7 +832,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   if (!cmd->renderer.has_value() && !s_state.requested_fullscreen_ui)
   {
     DestroyGPUBackendOnThread();
-    DestroyDeviceOnThread();
+    DestroyDeviceOnThread(true);
     return;
   }
 
@@ -864,10 +864,10 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   if (cmd->force_recreate_device || !GPUDevice::IsSameRenderAPI(current_api, expected_api))
   {
     const bool fullscreen = cmd->fullscreen.value_or(Host::IsFullscreen());
-    DestroyDeviceOnThread();
+    DestroyDeviceOnThread(false);
 
     Error local_error;
-    if (!CreateDeviceOnThread(expected_api, fullscreen, &local_error))
+    if (!CreateDeviceOnThread(expected_api, fullscreen, false, &local_error))
     {
       Host::AddIconOSDMessage(
         "DeviceSwitchFailed", ICON_FA_PAINT_ROLLER,
@@ -877,7 +877,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
         Host::OSD_CRITICAL_ERROR_DURATION);
 
       Host::ReleaseRenderWindow();
-      if (current_api == RenderAPI::None || !CreateDeviceOnThread(current_api, fullscreen, &local_error))
+      if (current_api == RenderAPI::None || !CreateDeviceOnThread(current_api, fullscreen, true, &local_error))
       {
         if (cmd->error_ptr)
           *cmd->error_ptr = local_error;
@@ -895,7 +895,8 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   }
   else if (s_state.requested_fullscreen_ui)
   {
-    if (!g_gpu_device && !CreateDeviceOnThread(expected_api, cmd->fullscreen.value_or(false), cmd->error_ptr))
+    const bool had_gpu_device = static_cast<bool>(g_gpu_device);
+    if (!g_gpu_device && !CreateDeviceOnThread(expected_api, cmd->fullscreen.value_or(false), true, cmd->error_ptr))
     {
       *cmd->out_result = false;
       return;
@@ -905,12 +906,16 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     g_gpu_device->SetGPUTimingEnabled(false);
 
     if (!(*cmd->out_result = FullscreenUI::IsInitialized() || FullscreenUI::Initialize()))
+    {
       Error::SetStringView(cmd->error_ptr, "Failed to initialize FullscreenUI.");
+      if (!had_gpu_device)
+        DestroyDeviceOnThread(true);
+    }
   }
   else
   {
     // Device is no longer needed.
-    DestroyDeviceOnThread();
+    DestroyDeviceOnThread(true);
   }
 }
 

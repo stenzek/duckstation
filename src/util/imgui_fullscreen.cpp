@@ -216,7 +216,7 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
   return true;
 }
 
-void ImGuiFullscreen::Shutdown()
+void ImGuiFullscreen::Shutdown(bool clear_state)
 {
   if (s_state.texture_load_thread.joinable())
   {
@@ -235,33 +235,36 @@ void ImGuiFullscreen::Shutdown()
 
   s_state.texture_cache.Clear();
 
-  s_state.notifications.clear();
-  s_state.background_progress_dialogs.clear();
-  s_state.fullscreen_footer_text.clear();
-  s_state.last_fullscreen_footer_text.clear();
-  s_state.fullscreen_text_change_time = 0.0f;
-  CloseInputDialog();
-  CloseMessageDialog();
-  s_state.choice_dialog_open = false;
-  s_state.choice_dialog_checkable = false;
-  s_state.choice_dialog_title = {};
-  s_state.choice_dialog_options.clear();
-  s_state.choice_dialog_callback = {};
-  s_state.enum_choice_button_id = 0;
-  s_state.enum_choice_button_value = 0;
-  s_state.enum_choice_button_set = false;
-  s_state.file_selector_open = false;
-  s_state.file_selector_directory = false;
-  s_state.file_selector_title = {};
-  s_state.file_selector_callback = {};
-  s_state.file_selector_current_directory = {};
-  s_state.file_selector_filters.clear();
-  s_state.file_selector_items.clear();
-  s_state.message_dialog_open = false;
-  s_state.message_dialog_title = {};
-  s_state.message_dialog_message = {};
-  s_state.message_dialog_buttons = {};
-  s_state.message_dialog_callback = {};
+  if (clear_state)
+  {
+    s_state.notifications.clear();
+    s_state.background_progress_dialogs.clear();
+    s_state.fullscreen_footer_text.clear();
+    s_state.last_fullscreen_footer_text.clear();
+    s_state.fullscreen_text_change_time = 0.0f;
+    CloseInputDialog();
+    CloseMessageDialog();
+    s_state.choice_dialog_open = false;
+    s_state.choice_dialog_checkable = false;
+    s_state.choice_dialog_title = {};
+    s_state.choice_dialog_options.clear();
+    s_state.choice_dialog_callback = {};
+    s_state.enum_choice_button_id = 0;
+    s_state.enum_choice_button_value = 0;
+    s_state.enum_choice_button_set = false;
+    s_state.file_selector_open = false;
+    s_state.file_selector_directory = false;
+    s_state.file_selector_title = {};
+    s_state.file_selector_callback = {};
+    s_state.file_selector_current_directory = {};
+    s_state.file_selector_filters.clear();
+    s_state.file_selector_items.clear();
+    s_state.message_dialog_open = false;
+    s_state.message_dialog_title = {};
+    s_state.message_dialog_message = {};
+    s_state.message_dialog_buttons = {};
+    s_state.message_dialog_callback = {};
+  }
 }
 
 void ImGuiFullscreen::SetSmoothScrolling(bool enabled)

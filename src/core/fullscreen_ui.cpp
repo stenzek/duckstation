@@ -592,23 +592,21 @@ bool FullscreenUI::Initialize()
       !LoadResources())
   {
     DestroyResources();
-    ImGuiFullscreen::Shutdown();
+    Shutdown(true);
     s_state.tried_to_initialize = true;
     return false;
   }
 
   s_state.initialized = true;
-  s_state.current_main_window = MainWindowType::None;
-  s_state.current_pause_submenu = PauseSubMenu::None;
-  s_state.pause_menu_was_open = false;
-  s_state.was_paused_on_quick_menu_open = false;
-  s_state.about_window_open = false;
   s_state.hotkey_list_cache = InputManager::GetHotkeyList();
 
   Host::RunOnCPUThread([]() { Host::OnFullscreenUIStartedOrStopped(true); });
 
-  if (!GPUThread::HasGPUBackend() && !GPUThread::IsGPUBackendRequested())
+  if (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
+      !GPUThread::IsGPUBackendRequested())
+  {
     SwitchToLanding();
+  }
 
   UpdateRunIdleState();
   ForceKeyNavEnabled();
@@ -799,27 +797,37 @@ void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
   QueueResetFocus(FocusResetType::ViewChanged);
 }
 
-void FullscreenUI::Shutdown()
+void FullscreenUI::Shutdown(bool clear_state)
 {
-  Achievements::ClearUIState();
-  ClearInputBindingVariables();
-  CloseSaveStateSelector();
-  s_state.cover_image_map.clear();
-  std::memset(s_state.controller_macro_expanded, 0, sizeof(s_state.controller_macro_expanded));
-  s_state.game_list_sorted_entries = {};
-  s_state.game_list_directories_cache = {};
-  s_state.game_patch_list = {};
-  s_state.enabled_game_patch_cache = {};
-  s_state.game_cheats_list = {};
-  s_state.enabled_game_cheat_cache = {};
-  s_state.game_cheat_groups = {};
-  s_state.postprocessing_stages = {};
-  s_state.fullscreen_mode_list_cache = {};
-  s_state.graphics_adapter_list_cache = {};
-  s_state.hotkey_list_cache = {};
-  s_state.current_game_subtitle = {};
+  if (clear_state)
+  {
+    s_state.current_main_window = MainWindowType::None;
+    s_state.current_pause_submenu = PauseSubMenu::None;
+    s_state.pause_menu_was_open = false;
+    s_state.was_paused_on_quick_menu_open = false;
+    s_state.about_window_open = false;
+
+    Achievements::ClearUIState();
+    ClearInputBindingVariables();
+    CloseSaveStateSelector();
+    s_state.cover_image_map.clear();
+    std::memset(s_state.controller_macro_expanded, 0, sizeof(s_state.controller_macro_expanded));
+    s_state.game_list_sorted_entries = {};
+    s_state.game_list_directories_cache = {};
+    s_state.game_patch_list = {};
+    s_state.enabled_game_patch_cache = {};
+    s_state.game_cheats_list = {};
+    s_state.enabled_game_cheat_cache = {};
+    s_state.game_cheat_groups = {};
+    s_state.postprocessing_stages = {};
+    s_state.fullscreen_mode_list_cache = {};
+    s_state.graphics_adapter_list_cache = {};
+    s_state.hotkey_list_cache = {};
+    s_state.current_game_subtitle = {};
+  }
+
   DestroyResources();
-  ImGuiFullscreen::Shutdown();
+  ImGuiFullscreen::Shutdown(clear_state);
   if (s_state.initialized)
     Host::RunOnCPUThread([]() { Host::OnFullscreenUIStartedOrStopped(false); });
 
@@ -4318,7 +4326,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       else
         bsi->SetStringValue("GPU", "Adapter", value);
       SetSettingsChanged(bsi);
-      ShowToast(std::string(), FSUI_STR("GPU adapter will be applied after restarting."), 10.0f);
       CloseChoiceDialog();
     };
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_MICROCHIP, "GPU Adapter"), false, std::move(options), std::move(callback));

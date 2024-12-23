@@ -130,7 +130,7 @@ void SetFonts(ImFont* medium_font, ImFont* large_font);
 bool UpdateLayoutScale();
 
 /// Shuts down, clearing all state.
-void Shutdown();
+void Shutdown(bool clear_state);
 
 /// Texture cache.
 const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();

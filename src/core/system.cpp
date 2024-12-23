@@ -4577,7 +4577,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (GPUThread::IsFullscreenUIRequested())
     {
       // handle device setting updates as well
-      if (g_settings.AreGPUDeviceSettingsChanged(old_settings))
+      if (g_settings.gpu_renderer != old_settings.gpu_renderer || g_settings.AreGPUDeviceSettingsChanged(old_settings))
         GPUThread::UpdateSettings(false, true);
 
       if (g_settings.display_vsync != old_settings.display_vsync ||
