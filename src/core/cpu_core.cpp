@@ -205,6 +205,7 @@ void CPU::Reset()
   g_state.cop0_regs.BDAM = 0;
   g_state.cop0_regs.BPCM = 0;
   g_state.cop0_regs.EPC = 0;
+  g_state.cop0_regs.dcic.bits = 0;
   g_state.cop0_regs.sr.bits = 0;
   g_state.cop0_regs.cause.bits = 0;
 
