@@ -370,7 +370,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     case GPUBackendCommandType::LoadMemoryState:
     {
       System::MemorySaveState& mss = *static_cast<const GPUBackendDoMemoryStateCommand*>(cmd)->memory_save_state;
-      StateWrapper sw(mss.gpu_state_data.span(mss.gpu_state_size), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+      StateWrapper sw(mss.gpu_state_data.span(0, mss.gpu_state_size), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
       DoMemoryState(sw, mss);
     }
     break;
