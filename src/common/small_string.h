@@ -66,6 +66,7 @@ public:
 
   template<typename... T>
   void append_format(fmt::format_string<T...> fmt, T&&... args);
+  void append_vformat(fmt::string_view fmt, fmt::format_args args);
 
   // append hex string
   void append_hex(const void* data, size_t len, bool comma_separate = false);
@@ -100,7 +101,6 @@ public:
 
   template<typename... T>
   void format(fmt::format_string<T...> fmt, T&&... args);
-
   void vformat(fmt::string_view fmt, fmt::format_args args);
 
   // compare one string to another
