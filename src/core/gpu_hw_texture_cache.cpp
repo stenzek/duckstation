@@ -533,6 +533,7 @@ struct GPUTextureCacheState
   std::vector<VRAMWrite*> temp_vram_write_list;
 
   std::unique_ptr<GPUTexture> replacement_texture_render_target;
+  std::unique_ptr<GPUPipeline> replacement_upscale_pipeline;              // copies alpha as-is with optional bilinear
   std::unique_ptr<GPUPipeline> replacement_draw_pipeline;                 // copies alpha as-is
   std::unique_ptr<GPUPipeline> replacement_semitransparent_draw_pipeline; // inverts alpha (i.e. semitransparent)
 
@@ -621,7 +622,7 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
   }
 
   UpdateVRAMTrackingState();
-  
+
   if (s_state.track_vram_writes != prev_tracking_state)
     Invalidate();
 }
@@ -858,25 +859,42 @@ bool GPUTextureCache::CompilePipelines()
     shadergen.GenerateReplacementMergeFragmentShader(false, s_state.config.replacement_scale_linear_filter));
   if (!fs)
     return false;
+  GL_OBJECT_NAME(fs, "Replacement upscale shader");
   plconfig.fragment_shader = fs.get();
-  if (!(s_state.replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+  if (!(s_state.replacement_upscale_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
+  GL_OBJECT_NAME(s_state.replacement_upscale_pipeline, "Replacement upscale pipeline");
 
-  fs = g_gpu_device->CreateShader(
-    GPUShaderStage::Fragment, shadergen.GetLanguage(),
-    shadergen.GenerateReplacementMergeFragmentShader(true, s_state.config.replacement_scale_linear_filter));
+  if (s_state.config.replacement_scale_linear_filter)
+  {
+    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                    shadergen.GenerateReplacementMergeFragmentShader(false, false));
+    if (!fs)
+      return false;
+    GL_OBJECT_NAME(fs, "Replacement draw shader");
+    plconfig.fragment_shader = fs.get();
+    if (!(s_state.replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+      return false;
+    GL_OBJECT_NAME(s_state.replacement_draw_pipeline, "Replacement draw pipeline");
+  }
+
+  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                  shadergen.GenerateReplacementMergeFragmentShader(true, false));
   if (!fs)
     return false;
+  GL_OBJECT_NAME(fs, "Replacement semitransparent draw shader");
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.fragment_shader = fs.get();
   if (!(s_state.replacement_semitransparent_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
+  GL_OBJECT_NAME(s_state.replacement_semitransparent_draw_pipeline, "Replacement semitransparent draw pipeline");
 
   return true;
 }
 
 void GPUTextureCache::DestroyPipelines()
 {
+  s_state.replacement_upscale_pipeline.reset();
   s_state.replacement_draw_pipeline.reset();
   s_state.replacement_semitransparent_draw_pipeline.reset();
 }
@@ -3602,29 +3620,41 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
     return;
   }
 
+  GL_SCOPE_FMT("ApplyTextureReplacements({:016X}, {:016X}) => {}x{}", tex_hash, pal_hash, replacement_tex->GetWidth(),
+               replacement_tex->GetHeight());
+
   // TODO: Use rects instead of fullscreen tris, maybe avoid the copy..
+  g_gpu_device->InvalidateRenderTarget(s_state.replacement_texture_render_target.get());
+  g_gpu_device->SetRenderTarget(s_state.replacement_texture_render_target.get());
+
+  GL_INS("Upscale Texture Page");
   alignas(VECTOR_ALIGNMENT) float uniforms[4];
   GSVector2 texture_size = GSVector2(GSVector2i(entry->texture->GetWidth(), entry->texture->GetHeight()));
   GSVector2::store<true>(&uniforms[0], texture_size);
   GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
-  g_gpu_device->InvalidateRenderTarget(s_state.replacement_texture_render_target.get());
-  g_gpu_device->SetRenderTarget(s_state.replacement_texture_render_target.get());
   g_gpu_device->SetViewportAndScissor(0, 0, new_width, new_height);
-  g_gpu_device->SetPipeline(s_state.replacement_draw_pipeline.get());
+  g_gpu_device->SetPipeline(s_state.replacement_upscale_pipeline.get());
   g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->SetTextureSampler(0, entry->texture.get(), g_gpu_device->GetNearestSampler());
   g_gpu_device->Draw(3, 0);
 
   for (const TextureReplacementSubImage& si : subimages)
   {
+    GL_INS_FMT("Blit {}x{} replacement from {} to {}", si.texture->GetWidth(), si.texture->GetHeight(), si.src_rect,
+               si.dst_rect);
+
     const GSVector4i dst_rect = GSVector4i(GSVector4(si.dst_rect) * max_scale_v);
     texture_size = GSVector2(si.texture->GetSizeVec());
     GSVector2::store<true>(&uniforms[0], texture_size);
     GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
     g_gpu_device->SetViewportAndScissor(dst_rect);
-    g_gpu_device->SetTextureSampler(0, si.texture, g_gpu_device->GetNearestSampler());
-    g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :
-                                                s_state.replacement_draw_pipeline.get());
+    g_gpu_device->SetTextureSampler(0, si.texture,
+                                    s_state.config.replacement_scale_linear_filter ? g_gpu_device->GetLinearSampler() :
+                                                                                     g_gpu_device->GetNearestSampler());
+    g_gpu_device->SetPipeline(si.invert_alpha ?
+                                s_state.replacement_semitransparent_draw_pipeline.get() :
+                                (s_state.replacement_draw_pipeline ? s_state.replacement_draw_pipeline.get() :
+                                                                     s_state.replacement_upscale_pipeline.get()));
     g_gpu_device->Draw(3, 0);
   }
 
