@@ -338,6 +338,9 @@ std::pair<float, float> GetPointerAbsolutePosition(u32 index);
 /// Updates absolute pointer position. Can call from UI thread, use when the host only reports absolute coordinates.
 void UpdatePointerAbsolutePosition(u32 index, float x, float y);
 
+/// Resets the accumulated pointer movement. Use when pointer tracking was interrupted.
+void ResetPointerRelativeDelta(u32 index);
+
 /// Updates relative pointer position. Can call from the UI thread, use when host supports relative coordinate
 /// reporting.
 void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input = false);
