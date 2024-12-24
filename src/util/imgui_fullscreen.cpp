@@ -2285,6 +2285,7 @@ void ImGuiFullscreen::DrawFileSelector()
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
@@ -2329,7 +2330,7 @@ void ImGuiFullscreen::DrawFileSelector()
   }
 
   ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 
   if (is_open)
@@ -2416,6 +2417,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
@@ -2481,7 +2483,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   }
 
   ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 
   is_open &= !WantsToCloseMenu();
