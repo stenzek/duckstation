@@ -4672,7 +4672,14 @@ void System::WarnAboutStateTaints(u32 state_taints)
 void System::WarnAboutUnsafeSettings()
 {
   LargeString messages;
-  auto append = [&messages](const char* icon, std::string_view msg) { messages.append_format("{} {}\n", icon, msg); };
+  const auto append = [&messages](const char* icon, std::string_view msg) {
+    messages.append_format("{} {}\n", icon, msg);
+  };
+  const auto append_format = [&messages]<typename... T>(const char* icon, fmt::format_string<T...> fmt, T&&... args) {
+    messages.append_format("{} ", icon);
+    messages.append_vformat(fmt, fmt::make_format_args(args...));
+    messages.append('\n');
+  };
 
   if (!g_settings.disable_all_enhancements)
   {
@@ -4680,26 +4687,27 @@ void System::WarnAboutUnsafeSettings()
     {
       if (g_settings.cpu_overclock_active)
       {
-        append(ICON_EMOJI_WARNING,
-               SmallString::from_format(
-                 TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
-                 g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
-                 g_settings.cpu_overclock_denominator));
+        append_format(ICON_EMOJI_WARNING,
+                      TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+                      g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
+                      g_settings.cpu_overclock_denominator);
       }
       if (g_settings.cdrom_read_speedup > 1)
       {
-        append(ICON_EMOJI_WARNING,
-               SmallString::from_format(
-                 TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
-                 g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2));
+        append_format(
+          ICON_EMOJI_WARNING,
+          TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
+          g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
       }
       if (g_settings.cdrom_seek_speedup != 1)
       {
-        append(ICON_EMOJI_WARNING,
-               SmallString::from_format(TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
-                                        (g_settings.cdrom_seek_speedup == 0) ?
-                                          TinyString(TRANSLATE_SV("System", "Instant")) :
-                                          TinyString::from_format("{}x", g_settings.cdrom_seek_speedup)));
+        TinyString speed;
+        if (g_settings.cdrom_seek_speedup == 0)
+          speed = TRANSLATE_SV("System", "Instant");
+        else
+          speed.format("{}x", g_settings.cdrom_seek_speedup);
+        append_format(ICON_EMOJI_WARNING,
+                      TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."), speed);
       }
       if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
       {
@@ -4734,6 +4742,14 @@ void System::WarnAboutUnsafeSettings()
         ICON_FA_PAINT_ROLLER,
         TRANSLATE_SV("System",
                      "Texture cache is enabled. This feature is experimental, some games may not render correctly."));
+    }
+
+    // Potential performance issues.
+    if (g_settings.cpu_fastmem_mode != Settings::DEFAULT_CPU_FASTMEM_MODE)
+    {
+      append_format(ICON_EMOJI_WARNING,
+                    TRANSLATE_FS("System", "Fastmem mode is set to {}, this will reduce performance."),
+                    Settings::GetCPUFastmemModeName(g_settings.cpu_fastmem_mode));
     }
   }
 
