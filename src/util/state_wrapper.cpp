@@ -111,6 +111,16 @@ bool StateWrapper::DoMarker(const char* marker)
   return false;
 }
 
+std::span<u8> StateWrapper::GetDeferredBytes(size_t size)
+{
+  if ((m_error = (m_error || (m_pos + size) > m_size))) [[unlikely]]
+    return {};
+
+  const std::span<u8> ret(&m_data[m_pos], size);
+  m_pos += size;
+  return ret;
+}
+
 bool StateWrapper::ReadData(void* buf, size_t size)
 {
   if ((m_error = (m_error || (m_pos + size) > m_size))) [[unlikely]]

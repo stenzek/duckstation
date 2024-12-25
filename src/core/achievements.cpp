@@ -230,8 +230,6 @@ struct State
   std::string game_icon;
   std::string game_icon_url;
 
-  DynamicHeapArray<u8> state_buffer;
-
   rc_client_async_handle_t* login_request = nullptr;
   rc_client_async_handle_t* load_game_request = nullptr;
 
@@ -1019,7 +1017,6 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
   ClearGameHash();
   s_state.game_path = path;
   s_state.game_hash = std::move(game_hash);
-  s_state.state_buffer.deallocate();
 
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
@@ -1106,7 +1103,6 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   const bool was_disc_change = (userdata != nullptr);
 
   s_state.load_game_request = nullptr;
-  s_state.state_buffer.deallocate();
 
   if (result == RC_NO_GAME_LOADED)
   {
@@ -1224,7 +1220,6 @@ void Achievements::ClearGameInfo()
   s_state.game_title = {};
   s_state.game_icon = {};
   s_state.game_icon_url = {};
-  s_state.state_buffer.deallocate();
   s_state.has_achievements = false;
   s_state.has_leaderboards = false;
   s_state.has_rich_presence = false;
@@ -1768,7 +1763,7 @@ bool Achievements::DoState(StateWrapper& sw)
     if (data_size == 0)
     {
       // reset runtime, no data (state might've been created without cheevos)
-      DEV_LOG("State is missing cheevos data, resetting runtime");
+      WARNING_LOG("State is missing cheevos data, resetting runtime");
 #ifdef ENABLE_RAINTEGRATION
       if (IsUsingRAIntegration())
         RA_OnReset();
@@ -1781,21 +1776,18 @@ bool Achievements::DoState(StateWrapper& sw)
       return !sw.HasError();
     }
 
-    if (data_size > s_state.state_buffer.size())
-      s_state.state_buffer.resize(data_size);
-    if (data_size > 0)
-      sw.DoBytes(s_state.state_buffer.data(), data_size);
+    const std::span<u8> data = sw.GetDeferredBytes(data_size);
     if (sw.HasError())
       return false;
 
 #ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
     {
-      RA_RestoreState(reinterpret_cast<const char*>(s_state.state_buffer.data()));
+      RA_RestoreState(reinterpret_cast<const char*>(data.data()));
     }
     else
     {
-      const int result = rc_client_deserialize_progress_sized(s_state.client, s_state.state_buffer.data(), data_size);
+      const int result = rc_client_deserialize_progress_sized(s_state.client, data.data(), data_size);
       if (result != RC_OK)
       {
         WARNING_LOG("Failed to deserialize cheevos state ({}), resetting", result);
@@ -1808,49 +1800,51 @@ bool Achievements::DoState(StateWrapper& sw)
   }
   else
   {
-    size_t data_size;
+    const size_t size_pos = sw.GetPosition();
 
 #ifdef ENABLE_RAINTEGRATION
     if (IsUsingRAIntegration())
     {
       const int size = RA_CaptureState(nullptr, 0);
+      u32 write_size = static_cast<u32>(std::max(size, 0));
+      sw.Do(&write_size);
 
-      data_size = (size >= 0) ? static_cast<u32>(size) : 0;
-      s_state.state_buffer.resize(data_size);
-
-      if (data_size > 0)
+      const std::span<u8> data = sw.GetDeferredBytes(write_size);
+      if (!data.empty())
       {
-        const int result =
-          RA_CaptureState(reinterpret_cast<char*>(s_state.state_buffer.data()), static_cast<int>(data_size));
-        if (result != static_cast<int>(data_size))
+        const int result = RA_CaptureState(reinterpret_cast<char*>(data.data()), size);
+        if (result != static_cast<int>(size))
         {
           WARNING_LOG("Failed to serialize cheevos state from RAIntegration.");
-          data_size = 0;
+          write_size = 0;
+          sw.SetPosition(size_pos);
+          sw.Do(&write_size);
         }
       }
     }
     else
 #endif
     {
-      data_size = rc_client_progress_size(s_state.client);
+      u32 data_size = static_cast<u32>(rc_client_progress_size(s_state.client));
+      sw.Do(&data_size);
+
       if (data_size > 0)
       {
-        if (s_state.state_buffer.size() < data_size)
-          s_state.state_buffer.resize(data_size);
-
-        const int result = rc_client_serialize_progress_sized(s_state.client, s_state.state_buffer.data(), data_size);
-        if (result != RC_OK)
+        const std::span<u8> data = sw.GetDeferredBytes(data_size);
+        if (!sw.HasError()) [[likely]]
         {
-          // set data to zero, effectively serializing nothing
-          WARNING_LOG("Failed to serialize cheevos state ({})", result);
-          data_size = 0;
+          const int result = rc_client_serialize_progress_sized(s_state.client, data.data(), data_size);
+          if (result != RC_OK)
+          {
+            // set data to zero, effectively serializing nothing
+            WARNING_LOG("Failed to serialize cheevos state ({})", result);
+            data_size = 0;
+            sw.SetPosition(size_pos);
+            sw.Do(&data_size);
+          }
         }
       }
     }
-
-    sw.Do(&data_size);
-    if (data_size > 0)
-      sw.DoBytes(s_state.state_buffer.data(), data_size);
 
     return !sw.HasError();
   }

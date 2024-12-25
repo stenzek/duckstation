@@ -9,8 +9,8 @@
 
 #include <cstring>
 #include <deque>
-#include <string>
 #include <span>
+#include <string>
 #include <type_traits>
 #include <vector>
 
@@ -205,6 +205,9 @@ public:
     if (!m_error) [[likely]]
       m_pos += count;
   }
+
+  // spans don't copy immediately
+  std::span<u8> GetDeferredBytes(size_t size);
 
 private:
   bool ReadData(void* buf, size_t size);
