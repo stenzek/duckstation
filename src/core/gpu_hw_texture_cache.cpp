@@ -2699,7 +2699,7 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
 
   for (u32 y = 0; y < height; y++)
   {
-    u8* row_ptr = image.GetPixels();
+    u8* row_ptr = image.GetRowPixels(y);
     for (u32 x = 0; x < width; x++)
     {
       const u32 pixel32 = VRAMRGBA5551ToRGBA8888(*(src_pixels++));
