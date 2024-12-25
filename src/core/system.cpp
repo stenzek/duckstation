@@ -4427,14 +4427,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_show_vram != old_settings.gpu_show_vram ||
              g_settings.rewind_enable != old_settings.rewind_enable ||
              g_settings.runahead_frames != old_settings.runahead_frames ||
-             g_settings.texture_replacements.enable_texture_replacements !=
-               old_settings.texture_replacements.enable_texture_replacements ||
-             g_settings.texture_replacements.enable_vram_write_replacements !=
-               old_settings.texture_replacements.enable_vram_write_replacements ||
-             g_settings.texture_replacements.always_track_uploads !=
-               old_settings.texture_replacements.always_track_uploads ||
-             g_settings.texture_replacements.dump_textures != old_settings.texture_replacements.dump_textures ||
-             g_settings.texture_replacements.config != old_settings.texture_replacements.config)
+             g_settings.texture_replacements != old_settings.texture_replacements)
     {
       GPUThread::UpdateSettings(true, false);
 
