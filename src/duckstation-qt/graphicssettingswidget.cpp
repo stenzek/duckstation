@@ -289,9 +289,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   connect(m_ui.enableTextureReplacements, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged);
   connect(m_ui.enableTextureDumping, &QCheckBox::checkStateChanged, this,
-          &GraphicsSettingsWidget::onEnableTextureDumpingChanged);
+          &GraphicsSettingsWidget::onEnableAnyTextureDumpingChanged);
   connect(m_ui.vramWriteReplacement, &QCheckBox::checkStateChanged, this,
           &GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged);
+  connect(m_ui.vramWriteDumping, &QCheckBox::checkStateChanged, this,
+          &GraphicsSettingsWidget::onEnableAnyTextureDumpingChanged);
   connect(m_ui.textureReplacementOptions, &QPushButton::clicked, this,
           &GraphicsSettingsWidget::onTextureReplacementOptionsClicked);
 
@@ -1169,16 +1171,19 @@ void GraphicsSettingsWidget::onEnableTextureCacheChanged()
   m_ui.enableTextureReplacements->setEnabled(tc_enabled);
   m_ui.enableTextureDumping->setEnabled(tc_enabled);
   m_ui.alwaysTrackUploads->setEnabled(tc_enabled);
-  onEnableTextureDumpingChanged();
+  onEnableAnyTextureDumpingChanged();
   onEnableAnyTextureReplacementsChanged();
 }
 
-void GraphicsSettingsWidget::onEnableTextureDumpingChanged()
+void GraphicsSettingsWidget::onEnableAnyTextureDumpingChanged()
 {
   const bool tc_enabled = m_dialog->getEffectiveBoolValue("GPU", "EnableTextureCache", false);
   const bool dumping_enabled =
-    tc_enabled && m_dialog->getEffectiveBoolValue("TextureReplacements", "DumpTextures", false);
-  m_ui.dumpReplacedTextures->setEnabled(dumping_enabled);
+    (tc_enabled && m_dialog->getEffectiveBoolValue("TextureReplacements", "DumpTextures", false));
+  const bool background_dumping_enabled =
+    m_dialog->getEffectiveBoolValue("TextureReplacements", "DumpVRAMWrites", false);
+  const bool any_dumping_enabled = (dumping_enabled || background_dumping_enabled);
+  m_ui.dumpReplacedTextures->setEnabled(any_dumping_enabled);
 }
 
 void GraphicsSettingsWidget::onEnableAnyTextureReplacementsChanged()

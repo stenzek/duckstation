@@ -305,7 +305,7 @@ static std::string GetTextureReplacementDirectory();
 static std::string GetTextureDumpDirectory();
 
 static VRAMReplacementName GetVRAMWriteHash(u32 width, u32 height, const void* pixels);
-static std::string GetVRAMWriteDumpFilename(const VRAMReplacementName& name);
+static std::string GetVRAMWriteDumpPath(const VRAMReplacementName& name);
 
 static bool IsMatchingReplacementPalette(HashType full_palette_hash, GPUTextureMode mode, GPUTexturePaletteReg palette,
                                          const TextureReplacementName& name);
@@ -812,6 +812,7 @@ void GPUTextureCache::Shutdown()
   s_state.vram_write_texture_replacements.clear();
   s_state.texture_page_texture_replacements.clear();
   s_state.dumped_textures.clear();
+  s_state.dumped_vram_writes.clear();
 }
 
 void GPUTextureCache::SetHashCacheTextureFormat()
@@ -2689,8 +2690,15 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
 
   s_state.dumped_vram_writes.insert(name);
 
-  const std::string filename = GetVRAMWriteDumpFilename(name);
-  if (filename.empty() || FileSystem::FileExists(filename.c_str()))
+  if (!g_gpu_settings.texture_replacements.dump_replaced_textures &&
+      s_state.vram_replacements.find(name) != s_state.vram_replacements.end())
+  {
+    INFO_LOG("Not dumping VRAM write '{}' because it already has a replacement", name.ToString());
+    return;
+  }
+
+  const std::string path = GetVRAMWriteDumpPath(name);
+  if (path.empty() || FileSystem::FileExists(path.c_str()))
     return;
 
   Image image(width, height, ImageFormat::RGBA8);
@@ -2711,9 +2719,14 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
   if (s_state.config.dump_vram_write_force_alpha_channel)
     image.SetAllPixelsOpaque();
 
-  INFO_LOG("Dumping {}x{} VRAM write to '{}'", width, height, Path::GetFileName(filename));
-  if (!image.SaveToFile(filename.c_str())) [[unlikely]]
-    ERROR_LOG("Failed to dump {}x{} VRAM write to '{}'", width, height, filename);
+  INFO_LOG("Dumping {}x{} VRAM write to '{}'", width, height, Path::GetFileName(path));
+
+  Error error;
+  if (!image.SaveToFile(path.c_str(), Image::DEFAULT_SAVE_QUALITY, &error)) [[unlikely]]
+  {
+    ERROR_LOG("Failed to dump {}x{} VRAM write to '{}': {}", width, height, Path::GetFileName(path),
+              error.GetDescription());
+  }
 }
 
 void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32 offset_y, u32 src_width,
@@ -3390,7 +3403,7 @@ GPUTextureCache::VRAMReplacementName GPUTextureCache::GetVRAMWriteHash(u32 width
   return {hash.low64, hash.high64};
 }
 
-std::string GPUTextureCache::GetVRAMWriteDumpFilename(const VRAMReplacementName& name)
+std::string GPUTextureCache::GetVRAMWriteDumpPath(const VRAMReplacementName& name)
 {
   std::string ret;
   if (!EnsureGameDirectoryExists())

@@ -40,7 +40,7 @@ private Q_SLOTS:
   void onMediaCaptureAudioEnabledChanged();
 
   void onEnableTextureCacheChanged();
-  void onEnableTextureDumpingChanged();
+  void onEnableAnyTextureDumpingChanged();
   void onEnableAnyTextureReplacementsChanged();
   void onTextureReplacementOptionsClicked();
 
