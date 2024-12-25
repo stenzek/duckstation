@@ -6888,26 +6888,29 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   }
   EndFullscreenColumnWindow();
 
-  if (BeginFullscreenColumnWindow(-530.0f, 0.0f, "game_list_info", UIStyle.PrimaryDarkColor))
+  static constexpr float info_window_width = 530.0f;
+  if (BeginFullscreenColumnWindow(-info_window_width, 0.0f, "game_list_info", UIStyle.PrimaryDarkColor))
   {
+    static constexpr float info_top_margin = 20.0f;
+    static constexpr float cover_size = 320.0f;
     const GPUTexture* cover_texture =
       selected_entry ? GetGameListCover(selected_entry) : GetTextureForGameListEntryType(GameList::EntryType::Count);
     if (cover_texture)
     {
-      const ImRect image_rect(
-        CenterImage(LayoutScale(ImVec2(350.0f, 350.0f)), ImVec2(static_cast<float>(cover_texture->GetWidth()),
-                                                                static_cast<float>(cover_texture->GetHeight()))));
+      const ImRect image_rect(CenterImage(
+        LayoutScale(ImVec2(cover_size, cover_size)),
+        ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
-      ImGui::SetCursorPos(LayoutScale(ImVec2(90.0f, 0.0f)) + image_rect.Min);
+      ImGui::SetCursorPos(LayoutScale((info_window_width - cover_size) / 2.0f, info_top_margin) + image_rect.Min);
       ImGui::Image(selected_entry ? GetGameListCover(selected_entry) :
                                     GetTextureForGameListEntryType(GameList::EntryType::Count),
                    image_rect.GetSize());
     }
 
     const float work_width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-    constexpr float field_margin_y = 10.0f;
-    constexpr float start_x = 50.0f;
-    float text_y = 400.0f;
+    static constexpr float field_margin_y = 20.0f;
+    static constexpr float start_x = 50.0f;
+    float text_y = info_top_margin + cover_size + info_top_margin;
     float text_width;
 
     PushPrimaryColor();
@@ -6988,11 +6991,15 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       // size
       if (selected_entry->file_size >= 0)
-        ImGui::Text(FSUI_CSTR("File Size: %.2f MB"), static_cast<float>(selected_entry->file_size) / 1048576.0f);
+      {
+        const auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
+        ImGui::Text(FSUI_CSTR("File Size: %u MB (%u MB on disk)"), to_mb(selected_entry->file_size),
+                    to_mb(selected_entry->uncompressed_size));
+      }
       else
+      {
         ImGui::TextUnformatted(FSUI_CSTR("Unknown File Size"));
-      ImGui::Text(FSUI_CSTR("Uncompressed Size: %.2f MB"),
-                  static_cast<float>(selected_entry->uncompressed_size) / 1048576.0f);
+      }
 
       ImGui::PopFont();
     }
