@@ -583,6 +583,7 @@ void ImGuiFullscreen::PushResetLayout()
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, LayoutScale(4.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.SecondaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TextDisabled, UIStyle.DisabledColor);
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SecondaryColor);
@@ -599,7 +600,7 @@ void ImGuiFullscreen::PushResetLayout()
 void ImGuiFullscreen::PopResetLayout()
 {
   ImGui::PopStyleColor(11);
-  ImGui::PopStyleVar(12);
+  ImGui::PopStyleVar(13);
 }
 
 void ImGuiFullscreen::QueueResetFocus(FocusResetType type)
@@ -797,7 +798,6 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(padding));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(rounding));
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
 
   return ImGui::Begin(name, nullptr,
                       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
@@ -807,7 +807,7 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
 void ImGuiFullscreen::EndFullscreenWindow()
 {
   ImGui::End();
-  ImGui::PopStyleVar(4);
+  ImGui::PopStyleVar(3);
   ImGui::PopStyleColor();
 }
 
@@ -2285,7 +2285,6 @@ void ImGuiFullscreen::DrawFileSelector()
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
@@ -2330,7 +2329,7 @@ void ImGuiFullscreen::DrawFileSelector()
   }
 
   ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(4);
+  ImGui::PopStyleVar(3);
   ImGui::PopFont();
 
   if (is_open)
@@ -2417,7 +2416,6 @@ void ImGuiFullscreen::DrawChoiceDialog()
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
   ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
@@ -2483,7 +2481,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   }
 
   ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(4);
+  ImGui::PopStyleVar(3);
   ImGui::PopFont();
 
   is_open &= !WantsToCloseMenu();
