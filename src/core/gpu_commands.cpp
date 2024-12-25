@@ -5,7 +5,6 @@
 #include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_dump.h"
-#include "gpu_hw_texture_cache.h"
 #include "gpu_thread_commands.h"
 #include "interrupt_controller.h"
 #include "system.h"
@@ -1046,12 +1045,6 @@ void GPU::FinishVRAMWrite()
     {
       DumpVRAMToFile(TinyString::from_format("cpu_to_vram_copy_{}.png", s_cpu_to_vram_dump_id++), m_vram_transfer.width,
                      m_vram_transfer.height, sizeof(u16) * m_vram_transfer.width, m_blit_buffer.data(), true);
-    }
-
-    if (GPUTextureCache::ShouldDumpVRAMWrite(m_vram_transfer.width, m_vram_transfer.height))
-    {
-      GPUTextureCache::DumpVRAMWrite(m_vram_transfer.width, m_vram_transfer.height,
-                                     reinterpret_cast<const u16*>(m_blit_buffer.data()));
     }
 
     UpdateVRAM(m_vram_transfer.x, m_vram_transfer.y, m_vram_transfer.width, m_vram_transfer.height,

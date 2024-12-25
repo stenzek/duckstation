@@ -3243,6 +3243,10 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   }
   else
   {
+    // no point dumping things we can't replace, so put it after the mask check
+    if (GPUTextureCache::ShouldDumpVRAMWrite(width, height))
+      GPUTextureCache::DumpVRAMWrite(width, height, data);
+
     GPUTexture* rtex = GPUTextureCache::GetVRAMReplacement(width, height, data);
     if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
                                            width * m_resolution_scale, height * m_resolution_scale))
