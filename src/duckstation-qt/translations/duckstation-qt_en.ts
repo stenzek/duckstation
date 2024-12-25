@@ -4,8 +4,8 @@
 <context>
     <name>AchievementSettingsWidget</name>
     <message numerus="yes">
-        <location filename="../achievementsettingswidget.cpp" line="164"/>
-        <location filename="../achievementsettingswidget.cpp" line="171"/>
+        <location filename="../achievementsettingswidget.cpp" line="160"/>
+        <location filename="../achievementsettingswidget.cpp" line="167"/>
         <source>%n seconds</source>
         <translation>
             <numerusform>%n second</numerusform>
@@ -16,7 +16,7 @@
 <context>
     <name>Achievements</name>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1214"/>
+        <location filename="../../core/achievements.cpp" line="1256"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -25,7 +25,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1217"/>
+        <location filename="../../core/achievements.cpp" line="1259"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1292"/>
+        <location filename="../../core/achievements.cpp" line="1351"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -43,8 +43,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1294"/>
-        <location filename="../../core/achievements.cpp" line="2606"/>
+        <location filename="../../core/achievements.cpp" line="1353"/>
+        <location filename="../../core/achievements.cpp" line="2738"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -53,7 +53,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2425"/>
+        <location filename="../../core/achievements.cpp" line="2557"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -62,12 +62,33 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2842"/>
+        <location filename="../../core/achievements.cpp" line="2981"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
             <numerusform>This game has %n leaderboard.</numerusform>
             <numerusform>This game has %n leaderboards.</numerusform>
+        </translation>
+    </message>
+</context>
+<context>
+    <name>Cheats</name>
+    <message numerus="yes">
+        <location filename="../../core/cheats.cpp" line="948"/>
+        <source>%n game patches are active.</source>
+        <comment>OSD Message</comment>
+        <translation>
+            <numerusform>%n game patch is active.</numerusform>
+            <numerusform>%n game patches are active.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../core/cheats.cpp" line="955"/>
+        <source>%n cheats are enabled. This may crash games.</source>
+        <comment>OSD Message</comment>
+        <translation>
+            <numerusform>%n cheat is enabled. This may crash games.</numerusform>
+            <numerusform>%n cheats are enabled. This may crash games.</numerusform>
         </translation>
     </message>
 </context>
@@ -85,7 +106,7 @@
 <context>
     <name>GPU_HW</name>
     <message numerus="yes">
-        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3153"/>
+        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3524"/>
         <source>%n replacement textures found.</source>
         <comment>Replacement texture count</comment>
         <translation>
@@ -98,7 +119,7 @@
     <name>GameList</name>
     <message numerus="yes">
         <location filename="../gamelistmodel.cpp" line="258"/>
-        <location filename="../../core/game_list.cpp" line="1327"/>
+        <location filename="../../core/game_list.cpp" line="1365"/>
         <source>%n hours</source>
         <translation>
             <numerusform>%n hour</numerusform>
@@ -107,7 +128,7 @@
     </message>
     <message numerus="yes">
         <location filename="../gamelistmodel.cpp" line="260"/>
-        <location filename="../../core/game_list.cpp" line="1329"/>
+        <location filename="../../core/game_list.cpp" line="1367"/>
         <source>%n minutes</source>
         <translation>
             <numerusform>%n minute</numerusform>
@@ -118,7 +139,7 @@
 <context>
     <name>InputBindingWidget</name>
     <message numerus="yes">
-        <location filename="../inputbindingwidgets.cpp" line="70"/>
+        <location filename="../inputbindingwidgets.cpp" line="76"/>
         <source>%n bindings</source>
         <translation>
             <numerusform>%n binding</numerusform>
@@ -129,38 +150,11 @@
 <context>
     <name>MemoryCardEditorWindow</name>
     <message numerus="yes">
-        <location filename="../memorycardeditorwindow.cpp" line="304"/>
+        <location filename="../memorycardeditorwindow.cpp" line="316"/>
         <source>%n block(s) free%1</source>
         <translation>
             <numerusform>%n block free%1</numerusform>
             <numerusform>%n blocks free%1</numerusform>
-        </translation>
-    </message>
-</context>
-<context>
-    <name>System</name>
-    <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3593"/>
-        <source>%n cheat(s) are now active.</source>
-        <translation>
-            <numerusform>%n cheat is now active.</numerusform>
-            <numerusform>%n cheats are now active.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../../core/system.cpp" line="3594"/>
-        <source>%n cheat(s) are now inactive.</source>
-        <translation>
-            <numerusform>%n cheat is now inactive.</numerusform>
-            <numerusform>%n cheats are now inactive.</numerusform>
-        </translation>
-    </message>
-    <message numerus="yes">
-        <location filename="../../core/system.cpp" line="4245"/>
-        <source>%n cheat(s) are enabled. This may crash games.</source>
-        <translation>
-            <numerusform>%n cheat is enabled. This may crash games.</numerusform>
-            <numerusform>%n cheats are enabled. This may crash games.</numerusform>
         </translation>
     </message>
 </context>
