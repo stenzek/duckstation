@@ -94,6 +94,7 @@ static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
 static constexpr u32 MAX_CONCURRENT_SERVER_CALLS = 10;
 
 namespace {
+
 struct LoginWithPasswordParameters
 {
   const char* username;
@@ -101,11 +102,12 @@ struct LoginWithPasswordParameters
   rc_client_async_handle_t* request;
   bool result;
 };
+
 struct LeaderboardTrackerIndicator
 {
   u32 tracker_id;
   std::string text;
-  Timer show_hide_time;
+  float opacity;
   bool active;
 };
 
@@ -113,7 +115,7 @@ struct AchievementChallengeIndicator
 {
   const rc_client_achievement_t* achievement;
   std::string badge_path;
-  Timer show_hide_time;
+  float opacity;
   bool active;
 };
 
@@ -121,9 +123,10 @@ struct AchievementProgressIndicator
 {
   const rc_client_achievement_t* achievement;
   std::string badge_path;
-  Timer show_hide_time;
+  float opacity;
   bool active;
 };
+
 } // namespace
 
 static void ReportError(std::string_view sv);
@@ -1478,11 +1481,12 @@ void Achievements::HandleLeaderboardTrackerShowEvent(const rc_client_event_t* ev
   for (u32 i = 0; i < display_len; i++)
     width_string.append('0');
 
-  LeaderboardTrackerIndicator indicator;
-  indicator.tracker_id = event->leaderboard_tracker->id;
-  indicator.text = event->leaderboard_tracker->display;
-  indicator.active = true;
-  s_state.active_leaderboard_trackers.push_back(std::move(indicator));
+  s_state.active_leaderboard_trackers.push_back(LeaderboardTrackerIndicator{
+    .tracker_id = event->leaderboard_tracker->id,
+    .text = event->leaderboard_tracker->display,
+    .opacity = 0.0f,
+    .active = true,
+  });
 }
 
 void Achievements::HandleLeaderboardTrackerHideEvent(const rc_client_event_t* event)
@@ -1495,7 +1499,6 @@ void Achievements::HandleLeaderboardTrackerHideEvent(const rc_client_event_t* ev
 
   DEV_LOG("Hiding leaderboard tracker: {}", id);
   it->active = false;
-  it->show_hide_time.Reset();
 }
 
 void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* event)
@@ -1514,21 +1517,20 @@ void Achievements::HandleLeaderboardTrackerUpdateEvent(const rc_client_event_t* 
 
 void Achievements::HandleAchievementChallengeIndicatorShowEvent(const rc_client_event_t* event)
 {
-  if (auto it =
+  if (const auto it =
         std::find_if(s_state.active_challenge_indicators.begin(), s_state.active_challenge_indicators.end(),
                      [event](const AchievementChallengeIndicator& it) { return it.achievement == event->achievement; });
       it != s_state.active_challenge_indicators.end())
   {
-    it->show_hide_time.Reset();
     it->active = true;
     return;
   }
 
-  AchievementChallengeIndicator indicator;
-  indicator.achievement = event->achievement;
-  indicator.badge_path = GetAchievementBadgePath(event->achievement, RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
-  indicator.active = true;
-  s_state.active_challenge_indicators.push_back(std::move(indicator));
+  s_state.active_challenge_indicators.push_back(AchievementChallengeIndicator{
+    .achievement = event->achievement,
+    .badge_path = GetAchievementBadgePath(event->achievement, RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED),
+    .opacity = 0.0f,
+    .active = true});
 
   DEV_LOG("Show challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
 }
@@ -1542,7 +1544,6 @@ void Achievements::HandleAchievementChallengeIndicatorHideEvent(const rc_client_
     return;
 
   DEV_LOG("Hide challenge indicator for {} ({})", event->achievement->id, event->achievement->title);
-  it->show_hide_time.Reset();
   it->active = false;
 }
 
@@ -1553,12 +1554,11 @@ void Achievements::HandleAchievementProgressIndicatorShowEvent(const rc_client_e
 
   if (!s_state.active_progress_indicator.has_value())
     s_state.active_progress_indicator.emplace();
-  else
-    s_state.active_progress_indicator->show_hide_time.Reset();
 
   s_state.active_progress_indicator->achievement = event->achievement;
   s_state.active_progress_indicator->badge_path =
     GetAchievementBadgePath(event->achievement, RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
+  s_state.active_progress_indicator->opacity = 0.0f;
   s_state.active_progress_indicator->active = true;
 }
 
@@ -1568,7 +1568,6 @@ void Achievements::HandleAchievementProgressIndicatorHideEvent(const rc_client_e
     return;
 
   DEV_LOG("Hiding progress indicator");
-  s_state.active_progress_indicator->show_hide_time.Reset();
   s_state.active_progress_indicator->active = false;
 }
 
@@ -2208,12 +2207,24 @@ void Achievements::ClearUIState()
 }
 
 template<typename T>
-static float IndicatorOpacity(const T& i)
+static float IndicatorOpacity(float delta_time, T& i)
 {
-  const float elapsed = static_cast<float>(i.show_hide_time.GetTimeSeconds());
-  const float time = i.active ? Achievements::INDICATOR_FADE_IN_TIME : Achievements::INDICATOR_FADE_OUT_TIME;
-  const float opacity = (elapsed >= time) ? 1.0f : (elapsed / time);
-  return (i.active) ? opacity : (1.0f - opacity);
+  float target, rate;
+  if (i.active)
+  {
+    target = 1.0f;
+    rate = Achievements::INDICATOR_FADE_IN_TIME;
+  }
+  else
+  {
+    target = 0.0f;
+    rate = -Achievements::INDICATOR_FADE_OUT_TIME;
+  }
+
+  if (i.opacity != target)
+    i.opacity = ImSaturate(i.opacity + (delta_time / rate));
+
+  return i.opacity;
 }
 
 void Achievements::DrawGameOverlays()
@@ -2241,8 +2252,8 @@ void Achievements::DrawGameOverlays()
 
     for (auto it = s_state.active_challenge_indicators.begin(); it != s_state.active_challenge_indicators.end();)
     {
-      const AchievementChallengeIndicator& indicator = *it;
-      const float opacity = IndicatorOpacity(indicator);
+      AchievementChallengeIndicator& indicator = *it;
+      const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
       const u32 col = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity));
 
       GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(indicator.badge_path);
@@ -2269,8 +2280,8 @@ void Achievements::DrawGameOverlays()
 
   if (s_state.active_progress_indicator.has_value())
   {
-    const AchievementProgressIndicator& indicator = s_state.active_progress_indicator.value();
-    const float opacity = IndicatorOpacity(indicator);
+    AchievementProgressIndicator& indicator = s_state.active_progress_indicator.value();
+    const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
     const u32 col = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity));
 
     const char* text_start = s_state.active_progress_indicator->achievement->measured_progress;
@@ -2312,8 +2323,8 @@ void Achievements::DrawGameOverlays()
   {
     for (auto it = s_state.active_leaderboard_trackers.begin(); it != s_state.active_leaderboard_trackers.end();)
     {
-      const LeaderboardTrackerIndicator& indicator = *it;
-      const float opacity = IndicatorOpacity(indicator);
+      LeaderboardTrackerIndicator& indicator = *it;
+      const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
 
       TinyString width_string;
       width_string.append(ICON_FA_STOPWATCH);
