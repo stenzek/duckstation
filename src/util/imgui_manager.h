@@ -230,6 +230,13 @@ void RemoveKeyedOSDMessage(std::string key);
 void RemoveKeyedOSDWarning(std::string key);
 void ClearOSDMessages(bool clear_warnings);
 
+/// Called by ImGuiManager when the cursor enters a text field. The host may choose to open an on-screen
+/// keyboard for devices without a physical keyboard.
+void BeginTextInput();
+
+/// Called by ImGuiManager when the cursor leaves a text field.
+void EndTextInput();
+
 #ifndef __ANDROID__
 
 /// Auxiliary window management.
