@@ -39,6 +39,9 @@ void rc_buffer_destroy(rc_buffer_t* buffer)
     wasted += (int)(chunk->end - chunk->write);
     ++count;
 #endif
+#ifdef DEBUG_BUFFERS
+    printf("< free %p.%p\n", (void*)buffer, (void*)chunk);
+#endif
     free(chunk);
     chunk = next;
   }
@@ -69,6 +72,10 @@ uint8_t* rc_buffer_reserve(rc_buffer_t* buffer, size_t amount)
       chunk->next = (rc_buffer_chunk_t*)malloc(alloc_size);
       if (!chunk->next)
         break;
+
+#ifdef DEBUG_BUFFERS
+      printf("> alloc %p.%p\n", (void*)buffer, (void*)chunk->next);
+#endif
 
       chunk->next->start = (uint8_t*)chunk->next + chunk_header_size;
       chunk->next->write = chunk->next->start;

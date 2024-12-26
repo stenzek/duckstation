@@ -1,0 +1,539 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <!-- https://learn.microsoft.com/en-us/visualstudio/debugger/create-custom-views-of-native-objects?view=vs-2022 -->
+    <!-- https://learn.microsoft.com/en-us/visualstudio/debugger/format-specifiers-in-cpp?view=vs-2022 -->
+    <Type Name="rc_typed_value_t">
+        <DisplayString Condition="type==RC_VALUE_TYPE_UNSIGNED">{value.u32} (RC_VALUE_TYPE_UNSIGNED)</DisplayString>
+        <DisplayString Condition="type==RC_VALUE_TYPE_FLOAT">{value.f32} (RC_VALUE_TYPE_FLOAT)</DisplayString>
+        <DisplayString Condition="type==RC_VALUE_TYPE_SIGNED">{value.i32} (RC_VALUE_TYPE_SIGNED)</DisplayString>
+        <DisplayString Condition="type==RC_VALUE_TYPE_NONE">none (RC_VALUE_TYPE_NONE)</DisplayString>
+        <DisplayString>{value.i32} (unknown)</DisplayString>
+    </Type>
+    <Type Name="__rc_bool_enum_t">
+        <DisplayString Condition="value==0">false</DisplayString>
+        <DisplayString Condition="value==1">true</DisplayString>
+        <DisplayString>true ({value})</DisplayString>
+    </Type>
+    <Type Name="__rc_memsize_enum_t">
+        <DisplayString Condition="value==RC_MEMSIZE_8_BITS">{RC_MEMSIZE_8_BITS}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_16_BITS">{RC_MEMSIZE_16_BITS}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_24_BITS">{RC_MEMSIZE_24_BITS}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_32_BITS">{RC_MEMSIZE_32_BITS}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_LOW">{RC_MEMSIZE_LOW}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_HIGH">{RC_MEMSIZE_HIGH}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_0">{RC_MEMSIZE_BIT_0}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_1">{RC_MEMSIZE_BIT_1}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_2">{RC_MEMSIZE_BIT_2}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_3">{RC_MEMSIZE_BIT_3}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_4">{RC_MEMSIZE_BIT_4}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_5">{RC_MEMSIZE_BIT_5}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_6">{RC_MEMSIZE_BIT_6}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_7">{RC_MEMSIZE_BIT_7}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BITCOUNT">{RC_MEMSIZE_BITCOUNT}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_16_BITS_BE">{RC_MEMSIZE_16_BITS_BE}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_24_BITS_BE">{RC_MEMSIZE_24_BITS_BE}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_32_BITS_BE">{RC_MEMSIZE_32_BITS_BE}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_FLOAT">{RC_MEMSIZE_FLOAT}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_MBF32">{RC_MEMSIZE_MBF32}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_MBF32_LE">{RC_MEMSIZE_MBF32_LE}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_FLOAT_BE">{RC_MEMSIZE_FLOAT_BE}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_DOUBLE32">{RC_MEMSIZE_DOUBLE32}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_DOUBLE32_BE">{RC_MEMSIZE_DOUBLE32_BE}</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_VARIABLE">{RC_MEMSIZE_VARIABLE}</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="__rc_value_type_enum_t">
+        <DisplayString Condition="value==RC_VALUE_TYPE_NONE">{RC_VALUE_TYPE_NONE}</DisplayString>
+        <DisplayString Condition="value==RC_VALUE_TYPE_UNSIGNED">{RC_VALUE_TYPE_UNSIGNED}</DisplayString>
+        <DisplayString Condition="value==RC_VALUE_TYPE_SIGNED">{RC_VALUE_TYPE_SIGNED}</DisplayString>
+        <DisplayString Condition="value==RC_VALUE_TYPE_FLOAT">{RC_VALUE_TYPE_FLOAT}</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="__rc_memref_type_enum_t">
+        <DisplayString Condition="value==RC_MEMREF_TYPE_MEMREF">{RC_MEMREF_TYPE_MEMREF}</DisplayString>
+        <DisplayString Condition="value==RC_MEMREF_TYPE_MODIFIED_MEMREF">{RC_MEMREF_TYPE_MODIFIED_MEMREF}</DisplayString>
+        <DisplayString Condition="value==RC_MEMREF_TYPE_VALUE">RC_MEMREF_TYPE_VALUE</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="__rc_memsize_enum_func_t">
+        <DisplayString Condition="value==RC_MEMSIZE_8_BITS">byte</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_16_BITS">word</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_24_BITS">tbyte</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_32_BITS">dword</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_LOW">lower4</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_HIGH">upper4</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_0">bit0</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_1">bit1</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_2">bit2</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_3">bit3</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_4">bit4</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_5">bit5</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_6">bit6</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BIT_7">bit7</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_BITCOUNT">bitcount</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_16_BITS_BE">word_be</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_24_BITS_BE">tbyte_be</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_32_BITS_BE">dword_be</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_FLOAT">float</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_MBF32">mbf32</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_MBF32_LE">mbf32_le</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_FLOAT_BE">float_be</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_DOUBLE32">double32</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_DOUBLE32_BE">double32_be</DisplayString>
+        <DisplayString Condition="value==RC_MEMSIZE_VARIABLE">var</DisplayString>
+        <DisplayString>unknown</DisplayString>
+    </Type>
+    <Type Name="rc_memref_value_t">
+        <DisplayString Condition="type==RC_VALUE_TYPE_FLOAT">{{value={(float)*((float*)&amp;value)} prior={(float)*((float*)&amp;prior)}}}</DisplayString>
+        <DisplayString Condition="type==RC_VALUE_TYPE_SIGNED">{{value={(int)value} prior={(int)prior}}}</DisplayString>
+        <DisplayString>{{value={value,x} prior={prior,x}}}</DisplayString>
+        <Expand>
+            <Item Name="value">value</Item>
+            <Item Name="prior">prior</Item>
+            <Item Name="size">*((__rc_memsize_enum_t*)&amp;size)</Item>
+            <Item Name="changed">*((__rc_bool_enum_t*)&amp;changed)</Item>
+            <Item Name="type">*((__rc_value_type_enum_t*)&amp;type)</Item>
+            <Item Name="memref_type">*((__rc_memref_type_enum_t*)&amp;memref_type)</Item>
+        </Expand>
+    </Type>
+    <Type Name="rc_memref_t">
+        <DisplayString Condition="value.memref_type==RC_MEMREF_TYPE_MODIFIED_MEMREF">{*(rc_modified_memref_t*)&amp;value}</DisplayString>
+        <DisplayString Condition="value.memref_type==RC_MEMREF_TYPE_VALUE">{*(rc_value_t*)&amp;value}</DisplayString>
+        <DisplayString Condition="value.size==RC_MEMSIZE_VARIABLE">var</DisplayString>
+        <DisplayString>{*((__rc_memsize_enum_func_t*)&amp;value.size)}({address,x})</DisplayString>
+        <Expand>
+            <Item Name="[rc_modified_memref_t]" Condition="value.memref_type==RC_MEMREF_TYPE_MODIFIED_MEMREF">(rc_modified_memref_t*)&amp;value</Item>
+            <Item Name="value">value</Item>
+            <Item Name="address">address</Item>
+        </Expand>
+    </Type>
+    <Type Name="rc_memref_list_t">
+        <DisplayString>{{count = {count}}}</DisplayString>
+        <Expand>
+            <Item Name="next" Condition="next!=0">next</Item>
+            <Item Name="count">count</Item>
+            <Item Name="capacity">capacity</Item>
+            <ArrayItems>
+                <Size>count</Size>
+                <ValuePointer>items</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="__rc_operand_memref_t">
+        <DisplayString Condition="operand.value.memref->value.memref_type==RC_MEMREF_TYPE_MODIFIED_MEMREF">... {*((__rc_memsize_enum_func_t*)&amp;operand.size)} {operand.value.memref->address,x}</DisplayString>
+        <DisplayString Condition="operand.value.memref->value.memref_type==RC_MEMREF_TYPE_VALUE">value {((rc_value_t*)operand.value.memref)->name,s}</DisplayString>
+        <DisplayString>{*((__rc_memsize_enum_func_t*)&amp;operand.size)} {operand.value.memref->address,x}</DisplayString>
+        <Expand>
+            <Item Name="[rc_modified_memref_t]" Condition="operand.value.memref->value.memref_type==RC_MEMREF_TYPE_MODIFIED_MEMREF">(rc_modified_memref_t*)&amp;operand.value</Item>
+            <Item Name="value">operand.value.memref->value</Item>
+            <Item Name="address">operand.value.memref->address</Item>
+        </Expand>
+    </Type>
+    <Type Name="__rc_operand_enum_t">
+        <DisplayString Condition="value==RC_OPERAND_ADDRESS">{RC_OPERAND_ADDRESS}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_DELTA">{RC_OPERAND_DELTA}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_CONST">{RC_OPERAND_CONST}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_FP">{RC_OPERAND_FP}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_LUA">{RC_OPERAND_LUA}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_PRIOR">{RC_OPERAND_PRIOR}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_BCD">{RC_OPERAND_BCD}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_INVERTED">{RC_OPERAND_INVERTED}</DisplayString>
+        <DisplayString Condition="value==RC_OPERAND_RECALL">{RC_OPERAND_RECALL}</DisplayString>
+        <DisplayString Condition="value==0xFF">RC_OPERAND_NONE (255)</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="rc_operand_t">
+        <DisplayString Condition="type==RC_OPERAND_ADDRESS">{{{*(__rc_operand_memref_t*)&amp;value.memref}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_DELTA">{{delta {*(__rc_operand_memref_t*)&amp;value.memref}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_PRIOR">{{prior {*(__rc_operand_memref_t*)&amp;value.memref}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_BCD">{{bcd {*(__rc_operand_memref_t*)&amp;value.memref}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_INVERTED">{{inverted {*(__rc_operand_memref_t*)&amp;value.memref}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_CONST &amp;&amp; value.num &gt; 0xFFFF0000">{{value {(int)value.num}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_CONST &amp;&amp; value.num &gt; 0x01000000">{{value {value.num,x}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_CONST">{{value {value.num}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_FP">{{value {value.dbl}}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_RECALL">{{recall}}</DisplayString>
+        <DisplayString Condition="type==RC_OPERAND_LUA">{{lua @{value.luafunc}}}</DisplayString>
+        <DisplayString Condition="type==0xFF">{{none}}</DisplayString>
+        <DisplayString>{{unknown}}</DisplayString>
+        <Expand>
+            <Item Name="value" Condition="type==RC_OPERAND_CONST">value.num</Item>
+            <Item Name="value" Condition="type==RC_OPERAND_FP">value.dbl</Item>
+            <Item Name="value" Condition="type==RC_OPERAND_RECALL &amp;&amp; memref_access_type==RC_OPERAND_CONST">value.num</Item>
+            <Item Name="value" Condition="type==RC_OPERAND_RECALL &amp;&amp; memref_access_type==RC_OPERAND_FP">value.dbl</Item>
+            <Item Name="value" Condition="type!=RC_OPERAND_CONST &amp;&amp; type!=RC_OPERAND_FP &amp;&amp; value.memref==0">value.memref</Item>
+            <Item Name="value" Condition="type!=RC_OPERAND_CONST &amp;&amp; type!=RC_OPERAND_FP &amp;&amp; ((rc_memref_t*)value.memref)->value.memref_type!=RC_MEMREF_TYPE_MODIFIED_MEMREF">value.memref</Item>
+            <Item Name="value" Condition="type!=RC_OPERAND_CONST &amp;&amp; type!=RC_OPERAND_FP &amp;&amp; ((rc_memref_t*)value.memref)->value.memref_type==RC_MEMREF_TYPE_MODIFIED_MEMREF">(rc_modified_memref_t*)value.memref</Item>
+            <Item Name="type">*((__rc_operand_enum_t*)&amp;type)</Item>
+            <Item Name="size">*((__rc_memsize_enum_t*)&amp;size)</Item>
+            <Item Name="memref_access_type">*((__rc_operand_enum_t*)&amp;memref_access_type)</Item>
+        </Expand>
+    </Type>
+    <Type Name="__rc_condition_enum_t">
+        <DisplayString Condition="value==RC_CONDITION_STANDARD">{RC_CONDITION_STANDARD}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_PAUSE_IF">{RC_CONDITION_PAUSE_IF}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_RESET_IF">{RC_CONDITION_RESET_IF}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_MEASURED_IF">{RC_CONDITION_MEASURED_IF}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_TRIGGER">{RC_CONDITION_TRIGGER}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_MEASURED">{RC_CONDITION_MEASURED}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_ADD_SOURCE">{RC_CONDITION_ADD_SOURCE}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_SUB_SOURCE">{RC_CONDITION_SUB_SOURCE}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_ADD_ADDRESS">{RC_CONDITION_ADD_ADDRESS}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_REMEMBER">{RC_CONDITION_REMEMBER}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_ADD_HITS">{RC_CONDITION_ADD_HITS}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_SUB_HITS">{RC_CONDITION_SUB_HITS}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_RESET_NEXT_IF">{RC_CONDITION_RESET_NEXT_IF}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_AND_NEXT">{RC_CONDITION_AND_NEXT}</DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_OR_NEXT">{RC_CONDITION_OR_NEXT}</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="__rc_condition_enum_str_t">
+        <DisplayString Condition="value==RC_CONDITION_STANDARD"></DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_PAUSE_IF">PauseIf </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_RESET_IF">ResetIf </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_MEASURED_IF">MeasuredIf </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_TRIGGER">Trigger </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_MEASURED">Measured </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_ADD_SOURCE">AddSource </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_SUB_SOURCE">SubSource </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_ADD_ADDRESS">AddAddress </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_REMEMBER">Remember </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_ADD_HITS">AddHits </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_SUB_HITS">SubHits </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_RESET_NEXT_IF">ResetNextIf </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_AND_NEXT">AndNext </DisplayString>
+        <DisplayString Condition="value==RC_CONDITION_OR_NEXT">OrNext </DisplayString>
+        <DisplayString>{value} </DisplayString>
+    </Type>
+    <Type Name="__rc_operator_enum_t">
+        <DisplayString Condition="value==RC_OPERATOR_EQ">{RC_OPERATOR_EQ}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_LT">{RC_OPERATOR_LT}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_LE">{RC_OPERATOR_LE}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_GT">{RC_OPERATOR_GT}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_GE">{RC_OPERATOR_GE}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_NE">{RC_OPERATOR_NE}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_NONE">{RC_OPERATOR_NONE}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_MULT">{RC_OPERATOR_MULT}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_DIV">{RC_OPERATOR_DIV}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_AND">{RC_OPERATOR_AND}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_XOR">{RC_OPERATOR_XOR}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_MOD">{RC_OPERATOR_MOD}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_ADD">{RC_OPERATOR_ADD}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_SUB">{RC_OPERATOR_SUB}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_SUB_PARENT">{RC_OPERATOR_SUB_PARENT}</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_INDIRECT_READ">{RC_OPERATOR_INDIRECT_READ}</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="__rc_operator_enum_str_t">
+        <DisplayString Condition="value==RC_OPERATOR_EQ">==</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_LT">&lt;</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_LE">&lt;=</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_GT">&gt;</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_GE">&gt;=</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_NE">!=</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_NONE"> </DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_MULT">*</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_DIV">/</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_AND">&amp;</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_XOR">^</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_MOD">%</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_ADD">+</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_SUB">-</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_SUB_PARENT">subtracted from</DisplayString>
+        <DisplayString Condition="value==RC_OPERATOR_INDIRECT_READ">$</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="rc_condition_t">
+        <DisplayString Condition="oper==RC_OPERATOR_NONE &amp;&amp; required_hits==0">{*((__rc_condition_enum_str_t*)&amp;type)} {operand1}</DisplayString>
+        <DisplayString Condition="oper==RC_OPERATOR_NONE">{*((__rc_condition_enum_str_t*)&amp;type)} {operand1} ({required_hits})</DisplayString>
+        <DisplayString Condition="required_hits==0">{*((__rc_condition_enum_str_t*)&amp;type)} {operand1} {*((__rc_operator_enum_str_t*)&amp;oper)} {operand2}</DisplayString>
+        <DisplayString>{*((__rc_condition_enum_str_t*)&amp;type)} {operand1} {*((__rc_operator_enum_str_t*)&amp;oper)} {operand2} ({required_hits})</DisplayString>
+        <Expand>
+            <Item Name="type">*((__rc_condition_enum_t*)&amp;type)</Item>
+            <Item Name="operand1">operand1</Item>
+            <Item Name="oper">*((__rc_operator_enum_t*)&amp;oper)</Item>
+            <Item Name="operand2">operand2</Item>
+            <Item Name="required_hits">required_hits</Item>
+            <Item Name="current_hits">current_hits</Item>
+            <Item Name="next">next</Item>
+        </Expand>
+    </Type>
+    <Type Name="rc_condset_t">
+        <DisplayString>{{count={num_pause_conditions+num_reset_conditions+num_hittarget_conditions+num_measured_conditions+num_other_conditions+num_indirect_conditions}}}</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <HeadPointer>conditions</HeadPointer>
+                <NextPointer>next</NextPointer>
+                <ValueNode>this</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+    <Type Name="__rc_condset_list_t">
+        <DisplayString Condition="first_condset==0">{{}}</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <HeadPointer>first_condset</HeadPointer>
+                <NextPointer>next</NextPointer>
+                <ValueNode>this</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+    <Type Name="rc_modified_memref_t">
+        <DisplayString Condition="modifier_type==RC_OPERATOR_INDIRECT_READ">$({parent} + {modifier})</DisplayString>
+        <DisplayString Condition="modifier_type==RC_OPERATOR_SUB_PARENT">({modifier} - {parent})</DisplayString>
+        <DisplayString>({parent} {*((__rc_operator_enum_str_t*)&amp;modifier_type)} {modifier})</DisplayString>
+        <Expand>
+            <Item Name="value">memref.value</Item>
+            <Item Name="parent">parent</Item>
+            <Item Name="modifier_type">*((__rc_operator_enum_t*)&amp;modifier_type)</Item>
+            <Item Name="modifier">modifier</Item>
+        </Expand>
+    </Type>
+    <Type Name="rc_modified_memref_list_t">
+        <DisplayString>{{count = {count}}}</DisplayString>
+        <Expand>
+            <Item Name="next" Condition="next!=0">next</Item>
+            <Item Name="count">count</Item>
+            <Item Name="capacity">capacity</Item>
+            <ArrayItems>
+                <Size>count</Size>
+                <ValuePointer>items</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="__rc_trigger_state_enum_t">
+        <DisplayString Condition="value==RC_TRIGGER_STATE_INACTIVE">{RC_TRIGGER_STATE_INACTIVE}</DisplayString>
+        <DisplayString Condition="value==RC_TRIGGER_STATE_WAITING">{RC_TRIGGER_STATE_WAITING}</DisplayString>
+        <DisplayString Condition="value==RC_TRIGGER_STATE_ACTIVE">{RC_TRIGGER_STATE_ACTIVE}</DisplayString>
+        <DisplayString Condition="value==RC_TRIGGER_STATE_PAUSED">{RC_TRIGGER_STATE_PAUSED}</DisplayString>
+        <DisplayString Condition="value==RC_TRIGGER_STATE_RESET">{RC_TRIGGER_STATE_RESET}</DisplayString>
+        <DisplayString Condition="value==RC_TRIGGER_STATE_TRIGGERED">{RC_TRIGGER_STATE_TRIGGERED}</DisplayString>
+        <DisplayString Condition="value==RC_TRIGGER_STATE_PRIMED">{RC_TRIGGER_STATE_PRIMED}</DisplayString>
+        <DisplayString Condition="value==RC_TRIGGER_STATE_DISABLED">{RC_TRIGGER_STATE_DISABLED}</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="rc_trigger_t">
+        <Expand>
+            <Item Name="state">*((__rc_trigger_state_enum_t*)&amp;state)</Item>
+            <Item Name="has_hits">*((__rc_bool_enum_t*)&amp;has_hits)</Item>
+            <Item Name="measured_as_percent">*((__rc_bool_enum_t*)&amp;measured_as_percent)</Item>
+            <Item Name="requirement">requirement</Item>
+            <Item Name="alternative">*((__rc_condset_list_t*)&amp;alternative)</Item>
+        </Expand>
+    </Type>
+    <Type Name="rc_value_t">
+        <DisplayString>{value} {name,s}</DisplayString>
+        <Expand>
+            <Item Name="value">value</Item>
+            <Item Name="conditions">conditions</Item>
+            <Item Name="name">name</Item>
+        </Expand>
+    </Type>
+    <Type Name="rc_value_list_t">
+        <DisplayString>{{count = {count}}}</DisplayString>
+        <Expand>
+            <Item Name="count">count</Item>
+            <Item Name="capacity">capacity</Item>
+            <ArrayItems>
+                <Size>count</Size>
+                <ValuePointer>items</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <Type Name="__rc_lboard_state_enum_t">
+        <DisplayString Condition="value==RC_LBOARD_STATE_INACTIVE">{RC_LBOARD_STATE_INACTIVE}</DisplayString>
+        <DisplayString Condition="value==RC_LBOARD_STATE_WAITING">{RC_LBOARD_STATE_WAITING}</DisplayString>
+        <DisplayString Condition="value==RC_LBOARD_STATE_ACTIVE">{RC_LBOARD_STATE_ACTIVE}</DisplayString>
+        <DisplayString Condition="value==RC_LBOARD_STATE_STARTED">{RC_LBOARD_STATE_STARTED}</DisplayString>
+        <DisplayString Condition="value==RC_LBOARD_STATE_CANCELED">{RC_LBOARD_STATE_CANCELED}</DisplayString>
+        <DisplayString Condition="value==RC_LBOARD_STATE_TRIGGERED">{RC_LBOARD_STATE_TRIGGERED}</DisplayString>
+        <DisplayString Condition="value==RC_LBOARD_STATE_DISABLED">{RC_LBOARD_STATE_DISABLED}</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="rc_lboard_t">
+        <Expand>
+            <Item Name="state">*((__rc_lboard_state_enum_t*)&amp;state)</Item>
+            <Item Name="start">start</Item>
+            <Item Name="submit">submit</Item>
+            <Item Name="cancel">cancel</Item>
+            <Item Name="value">value</Item>
+        </Expand>
+    </Type>
+    <Type Name="__rc_format_enum_t">
+        <DisplayString Condition="value==RC_FORMAT_FRAMES">{RC_FORMAT_FRAMES}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_SECONDS">{RC_FORMAT_SECONDS}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_CENTISECS">{RC_FORMAT_CENTISECS}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_SCORE">{RC_FORMAT_SCORE}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_VALUE">{RC_FORMAT_VALUE}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_MINUTES">{RC_FORMAT_MINUTES}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_SECONDS_AS_MINUTES">{RC_FORMAT_SECONDS_AS_MINUTES}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FLOAT1">{RC_FORMAT_FLOAT1}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FLOAT2">{RC_FORMAT_FLOAT2}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FLOAT3">{RC_FORMAT_FLOAT3}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FLOAT4">{RC_FORMAT_FLOAT4}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FLOAT5">{RC_FORMAT_FLOAT5}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FLOAT6">{RC_FORMAT_FLOAT6}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FIXED1">{RC_FORMAT_FIXED1}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FIXED2">{RC_FORMAT_FIXED2}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_FIXED3">{RC_FORMAT_FIXED3}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_TENS">{RC_FORMAT_TENS}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_HUNDREDS">{RC_FORMAT_HUNDREDS}</DisplayString>
+        <DisplayString Condition="value==RC_FORMAT_THOUSANDS">{RC_FORMAT_THOUSANDS}</DisplayString>
+        <DisplayString Condition="value==101">RC_FORMAT_STRING (101)</DisplayString>
+        <DisplayString Condition="value==102">RC_FORMAT_LOOKUP (102)</DisplayString>
+        <DisplayString Condition="value==103">RC_FORMAT_UNKNOWN_MACRO (103)</DisplayString>
+        <DisplayString Condition="value==104">RC_FORMAT_ASCIICHAR (104)</DisplayString>
+        <DisplayString Condition="value==105">RC_FORMAT_UNICODECHAR (105)</DisplayString>
+        <DisplayString>unknown ({value})</DisplayString>
+    </Type>
+    <Type Name="rc_richpresence_display_part_t">
+        <DisplayString Condition="display_type==101">{text,s}</DisplayString>
+        <DisplayString Condition="display_type==103">[Unknown macro]{text,sb}</DisplayString>
+        <DisplayString Condition="lookup==0">@{text,sb}({value,na})</DisplayString>
+        <DisplayString>@{lookup->name,sb}({value,na})</DisplayString>
+        <Expand>
+            <Item Name="text" Condition="display_type==101||display_type==103">text</Item>
+            <Item Name="lookup" Condition="display_type!=101&amp;&amp;display_type!=103">lookup</Item>
+            <Item Name="value" Condition="display_type!=101&amp;&amp;display_type!=103">value</Item>
+            <Item Name="display_type">*((__rc_format_enum_t*)&amp;display_type)</Item>
+        </Expand>
+    </Type>
+    <Type Name="__rc_richpresence_display_part_list_t">
+        <DisplayString Condition="display->next->next!=0">{display,na} {display->next,na} {display->next->next,na}</DisplayString>
+        <DisplayString Condition="display->next!=0">{display,na} {display->next,na}</DisplayString>
+        <DisplayString>{display,na}</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <HeadPointer>display</HeadPointer>
+                <NextPointer>next</NextPointer>
+                <ValueNode>this</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+    <Type Name="rc_richpresence_display_t">
+        <Expand>
+            <Item Name="displays">*((__rc_richpresence_display_part_list_t*)&amp;display)</Item>
+            <Item Name="trigger">trigger</Item>
+        </Expand>
+    </Type>
+    <Type Name="__rc_richpresence_display_list_t">
+        <DisplayString Condition="first_display==0">{{NULL}}</DisplayString>
+        <DisplayString>{(void*)&amp;first_display,na}</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <HeadPointer>first_display</HeadPointer>
+                <NextPointer>next</NextPointer>
+                <ValueNode>this</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+    <Type Name="rc_richpresence_lookup_item_t">
+        <DisplayString Condition="first==last">{first}: {label,na}</DisplayString>
+        <DisplayString>{first}-{last}: {label,na}</DisplayString>
+    </Type>
+    <Type Name="rc_richpresence_lookup_t">
+        <DisplayString>{name,na}</DisplayString>
+        <Expand>
+            <Item Name="name">name</Item>
+            <Item Name="format">*((__rc_format_enum_t*)&amp;format)</Item>
+            <Item Name="default_label" Condition="format>101">default_label</Item>
+            <TreeItems>
+                <HeadPointer>root</HeadPointer>
+                <LeftPointer>left</LeftPointer>
+                <RightPointer>right</RightPointer>
+                <ValueNode>this</ValueNode>
+            </TreeItems>
+        </Expand>
+    </Type>
+    <Type Name="__rc_richpresence_lookup_list_t">
+        <DisplayString Condition="first_lookup==0">{{NULL}}</DisplayString>
+        <DisplayString>{(void*)&amp;first_lookup,na}</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <HeadPointer>first_lookup</HeadPointer>
+                <NextPointer>next</NextPointer>
+                <ValueNode>this</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+    <Type Name="rc_richpresence_t">
+        <Expand>
+            <Item Name="displays">((__rc_richpresence_display_list_t*)&amp;first_display)</Item>
+            <Item Name="lookups">((__rc_richpresence_lookup_list_t*)&amp;first_lookup)</Item>
+        </Expand>
+    </Type>
+    <Type Name="__rc_value_list_t">
+        <DisplayString Condition="first_value==0">{{NULL}}</DisplayString>
+        <DisplayString>{(void*)&amp;first_value,na}</DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <HeadPointer>first_value</HeadPointer>
+                <NextPointer>next</NextPointer>
+                <ValueNode>this</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+    <Type Name="rc_parse_state_t">
+        <DisplayString>{{offset={offset} addsource_parent={addsource_parent} indirect_parent={indirect_parent}}}</DisplayString>
+        <Expand>
+            <Item Name="offset">offset</Item>
+            <Item Name="memrefs">memrefs</Item>
+            <Item Name="existing_memrefs">existing_memrefs</Item>
+            <Item Name="variables" Condition="variables==0">variables</Item>
+            <Item Name="variables" Condition="variables!=0">((__rc_value_list_t*)&amp;variables)</Item>
+            <Item Name="addsource_parent">addsource_parent</Item>
+            <Item Name="addsource_oper">*((__rc_operator_enum_t*)&amp;addsource_oper)</Item>
+            <Item Name="indirect_parent">indirect_parent</Item>
+            <Item Name="remember">remember</Item>
+            <Item Name="is_value">*((__rc_bool_enum_t*)&amp;is_value)</Item>
+            <Item Name="has_required_hits">*((__rc_bool_enum_t*)&amp;has_required_hits)</Item>
+            <Item Name="measured_as_percent">*((__rc_bool_enum_t*)&amp;measured_as_percent)</Item>
+        </Expand>
+    </Type>
+    <Type Name="rc_buffer_chunk_t">
+        <DisplayString>{{used={write-start} size={end-start}}}</DisplayString>
+        <Expand>
+            <Item Name="[size]">end-start</Item>
+            <Item Name="[used]">write-start</Item>
+            <Item Name="[available]">end-write</Item>
+            <Item Name="next">next</Item>
+        </Expand>
+    </Type>
+    <Type Name="rc_buffer_t">
+        <DisplayString></DisplayString>
+        <Expand>
+            <LinkedListItems>
+                <HeadPointer>&amp;chunk</HeadPointer>
+                <NextPointer>next</NextPointer>
+                <ValueNode>this</ValueNode>
+            </LinkedListItems>
+        </Expand>
+    </Type>
+    <Type Name="__rc_runtime_trigger_list_t">
+        <DisplayString>{{count={runtime.trigger_count}}}</DisplayString>
+        <Expand>
+            <IndexListItems>
+                <Size>runtime.trigger_count</Size>
+                <ValueNode>runtime.triggers[$i]</ValueNode>
+            </IndexListItems>
+        </Expand>
+    </Type>
+    <Type Name="__rc_runtime_lboard_list_t">
+        <DisplayString>{{count={runtime.lboard_count}}}</DisplayString>
+        <Expand>
+            <IndexListItems>
+                <Size>runtime.lboard_count</Size>
+                <ValueNode>runtime.lboards[$i]</ValueNode>
+            </IndexListItems>
+        </Expand>
+    </Type>
+    <Type Name="rc_runtime_t">
+        <DisplayString>{{trigger_count={trigger_count} lboard_count={lboard_count}}}</DisplayString>
+        <Expand>
+            <Item Name="triggers">*((__rc_runtime_trigger_list_t*)this)</Item>
+            <Item Name="lboards">*((__rc_runtime_lboard_list_t*)this)</Item>
+            <Item Name="richpresence">richpresence</Item>
+            <Item Name="memrefs">memrefs</Item>
+        </Expand>
+    </Type>
+</AutoVisualizer>

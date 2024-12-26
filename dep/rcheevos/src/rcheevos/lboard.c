@@ -29,7 +29,6 @@ void rc_parse_lboard_internal(rc_lboard_t* self, const char* memaddr, rc_parse_s
       if (*memaddr && *memaddr != ':') {
         found |= RC_LBOARD_START;
         rc_parse_trigger_internal(&self->start, &memaddr, parse);
-        self->start.memrefs = 0;
       }
     }
     else if ((memaddr[0] == 'c' || memaddr[0] == 'C') &&
@@ -44,7 +43,6 @@ void rc_parse_lboard_internal(rc_lboard_t* self, const char* memaddr, rc_parse_s
       if (*memaddr && *memaddr != ':') {
         found |= RC_LBOARD_CANCEL;
         rc_parse_trigger_internal(&self->cancel, &memaddr, parse);
-        self->cancel.memrefs = 0;
       }
     }
     else if ((memaddr[0] == 's' || memaddr[0] == 'S') &&
@@ -59,7 +57,6 @@ void rc_parse_lboard_internal(rc_lboard_t* self, const char* memaddr, rc_parse_s
       if (*memaddr && *memaddr != ':') {
         found |= RC_LBOARD_SUBMIT;
         rc_parse_trigger_internal(&self->submit, &memaddr, parse);
-        self->submit.memrefs = 0;
       }
     }
     else if ((memaddr[0] == 'v' || memaddr[0] == 'V') &&
@@ -74,7 +71,6 @@ void rc_parse_lboard_internal(rc_lboard_t* self, const char* memaddr, rc_parse_s
       if (*memaddr && *memaddr != ':') {
         found |= RC_LBOARD_VALUE;
         rc_parse_value_internal(&self->value, &memaddr, parse);
-        self->value.memrefs = 0;
       }
     }
     else if ((memaddr[0] == 'p' || memaddr[0] == 'P') &&
@@ -91,7 +87,6 @@ void rc_parse_lboard_internal(rc_lboard_t* self, const char* memaddr, rc_parse_s
 
         self->progress = RC_ALLOC(rc_value_t, parse);
         rc_parse_value_internal(self->progress, &memaddr, parse);
-        self->progress->memrefs = 0;
       }
     }
 
@@ -130,44 +125,55 @@ void rc_parse_lboard_internal(rc_lboard_t* self, const char* memaddr, rc_parse_s
   }
 
   self->state = RC_LBOARD_STATE_WAITING;
+  self->has_memrefs = 0;
 }
 
 int rc_lboard_size(const char* memaddr) {
-  rc_lboard_t* self;
-  rc_parse_state_t parse;
-  rc_memref_t* first_memref;
-  rc_init_parse_state(&parse, 0, 0, 0);
-  rc_init_parse_state_memrefs(&parse, &first_memref);
+  rc_lboard_with_memrefs_t* lboard;
+  rc_preparse_state_t preparse;
+  rc_init_preparse_state(&preparse, NULL, 0);
 
-  self = RC_ALLOC(rc_lboard_t, &parse);
-  rc_parse_lboard_internal(self, memaddr, &parse);
+  lboard = RC_ALLOC(rc_lboard_with_memrefs_t, &preparse.parse);
+  rc_parse_lboard_internal(&lboard->lboard, memaddr, &preparse.parse);
+  rc_preparse_alloc_memrefs(NULL, &preparse);
 
-  rc_destroy_parse_state(&parse);
-  return parse.offset;
+  rc_destroy_preparse_state(&preparse);
+  return preparse.parse.offset;
 }
 
 rc_lboard_t* rc_parse_lboard(void* buffer, const char* memaddr, lua_State* L, int funcs_ndx) {
-  rc_lboard_t* self;
-  rc_parse_state_t parse;
+  rc_lboard_with_memrefs_t* lboard;
+  rc_preparse_state_t preparse;
 
   if (!buffer || !memaddr)
     return 0;
 
-  rc_init_parse_state(&parse, buffer, L, funcs_ndx);
+  rc_init_preparse_state(&preparse, L, funcs_ndx);
+  lboard = RC_ALLOC(rc_lboard_with_memrefs_t, &preparse.parse);
+  rc_parse_lboard_internal(&lboard->lboard, memaddr, &preparse.parse);
 
-  self = RC_ALLOC(rc_lboard_t, &parse);
-  rc_init_parse_state_memrefs(&parse, &self->memrefs);
+  rc_reset_parse_state(&preparse.parse, buffer, L, funcs_ndx);
+  lboard = RC_ALLOC(rc_lboard_with_memrefs_t, &preparse.parse);
+  rc_preparse_alloc_memrefs(&lboard->memrefs, &preparse);
 
-  rc_parse_lboard_internal(self, memaddr, &parse);
+  rc_parse_lboard_internal(&lboard->lboard, memaddr, &preparse.parse);
+  lboard->lboard.has_memrefs = 1;
 
-  rc_destroy_parse_state(&parse);
-  return (parse.offset >= 0) ? self : 0;
+  rc_destroy_preparse_state(&preparse);
+  return (preparse.parse.offset >= 0) ? &lboard->lboard : NULL;
+}
+
+static void rc_update_lboard_memrefs(rc_lboard_t* self, rc_peek_t peek, void* ud) {
+  if (self->has_memrefs) {
+    rc_lboard_with_memrefs_t* lboard = (rc_lboard_with_memrefs_t*)self;
+    rc_update_memref_values(&lboard->memrefs, peek, ud);
+  }
 }
 
 int rc_evaluate_lboard(rc_lboard_t* self, int32_t* value, rc_peek_t peek, void* peek_ud, lua_State* L) {
   int start_ok, cancel_ok, submit_ok;
 
-  rc_update_memref_values(self->memrefs, peek, peek_ud);
+  rc_update_lboard_memrefs(self, peek, peek_ud);
 
   if (self->state == RC_LBOARD_STATE_INACTIVE || self->state == RC_LBOARD_STATE_DISABLED)
     return RC_LBOARD_STATE_INACTIVE;

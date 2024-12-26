@@ -77,7 +77,7 @@ static void* filereader_open(const char* path)
     return NULL;
   }
 
- #if defined(__STDC_WANT_SECURE_LIB__)
+ #if defined(__STDC_SECURE_LIB__)
   /* have to use _SH_DENYNO because some cores lock the file while its loaded */
   fp = _wfsopen(wpath, L"rb", _SH_DENYNO);
  #else
@@ -90,7 +90,7 @@ static void* filereader_open(const char* path)
 #else /* !WINVER >= 0x0500 */
 static void* filereader_open(const char* path)
 {
- #if defined(__STDC_WANT_SECURE_LIB__)
+ #if defined(__STDC_SECURE_LIB__)
   #if defined(WINVER)
    /* have to use _SH_DENYNO because some cores lock the file while its loaded */
    return _fsopen(path, "rb", _SH_DENYNO);
@@ -99,7 +99,7 @@ static void* filereader_open(const char* path)
    fopen_s(&fp, path, "rb");
    return fp;
   #endif
- #else /* !__STDC_WANT_SECURE_LIB__ */
+ #else /* !__STDC_SECURE_LIB__ */
   return fopen(path, "rb");
  #endif
 }
@@ -2513,6 +2513,7 @@ int rc_hash_generate_from_buffer(char hash[33], uint32_t console_id, const uint8
     case RC_CONSOLE_ATARI_LYNX:
       return rc_hash_lynx(hash, buffer, buffer_size);
 
+    case RC_CONSOLE_FAMICOM_DISK_SYSTEM:
     case RC_CONSOLE_NINTENDO:
       return rc_hash_nes(hash, buffer, buffer_size);
 
@@ -2818,6 +2819,7 @@ int rc_hash_generate_from_file(char hash[33], uint32_t console_id, const char* p
     case RC_CONSOLE_ARDUBOY:
     case RC_CONSOLE_ATARI_7800:
     case RC_CONSOLE_ATARI_LYNX:
+    case RC_CONSOLE_FAMICOM_DISK_SYSTEM:
     case RC_CONSOLE_NINTENDO:
     case RC_CONSOLE_PC_ENGINE:
     case RC_CONSOLE_SUPER_CASSETTEVISION:
@@ -3015,7 +3017,11 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
         break;
 
       case 'a':
-        if (rc_path_compare_extension(ext, "a78"))
+        if (rc_path_compare_extension(ext, "a26"))
+        {
+          iterator->consoles[0] = RC_CONSOLE_ATARI_2600;
+        }
+        else if (rc_path_compare_extension(ext, "a78"))
         {
           iterator->consoles[0] = RC_CONSOLE_ATARI_7800;
         }
@@ -3157,7 +3163,7 @@ void rc_hash_initialize_iterator(struct rc_hash_iterator* iterator, const char* 
         }
         else if (rc_path_compare_extension(ext, "fds"))
         {
-          iterator->consoles[0] = RC_CONSOLE_NINTENDO;
+          iterator->consoles[0] = RC_CONSOLE_FAMICOM_DISK_SYSTEM;
         }
         else if (rc_path_compare_extension(ext, "fd"))
         {

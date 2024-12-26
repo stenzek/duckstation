@@ -91,6 +91,70 @@ static void rc_client_award_achievement_retry(rc_client_scheduled_callback_data_
 static int rc_client_is_award_achievement_pending(const rc_client_t* client, uint32_t achievement_id);
 static void rc_client_submit_leaderboard_entry_retry(rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now);
 
+/* ===== natvis extensions ===== */
+
+typedef struct __rc_client_achievement_state_enum_t { uint8_t value; } __rc_client_achievement_state_enum_t;
+typedef struct __rc_client_achievement_category_enum_t { uint8_t value; } __rc_client_achievement_category_enum_t;
+typedef struct __rc_client_achievement_type_enum_t { uint8_t value; } __rc_client_achievement_type_enum_t;
+typedef struct __rc_client_achievement_bucket_enum_t { uint8_t value; } __rc_client_achievement_bucket_enum_t;
+typedef struct __rc_client_achievement_unlocked_enum_t { uint8_t value; } __rc_client_achievement_unlocked_enum_t;
+typedef struct __rc_client_leaderboard_state_enum_t { uint8_t value; } __rc_client_leaderboard_state_enum_t;
+typedef struct __rc_client_leaderboard_format_enum_t { uint8_t value; } __rc_client_leaderboard_format_enum_t;
+typedef struct __rc_client_log_level_enum_t { uint8_t value; } __rc_client_log_level_enum_t;
+typedef struct __rc_client_event_type_enum_t { uint8_t value; } __rc_client_event_type_enum_t;
+typedef struct __rc_client_load_game_state_enum_t { uint8_t value; } __rc_client_load_game_state_enum_t;
+typedef struct __rc_client_user_state_enum_t { uint8_t value; } __rc_client_user_state_enum_t;
+typedef struct __rc_client_mastery_state_enum_t { uint8_t value; } __rc_client_mastery_state_enum_t;
+typedef struct __rc_client_spectator_mode_enum_t { uint8_t value; } __rc_client_spectator_mode_enum_t;
+typedef struct __rc_client_disconnect_enum_t { uint8_t value; } __rc_client_disconnect_enum_t;
+typedef struct __rc_client_leaderboard_tracker_list_t { rc_client_leaderboard_tracker_info_t* first; } __rc_client_leaderboard_tracker_list_t;
+typedef struct __rc_client_subset_info_list_t { rc_client_subset_info_t* first; } __rc_client_subset_info_list_t;
+typedef struct __rc_client_media_hash_list_t { rc_client_media_hash_t* first; } __rc_client_media_hash_list_t;
+typedef struct __rc_client_subset_info_achievements_list_t { rc_client_subset_info_t info; } __rc_client_subset_info_achievements_list_t;
+typedef struct __rc_client_subset_info_leaderboards_list_t { rc_client_subset_info_t info; } __rc_client_subset_info_leaderboards_list_t;
+typedef struct __rc_client_scheduled_callback_list_t { rc_client_state_t state; } __rc_client_scheduled_callback_list_t;
+typedef struct __rc_client_game_hash_list_t { rc_client_t client; } __rc_client_game_hash_list_t;
+
+static void rc_client_natvis_helper(const rc_client_event_t* event, rc_client_t* client)
+{
+  struct natvis_extensions {
+    __rc_client_achievement_state_enum_t achievement_state;
+    __rc_client_achievement_category_enum_t achievement_category;
+    __rc_client_achievement_type_enum_t achievement_type;
+    __rc_client_achievement_bucket_enum_t achievement_bucket;
+    __rc_client_achievement_unlocked_enum_t achievement_unlocked;
+    __rc_client_leaderboard_state_enum_t leaderboard_state;
+    __rc_client_leaderboard_format_enum_t leaderboard_format;
+    __rc_client_log_level_enum_t log_level;
+    __rc_client_event_type_enum_t event_type;
+    __rc_client_load_game_state_enum_t load_game_state;
+    __rc_client_user_state_enum_t user_state;
+    __rc_client_mastery_state_enum_t mastery_state;
+    __rc_client_spectator_mode_enum_t spectator_mode;
+    __rc_client_disconnect_enum_t disconnect;
+    __rc_client_leaderboard_tracker_list_t leaderboard_tracker_list;
+    __rc_client_subset_info_list_t subset_info_list;
+    __rc_client_media_hash_list_t media_hash_list;
+    __rc_client_subset_info_achievements_list_t subset_info_achievements_list;
+    __rc_client_subset_info_leaderboards_list_t subset_info_leaderboards_list;
+    __rc_client_scheduled_callback_list_t scheduled_callback_list;
+    __rc_client_game_hash_list_t client_game_hash_list;
+  } natvis;
+
+  memset(&natvis, 0, sizeof(natvis));
+  (void)event;
+  (void)client;
+
+  /* this code should never be executed. it just ensures these constants get defined for
+   * the natvis VisualStudio extension as they're not used directly in the code. */
+  natvis.achievement_type.value = RC_CLIENT_ACHIEVEMENT_TYPE_STANDARD;
+  natvis.achievement_type.value = RC_CLIENT_ACHIEVEMENT_TYPE_MISSABLE;
+  natvis.achievement_type.value = RC_CLIENT_ACHIEVEMENT_TYPE_PROGRESSION;
+  natvis.achievement_type.value = RC_CLIENT_ACHIEVEMENT_TYPE_WIN;
+  natvis.achievement_category.value = RC_CLIENT_ACHIEVEMENT_CATEGORY_NONE;
+  natvis.event_type.value = RC_CLIENT_EVENT_TYPE_NONE;
+}
+
 /* ===== Construction/Destruction ===== */
 
 static void rc_client_dummy_event_handler(const rc_client_event_t* event, rc_client_t* client)
@@ -110,6 +174,7 @@ rc_client_t* rc_client_create(rc_client_read_memory_func_t read_memory_function,
 
   client->callbacks.read_memory = read_memory_function;
   client->callbacks.server_call = server_call_function;
+  client->callbacks.event_handler = rc_client_natvis_helper;
   client->callbacks.event_handler = rc_client_dummy_event_handler;
   rc_client_set_legacy_peek(client, RC_CLIENT_LEGACY_PEEK_AUTO);
   rc_client_set_get_time_millisecs_function(client, NULL);
@@ -180,7 +245,7 @@ static void rc_client_log_message_va(const rc_client_t* client, const char* form
   if (client->callbacks.log_call) {
     char buffer[2048];
 
-#ifdef __STDC_WANT_SECURE_LIB__
+#ifdef __STDC_SECURE_LIB__
     vsprintf_s(buffer, sizeof(buffer), format, args);
 #elif __STDC_VERSION__ >= 199901L /* vsnprintf requires c99 */
     vsnprintf(buffer, sizeof(buffer), format, args);
@@ -1071,27 +1136,23 @@ static void rc_client_validate_addresses(rc_client_game_info_t* game, rc_client_
   uint32_t total_count = 0;
   uint32_t invalid_count = 0;
 
-  rc_memref_t** last_memref = &game->runtime.memrefs;
-  rc_memref_t* memref = game->runtime.memrefs;
-  for (; memref; memref = memref->next) {
-    if (!memref->value.is_indirect) {
-      total_count++;
+  rc_memref_list_t* memref_list = &game->runtime.memrefs->memrefs;
+  for (; memref_list; memref_list = memref_list->next) {
+    rc_memref_t* memref = memref_list->items;
+    const rc_memref_t* memref_end = memref + memref_list->count;
+    total_count += memref_list->count;
 
+    for (; memref < memref_end; ++memref) {
       if (memref->address > max_address ||
-        client->callbacks.read_memory(memref->address, buffer, 1, client) == 0) {
-        /* invalid address, remove from chain so we don't have to evaluate it in the future.
-         * it's still there, so anything referencing it will always fetch 0. */
-        *last_memref = memref->next;
+          client->callbacks.read_memory(memref->address, buffer, 1, client) == 0) {
+        memref->value.type = RC_VALUE_TYPE_NONE;
 
         rc_client_invalidate_memref_achievements(game, client, memref);
         rc_client_invalidate_memref_leaderboards(game, client, memref);
 
         invalid_count++;
-        continue;
       }
     }
-
-    last_memref = &memref->next;
   }
 
   game->max_valid_address = max_address;
@@ -1654,9 +1715,10 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
   rc_client_achievement_info_t* achievement;
   rc_client_achievement_info_t* scan;
   rc_buffer_t* buffer;
-  rc_parse_state_t parse;
+  rc_preparse_state_t preparse;
   const char* memaddr;
   size_t size;
+  rc_trigger_t* trigger;
   int trigger_size;
 
   subset->achievements = NULL;
@@ -1686,11 +1748,11 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
       + sizeof(rc_trigger_t) + sizeof(rc_condset_t) * 2 /* trigger container */
       + sizeof(rc_condition_t) * 8 /* assume average trigger length of 8 conditions */
       + sizeof(rc_client_achievement_info_t);
-  rc_buffer_reserve(&load_state->game->buffer, size * num_achievements);
+  buffer = &load_state->game->buffer;
+  rc_buffer_reserve(buffer, size * num_achievements);
 
   /* allocate the achievement array */
   size = sizeof(rc_client_achievement_info_t) * num_achievements;
-  buffer = &load_state->game->buffer;
   achievement = achievements = rc_buffer_alloc(buffer, size);
   memset(achievements, 0, size);
 
@@ -1713,7 +1775,12 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
     memaddr = read->definition;
     rc_runtime_checksum(memaddr, achievement->md5);
 
-    trigger_size = rc_trigger_size(memaddr);
+    rc_init_preparse_state(&preparse, NULL, 0);
+    preparse.parse.existing_memrefs = load_state->game->runtime.memrefs;
+    trigger = RC_ALLOC(rc_trigger_t, &preparse.parse);
+    rc_parse_trigger_internal(trigger, &memaddr, &preparse.parse);
+
+    trigger_size = preparse.parse.offset;
     if (trigger_size < 0) {
       RC_CLIENT_LOG_WARN_FORMATTED(load_state->client, "Parse error %d processing achievement %u", trigger_size, read->id);
       achievement->public_.state = RC_CLIENT_ACHIEVEMENT_STATE_DISABLED;
@@ -1721,23 +1788,22 @@ static void rc_client_copy_achievements(rc_client_load_state_t* load_state,
     }
     else {
       /* populate the item, using the communal memrefs pool */
-      rc_init_parse_state(&parse, rc_buffer_reserve(buffer, trigger_size), NULL, 0);
-      parse.first_memref = &load_state->game->runtime.memrefs;
-      parse.variables = &load_state->game->runtime.variables;
-      achievement->trigger = RC_ALLOC(rc_trigger_t, &parse);
-      rc_parse_trigger_internal(achievement->trigger, &memaddr, &parse);
+      rc_reset_parse_state(&preparse.parse, rc_buffer_reserve(buffer, trigger_size), NULL, 0);
+      rc_preparse_reserve_memrefs(&preparse, load_state->game->runtime.memrefs);
+      achievement->trigger = RC_ALLOC(rc_trigger_t, &preparse.parse);
+      memaddr = read->definition;
+      rc_parse_trigger_internal(achievement->trigger, &memaddr, &preparse.parse);
 
-      if (parse.offset < 0) {
-        RC_CLIENT_LOG_WARN_FORMATTED(load_state->client, "Parse error %d processing achievement %u", parse.offset, read->id);
+      if (preparse.parse.offset < 0) {
+        RC_CLIENT_LOG_WARN_FORMATTED(load_state->client, "Parse error %d processing achievement %u", preparse.parse.offset, read->id);
         achievement->public_.state = RC_CLIENT_ACHIEVEMENT_STATE_DISABLED;
         achievement->public_.bucket = RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED;
       }
       else {
-        rc_buffer_consume(buffer, parse.buffer, (uint8_t*)parse.buffer + parse.offset);
-        achievement->trigger->memrefs = NULL; /* memrefs managed by runtime */
+        rc_buffer_consume(buffer, preparse.parse.buffer, (uint8_t*)preparse.parse.buffer + preparse.parse.offset);
       }
 
-      rc_destroy_parse_state(&parse);
+      rc_destroy_preparse_state(&preparse);
     }
 
     achievement->created_time = read->created;
@@ -1801,10 +1867,11 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
   rc_client_leaderboard_info_t* leaderboards;
   rc_client_leaderboard_info_t* leaderboard;
   rc_buffer_t* buffer;
-  rc_parse_state_t parse;
+  rc_preparse_state_t preparse;
   const char* memaddr;
   const char* ptr;
   size_t size;
+  rc_lboard_t* lboard;
   int lboard_size;
 
   subset->leaderboards = NULL;
@@ -1854,29 +1921,32 @@ static void rc_client_copy_leaderboards(rc_client_load_state_t* load_state,
       leaderboard->value_djb2 = hash;
     }
 
-    lboard_size = rc_lboard_size(memaddr);
+    rc_init_preparse_state(&preparse, NULL, 0);
+    preparse.parse.existing_memrefs = load_state->game->runtime.memrefs;
+    lboard = RC_ALLOC(rc_lboard_t, &preparse.parse);
+    rc_parse_lboard_internal(lboard, memaddr, &preparse.parse);
+
+    lboard_size = preparse.parse.offset;
     if (lboard_size < 0) {
       RC_CLIENT_LOG_WARN_FORMATTED(load_state->client, "Parse error %d processing leaderboard %u", lboard_size, read->id);
       leaderboard->public_.state = RC_CLIENT_LEADERBOARD_STATE_DISABLED;
     }
     else {
       /* populate the item, using the communal memrefs pool */
-      rc_init_parse_state(&parse, rc_buffer_reserve(buffer, lboard_size), NULL, 0);
-      parse.first_memref = &load_state->game->runtime.memrefs;
-      parse.variables = &load_state->game->runtime.variables;
-      leaderboard->lboard = RC_ALLOC(rc_lboard_t, &parse);
-      rc_parse_lboard_internal(leaderboard->lboard, memaddr, &parse);
+      rc_reset_parse_state(&preparse.parse, rc_buffer_reserve(buffer, lboard_size), NULL, 0);
+      rc_preparse_reserve_memrefs(&preparse, load_state->game->runtime.memrefs);
+      leaderboard->lboard = RC_ALLOC(rc_lboard_t, &preparse.parse);
+      rc_parse_lboard_internal(leaderboard->lboard, memaddr, &preparse.parse);
 
-      if (parse.offset < 0) {
-        RC_CLIENT_LOG_WARN_FORMATTED(load_state->client, "Parse error %d processing leaderboard %u", parse.offset, read->id);
+      if (preparse.parse.offset < 0) {
+        RC_CLIENT_LOG_WARN_FORMATTED(load_state->client, "Parse error %d processing leaderboard %u", preparse.parse.offset, read->id);
         leaderboard->public_.state = RC_CLIENT_LEADERBOARD_STATE_DISABLED;
       }
       else {
-        rc_buffer_consume(buffer, parse.buffer, (uint8_t*)parse.buffer + parse.offset);
-        leaderboard->lboard->memrefs = NULL; /* memrefs managed by runtime */
+        rc_buffer_consume(buffer, preparse.parse.buffer, (uint8_t*)preparse.parse.buffer + preparse.parse.offset);
       }
 
-      rc_destroy_parse_state(&parse);
+      rc_destroy_preparse_state(&preparse);
     }
 
     ++leaderboard;
@@ -4801,22 +4871,11 @@ void rc_client_set_read_memory_function(rc_client_t* client, rc_client_read_memo
 
 static void rc_client_invalidate_processing_memref(rc_client_t* client)
 {
-  rc_memref_t** next_memref = &client->game->runtime.memrefs;
-  rc_memref_t* memref;
-
   /* if processing_memref is not set, this occurred following a pointer chain. ignore it. */
   if (!client->state.processing_memref)
     return;
 
-  /* invalid memref. remove from chain so we don't have to evaluate it in the future.
-   * it's still there, so anything referencing it will always fetch the current value. */
-  while ((memref = *next_memref) != NULL) {
-    if (memref == client->state.processing_memref) {
-      *next_memref = memref->next;
-      break;
-    }
-    next_memref = &memref->next;
-  }
+  client->state.processing_memref->value.type = RC_VALUE_TYPE_NONE;
 
   rc_client_invalidate_memref_achievements(client->game, client, client->state.processing_memref);
   rc_client_invalidate_memref_leaderboards(client->game, client, client->state.processing_memref);
@@ -4924,30 +4983,56 @@ int rc_client_is_processing_required(rc_client_t* client)
   return (client->game->runtime.richpresence && client->game->runtime.richpresence->richpresence);
 }
 
-static void rc_client_update_memref_values(rc_client_t* client)
-{
-  rc_memref_t* memref = client->game->runtime.memrefs;
-  uint32_t value;
+static void rc_client_update_memref_values(rc_client_t* client) {
+  rc_memrefs_t* memrefs = client->game->runtime.memrefs;
+  rc_memref_list_t* memref_list;
+  rc_modified_memref_list_t* modified_memref_list;
   int invalidated_memref = 0;
 
-  for (; memref; memref = memref->next) {
-    if (memref->value.is_indirect)
-      continue;
+  memref_list = &memrefs->memrefs;
+  do {
+    rc_memref_t* memref = memref_list->items;
+    const rc_memref_t* memref_stop = memref + memref_list->count;
+    uint32_t value;
 
-    client->state.processing_memref = memref;
+    for (; memref < memref_stop; ++memref) {
+      if (memref->value.type == RC_VALUE_TYPE_NONE)
+        continue;
 
-    value = rc_peek_value(memref->address, memref->value.size, client->state.legacy_peek, client);
+      /* if processing_memref is set, and the memory read fails, all dependent achievements will be disabled */
+      client->state.processing_memref = memref;
 
-    if (client->state.processing_memref) {
-      rc_update_memref_value(&memref->value, value);
+      value = rc_peek_value(memref->address, memref->value.size, client->state.legacy_peek, client);
+
+      if (client->state.processing_memref) {
+        rc_update_memref_value(&memref->value, value);
+      }
+      else {
+        /* if the peek function cleared the processing_memref, the memref was invalidated */
+        invalidated_memref = 1;
+      }
     }
-    else {
-      /* if the peek function cleared the processing_memref, the memref was invalidated */
-      invalidated_memref = 1;
-    }
-  }
+
+    memref_list = memref_list->next;
+  } while (memref_list);
 
   client->state.processing_memref = NULL;
+
+  modified_memref_list = &memrefs->modified_memrefs;
+  if (modified_memref_list->count) {
+    do {
+      rc_modified_memref_t* modified_memref = modified_memref_list->items;
+      const rc_modified_memref_t* modified_memref_stop = modified_memref + modified_memref_list->count;
+
+      for (; modified_memref < modified_memref_stop; ++modified_memref)
+        rc_update_memref_value(&modified_memref->memref.value, rc_get_modified_memref_value(modified_memref, client->state.legacy_peek, client));
+
+      modified_memref_list = modified_memref_list->next;
+    } while (modified_memref_list);
+  }
+
+  if (client->game->runtime.richpresence && client->game->runtime.richpresence->richpresence)
+    rc_update_values(client->game->runtime.richpresence->richpresence->values, client->state.legacy_peek, client, NULL);
 
   if (invalidated_memref)
     rc_client_update_active_achievements(client->game);
@@ -5362,7 +5447,6 @@ void rc_client_do_frame(rc_client_t* client)
     rc_client_reset_pending_events(client);
 
     rc_client_update_memref_values(client);
-    rc_update_variables(client->game->runtime.variables, client->state.legacy_peek, client, NULL);
 
     client->game->progress_tracker.progress = 0.0;
     for (subset = client->game->subsets; subset; subset = subset->next) {
@@ -5534,9 +5618,8 @@ static void rc_client_reset_richpresence(rc_client_t* client)
 
 static void rc_client_reset_variables(rc_client_t* client)
 {
-  rc_value_t* variable = client->game->runtime.variables;
-  for (; variable; variable = variable->next)
-    rc_reset_value(variable);
+  if (client->game->runtime.richpresence && client->game->runtime.richpresence->richpresence)
+    rc_reset_values(client->game->runtime.richpresence->richpresence->values);
 }
 
 static void rc_client_reset_all(rc_client_t* client)

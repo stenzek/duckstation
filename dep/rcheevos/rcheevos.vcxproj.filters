@@ -138,4 +138,10 @@
       <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="src\rc_client_types.natvis" />
+    <Natvis Include="src\rcheevos\rc_runtime_types.natvis">
+      <Filter>rcheevos</Filter>
+    </Natvis>
+  </ItemGroup>
 </Project>
