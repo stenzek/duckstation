@@ -225,6 +225,7 @@ private:
   void connectSignals();
 
   void updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode);
+  void updateShortcutActions(bool starting);
   void updateStatusBarWidgetVisibility();
   void updateWindowTitle();
   void updateWindowState(bool force_visible = false);

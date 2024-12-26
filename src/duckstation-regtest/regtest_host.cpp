@@ -370,6 +370,16 @@ void Host::ReleaseRenderWindow()
   //
 }
 
+void Host::BeginTextInput()
+{
+  //
+}
+
+void Host::EndTextInput()
+{
+  //
+}
+
 bool Host::CreateAuxiliaryRenderWindow(s32 x, s32 y, u32 width, u32 height, std::string_view title,
                                        std::string_view icon_name, AuxiliaryRenderWindowUserData userdata,
                                        AuxiliaryRenderWindowHandle* handle, WindowInfo* wi, Error* error)

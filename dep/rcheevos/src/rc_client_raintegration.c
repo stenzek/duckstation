@@ -6,6 +6,24 @@
 
 #ifdef RC_CLIENT_SUPPORTS_RAINTEGRATION
 
+/* ===== natvis extensions ===== */
+
+typedef struct __rc_client_raintegration_event_enum_t { uint8_t value; } __rc_client_raintegration_event_enum_t;
+static void rc_client_raintegration_natvis_helper(void)
+{
+  struct natvis_extensions {
+    __rc_client_raintegration_event_enum_t raintegration_event_type;
+  } natvis;
+
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_TYPE_NONE;
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_MENUITEM_CHECKED_CHANGED;
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_HARDCORE_CHANGED;
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_PAUSE;
+  natvis.raintegration_event_type.value = RC_CLIENT_RAINTEGRATION_EVENT_MENU_CHANGED;
+}
+
+/* ============================= */
+
 static void rc_client_raintegration_load_dll(rc_client_t* client,
     const wchar_t* search_directory, rc_client_callback_t callback, void* callback_userdata)
 {
@@ -89,6 +107,9 @@ static void rc_client_raintegration_load_dll(rc_client_t* client,
     FreeLibrary(hDLL);
 
     callback(RC_ABORTED, "One or more required exports was not found in RA_Integration.dll", client, callback_userdata);
+
+    /* dummy reference to natvis helper to ensure extensions get compiled in. */
+    raintegration->shutdown = rc_client_raintegration_natvis_helper;
   }
   else {
     rc_mutex_lock(&client->state.mutex);

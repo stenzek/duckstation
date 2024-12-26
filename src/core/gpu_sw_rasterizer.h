@@ -32,7 +32,7 @@ using DrawTriangleFunction = void (*)(const GPUBackendDrawCommand* cmd, const GP
                                       const GPUBackendDrawPolygonCommand::Vertex* v2);
 typedef const DrawTriangleFunction DrawTriangleFunctionTable[2][2][2][2];
 
-using DrawLineFunction = void (*)(const GPUBackendDrawLineCommand* cmd, const GPUBackendDrawLineCommand::Vertex* p0,
+using DrawLineFunction = void (*)(const GPUBackendDrawCommand* cmd, const GPUBackendDrawLineCommand::Vertex* p0,
                                   const GPUBackendDrawLineCommand::Vertex* p1);
 typedef const DrawLineFunction DrawLineFunctionTable[2][2];
 

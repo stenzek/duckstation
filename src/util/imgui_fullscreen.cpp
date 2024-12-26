@@ -216,7 +216,7 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
   return true;
 }
 
-void ImGuiFullscreen::Shutdown()
+void ImGuiFullscreen::Shutdown(bool clear_state)
 {
   if (s_state.texture_load_thread.joinable())
   {
@@ -235,33 +235,36 @@ void ImGuiFullscreen::Shutdown()
 
   s_state.texture_cache.Clear();
 
-  s_state.notifications.clear();
-  s_state.background_progress_dialogs.clear();
-  s_state.fullscreen_footer_text.clear();
-  s_state.last_fullscreen_footer_text.clear();
-  s_state.fullscreen_text_change_time = 0.0f;
-  CloseInputDialog();
-  CloseMessageDialog();
-  s_state.choice_dialog_open = false;
-  s_state.choice_dialog_checkable = false;
-  s_state.choice_dialog_title = {};
-  s_state.choice_dialog_options.clear();
-  s_state.choice_dialog_callback = {};
-  s_state.enum_choice_button_id = 0;
-  s_state.enum_choice_button_value = 0;
-  s_state.enum_choice_button_set = false;
-  s_state.file_selector_open = false;
-  s_state.file_selector_directory = false;
-  s_state.file_selector_title = {};
-  s_state.file_selector_callback = {};
-  s_state.file_selector_current_directory = {};
-  s_state.file_selector_filters.clear();
-  s_state.file_selector_items.clear();
-  s_state.message_dialog_open = false;
-  s_state.message_dialog_title = {};
-  s_state.message_dialog_message = {};
-  s_state.message_dialog_buttons = {};
-  s_state.message_dialog_callback = {};
+  if (clear_state)
+  {
+    s_state.notifications.clear();
+    s_state.background_progress_dialogs.clear();
+    s_state.fullscreen_footer_text.clear();
+    s_state.last_fullscreen_footer_text.clear();
+    s_state.fullscreen_text_change_time = 0.0f;
+    CloseInputDialog();
+    CloseMessageDialog();
+    s_state.choice_dialog_open = false;
+    s_state.choice_dialog_checkable = false;
+    s_state.choice_dialog_title = {};
+    s_state.choice_dialog_options.clear();
+    s_state.choice_dialog_callback = {};
+    s_state.enum_choice_button_id = 0;
+    s_state.enum_choice_button_value = 0;
+    s_state.enum_choice_button_set = false;
+    s_state.file_selector_open = false;
+    s_state.file_selector_directory = false;
+    s_state.file_selector_title = {};
+    s_state.file_selector_callback = {};
+    s_state.file_selector_current_directory = {};
+    s_state.file_selector_filters.clear();
+    s_state.file_selector_items.clear();
+    s_state.message_dialog_open = false;
+    s_state.message_dialog_title = {};
+    s_state.message_dialog_message = {};
+    s_state.message_dialog_buttons = {};
+    s_state.message_dialog_callback = {};
+  }
 }
 
 void ImGuiFullscreen::SetSmoothScrolling(bool enabled)
@@ -580,6 +583,7 @@ void ImGuiFullscreen::PushResetLayout()
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, LayoutScale(4.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.SecondaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TextDisabled, UIStyle.DisabledColor);
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SecondaryColor);
@@ -596,7 +600,7 @@ void ImGuiFullscreen::PushResetLayout()
 void ImGuiFullscreen::PopResetLayout()
 {
   ImGui::PopStyleColor(11);
-  ImGui::PopStyleVar(12);
+  ImGui::PopStyleVar(13);
 }
 
 void ImGuiFullscreen::QueueResetFocus(FocusResetType type)
@@ -794,7 +798,6 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(padding));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(rounding));
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
 
   return ImGui::Begin(name, nullptr,
                       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
@@ -804,7 +807,7 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
 void ImGuiFullscreen::EndFullscreenWindow()
 {
   ImGui::End();
-  ImGui::PopStyleVar(4);
+  ImGui::PopStyleVar(3);
   ImGui::PopStyleColor();
 }
 

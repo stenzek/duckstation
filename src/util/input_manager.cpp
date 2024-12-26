@@ -1224,13 +1224,15 @@ void InputManager::GenerateRelativeMouseEvents()
     {
       PointerAxisState& state = s_pointer_state[device][axis];
       const float delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
-      if (delta == 0.0f)
+      const float unclamped_value = delta * s_pointer_axis_scale[axis];
+      const float value = std::clamp(unclamped_value, -1.0f, 1.0f);
+      if (value == state.last_value)
         continue;
 
-      const float unclamped_value = delta * s_pointer_axis_scale[axis];
+      state.last_value = value;
 
       const InputBindingKey key(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)));
-      if (axis >= static_cast<u32>(InputPointerAxis::WheelX) &&
+      if (device == 0 && axis >= static_cast<u32>(InputPointerAxis::WheelX) &&
           ImGuiManager::ProcessPointerAxisEvent(key, unclamped_value))
       {
         continue;
@@ -1239,12 +1241,7 @@ void InputManager::GenerateRelativeMouseEvents()
       if (!system_running)
         continue;
 
-      const float value = std::clamp(unclamped_value, -1.0f, 1.0f);
-      if (value != state.last_value)
-      {
-        state.last_value = value;
-        InvokeEvents(key, value, GenericInputBinding::Unknown);
-      }
+      InvokeEvents(key, value, GenericInputBinding::Unknown);
 
       if (delta != 0.0f)
       {
@@ -1302,16 +1299,25 @@ void InputManager::UpdatePointerAbsolutePosition(u32 index, float x, float y)
   if (dx != 0.0f)
   {
     s_pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta.fetch_add(static_cast<s32>(dx * 65536.0f),
-                                                                                 std::memory_order_release);
+                                                                                 std::memory_order_acq_rel);
   }
   if (dy != 0.0f)
   {
     s_pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta.fetch_add(static_cast<s32>(dy * 65536.0f),
-                                                                                 std::memory_order_release);
+                                                                                 std::memory_order_acq_rel);
   }
 
   if (index == 0)
     ImGuiManager::UpdateMousePosition(x, y);
+}
+
+void InputManager::ResetPointerRelativeDelta(u32 index)
+{
+  if (index >= MAX_POINTER_DEVICES || s_relative_mouse_mode_active) [[unlikely]]
+    return;
+
+  s_pointer_state[index][static_cast<u8>(InputPointerAxis::X)].delta.store(0, std::memory_order_release);
+  s_pointer_state[index][static_cast<u8>(InputPointerAxis::Y)].delta.store(0, std::memory_order_release);
 }
 
 void InputManager::UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool raw_input)

@@ -124,7 +124,7 @@ static const rc_disallowed_setting_t _rc_disallowed_neocd_settings[] = {
 };
 
 static const rc_disallowed_setting_t _rc_disallowed_pcsx_rearmed_settings[] = {
-  { "pcsx_rearmed_psxclock", "<55" },
+  { "pcsx_rearmed_psxclock", ",!auto,<55" },
   { "pcsx_rearmed_region", "pal" },
   { NULL, NULL }
 };
@@ -202,14 +202,14 @@ static const rc_disallowed_core_settings_t rc_disallowed_core_settings[] = {
   { NULL, NULL }
 };
 
-static int rc_libretro_string_equal_nocase_wildcard(const char* test, const char* value) {
+static int rc_libretro_string_equal_nocase_wildcard(const char* test, const char* match) {
   char c1, c2;
   while ((c1 = *test++)) {
-    if (tolower(c1) != tolower(c2 = *value++) && c2 != '?')
+    if (tolower(c1) != tolower(c2 = *match++) && c2 != '?')
       return (c2 == '*');
   }
 
-  return (*value == '\0');
+  return (*match == '\0');
 }
 
 static int rc_libretro_numeric_less_than(const char* test, const char* value) {
@@ -218,7 +218,50 @@ static int rc_libretro_numeric_less_than(const char* test, const char* value) {
   return (test_num < value_num);
 }
 
+static int rc_libretro_match_token(const char* val, const char* token, size_t size, int* result) {
+  if (*token == '!') {
+    /* !X => if X is a match, it's explicitly allowed. match with result = false */
+    if (rc_libretro_match_token(val, token + 1, size - 1, result)) {
+      *result = 0;
+      return 1;
+    }
+  }
+
+  if (*token == '<') {
+    /* if val < token, match with result = true */
+    char buffer[128];
+    memcpy(buffer, token + 1, size - 1);
+    buffer[size - 1] = '\0';
+    if (rc_libretro_numeric_less_than(val, buffer)) {
+      *result = 1;
+      return 1;
+    }
+  }
+
+  if (memcmp(token, val, size) == 0 && val[size] == 0) {
+    /* exact match, match with result = true */
+    *result = 1;
+    return 1;
+  }
+  else {
+    /* check for case insensitive match */
+    char buffer[128];
+    memcpy(buffer, token, size);
+    buffer[size] = '\0';
+    if (rc_libretro_string_equal_nocase_wildcard(val, buffer)) {
+      /* case insensitive match, match with result = true */
+      *result = 1;
+      return 1;
+    }
+  }
+
+  /* no match */
+  return 0;
+}
+
 static int rc_libretro_match_value(const char* val, const char* match) {
+  int result = 0;
+
   /* if value starts with a comma, it's a CSV list of potential matches */
   if (*match == ',') {
     do {
@@ -229,33 +272,23 @@ static int rc_libretro_match_value(const char* val, const char* match) {
         ++match;
 
       size = match - ptr;
-      if (val[size] == '\0') {
-        if (memcmp(ptr, val, size) == 0) {
-          return 1;
-        }
-        else {
-          char buffer[128];
-          memcpy(buffer, ptr, size);
-          buffer[size] = '\0';
-          if (rc_libretro_string_equal_nocase_wildcard(buffer, val))
-            return 1;
-        }
-      }
-    } while (*match == ',');
+      if (rc_libretro_match_token(val, ptr, size, &result))
+        return result;
 
-    return 0;
+    } while (*match == ',');
+  }
+  else {
+    /* a leading exclamation point means the provided value(s) are not forbidden (are allowed) */
+    if (*match == '!')
+      return !rc_libretro_match_value(val, &match[1]);
+
+    /* just a single value, attempt to match it */
+    if (rc_libretro_match_token(val, match, strlen(match), &result))
+      return result;
   }
 
-  /* a leading exclamation point means the provided value(s) are not forbidden (are allowed) */
-  if (*match == '!')
-    return !rc_libretro_match_value(val, &match[1]);
-
-  /* a leading less tahn means the provided value is the minimum allowed */
-  if (*match == '<')
-    return rc_libretro_numeric_less_than(val, &match[1]);
-
-  /* just a single value, attempt to match it */
-  return rc_libretro_string_equal_nocase_wildcard(val, match);
+  /* value did not match filters, assume it's allowed */
+  return 0;
 }
 
 int rc_libretro_is_setting_allowed(const rc_disallowed_setting_t* disallowed_settings, const char* setting, const char* value) {

@@ -46,7 +46,6 @@ typedef struct rc_runtime_trigger_t {
   rc_memref_t* invalid_memref;
   uint8_t md5[16];
   int32_t serialized_size;
-  uint8_t owns_memrefs;
 }
 rc_runtime_trigger_t;
 
@@ -58,16 +57,13 @@ typedef struct rc_runtime_lboard_t {
   rc_memref_t* invalid_memref;
   uint8_t md5[16];
   uint32_t serialized_size;
-  uint8_t owns_memrefs;
 }
 rc_runtime_lboard_t;
 
 typedef struct rc_runtime_richpresence_t {
   rc_richpresence_t* richpresence;
   void* buffer;
-  struct rc_runtime_richpresence_t* previous;
   uint8_t md5[16];
-  uint8_t owns_memrefs;
 }
 rc_runtime_richpresence_t;
 
@@ -82,11 +78,7 @@ typedef struct rc_runtime_t {
 
   rc_runtime_richpresence_t* richpresence;
 
-  rc_memref_t* memrefs;
-  rc_memref_t** next_memref;
-
-  rc_value_t* variables;
-  rc_value_t** next_variable;
+  struct rc_memrefs_t* memrefs;
 
   uint8_t owns_self;
 }

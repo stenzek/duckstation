@@ -2055,7 +2055,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../autoupdaterdialog.ui" line="51"/>
         <source>Update Available</source>
-        <translation>Досупно обновление</translation>
+        <translation>Доступно обновление</translation>
     </message>
     <message>
         <location filename="../autoupdaterdialog.ui" line="60"/>

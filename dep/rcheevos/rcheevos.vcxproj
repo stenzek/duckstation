@@ -48,6 +48,10 @@
     <ClInclude Include="src\rc_version.h" />
     <ClInclude Include="src\rhash\md5.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="src\rcheevos\rc_runtime_types.natvis" />
+    <Natvis Include="src\rc_client_types.natvis" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{4BA0A6D4-3AE1-42B2-9347-096FD023FF64}</ProjectGuid>
   </PropertyGroup>

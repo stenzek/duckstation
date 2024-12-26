@@ -545,7 +545,10 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
 
   Entry entry;
   if (!PopulateEntryFromPath(path, &entry))
+  {
+    lock.lock();
     return false;
+  }
 
   entry.path = std::move(path);
   entry.last_modified_time = timestamp;

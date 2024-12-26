@@ -2120,15 +2120,19 @@ void System::FrameDone()
     AccumulatePreFrameSleepTime(current_time);
 
   // pre-frame sleep (input lag reduction)
-  current_time = Timer::GetCurrentValue();
-  if (s_state.pre_frame_sleep)
+  // if we're running over, then fall through to the normal Throttle() case which will fix up next_frame_time.
+  if (s_state.pre_frame_sleep && pre_frame_sleep_until > current_time)
   {
     // don't sleep if it's under 1ms, because we're just going to overshoot (or spin).
-    if (pre_frame_sleep_until > current_time &&
-        Timer::ConvertValueToMilliseconds(pre_frame_sleep_until - current_time) >= 1)
+    if (Timer::ConvertValueToMilliseconds(pre_frame_sleep_until - current_time) >= 1)
     {
       Throttle(current_time, pre_frame_sleep_until);
       current_time = Timer::GetCurrentValue();
+    }
+    else
+    {
+      // still need to update next_frame_time
+      s_state.next_frame_time += s_state.frame_period;
     }
   }
   else
@@ -4364,6 +4368,17 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
     SPU::GetOutputStream()->SetOutputVolume(GetAudioOutputVolume());
 
+    // CPU side GPU settings
+    if (g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
+        g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
+        g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
+        g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing ||
+        g_settings.display_crop_mode != old_settings.display_crop_mode ||
+        g_settings.display_aspect_ratio != old_settings.display_aspect_ratio)
+    {
+      g_gpu.UpdateSettings(old_settings);
+    }
+
     if (g_settings.gpu_renderer != old_settings.gpu_renderer)
     {
       // RecreateGPU() also pushes new settings to the thread.
@@ -4380,8 +4395,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames ||
              g_settings.gpu_use_software_renderer_for_readbacks !=
                old_settings.gpu_use_software_renderer_for_readbacks ||
-             g_settings.gpu_fifo_size != old_settings.gpu_fifo_size ||
-             g_settings.gpu_max_run_ahead != old_settings.gpu_max_run_ahead ||
              g_settings.gpu_true_color != old_settings.gpu_true_color ||
              g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
              g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords ||
@@ -4389,14 +4402,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||
              g_settings.gpu_sprite_texture_filter != old_settings.gpu_sprite_texture_filter ||
              g_settings.gpu_line_detect_mode != old_settings.gpu_line_detect_mode ||
-             g_settings.gpu_force_video_timing != old_settings.gpu_force_video_timing ||
              g_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
              g_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale ||
              g_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode ||
              g_settings.gpu_texture_cache != old_settings.gpu_texture_cache ||
              g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
              g_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing ||
-             g_settings.display_crop_mode != old_settings.display_crop_mode ||
              g_settings.display_aspect_ratio != old_settings.display_aspect_ratio ||
              g_settings.display_scaling != old_settings.display_scaling ||
              g_settings.display_alignment != old_settings.display_alignment ||
@@ -4416,12 +4427,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.gpu_show_vram != old_settings.gpu_show_vram ||
              g_settings.rewind_enable != old_settings.rewind_enable ||
              g_settings.runahead_frames != old_settings.runahead_frames ||
-             g_settings.texture_replacements.enable_texture_replacements !=
-               old_settings.texture_replacements.enable_texture_replacements ||
-             g_settings.texture_replacements.enable_vram_write_replacements !=
-               old_settings.texture_replacements.enable_vram_write_replacements ||
-             g_settings.texture_replacements.dump_textures != old_settings.texture_replacements.dump_textures ||
-             g_settings.texture_replacements.config != old_settings.texture_replacements.config)
+             g_settings.texture_replacements != old_settings.texture_replacements)
     {
       GPUThread::UpdateSettings(true, false);
 
@@ -4564,7 +4570,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     if (GPUThread::IsFullscreenUIRequested())
     {
       // handle device setting updates as well
-      if (g_settings.AreGPUDeviceSettingsChanged(old_settings))
+      if (g_settings.gpu_renderer != old_settings.gpu_renderer || g_settings.AreGPUDeviceSettingsChanged(old_settings))
         GPUThread::UpdateSettings(false, true);
 
       if (g_settings.display_vsync != old_settings.display_vsync ||
@@ -4659,7 +4665,14 @@ void System::WarnAboutStateTaints(u32 state_taints)
 void System::WarnAboutUnsafeSettings()
 {
   LargeString messages;
-  auto append = [&messages](const char* icon, std::string_view msg) { messages.append_format("{} {}\n", icon, msg); };
+  const auto append = [&messages](const char* icon, std::string_view msg) {
+    messages.append_format("{} {}\n", icon, msg);
+  };
+  const auto append_format = [&messages]<typename... T>(const char* icon, fmt::format_string<T...> fmt, T&&... args) {
+    messages.append_format("{} ", icon);
+    messages.append_vformat(fmt, fmt::make_format_args(args...));
+    messages.append('\n');
+  };
 
   if (!g_settings.disable_all_enhancements)
   {
@@ -4667,26 +4680,27 @@ void System::WarnAboutUnsafeSettings()
     {
       if (g_settings.cpu_overclock_active)
       {
-        append(ICON_EMOJI_WARNING,
-               SmallString::from_format(
-                 TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
-                 g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
-                 g_settings.cpu_overclock_denominator));
+        append_format(ICON_EMOJI_WARNING,
+                      TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+                      g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
+                      g_settings.cpu_overclock_denominator);
       }
       if (g_settings.cdrom_read_speedup > 1)
       {
-        append(ICON_EMOJI_WARNING,
-               SmallString::from_format(
-                 TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
-                 g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2));
+        append_format(
+          ICON_EMOJI_WARNING,
+          TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
+          g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
       }
       if (g_settings.cdrom_seek_speedup != 1)
       {
-        append(ICON_EMOJI_WARNING,
-               SmallString::from_format(TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
-                                        (g_settings.cdrom_seek_speedup == 0) ?
-                                          TinyString(TRANSLATE_SV("System", "Instant")) :
-                                          TinyString::from_format("{}x", g_settings.cdrom_seek_speedup)));
+        TinyString speed;
+        if (g_settings.cdrom_seek_speedup == 0)
+          speed = TRANSLATE_SV("System", "Instant");
+        else
+          speed.format("{}x", g_settings.cdrom_seek_speedup);
+        append_format(ICON_EMOJI_WARNING,
+                      TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."), speed);
       }
       if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
       {
@@ -4721,6 +4735,14 @@ void System::WarnAboutUnsafeSettings()
         ICON_FA_PAINT_ROLLER,
         TRANSLATE_SV("System",
                      "Texture cache is enabled. This feature is experimental, some games may not render correctly."));
+    }
+
+    // Potential performance issues.
+    if (g_settings.cpu_fastmem_mode != Settings::DEFAULT_CPU_FASTMEM_MODE)
+    {
+      append_format(ICON_EMOJI_WARNING,
+                    TRANSLATE_FS("System", "Fastmem mode is set to {}, this will reduce performance."),
+                    Settings::GetCPUFastmemModeName(g_settings.cpu_fastmem_mode));
     }
   }
 

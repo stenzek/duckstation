@@ -1692,9 +1692,10 @@ PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exc
 
     // if we're writing to ram, let it go through a few times, and use manual block protection to sort it out
     // TODO: path for manual protection to return back to read-only pages
-    if (is_write && !g_state.cop0_regs.sr.Isc && GetSegmentForAddress(guest_address) != CPU::Segment::KSEG2 &&
+    if (!g_state.cop0_regs.sr.Isc && GetSegmentForAddress(guest_address) != CPU::Segment::KSEG2 &&
         AddressInRAM(guest_address))
     {
+      DebugAssert(is_write);
       DEV_LOG("Ignoring fault due to RAM write @ 0x{:08X}", guest_address);
       InvalidateBlocksWithPageIndex(Bus::GetRAMCodePageIndex(guest_address));
       return PageFaultHandler::HandlerResult::ContinueExecution;

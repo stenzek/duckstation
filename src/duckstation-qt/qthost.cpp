@@ -234,8 +234,7 @@ bool QtHost::SaveGameSettings(SettingsInterface* sif, bool delete_if_empty)
     // to read it at the same time.
     const auto lock = Host::GetSettingsLock();
 
-    if (FileSystem::FileExists(ini->GetPath().c_str()) &&
-        !FileSystem::DeleteFile(ini->GetPath().c_str(), &error))
+    if (FileSystem::FileExists(ini->GetPath().c_str()) && !FileSystem::DeleteFile(ini->GetPath().c_str(), &error))
     {
       Host::ReportErrorAsync(
         TRANSLATE_SV("QtHost", "Error"),
@@ -1645,6 +1644,25 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
     else
       callback(path.toStdString());
   });
+}
+
+void Host::BeginTextInput()
+{
+  DEV_LOG("Host::BeginTextInput()");
+
+  // NOTE: Called on GPU thread.
+  QInputMethod* method = qApp->inputMethod();
+  if (method)
+    QMetaObject::invokeMethod(method, "show", Qt::QueuedConnection);
+}
+
+void Host::EndTextInput()
+{
+  DEV_LOG("Host::EndTextInput()");
+
+  QInputMethod* method = qApp->inputMethod();
+  if (method)
+    QMetaObject::invokeMethod(method, "hide", Qt::QueuedConnection);
 }
 
 bool Host::CreateAuxiliaryRenderWindow(s32 x, s32 y, u32 width, u32 height, std::string_view title,

@@ -150,6 +150,26 @@ void GPU_SW::DrawLine(const GPUBackendDrawLineCommand* cmd)
     DrawFunction(cmd, &cmd->vertices[i], &cmd->vertices[i + 1]);
 }
 
+void GPU_SW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
+{
+  const GPU_SW_Rasterizer::DrawLineFunction DrawFunction =
+    GPU_SW_Rasterizer::GetDrawLineFunction(cmd->shading_enable, cmd->transparency_enable);
+
+  // Need to cut out the irrelevant bits.
+  // TODO: In _theory_ we could use the fixed-point parts here.
+  for (u32 i = 0; i < cmd->num_vertices; i += 2)
+  {
+    const GPUBackendDrawPreciseLineCommand::Vertex& RESTRICT start = cmd->vertices[i];
+    const GPUBackendDrawPreciseLineCommand::Vertex& RESTRICT end = cmd->vertices[i + 1];
+    const GPUBackendDrawLineCommand::Vertex vertices[2] = {
+      {.x = start.native_x, .y = start.native_y, .color = start.color},
+      {.x = end.native_x, .y = end.native_y, .color = end.color},
+    };
+
+    DrawFunction(cmd, &vertices[0], &vertices[1]);
+  }
+}
+
 void GPU_SW::DrawingAreaChanged()
 {
   // GPU_SW_Rasterizer::g_drawing_area set by base class.

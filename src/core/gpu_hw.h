@@ -48,6 +48,7 @@ public:
     SpritePalette4Bit,
     SpritePalette8Bit,
     SpriteDirect16Bit,
+    SpritePageTexture,
 
     MaxCount,
 
@@ -89,6 +90,7 @@ protected:
   void DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd) override;
   void DrawSprite(const GPUBackendDrawRectangleCommand* cmd) override;
   void DrawLine(const GPUBackendDrawLineCommand* cmd) override;
+  void DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd) override;
 
   void FlushRender() override;
   void DrawingAreaChanged() override;
@@ -238,6 +240,7 @@ private:
   /// Returns true if the draw is going to use shader blending/framebuffer fetch.
   bool NeedsShaderBlending(GPUTransparencyMode transparency, BatchTextureMode texture, bool check_mask) const;
 
+  void DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height);
   void UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* data, u32 data_pitch, bool set_mask,
                        bool check_mask, const GSVector4i bounds);
   bool BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);

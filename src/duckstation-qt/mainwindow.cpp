@@ -371,6 +371,7 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool 
   }
 
   updateDisplayRelatedActions(true, render_to_main, fullscreen);
+  updateShortcutActions(false);
 
   // We need the surface visible.
   QGuiApplication::sync();
@@ -405,6 +406,7 @@ void MainWindow::releaseRenderWindow()
   m_display_created = false;
 
   updateDisplayRelatedActions(false, false, false);
+  updateShortcutActions(false);
 
   m_ui.actionViewSystemDisplay->setEnabled(false);
   m_ui.actionFullscreen->setEnabled(false);
@@ -1739,11 +1741,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
 
   m_ui.actionViewGameProperties->setDisabled(starting_or_not_running);
 
-  m_shortcuts.open_file->setEnabled(!starting_or_running);
-  m_shortcuts.game_list_refresh->setEnabled(!starting_or_running);
-  m_shortcuts.game_list_search->setEnabled(!starting_or_running);
-  m_shortcuts.game_grid_zoom_in->setEnabled(!starting_or_running);
-  m_shortcuts.game_grid_zoom_out->setEnabled(!starting_or_running);
+  updateShortcutActions(starting);
 
   if (starting_or_running)
   {
@@ -1765,6 +1763,18 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   }
 
   m_ui.statusBar->clearMessage();
+}
+
+void MainWindow::updateShortcutActions(bool starting)
+{
+  const bool starting_or_running = starting || s_system_valid;
+  const bool is_showing_game_list = isShowingGameList();
+
+  m_shortcuts.open_file->setEnabled(!starting_or_running);
+  m_shortcuts.game_list_refresh->setEnabled(is_showing_game_list);
+  m_shortcuts.game_list_search->setEnabled(is_showing_game_list);
+  m_shortcuts.game_grid_zoom_in->setEnabled(is_showing_game_list);
+  m_shortcuts.game_grid_zoom_out->setEnabled(is_showing_game_list);
 }
 
 void MainWindow::updateStatusBarWidgetVisibility()
@@ -1915,6 +1925,8 @@ void MainWindow::switchToGameListView()
       QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents,
                                       [this]() { return static_cast<bool>(m_display_widget); });
     }
+
+    updateShortcutActions(false);
   }
 
   m_game_list_widget->setFocus();
@@ -1931,6 +1943,8 @@ void MainWindow::switchToEmulationView()
   // resume if we weren't paused at switch time
   if (s_system_paused && !m_was_paused_on_surface_loss)
     g_emu_thread->setSystemPaused(false);
+
+  updateShortcutActions(false);
 
   if (m_display_widget)
     m_display_widget->setFocus();

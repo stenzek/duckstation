@@ -305,7 +305,7 @@ static std::string GetTextureReplacementDirectory();
 static std::string GetTextureDumpDirectory();
 
 static VRAMReplacementName GetVRAMWriteHash(u32 width, u32 height, const void* pixels);
-static std::string GetVRAMWriteDumpFilename(const VRAMReplacementName& name);
+static std::string GetVRAMWriteDumpPath(const VRAMReplacementName& name);
 
 static bool IsMatchingReplacementPalette(HashType full_palette_hash, GPUTextureMode mode, GPUTexturePaletteReg palette,
                                          const TextureReplacementName& name);
@@ -533,6 +533,7 @@ struct GPUTextureCacheState
   std::vector<VRAMWrite*> temp_vram_write_list;
 
   std::unique_ptr<GPUTexture> replacement_texture_render_target;
+  std::unique_ptr<GPUPipeline> replacement_upscale_pipeline;              // copies alpha as-is with optional bilinear
   std::unique_ptr<GPUPipeline> replacement_draw_pipeline;                 // copies alpha as-is
   std::unique_ptr<GPUPipeline> replacement_semitransparent_draw_pipeline; // inverts alpha (i.e. semitransparent)
 
@@ -564,6 +565,9 @@ bool GPUTextureCache::ShouldTrackVRAMWrites()
   if (!g_gpu_settings.gpu_texture_cache)
     return false;
 
+  if (g_gpu_settings.texture_replacements.always_track_uploads)
+    return true;
+
 #ifdef ALWAYS_TRACK_VRAM_WRITES
   return true;
 #else
@@ -592,20 +596,7 @@ bool GPUTextureCache::Initialize(GPU_HW* backend)
 
 void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings)
 {
-  if (use_texture_cache)
-  {
-    UpdateVRAMTrackingState();
-
-    if (g_gpu_settings.texture_replacements.enable_texture_replacements !=
-        old_settings.texture_replacements.enable_texture_replacements)
-    {
-      Invalidate();
-
-      DestroyPipelines();
-      if (!CompilePipelines()) [[unlikely]]
-        Panic("Failed to compile pipelines on TC settings change");
-    }
-  }
+  const bool prev_tracking_state = s_state.track_vram_writes;
 
   // Reload textures if configuration changes.
   const bool old_replacement_scale_linear_filter = s_state.config.replacement_scale_linear_filter;
@@ -617,8 +608,11 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
   {
     if (use_texture_cache)
     {
-      if (s_state.config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
+      if (g_gpu_settings.texture_replacements.enable_texture_replacements !=
+            old_settings.texture_replacements.enable_texture_replacements ||
+          s_state.config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
       {
+        DestroyPipelines();
         if (!CompilePipelines()) [[unlikely]]
           Panic("Failed to compile pipelines on TC replacement settings change");
       }
@@ -626,6 +620,11 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
 
     ReloadTextureReplacements(false);
   }
+
+  UpdateVRAMTrackingState();
+
+  if (s_state.track_vram_writes != prev_tracking_state)
+    Invalidate();
 }
 
 bool GPUTextureCache::GetStateSize(StateWrapper& sw, u32* size)
@@ -813,6 +812,7 @@ void GPUTextureCache::Shutdown()
   s_state.vram_write_texture_replacements.clear();
   s_state.texture_page_texture_replacements.clear();
   s_state.dumped_textures.clear();
+  s_state.dumped_vram_writes.clear();
 }
 
 void GPUTextureCache::SetHashCacheTextureFormat()
@@ -860,25 +860,42 @@ bool GPUTextureCache::CompilePipelines()
     shadergen.GenerateReplacementMergeFragmentShader(false, s_state.config.replacement_scale_linear_filter));
   if (!fs)
     return false;
+  GL_OBJECT_NAME(fs, "Replacement upscale shader");
   plconfig.fragment_shader = fs.get();
-  if (!(s_state.replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+  if (!(s_state.replacement_upscale_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
+  GL_OBJECT_NAME(s_state.replacement_upscale_pipeline, "Replacement upscale pipeline");
 
-  fs = g_gpu_device->CreateShader(
-    GPUShaderStage::Fragment, shadergen.GetLanguage(),
-    shadergen.GenerateReplacementMergeFragmentShader(true, s_state.config.replacement_scale_linear_filter));
+  if (s_state.config.replacement_scale_linear_filter)
+  {
+    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                    shadergen.GenerateReplacementMergeFragmentShader(false, false));
+    if (!fs)
+      return false;
+    GL_OBJECT_NAME(fs, "Replacement draw shader");
+    plconfig.fragment_shader = fs.get();
+    if (!(s_state.replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+      return false;
+    GL_OBJECT_NAME(s_state.replacement_draw_pipeline, "Replacement draw pipeline");
+  }
+
+  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                  shadergen.GenerateReplacementMergeFragmentShader(true, false));
   if (!fs)
     return false;
+  GL_OBJECT_NAME(fs, "Replacement semitransparent draw shader");
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.fragment_shader = fs.get();
   if (!(s_state.replacement_semitransparent_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
     return false;
+  GL_OBJECT_NAME(s_state.replacement_semitransparent_draw_pipeline, "Replacement semitransparent draw pipeline");
 
   return true;
 }
 
 void GPUTextureCache::DestroyPipelines()
 {
+  s_state.replacement_upscale_pipeline.reset();
   s_state.replacement_draw_pipeline.reset();
   s_state.replacement_semitransparent_draw_pipeline.reset();
 }
@@ -2673,8 +2690,15 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
 
   s_state.dumped_vram_writes.insert(name);
 
-  const std::string filename = GetVRAMWriteDumpFilename(name);
-  if (filename.empty() || FileSystem::FileExists(filename.c_str()))
+  if (!g_gpu_settings.texture_replacements.dump_replaced_textures &&
+      s_state.vram_replacements.find(name) != s_state.vram_replacements.end())
+  {
+    INFO_LOG("Not dumping VRAM write '{}' because it already has a replacement", name.ToString());
+    return;
+  }
+
+  const std::string path = GetVRAMWriteDumpPath(name);
+  if (path.empty() || FileSystem::FileExists(path.c_str()))
     return;
 
   Image image(width, height, ImageFormat::RGBA8);
@@ -2683,7 +2707,7 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
 
   for (u32 y = 0; y < height; y++)
   {
-    u8* row_ptr = image.GetPixels();
+    u8* row_ptr = image.GetRowPixels(y);
     for (u32 x = 0; x < width; x++)
     {
       const u32 pixel32 = VRAMRGBA5551ToRGBA8888(*(src_pixels++));
@@ -2695,9 +2719,14 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
   if (s_state.config.dump_vram_write_force_alpha_channel)
     image.SetAllPixelsOpaque();
 
-  INFO_LOG("Dumping {}x{} VRAM write to '{}'", width, height, Path::GetFileName(filename));
-  if (!image.SaveToFile(filename.c_str())) [[unlikely]]
-    ERROR_LOG("Failed to dump {}x{} VRAM write to '{}'", width, height, filename);
+  INFO_LOG("Dumping {}x{} VRAM write to '{}'", width, height, Path::GetFileName(path));
+
+  Error error;
+  if (!image.SaveToFile(path.c_str(), Image::DEFAULT_SAVE_QUALITY, &error)) [[unlikely]]
+  {
+    ERROR_LOG("Failed to dump {}x{} VRAM write to '{}': {}", width, height, Path::GetFileName(path),
+              error.GetDescription());
+  }
 }
 
 void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32 offset_y, u32 src_width,
@@ -3374,7 +3403,7 @@ GPUTextureCache::VRAMReplacementName GPUTextureCache::GetVRAMWriteHash(u32 width
   return {hash.low64, hash.high64};
 }
 
-std::string GPUTextureCache::GetVRAMWriteDumpFilename(const VRAMReplacementName& name)
+std::string GPUTextureCache::GetVRAMWriteDumpPath(const VRAMReplacementName& name)
 {
   std::string ret;
   if (!EnsureGameDirectoryExists())
@@ -3604,29 +3633,41 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
     return;
   }
 
+  GL_SCOPE_FMT("ApplyTextureReplacements({:016X}, {:016X}) => {}x{}", tex_hash, pal_hash, replacement_tex->GetWidth(),
+               replacement_tex->GetHeight());
+
   // TODO: Use rects instead of fullscreen tris, maybe avoid the copy..
+  g_gpu_device->InvalidateRenderTarget(s_state.replacement_texture_render_target.get());
+  g_gpu_device->SetRenderTarget(s_state.replacement_texture_render_target.get());
+
+  GL_INS("Upscale Texture Page");
   alignas(VECTOR_ALIGNMENT) float uniforms[4];
   GSVector2 texture_size = GSVector2(GSVector2i(entry->texture->GetWidth(), entry->texture->GetHeight()));
   GSVector2::store<true>(&uniforms[0], texture_size);
   GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
-  g_gpu_device->InvalidateRenderTarget(s_state.replacement_texture_render_target.get());
-  g_gpu_device->SetRenderTarget(s_state.replacement_texture_render_target.get());
   g_gpu_device->SetViewportAndScissor(0, 0, new_width, new_height);
-  g_gpu_device->SetPipeline(s_state.replacement_draw_pipeline.get());
+  g_gpu_device->SetPipeline(s_state.replacement_upscale_pipeline.get());
   g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->SetTextureSampler(0, entry->texture.get(), g_gpu_device->GetNearestSampler());
   g_gpu_device->Draw(3, 0);
 
   for (const TextureReplacementSubImage& si : subimages)
   {
+    GL_INS_FMT("Blit {}x{} replacement from {} to {}", si.texture->GetWidth(), si.texture->GetHeight(), si.src_rect,
+               si.dst_rect);
+
     const GSVector4i dst_rect = GSVector4i(GSVector4(si.dst_rect) * max_scale_v);
     texture_size = GSVector2(si.texture->GetSizeVec());
     GSVector2::store<true>(&uniforms[0], texture_size);
     GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
     g_gpu_device->SetViewportAndScissor(dst_rect);
-    g_gpu_device->SetTextureSampler(0, si.texture, g_gpu_device->GetNearestSampler());
-    g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :
-                                                s_state.replacement_draw_pipeline.get());
+    g_gpu_device->SetTextureSampler(0, si.texture,
+                                    s_state.config.replacement_scale_linear_filter ? g_gpu_device->GetLinearSampler() :
+                                                                                     g_gpu_device->GetNearestSampler());
+    g_gpu_device->SetPipeline(si.invert_alpha ?
+                                s_state.replacement_semitransparent_draw_pipeline.get() :
+                                (s_state.replacement_draw_pipeline ? s_state.replacement_draw_pipeline.get() :
+                                                                     s_state.replacement_upscale_pipeline.get()));
     g_gpu_device->Draw(3, 0);
   }
 

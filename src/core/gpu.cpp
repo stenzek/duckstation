@@ -66,8 +66,7 @@ static TimingEvent s_command_tick_event(
   "GPU Command Tick", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.CommandTickEvent(ticks); },
   nullptr);
 static TimingEvent s_frame_done_event(
-  "Frame Done", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.FrameDoneEvent(ticks); },
-  nullptr);
+  "Frame Done", 1, 1, [](void* param, TickCount ticks, TickCount ticks_late) { g_gpu.FrameDoneEvent(ticks); }, nullptr);
 
 // #define PSX_GPU_STATS
 #ifdef PSX_GPU_STATS
@@ -160,8 +159,10 @@ std::tuple<u32, u32> GPU::GetFullDisplayResolution() const
                                              std::clamp<s32>(m_crtc_state.regs.X1, xmin, xmax),
                                            0) /
                              m_crtc_state.dot_clock_divider);
-    height = static_cast<u32>(std::max<s32>(
-      std::clamp<s32>(m_crtc_state.regs.Y2, ymin, ymax) - std::clamp<s32>(m_crtc_state.regs.Y1, ymin, ymax), 0));
+    height =
+      static_cast<u32>(std::max<s32>(
+        std::clamp<s32>(m_crtc_state.regs.Y2, ymin, ymax) - std::clamp<s32>(m_crtc_state.regs.Y1, ymin, ymax), 0))
+      << BoolToUInt8(m_GPUSTAT.vertical_interlace && m_GPUSTAT.vertical_resolution);
   }
 
   return std::tie(width, height);
@@ -414,7 +415,6 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool upd
 
   sw.Do(&m_current_clut_reg_bits);
   sw.Do(&m_current_clut_is_8bit);
-  sw.DoBytes(g_gpu_clut, sizeof(g_gpu_clut));
 
   sw.DoBytes(&m_vram_transfer, sizeof(m_vram_transfer));
 
@@ -422,9 +422,6 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool upd
   sw.Do(&m_blit_buffer);
   sw.Do(&m_blit_remaining_words);
   sw.Do(&m_render_command.bits);
-
-  sw.Do(&m_max_run_ahead);
-  sw.Do(&m_fifo_size);
 
   if (sw.IsReading())
   {

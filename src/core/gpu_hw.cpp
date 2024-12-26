@@ -58,8 +58,8 @@ static constexpr const std::array s_transparency_modes = {
 };
 
 static constexpr const std::array s_batch_texture_modes = {
-  "Palette4Bit", "Palette8Bit",       "Direct16Bit",       "PageTexture",
-  "Disabled",    "SpritePalette4Bit", "SpritePalette8Bit", "SpriteDirect16Bit",
+  "Palette4Bit",       "Palette8Bit",       "Direct16Bit",       "PageTexture",       "Disabled",
+  "SpritePalette4Bit", "SpritePalette8Bit", "SpriteDirect16Bit", "SpritePageTexture",
 };
 static_assert(s_batch_texture_modes.size() == static_cast<size_t>(GPU_HW::BatchTextureMode::MaxCount));
 
@@ -616,6 +616,8 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
   // Need to reload CLUT if we're enabling SW rendering.
   if (g_gpu_settings.gpu_use_software_renderer_for_readbacks && !old_settings.gpu_use_software_renderer_for_readbacks)
   {
+    DownloadVRAMFromGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+
     if (m_draw_mode.mode_reg.texture_mode <= GPUTextureMode::Palette8Bit)
     {
       GPU_SW_Rasterizer::UpdateCLUT(m_draw_mode.palette_reg,
@@ -1121,8 +1123,10 @@ bool GPU_HW::CompilePipelines(Error* error)
   const u32 max_active_texture_modes =
     (m_allow_sprite_mode ? NUM_TEXTURE_MODES :
                            (NUM_TEXTURE_MODES - (NUM_TEXTURE_MODES - static_cast<u32>(BatchTextureMode::SpriteStart))));
-  const u32 num_active_texture_modes = (max_active_texture_modes - BoolToUInt32(!needs_page_texture));
-  const u32 total_vertex_shaders = ((m_allow_sprite_mode ? 7 : 4) - BoolToUInt32(!needs_page_texture));
+  const u32 num_active_texture_modes =
+    (max_active_texture_modes - (BoolToUInt32(!needs_page_texture) * (BoolToUInt32(m_allow_sprite_mode) + 1)));
+  const u32 total_vertex_shaders =
+    ((m_allow_sprite_mode ? 7 : 4) - (BoolToUInt32(!needs_page_texture) * (BoolToUInt32(m_allow_sprite_mode) + 1)));
   const u32 total_fragment_shaders = ((1 + BoolToUInt32(needs_rov_depth)) * 5 * 5 * num_active_texture_modes * 2 *
                                       (1 + BoolToUInt32(!true_color)) * (1 + BoolToUInt32(!force_progressive_scan)));
   const u32 total_items =
@@ -1230,8 +1234,11 @@ bool GPU_HW::CompilePipelines(Error* error)
 
         for (u8 texture_mode = 0; texture_mode < max_active_texture_modes; texture_mode++)
         {
-          if (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) && !needs_page_texture)
+          if (!needs_page_texture && (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) ||
+                                      texture_mode == static_cast<u8>(BatchTextureMode::SpritePageTexture)))
+          {
             continue;
+          }
 
           for (u8 check_mask = 0; check_mask < 2; check_mask++)
           {
@@ -1351,8 +1358,11 @@ bool GPU_HW::CompilePipelines(Error* error)
 
         for (u8 texture_mode = 0; texture_mode < max_active_texture_modes; texture_mode++)
         {
-          if (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) && !needs_page_texture)
+          if (!needs_page_texture && (texture_mode == static_cast<u8>(BatchTextureMode::PageTexture) ||
+                                      texture_mode == static_cast<u8>(BatchTextureMode::SpritePageTexture)))
+          {
             continue;
+          }
 
           for (u8 dithering = 0; dithering < 2; dithering++)
           {
@@ -1375,7 +1385,8 @@ bool GPU_HW::CompilePipelines(Error* error)
                    static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePalette4Bit ||
                    static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePalette8Bit);
                 const bool page_texture =
-                  (static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::PageTexture);
+                  (static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::PageTexture ||
+                   static_cast<BatchTextureMode>(texture_mode) == BatchTextureMode::SpritePageTexture);
                 const bool sprite = (static_cast<BatchTextureMode>(texture_mode) >= BatchTextureMode::SpriteStart);
                 const bool uv_limits = ShouldClampUVs(sprite ? m_sprite_texture_filtering : m_texture_filtering);
                 const bool use_shader_blending = (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend));
@@ -2042,11 +2053,10 @@ ALWAYS_INLINE_RELEASE void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode
                                                      u32 base_vertex, const GPUTextureCache::Source* texture)
 {
   // [depth_test][transparency_mode][render_mode][texture_mode][dithering][interlacing][check_mask]
-  const u8 texture_mode = texture ? static_cast<u8>(BatchTextureMode::PageTexture) :
-                                    (static_cast<u8>(m_batch.texture_mode) +
-                                     ((m_batch.texture_mode < BatchTextureMode::PageTexture && m_batch.sprite_mode) ?
-                                        static_cast<u8>(BatchTextureMode::SpriteStart) :
-                                        0));
+  const u8 texture_mode = (static_cast<u8>(m_batch.texture_mode) +
+                           ((m_batch.texture_mode < BatchTextureMode::Disabled && m_batch.sprite_mode) ?
+                              static_cast<u8>(BatchTextureMode::SpriteStart) :
+                              0));
   const u8 depth_test = BoolToUInt8(m_batch.use_depth_buffer);
   const u8 check_mask = BoolToUInt8(m_batch.check_mask_before_draw);
   g_gpu_device->SetPipeline(m_batch_pipelines[depth_test][static_cast<u8>(m_batch.transparency_mode)][static_cast<u8>(
@@ -2497,6 +2507,54 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
 
     for (u32 i = 0; i < num_vertices; i += 2)
       DrawFunction(cmd, &cmd->vertices[i], &cmd->vertices[i + 1]);
+  }
+}
+
+void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
+{
+  PrepareDraw(cmd);
+
+  const bool use_depth = m_pgxp_depth_buffer && cmd->valid_w;
+  SetBatchDepthBuffer(cmd, use_depth);
+
+  const u32 num_vertices = cmd->num_vertices;
+  DebugAssert(m_batch_vertex_space >= (num_vertices * 4) && m_batch_index_space >= (num_vertices * 6));
+
+  const float depth = GetCurrentNormalizedVertexDepth();
+
+  for (u32 i = 0; i < num_vertices; i += 2)
+  {
+    const GSVector2 start_pos = GSVector2::load<false>(&cmd->vertices[i].x);
+    const u32 start_color = cmd->vertices[i].color;
+    const GSVector2 end_pos = GSVector2::load<false>(&cmd->vertices[i + 1].x);
+    const u32 end_color = cmd->vertices[i + 1].color;
+
+    const GSVector4 bounds = GSVector4::xyxy(start_pos, end_pos);
+    const GSVector4i rect =
+      GSVector4i(GSVector4::xyxy(start_pos.min(end_pos), start_pos.max(end_pos))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+    const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
+    DebugAssert(rect.width() <= MAX_PRIMITIVE_WIDTH && rect.height() <= MAX_PRIMITIVE_HEIGHT && !clamped_rect.rempty());
+
+    AddDrawnRectangle(clamped_rect);
+    DrawLine(bounds, start_color, end_color, depth);
+  }
+
+  if (ShouldDrawWithSoftwareRenderer())
+  {
+    const GPU_SW_Rasterizer::DrawLineFunction DrawFunction =
+      GPU_SW_Rasterizer::GetDrawLineFunction(cmd->shading_enable, cmd->transparency_enable);
+
+    for (u32 i = 0; i < cmd->num_vertices; i += 2)
+    {
+      const GPUBackendDrawPreciseLineCommand::Vertex& RESTRICT start = cmd->vertices[i];
+      const GPUBackendDrawPreciseLineCommand::Vertex& RESTRICT end = cmd->vertices[i + 1];
+      const GPUBackendDrawLineCommand::Vertex vertices[2] = {
+        {.x = start.native_x, .y = start.native_y, .color = start.color},
+        {.x = end.native_x, .y = end.native_y, .color = end.color},
+      };
+
+      DrawFunction(cmd, &vertices[0], &vertices[1]);
+    }
   }
 }
 
@@ -3003,6 +3061,7 @@ void GPU_HW::EnsureVertexBufferSpaceForCommand(const GPUBackendDrawCommand* cmd)
       required_indices = MAX_VERTICES_FOR_RECTANGLE;
       break;
     case GPUBackendCommandType::DrawLine:
+    case GPUBackendCommandType::DrawPreciseLine:
     {
       // assume expansion
       const GPUBackendDrawLineCommand* lcmd = static_cast<const GPUBackendDrawLineCommand*>(cmd);
@@ -3045,9 +3104,9 @@ ALWAYS_INLINE float GPU_HW::GetCurrentNormalizedVertexDepth() const
 void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering, u8 active_line_lsb)
 {
   FlushRender();
+  DeactivateROV();
 
   GL_SCOPE_FMT("FillVRAM({},{} => {},{} ({}x{}) with 0x{:08X}", x, y, x + width, y + height, width, height, color);
-  DeactivateROV();
 
   GL_INS_FMT("Dirty draw area before: {}", m_vram_dirty_draw_rect);
 
@@ -3100,16 +3159,20 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
 
 void GPU_HW::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
 {
-  FlushRender();
-
-  GL_PUSH_FMT("ReadVRAM({},{} => {},{} ({}x{})", x, y, x + width, y + height, width, height);
+  GL_SCOPE_FMT("ReadVRAM({},{} => {},{} ({}x{})", x, y, x + width, y + height, width, height);
 
   if (ShouldDrawWithSoftwareRenderer())
   {
     GL_INS("VRAM is already up to date due to SW draws.");
-    GL_POP();
     return;
   }
+
+  DownloadVRAMFromGPU(x, y, width, height);
+}
+
+void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
+{
+  FlushRender();
 
   // TODO: Only read if it's in the drawn area
 
@@ -3180,6 +3243,10 @@ void GPU_HW::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, b
   }
   else
   {
+    // no point dumping things we can't replace, so put it after the mask check
+    if (GPUTextureCache::ShouldDumpVRAMWrite(width, height))
+      GPUTextureCache::DumpVRAMWrite(width, height, data);
+
     GPUTexture* rtex = GPUTextureCache::GetVRAMReplacement(width, height, data);
     if (rtex && BlitVRAMReplacementTexture(rtex, x * m_resolution_scale, y * m_resolution_scale,
                                            width * m_resolution_scale, height * m_resolution_scale))

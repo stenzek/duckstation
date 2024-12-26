@@ -205,6 +205,7 @@ void CPU::Reset()
   g_state.cop0_regs.BDAM = 0;
   g_state.cop0_regs.BPCM = 0;
   g_state.cop0_regs.EPC = 0;
+  g_state.cop0_regs.dcic.bits = 0;
   g_state.cop0_regs.sr.bits = 0;
   g_state.cop0_regs.cause.bits = 0;
 
@@ -220,14 +221,16 @@ void CPU::Reset()
   // This consumes cycles, so do it first.
   SetPC(RESET_VECTOR);
 
-  g_state.pending_ticks = 0;
   g_state.downcount = 0;
+  g_state.pending_ticks = 0;
+  g_state.gte_completion_tick = 0;
 }
 
 bool CPU::DoState(StateWrapper& sw)
 {
   sw.Do(&g_state.pending_ticks);
   sw.Do(&g_state.downcount);
+  sw.DoEx(&g_state.gte_completion_tick, 78, static_cast<u32>(0));
   sw.DoArray(g_state.regs.r, static_cast<u32>(Reg::count));
   sw.Do(&g_state.pc);
   sw.Do(&g_state.npc);
@@ -299,6 +302,7 @@ bool CPU::DoState(StateWrapper& sw)
                                                                             g_settings.cpu_execution_mode);
     g_state.gte_completion_tick = 0;
     UpdateMemoryPointers();
+    UpdateDebugDispatcherFlag();
   }
 
   return !sw.HasError();

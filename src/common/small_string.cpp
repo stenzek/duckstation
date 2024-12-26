@@ -526,6 +526,11 @@ std::span<u8> SmallStringBase::bspan()
   return std::span<u8>(reinterpret_cast<u8*>(m_buffer), m_length);
 }
 
+void SmallStringBase::append_vformat(fmt::string_view fmt, fmt::format_args args)
+{
+  fmt::vformat_to(std::back_inserter(*this), fmt, args);
+}
+
 void SmallStringBase::vformat(fmt::string_view fmt, fmt::format_args args)
 {
   clear();

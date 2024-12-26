@@ -70,6 +70,7 @@ enum : u32
   CDDA_REPORT_START_DELAY = 60, // 60 frames
   MINIMUM_INTERRUPT_DELAY = 1000,
   INTERRUPT_DELAY_CYCLES = 500,
+  MISSED_INT1_DELAY_CYCLES = 5000, // See CheckForSectorBufferReadComplete().
 };
 
 static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
@@ -3896,12 +3897,13 @@ void CDROM::CheckForSectorBufferReadComplete()
   // Otherwise, if games read the header then data out as two separate transfers (which is typical), they'll
   // get the header for one sector, and the header for the next in the second transfer.
   SectorBuffer& next_sb = s_state.sector_buffers[s_state.current_write_sector_buffer];
-  if (next_sb.position == 0 && next_sb.size > 0 && !HasPendingAsyncInterrupt())
+  if (next_sb.position == 0 && next_sb.size > 0 && !HasPendingAsyncInterrupt() && IsReading())
   {
     DEV_LOG("Sending additional INT1 for missed sector in buffer {}", s_state.current_write_sector_buffer);
     s_state.async_response_fifo.Push(s_state.secondary_status.bits);
     s_state.pending_async_interrupt = static_cast<u8>(Interrupt::DataReady);
-    s_state.async_interrupt_event.Schedule(INTERRUPT_DELAY_CYCLES);
+    s_state.async_interrupt_event.Schedule(
+      std::min<TickCount>(s_state.drive_event.GetTicksUntilNextExecution(), MISSED_INT1_DELAY_CYCLES));
   }
 }
 
