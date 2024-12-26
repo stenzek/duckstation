@@ -5297,18 +5297,26 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     QueueResetFocus(FocusResetType::PopupClosed);
   };
 
-  ImGui::SetNextWindowSize(LayoutScale(700.0f, 0.0f));
+  ImGui::SetNextWindowSize(LayoutScale(750.0f, 0.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
   ImGui::PushFont(UIStyle.LargeFont);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+                      LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
+  ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
+  ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
 
-  const char* popup_title = FSUI_CSTR("RetroAchievements Login");
+  const char* popup_title = FSUI_ICONSTR(ICON_FA_KEY, "RetroAchievements Login");
   bool popup_closed = false;
   ImGui::OpenPopup(popup_title);
-  if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
   {
+    BeginMenuButtons();
+
     ImGui::TextWrapped(
       FSUI_CSTR("Please enter your user name and password for retroachievements.org below. Your password will "
                 "not be saved in DuckStation, an access token will be generated and used instead."));
@@ -5329,8 +5337,6 @@ void FullscreenUI::DrawAchievementsLoginWindow()
                                      ImGuiInputTextFlags_Password);
 
     ImGui::NewLine();
-
-    BeginMenuButtons();
 
     const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
 
@@ -5379,8 +5385,9 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     ImGui::EndPopup();
   }
 
+  ImGui::PopStyleColor(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
-  ImGui::PopStyleVar(2);
 
   if (popup_closed)
     actually_close_popup();
