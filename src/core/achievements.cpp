@@ -1785,6 +1785,7 @@ bool Achievements::DoState(StateWrapper& sw)
       RA_RestoreState(reinterpret_cast<const char*>(data.data()));
     }
     else
+#endif
     {
       const int result = rc_client_deserialize_progress_sized(s_state.client, data.data(), data_size);
       if (result != RC_OK)
@@ -1793,7 +1794,6 @@ bool Achievements::DoState(StateWrapper& sw)
         rc_client_reset(s_state.client);
       }
     }
-#endif
 
     return true;
   }
