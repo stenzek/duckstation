@@ -192,11 +192,6 @@ void GPU_SW::ClearCache()
 {
 }
 
-void GPU_SW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
-{
-  GPU_SW_Rasterizer::UpdateCLUT(reg, clut_is_8bit);
-}
-
 void GPU_SW::OnBufferSwapped()
 {
 }

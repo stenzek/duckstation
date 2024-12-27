@@ -83,7 +83,6 @@ protected:
   void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask,
                 bool check_mask) override;
   void ClearCache() override;
-  void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) override;
   void OnBufferSwapped() override;
 
   void DrawPolygon(const GPUBackendDrawPolygonCommand* cmd) override;

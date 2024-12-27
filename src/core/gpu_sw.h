@@ -40,7 +40,6 @@ protected:
   void DrawSprite(const GPUBackendDrawRectangleCommand* cmd) override;
   void DrawingAreaChanged() override;
   void ClearCache() override;
-  void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) override;
   void OnBufferSwapped() override;
 
   void UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd) override;

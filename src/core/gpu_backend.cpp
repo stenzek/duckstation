@@ -463,7 +463,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
     case GPUBackendCommandType::UpdateCLUT:
     {
       const GPUBackendUpdateCLUTCommand* ccmd = static_cast<const GPUBackendUpdateCLUTCommand*>(cmd);
-      UpdateCLUT(ccmd->reg, ccmd->clut_is_8bit);
+      GPU_SW_Rasterizer::UpdateCLUT(ccmd->reg, ccmd->clut_is_8bit);
     }
     break;
 
@@ -1238,10 +1238,6 @@ bool GPUBackend::ApplyChromaSmoothing()
   m_chroma_smoothing_texture->MakeReadyForSampling();
   SetDisplayTexture(m_chroma_smoothing_texture.get(), m_display_depth_buffer, 0, 0, width, height);
   return true;
-}
-
-void GPUBackend::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
-{
 }
 
 void GPUBackend::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,

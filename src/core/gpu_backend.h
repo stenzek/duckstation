@@ -129,7 +129,6 @@ protected:
   virtual void DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd) = 0;
 
   virtual void DrawingAreaChanged() = 0;
-  virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;
   virtual void ClearCache() = 0;
   virtual void OnBufferSwapped() = 0;
   virtual void ClearVRAM() = 0;

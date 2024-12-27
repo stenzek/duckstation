@@ -318,11 +318,8 @@ void GPU_HW::ClearVRAM()
   m_texpage_dirty = false;
   m_compute_uv_range = m_clamp_uvs;
 
-  if (ShouldDrawWithSoftwareRenderer())
-  {
-    std::memset(g_vram, 0, sizeof(g_vram));
-    std::memset(g_gpu_clut, 0, sizeof(g_gpu_clut));
-  }
+  std::memset(g_vram, 0, sizeof(g_vram));
+  std::memset(g_gpu_clut, 0, sizeof(g_gpu_clut));
 
   m_batch = {};
   m_current_depth = 1;
@@ -336,10 +333,8 @@ void GPU_HW::LoadState(const GPUBackendLoadStateCommand* cmd)
     UnmapGPUBuffer(0, 0);
 
   std::memcpy(g_vram, cmd->vram_data, sizeof(g_vram));
+  std::memcpy(g_gpu_clut, cmd->clut_data, sizeof(g_gpu_clut));
   UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
-
-  if (ShouldDrawWithSoftwareRenderer())
-    std::memcpy(g_gpu_clut, cmd->clut_data, sizeof(g_gpu_clut));
 
   if (m_use_texture_cache)
   {
@@ -3765,12 +3760,6 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
 
   if (cmd->check_mask_before_draw)
     m_current_depth++;
-}
-
-void GPU_HW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
-{
-  if (ShouldDrawWithSoftwareRenderer())
-    GPU_SW_Rasterizer::UpdateCLUT(reg, clut_is_8bit);
 }
 
 void GPU_HW::FlushRender()
