@@ -156,8 +156,9 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     cg->mov(RWARG1, cg->dword[PTR(&g_state.pc)]);
     cg->lea(RXARG2, cg->dword[PTR(g_code_lut.data())]);
     cg->mov(RWARG3, RWARG1);
-    cg->shr(RWARG3, 16);
+    cg->shr(RWARG3, LUT_TABLE_SHIFT);
     cg->mov(RXARG2, cg->qword[RXARG2 + RXARG3 * 8]);
+    cg->and_(RWARG1, (LUT_TABLE_SIZE - 1) << 2); // 0xFFFC
 
     // call(rcx[pc * 2]) (fast_map[pc >> 2])
     cg->jmp(cg->qword[RXARG2 + RXARG1 * 2]);

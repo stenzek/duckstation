@@ -52,10 +52,6 @@ static constexpr u32 RECOMPILE_FRAMES_FOR_INTERPRETER_FALLBACK = 15;
 static constexpr u32 INVALIDATE_COUNT_FOR_MANUAL_PROTECTION = 4;
 static constexpr u32 INVALIDATE_FRAMES_FOR_MANUAL_PROTECTION = 60;
 
-static CodeLUT DecodeCodeLUTPointer(u32 slot, CodeLUT ptr);
-static CodeLUT EncodeCodeLUTPointer(u32 slot, CodeLUT ptr);
-static CodeLUT OffsetCodeLUTPointer(CodeLUT fake_ptr, u32 pc);
-
 static void AllocateLUTs();
 static void DeallocateLUTs();
 static void ResetCodeLUT();
@@ -277,31 +273,6 @@ static constexpr u32 GetLUTSlotCount(bool include_unreachable)
 }
 } // namespace CPU::CodeCache
 
-CPU::CodeCache::CodeLUT CPU::CodeCache::DecodeCodeLUTPointer(u32 slot, CodeLUT ptr)
-{
-  if constexpr (sizeof(void*) == 8)
-    return reinterpret_cast<CodeLUT>(reinterpret_cast<u8*>(ptr) + (static_cast<u64>(slot) << 17));
-  else
-    return reinterpret_cast<CodeLUT>(reinterpret_cast<u8*>(ptr) + (slot << 16));
-}
-
-CPU::CodeCache::CodeLUT CPU::CodeCache::EncodeCodeLUTPointer(u32 slot, CodeLUT ptr)
-{
-  if constexpr (sizeof(void*) == 8)
-    return reinterpret_cast<CodeLUT>(reinterpret_cast<u8*>(ptr) - (static_cast<u64>(slot) << 17));
-  else
-    return reinterpret_cast<CodeLUT>(reinterpret_cast<u8*>(ptr) - (slot << 16));
-}
-
-CPU::CodeCache::CodeLUT CPU::CodeCache::OffsetCodeLUTPointer(CodeLUT fake_ptr, u32 pc)
-{
-  u8* fake_byte_ptr = reinterpret_cast<u8*>(fake_ptr);
-  if constexpr (sizeof(void*) == 8)
-    return reinterpret_cast<const void**>(fake_byte_ptr + (static_cast<u64>(pc) << 1));
-  else
-    return reinterpret_cast<const void**>(fake_byte_ptr + pc);
-}
-
 void CPU::CodeCache::AllocateLUTs()
 {
   constexpr u32 num_code_slots = GetLUTSlotCount(true);
@@ -323,9 +294,11 @@ void CPU::CodeCache::AllocateLUTs()
   // Mark everything as unreachable to begin with.
   for (u32 i = 0; i < LUT_TABLE_COUNT; i++)
   {
-    g_code_lut[i] = EncodeCodeLUTPointer(i, code_table_ptr);
+    g_code_lut[i] = code_table_ptr;
     s_block_lut[i] = nullptr;
   }
+
+  // Exclude unreachable.
   code_table_ptr += LUT_TABLE_SIZE;
 
   // Allocate ranges.
@@ -337,7 +310,7 @@ void CPU::CodeCache::AllocateLUTs()
     {
       const u32 slot = start_slot + i;
 
-      g_code_lut[slot] = EncodeCodeLUTPointer(slot, code_table_ptr);
+      g_code_lut[slot] = code_table_ptr;
       code_table_ptr += LUT_TABLE_SIZE;
 
       s_block_lut[slot] = block_table_ptr;
@@ -357,15 +330,13 @@ void CPU::CodeCache::DeallocateLUTs()
 
 void CPU::CodeCache::ResetCodeLUT()
 {
-  if (!s_lut_code_pointers)
-    return;
-
   // Make the unreachable table jump to the invalid code callback.
   MemsetPtrs(s_lut_code_pointers.get(), g_interpret_block, LUT_TABLE_COUNT);
 
   for (u32 i = 0; i < LUT_TABLE_COUNT; i++)
   {
-    CodeLUT ptr = DecodeCodeLUTPointer(i, g_code_lut[i]);
+    // Don't overwrite anything bound to unreachable.
+    CodeLUT ptr = g_code_lut[i];
     if (ptr == s_lut_code_pointers.get())
       continue;
 
@@ -375,18 +346,10 @@ void CPU::CodeCache::ResetCodeLUT()
 
 void CPU::CodeCache::SetCodeLUT(u32 pc, const void* function)
 {
-  if (!s_lut_code_pointers)
-    return;
-
   const u32 table = pc >> LUT_TABLE_SHIFT;
-  CodeLUT encoded_ptr = g_code_lut[table];
-
-#ifdef _DEBUG
-  const CodeLUT table_ptr = DecodeCodeLUTPointer(table, encoded_ptr);
-  DebugAssert(table_ptr != nullptr && table_ptr != s_lut_code_pointers.get());
-#endif
-
-  *OffsetCodeLUTPointer(encoded_ptr, pc) = function;
+  const u32 idx = (pc & 0xFFFF) >> 2;
+  DebugAssert(g_code_lut[table] != s_lut_code_pointers.get());
+  g_code_lut[table][idx] = function;
 }
 
 CPU::CodeCache::Block* CPU::CodeCache::LookupBlock(u32 pc)

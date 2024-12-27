@@ -279,12 +279,14 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     rvAsm->LWU(RARG1, PTR(&g_state.pc));
     rvMoveAddressToReg(rvAsm, RARG3, g_code_lut.data());
     rvAsm->SRLI(RARG2, RARG1, 16);
-    rvAsm->SLLI(RARG1, RARG1, 1);
     rvAsm->SLLI(RARG2, RARG2, 3);
     rvAsm->ADD(RARG2, RARG2, RARG3);
     rvAsm->LD(RARG2, 0, RARG2);
+    rvAsm->SLLI(RARG1, RARG1, 48); // idx = (pc & 0xFFFF) >> 2
+    rvAsm->SRLI(RARG1, RARG1, 50);
+    rvAsm->SLLI(RARG1, RARG1, 3);
 
-    // blr(x9[pc * 2]) (fast_map[pc >> 2])
+    // blr(x9[pc * 2]) (fast_map[idx])
     rvAsm->ADD(RARG1, RARG1, RARG2);
     rvAsm->LD(RARG1, 0, RARG1);
     rvAsm->JR(RARG1);

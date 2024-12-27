@@ -290,10 +290,11 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->ldr(RARG1, PTR(&g_state.pc));
     armMoveAddressToReg(armAsm, RARG3, g_code_lut.data());
     armAsm->lsr(RARG2, RARG1, 16);
+    armAsm->ubfx(RARG1, RARG1, 2, 14);
     armAsm->ldr(RARG2, MemOperand(RARG3, RARG2, LSL, 2));
 
     // blr(x9[pc * 2]) (fast_map[pc >> 2])
-    armAsm->ldr(RARG1, MemOperand(RARG2, RARG1));
+    armAsm->ldr(RARG1, MemOperand(RARG2, RARG1, LSL, 2));
     armAsm->blx(RARG1);
   }
 
