@@ -2549,7 +2549,7 @@ void CPU::CodeCache::InterpretCachedBlock(const Block* block)
 
     // now executing the instruction we previously fetched
     g_state.current_instruction.bits = instruction->bits;
-    g_state.current_instruction_pc = info->pc;
+    g_state.current_instruction_pc = g_state.pc;
     g_state.current_instruction_in_branch_delay_slot = info->is_branch_delay_slot; // TODO: let int set it instead
     g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
     g_state.branch_was_taken = false;

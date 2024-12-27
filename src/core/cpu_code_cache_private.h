@@ -37,8 +37,6 @@ enum RegInfoFlags : u8
 
 struct InstructionInfo
 {
-  u32 pc; // TODO: Remove this, old recs still depend on it.
-
   bool is_branch_instruction : 1;
   bool is_direct_branch_instruction : 1;
   bool is_unconditional_branch_instruction : 1;

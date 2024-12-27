@@ -948,7 +948,6 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
     InstructionInfo info;
     std::memset(&info, 0, sizeof(info));
 
-    info.pc = pc;
     info.is_branch_delay_slot = is_branch_delay_slot;
     info.is_load_delay_slot = is_load_delay_slot;
     info.is_branch_instruction = IsBranchInstruction(instruction);
@@ -985,18 +984,18 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
       const BlockInstructionInfoPair& prev = instructions->back();
       if (!prev.second.is_unconditional_branch_instruction || !prev.second.is_direct_branch_instruction)
       {
-        WARNING_LOG("Conditional or indirect branch delay slot at {:08X}, skipping block", info.pc);
+        WARNING_LOG("Conditional or indirect branch delay slot at {:08X}, skipping block", pc);
         return false;
       }
       if (!IsDirectBranchInstruction(instruction))
       {
-        WARNING_LOG("Indirect branch in delay slot at {:08X}, skipping block", info.pc);
+        WARNING_LOG("Indirect branch in delay slot at {:08X}, skipping block", pc);
         return false;
       }
 
       // we _could_ fetch the delay slot from the first branch's target, but it's probably in a different
       // page, and that's an invalidation nightmare. so just fallback to the int, this is very rare anyway.
-      WARNING_LOG("Direct branch in delay slot at {:08X}, skipping block", info.pc);
+      WARNING_LOG("Direct branch in delay slot at {:08X}, skipping block", pc);
       return false;
     }
 
@@ -1029,14 +1028,16 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
 
 #if defined(_DEBUG) || defined(_DEVEL)
   SmallString disasm;
+  u32 disasm_pc = start_pc;
   DEBUG_LOG("Block at 0x{:08X}", start_pc);
   DEBUG_LOG(" Uncached fetch ticks: {}", metadata->uncached_fetch_ticks);
   DEBUG_LOG(" ICache line count: {}", metadata->icache_line_count);
   for (const auto& cbi : *instructions)
   {
-    CPU::DisassembleInstruction(&disasm, cbi.second.pc, cbi.first.bits);
+    CPU::DisassembleInstruction(&disasm, disasm_pc, cbi.first.bits);
     DEBUG_LOG("[{} {} 0x{:08X}] {:08X} {}", cbi.second.is_branch_delay_slot ? "BD" : "  ",
-              cbi.second.is_load_delay_slot ? "LD" : "  ", cbi.second.pc, cbi.first.bits, disasm);
+              cbi.second.is_load_delay_slot ? "LD" : "  ", disasm_pc, cbi.first.bits, disasm);
+    disasm_pc += sizeof(Instruction);
   }
 #endif
 

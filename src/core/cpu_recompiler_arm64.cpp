@@ -1174,7 +1174,7 @@ void CPU::ARM64Recompiler::Flush(u32 flags)
 
 void CPU::ARM64Recompiler::Compile_Fallback()
 {
-  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", iinfo->pc, inst->bits);
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc, inst->bits);
 
   Flush(FLUSH_FOR_INTERPRETER);
 
