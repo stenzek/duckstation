@@ -478,12 +478,12 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->ldr(RWARG1, PTR(&g_state.pc));
     armMoveAddressToReg(armAsm, RXARG3, g_code_lut.data());
     armAsm->lsr(RWARG2, RWARG1, 16);
-    armAsm->lsr(RWARG1, RWARG1, 2);
+    armAsm->ubfx(RWARG1, RWARG1, 2, 14);
     armAsm->ldr(RXARG2, MemOperand(RXARG3, RXARG2, LSL, 3));
 
     // blr(x9[pc * 2]) (fast_map[pc >> 2])
     armAsm->ldr(RXARG1, MemOperand(RXARG2, RXARG1, LSL, 3));
-    armAsm->blr(RXARG1);
+    armAsm->br(RXARG1);
   }
 
   g_compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
@@ -1174,7 +1174,7 @@ void CPU::ARM64Recompiler::Flush(u32 flags)
 
 void CPU::ARM64Recompiler::Compile_Fallback()
 {
-  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", iinfo->pc, inst->bits);
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc, inst->bits);
 
   Flush(FLUSH_FOR_INTERPRETER);
 

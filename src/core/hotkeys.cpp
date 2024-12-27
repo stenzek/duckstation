@@ -210,7 +210,6 @@ DEFINE_HOTKEY("OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_
                 if (!pressed && CanPause())
                   FullscreenUI::OpenCheatsMenu();
               })
-#endif
 
 DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
               [](s32 pressed) {
@@ -218,21 +217,6 @@ DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP
                   System::SaveScreenshot();
               })
 
-DEFINE_HOTKEY("RecordSingleFrameGPUDump", TRANSLATE_NOOP("Hotkeys", "Graphics"),
-              TRANSLATE_NOOP("Hotkeys", "Record Single Frame GPU Trace"), [](s32 pressed) {
-                if (!pressed)
-                  System::StartRecordingGPUDump(nullptr, 1);
-              })
-
-DEFINE_HOTKEY("RecordMultiFrameGPUDump", TRANSLATE_NOOP("Hotkeys", "Graphics"),
-              TRANSLATE_NOOP("Hotkeys", "Record Multi-Frame GPU Trace"), [](s32 pressed) {
-                if (pressed > 0)
-                  System::StartRecordingGPUDump(nullptr, 0);
-                else
-                  System::StopRecordingGPUDump();
-              })
-
-#ifndef __ANDROID__
 DEFINE_HOTKEY("ToggleMediaCapture", TRANSLATE_NOOP("Hotkeys", "General"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Media Capture"), [](s32 pressed) {
                 if (!pressed)
@@ -256,6 +240,20 @@ DEFINE_HOTKEY("OpenLeaderboards", TRANSLATE_NOOP("Hotkeys", "General"),
                   FullscreenUI::OpenLeaderboardsWindow();
               })
 #endif
+
+DEFINE_HOTKEY("RecordSingleFrameGPUDump", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Record Single Frame GPU Trace"), [](s32 pressed) {
+                if (!pressed)
+                  System::StartRecordingGPUDump(nullptr, 1);
+              })
+
+DEFINE_HOTKEY("RecordMultiFrameGPUDump", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Record Multi-Frame GPU Trace"), [](s32 pressed) {
+                if (pressed > 0)
+                  System::StartRecordingGPUDump(nullptr, 0);
+                else
+                  System::StopRecordingGPUDump();
+              })
 
 DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Reset System"), [](s32 pressed) {
   if (!pressed)

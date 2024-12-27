@@ -558,7 +558,11 @@ void RegTestHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -dumpinterval: Dumps every N frames.\n");
   std::fprintf(stderr, "  -frames: Sets the number of frames to execute.\n");
   std::fprintf(stderr, "  -log <level>: Sets the log level. Defaults to verbose.\n");
+  std::fprintf(stderr, "  -console: Enables console logging output.\n");
+  std::fprintf(stderr, "  -pgxp: Enables PGXP.\n");
+  std::fprintf(stderr, "  -pgxp-cpu: Forces PGXP CPU mode.\n");
   std::fprintf(stderr, "  -renderer <renderer>: Sets the graphics renderer. Default to software.\n");
+  std::fprintf(stderr, "  -upscale <multiplier>: Enables upscaled rendering at the specified multiplier.\n");
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
                        "    parameters make up the filename. Use when the filename contains\n"
                        "    spaces or starts with a dash.\n");
@@ -639,7 +643,7 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         s_base_settings_interface->SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(level.value()));
         continue;
       }
-      else if (CHECK_ARG_PARAM("-console"))
+      else if (CHECK_ARG("-console"))
       {
         Log::SetConsoleOutputParams(true);
         s_base_settings_interface->SetBoolValue("Logging", "LogToConsole", true);

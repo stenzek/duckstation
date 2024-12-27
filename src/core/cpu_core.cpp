@@ -2549,7 +2549,7 @@ void CPU::CodeCache::InterpretCachedBlock(const Block* block)
 
     // now executing the instruction we previously fetched
     g_state.current_instruction.bits = instruction->bits;
-    g_state.current_instruction_pc = info->pc;
+    g_state.current_instruction_pc = g_state.pc;
     g_state.current_instruction_in_branch_delay_slot = info->is_branch_delay_slot; // TODO: let int set it instead
     g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
     g_state.branch_was_taken = false;
@@ -2706,10 +2706,13 @@ ALWAYS_INLINE_RELEASE bool CPU::DoInstructionRead(PhysicalMemoryAddress address,
 
     return true;
   }
-  else
+  else [[unlikely]]
   {
     if (raise_exceptions)
-      CPU::RaiseException(address, Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0));
+    {
+      g_state.cop0_regs.BadVaddr = address;
+      RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::IBE, false, false, 0), address);
+    }
 
     std::memset(data, 0, sizeof(u32) * word_count);
     return false;
@@ -2871,7 +2874,13 @@ ALWAYS_INLINE_RELEASE bool CPU::FetchInstruction()
 
 bool CPU::FetchInstructionForInterpreterFallback()
 {
-  DebugAssert(Common::IsAlignedPow2(g_state.npc, 4));
+  if (!Common::IsAlignedPow2(g_state.npc, 4)) [[unlikely]]
+  {
+    // The BadVaddr and EPC must be set to the fetching address, not the instruction about to execute.
+    g_state.cop0_regs.BadVaddr = g_state.npc;
+    RaiseException(Cop0Registers::CAUSE::MakeValueForException(Exception::AdEL, false, false, 0), g_state.npc);
+    return false;
+  }
 
   const PhysicalMemoryAddress address = g_state.npc;
   switch (address >> 29)
@@ -2881,7 +2890,7 @@ bool CPU::FetchInstructionForInterpreterFallback()
     case 0x05: // KSEG1 - physical memory uncached
     {
       // We don't use the icache when doing interpreter fallbacks, because it's probably stale.
-      if (!DoInstructionRead<false, false, 1, true>(address, &g_state.next_instruction.bits))
+      if (!DoInstructionRead<false, false, 1, true>(address, &g_state.next_instruction.bits)) [[unlikely]]
         return false;
     }
     break;
