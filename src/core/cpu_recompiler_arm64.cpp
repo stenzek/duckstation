@@ -483,7 +483,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
     // blr(x9[pc * 2]) (fast_map[pc >> 2])
     armAsm->ldr(RXARG1, MemOperand(RXARG2, RXARG1, LSL, 3));
-    armAsm->blr(RXARG1);
+    armAsm->br(RXARG1);
   }
 
   g_compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
