@@ -248,7 +248,12 @@ public:
 
   GSVector2i upl32() const { return GSVector2i(S32[0], 0); }
 
-  GSVector2i i8to16() const { ALL_LANES_16(ret.S16[i] = S8[i]); }
+  GSVector2i s8to16() const { ALL_LANES_16(ret.S16[i] = S8[i]); }
+  GSVector2i s8to32() const { ALL_LANES_32(ret.S32[i] = S8[i]); }
+  GSVector2i u8to16() const { ALL_LANES_16(ret.U16[i] = U8[i]); }
+  GSVector2i u8to32() const { ALL_LANES_32(ret.U32[i] = U8[i]); }
+  GSVector2i u16to32() const { ALL_LANES_32(ret.U32[i] = U16[i]); }
+  GSVector2i s16to32() const { ALL_LANES_32(ret.S32[i] = S16[i]); }
 
   template<s32 v>
   GSVector2i srl() const
@@ -1244,7 +1249,7 @@ public:
   GSVector4i s16to32() const { ALL_LANES_32(ret.S32[i] = S16[i]); }
   GSVector4i s16to64() const { ALL_LANES_64(ret.S64[i] = S16[i]); }
   GSVector4i s32to64() const { ALL_LANES_64(ret.S64[i] = S32[i]); }
-  GSVector4i u8to16() const { ALL_LANES_64(ret.U16[i] = U8[i]); }
+  GSVector4i u8to16() const { ALL_LANES_16(ret.U16[i] = U8[i]); }
   GSVector4i u8to32() const { ALL_LANES_32(ret.U32[i] = U8[i]); }
   GSVector4i u8to64() const { ALL_LANES_64(ret.U64[i] = U8[i]); }
   GSVector4i u16to32() const { ALL_LANES_32(ret.U32[i] = U16[i]); }
@@ -1846,10 +1851,7 @@ public:
 
   GSVector4 hsub(const GSVector4& v) const { return GSVector4(x - y, z - w, v.x - v.y, v.z - v.w); }
 
-  ALWAYS_INLINE float dot(const GSVector4& v) const
-  {
-    return (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w);
-  }
+  ALWAYS_INLINE float dot(const GSVector4& v) const { return (x * v.x) + (y * v.y) + (z * v.z) + (w * v.w); }
 
   GSVector4 sat(const GSVector4& min, const GSVector4& max) const
   {
@@ -2316,10 +2318,7 @@ public:
 
   ALWAYS_INLINE GSVector2 zw() const { return GSVector2(z, w); }
 
-  ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l, const GSVector2& h)
-  {
-    return GSVector4(l.x, l.y, h.x, h.y);
-  }
+  ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l, const GSVector2& h) { return GSVector4(l.x, l.y, h.x, h.y); }
 
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
   ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const { return GSVector4(F32[xn], F32[yn], F32[zn], F32[wn]); }

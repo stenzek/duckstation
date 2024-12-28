@@ -369,10 +369,21 @@ public:
   ALWAYS_INLINE GSVector2i upl32() const { return GSVector2i(_mm_unpacklo_epi32(m, _mm_setzero_si128())); }
   ALWAYS_INLINE GSVector2i uph32() const { return GSVector2i(_mm_unpackhi_epi32(m, _mm_setzero_si128())); }
 
-  ALWAYS_INLINE GSVector2i i8to16() const { return GSVector2i(_mm_cvtepi8_epi16(m)); }
-
 #ifdef CPU_ARCH_SSE41
   ALWAYS_INLINE GSVector2i u8to16() const { return GSVector2i(_mm_cvtepu8_epi16(m)); }
+  ALWAYS_INLINE GSVector2i u8to32() const { return GSVector2i(_mm_cvtepu8_epi32(m)); }
+  ALWAYS_INLINE GSVector2i s16to32() const { return GSVector2i(_mm_cvtepi16_epi32(m)); }
+  ALWAYS_INLINE GSVector2i u16to32() const { return GSVector2i(_mm_cvtepu16_epi32(m)); }
+#else
+  // These are a pain, adding only as needed...
+  ALWAYS_INLINE GSVector2i u8to16() const { return upl8(); }
+  ALWAYS_INLINE GSVector2i u8to32() const
+  {
+    return GSVector2i(_mm_unpacklo_epi16(_mm_unpacklo_epi8(m, _mm_setzero_si128()), _mm_setzero_si128()));
+  }
+
+  ALWAYS_INLINE GSVector2i s16to32() const { return upl16().sll32<16>().sra32<16>(); }
+  ALWAYS_INLINE GSVector2i u16to32() const { return upl16(); }
 #endif
 
   template<s32 i>
