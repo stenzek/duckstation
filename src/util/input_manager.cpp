@@ -1921,8 +1921,9 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
     // From lilypad: 1 mouse pixel = 1/8th way down.
     const float default_scale = (axis <= static_cast<u32>(InputPointerAxis::Y)) ? 8.0f : 1.0f;
     s_pointer_axis_scale[axis] =
-      1.0f / std::max(binding_si.GetFloatValue("Pad", fmt::format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(),
-                                               default_scale),
+      1.0f / std::max(binding_si.GetFloatValue(
+                        "ControllerPorts",
+                        TinyString::from_format("Pointer{}Scale", s_pointer_axis_names[axis]).c_str(), default_scale),
                       1.0f);
   }
 
