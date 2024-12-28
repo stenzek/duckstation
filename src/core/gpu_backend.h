@@ -174,6 +174,8 @@ protected:
   void DestroyDeinterlaceTextures();
   bool ApplyChromaSmoothing();
 
+  GSVector4i m_clamped_drawing_area = {};
+
   s32 m_display_width = 0;
   s32 m_display_height = 0;
   s32 m_display_origin_left = 0;

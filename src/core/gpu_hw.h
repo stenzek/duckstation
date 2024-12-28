@@ -227,8 +227,11 @@ private:
   void EnsureVertexBufferSpace(u32 required_vertices, u32 required_indices);
   void EnsureVertexBufferSpaceForCommand(const GPUBackendDrawCommand* cmd);
   void PrepareDraw(const GPUBackendDrawCommand* cmd);
+  bool BeginPolygonDraw(const GPUBackendDrawCommand* cmd, std::array<BatchVertex, 4>& vertices, u32& num_vertices,
+                        GSVector4i& clamped_draw_rect_012, GSVector4i& clamped_draw_rect_123);
   void FinishPolygonDraw(const GPUBackendDrawCommand* cmd, std::array<BatchVertex, 4>& vertices, u32 num_vertices,
-                         bool is_precise, bool is_3d);
+                         bool is_precise, bool is_3d, const GSVector4i clamped_draw_rect_012,
+                         const GSVector4i clamped_draw_rect_123);
   void ResetBatchVertexDepth();
 
   /// Returns the value to be written to the depth buffer for the current operation for mask bit emulation.
@@ -325,7 +328,6 @@ private:
   BatchUBOData m_batch_ubo_data = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.
-  GSVector4i m_clamped_drawing_area = {};
   GSVector4i m_vram_dirty_draw_rect = INVALID_RECT;
   GSVector4i m_vram_dirty_write_rect = INVALID_RECT; // TODO: Don't use in TC mode, should be kept at zero.
   GSVector4i m_current_uv_rect = INVALID_RECT;

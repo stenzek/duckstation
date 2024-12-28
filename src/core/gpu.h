@@ -326,8 +326,10 @@ private:
 
     AddCommandTicks(pixels);
   }
-  ALWAYS_INLINE_RELEASE void AddDrawRectangleTicks(const GSVector4i clamped_rect, bool textured, bool semitransparent)
+  ALWAYS_INLINE_RELEASE void AddDrawRectangleTicks(const GSVector4i rect, bool textured, bool semitransparent)
   {
+    const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+
     u32 drawn_width = clamped_rect.width();
     u32 drawn_height = clamped_rect.height();
 
@@ -373,8 +375,9 @@ private:
 
     AddCommandTicks(ticks_per_row * drawn_height);
   }
-  ALWAYS_INLINE_RELEASE void AddDrawLineTicks(const GSVector4i clamped_rect, bool shaded)
+  ALWAYS_INLINE_RELEASE void AddDrawLineTicks(const GSVector4i rect, bool shaded)
   {
+    const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
     u32 drawn_width = clamped_rect.width();
     u32 drawn_height = clamped_rect.height();
 

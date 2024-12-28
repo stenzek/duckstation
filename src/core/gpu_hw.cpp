@@ -296,7 +296,7 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
   if (upload_vram)
     UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
 
-  DrawingAreaChanged();
+  m_drawing_area_changed = true;
   return true;
 }
 
@@ -2494,7 +2494,12 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
     const GSVector4i rect =
       GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
     const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-    DebugAssert(rect.width() <= MAX_PRIMITIVE_WIDTH && rect.height() <= MAX_PRIMITIVE_HEIGHT && !clamped_rect.rempty());
+    DebugAssert(rect.width() <= MAX_PRIMITIVE_WIDTH && rect.height() <= MAX_PRIMITIVE_HEIGHT);
+    if (clamped_rect.rempty())
+    {
+      GL_INS_FMT("Culling off-screen line {} => {}", start_pos, end_pos);
+      continue;
+    }
 
     AddDrawnRectangle(clamped_rect);
     DrawLine(GSVector4(bounds), start_color, end_color, depth);
@@ -2533,7 +2538,11 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
     const GSVector4i rect =
       GSVector4i(GSVector4::xyxy(start_pos.min(end_pos), start_pos.max(end_pos))).add32(GSVector4i::cxpr(0, 0, 1, 1));
     const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-    DebugAssert(rect.width() <= MAX_PRIMITIVE_WIDTH && rect.height() <= MAX_PRIMITIVE_HEIGHT && !clamped_rect.rempty());
+    if (clamped_rect.rempty())
+    {
+      GL_INS_FMT("Culling off-screen line {} => {}", start_pos, end_pos);
+      continue;
+    }
 
     AddDrawnRectangle(clamped_rect);
     DrawLine(bounds, start_color, end_color, depth);
@@ -2658,6 +2667,16 @@ void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
 
 void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 {
+  const GSVector2i pos = GSVector2i::load<true>(&cmd->x);
+  const GSVector2i size = GSVector2i::load<true>(&cmd->width).u16to32();
+  const GSVector4i rect = GSVector4i::xyxy(pos, pos.add32(size));
+  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+  if (clamped_rect.rempty())
+  {
+    GL_INS_FMT("Culling off-screen sprite {}", rect);
+    return;
+  }
+
   PrepareDraw(cmd);
   SetBatchDepthBuffer(cmd, false);
   SetBatchSpriteMode(cmd, m_allow_sprite_mode);
@@ -2672,11 +2691,6 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   const u32 orig_tex_top = ZeroExtend32(cmd->texcoord) >> 8;
   const u32 rectangle_width = cmd->width;
   const u32 rectangle_height = cmd->height;
-
-  const GSVector4i rect =
-    GSVector4i(pos_x, pos_y, pos_x + static_cast<s32>(rectangle_width), pos_y + static_cast<s32>(rectangle_height));
-  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
-  DebugAssert(!clamped_rect.rempty());
 
   // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
   u32 tex_top = orig_tex_top;
@@ -2747,15 +2761,12 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 
 void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 {
-  PrepareDraw(cmd);
-  SetBatchDepthBuffer(cmd, false);
-
   // TODO: This could write directly to the mapped GPU pointer. But watch out for the reads below.
   const float depth = GetCurrentNormalizedVertexDepth();
   const bool raw_texture = (cmd->texture_enable && cmd->raw_texture_enable);
-  const u32 num_vertices = cmd->num_vertices;
-  const u32 texpage = m_draw_mode.bits;
+  const u32 texpage = ZeroExtend32(cmd->draw_mode.bits) | (ZeroExtend32(cmd->palette.bits) << 16);
   std::array<BatchVertex, 4> vertices;
+  u32 num_vertices = cmd->num_vertices;
   for (u32 i = 0; i < num_vertices; i++)
   {
     const GPUBackendDrawPolygonCommand::Vertex& vert = cmd->vertices[i];
@@ -2764,7 +2775,13 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
                     vert.texcoord, 0xFFFF0000u);
   }
 
-  FinishPolygonDraw(cmd, vertices, num_vertices, false, false);
+  GSVector4i clamped_draw_rect_012, clamped_draw_rect_123;
+  if (BeginPolygonDraw(cmd, vertices, num_vertices, clamped_draw_rect_012, clamped_draw_rect_123))
+  {
+    SetBatchDepthBuffer(cmd, false);
+
+    FinishPolygonDraw(cmd, vertices, num_vertices, false, false, clamped_draw_rect_012, clamped_draw_rect_123);
+  }
 
   if (ShouldDrawWithSoftwareRenderer())
   {
@@ -2778,14 +2795,12 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 
 void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
 {
-  PrepareDraw(cmd);
-
   // TODO: This could write directly to the mapped GPU pointer. But watch out for the reads below.
   const float depth = GetCurrentNormalizedVertexDepth();
   const bool raw_texture = (cmd->texture_enable && cmd->raw_texture_enable);
-  const u32 num_vertices = cmd->num_vertices;
-  const u32 texpage = m_draw_mode.bits;
+  const u32 texpage = ZeroExtend32(cmd->draw_mode.bits) | (ZeroExtend32(cmd->palette.bits) << 16);
   std::array<BatchVertex, 4> vertices;
+  u32 num_vertices = cmd->num_vertices;
   for (u32 i = 0; i < num_vertices; i++)
   {
     const GPUBackendDrawPrecisePolygonCommand::Vertex& vert = cmd->vertices[i];
@@ -2793,14 +2808,18 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
                     vert.texcoord, 0xFFFF0000u);
   }
 
-  const bool use_depth = m_pgxp_depth_buffer && cmd->valid_w;
-  SetBatchDepthBuffer(cmd, use_depth);
-  if (use_depth)
-    CheckForDepthClear(cmd, vertices.data(), num_vertices);
+  GSVector4i clamped_draw_rect_012, clamped_draw_rect_123;
+  if (BeginPolygonDraw(cmd, vertices, num_vertices, clamped_draw_rect_012, clamped_draw_rect_123))
+  {
+    const bool use_depth = m_pgxp_depth_buffer && cmd->valid_w;
+    SetBatchDepthBuffer(cmd, use_depth);
+    if (use_depth)
+      CheckForDepthClear(cmd, vertices.data(), num_vertices);
 
-  // Use PGXP to exclude primitives that are definitely 3D.
-  const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
-  FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d);
+    // Use PGXP to exclude primitives that are definitely 3D.
+    const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
+    FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d, clamped_draw_rect_012, clamped_draw_rect_123);
+  }
 
   if (ShouldDrawWithSoftwareRenderer())
   {
@@ -2820,16 +2839,11 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
   }
 }
 
-ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand* cmd,
-                                                     std::array<BatchVertex, 4>& vertices, u32 num_vertices,
-                                                     bool is_precise, bool is_3d)
+ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand* cmd,
+                                                    std::array<BatchVertex, 4>& vertices, u32& num_vertices,
+                                                    GSVector4i& clamped_draw_rect_012,
+                                                    GSVector4i& clamped_draw_rect_123)
 {
-  // Use PGXP to exclude primitives that are definitely 3D.
-  if (m_resolution_scale > 1 && !is_3d && cmd->quad_polygon)
-    HandleFlippedQuadTextureCoordinates(cmd, vertices.data());
-  else if (m_allow_sprite_mode)
-    SetBatchSpriteMode(cmd, is_precise ? !is_3d : IsPossibleSpritePolygon(vertices.data()));
-
   const GSVector2 v0f = GSVector2::load<false>(&vertices[0].x);
   const GSVector2 v1f = GSVector2::load<false>(&vertices[1].x);
   const GSVector2 v2f = GSVector2::load<false>(&vertices[2].x);
@@ -2837,9 +2851,69 @@ ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand
   const GSVector2 max_pos_12 = v1f.max(v2f);
   const GSVector4i draw_rect_012 =
     GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f)))).add32(GSVector4i::cxpr(0, 0, 1, 1));
-  const GSVector4i clamped_draw_rect_012 = draw_rect_012.rintersect(m_clamped_drawing_area);
-  DebugAssert(draw_rect_012.width() <= MAX_PRIMITIVE_WIDTH && draw_rect_012.height() <= MAX_PRIMITIVE_HEIGHT &&
-              !clamped_draw_rect_012.rempty());
+  clamped_draw_rect_012 = draw_rect_012.rintersect(m_clamped_drawing_area);
+  const bool first_tri_culled = clamped_draw_rect_012.rempty();
+  if (first_tri_culled)
+  {
+    GL_INS_FMT("Culling off-screen polygon: {},{} {},{} {},{}", vertices[0].x, vertices[0].y, vertices[1].y,
+               vertices[1].x, vertices[2].y, vertices[2].y);
+
+    if (num_vertices != 4)
+      return false;
+  }
+
+  if (num_vertices == 4)
+  {
+    const GSVector2 v3f = GSVector2::load<false>(&vertices[3].x);
+    const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
+                                       .add32(GSVector4i::cxpr(0, 0, 1, 1));
+    clamped_draw_rect_123 = draw_rect_123.rintersect(m_clamped_drawing_area);
+    const bool second_tri_culled = clamped_draw_rect_123.rempty();
+    if (second_tri_culled)
+    {
+      GL_INS_FMT("Culling off-screen polygon (quad second half): {},{} {},{} {},{}", vertices[2].x, vertices[2].y,
+                 vertices[1].x, vertices[1].y, vertices[3].x, vertices[3].y);
+
+      if (first_tri_culled)
+      {
+        // both parts culled
+        return false;
+      }
+
+      // Remove second part of quad.
+      // NOTE: Culling this way results in subtle differences with UV clamping, since the fourth vertex is no
+      // longer considered in the range. This is mainly apparent when the UV gradient is zero. Seems like it
+      // generally looks better this way, so I'm keeping it.
+      num_vertices = 3;
+    }
+    else
+    {
+      // If first part was culled, move the second part to the first.
+      if (first_tri_culled)
+      {
+        clamped_draw_rect_012 = clamped_draw_rect_123;
+        std::memcpy(&vertices[0], &vertices[2], sizeof(BatchVertex));
+        std::memcpy(&vertices[2], &vertices[3], sizeof(BatchVertex));
+        num_vertices = 3;
+      }
+    }
+  }
+
+  PrepareDraw(cmd);
+  return true;
+}
+
+ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand* cmd,
+                                                     std::array<BatchVertex, 4>& vertices, u32 num_vertices,
+                                                     bool is_precise, bool is_3d,
+                                                     const GSVector4i clamped_draw_rect_012,
+                                                     const GSVector4i clamped_draw_rect_123)
+{
+  // Use PGXP to exclude primitives that are definitely 3D.
+  if (m_resolution_scale > 1 && !is_3d && cmd->quad_polygon)
+    HandleFlippedQuadTextureCoordinates(cmd, vertices.data());
+  else if (m_allow_sprite_mode)
+    SetBatchSpriteMode(cmd, is_precise ? !is_3d : IsPossibleSpritePolygon(vertices.data()));
 
   if (cmd->texture_enable && m_compute_uv_range)
     ComputePolygonUVLimits(cmd, vertices.data(), num_vertices);
@@ -2864,12 +2938,6 @@ ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand
   // quads, use num_vertices here, because the first half might be culled
   if (num_vertices == 4)
   {
-    const GSVector2 v3f = GSVector2::load<false>(&vertices[3].x);
-    const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
-                                       .add32(GSVector4i::cxpr(0, 0, 1, 1));
-    const GSVector4i clamped_draw_rect_123 = draw_rect_123.rintersect(m_clamped_drawing_area);
-    DebugAssert(draw_rect_123.width() <= MAX_PRIMITIVE_WIDTH && draw_rect_123.height() <= MAX_PRIMITIVE_HEIGHT &&
-                !clamped_draw_rect_123.rempty());
     AddDrawnRectangle(clamped_draw_rect_123);
 
     DebugAssert(m_batch_index_space >= 3);
@@ -3723,7 +3791,7 @@ void GPU_HW::FlushRender()
 
 void GPU_HW::DrawingAreaChanged()
 {
-  m_clamped_drawing_area = GPU::GetClampedDrawingArea(GPU_SW_Rasterizer::g_drawing_area);
+  FlushRender();
   m_drawing_area_changed = true;
 }
 

@@ -428,22 +428,20 @@ bool GPU::HandleRenderPolygonCommand()
     }
 
     // Cull polygons which are too large.
-    const GSVector2 v0f = GSVector2::load<false>(&cmd->vertices[0].x);
-    const GSVector2 v1f = GSVector2::load<false>(&cmd->vertices[1].x);
-    const GSVector2 v2f = GSVector2::load<false>(&cmd->vertices[2].x);
-    const GSVector2 min_pos_12 = v1f.min(v2f);
-    const GSVector2 max_pos_12 = v1f.max(v2f);
-    const GSVector4i draw_rect_012 = GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f))))
-                                       .add32(GSVector4i::cxpr(0, 0, 1, 1));
+    const GSVector2i v0 = GSVector2i::load<false>(&cmd->vertices[0].native_x);
+    const GSVector2i v1 = GSVector2i::load<false>(&cmd->vertices[1].native_x);
+    const GSVector2i v2 = GSVector2i::load<false>(&cmd->vertices[2].native_x);
+    const GSVector2i min_pos_12 = v1.min_s32(v2);
+    const GSVector2i max_pos_12 = v1.max_s32(v2);
+    const GSVector4i draw_rect_012 =
+      GSVector4i::xyxy(min_pos_12.min_s32(v0), max_pos_12.max_s32(v0)).add32(GSVector4i::cxpr(0, 0, 1, 1));
     const bool first_tri_culled =
-      (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
-       !draw_rect_012.rintersects(m_clamped_drawing_area));
+      (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT);
     if (first_tri_culled)
     {
-      // TODO: GPU events... somehow.
-      DEBUG_LOG("Culling off-screen/too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].native_x,
-                cmd->vertices[0].native_y, cmd->vertices[1].native_x, cmd->vertices[1].native_y,
-                cmd->vertices[2].native_x, cmd->vertices[2].native_y);
+      DEBUG_LOG("Culling too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].native_x, cmd->vertices[0].native_y,
+                cmd->vertices[1].native_x, cmd->vertices[1].native_y, cmd->vertices[2].native_x,
+                cmd->vertices[2].native_y);
 
       if (!rc.quad_polygon)
       {
@@ -462,19 +460,19 @@ bool GPU::HandleRenderPolygonCommand()
     // quads
     if (rc.quad_polygon)
     {
-      const GSVector2 v3f = GSVector2::load<false>(&cmd->vertices[3].x);
-      const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
+      const GSVector2i v3 = GSVector2i::load<false>(&cmd->vertices[3].native_x);
+      const GSVector4i draw_rect_123 = GSVector4i(min_pos_12.min_s32(v3))
+                                         .upl64(GSVector4i(max_pos_12.max_s32(v3)))
                                          .add32(GSVector4i::cxpr(0, 0, 1, 1));
 
       // Cull polygons which are too large.
       const bool second_tri_culled =
-        (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT ||
-         !draw_rect_123.rintersects(m_clamped_drawing_area));
+        (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT);
       if (second_tri_culled)
       {
-        DEBUG_LOG("Culling off-screen/too-large polygon (quad second half): {},{} {},{} {},{}",
-                  cmd->vertices[2].native_x, cmd->vertices[2].native_y, cmd->vertices[1].native_x,
-                  cmd->vertices[1].native_y, cmd->vertices[0].native_x, cmd->vertices[0].native_y);
+        DEBUG_LOG("Culling too-large polygon (quad second half): {},{} {},{} {},{}", cmd->vertices[2].native_x,
+                  cmd->vertices[2].native_y, cmd->vertices[1].native_x, cmd->vertices[1].native_y,
+                  cmd->vertices[3].native_x, cmd->vertices[3].native_y);
 
         if (first_tri_culled)
         {
@@ -483,9 +481,6 @@ bool GPU::HandleRenderPolygonCommand()
         }
 
         // Remove second part of quad.
-        // NOTE: Culling this way results in subtle differences with UV clamping, since the fourth vertex is no
-        // longer considered in the range. This is mainly apparent when the UV gradient is zero. Seems like it
-        // generally looks better this way, so I'm keeping it.
         cmd->size = GPUThreadCommand::AlignCommandSize(sizeof(GPUBackendDrawPrecisePolygonCommand) +
                                                        3 * sizeof(GPUBackendDrawPrecisePolygonCommand::Vertex));
         cmd->num_vertices = 3;
@@ -540,11 +535,10 @@ bool GPU::HandleRenderPolygonCommand()
     const GSVector4i draw_rect_012 =
       GSVector4i::xyxy(min_pos_12.min_s32(v0), max_pos_12.max_s32(v0)).add32(GSVector4i::cxpr(0, 0, 1, 1));
     const bool first_tri_culled =
-      (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
-       !draw_rect_012.rintersects(m_clamped_drawing_area));
+      (draw_rect_012.width() > MAX_PRIMITIVE_WIDTH || draw_rect_012.height() > MAX_PRIMITIVE_HEIGHT);
     if (first_tri_culled)
     {
-      DEBUG_LOG("Culling off-screen/too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].x, cmd->vertices[0].y,
+      DEBUG_LOG("Culling too-large polygon: {},{} {},{} {},{}", cmd->vertices[0].x, cmd->vertices[0].y,
                 cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[2].x, cmd->vertices[2].y);
 
       if (!rc.quad_polygon)
@@ -568,12 +562,11 @@ bool GPU::HandleRenderPolygonCommand()
 
       // Cull polygons which are too large.
       const bool second_tri_culled =
-        (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT ||
-         !draw_rect_123.rintersects(m_clamped_drawing_area));
+        (draw_rect_123.width() > MAX_PRIMITIVE_WIDTH || draw_rect_123.height() > MAX_PRIMITIVE_HEIGHT);
       if (second_tri_culled)
       {
         DEBUG_LOG("Culling too-large polygon (quad second half): {},{} {},{} {},{}", cmd->vertices[2].x,
-                  cmd->vertices[2].y, cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[0].x, cmd->vertices[0].y);
+                  cmd->vertices[2].y, cmd->vertices[1].x, cmd->vertices[1].y, cmd->vertices[3].x, cmd->vertices[3].y);
 
         if (first_tri_culled)
         {
@@ -681,15 +674,7 @@ bool GPU::HandleRenderRectangleCommand()
   }
 
   const GSVector4i rect = GSVector4i(cmd->x, cmd->y, cmd->x + cmd->width, cmd->y + cmd->height);
-  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
-  if (clamped_rect.rempty()) [[unlikely]]
-  {
-    DEBUG_LOG("Culling off-screen rectangle {}", rect);
-    EndCommand();
-    return true;
-  }
-
-  AddDrawRectangleTicks(clamped_rect, rc.texture_enable, rc.transparency_enable);
+  AddDrawRectangleTicks(rect, rc.texture_enable, rc.transparency_enable);
 
   GPUBackend::PushCommand(cmd);
   EndCommand();
@@ -883,15 +868,13 @@ void GPU::FinishPolyline()
       const GSVector2 end_pos = GSVector2::load<false>(&end.x);
       const GSVector4i rect =
         GSVector4i(GSVector4::xyxy(start_pos.min(end_pos), start_pos.max(end_pos))).add32(GSVector4i::cxpr(0, 0, 1, 1));
-      const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-
-      if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
+      if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
       {
         DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", start_pos.x, start_pos.y, end_pos.x, end_pos.y);
       }
       else
       {
-        AddDrawLineTicks(clamped_rect, m_render_command.shading_enable);
+        AddDrawLineTicks(rect, m_render_command.shading_enable);
 
         cmd->vertices[out_vertex_count++] = start;
         cmd->vertices[out_vertex_count++] = end;
@@ -930,15 +913,13 @@ void GPU::FinishPolyline()
 
       const GSVector4i rect =
         GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
-      const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-
-      if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
+      if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
       {
-        DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", start_pos.x, start_pos.y, end_pos.x, end_pos.y);
+        DEBUG_LOG("Culling too-large line: {},{} - {},{}", start_pos.x, start_pos.y, end_pos.x, end_pos.y);
       }
       else
       {
-        AddDrawLineTicks(clamped_rect, m_render_command.shading_enable);
+        AddDrawLineTicks(rect, m_render_command.shading_enable);
 
         GPUBackendDrawLineCommand::Vertex* out_vertex = &cmd->vertices[out_vertex_count];
         out_vertex_count += 2;
