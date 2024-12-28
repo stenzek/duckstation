@@ -9,6 +9,7 @@
 #include "bus.h"
 #include "cpu_core.h"
 #include "cpu_disasm.h"
+#include "gpu_types.h"
 #include "settings.h"
 
 #include "util/gpu_device.h"
@@ -586,9 +587,12 @@ ALWAYS_INLINE_RELEASE CPU::PGXPValue* CPU::PGXP::GetCachedVertex(u32 value)
 
 ALWAYS_INLINE_RELEASE float CPU::PGXP::TruncateVertexPosition(float p)
 {
+  // Truncates positions to 11 bits before drawing.
+  // Matches GPU command parsing, where the upper 5 bits are dropped.
+  // Necessary for Jet Moto and Racingroovy VS.
   const s32 int_part = static_cast<s32>(p);
   const float int_part_f = static_cast<float>(int_part);
-  return static_cast<float>(static_cast<s16>(int_part << 5) >> 5) + (p - int_part_f);
+  return static_cast<float>(TruncateGPUVertexPosition(int_part)) + (p - int_part_f);
 }
 
 ALWAYS_INLINE_RELEASE bool CPU::PGXP::IsWithinTolerance(float precise_x, float precise_y, int int_x, int int_y)
@@ -605,9 +609,8 @@ bool CPU::PGXP::GetPreciseVertex(u32 addr, u32 value, int x, int y, int xOffs, i
                                  float* out_w)
 {
   const PGXPValue* vert = GetPtr(addr);
-  if (vert && ((vert->flags & VALID_XY) == VALID_XY) && (vert->value == value))
+  if (vert && (vert->flags & VALID_XY) == VALID_XY && vert->value == value)
   {
-    // There is a value here with valid X and Y coordinates
     *out_x = TruncateVertexPosition(vert->x) + static_cast<float>(xOffs);
     *out_y = TruncateVertexPosition(vert->y) + static_cast<float>(yOffs);
     *out_w = vert->z / 32768.0f;

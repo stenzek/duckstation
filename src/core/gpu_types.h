@@ -353,7 +353,7 @@ union GPUVertexPosition
   BitField<u32, s32, 16, 11> y;
 };
 
-// Sprites/rectangles should be clipped to 12 bits before drawing.
+// Sprites/rectangles should be clipped to 11 bits before drawing.
 static constexpr s32 TruncateGPUVertexPosition(s32 x)
 {
   return SignExtendN<11, s32>(x);

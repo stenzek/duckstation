@@ -2844,22 +2844,71 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand*
                                                     GSVector4i& clamped_draw_rect_012,
                                                     GSVector4i& clamped_draw_rect_123)
 {
-  const GSVector2 v0f = GSVector2::load<false>(&vertices[0].x);
-  const GSVector2 v1f = GSVector2::load<false>(&vertices[1].x);
-  const GSVector2 v2f = GSVector2::load<false>(&vertices[2].x);
-  const GSVector2 min_pos_12 = v1f.min(v2f);
-  const GSVector2 max_pos_12 = v1f.max(v2f);
-  const GSVector4i draw_rect_012 =
+  GSVector2 v0f = GSVector2::load<false>(&vertices[0].x);
+  GSVector2 v1f = GSVector2::load<false>(&vertices[1].x);
+  GSVector2 v2f = GSVector2::load<false>(&vertices[2].x);
+  GSVector2 min_pos_12 = v1f.min(v2f);
+  GSVector2 max_pos_12 = v1f.max(v2f);
+  GSVector4i draw_rect_012 =
     GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f)))).add32(GSVector4i::cxpr(0, 0, 1, 1));
   clamped_draw_rect_012 = draw_rect_012.rintersect(m_clamped_drawing_area);
-  const bool first_tri_culled = clamped_draw_rect_012.rempty();
+  bool first_tri_culled = clamped_draw_rect_012.rempty();
   if (first_tri_culled)
   {
-    GL_INS_FMT("Culling off-screen polygon: {},{} {},{} {},{}", vertices[0].x, vertices[0].y, vertices[1].y,
-               vertices[1].x, vertices[2].y, vertices[2].y);
+    // What is this monstrosity? Final Fantasy VIII relies on X coordinates being truncated during scanline drawing,
+    // with negative coordinates becoming positive and vice versa. Fortunately the bits that we need are consistent
+    // across the entire polygon, so we can get away with truncating the vertices. However, we can't do this to all
+    // vertices, because other game's vertices break in various ways. For example, +1024 becomes -1024, which is a
+    // valid vertex position as the ending coordinate is exclusive. Therefore, 1024 is never truncated, only 1023.
+    // Luckily, FF8's vertices get culled as they do not intersect with the clip rectangle, so we can do this fixup
+    // only when culled, and everything seems happy.
 
-    if (num_vertices != 4)
-      return false;
+    const auto truncate_pos = [](const GSVector4 pos) {
+      // See TruncateGPUVertexPosition().
+      GSVector4i ipos = GSVector4i(pos);
+      const GSVector4 fdiff = pos - GSVector4(ipos);
+      ipos = ipos.sll32<21>().sra32<21>();
+      return GSVector4(ipos) + fdiff;
+    };
+
+    const GSVector4 tv01f = truncate_pos(GSVector4::xyxy(v0f, v1f));
+    const GSVector4 tv23f = truncate_pos(GSVector4::xyxy(v2f, GSVector2::load<false>(&vertices[3].x)));
+    const GSVector2 tv0f = tv01f.xy();
+    const GSVector2 tv1f = tv01f.zw();
+    const GSVector2 tv2f = tv23f.xy();
+    const GSVector2 tmin_pos_12 = tv1f.min(tv2f);
+    const GSVector2 tmax_pos_12 = tv1f.max(tv2f);
+    const GSVector4i tdraw_rect_012 =
+      GSVector4i(GSVector4(tmin_pos_12.min(tv0f)).upld(GSVector4(tmax_pos_12.max(tv0f))))
+        .add32(GSVector4i::cxpr(0, 0, 1, 1));
+    first_tri_culled =
+      (tdraw_rect_012.width() > MAX_PRIMITIVE_WIDTH || tdraw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
+       !tdraw_rect_012.rintersects(m_clamped_drawing_area));
+    if (!first_tri_culled)
+    {
+      GSVector4::storel<false>(&vertices[0].x, tv01f);
+      GSVector4::storeh<false>(&vertices[1].x, tv01f);
+      GSVector4::storel<false>(&vertices[2].x, tv23f);
+      if (num_vertices == 4)
+        GSVector4::storeh<false>(&vertices[3].x, tv23f);
+
+      GL_INS_FMT("Adjusted polygon from [{} {} {}] to [{} {} {}] due to coordinate truncation", v0f, v1f, v2f, tv0f,
+                 tv1f, tv2f);
+
+      v0f = tv0f;
+      v1f = tv1f;
+      v2f = tv2f;
+      min_pos_12 = tmin_pos_12;
+      max_pos_12 = tmax_pos_12;
+    }
+    else
+    {
+      GL_INS_FMT("Culling off-screen polygon: {},{} {},{} {},{}", vertices[0].x, vertices[0].y, vertices[1].y,
+                 vertices[1].x, vertices[2].y, vertices[2].y);
+
+      if (num_vertices != 4)
+        return false;
+    }
   }
 
   if (num_vertices == 4)
