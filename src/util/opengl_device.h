@@ -177,7 +177,8 @@ private:
   void CreateTimestampQueries();
   void DestroyTimestampQueries();
   void PopTimestampQuery();
-  void KickTimestampQuery();
+  void StartTimestampQuery();
+  void EndTimestampQuery();
 
   GLuint CreateProgramFromPipelineCache(const OpenGLPipeline::ProgramCacheItem& it,
                                         const GPUPipeline::GraphicsConfig& plconfig);

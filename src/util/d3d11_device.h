@@ -161,7 +161,8 @@ private:
   bool CreateTimestampQueries();
   void DestroyTimestampQueries();
   void PopTimestampQuery();
-  void KickTimestampQuery();
+  void EndTimestampQuery();
+  void StartTimestampQuery();
 
   ComPtr<ID3D11Device1> m_device;
   ComPtr<ID3D11DeviceContext1> m_context;
