@@ -2480,9 +2480,9 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
 
   for (u32 i = 0; i < num_vertices; i += 2)
   {
-    const GSVector2i start_pos = GSVector2i::load<false>(&cmd->vertices[i].x);
+    const GSVector2i start_pos = GSVector2i::load<true>(&cmd->vertices[i].x);
     const u32 start_color = cmd->vertices[i].color;
-    const GSVector2i end_pos = GSVector2i::load<false>(&cmd->vertices[i + 1].x);
+    const GSVector2i end_pos = GSVector2i::load<true>(&cmd->vertices[i + 1].x);
     const u32 end_color = cmd->vertices[i + 1].color;
 
     const GSVector4i bounds = GSVector4i::xyxy(start_pos, end_pos);
@@ -2524,9 +2524,9 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
 
   for (u32 i = 0; i < num_vertices; i += 2)
   {
-    const GSVector2 start_pos = GSVector2::load<false>(&cmd->vertices[i].x);
+    const GSVector2 start_pos = GSVector2::load<true>(&cmd->vertices[i].x);
     const u32 start_color = cmd->vertices[i].color;
-    const GSVector2 end_pos = GSVector2::load<false>(&cmd->vertices[i + 1].x);
+    const GSVector2 end_pos = GSVector2::load<true>(&cmd->vertices[i + 1].x);
     const u32 end_color = cmd->vertices[i + 1].color;
 
     const GSVector4 bounds = GSVector4::xyxy(start_pos, end_pos);
@@ -2765,7 +2765,7 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
   for (u32 i = 0; i < num_vertices; i++)
   {
     const GPUBackendDrawPolygonCommand::Vertex& vert = cmd->vertices[i];
-    const GSVector2 vert_pos = GSVector2(GSVector2i::load<false>(&vert.x));
+    const GSVector2 vert_pos = GSVector2(GSVector2i::load<true>(&vert.x));
     vertices[i].Set(vert_pos.x, vert_pos.y, depth, 1.0f, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
                     vert.texcoord, 0xFFFF0000u);
   }
@@ -2839,9 +2839,9 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand*
                                                     GSVector4i& clamped_draw_rect_012,
                                                     GSVector4i& clamped_draw_rect_123)
 {
-  GSVector2 v0f = GSVector2::load<false>(&vertices[0].x);
-  GSVector2 v1f = GSVector2::load<false>(&vertices[1].x);
-  GSVector2 v2f = GSVector2::load<false>(&vertices[2].x);
+  GSVector2 v0f = GSVector2::load<true>(&vertices[0].x);
+  GSVector2 v1f = GSVector2::load<true>(&vertices[1].x);
+  GSVector2 v2f = GSVector2::load<true>(&vertices[2].x);
   GSVector2 min_pos_12 = v1f.min(v2f);
   GSVector2 max_pos_12 = v1f.max(v2f);
   GSVector4i draw_rect_012 =
@@ -2867,7 +2867,7 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand*
     };
 
     const GSVector4 tv01f = truncate_pos(GSVector4::xyxy(v0f, v1f));
-    const GSVector4 tv23f = truncate_pos(GSVector4::xyxy(v2f, GSVector2::load<false>(&vertices[3].x)));
+    const GSVector4 tv23f = truncate_pos(GSVector4::xyxy(v2f, GSVector2::load<true>(&vertices[3].x)));
     const GSVector2 tv0f = tv01f.xy();
     const GSVector2 tv1f = tv01f.zw();
     const GSVector2 tv2f = tv23f.xy();
@@ -2881,11 +2881,11 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand*
        !tdraw_rect_012.rintersects(m_clamped_drawing_area));
     if (!first_tri_culled)
     {
-      GSVector4::storel<false>(&vertices[0].x, tv01f);
-      GSVector4::storeh<false>(&vertices[1].x, tv01f);
-      GSVector4::storel<false>(&vertices[2].x, tv23f);
+      GSVector4::storel<true>(&vertices[0].x, tv01f);
+      GSVector4::storeh<true>(&vertices[1].x, tv01f);
+      GSVector4::storel<true>(&vertices[2].x, tv23f);
       if (num_vertices == 4)
-        GSVector4::storeh<false>(&vertices[3].x, tv23f);
+        GSVector4::storeh<true>(&vertices[3].x, tv23f);
 
       GL_INS_FMT("Adjusted polygon from [{} {} {}] to [{} {} {}] due to coordinate truncation", v0f, v1f, v2f, tv0f,
                  tv1f, tv2f);
@@ -2908,7 +2908,7 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand*
 
   if (num_vertices == 4)
   {
-    const GSVector2 v3f = GSVector2::load<false>(&vertices[3].x);
+    const GSVector2 v3f = GSVector2::load<true>(&vertices[3].x);
     const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
                                        .add32(GSVector4i::cxpr(0, 0, 1, 1));
     clamped_draw_rect_123 = draw_rect_123.rintersect(m_clamped_drawing_area);

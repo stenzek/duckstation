@@ -121,7 +121,7 @@ private:
 
   static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_HEIGHT));
 
-  struct BatchVertex
+  struct alignas(16) BatchVertex
   {
     float x;
     float y;
