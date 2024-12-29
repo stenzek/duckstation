@@ -772,7 +772,7 @@ static void DrawLine(const GPUBackendDrawCommand* RESTRICT cmd, const GPUBackend
   static constexpr u32 XY_SHIFT = 32;
   static constexpr u32 RGB_SHIFT = 12;
   static constexpr auto makefp_xy = [](s32 x) { return (static_cast<s64>(x) << XY_SHIFT) | (1LL << (XY_SHIFT - 1)); };
-  static constexpr auto unfp_xy = [](s64 x) { return static_cast<s32>(x >> XY_SHIFT) & 2047; };
+  static constexpr auto unfp_xy = [](s64 x) { return TruncateGPUVertexPosition(static_cast<s32>(x >> XY_SHIFT)); };
   static constexpr auto div_xy = [](s64 delta, s32 dk) {
     return ((delta << XY_SHIFT) - ((delta < 0) ? (dk - 1) : 0) + ((delta > 0) ? (dk - 1) : 0)) / dk;
   };

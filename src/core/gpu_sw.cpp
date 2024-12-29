@@ -12,6 +12,7 @@
 
 #include "common/align.h"
 #include "common/assert.h"
+#include "common/gsvector_formatter.h"
 #include "common/intrin.h"
 #include "common/log.h"
 
@@ -135,6 +136,18 @@ void GPU_SW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
 
 void GPU_SW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 {
+  // Sprites coordinates are truncated in the GPU class, so it's safe to cull them here.
+  // Probably wrong, but if we ever change it, this should be removed.
+  const GSVector2i pos = GSVector2i::load<true>(&cmd->x);
+  const GSVector2i size = GSVector2i::load<true>(&cmd->width).u16to32();
+  const GSVector4i rect = GSVector4i::xyxy(pos, pos.add32(size));
+  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+  if (clamped_rect.rempty())
+  {
+    DEBUG_LOG("Culling off-screen sprite {}", rect);
+    return;
+  }
+
   const GPU_SW_Rasterizer::DrawRectangleFunction DrawFunction =
     GPU_SW_Rasterizer::GetDrawRectangleFunction(cmd->texture_enable, cmd->raw_texture_enable, cmd->transparency_enable);
 
@@ -177,11 +190,6 @@ void GPU_SW::DrawingAreaChanged()
 
 void GPU_SW::ClearCache()
 {
-}
-
-void GPU_SW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
-{
-  GPU_SW_Rasterizer::UpdateCLUT(reg, clut_is_8bit);
 }
 
 void GPU_SW::OnBufferSwapped()

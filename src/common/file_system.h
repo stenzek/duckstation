@@ -202,10 +202,10 @@ bool CreateDirectory(const char* path, bool recursive, Error* error = nullptr);
 bool EnsureDirectoryExists(const char* path, bool recursive, Error* error = nullptr);
 
 /// Removes a directory.
-bool DeleteDirectory(const char* path);
+bool DeleteDirectory(const char* path, Error* error = nullptr);
 
 /// Recursively removes a directory and all subdirectories/files.
-bool RecursiveDeleteDirectory(const char* path);
+bool RecursiveDeleteDirectory(const char* path, Error* error = nullptr);
 
 /// Copies one file to another, optionally replacing it if it already exists.
 bool CopyFilePath(const char* source, const char* destination, bool replace);

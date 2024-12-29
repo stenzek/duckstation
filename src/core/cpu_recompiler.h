@@ -34,6 +34,9 @@ public:
   static constexpr u32 NUM_HOST_REGS = 16;
   static constexpr bool HAS_MEMORY_OPERANDS = true;
 
+  // Align functions to 16 bytes.
+  static constexpr u32 FUNCTION_ALIGNMENT = 16;
+
 #elif defined(CPU_ARCH_ARM32)
 
   // A reasonable "maximum" number of bytes per instruction.
@@ -43,6 +46,9 @@ public:
   // Number of host registers.
   static constexpr u32 NUM_HOST_REGS = 16;
   static constexpr bool HAS_MEMORY_OPERANDS = false;
+
+  // Align functions to 4 bytes (word size).
+  static constexpr u32 FUNCTION_ALIGNMENT = 16;
 
 #elif defined(CPU_ARCH_ARM64)
 
@@ -56,6 +62,9 @@ public:
   static constexpr u32 NUM_HOST_REGS = 32;
   static constexpr bool HAS_MEMORY_OPERANDS = false;
 
+  // Align functions to 16 bytes.
+  static constexpr u32 FUNCTION_ALIGNMENT = 16;
+
 #elif defined(CPU_ARCH_RISCV64)
 
   // Number of host registers.
@@ -67,6 +76,9 @@ public:
   // Use an upper bound of 64 bytes to be safe.
   static constexpr u32 MAX_NEAR_HOST_BYTES_PER_INSTRUCTION = 64;
   static constexpr u32 MIN_CODE_RESERVE_FOR_BLOCK = 512;
+
+  // Align functions to 16 bytes.
+  static constexpr u32 FUNCTION_ALIGNMENT = 16;
 
 #endif
 

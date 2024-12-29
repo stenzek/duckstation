@@ -41,19 +41,20 @@ LOG_CHANNEL(Recompiler);
 #define RSTATE vixl::aarch64::x19
 #define RMEMBASE vixl::aarch64::x20
 
-bool armIsCallerSavedRegister(u32 id);
-s64 armGetPCDisplacement(const void* current, const void* target);
-bool armIsInAdrpRange(vixl::aarch64::Assembler* armAsm, const void* addr);
-void armMoveAddressToReg(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr);
-void armEmitMov(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& rd, u64 imm);
-void armEmitJmp(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
-void armEmitCall(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
-void armEmitCondBranch(vixl::aarch64::Assembler* armAsm, vixl::aarch64::Condition cond, const void* ptr);
-void armEmitFarLoad(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr,
-                    bool sign_extend_word = false);
-void armEmitFarStore(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr,
-                     const vixl::aarch64::Register& tempreg = RXSCRATCH);
-u8* armGetJumpTrampoline(const void* target);
+static bool armIsCallerSavedRegister(u32 id);
+static s64 armGetPCDisplacement(const void* current, const void* target);
+static bool armIsInAdrpRange(vixl::aarch64::Assembler* armAsm, const void* addr);
+static void armMoveAddressToReg(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr);
+static void armEmitMov(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& rd, u64 imm);
+static void armEmitJmp(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
+static void armEmitCall(vixl::aarch64::Assembler* armAsm, const void* ptr, bool force_inline);
+static void armEmitCondBranch(vixl::aarch64::Assembler* armAsm, vixl::aarch64::Condition cond, const void* ptr);
+static void armEmitFarLoad(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr,
+                           bool sign_extend_word = false);
+static void armEmitFarStore(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr,
+                            const vixl::aarch64::Register& tempreg = RXSCRATCH);
+static u8* armGetJumpTrampoline(const void* target);
+static void armAlignCode(vixl::aarch64::Assembler* armAsm, size_t alignment);
 
 static constexpr u32 TRAMPOLINE_AREA_SIZE = 4 * 1024;
 static std::unordered_map<const void*, u32> s_trampoline_targets;
@@ -327,8 +328,8 @@ void armEmitFarLoad(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Regis
     armAsm->ldr(reg, memop);
 }
 
-void armEmitFarStore(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg, const void* addr,
-                     const vixl::aarch64::Register& tempreg)
+[[maybe_unused]] void armEmitFarStore(vixl::aarch64::Assembler* armAsm, const vixl::aarch64::Register& reg,
+                                      const void* addr, const vixl::aarch64::Register& tempreg)
 {
   DebugAssert(tempreg.IsX());
 
@@ -359,7 +360,7 @@ u8* armGetJumpTrampoline(const void* target)
     return s_trampoline_start_ptr + it->second;
 
   // align to 16 bytes?
-  const u32 offset = s_trampoline_used; // Common::AlignUpPow2(s_trampoline_used, 16);
+  const u32 offset = Common::AlignUpPow2(s_trampoline_used, CPU::Recompiler::FUNCTION_ALIGNMENT);
 
   // 4 movs plus a jump
   if (TRAMPOLINE_AREA_SIZE - offset < 20)
@@ -385,6 +386,17 @@ u8* armGetJumpTrampoline(const void* target)
 
   MemMap::FlushInstructionCache(start, size);
   return start;
+}
+
+void armAlignCode(vixl::aarch64::Assembler* armAsm, size_t alignment)
+{
+  size_t addr = armAsm->GetCursorAddress<size_t>();
+  const size_t end_addr = Common::AlignUpPow2(addr, alignment);
+  while (addr != end_addr)
+  {
+    armAsm->nop();
+    addr += vixl::aarch64::kInstructionSize;
+  }
 }
 
 void CPU::CodeCache::DisassembleAndLogHostCode(const void* start, u32 size)
@@ -434,7 +446,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   using namespace vixl::aarch64;
 
   Assembler actual_asm(static_cast<u8*>(code), code_size);
-  Assembler* armAsm = &actual_asm;
+  Assembler* RESTRICT armAsm = &actual_asm;
 
 #ifdef VIXL_DEBUG
   vixl::CodeBufferCheckScope asm_check(armAsm, code_size, vixl::CodeBufferCheckScope::kDontReserveBufferSpace);
@@ -455,21 +467,19 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   // check events then for frame done
+  armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
   g_check_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
   {
-    Label skip_event_check;
     armAsm->ldr(RWARG1, PTR(&g_state.pending_ticks));
     armAsm->ldr(RWARG2, PTR(&g_state.downcount));
     armAsm->cmp(RWARG1, RWARG2);
-    armAsm->b(&skip_event_check, lt);
+    armAsm->b(&dispatch, lt);
 
     g_run_events_and_dispatch = armAsm->GetCursorAddress<const void*>();
     armEmitCall(armAsm, reinterpret_cast<const void*>(&TimingEvents::RunEvents), true);
-
-    armAsm->bind(&skip_event_check);
   }
 
-  // TODO: align?
+  armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
   g_dispatcher = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->bind(&dispatch);
@@ -486,6 +496,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->br(RXARG1);
   }
 
+  armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
   g_compile_or_revalidate_block = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->ldr(RWARG1, PTR(&g_state.pc));
@@ -493,6 +504,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->b(&dispatch);
   }
 
+  armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
   g_discard_and_recompile_block = armAsm->GetCursorAddress<const void*>();
   {
     armAsm->ldr(RWARG1, PTR(&g_state.pc));
@@ -500,6 +512,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     armAsm->b(&dispatch);
   }
 
+  armAlignCode(armAsm, Recompiler::FUNCTION_ALIGNMENT);
   g_interpret_block = armAsm->GetCursorAddress<const void*>();
   {
     armEmitCall(armAsm, reinterpret_cast<const void*>(GetInterpretUncachedBlockFunction()), true);
@@ -508,12 +521,17 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
   armAsm->FinalizeCode();
 
-  // TODO: align?
   s_trampoline_targets.clear();
   s_trampoline_start_ptr = static_cast<u8*>(code) + armAsm->GetCursorOffset();
   s_trampoline_used = 0;
 
   return static_cast<u32>(armAsm->GetCursorOffset()) + TRAMPOLINE_AREA_SIZE;
+}
+
+void CPU::CodeCache::EmitAlignmentPadding(void* dst, size_t size)
+{
+  constexpr u8 padding_value = 0x00;
+  std::memset(dst, padding_value, size);
 }
 
 CPU::ARM64Recompiler::ARM64Recompiler() : m_emitter(PositionDependentCode), m_far_emitter(PositionIndependentCode)
@@ -1174,7 +1192,8 @@ void CPU::ARM64Recompiler::Flush(u32 flags)
 
 void CPU::ARM64Recompiler::Compile_Fallback()
 {
-  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc, inst->bits);
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc,
+              inst->bits);
 
   Flush(FLUSH_FOR_INTERPRETER);
 

@@ -133,22 +133,27 @@ bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
 
   return true;
 #else
+  Error error;
   FileSystem::FindResultsArray results;
   if (FileSystem::FindFiles(path, "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_FOLDERS | FILESYSTEM_FIND_HIDDEN_FILES,
                             &results))
   {
     for (const FILESYSTEM_FIND_DATA& fd : results)
     {
-      if (fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
+      if ((fd.Attributes & (FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY | FILESYSTEM_FILE_ATTRIBUTE_LINK)) ==
+          FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY)
       {
         if (!RecursiveDeleteDirectory(fd.FileName.c_str(), true))
           return false;
       }
       else
       {
-        m_progress->FormatInformation("Removing directory '{}'.", fd.FileName);
-        if (!FileSystem::DeleteFile(fd.FileName.c_str()))
+        m_progress->FormatInformation("Removing file '{}'.", fd.FileName);
+        if (!FileSystem::DeleteFile(fd.FileName.c_str(), &error))
+        {
+          m_progress->FormatModalError("DeleteFile({}) failed: {}", fd.FileName, error.GetDescription());
           return false;
+        }
       }
     }
   }
@@ -157,7 +162,13 @@ bool Updater::RecursiveDeleteDirectory(const char* path, bool remove_dir)
     return true;
 
   m_progress->FormatInformation("Removing directory '{}'.", path);
-  return FileSystem::DeleteDirectory(path);
+  if (!FileSystem::DeleteDirectory(path, &error))
+  {
+    m_progress->FormatModalError("DeleteDirectory({}) failed: {}", path, error.GetDescription());
+    return false;
+  }
+
+  return true;
 #endif
 }
 

@@ -6,7 +6,7 @@
 set -e
 
 if [ "$#" -lt 1 ]; then
-    echo "Syntax: $0 [-system-freetype] [-system-harfbuzz] [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-libzip] [-system-zstd] [-system-qt] [-skip-download] [-skip-cleanup] <output directory>"
+    echo "Syntax: $0 [-system-freetype] [-system-harfbuzz] [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-libzip] [-system-zstd] [-system-qt] [-skip-download] [-skip-cleanup] [-only-download] <output directory>"
     exit 1
 fi
 
@@ -50,6 +50,10 @@ for arg in "$@"; do
 	elif [ "$arg" == "-skip-cleanup" ]; then
 		echo "Not removing build directory."
 		SKIP_CLEANUP=true
+		shift
+	elif [ "$arg" == "-only-download" ]; then
+		echo "Only downloading sources."
+		ONLY_DOWNLOAD=true
 		shift
 	fi
 done
@@ -186,6 +190,11 @@ if [ "$SKIP_DOWNLOAD" != true ]; then
 	if [ ! -d "SPIRV-Cross" ]; then
 		git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS --depth 1
 	fi
+fi
+
+# Only downloading sources?
+if [ "$ONLY_DOWNLOAD" == true ]; then
+	exit 0
 fi
 
 echo "Building libbacktrace..."

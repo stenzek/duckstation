@@ -36,6 +36,7 @@ LOG_CHANNEL(Recompiler);
 // PGXP TODO: LWL etc, MFC0
 // PGXP TODO: Spyro 1 level gates have issues.
 
+static constexpr u32 FUNCTION_ALIGNMENT = 16;
 static constexpr u32 BACKPATCH_JMP_SIZE = 5;
 
 static bool IsCallerSavedRegister(u32 id);
@@ -134,20 +135,18 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   }
 
   // check events then for frame done
+  cg->align(FUNCTION_ALIGNMENT);
   g_check_events_and_dispatch = cg->getCurr();
   {
-    Label skip_event_check;
     cg->mov(RWARG1, cg->dword[PTR(&g_state.pending_ticks)]);
     cg->cmp(RWARG1, cg->dword[PTR(&g_state.downcount)]);
-    cg->jl(skip_event_check);
+    cg->jl(dispatch);
 
     g_run_events_and_dispatch = cg->getCurr();
     cg->call(reinterpret_cast<const void*>(&TimingEvents::RunEvents));
-
-    cg->L(skip_event_check);
   }
 
-  // TODO: align?
+  cg->align(FUNCTION_ALIGNMENT);
   g_dispatcher = cg->getCurr();
   {
     cg->L(dispatch);
@@ -164,6 +163,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     cg->jmp(cg->qword[RXARG2 + RXARG1 * 2]);
   }
 
+  cg->align(FUNCTION_ALIGNMENT);
   g_compile_or_revalidate_block = cg->getCurr();
   {
     cg->mov(RWARG1, cg->dword[PTR(&g_state.pc)]);
@@ -171,6 +171,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     cg->jmp(dispatch);
   }
 
+  cg->align(FUNCTION_ALIGNMENT);
   g_discard_and_recompile_block = cg->getCurr();
   {
     cg->mov(RWARG1, cg->dword[PTR(&g_state.pc)]);
@@ -178,6 +179,7 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     cg->jmp(dispatch);
   }
 
+  cg->align(FUNCTION_ALIGNMENT);
   g_interpret_block = cg->getCurr();
   {
     cg->call(CodeCache::GetInterpretUncachedBlockFunction());
@@ -199,6 +201,32 @@ u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
   const s32 disp32 = static_cast<s32>(disp);
   std::memcpy(ptr, &disp32, sizeof(disp32));
   return 5;
+}
+
+void CPU::CodeCache::EmitAlignmentPadding(void* dst, size_t size)
+{
+  // Copied from Xbyak nop(), to avoid constructing a CodeGenerator.
+  static const uint8_t nopTbl[9][9] = {
+    {0x90},
+    {0x66, 0x90},
+    {0x0F, 0x1F, 0x00},
+    {0x0F, 0x1F, 0x40, 0x00},
+    {0x0F, 0x1F, 0x44, 0x00, 0x00},
+    {0x66, 0x0F, 0x1F, 0x44, 0x00, 0x00},
+    {0x0F, 0x1F, 0x80, 0x00, 0x00, 0x00, 0x00},
+    {0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
+    {0x66, 0x0F, 0x1F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x00},
+  };
+  const size_t n = sizeof(nopTbl) / sizeof(nopTbl[0]);
+  u8* dst_ptr = static_cast<u8*>(dst);
+  while (size > 0)
+  {
+    size_t len = (std::min)(n, size);
+    const uint8_t* seq = nopTbl[len - 1];
+    std::memcpy(dst_ptr, seq, len);
+    dst_ptr += len;
+    size -= len;
+  }
 }
 
 #ifdef ENABLE_HOST_DISASSEMBLY
@@ -929,7 +957,8 @@ void CPU::X64Recompiler::Flush(u32 flags)
 
 void CPU::X64Recompiler::Compile_Fallback()
 {
-  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc, inst->bits);
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc,
+              inst->bits);
 
   Flush(FLUSH_FOR_INTERPRETER);
 

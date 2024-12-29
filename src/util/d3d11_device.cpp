@@ -509,12 +509,14 @@ std::string D3D11Device::GetDriverInfo() const
 void D3D11Device::FlushCommands()
 {
   m_context->Flush();
+  EndTimestampQuery();
   TrimTexturePool();
 }
 
 void D3D11Device::WaitForGPUIdle()
 {
   m_context->Flush();
+  EndTimestampQuery();
   TrimTexturePool();
 }
 
@@ -671,7 +673,10 @@ GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32
   // in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
   // the time, when it's more like a couple of percent.
   if (SC == m_main_swap_chain.get() && SC->GetVSyncMode() == GPUVSyncMode::FIFO && m_gpu_timing_enabled)
+  {
     PopTimestampQuery();
+    EndTimestampQuery();
+  }
 
   m_context->ClearRenderTargetView(SC->GetRTV(), GSVector4::rgba32(clear_color).F32);
   m_context->OMSetRenderTargets(1, SC->GetRTVArray(), nullptr);
@@ -690,7 +695,10 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
 
   if (SC == m_main_swap_chain.get() && SC->GetVSyncMode() != GPUVSyncMode::FIFO && m_gpu_timing_enabled)
+  {
     PopTimestampQuery();
+    EndTimestampQuery();
+  }
 
   const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
   const UINT flags =
@@ -698,7 +706,7 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   SC->GetSwapChain()->Present(sync_interval, flags);
 
   if (m_gpu_timing_enabled)
-    KickTimestampQuery();
+    StartTimestampQuery();
 
   TrimTexturePool();
 }
@@ -724,7 +732,7 @@ bool D3D11Device::CreateTimestampQueries()
     }
   }
 
-  KickTimestampQuery();
+  StartTimestampQuery();
   return true;
 }
 
@@ -783,7 +791,10 @@ void D3D11Device::PopTimestampQuery()
       }
     }
   }
+}
 
+void D3D11Device::EndTimestampQuery()
+{
   if (m_timestamp_query_started)
   {
     m_context->End(m_timestamp_queries[m_write_timestamp_query][2].Get());
@@ -794,7 +805,7 @@ void D3D11Device::PopTimestampQuery()
   }
 }
 
-void D3D11Device::KickTimestampQuery()
+void D3D11Device::StartTimestampQuery()
 {
   if (m_timestamp_query_started || !m_timestamp_queries[0][0] || m_waiting_timestamp_queries == NUM_TIMESTAMP_QUERIES)
     return;
@@ -815,7 +826,7 @@ bool D3D11Device::SetGPUTimingEnabled(bool enabled)
     if (!CreateTimestampQueries())
       return false;
 
-    KickTimestampQuery();
+    StartTimestampQuery();
     return true;
   }
   else

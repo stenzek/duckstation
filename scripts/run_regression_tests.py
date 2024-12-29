@@ -6,13 +6,12 @@ import subprocess
 import multiprocessing
 from functools import partial
 
-def is_game_path(path):
-    idx = path.rfind('.')
-    if idx < 0:
-        return False
-
-    extension = path[idx + 1:].strip().lower()
-    return extension in ["cue", "chd"]
+def is_game_path(path:str):
+    lpath = path.lower()
+    for extension in ["cue", "chd", "psxgpu", "psxgpu.zst", "psxgpu.xz"]:
+        if path.endswith(extension):
+            return True
+    return False
 
 
 def run_regression_test(runner, destdir, dump_interval, frames, renderer, cargs, gamepath):
@@ -31,8 +30,10 @@ def run_regression_test(runner, destdir, dump_interval, frames, renderer, cargs,
     return os.path.basename(gamepath)
 
 
-def run_regression_tests(runner, gamedir, destdir, dump_interval, frames, parallel, renderer, cargs):
-    paths = glob.glob(gamedir + "/*.*", recursive=True)
+def run_regression_tests(runner, gamedirs, destdir, dump_interval, frames, parallel, renderer, cargs):
+    paths = []
+    for gamedir in gamedirs:
+        paths += glob.glob(os.path.realpath(gamedir) + "/*.*", recursive=True)
     gamepaths = list(filter(is_game_path, paths))
 
     try:
@@ -64,7 +65,7 @@ def run_regression_tests(runner, gamedir, destdir, dump_interval, frames, parall
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate frame dump images for regression tests")
     parser.add_argument("-runner", action="store", required=True, help="Path to DuckStation regression test runner")
-    parser.add_argument("-gamedir", action="store", required=True, help="Directory containing game images")
+    parser.add_argument("-gamedir", action="append", required=True, help="Directory containing game images")
     parser.add_argument("-destdir", action="store", required=True, help="Base directory to dump frames to")
     parser.add_argument("-dumpinterval", action="store", type=int, default=600, help="Interval to dump frames at")
     parser.add_argument("-frames", action="store", type=int, default=36000, help="Number of frames to run")
@@ -86,7 +87,7 @@ if __name__ == "__main__":
     if (args.cpu is not None):
         cargs += ["-cpu", args.cpu]
 
-    if not run_regression_tests(args.runner, os.path.realpath(args.gamedir), os.path.realpath(args.destdir), args.dumpinterval, args.frames, args.parallel, args.renderer, cargs):
+    if not run_regression_tests(args.runner, args.gamedir, os.path.realpath(args.destdir), args.dumpinterval, args.frames, args.parallel, args.renderer, cargs):
         sys.exit(1)
     else:
         sys.exit(0)

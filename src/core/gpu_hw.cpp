@@ -296,7 +296,7 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
   if (upload_vram)
     UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
 
-  DrawingAreaChanged();
+  m_drawing_area_changed = true;
   return true;
 }
 
@@ -318,11 +318,8 @@ void GPU_HW::ClearVRAM()
   m_texpage_dirty = false;
   m_compute_uv_range = m_clamp_uvs;
 
-  if (ShouldDrawWithSoftwareRenderer())
-  {
-    std::memset(g_vram, 0, sizeof(g_vram));
-    std::memset(g_gpu_clut, 0, sizeof(g_gpu_clut));
-  }
+  std::memset(g_vram, 0, sizeof(g_vram));
+  std::memset(g_gpu_clut, 0, sizeof(g_gpu_clut));
 
   m_batch = {};
   m_current_depth = 1;
@@ -336,10 +333,8 @@ void GPU_HW::LoadState(const GPUBackendLoadStateCommand* cmd)
     UnmapGPUBuffer(0, 0);
 
   std::memcpy(g_vram, cmd->vram_data, sizeof(g_vram));
+  std::memcpy(g_gpu_clut, cmd->clut_data, sizeof(g_gpu_clut));
   UpdateVRAMOnGPU(0, 0, VRAM_WIDTH, VRAM_HEIGHT, g_vram, VRAM_WIDTH * sizeof(u16), false, false, VRAM_SIZE_RECT);
-
-  if (ShouldDrawWithSoftwareRenderer())
-    std::memcpy(g_gpu_clut, cmd->clut_data, sizeof(g_gpu_clut));
 
   if (m_use_texture_cache)
   {
@@ -2106,30 +2101,33 @@ ALWAYS_INLINE_RELEASE void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode
   }
 }
 
+ALWAYS_INLINE_RELEASE void GPU_HW::ComputeUVPartialDerivatives(const BatchVertex* vertices, float* dudx, float* dudy,
+                                                               float* dvdx, float* dvdy, float* xy_area, s32* uv_area)
+{
+  const float v01x = vertices[1].x - vertices[0].x;
+  const float v01y = vertices[1].y - vertices[0].y;
+  const float v12x = vertices[2].x - vertices[1].x;
+  const float v12y = vertices[2].y - vertices[1].y;
+  const float v23x = vertices[0].x - vertices[2].x;
+  const float v23y = vertices[0].y - vertices[2].y;
+  const float v0u = static_cast<float>(vertices[0].u);
+  const float v0v = static_cast<float>(vertices[0].v);
+  const float v1u = static_cast<float>(vertices[1].u);
+  const float v1v = static_cast<float>(vertices[1].v);
+  const float v2u = static_cast<float>(vertices[2].u);
+  const float v2v = static_cast<float>(vertices[2].v);
+  *dudx = -v01y * v2u - v12y * v0u - v23y * v1u;
+  *dvdx = -v01y * v2v - v12y * v0v - v23y * v1v;
+  *dudy = v01x * v2u + v12x * v0u + v23x * v1u;
+  *dvdy = v01x * v2v + v12x * v0v + v23x * v1v;
+  *xy_area = v12x * v23y - v12y * v23x;
+  *uv_area = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
+             (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
+}
+
 ALWAYS_INLINE_RELEASE void GPU_HW::HandleFlippedQuadTextureCoordinates(const GPUBackendDrawCommand* cmd,
                                                                        BatchVertex* vertices)
 {
-  // Taken from beetle-psx gpu_polygon.cpp
-  // For X/Y flipped 2D sprites, PSX games rely on a very specific rasterization behavior. If U or V is decreasing in X
-  // or Y, and we use the provided U/V as is, we will sample the wrong texel as interpolation covers an entire pixel,
-  // while PSX samples its interpolation essentially in the top-left corner and splats that interpolant across the
-  // entire pixel. While we could emulate this reasonably well in native resolution by shifting our vertex coords by
-  // 0.5, this breaks in upscaling scenarios, because we have several samples per native sample and we need NN rules to
-  // hit the same UV every time. One approach here is to use interpolate at offset or similar tricks to generalize the
-  // PSX interpolation patterns, but the problem is that vertices sharing an edge will no longer see the same UV (due to
-  // different plane derivatives), we end up sampling outside the intended boundary and artifacts are inevitable, so the
-  // only case where we can apply this fixup is for "sprites" or similar which should not share edges, which leads to
-  // this unfortunate code below.
-
-  // It might be faster to do more direct checking here, but the code below handles primitives in any order and
-  // orientation, and is far more SIMD-friendly if needed.
-  const float abx = vertices[1].x - vertices[0].x;
-  const float aby = vertices[1].y - vertices[0].y;
-  const float bcx = vertices[2].x - vertices[1].x;
-  const float bcy = vertices[2].y - vertices[1].y;
-  const float cax = vertices[0].x - vertices[2].x;
-  const float cay = vertices[0].y - vertices[2].y;
-
   // Hack for Wild Arms 2: The player sprite is drawn one line at a time with a quad, but the bottom V coordinates
   // are set to a large distance from the top V coordinate. When upscaling, this means that the coordinate is
   // interpolated between these two values, result in out-of-bounds sampling. At native, it's fine, because at the
@@ -2148,63 +2146,47 @@ ALWAYS_INLINE_RELEASE void GPU_HW::HandleFlippedQuadTextureCoordinates(const GPU
     vertices[3].v = vertices[0].v;
   }
 
-  // Compute static derivatives, just assume W is uniform across the primitive and that the plane equation remains the
-  // same across the quad. (which it is, there is no Z.. yet).
-  const float dudx = -aby * static_cast<float>(vertices[2].u) - bcy * static_cast<float>(vertices[0].u) -
-                     cay * static_cast<float>(vertices[1].u);
-  const float dvdx = -aby * static_cast<float>(vertices[2].v) - bcy * static_cast<float>(vertices[0].v) -
-                     cay * static_cast<float>(vertices[1].v);
-  const float dudy = +abx * static_cast<float>(vertices[2].u) + bcx * static_cast<float>(vertices[0].u) +
-                     cax * static_cast<float>(vertices[1].u);
-  const float dvdy = +abx * static_cast<float>(vertices[2].v) + bcx * static_cast<float>(vertices[0].v) +
-                     cax * static_cast<float>(vertices[1].v);
-  const float area = bcx * cay - bcy * cax;
-
-  // Detect and reject any triangles with 0 size texture area
-  const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
-                      (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
-
-  // Shouldn't matter as degenerate primitives will be culled anyways.
-  if (area == 0.0f || texArea == 0)
+  // Handle interpolation differences between PC GPUs and the PSX GPU. The first pixel on each span/scanline is given
+  // the initial U/V coordinate without any further interpolation on the PSX GPU, in contrast to PC GPUs. This results
+  // in oversampling on the right edge, so compensate by offsetting the left (right in texture space) UV.
+  alignas(VECTOR_ALIGNMENT) float pd[4];
+  float xy_area;
+  s32 uv_area;
+  ComputeUVPartialDerivatives(vertices, &pd[0], &pd[1], &pd[2], &pd[3], &xy_area, &uv_area);
+  if (xy_area == 0.0f || uv_area == 0)
     return;
 
-  // Use floats here as it'll be faster than integer divides.
-  const float rcp_area = 1.0f / area;
-  const float dudx_area = dudx * rcp_area;
-  const float dudy_area = dudy * rcp_area;
-  const float dvdx_area = dvdx * rcp_area;
-  const float dvdy_area = dvdy * rcp_area;
-  const bool neg_dudx = dudx_area < 0.0f;
-  const bool neg_dudy = dudy_area < 0.0f;
-  const bool neg_dvdx = dvdx_area < 0.0f;
-  const bool neg_dvdy = dvdy_area < 0.0f;
-  const bool zero_dudx = dudx_area == 0.0f;
-  const bool zero_dudy = dudy_area == 0.0f;
-  const bool zero_dvdx = dvdx_area == 0.0f;
-  const bool zero_dvdy = dvdy_area == 0.0f;
+  const GSVector4 pd_area = GSVector4::load<true>(pd) / GSVector4(xy_area);
+  const GSVector4 neg_pd = (pd_area < GSVector4::zero());
+  const GSVector4 zero_pd = (pd_area == GSVector4::zero());
+  const int mask = (neg_pd.mask() | (zero_pd.mask() << 4));
 
-  // If we have negative dU or dV in any direction, increment the U or V to work properly with nearest-neighbor in
-  // this impl. If we don't have 1:1 pixel correspondence, this creates a slight "shift" in the sprite, but we
-  // guarantee that we don't sample garbage at least. Overall, this is kinda hacky because there can be legitimate,
-  // rare cases where 3D meshes hit this scenario, and a single texel offset can pop in, but this is way better than
-  // having borked 2D overall.
-  //
-  // TODO: If perf becomes an issue, we can probably SIMD the 8 comparisons above,
-  // create an 8-bit code, and use a LUT to get the offsets.
-  // Case 1: U is decreasing in X, but no change in Y.
-  // Case 2: U is decreasing in Y, but no change in X.
-  // Case 3: V is decreasing in X, but no change in Y.
-  // Case 4: V is decreasing in Y, but no change in X.
-  if ((neg_dudx && zero_dudy) || (neg_dudy && zero_dudx))
+  // Addressing the 8-bit status code above.
+  static constexpr int NEG_DUDX = 0x1;
+  static constexpr int NEG_DUDY = 0x2;
+  static constexpr int NEG_DVDX = 0x4;
+  static constexpr int NEG_DVDY = 0x8;
+  static constexpr int ZERO_DUDX = 0x10;
+  static constexpr int ZERO_DUDY = 0x20;
+  static constexpr int ZERO_DVDX = 0x40;
+  static constexpr int ZERO_DVDY = 0x80;
+
+  // Flipped horizontal sprites: negative dudx+zero dudy or negative dudy+zero dudx.
+  if ((mask & (NEG_DUDX | ZERO_DUDY)) == (NEG_DUDX | ZERO_DUDY) ||
+      (mask & (NEG_DUDY | ZERO_DUDX)) == (NEG_DUDY | ZERO_DUDX))
   {
+    GL_INS_FMT("Horizontal flipped sprite detected at {},{}", vertices[0].x, vertices[0].y);
     vertices[0].u++;
     vertices[1].u++;
     vertices[2].u++;
     vertices[3].u++;
   }
 
-  if ((neg_dvdx && zero_dvdy) || (neg_dvdy && zero_dvdx))
+  // Flipped vertical sprites: negative dvdx+zero dvdy or negative dvdy+zero dvdx.
+  if ((mask & (NEG_DVDX | ZERO_DVDY)) == (NEG_DVDX | ZERO_DVDY) ||
+      (mask & (NEG_DVDY | ZERO_DVDX)) == (NEG_DVDY | ZERO_DVDX))
   {
+    GL_INS_FMT("Vertical flipped sprite detected at {},{}", vertices[0].x, vertices[0].y);
     vertices[0].v++;
     vertices[1].v++;
     vertices[2].v++;
@@ -2213,32 +2195,24 @@ ALWAYS_INLINE_RELEASE void GPU_HW::HandleFlippedQuadTextureCoordinates(const GPU
 
   // 2D polygons should have zero change in V on the X axis, and vice versa.
   if (m_allow_sprite_mode)
-    SetBatchSpriteMode(cmd, zero_dudy && zero_dvdx);
+  {
+    const bool is_sprite = (mask & (ZERO_DVDX | ZERO_DUDY)) == (ZERO_DVDX | ZERO_DUDY);
+    SetBatchSpriteMode(cmd, is_sprite);
+  }
 }
 
 bool GPU_HW::IsPossibleSpritePolygon(const BatchVertex* vertices) const
 {
-  const float abx = vertices[1].x - vertices[0].x;
-  const float aby = vertices[1].y - vertices[0].y;
-  const float bcx = vertices[2].x - vertices[1].x;
-  const float bcy = vertices[2].y - vertices[1].y;
-  const float cax = vertices[0].x - vertices[2].x;
-  const float cay = vertices[0].y - vertices[2].y;
-  const float dvdx = -aby * static_cast<float>(vertices[2].v) - bcy * static_cast<float>(vertices[0].v) -
-                     cay * static_cast<float>(vertices[1].v);
-  const float dudy = +abx * static_cast<float>(vertices[2].u) + bcx * static_cast<float>(vertices[0].u) +
-                     cax * static_cast<float>(vertices[1].u);
-  const float area = bcx * cay - bcy * cax;
-  const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
-                      (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
-
-  // Doesn't matter.
-  if (area == 0.0f || texArea == 0)
+  float dudx, dudy, dvdx, dvdy, xy_area;
+  s32 uv_area;
+  ComputeUVPartialDerivatives(vertices, &dudx, &dudy, &dvdx, &dvdy, &xy_area, &uv_area);
+  if (xy_area == 0.0f || uv_area == 0)
     return m_batch.sprite_mode;
 
-  const float rcp_area = 1.0f / area;
-  const bool zero_dudy = ((dudy * rcp_area) == 0.0f);
-  const bool zero_dvdx = ((dvdx * rcp_area) == 0.0f);
+  // Could vectorize this, but it's not really worth it as we're only checking two partial derivatives.
+  const float rcp_xy_area = 1.0f / xy_area;
+  const bool zero_dudy = ((dudy * rcp_xy_area) == 0.0f);
+  const bool zero_dvdx = ((dvdx * rcp_xy_area) == 0.0f);
   return (zero_dudy && zero_dvdx);
 }
 
@@ -2387,6 +2361,8 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::ExpandLineTriangles(BatchVertex* vertices)
   // Upload vertices.
   DebugAssert(m_batch_vertex_space >= 4);
   std::memcpy(m_batch_vertex_ptr, vertices, sizeof(BatchVertex) * 4);
+  m_batch_vertex_ptr[0].z = m_batch_vertex_ptr[1].z = m_batch_vertex_ptr[2].z = m_batch_vertex_ptr[3].z =
+    GetCurrentNormalizedVertexDepth();
   m_batch_vertex_ptr += 4;
   m_batch_vertex_count += 4;
   m_batch_vertex_space -= 4;
@@ -2485,16 +2461,21 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
 
   for (u32 i = 0; i < num_vertices; i += 2)
   {
-    const GSVector2i start_pos = GSVector2i::load<false>(&cmd->vertices[i].x);
+    const GSVector2i start_pos = GSVector2i::load<true>(&cmd->vertices[i].x);
     const u32 start_color = cmd->vertices[i].color;
-    const GSVector2i end_pos = GSVector2i::load<false>(&cmd->vertices[i + 1].x);
+    const GSVector2i end_pos = GSVector2i::load<true>(&cmd->vertices[i + 1].x);
     const u32 end_color = cmd->vertices[i + 1].color;
 
     const GSVector4i bounds = GSVector4i::xyxy(start_pos, end_pos);
     const GSVector4i rect =
       GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
     const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-    DebugAssert(rect.width() <= MAX_PRIMITIVE_WIDTH && rect.height() <= MAX_PRIMITIVE_HEIGHT && !clamped_rect.rempty());
+    DebugAssert(rect.width() <= MAX_PRIMITIVE_WIDTH && rect.height() <= MAX_PRIMITIVE_HEIGHT);
+    if (clamped_rect.rempty())
+    {
+      GL_INS_FMT("Culling off-screen line {} => {}", start_pos, end_pos);
+      continue;
+    }
 
     AddDrawnRectangle(clamped_rect);
     DrawLine(GSVector4(bounds), start_color, end_color, depth);
@@ -2524,16 +2505,20 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
 
   for (u32 i = 0; i < num_vertices; i += 2)
   {
-    const GSVector2 start_pos = GSVector2::load<false>(&cmd->vertices[i].x);
+    const GSVector2 start_pos = GSVector2::load<true>(&cmd->vertices[i].x);
     const u32 start_color = cmd->vertices[i].color;
-    const GSVector2 end_pos = GSVector2::load<false>(&cmd->vertices[i + 1].x);
+    const GSVector2 end_pos = GSVector2::load<true>(&cmd->vertices[i + 1].x);
     const u32 end_color = cmd->vertices[i + 1].color;
 
     const GSVector4 bounds = GSVector4::xyxy(start_pos, end_pos);
     const GSVector4i rect =
       GSVector4i(GSVector4::xyxy(start_pos.min(end_pos), start_pos.max(end_pos))).add32(GSVector4i::cxpr(0, 0, 1, 1));
     const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-    DebugAssert(rect.width() <= MAX_PRIMITIVE_WIDTH && rect.height() <= MAX_PRIMITIVE_HEIGHT && !clamped_rect.rempty());
+    if (clamped_rect.rempty())
+    {
+      GL_INS_FMT("Culling off-screen line {} => {}", start_pos, end_pos);
+      continue;
+    }
 
     AddDrawnRectangle(clamped_rect);
     DrawLine(bounds, start_color, end_color, depth);
@@ -2658,6 +2643,16 @@ void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
 
 void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 {
+  const GSVector2i pos = GSVector2i::load<true>(&cmd->x);
+  const GSVector2i size = GSVector2i::load<true>(&cmd->width).u16to32();
+  const GSVector4i rect = GSVector4i::xyxy(pos, pos.add32(size));
+  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
+  if (clamped_rect.rempty())
+  {
+    GL_INS_FMT("Culling off-screen sprite {}", rect);
+    return;
+  }
+
   PrepareDraw(cmd);
   SetBatchDepthBuffer(cmd, false);
   SetBatchSpriteMode(cmd, m_allow_sprite_mode);
@@ -2672,11 +2667,6 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   const u32 orig_tex_top = ZeroExtend32(cmd->texcoord) >> 8;
   const u32 rectangle_width = cmd->width;
   const u32 rectangle_height = cmd->height;
-
-  const GSVector4i rect =
-    GSVector4i(pos_x, pos_y, pos_x + static_cast<s32>(rectangle_width), pos_y + static_cast<s32>(rectangle_height));
-  const GSVector4i clamped_rect = m_clamped_drawing_area.rintersect(rect);
-  DebugAssert(!clamped_rect.rempty());
 
   // Split the rectangle into multiple quads if it's greater than 256x256, as the texture page should repeat.
   u32 tex_top = orig_tex_top;
@@ -2747,24 +2737,26 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 
 void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 {
-  PrepareDraw(cmd);
-  SetBatchDepthBuffer(cmd, false);
-
   // TODO: This could write directly to the mapped GPU pointer. But watch out for the reads below.
-  const float depth = GetCurrentNormalizedVertexDepth();
   const bool raw_texture = (cmd->texture_enable && cmd->raw_texture_enable);
-  const u32 num_vertices = cmd->num_vertices;
-  const u32 texpage = m_draw_mode.bits;
+  const u32 texpage = ZeroExtend32(cmd->draw_mode.bits) | (ZeroExtend32(cmd->palette.bits) << 16);
   std::array<BatchVertex, 4> vertices;
+  u32 num_vertices = cmd->num_vertices;
   for (u32 i = 0; i < num_vertices; i++)
   {
     const GPUBackendDrawPolygonCommand::Vertex& vert = cmd->vertices[i];
-    const GSVector2 vert_pos = GSVector2(GSVector2i::load<false>(&vert.x));
-    vertices[i].Set(vert_pos.x, vert_pos.y, depth, 1.0f, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
+    const GSVector2 vert_pos = GSVector2(GSVector2i::load<true>(&vert.x));
+    vertices[i].Set(vert_pos.x, vert_pos.y, 0.0f, 1.0f, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
                     vert.texcoord, 0xFFFF0000u);
   }
 
-  FinishPolygonDraw(cmd, vertices, num_vertices, false, false);
+  GSVector4i clamped_draw_rect_012, clamped_draw_rect_123;
+  if (BeginPolygonDraw(cmd, vertices, num_vertices, clamped_draw_rect_012, clamped_draw_rect_123))
+  {
+    SetBatchDepthBuffer(cmd, false);
+
+    FinishPolygonDraw(cmd, vertices, num_vertices, false, false, clamped_draw_rect_012, clamped_draw_rect_123);
+  }
 
   if (ShouldDrawWithSoftwareRenderer())
   {
@@ -2778,29 +2770,30 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 
 void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
 {
-  PrepareDraw(cmd);
-
   // TODO: This could write directly to the mapped GPU pointer. But watch out for the reads below.
-  const float depth = GetCurrentNormalizedVertexDepth();
   const bool raw_texture = (cmd->texture_enable && cmd->raw_texture_enable);
-  const u32 num_vertices = cmd->num_vertices;
-  const u32 texpage = m_draw_mode.bits;
+  const u32 texpage = ZeroExtend32(cmd->draw_mode.bits) | (ZeroExtend32(cmd->palette.bits) << 16);
   std::array<BatchVertex, 4> vertices;
+  u32 num_vertices = cmd->num_vertices;
   for (u32 i = 0; i < num_vertices; i++)
   {
     const GPUBackendDrawPrecisePolygonCommand::Vertex& vert = cmd->vertices[i];
-    vertices[i].Set(vert.x, vert.y, depth, vert.w, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
+    vertices[i].Set(vert.x, vert.y, 0.0f, vert.w, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
                     vert.texcoord, 0xFFFF0000u);
   }
 
-  const bool use_depth = m_pgxp_depth_buffer && cmd->valid_w;
-  SetBatchDepthBuffer(cmd, use_depth);
-  if (use_depth)
-    CheckForDepthClear(cmd, vertices.data(), num_vertices);
+  GSVector4i clamped_draw_rect_012, clamped_draw_rect_123;
+  if (BeginPolygonDraw(cmd, vertices, num_vertices, clamped_draw_rect_012, clamped_draw_rect_123))
+  {
+    const bool use_depth = m_pgxp_depth_buffer && cmd->valid_w;
+    SetBatchDepthBuffer(cmd, use_depth);
+    if (use_depth)
+      CheckForDepthClear(cmd, vertices.data(), num_vertices);
 
-  // Use PGXP to exclude primitives that are definitely 3D.
-  const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
-  FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d);
+    // Use PGXP to exclude primitives that are definitely 3D.
+    const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
+    FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d, clamped_draw_rect_012, clamped_draw_rect_123);
+  }
 
   if (ShouldDrawWithSoftwareRenderer())
   {
@@ -2820,26 +2813,130 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
   }
 }
 
+ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand* cmd,
+                                                    std::array<BatchVertex, 4>& vertices, u32& num_vertices,
+                                                    GSVector4i& clamped_draw_rect_012,
+                                                    GSVector4i& clamped_draw_rect_123)
+{
+  GSVector2 v0f = GSVector2::load<true>(&vertices[0].x);
+  GSVector2 v1f = GSVector2::load<true>(&vertices[1].x);
+  GSVector2 v2f = GSVector2::load<true>(&vertices[2].x);
+  GSVector2 min_pos_12 = v1f.min(v2f);
+  GSVector2 max_pos_12 = v1f.max(v2f);
+  GSVector4i draw_rect_012 =
+    GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f)))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+  clamped_draw_rect_012 = draw_rect_012.rintersect(m_clamped_drawing_area);
+  bool first_tri_culled = clamped_draw_rect_012.rempty();
+  if (first_tri_culled)
+  {
+    // What is this monstrosity? Final Fantasy VIII relies on X coordinates being truncated during scanline drawing,
+    // with negative coordinates becoming positive and vice versa. Fortunately the bits that we need are consistent
+    // across the entire polygon, so we can get away with truncating the vertices. However, we can't do this to all
+    // vertices, because other game's vertices break in various ways. For example, +1024 becomes -1024, which is a
+    // valid vertex position as the ending coordinate is exclusive. Therefore, 1024 is never truncated, only 1023.
+    // Luckily, FF8's vertices get culled as they do not intersect with the clip rectangle, so we can do this fixup
+    // only when culled, and everything seems happy.
+
+    const auto truncate_pos = [](const GSVector4 pos) {
+      // See TruncateGPUVertexPosition().
+      GSVector4i ipos = GSVector4i(pos);
+      const GSVector4 fdiff = pos - GSVector4(ipos);
+      ipos = ipos.sll32<21>().sra32<21>();
+      return GSVector4(ipos) + fdiff;
+    };
+
+    const GSVector4 tv01f = truncate_pos(GSVector4::xyxy(v0f, v1f));
+    const GSVector4 tv23f = truncate_pos(GSVector4::xyxy(v2f, GSVector2::load<true>(&vertices[3].x)));
+    const GSVector2 tv0f = tv01f.xy();
+    const GSVector2 tv1f = tv01f.zw();
+    const GSVector2 tv2f = tv23f.xy();
+    const GSVector2 tmin_pos_12 = tv1f.min(tv2f);
+    const GSVector2 tmax_pos_12 = tv1f.max(tv2f);
+    const GSVector4i tdraw_rect_012 =
+      GSVector4i(GSVector4(tmin_pos_12.min(tv0f)).upld(GSVector4(tmax_pos_12.max(tv0f))))
+        .add32(GSVector4i::cxpr(0, 0, 1, 1));
+    first_tri_culled =
+      (tdraw_rect_012.width() > MAX_PRIMITIVE_WIDTH || tdraw_rect_012.height() > MAX_PRIMITIVE_HEIGHT ||
+       !tdraw_rect_012.rintersects(m_clamped_drawing_area));
+    if (!first_tri_culled)
+    {
+      GSVector4::storel<true>(&vertices[0].x, tv01f);
+      GSVector4::storeh<true>(&vertices[1].x, tv01f);
+      GSVector4::storel<true>(&vertices[2].x, tv23f);
+      if (num_vertices == 4)
+        GSVector4::storeh<true>(&vertices[3].x, tv23f);
+
+      GL_INS_FMT("Adjusted polygon from [{} {} {}] to [{} {} {}] due to coordinate truncation", v0f, v1f, v2f, tv0f,
+                 tv1f, tv2f);
+
+      v0f = tv0f;
+      v1f = tv1f;
+      v2f = tv2f;
+      min_pos_12 = tmin_pos_12;
+      max_pos_12 = tmax_pos_12;
+    }
+    else
+    {
+      GL_INS_FMT("Culling off-screen polygon: {},{} {},{} {},{}", vertices[0].x, vertices[0].y, vertices[1].y,
+                 vertices[1].x, vertices[2].y, vertices[2].y);
+
+      if (num_vertices != 4)
+        return false;
+    }
+  }
+
+  if (num_vertices == 4)
+  {
+    const GSVector2 v3f = GSVector2::load<true>(&vertices[3].x);
+    const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
+                                       .add32(GSVector4i::cxpr(0, 0, 1, 1));
+    clamped_draw_rect_123 = draw_rect_123.rintersect(m_clamped_drawing_area);
+    const bool second_tri_culled = clamped_draw_rect_123.rempty();
+    if (second_tri_culled)
+    {
+      GL_INS_FMT("Culling off-screen polygon (quad second half): {},{} {},{} {},{}", vertices[2].x, vertices[2].y,
+                 vertices[1].x, vertices[1].y, vertices[3].x, vertices[3].y);
+
+      if (first_tri_culled)
+      {
+        // both parts culled
+        return false;
+      }
+
+      // Remove second part of quad.
+      // NOTE: Culling this way results in subtle differences with UV clamping, since the fourth vertex is no
+      // longer considered in the range. This is mainly apparent when the UV gradient is zero. Seems like it
+      // generally looks better this way, so I'm keeping it.
+      num_vertices = 3;
+    }
+    else
+    {
+      // If first part was culled, move the second part to the first.
+      if (first_tri_culled)
+      {
+        clamped_draw_rect_012 = clamped_draw_rect_123;
+        std::memcpy(&vertices[0], &vertices[2], sizeof(BatchVertex));
+        std::memcpy(&vertices[2], &vertices[3], sizeof(BatchVertex));
+        num_vertices = 3;
+      }
+    }
+  }
+
+  PrepareDraw(cmd);
+  return true;
+}
+
 ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand* cmd,
                                                      std::array<BatchVertex, 4>& vertices, u32 num_vertices,
-                                                     bool is_precise, bool is_3d)
+                                                     bool is_precise, bool is_3d,
+                                                     const GSVector4i clamped_draw_rect_012,
+                                                     const GSVector4i clamped_draw_rect_123)
 {
   // Use PGXP to exclude primitives that are definitely 3D.
   if (m_resolution_scale > 1 && !is_3d && cmd->quad_polygon)
     HandleFlippedQuadTextureCoordinates(cmd, vertices.data());
   else if (m_allow_sprite_mode)
     SetBatchSpriteMode(cmd, is_precise ? !is_3d : IsPossibleSpritePolygon(vertices.data()));
-
-  const GSVector2 v0f = GSVector2::load<false>(&vertices[0].x);
-  const GSVector2 v1f = GSVector2::load<false>(&vertices[1].x);
-  const GSVector2 v2f = GSVector2::load<false>(&vertices[2].x);
-  const GSVector2 min_pos_12 = v1f.min(v2f);
-  const GSVector2 max_pos_12 = v1f.max(v2f);
-  const GSVector4i draw_rect_012 =
-    GSVector4i(GSVector4(min_pos_12.min(v0f)).upld(GSVector4(max_pos_12.max(v0f)))).add32(GSVector4i::cxpr(0, 0, 1, 1));
-  const GSVector4i clamped_draw_rect_012 = draw_rect_012.rintersect(m_clamped_drawing_area);
-  DebugAssert(draw_rect_012.width() <= MAX_PRIMITIVE_WIDTH && draw_rect_012.height() <= MAX_PRIMITIVE_HEIGHT &&
-              !clamped_draw_rect_012.rempty());
 
   if (cmd->texture_enable && m_compute_uv_range)
     ComputePolygonUVLimits(cmd, vertices.data(), num_vertices);
@@ -2864,12 +2961,6 @@ ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand
   // quads, use num_vertices here, because the first half might be culled
   if (num_vertices == 4)
   {
-    const GSVector2 v3f = GSVector2::load<false>(&vertices[3].x);
-    const GSVector4i draw_rect_123 = GSVector4i(GSVector4(min_pos_12.min(v3f)).upld(GSVector4(max_pos_12.max(v3f))))
-                                       .add32(GSVector4i::cxpr(0, 0, 1, 1));
-    const GSVector4i clamped_draw_rect_123 = draw_rect_123.rintersect(m_clamped_drawing_area);
-    DebugAssert(draw_rect_123.width() <= MAX_PRIMITIVE_WIDTH && draw_rect_123.height() <= MAX_PRIMITIVE_HEIGHT &&
-                !clamped_draw_rect_123.rempty());
     AddDrawnRectangle(clamped_draw_rect_123);
 
     DebugAssert(m_batch_index_space >= 3);
@@ -2879,8 +2970,11 @@ ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand
     m_batch_index_count += 3;
     m_batch_index_space -= 3;
 
+    // Fake depth must be written here rather than at vertex init time, because a flush could occur in between.
     DebugAssert(m_batch_vertex_space >= 4);
     std::memcpy(m_batch_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 4);
+    m_batch_vertex_ptr[0].z = m_batch_vertex_ptr[1].z = m_batch_vertex_ptr[2].z = m_batch_vertex_ptr[3].z =
+      GetCurrentNormalizedVertexDepth();
     m_batch_vertex_ptr += 4;
     m_batch_vertex_count += 4;
     m_batch_vertex_space -= 4;
@@ -2889,6 +2983,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand
   {
     DebugAssert(m_batch_vertex_space >= 3);
     std::memcpy(m_batch_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 3);
+    m_batch_vertex_ptr[0].z = m_batch_vertex_ptr[1].z = m_batch_vertex_ptr[2].z = GetCurrentNormalizedVertexDepth();
     m_batch_vertex_ptr += 3;
     m_batch_vertex_count += 3;
     m_batch_vertex_space -= 3;
@@ -3200,7 +3295,6 @@ void GPU_HW::DownloadVRAMFromGPU(u32 x, u32 y, u32 width, u32 height)
   g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
   g_gpu_device->Draw(3, 0);
   m_vram_readback_texture->MakeReadyForSampling();
-  GL_POP();
 
   // Stage the readback and copy it into our shadow buffer.
   if (m_vram_readback_download_texture->IsImported())
@@ -3552,13 +3646,14 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
     }
   }
 
-  DebugAssert((cmd->texture_enable && (texture_mode == BatchTextureMode::PageTexture &&
-                                       texture_cache_key.mode == m_draw_mode.mode_reg.texture_mode) ||
-               texture_mode == static_cast<BatchTextureMode>(
-                                 (m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit) ?
-                                   GPUTextureMode::Direct16Bit :
-                                   m_draw_mode.mode_reg.texture_mode)) ||
-              (!cmd->texture_enable && texture_mode == BatchTextureMode::Disabled));
+  DebugAssert(
+    (cmd->texture_enable &&
+     ((texture_mode == BatchTextureMode::PageTexture && texture_cache_key.mode == m_draw_mode.mode_reg.texture_mode) ||
+      texture_mode ==
+        static_cast<BatchTextureMode>((m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit) ?
+                                        GPUTextureMode::Direct16Bit :
+                                        m_draw_mode.mode_reg.texture_mode))) ||
+    (!cmd->texture_enable && texture_mode == BatchTextureMode::Disabled));
   DebugAssert(!(m_texpage_dirty & TEXPAGE_DIRTY_PAGE_RECT) || texture_mode == BatchTextureMode::PageTexture ||
               !cmd->texture_enable);
 
@@ -3650,12 +3745,6 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
     m_current_depth++;
 }
 
-void GPU_HW::UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit)
-{
-  if (ShouldDrawWithSoftwareRenderer())
-    GPU_SW_Rasterizer::UpdateCLUT(reg, clut_is_8bit);
-}
-
 void GPU_HW::FlushRender()
 {
   const u32 base_vertex = m_batch_base_vertex;
@@ -3723,7 +3812,7 @@ void GPU_HW::FlushRender()
 
 void GPU_HW::DrawingAreaChanged()
 {
-  m_clamped_drawing_area = GPU::GetClampedDrawingArea(GPU_SW_Rasterizer::g_drawing_area);
+  FlushRender();
   m_drawing_area_changed = true;
 }
 

@@ -1492,18 +1492,15 @@ void CPU::CodeCache::CommitFarCode(u32 length)
 
 void CPU::CodeCache::AlignCode(u32 alignment)
 {
-#if defined(CPU_ARCH_X64)
-  constexpr u8 padding_value = 0xcc; // int3
-#else
-  constexpr u8 padding_value = 0x00;
-#endif
-
   DebugAssert(Common::IsPow2(alignment));
   const u32 num_padding_bytes =
     std::min(static_cast<u32>(Common::AlignUpPow2(reinterpret_cast<uintptr_t>(s_free_code_ptr), alignment) -
                               reinterpret_cast<uintptr_t>(s_free_code_ptr)),
              GetFreeCodeSpace());
-  std::memset(s_free_code_ptr, padding_value, num_padding_bytes);
+
+  if (num_padding_bytes > 0)
+    EmitAlignmentPadding(s_free_code_ptr, num_padding_bytes);
+
   s_free_code_ptr += num_padding_bytes;
   s_code_used += num_padding_bytes;
 }

@@ -34,7 +34,7 @@ CPU::Recompiler::Recompiler::Recompiler() = default;
 CPU::Recompiler::Recompiler::~Recompiler() = default;
 
 void CPU::Recompiler::Recompiler::Reset(CodeCache::Block* block, u8* code_buffer, u32 code_buffer_space,
-                                      u8* far_code_buffer, u32 far_code_space)
+                                        u8* far_code_buffer, u32 far_code_space)
 {
   m_block = block;
   m_compiler_pc = block->pc;
@@ -101,10 +101,12 @@ void CPU::Recompiler::Recompiler::BeginBlock()
 }
 
 const void* CPU::Recompiler::Recompiler::CompileBlock(CodeCache::Block* block, u32* host_code_size,
-                                                    u32* host_far_code_size)
+                                                      u32* host_far_code_size)
 {
-  Reset(block, CPU::CodeCache::GetFreeCodePointer(), CPU::CodeCache::GetFreeCodeSpace(),
-        CPU::CodeCache::GetFreeFarCodePointer(), CPU::CodeCache::GetFreeFarCodeSpace());
+  CodeCache::AlignCode(FUNCTION_ALIGNMENT);
+
+  Reset(block, CodeCache::GetFreeCodePointer(), CodeCache::GetFreeCodeSpace(), CodeCache::GetFreeFarCodePointer(),
+        CodeCache::GetFreeFarCodeSpace());
 
   DEBUG_LOG("Block range: {:08X} -> {:08X}", block->pc, block->pc + block->size * 4);
 
@@ -144,8 +146,8 @@ const void* CPU::Recompiler::Recompiler::CompileBlock(CodeCache::Block* block, u
   const void* code = EndCompile(&code_size, &far_code_size);
   *host_code_size = code_size;
   *host_far_code_size = far_code_size;
-  CPU::CodeCache::CommitCode(code_size);
-  CPU::CodeCache::CommitFarCode(far_code_size);
+  CodeCache::CommitCode(code_size);
+  CodeCache::CommitFarCode(far_code_size);
 
   return code;
 }
@@ -651,7 +653,7 @@ const char* CPU::Recompiler::Recompiler::GetReadWriteModeString(u32 flags)
 }
 
 u32 CPU::Recompiler::Recompiler::AllocateHostReg(u32 flags, HostRegAllocType type /* = HR_TYPE_TEMP */,
-                                               Reg reg /* = Reg::count */)
+                                                 Reg reg /* = Reg::count */)
 {
   // Cancel any load delays before booting anything out
   if (flags & HR_MODE_WRITE && (type == HR_TYPE_CPU_REG || type == HR_TYPE_NEXT_LOAD_DELAY_VALUE))
@@ -753,7 +755,7 @@ u32 CPU::Recompiler::Recompiler::AllocateHostReg(u32 flags, HostRegAllocType typ
 }
 
 std::optional<u32> CPU::Recompiler::Recompiler::CheckHostReg(u32 flags, HostRegAllocType type /* = HR_TYPE_TEMP */,
-                                                           Reg reg /* = Reg::count */)
+                                                             Reg reg /* = Reg::count */)
 {
   for (u32 i = 0; i < NUM_HOST_REGS; i++)
   {
@@ -1158,7 +1160,8 @@ void CPU::Recompiler::Recompiler::RestoreHostState()
 }
 
 void CPU::Recompiler::Recompiler::AddLoadStoreInfo(void* code_address, u32 code_size, u32 address_register,
-                                                 u32 data_register, MemoryAccessSize size, bool is_signed, bool is_load)
+                                                   u32 data_register, MemoryAccessSize size, bool is_signed,
+                                                   bool is_load)
 {
   DebugAssert(CodeCache::IsUsingFastmem());
   DebugAssert(address_register < NUM_HOST_REGS);
@@ -1367,8 +1370,8 @@ void CPU::Recompiler::Recompiler::CompileBranchDelaySlot(bool dirty_pc /* = true
 }
 
 void CPU::Recompiler::Recompiler::CompileTemplate(void (Recompiler::*const_func)(CompileFlags),
-                                                void (Recompiler::*func)(CompileFlags), const void* pgxp_cpu_func,
-                                                u32 tflags)
+                                                  void (Recompiler::*func)(CompileFlags), const void* pgxp_cpu_func,
+                                                  u32 tflags)
 {
   // TODO: This is where we will do memory operand optimization. Remember to kill constants!
   // TODO: Swap S and T if commutative
@@ -1733,7 +1736,7 @@ const TickCount* CPU::Recompiler::Recompiler::GetFetchMemoryAccessTimePtr() cons
 }
 
 void CPU::Recompiler::Recompiler::FlushForLoadStore(const std::optional<VirtualMemoryAddress>& address, bool store,
-                                                  bool use_fastmem)
+                                                    bool use_fastmem)
 {
   if (use_fastmem)
     return;

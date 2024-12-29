@@ -359,7 +359,7 @@ public:
 
 #endif
 
-  ALWAYS_INLINE GSVector2i i8to16() const
+  ALWAYS_INLINE GSVector2i s8to16() const
   {
     return GSVector2i(vreinterpret_s32_s16(vget_low_s8(vmovl_s8(vreinterpret_s8_s32(v2s)))));
   }
@@ -367,6 +367,23 @@ public:
   ALWAYS_INLINE GSVector2i u8to16() const
   {
     return GSVector2i(vreinterpret_s32_u16(vget_low_u8(vmovl_u8(vreinterpret_u8_s32(v2s)))));
+  }
+
+  ALWAYS_INLINE GSVector2i s8to32() const
+  {
+    return GSVector2i(vget_low_s32(vmovl_s16(vget_low_s16(vmovl_s8(vreinterpret_s8_s32(v2s))))));
+  }
+
+  ALWAYS_INLINE GSVector2i u8to32() const
+  {
+    return GSVector2i(vreinterpret_s32_u32(vget_low_u32(vmovl_u16(vget_low_u16(vmovl_u8(vreinterpret_u8_s32(v2s)))))));
+  }
+
+  ALWAYS_INLINE GSVector2i s16to32() const { return GSVector2i(vget_low_s32(vmovl_s16(vreinterpret_s16_s32(v2s)))); }
+
+  ALWAYS_INLINE GSVector2i u16to32() const
+  {
+    return GSVector2i(vreinterpret_s32_u32(vget_low_u32(vmovl_u16(vreinterpret_u16_s32(v2s)))));
   }
 
   template<int i>

@@ -320,14 +320,17 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
 
   armAsm->FinalizeCode();
 
-#if 0
-  // TODO: align?
   s_trampoline_targets.clear();
   s_trampoline_start_ptr = static_cast<u8*>(code) + armAsm->GetCursorOffset();
   s_trampoline_used = 0;
-#endif
 
-  return static_cast<u32>(armAsm->GetCursorOffset()) /* + TRAMPOLINE_AREA_SIZE*/;
+  return static_cast<u32>(armAsm->GetCursorOffset()) + TRAMPOLINE_AREA_SIZE;
+}
+
+void CPU::CodeCache::EmitAlignmentPadding(void* dst, size_t size)
+{
+  constexpr u8 padding_value = 0x00;
+  std::memset(dst, padding_value, size);
 }
 
 CPU::ARM32Recompiler::ARM32Recompiler() : m_emitter(A32), m_far_emitter(A32)
@@ -1025,7 +1028,8 @@ void CPU::ARM32Recompiler::Flush(u32 flags)
 
 void CPU::ARM32Recompiler::Compile_Fallback()
 {
-  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc, inst->bits);
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc,
+              inst->bits);
 
   Flush(FLUSH_FOR_INTERPRETER);
 

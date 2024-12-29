@@ -129,7 +129,6 @@ protected:
   virtual void DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd) = 0;
 
   virtual void DrawingAreaChanged() = 0;
-  virtual void UpdateCLUT(GPUTexturePaletteReg reg, bool clut_is_8bit) = 0;
   virtual void ClearCache() = 0;
   virtual void OnBufferSwapped() = 0;
   virtual void ClearVRAM() = 0;
@@ -173,6 +172,8 @@ protected:
   bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
   void DestroyDeinterlaceTextures();
   bool ApplyChromaSmoothing();
+
+  GSVector4i m_clamped_drawing_area = {};
 
   s32 m_display_width = 0;
   s32 m_display_height = 0;
