@@ -2382,6 +2382,8 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::ExpandLineTriangles(BatchVertex* vertices)
   // Upload vertices.
   DebugAssert(m_batch_vertex_space >= 4);
   std::memcpy(m_batch_vertex_ptr, vertices, sizeof(BatchVertex) * 4);
+  m_batch_vertex_ptr[0].z = m_batch_vertex_ptr[1].z = m_batch_vertex_ptr[2].z = m_batch_vertex_ptr[3].z =
+    GetCurrentNormalizedVertexDepth();
   m_batch_vertex_ptr += 4;
   m_batch_vertex_count += 4;
   m_batch_vertex_space -= 4;
@@ -2757,7 +2759,6 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 {
   // TODO: This could write directly to the mapped GPU pointer. But watch out for the reads below.
-  const float depth = GetCurrentNormalizedVertexDepth();
   const bool raw_texture = (cmd->texture_enable && cmd->raw_texture_enable);
   const u32 texpage = ZeroExtend32(cmd->draw_mode.bits) | (ZeroExtend32(cmd->palette.bits) << 16);
   std::array<BatchVertex, 4> vertices;
@@ -2766,7 +2767,7 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
   {
     const GPUBackendDrawPolygonCommand::Vertex& vert = cmd->vertices[i];
     const GSVector2 vert_pos = GSVector2(GSVector2i::load<true>(&vert.x));
-    vertices[i].Set(vert_pos.x, vert_pos.y, depth, 1.0f, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
+    vertices[i].Set(vert_pos.x, vert_pos.y, 0.0f, 1.0f, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
                     vert.texcoord, 0xFFFF0000u);
   }
 
@@ -2791,7 +2792,6 @@ void GPU_HW::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
 void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
 {
   // TODO: This could write directly to the mapped GPU pointer. But watch out for the reads below.
-  const float depth = GetCurrentNormalizedVertexDepth();
   const bool raw_texture = (cmd->texture_enable && cmd->raw_texture_enable);
   const u32 texpage = ZeroExtend32(cmd->draw_mode.bits) | (ZeroExtend32(cmd->palette.bits) << 16);
   std::array<BatchVertex, 4> vertices;
@@ -2799,7 +2799,7 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
   for (u32 i = 0; i < num_vertices; i++)
   {
     const GPUBackendDrawPrecisePolygonCommand::Vertex& vert = cmd->vertices[i];
-    vertices[i].Set(vert.x, vert.y, depth, vert.w, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
+    vertices[i].Set(vert.x, vert.y, 0.0f, vert.w, raw_texture ? UINT32_C(0x00808080) : vert.color, texpage,
                     vert.texcoord, 0xFFFF0000u);
   }
 
@@ -2991,8 +2991,11 @@ ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand
     m_batch_index_count += 3;
     m_batch_index_space -= 3;
 
+    // Fake depth must be written here rather than at vertex init time, because a flush could occur in between.
     DebugAssert(m_batch_vertex_space >= 4);
     std::memcpy(m_batch_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 4);
+    m_batch_vertex_ptr[0].z = m_batch_vertex_ptr[1].z = m_batch_vertex_ptr[2].z = m_batch_vertex_ptr[3].z =
+      GetCurrentNormalizedVertexDepth();
     m_batch_vertex_ptr += 4;
     m_batch_vertex_count += 4;
     m_batch_vertex_space -= 4;
@@ -3001,6 +3004,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand
   {
     DebugAssert(m_batch_vertex_space >= 3);
     std::memcpy(m_batch_vertex_ptr, vertices.data(), sizeof(BatchVertex) * 3);
+    m_batch_vertex_ptr[0].z = m_batch_vertex_ptr[1].z = m_batch_vertex_ptr[2].z = GetCurrentNormalizedVertexDepth();
     m_batch_vertex_ptr += 3;
     m_batch_vertex_count += 3;
     m_batch_vertex_space -= 3;
