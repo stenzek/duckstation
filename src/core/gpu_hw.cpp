@@ -2101,30 +2101,33 @@ ALWAYS_INLINE_RELEASE void GPU_HW::DrawBatchVertices(BatchRenderMode render_mode
   }
 }
 
+ALWAYS_INLINE_RELEASE void GPU_HW::ComputeUVPartialDerivatives(const BatchVertex* vertices, float* dudx, float* dudy,
+                                                               float* dvdx, float* dvdy, float* xy_area, s32* uv_area)
+{
+  const float v01x = vertices[1].x - vertices[0].x;
+  const float v01y = vertices[1].y - vertices[0].y;
+  const float v12x = vertices[2].x - vertices[1].x;
+  const float v12y = vertices[2].y - vertices[1].y;
+  const float v23x = vertices[0].x - vertices[2].x;
+  const float v23y = vertices[0].y - vertices[2].y;
+  const float v0u = static_cast<float>(vertices[0].u);
+  const float v0v = static_cast<float>(vertices[0].v);
+  const float v1u = static_cast<float>(vertices[1].u);
+  const float v1v = static_cast<float>(vertices[1].v);
+  const float v2u = static_cast<float>(vertices[2].u);
+  const float v2v = static_cast<float>(vertices[2].v);
+  *dudx = -v01y * v2u - v12y * v0u - v23y * v1u;
+  *dvdx = -v01y * v2v - v12y * v0v - v23y * v1v;
+  *dudy = v01x * v2u + v12x * v0u + v23x * v1u;
+  *dvdy = v01x * v2v + v12x * v0v + v23x * v1v;
+  *xy_area = v12x * v23y - v12y * v23x;
+  *uv_area = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
+             (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
+}
+
 ALWAYS_INLINE_RELEASE void GPU_HW::HandleFlippedQuadTextureCoordinates(const GPUBackendDrawCommand* cmd,
                                                                        BatchVertex* vertices)
 {
-  // Taken from beetle-psx gpu_polygon.cpp
-  // For X/Y flipped 2D sprites, PSX games rely on a very specific rasterization behavior. If U or V is decreasing in X
-  // or Y, and we use the provided U/V as is, we will sample the wrong texel as interpolation covers an entire pixel,
-  // while PSX samples its interpolation essentially in the top-left corner and splats that interpolant across the
-  // entire pixel. While we could emulate this reasonably well in native resolution by shifting our vertex coords by
-  // 0.5, this breaks in upscaling scenarios, because we have several samples per native sample and we need NN rules to
-  // hit the same UV every time. One approach here is to use interpolate at offset or similar tricks to generalize the
-  // PSX interpolation patterns, but the problem is that vertices sharing an edge will no longer see the same UV (due to
-  // different plane derivatives), we end up sampling outside the intended boundary and artifacts are inevitable, so the
-  // only case where we can apply this fixup is for "sprites" or similar which should not share edges, which leads to
-  // this unfortunate code below.
-
-  // It might be faster to do more direct checking here, but the code below handles primitives in any order and
-  // orientation, and is far more SIMD-friendly if needed.
-  const float abx = vertices[1].x - vertices[0].x;
-  const float aby = vertices[1].y - vertices[0].y;
-  const float bcx = vertices[2].x - vertices[1].x;
-  const float bcy = vertices[2].y - vertices[1].y;
-  const float cax = vertices[0].x - vertices[2].x;
-  const float cay = vertices[0].y - vertices[2].y;
-
   // Hack for Wild Arms 2: The player sprite is drawn one line at a time with a quad, but the bottom V coordinates
   // are set to a large distance from the top V coordinate. When upscaling, this means that the coordinate is
   // interpolated between these two values, result in out-of-bounds sampling. At native, it's fine, because at the
@@ -2143,63 +2146,47 @@ ALWAYS_INLINE_RELEASE void GPU_HW::HandleFlippedQuadTextureCoordinates(const GPU
     vertices[3].v = vertices[0].v;
   }
 
-  // Compute static derivatives, just assume W is uniform across the primitive and that the plane equation remains the
-  // same across the quad. (which it is, there is no Z.. yet).
-  const float dudx = -aby * static_cast<float>(vertices[2].u) - bcy * static_cast<float>(vertices[0].u) -
-                     cay * static_cast<float>(vertices[1].u);
-  const float dvdx = -aby * static_cast<float>(vertices[2].v) - bcy * static_cast<float>(vertices[0].v) -
-                     cay * static_cast<float>(vertices[1].v);
-  const float dudy = +abx * static_cast<float>(vertices[2].u) + bcx * static_cast<float>(vertices[0].u) +
-                     cax * static_cast<float>(vertices[1].u);
-  const float dvdy = +abx * static_cast<float>(vertices[2].v) + bcx * static_cast<float>(vertices[0].v) +
-                     cax * static_cast<float>(vertices[1].v);
-  const float area = bcx * cay - bcy * cax;
-
-  // Detect and reject any triangles with 0 size texture area
-  const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
-                      (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
-
-  // Shouldn't matter as degenerate primitives will be culled anyways.
-  if (area == 0.0f || texArea == 0)
+  // Handle interpolation differences between PC GPUs and the PSX GPU. The first pixel on each span/scanline is given
+  // the initial U/V coordinate without any further interpolation on the PSX GPU, in contrast to PC GPUs. This results
+  // in oversampling on the right edge, so compensate by offsetting the left (right in texture space) UV.
+  alignas(VECTOR_ALIGNMENT) float pd[4];
+  float xy_area;
+  s32 uv_area;
+  ComputeUVPartialDerivatives(vertices, &pd[0], &pd[1], &pd[2], &pd[3], &xy_area, &uv_area);
+  if (xy_area == 0.0f || uv_area == 0)
     return;
 
-  // Use floats here as it'll be faster than integer divides.
-  const float rcp_area = 1.0f / area;
-  const float dudx_area = dudx * rcp_area;
-  const float dudy_area = dudy * rcp_area;
-  const float dvdx_area = dvdx * rcp_area;
-  const float dvdy_area = dvdy * rcp_area;
-  const bool neg_dudx = dudx_area < 0.0f;
-  const bool neg_dudy = dudy_area < 0.0f;
-  const bool neg_dvdx = dvdx_area < 0.0f;
-  const bool neg_dvdy = dvdy_area < 0.0f;
-  const bool zero_dudx = dudx_area == 0.0f;
-  const bool zero_dudy = dudy_area == 0.0f;
-  const bool zero_dvdx = dvdx_area == 0.0f;
-  const bool zero_dvdy = dvdy_area == 0.0f;
+  const GSVector4 pd_area = GSVector4::load<true>(pd) / GSVector4(xy_area);
+  const GSVector4 neg_pd = (pd_area < GSVector4::zero());
+  const GSVector4 zero_pd = (pd_area == GSVector4::zero());
+  const int mask = (neg_pd.mask() | (zero_pd.mask() << 4));
 
-  // If we have negative dU or dV in any direction, increment the U or V to work properly with nearest-neighbor in
-  // this impl. If we don't have 1:1 pixel correspondence, this creates a slight "shift" in the sprite, but we
-  // guarantee that we don't sample garbage at least. Overall, this is kinda hacky because there can be legitimate,
-  // rare cases where 3D meshes hit this scenario, and a single texel offset can pop in, but this is way better than
-  // having borked 2D overall.
-  //
-  // TODO: If perf becomes an issue, we can probably SIMD the 8 comparisons above,
-  // create an 8-bit code, and use a LUT to get the offsets.
-  // Case 1: U is decreasing in X, but no change in Y.
-  // Case 2: U is decreasing in Y, but no change in X.
-  // Case 3: V is decreasing in X, but no change in Y.
-  // Case 4: V is decreasing in Y, but no change in X.
-  if ((neg_dudx && zero_dudy) || (neg_dudy && zero_dudx))
+  // Addressing the 8-bit status code above.
+  static constexpr int NEG_DUDX = 0x1;
+  static constexpr int NEG_DUDY = 0x2;
+  static constexpr int NEG_DVDX = 0x4;
+  static constexpr int NEG_DVDY = 0x8;
+  static constexpr int ZERO_DUDX = 0x10;
+  static constexpr int ZERO_DUDY = 0x20;
+  static constexpr int ZERO_DVDX = 0x40;
+  static constexpr int ZERO_DVDY = 0x80;
+
+  // Flipped horizontal sprites: negative dudx+zero dudy or negative dudy+zero dudx.
+  if ((mask & (NEG_DUDX | ZERO_DUDY)) == (NEG_DUDX | ZERO_DUDY) ||
+      (mask & (NEG_DUDY | ZERO_DUDX)) == (NEG_DUDY | ZERO_DUDX))
   {
+    GL_INS_FMT("Horizontal flipped sprite detected at {},{}", vertices[0].x, vertices[0].y);
     vertices[0].u++;
     vertices[1].u++;
     vertices[2].u++;
     vertices[3].u++;
   }
 
-  if ((neg_dvdx && zero_dvdy) || (neg_dvdy && zero_dvdx))
+  // Flipped vertical sprites: negative dvdx+zero dvdy or negative dvdy+zero dvdx.
+  if ((mask & (NEG_DVDX | ZERO_DVDY)) == (NEG_DVDX | ZERO_DVDY) ||
+      (mask & (NEG_DVDY | ZERO_DVDX)) == (NEG_DVDY | ZERO_DVDX))
   {
+    GL_INS_FMT("Vertical flipped sprite detected at {},{}", vertices[0].x, vertices[0].y);
     vertices[0].v++;
     vertices[1].v++;
     vertices[2].v++;
@@ -2208,32 +2195,24 @@ ALWAYS_INLINE_RELEASE void GPU_HW::HandleFlippedQuadTextureCoordinates(const GPU
 
   // 2D polygons should have zero change in V on the X axis, and vice versa.
   if (m_allow_sprite_mode)
-    SetBatchSpriteMode(cmd, zero_dudy && zero_dvdx);
+  {
+    const bool is_sprite = (mask & (ZERO_DVDX | ZERO_DUDY)) == (ZERO_DVDX | ZERO_DUDY);
+    SetBatchSpriteMode(cmd, is_sprite);
+  }
 }
 
 bool GPU_HW::IsPossibleSpritePolygon(const BatchVertex* vertices) const
 {
-  const float abx = vertices[1].x - vertices[0].x;
-  const float aby = vertices[1].y - vertices[0].y;
-  const float bcx = vertices[2].x - vertices[1].x;
-  const float bcy = vertices[2].y - vertices[1].y;
-  const float cax = vertices[0].x - vertices[2].x;
-  const float cay = vertices[0].y - vertices[2].y;
-  const float dvdx = -aby * static_cast<float>(vertices[2].v) - bcy * static_cast<float>(vertices[0].v) -
-                     cay * static_cast<float>(vertices[1].v);
-  const float dudy = +abx * static_cast<float>(vertices[2].u) + bcx * static_cast<float>(vertices[0].u) +
-                     cax * static_cast<float>(vertices[1].u);
-  const float area = bcx * cay - bcy * cax;
-  const s32 texArea = (vertices[1].u - vertices[0].u) * (vertices[2].v - vertices[0].v) -
-                      (vertices[2].u - vertices[0].u) * (vertices[1].v - vertices[0].v);
-
-  // Doesn't matter.
-  if (area == 0.0f || texArea == 0)
+  float dudx, dudy, dvdx, dvdy, xy_area;
+  s32 uv_area;
+  ComputeUVPartialDerivatives(vertices, &dudx, &dudy, &dvdx, &dvdy, &xy_area, &uv_area);
+  if (xy_area == 0.0f || uv_area == 0)
     return m_batch.sprite_mode;
 
-  const float rcp_area = 1.0f / area;
-  const bool zero_dudy = ((dudy * rcp_area) == 0.0f);
-  const bool zero_dvdx = ((dvdx * rcp_area) == 0.0f);
+  // Could vectorize this, but it's not really worth it as we're only checking two partial derivatives.
+  const float rcp_xy_area = 1.0f / xy_area;
+  const bool zero_dudy = ((dudy * rcp_xy_area) == 0.0f);
+  const bool zero_dvdx = ((dvdx * rcp_xy_area) == 0.0f);
   return (zero_dudy && zero_dvdx);
 }
 

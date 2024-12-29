@@ -250,6 +250,10 @@ private:
   /// Expands a line into two triangles.
   void DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth);
 
+  /// Computes partial derivatives and area for the given triangle. Needed for sprite/line detection.
+  static void ComputeUVPartialDerivatives(const BatchVertex* vertices, float* dudx, float* dudy, float* dvdx,
+                                          float* dvdy, float* xy_area, s32* uv_area);
+
   /// Handles quads with flipped texture coordinate directions.
   void HandleFlippedQuadTextureCoordinates(const GPUBackendDrawCommand* cmd, BatchVertex* vertices);
   bool IsPossibleSpritePolygon(const BatchVertex* vertices) const;
