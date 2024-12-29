@@ -2,12 +2,15 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "core/achievements.h"
+#include "core/bus.h"
 #include "core/controller.h"
 #include "core/fullscreen_ui.h"
 #include "core/game_list.h"
+#include "core/gpu.h"
 #include "core/gpu_backend.h"
 #include "core/gpu_thread.h"
 #include "core/host.h"
+#include "core/spu.h"
 #include "core/system.h"
 #include "core/system_private.h"
 
@@ -27,6 +30,7 @@
 #include "common/log.h"
 #include "common/memory_settings_interface.h"
 #include "common/path.h"
+#include "common/sha256_digest.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 
@@ -38,6 +42,7 @@
 LOG_CHANNEL(Host);
 
 namespace RegTestHost {
+
 static bool ParseCommandLineParameters(int argc, char* argv[], std::optional<SystemBootParameters>& autoboot);
 static void PrintCommandLineVersion();
 static void PrintCommandLineHelp(const char* progname);
@@ -46,8 +51,10 @@ static void InitializeEarlyConsole();
 static void HookSignals();
 static bool SetFolders();
 static bool SetNewDataRoot(const std::string& filename);
+static void DumpSystemStateHashes();
 static std::string GetFrameDumpFilename(u32 frame);
 static void GPUThreadEntryPoint();
+
 } // namespace RegTestHost
 
 static std::unique_ptr<MemorySettingsInterface> s_base_settings_interface;
@@ -320,7 +327,10 @@ void Host::PumpMessagesOnCPUThread()
 {
   s_frames_remaining--;
   if (s_frames_remaining == 0)
+  {
+    RegTestHost::DumpSystemStateHashes();
     System::ShutdownSystem(false);
+  }
 }
 
 void Host::RunOnCPUThread(std::function<void()> function, bool block /* = false */)
@@ -526,6 +536,32 @@ void RegTestHost::GPUThreadEntryPoint()
 {
   Threading::SetNameOfCurrentThread("CPU Thread");
   GPUThread::Internal::GPUThreadEntryPoint();
+}
+
+void RegTestHost::DumpSystemStateHashes()
+{
+  Error error;
+
+  // don't save full state on gpu dump, it's not going to be complete...
+  if (!System::IsReplayingGPUDump())
+  {
+    DynamicHeapArray<u8> state_data(System::GetMaxSaveStateSize());
+    size_t state_data_size;
+    if (!System::SaveStateDataToBuffer(state_data, &state_data_size, &error))
+    {
+      ERROR_LOG("Failed to save system state: {}", error.GetDescription());
+      return;
+    }
+
+    INFO_LOG("Save State Hash: {}",
+             SHA256Digest::DigestToString(SHA256Digest::GetDigest(state_data.cspan(0, state_data_size))));
+    INFO_LOG("RAM Hash: {}",
+             SHA256Digest::DigestToString(SHA256Digest::GetDigest(std::span<const u8>(Bus::g_ram, Bus::g_ram_size))));
+    INFO_LOG("SPU RAM Hash: {}", SHA256Digest::DigestToString(SHA256Digest::GetDigest(SPU::GetRAM())));
+  }
+
+  INFO_LOG("VRAM Hash: {}", SHA256Digest::DigestToString(SHA256Digest::GetDigest(
+                              std::span<const u8>(reinterpret_cast<const u8*>(g_vram), VRAM_SIZE))));
 }
 
 void RegTestHost::InitializeEarlyConsole()

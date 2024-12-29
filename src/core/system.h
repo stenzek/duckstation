@@ -260,10 +260,17 @@ bool BootSystem(SystemBootParameters parameters, Error* error);
 void PauseSystem(bool paused);
 void ResetSystem();
 
+/// Returns the maximum size of a save state, considering the current configuration.
+size_t GetMaxSaveStateSize();
+
 /// Loads state from the specified path.
 bool LoadState(const char* path, Error* error, bool save_undo_state);
 bool SaveState(std::string path, Error* error, bool backup_existing_save, bool ignore_memcard_busy);
 bool SaveResumeState(Error* error);
+
+/// State data access, use with care as the media path is not updated.
+bool LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Error* error, bool update_display);
+bool SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error* error);
 
 /// Runs the VM until the CPU execution is canceled.
 void Execute();

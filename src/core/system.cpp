@@ -195,9 +195,6 @@ static void UpdatePerGameMemoryCards();
 static std::unique_ptr<MemoryCard> GetMemoryCardForSlot(u32 slot, MemoryCardType type);
 static void UpdateMultitaps();
 
-/// Returns the maximum size of a save state, considering the current configuration.
-static size_t GetMaxSaveStateSize();
-
 static std::string GetMediaPathFromSaveState(const char* path);
 static bool SaveUndoLoadState();
 static void UpdateMemorySaveStateSettings();
@@ -2929,7 +2926,18 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   // Updating game/loading settings can turn on hardcore mode. Catch this.
   Achievements::DisableHardcoreMode();
 
-  StateWrapper sw(buffer.state_data.cspan(0, buffer.state_size), StateWrapper::Mode::Read, buffer.version);
+  return LoadStateDataFromBuffer(buffer.state_data.cspan(0, buffer.state_size), buffer.version, error, update_display);
+}
+
+bool System::LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Error* error, bool update_display)
+{
+  if (IsShutdown()) [[unlikely]]
+  {
+    Error::SetStringView(error, "System is invalid.");
+    return 0;
+  }
+
+  StateWrapper sw(data, StateWrapper::Mode::Read, version);
   if (!DoState(sw, update_display))
   {
     Error::SetStringView(error, "Save state stream is corrupted.");
@@ -3197,12 +3205,6 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
 
 bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size /* = 256 */)
 {
-  if (IsShutdown()) [[unlikely]]
-  {
-    Error::SetStringView(error, "System is invalid.");
-    return 0;
-  }
-
   buffer->title = s_state.running_game_title;
   buffer->serial = s_state.running_game_serial;
   buffer->version = SAVE_STATE_VERSION;
@@ -3250,14 +3252,25 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
   if (buffer->state_data.empty())
     buffer->state_data.resize(GetMaxSaveStateSize());
 
-  StateWrapper sw(buffer->state_data.span(), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  return SaveStateDataToBuffer(buffer->state_data, &buffer->state_size, error);
+}
+
+bool System::SaveStateDataToBuffer(std::span<u8> data, size_t* data_size, Error* error)
+{
+  if (IsShutdown()) [[unlikely]]
+  {
+    Error::SetStringView(error, "System is invalid.");
+    return 0;
+  }
+
+  StateWrapper sw(data, StateWrapper::Mode::Write, SAVE_STATE_VERSION);
   if (!DoState(sw, false))
   {
     Error::SetStringView(error, "DoState() failed");
     return false;
   }
 
-  buffer->state_size = sw.GetPosition();
+  *data_size = sw.GetPosition();
   return true;
 }
 
