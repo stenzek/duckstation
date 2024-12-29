@@ -172,6 +172,7 @@ bool IsValid();
 bool IsValidOrInitializing();
 bool IsExecuting();
 bool IsReplayingGPUDump();
+size_t GetGPUDumpFrameCount();
 
 bool IsStartupCancelled();
 void CancelPendingStartup();

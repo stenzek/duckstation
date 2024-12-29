@@ -726,14 +726,6 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
 
 bool RegTestHost::SetNewDataRoot(const std::string& filename)
 {
-  Error error;
-  std::unique_ptr<CDImage> image = CDImage::Open(filename.c_str(), false, &error);
-  if (!image)
-  {
-    ERROR_LOG("Failed to open CD image '{}' to set data root: {}", Path::GetFileName(filename), error.GetDescription());
-    return false;
-  }
-
   if (!s_dump_base_directory.empty())
   {
     std::string game_subdir = Path::SanitizeFileName(Path::GetFileTitle(filename));
@@ -806,6 +798,13 @@ int main(int argc, char* argv[])
   {
     ERROR_LOG("Failed to boot system: {}", error.GetDescription());
     goto cleanup;
+  }
+
+  if (System::IsReplayingGPUDump() && !s_dump_base_directory.empty())
+  {
+    INFO_LOG("Replaying GPU dump, dumping all frames.");
+    s_frame_dump_interval = 1;
+    s_frames_to_run = static_cast<u32>(System::GetGPUDumpFrameCount());
   }
 
   if (s_frame_dump_interval > 0)

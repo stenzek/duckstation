@@ -622,6 +622,11 @@ bool System::IsReplayingGPUDump()
   return static_cast<bool>(s_state.gpu_dump_player);
 }
 
+size_t System::GetGPUDumpFrameCount()
+{
+  return s_state.gpu_dump_player ? s_state.gpu_dump_player->GetFrameCount() : 0;
+}
+
 bool System::IsStartupCancelled()
 {
   return s_state.startup_cancelled.load(std::memory_order_acquire);
