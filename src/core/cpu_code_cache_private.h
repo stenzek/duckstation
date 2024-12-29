@@ -247,6 +247,7 @@ bool HasPreviouslyFaultedOnPC(u32 guest_pc);
 
 u32 EmitASMFunctions(void* code, u32 code_size);
 u32 EmitJump(void* code, const void* dst, bool flush_icache);
+void EmitAlignmentPadding(void* dst, size_t size);
 
 void DisassembleAndLogHostCode(const void* start, u32 size);
 u32 GetHostInstructionCount(const void* start, u32 size);

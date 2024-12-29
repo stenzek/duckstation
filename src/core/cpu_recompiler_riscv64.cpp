@@ -317,6 +317,12 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
   return static_cast<u32>(rvAsm->GetCodeBuffer().GetSizeInBytes());
 }
 
+void CPU::CodeCache::EmitAlignmentPadding(void* dst, size_t size)
+{
+  constexpr u8 padding_value = 0x00;
+  std::memset(dst, padding_value, size);
+}
+
 u32 CPU::CodeCache::EmitJump(void* code, const void* dst, bool flush_icache)
 {
   // TODO: get rid of assembler construction here
@@ -998,7 +1004,8 @@ void CPU::RISCV64Recompiler::Flush(u32 flags)
 
 void CPU::RISCV64Recompiler::Compile_Fallback()
 {
-  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc, inst->bits);
+  WARNING_LOG("Compiling instruction fallback at PC=0x{:08X}, instruction=0x{:08X}", m_current_instruction_pc,
+              inst->bits);
 
   Flush(FLUSH_FOR_INTERPRETER);
 
