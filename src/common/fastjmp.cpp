@@ -117,6 +117,7 @@ asm(
 asm(
 	"\t.global " PREFIX "fastjmp_set\n"
 	"\t.global " PREFIX "fastjmp_jmp\n"
+	"\t.attribute arch, \"rv64gc\"\n"
 	"\t.text\n"
 	"\t.align 16\n"
 	"\t" PREFIX "fastjmp_set:" R"(
