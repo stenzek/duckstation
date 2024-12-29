@@ -551,7 +551,7 @@ public:
     {
       float r, g;
     };
-    float F32[4];
+    float F32[2];
     double F64[2];
     s8 I8[16];
     s16 I16[8];
