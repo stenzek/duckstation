@@ -3646,13 +3646,14 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
     }
   }
 
-  DebugAssert((cmd->texture_enable && (texture_mode == BatchTextureMode::PageTexture &&
-                                       texture_cache_key.mode == m_draw_mode.mode_reg.texture_mode) ||
-               texture_mode == static_cast<BatchTextureMode>(
-                                 (m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit) ?
-                                   GPUTextureMode::Direct16Bit :
-                                   m_draw_mode.mode_reg.texture_mode)) ||
-              (!cmd->texture_enable && texture_mode == BatchTextureMode::Disabled));
+  DebugAssert(
+    (cmd->texture_enable &&
+     ((texture_mode == BatchTextureMode::PageTexture && texture_cache_key.mode == m_draw_mode.mode_reg.texture_mode) ||
+      texture_mode ==
+        static_cast<BatchTextureMode>((m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Reserved_Direct16Bit) ?
+                                        GPUTextureMode::Direct16Bit :
+                                        m_draw_mode.mode_reg.texture_mode))) ||
+    (!cmd->texture_enable && texture_mode == BatchTextureMode::Disabled));
   DebugAssert(!(m_texpage_dirty & TEXPAGE_DIRTY_PAGE_RECT) || texture_mode == BatchTextureMode::PageTexture ||
               !cmd->texture_enable);
 
