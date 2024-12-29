@@ -2111,7 +2111,7 @@ std::unique_ptr<Cheats::GamesharkCheatCode> Cheats::GamesharkCheatCode::Parse(Me
     std::optional<u32> second;
     if (next.find('?') != std::string_view::npos)
     {
-      u8 option_bitpos, option_bitcount;
+      u8 option_bitpos = 0, option_bitcount = 0;
       second = ParseHexOptionMask(next, &option_bitpos, &option_bitcount);
       if (second.has_value())
       {
