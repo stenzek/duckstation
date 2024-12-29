@@ -60,7 +60,7 @@ ALWAYS_INLINE static __m128i sse2_min_u16(const __m128i m, const __m128i v)
 
 ALWAYS_INLINE static __m128i sse2_max_u16(const __m128i m, const __m128i v)
 {
-  return _mm_add_epi16(v, _mm_subs_epu16(v, m));
+  return _mm_add_epi16(m, _mm_subs_epu16(v, m));
 }
 
 ALWAYS_INLINE static __m128i sse2_min_u32(const __m128i m, const __m128i v)
