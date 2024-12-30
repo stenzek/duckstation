@@ -1399,13 +1399,8 @@ static void DrawTriangle(const GPUBackendDrawCommand* RESTRICT cmd,
   tl = tl >> 1;
 
   // Invalid size early culling.
-  if (static_cast<u32>(std::abs(v2->x - v0->x)) >= MAX_PRIMITIVE_WIDTH ||
-      static_cast<u32>(std::abs(v2->x - v1->x)) >= MAX_PRIMITIVE_WIDTH ||
-      static_cast<u32>(std::abs(v1->x - v0->x)) >= MAX_PRIMITIVE_WIDTH ||
-      static_cast<u32>(v2->y - v0->y) >= MAX_PRIMITIVE_HEIGHT || v0->y == v2->y)
-  {
+  if (v0->y == v2->y)
     return;
-  }
 
   // Same as line rasterization, use higher precision for position.
   static constexpr auto makefp_xy = [](s32 x) { return (static_cast<s64>(x) << 32) + ((1LL << 32) - (1 << 11)); };
