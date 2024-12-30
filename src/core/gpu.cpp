@@ -1883,19 +1883,22 @@ void GPU::ClearDisplay()
 
 void GPU::UpdateDisplay(bool submit_frame)
 {
+  const bool interlaced = IsInterlacedDisplayEnabled();
+  const u8 interlaced_field = GetInterlacedDisplayField();
+  const bool line_skip = (interlaced && m_GPUSTAT.vertical_resolution);
   GPUBackendUpdateDisplayCommand* cmd = GPUBackend::NewUpdateDisplayCommand();
   cmd->display_width = m_crtc_state.display_width;
   cmd->display_height = m_crtc_state.display_height;
   cmd->display_origin_left = m_crtc_state.display_origin_left;
   cmd->display_origin_top = m_crtc_state.display_origin_top;
   cmd->display_vram_left = m_crtc_state.display_vram_left;
-  cmd->display_vram_top = m_crtc_state.display_vram_top;
+  cmd->display_vram_top = m_crtc_state.display_vram_top + (interlaced_field & BoolToUInt8(line_skip));
   cmd->display_vram_width = m_crtc_state.display_vram_width;
-  cmd->display_vram_height = m_crtc_state.display_vram_height;
+  cmd->display_vram_height = m_crtc_state.display_vram_height >> BoolToUInt8(interlaced);
   cmd->X = m_crtc_state.regs.X;
-  cmd->interlaced_display_enabled = IsInterlacedDisplayEnabled();
-  cmd->interlaced_display_field = ConvertToBoolUnchecked(GetInterlacedDisplayField());
-  cmd->interlaced_display_interleaved = cmd->interlaced_display_enabled && m_GPUSTAT.vertical_resolution;
+  cmd->interlaced_display_enabled = interlaced;
+  cmd->interlaced_display_field = ConvertToBoolUnchecked(interlaced_field);
+  cmd->interlaced_display_interleaved = line_skip;
   cmd->display_24bit = m_GPUSTAT.display_area_color_depth_24;
   cmd->display_disabled = IsDisplayDisabled();
   cmd->display_pixel_aspect_ratio = ComputePixelAspectRatio();

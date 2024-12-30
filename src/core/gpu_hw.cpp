@@ -3843,14 +3843,12 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
   const bool interlaced = cmd->interlaced_display_enabled;
   const u32 interlaced_field = BoolToUInt32(cmd->interlaced_display_field);
+  const u32 line_skip = BoolToUInt32(cmd->interlaced_display_interleaved);
   const u32 resolution_scale = cmd->display_24bit ? 1 : m_resolution_scale;
   const u32 scaled_vram_offset_x = cmd->display_vram_left * resolution_scale;
-  const u32 scaled_vram_offset_y = (cmd->display_vram_top * resolution_scale) +
-                                   ((interlaced && cmd->interlaced_display_interleaved) ? interlaced_field : 0);
+  const u32 scaled_vram_offset_y = cmd->display_vram_top * resolution_scale;
   const u32 scaled_display_width = cmd->display_vram_width * resolution_scale;
   const u32 scaled_display_height = cmd->display_vram_height * resolution_scale;
-  const u32 read_height = interlaced ? (scaled_display_height / 2u) : scaled_display_height;
-  const u32 line_skip = cmd->interlaced_display_interleaved;
   bool drew_anything = false;
 
   // Don't bother grabbing depth if postfx doesn't need it.
@@ -3864,20 +3862,20 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     ClearDisplayTexture();
     return;
   }
-  else if (!cmd->display_24bit && !IsUsingMultisampling() &&
+  else if (!cmd->display_24bit && line_skip == 0 && !IsUsingMultisampling() &&
            (scaled_vram_offset_x + scaled_display_width) <= m_vram_texture->GetWidth() &&
            (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture->GetHeight() &&
            !PostProcessing::InternalChain.IsActive())
   {
     SetDisplayTexture(m_vram_texture.get(), depth_source, scaled_vram_offset_x, scaled_vram_offset_y,
-                      scaled_display_width, read_height);
+                      scaled_display_width, scaled_display_height);
 
     // Fast path if no copies are needed.
     if (interlaced)
     {
       GL_INS("Deinterlace fast path");
       drew_anything = true;
-      Deinterlace(interlaced_field, line_skip);
+      Deinterlace(interlaced_field);
     }
     else
     {
@@ -3887,9 +3885,9 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   else
   {
     if (!m_vram_extract_texture || m_vram_extract_texture->GetWidth() != scaled_display_width ||
-        m_vram_extract_texture->GetHeight() != read_height)
+        m_vram_extract_texture->GetHeight() != scaled_display_height)
     {
-      if (!g_gpu_device->ResizeTexture(&m_vram_extract_texture, scaled_display_width, read_height,
+      if (!g_gpu_device->ResizeTexture(&m_vram_extract_texture, scaled_display_width, scaled_display_height,
                                        GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8,
                                        GPUTexture::Flags::None)) [[unlikely]]
       {
@@ -3929,8 +3927,8 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     GL_INS_FMT("VRAM extract, depth = {}, 24bpp = {}, skip_x = {}, line_skip = {}", depth_source ? "yes" : "no",
                cmd->display_24bit, skip_x, line_skip);
     GL_INS_FMT("Source: {},{} => {},{} ({}x{})", reinterpret_start_x, scaled_vram_offset_y,
-               reinterpret_start_x + scaled_display_width, scaled_vram_offset_y + read_height, scaled_display_width,
-               read_height);
+               reinterpret_start_x + scaled_display_width, (scaled_vram_offset_y + scaled_display_height) << line_skip,
+               scaled_display_width, scaled_display_height);
 
     struct ExtractUniforms
     {
@@ -3943,7 +3941,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
                                       static_cast<float>(line_skip ? 2 : 1)};
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
-    g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, read_height);
+    g_gpu_device->SetViewportAndScissor(0, 0, scaled_display_width, scaled_display_height);
     g_gpu_device->Draw(3, 0);
 
     m_vram_extract_texture->MakeReadyForSampling();
@@ -3957,19 +3955,19 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     drew_anything = true;
 
     SetDisplayTexture(m_vram_extract_texture.get(), depth_source ? m_vram_extract_depth_texture.get() : nullptr, 0, 0,
-                      scaled_display_width, read_height);
+                      scaled_display_width, scaled_display_height);
     if (g_settings.display_24bit_chroma_smoothing)
     {
       if (ApplyChromaSmoothing())
       {
         if (interlaced)
-          Deinterlace(interlaced_field, 0);
+          Deinterlace(interlaced_field);
       }
     }
     else
     {
       if (interlaced)
-        Deinterlace(interlaced_field, 0);
+        Deinterlace(interlaced_field);
     }
   }
 

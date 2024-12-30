@@ -578,30 +578,15 @@ bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool ch
 
   if (deinterlace)
   {
-    plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
-
     std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
                                                                 shadergen.GenerateScreenQuadVertexShader(), error);
     if (!vso)
       return false;
     GL_OBJECT_NAME(vso, "Deinterlace Vertex Shader");
 
-    std::unique_ptr<GPUShader> fso;
-    if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                           shadergen.GenerateInterleavedFieldExtractFragmentShader(), error)))
-    {
-      return false;
-    }
-
-    GL_OBJECT_NAME(fso, "Deinterlace Field Extract Fragment Shader");
-
     plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
     plconfig.vertex_shader = vso.get();
-    plconfig.fragment_shader = fso.get();
-    if (!(m_deinterlace_extract_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-      return false;
-
-    GL_OBJECT_NAME(m_deinterlace_extract_pipeline, "Deinterlace Field Extract Pipeline");
+    plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
 
     switch (g_gpu_settings.display_deinterlacing_mode)
     {
@@ -611,11 +596,10 @@ bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool ch
 
       case DisplayDeinterlacingMode::Weave:
       {
-        if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                               shadergen.GenerateDeinterlaceWeaveFragmentShader(), error)))
-        {
+        std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(
+          GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateDeinterlaceWeaveFragmentShader(), error);
+        if (!fso)
           return false;
-        }
 
         GL_OBJECT_NAME(fso, "Weave Deinterlace Fragment Shader");
 
@@ -631,11 +615,10 @@ bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool ch
 
       case DisplayDeinterlacingMode::Blend:
       {
-        if (!(fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                               shadergen.GenerateDeinterlaceBlendFragmentShader(), error)))
-        {
+        std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(
+          GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateDeinterlaceBlendFragmentShader(), error);
+        if (!fso)
           return false;
-        }
 
         GL_OBJECT_NAME(fso, "Blend Deinterlace Fragment Shader");
 
@@ -651,8 +634,9 @@ bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool ch
 
       case DisplayDeinterlacingMode::Adaptive:
       {
-        fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                         shadergen.GenerateFastMADReconstructFragmentShader(), error);
+        std::unique_ptr<GPUShader> fso =
+          g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                     shadergen.GenerateFastMADReconstructFragmentShader(), error);
         if (!fso)
           return false;
 
@@ -704,13 +688,14 @@ bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool ch
 
 void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand* cmd)
 {
+  // Height has to be doubled because we halved it on the GPU side.
   const GPUBackendUpdateDisplayCommand* ccmd = static_cast<const GPUBackendUpdateDisplayCommand*>(cmd);
   m_display_width = ccmd->display_width;
   m_display_height = ccmd->display_height;
   m_display_origin_left = ccmd->display_origin_left;
   m_display_origin_top = ccmd->display_origin_top;
   m_display_vram_width = ccmd->display_vram_width;
-  m_display_vram_height = ccmd->display_vram_height;
+  m_display_vram_height = (ccmd->display_vram_height << BoolToUInt32(ccmd->interlaced_display_enabled));
   m_display_pixel_aspect_ratio = ccmd->display_pixel_aspect_ratio;
 
   UpdateDisplay(ccmd);
@@ -1022,7 +1007,7 @@ void GPUBackend::DestroyDeinterlaceTextures()
   m_current_deinterlace_buffer = 0;
 }
 
-bool GPUBackend::Deinterlace(u32 field, u32 line_skip)
+bool GPUBackend::Deinterlace(u32 field)
 {
   GPUTexture* src = m_display_texture;
   const u32 x = m_display_texture_view_x;
@@ -1030,24 +1015,39 @@ bool GPUBackend::Deinterlace(u32 field, u32 line_skip)
   const u32 width = m_display_texture_view_width;
   const u32 height = m_display_texture_view_height;
 
+  const auto copy_to_field_buffer = [&](u32 buffer) {
+    if (!m_deinterlace_buffers[buffer] || m_deinterlace_buffers[buffer]->GetWidth() != width ||
+        m_deinterlace_buffers[buffer]->GetHeight() != height ||
+        m_deinterlace_buffers[buffer]->GetFormat() != src->GetFormat())
+    {
+      if (!g_gpu_device->ResizeTexture(&m_deinterlace_buffers[buffer], width, height, GPUTexture::Type::Texture,
+                                       src->GetFormat(), GPUTexture::Flags::None, false)) [[unlikely]]
+      {
+        return false;
+      }
+
+      GL_OBJECT_NAME_FMT(m_deinterlace_buffers[buffer], "Blend Deinterlace Buffer {}", buffer);
+    }
+
+    GL_INS_FMT("Copy {}x{} from {},{} to field buffer {}", width, height, x, y, buffer);
+    g_gpu_device->CopyTextureRegion(m_deinterlace_buffers[buffer].get(), 0, 0, 0, 0, m_display_texture, x, y, 0, 0,
+                                    width, height);
+    return true;
+  };
+
+  src->MakeReadyForSampling();
+
   switch (g_gpu_settings.display_deinterlacing_mode)
   {
     case DisplayDeinterlacingMode::Disabled:
     {
-      if (line_skip == 0)
-        return true;
-
-      // Still have to extract the field.
-      if (!DeinterlaceExtractField(0, src, x, y, width, height, line_skip)) [[unlikely]]
-        return false;
-
-      SetDisplayTexture(m_deinterlace_buffers[0].get(), m_display_depth_buffer, 0, 0, width, height);
+      GL_INS("Deinterlacing disabled, displaying field texture");
       return true;
     }
 
     case DisplayDeinterlacingMode::Weave:
     {
-      GL_SCOPE_FMT("DeinterlaceWeave({{{},{}}}, {}x{}, field={}, line_skip={})", x, y, width, height, field, line_skip);
+      GL_SCOPE_FMT("DeinterlaceWeave({{{},{}}}, {}x{}, field={})", x, y, width, height, field);
 
       const u32 full_height = height * 2;
       if (!DeinterlaceSetTargetSize(width, full_height, true)) [[unlikely]]
@@ -1061,7 +1061,7 @@ bool GPUBackend::Deinterlace(u32 field, u32 line_skip)
       g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
       g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
       g_gpu_device->SetTextureSampler(0, src, g_gpu_device->GetNearestSampler());
-      const u32 uniforms[] = {x, y, field, line_skip};
+      const u32 uniforms[4] = {x, y, field, 0};
       g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
       g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
       g_gpu_device->Draw(3, 0);
@@ -1075,20 +1075,20 @@ bool GPUBackend::Deinterlace(u32 field, u32 line_skip)
     {
       constexpr u32 NUM_BLEND_BUFFERS = 2;
 
-      GL_SCOPE_FMT("DeinterlaceBlend({{{},{}}}, {}x{}, field={}, line_skip={})", x, y, width, height, field, line_skip);
+      GL_SCOPE_FMT("DeinterlaceBlend({{{},{}}}, {}x{}, field={})", x, y, width, height, field);
 
       const u32 this_buffer = m_current_deinterlace_buffer;
       m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % NUM_BLEND_BUFFERS;
       GL_INS_FMT("Current buffer: {}", this_buffer);
-      if (!DeinterlaceExtractField(this_buffer, src, x, y, width, height, line_skip) ||
-          !DeinterlaceSetTargetSize(width, height, false)) [[unlikely]]
+      if (!DeinterlaceSetTargetSize(width, height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
       {
         ClearDisplayTexture();
         return false;
       }
 
-      // TODO: could be implemented with alpha blending instead..
+      copy_to_field_buffer(this_buffer);
 
+      // TODO: could be implemented with alpha blending instead..
       g_gpu_device->InvalidateRenderTarget(m_deinterlace_texture.get());
       g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
       g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
@@ -1105,15 +1105,13 @@ bool GPUBackend::Deinterlace(u32 field, u32 line_skip)
 
     case DisplayDeinterlacingMode::Adaptive:
     {
-      GL_SCOPE_FMT("DeinterlaceAdaptive({{{},{}}}, {}x{}, field={}, line_skip={})", x, y, width, height, field,
-                   line_skip);
+      GL_SCOPE_FMT("DeinterlaceAdaptive({{{},{}}}, {}x{}, field={})", x, y, width, height, field);
 
-      const u32 full_height = height * 2;
       const u32 this_buffer = m_current_deinterlace_buffer;
+      const u32 full_height = height * 2;
       m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % DEINTERLACE_BUFFER_COUNT;
       GL_INS_FMT("Current buffer: {}", this_buffer);
-      if (!DeinterlaceExtractField(this_buffer, src, x, y, width, height, line_skip) ||
-          !DeinterlaceSetTargetSize(width, full_height, false)) [[unlikely]]
+      if (!DeinterlaceSetTargetSize(width, full_height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
       {
         ClearDisplayTexture();
         return false;
@@ -1141,50 +1139,6 @@ bool GPUBackend::Deinterlace(u32 field, u32 line_skip)
     default:
       UnreachableCode();
   }
-}
-
-bool GPUBackend::DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y, u32 width, u32 height,
-                                         u32 line_skip)
-{
-  if (!m_deinterlace_buffers[dst_bufidx] || m_deinterlace_buffers[dst_bufidx]->GetWidth() != width ||
-      m_deinterlace_buffers[dst_bufidx]->GetHeight() != height)
-  {
-    if (!g_gpu_device->ResizeTexture(&m_deinterlace_buffers[dst_bufidx], width, height, GPUTexture::Type::RenderTarget,
-                                     GPUTexture::Format::RGBA8, GPUTexture::Flags::None, false)) [[unlikely]]
-    {
-      return false;
-    }
-
-    GL_OBJECT_NAME_FMT(m_deinterlace_buffers[dst_bufidx], "Blend Deinterlace Buffer {}", dst_bufidx);
-  }
-
-  GPUTexture* dst = m_deinterlace_buffers[dst_bufidx].get();
-  g_gpu_device->InvalidateRenderTarget(dst);
-
-  // If we're not skipping lines, then we can simply copy the texture.
-  if (line_skip == 0 && src->GetFormat() == dst->GetFormat())
-  {
-    GL_INS_FMT("DeinterlaceExtractField({{{},{}}} {}x{} line_skip={}) => copy direct", x, y, width, height, line_skip);
-    g_gpu_device->CopyTextureRegion(dst, 0, 0, 0, 0, src, x, y, 0, 0, width, height);
-  }
-  else
-  {
-    GL_SCOPE_FMT("DeinterlaceExtractField({{{},{}}} {}x{} line_skip={}) => shader copy", x, y, width, height,
-                 line_skip);
-
-    // Otherwise, we need to extract every other line from the texture.
-    src->MakeReadyForSampling();
-    g_gpu_device->SetRenderTarget(dst);
-    g_gpu_device->SetPipeline(m_deinterlace_extract_pipeline.get());
-    g_gpu_device->SetTextureSampler(0, src, g_gpu_device->GetNearestSampler());
-    const u32 uniforms[] = {x, y, line_skip};
-    g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-    g_gpu_device->SetViewportAndScissor(0, 0, width, height);
-    g_gpu_device->Draw(3, 0);
-  }
-
-  dst->MakeReadyForSampling();
-  return true;
 }
 
 bool GPUBackend::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve)

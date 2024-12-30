@@ -102,29 +102,11 @@ std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
   return ss.str();
 }
 
-std::string GPUShaderGen::GenerateInterleavedFieldExtractFragmentShader() const
-{
-  std::stringstream ss;
-  WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_src_offset", "uint u_line_skip"}, true);
-  DeclareTexture(ss, "samp0", 0, false);
-
-  DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
-  ss << R"(
-{
-  uint2 tcoord = u_src_offset + uint2(uint(v_pos.x), uint(v_pos.y) << u_line_skip);
-  o_col0 = LOAD_TEXTURE(samp0, int2(tcoord), 0);
-}
-)";
-
-  return ss.str();
-}
-
 std::string GPUShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"uint2 u_src_offset", "uint u_render_field", "uint u_line_skip"}, true);
+  DeclareUniformBuffer(ss, {"uint2 u_src_offset", "uint u_render_field"}, true);
   DeclareTexture(ss, "samp0", 0, false);
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
@@ -134,7 +116,7 @@ std::string GPUShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
   if ((fcoord.y & 1) != u_render_field)
     discard;
 
-  uint2 tcoord = u_src_offset + uint2(fcoord.x, (fcoord.y / 2u) << u_line_skip);
+  uint2 tcoord = u_src_offset + uint2(fcoord.x, (fcoord.y / 2u));
   o_col0 = LOAD_TEXTURE(samp0, int2(tcoord), 0);
 })";
 

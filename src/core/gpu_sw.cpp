@@ -393,36 +393,37 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     }
 
     const bool is_24bit = cmd->display_24bit;
-    const bool interlaced = cmd->interlaced_display_enabled;
     const u32 field = BoolToUInt32(cmd->interlaced_display_field);
-    const u32 vram_offset_x = is_24bit ? cmd->X : cmd->display_vram_left;
-    const u32 vram_offset_y = cmd->display_vram_top + ((interlaced && cmd->interlaced_display_interleaved) ? field : 0);
+    const u32 line_skip = BoolToUInt32(cmd->interlaced_display_interleaved);
+    const u32 src_x = is_24bit ? cmd->X : cmd->display_vram_left;
     const u32 skip_x = is_24bit ? (cmd->display_vram_left - cmd->X) : 0;
-    const u32 read_width = cmd->display_vram_width;
-    const u32 read_height = interlaced ? (cmd->display_vram_height / 2) : cmd->display_vram_height;
+    const u32 src_y = cmd->display_vram_top;
+    const u32 width = cmd->display_vram_width;
+    const u32 height = cmd->display_vram_height;
+
+    GL_INS_FMT("Software scanout {}x{} from {},{} line_skip={}", width, height, src_x, src_y, line_skip);
 
     if (cmd->interlaced_display_enabled)
     {
-      const u32 line_skip = cmd->interlaced_display_interleaved;
-      if (CopyOut(vram_offset_x, vram_offset_y, skip_x, read_width, read_height, line_skip, is_24bit))
+      if (CopyOut(src_x, src_y, skip_x, width, height, line_skip, is_24bit))
       {
-        SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, read_width, read_height);
+        SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, width, height);
         if (is_24bit && g_settings.display_24bit_chroma_smoothing)
         {
           if (ApplyChromaSmoothing())
-            Deinterlace(field, 0);
+            Deinterlace(field);
         }
         else
         {
-          Deinterlace(field, 0);
+          Deinterlace(field);
         }
       }
     }
     else
     {
-      if (CopyOut(vram_offset_x, vram_offset_y, skip_x, read_width, read_height, 0, is_24bit))
+      if (CopyOut(src_x, src_y, skip_x, width, height, 0, is_24bit))
       {
-        SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, read_width, read_height);
+        SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, width, height);
         if (is_24bit && g_settings.display_24bit_chroma_smoothing)
           ApplyChromaSmoothing();
       }
