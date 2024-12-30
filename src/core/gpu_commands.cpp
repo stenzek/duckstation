@@ -724,21 +724,17 @@ bool GPU::HandleRenderLineCommand()
         cmd->vertices[i].w = 1.0f;
     }
 
-    const GSVector2 v0f = GSVector2::load<false>(&cmd->vertices[0].x);
-    const GSVector2 v1f = GSVector2::load<false>(&cmd->vertices[1].x);
-    const GSVector4i rect =
-      GSVector4i(GSVector4(v0f.min(v1f)).upld(GSVector4(v0f.max(v1f)))).add32(GSVector4i::cxpr(0, 0, 1, 1));
-    const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-
-    if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
+    const GSVector2i v0 = GSVector2i::load<false>(&cmd->vertices[0].native_x);
+    const GSVector2i v1 = GSVector2i::load<false>(&cmd->vertices[1].native_x);
+    const GSVector4i rect = GSVector4i::xyxy(v0.min_s32(v1), v0.max_s32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
+    if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
     {
-      DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", cmd->vertices[0].y, cmd->vertices[0].y,
-                cmd->vertices[1].x, cmd->vertices[1].y);
+      DEBUG_LOG("Culling too-large line: {} - {}", v0, v1);
       EndCommand();
       return true;
     }
 
-    AddDrawLineTicks(clamped_rect, rc.shading_enable);
+    AddDrawLineTicks(rect, rc.shading_enable);
     GPUBackend::PushCommand(cmd);
   }
   else
@@ -776,17 +772,14 @@ bool GPU::HandleRenderLineCommand()
     const GSVector2i v0 = GSVector2i::load<false>(&cmd->vertices[0].x);
     const GSVector2i v1 = GSVector2i::load<false>(&cmd->vertices[1].x);
     const GSVector4i rect = GSVector4i::xyxy(v0.min_s32(v1), v0.max_s32(v1)).add32(GSVector4i::cxpr(0, 0, 1, 1));
-    const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-
-    if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT || clamped_rect.rempty())
+    if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
     {
-      DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", cmd->vertices[0].y, cmd->vertices[0].y,
-                cmd->vertices[1].x, cmd->vertices[1].y);
+      DEBUG_LOG("Culling too-large line: {} - {}", v0, v1);
       EndCommand();
       return true;
     }
 
-    AddDrawLineTicks(clamped_rect, rc.shading_enable);
+    AddDrawLineTicks(rect, rc.shading_enable);
     GPUBackend::PushCommand(cmd);
   }
 
@@ -864,13 +857,13 @@ void GPU::FinishPolyline()
         (shaded ? Truncate32(m_polyline_buffer[buffer_pos++]) : m_render_command.bits) & UINT32_C(0x00FFFFFF);
       read_vertex(end, color);
 
-      const GSVector2 start_pos = GSVector2::load<false>(&start.x);
-      const GSVector2 end_pos = GSVector2::load<false>(&end.x);
+      const GSVector2i start_pos = GSVector2i::load<false>(&start.native_x);
+      const GSVector2i end_pos = GSVector2i::load<false>(&end.native_x);
       const GSVector4i rect =
-        GSVector4i(GSVector4::xyxy(start_pos.min(end_pos), start_pos.max(end_pos))).add32(GSVector4i::cxpr(0, 0, 1, 1));
+        GSVector4i::xyxy(start_pos.min_s32(end_pos), start_pos.max_s32(end_pos)).add32(GSVector4i::cxpr(0, 0, 1, 1));
       if (rect.width() > MAX_PRIMITIVE_WIDTH || rect.height() > MAX_PRIMITIVE_HEIGHT)
       {
-        DEBUG_LOG("Culling too-large/off-screen line: {},{} - {},{}", start_pos.x, start_pos.y, end_pos.x, end_pos.y);
+        DEBUG_LOG("Culling too-large line: {} - {}", start_pos, end_pos);
       }
       else
       {
