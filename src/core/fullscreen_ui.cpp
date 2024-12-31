@@ -4384,9 +4384,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     bsi, FSUI_ICONSTR(ICON_FA_GRIP_LINES, "Deinterlacing Mode"),
     FSUI_CSTR(
       "Determines which algorithm is used to convert interlaced frames to progressive for display on your system."),
-    "Display", "DeinterlacingMode", Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE,
-    &Settings::ParseDisplayDeinterlacingMode, &Settings::GetDisplayDeinterlacingModeName,
-    &Settings::GetDisplayDeinterlacingModeDisplayName, DisplayDeinterlacingMode::Count);
+    "GPU", "DeinterlacingMode", Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE, &Settings::ParseDisplayDeinterlacingMode,
+    &Settings::GetDisplayDeinterlacingModeName, &Settings::GetDisplayDeinterlacingModeDisplayName,
+    DisplayDeinterlacingMode::Count);
 
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_CROP_ALT, "Crop Mode"),
                   FSUI_CSTR("Determines how much of the area typically not visible on a consumer TV set to crop/hide."),
