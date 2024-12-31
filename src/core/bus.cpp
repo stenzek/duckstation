@@ -794,6 +794,8 @@ const TickCount* Bus::GetMemoryAccessTimePtr(PhysicalMemoryAddress address, Memo
   // Currently only BIOS, but could be EXP1 as well.
   if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_MIRROR_SIZE))
     return &g_bios_access_time[static_cast<size_t>(size)];
+  else if (address >= EXP1_BASE && address < (EXP1_BASE + EXP1_SIZE))
+    return &g_exp1_access_time[static_cast<size_t>(size)];
 
   return nullptr;
 }
