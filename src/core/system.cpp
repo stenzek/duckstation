@@ -775,9 +775,9 @@ System::BootMode System::GetBootMode()
   return s_state.boot_mode;
 }
 
-const BIOS::ImageInfo* System::GetBIOSImageInfo()
+bool System::IsUsingPS2BIOS()
 {
-  return s_state.bios_image_info;
+  return (s_state.bios_image_info && s_state.bios_image_info->fastboot_patch == BIOS::ImageInfo::FastBootPatch::Type2);
 }
 
 bool System::IsExePath(std::string_view path)

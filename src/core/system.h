@@ -31,10 +31,6 @@ class GPUTexture;
 class INISettingsInterface;
 class MediaCapture;
 
-namespace BIOS {
-struct ImageInfo;
-} // namespace BIOS
-
 namespace GameDatabase {
 struct Entry;
 }
@@ -225,12 +221,11 @@ const std::string& GetExeOverride();
 const GameDatabase::Entry* GetGameDatabaseEntry();
 GameHash GetGameHash();
 bool IsRunningUnknownGame();
+bool IsUsingPS2BIOS();
 BootMode GetBootMode();
 
 /// Returns the time elapsed in the current play session.
 u64 GetSessionPlayedTime();
-
-const BIOS::ImageInfo* GetBIOSImageInfo();
 
 void FormatLatencyStats(SmallStringBase& str);
 
