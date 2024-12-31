@@ -560,7 +560,7 @@ void CPU::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
     if (m_block->HasFlag(CodeCache::BlockFlags::NeedsDynamicFetchTicks))
     {
       rvEmitFarLoad(rvAsm, RARG2, GetFetchMemoryAccessTimePtr());
-      rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
+      rvAsm->LWU(RARG1, PTR(&g_state.pending_ticks));
       rvEmitMov(rvAsm, RARG3, m_block->size);
       rvAsm->MULW(RARG2, RARG2, RARG3);
       rvAsm->ADD(RARG1, RARG1, RARG2);
@@ -568,7 +568,7 @@ void CPU::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
     }
     else
     {
-      rvAsm->LW(RARG1, PTR(&g_state.pending_ticks));
+      rvAsm->LWU(RARG1, PTR(&g_state.pending_ticks));
       SafeADDIW(RARG1, RARG1, static_cast<u32>(m_block->uncached_fetch_ticks));
       rvAsm->SW(RARG1, PTR(&g_state.pending_ticks));
     }
@@ -579,8 +579,12 @@ void CPU::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
     const auto& current_tag_reg = RARG2;
     const auto& existing_tag_reg = RARG3;
 
+    // start of block, nothing should be using this
+    const auto& maddr_reg = biscuit::t0;
+    DebugAssert(!IsHostRegAllocated(maddr_reg.Index()));
+
     VirtualMemoryAddress current_pc = m_block->pc & ICACHE_TAG_ADDRESS_MASK;
-    rvAsm->LW(ticks_reg, PTR(&g_state.pending_ticks));
+    rvAsm->LWU(ticks_reg, PTR(&g_state.pending_ticks));
     rvEmitMov(rvAsm, current_tag_reg, current_pc);
 
     for (u32 i = 0; i < m_block->icache_line_count; i++, current_pc += ICACHE_LINE_SIZE)
@@ -592,12 +596,22 @@ void CPU::RISCV64Recompiler::GenerateICacheCheckAndUpdate()
       const u32 line = GetICacheLine(current_pc);
       const u32 offset = OFFSETOF(State, icache_tags) + (line * sizeof(u32));
 
-      // TODO: Verify sign extension here...
+      // Offsets must fit in signed 12 bits.
       Label cache_hit;
-      rvAsm->LW(existing_tag_reg, offset, RSTATE);
-      rvAsm->BEQ(existing_tag_reg, current_tag_reg, &cache_hit);
+      if (offset >= 2048)
+      {
+        SafeADDI(maddr_reg, RSTATE, offset);
+        rvAsm->LW(existing_tag_reg, 0, maddr_reg);
+        rvAsm->BEQ(existing_tag_reg, current_tag_reg, &cache_hit);
+        rvAsm->SW(current_tag_reg, 0, maddr_reg);
+      }
+      else
+      {
+        rvAsm->LW(existing_tag_reg, offset, RSTATE);
+        rvAsm->BEQ(existing_tag_reg, current_tag_reg, &cache_hit);
+        rvAsm->SW(current_tag_reg, offset, RSTATE);
+      }
 
-      rvAsm->SW(current_tag_reg, offset, RSTATE);
       SafeADDIW(ticks_reg, ticks_reg, static_cast<u32>(fill_ticks));
       rvAsm->Bind(&cache_hit);
 
