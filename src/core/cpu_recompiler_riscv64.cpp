@@ -282,8 +282,8 @@ u32 CPU::CodeCache::EmitASMFunctions(void* code, u32 code_size)
     rvAsm->SLLI(RARG2, RARG2, 3);
     rvAsm->ADD(RARG2, RARG2, RARG3);
     rvAsm->LD(RARG2, 0, RARG2);
-    rvAsm->SLLI(RARG1, RARG1, 48); // idx = (pc & 0xFFFF) >> 2
-    rvAsm->SRLI(RARG1, RARG1, 50);
+    rvAsm->SLLI64(RARG1, RARG1, 48); // idx = (pc & 0xFFFF) >> 2
+    rvAsm->SRLI64(RARG1, RARG1, 50);
     rvAsm->SLLI(RARG1, RARG1, 3);
 
     // blr(x9[pc * 2]) (fast_map[idx])
