@@ -1995,7 +1995,10 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
     swap_chain =
       std::make_unique<VulkanSwapChain>(wi, vsync_mode, allow_present_throttle, exclusive_fullscreen_control);
     if (!swap_chain->CreateSurface(m_instance, m_physical_device, error))
+    {
+      swap_chain->Destroy(*this, false);
       return false;
+    }
   }
 
   // Attempt to create the device.
