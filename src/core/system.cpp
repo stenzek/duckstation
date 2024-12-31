@@ -2728,7 +2728,7 @@ void System::InternalReset()
   CPU::Reset();
   CPU::CodeCache::Reset();
   if (g_settings.gpu_pgxp_enable)
-    CPU::PGXP::Initialize();
+    CPU::PGXP::Reset();
 
   Bus::Reset();
   PIO::Reset();
