@@ -1266,7 +1266,9 @@ float3 SampleVRAM24(uint2 icoords)
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true, depth_buffer ? 2 : 1);
   ss << R"(
 {
-  uint2 icoords = uint2(v_pos.x + u_skip_x, v_pos.y * u_line_skip);
+  // Have to floor because SV_Position is at the pixel center.
+  float2 v_pos_floored = floor(v_pos.xy);
+  uint2 icoords = uint2(v_pos_floored.x + u_skip_x, v_pos_floored.y * u_line_skip);
   int2 wrapped_coords = int2((icoords + u_vram_offset) % VRAM_SIZE);
 
   #if COLOR_24BIT

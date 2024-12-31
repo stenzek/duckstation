@@ -15,7 +15,6 @@ public:
   std::string GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const;
   std::string GenerateDisplaySharpBilinearFragmentShader() const;
 
-  std::string GenerateInterleavedFieldExtractFragmentShader() const;
   std::string GenerateDeinterlaceWeaveFragmentShader() const;
   std::string GenerateDeinterlaceBlendFragmentShader() const;
   std::string GenerateFastMADReconstructFragmentShader() const;

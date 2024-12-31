@@ -92,17 +92,22 @@ function(detect_architecture)
   elseif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "riscv64")
     message(STATUS "Building RISC-V 64 binaries.")
     set(CPU_ARCH_RISCV64 TRUE PARENT_SCOPE)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -finline-atomics" PARENT_SCOPE)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -finline-atomics" PARENT_SCOPE)
 
-    # Still need this, apparently.
-    link_libraries("-latomic")
+    # Don't want function calls for atomics.
+    if(COMPILER_GCC)
+      set(EXTRA_CFLAGS "${EXTRA_CFLAGS} -finline-atomics")
+
+      # Still need this, apparently.
+      link_libraries("-latomic")
+    endif()
 
     if(NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
       # Frame pointers generate an annoying amount of code on leaf functions.
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fomit-frame-pointer" PARENT_SCOPE)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fomit-frame-pointer" PARENT_SCOPE)
+      set(EXTRA_CFLAGS "${EXTRA_CFLAGS} -fomit-frame-pointer")
     endif()
+
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}" PARENT_SCOPE)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CFLAGS}" PARENT_SCOPE)
   else()
     message(FATAL_ERROR "Unknown system processor: ${CMAKE_SYSTEM_PROCESSOR}")
   endif()
@@ -121,8 +126,8 @@ function(detect_page_size)
     return()
   endif()
 
-  if(HOST_MIN_PAGE_SIZE OR HOST_MAX_PAGE_SIZE)
-    if(NOT HOST_MIN_PAGE_SIZE OR NOT HOST_MAX_PAGE_SIZE)
+  if(DEFINED HOST_MIN_PAGE_SIZE OR DEFINED HOST_MAX_PAGE_SIZE)
+    if(NOT DEFINED HOST_MIN_PAGE_SIZE OR NOT DEFINED HOST_MAX_PAGE_SIZE)
       message(FATAL_ERROR "Both HOST_MIN_PAGE_SIZE and HOST_MAX_PAGE_SIZE must be defined.")
     endif()
     return()
@@ -172,7 +177,7 @@ function(detect_cache_line_size)
   endif()
 
   if(CMAKE_CROSSCOMPILING)
-    message(WARNING "Cross-compiling and can't determine page size, assuming default.")
+    message(WARNING "Cross-compiling and can't determine cache line size, assuming default.")
     return()
   endif()
 

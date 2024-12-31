@@ -68,7 +68,7 @@ cd "${RUNTIME}"
 rm -vf libnss_*
 
 # Move ld-linux.so.2 into the binary directory so we can preserve arg0's directory
-mv -v "ld-linux-"*.so.2 "${APPDIR}/usr/bin/ld-linux"
+mv -v "ld-linux-"*.so.* "${APPDIR}/usr/bin/ld-linux"
 
 # Set up the replacement apprun script
 cd "${APPDIR}"

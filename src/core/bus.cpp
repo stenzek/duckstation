@@ -794,6 +794,8 @@ const TickCount* Bus::GetMemoryAccessTimePtr(PhysicalMemoryAddress address, Memo
   // Currently only BIOS, but could be EXP1 as well.
   if (address >= BIOS_BASE && address < (BIOS_BASE + BIOS_MIRROR_SIZE))
     return &g_bios_access_time[static_cast<size_t>(size)];
+  else if (address >= EXP1_BASE && address < (EXP1_BASE + EXP1_SIZE))
+    return &g_exp1_access_time[static_cast<size_t>(size)];
 
   return nullptr;
 }
@@ -1638,8 +1640,7 @@ template<MemoryAccessSize size>
 u32 Bus::SIO2ReadHandler(PhysicalMemoryAddress address)
 {
   // Stub for using PS2 BIOS.
-  if (const BIOS::ImageInfo* ii = System::GetBIOSImageInfo();
-      !ii || ii->fastboot_patch != BIOS::ImageInfo::FastBootPatch::Type2) [[unlikely]]
+  if (!System::IsUsingPS2BIOS()) [[unlikely]]
   {
     // Throw exception when not using PS2 BIOS.
     return UnmappedReadHandler<size>(address);
@@ -1653,8 +1654,7 @@ template<MemoryAccessSize size>
 void Bus::SIO2WriteHandler(PhysicalMemoryAddress address, u32 value)
 {
   // Stub for using PS2 BIOS.
-  if (const BIOS::ImageInfo* ii = System::GetBIOSImageInfo();
-      !ii || ii->fastboot_patch != BIOS::ImageInfo::FastBootPatch::Type2) [[unlikely]]
+  if (!System::IsUsingPS2BIOS()) [[unlikely]]
   {
     // Throw exception when not using PS2 BIOS.
     UnmappedWriteHandler<size>(address, value);

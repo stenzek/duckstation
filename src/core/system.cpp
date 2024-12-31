@@ -382,7 +382,6 @@ bool System::PerformEarlyHardwareChecks(Error* error)
     Error::SetStringFmt(
       error, "Page size mismatch. This build was compiled with {} byte pages, but the system has {} byte pages.",
       HOST_PAGE_SIZE, runtime_host_page_size);
-    CPUThreadShutdown();
     return false;
   }
 #else
@@ -390,7 +389,6 @@ bool System::PerformEarlyHardwareChecks(Error* error)
   {
     Error::SetStringFmt(error, "Page size of {} bytes is out of the range supported by this build: {}-{}.",
                         HOST_PAGE_SIZE, MIN_HOST_PAGE_SIZE, MAX_HOST_PAGE_SIZE);
-    CPUThreadShutdown();
     return false;
   }
 #endif
@@ -451,7 +449,7 @@ void System::LogStartupInformation()
   INFO_LOG("Version: {} [{}]", g_scm_tag_str, g_scm_branch_str);
   INFO_LOG("SCM Timestamp: {}", g_scm_date_str);
   INFO_LOG("Build Timestamp: {} {}", __DATE__, __TIME__);
-  if (const cpuinfo_package* package = cpuinfo_get_package(0)) [[likely]]
+  if (const cpuinfo_package* package = cpuinfo_initialize() ? cpuinfo_get_package(0) : nullptr) [[likely]]
   {
     INFO_LOG("Host CPU: {}", package->name);
     INFO_LOG("CPU has {} logical processor(s) and {} core(s) across {} cluster(s).", package->processor_count,
@@ -777,9 +775,9 @@ System::BootMode System::GetBootMode()
   return s_state.boot_mode;
 }
 
-const BIOS::ImageInfo* System::GetBIOSImageInfo()
+bool System::IsUsingPS2BIOS()
 {
-  return s_state.bios_image_info;
+  return (s_state.bios_image_info && s_state.bios_image_info->fastboot_patch == BIOS::ImageInfo::FastBootPatch::Type2);
 }
 
 bool System::IsExePath(std::string_view path)
@@ -2730,7 +2728,7 @@ void System::InternalReset()
   CPU::Reset();
   CPU::CodeCache::Reset();
   if (g_settings.gpu_pgxp_enable)
-    CPU::PGXP::Initialize();
+    CPU::PGXP::Reset();
 
   Bus::Reset();
   PIO::Reset();

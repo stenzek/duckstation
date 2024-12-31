@@ -378,7 +378,12 @@ private:
   ALWAYS_INLINE_RELEASE void AddDrawLineTicks(const GSVector4i rect, bool shaded)
   {
     const GSVector4i clamped_rect = rect.rintersect(m_clamped_drawing_area);
-    u32 drawn_width = clamped_rect.width();
+
+    // Needed because we're not multiplying either dimension.
+    if (clamped_rect.rempty())
+      return;
+
+    const u32 drawn_width = clamped_rect.width();
     u32 drawn_height = clamped_rect.height();
 
     if (m_GPUSTAT.SkipDrawingToActiveField())

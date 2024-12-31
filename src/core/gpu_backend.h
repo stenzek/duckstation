@@ -167,8 +167,7 @@ protected:
   /// Sends the current frame to media capture.
   void SendDisplayToMediaCapture(MediaCapture* cap);
 
-  bool Deinterlace(u32 field, u32 line_skip);
-  bool DeinterlaceExtractField(u32 dst_bufidx, GPUTexture* src, u32 x, u32 y, u32 width, u32 height, u32 line_skip);
+  bool Deinterlace(u32 field);
   bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
   void DestroyDeinterlaceTextures();
   bool ApplyChromaSmoothing();
@@ -185,7 +184,6 @@ protected:
 
   u32 m_current_deinterlace_buffer = 0;
   std::unique_ptr<GPUPipeline> m_deinterlace_pipeline;
-  std::unique_ptr<GPUPipeline> m_deinterlace_extract_pipeline;
   std::array<std::unique_ptr<GPUTexture>, DEINTERLACE_BUFFER_COUNT> m_deinterlace_buffers;
   std::unique_ptr<GPUTexture> m_deinterlace_texture;
 
