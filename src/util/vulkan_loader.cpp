@@ -8,6 +8,7 @@
 
 #include "common/assert.h"
 #include "common/dynamic_library.h"
+#include "common/error.h"
 #include "common/log.h"
 
 #include <cstdarg>
@@ -73,7 +74,7 @@ bool Vulkan::LoadVulkanLibrary(Error* error)
   bool required_functions_missing = false;
 
 #define VULKAN_MODULE_ENTRY_POINT(name, required)                                                                      \
-  if (!s_vulkan_library.GetSymbol(#name, &name))                                                                       \
+  if (!s_vulkan_library.GetSymbol(#name, &name) && required)                                                           \
   {                                                                                                                    \
     ERROR_LOG("Vulkan: Failed to load required module function {}", #name);                                            \
     required_functions_missing = true;                                                                                 \
@@ -83,6 +84,7 @@ bool Vulkan::LoadVulkanLibrary(Error* error)
 
   if (required_functions_missing)
   {
+    Error::SetStringView(error, "One or more required functions are missing. The log contains more information.");
     ResetVulkanLibraryFunctionPointers();
     s_vulkan_library.Close();
     return false;
