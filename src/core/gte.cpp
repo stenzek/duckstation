@@ -66,6 +66,7 @@ struct ALIGN_TO_CACHE_LINE Config
   std::atomic_bool freecam_transform_changed{false};
   bool freecam_enabled = false;
   bool freecam_active = false;
+  bool freecam_reverse_transform_order = false;
 
   float freecam_move_speed = FREECAM_DEFAULT_MOVE_SPEED;
   float freecam_turn_speed = FREECAM_DEFAULT_TURN_SPEED;
@@ -1511,30 +1512,61 @@ void GTE::UpdateFreecam(u64 current_time)
   // translate than rotate, since the camera is rotating around a point
   // remember, matrix transformation happens in the opposite of the multiplication order
 
-  if (s_config.freecam_translation.x != 0.0f || s_config.freecam_translation.y != 0.0f ||
-      s_config.freecam_translation.z != 0.0f)
+  if (!s_config.freecam_reverse_transform_order)
   {
-    s_config.freecam_matrix = GSMatrix4x4::Translation(s_config.freecam_translation.x, s_config.freecam_translation.y,
-                                                       s_config.freecam_translation.z);
-    any_xform = true;
-  }
+    if (s_config.freecam_translation.x != 0.0f || s_config.freecam_translation.y != 0.0f ||
+        s_config.freecam_translation.z != 0.0f)
+    {
+      s_config.freecam_matrix = GSMatrix4x4::Translation(s_config.freecam_translation.x, s_config.freecam_translation.y,
+                                                         s_config.freecam_translation.z);
+      any_xform = true;
+    }
 
-  if (s_config.freecam_rotation.z != 0.0f)
-  {
-    s_config.freecam_matrix *= GSMatrix4x4::RotationZ(s_config.freecam_rotation.z);
-    any_xform = true;
-  }
+    if (s_config.freecam_rotation.z != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationZ(s_config.freecam_rotation.z);
+      any_xform = true;
+    }
 
-  if (s_config.freecam_rotation.y != 0.0f)
-  {
-    s_config.freecam_matrix *= GSMatrix4x4::RotationY(s_config.freecam_rotation.y);
-    any_xform = true;
-  }
+    if (s_config.freecam_rotation.y != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationY(s_config.freecam_rotation.y);
+      any_xform = true;
+    }
 
-  if (s_config.freecam_rotation.x != 0.0f)
+    if (s_config.freecam_rotation.x != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationX(s_config.freecam_rotation.x);
+      any_xform = true;
+    }
+  }
+  else
   {
-    s_config.freecam_matrix *= GSMatrix4x4::RotationX(s_config.freecam_rotation.x);
-    any_xform = true;
+    if (s_config.freecam_rotation.x != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationX(s_config.freecam_rotation.x);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_rotation.y != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationY(s_config.freecam_rotation.y);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_rotation.z != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationZ(s_config.freecam_rotation.z);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_translation.x != 0.0f || s_config.freecam_translation.y != 0.0f ||
+        s_config.freecam_translation.z != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::Translation(
+        s_config.freecam_translation.x, s_config.freecam_translation.y, s_config.freecam_translation.z);
+      any_xform = true;
+    }
   }
 
   s_config.freecam_active = any_xform;
@@ -1565,13 +1597,13 @@ void GTE::ApplyFreecam(s64& x, s64& y, s64& z)
 void GTE::DrawFreecamWindow(float scale)
 {
   const ImGuiStyle& style = ImGui::GetStyle();
-
-  bool freecam_enabled = s_config.freecam_enabled;
-  bool enabled_changed = false;
-
   const float label_width = 140.0f * scale;
   const float item_width = 350.0f * scale;
   const float padding_height = 5.0f * scale;
+
+  bool freecam_enabled = s_config.freecam_enabled;
+  bool enabled_changed = false;
+  bool changed = false;
 
   if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
   {
@@ -1579,6 +1611,10 @@ void GTE::DrawFreecamWindow(float scale)
     const float second_width = item_width - third_width;
 
     enabled_changed = ImGui::Checkbox("Enable Freecam", &freecam_enabled);
+
+    changed |= ImGui::Checkbox("Reverse Transform Order", &s_config.freecam_reverse_transform_order);
+    ImGui::SetItemTooltip("Swaps the order that the camera rotation/offset is applied.\nCan work better in some games "
+                          "that use different modelview matrices.");
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding_height);
 
@@ -1610,8 +1646,6 @@ void GTE::DrawFreecamWindow(float scale)
     ImGui::Columns(1);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding_height);
   }
-
-  bool changed = false;
 
   if (ImGui::CollapsingHeader("Rotation", ImGuiTreeNodeFlags_DefaultOpen))
   {
