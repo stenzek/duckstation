@@ -4876,7 +4876,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
 
-          ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+          ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
           ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
           ImGui::PushFont(UIStyle.LargeFont);
@@ -4884,6 +4884,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
           ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+          ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
           bool is_open = true;
           if (ImGui::BeginPopupModal(tstr, &is_open,
@@ -4962,7 +4963,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             ImGui::EndPopup();
           }
 
-          ImGui::PopStyleVar(3);
+          ImGui::PopStyleVar(4);
           ImGui::PopFont();
         }
         break;
@@ -4975,7 +4976,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
 
-          ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+          ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
           ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
           ImGui::PushFont(UIStyle.LargeFont);
@@ -4983,6 +4984,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
           ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+          ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
           bool is_open = true;
           if (ImGui::BeginPopupModal(tstr, &is_open,
@@ -5060,7 +5062,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             ImGui::EndPopup();
           }
 
-          ImGui::PopStyleVar(3);
+          ImGui::PopStyleVar(4);
           ImGui::PopFont();
         }
         break;
