@@ -280,6 +280,7 @@ static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
 static bool ShouldShowAdvancedSettings();
+static float GetSettingsWindowBgAlpha();
 static bool IsEditingGameSettings(SettingsInterface* bsi);
 static SettingsInterface* GetEditingSettingsInterface();
 static SettingsInterface* GetEditingSettingsInterface(bool game_settings);
@@ -442,6 +443,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::shared_ptr<GPUTexture> fallback_playlist_texture;
 
   // Settings
+  float settings_last_bg_alpha = 1.0f;
   SettingsPage settings_page = SettingsPage::Interface;
   std::unique_ptr<INISettingsInterface> game_settings_interface;
   const GameDatabase::Entry* game_settings_db_entry;
@@ -1595,6 +1597,11 @@ void FullscreenUI::DrawExitWindow()
 bool FullscreenUI::ShouldShowAdvancedSettings()
 {
   return Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
+}
+
+float FullscreenUI::GetSettingsWindowBgAlpha()
+{
+  return GPUThread::HasGPUBackend() ? (s_state.settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
 }
 
 bool FullscreenUI::IsEditingGameSettings(SettingsInterface* bsi)
@@ -2798,6 +2805,7 @@ void FullscreenUI::SwitchToSettings()
 
   s_state.current_main_window = MainWindowType::Settings;
   s_state.settings_page = SettingsPage::Interface;
+  s_state.settings_last_bg_alpha = GetSettingsWindowBgAlpha();
 }
 
 void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
@@ -2917,11 +2925,14 @@ void FullscreenUI::DrawSettingsWindow()
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  const float bg_alpha =
-    GPUThread::HasGPUBackend() ? (s_state.settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
+  const float target_bg_alpha = GetSettingsWindowBgAlpha();
+  s_state.settings_last_bg_alpha = (target_bg_alpha < s_state.settings_last_bg_alpha) ?
+                                     std::max(s_state.settings_last_bg_alpha - io.DeltaTime * 2.0f, target_bg_alpha) :
+                                     std::min(s_state.settings_last_bg_alpha + io.DeltaTime * 2.0f, target_bg_alpha);
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
-                            ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z, bg_alpha)))
+  if (BeginFullscreenWindow(
+        ImVec2(0.0f, 0.0f), heading_size, "settings_category",
+        ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z, s_state.settings_last_bg_alpha)))
   {
     static constexpr float ITEM_WIDTH = 25.0f;
 
@@ -3020,8 +3031,9 @@ void FullscreenUI::DrawSettingsWindow()
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
         TinyString::from_format("settings_page_{}", static_cast<u32>(s_state.settings_page)).c_str(),
-        ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z, bg_alpha), 0.0f,
-        ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
+        ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
+               s_state.settings_last_bg_alpha),
+        0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
   {
     ResetFocusHere();
 
