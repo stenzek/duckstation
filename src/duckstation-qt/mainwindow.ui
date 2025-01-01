@@ -227,6 +227,7 @@
     <addaction name="separator"/>
     <addaction name="actionMemoryCardEditor"/>
     <addaction name="actionCoverDownloader"/>
+    <addaction name="actionControllerTest"/>
     <addaction name="separator"/>
     <addaction name="actionMemoryScanner"/>
     <addaction name="actionISOBrowser"/>
@@ -977,6 +978,11 @@
    </property>
    <property name="text">
     <string>Free Camera</string>
+   </property>
+  </action>
+  <action name="actionControllerTest">
+   <property name="text">
+    <string>Controller Test</string>
    </property>
   </action>
  </widget>

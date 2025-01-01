@@ -1334,6 +1334,45 @@ void EmuThread::captureGPUFrameDump()
     System::StartRecordingGPUDump();
 }
 
+void EmuThread::startControllerTest()
+{
+  static constexpr const char* PADTEST_URL = "https://downloads.duckstation.org/runtime-resources/padtest.psexe";
+
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, "startControllerTest", Qt::QueuedConnection);
+    return;
+  }
+
+  if (System::IsValid())
+    return;
+
+  std::string path = Path::Combine(EmuFolders::UserResources, "padtest.psexe");
+  if (FileSystem::FileExists(path.c_str()))
+  {
+    bootSystem(std::make_shared<SystemBootParameters>(std::move(path)));
+    return;
+  }
+
+  QtHost::RunOnUIThread([path = std::move(path)]() mutable {
+    {
+      auto lock = g_main_window->pauseAndLockSystem();
+      if (QMessageBox::question(
+            lock.getDialogParent(), tr("Confirm Download"),
+            tr("Your DuckStation installation does not have the padtest application "
+               "available.\n\nThis file is approximately 206KB, do you want to download it now?")) != QMessageBox::Yes)
+      {
+        return;
+      }
+
+      if (!QtHost::DownloadFile(lock.getDialogParent(), tr("File Download"), PADTEST_URL, path.c_str()))
+        return;
+    }
+
+    g_emu_thread->startControllerTest();
+  });
+}
+
 void EmuThread::runOnEmuThread(std::function<void()> callback)
 {
   callback();

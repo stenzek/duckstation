@@ -212,6 +212,7 @@ public Q_SLOTS:
   void clearInputBindStateFromSource(InputBindingKey key);
   void reloadTextureReplacements();
   void captureGPUFrameDump();
+  void startControllerTest();
   void setGPUThreadRunIdle(bool active);
 
 private Q_SLOTS:
