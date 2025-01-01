@@ -2899,8 +2899,8 @@ void FullscreenUI::DoCopyGameSettings()
   temp_settings.Save(*s_state.game_settings_interface, true);
   SetSettingsChanged(s_state.game_settings_interface.get());
 
-  ShowToast("Game Settings Copied", fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
-                                                Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
+  ShowToast(std::string(), fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
+                                       Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
 }
 
 void FullscreenUI::DoClearGameSettings()
@@ -2914,8 +2914,8 @@ void FullscreenUI::DoClearGameSettings()
 
   SetSettingsChanged(s_state.game_settings_interface.get());
 
-  ShowToast("Game Settings Cleared", fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."),
-                                                 Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
+  ShowToast(std::string(), fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."),
+                                       Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
 }
 
 void FullscreenUI::DrawSettingsWindow()
@@ -7834,7 +7834,7 @@ void FullscreenUI::CloseLoadingScreen()
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Translation String Area
-// To avoid having to type T_RANSLATE("FullscreenUI", ...) everywhere, we use the shorter macros at the top
+// To avoid having to type TRANSLATE("FullscreenUI", ...) everywhere, we use the shorter macros at the top
 // of the file, then preprocess and generate a bunch of noops here to define the strings. Sadly that means
 // the view in Linguist is gonna suck, but you can search the file for the string for more context.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
