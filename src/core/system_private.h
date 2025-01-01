@@ -27,7 +27,7 @@ MemorySaveState& AllocateMemoryState();
 MemorySaveState& GetFirstMemoryState();
 MemorySaveState& PopMemoryState();
 bool AllocateMemoryStates(size_t state_count, bool recycle_old_textures);
-void FreeMemoryStateStorage(bool recycle_texture);
+void FreeMemoryStateStorage(bool release_memory, bool release_textures, bool recycle_textures);
 void LoadMemoryState(MemorySaveState& mss, bool update_display);
 void SaveMemoryState(MemorySaveState& mss);
 
