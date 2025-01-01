@@ -6929,14 +6929,14 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     }
 
     const float work_width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-    static constexpr float field_margin_y = 20.0f;
+    static constexpr float field_margin_y = 4.0f;
     static constexpr float start_x = 50.0f;
     float text_y = info_top_margin + cover_size + info_top_margin;
     float text_width;
 
     PushPrimaryColor();
     ImGui::SetCursorPos(LayoutScale(start_x, text_y));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, field_margin_y));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(0.0f, field_margin_y));
     ImGui::BeginGroup();
 
     if (selected_entry)
@@ -6967,7 +6967,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       text_width = ImGui::CalcTextSize(selected_entry->serial.c_str(), nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
       ImGui::TextWrapped("%s", selected_entry->serial.c_str());
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15.0f);
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(15.0f));
 
       // region
       {
