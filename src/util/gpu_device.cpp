@@ -1028,7 +1028,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
 
   TexturePool::iterator it;
 
-  if (is_texture && m_features.prefer_unused_textures)
+  if (is_texture && data && m_features.prefer_unused_textures)
   {
     // Try to find a texture that wasn't used this frame first.
     for (it = m_texture_pool.begin(); it != m_texture_pool.end(); ++it)
