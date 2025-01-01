@@ -33,6 +33,7 @@ enum class AuxiliaryRenderWindowEvent : u8
   Resized,
   KeyPressed,
   KeyReleased,
+  TextEntered,
   MouseMoved,
   MousePressed,
   MouseReleased,

@@ -1534,6 +1534,12 @@ void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderW
     }
     break;
 
+    case Host::AuxiliaryRenderWindowEvent::TextEntered:
+    {
+      io.AddInputCharacter(param1.uint_param);
+    }
+    break;
+
     case Host::AuxiliaryRenderWindowEvent::MouseMoved:
     {
       io.MousePos.x = param1.float_param;
