@@ -60,8 +60,8 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
   if (System::IsValid())
   {
-    System::ClearMemorySaveStates(true, false);
     GPUThread::UpdateSettings(true, false);
+    System::ClearMemorySaveStates(true, false);
   }
 }
 
