@@ -25,6 +25,12 @@
 
 LOG_CHANNEL(Host);
 
+// Freecam is disabled on Android because there's no windowed UI for it.
+// And because users can't be trusted to not crash games and complain.
+#ifndef __ANDROID__
+#define ENABLE_FREECAM 1
+#endif
+
 namespace GTE {
 
 static constexpr s64 MAC0_MIN_VALUE = -(INT64_C(1) << 31);
@@ -47,14 +53,14 @@ static constexpr float FREECAM_MAX_TURN_SPEED = 360.0f;
 
 namespace {
 
-struct Config
+struct ALIGN_TO_CACHE_LINE Config
 {
   DisplayAspectRatio aspect_ratio = DisplayAspectRatio::R4_3;
   u32 custom_aspect_ratio_numerator;
   u32 custom_aspect_ratio_denominator;
   float custom_aspect_ratio_f;
 
-  //////////////////////////////////////////////////////////////////////////
+#ifdef ENABLE_FREECAM
 
   Timer::Value freecam_update_time = 0;
   std::atomic_bool freecam_transform_changed{false};
@@ -70,11 +76,13 @@ struct Config
   GSVector4 freecam_translation = GSVector4::cxpr(0.0f);
 
   ALIGN_TO_CACHE_LINE GSMatrix4x4 freecam_matrix = GSMatrix4x4::Identity();
+
+#endif
 };
 
 } // namespace
 
-ALIGN_TO_CACHE_LINE static Config s_config;
+static Config s_config;
 
 #define REGS CPU::g_state.gte_regs
 
@@ -209,7 +217,6 @@ static void PushSZ(s32 value);
 static void PushRGBFromMAC();
 static u32 UNRDivide(u32 lhs, u32 rhs);
 
-static void ApplyFreecam(s64& x, s64& y, s64& z);
 static void MulMatVec(const s16* M_, const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
 static void MulMatVec(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
 static void MulMatVecBuggy(const s16* M_, const s32 T[3], const s16 Vx, const s16 Vy, const s16 Vz, u8 shift, bool lm);
@@ -220,6 +227,10 @@ static void NCS(const s16 V[3], u8 shift, bool lm);
 static void NCCS(const s16 V[3], u8 shift, bool lm);
 static void NCDS(const s16 V[3], u8 shift, bool lm);
 static void DPCS(const u8 color[3], u8 shift, bool lm);
+
+#ifdef ENABLE_FREECAM
+static void ApplyFreecam(s64& x, s64& y, s64& z);
+#endif
 
 static void Execute_MVMVA(Instruction inst);
 static void Execute_SQR(Instruction inst);
@@ -687,8 +698,12 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   s64 x = dot3(0);
   s64 y = dot3(1);
   s64 z = dot3(2);
+
+#ifdef ENABLE_FREECAM
   if (s_config.freecam_active)
     ApplyFreecam(x, y, z);
+#endif
+
   TruncateAndSetMAC<1>(x, shift);
   TruncateAndSetMAC<2>(y, shift);
   TruncateAndSetMAC<3>(z, shift);
@@ -1416,6 +1431,8 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
   }
 }
 
+#ifdef ENABLE_FREECAM
+
 bool GTE::IsFreecamEnabled()
 {
   return s_config.freecam_enabled;
@@ -1681,3 +1698,36 @@ void GTE::DrawFreecamWindow(float scale)
   if (changed)
     s_config.freecam_transform_changed.store(true, std::memory_order_release);
 }
+
+#else // ENABLE_FREECAM
+
+bool GTE::IsFreecamEnabled()
+{
+  return false;
+}
+
+void GTE::SetFreecamEnabled(bool enabled)
+{
+}
+
+void GTE::SetFreecamMoveAxis(u32 axis, float x)
+{
+}
+
+void GTE::SetFreecamRotateAxis(u32 axis, float x)
+{
+}
+
+void GTE::UpdateFreecam(u64 current_time)
+{
+}
+
+void GTE::ResetFreecam()
+{
+}
+
+void GTE::DrawFreecamWindow(float scale)
+{
+}
+
+#endif // ENABLE_FREECAM

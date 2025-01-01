@@ -521,6 +521,9 @@ DEFINE_HOTKEY("RotateCounterclockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                 }
               })
 
+// See gte.cpp.
+#ifndef __ANDROID__
+
 DEFINE_HOTKEY("FreecamToggle", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Freecam Toggle"),
               [](s32 pressed) {
                 if (!pressed && !Achievements::IsHardcoreModeActive())
@@ -615,6 +618,8 @@ DEFINE_HOTKEY("FreecamRollRight", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 
                 GTE::SetFreecamRotateAxis(2, std::max(static_cast<float>(pressed), 0.0f));
               })
+
+#endif // __ANDROID__
 
 DEFINE_HOTKEY("AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"),
               [](s32 pressed) {
