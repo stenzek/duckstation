@@ -27,4 +27,13 @@ void ExecuteInstruction(u32 inst_bits);
 using InstructionImpl = void (*)(Instruction);
 InstructionImpl GetInstructionImpl(u32 inst_bits, TickCount* ticks);
 
+void DrawFreecamWindow(float scale);
+
+bool IsFreecamEnabled();
+void SetFreecamEnabled(bool enabled);
+void SetFreecamMoveAxis(u32 axis, float x);
+void SetFreecamRotateAxis(u32 axis, float x);
+void UpdateFreecam(u64 current_time);
+void ResetFreecam();
+
 } // namespace GTE

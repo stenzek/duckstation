@@ -231,6 +231,7 @@
     <addaction name="actionMemoryScanner"/>
     <addaction name="actionISOBrowser"/>
     <addaction name="separator"/>
+    <addaction name="actionFreeCamera"/>
     <addaction name="actionMediaCapture"/>
     <addaction name="actionCaptureGPUFrame"/>
     <addaction name="separator"/>
@@ -968,6 +969,14 @@
   <action name="actionISOBrowser">
    <property name="text">
     <string>ISO Browser</string>
+   </property>
+  </action>
+  <action name="actionFreeCamera">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Free Camera</string>
    </property>
   </action>
  </widget>

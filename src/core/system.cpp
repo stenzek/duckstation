@@ -2104,14 +2104,15 @@ void System::FrameDone()
     SaveMemoryState(AllocateMemoryState());
   }
 
+  Timer::Value current_time = Timer::GetCurrentValue();
+  GTE::UpdateFreecam(current_time);
+
   // Frame step after runahead, otherwise the pause takes precedence and the replay never happens.
   if (s_state.frame_step_request)
   {
     s_state.frame_step_request = false;
     PauseSystem(true);
   }
-
-  Timer::Value current_time = Timer::GetCurrentValue();
 
   // pre-frame sleep accounting (input lag reduction)
   const Timer::Value pre_frame_sleep_until = s_state.next_frame_time + s_state.pre_frame_sleep_time;
