@@ -59,7 +59,7 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
   if (System::IsValid())
   {
-    System::ClearMemorySaveStates(true);
+    System::ClearMemorySaveStates(true, false);
     GPUThread::UpdateSettings(true, false);
   }
 }
@@ -373,7 +373,7 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
               [](s32 pressed) {
                 if (!pressed && System::IsValid())
                 {
-                  System::ClearMemorySaveStates(true);
+                  System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                   GPUThread::UpdateSettings(true, false);
@@ -451,7 +451,7 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   if (!g_settings.gpu_pgxp_enable)
                     return;
 
-                  System::ClearMemorySaveStates(true);
+                  System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
                   GPUThread::UpdateSettings(true, false);
@@ -471,7 +471,7 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
                   if (!g_settings.gpu_pgxp_enable)
                     return;
 
-                  System::ClearMemorySaveStates(true);
+                  System::ClearMemorySaveStates(true, true);
 
                   // GPU thread is unchanged
                   g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
