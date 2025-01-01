@@ -1223,27 +1223,29 @@ void InputManager::GenerateRelativeMouseEvents()
     for (u32 axis = 0; axis < static_cast<u32>(static_cast<u8>(InputPointerAxis::Count)); axis++)
     {
       PointerAxisState& state = s_pointer_state[device][axis];
-      const float delta = static_cast<float>(state.delta.exchange(0, std::memory_order_acquire)) / 65536.0f;
+      const int deltai = state.delta.load(std::memory_order_acquire);
+      state.delta.fetch_sub(deltai, std::memory_order_release);
+      const float delta = static_cast<float>(deltai) / 65536.0f;
       const float unclamped_value = delta * s_pointer_axis_scale[axis];
       const float value = std::clamp(unclamped_value, -1.0f, 1.0f);
-      if (value == state.last_value)
-        continue;
-
-      state.last_value = value;
 
       const InputBindingKey key(MakePointerAxisKey(device, static_cast<InputPointerAxis>(axis)));
-      if (device == 0 && axis >= static_cast<u32>(InputPointerAxis::WheelX) &&
-          ImGuiManager::ProcessPointerAxisEvent(key, unclamped_value))
+      if (device == 0 && axis >= static_cast<u32>(InputPointerAxis::WheelX) && delta != 0.0f &&
+          ImGuiManager::ProcessPointerAxisEvent(key, delta))
       {
         continue;
       }
 
-      if (!system_running)
-        continue;
+      // only generate axis-bound events when it hasn't changed
+      if (value != state.last_value)
+      {
+        state.last_value = value;
+        if (system_running)
+          InvokeEvents(key, value, GenericInputBinding::Unknown);
+      }
 
-      InvokeEvents(key, value, GenericInputBinding::Unknown);
-
-      if (delta != 0.0f)
+      // and pointer events only when it hasn't moved
+      if (delta != 0.0f && system_running)
       {
         for (const std::pair<u32, PointerMoveCallback>& pmc : s_pointer_move_callbacks)
         {
