@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreen_ui.h"
@@ -5340,17 +5340,33 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     const bool is_logging_in = ImGuiFullscreen::IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
     ResetFocusHere();
 
-    ImGui::Text(FSUI_CSTR("User Name: "));
-    ImGui::SameLine(LayoutScale(200.0f));
-    ImGui::InputText("##username", username, sizeof(username), is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+    const float inner_spacing = LayoutScale(6.0f);
+    const float item_margin = LayoutScale(10.0f);
+    const float item_width = LayoutScale(550.0f);
+    ImGui::Columns(2, "LoginFields", true);
+    ImGui::SetColumnWidth(0, LayoutScale(150.0f));
+    ImGui::SetColumnWidth(1, item_width);
 
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + inner_spacing);
+    ImGui::Text(FSUI_CSTR("User Name: "));
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(item_width);
+    ImGui::InputText("##username", username, sizeof(username), is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+    ImGui::NextColumn();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin + inner_spacing);
     ImGui::Text(FSUI_CSTR("Password: "));
-    ImGui::SameLine(LayoutScale(200.0f));
+    ImGui::NextColumn();
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
+    ImGui::SetNextItemWidth(item_width);
     ImGui::InputText("##password", password, sizeof(password),
                      is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
                                      ImGuiInputTextFlags_Password);
+    ImGui::NextColumn();
 
-    ImGui::NewLine();
+    ImGui::Columns(1);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
 
     const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
 
