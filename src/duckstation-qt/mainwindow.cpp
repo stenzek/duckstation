@@ -1741,6 +1741,8 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
 
   m_ui.actionViewGameProperties->setDisabled(starting_or_not_running);
 
+  m_ui.actionControllerTest->setDisabled(starting_or_running);
+
   updateShortcutActions(starting);
 
   if (starting_or_running)
