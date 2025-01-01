@@ -1178,6 +1178,10 @@ void System::RecreateGPU(GPURenderer renderer)
   }
 
   ClearMemorySaveStates(true, false);
+
+  g_gpu.UpdateDisplay(false);
+  if (IsPaused())
+    GPUThread::PresentCurrentFrame();
 }
 
 void System::LoadSettings(bool display_osd_messages)
@@ -2390,7 +2394,7 @@ bool System::DoState(StateWrapper& sw, bool update_display)
   if (!sw.DoMarker("InterruptController") || !InterruptController::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("GPU") || !g_gpu.DoState(sw, update_display))
+  if (!sw.DoMarker("GPU") || !g_gpu.DoState(sw))
     return false;
 
   if (!sw.DoMarker("CDROM") || !CDROM::DoState(sw))
@@ -2459,7 +2463,14 @@ bool System::DoState(StateWrapper& sw, bool update_display)
     Achievements::ResetClient();
   }
 
-  return !sw.HasError();
+  if (sw.HasError())
+    return false;
+
+  // If we're paused, need to update the display FB.
+  if (update_display)
+    g_gpu.UpdateDisplay(false);
+
+  return true;
 }
 
 System::MemorySaveState& System::AllocateMemoryState()
@@ -2665,7 +2676,7 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
   SAVE_COMPONENT("DMA", DMA::DoState(sw));
   SAVE_COMPONENT("InterruptController", InterruptController::DoState(sw));
 
-  g_gpu.DoMemoryState(sw, mss, update_display);
+  g_gpu.DoMemoryState(sw, mss);
 
   SAVE_COMPONENT("CDROM", CDROM::DoState(sw));
   SAVE_COMPONENT("Pad", Pad::DoState(sw, true));
@@ -2677,6 +2688,9 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
   SAVE_COMPONENT("Achievements", Achievements::DoState(sw));
 
 #undef SAVE_COMPONENT
+
+  if (update_display)
+    g_gpu.UpdateDisplay(false);
 }
 
 bool System::LoadBIOS(Error* error)

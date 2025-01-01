@@ -97,8 +97,8 @@ public:
   void Initialize();
   void Shutdown();
   void Reset(bool clear_vram);
-  bool DoState(StateWrapper& sw, bool update_display);
-  void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool update_display);
+  bool DoState(StateWrapper& sw);
+  void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss);
 
   // Render statistics debug window.
   void DrawDebugStateWindow(float scale);
@@ -216,6 +216,9 @@ public:
   // Dumps raw VRAM to a file.
   bool DumpVRAMToFile(const char* filename);
 
+  // Kicks the current frame to the backend for display.
+  void UpdateDisplay(bool submit_frame);
+
   // Queues the current frame for presentation. Should only be used with runahead.
   void QueuePresentCurrentFrame();
 
@@ -296,7 +299,6 @@ private:
 
   void ReadVRAM(u16 x, u16 y, u16 width, u16 height);
   void UpdateVRAM(u16 x, u16 y, u16 width, u16 height, const void* data, bool set_mask, bool check_mask);
-  void UpdateDisplay(bool submit_frame);
 
   void PrepareForDraw();
   void FinishPolyline();

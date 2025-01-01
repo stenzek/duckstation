@@ -243,7 +243,7 @@ void GPU::SoftReset()
   UpdateGPUIdle();
 }
 
-bool GPU::DoState(StateWrapper& sw, bool update_display)
+bool GPU::DoState(StateWrapper& sw)
 {
   if (sw.IsWriting())
   {
@@ -378,10 +378,6 @@ bool GPU::DoState(StateWrapper& sw, bool update_display)
     UpdateDMARequest();
     UpdateCRTCConfig();
     UpdateCommandTickEvent();
-
-    // If we're paused, need to update the display FB.
-    if (update_display)
-      UpdateDisplay(false);
   }
   else // if not memory state
   {
@@ -395,7 +391,7 @@ bool GPU::DoState(StateWrapper& sw, bool update_display)
   return !sw.HasError();
 }
 
-void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool update_display)
+void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
 {
   sw.Do(&m_GPUSTAT.bits);
 
@@ -438,12 +434,6 @@ void GPU::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss, bool upd
     sizeof(GPUBackendDoMemoryStateCommand)));
   cmd->memory_save_state = &mss;
   GPUThread::PushCommandAndWakeThread(cmd);
-
-  if (update_display)
-  {
-    DebugAssert(sw.IsReading());
-    UpdateDisplay(false);
-  }
 }
 
 void GPU::UpdateDMARequest()
