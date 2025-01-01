@@ -2019,13 +2019,13 @@ public:
 
   ALWAYS_INLINE GSVector4 hsub(const GSVector4& v) const { return GSVector4(_mm_hsub_ps(m, v.m)); }
 
-  ALWAYS_INLINE float dot(const GSVector4& v) const
+  NEVER_INLINE float dot(const GSVector4& v) const
   {
 #ifdef CPU_ARCH_SSE41
     return _mm_cvtss_f32(_mm_dp_ps(m, v.m, 0xf1));
 #else
     __m128 tmp = _mm_mul_ps(m, v.m);
-    tmp = _mm_add_ps(tmp, _mm_unpackhi_ps(tmp, tmp)); // (x+z, y+w, ..., ...)
+    tmp = _mm_add_ps(tmp, _mm_movehl_ps(tmp, tmp)); // (x+z, y+w, ..., ...)
     tmp = _mm_add_ss(tmp, _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(3, 2, 1, 1)));
     return _mm_cvtss_f32(tmp);
 #endif
@@ -2057,7 +2057,12 @@ public:
 
   ALWAYS_INLINE GSVector4 blend32(const GSVector4& v, const GSVector4& mask) const
   {
+#ifdef CPU_ARCH_SSE41
     return GSVector4(_mm_blendv_ps(m, v, mask));
+#else
+    // NOTE: Assumes the entire lane is set with 1s or 0s.
+    return (v & mask) | andnot(mask);
+#endif
   }
 
   ALWAYS_INLINE GSVector4 upl(const GSVector4& v) const { return GSVector4(_mm_unpacklo_ps(m, v)); }
