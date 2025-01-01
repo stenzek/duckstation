@@ -61,6 +61,7 @@ static void ClearBlocks();
 
 static Block* LookupBlock(u32 pc);
 static Block* CreateBlock(u32 pc, const BlockInstructionList& instructions, const BlockMetadata& metadata);
+static bool HasBlockLUT(u32 pc);
 static bool IsBlockCodeCurrent(const Block* block);
 static bool RevalidateBlock(Block* block);
 static PageProtectionMode GetProtectionModeForPC(u32 pc);
@@ -360,6 +361,12 @@ CPU::CodeCache::Block* CPU::CodeCache::LookupBlock(u32 pc)
 
   const u32 idx = (pc & 0xFFFF) >> 2;
   return s_block_lut[table][idx];
+}
+
+bool CPU::CodeCache::HasBlockLUT(u32 pc)
+{
+  const u32 table = pc >> LUT_TABLE_SHIFT;
+  return (s_block_lut[table] != nullptr);
 }
 
 CPU::CodeCache::Block* CPU::CodeCache::CreateBlock(u32 pc, const BlockInstructionList& instructions,
@@ -1372,7 +1379,7 @@ const void* CPU::CodeCache::CreateBlockLink(Block* block, void* code, u32 newpc)
     }
     else
     {
-      dst = g_compile_or_revalidate_block;
+      dst = HasBlockLUT(newpc) ? g_compile_or_revalidate_block : g_interpret_block;
     }
 
     BlockLinkMap::iterator iter = s_block_links.emplace(newpc, code);
