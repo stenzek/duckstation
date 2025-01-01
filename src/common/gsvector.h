@@ -47,6 +47,7 @@ public:
   GSMatrix4x4(const GSMatrix2x2& m);
 
   GSMatrix4x4 operator*(const GSMatrix4x4& m) const;
+  GSMatrix4x4& operator*=(const GSMatrix4x4& m);
 
   GSVector4 operator*(const GSVector4& v) const;
 
@@ -55,6 +56,7 @@ public:
   static GSMatrix4x4 RotationX(float angle_in_radians);
   static GSMatrix4x4 RotationY(float angle_in_radians);
   static GSMatrix4x4 RotationZ(float angle_in_radians);
+  static GSMatrix4x4 Translation(float x, float y, float z);
 
   static GSMatrix4x4 OffCenterOrthographicProjection(float left, float top, float right, float bottom, float zNear,
                                                      float zFar);
@@ -62,6 +64,8 @@ public:
 
   GSVector4 row(size_t i) const;
   GSVector4 col(size_t i) const;
+
+  GSMatrix4x4 Invert() const;
 
   void store(void* m);
 
