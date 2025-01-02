@@ -70,7 +70,7 @@ struct PGXPValue
   }
 };
 
-struct State
+struct ALIGN_TO_CACHE_LINE State
 {
   // ticks the CPU has executed
   u32 downcount = 0;
@@ -80,8 +80,8 @@ struct State
   Registers regs = {};
   Cop0Registers cop0_regs = {};
 
-  u32 pc;  // at execution time: the address of the next instruction to execute (already fetched)
-  u32 npc; // at execution time: the address of the next instruction to fetch
+  u32 pc = 0;  // at execution time: the address of the next instruction to execute (already fetched)
+  u32 npc = 0; // at execution time: the address of the next instruction to fetch
 
   // address of the instruction currently being executed
   Instruction current_instruction = {};
@@ -125,7 +125,7 @@ struct State
   static constexpr u32 GTERegisterOffset(u32 index) { return OFFSETOF(State, gte_regs.r32) + (sizeof(u32) * index); }
 };
 
-ALIGN_TO_CACHE_LINE extern State g_state;
+extern State g_state;
 
 void Initialize();
 void Shutdown();

@@ -98,7 +98,7 @@ static bool WriteMemoryByte(VirtualMemoryAddress addr, u32 value);
 static bool WriteMemoryHalfWord(VirtualMemoryAddress addr, u32 value);
 static bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 
-alignas(HOST_CACHE_LINE_SIZE) State g_state;
+constinit State g_state;
 bool TRACE_EXECUTION = false;
 
 static fastjmp_buf s_jmp_buf;
