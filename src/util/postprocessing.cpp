@@ -11,8 +11,8 @@
 #include "shadergen.h"
 
 // TODO: Remove me
-#include "core/host.h"
 #include "core/fullscreen_ui.h"
+#include "core/host.h"
 #include "core/settings.h"
 
 #include "IconsFontAwesome5.h"
@@ -51,7 +51,7 @@ ALWAYS_INLINE void ForAllChains(const T& F)
 Chain DisplayChain(Config::DISPLAY_CHAIN_SECTION);
 Chain InternalChain(Config::INTERNAL_CHAIN_SECTION);
 
-static Timer s_timer;
+static Timer::Value s_start_time;
 
 static std::unordered_map<u64, std::unique_ptr<GPUSampler>> s_samplers;
 static std::unique_ptr<GPUTexture> s_dummy_texture;
@@ -525,7 +525,7 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
 
   if (stage_count > 0)
   {
-    s_timer.Reset();
+    s_start_time = Timer::GetCurrentValue();
     DEV_LOG("Loaded {} post-processing stages.", stage_count);
   }
 
@@ -555,7 +555,7 @@ void PostProcessing::Chain::Toggle()
   m_enabled = new_enabled;
   m_needs_depth_buffer = new_enabled && m_wants_depth_buffer;
   if (m_enabled)
-    s_timer.Reset();
+    s_start_time = Timer::GetCurrentValue();
 }
 
 bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 target_width, u32 target_height,
@@ -693,13 +693,14 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
     draw_final_target = GetTextureUnusedAtEndOfChain();
   }
 
+  const float time = Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_start_time);
   for (const std::unique_ptr<Shader>& stage : m_stages)
   {
     const bool is_final = (stage.get() == m_stages.back().get());
 
     if (const GPUDevice::PresentResult pres =
           stage->Apply(input_color, input_depth, is_final ? draw_final_target : output, final_rect, orig_width,
-                       orig_height, native_width, native_height, m_target_width, m_target_height);
+                       orig_height, native_width, native_height, m_target_width, m_target_height, time);
         pres != GPUDevice::PresentResult::OK)
     {
       return pres;
@@ -744,7 +745,7 @@ void PostProcessing::Initialize()
 {
   DisplayChain.LoadStages();
   InternalChain.LoadStages();
-  s_timer.Reset();
+  s_start_time = Timer::GetCurrentValue();
 }
 
 void PostProcessing::UpdateSettings()
@@ -780,7 +781,7 @@ bool PostProcessing::ReloadShaders()
     chain.DestroyTextures();
     chain.LoadStages();
   });
-  s_timer.Reset();
+  s_start_time = Timer::GetCurrentValue();
 
   Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
                           TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."), Host::OSD_QUICK_DURATION);
@@ -867,11 +868,6 @@ SettingsInterface& PostProcessing::GetLoadSettingsInterface(const char* section)
     return *game_si;
   else
     return *Host::Internal::GetBaseSettingsLayer();
-}
-
-const Timer& PostProcessing::GetTimer()
-{
-  return s_timer;
 }
 
 GPUSampler* PostProcessing::GetSampler(const GPUSampler::Config& config)

@@ -175,8 +175,6 @@ void Shutdown();
 GPUSampler* GetSampler(const GPUSampler::Config& config);
 GPUTexture* GetDummyTexture();
 
-const Timer& GetTimer();
-
 extern Chain DisplayChain;
 extern Chain InternalChain;
 

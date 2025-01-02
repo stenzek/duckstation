@@ -1469,7 +1469,8 @@ bool PostProcessing::ReShadeFXShader::ResizeOutput(GPUTexture::Format format, u3
 GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* input_color, GPUTexture* input_depth,
                                                                 GPUTexture* final_target, GSVector4i final_rect,
                                                                 s32 orig_width, s32 orig_height, s32 native_width,
-                                                                s32 native_height, u32 target_width, u32 target_height)
+                                                                s32 native_height, u32 target_width, u32 target_height,
+                                                                float time)
 {
   GL_PUSH_FMT("PostProcessingShaderFX {}", m_name);
 
@@ -1477,6 +1478,9 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
 
   // Reshade always draws at full size.
   g_gpu_device->SetViewportAndScissor(GSVector4i(0, 0, target_width, target_height));
+
+  // Reshade timer variable is in milliseconds.
+  time *= 1000.0f;
 
   if (m_uniforms_size > 0)
   {
@@ -1509,8 +1513,7 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
 
         case SourceOptionType::Timer:
         {
-          const float value = static_cast<float>(PostProcessing::GetTimer().GetTimeMilliseconds());
-          std::memcpy(dst, &value, sizeof(value));
+          std::memcpy(dst, &time, sizeof(time));
         }
         break;
 

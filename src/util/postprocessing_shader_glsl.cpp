@@ -170,7 +170,8 @@ bool PostProcessing::GLSLShader::CompilePipeline(GPUTexture::Format format, u32 
 GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* input_color, GPUTexture* input_depth,
                                                            GPUTexture* final_target, GSVector4i final_rect,
                                                            s32 orig_width, s32 orig_height, s32 native_width,
-                                                           s32 native_height, u32 target_width, u32 target_height)
+                                                           s32 native_height, u32 target_width, u32 target_height,
+                                                           float time)
 {
   GL_SCOPE_FMT("GLSL Shader {}", m_name);
 
@@ -194,8 +195,7 @@ GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* input_col
   const u32 uniforms_size = GetUniformsSize();
   void* uniforms = g_gpu_device->MapUniformBuffer(uniforms_size);
   FillUniformBuffer(uniforms, final_rect.left, final_rect.top, final_rect.width(), final_rect.height(), target_width,
-                    target_height, orig_width, orig_height, native_width, native_height,
-                    static_cast<float>(PostProcessing::GetTimer().GetTimeSeconds()));
+                    target_height, orig_width, orig_height, native_width, native_height, time);
   g_gpu_device->UnmapUniformBuffer(uniforms_size);
   g_gpu_device->Draw(3, 0);
   return GPUDevice::PresentResult::OK;
