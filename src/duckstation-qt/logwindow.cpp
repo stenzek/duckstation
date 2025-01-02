@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "logwindow.h"
@@ -177,6 +177,7 @@ void LogWindow::createUi()
   m_text->setUndoRedoEnabled(false);
   m_text->setTextInteractionFlags(Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
   m_text->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+  m_text->setMaximumBlockCount(MAX_LINES);
 
 #if defined(_WIN32)
   QFont font("Consolas");
@@ -271,6 +272,8 @@ void LogWindow::logCallback(void* pUserParam, Log::MessageCategory cat, const ch
   const QLatin1StringView qchannel(
     (Log::UnpackLevel(cat) <= Log::Level::Warning) ? functionName : Log::GetChannelName(Log::UnpackChannel(cat)));
 
+  this_ptr->m_lines_pending.fetch_add(1, std::memory_order_acq_rel);
+
   if (QThread::isMainThread())
   {
     this_ptr->appendMessage(qchannel, static_cast<u32>(cat), qmessage);
@@ -307,6 +310,43 @@ void LogWindow::changeEvent(QEvent* event)
 }
 
 void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message)
+{
+  const int num_lines_still_pending = m_lines_pending.fetch_sub(1, std::memory_order_acq_rel) - 1;
+  if (m_lines_to_skip > 0)
+  {
+    m_lines_to_skip--;
+    return;
+  }
+
+  if (num_lines_still_pending > MAX_LINES)
+  {
+    realAppendMessage(
+      QLatin1StringView(Log::GetChannelName(Log::Channel::Log)),
+      Log::PackCategory(Log::Channel::Log, Log::Level::Warning, Log::Color::StrongYellow),
+      tr("Dropped %1 log messages, please use file or system console logging.\n").arg(num_lines_still_pending));
+    m_lines_to_skip = num_lines_still_pending;
+    return;
+  }
+  else if (num_lines_still_pending > BLOCK_UPDATES_THRESHOLD)
+  {
+    if (m_text->updatesEnabled())
+    {
+      m_text->setUpdatesEnabled(false);
+      m_text->document()->blockSignals(true);
+      m_text->blockSignals(true);
+    }
+  }
+  else if (!m_text->updatesEnabled())
+  {
+    m_text->blockSignals(false);
+    m_text->document()->blockSignals(false);
+    m_text->setUpdatesEnabled(true);
+  }
+
+  realAppendMessage(channel, cat, message);
+}
+
+void LogWindow::realAppendMessage(const QLatin1StringView& channel, quint32 cat, const QString& message)
 {
   QTextCursor temp_cursor = m_text->textCursor();
   QScrollBar* scrollbar = m_text->verticalScrollBar();
@@ -370,6 +410,7 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 cat, con
     QTextCharFormat format = temp_cursor.charFormat();
     const size_t dark = static_cast<size_t>(m_is_dark_theme);
 
+    temp_cursor.beginEditBlock();
     if (Log::AreTimestampsEnabled())
     {
       const float message_time = Log::GetCurrentMessageTime();
@@ -395,23 +436,11 @@ void LogWindow::appendMessage(const QLatin1StringView& channel, quint32 cat, con
     format.setForeground(QBrush(message_colors[dark][static_cast<size_t>(color)]));
     temp_cursor.setCharFormat(format);
     temp_cursor.insertText(message);
+    temp_cursor.endEditBlock();
   }
 
-  if (cursor_at_end)
-  {
-    if (scroll_at_end)
-    {
-      m_text->setTextCursor(temp_cursor);
-      scrollbar->setSliderPosition(scrollbar->maximum());
-    }
-    else
-    {
-      // Can't let changing the cursor affect the scroll bar...
-      const int pos = scrollbar->sliderPosition();
-      m_text->setTextCursor(temp_cursor);
-      scrollbar->setSliderPosition(pos);
-    }
-  }
+  if (cursor_at_end && scroll_at_end)
+    m_text->centerCursor();
 }
 
 void LogWindow::saveSize()

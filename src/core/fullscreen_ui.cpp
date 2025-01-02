@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "fullscreen_ui.h"
@@ -280,6 +280,7 @@ static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
 static bool ShouldShowAdvancedSettings();
+static float GetSettingsWindowBgAlpha();
 static bool IsEditingGameSettings(SettingsInterface* bsi);
 static SettingsInterface* GetEditingSettingsInterface();
 static SettingsInterface* GetEditingSettingsInterface(bool game_settings);
@@ -442,6 +443,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::shared_ptr<GPUTexture> fallback_playlist_texture;
 
   // Settings
+  float settings_last_bg_alpha = 1.0f;
   SettingsPage settings_page = SettingsPage::Interface;
   std::unique_ptr<INISettingsInterface> game_settings_interface;
   const GameDatabase::Entry* game_settings_db_entry;
@@ -1595,6 +1597,11 @@ void FullscreenUI::DrawExitWindow()
 bool FullscreenUI::ShouldShowAdvancedSettings()
 {
   return Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
+}
+
+float FullscreenUI::GetSettingsWindowBgAlpha()
+{
+  return GPUThread::HasGPUBackend() ? (s_state.settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
 }
 
 bool FullscreenUI::IsEditingGameSettings(SettingsInterface* bsi)
@@ -2798,6 +2805,7 @@ void FullscreenUI::SwitchToSettings()
 
   s_state.current_main_window = MainWindowType::Settings;
   s_state.settings_page = SettingsPage::Interface;
+  s_state.settings_last_bg_alpha = GetSettingsWindowBgAlpha();
 }
 
 void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
@@ -2891,8 +2899,8 @@ void FullscreenUI::DoCopyGameSettings()
   temp_settings.Save(*s_state.game_settings_interface, true);
   SetSettingsChanged(s_state.game_settings_interface.get());
 
-  ShowToast("Game Settings Copied", fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
-                                                Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
+  ShowToast(std::string(), fmt::format(FSUI_FSTR("Game settings initialized with global settings for '{}'."),
+                                       Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
 }
 
 void FullscreenUI::DoClearGameSettings()
@@ -2906,8 +2914,8 @@ void FullscreenUI::DoClearGameSettings()
 
   SetSettingsChanged(s_state.game_settings_interface.get());
 
-  ShowToast("Game Settings Cleared", fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."),
-                                                 Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
+  ShowToast(std::string(), fmt::format(FSUI_FSTR("Game settings have been cleared for '{}'."),
+                                       Path::GetFileTitle(s_state.game_settings_interface->GetPath())));
 }
 
 void FullscreenUI::DrawSettingsWindow()
@@ -2917,11 +2925,14 @@ void FullscreenUI::DrawSettingsWindow()
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  const float bg_alpha =
-    GPUThread::HasGPUBackend() ? (s_state.settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
+  const float target_bg_alpha = GetSettingsWindowBgAlpha();
+  s_state.settings_last_bg_alpha = (target_bg_alpha < s_state.settings_last_bg_alpha) ?
+                                     std::max(s_state.settings_last_bg_alpha - io.DeltaTime * 2.0f, target_bg_alpha) :
+                                     std::min(s_state.settings_last_bg_alpha + io.DeltaTime * 2.0f, target_bg_alpha);
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "settings_category",
-                            ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z, bg_alpha)))
+  if (BeginFullscreenWindow(
+        ImVec2(0.0f, 0.0f), heading_size, "settings_category",
+        ImVec4(UIStyle.PrimaryColor.x, UIStyle.PrimaryColor.y, UIStyle.PrimaryColor.z, s_state.settings_last_bg_alpha)))
   {
     static constexpr float ITEM_WIDTH = 25.0f;
 
@@ -3020,8 +3031,9 @@ void FullscreenUI::DrawSettingsWindow()
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
         TinyString::from_format("settings_page_{}", static_cast<u32>(s_state.settings_page)).c_str(),
-        ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z, bg_alpha), 0.0f,
-        ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
+        ImVec4(UIStyle.BackgroundColor.x, UIStyle.BackgroundColor.y, UIStyle.BackgroundColor.z,
+               s_state.settings_last_bg_alpha),
+        0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
   {
     ResetFocusHere();
 
@@ -4864,7 +4876,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
 
-          ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+          ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
           ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
           ImGui::PushFont(UIStyle.LargeFont);
@@ -4872,6 +4884,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
           ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+          ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
           bool is_open = true;
           if (ImGui::BeginPopupModal(tstr, &is_open,
@@ -4950,7 +4963,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             ImGui::EndPopup();
           }
 
-          ImGui::PopStyleVar(3);
+          ImGui::PopStyleVar(4);
           ImGui::PopFont();
         }
         break;
@@ -4963,7 +4976,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           if (MenuButton(tstr, str))
             ImGui::OpenPopup(tstr);
 
-          ImGui::SetNextWindowSize(LayoutScale(500.0f, 190.0f));
+          ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
           ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
           ImGui::PushFont(UIStyle.LargeFont);
@@ -4971,6 +4984,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
           ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                                       ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
           ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+          ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
           bool is_open = true;
           if (ImGui::BeginPopupModal(tstr, &is_open,
@@ -5048,7 +5062,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             ImGui::EndPopup();
           }
 
-          ImGui::PopStyleVar(3);
+          ImGui::PopStyleVar(4);
           ImGui::PopFont();
         }
         break;
@@ -5326,17 +5340,33 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     const bool is_logging_in = ImGuiFullscreen::IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
     ResetFocusHere();
 
-    ImGui::Text(FSUI_CSTR("User Name: "));
-    ImGui::SameLine(LayoutScale(200.0f));
-    ImGui::InputText("##username", username, sizeof(username), is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+    const float inner_spacing = LayoutScale(6.0f);
+    const float item_margin = LayoutScale(10.0f);
+    const float item_width = LayoutScale(550.0f);
+    ImGui::Columns(2, "LoginFields", true);
+    ImGui::SetColumnWidth(0, LayoutScale(150.0f));
+    ImGui::SetColumnWidth(1, item_width);
 
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + inner_spacing);
+    ImGui::Text(FSUI_CSTR("User Name: "));
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(item_width);
+    ImGui::InputText("##username", username, sizeof(username), is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+    ImGui::NextColumn();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin + inner_spacing);
     ImGui::Text(FSUI_CSTR("Password: "));
-    ImGui::SameLine(LayoutScale(200.0f));
+    ImGui::NextColumn();
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
+    ImGui::SetNextItemWidth(item_width);
     ImGui::InputText("##password", password, sizeof(password),
                      is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
                                      ImGuiInputTextFlags_Password);
+    ImGui::NextColumn();
 
-    ImGui::NewLine();
+    ImGui::Columns(1);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
 
     const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
 
@@ -6917,14 +6947,14 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     }
 
     const float work_width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-    static constexpr float field_margin_y = 20.0f;
+    static constexpr float field_margin_y = 4.0f;
     static constexpr float start_x = 50.0f;
     float text_y = info_top_margin + cover_size + info_top_margin;
     float text_width;
 
     PushPrimaryColor();
     ImGui::SetCursorPos(LayoutScale(start_x, text_y));
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, field_margin_y));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(0.0f, field_margin_y));
     ImGui::BeginGroup();
 
     if (selected_entry)
@@ -6955,7 +6985,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       text_width = ImGui::CalcTextSize(selected_entry->serial.c_str(), nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
       ImGui::TextWrapped("%s", selected_entry->serial.c_str());
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 15.0f);
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(15.0f));
 
       // region
       {
@@ -7822,7 +7852,7 @@ void FullscreenUI::CloseLoadingScreen()
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Translation String Area
-// To avoid having to type T_RANSLATE("FullscreenUI", ...) everywhere, we use the shorter macros at the top
+// To avoid having to type TRANSLATE("FullscreenUI", ...) everywhere, we use the shorter macros at the top
 // of the file, then preprocess and generate a bunch of noops here to define the strings. Sadly that means
 // the view in Linguist is gonna suck, but you can search the file for the string for more context.
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////

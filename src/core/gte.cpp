@@ -5,16 +5,31 @@
 #include "cpu_core.h"
 #include "cpu_core_private.h"
 #include "cpu_pgxp.h"
+#include "host.h"
 #include "settings.h"
 
 #include "util/state_wrapper.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/gsvector.h"
+#include "common/timer.h"
+
+#include "imgui.h"
 
 #include <algorithm>
 #include <array>
+#include <atomic>
+#include <numbers>
 #include <numeric>
+
+LOG_CHANNEL(Host);
+
+// Freecam is disabled on Android because there's no windowed UI for it.
+// And because users can't be trusted to not crash games and complain.
+#ifndef __ANDROID__
+#define ENABLE_FREECAM 1
+#endif
 
 namespace GTE {
 
@@ -27,17 +42,48 @@ static constexpr s32 IR0_MAX_VALUE = 0x1000;
 static constexpr s32 IR123_MIN_VALUE = -(INT64_C(1) << 15);
 static constexpr s32 IR123_MAX_VALUE = (INT64_C(1) << 15) - 1;
 
+static constexpr float FREECAM_MIN_TRANSLATION = -40000.0f;
+static constexpr float FREECAM_MAX_TRANSLATION = 40000.0f;
+static constexpr float FREECAM_MIN_ROTATION = -360.0f;
+static constexpr float FREECAM_MAX_ROTATION = 360.0f;
+static constexpr float FREECAM_DEFAULT_MOVE_SPEED = 4096.0f;
+static constexpr float FREECAM_MAX_MOVE_SPEED = 65536.0f;
+static constexpr float FREECAM_DEFAULT_TURN_SPEED = 30.0f;
+static constexpr float FREECAM_MAX_TURN_SPEED = 360.0f;
+
 namespace {
-struct Config
+
+struct ALIGN_TO_CACHE_LINE Config
 {
   DisplayAspectRatio aspect_ratio = DisplayAspectRatio::R4_3;
   u32 custom_aspect_ratio_numerator;
   u32 custom_aspect_ratio_denominator;
   float custom_aspect_ratio_f;
+
+#ifdef ENABLE_FREECAM
+
+  Timer::Value freecam_update_time = 0;
+  std::atomic_bool freecam_transform_changed{false};
+  bool freecam_enabled = false;
+  bool freecam_active = false;
+  bool freecam_reverse_transform_order = false;
+
+  float freecam_move_speed = FREECAM_DEFAULT_MOVE_SPEED;
+  float freecam_turn_speed = FREECAM_DEFAULT_TURN_SPEED;
+  GSVector4 freecam_move = GSVector4::cxpr(0.0f);
+  GSVector4 freecam_turn = GSVector4::cxpr(0.0f);
+
+  GSVector4 freecam_rotation = GSVector4::cxpr(0.0f);
+  GSVector4 freecam_translation = GSVector4::cxpr(0.0f);
+
+  ALIGN_TO_CACHE_LINE GSMatrix4x4 freecam_matrix = GSMatrix4x4::Identity();
+
+#endif
 };
+
 } // namespace
 
-ALIGN_TO_CACHE_LINE static Config s_config;
+static Config s_config;
 
 #define REGS CPU::g_state.gte_regs
 
@@ -183,6 +229,10 @@ static void NCCS(const s16 V[3], u8 shift, bool lm);
 static void NCDS(const s16 V[3], u8 shift, bool lm);
 static void DPCS(const u8 color[3], u8 shift, bool lm);
 
+#ifdef ENABLE_FREECAM
+static void ApplyFreecam(s64& x, s64& y, s64& z);
+#endif
+
 static void Execute_MVMVA(Instruction inst);
 static void Execute_SQR(Instruction inst);
 static void Execute_OP(Instruction inst);
@@ -218,6 +268,8 @@ void GTE::Initialize()
 void GTE::Reset()
 {
   std::memset(&REGS, 0, sizeof(REGS));
+  SetFreecamEnabled(false);
+  ResetFreecam();
 }
 
 bool GTE::DoState(StateWrapper& sw)
@@ -644,9 +696,15 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
   // IR1 = MAC1 = (TRX*1000h + RT11*VX0 + RT12*VY0 + RT13*VZ0) SAR (sf*12)
   // IR2 = MAC2 = (TRY*1000h + RT21*VX0 + RT22*VY0 + RT23*VZ0) SAR (sf*12)
   // IR3 = MAC3 = (TRZ*1000h + RT31*VX0 + RT32*VY0 + RT33*VZ0) SAR (sf*12)
-  const s64 x = dot3(0);
-  const s64 y = dot3(1);
-  const s64 z = dot3(2);
+  s64 x = dot3(0);
+  s64 y = dot3(1);
+  s64 z = dot3(2);
+
+#ifdef ENABLE_FREECAM
+  if (s_config.freecam_active)
+    ApplyFreecam(x, y, z);
+#endif
+
   TruncateAndSetMAC<1>(x, shift);
   TruncateAndSetMAC<2>(y, shift);
   TruncateAndSetMAC<3>(z, shift);
@@ -1373,3 +1431,337 @@ GTE::InstructionImpl GTE::GetInstructionImpl(u32 inst_bits, TickCount* ticks)
       Panic("Missing handler");
   }
 }
+
+#ifdef ENABLE_FREECAM
+
+bool GTE::IsFreecamEnabled()
+{
+  return s_config.freecam_enabled;
+}
+
+void GTE::SetFreecamEnabled(bool enabled)
+{
+  if (s_config.freecam_enabled == enabled)
+    return;
+
+  s_config.freecam_enabled = enabled;
+  if (enabled)
+  {
+    s_config.freecam_transform_changed.store(true, std::memory_order_release);
+    s_config.freecam_update_time = Timer::GetCurrentValue();
+  }
+}
+
+void GTE::SetFreecamMoveAxis(u32 axis, float x)
+{
+  DebugAssert(axis < 3);
+  s_config.freecam_move.F32[axis] = x;
+  SetFreecamEnabled(true);
+}
+
+void GTE::SetFreecamRotateAxis(u32 axis, float x)
+{
+  DebugAssert(axis < 3);
+  s_config.freecam_turn.F32[axis] = x;
+  SetFreecamEnabled(true);
+}
+
+void GTE::UpdateFreecam(u64 current_time)
+{
+  if (!s_config.freecam_enabled)
+  {
+    s_config.freecam_active = false;
+    return;
+  }
+
+  const float dt = std::clamp(
+    static_cast<float>(Timer::ConvertValueToSeconds(current_time - s_config.freecam_update_time)), 0.0f, 1.0f);
+  s_config.freecam_update_time = current_time;
+
+  bool changed = true;
+  s_config.freecam_transform_changed.compare_exchange_strong(changed, false, std::memory_order_acq_rel);
+
+  if (!(s_config.freecam_move == GSVector4::zero()).alltrue())
+  {
+    s_config.freecam_translation += s_config.freecam_move * GSVector4(s_config.freecam_move_speed * dt);
+    changed = true;
+  }
+
+  if (!(s_config.freecam_turn == GSVector4::zero()).alltrue())
+  {
+    s_config.freecam_rotation += s_config.freecam_turn * GSVector4(s_config.freecam_turn_speed *
+                                                                   static_cast<float>(std::numbers::pi / 180.0) * dt);
+
+    // wrap around -360 degrees/360 degrees
+    constexpr GSVector4 min_rot = GSVector4::cxpr(static_cast<float>(std::numbers::pi * -2.0));
+    constexpr GSVector4 max_rot = GSVector4::cxpr(static_cast<float>(std::numbers::pi * 2.0));
+    s_config.freecam_rotation =
+      s_config.freecam_rotation.blend32(s_config.freecam_rotation + max_rot, (s_config.freecam_rotation < min_rot));
+    s_config.freecam_rotation =
+      s_config.freecam_rotation.blend32(s_config.freecam_rotation + min_rot, (s_config.freecam_rotation > max_rot));
+
+    changed = true;
+  }
+
+  if (!changed)
+    return;
+
+  bool any_xform = false;
+  s_config.freecam_matrix = GSMatrix4x4::Identity();
+
+  // translate than rotate, since the camera is rotating around a point
+  // remember, matrix transformation happens in the opposite of the multiplication order
+
+  if (!s_config.freecam_reverse_transform_order)
+  {
+    if (s_config.freecam_translation.x != 0.0f || s_config.freecam_translation.y != 0.0f ||
+        s_config.freecam_translation.z != 0.0f)
+    {
+      s_config.freecam_matrix = GSMatrix4x4::Translation(s_config.freecam_translation.x, s_config.freecam_translation.y,
+                                                         s_config.freecam_translation.z);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_rotation.z != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationZ(s_config.freecam_rotation.z);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_rotation.y != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationY(s_config.freecam_rotation.y);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_rotation.x != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationX(s_config.freecam_rotation.x);
+      any_xform = true;
+    }
+  }
+  else
+  {
+    if (s_config.freecam_rotation.x != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationX(s_config.freecam_rotation.x);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_rotation.y != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationY(s_config.freecam_rotation.y);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_rotation.z != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::RotationZ(s_config.freecam_rotation.z);
+      any_xform = true;
+    }
+
+    if (s_config.freecam_translation.x != 0.0f || s_config.freecam_translation.y != 0.0f ||
+        s_config.freecam_translation.z != 0.0f)
+    {
+      s_config.freecam_matrix *= GSMatrix4x4::Translation(
+        s_config.freecam_translation.x, s_config.freecam_translation.y, s_config.freecam_translation.z);
+      any_xform = true;
+    }
+  }
+
+  s_config.freecam_active = any_xform;
+}
+
+void GTE::ResetFreecam()
+{
+  s_config.freecam_active = false;
+  s_config.freecam_rotation = GSVector4::zero();
+  s_config.freecam_translation = GSVector4::zero();
+  s_config.freecam_transform_changed.store(false, std::memory_order_release);
+}
+
+void GTE::ApplyFreecam(s64& x, s64& y, s64& z)
+{
+  constexpr double scale = 1 << 12;
+
+  GSVector4 xyz(static_cast<float>(static_cast<double>(x) / scale), static_cast<float>(static_cast<double>(y) / scale),
+                static_cast<float>(static_cast<double>(z) / scale), 1.0f);
+
+  xyz = s_config.freecam_matrix * xyz;
+
+  x = static_cast<s64>(static_cast<double>(xyz.x) * scale);
+  y = static_cast<s64>(static_cast<double>(xyz.y) * scale);
+  z = static_cast<s64>(static_cast<double>(xyz.z) * scale);
+}
+
+void GTE::DrawFreecamWindow(float scale)
+{
+  const ImGuiStyle& style = ImGui::GetStyle();
+  const float label_width = 140.0f * scale;
+  const float item_width = 350.0f * scale;
+  const float padding_height = 5.0f * scale;
+
+  bool freecam_enabled = s_config.freecam_enabled;
+  bool enabled_changed = false;
+  bool changed = false;
+
+  if (ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    const float third_width = 50.0f * scale;
+    const float second_width = item_width - third_width;
+
+    enabled_changed = ImGui::Checkbox("Enable Freecam", &freecam_enabled);
+
+    changed |= ImGui::Checkbox("Reverse Transform Order", &s_config.freecam_reverse_transform_order);
+    ImGui::SetItemTooltip("Swaps the order that the camera rotation/offset is applied.\nCan work better in some games "
+                          "that use different modelview matrices.");
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding_height);
+
+    ImGui::Columns(3, "Settings", false);
+    ImGui::SetColumnWidth(0, label_width);
+    ImGui::SetColumnWidth(1, second_width);
+    ImGui::SetColumnWidth(2, third_width);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
+    ImGui::TextUnformatted("Movement Speed:");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(second_width);
+    ImGui::DragFloat("##MovementSpeed", &s_config.freecam_move_speed, 1.0f, 0.0f, FREECAM_MAX_MOVE_SPEED);
+    ImGui::NextColumn();
+    if (ImGui::Button("Reset##ResetMovementSpeed"))
+      s_config.freecam_move_speed = FREECAM_DEFAULT_MOVE_SPEED;
+    ImGui::NextColumn();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
+    ImGui::TextUnformatted("Turning Speed:");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(second_width);
+    ImGui::DragFloat("##TurnSpeed", &s_config.freecam_turn_speed, 1.0f, 0.0f, FREECAM_MAX_TURN_SPEED);
+    ImGui::NextColumn();
+    if (ImGui::Button("Reset##ResetTurnSpeed"))
+      s_config.freecam_turn_speed = FREECAM_DEFAULT_TURN_SPEED;
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding_height);
+  }
+
+  if (ImGui::CollapsingHeader("Rotation", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::Columns(2, "Rotation", false);
+    ImGui::SetColumnWidth(0, label_width);
+    ImGui::SetColumnWidth(1, item_width);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
+    ImGui::TextUnformatted("X Rotation (Pitch):");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(item_width);
+    changed |= ImGui::SliderAngle("##XRot", &s_config.freecam_rotation.x, FREECAM_MIN_ROTATION, FREECAM_MAX_ROTATION);
+    ImGui::NextColumn();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
+    ImGui::TextUnformatted("Y Rotation (Yaw):");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(item_width);
+    changed |= ImGui::SliderAngle("##YRot", &s_config.freecam_rotation.y, FREECAM_MIN_ROTATION, FREECAM_MAX_ROTATION);
+    ImGui::NextColumn();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
+    ImGui::TextUnformatted("Z Rotation (Roll):");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(item_width);
+    changed |= ImGui::SliderAngle("##ZRot", &s_config.freecam_rotation.z, FREECAM_MIN_ROTATION, FREECAM_MAX_ROTATION);
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+
+    if (ImGui::Button("Reset##ResetRotation"))
+    {
+      s_config.freecam_rotation = GSVector4::zero();
+      changed = true;
+    }
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding_height);
+  }
+
+  if (ImGui::CollapsingHeader("Translation", ImGuiTreeNodeFlags_DefaultOpen))
+  {
+    ImGui::Columns(2, "Translation", false);
+    ImGui::SetColumnWidth(0, label_width);
+    ImGui::SetColumnWidth(1, item_width);
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
+    ImGui::TextUnformatted("X Offset:");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(item_width);
+    changed |= ImGui::DragFloat("##XOffset", &s_config.freecam_translation.x, 1.0f, FREECAM_MIN_TRANSLATION,
+                                FREECAM_MAX_TRANSLATION, "%.1f", ImGuiSliderFlags_None);
+    ImGui::NextColumn();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
+    ImGui::TextUnformatted("Y Offset:");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(item_width);
+    changed |= ImGui::DragFloat("##YOffset", &s_config.freecam_translation.y, 1.0f, FREECAM_MIN_TRANSLATION,
+                                FREECAM_MAX_TRANSLATION, "%.1f", ImGuiSliderFlags_None);
+    ImGui::NextColumn();
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + style.ItemInnerSpacing.y);
+    ImGui::TextUnformatted("Z Offset:");
+    ImGui::NextColumn();
+    ImGui::SetNextItemWidth(item_width);
+    changed |= ImGui::DragFloat("##ZOffset", &s_config.freecam_translation.z, 1.0f, FREECAM_MIN_TRANSLATION,
+                                FREECAM_MAX_TRANSLATION, "%.1f", ImGuiSliderFlags_None);
+    ImGui::NextColumn();
+
+    ImGui::Columns(1);
+
+    if (ImGui::Button("Reset##ResetTranslation"))
+    {
+      s_config.freecam_translation = GSVector4::zero();
+      changed = true;
+    }
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + padding_height);
+  }
+
+  if (enabled_changed || (!freecam_enabled && changed))
+    Host::RunOnCPUThread([enabled = freecam_enabled || changed]() { SetFreecamEnabled(enabled); });
+
+  if (changed)
+    s_config.freecam_transform_changed.store(true, std::memory_order_release);
+}
+
+#else // ENABLE_FREECAM
+
+bool GTE::IsFreecamEnabled()
+{
+  return false;
+}
+
+void GTE::SetFreecamEnabled(bool enabled)
+{
+}
+
+void GTE::SetFreecamMoveAxis(u32 axis, float x)
+{
+}
+
+void GTE::SetFreecamRotateAxis(u32 axis, float x)
+{
+}
+
+void GTE::UpdateFreecam(u64 current_time)
+{
+}
+
+void GTE::ResetFreecam()
+{
+}
+
+void GTE::DrawFreecamWindow(float scale)
+{
+}
+
+#endif // ENABLE_FREECAM

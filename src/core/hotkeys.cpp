@@ -9,6 +9,7 @@
 #include "gpu.h"
 #include "gpu_hw_texture_cache.h"
 #include "gpu_thread.h"
+#include "gte.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
@@ -59,8 +60,8 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
   if (System::IsValid())
   {
-    System::ClearMemorySaveStates(true);
     GPUThread::UpdateSettings(true, false);
+    System::ClearMemorySaveStates(true, false);
   }
 }
 
@@ -373,7 +374,7 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
               [](s32 pressed) {
                 if (!pressed && System::IsValid())
                 {
-                  System::ClearMemorySaveStates(true);
+                  System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
                   GPUThread::UpdateSettings(true, false);
@@ -451,7 +452,7 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   if (!g_settings.gpu_pgxp_enable)
                     return;
 
-                  System::ClearMemorySaveStates(true);
+                  System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
                   GPUThread::UpdateSettings(true, false);
@@ -471,7 +472,7 @@ DEFINE_HOTKEY("TogglePGXPCPU", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_
                   if (!g_settings.gpu_pgxp_enable)
                     return;
 
-                  System::ClearMemorySaveStates(true);
+                  System::ClearMemorySaveStates(true, true);
 
                   // GPU thread is unchanged
                   g_settings.gpu_pgxp_cpu = !g_settings.gpu_pgxp_cpu;
@@ -519,6 +520,106 @@ DEFINE_HOTKEY("RotateCounterclockwise", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                       static_cast<DisplayRotation>(static_cast<u8>(DisplayRotation::Count) - 1);
                 }
               })
+
+// See gte.cpp.
+#ifndef __ANDROID__
+
+DEFINE_HOTKEY("FreecamToggle", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Freecam Toggle"),
+              [](s32 pressed) {
+                if (!pressed && !Achievements::IsHardcoreModeActive())
+                  GTE::SetFreecamEnabled(!GTE::IsFreecamEnabled());
+              })
+DEFINE_HOTKEY("FreecamReset", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Freecam Reset"),
+              [](s32 pressed) {
+                if (!pressed && !Achievements::IsHardcoreModeActive())
+                  GTE::ResetFreecam();
+              })
+DEFINE_HOTKEY("FreecamMoveLeft", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Left"),
+              [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamMoveAxis(0, std::max(static_cast<float>(pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamMoveRight", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Freecam Move Right"), [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamMoveAxis(0, std::min(static_cast<float>(-pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamMoveUp", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Up"),
+              [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamMoveAxis(1, std::max(static_cast<float>(pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamMoveDown", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Freecam Move Down"),
+              [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamMoveAxis(1, std::min(static_cast<float>(-pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamMoveForward", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Freecam Move Forward"), [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamMoveAxis(2, std::min(static_cast<float>(-pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamMoveBackward", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Freecam Move Backward"), [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamMoveAxis(2, std::max(static_cast<float>(pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamRotateLeft", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Freecam Rotate Left"), [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamRotateAxis(1, std::max(static_cast<float>(pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamRotateRight", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Freecam Rotate Right"), [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamRotateAxis(1, std::min(static_cast<float>(-pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamRotateForward", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Freecam Rotate Forward"), [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamRotateAxis(0, std::min(static_cast<float>(-pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamRotateBackward", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Freecam Rotate Backward"), [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamRotateAxis(0, std::max(static_cast<float>(pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamRollLeft", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOOP("Hotkeys", "Freecam Roll Left"),
+              [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamRotateAxis(2, std::min(static_cast<float>(-pressed), 0.0f));
+              })
+DEFINE_HOTKEY("FreecamRollRight", TRANSLATE_NOOP("Hotkeys", "Graphics"),
+              TRANSLATE_NOOP("Hotkeys", "Freecam Roll Right"), [](s32 pressed) {
+                if (Achievements::IsHardcoreModeActive())
+                  return;
+
+                GTE::SetFreecamRotateAxis(2, std::max(static_cast<float>(pressed), 0.0f));
+              })
+
+#endif // __ANDROID__
 
 DEFINE_HOTKEY("AudioMute", TRANSLATE_NOOP("Hotkeys", "Audio"), TRANSLATE_NOOP("Hotkeys", "Toggle Mute"),
               [](s32 pressed) {

@@ -497,12 +497,32 @@ bool AuxiliaryDisplayWidget::event(QEvent* event)
     case QEvent::KeyPress:
     case QEvent::KeyRelease:
     {
+      const QKeyEvent* key_event = static_cast<const QKeyEvent*>(event);
+
+      if (type == QEvent::KeyPress)
+      {
+        // note this won't work for emojis.. deal with that if it's ever needed
+        for (const QChar& ch : key_event->text())
+        {
+          // Don't forward backspace characters. We send the backspace as a normal key event,
+          // so if we send the character too, it double-deletes.
+          if (ch == QChar('\b'))
+            break;
+
+          g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
+            m_userdata, Host::AuxiliaryRenderWindowEvent::TextEntered,
+            Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(ch.unicode())});
+        }
+      }
+
+      if (key_event->isAutoRepeat())
+        return true;
+
       g_emu_thread->queueAuxiliaryRenderWindowInputEvent(
         m_userdata,
         (type == QEvent::KeyPress) ? Host::AuxiliaryRenderWindowEvent::KeyPressed :
                                      Host::AuxiliaryRenderWindowEvent::KeyReleased,
-        Host::AuxiliaryRenderWindowEventParam{.uint_param =
-                                                static_cast<u32>(static_cast<const QKeyEvent*>(event)->key())});
+        Host::AuxiliaryRenderWindowEventParam{.uint_param = static_cast<u32>(key_event->key())});
 
       return true;
     }

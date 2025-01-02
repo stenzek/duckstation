@@ -11,6 +11,7 @@
 #include "gpu.h"
 #include "gpu_backend.h"
 #include "gpu_thread.h"
+#include "gte.h"
 #include "host.h"
 #include "mdec.h"
 #include "performance_counters.h"
@@ -72,6 +73,7 @@ struct DebugWindowInfo
 } // namespace
 
 static void FormatProcessorStat(SmallStringBase& text, double usage, double time);
+static void SetStatusIndicatorIcons(SmallStringBase& text, bool paused);
 static void DrawPerformanceOverlay(const GPUBackend* gpu, float& position_y, float scale, float margin, float spacing);
 static void DrawMediaCaptureOverlay(float& position_y, float scale, float margin, float spacing);
 static void DrawFrameTimeOverlay(float& position_y, float scale, float margin, float spacing);
@@ -80,9 +82,10 @@ static void DrawInputsOverlay();
 
 #ifndef __ANDROID__
 
-static constexpr size_t NUM_DEBUG_WINDOWS = 6;
+static constexpr size_t NUM_DEBUG_WINDOWS = 7;
 static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
+  {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 500, 400},
   {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 800, 915},
   {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 800, 540},
   {"GPU", "GPU State", ":icons/applications-system.png", [](float sc) { g_gpu.DrawDebugStateWindow(sc); }, 450, 550},
@@ -250,6 +253,27 @@ void ImGuiManager::FormatProcessorStat(SmallStringBase& text, double usage, doub
     text.append_format("{:.1f}% ({:.2f}ms)", usage, time);
 }
 
+void ImGuiManager::SetStatusIndicatorIcons(SmallStringBase& text, bool paused)
+{
+  text.clear();
+  if (GTE::IsFreecamEnabled())
+    text.append(ICON_EMOJI_MAGNIFIYING_GLASS_TILTED_LEFT " ");
+
+  if (paused)
+  {
+    text.append(ICON_EMOJI_PAUSE);
+  }
+  else
+  {
+    const bool rewinding = System::IsRewinding();
+    if (rewinding || System::IsFastForwardEnabled() || System::IsTurboEnabled())
+      text.append(rewinding ? ICON_EMOJI_FAST_REVERSE : ICON_EMOJI_FAST_FORWARD);
+  }
+
+  if (!text.empty() && text.back() == ' ')
+    text.pop_back();
+}
+
 void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position_y, float scale, float margin,
                                           float spacing)
 {
@@ -282,8 +306,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
     position_y += text_size.y + spacing;                                                                               \
   } while (0)
 
-  const System::State state = System::GetState();
-  if (state == System::State::Running)
+  if (!GPUThread::IsSystemPaused())
   {
     const float speed = PerformanceCounters::GetEmulationSpeed();
     if (g_gpu_settings.display_show_fps)
@@ -415,18 +438,14 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
 
     if (g_gpu_settings.display_show_status_indicators)
     {
-      const bool rewinding = System::IsRewinding();
-      if (rewinding || System::IsFastForwardEnabled() || System::IsTurboEnabled())
-      {
-        text.assign(rewinding ? ICON_EMOJI_FAST_REVERSE : ICON_EMOJI_FAST_FORWARD);
+      SetStatusIndicatorIcons(text, false);
+      if (!text.empty())
         DRAW_LINE(standard_font, text, IM_COL32(255, 255, 255, 255));
-      }
     }
   }
-  else if (g_gpu_settings.display_show_status_indicators && state == System::State::Paused &&
-           !FullscreenUI::HasActiveWindow())
+  else if (g_gpu_settings.display_show_status_indicators && !FullscreenUI::HasActiveWindow())
   {
-    text.assign(ICON_EMOJI_PAUSE);
+    SetStatusIndicatorIcons(text, true);
     DRAW_LINE(standard_font, text, IM_COL32(255, 255, 255, 255));
   }
 
@@ -457,7 +476,8 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
     text.append_format(" IR={}x", g_gpu_settings.gpu_resolution_scale);
   if (g_gpu_settings.gpu_multisamples != 1)
   {
-    text.append_format(" {}x{}", g_gpu_settings.gpu_multisamples, g_gpu_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
+    text.append_format(" {}x{}", g_gpu_settings.gpu_multisamples,
+                       g_gpu_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
   }
   if (g_gpu_settings.gpu_true_color)
     text.append(" TrueCol");

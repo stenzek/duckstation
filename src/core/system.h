@@ -418,7 +418,7 @@ void RequestDisplaySize(float scale = 0.0f);
 // Memory Save States (Rewind and Runahead)
 //////////////////////////////////////////////////////////////////////////
 void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_usage, u64* vram_usage);
-void ClearMemorySaveStates(bool reallocate_resources);
+void ClearMemorySaveStates(bool reallocate_resources, bool recycle_textures);
 void SetRunaheadReplayFlag();
 
 /// Shared socket multiplexer, used by PINE/GDB/etc.

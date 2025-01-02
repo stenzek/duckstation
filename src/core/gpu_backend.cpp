@@ -332,21 +332,32 @@ bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> sta
       for (size_t i = 0; i < states.size(); i++)
         g_gpu_device->RecycleTexture(std::move(states[i].vram_texture));
 
+      // Maximize potential for texture reuse by flushing the current command buffer.
+      g_gpu_device->WaitForGPUIdle();
+
       for (size_t i = 0; i < states.size(); i++)
       {
         if (!backend->AllocateMemorySaveState(states[i], error))
         {
-          // Free anything that was allocated.
-          for (size_t j = 0; j <= i; i++)
+          // Try flushing the pool.
+          WARNING_LOG("Failed to allocate memory save state texture, trying flushing pool.");
+          g_gpu_device->PurgeTexturePool();
+          g_gpu_device->WaitForGPUIdle();
+          if (!backend->AllocateMemorySaveState(states[i], error))
           {
-            states[j].state_data.deallocate();
-            states[j].vram_texture.reset();
-            result = false;
-            return;
+            // Free anything that was allocated.
+            for (size_t j = 0; j <= i; i++)
+            {
+              states[j].state_data.deallocate();
+              states[j].vram_texture.reset();
+              result = false;
+              return;
+            }
           }
         }
       }
 
+      backend->RestoreDeviceContext();
       result = true;
     },
     true, false);

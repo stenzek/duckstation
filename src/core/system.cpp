@@ -1167,7 +1167,7 @@ DiscRegion System::GetRegionForPsf(const char* path)
 
 void System::RecreateGPU(GPURenderer renderer)
 {
-  FreeMemoryStateTextures();
+  FreeMemoryStateStorage(false, true, false);
   StopMediaCapture();
 
   Error error;
@@ -1177,7 +1177,11 @@ void System::RecreateGPU(GPURenderer renderer)
     Panic("Failed to switch renderer.");
   }
 
-  ClearMemorySaveStates(true);
+  ClearMemorySaveStates(true, false);
+
+  g_gpu.UpdateDisplay(false);
+  if (IsPaused())
+    GPUThread::PresentCurrentFrame();
 }
 
 void System::LoadSettings(bool display_osd_messages)
@@ -1954,7 +1958,7 @@ void System::DestroySystem()
   if (g_settings.inhibit_screensaver)
     PlatformMisc::ResumeScreensaver();
 
-  FreeMemoryStateStorage();
+  FreeMemoryStateStorage(true, true, false);
 
   Cheats::UnloadAll();
   PCDrv::Shutdown();
@@ -2104,14 +2108,15 @@ void System::FrameDone()
     SaveMemoryState(AllocateMemoryState());
   }
 
+  Timer::Value current_time = Timer::GetCurrentValue();
+  GTE::UpdateFreecam(current_time);
+
   // Frame step after runahead, otherwise the pause takes precedence and the replay never happens.
   if (s_state.frame_step_request)
   {
     s_state.frame_step_request = false;
     PauseSystem(true);
   }
-
-  Timer::Value current_time = Timer::GetCurrentValue();
 
   // pre-frame sleep accounting (input lag reduction)
   const Timer::Value pre_frame_sleep_until = s_state.next_frame_time + s_state.pre_frame_sleep_time;
@@ -2389,7 +2394,7 @@ bool System::DoState(StateWrapper& sw, bool update_display)
   if (!sw.DoMarker("InterruptController") || !InterruptController::DoState(sw))
     return false;
 
-  if (!sw.DoMarker("GPU") || !g_gpu.DoState(sw, update_display))
+  if (!sw.DoMarker("GPU") || !g_gpu.DoState(sw))
     return false;
 
   if (!sw.DoMarker("CDROM") || !CDROM::DoState(sw))
@@ -2458,7 +2463,14 @@ bool System::DoState(StateWrapper& sw, bool update_display)
     Achievements::ResetClient();
   }
 
-  return !sw.HasError();
+  if (sw.HasError())
+    return false;
+
+  // If we're paused, need to update the display FB.
+  if (update_display)
+    g_gpu.UpdateDisplay(false);
+
+  return true;
 }
 
 System::MemorySaveState& System::AllocateMemoryState()
@@ -2495,13 +2507,13 @@ System::MemorySaveState& System::PopMemoryState()
   return s_state.memory_save_states[s_state.memory_save_state_front];
 }
 
-bool System::AllocateMemoryStates(size_t state_count)
+bool System::AllocateMemoryStates(size_t state_count, bool recycle_old_textures)
 {
   DEV_LOG("Allocating {} memory save state slots", state_count);
 
   if (state_count != s_state.memory_save_states.size())
   {
-    FreeMemoryStateStorage();
+    FreeMemoryStateStorage(true, true, recycle_old_textures);
     s_state.memory_save_states.resize(state_count);
   }
 
@@ -2522,7 +2534,7 @@ bool System::AllocateMemoryStates(size_t state_count)
     ERROR_LOG("Failed to allocate {} memory save states: {}", s_state.memory_save_states.size(),
               error.GetDescription());
     ERROR_LOG("Disabling runahead/rewind.");
-    FreeMemoryStateStorage();
+    FreeMemoryStateStorage(true, true, false);
     s_state.runahead_frames = 0;
     s_state.memory_save_state_front = 0;
     s_state.memory_save_state_count = 0;
@@ -2536,86 +2548,65 @@ bool System::AllocateMemoryStates(size_t state_count)
   return true;
 }
 
-void System::ClearMemorySaveStates(bool reallocate_resources)
+void System::ClearMemorySaveStates(bool reallocate_resources, bool recycle_textures)
 {
   s_state.memory_save_state_front = 0;
   s_state.memory_save_state_count = 0;
 
   if (reallocate_resources && !s_state.memory_save_states.empty())
-    AllocateMemoryStates(s_state.memory_save_states.size());
+    AllocateMemoryStates(s_state.memory_save_states.size(), recycle_textures);
 }
 
-void System::FreeMemoryStateTextures()
+void System::FreeMemoryStateStorage(bool release_memory, bool release_textures, bool recycle_textures)
 {
-  // TODO: use non-copyable function, that way we don't need to store raw pointers
-  std::vector<GPUTexture*> textures;
-  bool gpu_thread_synced = false;
-
-  for (MemorySaveState& mss : s_state.memory_save_states)
+  if (release_memory || release_textures)
   {
-    if ((mss.vram_texture || !mss.gpu_state_data.empty()) && !gpu_thread_synced)
+    // TODO: use non-copyable function, that way we don't need to store raw pointers
+    std::vector<GPUTexture*> textures;
+    bool gpu_thread_synced = false;
+
+    for (MemorySaveState& mss : s_state.memory_save_states)
     {
-      gpu_thread_synced = true;
-      GPUThread::SyncGPUThread(true);
+      if ((mss.vram_texture || !mss.gpu_state_data.empty()) && !gpu_thread_synced)
+      {
+        gpu_thread_synced = true;
+        GPUThread::SyncGPUThread(true);
+      }
+
+      if (mss.vram_texture)
+      {
+        if (textures.empty())
+          textures.reserve(s_state.memory_save_states.size());
+
+        textures.push_back(mss.vram_texture.release());
+      }
+
+      mss.gpu_state_data.deallocate();
+      mss.gpu_state_size = 0;
+      mss.state_data.deallocate();
+      mss.state_size = 0;
     }
 
-    if (mss.vram_texture)
+    if (!textures.empty())
     {
-      if (textures.empty())
-        textures.reserve(s_state.memory_save_states.size());
-
-      textures.push_back(mss.vram_texture.release());
+      GPUThread::RunOnThread([textures = std::move(textures), recycle_textures]() mutable {
+        for (GPUTexture* texture : textures)
+        {
+          if (recycle_textures)
+            g_gpu_device->RecycleTexture(std::unique_ptr<GPUTexture>(texture));
+          else
+            delete texture;
+        }
+      });
     }
   }
 
-  if (!textures.empty())
+  if (release_memory)
   {
-    GPUThread::RunOnThread([textures = std::move(textures)]() mutable {
-      for (GPUTexture* texture : textures)
-        g_gpu_device->RecycleTexture(std::unique_ptr<GPUTexture>(texture));
-    });
+    s_state.memory_save_states = std::vector<MemorySaveState>();
+    s_state.memory_save_state_front = 0;
+    s_state.memory_save_state_count = 0;
   }
-}
-
-void System::FreeMemoryStateStorage()
-{
-  // TODO: use non-copyable function, that way we don't need to store raw pointers
-  std::vector<GPUTexture*> textures;
-  bool gpu_thread_synced = false;
-
-  for (MemorySaveState& mss : s_state.memory_save_states)
-  {
-    if ((mss.vram_texture || !mss.gpu_state_data.empty()) && !gpu_thread_synced)
-    {
-      gpu_thread_synced = true;
-      GPUThread::SyncGPUThread(true);
-    }
-
-    if (mss.vram_texture)
-    {
-      if (textures.empty())
-        textures.reserve(s_state.memory_save_states.size());
-
-      textures.push_back(mss.vram_texture.release());
-    }
-
-    mss.gpu_state_data.deallocate();
-    mss.gpu_state_size = 0;
-    mss.state_data.deallocate();
-    mss.state_size = 0;
-  }
-
-  if (!textures.empty())
-  {
-    GPUThread::RunOnThread([textures = std::move(textures)]() mutable {
-      for (GPUTexture* texture : textures)
-        g_gpu_device->RecycleTexture(std::unique_ptr<GPUTexture>(texture));
-    });
-  }
-
-  s_state.memory_save_states = std::vector<MemorySaveState>();
-  s_state.memory_save_state_front = 0;
-  s_state.memory_save_state_count = 0;
 }
 
 void System::LoadMemoryState(MemorySaveState& mss, bool update_display)
@@ -2685,7 +2676,7 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
   SAVE_COMPONENT("DMA", DMA::DoState(sw));
   SAVE_COMPONENT("InterruptController", InterruptController::DoState(sw));
 
-  g_gpu.DoMemoryState(sw, mss, update_display);
+  g_gpu.DoMemoryState(sw, mss);
 
   SAVE_COMPONENT("CDROM", CDROM::DoState(sw));
   SAVE_COMPONENT("Pad", Pad::DoState(sw, true));
@@ -2697,6 +2688,9 @@ void System::DoMemoryState(StateWrapper& sw, MemorySaveState& mss, bool update_d
   SAVE_COMPONENT("Achievements", Achievements::DoState(sw));
 
 #undef SAVE_COMPONENT
+
+  if (update_display)
+    g_gpu.UpdateDisplay(false);
 }
 
 bool System::LoadBIOS(Error* error)
@@ -2919,7 +2913,7 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
   if (g_settings.HasAnyPerGameMemoryCards())
     UpdatePerGameMemoryCards();
 
-  ClearMemorySaveStates(false);
+  ClearMemorySaveStates(false, false);
 
   // Updating game/loading settings can turn on hardcore mode. Catch this.
   Achievements::DisableHardcoreMode();
@@ -4005,7 +3999,7 @@ bool System::InsertMedia(const char* path)
   if (IsGPUDumpPath(path)) [[unlikely]]
     return ChangeGPUDump(path);
 
-  ClearMemorySaveStates(true);
+  ClearMemorySaveStates(true, true);
 
   Error error;
   std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
@@ -4044,7 +4038,7 @@ bool System::InsertMedia(const char* path)
 
 void System::RemoveMedia()
 {
-  ClearMemorySaveStates(true);
+  ClearMemorySaveStates(true, true);
   CDROM::RemoveMedia(false);
 }
 
@@ -4254,7 +4248,7 @@ bool System::SwitchMediaSubImage(u32 index)
   if (!CDROM::HasMedia())
     return false;
 
-  ClearMemorySaveStates(true);
+  ClearMemorySaveStates(true, true);
 
   std::unique_ptr<CDImage> image = CDROM::RemoveMedia(true);
   Assert(image);
@@ -4308,7 +4302,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 {
   if (IsValid())
   {
-    ClearMemorySaveStates(false);
+    ClearMemorySaveStates(false, false);
 
     if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
         (g_settings.cpu_overclock_active &&
@@ -4448,7 +4442,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       GPUThread::UpdateSettings(true, false);
 
       // NOTE: Must come after the GPU thread settings update, otherwise it allocs the wrong size textures.
-      ClearMemorySaveStates(true);
+      const bool use_existing_textures = (g_settings.gpu_resolution_scale == old_settings.gpu_resolution_scale);
+      ClearMemorySaveStates(true, use_existing_textures);
 
       if (IsPaused())
         GPUThread::PresentCurrentFrame();
@@ -4884,7 +4879,8 @@ void System::CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64
 
 void System::UpdateMemorySaveStateSettings()
 {
-  FreeMemoryStateStorage();
+  const bool any_memory_states_active = (g_settings.IsRunaheadEnabled() || g_settings.rewind_enable);
+  FreeMemoryStateStorage(true, true, any_memory_states_active);
 
   if (IsReplayingGPUDump()) [[unlikely]]
   {
@@ -4926,7 +4922,7 @@ void System::UpdateMemorySaveStateSettings()
 
   // allocate storage for memory save states
   if (num_slots > 0)
-    AllocateMemoryStates(num_slots);
+    AllocateMemoryStates(num_slots, true);
 
   // reenter execution loop, don't want to try to save a state now if runahead was turned off
   InterruptExecution();
@@ -5024,7 +5020,7 @@ bool System::DoRunahead()
     s_state.runahead_replay_frames = s_state.memory_save_state_count;
 
     // and throw away all the states, forcing us to catch up below
-    ClearMemorySaveStates(false);
+    ClearMemorySaveStates(false, false);
 
     // run the frames with no audio
     SPU::SetAudioOutputMuted(true);
