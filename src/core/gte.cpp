@@ -56,9 +56,9 @@ namespace {
 struct ALIGN_TO_CACHE_LINE Config
 {
   DisplayAspectRatio aspect_ratio = DisplayAspectRatio::R4_3;
-  u32 custom_aspect_ratio_numerator;
-  u32 custom_aspect_ratio_denominator;
-  float custom_aspect_ratio_f;
+  u32 custom_aspect_ratio_numerator = 0;
+  u32 custom_aspect_ratio_denominator = 0;
+  float custom_aspect_ratio_f = 1.0f;
 
 #ifdef ENABLE_FREECAM
 
@@ -77,13 +77,13 @@ struct ALIGN_TO_CACHE_LINE Config
   GSVector4 freecam_translation = GSVector4::cxpr(0.0f);
 
   ALIGN_TO_CACHE_LINE GSMatrix4x4 freecam_matrix = GSMatrix4x4::Identity();
-
+  GSMatrix4x4 freecam_inverted_rotation_matrix = GSMatrix4x4::Identity();
 #endif
 };
 
 } // namespace
 
-static Config s_config;
+static constinit Config s_config;
 
 #define REGS CPU::g_state.gte_regs
 
@@ -1483,7 +1483,11 @@ void GTE::UpdateFreecam(u64 current_time)
 
   if (!(s_config.freecam_move == GSVector4::zero()).alltrue())
   {
-    s_config.freecam_translation += s_config.freecam_move * GSVector4(s_config.freecam_move_speed * dt);
+    GSVector4 disp = s_config.freecam_move * GSVector4(s_config.freecam_move_speed * dt);
+    if (s_config.freecam_reverse_transform_order)
+      disp = s_config.freecam_inverted_rotation_matrix * disp;
+
+    s_config.freecam_translation += disp;
     changed = true;
   }
 
@@ -1559,6 +1563,11 @@ void GTE::UpdateFreecam(u64 current_time)
       s_config.freecam_matrix *= GSMatrix4x4::RotationZ(s_config.freecam_rotation.z);
       any_xform = true;
     }
+
+    if (any_xform)
+      s_config.freecam_inverted_rotation_matrix = s_config.freecam_matrix.invert();
+    else
+      s_config.freecam_inverted_rotation_matrix = GSMatrix4x4::Identity();
 
     if (s_config.freecam_translation.x != 0.0f || s_config.freecam_translation.y != 0.0f ||
         s_config.freecam_translation.z != 0.0f)

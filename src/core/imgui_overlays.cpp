@@ -85,7 +85,7 @@ static void DrawInputsOverlay();
 static constexpr size_t NUM_DEBUG_WINDOWS = 7;
 static constexpr const char* DEBUG_WINDOW_CONFIG_SECTION = "DebugWindows";
 static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_window_info = {{
-  {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 500, 400},
+  {"Freecam", "Free Camera", ":icons/applications-system.png", &GTE::DrawFreecamWindow, 500, 425},
   {"SPU", "SPU State", ":icons/applications-system.png", &SPU::DrawDebugStateWindow, 800, 915},
   {"CDROM", "CD-ROM State", ":icons/applications-system.png", &CDROM::DrawDebugWindow, 800, 540},
   {"GPU", "GPU State", ":icons/applications-system.png", [](float sc) { g_gpu.DrawDebugStateWindow(sc); }, 450, 550},
