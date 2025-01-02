@@ -71,7 +71,7 @@ static void SetStyle(ImGuiStyle& style, float scale);
 static void SetKeyMap();
 static bool LoadFontData(Error* error);
 static void ReloadFontDataIfActive();
-static bool AddImGuiFonts(bool fullscreen_fonts);
+static bool AddImGuiFonts(bool debug_font, bool fullscreen_fonts);
 static ImFont* AddTextFont(float size, bool full_glyph_range);
 static ImFont* AddFixedFont(float size);
 static bool AddIconFonts(float size);
@@ -100,7 +100,7 @@ static std::vector<WCharType> s_font_range;
 static std::vector<WCharType> s_emoji_range;
 
 static ImGuiContext* s_imgui_context;
-static ImFont* s_standard_font;
+static ImFont* s_debug_font;
 static ImFont* s_osd_font;
 static ImFont* s_fixed_font;
 static ImFont* s_medium_font;
@@ -270,7 +270,7 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
   SetKeyMap();
   SetStyle(s_imgui_context->Style, s_global_scale);
 
-  if (!AddImGuiFonts(false) || !g_gpu_device->UpdateImGuiFontTexture())
+  if (!AddImGuiFonts(false, false) || !g_gpu_device->UpdateImGuiFontTexture())
   {
     Error::SetString(error, "Failed to create ImGui font text");
     ImGui::DestroyContext();
@@ -296,7 +296,7 @@ void ImGuiManager::Shutdown()
     s_imgui_context = nullptr;
   }
 
-  s_standard_font = nullptr;
+  s_debug_font = nullptr;
   s_fixed_font = nullptr;
   s_medium_font = nullptr;
   s_large_font = nullptr;
@@ -351,7 +351,7 @@ void ImGuiManager::UpdateScale()
   s_global_scale = scale;
   SetStyle(s_imgui_context->Style, s_global_scale);
 
-  if (!AddImGuiFonts(HasFullscreenFonts()))
+  if (!AddImGuiFonts(HasDebugFont(), HasFullscreenFonts()))
     Panic("Failed to create ImGui font text");
 
   if (!g_gpu_device->UpdateImGuiFontTexture())
@@ -695,17 +695,26 @@ bool ImGuiManager::AddIconFonts(float size)
   return true;
 }
 
-bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
+bool ImGuiManager::AddImGuiFonts(bool debug_font, bool fullscreen_fonts)
 {
+  const float window_scale =
+    (g_gpu_device && g_gpu_device->HasMainSwapChain()) ? g_gpu_device->GetMainSwapChain()->GetScale() : 1.0f;
+  const float debug_font_size = std::ceil(15.0f * window_scale);
   const float standard_font_size = std::ceil(15.0f * s_global_scale);
   const float osd_font_size = std::ceil(17.0f * s_global_scale);
+
+  INFO_LOG("Allocating fonts winscale={} globalscale={} debug={} fullscreen={}", window_scale, s_global_scale,
+           debug_font, fullscreen_fonts);
 
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
 
-  s_standard_font = AddTextFont(standard_font_size, false);
-  if (!s_standard_font)
-    return false;
+  if (debug_font)
+  {
+    s_debug_font = AddTextFont(debug_font_size, false);
+    if (!s_debug_font)
+      return false;
+  }
 
   s_fixed_font = AddFixedFont(standard_font_size);
   if (!s_fixed_font)
@@ -714,6 +723,8 @@ bool ImGuiManager::AddImGuiFonts(bool fullscreen_fonts)
   s_osd_font = AddTextFont(osd_font_size, true);
   if (!s_osd_font || !AddIconFonts(osd_font_size))
     return false;
+  if (!debug_font)
+    s_debug_font = s_osd_font;
 
   if (fullscreen_fonts)
   {
@@ -748,7 +759,7 @@ void ImGuiManager::ReloadFontDataIfActive()
   if (!LoadFontData(nullptr))
     Panic("Failed to load font data");
 
-  if (!AddImGuiFonts(HasFullscreenFonts()))
+  if (!AddImGuiFonts(HasDebugFont(), HasFullscreenFonts()))
     Panic("Failed to create ImGui font text");
 
   if (!g_gpu_device->UpdateImGuiFontTexture())
@@ -765,16 +776,43 @@ bool ImGuiManager::AddFullscreenFontsIfMissing()
   // can't do this in the middle of a frame
   ImGui::EndFrame();
 
-  if (!AddImGuiFonts(true))
+  const bool debug_font = HasDebugFont();
+  if (!AddImGuiFonts(debug_font, true))
   {
     ERROR_LOG("Failed to lazily allocate fullscreen fonts.");
-    AddImGuiFonts(false);
+    AddImGuiFonts(debug_font, false);
   }
 
   g_gpu_device->UpdateImGuiFontTexture();
   NewFrame();
 
   return HasFullscreenFonts();
+}
+
+bool ImGuiManager::HasDebugFont()
+{
+  return (s_debug_font != s_osd_font);
+}
+
+bool ImGuiManager::AddDebugFontIfMissing()
+{
+  if (HasDebugFont())
+    return true;
+
+  // can't do this in the middle of a frame
+  ImGui::EndFrame();
+
+  const bool fullscreen_font = HasFullscreenFonts();
+  if (!AddImGuiFonts(true, fullscreen_font))
+  {
+    ERROR_LOG("Failed to lazily allocate fullscreen fonts.");
+    AddImGuiFonts(true, fullscreen_font);
+  }
+
+  g_gpu_device->UpdateImGuiFontTexture();
+  NewFrame();
+
+  return HasDebugFont();
 }
 
 bool ImGuiManager::HasFullscreenFonts()
@@ -1044,9 +1082,9 @@ float ImGuiManager::GetScreenMargin()
   return s_screen_margin;
 }
 
-ImFont* ImGuiManager::GetStandardFont()
+ImFont* ImGuiManager::GetDebugFont()
 {
-  return s_standard_font;
+  return s_debug_font;
 }
 
 ImFont* ImGuiManager::GetOSDFont()
@@ -1396,6 +1434,8 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
     return false;
   }
 
+  AddDebugFontIfMissing();
+
   state->imgui_context = ImGui::CreateContext(s_imgui_context->IO.Fonts);
   state->imgui_context->IO.DisplaySize =
     ImVec2(static_cast<float>(state->swap_chain->GetWidth()), static_cast<float>(state->swap_chain->GetHeight()));
@@ -1465,6 +1505,7 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   ImGui::SetCurrentContext(state->imgui_context);
 
   ImGui::NewFrame();
+  ImGui::PushFont(s_debug_font);
   ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f), ImGuiCond_Always);
   ImGui::SetNextWindowSize(state->imgui_context->IO.DisplaySize, ImGuiCond_Always);
   if (ImGui::Begin("AuxRenderWindowMain", nullptr,
@@ -1475,6 +1516,7 @@ bool ImGuiManager::RenderAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   }
 
   ImGui::End();
+  ImGui::PopFont();
 
   const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(state->swap_chain.get());
   if (pres == GPUDevice::PresentResult::OK)

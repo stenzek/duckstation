@@ -118,8 +118,14 @@ bool HasFullscreenFonts();
 /// Allocates/adds fullscreen fonts if they're not loaded.
 bool AddFullscreenFontsIfMissing();
 
+/// Returns true if there is a separate debug font.
+bool HasDebugFont();
+
+/// Changes whether a debug font is generated. Otherwise, the OSD font will be used for GetStandardFont().
+bool AddDebugFontIfMissing();
+
 /// Returns the standard font for external drawing.
-ImFont* GetStandardFont();
+ImFont* GetDebugFont();
 
 /// Returns the standard font for on-screen display drawing.
 ImFont* GetOSDFont();
