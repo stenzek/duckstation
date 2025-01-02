@@ -41,17 +41,60 @@ public:
 class alignas(VECTOR_ALIGNMENT) GSMatrix4x4
 {
 public:
-  GSMatrix4x4() = default;
-  GSMatrix4x4(float e00, float e01, float e02, float e03, float e10, float e11, float e12, float e13, float e20,
-              float e21, float e22, float e23, float e30, float e31, float e32, float e33);
-  GSMatrix4x4(const GSMatrix2x2& m);
+  constexpr GSMatrix4x4() = default;
+  constexpr GSMatrix4x4(float e00, float e01, float e02, float e03, float e10, float e11, float e12, float e13,
+                        float e20, float e21, float e22, float e23, float e30, float e31, float e32, float e33)
+  {
+    E[0][0] = e00;
+    E[0][1] = e01;
+    E[0][2] = e02;
+    E[0][3] = e03;
+    E[1][0] = e10;
+    E[1][1] = e11;
+    E[1][2] = e12;
+    E[1][3] = e13;
+    E[2][0] = e20;
+    E[2][1] = e21;
+    E[2][2] = e22;
+    E[2][3] = e23;
+    E[3][0] = e30;
+    E[3][1] = e31;
+    E[3][2] = e32;
+    E[3][3] = e33;
+  }
+
+  constexpr GSMatrix4x4(const GSMatrix2x2& m)
+  {
+    E[0][0] = m.E[0][0];
+    E[0][1] = m.E[0][1];
+    E[0][2] = 0.0f;
+    E[0][3] = 0.0f;
+    E[1][0] = m.E[1][0];
+    E[1][1] = m.E[1][1];
+    E[1][2] = 0.0f;
+    E[1][3] = 0.0f;
+    E[2][0] = 0.0f;
+    E[2][1] = 0.0f;
+    E[2][2] = 1.0f;
+    E[2][3] = 0.0f;
+    E[3][0] = 0.0f;
+    E[3][1] = 0.0f;
+    E[3][2] = 0.0f;
+    E[3][3] = 1.0f;
+  }
 
   GSMatrix4x4 operator*(const GSMatrix4x4& m) const;
   GSMatrix4x4& operator*=(const GSMatrix4x4& m);
 
-  GSVector4 operator*(const GSVector4& v) const;
+  GSVector4 operator*(const GSVector4& v) const
+  {
+    return GSVector4(row(0).dot(v), row(1).dot(v), row(2).dot(v), row(3).dot(v));
+  }
 
-  static GSMatrix4x4 Identity();
+  static constexpr GSMatrix4x4 Identity()
+  {
+    return GSMatrix4x4(1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+  }
 
   static GSMatrix4x4 RotationX(float angle_in_radians);
   static GSMatrix4x4 RotationY(float angle_in_radians);
@@ -62,10 +105,19 @@ public:
                                                      float zFar);
   static GSMatrix4x4 OffCenterOrthographicProjection(float width, float height, float zNear, float zFar);
 
-  GSVector4 row(size_t i) const;
-  GSVector4 col(size_t i) const;
+  GSVector4 row(size_t i) const { return GSVector4::load<true>(&E[i][0]); }
+  GSVector4 col(size_t i) const { return GSVector4(E[0][i], E[1][i], E[2][i], E[3][i]); }
 
-  GSMatrix4x4 Invert() const;
+  void set_row(size_t i, GSVector4 row) { GSVector4::store<true>(&E[i][0], row); }
+  void set_col(size_t i, GSVector4 col)
+  {
+    E[0][i] = col.x;
+    E[1][i] = col.y;
+    E[2][i] = col.z;
+    E[3][i] = col.w;
+  }
+
+  GSMatrix4x4 invert() const;
 
   void store(void* m);
 
