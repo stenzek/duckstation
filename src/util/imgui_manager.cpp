@@ -338,7 +338,7 @@ void ImGuiManager::WindowResized(float width, float height)
 {
   s_state.window_width = width;
   s_state.window_height = height;
-  ImGui::GetIO().DisplaySize = ImVec2(width, height);
+  ImGui::GetMainViewport()->Size = ImGui::GetIO().DisplaySize = ImVec2(width, height);
 
   // Scale might have changed as a result of window resize.
   RequestScaleUpdate();
@@ -1452,7 +1452,7 @@ bool ImGuiManager::CreateAuxiliaryRenderWindow(AuxiliaryRenderWindowState* state
   AddDebugFontIfMissing();
 
   state->imgui_context = ImGui::CreateContext(s_state.imgui_context->IO.Fonts);
-  state->imgui_context->IO.DisplaySize =
+  state->imgui_context->Viewports[0]->Size = state->imgui_context->IO.DisplaySize =
     ImVec2(static_cast<float>(state->swap_chain->GetWidth()), static_cast<float>(state->swap_chain->GetHeight()));
   state->imgui_context->IO.IniFilename = nullptr;
   state->imgui_context->IO.BackendFlags |= ImGuiBackendFlags_HasGamepad;
@@ -1579,8 +1579,8 @@ void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderW
         return;
       }
 
-      state->imgui_context->IO.DisplaySize.x = static_cast<float>(param1.uint_param);
-      state->imgui_context->IO.DisplaySize.y = static_cast<float>(param2.uint_param);
+      state->imgui_context->Viewports[0]->Size = state->imgui_context->IO.DisplaySize =
+        ImVec2(static_cast<float>(param1.uint_param), static_cast<float>(param2.uint_param));
     }
     break;
 
