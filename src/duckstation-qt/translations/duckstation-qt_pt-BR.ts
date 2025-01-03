@@ -13394,7 +13394,7 @@ Escanear o diretório desta forma demora mais tempo porém, identificará arquiv
     <message>
         <location filename="../../core/hotkeys.cpp" line="601"/>
         <source>Freecam Rotate Backward</source>
-        <translation>Girar para a trás</translation>
+        <translation>Girar para trás</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="607"/>
