@@ -693,7 +693,7 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
     draw_final_target = GetTextureUnusedAtEndOfChain();
   }
 
-  const float time = Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_start_time);
+  const float time = static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_start_time));
   for (const std::unique_ptr<Shader>& stage : m_stages)
   {
     const bool is_final = (stage.get() == m_stages.back().get());
