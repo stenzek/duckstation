@@ -1494,12 +1494,11 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
 
       if (compress_on_thread)
       {
-        System::QueueTaskOnThread([width, height, path = std::move(path), fp = fp.release(), quality,
-                                   flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
-                                   osd_key = std::move(osd_key)]() mutable {
+        System::QueueAsyncTask([width, height, path = std::move(path), fp = fp.release(), quality,
+                                flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
+                                osd_key = std::move(osd_key)]() mutable {
           CompressAndWriteTextureToFile(width, height, std::move(path), FileSystem::ManagedCFilePtr(fp), quality, true,
                                         flip_y, std::move(image), std::move(osd_key));
-          System::RemoveSelfFromTaskThreads();
         });
       }
       else

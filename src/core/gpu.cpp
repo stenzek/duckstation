@@ -2103,7 +2103,7 @@ void GPU::StopRecordingGPUDump()
   Host::AddIconOSDMessage(
     osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
     fmt::format(TRANSLATE_FS("GPU", "Compressing GPU trace '{}'..."), Path::GetFileName(source_path)), 60.0f);
-  System::QueueTaskOnThread(
+  System::QueueAsyncTask(
     [compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
       Error error;
       if (GPUDump::Recorder::Compress(source_path, compress_mode, &error))
@@ -2123,8 +2123,6 @@ void GPU::StopRecordingGPUDump()
                       error.GetDescription()),
           Host::OSD_ERROR_DURATION);
       }
-
-      System::RemoveSelfFromTaskThreads();
     });
 }
 

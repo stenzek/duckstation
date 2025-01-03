@@ -1080,6 +1080,8 @@ std::shared_ptr<SystemBootParameters> MainWindow::getSystemBootParameters(std::s
 
 std::optional<bool> MainWindow::promptForResumeState(const std::string& save_state_path)
 {
+  System::FlushSaveStates();
+
   FILESYSTEM_STAT_DATA sd;
   if (save_state_path.empty() || !FileSystem::StatFile(save_state_path.c_str(), &sd))
     return false;

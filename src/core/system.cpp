@@ -63,6 +63,7 @@
 #include "common/memmap.h"
 #include "common/path.h"
 #include "common/string_util.h"
+#include "common/task_queue.h"
 #include "common/timer.h"
 
 #include "IconsEmoji.h"
@@ -113,6 +114,8 @@ SystemBootParameters::SystemBootParameters(std::string filename_) : filename(std
 SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
+
+static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 
 static constexpr float PRE_FRAME_SLEEP_UPDATE_INTERVAL = 1.0f;
 static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
@@ -319,8 +322,11 @@ struct ALIGN_TO_CACHE_LINE StateVars
   // Used to track play time. We use a monotonic timer here, in case of clock changes.
   u64 session_start_time = 0;
 
-  std::deque<std::thread> task_threads;
-  std::mutex task_threads_mutex;
+  // internal async task counters
+  std::atomic_uint32_t outstanding_save_state_tasks{0};
+
+  // async task pool
+  TaskQueue async_task_queue;
 
 #ifdef ENABLE_SOCKET_MULTIPLEXER
   std::unique_ptr<SocketMultiplexer> socket_multiplexer;
@@ -511,6 +517,8 @@ bool System::CPUThreadInitialize(Error* error)
 
   LogStartupInformation();
 
+  s_state.async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
+
   GPUThread::Internal::ProcessStartup();
 
   if (g_settings.achievements_enabled)
@@ -533,6 +541,8 @@ void System::CPUThreadShutdown()
   Achievements::Shutdown(false);
 
   InputManager::CloseSources();
+
+  s_state.async_task_queue.SetWorkerCount(0);
 
 #ifdef _WIN32
   CoUninitialize();
@@ -1932,8 +1942,6 @@ void System::DestroySystem()
   if (s_state.state == State::Shutdown)
     return;
 
-  JoinTaskThreads();
-
   if (s_state.media_capture)
     StopMediaCapture();
 
@@ -2820,6 +2828,8 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
     return true;
   }
 
+  FlushSaveStates();
+
   Timer load_timer;
 
   auto fp = FileSystem::OpenManagedCFile(path, "rb", error);
@@ -3143,8 +3153,12 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
   Host::AddIconOSDMessage(osd_key, ICON_EMOJI_FLOPPY_DISK,
                           fmt::format(TRANSLATE_FS("System", "Saving state to '{}'."), Path::GetFileName(path)), 60.0f);
 
-  QueueTaskOnThread([path = std::move(path), buffer = std::move(buffer), osd_key = std::move(osd_key),
-                     backup_existing_save, compression = g_settings.save_state_compression]() {
+  // ensure multiple saves to the same path do not overlap
+  FlushSaveStates();
+
+  s_state.outstanding_save_state_tasks.fetch_add(1, std::memory_order_acq_rel);
+  s_state.async_task_queue.SubmitTask([path = std::move(path), buffer = std::move(buffer), osd_key = std::move(osd_key),
+                                       backup_existing_save, compression = g_settings.save_state_compression]() {
     INFO_LOG("Saving state to '{}'...", path);
 
     Error lerror;
@@ -3175,6 +3189,13 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
     }
 
     VERBOSE_LOG("Saving state took {:.2f} msec", lsave_timer.GetTimeMilliseconds());
+
+    s_state.outstanding_save_state_tasks.fetch_sub(1, std::memory_order_acq_rel);
+
+    // don't display a resume state saved message in FSUI
+    if (!IsValid())
+      return;
+
     if (result)
     {
       Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_FLOPPY_DISK,
@@ -3188,11 +3209,15 @@ bool System::SaveState(std::string path, Error* error, bool backup_existing_save
                                           Path::GetFileName(path), lerror.GetDescription()),
                               Host::OSD_ERROR_DURATION);
     }
-
-    System::RemoveSelfFromTaskThreads();
   });
 
   return true;
+}
+
+void System::FlushSaveStates()
+{
+  while (s_state.outstanding_save_state_tasks.load(std::memory_order_acquire) > 0)
+    WaitForAllAsyncTasks();
 }
 
 bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screenshot_size /* = 256 */)
@@ -5451,6 +5476,8 @@ std::vector<SaveStateInfo> System::GetAvailableSaveStates(std::string_view seria
     si.push_back(SaveStateInfo{std::move(path), sd.ModificationTime, static_cast<s32>(slot), global});
   };
 
+  FlushSaveStates();
+
   if (!serial.empty())
   {
     add_path(GetGameSaveStateFileName(serial, -1), -1, false);
@@ -5469,6 +5496,8 @@ std::optional<SaveStateInfo> System::GetSaveStateInfo(std::string_view serial, s
   const bool global = serial.empty();
   std::string path = global ? GetGlobalSaveStateFileName(slot) : GetGameSaveStateFileName(serial, slot);
 
+  FlushSaveStates();
+
   FILESYSTEM_STAT_DATA sd;
   if (!FileSystem::StatFile(path.c_str(), &sd))
     return std::nullopt;
@@ -5479,6 +5508,8 @@ std::optional<SaveStateInfo> System::GetSaveStateInfo(std::string_view serial, s
 std::optional<ExtendedSaveStateInfo> System::GetExtendedSaveStateInfo(const char* path)
 {
   std::optional<ExtendedSaveStateInfo> ssi;
+
+  FlushSaveStates();
 
   Error error;
   auto fp = FileSystem::OpenManagedCFile(path, "rb", &error);
@@ -5618,6 +5649,8 @@ std::string System::GetGameMemoryCardPath(std::string_view serial, std::string_v
 
 std::string System::GetMostRecentResumeSaveStatePath()
 {
+  FlushSaveStates();
+
   std::vector<FILESYSTEM_FIND_DATA> files;
   if (!FileSystem::FindFiles(EmuFolders::SaveStates.c_str(), "*resume.sav", FILESYSTEM_FIND_FILES, &files) ||
       files.empty())
@@ -5832,38 +5865,14 @@ u64 System::GetSessionPlayedTime()
   return static_cast<u64>(std::round(Timer::ConvertValueToSeconds(ctime - s_state.session_start_time)));
 }
 
-void System::QueueTaskOnThread(std::function<void()> task)
+void System::QueueAsyncTask(std::function<void()> function)
 {
-  const std::unique_lock lock(s_state.task_threads_mutex);
-  s_state.task_threads.emplace_back(std::move(task));
+  s_state.async_task_queue.SubmitTask(std::move(function));
 }
 
-void System::RemoveSelfFromTaskThreads()
+void System::WaitForAllAsyncTasks()
 {
-  const auto this_id = std::this_thread::get_id();
-  const std::unique_lock lock(s_state.task_threads_mutex);
-  for (auto it = s_state.task_threads.begin(); it != s_state.task_threads.end(); ++it)
-  {
-    if (it->get_id() == this_id)
-    {
-      it->detach();
-      s_state.task_threads.erase(it);
-      break;
-    }
-  }
-}
-
-void System::JoinTaskThreads()
-{
-  std::unique_lock lock(s_state.task_threads_mutex);
-  while (!s_state.task_threads.empty())
-  {
-    std::thread save_thread(std::move(s_state.task_threads.front()));
-    s_state.task_threads.pop_front();
-    lock.unlock();
-    save_thread.join();
-    lock.lock();
-  }
+  s_state.async_task_queue.WaitForAll();
 }
 
 SocketMultiplexer* System::GetSocketMultiplexer()

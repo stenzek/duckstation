@@ -356,6 +356,9 @@ std::string GetCheatFileName();
 /// Powers off the system, optionally saving the resume state.
 void ShutdownSystem(bool save_resume_state);
 
+/// Waits for all asynchronous state saves to complete.
+void FlushSaveStates();
+
 /// Returns true if an undo load state exists.
 bool CanUndoLoadState();
 
@@ -421,7 +424,11 @@ void CalculateRewindMemoryUsage(u32 num_saves, u32 resolution_scale, u64* ram_us
 void ClearMemorySaveStates(bool reallocate_resources, bool recycle_textures);
 void SetRunaheadReplayFlag();
 
-/// Shared socket multiplexer, used by PINE/GDB/etc.
+/// Asynchronous work tasks, complete on worker thread.
+void QueueAsyncTask(std::function<void()> function);
+void WaitForAllAsyncTasks();
+
+/// Shared socket multiplexer.
 SocketMultiplexer* GetSocketMultiplexer();
 void ReleaseSocketMultiplexer();
 
