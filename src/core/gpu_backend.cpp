@@ -292,7 +292,9 @@ bool GPUBackend::BeginQueueFrame()
   if (queued_frames <= g_settings.gpu_max_queued_frames)
     return false;
 
-  DEV_LOG("<-- {} queued frames, {} max, blocking CPU thread", queued_frames, g_settings.gpu_max_queued_frames);
+  if (g_settings.gpu_max_queued_frames > 0)
+    DEV_LOG("<-- {} queued frames, {} max, blocking CPU thread", queued_frames, g_settings.gpu_max_queued_frames);
+
   s_cpu_thread_state.waiting_for_gpu_thread.store(true, std::memory_order_release);
   return true;
 }
@@ -733,7 +735,9 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
     if (s_cpu_thread_state.waiting_for_gpu_thread.compare_exchange_strong(expected, false, std::memory_order_acq_rel,
                                                                           std::memory_order_relaxed))
     {
-      DEV_LOG("--> Unblocking CPU thread");
+      if (g_settings.gpu_max_queued_frames > 0)
+        DEV_LOG("--> Unblocking CPU thread");
+
       s_cpu_thread_state.gpu_thread_wait.Post();
     }
   }
