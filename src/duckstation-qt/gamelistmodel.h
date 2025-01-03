@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -11,7 +11,9 @@
 #include "common/lru_cache.h"
 
 #include <QtCore/QAbstractTableModel>
+#include <QtGui/QImage>
 #include <QtGui/QPixmap>
+
 #include <algorithm>
 #include <array>
 #include <optional>
@@ -85,6 +87,9 @@ public:
 Q_SIGNALS:
   void coverScaleChanged();
 
+private Q_SLOTS:
+  void coverLoaded(const std::string& path, const QPixmap& pixmap);
+
 private:
   /// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
   /// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
@@ -126,7 +131,7 @@ private:
   std::array<QPixmap, static_cast<int>(GameList::EntryType::Count)> m_type_pixmaps;
   std::array<QPixmap, static_cast<int>(GameDatabase::CompatibilityRating::Count)> m_compatibility_pixmaps;
 
-  QPixmap m_placeholder_pixmap;
+  QImage m_placeholder_image;
   QPixmap m_loading_pixmap;
 
   mutable PreferUnorderedStringMap<QPixmap> m_flag_pixmap_cache;
@@ -134,4 +139,34 @@ private:
   mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
 
   mutable LRUCache<std::string, QPixmap> m_memcard_pixmap_cache;
+};
+
+class GameListCoverLoader : public QObject
+{
+  Q_OBJECT
+
+public:
+  GameListCoverLoader(const GameList::Entry* ge, const QImage& placeholder_image, int width, int height, float scale);
+  ~GameListCoverLoader();
+
+public:
+  void loadOrGenerateCover();
+
+Q_SIGNALS:
+  void coverLoaded(const std::string& path, const QPixmap& pixmap);
+
+private:
+  void createPlaceholderImage();
+  void resizeAndPadImage();
+
+  std::string m_path;
+  std::string m_serial;
+  std::string m_title;
+  const QImage& m_placeholder_image;
+  int m_width;
+  int m_height;
+  float m_scale;
+  float m_dpr;
+
+  QImage m_image;
 };

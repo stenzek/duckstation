@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamelistmodel.h"
@@ -12,11 +12,8 @@
 #include "common/path.h"
 #include "common/string_util.h"
 
-#include <QtConcurrent/QtConcurrent>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
-#include <QtCore/QFuture>
-#include <QtCore/QFutureWatcher>
 #include <QtGui/QGuiApplication>
 #include <QtGui/QIcon>
 #include <QtGui/QPainter>
@@ -75,31 +72,99 @@ static void resizeAndPadPixmap(QPixmap* pm, int expected_width, int expected_hei
   *pm = padded_image;
 }
 
-static QPixmap createPlaceholderImage(const QPixmap& placeholder_pixmap, int width, int height, float scale,
-                                      const std::string& title)
+GameListCoverLoader::GameListCoverLoader(const GameList::Entry* ge, const QImage& placeholder_image, int width,
+                                         int height, float scale)
+  : QObject(nullptr), m_path(ge->path), m_serial(ge->serial), m_title(ge->title),
+    m_placeholder_image(placeholder_image), m_width(width), m_height(height), m_scale(scale),
+    m_dpr(qApp->devicePixelRatio())
 {
-  const float dpr = qApp->devicePixelRatio();
-  QPixmap pm(placeholder_pixmap.copy());
-  pm.setDevicePixelRatio(dpr);
-  if (pm.isNull())
-    return QPixmap();
+}
 
-  resizeAndPadPixmap(&pm, width, height, dpr);
+GameListCoverLoader::~GameListCoverLoader() = default;
+
+void GameListCoverLoader::loadOrGenerateCover()
+{
+  QPixmap image;
+  const std::string cover_path(GameList::GetCoverImagePath(m_path, m_serial, m_title));
+  if (!cover_path.empty())
+  {
+    m_image.load(QString::fromStdString(cover_path));
+    if (!m_image.isNull())
+    {
+      m_image.setDevicePixelRatio(m_dpr);
+      resizeAndPadImage();
+    }
+  }
+
+  if (m_image.isNull())
+    createPlaceholderImage();
+
+  // Have to pass through the UI thread, because the thread pool isn't a QThread...
+  // Can't create pixmaps on the worker thread, have to create it on the UI thread.
+  QtHost::RunOnUIThread([this]() {
+    if (!m_image.isNull())
+      emit coverLoaded(m_path, QPixmap::fromImage(m_image));
+    else
+      emit coverLoaded(m_path, QPixmap());
+    delete this;
+  });
+}
+
+void GameListCoverLoader::createPlaceholderImage()
+{
+  m_image = m_placeholder_image.copy();
+  m_image.setDevicePixelRatio(m_dpr);
+  if (m_image.isNull())
+    return;
+
+  resizeAndPadImage();
+
   QPainter painter;
-  if (painter.begin(&pm))
+  if (painter.begin(&m_image))
   {
     QFont font;
-    font.setPointSize(std::max(static_cast<int>(32.0f * scale), 1));
+    font.setPointSize(std::max(static_cast<int>(32.0f * m_scale), 1));
     painter.setFont(font);
     painter.setPen(Qt::white);
 
-    const QRect text_rc(0, 0, static_cast<int>(static_cast<float>(width)),
-                        static_cast<int>(static_cast<float>(height)));
-    painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(title));
+    const QRect text_rc(0, 0, static_cast<int>(static_cast<float>(m_width)),
+                        static_cast<int>(static_cast<float>(m_height)));
+    painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(m_title));
     painter.end();
   }
+}
 
-  return pm;
+void GameListCoverLoader::resizeAndPadImage()
+{
+  const int dpr_expected_width = DPRScale(m_width, m_dpr);
+  const int dpr_expected_height = DPRScale(m_height, m_dpr);
+  if (m_image.width() == dpr_expected_width && m_image.height() == dpr_expected_height)
+    return;
+
+  m_image = m_image.scaled(dpr_expected_width, dpr_expected_height, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+  if (m_image.width() == dpr_expected_width && m_image.height() == dpr_expected_height)
+    return;
+
+  // QPainter works in unscaled coordinates.
+  int xoffs = 0;
+  int yoffs = 0;
+  if (m_image.width() < dpr_expected_width)
+    xoffs = DPRUnscale((dpr_expected_width - m_image.width()) / 2, m_dpr);
+  if (m_image.height() < dpr_expected_height)
+    yoffs = DPRUnscale((dpr_expected_height - m_image.height()) / 2, m_dpr);
+
+  QPixmap padded_image(dpr_expected_width, dpr_expected_height);
+  padded_image.setDevicePixelRatio(m_dpr);
+  padded_image.fill(Qt::transparent);
+  QPainter painter;
+  if (painter.begin(&padded_image))
+  {
+    painter.setCompositionMode(QPainter::CompositionMode_Source);
+    painter.drawImage(xoffs, yoffs, m_image);
+    painter.setCompositionMode(QPainter::CompositionMode_Destination);
+    painter.fillRect(padded_image.rect(), QColor(0, 0, 0, 0));
+    painter.end();
+  }
 }
 
 std::optional<GameListModel::Column> GameListModel::getColumnIdForName(std::string_view name)
@@ -131,7 +196,11 @@ GameListModel::GameListModel(float cover_scale, bool show_cover_titles, bool sho
     GameList::ReloadMemcardTimestampCache();
 }
 
-GameListModel::~GameListModel() = default;
+GameListModel::~GameListModel()
+{
+  // wait for all cover loads to finish, they're using m_placeholder_image
+  System::WaitForAllAsyncTasks();
+}
 
 void GameListModel::setShowGameIcons(bool enabled)
 {
@@ -151,8 +220,16 @@ void GameListModel::setCoverScale(float scale)
 
   m_cover_pixmap_cache.Clear();
   m_cover_scale = scale;
-  m_loading_pixmap = QPixmap(getCoverArtWidth(), getCoverArtHeight());
-  m_loading_pixmap.fill(QColor(0, 0, 0, 0));
+  if (m_loading_pixmap.load(QStringLiteral("%1/images/placeholder.png").arg(QtHost::GetResourcesBasePath())))
+  {
+    m_loading_pixmap.setDevicePixelRatio(qApp->devicePixelRatio());
+    resizeAndPadPixmap(&m_loading_pixmap, getCoverArtWidth(), getCoverArtHeight(), qApp->devicePixelRatio());
+  }
+  else
+  {
+    m_loading_pixmap = QPixmap(getCoverArtWidth(), getCoverArtHeight());
+    m_loading_pixmap.fill(QColor(0, 0, 0, 0));
+  }
 
   emit coverScaleChanged();
 }
@@ -181,33 +258,17 @@ void GameListModel::reloadThemeSpecificImages()
 
 void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 {
-  QFuture<QPixmap> future =
-    QtConcurrent::run([this, path = ge->path, title = ge->title, serial = ge->serial]() -> QPixmap {
-      QPixmap image;
-      const std::string cover_path(GameList::GetCoverImagePath(path, serial, title));
-      if (!cover_path.empty())
-      {
-        const float dpr = qApp->devicePixelRatio();
-        image = QPixmap(QString::fromStdString(cover_path));
-        if (!image.isNull())
-        {
-          image.setDevicePixelRatio(dpr);
-          resizeAndPadPixmap(&image, getCoverArtWidth(), getCoverArtHeight(), dpr);
-        }
-      }
+  // NOTE: Must get connected before queuing, because otherwise you risk a race.
+  GameListCoverLoader* loader =
+    new GameListCoverLoader(ge, m_placeholder_image, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale);
+  connect(loader, &GameListCoverLoader::coverLoaded, this, &GameListModel::coverLoaded);
+  System::QueueAsyncTask([loader]() { loader->loadOrGenerateCover(); });
+}
 
-      if (image.isNull())
-        image =
-          createPlaceholderImage(m_placeholder_pixmap, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale, title);
-
-      return image;
-    });
-
-  // Context must be 'this' so we run on the UI thread.
-  future.then(this, [this, path = ge->path](QPixmap pm) {
-    m_cover_pixmap_cache.Insert(std::move(path), std::move(pm));
-    invalidateCoverForPath(path);
-  });
+void GameListModel::coverLoaded(const std::string& path, const QPixmap& pixmap)
+{
+  m_cover_pixmap_cache.Insert(path, pixmap);
+  invalidateCoverForPath(path);
 }
 
 void GameListModel::invalidateCoverForPath(const std::string& path)
@@ -816,7 +877,7 @@ void GameListModel::loadCommonImages()
       QtUtils::GetIconForCompatibility(static_cast<GameDatabase::CompatibilityRating>(i)).pixmap(96, 24);
   }
 
-  m_placeholder_pixmap.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath()));
+  m_placeholder_image.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath()));
 }
 
 void GameListModel::setColumnDisplayNames()
