@@ -587,7 +587,14 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
     fmt::format_to(appender, "OptionRange = {}:{}\n", code.option_range_start, code.option_range_end);
   }
 
-  fmt::format_to(appender, "{}\n\n", code.body, code.body.ends_with('\n') ? "\n" : "");
+  // remove trailing whitespace
+  std::string_view code_body = code.body;
+  while (!code_body.empty() && std::isspace(code_body.back()))
+    code_body = code_body.substr(0, code_body.length() - 1);
+  if (!code_body.empty())
+    buf.append(code_body);
+
+  buf.push_back('\n');
   return std::string(buf.begin(), buf.end());
 }
 
@@ -634,8 +641,10 @@ bool Cheats::UpdateCodeInFile(const char* path, const std::string_view name, con
   {
     const std::string code_body = FormatCodeForFile(*code);
     file_contents.reserve(file_contents.length() + 1 + code_body.length());
-    if (!file_contents.empty() && file_contents.back() != '\n')
-      file_contents.push_back('\n');
+    while (!file_contents.empty() && std::isspace(file_contents.back()))
+      file_contents.pop_back();
+    if (!file_contents.empty())
+      file_contents.append("\n\n");
     file_contents.append(code_body);
   }
 
@@ -690,8 +699,10 @@ bool Cheats::SaveCodesToFile(const char* path, const CodeInfoList& codes, Error*
     {
       const std::string code_body = FormatCodeForFile(code);
       file_contents.reserve(file_contents.length() + 1 + code_body.length());
-      if (!file_contents.empty() && file_contents.back() != '\n')
-        file_contents.push_back('\n');
+      while (!file_contents.empty() && std::isspace(file_contents.back()))
+        file_contents.pop_back();
+      if (!file_contents.empty())
+        file_contents.append("\n\n");
       file_contents.append(code_body);
     }
   }
@@ -1508,14 +1519,8 @@ bool Cheats::ExportCodesToFile(std::string path, const CodeInfoList& codes, Erro
 
   for (const CodeInfo& code : codes)
   {
-    std::string code_body = FormatCodeForFile(code);
-
-    // ensure there's at least two newlines of space between each code
-    const size_t newline_len = code_body.ends_with("\n\n") ? 0 : (code_body.ends_with("\n") ? 1 : 2);
-    for (size_t i = 0; i < newline_len; i++)
-      code_body.push_back('\n');
-
-    if (std::fwrite(code_body.data(), code_body.length(), 1, fp.get()) != 1)
+    const std::string code_body = FormatCodeForFile(code);
+    if (std::fwrite(code_body.data(), code_body.length(), 1, fp.get()) != 1 || std::fputc('\n', fp.get()) != 0)
     {
       Error::SetErrno(error, "fwrite() failed: ", errno);
       FileSystem::DiscardAtomicRenamedFile(fp);
