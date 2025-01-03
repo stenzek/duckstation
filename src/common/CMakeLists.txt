@@ -60,6 +60,8 @@ add_library(common
   thirdparty/SmallVector.h
   thirdparty/aes.cpp
   thirdparty/aes.h
+  task_queue.cpp
+  task_queue.h
   threading.cpp
   threading.h
   timer.cpp

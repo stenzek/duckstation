@@ -52,6 +52,7 @@
     <ClInclude Include="log_channels.h" />
     <ClInclude Include="sha256_digest.h" />
     <ClInclude Include="thirdparty\aes.h" />
+    <ClInclude Include="task_queue.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />
@@ -82,6 +83,7 @@
     <ClCompile Include="gsvector.cpp" />
     <ClCompile Include="sha256_digest.cpp" />
     <ClCompile Include="thirdparty\aes.cpp" />
+    <ClCompile Include="task_queue.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="bitfield.natvis" />

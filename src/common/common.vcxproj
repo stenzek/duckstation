@@ -45,6 +45,7 @@
     <ClInclude Include="thirdparty\SmallVector.h" />
     <ClInclude Include="thirdparty\StackWalker.h" />
     <ClInclude Include="threading.h" />
+    <ClInclude Include="task_queue.h" />
     <ClInclude Include="timer.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="minizip_helpers.h" />
@@ -74,6 +75,7 @@
     <ClCompile Include="thirdparty\SmallVector.cpp" />
     <ClCompile Include="thirdparty\StackWalker.cpp" />
     <ClCompile Include="threading.cpp" />
+    <ClCompile Include="task_queue.cpp" />
     <ClCompile Include="timer.cpp" />
   </ItemGroup>
   <ItemGroup>
