@@ -33,6 +33,10 @@
 #endif
 #endif
 
+#ifdef ENABLE_SDL
+#include "opengl_context_sdl.h"
+#endif
+
 LOG_CHANNEL(GPUDevice);
 
 static bool ShouldPreferESContext()
@@ -174,6 +178,10 @@ std::unique_ptr<OpenGLContext> OpenGLContext::Create(WindowInfo& wi, SurfaceHand
 #endif
   if (wi.type == WindowInfo::Type::Surfaceless)
     context = OpenGLContextEGL::Create(wi, surface, versions_to_try, error);
+#endif
+#ifdef ENABLE_SDL
+  if (wi.type == WindowInfo::Type::SDL)
+    context = OpenGLContextSDL::Create(wi, surface, versions_to_try, error);
 #endif
 
   if (!context)

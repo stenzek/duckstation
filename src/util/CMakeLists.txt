@@ -190,6 +190,12 @@ if(NOT ANDROID)
     sdl_input_source.cpp
     sdl_input_source.h
   )
+  if(ENABLE_OPENGL)
+    target_sources(util PRIVATE
+      opengl_context_sdl.cpp
+      opengl_context_sdl.h
+    )
+  endif()
   target_compile_definitions(util PUBLIC
     ENABLE_SDL
   )

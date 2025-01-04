@@ -74,6 +74,7 @@
     <ClInclude Include="x11_tools.h" />
     <ClInclude Include="opengl_context_egl_xlib.h" />
     <ClInclude Include="texture_decompress.h" />
+    <ClInclude Include="opengl_context_sdl.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="state_wrapper.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="x11_tools.cpp" />
     <ClCompile Include="opengl_context_egl_xlib.cpp" />
     <ClCompile Include="texture_decompress.cpp" />
+    <ClCompile Include="opengl_context_sdl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="metal_shaders.metal" />
