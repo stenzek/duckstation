@@ -23,6 +23,11 @@
 #include "fmt/format.h"
 #include "xxhash.h"
 
+#ifdef ENABLE_SDL
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
+#endif
+
 #include <cstdlib>
 #include <limits>
 #include <mutex>
@@ -245,29 +250,53 @@ bool VulkanDevice::SelectInstanceExtensions(ExtensionList* extension_list, const
     return false;
   };
 
-  // Common extensions
-  if (wi.type != WindowInfo::Type::Surfaceless && !SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true))
-    return false;
-
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
-  if (wi.type == WindowInfo::Type::Win32 && !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true))
+  if (wi.type == WindowInfo::Type::Win32 && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                             !SupportsExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME, true)))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_XCB_KHR)
-  if (wi.type == WindowInfo::Type::XCB && !SupportsExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME, true))
+  if (wi.type == WindowInfo::Type::XCB && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                           !SupportsExtension(VK_KHR_XCB_SURFACE_EXTENSION_NAME, true)))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_WAYLAND_KHR)
-  if (wi.type == WindowInfo::Type::Wayland && !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true))
+  if (wi.type == WindowInfo::Type::Wayland && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                               !SupportsExtension(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME, true)))
     return false;
 #endif
 #if defined(VK_USE_PLATFORM_METAL_EXT)
-  if (wi.type == WindowInfo::Type::MacOS && !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true))
+  if (wi.type == WindowInfo::Type::MacOS && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                             !SupportsExtension(VK_EXT_METAL_SURFACE_EXTENSION_NAME, true)))
+  {
     return false;
+  }
 #endif
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
-  if (wi.type == WindowInfo::Type::Android && !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true))
+  if (wi.type == WindowInfo::Type::Android && (!SupportsExtension(VK_KHR_SURFACE_EXTENSION_NAME, true) ||
+                                               !SupportsExtension(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME, true)))
+  {
     return false;
+  }
+#endif
+
+#if defined(ENABLE_SDL)
+  if (wi.type == WindowInfo::Type::SDL)
+  {
+    Uint32 sdl_extension_count = 0;
+    const char* const* sdl_extensions = SDL_Vulkan_GetInstanceExtensions(&sdl_extension_count);
+    if (!sdl_extensions)
+    {
+      ERROR_LOG("SDL_Vulkan_GetInstanceExtensions() failed: {}", SDL_GetError());
+      return false;
+    }
+
+    for (unsigned int i = 0; i < sdl_extension_count; i++)
+    {
+      if (!SupportsExtension(sdl_extensions[i], true))
+        return false;
+    }
+  }
 #endif
 
   // VK_EXT_debug_utils
@@ -374,7 +403,10 @@ VulkanDevice::GPUList VulkanDevice::EnumerateGPUs()
         if (Vulkan::LoadVulkanInstanceFunctions(instance))
           ret = EnumerateGPUs(instance);
 
-        vkDestroyInstance(instance, nullptr);
+        if (vkDestroyInstance)
+          vkDestroyInstance(instance, nullptr);
+        else
+          ERROR_LOG("Vulkan instance was leaked because vkDestroyInstance() could not be loaded.");
       }
 
       Vulkan::UnloadVulkanLibrary();
@@ -1894,7 +1926,13 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
   bool enable_debug_utils = m_debug_device;
   bool enable_validation_layer = m_debug_device;
 
-  if (!Vulkan::LoadVulkanLibrary(error))
+#ifdef ENABLE_SDL
+  const bool library_loaded =
+    (wi.type == WindowInfo::Type::SDL) ? Vulkan::LoadVulkanLibraryFromSDL(error) : Vulkan::LoadVulkanLibrary(error);
+#else
+  const bool library_loaded = Vulkan::LoadVulkanLibrary(error);
+#endif
+  if (!library_loaded)
   {
     Error::AddPrefix(error,
                      "Failed to load Vulkan library. Does your GPU and/or driver support Vulkan?\nThe error was:");
@@ -1924,6 +1962,12 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
   {
     ERROR_LOG("Failed to load Vulkan instance functions");
     Error::SetStringView(error, "Failed to load Vulkan instance functions");
+
+    if (vkDestroyInstance)
+      vkDestroyInstance(std::exchange(m_instance, nullptr), nullptr);
+    else
+      ERROR_LOG("Vulkan instance was leaked because vkDestroyInstance() could not be loaded.");
+
     return false;
   }
 
