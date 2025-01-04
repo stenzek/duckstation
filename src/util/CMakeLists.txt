@@ -85,7 +85,11 @@ if(ENABLE_X11)
     x11_tools.h
   )
   target_compile_definitions(util PRIVATE "-DENABLE_X11=1")
-  target_link_libraries(util PRIVATE X11::xcb X11::xcb_randr X11::X11_xcb)
+  target_include_directories(util PRIVATE
+    "${X11_xcb_INCLUDE_PATH}"
+    "${X11_xcb_randr_INCLUDE_PATH}"
+    "${X11_X11_xcb_INCLUDE_PATH}"
+  )
 endif()
 
 if(ENABLE_WAYLAND)
