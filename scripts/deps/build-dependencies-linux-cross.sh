@@ -85,6 +85,20 @@ CMAKE_COMMON=(
 	-DCMAKE_INSTALL_PREFIX="$INSTALLDIR"
 )
 
+# Determine architecture.
+if [ "$CROSSARCH" == "arm64" ]; then
+	CROSSSYSARCH="aarch64"
+	CROSSTRIPLET="aarch64-linux-gnu"
+	CMAKEPROCESSOR="aarch64"
+elif [ "$CROSSARCH" == "armhf" ]; then
+	CROSSSYSARCH="armhf"
+	CROSSTRIPLET="arm-linux-gnueabihf"
+	CMAKEPROCESSOR="armv7-a"
+else
+	echo "Unknown cross arch $CROSSARCH"
+	exit 1
+fi
+
 # TODO: Pull all of this from the main file.
 
 FREETYPE=2.13.3
@@ -228,24 +242,24 @@ if [ "$ONLY_DOWNLOAD" == true ]; then
 fi
 
 # Stop pkg-config picking up host files.
-export PKG_CONFIG_PATH=${SYSROOTDIR}/usr/lib/${CROSSARCH}-linux-gnu/pkgconfig:${SYSROOTDIR}/usr/lib/pkgconfig:${SYSROOTDIR}/usr/share/pkgconfig
+export PKG_CONFIG_PATH=${SYSROOTDIR}/usr/lib/${CROSSTRIPLET}/pkgconfig:${SYSROOTDIR}/usr/lib/pkgconfig:${SYSROOTDIR}/usr/share/pkgconfig
 export PKG_CONFIG_SYSROOT_DIR=${SYSROOTDIR}
 
 # Generate cmake toolchain file.
 cat > "$TOOLCHAINFILE" << EOF
 set(CMAKE_CROSSCOMPILING TRUE)
 set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR ${CROSSARCH})
+set(CMAKE_SYSTEM_PROCESSOR ${CMAKEPROCESSOR})
 
-set(CMAKE_C_COMPILER "/usr/bin/${CROSSARCH}-linux-gnu-gcc")
-set(CMAKE_C_COMPILER_TARGET "${CROSSARCH}-linux-gnu")
-set(CMAKE_C_COMPILER_AR "/usr/bin/${CROSSARCH}-linux-gnu-ar")
-set(CMAKE_C_COMPILER_RANLIB "/usr/bin/${CROSSARCH}-linux-gnu-ranlib")
+set(CMAKE_C_COMPILER "/usr/bin/${CROSSTRIPLET}-gcc")
+set(CMAKE_C_COMPILER_TARGET "${CROSSTRIPLET}")
+set(CMAKE_C_COMPILER_AR "/usr/bin/${CROSSTRIPLET}-ar")
+set(CMAKE_C_COMPILER_RANLIB "/usr/bin/${CROSSTRIPLET}-ranlib")
 
-set(CMAKE_CXX_COMPILER "/usr/bin/${CROSSARCH}-linux-gnu-g++")
-set(CMAKE_CXX_COMPILER_TARGET "${CROSSARCH}-linux-gnu")
-set(CMAKE_CXX_COMPILER_AR "/usr/bin/${CROSSARCH}-linux-gnu-ar")
-set(CMAKE_CXX_COMPILER_RANLIB "/usr/bin/${CROSSARCH}-linux-gnu-ranlib")
+set(CMAKE_CXX_COMPILER "/usr/bin/${CROSSTRIPLET}-g++")
+set(CMAKE_CXX_COMPILER_TARGET "${CROSSTRIPLET}")
+set(CMAKE_CXX_COMPILER_AR "/usr/bin/${CROSSTRIPLET}-ar")
+set(CMAKE_CXX_COMPILER_RANLIB "/usr/bin/${CROSSTRIPLET}-ranlib")
 
 set(CMAKE_FIND_ROOT_PATH "${INSTALLDIR};${SYSROOTDIR}")
 set(CMAKE_SYSROOT "${SYSROOTDIR}")
@@ -274,9 +288,9 @@ fi
 # NOTE: Must be a shared library because otherwise aarch64 libgcc symbols are missing when building with clang.
 echo "Building libbacktrace..."
 rm -fr "libbacktrace-$LIBBACKTRACE"
-tar xf "$LIBBACKTRACE.tar.gz"
+tar xf "libbacktrace-$LIBBACKTRACE.tar.gz"
 cd "libbacktrace-$LIBBACKTRACE"
-./configure --prefix="$INSTALLDIR" --build=x86_64-linux-gnu --host="${CROSSARCH}-linux-gnu" --with-pic --enable-shared --disable-static
+./configure --prefix="$INSTALLDIR" --build=x86_64-linux-gnu --host="${CROSSTRIPLET}" --with-pic --enable-shared --disable-static
 make
 make install
 cd ..
@@ -376,8 +390,6 @@ echo "Building SDL..."
 rm -fr "SDL3-$SDL3"
 tar xf "SDL3-$SDL3.tar.gz"
 cd "SDL3-$SDL3"
-# needed because -Isystem with chroot/usr/include breaks
-patch -p1 < "$SCRIPTDIR/sdl2-disable-isystem.patch"
 patch -p1 < "$SCRIPTDIR/sdl3-joystick-crash.patch"
 cmake -B build "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -G Ninja
 cmake --build build --parallel
