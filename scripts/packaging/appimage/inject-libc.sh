@@ -31,19 +31,27 @@ TRIPLE=$3
 MIRROR=$4
 APPNAME=$5
 
-LIBC_PACKAGE_URL="${MIRROR}/pool/main/g/glibc/libc6_2.35-0ubuntu3.8_${DEBARCH}.deb"
+LIBC_PACKAGE_URL="${MIRROR}/pool/main/g/glibc/libc6_2.35-0ubuntu3.9_${DEBARCH}.deb"
 LIBGCCS_PACKAGE_URL="${MIRROR}/pool/main/g/gcc-12/libgcc-s1_12.3.0-1ubuntu1~22.04_${DEBARCH}.deb"
 LIBSTDCXX_PACKAGE_URL="${MIRROR}/pool/main/g/gcc-12/libstdc++6_12.3.0-1ubuntu1~22.04_${DEBARCH}.deb"
 GLIBC_VERSION=2.35
 
+if [ ! -f "libc.deb" ]; then
+	retry_command wget -O "libc.deb" "${LIBC_PACKAGE_URL}"
+fi
+if [ ! -f "libgccs.deb" ]; then
+	retry_command wget -O "libgccs.deb" "${LIBGCCS_PACKAGE_URL}"
+fi
+if [ ! -f "libstdc++.deb" ]; then
+	retry_command wget -O "libstdc++.deb" "${LIBSTDCXX_PACKAGE_URL}"
+fi
+
+rm -fr "temp"
 mkdir "temp"
 cd "temp"
-retry_command wget -O "libc.deb" "${LIBC_PACKAGE_URL}"
-retry_command wget -O "libgccs.deb" "${LIBGCCS_PACKAGE_URL}"
-retry_command wget -O "libstdc++.deb" "${LIBSTDCXX_PACKAGE_URL}"
-dpkg -x "libc.deb" .
-dpkg -x "libgccs.deb" .
-dpkg -x "libstdc++.deb" .
+dpkg -x "../libc.deb" .
+dpkg -x "../libgccs.deb" .
+dpkg -x "../libstdc++.deb" .
 
 # Copy everything into AppDir
 RUNTIME="${APPDIR}/libc-runtime"
