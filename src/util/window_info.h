@@ -22,6 +22,7 @@ struct WindowInfo
     Wayland,
     MacOS,
     Android,
+    SDL,
   };
 
   enum class PreRotation : u8
