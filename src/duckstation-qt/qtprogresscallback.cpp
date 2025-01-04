@@ -97,11 +97,13 @@ void QtModalProgressCallback::checkForDelayedShow()
     return;
 
   if (m_show_timer.GetTimeSeconds() >= m_show_delay)
-  {
-    m_dialog.setRange(0, m_progress_range);
-    m_dialog.setValue(m_progress_value);
-    m_dialog.show();
-  }
+    MakeVisible();
+}
+void QtModalProgressCallback::MakeVisible()
+{
+  m_dialog.setRange(0, m_progress_range);
+  m_dialog.setValue(m_progress_value);
+  m_dialog.show();
 }
 
 // NOTE: We deliberately don't set the thread parent, because otherwise we can't move it.

@@ -292,6 +292,7 @@ std::optional<bool> QtHost::DownloadFile(QWidget* parent, const QString& title, 
   progress.GetDialog().setWindowTitle(title);
   progress.GetDialog().setWindowIcon(GetAppIcon());
   progress.SetCancellable(true);
+  progress.MakeVisible();
 
   http->CreateRequest(
     std::move(url),

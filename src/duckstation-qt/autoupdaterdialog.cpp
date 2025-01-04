@@ -533,6 +533,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
   progress.SetStatusText(tr("Downloading %1...").arg(m_latest_sha).toUtf8().constData());
   progress.GetDialog().setWindowIcon(windowIcon());
   progress.SetCancellable(true);
+  progress.MakeVisible();
 
   m_http->CreateRequest(
     m_download_url.toStdString(),

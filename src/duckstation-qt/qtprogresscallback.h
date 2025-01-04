@@ -31,6 +31,8 @@ public:
   bool ModalConfirmation(const std::string_view message) override;
   void ModalInformation(const std::string_view message) override;
 
+  void MakeVisible();
+
 private Q_SLOTS:
   void dialogCancelled();
 
