@@ -59,6 +59,7 @@
     <ClInclude Include="opengl_context_egl_xlib.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="opengl_context_sdl.h" />
     <ClInclude Include="opengl_context_wgl.h">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClInclude>
@@ -166,6 +167,7 @@
     <ClCompile Include="opengl_context_egl_xlib.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="opengl_context_sdl.cpp" />
     <ClCompile Include="opengl_context_wgl.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='ARM64'">true</ExcludedFromBuild>
     </ClCompile>
