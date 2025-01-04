@@ -2147,8 +2147,10 @@ void EmuThread::updatePerformanceCounters(const GPUBackend* gpu_backend)
   }
   if (render_width != m_last_render_width || render_height != m_last_render_height)
   {
+    const QString text =
+      (render_width != 0 && render_height != 0) ? tr("%1x%2").arg(render_width).arg(render_height) : tr("No Image");
     QMetaObject::invokeMethod(g_main_window->getStatusResolutionWidget(), "setText", Qt::QueuedConnection,
-                              Q_ARG(const QString&, tr("%1x%2").arg(render_width).arg(render_height)));
+                              Q_ARG(const QString&, text));
     m_last_render_width = render_width;
     m_last_render_height = render_height;
   }
