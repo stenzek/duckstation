@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\..\dep\msvc\vsprops\Configurations.props" />
+  <ItemGroup>
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="sdl_key_names.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="duckstation-mini.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="duckstation-mini.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="duckstation-mini.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\common.vcxproj">
+      <Project>{ee054e08-3799-4a59-a422-18259c105ffd}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\core\core.vcxproj">
+      <Project>{868b98c8-65a1-494b-8346-250a73a48c0a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\util\util.vcxproj">
+      <Project>{57f6206d-f264-4b07-baf8-11b9bbe1f455}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="mini_host.cpp" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FA259BC0-1007-4FD9-8A47-87CC0ECB8445}</ProjectGuid>
+    <ProjectName>duckstation-mini</ProjectName>
+  </PropertyGroup>
+  <Import Project="..\..\dep\msvc\vsprops\Win32Application.props" />
+  <Import Project="..\core\core.props" />
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>%(AdditionalDependencies);SDL2main.lib</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="..\..\dep\msvc\vsprops\Targets.props" />
+</Project>
