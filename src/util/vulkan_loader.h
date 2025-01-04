@@ -59,10 +59,16 @@ class Error;
 #endif
 
 namespace Vulkan {
+
 bool IsVulkanLibraryLoaded();
 bool LoadVulkanLibrary(Error* error);
 bool LoadVulkanInstanceFunctions(VkInstance instance);
 bool LoadVulkanDeviceFunctions(VkDevice device);
 void UnloadVulkanLibrary();
 void ResetVulkanLibraryFunctionPointers();
+
+#ifdef ENABLE_SDL
+bool LoadVulkanLibraryFromSDL(Error* error);
+#endif
+
 } // namespace Vulkan

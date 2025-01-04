@@ -13,12 +13,12 @@
 #include <array>
 #include <cmath>
 
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-#include <X11/Xlib.h>
-#endif
-
 #if defined(VK_USE_PLATFORM_METAL_EXT)
 #include "util/metal_layer.h"
+#endif
+
+#ifdef ENABLE_SDL
+#include <SDL3/SDL_vulkan.h>
 #endif
 
 LOG_CHANNEL(GPUDevice);
@@ -178,6 +178,19 @@ bool VulkanSwapChain::CreateSurface(VkInstance instance, VkPhysicalDevice physic
     if (res != VK_SUCCESS)
     {
       Vulkan::SetErrorObject(error, "vkCreateWaylandSurfaceEXT failed: ", res);
+      return false;
+    }
+
+    return true;
+  }
+#endif
+
+#if defined(ENABLE_SDL)
+  if (m_window_info.type == WindowInfo::Type::SDL)
+  {
+    if (!SDL_Vulkan_CreateSurface(static_cast<SDL_Window*>(m_window_info.window_handle), instance, nullptr, &m_surface))
+    {
+      Error::SetStringFmt(error, "SDL_Vulkan_CreateSurface() failed: {}", SDL_GetError());
       return false;
     }
 

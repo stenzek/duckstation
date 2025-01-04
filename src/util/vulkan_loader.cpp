@@ -11,6 +11,10 @@
 #include "common/error.h"
 #include "common/log.h"
 
+#ifdef ENABLE_SDL
+#include <SDL3/SDL_vulkan.h>
+#endif
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
@@ -43,9 +47,17 @@ void Vulkan::ResetVulkanLibraryFunctionPointers()
 
 static DynamicLibrary s_vulkan_library;
 
+#ifdef ENABLE_SDL
+static bool s_vulkan_library_loaded_from_sdl = false;
+#endif
+
 bool Vulkan::IsVulkanLibraryLoaded()
 {
+#ifdef ENABLE_SDL
+  return (s_vulkan_library.IsOpen() || s_vulkan_library_loaded_from_sdl);
+#else
   return s_vulkan_library.IsOpen();
+#endif
 }
 
 bool Vulkan::LoadVulkanLibrary(Error* error)
@@ -93,10 +105,65 @@ bool Vulkan::LoadVulkanLibrary(Error* error)
   return true;
 }
 
+#ifdef ENABLE_SDL
+
+bool Vulkan::LoadVulkanLibraryFromSDL(Error* error)
+{
+  if (!SDL_Vulkan_LoadLibrary(nullptr))
+  {
+    Error::SetStringFmt(error, "SDL_Vulkan_LoadLibrary() failed: {}", SDL_GetError());
+    return false;
+  }
+
+  vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(SDL_Vulkan_GetVkGetInstanceProcAddr());
+  if (!vkGetInstanceProcAddr)
+  {
+    Error::SetStringFmt(error, "SDL_Vulkan_GetVkGetInstanceProcAddr() failed: {}", SDL_GetError());
+    SDL_Vulkan_UnloadLibrary();
+    return false;
+  }
+
+  bool required_functions_missing = false;
+
+  // vkGetInstanceProcAddr() can't resolve itself until Vulkan 1.2.
+
+#define VULKAN_MODULE_ENTRY_POINT(name, required)                                                                      \
+  if ((reinterpret_cast<const void*>(&name) != reinterpret_cast<const void*>(&vkGetInstanceProcAddr)) &&               \
+      !(name = reinterpret_cast<decltype(name)>(vkGetInstanceProcAddr(nullptr, #name))) && required)                   \
+  {                                                                                                                    \
+    ERROR_LOG("Vulkan: Failed to load required module function {}", #name);                                            \
+    required_functions_missing = true;                                                                                 \
+  }
+#include "vulkan_entry_points.inl"
+#undef VULKAN_MODULE_ENTRY_POINT
+
+  if (required_functions_missing)
+  {
+    Error::SetStringView(error, "One or more required functions are missing. The log contains more information.");
+    ResetVulkanLibraryFunctionPointers();
+    SDL_Vulkan_UnloadLibrary();
+    return false;
+  }
+
+  s_vulkan_library_loaded_from_sdl = true;
+  return true;
+}
+
+#endif
+
 void Vulkan::UnloadVulkanLibrary()
 {
   ResetVulkanLibraryFunctionPointers();
+
   s_vulkan_library.Close();
+
+#ifdef ENABLE_SDL
+  if (s_vulkan_library_loaded_from_sdl)
+  {
+    s_vulkan_library_loaded_from_sdl = false;
+    SDL_Vulkan_UnloadLibrary();
+  }
+#endif
 }
 
 bool Vulkan::LoadVulkanInstanceFunctions(VkInstance instance)
