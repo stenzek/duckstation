@@ -186,6 +186,8 @@ target_include_directories(util PUBLIC ${SHADERC_INCLUDE_DIR} ${SPIRV_CROSS_INCL
 if(NOT ANDROID)
   target_sources(util PRIVATE
     cubeb_audio_stream.cpp
+    opengl_context_sdl.cpp
+    opengl_context_sdl.h
     sdl_audio_stream.cpp
     sdl_input_source.cpp
     sdl_input_source.h
