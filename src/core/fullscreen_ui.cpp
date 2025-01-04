@@ -8525,6 +8525,75 @@ void FullscreenUI::OpenLeaderboardsWindow()
   });
 }
 
+FullscreenUI::BackgroundProgressCallback::BackgroundProgressCallback(std::string name)
+  : ProgressCallback(), m_name(std::move(name))
+{
+  ImGuiFullscreen::OpenBackgroundProgressDialog(m_name.c_str(), "", 0, 100, 0);
+}
+
+FullscreenUI::BackgroundProgressCallback::~BackgroundProgressCallback()
+{
+  ImGuiFullscreen::CloseBackgroundProgressDialog(m_name.c_str());
+}
+
+void FullscreenUI::BackgroundProgressCallback::SetStatusText(const std::string_view text)
+{
+  ProgressCallback::SetStatusText(text);
+  Redraw(true);
+}
+
+void FullscreenUI::BackgroundProgressCallback::SetProgressRange(u32 range)
+{
+  const u32 last_range = m_progress_range;
+
+  ProgressCallback::SetProgressRange(range);
+
+  if (m_progress_range != last_range)
+    Redraw(false);
+}
+
+void FullscreenUI::BackgroundProgressCallback::SetProgressValue(u32 value)
+{
+  const u32 last_value = m_progress_value;
+
+  ProgressCallback::SetProgressValue(value);
+
+  if (m_progress_value != last_value)
+    Redraw(false);
+}
+
+void FullscreenUI::BackgroundProgressCallback::Redraw(bool force)
+{
+  const int percent =
+    static_cast<int>((static_cast<float>(m_progress_value) / static_cast<float>(m_progress_range)) * 100.0f);
+  if (percent == m_last_progress_percent && !force)
+    return;
+
+  m_last_progress_percent = percent;
+  ImGuiFullscreen::UpdateBackgroundProgressDialog(m_name.c_str(), m_status_text, 0, 100, percent);
+}
+
+void FullscreenUI::BackgroundProgressCallback::ModalError(const std::string_view message)
+{
+  Host::ReportErrorAsync("Error", message);
+}
+
+bool FullscreenUI::BackgroundProgressCallback::ModalConfirmation(const std::string_view message)
+{
+  return Host::ConfirmMessage("Confirm", message);
+}
+
+void FullscreenUI::BackgroundProgressCallback::ModalInformation(const std::string_view message)
+{
+  Host::ReportErrorAsync("Information", message);
+}
+
+void FullscreenUI::BackgroundProgressCallback::SetCancelled()
+{
+  if (m_cancellable)
+    m_cancelled = true;
+}
+
 #endif // __ANDROID__
 
 LoadingScreenProgressCallback::LoadingScreenProgressCallback()
