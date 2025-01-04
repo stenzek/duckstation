@@ -5,6 +5,7 @@
 #include "window_info.h"
 
 #include "common/assert.h"
+#include "common/dynamic_library.h"
 #include "common/error.h"
 #include "common/log.h"
 #include "common/scoped_guard.h"
@@ -18,6 +19,66 @@
 LOG_CHANNEL(WindowInfo);
 
 namespace {
+
+namespace dyn_libs {
+
+#define XCB_FUNCTIONS(X)                                                                                               \
+  X(xcb_get_geometry)                                                                                                  \
+  X(xcb_get_geometry_reply)                                                                                            \
+  X(xcb_get_setup)                                                                                                     \
+  X(xcb_setup_roots_iterator)                                                                                          \
+  X(xcb_screen_next)                                                                                                   \
+  X(xcb_screen_allowed_depths_iterator)                                                                                \
+  X(xcb_depth_next)                                                                                                    \
+  X(xcb_depth_visuals_length)                                                                                          \
+  X(xcb_depth_visuals)                                                                                                 \
+  X(xcb_generate_id)                                                                                                   \
+  X(xcb_request_check)                                                                                                 \
+  X(xcb_create_colormap_checked)                                                                                       \
+  X(xcb_create_window_checked)                                                                                         \
+  X(xcb_map_window_checked)                                                                                            \
+  X(xcb_unmap_window_checked)                                                                                          \
+  X(xcb_destroy_window_checked)                                                                                        \
+  X(xcb_free_colormap_checked)                                                                                         \
+  X(xcb_configure_window_checked)
+
+#define XCB_RANDR_FUNCTIONS(X)                                                                                         \
+  X(xcb_randr_get_screen_resources_reply)                                                                              \
+  X(xcb_randr_get_screen_resources)                                                                                    \
+  X(xcb_randr_get_monitors_reply)                                                                                      \
+  X(xcb_randr_get_monitors)                                                                                            \
+  X(xcb_randr_get_monitors_monitors_iterator)                                                                          \
+  X(xcb_randr_monitor_info_outputs)                                                                                    \
+  X(xcb_randr_get_output_info_reply)                                                                                   \
+  X(xcb_randr_get_output_info)                                                                                         \
+  X(xcb_randr_get_crtc_info_reply)                                                                                     \
+  X(xcb_randr_get_crtc_info)                                                                                           \
+  X(xcb_randr_get_screen_resources_modes_iterator)                                                                     \
+  X(xcb_randr_mode_info_next)
+
+#define X11XCB_FUNCTIONS(X) X(XGetXCBConnection)
+
+static bool OpenXcb(Error* error);
+static void CloseXcb();
+static bool OpenXcbRandR(Error* error);
+static void CloseXcbRandR();
+static bool OpenX11Xcb(Error* error);
+static void CloseX11Xcb();
+static void CloseAll();
+
+static DynamicLibrary s_xcb_library;
+static DynamicLibrary s_xcb_randr_library;
+static DynamicLibrary s_x11xcb_library;
+static bool s_close_registered = false;
+
+#define ADD_FUNC(F) static decltype(&::F) F;
+XCB_FUNCTIONS(ADD_FUNC);
+XCB_RANDR_FUNCTIONS(ADD_FUNC);
+X11XCB_FUNCTIONS(ADD_FUNC);
+#undef ADD_FUNC
+
+} // namespace dyn_libs
+
 template<typename T>
 struct XCBPointerDeleter
 {
@@ -26,7 +87,138 @@ struct XCBPointerDeleter
 
 template<typename T>
 using XCBPointer = std::unique_ptr<T, XCBPointerDeleter<T>>;
+
 } // namespace
+
+bool dyn_libs::OpenXcb(Error* error)
+{
+  if (s_xcb_library.IsOpen())
+    return true;
+
+  const std::string libname = DynamicLibrary::GetVersionedFilename("xcb", 1);
+  if (!s_xcb_library.Open(libname.c_str(), error))
+  {
+    Error::AddPrefix(error, "Failed to load xcb: ");
+    return false;
+  }
+
+#define LOAD_FUNC(F)                                                                                                   \
+  if (!s_xcb_library.GetSymbol(#F, &F))                                                                                \
+  {                                                                                                                    \
+    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
+    CloseXcb();                                                                                                        \
+    return false;                                                                                                      \
+  }
+
+  XCB_FUNCTIONS(LOAD_FUNC)
+#undef LOAD_FUNC
+
+  if (!s_close_registered)
+  {
+    s_close_registered = true;
+    std::atexit(&dyn_libs::CloseAll);
+  }
+
+  return true;
+}
+
+void dyn_libs::CloseXcb()
+{
+#define UNLOAD_FUNC(F) F = nullptr;
+  XCB_FUNCTIONS(UNLOAD_FUNC)
+#undef UNLOAD_FUNC
+
+  s_xcb_library.Close();
+}
+
+bool dyn_libs::OpenXcbRandR(Error* error)
+{
+  if (s_xcb_randr_library.IsOpen())
+    return true;
+
+  const std::string libname = DynamicLibrary::GetVersionedFilename("xcb-randr", 0);
+  if (!s_xcb_randr_library.Open(libname.c_str(), error))
+  {
+    Error::AddPrefix(error, "Failed to load xcb-randr: ");
+    return false;
+  }
+
+#define LOAD_FUNC(F)                                                                                                   \
+  if (!s_xcb_randr_library.GetSymbol(#F, &F))                                                                          \
+  {                                                                                                                    \
+    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
+    CloseXcb();                                                                                                        \
+    return false;                                                                                                      \
+  }
+
+  XCB_RANDR_FUNCTIONS(LOAD_FUNC)
+#undef LOAD_FUNC
+
+  if (!s_close_registered)
+  {
+    s_close_registered = true;
+    std::atexit(&dyn_libs::CloseAll);
+  }
+
+  return true;
+}
+
+void dyn_libs::CloseXcbRandR()
+{
+#define UNLOAD_FUNC(F) F = nullptr;
+  XCB_RANDR_FUNCTIONS(UNLOAD_FUNC)
+#undef UNLOAD_FUNC
+
+  s_xcb_randr_library.Close();
+}
+
+bool dyn_libs::OpenX11Xcb(Error* error)
+{
+  if (s_x11xcb_library.IsOpen())
+    return true;
+
+  const std::string libname = DynamicLibrary::GetVersionedFilename("X11-xcb", 1);
+  if (!s_x11xcb_library.Open(libname.c_str(), error))
+  {
+    Error::AddPrefix(error, "Failed to load X11-xcb: ");
+    return false;
+  }
+
+#define LOAD_FUNC(F)                                                                                                   \
+  if (!s_x11xcb_library.GetSymbol(#F, &F))                                                                             \
+  {                                                                                                                    \
+    Error::SetStringFmt(error, "Failed to find function {}", #F);                                                      \
+    CloseXcb();                                                                                                        \
+    return false;                                                                                                      \
+  }
+
+  X11XCB_FUNCTIONS(LOAD_FUNC)
+#undef LOAD_FUNC
+
+  if (!s_close_registered)
+  {
+    s_close_registered = true;
+    std::atexit(&dyn_libs::CloseAll);
+  }
+
+  return true;
+}
+
+void dyn_libs::CloseX11Xcb()
+{
+#define UNLOAD_FUNC(F) F = nullptr;
+  X11XCB_FUNCTIONS(UNLOAD_FUNC)
+#undef UNLOAD_FUNC
+
+  s_x11xcb_library.Close();
+}
+
+void dyn_libs::CloseAll()
+{
+  CloseX11Xcb();
+  CloseXcbRandR();
+  CloseXcb();
+}
 
 X11Window::X11Window() = default;
 
@@ -81,11 +273,14 @@ bool X11Window::Create(xcb_connection_t* connection, xcb_window_t parent_window,
 {
   xcb_generic_error_t* xerror;
 
+  if (!dyn_libs::OpenXcb(error))
+    return false;
+
   m_connection = connection;
   m_parent_window = parent_window;
 
   XCBPointer<xcb_get_geometry_reply_t> gwa(
-    xcb_get_geometry_reply(connection, xcb_get_geometry(connection, parent_window), &xerror));
+    dyn_libs::xcb_get_geometry_reply(connection, dyn_libs::xcb_get_geometry(connection, parent_window), &xerror));
   if (!gwa)
   {
     SetErrorObject(error, "xcb_get_geometry_reply() failed: ", xerror);
@@ -97,15 +292,16 @@ bool X11Window::Create(xcb_connection_t* connection, xcb_window_t parent_window,
 
   // Need to find the root window to get an appropriate depth. Needed for NVIDIA+XWayland.
   int visual_depth = XCB_COPY_FROM_PARENT;
-  for (xcb_screen_iterator_t it = xcb_setup_roots_iterator(xcb_get_setup(connection)); it.rem != 0;
-       xcb_screen_next(&it))
+  for (xcb_screen_iterator_t it = dyn_libs::xcb_setup_roots_iterator(dyn_libs::xcb_get_setup(connection)); it.rem != 0;
+       dyn_libs::xcb_screen_next(&it))
   {
     if (it.data->root == gwa->root)
     {
-      for (xcb_depth_iterator_t dit = xcb_screen_allowed_depths_iterator(it.data); dit.rem != 0; xcb_depth_next(&dit))
+      for (xcb_depth_iterator_t dit = dyn_libs::xcb_screen_allowed_depths_iterator(it.data); dit.rem != 0;
+           dyn_libs::xcb_depth_next(&dit))
       {
-        const int len = xcb_depth_visuals_length(dit.data);
-        const xcb_visualtype_t* visuals = xcb_depth_visuals(dit.data);
+        const int len = dyn_libs::xcb_depth_visuals_length(dit.data);
+        const xcb_visualtype_t* visuals = dyn_libs::xcb_depth_visuals(dit.data);
         int idx = 0;
         for (; idx < len; idx++)
         {
@@ -124,22 +320,24 @@ bool X11Window::Create(xcb_connection_t* connection, xcb_window_t parent_window,
     WARNING_LOG("Could not find visual's depth.");
 
   // ID isn't "used" until the call succeeds.
-  m_colormap = xcb_generate_id(connection);
-  if ((xerror = xcb_request_check(
-         connection, xcb_create_colormap_checked(connection, XCB_COLORMAP_ALLOC_NONE, m_colormap, parent_window, vi))))
+  m_colormap = dyn_libs::xcb_generate_id(connection);
+  if ((xerror = dyn_libs::xcb_request_check(
+         connection,
+         dyn_libs::xcb_create_colormap_checked(connection, XCB_COLORMAP_ALLOC_NONE, m_colormap, parent_window, vi))))
   {
     SetErrorObject(error, "xcb_create_colormap_checked() failed: ", xerror);
     m_colormap = {};
     return false;
   }
 
-  m_window = xcb_generate_id(connection);
+  m_window = dyn_libs::xcb_generate_id(connection);
 
   const u32 window_values[] = {XCB_PIXMAP_NONE, 0u, m_colormap};
-  xerror = xcb_request_check(
-    connection, xcb_create_window_checked(connection, visual_depth, m_window, parent_window, 0, 0, m_width, m_height, 0,
-                                          XCB_WINDOW_CLASS_INPUT_OUTPUT, vi,
-                                          XCB_CW_BACK_PIXMAP | XCB_CW_BORDER_PIXEL | XCB_CW_COLORMAP, window_values));
+  xerror = dyn_libs::xcb_request_check(
+    connection,
+    dyn_libs::xcb_create_window_checked(connection, visual_depth, m_window, parent_window, 0, 0, m_width, m_height, 0,
+                                        XCB_WINDOW_CLASS_INPUT_OUTPUT, vi,
+                                        XCB_CW_BACK_PIXMAP | XCB_CW_BORDER_PIXEL | XCB_CW_COLORMAP, window_values));
   if (xerror)
   {
     SetErrorObject(error, "xcb_create_window_checked() failed: ", xerror);
@@ -147,7 +345,7 @@ bool X11Window::Create(xcb_connection_t* connection, xcb_window_t parent_window,
     return false;
   }
 
-  xerror = xcb_request_check(connection, xcb_map_window_checked(connection, m_window));
+  xerror = dyn_libs::xcb_request_check(connection, dyn_libs::xcb_map_window_checked(connection, m_window));
   if (xerror)
   {
     SetErrorObject(error, "xcb_map_window_checked() failed: ", xerror);
@@ -164,13 +362,15 @@ void X11Window::Destroy()
 
   if (m_window)
   {
-    if ((xerror = xcb_request_check(m_connection, xcb_unmap_window_checked(m_connection, m_window))))
+    if ((xerror =
+           dyn_libs::xcb_request_check(m_connection, dyn_libs::xcb_unmap_window_checked(m_connection, m_window))))
     {
       SetErrorObject(&error, "xcb_unmap_window_checked() failed: ", xerror);
       ERROR_LOG(error.GetDescription());
     }
 
-    if ((xerror = xcb_request_check(m_connection, xcb_destroy_window_checked(m_connection, m_window))))
+    if ((xerror =
+           dyn_libs::xcb_request_check(m_connection, dyn_libs::xcb_destroy_window_checked(m_connection, m_window))))
     {
       SetErrorObject(&error, "xcb_destroy_window_checked() failed: ", xerror);
       ERROR_LOG(error.GetDescription());
@@ -182,7 +382,8 @@ void X11Window::Destroy()
 
   if (m_colormap)
   {
-    if ((xerror = xcb_request_check(m_connection, xcb_free_colormap_checked(m_connection, m_colormap))))
+    if ((xerror =
+           dyn_libs::xcb_request_check(m_connection, dyn_libs::xcb_free_colormap_checked(m_connection, m_colormap))))
     {
       SetErrorObject(&error, "xcb_free_colormap_checked() failed: ", xerror);
       ERROR_LOG(error.GetDescription());
@@ -204,8 +405,8 @@ void X11Window::Resize(u16 width, u16 height)
   }
   else
   {
-    XCBPointer<xcb_get_geometry_reply_t> gwa(
-      xcb_get_geometry_reply(m_connection, xcb_get_geometry(m_connection, m_parent_window), &xerror));
+    XCBPointer<xcb_get_geometry_reply_t> gwa(dyn_libs::xcb_get_geometry_reply(
+      m_connection, dyn_libs::xcb_get_geometry(m_connection, m_parent_window), &xerror));
     if (!gwa)
     {
       SetErrorObject(&error, "xcb_get_geometry() failed: ", xerror);
@@ -218,9 +419,9 @@ void X11Window::Resize(u16 width, u16 height)
   }
 
   u32 values[] = {width, height};
-  if ((xerror = xcb_request_check(
-         m_connection, xcb_configure_window_checked(m_connection, m_window,
-                                                    XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values))))
+  if ((xerror = dyn_libs::xcb_request_check(
+         m_connection, dyn_libs::xcb_configure_window_checked(
+                         m_connection, m_window, XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values))))
   {
     SetErrorObject(&error, "xcb_configure_window_checked() failed: ", xerror);
     ERROR_LOG(error.GetDescription());
@@ -232,7 +433,10 @@ std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi, Error* error
   xcb_connection_t* connection = nullptr;
   if (wi.type == WindowInfo::Type::Xlib)
   {
-    connection = XGetXCBConnection(static_cast<Display*>(wi.display_connection));
+    if (!dyn_libs::OpenX11Xcb(error))
+      return std::nullopt;
+
+    connection = dyn_libs::XGetXCBConnection(static_cast<Display*>(wi.display_connection));
   }
   else if (wi.type == WindowInfo::Type::XCB)
   {
@@ -246,17 +450,20 @@ std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi, Error* error
     return std::nullopt;
   }
 
+  if (!dyn_libs::OpenXcb(error) || !dyn_libs::OpenXcbRandR(error))
+    return std::nullopt;
+
   xcb_generic_error_t* xerror;
-  XCBPointer<xcb_randr_get_screen_resources_reply_t> gsr(
-    xcb_randr_get_screen_resources_reply(connection, xcb_randr_get_screen_resources(connection, window), &xerror));
+  XCBPointer<xcb_randr_get_screen_resources_reply_t> gsr(dyn_libs::xcb_randr_get_screen_resources_reply(
+    connection, dyn_libs::xcb_randr_get_screen_resources(connection, window), &xerror));
   if (xerror)
   {
     SetErrorObject(error, "xcb_randr_get_screen_resources() failed: ", xerror);
     return std::nullopt;
   }
 
-  XCBPointer<xcb_randr_get_monitors_reply_t> gm(
-    xcb_randr_get_monitors_reply(connection, xcb_randr_get_monitors(connection, window, true), &xerror));
+  XCBPointer<xcb_randr_get_monitors_reply_t> gm(dyn_libs::xcb_randr_get_monitors_reply(
+    connection, dyn_libs::xcb_randr_get_monitors(connection, window, true), &xerror));
   if (xerror || gm->nMonitors < 0)
   {
     SetErrorObject(error, "xcb_randr_get_screen_resources() failed: ", xerror);
@@ -276,22 +483,22 @@ std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi, Error* error
     WARNING_LOG("Monitor has {} outputs, using first", gm->nOutputs);
   }
 
-  xcb_randr_monitor_info_t* monitor_info = xcb_randr_get_monitors_monitors_iterator(gm.get()).data;
+  xcb_randr_monitor_info_t* monitor_info = dyn_libs::xcb_randr_get_monitors_monitors_iterator(gm.get()).data;
   DebugAssert(monitor_info);
 
-  xcb_randr_output_t* monitor_outputs = xcb_randr_monitor_info_outputs(monitor_info);
+  xcb_randr_output_t* monitor_outputs = dyn_libs::xcb_randr_monitor_info_outputs(monitor_info);
   DebugAssert(monitor_outputs);
 
-  XCBPointer<xcb_randr_get_output_info_reply_t> goi(
-    xcb_randr_get_output_info_reply(connection, xcb_randr_get_output_info(connection, monitor_outputs[0], 0), &xerror));
+  XCBPointer<xcb_randr_get_output_info_reply_t> goi(dyn_libs::xcb_randr_get_output_info_reply(
+    connection, dyn_libs::xcb_randr_get_output_info(connection, monitor_outputs[0], 0), &xerror));
   if (xerror)
   {
     SetErrorObject(error, "xcb_randr_get_output_info() failed: ", xerror);
     return std::nullopt;
   }
 
-  XCBPointer<xcb_randr_get_crtc_info_reply_t> gci(
-    xcb_randr_get_crtc_info_reply(connection, xcb_randr_get_crtc_info(connection, goi->crtc, 0), &xerror));
+  XCBPointer<xcb_randr_get_crtc_info_reply_t> gci(dyn_libs::xcb_randr_get_crtc_info_reply(
+    connection, dyn_libs::xcb_randr_get_crtc_info(connection, goi->crtc, 0), &xerror));
   if (xerror)
   {
     SetErrorObject(error, "xcb_randr_get_crtc_info_reply() failed: ", xerror);
@@ -299,8 +506,8 @@ std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi, Error* error
   }
 
   xcb_randr_mode_info_t* mode = nullptr;
-  for (xcb_randr_mode_info_iterator_t it = xcb_randr_get_screen_resources_modes_iterator(gsr.get()); it.rem != 0;
-       xcb_randr_mode_info_next(&it))
+  for (xcb_randr_mode_info_iterator_t it = dyn_libs::xcb_randr_get_screen_resources_modes_iterator(gsr.get());
+       it.rem != 0; dyn_libs::xcb_randr_mode_info_next(&it))
   {
     if (it.data->id == gci->mode)
     {
