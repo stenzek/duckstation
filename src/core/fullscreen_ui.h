@@ -26,18 +26,6 @@ void OnSystemResumed();
 void OnSystemDestroyed();
 void OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title, GameHash hash);
 
-#ifndef __ANDROID__
-void OpenPauseMenu();
-void OpenCheatsMenu();
-void OpenDiscChangeMenu();
-void OpenAchievementsWindow();
-void OpenLeaderboardsWindow();
-void ReturnToMainWindow();
-void ReturnToPreviousWindow();
-void SetStandardSelectionFooterText(bool back_instead_of_cancel);
-void UpdateRunIdleState();
-#endif
-
 void Shutdown(bool clear_state);
 void Render();
 void InvalidateCoverCache();
@@ -50,6 +38,43 @@ void OpenLoadingScreen(std::string_view image, std::string_view message, s32 pro
 void UpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
                          s32 progress_value = -1);
 void CloseLoadingScreen();
+
+#ifndef __ANDROID__
+
+void OpenPauseMenu();
+void OpenCheatsMenu();
+void OpenDiscChangeMenu();
+void OpenAchievementsWindow();
+void OpenLeaderboardsWindow();
+void ReturnToMainWindow();
+void ReturnToPreviousWindow();
+void SetStandardSelectionFooterText(bool back_instead_of_cancel);
+void UpdateRunIdleState();
+
+class BackgroundProgressCallback final : public ProgressCallback
+{
+public:
+  BackgroundProgressCallback(std::string name);
+  ~BackgroundProgressCallback() override;
+
+  void SetStatusText(const std::string_view text) override;
+  void SetProgressRange(u32 range) override;
+  void SetProgressValue(u32 value) override;
+
+  void ModalError(const std::string_view message) override;
+  bool ModalConfirmation(const std::string_view message) override;
+  void ModalInformation(const std::string_view message) override;
+
+  void SetCancelled();
+
+private:
+  void Redraw(bool force);
+
+  std::string m_name;
+  int m_last_progress_percent = -1;
+};
+
+#endif // __ANDROID__
 
 } // namespace FullscreenUI
 
