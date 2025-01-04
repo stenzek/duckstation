@@ -1,8 +1,8 @@
 # Renderer options.
 option(ENABLE_OPENGL "Build with OpenGL renderer" ON)
 option(ENABLE_VULKAN "Build with Vulkan renderer" ON)
-option(BUILD_NOGUI_FRONTEND "Build the NoGUI frontend" OFF)
 option(BUILD_QT_FRONTEND "Build the Qt frontend" ON)
+option(BUILD_MINI_FRONTEND "Build the Mini frontend" OFF)
 option(BUILD_REGTEST "Build regression test runner" OFF)
 option(BUILD_TESTS "Build unit tests" OFF)
 option(DISABLE_SSE4 "Build with SSE4 instructions disabled, reduces performance" OFF)
