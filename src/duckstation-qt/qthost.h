@@ -103,7 +103,6 @@ public:
 
   void startBackgroundControllerPollTimer();
   void stopBackgroundControllerPollTimer();
-  void setFullscreenUIStarted(bool started);
   void wakeThread();
 
   bool shouldRenderToMain() const;

@@ -602,8 +602,6 @@ bool FullscreenUI::Initialize()
   s_state.initialized = true;
   s_state.hotkey_list_cache = InputManager::GetHotkeyList();
 
-  Host::RunOnCPUThread([]() { Host::OnFullscreenUIStartedOrStopped(true); });
-
   if (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
       !GPUThread::IsGPUBackendRequested())
   {
@@ -830,8 +828,6 @@ void FullscreenUI::Shutdown(bool clear_state)
 
   DestroyResources();
   ImGuiFullscreen::Shutdown(clear_state);
-  if (s_state.initialized)
-    Host::RunOnCPUThread([]() { Host::OnFullscreenUIStartedOrStopped(false); });
 
   s_state.initialized = false;
   s_state.tried_to_initialize = false;

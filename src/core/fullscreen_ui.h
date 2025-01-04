@@ -82,9 +82,6 @@ namespace Host {
 
 #ifndef __ANDROID__
 
-/// Called whenever fullscreen UI starts/stops.
-void OnFullscreenUIStartedOrStopped(bool started);
-
 /// Requests shut down and exit of the hosting application. This may not actually exit,
 /// if the user cancels the shutdown confirmation.
 void RequestExitApplication(bool allow_confirm);

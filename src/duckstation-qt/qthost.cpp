@@ -743,6 +743,9 @@ void EmuThread::startFullscreenUI()
     Host::ReportErrorAsync("Error", error.GetDescription());
     return;
   }
+
+  m_is_fullscreen_ui_started = true;
+  emit fullscreenUIStartedOrStopped(true);
 }
 
 void EmuThread::stopFullscreenUI()
@@ -758,7 +761,10 @@ void EmuThread::stopFullscreenUI()
   }
 
   if (m_is_fullscreen_ui_started)
+  {
     GPUThread::StopFullscreenUI();
+    emit fullscreenUIStartedOrStopped(false);
+  }
 }
 
 void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
@@ -1021,11 +1027,6 @@ void Host::OnSystemDestroyed()
   g_emu_thread->resetPerformanceCounters();
   g_emu_thread->startBackgroundControllerPollTimer();
   emit g_emu_thread->systemDestroyed();
-}
-
-void Host::OnFullscreenUIStartedOrStopped(bool started)
-{
-  g_emu_thread->setFullscreenUIStarted(started);
 }
 
 void Host::OnGPUThreadRunIdleChanged(bool is_active)
@@ -1821,15 +1822,6 @@ void EmuThread::setGPUThreadRunIdle(bool active)
 
   g_emu_thread->stopBackgroundControllerPollTimer();
   g_emu_thread->startBackgroundControllerPollTimer();
-}
-
-void EmuThread::setFullscreenUIStarted(bool started)
-{
-  if (m_is_fullscreen_ui_started == started)
-    return;
-
-  m_is_fullscreen_ui_started = started;
-  emit fullscreenUIStartedOrStopped(started);
 }
 
 void EmuThread::start()

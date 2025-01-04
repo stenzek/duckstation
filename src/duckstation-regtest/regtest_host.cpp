@@ -296,11 +296,6 @@ void Host::OnGPUThreadRunIdleChanged(bool is_active)
   //
 }
 
-void Host::OnFullscreenUIStartedOrStopped(bool started)
-{
-  //
-}
-
 void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
 {
   //
