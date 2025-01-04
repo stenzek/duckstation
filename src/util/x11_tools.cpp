@@ -240,7 +240,7 @@ std::optional<float> GetRefreshRateFromXRandR(const WindowInfo& wi, Error* error
   }
 
   xcb_window_t window = static_cast<xcb_window_t>(reinterpret_cast<uintptr_t>(wi.window_handle));
-  if (wi.type != WindowInfo::Type::XCB || !connection || window == XCB_NONE)
+  if (!connection || window == XCB_NONE)
   {
     Error::SetStringView(error, "Invalid window handle.");
     return std::nullopt;
