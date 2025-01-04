@@ -1520,7 +1520,7 @@ bool Cheats::ExportCodesToFile(std::string path, const CodeInfoList& codes, Erro
   for (const CodeInfo& code : codes)
   {
     const std::string code_body = FormatCodeForFile(code);
-    if (std::fwrite(code_body.data(), code_body.length(), 1, fp.get()) != 1 || std::fputc('\n', fp.get()) != 0)
+    if (std::fwrite(code_body.data(), code_body.length(), 1, fp.get()) != 1 || std::fputc('\n', fp.get()) == EOF)
     {
       Error::SetErrno(error, "fwrite() failed: ", errno);
       FileSystem::DiscardAtomicRenamedFile(fp);
