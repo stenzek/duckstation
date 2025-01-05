@@ -234,3 +234,9 @@ bool PlatformMisc::PlaySoundAsync(const char* path)
   return false;
 #endif
 }
+
+bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error /* = nullptr */)
+{
+  Error::SetStringView(error, "Unsupported on this platform.");
+  return false;
+}

@@ -16,6 +16,7 @@
 #include "common/windows_headers.h"
 #include <Psapi.h>
 #include <WinSock2.h>
+#include <dwmapi.h>
 #include <mmsystem.h>
 
 LOG_CHANNEL(PlatformMisc);
@@ -26,18 +27,21 @@ static std::once_flag s_winsock_initializer;
 
 bool PlatformMisc::InitializeSocketSupport(Error* error)
 {
-  std::call_once(s_winsock_initializer, [](Error* error) {
-    WSADATA wsa = {};
-    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
-    {
-      Error::SetSocket(error, "WSAStartup() failed: ", WSAGetLastError());
-      return false;
-    }
+  std::call_once(
+    s_winsock_initializer,
+    [](Error* error) {
+      WSADATA wsa = {};
+      if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
+      {
+        Error::SetSocket(error, "WSAStartup() failed: ", WSAGetLastError());
+        return false;
+      }
 
-    s_winsock_initialized = true;
-    std::atexit([]() { WSACleanup(); });
-    return true;
-  }, error);
+      s_winsock_initialized = true;
+      std::atexit([]() { WSACleanup(); });
+      return true;
+    },
+    error);
 
   return s_winsock_initialized;
 }
@@ -82,4 +86,15 @@ bool PlatformMisc::PlaySoundAsync(const char* path)
 {
   const std::wstring wpath(FileSystem::GetWin32Path(path));
   return PlaySoundW(wpath.c_str(), NULL, SND_ASYNC | SND_NODEFAULT);
+}
+
+bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error)
+{
+  const DWM_WINDOW_CORNER_PREFERENCE value = enabled ? DWMWCP_DEFAULT : DWMWCP_DONOTROUND;
+  const HRESULT hr =
+    DwmSetWindowAttribute(static_cast<HWND>(window_handle), DWMWA_WINDOW_CORNER_PREFERENCE, &value, sizeof(value));
+  if (FAILED(hr))
+    Error::SetHResult(error, "DwmSetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: ", hr);
+
+  return SUCCEEDED(hr);
 }

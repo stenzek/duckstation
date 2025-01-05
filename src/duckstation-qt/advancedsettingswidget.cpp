@@ -238,6 +238,9 @@ void AdvancedSettingsWidget::addTweakOptions()
                        static_cast<u32>(SaveStateCompressionMode::Count),
                        Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE);
 
+  addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Disable Window Rounded Corners"), "Main",
+                        "DisableWindowRoundedCorners", false);
+
   if (m_dialog->isPerGameSettings())
   {
     addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Display Active Start Offset"), "Display",
@@ -295,10 +298,11 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     int i = 0;
 
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply Game Settings
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply compatibility settings
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, true);  // Apply Compatibility settings
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false); // Load Devices From Save States
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_SAVE_STATE_COMPRESSION_MODE); // Save State Compression
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);            // Disable Window Rounded Corners
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            static_cast<int>(Settings::DEFAULT_DMA_MAX_SLICE_TICKS)); // DMA max slice ticks
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
@@ -331,6 +335,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("Main", "ApplyCompatibilitySettings");
   sif->DeleteValue("Main", "LoadDevicesFromSaveStates");
   sif->DeleteValue("Main", "CompressSaveStates");
+  sif->DeleteValue("Main", "DisableWindowRoundedCorners");
   sif->DeleteValue("Display", "ActiveStartOffset");
   sif->DeleteValue("Display", "ActiveEndOffset");
   sif->DeleteValue("Display", "LineStartOffset");

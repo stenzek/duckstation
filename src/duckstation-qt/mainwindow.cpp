@@ -32,6 +32,7 @@
 
 #include "util/cd_image.h"
 #include "util/gpu_device.h"
+#include "util/platform_misc.h"
 
 #include "common/assert.h"
 #include "common/error.h"
@@ -83,6 +84,7 @@ static bool s_use_central_widget = false;
 #endif
 
 // UI thread VM validity.
+static bool s_disable_window_rounded_corners = false;
 static bool s_system_valid = false;
 static bool s_system_paused = false;
 static bool s_fullscreen_ui_started = false;
@@ -353,6 +355,9 @@ void MainWindow::createDisplayWidget(bool fullscreen, bool render_to_main, bool 
     else
       restoreDisplayWindowGeometryFromConfig();
     container->showNormal();
+
+    if (s_disable_window_rounded_corners)
+      PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(container->winId()), false);
   }
   else if (s_use_central_widget)
   {
@@ -1678,6 +1683,10 @@ void MainWindow::setupAdditionalUi()
   m_shortcuts.game_grid_zoom_out =
     new QShortcut(Qt::ControlModifier | Qt::Key_Minus, this, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
 
+  s_disable_window_rounded_corners = Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
+  if (s_disable_window_rounded_corners)
+    PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(winId()), false);
+
 #ifdef ENABLE_RAINTEGRATION
   if (Achievements::IsUsingRAIntegration())
   {
@@ -2549,6 +2558,20 @@ void MainWindow::requestExit(bool allow_confirm /* = true */)
 
 void MainWindow::checkForSettingChanges()
 {
+  if (const bool disable_window_rounded_corners =
+        Host::GetBaseBoolSettingValue("Main", "DisableWindowRoundedCorners", false);
+      disable_window_rounded_corners != s_disable_window_rounded_corners)
+  {
+    s_disable_window_rounded_corners = disable_window_rounded_corners;
+    PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(winId()), !s_disable_window_rounded_corners);
+
+    if (QWidget* container = getDisplayContainer(); container && !container->parent() && !container->isFullScreen())
+    {
+      PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(container->winId()),
+                                                !s_disable_window_rounded_corners);
+    }
+  }
+
   LogWindow::updateSettings();
   updateWindowState();
 }
@@ -2646,6 +2669,9 @@ bool MainWindow::onCreateAuxiliaryRenderWindow(RenderAPI render_api, qint32 x, q
   AuxiliaryDisplayWidget* widget = AuxiliaryDisplayWidget::create(x, y, width, height, title, icon_name, userdata);
   if (!widget)
     return false;
+
+  if (s_disable_window_rounded_corners)
+    PlatformMisc::SetWindowRoundedCornerState(reinterpret_cast<void*>(widget->winId()), false);
 
   const std::optional<WindowInfo> owi = QtUtils::GetWindowInfoForWidget(widget, render_api, error);
   if (!owi.has_value())

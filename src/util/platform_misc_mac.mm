@@ -88,6 +88,12 @@ bool PlatformMisc::PlaySoundAsync(const char* path)
   return result;
 }
 
+bool PlatformMisc::SetWindowRoundedCornerState(void* window_handle, bool enabled, Error* error /* = nullptr */)
+{
+  Error::SetStringView(error, "Unsupported on this platform.");
+  return false;
+}
+
 void* CocoaTools::CreateMetalLayer(const WindowInfo& wi, Error* error)
 {
   // Punt off to main thread if we're not calling from it already.
