@@ -420,6 +420,34 @@ static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
 static GPUTexture* GetGameListCover(const GameList::Entry* entry);
 static GPUTexture* GetCoverForCurrentGame();
 
+//////////////////////////////////////////////////////////////////////////
+// Constants
+//////////////////////////////////////////////////////////////////////////
+
+static constexpr const std::array s_ps_button_mapping{
+  std::make_pair(ICON_PF_XBOX_DPAD_LEFT, ICON_PF_DPAD_LEFT),
+  std::make_pair(ICON_PF_XBOX_DPAD_UP, ICON_PF_DPAD_UP),
+  std::make_pair(ICON_PF_XBOX_DPAD_RIGHT, ICON_PF_DPAD_RIGHT),
+  std::make_pair(ICON_PF_XBOX_DPAD_DOWN, ICON_PF_DPAD_DOWN),
+  std::make_pair(ICON_PF_XBOX_DPAD_LEFT_RIGHT, ICON_PF_DPAD_LEFT_RIGHT),
+  std::make_pair(ICON_PF_XBOX_DPAD_UP_DOWN, ICON_PF_DPAD_UP_DOWN),
+  std::make_pair(ICON_PF_BUTTON_A, ICON_PF_BUTTON_CROSS),
+  std::make_pair(ICON_PF_BUTTON_B, ICON_PF_BUTTON_CIRCLE),
+  std::make_pair(ICON_PF_BUTTON_X, ICON_PF_BUTTON_SQUARE),
+  std::make_pair(ICON_PF_BUTTON_Y, ICON_PF_BUTTON_TRIANGLE),
+  std::make_pair(ICON_PF_SHARE_CAPTURE, ICON_PF_DUALSHOCK_SHARE),
+  std::make_pair(ICON_PF_BURGER_MENU, ICON_PF_DUALSHOCK_OPTIONS),
+  std::make_pair(ICON_PF_XBOX, ICON_PF_PLAYSTATION),
+  std::make_pair(ICON_PF_LEFT_SHOULDER_LB, ICON_PF_LEFT_SHOULDER_L1),
+  std::make_pair(ICON_PF_LEFT_TRIGGER_LT, ICON_PF_LEFT_TRIGGER_L2),
+  std::make_pair(ICON_PF_RIGHT_SHOULDER_RB, ICON_PF_RIGHT_SHOULDER_R1),
+  std::make_pair(ICON_PF_RIGHT_TRIGGER_RT, ICON_PF_RIGHT_TRIGGER_R2),
+};
+
+//////////////////////////////////////////////////////////////////////////
+// State
+//////////////////////////////////////////////////////////////////////////
+
 namespace {
 
 struct ALIGN_TO_CACHE_LINE UIState
@@ -589,6 +617,9 @@ bool FullscreenUI::Initialize()
   ImGuiFullscreen::SetTheme(Host::GetBaseBoolSettingValue("Main", "UseLightFullscreenUITheme", false));
   ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
   ImGuiFullscreen::UpdateLayoutScale();
+
+  if (Host::GetBaseBoolSettingValue("Main", "FullscreenUIDisplayPSIcons", false))
+    ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
 
   if (!ImGuiManager::AddFullscreenFontsIfMissing() || !ImGuiFullscreen::Initialize("images/placeholder.png") ||
       !LoadResources())
@@ -1717,7 +1748,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     return;
 
   if (oneline && type != InputBindingInfo::Type::Pointer && type != InputBindingInfo::Type::Device)
-    InputManager::PrettifyInputBinding(value);
+    InputManager::PrettifyInputBinding(value, &ImGuiFullscreen::GetControllerIconMapping);
 
   if (show_type)
   {
@@ -3243,6 +3274,18 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                         "UseLightFullscreenUITheme", false))
   {
     ImGuiFullscreen::SetTheme(bsi->GetBoolValue("Main", "UseLightFullscreenUITheme", false));
+  }
+
+  if (DrawToggleSetting(
+        bsi, FSUI_ICONSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
+        FSUI_CSTR(
+          "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons."),
+        "Main", "FullscreenUIDisplayPSIcons", false))
+  {
+    if (bsi->GetBoolValue("Main", "FullscreenUIDisplayPSIcons", false))
+      ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
+    else
+      ImGuiFullscreen::SetFullscreenFooterTextIconMapping({});
   }
 
   if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Smooth Scrolling"),
@@ -7575,7 +7618,7 @@ void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 
 void FullscreenUI::DrawAboutWindow()
 {
-  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 540.0f));
+  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 545.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(FSUI_CSTR("About DuckStation"));
 

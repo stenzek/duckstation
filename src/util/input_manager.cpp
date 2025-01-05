@@ -110,7 +110,8 @@ static std::optional<InputBindingKey> ParseSensorKey(std::string_view source, st
 
 static std::vector<std::string_view> SplitChord(std::string_view binding);
 static bool SplitBinding(std::string_view binding, std::string_view* source, std::string_view* sub_binding);
-static void PrettifyInputBindingPart(std::string_view binding, SmallString& ret, bool& changed);
+static void PrettifyInputBindingPart(std::string_view binding, BindingIconMappingFunction mapper, SmallString& ret,
+                                     bool& changed);
 static void AddBindings(const std::vector<std::string>& bindings, const InputEventHandler& handler);
 static void UpdatePointerCount();
 
@@ -384,10 +385,12 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
   return ss.str();
 }
 
-bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
+bool InputManager::PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper /*= nullptr*/)
 {
   if (binding.empty())
     return false;
+
+  mapper = mapper ? mapper : [](std::string_view v) { return v; };
 
   const std::string_view binding_view = binding.view();
 
@@ -405,7 +408,7 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
       {
         if (!ret.empty())
           ret.append(" + ");
-        PrettifyInputBindingPart(part, ret, changed);
+        PrettifyInputBindingPart(part, mapper, ret, changed);
       }
     }
     last = next + 1;
@@ -417,7 +420,7 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
     {
       if (!ret.empty())
         ret.append(" + ");
-      PrettifyInputBindingPart(part, ret, changed);
+      PrettifyInputBindingPart(part, mapper, ret, changed);
     }
   }
 
@@ -427,7 +430,8 @@ bool InputManager::PrettifyInputBinding(SmallStringBase& binding)
   return changed;
 }
 
-void InputManager::PrettifyInputBindingPart(const std::string_view binding, SmallString& ret, bool& changed)
+void InputManager::PrettifyInputBindingPart(const std::string_view binding, BindingIconMappingFunction mapper,
+                                            SmallString& ret, bool& changed)
 {
   std::string_view source, sub_binding;
   if (!SplitBinding(binding, &source, &sub_binding))
@@ -477,7 +481,7 @@ void InputManager::PrettifyInputBindingPart(const std::string_view binding, Smal
         std::optional<InputBindingKey> key = s_input_sources[i]->ParseKeyString(source, sub_binding);
         if (key.has_value())
         {
-          const TinyString icon = s_input_sources[i]->ConvertKeyToIcon(key.value());
+          const TinyString icon = s_input_sources[i]->ConvertKeyToIcon(key.value(), mapper);
           if (!icon.empty())
           {
             ret.append(icon);

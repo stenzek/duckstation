@@ -35,7 +35,7 @@ public:
   virtual bool ContainsDevice(std::string_view device) const = 0;
   virtual std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) = 0;
   virtual TinyString ConvertKeyToString(InputBindingKey key) = 0;
-  virtual TinyString ConvertKeyToIcon(InputBindingKey key) = 0;
+  virtual TinyString ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper) = 0;
 
   /// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
   virtual std::vector<std::pair<std::string, std::string>> EnumerateDevices() = 0;

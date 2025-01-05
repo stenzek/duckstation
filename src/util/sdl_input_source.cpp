@@ -41,8 +41,8 @@ static constexpr const char* s_sdl_axis_icons[][2] = {
   {ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN},      // SDL_CONTROLLER_AXIS_LEFTY
   {ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}, // SDL_CONTROLLER_AXIS_RIGHTX
   {ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN},    // SDL_CONTROLLER_AXIS_RIGHTY
-  {nullptr, ICON_PF_LEFT_TRIGGER_PULL},                    // SDL_CONTROLLER_AXIS_TRIGGERLEFT
-  {nullptr, ICON_PF_RIGHT_TRIGGER_PULL},                   // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
+  {nullptr, ICON_PF_LEFT_TRIGGER_LT},                      // SDL_CONTROLLER_AXIS_TRIGGERLEFT
+  {nullptr, ICON_PF_RIGHT_TRIGGER_RT},                     // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
 };
 static constexpr const GenericInputBinding s_sdl_generic_binding_axis_mapping[][2] = {
   {GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight},   // SDL_CONTROLLER_AXIS_LEFTX
@@ -92,6 +92,12 @@ static constexpr const char* s_sdl_button_icons[] = {
   ICON_PF_XBOX_DPAD_DOWN,     // SDL_CONTROLLER_BUTTON_DPAD_DOWN
   ICON_PF_XBOX_DPAD_LEFT,     // SDL_CONTROLLER_BUTTON_DPAD_LEFT
   ICON_PF_XBOX_DPAD_RIGHT,    // SDL_CONTROLLER_BUTTON_DPAD_RIGHT
+  nullptr,                    // SDL_CONTROLLER_BUTTON_MISC1
+  nullptr,                    // SDL_CONTROLLER_BUTTON_PADDLE1
+  nullptr,                    // SDL_CONTROLLER_BUTTON_PADDLE2
+  nullptr,                    // SDL_CONTROLLER_BUTTON_PADDLE3
+  nullptr,                    // SDL_CONTROLLER_BUTTON_PADDLE4
+  ICON_PF_DUALSHOCK_TOUCHPAD, // SDL_CONTROLLER_BUTTON_TOUCHPAD
 };
 static constexpr const GenericInputBinding s_sdl_generic_binding_button_mapping[] = {
   GenericInputBinding::Cross,     // SDL_CONTROLLER_BUTTON_A
@@ -539,7 +545,7 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
   return ret;
 }
 
-TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
+TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper)
 {
   TinyString ret;
 
@@ -550,13 +556,13 @@ TinyString SDLInputSource::ConvertKeyToIcon(InputBindingKey key)
       if (key.data < std::size(s_sdl_axis_icons) && key.modifier != InputModifier::FullAxis)
       {
         ret.format("SDL-{}  {}", static_cast<u32>(key.source_index),
-                   s_sdl_axis_icons[key.data][key.modifier == InputModifier::None]);
+                   mapper(s_sdl_axis_icons[key.data][key.modifier == InputModifier::None]));
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerButton)
     {
-      if (key.data < std::size(s_sdl_button_icons))
-        ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), s_sdl_button_icons[key.data]);
+      if (key.data < std::size(s_sdl_button_icons) && s_sdl_button_icons[key.data])
+        ret.format("SDL-{}  {}", static_cast<u32>(key.source_index), mapper(s_sdl_button_icons[key.data]));
     }
   }
 

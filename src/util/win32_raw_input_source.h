@@ -33,7 +33,7 @@ public:
   bool ContainsDevice(std::string_view device) const override;
   std::optional<InputBindingKey> ParseKeyString(std::string_view device, std::string_view binding) override;
   TinyString ConvertKeyToString(InputBindingKey key) override;
-  TinyString ConvertKeyToIcon(InputBindingKey key) override;
+  TinyString ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper) override;
 
   std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) override;
 

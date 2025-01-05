@@ -29,8 +29,8 @@ static constexpr const char* s_axis_icons[][2] = {
   {ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN},      // AXIS_LEFTY
   {ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}, // AXIS_RIGHTX
   {ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN},    // AXIS_RIGHTY
-  {nullptr, ICON_PF_LEFT_TRIGGER_PULL},                    // AXIS_TRIGGERLEFT
-  {nullptr, ICON_PF_RIGHT_TRIGGER_PULL},                   // AXIS_TRIGGERRIGHT
+  {nullptr, ICON_PF_LEFT_TRIGGER_LT},                      // AXIS_TRIGGERLEFT
+  {nullptr, ICON_PF_RIGHT_TRIGGER_RT},                     // AXIS_TRIGGERRIGHT
 };
 static const GenericInputBinding s_xinput_generic_binding_axis_mapping[][2] = {
   {GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight},   // AXIS_LEFTX
@@ -346,7 +346,7 @@ TinyString XInputSource::ConvertKeyToString(InputBindingKey key)
   return ret;
 }
 
-TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key)
+TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper)
 {
   TinyString ret;
 
@@ -357,13 +357,13 @@ TinyString XInputSource::ConvertKeyToIcon(InputBindingKey key)
       if (key.data < std::size(s_axis_icons) && key.modifier != InputModifier::FullAxis)
       {
         ret.format("XInput-{}  {}", static_cast<u32>(key.source_index),
-                   s_axis_icons[key.data][key.modifier == InputModifier::None]);
+                   mapper(s_axis_icons[key.data][key.modifier == InputModifier::None]));
       }
     }
     else if (key.source_subtype == InputSubclass::ControllerButton)
     {
       if (key.data < std::size(s_button_icons))
-        ret.format("XInput-{}  {}", static_cast<u32>(key.source_index), s_button_icons[key.data]);
+        ret.format("XInput-{}  {}", static_cast<u32>(key.source_index), mapper(s_button_icons[key.data]));
     }
   }
 

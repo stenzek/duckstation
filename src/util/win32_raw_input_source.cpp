@@ -106,7 +106,7 @@ TinyString Win32RawInputSource::ConvertKeyToString(InputBindingKey key)
   return {};
 }
 
-TinyString Win32RawInputSource::ConvertKeyToIcon(InputBindingKey key)
+TinyString Win32RawInputSource::ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper)
 {
   return {};
 }

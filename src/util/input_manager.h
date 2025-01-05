@@ -253,7 +253,9 @@ std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
                                             size_t num_keys);
 
 /// Represents a binding with icon fonts, if available.
-bool PrettifyInputBinding(SmallStringBase& binding);
+/// Optionally maps icon fonts to a different style, e.g. xbox icons -> PS buttons.
+using BindingIconMappingFunction = std::string_view(*)(std::string_view);
+bool PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper = nullptr);
 
 /// Returns a list of all hotkeys.
 std::vector<const HotkeyInfo*> GetHotkeyList();

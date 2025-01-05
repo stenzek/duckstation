@@ -125,6 +125,7 @@ struct ALIGN_TO_CACHE_LINE UIState
 
   SmallString fullscreen_footer_text;
   SmallString last_fullscreen_footer_text;
+  std::vector<std::pair<std::string_view, std::string_view>> fullscreen_footer_icon_mapping;
   float fullscreen_text_change_time;
 
   bool choice_dialog_open = false;
@@ -237,6 +238,7 @@ void ImGuiFullscreen::Shutdown(bool clear_state)
 
   if (clear_state)
   {
+    s_state.fullscreen_footer_icon_mapping = {};
     s_state.notifications.clear();
     s_state.background_progress_dialogs.clear();
     s_state.fullscreen_footer_text.clear();
@@ -816,6 +818,16 @@ bool ImGuiFullscreen::IsGamepadInputSource()
   return (ImGui::GetCurrentContext()->NavInputSource == ImGuiInputSource_Gamepad);
 }
 
+std::string_view ImGuiFullscreen::GetControllerIconMapping(std::string_view icon)
+{
+  const auto iter =
+    std::lower_bound(s_state.fullscreen_footer_icon_mapping.begin(), s_state.fullscreen_footer_icon_mapping.end(), icon,
+                     [](const auto& it, const auto& value) { return (it.first < value); });
+  if (iter != s_state.fullscreen_footer_icon_mapping.end() && iter->first == icon)
+    icon = iter->second;
+  return icon;
+}
+
 void ImGuiFullscreen::CreateFooterTextString(SmallStringBase& dest,
                                              std::span<const std::pair<const char*, std::string_view>> items)
 {
@@ -825,7 +837,7 @@ void ImGuiFullscreen::CreateFooterTextString(SmallStringBase& dest,
     if (!dest.empty())
       dest.append("    ");
 
-    dest.append(icon);
+    dest.append(GetControllerIconMapping(icon));
     dest.append(' ');
     dest.append(text);
   }
@@ -839,6 +851,21 @@ void ImGuiFullscreen::SetFullscreenFooterText(std::string_view text)
 void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items)
 {
   CreateFooterTextString(s_state.fullscreen_footer_text, items);
+}
+
+void ImGuiFullscreen::SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping)
+{
+  if (mapping.empty())
+  {
+    s_state.fullscreen_footer_icon_mapping = {};
+    return;
+  }
+
+  s_state.fullscreen_footer_icon_mapping.reserve(mapping.size());
+  for (const auto& [icon, mapped_icon] : mapping)
+    s_state.fullscreen_footer_icon_mapping.emplace_back(icon, mapped_icon);
+  std::sort(s_state.fullscreen_footer_icon_mapping.begin(), s_state.fullscreen_footer_icon_mapping.end(),
+            [](const auto& lhs, const auto& rhs) { return (lhs.first < rhs.first); });
 }
 
 void ImGuiFullscreen::DrawFullscreenFooter()
