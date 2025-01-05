@@ -70,7 +70,7 @@ static bool SetScreensaverInhibitDBus(const bool inhibit_requested, const char* 
     Error lerror;
     s_dbus_library_loaded = true;
 
-    if (!s_dbus_library.Open(DynamicLibrary::GetVersionedFilename("dbus-1").c_str(), &lerror))
+    if (!s_dbus_library.Open(DynamicLibrary::GetVersionedFilename("dbus-1", 3).c_str(), &lerror))
     {
       ERROR_LOG("Failed to open libdbus: {}", lerror.GetDescription());
       return false;
