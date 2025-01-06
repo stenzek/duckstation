@@ -4189,7 +4189,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
 bool System::CheckForRequiredSubQ(Error* error)
 {
-  if (!s_state.running_game_entry || !s_state.running_game_entry->HasTrait(GameDatabase::Trait::IsLibCryptProtected) ||
+  if (IsReplayingGPUDump() || !s_state.running_game_entry ||
+      !s_state.running_game_entry->HasTrait(GameDatabase::Trait::IsLibCryptProtected) ||
       CDROM::HasNonStandardOrReplacementSubQ())
   {
     return true;
