@@ -412,7 +412,7 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view d
   else if (binding[0] == '+' || binding[0] == '-')
   {
     // likely an axis
-    const std::string_view axis_name(binding.substr(1));
+    std::string_view axis_name(binding.substr(1));
 
     if (axis_name.starts_with("Axis"))
     {
@@ -426,6 +426,13 @@ std::optional<InputBindingKey> SDLInputSource::ParseKeyString(std::string_view d
         return key;
       }
     }
+
+    if (!axis_name.empty() && axis_name.back() == '~')
+    {
+      axis_name = axis_name.substr(0, axis_name.size() - 1);
+      key.invert = true;
+    }
+
     for (u32 i = 0; i < std::size(s_sdl_axis_names); i++)
     {
       if (axis_name == s_sdl_axis_names[i])
@@ -505,7 +512,8 @@ TinyString SDLInputSource::ConvertKeyToString(InputBindingKey key)
         (key.modifier == InputModifier::FullAxis ? "Full" : (key.modifier == InputModifier::Negate ? "-" : "+"));
       if (key.data < std::size(s_sdl_axis_names))
       {
-        ret.format("SDL-{}/{}{}", static_cast<u32>(key.source_index), modifier, s_sdl_axis_names[key.data]);
+        ret.format("SDL-{}/{}{}{}", static_cast<u32>(key.source_index), modifier, s_sdl_axis_names[key.data],
+                   key.invert ? "~" : "");
       }
       else
       {
