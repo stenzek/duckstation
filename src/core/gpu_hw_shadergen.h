@@ -43,6 +43,8 @@ public:
   std::string GenerateAdaptiveDownsampleBlurFragmentShader() const;
   std::string GenerateAdaptiveDownsampleCompositeFragmentShader() const;
   std::string GenerateBoxSampleDownsampleFragmentShader(u32 factor) const;
+  std::string GenerateAdaptiveStencilDownsampleBlurFragmentShader(u32 factor, u8 msaa) const;
+  std::string GenerateAdaptiveStencilDownsampleCompositeFragmentShader() const;
 
   std::string GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter) const;
 

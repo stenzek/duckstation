@@ -1824,6 +1824,73 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
   return ss.str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateAdaptiveStencilDownsampleBlurFragmentShader(u32 factor, u8 multisamples) const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DefineMacro(ss, "MULTISAMPLES", multisamples);
+  DeclareUniformBuffer(ss, {"uint2 u_base_coords", "uint2 u_fb_base_coords", "uint u_line_skip"}, true);
+  DeclareTexture(ss, "samp0", 0, false);
+  DeclareTexture(ss, "samp1", 1, (multisamples > 1));
+
+  ss << "#define FACTOR " << factor << "u\n";
+
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
+  ss << R"(
+{
+  float3 color = float3(0.0, 0.0, 0.0);
+  float weight = 0.0;
+  uint2 base_coords = u_base_coords + uint2(v_pos.xy) * uint2(FACTOR, FACTOR);
+  uint2 fb_base_coords = u_fb_base_coords + uint2(uint(v_pos.x) * FACTOR, (uint(v_pos.y) << u_line_skip) * FACTOR);
+  for (uint offset_x = 0u; offset_x < FACTOR; offset_x++)
+  {
+    for (uint offset_y = 0u; offset_y < FACTOR; offset_y++)
+    {
+      int2 lcoords = int2(base_coords + uint2(offset_x, offset_y));
+      color += LOAD_TEXTURE(samp0, lcoords, 0).rgb;
+
+      int2 fbcoords = int2(fb_base_coords + uint2(offset_x, offset_y << u_line_skip));
+      #if MULTISAMPLES > 1
+        for (int i = 0; i < MULTISAMPLES; i++)
+          weight += LOAD_TEXTURE_MS(samp1, fbcoords, i).r;
+      #else
+        weight += LOAD_TEXTURE(samp1, fbcoords, 0).r;
+      #endif
+    }
+  }
+  color /= float(FACTOR * FACTOR);
+  o_col0 = float4(color, float(weight != 0.0));
+}
+)";
+
+  return ss.str();
+}
+
+std::string GPU_HW_ShaderGen::GenerateAdaptiveStencilDownsampleCompositeFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+
+  DeclareUniformBuffer(ss, {"float4 u_native_rect"}, true);
+
+  DeclareTexture(ss, "samp0", 0, false);
+  DeclareTexture(ss, "samp1", 1, false);
+  DeclareTexture(ss, "samp2", 2, false);
+
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
+  ss << R"(
+{
+  float4 downsample_color = SAMPLE_TEXTURE(samp0, v_tex0);
+  float native_weight = float(downsample_color.a != 0.0);
+  float2 native_coords = u_native_rect.xy + v_tex0 * u_native_rect.zw;
+  float4 native_color = SAMPLE_TEXTURE(samp1, native_coords); 
+
+  o_col0 = lerp(downsample_color, native_color, native_weight);
+})";
+
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter) const
 {
   std::stringstream ss;

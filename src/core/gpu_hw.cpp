@@ -41,8 +41,8 @@ LOG_CHANNEL(GPU_HW);
 // TODO: instead of full state restore, only restore what changed
 
 static constexpr GPUTexture::Format VRAM_RT_FORMAT = GPUTexture::Format::RGBA8;
-static constexpr GPUTexture::Format VRAM_DS_FORMAT = GPUTexture::Format::D16;
-static constexpr GPUTexture::Format VRAM_DS_DEPTH_FORMAT = GPUTexture::Format::D32F;
+static constexpr GPUTexture::Format VRAM_DS_FORMAT = GPUTexture::Format::D32FS8;
+static constexpr GPUTexture::Format VRAM_DS_DEPTH_FORMAT = GPUTexture::Format::D32FS8;
 static constexpr GPUTexture::Format VRAM_DS_COLOR_FORMAT = GPUTexture::Format::R32F;
 
 #if defined(_DEBUG) || defined(_DEVEL)
@@ -427,11 +427,13 @@ void GPU_HW::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
 
 void GPU_HW::RestoreDeviceContext()
 {
+  m_batch_ubo_dirty = true;
   g_gpu_device->SetTextureSampler(0, m_vram_read_texture.get(), g_gpu_device->GetNearestSampler());
   SetVRAMRenderTarget();
+  if (UseStencilBuffer())
+    g_gpu_device->SetStencilRef(m_batch.stencil_reference);
   g_gpu_device->SetViewport(m_vram_texture->GetRect());
   SetScissor();
-  m_batch_ubo_dirty = true;
 }
 
 void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
@@ -447,7 +449,9 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
      g_gpu_settings.IsUsingAccurateBlending() != old_settings.IsUsingAccurateBlending() ||
      m_pgxp_depth_buffer != g_gpu_settings.UsingPGXPDepthBuffer() ||
-     (!old_settings.gpu_texture_cache && g_gpu_settings.gpu_texture_cache));
+     (!old_settings.gpu_texture_cache && g_gpu_settings.gpu_texture_cache) ||
+     (GetDownsampleMode(resolution_scale) == GPUDownsampleMode::AdaptiveStencil) !=
+       (m_downsample_mode == GPUDownsampleMode::AdaptiveStencil));
   const bool shaders_changed =
     ((m_resolution_scale > 1) != (resolution_scale > 1) || m_multisamples != multisamples ||
      m_true_color != g_gpu_settings.gpu_true_color ||
@@ -466,7 +470,9 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
       g_gpu_settings.gpu_pgxp_color_correction != old_settings.gpu_pgxp_color_correction) ||
      m_allow_sprite_mode != ShouldAllowSpriteMode(m_resolution_scale, g_gpu_settings.gpu_texture_filter,
                                                   g_gpu_settings.gpu_sprite_texture_filter) ||
-     (!old_settings.gpu_texture_cache && g_gpu_settings.gpu_texture_cache));
+     (!old_settings.gpu_texture_cache && g_gpu_settings.gpu_texture_cache) ||
+     (GetDownsampleMode(resolution_scale) == GPUDownsampleMode::AdaptiveStencil) !=
+       (m_downsample_mode == GPUDownsampleMode::AdaptiveStencil));
   const bool resolution_dependent_shaders_changed =
     (m_resolution_scale != resolution_scale || m_multisamples != multisamples);
   const bool downsampling_shaders_changed =
@@ -889,6 +895,7 @@ void GPU_HW::PrintSettingsToLog()
 GPUTexture::Format GPU_HW::GetDepthBufferFormat() const
 {
   // Use 32-bit depth for PGXP depth buffer, otherwise 16-bit for mask bit.
+  // TODO: AMD doesn't support D24S8
   return m_pgxp_depth_buffer ? (m_use_rov_for_shader_blend ? VRAM_DS_COLOR_FORMAT : VRAM_DS_DEPTH_FORMAT) :
                                VRAM_DS_FORMAT;
 }
@@ -978,6 +985,10 @@ bool GPU_HW::CreateBuffers(Error* error)
 
   SetVRAMRenderTarget();
   SetFullVRAMDirtyRectangle();
+
+  if (UseStencilBuffer())
+    g_gpu_device->ClearStencil(m_vram_depth_texture.get(), 0);
+
   return true;
 }
 
@@ -990,6 +1001,9 @@ void GPU_HW::ClearFramebuffer()
       g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0xFF);
     else
       g_gpu_device->ClearDepth(m_vram_depth_texture.get(), m_pgxp_depth_buffer ? 1.0f : 0.0f);
+
+    if (UseStencilBuffer())
+      g_gpu_device->ClearStencil(m_vram_depth_texture.get(), 0);
   }
   ClearVRAMDirtyRectangle();
   if (m_use_texture_cache)
@@ -1419,13 +1433,27 @@ bool GPU_HW::CompilePipelines(Error* error)
                 {
                   plconfig.depth.depth_test =
                     m_pgxp_depth_buffer ?
-                      (depth_test ? GPUPipeline::DepthFunc::LessEqual : GPUPipeline::DepthFunc::Always) :
-                      (check_mask ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always);
+                      (depth_test ? GPUPipeline::ComparisonFunc::LessEqual : GPUPipeline::ComparisonFunc::Always) :
+                      (check_mask ? GPUPipeline::ComparisonFunc::GreaterEqual : GPUPipeline::ComparisonFunc::Always);
 
                   // Don't write for transparent, but still test.
                   plconfig.depth.depth_write =
                     !m_pgxp_depth_buffer ||
                     (depth_test && transparency_mode == static_cast<u8>(GPUTransparencyMode::Disabled));
+
+                  if (UseStencilBuffer())
+                  {
+                    const bool replace = (transparency_mode == static_cast<u8>(GPUTransparencyMode::Disabled) ||
+                                          render_mode == static_cast<u8>(BatchRenderMode::TransparencyDisabled) ||
+                                          render_mode == static_cast<u8>(BatchRenderMode::OnlyOpaque));
+                    plconfig.depth.stencil_enable = true;
+                    plconfig.depth.back_stencil_func = GPUPipeline::ComparisonFunc::Always;
+                    plconfig.depth.back_stencil_pass_op =
+                      replace ? GPUPipeline::StencilOp::Replace : GPUPipeline::StencilOp::Keep;
+                    plconfig.depth.front_stencil_func = GPUPipeline::ComparisonFunc::Always;
+                    plconfig.depth.front_stencil_pass_op =
+                      replace ? GPUPipeline::StencilOp::Replace : GPUPipeline::StencilOp::Keep;
+                  }
                 }
 
                 plconfig.SetTargetFormats(use_rov ? GPUTexture::Format::Unknown : VRAM_RT_FORMAT,
@@ -1563,6 +1591,15 @@ bool GPU_HW::CompilePipelines(Error* error)
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
   plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTexture::Format::Unknown;
 
+  if (UseStencilBuffer())
+  {
+    plconfig.depth.stencil_enable = true;
+    plconfig.depth.back_stencil_func = GPUPipeline::ComparisonFunc::Always;
+    plconfig.depth.back_stencil_pass_op = GPUPipeline::StencilOp::Replace;
+    plconfig.depth.front_stencil_func = GPUPipeline::ComparisonFunc::Always;
+    plconfig.depth.front_stencil_pass_op = GPUPipeline::StencilOp::Replace;
+  }
+
   // VRAM fill
   for (u8 wrapped = 0; wrapped < 2; wrapped++)
   {
@@ -1577,8 +1614,9 @@ bool GPU_HW::CompilePipelines(Error* error)
         return false;
 
       plconfig.fragment_shader = fs.get();
-      plconfig.depth = needs_real_depth_buffer ? GPUPipeline::DepthState::GetAlwaysWriteState() :
-                                                 GPUPipeline::DepthState::GetNoTestsState();
+      plconfig.depth.depth_test =
+        needs_real_depth_buffer ? GPUPipeline::ComparisonFunc::Always : GPUPipeline::ComparisonFunc::Never;
+      plconfig.depth.depth_write = needs_real_depth_buffer;
 
       if (!(m_vram_fill_pipelines[wrapped][interlaced] = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
@@ -1604,7 +1642,7 @@ bool GPU_HW::CompilePipelines(Error* error)
 
       plconfig.depth.depth_write = needs_real_depth_buffer;
       plconfig.depth.depth_test =
-        (depth_test != 0) ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always;
+        (depth_test != 0) ? GPUPipeline::ComparisonFunc::GreaterEqual : GPUPipeline::ComparisonFunc::Always;
 
       if (!(m_vram_copy_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig), error))
         return false;
@@ -1636,7 +1674,7 @@ bool GPU_HW::CompilePipelines(Error* error)
 
       plconfig.depth.depth_write = needs_real_depth_buffer;
       plconfig.depth.depth_test =
-        (depth_test != 0) ? GPUPipeline::DepthFunc::GreaterEqual : GPUPipeline::DepthFunc::Always;
+        (depth_test != 0) ? GPUPipeline::ComparisonFunc::GreaterEqual : GPUPipeline::ComparisonFunc::Always;
 
       if (!(m_vram_write_pipelines[depth_test] = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
@@ -1657,7 +1695,9 @@ bool GPU_HW::CompilePipelines(Error* error)
 
     plconfig.fragment_shader = fs.get();
     plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-    plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+    plconfig.depth.depth_write = needs_real_depth_buffer;
+    plconfig.depth.depth_test = GPUPipeline::ComparisonFunc::Always;
+
     if (!(m_vram_write_replacement_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
 
@@ -1669,6 +1709,7 @@ bool GPU_HW::CompilePipelines(Error* error)
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.input_layout.vertex_attributes = {};
   plconfig.input_layout.vertex_stride = 0;
+  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
 
   // VRAM update depth
   if (m_write_mask_as_depth)
@@ -1881,6 +1922,61 @@ bool GPU_HW::CompileDownsamplePipelines(Error* error)
       return false;
     }
     GL_OBJECT_NAME(m_downsample_composite_sampler, "Downsample Trilinear Sampler");
+  }
+  else if (m_downsample_mode == GPUDownsampleMode::AdaptiveStencil)
+  {
+    std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(),
+      shadergen.GenerateAdaptiveStencilDownsampleBlurFragmentShader(m_resolution_scale, m_multisamples), error);
+    if (!fs)
+      return false;
+
+    GL_OBJECT_NAME(fs, "Adaptive Stencil Downsample Fragment Shader");
+    plconfig.fragment_shader = fs.get();
+    plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
+
+    if (!(m_downsample_blur_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+      return false;
+
+    GL_OBJECT_NAME(m_downsample_blur_pipeline, "Adaptive Stencil Downsample Pipeline");
+
+    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                    shadergen.GenerateAdaptiveStencilDownsampleCompositeFragmentShader(), error);
+    if (!fs)
+      return false;
+
+    GL_OBJECT_NAME(fs, "Adaptive Stencil Composite Fragment Shader");
+    plconfig.fragment_shader = fs.get();
+    plconfig.SetTargetFormats(VRAM_RT_FORMAT);
+
+    if (!(m_downsample_composite_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+      return false;
+
+    GL_OBJECT_NAME(m_downsample_composite_pipeline, "Adaptive Stencil Composite Pipeline");
+
+    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                    shadergen.GenerateFillFragmentShader(), error);
+    if (!fs)
+      return false;
+
+    GL_OBJECT_NAME(fs, "Adaptive Stencil Mark Fragment Shader");
+    plconfig.fragment_shader = fs.get();
+    plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+    plconfig.SetTargetFormats(GPUTexture::Format::R8, GetDepthBufferFormat());
+    plconfig.samples = m_multisamples;
+    plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+    plconfig.depth.stencil_enable = true;
+    plconfig.depth.front_stencil_pass_op = GPUPipeline::StencilOp::Keep;
+    plconfig.depth.front_stencil_fail_op = GPUPipeline::StencilOp::Keep;
+    plconfig.depth.front_stencil_func = GPUPipeline::ComparisonFunc::Equal;
+    plconfig.depth.back_stencil_pass_op = GPUPipeline::StencilOp::Keep;
+    plconfig.depth.back_stencil_fail_op = GPUPipeline::StencilOp::Keep;
+    plconfig.depth.back_stencil_func = GPUPipeline::ComparisonFunc::Equal;
+
+    if (!(m_downsample_pass_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+      return false;
+
+    GL_OBJECT_NAME(m_downsample_pass_pipeline, "Adaptive Stencil Downsample Pipeline");
   }
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
@@ -2471,10 +2567,28 @@ void GPU_HW::SetBatchSpriteMode(const GPUBackendDrawCommand* cmd, bool enabled)
   m_batch.sprite_mode = enabled;
 }
 
+void GPU_HW::SetBatchStencilReference(const GPUBackendDrawCommand* cmd, u8 value)
+{
+  if (!UseStencilBuffer() || m_batch.stencil_reference == value)
+    return;
+
+  if (m_batch_index_count > 0)
+  {
+    FlushRender();
+    EnsureVertexBufferSpaceForCommand(cmd);
+  }
+
+  GL_INS_FMT("Stencil reference is now {}", value);
+
+  m_batch.stencil_reference = value;
+  g_gpu_device->SetStencilRef(m_batch.stencil_reference);
+}
+
 void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
 {
   PrepareDraw(cmd);
   SetBatchDepthBuffer(cmd, false);
+  SetBatchStencilReference(cmd, 0);
 
   const u32 num_vertices = cmd->num_vertices;
   DebugAssert(m_batch_vertex_space >= (num_vertices * 4) && m_batch_index_space >= (num_vertices * 6));
@@ -2519,6 +2633,7 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
 
   const bool use_depth = m_pgxp_depth_buffer && cmd->valid_w;
   SetBatchDepthBuffer(cmd, use_depth);
+  SetBatchStencilReference(cmd, BoolToUInt8(use_depth));
 
   const u32 num_vertices = cmd->num_vertices;
   DebugAssert(m_batch_vertex_space >= (num_vertices * 4) && m_batch_index_space >= (num_vertices * 6));
@@ -2678,6 +2793,7 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   PrepareDraw(cmd);
   SetBatchDepthBuffer(cmd, false);
   SetBatchSpriteMode(cmd, m_allow_sprite_mode);
+  SetBatchStencilReference(cmd, 0);
   DebugAssert(m_batch_vertex_space >= MAX_VERTICES_FOR_RECTANGLE && m_batch_index_space >= MAX_VERTICES_FOR_RECTANGLE);
 
   const s32 pos_x = cmd->x;
@@ -2955,10 +3071,12 @@ ALWAYS_INLINE_RELEASE void GPU_HW::FinishPolygonDraw(const GPUBackendDrawCommand
                                                      const GSVector4i clamped_draw_rect_123)
 {
   // Use PGXP to exclude primitives that are definitely 3D.
+  const bool really_3d = is_precise ? is_3d : IsPossibleSpritePolygon(vertices.data());
   if (m_resolution_scale > 1 && !is_3d && cmd->quad_polygon)
     HandleFlippedQuadTextureCoordinates(cmd, vertices.data());
   else if (m_allow_sprite_mode)
-    SetBatchSpriteMode(cmd, is_precise ? !is_3d : IsPossibleSpritePolygon(vertices.data()));
+    SetBatchSpriteMode(cmd, !really_3d);
+  SetBatchStencilReference(cmd, BoolToUInt8(really_3d));
 
   if (cmd->texture_enable && m_compute_uv_range)
     ComputePolygonUVLimits(cmd, vertices.data(), num_vertices);
@@ -3019,6 +3137,9 @@ bool GPU_HW::BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u
 
   g_gpu_device->SetTextureSampler(0, tex, g_gpu_device->GetLinearSampler());
   g_gpu_device->SetPipeline(m_vram_write_replacement_pipeline.get());
+
+  if (UseStencilBuffer())
+    g_gpu_device->SetStencilRef(0);
 
   const GSVector4i rect(dst_x, dst_y, dst_x + width, dst_y + height);
   g_gpu_device->SetScissor(rect);
@@ -3213,6 +3334,11 @@ void GPU_HW::ResetBatchVertexDepth()
   m_current_depth = 1;
 }
 
+ALWAYS_INLINE bool GPU_HW::UseStencilBuffer() const
+{
+  return (m_downsample_mode == GPUDownsampleMode::AdaptiveStencil);
+}
+
 ALWAYS_INLINE float GPU_HW::GetCurrentNormalizedVertexDepth() const
 {
   return 1.0f - (static_cast<float>(m_current_depth) / 65535.0f);
@@ -3290,6 +3416,9 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
     GPUDevice::RGBA8ToFloat(m_true_color ? color : VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color)));
   uniforms.u_interlaced_displayed_field = active_line_lsb;
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
+
+  if (UseStencilBuffer())
+    g_gpu_device->SetStencilRef(0);
 
   const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
   g_gpu_device->SetScissor(scaled_bounds);
@@ -3456,6 +3585,9 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
   g_gpu_device->SetPipeline(m_vram_write_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
 
+  if (UseStencilBuffer())
+    g_gpu_device->SetStencilRef(0);
+
   if (upload_texture)
     g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
   else
@@ -3538,6 +3670,9 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
     g_gpu_device->SetPipeline(m_vram_copy_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
     g_gpu_device->SetTextureSampler(0, m_vram_read_texture.get(), g_gpu_device->GetNearestSampler());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
+
+    if (UseStencilBuffer())
+      g_gpu_device->SetStencilRef(0);
 
     const GSVector4i dst_bounds_scaled = dst_bounds.mul32l(GSVector4i(m_resolution_scale));
     g_gpu_device->SetScissor(dst_bounds_scaled);
@@ -4012,7 +4147,23 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   if (m_downsample_mode != GPUDownsampleMode::Disabled && !cmd->display_24bit)
   {
     DebugAssert(m_display_texture);
-    DownsampleFramebuffer();
+
+    if (m_downsample_mode == GPUDownsampleMode::Adaptive)
+    {
+      DownsampleFramebufferAdaptive(m_display_texture, m_display_texture_view_x, m_display_texture_view_y,
+                                    m_display_texture_view_width, m_display_texture_view_height);
+    }
+    else if (m_downsample_mode == GPUDownsampleMode::AdaptiveStencil)
+    {
+      DownsampleFramebufferAdaptiveStencil(m_display_texture, m_display_texture_view_x, m_display_texture_view_y,
+                                           m_display_texture_view_width, m_display_texture_view_height,
+                                           scaled_vram_offset_x, scaled_vram_offset_y, line_skip);
+    }
+    else
+    {
+      DownsampleFramebufferBoxFilter(m_display_texture, m_display_texture_view_x, m_display_texture_view_y,
+                                     m_display_texture_view_width, m_display_texture_view_height);
+    }
   }
 
   if (drew_anything)
@@ -4031,6 +4182,10 @@ void GPU_HW::UpdateDownsamplingLevels()
       current_width /= 2;
     }
   }
+  else if (m_downsample_mode == GPUDownsampleMode::AdaptiveStencil)
+  {
+    m_downsample_scale_or_levels = m_resolution_scale;
+  }
   else if (m_downsample_mode == GPUDownsampleMode::Box)
   {
     m_downsample_scale_or_levels = m_resolution_scale / GetBoxDownsampleScale(m_resolution_scale);
@@ -4048,20 +4203,6 @@ void GPU_HW::OnBufferSwapped()
 {
   GL_INS("OnBufferSwapped()");
   m_depth_was_copied = false;
-}
-
-void GPU_HW::DownsampleFramebuffer()
-{
-  GPUTexture* source = m_display_texture;
-  const u32 left = m_display_texture_view_x;
-  const u32 top = m_display_texture_view_y;
-  const u32 width = m_display_texture_view_width;
-  const u32 height = m_display_texture_view_height;
-
-  if (m_downsample_mode == GPUDownsampleMode::Adaptive)
-    DownsampleFramebufferAdaptive(source, left, top, width, height);
-  else
-    DownsampleFramebufferBoxFilter(source, left, top, width, height);
 }
 
 void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
@@ -4179,6 +4320,94 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
 
   GL_POP();
 
+  RestoreDeviceContext();
+
+  SetDisplayTexture(m_downsample_texture.get(), m_display_depth_buffer, 0, 0, width, height);
+}
+
+void GPU_HW::DownsampleFramebufferAdaptiveStencil(GPUTexture* source, u32 left, u32 top, u32 width, u32 height,
+                                                  u32 fb_left, u32 fb_top, u32 line_skip)
+{
+  GL_PUSH_FMT("DownsampleFramebufferAdaptiveStencil({},{} => {},{} ({}x{})", left, top, left + width, top + height,
+              width, height);
+
+  const u32 ds_width = width / m_downsample_scale_or_levels;
+  const u32 ds_height = height / m_downsample_scale_or_levels;
+
+  // TODO: Weight texture is broken with MSAA
+  const bool output_texture_ok =
+    g_gpu_device->ResizeTexture(&m_downsample_texture, width, height, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT,
+                                GPUTexture::Flags::None, false);
+  GPUDevice::AutoRecycleTexture downsample_texture = g_gpu_device->FetchAutoRecycleTexture(
+    ds_width, ds_height, 1, 1, 1, GPUTexture::Type::RenderTarget, VRAM_RT_FORMAT, GPUTexture::Flags::None);
+  GPUDevice::AutoRecycleTexture weight_texture = g_gpu_device->FetchAutoRecycleTexture(
+    m_vram_texture->GetWidth(), m_vram_texture->GetHeight(), 1, 1, m_vram_texture->GetSamples(),
+    GPUTexture::Type::RenderTarget, GPUTexture::Format::R8, GPUTexture::Flags::None);
+  if (!output_texture_ok || !downsample_texture || !weight_texture)
+  {
+    ERROR_LOG("Failed to create {}x{} RT for adaptive stencil downsampling", width, height);
+    return;
+  }
+
+  {
+    // fill weight texture
+    GL_SCOPE("Weights");
+
+    const float fill_uniforms_unmarked[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    const float fill_uniforms_marked[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+    g_gpu_device->SetViewportAndScissor(fb_left, fb_top, width, height << line_skip);
+
+    g_gpu_device->InvalidateRenderTarget(weight_texture.get());
+    g_gpu_device->SetRenderTarget(weight_texture.get(), m_vram_depth_texture.get());
+    g_gpu_device->SetPipeline(m_downsample_pass_pipeline.get());
+
+    g_gpu_device->SetStencilRef(0);
+    g_gpu_device->PushUniformBuffer(fill_uniforms_unmarked, sizeof(fill_uniforms_unmarked));
+    g_gpu_device->Draw(3, 0);
+
+    g_gpu_device->SetStencilRef(1);
+    g_gpu_device->PushUniformBuffer(fill_uniforms_marked, sizeof(fill_uniforms_marked));
+    g_gpu_device->Draw(3, 0);
+  }
+
+  // box downsample
+  {
+    GL_SCOPE("Box downsample");
+    source->MakeReadyForSampling();
+
+    const u32 uniforms[9] = {left, top, fb_left, fb_top, line_skip};
+
+    g_gpu_device->InvalidateRenderTarget(downsample_texture.get());
+    g_gpu_device->SetRenderTarget(downsample_texture.get());
+    g_gpu_device->SetPipeline(m_downsample_blur_pipeline.get());
+    g_gpu_device->SetTextureSampler(0, source, g_gpu_device->GetNearestSampler());
+    g_gpu_device->SetTextureSampler(1, weight_texture.get(), g_gpu_device->GetNearestSampler());
+    g_gpu_device->SetViewportAndScissor(0, 0, ds_width, ds_height);
+    g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
+    g_gpu_device->Draw(3, 0);
+  }
+
+  // composite
+  {
+    GL_SCOPE("Composite");
+
+    const GSVector4 nat_uniforms =
+      GSVector4(GSVector4i(left, top, width, height)) / GSVector4(GSVector4i::xyxy(source->GetSizeVec()));
+
+    g_gpu_device->InvalidateRenderTarget(m_downsample_texture.get());
+    g_gpu_device->SetRenderTarget(m_downsample_texture.get());
+    g_gpu_device->SetPipeline(m_downsample_composite_pipeline.get());
+    g_gpu_device->SetTextureSampler(0, downsample_texture.get(), g_gpu_device->GetLinearSampler());
+    g_gpu_device->SetTextureSampler(1, source, g_gpu_device->GetNearestSampler());
+    g_gpu_device->SetViewportAndScissor(0, 0, width, height);
+    g_gpu_device->PushUniformBuffer(&nat_uniforms, sizeof(nat_uniforms));
+    g_gpu_device->Draw(3, 0);
+
+    m_downsample_texture->MakeReadyForSampling();
+  }
+
+  GL_POP();
   RestoreDeviceContext();
 
   SetDisplayTexture(m_downsample_texture.get(), m_display_depth_buffer, 0, 0, width, height);

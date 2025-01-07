@@ -151,6 +151,7 @@ private:
     bool check_mask_before_draw = false;
     bool use_depth_buffer = false;
     bool sprite_mode = false;
+    u8 stencil_reference = 0;
 
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const;
@@ -234,6 +235,9 @@ private:
                          const GSVector4i clamped_draw_rect_123);
   void ResetBatchVertexDepth();
 
+  /// Returns true if the stencil buffer should be filled.
+  bool UseStencilBuffer() const;
+
   /// Returns the value to be written to the depth buffer for the current operation for mask bit emulation.
   float GetCurrentNormalizedVertexDepth() const;
 
@@ -267,11 +271,13 @@ private:
   void SetBatchDepthBuffer(const GPUBackendDrawCommand* cmd, bool enabled);
   void CheckForDepthClear(const GPUBackendDrawCommand* cmd, const BatchVertex* vertices, u32 num_vertices);
   void SetBatchSpriteMode(const GPUBackendDrawCommand* cmd, bool enabled);
+  void SetBatchStencilReference(const GPUBackendDrawCommand* cmd, u8 value);
 
   void UpdateDownsamplingLevels();
 
-  void DownsampleFramebuffer();
   void DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
+  void DownsampleFramebufferAdaptiveStencil(GPUTexture* source, u32 left, u32 top, u32 width, u32 height, u32 fb_left,
+                                            u32 fb_top, u32 line_skip);
   void DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
 
   std::unique_ptr<GPUTexture> m_vram_texture;

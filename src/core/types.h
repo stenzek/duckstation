@@ -105,6 +105,7 @@ enum class GPUDownsampleMode : u8
   Disabled,
   Box,
   Adaptive,
+  AdaptiveStencil,
   Count
 };
 

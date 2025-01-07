@@ -1565,11 +1565,12 @@ const char* Settings::GetLineDetectModeDisplayName(GPULineDetectMode mode)
                                   "GPULineDetectMode");
 }
 
-static constexpr const std::array s_downsample_mode_names = {"Disabled", "Box", "Adaptive"};
+static constexpr const std::array s_downsample_mode_names = {"Disabled", "Box", "Adaptive", "AdaptiveStencil"};
 static constexpr const std::array s_downsample_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "GPUDownsampleMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Box (Downsample 3D/Smooth All)", "GPUDownsampleMode"),
-  TRANSLATE_DISAMBIG_NOOP("Settings", "Adaptive (Preserve 3D/Smooth 2D)", "GPUDownsampleMode")};
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Adaptive (Preserve 3D/Smooth 2D)", "GPUDownsampleMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Adaptive Sharp (Preserve 3D/Smooth 2D)", "GPUDownsampleMode")};
 
 std::optional<GPUDownsampleMode> Settings::ParseDownsampleModeName(const char* str)
 {
