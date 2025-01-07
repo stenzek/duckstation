@@ -71,6 +71,7 @@ public:
   u32 GetResolutionScale() const override;
 
   void RestoreDeviceContext() override;
+  void FlushRender() override;
 
 protected:
   void UpdateSettings(const GPUSettings& old_settings) override;
@@ -91,7 +92,6 @@ protected:
   void DrawLine(const GPUBackendDrawLineCommand* cmd) override;
   void DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd) override;
 
-  void FlushRender() override;
   void DrawingAreaChanged() override;
   void ClearVRAM() override;
 

@@ -1215,6 +1215,9 @@ void GPUThread::SleepUntilPresentTime(Timer::Value present_time)
 
 void GPUThread::Internal::PresentFrame(bool allow_skip_present, u64 present_time)
 {
+  if (s_state.gpu_backend)
+    s_state.gpu_backend->FlushRender();
+
   const bool skip_present = (!g_gpu_device->HasMainSwapChain() ||
                              (allow_skip_present && g_gpu_device->GetMainSwapChain()->ShouldSkipPresentingFrame() &&
                               s_state.skipped_present_count < MAX_SKIPPED_PRESENT_COUNT));

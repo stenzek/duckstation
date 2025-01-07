@@ -23,6 +23,7 @@ public:
   bool Initialize(bool upload_vram, Error* error) override;
 
   void RestoreDeviceContext() override;
+  void FlushRender() override;
 
   u32 GetResolutionScale() const override;
 
@@ -45,8 +46,6 @@ protected:
   void UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd) override;
 
   void ClearVRAM() override;
-
-  void FlushRender() override;
 
   void UpdateResolutionScale() override;
 

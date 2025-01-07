@@ -90,6 +90,9 @@ public:
   // TODO: replace with "invalidate cached state"
   virtual void RestoreDeviceContext() = 0;
 
+  /// Ensures all pending draws are flushed to the host GPU.
+  virtual void FlushRender() = 0;
+
   /// Main command handler for GPU thread.
   void HandleCommand(const GPUThreadCommand* cmd);
 
@@ -139,9 +142,6 @@ protected:
 
   virtual bool AllocateMemorySaveState(System::MemorySaveState& mss, Error* error) = 0;
   virtual void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss) = 0;
-
-  /// Ensures all pending draws are flushed to the host GPU.
-  virtual void FlushRender() = 0;
 
   /// Helper function for computing the draw rectangle in a larger window.
   void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
