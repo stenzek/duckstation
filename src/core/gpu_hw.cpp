@@ -3896,26 +3896,20 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   }
   else
   {
-    if (!m_vram_extract_texture || m_vram_extract_texture->GetWidth() != scaled_display_width ||
-        m_vram_extract_texture->GetHeight() != scaled_display_height)
+    if (!g_gpu_device->ResizeTexture(&m_vram_extract_texture, scaled_display_width, scaled_display_height,
+                                     GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8,
+                                     GPUTexture::Flags::None)) [[unlikely]]
     {
-      if (!g_gpu_device->ResizeTexture(&m_vram_extract_texture, scaled_display_width, scaled_display_height,
-                                       GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8,
-                                       GPUTexture::Flags::None)) [[unlikely]]
-      {
-        ClearDisplayTexture();
-        return;
-      }
+      ClearDisplayTexture();
+      return;
     }
 
     m_vram_texture->MakeReadyForSampling();
     g_gpu_device->InvalidateRenderTarget(m_vram_extract_texture.get());
 
     if (depth_source &&
-        ((m_vram_extract_depth_texture && m_vram_extract_depth_texture->GetWidth() == scaled_display_width &&
-          m_vram_extract_depth_texture->GetHeight() == scaled_display_height) ||
-         !g_gpu_device->ResizeTexture(&m_vram_extract_depth_texture, scaled_display_width, scaled_display_height,
-                                      GPUTexture::Type::RenderTarget, VRAM_DS_COLOR_FORMAT, GPUTexture::Flags::None)))
+        g_gpu_device->ResizeTexture(&m_vram_extract_depth_texture, scaled_display_width, scaled_display_height,
+                                    GPUTexture::Type::RenderTarget, VRAM_DS_COLOR_FORMAT, GPUTexture::Flags::None))
     {
       depth_source->MakeReadyForSampling();
       g_gpu_device->InvalidateRenderTarget(m_vram_extract_depth_texture.get());
@@ -4166,14 +4160,8 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
   const u32 ds_width = width / m_downsample_scale_or_levels;
   const u32 ds_height = height / m_downsample_scale_or_levels;
 
-  if (!m_downsample_texture || m_downsample_texture->GetWidth() != ds_width ||
-      m_downsample_texture->GetHeight() != ds_height)
-  {
-    g_gpu_device->RecycleTexture(std::move(m_downsample_texture));
-    m_downsample_texture = g_gpu_device->FetchTexture(ds_width, ds_height, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                                      VRAM_RT_FORMAT, GPUTexture::Flags::None);
-  }
-  if (!m_downsample_texture)
+  if (!g_gpu_device->ResizeTexture(&m_downsample_texture, ds_width, ds_height, GPUTexture::Type::RenderTarget,
+                                   VRAM_RT_FORMAT, GPUTexture::Flags::None, false))
   {
     ERROR_LOG("Failed to create {}x{} RT for box downsampling", width, height);
     return;
