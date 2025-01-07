@@ -24,7 +24,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QGroupBox" name="groupBox_4">
+    <widget class="QGroupBox" name="behaviorGroup">
      <property name="title">
       <string>Behaviour</string>
      </property>
@@ -89,7 +89,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
+    <widget class="QGroupBox" name="gameDisplayGroup">
      <property name="title">
       <string>Game Display</string>
      </property>
@@ -149,14 +149,14 @@
        <widget class="QComboBox" name="theme"/>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="languageLabel">
         <property name="text">
          <string>Language:</string>
         </property>
        </widget>
       </item>
       <item row="0" column="2">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="themeLabel">
         <property name="text">
          <string>Theme:</string>
         </property>
@@ -175,7 +175,7 @@
      </property>
      <layout class="QFormLayout" name="formLayout_2">
       <item row="0" column="0">
-       <widget class="QLabel" name="label_4">
+       <widget class="QLabel" name="autoUpdateTagLabel">
         <property name="text">
          <string>Update Channel:</string>
         </property>
@@ -185,7 +185,7 @@
        <widget class="QComboBox" name="autoUpdateTag"/>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label_5">
+       <widget class="QLabel" name="autoUpdateCurrentVersionLabel">
         <property name="text">
          <string>Current Version:</string>
         </property>
@@ -199,7 +199,7 @@
        </widget>
       </item>
       <item row="2" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QHBoxLayout" name="autoUpdateCheckLayout">
         <item>
          <widget class="QCheckBox" name="autoUpdateEnabled">
           <property name="text">
