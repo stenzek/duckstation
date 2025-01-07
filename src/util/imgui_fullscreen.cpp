@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "imgui_fullscreen.h"
@@ -19,6 +19,7 @@
 #include "common/timer.h"
 
 #include "core/host.h"
+#include "core/system.h" // For async workers, should be in general host.
 
 #include "fmt/core.h"
 
@@ -31,7 +32,6 @@
 #include <condition_variable>
 #include <deque>
 #include <mutex>
-#include <thread>
 #include <utility>
 #include <variant>
 
@@ -45,7 +45,6 @@ static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
-static void TextureLoaderThread();
 
 static void DrawFileSelector();
 static void DrawChoiceDialog();
@@ -107,21 +106,19 @@ struct BackgroundProgressDialogData
 
 struct ALIGN_TO_CACHE_LINE UIState
 {
+  std::recursive_mutex shared_state_mutex;
+
   u32 menu_button_index = 0;
   u32 close_button_state = 0;
   ImGuiDir has_pending_nav_move = ImGuiDir_None;
   FocusResetType focus_reset_queued = FocusResetType::None;
+  bool initialized = false;
   bool light_theme = false;
   bool smooth_scrolling = false;
 
   LRUCache<std::string, std::shared_ptr<GPUTexture>> texture_cache{128, true};
   std::shared_ptr<GPUTexture> placeholder_texture;
-  std::atomic_bool texture_load_thread_quit{false};
-  std::mutex texture_load_mutex;
-  std::condition_variable texture_load_cv;
-  std::deque<std::string> texture_load_queue;
   std::deque<std::pair<std::string, Image>> texture_upload_queue;
-  std::thread texture_load_thread;
 
   SmallString fullscreen_footer_text;
   SmallString last_fullscreen_footer_text;
@@ -173,7 +170,6 @@ struct ALIGN_TO_CACHE_LINE UIState
   float toast_duration;
 
   std::vector<BackgroundProgressDialogData> background_progress_dialogs;
-  std::mutex background_progress_lock;
 
   std::string loading_screen_image;
   std::string loading_screen_message;
@@ -201,6 +197,8 @@ void ImGuiFullscreen::SetFonts(ImFont* medium_font, ImFont* large_font)
 
 bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
 {
+  std::unique_lock lock(s_state.shared_state_mutex);
+
   s_state.focus_reset_queued = FocusResetType::ViewChanged;
   s_state.close_button_state = 0;
 
@@ -211,24 +209,15 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
     return false;
   }
 
-  s_state.texture_load_thread_quit.store(false, std::memory_order_release);
-  s_state.texture_load_thread = std::thread(TextureLoaderThread);
+  s_state.initialized = true;
   ResetMenuButtonFrame();
   return true;
 }
 
 void ImGuiFullscreen::Shutdown(bool clear_state)
 {
-  if (s_state.texture_load_thread.joinable())
-  {
-    {
-      std::unique_lock lock(s_state.texture_load_mutex);
-      s_state.texture_load_thread_quit.store(true, std::memory_order_release);
-      s_state.texture_load_cv.notify_one();
-    }
-    s_state.texture_load_thread.join();
-  }
-
+  std::unique_lock lock(s_state.shared_state_mutex);
+  s_state.initialized = false;
   s_state.texture_upload_queue.clear();
   s_state.placeholder_texture.reset();
   UIStyle.MediumFont = nullptr;
@@ -410,9 +399,17 @@ GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name)
     tex_ptr = s_state.texture_cache.Insert(std::string(name), s_state.placeholder_texture);
 
     // queue the actual load
-    std::unique_lock lock(s_state.texture_load_mutex);
-    s_state.texture_load_queue.emplace_back(name);
-    s_state.texture_load_cv.notify_one();
+    System::QueueAsyncTask([path = std::string(name)]() mutable {
+      std::optional<Image> image(LoadTextureImage(path.c_str(), 0, 0));
+
+      // don't bother queuing back if it doesn't exist
+      if (!image.has_value())
+        return;
+
+      std::unique_lock lock(s_state.shared_state_mutex);
+      if (s_state.initialized)
+        s_state.texture_upload_queue.emplace_back(std::move(path), std::move(image.value()));
+    });
   }
 
   return tex_ptr->get();
@@ -425,7 +422,7 @@ bool ImGuiFullscreen::InvalidateCachedTexture(const std::string& path)
 
 void ImGuiFullscreen::UploadAsyncTextures()
 {
-  std::unique_lock lock(s_state.texture_load_mutex);
+  std::unique_lock lock(s_state.shared_state_mutex);
   while (!s_state.texture_upload_queue.empty())
   {
     std::pair<std::string, Image> it(std::move(s_state.texture_upload_queue.front()));
@@ -438,39 +435,6 @@ void ImGuiFullscreen::UploadAsyncTextures()
 
     lock.lock();
   }
-}
-
-void ImGuiFullscreen::TextureLoaderThread()
-{
-  Threading::SetNameOfCurrentThread("ImGuiFullscreen Texture Loader");
-
-  std::unique_lock lock(s_state.texture_load_mutex);
-
-  for (;;)
-  {
-    s_state.texture_load_cv.wait(lock, []() {
-      return (s_state.texture_load_thread_quit.load(std::memory_order_acquire) || !s_state.texture_load_queue.empty());
-    });
-
-    if (s_state.texture_load_thread_quit.load(std::memory_order_acquire))
-      break;
-
-    while (!s_state.texture_load_queue.empty())
-    {
-      std::string path(std::move(s_state.texture_load_queue.front()));
-      s_state.texture_load_queue.pop_front();
-
-      lock.unlock();
-      std::optional<Image> image(LoadTextureImage(path.c_str(), 0, 0));
-      lock.lock();
-
-      // don't bother queuing back if it doesn't exist
-      if (image)
-        s_state.texture_upload_queue.emplace_back(std::move(path), std::move(image.value()));
-    }
-  }
-
-  s_state.texture_load_queue.clear();
 }
 
 bool ImGuiFullscreen::UpdateLayoutScale()
@@ -2814,7 +2778,7 @@ void ImGuiFullscreen::OpenBackgroundProgressDialog(const char* str_id, std::stri
 {
   const ImGuiID id = GetBackgroundProgressID(str_id);
 
-  std::unique_lock<std::mutex> lock(s_state.background_progress_lock);
+  std::unique_lock lock(s_state.shared_state_mutex);
 
 #if defined(_DEBUG) || defined(_DEVEL)
   for (const BackgroundProgressDialogData& data : s_state.background_progress_dialogs)
@@ -2837,7 +2801,7 @@ void ImGuiFullscreen::UpdateBackgroundProgressDialog(const char* str_id, std::st
 {
   const ImGuiID id = GetBackgroundProgressID(str_id);
 
-  std::unique_lock<std::mutex> lock(s_state.background_progress_lock);
+  std::unique_lock lock(s_state.shared_state_mutex);
 
   for (BackgroundProgressDialogData& data : s_state.background_progress_dialogs)
   {
@@ -2858,7 +2822,7 @@ void ImGuiFullscreen::CloseBackgroundProgressDialog(const char* str_id)
 {
   const ImGuiID id = GetBackgroundProgressID(str_id);
 
-  std::unique_lock<std::mutex> lock(s_state.background_progress_lock);
+  std::unique_lock lock(s_state.shared_state_mutex);
 
   for (auto it = s_state.background_progress_dialogs.begin(); it != s_state.background_progress_dialogs.end(); ++it)
   {
@@ -2876,7 +2840,7 @@ bool ImGuiFullscreen::IsBackgroundProgressDialogOpen(const char* str_id)
 {
   const ImGuiID id = GetBackgroundProgressID(str_id);
 
-  std::unique_lock<std::mutex> lock(s_state.background_progress_lock);
+  std::unique_lock lock(s_state.shared_state_mutex);
 
   for (auto it = s_state.background_progress_dialogs.begin(); it != s_state.background_progress_dialogs.end(); ++it)
   {
@@ -2889,7 +2853,7 @@ bool ImGuiFullscreen::IsBackgroundProgressDialogOpen(const char* str_id)
 
 void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spacing)
 {
-  std::unique_lock<std::mutex> lock(s_state.background_progress_lock);
+  std::unique_lock lock(s_state.shared_state_mutex);
   if (s_state.background_progress_dialogs.empty())
     return;
 
