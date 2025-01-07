@@ -1976,7 +1976,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
   // Read device physical memory properties, we need it for allocating buffers
   vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
   m_device_properties.limits.minUniformBufferOffsetAlignment =
-    std::max(m_device_properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(1));
+    std::max(m_device_properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(16));
   m_device_properties.limits.minTexelBufferOffsetAlignment =
     std::max(m_device_properties.limits.minTexelBufferOffsetAlignment, static_cast<VkDeviceSize>(1));
   m_device_properties.limits.optimalBufferCopyOffsetAlignment =
