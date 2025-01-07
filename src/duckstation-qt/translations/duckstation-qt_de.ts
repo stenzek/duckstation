@@ -9618,7 +9618,7 @@ Rekursives Durchsuchen benötigt mehr Zeit, erkennt allerdings auch Dateien in U
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="32"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Betriebsverhalten</translation>
     </message>
     <message>

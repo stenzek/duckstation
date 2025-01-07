@@ -9646,7 +9646,7 @@ L&apos;analyse récursive prend plus de temps, mais elle permet d&apos;identifie
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="32"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Comportement</translation>
     </message>
     <message>

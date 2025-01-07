@@ -11900,7 +11900,7 @@ Buscar recursivamente lleva más tiempo, pero identifica archivos en subdirector
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Comportamiento</translation>
     </message>
     <message>

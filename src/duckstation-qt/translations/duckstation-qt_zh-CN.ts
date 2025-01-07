@@ -12630,7 +12630,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>行为</translation>
     </message>
     <message>

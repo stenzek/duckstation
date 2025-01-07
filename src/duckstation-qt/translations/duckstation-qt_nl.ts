@@ -9617,7 +9617,7 @@ Recursief doorzoeken kost meer tijd, maar zal bestanden in subfolders vinden.</t
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="32"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Gedrag</translation>
     </message>
     <message>

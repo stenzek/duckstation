@@ -9616,7 +9616,7 @@ Analisar de forma recorrente demora mais tempo, mas irá identificar ficheiros e
     </message>
     <message>
         <location filename="../generalsettingswidget.ui" line="32"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Comportamento</translation>
     </message>
     <message>

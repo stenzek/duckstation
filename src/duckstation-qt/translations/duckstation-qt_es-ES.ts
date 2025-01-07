@@ -13492,7 +13492,7 @@ La búsqueda recursiva llevará más tiempo, pero identificará todo archivo que
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Comportamiento</translation>
     </message>
     <message>

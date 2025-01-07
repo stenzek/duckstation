@@ -13935,7 +13935,7 @@ Segure a tecla shift pressionada para definir vários vínculos.</translation>
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Comportamento</translation>
     </message>
     <message>

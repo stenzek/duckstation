@@ -10235,7 +10235,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
         <translation type="vanished">FInestra</translation>
     </message>
     <message>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation type="vanished">Comportamento</translation>
     </message>
     <message>
@@ -12215,7 +12215,7 @@ Scansionare ricorsivamente richiede più tempo, ma identificherà file anche nel
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Comportamento</translation>
     </message>
     <message>

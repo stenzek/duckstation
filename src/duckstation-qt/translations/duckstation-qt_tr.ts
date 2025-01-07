@@ -12151,7 +12151,7 @@ Alt klasörlerle birlikte aramak daha çok zaman alır ama alt klasörleride tar
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Davranış</translation>
     </message>
     <message>

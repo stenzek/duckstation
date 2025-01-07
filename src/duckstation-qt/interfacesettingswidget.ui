@@ -26,7 +26,7 @@
    <item>
     <widget class="QGroupBox" name="behaviorGroup">
      <property name="title">
-      <string>Behaviour</string>
+      <string>Behavior</string>
      </property>
      <layout class="QGridLayout" name="formLayout_4">
       <item row="3" column="0">

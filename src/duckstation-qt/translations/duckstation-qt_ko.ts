@@ -11483,7 +11483,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
       <location filename="../generalsettingswidget.ui" line="32"/>
-      <source>Behaviour</source>
+      <source>Behavior</source>
       <translation>동작</translation>
     </message>
     <message>
@@ -20719,7 +20719,7 @@ Please configure a supported controller from the list above.</source>
     <name>InterfaceSettingsWidget</name>
     <message>
       <location filename="../interfacesettingswidget.ui" line="29"/>
-      <source>Behaviour</source>
+      <source>Behavior</source>
       <translation>동작</translation>
     </message>
     <message>

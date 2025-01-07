@@ -12930,7 +12930,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Beteende</translation>
     </message>
     <message>

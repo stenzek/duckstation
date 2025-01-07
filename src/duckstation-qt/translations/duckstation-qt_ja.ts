@@ -11060,7 +11060,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="vanished">形式</translation>
     </message>
     <message>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation type="vanished">動作</translation>
     </message>
     <message>
@@ -13062,7 +13062,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>動作</translation>
     </message>
     <message>

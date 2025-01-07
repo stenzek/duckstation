@@ -11548,7 +11548,7 @@ Pemindaian rekursif akan membuat proses pencarian menjadi lebih lama, namun dapa
     <name>InterfaceSettingsWidget</name>
     <message>
         <location filename="../interfacesettingswidget.ui" line="29"/>
-        <source>Behaviour</source>
+        <source>Behavior</source>
         <translation>Perilaku</translation>
     </message>
     <message>
