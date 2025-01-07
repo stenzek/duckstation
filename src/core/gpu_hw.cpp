@@ -3050,10 +3050,9 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(const GPUBackendDrawCo
     if (m_texpage_dirty & TEXPAGE_DIRTY_PAGE_RECT)
     {
       DebugAssert(!(m_texpage_dirty & (TEXPAGE_DIRTY_DRAWN_RECT | TEXPAGE_DIRTY_WRITTEN_RECT)));
-      DebugAssert(m_batch.texture_mode == BatchTextureMode::PageTexture &&
-                  m_batch.texture_cache_key.page < NUM_VRAM_PAGES);
+      DebugAssert(m_batch.texture_mode == BatchTextureMode::PageTexture && m_texture_cache_key.page < NUM_VRAM_PAGES);
 
-      if (GPUTextureCache::AreSourcePagesDrawn(m_batch.texture_cache_key, m_current_uv_rect))
+      if (GPUTextureCache::AreSourcePagesDrawn(m_texture_cache_key, m_current_uv_rect))
       {
         // UVs intersect with drawn area, can't use TC
         if (m_batch_index_count > 0)
@@ -3063,7 +3062,7 @@ ALWAYS_INLINE_RELEASE void GPU_HW::CheckForTexPageOverlap(const GPUBackendDrawCo
         }
 
         // We need to swap the dirty tracking over to drawn/written.
-        const GSVector4i page_rect = GetTextureRect(m_batch.texture_cache_key.page, m_batch.texture_cache_key.mode);
+        const GSVector4i page_rect = GetTextureRect(m_texture_cache_key.page, m_texture_cache_key.mode);
         m_texpage_dirty = (m_vram_dirty_draw_rect.rintersects(page_rect) ? TEXPAGE_DIRTY_DRAWN_RECT : 0) |
                           (m_vram_dirty_write_rect.rintersects(page_rect) ? TEXPAGE_DIRTY_WRITTEN_RECT : 0);
         m_compute_uv_range = (ShouldCheckForTexPageOverlap() || m_clamp_uvs);
@@ -3572,7 +3571,7 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
 {
   // TODO: avoid all this for vertex loading, only do when the type of draw changes
   BatchTextureMode texture_mode = cmd->texture_enable ? m_batch.texture_mode : BatchTextureMode::Disabled;
-  GPUTextureCache::SourceKey texture_cache_key = m_batch.texture_cache_key;
+  GPUTextureCache::SourceKey texture_cache_key = m_texture_cache_key;
   if (cmd->texture_enable)
   {
     // texture page changed - check that the new page doesn't intersect the drawing area
@@ -3680,9 +3679,9 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
   {
     if (texture_mode != m_batch.texture_mode || transparency_mode != m_batch.transparency_mode ||
         (transparency_mode == GPUTransparencyMode::BackgroundMinusForeground && !m_allow_shader_blend) ||
-        dithering_enable != m_batch.dithering || m_batch_ubo_data.u_texture_window_bits != cmd->window ||
+        dithering_enable != m_batch.dithering || m_texture_window_bits != cmd->window ||
         m_batch_ubo_data.u_set_mask_while_drawing != BoolToUInt32(cmd->set_mask_while_drawing) ||
-        (texture_mode == BatchTextureMode::PageTexture && m_batch.texture_cache_key != texture_cache_key))
+        (texture_mode == BatchTextureMode::PageTexture && m_texture_cache_key != texture_cache_key))
     {
       FlushRender();
     }
@@ -3729,13 +3728,13 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
     m_batch.texture_mode = texture_mode;
     m_batch.transparency_mode = transparency_mode;
     m_batch.dithering = dithering_enable;
-    m_batch.texture_cache_key = texture_cache_key;
+    m_texture_cache_key = texture_cache_key;
 
-    if (m_batch_ubo_data.u_texture_window_bits != cmd->window)
+    if (m_texture_window_bits != cmd->window)
     {
-      m_batch_ubo_data.u_texture_window_bits = cmd->window;
+      m_texture_window_bits = cmd->window;
       m_texture_window_active = (cmd->window != GPUTextureWindow{{0xFF, 0xFF, 0x00, 0x00}});
-      GSVector4i::store<true>(&m_batch_ubo_data.u_texture_window[0], GSVector4i::load32(&cmd->window).u8to32());
+      GSVector4i::store<false>(&m_batch_ubo_data.u_texture_window[0], GSVector4i::load32(&cmd->window).u8to32());
       m_batch_ubo_dirty = true;
     }
 
@@ -3779,7 +3778,7 @@ void GPU_HW::FlushRender()
   const GPUTextureCache::Source* texture = nullptr;
   if (m_batch.texture_mode == BatchTextureMode::PageTexture)
   {
-    texture = LookupSource(m_batch.texture_cache_key, m_current_uv_rect,
+    texture = LookupSource(m_texture_cache_key, m_current_uv_rect,
                            m_batch.transparency_mode != GPUTransparencyMode::Disabled ?
                              GPUTextureCache::PaletteRecordFlags::HasSemiTransparentDraws :
                              GPUTextureCache::PaletteRecordFlags::None);
