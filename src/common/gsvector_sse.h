@@ -1831,6 +1831,11 @@ public:
 
   ALWAYS_INLINE GSVector4i xyxy(const GSVector4i& v) const { return upl64(v); }
 
+  ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xyzw)
+  {
+    return GSVector4i(_mm_unpacklo_epi64(xyzw.m, xyzw.m));
+  }
+
   ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xy, const GSVector2i& zw)
   {
     return GSVector4i(_mm_unpacklo_epi64(xy.m, zw.m));
@@ -2419,6 +2424,11 @@ public:
   ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l, const GSVector2& h)
   {
     return GSVector4(_mm_movelh_ps(l.m, h.m));
+  }
+
+  ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l)
+  {
+    return GSVector4(_mm_movelh_ps(l.m, l.m));
   }
 
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \

@@ -1665,6 +1665,8 @@ public:
     return GSVector4i(xy.x, xy.y, zw.x, zw.y);
   }
 
+  ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xyzw) { return GSVector4i(xyzw.x, xyzw.y, xyzw.x, xyzw.y); }
+
   ALWAYS_INLINE GSVector2i xy() const { return GSVector2i(x, y); }
   ALWAYS_INLINE GSVector2i zw() const { return GSVector2i(z, w); }
 
@@ -2319,6 +2321,8 @@ public:
   ALWAYS_INLINE GSVector2 zw() const { return GSVector2(z, w); }
 
   ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l, const GSVector2& h) { return GSVector4(l.x, l.y, h.x, h.y); }
+
+  ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l) { return GSVector4(l.x, l.y, l.x, l.y); }
 
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
   ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const { return GSVector4(F32[xn], F32[yn], F32[zn], F32[wn]); }
