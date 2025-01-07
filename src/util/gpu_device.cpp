@@ -1222,6 +1222,12 @@ bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u
                               GPUTexture::Format format, GPUTexture::Flags flags, bool preserve /* = true */)
 {
   GPUTexture* old_tex = tex->get();
+  if (old_tex && old_tex->GetWidth() == new_width && old_tex->GetHeight() == new_height && old_tex->GetType() == type &&
+      old_tex->GetFormat() == format && old_tex->GetFlags() == flags)
+  {
+    return true;
+  }
+
   DebugAssert(!old_tex || (old_tex->GetLayers() == 1 && old_tex->GetLevels() == 1 && old_tex->GetSamples() == 1));
   std::unique_ptr<GPUTexture> new_tex = FetchTexture(new_width, new_height, 1, 1, 1, type, format, flags);
   if (!new_tex) [[unlikely]]

@@ -1031,18 +1031,13 @@ bool GPUBackend::Deinterlace(u32 field)
   const u32 height = m_display_texture_view_height;
 
   const auto copy_to_field_buffer = [&](u32 buffer) {
-    if (!m_deinterlace_buffers[buffer] || m_deinterlace_buffers[buffer]->GetWidth() != width ||
-        m_deinterlace_buffers[buffer]->GetHeight() != height ||
-        m_deinterlace_buffers[buffer]->GetFormat() != src->GetFormat())
+    if (!g_gpu_device->ResizeTexture(&m_deinterlace_buffers[buffer], width, height, GPUTexture::Type::Texture,
+                                     src->GetFormat(), GPUTexture::Flags::None, false)) [[unlikely]]
     {
-      if (!g_gpu_device->ResizeTexture(&m_deinterlace_buffers[buffer], width, height, GPUTexture::Type::Texture,
-                                       src->GetFormat(), GPUTexture::Flags::None, false)) [[unlikely]]
-      {
-        return false;
-      }
-
-      GL_OBJECT_NAME_FMT(m_deinterlace_buffers[buffer], "Blend Deinterlace Buffer {}", buffer);
+      return false;
     }
+
+    GL_OBJECT_NAME_FMT(m_deinterlace_buffers[buffer], "Blend Deinterlace Buffer {}", buffer);
 
     GL_INS_FMT("Copy {}x{} from {},{} to field buffer {}", width, height, x, y, buffer);
     g_gpu_device->CopyTextureRegion(m_deinterlace_buffers[buffer].get(), 0, 0, 0, 0, m_display_texture, x, y, 0, 0,
@@ -1158,18 +1153,13 @@ bool GPUBackend::Deinterlace(u32 field)
 
 bool GPUBackend::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve)
 {
-  if (!m_deinterlace_texture || m_deinterlace_texture->GetWidth() != width ||
-      m_deinterlace_texture->GetHeight() != height)
+  if (!g_gpu_device->ResizeTexture(&m_deinterlace_texture, width, height, GPUTexture::Type::RenderTarget,
+                                   GPUTexture::Format::RGBA8, GPUTexture::Flags::None, preserve)) [[unlikely]]
   {
-    if (!g_gpu_device->ResizeTexture(&m_deinterlace_texture, width, height, GPUTexture::Type::RenderTarget,
-                                     GPUTexture::Format::RGBA8, GPUTexture::Flags::None, preserve)) [[unlikely]]
-    {
-      return false;
-    }
-
-    GL_OBJECT_NAME(m_deinterlace_texture, "Deinterlace target texture");
+    return false;
   }
 
+  GL_OBJECT_NAME(m_deinterlace_texture, "Deinterlace target texture");
   return true;
 }
 
@@ -1179,18 +1169,14 @@ bool GPUBackend::ApplyChromaSmoothing()
   const u32 y = m_display_texture_view_y;
   const u32 width = m_display_texture_view_width;
   const u32 height = m_display_texture_view_height;
-  if (!m_chroma_smoothing_texture || m_chroma_smoothing_texture->GetWidth() != width ||
-      m_chroma_smoothing_texture->GetHeight() != height)
+  if (!g_gpu_device->ResizeTexture(&m_chroma_smoothing_texture, width, height, GPUTexture::Type::RenderTarget,
+                                   GPUTexture::Format::RGBA8, GPUTexture::Flags::None, false))
   {
-    if (!g_gpu_device->ResizeTexture(&m_chroma_smoothing_texture, width, height, GPUTexture::Type::RenderTarget,
-                                     GPUTexture::Format::RGBA8, GPUTexture::Flags::None, false))
-    {
-      ClearDisplayTexture();
-      return false;
-    }
-
-    GL_OBJECT_NAME(m_chroma_smoothing_texture, "Chroma smoothing texture");
+    ClearDisplayTexture();
+    return false;
   }
+
+  GL_OBJECT_NAME(m_chroma_smoothing_texture, "Chroma smoothing texture");
 
   GL_SCOPE_FMT("ApplyChromaSmoothing({{{},{}}}, {}x{})", x, y, width, height);
 
