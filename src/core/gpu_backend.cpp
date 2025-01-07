@@ -535,7 +535,6 @@ bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool ch
                                g_gpu_device->GetFeatures().framebuffer_fetch);
 
   GPUPipeline::GraphicsConfig plconfig;
-  plconfig.input_layout.vertex_stride = 0;
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
   plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
   plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
@@ -548,6 +547,8 @@ bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool ch
 
   if (display)
   {
+    SetScreenQuadInputLayout(plconfig);
+
     plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
     plconfig.SetTargetFormats(g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() :
                                                                  GPUTexture::Format::RGBA8);
@@ -588,6 +589,9 @@ bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool ch
     GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
                        Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
   }
+
+  plconfig.input_layout = {};
+  plconfig.primitive = GPUPipeline::Primitive::Triangles;
 
   if (deinterlace)
   {
@@ -841,14 +845,12 @@ GPUDevice::PresentResult GPUBackend::RenderDisplay(GPUTexture* target, const GSV
   const bool really_postfx = (postfx && PostProcessing::DisplayChain.IsActive() && g_gpu_device->HasMainSwapChain() &&
                               hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
                               PostProcessing::DisplayChain.CheckTargets(hdformat, target_width, target_height));
+  const u32 real_target_width =
+    (target || really_postfx) ? target_width : g_gpu_device->GetMainSwapChain()->GetPostRotatedWidth();
+  const u32 real_target_height =
+    (target || really_postfx) ? target_height : g_gpu_device->GetMainSwapChain()->GetPostRotatedHeight();
   GSVector4i real_draw_rect =
     (target || really_postfx) ? draw_rect : g_gpu_device->GetMainSwapChain()->PreRotateClipRect(draw_rect);
-  if (g_gpu_device->UsesLowerLeftOrigin())
-  {
-    real_draw_rect = GPUDevice::FlipToLowerLeft(
-      real_draw_rect,
-      (target || really_postfx) ? target_height : g_gpu_device->GetMainSwapChain()->GetPostRotatedHeight());
-  }
   if (really_postfx)
   {
     g_gpu_device->ClearRenderTarget(PostProcessing::DisplayChain.GetInputTexture(), GPUDevice::DEFAULT_CLEAR_COLOR);
@@ -872,13 +874,11 @@ GPUDevice::PresentResult GPUBackend::RenderDisplay(GPUTexture* target, const GSV
   {
     bool texture_filter_linear = false;
 
-    struct Uniforms
+    struct alignas(16) Uniforms
     {
-      float src_rect[4];
       float src_size[4];
       float clamp_rect[4];
       float params[4];
-      float rotation_matrix[2][2];
     } uniforms;
     std::memset(uniforms.params, 0, sizeof(uniforms.params));
 
@@ -916,50 +916,75 @@ GPUDevice::PresentResult GPUBackend::RenderDisplay(GPUTexture* target, const GSV
 
     // For bilinear, clamp to 0.5/SIZE-0.5 to avoid bleeding from the adjacent texels in VRAM. This is because
     // 1.0 in UV space is not the bottom-right texel, but a mix of the bottom-right and wrapped/next texel.
-    const float rcp_width = 1.0f / static_cast<float>(display_texture->GetWidth());
-    const float rcp_height = 1.0f / static_cast<float>(display_texture->GetHeight());
-    uniforms.src_rect[0] = static_cast<float>(display_texture_view_x) * rcp_width;
-    uniforms.src_rect[1] = static_cast<float>(display_texture_view_y) * rcp_height;
-    uniforms.src_rect[2] = static_cast<float>(display_texture_view_width) * rcp_width;
-    uniforms.src_rect[3] = static_cast<float>(display_texture_view_height) * rcp_height;
-    uniforms.clamp_rect[0] = (static_cast<float>(display_texture_view_x) + 0.5f) * rcp_width;
-    uniforms.clamp_rect[1] = (static_cast<float>(display_texture_view_y) + 0.5f) * rcp_height;
-    uniforms.clamp_rect[2] =
-      (static_cast<float>(display_texture_view_x + display_texture_view_width) - 0.5f) * rcp_width;
-    uniforms.clamp_rect[3] =
-      (static_cast<float>(display_texture_view_y + display_texture_view_height) - 0.5f) * rcp_height;
-    uniforms.src_size[0] = static_cast<float>(display_texture->GetWidth());
-    uniforms.src_size[1] = static_cast<float>(display_texture->GetHeight());
-    uniforms.src_size[2] = rcp_width;
-    uniforms.src_size[3] = rcp_height;
+    const GSVector2 display_texture_size = GSVector2(display_texture->GetSizeVec());
+    const GSVector4 display_texture_size4 = GSVector4::xyxy(display_texture_size);
+    const GSVector4 uv_rect = GSVector4(GSVector4i(display_texture_view_x, display_texture_view_y,
+                                                   display_texture_view_x + display_texture_view_width,
+                                                   display_texture_view_y + display_texture_view_height)) /
+                              display_texture_size4;
+    GSVector4::store<true>(uniforms.clamp_rect,
+                           GSVector4(static_cast<float>(display_texture_view_x) + 0.5f,
+                                     static_cast<float>(display_texture_view_y) + 0.5f,
+                                     static_cast<float>(display_texture_view_x + display_texture_view_width) - 0.5f,
+                                     static_cast<float>(display_texture_view_y + display_texture_view_height) - 0.5f) /
+                             display_texture_size4);
+    GSVector4::store<true>(uniforms.src_size,
+                           GSVector4::xyxy(display_texture_size, GSVector2::cxpr(1.0f) / display_texture_size));
+
+    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
+
+    g_gpu_device->SetViewport(0, 0, real_target_width, real_target_height);
+    g_gpu_device->SetScissor(g_gpu_device->UsesLowerLeftOrigin() ?
+                               GPUDevice::FlipToLowerLeft(real_draw_rect, real_target_height) :
+                               real_draw_rect);
+
+    ScreenVertex* vertices;
+    u32 space;
+    u32 base_vertex;
+    g_gpu_device->MapVertexBuffer(sizeof(ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space, &base_vertex);
 
     const WindowInfo::PreRotation surface_prerotation = (target || really_postfx) ?
                                                           WindowInfo::PreRotation::Identity :
                                                           g_gpu_device->GetMainSwapChain()->GetPreRotation();
-    if (g_gpu_settings.display_rotation != DisplayRotation::Normal ||
-        surface_prerotation != WindowInfo::PreRotation::Identity)
+
+    const DisplayRotation uv_rotation = static_cast<DisplayRotation>(
+      (static_cast<u32>(g_gpu_settings.display_rotation) + static_cast<u32>(surface_prerotation)) %
+      static_cast<u32>(DisplayRotation::Count));
+
+    const GSVector4 xy =
+      GetScreenQuadClipSpaceCoordinates(real_draw_rect, GSVector2i(real_target_width, real_target_height));
+    switch (uv_rotation)
     {
-      static constexpr const std::array<float, static_cast<size_t>(DisplayRotation::Count)> rotation_radians = {{
-        0.0f,
-        static_cast<float>(std::numbers::pi * 1.5f), // Rotate90
-        static_cast<float>(std::numbers::pi),        // Rotate180
-        static_cast<float>(std::numbers::pi / 2.0),  // Rotate270
-      }};
+      case DisplayRotation::Normal:
+        vertices[0].Set(xy.xy(), uv_rect.xy());
+        vertices[1].Set(xy.zyzw().xy(), uv_rect.zyzw().xy());
+        vertices[2].Set(xy.xwzw().xy(), uv_rect.xwzw().xy());
+        vertices[3].Set(xy.zw(), uv_rect.zw());
+        break;
+      case DisplayRotation::Rotate90:
+        vertices[0].Set(xy.xy(), uv_rect.xwzw().xy());
+        vertices[1].Set(xy.zyzw().xy(), uv_rect.xy());
+        vertices[2].Set(xy.xwzw().xy(), uv_rect.zw());
+        vertices[3].Set(xy.zw(), uv_rect.zyzw().xy());
+        break;
+      case DisplayRotation::Rotate180:
+        vertices[0].Set(xy.xy(), uv_rect.xwzw().xy());
+        vertices[1].Set(xy.zyzw().xy(), uv_rect.zw());
+        vertices[2].Set(xy.xwzw().xy(), uv_rect.xy());
+        vertices[3].Set(xy.zw(), uv_rect.zyzw().xy());
+        break;
+      case DisplayRotation::Rotate270:
+        vertices[0].Set(xy.xy(), uv_rect.zyzw().xy());
+        vertices[1].Set(xy.zyzw().xy(), uv_rect.zw());
+        vertices[2].Set(xy.xwzw().xy(), uv_rect.xy());
+        vertices[3].Set(xy.zw(), uv_rect.xwzw().xy());
+        break;
 
-      const u32 rotation_idx =
-        (static_cast<u32>(g_gpu_settings.display_rotation) + static_cast<u32>(surface_prerotation)) %
-        static_cast<u32>(rotation_radians.size());
-      GSMatrix2x2::Rotation(rotation_radians[rotation_idx]).store(uniforms.rotation_matrix);
+        DefaultCaseIsUnreachable();
     }
-    else
-    {
-      GSMatrix2x2::Identity().store(uniforms.rotation_matrix);
-    }
 
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-
-    g_gpu_device->SetViewportAndScissor(real_draw_rect);
-    g_gpu_device->Draw(3, 0);
+    g_gpu_device->UnmapVertexBuffer(sizeof(ScreenVertex), 4);
+    g_gpu_device->Draw(4, base_vertex);
   }
 
   if (really_postfx)
