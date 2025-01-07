@@ -223,6 +223,7 @@ private:
   bool ShouldCheckForTexPageOverlap() const;
 
   bool IsFlushed() const;
+
   void EnsureVertexBufferSpace(u32 required_vertices, u32 required_indices);
   void EnsureVertexBufferSpaceForCommand(const GPUBackendDrawCommand* cmd);
   void PrepareDraw(const GPUBackendDrawCommand* cmd);
@@ -380,4 +381,5 @@ private:
 
   // common shaders
   std::unique_ptr<GPUShader> m_fullscreen_quad_vertex_shader;
+  std::unique_ptr<GPUShader> m_screen_quad_vertex_shader;
 };

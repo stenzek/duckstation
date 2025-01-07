@@ -1057,6 +1057,15 @@ bool GPU_HW::CompileCommonShaders(Error* error)
   if (!m_fullscreen_quad_vertex_shader)
     return false;
 
+  GL_OBJECT_NAME(m_fullscreen_quad_vertex_shader, "Fullscreen Quad Vertex Shader");
+
+  m_screen_quad_vertex_shader = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                           shadergen.GenerateScreenVertexShader(), error);
+  if (!m_screen_quad_vertex_shader)
+    return false;
+
+  GL_OBJECT_NAME(m_screen_quad_vertex_shader, "Screen Quad Vertex Shader");
+
   return true;
 }
 
@@ -1538,12 +1547,11 @@ bool GPU_HW::CompilePipelines(Error* error)
   batch_shader_guard.Run();
 
   // common state
-  plconfig.input_layout.vertex_attributes = {};
-  plconfig.input_layout.vertex_stride = 0;
+  SetScreenQuadInputLayout(plconfig);
+  plconfig.vertex_shader = m_screen_quad_vertex_shader.get();
   plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
   plconfig.per_sample_shading = false;
   plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.vertex_shader = m_fullscreen_quad_vertex_shader.get();
   plconfig.color_formats[1] = needs_rov_depth ? VRAM_DS_COLOR_FORMAT : GPUTexture::Format::Unknown;
 
   // VRAM fill
@@ -1631,8 +1639,6 @@ bool GPU_HW::CompilePipelines(Error* error)
     }
   }
 
-  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-
   // VRAM write replacement
   {
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
@@ -1641,6 +1647,7 @@ bool GPU_HW::CompilePipelines(Error* error)
       return false;
 
     plconfig.fragment_shader = fs.get();
+    plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
     plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
     if (!(m_vram_write_replacement_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
@@ -1648,6 +1655,11 @@ bool GPU_HW::CompilePipelines(Error* error)
     if (!progress.Increment(1, error)) [[unlikely]]
       return false;
   }
+
+  plconfig.vertex_shader = m_fullscreen_quad_vertex_shader.get();
+  plconfig.primitive = GPUPipeline::Primitive::Triangles;
+  plconfig.input_layout.vertex_attributes = {};
+  plconfig.input_layout.vertex_stride = 0;
 
   // VRAM update depth
   if (m_write_mask_as_depth)
@@ -1954,6 +1966,7 @@ void GPU_HW::UpdateVRAMReadTexture(bool drawn, bool written)
 
 void GPU_HW::UpdateDepthBufferFromMaskBit()
 {
+  GL_SCOPE_FMT("UpdateDepthBufferFromMaskBit()");
   DebugAssert(!m_pgxp_depth_buffer && m_vram_depth_texture && m_write_mask_as_depth);
 
   // Viewport should already be set full, only need to fudge the scissor.
@@ -2997,9 +3010,10 @@ bool GPU_HW::BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u
 
   g_gpu_device->SetTextureSampler(0, tex, g_gpu_device->GetLinearSampler());
   g_gpu_device->SetPipeline(m_vram_write_replacement_pipeline.get());
-  g_gpu_device->SetViewportAndScissor(dst_x, dst_y, width, height);
-  g_gpu_device->Draw(3, 0);
 
+  const GSVector4i rect(dst_x, dst_y, dst_x + width, dst_y + height);
+  g_gpu_device->SetScissor(rect);
+  DrawScreenQuad(rect, m_vram_texture->GetSizeVec());
   RestoreDeviceContext();
   return true;
 }
@@ -3225,9 +3239,6 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
   const bool is_oversized = (((x + width) > VRAM_WIDTH || (y + height) > VRAM_HEIGHT));
   g_gpu_device->SetPipeline(m_vram_fill_pipelines[BoolToUInt8(is_oversized)][BoolToUInt8(interlaced_rendering)].get());
 
-  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
-  g_gpu_device->SetViewportAndScissor(scaled_bounds);
-
   struct VRAMFillUBOData
   {
     u32 u_dst_x;
@@ -3247,7 +3258,10 @@ void GPU_HW::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool inter
     GPUDevice::RGBA8ToFloat(m_true_color ? color : VRAMRGBA5551ToRGBA8888(VRAMRGBA8888ToRGBA5551(color)));
   uniforms.u_interlaced_displayed_field = active_line_lsb;
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-  g_gpu_device->Draw(3, 0);
+
+  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
+  g_gpu_device->SetScissor(scaled_bounds);
+  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec());
 
   RestoreDeviceContext();
 }
@@ -3357,14 +3371,15 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
 {
   DeactivateROV();
 
-  std::unique_ptr<GPUTexture> upload_texture;
+  GPUDevice::AutoRecycleTexture upload_texture;
   u32 map_index;
 
   if (!g_gpu_device->GetFeatures().supports_texture_buffers)
   {
     map_index = 0;
-    upload_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture,
-                                                GPUTexture::Format::R16U, GPUTexture::Flags::None, data, data_pitch);
+    upload_texture =
+      g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::R16U,
+                                            GPUTexture::Flags::None, data, data_pitch);
     if (!upload_texture)
     {
       ERROR_LOG("Failed to get {}x{} upload texture. Things are gonna break.", width, height);
@@ -3406,21 +3421,17 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
                                      GetCurrentNormalizedVertexDepth()};
 
   // the viewport should already be set to the full vram, so just adjust the scissor
-  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
-  g_gpu_device->SetScissor(scaled_bounds.left, scaled_bounds.top, scaled_bounds.width(), scaled_bounds.height());
   g_gpu_device->SetPipeline(m_vram_write_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
+
   if (upload_texture)
-  {
     g_gpu_device->SetTextureSampler(0, upload_texture.get(), g_gpu_device->GetNearestSampler());
-    g_gpu_device->Draw(3, 0);
-    g_gpu_device->RecycleTexture(std::move(upload_texture));
-  }
   else
-  {
     g_gpu_device->SetTextureBuffer(0, m_vram_upload_buffer.get());
-    g_gpu_device->Draw(3, 0);
-  }
+
+  const GSVector4i scaled_bounds = bounds.mul32l(GSVector4i(m_resolution_scale));
+  g_gpu_device->SetScissor(scaled_bounds);
+  DrawScreenQuad(scaled_bounds, m_vram_texture->GetSizeVec());
 
   RestoreDeviceContext();
 }
@@ -3492,12 +3503,13 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
                                       GetCurrentNormalizedVertexDepth()};
 
     // VRAM read texture should already be bound.
-    const GSVector4i dst_bounds_scaled = dst_bounds.mul32l(GSVector4i(m_resolution_scale));
-    g_gpu_device->SetViewportAndScissor(dst_bounds_scaled);
     g_gpu_device->SetPipeline(m_vram_copy_pipelines[BoolToUInt8(check_mask && m_write_mask_as_depth)].get());
     g_gpu_device->SetTextureSampler(0, m_vram_read_texture.get(), g_gpu_device->GetNearestSampler());
     g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-    g_gpu_device->Draw(3, 0);
+
+    const GSVector4i dst_bounds_scaled = dst_bounds.mul32l(GSVector4i(m_resolution_scale));
+    g_gpu_device->SetScissor(dst_bounds_scaled);
+    DrawScreenQuad(dst_bounds_scaled, m_vram_texture->GetSizeVec());
     RestoreDeviceContext();
 
     if (check_mask && !m_pgxp_depth_buffer)

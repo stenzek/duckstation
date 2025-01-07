@@ -1209,6 +1209,49 @@ bool GPUBackend::ApplyChromaSmoothing()
   return true;
 }
 
+void GPUBackend::SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config)
+{
+  static constexpr GPUPipeline::VertexAttribute screen_vertex_attributes[] = {
+    GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ScreenVertex, x)),
+    GPUPipeline::VertexAttribute::Make(1, GPUPipeline::VertexAttribute::Semantic::TexCoord, 0,
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ScreenVertex, u)),
+  };
+
+  // common state
+  config.input_layout.vertex_attributes = screen_vertex_attributes;
+  config.input_layout.vertex_stride = sizeof(ScreenVertex);
+  config.primitive = GPUPipeline::Primitive::TriangleStrips;
+}
+
+GSVector4 GPUBackend::GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size)
+{
+  const GSVector4 fboundsxxyy = GSVector4(bounds.xzyw());
+  const GSVector2 fsize = GSVector2(rt_size);
+  const GSVector2 x = ((fboundsxxyy.xy() * GSVector2::cxpr(2.0f)) / fsize.xx()) - GSVector2::cxpr(1.0f);
+  const GSVector2 y = GSVector2::cxpr(1.0f) - (GSVector2::cxpr(2.0f) * (fboundsxxyy.zw() / fsize.yy()));
+  return GSVector4::xyxy(x, y).xzyw();
+}
+
+void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
+                                const GSVector4 uv_bounds /* = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f) */)
+{
+  const GSVector4 xy = GetScreenQuadClipSpaceCoordinates(bounds, rt_size);
+
+  ScreenVertex* vertices;
+  u32 space;
+  u32 base_vertex;
+  g_gpu_device->MapVertexBuffer(sizeof(ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space, &base_vertex);
+
+  vertices[0].Set(xy.xy(), uv_bounds.xy());
+  vertices[1].Set(xy.zyzw().xy(), uv_bounds.zyzw().xy());
+  vertices[2].Set(xy.xwzw().xy(), uv_bounds.xwzw().xy());
+  vertices[3].Set(xy.zw(), uv_bounds.zw());
+
+  g_gpu_device->UnmapVertexBuffer(sizeof(ScreenVertex), 4);
+  g_gpu_device->Draw(4, base_vertex);
+}
+
 void GPUBackend::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
                                    GSVector4i* display_rect, GSVector4i* draw_rect) const
 {

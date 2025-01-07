@@ -118,6 +118,19 @@ protected:
     DEINTERLACE_BUFFER_COUNT = 4,
   };
 
+  struct ScreenVertex
+  {
+    float x;
+    float y;
+    float u;
+    float v;
+
+    ALWAYS_INLINE void Set(const GSVector2& xy, const GSVector2& uv)
+    {
+      GSVector4::store<false>(this, GSVector4::xyxy(xy, uv));
+    }
+  };
+
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height) = 0;
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering,
                         u8 interlaced_display_field) = 0;
@@ -142,6 +155,12 @@ protected:
 
   virtual bool AllocateMemorySaveState(System::MemorySaveState& mss, Error* error) = 0;
   virtual void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss) = 0;
+
+  static void SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config);
+  static GSVector4 GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size);
+
+  void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
+                      const GSVector4 uv_bounds = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f));
 
   /// Helper function for computing the draw rectangle in a larger window.
   void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
