@@ -1394,6 +1394,11 @@ void InputManager::UpdateHostMouseMode()
   Host::SetMouseMode(wanted_relative_mouse_mode, wanted_hide_host_mouse_cursor);
 }
 
+bool InputManager::IsRelativeMouseModeActive()
+{
+  return s_relative_mouse_mode_active;
+}
+
 bool InputManager::IsUsingRawInput()
 {
 #if defined(_WIN32)
@@ -1407,6 +1412,11 @@ void InputManager::SetDisplayWindowSize(float width, float height)
 {
   s_window_size[0] = width;
   s_window_size[1] = height;
+}
+
+std::pair<float, float> InputManager::GetDisplayWindowSize()
+{
+  return std::make_pair(s_window_size[0], s_window_size[1]);
 }
 
 void InputManager::SetDefaultSourceConfig(SettingsInterface& si)

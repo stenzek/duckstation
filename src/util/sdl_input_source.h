@@ -62,6 +62,8 @@ private:
     int haptic_left_right_effect;
     int joystick_id;
     int player_id;
+    float last_touch_x;
+    float last_touch_y;
     bool use_game_controller_rumble;
 
     // Used to disable Joystick controls that are used in GameController inputs so we don't get double events
@@ -87,6 +89,7 @@ private:
   bool CloseDevice(int joystick_index);
   bool HandleControllerAxisEvent(const SDL_ControllerAxisEvent* ev);
   bool HandleControllerButtonEvent(const SDL_ControllerButtonEvent* ev);
+  bool HandleControllerTouchpadEvent(const SDL_ControllerTouchpadEvent* ev);
   bool HandleJoystickAxisEvent(const SDL_JoyAxisEvent* ev);
   bool HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev);
   bool HandleJoystickHatEvent(const SDL_JoyHatEvent* ev);
@@ -100,6 +103,7 @@ private:
   bool m_sdl_subsystem_initialized = false;
   bool m_controller_enhanced_mode = false;
   bool m_controller_ps5_player_led = false;
+  bool m_controller_touchpad_as_pointer = false;
 
 #ifdef __APPLE__
   bool m_enable_iokit_driver = false;

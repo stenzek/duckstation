@@ -239,6 +239,7 @@ void SDLInputSource::LoadSettings(const SettingsInterface& si)
 
   m_controller_enhanced_mode = si.GetBoolValue("InputSources", "SDLControllerEnhancedMode", false);
   m_controller_ps5_player_led = si.GetBoolValue("InputSources", "SDLPS5PlayerLED", false);
+  m_controller_touchpad_as_pointer = si.GetBoolValue("InputSources", "SDLTouchpadAsPointer", false);
   m_sdl_hints = si.GetKeyValueList("SDLHints");
 
 #ifdef __APPLE__
@@ -588,6 +589,9 @@ bool SDLInputSource::IsHandledInputEvent(const SDL_Event* ev)
     case SDL_CONTROLLERAXISMOTION:
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
+    case SDL_CONTROLLERTOUCHPADDOWN:
+    case SDL_CONTROLLERTOUCHPADUP:
+    case SDL_CONTROLLERTOUCHPADMOTION:
     case SDL_JOYAXISMOTION:
     case SDL_JOYBUTTONDOWN:
     case SDL_JOYBUTTONUP:
@@ -646,6 +650,11 @@ bool SDLInputSource::ProcessSDLEvent(const SDL_Event* event)
     case SDL_CONTROLLERBUTTONDOWN:
     case SDL_CONTROLLERBUTTONUP:
       return HandleControllerButtonEvent(&event->cbutton);
+
+    case SDL_CONTROLLERTOUCHPADDOWN:
+    case SDL_CONTROLLERTOUCHPADUP:
+    case SDL_CONTROLLERTOUCHPADMOTION:
+      return HandleControllerTouchpadEvent(&event->ctouchpad);
 
     case SDL_JOYAXISMOTION:
       return HandleJoystickAxisEvent(&event->jaxis);
@@ -755,6 +764,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
   cd.haptic_left_right_effect = -1;
   cd.game_controller = gcontroller;
   cd.joystick = joystick;
+  cd.last_touch_x = 0.0f;
+  cd.last_touch_y = 0.0f;
 
   if (gcontroller)
   {
@@ -893,6 +904,58 @@ bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent
                                             s_sdl_generic_binding_button_mapping[ev->button] :
                                             GenericInputBinding::Unknown;
   InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f, generic_key);
+  return true;
+}
+
+bool SDLInputSource::HandleControllerTouchpadEvent(const SDL_ControllerTouchpadEvent* ev)
+{
+  // More than one touchpad?
+  if (ev->touchpad != 0 || !m_controller_touchpad_as_pointer)
+    return false;
+
+  auto it = GetControllerDataForJoystickId(ev->which);
+  if (it == m_controllers.end())
+    return false;
+
+  // Limited by InputManager pointers.
+  const u32 pointer_index = static_cast<u32>(it->player_id);
+  if (pointer_index >= InputManager::MAX_POINTER_DEVICES)
+    return false;
+
+  // Only looking at the first finger for motion for now.
+  if (ev->finger == 0)
+  {
+    // If down event, reset the position.
+    if (ev->type == SDL_CONTROLLERTOUCHPADDOWN)
+    {
+      it->last_touch_x = ev->x;
+      it->last_touch_y = ev->y;
+    }
+
+    const auto& [win_width, win_height] = InputManager::GetDisplayWindowSize();
+    const float rel_x = (ev->x - std::exchange(it->last_touch_x, ev->x)) * win_width;
+    const float rel_y = (ev->y - std::exchange(it->last_touch_y, ev->y)) * win_height;
+    if (!InputManager::IsRelativeMouseModeActive())
+    {
+      const auto& [current_x, current_y] = InputManager::GetPointerAbsolutePosition(pointer_index);
+      InputManager::UpdatePointerAbsolutePosition(pointer_index, current_x + rel_x, current_y + rel_y);
+    }
+    else
+    {
+      if (rel_x != 0.0f)
+        InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::X, rel_x);
+      if (rel_y != 0.0f)
+        InputManager::UpdatePointerRelativeDelta(pointer_index, InputPointerAxis::Y, rel_y);
+    }
+  }
+
+  // If down/up event, fire the clicked handler.
+  if (ev->type == SDL_CONTROLLERTOUCHPADDOWN || ev->type == SDL_CONTROLLERTOUCHPADUP)
+  {
+    const InputBindingKey key(InputManager::MakePointerButtonKey(pointer_index, static_cast<u32>(ev->finger)));
+    InputManager::InvokeEvents(key, (ev->type == SDL_CONTROLLERTOUCHPADUP) ? 0.0f : ev->pressure);
+  }
+
   return true;
 }
 

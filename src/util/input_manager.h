@@ -350,6 +350,7 @@ void UpdatePointerRelativeDelta(u32 index, InputPointerAxis axis, float d, bool 
 /// Updates host mouse mode (relative/cursor hiding).
 void UpdateRelativeMouseMode();
 void UpdateHostMouseMode();
+bool IsRelativeMouseModeActive();
 
 /// Sets the state of the specified macro button.
 void SetMacroButtonState(u32 pad, u32 index, bool state);
@@ -359,6 +360,7 @@ bool IsUsingRawInput();
 
 /// Updates InputManager's view of the window size, used for clamping raw input coordinates.
 void SetDisplayWindowSize(float width, float height);
+std::pair<float, float> GetDisplayWindowSize();
 
 /// Restores default configuration.
 void SetDefaultSourceConfig(SettingsInterface& si);
