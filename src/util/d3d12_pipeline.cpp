@@ -165,7 +165,7 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
     D3D12_CULL_MODE_BACK,  // Back
   }};
 
-  static constexpr std::array<D3D12_COMPARISON_FUNC, static_cast<u32>(GPUPipeline::DepthFunc::MaxCount)>
+  static constexpr std::array<D3D12_COMPARISON_FUNC, static_cast<u32>(GPUPipeline::ComparisonFunc::MaxCount)>
     compare_mapping = {{
       D3D12_COMPARISON_FUNC_NEVER,         // Never
       D3D12_COMPARISON_FUNC_ALWAYS,        // Always
@@ -174,6 +174,18 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
       D3D12_COMPARISON_FUNC_GREATER,       // Greater
       D3D12_COMPARISON_FUNC_GREATER_EQUAL, // GreaterEqual
       D3D12_COMPARISON_FUNC_EQUAL,         // Equal
+    }};
+
+  static constexpr std::array<D3D12_STENCIL_OP, static_cast<u32>(GPUPipeline::StencilOp::MaxCount)> stencil_op_mapping =
+    {{
+      D3D12_STENCIL_OP_KEEP,     // Keep
+      D3D12_STENCIL_OP_ZERO,     // Zero
+      D3D12_STENCIL_OP_REPLACE,  // Replace
+      D3D12_STENCIL_OP_INCR_SAT, // IncrSat
+      D3D12_STENCIL_OP_DECR_SAT, // DecrSat
+      D3D12_STENCIL_OP_INVERT,   // Invert
+      D3D12_STENCIL_OP_INCR,     // Incr
+      D3D12_STENCIL_OP_DECR,     // Decr
     }};
 
   static constexpr std::array<D3D12_BLEND, static_cast<u32>(GPUPipeline::BlendFunc::MaxCount)> blend_mapping = {{
@@ -238,9 +250,28 @@ std::unique_ptr<GPUPipeline> D3D12Device::CreatePipeline(const GPUPipeline::Grap
                             cull_mapping[static_cast<u8>(config.rasterization.cull_mode.GetValue())], false);
   if (config.samples > 1)
     gpb.SetMultisamples(config.samples);
-  gpb.SetDepthState(config.depth.depth_test != GPUPipeline::DepthFunc::Always || config.depth.depth_write,
+  gpb.SetDepthState(config.depth.depth_test != GPUPipeline::ComparisonFunc::Always || config.depth.depth_write,
                     config.depth.depth_write, compare_mapping[static_cast<u8>(config.depth.depth_test.GetValue())]);
-  gpb.SetNoStencilState();
+  if (config.depth.stencil_enable)
+  {
+    const D3D12_DEPTH_STENCILOP_DESC front = {
+      .StencilFailOp = stencil_op_mapping[static_cast<u8>(config.depth.front_stencil_fail_op.GetValue())],
+      .StencilDepthFailOp = stencil_op_mapping[static_cast<u8>(config.depth.front_stencil_depth_fail_op.GetValue())],
+      .StencilPassOp = stencil_op_mapping[static_cast<u8>(config.depth.front_stencil_pass_op.GetValue())],
+      .StencilFunc = compare_mapping[static_cast<u8>(config.depth.front_stencil_func.GetValue())],
+    };
+    const D3D12_DEPTH_STENCILOP_DESC back = {
+      .StencilFailOp = stencil_op_mapping[static_cast<u8>(config.depth.back_stencil_fail_op.GetValue())],
+      .StencilDepthFailOp = stencil_op_mapping[static_cast<u8>(config.depth.back_stencil_depth_fail_op.GetValue())],
+      .StencilPassOp = stencil_op_mapping[static_cast<u8>(config.depth.back_stencil_pass_op.GetValue())],
+      .StencilFunc = compare_mapping[static_cast<u8>(config.depth.back_stencil_func.GetValue())],
+    };
+    gpb.SetStencilState(config.depth.stencil_enable, 0xFF, 0xFF, front, back);
+  }
+  else
+  {
+    gpb.SetNoStencilState();
+  }
 
   gpb.SetBlendState(0, config.blend.enable, blend_mapping[static_cast<u8>(config.blend.src_blend.GetValue())],
                     blend_mapping[static_cast<u8>(config.blend.dst_blend.GetValue())],

@@ -192,8 +192,8 @@ D3D11Device::ComPtr<ID3D11DepthStencilState> D3D11Device::GetDepthState(const GP
     return dds;
   }
 
-  static constexpr std::array<D3D11_COMPARISON_FUNC, static_cast<u32>(GPUPipeline::DepthFunc::MaxCount)> func_mapping =
-    {{
+  static constexpr std::array<D3D11_COMPARISON_FUNC, static_cast<u32>(GPUPipeline::ComparisonFunc::MaxCount)>
+    func_mapping = {{
       D3D11_COMPARISON_NEVER,         // Never
       D3D11_COMPARISON_ALWAYS,        // Always
       D3D11_COMPARISON_LESS,          // Less
@@ -203,10 +203,36 @@ D3D11Device::ComPtr<ID3D11DepthStencilState> D3D11Device::GetDepthState(const GP
       D3D11_COMPARISON_EQUAL,         // Equal
     }};
 
+  static constexpr std::array<D3D11_STENCIL_OP, static_cast<u32>(GPUPipeline::StencilOp::MaxCount)> stencil_op_mapping =
+    {{
+      D3D11_STENCIL_OP_KEEP,     // Keep
+      D3D11_STENCIL_OP_ZERO,     // Zero
+      D3D11_STENCIL_OP_REPLACE,  // Replace
+      D3D11_STENCIL_OP_INCR_SAT, // IncrSat
+      D3D11_STENCIL_OP_DECR_SAT, // DecrSat
+      D3D11_STENCIL_OP_INVERT,   // Invert
+      D3D11_STENCIL_OP_INCR,     // Incr
+      D3D11_STENCIL_OP_DECR,     // Decr
+    }};
+
   D3D11_DEPTH_STENCIL_DESC desc = {};
-  desc.DepthEnable = ds.depth_test != GPUPipeline::DepthFunc::Always || ds.depth_write;
+  desc.DepthEnable = ds.depth_test != GPUPipeline::ComparisonFunc::Always || ds.depth_write;
   desc.DepthFunc = func_mapping[static_cast<u8>(ds.depth_test.GetValue())];
   desc.DepthWriteMask = ds.depth_write ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
+  desc.StencilEnable = ds.stencil_enable;
+  if (ds.stencil_enable)
+  {
+    desc.StencilReadMask = 0xFF;
+    desc.StencilWriteMask = 0xFF;
+    desc.FrontFace.StencilFailOp = stencil_op_mapping[static_cast<u8>(ds.front_stencil_fail_op.GetValue())];
+    desc.FrontFace.StencilDepthFailOp = stencil_op_mapping[static_cast<u8>(ds.front_stencil_depth_fail_op.GetValue())];
+    desc.FrontFace.StencilPassOp = stencil_op_mapping[static_cast<u8>(ds.front_stencil_pass_op.GetValue())];
+    desc.FrontFace.StencilFunc = func_mapping[static_cast<u8>(ds.back_stencil_func.GetValue())];
+    desc.BackFace.StencilFailOp = stencil_op_mapping[static_cast<u8>(ds.back_stencil_fail_op.GetValue())];
+    desc.BackFace.StencilDepthFailOp = stencil_op_mapping[static_cast<u8>(ds.back_stencil_depth_fail_op.GetValue())];
+    desc.BackFace.StencilPassOp = stencil_op_mapping[static_cast<u8>(ds.back_stencil_pass_op.GetValue())];
+    desc.BackFace.StencilFunc = func_mapping[static_cast<u8>(ds.back_stencil_func.GetValue())];
+  }
 
   HRESULT hr = m_device->CreateDepthStencilState(&desc, dds.GetAddressOf());
   if (FAILED(hr)) [[unlikely]]
@@ -449,7 +475,7 @@ void D3D11Device::SetPipeline(GPUPipeline* pipeline)
     if (ID3D11DepthStencilState* ds = PL->GetDepthStencilState(); m_current_depth_state != ds)
     {
       m_current_depth_state = ds;
-      m_context->OMSetDepthStencilState(ds, 0);
+      m_context->OMSetDepthStencilState(ds, m_current_stencil_ref);
     }
 
     if (ID3D11BlendState* bs = PL->GetBlendState();

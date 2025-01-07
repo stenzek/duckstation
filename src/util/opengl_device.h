@@ -74,6 +74,7 @@ public:
                             u32 src_x, u32 src_y, u32 width, u32 height) override;
   void ClearRenderTarget(GPUTexture* t, u32 c) override;
   void ClearDepth(GPUTexture* t, float d) override;
+  void ClearStencil(GPUTexture* t, u8 value) override;
   void InvalidateRenderTarget(GPUTexture* t) override;
 
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
@@ -105,6 +106,7 @@ public:
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
+  void SetStencilRef(u8 value) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
@@ -173,6 +175,7 @@ private:
 
   void UpdateViewport();
   void UpdateScissor();
+  void UpdateStencilFunc();
 
   void CreateTimestampQueries();
   void DestroyTimestampQueries();
@@ -206,8 +209,9 @@ private:
   // VAO cache - fixed max as key
   OpenGLPipeline::VertexArrayCache::const_iterator m_last_vao = m_vao_cache.cend();
   GPUPipeline::BlendState m_last_blend_state = {};
-  GPUPipeline::RasterizationState m_last_rasterization_state = {};
   GPUPipeline::DepthState m_last_depth_state = {};
+  GPUPipeline::RasterizationState m_last_rasterization_state = {};
+  u8 m_last_stencil_ref = 0;
   GLuint m_uniform_buffer_alignment = 1;
   GLuint m_last_program = 0;
   u32 m_last_texture_unit = 0;

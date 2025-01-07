@@ -582,9 +582,9 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
     GL_OBJECT_NAME(vso, "Post-processing rotate blit VS");
     GL_OBJECT_NAME(vso, "Post-processing rotate blit FS");
 
-    const GPUPipeline::GraphicsConfig config = {.layout = GPUPipeline::Layout::SingleTextureAndPushConstants,
+    const GPUPipeline::GraphicsConfig config = {.input_layout = {},
+                                                .layout = GPUPipeline::Layout::SingleTextureAndPushConstants,
                                                 .primitive = GPUPipeline::Primitive::Triangles,
-                                                .input_layout = {},
                                                 .rasterization = GPUPipeline::RasterizationState::GetNoCullState(),
                                                 .depth = GPUPipeline::DepthState::GetNoTestsState(),
                                                 .blend = GPUPipeline::BlendState::GetNoBlendingState(),

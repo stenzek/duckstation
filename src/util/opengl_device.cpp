@@ -192,6 +192,33 @@ void OpenGLDevice::ClearDepth(GPUTexture* t, float d)
     CommitDSClearInFB(static_cast<OpenGLTexture*>(t));
 }
 
+void OpenGLDevice::ClearStencil(GPUTexture* t, u8 value)
+{
+  OpenGLTexture* T = static_cast<OpenGLTexture*>(t);
+  DebugAssert(T->HasStencil());
+
+  glDisable(GL_SCISSOR_TEST);
+
+  const GLint ivalue = value;
+
+  if (m_current_depth_target == T)
+  {
+    glClearBufferiv(GL_STENCIL, 0, &ivalue);
+  }
+  else
+  {
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_write_fbo);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, T->GetGLTarget(), T->GetGLId(), 0);
+
+    glClearBufferiv(GL_STENCIL, 0, &ivalue);
+
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_current_fbo);
+  }
+
+  glEnable(GL_SCISSOR_TEST);
+}
+
 void OpenGLDevice::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
@@ -708,7 +735,8 @@ GLuint OpenGLDevice::CreateFramebuffer(GPUTexture* const* rts, u32 num_rts, GPUT
   if (ds)
   {
     OpenGLTexture* const DS = static_cast<OpenGLTexture*>(ds);
-    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, DS->GetGLTarget(), DS->GetGLId(), 0);
+    glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, DS->HasStencil() ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT,
+                           DS->GetGLTarget(), DS->GetGLId(), 0);
   }
 
   glDrawBuffers(num_rts, s_draw_buffers.data());
@@ -1269,6 +1297,16 @@ void OpenGLDevice::SetScissor(const GSVector4i rc)
 
   m_last_scissor = rc;
   UpdateScissor();
+}
+
+void OpenGLDevice::SetStencilRef(u8 value)
+{
+  if (m_last_stencil_ref == value)
+    return;
+
+  m_last_stencil_ref = value;
+  if (m_last_depth_state.stencil_enable)
+    UpdateStencilFunc();
 }
 
 void OpenGLDevice::UpdateViewport()

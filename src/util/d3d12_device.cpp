@@ -1509,6 +1509,16 @@ void D3D12Device::ClearDepth(GPUTexture* t, float d)
     EndRenderPass();
 }
 
+void D3D12Device::ClearStencil(GPUTexture* t, u8 value)
+{
+  DebugAssert(t->HasStencil());
+  if (InRenderPass() && m_current_depth_target == t)
+    EndRenderPass();
+
+  GetCommandList()->ClearDepthStencilView(static_cast<D3D12Texture*>(t)->GetWriteDescriptor(), D3D12_CLEAR_FLAG_STENCIL,
+                                          0.0f, value, 0, nullptr);
+}
+
 void D3D12Device::InvalidateRenderTarget(GPUTexture* t)
 {
   GPUDevice::InvalidateRenderTarget(t);
@@ -1892,8 +1902,12 @@ void D3D12Device::BeginRenderPass()
       ds_desc_p = &ds_desc;
       ds_desc.cpuDescriptor = ds->GetWriteDescriptor();
       ds_desc.DepthEndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
-      ds_desc.StencilBeginningAccess = {};
-      ds_desc.StencilEndingAccess = {};
+      ds_desc.StencilBeginningAccess = {ds->IsDepthStencil() ? D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_PRESERVE :
+                                                               D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_DISCARD,
+                                        {}};
+      ds_desc.StencilEndingAccess = {ds->IsDepthStencil() ? D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE :
+                                                            D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_DISCARD,
+                                     {}};
 
       switch (ds->GetState())
       {
@@ -2073,6 +2087,8 @@ void D3D12Device::SetInitialPipelineState()
   m_current_blend_constant = m_current_pipeline->GetBlendConstants();
   cmdlist->OMSetBlendFactor(m_current_pipeline->GetBlendConstantsF().data());
 
+  cmdlist->OMSetStencilRef(m_current_stencil_ref);
+
   SetViewport(cmdlist);
   SetScissor(cmdlist);
 }
@@ -2099,6 +2115,15 @@ void D3D12Device::SetScissor(ID3D12GraphicsCommandList4* cmdlist)
 {
   static_assert(sizeof(GSVector4i) == sizeof(D3D12_RECT));
   cmdlist->RSSetScissorRects(1, reinterpret_cast<const D3D12_RECT*>(&m_current_scissor));
+}
+
+void D3D12Device::SetStencilRef(u8 value)
+{
+  if (m_current_stencil_ref == value)
+    return;
+
+  m_current_stencil_ref = value;
+  GetCommandList()->OMSetStencilRef(m_current_stencil_ref);
 }
 
 void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)

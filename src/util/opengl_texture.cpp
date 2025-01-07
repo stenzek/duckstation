@@ -587,7 +587,9 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
       {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_write_fbo);
 
-        const GLenum attachment = tex->IsDepthStencil() ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0;
+        const GLenum attachment = tex->IsDepthStencil() ?
+                                    (tex->HasStencil() ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT) :
+                                    GL_COLOR_ATTACHMENT0;
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, tex->GetGLTarget(), tex->GetGLId(), 0);
 
         glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
@@ -612,7 +614,9 @@ void OpenGLDevice::CommitClear(OpenGLTexture* tex)
       {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_write_fbo);
 
-        const GLenum attachment = tex->IsDepthStencil() ? GL_DEPTH_ATTACHMENT : GL_COLOR_ATTACHMENT0;
+        const GLenum attachment = tex->IsDepthStencil() ?
+                                    (tex->HasStencil() ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT) :
+                                    GL_COLOR_ATTACHMENT0;
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, attachment, tex->GetGLTarget(), tex->GetGLId(), 0);
 
         if (tex->IsDepthStencil())
@@ -701,7 +705,7 @@ void OpenGLDevice::CommitDSClearInFB(OpenGLTexture* tex)
   {
     case GPUTexture::State::Invalidated:
     {
-      const GLenum attachment = GL_DEPTH_ATTACHMENT;
+      const GLenum attachment = tex->HasStencil() ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT;
       if (glInvalidateFramebuffer)
         glInvalidateFramebuffer(GL_DRAW_FRAMEBUFFER, 1, &attachment);
       tex->SetState(GPUTexture::State::Dirty);

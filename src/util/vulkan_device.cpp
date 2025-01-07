@@ -2317,8 +2317,8 @@ void VulkanDevice::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u
   m_current_swap_chain = nullptr;
 
   VkCommandBuffer cmdbuf = GetCurrentCommandBuffer();
-  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, SC->GetCurrentImage(), GPUTexture::Type::RenderTarget, 0, 1, 0,
-                                                1, VulkanTexture::Layout::ColorAttachment,
+  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, SC->GetCurrentImage(), GPUTexture::Type::RenderTarget,
+                                                SC->GetFormat(), 0, 1, 0, 1, VulkanTexture::Layout::ColorAttachment,
                                                 VulkanTexture::Layout::PresentSrc);
   EndAndSubmitCommandBuffer(SC, explicit_present);
   InvalidateCachedState();
@@ -2644,6 +2644,25 @@ void VulkanDevice::ClearDepth(GPUTexture* t, float d)
       vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
       T->SetState(GPUTexture::State::Dirty);
     }
+  }
+}
+
+void VulkanDevice::ClearStencil(GPUTexture* t, u8 value)
+{
+  VulkanTexture* T = static_cast<VulkanTexture*>(t);
+  const VkClearDepthStencilValue clear_value = {0.0f, static_cast<u32>(value)};
+  if (InRenderPass() && m_current_depth_target == T)
+  {
+    // Use an attachment clear so the render pass isn't restarted.
+    const VkClearAttachment ca = {VK_IMAGE_ASPECT_STENCIL_BIT, 0, {.depthStencil = clear_value}};
+    const VkClearRect rc = {{{0, 0}, {T->GetWidth(), T->GetHeight()}}, 0u, 1u};
+    vkCmdClearAttachments(m_current_command_buffer, 1, &ca, 1, &rc);
+  }
+  else
+  {
+    const VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_STENCIL_BIT, 0u, 1u, 0u, 1u};
+    T->TransitionToLayout(VulkanTexture::Layout::ClearDst);
+    vkCmdClearDepthStencilImage(m_current_command_buffer, T->GetImage(), T->GetVkLayout(), &clear_value, 1, &srr);
   }
 }
 
@@ -3012,11 +3031,13 @@ void VulkanDevice::RenderBlankFrame(VulkanSwapChain* swap_chain)
   const VkImage image = swap_chain->GetCurrentImage();
   static constexpr VkImageSubresourceRange srr = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
   static constexpr VkClearColorValue clear_color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
-                                                VulkanTexture::Layout::Undefined, VulkanTexture::Layout::TransferDst);
+  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, swap_chain->GetFormat(),
+                                                0, 1, 0, 1, VulkanTexture::Layout::Undefined,
+                                                VulkanTexture::Layout::TransferDst);
   vkCmdClearColorImage(cmdbuf, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clear_color, 1, &srr);
-  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
-                                                VulkanTexture::Layout::TransferDst, VulkanTexture::Layout::PresentSrc);
+  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, image, GPUTexture::Type::RenderTarget, swap_chain->GetFormat(),
+                                                0, 1, 0, 1, VulkanTexture::Layout::TransferDst,
+                                                VulkanTexture::Layout::PresentSrc);
 
   EndAndSubmitCommandBuffer(swap_chain, false);
 
@@ -3205,7 +3226,7 @@ void VulkanDevice::BeginRenderPass()
       VK_STRUCTURE_TYPE_RENDERING_INFO_KHR, nullptr, 0u, {}, 1u, 0u, 0u, nullptr, nullptr, nullptr};
 
     std::array<VkRenderingAttachmentInfoKHR, MAX_RENDER_TARGETS> attachments;
-    VkRenderingAttachmentInfoKHR depth_attachment;
+    VkRenderingAttachmentInfoKHR depth_attachment, stencil_attachment;
 
     if (m_num_current_render_targets > 0 || m_current_depth_target)
     {
@@ -3276,6 +3297,20 @@ void VulkanDevice::BeginRenderPass()
           depth_attachment.clearValue.depthStencil = {ds->GetClearDepth(), 0u};
 
         ds->SetState(GPUTexture::State::Dirty);
+
+        if (ds->HasStencil())
+        {
+          stencil_attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR;
+          stencil_attachment.pNext = nullptr;
+          stencil_attachment.imageView = ds->GetView();
+          stencil_attachment.imageLayout = ds->GetVkLayout();
+          stencil_attachment.resolveMode = VK_RESOLVE_MODE_NONE_KHR;
+          stencil_attachment.resolveImageView = VK_NULL_HANDLE;
+          stencil_attachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+          stencil_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+          stencil_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+          ri.pStencilAttachment = &stencil_attachment;
+        }
       }
 
       const VulkanTexture* const rt_or_ds =
@@ -3372,7 +3407,15 @@ void VulkanDevice::BeginRenderPass()
 
   // If this is a new command buffer, bind the pipeline and such.
   if (m_dirty_flags & DIRTY_FLAG_INITIAL)
+  {
     SetInitialPipelineState();
+  }
+  else if (m_current_depth_target && m_current_depth_target->IsDepthStencil())
+  {
+    // Stencil reference still needs to be set.
+    vkCmdSetStencilReference(GetCurrentCommandBuffer(), VK_STENCIL_FACE_FRONT_AND_BACK,
+                             ZeroExtend32(m_current_stencil_ref));
+  }
 }
 
 void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 clear_color)
@@ -3383,8 +3426,8 @@ void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 cle
   const VkImage swap_chain_image = swap_chain->GetCurrentImage();
 
   // Swap chain images start in undefined
-  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, swap_chain_image, GPUTexture::Type::RenderTarget, 0, 1, 0, 1,
-                                                VulkanTexture::Layout::Undefined,
+  VulkanTexture::TransitionSubresourcesToLayout(cmdbuf, swap_chain_image, GPUTexture::Type::RenderTarget,
+                                                swap_chain->GetFormat(), 0, 1, 0, 1, VulkanTexture::Layout::Undefined,
                                                 VulkanTexture::Layout::ColorAttachment);
 
   // All textures should be in shader read only optimal already, but just in case..
@@ -3563,6 +3606,12 @@ void VulkanDevice::SetInitialPipelineState()
   const VkRect2D vrc = {{m_current_scissor.left, m_current_scissor.top},
                         {static_cast<u32>(m_current_scissor.width()), static_cast<u32>(m_current_scissor.height())}};
   vkCmdSetScissor(GetCurrentCommandBuffer(), 0, 1, &vrc);
+
+  if (m_current_depth_target && m_current_depth_target->IsDepthStencil())
+  {
+    vkCmdSetStencilReference(GetCurrentCommandBuffer(), VK_STENCIL_FACE_FRONT_AND_BACK,
+                             ZeroExtend32(m_current_stencil_ref));
+  }
 }
 
 void VulkanDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
@@ -3665,6 +3714,20 @@ void VulkanDevice::SetViewport(const GSVector4i rc)
                          0.0f,
                          1.0f};
   vkCmdSetViewport(GetCurrentCommandBuffer(), 0, 1, &vp);
+}
+
+void VulkanDevice::SetStencilRef(u8 value)
+{
+  if (m_current_stencil_ref == value)
+    return;
+
+  m_current_stencil_ref = value;
+
+  // if current DS does not have a stencil component, then dynamic stencil state will not be enabled
+  if (!InRenderPass() || !m_current_depth_target || !m_current_depth_target->IsDepthStencil())
+    return;
+
+  vkCmdSetStencilReference(m_current_command_buffer, VK_STENCIL_FACE_FRONT_AND_BACK, ZeroExtend32(value));
 }
 
 void VulkanDevice::SetScissor(const GSVector4i rc)

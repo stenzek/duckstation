@@ -116,7 +116,9 @@ std::unique_ptr<VulkanTexture> VulkanTexture::Create(u32 width, u32 height, u32 
       DebugAssert(levels == 1);
       ici.usage = VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT |
                   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-      vci.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+      vci.subresourceRange.aspectMask = IsDepthStencilFormat(format) ?
+                                          (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) :
+                                          VK_IMAGE_ASPECT_STENCIL_BIT;
     }
     break;
 
@@ -490,19 +492,19 @@ void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffe
                                                    u32 start_level, u32 num_levels, Layout old_layout,
                                                    Layout new_layout)
 {
-  TransitionSubresourcesToLayout(command_buffer, m_image, m_type, start_layer, num_layers, start_level, num_levels,
-                                 old_layout, new_layout);
+  TransitionSubresourcesToLayout(command_buffer, m_image, m_type, m_format, start_layer, num_layers, start_level,
+                                 num_levels, old_layout, new_layout);
 }
 
 void VulkanTexture::TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, VkImage image, Type type,
-                                                   u32 start_layer, u32 num_layers, u32 start_level, u32 num_levels,
-                                                   Layout old_layout, Layout new_layout)
+                                                   Format format, u32 start_layer, u32 num_layers, u32 start_level,
+                                                   u32 num_levels, Layout old_layout, Layout new_layout)
 {
   VkImageAspectFlags aspect;
   if (type == Type::DepthStencil)
   {
-    // TODO: detect stencil
-    aspect = VK_IMAGE_ASPECT_DEPTH_BIT;
+    aspect = IsDepthStencilFormat(format) ? (VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT) :
+                                            VK_IMAGE_ASPECT_DEPTH_BIT;
   }
   else
   {

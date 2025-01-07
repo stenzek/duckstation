@@ -129,14 +129,14 @@ GPUPipeline::RasterizationState GPUPipeline::RasterizationState::GetNoCullState(
 GPUPipeline::DepthState GPUPipeline::DepthState::GetNoTestsState()
 {
   DepthState ret = {};
-  ret.depth_test = DepthFunc::Always;
+  ret.depth_test = ComparisonFunc::Always;
   return ret;
 }
 
 GPUPipeline::DepthState GPUPipeline::DepthState::GetAlwaysWriteState()
 {
   DepthState ret = {};
-  ret.depth_test = DepthFunc::Always;
+  ret.depth_test = ComparisonFunc::Always;
   ret.depth_write = true;
   return ret;
 }
@@ -813,6 +813,16 @@ void GPUDevice::SetViewport(s32 x, s32 y, s32 width, s32 height)
 void GPUDevice::SetScissor(s32 x, s32 y, s32 width, s32 height)
 {
   SetScissor(GSVector4i(x, y, x + width, y + height));
+}
+
+void GPUDevice::SetStencilRef(u8 value) /*= 0*/
+{
+  Panic("FIXME");
+}
+
+void GPUDevice::ClearStencil(GPUTexture* t, u8 value) /*= 0*/
+{
+  Panic("FIXME");
 }
 
 void GPUDevice::SetViewportAndScissor(s32 x, s32 y, s32 width, s32 height)

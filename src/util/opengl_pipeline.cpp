@@ -686,9 +686,8 @@ ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyRasterizationState(GPUPipeline::Ra
   m_last_rasterization_state = rs;
 }
 
-ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyDepthState(GPUPipeline::DepthState ds)
-{
-  static constexpr std::array<GLenum, static_cast<u32>(GPUPipeline::DepthFunc::MaxCount)> func_mapping = {{
+static constexpr std::array<GLenum, static_cast<u32>(GPUPipeline::ComparisonFunc::MaxCount)> s_comparison_func_mapping =
+  {{
     GL_NEVER,   // Never
     GL_ALWAYS,  // Always
     GL_LESS,    // Less
@@ -698,16 +697,80 @@ ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyDepthState(GPUPipeline::DepthState
     GL_EQUAL,   // Equal
   }};
 
+ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyDepthState(GPUPipeline::DepthState ds)
+{
+  static constexpr std::array<GLenum, static_cast<u32>(GPUPipeline::StencilOp::MaxCount)> stencil_op_mapping = {{
+    GL_KEEP,      // Keep
+    GL_ZERO,      // Zero
+    GL_REPLACE,   // Replace
+    GL_INCR,      // IncrSat
+    GL_DECR,      // DecrSat
+    GL_INVERT,    // Invert
+    GL_INCR_WRAP, // Incr
+    GL_DECR_WRAP, // Decr
+  }};
+
   if (m_last_depth_state == ds)
     return;
 
-  (ds.depth_test != GPUPipeline::DepthFunc::Always || ds.depth_write) ? glEnable(GL_DEPTH_TEST) :
-                                                                        glDisable(GL_DEPTH_TEST);
-  glDepthFunc(func_mapping[static_cast<u8>(ds.depth_test.GetValue())]);
-  if (m_last_depth_state.depth_write != ds.depth_write)
-    glDepthMask(ds.depth_write);
+  if (!m_last_depth_state.DepthMatches(ds))
+  {
+    (ds.depth_test != GPUPipeline::ComparisonFunc::Always || ds.depth_write) ? glEnable(GL_DEPTH_TEST) :
+                                                                               glDisable(GL_DEPTH_TEST);
+    glDepthFunc(s_comparison_func_mapping[static_cast<u8>(ds.depth_test.GetValue())]);
+    if (m_last_depth_state.depth_write != ds.depth_write)
+      glDepthMask(ds.depth_write);
+  }
+
+  if (!m_last_depth_state.StencilMatches(ds))
+  {
+    if (m_last_depth_state.stencil_enable != ds.stencil_enable)
+      ds.stencil_enable ? glEnable(GL_STENCIL_TEST) : glDisable(GL_STENCIL_TEST);
+
+    if (ds.FrontAndBackStencilAreSame())
+    {
+      glStencilFuncSeparate(GL_FRONT_AND_BACK,
+                            s_comparison_func_mapping[static_cast<u8>(ds.front_stencil_func.GetValue())],
+                            m_last_stencil_ref, 0xFF);
+      glStencilOpSeparate(GL_FRONT_AND_BACK, stencil_op_mapping[static_cast<u8>(ds.front_stencil_fail_op.GetValue())],
+                          stencil_op_mapping[static_cast<u8>(ds.front_stencil_depth_fail_op.GetValue())],
+                          stencil_op_mapping[static_cast<u8>(ds.front_stencil_pass_op.GetValue())]);
+    }
+    else
+    {
+      glStencilFuncSeparate(GL_FRONT, s_comparison_func_mapping[static_cast<u8>(ds.front_stencil_func.GetValue())],
+                            m_last_stencil_ref, 0xFF);
+      glStencilFuncSeparate(GL_BACK, s_comparison_func_mapping[static_cast<u8>(ds.back_stencil_func.GetValue())],
+                            m_last_stencil_ref, 0xFF);
+      glStencilOpSeparate(GL_FRONT, stencil_op_mapping[static_cast<u8>(ds.front_stencil_fail_op.GetValue())],
+                          stencil_op_mapping[static_cast<u8>(ds.front_stencil_depth_fail_op.GetValue())],
+                          stencil_op_mapping[static_cast<u8>(ds.front_stencil_pass_op.GetValue())]);
+      glStencilOpSeparate(GL_BACK, stencil_op_mapping[static_cast<u8>(ds.back_stencil_fail_op.GetValue())],
+                          stencil_op_mapping[static_cast<u8>(ds.back_stencil_depth_fail_op.GetValue())],
+                          stencil_op_mapping[static_cast<u8>(ds.back_stencil_pass_op.GetValue())]);
+    }
+  }
 
   m_last_depth_state = ds;
+}
+
+void OpenGLDevice::UpdateStencilFunc()
+{
+  if (m_last_depth_state.FrontAndBackStencilAreSame())
+  {
+    glStencilFuncSeparate(GL_FRONT_AND_BACK,
+                          s_comparison_func_mapping[static_cast<u8>(m_last_depth_state.front_stencil_func.GetValue())],
+                          m_last_stencil_ref, 0xFF);
+  }
+  else
+  {
+    glStencilFuncSeparate(GL_FRONT,
+                          s_comparison_func_mapping[static_cast<u8>(m_last_depth_state.front_stencil_func.GetValue())],
+                          m_last_stencil_ref, 0xFF);
+    glStencilFuncSeparate(GL_BACK,
+                          s_comparison_func_mapping[static_cast<u8>(m_last_depth_state.back_stencil_func.GetValue())],
+                          m_last_stencil_ref, 0xFF);
+  }
 }
 
 ALWAYS_INLINE_RELEASE void OpenGLDevice::ApplyBlendState(GPUPipeline::BlendState bs)

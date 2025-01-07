@@ -289,7 +289,7 @@ public:
     MaxCount
   };
 
-  enum class DepthFunc : u8
+  enum class ComparisonFunc : u8
   {
     Never,
     Always,
@@ -298,6 +298,20 @@ public:
     Greater,
     GreaterEqual,
     Equal,
+
+    MaxCount
+  };
+
+  enum class StencilOp : u8
+  {
+    Keep,
+    Zero,
+    Replace,
+    IncrSat,
+    DecrSat,
+    Invert,
+    Incr,
+    Decr,
 
     MaxCount
   };
@@ -353,9 +367,19 @@ public:
 
   union DepthState
   {
-    BitField<u8, DepthFunc, 0, 3> depth_test;
-    BitField<u8, bool, 4, 1> depth_write;
-    u8 key;
+    BitField<u32, ComparisonFunc, 0, 3> depth_test;
+    BitField<u32, bool, 4, 1> depth_write;
+
+    BitField<u32, bool, 5, 1> stencil_enable;
+    BitField<u32, StencilOp, 6, 3> front_stencil_fail_op;
+    BitField<u32, StencilOp, 9, 3> front_stencil_depth_fail_op;
+    BitField<u32, StencilOp, 12, 3> front_stencil_pass_op;
+    BitField<u32, ComparisonFunc, 15, 3> front_stencil_func;
+    BitField<u32, StencilOp, 18, 3> back_stencil_fail_op;
+    BitField<u32, StencilOp, 21, 3> back_stencil_depth_fail_op;
+    BitField<u32, StencilOp, 24, 3> back_stencil_pass_op;
+    BitField<u32, ComparisonFunc, 27, 3> back_stencil_func;
+    u32 key;
 
     // clang-format off
     ALWAYS_INLINE DepthState() = default;
@@ -365,6 +389,13 @@ public:
     ALWAYS_INLINE bool operator!=(const DepthState& rhs) const { return key != rhs.key; }
     ALWAYS_INLINE bool operator<(const DepthState& rhs) const { return key < rhs.key; }
     // clang-format on
+
+    ALWAYS_INLINE bool DepthMatches(const DepthState& ds) const { return ((key & 0x0Fu) == (ds.key & 0x0Fu)); }
+    ALWAYS_INLINE bool StencilMatches(const DepthState& ds) const
+    {
+      return ((key & 0x1FFFFFF0u) == (ds.key & 0x1FFFFFF0u));
+    }
+    ALWAYS_INLINE bool FrontAndBackStencilAreSame() const { return ((key >> 6) & 0xFFFu) == ((key >> 18) & 0xFFFu); }
 
     static DepthState GetNoTestsState();
     static DepthState GetAlwaysWriteState();
@@ -417,10 +448,10 @@ public:
 
   struct GraphicsConfig
   {
-    Layout layout;
-
-    Primitive primitive;
     InputLayout input_layout;
+
+    Layout layout;
+    Primitive primitive;
 
     RasterizationState rasterization;
     DepthState depth;
@@ -773,6 +804,7 @@ public:
                                     GPUTexture* src, u32 src_x, u32 src_y, u32 width, u32 height) = 0;
   virtual void ClearRenderTarget(GPUTexture* t, u32 c);
   virtual void ClearDepth(GPUTexture* t, float d);
+  virtual void ClearStencil(GPUTexture* t, u8 value) = 0;
   virtual void InvalidateRenderTarget(GPUTexture* t);
 
   /// Shader abstraction.
@@ -826,6 +858,7 @@ public:
   virtual void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) = 0;
   virtual void SetViewport(const GSVector4i rc) = 0;
   virtual void SetScissor(const GSVector4i rc) = 0;
+  virtual void SetStencilRef(u8 value) = 0;
   void SetRenderTarget(GPUTexture* rt, GPUTexture* ds = nullptr,
                        GPUPipeline::RenderPassFlag flags = GPUPipeline::NoRenderPassFlags);
   void SetViewport(s32 x, s32 y, s32 width, s32 height);

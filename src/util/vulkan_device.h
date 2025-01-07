@@ -108,6 +108,7 @@ public:
                             u32 src_x, u32 src_y, u32 width, u32 height) override;
   void ClearRenderTarget(GPUTexture* t, u32 c) override;
   void ClearDepth(GPUTexture* t, float d) override;
+  void ClearStencil(GPUTexture* t, u8 value) override;
   void InvalidateRenderTarget(GPUTexture* t) override;
 
   std::unique_ptr<GPUShader> CreateShaderFromBinary(GPUShaderStage stage, std::span<const u8> data,
@@ -139,6 +140,7 @@ public:
   void SetTextureBuffer(u32 slot, GPUTextureBuffer* buffer) override;
   void SetViewport(const GSVector4i rc) override;
   void SetScissor(const GSVector4i rc) override;
+  void SetStencilRef(u8 value) override;
   void Draw(u32 vertex_count, u32 base_vertex) override;
   void DrawIndexed(u32 index_count, u32 base_index, u32 base_vertex) override;
   void DrawIndexedWithBarrier(u32 index_count, u32 base_index, u32 base_vertex, DrawBarrier type) override;
@@ -471,6 +473,7 @@ private:
 
   VulkanPipeline* m_current_pipeline = nullptr;
   GPUPipeline::Layout m_current_pipeline_layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  u8 m_current_stencil_ref = 0;
 
   std::array<VulkanTexture*, MAX_TEXTURE_SAMPLERS> m_current_textures = {};
   std::array<VkSampler, MAX_TEXTURE_SAMPLERS> m_current_samplers = {};

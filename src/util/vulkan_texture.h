@@ -73,9 +73,9 @@ public:
   void TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, u32 start_layer, u32 num_layers, u32 start_level,
                                       u32 num_levels, Layout old_layout, Layout new_layout);
 
-  static void TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, VkImage image, Type type, u32 start_layer,
-                                             u32 num_layers, u32 start_level, u32 num_levels, Layout old_layout,
-                                             Layout new_layout);
+  static void TransitionSubresourcesToLayout(VkCommandBuffer command_buffer, VkImage image, Type type, Format format,
+                                             u32 start_layer, u32 num_layers, u32 start_level, u32 num_levels,
+                                             Layout old_layout, Layout new_layout);
 
   // Call when the texture is bound to the pipeline, or read from in a copy.
   ALWAYS_INLINE void SetUseFenceCounter(u64 counter) { m_use_fence_counter = counter; }

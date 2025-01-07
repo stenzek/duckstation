@@ -646,6 +646,13 @@ void D3D11Device::ClearDepth(GPUTexture* t, float d)
     T->CommitClear(m_context.Get());
 }
 
+void D3D11Device::ClearStencil(GPUTexture* t, u8 value)
+{
+  D3D11Texture* const T = static_cast<D3D11Texture*>(t);
+  DebugAssert(T->HasStencil());
+  m_context->ClearDepthStencilView(T->GetD3DDSV(), D3D11_CLEAR_STENCIL, 0.0f, value);
+}
+
 void D3D11Device::InvalidateRenderTarget(GPUTexture* t)
 {
   D3D11Texture* const T = static_cast<D3D11Texture*>(t);
@@ -1144,6 +1151,16 @@ void D3D11Device::SetScissor(const GSVector4i rc)
   alignas(16) D3D11_RECT drc;
   GSVector4i::store<true>(&drc, rc);
   m_context->RSSetScissorRects(1, &drc);
+}
+
+void D3D11Device::SetStencilRef(u8 value)
+{
+  if (m_current_stencil_ref == value)
+    return;
+
+  m_current_stencil_ref = value;
+  if (m_current_pipeline)
+    m_context->OMSetDepthStencilState(m_current_pipeline->GetDepthStencilState(), m_current_stencil_ref);
 }
 
 void D3D11Device::Draw(u32 vertex_count, u32 base_vertex)

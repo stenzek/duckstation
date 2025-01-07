@@ -151,6 +151,7 @@ public:
   {
     return (m_type >= Type::RenderTarget && m_type <= Type::DepthStencil);
   }
+  ALWAYS_INLINE bool HasStencil() const { return IsDepthStencilFormat(m_format); }
 
   ALWAYS_INLINE const ClearValue& GetClearValue() const { return m_clear_value; }
   ALWAYS_INLINE u32 GetClearColor() const { return m_clear_value.color; }

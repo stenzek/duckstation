@@ -150,7 +150,7 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
     VK_CULL_MODE_BACK_BIT,  // Back
   }};
 
-  static constexpr std::array<VkCompareOp, static_cast<u32>(GPUPipeline::DepthFunc::MaxCount)> compare_mapping = {{
+  static constexpr std::array<VkCompareOp, static_cast<u32>(GPUPipeline::ComparisonFunc::MaxCount)> compare_mapping = {{
     VK_COMPARE_OP_NEVER,            // Never
     VK_COMPARE_OP_ALWAYS,           // Always
     VK_COMPARE_OP_LESS,             // Less
@@ -158,6 +158,17 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
     VK_COMPARE_OP_GREATER,          // Greater
     VK_COMPARE_OP_GREATER_OR_EQUAL, // GreaterEqual
     VK_COMPARE_OP_EQUAL,            // Equal
+  }};
+
+  static constexpr std::array<VkStencilOp, static_cast<u32>(GPUPipeline::StencilOp::MaxCount)> stencil_op_mapping = {{
+    VK_STENCIL_OP_KEEP,                // Keep
+    VK_STENCIL_OP_ZERO,                // Zero
+    VK_STENCIL_OP_REPLACE,             // Replace
+    VK_STENCIL_OP_INCREMENT_AND_CLAMP, // IncrSat
+    VK_STENCIL_OP_DECREMENT_AND_CLAMP, // DecrSat
+    VK_STENCIL_OP_INVERT,              // Invert
+    VK_STENCIL_OP_INCREMENT_AND_WRAP,  // Incr
+    VK_STENCIL_OP_DECREMENT_AND_WRAP,  // Decr
   }};
 
   static constexpr std::array<VkBlendFactor, static_cast<u32>(GPUPipeline::BlendFunc::MaxCount)> blend_mapping = {{
@@ -215,9 +226,35 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
                             VK_FRONT_FACE_CLOCKWISE);
   if (config.samples > 1)
     gpb.SetMultisamples(config.samples, config.per_sample_shading);
-  gpb.SetDepthState(config.depth.depth_test != GPUPipeline::DepthFunc::Always || config.depth.depth_write,
+  gpb.SetDepthState(config.depth.depth_test != GPUPipeline::ComparisonFunc::Always || config.depth.depth_write,
                     config.depth.depth_write, compare_mapping[static_cast<u8>(config.depth.depth_test.GetValue())]);
-  gpb.SetNoStencilState();
+
+  if (config.depth.stencil_enable)
+  {
+    const VkStencilOpState front = {
+      .failOp = stencil_op_mapping[static_cast<u8>(config.depth.front_stencil_fail_op.GetValue())],
+      .passOp = stencil_op_mapping[static_cast<u8>(config.depth.front_stencil_pass_op.GetValue())],
+      .depthFailOp = stencil_op_mapping[static_cast<u8>(config.depth.front_stencil_depth_fail_op.GetValue())],
+      .compareOp = compare_mapping[static_cast<u8>(config.depth.front_stencil_func.GetValue())],
+      .compareMask = 0xFFu,
+      .writeMask = 0xFFu,
+      .reference = 0x00u,
+    };
+    const VkStencilOpState back = {
+      .failOp = stencil_op_mapping[static_cast<u8>(config.depth.back_stencil_fail_op.GetValue())],
+      .passOp = stencil_op_mapping[static_cast<u8>(config.depth.back_stencil_pass_op.GetValue())],
+      .depthFailOp = stencil_op_mapping[static_cast<u8>(config.depth.back_stencil_depth_fail_op.GetValue())],
+      .compareOp = compare_mapping[static_cast<u8>(config.depth.back_stencil_func.GetValue())],
+      .compareMask = 0xFFu,
+      .writeMask = 0xFFu,
+      .reference = 0x00u,
+    };
+    gpb.SetStencilState(true, front, back);
+  }
+  else
+  {
+    gpb.SetNoStencilState();
+  }
 
   for (u32 i = 0; i < MAX_RENDER_TARGETS; i++)
   {
@@ -239,6 +276,9 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
   gpb.AddDynamicState(VK_DYNAMIC_STATE_VIEWPORT);
   gpb.AddDynamicState(VK_DYNAMIC_STATE_SCISSOR);
 
+  if (GPUTexture::IsDepthStencilFormat(config.depth_format))
+    gpb.AddDynamicState(VK_DYNAMIC_STATE_STENCIL_REFERENCE);
+
   gpb.SetPipelineLayout(m_pipeline_layouts[static_cast<size_t>(GetPipelineLayoutType(config.render_pass_flags))]
                                           [static_cast<size_t>(config.layout)]);
 
@@ -258,8 +298,9 @@ std::unique_ptr<GPUPipeline> VulkanDevice::CreatePipeline(const GPUPipeline::Gra
 
     if (config.depth_format != GPUTexture::Format::Unknown)
     {
-      gpb.SetDynamicRenderingDepthAttachment(VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(config.depth_format)],
-                                             VK_FORMAT_UNDEFINED);
+      const VkFormat vk_format = VulkanDevice::TEXTURE_FORMAT_MAPPING[static_cast<u8>(config.depth_format)];
+      gpb.SetDynamicRenderingDepthAttachment(
+        vk_format, GPUTexture::IsDepthStencilFormat(config.depth_format) ? vk_format : VK_FORMAT_UNDEFINED);
     }
 
     if (config.render_pass_flags & GPUPipeline::ColorFeedbackLoop)
