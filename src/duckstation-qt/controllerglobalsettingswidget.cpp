@@ -21,6 +21,10 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
   ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLSource, "InputSources", "SDL", true);
   ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLEnhancedMode, "InputSources",
                                                               "SDLControllerEnhancedMode", false);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableTouchPadAsPointer, "InputSources",
+                                                              "SDLTouchpadAsPointer", false);
+  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources",
+                                                              "SDLPS5PlayerLED", false);
   connect(m_ui.enableSDLSource, &QCheckBox::checkStateChanged, this,
           &ControllerGlobalSettingsWidget::updateSDLOptionsEnabled);
   connect(m_ui.ledSettings, &QToolButton::clicked, this, &ControllerGlobalSettingsWidget::ledSettingsClicked);
@@ -137,8 +141,14 @@ void ControllerGlobalSettingsWidget::ledSettingsClicked()
 void ControllerGlobalSettingsWidget::updateSDLOptionsEnabled()
 {
   const bool enabled = m_ui.enableSDLSource->isChecked();
-  m_ui.enableSDLEnhancedMode->setEnabled(enabled);
-  m_ui.ledSettings->setEnabled(enabled);
+  if (m_ui.enableSDLEnhancedMode)
+    m_ui.enableSDLEnhancedMode->setEnabled(enabled);
+  if (m_ui.enableTouchPadAsPointer)
+    m_ui.enableTouchPadAsPointer->setEnabled(enabled);
+  if (m_ui.enableSDLPS5PlayerLED)
+    m_ui.enableSDLPS5PlayerLED->setEnabled(enabled);
+  if (m_ui.ledSettings)
+    m_ui.ledSettings->setEnabled(enabled);
 }
 
 ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, ControllerSettingsWindow* dialog)
@@ -151,10 +161,6 @@ ControllerLEDSettingsDialog::ControllerLEDSettingsDialog(QWidget* parent, Contro
   linkButton(m_ui.SDL2LED, 2);
   linkButton(m_ui.SDL3LED, 3);
 
-  SettingsInterface* sif = dialog->getEditingSettingsInterface();
-
-  ControllerSettingWidgetBinder::BindWidgetToInputProfileBool(sif, m_ui.enableSDLPS5PlayerLED, "InputSources",
-                                                              "SDLPS5PlayerLED", false);
   connect(m_ui.buttonBox->button(QDialogButtonBox::Close), &QPushButton::clicked, this, &QDialog::accept);
 }
 

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>902</width>
-    <height>800</height>
+    <height>743</height>
    </rect>
   </property>
   <layout class="QGridLayout" name="mainLayout" columnstretch="1,0">
@@ -98,7 +98,7 @@
        </widget>
       </item>
       <item row="1" column="1">
-       <widget class="QComboBox" name="multitapMode" />
+       <widget class="QComboBox" name="multitapMode"/>
       </item>
      </layout>
     </widget>
@@ -109,13 +109,17 @@
       <string>SDL Input Source</string>
      </property>
      <layout class="QGridLayout" name="sdlGridLayout">
-      <item row="0" column="0" colspan="2">
-       <widget class="QLabel" name="label_2">
+      <item row="3" column="1">
+       <widget class="QCheckBox" name="enableSDLMFIDriver">
         <property name="text">
-         <string>The SDL input source supports most controllers, and provides advanced functionality for DualShock 4 / DualSense pads in Bluetooth mode (Vibration / LED Control).</string>
+         <string>Enable MFI Driver</string>
         </property>
-        <property name="wordWrap">
-         <bool>true</bool>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QCheckBox" name="enableSDLIOKitDriver">
+        <property name="text">
+         <string>Enable IOKit Driver</string>
         </property>
        </widget>
       </item>
@@ -126,12 +130,42 @@
         </property>
        </widget>
       </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>The SDL input source supports most controllers, and provides Vibration/LED functionality for DualShock 4 / DualSense pads in Bluetooth mode.</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
+       <widget class="QCheckBox" name="enableTouchPadAsPointer">
+        <property name="text">
+         <string>Enable Touchpad</string>
+        </property>
+       </widget>
+      </item>
       <item row="1" column="1">
+       <widget class="QCheckBox" name="enableSDLEnhancedMode">
+        <property name="text">
+         <string>DualShock 4 / DualSense Enhanced Mode</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
        <layout class="QHBoxLayout" name="horizontalLayout_4">
         <item>
-         <widget class="QCheckBox" name="enableSDLEnhancedMode">
+         <widget class="QCheckBox" name="enableSDLPS5PlayerLED">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
-           <string>DualShock 4 / DualSense Enhanced Mode</string>
+           <string>Enable DualSense Player LED</string>
           </property>
          </widget>
         </item>
@@ -146,20 +180,6 @@
          </widget>
         </item>
        </layout>
-      </item>
-      <item row="2" column="0">
-       <widget class="QCheckBox" name="enableSDLIOKitDriver">
-        <property name="text">
-         <string>Enable IOKit Driver</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QCheckBox" name="enableSDLMFIDriver">
-        <property name="text">
-         <string>Enable MFI Driver</string>
-        </property>
-       </widget>
       </item>
      </layout>
     </widget>
@@ -287,6 +307,24 @@
         </item>
        </layout>
       </item>
+      <item row="3" column="0" colspan="2">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <item>
+         <widget class="QCheckBox" name="enableMouseMapping">
+          <property name="text">
+           <string>Enable Mouse Mapping</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="enableRawInput">
+          <property name="text">
+           <string>Use Raw Input</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
       <item row="2" column="0">
        <widget class="QLabel" name="label_6">
         <property name="text">
@@ -342,24 +380,6 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QCheckBox" name="enableMouseMapping">
-          <property name="text">
-           <string>Enable Mouse Mapping</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QCheckBox" name="enableRawInput">
-          <property name="text">
-           <string>Use Raw Input</string>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
      </layout>
     </widget>
    </item>
@@ -371,7 +391,7 @@
      <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
-       <height>40</height>
+       <height>1</height>
       </size>
      </property>
     </spacer>

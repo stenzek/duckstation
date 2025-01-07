@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>501</width>
-    <height>128</height>
+    <height>108</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,18 +38,6 @@
      </layout>
     </widget>
    </item>
-   <item row="0" column="2">
-    <widget class="QGroupBox" name="groupBox_3">
-     <property name="title">
-      <string>SDL-2 LED</string>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="ColorPickerButton" name="SDL2LED"/>
-      </item>
-     </layout>
-    </widget>
-   </item>
    <item row="0" column="1">
     <widget class="QGroupBox" name="groupBox_2">
      <property name="title">
@@ -62,41 +50,30 @@
      </layout>
     </widget>
    </item>
-   <item row="3" column="0" colspan="4">
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
-     <property name="sizeConstraint">
-      <enum>QLayout::SetDefaultConstraint</enum>
+   <item row="0" column="2">
+    <widget class="QGroupBox" name="groupBox_3">
+     <property name="title">
+      <string>SDL-2 LED</string>
      </property>
-     <property name="bottomMargin">
-      <number>0</number>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <item>
+       <widget class="ColorPickerButton" name="SDL2LED"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="1" column="2" colspan="2">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
      </property>
-     <item>
-      <widget class="QCheckBox" name="enableSDLPS5PlayerLED">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Enable DualSense Player LED</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QDialogButtonBox" name="buttonBox">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="standardButtons">
-        <set>QDialogButtonBox::Close</set>
-       </property>
-      </widget>
-     </item>
-    </layout>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Close</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
