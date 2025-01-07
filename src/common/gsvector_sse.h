@@ -1831,6 +1831,11 @@ public:
 
   ALWAYS_INLINE GSVector4i xyxy(const GSVector4i& v) const { return upl64(v); }
 
+  ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xyzw)
+  {
+    return GSVector4i(_mm_unpacklo_epi64(xyzw.m, xyzw.m));
+  }
+
   ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xy, const GSVector2i& zw)
   {
     return GSVector4i(_mm_unpacklo_epi64(xy.m, zw.m));

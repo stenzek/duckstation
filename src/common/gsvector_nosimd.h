@@ -1665,6 +1665,8 @@ public:
     return GSVector4i(xy.x, xy.y, zw.x, zw.y);
   }
 
+  ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xyzw) { return GSVector4i(xyxy.x, xyxy.y, xyzw.x, xyzw.y); }
+
   ALWAYS_INLINE GSVector2i xy() const { return GSVector2i(x, y); }
   ALWAYS_INLINE GSVector2i zw() const { return GSVector2i(z, w); }
 

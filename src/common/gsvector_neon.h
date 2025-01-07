@@ -2346,6 +2346,8 @@ public:
     return GSVector4i(vcombine_s32(xy.v2s, zw.v2s));
   }
 
+  ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xyzw) { return GSVector4i(vcombine_s32(xyzw.v2s, xyzw.v2s)); }
+
   ALWAYS_INLINE GSVector2i xy() const { return GSVector2i(vget_low_s32(v4s)); }
 
   ALWAYS_INLINE GSVector2i zw() const { return GSVector2i(vget_high_s32(v4s)); }
