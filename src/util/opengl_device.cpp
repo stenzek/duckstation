@@ -746,6 +746,7 @@ bool OpenGLDevice::CreateBuffers()
   GL_OBJECT_NAME(m_uniform_buffer, "Device Uniform Buffer");
 
   glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, reinterpret_cast<GLint*>(&m_uniform_buffer_alignment));
+  m_uniform_buffer_alignment = std::max<GLuint>(m_uniform_buffer_alignment, 16);
 
   if (!m_disable_pbo)
   {
