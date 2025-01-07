@@ -15,12 +15,6 @@
 #include <tuple>
 #include <utility>
 
-class Error;
-
-class GPU_SW_Backend;
-struct GPUBackendCommand;
-struct GPUBackendDrawCommand;
-
 // TODO: Move to cpp
 // TODO: Rename to GPUHWBackend, preserved to avoid conflicts.
 class GPU_HW final : public GPUBackend
@@ -147,7 +141,7 @@ private:
     void SetUVLimits(u32 min_u, u32 max_u, u32 min_v, u32 max_v);
   };
 
-  struct alignas(4) BatchConfig
+  struct BatchConfig
   {
     BatchTextureMode texture_mode = BatchTextureMode::Disabled;
     GPUTransparencyMode transparency_mode = GPUTransparencyMode::Disabled;
@@ -158,13 +152,11 @@ private:
     bool use_depth_buffer = false;
     bool sprite_mode = false;
 
-    GPUTextureCache::SourceKey texture_cache_key = {};
-
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const;
   };
 
-  struct alignas(VECTOR_ALIGNMENT) BatchUBOData
+  struct BatchUBOData
   {
     u32 u_texture_window[4]; // and_x, and_y, or_x, or_y
     float u_src_alpha_factor;
@@ -174,7 +166,6 @@ private:
     float u_resolution_scale;
     float u_rcp_resolution_scale;
     float u_resolution_scale_minus_one;
-    GPUTextureWindow u_texture_window_bits; // not actually used on GPU
   };
 
   struct RendererStats
@@ -339,6 +330,7 @@ private:
 
   // Changed state
   BatchUBOData m_batch_ubo_data = {};
+  GPUTextureCache::SourceKey m_texture_cache_key = {};
 
   // Bounding box of VRAM area that the GPU has drawn into.
   GSVector4i m_vram_dirty_draw_rect = INVALID_RECT;
@@ -358,6 +350,8 @@ private:
 
     u32 bits = INVALID_DRAW_MODE_BITS;
   } m_draw_mode = {};
+
+  GPUTextureWindow m_texture_window_bits;
 
   std::unique_ptr<GPUPipeline> m_wireframe_pipeline;
 
