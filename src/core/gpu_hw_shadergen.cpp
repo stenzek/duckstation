@@ -50,6 +50,27 @@ void GPU_HW_ShaderGen::WriteBatchUniformBuffer(std::stringstream& ss) const
                        false);
 }
 
+std::string GPU_HW_ShaderGen::GenerateScreenVertexShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareVertexEntryPoint(ss, {"float2 a_pos", "float2 a_tex0"}, 0, 1, {}, false, "", false, false, false);
+  ss << R"(
+{
+  // Depth set to 1 for PGXP depth buffer.
+  v_pos = float4(a_pos, 1.0f, 1.0f);
+  v_tex0 = a_tex0;
+
+  // NDC space Y flip in Vulkan.
+  #if API_OPENGL || API_OPENGL_ES || API_VULKAN
+    v_pos.y = -v_pos.y;
+  #endif
+}
+)";
+
+  return ss.str();
+}
+
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool upscaled, bool msaa, bool per_sample_shading,
                                                         bool textured, bool palette, bool page_texture, bool uv_limits,
                                                         bool force_round_texcoords, bool pgxp_depth,

@@ -13,6 +13,8 @@ public:
   GPU_HW_ShaderGen(RenderAPI render_api, bool supports_dual_source_blend, bool supports_framebuffer_fetch);
   ~GPU_HW_ShaderGen();
 
+  std::string GenerateScreenVertexShader() const;
+
   std::string GenerateBatchVertexShader(bool upscaled, bool msaa, bool per_sample_shading, bool textured, bool palette,
                                         bool page_texture, bool uv_limits, bool force_round_texcoords, bool pgxp_depth,
                                         bool disable_color_perspective) const;

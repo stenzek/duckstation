@@ -121,6 +121,14 @@ private:
 
   static_assert(GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS >= (VRAM_WIDTH * VRAM_HEIGHT));
 
+  struct alignas(16) ScreenVertex
+  {
+    float x;
+    float y;
+    float u;
+    float v;
+  };
+
   struct alignas(16) BatchVertex
   {
     float x;
@@ -223,6 +231,8 @@ private:
   bool ShouldCheckForTexPageOverlap() const;
 
   bool IsFlushed() const;
+  void DrawScreenQuad(const GSVector4i bounds, const GSVector4 uv_bounds = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f));
+
   void EnsureVertexBufferSpace(u32 required_vertices, u32 required_indices);
   void EnsureVertexBufferSpaceForCommand(const GPUBackendDrawCommand* cmd);
   void PrepareDraw(const GPUBackendDrawCommand* cmd);
@@ -380,4 +390,5 @@ private:
 
   // common shaders
   std::unique_ptr<GPUShader> m_fullscreen_quad_vertex_shader;
+  std::unique_ptr<GPUShader> m_screen_quad_vertex_shader;
 };
