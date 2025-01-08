@@ -6,8 +6,11 @@
 #include "common/align.h"
 #include "common/assert.h"
 #include "common/error.h"
+#include "common/log.h"
 
 #include <array>
+
+LOG_CHANNEL(GPUDevice);
 
 OpenGLStreamBuffer::OpenGLStreamBuffer(GLenum target, GLuint buffer_id, u32 size)
   : m_target(target), m_buffer_id(buffer_id), m_size(size)
@@ -154,6 +157,83 @@ private:
   u8* m_cpu_buffer;
 };
 
+// Uses multiple buffers with unsynchronized mapping.
+class MapAndOrphanStreamBuffer final : public OpenGLStreamBuffer
+{
+public:
+  ~MapAndOrphanStreamBuffer() override = default;
+
+  static std::unique_ptr<OpenGLStreamBuffer> Create(GLenum target, u32 size, Error* error)
+  {
+    glGetError();
+
+    GLuint buffer_id;
+    glGenBuffers(1, &buffer_id);
+    glBindBuffer(target, buffer_id);
+    glBufferData(target, size, nullptr, GL_STREAM_DRAW);
+
+    const GLenum err = glGetError();
+    if (err != GL_NO_ERROR) [[unlikely]]
+    {
+      Error::SetStringFmt(error, "Failed to create buffer: 0x{:X}", err);
+      glBindBuffer(target, 0);
+      glDeleteBuffers(1, &buffer_id);
+      return {};
+    }
+
+    return std::unique_ptr<OpenGLStreamBuffer>(new MapAndOrphanStreamBuffer(target, buffer_id, size));
+  }
+
+  MappingResult Map(u32 alignment, u32 min_size) override
+  {
+    Bind();
+
+    if (m_position > 0)
+      m_position = Common::AlignUp(m_position, alignment);
+
+    if ((m_position + min_size) > m_size)
+    {
+      // create a new buffer
+      m_position = 0;
+      glBufferData(m_target, m_size, nullptr, GL_STREAM_DRAW);
+    }
+
+    // explicit flush because we may not use the whole range
+    // NOTE: using GL_MAP_INVALIDATE_RANGE_BIT causes massive memory blowup on AMD, but it's not using this path anyway
+    void* map = glMapBufferRange(m_target, m_position, m_size - m_position,
+                                 GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    Assert(map != nullptr);
+
+    return MappingResult{.pointer = map,
+                         .buffer_offset = m_position,
+                         .index_aligned = m_position / alignment,
+                         .space_aligned = (m_size - m_position) / alignment};
+  }
+
+  u32 Unmap(u32 used_size) override
+  {
+    DebugAssert((m_position + used_size) <= m_size);
+
+    Bind();
+
+    if (used_size > 0)
+      glFlushMappedBufferRange(m_target, 0, used_size);
+
+    glUnmapBuffer(m_target);
+
+    const u32 prev_position = m_position;
+    m_position += used_size;
+    return prev_position;
+  }
+
+  u32 GetChunkSize() const override { return m_size; }
+
+private:
+  MapAndOrphanStreamBuffer(GLenum target, GLuint buffer_id, u32 size) : OpenGLStreamBuffer(target, buffer_id, size) {}
+
+  u32 m_position = 0;
+};
+
 // Base class for implementations which require syncing.
 class SyncingStreamBuffer : public OpenGLStreamBuffer
 {
@@ -241,6 +321,73 @@ protected:
   u32 m_available_block_index = NUM_SYNC_POINTS;
   u32 m_bytes_per_block;
   std::array<GLsync, NUM_SYNC_POINTS> m_sync_objects{};
+};
+
+// Uses a single buffer with unsynchronized mapping.
+class MapAndSyncStreamBuffer : public SyncingStreamBuffer
+{
+public:
+  ~MapAndSyncStreamBuffer() override = default;
+
+  static std::unique_ptr<OpenGLStreamBuffer> Create(GLenum target, u32 size, Error* error, bool coherent = true)
+  {
+    glGetError();
+
+    GLuint buffer_id;
+    glGenBuffers(1, &buffer_id);
+    glBindBuffer(target, buffer_id);
+    glBufferData(target, size, nullptr, GL_STREAM_DRAW);
+
+    const GLenum err = glGetError();
+    if (err != GL_NO_ERROR) [[unlikely]]
+    {
+      Error::SetStringFmt(error, "Failed to create buffer: 0x{:X}", err);
+      glBindBuffer(target, 0);
+      glDeleteBuffers(1, &buffer_id);
+      return {};
+    }
+
+    return std::unique_ptr<OpenGLStreamBuffer>(new MapAndSyncStreamBuffer(target, buffer_id, size));
+  }
+
+  MappingResult Map(u32 alignment, u32 min_size) override
+  {
+    if (m_position > 0)
+      m_position = Common::AlignUp(m_position, alignment);
+
+    AllocateSpace(min_size);
+    DebugAssert((m_position + min_size) <= (m_available_block_index * m_bytes_per_block));
+
+    // explicit flush because we may not use the whole range
+    Bind();
+    const u32 space = ((m_available_block_index * m_bytes_per_block) - m_position);
+    void* map = glMapBufferRange(m_target, m_position, space,
+                                 GL_MAP_WRITE_BIT | GL_MAP_FLUSH_EXPLICIT_BIT | GL_MAP_UNSYNCHRONIZED_BIT);
+    Assert(map != nullptr);
+
+    return MappingResult{.pointer = map,
+                         .buffer_offset = m_position,
+                         .index_aligned = m_position / alignment,
+                         .space_aligned = space / alignment};
+  }
+
+  u32 Unmap(u32 used_size) override
+  {
+    Bind();
+
+    DebugAssert((m_position + used_size) <= m_size);
+
+    if (used_size > 0)
+      glFlushMappedBufferRange(m_target, 0, used_size);
+    glUnmapBuffer(m_target);
+
+    const u32 prev_position = m_position;
+    m_position += used_size;
+    return prev_position;
+  }
+
+private:
+  MapAndSyncStreamBuffer(GLenum target, GLuint buffer_id, u32 size) : SyncingStreamBuffer(target, buffer_id, size) {}
 };
 
 class BufferStorageStreamBuffer : public SyncingStreamBuffer
@@ -332,12 +479,39 @@ private:
 
 std::unique_ptr<OpenGLStreamBuffer> OpenGLStreamBuffer::Create(GLenum target, u32 size, Error* error /* = nullptr */)
 {
+  // In terms of speed: persistent mapping > map+sync -> map+orphan -> bufferdata/subdata
+
   std::unique_ptr<OpenGLStreamBuffer> buf;
   if (GLAD_GL_VERSION_4_4 || GLAD_GL_ARB_buffer_storage || GLAD_GL_EXT_buffer_storage)
   {
     buf = BufferStorageStreamBuffer::Create(target, size, error);
     if (buf)
+    {
+      DEV_LOG("Using BufferStorageStreamBuffer for {} byte 0x{:X} buffer.", size, target);
       return buf;
+    }
+  }
+
+  // Prefer doing our own synchronization if supported.
+  if (GLAD_GL_VERSION_3_2 || GLAD_GL_ARB_sync || GLAD_GL_ES_VERSION_3_0)
+  {
+    buf = MapAndSyncStreamBuffer::Create(target, size, error);
+    if (buf)
+    {
+      DEV_LOG("Using MapAndSyncStreamBuffer for {} byte 0x{:X} buffer.", size, target);
+      return buf;
+    }
+  }
+
+  // Should be supported everywhere...
+  if (GLAD_GL_VERSION_3_0)
+  {
+    buf = MapAndOrphanStreamBuffer::Create(target, size, error);
+    if (buf)
+    {
+      DEV_LOG("Using MapAndOrphanStreamBuffer for {} byte 0x{:X} buffer.", size, target);
+      return buf;
+    }
   }
 
   // BufferSubData is slower on all drivers except NVIDIA...
@@ -346,11 +520,14 @@ std::unique_ptr<OpenGLStreamBuffer> OpenGLStreamBuffer::Create(GLenum target, u3
   if (std::strcmp(vendor, "ARM") == 0 || std::strcmp(vendor, "Qualcomm") == 0)
   {
     // Mali and Adreno drivers can't do sub-buffer tracking...
+    DEV_LOG("Using BufferDataStreamBuffer for {} byte 0x{:X} buffer.", size, target);
     return BufferDataStreamBuffer::Create(target, size, error);
   }
 
+  DEV_LOG("Using BufferSubDataStreamBuffer for {} byte 0x{:X} buffer.", size, target);
   return BufferSubDataStreamBuffer::Create(target, size, error);
 #else
+  DEV_LOG("Using BufferDataStreamBuffer for {} byte 0x{:X} buffer.", size, target);
   return BufferDataStreamBuffer::Create(target, size, error);
 #endif
 }
