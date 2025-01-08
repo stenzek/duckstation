@@ -1,17 +1,21 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "core/types.h"
 
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QGroupBox>
-#include <QtWidgets/QLineEdit>
-#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
+
 #include <array>
 #include <vector>
+
+class QLabel;
+class QGroupBox;
+class QVBoxLayout;
+class QComboBox;
+class QLineEdit;
+class QPushButton;
 
 class SettingsWindow;
 
@@ -31,11 +35,15 @@ private:
     QGroupBox* container;
     QVBoxLayout* layout;
     QComboBox* memory_card_type;
+    QLabel* memory_card_path_label;
     QLineEdit* memory_card_path;
+    QPushButton* memory_card_path_browse;
+    QPushButton* memory_card_path_reset;
   };
 
   void createUi(SettingsWindow* dialog);
   void createPortSettingsUi(SettingsWindow* dialog, int index, PortSettingsUI* ui);
+  void onMemoryCardTypeChanged(int index);
   void onBrowseMemoryCardPathClicked(int index);
   void onResetMemoryCardPathClicked(int index);
   void onMemoryCardPathChanged(int index);

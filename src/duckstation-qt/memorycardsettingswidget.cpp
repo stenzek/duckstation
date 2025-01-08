@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memorycardsettingswidget.h"
@@ -18,8 +18,14 @@
 #include "fmt/format.h"
 
 #include <QtCore/QUrl>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QFileDialog>
+#include <QtWidgets/QGroupBox>
 #include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QVBoxLayout>
+
+#include <functional>
 
 static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
   QT_TRANSLATE_NOOP("MemoryCardSettingsWidget", "All Memory Card Types (*.mcd *.mcr *.mc)");
@@ -41,10 +47,11 @@ void MemoryCardSettingsWidget::createUi(SettingsWindow* dialog)
   {
     createPortSettingsUi(dialog, i, &m_port_ui[i]);
     layout->addWidget(m_port_ui[i].container);
+    onMemoryCardTypeChanged(i);
   }
 
   {
-    QGroupBox* box = new QGroupBox(tr("Shared Settings"), this);
+    QGroupBox* box = new QGroupBox(tr("Game-Specific Card Settings"), this);
     QVBoxLayout* box_layout = new QVBoxLayout(box);
     QPushButton* browse = new QPushButton(tr("Browse..."), box);
     QPushButton* open_memcards = new QPushButton(tr("Open..."), box);
@@ -118,6 +125,8 @@ void MemoryCardSettingsWidget::createPortSettingsUi(SettingsWindow* dialog, int 
   SettingWidgetBinder::BindWidgetToEnumSetting(m_dialog->getSettingsInterface(), ui->memory_card_type, "MemoryCards",
                                                fmt::format("Card{}Type", index + 1), &Settings::ParseMemoryCardTypeName,
                                                &Settings::GetMemoryCardTypeName, default_value);
+  connect(ui->memory_card_type, &QComboBox::currentIndexChanged, this,
+          std::bind(&MemoryCardSettingsWidget::onMemoryCardTypeChanged, this, index));
   ui->layout->addWidget(new QLabel(tr("Memory Card Type:"), ui->container));
   ui->layout->addWidget(ui->memory_card_type);
 
@@ -132,20 +141,39 @@ void MemoryCardSettingsWidget::createPortSettingsUi(SettingsWindow* dialog, int 
   }
   memory_card_layout->addWidget(ui->memory_card_path);
 
-  QPushButton* memory_card_path_browse = new QPushButton(tr("Browse..."), ui->container);
-  connect(memory_card_path_browse, &QPushButton::clicked, this,
+  ui->memory_card_path_browse = new QPushButton(tr("Browse..."), ui->container);
+  connect(ui->memory_card_path_browse, &QPushButton::clicked, this,
           [this, index]() { onBrowseMemoryCardPathClicked(index); });
-  memory_card_layout->addWidget(memory_card_path_browse);
+  memory_card_layout->addWidget(ui->memory_card_path_browse);
 
-  QPushButton* memory_card_path_reset = new QPushButton(tr("Reset"), ui->container);
-  connect(memory_card_path_reset, &QPushButton::clicked, this,
+  ui->memory_card_path_reset = new QPushButton(tr("Reset"), ui->container);
+  connect(ui->memory_card_path_reset, &QPushButton::clicked, this,
           [this, index]() { onResetMemoryCardPathClicked(index); });
-  memory_card_layout->addWidget(memory_card_path_reset);
+  memory_card_layout->addWidget(ui->memory_card_path_reset);
 
-  ui->layout->addWidget(new QLabel(tr("Shared Memory Card Path:"), ui->container));
+  ui->memory_card_path_label = new QLabel(tr("Shared Memory Card Path:"), ui->container);
+  ui->layout->addWidget(ui->memory_card_path_label);
   ui->layout->addLayout(memory_card_layout);
 
   ui->layout->addStretch(1);
+}
+
+void MemoryCardSettingsWidget::onMemoryCardTypeChanged(int index)
+{
+  const MemoryCardType default_type =
+    (index == 0) ? Settings::DEFAULT_MEMORY_CARD_1_TYPE : Settings::DEFAULT_MEMORY_CARD_2_TYPE;
+  const MemoryCardType type =
+    Settings::ParseMemoryCardTypeName(m_dialog
+                                        ->getEffectiveStringValue("MemoryCards",
+                                                                  TinyString::from_format("Card{}Type", index + 1),
+                                                                  Settings::GetMemoryCardTypeName(default_type))
+                                        .c_str())
+      .value_or(default_type);
+  const bool shared_enabled = (type == MemoryCardType::Shared);
+  m_port_ui[index].memory_card_path_label->setEnabled(shared_enabled);
+  m_port_ui[index].memory_card_path->setEnabled(shared_enabled);
+  m_port_ui[index].memory_card_path_browse->setEnabled(shared_enabled);
+  m_port_ui[index].memory_card_path_reset->setEnabled(shared_enabled);
 }
 
 void MemoryCardSettingsWidget::onBrowseMemoryCardPathClicked(int index)
