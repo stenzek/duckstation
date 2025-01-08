@@ -4793,8 +4793,16 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                  FSUI_CSTR("Reloads the shaders from disk, applying any changes."),
                  bsi->GetBoolValue("PostProcessing", "Enabled", false)))
   {
-    if (GPUThread::HasGPUBackend() && PostProcessing::ReloadShaders())
-      ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
+    // Have to defer because of the settings lock.
+    if (GPUThread::HasGPUBackend())
+    {
+      Host::RunOnCPUThread([]() {
+        GPUThread::RunOnThread([]() {
+          if (PostProcessing::ReloadShaders())
+            ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
+        });
+      });
+    }
   }
 
   MenuHeading(FSUI_CSTR("Operations"));
