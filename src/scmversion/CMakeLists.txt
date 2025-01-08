@@ -4,7 +4,7 @@ if(CMAKE_HOST_SYSTEM MATCHES "Windows")
                      COMMAND cmd /k "${CMAKE_CURRENT_SOURCE_DIR}/gen_scmversion.bat"
                      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 else()
-  add_custom_command(OUTPUT scmversion.cpp PRE_BUILD
+  add_custom_command(OUTPUT scmversion.cpp _scmversion.cpp
                      COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/gen_scmversion.sh")
 endif()
 
