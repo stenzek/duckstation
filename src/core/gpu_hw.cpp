@@ -2798,13 +2798,14 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
   GSVector4i clamped_draw_rect_012, clamped_draw_rect_123;
   if (BeginPolygonDraw(cmd, vertices, num_vertices, clamped_draw_rect_012, clamped_draw_rect_123))
   {
-    const bool use_depth = m_pgxp_depth_buffer && cmd->valid_w;
+    // Use PGXP to exclude primitives that are definitely 3D.
+    const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w ||
+                        (num_vertices == 4 && vertices[0].w != vertices[3].w));
+    const bool use_depth = m_pgxp_depth_buffer && is_3d;
     SetBatchDepthBuffer(cmd, use_depth);
     if (use_depth)
       CheckForDepthClear(cmd, vertices.data(), num_vertices);
 
-    // Use PGXP to exclude primitives that are definitely 3D.
-    const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w);
     FinishPolygonDraw(cmd, vertices, num_vertices, true, is_3d, clamped_draw_rect_012, clamped_draw_rect_123);
   }
 
