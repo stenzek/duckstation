@@ -14,6 +14,7 @@
 #include "util/media_capture.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/memmap.h"
@@ -352,8 +353,10 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   cdrom_load_image_to_ram = si.GetBoolValue("CDROM", "LoadImageToRAM", false);
   cdrom_load_image_patches = si.GetBoolValue("CDROM", "LoadImagePatches", false);
   cdrom_mute_cd_audio = si.GetBoolValue("CDROM", "MuteCDAudio", false);
-  cdrom_read_speedup = si.GetIntValue("CDROM", "ReadSpeedup", 1);
-  cdrom_seek_speedup = si.GetIntValue("CDROM", "SeekSpeedup", 1);
+  cdrom_read_speedup =
+    Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "ReadSpeedup", 1u), std::numeric_limits<u8>::max()));
+  cdrom_seek_speedup =
+    Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "SeekSpeedup", 1u), std::numeric_limits<u8>::max()));
 
   audio_backend =
     AudioStream::ParseBackendName(
@@ -362,8 +365,10 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   audio_driver = si.GetStringValue("Audio", "Driver");
   audio_output_device = si.GetStringValue("Audio", "OutputDevice");
   audio_stream_parameters.Load(si, "Audio");
-  audio_output_volume = si.GetUIntValue("Audio", "OutputVolume", 100);
-  audio_fast_forward_volume = si.GetUIntValue("Audio", "FastForwardVolume", 100);
+  audio_output_volume =
+    Truncate8(std::min<u32>(si.GetUIntValue("Audio", "OutputVolume", 100), std::numeric_limits<u8>::max()));
+  audio_fast_forward_volume =
+    Truncate8(std::min<u32>(si.GetUIntValue("Audio", "FastForwardVolume", 100), std::numeric_limits<u8>::max()));
 
   audio_output_muted = si.GetBoolValue("Audio", "OutputMuted", false);
 
@@ -468,20 +473,21 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     si.GetUIntValue("TextureReplacements", "MaxReplacementCacheVRAMUsage",
                     TextureReplacementSettings::Configuration::DEFAULT_MAX_REPLACEMENT_CACHE_VRAM_USAGE_MB);
 
-  texture_replacements.config.max_vram_write_splits = si.GetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", 0u);
-  texture_replacements.config.max_vram_write_coalesce_width =
-    si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth", 0u);
-  texture_replacements.config.max_vram_write_coalesce_height =
-    si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceHeight", 0u);
+  texture_replacements.config.max_vram_write_splits = Truncate16(
+    std::min<u32>(si.GetUIntValue("TextureReplacements", "MaxVRAMWriteSplits", 0u), std::numeric_limits<u16>::max()));
+  texture_replacements.config.max_vram_write_coalesce_width = Truncate16(std::min<u32>(
+    si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceWidth", 0u), std::numeric_limits<u16>::max()));
+  texture_replacements.config.max_vram_write_coalesce_height = Truncate16(std::min<u32>(
+    si.GetUIntValue("TextureReplacements", "MaxVRAMWriteCoalesceHeight", 0u), std::numeric_limits<u16>::max()));
 
-  texture_replacements.config.texture_dump_width_threshold =
-    si.GetUIntValue("TextureReplacements", "DumpTextureWidthThreshold", 16);
-  texture_replacements.config.texture_dump_height_threshold =
-    si.GetUIntValue("TextureReplacements", "DumpTextureHeightThreshold", 16);
-  texture_replacements.config.vram_write_dump_width_threshold =
-    si.GetUIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128);
-  texture_replacements.config.vram_write_dump_height_threshold =
-    si.GetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128);
+  texture_replacements.config.texture_dump_width_threshold = Truncate16(std::min<u32>(
+    si.GetUIntValue("TextureReplacements", "DumpTextureWidthThreshold", 16), std::numeric_limits<u16>::max()));
+  texture_replacements.config.texture_dump_height_threshold = Truncate16(std::min<u32>(
+    si.GetUIntValue("TextureReplacements", "DumpTextureHeightThreshold", 16), std::numeric_limits<u16>::max()));
+  texture_replacements.config.vram_write_dump_width_threshold = Truncate16(std::min<u32>(
+    si.GetUIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 128), std::numeric_limits<u16>::max()));
+  texture_replacements.config.vram_write_dump_height_threshold = Truncate16(std::min<u32>(
+    si.GetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 128), std::numeric_limits<u16>::max()));
 
   pio_device_type = ParsePIODeviceTypeName(
                       si.GetTinyStringValue("PIO", "DeviceType", GetPIODeviceTypeModeName(DEFAULT_PIO_DEVICE_TYPE)))

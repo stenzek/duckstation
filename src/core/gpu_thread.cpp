@@ -658,7 +658,8 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (!g_gpu_device ||
       !(wi = Host::AcquireRenderWindow(api, fullscreen, fullscreen_mode.has_value(), &create_error)).has_value() ||
       !g_gpu_device->Create(
-        g_gpu_settings.gpu_adapter, static_cast<GPUDevice::FeatureMask>(disabled_features), shader_dump_directory,
+        Host::GetStringSettingValue("GPU", "Adapter"), static_cast<GPUDevice::FeatureMask>(disabled_features),
+        shader_dump_directory,
         g_gpu_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
         SHADER_CACHE_VERSION, g_gpu_settings.gpu_use_debug_device, wi.value(), s_state.requested_vsync,
         s_state.requested_allow_present_throttle, fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,

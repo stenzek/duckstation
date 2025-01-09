@@ -5202,7 +5202,7 @@ bool System::IsFastForwardingBoot()
           s_state.boot_mode == BootMode::FastBoot);
 }
 
-s32 System::GetAudioOutputVolume()
+u8 System::GetAudioOutputVolume()
 {
   return g_settings.GetAudioOutputVolume(IsRunningAtNonStandardSpeed());
 }

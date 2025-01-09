@@ -3460,17 +3460,17 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
                                               .value_or(static_cast<bool>(s_state.config.convert_copies_to_writes));
   s_state.config.max_vram_write_splits =
     GetOptionalTFromObject<bool>(root, "MaxVRAMWriteSplits").value_or(s_state.config.max_vram_write_splits);
-  s_state.config.max_vram_write_coalesce_width = GetOptionalTFromObject<u32>(root, "MaxVRAMWriteCoalesceWidth")
+  s_state.config.max_vram_write_coalesce_width = GetOptionalTFromObject<u16>(root, "MaxVRAMWriteCoalesceWidth")
                                                    .value_or(s_state.config.max_vram_write_coalesce_width);
-  s_state.config.max_vram_write_coalesce_height = GetOptionalTFromObject<u32>(root, "MaxVRAMWriteCoalesceHeight")
+  s_state.config.max_vram_write_coalesce_height = GetOptionalTFromObject<u16>(root, "MaxVRAMWriteCoalesceHeight")
                                                     .value_or(s_state.config.max_vram_write_coalesce_height);
-  s_state.config.texture_dump_width_threshold = GetOptionalTFromObject<u32>(root, "DumpTextureWidthThreshold")
+  s_state.config.texture_dump_width_threshold = GetOptionalTFromObject<u16>(root, "DumpTextureWidthThreshold")
                                                   .value_or(s_state.config.texture_dump_width_threshold);
-  s_state.config.texture_dump_height_threshold = GetOptionalTFromObject<u32>(root, "DumpTextureHeightThreshold")
+  s_state.config.texture_dump_height_threshold = GetOptionalTFromObject<u16>(root, "DumpTextureHeightThreshold")
                                                    .value_or(s_state.config.texture_dump_height_threshold);
-  s_state.config.vram_write_dump_width_threshold = GetOptionalTFromObject<u32>(root, "DumpVRAMWriteWidthThreshold")
+  s_state.config.vram_write_dump_width_threshold = GetOptionalTFromObject<u16>(root, "DumpVRAMWriteWidthThreshold")
                                                      .value_or(s_state.config.vram_write_dump_width_threshold);
-  s_state.config.vram_write_dump_height_threshold = GetOptionalTFromObject<u32>(root, "DumpVRAMWriteHeightThreshold")
+  s_state.config.vram_write_dump_height_threshold = GetOptionalTFromObject<u16>(root, "DumpVRAMWriteHeightThreshold")
                                                       .value_or(s_state.config.vram_write_dump_height_threshold);
   s_state.config.max_hash_cache_entries =
     GetOptionalTFromObject<u32>(root, "MaxHashCacheEntries").value_or(s_state.config.max_hash_cache_entries);

@@ -385,7 +385,7 @@ std::string GetGameMemoryCardPath(std::string_view serial, std::string_view path
                                   MemoryCardType* out_type = nullptr);
 
 /// Returns intended output volume considering fast forwarding.
-s32 GetAudioOutputVolume();
+u8 GetAudioOutputVolume();
 void UpdateVolume();
 
 /// Saves a screenshot to the specified file. If no file name is provided, one will be generated automatically.
