@@ -4770,6 +4770,11 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                 "fix misaligned UI in some games, but otherwise should be left disabled."),
       "GPU", "PGXPDisableOn2DPolygons", false, pgxp_enabled);
 
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PENCIL_RULER, "Depth Test Transparent Polygons"),
+                      FSUI_CSTR("Enables depth testing for semi-transparent polygons. Usually these include shadows, "
+                                "and tend to clip through the ground when depth testing is enabled."),
+                      "GPU", "PGXPTransparentDepthTest", false, pgxp_enabled);
+
     DrawFloatRangeSetting(
       bsi, FSUI_ICONSTR(ICON_FA_STAR, "Geometry Tolerance"),
       FSUI_CSTR("Sets a threshold for discarding precise values when exceeded. May help with glitches in some games."),
@@ -8182,6 +8187,7 @@ TRANSLATE_NOOP("FullscreenUI", "Deinterlacing Mode");
 TRANSLATE_NOOP("FullscreenUI", "Delete Save");
 TRANSLATE_NOOP("FullscreenUI", "Delete State");
 TRANSLATE_NOOP("FullscreenUI", "Depth Clear Threshold");
+TRANSLATE_NOOP("FullscreenUI", "Depth Test Transparent Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Desktop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Details");
 TRANSLATE_NOOP("FullscreenUI", "Details unavailable for game not scanned in game list.");
@@ -8255,6 +8261,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enables alignment and bus exceptions. Not needed
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Enables an additional three controller slots on each port. Not supported in all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables caching of guest textures, required for texture replacement.");
+TRANSLATE_NOOP("FullscreenUI", "Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Enables dumping of textures to image files, which can be replaced. Not compatible with all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables loading of cheats for this game from DuckStation's database.");
 TRANSLATE_NOOP("FullscreenUI", "Enables loading of replacement textures. Not compatible with all games.");

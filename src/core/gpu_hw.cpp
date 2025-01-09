@@ -2804,7 +2804,8 @@ void GPU_HW::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
     // Use PGXP to exclude primitives that are definitely 3D.
     const bool is_3d = (vertices[0].w != vertices[1].w || vertices[0].w != vertices[2].w ||
                         (num_vertices == 4 && vertices[0].w != vertices[3].w));
-    const bool use_depth = m_pgxp_depth_buffer && is_3d;
+    const bool use_depth =
+      m_pgxp_depth_buffer && is_3d && (!cmd->transparency_enable || g_gpu_settings.gpu_pgxp_transparent_depth);
     SetBatchDepthBuffer(cmd, use_depth);
     if (use_depth)
       CheckForDepthClear(cmd, vertices.data(), num_vertices);

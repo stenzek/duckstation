@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "graphicssettingswidget.h"
@@ -168,6 +168,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpCPU, "GPU", "PGXPCPU", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpVertexCache, "GPU", "PGXPVertexCache", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDisableOn2DPolygons, "GPU", "PGXPDisableOn2DPolygons",
+                                               false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpTransparentDepthTest, "GPU", "PGXPTransparentDepthTest",
                                                false);
 
   connect(m_ui.pgxpTextureCorrection, &QCheckBox::checkStateChanged, this,
@@ -509,6 +511,10 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                              tr("Uses native resolution coordinates for 2D polygons, instead of precise coordinates. "
                                 "Can fix misaligned UI in some games, but otherwise should be left disabled. The game "
                                 "database will enable this automatically when needed."));
+  dialog->registerWidgetHelp(m_ui.pgxpTransparentDepthTest, tr("Depth Test Transparent Polygons"), tr("Unchecked"),
+                             tr("Enables depth testing for semi-transparent polygons. Usually these include shadows, "
+                                "and tend to clip through the ground when depth testing is enabled. Depth writes for "
+                                "semi-transparent polygons are disabled regardless of this setting.."));
 
   // OSD Tab
 
@@ -994,6 +1000,8 @@ void GraphicsSettingsWidget::updatePGXPSettingsEnabled()
   m_ui.pgxpGeometryToleranceLabel->setEnabled(enabled);
   m_ui.pgxpDepthClearThreshold->setEnabled(depth_enabled);
   m_ui.pgxpDepthClearThresholdLabel->setEnabled(depth_enabled);
+  m_ui.pgxpDisableOn2DPolygons->setEnabled(enabled);
+  m_ui.pgxpTransparentDepthTest->setEnabled(depth_enabled);
 }
 
 void GraphicsSettingsWidget::onAspectRatioChanged()
