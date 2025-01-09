@@ -317,8 +317,14 @@ void PostProcessing::Config::RemoveStage(SettingsInterface& si, const char* sect
   for (u32 i = index; i < (stage_count - 1); i++)
     CopyStageConfig(si, section, i + 1, i);
 
-  si.ClearSection(GetStageConfigSection(section, stage_count - 1));
-  si.SetUIntValue(section, "StageCount", stage_count - 1);
+  const u32 new_stage_count = stage_count - 1;
+  si.ClearSection(GetStageConfigSection(section, new_stage_count));
+
+  // if game settings, wipe the field out so we can potentially remove the file
+  if (&si != Host::Internal::GetBaseSettingsLayer())
+    si.DeleteValue(section, "StageCount");
+  else
+    si.SetUIntValue(section, "StageCount", new_stage_count);
 }
 
 void PostProcessing::Config::MoveStageUp(SettingsInterface& si, const char* section, u32 index)
@@ -358,7 +364,12 @@ void PostProcessing::Config::ClearStages(SettingsInterface& si, const char* sect
   const u32 count = GetStageCount(si, section);
   for (s32 i = static_cast<s32>(count - 1); i >= 0; i--)
     si.ClearSection(GetStageConfigSection(section, static_cast<u32>(i)));
-  si.SetUIntValue(section, "StageCount", 0);
+
+  // if game settings, wipe the field out so we can potentially remove the file
+  if (&si != Host::Internal::GetBaseSettingsLayer())
+    si.SetUIntValue(section, "StageCount", 0);
+  else
+    si.DeleteValue(section, "StageCount");
 }
 
 PostProcessing::Chain::Chain(const char* section) : m_section(section)
