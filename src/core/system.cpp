@@ -2562,7 +2562,13 @@ void System::ClearMemorySaveStates(bool reallocate_resources, bool recycle_textu
   s_state.memory_save_state_count = 0;
 
   if (reallocate_resources && !s_state.memory_save_states.empty())
-    AllocateMemoryStates(s_state.memory_save_states.size(), recycle_textures);
+  {
+    if (!AllocateMemoryStates(s_state.memory_save_states.size(), recycle_textures))
+      return;
+  }
+
+  // immediately save a rewind state next frame
+  s_state.rewind_save_counter = (s_state.rewind_save_frequency > 0) ? 0 : -1;
 }
 
 void System::FreeMemoryStateStorage(bool release_memory, bool release_textures, bool recycle_textures)
@@ -4962,7 +4968,8 @@ bool System::LoadOneRewindState()
   if (s_state.memory_save_state_count == 0)
     return false;
 
-  LoadMemoryState(PopMemoryState(), true);
+  // keep the last state so we can go back to it with smaller frequencies
+  LoadMemoryState((s_state.memory_save_state_count > 1) ? PopMemoryState() : GetFirstMemoryState(), true);
 
   // back in time, need to reset perf counters
   GPUThread::RunOnThread(&PerformanceCounters::Reset);
@@ -4977,10 +4984,10 @@ bool System::IsRewinding()
 
 void System::SetRewinding(bool enabled)
 {
+  const bool was_enabled = IsRewinding();
+
   if (enabled)
   {
-    const bool was_enabled = IsRewinding();
-
     // Try to rewind at the replay speed, or one per second maximum.
     const float load_frequency = std::min(g_settings.rewind_save_frequency, 1.0f);
     s_state.rewind_load_frequency = static_cast<s32>(std::ceil(load_frequency * s_state.video_frame_rate));
@@ -4988,8 +4995,10 @@ void System::SetRewinding(bool enabled)
 
     if (!was_enabled && s_state.system_executing)
     {
-      // Drop the save we just created, since we don't want to rewind to where we are.
-      PopMemoryState();
+      // Drop the last save if we just created it, since we don't want to rewind to where we are.
+      if (s_state.rewind_save_counter == s_state.rewind_save_frequency && s_state.memory_save_state_count > 0)
+        PopMemoryState();
+
       s_state.system_interrupted = true;
     }
   }
@@ -4997,6 +5006,15 @@ void System::SetRewinding(bool enabled)
   {
     s_state.rewind_load_frequency = -1;
     s_state.rewind_load_counter = -1;
+
+    if (was_enabled)
+    {
+      // reset perf counters to avoid the spike
+      GPUThread::RunOnThread(&PerformanceCounters::Reset);
+
+      // and wait the full frequency before filling a new rewind slot
+      s_state.rewind_save_counter = s_state.rewind_save_frequency;
+    }
   }
 }
 
@@ -5016,6 +5034,10 @@ void System::DoRewind()
 
   Host::PumpMessagesOnCPUThread();
   IdlePollUpdate();
+
+  // get back into it straight away if we're no longer rewinding
+  if (!IsRewinding())
+    return;
 
   Throttle(Timer::GetCurrentValue(), s_state.next_frame_time);
 }
