@@ -816,6 +816,7 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
   g_gpu_device->SetGPUTimingEnabled(g_gpu_settings.display_show_gpu_usage);
   PostProcessing::Initialize();
   ImGuiManager::UpdateDebugWindowConfig();
+  Internal::RestoreContextAfterPresent();
   SetRunIdleReason(RunIdleReason::NoGPUBackend, false);
   std::atomic_thread_fence(std::memory_order_release);
   return true;
