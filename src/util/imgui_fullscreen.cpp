@@ -763,7 +763,7 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
   ImGui::PushStyleColor(ImGuiCol_WindowBg, background);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(padding));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(rounding));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 
   return ImGui::Begin(name, nullptr,
                       ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
@@ -2404,6 +2404,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
 
   ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2472,7 +2473,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   }
 
   ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 
   is_open &= !WantsToCloseMenu();
