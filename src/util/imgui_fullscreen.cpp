@@ -3012,9 +3012,13 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
   ImGui::End();
 
   const float padding_and_rounding = 18.0f * scale;
+  const float frame_rounding = 6.0f * scale;
+  const float bar_height = ImCeil(ImGuiManager::GetOSDFont()->FontSize * 1.1f);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
-  ImGui::SetNextWindowSize(ImVec2(width, ((has_progress || is_persistent) ? 90.0f : 55.0f) * scale), ImGuiCond_Always);
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, frame_rounding);
+  ImGui::PushFont(ImGuiManager::GetOSDFont());
+  ImGui::SetNextWindowSize(ImVec2(width, ((has_progress || is_persistent) ? 85.0f : 55.0f) * scale), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
                           ImGuiCond_Always, ImVec2(0.5f, 0.0f));
   if (ImGui::Begin("LoadingScreen", nullptr,
@@ -3043,7 +3047,7 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
       ImGui::ProgressBar(has_progress ?
                            (static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min)) :
                            static_cast<float>(-ImGui::GetTime()),
-                         ImVec2(-1.0f, 0.0f), "");
+                         ImVec2(-1.0f, bar_height), "");
     }
     else
     {
@@ -3056,7 +3060,8 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
     }
   }
   ImGui::End();
-  ImGui::PopStyleVar(2);
+  ImGui::PopFont();
+  ImGui::PopStyleVar(3);
 }
 
 //////////////////////////////////////////////////////////////////////////
