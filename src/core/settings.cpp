@@ -357,6 +357,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "ReadSpeedup", 1u), std::numeric_limits<u8>::max()));
   cdrom_seek_speedup =
     Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "SeekSpeedup", 1u), std::numeric_limits<u8>::max()));
+  cdrom_max_speedup_cycles = si.GetUIntValue("CDROM", "MaxSpeedupCycles", DEFAULT_CDROM_MAX_SPEEDUP_CYCLES);
 
   audio_backend =
     AudioStream::ParseBackendName(
@@ -377,7 +378,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
 
   dma_max_slice_ticks = si.GetIntValue("Hacks", "DMAMaxSliceTicks", DEFAULT_DMA_MAX_SLICE_TICKS);
   dma_halt_ticks = si.GetIntValue("Hacks", "DMAHaltTicks", DEFAULT_DMA_HALT_TICKS);
-  gpu_fifo_size = static_cast<u32>(si.GetIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE));
+  gpu_fifo_size = si.GetUIntValue("Hacks", "GPUFIFOSize", DEFAULT_GPU_FIFO_SIZE);
   gpu_max_run_ahead = si.GetIntValue("Hacks", "GPUMaxRunAhead", DEFAULT_GPU_MAX_RUN_AHEAD);
 
   bios_tty_logging = si.GetBoolValue("BIOS", "TTYLogging", false);
@@ -650,8 +651,9 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetBoolValue("CDROM", "LoadImageToRAM", cdrom_load_image_to_ram);
   si.SetBoolValue("CDROM", "LoadImagePatches", cdrom_load_image_patches);
   si.SetBoolValue("CDROM", "MuteCDAudio", cdrom_mute_cd_audio);
-  si.SetIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
-  si.SetIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
+  si.SetUIntValue("CDROM", "ReadSpeedup", cdrom_read_speedup);
+  si.SetUIntValue("CDROM", "SeekSpeedup", cdrom_seek_speedup);
+  si.SetUIntValue("CDROM", "MaxSpeedupCycles", cdrom_max_speedup_cycles);
 
   si.SetStringValue("Audio", "Backend", AudioStream::GetBackendName(audio_backend));
   si.SetStringValue("Audio", "Driver", audio_driver.c_str());

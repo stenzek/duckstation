@@ -275,6 +275,8 @@ void AdvancedSettingsWidget::addTweakOptions()
                        Settings::ParseCDROMMechVersionName, Settings::GetCDROMMechVersionName,
                        Settings::GetCDROMMechVersionDisplayName, static_cast<u8>(CDROMMechaconVersion::Count),
                        Settings::DEFAULT_CDROM_MECHACON_VERSION);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Speedup Read/Seek Cycles"), "CDROM",
+                         "MaxSpeedupCycles", 0, 1000000, Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), "CDROM", "RegionCheck", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM SubQ Skew"), "CDROM", "SubQSkew", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
@@ -317,10 +319,12 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
                          Settings::DEFAULT_CPU_FASTMEM_MODE); // Recompiler fastmem mode
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CDROM_MECHACON_VERSION); // CDROM Mechacon Version
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM Region Check
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // CDROM SubQ Skew
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Allow booting without SBI file
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);       // Enable GDB Server
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES); // CD-ROM Max Speedup Read/Seek Cycles
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // CDROM Region Check
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // CDROM SubQ Skew
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // Allow booting without SBI file
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // Enable GDB Server
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_GDB_SERVER_PORT); // GDB Server Port
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Export Shared Memory
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Enable PCDRV
@@ -349,6 +353,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CPU", "RecompilerBlockLinking");
   sif->DeleteValue("CPU", "FastmemMode");
   sif->DeleteValue("CDROM", "MechaconVersion");
+  sif->DeleteValue("CDROM", "MaxSpeedupCycles");
   sif->DeleteValue("CDROM", "RegionCheck");
   sif->DeleteValue("CDROM", "SubQSkew");
   sif->DeleteValue("CDROM", "AllowBootingWithoutSBIFile");

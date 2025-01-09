@@ -75,7 +75,7 @@ enum : u32
 
 static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
 
-static constexpr TickCount INSTANT_SEEK_OR_READ_TICKS = 30000;
+static constexpr TickCount MIN_SEEK_TICKS = 30000;
 
 enum class Interrupt : u8
 {
@@ -1568,7 +1568,7 @@ u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 {
   if (g_settings.cdrom_seek_speedup == 0)
-    return System::ScaleTicksToOverclock(INSTANT_SEEK_OR_READ_TICKS);
+    return System::ScaleTicksToOverclock(g_settings.cdrom_max_speedup_cycles);
 
   u32 ticks = 0;
 
@@ -1638,7 +1638,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
-    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, INSTANT_SEEK_OR_READ_TICKS);
+    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_SEEK_TICKS);
 
   if (s_state.drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
@@ -1667,7 +1667,7 @@ TickCount CDROM::GetTicksForPause()
     return 7000;
 
   if (g_settings.cdrom_read_speedup == 0 && CanUseReadSpeedup())
-    return System::ScaleTicksToOverclock(INSTANT_SEEK_OR_READ_TICKS);
+    return System::ScaleTicksToOverclock(g_settings.cdrom_max_speedup_cycles);
 
   const u32 sectors_per_track = GetSectorsPerTrack(s_state.current_lba);
   const TickCount ticks_per_read = GetTicksForRead();
@@ -2813,7 +2813,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   {
     DEV_COLOR_LOG(StrongCyan, "Completing seek instantly due to not passing target {}.",
                   LBAToMSFString(seek_lba - SUBQ_SECTOR_SKEW));
-    seek_time = INSTANT_SEEK_OR_READ_TICKS;
+    seek_time = MIN_SEEK_TICKS;
   }
   else
   {
@@ -3901,7 +3901,7 @@ void CDROM::CheckForSectorBufferReadComplete()
       CanUseReadSpeedup() && g_settings.cdrom_read_speedup == 0)
   {
     const TickCount remaining_time = s_state.drive_event.GetTicksUntilNextExecution();
-    const TickCount instant_ticks = System::ScaleTicksToOverclock(INSTANT_SEEK_OR_READ_TICKS);
+    const TickCount instant_ticks = System::ScaleTicksToOverclock(g_settings.cdrom_max_speedup_cycles);
     if (remaining_time > instant_ticks)
       s_state.drive_event.Schedule(instant_ticks);
   }
