@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "system.h"
@@ -4722,18 +4722,21 @@ void System::WarnAboutUnsafeSettings()
                       g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
                       g_settings.cpu_overclock_denominator);
       }
-      if (g_settings.cdrom_read_speedup > 1)
+      if (g_settings.cdrom_read_speedup != 1)
       {
-        append_format(
-          ICON_EMOJI_WARNING,
-          TRANSLATE_FS("System", "CD-ROM read speedup set to {}x (effective speed {}x). This may crash games."),
-          g_settings.cdrom_read_speedup, g_settings.cdrom_read_speedup * 2);
+        TinyString speed;
+        if (g_settings.cdrom_read_speedup == 0)
+          speed = TRANSLATE_SV("System", "Maximum");
+        else
+          speed.format("{}x", g_settings.cdrom_read_speedup);
+        append_format(ICON_EMOJI_WARNING,
+                      TRANSLATE_FS("System", "CD-ROM read speedup set to {}. This may crash games."), speed);
       }
       if (g_settings.cdrom_seek_speedup != 1)
       {
         TinyString speed;
         if (g_settings.cdrom_seek_speedup == 0)
-          speed = TRANSLATE_SV("System", "Instant");
+          speed = TRANSLATE_SV("System", "Maximum");
         else
           speed.format("{}x", g_settings.cdrom_seek_speedup);
         append_format(ICON_EMOJI_WARNING,

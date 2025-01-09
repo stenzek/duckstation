@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cdrom.h"
@@ -75,7 +75,7 @@ enum : u32
 
 static constexpr u8 INTERRUPT_REGISTER_MASK = 0x1F;
 
-static constexpr TickCount MIN_SEEK_TICKS = 30000;
+static constexpr TickCount INSTANT_SEEK_OR_READ_TICKS = 30000;
 
 enum class Interrupt : u8
 {
@@ -311,6 +311,7 @@ static void SendAsyncErrorResponse(u8 stat_bits = STAT_ERROR, u8 reason = 0x80);
 static void UpdateStatusRegister();
 static void UpdateInterruptRequest();
 static bool HasPendingDiscEvent();
+static bool CanUseReadSpeedup();
 
 static TickCount GetAckDelayForCommand(Command command);
 static TickCount GetTicksForSpinUp();
@@ -1469,6 +1470,12 @@ bool CDROM::HasPendingDiscEvent()
   return (s_state.drive_event.IsActive() && s_state.drive_event.GetTicksUntilNextExecution() <= 0);
 }
 
+bool CDROM::CanUseReadSpeedup()
+{
+  // Only use read speedup in 2X mode and when we're not playing/filtering XA.
+  return (!s_state.mode.cdda && !s_state.mode.xa_enable && s_state.mode.double_speed);
+}
+
 TickCount CDROM::GetAckDelayForCommand(Command command)
 {
   if (command == Command::Init)
@@ -1503,7 +1510,7 @@ TickCount CDROM::GetTicksForRead()
 {
   const TickCount tps = System::GetTicksPerSecond();
 
-  if (g_settings.cdrom_read_speedup > 1 && !s_state.mode.cdda && !s_state.mode.xa_enable && s_state.mode.double_speed)
+  if (g_settings.cdrom_read_speedup > 1 && CanUseReadSpeedup())
     return tps / (150 * g_settings.cdrom_read_speedup);
 
   return s_state.mode.double_speed ? (tps / 150) : (tps / 75);
@@ -1561,7 +1568,7 @@ u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 {
   if (g_settings.cdrom_seek_speedup == 0)
-    return System::ScaleTicksToOverclock(MIN_SEEK_TICKS);
+    return System::ScaleTicksToOverclock(INSTANT_SEEK_OR_READ_TICKS);
 
   u32 ticks = 0;
 
@@ -1631,7 +1638,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
   }
 
   if (g_settings.cdrom_seek_speedup > 1)
-    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_SEEK_TICKS);
+    ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, INSTANT_SEEK_OR_READ_TICKS);
 
   if (s_state.drive_state == DriveState::ChangingSpeedOrTOCRead && !ignore_speed_change)
   {
@@ -1658,6 +1665,9 @@ TickCount CDROM::GetTicksForPause()
 {
   if (!IsReadingOrPlaying())
     return 7000;
+
+  if (g_settings.cdrom_read_speedup == 0 && CanUseReadSpeedup())
+    return System::ScaleTicksToOverclock(INSTANT_SEEK_OR_READ_TICKS);
 
   const u32 sectors_per_track = GetSectorsPerTrack(s_state.current_lba);
   const TickCount ticks_per_read = GetTicksForRead();
@@ -2803,7 +2813,7 @@ void CDROM::BeginSeeking(bool logical, bool read_after_seek, bool play_after_see
   {
     DEV_COLOR_LOG(StrongCyan, "Completing seek instantly due to not passing target {}.",
                   LBAToMSFString(seek_lba - SUBQ_SECTOR_SKEW));
-    seek_time = MIN_SEEK_TICKS;
+    seek_time = INSTANT_SEEK_OR_READ_TICKS;
   }
   else
   {
@@ -3883,6 +3893,18 @@ void CDROM::CheckForSectorBufferReadComplete()
   // BFRD gets cleared on DMA completion.
   s_state.request_register.BFRD = (s_state.request_register.BFRD && sb.position < sb.size);
   s_state.status.DRQSTS = s_state.request_register.BFRD;
+
+  // Maximum/immediate read speedup. Wait for the data portion of the sector to be read.
+  if (s_state.drive_state == DriveState::Reading &&
+      sb.position >=
+        (s_state.mode.read_raw_sector ? (MODE2_HEADER_SIZE + DATA_SECTOR_OUTPUT_SIZE) : DATA_SECTOR_OUTPUT_SIZE) &&
+      CanUseReadSpeedup() && g_settings.cdrom_read_speedup == 0)
+  {
+    const TickCount remaining_time = s_state.drive_event.GetTicksUntilNextExecution();
+    const TickCount instant_ticks = System::ScaleTicksToOverclock(INSTANT_SEEK_OR_READ_TICKS);
+    if (remaining_time > instant_ticks)
+      s_state.drive_event.Schedule(instant_ticks);
+  }
 
   // Buffer complete?
   if (sb.position >= sb.size)

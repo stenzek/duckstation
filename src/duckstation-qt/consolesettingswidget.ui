@@ -207,6 +207,11 @@
           <string>10x (20x Speed)</string>
          </property>
         </item>
+        <item>
+         <property name="text">
+          <string>Maximum</string>
+         </property>
+        </item>
        </widget>
       </item>
       <item row="2" column="0">
@@ -221,11 +226,6 @@
         <property name="currentIndex">
          <number>1</number>
         </property>
-        <item>
-         <property name="text">
-          <string>Infinite/Instantaneous</string>
-         </property>
-        </item>
         <item>
          <property name="text">
           <string>None (Normal Speed)</string>
@@ -274,6 +274,11 @@
         <item>
          <property name="text">
           <string>10x</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Maximum</string>
          </property>
         </item>
        </widget>

@@ -311,6 +311,12 @@ static void DrawIntListSetting(SettingsInterface* bsi, const char* title, const 
                                float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
                                const char* tr_context = TR_CONTEXT);
+static void DrawIntListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+                               const char* key, int default_value, std::span<const char* const> options,
+                               bool translate_options, std::span<const int> values, bool enabled = true,
+                               float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                               ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
+                               const char* tr_context = TR_CONTEXT);
 static void DrawIntRangeSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                 const char* key, int default_value, int min_value, int max_value,
                                 const char* format = "%d", bool enabled = true,
@@ -2064,6 +2070,75 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
   }
 }
 
+void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title, const char* summary,
+                                      const char* section, const char* key, int default_value,
+                                      std::span<const char* const> options, bool translate_options,
+                                      std::span<const int> values, bool enabled, float height, ImFont* font,
+                                      ImFont* summary_font, const char* tr_context)
+{
+  static constexpr auto value_to_index = [](s32 value, const std::span<const int> values) {
+    for (size_t i = 0; i < values.size(); i++)
+    {
+      if (values[i] == value)
+        return static_cast<int>(i);
+    }
+
+    return -1;
+  };
+
+  DebugAssert(options.size() == values.size());
+
+  const bool game_settings = IsEditingGameSettings(bsi);
+
+  const std::optional<int> value =
+    bsi->GetOptionalIntValue(section, key, game_settings ? std::nullopt : std::optional<int>(default_value));
+  const int index = value.has_value() ? value_to_index(value.value(), values) : -1;
+  const char* value_text =
+    (value.has_value()) ?
+      ((index < 0 || static_cast<size_t>(index) >= options.size()) ?
+         FSUI_CSTR("Unknown") :
+         (translate_options ? Host::TranslateToCString(tr_context, options[index]) : options[index])) :
+      FSUI_CSTR("Use Global Setting");
+
+  if (MenuButtonWithValue(title, summary, value_text, enabled, height, font, summary_font))
+  {
+    ImGuiFullscreen::ChoiceDialogOptions cd_options;
+    cd_options.reserve(options.size() + 1);
+    if (game_settings)
+      cd_options.emplace_back(FSUI_STR("Use Global Setting"), !value.has_value());
+    for (size_t i = 0; i < options.size(); i++)
+    {
+      cd_options.emplace_back(translate_options ? Host::TranslateToString(tr_context, options[i]) :
+                                                  std::string(options[i]),
+                              (i == static_cast<size_t>(index)));
+    }
+    OpenChoiceDialog(title, false, std::move(cd_options),
+                     [game_settings, section = TinyString(section), key = TinyString(key),
+                      values](s32 index, const std::string& title, bool checked) {
+                       if (index >= 0)
+                       {
+                         auto lock = Host::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (game_settings)
+                         {
+                           if (index == 0)
+                             bsi->DeleteValue(section, key);
+                           else
+                             bsi->SetIntValue(section, key, values[index - 1]);
+                         }
+                         else
+                         {
+                           bsi->SetIntValue(section, key, values[index]);
+                         }
+
+                         SetSettingsChanged(bsi);
+                       }
+
+                       CloseChoiceDialog();
+                     });
+  }
+}
+
 void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                        const char* section, const char* key, int default_value, int min_value,
                                        int max_value, const char* format, bool enabled, float height, ImFont* font,
@@ -3468,11 +3543,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
     FSUI_NSTR("None (Double Speed)"), FSUI_NSTR("2x (Quad Speed)"), FSUI_NSTR("3x (6x Speed)"),
     FSUI_NSTR("4x (8x Speed)"),       FSUI_NSTR("5x (10x Speed)"),  FSUI_NSTR("6x (12x Speed)"),
     FSUI_NSTR("7x (14x Speed)"),      FSUI_NSTR("8x (16x Speed)"),  FSUI_NSTR("9x (18x Speed)"),
-    FSUI_NSTR("10x (20x Speed)"),
+    FSUI_NSTR("10x (20x Speed)"),     FSUI_NSTR("Maximum"),
   };
 
   static constexpr const std::array cdrom_seek_speeds = {
-    FSUI_NSTR("Infinite/Instantaneous"),
     FSUI_NSTR("None (Normal Speed)"),
     FSUI_NSTR("2x"),
     FSUI_NSTR("3x"),
@@ -3483,7 +3557,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
     FSUI_NSTR("8x"),
     FSUI_NSTR("9x"),
     FSUI_NSTR("10x"),
+    FSUI_NSTR("Maximum"),
   };
+
+  static constexpr std::array cdrom_read_seek_speed_values = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0};
 
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
@@ -3541,12 +3618,12 @@ void FullscreenUI::DrawConsoleSettingsPage()
     bsi, FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Read Speedup"),
     FSUI_CSTR(
       "Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others."),
-    "CDROM", "ReadSpeedup", 1, cdrom_read_speeds.data(), cdrom_read_speeds.size(), true, 1);
+    "CDROM", "ReadSpeedup", 1, cdrom_read_speeds, true, cdrom_read_seek_speed_values);
   DrawIntListSetting(
     bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "Seek Speedup"),
     FSUI_CSTR(
       "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others."),
-    "CDROM", "SeekSpeedup", 1, cdrom_seek_speeds.data(), cdrom_seek_speeds.size(), true);
+    "CDROM", "SeekSpeedup", 1, cdrom_seek_speeds, true, cdrom_read_seek_speed_values);
 
   DrawIntRangeSetting(
     bsi, FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Readahead Sectors"),
@@ -8122,6 +8199,7 @@ TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Disables dithering and uses the full 8 bits per channel of color information.");
 TRANSLATE_NOOP("FullscreenUI", "Disc {} | {}");
 TRANSLATE_NOOP("FullscreenUI", "Discord Server");
+TRANSLATE_NOOP("FullscreenUI", "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
@@ -8244,7 +8322,6 @@ TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game direc
 TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
 TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.");
 TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
-TRANSLATE_NOOP("FullscreenUI", "Infinite/Instantaneous");
 TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
 TRANSLATE_NOOP("FullscreenUI", "Input Sources");
 TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' loaded.");
@@ -8293,6 +8370,7 @@ TRANSLATE_NOOP("FullscreenUI", "Logs messages to the debug console where support
 TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Macro Button {}");
 TRANSLATE_NOOP("FullscreenUI", "Makes games run closer to their console framerate, at a small cost to performance.");
+TRANSLATE_NOOP("FullscreenUI", "Maximum");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Busy");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Port {}");
@@ -8567,6 +8645,7 @@ TRANSLATE_NOOP("FullscreenUI", "Unknown File Size");
 TRANSLATE_NOOP("FullscreenUI", "Unlimited");
 TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");
+TRANSLATE_NOOP("FullscreenUI", "Use DualShock/DualSense Button Icons");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
 TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
 TRANSLATE_NOOP("FullscreenUI", "Use Old MDEC Routines");

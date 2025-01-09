@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -29,8 +29,10 @@
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QSpinBox>
+
 #include <memory>
 #include <optional>
+#include <span>
 #include <type_traits>
 
 namespace SettingWidgetBinder {
@@ -787,6 +789,57 @@ static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
         Host::CommitBaseSettingChanges();
         g_emu_thread->applySettings();
       });
+  }
+}
+
+template<typename WidgetType>
+static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, std::string section, std::string key,
+                                   int default_value, std::span<const int> values)
+{
+  using Accessor = SettingAccessor<WidgetType>;
+
+  static constexpr auto value_to_index = [](s32 value, const std::span<const int> values) {
+    for (size_t i = 0; i < values.size(); i++)
+    {
+      if (values[i] == value)
+        return static_cast<int>(i);
+    }
+
+    return -1;
+  };
+
+  const s32 value = Host::GetBaseIntSettingValue(section.c_str(), key.c_str(), static_cast<s32>(default_value));
+
+  if (sif)
+  {
+    Accessor::makeNullableInt(widget, value);
+
+    int sif_value;
+    if (sif->GetIntValue(section.c_str(), key.c_str(), &sif_value))
+      Accessor::setNullableIntValue(widget, value_to_index(sif_value, values));
+    else
+      Accessor::setNullableIntValue(widget, std::nullopt);
+
+    Accessor::connectValueChanged(widget, [sif, widget, section = std::move(section), key = std::move(key), values]() {
+      if (std::optional<int> new_value = Accessor::getNullableIntValue(widget); new_value.has_value())
+        sif->SetIntValue(section.c_str(), key.c_str(), values[new_value.value()]);
+      else
+        sif->DeleteValue(section.c_str(), key.c_str());
+
+      QtHost::SaveGameSettings(sif, true);
+      g_emu_thread->reloadGameSettings();
+    });
+  }
+  else
+  {
+    Accessor::setIntValue(widget, value_to_index(value, values));
+
+    Accessor::connectValueChanged(widget, [widget, section = std::move(section), key = std::move(key), values]() {
+      const int new_value = Accessor::getIntValue(widget);
+      Host::SetBaseIntSettingValue(section.c_str(), key.c_str(), values[new_value]);
+      Host::CommitBaseSettingChanges();
+      g_emu_thread->applySettings();
+    });
   }
 }
 
