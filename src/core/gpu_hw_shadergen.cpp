@@ -733,13 +733,12 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   GPUTextureFilter texture_filtering, bool upscaled, bool msaa, bool per_sample_shading, bool uv_limits,
   bool force_round_texcoords, bool true_color, bool dithering, bool scaled_dithering, bool disable_color_perspective,
   bool interlacing, bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth,
-  bool rov_depth_test) const
+  bool rov_depth_test, bool rov_depth_write) const
 {
   DebugAssert(!true_color || !dithering); // Should not be doing dithering+true color.
 
-  // TODO: don't write depth for shader blend
   DebugAssert(transparency == GPUTransparencyMode::Disabled || render_mode == GPU_HW::BatchRenderMode::ShaderBlend);
-  DebugAssert(!rov_depth_test || (use_rov && use_rov_depth));
+  DebugAssert((!rov_depth_test && !rov_depth_write) || (use_rov && use_rov_depth));
 
   const bool textured = (texture_mode != GPU_HW::BatchTextureMode::Disabled);
   const bool palette =
@@ -773,6 +772,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   DefineMacro(ss, "USE_ROV", use_rov);
   DefineMacro(ss, "USE_ROV_DEPTH", use_rov_depth);
   DefineMacro(ss, "ROV_DEPTH_TEST", rov_depth_test);
+  DefineMacro(ss, "ROV_DEPTH_WRITE", rov_depth_write);
   DefineMacro(ss, "USE_DUAL_SOURCE", use_dual_source);
   DefineMacro(ss, "WRITE_MASK_AS_DEPTH", write_mask_as_depth);
   DefineMacro(ss, "FORCE_ROUND_TEXCOORDS", force_round_texcoords);
@@ -1124,7 +1124,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       if (!discarded)
       {
         ROV_STORE(rov_color, fragpos, o_col0);
-        #if USE_ROV_DEPTH
+        #if USE_ROV_DEPTH && ROV_DEPTH_WRITE
           ROV_STORE(rov_depth, fragpos, float4(v_pos.z, 0.0, 0.0, 0.0));
         #endif
       }

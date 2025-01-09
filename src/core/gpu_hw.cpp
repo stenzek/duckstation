@@ -1276,13 +1276,16 @@ bool GPU_HW::CompilePipelines(Error* error)
                   texture_mode - (sprite ? static_cast<u8>(BatchTextureMode::SpriteStart) : 0));
                 const bool use_rov =
                   (render_mode == static_cast<u8>(BatchRenderMode::ShaderBlend) && m_use_rov_for_shader_blend);
+                const bool rov_depth_test = (use_rov && depth_test != 0);
+                const bool rov_depth_write = (rov_depth_test && static_cast<GPUTransparencyMode>(transparency_mode) ==
+                                                                  GPUTransparencyMode::Disabled);
                 const std::string fs = shadergen.GenerateBatchFragmentShader(
                   static_cast<BatchRenderMode>(render_mode), static_cast<GPUTransparencyMode>(transparency_mode),
                   shader_texmode, sprite ? m_sprite_texture_filtering : m_texture_filtering, upscaled, msaa,
                   per_sample_shading, uv_limits, !sprite && force_round_texcoords, true_color,
                   ConvertToBoolUnchecked(dithering), scaled_dithering, disable_color_perspective,
                   ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask), m_write_mask_as_depth,
-                  use_rov, needs_rov_depth, (depth_test != 0));
+                  use_rov, needs_rov_depth, rov_depth_test, rov_depth_write);
 
                 if (!(batch_fragment_shaders[depth_test][render_mode][transparency_mode][texture_mode][check_mask]
                                             [dithering][interlacing] = g_gpu_device->CreateShader(
