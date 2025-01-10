@@ -1456,6 +1456,12 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
       dest_si->CopyBoolValue(src_si, "InputSources",
                              InputManager::InputSourceToString(static_cast<InputSourceType>(type)));
     }
+
+#ifdef ENABLE_SDL
+    // I hate this, but there isn't a better location for it...
+    if (dest_si->GetBoolValue("InputSources", "SDL"))
+      InputSource::CopySDLSourceSettings(dest_si, src_si);
+#endif
   }
 
   for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)

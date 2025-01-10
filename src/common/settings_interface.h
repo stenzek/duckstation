@@ -267,4 +267,13 @@ public:
     else
       DeleteValue(section, key);
   }
+
+  // NOTE: Writes values as strings.
+  ALWAYS_INLINE void CopySection(const SettingsInterface& si, const char* section)
+  {
+    ClearSection(section);
+
+    for (const auto& [key, value] : si.GetKeyValueList(section))
+      SetStringValue(section, key.c_str(), value.c_str());
+  }
 };

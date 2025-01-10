@@ -50,6 +50,8 @@ public:
 
   static bool IsHandledInputEvent(const SDL_Event* ev);
 
+  static void CopySettings(SettingsInterface& dest_si, const SettingsInterface& src_si);
+
   static bool ALLOW_EVENT_POLLING;
 
 private:

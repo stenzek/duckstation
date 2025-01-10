@@ -248,11 +248,22 @@ void SDLInputSource::LoadSettings(const SettingsInterface& si)
 #endif
 }
 
+void InputSource::CopySDLSourceSettings(SettingsInterface* dest_si, const SettingsInterface& src_si)
+{
+  for (u32 i = 0; i < SDLInputSource::MAX_LED_COLORS; i++)
+    dest_si->CopyStringValue(src_si, "SDLExtra", TinyString::from_format("Player{}LED", i).c_str());
+
+  dest_si->CopyBoolValue(src_si, "InputSources", "SDLControllerEnhancedMode");
+  dest_si->CopyBoolValue(src_si, "InputSources", "SDLPS5PlayerLED");
+  dest_si->CopyBoolValue(src_si, "InputSources", "SDLTouchpadAsPointer");
+  dest_si->CopySection(src_si, "SDLHints");
+}
+
 u32 SDLInputSource::GetRGBForPlayerId(const SettingsInterface& si, u32 player_id)
 {
-  return ParseRGBForPlayerId(
-    si.GetStringValue("SDLExtra", fmt::format("Player{}LED", player_id).c_str(), s_sdl_default_led_colors[player_id]),
-    player_id);
+  return ParseRGBForPlayerId(si.GetStringValue("SDLExtra", TinyString::from_format("Player{}LED", player_id).c_str(),
+                                               s_sdl_default_led_colors[player_id]),
+                             player_id);
 }
 
 u32 SDLInputSource::ParseRGBForPlayerId(std::string_view str, u32 player_id)
