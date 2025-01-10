@@ -508,9 +508,9 @@ struct PixelVectors
 template<bool texture_enable, bool raw_texture_enable, bool transparency_enable>
 ALWAYS_INLINE_RELEASE static void ShadePixel(const PixelVectors<texture_enable>& RESTRICT pv,
                                              GPUTextureMode texture_mode, GPUTransparencyMode transparency_mode,
-                                             u32 start_x, u32 y, GSVectorNi vertex_color_rg, GSVectorNi vertex_color_ba,
-                                             GSVectorNi texcoord_x, GSVectorNi texcoord_y, GSVectorNi preserve_mask,
-                                             GSVectorNi dither)
+                                             bool mask_bit_test, u32 start_x, u32 y, GSVectorNi vertex_color_rg,
+                                             GSVectorNi vertex_color_ba, GSVectorNi texcoord_x, GSVectorNi texcoord_y,
+                                             GSVectorNi preserve_mask, GSVectorNi dither)
 {
   static constexpr GSVectorNi coord_mask_x = GSVectorNi::cxpr(VRAM_WIDTH_MASK);
   static constexpr GSVectorNi coord_mask_y = GSVectorNi::cxpr(VRAM_HEIGHT_MASK);
@@ -611,84 +611,94 @@ ALWAYS_INLINE_RELEASE static void ShadePixel(const PixelVectors<texture_enable>&
     color = RG_BAToRGB5A1(rg, ba);
   }
 
-  GSVectorNi bg_color = LoadVector(start_x, y);
-
-  if constexpr (transparency_enable)
+  // Can we store directly?
+  if (!mask_bit_test && !transparency_enable && preserve_mask.allfalse())
   {
-    [[maybe_unused]] GSVectorNi transparent_mask;
-    if constexpr (texture_enable)
-    {
-      // Compute transparent_mask, ffff per lane if transparent otherwise 0000
-      transparent_mask = color.sra16<15>();
-    }
-
-    // TODO: We don't need to OR color here with 0x8000 for textures.
-    // 0x8000 is added to match serial path.
-
-    GSVectorNi blended_color;
-    switch (transparency_mode)
-    {
-      case GPUTransparencyMode::HalfBackgroundPlusHalfForeground:
-      {
-        const GSVectorNi fg_bits = color | GSVectorNi::cxpr(0x8000u);
-        const GSVectorNi bg_bits = bg_color | GSVectorNi::cxpr(0x8000u);
-        const GSVectorNi res = fg_bits.add32(bg_bits).sub32((fg_bits ^ bg_bits) & GSVectorNi::cxpr(0x0421u)).srl32<1>();
-        blended_color = res & GSVectorNi::cxpr(0xffff);
-      }
-      break;
-
-      case GPUTransparencyMode::BackgroundPlusForeground:
-      {
-        const GSVectorNi fg_bits = color | GSVectorNi::cxpr(0x8000u);
-        const GSVectorNi bg_bits = bg_color & GSVectorNi::cxpr(0x7FFFu);
-        const GSVectorNi sum = fg_bits.add32(bg_bits);
-        const GSVectorNi carry =
-          (sum.sub32((fg_bits ^ bg_bits) & GSVectorNi::cxpr(0x8421u))) & GSVectorNi::cxpr(0x8420u);
-        const GSVectorNi res = sum.sub32(carry) | carry.sub32(carry.srl32<5>());
-        blended_color = res & GSVectorNi::cxpr(0xffff);
-      }
-      break;
-
-      case GPUTransparencyMode::BackgroundMinusForeground:
-      {
-        const GSVectorNi bg_bits = bg_color | GSVectorNi::cxpr(0x8000u);
-        const GSVectorNi fg_bits = color & GSVectorNi::cxpr(0x7FFFu);
-        const GSVectorNi diff = bg_bits.sub32(fg_bits).add32(GSVectorNi::cxpr(0x108420u));
-        const GSVectorNi borrow =
-          diff.sub32((bg_bits ^ fg_bits) & GSVectorNi::cxpr(0x108420u)) & GSVectorNi::cxpr(0x108420u);
-        const GSVectorNi res = diff.sub32(borrow) & borrow.sub32(borrow.srl32<5>());
-        blended_color = res & GSVectorNi::cxpr(0xffff);
-      }
-      break;
-
-      case GPUTransparencyMode::BackgroundPlusQuarterForeground:
-      default:
-      {
-        const GSVectorNi bg_bits = bg_color & GSVectorNi::cxpr(0x7FFFu);
-        const GSVectorNi fg_bits =
-          ((color | GSVectorNi::cxpr(0x8000)).srl32<2>() & GSVectorNi::cxpr(0x1CE7u)) | GSVectorNi::cxpr(0x8000u);
-        const GSVectorNi sum = fg_bits.add32(bg_bits);
-        const GSVectorNi carry = sum.sub32((fg_bits ^ bg_bits) & GSVectorNi::cxpr(0x8421u)) & GSVectorNi::cxpr(0x8420u);
-        const GSVectorNi res = sum.sub32(carry) | carry.sub32(carry.srl32<5>());
-        blended_color = res & GSVectorNi::cxpr(0xffff);
-      }
-      break;
-    }
-
-    // select blended pixels for transparent pixels, otherwise consider opaque
-    if constexpr (texture_enable)
-      color = color.blend8(blended_color, transparent_mask);
-    else
-      color = blended_color & GSVectorNi::cxpr(0x7fff);
+    color = color | pv.mask_or;
   }
+  else
+  {
+    GSVectorNi bg_color = LoadVector(start_x, y);
 
-  GSVectorNi mask_bits_set = bg_color & pv.mask_and; // 8000 if masked else 0000
-  mask_bits_set = mask_bits_set.sra16<15>();         // ffff if masked else 0000
-  preserve_mask = preserve_mask | mask_bits_set;     // ffff if preserved else 0000
+    if constexpr (transparency_enable)
+    {
+      [[maybe_unused]] GSVectorNi transparent_mask;
+      if constexpr (texture_enable)
+      {
+        // Compute transparent_mask, ffff per lane if transparent otherwise 0000
+        transparent_mask = color.sra16<15>();
+      }
 
-  bg_color = bg_color & preserve_mask;
-  color = (color | pv.mask_or).andnot(preserve_mask);
-  color = color | bg_color;
+      // TODO: We don't need to OR color here with 0x8000 for textures.
+      // 0x8000 is added to match serial path.
+
+      GSVectorNi blended_color;
+      switch (transparency_mode)
+      {
+        case GPUTransparencyMode::HalfBackgroundPlusHalfForeground:
+        {
+          const GSVectorNi fg_bits = color | GSVectorNi::cxpr(0x8000u);
+          const GSVectorNi bg_bits = bg_color | GSVectorNi::cxpr(0x8000u);
+          const GSVectorNi res =
+            fg_bits.add32(bg_bits).sub32((fg_bits ^ bg_bits) & GSVectorNi::cxpr(0x0421u)).srl32<1>();
+          blended_color = res & GSVectorNi::cxpr(0xffff);
+        }
+        break;
+
+        case GPUTransparencyMode::BackgroundPlusForeground:
+        {
+          const GSVectorNi fg_bits = color | GSVectorNi::cxpr(0x8000u);
+          const GSVectorNi bg_bits = bg_color & GSVectorNi::cxpr(0x7FFFu);
+          const GSVectorNi sum = fg_bits.add32(bg_bits);
+          const GSVectorNi carry =
+            (sum.sub32((fg_bits ^ bg_bits) & GSVectorNi::cxpr(0x8421u))) & GSVectorNi::cxpr(0x8420u);
+          const GSVectorNi res = sum.sub32(carry) | carry.sub32(carry.srl32<5>());
+          blended_color = res & GSVectorNi::cxpr(0xffff);
+        }
+        break;
+
+        case GPUTransparencyMode::BackgroundMinusForeground:
+        {
+          const GSVectorNi bg_bits = bg_color | GSVectorNi::cxpr(0x8000u);
+          const GSVectorNi fg_bits = color & GSVectorNi::cxpr(0x7FFFu);
+          const GSVectorNi diff = bg_bits.sub32(fg_bits).add32(GSVectorNi::cxpr(0x108420u));
+          const GSVectorNi borrow =
+            diff.sub32((bg_bits ^ fg_bits) & GSVectorNi::cxpr(0x108420u)) & GSVectorNi::cxpr(0x108420u);
+          const GSVectorNi res = diff.sub32(borrow) & borrow.sub32(borrow.srl32<5>());
+          blended_color = res & GSVectorNi::cxpr(0xffff);
+        }
+        break;
+
+        case GPUTransparencyMode::BackgroundPlusQuarterForeground:
+        default:
+        {
+          const GSVectorNi bg_bits = bg_color & GSVectorNi::cxpr(0x7FFFu);
+          const GSVectorNi fg_bits =
+            ((color | GSVectorNi::cxpr(0x8000)).srl32<2>() & GSVectorNi::cxpr(0x1CE7u)) | GSVectorNi::cxpr(0x8000u);
+          const GSVectorNi sum = fg_bits.add32(bg_bits);
+          const GSVectorNi carry =
+            sum.sub32((fg_bits ^ bg_bits) & GSVectorNi::cxpr(0x8421u)) & GSVectorNi::cxpr(0x8420u);
+          const GSVectorNi res = sum.sub32(carry) | carry.sub32(carry.srl32<5>());
+          blended_color = res & GSVectorNi::cxpr(0xffff);
+        }
+        break;
+      }
+
+      // select blended pixels for transparent pixels, otherwise consider opaque
+      if constexpr (texture_enable)
+        color = color.blend8(blended_color, transparent_mask);
+      else
+        color = blended_color & GSVectorNi::cxpr(0x7fff);
+    }
+
+    GSVectorNi mask_bits_set = bg_color & pv.mask_and; // 8000 if masked else 0000
+    mask_bits_set = mask_bits_set.sra16<15>();         // ffff if masked else 0000
+    preserve_mask = preserve_mask | mask_bits_set;     // ffff if preserved else 0000
+
+    bg_color = bg_color & preserve_mask;
+    color = (color | pv.mask_or).andnot(preserve_mask);
+    color = color | bg_color;
+  }
 
   StoreVector(start_x, y, color);
 }
@@ -710,6 +720,8 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
 
   const PixelVectors<texture_enable> pv(cmd);
   const u32 width = cmd->width;
+  const GPUTransparencyMode transparency_mode = cmd->draw_mode.transparency_mode;
+  const bool mask_bit_test = cmd->check_mask_before_draw;
 
 #ifdef CHECK_VECTOR
   BACKUP_VRAM();
@@ -741,7 +753,7 @@ static void DrawRectangle(const GPUBackendDrawRectangleCommand* RESTRICT cmd)
         if (!preserve_mask.alltrue())
         {
           ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(
-            pv, cmd->draw_mode.texture_mode, cmd->draw_mode.transparency_mode, x, draw_y, rg, ba, row_texcoord_x,
+            pv, cmd->draw_mode.texture_mode, transparency_mode, mask_bit_test, x, draw_y, rg, ba, row_texcoord_x,
             texcoord_y, preserve_mask, GSVectorNi::zero());
         }
 
@@ -1211,6 +1223,9 @@ ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* RESTRICT
   GSVectorNi xvec = GSVectorNi(current_x).add32(SPAN_OFFSET_VEC);
   GSVectorNi wvec = GSVectorNi(width).sub32(SPAN_WIDTH_VEC);
 
+  const GPUTransparencyMode transparency_mode = cmd->draw_mode.transparency_mode;
+  const bool mask_bit_test = cmd->check_mask_before_draw;
+
   for (s32 count = (width + (PIXELS_PER_VEC - 1)) / PIXELS_PER_VEC; count > 0; --count)
   {
     // R000 | R000 | R000 | R000
@@ -1233,7 +1248,7 @@ ALWAYS_INLINE_RELEASE static void DrawSpan(const GPUBackendDrawCommand* RESTRICT
     if (!preserve_mask.alltrue())
     {
       ShadePixel<texture_enable, raw_texture_enable, transparency_enable>(
-        tv, cmd->draw_mode.texture_mode, cmd->draw_mode.transparency_mode, static_cast<u32>(current_x),
+        tv, cmd->draw_mode.texture_mode, transparency_mode, mask_bit_test, static_cast<u32>(current_x),
         static_cast<u32>(y), rg, b, u, v, preserve_mask, dither);
     }
 
