@@ -910,11 +910,11 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
   for (u32 macro_button_index = 0; macro_button_index < NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
   {
     const std::vector<std::string> bindings(
-      si.GetStringList(section.c_str(), fmt::format("Macro{}", macro_button_index + 1u).c_str()));
+      si.GetStringList(section.c_str(), TinyString::from_format("Macro{}", macro_button_index + 1u).c_str()));
     if (!bindings.empty())
     {
-      const float deadzone =
-        si.GetFloatValue(section.c_str(), fmt::format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
+      const float deadzone = si.GetFloatValue(
+        section.c_str(), TinyString::from_format("Macro{}Deadzone", macro_button_index + 1).c_str(), 0.0f);
       for (const std::string& binding : bindings)
       {
         // We currently can't use chords with a deadzone.
@@ -1479,12 +1479,17 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
     if (copy_pad_bindings)
     {
       for (const Controller::ControllerBindingInfo& bi : info->bindings)
+      {
         dest_si->CopyStringListValue(src_si, section.c_str(), bi.name);
+        dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("{}Scale", bi.name));
+        dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("{}Deadzone", bi.name));
+      }
 
       for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
       {
         dest_si->CopyStringListValue(src_si, section.c_str(), TinyString::from_format("Macro{}", i + 1));
         dest_si->CopyStringValue(src_si, section.c_str(), TinyString::from_format("Macro{}Binds", i + 1));
+        dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("Macro{}Deadzone", i + 1));
         dest_si->CopyFloatValue(src_si, section.c_str(), TinyString::from_format("Macro{}Pressure", i + 1));
         dest_si->CopyUIntValue(src_si, section.c_str(), TinyString::from_format("Macro{}Frequency", i + 1));
         dest_si->CopyBoolValue(src_si, section.c_str(), TinyString::from_format("Macro{}Toggle", i + 1));
