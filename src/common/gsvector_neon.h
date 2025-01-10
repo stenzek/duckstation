@@ -9,6 +9,7 @@
 
 #define GSVECTOR_HAS_FAST_INT_SHUFFLE8 1
 #define GSVECTOR_HAS_SRLV 1
+#define GSVECTOR_HAS_TBL2 1
 
 class GSVector2;
 class GSVector2i;
@@ -1441,23 +1442,18 @@ public:
   template<int mask>
   ALWAYS_INLINE GSVector4i blend16(const GSVector4i& a) const
   {
-    static constexpr const uint16_t _mask[8] = {
-      ((mask) & (1 << 0)) ? (uint16_t)-1 : 0x0, ((mask) & (1 << 1)) ? (uint16_t)-1 : 0x0,
-      ((mask) & (1 << 2)) ? (uint16_t)-1 : 0x0, ((mask) & (1 << 3)) ? (uint16_t)-1 : 0x0,
-      ((mask) & (1 << 4)) ? (uint16_t)-1 : 0x0, ((mask) & (1 << 5)) ? (uint16_t)-1 : 0x0,
-      ((mask) & (1 << 6)) ? (uint16_t)-1 : 0x0, ((mask) & (1 << 7)) ? (uint16_t)-1 : 0x0};
-    return GSVector4i(
-      vreinterpretq_s32_u16(vbslq_u16(vld1q_u16(_mask), vreinterpretq_u16_s32(a.v4s), vreinterpretq_u16_s32(v4s))));
+    return GSVector4i(vreinterpretq_s32_s16(__builtin_shufflevector(
+      vreinterpretq_s16_s32(v4s), vreinterpretq_s16_s32(a.v4s), ((mask & 0x01) == 0) ? 0 : 8,
+      ((mask & 0x02) == 0) ? 1 : 9, ((mask & 0x04) == 0) ? 2 : 10, ((mask & 0x08) == 0) ? 3 : 11,
+      ((mask & 0x10) == 0) ? 4 : 12, ((mask & 0x20) == 0) ? 5 : 13, ((mask & 0x40) == 0) ? 6 : 14,
+      ((mask & 0x80) == 0) ? 7 : 15)));
   }
 
   template<int mask>
   ALWAYS_INLINE GSVector4i blend32(const GSVector4i& v) const
   {
-    constexpr int bit3 = ((mask & 8) * 3) << 3;
-    constexpr int bit2 = ((mask & 4) * 3) << 2;
-    constexpr int bit1 = ((mask & 2) * 3) << 1;
-    constexpr int bit0 = (mask & 1) * 3;
-    return blend16<bit3 | bit2 | bit1 | bit0>(v);
+    return GSVector4i(__builtin_shufflevector(v4s, v.v4s, ((mask & 1) == 0) ? 0 : 4, ((mask & 2) == 0) ? 1 : 5,
+                                              ((mask & 4) == 0) ? 2 : 6, ((mask & 8) == 0) ? 3 : 7));
   }
 
   ALWAYS_INLINE GSVector4i blend(const GSVector4i& v, const GSVector4i& mask) const
@@ -2176,6 +2172,13 @@ public:
   ALWAYS_INLINE s64 extract64() const
   {
     return vgetq_lane_s64(vreinterpretq_s64_s32(v4s), i);
+  }
+
+  ALWAYS_INLINE GSVector4i tbl2(const GSVector4i& a, const GSVector4i& b, const GSVector4i& idx)
+  {
+    return GSVector4i(vreinterpretq_s32_u8(
+      vqtbx2q_u8(vreinterpretq_u8_s32(v4s), uint8x16x2_t{vreinterpretq_u8_s32(a.v4s), vreinterpretq_u8_s32(b.v4s)},
+                 vreinterpretq_u8_s32(idx.v4s))));
   }
 
   ALWAYS_INLINE static GSVector4i loadnt(const void* p)
