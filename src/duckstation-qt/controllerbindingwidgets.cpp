@@ -272,11 +272,12 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
   QMenu menu(this);
   bool added = false;
 
-  for (const auto& [identifier, device_name] : g_emu_thread->getInputDeviceListModel()->getDeviceList())
+  for (const InputDeviceListModel::Device& dev : g_emu_thread->getInputDeviceListModel()->getDeviceList())
   {
     // we set it as data, because the device list could get invalidated while the menu is up
-    QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(identifier).arg(device_name));
-    action->setData(identifier);
+    QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(dev.identifier).arg(dev.display_name));
+    action->setIcon(InputDeviceListModel::getIconForKey(dev.key));
+    action->setData(dev.identifier);
     connect(action, &QAction::triggered, this,
             [this, action]() { doDeviceAutomaticBinding(action->data().toString()); });
     added = true;

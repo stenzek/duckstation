@@ -140,6 +140,7 @@ void QtHost::RegisterTypes()
   qRegisterMetaType<RenderAPI>("RenderAPI");
   qRegisterMetaType<GPURenderer>("GPURenderer");
   qRegisterMetaType<InputBindingKey>("InputBindingKey");
+  qRegisterMetaType<InputDeviceListModel::Device>("InputDeviceListModel::Device");
   qRegisterMetaType<std::string>("std::string");
   qRegisterMetaType<std::vector<std::pair<std::string, std::string>>>(
     "std::vector<std::pair<std::string, std::string>>");
@@ -2007,6 +2008,16 @@ InputDeviceListModel::InputDeviceListModel(QObject* parent) : QAbstractListModel
 
 InputDeviceListModel::~InputDeviceListModel() = default;
 
+QIcon InputDeviceListModel::getIconForKey(const InputBindingKey& key)
+{
+  if (key.source_type == InputSourceType::Keyboard)
+    return QIcon::fromTheme("keyboard-line");
+  else if (key.source_type == InputSourceType::Pointer)
+    return QIcon::fromTheme("mouse-line");
+  else
+    return QIcon::fromTheme("controller-line");
+}
+
 int InputDeviceListModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
   return m_devices.size();
@@ -2018,11 +2029,31 @@ QVariant InputDeviceListModel::data(const QModelIndex& index, int role /*= Qt::D
   if (index.column() != 0 || row < 0 || static_cast<qsizetype>(row) >= m_devices.size())
     return QVariant();
 
-  const auto& dev = m_devices[static_cast<qsizetype>(row)];
   if (role == Qt::DisplayRole)
-    return QStringLiteral("%1: %2").arg(dev.first).arg(dev.second);
+  {
+    const auto& dev = m_devices[static_cast<qsizetype>(row)];
+    const InputBindingKey key = dev.key;
+
+    // don't display device names for implicit keyboard/mouse
+    if (key.source_type == InputSourceType::Keyboard ||
+        (key.source_type == InputSourceType::Pointer && !InputManager::IsUsingRawInput()))
+    {
+      return dev.display_name;
+    }
+    else
+    {
+      return QStringLiteral("%1\n%2").arg(dev.identifier).arg(dev.display_name);
+    }
+  }
+  else if (role == Qt::DecorationRole)
+  {
+    const auto& dev = m_devices[static_cast<qsizetype>(row)];
+    return getIconForKey(dev.key);
+  }
   else
+  {
     return QVariant();
+  }
 }
 
 void InputDeviceListModel::enumerateDevices()
@@ -2035,7 +2066,7 @@ void InputDeviceListModel::enumerateDevices()
   DeviceList new_devices;
   new_devices.reserve(devices.size());
   for (const auto& [key, identifier, device_name] : devices)
-    new_devices.emplace_back(QString::fromStdString(identifier), QString::fromStdString(device_name));
+    new_devices.emplace_back(key, QString::fromStdString(identifier), QString::fromStdString(device_name));
 
   QStringList new_motors;
   new_motors.reserve(motors.size());
@@ -2059,28 +2090,28 @@ void InputDeviceListModel::resetLists(const DeviceList& devices, const QStringLi
   endResetModel();
 }
 
-void InputDeviceListModel::onDeviceConnected(const QString& identifier, const QString& device_name,
-                                             const QStringList& vibration_motors)
+void InputDeviceListModel::onDeviceConnected(const InputBindingKey& key, const QString& identifier,
+                                             const QString& device_name, const QStringList& vibration_motors)
 {
   for (const auto& it : m_devices)
   {
-    if (it.first == identifier)
+    if (it.identifier == identifier)
       return;
   }
 
   const int index = static_cast<int>(m_devices.size());
   beginInsertRows(QModelIndex(), index, index);
-  m_devices.emplace_back(identifier, device_name);
+  m_devices.emplace_back(key, identifier, device_name);
   endInsertRows();
 
   m_vibration_motors.append(vibration_motors);
 }
 
-void InputDeviceListModel::onDeviceDisconnected(const QString& identifier)
+void InputDeviceListModel::onDeviceDisconnected(const InputBindingKey& key, const QString& identifier)
 {
   for (qsizetype i = 0; i < m_devices.size(); i++)
   {
-    if (m_devices[i].first == identifier)
+    if (m_devices[i].identifier == identifier)
     {
       const int index = static_cast<int>(i);
       beginRemoveRows(QModelIndex(), index, index);
@@ -2117,10 +2148,10 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
     }
   }
 
-  QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), "onDeviceConnected", Qt::QueuedConnection,
-                            Q_ARG(const QString&, QtUtils::StringViewToQString(identifier)),
-                            Q_ARG(const QString&, QtUtils::StringViewToQString(device_name)),
-                            Q_ARG(const QStringList&, vibration_motor_list));
+  QMetaObject::invokeMethod(
+    g_emu_thread->getInputDeviceListModel(), "onDeviceConnected", Qt::QueuedConnection,
+    Q_ARG(const InputBindingKey&, key), Q_ARG(const QString&, QtUtils::StringViewToQString(identifier)),
+    Q_ARG(const QString&, QtUtils::StringViewToQString(device_name)), Q_ARG(const QStringList&, vibration_motor_list));
 
   if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {
@@ -2133,6 +2164,7 @@ void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifi
 void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
   QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), "onDeviceDisconnected", Qt::QueuedConnection,
+                            Q_ARG(const InputBindingKey&, key),
                             Q_ARG(const QString&, QtUtils::StringViewToQString(identifier)));
 
   if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&

@@ -266,7 +266,14 @@ class InputDeviceListModel final : public QAbstractListModel
   Q_OBJECT
 
 public:
-  using DeviceList = QList<QPair<QString, QString>>;
+  struct Device
+  {
+    InputBindingKey key;
+    QString identifier;
+    QString display_name;
+  };
+
+  using DeviceList = QList<Device>;
 
   InputDeviceListModel(QObject* parent = nullptr);
   ~InputDeviceListModel() override;
@@ -275,6 +282,8 @@ public:
   ALWAYS_INLINE const DeviceList& getDeviceList() const { return m_devices; }
   ALWAYS_INLINE const QStringList& getVibrationMotorList() const { return m_vibration_motors; }
 
+  static QIcon getIconForKey(const InputBindingKey& key);
+
   int rowCount(const QModelIndex& parent = QModelIndex()) const override;
   QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
@@ -282,8 +291,9 @@ public:
   void enumerateDevices();
 
 public Q_SLOTS:
-  void onDeviceConnected(const QString& identifier, const QString& device_name, const QStringList& vibration_motors);
-  void onDeviceDisconnected(const QString& identifier);
+  void onDeviceConnected(const InputBindingKey& key, const QString& identifier, const QString& device_name,
+                         const QStringList& vibration_motors);
+  void onDeviceDisconnected(const InputBindingKey& key, const QString& identifier);
 
 private Q_SLOTS:
   void resetLists(const DeviceList& devices, const QStringList& motors);
