@@ -146,7 +146,7 @@ using BindingMap = std::unordered_multimap<InputBindingKey, std::shared_ptr<Inpu
 using VibrationBindingArray = std::vector<PadVibrationBinding>;
 static BindingMap s_binding_map;
 static VibrationBindingArray s_pad_vibration_array;
-static std::mutex s_binding_map_write_lock;
+static std::mutex s_mutex;
 
 // Hooks/intercepting (for setting bindings)
 static std::mutex m_event_intercept_mutex;
@@ -973,13 +973,13 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
 
 bool InputManager::HasAnyBindingsForKey(InputBindingKey key)
 {
-  std::unique_lock lock(s_binding_map_write_lock);
+  std::unique_lock lock(s_mutex);
   return (s_binding_map.find(key.MaskDirection()) != s_binding_map.end());
 }
 
 bool InputManager::HasAnyBindingsForSource(InputBindingKey key)
 {
-  std::unique_lock lock(s_binding_map_write_lock);
+  std::unique_lock lock(s_mutex);
   for (const auto& it : s_binding_map)
   {
     const InputBindingKey& okey = it.first;
@@ -1904,7 +1904,7 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 {
   PauseVibration();
 
-  std::unique_lock lock(s_binding_map_write_lock);
+  std::unique_lock lock(s_mutex);
 
   s_binding_map.clear();
   s_pad_vibration_array.clear();
@@ -1948,6 +1948,8 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
 
 bool InputManager::ReloadDevices()
 {
+  std::unique_lock lock(s_mutex);
+
   bool changed = false;
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
@@ -1963,6 +1965,8 @@ bool InputManager::ReloadDevices()
 
 void InputManager::CloseSources()
 {
+  std::unique_lock lock(s_mutex);
+
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_input_sources[i])
@@ -1993,6 +1997,8 @@ void InputManager::PollSources()
 
 InputManager::DeviceList InputManager::EnumerateDevices()
 {
+  std::unique_lock lock(s_mutex);
+
   DeviceList ret;
 
   InputBindingKey keyboard_key = {};
@@ -2020,6 +2026,8 @@ InputManager::DeviceList InputManager::EnumerateDevices()
 
 InputManager::VibrationMotorList InputManager::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
 {
+  std::unique_lock lock(s_mutex);
+
   VibrationMotorList ret;
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
@@ -2137,6 +2145,8 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::uniq
 
 void InputManager::ReloadSources(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock)
 {
+  std::unique_lock lock(s_mutex);
+
 #ifdef _WIN32
   UpdateInputSourceState(si, settings_lock, InputSourceType::DInput, &InputSource::CreateDInputSource);
   UpdateInputSourceState(si, settings_lock, InputSourceType::XInput, &InputSource::CreateXInputSource);
