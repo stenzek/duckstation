@@ -135,14 +135,14 @@ private:
 
   struct BatchConfig
   {
-    BatchTextureMode texture_mode = BatchTextureMode::Disabled;
-    GPUTransparencyMode transparency_mode = GPUTransparencyMode::Disabled;
-    bool dithering = false;
-    bool interlacing = false;
-    bool set_mask_while_drawing = false;
-    bool check_mask_before_draw = false;
-    bool use_depth_buffer = false;
-    bool sprite_mode = false;
+    BatchTextureMode texture_mode;
+    GPUTransparencyMode transparency_mode;
+    bool dithering;
+    bool interlacing;
+    bool set_mask_while_drawing;
+    bool check_mask_before_draw;
+    bool use_depth_buffer;
+    bool sprite_mode;
 
     // Returns the render mode for this batch.
     BatchRenderMode GetRenderMode() const;
@@ -317,7 +317,7 @@ private:
 
   bool m_batch_ubo_dirty = true;
   bool m_drawing_area_changed = true;
-  BatchConfig m_batch;
+  BatchConfig m_batch = {};
   GPUTextureCache::SourceKey m_texture_cache_key = {};
 
   // Changed state
