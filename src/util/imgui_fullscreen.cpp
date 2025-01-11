@@ -2412,10 +2412,10 @@ void ImGuiFullscreen::DrawChoiceDialog()
   const float width = LayoutScale(600.0f);
   const float title_height =
     UIStyle.LargeFont->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f + ImGui::GetStyle().WindowPadding.y * 2.0f;
+  const float item_height =
+    (LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f);
   const float height =
-    std::min(LayoutScale(480.0f), title_height + (LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
-                                                  LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) *
-                                                   static_cast<float>(s_state.choice_dialog_options.size()));
+    title_height + (item_height * static_cast<float>(std::min<size_t>(9, s_state.choice_dialog_options.size())));
   ImGui::SetNextWindowSize(ImVec2(width, height));
   ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));
