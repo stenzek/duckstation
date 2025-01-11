@@ -72,7 +72,7 @@
        <item>
         <widget class="QLabel" name="editProfileLabel">
          <property name="text">
-          <string>Editing Profile:</string>
+          <string>Editing Preset:</string>
          </property>
         </widget>
        </item>
@@ -89,7 +89,7 @@
        <item>
         <widget class="QPushButton" name="newProfile">
          <property name="text">
-          <string>New Profile</string>
+          <string>New Preset</string>
          </property>
          <property name="icon">
           <iconset theme="add-line"/>
@@ -99,7 +99,7 @@
        <item>
         <widget class="QPushButton" name="applyProfile">
          <property name="text">
-          <string>Apply Profile</string>
+          <string>Apply Preset</string>
          </property>
          <property name="icon">
           <iconset theme="folder-open-line"/>
@@ -109,7 +109,7 @@
        <item>
         <widget class="QPushButton" name="deleteProfile">
          <property name="text">
-          <string>Delete Profile</string>
+          <string>Delete Preset</string>
          </property>
          <property name="icon">
           <iconset theme="minus-line"/>

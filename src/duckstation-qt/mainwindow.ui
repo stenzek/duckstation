@@ -991,7 +991,7 @@
     <iconset theme="controllers-line"/>
    </property>
    <property name="text">
-    <string>Controller Profiles</string>
+    <string>Controller Presets</string>
    </property>
   </action>
  </widget>

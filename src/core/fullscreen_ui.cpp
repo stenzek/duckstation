@@ -3872,7 +3872,7 @@ void FullscreenUI::DoLoadInputProfile()
   coptions.reserve(profiles.size());
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
-  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load Profile"), false, std::move(coptions),
+  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load Preset"), false, std::move(coptions),
                    [](s32 index, const std::string& title, bool checked) {
                      if (index < 0)
                        return;
@@ -3889,7 +3889,7 @@ void FullscreenUI::DoLoadInputProfile()
                      SettingsInterface* dsi = GetEditingSettingsInterface();
                      InputManager::CopyConfiguration(dsi, ssi, true, true, true, IsEditingGameSettings(dsi));
                      SetSettingsChanged(dsi);
-                     ShowToast(std::string(), fmt::format(FSUI_FSTR("Input profile '{}' loaded."), title));
+                     ShowToast(std::string(), fmt::format(FSUI_FSTR("Controller preset '{}' loaded."), title));
                      CloseChoiceDialog();
                    });
 }
@@ -3902,15 +3902,15 @@ void FullscreenUI::DoSaveInputProfile(const std::string& name)
   SettingsInterface* ssi = GetEditingSettingsInterface();
   InputManager::CopyConfiguration(&dsi, *ssi, true, true, true, IsEditingGameSettings(ssi));
   if (dsi.Save())
-    ShowToast(std::string(), fmt::format(FSUI_FSTR("Input profile '{}' saved."), name));
+    ShowToast(std::string(), fmt::format(FSUI_FSTR("Controller preset '{}' saved."), name));
   else
-    ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to save input profile '{}'."), name));
+    ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to save controller preset '{}'."), name));
 }
 
 void FullscreenUI::DoSaveNewInputProfile()
 {
-  OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"),
-                        FSUI_STR("Enter the name of the input profile you wish to create."), std::string(),
+  OpenInputStringDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Controller Preset"),
+                        FSUI_STR("Enter the name of the controller preset you wish to create."), std::string(),
                         FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Create"), [](std::string title) {
                           if (!title.empty())
                             DoSaveInputProfile(title);
@@ -3931,7 +3931,7 @@ void FullscreenUI::DoSaveInputProfile()
   coptions.emplace_back(FSUI_STR("Create New..."), false);
   for (std::string& name : profiles)
     coptions.emplace_back(std::move(name), false);
-  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"), false, std::move(coptions),
+  OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_SAVE, "Save Preset"), false, std::move(coptions),
                    [](s32 index, const std::string& title, bool checked) {
                      if (index < 0)
                        return;
@@ -4004,13 +4004,13 @@ void FullscreenUI::DrawControllerSettingsPage()
     }
   }
 
-  if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load Profile"),
-                 FSUI_CSTR("Replaces these settings with a previously saved input profile.")))
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load Preset"),
+                 FSUI_CSTR("Replaces these settings with a previously saved controller preset.")))
   {
     DoLoadInputProfile();
   }
-  if (MenuButton(FSUI_ICONSTR(ICON_FA_SAVE, "Save Profile"),
-                 FSUI_CSTR("Stores the current settings to an input profile.")))
+  if (MenuButton(FSUI_ICONSTR(ICON_FA_SAVE, "Save Preset"),
+                 FSUI_CSTR("Stores the current settings to a controller preset.")))
   {
     DoSaveInputProfile();
   }
@@ -8214,6 +8214,8 @@ TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Macros");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Settings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Settings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Type");
+TRANSLATE_NOOP("FullscreenUI", "Controller preset '{}' loaded.");
+TRANSLATE_NOOP("FullscreenUI", "Controller preset '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Controller settings reset to default.");
 TRANSLATE_NOOP("FullscreenUI", "Controls");
 TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host when fast forwarding.");
@@ -8327,7 +8329,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures i
 TRANSLATE_NOOP("FullscreenUI", "Encore Mode");
 TRANSLATE_NOOP("FullscreenUI", "Ensures every frame generated is displayed for optimal pacing. Enable for variable refresh displays, such as GSync/FreeSync. Disable if you are having speed or sound issues.");
 TRANSLATE_NOOP("FullscreenUI", "Enter Value");
-TRANSLATE_NOOP("FullscreenUI", "Enter the name of the input profile you wish to create.");
+TRANSLATE_NOOP("FullscreenUI", "Enter the name of the controller preset you wish to create.");
 TRANSLATE_NOOP("FullscreenUI", "Error");
 TRANSLATE_NOOP("FullscreenUI", "Execution Mode");
 TRANSLATE_NOOP("FullscreenUI", "Exit");
@@ -8341,7 +8343,7 @@ TRANSLATE_NOOP("FullscreenUI", "Failed to delete save state.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete {}.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to load '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to load shader {}. It may be invalid.\nError was:");
-TRANSLATE_NOOP("FullscreenUI", "Failed to save input profile '{}'.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to save controller preset '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Boot");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
@@ -8399,8 +8401,6 @@ TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chos
 TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
 TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
 TRANSLATE_NOOP("FullscreenUI", "Input Sources");
-TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' loaded.");
-TRANSLATE_NOOP("FullscreenUI", "Input profile '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Integration");
 TRANSLATE_NOOP("FullscreenUI", "Interface Settings");
 TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
@@ -8420,7 +8420,7 @@ TRANSLATE_NOOP("FullscreenUI", "List Settings");
 TRANSLATE_NOOP("FullscreenUI", "Load Database Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Load Devices From Save States");
 TRANSLATE_NOOP("FullscreenUI", "Load Global State");
-TRANSLATE_NOOP("FullscreenUI", "Load Profile");
+TRANSLATE_NOOP("FullscreenUI", "Load Preset");
 TRANSLATE_NOOP("FullscreenUI", "Load Resume State");
 TRANSLATE_NOOP("FullscreenUI", "Load State");
 TRANSLATE_NOOP("FullscreenUI", "Loads all replacement texture to RAM, reducing stuttering at runtime.");
@@ -8546,7 +8546,7 @@ TRANSLATE_NOOP("FullscreenUI", "Removed stage {} ({}).");
 TRANSLATE_NOOP("FullscreenUI", "Removes this shader from the chain.");
 TRANSLATE_NOOP("FullscreenUI", "Renames existing save states when saving to a backup file.");
 TRANSLATE_NOOP("FullscreenUI", "Rendering");
-TRANSLATE_NOOP("FullscreenUI", "Replaces these settings with a previously saved input profile.");
+TRANSLATE_NOOP("FullscreenUI", "Replaces these settings with a previously saved controller preset.");
 TRANSLATE_NOOP("FullscreenUI", "Rescan All Games");
 TRANSLATE_NOOP("FullscreenUI", "Reset Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Reset Play Time");
@@ -8577,7 +8577,8 @@ TRANSLATE_NOOP("FullscreenUI", "Runs the software renderer in parallel for VRAM 
 TRANSLATE_NOOP("FullscreenUI", "SDL DualSense Player LED");
 TRANSLATE_NOOP("FullscreenUI", "SDL DualShock 4 / DualSense Enhanced Mode");
 TRANSLATE_NOOP("FullscreenUI", "Safe Mode");
-TRANSLATE_NOOP("FullscreenUI", "Save Profile");
+TRANSLATE_NOOP("FullscreenUI", "Save Controller Preset");
+TRANSLATE_NOOP("FullscreenUI", "Save Preset");
 TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
 TRANSLATE_NOOP("FullscreenUI", "Save State");
 TRANSLATE_NOOP("FullscreenUI", "Save State Compression");
@@ -8679,7 +8680,7 @@ TRANSLATE_NOOP("FullscreenUI", "Start Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Start Game");
 TRANSLATE_NOOP("FullscreenUI", "Start a game from a disc in your PC's DVD drive.");
 TRANSLATE_NOOP("FullscreenUI", "Start the console without any disc inserted.");
-TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to an input profile.");
+TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to a controller preset.");
 TRANSLATE_NOOP("FullscreenUI", "Stretch Display Vertically");
 TRANSLATE_NOOP("FullscreenUI", "Stretch Mode");
 TRANSLATE_NOOP("FullscreenUI", "Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.");
