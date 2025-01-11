@@ -63,18 +63,8 @@ void AnalogController::Reset()
 
   if (m_force_analog_on_reset)
   {
-    if (!CanStartInAnalogMode(ControllerType::AnalogController))
-    {
-      Host::AddIconOSDMessage(
-        fmt::format("Controller{}AnalogMode", m_index), ICON_PF_GAMEPAD_ALT,
-        TRANSLATE_STR("OSDMessage",
-                      "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
-        10.0f);
-    }
-    else
-    {
+    if (CanStartInAnalogMode(ControllerType::AnalogController))
       SetAnalogMode(true, false);
-    }
   }
 }
 

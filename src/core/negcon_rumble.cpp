@@ -69,18 +69,8 @@ void NeGconRumble::Reset()
 
   if (m_force_analog_on_reset)
   {
-    if (!CanStartInAnalogMode(ControllerType::AnalogController))
-    {
-      Host::AddIconOSDMessage(
-        fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-        TRANSLATE_STR("OSDMessage",
-                      "Analog mode forcing is disabled by game settings. Controller will start in digital mode."),
-        10.0f);
-    }
-    else
-    {
+    if (CanStartInAnalogMode(ControllerType::AnalogController))
       SetAnalogMode(true, false);
-    }
   }
 }
 
@@ -720,14 +710,14 @@ std::unique_ptr<NeGconRumble> NeGconRumble::Create(u32 index)
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
-  }
+  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 #define AXIS(name, display_name, icon_name, halfaxis, genb)                                                            \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(NeGconRumble::Button::Count) + static_cast<u32>(halfaxis),         \
-      InputBindingInfo::Type::HalfAxis, genb                                                                           \
-  }
+  {name,                                                                                                               \
+   display_name,                                                                                                       \
+   icon_name,                                                                                                          \
+   static_cast<u32>(NeGconRumble::Button::Count) + static_cast<u32>(halfaxis),                                         \
+   InputBindingInfo::Type::HalfAxis,                                                                                   \
+   genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("NeGconRumble", "D-Pad Up"), ICON_PF_DPAD_UP, NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
