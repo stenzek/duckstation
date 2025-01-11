@@ -198,26 +198,23 @@ static const Controller::ControllerBindingInfo s_popn_binding_info[] = {
   {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 
   // clang-format off
-  BUTTON("LeftWhite", TRANSLATE_NOOP("PopnController", "Left White"), ICON_PF_BUTTON_TRIANGLE, DigitalController::Button::Triangle, GenericInputBinding::Triangle),
-  BUTTON("LeftYellow", TRANSLATE_NOOP("PopnController", "Left Yellow"), ICON_PF_BUTTON_CIRCLE, DigitalController::Button::Circle, GenericInputBinding::Circle),
-  BUTTON("LeftGreen", TRANSLATE_NOOP("PopnController", "Left Green"), ICON_PF_RIGHT_SHOULDER_R1, DigitalController::Button::R1, GenericInputBinding::R1),
-  BUTTON("LeftBlue", TRANSLATE_NOOP("PopnController", "Left Blue/Sel"), ICON_PF_BUTTON_CROSS, DigitalController::Button::Cross, GenericInputBinding::Cross),
-  BUTTON("MiddleRed", TRANSLATE_NOOP("PopnController", "Middle Red/Okay"), ICON_PF_LEFT_SHOULDER_L1, DigitalController::Button::L1, GenericInputBinding::L1),
-  BUTTON("RightBlue", TRANSLATE_NOOP("PopnController", "Right Blue/Sel"), ICON_PF_BUTTON_SQUARE, DigitalController::Button::Square, GenericInputBinding::Square),
-  BUTTON("RightGreen", TRANSLATE_NOOP("PopnController", "Right Green"), ICON_PF_RIGHT_TRIGGER_R2, DigitalController::Button::R2, GenericInputBinding::R2),
-  BUTTON("RightYellow", TRANSLATE_NOOP("PopnController", "Right Yellow"), ICON_PF_DPAD_UP, DigitalController::Button::Up, GenericInputBinding::DPadUp),
-  BUTTON("RightWhite", TRANSLATE_NOOP("PopnController", "Right White"), ICON_PF_LEFT_TRIGGER_L2, DigitalController::Button::L2, GenericInputBinding::L2),
+  BUTTON("LeftWhite", TRANSLATE_NOOP("PopnController", "Left White"), ICON_PF_POPN_WL, DigitalController::Button::Triangle, GenericInputBinding::Triangle),
+  BUTTON("LeftYellow", TRANSLATE_NOOP("PopnController", "Left Yellow"), ICON_PF_POPN_YL, DigitalController::Button::Circle, GenericInputBinding::Circle),
+  BUTTON("LeftGreen", TRANSLATE_NOOP("PopnController", "Left Green"), ICON_PF_POPN_GL, DigitalController::Button::R1, GenericInputBinding::R1),
+  BUTTON("LeftBlue", TRANSLATE_NOOP("PopnController", "Left Blue/Sel"), ICON_PF_POPN_BL, DigitalController::Button::Cross, GenericInputBinding::Cross),
+  BUTTON("MiddleRed", TRANSLATE_NOOP("PopnController", "Middle Red/Okay"), ICON_PF_POPN_R, DigitalController::Button::L1, GenericInputBinding::L1),
+  BUTTON("RightBlue", TRANSLATE_NOOP("PopnController", "Right Blue/Sel"), ICON_PF_POPN_BR, DigitalController::Button::Square, GenericInputBinding::Square),
+  BUTTON("RightGreen", TRANSLATE_NOOP("PopnController", "Right Green"), ICON_PF_POPN_GR, DigitalController::Button::R2, GenericInputBinding::R2),
+  BUTTON("RightYellow", TRANSLATE_NOOP("PopnController", "Right Yellow"), ICON_PF_POPN_YR, DigitalController::Button::Up, GenericInputBinding::DPadUp),
+  BUTTON("RightWhite", TRANSLATE_NOOP("PopnController", "Right White"), ICON_PF_POPN_WR, DigitalController::Button::L2, GenericInputBinding::L2),
 // clang-format on
 
 #undef BUTTON
 };
 
-const Controller::ControllerInfo DigitalController::INFO_POPN = {ControllerType::PopnController,
-                                                                 "PopnController",
-                                                                 TRANSLATE_NOOP("ControllerType", "Pop'n Controller"),
-                                                                 ICON_PF_GAMEPAD_ALT,
-                                                                 s_popn_binding_info,
-                                                                 {}};
+const Controller::ControllerInfo DigitalController::INFO_POPN = {
+  ControllerType::PopnController, "PopnController",    TRANSLATE_NOOP("ControllerType", "Pop'n Controller"),
+  ICON_PF_POPN_CONTROLLER,        s_popn_binding_info, {}};
 
 static const Controller::ControllerBindingInfo s_ddgo_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
