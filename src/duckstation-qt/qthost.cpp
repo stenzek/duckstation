@@ -981,6 +981,7 @@ std::optional<WindowInfo> EmuThread::acquireRenderWindow(RenderAPI render_api, b
 void EmuThread::releaseRenderWindow()
 {
   emit onReleaseRenderWindowRequested();
+  m_is_fullscreen = false;
 }
 
 void EmuThread::connectDisplaySignals(DisplayWidget* widget)
