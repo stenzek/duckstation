@@ -766,6 +766,7 @@ void EmuThread::stopFullscreenUI()
   if (m_is_fullscreen_ui_started)
   {
     GPUThread::StopFullscreenUI();
+    m_is_fullscreen_ui_started = false;
     emit fullscreenUIStartedOrStopped(false);
   }
 }
