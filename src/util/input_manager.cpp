@@ -1274,9 +1274,9 @@ void InputManager::UpdatePointerCount()
   DebugAssert(ris);
 
   s_pointer_count = 0;
-  for (const std::pair<std::string, std::string>& it : ris->EnumerateDevices())
+  for (const auto& [key, identifier, device_name] : ris->EnumerateDevices())
   {
-    if (it.first.starts_with("Pointer-"))
+    if (key.source_type == InputSourceType::Pointer)
       s_pointer_count++;
   }
 #endif
@@ -1614,10 +1614,11 @@ std::vector<std::string> InputManager::GetInputProfileNames()
   return ret;
 }
 
-void InputManager::OnInputDeviceConnected(std::string_view identifier, std::string_view device_name)
+void InputManager::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier,
+                                          std::string_view device_name)
 {
   INFO_LOG("Device '{}' connected: '{}'", identifier, device_name);
-  Host::OnInputDeviceConnected(identifier, device_name);
+  Host::OnInputDeviceConnected(key, identifier, device_name);
 }
 
 void InputManager::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
@@ -2006,18 +2007,23 @@ void InputManager::PollSources()
   }
 }
 
-std::vector<std::pair<std::string, std::string>> InputManager::EnumerateDevices()
+InputManager::DeviceList InputManager::EnumerateDevices()
 {
-  std::vector<std::pair<std::string, std::string>> ret;
+  DeviceList ret;
 
-  ret.emplace_back("Keyboard", "Keyboard");
-  ret.emplace_back("Mouse", "Mouse");
+  InputBindingKey keyboard_key = {};
+  keyboard_key.source_type = InputSourceType::Keyboard;
+  InputBindingKey mouse_key = {};
+  mouse_key.source_type = InputSourceType::Pointer;
+
+  ret.emplace_back(keyboard_key, "Keyboard", "Keyboard");
+  ret.emplace_back(mouse_key, "Mouse", "Mouse");
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_input_sources[i])
     {
-      std::vector<std::pair<std::string, std::string>> devs(s_input_sources[i]->EnumerateDevices());
+      DeviceList devs = s_input_sources[i]->EnumerateDevices();
       if (ret.empty())
         ret = std::move(devs);
       else
@@ -2028,15 +2034,15 @@ std::vector<std::pair<std::string, std::string>> InputManager::EnumerateDevices(
   return ret;
 }
 
-std::vector<InputBindingKey> InputManager::EnumerateMotors()
+InputManager::VibrationMotorList InputManager::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
 {
-  std::vector<InputBindingKey> ret;
+  VibrationMotorList ret;
 
   for (u32 i = FIRST_EXTERNAL_INPUT_SOURCE; i < LAST_EXTERNAL_INPUT_SOURCE; i++)
   {
     if (s_input_sources[i])
     {
-      std::vector<InputBindingKey> devs(s_input_sources[i]->EnumerateMotors());
+      VibrationMotorList devs = s_input_sources[i]->EnumerateVibrationMotors(for_device);
       if (ret.empty())
         ret = std::move(devs);
       else

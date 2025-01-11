@@ -426,15 +426,6 @@ void SetupWizardDialog::setupControllerPage(bool initial)
     }
   }
 
-  if (initial)
-  {
-    // Trigger enumeration to populate the device list.
-    connect(g_emu_thread, &EmuThread::onInputDevicesEnumerated, this, &SetupWizardDialog::onInputDevicesEnumerated);
-    connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &SetupWizardDialog::onInputDeviceConnected);
-    connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this, &SetupWizardDialog::onInputDeviceDisconnected);
-    g_emu_thread->enumerateInputDevices();
-  }
-
   if (!initial)
   {
     for (const PadWidgets& w : pad_widgets)
@@ -451,13 +442,11 @@ void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
   QMenu menu(this);
   bool added = false;
 
-  for (const auto& [identifier, device_name] : m_device_list)
+  for (const auto& [identifier, device_name] : g_emu_thread->getInputDeviceListModel()->getDeviceList())
   {
     // we set it as data, because the device list could get invalidated while the menu is up
-    const QString qidentifier = QString::fromStdString(identifier);
-    QAction* action =
-      menu.addAction(QStringLiteral("%1 (%2)").arg(qidentifier).arg(QString::fromStdString(device_name)));
-    action->setData(qidentifier);
+    QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(identifier).arg(device_name));
+    action->setData(identifier);
     connect(action, &QAction::triggered, this, [this, port, update_label, action]() {
       doDeviceAutomaticBinding(port, update_label, action->data().toString());
     });
@@ -498,26 +487,4 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
   Host::CommitBaseSettingChanges();
 
   update_label->setText(device);
-}
-
-void SetupWizardDialog::onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices)
-{
-  m_device_list = devices;
-}
-
-void SetupWizardDialog::onInputDeviceConnected(const std::string& identifier, const std::string& device_name)
-{
-  m_device_list.emplace_back(identifier, device_name);
-}
-
-void SetupWizardDialog::onInputDeviceDisconnected(const std::string& identifier)
-{
-  for (auto iter = m_device_list.begin(); iter != m_device_list.end(); ++iter)
-  {
-    if (iter->first == identifier)
-    {
-      m_device_list.erase(iter);
-      break;
-    }
-  }
 }

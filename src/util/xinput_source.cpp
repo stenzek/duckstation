@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "xinput_source.h"
@@ -237,16 +237,17 @@ void XInputSource::PollEvents()
   }
 }
 
-std::vector<std::pair<std::string, std::string>> XInputSource::EnumerateDevices()
+InputManager::DeviceList XInputSource::EnumerateDevices()
 {
-  std::vector<std::pair<std::string, std::string>> ret;
+  InputManager::DeviceList ret;
 
   for (u32 i = 0; i < NUM_CONTROLLERS; i++)
   {
     if (!m_controllers[i].connected)
       continue;
 
-    ret.emplace_back(fmt::format("XInput-{}", i), fmt::format("XInput Controller {}", i));
+    ret.emplace_back(MakeGenericControllerDeviceKey(InputSourceType::XInput, i), fmt::format("XInput-{}", i),
+                     fmt::format("XInput Controller {}", i));
   }
 
   return ret;
@@ -376,12 +377,18 @@ std::unique_ptr<ForceFeedbackDevice> XInputSource::CreateForceFeedbackDevice(std
   return {};
 }
 
-std::vector<InputBindingKey> XInputSource::EnumerateMotors()
+InputManager::VibrationMotorList XInputSource::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
 {
-  std::vector<InputBindingKey> ret;
+  InputManager::VibrationMotorList ret;
+
+  if (for_device.has_value() && for_device->source_type != InputSourceType::XInput)
+    return ret;
 
   for (u32 i = 0; i < NUM_CONTROLLERS; i++)
   {
+    if (for_device.has_value() && for_device->source_index != i)
+      continue;
+
     const ControllerData& cd = m_controllers[i];
     if (!cd.connected)
       continue;
@@ -449,19 +456,15 @@ void XInputSource::HandleControllerConnection(u32 index)
   cd.has_small_motor = caps.Vibration.wRightMotorSpeed != 0;
   cd.last_state = {};
 
-  InputManager::OnInputDeviceConnected(fmt::format("XInput-{}", index), fmt::format("XInput Controller {}", index));
+  InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::XInput, index),
+                                       fmt::format("XInput-{}", index), fmt::format("XInput Controller {}", index));
 }
 
 void XInputSource::HandleControllerDisconnection(u32 index)
 {
   INFO_LOG("XInput controller {} disconnected.", index);
 
-  InputManager::OnInputDeviceDisconnected({{.source_type = InputSourceType::XInput,
-                                            .source_index = index,
-                                            .source_subtype = InputSubclass::None,
-                                            .modifier = InputModifier::None,
-                                            .invert = 0,
-                                            .data = 0}},
+  InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::XInput, index),
                                           fmt::format("XInput-{}", index));
   m_controllers[index] = {};
 }

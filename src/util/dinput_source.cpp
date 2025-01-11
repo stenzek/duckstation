@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #define INITGUID
@@ -153,7 +153,8 @@ bool DInputSource::ReloadDevices()
     {
       const u32 index = static_cast<u32>(m_controllers.size());
       m_controllers.push_back(std::move(cd));
-      InputManager::OnInputDeviceConnected(GetDeviceIdentifier(index), name);
+      InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::DInput, index),
+                                           GetDeviceIdentifier(index), name);
       changed = true;
     }
   }
@@ -166,12 +167,7 @@ void DInputSource::Shutdown()
   while (!m_controllers.empty())
   {
     const u32 index = static_cast<u32>(m_controllers.size() - 1);
-    InputManager::OnInputDeviceDisconnected(InputBindingKey{{.source_type = InputSourceType::DInput,
-                                                             .source_index = index,
-                                                             .source_subtype = InputSubclass::None,
-                                                             .modifier = InputModifier::None,
-                                                             .invert = 0,
-                                                             .data = 0}},
+    InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::DInput, index),
                                             GetDeviceIdentifier(static_cast<u32>(m_controllers.size() - 1)));
     m_controllers.pop_back();
   }
@@ -298,9 +294,9 @@ void DInputSource::PollEvents()
   }
 }
 
-std::vector<std::pair<std::string, std::string>> DInputSource::EnumerateDevices()
+InputManager::DeviceList DInputSource::EnumerateDevices()
 {
-  std::vector<std::pair<std::string, std::string>> ret;
+  InputManager::DeviceList ret;
   for (size_t i = 0; i < m_controllers.size(); i++)
   {
     DIDEVICEINSTANCEW dii;
@@ -312,13 +308,14 @@ std::vector<std::pair<std::string, std::string>> DInputSource::EnumerateDevices(
     if (name.empty())
       name = "Unknown";
 
-    ret.emplace_back(GetDeviceIdentifier(static_cast<u32>(i)), std::move(name));
+    ret.emplace_back(MakeGenericControllerDeviceKey(InputSourceType::DInput, static_cast<u32>(i)),
+                     GetDeviceIdentifier(static_cast<u32>(i)), std::move(name));
   }
 
   return ret;
 }
 
-std::vector<InputBindingKey> DInputSource::EnumerateMotors()
+InputManager::VibrationMotorList DInputSource::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
 {
   return {};
 }

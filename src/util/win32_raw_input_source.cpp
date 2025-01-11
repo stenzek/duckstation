@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "win32_raw_input_source.h"
@@ -73,11 +73,14 @@ void Win32RawInputSource::PollEvents()
   // noop, handled by message pump
 }
 
-std::vector<std::pair<std::string, std::string>> Win32RawInputSource::EnumerateDevices()
+InputManager::DeviceList Win32RawInputSource::EnumerateDevices()
 {
-  std::vector<std::pair<std::string, std::string>> ret;
+  InputManager::DeviceList ret;
   for (u32 pointer_index = 0; pointer_index < static_cast<u32>(m_mice.size()); pointer_index++)
-    ret.emplace_back(InputManager::GetPointerDeviceName(pointer_index), GetMouseDeviceName(pointer_index));
+  {
+    ret.emplace_back(MakeGenericControllerDeviceKey(InputSourceType::Pointer, pointer_index),
+                     InputManager::GetPointerDeviceName(pointer_index), GetMouseDeviceName(pointer_index));
+  }
 
   return ret;
 }
@@ -118,7 +121,8 @@ std::unique_ptr<ForceFeedbackDevice> Win32RawInputSource::CreateForceFeedbackDev
   return {};
 }
 
-std::vector<InputBindingKey> Win32RawInputSource::EnumerateMotors()
+InputManager::VibrationMotorList
+Win32RawInputSource::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
 {
   return {};
 }
@@ -272,7 +276,10 @@ bool Win32RawInputSource::OpenDevices()
       return false;
 
     for (u32 i = 0; i < static_cast<u32>(m_mice.size()); i++)
-      InputManager::OnInputDeviceConnected(InputManager::GetPointerDeviceName(i), GetMouseDeviceName(i));
+    {
+      InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, i),
+                                           InputManager::GetPointerDeviceName(i), GetMouseDeviceName(i));
+    }
   }
 
   return true;
@@ -287,7 +294,7 @@ void Win32RawInputSource::CloseDevices()
 
     for (u32 i = 0; i < static_cast<u32>(m_mice.size()); i++)
     {
-      InputManager::OnInputDeviceDisconnected(InputManager::MakePointerAxisKey(i, InputPointerAxis::X),
+      InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::Pointer, i),
                                               InputManager::GetPointerDeviceName(i));
     }
     m_mice.clear();

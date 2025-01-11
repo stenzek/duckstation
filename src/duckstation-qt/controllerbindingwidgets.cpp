@@ -272,16 +272,11 @@ void ControllerBindingWidget::onAutomaticBindingClicked()
   QMenu menu(this);
   bool added = false;
 
-  const auto& device_list = m_dialog->isEditingGameSettings() ?
-                              g_main_window->getControllerSettingsWindow()->getDeviceList() :
-                              m_dialog->getDeviceList();
-  for (const auto& [identifier, device_name] : device_list)
+  for (const auto& [identifier, device_name] : g_emu_thread->getInputDeviceListModel()->getDeviceList())
   {
     // we set it as data, because the device list could get invalidated while the menu is up
-    const QString qidentifier = QString::fromStdString(identifier);
-    QAction* action =
-      menu.addAction(QStringLiteral("%1 (%2)").arg(qidentifier).arg(QString::fromStdString(device_name)));
-    action->setData(qidentifier);
+    QAction* action = menu.addAction(QStringLiteral("%1 (%2)").arg(identifier).arg(device_name));
+    action->setData(identifier);
     connect(action, &QAction::triggered, this,
             [this, action]() { doDeviceAutomaticBinding(action->data().toString()); });
     added = true;

@@ -38,10 +38,10 @@ public:
   virtual TinyString ConvertKeyToIcon(InputBindingKey key, InputManager::BindingIconMappingFunction mapper) = 0;
 
   /// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
-  virtual std::vector<std::pair<std::string, std::string>> EnumerateDevices() = 0;
+  virtual InputManager::DeviceList EnumerateDevices() = 0;
 
   /// Enumerates available vibration motors at the time of call.
-  virtual std::vector<InputBindingKey> EnumerateMotors() = 0;
+  virtual InputManager::VibrationMotorList EnumerateVibrationMotors(std::optional<InputBindingKey> for_device) = 0;
 
   /// Retrieves bindings that match the generic bindings for the specified device.
   /// Returns false if it's not one of our devices.
@@ -56,6 +56,9 @@ public:
 
   /// Creates a force-feedback device from this source.
   virtual std::unique_ptr<ForceFeedbackDevice> CreateForceFeedbackDevice(std::string_view device, Error* error) = 0;
+
+  /// Creates a key for a generic controller device.
+  static InputBindingKey MakeGenericControllerDeviceKey(InputSourceType clazz, u32 controller_index);
 
   /// Creates a key for a generic controller axis event.
   static InputBindingKey MakeGenericControllerAxisKey(InputSourceType clazz, u32 controller_index, s32 axis_index);

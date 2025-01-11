@@ -448,7 +448,7 @@ void InputVibrationBindingWidget::onClicked()
   const QString full_key(
     QStringLiteral("%1/%2").arg(QString::fromStdString(m_section_name)).arg(QString::fromStdString(m_key_name)));
   const QString current(QString::fromStdString(m_binding));
-  QStringList input_options(m_dialog->getVibrationMotors());
+  QStringList input_options = g_emu_thread->getInputDeviceListModel()->getVibrationMotorList();
   if (!current.isEmpty() && input_options.indexOf(current) < 0)
   {
     input_options.append(current);

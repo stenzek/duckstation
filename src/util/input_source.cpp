@@ -20,6 +20,16 @@ void InputSource::UpdateMotorState(InputBindingKey large_key, InputBindingKey sm
     UpdateMotorState(small_key, small_intensity);
 }
 
+InputBindingKey InputSource::MakeGenericControllerDeviceKey(InputSourceType clazz, u32 controller_index)
+{
+  InputBindingKey key = {};
+  key.source_type = clazz;
+  key.source_index = controller_index;
+  key.source_subtype = InputSubclass::None;
+  key.data = 0;
+  return key;
+}
+
 InputBindingKey InputSource::MakeGenericControllerAxisKey(InputSourceType clazz, u32 controller_index, s32 axis_index)
 {
   InputBindingKey key = {};

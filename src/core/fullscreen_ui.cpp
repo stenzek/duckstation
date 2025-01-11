@@ -2850,7 +2850,7 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, 
 
 void FullscreenUI::StartAutomaticBinding(u32 port)
 {
-  std::vector<std::pair<std::string, std::string>> devices(InputManager::EnumerateDevices());
+  InputManager::DeviceList devices = InputManager::EnumerateDevices();
   if (devices.empty())
   {
     ShowToast({}, FSUI_STR("Automatic mapping failed, no devices are available."));
@@ -2861,7 +2861,7 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
   ImGuiFullscreen::ChoiceDialogOptions options;
   options.reserve(devices.size());
   names.reserve(devices.size());
-  for (auto& [name, display_name] : devices)
+  for (auto& [key, name, display_name] : devices)
   {
     names.push_back(std::move(name));
     options.emplace_back(std::move(display_name), false);

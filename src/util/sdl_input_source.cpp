@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "sdl_input_source.h"
@@ -361,19 +361,20 @@ void SDLInputSource::PollEvents()
   }
 }
 
-std::vector<std::pair<std::string, std::string>> SDLInputSource::EnumerateDevices()
+InputManager::DeviceList SDLInputSource::EnumerateDevices()
 {
-  std::vector<std::pair<std::string, std::string>> ret;
+  InputManager::DeviceList ret;
 
   for (const ControllerData& cd : m_controllers)
   {
     std::string id = fmt::format("SDL-{}", cd.player_id);
 
+    const InputBindingKey key = MakeGenericControllerDeviceKey(InputSourceType::SDL, cd.player_id);
     const char* name = cd.game_controller ? SDL_GameControllerName(cd.game_controller) : SDL_JoystickName(cd.joystick);
     if (name)
-      ret.emplace_back(std::move(id), name);
+      ret.emplace_back(key, std::move(id), name);
     else
-      ret.emplace_back(std::move(id), "Unknown Device");
+      ret.emplace_back(key, std::move(id), "Unknown Device");
   }
 
   return ret;
@@ -858,7 +859,8 @@ bool SDLInputSource::OpenDevice(int index, bool is_gamecontroller)
 
   m_controllers.push_back(std::move(cd));
 
-  InputManager::OnInputDeviceConnected(fmt::format("SDL-{}", player_id), name);
+  InputManager::OnInputDeviceConnected(MakeGenericControllerDeviceKey(InputSourceType::SDL, player_id),
+                                       fmt::format("SDL-{}", player_id), name);
   return true;
 }
 
@@ -868,12 +870,7 @@ bool SDLInputSource::CloseDevice(int joystick_index)
   if (it == m_controllers.end())
     return false;
 
-  InputManager::OnInputDeviceDisconnected(InputBindingKey{{.source_type = InputSourceType::SDL,
-                                                           .source_index = static_cast<u32>(it->player_id),
-                                                           .source_subtype = InputSubclass::None,
-                                                           .modifier = InputModifier::None,
-                                                           .invert = 0,
-                                                           .data = 0}},
+  InputManager::OnInputDeviceDisconnected(MakeGenericControllerDeviceKey(InputSourceType::SDL, it->player_id),
                                           fmt::format("SDL-{}", it->player_id));
 
   if (it->haptic)
@@ -1023,15 +1020,21 @@ bool SDLInputSource::HandleJoystickHatEvent(const SDL_JoyHatEvent* ev)
   return true;
 }
 
-std::vector<InputBindingKey> SDLInputSource::EnumerateMotors()
+InputManager::VibrationMotorList SDLInputSource::EnumerateVibrationMotors(std::optional<InputBindingKey> for_device)
 {
-  std::vector<InputBindingKey> ret;
+  InputManager::VibrationMotorList ret;
+
+  if (for_device.has_value() && for_device->source_type != InputSourceType::SDL)
+    return ret;
 
   InputBindingKey key = {};
   key.source_type = InputSourceType::SDL;
 
   for (ControllerData& cd : m_controllers)
   {
+    if (for_device.has_value() && for_device->source_index != static_cast<u32>(cd.player_id))
+      continue;
+
     key.source_index = cd.player_id;
 
     if (cd.use_game_controller_rumble || cd.haptic_left_right_effect)

@@ -15,8 +15,10 @@
 #include "util/input_manager.h"
 
 #include <QtCore/QByteArray>
+#include <QtCore/QList>
 #include <QtCore/QMetaType>
 #include <QtCore/QObject>
+#include <QtCore/QPair>
 #include <QtCore/QSemaphore>
 #include <QtCore/QString>
 #include <QtCore/QThread>
@@ -48,6 +50,7 @@ class GPUBackend;
 
 class MainWindow;
 class DisplayWidget;
+class InputDeviceListModel;
 
 namespace Achievements {
 enum class LoginRequestReason;
@@ -96,6 +99,8 @@ public:
   ALWAYS_INLINE bool isRenderingToMain() const { return m_is_rendering_to_main; }
   ALWAYS_INLINE bool isSurfaceless() const { return m_is_surfaceless; }
 
+  ALWAYS_INLINE InputDeviceListModel* getInputDeviceListModel() const { return m_input_device_list_model.get(); }
+
   std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
                                                 Error* error);
   void connectDisplaySignals(DisplayWidget* widget);
@@ -130,10 +135,6 @@ Q_SIGNALS:
   void statusMessage(const QString& message);
   void debuggerMessageReported(const QString& message);
   void settingsResetToDefault(bool system, bool controller);
-  void onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices);
-  void onInputDeviceConnected(const std::string& identifier, const std::string& device_name);
-  void onInputDeviceDisconnected(const std::string& identifier);
-  void onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors);
   void systemStarting();
   void systemStarted();
   void systemDestroyed();
@@ -177,8 +178,6 @@ public Q_SLOTS:
   void reloadInputBindings();
   void reloadInputDevices();
   void closeInputSources();
-  void enumerateInputDevices();
-  void enumerateVibrationMotors();
   void startFullscreenUI();
   void stopFullscreenUI();
   void bootSystem(std::shared_ptr<SystemBootParameters> params);
@@ -241,6 +240,7 @@ private:
   QSemaphore m_started_semaphore;
   QEventLoop* m_event_loop = nullptr;
   QTimer* m_background_controller_polling_timer = nullptr;
+  std::unique_ptr<InputDeviceListModel> m_input_device_list_model;
 
   bool m_shutdown_flag = false;
   bool m_is_rendering_to_main = false;
@@ -259,6 +259,38 @@ private:
   u32 m_last_render_height = std::numeric_limits<u32>::max();
   RenderAPI m_last_render_api = RenderAPI::None;
   bool m_last_hardware_renderer = false;
+};
+
+class InputDeviceListModel final : public QAbstractListModel
+{
+  Q_OBJECT
+
+public:
+  using DeviceList = QList<QPair<QString, QString>>;
+
+  InputDeviceListModel(QObject* parent = nullptr);
+  ~InputDeviceListModel() override;
+
+  // Safe to access on UI thread.
+  ALWAYS_INLINE const DeviceList& getDeviceList() const { return m_devices; }
+  ALWAYS_INLINE const QStringList& getVibrationMotorList() const { return m_vibration_motors; }
+
+  int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+  QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+
+  // NOTE: Should only be called on EmuThread.
+  void enumerateDevices();
+
+public Q_SLOTS:
+  void onDeviceConnected(const QString& identifier, const QString& device_name, const QStringList& vibration_motors);
+  void onDeviceDisconnected(const QString& identifier);
+
+private Q_SLOTS:
+  void resetLists(const DeviceList& devices, const QStringList& motors);
+
+private:
+  DeviceList m_devices;
+  QStringList m_vibration_motors;
 };
 
 extern EmuThread* g_emu_thread;

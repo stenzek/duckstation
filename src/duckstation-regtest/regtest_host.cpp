@@ -481,7 +481,7 @@ void Host::AddFixedInputBindings(const SettingsInterface& si)
   // noop
 }
 
-void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view device_name)
+void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name)
 {
   // noop
 }

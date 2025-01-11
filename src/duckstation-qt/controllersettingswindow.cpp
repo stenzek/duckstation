@@ -49,18 +49,6 @@ ControllerSettingsWindow::ControllerSettingsWindow(SettingsInterface* game_sif /
     connect(m_ui.applyProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onApplyProfileClicked);
     connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onDeleteProfileClicked);
     connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
-
-    connect(g_emu_thread, &EmuThread::onInputDevicesEnumerated, this,
-            &ControllerSettingsWindow::onInputDevicesEnumerated);
-    connect(g_emu_thread, &EmuThread::onInputDeviceConnected, this, &ControllerSettingsWindow::onInputDeviceConnected);
-    connect(g_emu_thread, &EmuThread::onInputDeviceDisconnected, this,
-            &ControllerSettingsWindow::onInputDeviceDisconnected);
-    connect(g_emu_thread, &EmuThread::onVibrationMotorsEnumerated, this,
-            &ControllerSettingsWindow::onVibrationMotorsEnumerated);
-
-    // trigger a device enumeration to populate the device list
-    g_emu_thread->enumerateInputDevices();
-    g_emu_thread->enumerateVibrationMotors();
   }
   else
   {
@@ -324,48 +312,6 @@ void ControllerSettingsWindow::onRestoreDefaultsForGameClicked()
                            tr("Per-game controller configuration reset to default settings."));
 }
 
-void ControllerSettingsWindow::onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices)
-{
-  m_device_list = devices;
-  for (const auto& [device_name, display_name] : m_device_list)
-    m_global_settings->addDeviceToList(QString::fromStdString(device_name), QString::fromStdString(display_name));
-}
-
-void ControllerSettingsWindow::onInputDeviceConnected(const std::string& identifier, const std::string& device_name)
-{
-  m_device_list.emplace_back(identifier, device_name);
-  m_global_settings->addDeviceToList(QString::fromStdString(identifier), QString::fromStdString(device_name));
-  g_emu_thread->enumerateVibrationMotors();
-}
-
-void ControllerSettingsWindow::onInputDeviceDisconnected(const std::string& identifier)
-{
-  for (auto iter = m_device_list.begin(); iter != m_device_list.end(); ++iter)
-  {
-    if (iter->first == identifier)
-    {
-      m_device_list.erase(iter);
-      break;
-    }
-  }
-
-  m_global_settings->removeDeviceFromList(QString::fromStdString(identifier));
-  g_emu_thread->enumerateVibrationMotors();
-}
-
-void ControllerSettingsWindow::onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors)
-{
-  m_vibration_motors.clear();
-  m_vibration_motors.reserve(motors.size());
-
-  for (const InputBindingKey key : motors)
-  {
-    const std::string key_str(InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, key));
-    if (!key_str.empty())
-      m_vibration_motors.push_back(QString::fromStdString(key_str));
-  }
-}
-
 bool ControllerSettingsWindow::getBoolValue(const char* section, const char* key, bool default_value) const
 {
   if (m_editing_settings_interface)
@@ -489,11 +435,6 @@ void ControllerSettingsWindow::createWidgets()
     m_ui.settingsContainer->addWidget(m_global_settings);
     connect(m_global_settings, &ControllerGlobalSettingsWidget::bindingSetupChanged, this,
             &ControllerSettingsWindow::createWidgets);
-    if (!isEditingGameSettings())
-    {
-      for (const auto& [identifier, device_name] : m_device_list)
-        m_global_settings->addDeviceToList(QString::fromStdString(identifier), QString::fromStdString(device_name));
-    }
   }
 
   // load mtap settings

@@ -7,6 +7,7 @@
 #include <mutex>
 #include <optional>
 #include <string_view>
+#include <tuple>
 #include <utility>
 #include <variant>
 
@@ -254,17 +255,19 @@ std::string ConvertInputBindingKeysToString(InputBindingInfo::Type binding_type,
 
 /// Represents a binding with icon fonts, if available.
 /// Optionally maps icon fonts to a different style, e.g. xbox icons -> PS buttons.
-using BindingIconMappingFunction = std::string_view(*)(std::string_view);
+using BindingIconMappingFunction = std::string_view (*)(std::string_view);
 bool PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper = nullptr);
 
 /// Returns a list of all hotkeys.
 std::vector<const HotkeyInfo*> GetHotkeyList();
 
 /// Enumerates available devices. Returns a pair of the prefix (e.g. SDL-0) and the device name.
-std::vector<std::pair<std::string, std::string>> EnumerateDevices();
+using DeviceList = std::vector<std::tuple<InputBindingKey, std::string, std::string>>;
+DeviceList EnumerateDevices();
 
 /// Enumerates available vibration motors at the time of call.
-std::vector<InputBindingKey> EnumerateMotors();
+using VibrationMotorList = std::vector<InputBindingKey>;
+VibrationMotorList EnumerateVibrationMotors(std::optional<InputBindingKey> for_device = std::nullopt);
 
 /// Retrieves bindings that match the generic bindings for the specified device.
 GenericInputBindingMapping GetGenericBindingMapping(std::string_view device);
@@ -380,7 +383,7 @@ bool MapController(SettingsInterface& si, u32 controller,
 std::vector<std::string> GetInputProfileNames();
 
 /// Called when a new input device is connected.
-void OnInputDeviceConnected(std::string_view identifier, std::string_view device_name);
+void OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name);
 
 /// Called when an input device is disconnected.
 void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier);
@@ -394,7 +397,7 @@ namespace Host {
 void AddFixedInputBindings(const SettingsInterface& si);
 
 /// Called when a new input device is connected.
-void OnInputDeviceConnected(std::string_view identifier, std::string_view device_name);
+void OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name);
 
 /// Called when an input device is disconnected.
 void OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier);

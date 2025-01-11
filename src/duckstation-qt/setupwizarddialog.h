@@ -45,10 +45,6 @@ private Q_SLOTS:
   void refreshDirectoryList();
   void resizeDirectoryListColumns();
 
-  void onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices);
-  void onInputDeviceConnected(const std::string& identifier, const std::string& device_name);
-  void onInputDeviceDisconnected(const std::string& identifier);
-
 protected:
   void resizeEvent(QResizeEvent* event);
 
@@ -82,6 +78,4 @@ private:
   Ui::SetupWizardDialog m_ui;
 
   std::array<QLabel*, Page_Count> m_page_labels;
-
-  std::vector<std::pair<std::string, std::string>> m_device_list;
 };

@@ -122,7 +122,8 @@ static bool s_cleanup_after_update = false;
 
 EmuThread* g_emu_thread = nullptr;
 
-EmuThread::EmuThread(QThread* ui_thread) : QThread(), m_ui_thread(ui_thread)
+EmuThread::EmuThread(QThread* ui_thread)
+  : QThread(), m_ui_thread(ui_thread), m_input_device_list_model(std::make_unique<InputDeviceListModel>())
 {
 }
 
@@ -1079,34 +1080,6 @@ void EmuThread::closeInputSources()
   InputManager::CloseSources();
 }
 
-void EmuThread::enumerateInputDevices()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &EmuThread::enumerateInputDevices, Qt::QueuedConnection);
-    return;
-  }
-
-  onInputDevicesEnumerated(InputManager::EnumerateDevices());
-}
-
-void EmuThread::enumerateVibrationMotors()
-{
-  if (!isCurrentThread())
-  {
-    QMetaObject::invokeMethod(this, &EmuThread::enumerateVibrationMotors, Qt::QueuedConnection);
-    return;
-  }
-
-  const std::vector<InputBindingKey> motors(InputManager::EnumerateMotors());
-  QList<InputBindingKey> qmotors;
-  qmotors.reserve(motors.size());
-  for (InputBindingKey key : motors)
-    qmotors.push_back(key);
-
-  onVibrationMotorsEnumerated(qmotors);
-}
-
 void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel_resume_on_accept,
                                               std::function<void(bool)> callback) const
 {
@@ -1830,9 +1803,9 @@ void EmuThread::start()
   AssertMsg(!g_emu_thread, "Emu thread does not exist");
 
   g_emu_thread = new EmuThread(QThread::currentThread());
+  g_emu_thread->moveToThread(g_emu_thread);
   g_emu_thread->QThread::start();
   g_emu_thread->m_started_semaphore.acquire();
-  g_emu_thread->moveToThread(g_emu_thread);
 }
 
 void EmuThread::stop()
@@ -1868,7 +1841,10 @@ void EmuThread::run()
     }
   }
 
-  // bind buttons/axises
+  // enumerate all devices, even those which were added early
+  m_input_device_list_model->enumerateDevices();
+
+  // start background input polling
   createBackgroundControllerPollTimer();
   startBackgroundControllerPollTimer();
 
@@ -2025,13 +2001,126 @@ void Host::ReportDebuggerMessage(std::string_view message)
   emit g_emu_thread->debuggerMessageReported(QString::fromUtf8(message));
 }
 
-void Host::AddFixedInputBindings(const SettingsInterface& si)
+InputDeviceListModel::InputDeviceListModel(QObject* parent) : QAbstractListModel(parent)
 {
 }
 
-void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view device_name)
+InputDeviceListModel::~InputDeviceListModel() = default;
+
+int InputDeviceListModel::rowCount(const QModelIndex& parent /*= QModelIndex()*/) const
 {
-  emit g_emu_thread->onInputDeviceConnected(std::string(identifier), std::string(device_name));
+  return m_devices.size();
+}
+
+QVariant InputDeviceListModel::data(const QModelIndex& index, int role /*= Qt::DisplayRole*/) const
+{
+  const int row = index.row();
+  if (index.column() != 0 || row < 0 || static_cast<qsizetype>(row) >= m_devices.size())
+    return QVariant();
+
+  const auto& dev = m_devices[static_cast<qsizetype>(row)];
+  if (role == Qt::DisplayRole)
+    return QStringLiteral("%1: %2").arg(dev.first).arg(dev.second);
+  else
+    return QVariant();
+}
+
+void InputDeviceListModel::enumerateDevices()
+{
+  DebugAssert(g_emu_thread->isCurrentThread());
+
+  const InputManager::DeviceList devices = InputManager::EnumerateDevices();
+  const InputManager::VibrationMotorList motors = InputManager::EnumerateVibrationMotors();
+
+  DeviceList new_devices;
+  new_devices.reserve(devices.size());
+  for (const auto& [key, identifier, device_name] : devices)
+    new_devices.emplace_back(QString::fromStdString(identifier), QString::fromStdString(device_name));
+
+  QStringList new_motors;
+  new_motors.reserve(motors.size());
+  for (const auto& key : motors)
+  {
+    new_motors.push_back(
+      QString::fromStdString(InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, key)));
+  }
+
+  QMetaObject::invokeMethod(this, "resetLists", Qt::QueuedConnection, Q_ARG(const DeviceList&, new_devices),
+                            Q_ARG(const QStringList&, m_vibration_motors));
+}
+
+void InputDeviceListModel::resetLists(const DeviceList& devices, const QStringList& motors)
+{
+  beginResetModel();
+
+  m_devices = devices;
+  m_vibration_motors = motors;
+
+  endResetModel();
+}
+
+void InputDeviceListModel::onDeviceConnected(const QString& identifier, const QString& device_name,
+                                             const QStringList& vibration_motors)
+{
+  for (const auto& it : m_devices)
+  {
+    if (it.first == identifier)
+      return;
+  }
+
+  const int index = static_cast<int>(m_devices.size());
+  beginInsertRows(QModelIndex(), index, index);
+  m_devices.emplace_back(identifier, device_name);
+  endInsertRows();
+
+  m_vibration_motors.append(vibration_motors);
+}
+
+void InputDeviceListModel::onDeviceDisconnected(const QString& identifier)
+{
+  for (qsizetype i = 0; i < m_devices.size(); i++)
+  {
+    if (m_devices[i].first == identifier)
+    {
+      const int index = static_cast<int>(i);
+      beginRemoveRows(QModelIndex(), index, index);
+      m_devices.remove(i);
+      endRemoveRows();
+
+      // remove vibration motors too
+      const QString motor_prefix = QStringLiteral("%1/").arg(identifier);
+      for (qsizetype j = 0; j < m_vibration_motors.size();)
+      {
+        if (m_vibration_motors[j].startsWith(motor_prefix))
+          m_vibration_motors.remove(j);
+        else
+          j++;
+      }
+
+      return;
+    }
+  }
+}
+
+void Host::OnInputDeviceConnected(InputBindingKey key, std::string_view identifier, std::string_view device_name)
+{
+  // get the motors for this device to append to the list
+  QStringList vibration_motor_list;
+  const InputManager::VibrationMotorList im_vibration_motor_list = InputManager::EnumerateVibrationMotors(key);
+  if (!im_vibration_motor_list.empty())
+  {
+    vibration_motor_list.reserve(im_vibration_motor_list.size());
+    for (const InputBindingKey& motor_key : im_vibration_motor_list)
+    {
+      vibration_motor_list.push_back(
+        QString::fromStdString(InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, motor_key)));
+    }
+  }
+
+  QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), "onDeviceConnected", Qt::QueuedConnection,
+                            Q_ARG(const QString&, QtUtils::StringViewToQString(identifier)),
+                            Q_ARG(const QString&, QtUtils::StringViewToQString(device_name)),
+                            Q_ARG(const QStringList&, vibration_motor_list));
 
   if (System::IsValid() || GPUThread::IsFullscreenUIRequested())
   {
@@ -2043,7 +2132,8 @@ void Host::OnInputDeviceConnected(std::string_view identifier, std::string_view 
 
 void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view identifier)
 {
-  emit g_emu_thread->onInputDeviceDisconnected(std::string(identifier));
+  QMetaObject::invokeMethod(g_emu_thread->getInputDeviceListModel(), "onDeviceDisconnected", Qt::QueuedConnection,
+                            Q_ARG(const QString&, QtUtils::StringViewToQString(identifier)));
 
   if (g_settings.pause_on_controller_disconnection && System::GetState() == System::State::Running &&
       InputManager::HasAnyBindingsForSource(key))
@@ -2065,6 +2155,10 @@ void Host::OnInputDeviceDisconnected(InputBindingKey key, std::string_view ident
                             fmt::format(TRANSLATE_FS("QtHost", "Controller {} disconnected."), identifier),
                             Host::OSD_INFO_DURATION);
   }
+}
+
+void Host::AddFixedInputBindings(const SettingsInterface& si)
+{
 }
 
 std::string QtHost::GetResourcePath(std::string_view filename, bool allow_override)

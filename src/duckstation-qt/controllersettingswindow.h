@@ -48,9 +48,6 @@ public:
 
   ALWAYS_INLINE HotkeySettingsWidget* getHotkeySettingsWidget() const { return m_hotkey_settings; }
 
-  ALWAYS_INLINE const std::vector<std::pair<std::string, std::string>>& getDeviceList() const { return m_device_list; }
-  ALWAYS_INLINE const QStringList& getVibrationMotors() const { return m_vibration_motors; }
-
   ALWAYS_INLINE bool isEditingGlobalSettings() const
   {
     return (m_profile_name.isEmpty() && !m_editing_settings_interface);
@@ -95,11 +92,6 @@ private Q_SLOTS:
   void onCopyGlobalSettingsClicked();
   void onRestoreDefaultsForGameClicked();
 
-  void onInputDevicesEnumerated(const std::vector<std::pair<std::string, std::string>>& devices);
-  void onInputDeviceConnected(const std::string& identifier, const std::string& device_name);
-  void onInputDeviceDisconnected(const std::string& identifier);
-  void onVibrationMotorsEnumerated(const QList<InputBindingKey>& motors);
-
   void createWidgets();
 
 protected:
@@ -118,9 +110,6 @@ private:
   ControllerGlobalSettingsWidget* m_global_settings = nullptr;
   std::array<ControllerBindingWidget*, NUM_CONTROLLER_AND_CARD_PORTS> m_port_bindings{};
   HotkeySettingsWidget* m_hotkey_settings = nullptr;
-
-  std::vector<std::pair<std::string, std::string>> m_device_list;
-  QStringList m_vibration_motors;
 
   QString m_profile_name;
   std::unique_ptr<SettingsInterface> m_profile_settings_interface;

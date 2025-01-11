@@ -1,9 +1,12 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
-#include "common/windows_headers.h"
+
 #include "input_source.h"
+
+#include "common/windows_headers.h"
+
 #include <array>
 #include <functional>
 #include <mutex>
@@ -23,8 +26,8 @@ public:
   void Shutdown() override;
 
   void PollEvents() override;
-  std::vector<std::pair<std::string, std::string>> EnumerateDevices() override;
-  std::vector<InputBindingKey> EnumerateMotors() override;
+  InputManager::DeviceList EnumerateDevices() override;
+  InputManager::VibrationMotorList EnumerateVibrationMotors(std::optional<InputBindingKey> for_device) override;
   bool GetGenericBindingMapping(std::string_view device, GenericInputBindingMapping* mapping) override;
   void UpdateMotorState(InputBindingKey key, float intensity) override;
   void UpdateMotorState(InputBindingKey large_key, InputBindingKey small_key, float large_intensity,

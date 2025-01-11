@@ -87,14 +87,7 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
     m_ui.profileSettings = nullptr;
   }
 
-  if (dialog->isEditingGameSettings())
-  {
-    m_ui.mainLayout->removeWidget(m_ui.deviceListGroup);
-    delete m_ui.deviceList;
-    m_ui.deviceList = nullptr;
-    delete m_ui.deviceListGroup;
-    m_ui.deviceListGroup = nullptr;
-  }
+  m_ui.deviceList->setModel(g_emu_thread->getInputDeviceListModel());
 
   connect(m_ui.multitapMode, &QComboBox::currentIndexChanged, this, [this]() { emit bindingSetupChanged(); });
 
@@ -109,28 +102,6 @@ ControllerGlobalSettingsWidget::ControllerGlobalSettingsWidget(QWidget* parent, 
 }
 
 ControllerGlobalSettingsWidget::~ControllerGlobalSettingsWidget() = default;
-
-void ControllerGlobalSettingsWidget::addDeviceToList(const QString& identifier, const QString& name)
-{
-  QListWidgetItem* item = new QListWidgetItem();
-  item->setText(QStringLiteral("%1: %2").arg(identifier).arg(name));
-  item->setData(Qt::UserRole, identifier);
-  m_ui.deviceList->addItem(item);
-}
-
-void ControllerGlobalSettingsWidget::removeDeviceFromList(const QString& identifier)
-{
-  const int count = m_ui.deviceList->count();
-  for (int i = 0; i < count; i++)
-  {
-    QListWidgetItem* item = m_ui.deviceList->item(i);
-    if (item->data(Qt::UserRole) != identifier)
-      continue;
-
-    delete m_ui.deviceList->takeItem(i);
-    break;
-  }
-}
 
 void ControllerGlobalSettingsWidget::ledSettingsClicked()
 {
