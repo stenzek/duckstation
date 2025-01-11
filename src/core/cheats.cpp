@@ -2833,18 +2833,21 @@ void Cheats::GamesharkCheatCode::Apply() const
             cht_register[cht_reg_no1] = DoMemoryRead<u8>(cht_register[cht_reg_no2] + poke_value);
             break;
           case 0x07: // Write the u8 poke_value to a specific index of a single array in a series of consecutive arrays
-            //This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
-            //cht_register[cht_reg_no1] = the base address of the first element of the first array
-            //cht_register[cht_reg_no1+1] = the array size (basically the address diff between the start of each array)
-            //cht_register[cht_reg_no1+2] = the index of which array in the series to poke (this must be greater than 0)
-            //cht_register[cht_reg_no1+3] must == 0xD0D0 to ensure it only pokes when the above cht_regs have been set
-            //                                    (safety valve)
-            //cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
-            if (cht_register[cht_reg_no1 + 3] == 0xD0D0 && cht_register[cht_reg_no1 + 2]  > 0
-                && cht_register[cht_reg_no1 + 1] >= cht_offset)
-                DoMemoryWrite<u8>((cht_register[cht_reg_no1] - cht_register[cht_reg_no1 + 1]) +
+            // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
+            // cht_register[cht_reg_no1] = the base address of the first element of the first array
+            // cht_register[cht_reg_no1+1] = the array size (basically the address diff between the start of each array)
+            // cht_register[cht_reg_no1+2] = the index of which array in the series to poke (this must be greater than
+            // 0) cht_register[cht_reg_no1+3] must == 0xD0D0 to ensure it only pokes when the above cht_regs have been
+            // set
+            //                                     (safety valve)
+            // cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
+            if ((cht_reg_no1 <= (std::size(cht_register) - 4)) && cht_register[cht_reg_no1 + 3] == 0xD0D0 &&
+                cht_register[cht_reg_no1 + 2] > 0 && cht_register[cht_reg_no1 + 1] >= cht_offset)
+            {
+              DoMemoryWrite<u8>((cht_register[cht_reg_no1] - cht_register[cht_reg_no1 + 1]) +
                                   (cht_register[cht_reg_no1 + 1] * cht_register[cht_reg_no1 + 2]) + cht_offset,
-                                   Truncate8(poke_value & 0xFFu));
+                                Truncate8(poke_value & 0xFFu));
+            }
             break;
 
           case 0x40: // Write the u16 from cht_register[cht_reg_no1] to address
@@ -2874,18 +2877,21 @@ void Cheats::GamesharkCheatCode::Apply() const
             cht_register[cht_reg_no1] = DoMemoryRead<u16>(cht_register[cht_reg_no2] + poke_value);
             break;
           case 0x47: // Write the u16 poke_value to a specific index of a single array in a series of consecutive arrays
-            //This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
-            //cht_register[cht_reg_no1] = the base address of the first element of the first array
-            //cht_register[cht_reg_no1+1] = the array size (basically the address diff between the start of each array)
-            //cht_register[cht_reg_no1+2] = the index of which array in the series to poke (this must be greater than 0)
-            //cht_register[cht_reg_no1+3] must == 0xD0D0 to ensure it only pokes when the above cht_regs have been set
-            //                                    (safety valve)
-            //cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
-            if (cht_register[cht_reg_no1 + 3] == 0xD0D0 && cht_register[cht_reg_no1 + 2]  > 0
-                && cht_register[cht_reg_no1 + 1] >= cht_offset)
-                DoMemoryWrite<u16>((cht_register[cht_reg_no1] - cht_register[cht_reg_no1 + 1]) +
-                                  (cht_register[cht_reg_no1 + 1] * cht_register[cht_reg_no1 + 2]) + cht_offset,
-                                   Truncate16(poke_value & 0xFFFFu));
+            // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
+            // cht_register[cht_reg_no1] = the base address of the first element of the first array
+            // cht_register[cht_reg_no1+1] = the array size (basically the address diff between the start of each array)
+            // cht_register[cht_reg_no1+2] = the index of which array in the series to poke (this must be greater than
+            // 0) cht_register[cht_reg_no1+3] must == 0xD0D0 to ensure it only pokes when the above cht_regs have been
+            // set
+            //                                     (safety valve)
+            // cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
+            if ((cht_reg_no1 <= (std::size(cht_register) - 4)) && cht_register[cht_reg_no1 + 3] == 0xD0D0 &&
+                cht_register[cht_reg_no1 + 2] > 0 && cht_register[cht_reg_no1 + 1] >= cht_offset)
+            {
+              DoMemoryWrite<u16>((cht_register[cht_reg_no1] - cht_register[cht_reg_no1 + 1]) +
+                                   (cht_register[cht_reg_no1 + 1] * cht_register[cht_reg_no1 + 2]) + cht_offset,
+                                 Truncate16(poke_value & 0xFFFFu));
+            }
             break;
 
           case 0x80: // Write the u32 from cht_register[cht_reg_no1] to address
@@ -2912,7 +2918,7 @@ void Cheats::GamesharkCheatCode::Apply() const
             // cht_register[cht_reg_no1]
             cht_register[cht_reg_no1] = DoMemoryRead<u32>(cht_register[cht_reg_no2] + poke_value);
             break;
-          //Do not use 0x87 as it's not possible to duplicate 0x07, 0x47 for a 32 bit write as not enough characters
+            // Do not use 0x87 as it's not possible to duplicate 0x07, 0x47 for a 32 bit write as not enough characters
 
           case 0xC0: // Reg3 = Reg2 + Reg1
             cht_register[cht_reg_no3] = cht_register[cht_reg_no2] + cht_register[cht_reg_no1];
