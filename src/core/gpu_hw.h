@@ -342,7 +342,7 @@ private:
     u32 bits = INVALID_DRAW_MODE_BITS;
   } m_draw_mode = {};
 
-  GPUTextureWindow m_texture_window_bits;
+  GPUTextureWindow m_texture_window_bits = {};
 
   std::unique_ptr<GPUPipeline> m_wireframe_pipeline;
 
