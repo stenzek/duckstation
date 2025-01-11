@@ -505,7 +505,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::string input_binding_display_name;
   std::vector<InputBindingKey> input_binding_new_bindings;
   std::vector<std::pair<InputBindingKey, std::pair<float, float>>> input_binding_value_ranges;
-  Timer input_binding_timer;
+  Timer::Value input_binding_start_time = 0;
   bool controller_macro_expanded[NUM_CONTROLLER_AND_CARD_PORTS][InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
 
   // Save State List
@@ -1865,7 +1865,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
   s_state.input_binding_display_name = display_name;
   s_state.input_binding_new_bindings = {};
   s_state.input_binding_value_ranges = {};
-  s_state.input_binding_timer.Reset();
+  s_state.input_binding_start_time = Timer::GetCurrentValue();
 
   const bool game_settings = IsEditingGameSettings(bsi);
 
@@ -1996,7 +1996,9 @@ void FullscreenUI::DrawInputBindingWindow()
 {
   DebugAssert(s_state.input_binding_type != InputBindingInfo::Type::Unknown);
 
-  const double time_remaining = INPUT_BINDING_TIMEOUT_SECONDS - s_state.input_binding_timer.GetTimeSeconds();
+  const double time_remaining =
+    INPUT_BINDING_TIMEOUT_SECONDS -
+    Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.input_binding_start_time);
   if (time_remaining <= 0.0)
   {
     InputManager::RemoveHook();
