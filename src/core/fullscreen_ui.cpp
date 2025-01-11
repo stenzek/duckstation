@@ -73,7 +73,9 @@ public:
 #define FSUI_FSTR(str) fmt::runtime(Host::TranslateToStringView(TR_CONTEXT, str))
 #define FSUI_NSTR(str) str
 
+using ImGuiFullscreen::ChoiceDialogOptions;
 using ImGuiFullscreen::FocusResetType;
+
 using ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
@@ -373,6 +375,8 @@ static void PopulatePatchesAndCheatsList(const std::string_view serial);
 static void PopulatePostProcessingChain(SettingsInterface* si, const char* section);
 static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
                               std::string_view key, std::string_view display_name);
+static void BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
+                                       const char* key, std::string_view display_name);
 static void DrawInputBindingWindow();
 static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                    const char* name, const char* display_name, const char* icon_name,
@@ -1823,7 +1827,10 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
 
   if (clicked)
   {
-    BeginInputBinding(bsi, type, section, name, display_name);
+    if (type == InputBindingInfo::Type::Motor)
+      BeginVibrationMotorBinding(bsi, type, section, name, display_name);
+    else
+      BeginInputBinding(bsi, type, section, name, display_name);
   }
   else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
   {
@@ -1933,6 +1940,55 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
 
     return default_action;
   });
+}
+
+void FullscreenUI::BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
+                                              const char* key, std::string_view display_name)
+{
+  // vibration motors use a list to select
+  const bool game_settings = IsEditingGameSettings(bsi);
+  InputManager::VibrationMotorList motors = InputManager::EnumerateVibrationMotors();
+  if (motors.empty())
+  {
+    ShowToast({}, FSUI_STR("No devices with vibration motors were detected."));
+    return;
+  }
+
+  const TinyString current_binding = bsi->GetTinyStringValue(section, key);
+  size_t current_index = motors.size();
+  ChoiceDialogOptions options;
+  options.reserve(motors.size() + 1);
+  for (size_t i = 0; i < motors.size(); i++)
+  {
+    std::string text = InputManager::ConvertInputBindingKeyToString(InputBindingInfo::Type::Motor, motors[i]);
+    const bool this_index = (current_binding.view() == text);
+    current_index = this_index ? i : current_index;
+    options.emplace_back(std::move(text), this_index);
+  }
+
+  // empty/no mapping value
+  options.emplace_back(FSUI_STR("No Vibration"), current_binding.empty());
+
+  // add current value to list if it's not currently available
+  if (!current_binding.empty() && current_index == motors.size())
+    options.emplace_back(std::make_pair(std::string(current_binding.view()), true));
+
+  OpenChoiceDialog(display_name, false, std::move(options),
+                   [game_settings, section = std::string(section), key = std::string(key),
+                    motors = std::move(motors)](s32 index, const std::string& title, bool checked) {
+                     if (index >= 0)
+                     {
+                       auto lock = Host::GetSettingsLock();
+                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                       if (static_cast<size_t>(index) == motors.size())
+                         bsi->DeleteValue(section.c_str(), key.c_str());
+                       else
+                         bsi->SetStringValue(section.c_str(), key.c_str(), title.c_str());
+                       SetSettingsChanged(bsi);
+                     }
+
+                     CloseChoiceDialog();
+                   });
 }
 
 void FullscreenUI::DrawInputBindingWindow()
@@ -3755,11 +3811,10 @@ void FullscreenUI::DrawEmulationSettingsPage()
     FSUI_NSTR("4 Frames"), FSUI_NSTR("5 Frames"), FSUI_NSTR("6 Frames"), FSUI_NSTR("7 Frames"),
     FSUI_NSTR("8 Frames"), FSUI_NSTR("9 Frames"), FSUI_NSTR("10 Frames")};
 
-  DrawIntListSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_RUNNING, "Runahead"),
-    FSUI_CSTR(
-      "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements."),
-    "Main", "RunaheadFrameCount", 0, runahead_options);
+  DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_RUNNING, "Runahead"),
+                     FSUI_CSTR("Simulates the system ahead of time and rolls back/replays to reduce input lag. Very "
+                               "high system requirements."),
+                     "Main", "RunaheadFrameCount", 0, runahead_options);
 
   TinyString rewind_summary;
   if (runahead_enabled)
@@ -8410,7 +8465,9 @@ TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
 TRANSLATE_NOOP("FullscreenUI", "Navigate");
 TRANSLATE_NOOP("FullscreenUI", "No Binding");
 TRANSLATE_NOOP("FullscreenUI", "No Game Selected");
+TRANSLATE_NOOP("FullscreenUI", "No Vibration");
 TRANSLATE_NOOP("FullscreenUI", "No cheats are available for this game.");
+TRANSLATE_NOOP("FullscreenUI", "No devices with vibration motors were detected.");
 TRANSLATE_NOOP("FullscreenUI", "No input profiles available.");
 TRANSLATE_NOOP("FullscreenUI", "No patches are available for this game.");
 TRANSLATE_NOOP("FullscreenUI", "No resume save state found.");
