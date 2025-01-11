@@ -2521,6 +2521,7 @@ void ImGuiFullscreen::DrawInputDialog()
 
   ImGui::PushFont(UIStyle.LargeFont);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                       LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
@@ -2583,7 +2584,7 @@ void ImGuiFullscreen::DrawInputDialog()
     GetInputDialogHelpText(s_state.fullscreen_footer_text);
 
   ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(3);
+  ImGui::PopStyleVar(4);
   ImGui::PopFont();
 }
 
