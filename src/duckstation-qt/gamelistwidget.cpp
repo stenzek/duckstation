@@ -511,7 +511,7 @@ void GameListWidget::showGameList()
   setFocusProxy(m_table_view);
   resizeTableViewColumnsToFit();
   updateToolbar();
-  emit layoutChange();
+  emit layoutChanged();
 }
 
 void GameListWidget::showGameGrid()
@@ -527,7 +527,7 @@ void GameListWidget::showGameGrid()
   m_ui.stack->setCurrentIndex(1);
   setFocusProxy(m_list_view);
   updateToolbar();
-  emit layoutChange();
+  emit layoutChanged();
 }
 
 void GameListWidget::setShowCoverTitles(bool enabled)
@@ -544,7 +544,7 @@ void GameListWidget::setShowCoverTitles(bool enabled)
   if (isShowingGameGrid())
     m_model->refresh();
   updateToolbar();
-  emit layoutChange();
+  emit layoutChanged();
 }
 
 void GameListWidget::setMergeDiscSets(bool enabled)
@@ -559,7 +559,7 @@ void GameListWidget::setMergeDiscSets(bool enabled)
   Host::CommitBaseSettingChanges();
   m_sort_model->setMergeDiscSets(enabled);
   updateToolbar();
-  emit layoutChange();
+  emit layoutChanged();
 }
 
 void GameListWidget::setShowGameIcons(bool enabled)

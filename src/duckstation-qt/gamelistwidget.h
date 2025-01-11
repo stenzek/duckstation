@@ -66,7 +66,7 @@ Q_SIGNALS:
   void entryContextMenuRequested(const QPoint& point);
 
   void addGameDirectoryRequested();
-  void layoutChange();
+  void layoutChanged();
 
 private Q_SLOTS:
   void onRefreshProgress(const QString& status, int current, int total, float time);

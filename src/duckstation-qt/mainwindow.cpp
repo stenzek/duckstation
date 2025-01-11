@@ -1370,6 +1370,25 @@ void MainWindow::onGameListRefreshComplete()
   clearProgressBar();
 }
 
+void MainWindow::onGameListLayoutChanged()
+{
+  // re-sync with menu
+  {
+    QSignalBlocker sb(m_ui.actionGridViewShowTitles);
+    m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->isShowingGridCoverTitles());
+  }
+
+  {
+    QSignalBlocker sb(m_ui.actionMergeDiscSets);
+    m_ui.actionMergeDiscSets->setChecked(m_game_list_widget->isMergingDiscSets());
+  }
+
+  {
+    QSignalBlocker sb(m_ui.actionShowGameIcons);
+    m_ui.actionShowGameIcons->setChecked(m_game_list_widget->isShowingGameIcons());
+  }
+}
+
 void MainWindow::onGameListSelectionChanged()
 {
   auto lock = GameList::GetLock();
@@ -1621,9 +1640,6 @@ void MainWindow::setupAdditionalUi()
 
   m_game_list_widget = new GameListWidget(getContentParent());
   m_game_list_widget->initialize();
-  m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->isShowingGridCoverTitles());
-  m_ui.actionMergeDiscSets->setChecked(m_game_list_widget->isMergingDiscSets());
-  m_ui.actionShowGameIcons->setChecked(m_game_list_widget->isShowingGameIcons());
   if (s_use_central_widget)
   {
     m_ui.mainContainer = nullptr; // setCentralWidget() will delete this
@@ -1663,14 +1679,13 @@ void MainWindow::setupAdditionalUi()
   m_settings_toolbar_menu->addAction(m_ui.actionSettings);
   m_settings_toolbar_menu->addAction(m_ui.actionViewGameProperties);
 
-  m_ui.actionGridViewShowTitles->setChecked(m_game_list_widget->isShowingGridCoverTitles());
-
   for (u32 scale = 1; scale <= 10; scale++)
   {
     QAction* action = m_ui.menuWindowSize->addAction(tr("%1x Scale").arg(scale));
     connect(action, &QAction::triggered, [scale]() { g_emu_thread->requestDisplaySize(scale); });
   }
 
+  onGameListLayoutChanged();
   updateDebugMenuVisibility();
 
   m_shortcuts.open_file =
@@ -2091,6 +2106,7 @@ void MainWindow::connectSignals()
   // These need to be queued connections to stop crashing due to menus opening/closing and switching focus.
   connect(m_game_list_widget, &GameListWidget::refreshProgress, this, &MainWindow::onGameListRefreshProgress);
   connect(m_game_list_widget, &GameListWidget::refreshComplete, this, &MainWindow::onGameListRefreshComplete);
+  connect(m_game_list_widget, &GameListWidget::layoutChanged, this, &MainWindow::onGameListLayoutChanged);
   connect(m_game_list_widget, &GameListWidget::selectionChanged, this, &MainWindow::onGameListSelectionChanged,
           Qt::QueuedConnection);
   connect(m_game_list_widget, &GameListWidget::entryActivated, this, &MainWindow::onGameListEntryActivated,
