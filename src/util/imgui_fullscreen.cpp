@@ -181,9 +181,6 @@ struct ALIGN_TO_CACHE_LINE UIState
 
 } // namespace
 
-static constexpr float NOTIFICATION_FADE_IN_TIME = 0.2f;
-static constexpr float NOTIFICATION_FADE_OUT_TIME = 0.8f;
-
 UIStyles UIStyle = {};
 static UIState s_state;
 
@@ -3068,6 +3065,9 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
 // Notifications
 //////////////////////////////////////////////////////////////////////////
 
+static constexpr float NOTIFICATION_APPEAR_ANIMATION_TIME = 0.2f;
+static constexpr float NOTIFICATION_DISAPPEAR_ANIMATION_TIME = 0.5f;
+
 void ImGuiFullscreen::AddNotification(std::string key, float duration, std::string title, std::string text,
                                       std::string image_path)
 {
@@ -3086,7 +3086,8 @@ void ImGuiFullscreen::AddNotification(std::string key, float duration, std::stri
 
         // Don't fade it in again
         const float time_passed = static_cast<float>(Timer::ConvertValueToSeconds(current_time - it->start_time));
-        it->start_time = current_time - Timer::ConvertSecondsToValue(std::min(time_passed, NOTIFICATION_FADE_IN_TIME));
+        it->start_time =
+          current_time - Timer::ConvertSecondsToValue(std::min(time_passed, NOTIFICATION_APPEAR_ANIMATION_TIME));
         return;
       }
     }
@@ -3119,7 +3120,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
   const Timer::Value current_time = Timer::GetCurrentValue();
 
   const float horizontal_padding = ImGuiFullscreen::LayoutScale(20.0f);
-  const float vertical_padding = ImGuiFullscreen::LayoutScale(10.0f);
+  const float vertical_padding = ImGuiFullscreen::LayoutScale(15.0f);
   const float horizontal_spacing = ImGuiFullscreen::LayoutScale(10.0f);
   const float vertical_spacing = ImGuiFullscreen::LayoutScale(4.0f);
   const float badge_size = ImGuiFullscreen::LayoutScale(48.0f);
@@ -3127,16 +3128,14 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
   const float max_width = ImGuiFullscreen::LayoutScale(800.0f);
   const float max_text_width = max_width - badge_size - (horizontal_padding * 2.0f) - horizontal_spacing;
   const float min_height = (vertical_padding * 2.0f) + badge_size;
-  const float shadow_size = ImGuiFullscreen::LayoutScale(4.0f);
-  const float rounding = ImGuiFullscreen::LayoutScale(4.0f);
+  const float shadow_size = ImGuiFullscreen::LayoutScale(2.0f);
+  const float rounding = ImGuiFullscreen::LayoutScale(12.0f);
 
   ImFont* const title_font = ImGuiFullscreen::UIStyle.LargeFont;
   ImFont* const text_font = ImGuiFullscreen::UIStyle.MediumFont;
 
   const u32 toast_background_color =
-    s_state.light_theme ? IM_COL32(241, 241, 241, 255) : IM_COL32(0x21, 0x21, 0x21, 255);
-  const u32 toast_border_color =
-    s_state.light_theme ? IM_COL32(0x88, 0x88, 0x88, 255) : IM_COL32(0x48, 0x48, 0x48, 255);
+    s_state.light_theme ? IM_COL32(241, 241, 241, 255) : IM_COL32(0x28, 0x28, 0x28, 255);
   const u32 toast_title_color = s_state.light_theme ? IM_COL32(1, 1, 1, 255) : IM_COL32(0xff, 0xff, 0xff, 255);
   const u32 toast_text_color = s_state.light_theme ? IM_COL32(0, 0, 0, 255) : IM_COL32(0xff, 0xff, 0xff, 255);
 
@@ -3156,19 +3155,30 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     const ImVec2 text_size(text_font->CalcTextSizeA(text_font->FontSize, max_text_width, max_text_width,
                                                     notif.text.c_str(), notif.text.c_str() + notif.text.size()));
 
-    const float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
-                                       ImCeil(std::max(title_size.x, text_size.x)),
-                                     min_width);
+    float box_width = std::max((horizontal_padding * 2.0f) + badge_size + horizontal_spacing +
+                                 ImCeil(std::max(title_size.x, text_size.x)),
+                               min_width);
     const float box_height =
       std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
 
-    u8 opacity;
-    if (time_passed < NOTIFICATION_FADE_IN_TIME)
-      opacity = static_cast<u8>((time_passed / NOTIFICATION_FADE_IN_TIME) * 255.0f);
-    else if (time_passed > (notif.duration - NOTIFICATION_FADE_OUT_TIME))
-      opacity = static_cast<u8>(std::min((notif.duration - time_passed) / NOTIFICATION_FADE_OUT_TIME, 1.0f) * 255.0f);
-    else
-      opacity = 255;
+    u8 opacity = 255;
+    bool clip_box = false;
+    if (time_passed < NOTIFICATION_APPEAR_ANIMATION_TIME)
+    {
+      const float pct = time_passed / NOTIFICATION_APPEAR_ANIMATION_TIME;
+      const float eased_pct = Easing::OutExpo(pct);
+      box_width = box_width * eased_pct;
+      opacity = static_cast<u8>(pct * 255.0f);
+      clip_box = true;
+    }
+    else if (time_passed >= (notif.duration - NOTIFICATION_DISAPPEAR_ANIMATION_TIME))
+    {
+      const float pct = (notif.duration - time_passed) / NOTIFICATION_DISAPPEAR_ANIMATION_TIME;
+      const float eased_pct = Easing::InExpo(pct);
+      box_width = box_width * eased_pct;
+      opacity = static_cast<u8>(eased_pct * 255.0f);
+      clip_box = true;
+    }
 
     const float expected_y = position.y - ((s_notification_vertical_direction < 0.0f) ? box_height : 0.0f);
     float actual_y = notif.last_y;
@@ -3198,15 +3208,12 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     const ImVec2 box_min(position.x, actual_y);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
     const u32 background_color = (toast_background_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
-    const u32 border_color = (toast_border_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
 
     ImDrawList* dl = ImGui::GetForegroundDrawList();
-    dl->AddRectFilled(ImVec2(box_min.x + shadow_size, box_min.y + shadow_size),
-                      ImVec2(box_max.x + shadow_size, box_max.y + shadow_size),
-                      IM_COL32(20, 20, 20, (180 * opacity) / 255u), rounding, ImDrawFlags_RoundCornersAll);
     dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundCornersAll);
-    dl->AddRect(box_min, box_max, border_color, rounding, ImDrawFlags_RoundCornersAll,
-                ImGuiFullscreen::LayoutScale(1.0f));
+
+    if (clip_box)
+      dl->PushClipRect(box_min, box_max);
 
     const ImVec2 badge_min(box_min.x + horizontal_padding, box_min.y + vertical_padding);
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
@@ -3231,6 +3238,9 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     const u32 text_col = (toast_text_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
     dl->AddText(text_font, text_font->FontSize, text_min, text_col, notif.text.c_str(),
                 notif.text.c_str() + notif.text.size(), max_text_width);
+
+    if (clip_box)
+      dl->PopClipRect();
 
     position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
     index++;
