@@ -162,11 +162,7 @@ void ControllerSettingsWindow::onCategoryCurrentRowChanged(int row)
 
 void ControllerSettingsWindow::onCurrentProfileChanged(int index)
 {
-  std::string profile_name;
-  if (index > 0)
-    profile_name = m_ui.currentProfile->itemText(index).toStdString();
-
-  switchProfile(profile_name);
+  switchProfile(m_ui.currentProfile->itemText(index).toStdString());
 }
 
 void ControllerSettingsWindow::onNewProfileClicked()
