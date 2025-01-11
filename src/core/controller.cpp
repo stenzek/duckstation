@@ -19,13 +19,8 @@
 
 #include "fmt/format.h"
 
-static const Controller::ControllerInfo s_none_info = {ControllerType::None,
-                                                       "None",
-                                                       TRANSLATE_NOOP("ControllerType", "Not Connected"),
-                                                       nullptr,
-                                                       {},
-                                                       {},
-                                                       Controller::VibrationCapabilities::NoVibration};
+static const Controller::ControllerInfo s_none_info = {
+  ControllerType::None, "None", TRANSLATE_NOOP("ControllerType", "Not Connected"), nullptr, {}, {}};
 
 static const Controller::ControllerInfo* s_controller_info[] = {
   &s_none_info,

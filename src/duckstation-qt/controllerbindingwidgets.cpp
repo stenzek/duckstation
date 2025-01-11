@@ -401,7 +401,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
   {
     if (bi.type == InputBindingInfo::Type::Axis || bi.type == InputBindingInfo::Type::HalfAxis ||
         bi.type == InputBindingInfo::Type::Pointer || bi.type == InputBindingInfo::Type::RelativePointer ||
-        bi.type == InputBindingInfo::Type::Device)
+        bi.type == InputBindingInfo::Type::Device || bi.type == InputBindingInfo::Type::Motor)
     {
       if (!axis_gbox)
       {
@@ -411,7 +411,12 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
 
       QGroupBox* gbox = new QGroupBox(QString::fromUtf8(m_controller_info->GetBindingDisplayName(bi)), axis_gbox);
       QVBoxLayout* temp = new QVBoxLayout(gbox);
-      InputBindingWidget* widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
+      QWidget* widget;
+      if (bi.type != InputBindingInfo::Type::Motor)
+        widget = new InputBindingWidget(gbox, sif, bi.type, getConfigSection(), bi.name);
+      else
+        widget = new InputVibrationBindingWidget(gbox, getDialog(), getConfigSection(), bi.name);
+
       temp->addWidget(widget);
       axis_layout->addWidget(gbox, row, column);
       if ((++column) == NUM_AXIS_COLUMNS)
@@ -421,41 +426,7 @@ void ControllerBindingWidget::createBindingWidgets(QWidget* parent)
       }
     }
   }
-  if (m_controller_info->vibration_caps != Controller::VibrationCapabilities::NoVibration)
-  {
-    const bool dual_motors = (m_controller_info->vibration_caps == Controller::VibrationCapabilities::LargeSmallMotors);
-    if (!axis_gbox)
-    {
-      axis_gbox = new QGroupBox(tr("Axes"), scrollarea_widget);
-      axis_layout = new QGridLayout(axis_gbox);
-    }
 
-    QGroupBox* gbox = new QGroupBox(dual_motors ? tr("Large Motor") : tr("Vibration"), axis_gbox);
-    QVBoxLayout* temp = new QVBoxLayout(gbox);
-    InputVibrationBindingWidget* widget =
-      new InputVibrationBindingWidget(gbox, getDialog(), getConfigSection(), dual_motors ? "LargeMotor" : "Motor");
-    temp->addWidget(widget);
-    axis_layout->addWidget(gbox, row, column);
-    if ((++column) == NUM_AXIS_COLUMNS)
-    {
-      column = 0;
-      row++;
-    }
-
-    if (m_controller_info->vibration_caps == Controller::VibrationCapabilities::LargeSmallMotors)
-    {
-      gbox = new QGroupBox(tr("Small Motor"), axis_gbox);
-      temp = new QVBoxLayout(gbox);
-      widget = new InputVibrationBindingWidget(gbox, getDialog(), getConfigSection(), "SmallMotor");
-      temp->addWidget(widget);
-      axis_layout->addWidget(gbox, row, column);
-      if ((++column) == NUM_AXIS_COLUMNS)
-      {
-        column = 0;
-        row++;
-      }
-    }
-  }
   if (axis_gbox)
     axis_layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), ++row, 0);
 
@@ -526,34 +497,12 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
 
       widget->initialize(sif, bi.type, config_section, bi.name);
     }
-  }
-
-  switch (m_controller_info->vibration_caps)
-  {
-    case Controller::VibrationCapabilities::LargeSmallMotors:
+    else if (bi.type == InputBindingInfo::Type::Motor)
     {
-      InputVibrationBindingWidget* widget =
-        parent->findChild<InputVibrationBindingWidget*>(QStringLiteral("LargeMotor"));
+      InputVibrationBindingWidget* widget = parent->findChild<InputVibrationBindingWidget*>(QString::fromUtf8(bi.name));
       if (widget)
-        widget->setKey(getDialog(), config_section, "LargeMotor");
-
-      widget = parent->findChild<InputVibrationBindingWidget*>(QStringLiteral("SmallMotor"));
-      if (widget)
-        widget->setKey(getDialog(), config_section, "SmallMotor");
+        widget->setKey(getDialog(), config_section, bi.name);
     }
-    break;
-
-    case Controller::VibrationCapabilities::SingleMotor:
-    {
-      InputVibrationBindingWidget* widget = parent->findChild<InputVibrationBindingWidget*>(QStringLiteral("Motor"));
-      if (widget)
-        widget->setKey(getDialog(), config_section, "Motor");
-    }
-    break;
-
-    case Controller::VibrationCapabilities::NoVibration:
-    default:
-      break;
   }
 }
 

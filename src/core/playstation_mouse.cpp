@@ -220,5 +220,4 @@ const Controller::ControllerInfo PlayStationMouse::INFO = {ControllerType::PlayS
                                                            TRANSLATE_NOOP("ControllerType", "Mouse"),
                                                            ICON_PF_MOUSE,
                                                            s_binding_info,
-                                                           s_settings,
-                                                           Controller::VibrationCapabilities::NoVibration};
+                                                           s_settings};

@@ -327,13 +327,9 @@ std::unique_ptr<Justifier> Justifier::Create(u32 index)
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, binding, genb)                                                           \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb                     \
-  }
+  {name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::Button, genb}
 #define HALFAXIS(name, display_name, icon_name, binding, genb)                                                         \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb                   \
-  }
+  {name, display_name, icon_name, static_cast<u32>(binding), InputBindingInfo::Type::HalfAxis, genb}
 
   // clang-format off
   {"Pointer", TRANSLATE_NOOP("Justifier", "Pointer/Aiming"), ICON_PF_MOUSE, static_cast<u32>(Justifier::Binding::ButtonCount), InputBindingInfo::Type::Pointer, GenericInputBinding::Unknown},
@@ -394,13 +390,9 @@ static const SettingInfo s_settings[] = {
    "5", "0", "80", "1", "%u", nullptr, 0.0f},
 };
 
-const Controller::ControllerInfo Justifier::INFO = {ControllerType::Justifier,
-                                                    "Justifier",
-                                                    TRANSLATE_NOOP("ControllerType", "Justifier"),
-                                                    ICON_PF_LIGHT_GUN,
-                                                    s_binding_info,
-                                                    s_settings,
-                                                    Controller::VibrationCapabilities::NoVibration};
+const Controller::ControllerInfo Justifier::INFO = {
+  ControllerType::Justifier, "Justifier",    TRANSLATE_NOOP("ControllerType", "Justifier"),
+  ICON_PF_LIGHT_GUN,         s_binding_info, s_settings};
 
 void Justifier::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

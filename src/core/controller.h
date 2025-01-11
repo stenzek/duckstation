@@ -23,14 +23,6 @@ class HostInterface;
 class Controller
 {
 public:
-  enum class VibrationCapabilities : u8
-  {
-    NoVibration,
-    LargeSmallMotors,
-    SingleMotor,
-    Count
-  };
-
   struct ControllerBindingInfo
   {
     const char* name;
@@ -49,7 +41,6 @@ public:
     const char* icon_name;
     std::span<const ControllerBindingInfo> bindings;
     std::span<const SettingInfo> settings;
-    VibrationCapabilities vibration_caps;
 
     /// Returns localized controller type name.
     const char* GetDisplayName() const;

@@ -837,6 +837,10 @@ void InputManager::AddHotkeyBindings(const SettingsInterface& si)
 void InputManager::AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad_index,
                                   const Controller::ControllerInfo* cinfo)
 {
+  bool vibration_binding_valid = false;
+  PadVibrationBinding vibration_binding = {};
+  vibration_binding.pad_index = pad_index;
+
   for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
   {
     const std::vector<std::string> bindings(si.GetStringList(section.c_str(), bi.name));
@@ -896,6 +900,21 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
       }
       break;
 
+      case InputBindingInfo::Type::Motor:
+      {
+        DebugAssert(bi.bind_index < std::size(vibration_binding.motors));
+        if (bindings.empty())
+          continue;
+
+        if (bindings.size() > 1)
+          WARNING_LOG("More than one vibration motor binding for {}:{}", pad_index, bi.name);
+
+        vibration_binding_valid |=
+          ParseBindingAndGetSource(bindings.front(), &vibration_binding.motors[bi.bind_index].binding,
+                                   &vibration_binding.motors[bi.bind_index].source);
+      }
+      break;
+
       case InputBindingInfo::Type::Pointer:
       case InputBindingInfo::Type::Device:
         // handled in device
@@ -906,6 +925,9 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
         break;
     }
   }
+
+  if (vibration_binding_valid)
+    s_pad_vibration_array.push_back(std::move(vibration_binding));
 
   for (u32 macro_button_index = 0; macro_button_index < NUM_MACRO_BUTTONS_PER_CONTROLLER; macro_button_index++)
   {
@@ -942,38 +964,6 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
         }
       }
     }
-  }
-
-  if (cinfo->vibration_caps != Controller::VibrationCapabilities::NoVibration)
-  {
-    PadVibrationBinding vib;
-    vib.pad_index = pad_index;
-
-    bool has_any_bindings = false;
-    switch (cinfo->vibration_caps)
-    {
-      case Controller::VibrationCapabilities::LargeSmallMotors:
-      {
-        if (const std::string large_binding(si.GetStringValue(section.c_str(), "LargeMotor")); !large_binding.empty())
-          has_any_bindings |= ParseBindingAndGetSource(large_binding, &vib.motors[0].binding, &vib.motors[0].source);
-        if (const std::string small_binding(si.GetStringValue(section.c_str(), "SmallMotor")); !small_binding.empty())
-          has_any_bindings |= ParseBindingAndGetSource(small_binding, &vib.motors[1].binding, &vib.motors[1].source);
-      }
-      break;
-
-      case Controller::VibrationCapabilities::SingleMotor:
-      {
-        if (const std::string binding(si.GetStringValue(section.c_str(), "Motor")); !binding.empty())
-          has_any_bindings |= ParseBindingAndGetSource(binding, &vib.motors[0].binding, &vib.motors[0].source);
-      }
-      break;
-
-      default:
-        break;
-    }
-
-    if (has_any_bindings)
-      s_pad_vibration_array.push_back(std::move(vib));
   }
 }
 
@@ -1580,19 +1570,13 @@ bool InputManager::MapController(SettingsInterface& si, u32 controller,
     if (bi.generic_mapping == GenericInputBinding::Unknown)
       continue;
 
-    num_mappings += TryMapGenericMapping(si, section, mapping, bi.generic_mapping, bi.name);
-  }
-  if (info->vibration_caps == Controller::VibrationCapabilities::LargeSmallMotors)
-  {
-    num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, "SmallMotor");
-    num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::LargeMotor, "LargeMotor");
-  }
-  else if (info->vibration_caps == Controller::VibrationCapabilities::SingleMotor)
-  {
-    if (TryMapGenericMapping(si, section, mapping, GenericInputBinding::LargeMotor, "Motor") == 0)
-      num_mappings += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, "Motor");
-    else
-      num_mappings++;
+    u32 mappings_added = TryMapGenericMapping(si, section, mapping, bi.generic_mapping, bi.name);
+
+    // try to map to small motor if we tried big motor
+    if (mappings_added == 0 && bi.generic_mapping == GenericInputBinding::LargeMotor)
+      mappings_added += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, bi.name);
+
+    num_mappings += mappings_added;
   }
 
   return (num_mappings > 0);

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "analog_controller.h"
@@ -757,6 +757,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    static_cast<u32>(AnalogController::Button::Count) + static_cast<u32>(halfaxis),                                     \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
+#define MOTOR(name, display_name, icon_name, index, genb)                                                              \
+  {name, display_name, icon_name, index, InputBindingInfo::Type::Motor, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("AnalogController", "D-Pad Up"), ICON_PF_DPAD_UP, AnalogController::Button::Up, GenericInputBinding::DPadUp),
@@ -785,8 +787,12 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   AXIS("RRight", TRANSLATE_NOOP("AnalogController", "Right Stick Right"), ICON_PF_RIGHT_ANALOG_RIGHT, AnalogController::HalfAxis::RRight, GenericInputBinding::RightStickRight),
   AXIS("RDown", TRANSLATE_NOOP("AnalogController", "Right Stick Down"), ICON_PF_RIGHT_ANALOG_DOWN, AnalogController::HalfAxis::RDown, GenericInputBinding::RightStickDown),
   AXIS("RUp", TRANSLATE_NOOP("AnalogController", "Right Stick Up"), ICON_PF_RIGHT_ANALOG_UP, AnalogController::HalfAxis::RUp, GenericInputBinding::RightStickUp),
+
+  MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_GEARS_OPTIONS_SETTINGS, 0, GenericInputBinding::LargeMotor),
+  MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_GEARS_OPTIONS_SETTINGS, 1, GenericInputBinding::SmallMotor),
 // clang-format on
 
+#undef MOTOR
 #undef AXIS
 #undef BUTTON
 };
@@ -844,8 +850,7 @@ const Controller::ControllerInfo AnalogController::INFO = {ControllerType::Analo
                                                            TRANSLATE_NOOP("ControllerType", "Analog Controller"),
                                                            ICON_PF_GAMEPAD_ALT,
                                                            s_binding_info,
-                                                           s_settings,
-                                                           Controller::VibrationCapabilities::LargeSmallMotors};
+                                                           s_settings};
 
 void AnalogController::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

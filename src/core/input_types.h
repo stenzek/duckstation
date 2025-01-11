@@ -65,8 +65,8 @@ enum class GenericInputBinding : u8
   R1, // RB on XBox pads.
   R2, // Right trigger on Xbox pads.
 
-  SmallMotor, // High frequency vibration.
   LargeMotor, // Low frequency vibration.
+  SmallMotor, // High frequency vibration.
 
   Count,
 };

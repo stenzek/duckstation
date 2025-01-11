@@ -632,6 +632,9 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
 
   // clang-format on
 
+  {"Motor", TRANSLATE_NOOP("JogCon", "Vibration Motor"), nullptr, 0u, InputBindingInfo::Type::Motor,
+   GenericInputBinding::LargeMotor},
+
   {"ForceFeedbackDevice", TRANSLATE_NOOP("JogCon", "Force Feedback Device"), nullptr,
    static_cast<u32>(JogCon::Button::MaxCount) + static_cast<u32>(JogCon::HalfAxis::MaxCount),
    InputBindingInfo::Type::Device, GenericInputBinding::Unknown},
@@ -661,5 +664,5 @@ static const SettingInfo s_settings[] = {
 };
 
 const Controller::ControllerInfo JogCon::INFO = {
-  ControllerType::JogCon, "JogCon",   TRANSLATE_NOOP("ControllerType", "JogCon"),    ICON_PF_STEERING_WHEEL,
-  s_binding_info,         s_settings, Controller::VibrationCapabilities::SingleMotor};
+  ControllerType::JogCon, "JogCon",       TRANSLATE_NOOP("ControllerType", "JogCon"),
+  ICON_PF_STEERING_WHEEL, s_binding_info, s_settings};

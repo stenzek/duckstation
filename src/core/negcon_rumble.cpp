@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "negcon_rumble.h"
@@ -718,6 +718,8 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
    static_cast<u32>(NeGconRumble::Button::Count) + static_cast<u32>(halfaxis),                                         \
    InputBindingInfo::Type::HalfAxis,                                                                                   \
    genb}
+#define MOTOR(name, display_name, icon_name, index, genb)                                                              \
+  {name, display_name, icon_name, index, InputBindingInfo::Type::Motor, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("NeGconRumble", "D-Pad Up"), ICON_PF_DPAD_UP, NeGconRumble::Button::Up, GenericInputBinding::DPadUp),
@@ -734,8 +736,12 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   AXIS("SteeringLeft", TRANSLATE_NOOP("NeGconRumble", "Steering (Twist) Left"), ICON_PF_LEFT_ANALOG_LEFT, NeGconRumble::HalfAxis::SteeringLeft, GenericInputBinding::LeftStickLeft),
   AXIS("SteeringRight", TRANSLATE_NOOP("NeGconRumble", "Steering (Twist) Right"), ICON_PF_LEFT_ANALOG_LEFT, NeGconRumble::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
   BUTTON("Analog", TRANSLATE_NOOP("NeGconRumble", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, NeGconRumble::Button::Analog, GenericInputBinding::System),
+  
+  MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_GEARS_OPTIONS_SETTINGS, 0, GenericInputBinding::LargeMotor),
+  MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_GEARS_OPTIONS_SETTINGS, 1, GenericInputBinding::SmallMotor),
 // clang-format on
 
+#undef MOTOR
 #undef AXIS
 #undef BUTTON
 };
@@ -764,8 +770,7 @@ const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRum
                                                        TRANSLATE_NOOP("ControllerType", "NeGcon (Rumble)"),
                                                        ICON_PF_GAMEPAD,
                                                        s_binding_info,
-                                                       s_settings,
-                                                       Controller::VibrationCapabilities::LargeSmallMotors};
+                                                       s_settings};
 
 void NeGconRumble::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {

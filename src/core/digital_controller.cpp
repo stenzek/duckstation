@@ -164,9 +164,7 @@ std::unique_ptr<DigitalController> DigitalController::Create(u32 index, Controll
 
 static const Controller::ControllerBindingInfo s_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
-  }
+  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 
   // clang-format off
   BUTTON("Up", TRANSLATE_NOOP("DigitalController", "D-Pad Up"), ICON_PF_DPAD_UP, DigitalController::Button::Up, GenericInputBinding::DPadUp),
@@ -193,14 +191,11 @@ const Controller::ControllerInfo DigitalController::INFO = {ControllerType::Digi
                                                             TRANSLATE_NOOP("ControllerType", "Digital Controller"),
                                                             ICON_PF_GAMEPAD_ALT,
                                                             s_binding_info,
-                                                            {},
-                                                            Controller::VibrationCapabilities::NoVibration};
+                                                            {}};
 
 static const Controller::ControllerBindingInfo s_popn_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
-  }
+  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 
   // clang-format off
   BUTTON("LeftWhite", TRANSLATE_NOOP("PopnController", "Left White"), ICON_PF_BUTTON_TRIANGLE, DigitalController::Button::Triangle, GenericInputBinding::Triangle),
@@ -222,14 +217,11 @@ const Controller::ControllerInfo DigitalController::INFO_POPN = {ControllerType:
                                                                  TRANSLATE_NOOP("ControllerType", "Pop'n Controller"),
                                                                  ICON_PF_GAMEPAD_ALT,
                                                                  s_popn_binding_info,
-                                                                 {},
-                                                                 Controller::VibrationCapabilities::NoVibration};
+                                                                 {}};
 
 static const Controller::ControllerBindingInfo s_ddgo_binding_info[] = {
 #define BUTTON(name, display_name, icon_name, button, genb)                                                            \
-  {                                                                                                                    \
-    name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb                      \
-  }
+  {name, display_name, icon_name, static_cast<u32>(button), InputBindingInfo::Type::Button, genb}
 
   // clang-format off
   BUTTON("Select", TRANSLATE_NOOP("DDGoController", "Select"), ICON_PF_SELECT_SHARE, DigitalController::Button::Select, GenericInputBinding::Select),
@@ -255,5 +247,4 @@ const Controller::ControllerInfo DigitalController::INFO_DDGO = {
   TRANSLATE_NOOP("ControllerType", "Densha de Go! Controller"),
   ICON_PF_GAMEPAD_ALT,
   s_ddgo_binding_info,
-  {},
-  Controller::VibrationCapabilities::NoVibration};
+  {}};
