@@ -146,10 +146,9 @@ using BindingMap = std::unordered_multimap<InputBindingKey, std::shared_ptr<Inpu
 using VibrationBindingArray = std::vector<PadVibrationBinding>;
 static BindingMap s_binding_map;
 static VibrationBindingArray s_pad_vibration_array;
-static std::mutex s_mutex;
+static std::recursive_mutex s_mutex;
 
 // Hooks/intercepting (for setting bindings)
-static std::mutex m_event_intercept_mutex;
 static InputInterceptHook::Callback m_event_intercept_callback;
 
 // Input sources. Keyboard/mouse don't exist here.
@@ -1864,27 +1863,27 @@ void InputManager::UpdateMacroButtons()
 
 void InputManager::SetHook(InputInterceptHook::Callback callback)
 {
-  std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
+  std::unique_lock lock(s_mutex);
   DebugAssert(!m_event_intercept_callback);
   m_event_intercept_callback = std::move(callback);
 }
 
 void InputManager::RemoveHook()
 {
-  std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
+  std::unique_lock lock(s_mutex);
   if (m_event_intercept_callback)
     m_event_intercept_callback = {};
 }
 
 bool InputManager::HasHook()
 {
-  std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
+  std::unique_lock lock(s_mutex);
   return (bool)m_event_intercept_callback;
 }
 
 bool InputManager::DoEventHook(InputBindingKey key, float value)
 {
-  std::unique_lock<std::mutex> lock(m_event_intercept_mutex);
+  std::unique_lock lock(s_mutex);
   if (!m_event_intercept_callback)
     return false;
 
