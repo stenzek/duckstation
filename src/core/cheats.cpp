@@ -521,6 +521,7 @@ Cheats::CodeInfoList Cheats::GetCodeInfoList(const std::string_view serial, std:
                     });
 
   if (sort_by_name)
+  {
     std::sort(ret.begin(), ret.end(), [](const CodeInfo& lhs, const CodeInfo& rhs) {
       // ungrouped cheats go together first
       if (const int lhs_group = static_cast<int>(lhs.name.find('\\') != std::string::npos),
@@ -530,8 +531,21 @@ Cheats::CodeInfoList Cheats::GetCodeInfoList(const std::string_view serial, std:
         return (lhs_group < rhs_group);
       }
 
+      // sort special characters first
+      static constexpr auto is_special = [](char ch) {
+        return !((ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') ||
+                 (ch >= 0x0A && ch <= 0x0D));
+      };
+      if (const int lhs_is_special = static_cast<int>(!lhs.name.empty() && is_special(lhs.name.front())),
+          rhs_is_special = static_cast<int>(!rhs.name.empty() && is_special(rhs.name.front()));
+          lhs_is_special != rhs_is_special)
+      {
+        return (lhs_is_special > rhs_is_special);
+      }
+
       return lhs.name < rhs.name;
     });
+  }
 
   return ret;
 }
