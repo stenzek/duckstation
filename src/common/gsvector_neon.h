@@ -9,7 +9,11 @@
 
 #define GSVECTOR_HAS_FAST_INT_SHUFFLE8 1
 #define GSVECTOR_HAS_SRLV 1
+
+#ifdef CPU_ARCH_ARM64
+// tbl2 with 128-bit vectors is not in A32.
 #define GSVECTOR_HAS_TBL2 1
+#endif
 
 class GSVector2;
 class GSVector2i;
@@ -2174,12 +2178,14 @@ public:
     return vgetq_lane_s64(vreinterpretq_s64_s32(v4s), i);
   }
 
+#ifdef CPU_ARCH_ARM64
   ALWAYS_INLINE GSVector4i tbl2(const GSVector4i& a, const GSVector4i& b, const GSVector4i& idx)
   {
     return GSVector4i(vreinterpretq_s32_u8(
       vqtbx2q_u8(vreinterpretq_u8_s32(v4s), uint8x16x2_t{vreinterpretq_u8_s32(a.v4s), vreinterpretq_u8_s32(b.v4s)},
                  vreinterpretq_u8_s32(idx.v4s))));
   }
+#endif
 
   ALWAYS_INLINE static GSVector4i loadnt(const void* p)
   {
