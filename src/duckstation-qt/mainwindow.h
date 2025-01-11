@@ -192,6 +192,7 @@ private Q_SLOTS:
   void onToolsOpenDataDirectoryTriggered();
   void onToolsOpenTextureDirectoryTriggered();
   void onSettingsTriggeredFromToolbar();
+  void onSettingsControllerProfilesTriggered();
 
   void onGameListRefreshComplete();
   void onGameListRefreshProgress(const QString& status, int current, int total);
@@ -313,6 +314,7 @@ private:
 
   SettingsWindow* m_settings_window = nullptr;
   ControllerSettingsWindow* m_controller_settings_window = nullptr;
+  ControllerSettingsWindow* m_input_profile_editor_window = nullptr;
 
   AutoUpdaterDialog* m_auto_updater_dialog = nullptr;
   MemoryCardEditorWindow* m_memory_card_editor_window = nullptr;

@@ -797,6 +797,7 @@ void MainWindow::destroySubWindows()
   QtUtils::CloseAndDeleteWindow(m_debugger_window);
   QtUtils::CloseAndDeleteWindow(m_memory_card_editor_window);
   QtUtils::CloseAndDeleteWindow(m_controller_settings_window);
+  QtUtils::CloseAndDeleteWindow(m_input_profile_editor_window);
   QtUtils::CloseAndDeleteWindow(m_settings_window);
 
   SettingsWindow::closeGamePropertiesDialogs();
@@ -2021,6 +2022,7 @@ void MainWindow::connectSignals()
   connect(m_ui.actionAchievementSettings, &QAction::triggered, [this]() { doSettings("Achievements"); });
   connect(m_ui.actionFolderSettings, &QAction::triggered, [this]() { doSettings("Folders"); });
   connect(m_ui.actionAdvancedSettings, &QAction::triggered, [this]() { doSettings("Advanced"); });
+  connect(m_ui.actionControllerProfiles, &QAction::triggered, this, &MainWindow::onSettingsControllerProfilesTriggered);
   connect(m_ui.actionViewToolbar, &QAction::toggled, this, &MainWindow::onViewToolbarActionToggled);
   connect(m_ui.actionViewLockToolbar, &QAction::toggled, this, &MainWindow::onViewLockToolbarActionToggled);
   connect(m_ui.actionViewStatusBar, &QAction::toggled, this, &MainWindow::onViewStatusBarActionToggled);
@@ -2336,11 +2338,29 @@ void MainWindow::doControllerSettings(
     dlg->setCategory(category);
 }
 
+void MainWindow::onSettingsTriggeredFromToolbar()
+{
+  if (s_system_valid)
+    m_settings_toolbar_menu->exec(QCursor::pos());
+  else
+    doSettings();
+}
+
+void MainWindow::onSettingsControllerProfilesTriggered()
+{
+  if (!m_input_profile_editor_window)
+    m_input_profile_editor_window = new ControllerSettingsWindow(nullptr, true);
+
+  QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window);
+}
+
 void MainWindow::openInputProfileEditor(const std::string_view name)
 {
-  ControllerSettingsWindow* dlg = getControllerSettingsWindow();
-  QtUtils::ShowOrRaiseWindow(dlg);
-  dlg->switchProfile(name);
+  if (!m_input_profile_editor_window)
+    m_input_profile_editor_window = new ControllerSettingsWindow(nullptr, true);
+
+  QtUtils::ShowOrRaiseWindow(m_input_profile_editor_window);
+  m_input_profile_editor_window->switchProfile(name);
 }
 
 void MainWindow::showEvent(QShowEvent* event)
@@ -2792,14 +2812,6 @@ void MainWindow::onToolsOpenTextureDirectoryTriggered()
     dir = QStringLiteral("%1" FS_OSPATH_SEPARATOR_STR "%2").arg(dir).arg(s_current_game_serial);
 
   QtUtils::OpenURL(this, QUrl::fromLocalFile(dir));
-}
-
-void MainWindow::onSettingsTriggeredFromToolbar()
-{
-  if (s_system_valid)
-    m_settings_toolbar_menu->exec(QCursor::pos());
-  else
-    doSettings();
 }
 
 void MainWindow::checkForUpdates(bool display_message)

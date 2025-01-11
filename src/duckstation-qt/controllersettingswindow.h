@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -14,6 +14,7 @@
 #include <QtCore/QString>
 #include <QtCore/QStringList>
 #include <QtWidgets/QDialog>
+#include <QtCore/QAbstractListModel>
 
 #include <array>
 #include <string>
@@ -41,7 +42,8 @@ public:
     Count
   };
 
-  ControllerSettingsWindow(SettingsInterface* game_sif = nullptr, QWidget* parent = nullptr);
+  ControllerSettingsWindow(SettingsInterface* game_sif = nullptr, bool edit_profiles = false,
+                           QWidget* parent = nullptr);
   ~ControllerSettingsWindow();
 
   static void editControllerSettingsForGame(QWidget* parent, SettingsInterface* sif);
@@ -50,13 +52,13 @@ public:
 
   ALWAYS_INLINE bool isEditingGlobalSettings() const
   {
-    return (m_profile_name.isEmpty() && !m_editing_settings_interface);
+    return (!m_editing_input_profiles && !m_editing_settings_interface);
   }
   ALWAYS_INLINE bool isEditingGameSettings() const
   {
-    return (m_profile_name.isEmpty() && m_editing_settings_interface);
+    return (!m_editing_input_profiles && m_editing_settings_interface);
   }
-  ALWAYS_INLINE bool isEditingProfile() const { return !m_profile_name.isEmpty(); }
+  ALWAYS_INLINE bool isEditingProfile() const { return m_editing_input_profiles; }
   ALWAYS_INLINE SettingsInterface* getEditingSettingsInterface() { return m_editing_settings_interface; }
 
   Category getCurrentCategory() const;
@@ -90,7 +92,6 @@ private Q_SLOTS:
   void onDeleteProfileClicked();
   void onRestoreDefaultsClicked();
   void onCopyGlobalSettingsClicked();
-  void onRestoreDefaultsForGameClicked();
 
   void createWidgets();
 
@@ -113,4 +114,5 @@ private:
 
   QString m_profile_name;
   std::unique_ptr<SettingsInterface> m_profile_settings_interface;
+  bool m_editing_input_profiles = false;
 };

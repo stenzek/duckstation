@@ -115,6 +115,7 @@
     <addaction name="actionAdvancedSettings"/>
     <addaction name="separator"/>
     <addaction name="actionControllerSettings"/>
+    <addaction name="actionControllerProfiles"/>
     <addaction name="actionHotkeySettings"/>
     <addaction name="separator"/>
     <addaction name="actionAddGameDirectory"/>
@@ -983,6 +984,14 @@
   <action name="actionControllerTest">
    <property name="text">
     <string>Controller Test</string>
+   </property>
+  </action>
+  <action name="actionControllerProfiles">
+   <property name="icon">
+    <iconset theme="controllers-line"/>
+   </property>
+   <property name="text">
+    <string>Controller Profiles</string>
    </property>
   </action>
  </widget>

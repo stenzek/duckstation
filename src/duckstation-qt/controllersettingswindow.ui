@@ -126,22 +126,12 @@
          </property>
         </widget>
        </item>
-       <item>
-        <widget class="QPushButton" name="restoreDefaults">
-         <property name="text">
-          <string>Restore Defaults</string>
-         </property>
-         <property name="icon">
-          <iconset theme="restart-line"/>
-         </property>
-        </widget>
-       </item>
       </layout>
      </item>
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="standardButtons">
-        <set>QDialogButtonBox::StandardButton::Close</set>
+        <set>QDialogButtonBox::StandardButton::Close|QDialogButtonBox::StandardButton::RestoreDefaults</set>
        </property>
       </widget>
      </item>

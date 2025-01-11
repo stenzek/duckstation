@@ -5,6 +5,7 @@
 #include "controllerbindingwidgets.h"
 #include "controllerglobalsettingswidget.h"
 #include "hotkeysettingswidget.h"
+#include "mainwindow.h"
 #include "qthost.h"
 
 #include "core/controller.h"
@@ -22,8 +23,8 @@
 #include <array>
 
 ControllerSettingsWindow::ControllerSettingsWindow(SettingsInterface* game_sif /* = nullptr */,
-                                                   QWidget* parent /* = nullptr */)
-  : QWidget(parent), m_editing_settings_interface(game_sif)
+                                                   bool edit_profiles /* = false */, QWidget* parent /* = nullptr */)
+  : QWidget(parent), m_editing_settings_interface(game_sif), m_editing_input_profiles(edit_profiles)
 {
   m_ui.setupUi(this);
 
@@ -35,23 +36,9 @@ ControllerSettingsWindow::ControllerSettingsWindow(SettingsInterface* game_sif /
           &ControllerSettingsWindow::onCategoryCurrentRowChanged);
   connect(m_ui.buttonBox, &QDialogButtonBox::rejected, this, &ControllerSettingsWindow::close);
 
-  if (!game_sif)
+  if (!game_sif && !edit_profiles)
   {
-    refreshProfileList();
-
-    m_ui.editProfileLayout->removeWidget(m_ui.copyGlobalSettings);
-    delete m_ui.copyGlobalSettings;
-    m_ui.copyGlobalSettings = nullptr;
-
-    connect(m_ui.currentProfile, &QComboBox::currentIndexChanged, this,
-            &ControllerSettingsWindow::onCurrentProfileChanged);
-    connect(m_ui.newProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onNewProfileClicked);
-    connect(m_ui.applyProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onApplyProfileClicked);
-    connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onDeleteProfileClicked);
-    connect(m_ui.restoreDefaults, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
-  }
-  else
-  {
+    // editing global settings
     m_ui.editProfileLayout->removeWidget(m_ui.editProfileLabel);
     delete m_ui.editProfileLabel;
     m_ui.editProfileLabel = nullptr;
@@ -67,11 +54,51 @@ ControllerSettingsWindow::ControllerSettingsWindow(SettingsInterface* game_sif /
     m_ui.editProfileLayout->removeWidget(m_ui.deleteProfile);
     delete m_ui.deleteProfile;
     m_ui.deleteProfile = nullptr;
+    m_ui.editProfileLayout->removeWidget(m_ui.copyGlobalSettings);
+    delete m_ui.copyGlobalSettings;
+    m_ui.copyGlobalSettings = nullptr;
+
+    if (QPushButton* button = m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults))
+      connect(button, &QPushButton::clicked, this, &ControllerSettingsWindow::onRestoreDefaultsClicked);
+  }
+  else
+  {
+    if (QPushButton* button = m_ui.buttonBox->button(QDialogButtonBox::RestoreDefaults))
+      m_ui.buttonBox->removeButton(button);
 
     connect(m_ui.copyGlobalSettings, &QPushButton::clicked, this,
             &ControllerSettingsWindow::onCopyGlobalSettingsClicked);
-    connect(m_ui.restoreDefaults, &QPushButton::clicked, this,
-            &ControllerSettingsWindow::onRestoreDefaultsForGameClicked);
+
+    if (edit_profiles)
+    {
+      setWindowTitle(tr("DuckStation Controller Profiles"));
+      refreshProfileList();
+
+      connect(m_ui.currentProfile, &QComboBox::currentIndexChanged, this,
+              &ControllerSettingsWindow::onCurrentProfileChanged);
+      connect(m_ui.newProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onNewProfileClicked);
+      connect(m_ui.applyProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onApplyProfileClicked);
+      connect(m_ui.deleteProfile, &QPushButton::clicked, this, &ControllerSettingsWindow::onDeleteProfileClicked);
+    }
+    else
+    {
+      // editing game settings
+      m_ui.editProfileLayout->removeWidget(m_ui.editProfileLabel);
+      delete m_ui.editProfileLabel;
+      m_ui.editProfileLabel = nullptr;
+      m_ui.editProfileLayout->removeWidget(m_ui.currentProfile);
+      delete m_ui.currentProfile;
+      m_ui.currentProfile = nullptr;
+      m_ui.editProfileLayout->removeWidget(m_ui.newProfile);
+      delete m_ui.newProfile;
+      m_ui.newProfile = nullptr;
+      m_ui.editProfileLayout->removeWidget(m_ui.applyProfile);
+      delete m_ui.applyProfile;
+      m_ui.applyProfile = nullptr;
+      m_ui.editProfileLayout->removeWidget(m_ui.deleteProfile);
+      delete m_ui.deleteProfile;
+      m_ui.deleteProfile = nullptr;
+    }
   }
 
   createWidgets();
@@ -81,7 +108,7 @@ ControllerSettingsWindow::~ControllerSettingsWindow() = default;
 
 void ControllerSettingsWindow::editControllerSettingsForGame(QWidget* parent, SettingsInterface* sif)
 {
-  ControllerSettingsWindow* dlg = new ControllerSettingsWindow(sif, parent);
+  ControllerSettingsWindow* dlg = new ControllerSettingsWindow(sif, false, parent);
   dlg->setWindowFlag(Qt::Window);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
   dlg->setWindowModality(Qt::WindowModality::WindowModal);
@@ -207,9 +234,8 @@ void ControllerSettingsWindow::onNewProfileClicked()
 
   if (!temp_si.Save())
   {
-    QMessageBox::critical(
-      this, tr("Error"),
-      tr("Failed to save the new profile to '%1'.").arg(QString::fromStdString(temp_si.GetPath())));
+    QMessageBox::critical(this, tr("Error"),
+                          tr("Failed to save the new profile to '%1'.").arg(QString::fromStdString(temp_si.GetPath())));
     return;
   }
 
@@ -238,14 +264,14 @@ void ControllerSettingsWindow::onApplyProfileClicked()
   }
   g_emu_thread->applySettings();
 
-  // make it visible
-  switchProfile({});
+  // Recreate global widget on profile apply
+  g_main_window->getControllerSettingsWindow()->createWidgets();
 }
 
 void ControllerSettingsWindow::onDeleteProfileClicked()
 {
-  if (QMessageBox::question(this, tr("Delete Input Profile"),
-                            tr("Are you sure you want to delete the input profile named '%1'?\n\n"
+  if (QMessageBox::question(this, tr("Delete Input Preset"),
+                            tr("Are you sure you want to delete the input preset named '%1'?\n\n"
                                "You cannot undo this action.")
                               .arg(m_profile_name)) != QMessageBox::Yes)
   {
@@ -266,11 +292,10 @@ void ControllerSettingsWindow::onDeleteProfileClicked()
 
 void ControllerSettingsWindow::onRestoreDefaultsClicked()
 {
-  if (QMessageBox::question(
-        this, tr("Restore Defaults"),
-        tr("Are you sure you want to restore the default controller configuration?\n\n"
-           "All shared bindings and configuration will be lost, but your input profiles will remain.\n\n"
-           "You cannot undo this action.")) != QMessageBox::Yes)
+  if (QMessageBox::question(this, tr("Restore Defaults"),
+                            tr("Are you sure you want to restore the default controller configuration?\n\n"
+                               "All bindings and configuration will be lost. You cannot undo this action.")) !=
+      QMessageBox::Yes)
   {
     return;
   }
@@ -279,12 +304,12 @@ void ControllerSettingsWindow::onRestoreDefaultsClicked()
   g_emu_thread->setDefaultSettings(false, true);
 
   // reload all settings
-  switchProfile({});
+  createWidgets();
 }
 
 void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
 {
-  DebugAssert(isEditingGameSettings());
+  DebugAssert(!isEditingGlobalSettings());
 
   {
     const auto lock = Host::GetSettingsLock();
@@ -297,19 +322,8 @@ void ControllerSettingsWindow::onCopyGlobalSettingsClicked()
   createWidgets();
 
   QMessageBox::information(QtUtils::GetRootWidget(this), tr("DuckStation Controller Settings"),
-                           tr("Per-game controller configuration reset to global settings."));
-}
-
-void ControllerSettingsWindow::onRestoreDefaultsForGameClicked()
-{
-  DebugAssert(isEditingGameSettings());
-  Settings::SetDefaultControllerConfig(*m_editing_settings_interface);
-  m_editing_settings_interface->Save();
-  g_emu_thread->reloadGameSettings();
-  createWidgets();
-
-  QMessageBox::information(QtUtils::GetRootWidget(this), tr("DuckStation Controller Settings"),
-                           tr("Per-game controller configuration reset to default settings."));
+                           isEditingGameSettings() ? tr("Per-game controller configuration reset to global settings.") :
+                                                     tr("Controller profile reset to global settings."));
 }
 
 bool ControllerSettingsWindow::getBoolValue(const char* section, const char* key, bool default_value) const
@@ -472,11 +486,12 @@ void ControllerSettingsWindow::createWidgets()
     m_ui.settingsContainer->addWidget(m_hotkey_settings);
   }
 
-  if (!isEditingGameSettings())
+  if (isEditingProfile())
   {
-    m_ui.applyProfile->setEnabled(isEditingProfile());
-    m_ui.deleteProfile->setEnabled(isEditingProfile());
-    m_ui.restoreDefaults->setEnabled(isEditingGlobalSettings());
+    const bool enable_buttons = static_cast<bool>(m_profile_settings_interface);
+    m_ui.applyProfile->setEnabled(enable_buttons);
+    m_ui.deleteProfile->setEnabled(enable_buttons);
+    m_ui.copyGlobalSettings->setEnabled(enable_buttons);
   }
 }
 
@@ -519,55 +534,64 @@ std::array<bool, 2> ControllerSettingsWindow::getEnabledMultitaps() const
   return {{(mtap_mode == MultitapMode::Port1Only || mtap_mode == MultitapMode::BothPorts),
            (mtap_mode == MultitapMode::Port2Only || mtap_mode == MultitapMode::BothPorts)}};
 }
+
 void ControllerSettingsWindow::refreshProfileList()
 {
   const std::vector<std::string> names(InputManager::GetInputProfileNames());
 
   QSignalBlocker sb(m_ui.currentProfile);
   m_ui.currentProfile->clear();
-  m_ui.currentProfile->addItem(tr("Shared"));
-  if (isEditingGlobalSettings())
-    m_ui.currentProfile->setCurrentIndex(0);
 
+  bool current_profile_found = false;
   for (const std::string& name : names)
   {
     const QString qname(QString::fromStdString(name));
     m_ui.currentProfile->addItem(qname);
     if (qname == m_profile_name)
+    {
       m_ui.currentProfile->setCurrentIndex(m_ui.currentProfile->count() - 1);
+      current_profile_found = true;
+    }
   }
+
+  if (!current_profile_found)
+    switchProfile(names.empty() ? std::string_view() : std::string_view(names.front()));
 }
 
 void ControllerSettingsWindow::switchProfile(const std::string_view name)
 {
-  QSignalBlocker sb(m_ui.currentProfile);
-
-  if (!name.empty())
+  const QString name_qstr = QtUtils::StringViewToQString(name);
   {
-    const QString name_qstr = QtUtils::StringViewToQString(name);
-
-    std::string path = System::GetInputProfilePath(name);
-    if (!FileSystem::FileExists(path.c_str()))
-    {
-      QMessageBox::critical(this, tr("Error"), tr("The input profile named '%1' cannot be found.").arg(name_qstr));
-      return;
-    }
-
-    std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(path));
-    sif->Load();
-
-    m_profile_settings_interface = std::move(sif);
-    m_editing_settings_interface = m_profile_settings_interface.get();
+    QSignalBlocker sb(m_ui.currentProfile);
     m_ui.currentProfile->setCurrentIndex(m_ui.currentProfile->findText(name_qstr));
-    m_profile_name = name_qstr;
   }
-  else
+  m_profile_name = name_qstr;
+  m_profile_settings_interface.reset();
+  m_editing_settings_interface = nullptr;
+
+  // disable UI if there is no selection
+  const bool disable_ui = name.empty();
+  m_ui.settingsCategory->setDisabled(disable_ui);
+  m_ui.settingsContainer->setDisabled(disable_ui);
+
+  if (name_qstr.isEmpty())
   {
-    m_profile_settings_interface.reset();
-    m_editing_settings_interface = nullptr;
-    m_ui.currentProfile->setCurrentIndex(0);
-    m_profile_name = QString();
+    createWidgets();
+    return;
   }
+
+  std::string path = System::GetInputProfilePath(name);
+  if (!FileSystem::FileExists(path.c_str()))
+  {
+    QMessageBox::critical(this, tr("Error"), tr("The input profile named '%1' cannot be found.").arg(name_qstr));
+    return;
+  }
+
+  std::unique_ptr<INISettingsInterface> sif = std::make_unique<INISettingsInterface>(std::move(path));
+  sif->Load();
+
+  m_profile_settings_interface = std::move(sif);
+  m_editing_settings_interface = m_profile_settings_interface.get();
 
   createWidgets();
 }
