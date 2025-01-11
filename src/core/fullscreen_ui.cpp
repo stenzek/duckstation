@@ -297,7 +297,7 @@ static TinyString GetEffectiveTinyStringSetting(SettingsInterface* bsi, const ch
 static void DoCopyGameSettings();
 static void DoClearGameSettings();
 static void CopyGlobalControllerSettingsToGame();
-static void ResetControllerSettings();
+static void BeginResetControllerSettings();
 static void DoLoadInputProfile();
 static void DoSaveInputProfile();
 static void DoSaveNewInputProfile();
@@ -382,7 +382,8 @@ static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Typ
                                    const char* name, const char* display_name, const char* icon_name,
                                    bool show_type = true);
 static void ClearInputBindingVariables();
-static void StartAutomaticBinding(u32 port);
+static void StartAutomaticBindingForPort(u32 port);
+static void StartClearBindingsForPort(u32 port);
 
 //////////////////////////////////////////////////////////////////////////
 // Save State List
@@ -2904,7 +2905,7 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, 
   }
 }
 
-void FullscreenUI::StartAutomaticBinding(u32 port)
+void FullscreenUI::StartAutomaticBindingForPort(u32 port)
 {
   InputManager::DeviceList devices = InputManager::EnumerateDevices();
   if (devices.empty())
@@ -2939,6 +2940,22 @@ void FullscreenUI::StartAutomaticBinding(u32 port)
                                             fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
                      CloseChoiceDialog();
                    });
+}
+
+void FullscreenUI::StartClearBindingsForPort(u32 port)
+{
+  ImGuiFullscreen::OpenConfirmMessageDialog(
+    FSUI_STR("Clear Mappings"),
+    FSUI_STR("Are you sure you want to clear all mappings for this controller?\n\nYou cannot undo this action."),
+    [port](bool result) {
+      if (!result)
+        return;
+
+      auto lock = Host::GetSettingsLock();
+      SettingsInterface* bsi = GetEditingSettingsInterface();
+      InputManager::ClearPortBindings(*bsi, port);
+      ShowToast({}, FSUI_CSTR("Controller mapping cleared."));
+    });
 }
 
 void FullscreenUI::SwitchToSettings()
@@ -3149,7 +3166,7 @@ void FullscreenUI::DrawSettingsWindow()
       }
     }
 
-    if (NavButton(ICON_FA_BACKWARD, true, true))
+    if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       ReturnToPreviousWindow();
 
     if (s_state.game_settings_entry)
@@ -3949,12 +3966,20 @@ void FullscreenUI::DoSaveInputProfile()
                    });
 }
 
-void FullscreenUI::ResetControllerSettings()
+void FullscreenUI::BeginResetControllerSettings()
 {
-  SettingsInterface* dsi = GetEditingSettingsInterface();
+  OpenConfirmMessageDialog(FSUI_STR("Reset Controller Settings"),
+                           FSUI_STR("Are you sure you want to restore the default controller configuration?\n\nAll "
+                                    "bindings and configuration will be lost. You cannot undo this action."),
+                           [](bool result) {
+                             if (!result)
+                               return;
 
-  Settings::SetDefaultControllerConfig(*dsi);
-  ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
+                             SettingsInterface* dsi = GetEditingSettingsInterface();
+
+                             Settings::SetDefaultControllerConfig(*dsi);
+                             ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
+                           });
 }
 
 void FullscreenUI::DrawControllerSettingsPage()
@@ -3993,14 +4018,16 @@ void FullscreenUI::DrawControllerSettingsPage()
   {
     if (MenuButton(FSUI_ICONSTR(ICON_FA_COPY, "Copy Global Settings"),
                    FSUI_CSTR("Copies the global controller configuration to this game.")))
+    {
       CopyGlobalControllerSettingsToGame();
+    }
   }
   else
   {
     if (MenuButton(FSUI_ICONSTR(ICON_FA_DUMPSTER_FIRE, "Reset Settings"),
                    FSUI_CSTR("Resets all configuration to defaults (including bindings).")))
     {
-      ResetControllerSettings();
+      BeginResetControllerSettings();
     }
   }
 
@@ -4062,26 +4089,38 @@ void FullscreenUI::DrawControllerSettingsPage()
     const TinyString type =
       bsi->GetTinyStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot));
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
-    if (MenuButton(TinyString::from_format("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
-                   ci ? Host::TranslateToCString("ControllerType", ci->display_name) : FSUI_CSTR("Unknown")))
+    TinyString value;
+    if (ci && ci->icon_name)
+      value.format("{} {}", ci->icon_name, ci->GetDisplayName());
+    else if (ci)
+      value = ci->GetDisplayName();
+    else
+      value = FSUI_VSTR("Unknown");
+
+    if (MenuButtonWithValue(
+          TinyString::from_format("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
+          FSUI_CSTR("Selects the type of emulated controller for this port."), value))
     {
-      std::vector<std::pair<std::string, std::string>> raw_options(Controller::GetControllerTypeNames());
+      const std::span<const Controller::ControllerInfo*> infos = Controller::GetControllerInfoList();
       ImGuiFullscreen::ChoiceDialogOptions options;
-      options.reserve(raw_options.size());
-      for (auto& it : raw_options)
+      options.reserve(infos.size());
+      for (const Controller::ControllerInfo* it : infos)
       {
-        options.emplace_back(std::move(it.second), type == it.first);
+        if (it->icon_name)
+          options.emplace_back(fmt::format("{} {}", it->icon_name, it->GetDisplayName()), type == it->name);
+        else
+          options.emplace_back(it->GetDisplayName(), type == it->name);
       }
+
       OpenChoiceDialog(TinyString::from_format(FSUI_FSTR("Port {} Controller Type"), global_slot + 1), false,
                        std::move(options),
-                       [game_settings, section,
-                        raw_options = std::move(raw_options)](s32 index, const std::string& title, bool checked) {
+                       [game_settings, section, infos](s32 index, const std::string& title, bool checked) {
                          if (index < 0)
                            return;
 
                          auto lock = Host::GetSettingsLock();
                          SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         bsi->SetStringValue(section.c_str(), "Type", raw_options[index].first.c_str());
+                         bsi->SetStringValue(section.c_str(), "Type", infos[index]->name);
                          SetSettingsChanged(bsi);
                          CloseChoiceDialog();
                        });
@@ -4093,8 +4132,18 @@ void FullscreenUI::DrawControllerSettingsPage()
     if (MenuButton(FSUI_ICONSTR(ICON_FA_MAGIC, "Automatic Mapping"),
                    FSUI_CSTR("Attempts to map the selected port to a chosen controller.")))
     {
-      StartAutomaticBinding(global_slot);
+      StartAutomaticBindingForPort(global_slot);
     }
+
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_TRASH, "Clear Mappings"),
+                   FSUI_CSTR("Removes all bindings for this controller port.")))
+    {
+      StartClearBindingsForPort(global_slot);
+    }
+
+    MenuHeading(
+      SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_MICROCHIP, "Controller Port {} Bindings")),
+                               Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
 
     for (const Controller::ControllerBindingInfo& bi : ci->bindings)
       DrawInputBindingButton(bsi, bi.type, section.c_str(), bi.name, ci->GetBindingDisplayName(bi), bi.icon_name, true);
@@ -8149,7 +8198,9 @@ TRANSLATE_NOOP("FullscreenUI", "Always Track Uploads");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
+TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear all mappings for this controller?\n\nYou cannot undo this action.");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-processing chain? All configuration will be lost.");
+TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to restore the default controller configuration?\n\nAll bindings and configuration will be lost. You cannot undo this action.");
 TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to map the selected port to a chosen controller.");
@@ -8195,6 +8246,7 @@ TRANSLATE_NOOP("FullscreenUI", "Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the backend to use for rendering the console/game visuals.");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the language used for UI elements.");
 TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
+TRANSLATE_NOOP("FullscreenUI", "Clear Mappings");
 TRANSLATE_NOOP("FullscreenUI", "Clear Settings");
 TRANSLATE_NOOP("FullscreenUI", "Clear Shaders");
 TRANSLATE_NOOP("FullscreenUI", "Clears a shader from the chain.");
@@ -8210,10 +8262,12 @@ TRANSLATE_NOOP("FullscreenUI", "Confirm Power Off");
 TRANSLATE_NOOP("FullscreenUI", "Console Settings");
 TRANSLATE_NOOP("FullscreenUI", "Contributor List");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {}");
+TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Bindings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Macros");
 TRANSLATE_NOOP("FullscreenUI", "Controller Port {} Settings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Settings");
 TRANSLATE_NOOP("FullscreenUI", "Controller Type");
+TRANSLATE_NOOP("FullscreenUI", "Controller mapping cleared.");
 TRANSLATE_NOOP("FullscreenUI", "Controller preset '{}' loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Controller preset '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Controller settings reset to default.");
@@ -8543,11 +8597,13 @@ TRANSLATE_NOOP("FullscreenUI", "Reloads the shaders from disk, applying any chan
 TRANSLATE_NOOP("FullscreenUI", "Remove From Chain");
 TRANSLATE_NOOP("FullscreenUI", "Remove From List");
 TRANSLATE_NOOP("FullscreenUI", "Removed stage {} ({}).");
+TRANSLATE_NOOP("FullscreenUI", "Removes all bindings for this controller port.");
 TRANSLATE_NOOP("FullscreenUI", "Removes this shader from the chain.");
 TRANSLATE_NOOP("FullscreenUI", "Renames existing save states when saving to a backup file.");
 TRANSLATE_NOOP("FullscreenUI", "Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Replaces these settings with a previously saved controller preset.");
 TRANSLATE_NOOP("FullscreenUI", "Rescan All Games");
+TRANSLATE_NOOP("FullscreenUI", "Reset Controller Settings");
 TRANSLATE_NOOP("FullscreenUI", "Reset Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Reset Play Time");
 TRANSLATE_NOOP("FullscreenUI", "Reset Settings");
@@ -8612,6 +8668,7 @@ TRANSLATE_NOOP("FullscreenUI", "Selects the percentage of the normal clock speed
 TRANSLATE_NOOP("FullscreenUI", "Selects the quality at which screenshots will be compressed.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the resolution to use in fullscreen modes.");
+TRANSLATE_NOOP("FullscreenUI", "Selects the type of emulated controller for this port.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the view that the game list will open to.");
 TRANSLATE_NOOP("FullscreenUI", "Serial");
 TRANSLATE_NOOP("FullscreenUI", "Session: {}");

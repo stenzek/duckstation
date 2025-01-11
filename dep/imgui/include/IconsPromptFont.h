@@ -351,3 +351,4 @@
 #define ICON_PF_POPN_WL "\xE2\x8B\x86"
 #define ICON_PF_POPN_WR "\xE2\x8B\x87"
 #define ICON_PF_POPN_R "\xE2\x8B\x88"
+#define ICON_PF_NAVIGATION_BACK "\xE2\x8F\x8C"

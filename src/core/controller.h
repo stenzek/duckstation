@@ -96,8 +96,8 @@ public:
   /// Returns the default type for the specified port.
   static const char* GetDefaultPadType(u32 pad);
 
-  /// Returns a list of controller type names. Pair of [name, display name].
-  static std::vector<std::pair<std::string, std::string>> GetControllerTypeNames();
+  /// Returns a list of all controller types.
+  static std::span<const ControllerInfo*> GetControllerInfoList();
 
   /// Gets the integer code for an axis in the specified controller type.
   static std::optional<u32> GetBindIndex(ControllerType type, std::string_view bind_name);

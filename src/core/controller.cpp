@@ -17,10 +17,11 @@
 
 #include "util/state_wrapper.h"
 
+#include "IconsPromptFont.h"
 #include "fmt/format.h"
 
 static const Controller::ControllerInfo s_none_info = {
-  ControllerType::None, "None", TRANSLATE_NOOP("ControllerType", "Not Connected"), nullptr, {}, {}};
+  ControllerType::None, "None", TRANSLATE_NOOP("ControllerType", "Not Connected"), ICON_PF_QUESTION, {}, {}};
 
 static const Controller::ControllerInfo* s_controller_info[] = {
   &s_none_info,
@@ -174,13 +175,9 @@ const Controller::ControllerInfo* Controller::GetControllerInfo(std::string_view
   return nullptr;
 }
 
-std::vector<std::pair<std::string, std::string>> Controller::GetControllerTypeNames()
+std::span<const Controller::ControllerInfo*> Controller::GetControllerInfoList()
 {
-  std::vector<std::pair<std::string, std::string>> ret;
-  for (const ControllerInfo* info : s_controller_info)
-    ret.emplace_back(info->name, Host::TranslateToString("ControllerType", info->display_name));
-
-  return ret;
+  return s_controller_info;
 }
 
 std::optional<u32> Controller::GetBindIndex(ControllerType type, std::string_view bind_name)
