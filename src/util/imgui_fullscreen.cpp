@@ -514,12 +514,11 @@ void ImGuiFullscreen::EndLayout()
 
   DrawFullscreenFooter();
 
-  const float notification_margin = LayoutScale(10.0f);
+  const float margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
   const float spacing = LayoutScale(10.0f);
   const float notification_vertical_pos = GetNotificationVerticalPosition();
-  ImVec2 position(notification_margin,
-                  notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
-                    ((notification_vertical_pos >= 0.5f) ? -notification_margin : notification_margin));
+  ImVec2 position(margin, notification_vertical_pos * ImGui::GetIO().DisplaySize.y +
+                            ((notification_vertical_pos >= 0.5f) ? -margin : margin));
   DrawBackgroundProgressDialogs(position, spacing);
   DrawNotifications(position, spacing);
   DrawToast();

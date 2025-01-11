@@ -2237,12 +2237,13 @@ void Achievements::DrawGameOverlays()
 
   const auto lock = GetLock();
 
+  const float margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
   const float spacing = LayoutScale(10.0f);
   const float padding = LayoutScale(10.0f);
   const ImVec2 image_size =
     LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
   const ImGuiIO& io = ImGui::GetIO();
-  ImVec2 position = ImVec2(io.DisplaySize.x - padding, io.DisplaySize.y - padding);
+  ImVec2 position = ImVec2(io.DisplaySize.x - margin, io.DisplaySize.y - margin);
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
   if (!s_state.active_challenge_indicators.empty())
