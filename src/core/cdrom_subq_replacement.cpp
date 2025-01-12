@@ -162,7 +162,7 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
     for (const FileLoader& loader : loaders)
     {
       path = Path::BuildRelativePath(image_path,
-                                     SmallString::from_format("{}_{}.{}", Path::GetFileName(image_path),
+                                     SmallString::from_format("{}_{}.{}", Path::GetFileTitle(image_path),
                                                               image->GetCurrentSubImage() + 1, loader.extension));
       if (FileSystem::FileExists(path.c_str()))
       {
