@@ -2021,14 +2021,16 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
     // only display user error if they've started a game
     if (System::IsValid())
     {
-      std::string message =
-        fmt::format("Achievement unlocks will not be submitted for this session.\nError: {}", error_message);
+      std::string message = fmt::format(
+        TRANSLATE_FS("Achievements", "Achievement unlocks will not be submitted for this session.\nError: {}"),
+        error_message);
       GPUThread::RunOnThread([message = std::move(message)]() mutable {
         if (!GPUThread::HasGPUBackend() || !FullscreenUI::Initialize())
           return;
 
         ImGuiFullscreen::AddNotification("AchievementsLoginFailed", Host::OSD_ERROR_DURATION,
-                                         "RetroAchievements Login Failed", std::move(message), "images/warning.svg");
+                                         TRANSLATE_STR("Achievements", "RetroAchievements Login Failed"),
+                                         std::move(message), "images/warning.svg");
       });
     }
 
