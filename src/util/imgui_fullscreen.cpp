@@ -3219,7 +3219,8 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     const ImVec2 badge_max(badge_min.x + badge_size, badge_min.y + badge_size);
     if (!notif.badge_path.empty())
     {
-      GPUTexture* tex = GetCachedTexture(notif.badge_path.c_str());
+      GPUTexture* tex =
+        GetCachedTexture(notif.badge_path.c_str(), static_cast<u32>(badge_size), static_cast<u32>(badge_size));
       if (tex)
       {
         dl->AddImage(tex, badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),

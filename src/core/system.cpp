@@ -2014,7 +2014,7 @@ void System::ClearRunningGame()
 
   Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title);
 
-  Achievements::GameChanged(s_state.running_game_path, nullptr);
+  Achievements::GameChanged(s_state.running_game_path, nullptr, false);
 
   UpdateRichPresence(true);
 }
@@ -4175,7 +4175,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
     if (booting)
       Achievements::ResetHardcoreMode(true);
 
-    Achievements::GameChanged(s_state.running_game_path, image);
+    Achievements::GameChanged(s_state.running_game_path, image, booting);
 
     // game layer reloads cheats, but only the active list, we need new files
     Cheats::ReloadCheats(true, false, false, true);

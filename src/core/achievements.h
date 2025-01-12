@@ -72,7 +72,7 @@ bool Login(const char* username, const char* password, Error* error);
 void Logout();
 
 /// Called when the system changes game, or is booting.
-void GameChanged(const std::string& path, CDImage* image);
+void GameChanged(const std::string& path, CDImage* image, bool booting);
 
 /// Re-enables hardcore mode if it is enabled in the settings.
 bool ResetHardcoreMode(bool is_booting);

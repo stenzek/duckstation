@@ -137,6 +137,7 @@ static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
 static void ClearGameInfo();
 static void ClearGameHash();
 static std::string GetGameHash(CDImage* image);
+static bool TryLoggingInWithToken();
 static void SetHardcoreMode(bool enabled, bool force_display_message);
 static bool IsLoggedInOrLoggingIn();
 static bool CanEnableHardcoreMode();
@@ -583,24 +584,7 @@ bool Achievements::Initialize()
   if (System::IsValid())
     IdentifyGame(System::GetDiscPath(), nullptr);
 
-  std::string username = Host::GetBaseStringSettingValue("Cheevos", "Username");
-  std::string api_token = Host::GetBaseStringSettingValue("Cheevos", "Token");
-  if (!username.empty() && !api_token.empty())
-  {
-    INFO_LOG("Attempting login with user '{}'...", username);
-
-    // If we can't decrypt the token, it was an old config and we need to re-login.
-    if (const TinyString decrypted_api_token = DecryptLoginToken(api_token, username); !decrypted_api_token.empty())
-    {
-      s_state.login_request = rc_client_begin_login_with_token(
-        s_state.client, username.c_str(), decrypted_api_token.c_str(), ClientLoginWithTokenCallback, nullptr);
-    }
-    else
-    {
-      WARNING_LOG("Invalid encrypted login token, requesitng a new one.");
-      Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
-    }
-  }
+  TryLoggingInWithToken();
 
   // Hardcore mode isn't enabled when achievements first starts, if a game is already running.
   if (System::IsValid() && IsLoggedInOrLoggingIn() && g_settings.achievements_hardcore_mode)
@@ -647,6 +631,36 @@ void Achievements::DestroyClient(rc_client_t** client, std::unique_ptr<HTTPDownl
   *client = nullptr;
 
   http->reset();
+}
+
+bool Achievements::TryLoggingInWithToken()
+{
+  std::string username = Host::GetBaseStringSettingValue("Cheevos", "Username");
+  std::string api_token = Host::GetBaseStringSettingValue("Cheevos", "Token");
+  if (username.empty() || api_token.empty())
+    return false;
+
+  INFO_LOG("Attempting token login with user '{}'...", username);
+
+  // If we can't decrypt the token, it was an old config and we need to re-login.
+  if (const TinyString decrypted_api_token = DecryptLoginToken(api_token, username); !decrypted_api_token.empty())
+  {
+    s_state.login_request = rc_client_begin_login_with_token(
+      s_state.client, username.c_str(), decrypted_api_token.c_str(), ClientLoginWithTokenCallback, nullptr);
+    if (!s_state.login_request)
+    {
+      WARNING_LOG("Creating login request failed.");
+      return false;
+    }
+
+    return true;
+  }
+  else
+  {
+    WARNING_LOG("Invalid encrypted login token, requesitng a new one.");
+    Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
+    return false;
+  }
 }
 
 void Achievements::UpdateSettings(const Settings& old_config)
@@ -976,7 +990,7 @@ void Achievements::UpdateRichPresence(std::unique_lock<std::recursive_mutex>& lo
   lock.lock();
 }
 
-void Achievements::GameChanged(const std::string& path, CDImage* image)
+void Achievements::GameChanged(const std::string& path, CDImage* image, bool booting)
 {
   std::unique_lock lock(s_state.mutex);
 
@@ -984,6 +998,15 @@ void Achievements::GameChanged(const std::string& path, CDImage* image)
     return;
 
   IdentifyGame(path, image);
+
+  // if we're not logged in, and there's no login request, retry logging in
+  // this'll happen if we had no network connection on startup, but gained it before starting a game.
+  // follow the same order as Initialize() - identify, then log in
+  if (!IsLoggedInOrLoggingIn() && booting)
+  {
+    WARNING_LOG("Not logged in on game booting, trying again.");
+    TryLoggingInWithToken();
+  }
 }
 
 void Achievements::IdentifyGame(const std::string& path, CDImage* image)
@@ -1985,10 +2008,30 @@ void Achievements::ClientLoginWithTokenCallback(int result, const char* error_me
 {
   s_state.login_request = nullptr;
 
-  if (result != RC_OK)
+  if (result == RC_INVALID_CREDENTIALS || result == RC_EXPIRED_TOKEN)
   {
-    ReportFmtError("Login failed: {}", error_message);
+    ERROR_LOG("Login failed due to invalid token: {}: {}", rc_error_str(result), error_message);
     Host::OnAchievementsLoginRequested(LoginRequestReason::TokenInvalid);
+    return;
+  }
+  else if (result != RC_OK)
+  {
+    ERROR_LOG("Login failed: {}: {}", rc_error_str(result), error_message);
+
+    // only display user error if they've started a game
+    if (System::IsValid())
+    {
+      std::string message =
+        fmt::format("Achievement unlocks will not be submitted for this session.\nError: {}", error_message);
+      GPUThread::RunOnThread([message = std::move(message)]() mutable {
+        if (!GPUThread::HasGPUBackend() || !FullscreenUI::Initialize())
+          return;
+
+        ImGuiFullscreen::AddNotification("AchievementsLoginFailed", Host::OSD_ERROR_DURATION,
+                                         "RetroAchievements Login Failed", std::move(message), "images/warning.svg");
+      });
+    }
+
     return;
   }
 
