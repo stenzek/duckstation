@@ -514,6 +514,19 @@ void ImGuiFullscreen::EndLayout()
 
   DrawFullscreenFooter();
 
+  PopResetLayout();
+
+  s_state.fullscreen_footer_text.clear();
+
+  s_state.rendered_menu_item_border = false;
+  s_state.had_hovered_menu_item = std::exchange(s_state.has_hovered_menu_item, false);
+}
+
+void ImGuiFullscreen::RenderOverlays()
+{
+  if (!s_state.initialized)
+    return;
+
   const float margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
   const float spacing = LayoutScale(10.0f);
   const float notification_vertical_pos = GetNotificationVerticalPosition();
@@ -522,13 +535,6 @@ void ImGuiFullscreen::EndLayout()
   DrawBackgroundProgressDialogs(position, spacing);
   DrawNotifications(position, spacing);
   DrawToast();
-
-  PopResetLayout();
-
-  s_state.fullscreen_footer_text.clear();
-
-  s_state.rendered_menu_item_border = false;
-  s_state.had_hovered_menu_item = std::exchange(s_state.has_hovered_menu_item, false);
 }
 
 void ImGuiFullscreen::PushResetLayout()
@@ -2858,14 +2864,6 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
   const float window_width = LayoutScale(500.0f);
   const float window_height = LayoutScale(75.0f);
 
-  ImGui::PushStyleColor(ImGuiCol_WindowBg, UIStyle.PrimaryDarkColor);
-  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryStrongColor);
-  ImGui::PushStyleVar(ImGuiStyleVar_PopupRounding, LayoutScale(4.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_PopupBorderSize, LayoutScale(1.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(10.0f, 10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, LayoutScale(10.0f, 10.0f));
-  ImGui::PushFont(UIStyle.MediumFont);
-
   ImDrawList* dl = ImGui::GetForegroundDrawList();
 
   for (const BackgroundProgressDialogData& data : s_state.background_progress_dialogs)
@@ -2911,10 +2909,6 @@ void ImGuiFullscreen::DrawBackgroundProgressDialogs(ImVec2& position, float spac
 
     position.y += s_notification_vertical_direction * (window_height + spacing);
   }
-
-  ImGui::PopFont();
-  ImGui::PopStyleVar(4);
-  ImGui::PopStyleColor(2);
 }
 
 void ImGuiFullscreen::RenderLoadingScreen(std::string_view image, std::string_view message, s32 progress_min /*= -1*/,

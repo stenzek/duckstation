@@ -144,6 +144,8 @@ void UploadAsyncTextures();
 void BeginLayout();
 void EndLayout();
 
+void RenderOverlays();
+
 void PushResetLayout();
 void PopResetLayout();
 

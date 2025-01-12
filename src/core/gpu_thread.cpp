@@ -16,6 +16,7 @@
 #include "system_private.h"
 
 #include "util/gpu_device.h"
+#include "util/imgui_fullscreen.h"
 #include "util/imgui_manager.h"
 #include "util/input_manager.h"
 #include "util/postprocessing.h"
@@ -1234,12 +1235,15 @@ void GPUThread::Internal::PresentFrame(bool allow_skip_present, u64 present_time
     if (s_state.gpu_backend && System::IsValid())
       ImGuiManager::RenderTextOverlays(s_state.gpu_backend.get());
 
+    ImGuiManager::RenderOverlayWindows();
+
     ImGuiManager::RenderOSDMessages();
+
+    ImGuiFullscreen::RenderOverlays();
 
     if (s_state.gpu_backend && System::GetState() == System::State::Running)
       ImGuiManager::RenderSoftwareCursors();
 
-    ImGuiManager::RenderOverlayWindows();
     ImGuiManager::RenderDebugWindows();
   }
 
