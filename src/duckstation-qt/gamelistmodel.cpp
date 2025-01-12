@@ -552,62 +552,11 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
     case Qt::InitialSortOrderRole:
     {
-      switch (index.column())
-      {
-        case Column_Icon:
-          return static_cast<int>(ge->GetSortType());
-
-        case Column_Serial:
-          return QString::fromStdString(ge->serial);
-
-        case Column_Title:
-        case Column_Cover:
-          return QString::fromStdString(ge->title);
-
-        case Column_FileTitle:
-          return QtUtils::StringViewToQString(Path::GetFileTitle(ge->path));
-
-        case Column_Developer:
-          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->developer) : QString();
-
-        case Column_Publisher:
-          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->publisher) : QString();
-
-        case Column_Genre:
-          return ge->dbentry ? QtUtils::StringViewToQString(ge->dbentry->genre) : QString();
-
-        case Column_Year:
-          return ge->dbentry ?
-                   QDateTime::fromSecsSinceEpoch(static_cast<qint64>(ge->dbentry->release_date), QTimeZone::utc())
-                     .date()
-                     .year() :
-                   0;
-
-        case Column_Players:
-          return static_cast<int>(ge->dbentry ? ge->dbentry->max_players : 0);
-
-        case Column_Region:
-          return static_cast<int>(ge->region);
-
-        case Column_Compatibility:
-          return static_cast<int>(ge->dbentry ? ge->dbentry->compatibility :
-                                                GameDatabase::CompatibilityRating::Unknown);
-
-        case Column_TimePlayed:
-          return static_cast<qlonglong>(ge->total_played_time);
-
-        case Column_LastPlayed:
-          return static_cast<qlonglong>(ge->last_played_time);
-
-        case Column_FileSize:
-          return static_cast<qulonglong>(ge->file_size);
-
-        case Column_UncompressedSize:
-          return static_cast<qulonglong>(ge->uncompressed_size);
-
-        default:
-          return {};
-      }
+      const int column = index.column();
+      if (column == Column_TimePlayed || column == Column_LastPlayed)
+        return Qt::DescendingOrder;
+      else
+        return Qt::AscendingOrder;
     }
 
     case Qt::DecorationRole:
