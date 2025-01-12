@@ -4302,7 +4302,8 @@ bool System::SwitchMediaSubImage(u32 index)
   {
     Host::AddIconOSDMessage("MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
                             fmt::format(TRANSLATE_FS("System", "Failed to switch to subimage {} in '{}': {}."),
-                                        index + 1u, Path::GetFileName(image->GetPath()), error.GetDescription()),
+                                        index + 1u, FileSystem::GetDisplayNameFromPath(image->GetPath()),
+                                        error.GetDescription()),
                             Host::OSD_INFO_DURATION);
 
     // restore old disc
@@ -4313,10 +4314,10 @@ bool System::SwitchMediaSubImage(u32 index)
     return false;
   }
 
-  Host::AddIconOSDMessage("MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
-                          fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."), subimage_title,
-                                      title, index + 1u, Path::GetFileName(CDROM::GetMediaPath())),
-                          Host::OSD_INFO_DURATION);
+  Host::AddIconOSDMessage(
+    "MediaSwitchSubImage", ICON_FA_COMPACT_DISC,
+    fmt::format(TRANSLATE_FS("System", "Switched to sub-image {} ({}) in '{}'."), subimage_title, index + 1u, title),
+    Host::OSD_INFO_DURATION);
   return true;
 }
 
