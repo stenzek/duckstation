@@ -189,6 +189,13 @@ public:
 };
 
 namespace InputManager {
+
+/// Maximum number of buttons that can be part of a chord.
+static constexpr u32 MAX_KEYS_PER_BINDING = 4;
+
+/// Maximum number of output vibration motors per pad.
+static constexpr u32 MAX_MOTORS_PER_PAD = 2;
+
 /// Minimum interval between vibration updates when the effect is continuous.
 static constexpr double VIBRATION_UPDATE_INTERVAL_SECONDS = 0.5; // 500ms
 

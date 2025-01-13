@@ -33,7 +33,7 @@
 
 LOG_CHANNEL(InputManager);
 
-namespace {
+namespace InputManager {
 
 // ------------------------------------------------------------------------
 // Constants
@@ -41,8 +41,6 @@ namespace {
 
 enum : u32
 {
-  MAX_KEYS_PER_BINDING = 4,
-  MAX_MOTORS_PER_PAD = 2,
   FIRST_EXTERNAL_INPUT_SOURCE = static_cast<u32>(InputSourceType::Pointer) + 1u,
   LAST_EXTERNAL_INPUT_SOURCE = static_cast<u32>(InputSourceType::Count),
 };
@@ -54,6 +52,8 @@ enum : u32
 // as the state of all buttons. For button callbacks, it's fired when
 // all keys go active, and for axis callbacks, when all are active and
 // the value changes.
+
+namespace {
 
 struct InputBinding
 {
@@ -103,7 +103,6 @@ struct MacroButton
 // ------------------------------------------------------------------------
 // Forward Declarations (for static qualifier)
 // ------------------------------------------------------------------------
-namespace InputManager {
 static std::optional<InputBindingKey> ParseHostKeyboardKey(std::string_view source, std::string_view sub_binding);
 static std::optional<InputBindingKey> ParsePointerKey(std::string_view source, std::string_view sub_binding);
 static std::optional<InputBindingKey> ParseSensorKey(std::string_view source, std::string_view sub_binding);
@@ -135,7 +134,6 @@ static void UpdateMacroButtons();
 
 static void UpdateInputSourceState(const SettingsInterface& si, std::unique_lock<std::mutex>& settings_lock,
                                    InputSourceType type, std::unique_ptr<InputSource> (*factory_function)());
-} // namespace InputManager
 
 // ------------------------------------------------------------------------
 // Local Variables
@@ -197,6 +195,8 @@ static bool s_relative_mouse_mode = false;
 static bool s_relative_mouse_mode_active = false;
 static bool s_hide_host_mouse_cursor = false;
 static bool s_hide_host_mouse_cusor_active = false;
+
+} // namespace InputManager
 
 // ------------------------------------------------------------------------
 // Binding Parsing
