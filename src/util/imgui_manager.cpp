@@ -14,6 +14,7 @@
 #include "core/host.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/easing.h"
 #include "common/error.h"
 #include "common/file_system.h"
@@ -120,6 +121,9 @@ struct ALIGN_TO_CACHE_LINE State
   float window_width = 0.0f;
   float window_height = 0.0f;
   bool scale_changed = false;
+
+  // we maintain a second copy of the stick state here so we can map it to the dpad
+  std::array<s8, 2> left_stick_axis_state = {};
 
   ImFont* debug_font = nullptr;
   ImFont* osd_font = nullptr;
@@ -1240,32 +1244,32 @@ void ImGuiManager::SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed)
 bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value)
 {
   static constexpr std::array key_map = {
-    ImGuiKey_None,             // Unknown,
-    ImGuiKey_GamepadDpadUp,    // DPadUp
-    ImGuiKey_GamepadDpadRight, // DPadRight
-    ImGuiKey_GamepadDpadLeft,  // DPadLeft
-    ImGuiKey_GamepadDpadDown,  // DPadDown
-    ImGuiKey_None,             // LeftStickUp
-    ImGuiKey_None,             // LeftStickRight
-    ImGuiKey_None,             // LeftStickDown
-    ImGuiKey_None,             // LeftStickLeft
-    ImGuiKey_GamepadL3,        // L3
-    ImGuiKey_None,             // RightStickUp
-    ImGuiKey_None,             // RightStickRight
-    ImGuiKey_None,             // RightStickDown
-    ImGuiKey_None,             // RightStickLeft
-    ImGuiKey_GamepadR3,        // R3
-    ImGuiKey_GamepadFaceUp,    // Triangle
-    ImGuiKey_GamepadFaceRight, // Circle
-    ImGuiKey_GamepadFaceDown,  // Cross
-    ImGuiKey_GamepadFaceLeft,  // Square
-    ImGuiKey_GamepadBack,      // Select
-    ImGuiKey_GamepadStart,     // Start
-    ImGuiKey_None,             // System
-    ImGuiKey_GamepadL1,        // L1
-    ImGuiKey_GamepadL2,        // L2
-    ImGuiKey_GamepadR1,        // R1
-    ImGuiKey_GamepadL2,        // R2
+    ImGuiKey_None,               // Unknown,
+    ImGuiKey_GamepadDpadUp,      // DPadUp
+    ImGuiKey_GamepadDpadRight,   // DPadRight
+    ImGuiKey_GamepadDpadLeft,    // DPadLeft
+    ImGuiKey_GamepadDpadDown,    // DPadDown
+    ImGuiKey_GamepadLStickUp,    // LeftStickUp
+    ImGuiKey_GamepadLStickRight, // LeftStickRight
+    ImGuiKey_GamepadLStickDown,  // LeftStickDown
+    ImGuiKey_GamepadLStickLeft,  // LeftStickLeft
+    ImGuiKey_GamepadL3,          // L3
+    ImGuiKey_None,               // RightStickUp
+    ImGuiKey_None,               // RightStickRight
+    ImGuiKey_None,               // RightStickDown
+    ImGuiKey_None,               // RightStickLeft
+    ImGuiKey_GamepadR3,          // R3
+    ImGuiKey_GamepadFaceUp,      // Triangle
+    ImGuiKey_GamepadFaceRight,   // Circle
+    ImGuiKey_GamepadFaceDown,    // Cross
+    ImGuiKey_GamepadFaceLeft,    // Square
+    ImGuiKey_GamepadBack,        // Select
+    ImGuiKey_GamepadStart,       // Start
+    ImGuiKey_None,               // System
+    ImGuiKey_GamepadL1,          // L1
+    ImGuiKey_GamepadL2,          // L2
+    ImGuiKey_GamepadR1,          // R1
+    ImGuiKey_GamepadL2,          // R2
   };
 
   const ImGuiKey imkey = (static_cast<u32>(key) < key_map.size()) ? key_map[static_cast<u32>(key)] : ImGuiKey_None;
@@ -1280,7 +1284,31 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
     if (!s_state.imgui_context)
       return;
 
-    s_state.imgui_context->IO.AddKeyAnalogEvent(imkey, (value > 0.0f), value);
+    if (imkey >= ImGuiKey_GamepadLStickLeft && imkey <= ImGuiKey_GamepadLStickDown)
+    {
+      // NOTE: This assumes the source is sending a whole axis value, not half axis.
+      const u32 axis = BoolToUInt32(imkey >= ImGuiKey_GamepadLStickUp);
+      const s8 old_state = s_state.left_stick_axis_state[axis];
+      const s8 new_state = (value <= -0.5f) ? -1 : ((value >= 0.5f) ? 1 : 0);
+      if (old_state != new_state)
+      {
+        static constexpr auto map_to_key = [](u32 axis, s8 state) {
+          // 0:-1/1 => ImGuiKey_GamepadDpadLeft/Right, 1:-1/1 => ImGuiKey_GamepadDpadUp/ImGuiKey_GamepadDpadDown
+          return static_cast<ImGuiKey>(static_cast<u32>(ImGuiKey_GamepadDpadLeft) + (axis << 1) +
+                                       BoolToUInt32(state > 0));
+        };
+
+        s_state.left_stick_axis_state[axis] = new_state;
+        if (old_state != 0)
+          s_state.imgui_context->IO.AddKeyAnalogEvent(map_to_key(axis, old_state), false, 0.0f);
+        if (new_state != 0)
+          s_state.imgui_context->IO.AddKeyAnalogEvent(map_to_key(axis, new_state), true, 1.0f);
+      }
+    }
+    else
+    {
+      s_state.imgui_context->IO.AddKeyAnalogEvent(imkey, (value > 0.0f), value);
+    }
   });
 
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
