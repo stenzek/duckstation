@@ -61,6 +61,8 @@ static bool Reconfigure(std::string serial, std::optional<GPURenderer> renderer,
 
 // NOTE: Use with care! The handler needs to manually run the destructor.
 template<class T, typename... Args>
+T* AllocateCommand(u32 size, GPUBackendCommandType type, Args... args);
+template<class T, typename... Args>
 T* AllocateCommand(GPUBackendCommandType type, Args... args);
 
 static u32 GetPendingCommandSize();
@@ -248,19 +250,25 @@ GPUThreadCommand* GPUThread::AllocateCommand(GPUBackendCommandType command, u32 
 }
 
 template<class T, typename... Args>
-T* GPUThread::AllocateCommand(GPUBackendCommandType command, Args... args)
+T* GPUThread::AllocateCommand(u32 size, GPUBackendCommandType type, Args... args)
 {
-  const u32 size = GPUThreadCommand::AlignCommandSize(sizeof(T));
-  GPUThreadCommand* cmd = AllocateCommand(command, size);
-  DebugAssert(cmd->size == size);
+  const u32 alloc_size = GPUThreadCommand::AlignCommandSize(size);
+  GPUThreadCommand* cmd = AllocateCommand(type, alloc_size);
+  DebugAssert(cmd->size == alloc_size);
 
   new (cmd) T(std::forward<Args>(args)...);
 
   // constructor may overwrite the fields, need to reset them
-  cmd->type = command;
-  cmd->size = size;
+  cmd->type = type;
+  cmd->size = alloc_size;
 
   return static_cast<T*>(cmd);
+}
+
+template<class T, typename... Args>
+T* GPUThread::AllocateCommand(GPUBackendCommandType type, Args... args)
+{
+  return AllocateCommand<T>(sizeof(T), type, std::forward<Args>(args)...);
 }
 
 u32 GPUThread::GetPendingCommandSize()
@@ -993,6 +1001,16 @@ void GPUThread::RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_
     PushCommandAndWakeThread(cmd);
   else
     PushCommand(cmd);
+}
+
+std::pair<GPUThreadCommand*, void*> GPUThread::BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size)
+{
+  // this is less than optimal, but it's only used for input osd updates currently, so whatever
+  GPUThreadAsyncCallCommand* const cmd = AllocateCommand<GPUThreadAsyncCallCommand>(
+    sizeof(GPUThreadAsyncCallCommand) + buffer_size, GPUBackendCommandType::AsyncCall);
+  void* const buffer = static_cast<void*>(cmd + 1);
+  cmd->func = [func, buffer]() { func(buffer); };
+  return std::make_pair(static_cast<GPUThreadCommand*>(cmd), buffer);
 }
 
 void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_changed)

@@ -103,6 +103,7 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 // disable warnings that show up at warning level 4
 // TODO: Move to build system instead
 #ifdef _MSC_VER
+#pragma warning(disable : 4200) // warning C4200: nonstandard extension used: zero-sized array in struct/union
 #pragma warning(disable : 4201) // warning C4201: nonstandard extension used : nameless struct/union
 #pragma warning(disable : 4100) // warning C4100: 'Platform' : unreferenced formal parameter
 #pragma warning(disable : 4355) // warning C4355: 'this' : used in base member initializer list

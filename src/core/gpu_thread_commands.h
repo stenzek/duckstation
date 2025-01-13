@@ -23,11 +23,6 @@ namespace System {
 struct MemorySaveState;
 }
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4200) // warning C4200: nonstandard extension used: zero-sized array in struct/union
-#endif
-
 enum class GPUBackendCommandType : u8
 {
   Wraparound,
@@ -87,6 +82,7 @@ struct GPUThreadReconfigureCommand : public GPUThreadCommand
 
 struct GPUThreadAsyncCallCommand : public GPUThreadCommand
 {
+  GPUThreadAsyncCallCommand() = default;
   GPUThreadAsyncCallCommand(std::function<void()> func_) : func(std::move(func_)) {}
 
   std::function<void()> func;
@@ -329,7 +325,3 @@ struct GPUBackendDrawPreciseLineCommand : public GPUBackendDrawCommand
 
   Vertex vertices[0];
 };
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif

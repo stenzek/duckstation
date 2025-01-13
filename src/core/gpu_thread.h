@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <optional>
+#include <utility>
 
 class Error;
 struct WindowInfo;
@@ -28,6 +29,7 @@ struct GPUBackendUpdateDisplayCommand;
 namespace GPUThread {
 using AsyncCallType = std::function<void()>;
 using AsyncBackendCallType = std::function<void(GPUBackend*)>;
+using AsyncBufferCallType = void(*)(void*);
 
 enum class RunIdleReason : u8
 {
@@ -70,6 +72,7 @@ bool IsOnThread();
 bool IsUsingThread();
 void RunOnThread(AsyncCallType func);
 void RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake);
+std::pair<GPUThreadCommand*, void*> BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size);
 void SetVSync(GPUVSyncMode mode, bool allow_present_throttle);
 
 // Should only be called on the GPU thread.
