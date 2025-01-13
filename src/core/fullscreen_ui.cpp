@@ -399,8 +399,7 @@ struct SaveStateListEntry
   bool global;
 };
 
-static void InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, const std::string& serial, s32 slot,
-                                                    bool global);
+static void InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot, bool global);
 static bool InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li, const std::string& serial, s32 slot,
                                                    bool global);
 static bool InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global);
@@ -6276,8 +6275,7 @@ void FullscreenUI::DrawPauseMenu()
   }
 }
 
-void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, const std::string& serial, s32 slot,
-                                                           bool global)
+void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot, bool global)
 {
   li->title = (global || slot > 0) ? fmt::format(global ? FSUI_FSTR("Global Slot {0}##global_slot_{0}") :
                                                           FSUI_FSTR("Game Slot {0}##game_slot_{0}"),
@@ -6298,7 +6296,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li
     (global ? System::GetGlobalSaveStateFileName(slot) : System::GetGameSaveStateFileName(serial, slot));
   if (!InitializeSaveStateListEntryFromPath(li, path.c_str(), slot, global))
   {
-    InitializePlaceholderSaveStateListEntry(li, serial, slot, global);
+    InitializePlaceholderSaveStateListEntry(li, slot, global);
     return false;
   }
 
@@ -6575,7 +6573,11 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
             else if (FileSystem::DeleteFile(entry.path.c_str()))
             {
               ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
-              s_state.save_state_selector_slots.erase(s_state.save_state_selector_slots.begin() + i);
+              if (is_loading)
+                s_state.save_state_selector_slots.erase(s_state.save_state_selector_slots.begin() + i);
+              else
+                InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
+
               removed = true;
 
               if (s_state.save_state_selector_slots.empty())
