@@ -28,32 +28,33 @@ LOG_CHANNEL(SDL);
 
 static constexpr const char* CONTROLLER_DB_FILENAME = "gamecontrollerdb.txt";
 
-static constexpr const char* s_sdl_axis_names[] = {
+static constexpr std::array<const char*, SDL_CONTROLLER_AXIS_MAX> s_sdl_axis_names = {{
   "LeftX",        // SDL_CONTROLLER_AXIS_LEFTX
   "LeftY",        // SDL_CONTROLLER_AXIS_LEFTY
   "RightX",       // SDL_CONTROLLER_AXIS_RIGHTX
   "RightY",       // SDL_CONTROLLER_AXIS_RIGHTY
   "LeftTrigger",  // SDL_CONTROLLER_AXIS_TRIGGERLEFT
   "RightTrigger", // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
-};
-static constexpr const char* s_sdl_axis_icons[][2] = {
-  {ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT},   // SDL_CONTROLLER_AXIS_LEFTX
-  {ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN},      // SDL_CONTROLLER_AXIS_LEFTY
-  {ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}, // SDL_CONTROLLER_AXIS_RIGHTX
-  {ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN},    // SDL_CONTROLLER_AXIS_RIGHTY
-  {nullptr, ICON_PF_LEFT_TRIGGER_LT},                      // SDL_CONTROLLER_AXIS_TRIGGERLEFT
-  {nullptr, ICON_PF_RIGHT_TRIGGER_RT},                     // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
-};
-static constexpr const GenericInputBinding s_sdl_generic_binding_axis_mapping[][2] = {
-  {GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight},   // SDL_CONTROLLER_AXIS_LEFTX
-  {GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown},      // SDL_CONTROLLER_AXIS_LEFTY
-  {GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}, // SDL_CONTROLLER_AXIS_RIGHTX
-  {GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown},    // SDL_CONTROLLER_AXIS_RIGHTY
-  {GenericInputBinding::Unknown, GenericInputBinding::L2},                     // SDL_CONTROLLER_AXIS_TRIGGERLEFT
-  {GenericInputBinding::Unknown, GenericInputBinding::R2},                     // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
-};
+}};
+static constexpr std::array<std::array<const char*, 2>, SDL_CONTROLLER_AXIS_MAX> s_sdl_axis_icons = {{
+  {{ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT}},   // SDL_CONTROLLER_AXIS_LEFTX
+  {{ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN}},      // SDL_CONTROLLER_AXIS_LEFTY
+  {{ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}}, // SDL_CONTROLLER_AXIS_RIGHTX
+  {{ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN}},    // SDL_CONTROLLER_AXIS_RIGHTY
+  {{nullptr, ICON_PF_LEFT_TRIGGER_LT}},                      // SDL_CONTROLLER_AXIS_TRIGGERLEFT
+  {{nullptr, ICON_PF_RIGHT_TRIGGER_RT}},                     // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
+}};
+static constexpr std::array<std::array<GenericInputBinding, 2>, SDL_CONTROLLER_AXIS_MAX>
+  s_sdl_generic_binding_axis_mapping = {{
+    {{GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight}},   // SDL_CONTROLLER_AXIS_LEFTX
+    {{GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown}},      // SDL_CONTROLLER_AXIS_LEFTY
+    {{GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}}, // SDL_CONTROLLER_AXIS_RIGHTX
+    {{GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown}},    // SDL_CONTROLLER_AXIS_RIGHTY
+    {{GenericInputBinding::Unknown, GenericInputBinding::L2}},                     // SDL_CONTROLLER_AXIS_TRIGGERLEFT
+    {{GenericInputBinding::Unknown, GenericInputBinding::R2}},                     // SDL_CONTROLLER_AXIS_TRIGGERRIGHT
+  }};
 
-static constexpr const char* s_sdl_button_names[] = {
+static constexpr std::array<const char*, SDL_CONTROLLER_BUTTON_MAX> s_sdl_button_names = {{
   "A",             // SDL_CONTROLLER_BUTTON_A
   "B",             // SDL_CONTROLLER_BUTTON_B
   "X",             // SDL_CONTROLLER_BUTTON_X
@@ -75,8 +76,8 @@ static constexpr const char* s_sdl_button_names[] = {
   "Paddle3",       // SDL_CONTROLLER_BUTTON_PADDLE3
   "Paddle4",       // SDL_CONTROLLER_BUTTON_PADDLE4
   "Touchpad",      // SDL_CONTROLLER_BUTTON_TOUCHPAD
-};
-static constexpr const char* s_sdl_button_icons[] = {
+}};
+static constexpr std::array<const char*, SDL_CONTROLLER_BUTTON_MAX> s_sdl_button_icons = {{
   ICON_PF_BUTTON_A,           // SDL_CONTROLLER_BUTTON_A
   ICON_PF_BUTTON_B,           // SDL_CONTROLLER_BUTTON_B
   ICON_PF_BUTTON_X,           // SDL_CONTROLLER_BUTTON_X
@@ -98,8 +99,8 @@ static constexpr const char* s_sdl_button_icons[] = {
   nullptr,                    // SDL_CONTROLLER_BUTTON_PADDLE3
   nullptr,                    // SDL_CONTROLLER_BUTTON_PADDLE4
   ICON_PF_DUALSHOCK_TOUCHPAD, // SDL_CONTROLLER_BUTTON_TOUCHPAD
-};
-static constexpr const GenericInputBinding s_sdl_generic_binding_button_mapping[] = {
+}};
+static constexpr std::array<GenericInputBinding, SDL_CONTROLLER_BUTTON_MAX> s_sdl_generic_binding_button_mapping = {{
   GenericInputBinding::Cross,     // SDL_CONTROLLER_BUTTON_A
   GenericInputBinding::Circle,    // SDL_CONTROLLER_BUTTON_B
   GenericInputBinding::Square,    // SDL_CONTROLLER_BUTTON_X
@@ -121,23 +122,23 @@ static constexpr const GenericInputBinding s_sdl_generic_binding_button_mapping[
   GenericInputBinding::Unknown,   // SDL_CONTROLLER_BUTTON_PADDLE3
   GenericInputBinding::Unknown,   // SDL_CONTROLLER_BUTTON_PADDLE4
   GenericInputBinding::Unknown,   // SDL_CONTROLLER_BUTTON_TOUCHPAD
-};
+}};
 
-static constexpr const char* s_sdl_hat_direction_names[] = {
+static constexpr std::array<const char*, 4> s_sdl_hat_direction_names = {{
   // clang-format off
 	"North",
 	"East",
 	"South",
 	"West",
   // clang-format on
-};
+}};
 
-static constexpr const char* s_sdl_default_led_colors[] = {
+static constexpr std::array<const char*, 4> s_sdl_default_led_colors = {{
   "0000ff", // SDL-0
   "ff0000", // SDL-1
   "00ff00", // SDL-2
   "ffff00", // SDL-3
-};
+}};
 
 static void SetControllerRGBLED(SDL_GameController* gc, u32 color)
 {
@@ -897,7 +898,10 @@ bool SDLInputSource::HandleControllerAxisEvent(const SDL_ControllerAxisEvent* ev
     return false;
 
   const InputBindingKey key(MakeGenericControllerAxisKey(InputSourceType::SDL, it->player_id, ev->axis));
-  InputManager::InvokeEvents(key, NormalizeS16(ev->value));
+  const GenericInputBinding generic_key = (ev->axis < s_sdl_generic_binding_axis_mapping.size()) ?
+                                            s_sdl_generic_binding_axis_mapping[ev->axis][ev->value >= 0] :
+                                            GenericInputBinding::Unknown;
+  InputManager::InvokeEvents(key, NormalizeS16(ev->value), generic_key);
   return true;
 }
 
@@ -908,7 +912,7 @@ bool SDLInputSource::HandleControllerButtonEvent(const SDL_ControllerButtonEvent
     return false;
 
   const InputBindingKey key(MakeGenericControllerButtonKey(InputSourceType::SDL, it->player_id, ev->button));
-  const GenericInputBinding generic_key = (ev->button < std::size(s_sdl_generic_binding_button_mapping)) ?
+  const GenericInputBinding generic_key = (ev->button < s_sdl_generic_binding_button_mapping.size()) ?
                                             s_sdl_generic_binding_button_mapping[ev->button] :
                                             GenericInputBinding::Unknown;
   InputManager::InvokeEvents(key, (ev->state == SDL_PRESSED) ? 1.0f : 0.0f, generic_key);
