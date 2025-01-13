@@ -91,22 +91,6 @@ private Q_SLOTS:
   void coverLoaded(const std::string& path, const QPixmap& pixmap);
 
 private:
-  /// The purpose of this cache is to stop us trying to constantly extract memory card icons, when we know a game
-  /// doesn't have any saves yet. It caches the serial:memcard_timestamp pair, and only tries extraction when the
-  /// timestamp of the memory card has changed.
-#pragma pack(push, 1)
-  struct MemcardTimestampCacheEntry
-  {
-    enum : u32
-    {
-      MAX_SERIAL_LENGTH = 32,
-    };
-
-    char serial[MAX_SERIAL_LENGTH];
-    s64 memcard_timestamp;
-  };
-#pragma pack(pop)
-
   QVariant data(const QModelIndex& index, int role, const GameList::Entry* ge) const;
 
   void loadCommonImages();
