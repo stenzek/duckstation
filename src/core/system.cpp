@@ -2457,19 +2457,8 @@ bool System::DoState(StateWrapper& sw, bool update_display)
     UpdateOverclock();
   }
 
-  if (sw.GetVersion() >= 56) [[unlikely]]
-  {
-    if (!sw.DoMarker("Cheevos"))
-      return false;
-
-    if (!Achievements::DoState(sw))
-      return false;
-  }
-  else
-  {
-    // loading an old state without cheevos, so reset the runtime
-    Achievements::ResetClient();
-  }
+  if (!sw.DoMarkerEx("Cheevos", 56) || !Achievements::DoState(sw))
+    return false;
 
   if (sw.HasError())
     return false;
@@ -2750,7 +2739,7 @@ void System::InternalReset()
   MDEC::Reset();
   SIO::Reset();
   PCDrv::Reset();
-  Achievements::ResetClient();
+  Achievements::Reset();
   s_state.frame_number = 1;
   s_state.internal_frame_number = 0;
 }

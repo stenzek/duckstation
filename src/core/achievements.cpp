@@ -1642,7 +1642,7 @@ void Achievements::HandleServerReconnectedEvent(const rc_client_event_t* event)
   });
 }
 
-void Achievements::ResetClient()
+void Achievements::Reset()
 {
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
@@ -1750,11 +1750,13 @@ void Achievements::SetHardcoreMode(bool enabled, bool force_display_message)
 
 bool Achievements::DoState(StateWrapper& sw)
 {
+  static constexpr u32 REQUIRED_VERSION = 56;
+
   // if we're inactive, we still need to skip the data (if any)
   if (!IsActive())
   {
     u32 data_size = 0;
-    sw.Do(&data_size);
+    sw.DoEx(&data_size, REQUIRED_VERSION, 0u);
     if (data_size > 0)
       sw.SkipBytes(data_size);
 
@@ -1780,8 +1782,11 @@ bool Achievements::DoState(StateWrapper& sw)
       GPUThread::RunOnThread([]() { FullscreenUI::CloseLoadingScreen(); });
     }
 
+    // loading an old state without cheevos, so reset the runtime
+    Achievements::Reset();
+
     u32 data_size = 0;
-    sw.Do(&data_size);
+    sw.DoEx(&data_size, REQUIRED_VERSION, 0u);
     if (data_size == 0)
     {
       // reset runtime, no data (state might've been created without cheevos)

@@ -180,6 +180,7 @@ public:
   }
 
   bool DoMarker(const char* marker);
+  bool DoMarkerEx(const char* marker, u32 version_introduced);
 
   template<typename T>
   void DoEx(T* data, u32 version_introduced, T default_value)

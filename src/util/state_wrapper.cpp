@@ -111,6 +111,14 @@ bool StateWrapper::DoMarker(const char* marker)
   return false;
 }
 
+bool StateWrapper::DoMarkerEx(const char* marker, u32 version_introduced)
+{
+  if (m_version < version_introduced)
+    return !HasError();
+
+  return DoMarker(marker);
+}
+
 std::span<u8> StateWrapper::GetDeferredBytes(size_t size)
 {
   if ((m_error = (m_error || (m_pos + size) > m_size))) [[unlikely]]

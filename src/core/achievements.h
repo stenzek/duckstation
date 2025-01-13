@@ -41,7 +41,7 @@ bool Initialize();
 void UpdateSettings(const Settings& old_config);
 
 /// Resets the internal state of all achievement tracking. Call on system reset.
-void ResetClient();
+void Reset();
 
 /// Called when the system is being reset. If it returns false, the reset should be aborted.
 bool ConfirmSystemReset();
