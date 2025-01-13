@@ -98,46 +98,50 @@ namespace {
 
 struct ALIGN_TO_CACHE_LINE State
 {
-  float global_prescale = 0.0f; // before window scale
-  float global_scale = 0.0f;
-  float screen_margin = 0.0f;
-
-  std::string font_path;
-  std::vector<WCharType> font_range;
-  std::vector<WCharType> emoji_range;
-
-  ImGuiContext* imgui_context;
-  ImFont* debug_font;
-  ImFont* osd_font;
-  ImFont* fixed_font;
-  ImFont* medium_font;
-  ImFont* large_font;
-
-  DynamicHeapArray<u8> standard_font_data;
-  DynamicHeapArray<u8> fixed_font_data;
-  DynamicHeapArray<u8> icon_fa_font_data;
-  DynamicHeapArray<u8> icon_pf_font_data;
-  DynamicHeapArray<u8> emoji_font_data;
-
-  float window_width;
-  float window_height;
-  Timer::Value last_render_time;
+  ImGuiContext* imgui_context = nullptr;
 
   // cached copies of WantCaptureKeyboard/Mouse, used to know when to dispatch events
   std::atomic_bool imgui_wants_keyboard{false};
   std::atomic_bool imgui_wants_mouse{false};
   std::atomic_bool imgui_wants_text{false};
 
-  // mapping of host key -> imgui key
-  std::unordered_map<u32, ImGuiKey> imgui_key_map;
-
-  std::deque<OSDMessage> osd_active_messages;
   std::deque<OSDMessage> osd_posted_messages;
   std::mutex osd_messages_lock;
   bool show_osd_messages = true;
+
+  // Owned by GPU thread
+  ALIGN_TO_CACHE_LINE Timer::Value last_render_time = 0;
+
+  float global_prescale = 0.0f; // before window scale
+  float global_scale = 0.0f;
+  float screen_margin = 0.0f;
+
+  float window_width = 0.0f;
+  float window_height = 0.0f;
   bool scale_changed = false;
 
+  ImFont* debug_font = nullptr;
+  ImFont* osd_font = nullptr;
+  ImFont* fixed_font = nullptr;
+  ImFont* medium_font = nullptr;
+  ImFont* large_font = nullptr;
+
+  std::deque<OSDMessage> osd_active_messages;
+
   std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
+
+  // mapping of host key -> imgui key
+  std::unordered_map<u32, ImGuiKey> imgui_key_map;
+
+  std::string font_path;
+  std::vector<WCharType> font_range;
+  std::vector<WCharType> emoji_range;
+
+  DynamicHeapArray<u8> standard_font_data;
+  DynamicHeapArray<u8> fixed_font_data;
+  DynamicHeapArray<u8> icon_fa_font_data;
+  DynamicHeapArray<u8> icon_pf_font_data;
+  DynamicHeapArray<u8> emoji_font_data;
 };
 
 } // namespace
