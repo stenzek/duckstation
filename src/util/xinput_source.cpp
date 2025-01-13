@@ -5,6 +5,7 @@
 #include "input_manager.h"
 
 #include "common/assert.h"
+#include "common/bitutils.h"
 #include "common/error.h"
 #include "common/log.h"
 #include "common/string_util.h"
@@ -16,32 +17,33 @@
 
 LOG_CHANNEL(XInputSource);
 
-static const char* s_axis_names[XInputSource::NUM_AXES] = {
+static constexpr std::array<const char*, XInputSource::NUM_AXES> s_axis_names = {{
   "LeftX",        // AXIS_LEFTX
   "LeftY",        // AXIS_LEFTY
   "RightX",       // AXIS_RIGHTX
   "RightY",       // AXIS_RIGHTY
   "LeftTrigger",  // AXIS_TRIGGERLEFT
   "RightTrigger", // AXIS_TRIGGERRIGHT
-};
-static constexpr const char* s_axis_icons[][2] = {
-  {ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT},   // AXIS_LEFTX
-  {ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN},      // AXIS_LEFTY
-  {ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}, // AXIS_RIGHTX
-  {ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN},    // AXIS_RIGHTY
-  {nullptr, ICON_PF_LEFT_TRIGGER_LT},                      // AXIS_TRIGGERLEFT
-  {nullptr, ICON_PF_RIGHT_TRIGGER_RT},                     // AXIS_TRIGGERRIGHT
-};
-static const GenericInputBinding s_xinput_generic_binding_axis_mapping[][2] = {
-  {GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight},   // AXIS_LEFTX
-  {GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown},      // AXIS_LEFTY
-  {GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}, // AXIS_RIGHTX
-  {GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown},    // AXIS_RIGHTY
-  {GenericInputBinding::Unknown, GenericInputBinding::L2},                     // AXIS_TRIGGERLEFT
-  {GenericInputBinding::Unknown, GenericInputBinding::R2},                     // AXIS_TRIGGERRIGHT
-};
+}};
+static constexpr std::array<std::array<const char*, 2>, XInputSource::NUM_AXES> s_axis_icons = {{
+  {{ICON_PF_LEFT_ANALOG_LEFT, ICON_PF_LEFT_ANALOG_RIGHT}},   // AXIS_LEFTX
+  {{ICON_PF_LEFT_ANALOG_UP, ICON_PF_LEFT_ANALOG_DOWN}},      // AXIS_LEFTY
+  {{ICON_PF_RIGHT_ANALOG_LEFT, ICON_PF_RIGHT_ANALOG_RIGHT}}, // AXIS_RIGHTX
+  {{ICON_PF_RIGHT_ANALOG_UP, ICON_PF_RIGHT_ANALOG_DOWN}},    // AXIS_RIGHTY
+  {{nullptr, ICON_PF_LEFT_TRIGGER_LT}},                      // AXIS_TRIGGERLEFT
+  {{nullptr, ICON_PF_RIGHT_TRIGGER_RT}},                     // AXIS_TRIGGERRIGHT
+}};
+static constexpr std::array<std::array<GenericInputBinding, 2>, XInputSource::NUM_AXES>
+  s_xinput_generic_binding_axis_mapping = {{
+    {{GenericInputBinding::LeftStickLeft, GenericInputBinding::LeftStickRight}},   // AXIS_LEFTX
+    {{GenericInputBinding::LeftStickUp, GenericInputBinding::LeftStickDown}},      // AXIS_LEFTY
+    {{GenericInputBinding::RightStickLeft, GenericInputBinding::RightStickRight}}, // AXIS_RIGHTX
+    {{GenericInputBinding::RightStickUp, GenericInputBinding::RightStickDown}},    // AXIS_RIGHTY
+    {{GenericInputBinding::Unknown, GenericInputBinding::L2}},                     // AXIS_TRIGGERLEFT
+    {{GenericInputBinding::Unknown, GenericInputBinding::R2}},                     // AXIS_TRIGGERRIGHT
+  }};
 
-static const char* s_button_names[XInputSource::NUM_BUTTONS] = {
+static constexpr std::array<const char*, XInputSource::NUM_BUTTONS> s_button_names = {{
   "DPadUp",        // XINPUT_GAMEPAD_DPAD_UP
   "DPadDown",      // XINPUT_GAMEPAD_DPAD_DOWN
   "DPadLeft",      // XINPUT_GAMEPAD_DPAD_LEFT
@@ -57,25 +59,15 @@ static const char* s_button_names[XInputSource::NUM_BUTTONS] = {
   "X",             // XINPUT_GAMEPAD_X
   "Y",             // XINPUT_GAMEPAD_Y
   "Guide",         // XINPUT_GAMEPAD_GUIDE
-};
-static const u16 s_button_masks[XInputSource::NUM_BUTTONS] = {
-  XINPUT_GAMEPAD_DPAD_UP,
-  XINPUT_GAMEPAD_DPAD_DOWN,
-  XINPUT_GAMEPAD_DPAD_LEFT,
-  XINPUT_GAMEPAD_DPAD_RIGHT,
-  XINPUT_GAMEPAD_START,
-  XINPUT_GAMEPAD_BACK,
-  XINPUT_GAMEPAD_LEFT_THUMB,
-  XINPUT_GAMEPAD_RIGHT_THUMB,
-  XINPUT_GAMEPAD_LEFT_SHOULDER,
-  XINPUT_GAMEPAD_RIGHT_SHOULDER,
-  XINPUT_GAMEPAD_A,
-  XINPUT_GAMEPAD_B,
-  XINPUT_GAMEPAD_X,
+}};
+static constexpr std::array<u16, XInputSource::NUM_BUTTONS> s_button_masks = {{
+  XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT,
+  XINPUT_GAMEPAD_START, XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_LEFT_THUMB, XINPUT_GAMEPAD_RIGHT_THUMB,
+  XINPUT_GAMEPAD_LEFT_SHOULDER, XINPUT_GAMEPAD_RIGHT_SHOULDER, XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X,
   XINPUT_GAMEPAD_Y,
   0x400, // XINPUT_GAMEPAD_GUIDE
-};
-static constexpr const char* s_button_icons[] = {
+}};
+static constexpr std::array<const char*, XInputSource::NUM_BUTTONS> s_button_icons = {{
   ICON_PF_XBOX_DPAD_UP,       // XINPUT_GAMEPAD_DPAD_UP
   ICON_PF_XBOX_DPAD_DOWN,     // XINPUT_GAMEPAD_DPAD_DOWN
   ICON_PF_XBOX_DPAD_LEFT,     // XINPUT_GAMEPAD_DPAD_LEFT
@@ -91,8 +83,8 @@ static constexpr const char* s_button_icons[] = {
   ICON_PF_BUTTON_X,           // XINPUT_GAMEPAD_X
   ICON_PF_BUTTON_Y,           // XINPUT_GAMEPAD_Y
   ICON_PF_XBOX,               // XINPUT_GAMEPAD_GUIDE
-};
-static const GenericInputBinding s_xinput_generic_binding_button_mapping[] = {
+}};
+static constexpr std::array<GenericInputBinding, XInputSource::NUM_BUTTONS> s_xinput_generic_binding_button_mapping = {{
   GenericInputBinding::DPadUp,    // XINPUT_GAMEPAD_DPAD_UP
   GenericInputBinding::DPadDown,  // XINPUT_GAMEPAD_DPAD_DOWN
   GenericInputBinding::DPadLeft,  // XINPUT_GAMEPAD_DPAD_LEFT
@@ -108,7 +100,7 @@ static const GenericInputBinding s_xinput_generic_binding_button_mapping[] = {
   GenericInputBinding::Square,    // XINPUT_GAMEPAD_X
   GenericInputBinding::Triangle,  // XINPUT_GAMEPAD_Y
   GenericInputBinding::System,    // XINPUT_GAMEPAD_GUIDE
-};
+}};
 
 XInputSource::XInputSource() = default;
 
@@ -483,7 +475,7 @@ void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state
   {                                                                                                                    \
     InputManager::InvokeEvents(MakeGenericControllerAxisKey(InputSourceType::XInput, index, axis),                     \
                                static_cast<float>(ngp.field) / ((ngp.field < 0) ? min_value : max_value),              \
-                               GenericInputBinding::Unknown);                                                          \
+                               s_xinput_generic_binding_axis_mapping[axis][BoolToUInt8(ngp.field >= 0)]);              \
   }
 
   // Y axes is inverted in XInput when compared to SDL.
@@ -505,9 +497,7 @@ void XInputSource::CheckForStateChanges(u32 index, const XINPUT_STATE& new_state
       const u16 button_mask = s_button_masks[button];
       if ((old_button_bits & button_mask) != (new_button_bits & button_mask))
       {
-        const GenericInputBinding generic_key = (button < std::size(s_xinput_generic_binding_button_mapping)) ?
-                                                  s_xinput_generic_binding_button_mapping[button] :
-                                                  GenericInputBinding::Unknown;
+        const GenericInputBinding generic_key = s_xinput_generic_binding_button_mapping[button];
         const float value = ((new_button_bits & button_mask) != 0) ? 1.0f : 0.0f;
         InputManager::InvokeEvents(MakeGenericControllerButtonKey(InputSourceType::XInput, index, button), value,
                                    generic_key);
