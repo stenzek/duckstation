@@ -51,7 +51,7 @@
      <item>
       <widget class="QToolButton" name="sortCheats">
        <property name="toolTip">
-        <string>Reload Cheats</string>
+        <string>Sort Alphabetically</string>
        </property>
        <property name="icon">
         <iconset theme="sort-alphabet-asc"/>
