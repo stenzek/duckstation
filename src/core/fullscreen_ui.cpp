@@ -986,10 +986,15 @@ void FullscreenUI::Render()
 
 void FullscreenUI::InvalidateCoverCache()
 {
-  if (!IsInitialized())
+  if (!GPUThread::IsFullscreenUIRequested())
     return;
 
-  Host::RunOnCPUThread([]() { s_state.cover_image_map.clear(); });
+  GPUThread::RunOnThread([]() {
+    if (!IsInitialized())
+      return;
+
+    s_state.cover_image_map.clear();
+  });
 }
 
 void FullscreenUI::ReturnToPreviousWindow()
