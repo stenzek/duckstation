@@ -10,6 +10,7 @@
 #include "input_manager.h"
 
 // TODO: Remove me when GPUDevice config is also cleaned up.
+#include "core/gpu_thread.h"
 #include "core/host.h"
 
 #include "common/assert.h"
@@ -76,7 +77,7 @@ static ImFont* AddTextFont(float size, bool full_glyph_range);
 static ImFont* AddFixedFont(float size);
 static bool AddIconFonts(float size);
 static void SetCommonIOOptions(ImGuiIO& io);
-static void SetImKeyState(ImGuiIO& io, u32 key, bool pressed);
+static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(void* userdata);
 static void SetClipboardTextImpl(void* userdata, const char* text);
 static void AddOSDMessage(std::string key, std::string message, float duration, bool is_warning);
@@ -131,7 +132,7 @@ struct ALIGN_TO_CACHE_LINE State
   std::array<ImGuiManager::SoftwareCursor, InputManager::MAX_SOFTWARE_CURSORS> software_cursors = {};
 
   // mapping of host key -> imgui key
-  std::unordered_map<u32, ImGuiKey> imgui_key_map;
+  ALIGN_TO_CACHE_LINE std::unordered_map<u32, ImGuiKey> imgui_key_map;
 
   std::string font_path;
   std::vector<WCharType> font_range;
@@ -1140,13 +1141,15 @@ bool ImGuiManager::WantsMouseInput()
 
 void ImGuiManager::AddTextInput(std::string str)
 {
-  if (!s_state.imgui_context)
+  if (!s_state.imgui_context || !s_state.imgui_wants_keyboard.load(std::memory_order_acquire))
     return;
 
-  if (!s_state.imgui_wants_keyboard.load(std::memory_order_acquire))
-    return;
+  GPUThread::RunOnThread([str = std::move(str)]() {
+    if (!s_state.imgui_context)
+      return;
 
-  s_state.imgui_context->IO.AddInputCharactersUTF8(str.c_str());
+    s_state.imgui_context->IO.AddInputCharactersUTF8(str.c_str());
+  });
 }
 
 void ImGuiManager::UpdateMousePosition(float x, float y)
@@ -1173,7 +1176,14 @@ bool ImGuiManager::ProcessPointerButtonEvent(InputBindingKey key, float value)
     return false;
 
   // still update state anyway
-  s_state.imgui_context->IO.AddMouseButtonEvent(key.data, value != 0.0f);
+  const int button = static_cast<int>(key.data);
+  const bool pressed = (value != 0.0f);
+  GPUThread::RunOnThread([button, pressed]() {
+    if (!s_state.imgui_context)
+      return;
+
+    s_state.imgui_context->IO.AddMouseButtonEvent(button, pressed);
+  });
 
   return s_state.imgui_wants_mouse.load(std::memory_order_acquire);
 }
@@ -1185,7 +1195,12 @@ bool ImGuiManager::ProcessPointerAxisEvent(InputBindingKey key, float value)
 
   // still update state anyway
   const bool horizontal = (key.data == static_cast<u32>(InputPointerAxis::WheelX));
-  s_state.imgui_context->IO.AddMouseWheelEvent(horizontal ? value : 0.0f, horizontal ? 0.0f : value);
+  GPUThread::RunOnThread([value, horizontal]() {
+    if (!s_state.imgui_context)
+      return;
+
+    s_state.imgui_context->IO.AddMouseWheelEvent(horizontal ? value : 0.0f, horizontal ? 0.0f : value);
+  });
 
   return s_state.imgui_wants_mouse.load(std::memory_order_acquire);
 }
@@ -1195,33 +1210,36 @@ bool ImGuiManager::ProcessHostKeyEvent(InputBindingKey key, float value)
   if (!s_state.imgui_context)
     return false;
 
-  // still update state anyway
-  SetImKeyState(s_state.imgui_context->IO, key.data, (value != 0.0f));
+  const auto iter = s_state.imgui_key_map.find(key.data);
+  if (iter == s_state.imgui_key_map.end())
+    return false;
+
+  GPUThread::RunOnThread([imkey = iter->second, pressed = (value != 0.0f)]() {
+    if (!s_state.imgui_context)
+      return;
+
+    SetImKeyState(s_state.imgui_context->IO, imkey, pressed);
+  });
 
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
 }
 
-void ImGuiManager::SetImKeyState(ImGuiIO& io, u32 key, bool pressed)
+void ImGuiManager::SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed)
 {
-  const auto iter = s_state.imgui_key_map.find(key);
-  if (iter == s_state.imgui_key_map.end())
-    return;
-
-  const ImGuiKey imkey = iter->second;
-  s_state.imgui_context->IO.AddKeyEvent(imkey, pressed);
+  io.AddKeyEvent(imkey, pressed);
 
   // modifier keys need to be handled separately
   if ((imkey >= ImGuiKey_LeftCtrl && imkey <= ImGuiKey_LeftSuper) ||
       (imkey >= ImGuiKey_RightCtrl && imkey <= ImGuiKey_RightSuper))
   {
     const u32 idx = imkey - ((imkey >= ImGuiKey_RightCtrl) ? ImGuiKey_RightCtrl : ImGuiKey_LeftCtrl);
-    s_state.imgui_context->IO.AddKeyEvent(static_cast<ImGuiKey>(static_cast<u32>(ImGuiMod_Ctrl) << idx), pressed);
+    io.AddKeyEvent(static_cast<ImGuiKey>(static_cast<u32>(ImGuiMod_Ctrl) << idx), pressed);
   }
 }
 
 bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value)
 {
-  static constexpr ImGuiKey key_map[] = {
+  static constexpr std::array key_map = {
     ImGuiKey_None,             // Unknown,
     ImGuiKey_GamepadDpadUp,    // DPadUp
     ImGuiKey_GamepadDpadRight, // DPadRight
@@ -1250,13 +1268,21 @@ bool ImGuiManager::ProcessGenericInputEvent(GenericInputBinding key, float value
     ImGuiKey_GamepadL2,        // R2
   };
 
+  const ImGuiKey imkey = (static_cast<u32>(key) < key_map.size()) ? key_map[static_cast<u32>(key)] : ImGuiKey_None;
+  if (imkey == ImGuiKey_None)
+    return false;
+
+  // Racey read, but that's okay, worst case we push a couple of keys during shutdown.
   if (!s_state.imgui_context)
     return false;
 
-  if (static_cast<u32>(key) >= std::size(key_map) || key_map[static_cast<u32>(key)] == ImGuiKey_None)
-    return false;
+  GPUThread::RunOnThread([imkey, value]() {
+    if (!s_state.imgui_context)
+      return;
 
-  s_state.imgui_context->IO.AddKeyAnalogEvent(key_map[static_cast<u32>(key)], (value > 0.0f), value);
+    s_state.imgui_context->IO.AddKeyAnalogEvent(imkey, (value > 0.0f), value);
+  });
+
   return s_state.imgui_wants_keyboard.load(std::memory_order_acquire);
 }
 
@@ -1591,7 +1617,9 @@ void ImGuiManager::ProcessAuxiliaryRenderWindowInputEvent(Host::AuxiliaryRenderW
     case Host::AuxiliaryRenderWindowEvent::KeyPressed:
     case Host::AuxiliaryRenderWindowEvent::KeyReleased:
     {
-      SetImKeyState(io, param1.uint_param, (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
+      const auto iter = s_state.imgui_key_map.find(param1.uint_param);
+      if (iter != s_state.imgui_key_map.end())
+        SetImKeyState(io, iter->second, (event == Host::AuxiliaryRenderWindowEvent::KeyPressed));
     }
     break;
 
