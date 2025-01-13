@@ -2163,6 +2163,10 @@ void System::FrameDone()
     InputManager::PollSources();
     CheckForAndExitExecution();
   }
+
+  // Update input OSD if we're running
+  if (g_settings.display_show_inputs)
+    ImGuiManager::UpdateInputOverlay();
 }
 
 bool System::GetFramePresentationParameters(GPUBackendFramePresentationParameters* frame)

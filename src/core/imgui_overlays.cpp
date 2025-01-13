@@ -56,6 +56,31 @@ namespace ImGuiManager {
 
 namespace {
 
+struct InputOverlayState
+{
+  static constexpr u32 MAX_BINDS = 32;
+
+  struct PadState
+  {
+    ControllerType ctype;
+    u8 port;
+    u8 slot;
+    bool multitap;
+    u32 icon_color;
+    float vibration_state[InputManager::MAX_MOTORS_PER_PAD];
+    float bind_state[MAX_BINDS];
+  };
+
+  std::array<PadState, NUM_CONTROLLER_AND_CARD_PORTS> pads;
+  u32 num_active_pads = 0;
+};
+
+struct InputOverlayStateUpdateBuffer
+{
+  u32 num_active_pads = 0;
+  InputOverlayState::PadState pads[0];
+};
+
 #ifndef __ANDROID__
 
 struct DebugWindowInfo
@@ -79,6 +104,7 @@ static void DrawMediaCaptureOverlay(float& position_y, float scale, float margin
 static void DrawFrameTimeOverlay(float& position_y, float scale, float margin, float spacing);
 static void DrawEnhancementsOverlay(const GPUBackend* gpu);
 static void DrawInputsOverlay();
+static void UpdateInputOverlay(void* buffer);
 
 #ifndef __ANDROID__
 
@@ -96,6 +122,9 @@ static constexpr const std::array<DebugWindowInfo, NUM_DEBUG_WINDOWS> s_debug_wi
 static std::array<ImGuiManager::AuxiliaryRenderWindowState, NUM_DEBUG_WINDOWS> s_debug_window_state = {};
 
 #endif
+
+static InputOverlayState s_input_overlay_state = {};
+
 } // namespace ImGuiManager
 
 static std::tuple<float, float> GetMinMax(std::span<const float> values)
@@ -648,6 +677,70 @@ void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float ma
   position_y += history_size.y + spacing;
 }
 
+void ImGuiManager::UpdateInputOverlay()
+{
+  u32 num_active_pads = 0;
+  for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
+  {
+    if (g_settings.controller_types[port] != ControllerType::None)
+      num_active_pads++;
+  }
+
+  const u32 buffer_size =
+    sizeof(InputOverlayStateUpdateBuffer) + (static_cast<u32>(sizeof(InputOverlayState)) * num_active_pads);
+  const auto& [cmd, buffer] = GPUThread::BeginASyncBufferCall(&ImGuiManager::UpdateInputOverlay, buffer_size);
+
+  InputOverlayStateUpdateBuffer* const ubuffer = static_cast<InputOverlayStateUpdateBuffer*>(buffer);
+  ubuffer->num_active_pads = num_active_pads;
+
+  size_t out_index = 0;
+  for (const u32 pad : Controller::PortDisplayOrder)
+  {
+    const Controller* controller = System::GetController(pad);
+    if (!controller)
+      continue;
+
+    const ControllerType ctype = controller->GetType();
+    const auto& [port, slot] = Controller::ConvertPadToPortAndSlot(pad);
+    const bool multitap = g_settings.IsMultitapPortEnabled(port);
+    InputOverlayState::PadState& pstate = ubuffer->pads[out_index++];
+    pstate.port = Truncate8(port);
+    pstate.slot = Truncate8(slot);
+    pstate.multitap = multitap;
+    pstate.ctype = ctype;
+    pstate.icon_color = controller->GetInputOverlayIconColor();
+
+    const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(ctype);
+    for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
+    {
+      const u32 bidx = bi.bind_index;
+
+      // this will leave some uninitalized, but who cares, it won't be read on the other side
+      if (bi.type >= InputBindingInfo::Type::Button && bi.type <= InputBindingInfo::Type::HalfAxis)
+      {
+        DebugAssert(bidx < InputOverlayState::MAX_BINDS);
+        pstate.bind_state[bidx] = controller->GetBindState(bidx);
+      }
+      else if (bi.type == InputBindingInfo::Type::Motor)
+      {
+        DebugAssert(bidx < InputManager::MAX_MOTORS_PER_PAD);
+        pstate.vibration_state[bidx] = controller->GetVibrationMotorState(bidx);
+      }
+    }
+  }
+
+  GPUThread::PushCommand(cmd);
+}
+
+void ImGuiManager::UpdateInputOverlay(void* buffer)
+{
+  InputOverlayStateUpdateBuffer* const RESTRICT ubuffer = static_cast<InputOverlayStateUpdateBuffer*>(buffer);
+  DebugAssert(ubuffer->num_active_pads < NUM_CONTROLLER_AND_CARD_PORTS);
+  s_input_overlay_state.num_active_pads = ubuffer->num_active_pads;
+  for (u32 i = 0; i < ubuffer->num_active_pads; i++)
+    s_input_overlay_state.pads[i] = ubuffer->pads[i];
+}
+
 void ImGuiManager::DrawInputsOverlay()
 {
   const float scale = ImGuiManager::GetGlobalScale();
@@ -662,16 +755,10 @@ void ImGuiManager::DrawInputsOverlay()
   const ImVec2& display_size = ImGui::GetIO().DisplaySize;
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-  u32 num_ports = 0;
-  for (u32 port = 0; port < NUM_CONTROLLER_AND_CARD_PORTS; port++)
-  {
-    if (g_settings.controller_types[port] != ControllerType::None)
-      num_ports++;
-  }
-
   float current_x = ImFloor(margin);
   float current_y =
-    ImFloor(display_size.y - margin - ((static_cast<float>(num_ports) * (font->FontSize + spacing)) - spacing));
+    ImFloor(display_size.y - margin -
+            ((static_cast<float>(s_input_overlay_state.num_active_pads) * (font->FontSize + spacing)) - spacing));
 
   // This is a bit of a pain. Some of the glyphs slightly overhang/overshoot past the baseline, resulting
   // in the glyphs getting clipped if we use the text height/margin as a clip point. Instead, just clamp it
@@ -680,24 +767,19 @@ void ImGuiManager::DrawInputsOverlay()
 
   SmallString text;
 
-  for (const u32 pad : Controller::PortDisplayOrder)
+  for (u32 i = 0; i < s_input_overlay_state.num_active_pads; i++)
   {
-    const Controller* controller = System::GetController(pad);
-    if (!controller)
-      continue;
-
-    const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(controller->GetType());
-    const auto& [port, slot] = Controller::ConvertPadToPortAndSlot(pad);
-    const char* port_label = Controller::GetPortDisplayName(port, slot, g_settings.IsMultitapPortEnabled(port));
+    const InputOverlayState::PadState& pstate = s_input_overlay_state.pads[i];
+    const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(pstate.ctype);
+    const char* port_label = Controller::GetPortDisplayName(pstate.port, pstate.slot, pstate.multitap);
 
     float text_start_x = current_x;
     if (cinfo.icon_name)
     {
       const ImVec2 icon_size = font->CalcTextSizeA(font->FontSize, FLT_MAX, 0.0f, cinfo.icon_name);
-      const u32 icon_color = controller->GetInputOverlayIconColor();
       dl->AddText(font, font->FontSize, ImVec2(current_x + shadow_offset, current_y + shadow_offset), shadow_color,
                   cinfo.icon_name, nullptr, 0.0f, &clip_rect);
-      dl->AddText(font, font->FontSize, ImVec2(current_x, current_y), icon_color, cinfo.icon_name, nullptr, 0.0f,
+      dl->AddText(font, font->FontSize, ImVec2(current_x, current_y), pstate.icon_color, cinfo.icon_name, nullptr, 0.0f,
                   &clip_rect);
       text_start_x += icon_size.x;
       text.format(" {}", port_label);
@@ -709,36 +791,23 @@ void ImGuiManager::DrawInputsOverlay()
 
     for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
     {
-      switch (bi.type)
+      if (bi.type >= InputBindingInfo::Type::Button && bi.type <= InputBindingInfo::Type::HalfAxis)
       {
-        case InputBindingInfo::Type::Axis:
-        case InputBindingInfo::Type::HalfAxis:
-        {
-          // axes are always shown
-          const float value = controller->GetBindState(bi.bind_index);
-          if (value >= (254.0f / 255.0f))
-            text.append_format(" {}", bi.icon_name ? bi.icon_name : bi.name);
-          else if (value > (1.0f / 255.0f))
-            text.append_format(" {}: {:.2f}", bi.icon_name ? bi.icon_name : bi.name, value);
-        }
-        break;
-
-        case InputBindingInfo::Type::Button:
-        {
-          // buttons only shown when active
-          const float value = controller->GetBindState(bi.bind_index);
-          if (value >= 0.5f)
-            text.append_format(" {}", bi.icon_name ? bi.icon_name : bi.name);
-        }
-        break;
-
-        case InputBindingInfo::Type::Motor:
-        case InputBindingInfo::Type::Macro:
-        case InputBindingInfo::Type::Unknown:
-        case InputBindingInfo::Type::Pointer:
-        case InputBindingInfo::Type::RelativePointer:
-        default:
-          break;
+        // axes are always shown when not near resting, buttons only shown when active
+        const float value = pstate.bind_state[bi.bind_index];
+        const float threshold = (bi.type == InputBindingInfo::Type::Button) ? 0.5f : (254.0f / 255.0f);
+        if (value >= threshold)
+          text.append_format(" {}", bi.icon_name ? bi.icon_name : bi.name);
+        else if (value > (1.0f / 255.0f))
+          text.append_format(" {}: {:.2f}", bi.icon_name ? bi.icon_name : bi.name, value);
+      }
+      else if (bi.type == InputBindingInfo::Type::Motor)
+      {
+        const float value = pstate.vibration_state[bi.bind_index];
+        if (value >= 1.0f)
+          text.append_format(" {}", bi.icon_name ? bi.icon_name : bi.name);
+        else if (value > 0.0f)
+          text.append_format(" {}: {:.0f}%", bi.icon_name ? bi.icon_name : bi.name, std::ceil(value * 100.0f));
       }
     }
 

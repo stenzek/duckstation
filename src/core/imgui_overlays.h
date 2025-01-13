@@ -15,6 +15,7 @@ namespace ImGuiManager {
 
 static constexpr const char* LOGO_IMAGE_NAME = "images/duck.png";
 
+void UpdateInputOverlay();
 void RenderTextOverlays(const GPUBackend* gpu);
 bool AreAnyDebugWindowsEnabled(const SettingsInterface& si);
 void RenderDebugWindows();
