@@ -18,16 +18,19 @@
 
 #include <QtCore/QSignalBlocker>
 #include <QtGui/QPainter>
+#include <QtGui/QStandardItem>
+#include <QtGui/QStandardItemModel>
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QStyledItemDelegate>
 
 LOG_CHANNEL(Cheats);
 
 namespace {
+
 class CheatListOptionDelegate : public QStyledItemDelegate
 {
 public:
-  CheatListOptionDelegate(GameCheatSettingsWidget* parent, QTreeWidget* treeview);
+  CheatListOptionDelegate(GameCheatSettingsWidget* parent, QTreeView* treeview);
 
   QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
   void setEditorData(QWidget* editor, const QModelIndex& index) const override;
@@ -39,11 +42,11 @@ private:
   const Cheats::CodeInfo* getCodeInfoForRow(const QModelIndex& index) const;
 
   GameCheatSettingsWidget* m_parent;
-  QTreeWidget* m_treeview;
+  QTreeView* m_treeview;
 };
 }; // namespace
 
-CheatListOptionDelegate::CheatListOptionDelegate(GameCheatSettingsWidget* parent, QTreeWidget* treeview)
+CheatListOptionDelegate::CheatListOptionDelegate(GameCheatSettingsWidget* parent, QTreeView* treeview)
   : QStyledItemDelegate(parent), m_parent(parent), m_treeview(treeview)
 {
 }
@@ -149,7 +152,7 @@ void CheatListOptionDelegate::paint(QPainter* painter, const QStyleOptionViewIte
   if (index.column() == 0)
   {
     // skip for editable rows
-    if (index.flags() & Qt::ItemIsEditable)
+    if (index.data(Qt::UserRole + 1).toBool())
       return QStyledItemDelegate::paint(painter, option, index);
 
     // expand the width to full for those without options
@@ -173,25 +176,37 @@ void CheatListOptionDelegate::paint(QPainter* painter, const QStyleOptionViewIte
 
 GameCheatSettingsWidget::GameCheatSettingsWidget(SettingsWindow* dialog, QWidget* parent) : m_dialog(dialog)
 {
+  SettingsInterface* sif = m_dialog->getSettingsInterface();
+  const bool sorting_enabled = sif->GetBoolValue("Cheats", "SortList", false);
+
   m_ui.setupUi(this);
+
+  m_codes_model = new QStandardItemModel(this);
+  m_sort_model = new QSortFilterProxyModel(m_codes_model);
+  m_sort_model->setSourceModel(m_codes_model);
+  m_sort_model->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  m_sort_model->setRecursiveFilteringEnabled(true);
+  m_sort_model->setAutoAcceptChildRows(true);
+  m_sort_model->sort(sorting_enabled ? 0 : -1, Qt::AscendingOrder);
+  m_ui.cheatList->setModel(m_sort_model);
   m_ui.cheatList->setItemDelegate(new CheatListOptionDelegate(this, m_ui.cheatList));
 
   reloadList();
 
-  SettingsInterface* sif = m_dialog->getSettingsInterface();
-
   // We don't use the binder here, because they're binary - either enabled, or not in the file.
   m_ui.enableCheats->setChecked(sif->GetBoolValue("Cheats", "EnableCheats", false));
   m_ui.loadDatabaseCheats->setChecked(sif->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true));
+  m_ui.sortCheats->setChecked(sorting_enabled);
 
   connect(m_ui.enableCheats, &QCheckBox::checkStateChanged, this, &GameCheatSettingsWidget::onEnableCheatsChanged);
+  connect(m_ui.sortCheats, &QPushButton::toggled, this, &GameCheatSettingsWidget::onSortCheatsToggled);
+  connect(m_ui.search, &QLineEdit::textChanged, this, &GameCheatSettingsWidget::onSearchFilterChanged);
   connect(m_ui.loadDatabaseCheats, &QCheckBox::checkStateChanged, this,
           &GameCheatSettingsWidget::onLoadDatabaseCheatsChanged);
-  connect(m_ui.cheatList, &QTreeWidget::itemDoubleClicked, this,
-          &GameCheatSettingsWidget::onCheatListItemDoubleClicked);
-  connect(m_ui.cheatList, &QTreeWidget::customContextMenuRequested, this,
+  connect(m_ui.cheatList, &QTreeView::doubleClicked, this, &GameCheatSettingsWidget::onCheatListItemDoubleClicked);
+  connect(m_ui.cheatList, &QTreeView::customContextMenuRequested, this,
           &GameCheatSettingsWidget::onCheatListContextMenuRequested);
-  connect(m_ui.cheatList, &QTreeWidget::itemChanged, this, &GameCheatSettingsWidget::onCheatListItemChanged);
+  connect(m_codes_model, &QStandardItemModel::itemChanged, this, &GameCheatSettingsWidget::onCheatListItemChanged);
   connect(m_ui.add, &QToolButton::clicked, this, &GameCheatSettingsWidget::newCode);
   connect(m_ui.remove, &QToolButton::clicked, this, &GameCheatSettingsWidget::onRemoveCodeClicked);
   connect(m_ui.disableAll, &QToolButton::clicked, this, &GameCheatSettingsWidget::disableAllCheats);
@@ -255,6 +270,27 @@ void GameCheatSettingsWidget::onEnableCheatsChanged(Qt::CheckState state)
   m_dialog->saveAndReloadGameSettings();
 }
 
+void GameCheatSettingsWidget::onSortCheatsToggled(bool checked)
+{
+  m_sort_model->sort(checked ? 0 : -1, Qt::AscendingOrder);
+
+  if (checked)
+    m_dialog->getSettingsInterface()->SetBoolValue("Cheats", "SortList", true);
+  else
+    m_dialog->getSettingsInterface()->DeleteValue("Cheats", "SortList");
+
+  m_dialog->saveAndReloadGameSettings();
+}
+
+void GameCheatSettingsWidget::onSearchFilterChanged(const QString& text)
+{
+  m_sort_model->setFilterFixedString(text);
+
+  // if we're clearing search, re-expand everything, since sorting collapses them
+  if (text.isEmpty())
+    expandAllItems();
+}
+
 void GameCheatSettingsWidget::onLoadDatabaseCheatsChanged(Qt::CheckState state)
 {
   // Default is enabled.
@@ -266,25 +302,33 @@ void GameCheatSettingsWidget::onLoadDatabaseCheatsChanged(Qt::CheckState state)
   reloadList();
 }
 
-void GameCheatSettingsWidget::onCheatListItemDoubleClicked(QTreeWidgetItem* item, int column)
+void GameCheatSettingsWidget::onCheatListItemDoubleClicked(const QModelIndex& index)
 {
-  const QVariant item_data = item->data(0, Qt::UserRole);
+  const QModelIndex col0 = m_sort_model->mapToSource(index.siblingAtColumn(0));
+  if (!col0.isValid())
+    return;
+
+  const QStandardItem* item = m_codes_model->itemFromIndex(col0);
+  if (!item)
+    return;
+
+  const QVariant item_data = item->data(Qt::UserRole);
   if (!item_data.isValid())
     return;
 
   editCode(item_data.toString().toStdString());
 }
 
-void GameCheatSettingsWidget::onCheatListItemChanged(QTreeWidgetItem* item, int column)
+void GameCheatSettingsWidget::onCheatListItemChanged(QStandardItem* item)
 {
-  const QVariant item_data = item->data(0, Qt::UserRole);
+  const QVariant item_data = item->data(Qt::UserRole);
   if (!item_data.isValid())
     return;
 
   std::string cheat_name = item_data.toString().toStdString();
   const bool current_enabled =
     (std::find(m_enabled_codes.begin(), m_enabled_codes.end(), cheat_name) != m_enabled_codes.end());
-  const bool current_checked = (item->checkState(0) == Qt::Checked);
+  const bool current_checked = (item->checkState() == Qt::Checked);
   if (current_enabled == current_checked)
     return;
 
@@ -369,11 +413,15 @@ void GameCheatSettingsWidget::checkForMasterDisable()
 
 Cheats::CodeInfo* GameCheatSettingsWidget::getSelectedCode()
 {
-  const QList<QTreeWidgetItem*> selected = m_ui.cheatList->selectedItems();
+  const QList<QModelIndex> selected = m_ui.cheatList->selectionModel()->selectedRows();
   if (selected.size() != 1)
     return nullptr;
 
-  const QVariant item_data = selected[0]->data(0, Qt::UserRole);
+  const QStandardItem* item = m_codes_model->itemFromIndex(m_sort_model->mapToSource(selected[0]));
+  if (!item)
+    return nullptr;
+
+  const QVariant item_data = item->data(Qt::UserRole);
   if (!item_data.isValid())
     return nullptr;
 
@@ -415,29 +463,33 @@ void GameCheatSettingsWidget::setCheatEnabled(std::string name, bool enabled, bo
 
 void GameCheatSettingsWidget::setStateForAll(bool enabled)
 {
-  QSignalBlocker sb(m_ui.cheatList);
-  setStateRecursively(nullptr, enabled);
+  setStateRecursively(m_codes_model->invisibleRootItem(), enabled);
   m_dialog->saveAndReloadGameSettings();
 }
 
-void GameCheatSettingsWidget::setStateRecursively(QTreeWidgetItem* parent, bool enabled)
+void GameCheatSettingsWidget::setStateRecursively(QStandardItem* parent, bool enabled)
 {
-  const int count = parent ? parent->childCount() : m_ui.cheatList->topLevelItemCount();
+  const int count = parent->rowCount();
   for (int i = 0; i < count; i++)
   {
-    QTreeWidgetItem* item = parent ? parent->child(i) : m_ui.cheatList->topLevelItem(i);
-    const QVariant item_data = item->data(0, Qt::UserRole);
+    QStandardItem* child = parent->child(i);
+    if (child->hasChildren())
+    {
+      setStateRecursively(child, enabled);
+      continue;
+    }
+
+    // found a code to toggle
+    const QVariant item_data = child->data(Qt::UserRole);
     if (item_data.isValid())
     {
-      if ((item->checkState(0) == Qt::Checked) != enabled)
+      if ((child->checkState() == Qt::Checked) != enabled)
       {
-        item->setCheckState(0, enabled ? Qt::Checked : Qt::Unchecked);
+        // set state first, so the signal doesn't change it
+        // can't use a signal blocker here, because otherwise the view doesn't update
         setCheatEnabled(item_data.toString().toStdString(), enabled, false);
+        child->setCheckState(enabled ? Qt::Checked : Qt::Unchecked);
       }
-    }
-    else
-    {
-      setStateRecursively(item, enabled);
     }
   }
 }
@@ -445,13 +497,13 @@ void GameCheatSettingsWidget::setStateRecursively(QTreeWidgetItem* parent, bool 
 void GameCheatSettingsWidget::reloadList()
 {
   // Show all hashes, since the ini is shared.
-  m_codes = Cheats::GetCodeInfoList(m_dialog->getGameSerial(), std::nullopt, true, shouldLoadFromDatabase(), true);
+  m_codes = Cheats::GetCodeInfoList(m_dialog->getGameSerial(), std::nullopt, true, shouldLoadFromDatabase(), false);
   m_enabled_codes =
     m_dialog->getSettingsInterface()->GetStringList(Cheats::CHEATS_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
 
   m_parent_map.clear();
-  while (m_ui.cheatList->topLevelItemCount() > 0)
-    delete m_ui.cheatList->takeTopLevelItem(0);
+  m_codes_model->clear();
+  m_codes_model->invisibleRootItem()->setColumnCount(2);
 
   for (const Cheats::CodeInfo& ci : m_codes)
   {
@@ -459,17 +511,21 @@ void GameCheatSettingsWidget::reloadList()
 
     const std::string_view parent_part = ci.GetNameParentPart();
 
-    QTreeWidgetItem* parent = getTreeWidgetParent(parent_part);
-    QTreeWidgetItem* item = new QTreeWidgetItem();
-    populateTreeWidgetItem(item, ci, enabled);
-    if (parent)
-      parent->addChild(item);
-    else
-      m_ui.cheatList->addTopLevelItem(item);
+    QStandardItem* parent = getTreeWidgetParent(parent_part);
+    populateTreeWidgetItem(parent, ci, enabled);
   }
 
   // Hide root indicator when there's no groups, frees up some whitespace.
   m_ui.cheatList->setRootIsDecorated(!m_parent_map.empty());
+
+  // Expand all items.
+  expandAllItems();
+}
+
+void GameCheatSettingsWidget::expandAllItems()
+{
+  for (const auto& it : m_parent_map)
+    m_ui.cheatList->setExpanded(m_sort_model->mapFromSource(it.second->index()), true);
 }
 
 void GameCheatSettingsWidget::onImportClicked()
@@ -630,17 +686,17 @@ void GameCheatSettingsWidget::onClearClicked()
   reloadList();
 }
 
-QTreeWidgetItem* GameCheatSettingsWidget::getTreeWidgetParent(const std::string_view parent)
+QStandardItem* GameCheatSettingsWidget::getTreeWidgetParent(const std::string_view parent)
 {
   if (parent.empty())
-    return nullptr;
+    return m_codes_model->invisibleRootItem();
 
   auto it = m_parent_map.find(parent);
   if (it != m_parent_map.end())
     return it->second;
 
   std::string_view this_part = parent;
-  QTreeWidgetItem* parent_to_this = nullptr;
+  QStandardItem* parent_to_this = nullptr;
   const std::string_view::size_type pos = parent.rfind('\\');
   if (pos != std::string::npos && pos != (parent.size() - 1))
   {
@@ -648,45 +704,63 @@ QTreeWidgetItem* GameCheatSettingsWidget::getTreeWidgetParent(const std::string_
     parent_to_this = getTreeWidgetParent(parent.substr(0, pos));
     this_part = parent.substr(pos + 1);
   }
-
-  QTreeWidgetItem* item = new QTreeWidgetItem();
-  item->setText(0, QString::fromUtf8(this_part.data(), this_part.length()));
-
-  if (parent_to_this)
-    parent_to_this->addChild(item);
   else
-    m_ui.cheatList->addTopLevelItem(item);
+  {
+    parent_to_this = m_codes_model->invisibleRootItem();
+  }
 
-  // Must be called after adding.
-  item->setExpanded(true);
+  QStandardItem* item = new QStandardItem();
+  item->setText(QString::fromUtf8(this_part.data(), this_part.length()));
+  item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+  parent_to_this->appendRow(item);
+
   m_parent_map.emplace(parent, item);
   return item;
 }
 
-void GameCheatSettingsWidget::populateTreeWidgetItem(QTreeWidgetItem* item, const Cheats::CodeInfo& pi, bool enabled)
+void GameCheatSettingsWidget::populateTreeWidgetItem(QStandardItem* parent, const Cheats::CodeInfo& pi, bool enabled)
 {
   const std::string_view name_part = pi.GetNamePart();
-  item->setFlags(item->flags() | Qt::ItemIsUserCheckable | Qt::ItemNeverHasChildren);
-  item->setCheckState(0, enabled ? Qt::Checked : Qt::Unchecked);
-  item->setData(0, Qt::UserRole, QString::fromStdString(pi.name));
-  if (!pi.description.empty())
-    item->setToolTip(0, QString::fromStdString(pi.description));
-  if (!name_part.empty())
-    item->setText(0, QtUtils::StringViewToQString(name_part));
+  QStandardItem* label = new QStandardItem();
+  label->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsUserCheckable | Qt::ItemNeverHasChildren);
+  label->setCheckState(enabled ? Qt::Checked : Qt::Unchecked);
+  label->setData(QString::fromStdString(pi.name), Qt::UserRole);
 
-  if (pi.HasOptionChoices())
+  // Why?
+
+  if (!pi.description.empty())
+    label->setToolTip(QString::fromStdString(pi.description));
+  if (!name_part.empty())
+    label->setText(QtUtils::StringViewToQString(name_part));
+
+  const int index = parent->rowCount();
+  parent->appendRow(label);
+
+  if (pi.HasOptionChoices() || pi.HasOptionRange())
   {
-    // need to resolve the value back to a name
-    const std::string_view option_name =
-      pi.MapOptionValueToName(m_dialog->getSettingsInterface()->GetTinyStringValue("Cheats", pi.name.c_str()));
-    item->setData(1, Qt::UserRole, QtUtils::StringViewToQString(option_name));
-    item->setFlags(item->flags() | Qt::ItemIsEditable);
-  }
-  else if (pi.HasOptionRange())
-  {
-    const u32 value = m_dialog->getSettingsInterface()->GetUIntValue("Cheats", pi.name.c_str(), pi.option_range_start);
-    item->setData(1, Qt::UserRole, static_cast<uint>(value));
-    item->setFlags(item->flags() | Qt::ItemIsEditable);
+    QStandardItem* value_col = new QStandardItem();
+    value_col->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable);
+
+    if (pi.HasOptionChoices())
+    {
+      // need to resolve the value back to a name
+      const std::string_view option_name =
+        pi.MapOptionValueToName(m_dialog->getSettingsInterface()->GetTinyStringValue("Cheats", pi.name.c_str()));
+      value_col->setData(QtUtils::StringViewToQString(option_name), Qt::UserRole);
+    }
+    else if (pi.HasOptionRange())
+    {
+      const u32 value =
+        m_dialog->getSettingsInterface()->GetUIntValue("Cheats", pi.name.c_str(), pi.option_range_start);
+      value_col->setData(static_cast<uint>(value), Qt::UserRole);
+    }
+
+    parent->setChild(index, 1, value_col);
+
+    // Why are we doing this on the label item? Qt seems to return these oddball QStandardItem values
+    // for columns that don't exist that have all flags set, so we can't use it in the drawing delegate
+    // to determine whether the label should span the entire width or not.
+    label->setData(true, Qt::UserRole + 1);
   }
 }
 

@@ -25,6 +25,9 @@ struct Entry;
 
 class SettingsWindow;
 
+class QStandardItem;
+class QStandardItemModel;
+
 class GameCheatSettingsWidget : public QWidget
 {
   Q_OBJECT
@@ -45,9 +48,11 @@ protected:
 
 private Q_SLOTS:
   void onEnableCheatsChanged(Qt::CheckState state);
+  void onSortCheatsToggled(bool checked);
+  void onSearchFilterChanged(const QString& text);
   void onLoadDatabaseCheatsChanged(Qt::CheckState state);
-  void onCheatListItemDoubleClicked(QTreeWidgetItem* item, int column);
-  void onCheatListItemChanged(QTreeWidgetItem* item, int column);
+  void onCheatListItemDoubleClicked(const QModelIndex& index);
+  void onCheatListItemChanged(QStandardItem* item);
   void onCheatListContextMenuRequested(const QPoint& pos);
   void onRemoveCodeClicked();
   void onReloadClicked();
@@ -63,11 +68,13 @@ private:
   void checkForMasterDisable();
 
   Cheats::CodeInfo* getSelectedCode();
-  QTreeWidgetItem* getTreeWidgetParent(const std::string_view parent);
-  void populateTreeWidgetItem(QTreeWidgetItem* item, const Cheats::CodeInfo& pi, bool enabled);
+  QStandardItem* getTreeWidgetParent(const std::string_view parent);
+  void populateTreeWidgetItem(QStandardItem* parent, const Cheats::CodeInfo& pi, bool enabled);
+  void expandAllItems();
+
   void setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings);
   void setStateForAll(bool enabled);
-  void setStateRecursively(QTreeWidgetItem* parent, bool enabled);
+  void setStateRecursively(QStandardItem* parent, bool enabled);
   void importCodes(const std::string& file_contents);
   void newCode();
   void editCode(const std::string_view code_name);
@@ -76,8 +83,10 @@ private:
   Ui::GameCheatSettingsWidget m_ui;
   SettingsWindow* m_dialog;
 
-  UnorderedStringMap<QTreeWidgetItem*> m_parent_map;
+  UnorderedStringMap<QStandardItem*> m_parent_map;
   Cheats::CodeInfoList m_codes;
+  QStandardItemModel* m_codes_model;
+  QSortFilterProxyModel* m_sort_model;
   std::vector<std::string> m_enabled_codes;
 
   bool m_master_enable_ignored = false;

@@ -24,11 +24,40 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0,0,0,0">
      <item>
       <widget class="QCheckBox" name="enableCheats">
        <property name="text">
         <string>Enable Cheats</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="search">
+       <property name="minimumSize">
+        <size>
+         <width>200</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="placeholderText">
+        <string>Search...</string>
+       </property>
+       <property name="clearButtonEnabled">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QToolButton" name="sortCheats">
+       <property name="toolTip">
+        <string>Reload Cheats</string>
+       </property>
+       <property name="icon">
+        <iconset theme="sort-alphabet-asc"/>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -93,7 +122,7 @@
     </layout>
    </item>
    <item>
-    <widget class="QTreeWidget" name="cheatList">
+    <widget class="QTreeView" name="cheatList">
      <property name="contextMenuPolicy">
       <enum>Qt::ContextMenuPolicy::CustomContextMenu</enum>
      </property>
@@ -112,16 +141,9 @@
      <property name="headerHidden">
       <bool>true</bool>
      </property>
-     <column>
-      <property name="text">
-       <string>Name</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Value</string>
-      </property>
-     </column>
+     <property name="expandsOnDoubleClick">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item>
