@@ -148,7 +148,7 @@ static void BeginLoadGame();
 static void BeginChangeDisc();
 static void UpdateGameSummary();
 static std::string GetLocalImagePath(const std::string_view image_name, int type);
-static void DownloadImage(std::string url, std::string cache_filename);
+static void DownloadImage(std::string url, std::string cache_path);
 static void UpdateGlyphRanges();
 
 static TinyString DecryptLoginToken(std::string_view encrypted_token, std::string_view username);
@@ -370,23 +370,25 @@ std::string Achievements::GetLocalImagePath(const std::string_view image_name, i
   return ret;
 }
 
-void Achievements::DownloadImage(std::string url, std::string cache_filename)
+void Achievements::DownloadImage(std::string url, std::string cache_path)
 {
-  auto callback = [cache_filename](s32 status_code, const Error& error, const std::string& content_type,
-                                   HTTPDownloader::Request::Data data) {
+  auto callback = [cache_path = std::move(cache_path)](s32 status_code, const Error& error,
+                                                       const std::string& content_type,
+                                                       HTTPDownloader::Request::Data data) mutable {
     if (status_code != HTTPDownloader::HTTP_STATUS_OK)
     {
-      ERROR_LOG("Failed to download badge '{}': {}", Path::GetFileName(cache_filename), error.GetDescription());
+      ERROR_LOG("Failed to download badge '{}': {}", Path::GetFileName(cache_path), error.GetDescription());
       return;
     }
 
-    if (!FileSystem::WriteBinaryFile(cache_filename.c_str(), data.data(), data.size()))
+    if (!FileSystem::WriteBinaryFile(cache_path.c_str(), data.data(), data.size()))
     {
-      ERROR_LOG("Failed to write badge image to '{}'", cache_filename);
+      ERROR_LOG("Failed to write badge image to '{}'", cache_path);
       return;
     }
 
-    ImGuiFullscreen::InvalidateCachedTexture(cache_filename);
+    GPUThread::RunOnThread(
+      [cache_path = std::move(cache_path)]() { ImGuiFullscreen::InvalidateCachedTexture(cache_path); });
   };
 
   s_state.http_downloader->CreateRequest(std::move(url), std::move(callback));
