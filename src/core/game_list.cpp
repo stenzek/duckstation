@@ -1835,11 +1835,13 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
         std::memcpy(image.GetPixels(), &fi.icon_frames.front().pixels,
                     MemoryCardImage::ICON_WIDTH * MemoryCardImage::ICON_HEIGHT * sizeof(u32));
         serial_entry->icon_was_extracted = image.SaveToFile(ret.c_str());
-        if (!serial_entry->icon_was_extracted)
+        if (serial_entry->icon_was_extracted)
+        {
+          return ret;
+        }
+        else
         {
           ERROR_LOG("Failed to save memory card icon to {}.", ret);
-          ret = {};
-          return ret;
         }
       }
     }
@@ -1849,6 +1851,7 @@ std::string GameList::GetGameIconPath(std::string_view serial, std::string_view 
     ERROR_LOG("Failed to load memory card '{}': {}", Path::GetFileName(memcard_path), error.GetDescription());
   }
 
+  ret = {};
   UpdateMemcardTimestampCache(*serial_entry);
   return ret;
 }
