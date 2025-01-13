@@ -1350,15 +1350,11 @@ void FullscreenUI::DoToggleAnalogMode()
   Host::RunOnCPUThread([]() {
     for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
     {
-      Controller* ctrl = System::GetController(i);
+      Controller* const ctrl = System::GetController(i);
       if (!ctrl)
         continue;
 
-      const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(ctrl->GetType());
-      if (!cinfo)
-        continue;
-
-      for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
+      for (const Controller::ControllerBindingInfo& bi : Controller::GetControllerInfo(ctrl->GetType()).bindings)
       {
         if (std::strcmp(bi.name, "Analog") == 0)
         {
@@ -4099,8 +4095,8 @@ void FullscreenUI::DrawControllerSettingsPage()
                                         Controller::GetPortDisplayName(mtap_port, mtap_slot, mtap_enabled[mtap_port])));
 
     const TinyString section = TinyString::from_format("Pad{}", global_slot + 1);
-    const TinyString type =
-      bsi->GetTinyStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(global_slot));
+    const TinyString type = bsi->GetTinyStringValue(
+      section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(global_slot)).name);
     const Controller::ControllerInfo* ci = Controller::GetControllerInfo(type);
     TinyString value;
     if (ci && ci->icon_name)
@@ -4114,7 +4110,7 @@ void FullscreenUI::DrawControllerSettingsPage()
           TinyString::from_format("{}##type{}", FSUI_ICONSTR(ICON_FA_GAMEPAD, "Controller Type"), global_slot),
           FSUI_CSTR("Selects the type of emulated controller for this port."), value))
     {
-      const std::span<const Controller::ControllerInfo*> infos = Controller::GetControllerInfoList();
+      const auto& infos = Controller::GetControllerInfoList();
       ImGuiFullscreen::ChoiceDialogOptions options;
       options.reserve(infos.size());
       for (const Controller::ControllerInfo* it : infos)

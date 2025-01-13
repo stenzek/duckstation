@@ -195,7 +195,7 @@ void GameSummaryWidget::populateUi(const std::string& path, const std::string& s
         {
           if (!controllers.isEmpty())
             controllers.append(", ");
-          controllers.append(Controller::GetControllerInfo(static_cast<ControllerType>(i))->GetDisplayName());
+          controllers.append(Controller::GetControllerInfo(static_cast<ControllerType>(i)).GetDisplayName());
         }
       }
     }

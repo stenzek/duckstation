@@ -120,7 +120,7 @@ static float ApplySingleBindingScale(float sensitivity, float deadzone, float va
 
 static void AddHotkeyBindings(const SettingsInterface& si);
 static void AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad,
-                           const Controller::ControllerInfo* cinfo);
+                           const Controller::ControllerInfo& cinfo);
 static void UpdateContinuedVibration();
 static void GenerateRelativeMouseEvents();
 
@@ -129,7 +129,7 @@ static bool PreprocessEvent(InputBindingKey key, float value, GenericInputBindin
 static bool ProcessEvent(InputBindingKey key, float value, bool skip_button_handlers);
 
 static void LoadMacroButtonConfig(const SettingsInterface& si, const std::string& section, u32 pad,
-                                  const Controller::ControllerInfo* cinfo);
+                                  const Controller::ControllerInfo& cinfo);
 static void ApplyMacroButton(u32 pad, const MacroButton& mb);
 static void UpdateMacroButtons();
 
@@ -834,13 +834,13 @@ void InputManager::AddHotkeyBindings(const SettingsInterface& si)
 }
 
 void InputManager::AddPadBindings(const SettingsInterface& si, const std::string& section, u32 pad_index,
-                                  const Controller::ControllerInfo* cinfo)
+                                  const Controller::ControllerInfo& cinfo)
 {
   bool vibration_binding_valid = false;
   PadVibrationBinding vibration_binding = {};
   vibration_binding.pad_index = pad_index;
 
-  for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
+  for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
   {
     const std::vector<std::string> bindings(si.GetStringList(section.c_str(), bi.name));
 
@@ -1420,8 +1420,9 @@ void InputManager::SetDefaultSourceConfig(SettingsInterface& si)
 
 void InputManager::ClearPortBindings(SettingsInterface& si, u32 port)
 {
-  const std::string section(Controller::GetSettingsSection(port));
-  const std::string type(si.GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(port)));
+  const std::string section = Controller::GetSettingsSection(port);
+  const TinyString type = si.GetTinyStringValue(
+    section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(port)).name);
 
   const Controller::ControllerInfo* info = Controller::GetControllerInfo(type);
   if (!info)
@@ -1463,7 +1464,8 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
     }
 
     const std::string section(Controller::GetSettingsSection(port));
-    const std::string type(src_si.GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(port)));
+    const TinyString type = src_si.GetTinyStringValue(
+      section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(port)).name);
     if (copy_pad_config)
       dest_si->SetStringValue(section.c_str(), "Type", type.c_str());
 
@@ -1557,8 +1559,9 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
 bool InputManager::MapController(SettingsInterface& si, u32 controller,
                                  const std::vector<std::pair<GenericInputBinding, std::string>>& mapping)
 {
-  const std::string section(Controller::GetSettingsSection(controller));
-  const std::string type(si.GetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(controller)));
+  const std::string section = Controller::GetSettingsSection(controller);
+  const TinyString type = si.GetTinyStringValue(
+    section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(controller)).name);
   const Controller::ControllerInfo* info = Controller::GetControllerInfo(type);
   if (!info)
     return false;
@@ -1747,10 +1750,10 @@ void InputManager::UpdateContinuedVibration()
 // ------------------------------------------------------------------------
 
 void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std::string& section, u32 pad,
-                                         const Controller::ControllerInfo* cinfo)
+                                         const Controller::ControllerInfo& cinfo)
 {
   s_macro_buttons[pad] = {};
-  if (cinfo->bindings.empty())
+  if (cinfo.bindings.empty())
     return;
 
   for (u32 i = 0; i < NUM_MACRO_BUTTONS_PER_CONTROLLER; i++)
@@ -1776,7 +1779,7 @@ void InputManager::LoadMacroButtonConfig(const SettingsInterface& si, const std:
     for (const std::string_view& button : buttons_split)
     {
       const Controller::ControllerBindingInfo* binding = nullptr;
-      for (const Controller::ControllerBindingInfo& bi : cinfo->bindings)
+      for (const Controller::ControllerBindingInfo& bi : cinfo.bindings)
       {
         if (button == bi.name)
         {
@@ -1918,10 +1921,10 @@ void InputManager::ReloadBindings(const SettingsInterface& binding_si, const Set
   // falling back to the base configuration.
   for (u32 pad = 0; pad < NUM_CONTROLLER_AND_CARD_PORTS; pad++)
   {
-    const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(g_settings.controller_types[pad]);
-    if (!cinfo || cinfo->type == ControllerType::None)
+    if (g_settings.controller_types[pad] == ControllerType::None)
       continue;
 
+    const Controller::ControllerInfo& cinfo = Controller::GetControllerInfo(g_settings.controller_types[pad]);
     const std::string section(Controller::GetSettingsSection(pad));
     AddPadBindings(binding_si, section, pad, cinfo);
     LoadMacroButtonConfig(binding_si, section, pad, cinfo);

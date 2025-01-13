@@ -61,23 +61,14 @@ ControllerBindingWidget::~ControllerBindingWidget() = default;
 
 void ControllerBindingWidget::populateControllerTypes()
 {
-  for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
-  {
-    const ControllerType ctype = static_cast<ControllerType>(i);
-    const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(ctype);
-    if (!cinfo)
-      continue;
-
-    m_ui.controllerType->addItem(QString::fromUtf8(cinfo->GetDisplayName()), QVariant(static_cast<int>(i)));
-  }
+  for (const Controller::ControllerInfo* cinfo : Controller::GetControllerInfoList())
+    m_ui.controllerType->addItem(QString::fromUtf8(cinfo->GetDisplayName()), QVariant(static_cast<int>(cinfo->type)));
 
   m_controller_info = Controller::GetControllerInfo(
-    m_dialog->getStringValue(m_config_section.c_str(), "Type", Controller::GetDefaultPadType(m_port_number)));
+    m_dialog->getStringValue(m_config_section.c_str(), "Type",
+                             Controller::GetControllerInfo(Settings::GetDefaultControllerType(m_port_number)).name));
   if (!m_controller_info)
-  {
-    m_controller_info = Controller::GetControllerInfo(m_port_number == 0 ? Settings::DEFAULT_CONTROLLER_1_TYPE :
-                                                                           Settings::DEFAULT_CONTROLLER_2_TYPE);
-  }
+    m_controller_info = &Controller::GetControllerInfo(Settings::GetDefaultControllerType(m_port_number));
 
   const int index = m_ui.controllerType->findData(QVariant(static_cast<int>(m_controller_info->type)));
   if (index >= 0 && index != m_ui.controllerType->currentIndex())
@@ -247,8 +238,7 @@ void ControllerBindingWidget::onTypeChanged()
   if (!ok || index < 0 || index >= static_cast<int>(ControllerType::Count))
     return;
 
-  m_controller_info = Controller::GetControllerInfo(static_cast<ControllerType>(index));
-  DebugAssert(m_controller_info);
+  m_controller_info = &Controller::GetControllerInfo(static_cast<ControllerType>(index));
 
   SettingsInterface* sif = m_dialog->getEditingSettingsInterface();
   if (sif)

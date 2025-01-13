@@ -389,6 +389,12 @@ struct Settings : public GPUSettings
     return (port == 0) ? IsPort1MultitapEnabled() : IsPort2MultitapEnabled();
   }
 
+  /// Returns the default type for the specified port.
+  ALWAYS_INLINE static ControllerType GetDefaultControllerType(u32 pad)
+  {
+    return (pad == 0) ? DEFAULT_CONTROLLER_1_TYPE : DEFAULT_CONTROLLER_2_TYPE;
+  }
+
   ALWAYS_INLINE static bool IsPerGameMemoryCardType(MemoryCardType type)
   {
     return (type == MemoryCardType::PerGame || type == MemoryCardType::PerGameTitle ||

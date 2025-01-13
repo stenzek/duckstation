@@ -208,19 +208,19 @@ bool Pad::DoStateController(StateWrapper& sw, u32 i)
 
   if (controller_type != controller_type_in_state)
   {
-    const Controller::ControllerInfo* state_cinfo = Controller::GetControllerInfo(controller_type_in_state);
+    const Controller::ControllerInfo& state_cinfo = Controller::GetControllerInfo(controller_type_in_state);
     Assert(sw.IsReading());
 
-    DEV_LOG("Controller type mismatch in slot {}: state={}({}) ui={}({})", i + 1u, state_cinfo ? state_cinfo->name : "",
-            static_cast<unsigned>(controller_type_in_state), Controller::GetControllerInfo(controller_type)->name,
+    DEV_LOG("Controller type mismatch in slot {}: state={}({}) ui={}({})", i + 1u, state_cinfo.name,
+            static_cast<unsigned>(controller_type_in_state), Controller::GetControllerInfo(controller_type).name,
             static_cast<unsigned>(controller_type));
 
     Host::AddIconOSDWarning(
       fmt::format("PadTypeMismatch{}", i), ICON_EMOJI_WARNING,
       fmt::format(TRANSLATE_FS("OSDMessage",
                                "Save state contains controller type {0} in port {1}.\n       Leaving {2} connected."),
-                  state_cinfo ? state_cinfo->GetDisplayName() : "", i + 1u,
-                  Controller::GetControllerInfo(controller_type)->GetDisplayName()),
+                  state_cinfo.GetDisplayName(), i + 1u,
+                  Controller::GetControllerInfo(controller_type).GetDisplayName()),
       Host::OSD_WARNING_DURATION);
 
     if (s_state.controllers[i])
@@ -671,11 +671,11 @@ void Pad::WriteRegister(u32 offset, u32 value)
       return;
     }
 
-      [[unlikely]] default:
-      {
-        ERROR_LOG("Unknown register write: 0x{:X} <- 0x{:08X}", offset, value);
-        return;
-      }
+    [[unlikely]] default:
+    {
+      ERROR_LOG("Unknown register write: 0x{:X} <- 0x{:08X}", offset, value);
+      return;
+    }
   }
 }
 

@@ -404,18 +404,12 @@ void SetupWizardDialog::setupControllerPage(bool initial)
     const std::string section = fmt::format("Pad{}", port + 1);
     const PadWidgets& w = pad_widgets[port];
 
-    for (u32 i = 0; i < static_cast<u32>(ControllerType::Count); i++)
-    {
-      const ControllerType ctype = static_cast<ControllerType>(i);
-      const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(ctype);
-      if (!cinfo)
-        continue;
-
-      w.type_combo->addItem(qApp->translate("ControllerType", cinfo->display_name), QString::fromUtf8(cinfo->name));
-    }
+    for (const Controller::ControllerInfo* cinfo : Controller::GetControllerInfoList())
+      w.type_combo->addItem(QString::fromUtf8(cinfo->GetDisplayName()), QString::fromUtf8(cinfo->name));
 
     ControllerSettingWidgetBinder::BindWidgetToInputProfileString(
-      nullptr, w.type_combo, section, "Type", Controller::GetControllerInfo(Controller::GetDefaultPadType(port))->name);
+      nullptr, w.type_combo, section, "Type",
+      Controller::GetControllerInfo(Settings::GetDefaultControllerType(port)).name);
 
     w.mapping_result->setText((port == 0) ? tr("Default (Keyboard)") : tr("Default (None)"));
 

@@ -405,7 +405,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
 
     const ControllerType default_type = (pad == 0) ? DEFAULT_CONTROLLER_1_TYPE : DEFAULT_CONTROLLER_2_TYPE;
     const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_si.GetTinyStringValue(
-      Controller::GetSettingsSection(pad).c_str(), "Type", Controller::GetControllerInfo(default_type)->name));
+      Controller::GetSettingsSection(pad).c_str(), "Type", Controller::GetControllerInfo(default_type).name));
     controller_types[pad] = cinfo ? cinfo->type : default_type;
   }
 
@@ -682,9 +682,8 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
 
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
-    const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_types[i]);
-    DebugAssert(cinfo);
-    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type", cinfo->name);
+    si.SetStringValue(Controller::GetSettingsSection(i).c_str(), "Type",
+                      Controller::GetControllerInfo(controller_types[i]).name);
   }
 
   si.SetStringValue("MemoryCards", "Card1Type", GetMemoryCardTypeName(memory_card_types[0]));
@@ -1183,7 +1182,7 @@ void Settings::SetDefaultControllerConfig(SettingsInterface& si)
   {
     const std::string section(Controller::GetSettingsSection(i));
     si.ClearSection(section.c_str());
-    si.SetStringValue(section.c_str(), "Type", Controller::GetDefaultPadType(i));
+    si.SetStringValue(section.c_str(), "Type", Controller::GetControllerInfo(GetDefaultControllerType(i)).name);
   }
 
 #ifndef __ANDROID__

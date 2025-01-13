@@ -756,7 +756,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
           if (!supported_controller_string.empty())
             supported_controller_string.append(", ");
 
-          supported_controller_string.append(Controller::GetControllerInfo(supported_ctype)->GetDisplayName());
+          supported_controller_string.append(Controller::GetControllerInfo(supported_ctype).GetDisplayName());
         }
 
         Host::AddIconOSDWarning(
@@ -765,7 +765,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
             TRANSLATE_FS("GameDatabase",
                          "Controller in Port {0} ({1}) is not supported for this game.\nSupported controllers: "
                          "{2}\nPlease configure a supported controller from the list above."),
-            i + 1u, Controller::GetControllerInfo(ctype)->GetDisplayName(), supported_controller_string),
+            i + 1u, Controller::GetControllerInfo(ctype).GetDisplayName(), supported_controller_string),
           Host::OSD_CRITICAL_ERROR_DURATION);
       }
     }
@@ -857,7 +857,7 @@ std::string GameDatabase::Entry::GenerateCompatibilityReport() const
       if ((supported_controllers & (static_cast<u16>(1) << j)) == 0)
         continue;
 
-      ret.append_format(" - {}\n", Controller::GetControllerInfo(static_cast<ControllerType>(j))->GetDisplayName());
+      ret.append_format(" - {}\n", Controller::GetControllerInfo(static_cast<ControllerType>(j)).GetDisplayName());
     }
 
     if (supported_controllers & SUPPORTS_MULTITAP_BIT)
