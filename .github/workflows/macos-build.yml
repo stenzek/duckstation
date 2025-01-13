@@ -10,7 +10,7 @@ jobs:
     runs-on: macos-14
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -24,7 +24,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps-mac
-      uses: actions/cache@v4.0.2
+      uses: actions/cache@v4
       with:
         path: ~/deps
         key: deps-mac ${{ hashFiles('scripts/deps/build-dependencies-mac.sh') }}
@@ -73,7 +73,7 @@ jobs:
         zip -r duckstation-mac-release.zip DuckStation.app/
 
     - name: Upload MacOS .app
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4
       with:
         name: "macos"
         path: "build/duckstation-mac-release.zip"

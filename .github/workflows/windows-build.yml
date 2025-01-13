@@ -10,13 +10,13 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4.0.2
+      uses: actions/cache@v4
       with:
         path: |
           dep/msvc/deps-arm64
@@ -97,7 +97,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-release.zip ./bin/x64/*
 
     - name: Upload x64 Release Artifact
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4
       with:
         name: "windows-x64"
         path: "duckstation-windows-x64-release*.zip"
@@ -108,13 +108,13 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4.0.2
+      uses: actions/cache@v4
       with:
         path: |
           dep/msvc/deps-arm64
@@ -195,7 +195,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-x64-sse2-release.zip ./bin/x64/*
 
     - name: Upload x64 Release Artifact
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4
       with:
         name: "windows-x64-sse2"
         path: "duckstation-windows-x64-sse2-release*.zip"
@@ -206,14 +206,14 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4.0.2
+      uses: actions/cache@v4
       with:
         path: |
           dep/msvc/deps-arm64
@@ -294,7 +294,7 @@ jobs:
         "C:\Program Files\7-Zip\7z.exe" a -r duckstation-windows-arm64-release.zip ./bin/ARM64/*
 
     - name: Upload ARM64 Release Artifact
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4
       with:
         name: "windows-arm64"
         path: "duckstation-windows-arm64-release*.zip"

@@ -22,7 +22,7 @@ jobs:
       options: --privileged
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         set-safe-directory: ${{ env.GITHUB_WORKSPACE }}
@@ -107,7 +107,7 @@ jobs:
         build-log-url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
     - name: Upload Flatpak
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4
       with:
         name: "linux-flatpak"
         path: "duckstation-x64.flatpak"

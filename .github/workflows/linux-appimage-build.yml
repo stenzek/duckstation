@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -19,7 +19,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4.0.2
+      uses: actions/cache@v4
       with:
         path: ~/deps
         key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh') }}
@@ -70,7 +70,7 @@ jobs:
         scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64
 
     - name: Upload Qt AppImage
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4
       with:
         name: "linux-x64-appimage"
         path: "DuckStation-x64.AppImage"
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -90,7 +90,7 @@ jobs:
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4.0.2
+      uses: actions/cache@v4
       with:
         path: ~/deps
         key: deps ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-ffmpeg-linux.sh') }}
@@ -141,7 +141,7 @@ jobs:
         scripts/packaging/appimage/make-appimage.sh $(realpath .) $(realpath ./build) $HOME/deps DuckStation-x64-SSE2
 
     - name: Upload Qt AppImage
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4
       with:
         name: "linux-x64-sse2-appimage"
         path: "DuckStation-x64-SSE2.AppImage"

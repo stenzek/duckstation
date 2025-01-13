@@ -8,13 +8,13 @@ jobs:
     runs-on: windows-2022
     timeout-minutes: 120
     steps:
-    - uses: actions/checkout@v4.1.6
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Cache Dependencies
       id: cache-deps
-      uses: actions/cache@v4.0.2
+      uses: actions/cache@v4
       with:
         path: |
           dep/msvc/deps-arm64
@@ -30,7 +30,7 @@ jobs:
 
     - name: Upload Cache Files
       if: steps.cache-deps.outputs.cache-hit == 'true'
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v4
       with:
         name: "windows"
         path: "deps-*.zip"
