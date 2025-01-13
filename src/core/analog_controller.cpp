@@ -793,7 +793,7 @@ static const Controller::ControllerBindingInfo s_binding_info[] = {
   AXIS("RDown", TRANSLATE_NOOP("AnalogController", "Right Stick Down"), ICON_PF_RIGHT_ANALOG_DOWN, AnalogController::HalfAxis::RDown, GenericInputBinding::RightStickDown),
   AXIS("RUp", TRANSLATE_NOOP("AnalogController", "Right Stick Up"), ICON_PF_RIGHT_ANALOG_UP, AnalogController::HalfAxis::RUp, GenericInputBinding::RightStickUp),
 
-  MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_VIBRATION, 0, GenericInputBinding::LargeMotor),
+  MOTOR("LargeMotor", TRANSLATE_NOOP("AnalogController", "Large Motor"), ICON_PF_VIBRATION_L, 0, GenericInputBinding::LargeMotor),
   MOTOR("SmallMotor", TRANSLATE_NOOP("AnalogController", "Small Motor"), ICON_PF_VIBRATION, 1, GenericInputBinding::SmallMotor),
 // clang-format on
 
