@@ -54,6 +54,7 @@ public:
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 
   float GetBindState(u32 index) const override;
+  float GetVibrationMotorState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
   u32 GetButtonStateBits() const override;
   u32 GetInputOverlayIconColor() const override;
@@ -146,6 +147,9 @@ private:
   float m_analog_sensitivity = 1.33f;
   float m_button_deadzone = 0.0f;
 
-  std::string m_force_feedback_device_name;
+  float m_last_strength = 0.0f;
+
   std::unique_ptr<ForceFeedbackDevice> m_force_feedback_device;
+
+  std::string m_force_feedback_device_name;
 };

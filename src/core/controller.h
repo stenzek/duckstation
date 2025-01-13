@@ -78,6 +78,9 @@ public:
   /// Returns a bitmask of the current button states, 1 = on.
   virtual u32 GetButtonStateBits() const;
 
+  /// Returns the current state of the specified vibration motor.
+  virtual float GetVibrationMotorState(u32 index) const;
+
   /// Returns true if the controller supports analog mode, and it is active.
   virtual bool InAnalogMode() const;
 

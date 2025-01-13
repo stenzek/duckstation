@@ -72,6 +72,7 @@ public:
   bool DoState(StateWrapper& sw, bool ignore_input_state) override;
 
   float GetBindState(u32 index) const override;
+  float GetVibrationMotorState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
   u32 GetButtonStateBits() const override;
   std::optional<u32> GetAnalogInputBytes() const override;

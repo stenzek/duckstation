@@ -171,6 +171,11 @@ float AnalogController::GetBindState(u32 index) const
   }
 }
 
+float AnalogController::GetVibrationMotorState(u32 index) const
+{
+  return ((index < m_motor_state.size()) ? m_motor_state[index] : 0) * (1.0f / 255.0f);
+}
+
 void AnalogController::SetBindState(u32 index, float value)
 {
   if (index == static_cast<s32>(Button::Analog))

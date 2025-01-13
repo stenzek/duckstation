@@ -61,6 +61,7 @@ public:
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 
   float GetBindState(u32 index) const override;
+  float GetVibrationMotorState(u32 index) const override;
   void SetBindState(u32 index, float value) override;
 
   void ResetTransferState() override;

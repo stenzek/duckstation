@@ -96,6 +96,11 @@ float JogCon::GetBindState(u32 index) const
   }
 }
 
+float JogCon::GetVibrationMotorState(u32 index) const
+{
+  return (index == 0) ? m_last_strength : 0.0f;
+}
+
 void JogCon::SetBindState(u32 index, float value)
 {
   if (index == static_cast<u32>(Button::Mode))
@@ -275,7 +280,13 @@ void JogCon::SetMotorDirection(u8 direction_command, u8 strength)
     DEV_LOG("Stop motor");
     if (m_force_feedback_device)
       m_force_feedback_device->DisableForce(ForceFeedbackDevice::Effect::Constant);
-    InputManager::SetPadVibrationIntensity(m_index, 0.0f, 0.0f);
+
+    if (m_last_strength != 0.0f)
+    {
+      m_last_strength = 0.0f;
+      InputManager::SetPadVibrationIntensity(m_index, 0.0f, 0.0f);
+    }
+
     return;
   }
 
@@ -290,7 +301,11 @@ void JogCon::SetMotorDirection(u8 direction_command, u8 strength)
     m_force_feedback_device->SetConstantForce(ffb_value);
   }
 
-  InputManager::SetPadVibrationIntensity(m_index, f_strength, 0.0f);
+  if (f_strength != m_last_strength)
+  {
+    m_last_strength = f_strength;
+    InputManager::SetPadVibrationIntensity(m_index, f_strength, 0.0f);
+  }
 }
 
 void JogCon::UpdateSteeringHold()

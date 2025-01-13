@@ -90,6 +90,11 @@ u32 Controller::GetButtonStateBits() const
   return 0;
 }
 
+float Controller::GetVibrationMotorState(u32 index) const
+{
+  return 0.0f;
+}
+
 bool Controller::InAnalogMode() const
 {
   return false;
