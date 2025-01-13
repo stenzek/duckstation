@@ -243,7 +243,7 @@ static void DoStartBIOS();
 static void DoStartDisc(std::string path);
 static void DoStartDisc();
 static void DoToggleFastForward();
-static void ConfirmIfSavingMemoryCards(std::string_view action, std::function<void(bool)> callback);
+static void ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback);
 static void RequestShutdown(bool save_state);
 static void RequestReset();
 static void DoChangeDiscFromFile();
@@ -1164,29 +1164,36 @@ void FullscreenUI::DoStartDisc()
                    });
 }
 
-void FullscreenUI::ConfirmIfSavingMemoryCards(std::string_view action, std::function<void(bool)> callback)
+void FullscreenUI::ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback)
 {
-  if (!System::IsSavingMemoryCards())
-  {
-    callback(true);
-    return;
-  }
+  Host::RunOnCPUThread([action = std::move(action), callback = std::move(callback)]() mutable {
+    const bool was_saving = System::IsSavingMemoryCards();
+    GPUThread::RunOnThread([action = std::move(action), callback = std::move(callback), was_saving]() mutable {
+      if (!was_saving)
+      {
+        callback(true);
+        return;
+      }
 
-  OpenConfirmMessageDialog(
-    FSUI_ICONSTR(ICON_PF_MEMORY_CARD, "Memory Card Busy"),
-    fmt::format(FSUI_FSTR("WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY "
-                          "DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to "
-                          "finish saving.\n\nDo you want to {0} anyway?"),
-                action),
-    std::move(callback),
-    fmt::format(
-      fmt::runtime(FSUI_ICONSTR(ICON_FA_EXCLAMATION_TRIANGLE, "Yes, {} now and risk memory card corruption.")), action),
-    FSUI_ICONSTR(ICON_FA_PLAY, "No, resume the game."));
+      OpenConfirmMessageDialog(
+        FSUI_ICONSTR(ICON_PF_MEMORY_CARD, "Memory Card Busy"),
+        fmt::format(
+          FSUI_FSTR("WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY "
+                    "DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to "
+                    "finish saving.\n\nDo you want to {0} anyway?"),
+          action),
+        std::move(callback),
+        fmt::format(
+          fmt::runtime(FSUI_ICONSTR(ICON_FA_EXCLAMATION_TRIANGLE, "Yes, {} now and risk memory card corruption.")),
+          action),
+        FSUI_ICONSTR(ICON_FA_PLAY, "No, resume the game."));
+    });
+  });
 }
 
 void FullscreenUI::RequestShutdown(bool save_state)
 {
-  ConfirmIfSavingMemoryCards(FSUI_VSTR("shut down"), [save_state](bool result) {
+  ConfirmIfSavingMemoryCards(FSUI_STR("shut down"), [save_state](bool result) {
     if (result)
       Host::RunOnCPUThread([save_state]() { Host::RequestSystemShutdown(false, save_state); });
     else
@@ -1196,7 +1203,7 @@ void FullscreenUI::RequestShutdown(bool save_state)
 
 void FullscreenUI::RequestReset()
 {
-  ConfirmIfSavingMemoryCards(FSUI_VSTR("reset"), [](bool result) {
+  ConfirmIfSavingMemoryCards(FSUI_STR("reset"), [](bool result) {
     if (result)
       Host::RunOnCPUThread(System::ResetSystem);
     else
@@ -1216,7 +1223,7 @@ void FullscreenUI::DoToggleFastForward()
 
 void FullscreenUI::DoChangeDiscFromFile()
 {
-  ConfirmIfSavingMemoryCards(FSUI_VSTR("change disc"), [](bool result) {
+  ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [](bool result) {
     if (!result)
     {
       ClosePauseMenu();
@@ -6847,24 +6854,29 @@ void FullscreenUI::DrawResumeStateSelector()
 
 void FullscreenUI::DoLoadState(std::string path)
 {
-  Host::RunOnCPUThread([boot_path = s_state.save_state_selector_game_path, path = std::move(path)]() {
-    CloseSaveStateSelector();
+  std::string boot_path = std::move(s_state.save_state_selector_game_path);
+  CloseSaveStateSelector();
 
+  Host::RunOnCPUThread([boot_path = std::move(boot_path), path = std::move(path)]() mutable {
     if (System::IsValid())
     {
       if (path.empty())
       {
         // Loading undo state.
         if (!System::UndoLoadState())
-          ShowToast(std::string(), TRANSLATE_STR("System", "Failed to undo load state."));
+        {
+          GPUThread::RunOnThread(
+            []() { ShowToast(std::string(), TRANSLATE_STR("System", "Failed to undo load state.")); });
+        }
       }
       else
       {
         Error error;
         if (!System::LoadState(path.c_str(), &error, true))
         {
-          ShowToast(std::string(),
-                    fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error.GetDescription()));
+          GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+            ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error_desc));
+          });
         }
       }
     }
@@ -6877,8 +6889,9 @@ void FullscreenUI::DoLoadState(std::string path)
 
 void FullscreenUI::DoSaveState(s32 slot, bool global)
 {
+  CloseSaveStateSelector();
+
   Host::RunOnCPUThread([slot, global]() {
-    CloseSaveStateSelector();
     if (!System::IsValid())
       return;
 
@@ -6887,7 +6900,9 @@ void FullscreenUI::DoSaveState(s32 slot, bool global)
     Error error;
     if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
     {
-      ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error.GetDescription()));
+      GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+        ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error_desc));
+      });
     }
   });
 }
