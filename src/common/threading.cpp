@@ -296,7 +296,7 @@ bool Threading::ThreadHandle::IsCallingThread() const
 
 #ifdef __APPLE__
 
-bool Threading::ThreadHandle::SetTimeConstraints(bool enabled, u64 period, u64 typical_time, u64 maximum_time)
+bool Threading::ThreadHandle::SetTimeConstraints(bool enabled, u64 period, u64 typical_time, u64 maximum_time) const
 {
   const mach_port_t mach_thread_id = pthread_mach_thread_np((pthread_t)m_native_handle);
   if (!enabled)

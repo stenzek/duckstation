@@ -3558,10 +3558,19 @@ void System::UpdateSpeedLimiterState()
   constexpr u64 MAX_FRAME_TIME_NS = 7000000;
   static u64 last_scheduler_period = 0;
   const u64 new_scheduler_period = s_state.optimal_frame_pacing ? s_state.frame_period : 0;
-  if (s_state.cpu_thread_handle && new_scheduler_period != last_scheduler_period)
+  if (new_scheduler_period != last_scheduler_period)
   {
-    s_state.cpu_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, MAX_FRAME_TIME_NS,
-                                                 new_scheduler_period);
+    if (s_state.cpu_thread_handle)
+    {
+      s_state.cpu_thread_handle.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period,
+                                                   MAX_FRAME_TIME_NS, new_scheduler_period);
+    }
+    const Threading::ThreadHandle& gpu_thread = GPUThread::Internal::GetThreadHandle();
+    if (gpu_thread)
+    {
+      gpu_thread.SetTimeConstraints(s_state.optimal_frame_pacing, new_scheduler_period, MAX_FRAME_TIME_NS,
+                                    new_scheduler_period);
+    }
   }
 #endif
 }

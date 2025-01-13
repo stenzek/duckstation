@@ -58,7 +58,7 @@ public:
 
 #ifdef __APPLE__
   /// Only available on MacOS, sets a period/maximum time for the scheduler.
-  bool SetTimeConstraints(bool enabled, u64 period, u64 typical_time, u64 maximum_time);
+  bool SetTimeConstraints(bool enabled, u64 period, u64 typical_time, u64 maximum_time) const;
 #endif
 
 protected:
