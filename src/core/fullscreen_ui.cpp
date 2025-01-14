@@ -7058,6 +7058,7 @@ void FullscreenUI::DrawResumeStateSelector()
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
 
+    ResetFocusHere();
     BeginMenuButtons();
 
     if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Load State"), false))
