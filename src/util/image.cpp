@@ -958,10 +958,11 @@ struct JPEGErrorHandler
   Error* errptr;
   fastjmp_buf jbuf;
 
-  JPEGErrorHandler()
+  JPEGErrorHandler(Error* errptr_)
   {
     jpeg_std_error(&err);
     err.error_exit = &ErrorExit;
+    errptr = errptr_;
   }
 
   static void ErrorExit(j_common_ptr cinfo)
@@ -983,7 +984,7 @@ static bool WrapJPEGDecompress(Image* image, Error* error, T setup_func)
 
   // NOTE: Be **very** careful not to allocate memory after calling this function.
   // It won't get freed, because fastjmp does not unwind the stack.
-  JPEGErrorHandler errhandler;
+  JPEGErrorHandler errhandler(error);
   if (fastjmp_set(&errhandler.jbuf) != 0)
   {
     jpeg_destroy_decompress(&info);
@@ -1128,7 +1129,7 @@ static bool WrapJPEGCompress(const Image& image, u8 quality, Error* error, T set
 
   // NOTE: Be **very** careful not to allocate memory after calling this function.
   // It won't get freed, because fastjmp does not unwind the stack.
-  JPEGErrorHandler errhandler;
+  JPEGErrorHandler errhandler(error);
   if (fastjmp_set(&errhandler.jbuf) != 0)
   {
     jpeg_destroy_compress(&info);
