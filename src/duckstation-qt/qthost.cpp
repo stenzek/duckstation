@@ -765,6 +765,11 @@ void EmuThread::stopFullscreenUI()
 
   if (m_is_fullscreen_ui_started)
   {
+    // Need to switch out of fullscreen before stopping the fullscreen UI, otherwise Qt
+    // terminates the applcation because briefly there are no windows remaining.
+    if (m_is_fullscreen)
+      setFullscreen(false, true);
+
     GPUThread::StopFullscreenUI();
     m_is_fullscreen_ui_started = false;
     emit fullscreenUIStartedOrStopped(false);
