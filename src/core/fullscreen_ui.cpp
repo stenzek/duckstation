@@ -6224,7 +6224,7 @@ void FullscreenUI::DrawPauseMenu()
 
       case PauseSubMenu::Exit:
       {
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+        if (ActiveButton(FSUI_ICONSTR(ICON_PF_NAVIGATION_BACK, "Back To Pause Menu"), false) || WantsToCloseMenu())
           OpenPauseSubMenu(PauseSubMenu::None);
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_SYNC, "Reset System"), false))
@@ -6243,7 +6243,7 @@ void FullscreenUI::DrawPauseMenu()
 
       case PauseSubMenu::Achievements:
       {
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_BACKWARD, "Back To Pause Menu"), false) || WantsToCloseMenu())
+        if (ActiveButton(FSUI_ICONSTR(ICON_PF_NAVIGATION_BACK, "Back To Pause Menu"), false) || WantsToCloseMenu())
           OpenPauseSubMenu(PauseSubMenu::None);
 
         if (DefaultActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false))
@@ -6473,7 +6473,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
   if (ImGui::BeginChild("state_titlebar", heading_size, false, ImGuiWindowFlags_NavFlattened))
   {
     BeginNavBar();
-    if (NavButton(ICON_FA_BACKWARD, true, true))
+    if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       closed = true;
 
     NavTitle(is_loading ? FSUI_CSTR("Load State") : FSUI_CSTR("Save State"));
@@ -7038,7 +7038,7 @@ void FullscreenUI::DrawGameListWindow()
 
     BeginNavBar();
 
-    if (NavButton(ICON_FA_BACKWARD, true, true))
+    if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       ReturnToPreviousWindow();
 
     NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
@@ -7590,7 +7590,7 @@ void FullscreenUI::DrawGameListSettingsWindow()
   {
     BeginNavBar();
 
-    if (NavButton(ICON_FA_BACKWARD, true, true))
+    if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
     {
       s_state.current_main_window = MainWindowType::GameList;
       QueueResetFocus(FocusResetType::Other);
