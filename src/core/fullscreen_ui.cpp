@@ -1046,10 +1046,10 @@ void FullscreenUI::ReturnToMainWindow()
 bool FullscreenUI::LoadResources()
 {
   s_state.app_icon_texture = LoadTexture("images/duck.png");
-  s_state.fallback_disc_texture = LoadTexture("fullscreenui/media-cdrom.png");
-  s_state.fallback_exe_texture = LoadTexture("fullscreenui/applications-system.png");
-  s_state.fallback_psf_texture = LoadTexture("fullscreenui/multimedia-player.png");
-  s_state.fallback_playlist_texture = LoadTexture("fullscreenui/address-book-new.png");
+  s_state.fallback_disc_texture = LoadTexture("fullscreenui/cdrom.png");
+  s_state.fallback_exe_texture = LoadTexture("fullscreenui/settings.png");
+  s_state.fallback_psf_texture = LoadTexture("fullscreenui/psf-file.png");
+  s_state.fallback_playlist_texture = LoadTexture("fullscreenui/game-list.png");
   return true;
 }
 
@@ -1705,21 +1705,21 @@ void FullscreenUI::DrawLandingWindow()
   {
     ResetFocusHere();
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/address-book-new.png"), FSUI_CSTR("Game List"),
+    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/game-list.png"), FSUI_CSTR("Game List"),
                            FSUI_CSTR("Launch a game from images scanned from your game directories.")))
     {
       SwitchToGameList();
     }
 
     if (HorizontalMenuItem(
-          GetCachedTexture("fullscreenui/media-cdrom.png"), FSUI_CSTR("Start Game"),
+          GetCachedTexture("fullscreenui/cdrom.png"), FSUI_CSTR("Start Game"),
           FSUI_CSTR("Launch a game from a file, disc, or starts the console without any disc inserted.")))
     {
       s_state.current_main_window = MainWindowType::StartGame;
       QueueResetFocus(FocusResetType::ViewChanged);
     }
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/applications-system.png"), FSUI_CSTR("Settings"),
+    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/settings.png"), FSUI_CSTR("Settings"),
                            FSUI_CSTR("Changes settings for the application.")))
     {
       SwitchToSettings();
@@ -1784,7 +1784,7 @@ void FullscreenUI::DrawStartGameWindow()
       DoStartFile();
     }
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/drive-cdrom.png"), FSUI_CSTR("Start Disc"),
+    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/start-disc.png"), FSUI_CSTR("Start Disc"),
                            FSUI_CSTR("Start a game from a disc in your PC's DVD drive.")))
     {
       DoStartDisc();
