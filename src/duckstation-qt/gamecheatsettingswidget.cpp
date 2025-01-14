@@ -436,6 +436,11 @@ void GameCheatSettingsWidget::disableAllCheats()
 void GameCheatSettingsWidget::resizeEvent(QResizeEvent* event)
 {
   QWidget::resizeEvent(event);
+  resizeColumns();
+}
+
+void GameCheatSettingsWidget::resizeColumns()
+{
   QtUtils::ResizeColumnsForTreeView(m_ui.cheatList, {-1, 150});
 }
 
@@ -518,8 +523,9 @@ void GameCheatSettingsWidget::reloadList()
   // Hide root indicator when there's no groups, frees up some whitespace.
   m_ui.cheatList->setRootIsDecorated(!m_parent_map.empty());
 
-  // Expand all items.
+  // Expand all items, and ensure the size is correct. Otherwise editing codes resizes it.
   expandAllItems();
+  resizeColumns();
 }
 
 void GameCheatSettingsWidget::expandAllItems()

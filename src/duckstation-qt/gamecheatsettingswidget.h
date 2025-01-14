@@ -71,6 +71,7 @@ private:
   QStandardItem* getTreeWidgetParent(const std::string_view parent);
   void populateTreeWidgetItem(QStandardItem* parent, const Cheats::CodeInfo& pi, bool enabled);
   void expandAllItems();
+  void resizeColumns();
 
   void setCheatEnabled(std::string name, bool enabled, bool save_and_reload_settings);
   void setStateForAll(bool enabled);
