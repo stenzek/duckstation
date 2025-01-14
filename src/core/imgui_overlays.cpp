@@ -609,7 +609,7 @@ void ImGuiManager::DrawMediaCaptureOverlay(float& position_y, float scale, float
 
 void ImGuiManager::DrawFrameTimeOverlay(float& position_y, float scale, float margin, float spacing)
 {
-  if (!g_settings.display_show_frame_times || GPUThread::IsSystemPaused())
+  if (!g_gpu_settings.display_show_frame_times || GPUThread::IsSystemPaused())
     return;
 
   const float shadow_offset = std::ceil(1.0f * scale);

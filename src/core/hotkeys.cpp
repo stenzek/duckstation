@@ -134,6 +134,8 @@ static void HotkeyToggleOSD()
   g_settings.display_show_status_indicators ^= Host::GetBoolSettingValue("Display", "ShowStatusIndicators", true);
   g_settings.display_show_inputs ^= Host::GetBoolSettingValue("Display", "ShowInputs", false);
   g_settings.display_show_enhancements ^= Host::GetBoolSettingValue("Display", "ShowEnhancements", false);
+
+  GPUThread::UpdateSettings(true, false);
 }
 
 #ifndef __ANDROID__
