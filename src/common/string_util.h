@@ -1,9 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "types.h"
+
+#include <algorithm>
 #include <array>
 #include <charconv>
 #include <cstddef>
@@ -320,6 +322,45 @@ void StripWhitespace(std::string* str);
 [[nodiscard]] std::vector<std::string> SplitNewString(const std::string_view str, char delimiter,
                                                       bool skip_empty = true);
 
+/// Returns true if the given string is found in the string list container.
+template<typename T>
+static inline bool IsInStringList(const T& list, const std::string_view str)
+{
+  return std::any_of(std::begin(list), std::end(list), [&str](const auto& it) { return (str == it); });
+}
+
+/// Adds a string to a string list container. No append is performed if the string already exists.
+template<typename T>
+static inline bool AddToStringList(T& list, const std::string_view str)
+{
+  if (IsInStringList(list, str))
+    return false;
+
+  list.emplace_back(str);
+  return true;
+}
+
+/// Removes a string from a string list container.
+template<typename T>
+static inline bool RemoveFromStringList(T& list, const std::string_view str)
+{
+  bool removed = false;
+  for (auto iter = std::begin(list); iter != std::end(list);)
+  {
+    if (str == *iter)
+    {
+      iter = list.erase(iter);
+      removed = true;
+    }
+    else
+    {
+      ++iter;
+    }
+  }
+
+  return removed;
+}
+
 /// Joins a string together using the specified delimiter.
 template<typename T>
 static inline std::string JoinString(const T& start, const T& end, char delimiter)
@@ -334,6 +375,11 @@ static inline std::string JoinString(const T& start, const T& end, char delimite
   return ret;
 }
 template<typename T>
+static inline std::string JoinString(const T& list, char delimiter)
+{
+  return JoinString(std::begin(list), std::end(list), delimiter);
+}
+template<typename T>
 static inline std::string JoinString(const T& start, const T& end, const std::string_view delimiter)
 {
   std::string ret;
@@ -344,6 +390,11 @@ static inline std::string JoinString(const T& start, const T& end, const std::st
     ret.append(*it);
   }
   return ret;
+}
+template<typename T>
+static inline std::string JoinString(const T& list, const std::string_view delimiter)
+{
+  return JoinString(std::begin(list), std::end(list), delimiter);
 }
 
 /// Replaces all instances of search in subject with replacement.

@@ -80,6 +80,9 @@ public:
   explicit MainWindow();
   ~MainWindow();
 
+  /// Disable createPopupMenu(), the menu is bogus.
+  QMenu* createPopupMenu() override;
+
   /// Performs update check if enabled in settings.
   void startupUpdateCheck();
 
@@ -155,6 +158,8 @@ private Q_SLOTS:
 
   void onApplicationStateChanged(Qt::ApplicationState state);
 
+  void onToolbarContextMenuRequested(const QPoint& pos);
+
   void onStartFileActionTriggered();
   void onStartDiscActionTriggered();
   void onStartBIOSActionTriggered();
@@ -226,6 +231,7 @@ private:
   void setupAdditionalUi();
   void connectSignals();
 
+  void updateToolbarActions();
   void updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode);
   void updateShortcutActions(bool starting);
   void updateStatusBarWidgetVisibility();

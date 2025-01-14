@@ -38,6 +38,7 @@
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
+#include "common/string_util.h"
 
 #include <QtCore/QDebug>
 #include <QtCore/QFile>
@@ -62,6 +63,33 @@
 #endif
 
 LOG_CHANNEL(Host);
+
+static constexpr std::pair<const char*, QAction * Ui::MainWindow::*> s_toolbar_actions[] = {
+  {"StartFile", &Ui::MainWindow::actionStartFile},
+  {"StartBIOS", &Ui::MainWindow::actionStartBios},
+  {"StartDisc", &Ui::MainWindow::actionStartDisc},
+  {"FullscreenUI", &Ui::MainWindow::actionStartFullscreenUI2},
+  {nullptr, nullptr},
+  {"PowerOff", &Ui::MainWindow::actionPowerOff},
+  {"PowerOffWithoutSaving", &Ui::MainWindow::actionPowerOffWithoutSaving},
+  {"Reset", &Ui::MainWindow::actionReset},
+  {"Pause", &Ui::MainWindow::actionPause},
+  {"ChangeDisc", &Ui::MainWindow::actionChangeDisc},
+  {"Cheats", &Ui::MainWindow::actionCheatsToolbar},
+  {"Screenshot", &Ui::MainWindow::actionScreenshot},
+  {nullptr, nullptr},
+  {"LoadState", &Ui::MainWindow::actionLoadState},
+  {"SaveState", &Ui::MainWindow::actionSaveState},
+  {nullptr, nullptr},
+  {"Fullscreen", &Ui::MainWindow::actionFullscreen},
+  {"Settings", &Ui::MainWindow::actionSettings2},
+  {"ControllerSettings", &Ui::MainWindow::actionControllerSettings},
+  {"ControllerPresets", &Ui::MainWindow::actionControllerProfiles},
+};
+
+static constexpr const char* DEFAULT_TOOLBAR_ACTIONS =
+  "StartFile,StartBIOS,FullscreenUI,PowerOff,Reset,Pause,ChangeDisc,Cheats,Screenshot,LoadState,SaveState,"
+  "Fullscreen,Settings,ControllerSettings";
 
 static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "MainWindow",
@@ -150,6 +178,7 @@ void MainWindow::initialize()
 {
   m_ui.setupUi(this);
   setupAdditionalUi();
+  updateToolbarActions();
   connectSignals();
 
   restoreStateFromConfig();
@@ -164,6 +193,11 @@ void MainWindow::initialize()
 #ifdef _WIN32
   registerForDeviceNotifications();
 #endif
+}
+
+QMenu* MainWindow::createPopupMenu()
+{
+  return nullptr;
 }
 
 void MainWindow::reportError(const QString& title, const QString& message)
@@ -1636,7 +1670,6 @@ void MainWindow::setupAdditionalUi()
   const bool toolbars_locked = Host::GetBaseBoolSettingValue("UI", "LockToolbar", false);
   m_ui.actionViewLockToolbar->setChecked(toolbars_locked);
   m_ui.toolBar->setMovable(!toolbars_locked);
-  m_ui.toolBar->setContextMenuPolicy(Qt::PreventContextMenu);
 
   m_game_list_widget = new GameListWidget(getContentParent());
   m_game_list_widget->initialize();
@@ -1735,6 +1768,86 @@ void MainWindow::setupAdditionalUi()
 #endif
 }
 
+void MainWindow::updateToolbarActions()
+{
+  const std::string active_buttons_str =
+    Host::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
+  const std::vector<std::string_view> active_buttons = StringUtil::SplitString(active_buttons_str, ',');
+
+  m_ui.toolBar->clear();
+
+  bool any_items_before_separator = false;
+  for (const auto& [name, action_ptr] : s_toolbar_actions)
+  {
+    if (!name)
+    {
+      // separator, but don't insert empty space between them
+      if (any_items_before_separator)
+      {
+        any_items_before_separator = false;
+        m_ui.toolBar->addSeparator();
+      }
+
+      continue;
+    }
+
+    // enabled?
+    if (!StringUtil::IsInStringList(active_buttons, name))
+      continue;
+
+    // only one of resume/poweroff should be present depending on system state
+    QAction* action = (m_ui.*action_ptr);
+    if (action == m_ui.actionPowerOff && !s_system_valid)
+      action = m_ui.actionResumeLastState;
+
+    m_ui.toolBar->addAction(action);
+    any_items_before_separator = true;
+  }
+}
+
+void MainWindow::onToolbarContextMenuRequested(const QPoint& pos)
+{
+  {
+    const std::string active_buttons_str =
+      Host::GetBaseStringSettingValue("UI", "ToolbarButtons", DEFAULT_TOOLBAR_ACTIONS);
+    std::vector<std::string_view> active_buttons = StringUtil::SplitString(active_buttons_str, ',');
+    bool active_buttons_changed = false;
+
+    QMenu menu;
+
+    for (const auto& [name, action_ptr] : s_toolbar_actions)
+    {
+      if (!name)
+      {
+        menu.addSeparator();
+        continue;
+      }
+
+      QAction* action = (m_ui.*action_ptr);
+      QAction* menu_action = menu.addAction(action->text());
+      menu_action->setCheckable(true);
+      menu_action->setChecked(StringUtil::IsInStringList(active_buttons, name));
+      connect(menu_action, &QAction::toggled, this, [&active_buttons, &active_buttons_changed, name](bool checked) {
+        if (checked)
+          StringUtil::AddToStringList(active_buttons, name);
+        else
+          StringUtil::RemoveFromStringList(active_buttons, name);
+        active_buttons_changed = true;
+      });
+    }
+
+    menu.exec(m_ui.toolBar->mapToGlobal(pos));
+
+    if (!active_buttons_changed)
+      return;
+
+    Host::SetBaseStringSettingValue("UI", "ToolbarButtons", StringUtil::JoinString(active_buttons, ',').c_str());
+    Host::CommitBaseSettingChanges();
+  }
+
+  updateToolbarActions();
+}
+
 void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevos_challenge_mode)
 {
   const bool starting_or_running = (starting || running);
@@ -1774,7 +1887,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
 
   if (starting_or_running)
   {
-    if (!m_ui.toolBar->actions().contains(m_ui.actionPowerOff))
+    if (m_ui.toolBar->widgetForAction(m_ui.actionResumeLastState))
     {
       m_ui.toolBar->insertAction(m_ui.actionResumeLastState, m_ui.actionPowerOff);
       m_ui.toolBar->removeAction(m_ui.actionResumeLastState);
@@ -1782,7 +1895,7 @@ void MainWindow::updateEmulationActions(bool starting, bool running, bool cheevo
   }
   else
   {
-    if (!m_ui.toolBar->actions().contains(m_ui.actionResumeLastState))
+    if (m_ui.toolBar->widgetForAction(m_ui.actionPowerOff))
     {
       m_ui.toolBar->insertAction(m_ui.actionPowerOff, m_ui.actionResumeLastState);
       m_ui.toolBar->removeAction(m_ui.actionPowerOff);
@@ -1984,6 +2097,7 @@ void MainWindow::connectSignals()
   updateEmulationActions(false, false, Achievements::IsHardcoreModeActive());
 
   connect(qApp, &QGuiApplication::applicationStateChanged, this, &MainWindow::onApplicationStateChanged);
+  connect(m_ui.toolBar, &QToolBar::customContextMenuRequested, this, &MainWindow::onToolbarContextMenuRequested);
 
   connect(m_ui.actionStartFile, &QAction::triggered, this, &MainWindow::onStartFileActionTriggered);
   connect(m_ui.actionStartDisc, &QAction::triggered, this, &MainWindow::onStartDiscActionTriggered);
