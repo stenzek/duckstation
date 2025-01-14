@@ -3657,7 +3657,7 @@ void FullscreenUI::DrawInterfaceSettingsPage()
         bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
       MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"),
                           FSUI_CSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
-                                    "located in resources/fullscreenui in the data directory."),
+                                    "located in resources/fullscreenui/backgrounds in the data directory."),
                           current_value.c_str()))
   {
     ChoiceDialogOptions options = GetBackgroundOptions(current_value);
@@ -8781,6 +8781,7 @@ TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Port {}");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Settings");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card {} Type");
+TRANSLATE_NOOP("FullscreenUI", "Menu Background");
 TRANSLATE_NOOP("FullscreenUI", "Merge Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Merges multi-disc games into one item in the game list.");
 TRANSLATE_NOOP("FullscreenUI", "Minimal Output Latency");
@@ -8804,6 +8805,7 @@ TRANSLATE_NOOP("FullscreenUI", "No resume save state found.");
 TRANSLATE_NOOP("FullscreenUI", "No save present in this slot.");
 TRANSLATE_NOOP("FullscreenUI", "No save states found.");
 TRANSLATE_NOOP("FullscreenUI", "No, resume the game.");
+TRANSLATE_NOOP("FullscreenUI", "None");
 TRANSLATE_NOOP("FullscreenUI", "None (Double Speed)");
 TRANSLATE_NOOP("FullscreenUI", "None (Normal Speed)");
 TRANSLATE_NOOP("FullscreenUI", "Not Logged In");
@@ -8973,6 +8975,7 @@ TRANSLATE_NOOP("FullscreenUI", "Show OSD Messages");
 TRANSLATE_NOOP("FullscreenUI", "Show Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Show Speed");
 TRANSLATE_NOOP("FullscreenUI", "Show Status Indicators");
+TRANSLATE_NOOP("FullscreenUI", "Shows a background image or shader when a game isn't running. Backgrounds are located in resources/fullscreenui/backgrounds in the data directory.");
 TRANSLATE_NOOP("FullscreenUI", "Shows a visual history of frame times in the upper-left corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows enhancement settings in the bottom-right corner of the screen.");
 TRANSLATE_NOOP("FullscreenUI", "Shows icons in the lower-right corner of the screen when a challenge/primed achievement is active.");
