@@ -24,6 +24,7 @@
 #include "util/ini_settings_interface.h"
 #include "util/input_manager.h"
 #include "util/postprocessing.h"
+#include "util/shadergen.h"
 
 #include "common/error.h"
 #include "common/file_system.h"
@@ -225,6 +226,20 @@ static void FixStateIfPaused();
 static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 
 //////////////////////////////////////////////////////////////////////////
+// Backgrounds
+//////////////////////////////////////////////////////////////////////////
+
+static constexpr const char* DEFAULT_BACKGROUND_NAME = "Trails";
+
+static bool HasBackground();
+static void LoadBackground();
+static bool LoadBackgroundShader(const std::string& path, Error* error);
+static bool LoadBackgroundImage(const std::string& path, Error* error);
+static void DrawBackground();
+static void DrawShaderBackgroundCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd);
+static ChoiceDialogOptions GetBackgroundOptions(const TinyString& current_value);
+
+//////////////////////////////////////////////////////////////////////////
 // Resources
 //////////////////////////////////////////////////////////////////////////
 static bool LoadResources();
@@ -282,7 +297,7 @@ static void DrawAdvancedSettingsPage();
 static void DrawPatchesOrCheatsSettingsPage(bool cheats);
 
 static bool ShouldShowAdvancedSettings();
-static float GetSettingsWindowBgAlpha();
+static float GetBackgroundAlpha();
 static bool IsEditingGameSettings(SettingsInterface* bsi);
 static SettingsInterface* GetEditingSettingsInterface();
 static SettingsInterface* GetEditingSettingsInterface(bool game_settings);
@@ -480,6 +495,11 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::shared_ptr<GPUTexture> fallback_psf_texture;
   std::shared_ptr<GPUTexture> fallback_playlist_texture;
 
+  // Background
+  std::unique_ptr<GPUTexture> app_background_texture;
+  std::unique_ptr<GPUPipeline> app_background_shader;
+  Timer::Value app_background_load_time = 0;
+
   // Settings
   float settings_last_bg_alpha = 1.0f;
   SettingsPage settings_page = SettingsPage::Interface;
@@ -649,6 +669,7 @@ bool FullscreenUI::Initialize()
     SwitchToLanding();
   }
 
+  LoadBackground();
   UpdateRunIdleState();
   ForceKeyNavEnabled();
   return true;
@@ -885,6 +906,10 @@ void FullscreenUI::Render()
 
   ImGuiFullscreen::UploadAsyncTextures();
 
+  // draw background before any overlays
+  if (!GPUThread::HasGPUBackend())
+    DrawBackground();
+
   ImGuiFullscreen::BeginLayout();
 
   // Primed achievements must come first, because we don't want the pause screen to be behind them.
@@ -1021,7 +1046,6 @@ void FullscreenUI::ReturnToMainWindow()
 bool FullscreenUI::LoadResources()
 {
   s_state.app_icon_texture = LoadTexture("images/duck.png");
-
   s_state.fallback_disc_texture = LoadTexture("fullscreenui/media-cdrom.png");
   s_state.fallback_exe_texture = LoadTexture("fullscreenui/applications-system.png");
   s_state.fallback_psf_texture = LoadTexture("fullscreenui/multimedia-player.png");
@@ -1031,11 +1055,13 @@ bool FullscreenUI::LoadResources()
 
 void FullscreenUI::DestroyResources()
 {
-  s_state.app_icon_texture.reset();
   s_state.fallback_playlist_texture.reset();
   s_state.fallback_psf_texture.reset();
   s_state.fallback_exe_texture.reset();
   s_state.fallback_disc_texture.reset();
+  s_state.app_background_texture.reset();
+  s_state.app_background_shader.reset();
+  s_state.app_icon_texture.reset();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1386,6 +1412,208 @@ void FullscreenUI::DoToggleFullscreen()
 // Landing Window
 //////////////////////////////////////////////////////////////////////////
 
+bool FullscreenUI::HasBackground()
+{
+  return static_cast<bool>(s_state.app_background_texture || s_state.app_background_shader);
+}
+
+void FullscreenUI::LoadBackground()
+{
+  if (!IsInitialized())
+    return;
+
+  g_gpu_device->RecycleTexture(std::move(s_state.app_background_texture));
+  s_state.app_background_shader.reset();
+
+  const TinyString background_name =
+    Host::GetBaseTinyStringSettingValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
+  if (background_name.empty() || background_name == "None")
+    return;
+
+  static constexpr std::pair<const char*, bool (*)(const std::string&, Error*)> loaders[] = {
+    {"glsl", &FullscreenUI::LoadBackgroundShader},
+    {"jpg", &FullscreenUI::LoadBackgroundImage},
+    {"png", &FullscreenUI::LoadBackgroundImage},
+    {"webp", &FullscreenUI::LoadBackgroundImage},
+  };
+
+  for (const auto& [extension, loader] : loaders)
+  {
+    static constexpr auto get_path = [](const std::string& dir, const TinyString& name, const char* extension) {
+      return fmt::format("{}" FS_OSPATH_SEPARATOR_STR "fullscreenui" FS_OSPATH_SEPARATOR_STR
+                         "backgrounds" FS_OSPATH_SEPARATOR_STR "{}.{}",
+                         dir, name, extension);
+    };
+
+    // try user directory first
+    std::string path = get_path(EmuFolders::UserResources, background_name, extension);
+    if (!FileSystem::FileExists(path.c_str()))
+    {
+      path = get_path(EmuFolders::Resources, background_name, extension);
+      if (!FileSystem::FileExists(path.c_str()))
+        continue;
+    }
+
+    Error error;
+    if (!loader(path, &error))
+    {
+      ERROR_LOG("Failed to load background '{}' with {} loader: {}", background_name, extension,
+                error.GetDescription());
+      return;
+    }
+
+    INFO_LOG("Loaded background '{}' with {} loader", background_name, extension);
+    return;
+  }
+
+  ERROR_LOG("No loader or file found for background '{}'", background_name);
+}
+
+ChoiceDialogOptions FullscreenUI::GetBackgroundOptions(const TinyString& current_value)
+{
+  static constexpr const char* dir = FS_OSPATH_SEPARATOR_STR "fullscreenui" FS_OSPATH_SEPARATOR_STR "backgrounds";
+
+  ChoiceDialogOptions options;
+  options.emplace_back(FSUI_STR("None"), current_value.empty());
+
+  FileSystem::FindResultsArray results;
+  FileSystem::FindFiles(Path::Combine(EmuFolders::UserResources, dir).c_str(), "*",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS, &results);
+  FileSystem::FindFiles(Path::Combine(EmuFolders::Resources, dir).c_str(), "*",
+                        FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_KEEP_ARRAY, &results);
+
+  for (const auto& it : results)
+  {
+    const std::string_view name = Path::GetFileTitle(it.FileName);
+    if (std::any_of(options.begin(), options.end(), [&name](const auto& it) { return it.first == name; }))
+      continue;
+
+    options.emplace_back(name, current_value == name);
+  }
+
+  return options;
+}
+
+bool FullscreenUI::LoadBackgroundShader(const std::string& path, Error* error)
+{
+  std::optional<std::string> shader_body = FileSystem::ReadFileToString(path.c_str(), error);
+  if (!shader_body.has_value())
+    return false;
+
+  const std::string::size_type main_pos = shader_body->find("void main()");
+  if (main_pos == std::string::npos)
+  {
+    Error::SetStringView(error, "main() definition not found in shader.");
+    return false;
+  }
+
+  const ShaderGen shadergen(g_gpu_device->GetRenderAPI(), GPUShaderLanguage::GLSLVK, false, false);
+
+  std::stringstream shader;
+  shadergen.WriteHeader(shader);
+  shadergen.DeclareVertexEntryPoint(shader, {}, 0, 1, {}, true);
+  shader << R"( {
+    v_tex0 = vec2(float((v_id << 1) & 2u), float(v_id & 2u));
+    v_pos = vec4(v_tex0 * vec2(2.0f, -2.0f) + vec2(-1.0f, 1.0f), 0.0f, 1.0f);
+    #if API_VULKAN
+      v_pos.y = -v_pos.y;
+    #endif
+  })";
+  std::unique_ptr<GPUShader> vs =
+    g_gpu_device->CreateShader(GPUShaderStage::Vertex, GPUShaderLanguage::GLSLVK, shader.str(), error);
+  if (!vs)
+    return false;
+
+  shader.str(std::string());
+  shadergen.WriteHeader(shader, false, false, false);
+  shadergen.DeclareUniformBuffer(shader, {"vec2 u_display_size", "vec2 u_rcp_display_size", "float u_time"}, true);
+  if (main_pos > 0)
+    shader << std::string_view(shader_body.value()).substr(0, main_pos);
+  shadergen.DeclareFragmentEntryPoint(shader, 0, 1);
+  shader << std::string_view(shader_body.value()).substr(main_pos + 11);
+
+  std::unique_ptr<GPUShader> fs =
+    g_gpu_device->CreateShader(GPUShaderStage::Fragment, GPUShaderLanguage::GLSLVK, shader.str(), error);
+  if (!fs)
+    return false;
+
+  GPUPipeline::GraphicsConfig plconfig = {};
+  plconfig.primitive = GPUPipeline::Primitive::Triangles;
+  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
+  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
+  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
+  plconfig.geometry_shader = nullptr;
+  plconfig.depth_format = GPUTexture::Format::Unknown;
+  plconfig.samples = 1;
+  plconfig.per_sample_shading = false;
+  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
+  plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
+  plconfig.SetTargetFormats(g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() :
+                                                               GPUTexture::Format::RGBA8);
+  plconfig.vertex_shader = vs.get();
+  plconfig.fragment_shader = fs.get();
+  s_state.app_background_shader = g_gpu_device->CreatePipeline(plconfig, error);
+  if (!s_state.app_background_shader)
+    return false;
+
+  return true;
+}
+
+void FullscreenUI::DrawShaderBackgroundCallback(const ImDrawList* parent_list, const ImDrawCmd* cmd)
+{
+  if (!g_gpu_device->HasMainSwapChain())
+    return;
+
+  struct alignas(16) Uniforms
+  {
+    float u_display_size[2];
+    float u_rcp_display_size[2];
+    float u_time;
+  };
+
+  const GSVector2 display_size = GSVector2(g_gpu_device->GetMainSwapChain()->GetSizeVec());
+  Uniforms uniforms;
+  GSVector2::store<true>(uniforms.u_display_size, display_size);
+  GSVector2::store<true>(uniforms.u_rcp_display_size, GSVector2::cxpr(1.0f) / display_size);
+  uniforms.u_time =
+    static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.app_background_load_time));
+
+  g_gpu_device->SetPipeline(s_state.app_background_shader.get());
+  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
+  g_gpu_device->Draw(3, 0);
+}
+
+bool FullscreenUI::LoadBackgroundImage(const std::string& path, Error* error)
+{
+  Image image;
+  if (!image.LoadFromFile(path.c_str(), error))
+    return false;
+
+  s_state.app_background_texture = g_gpu_device->FetchAndUploadTextureImage(image, GPUTexture::Flags::None, error);
+  if (!s_state.app_background_texture)
+    return false;
+
+  return true;
+}
+
+void FullscreenUI::DrawBackground()
+{
+  if (s_state.app_background_shader)
+  {
+    ImDrawList* dl = ImGui::GetBackgroundDrawList();
+    dl->AddCallback(&FullscreenUI::DrawShaderBackgroundCallback, nullptr);
+  }
+  else if (s_state.app_background_texture)
+  {
+    ImDrawList* dl = ImGui::GetBackgroundDrawList();
+    const ImVec2 size = ImGui::GetIO().DisplaySize;
+    const ImRect uv_rect =
+      ImGuiFullscreen::FitImage(size, ImVec2(static_cast<float>(s_state.app_background_texture->GetWidth()),
+                                             static_cast<float>(s_state.app_background_texture->GetHeight())));
+    dl->AddImage(s_state.app_background_texture.get(), ImVec2(0.0f, 0.0f), size, uv_rect.Min, uv_rect.Max);
+  }
+}
+
 void FullscreenUI::SwitchToLanding()
 {
   s_state.current_main_window = MainWindowType::Landing;
@@ -1401,7 +1629,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
   *menu_pos = ImVec2(0.0f, heading_size.y);
   *menu_size = ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT));
 
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading", UIStyle.PrimaryColor))
+  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "landing_heading",
+                            ModAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
   {
     ImFont* const heading_font = UIStyle.LargeFont;
     ImDrawList* const dl = ImGui::GetWindowDrawList();
@@ -1471,7 +1700,8 @@ void FullscreenUI::DrawLandingWindow()
 
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
-  if (BeginHorizontalMenu("landing_window", menu_pos, menu_size, 4))
+  if (BeginHorizontalMenu("landing_window", menu_pos, menu_size,
+                          ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 4))
   {
     ResetFocusHere();
 
@@ -1543,7 +1773,8 @@ void FullscreenUI::DrawStartGameWindow()
 
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
-  if (BeginHorizontalMenu("start_game_window", menu_pos, menu_size, 4))
+  if (BeginHorizontalMenu("start_game_window", menu_pos, menu_size,
+                          ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 4))
   {
     ResetFocusHere();
 
@@ -1607,7 +1838,8 @@ void FullscreenUI::DrawExitWindow()
 
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
-  if (BeginHorizontalMenu("exit_window", menu_pos, menu_size, 3))
+  if (BeginHorizontalMenu("exit_window", menu_pos, menu_size, ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()),
+                          3))
   {
     ResetFocusHere();
 
@@ -1644,9 +1876,10 @@ bool FullscreenUI::ShouldShowAdvancedSettings()
   return Host::GetBaseBoolSettingValue("Main", "ShowDebugMenu", false);
 }
 
-float FullscreenUI::GetSettingsWindowBgAlpha()
+float FullscreenUI::GetBackgroundAlpha()
 {
-  return GPUThread::HasGPUBackend() ? (s_state.settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) : 1.0f;
+  return GPUThread::HasGPUBackend() ? (s_state.settings_page == SettingsPage::PostProcessing ? 0.50f : 0.90f) :
+                                      (HasBackground() ? 0.5f : 1.0f);
 }
 
 bool FullscreenUI::IsEditingGameSettings(SettingsInterface* bsi)
@@ -2983,7 +3216,7 @@ void FullscreenUI::SwitchToSettings()
 
   s_state.current_main_window = MainWindowType::Settings;
   s_state.settings_page = SettingsPage::Interface;
-  s_state.settings_last_bg_alpha = GetSettingsWindowBgAlpha();
+  s_state.settings_last_bg_alpha = GetBackgroundAlpha();
 }
 
 void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
@@ -3103,7 +3336,7 @@ void FullscreenUI::DrawSettingsWindow()
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  const float target_bg_alpha = GetSettingsWindowBgAlpha();
+  const float target_bg_alpha = GetBackgroundAlpha();
   s_state.settings_last_bg_alpha = (target_bg_alpha < s_state.settings_last_bg_alpha) ?
                                      std::max(s_state.settings_last_bg_alpha - io.DeltaTime * 2.0f, target_bg_alpha) :
                                      std::min(s_state.settings_last_bg_alpha + io.DeltaTime * 2.0f, target_bg_alpha);
@@ -3419,6 +3652,30 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Inhibit Screensaver"),
     FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."),
     "Main", "InhibitScreensaver", true);
+
+  if (const TinyString current_value =
+        bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
+      MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"),
+                          FSUI_CSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
+                                    "located in resources/fullscreenui in the data directory."),
+                          current_value.c_str()))
+  {
+    ChoiceDialogOptions options = GetBackgroundOptions(current_value);
+    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"), false, std::move(options),
+                     [](s32 index, const std::string& title, bool checked) {
+                       if (index >= 0)
+                       {
+                         SettingsInterface* bsi = GetEditingSettingsInterface();
+                         bsi->SetStringValue("Main", "FullscreenUIBackground", (index == 0) ? "None" : title.c_str());
+                         SetSettingsChanged(bsi);
+
+                         // Have to defer the reload, because we've already drawn the bg for this frame.
+                         Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
+                       }
+
+                       CloseChoiceDialog();
+                     });
+  }
 
   if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Use Light Theme"),
                         FSUI_CSTR("Uses a light coloured theme instead of the default dark theme."), "Main",
@@ -7026,10 +7283,8 @@ void FullscreenUI::DrawGameListWindow()
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  const float bg_alpha = GPUThread::HasGPUBackend() ? 0.90f : 1.0f;
-
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
-                            MulAlpha(UIStyle.PrimaryColor, bg_alpha)))
+                            MulAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
   {
     static constexpr float ITEM_WIDTH = 25.0f;
     static constexpr const char* icons[] = {ICON_FA_BORDER_ALL, ICON_FA_LIST};
@@ -7118,7 +7373,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   if (IsFocusResetFromWindowChange())
     ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
 
-  if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries"))
+  if (BeginFullscreenColumnWindow(0.0f, -530.0f, "game_list_entries",
+                                  ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha())))
   {
     const ImVec2 image_size(LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT, LAYOUT_MENU_BUTTON_HEIGHT));
 
@@ -7194,7 +7450,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   EndFullscreenColumnWindow();
 
   static constexpr float info_window_width = 530.0f;
-  if (BeginFullscreenColumnWindow(-info_window_width, 0.0f, "game_list_info", UIStyle.PrimaryDarkColor))
+  if (BeginFullscreenColumnWindow(-info_window_width, 0.0f, "game_list_info",
+                                  ModAlpha(UIStyle.PrimaryDarkColor, GetBackgroundAlpha())))
   {
     static constexpr float info_top_margin = 20.0f;
     static constexpr float cover_size = 320.0f;
@@ -7337,7 +7594,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   if (!BeginFullscreenWindow(
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)), "game_grid",
-        UIStyle.BackgroundColor))
+        ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha())))
   {
     EndFullscreenWindow();
     return;
@@ -7583,10 +7840,8 @@ void FullscreenUI::DrawGameListSettingsWindow()
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  const float bg_alpha = GPUThread::HasGPUBackend() ? 0.90f : 1.0f;
-
   if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
-                            MulAlpha(UIStyle.PrimaryColor, bg_alpha)))
+                            MulAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
   {
     BeginNavBar();
 
@@ -7605,7 +7860,8 @@ void FullscreenUI::DrawGameListSettingsWindow()
   if (!BeginFullscreenWindow(
         ImVec2(0.0f, heading_size.y),
         ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
-        "settings_parent", UIStyle.BackgroundColor, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
+        "settings_parent", MulAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha()), 0.0f,
+        ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
   {
     EndFullscreenWindow();
     return;

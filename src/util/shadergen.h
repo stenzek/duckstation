@@ -24,6 +24,8 @@ public:
   static TinyString GetGLSLVersionString(RenderAPI render_api, u32 version);
 
   ALWAYS_INLINE GPUShaderLanguage GetLanguage() const { return m_shader_language; }
+  ALWAYS_INLINE bool IsVulkan() const { return (m_render_api == RenderAPI::Vulkan); }
+  ALWAYS_INLINE bool IsMetal() const { return (m_render_api == RenderAPI::Metal); }
 
   std::string GenerateRotateVertexShader() const;
   std::string GenerateRotateFragmentShader() const;
@@ -35,10 +37,6 @@ public:
 
   std::string GenerateImGuiVertexShader() const;
   std::string GenerateImGuiFragmentShader() const;
-
-protected:
-  ALWAYS_INLINE bool IsVulkan() const { return (m_render_api == RenderAPI::Vulkan); }
-  ALWAYS_INLINE bool IsMetal() const { return (m_render_api == RenderAPI::Metal); }
 
   const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,
                                         bool is_out) const;
@@ -68,6 +66,7 @@ protected:
                             bool declare_sample_id = false, bool noperspective_color = false,
                             bool feedback_loop = false, bool rov = false) const;
 
+protected:
   RenderAPI m_render_api;
   GPUShaderLanguage m_shader_language;
   bool m_glsl;

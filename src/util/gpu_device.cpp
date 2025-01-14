@@ -758,10 +758,12 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
     for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
     {
       const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-      DebugAssert(!pcmd->UserCallback);
 
-      if (pcmd->ElemCount == 0 || pcmd->ClipRect.z <= pcmd->ClipRect.x || pcmd->ClipRect.w <= pcmd->ClipRect.y)
+      if ((pcmd->ElemCount == 0 && !pcmd->UserCallback) || pcmd->ClipRect.z <= pcmd->ClipRect.x ||
+          pcmd->ClipRect.w <= pcmd->ClipRect.y)
+      {
         continue;
+      }
 
       GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
       clip = swap_chain->PreRotateClipRect(clip);
@@ -770,7 +772,17 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
 
       SetScissor(clip);
       SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler.get());
-      DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
+
+      if (pcmd->UserCallback) [[unlikely]]
+      {
+        pcmd->UserCallback(cmd_list, pcmd);
+        PushUniformBuffer(&mproj, sizeof(mproj));
+        SetPipeline(m_imgui_pipeline.get());
+      }
+      else
+      {
+        DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
+      }
     }
   }
 }

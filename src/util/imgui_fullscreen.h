@@ -121,6 +121,9 @@ ALWAYS_INLINE static std::string_view RemoveHash(std::string_view s)
 ImRect CenterImage(const ImVec2& fit_size, const ImVec2& image_size);
 ImRect CenterImage(const ImRect& fit_rect, const ImVec2& image_size);
 
+/// Fits an image to the specified bounds, cropping if needed. Returns UV coordinates.
+ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
+
 /// Initializes, setting up any state.
 bool Initialize(const char* placeholder_image_path);
 
@@ -284,7 +287,8 @@ bool NavButton(const char* title, bool is_active, bool enabled = true, float wid
 bool NavTab(const char* title, bool is_active, bool enabled, float width, float height, const ImVec4& background,
             ImFont* font = UIStyle.LargeFont);
 
-bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, u32 num_items);
+bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, const ImVec4& bg_color,
+                         u32 num_items);
 void EndHorizontalMenu();
 bool HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description);
 

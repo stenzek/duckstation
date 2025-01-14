@@ -497,6 +497,33 @@ ImRect ImGuiFullscreen::CenterImage(const ImRect& fit_rect, const ImVec2& image_
   return ret;
 }
 
+ImRect ImGuiFullscreen::FitImage(const ImVec2& fit_size, const ImVec2& image_size)
+{
+  ImRect rect;
+
+  const float image_aspect = image_size.x / image_size.y;
+  const float screen_aspect = fit_size.x / fit_size.y;
+
+  if (screen_aspect < image_aspect)
+  {
+    // Screen is narrower than image - crop horizontally
+    float cropAmount = 1.0f - (screen_aspect / image_aspect);
+    float offset = cropAmount * 0.5f;
+    rect.Min = ImVec2(offset, 0.0f);
+    rect.Max = ImVec2(1.0f - offset, 1.0f);
+  }
+  else
+  {
+    // Screen is wider than image - crop vertically
+    float cropAmount = 1.0f - (image_aspect / screen_aspect);
+    float offset = cropAmount * 0.5f;
+    rect.Min = ImVec2(0.0f, offset);
+    rect.Max = ImVec2(1.0f, 1.0f - offset);
+  }
+
+  return rect;
+}
+
 void ImGuiFullscreen::BeginLayout()
 {
   // we evict from the texture cache at the start of the frame, in case we go over mid-frame,
@@ -695,13 +722,15 @@ bool ImGuiFullscreen::BeginFullscreenColumns(const char* title, float pos_y, boo
   if (title)
   {
     ImGui::PushFont(UIStyle.LargeFont);
-    clipped = ImGui::Begin(title, nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+    clipped = ImGui::Begin(title, nullptr,
+                           ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoBackground);
     ImGui::PopFont();
   }
   else
   {
     clipped = ImGui::Begin("fullscreen_ui_columns_parent", nullptr,
-                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize);
+                           ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                             ImGuiWindowFlags_NoBackground);
   }
 
   return clipped;
@@ -2053,7 +2082,8 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
   return pressed;
 }
 
-bool ImGuiFullscreen::BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, u32 num_items)
+bool ImGuiFullscreen::BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size,
+                                          const ImVec4& bg_color, u32 num_items)
 {
   s_state.menu_button_index = 0;
 
@@ -2068,7 +2098,7 @@ bool ImGuiFullscreen::BeginHorizontalMenu(const char* name, const ImVec2& positi
   ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, LayoutScale(1.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(item_spacing, 0.0f));
 
-  if (!BeginFullscreenWindow(position, size, name, UIStyle.BackgroundColor, 0.0f, ImVec2()))
+  if (!BeginFullscreenWindow(position, size, name, bg_color, 0.0f, ImVec2()))
     return false;
 
   ImGui::SetCursorPos(ImVec2((size.x - menu_width) * 0.5f, (size.y - menu_height) * 0.5f));

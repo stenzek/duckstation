@@ -512,6 +512,10 @@ public:
   ALWAYS_INLINE float GetScale() const { return m_window_info.surface_scale; }
   ALWAYS_INLINE WindowInfo::PreRotation GetPreRotation() const { return m_window_info.surface_prerotation; }
   ALWAYS_INLINE GPUTexture::Format GetFormat() const { return m_window_info.surface_format; }
+  ALWAYS_INLINE GSVector2i GetSizeVec() const
+  {
+    return GSVector2i(m_window_info.surface_width, m_window_info.surface_height);
+  }
 
   ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
   ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode == GPUVSyncMode::FIFO); }
