@@ -124,15 +124,16 @@ struct ALIGN_TO_CACHE_LINE UIState
   SmallString last_fullscreen_footer_text;
   std::vector<std::pair<std::string_view, std::string_view>> fullscreen_footer_icon_mapping;
   float fullscreen_text_change_time;
+  float fullscreen_text_alpha;
 
-  bool choice_dialog_open = false;
-  bool choice_dialog_checkable = false;
   std::string choice_dialog_title;
   ChoiceDialogOptions choice_dialog_options;
   ChoiceDialogCallback choice_dialog_callback;
   ImGuiID enum_choice_button_id = 0;
   s32 enum_choice_button_value = 0;
   bool enum_choice_button_set = false;
+  bool choice_dialog_open = false;
+  bool choice_dialog_checkable = false;
 
   bool input_dialog_open = false;
   std::string input_dialog_title;
@@ -838,14 +839,16 @@ void ImGuiFullscreen::CreateFooterTextString(SmallStringBase& dest,
   }
 }
 
-void ImGuiFullscreen::SetFullscreenFooterText(std::string_view text)
+void ImGuiFullscreen::SetFullscreenFooterText(std::string_view text, float background_alpha)
 {
   s_state.fullscreen_footer_text.assign(text);
+  s_state.fullscreen_text_alpha = background_alpha;
 }
 
-void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items)
+void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items, float background_alpha)
 {
   CreateFooterTextString(s_state.fullscreen_footer_text, items);
+  s_state.fullscreen_text_alpha = background_alpha;
 }
 
 void ImGuiFullscreen::SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping)
@@ -876,7 +879,7 @@ void ImGuiFullscreen::DrawFullscreenFooter()
   const float height = LayoutScale(LAYOUT_FOOTER_HEIGHT);
 
   ImDrawList* dl = ImGui::GetForegroundDrawList();
-  dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize, ImGui::GetColorU32(UIStyle.PrimaryColor),
+  dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, s_state.fullscreen_text_alpha)),
                     0.0f);
 
   ImFont* const font = UIStyle.MediumFont;
@@ -923,6 +926,9 @@ void ImGuiFullscreen::DrawFullscreenFooter()
                                           UIStyle.PrimaryTextColor.z, 1.0f - prev_opacity)),
                 s_state.fullscreen_footer_text.c_str(), s_state.fullscreen_footer_text.end_ptr());
   }
+
+  // for next frame
+  s_state.fullscreen_text_alpha = 1.0f;
 }
 
 void ImGuiFullscreen::PrerenderMenuButtonBorder()

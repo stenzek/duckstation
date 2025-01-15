@@ -2711,7 +2711,8 @@ void Achievements::DrawAchievementsWindow()
                std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                               TRANSLATE_SV("Achievements", "View Details")),
                std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                              TRANSLATE_SV("Achievements", "Back"))});
+                              TRANSLATE_SV("Achievements", "Back"))},
+    FullscreenUI::GetBackgroundAlpha());
 
   if (close_window)
     FullscreenUI::ReturnToPreviousWindow();
@@ -3171,7 +3172,8 @@ void Achievements::DrawLeaderboardsWindow()
                  std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                                 TRANSLATE_SV("Achievements", "Open Leaderboard")),
                  std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                                TRANSLATE_SV("Achievements", "Back"))});
+                                TRANSLATE_SV("Achievements", "Back"))},
+      FullscreenUI::GetBackgroundAlpha());
   }
   else
   {
@@ -3258,7 +3260,8 @@ void Achievements::DrawLeaderboardsWindow()
                  std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                                 TRANSLATE_SV("Achievements", "View Profile")),
                  std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                                TRANSLATE_SV("Achievements", "Back"))});
+                                TRANSLATE_SV("Achievements", "Back"))},
+      FullscreenUI::GetBackgroundAlpha());
   }
 
   if (close_leaderboard_on_exit)

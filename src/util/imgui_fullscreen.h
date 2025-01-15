@@ -194,8 +194,8 @@ void EndFullscreenWindow();
 bool IsGamepadInputSource();
 std::string_view GetControllerIconMapping(std::string_view icon);
 void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
-void SetFullscreenFooterText(std::string_view text);
-void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
+void SetFullscreenFooterText(std::string_view text, float background_alpha);
+void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items, float background_alpha);
 void SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping);
 void DrawFullscreenFooter();
 

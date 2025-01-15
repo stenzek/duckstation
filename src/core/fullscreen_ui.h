@@ -40,6 +40,8 @@ void Render();
 void InvalidateCoverCache();
 void TimeToPrintableString(SmallStringBase* str, time_t t);
 
+float GetBackgroundAlpha();
+
 void OpenLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
                        s32 progress_value = -1);
 void UpdateLoadingScreen(std::string_view image, std::string_view message, s32 progress_min = -1, s32 progress_max = -1,
