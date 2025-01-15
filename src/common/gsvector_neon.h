@@ -661,8 +661,8 @@ public:
 #ifdef CPU_ARCH_ARM64
     return (vmaxv_u32(vreinterpret_u8_s32(v2s)) & 0x80) != 0x80;
 #else
-    return ((vget_lane_u32(vreinterpret_u32_s32(v2s), 0) & vget_lane_u32(vreinterpret_u32_s32(v2s), 1) & 0x80808080u) ==
-            0);
+    return (
+      ((vget_lane_u32(vreinterpret_u32_s32(v2s), 0) | vget_lane_u32(vreinterpret_u32_s32(v2s), 1)) & 0x80808080u) == 0);
 #endif
   }
 
@@ -2125,8 +2125,8 @@ public:
 #ifdef CPU_ARCH_ARM64
     return (vmaxvq_u32(vreinterpretq_u8_s32(v4s)) & 0x80) != 0x80;
 #else
-    const uint32x2_t res = vreinterpret_u32_s32(vand_s32(vget_low_s32(v4s), vget_high_s32(v4s)));
-    return ((vget_lane_u32(res, 0) & vget_lane_u32(res, 1) & 0x80808080u) == 0);
+    const uint32x2_t res = vreinterpret_u32_s32(vorr_s32(vget_low_s32(v4s), vget_high_s32(v4s)));
+    return ((vget_lane_u32(res, 0) | vget_lane_u32(res, 1) & 0x80808080u) == 0);
 #endif
   }
 
