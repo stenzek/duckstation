@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 
 #define GSVECTOR_HAS_FAST_INT_SHUFFLE8 1
 #define GSVECTOR_HAS_SRLV 1
@@ -646,25 +647,10 @@ public:
 
   ALWAYS_INLINE bool alltrue() const
   {
-    // MSB should be set in all 8-bit lanes.
-#ifdef CPU_ARCH_ARM64
-    return (vminv_u8(vreinterpret_u8_s32(v2s)) & 0x80) == 0x80;
-#else
-    return ((vget_lane_u32(vreinterpret_u32_s32(v2s), 0) & vget_lane_u32(vreinterpret_u32_s32(v2s), 1) & 0x80808080u) ==
-            0x80808080u);
-#endif
+    return (vget_lane_u64(vreinterpret_u64_s32(v2s), 0) == UINT64_C(0xFFFFFFFFFFFFFFFF));
   }
 
-  ALWAYS_INLINE bool allfalse() const
-  {
-    // MSB should be clear in all 8-bit lanes.
-#ifdef CPU_ARCH_ARM64
-    return (vmaxv_u32(vreinterpret_u8_s32(v2s)) & 0x80) != 0x80;
-#else
-    return (
-      ((vget_lane_u32(vreinterpret_u32_s32(v2s), 0) | vget_lane_u32(vreinterpret_u32_s32(v2s), 1)) & 0x80808080u) == 0);
-#endif
-  }
+  ALWAYS_INLINE bool allfalse() const { return (vget_lane_u64(vreinterpret_u64_s32(v2s), 0) == UINT64_C(0)); }
 
   template<int i>
   ALWAYS_INLINE GSVector2i insert8(int a) const
@@ -910,9 +896,12 @@ public:
     return (vget_lane_u32(masks, 0) | (vget_lane_u32(masks, 1) << 1));
   }
 
-  ALWAYS_INLINE bool alltrue() const { return (vget_lane_u64(vreinterpret_u64_f32(v2s), 0) == 0xFFFFFFFFFFFFFFFFULL); }
+  ALWAYS_INLINE bool alltrue() const
+  {
+    return (vget_lane_u64(vreinterpret_u64_f32(v2s), 0) == UINT64_C(0xFFFFFFFFFFFFFFFF));
+  }
 
-  ALWAYS_INLINE bool allfalse() const { return (vget_lane_u64(vreinterpret_u64_f32(v2s), 0) == 0); }
+  ALWAYS_INLINE bool allfalse() const { return (vget_lane_u64(vreinterpret_u64_f32(v2s), 0) == UINT64_C(0)); }
 
   ALWAYS_INLINE GSVector2 replace_nan(const GSVector2& v) const { return v.blend32(*this, *this == *this); }
 
@@ -2110,23 +2099,20 @@ public:
 
   ALWAYS_INLINE bool alltrue() const
   {
-    // MSB should be set in all 8-bit lanes.
 #ifdef CPU_ARCH_ARM64
-    return (vminvq_u8(vreinterpretq_u8_s32(v4s)) & 0x80) == 0x80;
+    return (vminvq_u32(vreinterpretq_u32_s32(v4s)) == UINT32_C(0xFFFFFFFF));
 #else
-    const uint32x2_t res = vreinterpret_u32_s32(vand_s32(vget_low_s32(v4s), vget_high_s32(v4s)));
-    return ((vget_lane_u32(res, 0) & vget_lane_u32(res, 1) & 0x80808080u) == 0x80808080u);
+    return (vget_lane_u64(vreinterpret_u64_s32(vand_s32(vget_low_s32(v4s), vget_high_s32(v4s))), 0) ==
+            UINT64_C(0xFFFFFFFFFFFFFFFF));
 #endif
   }
 
   ALWAYS_INLINE bool allfalse() const
   {
-    // MSB should be clear in all 8-bit lanes.
 #ifdef CPU_ARCH_ARM64
-    return (vmaxvq_u32(vreinterpretq_u8_s32(v4s)) & 0x80) != 0x80;
+    return (vmaxvq_u32(vreinterpretq_u32_s32(v4s)) == UINT32_C(0));
 #else
-    const uint32x2_t res = vreinterpret_u32_s32(vorr_s32(vget_low_s32(v4s), vget_high_s32(v4s)));
-    return ((vget_lane_u32(res, 0) | vget_lane_u32(res, 1) & 0x80808080u) == 0);
+    return (vget_lane_u64(vreinterpret_u64_s32(vorr_s32(vget_low_s32(v4s), vget_high_s32(v4s))), 0) == UINT64_C(0));
 #endif
   }
 
@@ -2727,13 +2713,25 @@ public:
 
   ALWAYS_INLINE bool alltrue() const
   {
-    // return mask() == 0xf;
-    return ~(vgetq_lane_u64(vreinterpretq_u64_f32(v4s), 0) & vgetq_lane_u64(vreinterpretq_u64_f32(v4s), 1)) == 0;
+#ifdef CPU_ARCH_ARM64
+    return (vminvq_u32(vreinterpretq_u32_f32(v4s)) == UINT32_C(0xFFFFFFFF));
+#else
+
+    return (vget_lane_u64(vreinterpret_u64_u32(vand_u32(vget_low_u32(vreinterpretq_u32_f32(v4s)),
+                                                        vget_high_u32(vreinterpretq_u32_f32(v4s)))),
+                          0) == UINT64_C(0xFFFFFFFFFFFFFFFF));
+#endif
   }
 
   ALWAYS_INLINE bool allfalse() const
   {
-    return (vgetq_lane_u64(vreinterpretq_u64_f32(v4s), 0) | vgetq_lane_u64(vreinterpretq_u64_f32(v4s), 1)) == 0;
+#ifdef CPU_ARCH_ARM64
+    return (vmaxvq_u32(vreinterpretq_u32_f32(v4s)) == UINT32_C(0));
+#else
+    return (vget_lane_u64(vreinterpret_u64_u32(vorr_u32(vget_low_u32(vreinterpretq_u32_f32(v4s)),
+                                                        vget_high_u32(vreinterpretq_u32_f32(v4s)))),
+                          0) == UINT64_C(0));
+#endif
   }
 
   ALWAYS_INLINE GSVector4 replace_nan(const GSVector4& v) const { return v.blend32(*this, *this == *this); }
