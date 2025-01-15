@@ -57,6 +57,7 @@ static void DeallocateLUTs();
 static void ResetCodeLUT();
 static void SetCodeLUT(u32 pc, const void* function);
 static void InvalidateBlock(Block* block, BlockState new_state);
+static void ResetBlockCompileCount(Block* block);
 static void ClearBlocks();
 
 static Block* LookupBlock(u32 pc);
@@ -637,6 +638,12 @@ void CPU::CodeCache::InvalidateBlock(Block* block, BlockState new_state)
   block->state = new_state;
 }
 
+void CPU::CodeCache::ResetBlockCompileCount(Block* block)
+{
+  block->compile_frame = System::GetFrameNumber();
+  block->compile_count = 1;
+}
+
 void CPU::CodeCache::InvalidateAllRAMBlocks()
 {
   // TODO: maybe combine the backlink into one big instruction flush cache?
@@ -659,6 +666,35 @@ void CPU::CodeCache::InvalidateAllRAMBlocks()
 
   MemMap::EndCodeWrite();
   Bus::ClearRAMCodePageFlags();
+}
+
+void CPU::CodeCache::InvalidateOverlappingBlocks(u32 pc, bool force_recompile)
+{
+  const u32 table = pc >> LUT_TABLE_SHIFT;
+  Block** const blocks = s_block_lut[table];
+  if (!blocks)
+    return;
+
+  // optionally force recompilation
+  const BlockState new_block_state = force_recompile ? BlockState::NeedsRecompile : BlockState::Invalidated;
+
+  // loop through all blocks in the page
+  for (u32 i = 0; i < LUT_TABLE_SIZE; i++)
+  {
+    Block* const block = blocks[i];
+    if (!block)
+      continue;
+
+    if (pc >= block->pc && pc < (block->pc + block->size))
+    {
+      // this is pretty gross, if it's a RAM block we need to unlink it from the page list
+      RemoveBlockFromPageList(block);
+
+      // don't get trolled into the interpreter if bps are toggled
+      InvalidateBlock(block, new_block_state);
+      ResetBlockCompileCount(block);
+    }
+  }
 }
 
 void CPU::CodeCache::ClearBlocks()
@@ -859,6 +895,9 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
   const bool use_icache = CPU::IsCachedAddress(start_pc);
   const bool dynamic_fetch_ticks = (!use_icache && Bus::GetMemoryAccessTimePtr(start_pc & PHYSICAL_MEMORY_ADDRESS_MASK,
                                                                                MemoryAccessSize::Word) != nullptr);
+  const bool debug_breakpoints_enabled = CPU::HasAnyBreakpoints(BreakpointType::Execute);
+  const bool cop0_breakpoints_enabled = CPU::g_state.cop0_regs.dcic.ExecutionBreakpointsEnabled();
+
   u32 pc = start_pc;
   bool is_branch_delay_slot = false;
   bool is_load_delay_slot = false;
@@ -926,6 +965,8 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
     info.is_load_instruction = IsMemoryLoadInstruction(instruction);
     info.is_store_instruction = IsMemoryStoreInstruction(instruction);
     info.has_load_delay = InstructionHasLoadDelay(instruction);
+    info.is_cop0_breakpoint = (cop0_breakpoints_enabled && CPU::Cop0BreakpointMatchesPC(pc));
+    info.is_debug_breakpoint = (debug_breakpoints_enabled && CPU::HasBreakpointAtAddress(BreakpointType::Execute, pc));
 
     if (use_icache)
     {
@@ -971,6 +1012,19 @@ bool CPU::CodeCache::ReadBlockInstructions(u32 start_pc, BlockInstructionList* i
 
     // instruction is decoded now
     instructions->emplace_back(instruction, info);
+
+    if (info.is_cop0_breakpoint)
+    {
+      // end block early at breakpoints, the instruction doesn't actually get executed
+      WARNING_LOG("Ending block 0x{:08X} at 0x{:08X} due to cop0 breakpoint", start_pc, pc);
+      break;
+    }
+    else if (info.is_debug_breakpoint && is_branch_delay_slot)
+    {
+      // can't handle debug breakpoints in branch delay slots currently, since it can't resume
+      ERROR_LOG("Can't handle debug breakpoint at 0x{:08X} in branch delay slot, skipping block", pc);
+      return false;
+    }
 
     // if we're in a branch delay slot, the block is now done
     // except if this is a branch in a branch delay slot, then we grab the one after that, and so on...
@@ -1539,6 +1593,13 @@ const void* CPU::CodeCache::GetInterpretUncachedBlockFunction()
   }
 }
 
+void CPU::CodeCache::ResetAndExitExecution()
+{
+  DEV_LOG("Resetting code cache and exiting execution");
+  Reset();
+  CPU::ExitExecution();
+}
+
 void CPU::CodeCache::CompileASMFunctions()
 {
   MemMap::BeginCodeWrite();
@@ -1710,13 +1771,11 @@ PageFaultHandler::HandlerResult CPU::CodeCache::HandleFastmemException(void* exc
   if (block)
   {
     // This is a bit annoying, we have to remove it from the page list if it's a RAM block.
+    // Need to reset the recompile count, otherwise it'll get trolled into an interpreter fallback.
     DEV_LOG("Queuing block {:08X} for recompilation due to backpatch", block->pc);
     RemoveBlockFromPageList(block);
     InvalidateBlock(block, BlockState::NeedsRecompile);
-
-    // Need to reset the recompile count, otherwise it'll get trolled into an interpreter fallback.
-    block->compile_frame = System::GetFrameNumber();
-    block->compile_count = 1;
+    ResetBlockCompileCount(block);
   }
 
   MemMap::EndCodeWrite();

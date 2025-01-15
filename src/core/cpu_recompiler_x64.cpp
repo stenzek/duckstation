@@ -579,6 +579,12 @@ void CPU::X64Recompiler::GenerateCall(const void* func, s32 arg1reg /*= -1*/, s3
 
 void CPU::X64Recompiler::EndBlock(const std::optional<u32>& newpc, bool do_event_test)
 {
+  if (iinfo->is_cop0_breakpoint && m_block_ended)
+  {
+    // block already ended by breakpoint
+    return;
+  }
+
   if (newpc.has_value())
   {
     if (m_dirty_pc || m_compiler_pc != newpc)
@@ -978,6 +984,39 @@ void CPU::X64Recompiler::Compile_Fallback()
   cg->L(no_load_delay);
 
   m_load_delay_dirty = EMULATE_LOAD_DELAYS;
+}
+
+bool CPU::X64Recompiler::CompileExecutionBreakpointCheck()
+{
+  // flush regs and instruction bits, since cop0 needs it for the delay slot/cop bits
+  Flush(FLUSH_FOR_BREAKPOINT);
+
+  // cop0 has to come first, because debug can exit execution
+  if (iinfo->is_cop0_breakpoint)
+  {
+    // cop0 always exits regardless of what the debug bp does
+    cg->call(&CPU::DispatchCop0ExecutionBreakpoint);
+    if (iinfo->is_debug_breakpoint)
+      cg->call(&CPU::DispatchDebugBreakpoint);
+    EndBlock(std::nullopt, true);
+    return true;
+  }
+
+  // only a debug bp?
+  if (iinfo->is_debug_breakpoint)
+  {
+    // debug may or may not exit execution, or change pc
+    cg->call(&CPU::DispatchDebugBreakpoint);
+    cg->test(cg->eax, cg->eax);
+    SwitchToFarCode(true, &CodeGenerator::jnz);
+    BackupHostState();
+    EndBlock(std::nullopt, true);
+    RestoreHostState();
+    SwitchToNearCode(false);
+  }
+
+  // we can continue
+  return true;
 }
 
 void CPU::X64Recompiler::CheckBranchTarget(const Xbyak::Reg32& pcreg)
@@ -2289,16 +2328,26 @@ void CPU::X64Recompiler::Compile_mtc0(CompileFlags cf)
     cg->mov(RWARG1, cg->dword[PTR(&g_state.cop0_regs.sr.bits)]);
     TestInterrupts(RWARG1);
   }
-  else if (reg == Cop0Reg::DCIC || reg == Cop0Reg::BPCM)
+  else if (reg == Cop0Reg::DCIC || reg == Cop0Reg::BPC || reg == Cop0Reg::BPCM)
   {
     // need to check whether we're switching to debug mode
     Flush(FLUSH_FOR_C_CALL);
-    cg->call(&CPU::UpdateDebugDispatcherFlag);
+
+    // dcic can enable data breakpoints
+    if (reg == Cop0Reg::DCIC)
+    {
+      cg->call(&CPU::UpdateDebugDispatcherFlag);
+      cg->test(cg->al, cg->al);
+      SwitchToFarCode(true, &Xbyak::CodeGenerator::jnz);
+      SwitchToNearCode(false);
+    }
+
+    cg->call(&CPU::AreCop0ExecutionBreakpointsActive);
     cg->test(cg->al, cg->al);
     SwitchToFarCode(true, &Xbyak::CodeGenerator::jnz);
     BackupHostState();
     Flush(FLUSH_FOR_EARLY_BLOCK_EXIT);
-    cg->call(&CPU::ExitExecution); // does not return
+    cg->call(&CodeCache::ResetAndExitExecution); // does not return
     RestoreHostState();
     SwitchToNearCode(false);
   }

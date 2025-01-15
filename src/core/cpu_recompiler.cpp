@@ -350,6 +350,7 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
     return false;
 
   const Instruction* next_instruction = inst + 1;
+  const CodeCache::InstructionInfo* next_iinfo = iinfo + 1;
   DebugAssert(next_instruction < (m_block->Instructions() + m_block->size));
 
   const Reg opcode_rs = next_instruction->r.rs;
@@ -365,6 +366,10 @@ bool CPU::Recompiler::Recompiler::TrySwapDelaySlot(Reg rs, Reg rt, Reg rd)
   const Instruction* const backup_instruction = inst;
   const u32 backup_instruction_pc = m_current_instruction_pc;
   const bool backup_instruction_delay_slot = m_current_instruction_branch_delay_slot;
+
+  // branch delay slots with a breakpoint can't be swapped
+  if (next_iinfo->is_cop0_breakpoint || next_iinfo->is_debug_breakpoint)
+    goto is_unsafe;
 
   if (next_instruction->bits == 0)
   {
@@ -1187,6 +1192,13 @@ void CPU::Recompiler::Recompiler::CompileInstruction()
   DEBUG_LOG("Compiling{} {:08X}: {}", m_current_instruction_branch_delay_slot ? " branch delay slot" : "",
             m_current_instruction_pc, str);
 #endif
+
+  if (iinfo->is_cop0_breakpoint || iinfo->is_debug_breakpoint)
+  {
+    CompileExecutionBreakpointCheck();
+    if (m_block_ended)
+      return;
+  }
 
   m_cycles++;
 

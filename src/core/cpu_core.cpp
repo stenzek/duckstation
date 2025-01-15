@@ -530,15 +530,18 @@ ALWAYS_INLINE_RELEASE void CPU::Cop0ExecutionBreakpointCheck()
   if (!g_state.cop0_regs.dcic.ExecutionBreakpointsEnabled())
     return;
 
-  const u32 pc = g_state.current_instruction_pc;
-  const u32 bpc = g_state.cop0_regs.BPC;
-  const u32 bpcm = g_state.cop0_regs.BPCM;
+  if (Cop0BreakpointMatchesPC(g_state.current_instruction_pc))
+    DispatchCop0ExecutionBreakpoint();
+}
 
-  // Break condition is "((PC XOR BPC) AND BPCM)=0".
-  if (bpcm == 0 || ((pc ^ bpc) & bpcm) != 0u)
-    return;
+bool CPU::AreCop0ExecutionBreakpointsActive()
+{
+  return (g_state.cop0_regs.dcic.ExecutionBreakpointsEnabled() && IsCop0ExecutionBreakpointUnmasked());
+}
 
-  DEV_LOG("Cop0 execution breakpoint at {:08X}", pc);
+void CPU::DispatchCop0ExecutionBreakpoint()
+{
+  DEV_LOG("Cop0 execution breakpoint at {:08X}", g_state.current_instruction_pc);
   g_state.cop0_regs.dcic.status_any_break = true;
   g_state.cop0_regs.dcic.status_bpc_code_break = true;
   DispatchCop0Breakpoint();
@@ -2013,15 +2016,19 @@ CPUExecutionMode CPU::GetCurrentExecutionMode()
 
 bool CPU::UpdateDebugDispatcherFlag()
 {
-  const bool has_any_breakpoints = (HasAnyBreakpoints() || s_break_type == ExecutionBreakType::SingleStep);
-
   const auto& dcic = g_state.cop0_regs.dcic;
   const bool has_cop0_breakpoints = dcic.super_master_enable_1 && dcic.super_master_enable_2 &&
                                     dcic.execution_breakpoint_enable && IsCop0ExecutionBreakpointUnmasked();
+  const bool has_execution_breakpoints = HasAnyBreakpoints(BreakpointType::Execute);
+  const bool requires_interpreter =
+    (HasAnyBreakpoints(BreakpointType::Read) || HasAnyBreakpoints(BreakpointType::Write) ||
+     s_break_type == ExecutionBreakType::SingleStep);
 
+  // TODO: Don't force the int just for cop0 breakpoints, they're cheap. Also need it for cop0 data breakpoints.
   const bool use_debug_dispatcher =
-    has_any_breakpoints || has_cop0_breakpoints || s_trace_to_log ||
-    (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter && g_settings.bios_tty_logging);
+    s_trace_to_log || requires_interpreter ||
+    (g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter &&
+     (has_cop0_breakpoints || has_execution_breakpoints || g_settings.bios_tty_logging));
   if (use_debug_dispatcher == g_state.using_debug_dispatcher)
     return false;
 
@@ -2103,10 +2110,9 @@ void CPU::CheckForExecutionModeChange()
   fastjmp_jmp(&s_jmp_buf, 1);
 }
 
-bool CPU::HasAnyBreakpoints()
+bool CPU::HasAnyBreakpoints(BreakpointType type)
 {
-  return (GetBreakpointList(BreakpointType::Execute).size() + GetBreakpointList(BreakpointType::Read).size() +
-          GetBreakpointList(BreakpointType::Write).size()) > 0;
+  return (GetBreakpointList(type).size() > 0);
 }
 
 ALWAYS_INLINE CPU::BreakpointList& CPU::GetBreakpointList(BreakpointType type)
@@ -2129,10 +2135,7 @@ bool CPU::HasBreakpointAtAddress(BreakpointType type, VirtualMemoryAddress addre
   for (Breakpoint& bp : GetBreakpointList(type))
   {
     if (bp.enabled && (bp.address & 0x0FFFFFFFu) == (address & 0x0FFFFFFFu))
-    {
-      bp.hit_count++;
       return true;
-    }
   }
 
   return false;
@@ -2174,11 +2177,15 @@ bool CPU::AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool 
 
   Breakpoint bp{address, nullptr, auto_clear ? 0 : s_breakpoint_counter++, 0, type, auto_clear, enabled};
   GetBreakpointList(type).push_back(std::move(bp));
-  if (UpdateDebugDispatcherFlag())
-    System::InterruptExecution();
 
   if (!auto_clear)
     Host::ReportDebuggerMessage(fmt::format("Added breakpoint at 0x{:08X}.", address));
+
+  if (type == BreakpointType::Execute && s_current_execution_mode != CPUExecutionMode::Interpreter && enabled)
+    CodeCache::InvalidateOverlappingBlocks(address, true);
+
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 
   return true;
 }
@@ -2192,8 +2199,13 @@ bool CPU::AddBreakpointWithCallback(BreakpointType type, VirtualMemoryAddress ad
 
   Breakpoint bp{address, callback, 0, 0, type, false, true};
   GetBreakpointList(type).push_back(std::move(bp));
+
+  if (type == BreakpointType::Execute && s_current_execution_mode != CPUExecutionMode::Interpreter)
+    CodeCache::InvalidateOverlappingBlocks(address, true);
+
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
+
   return true;
 }
 
@@ -2209,11 +2221,14 @@ bool CPU::SetBreakpointEnabled(BreakpointType type, VirtualMemoryAddress address
                                           GetBreakpointTypeName(type), address));
   it->enabled = enabled;
 
-  if (UpdateDebugDispatcherFlag())
-    System::InterruptExecution();
-
   if (address == s_last_breakpoint_check_pc && !enabled)
     s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+
+  if (type == BreakpointType::Execute && s_current_execution_mode != CPUExecutionMode::Interpreter)
+    CodeCache::InvalidateOverlappingBlocks(address, true);
+
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 
   return true;
 }
@@ -2229,21 +2244,36 @@ bool CPU::RemoveBreakpoint(BreakpointType type, VirtualMemoryAddress address)
   Host::ReportDebuggerMessage(fmt::format("Removed {} breakpoint at 0x{:08X}.", GetBreakpointTypeName(type), address));
 
   bplist.erase(it);
-  if (UpdateDebugDispatcherFlag())
-    System::InterruptExecution();
 
   if (address == s_last_breakpoint_check_pc)
     s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+
+  if (type == BreakpointType::Execute && s_current_execution_mode != CPUExecutionMode::Interpreter)
+    CodeCache::InvalidateOverlappingBlocks(address, true);
+
+  if (UpdateDebugDispatcherFlag())
+    System::InterruptExecution();
 
   return true;
 }
 
 void CPU::ClearBreakpoints()
 {
+  if (s_current_execution_mode != CPUExecutionMode::Interpreter)
+  {
+    for (const Breakpoint& bp : s_breakpoints[static_cast<u32>(BreakpointType::Execute)])
+    {
+      if (bp.enabled)
+        CodeCache::InvalidateOverlappingBlocks(bp.address, true);
+    }
+  }
+
   for (BreakpointList& bplist : s_breakpoints)
     bplist.clear();
+
   s_breakpoint_counter = 0;
   s_last_breakpoint_check_pc = INVALID_BREAKPOINT_PC;
+
   if (UpdateDebugDispatcherFlag())
     System::InterruptExecution();
 }
@@ -2388,6 +2418,21 @@ ALWAYS_INLINE_RELEASE void CPU::ExecutionBreakpointCheck()
     s_break_type = ExecutionBreakType::None;
     ExitExecution();
   }
+}
+
+u32 CPU::DispatchDebugBreakpoint()
+{
+  const u32 prev_npc = g_state.npc;
+  DEV_LOG("Debug execution breakpoint at {:08X}", g_state.current_instruction_pc);
+
+  if (CheckBreakpointList(BreakpointType::Execute, g_state.current_instruction_pc))
+  {
+    s_break_type = ExecutionBreakType::None;
+    ExitExecution();
+  }
+
+  // return true if pc has changed and the rec needs to bail out
+  return BoolToUInt32(g_state.npc != prev_npc);
 }
 
 template<MemoryAccessType type>
@@ -2586,6 +2631,8 @@ void CPU::CodeCache::InterpretUncachedBlock()
   g_state.npc = g_state.pc;
   if (!FetchInstructionForInterpreterFallback())
     return;
+
+  // TODO: needs to check debug breakpoints, for when the breakpoint is in a branch delay slot
 
   // At this point, pc contains the last address executed (in the previous block). The instruction has not been fetched
   // yet. pc shouldn't be updated until the fetch occurs, that way the exception occurs in the delay slot.

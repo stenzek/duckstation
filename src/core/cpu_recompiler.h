@@ -119,6 +119,8 @@ protected:
       (FLUSH_CYCLES | FLUSH_GTE_DONE_CYCLE), // GTE cycles needed because it stalls when a GTE instruction is next.
     FLUSH_FOR_EARLY_BLOCK_EXIT =
       (FLUSH_FLUSH_MIPS_REGISTERS | FLUSH_CYCLES | FLUSH_GTE_DONE_CYCLE | FLUSH_PC | FLUSH_LOAD_DELAY),
+    FLUSH_FOR_BREAKPOINT =
+      (FLUSH_FLUSH_MIPS_REGISTERS | FLUSH_CYCLES | FLUSH_GTE_DONE_CYCLE | FLUSH_INSTRUCTION_BITS | FLUSH_FOR_C_CALL),
     FLUSH_FOR_INTERPRETER = (FLUSH_FLUSH_MIPS_REGISTERS | FLUSH_INVALIDATE_MIPS_REGISTERS |
                              FLUSH_FREE_CALLER_SAVED_REGISTERS | FLUSH_PC | FLUSH_CYCLES | FLUSH_INSTRUCTION_BITS |
                              FLUSH_LOAD_DELAY | FLUSH_GTE_DONE_CYCLE | FLUSH_INVALIDATE_SPECULATIVE_CONSTANTS),
@@ -337,6 +339,9 @@ protected:
                                             Reg arg3reg = Reg::count) = 0;
 
   virtual void Compile_Fallback() = 0;
+
+  // returns true if further compilation should be skipped
+  virtual bool CompileExecutionBreakpointCheck() = 0;
 
   void Compile_j();
   virtual void Compile_jr(CompileFlags cf) = 0;

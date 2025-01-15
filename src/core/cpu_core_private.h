@@ -132,6 +132,22 @@ ALWAYS_INLINE static void StallUntilGTEComplete()
     (g_state.gte_completion_tick > g_state.pending_ticks) ? g_state.gte_completion_tick : g_state.pending_ticks;
 }
 
+// cop0 breakpoint check
+ALWAYS_INLINE static bool Cop0BreakpointMatchesPC(u32 pc)
+{
+  const u32 bpc = g_state.cop0_regs.BPC;
+  const u32 bpcm = g_state.cop0_regs.BPCM;
+
+  // Break condition is "((PC XOR BPC) AND BPCM)=0".
+  // TODO: is the != 0 here correct?
+  return (bpcm != 0 && ((pc ^ bpc) & bpcm) == 0u);
+}
+
+// cop0 breakpoint dispatch
+bool AreCop0ExecutionBreakpointsActive();
+void DispatchCop0ExecutionBreakpoint();
+u32 DispatchDebugBreakpoint();
+
 // kernel call interception
 void HandleA0Syscall();
 void HandleB0Syscall();
