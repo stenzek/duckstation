@@ -249,7 +249,7 @@ using BreakpointList = std::vector<Breakpoint>;
 const char* GetBreakpointTypeName(BreakpointType type);
 const char* GetBreakpointTypeDisplayName(BreakpointType type);
 std::optional<BreakpointType> ParseBreakpointTypeName(std::string_view sv);
-bool HasAnyBreakpoints();
+bool HasAnyBreakpoints(BreakpointType type);
 bool HasBreakpointAtAddress(BreakpointType type, VirtualMemoryAddress address);
 BreakpointList CopyBreakpointList(bool include_auto_clear = false, bool include_callbacks = false);
 bool AddBreakpoint(BreakpointType type, VirtualMemoryAddress address, bool auto_clear = false, bool enabled = true);

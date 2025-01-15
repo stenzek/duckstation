@@ -51,6 +51,8 @@ protected:
 
   void Compile_Fallback() override;
 
+  bool CompileExecutionBreakpointCheck() override;
+
   void CheckBranchTarget(const Xbyak::Reg32& pcreg);
   void Compile_jr(CompileFlags cf) override;
   void Compile_jalr(CompileFlags cf) override;

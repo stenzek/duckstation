@@ -173,6 +173,24 @@ ALWAYS_INLINE constexpr TickCount GetDivTicks()
   return (36 - 1);
 }
 
+// cop0 breakpoint check
+ALWAYS_INLINE static bool Cop0BreakpointMatchesPC(u32 pc)
+{
+  const u32 bpc = g_state.cop0_regs.BPC;
+  const u32 bpcm = g_state.cop0_regs.BPCM;
+
+  // Break condition is "((PC XOR BPC) AND BPCM)=0".
+  if (bpcm == 0 || ((pc ^ bpc) & bpcm) != 0u)
+    return false;
+  else
+    return true;
+}
+
+// cop0 breakpoint dispatch
+bool AreCop0ExecutionBreakpointsActive();
+void DispatchCop0ExecutionBreakpoint();
+u32 DispatchDebugBreakpoint();
+
 // kernel call interception
 void HandleA0Syscall();
 void HandleB0Syscall();

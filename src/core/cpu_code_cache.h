@@ -37,4 +37,7 @@ void InvalidateBlocksWithPageIndex(u32 page_index);
 /// Invalidates all blocks in the cache.
 void InvalidateAllRAMBlocks();
 
+/// Invalidates blocks with the specified PC, forcing recompilation.
+void InvalidateOverlappingBlocks(u32 pc, bool force_recompile);
+
 } // namespace CPU::CodeCache

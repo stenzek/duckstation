@@ -44,6 +44,8 @@ struct InstructionInfo
   bool is_load_instruction : 1;
   bool is_store_instruction : 1;
   bool is_load_delay_slot : 1;
+  bool is_cop0_breakpoint : 1;
+  bool is_debug_breakpoint : 1;
   bool is_last_instruction : 1;
   bool has_load_delay : 1;
 
@@ -233,6 +235,7 @@ void CommitFarCode(u32 length);
 void AlignCode(u32 alignment);
 
 const void* GetInterpretUncachedBlockFunction();
+void ResetAndExitExecution();
 
 void CompileOrRevalidateBlock(u32 start_pc);
 void DiscardAndRecompileBlock(u32 start_pc);
