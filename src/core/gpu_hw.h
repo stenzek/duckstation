@@ -139,7 +139,7 @@ private:
     GPUTransparencyMode transparency_mode;
     bool dithering;
     bool interlacing;
-    bool set_mask_while_drawing;
+    bool set_mask_while_drawing; // NOTE: could be replaced with ubo u_set_mask_while drawing if needed
     bool check_mask_before_draw;
     bool use_depth_buffer;
     bool sprite_mode;

@@ -3684,7 +3684,7 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
     if (texture_mode != m_batch.texture_mode || transparency_mode != m_batch.transparency_mode ||
         (transparency_mode == GPUTransparencyMode::BackgroundMinusForeground && !m_allow_shader_blend) ||
         dithering_enable != m_batch.dithering || m_texture_window_bits != cmd->window ||
-        m_batch_ubo_data.u_set_mask_while_drawing != BoolToUInt32(cmd->set_mask_while_drawing) ||
+        m_batch.set_mask_while_drawing != cmd->set_mask_while_drawing ||
         (texture_mode == BatchTextureMode::PageTexture && m_texture_cache_key != texture_cache_key))
     {
       FlushRender();
