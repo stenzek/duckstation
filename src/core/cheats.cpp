@@ -587,6 +587,8 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
   fmt::memory_buffer buf;
   auto appender = std::back_inserter(buf);
   fmt::format_to(appender, "[{}]\n", code.name);
+  if (!code.author.empty())
+    fmt::format_to(appender, "Author = {}\n", code.author);
   if (!code.description.empty())
     fmt::format_to(appender, "Description = {}\n", code.description);
   fmt::format_to(appender, "Type = {}\n", GetTypeName(code.type));
