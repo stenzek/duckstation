@@ -3821,7 +3821,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
         }
 
         const u8 channel = subq.absolute_second_bcd & 1u;
-        const s16 peak_volume = std::min<s16>(GetPeakVolume(raw_sector, channel), 32767);
+        const s16 peak_volume = GetPeakVolume(raw_sector, channel);
         const u16 peak_value = (ZeroExtend16(channel) << 15) | peak_volume;
 
         s_state.async_response_fifo.Push(Truncate8(peak_value));      // peak low
