@@ -963,6 +963,7 @@ public:
   ALWAYS_INLINE s32 width() const { return right - left; }
   ALWAYS_INLINE s32 height() const { return bottom - top; }
 
+  ALWAYS_INLINE GSVector2i rsize() const { return GSVector2i(width(), height()); }
   ALWAYS_INLINE bool rempty() const { return (lt32(zwzw()).mask() != 0x00ff); }
   ALWAYS_INLINE bool rvalid() const { return ((ge32(zwzw()).mask() & 0xff) == 0); }
 

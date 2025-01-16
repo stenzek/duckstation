@@ -1180,6 +1180,8 @@ public:
   ALWAYS_INLINE s32 width() const { return right - left; }
   ALWAYS_INLINE s32 height() const { return bottom - top; }
 
+  ALWAYS_INLINE GSVector2i rsize() const { return zwzw().sub32(xyxy()).xy(); }
+
   ALWAYS_INLINE bool rempty() const
   {
     // !any((x, y) < (z, w)) i.e. !not_empty
