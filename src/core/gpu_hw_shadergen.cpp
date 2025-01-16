@@ -1880,11 +1880,14 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitr
     o_col0.a = (color.a <= 0.95f) ? 1.0f : 0.0f;
     o_col0.a = VECTOR_EQ(color, float4(0.0, 0.0, 0.0, 0.0)) ? 0.0f : o_col0.a;
   #else
-    // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
-    o_col0.a = color.a;
-
     // Map anything with an alpha below 0.5 to transparent.
-    o_col0 = lerp(o_col0, float4(0.0, 0.0, 0.0, 0.0), float(o_col0.a < 0.5));
+    // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
+    o_col0.rgb = lerp(o_col0.rgb, float3(0.0, 0.0, 0.0), float(color.a < 0.5));
+
+    // Clear alpha channel. This is the value for bit15 in the framebuffer.
+    // Silent Hill needs it to be zero, I'm not aware of anything that needs
+    // specific values yet. If it did, we'd need a different dumping technique.
+    o_col0.a = 0.0;
   #endif
 }
 )";
