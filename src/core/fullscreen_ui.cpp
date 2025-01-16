@@ -486,6 +486,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   bool about_window_open = false;
   bool achievements_login_window_open = false;
   std::string current_game_subtitle;
+  std::string achievements_user_badge_path;
 
   // Resources
   std::shared_ptr<GPUTexture> app_icon_texture;
@@ -1677,17 +1678,17 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
           ImVec2(time_pos.x - name_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
         ImGui::RenderTextClipped(name_pos, name_pos + name_size, username, nullptr, &name_size);
 
-        // TODO: should we cache this? heap allocations bad...
-        std::string badge_path = Achievements::GetLoggedInUserBadgePath();
-        if (!badge_path.empty()) [[likely]]
+        if (s_state.achievements_user_badge_path.empty()) [[unlikely]]
+          s_state.achievements_user_badge_path = Achievements::GetLoggedInUserBadgePath();
+        if (!s_state.achievements_user_badge_path.empty()) [[likely]]
         {
           const ImVec2 badge_size =
             LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
           const ImVec2 badge_pos =
             ImVec2(name_pos.x - badge_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
 
-          dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(badge_path)), badge_pos,
-                       badge_pos + badge_size);
+          dl->AddImage(reinterpret_cast<ImTextureID>(GetCachedTextureAsync(s_state.achievements_user_badge_path)),
+                       badge_pos, badge_pos + badge_size);
         }
       }
     }
