@@ -259,7 +259,6 @@ struct ALIGN_TO_CACHE_LINE StateVars
 
   bool can_sync_to_host = false;
   bool syncing_to_host = false;
-  bool syncing_to_host_with_vsync = false;
 
   bool fast_forward_enabled = false;
   bool turbo_enabled = false;
@@ -2185,7 +2184,7 @@ bool System::GetFramePresentationParameters(GPUBackendFramePresentationParameter
   const bool skip_this_frame =
     ((is_duplicate_frame || (!s_state.optimal_frame_pacing && current_time > s_state.next_frame_time &&
                              s_state.skipped_frame_count < MAX_SKIPPED_TIMEOUT_FRAME_COUNT)) &&
-     !s_state.syncing_to_host_with_vsync && !IsExecutionInterrupted());
+     !IsExecutionInterrupted());
   const bool should_allow_present_skip = IsRunningAtNonStandardSpeed();
   frame->update_performance_counters = !is_duplicate_frame;
   frame->present_frame = !skip_this_frame;
@@ -3441,7 +3440,7 @@ float System::GetTargetSpeed()
 
 float System::GetAudioNominalRate()
 {
-  return (s_state.throttler_enabled || s_state.syncing_to_host_with_vsync) ? s_state.target_speed : 1.0f;
+  return s_state.throttler_enabled ? s_state.target_speed : 1.0f;
 }
 
 void System::AccumulatePreFrameSleepTime(Timer::Value current_time)
@@ -3512,7 +3511,6 @@ void System::UpdateSpeedLimiterState()
   s_state.pre_frame_sleep = s_state.optimal_frame_pacing && g_settings.display_pre_frame_sleep;
   s_state.can_sync_to_host = false;
   s_state.syncing_to_host = false;
-  s_state.syncing_to_host_with_vsync = false;
 
   if (g_settings.sync_to_host_refresh_rate)
   {
@@ -3526,17 +3524,7 @@ void System::UpdateSpeedLimiterState()
       s_state.syncing_to_host =
         (s_state.can_sync_to_host && g_settings.sync_to_host_refresh_rate && s_state.target_speed == 1.0f);
       if (s_state.syncing_to_host)
-      {
         s_state.target_speed = ratio;
-
-        // When syncing to host and using vsync, we don't need to sleep.
-        s_state.syncing_to_host_with_vsync = g_settings.display_vsync;
-        if (s_state.syncing_to_host_with_vsync)
-        {
-          INFO_LOG("Using host vsync for throttling.");
-          s_state.throttler_enabled = false;
-        }
-      }
     }
   }
 
@@ -3581,8 +3569,7 @@ void System::UpdateDisplayVSync()
   const GPUVSyncMode vsync_mode = GetEffectiveVSyncMode();
   const bool allow_present_throttle = ShouldAllowPresentThrottle();
 
-  VERBOSE_LOG("VSync: {}{}{}", GPUDevice::VSyncModeToString(vsync_mode),
-              s_state.syncing_to_host_with_vsync ? " (for throttling)" : "",
+  VERBOSE_LOG("VSync: {}{}", GPUDevice::VSyncModeToString(vsync_mode),
               allow_present_throttle ? " (present throttle allowed)" : "");
 
   GPUThread::SetVSync(vsync_mode, allow_present_throttle);
