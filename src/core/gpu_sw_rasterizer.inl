@@ -477,12 +477,12 @@ struct PixelVectors
   GSVectorNi mask_and;
   GSVectorNi mask_or;
 
-  typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_and_x;
-  typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_or_x;
-  typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_and_y;
-  typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_or_y;
-  typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_base_x;
-  typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_base_y;
+  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_and_x;
+  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_or_x;
+  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_and_y;
+  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_window_or_y;
+  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_base_x;
+  NO_UNIQUE_ADDRESS typename std::conditional_t<texture_enable, GSVectorNi, UnusedField> texture_base_y;
 
   PixelVectors(const GPUBackendDrawCommand* cmd)
   {
