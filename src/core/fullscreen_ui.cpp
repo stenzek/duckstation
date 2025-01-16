@@ -503,6 +503,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   float settings_last_bg_alpha = 1.0f;
   SettingsPage settings_page = SettingsPage::Interface;
   std::unique_ptr<INISettingsInterface> game_settings_interface;
+  std::string game_settings_serial;
   const GameDatabase::Entry* game_settings_db_entry;
   std::unique_ptr<GameList::Entry> game_settings_entry;
   std::vector<std::pair<std::string, bool>> game_list_directories_cache;
@@ -875,6 +876,11 @@ void FullscreenUI::Shutdown(bool clear_state)
     std::memset(s_state.controller_macro_expanded, 0, sizeof(s_state.controller_macro_expanded));
     s_state.game_list_sorted_entries = {};
     s_state.game_list_directories_cache = {};
+    s_state.game_settings_db_entry = nullptr;
+    s_state.game_settings_entry.reset();
+    s_state.game_settings_serial = {};
+    s_state.game_settings_interface.reset();
+    s_state.game_settings_changed = false;
     s_state.game_patch_list = {};
     s_state.enabled_game_patch_cache = {};
     s_state.game_cheats_list = {};
@@ -3208,6 +3214,7 @@ void FullscreenUI::SwitchToSettings()
 {
   s_state.game_settings_entry.reset();
   s_state.game_settings_interface.reset();
+  s_state.game_settings_serial = {};
   s_state.game_settings_db_entry = nullptr;
   s_state.game_patch_list = {};
   s_state.enabled_game_patch_cache = {};
@@ -3225,6 +3232,7 @@ void FullscreenUI::SwitchToSettings()
 
 void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
 {
+  s_state.game_settings_serial = serial;
   s_state.game_settings_entry.reset();
   s_state.game_settings_db_entry = GameDatabase::GetEntryForSerial(serial);
   s_state.game_settings_interface =
@@ -3296,7 +3304,7 @@ void FullscreenUI::PopulatePatchesAndCheatsList(const std::string_view serial)
   s_state.game_patch_list = Cheats::GetCodeInfoList(serial, std::nullopt, false, true, true);
   s_state.game_cheats_list = Cheats::GetCodeInfoList(
     serial, std::nullopt, true, s_state.game_settings_interface->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true),
-    true);
+    s_state.game_settings_interface->GetBoolValue("Cheats", "SortList", false));
   s_state.game_cheat_groups = Cheats::GetCodeListUniquePrefixes(s_state.game_cheats_list, true);
   s_state.enabled_game_patch_cache =
     s_state.game_settings_interface->GetStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
@@ -6239,8 +6247,20 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
       else
         bsi->SetBoolValue("Cheats", "LoadCheatsFromDatabase", false);
       SetSettingsChanged(bsi);
-      if (s_state.game_settings_entry)
-        PopulatePatchesAndCheatsList(s_state.game_settings_entry->serial);
+      PopulatePatchesAndCheatsList(s_state.game_settings_serial);
+    }
+
+    bool sort_list = bsi->GetBoolValue("Cheats", "SortList", false);
+    if (ToggleButton(FSUI_ICONSTR(ICON_FA_SORT_ALPHA_DOWN, "Sort Alphabetically"),
+                     FSUI_CSTR("Sorts the cheat list alphabetically by the name of the code."), &sort_list))
+    {
+      if (!sort_list)
+        bsi->DeleteValue("Cheats", "SortList");
+      else
+        bsi->SetBoolValue("Cheats", "SortList", true);
+      SetSettingsChanged(bsi);
+      s_state.game_cheats_list =
+        Cheats::GetCodeInfoList(s_state.game_settings_serial, std::nullopt, true, load_database_cheats, sort_list);
     }
 
     if (code_list.empty())
@@ -9014,8 +9034,10 @@ TRANSLATE_NOOP("FullscreenUI", "Smooth Scrolling");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 2D objects.");
 TRANSLATE_NOOP("FullscreenUI", "Smooths out the blockiness of magnified textures on 3D objects.");
+TRANSLATE_NOOP("FullscreenUI", "Sort Alphabetically");
 TRANSLATE_NOOP("FullscreenUI", "Sort By");
 TRANSLATE_NOOP("FullscreenUI", "Sort Reversed");
+TRANSLATE_NOOP("FullscreenUI", "Sorts the cheat list alphabetically by the name of the code.");
 TRANSLATE_NOOP("FullscreenUI", "Sound Effects");
 TRANSLATE_NOOP("FullscreenUI", "Specifies the amount of buffer time added, which reduces the additional sleep time introduced.");
 TRANSLATE_NOOP("FullscreenUI", "Spectator Mode");
