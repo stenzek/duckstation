@@ -1013,6 +1013,19 @@ std::pair<GPUThreadCommand*, void*> GPUThread::BeginASyncBufferCall(AsyncBufferC
   return std::make_pair(static_cast<GPUThreadCommand*>(cmd), buffer);
 }
 
+void GPUThread::EndASyncBufferCall(GPUThreadCommand* cmd)
+{
+  if (!s_state.use_gpu_thread) [[unlikely]]
+  {
+    GPUThreadAsyncCallCommand* const acmd = static_cast<GPUThreadAsyncCallCommand*>(cmd);
+    acmd->func();
+    acmd->~GPUThreadAsyncCallCommand();
+    return;
+  }
+
+  PushCommand(cmd);
+}
+
 void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_changed)
 {
   if (device_settings_changed)

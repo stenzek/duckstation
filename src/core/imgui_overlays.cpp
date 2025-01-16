@@ -729,7 +729,7 @@ void ImGuiManager::UpdateInputOverlay()
     }
   }
 
-  GPUThread::PushCommand(cmd);
+  GPUThread::EndASyncBufferCall(cmd);
 }
 
 void ImGuiManager::UpdateInputOverlay(void* buffer)

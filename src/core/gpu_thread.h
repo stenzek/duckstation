@@ -73,6 +73,7 @@ bool IsUsingThread();
 void RunOnThread(AsyncCallType func);
 void RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake);
 std::pair<GPUThreadCommand*, void*> BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size);
+void EndASyncBufferCall(GPUThreadCommand* cmd);
 void SetVSync(GPUVSyncMode mode, bool allow_present_throttle);
 
 // Should only be called on the GPU thread.
