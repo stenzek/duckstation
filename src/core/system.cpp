@@ -2186,7 +2186,7 @@ bool System::GetFramePresentationParameters(GPUBackendFramePresentationParameter
     ((is_duplicate_frame || (!s_state.optimal_frame_pacing && current_time > s_state.next_frame_time &&
                              s_state.skipped_frame_count < MAX_SKIPPED_TIMEOUT_FRAME_COUNT)) &&
      !s_state.syncing_to_host_with_vsync && !IsExecutionInterrupted());
-  const bool should_allow_present_skip = !s_state.syncing_to_host_with_vsync && !s_state.optimal_frame_pacing;
+  const bool should_allow_present_skip = IsRunningAtNonStandardSpeed();
   frame->update_performance_counters = !is_duplicate_frame;
   frame->present_frame = !skip_this_frame;
   frame->allow_present_skip = should_allow_present_skip;
