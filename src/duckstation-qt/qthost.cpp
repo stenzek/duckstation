@@ -77,6 +77,9 @@ LOG_CHANNEL(Host);
 static constexpr u32 SETTINGS_VERSION = 3;
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
 
+/// Use two async worker threads, should be enough for most tasks.
+static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
+
 /// Interval at which the controllers are polled when the system is not active.
 static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL = 100;
 
@@ -1844,7 +1847,7 @@ void EmuThread::run()
   // input source setup must happen on emu thread
   {
     Error startup_error;
-    if (!System::CPUThreadInitialize(&startup_error))
+    if (!System::CPUThreadInitialize(&startup_error, NUM_ASYNC_WORKER_THREADS))
     {
       moveToThread(m_ui_thread);
       Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());

@@ -60,7 +60,7 @@ bool ProcessStartup(Error* error);
 void ProcessShutdown();
 
 /// Called on CPU thread initialization.
-bool CPUThreadInitialize(Error* error);
+bool CPUThreadInitialize(Error* error, u32 async_worker_thread_count);
 
 /// Called on CPU thread shutdown.
 void CPUThreadShutdown();

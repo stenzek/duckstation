@@ -115,8 +115,6 @@ SystemBootParameters::~SystemBootParameters() = default;
 
 namespace System {
 
-static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
-
 static constexpr float PRE_FRAME_SLEEP_UPDATE_INTERVAL = 1.0f;
 static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
 static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAME_COUNT = 2; // 20fps minimum
@@ -497,7 +495,7 @@ void System::ProcessShutdown()
   CPU::CodeCache::ProcessShutdown();
 }
 
-bool System::CPUThreadInitialize(Error* error)
+bool System::CPUThreadInitialize(Error* error, u32 async_worker_thread_count)
 {
 #ifdef _WIN32
   // On Win32, we have a bunch of things which use COM (e.g. SDL, Cubeb, etc).
@@ -516,7 +514,7 @@ bool System::CPUThreadInitialize(Error* error)
 
   LogStartupInformation();
 
-  s_state.async_task_queue.SetWorkerCount(NUM_ASYNC_WORKER_THREADS);
+  s_state.async_task_queue.SetWorkerCount(async_worker_thread_count);
 
   GPUThread::Internal::ProcessStartup();
 

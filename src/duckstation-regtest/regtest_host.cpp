@@ -813,7 +813,8 @@ int main(int argc, char* argv[])
   if (!RegTestHost::SetNewDataRoot(autoboot->filename))
     return EXIT_FAILURE;
 
-  if (!System::CPUThreadInitialize(&startup_error))
+  // Only one async worker.
+  if (!System::CPUThreadInitialize(&startup_error, 1))
   {
     ERROR_LOG("CPUThreadInitialize() failed: {}", startup_error.GetDescription());
     return EXIT_FAILURE;
