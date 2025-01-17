@@ -5,6 +5,34 @@
 
 #include <cmath>
 
+GSVector4i GSVector4i::rfit(const GSVector4i& fit_rect, const GSVector2i& image_size)
+{
+  const GSVector2 ffit_size = GSVector2(fit_rect.rsize());
+  const GSVector2 fimage_size = GSVector2(image_size);
+  const float fit_ar = ffit_size.x / ffit_size.y;
+  const float image_ar = fimage_size.x / fimage_size.y;
+
+  GSVector4i ret;
+  if (fit_ar > image_ar)
+  {
+    // center horizontally
+    const float width = ffit_size.y * image_ar;
+    const float offset = (ffit_size.x - width) / 2.0f;
+    const float height = ffit_size.y;
+    ret = GSVector4i(GSVector4(offset, 0.0f, offset + width, height));
+  }
+  else
+  {
+    // center vertically
+    const float height = ffit_size.x / image_ar;
+    const float offset = (ffit_size.y - height) / 2.0f;
+    const float width = ffit_size.x;
+    ret = GSVector4i(GSVector4(0.0f, offset, width, offset + height));
+  }
+
+  return ret;
+}
+
 GSMatrix2x2::GSMatrix2x2(float e00, float e01, float e10, float e11)
 {
   E[0][0] = e00;

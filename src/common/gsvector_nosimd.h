@@ -1565,7 +1565,6 @@ public:
     return ret;
   }
 
-  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const GSVector2i& v)
   {
     return loadh<true>(&v);
@@ -1667,6 +1666,8 @@ public:
   }
 
   ALWAYS_INLINE static GSVector4i xyxy(const GSVector2i& xyzw) { return GSVector4i(xyzw.x, xyzw.y, xyzw.x, xyzw.y); }
+
+  static GSVector4i rfit(const GSVector4i& fit_rect, const GSVector2i& image_size);
 
   ALWAYS_INLINE GSVector2i xy() const { return GSVector2i(x, y); }
   ALWAYS_INLINE GSVector2i zw() const { return GSVector2i(z, w); }

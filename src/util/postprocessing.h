@@ -107,7 +107,7 @@ void UnsetStageOption(SettingsInterface& si, const char* section, u32 index, con
 void ClearStages(SettingsInterface& si, const char* section);
 } // namespace Config
 
-class Chain
+class Chain final
 {
 public:
   Chain(const char* section);
@@ -129,7 +129,6 @@ public:
   void LoadStages();
   void ClearStages();
   void DestroyTextures();
-  void DestroyPipelines();
 
   /// Temporarily toggles post-processing on/off.
   void Toggle();
@@ -156,7 +155,6 @@ private:
   std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
   std::unique_ptr<GPUTexture> m_input_texture;
   std::unique_ptr<GPUTexture> m_output_texture;
-  std::unique_ptr<GPUPipeline> m_rotated_copy_pipeline;
 };
 
 // [display_name, filename]

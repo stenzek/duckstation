@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "ui_postprocessingchainconfigwidget.h"
+#include "ui_postprocessingoverlayconfigwidget.h"
 
 #include "util/postprocessing.h"
 
@@ -13,7 +14,7 @@
 class SettingsWindow;
 class PostProcessingShaderConfigWidget;
 
-class PostProcessingSettingsWidget : public QTabWidget
+class PostProcessingSettingsWidget final : public QTabWidget
 {
   Q_OBJECT
 
@@ -61,7 +62,7 @@ private:
   PostProcessingShaderConfigWidget* m_shader_config = nullptr;
 };
 
-class PostProcessingShaderConfigWidget : public QWidget
+class PostProcessingShaderConfigWidget final : public QWidget
 {
   Q_OBJECT
 
@@ -73,7 +74,7 @@ public:
 private Q_SLOTS:
   void onResetDefaultsClicked();
 
-protected:
+private:
   void createUi();
   void updateConfigForOption(const PostProcessing::ShaderOption& option);
 
@@ -85,4 +86,21 @@ protected:
   const char* m_section;
   u32 m_stage_index;
   std::vector<PostProcessing::ShaderOption> m_options;
+};
+
+class PostProcessingOverlayConfigWidget final : public QWidget
+{
+  Q_OBJECT
+
+public:
+  PostProcessingOverlayConfigWidget(SettingsWindow* dialog, QWidget* parent);
+  ~PostProcessingOverlayConfigWidget();
+
+private Q_SLOTS:
+  void onOverlayNameCurrentIndexChanged(int index);
+  void onImagePathBrowseClicked();
+
+private:
+  Ui::PostProcessingOverlayConfigWidget m_ui;
+  SettingsWindow* m_dialog;
 };

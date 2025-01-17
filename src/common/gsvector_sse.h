@@ -1745,7 +1745,6 @@ public:
     return GSVector4i(_mm_castps_si128(_mm_loadh_pi(_mm_setzero_ps(), static_cast<const __m64*>(p))));
   }
 
-  template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const GSVector2i& v)
   {
     return GSVector4i(_mm_unpacklo_epi64(_mm_setzero_si128(), v.m));
@@ -1841,6 +1840,8 @@ public:
   {
     return GSVector4i(_mm_unpacklo_epi64(xy.m, zw.m));
   }
+
+  static GSVector4i rfit(const GSVector4i& fit_rect, const GSVector2i& image_size);
 
   ALWAYS_INLINE GSVector2i xy() const { return GSVector2i(m); }
 

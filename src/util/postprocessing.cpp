@@ -577,45 +577,6 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
 
   Error error;
 
-  if (!IsInternalChain() && (!m_rotated_copy_pipeline || m_target_format != target_format))
-  {
-    const RenderAPI rapi = g_gpu_device->GetRenderAPI();
-    const ShaderGen shadergen(rapi, ShaderGen::GetShaderLanguageForAPI(rapi), false, false);
-    const std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                                      shadergen.GenerateRotateVertexShader(), &error);
-    const std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                                      shadergen.GenerateRotateFragmentShader(), &error);
-    if (!vso || !fso)
-    {
-      ERROR_LOG("Failed to compile post-processing rotate shaders: {}", error.GetDescription());
-      return false;
-    }
-    GL_OBJECT_NAME(vso, "Post-processing rotate blit VS");
-    GL_OBJECT_NAME(vso, "Post-processing rotate blit FS");
-
-    const GPUPipeline::GraphicsConfig config = {.layout = GPUPipeline::Layout::SingleTextureAndPushConstants,
-                                                .primitive = GPUPipeline::Primitive::Triangles,
-                                                .input_layout = {},
-                                                .rasterization = GPUPipeline::RasterizationState::GetNoCullState(),
-                                                .depth = GPUPipeline::DepthState::GetNoTestsState(),
-                                                .blend = GPUPipeline::BlendState::GetNoBlendingState(),
-                                                .vertex_shader = vso.get(),
-                                                .geometry_shader = nullptr,
-                                                .fragment_shader = fso.get(),
-                                                .color_formats = {target_format},
-                                                .depth_format = GPUTexture::Format::Unknown,
-                                                .samples = 1,
-                                                .per_sample_shading = false,
-                                                .render_pass_flags = GPUPipeline::NoRenderPassFlags};
-    m_rotated_copy_pipeline = g_gpu_device->CreatePipeline(config, &error);
-    if (!m_rotated_copy_pipeline)
-    {
-      ERROR_LOG("Failed to compile post-processing rotate pipeline: {}", error.GetDescription());
-      return false;
-    }
-    GL_OBJECT_NAME(m_rotated_copy_pipeline, "Post-processing rotate pipeline");
-  }
-
   // In case any allocs fail.
   DestroyTextures();
 
@@ -677,11 +638,6 @@ void PostProcessing::Chain::DestroyTextures()
   g_gpu_device->RecycleTexture(std::move(m_input_texture));
 }
 
-void PostProcessing::Chain::DestroyPipelines()
-{
-  m_rotated_copy_pipeline.reset();
-}
-
 GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth,
                                                       GPUTexture* final_target, GSVector4i final_rect, s32 orig_width,
                                                       s32 orig_height, s32 native_width, s32 native_height)
@@ -693,25 +649,14 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
   if (input_depth)
     input_depth->MakeReadyForSampling();
 
-  GPUTexture* draw_final_target = final_target;
-  const WindowInfo::PreRotation prerotation =
-    final_target ? WindowInfo::PreRotation::Identity : g_gpu_device->GetMainSwapChain()->GetPreRotation();
-  if (prerotation != WindowInfo::PreRotation::Identity)
-  {
-    // We have prerotation and post processing. This is messy, since we need to run the shader on the "real" size,
-    // then copy it across to the rotated image. We can use the input or output texture from the chain, whichever
-    // was not the last that was drawn to.
-    draw_final_target = GetTextureUnusedAtEndOfChain();
-  }
-
   const float time = static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_start_time));
   for (const std::unique_ptr<Shader>& stage : m_stages)
   {
     const bool is_final = (stage.get() == m_stages.back().get());
 
     if (const GPUDevice::PresentResult pres =
-          stage->Apply(input_color, input_depth, is_final ? draw_final_target : output, final_rect, orig_width,
-                       orig_height, native_width, native_height, m_target_width, m_target_height, time);
+          stage->Apply(input_color, input_depth, is_final ? final_target : output, final_rect, orig_width, orig_height,
+                       native_width, native_height, m_target_width, m_target_height, time);
         pres != GPUDevice::PresentResult::OK)
     {
       return pres;
@@ -723,30 +668,6 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
       input_color = output;
       output = (output == m_output_texture.get()) ? m_input_texture.get() : m_output_texture.get();
     }
-  }
-
-  if (prerotation != WindowInfo::PreRotation::Identity)
-  {
-    draw_final_target->MakeReadyForSampling();
-
-    // Rotate and blit to final swap chain.
-    GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
-    if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(swap_chain);
-        pres != GPUDevice::PresentResult::OK)
-    {
-      return pres;
-    }
-
-    GL_PUSH_FMT("Apply swap chain pre-rotation");
-
-    const GSMatrix2x2 rotmat = GSMatrix2x2::Rotation(WindowInfo::GetZRotationForPreRotation(prerotation));
-    g_gpu_device->SetPipeline(m_rotated_copy_pipeline.get());
-    g_gpu_device->PushUniformBuffer(&rotmat, sizeof(rotmat));
-    g_gpu_device->SetTextureSampler(0, draw_final_target, g_gpu_device->GetNearestSampler());
-    g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
-    g_gpu_device->Draw(3, 0);
-
-    GL_POP();
   }
 
   return GPUDevice::PresentResult::OK;
@@ -771,7 +692,6 @@ void PostProcessing::Shutdown()
   s_samplers.clear();
   ForAllChains([](Chain& chain) {
     chain.ClearStages();
-    chain.DestroyPipelines();
     chain.DestroyTextures();
   });
 }
@@ -788,7 +708,6 @@ bool PostProcessing::ReloadShaders()
 
   ForAllChains([](Chain& chain) {
     chain.ClearStages();
-    chain.DestroyPipelines();
     chain.DestroyTextures();
     chain.LoadStages();
   });

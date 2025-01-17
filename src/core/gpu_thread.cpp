@@ -973,7 +973,8 @@ void GPUThread::UpdateSettingsOnThread(const GPUSettings& old_settings)
     PostProcessing::UpdateSettings();
 
     Error error;
-    if (!s_state.gpu_presenter->UpdateSettings(old_settings, &error) ||
+    if (!s_state.gpu_presenter->UpdatePostProcessingSettings(&error) ||
+        !s_state.gpu_presenter->UpdateSettings(old_settings, &error) ||
         !s_state.gpu_backend->UpdateSettings(old_settings, &error)) [[unlikely]]
     {
       ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
@@ -1071,6 +1072,14 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
       if (s_state.gpu_backend)
       {
         PostProcessing::UpdateSettings();
+
+        Error error;
+        if (!s_state.gpu_presenter->UpdatePostProcessingSettings(&error))
+        {
+          ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
+          return;
+        }
+
         if (ImGuiManager::UpdateDebugWindowConfig() || (PostProcessing::DisplayChain.IsActive() && !IsSystemPaused()))
           PresentFrameAndRestoreContext();
       }

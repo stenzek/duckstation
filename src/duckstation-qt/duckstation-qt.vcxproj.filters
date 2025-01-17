@@ -295,6 +295,7 @@
     <QtUi Include="gamecheatcodechoiceeditordialog.ui" />
     <QtUi Include="memorycardrenamefiledialog.ui" />
     <QtUi Include="isobrowserwindow.ui" />
+    <QtUi Include="postprocessingoverlayconfigwidget.ui" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="duckstation-qt.rc" />

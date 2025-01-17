@@ -8,6 +8,7 @@
 #include "controller.h"
 #include "game_list.h"
 #include "gpu.h"
+#include "gpu_presenter.h"
 #include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -355,14 +356,12 @@ static void DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, c
                                     float step_value, float multiplier, const char* format = "%f", bool enabled = true,
                                     float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                     ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
-#if 0
 static void DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                const char* left_key, int default_left, const char* top_key, int default_top,
                                const char* right_key, int default_right, const char* bottom_key, int default_bottom,
                                int min_value, int max_value, const char* format = "%d", bool enabled = true,
-                               float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImFont* font = g_large_font,
-                               ImFont* summary_font = g_medium_font);
-#endif
+                               float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
+                               ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
 static void DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                   const char* key, const char* default_value, std::span<const char* const> options,
                                   std::span<const char* const> option_values, bool enabled = true,
@@ -2763,7 +2762,6 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
   ImGui::PopFont();
 }
 
-#if 0
 void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                       const char* section, const char* left_key, int default_left, const char* top_key,
                                       int default_top, const char* right_key, int default_right, const char* bottom_key,
@@ -2784,7 +2782,8 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
     left_value.has_value() ? TinyString::from_sprintf(format, left_value.value()) : TinyString(FSUI_VSTR("Default")),
     top_value.has_value() ? TinyString::from_sprintf(format, top_value.value()) : TinyString(FSUI_VSTR("Default")),
     right_value.has_value() ? TinyString::from_sprintf(format, right_value.value()) : TinyString(FSUI_VSTR("Default")),
-    bottom_value.has_value() ? TinyString::from_sprintf(format, bottom_value.value()) : TinyString(FSUI_VSTR("Default")));
+    bottom_value.has_value() ? TinyString::from_sprintf(format, bottom_value.value()) :
+                               TinyString(FSUI_VSTR("Default")));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
     ImGui::OpenPopup(title);
@@ -2792,7 +2791,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 370.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushFont(g_large_font);
+  ImGui::PushFont(font);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
                                                               ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
@@ -2868,7 +2867,8 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
     if (left_modified || top_modified || right_modified || bottom_modified)
       SetSettingsChanged(bsi);
 
-    if (MenuButtonWithoutSummary("OK", true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, g_large_font, ImVec2(0.5f, 0.0f)))
+    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
+                                 ImVec2(0.5f, 0.0f)))
     {
       ImGui::CloseCurrentPopup();
     }
@@ -2880,7 +2880,6 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
   ImGui::PopStyleVar(4);
   ImGui::PopFont();
 }
-#endif
 
 void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                          const char* section, const char* key, int default_value, int min_value,
@@ -5675,6 +5674,86 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     break;
     default:
       break;
+  }
+
+  MenuHeading(FSUI_CSTR("Border Overlay"));
+
+  {
+    const std::optional<TinyString> preset_name = bsi->GetOptionalTinyStringValue("BorderOverlay", "PresetName");
+    const bool is_null = !preset_name.has_value();
+    const bool is_none = (!is_null && preset_name->empty());
+    const bool is_custom = (!is_null && preset_name.value() == "Custom");
+    const char* visible_value =
+      is_null ? FSUI_CSTR("Use Global Setting") :
+                (is_none ? FSUI_CSTR("None") : (is_custom ? FSUI_CSTR("Custom") : preset_name->c_str()));
+    if (MenuButtonWithValue(
+          FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Selected Preset"),
+          FSUI_CSTR("Select from the list of preset borders, or manually specify a custom configuration."),
+          visible_value))
+    {
+      std::vector<std::string> preset_names = GPUPresenter::EnumerateBorderOverlayPresets();
+      ChoiceDialogOptions options;
+      options.reserve(preset_names.size() + 2 + BoolToUInt32(IsEditingGameSettings(bsi)));
+      if (IsEditingGameSettings(bsi))
+        options.emplace_back(FSUI_STR("Use Global Setting"), is_null);
+      options.emplace_back(FSUI_STR("None"), is_none);
+      options.emplace_back(FSUI_STR("Custom"), is_custom);
+      for (std::string& name : preset_names)
+      {
+        const bool is_selected = (preset_name.has_value() && preset_name.value() == name);
+        options.emplace_back(std::move(name), is_selected);
+      }
+
+      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Border Overlay"), false, std::move(options),
+                       [game_settings = IsEditingGameSettings(bsi)](s32 index, const std::string& title, bool) mutable {
+                         if (index < 0)
+                           return;
+
+                         auto lock = Host::GetSettingsLock();
+                         SettingsInterface* const bsi = GetEditingSettingsInterface(game_settings);
+                         const s32 offset = static_cast<s32>(BoolToUInt32(game_settings));
+                         if (game_settings && index == 0)
+                         {
+                           bsi->DeleteValue("BorderOverlay", "PresetName");
+                         }
+                         else
+                         {
+                           const char* new_value =
+                             (index == (offset + 0)) ? "" : ((index == (offset + 1)) ? "Custom" : title.c_str());
+                           bsi->SetStringValue("BorderOverlay", "PresetName", new_value);
+                         }
+                         SetSettingsChanged(bsi);
+                       });
+    }
+
+    if (is_custom)
+    {
+      if (MenuButton(FSUI_ICONSTR(ICON_FA_IMAGE, "Image Path"),
+                     GetEffectiveTinyStringSetting(bsi, "BorderOverlay", "ImagePath", "")))
+      {
+        OpenFileSelector(
+          FSUI_ICONSTR(ICON_FA_IMAGE, "Image Path"), false,
+          [game_settings = IsEditingGameSettings(bsi)](const std::string& path) {
+            if (path.empty())
+              return;
+
+            SettingsInterface* const bsi = GetEditingSettingsInterface(game_settings);
+            bsi->SetStringValue("BorderOverlay", "ImagePath", path.c_str());
+            SetSettingsChanged(bsi);
+          },
+          GetImageFilters());
+      }
+
+      DrawIntRectSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_STYLE, "Display Area"),
+                         FSUI_CSTR("Determines the area of the overlay image that the display will be drawn within."),
+                         "BorderOverlay", "DisplayStartX", 0, "DisplayStartY", 0, "DisplayEndX", 0, "DisplayEndY", 0, 0,
+                         65535, "%dpx");
+
+      DrawToggleSetting(
+        bsi, FSUI_ICONSTR(ICON_FA_BLENDER, "Destination Alpha Blending"),
+        FSUI_CSTR("If enabled, the display will be blended with the transparency of the overlay image."),
+        "BorderOverlay", "AlphaBlend", false);
+    }
   }
 
   EndMenuButtons();
@@ -8590,6 +8669,7 @@ TRANSLATE_NOOP("FullscreenUI", "Back");
 TRANSLATE_NOOP("FullscreenUI", "Back To Pause Menu");
 TRANSLATE_NOOP("FullscreenUI", "Backend Settings");
 TRANSLATE_NOOP("FullscreenUI", "Behavior");
+TRANSLATE_NOOP("FullscreenUI", "Border Overlay");
 TRANSLATE_NOOP("FullscreenUI", "Borderless Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Buffer Size");
 TRANSLATE_NOOP("FullscreenUI", "Buttons");
@@ -8650,6 +8730,7 @@ TRANSLATE_NOOP("FullscreenUI", "Create Save State Backups");
 TRANSLATE_NOOP("FullscreenUI", "Crop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
 TRANSLATE_NOOP("FullscreenUI", "Current Game");
+TRANSLATE_NOOP("FullscreenUI", "Custom");
 TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Debugging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Default");
@@ -8663,6 +8744,7 @@ TRANSLATE_NOOP("FullscreenUI", "Delete State");
 TRANSLATE_NOOP("FullscreenUI", "Depth Clear Threshold");
 TRANSLATE_NOOP("FullscreenUI", "Depth Test Transparent Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Desktop Mode");
+TRANSLATE_NOOP("FullscreenUI", "Destination Alpha Blending");
 TRANSLATE_NOOP("FullscreenUI", "Details");
 TRANSLATE_NOOP("FullscreenUI", "Details unavailable for game not scanned in game list.");
 TRANSLATE_NOOP("FullscreenUI", "Determines how large the on-screen messages and monitor are.");
@@ -8675,6 +8757,7 @@ TRANSLATE_NOOP("FullscreenUI", "Determines how the emulated console's output is 
 TRANSLATE_NOOP("FullscreenUI", "Determines quality of audio when not running at 100% speed.");
 TRANSLATE_NOOP("FullscreenUI", "Determines that field that the game list will be sorted by.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the amount of audio buffered before being pulled by the host API.");
+TRANSLATE_NOOP("FullscreenUI", "Determines the area of the overlay image that the display will be drawn within.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the emulated hardware type.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the format that screenshots will be saved/compressed with.");
 TRANSLATE_NOOP("FullscreenUI", "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire).");
@@ -8692,6 +8775,7 @@ TRANSLATE_NOOP("FullscreenUI", "Disabled");
 TRANSLATE_NOOP("FullscreenUI", "Disables dithering and uses the full 8 bits per channel of color information.");
 TRANSLATE_NOOP("FullscreenUI", "Disc {} | {}");
 TRANSLATE_NOOP("FullscreenUI", "Discord Server");
+TRANSLATE_NOOP("FullscreenUI", "Display Area");
 TRANSLATE_NOOP("FullscreenUI", "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
@@ -8815,7 +8899,9 @@ TRANSLATE_NOOP("FullscreenUI", "Hotkey Settings");
 TRANSLATE_NOOP("FullscreenUI", "How many saves will be kept for rewinding. Higher values have greater memory requirements.");
 TRANSLATE_NOOP("FullscreenUI", "How often a rewind state will be created. Higher frequencies have greater system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game directories.");
+TRANSLATE_NOOP("FullscreenUI", "If enabled, the display will be blended with the transparency of the overlay image.");
 TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
+TRANSLATE_NOOP("FullscreenUI", "Image Path");
 TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.");
 TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
 TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
@@ -9030,6 +9116,8 @@ TRANSLATE_NOOP("FullscreenUI", "Select Disc Image");
 TRANSLATE_NOOP("FullscreenUI", "Select Game");
 TRANSLATE_NOOP("FullscreenUI", "Select Macro {} Binds");
 TRANSLATE_NOOP("FullscreenUI", "Select State");
+TRANSLATE_NOOP("FullscreenUI", "Select from the list of preset borders, or manually specify a custom configuration.");
+TRANSLATE_NOOP("FullscreenUI", "Selected Preset");
 TRANSLATE_NOOP("FullscreenUI", "Selects the GPU to use for rendering.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the percentage of the normal clock speed the emulated hardware will run at.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the quality at which screenshots will be compressed.");

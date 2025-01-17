@@ -205,6 +205,9 @@ struct GPUSettings
     bool operator!=(const TextureReplacementSettings& rhs) const;
   } texture_replacements;
 
+  std::string overlay_image_path;
+  s16 mingus2[4];
+
   float GetDisplayAspectRatioValue() const;
 
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
@@ -256,7 +259,7 @@ struct Settings : public GPUSettings
 {
   Settings();
 
-  u32 cpu_overclock_numerator = 1;
+  ALIGN_TO_CACHE_LINE u32 cpu_overclock_numerator = 1;
   u32 cpu_overclock_denominator = 1;
 
   TickCount dma_max_slice_ticks = DEFAULT_DMA_MAX_SLICE_TICKS;

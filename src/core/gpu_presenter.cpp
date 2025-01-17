@@ -29,6 +29,7 @@
 #include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/settings_interface.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
 #include "common/threading.h"
@@ -37,6 +38,8 @@
 #include <numbers>
 
 LOG_CHANNEL(GPU);
+
+#include "common/ryml_helpers.h"
 
 static constexpr GPUTexture::Format DISPLAY_INTERNAL_POSTFX_FORMAT = GPUTexture::Format::RGBA8;
 
@@ -50,6 +53,15 @@ GPUPresenter::~GPUPresenter()
 
 bool GPUPresenter::Initialize(Error* error)
 {
+  // we can't change the format after compiling shaders
+  m_present_format =
+    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
+  VERBOSE_LOG("Presentation format is {}", GPUTexture::GetFormatName(m_present_format));
+
+  // overlay has to come first, because it sets the alpha blending on the display pipeline
+  if (LoadOverlaySettings())
+    LoadOverlayTexture();
+
   if (!CompileDisplayPipelines(true, true, g_gpu_settings.display_24bit_chroma_smoothing, error))
     return false;
 
@@ -79,6 +91,22 @@ bool GPUPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
   return true;
 }
 
+bool GPUPresenter::UpdatePostProcessingSettings(Error* error)
+{
+  if (LoadOverlaySettings())
+  {
+    // something changed, need to recompile pipelines
+    if (LoadOverlayTexture() && m_border_overlay_alpha_blend &&
+        (!m_present_copy_blend_pipeline || !m_display_blend_pipeline) &&
+        !CompileDisplayPipelines(true, false, false, error))
+    {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error)
 {
   const GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
@@ -100,10 +128,14 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
     GPUBackend::SetScreenQuadInputLayout(plconfig);
 
     plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-    plconfig.SetTargetFormats(g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() :
-                                                                 GPUTexture::Format::RGBA8);
+    plconfig.SetTargetFormats(m_present_format);
 
-    std::string vs = shadergen.GenerateDisplayVertexShader();
+    std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
+                                                                shadergen.GenerateDisplayVertexShader(), error);
+    if (!vso)
+      return false;
+    GL_OBJECT_NAME(vso, "Display Vertex Shader");
+
     std::string fs;
     switch (g_gpu_settings.display_scaling)
     {
@@ -123,25 +155,59 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
         break;
     }
 
-    std::unique_ptr<GPUShader> vso =
-      g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs, error);
     std::unique_ptr<GPUShader> fso =
       g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), fs, error);
-    if (!vso || !fso)
+    if (!fso)
       return false;
-    GL_OBJECT_NAME(vso, "Display Vertex Shader");
     GL_OBJECT_NAME_FMT(fso, "Display Fragment Shader [{}]",
                        Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
+
     plconfig.vertex_shader = vso.get();
     plconfig.fragment_shader = fso.get();
     if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
     GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
                        Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
+
+    std::unique_ptr<GPUShader> rotate_copy_fso = g_gpu_device->CreateShader(
+      GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateCopyFragmentShader(false), error);
+    if (!rotate_copy_fso)
+      return false;
+    GL_OBJECT_NAME(rotate_copy_fso, "Display Rotate/Copy Fragment Shader");
+
+    plconfig.fragment_shader = rotate_copy_fso.get();
+    if (!(m_present_copy_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+      return false;
+    GL_OBJECT_NAME(m_present_copy_pipeline, "Display Rotate/Copy Pipeline");
+
+    // blended variants
+    if (m_border_overlay_texture && m_border_overlay_alpha_blend)
+    {
+      // destination blend the main present, not source
+      plconfig.blend.enable = true;
+      plconfig.blend.src_blend = GPUPipeline::BlendFunc::InvDstAlpha;
+      plconfig.blend.blend_op = GPUPipeline::BlendOp::Add;
+      plconfig.blend.dst_blend = GPUPipeline::BlendFunc::One;
+      plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::One;
+      plconfig.blend.alpha_blend_op = GPUPipeline::BlendOp::Add;
+      plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::Zero;
+
+      plconfig.fragment_shader = fso.get();
+      if (!(m_display_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+        return false;
+      GL_OBJECT_NAME_FMT(m_display_blend_pipeline, "Display Pipeline [Blended, {}]",
+                         Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
+
+      plconfig.fragment_shader = rotate_copy_fso.get();
+      if (!(m_present_copy_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+        return false;
+      GL_OBJECT_NAME(m_present_copy_blend_pipeline, "Display Rotate/Copy Pipeline [Blended]");
+    }
   }
 
   plconfig.input_layout = {};
   plconfig.primitive = GPUPipeline::Primitive::Triangles;
+  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
 
   if (deinterlace)
   {
@@ -304,18 +370,38 @@ void GPUPresenter::SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buff
 
 GPUDevice::PresentResult GPUPresenter::PresentDisplay()
 {
-  if (!g_gpu_device->HasMainSwapChain())
-    return GPUDevice::PresentResult::SkipPresent;
+  DebugAssert(g_gpu_device->HasMainSwapChain());
+
+  u32 display_area_width = g_gpu_device->GetMainSwapChain()->GetWidth();
+  u32 display_area_height = g_gpu_device->GetMainSwapChain()->GetHeight();
+  GSVector4i overlay_display_rect = GSVector4i::zero();
+  GSVector4i overlay_rect = GSVector4i::zero();
+  if (m_border_overlay_texture)
+  {
+    overlay_rect = GSVector4i::rfit(GSVector4i(0, 0, display_area_width, display_area_height),
+                                    m_border_overlay_texture->GetSizeVec());
+
+    const GSVector2 scale = GSVector2(overlay_rect.rsize()) / GSVector2(m_border_overlay_texture->GetSizeVec());
+    overlay_display_rect =
+      GSVector4i(GSVector4(m_border_overlay_display_rect) * GSVector4::xyxy(scale)).add32(overlay_rect.xyxy());
+    display_area_width = overlay_display_rect.width();
+    display_area_height = overlay_display_rect.height();
+  }
 
   GSVector4i display_rect;
   GSVector4i draw_rect;
-  CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(), g_gpu_device->GetMainSwapChain()->GetHeight(),
-                    !g_gpu_settings.gpu_show_vram, true, &display_rect, &draw_rect);
-  return RenderDisplay(nullptr, display_rect, draw_rect, !g_gpu_settings.gpu_show_vram);
+  CalculateDrawRect(display_area_width, display_area_height, !g_gpu_settings.gpu_show_vram, true, &display_rect,
+                    &draw_rect);
+
+  display_rect = display_rect.add32(overlay_display_rect.xyxy());
+  draw_rect = draw_rect.add32(overlay_display_rect.xyxy());
+
+  return RenderDisplay(nullptr, overlay_rect, display_rect, draw_rect, !g_gpu_settings.gpu_show_vram);
 }
 
-GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const GSVector4i display_rect,
-                                                     const GSVector4i draw_rect, bool postfx)
+GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const GSVector4i overlay_rect,
+                                                     const GSVector4i display_rect, const GSVector4i draw_rect,
+                                                     bool postfx)
 {
   GL_SCOPE_FMT("RenderDisplay: {}", draw_rect);
 
@@ -332,10 +418,6 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       PostProcessing::InternalChain.CheckTargets(DISPLAY_INTERNAL_POSTFX_FORMAT, display_texture_view_width,
                                                  display_texture_view_height))
   {
-    DebugAssert(display_texture_view_x == 0 && display_texture_view_y == 0 &&
-                static_cast<s32>(display_texture->GetWidth()) == display_texture_view_width &&
-                static_cast<s32>(display_texture->GetHeight()) == display_texture_view_height);
-
     // Now we can apply the post chain.
     GPUTexture* post_output_texture = PostProcessing::InternalChain.GetOutputTexture();
     if (PostProcessing::InternalChain.Apply(display_texture, m_display_depth_buffer, post_output_texture,
@@ -350,176 +432,270 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     }
   }
 
-  const GPUTexture::Format hdformat = target ? target->GetFormat() : g_gpu_device->GetMainSwapChain()->GetFormat();
-  const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetMainSwapChain()->GetWidth();
-  const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetMainSwapChain()->GetHeight();
-  const bool really_postfx = (postfx && PostProcessing::DisplayChain.IsActive() && g_gpu_device->HasMainSwapChain() &&
-                              hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
-                              PostProcessing::DisplayChain.CheckTargets(hdformat, target_width, target_height));
-  const u32 real_target_width =
-    (target || really_postfx) ? target_width : g_gpu_device->GetMainSwapChain()->GetPostRotatedWidth();
-  const u32 real_target_height =
-    (target || really_postfx) ? target_height : g_gpu_device->GetMainSwapChain()->GetPostRotatedHeight();
-  GSVector4i real_draw_rect =
-    (target || really_postfx) ? draw_rect : g_gpu_device->GetMainSwapChain()->PreRotateClipRect(draw_rect);
-  if (really_postfx)
-  {
-    g_gpu_device->ClearRenderTarget(PostProcessing::DisplayChain.GetInputTexture(), GPUDevice::DEFAULT_CLEAR_COLOR);
-    g_gpu_device->SetRenderTarget(PostProcessing::DisplayChain.GetInputTexture());
-  }
-  else
-  {
+  // There's a bunch of scenarios where we need to use intermediate buffers.
+  // If we have post-processing and overlays enabled, postfx needs to happen on an intermediate buffer first.
+  // If pre-rotation is enabled with post-processing, we need to draw to an intermediate buffer, and apply the
+  // rotation at the end.
+  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+  const WindowInfo::PreRotation prerotation = target ? WindowInfo::PreRotation::Identity : swap_chain->GetPreRotation();
+  const bool have_overlay = static_cast<bool>(m_border_overlay_texture);
+  const bool have_prerotation = (prerotation != WindowInfo::PreRotation::Identity);
+  const GSVector2i target_size = target ? target->GetSizeVec() : swap_chain->GetSizeVec();
+  GL_INS(have_overlay ? "Overlay is ENABLED" : "Overlay is disabled");
+  GL_INS_FMT("Prerotation: {}", static_cast<u32>(prerotation));
+  GL_INS_FMT("Final target size: {}x{}", target_size.x, target_size.y);
+
+  // Postfx active?
+  const GSVector2i postfx_size = have_overlay ? display_rect.rsize() : target_size;
+  const bool really_postfx =
+    (postfx && PostProcessing::DisplayChain.IsActive() &&
+     PostProcessing::DisplayChain.CheckTargets(m_present_format, postfx_size.x, postfx_size.y));
+  GL_INS(really_postfx ? "Post-processing is ENABLED" : "Post-processing is disabled");
+  GL_INS_FMT("Post-processing render target size: {}x{}", postfx_size.x, postfx_size.y);
+
+  // Helper to bind swap chain/final target.
+  const auto bind_final_target = [target, swap_chain](bool clear) {
     if (target)
     {
+      if (clear)
+        g_gpu_device->ClearRenderTarget(target, GPUDevice::DEFAULT_CLEAR_COLOR);
+      else
+        g_gpu_device->InvalidateRenderTarget(target);
       g_gpu_device->SetRenderTarget(target);
+      return GPUDevice::PresentResult::OK;
     }
     else
     {
-      const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain());
-      if (pres != GPUDevice::PresentResult::OK)
-        return pres;
+      return g_gpu_device->BeginPresent(swap_chain);
     }
-  }
+  };
 
-  if (display_texture)
-  {
-    bool texture_filter_linear = false;
-
-    struct alignas(16) Uniforms
-    {
-      float src_size[4];
-      float clamp_rect[4];
-      float params[4];
-    } uniforms;
-    std::memset(uniforms.params, 0, sizeof(uniforms.params));
-
-    switch (g_gpu_settings.display_scaling)
-    {
-      case DisplayScalingMode::Nearest:
-      case DisplayScalingMode::NearestInteger:
-        break;
-
-      case DisplayScalingMode::BilinearSmooth:
-      case DisplayScalingMode::BilinearInteger:
-        texture_filter_linear = true;
-        break;
-
-      case DisplayScalingMode::BilinearSharp:
-      {
-        texture_filter_linear = true;
-        uniforms.params[0] = std::max(
-          std::floor(static_cast<float>(draw_rect.width()) / static_cast<float>(m_display_texture_view_width)), 1.0f);
-        uniforms.params[1] = std::max(
-          std::floor(static_cast<float>(draw_rect.height()) / static_cast<float>(m_display_texture_view_height)), 1.0f);
-        uniforms.params[2] = 0.5f - 0.5f / uniforms.params[0];
-        uniforms.params[3] = 0.5f - 0.5f / uniforms.params[1];
-      }
-      break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-
-    g_gpu_device->SetPipeline(m_display_pipeline.get());
-    g_gpu_device->SetTextureSampler(
-      0, display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
-
-    // For bilinear, clamp to 0.5/SIZE-0.5 to avoid bleeding from the adjacent texels in VRAM. This is because
-    // 1.0 in UV space is not the bottom-right texel, but a mix of the bottom-right and wrapped/next texel.
-    const GSVector2 display_texture_size = GSVector2(display_texture->GetSizeVec());
-    const GSVector4 display_texture_size4 = GSVector4::xyxy(display_texture_size);
-    const GSVector4 uv_rect = GSVector4(GSVector4i(display_texture_view_x, display_texture_view_y,
-                                                   display_texture_view_x + display_texture_view_width,
-                                                   display_texture_view_y + display_texture_view_height)) /
-                              display_texture_size4;
-    GSVector4::store<true>(uniforms.clamp_rect,
-                           GSVector4(static_cast<float>(display_texture_view_x) + 0.5f,
-                                     static_cast<float>(display_texture_view_y) + 0.5f,
-                                     static_cast<float>(display_texture_view_x + display_texture_view_width) - 0.5f,
-                                     static_cast<float>(display_texture_view_y + display_texture_view_height) - 0.5f) /
-                             display_texture_size4);
-    GSVector4::store<true>(uniforms.src_size,
-                           GSVector4::xyxy(display_texture_size, GSVector2::cxpr(1.0f) / display_texture_size));
-
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-
-    g_gpu_device->SetViewport(0, 0, real_target_width, real_target_height);
-    g_gpu_device->SetScissor(g_gpu_device->UsesLowerLeftOrigin() ?
-                               GPUDevice::FlipToLowerLeft(real_draw_rect, real_target_height) :
-                               real_draw_rect);
-
-    GPUBackend::ScreenVertex* vertices;
-    u32 space;
-    u32 base_vertex;
-    g_gpu_device->MapVertexBuffer(sizeof(GPUBackend::ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space,
-                                  &base_vertex);
-
-    const WindowInfo::PreRotation surface_prerotation = (target || really_postfx) ?
-                                                          WindowInfo::PreRotation::Identity :
-                                                          g_gpu_device->GetMainSwapChain()->GetPreRotation();
-
-    const DisplayRotation uv_rotation = static_cast<DisplayRotation>(
-      (static_cast<u32>(g_gpu_settings.display_rotation) + static_cast<u32>(surface_prerotation)) %
-      static_cast<u32>(DisplayRotation::Count));
-
-    const GSVector4 xy =
-      GPUBackend::GetScreenQuadClipSpaceCoordinates(real_draw_rect, GSVector2i(real_target_width, real_target_height));
-    switch (uv_rotation)
-    {
-      case DisplayRotation::Normal:
-        vertices[0].Set(xy.xy(), uv_rect.xy());
-        vertices[1].Set(xy.zyzw().xy(), uv_rect.zyzw().xy());
-        vertices[2].Set(xy.xwzw().xy(), uv_rect.xwzw().xy());
-        vertices[3].Set(xy.zw(), uv_rect.zw());
-        break;
-      case DisplayRotation::Rotate90:
-        vertices[0].Set(xy.xy(), uv_rect.xwzw().xy());
-        vertices[1].Set(xy.zyzw().xy(), uv_rect.xy());
-        vertices[2].Set(xy.xwzw().xy(), uv_rect.zw());
-        vertices[3].Set(xy.zw(), uv_rect.zyzw().xy());
-        break;
-      case DisplayRotation::Rotate180:
-        vertices[0].Set(xy.xy(), uv_rect.xwzw().xy());
-        vertices[1].Set(xy.zyzw().xy(), uv_rect.zw());
-        vertices[2].Set(xy.xwzw().xy(), uv_rect.xy());
-        vertices[3].Set(xy.zw(), uv_rect.zyzw().xy());
-        break;
-      case DisplayRotation::Rotate270:
-        vertices[0].Set(xy.xy(), uv_rect.zyzw().xy());
-        vertices[1].Set(xy.zyzw().xy(), uv_rect.zw());
-        vertices[2].Set(xy.xwzw().xy(), uv_rect.xy());
-        vertices[3].Set(xy.zw(), uv_rect.xwzw().xy());
-        break;
-
-        DefaultCaseIsUnreachable();
-    }
-
-    g_gpu_device->UnmapVertexBuffer(sizeof(GPUBackend::ScreenVertex), 4);
-    g_gpu_device->Draw(4, base_vertex);
-  }
-
+  // If postfx is enabled, we need to draw to an intermediate buffer first.
   if (really_postfx)
   {
-    DebugAssert(!g_gpu_settings.gpu_show_vram);
+    // Remove draw offset if we're using an overlay.
+    const GSVector4i real_draw_rect = have_overlay ? draw_rect.sub32(display_rect.xyxy()) : draw_rect;
 
-    // "original size" in postfx includes padding.
-    const float upscale_x =
-      m_display_texture ? static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width) :
-                          1.0f;
-    const float upscale_y = m_display_texture ? static_cast<float>(m_display_texture_view_height) /
-                                                  static_cast<float>(m_display_vram_height) :
-                                                1.0f;
-    const s32 orig_width = static_cast<s32>(std::ceil(static_cast<float>(m_display_width) * upscale_x));
-    const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_display_height) * upscale_y));
+    // Display is always drawn to the postfx input.
+    GPUTexture* const postfx_input = PostProcessing::DisplayChain.GetInputTexture();
+    g_gpu_device->ClearRenderTarget(postfx_input, GPUDevice::DEFAULT_CLEAR_COLOR);
+    g_gpu_device->SetRenderTarget(postfx_input);
+    if (display_texture)
+    {
+      DrawDisplay(postfx_size, display_texture, display_texture_view_x, display_texture_view_y,
+                  display_texture_view_width, display_texture_view_height, real_draw_rect, false,
+                  g_gpu_settings.display_rotation, WindowInfo::PreRotation::Identity);
+    }
+    postfx_input->MakeReadyForSampling();
 
-    return PostProcessing::DisplayChain.Apply(PostProcessing::DisplayChain.GetInputTexture(), nullptr, target,
-                                              display_rect, orig_width, orig_height, m_display_width, m_display_height);
+    // Apply postprocessing to an intermediate texture if we're prerotating or have an overlay.
+    if (have_prerotation || have_overlay)
+    {
+      GPUTexture* const postfx_output = PostProcessing::DisplayChain.GetTextureUnusedAtEndOfChain();
+      const GSVector4i real_display_rect = have_overlay ? display_rect.sub32(display_rect.xyxy()) : display_rect;
+      ApplyDisplayPostProcess(postfx_output, postfx_input, real_display_rect);
+      postfx_output->MakeReadyForSampling();
+
+      // Start draw to final buffer.
+      if (const GPUDevice::PresentResult pres = bind_final_target(have_overlay); pres != GPUDevice::PresentResult::OK)
+        return pres;
+
+      // If we have an overlay, draw it, and then copy the postprocessed framebuffer in.
+      if (have_overlay)
+      {
+        DrawTextureCopy(target_size, overlay_rect, m_border_overlay_texture.get(), false, true, prerotation);
+        DrawTextureCopy(target_size, draw_rect, postfx_output, m_border_overlay_alpha_blend, false, prerotation);
+      }
+      else
+      {
+        // Ohterwise, just copy the framebuffer.
+        DrawTextureCopy(target_size, draw_rect, postfx_output, false, false, prerotation);
+      }
+
+      // All done
+      return GPUDevice::PresentResult::OK;
+    }
+    else
+    {
+      // Otherwise apply postprocessing directly to swap chain.
+      return ApplyDisplayPostProcess(target, postfx_input, display_rect);
+    }
   }
   else
   {
+    // The non-postprocessing cases are much simpler. We always optionally draw the overlay, then draw the display.
+    // The only tricky bit is we have to combine the display rotation and prerotation for the latter.
+    if (const GPUDevice::PresentResult pres = bind_final_target(true); pres != GPUDevice::PresentResult::OK)
+      return pres;
+
+    if (have_overlay)
+      DrawTextureCopy(target_size, overlay_rect, m_border_overlay_texture.get(), false, true, prerotation);
+
+    if (display_texture)
+    {
+      DrawDisplay(target_size, display_texture, display_texture_view_x, display_texture_view_y,
+                  display_texture_view_width, display_texture_view_height, display_rect, m_border_overlay_alpha_blend,
+                  g_gpu_settings.display_rotation, prerotation);
+    }
+
     return GPUDevice::PresentResult::OK;
   }
+}
+
+void GPUPresenter::DrawDisplay(const GSVector2i target_size, GPUTexture* display_texture, s32 display_texture_view_x,
+                               s32 display_texture_view_y, s32 display_texture_view_width,
+                               s32 display_texture_view_height, const GSVector4i display_rect, bool dst_alpha_blend,
+                               DisplayRotation rotation, WindowInfo::PreRotation prerotation)
+{
+  bool texture_filter_linear = false;
+
+  struct alignas(16) Uniforms
+  {
+    float src_size[4];
+    float clamp_rect[4];
+    float params[4];
+  } uniforms;
+  std::memset(uniforms.params, 0, sizeof(uniforms.params));
+
+  switch (g_gpu_settings.display_scaling)
+  {
+    case DisplayScalingMode::Nearest:
+    case DisplayScalingMode::NearestInteger:
+      break;
+
+    case DisplayScalingMode::BilinearSmooth:
+    case DisplayScalingMode::BilinearInteger:
+      texture_filter_linear = true;
+      break;
+
+    case DisplayScalingMode::BilinearSharp:
+    {
+      texture_filter_linear = true;
+      uniforms.params[0] = std::max(
+        std::floor(static_cast<float>(display_rect.width()) / static_cast<float>(m_display_texture_view_width)), 1.0f);
+      uniforms.params[1] = std::max(
+        std::floor(static_cast<float>(display_rect.height()) / static_cast<float>(m_display_texture_view_height)),
+        1.0f);
+      uniforms.params[2] = 0.5f - 0.5f / uniforms.params[0];
+      uniforms.params[3] = 0.5f - 0.5f / uniforms.params[1];
+    }
+    break;
+
+    default:
+      UnreachableCode();
+      break;
+  }
+
+  g_gpu_device->SetPipeline(dst_alpha_blend ? m_display_blend_pipeline.get() : m_display_pipeline.get());
+  g_gpu_device->SetTextureSampler(
+    0, display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
+
+  // For bilinear, clamp to 0.5/SIZE-0.5 to avoid bleeding from the adjacent texels in VRAM. This is because
+  // 1.0 in UV space is not the bottom-right texel, but a mix of the bottom-right and wrapped/next texel.
+  const GSVector2 display_texture_size = GSVector2(display_texture->GetSizeVec());
+  const GSVector4 display_texture_size4 = GSVector4::xyxy(display_texture_size);
+  const GSVector4 uv_rect = GSVector4(GSVector4i(display_texture_view_x, display_texture_view_y,
+                                                 display_texture_view_x + display_texture_view_width,
+                                                 display_texture_view_y + display_texture_view_height)) /
+                            display_texture_size4;
+  GSVector4::store<true>(uniforms.clamp_rect,
+                         GSVector4(static_cast<float>(display_texture_view_x) + 0.5f,
+                                   static_cast<float>(display_texture_view_y) + 0.5f,
+                                   static_cast<float>(display_texture_view_x + display_texture_view_width) - 0.5f,
+                                   static_cast<float>(display_texture_view_y + display_texture_view_height) - 0.5f) /
+                           display_texture_size4);
+  GSVector4::store<true>(uniforms.src_size,
+                         GSVector4::xyxy(display_texture_size, GSVector2::cxpr(1.0f) / display_texture_size));
+
+  g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
+  DrawScreenQuad(display_rect, uv_rect, target_size, rotation, prerotation);
+}
+
+void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
+                                  DisplayRotation rotation, WindowInfo::PreRotation prerotation)
+{
+  const GSVector4i real_rect = GPUSwapChain::PreRotateClipRect(prerotation, target_size, rect);
+  g_gpu_device->SetViewport(GSVector4i::loadh(target_size));
+  g_gpu_device->SetScissor(g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(real_rect, target_size.y) :
+                                                                 real_rect);
+
+  GPUBackend::ScreenVertex* vertices;
+  u32 space;
+  u32 base_vertex;
+  g_gpu_device->MapVertexBuffer(sizeof(GPUBackend::ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space,
+                                &base_vertex);
+
+  const GSVector4 xy = GPUBackend::GetScreenQuadClipSpaceCoordinates(real_rect, target_size);
+
+  // Combine display rotation and prerotation together, since the rectangle has already been adjusted.
+  const DisplayRotation effective_rotation = static_cast<DisplayRotation>(
+    (static_cast<u32>(rotation) + static_cast<u32>(prerotation)) % static_cast<u32>(DisplayRotation::Count));
+  switch (effective_rotation)
+  {
+    case DisplayRotation::Normal:
+      vertices[0].Set(xy.xy(), uv_rect.xy());
+      vertices[1].Set(xy.zyzw().xy(), uv_rect.zyzw().xy());
+      vertices[2].Set(xy.xwzw().xy(), uv_rect.xwzw().xy());
+      vertices[3].Set(xy.zw(), uv_rect.zw());
+      break;
+
+    case DisplayRotation::Rotate90:
+      vertices[0].Set(xy.xy(), uv_rect.xwzw().xy());
+      vertices[1].Set(xy.zyzw().xy(), uv_rect.xy());
+      vertices[2].Set(xy.xwzw().xy(), uv_rect.zw());
+      vertices[3].Set(xy.zw(), uv_rect.zyzw().xy());
+      break;
+
+    case DisplayRotation::Rotate180:
+      vertices[0].Set(xy.xy(), uv_rect.xwzw().xy());
+      vertices[1].Set(xy.zyzw().xy(), uv_rect.zw());
+      vertices[2].Set(xy.xwzw().xy(), uv_rect.xy());
+      vertices[3].Set(xy.zw(), uv_rect.zyzw().xy());
+      break;
+
+    case DisplayRotation::Rotate270:
+      vertices[0].Set(xy.xy(), uv_rect.zyzw().xy());
+      vertices[1].Set(xy.zyzw().xy(), uv_rect.zw());
+      vertices[2].Set(xy.xwzw().xy(), uv_rect.xy());
+      vertices[3].Set(xy.zw(), uv_rect.xwzw().xy());
+      break;
+
+      DefaultCaseIsUnreachable();
+  }
+
+  g_gpu_device->UnmapVertexBuffer(sizeof(GPUBackend::ScreenVertex), 4);
+  g_gpu_device->Draw(4, base_vertex);
+}
+
+GPUDevice::PresentResult GPUPresenter::ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
+                                                               const GSVector4i display_rect)
+{
+  DebugAssert(!g_gpu_settings.gpu_show_vram);
+
+  // "original size" in postfx includes padding.
+  const float upscale_x =
+    m_display_texture ? static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width) :
+                        1.0f;
+  const float upscale_y =
+    m_display_texture ? static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_vram_height) :
+                        1.0f;
+  const s32 orig_width = static_cast<s32>(std::ceil(static_cast<float>(m_display_width) * upscale_x));
+  const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_display_height) * upscale_y));
+
+  return PostProcessing::DisplayChain.Apply(PostProcessing::DisplayChain.GetInputTexture(), nullptr, target,
+                                            display_rect, orig_width, orig_height, m_display_width, m_display_height);
+}
+
+void GPUPresenter::DrawTextureCopy(const GSVector2i target_size, const GSVector4i draw_rect, GPUTexture* input,
+                                   bool dst_alpha_blend, bool linear, WindowInfo::PreRotation prerotation)
+{
+  GL_SCOPE_FMT("DrawTextureCopy({}, blend={}, linear={}, prerotation={})", draw_rect, dst_alpha_blend, draw_rect,
+               static_cast<u32>(prerotation));
+
+  g_gpu_device->SetPipeline(dst_alpha_blend ? m_present_copy_blend_pipeline.get() : m_present_copy_pipeline.get());
+  g_gpu_device->SetTextureSampler(0, input, g_gpu_device->GetNearestSampler());
+
+  DrawScreenQuad(draw_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal, prerotation);
 }
 
 void GPUPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
@@ -542,7 +718,7 @@ void GPUPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
   // Not cleared by RenderDisplay().
   g_gpu_device->ClearRenderTarget(target, GPUDevice::DEFAULT_CLEAR_COLOR);
 
-  if (RenderDisplay(target, display_rect, draw_rect, postfx) != GPUDevice::PresentResult::OK ||
+  if (RenderDisplay(target, GSVector4i::zero(), display_rect, draw_rect, postfx) != GPUDevice::PresentResult::OK ||
       !cap->DeliverVideoFrame(target)) [[unlikely]]
   {
     WARNING_LOG("Failed to render/deliver video capture frame.");
@@ -857,21 +1033,19 @@ void GPUPresenter::SleepUntilPresentTime(u64 present_time)
 bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect,
                                             const GSVector4i draw_rect, bool postfx, Image* out_image)
 {
-  const GPUTexture::Format hdformat =
-    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
-  const ImageFormat image_format = GPUTexture::GetImageFormatForTextureFormat(hdformat);
+  const ImageFormat image_format = GPUTexture::GetImageFormatForTextureFormat(m_present_format);
   if (image_format == ImageFormat::None)
     return false;
 
   auto render_texture = g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                                              hdformat, GPUTexture::Flags::None);
+                                                              m_present_format, GPUTexture::Flags::None);
   if (!render_texture)
     return false;
 
   g_gpu_device->ClearRenderTarget(render_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
 
   // TODO: this should use copy shader instead.
-  RenderDisplay(render_texture.get(), display_rect, draw_rect, postfx);
+  RenderDisplay(render_texture.get(), GSVector4i::zero(), display_rect, draw_rect, postfx);
 
   Image image(width, height, image_format);
 
@@ -879,12 +1053,12 @@ bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, const GSVecto
   std::unique_ptr<GPUDownloadTexture> dltex;
   if (g_gpu_device->GetFeatures().memory_import)
   {
-    dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat, image.GetPixels(), image.GetStorageSize(),
-                                                image.GetPitch(), &error);
+    dltex = g_gpu_device->CreateDownloadTexture(width, height, m_present_format, image.GetPixels(),
+                                                image.GetStorageSize(), image.GetPitch(), &error);
   }
   if (!dltex)
   {
-    if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat, &error)))
+    if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, m_present_format, &error)))
     {
       ERROR_LOG("Failed to create {}x{} download texture: {}", width, height, error.GetDescription());
       return false;
@@ -944,4 +1118,158 @@ void GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* widt
     *height = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetHeight() : 1;
     CalculateDrawRect(*width, *height, true, !g_settings.gpu_show_vram, display_rect, draw_rect);
   }
+}
+
+bool GPUPresenter::LoadOverlaySettings()
+{
+  std::string preset_name = Host::GetStringSettingValue("BorderOverlay", "PresetName");
+  std::string image_path;
+  GSVector4i display_rect = m_border_overlay_display_rect;
+  bool alpha_blend = m_border_overlay_alpha_blend;
+  if (preset_name == "Custom")
+  {
+    image_path = Host::GetStringSettingValue("BorderOverlay", "ImagePath");
+    display_rect = GSVector4i(Host::GetIntSettingValue("BorderOverlay", "DisplayStartX", 0),
+                              Host::GetIntSettingValue("BorderOverlay", "DisplayStartY", 0),
+                              Host::GetIntSettingValue("BorderOverlay", "DisplayEndX", 0),
+                              Host::GetIntSettingValue("BorderOverlay", "DisplayEndY", 0));
+    alpha_blend = Host::GetBoolSettingValue("BorderOverlay", "AlphaBlend", false);
+  }
+
+  // check rect validity.. ignore everything if it's bogus
+  if (!image_path.empty() && display_rect.rempty())
+  {
+    ERROR_LOG("Border overlay rectangle {} is invalid.", display_rect);
+    image_path = {};
+  }
+  if (image_path.empty())
+  {
+    // using preset?
+    if (!preset_name.empty())
+    {
+      // don't worry about the other settings, the loader will fix them up
+      if (m_border_overlay_image_path == preset_name)
+        return false;
+
+      image_path = std::move(preset_name);
+    }
+
+    display_rect = GSVector4i::zero();
+    alpha_blend = false;
+  }
+
+  // display rect can be updated without issue
+  m_border_overlay_display_rect = display_rect;
+
+  // but images and alphablend require pipeline/texture changes
+  if (m_border_overlay_image_path == image_path && (image_path.empty() || alpha_blend == m_border_overlay_alpha_blend))
+  {
+    m_border_overlay_alpha_blend = alpha_blend;
+    return false;
+  }
+
+  m_border_overlay_image_path = std::move(image_path);
+  m_border_overlay_alpha_blend = alpha_blend;
+  return true;
+}
+
+bool GPUPresenter::LoadOverlayTexture()
+{
+  g_gpu_device->RecycleTexture(std::move(m_border_overlay_texture));
+  if (m_border_overlay_image_path.empty())
+  {
+    m_border_overlay_display_rect = GSVector4i::zero();
+    m_border_overlay_image_path = {};
+    m_border_overlay_alpha_blend = false;
+    return true;
+  }
+
+  Image image;
+  Error error;
+
+  bool image_load_result;
+  if (Path::IsAbsolute(m_border_overlay_image_path))
+    image_load_result = image.LoadFromFile(m_border_overlay_image_path.c_str(), &error);
+  else
+    image_load_result = LoadOverlayPreset(&error, &image);
+  if (!image_load_result ||
+      !(m_border_overlay_texture = g_gpu_device->FetchAndUploadTextureImage(image, GPUTexture::Flags::None, &error)))
+  {
+    ERROR_LOG("Failed to load overlay '{}': {}", Path::GetFileName(m_border_overlay_image_path),
+              error.GetDescription());
+    m_border_overlay_display_rect = GSVector4i::zero();
+    m_border_overlay_image_path = {};
+    m_border_overlay_alpha_blend = false;
+    return false;
+  }
+
+  INFO_LOG("Loaded overlay image {}: {}x{}", Path::GetFileName(m_border_overlay_image_path),
+           m_border_overlay_texture->GetWidth(), m_border_overlay_texture->GetHeight());
+  return true;
+}
+
+std::vector<std::string> GPUPresenter::EnumerateBorderOverlayPresets()
+{
+  static constexpr const char* pattern = "*.yml";
+
+  std::vector<std::string> ret;
+
+  FileSystem::FindResultsArray files;
+  FileSystem::FindFiles(Path::Combine(EmuFolders::Resources, "overlays").c_str(), pattern,
+                        FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES, &files);
+  FileSystem::FindFiles(Path::Combine(EmuFolders::UserResources, "overlays").c_str(), pattern,
+                        FILESYSTEM_FIND_RELATIVE_PATHS | FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_KEEP_ARRAY, &files);
+
+  ret.reserve(files.size());
+  for (FILESYSTEM_FIND_DATA& fd : files)
+  {
+    const std::string_view name = Path::GetFileTitle(fd.FileName);
+    if (StringUtil::IsInStringList(ret, name))
+      continue;
+
+    ret.emplace_back(name);
+  }
+
+  std::sort(ret.begin(), ret.end());
+  return ret;
+}
+
+bool GPUPresenter::LoadOverlayPreset(Error* error, Image* image)
+{
+  SmallString path = SmallString::from_format("overlays/{}.yml", m_border_overlay_image_path);
+  std::optional<std::string> yaml_data = Host::ReadResourceFileToString(path, true, error);
+  if (!yaml_data.has_value())
+    return false;
+
+  const ryml::Tree yaml =
+    ryml::parse_in_place(to_csubstr(path), c4::substr(reinterpret_cast<char*>(yaml_data->data()), yaml_data->size()));
+  const ryml::ConstNodeRef root = yaml.rootref();
+  if (root.empty())
+  {
+    Error::SetStringView(error, "Configuration is empty.");
+    return false;
+  }
+
+  std::string_view image_filename;
+  GSVector4i display_area = GSVector4i::zero();
+  bool display_alpha_blend = false;
+  if (!GetStringFromObject(root, "image", &image_filename) ||
+      !GetUIntFromObject(root, "displayStartX", &display_area.x) ||
+      !GetUIntFromObject(root, "displayStartY", &display_area.y) ||
+      !GetUIntFromObject(root, "displayEndX", &display_area.z) ||
+      !GetUIntFromObject(root, "displayEndY", &display_area.w) ||
+      !GetUIntFromObject(root, "alphaBlend", &display_alpha_blend))
+  {
+    Error::SetStringView(error, "One or more parameters is missing.");
+    return false;
+  }
+
+  path.format("overlays/{}", image_filename);
+  std::optional<DynamicHeapArray<u8>> image_data = Host::ReadResourceFile(path, true, error);
+  if (!image_data.has_value() || !image->LoadFromBuffer(image_filename, image_data.value(), error))
+    return false;
+
+  m_border_overlay_display_rect = display_area;
+  m_border_overlay_alpha_blend = display_alpha_blend;
+  return true;
 }

@@ -5,13 +5,17 @@
 #include "qthost.h"
 #include "settingwidgetbinder.h"
 
+#include "core/gpu_presenter.h"
+
 #include "util/postprocessing.h"
 
 #include "common/error.h"
 
+#include <QtCore/QDir>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QGridLayout>
+#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QSlider>
@@ -22,6 +26,7 @@ PostProcessingSettingsWidget::PostProcessingSettingsWidget(SettingsWindow* dialo
          tr("Display"));
   addTab(new PostProcessingChainConfigWidget(dialog, this, PostProcessing::Config::INTERNAL_CHAIN_SECTION),
          tr("Internal"));
+  addTab(new PostProcessingOverlayConfigWidget(dialog, this), tr("Border Overlay"));
   setDocumentMode(true);
 }
 
@@ -476,4 +481,54 @@ void PostProcessingShaderConfigWidget::createUi()
 
   row++;
   m_layout->addItem(new QSpacerItem(1, 1, QSizePolicy::Minimum, QSizePolicy::Expanding), row, 0, 1, 3);
+}
+
+PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWindow* dialog, QWidget* parent)
+  : QWidget(parent), m_dialog(dialog)
+{
+  SettingsInterface* sif = dialog->getSettingsInterface();
+
+  m_ui.setupUi(this);
+
+  m_ui.overlayName->addItem(tr("None"), QString());
+  m_ui.overlayName->addItem(tr("Custom..."), QStringLiteral("Custom"));
+  for (const std::string& name : GPUPresenter::EnumerateBorderOverlayPresets())
+  {
+    const QString qname = QString::fromStdString(name);
+    m_ui.overlayName->addItem(qname, qname);
+  }
+
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.overlayName, "BorderOverlay", "PresetName");
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.imagePath, "BorderOverlay", "ImagePath");
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartX, "BorderOverlay", "DisplayStartX", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayStartY, "BorderOverlay", "DisplayStartY", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayEndX, "BorderOverlay", "DisplayEndX", 0);
+  SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayEndY, "BorderOverlay", "DisplayEndY", 0);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.alphaBlend, "BorderOverlay", "AlphaBlend", false);
+
+  connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
+          &PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged);
+  connect(m_ui.imagePathBrowse, &QPushButton::clicked, this,
+          &PostProcessingOverlayConfigWidget::onImagePathBrowseClicked);
+
+  onOverlayNameCurrentIndexChanged(m_ui.overlayName->currentIndex());
+}
+
+PostProcessingOverlayConfigWidget::~PostProcessingOverlayConfigWidget() = default;
+
+void PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged(int index)
+{
+  const int custom_idx = m_dialog->isPerGameSettings() ? 2 : 1;
+  const bool enable_custom = (index == custom_idx);
+  m_ui.customConfiguration->setEnabled(enable_custom);
+}
+
+void PostProcessingOverlayConfigWidget::onImagePathBrowseClicked()
+{
+  const QString path = QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select Image"), QString(),
+                                                    tr("All Cover Image Types (*.jpg *.jpeg *.png *.webp)"));
+  if (path.isEmpty())
+    return;
+
+  m_ui.imagePath->setText(QDir::toNativeSeparators(path));
 }

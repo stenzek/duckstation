@@ -516,6 +516,10 @@ public:
   {
     return GSVector2i(m_window_info.surface_width, m_window_info.surface_height);
   }
+  ALWAYS_INLINE GSVector2i GetPostRotatedSizeVec() const
+  {
+    return GSVector2i(m_window_info.GetPostRotatedWidth(), m_window_info.GetPostRotatedHeight());
+  }
 
   ALWAYS_INLINE GPUVSyncMode GetVSyncMode() const { return m_vsync_mode; }
   ALWAYS_INLINE bool IsVSyncModeBlocking() const { return (m_vsync_mode == GPUVSyncMode::FIFO); }
@@ -524,10 +528,11 @@ public:
   virtual bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) = 0;
   virtual bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) = 0;
 
-  GSVector4i PreRotateClipRect(const GSVector4i& v);
-
   bool ShouldSkipPresentingFrame();
   void ThrottlePresentation();
+
+  static GSVector4i PreRotateClipRect(WindowInfo::PreRotation prerotation, const GSVector2i surface_size,
+                                      const GSVector4i& v);
 
 protected:
   // TODO: Merge WindowInfo into this struct...

@@ -233,10 +233,11 @@ GPUSwapChain::GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool a
 
 GPUSwapChain::~GPUSwapChain() = default;
 
-GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
+GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfo::PreRotation prerotation, const GSVector2i surface_size,
+                                           const GSVector4i& v)
 {
   GSVector4i new_clip;
-  switch (m_window_info.surface_prerotation)
+  switch (prerotation)
   {
     case WindowInfo::PreRotation::Identity:
       new_clip = v;
@@ -245,7 +246,7 @@ GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
     case WindowInfo::PreRotation::Rotate90Clockwise:
     {
       const s32 height = (v.w - v.y);
-      const s32 y = m_window_info.surface_height - v.y - height;
+      const s32 y = surface_size.y - v.y - height;
       new_clip = GSVector4i(y, v.x, y + height, v.z);
     }
     break;
@@ -254,8 +255,8 @@ GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
     {
       const s32 width = (v.z - v.x);
       const s32 height = (v.w - v.y);
-      const s32 x = m_window_info.surface_width - v.x - width;
-      const s32 y = m_window_info.surface_height - v.y - height;
+      const s32 x = surface_size.x - v.x - width;
+      const s32 y = surface_size.y - v.y - height;
       new_clip = GSVector4i(x, y, x + width, y + height);
     }
     break;
@@ -263,7 +264,7 @@ GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
     case WindowInfo::PreRotation::Rotate270Clockwise:
     {
       const s32 width = (v.z - v.x);
-      const s32 x = m_window_info.surface_width - v.x - width;
+      const s32 x = surface_size.x - v.x - width;
       new_clip = GSVector4i(v.y, x, v.w, x + width);
     }
     break;
@@ -736,12 +737,11 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
   SetPipeline(m_imgui_pipeline.get());
   SetViewport(0, 0, swap_chain->GetPostRotatedWidth(), post_rotated_height);
 
+  const bool prerotated = (swap_chain->GetPreRotation() != WindowInfo::PreRotation::Identity);
   GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(
     0.0f, 0.0f, static_cast<float>(swap_chain->GetWidth()), static_cast<float>(swap_chain->GetHeight()), 0.0f, 1.0f);
-  if (swap_chain->GetPreRotation() != WindowInfo::PreRotation::Identity)
-  {
+  if (prerotated)
     mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(swap_chain->GetPreRotation())) * mproj;
-  }
   PushUniformBuffer(&mproj, sizeof(mproj));
 
   // Render command lists
@@ -766,7 +766,9 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
       }
 
       GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
-      clip = swap_chain->PreRotateClipRect(clip);
+
+      if (prerotated)
+        clip = GPUSwapChain::PreRotateClipRect(swap_chain->GetPreRotation(), swap_chain->GetSizeVec(), clip);
       if (flip)
         clip = FlipToLowerLeft(clip, post_rotated_height);
 
