@@ -134,6 +134,7 @@ using ImGuiFullscreen::NavTitle;
 using ImGuiFullscreen::OpenChoiceDialog;
 using ImGuiFullscreen::OpenConfirmMessageDialog;
 using ImGuiFullscreen::OpenFileSelector;
+using ImGuiFullscreen::OpenInfoMessageDialog;
 using ImGuiFullscreen::OpenInputStringDialog;
 using ImGuiFullscreen::PopPrimaryColor;
 using ImGuiFullscreen::PushPrimaryColor;
@@ -991,16 +992,16 @@ void FullscreenUI::Render()
         if (FileSystem::FileExists(s_state.game_settings_interface->GetPath().c_str()) &&
             !FileSystem::DeleteFile(s_state.game_settings_interface->GetPath().c_str(), &error))
         {
-          ImGuiFullscreen::OpenInfoMessageDialog(
-            FSUI_STR("Error"), fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
-                                           error.GetDescription()));
+          OpenInfoMessageDialog(FSUI_STR("Error"),
+                                fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
+                                            error.GetDescription()));
         }
       }
       else
       {
         if (!s_state.game_settings_interface->Save(&error))
         {
-          ImGuiFullscreen::OpenInfoMessageDialog(
+          OpenInfoMessageDialog(
             FSUI_STR("Error"),
             fmt::format(FSUI_FSTR("An error occurred while saving game settings:\n{}"), error.GetDescription()));
         }
@@ -1101,8 +1102,14 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
     Error error;
     if (!System::BootSystem(std::move(params), &error))
     {
-      Host::ReportErrorAsync(TRANSLATE_SV("System", "Error"),
-                             fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error.GetDescription()));
+      GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+        if (!IsInitialized())
+          return;
+
+        OpenInfoMessageDialog(TRANSLATE_STR("System", "Error"),
+                              fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
+        ReturnToPreviousWindow();
+      });
     }
   });
 }
@@ -1157,8 +1164,14 @@ void FullscreenUI::DoStartDisc(std::string path)
     params.filename = std::move(path);
     if (!System::BootSystem(std::move(params), &error))
     {
-      Host::ReportErrorAsync(TRANSLATE_SV("System", "Error"),
-                             fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error.GetDescription()));
+      GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+        if (!IsInitialized())
+          return;
+
+        OpenInfoMessageDialog(TRANSLATE_STR("System", "Error"),
+                              fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
+        ReturnToPreviousWindow();
+      });
     }
   });
 }
