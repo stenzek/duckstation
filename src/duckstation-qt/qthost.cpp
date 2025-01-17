@@ -1045,6 +1045,18 @@ void Host::OnSystemDestroyed()
   emit g_emu_thread->systemDestroyed();
 }
 
+void Host::OnSystemAbnormalShutdown(const std::string_view reason)
+{
+  Host::ReportErrorAsync(
+    TRANSLATE_SV("QtHost", "Error"),
+    fmt::format(
+      TRANSLATE_FS("QtHost",
+                   "Unfortunately, the virtual machine has abnormally shut down and cannot be recovered. Please use "
+                   "the available support options for further assistance, and provide information about what you were "
+                   "doing when the error occurred, as well as the details below:\n\n{}"),
+      reason));
+}
+
 void Host::OnGPUThreadRunIdleChanged(bool is_active)
 {
   g_emu_thread->setGPUThreadRunIdle(is_active);

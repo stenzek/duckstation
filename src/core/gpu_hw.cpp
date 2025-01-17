@@ -277,11 +277,8 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
 
   if (m_use_texture_cache)
   {
-    if (!GPUTextureCache::Initialize(this))
-    {
-      ERROR_LOG("Failed to initialize texture cache, disabling.");
-      m_use_texture_cache = false;
-    }
+    if (!GPUTextureCache::Initialize(this, error))
+      return false;
   }
   else
   {
@@ -435,9 +432,10 @@ void GPU_HW::RestoreDeviceContext()
   m_batch_ubo_dirty = true;
 }
 
-void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
+bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
 {
-  GPUBackend::UpdateSettings(old_settings);
+  if (!GPUBackend::UpdateSettings(old_settings, error))
+    return false;
 
   FlushRender();
 
@@ -543,21 +541,19 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
 
   if (shaders_changed)
   {
-    Error error;
-    if (!CompilePipelines(&error))
+    if (!CompilePipelines(error))
     {
-      ERROR_LOG("Failed to recompile pipelines: {}", error.GetDescription());
-      Panic("Failed to recompile pipelines.");
+      Error::AddPrefix(error, "Failed to recompile pipelines: ");
+      return false;
     }
   }
   else if (resolution_dependent_shaders_changed || downsampling_shaders_changed)
   {
-    Error error;
-    if ((resolution_dependent_shaders_changed && !CompileResolutionDependentPipelines(&error)) ||
-        (downsampling_shaders_changed && !CompileDownsamplePipelines(&error)))
+    if ((resolution_dependent_shaders_changed && !CompileResolutionDependentPipelines(error)) ||
+        (downsampling_shaders_changed && !CompileDownsamplePipelines(error)))
     {
-      ERROR_LOG("Failed to recompile resolution dependent pipelines: {}", error.GetDescription());
-      Panic("Failed to recompile resolution dependent pipelines.");
+      Error::AddPrefix(error, "Failed to recompile resolution dependent pipelines: ");
+      return false;
     }
   }
 
@@ -568,11 +564,10 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
     g_gpu_device->PurgeTexturePool();
     g_gpu_device->WaitForGPUIdle();
 
-    Error error;
-    if (!CreateBuffers(&error))
+    if (!CreateBuffers(error))
     {
-      ERROR_LOG("Failed to recreate buffers: {}", error.GetDescription());
-      Panic("Failed to recreate buffers.");
+      Error::AddPrefix(error, "Failed to recreate buffers: ");
+      return false;
     }
 
     UpdateDownsamplingLevels();
@@ -591,10 +586,10 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
 
   if (m_use_texture_cache && !old_settings.gpu_texture_cache)
   {
-    if (!GPUTextureCache::Initialize(this))
+    if (!GPUTextureCache::Initialize(this, error))
     {
-      ERROR_LOG("Failed to initialize texture cache, disabling.");
-      m_use_texture_cache = false;
+      Error::AddPrefix(error, "Failed to initialize texture cache: ");
+      return false;
     }
   }
   else if (!m_use_texture_cache && old_settings.gpu_texture_cache)
@@ -602,7 +597,8 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
     GPUTextureCache::Shutdown();
   }
 
-  GPUTextureCache::UpdateSettings(m_use_texture_cache, old_settings);
+  if (!GPUTextureCache::UpdateSettings(m_use_texture_cache, old_settings, error))
+    return false;
 
   if (g_gpu_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
       (g_gpu_settings.gpu_downsample_mode == GPUDownsampleMode::Box &&
@@ -622,6 +618,8 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
                                     m_draw_mode.mode_reg.texture_mode == GPUTextureMode::Palette8Bit);
     }
   }
+
+  return true;
 }
 
 void GPU_HW::CheckSettings()
@@ -783,10 +781,12 @@ u32 GPU_HW::CalculateResolutionScale() const
   return std::clamp<u32>(scale, 1, GetMaxResolutionScale());
 }
 
-void GPU_HW::UpdateResolutionScale()
+bool GPU_HW::UpdateResolutionScale(Error* error)
 {
-  if (CalculateResolutionScale() != m_resolution_scale)
-    UpdateSettings(g_settings);
+  if (CalculateResolutionScale() == m_resolution_scale)
+    return true;
+
+  return UpdateSettings(g_settings, error);
 }
 
 GPUDownsampleMode GPU_HW::GetDownsampleMode(u32 resolution_scale) const
@@ -900,8 +900,6 @@ GPUTexture::Format GPU_HW::GetDepthBufferFormat() const
 
 bool GPU_HW::CreateBuffers(Error* error)
 {
-  DestroyBuffers();
-
   // scale vram size to internal resolution
   const u32 texture_width = VRAM_WIDTH * m_resolution_scale;
   const u32 texture_height = VRAM_HEIGHT * m_resolution_scale;

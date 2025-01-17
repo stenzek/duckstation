@@ -125,10 +125,12 @@ bool GPUBackend::Initialize(bool clear_vram, Error* error)
   return true;
 }
 
-void GPUBackend::UpdateSettings(const GPUSettings& old_settings)
+bool GPUBackend::UpdateSettings(const GPUSettings& old_settings, Error* error)
 {
   if (g_gpu_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats)
     GPUBackend::ResetStatistics();
+
+  return true;
 }
 
 GPUThreadCommand* GPUBackend::NewClearVRAMCommand()
@@ -367,6 +369,20 @@ bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> sta
     },
     true, false);
   return result;
+}
+
+void GPUBackend::QueueUpdateResolutionScale()
+{
+  DebugAssert(!GPUThread::IsOnThread());
+
+  GPUThread::RunOnBackend(
+    [](GPUBackend* backend) {
+      Error error;
+      if (!backend->UpdateResolutionScale(&error)) [[unlikely]]
+        GPUThread::ReportFatalErrorAndShutdown(
+          fmt::format("Failed to update resolution scale: {}", error.GetDescription()));
+    },
+    false, true);
 }
 
 void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
@@ -752,4 +768,159 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
       });
     },
     false, false);
+}
+
+namespace {
+
+class GPUNullBackend final : public GPUBackend
+{
+public:
+  GPUNullBackend(GPUPresenter& presenter);
+  ~GPUNullBackend() override;
+
+  bool Initialize(bool upload_vram, Error* error) override;
+  bool UpdateSettings(const GPUSettings& old_settings, Error* error) override;
+
+  u32 GetResolutionScale() const override;
+  bool UpdateResolutionScale(Error* error) override;
+
+  void RestoreDeviceContext() override;
+  void FlushRender() override;
+
+  void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;
+  void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering,
+                u8 interlaced_display_field) override;
+  void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) override;
+  void CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask,
+                bool check_mask) override;
+
+  void DrawPolygon(const GPUBackendDrawPolygonCommand* cmd) override;
+  void DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd) override;
+  void DrawSprite(const GPUBackendDrawRectangleCommand* cmd) override;
+  void DrawLine(const GPUBackendDrawLineCommand* cmd) override;
+  void DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd) override;
+
+  void DrawingAreaChanged() override;
+  void ClearCache() override;
+  void OnBufferSwapped() override;
+  void ClearVRAM() override;
+
+  void UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd) override;
+
+  void LoadState(const GPUBackendLoadStateCommand* cmd) override;
+
+  bool AllocateMemorySaveState(System::MemorySaveState& mss, Error* error) override;
+  void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss) override;
+};
+
+} // namespace
+
+GPUNullBackend::GPUNullBackend(GPUPresenter& presenter) : GPUBackend(presenter)
+{
+}
+
+GPUNullBackend::~GPUNullBackend() = default;
+
+bool GPUNullBackend::Initialize(bool upload_vram, Error* error)
+{
+  return GPUBackend::Initialize(upload_vram, error);
+}
+
+bool GPUNullBackend::UpdateSettings(const GPUSettings& old_settings, Error* error)
+{
+  return GPUBackend::UpdateSettings(old_settings, error);
+}
+
+u32 GPUNullBackend::GetResolutionScale() const
+{
+  return 1;
+}
+
+bool GPUNullBackend::UpdateResolutionScale(Error* error)
+{
+  return true;
+}
+
+void GPUNullBackend::RestoreDeviceContext()
+{
+}
+
+void GPUNullBackend::FlushRender()
+{
+}
+
+void GPUNullBackend::ReadVRAM(u32 x, u32 y, u32 width, u32 height)
+{
+}
+
+void GPUNullBackend::FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering,
+                              u8 interlaced_display_field)
+{
+}
+
+void GPUNullBackend::UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask)
+{
+}
+
+void GPUNullBackend::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32 height, bool set_mask,
+                              bool check_mask)
+{
+}
+
+void GPUNullBackend::DrawPolygon(const GPUBackendDrawPolygonCommand* cmd)
+{
+}
+
+void GPUNullBackend::DrawPrecisePolygon(const GPUBackendDrawPrecisePolygonCommand* cmd)
+{
+}
+
+void GPUNullBackend::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
+{
+}
+
+void GPUNullBackend::DrawLine(const GPUBackendDrawLineCommand* cmd)
+{
+}
+
+void GPUNullBackend::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
+{
+}
+
+void GPUNullBackend::DrawingAreaChanged()
+{
+}
+
+void GPUNullBackend::ClearCache()
+{
+}
+
+void GPUNullBackend::OnBufferSwapped()
+{
+}
+
+void GPUNullBackend::ClearVRAM()
+{
+}
+
+void GPUNullBackend::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
+{
+}
+
+void GPUNullBackend::LoadState(const GPUBackendLoadStateCommand* cmd)
+{
+}
+
+bool GPUNullBackend::AllocateMemorySaveState(System::MemorySaveState& mss, Error* error)
+{
+  return false;
+}
+
+void GPUNullBackend::DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss)
+{
+}
+
+std::unique_ptr<GPUBackend> GPUBackend::CreateNullBackend(GPUPresenter& presenter)
+{
+  return std::make_unique<GPUNullBackend>(presenter);
 }

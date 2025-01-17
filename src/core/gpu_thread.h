@@ -68,6 +68,9 @@ const WindowInfo& GetRenderWindowInfo();
 
 void UpdateSettings(bool gpu_settings_changed, bool device_settings_changed);
 
+/// Triggers an abnormal system shutdown and waits for it to destroy the backend.
+void ReportFatalErrorAndShutdown(std::string_view reason);
+
 bool IsOnThread();
 bool IsUsingThread();
 void RunOnThread(AsyncCallType func);

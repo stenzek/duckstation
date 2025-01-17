@@ -56,6 +56,7 @@ public:
 
   static std::unique_ptr<GPUBackend> CreateHardwareBackend(GPUPresenter& presenter);
   static std::unique_ptr<GPUBackend> CreateSoftwareBackend(GPUPresenter& presenter);
+  static std::unique_ptr<GPUBackend> CreateNullBackend(GPUPresenter& presenter);
 
   static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, Image* out_image);
   static void RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
@@ -67,6 +68,8 @@ public:
 
   static bool AllocateMemorySaveStates(std::span<System::MemorySaveState> states, Error* error);
 
+  static void QueueUpdateResolutionScale();
+
 public:
   GPUBackend(GPUPresenter& presenter);
   virtual ~GPUBackend();
@@ -75,13 +78,13 @@ public:
 
   virtual bool Initialize(bool upload_vram, Error* error);
 
-  virtual void UpdateSettings(const GPUSettings& old_settings);
+  virtual bool UpdateSettings(const GPUSettings& old_settings, Error* error);
 
   /// Returns the current resolution scale.
   virtual u32 GetResolutionScale() const = 0;
 
   /// Updates the resolution scale when it's set to automatic.
-  virtual void UpdateResolutionScale() = 0;
+  virtual bool UpdateResolutionScale(Error* error) = 0;
 
   // Graphics API state reset/restore - call when drawing the UI etc.
   // TODO: replace with "invalidate cached state"

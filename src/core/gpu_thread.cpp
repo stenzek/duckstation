@@ -186,7 +186,7 @@ void GPUThread::Internal::SetThreadEnabled(bool enabled)
                    requested_fullscreen_ui, true, &error))
   {
     ERROR_LOG("Reconfigure failed: {}", error.GetDescription());
-    Panic("Failed to reconfigure when changing thread state.");
+    ReportFatalErrorAndShutdown(fmt::format("Reconfigure failed: {}", error.GetDescription()));
   }
 }
 
@@ -780,7 +780,8 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
 
       s_state.requested_renderer = GPURenderer::Software;
       s_state.gpu_backend = GPUBackend::CreateSoftwareBackend(*s_state.gpu_presenter);
-      okay = s_state.gpu_backend->Initialize(upload_vram, &local_error);
+      if (!s_state.gpu_backend->Initialize(upload_vram, &local_error))
+        Panic("Failed to initialize fallback software renderer");
     }
 
     if (!okay)
@@ -971,8 +972,14 @@ void GPUThread::UpdateSettingsOnThread(const GPUSettings& old_settings)
 
     PostProcessing::UpdateSettings();
 
-    s_state.gpu_presenter->UpdateSettings(old_settings);
-    s_state.gpu_backend->UpdateSettings(old_settings);
+    Error error;
+    if (!s_state.gpu_presenter->UpdateSettings(old_settings, &error) ||
+        !s_state.gpu_backend->UpdateSettings(old_settings, &error)) [[unlikely]]
+    {
+      ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
+      return;
+    }
+
     if (ImGuiManager::UpdateDebugWindowConfig() || (PostProcessing::DisplayChain.IsActive() && !IsSystemPaused()))
       PresentFrameAndRestoreContext();
     else
@@ -1069,6 +1076,21 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
       }
     });
   }
+}
+
+void GPUThread::ReportFatalErrorAndShutdown(std::string_view reason)
+{
+  DebugAssert(IsOnThread());
+
+  std::string message = fmt::format("GPU thread shut down with fatal error:\n\n{}", reason);
+  Host::RunOnCPUThread([message = std::move(message)]() { System::AbnormalShutdown(message); });
+
+  // replace the renderer with a dummy/null backend, so that all commands get dropped
+  ERROR_LOG("Switching to null renderer: {}", reason);
+  s_state.gpu_backend.reset();
+  s_state.gpu_backend = GPUBackend::CreateNullBackend(*s_state.gpu_presenter);
+  if (!s_state.gpu_backend->Initialize(false, nullptr)) [[unlikely]]
+    Panic("Failed to initialize null GPU backend");
 }
 
 bool GPUThread::IsOnThread()
@@ -1193,7 +1215,11 @@ void GPUThread::DisplayWindowResizedOnThread()
     }
 
     if (g_gpu_settings.gpu_resolution_scale == 0)
-      s_state.gpu_backend->UpdateResolutionScale();
+    {
+      Error error;
+      if (!s_state.gpu_backend->UpdateResolutionScale(&error)) [[unlikely]]
+        ReportFatalErrorAndShutdown(fmt::format("Failed to update resolution scale: {}", error.GetDescription()));
+    }
   }
 }
 

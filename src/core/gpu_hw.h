@@ -67,10 +67,9 @@ public:
   void RestoreDeviceContext() override;
   void FlushRender() override;
 
-protected:
-  void UpdateSettings(const GPUSettings& old_settings) override;
+  bool UpdateSettings(const GPUSettings& old_settings, Error* error) override;
 
-  void UpdateResolutionScale() override;
+  bool UpdateResolutionScale(Error* error) override;
 
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering, u8 active_line_lsb) override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;

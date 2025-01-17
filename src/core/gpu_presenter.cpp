@@ -56,7 +56,7 @@ bool GPUPresenter::Initialize(Error* error)
   return true;
 }
 
-void GPUPresenter::UpdateSettings(const GPUSettings& old_settings)
+bool GPUPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
 {
   if (g_gpu_settings.display_scaling != old_settings.display_scaling ||
       g_gpu_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
@@ -69,11 +69,14 @@ void GPUPresenter::UpdateSettings(const GPUSettings& old_settings)
     if (!CompileDisplayPipelines(
           g_gpu_settings.display_scaling != old_settings.display_scaling,
           g_gpu_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
-          g_gpu_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing, nullptr))
+          g_gpu_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing, error))
     {
-      Panic("Failed to compile display pipeline on settings change.");
+      Error::AddPrefix(error, "Failed to compile display pipeline on settings change:\n");
+      return false;
     }
   }
+
+  return true;
 }
 
 bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error)
@@ -818,6 +821,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
     if (pres == GPUDevice::PresentResult::DeviceLost) [[unlikely]]
     {
       ERROR_LOG("GPU device lost during present.");
+      GPUThread::ReportFatalErrorAndShutdown("GPU device lost. The log may contain more information.");
       return false;
     }
 

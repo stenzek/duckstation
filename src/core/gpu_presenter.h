@@ -42,7 +42,7 @@ public:
 
   bool Initialize(Error* error);
 
-  void UpdateSettings(const GPUSettings& old_settings);
+  bool UpdateSettings(const GPUSettings& old_settings, Error* error);
 
   void ClearDisplay();
   void ClearDisplayTexture();

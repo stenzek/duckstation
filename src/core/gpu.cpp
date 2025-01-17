@@ -985,7 +985,7 @@ void GPU::UpdateCRTCDisplayParameters()
   if ((cs.display_vram_width != old_vram_width || cs.display_vram_height != old_vram_height) &&
       g_settings.gpu_resolution_scale == 0)
   {
-    GPUThread::RunOnBackend([](GPUBackend* backend) { backend->UpdateResolutionScale(); }, false, false);
+    GPUBackend::QueueUpdateResolutionScale();
   }
 }
 

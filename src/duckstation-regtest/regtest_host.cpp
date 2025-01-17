@@ -293,6 +293,11 @@ void Host::OnSystemResumed()
   //
 }
 
+void Host::OnSystemAbnormalShutdown(const std::string_view reason)
+{
+  // Already logged in core.
+}
+
 void Host::OnGPUThreadRunIdleChanged(bool is_active)
 {
   //

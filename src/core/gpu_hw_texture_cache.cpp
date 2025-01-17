@@ -249,7 +249,7 @@ static bool IsDumpingVRAMWriteTextures();
 static void UpdateVRAMTrackingState();
 
 static void SetHashCacheTextureFormat();
-static bool CompilePipelines();
+static bool CompilePipelines(Error* error);
 static void DestroyPipelines();
 
 static const Source* ReturnSource(Source* source, const GSVector4i uv_rect, PaletteRecordFlags flags);
@@ -581,20 +581,20 @@ bool GPUTextureCache::IsDumpingVRAMWriteTextures()
   return (g_gpu_settings.texture_replacements.dump_textures && !s_state.config.dump_texture_pages);
 }
 
-bool GPUTextureCache::Initialize(GPU_HW* backend)
+bool GPUTextureCache::Initialize(GPU_HW* backend, Error* error)
 {
   s_state.hw_backend = backend;
 
   SetHashCacheTextureFormat();
   ReloadTextureReplacements(false);
   UpdateVRAMTrackingState();
-  if (!CompilePipelines())
+  if (!CompilePipelines(error))
     return false;
 
   return true;
 }
 
-void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings)
+bool GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings, Error* error)
 {
   const bool prev_tracking_state = s_state.track_vram_writes;
 
@@ -613,8 +613,11 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
           s_state.config.replacement_scale_linear_filter != old_replacement_scale_linear_filter)
       {
         DestroyPipelines();
-        if (!CompilePipelines()) [[unlikely]]
-          Panic("Failed to compile pipelines on TC replacement settings change");
+        if (!CompilePipelines(error)) [[unlikely]]
+        {
+          Error::AddPrefix(error, "Failed to compile pipelines on TC replacement settings change: ");
+          return false;
+        }
       }
     }
 
@@ -625,6 +628,8 @@ void GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
 
   if (s_state.track_vram_writes != prev_tracking_state)
     Invalidate();
+
+  return true;
 }
 
 bool GPUTextureCache::GetStateSize(StateWrapper& sw, u32* size)
@@ -828,7 +833,7 @@ void GPUTextureCache::SetHashCacheTextureFormat()
   INFO_LOG("Using {} format for hash cache entries.", GPUTexture::GetFormatName(s_state.hash_cache_texture_format));
 }
 
-bool GPUTextureCache::CompilePipelines()
+bool GPUTextureCache::CompilePipelines(Error* error)
 {
   if (!g_gpu_settings.texture_replacements.enable_texture_replacements)
     return true;

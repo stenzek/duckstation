@@ -2005,6 +2005,24 @@ void System::DestroySystem()
   Host::OnSystemDestroyed();
 }
 
+void System::AbnormalShutdown(const std::string_view reason)
+{
+  if (!IsValid())
+    return;
+
+  ERROR_LOG("Abnormal shutdown: {}", reason);
+
+  Host::OnSystemAbnormalShutdown(reason);
+
+  // Immediately switch to destroying and exit execution to get out of here.
+  s_state.state = State::Stopping;
+  std::atomic_thread_fence(std::memory_order_release);
+  if (s_state.system_executing)
+    InterruptExecution();
+  else
+    DestroySystem();
+}
+
 void System::ClearRunningGame()
 {
   UpdateSessionTime(s_state.running_game_serial);
@@ -4636,8 +4654,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     Error error;
     if (!Bus::ReallocateMemoryMap(g_settings.export_shared_memory, &error)) [[unlikely]]
     {
-      ERROR_LOG(error.GetDescription());
-      Panic("Failed to reallocate memory map. The log may contain more information.");
+      if (IsValid())
+      {
+        AbnormalShutdown(fmt::format("Failed to reallocate memory map: {}", error.GetDescription()));
+        return;
+      }
     }
   }
 

@@ -5,6 +5,7 @@
 
 #include "gpu_types.h"
 
+class Error;
 class Image;
 class GPUTexture;
 class StateWrapper;
@@ -103,8 +104,8 @@ struct Source
   TListNode<Source> hash_cache_ref;
 };
 
-bool Initialize(GPU_HW* backend);
-void UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings);
+bool Initialize(GPU_HW* backend, Error* error);
+bool UpdateSettings(bool use_texture_cache, const GPUSettings& old_settings, Error* error);
 
 bool GetStateSize(StateWrapper& sw, u32* size);
 bool DoState(StateWrapper& sw, bool skip);
