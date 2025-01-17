@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>758</width>
+    <width>821</width>
     <height>619</height>
    </rect>
   </property>
@@ -27,7 +27,7 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0">
      <property name="leftMargin">
       <number>3</number>
      </property>
@@ -57,8 +57,7 @@
           <string>Game List</string>
          </property>
          <property name="icon">
-          <iconset theme="list-check">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="list-check"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -80,8 +79,7 @@
           <string>Game Grid</string>
          </property>
          <property name="icon">
-          <iconset theme="function-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="function-line"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -103,8 +101,7 @@
           <string>Merge Multi-Disc Games</string>
          </property>
          <property name="icon">
-          <iconset theme="play-list-2-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="play-list-2-line"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -126,8 +123,7 @@
           <string>Show Titles</string>
          </property>
          <property name="icon">
-          <iconset theme="price-tag-3-line">
-           <normaloff>.</normaloff>.</iconset>
+          <iconset theme="price-tag-3-line"/>
          </property>
          <property name="checkable">
           <bool>true</bool>
@@ -158,7 +154,7 @@
           <number>200</number>
          </property>
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
         </widget>
        </item>
@@ -167,7 +163,7 @@
      <item>
       <spacer name="horizontalSpacer">
        <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+        <enum>Qt::Orientation::Horizontal</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -189,8 +185,7 @@
            <string>All Types</string>
           </property>
           <property name="icon">
-           <iconset theme="filter-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="filter-line"/>
           </property>
          </item>
         </widget>
@@ -202,8 +197,7 @@
            <string>All Regions</string>
           </property>
           <property name="icon">
-           <iconset theme="global-line">
-            <normaloff>.</normaloff>.</iconset>
+           <iconset theme="global-line"/>
           </property>
          </item>
         </widget>
@@ -212,7 +206,7 @@
         <widget class="QLineEdit" name="searchText">
          <property name="minimumSize">
           <size>
-           <width>150</width>
+           <width>200</width>
            <height>0</height>
           </size>
          </property>
@@ -234,7 +228,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>
