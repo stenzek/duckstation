@@ -1282,7 +1282,7 @@ void SaveStateSelectorUI::LoadCurrentSlot()
     {
       Host::RunOnCPUThread([path = std::move(path)]() {
         Error error;
-        if (!System::LoadState(path.c_str(), &error, true))
+        if (!System::LoadState(path.c_str(), &error, true, false))
         {
           Host::AddKeyedOSDMessage("LoadState",
                                    fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load state from slot {0}:\n{1}"),

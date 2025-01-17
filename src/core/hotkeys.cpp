@@ -88,7 +88,7 @@ static void HotkeyLoadStateSlot(bool global, s32 slot)
   }
 
   Error error;
-  if (!System::LoadState(path.c_str(), &error, true))
+  if (!System::LoadState(path.c_str(), &error, true, false))
   {
     Host::AddKeyedOSDMessage(
       "LoadState",

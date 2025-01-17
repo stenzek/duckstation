@@ -7165,7 +7165,7 @@ void FullscreenUI::DoLoadState(std::string path)
       else
       {
         Error error;
-        if (!System::LoadState(path.c_str(), &error, true))
+        if (!System::LoadState(path.c_str(), &error, true, false))
         {
           GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
             ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error_desc));

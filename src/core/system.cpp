@@ -1823,8 +1823,11 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   std::atomic_thread_fence(std::memory_order_release);
   SPU::GetOutputStream()->SetPaused(false);
 
+  // Immediately pausing?
+  const bool start_paused = (ShouldStartPaused() || parameters.override_start_paused.value_or(false));
+
   // try to load the state, if it fails, bail out
-  if (!parameters.save_state.empty() && !LoadState(parameters.save_state.c_str(), error, false))
+  if (!parameters.save_state.empty() && !LoadState(parameters.save_state.c_str(), error, false, start_paused))
   {
     Error::AddPrefixFmt(error, "Failed to load save state file '{}' for booting:\n",
                         Path::GetFileName(parameters.save_state));
@@ -1852,7 +1855,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   if (parameters.start_media_capture)
     StartMediaCapture({});
 
-  if (ShouldStartPaused() || parameters.override_start_paused.value_or(false))
+  if (start_paused)
     PauseSystem(true);
 
   UpdateSpeedLimiterState();
@@ -2808,7 +2811,7 @@ std::string System::GetMediaPathFromSaveState(const char* path)
   return std::move(buffer.media_path);
 }
 
-bool System::LoadState(const char* path, Error* error, bool save_undo_state)
+bool System::LoadState(const char* path, Error* error, bool save_undo_state, bool force_update_display)
 {
   if (!IsValid() || IsReplayingGPUDump())
   {
@@ -2818,11 +2821,12 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
 
   if (Achievements::IsHardcoreModeActive())
   {
-    Achievements::ConfirmHardcoreModeDisableAsync(TRANSLATE("Achievements", "Loading state"),
-                                                  [path = std::string(path), save_undo_state](bool approved) {
-                                                    if (approved)
-                                                      LoadState(path.c_str(), nullptr, save_undo_state);
-                                                  });
+    Achievements::ConfirmHardcoreModeDisableAsync(
+      TRANSLATE("Achievements", "Loading state"),
+      [path = std::string(path), save_undo_state, force_update_display](bool approved) {
+        if (approved)
+          LoadState(path.c_str(), nullptr, save_undo_state, force_update_display);
+      });
     return true;
   }
 
@@ -2849,7 +2853,7 @@ bool System::LoadState(const char* path, Error* error, bool save_undo_state)
 
   SaveStateBuffer buffer;
   if (!LoadStateBufferFromFile(&buffer, fp.get(), error, false, true, false, true) ||
-      !LoadStateFromBuffer(buffer, error, IsPaused()))
+      !LoadStateFromBuffer(buffer, error, force_update_display || IsPaused()))
   {
     if (save_undo_state)
       UndoLoadState();
@@ -2950,7 +2954,7 @@ bool System::LoadStateDataFromBuffer(std::span<const u8> data, u32 version, Erro
   ResetThrottler();
 
   if (update_display)
-    GPUThread::PresentCurrentFrame();
+    g_gpu.UpdateDisplay(true);
 
   return true;
 }
