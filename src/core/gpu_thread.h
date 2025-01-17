@@ -89,7 +89,6 @@ void PushCommandAndWakeThread(GPUThreadCommand* cmd);
 void PushCommandAndSync(GPUThreadCommand* cmd, bool spin);
 void SyncGPUThread(bool spin);
 
-// NOTE: Only called by GPUBackend
 namespace Internal {
 const Threading::ThreadHandle& GetThreadHandle();
 void ProcessStartup();
@@ -97,8 +96,6 @@ void SetThreadEnabled(bool enabled);
 void DoRunIdle();
 void RequestShutdown();
 void GPUThreadEntryPoint();
-void PresentFrame(bool allow_skip_present, u64 present_time);
-void RestoreContextAfterPresent();
 } // namespace Internal
 } // namespace GPUThread
 

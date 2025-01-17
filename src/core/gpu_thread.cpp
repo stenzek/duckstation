@@ -5,6 +5,7 @@
 #include "fullscreen_ui.h"
 #include "gpu_backend.h"
 #include "gpu_hw_texture_cache.h"
+#include "gpu_presenter.h"
 #include "gpu_thread_commands.h"
 #include "gpu_types.h"
 #include "host.h"
@@ -42,7 +43,6 @@ enum : u32
 {
   COMMAND_QUEUE_SIZE = 16 * 1024 * 1024,
   THRESHOLD_TO_WAKE_GPU = 65536,
-  MAX_SKIPPED_PRESENT_COUNT = 50
 };
 
 static constexpr s32 THREAD_WAKE_COUNT_CPU_THREAD_IS_WAITING = 0x40000000; // CPU thread needs waking
@@ -76,18 +76,16 @@ static void DestroyDeviceOnThread(bool clear_fsui_state);
 static void ResizeDisplayWindowOnThread(u32 width, u32 height, float scale);
 static void UpdateDisplayWindowOnThread(bool fullscreen);
 static void DisplayWindowResizedOnThread();
-static void HandleGPUDeviceLost();
-static void HandleExclusiveFullscreenLost();
 
 static void ReconfigureOnThread(GPUThreadReconfigureCommand* cmd);
 static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Error* error);
 static void DestroyGPUBackendOnThread();
+static void DestroyGPUPresenterOnThread();
+static bool PresentFrameAndRestoreContext();
 
 static void UpdateSettingsOnThread(const GPUSettings& old_settings);
 
 static void UpdateRunIdle();
-
-static void SleepUntilPresentTime(Timer::Value present_time);
 
 namespace {
 
@@ -109,8 +107,8 @@ struct ALIGN_TO_CACHE_LINE State
 
   // Owned by GPU thread.
   ALIGN_TO_CACHE_LINE std::unique_ptr<GPUBackend> gpu_backend;
+  ALIGN_TO_CACHE_LINE std::unique_ptr<GPUPresenter> gpu_presenter;
   std::atomic<u32> command_fifo_read_ptr{0};
-  u32 skipped_present_count = 0;
   u8 run_idle_reasons = 0;
   bool run_idle_flag = false;
   GPUVSyncMode requested_vsync = GPUVSyncMode::Disabled;
@@ -528,7 +526,9 @@ void GPUThread::Internal::GPUThreadEntryPoint()
 
 void GPUThread::Internal::DoRunIdle()
 {
-  PresentFrame(false, 0);
+  if (!PresentFrameAndRestoreContext())
+    return;
+
   if (!g_gpu_device->GetMainSwapChain()->IsVSyncModeBlocking())
     g_gpu_device->GetMainSwapChain()->ThrottlePresentation();
 }
@@ -722,6 +722,9 @@ void GPUThread::DestroyDeviceOnThread(bool clear_fsui_state)
   if (!g_gpu_device)
     return;
 
+  // Presenter should be gone by this point
+  Assert(!s_state.gpu_presenter);
+
   const bool has_window = g_gpu_device->HasMainSwapChain();
 
   FullscreenUI::Shutdown(clear_fsui_state);
@@ -738,64 +741,30 @@ void GPUThread::DestroyDeviceOnThread(bool clear_fsui_state)
   std::atomic_thread_fence(std::memory_order_release);
 }
 
-void GPUThread::HandleGPUDeviceLost()
-{
-  static Timer::Value s_last_gpu_reset_time = 0;
-  static constexpr float MIN_TIME_BETWEEN_RESETS = 15.0f;
-
-  // If we're constantly crashing on something in particular, we don't want to end up in an
-  // endless reset loop.. that'd probably end up leaking memory and/or crashing us for other
-  // reasons. So just abort in such case.
-  const Timer::Value current_time = Timer::GetCurrentValue();
-  if (s_last_gpu_reset_time != 0 &&
-      Timer::ConvertValueToSeconds(current_time - s_last_gpu_reset_time) < MIN_TIME_BETWEEN_RESETS)
-  {
-    Panic("Host GPU lost too many times, device is probably completely wedged.");
-  }
-  s_last_gpu_reset_time = current_time;
-
-  const bool is_fullscreen = Host::IsFullscreen();
-
-  // Device lost, something went really bad.
-  // Let's just toss out everything, and try to hobble on.
-  DestroyGPUBackendOnThread();
-  DestroyDeviceOnThread(false);
-
-  Error error;
-  if (!CreateDeviceOnThread(
-        Settings::GetRenderAPIForRenderer(s_state.requested_renderer.value_or(g_gpu_settings.gpu_renderer)),
-        is_fullscreen, true, &error) ||
-      (s_state.requested_renderer.has_value() &&
-       !CreateGPUBackendOnThread(s_state.requested_renderer.value(), true, &error)))
-  {
-    ERROR_LOG("Failed to recreate GPU device after loss: {}", error.GetDescription());
-    Panic("Failed to recreate GPU device after loss.");
-    return;
-  }
-
-  // First frame after reopening is definitely going to be trash, so skip it.
-  Host::AddIconOSDWarning(
-    "HostGPUDeviceLost", ICON_EMOJI_WARNING,
-    TRANSLATE_STR("System", "Host GPU device encountered an error and has recovered. This may cause broken rendering."),
-    Host::OSD_CRITICAL_ERROR_DURATION);
-}
-
-void GPUThread::HandleExclusiveFullscreenLost()
-{
-  WARNING_LOG("Lost exclusive fullscreen.");
-  Host::SetFullscreen(false);
-}
-
 bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Error* error)
 {
+  Error local_error;
+
+  // Create presenter if we don't already have one.
+  if (!s_state.gpu_presenter)
+  {
+    s_state.gpu_presenter = std::make_unique<GPUPresenter>();
+    if (!s_state.gpu_presenter->Initialize(&local_error))
+    {
+      ERROR_LOG("Failed to create presenter: {}", local_error.GetDescription());
+      Error::SetStringFmt(error, "Failed to create presenter: {}", local_error.GetDescription());
+      s_state.gpu_presenter.reset();
+      return false;
+    }
+  }
+
   const bool is_hardware = (renderer != GPURenderer::Software);
 
   if (is_hardware)
-    s_state.gpu_backend = GPUBackend::CreateHardwareBackend();
+    s_state.gpu_backend = GPUBackend::CreateHardwareBackend(*s_state.gpu_presenter);
   else
-    s_state.gpu_backend = GPUBackend::CreateSoftwareBackend();
+    s_state.gpu_backend = GPUBackend::CreateSoftwareBackend(*s_state.gpu_presenter);
 
-  Error local_error;
   bool okay = s_state.gpu_backend->Initialize(upload_vram, &local_error);
   if (!okay)
   {
@@ -810,7 +779,7 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
         Host::OSD_CRITICAL_ERROR_DURATION);
 
       s_state.requested_renderer = GPURenderer::Software;
-      s_state.gpu_backend = GPUBackend::CreateSoftwareBackend();
+      s_state.gpu_backend = GPUBackend::CreateSoftwareBackend(*s_state.gpu_presenter);
       okay = s_state.gpu_backend->Initialize(upload_vram, &local_error);
     }
 
@@ -825,7 +794,7 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
   g_gpu_device->SetGPUTimingEnabled(g_gpu_settings.display_show_gpu_usage);
   PostProcessing::Initialize();
   ImGuiManager::UpdateDebugWindowConfig();
-  Internal::RestoreContextAfterPresent();
+  s_state.gpu_backend->RestoreDeviceContext();
   SetRunIdleReason(RunIdleReason::NoGPUBackend, false);
   std::atomic_thread_fence(std::memory_order_release);
   return true;
@@ -843,6 +812,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   if (!cmd->renderer.has_value() && !s_state.requested_fullscreen_ui)
   {
     DestroyGPUBackendOnThread();
+    DestroyGPUPresenterOnThread();
     DestroyDeviceOnThread(true);
     return;
   }
@@ -875,6 +845,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   if (cmd->force_recreate_device || !GPUDevice::IsSameRenderAPI(current_api, expected_api))
   {
     const bool fullscreen = cmd->fullscreen.value_or(Host::IsFullscreen());
+    DestroyGPUPresenterOnThread();
     DestroyDeviceOnThread(false);
 
     Error local_error;
@@ -902,7 +873,11 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   if (cmd->renderer.has_value())
   {
     // Do we want a renderer?
-    *cmd->out_result = CreateGPUBackendOnThread(cmd->renderer.value(), cmd->upload_vram, cmd->error_ptr);
+    if (!(*cmd->out_result = CreateGPUBackendOnThread(cmd->renderer.value(), cmd->upload_vram, cmd->error_ptr)))
+    {
+      // No point keeping the presenter around.
+      DestroyGPUPresenterOnThread();
+    }
   }
   else if (s_state.requested_fullscreen_ui)
   {
@@ -912,6 +887,9 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
       *cmd->out_result = false;
       return;
     }
+
+    // Don't need to present game frames anymore.
+    DestroyGPUPresenterOnThread();
 
     // Don't need timing to run FSUI.
     g_gpu_device->SetGPUTimingEnabled(false);
@@ -926,6 +904,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   else
   {
     // Device is no longer needed.
+    DestroyGPUBackendOnThread();
     DestroyDeviceOnThread(true);
   }
 }
@@ -943,6 +922,34 @@ void GPUThread::DestroyGPUBackendOnThread()
   ImGuiManager::DestroyOverlayTextures();
   PostProcessing::Shutdown();
   s_state.gpu_backend.reset();
+}
+
+void GPUThread::DestroyGPUPresenterOnThread()
+{
+  if (!s_state.gpu_presenter)
+    return;
+
+  VERBOSE_LOG("Shutting down GPU presenter...");
+
+  // Should have no queued frames by this point. Backend can get replaced with null.
+  Assert(!s_state.gpu_backend);
+  Assert(GPUBackend::GetQueuedFrameCount() == 0);
+
+  s_state.gpu_presenter.reset();
+}
+
+bool GPUThread::PresentFrameAndRestoreContext()
+{
+  if (s_state.gpu_backend)
+    s_state.gpu_backend->FlushRender();
+
+  if (!GPUPresenter::PresentFrame(s_state.gpu_presenter.get(), s_state.gpu_backend.get(), false, 0))
+    return false;
+
+  if (s_state.gpu_backend)
+    s_state.gpu_backend->RestoreDeviceContext();
+
+  return true;
 }
 
 void GPUThread::UpdateSettingsOnThread(const GPUSettings& old_settings)
@@ -964,11 +971,12 @@ void GPUThread::UpdateSettingsOnThread(const GPUSettings& old_settings)
 
     PostProcessing::UpdateSettings();
 
+    s_state.gpu_presenter->UpdateSettings(old_settings);
     s_state.gpu_backend->UpdateSettings(old_settings);
     if (ImGuiManager::UpdateDebugWindowConfig() || (PostProcessing::DisplayChain.IsActive() && !IsSystemPaused()))
-      Internal::PresentFrame(false, 0);
-
-    s_state.gpu_backend->RestoreDeviceContext();
+      PresentFrameAndRestoreContext();
+    else
+      s_state.gpu_backend->RestoreDeviceContext();
   }
 }
 
@@ -1057,7 +1065,7 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
       {
         PostProcessing::UpdateSettings();
         if (ImGuiManager::UpdateDebugWindowConfig() || (PostProcessing::DisplayChain.IsActive() && !IsSystemPaused()))
-          Internal::PresentFrame(false, 0);
+          PresentFrameAndRestoreContext();
       }
     });
   }
@@ -1180,8 +1188,8 @@ void GPUThread::DisplayWindowResizedOnThread()
     {
       // Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
       // displayed. Two seems to be good enough. Maybe something to do with direct scanout.
-      Internal::PresentFrame(false, 0);
-      Internal::PresentFrame(false, 0);
+      PresentFrameAndRestoreContext();
+      PresentFrameAndRestoreContext();
     }
 
     if (g_gpu_settings.gpu_resolution_scale == 0)
@@ -1231,110 +1239,10 @@ void GPUThread::PresentCurrentFrame()
       return;
     }
 
-    Internal::PresentFrame(false, 0);
+    // But we shouldn't be not running idle without a GPU backend.
+    if (s_state.gpu_backend)
+      PresentFrameAndRestoreContext();
   });
-}
-
-void GPUThread::SleepUntilPresentTime(Timer::Value present_time)
-{
-  // Use a spinwait if we undersleep for all platforms except android.. don't want to burn battery.
-  // Linux also seems to do a much better job of waking up at the requested time.
-
-#if !defined(__linux__) && !defined(__ANDROID__)
-  Timer::SleepUntil(present_time, true);
-#else
-  Timer::SleepUntil(present_time, false);
-#endif
-}
-
-void GPUThread::Internal::PresentFrame(bool allow_skip_present, u64 present_time)
-{
-  if (s_state.gpu_backend)
-    s_state.gpu_backend->FlushRender();
-
-  const bool skip_present = (!g_gpu_device->HasMainSwapChain() ||
-                             (allow_skip_present && g_gpu_device->GetMainSwapChain()->ShouldSkipPresentingFrame() &&
-                              s_state.skipped_present_count < MAX_SKIPPED_PRESENT_COUNT));
-
-  if (!skip_present)
-  {
-    // acquire for IO.MousePos and system state.
-    std::atomic_thread_fence(std::memory_order_acquire);
-
-    FullscreenUI::Render();
-
-    if (s_state.gpu_backend && System::IsValid())
-      ImGuiManager::RenderTextOverlays(s_state.gpu_backend.get());
-
-    ImGuiManager::RenderOverlayWindows();
-
-    ImGuiManager::RenderOSDMessages();
-
-    ImGuiFullscreen::RenderOverlays();
-
-    if (s_state.gpu_backend && System::GetState() == System::State::Running)
-      ImGuiManager::RenderSoftwareCursors();
-
-    ImGuiManager::RenderDebugWindows();
-  }
-
-  const GPUDevice::PresentResult pres =
-    skip_present ? GPUDevice::PresentResult::SkipPresent :
-                   (s_state.gpu_backend ? s_state.gpu_backend->PresentDisplay() :
-                                          g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain()));
-  if (pres == GPUDevice::PresentResult::OK)
-  {
-    s_state.skipped_present_count = 0;
-
-    g_gpu_device->RenderImGui(g_gpu_device->GetMainSwapChain());
-
-    const GPUDevice::Features features = g_gpu_device->GetFeatures();
-    const bool scheduled_present = (present_time != 0);
-    const bool explicit_present = (scheduled_present && (features.explicit_present && !features.timed_present));
-    const bool timed_present = (scheduled_present && features.timed_present);
-
-    if (scheduled_present && !explicit_present)
-    {
-      // No explicit present support, simulate it with Flush.
-      g_gpu_device->FlushCommands();
-      SleepUntilPresentTime(present_time);
-    }
-
-    g_gpu_device->EndPresent(g_gpu_device->GetMainSwapChain(), explicit_present, timed_present ? present_time : 0);
-
-    if (g_gpu_device->IsGPUTimingEnabled())
-      PerformanceCounters::AccumulateGPUTime();
-
-    if (explicit_present)
-    {
-      SleepUntilPresentTime(present_time);
-      g_gpu_device->SubmitPresent(g_gpu_device->GetMainSwapChain());
-    }
-  }
-  else
-  {
-    s_state.skipped_present_count++;
-
-    if (pres == GPUDevice::PresentResult::DeviceLost) [[unlikely]]
-      HandleGPUDeviceLost();
-    else if (pres == GPUDevice::PresentResult::ExclusiveFullscreenLost)
-      HandleExclusiveFullscreenLost();
-    else if (!skip_present)
-      g_gpu_device->FlushCommands();
-
-    // Still need to kick ImGui or it gets cranky.
-    ImGui::EndFrame();
-  }
-
-  ImGuiManager::NewFrame();
-
-  RestoreContextAfterPresent();
-}
-
-void GPUThread::Internal::RestoreContextAfterPresent()
-{
-  if (s_state.gpu_backend)
-    s_state.gpu_backend->RestoreDeviceContext();
 }
 
 bool GPUThread::GetRunIdleReason(RunIdleReason reason)

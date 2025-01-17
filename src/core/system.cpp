@@ -19,6 +19,7 @@
 #include "gpu_backend.h"
 #include "gpu_dump.h"
 #include "gpu_hw_texture_cache.h"
+#include "gpu_presenter.h"
 #include "gpu_thread.h"
 #include "gte.h"
 #include "host.h"
@@ -5254,8 +5255,7 @@ std::string System::GetScreenshotPath(const char* extension)
   return path;
 }
 
-void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, DisplayScreenshotFormat format, u8 quality,
-                            bool compress_on_thread)
+void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, DisplayScreenshotFormat format, u8 quality)
 {
   if (!IsValid())
     return;
@@ -5264,7 +5264,7 @@ void System::SaveScreenshot(const char* path, DisplayScreenshotMode mode, Displa
   if (!path)
     path = (auto_path = GetScreenshotPath(Settings::GetDisplayScreenshotFormatExtension(format))).c_str();
 
-  GPUBackend::RenderScreenshotToFile(path, mode, quality, compress_on_thread, true);
+  GPUBackend::RenderScreenshotToFile(path, mode, quality, true);
 }
 
 bool System::StartRecordingGPUDump(const char* path /*= nullptr*/, u32 num_frames /*= 0*/)
@@ -5332,8 +5332,8 @@ bool System::StartMediaCapture(std::string path)
 
         GSVector4i unused_display_rect, unused_draw_rect;
         u32 video_width, video_height;
-        backend->CalculateScreenshotSize(DisplayScreenshotMode::InternalResolution, &video_width, &video_height,
-                                         &unused_display_rect, &unused_draw_rect);
+        backend->GetPresenter().CalculateScreenshotSize(DisplayScreenshotMode::InternalResolution, &video_width,
+                                                        &video_height, &unused_display_rect, &unused_draw_rect);
 
         // fire back to the CPU thread to actually start the capture
         Host::RunOnCPUThread([path = std::move(path), capture_audio, video_width, video_height]() mutable {

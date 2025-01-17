@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "core/achievements.h"
@@ -8,6 +8,7 @@
 #include "core/game_list.h"
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
+#include "core/gpu_presenter.h"
 #include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/spu.h"
@@ -32,6 +33,7 @@
 #include "common/path.h"
 #include "common/sha256_digest.h"
 #include "common/string_util.h"
+#include "common/threading.h"
 #include "common/timer.h"
 
 #include "fmt/format.h"
@@ -52,7 +54,7 @@ static void HookSignals();
 static bool SetFolders();
 static bool SetNewDataRoot(const std::string& filename);
 static void DumpSystemStateHashes();
-static std::string GetFrameDumpFilename(u32 frame);
+static std::string GetFrameDumpPath(u32 frame);
 static void GPUThreadEntryPoint();
 
 } // namespace RegTestHost
@@ -400,8 +402,92 @@ void Host::DestroyAuxiliaryRenderWindow(AuxiliaryRenderWindowHandle handle, s32*
 
 void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
 {
-  if (s_frame_dump_interval > 0 && (s_frame_dump_interval == 1 || (frame_number % s_frame_dump_interval) == 0))
-    gpu_backend->WriteDisplayTextureToFile(RegTestHost::GetFrameDumpFilename(frame_number));
+  const GPUPresenter& presenter = gpu_backend->GetPresenter();
+  if (s_frame_dump_interval == 0 || (frame_number % s_frame_dump_interval) != 0 || !presenter.HasDisplayTexture())
+    return;
+
+  // Need to take a copy of the display texture.
+  GPUTexture* const read_texture = presenter.GetDisplayTexture();
+  const u32 read_x = static_cast<u32>(presenter.GetDisplayTextureViewX());
+  const u32 read_y = static_cast<u32>(presenter.GetDisplayTextureViewY());
+  const u32 read_width = static_cast<u32>(presenter.GetDisplayTextureViewWidth());
+  const u32 read_height = static_cast<u32>(presenter.GetDisplayTextureViewHeight());
+  const ImageFormat read_format = GPUTexture::GetImageFormatForTextureFormat(read_texture->GetFormat());
+  if (read_format == ImageFormat::None)
+    return;
+
+  Image image(read_width, read_height, read_format);
+  std::unique_ptr<GPUDownloadTexture> dltex;
+  if (g_gpu_device->GetFeatures().memory_import)
+  {
+    dltex = g_gpu_device->CreateDownloadTexture(read_width, read_height, read_texture->GetFormat(), image.GetPixels(),
+                                                image.GetStorageSize(), image.GetPitch());
+  }
+  if (!dltex)
+  {
+    if (!(dltex = g_gpu_device->CreateDownloadTexture(read_width, read_height, read_texture->GetFormat())))
+    {
+      ERROR_LOG("Failed to create {}x{} {} download texture", read_width, read_height,
+                GPUTexture::GetFormatName(read_texture->GetFormat()));
+      return;
+    }
+  }
+
+  dltex->CopyFromTexture(0, 0, read_texture, read_x, read_y, read_width, read_height, 0, 0, !dltex->IsImported());
+  if (!dltex->ReadTexels(0, 0, read_width, read_height, image.GetPixels(), image.GetPitch()))
+  {
+    ERROR_LOG("Failed to read {}x{} download texture", read_width, read_height);
+    gpu_backend->RestoreDeviceContext();
+    return;
+  }
+
+  // no more GPU calls
+  gpu_backend->RestoreDeviceContext();
+
+  Error error;
+  const std::string path = RegTestHost::GetFrameDumpPath(frame_number);
+  auto fp = FileSystem::OpenManagedCFile(path.c_str(), "wb", &error);
+  if (!fp)
+  {
+    ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(path), error.GetDescription());
+    return;
+  }
+
+  System::QueueAsyncTask([path = std::move(path), fp = fp.release(), flip_y = g_gpu_device->UsesLowerLeftOrigin(),
+                          image = std::move(image)]() mutable {
+    Error error;
+
+    if (flip_y)
+      image.FlipY();
+
+    if (image.GetFormat() != ImageFormat::RGBA8)
+    {
+      std::optional<Image> convert_image = image.ConvertToRGBA8(&error);
+      if (!convert_image.has_value())
+      {
+        ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}", Image::GetFormatName(image.GetFormat()),
+                  error.GetDescription());
+        image.Invalidate();
+      }
+      else
+      {
+        image = std::move(convert_image.value());
+      }
+    }
+
+    bool result = false;
+    if (image.IsValid())
+    {
+      image.SetAllPixelsOpaque();
+
+      result = image.SaveToFile(path.c_str(), fp, Image::DEFAULT_SAVE_QUALITY, &error);
+      if (!result)
+        ERROR_LOG("Failed to save screenshot to '{}': '{}'", Path::GetFileName(path), error.GetDescription());
+    }
+
+    std::fclose(fp);
+    return result;
+  });
 }
 
 void Host::OpenURL(std::string_view url)
@@ -781,7 +867,7 @@ bool RegTestHost::SetNewDataRoot(const std::string& filename)
   return true;
 }
 
-std::string RegTestHost::GetFrameDumpFilename(u32 frame)
+std::string RegTestHost::GetFrameDumpPath(u32 frame)
 {
   return Path::Combine(EmuFolders::DataRoot, fmt::format("frame_{:05d}.png", frame));
 }

@@ -3,6 +3,7 @@
 
 #include "gpu_sw.h"
 #include "gpu.h"
+#include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "settings.h"
 #include "system_private.h"
@@ -20,7 +21,9 @@
 
 LOG_CHANNEL(GPU);
 
-GPU_SW::GPU_SW() = default;
+GPU_SW::GPU_SW(GPUPresenter& presenter) : GPUBackend(presenter)
+{
+}
 
 GPU_SW::~GPU_SW() = default;
 
@@ -209,7 +212,7 @@ GPUTexture* GPU_SW::GetDisplayTexture(u32 width, u32 height, GPUTexture::Format 
   if (!m_upload_texture || m_upload_texture->GetWidth() != width || m_upload_texture->GetHeight() != height ||
       m_upload_texture->GetFormat() != format)
   {
-    ClearDisplayTexture();
+    m_presenter.ClearDisplayTexture();
     g_gpu_device->RecycleTexture(std::move(m_upload_texture));
     m_upload_texture = g_gpu_device->FetchTexture(width, height, 1, 1, 1, GPUTexture::Type::Texture, format,
                                                   GPUTexture::Flags::AllowMap, nullptr, 0);
@@ -388,7 +391,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   {
     if (cmd->display_disabled)
     {
-      ClearDisplayTexture();
+      m_presenter.ClearDisplayTexture();
       return;
     }
 
@@ -407,15 +410,15 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     {
       if (CopyOut(src_x, src_y, skip_x, width, height, line_skip, is_24bit))
       {
-        SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, width, height);
+        m_presenter.SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, width, height);
         if (is_24bit && g_settings.display_24bit_chroma_smoothing)
         {
-          if (ApplyChromaSmoothing())
-            Deinterlace(field);
+          if (m_presenter.ApplyChromaSmoothing())
+            m_presenter.Deinterlace(field);
         }
         else
         {
-          Deinterlace(field);
+          m_presenter.Deinterlace(field);
         }
       }
     }
@@ -423,20 +426,20 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     {
       if (CopyOut(src_x, src_y, skip_x, width, height, 0, is_24bit))
       {
-        SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, width, height);
+        m_presenter.SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, width, height);
         if (is_24bit && g_settings.display_24bit_chroma_smoothing)
-          ApplyChromaSmoothing();
+          m_presenter.ApplyChromaSmoothing();
       }
     }
   }
   else
   {
     if (CopyOut(0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 0, false))
-      SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+      m_presenter.SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
   }
 }
 
-std::unique_ptr<GPUBackend> GPUBackend::CreateSoftwareBackend()
+std::unique_ptr<GPUBackend> GPUBackend::CreateSoftwareBackend(GPUPresenter& presenter)
 {
-  return std::make_unique<GPU_SW>();
+  return std::make_unique<GPU_SW>(presenter);
 }

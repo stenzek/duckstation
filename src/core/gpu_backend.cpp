@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_backend.h"
 #include "gpu.h"
-#include "gpu_shadergen.h"
+#include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "gpu_thread.h"
 #include "host.h"
@@ -14,28 +14,18 @@
 #include "system_private.h"
 
 #include "util/gpu_device.h"
-#include "util/image.h"
 #include "util/imgui_manager.h"
-#include "util/media_capture.h"
-#include "util/postprocessing.h"
 #include "util/state_wrapper.h"
 
-#include "common/align.h"
 #include "common/error.h"
 #include "common/file_system.h"
-#include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/path.h"
-#include "common/small_string.h"
-#include "common/string_util.h"
-#include "common/timer.h"
+#include "common/threading.h"
 
 #include "IconsEmoji.h"
 #include "IconsFontAwesome5.h"
 #include "fmt/format.h"
-
-#include <numbers>
-#include <thread>
 
 LOG_CHANNEL(GPU);
 
@@ -70,77 +60,75 @@ struct ALIGN_TO_CACHE_LINE CPUThreadState
 
 } // namespace
 
-static bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string path, FileSystem::ManagedCFilePtr fp,
-                                          u8 quality, bool clear_alpha, bool flip_y, Image image, std::string osd_key);
-
-static constexpr GPUTexture::Format DISPLAY_INTERNAL_POSTFX_FORMAT = GPUTexture::Format::RGBA8;
-
 static Counters s_counters = {};
 static Stats s_stats = {};
+
 static CPUThreadState s_cpu_thread_state = {};
 
-GPUBackend::GPUBackend()
+GPUBackend::GPUBackend(GPUPresenter& presenter) : m_presenter(presenter)
 {
   GPU_SW_Rasterizer::SelectImplementation();
   ResetStatistics();
-
-  // Should be zero.
-  Assert(s_cpu_thread_state.queued_frames.load(std::memory_order_acquire) == 0);
-  Assert(!s_cpu_thread_state.waiting_for_gpu_thread.load(std::memory_order_acquire));
 }
 
 GPUBackend::~GPUBackend()
 {
-  DestroyDeinterlaceTextures();
-  g_gpu_device->RecycleTexture(std::move(m_chroma_smoothing_texture));
+  m_presenter.ClearDisplayTexture();
+}
+
+void GPUBackend::SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config)
+{
+  static constexpr GPUPipeline::VertexAttribute screen_vertex_attributes[] = {
+    GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ScreenVertex, x)),
+    GPUPipeline::VertexAttribute::Make(1, GPUPipeline::VertexAttribute::Semantic::TexCoord, 0,
+                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ScreenVertex, u)),
+  };
+
+  // common state
+  config.input_layout.vertex_attributes = screen_vertex_attributes;
+  config.input_layout.vertex_stride = sizeof(ScreenVertex);
+  config.primitive = GPUPipeline::Primitive::TriangleStrips;
+}
+
+GSVector4 GPUBackend::GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size)
+{
+  const GSVector4 fboundsxxyy = GSVector4(bounds.xzyw());
+  const GSVector2 fsize = GSVector2(rt_size);
+  const GSVector2 x = ((fboundsxxyy.xy() * GSVector2::cxpr(2.0f)) / fsize.xx()) - GSVector2::cxpr(1.0f);
+  const GSVector2 y = GSVector2::cxpr(1.0f) - (GSVector2::cxpr(2.0f) * (fboundsxxyy.zw() / fsize.yy()));
+  return GSVector4::xyxy(x, y).xzyw();
+}
+
+void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
+                                const GSVector4 uv_bounds /* = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f) */)
+{
+  const GSVector4 xy = GetScreenQuadClipSpaceCoordinates(bounds, rt_size);
+
+  ScreenVertex* vertices;
+  u32 space;
+  u32 base_vertex;
+  g_gpu_device->MapVertexBuffer(sizeof(ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space, &base_vertex);
+
+  vertices[0].Set(xy.xy(), uv_bounds.xy());
+  vertices[1].Set(xy.zyzw().xy(), uv_bounds.zyzw().xy());
+  vertices[2].Set(xy.xwzw().xy(), uv_bounds.xwzw().xy());
+  vertices[3].Set(xy.zw(), uv_bounds.zw());
+
+  g_gpu_device->UnmapVertexBuffer(sizeof(ScreenVertex), 4);
+  g_gpu_device->Draw(4, base_vertex);
 }
 
 bool GPUBackend::Initialize(bool clear_vram, Error* error)
 {
   m_clamped_drawing_area = GPU::GetClampedDrawingArea(GPU_SW_Rasterizer::g_drawing_area);
-
-  if (!CompileDisplayPipelines(true, true, g_gpu_settings.display_24bit_chroma_smoothing, error))
-    return false;
-
   return true;
 }
 
 void GPUBackend::UpdateSettings(const GPUSettings& old_settings)
 {
-  FlushRender();
-
   if (g_gpu_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats)
     GPUBackend::ResetStatistics();
-
-  if (g_gpu_settings.display_scaling != old_settings.display_scaling ||
-      g_gpu_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
-      g_gpu_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing)
-  {
-    // Toss buffers on mode change.
-    if (g_gpu_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode)
-      DestroyDeinterlaceTextures();
-
-    if (!CompileDisplayPipelines(
-          g_gpu_settings.display_scaling != old_settings.display_scaling,
-          g_gpu_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode,
-          g_gpu_settings.display_24bit_chroma_smoothing != old_settings.display_24bit_chroma_smoothing, nullptr))
-    {
-      Panic("Failed to compile display pipeline on settings change.");
-    }
-  }
-}
-
-void GPUBackend::UpdateResolutionScale()
-{
-}
-
-u32 GPUBackend::GetResolutionScale() const
-{
-  return 1u;
-}
-
-void GPUBackend::RestoreDeviceContext()
-{
 }
 
 GPUThreadCommand* GPUBackend::NewClearVRAMCommand()
@@ -325,6 +313,21 @@ u32 GPUBackend::GetQueuedFrameCount()
   return s_cpu_thread_state.queued_frames.load(std::memory_order_acquire);
 }
 
+void GPUBackend::ReleaseQueuedFrame()
+{
+  s_cpu_thread_state.queued_frames.fetch_sub(1, std::memory_order_acq_rel);
+
+  bool expected = true;
+  if (s_cpu_thread_state.waiting_for_gpu_thread.compare_exchange_strong(expected, false, std::memory_order_acq_rel,
+                                                                        std::memory_order_relaxed))
+  {
+    if (g_settings.gpu_max_queued_frames > 0)
+      DEV_LOG("--> Unblocking CPU thread");
+
+    s_cpu_thread_state.gpu_thread_wait.Post();
+  }
+}
+
 bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> states, Error* error)
 {
   bool result;
@@ -401,7 +404,7 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
 
     case GPUBackendCommandType::ClearDisplay:
     {
-      ClearDisplay();
+      m_presenter.ClearDisplay();
     }
     break;
 
@@ -529,194 +532,14 @@ void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
   }
 }
 
-bool GPUBackend::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error)
-{
-  const GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
-                               g_gpu_device->GetFeatures().framebuffer_fetch);
-
-  GPUPipeline::GraphicsConfig plconfig;
-  plconfig.primitive = GPUPipeline::Primitive::Triangles;
-  plconfig.rasterization = GPUPipeline::RasterizationState::GetNoCullState();
-  plconfig.depth = GPUPipeline::DepthState::GetNoTestsState();
-  plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
-  plconfig.geometry_shader = nullptr;
-  plconfig.depth_format = GPUTexture::Format::Unknown;
-  plconfig.samples = 1;
-  plconfig.per_sample_shading = false;
-  plconfig.render_pass_flags = GPUPipeline::NoRenderPassFlags;
-
-  if (display)
-  {
-    SetScreenQuadInputLayout(plconfig);
-
-    plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-    plconfig.SetTargetFormats(g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() :
-                                                                 GPUTexture::Format::RGBA8);
-
-    std::string vs = shadergen.GenerateDisplayVertexShader();
-    std::string fs;
-    switch (g_gpu_settings.display_scaling)
-    {
-      case DisplayScalingMode::BilinearSharp:
-        fs = shadergen.GenerateDisplaySharpBilinearFragmentShader();
-        break;
-
-      case DisplayScalingMode::BilinearSmooth:
-      case DisplayScalingMode::BilinearInteger:
-        fs = shadergen.GenerateDisplayFragmentShader(true, false);
-        break;
-
-      case DisplayScalingMode::Nearest:
-      case DisplayScalingMode::NearestInteger:
-      default:
-        fs = shadergen.GenerateDisplayFragmentShader(false, true);
-        break;
-    }
-
-    std::unique_ptr<GPUShader> vso =
-      g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(), vs, error);
-    std::unique_ptr<GPUShader> fso =
-      g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(), fs, error);
-    if (!vso || !fso)
-      return false;
-    GL_OBJECT_NAME(vso, "Display Vertex Shader");
-    GL_OBJECT_NAME_FMT(fso, "Display Fragment Shader [{}]",
-                       Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
-    plconfig.vertex_shader = vso.get();
-    plconfig.fragment_shader = fso.get();
-    if (!(m_display_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-      return false;
-    GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
-                       Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
-  }
-
-  plconfig.input_layout = {};
-  plconfig.primitive = GPUPipeline::Primitive::Triangles;
-
-  if (deinterlace)
-  {
-    std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                                shadergen.GenerateScreenQuadVertexShader(), error);
-    if (!vso)
-      return false;
-    GL_OBJECT_NAME(vso, "Deinterlace Vertex Shader");
-
-    plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-    plconfig.vertex_shader = vso.get();
-    plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
-
-    switch (g_gpu_settings.display_deinterlacing_mode)
-    {
-      case DisplayDeinterlacingMode::Disabled:
-      case DisplayDeinterlacingMode::Progressive:
-        break;
-
-      case DisplayDeinterlacingMode::Weave:
-      {
-        std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(
-          GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateDeinterlaceWeaveFragmentShader(), error);
-        if (!fso)
-          return false;
-
-        GL_OBJECT_NAME(fso, "Weave Deinterlace Fragment Shader");
-
-        plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-        plconfig.vertex_shader = vso.get();
-        plconfig.fragment_shader = fso.get();
-        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-          return false;
-
-        GL_OBJECT_NAME(m_deinterlace_pipeline, "Weave Deinterlace Pipeline");
-      }
-      break;
-
-      case DisplayDeinterlacingMode::Blend:
-      {
-        std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(
-          GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateDeinterlaceBlendFragmentShader(), error);
-        if (!fso)
-          return false;
-
-        GL_OBJECT_NAME(fso, "Blend Deinterlace Fragment Shader");
-
-        plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
-        plconfig.vertex_shader = vso.get();
-        plconfig.fragment_shader = fso.get();
-        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-          return false;
-
-        GL_OBJECT_NAME(m_deinterlace_pipeline, "Blend Deinterlace Pipeline");
-      }
-      break;
-
-      case DisplayDeinterlacingMode::Adaptive:
-      {
-        std::unique_ptr<GPUShader> fso =
-          g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                     shadergen.GenerateFastMADReconstructFragmentShader(), error);
-        if (!fso)
-          return false;
-
-        GL_OBJECT_NAME(fso, "FastMAD Reconstruct Fragment Shader");
-
-        plconfig.layout = GPUPipeline::Layout::MultiTextureAndPushConstants;
-        plconfig.fragment_shader = fso.get();
-        if (!(m_deinterlace_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-          return false;
-
-        GL_OBJECT_NAME(m_deinterlace_pipeline, "FastMAD Reconstruct Pipeline");
-      }
-      break;
-
-      default:
-        UnreachableCode();
-    }
-  }
-
-  if (chroma_smoothing)
-  {
-    m_chroma_smoothing_pipeline.reset();
-    g_gpu_device->RecycleTexture(std::move(m_chroma_smoothing_texture));
-
-    if (g_gpu_settings.display_24bit_chroma_smoothing)
-    {
-      plconfig.layout = GPUPipeline::Layout::SingleTextureAndPushConstants;
-      plconfig.SetTargetFormats(GPUTexture::Format::RGBA8);
-
-      std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                                  shadergen.GenerateScreenQuadVertexShader(), error);
-      std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(
-        GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateChromaSmoothingFragmentShader(), error);
-      if (!vso || !fso)
-        return false;
-      GL_OBJECT_NAME(vso, "Chroma Smoothing Vertex Shader");
-      GL_OBJECT_NAME(fso, "Chroma Smoothing Fragment Shader");
-
-      plconfig.vertex_shader = vso.get();
-      plconfig.fragment_shader = fso.get();
-      if (!(m_chroma_smoothing_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-        return false;
-      GL_OBJECT_NAME(m_chroma_smoothing_pipeline, "Chroma Smoothing Pipeline");
-    }
-  }
-
-  return true;
-}
-
 void GPUBackend::HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand* cmd)
 {
   // Height has to be doubled because we halved it on the GPU side.
-  const GPUBackendUpdateDisplayCommand* ccmd = static_cast<const GPUBackendUpdateDisplayCommand*>(cmd);
-  m_display_width = ccmd->display_width;
-  m_display_height = ccmd->display_height;
-  m_display_origin_left = ccmd->display_origin_left;
-  m_display_origin_top = ccmd->display_origin_top;
-  m_display_vram_width = ccmd->display_vram_width;
-  m_display_vram_height = (ccmd->display_vram_height << BoolToUInt32(ccmd->interlaced_display_enabled));
-  m_display_pixel_aspect_ratio = ccmd->display_pixel_aspect_ratio;
+  m_presenter.SetDisplayParameters(
+    cmd->display_width, cmd->display_height, cmd->display_origin_left, cmd->display_origin_top, cmd->display_vram_width,
+    cmd->display_vram_height << BoolToUInt32(cmd->interlaced_display_enabled), cmd->display_pixel_aspect_ratio);
 
-  UpdateDisplay(ccmd);
-
+  UpdateDisplay(cmd);
   if (cmd->submit_frame)
     HandleSubmitFrameCommand(&cmd->frame);
 }
@@ -727,23 +550,15 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   Host::FrameDoneOnGPUThread(this, cmd->frame_number);
 
   if (cmd->media_capture)
-    SendDisplayToMediaCapture(cmd->media_capture);
+    m_presenter.SendDisplayToMediaCapture(cmd->media_capture);
 
+  // If this returns false, our backend object is deleted and replaced with null, so bail out.
   if (cmd->present_frame)
   {
-    GPUThread::Internal::PresentFrame(cmd->allow_present_skip, cmd->present_time);
-
-    s_cpu_thread_state.queued_frames.fetch_sub(1, std::memory_order_acq_rel);
-
-    bool expected = true;
-    if (s_cpu_thread_state.waiting_for_gpu_thread.compare_exchange_strong(expected, false, std::memory_order_acq_rel,
-                                                                          std::memory_order_relaxed))
-    {
-      if (g_settings.gpu_max_queued_frames > 0)
-        DEV_LOG("--> Unblocking CPU thread");
-
-      s_cpu_thread_state.gpu_thread_wait.Post();
-    }
+    const bool result = m_presenter.PresentFrame(&m_presenter, this, cmd->allow_present_skip, cmd->present_time);
+    ReleaseQueuedFrame();
+    if (!result)
+      return;
   }
 
   // Update perf counters *after* throttling, we want to measure from start-of-frame
@@ -751,817 +566,8 @@ void GPUBackend::HandleSubmitFrameCommand(const GPUBackendFramePresentationParam
   // amounts of computation happening in each frame).
   if (cmd->update_performance_counters)
     PerformanceCounters::Update(this, cmd->frame_number, cmd->internal_frame_number);
-}
-
-void GPUBackend::ClearDisplay()
-{
-  ClearDisplayTexture();
-
-  // Just recycle the textures, it'll get re-fetched.
-  DestroyDeinterlaceTextures();
-}
-
-void GPUBackend::ClearDisplayTexture()
-{
-  m_display_texture = nullptr;
-  m_display_texture_view_x = 0;
-  m_display_texture_view_y = 0;
-  m_display_texture_view_width = 0;
-  m_display_texture_view_height = 0;
-}
-
-void GPUBackend::SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buffer, s32 view_x, s32 view_y,
-                                   s32 view_width, s32 view_height)
-{
-  DebugAssert(texture);
-
-  if (g_gpu_settings.display_auto_resize_window &&
-      (view_width != m_display_texture_view_width || view_height != m_display_texture_view_height))
-  {
-    Host::RunOnCPUThread([]() { System::RequestDisplaySize(); });
-  }
-
-  m_display_texture = texture;
-  m_display_depth_buffer = depth_buffer;
-  m_display_texture_view_x = view_x;
-  m_display_texture_view_y = view_y;
-  m_display_texture_view_width = view_width;
-  m_display_texture_view_height = view_height;
-}
-
-GPUDevice::PresentResult GPUBackend::PresentDisplay()
-{
-  FlushRender();
-
-  if (!g_gpu_device->HasMainSwapChain())
-    return GPUDevice::PresentResult::SkipPresent;
-
-  GSVector4i display_rect;
-  GSVector4i draw_rect;
-  CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(), g_gpu_device->GetMainSwapChain()->GetHeight(),
-                    !g_gpu_settings.gpu_show_vram, true, &display_rect, &draw_rect);
-  return RenderDisplay(nullptr, display_rect, draw_rect, !g_gpu_settings.gpu_show_vram);
-}
-
-GPUDevice::PresentResult GPUBackend::RenderDisplay(GPUTexture* target, const GSVector4i display_rect,
-                                                   const GSVector4i draw_rect, bool postfx)
-{
-  GL_SCOPE_FMT("RenderDisplay: {}", draw_rect);
-
-  if (m_display_texture)
-    m_display_texture->MakeReadyForSampling();
-
-  // Internal post-processing.
-  GPUTexture* display_texture = m_display_texture;
-  s32 display_texture_view_x = m_display_texture_view_x;
-  s32 display_texture_view_y = m_display_texture_view_y;
-  s32 display_texture_view_width = m_display_texture_view_width;
-  s32 display_texture_view_height = m_display_texture_view_height;
-  if (postfx && display_texture && PostProcessing::InternalChain.IsActive() &&
-      PostProcessing::InternalChain.CheckTargets(DISPLAY_INTERNAL_POSTFX_FORMAT, display_texture_view_width,
-                                                 display_texture_view_height))
-  {
-    DebugAssert(display_texture_view_x == 0 && display_texture_view_y == 0 &&
-                static_cast<s32>(display_texture->GetWidth()) == display_texture_view_width &&
-                static_cast<s32>(display_texture->GetHeight()) == display_texture_view_height);
-
-    // Now we can apply the post chain.
-    GPUTexture* post_output_texture = PostProcessing::InternalChain.GetOutputTexture();
-    if (PostProcessing::InternalChain.Apply(display_texture, m_display_depth_buffer, post_output_texture,
-                                            GSVector4i(0, 0, display_texture_view_width, display_texture_view_height),
-                                            display_texture_view_width, display_texture_view_height, m_display_width,
-                                            m_display_height) == GPUDevice::PresentResult::OK)
-    {
-      display_texture_view_x = 0;
-      display_texture_view_y = 0;
-      display_texture = post_output_texture;
-      display_texture->MakeReadyForSampling();
-    }
-  }
-
-  const GPUTexture::Format hdformat = target ? target->GetFormat() : g_gpu_device->GetMainSwapChain()->GetFormat();
-  const u32 target_width = target ? target->GetWidth() : g_gpu_device->GetMainSwapChain()->GetWidth();
-  const u32 target_height = target ? target->GetHeight() : g_gpu_device->GetMainSwapChain()->GetHeight();
-  const bool really_postfx = (postfx && PostProcessing::DisplayChain.IsActive() && g_gpu_device->HasMainSwapChain() &&
-                              hdformat != GPUTexture::Format::Unknown && target_width > 0 && target_height > 0 &&
-                              PostProcessing::DisplayChain.CheckTargets(hdformat, target_width, target_height));
-  const u32 real_target_width =
-    (target || really_postfx) ? target_width : g_gpu_device->GetMainSwapChain()->GetPostRotatedWidth();
-  const u32 real_target_height =
-    (target || really_postfx) ? target_height : g_gpu_device->GetMainSwapChain()->GetPostRotatedHeight();
-  GSVector4i real_draw_rect =
-    (target || really_postfx) ? draw_rect : g_gpu_device->GetMainSwapChain()->PreRotateClipRect(draw_rect);
-  if (really_postfx)
-  {
-    g_gpu_device->ClearRenderTarget(PostProcessing::DisplayChain.GetInputTexture(), GPUDevice::DEFAULT_CLEAR_COLOR);
-    g_gpu_device->SetRenderTarget(PostProcessing::DisplayChain.GetInputTexture());
-  }
-  else
-  {
-    if (target)
-    {
-      g_gpu_device->SetRenderTarget(target);
-    }
-    else
-    {
-      const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain());
-      if (pres != GPUDevice::PresentResult::OK)
-        return pres;
-    }
-  }
-
-  if (display_texture)
-  {
-    bool texture_filter_linear = false;
-
-    struct alignas(16) Uniforms
-    {
-      float src_size[4];
-      float clamp_rect[4];
-      float params[4];
-    } uniforms;
-    std::memset(uniforms.params, 0, sizeof(uniforms.params));
-
-    switch (g_gpu_settings.display_scaling)
-    {
-      case DisplayScalingMode::Nearest:
-      case DisplayScalingMode::NearestInteger:
-        break;
-
-      case DisplayScalingMode::BilinearSmooth:
-      case DisplayScalingMode::BilinearInteger:
-        texture_filter_linear = true;
-        break;
-
-      case DisplayScalingMode::BilinearSharp:
-      {
-        texture_filter_linear = true;
-        uniforms.params[0] = std::max(
-          std::floor(static_cast<float>(draw_rect.width()) / static_cast<float>(m_display_texture_view_width)), 1.0f);
-        uniforms.params[1] = std::max(
-          std::floor(static_cast<float>(draw_rect.height()) / static_cast<float>(m_display_texture_view_height)), 1.0f);
-        uniforms.params[2] = 0.5f - 0.5f / uniforms.params[0];
-        uniforms.params[3] = 0.5f - 0.5f / uniforms.params[1];
-      }
-      break;
-
-      default:
-        UnreachableCode();
-        break;
-    }
-
-    g_gpu_device->SetPipeline(m_display_pipeline.get());
-    g_gpu_device->SetTextureSampler(
-      0, display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
-
-    // For bilinear, clamp to 0.5/SIZE-0.5 to avoid bleeding from the adjacent texels in VRAM. This is because
-    // 1.0 in UV space is not the bottom-right texel, but a mix of the bottom-right and wrapped/next texel.
-    const GSVector2 display_texture_size = GSVector2(display_texture->GetSizeVec());
-    const GSVector4 display_texture_size4 = GSVector4::xyxy(display_texture_size);
-    const GSVector4 uv_rect = GSVector4(GSVector4i(display_texture_view_x, display_texture_view_y,
-                                                   display_texture_view_x + display_texture_view_width,
-                                                   display_texture_view_y + display_texture_view_height)) /
-                              display_texture_size4;
-    GSVector4::store<true>(uniforms.clamp_rect,
-                           GSVector4(static_cast<float>(display_texture_view_x) + 0.5f,
-                                     static_cast<float>(display_texture_view_y) + 0.5f,
-                                     static_cast<float>(display_texture_view_x + display_texture_view_width) - 0.5f,
-                                     static_cast<float>(display_texture_view_y + display_texture_view_height) - 0.5f) /
-                             display_texture_size4);
-    GSVector4::store<true>(uniforms.src_size,
-                           GSVector4::xyxy(display_texture_size, GSVector2::cxpr(1.0f) / display_texture_size));
-
-    g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-
-    g_gpu_device->SetViewport(0, 0, real_target_width, real_target_height);
-    g_gpu_device->SetScissor(g_gpu_device->UsesLowerLeftOrigin() ?
-                               GPUDevice::FlipToLowerLeft(real_draw_rect, real_target_height) :
-                               real_draw_rect);
-
-    ScreenVertex* vertices;
-    u32 space;
-    u32 base_vertex;
-    g_gpu_device->MapVertexBuffer(sizeof(ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space, &base_vertex);
-
-    const WindowInfo::PreRotation surface_prerotation = (target || really_postfx) ?
-                                                          WindowInfo::PreRotation::Identity :
-                                                          g_gpu_device->GetMainSwapChain()->GetPreRotation();
-
-    const DisplayRotation uv_rotation = static_cast<DisplayRotation>(
-      (static_cast<u32>(g_gpu_settings.display_rotation) + static_cast<u32>(surface_prerotation)) %
-      static_cast<u32>(DisplayRotation::Count));
-
-    const GSVector4 xy =
-      GetScreenQuadClipSpaceCoordinates(real_draw_rect, GSVector2i(real_target_width, real_target_height));
-    switch (uv_rotation)
-    {
-      case DisplayRotation::Normal:
-        vertices[0].Set(xy.xy(), uv_rect.xy());
-        vertices[1].Set(xy.zyzw().xy(), uv_rect.zyzw().xy());
-        vertices[2].Set(xy.xwzw().xy(), uv_rect.xwzw().xy());
-        vertices[3].Set(xy.zw(), uv_rect.zw());
-        break;
-      case DisplayRotation::Rotate90:
-        vertices[0].Set(xy.xy(), uv_rect.xwzw().xy());
-        vertices[1].Set(xy.zyzw().xy(), uv_rect.xy());
-        vertices[2].Set(xy.xwzw().xy(), uv_rect.zw());
-        vertices[3].Set(xy.zw(), uv_rect.zyzw().xy());
-        break;
-      case DisplayRotation::Rotate180:
-        vertices[0].Set(xy.xy(), uv_rect.xwzw().xy());
-        vertices[1].Set(xy.zyzw().xy(), uv_rect.zw());
-        vertices[2].Set(xy.xwzw().xy(), uv_rect.xy());
-        vertices[3].Set(xy.zw(), uv_rect.zyzw().xy());
-        break;
-      case DisplayRotation::Rotate270:
-        vertices[0].Set(xy.xy(), uv_rect.zyzw().xy());
-        vertices[1].Set(xy.zyzw().xy(), uv_rect.zw());
-        vertices[2].Set(xy.xwzw().xy(), uv_rect.xy());
-        vertices[3].Set(xy.zw(), uv_rect.xwzw().xy());
-        break;
-
-        DefaultCaseIsUnreachable();
-    }
-
-    g_gpu_device->UnmapVertexBuffer(sizeof(ScreenVertex), 4);
-    g_gpu_device->Draw(4, base_vertex);
-  }
-
-  if (really_postfx)
-  {
-    DebugAssert(!g_gpu_settings.gpu_show_vram);
-
-    // "original size" in postfx includes padding.
-    const float upscale_x =
-      m_display_texture ? static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width) :
-                          1.0f;
-    const float upscale_y = m_display_texture ? static_cast<float>(m_display_texture_view_height) /
-                                                  static_cast<float>(m_display_vram_height) :
-                                                1.0f;
-    const s32 orig_width = static_cast<s32>(std::ceil(static_cast<float>(m_display_width) * upscale_x));
-    const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_display_height) * upscale_y));
-
-    return PostProcessing::DisplayChain.Apply(PostProcessing::DisplayChain.GetInputTexture(), nullptr, target,
-                                              display_rect, orig_width, orig_height, m_display_width, m_display_height);
-  }
-  else
-  {
-    return GPUDevice::PresentResult::OK;
-  }
-}
-
-void GPUBackend::SendDisplayToMediaCapture(MediaCapture* cap)
-{
-  GPUTexture* target = cap->GetRenderTexture();
-  if (!target) [[unlikely]]
-  {
-    WARNING_LOG("Failed to get video capture render texture.");
-    Host::RunOnCPUThread(&System::StopMediaCapture);
-    return;
-  }
-
-  const bool apply_aspect_ratio =
-    (g_gpu_settings.display_screenshot_mode != DisplayScreenshotMode::UncorrectedInternalResolution);
-  const bool postfx = (g_gpu_settings.display_screenshot_mode != DisplayScreenshotMode::InternalResolution);
-  GSVector4i display_rect, draw_rect;
-  CalculateDrawRect(target->GetWidth(), target->GetHeight(), !g_gpu_settings.gpu_show_vram, apply_aspect_ratio,
-                    &display_rect, &draw_rect);
-
-  // Not cleared by RenderDisplay().
-  g_gpu_device->ClearRenderTarget(target, GPUDevice::DEFAULT_CLEAR_COLOR);
-
-  if (RenderDisplay(target, display_rect, draw_rect, postfx) != GPUDevice::PresentResult::OK ||
-      !cap->DeliverVideoFrame(target)) [[unlikely]]
-  {
-    WARNING_LOG("Failed to render/deliver video capture frame.");
-    Host::RunOnCPUThread(&System::StopMediaCapture);
-    return;
-  }
-}
-
-void GPUBackend::DestroyDeinterlaceTextures()
-{
-  for (std::unique_ptr<GPUTexture>& tex : m_deinterlace_buffers)
-    g_gpu_device->RecycleTexture(std::move(tex));
-  g_gpu_device->RecycleTexture(std::move(m_deinterlace_texture));
-  m_current_deinterlace_buffer = 0;
-}
-
-bool GPUBackend::Deinterlace(u32 field)
-{
-  GPUTexture* src = m_display_texture;
-  const u32 x = m_display_texture_view_x;
-  const u32 y = m_display_texture_view_y;
-  const u32 width = m_display_texture_view_width;
-  const u32 height = m_display_texture_view_height;
-
-  const auto copy_to_field_buffer = [&](u32 buffer) {
-    if (!g_gpu_device->ResizeTexture(&m_deinterlace_buffers[buffer], width, height, GPUTexture::Type::Texture,
-                                     src->GetFormat(), GPUTexture::Flags::None, false)) [[unlikely]]
-    {
-      return false;
-    }
-
-    GL_OBJECT_NAME_FMT(m_deinterlace_buffers[buffer], "Blend Deinterlace Buffer {}", buffer);
-
-    GL_INS_FMT("Copy {}x{} from {},{} to field buffer {}", width, height, x, y, buffer);
-    g_gpu_device->CopyTextureRegion(m_deinterlace_buffers[buffer].get(), 0, 0, 0, 0, m_display_texture, x, y, 0, 0,
-                                    width, height);
-    return true;
-  };
-
-  src->MakeReadyForSampling();
-
-  switch (g_gpu_settings.display_deinterlacing_mode)
-  {
-    case DisplayDeinterlacingMode::Disabled:
-    {
-      GL_INS("Deinterlacing disabled, displaying field texture");
-      return true;
-    }
-
-    case DisplayDeinterlacingMode::Weave:
-    {
-      GL_SCOPE_FMT("DeinterlaceWeave({{{},{}}}, {}x{}, field={})", x, y, width, height, field);
-
-      const u32 full_height = height * 2;
-      if (!DeinterlaceSetTargetSize(width, full_height, true)) [[unlikely]]
-      {
-        ClearDisplayTexture();
-        return false;
-      }
-
-      src->MakeReadyForSampling();
-
-      g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
-      g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
-      g_gpu_device->SetTextureSampler(0, src, g_gpu_device->GetNearestSampler());
-      const u32 uniforms[4] = {x, y, field, 0};
-      g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-      g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
-      g_gpu_device->Draw(3, 0);
-
-      m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, full_height);
-      return true;
-    }
-
-    case DisplayDeinterlacingMode::Blend:
-    {
-      constexpr u32 NUM_BLEND_BUFFERS = 2;
-
-      GL_SCOPE_FMT("DeinterlaceBlend({{{},{}}}, {}x{}, field={})", x, y, width, height, field);
-
-      const u32 this_buffer = m_current_deinterlace_buffer;
-      m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % NUM_BLEND_BUFFERS;
-      GL_INS_FMT("Current buffer: {}", this_buffer);
-      if (!DeinterlaceSetTargetSize(width, height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
-      {
-        ClearDisplayTexture();
-        return false;
-      }
-
-      copy_to_field_buffer(this_buffer);
-
-      // TODO: could be implemented with alpha blending instead..
-      g_gpu_device->InvalidateRenderTarget(m_deinterlace_texture.get());
-      g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
-      g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
-      g_gpu_device->SetTextureSampler(0, m_deinterlace_buffers[this_buffer].get(), g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetTextureSampler(1, m_deinterlace_buffers[(this_buffer - 1) % NUM_BLEND_BUFFERS].get(),
-                                      g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetViewportAndScissor(0, 0, width, height);
-      g_gpu_device->Draw(3, 0);
-
-      m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, height);
-      return true;
-    }
-
-    case DisplayDeinterlacingMode::Adaptive:
-    {
-      GL_SCOPE_FMT("DeinterlaceAdaptive({{{},{}}}, {}x{}, field={})", x, y, width, height, field);
-
-      const u32 this_buffer = m_current_deinterlace_buffer;
-      const u32 full_height = height * 2;
-      m_current_deinterlace_buffer = (m_current_deinterlace_buffer + 1u) % DEINTERLACE_BUFFER_COUNT;
-      GL_INS_FMT("Current buffer: {}", this_buffer);
-      if (!DeinterlaceSetTargetSize(width, full_height, false) || !copy_to_field_buffer(this_buffer)) [[unlikely]]
-      {
-        ClearDisplayTexture();
-        return false;
-      }
-
-      g_gpu_device->SetRenderTarget(m_deinterlace_texture.get());
-      g_gpu_device->SetPipeline(m_deinterlace_pipeline.get());
-      g_gpu_device->SetTextureSampler(0, m_deinterlace_buffers[this_buffer].get(), g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetTextureSampler(1, m_deinterlace_buffers[(this_buffer - 1) % DEINTERLACE_BUFFER_COUNT].get(),
-                                      g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetTextureSampler(2, m_deinterlace_buffers[(this_buffer - 2) % DEINTERLACE_BUFFER_COUNT].get(),
-                                      g_gpu_device->GetNearestSampler());
-      g_gpu_device->SetTextureSampler(3, m_deinterlace_buffers[(this_buffer - 3) % DEINTERLACE_BUFFER_COUNT].get(),
-                                      g_gpu_device->GetNearestSampler());
-      const u32 uniforms[] = {field, full_height};
-      g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-      g_gpu_device->SetViewportAndScissor(0, 0, width, full_height);
-      g_gpu_device->Draw(3, 0);
-
-      m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, full_height);
-      return true;
-    }
-
-    default:
-      UnreachableCode();
-  }
-}
-
-bool GPUBackend::DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve)
-{
-  if (!g_gpu_device->ResizeTexture(&m_deinterlace_texture, width, height, GPUTexture::Type::RenderTarget,
-                                   GPUTexture::Format::RGBA8, GPUTexture::Flags::None, preserve)) [[unlikely]]
-  {
-    return false;
-  }
-
-  GL_OBJECT_NAME(m_deinterlace_texture, "Deinterlace target texture");
-  return true;
-}
-
-bool GPUBackend::ApplyChromaSmoothing()
-{
-  const u32 x = m_display_texture_view_x;
-  const u32 y = m_display_texture_view_y;
-  const u32 width = m_display_texture_view_width;
-  const u32 height = m_display_texture_view_height;
-  if (!g_gpu_device->ResizeTexture(&m_chroma_smoothing_texture, width, height, GPUTexture::Type::RenderTarget,
-                                   GPUTexture::Format::RGBA8, GPUTexture::Flags::None, false))
-  {
-    ClearDisplayTexture();
-    return false;
-  }
-
-  GL_OBJECT_NAME(m_chroma_smoothing_texture, "Chroma smoothing texture");
-
-  GL_SCOPE_FMT("ApplyChromaSmoothing({{{},{}}}, {}x{})", x, y, width, height);
-
-  m_display_texture->MakeReadyForSampling();
-  g_gpu_device->InvalidateRenderTarget(m_chroma_smoothing_texture.get());
-  g_gpu_device->SetRenderTarget(m_chroma_smoothing_texture.get());
-  g_gpu_device->SetPipeline(m_chroma_smoothing_pipeline.get());
-  g_gpu_device->SetTextureSampler(0, m_display_texture, g_gpu_device->GetNearestSampler());
-  const u32 uniforms[] = {x, y, width - 1, height - 1};
-  g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
-  g_gpu_device->SetViewportAndScissor(0, 0, width, height);
-  g_gpu_device->Draw(3, 0);
-
-  m_chroma_smoothing_texture->MakeReadyForSampling();
-  SetDisplayTexture(m_chroma_smoothing_texture.get(), m_display_depth_buffer, 0, 0, width, height);
-  return true;
-}
-
-void GPUBackend::SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config)
-{
-  static constexpr GPUPipeline::VertexAttribute screen_vertex_attributes[] = {
-    GPUPipeline::VertexAttribute::Make(0, GPUPipeline::VertexAttribute::Semantic::Position, 0,
-                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ScreenVertex, x)),
-    GPUPipeline::VertexAttribute::Make(1, GPUPipeline::VertexAttribute::Semantic::TexCoord, 0,
-                                       GPUPipeline::VertexAttribute::Type::Float, 2, OFFSETOF(ScreenVertex, u)),
-  };
-
-  // common state
-  config.input_layout.vertex_attributes = screen_vertex_attributes;
-  config.input_layout.vertex_stride = sizeof(ScreenVertex);
-  config.primitive = GPUPipeline::Primitive::TriangleStrips;
-}
-
-GSVector4 GPUBackend::GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size)
-{
-  const GSVector4 fboundsxxyy = GSVector4(bounds.xzyw());
-  const GSVector2 fsize = GSVector2(rt_size);
-  const GSVector2 x = ((fboundsxxyy.xy() * GSVector2::cxpr(2.0f)) / fsize.xx()) - GSVector2::cxpr(1.0f);
-  const GSVector2 y = GSVector2::cxpr(1.0f) - (GSVector2::cxpr(2.0f) * (fboundsxxyy.zw() / fsize.yy()));
-  return GSVector4::xyxy(x, y).xzyw();
-}
-
-void GPUBackend::DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
-                                const GSVector4 uv_bounds /* = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f) */)
-{
-  const GSVector4 xy = GetScreenQuadClipSpaceCoordinates(bounds, rt_size);
-
-  ScreenVertex* vertices;
-  u32 space;
-  u32 base_vertex;
-  g_gpu_device->MapVertexBuffer(sizeof(ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space, &base_vertex);
-
-  vertices[0].Set(xy.xy(), uv_bounds.xy());
-  vertices[1].Set(xy.zyzw().xy(), uv_bounds.zyzw().xy());
-  vertices[2].Set(xy.xwzw().xy(), uv_bounds.xwzw().xy());
-  vertices[3].Set(xy.zw(), uv_bounds.zw());
-
-  g_gpu_device->UnmapVertexBuffer(sizeof(ScreenVertex), 4);
-  g_gpu_device->Draw(4, base_vertex);
-}
-
-void GPUBackend::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
-                                   GSVector4i* display_rect, GSVector4i* draw_rect) const
-{
-  const bool integer_scale = (g_gpu_settings.display_scaling == DisplayScalingMode::NearestInteger ||
-                              g_gpu_settings.display_scaling == DisplayScalingMode::BilinearInteger);
-  const bool show_vram = g_gpu_settings.gpu_show_vram;
-  const u32 display_width = show_vram ? VRAM_WIDTH : m_display_width;
-  const u32 display_height = show_vram ? VRAM_HEIGHT : m_display_height;
-  const s32 display_origin_left = show_vram ? 0 : m_display_origin_left;
-  const s32 display_origin_top = show_vram ? 0 : m_display_origin_top;
-  const u32 display_vram_width = show_vram ? VRAM_WIDTH : m_display_vram_width;
-  const u32 display_vram_height = show_vram ? VRAM_HEIGHT : m_display_vram_height;
-  const float display_pixel_aspect_ratio = show_vram ? 1.0f : m_display_pixel_aspect_ratio;
-  GPU::CalculateDrawRect(window_width, window_height, display_width, display_height, display_origin_left,
-                         display_origin_top, display_vram_width, display_vram_height, g_gpu_settings.display_rotation,
-                         g_gpu_settings.display_alignment, display_pixel_aspect_ratio,
-                         g_gpu_settings.display_stretch_vertically, integer_scale, display_rect, draw_rect);
-}
-
-bool CompressAndWriteTextureToFile(u32 width, u32 height, std::string path, FileSystem::ManagedCFilePtr fp, u8 quality,
-                                   bool clear_alpha, bool flip_y, Image image, std::string osd_key)
-{
-
-  Error error;
-
-  if (flip_y)
-    image.FlipY();
-
-  if (image.GetFormat() != ImageFormat::RGBA8)
-  {
-    std::optional<Image> convert_image = image.ConvertToRGBA8(&error);
-    if (!convert_image.has_value())
-    {
-      ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}", Image::GetFormatName(image.GetFormat()),
-                error.GetDescription());
-      image.Invalidate();
-    }
-    else
-    {
-      image = std::move(convert_image.value());
-    }
-  }
-
-  bool result = false;
-  if (image.IsValid())
-  {
-    if (clear_alpha)
-      image.SetAllPixelsOpaque();
-
-    result = image.SaveToFile(path.c_str(), fp.get(), quality, &error);
-    if (!result)
-      ERROR_LOG("Failed to save screenshot to '{}': '{}'", Path::GetFileName(path), error.GetDescription());
-  }
-
-  if (!osd_key.empty())
-  {
-    Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_CAMERA,
-                            fmt::format(result ? TRANSLATE_FS("GPU", "Saved screenshot to '{}'.") :
-                                                 TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
-                                        Path::GetFileName(path),
-                                        result ? Host::OSD_INFO_DURATION : Host::OSD_ERROR_DURATION));
-  }
-
-  return result;
-}
-
-bool GPUBackend::WriteDisplayTextureToFile(std::string filename)
-{
-  if (!m_display_texture)
-    return false;
-
-  const u32 read_x = static_cast<u32>(m_display_texture_view_x);
-  const u32 read_y = static_cast<u32>(m_display_texture_view_y);
-  const u32 read_width = static_cast<u32>(m_display_texture_view_width);
-  const u32 read_height = static_cast<u32>(m_display_texture_view_height);
-  const ImageFormat read_format = GPUTexture::GetImageFormatForTextureFormat(m_display_texture->GetFormat());
-  if (read_format == ImageFormat::None)
-    return false;
-
-  Image image(read_width, read_height, read_format);
-  std::unique_ptr<GPUDownloadTexture> dltex;
-  if (g_gpu_device->GetFeatures().memory_import)
-  {
-    dltex = g_gpu_device->CreateDownloadTexture(read_width, read_height, m_display_texture->GetFormat(),
-                                                image.GetPixels(), image.GetStorageSize(), image.GetPitch());
-  }
-  if (!dltex)
-  {
-    if (!(dltex = g_gpu_device->CreateDownloadTexture(read_width, read_height, m_display_texture->GetFormat())))
-    {
-      ERROR_LOG("Failed to create {}x{} {} download texture", read_width, read_height,
-                GPUTexture::GetFormatName(m_display_texture->GetFormat()));
-      return false;
-    }
-  }
-
-  dltex->CopyFromTexture(0, 0, m_display_texture, read_x, read_y, read_width, read_height, 0, 0, !dltex->IsImported());
-  if (!dltex->ReadTexels(0, 0, read_width, read_height, image.GetPixels(), image.GetPitch()))
-  {
-    RestoreDeviceContext();
-    return false;
-  }
 
   RestoreDeviceContext();
-
-  Error error;
-  auto fp = FileSystem::OpenManagedCFile(filename.c_str(), "wb", &error);
-  if (!fp)
-  {
-    ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(filename), error.GetDescription());
-    return false;
-  }
-
-  constexpr bool clear_alpha = true;
-  const bool flip_y = g_gpu_device->UsesLowerLeftOrigin();
-
-  return CompressAndWriteTextureToFile(read_width, read_height, std::move(filename), std::move(fp),
-                                       g_gpu_settings.display_screenshot_quality, clear_alpha, flip_y, std::move(image),
-                                       std::string());
-}
-
-bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, Image* out_image)
-{
-  bool result;
-  GPUThread::RunOnBackend(
-    [width, height, postfx, out_image, &result](GPUBackend* backend) {
-      if (!backend)
-        return;
-
-      GSVector4i draw_rect, display_rect;
-      backend->CalculateDrawRect(static_cast<s32>(width), static_cast<s32>(height), true, true, &display_rect,
-                                 &draw_rect);
-
-      // Crop it.
-      const u32 cropped_width = static_cast<u32>(display_rect.width());
-      const u32 cropped_height = static_cast<u32>(display_rect.height());
-      draw_rect = draw_rect.sub32(display_rect.xyxy());
-      display_rect = display_rect.sub32(display_rect.xyxy());
-      result =
-        backend->RenderScreenshotToBuffer(cropped_width, cropped_height, display_rect, draw_rect, postfx, out_image);
-    },
-    true, false);
-
-  return result;
-}
-
-bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect,
-                                          const GSVector4i draw_rect, bool postfx, Image* out_image)
-{
-  const GPUTexture::Format hdformat =
-    g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetFormat() : GPUTexture::Format::RGBA8;
-  const ImageFormat image_format = GPUTexture::GetImageFormatForTextureFormat(hdformat);
-  if (image_format == ImageFormat::None)
-    return false;
-
-  auto render_texture = g_gpu_device->FetchAutoRecycleTexture(width, height, 1, 1, 1, GPUTexture::Type::RenderTarget,
-                                                              hdformat, GPUTexture::Flags::None);
-  if (!render_texture)
-    return false;
-
-  g_gpu_device->ClearRenderTarget(render_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
-
-  // TODO: this should use copy shader instead.
-  RenderDisplay(render_texture.get(), display_rect, draw_rect, postfx);
-
-  Image image(width, height, image_format);
-
-  Error error;
-  std::unique_ptr<GPUDownloadTexture> dltex;
-  if (g_gpu_device->GetFeatures().memory_import)
-  {
-    dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat, image.GetPixels(), image.GetStorageSize(),
-                                                image.GetPitch(), &error);
-  }
-  if (!dltex)
-  {
-    if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, hdformat, &error)))
-    {
-      ERROR_LOG("Failed to create {}x{} download texture: {}", width, height, error.GetDescription());
-      return false;
-    }
-  }
-
-  dltex->CopyFromTexture(0, 0, render_texture.get(), 0, 0, width, height, 0, 0, false);
-  if (!dltex->ReadTexels(0, 0, width, height, image.GetPixels(), image.GetPitch()))
-  {
-    RestoreDeviceContext();
-    return false;
-  }
-
-  RestoreDeviceContext();
-  *out_image = std::move(image);
-  return true;
-}
-
-void GPUBackend::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height, GSVector4i* display_rect,
-                                         GSVector4i* draw_rect) const
-{
-  const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_gpu_settings.gpu_show_vram);
-  if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
-  {
-    if (mode == DisplayScreenshotMode::InternalResolution)
-    {
-      float f_width = static_cast<float>(m_display_texture_view_width);
-      float f_height = static_cast<float>(m_display_texture_view_height);
-      if (!g_gpu_settings.gpu_show_vram)
-        GPU::ApplyPixelAspectRatioToSize(m_display_pixel_aspect_ratio, &f_width, &f_height);
-
-      // DX11 won't go past 16K texture size.
-      const float max_texture_size = static_cast<float>(g_gpu_device->GetMaxTextureSize());
-      if (f_width > max_texture_size)
-      {
-        f_height = f_height / (f_width / max_texture_size);
-        f_width = max_texture_size;
-      }
-      if (f_height > max_texture_size)
-      {
-        f_height = max_texture_size;
-        f_width = f_width / (f_height / max_texture_size);
-      }
-
-      *width = static_cast<u32>(std::ceil(f_width));
-      *height = static_cast<u32>(std::ceil(f_height));
-    }
-    else // if (mode == DisplayScreenshotMode::UncorrectedInternalResolution)
-    {
-      *width = m_display_texture_view_width;
-      *height = m_display_texture_view_height;
-    }
-
-    // Remove padding, it's not part of the framebuffer.
-    *draw_rect = GSVector4i(0, 0, static_cast<s32>(*width), static_cast<s32>(*height));
-    *display_rect = *draw_rect;
-  }
-  else
-  {
-    *width = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetWidth() : 1;
-    *height = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetHeight() : 1;
-    CalculateDrawRect(*width, *height, true, !g_settings.gpu_show_vram, display_rect, draw_rect);
-  }
-}
-
-void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
-                                        bool compress_on_thread, bool show_osd_message)
-{
-  GPUThread::RunOnBackend(
-    [path = std::string(path), mode, quality, compress_on_thread, show_osd_message](GPUBackend* backend) mutable {
-      if (!backend)
-        return;
-
-      u32 width, height;
-      GSVector4i display_rect, draw_rect;
-      backend->CalculateScreenshotSize(mode, &width, &height, &display_rect, &draw_rect);
-
-      const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution);
-      if (width == 0 || height == 0)
-        return;
-
-      Image image;
-      if (!backend->RenderScreenshotToBuffer(width, height, display_rect, draw_rect, !internal_resolution, &image))
-      {
-        ERROR_LOG("Failed to render {}x{} screenshot", width, height);
-        return;
-      }
-
-      Error error;
-      auto fp = FileSystem::OpenManagedCFile(path.c_str(), "wb", &error);
-      if (!fp)
-      {
-        ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(path), error.GetDescription());
-        return;
-      }
-
-      std::string osd_key;
-      if (show_osd_message)
-      {
-        // Use a 60 second timeout to give it plenty of time to actually save.
-        osd_key = fmt::format("ScreenshotSaver_{}", path);
-        Host::AddIconOSDMessage(osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
-                                fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)),
-                                60.0f);
-      }
-
-      if (compress_on_thread)
-      {
-        System::QueueAsyncTask([width, height, path = std::move(path), fp = fp.release(), quality,
-                                flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
-                                osd_key = std::move(osd_key)]() mutable {
-          CompressAndWriteTextureToFile(width, height, std::move(path), FileSystem::ManagedCFilePtr(fp), quality, true,
-                                        flip_y, std::move(image), std::move(osd_key));
-        });
-      }
-      else
-      {
-        CompressAndWriteTextureToFile(width, height, std::move(path), std::move(fp), quality, true,
-                                      g_gpu_device->UsesLowerLeftOrigin(), std::move(image), std::move(osd_key));
-      }
-    },
-    false, false);
 }
 
 void GPUBackend::GetStatsString(SmallStringBase& str) const
@@ -1625,4 +631,125 @@ void GPUBackend::UpdateStatistics(u32 frame_count)
 #undef UPDATE_COUNTER
 
   ResetStatistics();
+}
+
+bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, Image* out_image)
+{
+  bool result;
+  GPUThread::RunOnBackend(
+    [width, height, postfx, out_image, &result](GPUBackend* backend) {
+      if (!backend)
+        return;
+
+      GSVector4i draw_rect, display_rect;
+      backend->m_presenter.CalculateDrawRect(static_cast<s32>(width), static_cast<s32>(height), true, true,
+                                             &display_rect, &draw_rect);
+
+      // Crop it.
+      const u32 cropped_width = static_cast<u32>(display_rect.width());
+      const u32 cropped_height = static_cast<u32>(display_rect.height());
+      draw_rect = draw_rect.sub32(display_rect.xyxy());
+      display_rect = display_rect.sub32(display_rect.xyxy());
+      result = backend->m_presenter.RenderScreenshotToBuffer(cropped_width, cropped_height, display_rect, draw_rect,
+                                                             postfx, out_image);
+      backend->RestoreDeviceContext();
+    },
+    true, false);
+
+  return result;
+}
+
+void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
+                                        bool show_osd_message)
+{
+  GPUThread::RunOnBackend(
+    [path = std::string(path), mode, quality, show_osd_message](GPUBackend* backend) mutable {
+      if (!backend)
+        return;
+
+      u32 width, height;
+      GSVector4i display_rect, draw_rect;
+      backend->m_presenter.CalculateScreenshotSize(mode, &width, &height, &display_rect, &draw_rect);
+
+      const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution);
+      if (width == 0 || height == 0)
+        return;
+
+      Image image;
+      if (!backend->m_presenter.RenderScreenshotToBuffer(width, height, display_rect, draw_rect, !internal_resolution,
+                                                         &image))
+      {
+        ERROR_LOG("Failed to render {}x{} screenshot", width, height);
+        backend->RestoreDeviceContext();
+        return;
+      }
+
+      // no more GPU calls
+      backend->RestoreDeviceContext();
+
+      Error error;
+      auto fp = FileSystem::OpenManagedCFile(path.c_str(), "wb", &error);
+      if (!fp)
+      {
+        ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(path), error.GetDescription());
+        return;
+      }
+
+      std::string osd_key;
+      if (show_osd_message)
+      {
+        // Use a 60 second timeout to give it plenty of time to actually save.
+        osd_key = fmt::format("ScreenshotSaver_{}", path);
+        Host::AddIconOSDMessage(osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
+                                fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)),
+                                60.0f);
+      }
+
+      System::QueueAsyncTask([path = std::move(path), fp = fp.release(), quality,
+                              flip_y = g_gpu_device->UsesLowerLeftOrigin(), image = std::move(image),
+                              osd_key = std::move(osd_key)]() mutable {
+        Error error;
+
+        if (flip_y)
+          image.FlipY();
+
+        if (image.GetFormat() != ImageFormat::RGBA8)
+        {
+          std::optional<Image> convert_image = image.ConvertToRGBA8(&error);
+          if (!convert_image.has_value())
+          {
+            ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}", Image::GetFormatName(image.GetFormat()),
+                      error.GetDescription());
+            image.Invalidate();
+          }
+          else
+          {
+            image = std::move(convert_image.value());
+          }
+        }
+
+        bool result = false;
+        if (image.IsValid())
+        {
+          image.SetAllPixelsOpaque();
+
+          result = image.SaveToFile(path.c_str(), fp, quality, &error);
+          if (!result)
+            ERROR_LOG("Failed to save screenshot to '{}': '{}'", Path::GetFileName(path), error.GetDescription());
+        }
+
+        if (!osd_key.empty())
+        {
+          Host::AddIconOSDMessage(std::move(osd_key), ICON_EMOJI_CAMERA,
+                                  fmt::format(result ? TRANSLATE_FS("GPU", "Saved screenshot to '{}'.") :
+                                                       TRANSLATE_FS("GPU", "Failed to save screenshot to '{}'."),
+                                              Path::GetFileName(path),
+                                              result ? Host::OSD_INFO_DURATION : Host::OSD_ERROR_DURATION));
+        }
+
+        std::fclose(fp);
+        return result;
+      });
+    },
+    false, false);
 }

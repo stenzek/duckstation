@@ -8329,8 +8329,8 @@ LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
   }
   else
   {
-    // since this was pushing frames, we need to restore the context
-    GPUThread::Internal::RestoreContextAfterPresent();
+    // since this was pushing frames, we need to restore the context. do that by pushing a frame ourselves
+    GPUThread::Internal::DoRunIdle();
   }
 }
 

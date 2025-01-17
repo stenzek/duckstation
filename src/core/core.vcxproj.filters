@@ -66,6 +66,7 @@
     <ClCompile Include="jogcon.cpp" />
     <ClCompile Include="pio.cpp" />
     <ClCompile Include="gpu_thread.cpp" />
+    <ClCompile Include="gpu_presenter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -142,6 +143,7 @@
     <ClInclude Include="pio.h" />
     <ClInclude Include="gpu_thread.h" />
     <ClInclude Include="gpu_thread_commands.h" />
+    <ClInclude Include="gpu_presenter.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />

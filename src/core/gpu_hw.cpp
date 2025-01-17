@@ -6,6 +6,7 @@
 #include "cpu_pgxp.h"
 #include "gpu.h"
 #include "gpu_hw_shadergen.h"
+#include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -201,7 +202,7 @@ private:
 };
 } // namespace
 
-GPU_HW::GPU_HW() : GPUBackend()
+GPU_HW::GPU_HW(GPUPresenter& presenter) : GPUBackend(presenter)
 {
 #if defined(_DEBUG) || defined(_DEVEL)
   s_draw_number = 0;
@@ -438,6 +439,8 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
 {
   GPUBackend::UpdateSettings(old_settings);
 
+  FlushRender();
+
   const GPUDevice::Features features = g_gpu_device->GetFeatures();
 
   const u8 resolution_scale = Truncate8(CalculateResolutionScale());
@@ -480,8 +483,8 @@ void GPU_HW::UpdateSettings(const GPUSettings& old_settings)
   {
     Host::AddIconOSDMessage("ResolutionScaleChanged", ICON_FA_PAINT_BRUSH,
                             fmt::format(TRANSLATE_FS("GPU_HW", "Internal resolution set to {0}x ({1}x{2})."),
-                                        resolution_scale, m_display_width * resolution_scale,
-                                        resolution_scale * m_display_height),
+                                        resolution_scale, m_presenter.GetDisplayWidth() * resolution_scale,
+                                        m_presenter.GetDisplayHeight() * resolution_scale),
                             Host::OSD_INFO_DURATION);
   }
 
@@ -732,8 +735,9 @@ u32 GPU_HW::CalculateResolutionScale() const
   else
   {
     // Auto scaling.
-    if (m_display_width == 0 || m_display_height == 0 || m_display_vram_width == 0 || m_display_vram_height == 0 ||
-        !m_display_texture || !g_gpu_device->HasMainSwapChain())
+    if (m_presenter.GetDisplayWidth() == 0 || m_presenter.GetDisplayHeight() == 0 ||
+        m_presenter.GetDisplayVRAMWidth() == 0 || m_presenter.GetDisplayVRAMHeight() == 0 ||
+        !m_presenter.HasDisplayTexture() || !g_gpu_device->HasMainSwapChain())
     {
       // When the system is starting and all borders crop is enabled, the registers are zero, and
       // display_height therefore is also zero. Keep the existing resolution until it updates.
@@ -742,18 +746,19 @@ u32 GPU_HW::CalculateResolutionScale() const
     else
     {
       GSVector4i display_rect, draw_rect;
-      CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(), g_gpu_device->GetMainSwapChain()->GetHeight(),
-                        true, true, &display_rect, &draw_rect);
+      m_presenter.CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(),
+                                    g_gpu_device->GetMainSwapChain()->GetHeight(), true, true, &display_rect,
+                                    &draw_rect);
 
       // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
       // anamorphic aspect ratio.
       const s32 draw_width = draw_rect.width();
       const s32 draw_height = draw_rect.height();
       scale = static_cast<u32>(
-        std::ceil(std::max(static_cast<float>(draw_width) / static_cast<float>(m_display_vram_width),
-                           static_cast<float>(draw_height) / static_cast<float>(m_display_vram_height))));
+        std::ceil(std::max(static_cast<float>(draw_width) / static_cast<float>(m_presenter.GetDisplayVRAMWidth()),
+                           static_cast<float>(draw_height) / static_cast<float>(m_presenter.GetDisplayVRAMHeight()))));
       VERBOSE_LOG("Draw Size = {}x{}, VRAM Size = {}x{}, Preferred Scale = {}", draw_width, draw_height,
-                  m_display_vram_width, m_display_vram_height, scale);
+                  m_presenter.GetDisplayVRAMWidth(), m_presenter.GetDisplayVRAMHeight(), scale);
     }
   }
 
@@ -1028,7 +1033,7 @@ void GPU_HW::DeactivateROV()
 
 void GPU_HW::DestroyBuffers()
 {
-  ClearDisplayTexture();
+  m_presenter.ClearDisplayTexture();
 
   DebugAssert((m_batch_vertex_ptr != nullptr) == (m_batch_index_ptr != nullptr));
   if (m_batch_vertex_ptr)
@@ -3846,12 +3851,13 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     if (IsUsingMultisampling())
     {
       UpdateVRAMReadTexture(!m_vram_dirty_draw_rect.eq(INVALID_RECT), !m_vram_dirty_write_rect.eq(INVALID_RECT));
-      SetDisplayTexture(m_vram_read_texture.get(), nullptr, 0, 0, m_vram_read_texture->GetWidth(),
-                        m_vram_read_texture->GetHeight());
+      m_presenter.SetDisplayTexture(m_vram_read_texture.get(), nullptr, 0, 0, m_vram_read_texture->GetWidth(),
+                                    m_vram_read_texture->GetHeight());
     }
     else
     {
-      SetDisplayTexture(m_vram_texture.get(), nullptr, 0, 0, m_vram_texture->GetWidth(), m_vram_texture->GetHeight());
+      m_presenter.SetDisplayTexture(m_vram_texture.get(), nullptr, 0, 0, m_vram_texture->GetWidth(),
+                                    m_vram_texture->GetHeight());
     }
 
     return;
@@ -3875,7 +3881,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
   if (cmd->display_disabled)
   {
-    ClearDisplayTexture();
+    m_presenter.ClearDisplayTexture();
     return;
   }
   else if (!cmd->display_24bit && line_skip == 0 && !IsUsingMultisampling() &&
@@ -3883,15 +3889,15 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
            (scaled_vram_offset_y + scaled_display_height) <= m_vram_texture->GetHeight() &&
            !PostProcessing::InternalChain.IsActive())
   {
-    SetDisplayTexture(m_vram_texture.get(), depth_source, scaled_vram_offset_x, scaled_vram_offset_y,
-                      scaled_display_width, scaled_display_height);
+    m_presenter.SetDisplayTexture(m_vram_texture.get(), depth_source, scaled_vram_offset_x, scaled_vram_offset_y,
+                                  scaled_display_width, scaled_display_height);
 
     // Fast path if no copies are needed.
     if (interlaced)
     {
       GL_INS("Deinterlace fast path");
       drew_anything = true;
-      Deinterlace(interlaced_field);
+      m_presenter.Deinterlace(interlaced_field);
     }
     else
     {
@@ -3904,7 +3910,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
                                      GPUTexture::Type::RenderTarget, GPUTexture::Format::RGBA8,
                                      GPUTexture::Flags::None)) [[unlikely]]
     {
-      ClearDisplayTexture();
+      m_presenter.ClearDisplayTexture();
       return;
     }
 
@@ -3964,26 +3970,27 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 
     drew_anything = true;
 
-    SetDisplayTexture(m_vram_extract_texture.get(), depth_source ? m_vram_extract_depth_texture.get() : nullptr, 0, 0,
-                      scaled_display_width, scaled_display_height);
+    m_presenter.SetDisplayTexture(m_vram_extract_texture.get(),
+                                  depth_source ? m_vram_extract_depth_texture.get() : nullptr, 0, 0,
+                                  scaled_display_width, scaled_display_height);
     if (g_settings.display_24bit_chroma_smoothing)
     {
-      if (ApplyChromaSmoothing())
+      if (m_presenter.ApplyChromaSmoothing())
       {
         if (interlaced)
-          Deinterlace(interlaced_field);
+          m_presenter.Deinterlace(interlaced_field);
       }
     }
     else
     {
       if (interlaced)
-        Deinterlace(interlaced_field);
+        m_presenter.Deinterlace(interlaced_field);
     }
   }
 
   if (m_downsample_mode != GPUDownsampleMode::Disabled && !cmd->display_24bit)
   {
-    DebugAssert(m_display_texture);
+    DebugAssert(m_presenter.HasDisplayTexture());
     DownsampleFramebuffer();
   }
 
@@ -4024,11 +4031,11 @@ void GPU_HW::OnBufferSwapped()
 
 void GPU_HW::DownsampleFramebuffer()
 {
-  GPUTexture* source = m_display_texture;
-  const u32 left = m_display_texture_view_x;
-  const u32 top = m_display_texture_view_y;
-  const u32 width = m_display_texture_view_width;
-  const u32 height = m_display_texture_view_height;
+  GPUTexture* source = m_presenter.GetDisplayTexture();
+  const u32 left = m_presenter.GetDisplayTextureViewX();
+  const u32 top = m_presenter.GetDisplayTextureViewY();
+  const u32 width = m_presenter.GetDisplayTextureViewWidth();
+  const u32 height = m_presenter.GetDisplayTextureViewHeight();
 
   if (m_downsample_mode == GPUDownsampleMode::Adaptive)
     DownsampleFramebufferAdaptive(source, left, top, width, height);
@@ -4153,7 +4160,7 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
 
   RestoreDeviceContext();
 
-  SetDisplayTexture(m_downsample_texture.get(), m_display_depth_buffer, 0, 0, width, height);
+  m_presenter.SetDisplayTexture(m_downsample_texture.get(), m_presenter.GetDisplayDepthBuffer(), 0, 0, width, height);
 }
 
 void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
@@ -4185,10 +4192,11 @@ void GPU_HW::DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 to
 
   RestoreDeviceContext();
 
-  SetDisplayTexture(m_downsample_texture.get(), m_display_depth_buffer, 0, 0, ds_width, ds_height);
+  m_presenter.SetDisplayTexture(m_downsample_texture.get(), m_presenter.GetDisplayDepthBuffer(), 0, 0, ds_width,
+                                ds_height);
 }
 
-std::unique_ptr<GPUBackend> GPUBackend::CreateHardwareBackend()
+std::unique_ptr<GPUBackend> GPUBackend::CreateHardwareBackend(GPUPresenter& presenter)
 {
-  return std::make_unique<GPU_HW>();
+  return std::make_unique<GPU_HW>(presenter);
 }
