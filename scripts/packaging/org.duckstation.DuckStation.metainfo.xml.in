@@ -31,6 +31,6 @@
     <release version="@GIT_VERSION@" date="@GIT_DATE@" />
   </releases>
   <custom>
-    <value key="flathub::manifest">https://raw.githubusercontent.com/stenzek/duckstation/@GIT_HASH@/scripts/flatpak/org.duckstation.DuckStation.yaml</value>
+    <value key="flathub::manifest">https://raw.githubusercontent.com/stenzek/duckstation/@GIT_HASH@/scripts/packaging/flatpak/org.duckstation.DuckStation.yaml</value>
   </custom>
 </component>
