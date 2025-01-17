@@ -230,7 +230,7 @@ static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_inst
 // Backgrounds
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr const char* DEFAULT_BACKGROUND_NAME = "Trails";
+static constexpr const char* DEFAULT_BACKGROUND_NAME = "Default";
 
 static bool HasBackground();
 static void LoadBackground();
