@@ -443,7 +443,7 @@ static void DrawGameListSettingsWindow();
 static void SwitchToGameList();
 static void PopulateGameListEntryList();
 static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
-static GPUTexture* GetGameListCover(const GameList::Entry* entry);
+static GPUTexture* GetGameListCover(const GameList::Entry* entry, bool fallback_to_icon);
 static GPUTexture* GetCoverForCurrentGame();
 
 //////////////////////////////////////////////////////////////////////////
@@ -540,6 +540,7 @@ struct ALIGN_TO_CACHE_LINE UIState
 
   // Lazily populated cover images.
   std::unordered_map<std::string, std::string> cover_image_map;
+  std::unordered_map<std::string, std::string> icon_image_map;
   std::vector<const GameList::Entry*> game_list_sorted_entries;
   GameListView game_list_view = GameListView::Grid;
 };
@@ -875,6 +876,7 @@ void FullscreenUI::Shutdown(bool clear_state)
     Achievements::ClearUIState();
     ClearInputBindingVariables();
     CloseSaveStateSelector();
+    s_state.icon_image_map.clear();
     s_state.cover_image_map.clear();
     std::memset(s_state.controller_macro_expanded, 0, sizeof(s_state.controller_macro_expanded));
     s_state.game_list_sorted_entries = {};
@@ -7470,7 +7472,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (!visible)
         continue;
 
-      GPUTexture* cover_texture = GetGameListCover(entry);
+      GPUTexture* cover_texture = GetGameListCover(entry, true);
 
       if (entry->serial.empty())
         summary.format("{} - ", Settings::GetDiscRegionDisplayName(entry->region));
@@ -7532,8 +7534,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   {
     static constexpr float info_top_margin = 20.0f;
     static constexpr float cover_size = 320.0f;
-    const GPUTexture* cover_texture =
-      selected_entry ? GetGameListCover(selected_entry) : GetTextureForGameListEntryType(GameList::EntryType::Count);
+    GPUTexture* cover_texture = selected_entry ? GetGameListCover(selected_entry, false) :
+                                                 GetTextureForGameListEntryType(GameList::EntryType::Count);
     if (cover_texture)
     {
       const ImRect image_rect(CenterImage(
@@ -7541,9 +7543,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         ImVec2(static_cast<float>(cover_texture->GetWidth()), static_cast<float>(cover_texture->GetHeight()))));
 
       ImGui::SetCursorPos(LayoutScale((info_window_width - cover_size) / 2.0f, info_top_margin) + image_rect.Min);
-      ImGui::Image(selected_entry ? GetGameListCover(selected_entry) :
-                                    GetTextureForGameListEntryType(GameList::EntryType::Count),
-                   image_rect.GetSize());
+      ImGui::Image(cover_texture, image_rect.GetSize());
     }
 
     const float work_width = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
@@ -7732,7 +7732,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       bb.Min += style.FramePadding;
       bb.Max -= style.FramePadding;
 
-      GPUTexture* const cover_texture = GetGameListCover(entry);
+      GPUTexture* const cover_texture = GetGameListCover(entry, false);
       const ImRect image_rect(
         CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(cover_texture->GetWidth()),
                                                                 static_cast<float>(cover_texture->GetHeight()))));
@@ -8091,6 +8091,15 @@ void FullscreenUI::SwitchToGameList()
   s_state.current_main_window = MainWindowType::GameList;
   s_state.game_list_view =
     static_cast<GameListView>(Host::GetBaseIntSettingValue("Main", "DefaultFullscreenUIGameView", 0));
+
+  // Wipe icon map, because a new save might give us an icon.
+  for (const auto& it : s_state.icon_image_map)
+  {
+    if (!it.second.empty())
+      ImGuiFullscreen::InvalidateCachedTexture(it.second);
+  }
+  s_state.icon_image_map.clear();
+
   {
     auto lock = Host::GetSettingsLock();
     PopulateGameListDirectoryCache(Host::Internal::GetBaseSettingsLayer());
@@ -8098,14 +8107,20 @@ void FullscreenUI::SwitchToGameList()
   QueueResetFocus(FocusResetType::ViewChanged);
 }
 
-GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry)
+GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fallback_to_icon)
 {
   // lookup and grab cover image
   auto cover_it = s_state.cover_image_map.find(entry->path);
   if (cover_it == s_state.cover_image_map.end())
   {
-    std::string cover_path(GameList::GetCoverImagePathForEntry(entry));
+    std::string cover_path = GameList::GetCoverImagePathForEntry(entry);
     cover_it = s_state.cover_image_map.emplace(entry->path, std::move(cover_path)).first;
+  }
+
+  if (fallback_to_icon && cover_it->second.empty())
+  {
+    std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
+    cover_it = s_state.icon_image_map.emplace(entry->path, std::move(icon_path)).first;
   }
 
   GPUTexture* tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
@@ -8139,7 +8154,7 @@ GPUTexture* FullscreenUI::GetCoverForCurrentGame()
   if (!entry)
     return s_state.fallback_disc_texture.get();
 
-  return GetGameListCover(entry);
+  return GetGameListCover(entry, true);
 }
 
 //////////////////////////////////////////////////////////////////////////
