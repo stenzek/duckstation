@@ -650,6 +650,16 @@ bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 
 bool GPUDevice::CreateResources(Error* error)
 {
+  // Backend may initialize null texture itself if it needs it.
+  if (!m_empty_texture &&
+      !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+                                       GPUTexture::Flags::None, nullptr, 0, error)))
+  {
+    Error::AddPrefix(error, "Failed to create null texture: ");
+    return false;
+  }
+  GL_OBJECT_NAME(m_empty_texture, "Null Texture");
+
   if (!(m_nearest_sampler = GetSampler(GPUSampler::GetNearestConfig(), error)) ||
       !(m_linear_sampler = GetSampler(GPUSampler::GetLinearConfig(), error)))
   {
@@ -714,6 +724,8 @@ bool GPUDevice::CreateResources(Error* error)
 
 void GPUDevice::DestroyResources()
 {
+  m_empty_texture.reset();
+
   m_imgui_font_texture.reset();
   m_imgui_pipeline.reset();
 

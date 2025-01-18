@@ -716,6 +716,7 @@ public:
   ALWAYS_INLINE GPUSwapChain* GetMainSwapChain() const { return m_main_swap_chain.get(); }
   ALWAYS_INLINE bool HasMainSwapChain() const { return static_cast<bool>(m_main_swap_chain); }
 
+  ALWAYS_INLINE GPUTexture* GetEmptyTexture() const { return m_empty_texture.get(); }
   ALWAYS_INLINE GPUSampler* GetLinearSampler() const { return m_linear_sampler; }
   ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler; }
 
@@ -920,11 +921,11 @@ protected:
   u32 m_max_multisamples = 0;
 
   std::unique_ptr<GPUSwapChain> m_main_swap_chain;
+  std::unique_ptr<GPUTexture> m_empty_texture;
   GPUSampler* m_nearest_sampler = nullptr;
   GPUSampler* m_linear_sampler = nullptr;
 
   GPUShaderCache m_shader_cache;
-
 
 private:
   static constexpr u32 MAX_TEXTURE_POOL_SIZE = 125;
@@ -985,7 +986,6 @@ private:
   TexturePool m_target_pool;
   size_t m_pool_vram_usage = 0;
   u32 m_texture_pool_counter = 0;
-
 
 protected:
   static Statistics s_stats;

@@ -435,8 +435,6 @@ private:
   OptionalExtensions m_optional_extensions = {};
   std::optional<bool> m_exclusive_fullscreen_control;
 
-  std::unique_ptr<VulkanTexture> m_null_texture;
-
   VkDescriptorSetLayout m_ubo_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_single_texture_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_single_texture_buffer_ds_layout = VK_NULL_HANDLE;
