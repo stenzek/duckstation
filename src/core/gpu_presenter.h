@@ -23,7 +23,7 @@ struct GPUSettings;
 struct GPUBackendUpdateDisplayCommand;
 struct GPUBackendFramePresentationParameters;
 
-class GPUPresenter final
+class ALIGN_TO_CACHE_LINE GPUPresenter final
 {
 public:
   GPUPresenter();

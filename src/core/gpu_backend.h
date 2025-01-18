@@ -27,7 +27,7 @@ struct MemorySaveState;
 // DESIGN NOTE: Only static methods should be called on the CPU thread.
 // You specifically don't have a global pointer available for this reason.
 
-class GPUBackend
+class ALIGN_TO_CACHE_LINE GPUBackend
 {
 public:
   static GPUThreadCommand* NewClearVRAMCommand();
