@@ -3295,6 +3295,7 @@ void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)
 
 void FullscreenUI::PopulateGraphicsAdapterList()
 {
+  auto lock = Host::GetSettingsLock();
   const GPURenderer renderer =
     Settings::ParseRendererName(GetEffectiveTinyStringSetting(GetEditingSettingsInterface(false), "GPU", "Renderer",
                                                               Settings::GetRendererName(Settings::DEFAULT_GPU_RENDERER))
