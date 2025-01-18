@@ -249,6 +249,7 @@ static void DestroyResources();
 //////////////////////////////////////////////////////////////////////////
 static void SwitchToLanding();
 static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters();
+static ImGuiFullscreen::FileSelectorFilters GetImageFilters();
 static void DoStartPath(std::string path, std::string state = std::string(),
                         std::optional<bool> fast_boot = std::nullopt);
 static void DoResume();
@@ -266,6 +267,8 @@ static void DoRequestExit();
 static void DoDesktopMode();
 static void DoToggleFullscreen();
 static void DoToggleAnalogMode();
+static void DoSetCoverImage(std::string entry_path);
+static void DoSetCoverImage(std::string source_path, std::string existing_path, std::string new_path);
 
 //////////////////////////////////////////////////////////////////////////
 // Settings
@@ -1079,6 +1082,11 @@ ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetDiscImageFilters()
           "*.psexe", "*.ps-exe", "*.exe", "*.psx", "*.psf", "*.minipsf", "*.m3u", "*.pbp"};
 }
 
+ImGuiFullscreen::FileSelectorFilters FullscreenUI::GetImageFilters()
+{
+  return {"*.png", "*.jpg", "*.jpeg", "*.webp"};
+}
+
 void FullscreenUI::DoStartPath(std::string path, std::string state, std::optional<bool> fast_boot)
 {
   if (GPUThread::HasGPUBackend())
@@ -1415,6 +1423,70 @@ void FullscreenUI::DoDesktopMode()
 void FullscreenUI::DoToggleFullscreen()
 {
   Host::RunOnCPUThread([]() { Host::SetFullscreen(!Host::IsFullscreen()); });
+}
+
+void FullscreenUI::DoSetCoverImage(std::string entry_path)
+{
+  OpenFileSelector(
+    FSUI_ICONSTR(ICON_FA_IMAGE, "Set Cover Image"), false,
+    [entry_path = std::move(entry_path)](std::string path) {
+      if (path.empty())
+        return;
+
+      const auto lock = GameList::GetLock();
+      const GameList::Entry* entry = GameList::GetEntryForPath(entry_path);
+      if (!entry)
+        return;
+
+      std::string existing_path = GameList::GetCoverImagePathForEntry(entry);
+      std::string new_path = GameList::GetNewCoverImagePathForEntry(entry, path.c_str(), false);
+      if (!existing_path.empty())
+      {
+        OpenConfirmMessageDialog(
+          FSUI_ICONSTR(ICON_FA_IMAGE, "Set Cover Image"),
+          FSUI_CSTR("A cover already exists for this game. Are you sure that you want to overwrite it?"),
+          [path = std::move(path), existing_path = std::move(existing_path),
+           new_path = std::move(new_path)](bool result) {
+            if (!result)
+              return;
+
+            DoSetCoverImage(std::move(path), std::move(existing_path), std::move(new_path));
+          });
+      }
+      else
+      {
+        DoSetCoverImage(std::move(path), std::move(existing_path), std::move(new_path));
+      }
+    },
+    GetImageFilters(), EmuFolders::Covers);
+}
+
+void FullscreenUI::DoSetCoverImage(std::string source_path, std::string existing_path, std::string new_path)
+{
+  Error error;
+  if (!existing_path.empty() && existing_path != new_path && FileSystem::FileExists(existing_path.c_str()))
+  {
+    if (!FileSystem::DeleteFile(existing_path.c_str(), &error))
+    {
+      ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete existing cover: {}"), error.GetDescription()));
+      return;
+    }
+  }
+
+  if (!FileSystem::CopyFilePath(source_path.c_str(), new_path.c_str(), true, &error))
+  {
+    ShowToast({}, fmt::format(FSUI_FSTR("Failed to copy cover: {}"), error.GetDescription()));
+    return;
+  }
+
+  ShowToast({}, FSUI_STR("Cover set."));
+
+  // Ensure the old one wasn't cached.
+  if (!existing_path.empty())
+    ImGuiFullscreen::InvalidateCachedTexture(existing_path);
+  if (existing_path != new_path)
+    ImGuiFullscreen::InvalidateCachedTexture(new_path);
+  s_state.cover_image_map.clear();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -7726,48 +7798,51 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
     ImGuiFullscreen::ChoiceDialogOptions options = {
       {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
       {FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Open Containing Directory"), false},
+      {FSUI_ICONSTR(ICON_FA_IMAGE, "Set Cover Image"), false},
       {FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false},
       {FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), false},
       {FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Default Boot"), false},
       {FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Fast Boot"), false},
       {FSUI_ICONSTR(ICON_FA_MAGIC, "Slow Boot"), false},
       {FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Reset Play Time"), false},
-      {FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
     };
 
-    OpenChoiceDialog(
-      entry->title.c_str(), false, std::move(options),
-      [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title, bool checked) {
-        switch (index)
-        {
-          case 0: // Open Game Properties
-            SwitchToGameSettingsForPath(entry_path);
-            break;
-          case 1: // Open Containing Directory
-            ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
-            break;
-          case 2: // Resume Game
-            DoStartPath(entry_path, System::GetGameSaveStateFileName(entry_serial, -1));
-            break;
-          case 3: // Load State
-            OpenLoadStateSelectorForGame(entry_path);
-            break;
-          case 4: // Default Boot
-            DoStartPath(entry_path);
-            break;
-          case 5: // Fast Boot
-            DoStartPath(entry_path, {}, true);
-            break;
-          case 6: // Slow Boot
-            DoStartPath(entry_path, {}, false);
-            break;
-          case 7: // Reset Play Time
-            GameList::ClearPlayedTimeForSerial(entry_serial);
-            break;
-          default:
-            break;
-        }
-      });
+    OpenChoiceDialog(entry->title.c_str(), false, std::move(options),
+                     [entry_path = entry->path, entry_serial = entry->serial](s32 index, const std::string& title,
+                                                                              bool checked) mutable {
+                       switch (index)
+                       {
+                         case 0: // Open Game Properties
+                           SwitchToGameSettingsForPath(entry_path);
+                           break;
+                         case 1: // Open Containing Directory
+                           ExitFullscreenAndOpenURL(Path::CreateFileURL(Path::GetDirectory(entry_path)));
+                           break;
+                         case 2: // Set Cover Image
+                           DoSetCoverImage(std::move(entry_path));
+                           break;
+                         case 3: // Resume Game
+                           DoStartPath(entry_path, System::GetGameSaveStateFileName(entry_serial, -1));
+                           break;
+                         case 4: // Load State
+                           OpenLoadStateSelectorForGame(entry_path);
+                           break;
+                         case 5: // Default Boot
+                           DoStartPath(entry_path);
+                           break;
+                         case 6: // Fast Boot
+                           DoStartPath(entry_path, {}, true);
+                           break;
+                         case 7: // Slow Boot
+                           DoStartPath(entry_path, {}, false);
+                           break;
+                         case 8: // Reset Play Time
+                           GameList::ClearPlayedTimeForSerial(entry_serial);
+                           break;
+                         default:
+                           break;
+                       }
+                     });
   }
   else
   {
@@ -7778,19 +7853,22 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
 
     ImGuiFullscreen::ChoiceDialogOptions options = {
       {FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false},
+      {FSUI_ICONSTR(ICON_FA_IMAGE, "Set Cover Image"), false},
       {FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc"), false},
-      {FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false},
     };
 
     OpenChoiceDialog(entry->title.c_str(), false, std::move(options),
                      [entry_path = first_disc_entry->path,
-                      disc_set_name = entry->path](s32 index, const std::string& title, bool checked) {
+                      disc_set_name = entry->path](s32 index, const std::string& title, bool checked) mutable {
                        switch (index)
                        {
                          case 0: // Open Game Properties
                            SwitchToGameSettingsForPath(entry_path);
                            break;
-                         case 1: // Select Disc
+                         case 1: // Set Cover Image
+                           DoSetCoverImage(std::move(disc_set_name));
+                           break;
+                         case 2: // Select Disc
                            HandleSelectDiscForDiscSet(disc_set_name);
                            break;
                          default:
@@ -8442,6 +8520,7 @@ TRANSLATE_NOOP("FullscreenUI", "900% [540 FPS (NTSC) / 450 FPS (PAL)]");
 TRANSLATE_NOOP("FullscreenUI", "9x");
 TRANSLATE_NOOP("FullscreenUI", "9x (18x Speed)");
 TRANSLATE_NOOP("FullscreenUI", "9x (for 4K)");
+TRANSLATE_NOOP("FullscreenUI", "A cover already exists for this game. Are you sure that you want to overwrite it?");
 TRANSLATE_NOOP("FullscreenUI", "A resume save state created at %s was found.\n\nDo you want to load this save and continue?");
 TRANSLATE_NOOP("FullscreenUI", "About");
 TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
@@ -8548,6 +8627,7 @@ TRANSLATE_NOOP("FullscreenUI", "Copy Global Settings");
 TRANSLATE_NOOP("FullscreenUI", "Copy Settings");
 TRANSLATE_NOOP("FullscreenUI", "Could not find any CD/DVD-ROM devices. Please ensure you have a drive connected and sufficient permissions to access it.");
 TRANSLATE_NOOP("FullscreenUI", "Cover Settings");
+TRANSLATE_NOOP("FullscreenUI", "Cover set.");
 TRANSLATE_NOOP("FullscreenUI", "Covers Directory");
 TRANSLATE_NOOP("FullscreenUI", "Create");
 TRANSLATE_NOOP("FullscreenUI", "Create New...");
@@ -8660,7 +8740,9 @@ TRANSLATE_NOOP("FullscreenUI", "Exit DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Exit Without Saving");
 TRANSLATE_NOOP("FullscreenUI", "Exits Big Picture mode, returning to the desktop interface.");
 TRANSLATE_NOOP("FullscreenUI", "FMV Chroma Smoothing");
+TRANSLATE_NOOP("FullscreenUI", "Failed to copy cover: {}");
 TRANSLATE_NOOP("FullscreenUI", "Failed to copy text to clipboard.");
+TRANSLATE_NOOP("FullscreenUI", "Failed to delete existing cover: {}");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete save state.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to delete {}.");
 TRANSLATE_NOOP("FullscreenUI", "Failed to load '{}'.");
@@ -8942,6 +9024,7 @@ TRANSLATE_NOOP("FullscreenUI", "Selects the type of emulated controller for this
 TRANSLATE_NOOP("FullscreenUI", "Selects the view that the game list will open to.");
 TRANSLATE_NOOP("FullscreenUI", "Serial");
 TRANSLATE_NOOP("FullscreenUI", "Session: {}");
+TRANSLATE_NOOP("FullscreenUI", "Set Cover Image");
 TRANSLATE_NOOP("FullscreenUI", "Set Input Binding");
 TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding the emulated depth buffer. May help in some games.");
