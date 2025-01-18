@@ -1370,7 +1370,7 @@ void FullscreenUI::DoChangeDisc()
             }
             else if (index > 0)
             {
-              System::InsertMedia(paths[index - 1].c_str());
+              Host::RunOnCPUThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
             }
 
             CloseChoiceDialog();
