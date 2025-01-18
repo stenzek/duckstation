@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -83,6 +83,25 @@ public:
       m_items.erase(lowest);
       count--;
     }
+  }
+
+  template<typename Pred>
+  std::size_t RemoveMatchingItems(const Pred& pred)
+  {
+    std::size_t removed_count = 0;
+    for (auto iter = m_items.begin(); iter != m_items.end();)
+    {
+      if (pred(iter->first))
+      {
+        iter = m_items.erase(iter);
+        removed_count++;
+      }
+      else
+      {
+        ++iter;
+      }
+    }
+    return removed_count;
   }
 
   template<typename KeyT>

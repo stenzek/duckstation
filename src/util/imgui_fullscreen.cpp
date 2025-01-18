@@ -413,9 +413,11 @@ GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name)
   return tex_ptr->get();
 }
 
-bool ImGuiFullscreen::InvalidateCachedTexture(const std::string& path)
+bool ImGuiFullscreen::InvalidateCachedTexture(std::string_view path)
 {
-  return s_state.texture_cache.Remove(path);
+  // need to do a partial match on this because SVG
+  return (s_state.texture_cache.RemoveMatchingItems([&path](const std::string& key) { return key.starts_with(path); }) >
+          0);
 }
 
 void ImGuiFullscreen::UploadAsyncTextures()
