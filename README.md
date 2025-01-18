@@ -23,20 +23,23 @@ DuckStation features a fully-featured frontend built using Qt, as well as a full
 Other features include:
 
  - CPU Recompiler/JIT (x86-64, armv7/AArch32, AArch64, RISC-V/RV64).
- - Hardware (D3D11, D3D12, OpenGL, Vulkan, Metal) and software rendering.
+ - Hardware renderer supporting D3D11, D3D12, OpenGL, Vulkan and Metal APIs.
  - Upscaling, texture filtering, and true colour (24-bit) in hardware renderers.
- - Accurate blending via Rasterizer Order Views/Fragment Shader Interlock.
  - PGXP for geometry precision, texture correction, and depth buffer emulation.
+ - Accurate blending via Rasterizer Order Views/Fragment Shader Interlock.
  - Texture replacement system in hardware renderers.
+ - Vectorized and multi-threaded software renderer.
  - Motion adaptive deinterlacing.
  - Adaptive downsampling filter.
  - Screen rotation for vertical or "TATE" shmup games.
  - Post processing shader chains (GLSL and Reshade FX).
+ - Border overlays/bezels displayed around game content.
  - "Fast boot" for skipping BIOS splash/intro.
  - Save state support, with runahead and rewind.
  - Windows, Linux, macOS support.
  - Supports reading directly from CD, bin/cue images, raw bin/img files, MAME CHD, single-track ECM, MDS/MDF, and unencrypted PBP formats.
  - Preloading of disc images to RAM to avoid disk sleeping hitches.
+ - Merging of multi-disc games in game list/grid with memory cards shared between discs.
  - Automatic loading/applying of PPF patches.
  - Direct booting of homebrew executables.
  - Direct loading of Portable Sound Format (psf) files.
@@ -44,6 +47,7 @@ Other features include:
  - Digital and analog controllers for input (rumble is forwarded to host).
  - GunCon and Justifier lightgun support (simulated with mouse).
  - NeGcon support.
+ - Controller presets and per-game configuration.
  - Qt and "Big Picture" UI.
  - Automatic updates with preview and latest channels.
  - Automatic content scanning - game titles/hashes are provided by redump.org.
@@ -56,6 +60,8 @@ Other features include:
  - RetroAchievements.
  - Discord Rich Presence.
  - Video capture with Media Foundation (Windows) and [FFmpeg](https://www.ffmpeg.org/) (All Platforms) backends.
+ - Free camera function.
+ - Parallel port cartridge emulation.
 
 ## System Requirements
  - A CPU faster than a potato. But it needs to be x86_64, AArch32/armv7, AArch64/ARMv8, or RISC-V/RV64.
