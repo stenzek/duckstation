@@ -348,12 +348,15 @@ bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url
 
   // Directory may not exist. Create it.
   const std::string directory(Path::GetDirectory(path));
+  Error error;
   if ((!directory.empty() && !FileSystem::DirectoryExists(directory.c_str()) &&
-       !FileSystem::CreateDirectory(directory.c_str(), true)) ||
-      !FileSystem::WriteBinaryFile(path, data.data(), data.size()))
+       !FileSystem::CreateDirectory(directory.c_str(), true, &error)) ||
+      !FileSystem::WriteBinaryFile(path, data, &error))
   {
     QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                          qApp->translate("QtHost", "Failed to write '%1'.").arg(QString::fromUtf8(path)));
+                          qApp->translate("QtHost", "Failed to write '%1':\n%2")
+                            .arg(QString::fromUtf8(path))
+                            .arg(QString::fromUtf8(error.GetDescription())));
     return false;
   }
 

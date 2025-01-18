@@ -381,9 +381,10 @@ void Achievements::DownloadImage(std::string url, std::string cache_path)
       return;
     }
 
-    if (!FileSystem::WriteBinaryFile(cache_path.c_str(), data.data(), data.size()))
+    Error write_error;
+    if (!FileSystem::WriteBinaryFile(cache_path.c_str(), data, &write_error))
     {
-      ERROR_LOG("Failed to write badge image to '{}'", cache_path);
+      ERROR_LOG("Failed to write badge image to '{}': {}", cache_path, write_error.GetDescription());
       return;
     }
 
