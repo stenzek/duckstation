@@ -1960,8 +1960,6 @@ void System::DestroySystem()
     Host::ClearOSDMessages(true);
   });
 
-  PostProcessing::Shutdown();
-
   InputManager::PauseVibration();
   InputManager::UpdateHostMouseMode();
 
