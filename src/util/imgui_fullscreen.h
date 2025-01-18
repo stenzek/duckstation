@@ -293,7 +293,7 @@ bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2&
 void EndHorizontalMenu();
 bool HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description);
 
-using FileSelectorCallback = std::function<void(const std::string& path)>;
+using FileSelectorCallback = std::function<void(std::string path)>;
 using FileSelectorFilters = std::vector<std::string>;
 bool IsFileSelectorOpen();
 void OpenFileSelector(std::string_view title, bool select_directory, FileSelectorCallback callback,

@@ -97,8 +97,6 @@ using ImGuiFullscreen::BeginHorizontalMenu;
 using ImGuiFullscreen::BeginMenuButtons;
 using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CenterImage;
-using ImGuiFullscreen::CloseChoiceDialog;
-using ImGuiFullscreen::CloseFileSelector;
 using ImGuiFullscreen::DefaultActiveButton;
 using ImGuiFullscreen::DrawShadowedText;
 using ImGuiFullscreen::EndFullscreenColumns;
@@ -1140,8 +1138,6 @@ void FullscreenUI::DoStartFile()
   auto callback = [](const std::string& path) {
     if (!path.empty())
       DoStartPath(path);
-
-    CloseFileSelector();
   };
 
   OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
@@ -1209,7 +1205,6 @@ void FullscreenUI::DoStartDisc()
                        return;
 
                      DoStartDisc(std::move(paths[index]));
-                     CloseChoiceDialog();
                    });
 }
 
@@ -1293,7 +1288,6 @@ void FullscreenUI::DoChangeDiscFromFile()
         }
       }
 
-      CloseFileSelector();
       ReturnToPreviousWindow();
     };
 
@@ -1321,7 +1315,6 @@ void FullscreenUI::DoChangeDisc()
         auto callback = [](s32 index, const std::string& title, bool checked) {
           if (index == 0)
           {
-            CloseChoiceDialog();
             DoChangeDiscFromFile();
             return;
           }
@@ -1330,11 +1323,10 @@ void FullscreenUI::DoChangeDisc()
             System::SwitchMediaSubImage(static_cast<u32>(index - 1));
           }
 
-          CloseChoiceDialog();
           ReturnToPreviousWindow();
         };
 
-        OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
+        OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
                          std::move(callback));
       });
 
@@ -1364,7 +1356,6 @@ void FullscreenUI::DoChangeDisc()
           auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
             if (index == 0)
             {
-              CloseChoiceDialog();
               DoChangeDiscFromFile();
               return;
             }
@@ -1373,11 +1364,10 @@ void FullscreenUI::DoChangeDisc()
               Host::RunOnCPUThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
             }
 
-            CloseChoiceDialog();
             ReturnToMainWindow();
           };
 
-          OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), true, std::move(options),
+          OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
                            std::move(callback));
         });
 
@@ -2241,18 +2231,16 @@ void FullscreenUI::BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindi
   OpenChoiceDialog(display_name, false, std::move(options),
                    [game_settings, section = std::string(section), key = std::string(key),
                     motors = std::move(motors)](s32 index, const std::string& title, bool checked) {
-                     if (index >= 0)
-                     {
-                       auto lock = Host::GetSettingsLock();
-                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                       if (static_cast<size_t>(index) == motors.size())
-                         bsi->DeleteValue(section.c_str(), key.c_str());
-                       else
-                         bsi->SetStringValue(section.c_str(), key.c_str(), title.c_str());
-                       SetSettingsChanged(bsi);
-                     }
+                     if (index < 0)
+                       return;
 
-                     CloseChoiceDialog();
+                     auto lock = Host::GetSettingsLock();
+                     SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                     if (static_cast<size_t>(index) == motors.size())
+                       bsi->DeleteValue(section.c_str(), key.c_str());
+                     else
+                       bsi->SetStringValue(section.c_str(), key.c_str(), title.c_str());
+                     SetSettingsChanged(bsi);
                    });
 }
 
@@ -2363,26 +2351,24 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
     OpenChoiceDialog(title, false, std::move(cd_options),
                      [game_settings, section = TinyString(section), key = TinyString(key),
                       option_offset](s32 index, const std::string& title, bool checked) {
-                       if (index >= 0)
-                       {
-                         auto lock = Host::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         if (game_settings)
-                         {
-                           if (index == 0)
-                             bsi->DeleteValue(section, key);
-                           else
-                             bsi->SetIntValue(section, key, index - 1 + option_offset);
-                         }
-                         else
-                         {
-                           bsi->SetIntValue(section, key, index + option_offset);
-                         }
+                       if (index < 0)
+                         return;
 
-                         SetSettingsChanged(bsi);
+                       auto lock = Host::GetSettingsLock();
+                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                       if (game_settings)
+                       {
+                         if (index == 0)
+                           bsi->DeleteValue(section, key);
+                         else
+                           bsi->SetIntValue(section, key, index - 1 + option_offset);
+                       }
+                       else
+                       {
+                         bsi->SetIntValue(section, key, index + option_offset);
                        }
 
-                       CloseChoiceDialog();
+                       SetSettingsChanged(bsi);
                      });
   }
 }
@@ -2432,26 +2418,24 @@ void FullscreenUI::DrawIntListSetting(SettingsInterface* bsi, const char* title,
     OpenChoiceDialog(title, false, std::move(cd_options),
                      [game_settings, section = TinyString(section), key = TinyString(key),
                       values](s32 index, const std::string& title, bool checked) {
-                       if (index >= 0)
-                       {
-                         auto lock = Host::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         if (game_settings)
-                         {
-                           if (index == 0)
-                             bsi->DeleteValue(section, key);
-                           else
-                             bsi->SetIntValue(section, key, values[index - 1]);
-                         }
-                         else
-                         {
-                           bsi->SetIntValue(section, key, values[index]);
-                         }
+                       if (index < 0)
+                         return;
 
-                         SetSettingsChanged(bsi);
+                       auto lock = Host::GetSettingsLock();
+                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                       if (game_settings)
+                       {
+                         if (index == 0)
+                           bsi->DeleteValue(section, key);
+                         else
+                           bsi->SetIntValue(section, key, values[index - 1]);
+                       }
+                       else
+                       {
+                         bsi->SetIntValue(section, key, values[index]);
                        }
 
-                       CloseChoiceDialog();
+                       SetSettingsChanged(bsi);
                      });
   }
 }
@@ -2990,26 +2974,24 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
       cd_options.emplace_back(options[i], (value.has_value() && i == static_cast<size_t>(index)));
     OpenChoiceDialog(title, false, std::move(cd_options),
                      [game_settings, section, key, option_values](s32 index, const std::string& title, bool checked) {
-                       if (index >= 0)
-                       {
-                         auto lock = Host::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         if (game_settings)
-                         {
-                           if (index == 0)
-                             bsi->DeleteValue(section, key);
-                           else
-                             bsi->SetStringValue(section, key, option_values[index - 1]);
-                         }
-                         else
-                         {
-                           bsi->SetStringValue(section, key, option_values[index]);
-                         }
+                       if (index < 0)
+                         return;
 
-                         SetSettingsChanged(bsi);
+                       auto lock = Host::GetSettingsLock();
+                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                       if (game_settings)
+                       {
+                         if (index == 0)
+                           bsi->DeleteValue(section, key);
+                         else
+                           bsi->SetStringValue(section, key, option_values[index - 1]);
+                       }
+                       else
+                       {
+                         bsi->SetStringValue(section, key, option_values[index]);
                        }
 
-                       CloseChoiceDialog();
+                       SetSettingsChanged(bsi);
                      });
   }
 }
@@ -3045,26 +3027,24 @@ void FullscreenUI::DrawEnumSetting(SettingsInterface* bsi, const char* title, co
     OpenChoiceDialog(title, false, std::move(cd_options),
                      [section = TinyString(section), key = TinyString(key), to_string_function,
                       game_settings](s32 index, const std::string& title, bool checked) {
-                       if (index >= 0)
-                       {
-                         auto lock = Host::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         if (game_settings)
-                         {
-                           if (index == 0)
-                             bsi->DeleteValue(section, key);
-                           else
-                             bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
-                         }
-                         else
-                         {
-                           bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
-                         }
+                       if (index < 0)
+                         return;
 
-                         SetSettingsChanged(bsi);
+                       auto lock = Host::GetSettingsLock();
+                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                       if (game_settings)
+                       {
+                         if (index == 0)
+                           bsi->DeleteValue(section, key);
+                         else
+                           bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index - 1)));
+                       }
+                       else
+                       {
+                         bsi->SetStringValue(section, key, to_string_function(static_cast<DataType>(index)));
                        }
 
-                       CloseChoiceDialog();
+                       SetSettingsChanged(bsi);
                      });
   }
 }
@@ -3120,26 +3100,24 @@ void FullscreenUI::DrawFloatListSetting(SettingsInterface* bsi, const char* titl
     OpenChoiceDialog(title, false, std::move(cd_options),
                      [game_settings, section = TinyString(section), key = TinyString(key),
                       option_values](s32 index, const std::string& title, bool checked) {
-                       if (index >= 0)
-                       {
-                         auto lock = Host::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         if (game_settings)
-                         {
-                           if (index == 0)
-                             bsi->DeleteValue(section, key);
-                           else
-                             bsi->SetFloatValue(section, key, option_values[index - 1]);
-                         }
-                         else
-                         {
-                           bsi->SetFloatValue(section, key, option_values[index]);
-                         }
+                       if (index < 0)
+                         return;
 
-                         SetSettingsChanged(bsi);
+                       auto lock = Host::GetSettingsLock();
+                       SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                       if (game_settings)
+                       {
+                         if (index == 0)
+                           bsi->DeleteValue(section, key);
+                         else
+                           bsi->SetFloatValue(section, key, option_values[index - 1]);
+                       }
+                       else
+                       {
+                         bsi->SetFloatValue(section, key, option_values[index]);
                        }
 
-                       CloseChoiceDialog();
+                       SetSettingsChanged(bsi);
                      });
   }
 }
@@ -3165,8 +3143,6 @@ void FullscreenUI::DrawFolderSetting(SettingsInterface* bsi, const char* title, 
 
                        Host::RunOnCPUThread(&EmuFolders::Update);
                        s_state.cover_image_map.clear();
-
-                       CloseFileSelector();
                      });
   }
 }
@@ -3204,7 +3180,6 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
                      // and the toast needs to happen on the UI thread.
                      ShowToast({}, result ? fmt::format(FSUI_FSTR("Automatic mapping completed for {}."), name) :
                                             fmt::format(FSUI_FSTR("Automatic mapping failed for {}."), name));
-                     CloseChoiceDialog();
                    });
 }
 
@@ -3692,17 +3667,15 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     ChoiceDialogOptions options = GetBackgroundOptions(current_value);
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"), false, std::move(options),
                      [](s32 index, const std::string& title, bool checked) {
-                       if (index >= 0)
-                       {
-                         SettingsInterface* bsi = GetEditingSettingsInterface();
-                         bsi->SetStringValue("Main", "FullscreenUIBackground", (index == 0) ? "None" : title.c_str());
-                         SetSettingsChanged(bsi);
+                       if (index < 0)
+                         return;
 
-                         // Have to defer the reload, because we've already drawn the bg for this frame.
-                         Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
-                       }
+                       SettingsInterface* bsi = GetEditingSettingsInterface();
+                       bsi->SetStringValue("Main", "FullscreenUIBackground", (index == 0) ? "None" : title.c_str());
+                       SetSettingsChanged(bsi);
 
-                       CloseChoiceDialog();
+                       // Have to defer the reload, because we've already drawn the bg for this frame.
+                       Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
                      });
   }
 
@@ -3755,7 +3728,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
                          Host::RunOnCPUThread(
                            [language = language_list[index].second]() { Host::ChangeLanguage(language); });
-                         ImGuiFullscreen::CloseChoiceDialog();
                        });
     }
   }
@@ -3865,17 +3837,16 @@ void FullscreenUI::DrawBIOSSettingsPage()
 
       OpenChoiceDialog(title, false, std::move(options),
                        [game_settings, i](s32 index, const std::string& path, bool checked) {
-                         if (index >= 0)
-                         {
-                           auto lock = Host::GetSettingsLock();
-                           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                           if (game_settings && index == 0)
-                             bsi->DeleteValue("BIOS", config_keys[i]);
-                           else
-                             bsi->SetStringValue("BIOS", config_keys[i], path.c_str());
-                           SetSettingsChanged(bsi);
-                         }
-                         CloseChoiceDialog();
+                         if (index < 0)
+                           return;
+
+                         auto lock = Host::GetSettingsLock();
+                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+                         if (game_settings && index == 0)
+                           bsi->DeleteValue("BIOS", config_keys[i]);
+                         else
+                           bsi->SetStringValue("BIOS", config_keys[i], path.c_str());
+                         SetSettingsChanged(bsi);
                        });
     }
   }
@@ -4193,7 +4164,6 @@ void FullscreenUI::DoLoadInputProfile()
                      if (!ssi.Load())
                      {
                        ShowToast(std::string(), fmt::format(FSUI_FSTR("Failed to load '{}'."), title));
-                       CloseChoiceDialog();
                        return;
                      }
 
@@ -4202,7 +4172,6 @@ void FullscreenUI::DoLoadInputProfile()
                      InputManager::CopyConfiguration(dsi, ssi, true, true, true, IsEditingGameSettings(dsi));
                      SetSettingsChanged(dsi);
                      ShowToast(std::string(), fmt::format(FSUI_FSTR("Controller preset '{}' loaded."), title));
-                     CloseChoiceDialog();
                    });
 }
 
@@ -4249,15 +4218,9 @@ void FullscreenUI::DoSaveInputProfile()
                        return;
 
                      if (index > 0)
-                     {
                        DoSaveInputProfile(title);
-                       CloseChoiceDialog();
-                     }
                      else
-                     {
-                       CloseChoiceDialog();
                        DoSaveNewInputProfile();
-                     }
                    });
 }
 
@@ -4417,7 +4380,6 @@ void FullscreenUI::DrawControllerSettingsPage()
                          SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
                          bsi->SetStringValue(section.c_str(), "Type", infos[index]->name);
                          SetSettingsChanged(bsi);
-                         CloseChoiceDialog();
                        });
     }
 
@@ -4779,7 +4741,6 @@ void FullscreenUI::DrawMemoryCardSettingsPage()
             bsi->SetStringValue("MemoryCards", path_keys[i], title.c_str());
           }
           SetSettingsChanged(bsi);
-          CloseChoiceDialog();
         });
     }
   }
@@ -4866,7 +4827,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       else
         bsi->SetStringValue("GPU", "Adapter", value);
       SetSettingsChanged(bsi);
-      CloseChoiceDialog();
     };
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_MICROCHIP, "GPU Adapter"), false, std::move(options), std::move(callback));
   }
@@ -5042,7 +5002,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
         bsi->SetStringValue("GPU", "FullscreenMode", value);
       SetSettingsChanged(bsi);
       ShowToast(std::string(), FSUI_STR("Resolution change will be applied after restarting."), 10.0f);
-      CloseChoiceDialog();
     };
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_TV, "Fullscreen Resolution"), false, std::move(options), std::move(callback));
   }
@@ -5330,8 +5289,6 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                                    fmt::format(FSUI_FSTR("Failed to load shader {}. It may be invalid.\nError was:"),
                                                title, error.GetDescription()));
                        }
-
-                       CloseChoiceDialog();
                      });
   }
 
@@ -6069,35 +6026,33 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
         OpenChoiceDialog(ci.name, false, std::move(options),
                          [cheat_name = ci.name, cheats, section](s32 index, const std::string& title, bool checked) {
-                           if (index >= 0)
+                           if (index < 0)
+                             return;
+
+                           const Cheats::CodeInfo* ci = Cheats::FindCodeInInfoList(
+                             cheats ? s_state.game_cheats_list : s_state.game_patch_list, cheat_name);
+                           if (ci)
                            {
-                             const Cheats::CodeInfo* ci = Cheats::FindCodeInInfoList(
-                               cheats ? s_state.game_cheats_list : s_state.game_patch_list, cheat_name);
-                             if (ci)
+                             SettingsInterface* bsi = GetEditingSettingsInterface();
+                             std::vector<std::string>& enable_list =
+                               cheats ? s_state.enabled_game_cheat_cache : s_state.enabled_game_patch_cache;
+                             const auto it = std::find(enable_list.begin(), enable_list.end(), ci->name);
+                             if (index == 0)
                              {
-                               SettingsInterface* bsi = GetEditingSettingsInterface();
-                               std::vector<std::string>& enable_list =
-                                 cheats ? s_state.enabled_game_cheat_cache : s_state.enabled_game_patch_cache;
-                               const auto it = std::find(enable_list.begin(), enable_list.end(), ci->name);
-                               if (index == 0)
-                               {
-                                 bsi->RemoveFromStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci->name.c_str());
-                                 if (it != enable_list.end())
-                                   enable_list.erase(it);
-                               }
-                               else
-                               {
-                                 bsi->AddToStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci->name.c_str());
-                                 bsi->SetUIntValue(section, ci->name.c_str(), ci->MapOptionNameToValue(title));
-                                 if (it == enable_list.end())
-                                   enable_list.push_back(std::move(cheat_name));
-                               }
-
-                               SetSettingsChanged(bsi);
+                               bsi->RemoveFromStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci->name.c_str());
+                               if (it != enable_list.end())
+                                 enable_list.erase(it);
                              }
-                           }
+                             else
+                             {
+                               bsi->AddToStringList(section, Cheats::PATCH_ENABLE_CONFIG_KEY, ci->name.c_str());
+                               bsi->SetUIntValue(section, ci->name.c_str(), ci->MapOptionNameToValue(title));
+                               if (it == enable_list.end())
+                                 enable_list.push_back(std::move(cheat_name));
+                             }
 
-                           CloseChoiceDialog();
+                             SetSettingsChanged(bsi);
+                           }
                          });
       }
     }
@@ -7812,8 +7767,6 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
           default:
             break;
         }
-
-        CloseChoiceDialog();
       });
   }
   else
@@ -7843,8 +7796,6 @@ void FullscreenUI::HandleGameListOptions(const GameList::Entry* entry)
                          default:
                            break;
                        }
-
-                       CloseChoiceDialog();
                      });
   }
 }
@@ -7871,15 +7822,13 @@ void FullscreenUI::HandleSelectDiscForDiscSet(std::string_view disc_set_name)
 
   OpenChoiceDialog(SmallString::from_format("Select Disc for {}", disc_set_name), false, std::move(options),
                    [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
-                     if (static_cast<u32>(index) < paths.size())
-                     {
-                       auto lock = GameList::GetLock();
-                       const GameList::Entry* entry = GameList::GetEntryForPath(paths[index]);
-                       if (entry)
-                         HandleGameListActivate(entry);
-                     }
+                     if (static_cast<u32>(index) >= paths.size())
+                       return;
 
-                     CloseChoiceDialog();
+                     auto lock = GameList::GetLock();
+                     const GameList::Entry* entry = GameList::GetEntryForPath(paths[index]);
+                     if (entry)
+                       HandleGameListActivate(entry);
                    });
 }
 
@@ -7944,8 +7893,6 @@ void FullscreenUI::DrawGameListSettingsWindow()
         PopulateGameListDirectoryCache(bsi);
         Host::RefreshGameListAsync(false);
       }
-
-      CloseFileSelector();
     });
   }
 
@@ -7965,9 +7912,6 @@ void FullscreenUI::DrawGameListSettingsWindow()
 
       OpenChoiceDialog(it.first.c_str(), false, std::move(options),
                        [dir = it.first, recursive = it.second](s32 index, const std::string& title, bool checked) {
-                         if (index < 0)
-                           return;
-
                          if (index == 0)
                          {
                            // Open in file browser
@@ -8007,8 +7951,6 @@ void FullscreenUI::DrawGameListSettingsWindow()
                            PopulateGameListDirectoryCache(bsi);
                            Host::RefreshGameListAsync(false);
                          }
-
-                         CloseChoiceDialog();
                        });
     }
   }

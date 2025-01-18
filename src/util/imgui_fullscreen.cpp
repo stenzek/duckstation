@@ -856,7 +856,8 @@ void ImGuiFullscreen::SetFullscreenFooterText(std::string_view text, float backg
   s_state.fullscreen_text_alpha = background_alpha;
 }
 
-void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items, float background_alpha)
+void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items,
+                                              float background_alpha)
 {
   CreateFooterTextString(s_state.fullscreen_footer_text, items);
   s_state.fullscreen_text_alpha = background_alpha;
@@ -890,8 +891,8 @@ void ImGuiFullscreen::DrawFullscreenFooter()
   const float height = LayoutScale(LAYOUT_FOOTER_HEIGHT);
 
   ImDrawList* dl = ImGui::GetForegroundDrawList();
-  dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize, ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, s_state.fullscreen_text_alpha)),
-                    0.0f);
+  dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
+                    ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, s_state.fullscreen_text_alpha)), 0.0f);
 
   ImFont* const font = UIStyle.MediumFont;
   const float max_width = io.DisplaySize.x - padding * 2.0f;
@@ -2379,7 +2380,10 @@ void ImGuiFullscreen::DrawFileSelector()
   {
     if (selected->is_file)
     {
-      s_state.file_selector_callback(selected->full_path);
+      std::string path = std::move(selected->full_path);
+      const FileSelectorCallback callback = std::move(s_state.file_selector_callback);
+      CloseFileSelector();
+      callback(std::move(path));
     }
     else
     {
@@ -2389,13 +2393,16 @@ void ImGuiFullscreen::DrawFileSelector()
   }
   else if (directory_selected)
   {
-    s_state.file_selector_callback(s_state.file_selector_current_directory);
+    std::string path = std::move(s_state.file_selector_current_directory);
+    const FileSelectorCallback callback = std::move(s_state.file_selector_callback);
+    CloseFileSelector();
+    callback(std::move(path));
   }
   else if (!is_open)
   {
-    std::string no_path;
-    s_state.file_selector_callback(no_path);
+    const FileSelectorCallback callback = std::move(s_state.file_selector_callback);
     CloseFileSelector();
+    callback(std::string());
   }
   else
   {
@@ -2529,14 +2536,26 @@ void ImGuiFullscreen::DrawChoiceDialog()
 
   if (choice >= 0)
   {
-    const auto& option = s_state.choice_dialog_options[choice];
-    s_state.choice_dialog_callback(choice, option.first, option.second);
+    // immediately close dialog when selecting, save the callback doing it. have to take a copy in this instance,
+    // because the callback may open another dialog, and we don't want to close that one.
+    if (!s_state.choice_dialog_checkable)
+    {
+      auto option = std::move(s_state.choice_dialog_options[choice]);
+      const ChoiceDialogCallback callback = std::move(s_state.choice_dialog_callback);
+      CloseChoiceDialog();
+      callback(choice, option.first, option.second);
+    }
+    else
+    {
+      const auto& option = s_state.choice_dialog_options[choice];
+      s_state.choice_dialog_callback(choice, option.first, option.second);
+    }
   }
   else if (!is_open)
   {
-    std::string no_string;
-    s_state.choice_dialog_callback(-1, no_string, false);
+    const ChoiceDialogCallback callback = std::move(s_state.choice_dialog_callback);
     CloseChoiceDialog();
+    callback(-1, std::string(), false);
   }
   else
   {
