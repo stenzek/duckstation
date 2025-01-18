@@ -157,6 +157,7 @@ struct ALIGN_TO_CACHE_LINE UIState
 
   bool file_selector_open = false;
   bool file_selector_directory = false;
+  bool file_selector_directory_changed = false;
   std::string file_selector_title;
   ImGuiFullscreen::FileSelectorCallback file_selector_callback;
   std::string file_selector_current_directory;
@@ -2282,12 +2283,12 @@ void ImGuiFullscreen::OpenFileSelector(std::string_view title, bool select_direc
 
   s_state.file_selector_open = true;
   s_state.file_selector_directory = select_directory;
+  s_state.file_selector_directory_changed = true;
   s_state.file_selector_title = fmt::format("{}##file_selector", title);
   s_state.file_selector_callback = std::move(callback);
   s_state.file_selector_filters = std::move(filters);
 
   SetFileSelectorDirectory(std::move(initial_directory));
-  QueueResetFocus(FocusResetType::PopupOpened);
 }
 
 void ImGuiFullscreen::CloseFileSelector()
@@ -2300,6 +2301,7 @@ void ImGuiFullscreen::CloseFileSelector()
 
   s_state.file_selector_open = false;
   s_state.file_selector_directory = false;
+  s_state.file_selector_directory_changed = false;
   std::string().swap(s_state.file_selector_title);
   FileSelectorCallback().swap(s_state.file_selector_callback);
   FileSelectorFilters().swap(s_state.file_selector_filters);
@@ -2336,6 +2338,12 @@ void ImGuiFullscreen::DrawFileSelector()
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
     ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
+
+    if (s_state.file_selector_directory_changed)
+    {
+      s_state.file_selector_directory_changed = false;
+      QueueResetFocus(FocusResetType::Other);
+    }
 
     ResetFocusHere();
     BeginMenuButtons();
@@ -2388,7 +2396,7 @@ void ImGuiFullscreen::DrawFileSelector()
     else
     {
       SetFileSelectorDirectory(std::move(selected->full_path));
-      QueueResetFocus(FocusResetType::Other);
+      s_state.file_selector_directory_changed = true;
     }
   }
   else if (directory_selected)
@@ -2412,7 +2420,7 @@ void ImGuiFullscreen::DrawFileSelector()
           s_state.file_selector_items.front().display_name == ICON_FA_FOLDER_OPEN "  <Parent Directory>")
       {
         SetFileSelectorDirectory(std::move(s_state.file_selector_items.front().full_path));
-        QueueResetFocus(FocusResetType::Other);
+        s_state.file_selector_directory_changed = true;
       }
     }
   }
