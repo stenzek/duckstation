@@ -30,6 +30,7 @@
 LOG_CHANNEL(PostProcessing);
 
 namespace PostProcessing {
+
 template<typename T>
 static u32 ParseVector(std::string_view line, ShaderOption::ValueVector* values);
 
@@ -51,10 +52,8 @@ ALWAYS_INLINE void ForAllChains(const T& F)
 Chain DisplayChain(Config::DISPLAY_CHAIN_SECTION);
 Chain InternalChain(Config::INTERNAL_CHAIN_SECTION);
 
-static Timer::Value s_start_time;
+Timer::Value Chain::s_start_time;
 
-static std::unordered_map<u64, std::unique_ptr<GPUSampler>> s_samplers;
-static std::unique_ptr<GPUTexture> s_dummy_texture;
 } // namespace PostProcessing
 
 template<typename T>
@@ -374,6 +373,8 @@ void PostProcessing::Config::ClearStages(SettingsInterface& si, const char* sect
 
 PostProcessing::Chain::Chain(const char* section) : m_section(section)
 {
+  if (s_start_time == 0) [[unlikely]]
+    s_start_time = Timer::GetCurrentValue();
 }
 
 PostProcessing::Chain::~Chain() = default;
@@ -677,7 +678,6 @@ void PostProcessing::Initialize()
 {
   DisplayChain.LoadStages();
   InternalChain.LoadStages();
-  s_start_time = Timer::GetCurrentValue();
 }
 
 void PostProcessing::UpdateSettings()
@@ -688,8 +688,6 @@ void PostProcessing::UpdateSettings()
 
 void PostProcessing::Shutdown()
 {
-  g_gpu_device->RecycleTexture(std::move(s_dummy_texture));
-  s_samplers.clear();
   ForAllChains([](Chain& chain) {
     chain.ClearStages();
     chain.DestroyTextures();
@@ -711,7 +709,6 @@ bool PostProcessing::ReloadShaders()
     chain.DestroyTextures();
     chain.LoadStages();
   });
-  s_start_time = Timer::GetCurrentValue();
 
   Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
                           TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."), Host::OSD_QUICK_DURATION);
@@ -798,32 +795,4 @@ SettingsInterface& PostProcessing::GetLoadSettingsInterface(const char* section)
     return *game_si;
   else
     return *Host::Internal::GetBaseSettingsLayer();
-}
-
-GPUSampler* PostProcessing::GetSampler(const GPUSampler::Config& config)
-{
-  auto it = s_samplers.find(config.key);
-  if (it != s_samplers.end())
-    return it->second.get();
-
-  std::unique_ptr<GPUSampler> sampler = g_gpu_device->CreateSampler(config);
-  if (!sampler)
-    ERROR_LOG("Failed to create GPU sampler with config={:X}", config.key);
-
-  it = s_samplers.emplace(config.key, std::move(sampler)).first;
-  return it->second.get();
-}
-
-GPUTexture* PostProcessing::GetDummyTexture()
-{
-  if (s_dummy_texture)
-    return s_dummy_texture.get();
-
-  const u32 zero = 0;
-  s_dummy_texture = g_gpu_device->FetchTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-                                               GPUTexture::Flags::None, &zero, sizeof(zero));
-  if (!s_dummy_texture)
-    ERROR_LOG("Failed to create dummy texture.");
-
-  return s_dummy_texture.get();
 }

@@ -1258,7 +1258,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 
         DEV_LOG("Pass {} Texture {} => {}", pi.name, tb.texture_name, sampler.texture_id);
 
-        sampler.sampler = GetSampler(MapSampler(sb));
+        sampler.sampler = g_gpu_device->GetSampler(MapSampler(sb));
         if (!sampler.sampler)
         {
           Error::SetString(error, "Failed to create sampler.");
@@ -1303,7 +1303,7 @@ GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTex
     }
     else if (id == INPUT_DEPTH_TEXTURE)
     {
-      return input_depth ? input_depth : GetDummyTexture();
+      return input_depth ? input_depth : g_gpu_device->GetEmptyTexture();
     }
     else if (id == OUTPUT_COLOR_TEXTURE)
     {

@@ -5,13 +5,13 @@
 
 #include "gpu_device.h"
 
+#include "common/timer.h"
+
 #include <array>
 #include <memory>
 #include <mutex>
 #include <string_view>
 #include <vector>
-
-class Timer;
 
 class GPUPipeline;
 class GPUSampler;
@@ -155,6 +155,8 @@ private:
   std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
   std::unique_ptr<GPUTexture> m_input_texture;
   std::unique_ptr<GPUTexture> m_output_texture;
+
+  static Timer::Value s_start_time;
 };
 
 // [display_name, filename]
@@ -169,9 +171,6 @@ void UpdateSettings();
 bool ReloadShaders();
 
 void Shutdown();
-
-GPUSampler* GetSampler(const GPUSampler::Config& config);
-GPUTexture* GetDummyTexture();
 
 extern Chain DisplayChain;
 extern Chain InternalChain;
