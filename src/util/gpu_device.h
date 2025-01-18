@@ -1001,6 +1001,10 @@ ALWAYS_INLINE void GPUDevice::PooledTextureDeleter::operator()(GPUTexture* const
   g_gpu_device->RecycleTexture(std::unique_ptr<GPUTexture>(tex));
 }
 
+// C preprocessor workarounds.
+#define GL_TOKEN_PASTE(x, y) x##y
+#define GL_TOKEN_PASTE2(x, y) GL_TOKEN_PASTE(x, y)
+
 // Macros for debug messages.
 #ifdef ENABLE_GPU_OBJECT_NAMES
 struct GLAutoPop
@@ -1025,7 +1029,7 @@ struct GLAutoPop
   }
 };
 
-#define GL_SCOPE(name) GLAutoPop gl_auto_pop(name)
+#define GL_SCOPE(name) GLAutoPop GL_TOKEN_PASTE2(gl_auto_pop_, __LINE__)(name)
 #define GL_PUSH(name)                                                                                                  \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -1051,7 +1055,7 @@ struct GLAutoPop
       (obj)->SetDebugName(name);                                                                                       \
   } while (0)
 
-#define GL_SCOPE_FMT(...) GLAutoPop gl_auto_pop(__VA_ARGS__)
+#define GL_SCOPE_FMT(...) GLAutoPop GL_TOKEN_PASTE2(gl_auto_pop_, __LINE__)(__VA_ARGS__)
 #define GL_PUSH_FMT(...)                                                                                               \
   do                                                                                                                   \
   {                                                                                                                    \
