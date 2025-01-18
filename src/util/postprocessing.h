@@ -113,7 +113,7 @@ public:
   Chain(const char* section);
   ~Chain();
 
-  ALWAYS_INLINE bool HasStages() const { return m_stages.empty(); }
+  ALWAYS_INLINE bool HasStages() const { return !m_stages.empty(); }
   ALWAYS_INLINE bool NeedsDepthBuffer() const { return m_needs_depth_buffer; }
   ALWAYS_INLINE GPUTexture* GetInputTexture() const { return m_input_texture.get(); }
   ALWAYS_INLINE GPUTexture* GetOutputTexture() const { return m_output_texture.get(); }
