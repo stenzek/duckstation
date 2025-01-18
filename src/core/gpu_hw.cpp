@@ -4055,7 +4055,7 @@ void GPU_HW::DownsampleFramebuffer()
 
 void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height)
 {
-  GL_PUSH_FMT("DownsampleFramebufferAdaptive ({},{} => {},{})", left, top, left + width, left + height);
+  GL_SCOPE_FMT("DownsampleFramebufferAdaptive ({},{} => {},{})", left, top, left + width, left + height);
 
   struct SmoothingUBOData
   {
@@ -4081,7 +4081,6 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
   if (!m_downsample_texture || !level_texture || !weight_texture)
   {
     ERROR_LOG("Failed to create {}x{} RTs for adaptive downsampling", width, height);
-    GL_POP();
     return;
   }
 
@@ -4165,8 +4164,6 @@ void GPU_HW::DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top
     g_gpu_device->Draw(3, 0);
     m_downsample_texture->MakeReadyForSampling();
   }
-
-  GL_POP();
 
   RestoreDeviceContext();
 

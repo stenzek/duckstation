@@ -1030,18 +1030,6 @@ struct GLAutoPop
 };
 
 #define GL_SCOPE(name) GLAutoPop GL_TOKEN_PASTE2(gl_auto_pop_, __LINE__)(name)
-#define GL_PUSH(name)                                                                                                  \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
-      g_gpu_device->PushDebugGroup(name);                                                                              \
-  } while (0)
-#define GL_POP()                                                                                                       \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
-      g_gpu_device->PopDebugGroup();                                                                                   \
-  } while (0)
 #define GL_INS(msg)                                                                                                    \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -1056,12 +1044,6 @@ struct GLAutoPop
   } while (0)
 
 #define GL_SCOPE_FMT(...) GLAutoPop GL_TOKEN_PASTE2(gl_auto_pop_, __LINE__)(__VA_ARGS__)
-#define GL_PUSH_FMT(...)                                                                                               \
-  do                                                                                                                   \
-  {                                                                                                                    \
-    if (g_gpu_device->IsDebugDevice()) [[unlikely]]                                                                    \
-      g_gpu_device->PushDebugGroup(__VA_ARGS__);                                                                       \
-  } while (0)
 #define GL_INS_FMT(...)                                                                                                \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -1076,13 +1058,10 @@ struct GLAutoPop
   } while (0)
 #else
 #define GL_SCOPE(name) (void)0
-#define GL_PUSH(name) (void)0
-#define GL_POP() (void)0
 #define GL_INS(msg) (void)0
 #define GL_OBJECT_NAME(obj, name) (void)0
 
 #define GL_SCOPE_FMT(...) (void)0
-#define GL_PUSH_FMT(...) (void)0
 #define GL_INS_FMT(...) (void)0
 #define GL_OBJECT_NAME_FMT(obj, ...) (void)0
 #endif
