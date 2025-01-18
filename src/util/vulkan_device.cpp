@@ -1604,6 +1604,12 @@ void VulkanDevice::DeferPersistentDescriptorSetDestruction(VkDescriptorSet objec
   m_cleanup_objects.emplace_back(GetCurrentFenceCounter(), [this, object]() { FreePersistentDescriptorSet(object); });
 }
 
+void VulkanDevice::DeferSamplerDestruction(VkSampler object)
+{
+  m_cleanup_objects.emplace_back(GetCurrentFenceCounter(),
+                                 [this, object]() { vkDestroySampler(m_device, object, nullptr); });
+}
+
 VKAPI_ATTR VkBool32 VKAPI_CALL DebugMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity,
                                                       VkDebugUtilsMessageTypeFlagsEXT messageType,
                                                       const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
@@ -2064,7 +2070,6 @@ void VulkanDevice::DestroyDevice()
   m_cleanup_objects.clear();
   DestroyPersistentDescriptorSets();
   DestroyBuffers();
-  DestroySamplers();
 
   DestroyPersistentDescriptorPool();
   DestroyPipelineLayouts();
@@ -2790,15 +2795,15 @@ bool VulkanDevice::CreateNullTexture(Error* error)
   Vulkan::SetObjectName(m_device, m_null_texture->GetView(), "Null texture view");
 
   // Bind null texture and point sampler state to all.
-  const VkSampler point_sampler = GetSampler(GPUSampler::GetNearestConfig(), error);
-  if (point_sampler == VK_NULL_HANDLE)
+  GPUSampler* point_sampler = GetSampler(GPUSampler::GetNearestConfig(), error);
+  if (!point_sampler)
   {
     Error::AddPrefix(error, "Failed to get nearest sampler for init bind: ");
     return false;
   }
 
   for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
-    m_current_samplers[i] = point_sampler;
+    m_current_samplers[i] = static_cast<VulkanSampler*>(point_sampler)->GetSampler();
 
   return true;
 }
@@ -3568,7 +3573,7 @@ void VulkanDevice::SetInitialPipelineState()
 void VulkanDevice::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* sampler)
 {
   VulkanTexture* T = static_cast<VulkanTexture*>(texture);
-  const VkSampler vsampler = static_cast<VulkanSampler*>(sampler ? sampler : m_nearest_sampler.get())->GetSampler();
+  const VkSampler vsampler = static_cast<VulkanSampler*>(sampler ? sampler : m_nearest_sampler)->GetSampler();
   if (m_current_textures[slot] != T || m_current_samplers[slot] != vsampler)
   {
     m_current_textures[slot] = T;

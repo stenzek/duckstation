@@ -317,7 +317,6 @@ void D3D12Device::DestroyDevice()
   m_main_swap_chain.reset();
 
   DestroyDeferredObjects(m_current_fence_value);
-  DestroySamplers();
   DestroyTimestampQuery();
   DestroyBuffers();
   DestroyDescriptorHeaps();
@@ -571,11 +570,11 @@ bool D3D12Device::CreateDescriptorHeaps(Error* error)
   m_device->CreateUnorderedAccessView(nullptr, nullptr, &null_uav_desc, m_null_uav_descriptor.cpu_handle);
 
   // Same for samplers.
-  m_point_sampler = GetSampler(GPUSampler::GetNearestConfig(), error);
-  if (!m_point_sampler) [[unlikely]]
+  GPUSampler* default_sampler = GetSampler(GPUSampler::GetNearestConfig(), error);
+  if (!default_sampler) [[unlikely]]
     return false;
   for (u32 i = 0; i < MAX_TEXTURE_SAMPLERS; i++)
-    m_current_samplers[i] = m_point_sampler;
+    m_current_samplers[i] = static_cast<D3D12Sampler*>(default_sampler)->GetDescriptor();
   return true;
 }
 
@@ -2123,7 +2122,7 @@ void D3D12Device::SetTextureSampler(u32 slot, GPUTexture* texture, GPUSampler* s
   }
 
   const D3D12DescriptorHandle& handle =
-    sampler ? static_cast<D3D12Sampler*>(sampler)->GetDescriptor() : m_point_sampler;
+    static_cast<D3D12Sampler*>(sampler ? sampler : m_nearest_sampler)->GetDescriptor();
   if (m_current_samplers[slot] != handle)
   {
     m_current_samplers[slot] = handle;
@@ -2295,7 +2294,7 @@ void D3D12Device::RenderTextureMipmap(D3D12Texture* texture, u32 dst_level, u32 
 
   cmdlist->SetPipelineState(pipeline.Get());
   cmdlist->SetGraphicsRootDescriptorTable(0, srv_handle);
-  cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12Sampler*>(m_linear_sampler.get())->GetDescriptor());
+  cmdlist->SetGraphicsRootDescriptorTable(1, static_cast<D3D12Sampler*>(m_linear_sampler)->GetDescriptor());
   cmdlist->DrawInstanced(3, 1, 0, 0);
 
   cmdlist->EndRenderPass();

@@ -716,8 +716,8 @@ public:
   ALWAYS_INLINE GPUSwapChain* GetMainSwapChain() const { return m_main_swap_chain.get(); }
   ALWAYS_INLINE bool HasMainSwapChain() const { return static_cast<bool>(m_main_swap_chain); }
 
-  ALWAYS_INLINE GPUSampler* GetLinearSampler() const { return m_linear_sampler.get(); }
-  ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler.get(); }
+  ALWAYS_INLINE GPUSampler* GetLinearSampler() const { return m_linear_sampler; }
+  ALWAYS_INLINE GPUSampler* GetNearestSampler() const { return m_nearest_sampler; }
 
   ALWAYS_INLINE bool IsGPUTimingEnabled() const { return m_gpu_timing_enabled; }
 
@@ -756,6 +756,8 @@ public:
   virtual std::unique_ptr<GPUSampler> CreateSampler(const GPUSampler::Config& config, Error* error = nullptr) = 0;
   virtual std::unique_ptr<GPUTextureBuffer> CreateTextureBuffer(GPUTextureBuffer::Format format, u32 size_in_elements,
                                                                 Error* error = nullptr) = 0;
+
+  GPUSampler* GetSampler(const GPUSampler::Config& config, Error* error = nullptr);
 
   // Texture pooling.
   std::unique_ptr<GPUTexture> FetchTexture(u32 width, u32 height, u32 layers, u32 levels, u32 samples,
@@ -918,11 +920,11 @@ protected:
   u32 m_max_multisamples = 0;
 
   std::unique_ptr<GPUSwapChain> m_main_swap_chain;
+  GPUSampler* m_nearest_sampler = nullptr;
+  GPUSampler* m_linear_sampler = nullptr;
 
   GPUShaderCache m_shader_cache;
 
-  std::unique_ptr<GPUSampler> m_nearest_sampler;
-  std::unique_ptr<GPUSampler> m_linear_sampler;
 
 private:
   static constexpr u32 MAX_TEXTURE_POOL_SIZE = 125;
@@ -957,6 +959,7 @@ private:
   };
 
   using TexturePool = std::deque<TexturePoolEntry>;
+  using SamplerMap = std::unordered_map<u64, std::unique_ptr<GPUSampler>>;
 
 #ifdef __APPLE__
   // We have to define these in the base class, because they're in Objective C++.
@@ -976,10 +979,13 @@ private:
   std::unique_ptr<GPUPipeline> m_imgui_pipeline;
   std::unique_ptr<GPUTexture> m_imgui_font_texture;
 
+  SamplerMap m_sampler_map;
+
   TexturePool m_texture_pool;
   TexturePool m_target_pool;
   size_t m_pool_vram_usage = 0;
   u32 m_texture_pool_counter = 0;
+
 
 protected:
   static Statistics s_stats;

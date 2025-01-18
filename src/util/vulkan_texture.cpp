@@ -776,7 +776,7 @@ VulkanSampler::VulkanSampler(VkSampler sampler) : m_sampler(sampler)
 
 VulkanSampler::~VulkanSampler()
 {
-  // Cleaned up by main class.
+  VulkanDevice::GetInstance().DeferSamplerDestruction(m_sampler);
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
@@ -788,12 +788,8 @@ void VulkanSampler::SetDebugName(std::string_view name)
 
 #endif
 
-VkSampler VulkanDevice::GetSampler(const GPUSampler::Config& config, Error* error)
+std::unique_ptr<GPUSampler> VulkanDevice::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
 {
-  const auto it = m_sampler_map.find(config.key);
-  if (it != m_sampler_map.end())
-    return it->second;
-
   static constexpr std::array<VkSamplerAddressMode, static_cast<u8>(GPUSampler::AddressMode::MaxCount)> ta = {{
     VK_SAMPLER_ADDRESS_MODE_REPEAT,          // Repeat
     VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,   // ClampToEdge
@@ -867,29 +863,10 @@ VkSampler VulkanDevice::GetSampler(const GPUSampler::Config& config, Error* erro
   {
     LOG_VULKAN_ERROR(res, "vkCreateSampler() failed: ");
     Vulkan::SetErrorObject(error, "vkCreateSampler() failed: ", res);
-  }
-
-  m_sampler_map.emplace(config.key, sampler);
-  return sampler;
-}
-
-void VulkanDevice::DestroySamplers()
-{
-  for (auto& it : m_sampler_map)
-  {
-    if (it.second != VK_NULL_HANDLE)
-      vkDestroySampler(m_device, it.second, nullptr);
-  }
-  m_sampler_map.clear();
-}
-
-std::unique_ptr<GPUSampler> VulkanDevice::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
-{
-  const VkSampler vsampler = GetSampler(config, error);
-  if (vsampler == VK_NULL_HANDLE)
     return {};
+  }
 
-  return std::unique_ptr<GPUSampler>(new VulkanSampler(vsampler));
+  return std::unique_ptr<GPUSampler>(new VulkanSampler(sampler));
 }
 
 VulkanTextureBuffer::VulkanTextureBuffer(Format format, u32 size_in_elements)

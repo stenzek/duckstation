@@ -650,12 +650,14 @@ bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 
 bool GPUDevice::CreateResources(Error* error)
 {
-  if (!(m_nearest_sampler = CreateSampler(GPUSampler::GetNearestConfig(), error)) ||
-      !(m_linear_sampler = CreateSampler(GPUSampler::GetLinearConfig(), error)))
+  if (!(m_nearest_sampler = GetSampler(GPUSampler::GetNearestConfig(), error)) ||
+      !(m_linear_sampler = GetSampler(GPUSampler::GetLinearConfig(), error)))
   {
     Error::AddPrefix(error, "Failed to create samplers: ");
     return false;
   }
+  GL_OBJECT_NAME(m_nearest_sampler, "Nearest Sampler");
+  GL_OBJECT_NAME(m_linear_sampler, "Nearest Sampler");
 
   const RenderAPI render_api = GetRenderAPI();
   ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), m_features.dual_source_blend,
@@ -717,8 +719,9 @@ void GPUDevice::DestroyResources()
 
   m_imgui_pipeline.reset();
 
-  m_linear_sampler.reset();
-  m_nearest_sampler.reset();
+  m_linear_sampler = nullptr;
+  m_nearest_sampler = nullptr;
+  m_sampler_map.clear();
 
   m_shader_cache.Close();
 }
@@ -773,7 +776,7 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
         clip = FlipToLowerLeft(clip, post_rotated_height);
 
       SetScissor(clip);
-      SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler.get());
+      SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler);
 
       if (pcmd->UserCallback) [[unlikely]]
       {
@@ -1013,6 +1016,25 @@ GSVector4i GPUDevice::FlipToLowerLeft(GSVector4i rc, s32 target_height)
   rc.top = flipped_y;
   rc.bottom = flipped_y + height;
   return rc;
+}
+
+GPUSampler* GPUDevice::GetSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
+{
+  auto it = m_sampler_map.find(config.key);
+  if (it != m_sampler_map.end())
+  {
+    if (!it->second) [[unlikely]]
+      Error::SetStringView(error, "Sampler previously failed creation.");
+
+    return it->second.get();
+  }
+
+  std::unique_ptr<GPUSampler> sampler = g_gpu_device->CreateSampler(config, error);
+  if (sampler)
+    GL_OBJECT_NAME_FMT(sampler, "Sampler {:016X}", config.key);
+
+  it = m_sampler_map.emplace(config.key, std::move(sampler)).first;
+  return it->second.get();
 }
 
 bool GPUDevice::IsTexturePoolType(GPUTexture::Type type)
