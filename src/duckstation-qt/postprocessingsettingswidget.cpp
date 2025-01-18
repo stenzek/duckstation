@@ -12,6 +12,7 @@
 #include "common/error.h"
 
 #include <QtCore/QDir>
+#include <QtCore/QFileInfo>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QGridLayout>
@@ -539,7 +540,8 @@ void PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged(int ind
 
 void PostProcessingOverlayConfigWidget::onImagePathBrowseClicked()
 {
-  const QString path = QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select Image"), QString(),
+  const QString path = QFileDialog::getOpenFileName(QtUtils::GetRootWidget(this), tr("Select Image"),
+                                                    QFileInfo(m_ui.imagePath->text()).dir().path(),
                                                     tr("All Cover Image Types (*.jpg *.jpeg *.png *.webp)"));
   if (path.isEmpty())
     return;

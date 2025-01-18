@@ -30,6 +30,7 @@ public:
   std::string GenerateScreenQuadVertexShader(float z = 0.0f) const;
   std::string GenerateUVQuadVertexShader() const;
   std::string GenerateFillFragmentShader() const;
+  std::string GenerateFillFragmentShader(const GSVector4i fixed_color) const;
   std::string GenerateCopyFragmentShader(bool offset = true) const;
 
   std::string GenerateImGuiVertexShader() const;

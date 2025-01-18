@@ -91,11 +91,6 @@ bool GPUPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
   return true;
 }
 
-bool GPUPresenter::IsDisplayPostProcessingActive() const
-{
-  return (m_display_postfx && m_display_postfx->IsActive());
-}
-
 bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error)
 {
   const GPUShaderGen shadergen(g_gpu_device->GetRenderAPI(), g_gpu_device->GetFeatures().dual_source_blend,
@@ -170,16 +165,19 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
     GL_OBJECT_NAME(m_present_copy_pipeline, "Display Rotate/Copy Pipeline");
 
     // blended variants
-    if (m_border_overlay_texture && m_border_overlay_alpha_blend)
+    if (m_border_overlay_texture)
     {
-      // destination blend the main present, not source
-      plconfig.blend.enable = true;
-      plconfig.blend.src_blend = GPUPipeline::BlendFunc::InvDstAlpha;
-      plconfig.blend.blend_op = GPUPipeline::BlendOp::Add;
-      plconfig.blend.dst_blend = GPUPipeline::BlendFunc::One;
-      plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::One;
-      plconfig.blend.alpha_blend_op = GPUPipeline::BlendOp::Add;
-      plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::Zero;
+      if (m_border_overlay_alpha_blend)
+      {
+        // destination blend the main present, not source
+        plconfig.blend.enable = true;
+        plconfig.blend.src_blend = GPUPipeline::BlendFunc::InvDstAlpha;
+        plconfig.blend.blend_op = GPUPipeline::BlendOp::Add;
+        plconfig.blend.dst_blend = GPUPipeline::BlendFunc::One;
+        plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::One;
+        plconfig.blend.alpha_blend_op = GPUPipeline::BlendOp::Add;
+        plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::Zero;
+      }
 
       plconfig.fragment_shader = fso.get();
       if (!(m_display_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
@@ -191,6 +189,18 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
       if (!(m_present_copy_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
       GL_OBJECT_NAME(m_present_copy_blend_pipeline, "Display Rotate/Copy Pipeline [Blended]");
+
+      std::unique_ptr<GPUShader> clear_fso =
+        g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                   shadergen.GenerateFillFragmentShader(GSVector4i::zero()), error);
+      if (!clear_fso)
+        return false;
+      GL_OBJECT_NAME(clear_fso, "Display Clear Fragment Shader");
+
+      plconfig.fragment_shader = clear_fso.get();
+      if (!(m_present_clear_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+        return false;
+      GL_OBJECT_NAME(m_present_clear_pipeline, "Display Clear Pipeline");
     }
   }
 
@@ -383,10 +393,12 @@ GPUDevice::PresentResult GPUPresenter::PresentDisplay()
   display_rect = display_rect.add32(overlay_display_rect.xyxy());
   draw_rect = draw_rect.add32(overlay_display_rect.xyxy());
 
-  return RenderDisplay(nullptr, overlay_rect, display_rect, draw_rect, !g_gpu_settings.gpu_show_vram);
+  return RenderDisplay(nullptr, overlay_rect, overlay_display_rect, display_rect, draw_rect,
+                       !g_gpu_settings.gpu_show_vram);
 }
 
 GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const GSVector4i overlay_rect,
+                                                     const GSVector4i overlay_display_rect,
                                                      const GSVector4i display_rect, const GSVector4i draw_rect,
                                                      bool postfx)
 {
@@ -409,7 +421,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   GL_INS_FMT("Final target size: {}x{}", target_size.x, target_size.y);
 
   // Postfx active?
-  const GSVector2i postfx_size = have_overlay ? display_rect.rsize() : target_size;
+  const GSVector2i postfx_size = have_overlay ? overlay_display_rect.rsize() : target_size;
   const bool really_postfx = (postfx && m_display_postfx && m_display_postfx->IsActive() && m_display_postfx &&
                               m_display_postfx->CheckTargets(m_present_format, postfx_size.x, postfx_size.y));
   GL_INS(really_postfx ? "Post-processing is ENABLED" : "Post-processing is disabled");
@@ -436,7 +448,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   if (really_postfx)
   {
     // Remove draw offset if we're using an overlay.
-    const GSVector4i real_draw_rect = have_overlay ? draw_rect.sub32(display_rect.xyxy()) : draw_rect;
+    const GSVector4i real_draw_rect = have_overlay ? draw_rect.sub32(overlay_display_rect.xyxy()) : draw_rect;
 
     // Display is always drawn to the postfx input.
     GPUTexture* const postfx_input = m_display_postfx->GetInputTexture();
@@ -453,8 +465,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     if (have_prerotation || have_overlay)
     {
       GPUTexture* const postfx_output = m_display_postfx->GetTextureUnusedAtEndOfChain();
-      const GSVector4i real_display_rect = have_overlay ? display_rect.sub32(display_rect.xyxy()) : display_rect;
-      ApplyDisplayPostProcess(postfx_output, postfx_input, real_display_rect);
+      ApplyDisplayPostProcess(postfx_output, postfx_input, real_draw_rect);
       postfx_output->MakeReadyForSampling();
 
       // Start draw to final buffer.
@@ -464,13 +475,26 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       // If we have an overlay, draw it, and then copy the postprocessed framebuffer in.
       if (have_overlay)
       {
-        DrawTextureCopy(target_size, overlay_rect, m_border_overlay_texture.get(), false, true, prerotation);
-        DrawTextureCopy(target_size, draw_rect, postfx_output, m_border_overlay_alpha_blend, false, prerotation);
+        GL_SCOPE_FMT("Draw overlay and postfx buffer");
+        g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
+        g_gpu_device->SetTextureSampler(0, m_border_overlay_texture.get(), g_gpu_device->GetLinearSampler());
+        DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal,
+                       prerotation);
+
+        g_gpu_device->SetPipeline(m_border_overlay_alpha_blend ? m_present_copy_blend_pipeline.get() :
+                                                                 m_present_copy_pipeline.get());
+        g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
+        DrawScreenQuad(overlay_display_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size,
+                       DisplayRotation::Normal, prerotation);
       }
       else
       {
-        // Ohterwise, just copy the framebuffer.
-        DrawTextureCopy(target_size, draw_rect, postfx_output, false, false, prerotation);
+        // Otherwise, just copy the framebuffer.
+        GL_SCOPE_FMT("Copy framebuffer for prerotation");
+        g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
+        g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
+        DrawScreenQuad(draw_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal,
+                       prerotation);
       }
 
       // All done
@@ -490,7 +514,22 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       return pres;
 
     if (have_overlay)
-      DrawTextureCopy(target_size, overlay_rect, m_border_overlay_texture.get(), false, true, prerotation);
+    {
+      GL_SCOPE_FMT("Draw overlay to {}", overlay_rect);
+      g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
+      g_gpu_device->SetTextureSampler(0, m_border_overlay_texture.get(), g_gpu_device->GetLinearSampler());
+
+      DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal,
+                     prerotation);
+
+      if (!overlay_display_rect.eq(draw_rect))
+      {
+        // Need to fill in the borders.
+        GL_SCOPE_FMT("Fill in overlay borders - odisplay={}, draw={}", overlay_display_rect, draw_rect);
+        g_gpu_device->SetPipeline(m_present_clear_pipeline.get());
+        DrawScreenQuad(overlay_display_rect, GSVector4::zero(), target_size, g_settings.display_rotation, prerotation);
+      }
+    }
 
     if (m_display_texture)
     {
@@ -676,7 +715,8 @@ void GPUPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
   // Not cleared by RenderDisplay().
   g_gpu_device->ClearRenderTarget(target, GPUDevice::DEFAULT_CLEAR_COLOR);
 
-  if (RenderDisplay(target, GSVector4i::zero(), display_rect, draw_rect, postfx) != GPUDevice::PresentResult::OK ||
+  if (RenderDisplay(target, GSVector4i::zero(), GSVector4i::zero(), display_rect, draw_rect, postfx) !=
+        GPUDevice::PresentResult::OK ||
       !cap->DeliverVideoFrame(target)) [[unlikely]]
   {
     WARNING_LOG("Failed to render/deliver video capture frame.");
@@ -1003,7 +1043,7 @@ bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, const GSVecto
   g_gpu_device->ClearRenderTarget(render_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
 
   // TODO: this should use copy shader instead.
-  RenderDisplay(render_texture.get(), GSVector4i::zero(), display_rect, draw_rect, postfx);
+  RenderDisplay(render_texture.get(), GSVector4i::zero(), GSVector4i::zero(), display_rect, draw_rect, postfx);
 
   Image image(width, height, image_format);
 
@@ -1102,7 +1142,7 @@ bool GPUPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
   {
     // something changed, need to recompile pipelines
     if (LoadOverlayTexture() && m_border_overlay_alpha_blend &&
-        (!m_present_copy_blend_pipeline || !m_display_blend_pipeline) &&
+        (!m_present_copy_blend_pipeline || !m_display_blend_pipeline || !m_present_clear_pipeline) &&
         !CompileDisplayPipelines(true, false, false, error))
     {
       return false;

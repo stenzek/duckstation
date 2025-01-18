@@ -48,8 +48,6 @@ public:
   bool Initialize(Error* error);
 
   bool UpdateSettings(const GPUSettings& old_settings, Error* error);
-
-  bool IsDisplayPostProcessingActive() const;
   bool UpdatePostProcessingSettings(bool force_reload, Error* error);
 
   void ClearDisplay();
@@ -106,7 +104,8 @@ private:
   bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error);
 
   GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector4i overlay_rect,
-                                         const GSVector4i display_rect, const GSVector4i draw_rect, bool postfx);
+                                         const GSVector4i overlay_display_rect, const GSVector4i display_rect,
+                                         const GSVector4i draw_rect, bool postfx);
 
   void DrawDisplay(const GSVector2i target_size, const GSVector4i display_rect, bool dst_alpha_blend,
                    DisplayRotation rotation, WindowInfo::PreRotation prerotation);
@@ -158,12 +157,13 @@ private:
   std::unique_ptr<GPUPipeline> m_present_copy_pipeline;
 
   std::unique_ptr<PostProcessing::Chain> m_display_postfx;
+  std::unique_ptr<GPUTexture> m_border_overlay_texture;
 
   // blended variants of pipelines, used when overlays are enabled
   std::unique_ptr<GPUPipeline> m_display_blend_pipeline;
   std::unique_ptr<GPUPipeline> m_present_copy_blend_pipeline;
+  std::unique_ptr<GPUPipeline> m_present_clear_pipeline;
 
-  std::unique_ptr<GPUTexture> m_border_overlay_texture;
   GSVector4i m_border_overlay_display_rect = GSVector4i::zero();
 
   // Low-traffic variables down here.

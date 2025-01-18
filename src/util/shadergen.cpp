@@ -845,6 +845,20 @@ std::string ShaderGen::GenerateFillFragmentShader() const
   return ss.str();
 }
 
+std::string ShaderGen::GenerateFillFragmentShader(const GSVector4i fixed_color) const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareFragmentEntryPoint(ss, 0, 0);
+
+  ss << "{\n";
+  ss << "  o_col0 = float4(" << std::fixed << fixed_color.x << ", " << fixed_color.y << ", " << fixed_color.z << ", "
+     << fixed_color.w << ");\n";
+  ss << "}\n";
+
+  return ss.str();
+}
+
 std::string ShaderGen::GenerateCopyFragmentShader(bool offset) const
 {
   std::stringstream ss;
