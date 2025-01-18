@@ -206,7 +206,7 @@ public Q_SLOTS:
   void requestDisplaySize(float scale);
   void applyCheat(const QString& name);
   void reloadPostProcessingShaders();
-  void updatePostProcessingSettings();
+  void updatePostProcessingSettings(bool display, bool internal, bool force_reload);
   void clearInputBindStateFromSource(InputBindingKey key);
   void reloadTextureReplacements();
   void captureGPUFrameDump();

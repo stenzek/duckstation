@@ -75,10 +75,12 @@ public:
   virtual ~GPUBackend();
 
   ALWAYS_INLINE const GPUPresenter& GetPresenter() const { return m_presenter; }
+  ALWAYS_INLINE GPUPresenter& GetPresenter() { return m_presenter; }
 
   virtual bool Initialize(bool upload_vram, Error* error);
 
   virtual bool UpdateSettings(const GPUSettings& old_settings, Error* error);
+  virtual void UpdatePostProcessingSettings(bool force_reload);
 
   /// Returns the current resolution scale.
   virtual u32 GetResolutionScale() const = 0;

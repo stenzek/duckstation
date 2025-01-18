@@ -41,6 +41,8 @@ PostProcessingChainConfigWidget::PostProcessingChainConfigWidget(SettingsWindow*
   m_ui.setupUi(this);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enablePostProcessing, section, "Enabled", false);
+  connect(m_ui.enablePostProcessing, &QCheckBox::checkStateChanged, this,
+          &PostProcessingChainConfigWidget::triggerSettingsReload);
 
   updateList();
   updateButtonsAndConfigPane(std::nullopt);
@@ -57,14 +59,17 @@ SettingsInterface& PostProcessingChainConfigWidget::getSettingsInterfaceToUpdate
 void PostProcessingChainConfigWidget::commitSettingsUpdate()
 {
   if (m_dialog->isPerGameSettings())
-  {
     m_dialog->saveAndReloadGameSettings();
-  }
   else
-  {
     Host::CommitBaseSettingChanges();
-    g_emu_thread->updatePostProcessingSettings();
-  }
+
+  triggerSettingsReload();
+}
+
+void PostProcessingChainConfigWidget::triggerSettingsReload()
+{
+  g_emu_thread->updatePostProcessingSettings(m_section == PostProcessing::Config::DISPLAY_CHAIN_SECTION,
+                                             m_section == PostProcessing::Config::INTERNAL_CHAIN_SECTION, false);
 }
 
 void PostProcessingChainConfigWidget::connectUi()
@@ -508,8 +513,17 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
 
   connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
           &PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged);
+  connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
+          &PostProcessingOverlayConfigWidget::triggerSettingsReload);
   connect(m_ui.imagePathBrowse, &QPushButton::clicked, this,
           &PostProcessingOverlayConfigWidget::onImagePathBrowseClicked);
+  connect(m_ui.imagePath, &QLineEdit::textChanged, this, &PostProcessingOverlayConfigWidget::triggerSettingsReload);
+  connect(m_ui.displayStartX, &QSpinBox::textChanged, this, &PostProcessingOverlayConfigWidget::triggerSettingsReload);
+  connect(m_ui.displayStartY, &QSpinBox::textChanged, this, &PostProcessingOverlayConfigWidget::triggerSettingsReload);
+  connect(m_ui.displayEndX, &QSpinBox::textChanged, this, &PostProcessingOverlayConfigWidget::triggerSettingsReload);
+  connect(m_ui.displayEndY, &QSpinBox::textChanged, this, &PostProcessingOverlayConfigWidget::triggerSettingsReload);
+  connect(m_ui.alphaBlend, &QCheckBox::checkStateChanged, this,
+          &PostProcessingOverlayConfigWidget::triggerSettingsReload);
 
   onOverlayNameCurrentIndexChanged(m_ui.overlayName->currentIndex());
 }
@@ -531,4 +545,9 @@ void PostProcessingOverlayConfigWidget::onImagePathBrowseClicked()
     return;
 
   m_ui.imagePath->setText(QDir::toNativeSeparators(path));
+}
+
+void PostProcessingOverlayConfigWidget::triggerSettingsReload()
+{
+  g_emu_thread->updatePostProcessingSettings(true, false, false);
 }

@@ -41,6 +41,7 @@ private Q_SLOTS:
   void onMoveDownButtonClicked();
   void onReloadButtonClicked();
   void onSelectedShaderChanged();
+  void triggerSettingsReload();
 
 private:
   SettingsInterface& getSettingsInterfaceToUpdate();
@@ -99,6 +100,7 @@ public:
 private Q_SLOTS:
   void onOverlayNameCurrentIndexChanged(int index);
   void onImagePathBrowseClicked();
+  void triggerSettingsReload();
 
 private:
   Ui::PostProcessingOverlayConfigWidget m_ui;

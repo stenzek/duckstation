@@ -356,7 +356,7 @@ static void DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, c
                                     float step_value, float multiplier, const char* format = "%f", bool enabled = true,
                                     float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
                                     ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
-static void DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+static bool DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                                const char* left_key, int default_left, const char* top_key, int default_top,
                                const char* right_key, int default_right, const char* bottom_key, int default_bottom,
                                int min_value, int max_value, const char* format = "%d", bool enabled = true,
@@ -2762,7 +2762,7 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
   ImGui::PopFont();
 }
 
-void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary,
+bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary,
                                       const char* section, const char* left_key, int default_left, const char* top_key,
                                       int default_top, const char* right_key, int default_right, const char* bottom_key,
                                       int default_bottom, int min_value, int max_value, const char* format,
@@ -2799,6 +2799,7 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
+  bool changed = false;
   if (ImGui::BeginPopupModal(title, &is_open,
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
@@ -2864,7 +2865,8 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
         bsi->SetIntValue(section, bottom_key, dlg_bottom_value);
     }
 
-    if (left_modified || top_modified || right_modified || bottom_modified)
+    changed = (left_modified || top_modified || right_modified || bottom_modified);
+    if (changed)
       SetSettingsChanged(bsi);
 
     if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
@@ -2879,6 +2881,8 @@ void FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
 
   ImGui::PopStyleVar(4);
   ImGui::PopFont();
+
+  return changed;
 }
 
 void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -5304,16 +5308,28 @@ enum
 
 void FullscreenUI::DrawPostProcessingSettingsPage()
 {
-  SettingsInterface* bsi = GetEditingSettingsInterface();
   static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
+
+  static constexpr auto queue_reload = []() {
+    if (GPUThread::HasGPUBackend())
+    {
+      Host::RunOnCPUThread([]() {
+        if (System::IsValid())
+          GPUPresenter::ReloadPostProcessingSettings(true, false, false);
+      });
+    }
+  };
+
+  SettingsInterface* bsi = GetEditingSettingsInterface();
+  bool reload_pending = false;
 
   BeginMenuButtons();
 
   MenuHeading(FSUI_CSTR("Controls"));
 
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Enable Post Processing"),
-                    FSUI_CSTR("If not enabled, the current post processing chain will be ignored."), "PostProcessing",
-                    "Enabled", false);
+  reload_pending |= DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Enable Post Processing"),
+                                      FSUI_CSTR("If not enabled, the current post processing chain will be ignored."),
+                                      "PostProcessing", "Enabled", false);
 
   if (MenuButton(FSUI_ICONSTR(ICON_FA_SEARCH, "Reload Shaders"),
                  FSUI_CSTR("Reloads the shaders from disk, applying any changes."),
@@ -5322,12 +5338,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
     // Have to defer because of the settings lock.
     if (GPUThread::HasGPUBackend())
     {
-      Host::RunOnCPUThread([]() {
-        GPUThread::RunOnThread([]() {
-          if (PostProcessing::ReloadShaders())
-            ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
-        });
-      });
+      Host::RunOnCPUThread([]() { GPUPresenter::ReloadPostProcessingSettings(true, true, true); });
+      ShowToast(std::string(), FSUI_STR("Post-processing shaders reloaded."));
     }
   }
 
@@ -5355,6 +5367,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                                                               PostProcessing::Config::GetStageCount(*bsi, section)));
                          PopulatePostProcessingChain(bsi, section);
                          SetSettingsChanged(bsi);
+                         queue_reload();
                        }
                        else
                        {
@@ -5379,6 +5392,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         PopulatePostProcessingChain(bsi, section);
         SetSettingsChanged(bsi);
         ShowToast(std::string(), FSUI_STR("Post-processing chain cleared."));
+        queue_reload();
       });
   }
 
@@ -5435,6 +5449,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             opt.value[0].int_value = (value != 0);
             PostProcessing::Config::SetStageOption(*bsi, section, stage_index, opt);
             SetSettingsChanged(bsi);
+            queue_reload();
           }
         }
         break;
@@ -5520,6 +5535,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             {
               PostProcessing::Config::SetStageOption(*bsi, section, stage_index, opt);
               SetSettingsChanged(bsi);
+              reload_pending = true;
             }
 #endif
 
@@ -5619,6 +5635,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             {
               PostProcessing::Config::SetStageOption(*bsi, section, stage_index, opt);
               SetSettingsChanged(bsi);
+              reload_pending = true;
             }
 #endif
 
@@ -5656,6 +5673,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       PostProcessing::Config::RemoveStage(*bsi, section, postprocessing_action_index);
       PopulatePostProcessingChain(bsi, section);
       SetSettingsChanged(bsi);
+      reload_pending = true;
     }
     break;
     case POSTPROCESSING_ACTION_MOVE_UP:
@@ -5663,6 +5681,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       PostProcessing::Config::MoveStageUp(*bsi, section, postprocessing_action_index);
       PopulatePostProcessingChain(bsi, section);
       SetSettingsChanged(bsi);
+      reload_pending = true;
     }
     break;
     case POSTPROCESSING_ACTION_MOVE_DOWN:
@@ -5670,6 +5689,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
       PostProcessing::Config::MoveStageDown(*bsi, section, postprocessing_action_index);
       PopulatePostProcessingChain(bsi, section);
       SetSettingsChanged(bsi);
+      reload_pending = true;
     }
     break;
     default:
@@ -5723,6 +5743,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
                            bsi->SetStringValue("BorderOverlay", "PresetName", new_value);
                          }
                          SetSettingsChanged(bsi);
+                         queue_reload();
                        });
     }
 
@@ -5740,16 +5761,17 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             SettingsInterface* const bsi = GetEditingSettingsInterface(game_settings);
             bsi->SetStringValue("BorderOverlay", "ImagePath", path.c_str());
             SetSettingsChanged(bsi);
+            queue_reload();
           },
           GetImageFilters());
       }
 
-      DrawIntRectSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_STYLE, "Display Area"),
-                         FSUI_CSTR("Determines the area of the overlay image that the display will be drawn within."),
-                         "BorderOverlay", "DisplayStartX", 0, "DisplayStartY", 0, "DisplayEndX", 0, "DisplayEndY", 0, 0,
-                         65535, "%dpx");
+      reload_pending |= DrawIntRectSetting(
+        bsi, FSUI_ICONSTR(ICON_FA_BORDER_STYLE, "Display Area"),
+        FSUI_CSTR("Determines the area of the overlay image that the display will be drawn within."), "BorderOverlay",
+        "DisplayStartX", 0, "DisplayStartY", 0, "DisplayEndX", 0, "DisplayEndY", 0, 0, 65535, "%dpx");
 
-      DrawToggleSetting(
+      reload_pending |= DrawToggleSetting(
         bsi, FSUI_ICONSTR(ICON_FA_BLENDER, "Destination Alpha Blending"),
         FSUI_CSTR("If enabled, the display will be blended with the transparency of the overlay image."),
         "BorderOverlay", "AlphaBlend", false);
@@ -5757,6 +5779,9 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
   }
 
   EndMenuButtons();
+
+  if (reload_pending)
+    queue_reload();
 }
 
 void FullscreenUI::DrawAudioSettingsPage()
@@ -8409,7 +8434,7 @@ LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
   else
   {
     // since this was pushing frames, we need to restore the context. do that by pushing a frame ourselves
-    GPUThread::Internal::DoRunIdle();
+    GPUThread::Internal::PresentFrameAndRestoreContext();
   }
 }
 

@@ -411,7 +411,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     {
       if (CopyOut(src_x, src_y, skip_x, width, height, line_skip, is_24bit))
       {
-        m_presenter.SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, width, height);
+        m_presenter.SetDisplayTexture(m_upload_texture.get(), 0, 0, width, height);
         if (is_24bit && g_settings.display_24bit_chroma_smoothing)
         {
           if (m_presenter.ApplyChromaSmoothing())
@@ -427,7 +427,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     {
       if (CopyOut(src_x, src_y, skip_x, width, height, 0, is_24bit))
       {
-        m_presenter.SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, width, height);
+        m_presenter.SetDisplayTexture(m_upload_texture.get(), 0, 0, width, height);
         if (is_24bit && g_settings.display_24bit_chroma_smoothing)
           m_presenter.ApplyChromaSmoothing();
       }
@@ -436,7 +436,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   else
   {
     if (CopyOut(0, 0, 0, VRAM_WIDTH, VRAM_HEIGHT, 0, false))
-      m_presenter.SetDisplayTexture(m_upload_texture.get(), nullptr, 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
+      m_presenter.SetDisplayTexture(m_upload_texture.get(), 0, 0, VRAM_WIDTH, VRAM_HEIGHT);
   }
 }
 

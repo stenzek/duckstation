@@ -81,7 +81,6 @@ static void ReconfigureOnThread(GPUThreadReconfigureCommand* cmd);
 static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Error* error);
 static void DestroyGPUBackendOnThread();
 static void DestroyGPUPresenterOnThread();
-static bool PresentFrameAndRestoreContext();
 
 static void UpdateSettingsOnThread(const GPUSettings& old_settings);
 
@@ -756,6 +755,8 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
       s_state.gpu_presenter.reset();
       return false;
     }
+
+    ImGuiManager::UpdateDebugWindowConfig();
   }
 
   const bool is_hardware = (renderer != GPURenderer::Software);
@@ -793,8 +794,6 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
   }
 
   g_gpu_device->SetGPUTimingEnabled(g_gpu_settings.display_show_gpu_usage);
-  PostProcessing::Initialize();
-  ImGuiManager::UpdateDebugWindowConfig();
   s_state.gpu_backend->RestoreDeviceContext();
   SetRunIdleReason(RunIdleReason::NoGPUBackend, false);
   std::atomic_thread_fence(std::memory_order_release);
@@ -919,9 +918,6 @@ void GPUThread::DestroyGPUBackendOnThread()
 
   SetRunIdleReason(RunIdleReason::NoGPUBackend, true);
 
-  ImGuiManager::DestroyAllDebugWindows();
-  ImGuiManager::DestroyOverlayTextures();
-  PostProcessing::Shutdown();
   s_state.gpu_backend.reset();
 }
 
@@ -932,6 +928,9 @@ void GPUThread::DestroyGPUPresenterOnThread()
 
   VERBOSE_LOG("Shutting down GPU presenter...");
 
+  ImGuiManager::DestroyAllDebugWindows();
+  ImGuiManager::DestroyOverlayTextures();
+
   // Should have no queued frames by this point. Backend can get replaced with null.
   Assert(!s_state.gpu_backend);
   Assert(GPUBackend::GetQueuedFrameCount() == 0);
@@ -939,8 +938,10 @@ void GPUThread::DestroyGPUPresenterOnThread()
   s_state.gpu_presenter.reset();
 }
 
-bool GPUThread::PresentFrameAndRestoreContext()
+bool GPUThread::Internal::PresentFrameAndRestoreContext()
 {
+  DebugAssert(IsOnThread());
+
   if (s_state.gpu_backend)
     s_state.gpu_backend->FlushRender();
 
@@ -970,19 +971,16 @@ void GPUThread::UpdateSettingsOnThread(const GPUSettings& old_settings)
     if (g_gpu_settings.display_show_gpu_usage != old_settings.display_show_gpu_usage)
       g_gpu_device->SetGPUTimingEnabled(g_gpu_settings.display_show_gpu_usage);
 
-    PostProcessing::UpdateSettings();
-
     Error error;
-    if (!s_state.gpu_presenter->UpdatePostProcessingSettings(&error) ||
-        !s_state.gpu_presenter->UpdateSettings(old_settings, &error) ||
+    if (!s_state.gpu_presenter->UpdateSettings(old_settings, &error) ||
         !s_state.gpu_backend->UpdateSettings(old_settings, &error)) [[unlikely]]
     {
       ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
       return;
     }
 
-    if (ImGuiManager::UpdateDebugWindowConfig() || (PostProcessing::DisplayChain.IsActive() && !IsSystemPaused()))
-      PresentFrameAndRestoreContext();
+    if (ImGuiManager::UpdateDebugWindowConfig())
+      Internal::PresentFrameAndRestoreContext();
     else
       s_state.gpu_backend->RestoreDeviceContext();
   }
@@ -1071,17 +1069,8 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
     RunOnThread([]() {
       if (s_state.gpu_backend)
       {
-        PostProcessing::UpdateSettings();
-
-        Error error;
-        if (!s_state.gpu_presenter->UpdatePostProcessingSettings(&error))
-        {
-          ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
-          return;
-        }
-
-        if (ImGuiManager::UpdateDebugWindowConfig() || (PostProcessing::DisplayChain.IsActive() && !IsSystemPaused()))
-          PresentFrameAndRestoreContext();
+        if (ImGuiManager::UpdateDebugWindowConfig())
+          Internal::PresentFrameAndRestoreContext();
       }
     });
   }
@@ -1219,8 +1208,8 @@ void GPUThread::DisplayWindowResizedOnThread()
     {
       // Hackity hack, on some systems, presenting a single frame isn't enough to actually get it
       // displayed. Two seems to be good enough. Maybe something to do with direct scanout.
-      PresentFrameAndRestoreContext();
-      PresentFrameAndRestoreContext();
+      Internal::PresentFrameAndRestoreContext();
+      Internal::PresentFrameAndRestoreContext();
     }
 
     if (g_gpu_settings.gpu_resolution_scale == 0)
@@ -1276,7 +1265,7 @@ void GPUThread::PresentCurrentFrame()
 
     // But we shouldn't be not running idle without a GPU backend.
     if (s_state.gpu_backend)
-      PresentFrameAndRestoreContext();
+      Internal::PresentFrameAndRestoreContext();
   });
 }
 

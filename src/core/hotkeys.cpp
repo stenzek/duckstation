@@ -8,6 +8,7 @@
 #include "fullscreen_ui.h"
 #include "gpu.h"
 #include "gpu_hw_texture_cache.h"
+#include "gpu_presenter.h"
 #include "gpu_thread.h"
 #include "gte.h"
 #include "host.h"
@@ -415,24 +416,13 @@ DEFINE_HOTKEY("DecreaseResolutionScale", TRANSLATE_NOOP("Hotkeys", "Graphics"),
 DEFINE_HOTKEY("TogglePostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Toggle Post-Processing"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                  PostProcessing::DisplayChain.Toggle();
-              })
-
-DEFINE_HOTKEY("ToggleInternalPostProcessing", TRANSLATE_NOOP("Hotkeys", "Graphics"),
-              TRANSLATE_NOOP("Hotkeys", "Toggle Internal Post-Processing"), [](s32 pressed) {
-                if (!pressed && System::IsValid())
-                  PostProcessing::InternalChain.Toggle();
+                  GPUPresenter::TogglePostProcessing();
               })
 
 DEFINE_HOTKEY("ReloadPostProcessingShaders", TRANSLATE_NOOP("Hotkeys", "Graphics"),
               TRANSLATE_NOOP("Hotkeys", "Reload Post Processing Shaders"), [](s32 pressed) {
                 if (!pressed && System::IsValid())
-                {
-                  GPUThread::RunOnThread([]() {
-                    if (GPUThread::HasGPUBackend())
-                      PostProcessing::ReloadShaders();
-                  });
-                }
+                  GPUPresenter::ReloadPostProcessingSettings(true, true, true);
               })
 
 DEFINE_HOTKEY("ReloadTextureReplacements", TRANSLATE_NOOP("Hotkeys", "Graphics"),

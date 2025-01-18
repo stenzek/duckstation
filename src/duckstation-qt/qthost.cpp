@@ -21,6 +21,7 @@
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
 #include "core/gpu_hw_texture_cache.h"
+#include "core/gpu_presenter.h"
 #include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/imgui_overlays.h"
@@ -1275,29 +1276,20 @@ void EmuThread::reloadPostProcessingShaders()
   }
 
   if (System::IsValid())
-  {
-    GPUThread::RunOnThread([]() {
-      if (GPUThread::HasGPUBackend())
-        PostProcessing::ReloadShaders();
-    });
-  }
+    GPUPresenter::ReloadPostProcessingSettings(true, true, true);
 }
 
-void EmuThread::updatePostProcessingSettings()
+void EmuThread::updatePostProcessingSettings(bool display, bool internal, bool force_reload)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, "updatePostProcessingSettings", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "updatePostProcessingSettings", Qt::QueuedConnection, Q_ARG(bool, display),
+                              Q_ARG(bool, internal), Q_ARG(bool, force_reload));
     return;
   }
 
   if (System::IsValid())
-  {
-    GPUThread::RunOnThread([]() {
-      if (GPUThread::HasGPUBackend())
-        PostProcessing::UpdateSettings();
-    });
-  }
+    GPUPresenter::ReloadPostProcessingSettings(display, internal, force_reload);
 }
 
 void EmuThread::clearInputBindStateFromSource(InputBindingKey key)

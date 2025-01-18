@@ -15,6 +15,10 @@
 #include <tuple>
 #include <utility>
 
+namespace PostProcessing {
+class Chain;
+}
+
 // TODO: Move to cpp
 // TODO: Rename to GPUHWBackend, preserved to avoid conflicts.
 class GPU_HW final : public GPUBackend
@@ -68,6 +72,7 @@ public:
   void FlushRender() override;
 
   bool UpdateSettings(const GPUSettings& old_settings, Error* error) override;
+  void UpdatePostProcessingSettings(bool force_reload) override;
 
   bool UpdateResolutionScale(Error* error) override;
 
@@ -264,6 +269,8 @@ private:
   void DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
   void DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
 
+  void LoadInternalPostProcessing();
+
   std::unique_ptr<GPUTexture> m_vram_texture;
   std::unique_ptr<GPUTexture> m_vram_depth_texture;
   std::unique_ptr<GPUTexture> m_vram_depth_copy_texture;
@@ -360,6 +367,7 @@ private:
   std::unique_ptr<GPUTexture> m_vram_extract_texture;
   std::unique_ptr<GPUTexture> m_vram_extract_depth_texture;
   std::unique_ptr<GPUPipeline> m_copy_depth_pipeline;
+  std::unique_ptr<PostProcessing::Chain> m_internal_postfx;
 
   std::unique_ptr<GPUTexture> m_downsample_texture;
   std::unique_ptr<GPUPipeline> m_downsample_pass_pipeline;

@@ -99,6 +99,7 @@ void SetThreadEnabled(bool enabled);
 void DoRunIdle();
 void RequestShutdown();
 void GPUThreadEntryPoint();
+bool PresentFrameAndRestoreContext();
 } // namespace Internal
 } // namespace GPUThread
 

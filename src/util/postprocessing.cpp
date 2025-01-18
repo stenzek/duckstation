@@ -40,17 +40,6 @@ static TinyString GetStageConfigSection(const char* section, u32 index);
 static void CopyStageConfig(SettingsInterface& si, const char* section, u32 old_index, u32 new_index);
 static void SwapStageConfig(SettingsInterface& si, const char* section, u32 lhs_index, u32 rhs_index);
 static std::unique_ptr<Shader> TryLoadingShader(const std::string& shader_name, bool only_config, Error* error);
-static SettingsInterface& GetLoadSettingsInterface(const char* section);
-
-template<typename T>
-ALWAYS_INLINE void ForAllChains(const T& F)
-{
-  F(DisplayChain);
-  F(InternalChain);
-}
-
-Chain DisplayChain(Config::DISPLAY_CHAIN_SECTION);
-Chain InternalChain(Config::INTERNAL_CHAIN_SECTION);
 
 Timer::Value Chain::s_start_time;
 
@@ -241,6 +230,11 @@ void PostProcessing::SwapStageConfig(SettingsInterface& si, const char* section,
     si.SetStringValue(rhs_section, key.c_str(), value.c_str());
 }
 
+bool PostProcessing::Config::IsEnabled(const SettingsInterface& si, const char* section)
+{
+  return si.GetBoolValue(section, "Enabled", false);
+}
+
 u32 PostProcessing::Config::GetStageCount(const SettingsInterface& si, const char* section)
 {
   return si.GetUIntValue(section, "StageCount", 0u);
@@ -389,11 +383,6 @@ bool PostProcessing::Chain::IsActive() const
   return m_enabled && !m_stages.empty();
 }
 
-bool PostProcessing::Chain::IsInternalChain() const
-{
-  return (this == &InternalChain);
-}
-
 void PostProcessing::Chain::ClearStagesWithError(const Error& error)
 {
   std::string msg = error.GetDescription();
@@ -402,13 +391,15 @@ void PostProcessing::Chain::ClearStagesWithError(const Error& error)
     fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load post-processing chain: {}"),
                 msg.empty() ? TRANSLATE_SV("PostProcessing", "Unknown Error") : std::string_view(msg)),
     Host::OSD_ERROR_DURATION);
+  DestroyTextures();
   m_stages.clear();
 }
 
-void PostProcessing::Chain::LoadStages()
+void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si,
+                                       bool preload_swap_chain_size)
 {
-  auto lock = Host::GetSettingsLock();
-  SettingsInterface& si = GetLoadSettingsInterface(m_section);
+  m_stages.clear();
+  DestroyTextures();
 
   m_enabled = si.GetBoolValue(m_section, "Enabled", false);
   m_wants_depth_buffer = false;
@@ -431,7 +422,7 @@ void PostProcessing::Chain::LoadStages()
       return;
     }
 
-    lock.unlock();
+    settings_lock.unlock();
     progress.FormatStatusText("Loading shader {}...", stage_name);
 
     std::unique_ptr<Shader> shader = TryLoadingShader(stage_name, false, &error);
@@ -441,7 +432,7 @@ void PostProcessing::Chain::LoadStages()
       return;
     }
 
-    lock.lock();
+    settings_lock.lock();
     shader->LoadOptions(si, GetStageConfigSection(m_section, i));
     m_stages.push_back(std::move(shader));
 
@@ -452,7 +443,7 @@ void PostProcessing::Chain::LoadStages()
     DEV_LOG("Loaded {} post-processing stages.", stage_count);
 
   // precompile shaders
-  if (!IsInternalChain() && g_gpu_device && g_gpu_device->HasMainSwapChain())
+  if (preload_swap_chain_size && g_gpu_device && g_gpu_device->HasMainSwapChain())
   {
     CheckTargets(g_gpu_device->GetMainSwapChain()->GetFormat(), g_gpu_device->GetMainSwapChain()->GetWidth(),
                  g_gpu_device->GetMainSwapChain()->GetHeight(), &progress);
@@ -466,15 +457,8 @@ void PostProcessing::Chain::LoadStages()
     DEV_LOG("Depth buffer is needed.");
 }
 
-void PostProcessing::Chain::ClearStages()
+void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si)
 {
-  decltype(m_stages)().swap(m_stages);
-}
-
-void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& settings_lock)
-{
-  SettingsInterface& si = GetLoadSettingsInterface(m_section);
-
   m_enabled = si.GetBoolValue(m_section, "Enabled", false);
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
@@ -674,47 +658,6 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
   return GPUDevice::PresentResult::OK;
 }
 
-void PostProcessing::Initialize()
-{
-  DisplayChain.LoadStages();
-  InternalChain.LoadStages();
-}
-
-void PostProcessing::UpdateSettings()
-{
-  auto lock = Host::GetSettingsLock();
-  ForAllChains([&lock](Chain& chain) { chain.UpdateSettings(lock); });
-}
-
-void PostProcessing::Shutdown()
-{
-  ForAllChains([](Chain& chain) {
-    chain.ClearStages();
-    chain.DestroyTextures();
-  });
-}
-
-bool PostProcessing::ReloadShaders()
-{
-  if (!DisplayChain.HasStages() && !InternalChain.HasStages())
-  {
-    Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
-                            TRANSLATE_STR("OSDMessage", "No post-processing shaders are selected."),
-                            Host::OSD_QUICK_DURATION);
-    return false;
-  }
-
-  ForAllChains([](Chain& chain) {
-    chain.ClearStages();
-    chain.DestroyTextures();
-    chain.LoadStages();
-  });
-
-  Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
-                          TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."), Host::OSD_QUICK_DURATION);
-  return true;
-}
-
 std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const std::string& shader_name,
                                                                          bool only_config, Error* error)
 {
@@ -783,16 +726,4 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
 
   Error::SetStringFmt(error, "Failed to locate shader '{}'", shader_name);
   return {};
-}
-
-SettingsInterface& PostProcessing::GetLoadSettingsInterface(const char* section)
-{
-  // If PostProcessing/Enable is set in the game settings interface, use that.
-  // Otherwise, use the base settings.
-
-  SettingsInterface* game_si = Host::Internal::GetGameSettingsLayer();
-  if (game_si && game_si->ContainsValue(section, "Enabled"))
-    return *game_si;
-  else
-    return *Host::Internal::GetBaseSettingsLayer();
 }

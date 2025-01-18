@@ -93,6 +93,7 @@ namespace Config {
 static constexpr const char* DISPLAY_CHAIN_SECTION = "PostProcessing";
 static constexpr const char* INTERNAL_CHAIN_SECTION = "InternalPostProcessing";
 
+bool IsEnabled(const SettingsInterface& si, const char* section);
 u32 GetStageCount(const SettingsInterface& si, const char* section);
 std::string GetStageShaderName(const SettingsInterface& si, const char* section, u32 index);
 std::vector<ShaderOption> GetStageOptions(const SettingsInterface& si, const char* section, u32 index);
@@ -122,13 +123,11 @@ public:
   GPUTexture* GetTextureUnusedAtEndOfChain() const;
 
   bool IsActive() const;
-  bool IsInternalChain() const;
 
-  void UpdateSettings(std::unique_lock<std::mutex>& settings_lock);
+  void UpdateSettings(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si);
 
-  void LoadStages();
-  void ClearStages();
-  void DestroyTextures();
+  void LoadStages(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si,
+                  bool preload_swap_chain_size);
 
   /// Temporarily toggles post-processing on/off.
   void Toggle();
@@ -142,6 +141,7 @@ public:
 
 private:
   void ClearStagesWithError(const Error& error);
+  void DestroyTextures();
 
   const char* m_section;
 
@@ -161,18 +161,5 @@ private:
 
 // [display_name, filename]
 std::vector<std::pair<std::string, std::string>> GetAvailableShaderNames();
-
-void Initialize();
-
-/// Reloads configuration.
-void UpdateSettings();
-
-/// Reloads post processing shaders with the current configuration.
-bool ReloadShaders();
-
-void Shutdown();
-
-extern Chain DisplayChain;
-extern Chain InternalChain;
 
 }; // namespace PostProcessing

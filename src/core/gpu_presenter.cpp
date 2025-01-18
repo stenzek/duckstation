@@ -24,11 +24,13 @@
 #include "util/state_wrapper.h"
 
 #include "common/align.h"
+#include "common/assert.h"
 #include "common/error.h"
 #include "common/file_system.h"
 #include "common/gsvector_formatter.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/ryml_helpers.h"
 #include "common/settings_interface.h"
 #include "common/small_string.h"
 #include "common/string_util.h"
@@ -38,10 +40,6 @@
 #include <numbers>
 
 LOG_CHANNEL(GPU);
-
-#include "common/ryml_helpers.h"
-
-static constexpr GPUTexture::Format DISPLAY_INTERNAL_POSTFX_FORMAT = GPUTexture::Format::RGBA8;
 
 GPUPresenter::GPUPresenter() = default;
 
@@ -64,6 +62,8 @@ bool GPUPresenter::Initialize(Error* error)
 
   if (!CompileDisplayPipelines(true, true, g_gpu_settings.display_24bit_chroma_smoothing, error))
     return false;
+
+  LoadPostProcessingSettings(false);
 
   return true;
 }
@@ -91,20 +91,9 @@ bool GPUPresenter::UpdateSettings(const GPUSettings& old_settings, Error* error)
   return true;
 }
 
-bool GPUPresenter::UpdatePostProcessingSettings(Error* error)
+bool GPUPresenter::IsDisplayPostProcessingActive() const
 {
-  if (LoadOverlaySettings())
-  {
-    // something changed, need to recompile pipelines
-    if (LoadOverlayTexture() && m_border_overlay_alpha_blend &&
-        (!m_present_copy_blend_pipeline || !m_display_blend_pipeline) &&
-        !CompileDisplayPipelines(true, false, false, error))
-    {
-      return false;
-    }
-  }
-
-  return true;
+  return (m_display_postfx && m_display_postfx->IsActive());
 }
 
 bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error)
@@ -349,8 +338,7 @@ void GPUPresenter::SetDisplayParameters(u16 display_width, u16 display_height, u
   m_display_pixel_aspect_ratio = display_pixel_aspect_ratio;
 }
 
-void GPUPresenter::SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buffer, s32 view_x, s32 view_y,
-                                     s32 view_width, s32 view_height)
+void GPUPresenter::SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height)
 {
   DebugAssert(texture);
 
@@ -361,7 +349,6 @@ void GPUPresenter::SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buff
   }
 
   m_display_texture = texture;
-  m_display_depth_buffer = depth_buffer;
   m_display_texture_view_x = view_x;
   m_display_texture_view_y = view_y;
   m_display_texture_view_width = view_width;
@@ -408,30 +395,6 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   if (m_display_texture)
     m_display_texture->MakeReadyForSampling();
 
-  // Internal post-processing.
-  GPUTexture* display_texture = m_display_texture;
-  s32 display_texture_view_x = m_display_texture_view_x;
-  s32 display_texture_view_y = m_display_texture_view_y;
-  s32 display_texture_view_width = m_display_texture_view_width;
-  s32 display_texture_view_height = m_display_texture_view_height;
-  if (postfx && display_texture && PostProcessing::InternalChain.IsActive() &&
-      PostProcessing::InternalChain.CheckTargets(DISPLAY_INTERNAL_POSTFX_FORMAT, display_texture_view_width,
-                                                 display_texture_view_height))
-  {
-    // Now we can apply the post chain.
-    GPUTexture* post_output_texture = PostProcessing::InternalChain.GetOutputTexture();
-    if (PostProcessing::InternalChain.Apply(display_texture, m_display_depth_buffer, post_output_texture,
-                                            GSVector4i(0, 0, display_texture_view_width, display_texture_view_height),
-                                            display_texture_view_width, display_texture_view_height, m_display_width,
-                                            m_display_height) == GPUDevice::PresentResult::OK)
-    {
-      display_texture_view_x = 0;
-      display_texture_view_y = 0;
-      display_texture = post_output_texture;
-      display_texture->MakeReadyForSampling();
-    }
-  }
-
   // There's a bunch of scenarios where we need to use intermediate buffers.
   // If we have post-processing and overlays enabled, postfx needs to happen on an intermediate buffer first.
   // If pre-rotation is enabled with post-processing, we need to draw to an intermediate buffer, and apply the
@@ -447,9 +410,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
 
   // Postfx active?
   const GSVector2i postfx_size = have_overlay ? display_rect.rsize() : target_size;
-  const bool really_postfx =
-    (postfx && PostProcessing::DisplayChain.IsActive() &&
-     PostProcessing::DisplayChain.CheckTargets(m_present_format, postfx_size.x, postfx_size.y));
+  const bool really_postfx = (postfx && m_display_postfx && m_display_postfx->IsActive() && m_display_postfx &&
+                              m_display_postfx->CheckTargets(m_present_format, postfx_size.x, postfx_size.y));
   GL_INS(really_postfx ? "Post-processing is ENABLED" : "Post-processing is disabled");
   GL_INS_FMT("Post-processing render target size: {}x{}", postfx_size.x, postfx_size.y);
 
@@ -477,21 +439,20 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     const GSVector4i real_draw_rect = have_overlay ? draw_rect.sub32(display_rect.xyxy()) : draw_rect;
 
     // Display is always drawn to the postfx input.
-    GPUTexture* const postfx_input = PostProcessing::DisplayChain.GetInputTexture();
+    GPUTexture* const postfx_input = m_display_postfx->GetInputTexture();
     g_gpu_device->ClearRenderTarget(postfx_input, GPUDevice::DEFAULT_CLEAR_COLOR);
     g_gpu_device->SetRenderTarget(postfx_input);
-    if (display_texture)
+    if (m_display_texture)
     {
-      DrawDisplay(postfx_size, display_texture, display_texture_view_x, display_texture_view_y,
-                  display_texture_view_width, display_texture_view_height, real_draw_rect, false,
-                  g_gpu_settings.display_rotation, WindowInfo::PreRotation::Identity);
+      DrawDisplay(postfx_size, real_draw_rect, false, g_gpu_settings.display_rotation,
+                  WindowInfo::PreRotation::Identity);
     }
     postfx_input->MakeReadyForSampling();
 
     // Apply postprocessing to an intermediate texture if we're prerotating or have an overlay.
     if (have_prerotation || have_overlay)
     {
-      GPUTexture* const postfx_output = PostProcessing::DisplayChain.GetTextureUnusedAtEndOfChain();
+      GPUTexture* const postfx_output = m_display_postfx->GetTextureUnusedAtEndOfChain();
       const GSVector4i real_display_rect = have_overlay ? display_rect.sub32(display_rect.xyxy()) : display_rect;
       ApplyDisplayPostProcess(postfx_output, postfx_input, real_display_rect);
       postfx_output->MakeReadyForSampling();
@@ -531,20 +492,17 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     if (have_overlay)
       DrawTextureCopy(target_size, overlay_rect, m_border_overlay_texture.get(), false, true, prerotation);
 
-    if (display_texture)
+    if (m_display_texture)
     {
-      DrawDisplay(target_size, display_texture, display_texture_view_x, display_texture_view_y,
-                  display_texture_view_width, display_texture_view_height, display_rect, m_border_overlay_alpha_blend,
-                  g_gpu_settings.display_rotation, prerotation);
+      DrawDisplay(target_size, display_rect, m_border_overlay_alpha_blend, g_gpu_settings.display_rotation,
+                  prerotation);
     }
 
     return GPUDevice::PresentResult::OK;
   }
 }
 
-void GPUPresenter::DrawDisplay(const GSVector2i target_size, GPUTexture* display_texture, s32 display_texture_view_x,
-                               s32 display_texture_view_y, s32 display_texture_view_width,
-                               s32 display_texture_view_height, const GSVector4i display_rect, bool dst_alpha_blend,
+void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector4i display_rect, bool dst_alpha_blend,
                                DisplayRotation rotation, WindowInfo::PreRotation prerotation)
 {
   bool texture_filter_linear = false;
@@ -588,22 +546,22 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, GPUTexture* display
 
   g_gpu_device->SetPipeline(dst_alpha_blend ? m_display_blend_pipeline.get() : m_display_pipeline.get());
   g_gpu_device->SetTextureSampler(
-    0, display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
+    0, m_display_texture, texture_filter_linear ? g_gpu_device->GetLinearSampler() : g_gpu_device->GetNearestSampler());
 
   // For bilinear, clamp to 0.5/SIZE-0.5 to avoid bleeding from the adjacent texels in VRAM. This is because
   // 1.0 in UV space is not the bottom-right texel, but a mix of the bottom-right and wrapped/next texel.
-  const GSVector2 display_texture_size = GSVector2(display_texture->GetSizeVec());
+  const GSVector2 display_texture_size = GSVector2(m_display_texture->GetSizeVec());
   const GSVector4 display_texture_size4 = GSVector4::xyxy(display_texture_size);
-  const GSVector4 uv_rect = GSVector4(GSVector4i(display_texture_view_x, display_texture_view_y,
-                                                 display_texture_view_x + display_texture_view_width,
-                                                 display_texture_view_y + display_texture_view_height)) /
+  const GSVector4 uv_rect = GSVector4(GSVector4i(m_display_texture_view_x, m_display_texture_view_y,
+                                                 m_display_texture_view_x + m_display_texture_view_width,
+                                                 m_display_texture_view_y + m_display_texture_view_height)) /
                             display_texture_size4;
-  GSVector4::store<true>(uniforms.clamp_rect,
-                         GSVector4(static_cast<float>(display_texture_view_x) + 0.5f,
-                                   static_cast<float>(display_texture_view_y) + 0.5f,
-                                   static_cast<float>(display_texture_view_x + display_texture_view_width) - 0.5f,
-                                   static_cast<float>(display_texture_view_y + display_texture_view_height) - 0.5f) /
-                           display_texture_size4);
+  GSVector4::store<true>(
+    uniforms.clamp_rect,
+    GSVector4(static_cast<float>(m_display_texture_view_x) + 0.5f, static_cast<float>(m_display_texture_view_y) + 0.5f,
+              static_cast<float>(m_display_texture_view_x + m_display_texture_view_width) - 0.5f,
+              static_cast<float>(m_display_texture_view_y + m_display_texture_view_height) - 0.5f) /
+      display_texture_size4);
   GSVector4::store<true>(uniforms.src_size,
                          GSVector4::xyxy(display_texture_size, GSVector2::cxpr(1.0f) / display_texture_size));
 
@@ -682,8 +640,8 @@ GPUDevice::PresentResult GPUPresenter::ApplyDisplayPostProcess(GPUTexture* targe
   const s32 orig_width = static_cast<s32>(std::ceil(static_cast<float>(m_display_width) * upscale_x));
   const s32 orig_height = static_cast<s32>(std::ceil(static_cast<float>(m_display_height) * upscale_y));
 
-  return PostProcessing::DisplayChain.Apply(PostProcessing::DisplayChain.GetInputTexture(), nullptr, target,
-                                            display_rect, orig_width, orig_height, m_display_width, m_display_height);
+  return m_display_postfx->Apply(input, nullptr, target, display_rect, orig_width, orig_height, m_display_width,
+                                 m_display_height);
 }
 
 void GPUPresenter::DrawTextureCopy(const GSVector2i target_size, const GSVector4i draw_rect, GPUTexture* input,
@@ -790,7 +748,7 @@ bool GPUPresenter::Deinterlace(u32 field)
       g_gpu_device->Draw(3, 0);
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, full_height);
+      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, full_height);
       return true;
     }
 
@@ -822,7 +780,7 @@ bool GPUPresenter::Deinterlace(u32 field)
       g_gpu_device->Draw(3, 0);
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, height);
+      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, height);
       return true;
     }
 
@@ -855,7 +813,7 @@ bool GPUPresenter::Deinterlace(u32 field)
       g_gpu_device->Draw(3, 0);
 
       m_deinterlace_texture->MakeReadyForSampling();
-      SetDisplayTexture(m_deinterlace_texture.get(), m_display_depth_buffer, 0, 0, width, full_height);
+      SetDisplayTexture(m_deinterlace_texture.get(), 0, 0, width, full_height);
       return true;
     }
 
@@ -904,7 +862,7 @@ bool GPUPresenter::ApplyChromaSmoothing()
   g_gpu_device->Draw(3, 0);
 
   m_chroma_smoothing_texture->MakeReadyForSampling();
-  SetDisplayTexture(m_chroma_smoothing_texture.get(), m_display_depth_buffer, 0, 0, width, height);
+  SetDisplayTexture(m_chroma_smoothing_texture.get(), 0, 0, width, height);
   return true;
 }
 
@@ -1118,6 +1076,139 @@ void GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* widt
     *height = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetHeight() : 1;
     CalculateDrawRect(*width, *height, true, !g_settings.gpu_show_vram, display_rect, draw_rect);
   }
+}
+
+void GPUPresenter::LoadPostProcessingSettings(bool force_load)
+{
+  static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
+
+  auto lock = Host::GetSettingsLock();
+  const SettingsInterface& si = GetPostProcessingSettingsInterface(section);
+
+  // This is the initial load, defer creating the chain until it's actually enabled if disabled.
+  if (!force_load &&
+      (!PostProcessing::Config::IsEnabled(si, section) || PostProcessing::Config::GetStageCount(si, section) == 0))
+  {
+    return;
+  }
+
+  m_display_postfx = std::make_unique<PostProcessing::Chain>(section);
+  m_display_postfx->LoadStages(lock, si, true);
+}
+
+bool GPUPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
+{
+  if (LoadOverlaySettings())
+  {
+    // something changed, need to recompile pipelines
+    if (LoadOverlayTexture() && m_border_overlay_alpha_blend &&
+        (!m_present_copy_blend_pipeline || !m_display_blend_pipeline) &&
+        !CompileDisplayPipelines(true, false, false, error))
+    {
+      return false;
+    }
+  }
+
+  // Update postfx settings
+  {
+    static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
+
+    auto lock = Host::GetSettingsLock();
+    const SettingsInterface& si = *Host::GetSettingsInterface();
+
+    // Don't delete the chain if we're just temporarily disabling.
+    if (PostProcessing::Config::GetStageCount(si, section) == 0)
+    {
+      m_display_postfx.reset();
+    }
+    else
+    {
+      if (!m_display_postfx || force_reload)
+      {
+        if (!m_display_postfx)
+          m_display_postfx = std::make_unique<PostProcessing::Chain>(section);
+        m_display_postfx->LoadStages(lock, si, true);
+      }
+      else if (!force_reload)
+      {
+        m_display_postfx->UpdateSettings(lock, si);
+      }
+    }
+  }
+
+  return true;
+}
+
+SettingsInterface& GPUPresenter::GetPostProcessingSettingsInterface(const char* section)
+{
+  // If PostProcessing/Enable is set in the game settings interface, use that.
+  // Otherwise, use the base settings.
+
+  SettingsInterface* game_si = Host::Internal::GetGameSettingsLayer();
+  if (game_si && game_si->ContainsValue(section, "Enabled"))
+    return *game_si;
+  else
+    return *Host::Internal::GetBaseSettingsLayer();
+}
+
+void GPUPresenter::TogglePostProcessing()
+{
+  DebugAssert(!GPUThread::IsOnThread());
+
+  GPUThread::RunOnBackend(
+    [](GPUBackend* backend) {
+      if (!backend)
+        return;
+
+      GPUPresenter& presenter = backend->GetPresenter();
+
+      // if it is being lazy loaded, we have to load it here
+      if (!presenter.m_display_postfx)
+      {
+        presenter.LoadPostProcessingSettings(true);
+        if (presenter.m_display_postfx && presenter.m_display_postfx->IsActive())
+          return;
+      }
+      if (presenter.m_display_postfx)
+        presenter.m_display_postfx->Toggle();
+    },
+    false, true);
+}
+
+void GPUPresenter::ReloadPostProcessingSettings(bool display, bool internal, bool reload_shaders)
+{
+  DebugAssert(!GPUThread::IsOnThread());
+
+  GPUThread::RunOnBackend(
+    [display, internal, reload_shaders](GPUBackend* backend) {
+      if (!backend)
+        return;
+
+      // OSD message first in case any errors occur.
+      if (reload_shaders)
+      {
+        Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
+                                TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."),
+                                Host::OSD_QUICK_DURATION);
+      }
+
+      if (display)
+      {
+        Error error;
+        if (!backend->GetPresenter().UpdatePostProcessingSettings(reload_shaders, &error))
+        {
+          GPUThread::ReportFatalErrorAndShutdown(fmt::format("Failed to update settings: {}", error.GetDescription()));
+          return;
+        }
+      }
+      if (internal)
+        backend->UpdatePostProcessingSettings(reload_shaders);
+
+      // trigger represent of frame
+      if (GPUThread::IsSystemPaused())
+        GPUThread::Internal::PresentFrameAndRestoreContext();
+    },
+    false, true);
 }
 
 bool GPUPresenter::LoadOverlaySettings()

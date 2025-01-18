@@ -133,6 +133,10 @@ bool GPUBackend::UpdateSettings(const GPUSettings& old_settings, Error* error)
   return true;
 }
 
+void GPUBackend::UpdatePostProcessingSettings(bool force_reload)
+{
+}
+
 GPUThreadCommand* GPUBackend::NewClearVRAMCommand()
 {
   return static_cast<GPUThreadCommand*>(

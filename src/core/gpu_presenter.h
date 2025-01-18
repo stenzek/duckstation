@@ -14,6 +14,7 @@
 class Error;
 class Image;
 class MediaCapture;
+class SettingsInterface;
 
 enum class DisplayScreenshotMode : u8;
 
@@ -23,17 +24,15 @@ struct GPUSettings;
 struct GPUBackendUpdateDisplayCommand;
 struct GPUBackendFramePresentationParameters;
 
+namespace PostProcessing {
+class Chain;
+}
+
 class ALIGN_TO_CACHE_LINE GPUPresenter final
 {
 public:
   GPUPresenter();
   virtual ~GPUPresenter();
-
-  /// Main frame presenter - used both when a game is and is not running.
-  static bool PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bool allow_skip_present, u64 present_time);
-
-  /// Returns a list of border overlay presets.
-  static std::vector<std::string> EnumerateBorderOverlayPresets();
 
   ALWAYS_INLINE s32 GetDisplayWidth() const { return m_display_width; }
   ALWAYS_INLINE s32 GetDisplayHeight() const { return m_display_height; }
@@ -44,21 +43,20 @@ public:
   ALWAYS_INLINE s32 GetDisplayTextureViewWidth() const { return m_display_texture_view_width; }
   ALWAYS_INLINE s32 GetDisplayTextureViewHeight() const { return m_display_texture_view_height; }
   ALWAYS_INLINE GPUTexture* GetDisplayTexture() const { return m_display_texture; }
-  ALWAYS_INLINE GPUTexture* GetDisplayDepthBuffer() const { return m_display_depth_buffer; }
   ALWAYS_INLINE bool HasDisplayTexture() const { return m_display_texture; }
 
   bool Initialize(Error* error);
 
   bool UpdateSettings(const GPUSettings& old_settings, Error* error);
 
-  bool UpdatePostProcessingSettings(Error* error);
+  bool IsDisplayPostProcessingActive() const;
+  bool UpdatePostProcessingSettings(bool force_reload, Error* error);
 
   void ClearDisplay();
   void ClearDisplayTexture();
   void SetDisplayParameters(u16 display_width, u16 display_height, u16 display_origin_left, u16 display_origin_top,
                             u16 display_vram_width, u16 display_vram_height, float display_pixel_aspect_ratio);
-  void SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buffer, s32 view_x, s32 view_y, s32 view_width,
-                         s32 view_height);
+  void SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y, s32 view_width, s32 view_height);
   bool Deinterlace(u32 field);
   bool ApplyChromaSmoothing();
 
@@ -77,6 +75,22 @@ public:
   /// Sends the current frame to media capture.
   void SendDisplayToMediaCapture(MediaCapture* cap);
 
+  /// Main frame presenter - used both when a game is and is not running.
+  static bool PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bool allow_skip_present, u64 present_time);
+
+  /// Returns a list of border overlay presets.
+  static std::vector<std::string> EnumerateBorderOverlayPresets();
+
+  /// Returns the settings interface to use for loading post-processing shader configuration.
+  /// Assumes the settings lock is being held.
+  static SettingsInterface& GetPostProcessingSettingsInterface(const char* section);
+
+  /// Toggles post-processing. Only callable from the CPU thread.
+  static void TogglePostProcessing();
+
+  /// Reloads post-processing settings. Only callable from the CPU thread.
+  static void ReloadPostProcessingSettings(bool display, bool internal, bool reload_shaders);
+
 private:
   enum : u32
   {
@@ -94,10 +108,8 @@ private:
   GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector4i overlay_rect,
                                          const GSVector4i display_rect, const GSVector4i draw_rect, bool postfx);
 
-  void DrawDisplay(const GSVector2i target_size, GPUTexture* display_texture, s32 display_texture_view_x,
-                   s32 display_texture_view_y, s32 display_texture_view_width, s32 display_texture_view_height,
-                   const GSVector4i display_rect, bool dst_alpha_blend, DisplayRotation rotation,
-                   WindowInfo::PreRotation prerotation);
+  void DrawDisplay(const GSVector2i target_size, const GSVector4i display_rect, bool dst_alpha_blend,
+                   DisplayRotation rotation, WindowInfo::PreRotation prerotation);
   GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
                                                    const GSVector4i display_rect);
   void DrawTextureCopy(const GSVector2i target_size, const GSVector4i draw_rect, GPUTexture* input,
@@ -107,6 +119,8 @@ private:
 
   bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
   void DestroyDeinterlaceTextures();
+
+  void LoadPostProcessingSettings(bool force_load);
 
   /// Returns true if the image path or alpha blend option has changed.
   bool LoadOverlaySettings();
@@ -132,7 +146,6 @@ private:
 
   std::unique_ptr<GPUPipeline> m_display_pipeline;
   GPUTexture* m_display_texture = nullptr;
-  GPUTexture* m_display_depth_buffer = nullptr;
   s32 m_display_texture_view_x = 0;
   s32 m_display_texture_view_y = 0;
   s32 m_display_texture_view_width = 0;
@@ -140,8 +153,11 @@ private:
 
   u32 m_skipped_present_count = 0;
   GPUTexture::Format m_present_format = GPUTexture::Format::Unknown;
+  bool m_border_overlay_alpha_blend = false;
 
   std::unique_ptr<GPUPipeline> m_present_copy_pipeline;
+
+  std::unique_ptr<PostProcessing::Chain> m_display_postfx;
 
   // blended variants of pipelines, used when overlays are enabled
   std::unique_ptr<GPUPipeline> m_display_blend_pipeline;
@@ -152,7 +168,6 @@ private:
 
   // Low-traffic variables down here.
   std::string m_border_overlay_image_path;
-  bool m_border_overlay_alpha_blend = false;
 };
 
 namespace Host {
