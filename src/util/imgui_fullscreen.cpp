@@ -374,6 +374,10 @@ GPUTexture* ImGuiFullscreen::GetCachedTexture(std::string_view name)
 
 GPUTexture* ImGuiFullscreen::GetCachedTexture(std::string_view name, u32 svg_width, u32 svg_height)
 {
+  // ignore size hints if it's not needed, don't duplicate
+  if (!TextureNeedsSVGDimensions(name))
+    return GetCachedTexture(name);
+
   svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
   svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
 
@@ -418,6 +422,11 @@ bool ImGuiFullscreen::InvalidateCachedTexture(std::string_view path)
   // need to do a partial match on this because SVG
   return (s_state.texture_cache.RemoveMatchingItems([&path](const std::string& key) { return key.starts_with(path); }) >
           0);
+}
+
+bool ImGuiFullscreen::TextureNeedsSVGDimensions(std::string_view path)
+{
+  return StringUtil::EndsWithNoCase(Path::GetExtension(path), "svg");
 }
 
 void ImGuiFullscreen::UploadAsyncTextures()
