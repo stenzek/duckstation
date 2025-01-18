@@ -1,0 +1,6 @@
+image: "psx.webp"
+displayStartX: 990
+displayStartY: 260
+displayEndX: 2850
+displayEndY: 1655
+alphaBlend: false
