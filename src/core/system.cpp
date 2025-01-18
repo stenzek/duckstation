@@ -62,6 +62,7 @@
 #include "common/log.h"
 #include "common/memmap.h"
 #include "common/path.h"
+#include "common/ryml_helpers.h"
 #include "common/string_util.h"
 #include "common/task_queue.h"
 #include "common/timer.h"
@@ -485,6 +486,9 @@ bool System::ProcessStartup(Error* error)
   VERBOSE_LOG("Memory allocation took {} ms.", timer.GetTimeMilliseconds());
 
   CheckCacheLineSize();
+
+  // Initialize rapidyaml before anything can use it.
+  SetRymlCallbacks();
 
   return true;
 }
