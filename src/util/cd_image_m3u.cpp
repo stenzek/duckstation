@@ -181,10 +181,10 @@ bool CDImageM3u::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
   return m_current_image->ReadSubChannelQ(subq, index, lba_in_index);
 }
 
-std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* filename, bool apply_patches, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* path, bool apply_patches, Error* error)
 {
   std::unique_ptr<CDImageM3u> image = std::make_unique<CDImageM3u>();
-  if (!image->Open(filename, apply_patches, error))
+  if (!image->Open(path, apply_patches, error))
     return {};
 
   return image;

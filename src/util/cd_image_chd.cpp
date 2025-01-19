@@ -533,10 +533,10 @@ s64 CDImageCHD::GetSizeOnDisk() const
   return static_cast<s64>(chd_get_compressed_size(m_chd));
 }
 
-std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* path, Error* error)
 {
   std::unique_ptr<CDImageCHD> image = std::make_unique<CDImageCHD>();
-  if (!image->Open(filename, error))
+  if (!image->Open(path, error))
     return {};
 
   return image;

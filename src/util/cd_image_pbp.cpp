@@ -935,10 +935,10 @@ s64 CDImagePBP::GetSizeOnDisk() const
   return FileSystem::FSize64(m_file);
 }
 
-std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* filename, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenPBPImage(const char* path, Error* error)
 {
   std::unique_ptr<CDImagePBP> image = std::make_unique<CDImagePBP>();
-  if (!image->Open(filename, error))
+  if (!image->Open(path, error))
     return {};
 
   return image;

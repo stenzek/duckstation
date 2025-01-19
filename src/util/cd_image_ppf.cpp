@@ -458,12 +458,11 @@ s64 CDImagePPF::GetSizeOnDisk() const
   return m_patch_size + m_parent_image->GetSizeOnDisk();
 }
 
-std::unique_ptr<CDImage>
-CDImage::OverlayPPFPatch(const char* filename, std::unique_ptr<CDImage> parent_image,
-                         ProgressCallback* progress /* = ProgressCallback::NullProgressCallback */)
+std::unique_ptr<CDImage> CDImage::OverlayPPFPatch(const char* path, std::unique_ptr<CDImage> parent_image,
+                                                  ProgressCallback* progress)
 {
   std::unique_ptr<CDImagePPF> ppf_image = std::make_unique<CDImagePPF>();
-  if (!ppf_image->Open(filename, std::move(parent_image)))
+  if (!ppf_image->Open(path, std::move(parent_image)))
     return {};
 
   return ppf_image;

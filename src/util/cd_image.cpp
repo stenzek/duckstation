@@ -50,83 +50,79 @@ void CDImage::DeinterleaveSubcode(const u8* subcode_in, u8* subcode_out)
   }
 }
 
-std::unique_ptr<CDImage> CDImage::Open(const char* filename, bool allow_patches, Error* error)
+std::unique_ptr<CDImage> CDImage::Open(const char* path, bool allow_patches, Error* error)
 {
-  const char* extension;
-
+  // Annoying handling because of storage access framework.
 #ifdef __ANDROID__
-  std::string filename_display_name(FileSystem::GetDisplayNameFromPath(filename));
-  if (filename_display_name.empty())
-    filename_display_name = filename;
-
-  extension = std::strrchr(filename_display_name.c_str(), '.');
+  const std::string path_display_name = FileSystem::GetDisplayNameFromPath(path);
+  const std::string_view extension = Path::GetExtension(path_display_name);
 #else
-  extension = std::strrchr(filename, '.');
+  const std::string_view extension = Path::GetExtension(path);
 #endif
 
   std::unique_ptr<CDImage> image;
-  if (!extension)
+  if (extension.empty())
   {
     // Device filenames on Linux don't have extensions.
-    if (IsDeviceName(filename))
+    if (IsDeviceName(path))
     {
-      image = OpenDeviceImage(filename, error);
+      image = OpenDeviceImage(path, error);
     }
     else
     {
-      Error::SetStringFmt(error, "Invalid filename: '{}'", Path::GetFileName(filename));
+      Error::SetStringFmt(error, "Invalid filename: '{}'", Path::GetFileName(path));
       return nullptr;
     }
   }
-  else if (StringUtil::Strcasecmp(extension, ".cue") == 0)
+  else if (StringUtil::EqualNoCase(extension, "cue"))
   {
-    image = OpenCueSheetImage(filename, error);
+    image = OpenCueSheetImage(path, error);
   }
-  else if (StringUtil::Strcasecmp(extension, ".bin") == 0 || StringUtil::Strcasecmp(extension, ".img") == 0 ||
-           StringUtil::Strcasecmp(extension, ".iso") == 0 || StringUtil::Strcasecmp(extension, ".ecm") == 0)
+  else if (StringUtil::EqualNoCase(extension, "bin") || StringUtil::EqualNoCase(extension, "img") ||
+           StringUtil::EqualNoCase(extension, "iso") || StringUtil::EqualNoCase(extension, "ecm"))
   {
-    image = OpenBinImage(filename, error);
+    image = OpenBinImage(path, error);
   }
-  else if (StringUtil::Strcasecmp(extension, ".chd") == 0)
+  else if (StringUtil::EqualNoCase(extension, "chd"))
   {
-    image = OpenCHDImage(filename, error);
+    image = OpenCHDImage(path, error);
   }
-  else if (StringUtil::Strcasecmp(extension, ".mds") == 0)
+  else if (StringUtil::EqualNoCase(extension, "mds"))
   {
-    image = OpenMdsImage(filename, error);
+    image = OpenMdsImage(path, error);
   }
-  else if (StringUtil::Strcasecmp(extension, ".pbp") == 0)
+  else if (StringUtil::EqualNoCase(extension, "pbp"))
   {
-    image = OpenPBPImage(filename, error);
+    image = OpenPBPImage(path, error);
   }
-  else if (StringUtil::Strcasecmp(extension, ".m3u") == 0)
+  else if (StringUtil::EqualNoCase(extension, "m3u"))
   {
-    image = OpenM3uImage(filename, allow_patches, error);
+    // skip applying patches to the main path, which isn't a real disc
+    image = OpenM3uImage(path, allow_patches, error);
+    allow_patches = false;
   }
-  else if (IsDeviceName(filename))
+  else if (IsDeviceName(path))
   {
-    image = OpenDeviceImage(filename, error);
+    image = OpenDeviceImage(path, error);
   }
   else
   {
-    Error::SetStringFmt(error, "Unknown extension '{}' from filename '{}'", extension, Path::GetFileName(filename));
+    Error::SetStringFmt(error, "Unknown extension '{}' from filename '{}'", extension, Path::GetFileName(path));
     return nullptr;
   }
 
   if (allow_patches)
   {
 #ifdef __ANDROID__
-    const std::string ppf_filename(
-      Path::BuildRelativePath(filename, Path::ReplaceExtension(filename_display_name, "ppf")));
+    const std::string ppf_path = Path::BuildRelativePath(path, Path::ReplaceExtension(path_display_name, "ppf"));
 #else
-    const std::string ppf_filename(
-      Path::BuildRelativePath(filename, Path::ReplaceExtension(Path::GetFileName(filename), "ppf")));
+    const std::string ppf_path = Path::BuildRelativePath(path, Path::ReplaceExtension(Path::GetFileName(path), "ppf"));
 #endif
-    if (FileSystem::FileExists(ppf_filename.c_str()))
+    if (FileSystem::FileExists(ppf_path.c_str()))
     {
-      image = CDImage::OverlayPPFPatch(ppf_filename.c_str(), std::move(image));
+      image = CDImage::OverlayPPFPatch(ppf_path.c_str(), std::move(image));
       if (!image)
-        Error::SetStringFmt(error, "Failed to apply ppf patch from '{}'.", ppf_filename);
+        Error::SetStringFmt(error, "Failed to apply ppf patch from '{}'.", ppf_path);
     }
   }
 
