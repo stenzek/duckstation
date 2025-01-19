@@ -514,12 +514,13 @@ bool System::CPUThreadInitialize(Error* error, u32 async_worker_thread_count)
   }
 #endif
 
+  s_state.cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
+  s_state.async_task_queue.SetWorkerCount(async_worker_thread_count);
+
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
 
   LogStartupInformation();
-
-  s_state.async_task_queue.SetWorkerCount(async_worker_thread_count);
 
   GPUThread::Internal::ProcessStartup();
 
@@ -545,6 +546,7 @@ void System::CPUThreadShutdown()
   InputManager::CloseSources();
 
   s_state.async_task_queue.SetWorkerCount(0);
+  s_state.cpu_thread_handle = {};
 
 #ifdef _WIN32
   CoUninitialize();
@@ -554,6 +556,11 @@ void System::CPUThreadShutdown()
 const Threading::ThreadHandle& System::GetCPUThreadHandle()
 {
   return s_state.cpu_thread_handle;
+}
+
+void System::SetCPUThreadHandle(Threading::ThreadHandle handle)
+{
+  s_state.cpu_thread_handle = std::move(handle);
 }
 
 void System::IdlePollUpdate()
@@ -1929,8 +1936,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   MDEC::Initialize();
   SIO::Initialize();
   PCDrv::Initialize();
-
-  s_state.cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
 
   UpdateGTEAspectRatio();
   UpdateThrottlePeriod();
@@ -4230,17 +4235,13 @@ bool System::CheckForRequiredSubQ(Error* error)
       return true;
     }
   }
-#ifndef __ANDROID__
+
   Error::SetStringFmt(
     error,
     TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
                            "{1}\n\nYour dump is incomplete, you must add the SBI file to run this game. \n\nThe "
                            "name of the SBI file must match the name of the disc image."),
     s_state.running_game_serial, s_state.running_game_title);
-#else
-  // Shorter because no confirm messages.
-  Error::SetStringView(error, "The selected game requires a SBI file to run properly.");
-#endif
 
   return false;
 }

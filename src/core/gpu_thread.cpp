@@ -433,6 +433,7 @@ bool GPUThread::SleepGPUThread(bool allow_sleep)
 void GPUThread::Internal::GPUThreadEntryPoint()
 {
   s_state.gpu_thread = Threading::ThreadHandle::GetForCallingThread();
+  std::atomic_thread_fence(std::memory_order_release);
 
   // Take a local copy of the FIFO, that way it's not ping-ponging between the threads.
   u8* const command_fifo_data = s_state.command_fifo_data.get();
@@ -521,6 +522,8 @@ void GPUThread::Internal::GPUThreadEntryPoint()
 
     s_state.command_fifo_read_ptr.store(read_ptr, std::memory_order_release);
   }
+
+  s_state.gpu_thread = {};
 }
 
 void GPUThread::Internal::DoRunIdle()
