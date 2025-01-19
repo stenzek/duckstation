@@ -410,13 +410,20 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   {
     overlay_rect = GSVector4i::rfit(GSVector4i::loadh(target_size), m_border_overlay_texture->GetSizeVec());
 
-    const GSVector2 scale = GSVector2(overlay_rect.rsize()) / GSVector2(m_border_overlay_texture->GetSizeVec());
+    // Align the overlay rectangle to the top/bottom if requested.
+    const GSVector2i overlay_rect_size = overlay_rect.rsize();
+    if (g_gpu_settings.display_alignment == DisplayAlignment::LeftOrTop)
+      overlay_rect = overlay_rect.sub32(overlay_rect.xyxy());
+    else if (g_gpu_settings.display_alignment == DisplayAlignment::RightOrBottom)
+      overlay_rect = GSVector4i::xyxy(target_size).sub32(GSVector4i(overlay_rect_size));
+
+    const GSVector2 scale = GSVector2(overlay_rect_size) / GSVector2(m_border_overlay_texture->GetSizeVec());
     overlay_display_rect =
       GSVector4i(GSVector4(m_border_overlay_display_rect) * GSVector4::xyxy(scale)).add32(overlay_rect.xyxy());
 
-    // Draw to the overlay area instead of the whole screen.
-    CalculateDrawRect(overlay_display_rect.width(), overlay_display_rect.height(), apply_aspect_ratio, &display_rect,
-                      &draw_rect);
+    // Draw to the overlay area instead of the whole screen. Always align in center, we align the overlay instead.
+    CalculateDrawRect(overlay_display_rect.width(), overlay_display_rect.height(), apply_aspect_ratio, false,
+                      &display_rect, &draw_rect);
 
     // Apply overlay area offset.
     display_rect = display_rect.add32(overlay_display_rect.xyxy());
@@ -424,7 +431,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   }
   else
   {
-    CalculateDrawRect(target_size.x, target_size.y, apply_aspect_ratio, &display_rect, &draw_rect);
+    CalculateDrawRect(target_size.x, target_size.y, apply_aspect_ratio, true, &display_rect, &draw_rect);
   }
 
   // There's a bunch of scenarios where we need to use intermediate buffers.
@@ -910,7 +917,7 @@ bool GPUPresenter::ApplyChromaSmoothing()
   return true;
 }
 
-void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio,
+void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio, bool apply_alignment,
                                      GSVector4i* display_rect, GSVector4i* draw_rect) const
 {
   const bool integer_scale = (g_gpu_settings.display_scaling == DisplayScalingMode::NearestInteger ||
@@ -924,10 +931,12 @@ void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool a
   const u32 display_vram_height = show_vram ? VRAM_HEIGHT : m_display_vram_height;
   const float display_pixel_aspect_ratio = (show_vram || !apply_aspect_ratio) ? 1.0f : m_display_pixel_aspect_ratio;
   const DisplayRotation display_rotation = show_vram ? DisplayRotation::Normal : g_gpu_settings.display_rotation;
+  const DisplayAlignment display_alignment =
+    apply_alignment ? g_gpu_settings.display_alignment : DisplayAlignment::Center;
   GPU::CalculateDrawRect(window_width, window_height, display_width, display_height, display_origin_left,
                          display_origin_top, display_vram_width, display_vram_height, display_rotation,
-                         g_gpu_settings.display_alignment, display_pixel_aspect_ratio,
-                         g_gpu_settings.display_stretch_vertically, integer_scale, display_rect, draw_rect);
+                         display_alignment, display_pixel_aspect_ratio, g_gpu_settings.display_stretch_vertically,
+                         integer_scale, display_rect, draw_rect);
 }
 
 bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bool allow_skip_present, u64 present_time)

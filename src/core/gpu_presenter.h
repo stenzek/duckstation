@@ -60,8 +60,8 @@ public:
   bool ApplyChromaSmoothing();
 
   /// Helper function for computing the draw rectangle in a larger window.
-  void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio, GSVector4i* display_rect,
-                         GSVector4i* draw_rect) const;
+  void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio, bool apply_alignment,
+                         GSVector4i* display_rect, GSVector4i* draw_rect) const;
 
   /// Helper function for computing screenshot bounds.
   GSVector2i CalculateScreenshotSize(DisplayScreenshotMode mode) const;

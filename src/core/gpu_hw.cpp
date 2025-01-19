@@ -746,7 +746,8 @@ u32 GPU_HW::CalculateResolutionScale() const
     {
       GSVector4i display_rect, draw_rect;
       m_presenter.CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(),
-                                    g_gpu_device->GetMainSwapChain()->GetHeight(), true, &display_rect, &draw_rect);
+                                    g_gpu_device->GetMainSwapChain()->GetHeight(), true, true, &display_rect,
+                                    &draw_rect);
 
       // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
       // anamorphic aspect ratio.

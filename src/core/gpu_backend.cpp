@@ -679,7 +679,7 @@ bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bo
         // Crop it if border overlay isn't enabled.
         GSVector4i draw_rect, display_rect;
         backend->GetPresenter().CalculateDrawRect(static_cast<s32>(width), static_cast<s32>(height), apply_aspect_ratio,
-                                                  &display_rect, &draw_rect);
+                                                  false, &display_rect, &draw_rect);
         image_width = static_cast<u32>(display_rect.width());
         image_height = static_cast<u32>(display_rect.height());
       }
