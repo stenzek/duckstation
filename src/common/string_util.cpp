@@ -302,13 +302,13 @@ std::string StringUtil::EncodeBase64(const std::span<u8> data)
 std::string_view StringUtil::StripWhitespace(const std::string_view str)
 {
   std::string_view::size_type start = 0;
-  while (start < str.size() && std::isspace(str[start]))
+  while (start < str.size() && StringUtil::IsWhitespace(str[start]))
     start++;
   if (start == str.size())
     return {};
 
   std::string_view::size_type end = str.size() - 1;
-  while (end > start && std::isspace(str[end]))
+  while (end > start && StringUtil::IsWhitespace(str[end]))
     end--;
 
   return str.substr(start, end - start + 1);
@@ -319,7 +319,7 @@ void StringUtil::StripWhitespace(std::string* str)
   {
     const char* cstr = str->c_str();
     std::string_view::size_type start = 0;
-    while (start < str->size() && std::isspace(cstr[start]))
+    while (start < str->size() && StringUtil::IsWhitespace(cstr[start]))
       start++;
     if (start != 0)
       str->erase(0, start);
@@ -328,7 +328,7 @@ void StringUtil::StripWhitespace(std::string* str)
   {
     const char* cstr = str->c_str();
     std::string_view::size_type start = str->size();
-    while (start > 0 && std::isspace(cstr[start - 1]))
+    while (start > 0 && StringUtil::IsWhitespace(cstr[start - 1]))
       start--;
     if (start != str->size())
       str->erase(start);

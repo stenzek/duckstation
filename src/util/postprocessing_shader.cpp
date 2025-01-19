@@ -16,29 +16,29 @@ LOG_CHANNEL(PostProcessing);
 void PostProcessing::Shader::ParseKeyValue(std::string_view line, std::string_view* key, std::string_view* value)
 {
   size_t key_start = 0;
-  while (key_start < line.size() && std::isspace(line[key_start]))
+  while (key_start < line.size() && StringUtil::IsWhitespace(line[key_start]))
     key_start++;
 
   size_t key_end = key_start;
-  while (key_end < line.size() && (!std::isspace(line[key_end]) && line[key_end] != '='))
+  while (key_end < line.size() && (!StringUtil::IsWhitespace(line[key_end]) && line[key_end] != '='))
     key_end++;
 
   if (key_start == key_end || key_end == line.size())
     return;
 
   size_t value_start = key_end;
-  while (value_start < line.size() && std::isspace(line[value_start]))
+  while (value_start < line.size() && StringUtil::IsWhitespace(line[value_start]))
     value_start++;
 
   if (value_start == line.size() || line[value_start] != '=')
     return;
 
   value_start++;
-  while (value_start < line.size() && std::isspace(line[value_start]))
+  while (value_start < line.size() && StringUtil::IsWhitespace(line[value_start]))
     value_start++;
 
   size_t value_end = line.size();
-  while (value_end > value_start && std::isspace(line[value_end - 1]))
+  while (value_end > value_start && StringUtil::IsWhitespace(line[value_end - 1]))
     value_end--;
 
   if (value_start == value_end)

@@ -88,7 +88,7 @@ std::string_view CueParser::File::GetToken(const char*& line)
   std::string_view ret;
 
   const char* start = line;
-  while (std::isspace(*start) && *start != '\0')
+  while (StringUtil::IsWhitespace(*start) && *start != '\0')
     start++;
 
   if (*start == '\0')
@@ -114,7 +114,7 @@ std::string_view CueParser::File::GetToken(const char*& line)
   else
   {
     end = start;
-    while (!std::isspace(*end) && *end != '\0')
+    while (!StringUtil::IsWhitespace(*end) && *end != '\0')
       end++;
 
     ret = std::string_view(start, static_cast<size_t>(end - start));
@@ -154,7 +154,7 @@ std::optional<CueParser::MSF> CueParser::File::GetMSF(std::string_view token)
     if (part == 3)
       break;
 
-    while (end < token.length() && std::isspace(token[end]))
+    while (end < token.length() && StringUtil::IsWhitespace(token[end]))
       end++;
     if (end == token.length() || token[end] != ':')
       return std::nullopt;

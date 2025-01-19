@@ -233,6 +233,13 @@ inline std::string ToChars(bool value, int base)
   return std::string(value ? "true" : "false");
 }
 
+/// Returns true if the given character is whitespace.
+static inline bool IsWhitespace(char ch)
+{
+  return ((ch >= 0x09 && ch <= 0x0D) || // horizontal tab, line feed, vertical tab, form feed, carriage return
+          ch == 0x20);                  // space
+}
+
 /// Encode/decode hexadecimal byte buffers
 u8 DecodeHexDigit(char ch);
 std::optional<std::vector<u8>> DecodeHex(const std::string_view str);
