@@ -721,7 +721,7 @@ public:
 #endif
   }
 
-  ALWAYS_INLINE explicit GSVector2(const GSVector2i& v);
+  ALWAYS_INLINE explicit GSVector2(const GSVector2i& v) : m(_mm_cvtepi32_ps(v)) {}
 
   ALWAYS_INLINE GSVector2& operator=(float f)
   {
@@ -1056,11 +1056,14 @@ public:
   {
   }
 
-  ALWAYS_INLINE explicit GSVector4i(const GSVector2i& v) { m = v.m; }
+  ALWAYS_INLINE explicit GSVector4i(const GSVector2i& v) { m = _mm_unpacklo_epi64(v.m, _mm_setzero_si128()); }
+
+  ALWAYS_INLINE explicit GSVector4i(const GSVector2& v)
+    : m(_mm_unpacklo_epi64(_mm_cvttps_epi32(v), _mm_setzero_si128()))
+  {
+  }
 
   ALWAYS_INLINE explicit GSVector4i(s32 i) { *this = i; }
-
-  ALWAYS_INLINE explicit GSVector4i(const GSVector2& v);
 
   ALWAYS_INLINE explicit GSVector4i(const GSVector4& v);
 
@@ -1739,6 +1742,11 @@ public:
     return GSVector4i(_mm_loadl_epi64(static_cast<const __m128i*>(p)));
   }
 
+  ALWAYS_INLINE static GSVector4i loadl(const GSVector2i& v)
+  {
+    return GSVector4i(_mm_unpacklo_epi64(v.m, _mm_setzero_si128()));
+  }
+
   template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const void* p)
   {
@@ -1958,7 +1966,10 @@ public:
     m = _mm_cvtepi32_ps(_mm_unpacklo_epi32(_mm_cvtsi32_si128(x), _mm_cvtsi32_si128(y)));
   }
 
-  ALWAYS_INLINE explicit GSVector4(const GSVector2& v) : m(v.m) {}
+  ALWAYS_INLINE explicit GSVector4(const GSVector2& v)
+    : m(_mm_castpd_ps(_mm_unpacklo_pd(_mm_castps_pd(v.m), _mm_setzero_pd())))
+  {
+  }
   ALWAYS_INLINE explicit GSVector4(const GSVector2i& v)
     : m(_mm_castpd_ps(_mm_unpacklo_pd(_mm_castps_pd(_mm_cvtepi32_ps(v.m)), _mm_setzero_pd())))
   {
@@ -1979,7 +1990,7 @@ public:
 #endif
   }
 
-  ALWAYS_INLINE explicit GSVector4(const GSVector4i& v);
+  ALWAYS_INLINE explicit GSVector4(const GSVector4i& v) : m(_mm_cvtepi32_ps(v)) {}
 
   ALWAYS_INLINE static GSVector4 f64(double x, double y) { return GSVector4(_mm_castpd_ps(_mm_set_pd(y, x))); }
   ALWAYS_INLINE static GSVector4 f64(double x) { return GSVector4(_mm_castpd_ps(_mm_set1_pd(x))); }
@@ -2428,10 +2439,7 @@ public:
     return GSVector4(_mm_movelh_ps(l.m, h.m));
   }
 
-  ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l)
-  {
-    return GSVector4(_mm_movelh_ps(l.m, l.m));
-  }
+  ALWAYS_INLINE static GSVector4 xyxy(const GSVector2& l) { return GSVector4(_mm_movelh_ps(l.m, l.m)); }
 
 #define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn)                                                              \
   ALWAYS_INLINE GSVector4 xs##ys##zs##ws() const                                                                       \
@@ -2491,11 +2499,6 @@ ALWAYS_INLINE GSVector2i::GSVector2i(const GSVector2& v)
   m = _mm_cvttps_epi32(v);
 }
 
-ALWAYS_INLINE GSVector2::GSVector2(const GSVector2i& v)
-{
-  m = _mm_cvtepi32_ps(v);
-}
-
 ALWAYS_INLINE GSVector2i GSVector2i::cast(const GSVector2& v)
 {
   return GSVector2i(_mm_castps_si128(v.m));
@@ -2509,11 +2512,6 @@ ALWAYS_INLINE GSVector2 GSVector2::cast(const GSVector2i& v)
 ALWAYS_INLINE GSVector4i::GSVector4i(const GSVector4& v)
 {
   m = _mm_cvttps_epi32(v);
-}
-
-ALWAYS_INLINE GSVector4::GSVector4(const GSVector4i& v)
-{
-  m = _mm_cvtepi32_ps(v);
 }
 
 ALWAYS_INLINE GSVector4i GSVector4i::cast(const GSVector4& v)
