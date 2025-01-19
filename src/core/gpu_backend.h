@@ -1,20 +1,13 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
-#include "gpu_thread_commands.h"
-
 #include "util/gpu_device.h"
 
-#include "common/heap_array.h"
-#include "common/threading.h"
+#include "gpu_thread_commands.h"
 
-#include <atomic>
-#include <condition_variable>
 #include <memory>
-#include <mutex>
-#include <tuple>
 
 class Error;
 class SmallStringBase;
@@ -25,6 +18,8 @@ class GPUPipeline;
 struct GPUSettings;
 class StateWrapper;
 
+class GPUPresenter;
+
 namespace System {
 struct MemorySaveState;
 }
@@ -32,7 +27,7 @@ struct MemorySaveState;
 // DESIGN NOTE: Only static methods should be called on the CPU thread.
 // You specifically don't have a global pointer available for this reason.
 
-class GPUBackend
+class ALIGN_TO_CACHE_LINE GPUBackend
 {
 public:
   static GPUThreadCommand* NewClearVRAMCommand();
@@ -59,12 +54,14 @@ public:
 
   static bool IsUsingHardwareBackend();
 
-  static std::unique_ptr<GPUBackend> CreateHardwareBackend();
-  static std::unique_ptr<GPUBackend> CreateSoftwareBackend();
+  static std::unique_ptr<GPUBackend> CreateHardwareBackend(GPUPresenter& presenter);
+  static std::unique_ptr<GPUBackend> CreateSoftwareBackend(GPUPresenter& presenter);
+  static std::unique_ptr<GPUBackend> CreateNullBackend(GPUPresenter& presenter);
 
-  static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, Image* out_image);
+  static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio, Image* out_image,
+                                       Error* error);
   static void RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
-                                     bool compress_on_thread, bool show_osd_message);
+                                     bool show_osd_message);
 
   static bool BeginQueueFrame();
   static void WaitForOneQueuedFrame();
@@ -72,19 +69,25 @@ public:
 
   static bool AllocateMemorySaveStates(std::span<System::MemorySaveState> states, Error* error);
 
+  static void QueueUpdateResolutionScale();
+
 public:
-  GPUBackend();
+  GPUBackend(GPUPresenter& presenter);
   virtual ~GPUBackend();
+
+  ALWAYS_INLINE const GPUPresenter& GetPresenter() const { return m_presenter; }
+  ALWAYS_INLINE GPUPresenter& GetPresenter() { return m_presenter; }
 
   virtual bool Initialize(bool upload_vram, Error* error);
 
-  virtual void UpdateSettings(const GPUSettings& old_settings);
+  virtual bool UpdateSettings(const GPUSettings& old_settings, Error* error);
+  virtual void UpdatePostProcessingSettings(bool force_reload);
 
   /// Returns the current resolution scale.
   virtual u32 GetResolutionScale() const = 0;
 
   /// Updates the resolution scale when it's set to automatic.
-  virtual void UpdateResolutionScale() = 0;
+  virtual bool UpdateResolutionScale(Error* error) = 0;
 
   // Graphics API state reset/restore - call when drawing the UI etc.
   // TODO: replace with "invalidate cached state"
@@ -96,28 +99,13 @@ public:
   /// Main command handler for GPU thread.
   void HandleCommand(const GPUThreadCommand* cmd);
 
-  /// Draws the current display texture, with any post-processing.
-  GPUDevice::PresentResult PresentDisplay();
-
-  /// Helper function to save current display texture to PNG. Used for regtest.
-  bool WriteDisplayTextureToFile(std::string filename);
-
-  /// Helper function for computing screenshot bounds.
-  void CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height, GSVector4i* display_rect,
-                               GSVector4i* draw_rect) const;
-
   void GetStatsString(SmallStringBase& str) const;
   void GetMemoryStatsString(SmallStringBase& str) const;
 
   void ResetStatistics();
   void UpdateStatistics(u32 frame_count);
 
-protected:
-  enum : u32
-  {
-    DEINTERLACE_BUFFER_COUNT = 4,
-  };
-
+  /// Screen-aligned vertex type for various draw types.
   struct ScreenVertex
   {
     float x;
@@ -129,6 +117,18 @@ protected:
     {
       GSVector4::store<false>(this, GSVector4::xyxy(xy, uv));
     }
+  };
+
+  static void SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config);
+  static GSVector4 GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size);
+
+  static void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
+                             const GSVector4 uv_bounds = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f));
+
+protected:
+  enum : u32
+  {
+    DEINTERLACE_BUFFER_COUNT = 4,
   };
 
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height) = 0;
@@ -156,67 +156,14 @@ protected:
   virtual bool AllocateMemorySaveState(System::MemorySaveState& mss, Error* error) = 0;
   virtual void DoMemoryState(StateWrapper& sw, System::MemorySaveState& mss) = 0;
 
-  static void SetScreenQuadInputLayout(GPUPipeline::GraphicsConfig& config);
-  static GSVector4 GetScreenQuadClipSpaceCoordinates(const GSVector4i bounds, const GSVector2i rt_size);
-
-  void DrawScreenQuad(const GSVector4i bounds, const GSVector2i rt_size,
-                      const GSVector4 uv_bounds = GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f));
-
-  /// Helper function for computing the draw rectangle in a larger window.
-  void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
-                         GSVector4i* display_rect, GSVector4i* draw_rect) const;
-
-  /// Renders the display, optionally with postprocessing to the specified image.
-  bool RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect, const GSVector4i draw_rect,
-                                bool postfx, Image* out_image);
-
-  bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error);
-
   void HandleUpdateDisplayCommand(const GPUBackendUpdateDisplayCommand* cmd);
   void HandleSubmitFrameCommand(const GPUBackendFramePresentationParameters* cmd);
 
-  void ClearDisplay();
-  void ClearDisplayTexture();
-  void SetDisplayTexture(GPUTexture* texture, GPUTexture* depth_buffer, s32 view_x, s32 view_y, s32 view_width,
-                         s32 view_height);
-
-  GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector4i display_rect, const GSVector4i draw_rect,
-                                         bool postfx);
-
-  /// Sends the current frame to media capture.
-  void SendDisplayToMediaCapture(MediaCapture* cap);
-
-  bool Deinterlace(u32 field);
-  bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
-  void DestroyDeinterlaceTextures();
-  bool ApplyChromaSmoothing();
-
-  s32 m_display_width = 0;
-  s32 m_display_height = 0;
-
+  GPUPresenter& m_presenter;
   GSVector4i m_clamped_drawing_area = {};
 
-  s32 m_display_origin_left = 0;
-  s32 m_display_origin_top = 0;
-  s32 m_display_vram_width = 0;
-  s32 m_display_vram_height = 0;
-  float m_display_pixel_aspect_ratio = 1.0f;
-
-  u32 m_current_deinterlace_buffer = 0;
-  std::unique_ptr<GPUPipeline> m_deinterlace_pipeline;
-  std::array<std::unique_ptr<GPUTexture>, DEINTERLACE_BUFFER_COUNT> m_deinterlace_buffers;
-  std::unique_ptr<GPUTexture> m_deinterlace_texture;
-
-  std::unique_ptr<GPUPipeline> m_chroma_smoothing_pipeline;
-  std::unique_ptr<GPUTexture> m_chroma_smoothing_texture;
-
-  std::unique_ptr<GPUPipeline> m_display_pipeline;
-  GPUTexture* m_display_texture = nullptr;
-  GPUTexture* m_display_depth_buffer = nullptr;
-  s32 m_display_texture_view_x = 0;
-  s32 m_display_texture_view_y = 0;
-  s32 m_display_texture_view_width = 0;
-  s32 m_display_texture_view_height = 0;
+private:
+  static void ReleaseQueuedFrame();
 };
 
 namespace Host {

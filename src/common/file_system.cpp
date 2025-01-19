@@ -1639,19 +1639,22 @@ bool FileSystem::RecursiveDeleteDirectory(const char* path, Error* error)
   return DeleteDirectory(path, error);
 }
 
-bool FileSystem::CopyFilePath(const char* source, const char* destination, bool replace)
+bool FileSystem::CopyFilePath(const char* source, const char* destination, bool replace, Error* error)
 {
 #ifndef _WIN32
   // TODO: There's technically a race here between checking and opening the file..
   // But fopen doesn't specify any way to say "don't create if it exists"...
   if (!replace && FileExists(destination))
+  {
+    Error::SetStringView(error, "File already exists.");
     return false;
+  }
 
-  auto in_fp = OpenManagedCFile(source, "rb");
+  auto in_fp = OpenManagedCFile(source, "rb", error);
   if (!in_fp)
     return false;
 
-  auto out_fp = OpenManagedCFile(destination, "wb");
+  auto out_fp = OpenManagedCFile(destination, "wb", error);
   if (!out_fp)
     return false;
 
@@ -1662,6 +1665,7 @@ bool FileSystem::CopyFilePath(const char* source, const char* destination, bool 
     if ((bytes_in == 0 && !std::feof(in_fp.get())) ||
         (bytes_in > 0 && std::fwrite(buf, 1, bytes_in, out_fp.get()) != bytes_in))
     {
+      Error::SetErrno(error, "fread() or fwrite() failed: ", errno);
       out_fp.reset();
       DeleteFile(destination);
       return false;
@@ -1670,6 +1674,7 @@ bool FileSystem::CopyFilePath(const char* source, const char* destination, bool 
 
   if (std::fflush(out_fp.get()) != 0)
   {
+    Error::SetErrno(error, "fflush() failed: ", errno);
     out_fp.reset();
     DeleteFile(destination);
     return false;
@@ -1677,7 +1682,11 @@ bool FileSystem::CopyFilePath(const char* source, const char* destination, bool 
 
   return true;
 #else
-  return CopyFileW(GetWin32Path(source).c_str(), GetWin32Path(destination).c_str(), !replace);
+  if (CopyFileW(GetWin32Path(source).c_str(), GetWin32Path(destination).c_str(), !replace))
+    return true;
+
+  Error::SetWin32(error, "CopyFileW() failed(): ", GetLastError());
+  return false;
 #endif
 }
 

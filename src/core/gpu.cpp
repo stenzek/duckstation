@@ -985,7 +985,7 @@ void GPU::UpdateCRTCDisplayParameters()
   if ((cs.display_vram_width != old_vram_width || cs.display_vram_height != old_vram_height) &&
       g_settings.gpu_resolution_scale == 0)
   {
-    GPUThread::RunOnBackend([](GPUBackend* backend) { backend->UpdateResolutionScale(); }, false, false);
+    GPUBackend::QueueUpdateResolutionScale();
   }
 }
 
@@ -2062,7 +2062,7 @@ bool GPU::StartRecordingGPUDump(const char* path, u32 num_frames /* = 1 */)
 
   // save screenshot to same location to identify it
   GPUBackend::RenderScreenshotToFile(Path::ReplaceExtension(path, "png"), DisplayScreenshotMode::ScreenResolution, 85,
-                                     true, false);
+                                     false);
   return true;
 }
 
@@ -2103,27 +2103,26 @@ void GPU::StopRecordingGPUDump()
   Host::AddIconOSDMessage(
     osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
     fmt::format(TRANSLATE_FS("GPU", "Compressing GPU trace '{}'..."), Path::GetFileName(source_path)), 60.0f);
-  System::QueueAsyncTask(
-    [compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
-      Error error;
-      if (GPUDump::Recorder::Compress(source_path, compress_mode, &error))
-      {
-        Host::AddIconOSDMessage(
-          std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
-          fmt::format(TRANSLATE_FS("GPU", "Saved GPU trace to '{}'."), Path::GetFileName(source_path)),
-          Host::OSD_QUICK_DURATION);
-      }
-      else
-      {
-        Host::AddIconOSDWarning(
-          std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
-          fmt::format("{}\n{}",
-                      SmallString::from_format(TRANSLATE_FS("GPU", "Failed to save GPU trace to '{}':"),
-                                               Path::GetFileName(source_path)),
-                      error.GetDescription()),
-          Host::OSD_ERROR_DURATION);
-      }
-    });
+  System::QueueAsyncTask([compress_mode, source_path = std::move(source_path), osd_key = std::move(osd_key)]() mutable {
+    Error error;
+    if (GPUDump::Recorder::Compress(source_path, compress_mode, &error))
+    {
+      Host::AddIconOSDMessage(
+        std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+        fmt::format(TRANSLATE_FS("GPU", "Saved GPU trace to '{}'."), Path::GetFileName(source_path)),
+        Host::OSD_QUICK_DURATION);
+    }
+    else
+    {
+      Host::AddIconOSDWarning(
+        std::move(osd_key), ICON_EMOJI_CAMERA_WITH_FLASH,
+        fmt::format("{}\n{}",
+                    SmallString::from_format(TRANSLATE_FS("GPU", "Failed to save GPU trace to '{}':"),
+                                             Path::GetFileName(source_path)),
+                    error.GetDescription()),
+        Host::OSD_ERROR_DURATION);
+    }
+  });
 }
 
 void GPU::WriteCurrentVideoModeToDump(GPUDump::Recorder* dump) const
@@ -2166,6 +2165,15 @@ void GPU::WriteCurrentVideoModeToDump(GPUDump::Recorder* dump) const
 
 void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u32> data)
 {
+  const auto execute_all_commands = [this]() {
+    do
+    {
+      m_pending_command_ticks = 0;
+      s_command_tick_event.Deactivate();
+      ExecuteCommands();
+    } while (m_pending_command_ticks > 0);
+  };
+
   switch (type)
   {
     case GPUDump::PacketType::GPUPort0Data:
@@ -2176,14 +2184,11 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
         return;
       }
 
-      // ensure it doesn't block
-      m_pending_command_ticks = 0;
-      UpdateCommandTickEvent();
-
       if (data.size() == 1) [[unlikely]]
       {
         // direct GP0 write
         WriteRegister(0, data[0]);
+        execute_all_commands();
       }
       else
       {
@@ -2191,7 +2196,9 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
         size_t current_word = 0;
         while (current_word < data.size())
         {
-          const u32 block_size = std::min(m_fifo_size - m_fifo.GetSize(), static_cast<u32>(data.size() - current_word));
+          // normally this would be constrained to the "real" fifo size, but VRAM updates also go through here
+          // it's easier to just push everything in and execute
+          const u32 block_size = std::min(m_fifo.GetSpace(), static_cast<u32>(data.size() - current_word));
           if (block_size == 0)
           {
             ERROR_LOG("FIFO overflow while processing dump packet of {} words", data.size());
@@ -2200,7 +2207,9 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
 
           for (u32 i = 0; i < block_size; i++)
             m_fifo.Push(ZeroExtend64(data[current_word++]));
-          ExecuteCommands();
+
+          execute_all_commands();
+          ;
         }
       }
     }
@@ -2221,8 +2230,7 @@ void GPU::ProcessGPUDumpPacket(GPUDump::PacketType type, const std::span<const u
     case GPUDump::PacketType::VSyncEvent:
     {
       // don't play silly buggers with events
-      m_pending_command_ticks = 0;
-      UpdateCommandTickEvent();
+      execute_all_commands();
 
       // we _should_ be using the tick count for the event, but it breaks with looping.
       // instead, just add a fixed amount

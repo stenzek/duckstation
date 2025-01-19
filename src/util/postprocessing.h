@@ -5,13 +5,13 @@
 
 #include "gpu_device.h"
 
+#include "common/timer.h"
+
 #include <array>
 #include <memory>
 #include <mutex>
 #include <string_view>
 #include <vector>
-
-class Timer;
 
 class GPUPipeline;
 class GPUSampler;
@@ -93,6 +93,7 @@ namespace Config {
 static constexpr const char* DISPLAY_CHAIN_SECTION = "PostProcessing";
 static constexpr const char* INTERNAL_CHAIN_SECTION = "InternalPostProcessing";
 
+bool IsEnabled(const SettingsInterface& si, const char* section);
 u32 GetStageCount(const SettingsInterface& si, const char* section);
 std::string GetStageShaderName(const SettingsInterface& si, const char* section, u32 index);
 std::vector<ShaderOption> GetStageOptions(const SettingsInterface& si, const char* section, u32 index);
@@ -107,13 +108,13 @@ void UnsetStageOption(SettingsInterface& si, const char* section, u32 index, con
 void ClearStages(SettingsInterface& si, const char* section);
 } // namespace Config
 
-class Chain
+class Chain final
 {
 public:
   Chain(const char* section);
   ~Chain();
 
-  ALWAYS_INLINE bool HasStages() const { return m_stages.empty(); }
+  ALWAYS_INLINE bool HasStages() const { return !m_stages.empty(); }
   ALWAYS_INLINE bool NeedsDepthBuffer() const { return m_needs_depth_buffer; }
   ALWAYS_INLINE GPUTexture* GetInputTexture() const { return m_input_texture.get(); }
   ALWAYS_INLINE GPUTexture* GetOutputTexture() const { return m_output_texture.get(); }
@@ -122,14 +123,11 @@ public:
   GPUTexture* GetTextureUnusedAtEndOfChain() const;
 
   bool IsActive() const;
-  bool IsInternalChain() const;
 
-  void UpdateSettings(std::unique_lock<std::mutex>& settings_lock);
+  void UpdateSettings(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si);
 
-  void LoadStages();
-  void ClearStages();
-  void DestroyTextures();
-  void DestroyPipelines();
+  void LoadStages(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si,
+                  bool preload_swap_chain_size);
 
   /// Temporarily toggles post-processing on/off.
   void Toggle();
@@ -143,6 +141,7 @@ public:
 
 private:
   void ClearStagesWithError(const Error& error);
+  void DestroyTextures();
 
   const char* m_section;
 
@@ -156,26 +155,11 @@ private:
   std::vector<std::unique_ptr<PostProcessing::Shader>> m_stages;
   std::unique_ptr<GPUTexture> m_input_texture;
   std::unique_ptr<GPUTexture> m_output_texture;
-  std::unique_ptr<GPUPipeline> m_rotated_copy_pipeline;
+
+  static Timer::Value s_start_time;
 };
 
 // [display_name, filename]
 std::vector<std::pair<std::string, std::string>> GetAvailableShaderNames();
-
-void Initialize();
-
-/// Reloads configuration.
-void UpdateSettings();
-
-/// Reloads post processing shaders with the current configuration.
-bool ReloadShaders();
-
-void Shutdown();
-
-GPUSampler* GetSampler(const GPUSampler::Config& config);
-GPUTexture* GetDummyTexture();
-
-extern Chain DisplayChain;
-extern Chain InternalChain;
 
 }; // namespace PostProcessing

@@ -30,6 +30,7 @@
 LOG_CHANNEL(PostProcessing);
 
 namespace PostProcessing {
+
 template<typename T>
 static u32 ParseVector(std::string_view line, ShaderOption::ValueVector* values);
 
@@ -39,22 +40,9 @@ static TinyString GetStageConfigSection(const char* section, u32 index);
 static void CopyStageConfig(SettingsInterface& si, const char* section, u32 old_index, u32 new_index);
 static void SwapStageConfig(SettingsInterface& si, const char* section, u32 lhs_index, u32 rhs_index);
 static std::unique_ptr<Shader> TryLoadingShader(const std::string& shader_name, bool only_config, Error* error);
-static SettingsInterface& GetLoadSettingsInterface(const char* section);
 
-template<typename T>
-ALWAYS_INLINE void ForAllChains(const T& F)
-{
-  F(DisplayChain);
-  F(InternalChain);
-}
+Timer::Value Chain::s_start_time;
 
-Chain DisplayChain(Config::DISPLAY_CHAIN_SECTION);
-Chain InternalChain(Config::INTERNAL_CHAIN_SECTION);
-
-static Timer::Value s_start_time;
-
-static std::unordered_map<u64, std::unique_ptr<GPUSampler>> s_samplers;
-static std::unique_ptr<GPUTexture> s_dummy_texture;
 } // namespace PostProcessing
 
 template<typename T>
@@ -242,6 +230,11 @@ void PostProcessing::SwapStageConfig(SettingsInterface& si, const char* section,
     si.SetStringValue(rhs_section, key.c_str(), value.c_str());
 }
 
+bool PostProcessing::Config::IsEnabled(const SettingsInterface& si, const char* section)
+{
+  return si.GetBoolValue(section, "Enabled", false);
+}
+
 u32 PostProcessing::Config::GetStageCount(const SettingsInterface& si, const char* section)
 {
   return si.GetUIntValue(section, "StageCount", 0u);
@@ -374,6 +367,8 @@ void PostProcessing::Config::ClearStages(SettingsInterface& si, const char* sect
 
 PostProcessing::Chain::Chain(const char* section) : m_section(section)
 {
+  if (s_start_time == 0) [[unlikely]]
+    s_start_time = Timer::GetCurrentValue();
 }
 
 PostProcessing::Chain::~Chain() = default;
@@ -388,11 +383,6 @@ bool PostProcessing::Chain::IsActive() const
   return m_enabled && !m_stages.empty();
 }
 
-bool PostProcessing::Chain::IsInternalChain() const
-{
-  return (this == &InternalChain);
-}
-
 void PostProcessing::Chain::ClearStagesWithError(const Error& error)
 {
   std::string msg = error.GetDescription();
@@ -401,13 +391,15 @@ void PostProcessing::Chain::ClearStagesWithError(const Error& error)
     fmt::format(TRANSLATE_FS("OSDMessage", "Failed to load post-processing chain: {}"),
                 msg.empty() ? TRANSLATE_SV("PostProcessing", "Unknown Error") : std::string_view(msg)),
     Host::OSD_ERROR_DURATION);
+  DestroyTextures();
   m_stages.clear();
 }
 
-void PostProcessing::Chain::LoadStages()
+void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si,
+                                       bool preload_swap_chain_size)
 {
-  auto lock = Host::GetSettingsLock();
-  SettingsInterface& si = GetLoadSettingsInterface(m_section);
+  m_stages.clear();
+  DestroyTextures();
 
   m_enabled = si.GetBoolValue(m_section, "Enabled", false);
   m_wants_depth_buffer = false;
@@ -430,7 +422,7 @@ void PostProcessing::Chain::LoadStages()
       return;
     }
 
-    lock.unlock();
+    settings_lock.unlock();
     progress.FormatStatusText("Loading shader {}...", stage_name);
 
     std::unique_ptr<Shader> shader = TryLoadingShader(stage_name, false, &error);
@@ -440,7 +432,7 @@ void PostProcessing::Chain::LoadStages()
       return;
     }
 
-    lock.lock();
+    settings_lock.lock();
     shader->LoadOptions(si, GetStageConfigSection(m_section, i));
     m_stages.push_back(std::move(shader));
 
@@ -451,7 +443,7 @@ void PostProcessing::Chain::LoadStages()
     DEV_LOG("Loaded {} post-processing stages.", stage_count);
 
   // precompile shaders
-  if (!IsInternalChain() && g_gpu_device && g_gpu_device->HasMainSwapChain())
+  if (preload_swap_chain_size && g_gpu_device && g_gpu_device->HasMainSwapChain())
   {
     CheckTargets(g_gpu_device->GetMainSwapChain()->GetFormat(), g_gpu_device->GetMainSwapChain()->GetWidth(),
                  g_gpu_device->GetMainSwapChain()->GetHeight(), &progress);
@@ -465,15 +457,8 @@ void PostProcessing::Chain::LoadStages()
     DEV_LOG("Depth buffer is needed.");
 }
 
-void PostProcessing::Chain::ClearStages()
+void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si)
 {
-  decltype(m_stages)().swap(m_stages);
-}
-
-void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& settings_lock)
-{
-  SettingsInterface& si = GetLoadSettingsInterface(m_section);
-
   m_enabled = si.GetBoolValue(m_section, "Enabled", false);
 
   const u32 stage_count = Config::GetStageCount(si, m_section);
@@ -577,45 +562,6 @@ bool PostProcessing::Chain::CheckTargets(GPUTexture::Format target_format, u32 t
 
   Error error;
 
-  if (!IsInternalChain() && (!m_rotated_copy_pipeline || m_target_format != target_format))
-  {
-    const RenderAPI rapi = g_gpu_device->GetRenderAPI();
-    const ShaderGen shadergen(rapi, ShaderGen::GetShaderLanguageForAPI(rapi), false, false);
-    const std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                                      shadergen.GenerateRotateVertexShader(), &error);
-    const std::unique_ptr<GPUShader> fso = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                                                      shadergen.GenerateRotateFragmentShader(), &error);
-    if (!vso || !fso)
-    {
-      ERROR_LOG("Failed to compile post-processing rotate shaders: {}", error.GetDescription());
-      return false;
-    }
-    GL_OBJECT_NAME(vso, "Post-processing rotate blit VS");
-    GL_OBJECT_NAME(vso, "Post-processing rotate blit FS");
-
-    const GPUPipeline::GraphicsConfig config = {.layout = GPUPipeline::Layout::SingleTextureAndPushConstants,
-                                                .primitive = GPUPipeline::Primitive::Triangles,
-                                                .input_layout = {},
-                                                .rasterization = GPUPipeline::RasterizationState::GetNoCullState(),
-                                                .depth = GPUPipeline::DepthState::GetNoTestsState(),
-                                                .blend = GPUPipeline::BlendState::GetNoBlendingState(),
-                                                .vertex_shader = vso.get(),
-                                                .geometry_shader = nullptr,
-                                                .fragment_shader = fso.get(),
-                                                .color_formats = {target_format},
-                                                .depth_format = GPUTexture::Format::Unknown,
-                                                .samples = 1,
-                                                .per_sample_shading = false,
-                                                .render_pass_flags = GPUPipeline::NoRenderPassFlags};
-    m_rotated_copy_pipeline = g_gpu_device->CreatePipeline(config, &error);
-    if (!m_rotated_copy_pipeline)
-    {
-      ERROR_LOG("Failed to compile post-processing rotate pipeline: {}", error.GetDescription());
-      return false;
-    }
-    GL_OBJECT_NAME(m_rotated_copy_pipeline, "Post-processing rotate pipeline");
-  }
-
   // In case any allocs fail.
   DestroyTextures();
 
@@ -677,11 +623,6 @@ void PostProcessing::Chain::DestroyTextures()
   g_gpu_device->RecycleTexture(std::move(m_input_texture));
 }
 
-void PostProcessing::Chain::DestroyPipelines()
-{
-  m_rotated_copy_pipeline.reset();
-}
-
 GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, GPUTexture* input_depth,
                                                       GPUTexture* final_target, GSVector4i final_rect, s32 orig_width,
                                                       s32 orig_height, s32 native_width, s32 native_height)
@@ -693,25 +634,14 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
   if (input_depth)
     input_depth->MakeReadyForSampling();
 
-  GPUTexture* draw_final_target = final_target;
-  const WindowInfo::PreRotation prerotation =
-    final_target ? WindowInfo::PreRotation::Identity : g_gpu_device->GetMainSwapChain()->GetPreRotation();
-  if (prerotation != WindowInfo::PreRotation::Identity)
-  {
-    // We have prerotation and post processing. This is messy, since we need to run the shader on the "real" size,
-    // then copy it across to the rotated image. We can use the input or output texture from the chain, whichever
-    // was not the last that was drawn to.
-    draw_final_target = GetTextureUnusedAtEndOfChain();
-  }
-
   const float time = static_cast<float>(Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_start_time));
   for (const std::unique_ptr<Shader>& stage : m_stages)
   {
     const bool is_final = (stage.get() == m_stages.back().get());
 
     if (const GPUDevice::PresentResult pres =
-          stage->Apply(input_color, input_depth, is_final ? draw_final_target : output, final_rect, orig_width,
-                       orig_height, native_width, native_height, m_target_width, m_target_height, time);
+          stage->Apply(input_color, input_depth, is_final ? final_target : output, final_rect, orig_width, orig_height,
+                       native_width, native_height, m_target_width, m_target_height, time);
         pres != GPUDevice::PresentResult::OK)
     {
       return pres;
@@ -725,78 +655,7 @@ GPUDevice::PresentResult PostProcessing::Chain::Apply(GPUTexture* input_color, G
     }
   }
 
-  if (prerotation != WindowInfo::PreRotation::Identity)
-  {
-    draw_final_target->MakeReadyForSampling();
-
-    // Rotate and blit to final swap chain.
-    GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
-    if (const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(swap_chain);
-        pres != GPUDevice::PresentResult::OK)
-    {
-      return pres;
-    }
-
-    GL_PUSH_FMT("Apply swap chain pre-rotation");
-
-    const GSMatrix2x2 rotmat = GSMatrix2x2::Rotation(WindowInfo::GetZRotationForPreRotation(prerotation));
-    g_gpu_device->SetPipeline(m_rotated_copy_pipeline.get());
-    g_gpu_device->PushUniformBuffer(&rotmat, sizeof(rotmat));
-    g_gpu_device->SetTextureSampler(0, draw_final_target, g_gpu_device->GetNearestSampler());
-    g_gpu_device->SetViewportAndScissor(0, 0, swap_chain->GetPostRotatedWidth(), swap_chain->GetPostRotatedHeight());
-    g_gpu_device->Draw(3, 0);
-
-    GL_POP();
-  }
-
   return GPUDevice::PresentResult::OK;
-}
-
-void PostProcessing::Initialize()
-{
-  DisplayChain.LoadStages();
-  InternalChain.LoadStages();
-  s_start_time = Timer::GetCurrentValue();
-}
-
-void PostProcessing::UpdateSettings()
-{
-  auto lock = Host::GetSettingsLock();
-  ForAllChains([&lock](Chain& chain) { chain.UpdateSettings(lock); });
-}
-
-void PostProcessing::Shutdown()
-{
-  g_gpu_device->RecycleTexture(std::move(s_dummy_texture));
-  s_samplers.clear();
-  ForAllChains([](Chain& chain) {
-    chain.ClearStages();
-    chain.DestroyPipelines();
-    chain.DestroyTextures();
-  });
-}
-
-bool PostProcessing::ReloadShaders()
-{
-  if (!DisplayChain.HasStages() && !InternalChain.HasStages())
-  {
-    Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
-                            TRANSLATE_STR("OSDMessage", "No post-processing shaders are selected."),
-                            Host::OSD_QUICK_DURATION);
-    return false;
-  }
-
-  ForAllChains([](Chain& chain) {
-    chain.ClearStages();
-    chain.DestroyPipelines();
-    chain.DestroyTextures();
-    chain.LoadStages();
-  });
-  s_start_time = Timer::GetCurrentValue();
-
-  Host::AddIconOSDMessage("PostProcessing", ICON_FA_PAINT_ROLLER,
-                          TRANSLATE_STR("OSDMessage", "Post-processing shaders reloaded."), Host::OSD_QUICK_DURATION);
-  return true;
 }
 
 std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const std::string& shader_name,
@@ -867,44 +726,4 @@ std::unique_ptr<PostProcessing::Shader> PostProcessing::TryLoadingShader(const s
 
   Error::SetStringFmt(error, "Failed to locate shader '{}'", shader_name);
   return {};
-}
-
-SettingsInterface& PostProcessing::GetLoadSettingsInterface(const char* section)
-{
-  // If PostProcessing/Enable is set in the game settings interface, use that.
-  // Otherwise, use the base settings.
-
-  SettingsInterface* game_si = Host::Internal::GetGameSettingsLayer();
-  if (game_si && game_si->ContainsValue(section, "Enabled"))
-    return *game_si;
-  else
-    return *Host::Internal::GetBaseSettingsLayer();
-}
-
-GPUSampler* PostProcessing::GetSampler(const GPUSampler::Config& config)
-{
-  auto it = s_samplers.find(config.key);
-  if (it != s_samplers.end())
-    return it->second.get();
-
-  std::unique_ptr<GPUSampler> sampler = g_gpu_device->CreateSampler(config);
-  if (!sampler)
-    ERROR_LOG("Failed to create GPU sampler with config={:X}", config.key);
-
-  it = s_samplers.emplace(config.key, std::move(sampler)).first;
-  return it->second.get();
-}
-
-GPUTexture* PostProcessing::GetDummyTexture()
-{
-  if (s_dummy_texture)
-    return s_dummy_texture.get();
-
-  const u32 zero = 0;
-  s_dummy_texture = g_gpu_device->FetchTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-                                               GPUTexture::Flags::None, &zero, sizeof(zero));
-  if (!s_dummy_texture)
-    ERROR_LOG("Failed to create dummy texture.");
-
-  return s_dummy_texture.get();
 }

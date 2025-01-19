@@ -146,7 +146,7 @@ void SettingsWindow::addPages()
     tr("<strong>Post-Processing Settings</strong><hr>Post processing allows you to alter the appearance of the image "
        "displayed on the screen with various filters. Shaders will be executed in sequence. Additional shaders can be "
        "downloaded from <a href=\"%1\">%1</a>.")
-      .arg("https://github.com/duckstation/shaders"));
+      .arg("https://github.com/stenzek/emu-shaders"));
   addWidget(
     m_audio_settings = new AudioSettingsWidget(this, m_ui.settingsContainer), tr("Audio"),
     QStringLiteral("volume-up-line"),

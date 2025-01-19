@@ -68,11 +68,15 @@ const WindowInfo& GetRenderWindowInfo();
 
 void UpdateSettings(bool gpu_settings_changed, bool device_settings_changed);
 
+/// Triggers an abnormal system shutdown and waits for it to destroy the backend.
+void ReportFatalErrorAndShutdown(std::string_view reason);
+
 bool IsOnThread();
 bool IsUsingThread();
 void RunOnThread(AsyncCallType func);
 void RunOnBackend(AsyncBackendCallType func, bool sync, bool spin_or_wake);
 std::pair<GPUThreadCommand*, void*> BeginASyncBufferCall(AsyncBufferCallType func, u32 buffer_size);
+void EndASyncBufferCall(GPUThreadCommand* cmd);
 void SetVSync(GPUVSyncMode mode, bool allow_present_throttle);
 
 // Should only be called on the GPU thread.
@@ -88,7 +92,6 @@ void PushCommandAndWakeThread(GPUThreadCommand* cmd);
 void PushCommandAndSync(GPUThreadCommand* cmd, bool spin);
 void SyncGPUThread(bool spin);
 
-// NOTE: Only called by GPUBackend
 namespace Internal {
 const Threading::ThreadHandle& GetThreadHandle();
 void ProcessStartup();
@@ -96,8 +99,7 @@ void SetThreadEnabled(bool enabled);
 void DoRunIdle();
 void RequestShutdown();
 void GPUThreadEntryPoint();
-void PresentFrame(bool allow_skip_present, u64 present_time);
-void RestoreContextAfterPresent();
+bool PresentFrameAndRestoreContext();
 } // namespace Internal
 } // namespace GPUThread
 

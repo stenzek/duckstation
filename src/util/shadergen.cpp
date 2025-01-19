@@ -793,40 +793,6 @@ void ShaderGen::DeclareFragmentEntryPoint(
   }
 }
 
-std::string ShaderGen::GenerateRotateVertexShader() const
-{
-  std::stringstream ss;
-  WriteHeader(ss);
-  DeclareUniformBuffer(ss, { "float2 u_rotation_matrix0", "float2 u_rotation_matrix1" }, true);
-  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
-  ss << "{\n";
-  ss << "  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));\n";
-  ss << "  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);\n";
-  ss << "  v_pos.xy = float2(dot(u_rotation_matrix0, v_pos.xy), dot(u_rotation_matrix1, v_pos.xy));\n";
-  ss << "  #if API_OPENGL || API_OPENGL_ES || API_VULKAN\n";
-  ss << "    v_pos.y = -v_pos.y;\n";
-  ss << "  #endif\n";
-  ss << "}\n";
-
-  return ss.str();
-}
-
-std::string ShaderGen::GenerateRotateFragmentShader() const
-{
-  std::stringstream ss;
-  WriteHeader(ss);
-  DeclareTexture(ss, "samp0", 0);
-  DeclareFragmentEntryPoint(ss, 0, 1);
-
-  ss << R"(
-{
-  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);
-}
-)";
-
-  return ss.str();
-}
-
 std::string ShaderGen::GenerateScreenQuadVertexShader(float z /* = 0.0f */) const
 {
   std::stringstream ss;
@@ -879,20 +845,47 @@ std::string ShaderGen::GenerateFillFragmentShader() const
   return ss.str();
 }
 
-std::string ShaderGen::GenerateCopyFragmentShader() const
+std::string ShaderGen::GenerateFillFragmentShader(const GSVector4i fixed_color) const
 {
   std::stringstream ss;
   WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float4 u_src_rect"}, true);
+  DeclareFragmentEntryPoint(ss, 0, 0);
+
+  ss << "{\n";
+  ss << "  o_col0 = float4(" << std::fixed << fixed_color.x << ", " << fixed_color.y << ", " << fixed_color.z << ", "
+     << fixed_color.w << ");\n";
+  ss << "}\n";
+
+  return ss.str();
+}
+
+std::string ShaderGen::GenerateCopyFragmentShader(bool offset) const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  if (offset)
+    DeclareUniformBuffer(ss, {"float4 u_src_rect"}, true);
+
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1);
 
-  ss << R"(
+  if (offset)
+  {
+    ss << R"(
 {
   float2 coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
   o_col0 = SAMPLE_TEXTURE(samp0, coords);
 }
 )";
+  }
+  else
+  {
+    ss << R"(
+{
+  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0);
+}
+)";
+  }
 
   return ss.str();
 }

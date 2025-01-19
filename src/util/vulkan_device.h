@@ -222,6 +222,7 @@ public:
   void DeferPipelineDestruction(VkPipeline object);
   void DeferBufferViewDestruction(VkBufferView object);
   void DeferPersistentDescriptorSetDestruction(VkDescriptorSet object);
+  void DeferSamplerDestruction(VkSampler object);
 
   // Wait for a fence to be completed.
   // Also invokes callbacks for completion.
@@ -315,7 +316,6 @@ private:
   };
 
   using CleanupObjectFunction = void (*)(VulkanDevice& dev, void* obj);
-  using SamplerMap = std::unordered_map<u64, VkSampler>;
 
   // Helper method to create a Vulkan instance.
   static VkInstance CreateVulkanInstance(const WindowInfo& wi, OptionalExtensions* oe, bool enable_debug_utils,
@@ -363,8 +363,6 @@ private:
   void DestroyPipelineLayouts();
   bool CreatePersistentDescriptorSets();
   void DestroyPersistentDescriptorSets();
-  VkSampler GetSampler(const GPUSampler::Config& config, Error* error = nullptr);
-  void DestroySamplers();
 
   void RenderBlankFrame(VulkanSwapChain* swap_chain);
 
@@ -437,8 +435,6 @@ private:
   OptionalExtensions m_optional_extensions = {};
   std::optional<bool> m_exclusive_fullscreen_control;
 
-  std::unique_ptr<VulkanTexture> m_null_texture;
-
   VkDescriptorSetLayout m_ubo_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_single_texture_ds_layout = VK_NULL_HANDLE;
   VkDescriptorSetLayout m_single_texture_buffer_ds_layout = VK_NULL_HANDLE;
@@ -456,8 +452,6 @@ private:
 
   VkDescriptorSet m_ubo_descriptor_set = VK_NULL_HANDLE;
   u32 m_uniform_buffer_position = 0;
-
-  SamplerMap m_sampler_map;
 
   // Which bindings/state has to be updated before the next draw.
   u32 m_dirty_flags = ALL_DIRTY_STATE;

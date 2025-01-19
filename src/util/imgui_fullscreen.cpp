@@ -124,15 +124,16 @@ struct ALIGN_TO_CACHE_LINE UIState
   SmallString last_fullscreen_footer_text;
   std::vector<std::pair<std::string_view, std::string_view>> fullscreen_footer_icon_mapping;
   float fullscreen_text_change_time;
+  float fullscreen_text_alpha;
 
-  bool choice_dialog_open = false;
-  bool choice_dialog_checkable = false;
   std::string choice_dialog_title;
   ChoiceDialogOptions choice_dialog_options;
   ChoiceDialogCallback choice_dialog_callback;
   ImGuiID enum_choice_button_id = 0;
   s32 enum_choice_button_value = 0;
   bool enum_choice_button_set = false;
+  bool choice_dialog_open = false;
+  bool choice_dialog_checkable = false;
 
   bool input_dialog_open = false;
   std::string input_dialog_title;
@@ -156,6 +157,7 @@ struct ALIGN_TO_CACHE_LINE UIState
 
   bool file_selector_open = false;
   bool file_selector_directory = false;
+  bool file_selector_directory_changed = false;
   std::string file_selector_title;
   ImGuiFullscreen::FileSelectorCallback file_selector_callback;
   std::string file_selector_current_directory;
@@ -373,6 +375,10 @@ GPUTexture* ImGuiFullscreen::GetCachedTexture(std::string_view name)
 
 GPUTexture* ImGuiFullscreen::GetCachedTexture(std::string_view name, u32 svg_width, u32 svg_height)
 {
+  // ignore size hints if it's not needed, don't duplicate
+  if (!TextureNeedsSVGDimensions(name))
+    return GetCachedTexture(name);
+
   svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
   svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
 
@@ -412,9 +418,16 @@ GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name)
   return tex_ptr->get();
 }
 
-bool ImGuiFullscreen::InvalidateCachedTexture(const std::string& path)
+bool ImGuiFullscreen::InvalidateCachedTexture(std::string_view path)
 {
-  return s_state.texture_cache.Remove(path);
+  // need to do a partial match on this because SVG
+  return (s_state.texture_cache.RemoveMatchingItems([&path](const std::string& key) { return key.starts_with(path); }) >
+          0);
+}
+
+bool ImGuiFullscreen::TextureNeedsSVGDimensions(std::string_view path)
+{
+  return StringUtil::EndsWithNoCase(Path::GetExtension(path), "svg");
 }
 
 void ImGuiFullscreen::UploadAsyncTextures()
@@ -838,14 +851,17 @@ void ImGuiFullscreen::CreateFooterTextString(SmallStringBase& dest,
   }
 }
 
-void ImGuiFullscreen::SetFullscreenFooterText(std::string_view text)
+void ImGuiFullscreen::SetFullscreenFooterText(std::string_view text, float background_alpha)
 {
   s_state.fullscreen_footer_text.assign(text);
+  s_state.fullscreen_text_alpha = background_alpha;
 }
 
-void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items)
+void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items,
+                                              float background_alpha)
 {
   CreateFooterTextString(s_state.fullscreen_footer_text, items);
+  s_state.fullscreen_text_alpha = background_alpha;
 }
 
 void ImGuiFullscreen::SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping)
@@ -876,8 +892,8 @@ void ImGuiFullscreen::DrawFullscreenFooter()
   const float height = LayoutScale(LAYOUT_FOOTER_HEIGHT);
 
   ImDrawList* dl = ImGui::GetForegroundDrawList();
-  dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize, ImGui::GetColorU32(UIStyle.PrimaryColor),
-                    0.0f);
+  dl->AddRectFilled(ImVec2(0.0f, io.DisplaySize.y - height), io.DisplaySize,
+                    ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, s_state.fullscreen_text_alpha)), 0.0f);
 
   ImFont* const font = UIStyle.MediumFont;
   const float max_width = io.DisplaySize.x - padding * 2.0f;
@@ -923,6 +939,9 @@ void ImGuiFullscreen::DrawFullscreenFooter()
                                           UIStyle.PrimaryTextColor.z, 1.0f - prev_opacity)),
                 s_state.fullscreen_footer_text.c_str(), s_state.fullscreen_footer_text.end_ptr());
   }
+
+  // for next frame
+  s_state.fullscreen_text_alpha = 1.0f;
 }
 
 void ImGuiFullscreen::PrerenderMenuButtonBorder()
@@ -2264,12 +2283,12 @@ void ImGuiFullscreen::OpenFileSelector(std::string_view title, bool select_direc
 
   s_state.file_selector_open = true;
   s_state.file_selector_directory = select_directory;
+  s_state.file_selector_directory_changed = true;
   s_state.file_selector_title = fmt::format("{}##file_selector", title);
   s_state.file_selector_callback = std::move(callback);
   s_state.file_selector_filters = std::move(filters);
 
   SetFileSelectorDirectory(std::move(initial_directory));
-  QueueResetFocus(FocusResetType::PopupOpened);
 }
 
 void ImGuiFullscreen::CloseFileSelector()
@@ -2282,6 +2301,7 @@ void ImGuiFullscreen::CloseFileSelector()
 
   s_state.file_selector_open = false;
   s_state.file_selector_directory = false;
+  s_state.file_selector_directory_changed = false;
   std::string().swap(s_state.file_selector_title);
   FileSelectorCallback().swap(s_state.file_selector_callback);
   FileSelectorFilters().swap(s_state.file_selector_filters);
@@ -2318,6 +2338,12 @@ void ImGuiFullscreen::DrawFileSelector()
                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
     ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
+
+    if (s_state.file_selector_directory_changed)
+    {
+      s_state.file_selector_directory_changed = false;
+      QueueResetFocus(FocusResetType::Other);
+    }
 
     ResetFocusHere();
     BeginMenuButtons();
@@ -2362,23 +2388,29 @@ void ImGuiFullscreen::DrawFileSelector()
   {
     if (selected->is_file)
     {
-      s_state.file_selector_callback(selected->full_path);
+      std::string path = std::move(selected->full_path);
+      const FileSelectorCallback callback = std::move(s_state.file_selector_callback);
+      CloseFileSelector();
+      callback(std::move(path));
     }
     else
     {
       SetFileSelectorDirectory(std::move(selected->full_path));
-      QueueResetFocus(FocusResetType::Other);
+      s_state.file_selector_directory_changed = true;
     }
   }
   else if (directory_selected)
   {
-    s_state.file_selector_callback(s_state.file_selector_current_directory);
+    std::string path = std::move(s_state.file_selector_current_directory);
+    const FileSelectorCallback callback = std::move(s_state.file_selector_callback);
+    CloseFileSelector();
+    callback(std::move(path));
   }
   else if (!is_open)
   {
-    std::string no_path;
-    s_state.file_selector_callback(no_path);
+    const FileSelectorCallback callback = std::move(s_state.file_selector_callback);
     CloseFileSelector();
+    callback(std::string());
   }
   else
   {
@@ -2388,7 +2420,7 @@ void ImGuiFullscreen::DrawFileSelector()
           s_state.file_selector_items.front().display_name == ICON_FA_FOLDER_OPEN "  <Parent Directory>")
       {
         SetFileSelectorDirectory(std::move(s_state.file_selector_items.front().full_path));
-        QueueResetFocus(FocusResetType::Other);
+        s_state.file_selector_directory_changed = true;
       }
     }
   }
@@ -2512,14 +2544,26 @@ void ImGuiFullscreen::DrawChoiceDialog()
 
   if (choice >= 0)
   {
-    const auto& option = s_state.choice_dialog_options[choice];
-    s_state.choice_dialog_callback(choice, option.first, option.second);
+    // immediately close dialog when selecting, save the callback doing it. have to take a copy in this instance,
+    // because the callback may open another dialog, and we don't want to close that one.
+    if (!s_state.choice_dialog_checkable)
+    {
+      auto option = std::move(s_state.choice_dialog_options[choice]);
+      const ChoiceDialogCallback callback = std::move(s_state.choice_dialog_callback);
+      CloseChoiceDialog();
+      callback(choice, option.first, option.second);
+    }
+    else
+    {
+      const auto& option = s_state.choice_dialog_options[choice];
+      s_state.choice_dialog_callback(choice, option.first, option.second);
+    }
   }
   else if (!is_open)
   {
-    std::string no_string;
-    s_state.choice_dialog_callback(-1, no_string, false);
+    const ChoiceDialogCallback callback = std::move(s_state.choice_dialog_callback);
     CloseChoiceDialog();
+    callback(-1, std::string(), false);
   }
   else
   {

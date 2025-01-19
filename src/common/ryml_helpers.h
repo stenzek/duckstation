@@ -1,7 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "log.h"
 #include "types.h"
+#include "string_util.h"
 
 #include "ryml.hpp"
 
@@ -10,23 +12,22 @@
 
 // RapidYAML utility routines.
 
-[[maybe_unused]] ALWAYS_INLINE std::string_view to_stringview(const c4::csubstr& s)
+static inline std::string_view to_stringview(const c4::csubstr& s)
 {
   return std::string_view(s.data(), s.size());
 }
 
-[[maybe_unused]] ALWAYS_INLINE std::string_view to_stringview(const c4::substr& s)
+static inline std::string_view to_stringview(const c4::substr& s)
 {
   return std::string_view(s.data(), s.size());
 }
 
-[[maybe_unused]] ALWAYS_INLINE c4::csubstr to_csubstr(std::string_view sv)
+static inline c4::csubstr to_csubstr(std::string_view sv)
 {
   return c4::csubstr(sv.data(), sv.length());
 }
 
-[[maybe_unused]] static bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key,
-                                                 std::string* dest)
+static inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key, std::string* dest)
 {
   dest->clear();
 
@@ -41,8 +42,7 @@
   return true;
 }
 
-[[maybe_unused]] static bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key,
-                                                 std::string_view* dest)
+static inline bool GetStringFromObject(const ryml::ConstNodeRef& object, std::string_view key, std::string_view* dest)
 {
   const ryml::ConstNodeRef member = object.find_child(to_csubstr(key));
   if (!member.valid())
@@ -56,7 +56,7 @@
 }
 
 template<typename T>
-[[maybe_unused]] static bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view key, T* dest)
+static inline bool GetUIntFromObject(const ryml::ConstNodeRef& object, std::string_view key, T* dest)
 {
   *dest = 0;
 
@@ -67,14 +67,15 @@ template<typename T>
   const c4::csubstr val = member.val();
   if (val.empty())
   {
-    ERROR_LOG("Unexpected empty value in {}", key);
+    Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}", key);
     return false;
   }
 
   const std::optional<T> opt_value = StringUtil::FromChars<T>(to_stringview(val));
   if (!opt_value.has_value())
   {
-    ERROR_LOG("Unexpected non-uint value in {}", key);
+    Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected non-uint value in {}",
+                   key);
     return false;
   }
 
@@ -83,7 +84,7 @@ template<typename T>
 }
 
 template<typename T>
-[[maybe_unused]] static std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key)
+static inline std::optional<T> GetOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key)
 {
   std::optional<T> ret;
 
@@ -97,14 +98,21 @@ template<typename T>
       if (!ret.has_value())
       {
         if constexpr (std::is_floating_point_v<T>)
-          ERROR_LOG("Unexpected non-float value in {}", key);
+        {
+          Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
+                         "Unexpected non-float value in {}", key);
+        }
         else if constexpr (std::is_integral_v<T>)
-          ERROR_LOG("Unexpected non-int value in {}", key);
+        {
+          Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
+                         "Unexpected non-int value in {}", key);
+        }
       }
     }
     else
     {
-      ERROR_LOG("Unexpected empty value in {}", key);
+      Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}",
+                     key);
     }
   }
 
@@ -112,9 +120,8 @@ template<typename T>
 }
 
 template<typename T>
-[[maybe_unused]] static std::optional<T>
-ParseOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key,
-                         std::optional<T> (*from_string_function)(const char* str))
+static inline std::optional<T> ParseOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key,
+                                                        std::optional<T> (*from_string_function)(const char* str))
 {
   std::optional<T> ret;
 
@@ -126,13 +133,30 @@ ParseOptionalTFromObject(const ryml::ConstNodeRef& object, std::string_view key,
     {
       ret = from_string_function(TinyString(to_stringview(val)));
       if (!ret.has_value())
-        ERROR_LOG("Unknown value for {}: {}", key, to_stringview(val));
+        Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unknown value for {}: {}", key,
+                       to_stringview(val));
     }
     else
     {
-      ERROR_LOG("Unexpected empty value in {}", key);
+      Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "Unexpected empty value in {}",
+                     key);
     }
   }
 
   return ret;
+}
+
+static inline void SetRymlCallbacks()
+{
+  ryml::Callbacks callbacks = ryml::get_callbacks();
+  callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
+    Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange,
+                   "YAML parse error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset,
+                   std::string_view(msg, msg_len));
+  };
+  ryml::set_callbacks(callbacks);
+  c4::set_error_callback([](const char* msg, size_t msg_size) {
+    Log::FastWrite(Log::Channel::Log, Log::Level::Error, Log::Color::StrongOrange, "C4 error: {}",
+                   std::string_view(msg, msg_size));
+  });
 }

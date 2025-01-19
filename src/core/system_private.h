@@ -50,6 +50,9 @@ void DisplayWindowResized();
 /// Updates the internal GTE aspect ratio. Use with "match display" aspect ratio setting.
 void UpdateGTEAspectRatio();
 
+/// Immediately terminates the virtual machine, no state is saved.
+void AbnormalShutdown(const std::string_view reason);
+
 /// Performs mandatory hardware checks.
 bool PerformEarlyHardwareChecks(Error* error);
 
@@ -60,7 +63,7 @@ bool ProcessStartup(Error* error);
 void ProcessShutdown();
 
 /// Called on CPU thread initialization.
-bool CPUThreadInitialize(Error* error);
+bool CPUThreadInitialize(Error* error, u32 async_worker_thread_count);
 
 /// Called on CPU thread shutdown.
 void CPUThreadShutdown();
@@ -95,6 +98,9 @@ void OnSystemPaused();
 
 /// Called when the VM is resumed after being paused.
 void OnSystemResumed();
+
+/// Called when the VM abnormally exits because an error has occurred, and it cannot continue.
+void OnSystemAbnormalShutdown(const std::string_view reason);
 
 /// Called when performance metrics are updated, approximately once a second.
 void OnPerformanceCountersUpdated(const GPUBackend* gpu_backend);

@@ -106,7 +106,7 @@ std::string GPUShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
   ss << R"(
 {
   uint2 fcoord = uint2(v_pos.xy);
-  if ((fcoord.y & 1) != u_render_field)
+  if ((fcoord.y & 1u) != u_render_field)
     discard;
 
   uint2 tcoord = u_src_offset + uint2(fcoord.x, (fcoord.y / 2u));

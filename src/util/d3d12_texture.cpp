@@ -699,7 +699,8 @@ D3D12Sampler::D3D12Sampler(D3D12DescriptorHandle descriptor) : m_descriptor(desc
 
 D3D12Sampler::~D3D12Sampler()
 {
-  // Cleaned up by main class.
+  D3D12Device& dev = D3D12Device::GetInstance();
+  dev.DeferDescriptorDestruction(dev.GetSamplerHeapManager(), &m_descriptor);
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
@@ -710,12 +711,8 @@ void D3D12Sampler::SetDebugName(std::string_view name)
 
 #endif
 
-D3D12DescriptorHandle D3D12Device::GetSampler(const GPUSampler::Config& config, Error* error)
+std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
 {
-  const auto it = m_sampler_map.find(config.key);
-  if (it != m_sampler_map.end())
-    return it->second;
-
   static constexpr std::array<D3D12_TEXTURE_ADDRESS_MODE, static_cast<u8>(GPUSampler::AddressMode::MaxCount)> ta = {{
     D3D12_TEXTURE_ADDRESS_MODE_WRAP,   // Repeat
     D3D12_TEXTURE_ADDRESS_MODE_CLAMP,  // ClampToEdge
@@ -756,31 +753,15 @@ D3D12DescriptorHandle D3D12Device::GetSampler(const GPUSampler::Config& config, 
 
   D3D12DescriptorHandle handle;
   if (m_sampler_heap_manager.Allocate(&handle)) [[likely]]
-    m_device->CreateSampler(&desc, handle);
-  else
-    Error::SetStringView(error, "Failed to allocate sampler handle.");
-
-  m_sampler_map.emplace(config.key, handle);
-  return handle;
-}
-
-void D3D12Device::DestroySamplers()
-{
-  for (auto& it : m_sampler_map)
   {
-    if (it.second)
-      m_sampler_heap_manager.Free(&it.second);
+    m_device->CreateSampler(&desc, handle);
+    return std::unique_ptr<GPUSampler>(new D3D12Sampler(handle));
   }
-  m_sampler_map.clear();
-}
-
-std::unique_ptr<GPUSampler> D3D12Device::CreateSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
-{
-  const D3D12DescriptorHandle handle = GetSampler(config, error);
-  if (!handle)
+  else
+  {
+    Error::SetStringView(error, "Failed to allocate sampler handle.");
     return {};
-
-  return std::unique_ptr<GPUSampler>(new D3D12Sampler(handle));
+  }
 }
 
 D3D12TextureBuffer::D3D12TextureBuffer(Format format, u32 size_in_elements) : GPUTextureBuffer(format, size_in_elements)

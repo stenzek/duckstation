@@ -17,7 +17,7 @@
 class GPU_SW final : public GPUBackend
 {
 public:
-  GPU_SW();
+  GPU_SW(GPUPresenter& presenter);
   ~GPU_SW() override;
 
   bool Initialize(bool upload_vram, Error* error) override;
@@ -27,7 +27,6 @@ public:
 
   u32 GetResolutionScale() const override;
 
-protected:
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering, u8 active_line_lsb) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) override;
@@ -47,7 +46,7 @@ protected:
 
   void ClearVRAM() override;
 
-  void UpdateResolutionScale() override;
+  bool UpdateResolutionScale(Error* error) override;
 
   void LoadState(const GPUBackendLoadStateCommand* cmd) override;
 

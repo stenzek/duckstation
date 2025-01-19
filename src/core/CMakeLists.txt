@@ -57,6 +57,8 @@ add_library(core
   gpu_hw_shadergen.h
   gpu_hw_texture_cache.cpp
   gpu_hw_texture_cache.h
+  gpu_presenter.cpp
+  gpu_presenter.h
   gpu_shadergen.cpp
   gpu_shadergen.h
   gpu_sw.cpp

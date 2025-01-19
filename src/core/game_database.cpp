@@ -16,6 +16,7 @@
 #include "common/heterogeneous_containers.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/ryml_helpers.h"
 #include "common/string_util.h"
 #include "common/timer.h"
 
@@ -34,8 +35,6 @@
 
 LOG_CHANNEL(GameDatabase);
 
-#include "common/ryml_helpers.h"
-
 namespace GameDatabase {
 
 enum : u32
@@ -49,7 +48,6 @@ static const Entry* GetEntryForId(std::string_view code);
 static bool LoadFromCache();
 static bool SaveToCache();
 
-static void SetRymlCallbacks();
 static bool LoadGameDBYaml();
 static bool ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value);
 static bool ParseYamlCodes(PreferUnorderedStringMap<std::string_view>& lookup, const ryml::ConstNodeRef& value,
@@ -1107,17 +1105,6 @@ bool GameDatabase::SaveToCache()
   }
 
   return true;
-}
-
-void GameDatabase::SetRymlCallbacks()
-{
-  ryml::Callbacks callbacks = ryml::get_callbacks();
-  callbacks.m_error = [](const char* msg, size_t msg_len, ryml::Location loc, void* userdata) {
-    ERROR_LOG("Parse error at {}:{} (bufpos={}): {}", loc.line, loc.col, loc.offset, std::string_view(msg, msg_len));
-  };
-  ryml::set_callbacks(callbacks);
-  c4::set_error_callback(
-    [](const char* msg, size_t msg_size) { ERROR_LOG("C4 error: {}", std::string_view(msg, msg_size)); });
 }
 
 bool GameDatabase::LoadGameDBYaml()

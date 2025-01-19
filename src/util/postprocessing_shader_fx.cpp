@@ -1258,7 +1258,7 @@ bool PostProcessing::ReShadeFXShader::CreatePasses(GPUTexture::Format backbuffer
 
         DEV_LOG("Pass {} Texture {} => {}", pi.name, tb.texture_name, sampler.texture_id);
 
-        sampler.sampler = GetSampler(MapSampler(sb));
+        sampler.sampler = g_gpu_device->GetSampler(MapSampler(sb));
         if (!sampler.sampler)
         {
           Error::SetString(error, "Failed to create sampler.");
@@ -1303,7 +1303,7 @@ GPUTexture* PostProcessing::ReShadeFXShader::GetTextureByID(TextureID id, GPUTex
     }
     else if (id == INPUT_DEPTH_TEXTURE)
     {
-      return input_depth ? input_depth : GetDummyTexture();
+      return input_depth ? input_depth : g_gpu_device->GetEmptyTexture();
     }
     else if (id == OUTPUT_COLOR_TEXTURE)
     {
@@ -1472,7 +1472,7 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
                                                                 s32 native_height, u32 target_width, u32 target_height,
                                                                 float time)
 {
-  GL_PUSH_FMT("PostProcessingShaderFX {}", m_name);
+  GL_SCOPE_FMT("PostProcessingShaderFX {}", m_name);
 
   m_frame_count++;
 
@@ -1764,10 +1764,7 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
       // Special case: drawing to final buffer.
       const GPUDevice::PresentResult pres = g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain());
       if (pres != GPUDevice::PresentResult::OK)
-      {
-        GL_POP();
         return pres;
-      }
     }
     else
     {
@@ -1820,7 +1817,6 @@ GPUDevice::PresentResult PostProcessing::ReShadeFXShader::Apply(GPUTexture* inpu
   for (u32 i = 0; i < GPUDevice::MAX_TEXTURE_SAMPLERS; i++)
     g_gpu_device->SetTextureSampler(i, nullptr, nullptr);
 
-  GL_POP();
   m_frame_timer.Reset();
   return GPUDevice::PresentResult::OK;
 }

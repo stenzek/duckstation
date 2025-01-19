@@ -15,6 +15,10 @@
 #include <tuple>
 #include <utility>
 
+namespace PostProcessing {
+class Chain;
+}
+
 // TODO: Move to cpp
 // TODO: Rename to GPUHWBackend, preserved to avoid conflicts.
 class GPU_HW final : public GPUBackend
@@ -57,7 +61,7 @@ public:
     GSVector4i::cxpr(std::numeric_limits<s32>::max(), std::numeric_limits<s32>::max(), std::numeric_limits<s32>::min(),
                      std::numeric_limits<s32>::min());
 
-  GPU_HW();
+  GPU_HW(GPUPresenter& presenter);
   ~GPU_HW() override;
 
   bool Initialize(bool upload_vram, Error* error) override;
@@ -67,10 +71,10 @@ public:
   void RestoreDeviceContext() override;
   void FlushRender() override;
 
-protected:
-  void UpdateSettings(const GPUSettings& old_settings) override;
+  bool UpdateSettings(const GPUSettings& old_settings, Error* error) override;
+  void UpdatePostProcessingSettings(bool force_reload) override;
 
-  void UpdateResolutionScale() override;
+  bool UpdateResolutionScale(Error* error) override;
 
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering, u8 active_line_lsb) override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;
@@ -139,7 +143,7 @@ private:
     GPUTransparencyMode transparency_mode;
     bool dithering;
     bool interlacing;
-    bool set_mask_while_drawing;
+    bool set_mask_while_drawing; // NOTE: could be replaced with ubo u_set_mask_while drawing if needed
     bool check_mask_before_draw;
     bool use_depth_buffer;
     bool sprite_mode;
@@ -265,6 +269,8 @@ private:
   void DownsampleFramebufferAdaptive(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
   void DownsampleFramebufferBoxFilter(GPUTexture* source, u32 left, u32 top, u32 width, u32 height);
 
+  void LoadInternalPostProcessing();
+
   std::unique_ptr<GPUTexture> m_vram_texture;
   std::unique_ptr<GPUTexture> m_vram_depth_texture;
   std::unique_ptr<GPUTexture> m_vram_depth_copy_texture;
@@ -361,6 +367,7 @@ private:
   std::unique_ptr<GPUTexture> m_vram_extract_texture;
   std::unique_ptr<GPUTexture> m_vram_extract_depth_texture;
   std::unique_ptr<GPUPipeline> m_copy_depth_pipeline;
+  std::unique_ptr<PostProcessing::Chain> m_internal_postfx;
 
   std::unique_ptr<GPUTexture> m_downsample_texture;
   std::unique_ptr<GPUPipeline> m_downsample_pass_pipeline;

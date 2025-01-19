@@ -141,7 +141,8 @@ std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, u32 svg_width = 0
 GPUTexture* GetCachedTexture(std::string_view name);
 GPUTexture* GetCachedTexture(std::string_view name, u32 svg_width, u32 svg_height);
 GPUTexture* GetCachedTextureAsync(std::string_view name);
-bool InvalidateCachedTexture(const std::string& path);
+bool InvalidateCachedTexture(std::string_view path);
+bool TextureNeedsSVGDimensions(std::string_view path);
 void UploadAsyncTextures();
 
 void BeginLayout();
@@ -194,8 +195,8 @@ void EndFullscreenWindow();
 bool IsGamepadInputSource();
 std::string_view GetControllerIconMapping(std::string_view icon);
 void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<const char*, std::string_view>> items);
-void SetFullscreenFooterText(std::string_view text);
-void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items);
+void SetFullscreenFooterText(std::string_view text, float background_alpha);
+void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items, float background_alpha);
 void SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping);
 void DrawFullscreenFooter();
 
@@ -292,7 +293,7 @@ bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2&
 void EndHorizontalMenu();
 bool HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description);
 
-using FileSelectorCallback = std::function<void(const std::string& path)>;
+using FileSelectorCallback = std::function<void(std::string path)>;
 using FileSelectorFilters = std::vector<std::string>;
 bool IsFileSelectorOpen();
 void OpenFileSelector(std::string_view title, bool select_directory, FileSelectorCallback callback,

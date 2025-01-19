@@ -100,6 +100,13 @@ char (&__countof_ArraySizeHelper(T (&array)[N]))[N];
 #define RESTRICT __restrict__
 #endif
 
+// msvc requires a different attribute, of course
+#ifdef _MSC_VER
+#define NO_UNIQUE_ADDRESS [[msvc::no_unique_address]]
+#else
+#define NO_UNIQUE_ADDRESS [[no_unique_address]]
+#endif
+
 // disable warnings that show up at warning level 4
 // TODO: Move to build system instead
 #ifdef _MSC_VER

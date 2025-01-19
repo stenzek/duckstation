@@ -381,9 +381,10 @@ void Achievements::DownloadImage(std::string url, std::string cache_path)
       return;
     }
 
-    if (!FileSystem::WriteBinaryFile(cache_path.c_str(), data.data(), data.size()))
+    Error write_error;
+    if (!FileSystem::WriteBinaryFile(cache_path.c_str(), data, &write_error))
     {
-      ERROR_LOG("Failed to write badge image to '{}'", cache_path);
+      ERROR_LOG("Failed to write badge image to '{}': {}", cache_path, write_error.GetDescription());
       return;
     }
 
@@ -2711,7 +2712,8 @@ void Achievements::DrawAchievementsWindow()
                std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                               TRANSLATE_SV("Achievements", "View Details")),
                std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                              TRANSLATE_SV("Achievements", "Back"))});
+                              TRANSLATE_SV("Achievements", "Back"))},
+    FullscreenUI::GetBackgroundAlpha());
 
   if (close_window)
     FullscreenUI::ReturnToPreviousWindow();
@@ -3171,7 +3173,8 @@ void Achievements::DrawLeaderboardsWindow()
                  std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                                 TRANSLATE_SV("Achievements", "Open Leaderboard")),
                  std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                                TRANSLATE_SV("Achievements", "Back"))});
+                                TRANSLATE_SV("Achievements", "Back"))},
+      FullscreenUI::GetBackgroundAlpha());
   }
   else
   {
@@ -3258,7 +3261,8 @@ void Achievements::DrawLeaderboardsWindow()
                  std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_A : ICON_PF_ENTER,
                                 TRANSLATE_SV("Achievements", "View Profile")),
                  std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_BUTTON_B : ICON_PF_ESC,
-                                TRANSLATE_SV("Achievements", "Back"))});
+                                TRANSLATE_SV("Achievements", "Back"))},
+      FullscreenUI::GetBackgroundAlpha());
   }
 
   if (close_leaderboard_on_exit)

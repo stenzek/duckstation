@@ -233,10 +233,11 @@ GPUSwapChain::GPUSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode, bool a
 
 GPUSwapChain::~GPUSwapChain() = default;
 
-GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
+GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfo::PreRotation prerotation, const GSVector2i surface_size,
+                                           const GSVector4i& v)
 {
   GSVector4i new_clip;
-  switch (m_window_info.surface_prerotation)
+  switch (prerotation)
   {
     case WindowInfo::PreRotation::Identity:
       new_clip = v;
@@ -245,7 +246,7 @@ GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
     case WindowInfo::PreRotation::Rotate90Clockwise:
     {
       const s32 height = (v.w - v.y);
-      const s32 y = m_window_info.surface_height - v.y - height;
+      const s32 y = surface_size.y - v.y - height;
       new_clip = GSVector4i(y, v.x, y + height, v.z);
     }
     break;
@@ -254,8 +255,8 @@ GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
     {
       const s32 width = (v.z - v.x);
       const s32 height = (v.w - v.y);
-      const s32 x = m_window_info.surface_width - v.x - width;
-      const s32 y = m_window_info.surface_height - v.y - height;
+      const s32 x = surface_size.x - v.x - width;
+      const s32 y = surface_size.y - v.y - height;
       new_clip = GSVector4i(x, y, x + width, y + height);
     }
     break;
@@ -263,7 +264,7 @@ GSVector4i GPUSwapChain::PreRotateClipRect(const GSVector4i& v)
     case WindowInfo::PreRotation::Rotate270Clockwise:
     {
       const s32 width = (v.z - v.x);
-      const s32 x = m_window_info.surface_width - v.x - width;
+      const s32 x = surface_size.x - v.x - width;
       new_clip = GSVector4i(v.y, x, v.w, x + width);
     }
     break;
@@ -649,12 +650,24 @@ bool GPUDevice::GetPipelineCacheData(DynamicHeapArray<u8>* data, Error* error)
 
 bool GPUDevice::CreateResources(Error* error)
 {
-  if (!(m_nearest_sampler = CreateSampler(GPUSampler::GetNearestConfig(), error)) ||
-      !(m_linear_sampler = CreateSampler(GPUSampler::GetLinearConfig(), error)))
+  // Backend may initialize null texture itself if it needs it.
+  if (!m_empty_texture &&
+      !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
+                                       GPUTexture::Flags::None, nullptr, 0, error)))
+  {
+    Error::AddPrefix(error, "Failed to create null texture: ");
+    return false;
+  }
+  GL_OBJECT_NAME(m_empty_texture, "Null Texture");
+
+  if (!(m_nearest_sampler = GetSampler(GPUSampler::GetNearestConfig(), error)) ||
+      !(m_linear_sampler = GetSampler(GPUSampler::GetLinearConfig(), error)))
   {
     Error::AddPrefix(error, "Failed to create samplers: ");
     return false;
   }
+  GL_OBJECT_NAME(m_nearest_sampler, "Nearest Sampler");
+  GL_OBJECT_NAME(m_linear_sampler, "Nearest Sampler");
 
   const RenderAPI render_api = GetRenderAPI();
   ShaderGen shadergen(render_api, ShaderGen::GetShaderLanguageForAPI(render_api), m_features.dual_source_blend,
@@ -711,13 +724,16 @@ bool GPUDevice::CreateResources(Error* error)
 
 void GPUDevice::DestroyResources()
 {
+  m_empty_texture.reset();
+
   m_imgui_font_texture.reset();
   m_imgui_pipeline.reset();
 
   m_imgui_pipeline.reset();
 
-  m_linear_sampler.reset();
-  m_nearest_sampler.reset();
+  m_linear_sampler = nullptr;
+  m_nearest_sampler = nullptr;
+  m_sampler_map.clear();
 
   m_shader_cache.Close();
 }
@@ -736,12 +752,11 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
   SetPipeline(m_imgui_pipeline.get());
   SetViewport(0, 0, swap_chain->GetPostRotatedWidth(), post_rotated_height);
 
+  const bool prerotated = (swap_chain->GetPreRotation() != WindowInfo::PreRotation::Identity);
   GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(
     0.0f, 0.0f, static_cast<float>(swap_chain->GetWidth()), static_cast<float>(swap_chain->GetHeight()), 0.0f, 1.0f);
-  if (swap_chain->GetPreRotation() != WindowInfo::PreRotation::Identity)
-  {
+  if (prerotated)
     mproj = GSMatrix4x4::RotationZ(WindowInfo::GetZRotationForPreRotation(swap_chain->GetPreRotation())) * mproj;
-  }
   PushUniformBuffer(&mproj, sizeof(mproj));
 
   // Render command lists
@@ -766,12 +781,14 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
       }
 
       GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
-      clip = swap_chain->PreRotateClipRect(clip);
+
+      if (prerotated)
+        clip = GPUSwapChain::PreRotateClipRect(swap_chain->GetPreRotation(), swap_chain->GetSizeVec(), clip);
       if (flip)
         clip = FlipToLowerLeft(clip, post_rotated_height);
 
       SetScissor(clip);
-      SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler.get());
+      SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler);
 
       if (pcmd->UserCallback) [[unlikely]]
       {
@@ -1011,6 +1028,25 @@ GSVector4i GPUDevice::FlipToLowerLeft(GSVector4i rc, s32 target_height)
   rc.top = flipped_y;
   rc.bottom = flipped_y + height;
   return rc;
+}
+
+GPUSampler* GPUDevice::GetSampler(const GPUSampler::Config& config, Error* error /* = nullptr */)
+{
+  auto it = m_sampler_map.find(config.key);
+  if (it != m_sampler_map.end())
+  {
+    if (!it->second) [[unlikely]]
+      Error::SetStringView(error, "Sampler previously failed creation.");
+
+    return it->second.get();
+  }
+
+  std::unique_ptr<GPUSampler> sampler = g_gpu_device->CreateSampler(config, error);
+  if (sampler)
+    GL_OBJECT_NAME_FMT(sampler, "Sampler {:016X}", config.key);
+
+  it = m_sampler_map.emplace(config.key, std::move(sampler)).first;
+  return it->second.get();
 }
 
 bool GPUDevice::IsTexturePoolType(GPUTexture::Type type)

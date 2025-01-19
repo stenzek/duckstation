@@ -21,6 +21,7 @@
 #include "core/gpu.h"
 #include "core/gpu_backend.h"
 #include "core/gpu_hw_texture_cache.h"
+#include "core/gpu_presenter.h"
 #include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/imgui_overlays.h"
@@ -76,6 +77,9 @@ LOG_CHANNEL(Host);
 
 static constexpr u32 SETTINGS_VERSION = 3;
 static constexpr u32 SETTINGS_SAVE_DELAY = 1000;
+
+/// Use two async worker threads, should be enough for most tasks.
+static constexpr u32 NUM_ASYNC_WORKER_THREADS = 2;
 
 /// Interval at which the controllers are polled when the system is not active.
 static constexpr u32 BACKGROUND_CONTROLLER_POLLING_INTERVAL = 100;
@@ -348,12 +352,15 @@ bool QtHost::DownloadFile(QWidget* parent, const QString& title, std::string url
 
   // Directory may not exist. Create it.
   const std::string directory(Path::GetDirectory(path));
+  Error error;
   if ((!directory.empty() && !FileSystem::DirectoryExists(directory.c_str()) &&
-       !FileSystem::CreateDirectory(directory.c_str(), true)) ||
-      !FileSystem::WriteBinaryFile(path, data.data(), data.size()))
+       !FileSystem::CreateDirectory(directory.c_str(), true, &error)) ||
+      !FileSystem::WriteBinaryFile(path, data, &error))
   {
     QMessageBox::critical(parent, qApp->translate("QtHost", "Error"),
-                          qApp->translate("QtHost", "Failed to write '%1'.").arg(QString::fromUtf8(path)));
+                          qApp->translate("QtHost", "Failed to write '%1':\n%2")
+                            .arg(QString::fromUtf8(path))
+                            .arg(QString::fromUtf8(error.GetDescription())));
     return false;
   }
 
@@ -806,7 +813,7 @@ void EmuThread::bootOrLoadState(std::string path)
   if (System::IsValid())
   {
     Error error;
-    if (!System::LoadState(path.c_str(), &error, true))
+    if (!System::LoadState(path.c_str(), &error, true, false))
     {
       emit errorReported(tr("Error"),
                          tr("Failed to load state: %1").arg(QString::fromStdString(error.GetDescription())));
@@ -1039,6 +1046,18 @@ void Host::OnSystemDestroyed()
   emit g_emu_thread->systemDestroyed();
 }
 
+void Host::OnSystemAbnormalShutdown(const std::string_view reason)
+{
+  Host::ReportErrorAsync(
+    TRANSLATE_SV("QtHost", "Error"),
+    fmt::format(
+      TRANSLATE_FS("QtHost",
+                   "Unfortunately, the virtual machine has abnormally shut down and cannot be recovered. Please use "
+                   "the available support options for further assistance, and provide information about what you were "
+                   "doing when the error occurred, as well as the details below:\n\n{}"),
+      reason));
+}
+
 void Host::OnGPUThreadRunIdleChanged(bool is_active)
 {
   g_emu_thread->setGPUThreadRunIdle(is_active);
@@ -1257,29 +1276,20 @@ void EmuThread::reloadPostProcessingShaders()
   }
 
   if (System::IsValid())
-  {
-    GPUThread::RunOnThread([]() {
-      if (GPUThread::HasGPUBackend())
-        PostProcessing::ReloadShaders();
-    });
-  }
+    GPUPresenter::ReloadPostProcessingSettings(true, true, true);
 }
 
-void EmuThread::updatePostProcessingSettings()
+void EmuThread::updatePostProcessingSettings(bool display, bool internal, bool force_reload)
 {
   if (!isCurrentThread())
   {
-    QMetaObject::invokeMethod(this, "updatePostProcessingSettings", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(this, "updatePostProcessingSettings", Qt::QueuedConnection, Q_ARG(bool, display),
+                              Q_ARG(bool, internal), Q_ARG(bool, force_reload));
     return;
   }
 
   if (System::IsValid())
-  {
-    GPUThread::RunOnThread([]() {
-      if (GPUThread::HasGPUBackend())
-        PostProcessing::UpdateSettings();
-    });
-  }
+    GPUPresenter::ReloadPostProcessingSettings(display, internal, force_reload);
 }
 
 void EmuThread::clearInputBindStateFromSource(InputBindingKey key)
@@ -1841,7 +1851,7 @@ void EmuThread::run()
   // input source setup must happen on emu thread
   {
     Error startup_error;
-    if (!System::CPUThreadInitialize(&startup_error))
+    if (!System::CPUThreadInitialize(&startup_error, NUM_ASYNC_WORKER_THREADS))
     {
       moveToThread(m_ui_thread);
       Host::ReportFatalError("Fatal Startup Error", startup_error.GetDescription());

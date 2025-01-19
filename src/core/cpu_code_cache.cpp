@@ -1432,6 +1432,25 @@ void CPU::CodeCache::UnlinkBlockExits(Block* block)
 
 void CPU::CodeCache::ResetCodeBuffer()
 {
+  if (s_code_used > 0 || s_far_code_used > 0)
+  {
+    MemMap::BeginCodeWrite();
+
+    if (s_code_used > 0)
+    {
+      std::memset(s_code_ptr, 0, s_code_used);
+      MemMap::FlushInstructionCache(s_code_ptr, s_code_used);
+    }
+
+    if (s_far_code_used > 0)
+    {
+      std::memset(s_far_code_ptr, 0, s_far_code_used);
+      MemMap::FlushInstructionCache(s_far_code_ptr, s_far_code_used);
+    }
+
+    MemMap::EndCodeWrite();
+  }
+
   s_code_ptr = static_cast<u8*>(s_code_buffer_ptr);
   s_free_code_ptr = s_code_ptr;
   s_code_size = RECOMPILER_CODE_CACHE_SIZE - RECOMPILER_FAR_CODE_CACHE_SIZE;
@@ -1444,13 +1463,6 @@ void CPU::CodeCache::ResetCodeBuffer()
   s_far_code_ptr = (far_code_size > 0) ? (static_cast<u8*>(s_code_ptr) + s_code_size) : nullptr;
   s_free_far_code_ptr = s_far_code_ptr;
   s_far_code_used = 0;
-
-  MemMap::BeginCodeWrite();
-
-  std::memset(s_code_ptr, 0, RECOMPILER_CODE_CACHE_SIZE);
-  MemMap::FlushInstructionCache(s_code_ptr, RECOMPILER_CODE_CACHE_SIZE);
-
-  MemMap::EndCodeWrite();
 }
 
 u8* CPU::CodeCache::GetFreeCodePointer()
