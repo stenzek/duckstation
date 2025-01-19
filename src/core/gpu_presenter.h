@@ -103,12 +103,13 @@ private:
   GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
                                          bool apply_aspect_ratio);
 
-  void DrawDisplay(const GSVector2i target_size, const GSVector4i display_rect, bool dst_alpha_blend,
-                   DisplayRotation rotation, WindowInfo::PreRotation prerotation);
+  void DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size, const GSVector4i display_rect,
+                   bool dst_alpha_blend, DisplayRotation rotation, WindowInfo::PreRotation prerotation);
   GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
                                                    const GSVector4i display_rect);
   void DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
-                      DisplayRotation uv_rotation, WindowInfo::PreRotation prerotation);
+                      const GSVector2i final_target_size, DisplayRotation uv_rotation,
+                      WindowInfo::PreRotation prerotation);
 
   bool DeinterlaceSetTargetSize(u32 width, u32 height, bool preserve);
   void DestroyDeinterlaceTextures();

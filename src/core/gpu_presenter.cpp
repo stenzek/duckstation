@@ -393,6 +393,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
 
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   const WindowInfo::PreRotation prerotation = target ? WindowInfo::PreRotation::Identity : swap_chain->GetPreRotation();
+  const GSVector2i final_target_size = target ? target->GetSizeVec() : swap_chain->GetPostRotatedSizeVec();
   const bool is_vram_view = g_gpu_settings.gpu_show_vram;
   const bool have_overlay = (postfx && !is_vram_view && HasBorderOverlay());
   const bool have_prerotation = (prerotation != WindowInfo::PreRotation::Identity);
@@ -438,7 +439,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   GL_INS_FMT("Post-processing render target size: {}x{}", postfx_size.x, postfx_size.y);
 
   // Helper to bind swap chain/final target.
-  const auto bind_final_target = [target, swap_chain](bool clear) {
+  const auto bind_final_target = [&target, &swap_chain, &final_target_size](bool clear) {
     if (target)
     {
       if (clear)
@@ -446,12 +447,16 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       else
         g_gpu_device->InvalidateRenderTarget(target);
       g_gpu_device->SetRenderTarget(target);
-      return GPUDevice::PresentResult::OK;
     }
     else
     {
-      return g_gpu_device->BeginPresent(swap_chain);
+      const GPUDevice::PresentResult res = g_gpu_device->BeginPresent(swap_chain);
+      if (res != GPUDevice::PresentResult::OK)
+        return res;
     }
+
+    g_gpu_device->SetViewport(GSVector4i::loadh(final_target_size));
+    return GPUDevice::PresentResult::OK;
   };
 
   // If postfx is enabled, we need to draw to an intermediate buffer first.
@@ -464,9 +469,10 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     GPUTexture* const postfx_input = m_display_postfx->GetInputTexture();
     g_gpu_device->ClearRenderTarget(postfx_input, GPUDevice::DEFAULT_CLEAR_COLOR);
     g_gpu_device->SetRenderTarget(postfx_input);
+    g_gpu_device->SetViewport(GSVector4i::loadh(postfx_size));
     if (m_display_texture)
     {
-      DrawDisplay(postfx_size, real_draw_rect, false, g_gpu_settings.display_rotation,
+      DrawDisplay(postfx_size, postfx_size, real_draw_rect, false, g_gpu_settings.display_rotation,
                   WindowInfo::PreRotation::Identity);
     }
     postfx_input->MakeReadyForSampling();
@@ -482,19 +488,23 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       if (const GPUDevice::PresentResult pres = bind_final_target(have_overlay); pres != GPUDevice::PresentResult::OK)
         return pres;
 
+      // UVs of post-processed/prerotated output are flipped in OpenGL.
+      const GSVector4 src_uv_rect = g_gpu_device->UsesLowerLeftOrigin() ? GSVector4::cxpr(0.0f, 1.0f, 1.0f, 0.0f) :
+                                                                          GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f);
+
       // If we have an overlay, draw it, and then copy the postprocessed framebuffer in.
       if (have_overlay)
       {
         GL_SCOPE_FMT("Draw overlay and postfx buffer");
         g_gpu_device->SetPipeline(m_border_overlay_pipeline.get());
         g_gpu_device->SetTextureSampler(0, m_border_overlay_texture.get(), g_gpu_device->GetLinearSampler());
-        DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal,
-                       prerotation);
+        DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, final_target_size,
+                       DisplayRotation::Normal, prerotation);
 
         g_gpu_device->SetPipeline(m_border_overlay_pipeline.get());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
-        DrawScreenQuad(overlay_display_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size,
-                       DisplayRotation::Normal, prerotation);
+        DrawScreenQuad(overlay_display_rect, src_uv_rect, target_size, final_target_size, DisplayRotation::Normal,
+                       prerotation);
       }
       else
       {
@@ -502,8 +512,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
         GL_SCOPE_FMT("Copy framebuffer for prerotation");
         g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
-        DrawScreenQuad(draw_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal,
-                       prerotation);
+        DrawScreenQuad(GSVector4i::loadh(postfx_size), src_uv_rect, target_size, final_target_size,
+                       DisplayRotation::Normal, prerotation);
       }
 
       // All done
@@ -528,21 +538,23 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       g_gpu_device->SetPipeline(m_border_overlay_pipeline.get());
       g_gpu_device->SetTextureSampler(0, m_border_overlay_texture.get(), g_gpu_device->GetLinearSampler());
 
-      DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal,
-                     prerotation);
+      DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, final_target_size,
+                     DisplayRotation::Normal, prerotation);
 
       if (!overlay_display_rect.eq(draw_rect))
       {
         // Need to fill in the borders.
         GL_SCOPE_FMT("Fill in overlay borders - odisplay={}, draw={}", overlay_display_rect, draw_rect);
         g_gpu_device->SetPipeline(m_present_clear_pipeline.get());
-        DrawScreenQuad(overlay_display_rect, GSVector4::zero(), target_size, g_settings.display_rotation, prerotation);
+        DrawScreenQuad(overlay_display_rect, GSVector4::zero(), target_size, final_target_size,
+                       g_settings.display_rotation, prerotation);
       }
     }
 
     if (m_display_texture)
     {
-      DrawDisplay(target_size, display_rect, m_border_overlay_destination_alpha_blend, g_gpu_settings.display_rotation,
+      DrawDisplay(target_size, final_target_size, display_rect,
+                  have_overlay && m_border_overlay_destination_alpha_blend, g_gpu_settings.display_rotation,
                   prerotation);
     }
 
@@ -550,8 +562,9 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
   }
 }
 
-void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector4i display_rect, bool dst_alpha_blend,
-                               DisplayRotation rotation, WindowInfo::PreRotation prerotation)
+void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size,
+                               const GSVector4i display_rect, bool dst_alpha_blend, DisplayRotation rotation,
+                               WindowInfo::PreRotation prerotation)
 {
   bool texture_filter_linear = false;
 
@@ -614,14 +627,14 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector4i di
                          GSVector4::xyxy(display_texture_size, GSVector2::cxpr(1.0f) / display_texture_size));
 
   g_gpu_device->PushUniformBuffer(&uniforms, sizeof(uniforms));
-  DrawScreenQuad(display_rect, uv_rect, target_size, rotation, prerotation);
+  DrawScreenQuad(display_rect, uv_rect, target_size, final_target_size, rotation, prerotation);
 }
 
 void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
-                                  DisplayRotation rotation, WindowInfo::PreRotation prerotation)
+                                  const GSVector2i final_target_size, DisplayRotation rotation,
+                                  WindowInfo::PreRotation prerotation)
 {
   const GSVector4i real_rect = GPUSwapChain::PreRotateClipRect(prerotation, target_size, rect);
-  g_gpu_device->SetViewport(GSVector4i::loadh(target_size));
   g_gpu_device->SetScissor(g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(real_rect, target_size.y) :
                                                                  real_rect);
 
@@ -631,9 +644,8 @@ void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect
   g_gpu_device->MapVertexBuffer(sizeof(GPUBackend::ScreenVertex), 4, reinterpret_cast<void**>(&vertices), &space,
                                 &base_vertex);
 
-  const GSVector4 xy = GPUBackend::GetScreenQuadClipSpaceCoordinates(real_rect, target_size);
-
   // Combine display rotation and prerotation together, since the rectangle has already been adjusted.
+  const GSVector4 xy = GPUBackend::GetScreenQuadClipSpaceCoordinates(real_rect, final_target_size);
   const DisplayRotation effective_rotation = static_cast<DisplayRotation>(
     (static_cast<u32>(rotation) + static_cast<u32>(prerotation)) % static_cast<u32>(DisplayRotation::Count));
   switch (effective_rotation)
