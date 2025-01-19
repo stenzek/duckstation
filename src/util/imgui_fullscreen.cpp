@@ -449,6 +449,8 @@ void ImGuiFullscreen::UploadAsyncTextures()
 
 bool ImGuiFullscreen::UpdateLayoutScale()
 {
+#ifndef __ANDROID__
+
   static constexpr float LAYOUT_RATIO = LAYOUT_SCREEN_WIDTH / LAYOUT_SCREEN_HEIGHT;
   const ImGuiIO& io = ImGui::GetIO();
 
@@ -474,7 +476,19 @@ bool ImGuiFullscreen::UpdateLayoutScale()
 
   UIStyle.RcpLayoutScale = 1.0f / UIStyle.LayoutScale;
 
-  return UIStyle.LayoutScale != old_scale;
+  return (UIStyle.LayoutScale != old_scale);
+
+#else
+
+  // On Android, treat a rotated display as always being in landscape mode for FSUI scaling.
+  // Makes achievement popups readable regardless of the device's orientation, and avoids layout changes.
+  const ImGuiIO& io = ImGui::GetIO();
+  const float old_scale = UIStyle.LayoutScale;
+  UIStyle.LayoutScale = std::max(io.DisplaySize.x, io.DisplaySize.y) / LAYOUT_SCREEN_WIDTH;
+  UIStyle.RcpLayoutScale = 1.0f / UIStyle.LayoutScale;
+  return (UIStyle.LayoutScale != old_scale);
+
+#endif
 }
 
 ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_size)

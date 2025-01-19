@@ -2288,7 +2288,8 @@ void Achievements::DrawGameOverlays()
 
   const auto lock = GetLock();
 
-  const float margin = std::max(ImGuiManager::GetScreenMargin(), LayoutScale(10.0f));
+  const float margin =
+    std::max(ImCeil(ImGuiManager::GetScreenMargin() * ImGuiManager::GetGlobalScale()), LayoutScale(10.0f));
   const float spacing = LayoutScale(10.0f);
   const float padding = LayoutScale(10.0f);
   const ImVec2 image_size =
