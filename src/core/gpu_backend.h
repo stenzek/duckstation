@@ -58,7 +58,8 @@ public:
   static std::unique_ptr<GPUBackend> CreateSoftwareBackend(GPUPresenter& presenter);
   static std::unique_ptr<GPUBackend> CreateNullBackend(GPUPresenter& presenter);
 
-  static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, Image* out_image);
+  static bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio, Image* out_image,
+                                       Error* error);
   static void RenderScreenshotToFile(const std::string_view path, DisplayScreenshotMode mode, u8 quality,
                                      bool show_osd_message);
 

@@ -653,25 +653,39 @@ void GPUBackend::UpdateStatistics(u32 frame_count)
   ResetStatistics();
 }
 
-bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, Image* out_image)
+bool GPUBackend::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio, Image* out_image,
+                                          Error* error)
 {
   bool result;
   GPUThread::RunOnBackend(
-    [width, height, postfx, out_image, &result](GPUBackend* backend) {
+    [width, height, postfx, apply_aspect_ratio, out_image, error, &result](GPUBackend* backend) {
       if (!backend)
+      {
+        Error::SetStringView(error, "No GPU backend.");
+        result = false;
         return;
+      }
 
-      GSVector4i draw_rect, display_rect;
-      backend->m_presenter.CalculateDrawRect(static_cast<s32>(width), static_cast<s32>(height), true, true,
-                                             &display_rect, &draw_rect);
+      // Post-processing requires that the size match the window.
+      const bool really_postfx = postfx && g_gpu_device->HasMainSwapChain();
+      u32 image_width, image_height;
+      if (really_postfx)
+      {
+        image_width = g_gpu_device->GetMainSwapChain()->GetWidth();
+        image_height = g_gpu_device->GetMainSwapChain()->GetHeight();
+      }
+      else
+      {
+        // Crop it if border overlay isn't enabled.
+        GSVector4i draw_rect, display_rect;
+        backend->GetPresenter().CalculateDrawRect(static_cast<s32>(width), static_cast<s32>(height), apply_aspect_ratio,
+                                                  &display_rect, &draw_rect);
+        image_width = static_cast<u32>(display_rect.width());
+        image_height = static_cast<u32>(display_rect.height());
+      }
 
-      // Crop it.
-      const u32 cropped_width = static_cast<u32>(display_rect.width());
-      const u32 cropped_height = static_cast<u32>(display_rect.height());
-      draw_rect = draw_rect.sub32(display_rect.xyxy());
-      display_rect = display_rect.sub32(display_rect.xyxy());
-      result = backend->m_presenter.RenderScreenshotToBuffer(cropped_width, cropped_height, display_rect, draw_rect,
-                                                             postfx, out_image);
+      result = backend->GetPresenter().RenderScreenshotToBuffer(image_width, image_height, really_postfx,
+                                                                apply_aspect_ratio, out_image, error);
       backend->RestoreDeviceContext();
     },
     true, false);
@@ -687,19 +701,29 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
       if (!backend)
         return;
 
-      u32 width, height;
-      GSVector4i display_rect, draw_rect;
-      backend->m_presenter.CalculateScreenshotSize(mode, &width, &height, &display_rect, &draw_rect);
-
-      const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution);
-      if (width == 0 || height == 0)
+      const GSVector2i size = backend->GetPresenter().CalculateScreenshotSize(mode);
+      if (size.x == 0 || size.y == 0)
         return;
 
+      std::string osd_key;
+      if (show_osd_message)
+        osd_key = fmt::format("ScreenshotSaver_{}", path);
+
+      const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution);
+      const bool apply_aspect_ratio = (mode != DisplayScreenshotMode::UncorrectedInternalResolution);
+      Error error;
       Image image;
-      if (!backend->m_presenter.RenderScreenshotToBuffer(width, height, display_rect, draw_rect, !internal_resolution,
-                                                         &image))
+      if (!backend->m_presenter.RenderScreenshotToBuffer(size.x, size.y, !internal_resolution, apply_aspect_ratio,
+                                                         &image, &error))
       {
-        ERROR_LOG("Failed to render {}x{} screenshot", width, height);
+        ERROR_LOG("Failed to render {}x{} screenshot: {}", size.x, size.y, error.GetDescription());
+        if (show_osd_message)
+        {
+          Host::AddIconOSDWarning(
+            std::move(osd_key), ICON_EMOJI_WARNING,
+            fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
+        }
+
         backend->RestoreDeviceContext();
         return;
       }
@@ -707,19 +731,23 @@ void GPUBackend::RenderScreenshotToFile(const std::string_view path, DisplayScre
       // no more GPU calls
       backend->RestoreDeviceContext();
 
-      Error error;
       auto fp = FileSystem::OpenManagedCFile(path.c_str(), "wb", &error);
       if (!fp)
       {
         ERROR_LOG("Can't open file '{}': {}", Path::GetFileName(path), error.GetDescription());
+        if (show_osd_message)
+        {
+          Host::AddIconOSDWarning(
+            std::move(osd_key), ICON_EMOJI_WARNING,
+            fmt::format(TRANSLATE_FS("GPU", "Failed to save screenshot:\n{}"), error.GetDescription()));
+        }
+
         return;
       }
 
-      std::string osd_key;
       if (show_osd_message)
       {
         // Use a 60 second timeout to give it plenty of time to actually save.
-        osd_key = fmt::format("ScreenshotSaver_{}", path);
         Host::AddIconOSDMessage(osd_key, ICON_EMOJI_CAMERA_WITH_FLASH,
                                 fmt::format(TRANSLATE_FS("GPU", "Saving screenshot to '{}'."), Path::GetFileName(path)),
                                 60.0f);

@@ -44,6 +44,7 @@ public:
   ALWAYS_INLINE s32 GetDisplayTextureViewHeight() const { return m_display_texture_view_height; }
   ALWAYS_INLINE GPUTexture* GetDisplayTexture() const { return m_display_texture; }
   ALWAYS_INLINE bool HasDisplayTexture() const { return m_display_texture; }
+  ALWAYS_INLINE bool HasBorderOverlay() const { return static_cast<bool>(m_border_overlay_texture); }
 
   bool Initialize(Error* error);
 
@@ -59,16 +60,15 @@ public:
   bool ApplyChromaSmoothing();
 
   /// Helper function for computing the draw rectangle in a larger window.
-  void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
-                         GSVector4i* display_rect, GSVector4i* draw_rect) const;
+  void CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio, GSVector4i* display_rect,
+                         GSVector4i* draw_rect) const;
 
   /// Helper function for computing screenshot bounds.
-  void CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height, GSVector4i* display_rect,
-                               GSVector4i* draw_rect) const;
+  GSVector2i CalculateScreenshotSize(DisplayScreenshotMode mode) const;
 
   /// Renders the display, optionally with postprocessing to the specified image.
-  bool RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect, const GSVector4i draw_rect,
-                                bool postfx, Image* out_image);
+  bool RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio, Image* out_image,
+                                Error* error);
 
   /// Sends the current frame to media capture.
   void SendDisplayToMediaCapture(MediaCapture* cap);
@@ -98,14 +98,10 @@ private:
 
   static void SleepUntilPresentTime(u64 present_time);
 
-  /// Draws the current display texture, with any post-processing.
-  GPUDevice::PresentResult PresentDisplay();
-
   bool CompileDisplayPipelines(bool display, bool deinterlace, bool chroma_smoothing, Error* error);
 
-  GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector4i overlay_rect,
-                                         const GSVector4i overlay_display_rect, const GSVector4i display_rect,
-                                         const GSVector4i draw_rect, bool postfx);
+  GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
+                                         bool apply_aspect_ratio);
 
   void DrawDisplay(const GSVector2i target_size, const GSVector4i display_rect, bool dst_alpha_blend,
                    DisplayRotation rotation, WindowInfo::PreRotation prerotation);

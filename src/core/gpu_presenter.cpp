@@ -377,65 +377,60 @@ void GPUPresenter::SetDisplayTexture(GPUTexture* texture, s32 view_x, s32 view_y
   m_display_texture_view_height = view_height;
 }
 
-GPUDevice::PresentResult GPUPresenter::PresentDisplay()
+GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
+                                                     bool apply_aspect_ratio)
 {
-  DebugAssert(g_gpu_device->HasMainSwapChain());
+  GL_SCOPE_FMT("RenderDisplay: {}x{}", target_size.x, target_size.y);
 
-  u32 display_area_width = g_gpu_device->GetMainSwapChain()->GetWidth();
-  u32 display_area_height = g_gpu_device->GetMainSwapChain()->GetHeight();
+  if (m_display_texture)
+    m_display_texture->MakeReadyForSampling();
+
+  DebugAssert(target || g_gpu_device->HasMainSwapChain());
+  DebugAssert(!postfx || target_size.eq(g_gpu_device->GetMainSwapChain()->GetSizeVec()));
+
+  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
+  const WindowInfo::PreRotation prerotation = target ? WindowInfo::PreRotation::Identity : swap_chain->GetPreRotation();
+  const bool is_vram_view = g_gpu_settings.gpu_show_vram;
+  const bool have_overlay = (postfx && !is_vram_view && HasBorderOverlay());
+  const bool have_prerotation = (prerotation != WindowInfo::PreRotation::Identity);
+  GL_INS(have_overlay ? "Overlay is ENABLED" : "Overlay is disabled");
+  GL_INS_FMT("Prerotation: {}", static_cast<u32>(prerotation));
+  GL_INS_FMT("Final target size: {}x{}", target_size.x, target_size.y);
+
+  // Compute draw area.
+  GSVector4i display_rect;
+  GSVector4i draw_rect;
   GSVector4i overlay_display_rect = GSVector4i::zero();
   GSVector4i overlay_rect = GSVector4i::zero();
-  if (m_border_overlay_texture)
+  if (have_overlay)
   {
-    overlay_rect = GSVector4i::rfit(GSVector4i(0, 0, display_area_width, display_area_height),
-                                    m_border_overlay_texture->GetSizeVec());
+    overlay_rect = GSVector4i::rfit(GSVector4i::loadh(target_size), m_border_overlay_texture->GetSizeVec());
 
     const GSVector2 scale = GSVector2(overlay_rect.rsize()) / GSVector2(m_border_overlay_texture->GetSizeVec());
     overlay_display_rect =
       GSVector4i(GSVector4(m_border_overlay_display_rect) * GSVector4::xyxy(scale)).add32(overlay_rect.xyxy());
-    display_area_width = overlay_display_rect.width();
-    display_area_height = overlay_display_rect.height();
+
+    // Draw to the overlay area instead of the whole screen.
+    CalculateDrawRect(overlay_display_rect.width(), overlay_display_rect.height(), apply_aspect_ratio, &display_rect,
+                      &draw_rect);
+
+    // Apply overlay area offset.
+    display_rect = display_rect.add32(overlay_display_rect.xyxy());
+    draw_rect = draw_rect.add32(overlay_display_rect.xyxy());
   }
-
-  GSVector4i display_rect;
-  GSVector4i draw_rect;
-  CalculateDrawRect(display_area_width, display_area_height, !g_gpu_settings.gpu_show_vram, true, &display_rect,
-                    &draw_rect);
-
-  display_rect = display_rect.add32(overlay_display_rect.xyxy());
-  draw_rect = draw_rect.add32(overlay_display_rect.xyxy());
-
-  return RenderDisplay(nullptr, overlay_rect, overlay_display_rect, display_rect, draw_rect,
-                       !g_gpu_settings.gpu_show_vram);
-}
-
-GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const GSVector4i overlay_rect,
-                                                     const GSVector4i overlay_display_rect,
-                                                     const GSVector4i display_rect, const GSVector4i draw_rect,
-                                                     bool postfx)
-{
-  GL_SCOPE_FMT("RenderDisplay: {}", draw_rect);
-
-  if (m_display_texture)
-    m_display_texture->MakeReadyForSampling();
+  else
+  {
+    CalculateDrawRect(target_size.x, target_size.y, apply_aspect_ratio, &display_rect, &draw_rect);
+  }
 
   // There's a bunch of scenarios where we need to use intermediate buffers.
   // If we have post-processing and overlays enabled, postfx needs to happen on an intermediate buffer first.
   // If pre-rotation is enabled with post-processing, we need to draw to an intermediate buffer, and apply the
   // rotation at the end.
-  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
-  const WindowInfo::PreRotation prerotation = target ? WindowInfo::PreRotation::Identity : swap_chain->GetPreRotation();
-  const bool have_overlay = static_cast<bool>(m_border_overlay_texture);
-  const bool have_prerotation = (prerotation != WindowInfo::PreRotation::Identity);
-  const GSVector2i target_size = target ? target->GetSizeVec() : swap_chain->GetSizeVec();
-  GL_INS(have_overlay ? "Overlay is ENABLED" : "Overlay is disabled");
-  GL_INS_FMT("Prerotation: {}", static_cast<u32>(prerotation));
-  GL_INS_FMT("Final target size: {}x{}", target_size.x, target_size.y);
-
-  // Postfx active?
   const GSVector2i postfx_size = have_overlay ? overlay_display_rect.rsize() : target_size;
-  const bool really_postfx = (postfx && m_display_postfx && m_display_postfx->IsActive() && m_display_postfx &&
-                              m_display_postfx->CheckTargets(m_present_format, postfx_size.x, postfx_size.y));
+  const bool really_postfx =
+    (postfx && !is_vram_view && m_display_postfx && m_display_postfx->IsActive() && m_display_postfx &&
+     m_display_postfx->CheckTargets(m_present_format, postfx_size.x, postfx_size.y));
   GL_INS(really_postfx ? "Post-processing is ENABLED" : "Post-processing is disabled");
   GL_INS_FMT("Post-processing render target size: {}x{}", postfx_size.x, postfx_size.y);
 
@@ -708,16 +703,11 @@ void GPUPresenter::SendDisplayToMediaCapture(MediaCapture* cap)
 
   const bool apply_aspect_ratio =
     (g_gpu_settings.display_screenshot_mode != DisplayScreenshotMode::UncorrectedInternalResolution);
-  const bool postfx = (g_gpu_settings.display_screenshot_mode != DisplayScreenshotMode::InternalResolution);
-  GSVector4i display_rect, draw_rect;
-  CalculateDrawRect(target->GetWidth(), target->GetHeight(), !g_gpu_settings.gpu_show_vram, apply_aspect_ratio,
-                    &display_rect, &draw_rect);
+  const bool postfx =
+    (g_gpu_settings.display_screenshot_mode == DisplayScreenshotMode::ScreenResolution &&
+     g_gpu_device->HasMainSwapChain() && target->GetSizeVec().eq(g_gpu_device->GetMainSwapChain()->GetSizeVec()));
 
-  // Not cleared by RenderDisplay().
-  g_gpu_device->ClearRenderTarget(target, GPUDevice::DEFAULT_CLEAR_COLOR);
-
-  if (RenderDisplay(target, GSVector4i::zero(), GSVector4i::zero(), display_rect, draw_rect, postfx) !=
-        GPUDevice::PresentResult::OK ||
+  if (RenderDisplay(target, target->GetSizeVec(), postfx, apply_aspect_ratio) != GPUDevice::PresentResult::OK ||
       !cap->DeliverVideoFrame(target)) [[unlikely]]
   {
     WARNING_LOG("Failed to render/deliver video capture frame.");
@@ -907,7 +897,7 @@ bool GPUPresenter::ApplyChromaSmoothing()
   return true;
 }
 
-void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_rotation, bool apply_aspect_ratio,
+void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio,
                                      GSVector4i* display_rect, GSVector4i* draw_rect) const
 {
   const bool integer_scale = (g_gpu_settings.display_scaling == DisplayScalingMode::NearestInteger ||
@@ -919,9 +909,10 @@ void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool a
   const s32 display_origin_top = show_vram ? 0 : m_display_origin_top;
   const u32 display_vram_width = show_vram ? VRAM_WIDTH : m_display_vram_width;
   const u32 display_vram_height = show_vram ? VRAM_HEIGHT : m_display_vram_height;
-  const float display_pixel_aspect_ratio = show_vram ? 1.0f : m_display_pixel_aspect_ratio;
+  const float display_pixel_aspect_ratio = (show_vram || !apply_aspect_ratio) ? 1.0f : m_display_pixel_aspect_ratio;
+  const DisplayRotation display_rotation = show_vram ? DisplayRotation::Normal : g_gpu_settings.display_rotation;
   GPU::CalculateDrawRect(window_width, window_height, display_width, display_height, display_origin_left,
-                         display_origin_top, display_vram_width, display_vram_height, g_gpu_settings.display_rotation,
+                         display_origin_top, display_vram_width, display_vram_height, display_rotation,
                          g_gpu_settings.display_alignment, display_pixel_aspect_ratio,
                          g_gpu_settings.display_stretch_vertically, integer_scale, display_rect, draw_rect);
 }
@@ -954,16 +945,17 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
     ImGuiManager::RenderDebugWindows();
   }
 
+  GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
   const GPUDevice::PresentResult pres =
-    skip_present ?
-      GPUDevice::PresentResult::SkipPresent :
-      (presenter ? presenter->PresentDisplay() : g_gpu_device->BeginPresent(g_gpu_device->GetMainSwapChain()));
+    skip_present ? GPUDevice::PresentResult::SkipPresent :
+                   (presenter ? presenter->RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
+                                g_gpu_device->BeginPresent(swap_chain));
   if (pres == GPUDevice::PresentResult::OK)
   {
     if (presenter)
       presenter->m_skipped_present_count = 0;
 
-    g_gpu_device->RenderImGui(g_gpu_device->GetMainSwapChain());
+    g_gpu_device->RenderImGui(swap_chain);
 
     const GPUDevice::Features features = g_gpu_device->GetFeatures();
     const bool scheduled_present = (present_time != 0);
@@ -977,7 +969,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       SleepUntilPresentTime(present_time);
     }
 
-    g_gpu_device->EndPresent(g_gpu_device->GetMainSwapChain(), explicit_present, timed_present ? present_time : 0);
+    g_gpu_device->EndPresent(swap_chain, explicit_present, timed_present ? present_time : 0);
 
     if (g_gpu_device->IsGPUTimingEnabled())
       PerformanceCounters::AccumulateGPUTime();
@@ -985,7 +977,7 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
     if (explicit_present)
     {
       SleepUntilPresentTime(present_time);
-      g_gpu_device->SubmitPresent(g_gpu_device->GetMainSwapChain());
+      g_gpu_device->SubmitPresent(swap_chain);
     }
   }
   else
@@ -1029,8 +1021,8 @@ void GPUPresenter::SleepUntilPresentTime(u64 present_time)
 #endif
 }
 
-bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, const GSVector4i display_rect,
-                                            const GSVector4i draw_rect, bool postfx, Image* out_image)
+bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, bool postfx, bool apply_aspect_ratio,
+                                            Image* out_image, Error* error)
 {
   const ImageFormat image_format = GPUTexture::GetImageFormatForTextureFormat(m_present_format);
   if (image_format == ImageFormat::None)
@@ -1042,24 +1034,26 @@ bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, const GSVecto
     return false;
 
   g_gpu_device->ClearRenderTarget(render_texture.get(), GPUDevice::DEFAULT_CLEAR_COLOR);
-
-  // TODO: this should use copy shader instead.
-  RenderDisplay(render_texture.get(), GSVector4i::zero(), GSVector4i::zero(), display_rect, draw_rect, postfx);
+  if (RenderDisplay(render_texture.get(), render_texture->GetSizeVec(), postfx, apply_aspect_ratio) !=
+      GPUDevice::PresentResult::OK)
+  {
+    Error::SetStringView(error, "RenderDisplay() failed");
+    return false;
+  }
 
   Image image(width, height, image_format);
 
-  Error error;
   std::unique_ptr<GPUDownloadTexture> dltex;
   if (g_gpu_device->GetFeatures().memory_import)
   {
     dltex = g_gpu_device->CreateDownloadTexture(width, height, m_present_format, image.GetPixels(),
-                                                image.GetStorageSize(), image.GetPitch(), &error);
+                                                image.GetStorageSize(), image.GetPitch(), error);
   }
   if (!dltex)
   {
-    if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, m_present_format, &error)))
+    if (!(dltex = g_gpu_device->CreateDownloadTexture(width, height, m_present_format, error)))
     {
-      ERROR_LOG("Failed to create {}x{} download texture: {}", width, height, error.GetDescription());
+      Error::AddPrefixFmt(error, "Failed to create {}x{} download texture: ", width, height);
       return false;
     }
   }
@@ -1072,8 +1066,7 @@ bool GPUPresenter::RenderScreenshotToBuffer(u32 width, u32 height, const GSVecto
   return true;
 }
 
-void GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* width, u32* height,
-                                           GSVector4i* display_rect, GSVector4i* draw_rect) const
+GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode) const
 {
   const bool internal_resolution = (mode != DisplayScreenshotMode::ScreenResolution || g_gpu_settings.gpu_show_vram);
   if (internal_resolution && m_display_texture_view_width != 0 && m_display_texture_view_height != 0)
@@ -1098,24 +1091,16 @@ void GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode, u32* widt
         f_width = f_width / (f_height / max_texture_size);
       }
 
-      *width = static_cast<u32>(std::ceil(f_width));
-      *height = static_cast<u32>(std::ceil(f_height));
+      return GSVector2i(static_cast<s32>(std::ceil(f_width)), static_cast<s32>(std::ceil(f_height)));
     }
     else // if (mode == DisplayScreenshotMode::UncorrectedInternalResolution)
     {
-      *width = m_display_texture_view_width;
-      *height = m_display_texture_view_height;
+      return GSVector2i(m_display_texture_view_width, m_display_texture_view_height);
     }
-
-    // Remove padding, it's not part of the framebuffer.
-    *draw_rect = GSVector4i(0, 0, static_cast<s32>(*width), static_cast<s32>(*height));
-    *display_rect = *draw_rect;
   }
   else
   {
-    *width = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetWidth() : 1;
-    *height = g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetHeight() : 1;
-    CalculateDrawRect(*width, *height, true, !g_settings.gpu_show_vram, display_rect, draw_rect);
+    return g_gpu_device->HasMainSwapChain() ? g_gpu_device->GetMainSwapChain()->GetSizeVec() : GSVector2i(1, 1);
   }
 }
 

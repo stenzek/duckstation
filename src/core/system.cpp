@@ -3257,7 +3257,9 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
   // save screenshot
   if (screenshot_size > 0)
   {
-    if (GPUBackend::RenderScreenshotToBuffer(screenshot_size, screenshot_size, false, &buffer->screenshot))
+    Error screenshot_error;
+    if (GPUBackend::RenderScreenshotToBuffer(screenshot_size, screenshot_size, false, true, &buffer->screenshot,
+                                             &screenshot_error))
     {
       if (g_gpu_device->UsesLowerLeftOrigin())
         buffer->screenshot.FlipY();
@@ -3265,12 +3267,11 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
       // Ensure it's RGBA8.
       if (buffer->screenshot.GetFormat() != ImageFormat::RGBA8)
       {
-        Error convert_error;
-        std::optional<Image> screenshot_rgba8 = buffer->screenshot.ConvertToRGBA8(&convert_error);
+        std::optional<Image> screenshot_rgba8 = buffer->screenshot.ConvertToRGBA8(&screenshot_error);
         if (!screenshot_rgba8.has_value())
         {
           ERROR_LOG("Failed to convert {} screenshot to RGBA8: {}",
-                    Image::GetFormatName(buffer->screenshot.GetFormat()), convert_error.GetDescription());
+                    Image::GetFormatName(buffer->screenshot.GetFormat()), screenshot_error.GetDescription());
           buffer->screenshot.Invalidate();
         }
         else
@@ -3281,8 +3282,8 @@ bool System::SaveStateToBuffer(SaveStateBuffer* buffer, Error* error, u32 screen
     }
     else
     {
-      WARNING_LOG("Failed to save {}x{} screenshot for save state due to render/conversion failure", screenshot_size,
-                  screenshot_size);
+      WARNING_LOG("Failed to save {}x{} screenshot for save state: {}", screenshot_size, screenshot_size,
+                  screenshot_error.GetDescription());
     }
   }
 
@@ -5347,14 +5348,16 @@ bool System::StartMediaCapture(std::string path)
   {
     // need to query this on the GPU thread
     GPUThread::RunOnBackend(
-      [path = std::move(path), capture_audio](GPUBackend* backend) mutable {
+      [path = std::move(path), capture_audio, mode = g_settings.display_screenshot_mode](GPUBackend* backend) mutable {
         if (!backend)
           return;
 
-        GSVector4i unused_display_rect, unused_draw_rect;
-        u32 video_width, video_height;
-        backend->GetPresenter().CalculateScreenshotSize(DisplayScreenshotMode::InternalResolution, &video_width,
-                                                        &video_height, &unused_display_rect, &unused_draw_rect);
+        // Prefer aligning for non-window size.
+        const GSVector2i video_size = backend->GetPresenter().CalculateScreenshotSize(mode);
+        u32 video_width = static_cast<u32>(video_size.x);
+        u32 video_height = static_cast<u32>(video_size.y);
+        if (mode != DisplayScreenshotMode::ScreenResolution)
+          MediaCapture::AdjustVideoSize(&video_width, &video_height);
 
         // fire back to the CPU thread to actually start the capture
         Host::RunOnCPUThread([path = std::move(path), capture_audio, video_width, video_height]() mutable {
@@ -5369,6 +5372,7 @@ bool System::StartMediaCapture(std::string path)
     Host::GetUIntSettingValue("MediaCapture", "VideoWidth", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_WIDTH);
   u32 video_height =
     Host::GetUIntSettingValue("MediaCapture", "VideoHeight", Settings::DEFAULT_MEDIA_CAPTURE_VIDEO_HEIGHT);
+  MediaCapture::AdjustVideoSize(&video_width, &video_height);
 
   return StartMediaCapture(std::move(path), capture_video, capture_audio, video_width, video_height);
 }
@@ -5385,8 +5389,6 @@ bool System::StartMediaCapture(std::string path, bool capture_video, bool captur
   const WindowInfo& main_window_info = GPUThread::GetRenderWindowInfo();
   const GPUTexture::Format capture_format =
     main_window_info.IsSurfaceless() ? GPUTexture::Format::RGBA8 : main_window_info.surface_format;
-  if (capture_video)
-    MediaCapture::AdjustVideoSize(&video_width, &video_height);
 
   // TODO: Render anamorphic capture instead?
   constexpr float aspect = 1.0f;

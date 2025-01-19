@@ -200,9 +200,7 @@ bool MediaCaptureBase::BeginCapture(float fps, float aspect, u32 width, u32 heig
     Error::SetStringView(error, "No path specified.");
     return false;
   }
-  else if (capture_video &&
-           (fps == 0.0f || m_video_width == 0 || !Common::IsAlignedPow2(m_video_width, VIDEO_WIDTH_ALIGNMENT) ||
-            m_video_height == 0 || !Common::IsAlignedPow2(m_video_height, VIDEO_HEIGHT_ALIGNMENT)))
+  else if (capture_video && (fps == 0.0f || m_video_width == 0 || m_video_height == 0))
   {
     Error::SetStringView(error, "Invalid video dimensions/rate.");
     return false;
