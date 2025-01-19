@@ -111,8 +111,6 @@ private:
                    DisplayRotation rotation, WindowInfo::PreRotation prerotation);
   GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,
                                                    const GSVector4i display_rect);
-  void DrawTextureCopy(const GSVector2i target_size, const GSVector4i draw_rect, GPUTexture* input,
-                       bool dst_alpha_blend, bool linear, WindowInfo::PreRotation prerotation);
   void DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect, const GSVector2i target_size,
                       DisplayRotation uv_rotation, WindowInfo::PreRotation prerotation);
 
@@ -158,11 +156,12 @@ private:
 
   std::unique_ptr<PostProcessing::Chain> m_display_postfx;
   std::unique_ptr<GPUTexture> m_border_overlay_texture;
+  std::unique_ptr<GPUPipeline> m_present_clear_pipeline;
 
   // blended variants of pipelines, used when overlays are enabled
   std::unique_ptr<GPUPipeline> m_display_blend_pipeline;
   std::unique_ptr<GPUPipeline> m_present_copy_blend_pipeline;
-  std::unique_ptr<GPUPipeline> m_present_clear_pipeline;
+  std::unique_ptr<GPUPipeline> m_present_clear_blend_pipeline;
 
   GSVector4i m_border_overlay_display_rect = GSVector4i::zero();
 
