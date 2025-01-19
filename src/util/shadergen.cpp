@@ -845,7 +845,7 @@ std::string ShaderGen::GenerateFillFragmentShader() const
   return ss.str();
 }
 
-std::string ShaderGen::GenerateFillFragmentShader(const GSVector4i fixed_color) const
+std::string ShaderGen::GenerateFillFragmentShader(const GSVector4 fixed_color) const
 {
   std::stringstream ss;
   WriteHeader(ss);

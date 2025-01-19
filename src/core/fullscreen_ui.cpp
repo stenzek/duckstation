@@ -5771,10 +5771,15 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         FSUI_CSTR("Determines the area of the overlay image that the display will be drawn within."), "BorderOverlay",
         "DisplayStartX", 0, "DisplayStartY", 0, "DisplayEndX", 0, "DisplayEndY", 0, 0, 65535, "%dpx");
 
+      reload_pending |=
+        DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BLENDER, "Alpha Blending"),
+                          FSUI_CSTR("If enabled, the transparency of the overlay image will be applied."),
+                          "BorderOverlay", "AlphaBlend", false);
+
       reload_pending |= DrawToggleSetting(
         bsi, FSUI_ICONSTR(ICON_FA_BLENDER, "Destination Alpha Blending"),
         FSUI_CSTR("If enabled, the display will be blended with the transparency of the overlay image."),
-        "BorderOverlay", "AlphaBlend", false);
+        "BorderOverlay", "DestinationAlphaBlend", false);
     }
   }
 
@@ -8660,6 +8665,7 @@ TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
 TRANSLATE_NOOP("FullscreenUI", "Allows loading protected games without subchannel information.");
+TRANSLATE_NOOP("FullscreenUI", "Alpha Blending");
 TRANSLATE_NOOP("FullscreenUI", "Always Track Uploads");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
@@ -8925,6 +8931,7 @@ TRANSLATE_NOOP("FullscreenUI", "How many saves will be kept for rewinding. Highe
 TRANSLATE_NOOP("FullscreenUI", "How often a rewind state will be created. Higher frequencies have greater system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Identifies any new files added to the game directories.");
 TRANSLATE_NOOP("FullscreenUI", "If enabled, the display will be blended with the transparency of the overlay image.");
+TRANSLATE_NOOP("FullscreenUI", "If enabled, the transparency of the overlay image will be applied.");
 TRANSLATE_NOOP("FullscreenUI", "If not enabled, the current post processing chain will be ignored.");
 TRANSLATE_NOOP("FullscreenUI", "Image Path");
 TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.");

@@ -147,17 +147,17 @@ private:
   u32 m_skipped_present_count = 0;
   GPUTexture::Format m_present_format = GPUTexture::Format::Unknown;
   bool m_border_overlay_alpha_blend = false;
+  bool m_border_overlay_destination_alpha_blend = false;
 
   std::unique_ptr<GPUPipeline> m_present_copy_pipeline;
 
   std::unique_ptr<PostProcessing::Chain> m_display_postfx;
   std::unique_ptr<GPUTexture> m_border_overlay_texture;
-  std::unique_ptr<GPUPipeline> m_present_clear_pipeline;
 
-  // blended variants of pipelines, used when overlays are enabled
+  std::unique_ptr<GPUPipeline> m_border_overlay_pipeline;
+  std::unique_ptr<GPUPipeline> m_present_clear_pipeline;
   std::unique_ptr<GPUPipeline> m_display_blend_pipeline;
   std::unique_ptr<GPUPipeline> m_present_copy_blend_pipeline;
-  std::unique_ptr<GPUPipeline> m_present_clear_blend_pipeline;
 
   GSVector4i m_border_overlay_display_rect = GSVector4i::zero();
 

@@ -511,6 +511,8 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayEndX, "BorderOverlay", "DisplayEndX", 0);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.displayEndY, "BorderOverlay", "DisplayEndY", 0);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.alphaBlend, "BorderOverlay", "AlphaBlend", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.destinationAlphaBlend, "BorderOverlay",
+                                               "DestinationAlphaBlend", false);
 
   connect(m_ui.overlayName, &QComboBox::currentIndexChanged, this,
           &PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged);
@@ -525,11 +527,35 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
   connect(m_ui.displayEndY, &QSpinBox::textChanged, this, &PostProcessingOverlayConfigWidget::triggerSettingsReload);
   connect(m_ui.alphaBlend, &QCheckBox::checkStateChanged, this,
           &PostProcessingOverlayConfigWidget::triggerSettingsReload);
+  connect(m_ui.destinationAlphaBlend, &QCheckBox::checkStateChanged, this,
+          &PostProcessingOverlayConfigWidget::triggerSettingsReload);
 
   onOverlayNameCurrentIndexChanged(m_ui.overlayName->currentIndex());
+
+  dialog->registerWidgetHelp(m_ui.imagePath, tr("Image Path"), tr("Unspecified"),
+                             tr("Defines the path of the custom overlay image that will be loaded."));
+  const QString display_rect_title = tr("Display Rectangle");
+  const QString display_rect_rec_value = tr("Unspecified");
+  const QString display_rect_help = tr("Defines the area in the overlay image that the game image will be drawn into.");
+  dialog->registerWidgetHelp(m_ui.displayStartX, display_rect_title, display_rect_rec_value, display_rect_help);
+  dialog->registerWidgetHelp(m_ui.displayStartY, display_rect_title, display_rect_rec_value, display_rect_help);
+  dialog->registerWidgetHelp(m_ui.displayEndX, display_rect_title, display_rect_rec_value, display_rect_help);
+  dialog->registerWidgetHelp(m_ui.displayEndY, display_rect_title, display_rect_rec_value, display_rect_help);
+  dialog->registerWidgetHelp(
+    m_ui.alphaBlend, tr("Alpha Blending"), tr("Unchecked"),
+    tr("If checked, the overlay image will be alpha blended with the framebuffer, i.e. transparency will be applied."));
+  dialog->registerWidgetHelp(
+    m_ui.destinationAlphaBlend, tr("Destination Alpha Blending"), tr("Unchecked"),
+    tr("If checked, the game image will be blended with the inverse amount of alpha in the overlay image. For example, "
+       "an image with alpha of 0.75 will draw the game image at 25% brightness."));
 }
 
 PostProcessingOverlayConfigWidget::~PostProcessingOverlayConfigWidget() = default;
+
+void PostProcessingOverlayConfigWidget::triggerSettingsReload()
+{
+  g_emu_thread->updatePostProcessingSettings(true, false, false);
+}
 
 void PostProcessingOverlayConfigWidget::onOverlayNameCurrentIndexChanged(int index)
 {
@@ -549,7 +575,33 @@ void PostProcessingOverlayConfigWidget::onImagePathBrowseClicked()
   m_ui.imagePath->setText(QDir::toNativeSeparators(path));
 }
 
-void PostProcessingOverlayConfigWidget::triggerSettingsReload()
+void PostProcessingOverlayConfigWidget::onExportCustomConfigClicked()
 {
-  g_emu_thread->updatePostProcessingSettings(true, false, false);
+  const QString path =
+    QFileDialog::getSaveFileName(QtUtils::GetRootWidget(this), tr("Export to YAML"),
+                                 QFileInfo(m_ui.imagePath->text()).dir().path(), tr("YAML Files (*.yml)"));
+  if (path.isEmpty())
+    return;
+
+  const QString output = QStringLiteral("imagePath: \"%1\"\n"
+                                        "displayStartX: %2\n"
+                                        "displayStartY: %3\n"
+                                        "displayEndX: %4\n"
+                                        "displayEndY: %5\n"
+                                        "alphaBlend: %6\n"
+                                        "destinationAlphaBlend: %7\n")
+                           .arg(QFileInfo(m_ui.imagePath->text()).fileName(), m_ui.displayStartX->value())
+                           .arg(m_ui.displayStartY->value())
+                           .arg(m_ui.displayEndX->value())
+                           .arg(m_ui.displayEndY->value())
+                           .arg(m_ui.alphaBlend->isChecked() ? "true" : "false")
+                           .arg(m_ui.destinationAlphaBlend->isChecked() ? "true" : "false");
+
+  Error error;
+  if (!FileSystem::WriteStringToFile(QDir::toNativeSeparators(path).toStdString().c_str(), output.toStdString(),
+                                     &error))
+  {
+    QMessageBox::critical(this, tr("Export Error"),
+                          tr("Failed to save file: %1").arg(QString::fromStdString(error.GetDescription())));
+  }
 }

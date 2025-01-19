@@ -153,66 +153,69 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
     GL_OBJECT_NAME_FMT(m_display_pipeline, "Display Pipeline [{}]",
                        Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
 
-    std::unique_ptr<GPUShader> rotate_copy_fso = g_gpu_device->CreateShader(
+    std::unique_ptr<GPUShader> copy_fso = g_gpu_device->CreateShader(
       GPUShaderStage::Fragment, shadergen.GetLanguage(), shadergen.GenerateCopyFragmentShader(false), error);
-    if (!rotate_copy_fso)
+    if (!copy_fso)
       return false;
-    GL_OBJECT_NAME(rotate_copy_fso, "Display Rotate/Copy Fragment Shader");
+    GL_OBJECT_NAME(copy_fso, "Display Copy Fragment Shader");
 
-    plconfig.fragment_shader = rotate_copy_fso.get();
+    plconfig.fragment_shader = copy_fso.get();
     if (!(m_present_copy_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
-    GL_OBJECT_NAME(m_present_copy_pipeline, "Display Rotate/Copy Pipeline");
+    GL_OBJECT_NAME(m_present_copy_pipeline, "Display Copy Pipeline");
 
     // blended variants
     if (m_border_overlay_texture)
     {
-      std::unique_ptr<GPUShader> clear_fso =
-        g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                   shadergen.GenerateFillFragmentShader(GSVector4i::zero()), error);
+      std::unique_ptr<GPUShader> clear_fso = g_gpu_device->CreateShader(
+        GPUShaderStage::Fragment, shadergen.GetLanguage(),
+        shadergen.GenerateFillFragmentShader(GSVector4::cxpr(0.0f, 0.0f, 0.0f, 1.0f)), error);
       if (!clear_fso)
         return false;
       GL_OBJECT_NAME(clear_fso, "Display Clear Fragment Shader");
 
-      plconfig.fragment_shader = clear_fso.get();
-      if (!(m_present_clear_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+      plconfig.fragment_shader = copy_fso.get();
+      plconfig.blend = m_border_overlay_alpha_blend ? GPUPipeline::BlendState::GetAlphaBlendingState() :
+                                                      GPUPipeline::BlendState::GetNoBlendingState();
+      if (!(m_border_overlay_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
-      GL_OBJECT_NAME(m_present_clear_pipeline, "Display Clear Pipeline");
+      GL_OBJECT_NAME(m_border_overlay_pipeline, "Border Overlay Pipeline");
 
-      if (m_border_overlay_alpha_blend)
+      plconfig.blend = GPUPipeline::BlendState::GetNoBlendingState();
+      if (m_border_overlay_destination_alpha_blend)
       {
         // destination blend the main present, not source
         plconfig.blend.enable = true;
         plconfig.blend.src_blend = GPUPipeline::BlendFunc::InvDstAlpha;
         plconfig.blend.blend_op = GPUPipeline::BlendOp::Add;
         plconfig.blend.dst_blend = GPUPipeline::BlendFunc::One;
-        plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::One;
+        plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::Zero;
         plconfig.blend.alpha_blend_op = GPUPipeline::BlendOp::Add;
-        plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::Zero;
-
-        plconfig.fragment_shader = fso.get();
-        if (!(m_display_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-          return false;
-        GL_OBJECT_NAME_FMT(m_display_blend_pipeline, "Display Pipeline [Blended, {}]",
-                           Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
-
-        plconfig.fragment_shader = rotate_copy_fso.get();
-        if (!(m_present_copy_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-          return false;
-        GL_OBJECT_NAME(m_present_copy_blend_pipeline, "Display Rotate/Copy Pipeline [Blended]");
-
-        plconfig.fragment_shader = clear_fso.get();
-        if (!(m_present_clear_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
-          return false;
-        GL_OBJECT_NAME(m_present_clear_blend_pipeline, "Display Clear Pipeline [Blended]");
+        plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::One;
       }
+
+      plconfig.fragment_shader = clear_fso.get();
+      if (!(m_present_clear_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+        return false;
+      GL_OBJECT_NAME(m_present_clear_pipeline, "Display Clear Pipeline");
+
+      plconfig.fragment_shader = fso.get();
+      if (!(m_display_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+        return false;
+      GL_OBJECT_NAME_FMT(m_display_blend_pipeline, "Display Pipeline [Blended, {}]",
+                         Settings::GetDisplayScalingName(g_gpu_settings.display_scaling));
+
+      plconfig.fragment_shader = copy_fso.get();
+      if (!(m_present_copy_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+        return false;
+      GL_OBJECT_NAME(m_present_copy_blend_pipeline, "Display Copy Pipeline [Blended]");
     }
     else
     {
+      m_border_overlay_pipeline.reset();
       m_present_clear_pipeline.reset();
       m_display_blend_pipeline.reset();
       m_present_copy_blend_pipeline.reset();
-      m_present_clear_blend_pipeline.reset();
     }
   }
 
@@ -483,13 +486,12 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       if (have_overlay)
       {
         GL_SCOPE_FMT("Draw overlay and postfx buffer");
-        g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
+        g_gpu_device->SetPipeline(m_border_overlay_pipeline.get());
         g_gpu_device->SetTextureSampler(0, m_border_overlay_texture.get(), g_gpu_device->GetLinearSampler());
         DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal,
                        prerotation);
 
-        g_gpu_device->SetPipeline(m_border_overlay_alpha_blend ? m_present_copy_blend_pipeline.get() :
-                                                                 m_present_copy_pipeline.get());
+        g_gpu_device->SetPipeline(m_border_overlay_pipeline.get());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
         DrawScreenQuad(overlay_display_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size,
                        DisplayRotation::Normal, prerotation);
@@ -523,7 +525,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     if (have_overlay)
     {
       GL_SCOPE_FMT("Draw overlay to {}", overlay_rect);
-      g_gpu_device->SetPipeline(m_present_copy_pipeline.get());
+      g_gpu_device->SetPipeline(m_border_overlay_pipeline.get());
       g_gpu_device->SetTextureSampler(0, m_border_overlay_texture.get(), g_gpu_device->GetLinearSampler());
 
       DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, DisplayRotation::Normal,
@@ -533,15 +535,14 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
       {
         // Need to fill in the borders.
         GL_SCOPE_FMT("Fill in overlay borders - odisplay={}, draw={}", overlay_display_rect, draw_rect);
-        g_gpu_device->SetPipeline(m_border_overlay_alpha_blend ? m_present_clear_blend_pipeline.get() :
-                                                                 m_present_clear_pipeline.get());
+        g_gpu_device->SetPipeline(m_present_clear_pipeline.get());
         DrawScreenQuad(overlay_display_rect, GSVector4::zero(), target_size, g_settings.display_rotation, prerotation);
       }
     }
 
     if (m_display_texture)
     {
-      DrawDisplay(target_size, display_rect, m_border_overlay_alpha_blend, g_gpu_settings.display_rotation,
+      DrawDisplay(target_size, display_rect, m_border_overlay_destination_alpha_blend, g_gpu_settings.display_rotation,
                   prerotation);
     }
 
@@ -1127,14 +1128,9 @@ bool GPUPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
   if (LoadOverlaySettings())
   {
     // something changed, need to recompile pipelines, the needed pipelines are based on alpha blend
-    if (LoadOverlayTexture() &&
-        ((m_border_overlay_alpha_blend &&
-          (!m_present_copy_blend_pipeline || !m_display_blend_pipeline || !m_present_clear_blend_pipeline)) ||
-         !m_present_clear_pipeline) &&
-        !CompileDisplayPipelines(true, false, false, error))
-    {
+    LoadOverlayTexture();
+    if (!CompileDisplayPipelines(true, false, false, error))
       return false;
-    }
   }
 
   // Update postfx settings
@@ -1245,6 +1241,7 @@ bool GPUPresenter::LoadOverlaySettings()
   std::string image_path;
   GSVector4i display_rect = m_border_overlay_display_rect;
   bool alpha_blend = m_border_overlay_alpha_blend;
+  bool destination_alpha_blend = m_border_overlay_destination_alpha_blend;
   if (preset_name == "Custom")
   {
     image_path = Host::GetStringSettingValue("BorderOverlay", "ImagePath");
@@ -1253,6 +1250,7 @@ bool GPUPresenter::LoadOverlaySettings()
                               Host::GetIntSettingValue("BorderOverlay", "DisplayEndX", 0),
                               Host::GetIntSettingValue("BorderOverlay", "DisplayEndY", 0));
     alpha_blend = Host::GetBoolSettingValue("BorderOverlay", "AlphaBlend", false);
+    destination_alpha_blend = Host::GetBoolSettingValue("BorderOverlay", "DestinationAlphaBlend", false);
   }
 
   // check rect validity.. ignore everything if it's bogus
@@ -1281,15 +1279,16 @@ bool GPUPresenter::LoadOverlaySettings()
   m_border_overlay_display_rect = display_rect;
 
   // but images and alphablend require pipeline/texture changes
-  if (m_border_overlay_image_path == image_path && (image_path.empty() || alpha_blend == m_border_overlay_alpha_blend))
-  {
-    m_border_overlay_alpha_blend = alpha_blend;
-    return false;
-  }
+  const bool image_changed = (m_border_overlay_image_path != image_path);
+  const bool changed =
+    (image_changed || (!image_path.empty() && (alpha_blend == m_border_overlay_alpha_blend ||
+                                               destination_alpha_blend == m_border_overlay_destination_alpha_blend)));
+  if (image_changed)
+    m_border_overlay_image_path = std::move(image_path);
 
-  m_border_overlay_image_path = std::move(image_path);
   m_border_overlay_alpha_blend = alpha_blend;
-  return true;
+  m_border_overlay_destination_alpha_blend = destination_alpha_blend;
+  return changed;
 }
 
 bool GPUPresenter::LoadOverlayTexture()
@@ -1371,13 +1370,15 @@ bool GPUPresenter::LoadOverlayPreset(Error* error, Image* image)
 
   std::string_view image_filename;
   GSVector4i display_area = GSVector4i::zero();
-  bool display_alpha_blend = false;
+  bool alpha_blend = false;
+  bool destination_alpha_blend = false;
   if (!GetStringFromObject(root, "image", &image_filename) ||
       !GetUIntFromObject(root, "displayStartX", &display_area.x) ||
       !GetUIntFromObject(root, "displayStartY", &display_area.y) ||
       !GetUIntFromObject(root, "displayEndX", &display_area.z) ||
       !GetUIntFromObject(root, "displayEndY", &display_area.w) ||
-      !GetUIntFromObject(root, "alphaBlend", &display_alpha_blend))
+      !GetUIntFromObject(root, "alphaBlend", &alpha_blend) ||
+      !GetUIntFromObject(root, "destinationAlphaBlend", &destination_alpha_blend))
   {
     Error::SetStringView(error, "One or more parameters is missing.");
     return false;
@@ -1389,6 +1390,7 @@ bool GPUPresenter::LoadOverlayPreset(Error* error, Image* image)
     return false;
 
   m_border_overlay_display_rect = display_area;
-  m_border_overlay_alpha_blend = display_alpha_blend;
+  m_border_overlay_alpha_blend = alpha_blend;
+  m_border_overlay_destination_alpha_blend = destination_alpha_blend;
   return true;
 }
