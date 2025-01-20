@@ -256,7 +256,6 @@ static void DoStartPath(std::string path, std::string state = std::string(),
 static void DoResume();
 static void DoStartFile();
 static void DoStartBIOS();
-static void DoStartDisc(std::string path);
 static void DoStartDisc();
 static void DoToggleFastForward();
 static void ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback);
@@ -922,7 +921,7 @@ void FullscreenUI::Render()
   ImGuiFullscreen::UploadAsyncTextures();
 
   // draw background before any overlays
-  if (!GPUThread::HasGPUBackend())
+  if (!GPUThread::HasGPUBackend() && s_state.current_main_window != MainWindowType::None)
     DrawBackground();
 
   ImGuiFullscreen::BeginLayout();
@@ -1100,28 +1099,31 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
     return;
 
   // Switch to nothing, we'll get called back via OnSystemDestroyed() if startup fails.
-  s_state.current_main_window = MainWindowType::None;
+  const MainWindowType prev_main_window = std::exchange(s_state.current_main_window, MainWindowType::None);
   QueueResetFocus(FocusResetType::ViewChanged);
-  UpdateRunIdleState();
+  GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, false);
 
   SystemBootParameters params;
   params.filename = std::move(path);
   params.save_state = std::move(state);
   params.override_fast_boot = std::move(fast_boot);
-  Host::RunOnCPUThread([params = std::move(params)]() {
+  Host::RunOnCPUThread([params = std::move(params), prev_main_window]() {
     if (System::IsValid())
       return;
 
     Error error;
     if (!System::BootSystem(std::move(params), &error))
     {
-      GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+      GPUThread::RunOnThread([error_desc = error.TakeDescription(), prev_main_window]() {
         if (!IsInitialized())
           return;
 
         OpenInfoMessageDialog(TRANSLATE_STR("System", "Error"),
                               fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
-        ReturnToPreviousWindow();
+        // ReturnToPreviousWindow();
+        s_state.current_main_window = prev_main_window;
+        QueueResetFocus(FocusResetType::ViewChanged);
+        UpdateRunIdleState();
       });
     }
   });
@@ -1161,30 +1163,7 @@ void FullscreenUI::DoStartFile()
 
 void FullscreenUI::DoStartBIOS()
 {
-  DoStartDisc(std::string());
-}
-
-void FullscreenUI::DoStartDisc(std::string path)
-{
-  Host::RunOnCPUThread([path = std::move(path)]() mutable {
-    if (System::IsValid())
-      return;
-
-    Error error;
-    SystemBootParameters params;
-    params.filename = std::move(path);
-    if (!System::BootSystem(std::move(params), &error))
-    {
-      GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
-        if (!IsInitialized())
-          return;
-
-        OpenInfoMessageDialog(TRANSLATE_STR("System", "Error"),
-                              fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
-        ReturnToPreviousWindow();
-      });
-    }
-  });
+  DoStartPath(std::string(), std::string(), std::nullopt);
 }
 
 void FullscreenUI::DoStartDisc()
@@ -1201,7 +1180,7 @@ void FullscreenUI::DoStartDisc()
   // if there's only one, select it automatically
   if (devices.size() == 1)
   {
-    DoStartDisc(std::move(devices.front().first));
+    DoStartPath(std::move(devices.front().first), std::string(), std::nullopt);
     return;
   }
 
@@ -1219,7 +1198,7 @@ void FullscreenUI::DoStartDisc()
                      if (index < 0)
                        return;
 
-                     DoStartDisc(std::move(paths[index]));
+                     DoStartPath(std::move(paths[index]), std::string(), std::nullopt);
                    });
 }
 
