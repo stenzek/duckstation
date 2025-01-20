@@ -118,6 +118,7 @@ static PlayedTimeEntry UpdatePlayedTimeFile(const std::string& path, const std::
                                             std::time_t add_time);
 
 static std::string GetCustomPropertiesFile();
+static const std::string& GetCustomPropertiesSection(const std::string& path, std::string* temp_path);
 static bool PutCustomPropertiesField(INISettingsInterface& ini, const std::string& path, const char* field,
                                      const char* value);
 
@@ -624,14 +625,17 @@ bool GameList::RescanCustomAttributesForPath(const std::string& path, const INIS
 void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
                                      const INISettingsInterface& custom_attributes_ini)
 {
-  std::optional<std::string> custom_title = custom_attributes_ini.GetOptionalStringValue(path.c_str(), "Title");
+  std::string temp_path;
+  const std::string& section = GetCustomPropertiesSection(path, &temp_path);
+
+  std::optional<std::string> custom_title = custom_attributes_ini.GetOptionalStringValue(section.c_str(), "Title");
   if (custom_title.has_value())
   {
     entry->title = std::move(custom_title.value());
     entry->has_custom_title = true;
   }
   const std::optional<SmallString> custom_region_str =
-    custom_attributes_ini.GetOptionalSmallStringValue(path.c_str(), "Region");
+    custom_attributes_ini.GetOptionalSmallStringValue(section.c_str(), "Region");
   if (custom_region_str.has_value())
   {
     const std::optional<DiscRegion> custom_region = Settings::ParseDiscRegionName(custom_region_str.value());
@@ -646,7 +650,7 @@ void GameList::ApplyCustomAttributes(const std::string& path, Entry* entry,
     }
   }
   const std::optional<TinyString> custom_language_str =
-    custom_attributes_ini.GetOptionalTinyStringValue(path.c_str(), "Language");
+    custom_attributes_ini.GetOptionalTinyStringValue(section.c_str(), "Language");
   if (custom_language_str.has_value())
   {
     const std::optional<GameDatabase::Language> custom_region =
@@ -1550,18 +1554,31 @@ std::string GameList::GetCustomPropertiesFile()
   return Path::Combine(EmuFolders::DataRoot, "custom_properties.ini");
 }
 
+const std::string& GameList::GetCustomPropertiesSection(const std::string& path, std::string* temp_path)
+{
+  // pretty much everything is fine in an ini section, except for square brackets.
+  if (path.find_first_of("[]") == std::string::npos)
+    return path;
+
+  // otherwise, URLencode it
+  return (*temp_path = Path::URLEncode(path));
+}
+
 bool GameList::PutCustomPropertiesField(INISettingsInterface& ini, const std::string& path, const char* field,
                                         const char* value)
 {
   ini.Load();
 
+  std::string temp_path;
+  const std::string& section = GetCustomPropertiesSection(path, &temp_path);
+
   if (value && *value != '\0')
   {
-    ini.SetStringValue(path.c_str(), field, value);
+    ini.SetStringValue(section.c_str(), field, value);
   }
   else
   {
-    ini.DeleteValue(path.c_str(), field);
+    ini.DeleteValue(section.c_str(), field);
     ini.RemoveEmptySections();
   }
 
