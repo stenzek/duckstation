@@ -277,3 +277,65 @@ TEST(Path, CreateFileURL)
   ASSERT_EQ(Path::CreateFileURL("/foo/bar"), "file:///foo/bar");
 #endif
 }
+
+TEST(Path, URLEncode)
+{
+  // Basic cases
+  ASSERT_EQ(Path::URLEncode("hello world"), "hello%20world");
+  ASSERT_EQ(Path::URLEncode(""), "");
+  ASSERT_EQ(Path::URLEncode("abcABC123"), "abcABC123");
+
+  // Special characters
+  ASSERT_EQ(Path::URLEncode("!@#$%^&*()"), "%21%40%23%24%25%5E%26%2A%28%29");
+  ASSERT_EQ(Path::URLEncode("[]{}<>"), "%5B%5D%7B%7D%3C%3E");
+  ASSERT_EQ(Path::URLEncode(",./?;:'\""), "%2C.%2F%3F%3B%3A%27%22");
+
+  // Unicode characters
+  ASSERT_EQ(Path::URLEncode("こんにちは"), "%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF");
+  ASSERT_EQ(Path::URLEncode("über"), "%C3%BCber");
+
+  // Additional special characters
+  ASSERT_EQ(Path::URLEncode("=&?"), "%3D%26%3F");
+  ASSERT_EQ(Path::URLEncode("\\|`"), "%5C%7C%60");
+  ASSERT_EQ(Path::URLEncode("§±€"), "%C2%A7%C2%B1%E2%82%AC");
+  ASSERT_EQ(Path::URLEncode("%20%2F%3F"), "%2520%252F%253F");
+  ASSERT_EQ(Path::URLEncode("tab\tline\nreturn\r"), "tab%09line%0Areturn%0D");
+
+  // Mixed content
+  ASSERT_EQ(Path::URLEncode("path/to/my file.txt"), "path%2Fto%2Fmy%20file.txt");
+  ASSERT_EQ(Path::URLEncode("user+name@example.com"), "user%2Bname%40example.com");
+}
+
+TEST(Path, URLDecode)
+{
+  // Basic cases
+  ASSERT_EQ(Path::URLDecode("hello%20world"), "hello world");
+  ASSERT_EQ(Path::URLDecode(""), "");
+  ASSERT_EQ(Path::URLDecode("abcABC123"), "abcABC123");
+
+  // Special characters
+  ASSERT_EQ(Path::URLDecode("%21%40%23%24%25%5E%26%2A%28%29"), "!@#$%^&*()");
+  ASSERT_EQ(Path::URLDecode("%5B%5D%7B%7D%3C%3E"), "[]{}<>");
+  ASSERT_EQ(Path::URLDecode("%2C%2F%3F%3B%3A%27%22"), ",/?;:'\"");
+
+  // Additional special characters
+  ASSERT_EQ(Path::URLDecode("%3D%26%3F"), "=&?");
+  ASSERT_EQ(Path::URLDecode("%5C%7C%60"), "\\|`");
+  ASSERT_EQ(Path::URLDecode("%C2%A7%C2%B1%E2%82%AC"), "§±€");
+  ASSERT_EQ(Path::URLDecode("%2520%252F%253F"), "%20%2F%3F");
+  ASSERT_EQ(Path::URLDecode("tab%09line%0Areturn%0D"), "tab\tline\nreturn\r");
+
+  // Unicode characters
+  ASSERT_EQ(Path::URLDecode("%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF"), "こんにちは");
+  ASSERT_EQ(Path::URLDecode("%C3%BCber"), "über");
+
+  // Mixed content
+  ASSERT_EQ(Path::URLDecode("path%2Fto%2Fmy%20file.txt"), "path/to/my file.txt");
+  ASSERT_EQ(Path::URLDecode("user%2Bname%40example.com"), "user+name@example.com");
+
+  // Invalid decode cases - decoder should stop at first error
+  ASSERT_EQ(Path::URLDecode("hello%2G"), "hello");    // Invalid hex char 'G'
+  ASSERT_EQ(Path::URLDecode("test%"), "test");        // Incomplete escape sequence
+  ASSERT_EQ(Path::URLDecode("path%%20name"), "path"); // Invalid % followed by valid sequence
+  ASSERT_EQ(Path::URLDecode("abc%2"), "abc");         // Truncated escape sequence
+}
