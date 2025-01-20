@@ -4208,6 +4208,9 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
   UpdateRichPresence(booting);
 
+  FullscreenUI::OnRunningGameChanged(s_state.running_game_path, s_state.running_game_serial,
+                                     s_state.running_game_title);
+
   Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title);
 }
 
