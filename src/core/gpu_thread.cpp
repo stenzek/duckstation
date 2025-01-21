@@ -820,11 +820,11 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     return;
   }
 
-  // TODO: Make this suck less.
   g_gpu_settings = g_settings;
 
   // Readback old VRAM for hardware renderers.
-  if (s_state.gpu_backend && cmd->renderer.has_value() && cmd->upload_vram)
+  const bool had_renderer = static_cast<bool>(s_state.gpu_backend);
+  if (had_renderer && cmd->renderer.has_value() && cmd->upload_vram)
   {
     GPUBackendReadVRAMCommand read_cmd;
     read_cmd.type = GPUBackendCommandType::ReadVRAM;
@@ -878,8 +878,18 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     // Do we want a renderer?
     if (!(*cmd->out_result = CreateGPUBackendOnThread(cmd->renderer.value(), cmd->upload_vram, cmd->error_ptr)))
     {
-      // No point keeping the presenter around.
-      DestroyGPUPresenterOnThread();
+      // If we had a renderer, it means it was a switch, and we need to bail out the thread.
+      if (had_renderer)
+      {
+        GPUThread::ReportFatalErrorAndShutdown("Failed to switch GPU backend.");
+        *cmd->out_result = true;
+      }
+      else
+      {
+        // No point keeping the presenter around.
+        DestroyGPUBackendOnThread();
+        DestroyGPUPresenterOnThread();
+      }
     }
   }
   else if (s_state.requested_fullscreen_ui)
