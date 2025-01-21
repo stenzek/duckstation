@@ -883,7 +883,13 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
     #endif
 
     // load colour/palette
-    float4 texel = SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
+    // use texelFetch()/load for native resolution to work around point sampling precision
+    // in some drivers, such as older AMD and Mali Midgard
+    #if !UPSCALED
+      float4 texel = LOAD_TEXTURE(samp0, int2(vicoord), 0);
+    #else
+      float4 texel = SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
+    #endif
     uint vram_value = RGBA8ToRGBA5551(texel);
 
     // apply palette
@@ -898,13 +904,17 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       uint2 palette_icoord = uint2(((texpage.z + palette_index) & 0x3FFu), texpage.w);
     #endif
 
-    return SAMPLE_TEXTURE_LEVEL(samp0, float2(palette_icoord) * RCP_VRAM_SIZE, 0.0);
+    #if !UPSCALED
+      return LOAD_TEXTURE(samp0, int2(palette_icoord), 0);
+    #else
+      return SAMPLE_TEXTURE_LEVEL(samp0, float2(palette_icoord) * RCP_VRAM_SIZE, 0.0);
+    #endif
   #else
     // Direct texturing - usually render-to-texture effects.
     #if !UPSCALED
       uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
       uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
-      return SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
+      return LOAD_TEXTURE(samp0, int2(vicoord), 0);
     #else
       // Coordinates are already upscaled, we need to downscale them to apply the texture
       // window, then re-upscale/offset. We can't round here, because it could result in
