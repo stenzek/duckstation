@@ -1079,6 +1079,8 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
   }
   else
   {
+#ifndef __ANDROID__
+    // Not needed on Android, debug windows are not used.
     RunOnThread([]() {
       if (s_state.gpu_backend)
       {
@@ -1086,6 +1088,7 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
           Internal::PresentFrameAndRestoreContext();
       }
     });
+#endif
   }
 }
 
