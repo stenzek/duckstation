@@ -589,7 +589,7 @@ public:
     bool per_sample_shading : 1;
     bool noperspective_interpolation : 1;
     bool texture_copy_to_self : 1;
-    bool supports_texture_buffers : 1;
+    bool texture_buffers : 1;
     bool texture_buffers_emulated_with_ssbo : 1;
     bool feedback_loops : 1;
     bool geometry_shaders : 1;

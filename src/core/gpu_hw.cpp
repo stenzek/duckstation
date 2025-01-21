@@ -961,7 +961,7 @@ bool GPU_HW::CreateBuffers(Error* error)
     }
   }
 
-  if (g_gpu_device->GetFeatures().supports_texture_buffers)
+  if (g_gpu_device->GetFeatures().texture_buffers)
   {
     if (!(m_vram_upload_buffer = g_gpu_device->CreateTextureBuffer(GPUTextureBuffer::Format::R16UI,
                                                                    GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS, error)))
@@ -1616,7 +1616,7 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM write
   {
-    const bool use_buffer = features.supports_texture_buffers;
+    const bool use_buffer = features.texture_buffers;
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
       GPUShaderStage::Fragment, shadergen.GetLanguage(),
@@ -3381,7 +3381,7 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
   GPUDevice::AutoRecycleTexture upload_texture;
   u32 map_index;
 
-  if (!g_gpu_device->GetFeatures().supports_texture_buffers)
+  if (!g_gpu_device->GetFeatures().texture_buffers)
   {
     map_index = 0;
     upload_texture =

@@ -2432,7 +2432,7 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDe
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self = !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
   m_features.per_sample_shading = vk_features.sampleRateShading;
-  m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
+  m_features.texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.feedback_loops = !(disabled_features & FEATURE_MASK_FEEDBACK_LOOPS);
 
 #ifdef __APPLE__
