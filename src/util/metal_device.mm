@@ -385,6 +385,7 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.geometry_shaders = false;
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = true;
+  m_features.exclusive_fullscreen = false;
   m_features.explicit_present = false;
   m_features.timed_present = true;
   m_features.shader_cache = true;

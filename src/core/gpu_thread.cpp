@@ -629,7 +629,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   g_gpu_device = GPUDevice::CreateDeviceForAPI(api);
 
   std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode;
-  if (fullscreen && g_gpu_device && g_gpu_device->SupportsExclusiveFullscreen())
+  if (fullscreen && g_gpu_device && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
     fullscreen_mode =
       GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
@@ -1140,7 +1140,7 @@ void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen)
     return;
 
   std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode;
-  if (fullscreen && g_gpu_device->SupportsExclusiveFullscreen())
+  if (fullscreen && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
     fullscreen_mode =
       GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));

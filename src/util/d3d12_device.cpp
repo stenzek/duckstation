@@ -116,6 +116,7 @@ static constexpr const u32 s_mipmap_blit_ps[] = {
 D3D12Device::D3D12Device()
 {
   m_render_api = RenderAPI::D3D12;
+  m_features.exclusive_fullscreen = true; // set so the caller can pass a mode to CreateDeviceAndSwapChain()
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
   s_debug_scope_depth = 0;
@@ -1346,6 +1347,7 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
   m_features.compute_shaders = !(disabled_features & FEATURE_MASK_COMPUTE_SHADERS);
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = false;
+  m_features.exclusive_fullscreen = true;
   m_features.explicit_present = true;
   m_features.timed_present = false;
   m_features.gpu_timing = true;

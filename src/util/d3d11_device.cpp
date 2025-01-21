@@ -48,6 +48,7 @@ void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
 D3D11Device::D3D11Device()
 {
   m_render_api = RenderAPI::D3D11;
+  m_features.exclusive_fullscreen = true; // set so the caller can pass a mode to CreateDeviceAndSwapChain()
 }
 
 D3D11Device::~D3D11Device()
@@ -186,6 +187,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
     (!(disabled_features & FEATURE_MASK_COMPUTE_SHADERS) && feature_level >= D3D_FEATURE_LEVEL_11_0);
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = false;
+  m_features.exclusive_fullscreen = true;
   m_features.explicit_present = false;
   m_features.timed_present = false;
   m_features.gpu_timing = true;
@@ -468,11 +470,6 @@ std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi,
   }
 
   return ret;
-}
-
-bool D3D11Device::SupportsExclusiveFullscreen() const
-{
-  return true;
 }
 
 std::string D3D11Device::GetDriverInfo() const

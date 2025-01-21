@@ -596,6 +596,7 @@ public:
     bool compute_shaders : 1;
     bool partial_msaa_resolve : 1;
     bool memory_import : 1;
+    bool exclusive_fullscreen : 1;
     bool explicit_present : 1;
     bool timed_present : 1;
     bool gpu_timing : 1;
@@ -739,8 +740,6 @@ public:
                              const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                              std::optional<bool> exclusive_fullscreen_control, Error* error);
   void DestroyMainSwapChain();
-
-  virtual bool SupportsExclusiveFullscreen() const;
 
   virtual std::string GetDriverInfo() const = 0;
 

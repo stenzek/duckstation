@@ -37,8 +37,6 @@ public:
   ALWAYS_INLINE static IDXGIFactory5* GetDXGIFactory() { return GetInstance().m_dxgi_factory.Get(); }
   ALWAYS_INLINE static D3D_FEATURE_LEVEL GetMaxFeatureLevel() { return GetInstance().m_max_feature_level; }
 
-  bool SupportsExclusiveFullscreen() const override;
-
   std::string GetDriverInfo() const override;
 
   void FlushCommands() override;

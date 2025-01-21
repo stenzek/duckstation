@@ -506,11 +506,6 @@ void GPUDevice::DestroyMainSwapChain()
   m_main_swap_chain.reset();
 }
 
-bool GPUDevice::SupportsExclusiveFullscreen() const
-{
-  return false;
-}
-
 void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
 {
   if (m_features.shader_cache && !base_path.empty())

@@ -2455,6 +2455,7 @@ void VulkanDevice::SetFeatures(FeatureMask disabled_features, const VkPhysicalDe
 
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = m_optional_extensions.vk_ext_external_memory_host;
+  m_features.exclusive_fullscreen = false;
   m_features.explicit_present = true;
   m_features.timed_present = false;
   m_features.shader_cache = true;
