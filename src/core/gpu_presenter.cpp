@@ -1158,7 +1158,7 @@ bool GPUPresenter::UpdatePostProcessingSettings(bool force_reload, Error* error)
     static constexpr const char* section = PostProcessing::Config::DISPLAY_CHAIN_SECTION;
 
     auto lock = Host::GetSettingsLock();
-    const SettingsInterface& si = *Host::GetSettingsInterface();
+    const SettingsInterface& si = GetPostProcessingSettingsInterface(section);
 
     // Don't delete the chain if we're just temporarily disabling.
     if (PostProcessing::Config::GetStageCount(si, section) == 0)
