@@ -560,9 +560,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
 
     if (m_display_texture)
     {
-      DrawDisplay(target_size, final_target_size, display_rect,
-                  have_overlay && m_border_overlay_destination_alpha_blend, g_gpu_settings.display_rotation,
-                  prerotation);
+      DrawDisplay(target_size, final_target_size, draw_rect, have_overlay && m_border_overlay_destination_alpha_blend,
+                  g_gpu_settings.display_rotation, prerotation);
     }
 
     return GPUDevice::PresentResult::OK;
