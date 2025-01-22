@@ -82,7 +82,7 @@ static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Err
 static void DestroyGPUBackendOnThread();
 static void DestroyGPUPresenterOnThread();
 
-static void UpdateSettingsOnThread(const GPUSettings& old_settings);
+static void UpdateSettingsOnThread(GPUThreadUpdateSettingsCommand* cmd);
 
 static void UpdateRunIdle();
 
@@ -507,6 +507,14 @@ void GPUThread::Internal::GPUThreadEntryPoint()
         }
         break;
 
+        case GPUBackendCommandType::UpdateSettings:
+        {
+          GPUThreadUpdateSettingsCommand* ccmd = static_cast<GPUThreadUpdateSettingsCommand*>(cmd);
+          UpdateSettingsOnThread(ccmd);
+          ccmd->~GPUThreadUpdateSettingsCommand();
+        }
+        break;
+
         case GPUBackendCommandType::Shutdown:
         {
           // Should have consumed everything, and be shutdown.
@@ -553,6 +561,7 @@ bool GPUThread::Reconfigure(std::string serial, std::optional<GPURenderer> rende
   cmd->upload_vram = upload_vram;
   cmd->error_ptr = error;
   cmd->out_result = &result;
+  cmd->settings = g_settings;
 
   if (!s_state.use_gpu_thread) [[unlikely]]
     ReconfigureOnThread(cmd);
@@ -819,7 +828,7 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
   s_state.requested_allow_present_throttle = cmd->allow_present_throttle;
   s_state.requested_fullscreen_ui = cmd->start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
   s_state.game_serial = std::move(cmd->game_serial);
-  g_gpu_settings = g_settings;
+  g_gpu_settings = std::move(cmd->settings);
 
   // Readback old VRAM for hardware renderers.
   const bool had_renderer = static_cast<bool>(s_state.gpu_backend);
@@ -966,8 +975,13 @@ bool GPUThread::Internal::PresentFrameAndRestoreContext()
   return true;
 }
 
-void GPUThread::UpdateSettingsOnThread(const GPUSettings& old_settings)
+void GPUThread::UpdateSettingsOnThread(GPUThreadUpdateSettingsCommand* cmd)
 {
+  VERBOSE_LOG("Updating GPU settings on thread...");
+
+  GPUSettings old_settings = std::move(g_gpu_settings);
+  g_gpu_settings = std::move(cmd->settings);
+
   if (g_gpu_device)
   {
     if (g_gpu_settings.display_osd_scale != old_settings.display_osd_scale)
@@ -1067,14 +1081,9 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
   }
   else if (gpu_settings_changed)
   {
-    RunOnThread([settings = g_settings]() {
-      VERBOSE_LOG("Updating GPU settings on thread...");
-
-      GPUSettings old_settings = std::move(g_gpu_settings);
-      g_gpu_settings = std::move(settings);
-
-      UpdateSettingsOnThread(old_settings);
-    });
+    GPUThreadUpdateSettingsCommand* cmd =
+      AllocateCommand<GPUThreadUpdateSettingsCommand>(GPUBackendCommandType::UpdateSettings, g_settings);
+    PushCommandAndWakeThread(cmd);
   }
   else
   {

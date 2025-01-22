@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "gpu_types.h"
+#include "settings.h"
 
 #include "common/align.h"
 
@@ -29,6 +30,7 @@ enum class GPUBackendCommandType : u8
   AsyncCall,
   AsyncBackendCall,
   Reconfigure,
+  UpdateSettings,
   Shutdown,
   ClearVRAM,
   ClearDisplay,
@@ -78,6 +80,14 @@ struct GPUThreadReconfigureCommand : public GPUThreadCommand
   bool allow_present_throttle;
   bool force_recreate_device;
   bool upload_vram;
+  GPUSettings settings;
+};
+
+struct GPUThreadUpdateSettingsCommand : public GPUThreadCommand
+{
+  GPUThreadUpdateSettingsCommand(const GPUSettings& settings_) : settings(settings_) {}
+
+  GPUSettings settings;
 };
 
 struct GPUThreadAsyncCallCommand : public GPUThreadCommand
