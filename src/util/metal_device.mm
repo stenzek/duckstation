@@ -2595,7 +2595,7 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32
     SetViewportAndScissor(m_current_framebuffer_size);
 
     // Set up rendering to layer.
-    const GSVector4 clear_color_v = GSVector4::rgba32(clear_color);
+    const GSVector4 clear_color_v = GSVector4::unorm8(clear_color);
     id<MTLTexture> layer_texture = [m_layer_drawable texture];
     MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
     desc.colorAttachments[0].texture = layer_texture;

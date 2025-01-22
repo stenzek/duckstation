@@ -3399,7 +3399,7 @@ void VulkanDevice::BeginSwapChainRenderPass(VulkanSwapChain* swap_chain, u32 cle
   }
 
   VkClearValue clear_value;
-  GSVector4::store<false>(&clear_value.color.float32, GSVector4::rgba32(clear_color));
+  GSVector4::store<false>(&clear_value.color.float32, GSVector4::unorm8(clear_color));
   if (m_optional_extensions.vk_khr_dynamic_rendering)
   {
     VkRenderingAttachmentInfo ai = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,

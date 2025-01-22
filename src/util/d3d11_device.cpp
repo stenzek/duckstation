@@ -675,7 +675,7 @@ GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32
     EndTimestampQuery();
   }
 
-  m_context->ClearRenderTargetView(SC->GetRTV(), GSVector4::rgba32(clear_color).F32);
+  m_context->ClearRenderTargetView(SC->GetRTV(), GSVector4::unorm8(clear_color).F32);
   m_context->OMSetRenderTargets(1, SC->GetRTVArray(), nullptr);
   s_stats.num_render_passes++;
   m_num_current_render_targets = 0;

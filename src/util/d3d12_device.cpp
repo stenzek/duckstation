@@ -1219,7 +1219,7 @@ GPUDevice::PresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32
   D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {swap_chain_buf.second,
                                                   {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, {}},
                                                   {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
-  GSVector4::store<false>(rt_desc.BeginningAccess.Clear.ClearValue.Color, GSVector4::rgba32(clear_color));
+  GSVector4::store<false>(rt_desc.BeginningAccess.Clear.ClearValue.Color, GSVector4::unorm8(clear_color));
   cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
 
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));

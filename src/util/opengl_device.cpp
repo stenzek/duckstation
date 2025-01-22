@@ -797,7 +797,7 @@ GPUDevice::PresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u3
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_SCISSOR_TEST);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  glClearBufferfv(GL_COLOR, 0, GSVector4::rgba32(clear_color).F32);
+  glClearBufferfv(GL_COLOR, 0, GSVector4::unorm8(clear_color).F32);
   glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
               m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);
