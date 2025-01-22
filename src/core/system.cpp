@@ -1220,7 +1220,7 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
-  if (IsValidOrInitializing())
+  if (IsValidOrInitializing() && display_osd_messages)
     WarnAboutUnsafeSettings();
 
   // apply compatibility settings
@@ -4740,59 +4740,54 @@ void System::WarnAboutUnsafeSettings()
 
   if (!g_settings.disable_all_enhancements)
   {
-    if (ImGuiManager::IsShowingOSDMessages())
+    if (g_settings.cpu_overclock_active)
     {
-      if (g_settings.cpu_overclock_active)
-      {
-        append_format(ICON_EMOJI_WARNING,
-                      TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
-                      g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
-                      g_settings.cpu_overclock_denominator);
-      }
-      if (g_settings.cdrom_read_speedup != 1)
-      {
-        TinyString speed;
-        if (g_settings.cdrom_read_speedup == 0)
-          speed = TRANSLATE_SV("System", "Maximum");
-        else
-          speed.format("{}x", g_settings.cdrom_read_speedup);
-        append_format(ICON_EMOJI_WARNING,
-                      TRANSLATE_FS("System", "CD-ROM read speedup set to {}. This may crash games."), speed);
-      }
-      if (g_settings.cdrom_seek_speedup != 1)
-      {
-        TinyString speed;
-        if (g_settings.cdrom_seek_speedup == 0)
-          speed = TRANSLATE_SV("System", "Maximum");
-        else
-          speed.format("{}x", g_settings.cdrom_seek_speedup);
-        append_format(ICON_EMOJI_WARNING,
-                      TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."), speed);
-      }
-      if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      {
-        append(ICON_FA_TV,
-               TRANSLATE_SV("System", "Force frame timings is enabled. Games may run at incorrect speeds."));
-      }
-      if (!g_settings.IsUsingSoftwareRenderer())
-      {
-        if (g_settings.gpu_multisamples != 1)
-        {
-          append(ICON_EMOJI_WARNING,
-                 TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
-        }
-        if (g_settings.gpu_resolution_scale > 1 && g_settings.gpu_force_round_texcoords)
-        {
-          append(
-            ICON_EMOJI_WARNING,
-            TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
-        }
-      }
-      if (g_settings.enable_8mb_ram)
+      append_format(
+        ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+        g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
+    }
+    if (g_settings.cdrom_read_speedup != 1)
+    {
+      TinyString speed;
+      if (g_settings.cdrom_read_speedup == 0)
+        speed = TRANSLATE_SV("System", "Maximum");
+      else
+        speed.format("{}x", g_settings.cdrom_read_speedup);
+      append_format(ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CD-ROM read speedup set to {}. This may crash games."),
+                    speed);
+    }
+    if (g_settings.cdrom_seek_speedup != 1)
+    {
+      TinyString speed;
+      if (g_settings.cdrom_seek_speedup == 0)
+        speed = TRANSLATE_SV("System", "Maximum");
+      else
+        speed.format("{}x", g_settings.cdrom_seek_speedup);
+      append_format(ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
+                    speed);
+    }
+    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+    {
+      append(ICON_FA_TV, TRANSLATE_SV("System", "Force frame timings is enabled. Games may run at incorrect speeds."));
+    }
+    if (!g_settings.IsUsingSoftwareRenderer())
+    {
+      if (g_settings.gpu_multisamples != 1)
       {
         append(ICON_EMOJI_WARNING,
-               TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+               TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
       }
+      if (g_settings.gpu_resolution_scale > 1 && g_settings.gpu_force_round_texcoords)
+      {
+        append(
+          ICON_EMOJI_WARNING,
+          TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
+      }
+    }
+    if (g_settings.enable_8mb_ram)
+    {
+      append(ICON_EMOJI_WARNING,
+             TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
     }
 
     // Always display TC warning.
@@ -4817,8 +4812,6 @@ void System::WarnAboutUnsafeSettings()
   {
     append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "Safe mode is enabled."));
 
-    if (ImGuiManager::IsShowingOSDMessages())
-    {
 #define APPEND_SUBMESSAGE(msg)                                                                                         \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -4827,59 +4820,58 @@ void System::WarnAboutUnsafeSettings()
     messages.append('\n');                                                                                             \
   } while (0)
 
-      if (g_settings.cpu_overclock_active)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
-      if (g_settings.enable_8mb_ram)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
-      if (s_state.game_settings_interface &&
-          s_state.game_settings_interface->GetBoolValue("Cheats", "EnableCheats", false))
-      {
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
-      }
-      if (s_state.game_settings_interface && s_state.game_settings_interface->ContainsValue("Patches", "Enable"))
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Patches disabled."));
-      if (g_settings.gpu_resolution_scale != 1)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
-      if (g_settings.gpu_multisamples != 1)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
-      if (g_settings.gpu_true_color)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "True color disabled."));
-      if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
-          g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
-      {
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
-      }
-      if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
-      if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
-      if (g_settings.gpu_widescreen_hack)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
-      if (g_settings.gpu_pgxp_enable)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PGXP disabled."));
-      if (g_settings.gpu_texture_cache)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "GPU texture cache disabled."));
-      if (g_settings.display_24bit_chroma_smoothing)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
-      if (g_settings.cdrom_read_speedup != 1)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
-      if (g_settings.cdrom_seek_speedup != 1)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
-      if (g_settings.cdrom_mute_cd_audio)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
-      if (g_settings.texture_replacements.enable_vram_write_replacements)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
-      if (g_settings.use_old_mdec_routines)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
-      if (g_settings.pio_device_type != PIODeviceType::None)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));
-      if (g_settings.pcdrv_enable)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
-      if (g_settings.bios_patch_fast_boot)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
+    if (g_settings.cpu_overclock_active)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
+    if (g_settings.enable_8mb_ram)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
+    if (s_state.game_settings_interface &&
+        s_state.game_settings_interface->GetBoolValue("Cheats", "EnableCheats", false))
+    {
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
+    }
+    if (s_state.game_settings_interface && s_state.game_settings_interface->ContainsValue("Patches", "Enable"))
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Patches disabled."));
+    if (g_settings.gpu_resolution_scale != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
+    if (g_settings.gpu_multisamples != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
+    if (g_settings.gpu_true_color)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "True color disabled."));
+    if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
+        g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
+    {
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
+    }
+    if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
+    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
+    if (g_settings.gpu_widescreen_hack)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
+    if (g_settings.gpu_pgxp_enable)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PGXP disabled."));
+    if (g_settings.gpu_texture_cache)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "GPU texture cache disabled."));
+    if (g_settings.display_24bit_chroma_smoothing)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
+    if (g_settings.cdrom_read_speedup != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
+    if (g_settings.cdrom_seek_speedup != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
+    if (g_settings.cdrom_mute_cd_audio)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
+    if (g_settings.texture_replacements.enable_vram_write_replacements)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
+    if (g_settings.use_old_mdec_routines)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
+    if (g_settings.pio_device_type != PIODeviceType::None)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));
+    if (g_settings.pcdrv_enable)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
+    if (g_settings.bios_patch_fast_boot)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
 
 #undef APPEND_SUBMESSAGE
-    }
   }
 
   if (!g_settings.apply_compatibility_settings)
@@ -4897,7 +4889,10 @@ void System::WarnAboutUnsafeSettings()
       messages.pop_back();
 
     LogUnsafeSettingsToConsole(messages);
-    Host::AddKeyedOSDWarning("performance_settings_warning", std::string(messages.view()), Host::OSD_WARNING_DURATION);
+
+    // Force the message, but use a reduced duration if they have OSD messages disabled.
+    Host::AddKeyedOSDWarning("performance_settings_warning", std::string(messages.view()),
+                             ImGuiManager::IsShowingOSDMessages() ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION);
   }
   else
   {
