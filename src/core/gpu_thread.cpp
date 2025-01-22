@@ -805,12 +805,6 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
 
 void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
 {
-  // Store state.
-  s_state.requested_vsync = cmd->vsync_mode;
-  s_state.requested_allow_present_throttle = cmd->allow_present_throttle;
-  s_state.requested_fullscreen_ui = cmd->start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
-  s_state.game_serial = std::move(cmd->game_serial);
-
   // Are we shutting down everything?
   if (!cmd->renderer.has_value() && !s_state.requested_fullscreen_ui)
   {
@@ -820,6 +814,11 @@ void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
     return;
   }
 
+  // Store state.
+  s_state.requested_vsync = cmd->vsync_mode;
+  s_state.requested_allow_present_throttle = cmd->allow_present_throttle;
+  s_state.requested_fullscreen_ui = cmd->start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
+  s_state.game_serial = std::move(cmd->game_serial);
   g_gpu_settings = g_settings;
 
   // Readback old VRAM for hardware renderers.

@@ -4185,9 +4185,6 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
     }
   }
 
-  if (!booting)
-    GPUThread::SetGameSerial(s_state.running_game_serial);
-
   if (!IsReplayingGPUDump())
   {
     if (booting)
@@ -4204,7 +4201,10 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   ApplySettings(true);
 
   if (s_state.running_game_serial != prev_serial)
+  {
+    GPUThread::SetGameSerial(s_state.running_game_serial);
     UpdateSessionTime(prev_serial);
+  }
 
   UpdateRichPresence(booting);
 
