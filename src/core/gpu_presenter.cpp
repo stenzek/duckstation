@@ -188,7 +188,8 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
         plconfig.blend.enable = true;
         plconfig.blend.src_blend = GPUPipeline::BlendFunc::InvDstAlpha;
         plconfig.blend.blend_op = GPUPipeline::BlendOp::Add;
-        plconfig.blend.dst_blend = GPUPipeline::BlendFunc::One;
+        plconfig.blend.dst_blend =
+          m_border_overlay_alpha_blend ? GPUPipeline::BlendFunc::One : GPUPipeline::BlendFunc::DstAlpha;
         plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::One;
         plconfig.blend.alpha_blend_op = GPUPipeline::BlendOp::Add;
         plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::Zero;
@@ -510,7 +511,7 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
         DrawScreenQuad(overlay_rect, GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f), target_size, final_target_size,
                        DisplayRotation::Normal, prerotation);
 
-        g_gpu_device->SetPipeline(m_border_overlay_pipeline.get());
+        g_gpu_device->SetPipeline(m_present_copy_blend_pipeline.get());
         g_gpu_device->SetTextureSampler(0, postfx_output, g_gpu_device->GetNearestSampler());
         DrawScreenQuad(overlay_display_rect, src_uv_rect, target_size, final_target_size, DisplayRotation::Normal,
                        prerotation);
