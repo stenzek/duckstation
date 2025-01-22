@@ -1187,7 +1187,7 @@ void Settings::SetDefaultControllerConfig(SettingsInterface& si)
 
 #ifndef __ANDROID__
   // Use the automapper to set this up.
-  InputManager::MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
+  InputManager::MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"), true);
 #endif
 }
 

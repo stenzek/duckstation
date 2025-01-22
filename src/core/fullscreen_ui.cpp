@@ -3236,7 +3236,7 @@ void FullscreenUI::StartAutomaticBindingForPort(u32 port)
                      auto lock = Host::GetSettingsLock();
                      SettingsInterface* bsi = GetEditingSettingsInterface();
                      const bool result =
-                       InputManager::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name));
+                       InputManager::MapController(*bsi, port, InputManager::GetGenericBindingMapping(name), true);
                      SetSettingsChanged(bsi);
 
                      // and the toast needs to happen on the UI thread.

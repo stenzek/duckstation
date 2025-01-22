@@ -384,7 +384,11 @@ void CopyConfiguration(SettingsInterface* dest_si, const SettingsInterface& src_
 
 /// Performs automatic controller mapping with the provided list of generic mappings.
 bool MapController(SettingsInterface& si, u32 controller,
-                   const std::vector<std::pair<GenericInputBinding, std::string>>& mapping);
+                   const std::vector<std::pair<GenericInputBinding, std::string>>& mapping,
+                   bool clear_existing_mappings);
+
+/// Returns the name of the first physical device mapped to the emulated controller, "None", or "Multiple Devices".
+std::string GetPhysicalDeviceForController(SettingsInterface& si, u32 controller);
 
 /// Returns a list of input profiles available.
 std::vector<std::string> GetInputProfileNames();

@@ -45,6 +45,8 @@ private Q_SLOTS:
   void refreshDirectoryList();
   void resizeDirectoryListColumns();
 
+  void doMultipleDeviceAutomaticBinding(u32 port, QLabel* update_label);
+
 protected:
   void resizeEvent(QResizeEvent* event);
 
@@ -72,6 +74,7 @@ private:
 
   void addPathToTable(const std::string& path, bool recursive);
 
+  QString findCurrentDeviceForPort(u32 port) const;
   void openAutomaticMappingMenu(u32 port, QLabel* update_label);
   void doDeviceAutomaticBinding(u32 port, QLabel* update_label, const QString& device);
 
