@@ -530,6 +530,18 @@ PostProcessingOverlayConfigWidget::PostProcessingOverlayConfigWidget(SettingsWin
   connect(m_ui.destinationAlphaBlend, &QCheckBox::checkStateChanged, this,
           &PostProcessingOverlayConfigWidget::triggerSettingsReload);
 
+  if (!m_dialog->isPerGameSettings())
+  {
+    connect(m_ui.exportCustomConfig, &QPushButton::clicked, this,
+            &PostProcessingOverlayConfigWidget::onExportCustomConfigClicked);
+  }
+  else
+  {
+    m_ui.exportCustomConfigLayout->removeWidget(m_ui.exportCustomConfig);
+    delete m_ui.exportCustomConfig;
+    m_ui.exportCustomConfig = nullptr;
+  }
+
   onOverlayNameCurrentIndexChanged(m_ui.overlayName->currentIndex());
 
   dialog->registerWidgetHelp(m_ui.imagePath, tr("Image Path"), tr("Unspecified"),
@@ -590,7 +602,8 @@ void PostProcessingOverlayConfigWidget::onExportCustomConfigClicked()
                                         "displayEndY: %5\n"
                                         "alphaBlend: %6\n"
                                         "destinationAlphaBlend: %7\n")
-                           .arg(QFileInfo(m_ui.imagePath->text()).fileName(), m_ui.displayStartX->value())
+                           .arg(QFileInfo(m_ui.imagePath->text()).fileName())
+                           .arg(m_ui.displayStartX->value())
                            .arg(m_ui.displayStartY->value())
                            .arg(m_ui.displayEndX->value())
                            .arg(m_ui.displayEndY->value())
