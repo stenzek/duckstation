@@ -102,7 +102,9 @@ private:
 
   GPUDevice::PresentResult RenderDisplay(GPUTexture* target, const GSVector2i target_size, bool postfx,
                                          bool apply_aspect_ratio);
-
+  void DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
+                          const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
+                          const WindowInfo::PreRotation prerotation);
   void DrawDisplay(const GSVector2i target_size, const GSVector2i final_target_size, const GSVector4i display_rect,
                    bool dst_alpha_blend, DisplayRotation rotation, WindowInfo::PreRotation prerotation);
   GPUDevice::PresentResult ApplyDisplayPostProcess(GPUTexture* target, GPUTexture* input,

@@ -189,17 +189,19 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
         plconfig.blend.src_blend = GPUPipeline::BlendFunc::InvDstAlpha;
         plconfig.blend.blend_op = GPUPipeline::BlendOp::Add;
         plconfig.blend.dst_blend = GPUPipeline::BlendFunc::One;
-        plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::Zero;
+        plconfig.blend.src_alpha_blend = GPUPipeline::BlendFunc::One;
         plconfig.blend.alpha_blend_op = GPUPipeline::BlendOp::Add;
-        plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::One;
+        plconfig.blend.dst_alpha_blend = GPUPipeline::BlendFunc::Zero;
       }
 
       plconfig.fragment_shader = clear_fso.get();
+      plconfig.primitive = GPUPipeline::Primitive::Triangles;
       if (!(m_present_clear_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
       GL_OBJECT_NAME(m_present_clear_pipeline, "Display Clear Pipeline");
 
       plconfig.fragment_shader = fso.get();
+      plconfig.primitive = GPUPipeline::Primitive::TriangleStrips;
       if (!(m_display_blend_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
         return false;
       GL_OBJECT_NAME_FMT(m_display_blend_pipeline, "Display Pipeline [Blended, {}]",
@@ -550,11 +552,8 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
 
       if (!overlay_display_rect.eq(draw_rect))
       {
-        // Need to fill in the borders.
-        GL_SCOPE_FMT("Fill in overlay borders - odisplay={}, draw={}", overlay_display_rect, draw_rect);
-        g_gpu_device->SetPipeline(m_present_clear_pipeline.get());
-        DrawScreenQuad(overlay_display_rect, GSVector4::zero(), target_size, final_target_size,
-                       g_settings.display_rotation, prerotation);
+        DrawOverlayBorders(target_size, final_target_size, overlay_display_rect,
+                           m_display_texture ? draw_rect : draw_rect.xyxy(), prerotation);
       }
     }
 
@@ -565,6 +564,78 @@ GPUDevice::PresentResult GPUPresenter::RenderDisplay(GPUTexture* target, const G
     }
 
     return GPUDevice::PresentResult::OK;
+  }
+}
+
+void GPUPresenter::DrawOverlayBorders(const GSVector2i target_size, const GSVector2i final_target_size,
+                                      const GSVector4i overlay_display_rect, const GSVector4i draw_rect,
+                                      const WindowInfo::PreRotation prerotation)
+{
+  GL_SCOPE_FMT("Fill in overlay borders - odisplay={}, draw={}", overlay_display_rect, draw_rect);
+
+  const GSVector2i overlay_display_rect_size = overlay_display_rect.rsize();
+  const GSVector4i overlay_display_rect_offset = overlay_display_rect.xyxy();
+  const GSVector4i draw_rect_inside_overlay = draw_rect.sub32(overlay_display_rect_offset);
+  const GSVector4i padding =
+    GSVector4i::xyxy(draw_rect_inside_overlay.xy(), overlay_display_rect_size.sub32(draw_rect_inside_overlay.zw()));
+
+  GPUBackend::ScreenVertex* vertices;
+  u32 space;
+  u32 base_vertex;
+  g_gpu_device->MapVertexBuffer(sizeof(GPUBackend::ScreenVertex), 24, reinterpret_cast<void**>(&vertices), &space,
+                                &base_vertex);
+
+  u32 vertex_count = 0;
+  const auto add_rect = [&](const GSVector4i& rc) {
+    const GSVector4i screen_rect = overlay_display_rect_offset.add32(rc);
+    const GSVector4 xy = GPUBackend::GetScreenQuadClipSpaceCoordinates(
+      GPUSwapChain::PreRotateClipRect(prerotation, target_size, screen_rect), final_target_size);
+    const GSVector2 uv = GSVector2::zero();
+    vertices[vertex_count + 0].Set(xy.xy(), uv);
+    vertices[vertex_count + 1].Set(xy.zyzw().xy(), uv);
+    vertices[vertex_count + 2].Set(xy.xwzw().xy(), uv);
+    vertices[vertex_count + 3].Set(xy.zyzw().xy(), uv);
+    vertices[vertex_count + 4].Set(xy.xwzw().xy(), uv);
+    vertices[vertex_count + 5].Set(xy.zw(), uv);
+    vertex_count += 6;
+  };
+
+  const s32 left_padding = padding.left;
+  const s32 top_padding = padding.top;
+  const s32 right_padding = padding.right;
+  const s32 bottom_padding = padding.bottom;
+  GL_INS_FMT("Padding: left={}, top={}, right={}, bottom={}", left_padding, top_padding, right_padding, bottom_padding);
+
+  // this is blended, so be careful not to overlap two rects
+  if (left_padding > 0)
+  {
+    add_rect(GSVector4i(0, 0, left_padding, overlay_display_rect_size.y));
+  }
+  if (top_padding > 0)
+  {
+    add_rect(GSVector4i((left_padding > 0) ? left_padding : 0, 0,
+                        overlay_display_rect_size.x - ((right_padding > 0) ? right_padding : 0), top_padding));
+  }
+  if (right_padding > 0)
+  {
+    add_rect(GSVector4i(overlay_display_rect_size.x - right_padding, 0, overlay_display_rect_size.x,
+                        overlay_display_rect_size.y));
+  }
+  if (bottom_padding > 0)
+  {
+    add_rect(GSVector4i((left_padding > 0) ? left_padding : 0, overlay_display_rect_size.y - bottom_padding,
+                        overlay_display_rect_size.x - ((right_padding > 0) ? right_padding : 0),
+                        overlay_display_rect_size.y));
+  }
+
+  g_gpu_device->UnmapVertexBuffer(sizeof(GPUBackend::ScreenVertex), vertex_count);
+  if (vertex_count > 0)
+  {
+    const GSVector4i scissor = GPUSwapChain::PreRotateClipRect(prerotation, target_size, overlay_display_rect);
+    g_gpu_device->SetScissor(
+      g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(scissor, final_target_size.y) : scissor);
+    g_gpu_device->SetPipeline(m_present_clear_pipeline.get());
+    g_gpu_device->Draw(vertex_count, base_vertex);
   }
 }
 
