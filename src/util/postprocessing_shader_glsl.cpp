@@ -185,7 +185,7 @@ GPUDevice::PresentResult PostProcessing::GLSLShader::Apply(GPUTexture* input_col
   else
   {
     g_gpu_device->SetRenderTargets(&final_target, 1, nullptr);
-    g_gpu_device->ClearRenderTarget(final_target, 0); // TODO: Could use an invalidate here too.
+    g_gpu_device->ClearRenderTarget(final_target, GPUDevice::DEFAULT_CLEAR_COLOR); // TODO: Could use an invalidate here too.
   }
 
   g_gpu_device->SetPipeline(m_pipeline.get());
