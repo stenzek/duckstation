@@ -4746,30 +4746,10 @@ void System::WarnAboutUnsafeSettings()
         ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
         g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
     }
-    if (g_settings.cdrom_read_speedup != 1)
-    {
-      TinyString speed;
-      if (g_settings.cdrom_read_speedup == 0)
-        speed = TRANSLATE_SV("System", "Maximum");
-      else
-        speed.format("{}x", g_settings.cdrom_read_speedup);
-      append_format(ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CD-ROM read speedup set to {}. This may crash games."),
-                    speed);
-    }
-    if (g_settings.cdrom_seek_speedup != 1)
-    {
-      TinyString speed;
-      if (g_settings.cdrom_seek_speedup == 0)
-        speed = TRANSLATE_SV("System", "Maximum");
-      else
-        speed.format("{}x", g_settings.cdrom_seek_speedup);
-      append_format(ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."),
-                    speed);
-    }
+    if (g_settings.cdrom_read_speedup != 1 || g_settings.cdrom_seek_speedup != 1)
+      append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-    {
       append(ICON_FA_TV, TRANSLATE_SV("System", "Force frame timings is enabled. Games may run at incorrect speeds."));
-    }
     if (!g_settings.IsUsingSoftwareRenderer())
     {
       if (g_settings.gpu_multisamples != 1)
