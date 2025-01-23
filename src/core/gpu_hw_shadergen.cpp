@@ -732,8 +732,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency, GPU_HW::BatchTextureMode texture_mode,
   GPUTextureFilter texture_filtering, bool upscaled, bool msaa, bool per_sample_shading, bool uv_limits,
   bool force_round_texcoords, bool true_color, bool dithering, bool scaled_dithering, bool disable_color_perspective,
-  bool interlacing, bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth,
-  bool rov_depth_test, bool rov_depth_write) const
+  bool interlacing, bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth, bool rov_depth_test,
+  bool rov_depth_write) const
 {
   DebugAssert(!true_color || !dithering); // Should not be doing dithering+true color.
 
@@ -1834,10 +1834,12 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
   return ss.str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter) const
+std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool replacement, bool semitransparent,
+                                                                     bool bilinear_filter) const
 {
   std::stringstream ss;
   WriteHeader(ss);
+  DefineMacro(ss, "REPLACEMENT", replacement);
   DefineMacro(ss, "SEMITRANSPARENT", semitransparent);
   DefineMacro(ss, "BILINEAR_FILTER", bilinear_filter);
   DeclareUniformBuffer(ss, {"float4 u_texture_size"}, true);
@@ -1864,6 +1866,7 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitr
   // Bilinearly interpolate.
   float2 weights = abs(texel_top_left);
   float4 color = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
+  float orig_alpha = float(color.a > 0.0);
 
   #if !SEMITRANSPARENT
     // Compute alpha from how many texels aren't pixel color 0000h.
@@ -1881,23 +1884,34 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitr
   #endif
 #else
   float4 color = SAMPLE_TEXTURE_LEVEL(samp0, v_tex0, 0.0);
+  float orig_alpha = color.a;
 #endif
   o_col0.rgb = color.rgb;
 
   // Alpha processing.
-  #if SEMITRANSPARENT
-    // Map anything not 255 to 1 for semitransparent, otherwise zero for opaque.
-    o_col0.a = (color.a <= 0.95f) ? 1.0f : 0.0f;
-    o_col0.a = VECTOR_EQ(color, float4(0.0, 0.0, 0.0, 0.0)) ? 0.0f : o_col0.a;
-  #else
-    // Map anything with an alpha below 0.5 to transparent.
-    // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
-    o_col0.rgb = lerp(o_col0.rgb, float3(0.0, 0.0, 0.0), float(color.a < 0.5));
+  #if REPLACEMENT
+    #if SEMITRANSPARENT
+      // Map anything not 255 to 1 for semitransparent, otherwise zero for opaque.
+      o_col0.a = (color.a <= 0.95f) ? 1.0f : 0.0f;
+      o_col0.a = VECTOR_EQ(color, float4(0.0, 0.0, 0.0, 0.0)) ? 0.0f : o_col0.a;
+    #else
+      // Map anything with an alpha below 0.5 to transparent.
+      // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
+      float alpha = float(color.a >= 0.5);
+      o_col0.rgb = lerp(float3(0.0, 0.0, 0.0), o_col0.rgb, alpha);
 
-    // Clear alpha channel. This is the value for bit15 in the framebuffer.
-    // Silent Hill needs it to be zero, I'm not aware of anything that needs
-    // specific values yet. If it did, we'd need a different dumping technique.
-    o_col0.a = 0.0;
+      // We can't simply clear the alpha channel unconditionally here, because that
+      // would result in any black pixels with zero alpha being transparency-culled.
+      // Instead, we set it to a minimum value (2/255 in case of rounding error, I
+      // don't trust drivers here) so that transparent polygons in the source still
+      // set bit 15 to zero in the framebuffer, but are not transparency-culled.
+      // Silent Hill needs it to be zero, I'm not aware of anything that needs
+      // specific values yet. If it did, we'd need a different dumping technique.
+      o_col0.a = lerp(0.0, 2.0 / 255.0, alpha);
+    #endif
+  #else
+    // Preserve original bit 15 for non-replacements.
+    o_col0.a = orig_alpha;
   #endif
 }
 )";

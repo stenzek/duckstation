@@ -44,7 +44,8 @@ public:
   std::string GenerateAdaptiveDownsampleCompositeFragmentShader() const;
   std::string GenerateBoxSampleDownsampleFragmentShader(u32 factor) const;
 
-  std::string GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter) const;
+  std::string GenerateReplacementMergeFragmentShader(bool replacement, bool semitransparent,
+                                                     bool bilinear_filter) const;
 
 private:
   void WriteColorConversionFunctions(std::stringstream& ss) const;

@@ -862,7 +862,7 @@ bool GPUTextureCache::CompilePipelines(Error* error)
 
   std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
     GPUShaderStage::Fragment, shadergen.GetLanguage(),
-    shadergen.GenerateReplacementMergeFragmentShader(false, s_state.config.replacement_scale_linear_filter));
+    shadergen.GenerateReplacementMergeFragmentShader(false, false, s_state.config.replacement_scale_linear_filter));
   if (!fs)
     return false;
   GL_OBJECT_NAME(fs, "Replacement upscale shader");
@@ -871,21 +871,18 @@ bool GPUTextureCache::CompilePipelines(Error* error)
     return false;
   GL_OBJECT_NAME(s_state.replacement_upscale_pipeline, "Replacement upscale pipeline");
 
-  if (s_state.config.replacement_scale_linear_filter)
-  {
-    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                    shadergen.GenerateReplacementMergeFragmentShader(false, false));
-    if (!fs)
-      return false;
-    GL_OBJECT_NAME(fs, "Replacement draw shader");
-    plconfig.fragment_shader = fs.get();
-    if (!(s_state.replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
-      return false;
-    GL_OBJECT_NAME(s_state.replacement_draw_pipeline, "Replacement draw pipeline");
-  }
+  fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                  shadergen.GenerateReplacementMergeFragmentShader(true, false, false));
+  if (!fs)
+    return false;
+  GL_OBJECT_NAME(fs, "Replacement draw shader");
+  plconfig.fragment_shader = fs.get();
+  if (!(s_state.replacement_draw_pipeline = g_gpu_device->CreatePipeline(plconfig)))
+    return false;
+  GL_OBJECT_NAME(s_state.replacement_draw_pipeline, "Replacement draw pipeline");
 
   fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
-                                  shadergen.GenerateReplacementMergeFragmentShader(true, false));
+                                  shadergen.GenerateReplacementMergeFragmentShader(true, true, false));
   if (!fs)
     return false;
   GL_OBJECT_NAME(fs, "Replacement semitransparent draw shader");
@@ -3669,10 +3666,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
     g_gpu_device->SetTextureSampler(0, si.texture,
                                     s_state.config.replacement_scale_linear_filter ? g_gpu_device->GetLinearSampler() :
                                                                                      g_gpu_device->GetNearestSampler());
-    g_gpu_device->SetPipeline(si.invert_alpha ?
-                                s_state.replacement_semitransparent_draw_pipeline.get() :
-                                (s_state.replacement_draw_pipeline ? s_state.replacement_draw_pipeline.get() :
-                                                                     s_state.replacement_upscale_pipeline.get()));
+    g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :
+                                                s_state.replacement_draw_pipeline.get());
     g_gpu_device->Draw(3, 0);
   }
 
