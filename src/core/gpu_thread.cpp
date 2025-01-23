@@ -814,19 +814,22 @@ bool GPUThread::CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram,
 
 void GPUThread::ReconfigureOnThread(GPUThreadReconfigureCommand* cmd)
 {
+  // Store state.
+  s_state.requested_vsync = cmd->vsync_mode;
+  s_state.requested_allow_present_throttle = cmd->allow_present_throttle;
+  s_state.requested_fullscreen_ui = cmd->start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
+
   // Are we shutting down everything?
   if (!cmd->renderer.has_value() && !s_state.requested_fullscreen_ui)
   {
     DestroyGPUBackendOnThread();
     DestroyGPUPresenterOnThread();
     DestroyDeviceOnThread(true);
+    s_state.game_serial = {};
     return;
   }
 
-  // Store state.
-  s_state.requested_vsync = cmd->vsync_mode;
-  s_state.requested_allow_present_throttle = cmd->allow_present_throttle;
-  s_state.requested_fullscreen_ui = cmd->start_fullscreen_ui.value_or(s_state.requested_fullscreen_ui);
+  // Serial clear must be after backend destroy, otherwise textures won't dump.
   s_state.game_serial = std::move(cmd->game_serial);
   g_gpu_settings = std::move(cmd->settings);
 
