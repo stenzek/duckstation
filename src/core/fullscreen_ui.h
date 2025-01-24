@@ -28,6 +28,7 @@ void OnRunningGameChanged(const std::string& path, const std::string& serial, co
 #ifndef __ANDROID__
 void OpenPauseMenu();
 void OpenCheatsMenu();
+void OpenDiscChangeMenu();
 void OpenAchievementsWindow();
 void OpenLeaderboardsWindow();
 void ReturnToMainWindow();

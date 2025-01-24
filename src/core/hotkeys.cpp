@@ -215,6 +215,12 @@ DEFINE_HOTKEY("OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_
                   FullscreenUI::OpenCheatsMenu();
               })
 
+DEFINE_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
+              [](s32 pressed) {
+                if (!pressed)
+                  FullscreenUI::OpenDiscChangeMenu();
+              })
+
 DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
               [](s32 pressed) {
                 if (!pressed)
@@ -263,17 +269,6 @@ DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotk
   if (!pressed)
     Host::RunOnCPUThread(System::ResetSystem);
 })
-
-DEFINE_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
-              [](s32 pressed) {
-                if (!pressed && System::IsValid() && System::HasMediaSubImages())
-                {
-                  const u32 current = System::GetMediaSubImageIndex();
-                  const u32 next = (current + 1) % System::GetMediaSubImageCount();
-                  if (current != next)
-                    Host::RunOnCPUThread([next]() { System::SwitchMediaSubImage(next); });
-                }
-              })
 
 DEFINE_HOTKEY("SwapMemoryCards", TRANSLATE_NOOP("Hotkeys", "System"),
               TRANSLATE_NOOP("Hotkeys", "Swap Memory Card Slots"), [](s32 pressed) {

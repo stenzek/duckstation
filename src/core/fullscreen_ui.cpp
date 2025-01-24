@@ -261,8 +261,8 @@ static void DoToggleFastForward();
 static void ConfirmIfSavingMemoryCards(std::string action, std::function<void(bool)> callback);
 static void RequestShutdown(bool save_state);
 static void RequestReset();
-static void DoChangeDiscFromFile();
-static void DoChangeDisc();
+static void BeginChangeDiscOnCPUThread(bool needs_pause);
+static void StartChangeDiscFromFile();
 static void DoRequestExit();
 static void DoDesktopMode();
 static void DoToggleFullscreen();
@@ -817,14 +817,27 @@ void FullscreenUI::OpenCheatsMenu()
   if (!System::IsValid())
     return;
 
-  if (!Initialize() || s_state.current_main_window != MainWindowType::None || !SwitchToGameSettings())
+  GPUThread::RunOnThread([]() {
+    if (!Initialize() || s_state.current_main_window != MainWindowType::None || !SwitchToGameSettings())
+      return;
+
+    PauseForMenuOpen(false);
+    s_state.current_main_window = MainWindowType::Settings;
+    s_state.settings_page = SettingsPage::Cheats;
+    QueueResetFocus(FocusResetType::ViewChanged);
+    ForceKeyNavEnabled();
+    UpdateRunIdleState();
+    FixStateIfPaused();
+  });
+}
+
+void FullscreenUI::OpenDiscChangeMenu()
+{
+  if (!System::IsValid())
     return;
 
-  s_state.settings_page = SettingsPage::Cheats;
-  PauseForMenuOpen(true);
-  ForceKeyNavEnabled();
-  UpdateRunIdleState();
-  FixStateIfPaused();
+  DebugAssert(!GPUThread::IsOnThread());
+  BeginChangeDiscOnCPUThread(true);
 }
 
 void FullscreenUI::FixStateIfPaused()
@@ -1259,17 +1272,17 @@ void FullscreenUI::DoToggleFastForward()
   });
 }
 
-void FullscreenUI::DoChangeDiscFromFile()
+void FullscreenUI::StartChangeDiscFromFile()
 {
-  ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [](bool result) {
-    if (!result)
+  auto callback = [](const std::string& path) {
+    if (path.empty())
     {
-      ClosePauseMenu();
+      ReturnToPreviousWindow();
       return;
     }
 
-    auto callback = [](const std::string& path) {
-      if (!path.empty())
+    ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [path](bool result) {
+      if (result)
       {
         if (!GameList::IsScannableFilename(path))
         {
@@ -1283,93 +1296,128 @@ void FullscreenUI::DoChangeDiscFromFile()
       }
 
       ReturnToPreviousWindow();
-    };
+    });
+  };
 
-    OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
-                     GetDiscImageFilters(), std::string(Path::GetDirectory(s_state.current_game_path)));
-  });
+  OpenFileSelector(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(callback),
+                   GetDiscImageFilters(), std::string(Path::GetDirectory(s_state.current_game_path)));
 }
 
-void FullscreenUI::DoChangeDisc()
+void FullscreenUI::BeginChangeDiscOnCPUThread(bool needs_pause)
 {
-  Host::RunOnCPUThread([]() {
-    ImGuiFullscreen::ChoiceDialogOptions options;
+  ImGuiFullscreen::ChoiceDialogOptions options;
 
-    if (System::HasMediaSubImages())
+  auto pause_if_needed = [needs_pause]() {
+    if (!needs_pause)
+      return;
+
+    PauseForMenuOpen(false);
+    ForceKeyNavEnabled();
+    UpdateRunIdleState();
+    FixStateIfPaused();
+  };
+
+  if (System::HasMediaSubImages())
+  {
+    const u32 current_index = System::GetMediaSubImageIndex();
+    const u32 count = System::GetMediaSubImageCount();
+    options.reserve(count + 1);
+    options.emplace_back(FSUI_STR("From File..."), false);
+
+    for (u32 i = 0; i < count; i++)
+      options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
+
+    GPUThread::RunOnThread([options = std::move(options), pause_if_needed = std::move(pause_if_needed)]() mutable {
+      if (!Initialize())
+        return;
+
+      auto callback = [](s32 index, const std::string& title, bool checked) {
+        if (index == 0)
+        {
+          StartChangeDiscFromFile();
+        }
+        else if (index > 0)
+        {
+          ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [index](bool result) {
+            if (result)
+              System::SwitchMediaSubImage(static_cast<u32>(index - 1));
+
+            ReturnToPreviousWindow();
+          });
+        }
+        else
+        {
+          ReturnToPreviousWindow();
+        }
+      };
+
+      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
+                       std::move(callback));
+      pause_if_needed();
+    });
+
+    return;
+  }
+
+  if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && !entry->disc_set_serials.empty())
+  {
+    const auto lock = GameList::GetLock();
+    auto matches = GameList::GetMatchingEntriesForSerial(entry->disc_set_serials);
+    if (matches.size() > 1)
     {
-      const u32 current_index = System::GetMediaSubImageIndex();
-      const u32 count = System::GetMediaSubImageCount();
-      options.reserve(count + 1);
+      options.reserve(matches.size() + 1);
       options.emplace_back(FSUI_STR("From File..."), false);
 
-      for (u32 i = 0; i < count; i++)
-        options.emplace_back(System::GetMediaSubImageTitle(i), i == current_index);
+      std::vector<std::string> paths;
+      paths.reserve(matches.size());
 
-      GPUThread::RunOnThread([options = std::move(options)]() mutable {
-        auto callback = [](s32 index, const std::string& title, bool checked) {
+      const std::string& current_path = System::GetDiscPath();
+      for (auto& [title, glentry] : matches)
+      {
+        options.emplace_back(std::move(title), current_path == glentry->path);
+        paths.push_back(glentry->path);
+      }
+
+      GPUThread::RunOnThread([options = std::move(options), paths = std::move(paths),
+                              pause_if_needed = std::move(pause_if_needed)]() mutable {
+        if (!Initialize())
+          return;
+
+        auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) mutable {
           if (index == 0)
           {
-            DoChangeDiscFromFile();
-            return;
+            StartChangeDiscFromFile();
           }
           else if (index > 0)
           {
-            System::SwitchMediaSubImage(static_cast<u32>(index - 1));
-          }
+            ConfirmIfSavingMemoryCards(FSUI_STR("change disc"), [paths = std::move(paths), index](bool result) {
+              if (result)
+                Host::RunOnCPUThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
 
-          ReturnToPreviousWindow();
+              ReturnToPreviousWindow();
+            });
+          }
+          else
+          {
+            ReturnToPreviousWindow();
+          }
         };
 
         OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
                          std::move(callback));
+        pause_if_needed();
       });
 
       return;
     }
+  }
 
-    if (const GameDatabase::Entry* entry = System::GetGameDatabaseEntry(); entry && !entry->disc_set_serials.empty())
-    {
-      const auto lock = GameList::GetLock();
-      auto matches = GameList::GetMatchingEntriesForSerial(entry->disc_set_serials);
-      if (matches.size() > 1)
-      {
-        options.reserve(matches.size() + 1);
-        options.emplace_back(FSUI_STR("From File..."), false);
+  GPUThread::RunOnThread([pause_if_needed = std::move(pause_if_needed)]() {
+    if (!Initialize())
+      return;
 
-        std::vector<std::string> paths;
-        paths.reserve(matches.size());
-
-        const std::string& current_path = System::GetDiscPath();
-        for (auto& [title, glentry] : matches)
-        {
-          options.emplace_back(std::move(title), current_path == glentry->path);
-          paths.push_back(glentry->path);
-        }
-
-        GPUThread::RunOnThread([options = std::move(options), paths = std::move(paths)]() mutable {
-          auto callback = [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
-            if (index == 0)
-            {
-              DoChangeDiscFromFile();
-              return;
-            }
-            else if (index > 0)
-            {
-              Host::RunOnCPUThread([path = std::move(paths[index - 1])]() { System::InsertMedia(path.c_str()); });
-            }
-
-            ReturnToMainWindow();
-          };
-
-          OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Select Disc Image"), false, std::move(options),
-                           std::move(callback));
-        });
-
-        return;
-      }
-    }
-
-    GPUThread::RunOnThread([]() { DoChangeDiscFromFile(); });
+    StartChangeDiscFromFile();
+    pause_if_needed();
   });
 }
 
@@ -2204,8 +2252,8 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
     {
       s_state.input_binding_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
 
-      // forward the event to imgui if it's a new key and a release, because this is what triggered the binding to start
-      // if we don't do this, imgui thinks the activate button is held down
+      // forward the event to imgui if it's a new key and a release, because this is what triggered the binding to
+      // start if we don't do this, imgui thinks the activate button is held down
       default_action = (value == 0.0f) ? InputInterceptHook::CallbackResult::ContinueProcessingEvent :
                                          InputInterceptHook::CallbackResult::StopProcessingEvent;
     }
@@ -6619,7 +6667,7 @@ void FullscreenUI::DrawPauseMenu()
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Change Disc"), false))
         {
           s_state.current_main_window = MainWindowType::None;
-          DoChangeDisc();
+          Host::RunOnCPUThread([]() { BeginChangeDiscOnCPUThread(false); });
         }
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Settings"), false))
