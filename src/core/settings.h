@@ -206,7 +206,6 @@ struct GPUSettings
   } texture_replacements;
 
   std::string overlay_image_path;
-  s16 mingus2[4];
 
   float GetDisplayAspectRatioValue() const;
 

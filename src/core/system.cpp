@@ -1209,6 +1209,7 @@ void System::LoadSettings(bool display_osd_messages)
   const SettingsInterface& si = *Host::GetSettingsInterface();
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
   const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
+  const bool previous_safe_mode = g_settings.disable_all_enhancements;
   g_settings.Load(si, controller_si);
 
   // Global safe mode overrides game settings.
@@ -1220,7 +1221,9 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
-  if (IsValidOrInitializing() && display_osd_messages)
+
+  // show safe mode warning if it's toggled on, or on startup
+  if (IsValidOrInitializing() && (display_osd_messages || (!previous_safe_mode && g_settings.disable_all_enhancements)))
     WarnAboutUnsafeSettings();
 
   // apply compatibility settings
@@ -1338,24 +1341,22 @@ void System::ApplySettings(bool display_osd_messages)
 {
   DEV_LOG("Applying settings...");
 
-  const Settings old_config(std::move(g_settings));
+  // copy safe mode setting, so the osd check in LoadSettings() works
+  const Settings old_settings = std::move(g_settings);
   g_settings = Settings();
+  g_settings.disable_all_enhancements = old_settings.disable_all_enhancements;
   LoadSettings(display_osd_messages);
 
   // If we've disabled/enabled game settings, we need to reload without it.
   // Also reload cheats when safe mode is toggled, because patches might change.
-  if (g_settings.apply_game_settings != old_config.apply_game_settings ||
-      g_settings.disable_all_enhancements != old_config.disable_all_enhancements)
+  if (g_settings.apply_game_settings != old_settings.apply_game_settings)
   {
-    if (g_settings.apply_game_settings != old_config.apply_game_settings)
-      UpdateGameSettingsLayer();
-    else
-      Cheats::ReloadCheats(false, true, false, true);
+    UpdateGameSettingsLayer();
     LoadSettings(display_osd_messages);
   }
 
-  CheckForSettingsChanges(old_config);
-  Host::CheckForSettingsChanges(old_config);
+  CheckForSettingsChanges(old_settings);
+  Host::CheckForSettingsChanges(old_settings);
 }
 
 void System::ReloadGameSettings(bool display_osd_messages)
@@ -4354,6 +4355,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   {
     ClearMemorySaveStates(false, false);
 
+    if (g_settings.disable_all_enhancements != old_settings.disable_all_enhancements)
+      Cheats::ReloadCheats(false, true, false, true);
+
     if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
         (g_settings.cpu_overclock_active &&
          (g_settings.cpu_overclock_numerator != old_settings.cpu_overclock_numerator ||
@@ -4768,6 +4772,11 @@ void System::WarnAboutUnsafeSettings()
     {
       append(ICON_EMOJI_WARNING,
              TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+    }
+    if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
+    {
+      append(ICON_EMOJI_WARNING,
+             TRANSLATE_SV("System", "Cached interpreter is being used, this may be incompatible with some games."));
     }
 
     // Always display TC warning.
