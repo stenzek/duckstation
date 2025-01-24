@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
+
 #include "input_source.h"
 
-#include <SDL.h>
+#include <SDL3/SDL.h>
 
 #include <array>
 #include <functional>
@@ -58,7 +59,7 @@ private:
   struct ControllerData
   {
     SDL_Haptic* haptic;
-    SDL_GameController* game_controller;
+    SDL_Gamepad* gamepad;
     SDL_Joystick* joystick;
     u16 rumble_intensity[2];
     int haptic_left_right_effect;
@@ -66,11 +67,13 @@ private:
     int player_id;
     float last_touch_x;
     float last_touch_y;
-    bool use_game_controller_rumble;
+    bool use_gamepad_rumble : 1;
+    bool has_led : 1;
 
     // Used to disable Joystick controls that are used in GameController inputs so we don't get double events
     std::vector<bool> joy_button_used_in_gc;
     std::vector<bool> joy_axis_used_in_gc;
+    std::vector<bool> joy_hat_used_in_gc;
 
     // Track last hat state so we can send "unpressed" events.
     std::vector<u8> last_hat_state;
@@ -89,9 +92,9 @@ private:
 
   bool OpenDevice(int index, bool is_gamecontroller);
   bool CloseDevice(int joystick_index);
-  bool HandleControllerAxisEvent(const SDL_ControllerAxisEvent* ev);
-  bool HandleControllerButtonEvent(const SDL_ControllerButtonEvent* ev);
-  bool HandleControllerTouchpadEvent(const SDL_ControllerTouchpadEvent* ev);
+  bool HandleGamepadAxisMotionEvent(const SDL_GamepadAxisEvent* ev);
+  bool HandleGamepadButtonEvent(const SDL_GamepadButtonEvent* ev);
+  bool HandleGamepadTouchpadEvent(const SDL_GamepadTouchpadEvent* ev);
   bool HandleJoystickAxisEvent(const SDL_JoyAxisEvent* ev);
   bool HandleJoystickButtonEvent(const SDL_JoyButtonEvent* ev);
   bool HandleJoystickHatEvent(const SDL_JoyHatEvent* ev);

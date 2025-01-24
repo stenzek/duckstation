@@ -90,7 +90,7 @@ LIBJPEGTURBO=3.0.4
 LIBPNG=1.6.44
 LIBWEBP=1.4.0
 LIBZIP=1.11.2
-SDL2=2.30.11
+SDL3=3.2.0
 QT=6.8.1
 ZSTD=1.5.6
 
@@ -108,7 +108,7 @@ cd deps-build
 if [ "$SKIP_DOWNLOAD" != true ]; then
 	curl -C - -L \
 		-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.tar.gz" \
-		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL2/SDL2-$SDL2.tar.gz" \
+		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL3/SDL3-$SDL3.tar.gz" \
 		-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
 		-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz" \
 		-o "lunasvg-$LUNASVG.tar.gz" "https://github.com/stenzek/lunasvg/archive/$LUNASVG.tar.gz" \
@@ -118,7 +118,7 @@ fi
 
 cat > SHASUMS <<EOF
 baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  $LIBBACKTRACE.tar.gz
-8b8d4aef2038533da814965220f88f77d60dfa0f32685f80ead65e501337da7f  SDL2-$SDL2.tar.gz
+bf308f92c5688b1479faf5cfe24af72f3cd4ce08d0c0670d6ce55bc2ec1e9a5e  SDL3-$SDL3.tar.gz
 e1351218d270db49c3dddcba04fb2153b09731ea3fa6830e423f5952f44585be  cpuinfo-$CPUINFO.tar.gz
 3eea5ccce6670c126282f1ba4d32c19d486db49a1a5cbfb8d6f48774784d310c  discord-rpc-$DISCORD_RPC.tar.gz
 3998b024b0d442614a9ee270e76e018bb37a17b8c6941212171731123cbbcac7  lunasvg-$LUNASVG.tar.gz
@@ -349,13 +349,13 @@ if [ "$SKIP_FREETYPE" != true ]; then
 	cd ..
 fi
 
-echo "Building SDL2..."
-rm -fr "SDL2-$SDL2"
-tar xf "SDL2-$SDL2.tar.gz"
-cd "SDL2-$SDL2"
+echo "Building SDL..."
+rm -fr "SDL3-$SDL3"
+tar xf "SDL3-$SDL3.tar.gz"
+cd "SDL3-$SDL3"
 # needed because -Isystem with chroot/usr/include breaks
 patch -p1 < "$SCRIPTDIR/sdl2-disable-isystem.patch"
-cmake -B build "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja
+cmake -B build "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -G Ninja
 cmake --build build --parallel
 ninja -C build install
 cd ..
