@@ -23,6 +23,7 @@
 #include "common/log.h"
 #include "common/path.h"
 
+#include "IconsEmoji.h"
 #include "fmt/format.h"
 
 #include <memory>
@@ -482,10 +483,13 @@ void SPU::CreateOutputStream()
                               g_settings.audio_driver.c_str(), g_settings.audio_output_device.c_str(), &error);
   if (!s_state.audio_stream)
   {
-    Host::ReportErrorAsync(
-      "Error",
-      fmt::format("Failed to create or configure audio stream, falling back to null output. The error was:\n{}",
-                  error.GetDescription()));
+    Host::AddIconOSDWarning(
+      "SPUAudioStream", ICON_EMOJI_WARNING,
+      fmt::format(
+        TRANSLATE_FS("SPU",
+                     "Failed to create or configure audio stream, falling back to null output. The error was:\n{}"),
+        error.GetDescription()),
+      Host::OSD_ERROR_DURATION);
     s_state.audio_stream.reset();
     s_state.audio_stream = AudioStream::CreateNullStream(SAMPLE_RATE, g_settings.audio_stream_parameters.buffer_ms);
   }
