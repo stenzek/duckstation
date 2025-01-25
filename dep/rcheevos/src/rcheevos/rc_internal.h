@@ -352,6 +352,7 @@ int rc_operand_is_float_memref(const rc_operand_t* self);
 int rc_operand_is_float(const rc_operand_t* self);
 int rc_operand_is_recall(const rc_operand_t* self);
 int rc_operand_type_is_memref(uint8_t type);
+int rc_operand_type_is_transform(uint8_t type);
 int rc_operands_are_equal(const rc_operand_t* left, const rc_operand_t* right);
 void rc_operand_addsource(rc_operand_t* self, rc_parse_state_t* parse, uint8_t new_size);
 void rc_operand_set_const(rc_operand_t* self, uint32_t value);

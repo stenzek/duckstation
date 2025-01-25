@@ -311,6 +311,88 @@ typedef struct rc_client_subset_t {
 RC_EXPORT const rc_client_subset_t* RC_CCONV rc_client_get_subset_info(rc_client_t* client, uint32_t subset_id);
 
 /*****************************************************************************\
+| Game Info                                                                   |
+\*****************************************************************************/
+
+typedef struct rc_client_hash_library_entry_t
+{
+  /* The hash for the game */
+  const char* hash;
+  /* The unique identifier of the game */
+  uint32_t game_id;
+} rc_client_hash_library_entry_t;
+
+typedef struct rc_client_hash_library_t
+{
+  /* An array of entries, one per game */
+  rc_client_hash_library_entry_t* entries;
+  /* The number of items in the entries array */
+  uint32_t num_entries;
+} rc_client_hash_library_t;
+
+/**
+ * Callback that is fired when a hash library request completes. list may be null if the query failed.
+ */
+typedef void(RC_CCONV* rc_client_fetch_hash_library_callback_t)(int result, const char* error_message,
+                                                                rc_client_hash_library_t* list, rc_client_t* client,
+                                                                void* callback_userdata);
+
+/**
+ * Starts an asynchronous request for all hashes for the given console.
+ * This request returns a mapping from hashes to the game's unique identifier. A single game may have multiple
+ * hashes in the case of multi-disc games, or variants that are still compatible with the same achievement set.
+ */
+RC_EXPORT rc_client_async_handle_t* RC_CCONV rc_client_begin_fetch_hash_library(
+  rc_client_t* client, uint32_t console_id, rc_client_fetch_hash_library_callback_t callback, void* callback_userdata);
+
+
+/**
+ * Destroys a previously-allocated result from the rc_client_destroy_hash_library() callback.
+ */
+RC_EXPORT void RC_CCONV rc_client_destroy_hash_library(rc_client_hash_library_t* list);
+
+typedef struct rc_client_all_progress_list_entry_t
+{
+  /* The unique identifier of the game */
+  uint32_t game_id;
+  /* The total number of achievements for this game */
+  uint32_t num_achievements;
+  /* The total number of unlocked achievements for this game in softcore mode */
+  uint32_t num_unlocked_achievements;
+  /* The total number of unlocked achievements for this game in hardcore mode */
+  uint32_t num_unlocked_achievements_hardcore;
+} rc_client_all_progress_list_entry_t;
+
+typedef struct rc_client_all_progress_list_t
+{
+  /* An array of entries, one per game */
+  rc_client_all_progress_list_entry_t* entries;
+  /* The number of items in the entries array */
+  uint32_t num_entries;
+} rc_client_all_progress_list_t;
+
+/**
+ * Callback that is fired when an all progress query completes. list may be null if the query failed.
+ */
+typedef void(RC_CCONV* rc_client_fetch_all_progress_list_callback_t)(int result, const char* error_message,
+                                                                     rc_client_all_progress_list_t* list,
+                                                                     rc_client_t* client, void* callback_userdata);
+
+/**
+ * Starts an asynchronous request for all progress for the given console.
+ * This query returns the total number of achievements for all games tracked by this console, as well as
+ * the user's achievement unlock count for both softcore and hardcore modes.
+ */
+RC_EXPORT rc_client_async_handle_t* RC_CCONV
+rc_client_begin_fetch_all_progress_list(rc_client_t* client, uint32_t console_id,
+                                        rc_client_fetch_all_progress_list_callback_t callback, void* callback_userdata);
+
+/**
+ * Destroys a previously-allocated result from the rc_client_begin_fetch_all_progress_list() callback.
+ */
+RC_EXPORT void RC_CCONV rc_client_destroy_all_progress_list(rc_client_all_progress_list_t* list);
+
+/*****************************************************************************\
 | Achievements                                                                |
 \*****************************************************************************/
 
