@@ -132,7 +132,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
     }
     case WINHTTP_CALLBACK_STATUS_SENDREQUEST_COMPLETE:
     {
-      DEV_LOG("SendRequest complete");
+      DEBUG_LOG("SendRequest complete");
       if (!WinHttpReceiveResponse(hRequest, nullptr))
       {
         const DWORD err = GetLastError();
@@ -146,7 +146,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
     }
     case WINHTTP_CALLBACK_STATUS_HEADERS_AVAILABLE:
     {
-      DEV_LOG("Headers available");
+      DEBUG_LOG("Headers available");
 
       DWORD buffer_size = sizeof(req->status_code);
       if (!WinHttpQueryHeaders(hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
@@ -215,7 +215,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
       }
 
       // start the transfer
-      DEV_LOG("{} bytes available", bytes_available);
+      DEBUG_LOG("{} bytes available", bytes_available);
       req->io_position = static_cast<u32>(req->data.size());
       req->data.resize(req->io_position + bytes_available);
       if (!WinHttpReadData(hRequest, req->data.data() + req->io_position, bytes_available, nullptr) &&
@@ -232,7 +232,7 @@ void CALLBACK HTTPDownloaderWinHttp::HTTPStatusCallback(HINTERNET hRequest, DWOR
     }
     case WINHTTP_CALLBACK_STATUS_READ_COMPLETE:
     {
-      DEV_LOG("Read of {} complete", dwStatusInformationLength);
+      DEBUG_LOG("Read of {} complete", dwStatusInformationLength);
 
       const u32 new_size = req->io_position + dwStatusInformationLength;
       Assert(new_size <= req->data.size());
