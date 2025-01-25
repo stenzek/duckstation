@@ -20,7 +20,7 @@
 
 static constexpr std::array<const char*, GameListModel::Column_Count> s_column_names = {
   {"Icon", "Serial", "Title", "File Title", "Developer", "Publisher", "Genre", "Year", "Players", "Time Played",
-   "Last Played", "Size", "File Size", "Region", "Compatibility", "Cover"}};
+   "Last Played", "Size", "File Size", "Region", "Achievements", "Compatibility", "Cover"}};
 
 static constexpr int COVER_ART_WIDTH = 512;
 static constexpr int COVER_ART_HEIGHT = 512;
@@ -371,8 +371,8 @@ const QPixmap& GameListModel::getIconPixmapForEntry(const GameList::Entry* ge) c
 
 const QPixmap& GameListModel::getFlagPixmapForEntry(const GameList::Entry* ge) const
 {
-  static constexpr u32 FLAG_PIXMAP_WIDTH = 42;
-  static constexpr u32 FLAG_PIXMAP_HEIGHT = 30;
+  static constexpr u32 FLAG_PIXMAP_WIDTH = 30;
+  static constexpr u32 FLAG_PIXMAP_HEIGHT = 20;
 
   const std::string_view name = ge->GetLanguageIcon();
   auto it = m_flag_pixmap_cache.find(name);
@@ -544,11 +544,14 @@ QVariant GameListModel::data(const QModelIndex& index, int role, const GameList:
 
         case Column_FileSize:
           return (ge->file_size >= 0) ?
-                   QString("%1 MB").arg(static_cast<double>(ge->file_size) / 1048576.0, 0, 'f', 2) :
+                   QStringLiteral("%1 MB").arg(static_cast<double>(ge->file_size) / 1048576.0, 0, 'f', 2) :
                    tr("Unknown");
 
         case Column_UncompressedSize:
-          return QString("%1 MB").arg(static_cast<double>(ge->uncompressed_size) / 1048576.0, 0, 'f', 2);
+          return QStringLiteral("%1 MB").arg(static_cast<double>(ge->uncompressed_size) / 1048576.0, 0, 'f', 2);
+
+        case Column_Achievements:
+          return {};
 
         case Column_TimePlayed:
         {
@@ -829,6 +832,31 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
       return (left_players < right_players);
     }
 
+    case Column_Achievements:
+    {
+      // sort by unlock percentage
+      const float unlock_left =
+        (left->num_achievements > 0) ?
+          (static_cast<float>(std::max(left->unlocked_achievements, left->unlocked_achievements_hc)) /
+           static_cast<float>(left->num_achievements)) :
+          0;
+      const float unlock_right =
+        (right->num_achievements > 0) ?
+          (static_cast<float>(std::max(right->unlocked_achievements, right->unlocked_achievements_hc)) /
+           static_cast<float>(right->num_achievements)) :
+          0;
+      if (std::abs(unlock_left - unlock_right) < 0.0001f)
+      {
+        // order by achievement count
+        if (left->num_achievements == right->num_achievements)
+          return titlesLessThan(left, right);
+
+        return (left->num_achievements < right->num_achievements);
+      }
+
+      return (unlock_left < unlock_right);
+    }
+
     default:
       return false;
   }
@@ -851,6 +879,15 @@ void GameListModel::loadCommonImages()
   }
 
   m_placeholder_image.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath()));
+
+  constexpr int ACHIEVEMENT_ICON_SIZE = 16;
+  m_no_achievements_pixmap = QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-gray.svg", true)))
+                               .pixmap(ACHIEVEMENT_ICON_SIZE);
+  m_has_achievements_pixmap = QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon.svg", true)))
+                                .pixmap(ACHIEVEMENT_ICON_SIZE);
+  m_mastered_achievements_pixmap =
+    QIcon(QString::fromStdString(QtHost::GetResourcePath("images/trophy-icon-star.svg", true)))
+      .pixmap(ACHIEVEMENT_ICON_SIZE);
 }
 
 void GameListModel::setColumnDisplayNames()
@@ -864,6 +901,7 @@ void GameListModel::setColumnDisplayNames()
   m_column_display_names[Column_Genre] = tr("Genre");
   m_column_display_names[Column_Year] = tr("Year");
   m_column_display_names[Column_Players] = tr("Players");
+  m_column_display_names[Column_Achievements] = tr("Achievements");
   m_column_display_names[Column_TimePlayed] = tr("Time Played");
   m_column_display_names[Column_LastPlayed] = tr("Last Played");
   m_column_display_names[Column_FileSize] = tr("Size");

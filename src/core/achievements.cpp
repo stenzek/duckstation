@@ -9,6 +9,7 @@
 #include "bus.h"
 #include "cpu_core.h"
 #include "fullscreen_ui.h"
+#include "game_list.h"
 #include "gpu_thread.h"
 #include "host.h"
 #include "imgui_overlays.h"
@@ -2209,13 +2210,12 @@ void Achievements::Logout()
     rc_client_logout(s_state.client);
   }
 
-  ClearProgressDatabase();
-
   INFO_LOG("Clearing credentials...");
   Host::DeleteBaseSettingValue("Cheevos", "Username");
   Host::DeleteBaseSettingValue("Cheevos", "Token");
   Host::DeleteBaseSettingValue("Cheevos", "LoginTimestamp");
   Host::CommitBaseSettingChanges();
+  ClearProgressDatabase();
 }
 
 bool Achievements::ConfirmSystemReset()
@@ -3836,6 +3836,9 @@ void Achievements::FinishRefreshHashDatabase()
   s_state.fetch_all_progress_result = nullptr;
   rc_client_destroy_hash_library(s_state.fetch_hash_library_result);
   s_state.fetch_hash_library_result = nullptr;
+
+  // update game list, we might have some new games that weren't in the seed database
+  GameList::UpdateAllAchievementData();
 }
 
 void Achievements::BuildHashDatabase(const rc_client_hash_library_t* hashlib,
@@ -4204,8 +4207,6 @@ void Achievements::BuildProgressDatabase(const rc_client_all_progress_list_t* al
 
   if (!writer.Flush(&error))
     ERROR_LOG("Failed to write progress database: {}", error.GetDescription());
-
-  // TODO: Notify game list
 }
 
 void Achievements::UpdateProgressDatabase(bool force)
@@ -4214,7 +4215,13 @@ void Achievements::UpdateProgressDatabase(bool force)
   if (rc_client_get_spectator_mode_enabled(s_state.client))
     return;
 
-  // TODO: Update in game list
+  // update the game list, this should be fairly quick
+  if (!s_state.game_hash.has_value())
+  {
+    GameList::UpdateAchievementData(s_state.game_hash.value(), s_state.game_id,
+                                    s_state.game_summary.num_core_achievements,
+                                    s_state.game_summary.num_unlocked_achievements, IsHardcoreModeActive());
+  }
 
   // done asynchronously so we don't hitch on disk I/O
   System::QueueAsyncTask([game_id = s_state.game_id,
@@ -4339,6 +4346,8 @@ void Achievements::ClearProgressDatabase()
     if (!FileSystem::DeleteFile(path.c_str(), &error))
       ERROR_LOG("Failed to delete progress database: {}", error.GetDescription());
   }
+
+  GameList::UpdateAllAchievementData();
 }
 
 Achievements::ProgressDatabase::ProgressDatabase() = default;

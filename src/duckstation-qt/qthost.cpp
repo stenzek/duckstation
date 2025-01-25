@@ -1586,13 +1586,7 @@ void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 
 void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
 {
-  const QString message = qApp->translate("QtHost", "RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.")
-                            .arg(QString::fromUtf8(username))
-                            .arg(points)
-                            .arg(sc_points)
-                            .arg(unread_messages);
-
-  emit g_emu_thread->statusMessage(message);
+  emit g_emu_thread->achievementsLoginSuccess(QString::fromUtf8(username), points, sc_points, unread_messages);
 }
 
 void Host::OnAchievementsRefreshed()

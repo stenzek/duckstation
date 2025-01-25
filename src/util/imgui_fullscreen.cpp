@@ -418,6 +418,39 @@ GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name)
   return tex_ptr->get();
 }
 
+GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name, u32 svg_width, u32 svg_height)
+{
+  // ignore size hints if it's not needed, don't duplicate
+  if (!TextureNeedsSVGDimensions(name))
+    return GetCachedTextureAsync(name);
+
+  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
+  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
+
+  const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
+  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
+  if (!tex_ptr)
+  {
+    // insert the placeholder
+    tex_ptr = s_state.texture_cache.Insert(std::string(wh_name), s_state.placeholder_texture);
+
+    // queue the actual load
+    System::QueueAsyncTask([path = std::string(name), wh_name = std::string(wh_name), svg_width, svg_height]() mutable {
+      std::optional<Image> image(LoadTextureImage(path.c_str(), svg_width, svg_height));
+
+      // don't bother queuing back if it doesn't exist
+      if (!image.has_value())
+        return;
+
+      std::unique_lock lock(s_state.shared_state_mutex);
+      if (s_state.initialized)
+        s_state.texture_upload_queue.emplace_back(std::move(wh_name), std::move(image.value()));
+    });
+  }
+
+  return tex_ptr->get();
+}
+
 bool ImGuiFullscreen::InvalidateCachedTexture(std::string_view path)
 {
   // need to do a partial match on this because SVG

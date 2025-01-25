@@ -117,6 +117,7 @@ using ImGuiFullscreen::IsFocusResetFromWindowChange;
 using ImGuiFullscreen::IsFocusResetQueued;
 using ImGuiFullscreen::IsGamepadInputSource;
 using ImGuiFullscreen::LayoutScale;
+using ImGuiFullscreen::LayoutUnscale;
 using ImGuiFullscreen::LoadTexture;
 using ImGuiFullscreen::MenuButton;
 using ImGuiFullscreen::MenuButtonFrame;
@@ -442,6 +443,7 @@ static void SwitchToGameList();
 static void PopulateGameListEntryList();
 static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
 static GPUTexture* GetGameListCover(const GameList::Entry* entry, bool fallback_to_icon);
+static GPUTexture* GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size);
 static GPUTexture* GetCoverForCurrentGame();
 
 //////////////////////////////////////////////////////////////////////////
@@ -543,6 +545,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::unordered_map<std::string, std::string> icon_image_map;
   std::vector<const GameList::Entry*> game_list_sorted_entries;
   GameListView game_list_view = GameListView::Grid;
+  bool game_list_show_trophy_icons = true;
 };
 
 } // namespace
@@ -7478,6 +7481,28 @@ void FullscreenUI::PopulateGameListEntryList()
                   }
                 }
                 break;
+
+                case 8: // Achievements
+                {
+                  // sort by unlock percentage
+                  const float unlock_lhs =
+                    (lhs->num_achievements > 0) ?
+                      (static_cast<float>(std::max(lhs->unlocked_achievements, lhs->unlocked_achievements_hc)) /
+                       static_cast<float>(lhs->num_achievements)) :
+                      0;
+                  const float unlock_rhs =
+                    (rhs->num_achievements > 0) ?
+                      (static_cast<float>(std::max(rhs->unlocked_achievements, rhs->unlocked_achievements_hc)) /
+                       static_cast<float>(rhs->num_achievements)) :
+                      0;
+                  if (std::abs(unlock_lhs - unlock_rhs) >= 0.0001f)
+                    return reverse ? (unlock_lhs >= unlock_rhs) : (unlock_lhs < unlock_rhs);
+
+                  // order by achievement count
+                  if (lhs->num_achievements != rhs->num_achievements)
+                    return reverse ? (rhs->num_achievements < lhs->num_achievements) :
+                                     (lhs->num_achievements < rhs->num_achievements);
+                }
               }
 
               // fallback to title when all else is equal
@@ -7752,6 +7777,21 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       // release date
       ImGui::Text(FSUI_CSTR("Release Date: %s"), selected_entry->GetReleaseDateString().c_str());
 
+      // achievements
+      if (selected_entry->num_achievements > 0)
+      {
+        if (selected_entry->unlocked_achievements_hc > 0)
+        {
+          ImGui::Text(FSUI_CSTR("Achievements: %u (%u) / %u"), selected_entry->unlocked_achievements,
+                      selected_entry->unlocked_achievements_hc, selected_entry->num_achievements);
+        }
+        else
+        {
+          ImGui::Text(FSUI_CSTR("Achievements: %u / %u"), selected_entry->unlocked_achievements,
+                      selected_entry->num_achievements);
+        }
+      }
+
       // compatibility
       ImGui::TextUnformatted(FSUI_CSTR("Compatibility: "));
       ImGui::SameLine();
@@ -7876,6 +7916,15 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
 
       ImGui::GetWindowDrawList()->AddImage(cover_texture, image_rect.Min, image_rect.Max, ImVec2(0.0f, 0.0f),
                                            ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+
+      GPUTexture* const cover_trophy = GetGameListCoverTrophy(entry, image_size);
+      if (cover_trophy)
+      {
+        const ImVec2 trophy_size =
+          ImVec2(static_cast<float>(cover_trophy->GetWidth()), static_cast<float>(cover_trophy->GetHeight()));
+        ImGui::GetWindowDrawList()->AddImage(cover_trophy, image_rect.Max - trophy_size, image_rect.Max,
+                                             ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), IM_COL32(255, 255, 255, 255));
+      }
 
       const ImRect title_bb(ImVec2(bb.Min.x, bb.Min.y + image_height + title_spacing), bb.Max);
       const std::string_view title(
@@ -8174,8 +8223,16 @@ void FullscreenUI::DrawGameListSettingsWindow()
   {
     static constexpr const char* view_types[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List")};
     static constexpr const char* sort_types[] = {
-      FSUI_NSTR("Type"),        FSUI_NSTR("Serial"),      FSUI_NSTR("Title"),     FSUI_NSTR("File Title"),
-      FSUI_NSTR("Time Played"), FSUI_NSTR("Last Played"), FSUI_NSTR("File Size"), FSUI_NSTR("Uncompressed Size")};
+      FSUI_NSTR("Type"),
+      FSUI_NSTR("Serial"),
+      FSUI_NSTR("Title"),
+      FSUI_NSTR("File Title"),
+      FSUI_NSTR("Time Played"),
+      FSUI_NSTR("Last Played"),
+      FSUI_NSTR("File Size"),
+      FSUI_NSTR("Uncompressed Size"),
+      FSUI_NSTR("Achievement Unlock/Count"),
+    };
 
     DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Default View"),
                        FSUI_CSTR("Selects the view that the game list will open to."), "Main",
@@ -8190,6 +8247,13 @@ void FullscreenUI::DrawGameListSettingsWindow()
     DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Merge Multi-Disc Games"),
                       FSUI_CSTR("Merges multi-disc games into one item in the game list."), "Main",
                       "FullscreenUIMergeDiscSets", true);
+    if (DrawToggleSetting(
+          bsi, FSUI_ICONSTR(ICON_FA_TROPHY, "Show Achievement Trophy Icons"),
+          FSUI_CSTR("Shows trophy icons in game grid when games have achievements or have been mastered."), "Main",
+          "FullscreenUIShowTrophyIcons", true))
+    {
+      s_state.game_list_show_trophy_icons = bsi->GetBoolValue("Main", "FullscreenUIShowTrophyIcons", true);
+    }
   }
 
   MenuHeading(FSUI_CSTR("Cover Settings"));
@@ -8228,6 +8292,7 @@ void FullscreenUI::SwitchToGameList()
   s_state.current_main_window = MainWindowType::GameList;
   s_state.game_list_view =
     static_cast<GameListView>(Host::GetBaseIntSettingValue("Main", "DefaultFullscreenUIGameView", 0));
+  s_state.game_list_show_trophy_icons = Host::GetBaseBoolSettingValue("Main", "FullscreenUIShowTrophyIcons", true);
 
   // Wipe icon map, because a new save might give us an icon.
   for (const auto& it : s_state.icon_image_map)
@@ -8262,6 +8327,22 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
 
   GPUTexture* tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
   return tex ? tex : GetTextureForGameListEntryType(entry->type);
+}
+
+GPUTexture* FullscreenUI::GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size)
+{
+  if (!s_state.game_list_show_trophy_icons || entry->num_achievements == 0)
+    return nullptr;
+
+  // this'll get re-scaled up, so undo layout scale
+  const ImVec2 trophy_size = LayoutUnscale(image_size / 6.0f);
+
+  GPUTexture* texture =
+    GetCachedTextureAsync(entry->AreAchievementsMastered() ? "images/trophy-icon-star.svg" : "images/trophy-icon.svg",
+                          static_cast<u32>(trophy_size.x), static_cast<u32>(trophy_size.y));
+
+  // don't draw the placeholder, it's way too large
+  return (texture == GetPlaceholderTexture().get()) ? nullptr : texture;
 }
 
 GPUTexture* FullscreenUI::GetTextureForGameListEntryType(GameList::EntryType type)
@@ -8679,9 +8760,12 @@ TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Account");
 TRANSLATE_NOOP("FullscreenUI", "Accurate Blending");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
+TRANSLATE_NOOP("FullscreenUI", "Achievement Unlock/Count");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
 TRANSLATE_NOOP("FullscreenUI", "Achievements are not enabled.");
+TRANSLATE_NOOP("FullscreenUI", "Achievements: %u (%u) / %u");
+TRANSLATE_NOOP("FullscreenUI", "Achievements: %u / %u");
 TRANSLATE_NOOP("FullscreenUI", "Add Search Directory");
 TRANSLATE_NOOP("FullscreenUI", "Add Shader");
 TRANSLATE_NOOP("FullscreenUI", "Adds a new directory to the game search list.");
@@ -9201,6 +9285,7 @@ TRANSLATE_NOOP("FullscreenUI", "Settings");
 TRANSLATE_NOOP("FullscreenUI", "Settings and Operations");
 TRANSLATE_NOOP("FullscreenUI", "Shader {} added as stage {}.");
 TRANSLATE_NOOP("FullscreenUI", "Shared Card Name");
+TRANSLATE_NOOP("FullscreenUI", "Show Achievement Trophy Icons");
 TRANSLATE_NOOP("FullscreenUI", "Show CPU Usage");
 TRANSLATE_NOOP("FullscreenUI", "Show Controller Input");
 TRANSLATE_NOOP("FullscreenUI", "Show Enhancement Settings");
@@ -9228,6 +9313,7 @@ TRANSLATE_NOOP("FullscreenUI", "Shows the game you are currently playing as part
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's CPU usage of each system thread in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the host's GPU usage in the top-right corner of the display.");
 TRANSLATE_NOOP("FullscreenUI", "Shows the number of frames (or v-syncs) displayed per second by the system in the top-right corner of the display.");
+TRANSLATE_NOOP("FullscreenUI", "Shows trophy icons in game grid when games have achievements or have been mastered.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the region check present in original, unmodified consoles.");
 TRANSLATE_NOOP("FullscreenUI", "Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.");
 TRANSLATE_NOOP("FullscreenUI", "Skip Duplicate Frame Display");

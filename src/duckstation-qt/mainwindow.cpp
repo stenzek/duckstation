@@ -2205,6 +2205,7 @@ void MainWindow::connectSignals()
   connect(g_emu_thread, &EmuThread::mouseModeRequested, this, &MainWindow::onMouseModeRequested);
   connect(g_emu_thread, &EmuThread::fullscreenUIStartedOrStopped, this, &MainWindow::onFullscreenUIStartedOrStopped);
   connect(g_emu_thread, &EmuThread::achievementsLoginRequested, this, &MainWindow::onAchievementsLoginRequested);
+  connect(g_emu_thread, &EmuThread::achievementsLoginSuccess, this, &MainWindow::onAchievementsLoginSuccess);
   connect(g_emu_thread, &EmuThread::achievementsChallengeModeChanged, this,
           &MainWindow::onAchievementsChallengeModeChanged);
   connect(g_emu_thread, &EmuThread::onCoverDownloaderOpenRequested, this, &MainWindow::onToolsCoverDownloaderTriggered);
@@ -2794,6 +2795,24 @@ void MainWindow::onAchievementsLoginRequested(Achievements::LoginRequestReason r
 
   AchievementLoginDialog dlg(lock.getDialogParent(), reason);
   dlg.exec();
+}
+
+void MainWindow::onAchievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points,
+                                            quint32 unread_messages)
+{
+  m_ui.statusBar->showMessage(tr("RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.")
+                                .arg(username)
+                                .arg(points)
+                                .arg(sc_points)
+                                .arg(unread_messages));
+
+  // Automatically show the achievements column after first login. If the user has manually hidden it,
+  // it will not be automatically shown again.
+  if (!Host::GetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", false))
+  {
+    Host::SetBaseBoolSettingValue("GameListTableView", "TriedShowingAchievementsColumn", true);
+    m_game_list_widget->setTableViewColumnHidden(GameListModel::Column_Achievements, false);
+  }
 }
 
 void MainWindow::onAchievementsChallengeModeChanged(bool enabled)

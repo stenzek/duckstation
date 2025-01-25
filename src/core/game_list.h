@@ -56,6 +56,12 @@ struct Entry
   std::time_t last_played_time = 0;
   std::time_t total_played_time = 0;
 
+  std::array<u8, 16> achievements_hash = {};
+  u32 achievements_game_id = 0;
+  u16 num_achievements = 0;
+  u16 unlocked_achievements = 0;
+  u16 unlocked_achievements_hc = 0;
+
   std::string_view GetLanguageIcon() const;
 
   TinyString GetLanguageIconName() const;
@@ -67,6 +73,12 @@ struct Entry
   ALWAYS_INLINE bool IsDiscSet() const { return (type == EntryType::DiscSet); }
   ALWAYS_INLINE bool HasCustomLanguage() const { return (custom_language != GameDatabase::Language::MaxCount); }
   ALWAYS_INLINE EntryType GetSortType() const { return (type == EntryType::DiscSet) ? EntryType::Disc : type; }
+  ALWAYS_INLINE bool AreAchievementsMastered() const
+  {
+    return (num_achievements > 0 &&
+            ((unlocked_achievements > unlocked_achievements_hc) ? unlocked_achievements : unlocked_achievements_hc) ==
+              num_achievements);
+  }
 };
 
 using EntryList = std::vector<Entry>;
@@ -141,6 +153,11 @@ std::optional<DiscRegion> GetCustomRegionForPath(const std::string_view path);
 /// timestamp of the memory card has changed.
 std::string GetGameIconPath(std::string_view serial, std::string_view path);
 void ReloadMemcardTimestampCache();
+
+/// Updates game list with new achievement unlocks.
+void UpdateAchievementData(const std::span<u8, 16> hash, u32 game_id, u32 num_achievements, u32 num_unlocked,
+                           bool hardcore);
+void UpdateAllAchievementData();
 
 }; // namespace GameList
 
