@@ -865,27 +865,23 @@ std::string System::GetGameHashId(GameHash hash)
   return fmt::format("HASH-{:X}", hash);
 }
 
-bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash)
+bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash,
+                                     std::string* out_executable_name, std::vector<u8>* out_executable_data)
 {
   IsoReader iso;
-  if (!iso.Open(cdi, 1))
-  {
-    if (out_id)
-      out_id->clear();
-    if (out_hash)
-      *out_hash = 0;
-    return false;
-  }
-
   std::string id;
   std::string exe_name;
   std::vector<u8> exe_buffer;
-  if (!ReadExecutableFromImage(iso, &exe_name, &exe_buffer))
+  if (!iso.Open(cdi, 1) || !ReadExecutableFromImage(iso, &exe_name, &exe_buffer))
   {
     if (out_id)
       out_id->clear();
     if (out_hash)
       *out_hash = 0;
+    if (out_executable_name)
+      out_executable_name->clear();
+    if (out_executable_data)
+      out_executable_data->clear();
     return false;
   }
 
@@ -930,6 +926,11 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
 
   if (out_hash)
     *out_hash = hash;
+
+  if (out_executable_name)
+    *out_executable_name = std::move(exe_name);
+  if (out_executable_data)
+    *out_executable_data = std::move(exe_buffer);
 
   return true;
 }

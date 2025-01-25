@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -8,11 +8,10 @@
 
 #include <functional>
 #include <mutex>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
-
-struct rc_client_t;
 
 class Error;
 class StateWrapper;
@@ -28,11 +27,16 @@ enum class LoginRequestReason
   TokenInvalid,
 };
 
+static constexpr size_t GAME_HASH_LENGTH = 16;
+using GameHash = std::array<u8, GAME_HASH_LENGTH>;
+
 /// Acquires the achievements lock. Must be held when accessing any achievement state from another thread.
 std::unique_lock<std::recursive_mutex> GetLock();
 
-/// Returns the rc_client instance. Should have the lock held.
-rc_client_t* GetClient();
+/// Returns the achievements game hash for a given disc.
+std::optional<GameHash> GetGameHash(CDImage* image, u32* bytes_hashed = nullptr);
+std::optional<GameHash> GetGameHash(const std::string_view executable_name, std::span<const u8> executable_data,
+                                    u32* bytes_hashed = nullptr);
 
 /// Initializes the RetroAchievments client.
 bool Initialize();

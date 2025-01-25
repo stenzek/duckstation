@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 // TODO: Don't poll when booting the game, e.g. Crash Warped freaks out.
@@ -129,6 +129,8 @@ struct AchievementProgressIndicator
 
 } // namespace
 
+static TinyString GameHashToString(const GameHash& hash);
+
 static void ReportError(std::string_view sv);
 template<typename... T>
 static void ReportFmtError(fmt::format_string<T...> fmt, T&&... args);
@@ -136,7 +138,6 @@ template<typename... T>
 static void ReportRCError(int err, fmt::format_string<T...> fmt, T&&... args);
 static void ClearGameInfo();
 static void ClearGameHash();
-static std::string GetGameHash(CDImage* image);
 static bool TryLoggingInWithToken();
 static void SetHardcoreMode(bool enabled, bool force_display_message);
 static bool IsLoggedInOrLoggingIn();
@@ -229,10 +230,10 @@ struct State
   std::unique_ptr<HTTPDownloader> http_downloader;
 
   std::string game_path;
-  std::string game_hash;
   std::string game_title;
   std::string game_icon;
   std::string game_icon_url;
+  std::optional<GameHash> game_hash;
 
   rc_client_async_handle_t* login_request = nullptr;
   rc_client_async_handle_t* load_game_request = nullptr;
@@ -252,6 +253,14 @@ struct State
 ALIGN_TO_CACHE_LINE static State s_state;
 
 } // namespace Achievements
+
+TinyString Achievements::GameHashToString(const GameHash& hash)
+{
+  return TinyString::from_format(
+    "{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}", hash[0],
+    hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10], hash[11], hash[12],
+    hash[13], hash[14], hash[15]);
+}
 
 std::unique_lock<std::recursive_mutex> Achievements::GetLock()
 {
@@ -292,44 +301,46 @@ void Achievements::ReportRCError(int err, fmt::format_string<T...> fmt, T&&... a
   ReportError(str);
 }
 
-std::string Achievements::GetGameHash(CDImage* image)
+std::optional<Achievements::GameHash> Achievements::GetGameHash(CDImage* image, u32* bytes_hashed)
 {
+  std::optional<GameHash> ret;
+
   std::string executable_name;
   std::vector<u8> executable_data;
   if (!System::ReadExecutableFromImage(image, &executable_name, &executable_data))
-    return {};
+    return ret;
 
-  BIOS::PSEXEHeader header = {};
-  if (executable_data.size() >= sizeof(header))
-    std::memcpy(&header, executable_data.data(), sizeof(header));
-  if (!BIOS::IsValidPSExeHeader(header, executable_data.size()))
+  return GetGameHash(executable_name, executable_data, bytes_hashed);
+}
+
+std::optional<Achievements::GameHash> Achievements::GetGameHash(const std::string_view executable_name,
+                                                                std::span<const u8> executable_data,
+                                                                u32* bytes_hashed /* = nullptr */)
+{
+  std::optional<GameHash> ret;
+
+  // NOTE: Assumes executable_data is aligned to 4 bytes at least.. it should be.
+  const BIOS::PSEXEHeader* header = reinterpret_cast<const BIOS::PSEXEHeader*>(executable_data.data());
+  if (executable_data.size() < sizeof(BIOS::PSEXEHeader) || !BIOS::IsValidPSExeHeader(*header, executable_data.size()))
   {
     ERROR_LOG("PS-EXE header is invalid in '{}' ({} bytes)", executable_name, executable_data.size());
-    return {};
+    return ret;
   }
 
-  // This is absolutely bonkers silly. Someone decided to hash the file size specified in the executable, plus 2048,
-  // instead of adding the size of the header. It _should_ be "header.file_size + sizeof(header)". But we have to hack
-  // around it because who knows how many games are affected by this.
-  // https://github.com/RetroAchievements/rcheevos/blob/b8dd5747a4ed38f556fd776e6f41b131ea16178f/src/rhash/hash.c#L2824
-  const u32 hash_size = std::min(header.file_size + 2048, static_cast<u32>(executable_data.size()));
+  const u32 hash_size = std::min(header->file_size + 2048, static_cast<u32>(executable_data.size()));
 
   MD5Digest digest;
-  digest.Update(executable_name.c_str(), static_cast<u32>(executable_name.size()));
+  digest.Update(executable_name.data(), static_cast<u32>(executable_name.size()));
   if (hash_size > 0)
     digest.Update(executable_data.data(), hash_size);
 
-  u8 hash[16];
-  digest.Final(hash);
+  ret = GameHash();
+  digest.Final(ret.value());
 
-  const std::string hash_str =
-    fmt::format("{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                hash[0], hash[1], hash[2], hash[3], hash[4], hash[5], hash[6], hash[7], hash[8], hash[9], hash[10],
-                hash[11], hash[12], hash[13], hash[14], hash[15]);
+  if (bytes_hashed)
+    *bytes_hashed = hash_size;
 
-  INFO_LOG("Hash for '{}' ({} bytes, {} bytes hashed): {}", executable_name, executable_data.size(), hash_size,
-           hash_str);
-  return hash_str;
+  return ret;
 }
 
 std::string Achievements::GetLocalImagePath(const std::string_view image_name, int type)
@@ -1029,9 +1040,14 @@ void Achievements::IdentifyGame(const std::string& path, CDImage* image)
       ERROR_LOG("Failed to open temporary CD image '{}'", path);
   }
 
-  std::string game_hash;
+  std::optional<GameHash> game_hash;
   if (image)
-    game_hash = GetGameHash(image);
+  {
+    u32 bytes_hashed;
+    game_hash = GetGameHash(image, &bytes_hashed);
+    if (game_hash.has_value())
+      INFO_LOG("RA Hash: {} ({} bytes hashed)", GameHashToString(game_hash.value()), bytes_hashed);
+  }
 
   if (s_state.game_hash == game_hash)
   {
@@ -1074,7 +1090,7 @@ void Achievements::BeginLoadGame()
 {
   ClearGameInfo();
 
-  if (s_state.game_hash.empty())
+  if (!s_state.game_hash.has_value())
   {
     // when we're booting the bios, this will fail
     if (!s_state.game_path.empty())
@@ -1090,8 +1106,8 @@ void Achievements::BeginLoadGame()
     return;
   }
 
-  s_state.load_game_request =
-    rc_client_begin_load_game(s_state.client, s_state.game_hash.c_str(), ClientLoadGameCallback, nullptr);
+  s_state.load_game_request = rc_client_begin_load_game(s_state.client, GameHashToString(s_state.game_hash.value()),
+                                                        ClientLoadGameCallback, nullptr);
 }
 
 void Achievements::BeginChangeDisc()
@@ -1103,7 +1119,7 @@ void Achievements::BeginChangeDisc()
     s_state.load_game_request = nullptr;
   }
 
-  if (s_state.game_hash.empty())
+  if (!s_state.game_hash.has_value())
   {
     // when we're booting the bios, this will fail
     if (!s_state.game_path.empty())
@@ -1121,8 +1137,8 @@ void Achievements::BeginChangeDisc()
   }
 
   s_state.load_game_request =
-    rc_client_begin_change_media_from_hash(s_state.client, s_state.game_hash.c_str(), ClientLoadGameCallback,
-                                           reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
+    rc_client_begin_change_media_from_hash(s_state.client, GameHashToString(s_state.game_hash.value()),
+                                           ClientLoadGameCallback, reinterpret_cast<void*>(static_cast<uintptr_t>(1)));
 }
 
 void Achievements::ClientLoadGameCallback(int result, const char* error_message, rc_client_t* client, void* userdata)
@@ -1134,7 +1150,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   if (result == RC_NO_GAME_LOADED)
   {
     // Unknown game.
-    INFO_LOG("Unknown game '{}', disabling achievements.", s_state.game_hash);
+    INFO_LOG("Unknown game '{}', disabling achievements.", GameHashToString(s_state.game_hash.value()));
     if (was_disc_change)
     {
       ClearGameInfo();
@@ -1259,7 +1275,7 @@ void Achievements::ClearGameInfo()
 void Achievements::ClearGameHash()
 {
   s_state.game_path = {};
-  std::string().swap(s_state.game_hash);
+  s_state.game_hash.reset();
 }
 
 void Achievements::DisplayAchievementSummary()
@@ -3743,7 +3759,7 @@ void Achievements::RAIntegration::MainWindowChanged(void* new_handle)
 
 void Achievements::RAIntegration::GameChanged()
 {
-  s_state.game_id = s_state.game_hash.empty() ? 0 : RA_IdentifyHash(s_state.game_hash.c_str());
+  s_state.game_id = s_state.game_hash.has_value() ? RA_IdentifyHash(GameHashToString(s_state.game_hash.value())) : 0;
   RA_ActivateGame(s_state.game_id);
 }
 
