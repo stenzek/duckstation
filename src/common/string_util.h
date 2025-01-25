@@ -242,6 +242,7 @@ static inline bool IsWhitespace(char ch)
 
 /// Encode/decode hexadecimal byte buffers
 u8 DecodeHexDigit(char ch);
+size_t DecodeHex(std::span<u8> dest, const std::string_view str);
 std::optional<std::vector<u8>> DecodeHex(const std::string_view str);
 std::string EncodeHex(const void* data, size_t length);
 template<typename T>

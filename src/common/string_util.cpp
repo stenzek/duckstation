@@ -165,21 +165,34 @@ u8 StringUtil::DecodeHexDigit(char ch)
     return 0;
 }
 
-std::optional<std::vector<u8>> StringUtil::DecodeHex(const std::string_view in)
+size_t StringUtil::DecodeHex(std::span<u8> dest, const std::string_view str)
 {
-  std::vector<u8> data;
-  data.reserve(in.size() / 2);
+  if ((str.length() % 2) != 0)
+    return 0;
 
-  for (size_t i = 0; i < in.size() / 2; i++)
+  const size_t bytes = str.length() / 2;
+  if (dest.size() != bytes)
+    return 0;
+
+  for (size_t i = 0; i < bytes; i++)
   {
-    std::optional<u8> byte = StringUtil::FromChars<u8>(in.substr(i * 2, 2), 16);
+    std::optional<u8> byte = StringUtil::FromChars<u8>(str.substr(i * 2, 2), 16);
     if (byte.has_value())
-      data.push_back(*byte);
+      dest[i] = byte.value();
     else
-      return std::nullopt;
+      return i;
   }
 
-  return {data};
+  return bytes;
+}
+
+std::optional<std::vector<u8>> StringUtil::DecodeHex(const std::string_view in)
+{
+  std::optional<std::vector<u8>> ret;
+  ret = std::vector<u8>(in.size() / 2);
+  if (DecodeHex(ret.value(), in) != ret->size())
+    ret.reset();
+  return ret;
 }
 
 std::string StringUtil::EncodeHex(const void* data, size_t length)
