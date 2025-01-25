@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "game_list.h"
@@ -24,6 +24,7 @@
 #include "common/path.h"
 #include "common/progress_callback.h"
 #include "common/string_util.h"
+#include "common/thirdparty/SmallVector.h"
 #include "common/timer.h"
 
 #include "fmt/format.h"
@@ -1223,50 +1224,35 @@ void GameList::AddPlayedTimeForSerial(const std::string& serial, std::time_t las
               static_cast<unsigned>(pt.total_played_time));
 
   std::unique_lock<std::recursive_mutex> lock(s_mutex);
-  for (GameList::Entry& entry : s_entries)
-  {
-    if (entry.serial != serial)
-      continue;
+  const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(serial);
+  llvm::SmallVector<u32, 32> changed_indices;
 
-    entry.last_played_time = pt.last_played_time;
-    entry.total_played_time = pt.total_played_time;
-  }
-
-  // We don't need to update the disc sets if we're not running Big Picture, because Qt refreshes on system destory,
-  // which causes the disc set entries to get recreated.
-  if (FullscreenUI::IsInitialized())
+  for (size_t i = 0; i < s_entries.size(); i++)
   {
-    const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(serial);
-    if (dbentry && !dbentry->disc_set_serials.empty())
+    Entry& entry = s_entries[i];
+    if (entry.IsDisc())
     {
-      for (GameList::Entry& entry : s_entries)
-      {
-        if (entry.type != EntryType::DiscSet || entry.path != dbentry->disc_set_name)
-          continue;
+      if (entry.serial != serial)
+        continue;
 
-        entry.last_played_time = 0;
-        entry.total_played_time = 0;
+      entry.last_played_time = pt.last_played_time;
+      entry.total_played_time = pt.total_played_time;
+      changed_indices.push_back(static_cast<u32>(i));
+    }
+    else if (entry.IsDiscSet())
+    {
+      if (!dbentry || entry.path != dbentry->disc_set_name)
+        continue;
 
-        // We shouldn't ever have duplicates for disc sets, so this should be fine.
-        const PlayedTimeMap ptm = LoadPlayedTimeMap(GetPlayedTimeFile());
-        for (const std::string& dsserial : dbentry->disc_set_serials)
-        {
-          const auto it = ptm.find(dsserial);
-          if (it == ptm.end())
-            continue;
-
-          entry.last_played_time =
-            (entry.last_played_time == 0) ?
-              it->second.last_played_time :
-              ((it->second.last_played_time != 0) ? std::max(entry.last_played_time, it->second.last_played_time) :
-                                                    entry.last_played_time);
-          entry.total_played_time += it->second.total_played_time;
-        }
-
-        break;
-      }
+      // have to add here, because other discs are already included in the sum
+      entry.last_played_time = pt.last_played_time;
+      entry.total_played_time += add_time;
+      changed_indices.push_back(static_cast<u32>(i));
     }
   }
+
+  if (!changed_indices.empty())
+    Host::OnGameListEntriesChanged(std::span<const u32>(changed_indices.begin(), changed_indices.end()));
 }
 
 void GameList::ClearPlayedTimeForSerial(const std::string& serial)

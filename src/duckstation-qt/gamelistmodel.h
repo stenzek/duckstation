@@ -89,6 +89,7 @@ Q_SIGNALS:
 
 private Q_SLOTS:
   void coverLoaded(const std::string& path, const QPixmap& pixmap);
+  void rowsChanged(const QList<int>& rows);
 
 private:
   QVariant data(const QModelIndex& index, int role, const GameList::Entry* ge) const;

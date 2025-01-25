@@ -621,10 +621,6 @@ void MainWindow::onSystemDestroyed()
     updateDisplayWidgetCursor();
   else
     switchToGameListView();
-
-  // reload played time
-  if (m_game_list_widget->isShowingGameList())
-    m_game_list_widget->refresh(false);
 }
 
 void MainWindow::onRunningGameChanged(const QString& filename, const QString& game_serial, const QString& game_title)

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -150,4 +150,7 @@ void RefreshGameListAsync(bool invalidate_cache);
 
 /// Cancels game list refresh, if there is one in progress.
 void CancelGameListRefresh();
+
+/// Called when game list rows are updated.
+void OnGameListEntriesChanged(std::span<const u32> changed_indices);
 } // namespace Host

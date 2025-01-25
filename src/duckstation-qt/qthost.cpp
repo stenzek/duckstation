@@ -1397,6 +1397,15 @@ void Host::CancelGameListRefresh()
   QMetaObject::invokeMethod(g_main_window, "cancelGameListRefresh", Qt::BlockingQueuedConnection);
 }
 
+void Host::OnGameListEntriesChanged(std::span<const u32> changed_indices)
+{
+  QList<int> changed_rows;
+  changed_rows.reserve(changed_indices.size());
+  for (const u32 row : changed_indices)
+    changed_rows.push_back(static_cast<int>(row));
+  emit g_emu_thread->gameListRowsChanged(changed_rows);
+}
+
 void EmuThread::loadState(const QString& filename)
 {
   if (!isCurrentThread())

@@ -194,6 +194,8 @@ GameListModel::GameListModel(float cover_scale, bool show_cover_titles, bool sho
 
   if (m_show_game_icons)
     GameList::ReloadMemcardTimestampCache();
+
+  connect(g_emu_thread, &EmuThread::gameListRowsChanged, this, &GameListModel::rowsChanged);
 }
 
 GameListModel::~GameListModel()
@@ -269,6 +271,28 @@ void GameListModel::coverLoaded(const std::string& path, const QPixmap& pixmap)
 {
   m_cover_pixmap_cache.Insert(path, pixmap);
   invalidateCoverForPath(path);
+}
+
+void GameListModel::rowsChanged(const QList<int>& rows)
+{
+  const QList<int> roles_changed = {Qt::DisplayRole};
+
+  // try to collapse multiples
+  size_t start = 0;
+  size_t idx = 0;
+  const size_t size = rows.size();
+  for (; idx < size;)
+  {
+    if ((idx + 1) < size && rows[idx + 1] == (rows[idx] + 1))
+    {
+      idx++;
+    }
+    else
+    {
+      emit dataChanged(createIndex(rows[start], 0), createIndex(rows[idx], Column_Count - 1), roles_changed);
+      start = ++idx;
+    }
+  }
 }
 
 void GameListModel::invalidateCoverForPath(const std::string& path)
