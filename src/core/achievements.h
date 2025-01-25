@@ -30,6 +30,34 @@ enum class LoginRequestReason
 static constexpr size_t GAME_HASH_LENGTH = 16;
 using GameHash = std::array<u8, GAME_HASH_LENGTH>;
 
+struct HashDatabaseEntry
+{
+  GameHash hash;
+  u32 game_id;
+  u32 num_achievements;
+};
+
+class ProgressDatabase
+{
+public:
+  struct Entry
+  {
+    u32 game_id;
+    u16 num_achievements_unlocked;
+    u16 num_hc_achievements_unlocked;
+  };
+
+  ProgressDatabase();
+  ~ProgressDatabase();
+
+  bool Load(Error* error);
+
+  const Entry* LookupGame(u32 game_id) const;
+
+private:
+  std::vector<Entry> m_entries;
+};
+
 /// Acquires the achievements lock. Must be held when accessing any achievement state from another thread.
 std::unique_lock<std::recursive_mutex> GetLock();
 
@@ -37,6 +65,9 @@ std::unique_lock<std::recursive_mutex> GetLock();
 std::optional<GameHash> GetGameHash(CDImage* image, u32* bytes_hashed = nullptr);
 std::optional<GameHash> GetGameHash(const std::string_view executable_name, std::span<const u8> executable_data,
                                     u32* bytes_hashed = nullptr);
+
+/// Returns the number of achievements for a given hash.
+const HashDatabaseEntry* LookupGameHash(const GameHash& hash);
 
 /// Initializes the RetroAchievments client.
 bool Initialize();
