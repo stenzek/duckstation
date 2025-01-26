@@ -609,21 +609,10 @@ bool Achievements::Initialize()
 
 bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownloader>* http)
 {
-  *http = HTTPDownloader::Create(Host::GetHTTPUserAgent());
-  if (!*http)
-  {
-    Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
-    return false;
-  }
-
-  (*http)->SetTimeout(SERVER_CALL_TIMEOUT);
-  (*http)->SetMaxActiveRequests(MAX_CONCURRENT_SERVER_CALLS);
-
   rc_client_t* new_client = rc_client_create(ClientReadMemory, ClientServerCall);
   if (!new_client)
   {
     Host::ReportErrorAsync("Achievements Error", "rc_client_create() failed, cannot use achievements");
-    http->reset();
     return false;
   }
 
@@ -631,8 +620,20 @@ bool Achievements::CreateClient(rc_client_t** client, std::unique_ptr<HTTPDownlo
     new_client, (Log::GetLogLevel() >= Log::Level::Verbose) ? RC_CLIENT_LOG_LEVEL_VERBOSE : RC_CLIENT_LOG_LEVEL_INFO,
     ClientMessageCallback);
 
-  rc_client_set_userdata(new_client, http->get());
+  char rc_client_user_agent[128];
+  rc_client_get_user_agent_clause(new_client, rc_client_user_agent, std::size(rc_client_user_agent));
+  *http = HTTPDownloader::Create(fmt::format("{} {}", Host::GetHTTPUserAgent(), rc_client_user_agent));
+  if (!*http)
+  {
+    Host::ReportErrorAsync("Achievements Error", "Failed to create HTTPDownloader, cannot use achievements");
+    rc_client_destroy(new_client);
+    return false;
+  }
 
+  (*http)->SetTimeout(SERVER_CALL_TIMEOUT);
+  (*http)->SetMaxActiveRequests(MAX_CONCURRENT_SERVER_CALLS);
+
+  rc_client_set_userdata(new_client, http->get());
   *client = new_client;
   return true;
 }
