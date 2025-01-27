@@ -1978,14 +1978,49 @@ bool Host::ConfirmMessage(std::string_view title, std::string_view message)
 
 void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback)
 {
-  QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
-                         callback = std::move(callback)]() mutable {
-    auto lock = g_main_window->pauseAndLockSystem();
+  INFO_LOG("ConfirmMessageAsync({}, {})", title, message);
 
-    const bool result = (QMessageBox::question(lock.getDialogParent(), title, message) != QMessageBox::No);
+  // This is a racey read, but whether FSUI is started should be visible on all threads.
+  std::atomic_thread_fence(std::memory_order_acquire);
 
-    callback(result);
-  });
+  // Use FSUI to display the confirmation if it is active.
+  if (FullscreenUI::IsInitialized())
+  {
+    // This.. should not be a thing.
+    if (!g_emu_thread->isCurrentThread())
+    {
+      Host::RunOnCPUThread(
+        [title = std::string(title), message = std::string(message), callback = std::move(callback)]() mutable {
+          ConfirmMessageAsync(title, message, std::move(callback));
+        });
+      return;
+    }
+
+    GPUThread::RunOnThread(
+      [title = std::string(title), message = std::string(message), callback = std::move(callback)]() mutable {
+        if (!FullscreenUI::Initialize())
+        {
+          callback(false);
+          return;
+        }
+
+        ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(callback),
+                                                  fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("QtHost", "Yes")),
+                                                  fmt::format(ICON_FA_TIMES " {}", TRANSLATE_SV("QtHost", "No")));
+      });
+  }
+  else
+  {
+    // Otherwise, use the desktop UI.
+    QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
+                           callback = std::move(callback)]() mutable {
+      auto lock = g_main_window->pauseAndLockSystem();
+
+      const bool result = (QMessageBox::question(lock.getDialogParent(), title, message) != QMessageBox::No);
+
+      callback(result);
+    });
+  }
 }
 
 void Host::OpenURL(std::string_view url)
