@@ -1990,30 +1990,51 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   if (no_text.empty())
     no_text = TRANSLATE_SV("QtHost", "No");
 
+  // Ensure it always comes from the CPU thread.
+  if (!g_emu_thread->isCurrentThread())
+  {
+    Host::RunOnCPUThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
+                          yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
+      ConfirmMessageAsync(title, message, std::move(callback));
+    });
+    return;
+  }
+
+  // Pause system while dialog is up.
+  const bool needs_pause = System::IsValid() && !System::IsPaused();
+  if (needs_pause)
+    System::PauseSystem(true);
+
   // Use FSUI to display the confirmation if it is active.
   if (FullscreenUI::IsInitialized())
   {
-    // This.. should not be a thing.
-    if (!g_emu_thread->isCurrentThread())
-    {
-      Host::RunOnCPUThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
-                            yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
-        ConfirmMessageAsync(title, message, std::move(callback));
-      });
-      return;
-    }
-
     GPUThread::RunOnThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
-                            yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
+                            yes_text = std::string(yes_text), no_text = std::string(no_text), needs_pause]() mutable {
       if (!FullscreenUI::Initialize())
       {
         callback(false);
+
+        if (needs_pause)
+        {
+          Host::RunOnCPUThread([]() {
+            if (System::IsValid())
+              System::PauseSystem(false);
+          });
+        }
+
         return;
       }
 
-      ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(callback),
+      // Need to reset run idle state _again_ after displaying.
+      auto final_callback = [callback = std::move(callback)](bool result) {
+        FullscreenUI::UpdateRunIdleState();
+        callback(result);
+      };
+
+      ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
                                                 fmt::format(ICON_FA_CHECK " {}", yes_text),
                                                 fmt::format(ICON_FA_TIMES " {}", no_text));
+      FullscreenUI::UpdateRunIdleState();
     });
   }
   else
@@ -2021,7 +2042,7 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
     // Otherwise, use the desktop UI.
     QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
                            callback = std::move(callback), yes_text = QtUtils::StringViewToQString(yes_text),
-                           no_text = QtUtils::StringViewToQString(no_text)]() mutable {
+                           no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
       auto lock = g_main_window->pauseAndLockSystem();
 
       bool result;
@@ -2038,6 +2059,14 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
       }
 
       callback(result);
+
+      if (needs_pause)
+      {
+        Host::RunOnCPUThread([]() {
+          if (System::IsValid())
+            System::PauseSystem(false);
+        });
+      }
     });
   }
 }

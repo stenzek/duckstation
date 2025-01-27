@@ -732,7 +732,7 @@ void MainWindow::quit()
   // Make sure VM is gone. It really should be if we're here.
   if (s_system_valid)
   {
-    g_emu_thread->shutdownSystem(false, true);
+    g_emu_thread->shutdownSystem(false, false);
     QtUtils::ProcessEventsWithSleep(QEventLoop::ExcludeUserInputEvents, []() { return s_system_valid; });
   }
 

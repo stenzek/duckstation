@@ -34,6 +34,7 @@ void OpenLeaderboardsWindow();
 void ReturnToMainWindow();
 void ReturnToPreviousWindow();
 void SetStandardSelectionFooterText(bool back_instead_of_cancel);
+void UpdateRunIdleState();
 #endif
 
 void Shutdown(bool clear_state);

@@ -210,7 +210,6 @@ struct PostProcessingStageInfo
 //////////////////////////////////////////////////////////////////////////
 // Main
 //////////////////////////////////////////////////////////////////////////
-static void UpdateRunIdleState();
 static void PauseForMenuOpen(bool set_pause_menu_open);
 static bool AreAnyDialogsOpen();
 static void ClosePauseMenu();
@@ -1122,25 +1121,18 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
       return;
 
     // This can "fail" if HC mode is enabled and the user cancels, or other startup cancel paths.
-    // In that case, we need to re-trigger the idle state so the user can interact with the message.
-    // But we can skip it if we have a system, because OnSystemStarted() fixed it up.
     Error error;
-    const bool result = System::BootSystem(std::move(params), &error);
-    if (result && System::IsValid())
-      return;
+    if (!System::BootSystem(std::move(params), &error))
+    {
+      GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+        if (!IsInitialized())
+          return;
 
-    GPUThread::RunOnThread([error_desc = error.TakeDescription(), result]() {
-      if (!IsInitialized())
-        return;
-
-      if (!result)
-      {
         OpenInfoMessageDialog(TRANSLATE_STR("System", "Error"),
                               fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
-      }
-
-      UpdateRunIdleState();
-    });
+        UpdateRunIdleState();
+      });
+    }
   });
 }
 
@@ -1246,21 +1238,25 @@ void FullscreenUI::ConfirmIfSavingMemoryCards(std::string action, std::function<
 
 void FullscreenUI::RequestShutdown(bool save_state)
 {
+  s_state.current_main_window = MainWindowType::None;
+
   ConfirmIfSavingMemoryCards(FSUI_STR("shut down"), [save_state](bool result) {
     if (result)
       Host::RunOnCPUThread([save_state]() { Host::RequestSystemShutdown(false, save_state); });
-    else
-      ClosePauseMenu();
+
+    ClosePauseMenu();
   });
 }
 
 void FullscreenUI::RequestReset()
 {
+  s_state.current_main_window = MainWindowType::None;
+
   ConfirmIfSavingMemoryCards(FSUI_STR("reset"), [](bool result) {
     if (result)
       Host::RunOnCPUThread(System::ResetSystem);
-    else
-      ClosePauseMenu();
+
+    ClosePauseMenu();
   });
 }
 
@@ -1297,7 +1293,7 @@ void FullscreenUI::StartChangeDiscFromFile()
         }
       }
 
-      ReturnToPreviousWindow();
+      ReturnToMainWindow();
     });
   };
 
@@ -6683,10 +6679,7 @@ void FullscreenUI::DrawPauseMenu()
           OpenPauseSubMenu(PauseSubMenu::None);
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_SYNC, "Reset System"), false))
-        {
-          ClosePauseMenu();
           RequestReset();
-        }
 
         if (ActiveButton(FSUI_ICONSTR(ICON_FA_SAVE, "Exit And Save State"), false))
           RequestShutdown(true);
