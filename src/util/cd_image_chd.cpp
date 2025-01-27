@@ -449,7 +449,7 @@ CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)
   if (m_precached)
     return CDImage::PrecacheResult::Success;
 
-  progress->SetStatusText(fmt::format("Precaching {}...", FileSystem::GetDisplayNameFromPath(m_filename)).c_str());
+  progress->SetStatusText("Precaching CHD...");
   progress->SetProgressRange(100);
 
   auto callback = [](size_t pos, size_t total, void* param) {

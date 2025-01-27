@@ -20,7 +20,7 @@ bool Initialize();
 bool IsInitialized();
 bool HasActiveWindow();
 void CheckForConfigChanges(const GPUSettings& old_settings);
-void OnSystemStarted();
+void OnSystemStarting();
 void OnSystemResumed();
 void OnSystemDestroyed();
 void OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title);

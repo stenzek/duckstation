@@ -223,7 +223,6 @@ static void DoRewind();
 
 static bool DoRunahead();
 
-static bool OpenGPUDump(std::string path, Error* error);
 static bool ChangeGPUDump(std::string new_path);
 
 static void UpdateSessionTime(const std::string& prev_serial);
@@ -1657,18 +1656,13 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   else
     INFO_LOG("Boot Filename: {}", parameters.filename);
 
-  Assert(s_state.state == State::Shutdown);
-  s_state.state = State::Starting;
-  s_state.startup_cancelled.store(false, std::memory_order_relaxed);
-  s_state.region = g_settings.region;
-  std::atomic_thread_fence(std::memory_order_release);
-  Host::OnSystemStarting();
-
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> disc;
+  ConsoleRegion console_region = ConsoleRegion::Auto;
   DiscRegion disc_region = DiscRegion::NonPS1;
   BootMode boot_mode = BootMode::FullBoot;
   std::string exe_override;
+  std::unique_ptr<GPUDump::Player> gpu_dump;
   if (!parameters.filename.empty())
   {
     if (IsExePath(parameters.filename))
@@ -1683,24 +1677,22 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     }
     else if (IsGPUDumpPath(parameters.filename))
     {
-      if (!OpenGPUDump(parameters.filename, error))
-      {
-        DestroySystem();
+      gpu_dump = GPUDump::Player::Open(parameters.filename, error);
+      if (!gpu_dump)
         return false;
-      }
 
       boot_mode = BootMode::ReplayGPUDump;
     }
 
     if (boot_mode == BootMode::BootEXE || boot_mode == BootMode::BootPSF)
     {
-      if (s_state.region == ConsoleRegion::Auto)
+      if (console_region == ConsoleRegion::Auto)
       {
         const DiscRegion file_region =
           ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.filename.c_str()) :
                                               GetRegionForPsf(parameters.filename.c_str()));
         INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
-        s_state.region = GetConsoleRegionForDiscRegion(file_region);
+        console_region = GetConsoleRegionForDiscRegion(file_region);
       }
     }
     else if (boot_mode != BootMode::ReplayGPUDump)
@@ -1710,25 +1702,24 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       if (!disc)
       {
         Error::AddPrefixFmt(error, "Failed to open CD image '{}':\n", Path::GetFileName(parameters.filename));
-        DestroySystem();
         return false;
       }
 
       disc_region = GameList::GetCustomRegionForPath(parameters.filename).value_or(GetRegionForImage(disc.get()));
-      if (s_state.region == ConsoleRegion::Auto)
+      if (console_region == ConsoleRegion::Auto)
       {
         if (disc_region != DiscRegion::Other)
         {
-          s_state.region = GetConsoleRegionForDiscRegion(disc_region);
+          console_region = GetConsoleRegionForDiscRegion(disc_region);
           INFO_LOG("Auto-detected console {} region for '{}' (region {})",
-                   Settings::GetConsoleRegionName(s_state.region), parameters.filename,
+                   Settings::GetConsoleRegionName(console_region), parameters.filename,
                    Settings::GetDiscRegionName(disc_region));
         }
         else
         {
-          s_state.region = ConsoleRegion::NTSC_U;
+          console_region = ConsoleRegion::NTSC_U;
           WARNING_LOG("Could not determine console region for disc region {}. Defaulting to {}.",
-                      Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(s_state.region));
+                      Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(console_region));
         }
       }
     }
@@ -1736,20 +1727,71 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   else
   {
     // Default to NTSC for BIOS boot.
-    if (s_state.region == ConsoleRegion::Auto)
-      s_state.region = ConsoleRegion::NTSC_U;
+    if (console_region == ConsoleRegion::Auto)
+      console_region = ConsoleRegion::NTSC_U;
   }
 
-  INFO_LOG("Console Region: {}", Settings::GetConsoleRegionDisplayName(s_state.region));
+  INFO_LOG("Console Region: {}", Settings::GetConsoleRegionDisplayName(console_region));
 
   // Switch subimage.
   if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, error))
   {
     Error::AddPrefixFmt(error, "Failed to switch to subimage {} in '{}':\n", parameters.media_playlist_index,
                         Path::GetFileName(parameters.filename));
-    DestroySystem();
     return false;
   }
+
+  // Achievement hardcore checks before committing to anything.
+  if (!IsReplayingGPUDump())
+  {
+    // Check for resuming with hardcore mode.
+    if (parameters.disable_achievements_hardcore_mode)
+      Achievements::DisableHardcoreMode();
+    else
+      Achievements::ResetHardcoreMode(true);
+
+    if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
+    {
+      const bool is_exe_override_boot = parameters.save_state.empty();
+      bool cancelled;
+      if (FullscreenUI::IsInitialized())
+      {
+        Achievements::ConfirmHardcoreModeDisableAsync(is_exe_override_boot ?
+                                                        TRANSLATE("Achievements", "Overriding executable") :
+                                                        TRANSLATE("Achievements", "Resuming state"),
+                                                      [parameters = std::move(parameters)](bool approved) mutable {
+                                                        if (approved)
+                                                        {
+                                                          parameters.disable_achievements_hardcore_mode = true;
+                                                          BootSystem(std::move(parameters), nullptr);
+                                                        }
+                                                      });
+        cancelled = true;
+      }
+      else
+      {
+        cancelled = !Achievements::ConfirmHardcoreModeDisable(is_exe_override_boot ?
+                                                                TRANSLATE("Achievements", "Overriding executable") :
+                                                                TRANSLATE("Achievements", "Resuming state"));
+      }
+
+      if (cancelled)
+      {
+        // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
+        return true;
+      }
+    }
+  }
+
+  // Can't early cancel without destroying past this point.
+  Assert(s_state.state == State::Shutdown);
+  s_state.state = State::Starting;
+  s_state.region = console_region;
+  s_state.startup_cancelled.store(false, std::memory_order_relaxed);
+  s_state.gpu_dump_player = std::move(gpu_dump);
+  std::atomic_thread_fence(std::memory_order_release);
+  Host::OnSystemStarting();
+  FullscreenUI::OnSystemStarting();
 
   // Update running game, this will apply settings as well.
   UpdateRunningGame(disc ? disc->GetPath() : parameters.filename, disc.get(), true);
@@ -1768,42 +1810,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     INFO_LOG("Overriding boot executable: '{}'", parameters.override_exe);
     boot_mode = BootMode::BootEXE;
     exe_override = std::move(parameters.override_exe);
-  }
-
-  // Check for resuming with hardcore mode.
-  if (parameters.disable_achievements_hardcore_mode)
-    Achievements::DisableHardcoreMode();
-  if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
-  {
-    const bool is_exe_override_boot = parameters.save_state.empty();
-    bool cancelled;
-    if (FullscreenUI::IsInitialized())
-    {
-      Achievements::ConfirmHardcoreModeDisableAsync(is_exe_override_boot ?
-                                                      TRANSLATE("Achievements", "Overriding executable") :
-                                                      TRANSLATE("Achievements", "Resuming state"),
-                                                    [parameters = std::move(parameters)](bool approved) mutable {
-                                                      if (approved)
-                                                      {
-                                                        parameters.disable_achievements_hardcore_mode = true;
-                                                        BootSystem(std::move(parameters), nullptr);
-                                                      }
-                                                    });
-      cancelled = true;
-    }
-    else
-    {
-      cancelled = !Achievements::ConfirmHardcoreModeDisable(is_exe_override_boot ?
-                                                              TRANSLATE("Achievements", "Overriding executable") :
-                                                              TRANSLATE("Achievements", "Resuming state"));
-    }
-
-    if (cancelled)
-    {
-      // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
-      DestroySystem();
-      return true;
-    }
   }
 
   // Are we fast booting? Must be checked after updating game settings.
@@ -1846,8 +1852,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     DestroySystem();
     return false;
   }
-
-  FullscreenUI::OnSystemStarted();
 
   InputManager::UpdateHostMouseMode();
 
@@ -4189,9 +4193,6 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
   if (!IsReplayingGPUDump())
   {
-    if (booting)
-      Achievements::ResetHardcoreMode(true);
-
     Achievements::GameChanged(s_state.running_game_path, image, booting);
 
     // game layer reloads cheats, but only the active list, we need new files
@@ -5848,27 +5849,18 @@ void System::UpdateGTEAspectRatio()
   GTE::SetAspectRatio(gte_ar, custom_num, custom_denom);
 }
 
-bool System::OpenGPUDump(std::string path, Error* error)
-{
-  std::unique_ptr<GPUDump::Player> new_dump = GPUDump::Player::Open(std::move(path), error);
-  if (!new_dump)
-    return false;
-
-  // set properties
-  s_state.gpu_dump_player = std::move(new_dump);
-  s_state.region = s_state.gpu_dump_player->GetRegion();
-  return true;
-}
-
 bool System::ChangeGPUDump(std::string new_path)
 {
   Error error;
-  if (!OpenGPUDump(std::move(new_path), &error))
+  std::unique_ptr<GPUDump::Player> new_dump = GPUDump::Player::Open(std::move(new_path), &error);
+  if (!new_dump)
   {
     Host::ReportErrorAsync("Error", fmt::format(TRANSLATE_FS("Failed to change GPU dump: {}", error.GetDescription())));
     return false;
   }
 
+  s_state.gpu_dump_player = std::move(new_dump);
+  s_state.region = s_state.gpu_dump_player->GetRegion();
   UpdateRunningGame(s_state.gpu_dump_player->GetPath(), nullptr, false);
 
   // current player object has been changed out, toss call stack

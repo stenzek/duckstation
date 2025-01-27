@@ -706,7 +706,8 @@ bool FullscreenUI::AreAnyDialogsOpen()
 {
   return (s_state.save_state_selector_open || s_state.about_window_open ||
           s_state.input_binding_type != InputBindingInfo::Type::Unknown || ImGuiFullscreen::IsChoiceDialogOpen() ||
-          ImGuiFullscreen::IsFileSelectorOpen());
+          ImGuiFullscreen::IsInputDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen() ||
+          ImGuiFullscreen::IsMessageBoxDialogOpen());
 }
 
 void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
@@ -720,7 +721,7 @@ void FullscreenUI::UpdateRunIdleState()
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, new_run_idle);
 }
 
-void FullscreenUI::OnSystemStarted()
+void FullscreenUI::OnSystemStarting()
 {
   // NOTE: Called on CPU thread.
   if (!IsInitialized())
@@ -1109,34 +1110,37 @@ void FullscreenUI::DoStartPath(std::string path, std::string state, std::optiona
   if (GPUThread::HasGPUBackend())
     return;
 
-  // Switch to nothing, we'll get called back via OnSystemDestroyed() if startup fails.
-  const MainWindowType prev_main_window = std::exchange(s_state.current_main_window, MainWindowType::None);
-  QueueResetFocus(FocusResetType::ViewChanged);
+  // Stop running idle to prevent game list from being redrawn until we know if startup succeeded.
   GPUThread::SetRunIdleReason(GPUThread::RunIdleReason::FullscreenUIActive, false);
 
   SystemBootParameters params;
   params.filename = std::move(path);
   params.save_state = std::move(state);
   params.override_fast_boot = std::move(fast_boot);
-  Host::RunOnCPUThread([params = std::move(params), prev_main_window]() {
+  Host::RunOnCPUThread([params = std::move(params)]() mutable {
     if (System::IsValid())
       return;
 
+    // This can "fail" if HC mode is enabled and the user cancels, or other startup cancel paths.
+    // In that case, we need to re-trigger the idle state so the user can interact with the message.
+    // But we can skip it if we have a system, because OnSystemStarted() fixed it up.
     Error error;
-    if (!System::BootSystem(std::move(params), &error))
-    {
-      GPUThread::RunOnThread([error_desc = error.TakeDescription(), prev_main_window]() {
-        if (!IsInitialized())
-          return;
+    const bool result = System::BootSystem(std::move(params), &error);
+    if (result && System::IsValid())
+      return;
 
+    GPUThread::RunOnThread([error_desc = error.TakeDescription(), result]() {
+      if (!IsInitialized())
+        return;
+
+      if (!result)
+      {
         OpenInfoMessageDialog(TRANSLATE_STR("System", "Error"),
                               fmt::format(TRANSLATE_FS("System", "Failed to boot system: {}"), error_desc));
-        // ReturnToPreviousWindow();
-        s_state.current_main_window = prev_main_window;
-        QueueResetFocus(FocusResetType::ViewChanged);
-        UpdateRunIdleState();
-      });
-    }
+      }
+
+      UpdateRunIdleState();
+    });
   });
 }
 
