@@ -97,6 +97,7 @@ using ImGuiFullscreen::BeginFullscreenWindow;
 using ImGuiFullscreen::BeginHorizontalMenu;
 using ImGuiFullscreen::BeginMenuButtons;
 using ImGuiFullscreen::BeginNavBar;
+using ImGuiFullscreen::CancelPendingMenuClose;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::DefaultActiveButton;
 using ImGuiFullscreen::DrawShadowedText;
@@ -2192,6 +2193,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   }
   else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
   {
+    CancelPendingMenuClose();
     bsi->DeleteValue(section, name);
     SetSettingsChanged(bsi);
   }
@@ -7149,6 +7151,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
                  (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
                   ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false)))
         {
+          CancelPendingMenuClose();
           s_state.save_state_selector_submenu_index = static_cast<s32>(i);
         }
       }
@@ -7665,6 +7668,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
             (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) ||
              ImGui::IsKeyPressed(ImGuiKey_F3, false)))
         {
+          CancelPendingMenuClose();
           HandleGameListOptions(selected_entry);
         }
       }
@@ -7927,6 +7931,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
                (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) ||
                 ImGui::IsKeyPressed(ImGuiKey_F3, false)))
       {
+        CancelPendingMenuClose();
         HandleGameListOptions(entry);
       }
     }

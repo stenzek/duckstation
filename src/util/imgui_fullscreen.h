@@ -171,6 +171,7 @@ void ForceKeyNavEnabled();
 
 bool WantsToCloseMenu();
 void ResetCloseMenuIfNeeded();
+void CancelPendingMenuClose();
 
 void PushPrimaryColor();
 void PopPrimaryColor();

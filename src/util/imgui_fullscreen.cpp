@@ -63,6 +63,16 @@ static ImGuiID GetBackgroundProgressID(const char* str_id);
 
 namespace {
 
+enum class CloseButtonState
+{
+  None,
+  KeyboardPressed,
+  MousePressed,
+  GamepadPressed,
+  AnyReleased,
+  Cancelled,
+};
+
 struct FileSelectorItem
 {
   FileSelectorItem() = default;
@@ -109,7 +119,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::recursive_mutex shared_state_mutex;
 
   u32 menu_button_index = 0;
-  u32 close_button_state = 0;
+  CloseButtonState close_button_state = CloseButtonState::None;
   ImGuiDir has_pending_nav_move = ImGuiDir_None;
   FocusResetType focus_reset_queued = FocusResetType::None;
   bool initialized = false;
@@ -199,7 +209,7 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
   std::unique_lock lock(s_state.shared_state_mutex);
 
   s_state.focus_reset_queued = FocusResetType::ViewChanged;
-  s_state.close_button_state = 0;
+  s_state.close_button_state = CloseButtonState::None;
 
   s_state.placeholder_texture = LoadTexture(placeholder_image_path);
   if (!s_state.placeholder_texture)
@@ -661,7 +671,8 @@ void ImGuiFullscreen::PopResetLayout()
 void ImGuiFullscreen::QueueResetFocus(FocusResetType type)
 {
   s_state.focus_reset_queued = type;
-  s_state.close_button_state = 0;
+  s_state.close_button_state =
+    (s_state.close_button_state != CloseButtonState::Cancelled) ? CloseButtonState::None : CloseButtonState::Cancelled;
 }
 
 bool ImGuiFullscreen::ResetFocusHere()
@@ -728,29 +739,37 @@ bool ImGuiFullscreen::WantsToCloseMenu()
 {
   ImGuiContext& g = *GImGui;
 
-  // Wait for the Close button to be released, THEN pressed
-  if (s_state.close_button_state == 0)
+  // Wait for the Close button to be pressed, THEN released
+  if (s_state.close_button_state == CloseButtonState::None)
   {
     if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
-      s_state.close_button_state = 1;
+      s_state.close_button_state = CloseButtonState::KeyboardPressed;
+    else if (ImGui::IsKeyPressed(ImGuiKey_MouseRight, false))
+      s_state.close_button_state = CloseButtonState::MousePressed;
     else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadCancel, false))
-      s_state.close_button_state = 2;
+      s_state.close_button_state = CloseButtonState::GamepadPressed;
   }
-  else if ((s_state.close_button_state == 1 && ImGui::IsKeyReleased(ImGuiKey_Escape)) ||
-           (s_state.close_button_state == 2 && ImGui::IsKeyReleased(ImGuiKey_NavGamepadCancel)))
+  else if ((s_state.close_button_state == CloseButtonState::KeyboardPressed && ImGui::IsKeyReleased(ImGuiKey_Escape)) ||
+           (s_state.close_button_state == CloseButtonState::MousePressed &&
+            ImGui::IsKeyReleased(ImGuiKey_MouseRight)) ||
+           (s_state.close_button_state == CloseButtonState::GamepadPressed &&
+            ImGui::IsKeyReleased(ImGuiKey_NavGamepadCancel)))
   {
-    s_state.close_button_state = 3;
+    s_state.close_button_state = CloseButtonState::AnyReleased;
   }
-  return s_state.close_button_state > 1;
+  return (s_state.close_button_state == CloseButtonState::AnyReleased);
 }
 
 void ImGuiFullscreen::ResetCloseMenuIfNeeded()
 {
   // If s_close_button_state reached the "Released" state, reset it after the tick
-  if (s_state.close_button_state > 1)
-  {
-    s_state.close_button_state = 0;
-  }
+  s_state.close_button_state =
+    (s_state.close_button_state >= CloseButtonState::AnyReleased) ? CloseButtonState::None : s_state.close_button_state;
+}
+
+void ImGuiFullscreen::CancelPendingMenuClose()
+{
+  s_state.close_button_state = CloseButtonState::Cancelled;
 }
 
 void ImGuiFullscreen::PushPrimaryColor()
