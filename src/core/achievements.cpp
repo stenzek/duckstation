@@ -2228,26 +2228,6 @@ bool Achievements::ConfirmSystemReset()
   return true;
 }
 
-bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
-{
-#ifdef ENABLE_RAINTEGRATION
-  if (IsUsingRAIntegration())
-    return (RA_WarnDisableHardcore(trigger) != 0);
-#endif
-
-  // I really hope this doesn't deadlock :/
-  const bool confirmed = Host::ConfirmMessage(
-    TRANSLATE("Achievements", "Confirm Hardcore Mode"),
-    fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
-                                             "want to disable hardcore mode? {0} will be cancelled if you select No."),
-                trigger));
-  if (!confirmed)
-    return false;
-
-  DisableHardcoreMode();
-  return true;
-}
-
 void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback)
 {
   auto real_callback = [callback = std::move(callback)](bool res) mutable {
@@ -2259,43 +2239,21 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
     });
   };
 
-#ifndef __ANDROID__
 #ifdef ENABLE_RAINTEGRATION
   if (IsUsingRAIntegration())
   {
     const bool result = (RA_WarnDisableHardcore(trigger) != 0);
-    callback(result);
+    real_callback(result);
     return;
   }
 #endif
 
-  GPUThread::RunOnThread([trigger = std::string(trigger), real_callback = std::move(real_callback)]() mutable {
-    if (!FullscreenUI::Initialize())
-    {
-      Host::AddOSDMessage(
-        fmt::format(TRANSLATE_FS("Achievements", "Cannot {} while hardcode mode is active."), trigger),
-        Host::OSD_WARNING_DURATION);
-      real_callback(false);
-      return;
-    }
-
-    ImGuiFullscreen::OpenConfirmMessageDialog(
-      TRANSLATE_STR("Achievements", "Confirm Hardcore Mode"),
-      fmt::format(TRANSLATE_FS("Achievements",
-                               "{0} cannot be performed while hardcore mode is active. Do you "
-                               "want to disable hardcore mode? {0} will be cancelled if you select No."),
-                  trigger),
-      std::move(real_callback), fmt::format(ICON_FA_CHECK " {}", TRANSLATE_SV("Achievements", "Yes")),
-      fmt::format(ICON_FA_TIMES " {}", TRANSLATE_SV("Achievements", "No")));
-  });
-#else
   Host::ConfirmMessageAsync(
     TRANSLATE_STR("Achievements", "Confirm Hardcore Mode"),
     fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you want to "
                                              "disable hardcore mode? {0} will be cancelled if you select No."),
                 trigger),
     std::move(real_callback));
-#endif
 }
 
 void Achievements::ClearUIState()
