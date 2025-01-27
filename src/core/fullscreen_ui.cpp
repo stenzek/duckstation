@@ -6028,7 +6028,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     QueueResetFocus(FocusResetType::PopupClosed);
   };
 
-  ImGui::SetNextWindowSize(LayoutScale(750.0f, 0.0f));
+  ImGui::SetNextWindowSize(LayoutScale(600.0f, 0.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
   ImGui::PushFont(UIStyle.LargeFont);
@@ -6057,31 +6057,20 @@ void FullscreenUI::DrawAchievementsLoginWindow()
     const bool is_logging_in = ImGuiFullscreen::IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
     ResetFocusHere();
 
-    const float inner_spacing = LayoutScale(6.0f);
     const float item_margin = LayoutScale(10.0f);
     const float item_width = LayoutScale(550.0f);
-    ImGui::Columns(2, "LoginFields", true);
-    ImGui::SetColumnWidth(0, LayoutScale(150.0f));
-    ImGui::SetColumnWidth(1, item_width);
 
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + inner_spacing);
-    ImGui::Text(FSUI_CSTR("User Name: "));
-    ImGui::NextColumn();
+    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
     ImGui::SetNextItemWidth(item_width);
-    ImGui::InputText("##username", username, sizeof(username), is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+    ImGui::InputTextWithHint("##username", FSUI_CSTR("User Name"), username, sizeof(username), is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
     ImGui::NextColumn();
 
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin + inner_spacing);
-    ImGui::Text(FSUI_CSTR("Password: "));
-    ImGui::NextColumn();
+    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
     ImGui::SetNextItemWidth(item_width);
-    ImGui::InputText("##password", password, sizeof(password),
+    ImGui::InputTextWithHint("##password", FSUI_CSTR("Password"), password, sizeof(password),
                      is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
                                      ImGuiInputTextFlags_Password);
-    ImGui::NextColumn();
-
-    ImGui::Columns(1);
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
 
