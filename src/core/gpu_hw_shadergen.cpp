@@ -1814,7 +1814,7 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
   DeclareUniformBuffer(ss, {"uint2 u_base_coords"}, true);
   DeclareTexture(ss, "samp0", 0, false);
 
-  ss << "#define FACTOR " << factor << "\n";
+  ss << "CONSTANT uint FACTOR = " << factor << "u;\n";
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
   ss << R"(
