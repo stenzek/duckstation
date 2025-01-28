@@ -58,7 +58,7 @@ struct TListNode
   TListNode<T>* next;
 };
 
-struct SourceKey
+struct alignas(4) SourceKey
 {
   u8 page;
   GPUTextureMode mode;

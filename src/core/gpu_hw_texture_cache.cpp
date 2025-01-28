@@ -1818,8 +1818,21 @@ void GPUTextureCache::UpdateVRAMWriteSources(VRAMWrite* entry, SourceKey source_
     return;
 
   // Add to the palette tracking list
-  auto iter = std::find_if(entry->palette_records.begin(), entry->palette_records.end(),
-                           [&source_key](const auto& it) { return (it.key == source_key); });
+  std::vector<VRAMWrite::PaletteRecord>::iterator iter;
+  if (source_key.HasPalette())
+  {
+    // Palette requires exact match.
+    iter = std::find_if(entry->palette_records.begin(), entry->palette_records.end(),
+                        [&source_key](const auto& it) { return (it.key == source_key); });
+  }
+  else
+  {
+    // C16 only needs to match on the mode, palette is not used, and page doesn't matter.
+    // In theory we could extend the page skipping to palette textures too, but is it needed?
+    iter = std::find_if(entry->palette_records.begin(), entry->palette_records.end(),
+                        [&source_key](const auto& it) { return (it.key.mode == source_key.mode); });
+  }
+
   if (iter != entry->palette_records.end())
   {
     iter->rect = iter->rect.runion(write_intersection);
