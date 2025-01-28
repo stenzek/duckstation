@@ -2924,18 +2924,28 @@ void GPUTextureCache::GetVRAMWriteTextureReplacements(std::vector<TextureReplace
       continue;
     }
 
-    // TODO: This fails in Wild Arms 2, writes that are wider than a page.
-    DebugAssert(rect_in_page_space.width() == name.width && rect_in_page_space.height() == name.height);
-    DebugAssert(rect_in_page_space.width() <= static_cast<s32>(TEXTURE_PAGE_WIDTH));
-    DebugAssert(rect_in_page_space.height() <= static_cast<s32>(TEXTURE_PAGE_HEIGHT));
-
     GPUTexture* texture = GetTextureReplacementGPUImage(it->second.second);
     if (!texture)
       continue;
 
+    // Especially for C16 textures, the write may span multiple pages. In this case, we need to offset
+    // the start of the page into the replacement texture.
+    const GSVector2i rect_in_page_space_start = rect_in_page_space.xy();
+    const GSVector2i src_offset =
+      GSVector2i::zero().sub32(rect_in_page_space_start) & rect_in_page_space_start.lt32(GSVector2i::zero());
+    const GSVector4i clamped_rect_in_page_space =
+      rect_in_page_space.add32(GSVector4i::xyxy(src_offset, GSVector2i::zero()))
+        .rintersect(GSVector4i::cxpr(0, 0, TEXTURE_PAGE_WIDTH, TEXTURE_PAGE_HEIGHT));
+
+    // TODO: This fails in Wild Arms 2, writes that are wider than a page.
+    DebugAssert(rect_in_page_space.width() == name.width && rect_in_page_space.height() == name.height);
+    DebugAssert(clamped_rect_in_page_space.width() <= static_cast<s32>(TEXTURE_PAGE_WIDTH));
+    DebugAssert(clamped_rect_in_page_space.height() <= static_cast<s32>(TEXTURE_PAGE_HEIGHT));
+
     const GSVector2 scale = GSVector2(texture->GetSizeVec()) / GSVector2(name.GetSizeVec());
-    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::zero(), texture, scale.x, scale.y,
-                                                      name.IsSemitransparent()});
+    replacements.push_back(TextureReplacementSubImage{
+      clamped_rect_in_page_space, GSVector4i::xyxy(src_offset, src_offset.add32(clamped_rect_in_page_space.rsize())),
+      texture, scale.x, scale.y, name.IsSemitransparent()});
   }
 }
 
@@ -2994,8 +3004,8 @@ void GPUTextureCache::GetTexturePageTextureReplacements(std::vector<TextureRepla
       continue;
 
     const GSVector2 scale = GSVector2(texture->GetSizeVec()) / GSVector2(name.GetSizeVec());
-    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::zero(), texture, scale.x, scale.y,
-                                                      name.IsSemitransparent()});
+    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::loadh(texture->GetSizeVec()),
+                                                      texture, scale.x, scale.y, name.IsSemitransparent()});
   }
 }
 
@@ -3662,10 +3672,11 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
   g_gpu_device->SetRenderTarget(s_state.replacement_texture_render_target.get());
 
   GL_INS("Upscale Texture Page");
-  alignas(VECTOR_ALIGNMENT) float uniforms[4];
+  alignas(VECTOR_ALIGNMENT) float uniforms[8];
   GSVector2 texture_size = GSVector2(GSVector2i(entry->texture->GetWidth(), entry->texture->GetHeight()));
-  GSVector2::store<true>(&uniforms[0], texture_size);
-  GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
+  GSVector4::store<true>(&uniforms[0], GSVector4::cxpr(0.0f, 0.0f, 1.0f, 1.0f));
+  GSVector2::store<true>(&uniforms[4], texture_size);
+  GSVector2::store<true>(&uniforms[6], GSVector2::cxpr(1.0f) / texture_size);
   g_gpu_device->SetViewportAndScissor(0, 0, new_width, new_height);
   g_gpu_device->SetPipeline(s_state.replacement_upscale_pipeline.get());
   g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
@@ -3677,16 +3688,21 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
     GL_INS_FMT("Blit {}x{} replacement from {} to {}", si.texture->GetWidth(), si.texture->GetHeight(), si.src_rect,
                si.dst_rect);
 
+    const GSVector4 src_rect = (GSVector4(GSVector4i::xyxy(si.src_rect.xy(), si.src_rect.rsize())) *
+                                GSVector4::xyxy(GSVector2(si.scale_x, si.scale_y))) /
+                               GSVector4(GSVector4i::xyxy(si.texture->GetSizeVec()));
     const GSVector4i dst_rect = GSVector4i(GSVector4(si.dst_rect) * max_scale_v);
     texture_size = GSVector2(si.texture->GetSizeVec());
-    GSVector2::store<true>(&uniforms[0], texture_size);
-    GSVector2::store<true>(&uniforms[2], GSVector2::cxpr(1.0f) / texture_size);
+    GSVector4::store<true>(&uniforms[0], src_rect);
+    GSVector2::store<true>(&uniforms[4], texture_size);
+    GSVector2::store<true>(&uniforms[6], GSVector2::cxpr(1.0f) / texture_size);
     g_gpu_device->SetViewportAndScissor(dst_rect);
     g_gpu_device->SetTextureSampler(0, si.texture,
                                     s_state.config.replacement_scale_linear_filter ? g_gpu_device->GetLinearSampler() :
                                                                                      g_gpu_device->GetNearestSampler());
     g_gpu_device->SetPipeline(si.invert_alpha ? s_state.replacement_semitransparent_draw_pipeline.get() :
                                                 s_state.replacement_draw_pipeline.get());
+    g_gpu_device->PushUniformBuffer(uniforms, sizeof(uniforms));
     g_gpu_device->Draw(3, 0);
   }
 

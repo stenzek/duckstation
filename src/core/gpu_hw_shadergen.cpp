@@ -1842,16 +1842,18 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool replac
   DefineMacro(ss, "REPLACEMENT", replacement);
   DefineMacro(ss, "SEMITRANSPARENT", semitransparent);
   DefineMacro(ss, "BILINEAR_FILTER", bilinear_filter);
-  DeclareUniformBuffer(ss, {"float4 u_texture_size"}, true);
+  DeclareUniformBuffer(ss, {"float4 u_src_rect", "float4 u_texture_size"}, true);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1);
 
   ss << R"(
 {
+  float2 start_coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
+
 #if BILINEAR_FILTER
   // Compute the coordinates of the four texels we will be interpolating between.
   // Clamp this to the triangle texture coordinates.
-  float2 coords = v_tex0 * u_texture_size.xy;
+  float2 coords = start_coords * u_texture_size.xy;
   float2 texel_top_left = frac(coords) - float2(0.5, 0.5);
   float2 texel_offset = sign(texel_top_left);
   float4 fcoords = max(coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
@@ -1883,7 +1885,7 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool replac
     color.a = (color.a >= 0.5) ? 1.0 : 0.0;
   #endif
 #else
-  float4 color = SAMPLE_TEXTURE_LEVEL(samp0, v_tex0, 0.0);
+  float4 color = SAMPLE_TEXTURE_LEVEL(samp0, start_coords, 0.0);
   float orig_alpha = color.a;
 #endif
   o_col0.rgb = color.rgb;
