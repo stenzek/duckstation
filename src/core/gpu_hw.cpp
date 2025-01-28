@@ -2663,6 +2663,13 @@ void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
 
 void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 {
+  // Treat non-textured sprite draws as fills, so we don't break the TC on framebuffer clears.
+  if (m_use_texture_cache && !cmd->transparency_enable && !cmd->shading_enable && !cmd->texture_enable)
+  {
+    FillVRAM(cmd->x, cmd->y, cmd->width, cmd->height, cmd->color, cmd->interlaced_rendering, cmd->active_line_lsb);
+    return;
+  }
+
   const GSVector2i pos = GSVector2i::load<true>(&cmd->x);
   const GSVector2i size = GSVector2i::load<true>(&cmd->width).u16to32();
   const GSVector4i rect = GSVector4i::xyxy(pos, pos.add32(size));
