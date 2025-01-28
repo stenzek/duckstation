@@ -2460,13 +2460,14 @@ bool GPUTextureCache::TextureReplacementName::Parse(const std::string_view file_
   if (token.size() != 16 || !(val64 = StringUtil::FromChars<u64>(token, 16)).has_value())
     return false;
   src_hash = val64.value();
-  start_pos = end_pos + 1;
-  end_pos = file_title.find("-", start_pos + 1);
-  if (end_pos == std::string_view::npos)
-    return false;
 
   if (GetTextureMode() < GPUTextureMode::Direct16Bit)
   {
+    start_pos = end_pos + 1;
+    end_pos = file_title.find("-", start_pos + 1);
+    if (end_pos == std::string_view::npos)
+      return false;
+
     // pal_hash
     token = file_title.substr(start_pos, end_pos - start_pos);
     if (token.size() != 16 || !(val64 = StringUtil::FromChars<u64>(token, 16)).has_value())
@@ -2564,6 +2565,11 @@ bool GPUTextureCache::TextureReplacementName::Parse(const std::string_view file_
   }
   else
   {
+    start_pos = end_pos + 1;
+    end_pos = file_title.find("x", start_pos + 1);
+    if (end_pos == std::string_view::npos)
+      return false;
+
     // src_width
     token = file_title.substr(start_pos, end_pos - start_pos);
     std::optional<u16> val16;
