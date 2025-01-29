@@ -871,9 +871,20 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
         current_adapter = &adapter;
     }
 
-    // default adapter
-    if (!m_adapters.empty() && current_adapter_name.empty())
-      current_adapter = &m_adapters.front();
+    if (!m_adapters.empty())
+    {
+      if (current_adapter_name.empty())
+      {
+        // default adapter
+        current_adapter = &m_adapters.front();
+      }
+      else if (!current_adapter)
+      {
+        // if the adapter is not available, ensure it's in the list anyway, otherwise select the default
+        const QString qadaptername = QString::fromStdString(current_adapter_name);
+        m_ui.adapter->addItem(qadaptername, QVariant(qadaptername));
+      }
+    }
 
     // disable it if we don't have a choice
     m_ui.adapter->setEnabled(!m_adapters.empty());
@@ -887,17 +898,30 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     m_ui.fullscreenMode->clear();
 
     m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"), QVariant(QString()));
+
+    const std::string current_fullscreen_mode = m_dialog->getEffectiveStringValue("GPU", "FullscreenMode", "");
+    bool current_fullscreen_mode_found = false;
     if (current_adapter)
     {
       for (const GPUDevice::ExclusiveFullscreenMode& mode : current_adapter->fullscreen_modes)
       {
-        const QString qmodename = QtUtils::StringViewToQString(mode.ToString());
+        const TinyString mode_str = mode.ToString();
+        current_fullscreen_mode_found = current_fullscreen_mode_found || (current_fullscreen_mode == mode_str.view());
+
+        const QString qmodename = QtUtils::StringViewToQString(mode_str);
         m_ui.fullscreenMode->addItem(qmodename, QVariant(qmodename));
       }
     }
 
+    // if the current mode is not valid (e.g. adapter change), ensure it's in the list so the user isn't confused
+    if (!current_fullscreen_mode_found)
+    {
+      const QString qmodename = QtUtils::StringViewToQString(current_fullscreen_mode);
+      m_ui.fullscreenMode->addItem(qmodename, QVariant(qmodename));
+    }
+
     // disable it if we don't have a choice
-    m_ui.fullscreenMode->setEnabled(current_adapter && !current_adapter->fullscreen_modes.empty());
+    m_ui.fullscreenMode->setEnabled(m_ui.fullscreenMode->count() > 1);
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenMode, "GPU", "FullscreenMode");
   }
 
