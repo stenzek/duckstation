@@ -854,24 +854,18 @@ void FullscreenUI::FixStateIfPaused()
 
 void FullscreenUI::ClosePauseMenu()
 {
-  if (!System::IsValid())
+  if (!GPUThread::HasGPUBackend())
     return;
 
-  const bool paused = System::IsPaused();
-  GPUThread::RunOnThread([paused]() {
-    if (!IsInitialized())
-      return;
+  if (GPUThread::IsSystemPaused() && !s_state.was_paused_on_quick_menu_open)
+    Host::RunOnCPUThread([]() { System::PauseSystem(false); });
 
-    if (paused && !s_state.was_paused_on_quick_menu_open)
-      Host::RunOnCPUThread([]() { System::PauseSystem(false); });
-
-    s_state.current_main_window = MainWindowType::None;
-    s_state.current_pause_submenu = PauseSubMenu::None;
-    s_state.pause_menu_was_open = false;
-    QueueResetFocus(FocusResetType::ViewChanged);
-    UpdateRunIdleState();
-    FixStateIfPaused();
-  });
+  s_state.current_main_window = MainWindowType::None;
+  s_state.current_pause_submenu = PauseSubMenu::None;
+  s_state.pause_menu_was_open = false;
+  QueueResetFocus(FocusResetType::ViewChanged);
+  UpdateRunIdleState();
+  FixStateIfPaused();
 }
 
 void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
@@ -6062,15 +6056,16 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
     ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
     ImGui::SetNextItemWidth(item_width);
-    ImGui::InputTextWithHint("##username", FSUI_CSTR("User Name"), username, sizeof(username), is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+    ImGui::InputTextWithHint("##username", FSUI_CSTR("User Name"), username, sizeof(username),
+                             is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
     ImGui::NextColumn();
 
     ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
     ImGui::SetNextItemWidth(item_width);
     ImGui::InputTextWithHint("##password", FSUI_CSTR("Password"), password, sizeof(password),
-                     is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
-                                     ImGuiInputTextFlags_Password);
+                             is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
+                                             ImGuiInputTextFlags_Password);
 
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
 
