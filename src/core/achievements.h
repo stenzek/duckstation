@@ -6,8 +6,10 @@
 #include "common/small_string.h"
 #include "common/types.h"
 
+#include <array>
 #include <functional>
 #include <mutex>
+#include <optional>
 #include <span>
 #include <string>
 #include <utility>
