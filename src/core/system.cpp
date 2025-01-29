@@ -1741,36 +1741,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     return false;
   }
 
-  // Achievement hardcore checks before committing to anything.
-  if (!IsReplayingGPUDump())
-  {
-    // Check for resuming with hardcore mode.
-    if (parameters.disable_achievements_hardcore_mode)
-      Achievements::DisableHardcoreMode();
-    else
-      Achievements::ResetHardcoreMode(true);
-
-    if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
-    {
-      const bool is_exe_override_boot = parameters.save_state.empty();
-      Achievements::ConfirmHardcoreModeDisableAsync(
-        is_exe_override_boot ? TRANSLATE("Achievements", "Overriding executable") :
-                               TRANSLATE("Achievements", "Resuming state"),
-        [parameters = std::move(parameters)](bool approved) mutable {
-          if (approved)
-          {
-            Host::RunOnCPUThread([parameters = std::move(parameters)]() mutable {
-              parameters.disable_achievements_hardcore_mode = true;
-              BootSystem(std::move(parameters), nullptr);
-            });
-          }
-        });
-
-      // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
-      return true;
-    }
-  }
-
   // Can't early cancel without destroying past this point.
   Assert(s_state.state == State::Shutdown);
   s_state.state = State::Starting;
@@ -1798,6 +1768,49 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     INFO_LOG("Overriding boot executable: '{}'", parameters.override_exe);
     boot_mode = BootMode::BootEXE;
     exe_override = std::move(parameters.override_exe);
+  }
+
+  // Achievement hardcore checks before committing to anything.
+  if (disc)
+  {
+    // Check for resuming with hardcore mode.
+    if (parameters.disable_achievements_hardcore_mode)
+      Achievements::DisableHardcoreMode();
+    else
+      Achievements::ResetHardcoreMode(true);
+
+    if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
+    {
+      const bool is_exe_override_boot = parameters.save_state.empty();
+      bool cancelled;
+      if (FullscreenUI::IsInitialized())
+      {
+        Achievements::ConfirmHardcoreModeDisableAsync(is_exe_override_boot ?
+                                                        TRANSLATE("Achievements", "Overriding executable") :
+                                                        TRANSLATE("Achievements", "Resuming state"),
+                                                      [parameters = std::move(parameters)](bool approved) mutable {
+                                                        if (approved)
+                                                        {
+                                                          parameters.disable_achievements_hardcore_mode = true;
+                                                          BootSystem(std::move(parameters), nullptr);
+                                                        }
+                                                      });
+        cancelled = true;
+      }
+      else
+      {
+        cancelled = !Achievements::ConfirmHardcoreModeDisable(is_exe_override_boot ?
+                                                                TRANSLATE("Achievements", "Overriding executable") :
+                                                                TRANSLATE("Achievements", "Resuming state"));
+      }
+
+      if (cancelled)
+      {
+        // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
+        DestroySystem();
+        return true;
+      }
+    }
   }
 
   // Are we fast booting? Must be checked after updating game settings.

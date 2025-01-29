@@ -2228,6 +2228,26 @@ bool Achievements::ConfirmSystemReset()
   return true;
 }
 
+bool Achievements::ConfirmHardcoreModeDisable(const char* trigger)
+{
+#ifdef ENABLE_RAINTEGRATION
+  if (IsUsingRAIntegration())
+    return (RA_WarnDisableHardcore(trigger) != 0);
+#endif
+
+  // I really hope this doesn't deadlock :/
+  const bool confirmed = Host::ConfirmMessage(
+    TRANSLATE("Achievements", "Confirm Hardcore Mode Disable"),
+    fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you "
+                                             "want to disable hardcore mode? {0} will be cancelled if you select No."),
+                trigger));
+  if (!confirmed)
+    return false;
+
+  DisableHardcoreMode();
+  return true;
+}
+
 void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::function<void(bool)> callback)
 {
   auto real_callback = [callback = std::move(callback)](bool res) mutable {
@@ -2249,7 +2269,7 @@ void Achievements::ConfirmHardcoreModeDisableAsync(const char* trigger, std::fun
 #endif
 
   Host::ConfirmMessageAsync(
-    TRANSLATE_STR("Achievements", "Confirm Hardcore Mode"),
+    TRANSLATE_STR("Achievements", "Confirm Hardcore Mode Disable"),
     fmt::format(TRANSLATE_FS("Achievements", "{0} cannot be performed while hardcore mode is active. Do you want to "
                                              "disable hardcore mode? {0} will be cancelled if you select No."),
                 trigger),
