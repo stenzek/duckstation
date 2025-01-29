@@ -233,8 +233,23 @@ bool D3D11SwapChain::InitializeExclusiveFullscreenMode(const GPUDevice::Exclusiv
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
 
+  // Little bit messy...
+  HRESULT hr;
+  ComPtr<IDXGIDevice> dxgi_dev;
+  if (FAILED((hr = D3D11Device::GetD3DDevice()->QueryInterface(IID_PPV_ARGS(dxgi_dev.GetAddressOf())))))
+  {
+    ERROR_LOG("Failed to get DXGIDevice from D3D device: {:08X}", static_cast<unsigned>(hr));
+    return false;
+  }
+  ComPtr<IDXGIAdapter> dxgi_adapter;
+  if (FAILED((hr = dxgi_dev->GetAdapter(dxgi_adapter.GetAddressOf()))))
+  {
+    ERROR_LOG("Failed to get DXGIAdapter from DXGIDevice: {:08X}", static_cast<unsigned>(hr));
+    return false;
+  }
+
   m_fullscreen_mode = D3DCommon::GetRequestedExclusiveFullscreenModeDesc(
-    D3D11Device::GetDXGIFactory(), client_rc, mode, fm.resource_format, m_fullscreen_output.GetAddressOf());
+    dxgi_adapter.Get(), client_rc, mode, fm.resource_format, m_fullscreen_output.GetAddressOf());
   return m_fullscreen_mode.has_value();
 }
 
@@ -442,6 +457,11 @@ bool D3D11SwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle
   m_swap_chain_rtv.Reset();
   DestroySwapChain();
   return CreateSwapChain(error) && CreateRTV(error);
+}
+
+bool D3D11SwapChain::IsExclusiveFullscreen() const
+{
+  return m_fullscreen_mode.has_value();
 }
 
 std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,

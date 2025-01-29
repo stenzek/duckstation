@@ -528,6 +528,9 @@ public:
   virtual bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) = 0;
   virtual bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) = 0;
 
+  /// Returns true if exclusive fullscreen is currently active on this swap chain.
+  virtual bool IsExclusiveFullscreen() const;
+
   bool ShouldSkipPresentingFrame();
   void ThrottlePresentation();
 

@@ -11,6 +11,7 @@
 
 #include <d3dcommon.h>
 #include <dxgiformat.h>
+#include <dxgitype.h>
 #include <optional>
 #include <string>
 #include <vector>
@@ -19,9 +20,9 @@
 class Error;
 
 struct IDXGIFactory5;
+struct IDXGIAdapter;
 struct IDXGIAdapter1;
 struct IDXGIOutput;
-struct DXGI_MODE_DESC;
 
 namespace D3DCommon {
 // returns string representation of feature level
@@ -42,7 +43,7 @@ GPUDevice::AdapterInfoList GetAdapterInfoList();
 
 // returns the fullscreen mode to use for the specified dimensions
 std::optional<DXGI_MODE_DESC>
-GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect,
+GetRequestedExclusiveFullscreenModeDesc(IDXGIAdapter* adapter, const RECT& window_rect,
                                         const GPUDevice::ExclusiveFullscreenMode* requested_fullscreen_mode,
                                         DXGI_FORMAT format, IDXGIOutput** output);
 

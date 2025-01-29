@@ -74,8 +74,9 @@ static bool SleepGPUThread(bool allow_sleep);
 static bool CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_fsui_state_on_failure, Error* error);
 static void DestroyDeviceOnThread(bool clear_fsui_state);
 static void ResizeDisplayWindowOnThread(u32 width, u32 height, float scale);
-static void UpdateDisplayWindowOnThread(bool fullscreen);
+static void UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen);
 static void DisplayWindowResizedOnThread();
+static bool CheckExclusiveFullscreenOnThread();
 
 static void ReconfigureOnThread(GPUThreadReconfigureCommand* cmd);
 static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Error* error);
@@ -725,6 +726,11 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
 
   std::atomic_thread_fence(std::memory_order_release);
   UpdateRunIdle();
+
+  // Switch to borderless if exclusive failed.
+  if (fullscreen_mode.has_value() && !CheckExclusiveFullscreenOnThread())
+    UpdateDisplayWindowOnThread(true, false);
+
   return true;
 }
 
@@ -1145,7 +1151,7 @@ void GPUThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale)
   if (!g_gpu_device->GetMainSwapChain()->ResizeBuffers(width, height, scale, &error))
   {
     ERROR_LOG("Failed to resize main swap chain: {}", error.GetDescription());
-    UpdateDisplayWindowOnThread(Host::IsFullscreen());
+    UpdateDisplayWindowOnThread(Host::IsFullscreen(), true);
     return;
   }
 
@@ -1154,20 +1160,22 @@ void GPUThread::ResizeDisplayWindowOnThread(u32 width, u32 height, float scale)
 
 void GPUThread::UpdateDisplayWindow(bool fullscreen)
 {
-  RunOnThread([fullscreen]() { UpdateDisplayWindowOnThread(fullscreen); });
+  RunOnThread([fullscreen]() { UpdateDisplayWindowOnThread(fullscreen, true); });
 }
 
-void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen)
+void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen, bool allow_exclusive_fullscreen)
 {
   // In case we get the event late.
   if (!g_gpu_device)
     return;
 
+  bool exclusive_fullscreen_requested = false;
   std::optional<GPUDevice::ExclusiveFullscreenMode> fullscreen_mode;
-  if (fullscreen && g_gpu_device->GetFeatures().exclusive_fullscreen)
+  if (allow_exclusive_fullscreen && fullscreen && g_gpu_device->GetFeatures().exclusive_fullscreen)
   {
     fullscreen_mode =
       GPUDevice::ExclusiveFullscreenMode::Parse(Host::GetTinyStringSettingValue("GPU", "FullscreenMode", ""));
+    exclusive_fullscreen_requested = fullscreen_mode.has_value();
   }
   std::optional<bool> exclusive_fullscreen_control;
   if (g_settings.display_exclusive_fullscreen_control != DisplayExclusiveFullscreenControl::Automatic)
@@ -1180,7 +1188,7 @@ void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen)
 
   Error error;
   std::optional<WindowInfo> wi =
-    Host::AcquireRenderWindow(g_gpu_device->GetRenderAPI(), fullscreen, fullscreen_mode.has_value(), &error);
+    Host::AcquireRenderWindow(g_gpu_device->GetRenderAPI(), fullscreen, exclusive_fullscreen_requested, &error);
   if (!wi.has_value())
   {
     Host::ReportFatalError("Failed to get render window after update", error.GetDescription());
@@ -1205,7 +1213,26 @@ void GPUThread::UpdateDisplayWindowOnThread(bool fullscreen)
       ERROR_LOG("Failed to switch to surfaceless, rendering commands may fail: {}", error.GetDescription());
   }
 
+  // If exclusive fullscreen failed, switch to borderless fullscreen.
+  if (exclusive_fullscreen_requested && !CheckExclusiveFullscreenOnThread())
+  {
+    UpdateDisplayWindowOnThread(true, false);
+    return;
+  }
+
   DisplayWindowResizedOnThread();
+}
+
+bool GPUThread::CheckExclusiveFullscreenOnThread()
+{
+  if (g_gpu_device->HasMainSwapChain() && g_gpu_device->GetMainSwapChain()->IsExclusiveFullscreen())
+    return true;
+
+  Host::AddIconOSDWarning(
+    "ExclusiveFullscreenFailed", ICON_EMOJI_WARNING,
+    TRANSLATE_STR("OSDMessage", "Failed to switch to exclusive fullscreen, using borderless instead."),
+    Host::OSD_INFO_DURATION);
+  return false;
 }
 
 void GPUThread::DisplayWindowResizedOnThread()

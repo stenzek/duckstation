@@ -275,6 +275,11 @@ GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfo::PreRotation prerotation, 
   return new_clip;
 }
 
+bool GPUSwapChain::IsExclusiveFullscreen() const
+{
+  return false;
+}
+
 bool GPUSwapChain::ShouldSkipPresentingFrame()
 {
   // Only needed with FIFO. But since we're so fast, we allow it always.

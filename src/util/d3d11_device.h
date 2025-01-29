@@ -224,10 +224,10 @@ public:
   ALWAYS_INLINE ID3D11RenderTargetView* GetRTV() const { return m_swap_chain_rtv.Get(); }
   ALWAYS_INLINE ID3D11RenderTargetView* const* GetRTVArray() const { return m_swap_chain_rtv.GetAddressOf(); }
   ALWAYS_INLINE bool IsUsingAllowTearing() const { return m_using_allow_tearing; }
-  ALWAYS_INLINE bool IsExclusiveFullscreen() const { return m_fullscreen_mode.has_value(); }
 
   bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
   bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+  bool IsExclusiveFullscreen() const override;
 
 private:
   static u32 GetNewBufferCount(GPUVSyncMode vsync_mode);

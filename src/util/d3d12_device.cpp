@@ -880,9 +880,8 @@ bool D3D12SwapChain::InitializeExclusiveFullscreenMode(const GPUDevice::Exclusiv
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
 
-  m_fullscreen_mode =
-    D3DCommon::GetRequestedExclusiveFullscreenModeDesc(D3D12Device::GetInstance().GetDXGIFactory(), client_rc, mode,
-                                                       fm.resource_format, m_fullscreen_output.GetAddressOf());
+  m_fullscreen_mode = D3DCommon::GetRequestedExclusiveFullscreenModeDesc(
+    D3D12Device::GetInstance().GetAdapter(), client_rc, mode, fm.resource_format, m_fullscreen_output.GetAddressOf());
   return m_fullscreen_mode.has_value();
 }
 
@@ -1080,6 +1079,11 @@ bool D3D12SwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle
 
   D3D12Device& dev = D3D12Device::GetInstance();
   return CreateSwapChain(dev, error) && CreateRTV(dev, error);
+}
+
+bool D3D12SwapChain::IsExclusiveFullscreen() const
+{
+  return m_fullscreen_mode.has_value();
 }
 
 bool D3D12SwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
