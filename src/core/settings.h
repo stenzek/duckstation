@@ -629,7 +629,7 @@ extern std::string Videos;
 
 // Assumes that AppRoot and DataRoot have been initialized.
 void SetDefaults();
-bool EnsureFoldersExist();
+void EnsureFoldersExist();
 void LoadConfig(SettingsInterface& si);
 void Save(SettingsInterface& si);
 

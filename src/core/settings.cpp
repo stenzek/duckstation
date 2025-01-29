@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "settings.h"
@@ -15,6 +15,7 @@
 
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/memmap.h"
@@ -2261,25 +2262,31 @@ const char* Settings::GetPIODeviceTypeModeDisplayName(PIODeviceType type)
                                   "PIODeviceType");
 }
 
-std::string EmuFolders::AppRoot;
-std::string EmuFolders::DataRoot;
-std::string EmuFolders::Bios;
-std::string EmuFolders::Cache;
-std::string EmuFolders::Cheats;
-std::string EmuFolders::Covers;
-std::string EmuFolders::GameIcons;
-std::string EmuFolders::GameSettings;
-std::string EmuFolders::InputProfiles;
-std::string EmuFolders::MemoryCards;
-std::string EmuFolders::Patches;
-std::string EmuFolders::Resources;
-std::string EmuFolders::SaveStates;
-std::string EmuFolders::Screenshots;
-std::string EmuFolders::Shaders;
-std::string EmuFolders::Subchannels;
-std::string EmuFolders::Textures;
-std::string EmuFolders::UserResources;
-std::string EmuFolders::Videos;
+namespace EmuFolders {
+
+std::string AppRoot;
+std::string DataRoot;
+std::string Bios;
+std::string Cache;
+std::string Cheats;
+std::string Covers;
+std::string GameIcons;
+std::string GameSettings;
+std::string InputProfiles;
+std::string MemoryCards;
+std::string Patches;
+std::string Resources;
+std::string SaveStates;
+std::string Screenshots;
+std::string Shaders;
+std::string Subchannels;
+std::string Textures;
+std::string UserResources;
+std::string Videos;
+
+static void EnsureFolderExists(const std::string& path);
+
+} // namespace EmuFolders
 
 void EmuFolders::SetDefaults()
 {
@@ -2392,33 +2399,35 @@ void EmuFolders::Update()
     System::UpdateMemoryCardTypes();
 }
 
-bool EmuFolders::EnsureFoldersExist()
+void EmuFolders::EnsureFolderExists(const std::string& path)
 {
-  bool result = FileSystem::EnsureDirectoryExists(Bios.c_str(), false);
-  result = FileSystem::EnsureDirectoryExists(Cache.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Cache, "achievement_images").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Cheats.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Covers.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(GameIcons.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(MemoryCards.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Patches.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(SaveStates.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Screenshots.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Shaders.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Shaders, "reshade").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(
-             Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), false) &&
-           result;
-  result = FileSystem::EnsureDirectoryExists(
-             Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures").c_str(), false) &&
-           result;
-  result = FileSystem::EnsureDirectoryExists(Subchannels.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(UserResources.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Videos.c_str(), false) && result;
-  return result;
+  Error error;
+  if (!FileSystem::EnsureDirectoryExists(path.c_str(), false, &error))
+    ERROR_LOG("Failed to create directory {}: {}", path, error.GetDescription());
+}
+
+void EmuFolders::EnsureFoldersExist()
+{
+  EnsureFolderExists(Bios);
+  EnsureFolderExists(Cache);
+  EnsureFolderExists(Path::Combine(Cache, "achievement_images"));
+  EnsureFolderExists(Cheats);
+  EnsureFolderExists(Covers);
+  EnsureFolderExists(GameIcons);
+  EnsureFolderExists(GameSettings);
+  EnsureFolderExists(InputProfiles);
+  EnsureFolderExists(MemoryCards);
+  EnsureFolderExists(Patches);
+  EnsureFolderExists(SaveStates);
+  EnsureFolderExists(Screenshots);
+  EnsureFolderExists(Shaders);
+  EnsureFolderExists(Path::Combine(Shaders, "reshade"));
+  EnsureFolderExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders"));
+  EnsureFolderExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures"));
+  EnsureFolderExists(Subchannels);
+  EnsureFolderExists(Textures);
+  EnsureFolderExists(UserResources);
+  EnsureFolderExists(Videos);
 }
 
 std::string EmuFolders::GetOverridableResourcePath(std::string_view name)
