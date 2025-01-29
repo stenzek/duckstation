@@ -3173,7 +3173,7 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
         ImGui::TextUnformatted(buf.c_str(), buf.end_ptr());
       }
 
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f * scale);
 
       ImGui::ProgressBar(has_progress ?
                            (static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min)) :
