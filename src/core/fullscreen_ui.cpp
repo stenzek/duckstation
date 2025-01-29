@@ -5897,7 +5897,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
                     FSUI_CSTR("When enabled and logged in, DuckStation will scan for achievements on startup."),
                     "Cheevos", "Enabled", false);
 
-  const bool enabled = bsi->GetBoolValue("Cheevos", "Enabled", false);
+  const bool enabled = GetEffectiveBoolSetting(bsi, "Cheevos", "Enabled", false);
 
   if (DrawToggleSetting(
         bsi, FSUI_ICONSTR(ICON_FA_HARD_HAT, "Hardcore Mode"),
