@@ -83,7 +83,7 @@ static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Err
 static void DestroyGPUBackendOnThread();
 static void DestroyGPUPresenterOnThread();
 
-static void UpdateSettingsOnThread(GPUThreadUpdateSettingsCommand* cmd);
+static void UpdateSettingsOnThread(GPUSettings&& new_settings);
 
 static void UpdateRunIdle();
 
@@ -511,7 +511,7 @@ void GPUThread::Internal::GPUThreadEntryPoint()
         case GPUBackendCommandType::UpdateSettings:
         {
           GPUThreadUpdateSettingsCommand* ccmd = static_cast<GPUThreadUpdateSettingsCommand*>(cmd);
-          UpdateSettingsOnThread(ccmd);
+          UpdateSettingsOnThread(std::move(ccmd->settings));
           ccmd->~GPUThreadUpdateSettingsCommand();
         }
         break;
@@ -984,12 +984,12 @@ bool GPUThread::Internal::PresentFrameAndRestoreContext()
   return true;
 }
 
-void GPUThread::UpdateSettingsOnThread(GPUThreadUpdateSettingsCommand* cmd)
+void GPUThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
 {
   VERBOSE_LOG("Updating GPU settings on thread...");
 
   GPUSettings old_settings = std::move(g_gpu_settings);
-  g_gpu_settings = std::move(cmd->settings);
+  g_gpu_settings = std::move(new_settings);
 
   if (g_gpu_device)
   {
@@ -1090,9 +1090,16 @@ void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_c
   }
   else if (gpu_settings_changed)
   {
-    GPUThreadUpdateSettingsCommand* cmd =
-      AllocateCommand<GPUThreadUpdateSettingsCommand>(GPUBackendCommandType::UpdateSettings, g_settings);
-    PushCommandAndWakeThread(cmd);
+    if (s_state.use_gpu_thread) [[likely]]
+    {
+      GPUThreadUpdateSettingsCommand* cmd =
+        AllocateCommand<GPUThreadUpdateSettingsCommand>(GPUBackendCommandType::UpdateSettings, g_settings);
+      PushCommandAndWakeThread(cmd);
+    }
+    else
+    {
+      UpdateSettingsOnThread(GPUSettings(g_settings));
+    }
   }
   else
   {
@@ -1377,7 +1384,7 @@ const std::string& GPUThread::GetGameSerial()
 
 void GPUThread::SetGameSerial(std::string serial)
 {
-  DebugAssert(!IsOnThread());
+  DebugAssert(!IsOnThread() || !s_state.use_gpu_thread);
   RunOnThread([serial = std::move(serial)]() mutable {
     const bool changed = (s_state.game_serial != serial);
     s_state.game_serial = std::move(serial);
