@@ -3603,7 +3603,7 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
 
   if (HasVRAMWriteTextureReplacements())
   {
-    const GSVector4i page_rect = VRAMPageRect(key.page);
+    const GSVector4i page_rect = GetTextureRect(key.page, key.mode);
     LoopRectPages(page_rect, [&key, &pal_hash, &subimages, &page_rect](u32 pn) {
       const PageEntry& page = s_state.pages[pn];
       ListIterate(page.writes, [&key, &pal_hash, &subimages, &page_rect](const VRAMWrite* vrw) {
