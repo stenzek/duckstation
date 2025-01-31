@@ -3663,7 +3663,8 @@ void GPUTextureCache::ApplyTextureReplacements(SourceKey key, HashType tex_hash,
 
   if (HasVRAMWriteTextureReplacements())
   {
-    const GSVector4i page_rect = GetTextureRect(key.page, key.mode);
+    // Wrapping around the edge for replacement testing breaks 8/16-bit textures in the rightmost page.
+    const GSVector4i page_rect = GetTextureRectWithoutWrap(key.page, key.mode);
     LoopRectPages(page_rect, [&key, &pal_hash, &subimages, &page_rect](u32 pn) {
       const PageEntry& page = s_state.pages[pn];
       ListIterate(page.writes, [&key, &pal_hash, &subimages, &page_rect](const VRAMWrite* vrw) {

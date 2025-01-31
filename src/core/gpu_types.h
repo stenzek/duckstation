@@ -517,6 +517,15 @@ ALWAYS_INLINE static constexpr GSVector4i GetTextureRect(u32 pn, GPUTextureMode 
   return GSVector4i::cxpr(left, top, right, bottom);
 }
 
+ALWAYS_INLINE static constexpr GSVector4i GetTextureRectWithoutWrap(u32 pn, GPUTextureMode mode)
+{
+  const u32 left = VRAMPageStartX(pn);
+  const u32 top = VRAMPageStartY(pn);
+  const u32 right = std::min<u32>(left + TexturePageWidthForMode(mode), VRAM_WIDTH);
+  const u32 bottom = top + VRAM_PAGE_HEIGHT;
+  return GSVector4i::cxpr(left, top, right, bottom);
+}
+
 /// Returns the maximum index for a paletted texture.
 ALWAYS_INLINE static constexpr u32 GetPaletteWidth(GPUTextureMode mode)
 {
