@@ -170,6 +170,7 @@ static void ClearRunningGame();
 static void DestroySystem();
 
 static void RecreateGPU(GPURenderer new_renderer);
+static void SetGPUThreadEnabled(bool enabled);
 static std::string GetScreenshotPath(const char* extension);
 static bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio, u32 video_width,
                               u32 video_height);
@@ -1195,6 +1196,27 @@ void System::RecreateGPU(GPURenderer renderer)
     ERROR_LOG("Failed to switch to {} renderer: {}", Settings::GetRendererName(renderer), error.GetDescription());
     Panic("Failed to switch renderer.");
   }
+
+  ClearMemorySaveStates(true, false);
+
+  g_gpu.UpdateDisplay(false);
+  if (IsPaused())
+    GPUThread::PresentCurrentFrame();
+}
+
+void System::SetGPUThreadEnabled(bool enabled)
+{
+  // can be called without valid system
+  if (!IsValid())
+  {
+    GPUThread::Internal::SetThreadEnabled(g_settings.gpu_use_thread);
+    return;
+  }
+
+  FreeMemoryStateStorage(false, true, false);
+  StopMediaCapture();
+
+  GPUThread::Internal::SetThreadEnabled(g_settings.gpu_use_thread);
 
   ClearMemorySaveStates(true, false);
 
@@ -4676,7 +4698,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
   if (g_settings.gpu_use_thread != old_settings.gpu_use_thread) [[unlikely]]
   {
-    GPUThread::Internal::SetThreadEnabled(g_settings.gpu_use_thread);
+    SetGPUThreadEnabled(g_settings.gpu_use_thread);
   }
   else if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames)
     [[unlikely]]
