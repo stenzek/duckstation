@@ -537,6 +537,13 @@ void GPUThread::Internal::GPUThreadEntryPoint()
 
 void GPUThread::Internal::DoRunIdle()
 {
+  if (!g_gpu_device->HasMainSwapChain()) [[unlikely]]
+  {
+    // only happens during language switch
+    Timer::NanoSleep(16 * 1000 * 1000);
+    return;
+  }
+
   if (!PresentFrameAndRestoreContext())
     return;
 
