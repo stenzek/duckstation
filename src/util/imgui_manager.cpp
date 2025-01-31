@@ -74,9 +74,9 @@ static void SetKeyMap();
 static bool LoadFontData(Error* error);
 static void ReloadFontDataIfActive();
 static bool AddImGuiFonts(bool debug_font, bool fullscreen_fonts);
-static ImFont* AddTextFont(float size, bool full_glyph_range);
+static ImFont* AddTextFont(float size, const ImWchar* glyph_range);
 static ImFont* AddFixedFont(float size);
-static bool AddIconFonts(float size);
+static bool AddIconFonts(float size, const ImWchar* emoji_range);
 static void SetCommonIOOptions(ImGuiIO& io);
 static void SetImKeyState(ImGuiIO& io, ImGuiKey imkey, bool pressed);
 static const char* GetClipboardTextImpl(void* userdata);
@@ -94,7 +94,8 @@ static void DrawSoftwareCursor(const SoftwareCursor& sc, const std::pair<float, 
 static constexpr float OSD_FADE_IN_TIME = 0.1f;
 static constexpr float OSD_FADE_OUT_TIME = 0.4f;
 
-static constexpr std::array<ImWchar, 4> s_ascii_font_range = {{0x20, 0x7F, 0x00, 0x00}};
+static constexpr std::array<ImWchar, 4> ASCII_FONT_RANGE = {{0x20, 0x7F, 0x00, 0x00}};
+static constexpr std::array<ImWchar, 6> DEFAULT_FONT_RANGE = {{0x0020, 0x00FF, 0x2022, 0x2022, 0x0000, 0x0000}};
 
 namespace {
 
@@ -140,7 +141,8 @@ struct ALIGN_TO_CACHE_LINE State
 
   std::string font_path;
   std::vector<WCharType> font_range;
-  std::vector<WCharType> emoji_range;
+  std::vector<WCharType> dynamic_font_range;
+  std::vector<WCharType> dynamic_emoji_range;
 
   DynamicHeapArray<u8> standard_font_data;
   DynamicHeapArray<u8> fixed_font_data;
@@ -166,32 +168,13 @@ void ImGuiManager::SetFontPathAndRange(std::string path, std::vector<WCharType> 
   ReloadFontDataIfActive();
 }
 
-void ImGuiManager::SetEmojiFontRange(std::vector<WCharType> range)
+void ImGuiManager::SetDynamicFontRange(std::vector<WCharType> font_range, std::vector<WCharType> emoji_range)
 {
-  static constexpr size_t builtin_size = std::size(EMOJI_ICON_RANGE);
-  const size_t runtime_size = range.size();
+  if (s_state.dynamic_font_range == font_range && s_state.dynamic_emoji_range == emoji_range)
+    return;
 
-  if (runtime_size == 0)
-  {
-    if (s_state.emoji_range.empty())
-      return;
-
-    s_state.emoji_range = {};
-  }
-  else
-  {
-    if (!s_state.emoji_range.empty() && (s_state.emoji_range.size() - builtin_size) == range.size() &&
-        std::memcmp(s_state.emoji_range.data(), range.data(), range.size() * sizeof(ImWchar)) == 0)
-    {
-      // no change
-      return;
-    }
-
-    s_state.emoji_range = std::move(range);
-    s_state.emoji_range.resize(s_state.emoji_range.size() + builtin_size);
-    std::memcpy(&s_state.emoji_range[runtime_size], EMOJI_ICON_RANGE, sizeof(EMOJI_ICON_RANGE));
-  }
-
+  s_state.dynamic_font_range = std::move(font_range);
+  s_state.dynamic_emoji_range = std::move(emoji_range);
   ReloadFontDataIfActive();
 }
 
@@ -647,13 +630,12 @@ bool ImGuiManager::LoadFontData(Error* error)
   return true;
 }
 
-ImFont* ImGuiManager::AddTextFont(float size, bool full_glyph_range)
+ImFont* ImGuiManager::AddTextFont(float size, const ImWchar* glyph_range)
 {
   ImFontConfig cfg;
   cfg.FontDataOwnedByAtlas = false;
   return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-    s_state.standard_font_data.data(), static_cast<int>(s_state.standard_font_data.size()), size, &cfg,
-    full_glyph_range ? s_state.font_range.data() : s_ascii_font_range.data());
+    s_state.standard_font_data.data(), static_cast<int>(s_state.standard_font_data.size()), size, &cfg, glyph_range);
 }
 
 ImFont* ImGuiManager::AddFixedFont(float size)
@@ -662,10 +644,10 @@ ImFont* ImGuiManager::AddFixedFont(float size)
   cfg.FontDataOwnedByAtlas = false;
   return ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.fixed_font_data.data(),
                                                     static_cast<int>(s_state.fixed_font_data.size()), size, &cfg,
-                                                    s_ascii_font_range.data());
+                                                    ASCII_FONT_RANGE.data());
 }
 
-bool ImGuiManager::AddIconFonts(float size)
+bool ImGuiManager::AddIconFonts(float size, const ImWchar* emoji_range)
 {
   {
     ImFontConfig cfg;
@@ -708,9 +690,9 @@ bool ImGuiManager::AddIconFonts(float size)
     cfg.FontDataOwnedByAtlas = false;
     cfg.FontBuilderFlags = ImGuiFreeTypeBuilderFlags_LoadColor | ImGuiFreeTypeBuilderFlags_Bitmap;
 
-    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(
-          s_state.emoji_font_data.data(), static_cast<int>(s_state.emoji_font_data.size()), size * 0.9f, &cfg,
-          s_state.emoji_range.empty() ? EMOJI_ICON_RANGE : s_state.emoji_range.data())) [[unlikely]]
+    if (!ImGui::GetIO().Fonts->AddFontFromMemoryTTF(s_state.emoji_font_data.data(),
+                                                    static_cast<int>(s_state.emoji_font_data.size()), size * 0.9f, &cfg,
+                                                    emoji_range)) [[unlikely]]
     {
       return false;
     }
@@ -730,12 +712,43 @@ bool ImGuiManager::AddImGuiFonts(bool debug_font, bool fullscreen_fonts)
   INFO_LOG("Allocating fonts winscale={} globalscale={} debug={} fullscreen={}", window_scale, s_state.global_scale,
            debug_font, fullscreen_fonts);
 
+  // need to generate arrays if dynamic ranges are present
+  const ImWchar* text_range = s_state.font_range.empty() ? DEFAULT_FONT_RANGE.data() : s_state.font_range.data();
+  const ImWchar* emoji_range = EMOJI_ICON_RANGE;
+  std::vector<ImWchar> full_text_range, full_emoji_range;
+  if (!s_state.dynamic_font_range.empty())
+  {
+    // skip the zeros, we'll add them afterwards
+    const size_t base_size = s_state.font_range.empty() ? DEFAULT_FONT_RANGE.size() : s_state.font_range.size();
+    Assert(base_size > 2);
+    full_text_range.reserve(base_size + s_state.dynamic_font_range.size());
+    full_text_range.insert(full_text_range.end(), &text_range[0], &text_range[base_size - 2]);
+    full_text_range.insert(full_text_range.end(), s_state.dynamic_font_range.begin(), s_state.dynamic_font_range.end());
+    full_text_range.insert(full_text_range.end(), 2, 0);
+    text_range = full_text_range.data();
+  }
+  if (!s_state.dynamic_emoji_range.empty())
+  {
+    // skip the zeros, we'll add them afterwards
+    size_t base_size = 0;
+    for (const ImWchar* c = EMOJI_ICON_RANGE; *c != 0; c++)
+      base_size++;
+
+    Assert(base_size > 2);
+    full_emoji_range.reserve(base_size + s_state.dynamic_emoji_range.size());
+    full_emoji_range.insert(full_emoji_range.end(), &EMOJI_ICON_RANGE[0], &EMOJI_ICON_RANGE[base_size - 2]);
+    full_emoji_range.insert(full_emoji_range.end(), s_state.dynamic_emoji_range.begin(),
+                            s_state.dynamic_emoji_range.end());
+    full_emoji_range.insert(full_emoji_range.end(), 2, 0);
+    emoji_range = full_emoji_range.data();
+  }
+
   ImGuiIO& io = ImGui::GetIO();
   io.Fonts->Clear();
 
   if (debug_font)
   {
-    s_state.debug_font = AddTextFont(debug_font_size, false);
+    s_state.debug_font = AddTextFont(debug_font_size, ASCII_FONT_RANGE.data());
     if (!s_state.debug_font)
       return false;
   }
@@ -744,8 +757,8 @@ bool ImGuiManager::AddImGuiFonts(bool debug_font, bool fullscreen_fonts)
   if (!s_state.fixed_font)
     return false;
 
-  s_state.osd_font = AddTextFont(osd_font_size, true);
-  if (!s_state.osd_font || !AddIconFonts(osd_font_size))
+  s_state.osd_font = AddTextFont(osd_font_size, text_range);
+  if (!s_state.osd_font || !AddIconFonts(osd_font_size, emoji_range))
     return false;
   if (!debug_font)
     s_state.debug_font = s_state.osd_font;
@@ -753,13 +766,13 @@ bool ImGuiManager::AddImGuiFonts(bool debug_font, bool fullscreen_fonts)
   if (fullscreen_fonts)
   {
     const float medium_font_size = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE);
-    s_state.medium_font = AddTextFont(medium_font_size, true);
-    if (!s_state.medium_font || !AddIconFonts(medium_font_size))
+    s_state.medium_font = AddTextFont(medium_font_size, text_range);
+    if (!s_state.medium_font || !AddIconFonts(medium_font_size, emoji_range))
       return false;
 
     const float large_font_size = ImGuiFullscreen::LayoutScale(ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE);
-    s_state.large_font = AddTextFont(large_font_size, true);
-    if (!s_state.large_font || !AddIconFonts(large_font_size))
+    s_state.large_font = AddTextFont(large_font_size, text_range);
+    if (!s_state.large_font || !AddIconFonts(large_font_size, emoji_range))
       return false;
   }
   else

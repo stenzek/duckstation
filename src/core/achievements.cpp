@@ -445,20 +445,25 @@ void Achievements::UpdateGlyphRanges()
   // To avoid rasterizing all emoji fonts, we get the set of used glyphs in the emoji range for all strings in the
   // current game's achievement data.
   using CodepointSet = std::unordered_set<ImGuiManager::WCharType>;
-  CodepointSet codepoints;
+  CodepointSet codepoints, emoji_codepoints;
 
-  static constexpr auto add_string = [](const std::string_view str, CodepointSet& codepoints) {
+  const auto add_string = [&codepoints, &emoji_codepoints](const std::string_view str) {
     char32_t codepoint;
     for (size_t offset = 0; offset < str.length();)
     {
       offset += StringUtil::DecodeUTF8(str, offset, &codepoint);
 
       // Basic Latin + Latin Supplement always included.
-      if (codepoint != StringUtil::UNICODE_REPLACEMENT_CHARACTER && codepoint >= 0x2000)
-        codepoints.insert(static_cast<ImGuiManager::WCharType>(codepoint));
+      if (codepoint != StringUtil::UNICODE_REPLACEMENT_CHARACTER && codepoint >= 0x100)
+      {
+        CodepointSet& dest = (codepoint >= 0x2000) ? emoji_codepoints : codepoints;
+        dest.insert(static_cast<ImGuiManager::WCharType>(codepoint));
+      }
     }
   };
 
+#ifndef __ANDROID__
+  // We don't need to check rich presence on Android, because we're not displaying it with FullscreenUI.
   if (rc_client_has_rich_presence(s_state.client))
   {
     std::vector<const char*> rp_strings;
@@ -479,8 +484,9 @@ void Achievements::UpdateGlyphRanges()
     }
 
     for (const char* str : rp_strings)
-      add_string(str, codepoints);
+      add_string(str);
   }
+#endif
 
   if (rc_client_has_achievements(s_state.client))
   {
@@ -495,9 +501,9 @@ void Achievements::UpdateGlyphRanges()
         {
           const rc_client_achievement_t* achievement = bucket.achievements[j];
           if (achievement->title)
-            add_string(achievement->title, codepoints);
+            add_string(achievement->title);
           if (achievement->description)
-            add_string(achievement->description, codepoints);
+            add_string(achievement->description);
         }
       }
       rc_client_destroy_achievement_list(achievements);
@@ -517,24 +523,29 @@ void Achievements::UpdateGlyphRanges()
         {
           const rc_client_leaderboard_t* leaderboard = bucket.leaderboards[j];
           if (leaderboard->title)
-            add_string(leaderboard->title, codepoints);
+            add_string(leaderboard->title);
           if (leaderboard->description)
-            add_string(leaderboard->description, codepoints);
+            add_string(leaderboard->description);
         }
       }
       rc_client_destroy_leaderboard_list(leaderboards);
     }
   }
 
-  std::vector<ImGuiManager::WCharType> sorted_codepoints;
+  std::vector<ImGuiManager::WCharType> sorted_codepoints, sorted_emoji_codepoints;
   sorted_codepoints.reserve(codepoints.size());
   sorted_codepoints.insert(sorted_codepoints.begin(), codepoints.begin(), codepoints.end());
   std::sort(sorted_codepoints.begin(), sorted_codepoints.end());
+  sorted_emoji_codepoints.reserve(codepoints.size());
+  sorted_emoji_codepoints.insert(sorted_emoji_codepoints.begin(), emoji_codepoints.begin(), emoji_codepoints.end());
+  std::sort(sorted_emoji_codepoints.begin(), sorted_emoji_codepoints.end());
 
   // Compact codepoints to ranges.
-  GPUThread::RunOnThread([sorted_codepoints = std::move(sorted_codepoints)]() {
-    ImGuiManager::SetEmojiFontRange(ImGuiManager::CompactFontRange(sorted_codepoints));
-  });
+  GPUThread::RunOnThread(
+    [sorted_codepoints = std::move(sorted_codepoints), sorted_emoji_codepoints = std::move(sorted_emoji_codepoints)]() {
+      ImGuiManager::SetDynamicFontRange(ImGuiManager::CompactFontRange(sorted_codepoints),
+                                        ImGuiManager::CompactFontRange(sorted_emoji_codepoints));
+    });
 }
 
 bool Achievements::IsActive()
