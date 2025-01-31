@@ -228,6 +228,13 @@ struct DumpedTextureKey
   {
     return (std::memcmp(&k, this, sizeof(DumpedTextureKey)) != 0);
   }
+
+  static DumpedTextureKey FromName(const TextureReplacementName& name)
+  {
+    return DumpedTextureKey{name.src_hash, name.pal_hash,     name.offset_x,
+                            name.offset_y, name.width,        name.height,
+                            name.type,     name.texture_mode, {}};
+  }
 };
 struct DumpedTextureKeyHash
 {
@@ -311,7 +318,8 @@ static bool IsMatchingReplacementPalette(HashType full_palette_hash, GPUTextureM
                                          const TextureReplacementName& name);
 static bool LoadLocalConfiguration(bool load_vram_write_replacement_aliases, bool load_texture_replacement_aliases);
 
-static void FindTextureReplacements(bool load_vram_write_replacements, bool load_texture_replacements);
+static void FindTextureReplacements(bool load_vram_write_replacements, bool load_texture_replacements,
+                                    bool prefill_dumped_texture_list, bool prefill_dumped_vram_list);
 static void LoadTextureReplacementAliases(const ryml::ConstNodeRef& root, bool load_vram_write_replacement_aliases,
                                           bool load_texture_replacement_aliases);
 
@@ -604,7 +612,12 @@ bool GPUTextureCache::UpdateSettings(bool use_texture_cache, const GPUSettings& 
       g_gpu_settings.texture_replacements.enable_texture_replacements !=
         old_settings.texture_replacements.enable_texture_replacements ||
       g_gpu_settings.texture_replacements.enable_vram_write_replacements !=
-        old_settings.texture_replacements.enable_vram_write_replacements)
+        old_settings.texture_replacements.enable_vram_write_replacements ||
+      g_gpu_settings.texture_replacements.dump_textures != old_settings.texture_replacements.dump_textures ||
+      g_gpu_settings.texture_replacements.dump_vram_writes != old_settings.texture_replacements.dump_vram_writes ||
+      (g_gpu_settings.texture_replacements.dump_replaced_textures !=
+         old_settings.texture_replacements.dump_replaced_textures &&
+       (g_gpu_settings.texture_replacements.dump_textures || g_gpu_settings.texture_replacements.dump_vram_writes)))
   {
     if (use_texture_cache)
     {
@@ -2707,16 +2720,12 @@ void GPUTextureCache::DumpVRAMWrite(u32 width, u32 height, const void* pixels)
 {
   const VRAMReplacementName name = GetVRAMWriteHash(width, height, pixels);
   if (s_state.dumped_vram_writes.find(name) != s_state.dumped_vram_writes.end())
-    return;
-
-  s_state.dumped_vram_writes.insert(name);
-
-  if (!g_gpu_settings.texture_replacements.dump_replaced_textures &&
-      s_state.vram_replacements.find(name) != s_state.vram_replacements.end())
   {
-    INFO_LOG("Not dumping VRAM write '{}' because it already has a replacement", name.ToString());
+    DEV_COLOR_LOG(Green, "Not dumping {}", name.ToString());
     return;
   }
+
+  s_state.dumped_vram_writes.insert(name);
 
   const std::string path = GetVRAMWriteDumpPath(name);
   if (path.empty() || FileSystem::FileExists(path.c_str()))
@@ -2765,27 +2774,6 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
                                 !s_state.config.dump_texture_force_alpha_channel);
   const u8 dumped_texture_mode = static_cast<u8>(mode) | (semitransparent ? 4 : 0);
 
-  const DumpedTextureKey key = {src_hash,
-                                pal_hash,
-                                Truncate16(offset_x),
-                                Truncate16(offset_y),
-                                Truncate16(width),
-                                Truncate16(height),
-                                type,
-                                dumped_texture_mode,
-                                {}};
-  if (s_state.dumped_textures.find(key) != s_state.dumped_textures.end())
-    return;
-
-  if (!EnsureGameDirectoryExists())
-    return;
-
-  const std::string dump_directory = GetTextureDumpDirectory();
-  if (!FileSystem::EnsureDirectoryExists(dump_directory.c_str(), false))
-    return;
-
-  s_state.dumped_textures.insert(key);
-
   const TextureReplacementName name = {
     .src_hash = src_hash,
     .pal_hash = pal_hash,
@@ -2801,23 +2789,21 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
     .pal_max = Truncate8(pal_max),
   };
 
-  // skip if dumped already
-  if (!g_gpu_settings.texture_replacements.dump_replaced_textures)
+  const DumpedTextureKey key = DumpedTextureKey::FromName(name);
+  if (s_state.dumped_textures.find(key) != s_state.dumped_textures.end())
   {
-    const TextureReplacementMap& map = (type == TextureReplacementType::TextureFromPage) ?
-                                         s_state.texture_page_texture_replacements :
-                                         s_state.vram_write_texture_replacements;
-    const auto& [begin, end] = map.equal_range(name.GetIndex());
-    for (auto it = begin; it != end; ++it)
-    {
-      // only match on the hash, not the sizes, we could be trying to dump a smaller texture
-      if (it->second.first.pal_hash == name.pal_hash)
-      {
-        DEV_LOG("Not dumping currently-replaced VRAM write {:016X} [{}x{}] at {}", src_hash, width, height, rect);
-        return;
-      }
-    }
+    DEV_COLOR_LOG(Green, "Not dumping {}", name.ToString());
+    return;
   }
+
+  if (!EnsureGameDirectoryExists())
+    return;
+
+  const std::string dump_directory = GetTextureDumpDirectory();
+  if (!FileSystem::EnsureDirectoryExists(dump_directory.c_str(), false))
+    return;
+
+  s_state.dumped_textures.insert(key);
 
   SmallString filename = name.ToString();
   filename.append(".png");
@@ -3036,7 +3022,8 @@ bool GPUTextureCache::HasValidReplacementExtension(const std::string_view path)
   return false;
 }
 
-void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements, bool load_texture_replacements)
+void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements, bool load_texture_replacements,
+                                              bool prefill_dumped_texture_list, bool prefill_dumped_vram_list)
 {
   if (GPUThread::GetGameSerial().empty())
     return;
@@ -3044,6 +3031,11 @@ void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements,
   FileSystem::FindResultsArray files;
   FileSystem::FindFiles(GetTextureReplacementDirectory().c_str(), "*",
                         FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE, &files);
+
+  const bool add_texture_replacements_to_dumped =
+    prefill_dumped_texture_list && !g_gpu_settings.texture_replacements.dump_replaced_textures;
+  const bool add_vram_replacements_to_dumped =
+    prefill_dumped_vram_list && !g_gpu_settings.texture_replacements.dump_replaced_textures;
 
   for (FILESYSTEM_FIND_DATA& fd : files)
   {
@@ -3060,17 +3052,23 @@ void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements,
       case TextureReplacementType::VRAMReplacement:
       {
         VRAMReplacementName name;
-        if (!load_vram_write_replacements || !name.Parse(file_title))
+        if (!name.Parse(file_title))
           continue;
 
-        if (const auto it = s_state.vram_replacements.find(name); it != s_state.vram_replacements.end())
+        if (add_vram_replacements_to_dumped)
+          s_state.dumped_vram_writes.insert(name);
+
+        if (load_vram_write_replacements)
         {
-          WARNING_LOG("Duplicate VRAM replacement: '{}' and '{}'", Path::GetFileName(it->second),
-                      Path::GetFileName(fd.FileName));
-          continue;
-        }
+          if (const auto it = s_state.vram_replacements.find(name); it != s_state.vram_replacements.end())
+          {
+            WARNING_LOG("Duplicate VRAM replacement: '{}' and '{}'", Path::GetFileName(it->second),
+                        Path::GetFileName(fd.FileName));
+            continue;
+          }
 
-        s_state.vram_replacements.emplace(name, std::move(fd.FileName));
+          s_state.vram_replacements.emplace(name, std::move(fd.FileName));
+        }
       }
       break;
 
@@ -3078,32 +3076,38 @@ void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements,
       case TextureReplacementType::TextureFromPage:
       {
         TextureReplacementName name;
-        if (!load_texture_replacements || !name.Parse(file_title))
+        if (!name.Parse(file_title))
           continue;
 
-        DebugAssert(name.type == type.value());
+        if (add_texture_replacements_to_dumped)
+          s_state.dumped_textures.insert(DumpedTextureKey::FromName(name));
 
-        const TextureReplacementIndex index = name.GetIndex();
-        TextureReplacementMap& dest_map = (type.value() == TextureReplacementType::TextureFromVRAMWrite) ?
-                                            s_state.vram_write_texture_replacements :
-                                            s_state.texture_page_texture_replacements;
-
-        // Multiple replacements in the same write are fine. But they should have different rects.
-        const auto range = dest_map.equal_range(index);
-        bool duplicate = false;
-        for (auto it = range.first; it != range.second; ++it)
+        if (load_texture_replacements)
         {
-          if (it->second.first == name) [[unlikely]]
-          {
-            WARNING_LOG("Duplicate texture replacement: '{}' and '{}'", Path::GetFileName(it->second.second),
-                        Path::GetFileName(fd.FileName));
-            duplicate = true;
-          }
-        }
-        if (duplicate) [[unlikely]]
-          continue;
+          DebugAssert(name.type == type.value());
 
-        dest_map.emplace(index, std::make_pair(name, std::move(fd.FileName)));
+          const TextureReplacementIndex index = name.GetIndex();
+          TextureReplacementMap& dest_map = (type.value() == TextureReplacementType::TextureFromVRAMWrite) ?
+                                              s_state.vram_write_texture_replacements :
+                                              s_state.texture_page_texture_replacements;
+
+          // Multiple replacements in the same write are fine. But they should have different rects.
+          const auto range = dest_map.equal_range(index);
+          bool duplicate = false;
+          for (auto it = range.first; it != range.second; ++it)
+          {
+            if (it->second.first == name) [[unlikely]]
+            {
+              WARNING_LOG("Duplicate texture replacement: '{}' and '{}'", Path::GetFileName(it->second.second),
+                          Path::GetFileName(fd.FileName));
+              duplicate = true;
+            }
+          }
+          if (duplicate) [[unlikely]]
+            continue;
+
+          dest_map.emplace(index, std::make_pair(name, std::move(fd.FileName)));
+        }
       }
       break;
 
@@ -3121,6 +3125,52 @@ void GPUTextureCache::FindTextureReplacements(bool load_vram_write_replacements,
 
   if (g_gpu_settings.texture_replacements.enable_vram_write_replacements)
     INFO_LOG("Found {} replacement VRAM for '{}'", s_state.vram_replacements.size(), GPUThread::GetGameSerial());
+
+  // if we're dumping, need to prefill the dumped list with those in the dumps directory as well
+  if (prefill_dumped_texture_list || prefill_dumped_vram_list)
+  {
+    FileSystem::FindFiles(GetTextureDumpDirectory().c_str(), "*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_RECURSIVE,
+                          &files);
+
+    for (FILESYSTEM_FIND_DATA& fd : files)
+    {
+      if ((fd.Attributes & FILESYSTEM_FILE_ATTRIBUTE_DIRECTORY) || !HasValidReplacementExtension(fd.FileName))
+        continue;
+
+      const std::string_view file_title = Path::GetFileTitle(fd.FileName);
+      const std::optional<TextureReplacementType> type = GetTextureReplacementTypeFromFileTitle(file_title);
+      if (!type.has_value())
+        continue;
+
+      switch (type.value())
+      {
+        case TextureReplacementType::VRAMReplacement:
+        {
+          VRAMReplacementName name;
+          if (!name.Parse(file_title))
+            continue;
+
+          if (prefill_dumped_vram_list)
+            s_state.dumped_vram_writes.insert(name);
+        }
+        break;
+
+        case TextureReplacementType::TextureFromVRAMWrite:
+        case TextureReplacementType::TextureFromPage:
+        {
+          TextureReplacementName name;
+          if (!name.Parse(file_title))
+            continue;
+
+          if (prefill_dumped_texture_list)
+            s_state.dumped_textures.insert(DumpedTextureKey::FromName(name));
+        }
+        break;
+
+          DefaultCaseIsUnreachable()
+      }
+    }
+  }
 }
 
 void GPUTextureCache::LoadTextureReplacementAliases(const ryml::ConstNodeRef& root,
@@ -3526,6 +3576,8 @@ bool GPUTextureCache::LoadLocalConfiguration(bool load_vram_write_replacement_al
 
 void GPUTextureCache::ReloadTextureReplacements(bool show_info)
 {
+  s_state.dumped_textures.clear();
+  s_state.dumped_vram_writes.clear();
   s_state.vram_replacements.clear();
   s_state.vram_write_texture_replacements.clear();
   s_state.texture_page_texture_replacements.clear();
@@ -3533,8 +3585,16 @@ void GPUTextureCache::ReloadTextureReplacements(bool show_info)
   const bool load_vram_write_replacements = (g_gpu_settings.texture_replacements.enable_vram_write_replacements);
   const bool load_texture_replacements =
     (g_gpu_settings.gpu_texture_cache && g_gpu_settings.texture_replacements.enable_texture_replacements);
-  if (load_vram_write_replacements || load_texture_replacements)
-    FindTextureReplacements(load_vram_write_replacements, load_texture_replacements);
+  const bool prefill_dumped_texture_list =
+    (g_gpu_settings.texture_replacements.dump_vram_writes || g_gpu_settings.texture_replacements.dump_textures);
+  const bool prefill_dumped_vram_list =
+    (g_gpu_settings.texture_replacements.dump_vram_writes || g_gpu_settings.texture_replacements.dump_textures);
+  if (load_vram_write_replacements || load_texture_replacements || prefill_dumped_texture_list ||
+      prefill_dumped_vram_list)
+  {
+    FindTextureReplacements(load_vram_write_replacements, load_texture_replacements, prefill_dumped_texture_list,
+                            prefill_dumped_vram_list);
+  }
 
   LoadLocalConfiguration(load_vram_write_replacements, load_texture_replacements);
 
