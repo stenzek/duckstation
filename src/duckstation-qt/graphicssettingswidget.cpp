@@ -110,6 +110,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling));
   SettingWidgetBinder::SetAvailability(m_ui.textureFiltering,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+  SettingWidgetBinder::SetAvailability(m_ui.spriteTextureFiltering,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   SettingWidgetBinder::SetAvailability(m_ui.trueColor, !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTrueColor));
   SettingWidgetBinder::SetAvailability(m_ui.pgxpEnable, !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
   SettingWidgetBinder::SetAvailability(m_ui.widescreenHack,
@@ -816,6 +818,10 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
                                     !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   m_ui.textureFilteringLabel->setEnabled(is_hardware &&
                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+  m_ui.spriteTextureFiltering->setEnabled(is_hardware &&
+                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+  m_ui.spriteTextureFilteringLabel->setEnabled(is_hardware &&
+                                               !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   m_ui.gpuDownsampleLabel->setEnabled(is_hardware);
   m_ui.gpuDownsampleMode->setEnabled(is_hardware);
   m_ui.gpuDownsampleScale->setEnabled(is_hardware);
@@ -1047,6 +1053,7 @@ void GraphicsSettingsWidget::onAspectRatioChanged()
 
 void GraphicsSettingsWidget::updateResolutionDependentOptions()
 {
+  const bool is_hardware = (getEffectiveRenderer() != GPURenderer::Software);
   const int scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
   const GPUTextureFilter texture_filtering =
     Settings::ParseTextureFilterName(
@@ -1055,18 +1062,19 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
                                   Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER))
         .c_str())
       .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
-  m_ui.forceRoundedTexcoords->setEnabled(scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
+  m_ui.forceRoundedTexcoords->setEnabled(is_hardware && scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
   onTrueColorChanged();
 }
 
 void GraphicsSettingsWidget::onTrueColorChanged()
 {
+  const bool is_hardware = (getEffectiveRenderer() != GPURenderer::Software);
   const int resolution_scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
   const bool true_color = m_dialog->getEffectiveBoolValue("GPU", "TrueColor", false);
   const bool allow_scaled_dithering =
     (resolution_scale != 1 && !true_color && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
-  m_ui.scaledDithering->setEnabled(allow_scaled_dithering);
-  m_ui.accurateBlending->setEnabled(!true_color);
+  m_ui.scaledDithering->setEnabled(is_hardware && allow_scaled_dithering);
+  m_ui.accurateBlending->setEnabled(is_hardware && !true_color);
 }
 
 void GraphicsSettingsWidget::onDownsampleModeChanged()
