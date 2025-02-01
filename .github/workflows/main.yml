@@ -19,22 +19,22 @@ on:
       - '.github/ISSUE_TEMPLATE/*'
 
 jobs:
-  windows:
-    name: 💻 Windows
-    uses: "./.github/workflows/windows-build.yml"
-  linux-appimage:
-    name: 🐧 Linux AppImage
-    uses: "./.github/workflows/linux-appimage-build.yml"
+  #windows:
+  #  name: 💻 Windows
+  #  uses: "./.github/workflows/windows-build.yml"
+  #linux-appimage:
+  #  name: 🐧 Linux AppImage
+  #  uses: "./.github/workflows/linux-appimage-build.yml"
   linux-flatpak:
     name: 📦 Linux Flatpak
     uses: "./.github/workflows/linux-flatpak-build.yml"
-  macos:
-    name: 🍎 MacOS
-    uses: "./.github/workflows/macos-build.yml"
+  #macos:
+  #  name: 🍎 MacOS
+  #  uses: "./.github/workflows/macos-build.yml"
 
   create-release:
     name: 📤 Create Release
-    needs: [windows, linux-appimage, linux-flatpak, macos]
+    needs: [linux-flatpak] #[windows, linux-appimage, linux-flatpak, macos]
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
@@ -63,7 +63,8 @@ jobs:
             ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/linux-x64-appimage/DuckStation-x64.AppImage
             ./artifacts/linux-x64-sse2-appimage/DuckStation-x64-SSE2.AppImage
-            ./artifacts/linux-flatpak/duckstation-x64.flatpak
+            ./artifacts/linux-flatpak-x86_64/duckstation-x86_64.flatpak
+            ./artifacts/linux-flatpak-aarch64/duckstation-aarch64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
 
       - name: Create Rolling Release
@@ -83,6 +84,7 @@ jobs:
             ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/linux-x64-appimage/DuckStation-x64.AppImage
             ./artifacts/linux-x64-sse2-appimage/DuckStation-x64-SSE2.AppImage
-            ./artifacts/linux-flatpak/duckstation-x64.flatpak
+            ./artifacts/linux-flatpak-x86_64/duckstation-x86_64.flatpak
+            ./artifacts/linux-flatpak-aarch64/duckstation-aarch64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
 
