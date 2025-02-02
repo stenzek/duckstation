@@ -695,22 +695,49 @@ float GPU::ComputeAspectRatioCorrection() const
   const CRTCState& cs = m_crtc_state;
   float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
   float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
-  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1 ||
-      g_settings.display_crop_mode == DisplayCropMode::OverscanUncorrected ||
-      g_settings.display_crop_mode == DisplayCropMode::BordersUncorrected)
-  {
+  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1)
     return 1.0f;
-  }
 
-  if (m_GPUSTAT.pal_mode)
+  // Apply aspect ratio correction for all borders, or overscan with altered display range.
+  // That way if cropping is performed, the original aspect ratio is maintained.
+  switch (g_settings.display_crop_mode)
   {
-    relative_width /= static_cast<float>(PAL_HORIZONTAL_ACTIVE_END - PAL_HORIZONTAL_ACTIVE_START);
-    relative_height /= static_cast<float>(PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START);
-  }
-  else
-  {
-    relative_width /= static_cast<float>(NTSC_HORIZONTAL_ACTIVE_END - NTSC_HORIZONTAL_ACTIVE_START);
-    relative_height /= static_cast<float>(NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START);
+    case DisplayCropMode::Borders:
+    case DisplayCropMode::None:
+    {
+      if (m_GPUSTAT.pal_mode)
+      {
+        relative_width /= static_cast<float>(PAL_HORIZONTAL_ACTIVE_END - PAL_HORIZONTAL_ACTIVE_START);
+        relative_height /= static_cast<float>(PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START);
+      }
+      else
+      {
+        relative_width /= static_cast<float>(NTSC_HORIZONTAL_ACTIVE_END - NTSC_HORIZONTAL_ACTIVE_START);
+        relative_height /= static_cast<float>(NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START);
+      }
+    }
+    break;
+
+    case DisplayCropMode::Overscan:
+    {
+      if (m_GPUSTAT.pal_mode)
+      {
+        relative_width /= static_cast<float>(PAL_OVERSCAN_HORIZONTAL_ACTIVE_END - PAL_OVERSCAN_HORIZONTAL_ACTIVE_START);
+        relative_height /= static_cast<float>(PAL_OVERSCAN_VERTICAL_ACTIVE_END - PAL_OVERSCAN_VERTICAL_ACTIVE_START);
+      }
+      else
+      {
+        relative_width /=
+          static_cast<float>(NTSC_OVERSCAN_HORIZONTAL_ACTIVE_END - NTSC_OVERSCAN_HORIZONTAL_ACTIVE_START);
+        relative_height /= static_cast<float>(NTSC_OVERSCAN_VERTICAL_ACTIVE_END - NTSC_OVERSCAN_VERTICAL_ACTIVE_START);
+      }
+    }
+    break;
+
+    case DisplayCropMode::OverscanUncorrected:
+    case DisplayCropMode::BordersUncorrected:
+    default:
+      return 1.0f;
   }
 
   return (relative_width / relative_height);
