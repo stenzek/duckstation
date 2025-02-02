@@ -1680,7 +1680,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> disc;
-  ConsoleRegion console_region = ConsoleRegion::Auto;
+  ConsoleRegion auto_console_region = ConsoleRegion::NTSC_U;
   DiscRegion disc_region = DiscRegion::NonPS1;
   BootMode boot_mode = BootMode::FullBoot;
   std::string exe_override;
@@ -1708,14 +1708,10 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
     if (boot_mode == BootMode::BootEXE || boot_mode == BootMode::BootPSF)
     {
-      if (console_region == ConsoleRegion::Auto)
-      {
-        const DiscRegion file_region =
-          ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.filename.c_str()) :
-                                              GetRegionForPsf(parameters.filename.c_str()));
-        INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
-        console_region = GetConsoleRegionForDiscRegion(file_region);
-      }
+      const DiscRegion file_region = ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.filename.c_str()) :
+                                                                         GetRegionForPsf(parameters.filename.c_str()));
+      INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
+      auto_console_region = GetConsoleRegionForDiscRegion(file_region);
     }
     else if (boot_mode != BootMode::ReplayGPUDump)
     {
@@ -1728,32 +1724,12 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       }
 
       disc_region = GameList::GetCustomRegionForPath(parameters.filename).value_or(GetRegionForImage(disc.get()));
-      if (console_region == ConsoleRegion::Auto)
-      {
-        if (disc_region != DiscRegion::Other)
-        {
-          console_region = GetConsoleRegionForDiscRegion(disc_region);
-          INFO_LOG("Auto-detected console {} region for '{}' (region {})",
-                   Settings::GetConsoleRegionName(console_region), parameters.filename,
-                   Settings::GetDiscRegionName(disc_region));
-        }
-        else
-        {
-          console_region = ConsoleRegion::NTSC_U;
-          WARNING_LOG("Could not determine console region for disc region {}. Defaulting to {}.",
-                      Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(console_region));
-        }
-      }
+      auto_console_region = GetConsoleRegionForDiscRegion(disc_region);
+      INFO_LOG("Auto-detected console {} region for '{}' (region {})",
+               Settings::GetConsoleRegionName(auto_console_region), parameters.filename,
+               Settings::GetDiscRegionName(disc_region));
     }
   }
-  else
-  {
-    // Default to NTSC for BIOS boot.
-    if (console_region == ConsoleRegion::Auto)
-      console_region = ConsoleRegion::NTSC_U;
-  }
-
-  INFO_LOG("Console Region: {}", Settings::GetConsoleRegionDisplayName(console_region));
 
   // Switch subimage.
   if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, error))
@@ -1766,7 +1742,7 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   // Can't early cancel without destroying past this point.
   Assert(s_state.state == State::Shutdown);
   s_state.state = State::Starting;
-  s_state.region = console_region;
+  s_state.region = auto_console_region;
   s_state.startup_cancelled.store(false, std::memory_order_relaxed);
   s_state.gpu_dump_player = std::move(gpu_dump);
   std::atomic_thread_fence(std::memory_order_release);
@@ -1775,6 +1751,10 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 
   // Update running game, this will apply settings as well.
   UpdateRunningGame(disc ? disc->GetPath() : parameters.filename, disc.get(), true);
+
+  // Determine console region. Has to be done here, because gamesettings can override it.
+  s_state.region = (g_settings.region == ConsoleRegion::Auto) ? auto_console_region : g_settings.region;
+  INFO_LOG("Console Region: {}", Settings::GetConsoleRegionDisplayName(s_state.region));
 
   // Get boot EXE override.
   if (!parameters.override_exe.empty())
