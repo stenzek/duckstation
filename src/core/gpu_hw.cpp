@@ -265,8 +265,8 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
   m_clamp_uvs = ShouldClampUVs(m_texture_filtering) || ShouldClampUVs(m_sprite_texture_filtering);
   m_compute_uv_range = m_clamp_uvs;
   m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
-  m_use_texture_cache = g_settings.gpu_texture_cache;
-  m_texture_dumping = m_use_texture_cache && g_settings.texture_replacements.dump_textures;
+  m_use_texture_cache = g_gpu_settings.gpu_texture_cache;
+  m_texture_dumping = m_use_texture_cache && g_gpu_settings.texture_replacements.dump_textures;
 
   CheckSettings();
 
@@ -487,9 +487,9 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
                             Host::OSD_INFO_DURATION);
   }
 
-  if (m_multisamples != multisamples || g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading)
+  if (m_multisamples != multisamples || g_gpu_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading)
   {
-    if (g_settings.gpu_per_sample_shading && features.per_sample_shading)
+    if (g_gpu_settings.gpu_per_sample_shading && features.per_sample_shading)
     {
       Host::AddIconOSDMessage(
         "MultisamplingChanged", ICON_FA_PAINT_BRUSH,
@@ -658,7 +658,7 @@ void GPU_HW::CheckSettings()
     m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
   }
 
-  if (g_settings.IsUsingAccurateBlending() && !m_supports_framebuffer_fetch && !features.feedback_loops &&
+  if (g_gpu_settings.IsUsingAccurateBlending() && !m_supports_framebuffer_fetch && !features.feedback_loops &&
       !features.raster_order_views)
   {
     // m_allow_shader_blend/m_prefer_shader_blend will be cleared in pipeline compile.
@@ -669,7 +669,7 @@ void GPU_HW::CheckSettings()
       Host::OSD_WARNING_DURATION);
   }
   else if (IsUsingMultisampling() && !features.framebuffer_fetch &&
-           ((g_settings.IsUsingAccurateBlending() && features.raster_order_views) ||
+           ((g_gpu_settings.IsUsingAccurateBlending() && features.raster_order_views) ||
             (m_pgxp_depth_buffer && features.raster_order_views && !features.feedback_loops)))
   {
     Host::AddIconOSDMessage(
@@ -787,7 +787,7 @@ bool GPU_HW::UpdateResolutionScale(Error* error)
   if (CalculateResolutionScale() == m_resolution_scale)
     return true;
 
-  return UpdateSettings(g_settings, error);
+  return UpdateSettings(g_gpu_settings, error);
 }
 
 GPUDownsampleMode GPU_HW::GetDownsampleMode(u32 resolution_scale) const
@@ -3992,7 +3992,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
       m_presenter.SetDisplayTexture(postfx_output, 0, 0, postfx_output->GetWidth(), postfx_output->GetHeight());
     }
 
-    if (g_settings.display_24bit_chroma_smoothing)
+    if (g_gpu_settings.display_24bit_chroma_smoothing)
     {
       if (m_presenter.ApplyChromaSmoothing())
       {

@@ -388,7 +388,7 @@ bool GPU_SW::CopyOut(u32 src_x, u32 src_y, u32 skip_x, u32 width, u32 height, u3
 
 void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
 {
-  if (!g_settings.gpu_show_vram)
+  if (!g_gpu_settings.gpu_show_vram)
   {
     if (cmd->display_disabled)
     {
@@ -412,7 +412,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
       if (CopyOut(src_x, src_y, skip_x, width, height, line_skip, is_24bit))
       {
         m_presenter.SetDisplayTexture(m_upload_texture.get(), 0, 0, width, height);
-        if (is_24bit && g_settings.display_24bit_chroma_smoothing)
+        if (is_24bit && g_gpu_settings.display_24bit_chroma_smoothing)
         {
           if (m_presenter.ApplyChromaSmoothing())
             m_presenter.Deinterlace(field);
@@ -428,7 +428,7 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
       if (CopyOut(src_x, src_y, skip_x, width, height, 0, is_24bit))
       {
         m_presenter.SetDisplayTexture(m_upload_texture.get(), 0, 0, width, height);
-        if (is_24bit && g_settings.display_24bit_chroma_smoothing)
+        if (is_24bit && g_gpu_settings.display_24bit_chroma_smoothing)
           m_presenter.ApplyChromaSmoothing();
       }
     }
