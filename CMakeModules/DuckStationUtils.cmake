@@ -1,3 +1,5 @@
+include(CheckSourceCompiles)
+
 function(disable_compiler_warnings_for_target target)
 	if(MSVC)
 		target_compile_options(${target} PRIVATE "/W0")
@@ -244,4 +246,49 @@ function(install_imported_dep_library name)
   get_target_property(SONAME "${name}" IMPORTED_SONAME_RELEASE)
   get_target_property(LOCATION "${name}" IMPORTED_LOCATION_RELEASE)
   install(FILES "${LOCATION}" RENAME "${SONAME}" DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+endfunction()
+
+function(check_cpp20_feature MACRO MINIMUM_VALUE)
+  set(CACHE_VAR "CHECK_CPP20_FEATURE_${MACRO}")
+  if(NOT DEFINED ${CACHE_VAR})
+    # Create a small source code snippet that fails to compile if the feature is not available.
+    set(TEMP_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.cpp")
+    file(WRITE "${TEMP_FILE}" "#include <version>
+#if !defined(${MACRO}) || ${MACRO} < ${MINIMUM_VALUE}L
+#error Missing feature
+#endif
+    ")
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+    try_compile(HAS_FEATURE
+      ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY} "${TEMP_FILE}"
+      CXX_STANDARD 20
+      CXX_STANDARD_REQUIRED TRUE
+    )
+    set(${CACHE_VAR} ${HAS_FEATURE} CACHE INTERNAL "Cached feature test result for ${MACRO}")
+  endif()
+  if(NOT HAS_FEATURE)
+    message(FATAL_ERROR "${MACRO} is not supported by your compiler, at least ${MINIMUM_VALUE} is required.")
+  endif()
+endfunction()
+
+function(check_cpp20_attribute ATTRIBUTE MINIMUM_VALUE)
+  set(CACHE_VAR "CHECK_CPP20_ATTRIBUTE_${MACRO}")
+  if(NOT DEFINED ${CACHE_VAR})
+    set(TEMP_FILE "${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/CMakeTmp/src.cpp")
+    file(WRITE "${TEMP_FILE}" "#include <version>
+#if !defined(__has_cpp_attribute) || __has_cpp_attribute(${ATTRIBUTE}) < ${MINIMUM_VALUE}L
+#error Missing feature
+#endif
+    ")
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
+    try_compile(HAS_FEATURE
+      ${CMAKE_BINARY_DIR}${CMAKE_FILES_DIRECTORY} "${TEMP_FILE}"
+      CXX_STANDARD 20
+      CXX_STANDARD_REQUIRED TRUE
+    )
+    set(${CACHE_VAR} ${HAS_FEATURE} CACHE INTERNAL "Cached attribute test result for ${MACRO}")
+  endif()
+  if(NOT HAS_FEATURE)
+    message(FATAL_ERROR "${ATTRIBUTE} is not supported by your compiler, at least ${MINIMUM_VALUE} is required.")
+  endif()
 endfunction()

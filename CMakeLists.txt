@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19)
 project(duckstation C CXX)
 
 # Policy settings.
@@ -16,10 +16,6 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|MinSizeRel|RelWithDebInfo|Release")
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
-message(STATUS "CMake Version: ${CMAKE_VERSION}")
-message(STATUS "CMake System Name: ${CMAKE_SYSTEM_NAME}")
-message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
-
 # Pull in modules.
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMakeModules/")
 include(DuckStationUtils)
@@ -34,6 +30,7 @@ detect_cache_line_size()
 # Build options. Depends on system attributes.
 include(DuckStationBuildOptions)
 include(DuckStationDependencies)
+include(DuckStationCompilerRequirement)
 
 # Enable PIC on Linux, otherwise the builds do not support ASLR.
 if(LINUX OR BSD)
@@ -119,10 +116,6 @@ endif()
 
 # Prevent fmt from being built with exceptions, or being thrown at call sites.
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DFMT_EXCEPTIONS=0")
-
-# Use C++20.
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Recursively include the source tree.
 add_subdirectory(dep)

@@ -13,6 +13,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <version>
 
 namespace detail {
 struct transparent_string_hash
