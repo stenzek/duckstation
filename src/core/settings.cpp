@@ -1102,7 +1102,8 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
 
 bool Settings::AreGPUDeviceSettingsChanged(const Settings& old_settings) const
 {
-  return (gpu_adapter != old_settings.gpu_adapter || gpu_use_debug_device != old_settings.gpu_use_debug_device ||
+  return (gpu_adapter != old_settings.gpu_adapter || gpu_use_thread != old_settings.gpu_use_thread ||
+          gpu_use_debug_device != old_settings.gpu_use_debug_device ||
           gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
           gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
           gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||

@@ -83,6 +83,7 @@ static bool CreateGPUBackendOnThread(GPURenderer renderer, bool upload_vram, Err
 static void DestroyGPUBackendOnThread();
 static void DestroyGPUPresenterOnThread();
 
+static void SetThreadEnabled(bool enabled);
 static void UpdateSettingsOnThread(GPUSettings&& new_settings);
 
 static void UpdateRunIdle();
@@ -134,60 +135,6 @@ void GPUThread::ResetCommandFIFO()
                                      s_state.command_fifo_write_ptr.load(std::memory_order_relaxed));
   s_state.command_fifo_write_ptr.store(0, std::memory_order_release);
   s_state.command_fifo_read_ptr.store(0, std::memory_order_release);
-}
-
-void GPUThread::Internal::SetThreadEnabled(bool enabled)
-{
-  if (s_state.use_gpu_thread == enabled)
-    return;
-
-  if (s_state.use_gpu_thread)
-  {
-    SyncGPUThread(false);
-    std::atomic_thread_fence(std::memory_order_acquire);
-  }
-
-  // Was anything active?
-  if (!g_gpu_device)
-  {
-    // Thread should be idle. Just reset the FIFO.
-    s_state.use_gpu_thread = enabled;
-    ResetCommandFIFO();
-    return;
-  }
-
-  const bool fullscreen = Host::IsFullscreen();
-  const bool requested_fullscreen_ui = s_state.requested_fullscreen_ui;
-  const std::optional<GPURenderer> requested_renderer = s_state.requested_renderer;
-  std::string serial = s_state.game_serial;
-
-  // Force VRAM download, we're recreating.
-  if (requested_renderer.has_value())
-  {
-    GPUBackendReadVRAMCommand* cmd = GPUBackend::NewReadVRAMCommand();
-    cmd->x = 0;
-    cmd->y = 0;
-    cmd->width = VRAM_WIDTH;
-    cmd->height = VRAM_HEIGHT;
-    PushCommand(cmd);
-  }
-
-  // Shutdown reconfigure.
-  Reconfigure(std::string(), std::nullopt, false, false, false, false, nullptr);
-
-  // Thread should be idle at this point. Reset the FIFO.
-  ResetCommandFIFO();
-
-  // Update state and reconfigure again.
-  s_state.use_gpu_thread = enabled;
-
-  Error error;
-  if (!Reconfigure(std::move(serial), requested_renderer, requested_renderer.has_value(), fullscreen,
-                   requested_fullscreen_ui, true, &error))
-  {
-    ERROR_LOG("Reconfigure failed: {}", error.GetDescription());
-    ReportFatalErrorAndShutdown(fmt::format("Reconfigure failed: {}", error.GetDescription()));
-  }
 }
 
 void GPUThread::Internal::ProcessStartup()
@@ -991,6 +938,60 @@ bool GPUThread::Internal::PresentFrameAndRestoreContext()
   return true;
 }
 
+void GPUThread::SetThreadEnabled(bool enabled)
+{
+  if (s_state.use_gpu_thread == enabled)
+    return;
+
+  if (s_state.use_gpu_thread)
+  {
+    SyncGPUThread(false);
+    std::atomic_thread_fence(std::memory_order_acquire);
+  }
+
+  // Was anything active?
+  if (!g_gpu_device)
+  {
+    // Thread should be idle. Just reset the FIFO.
+    s_state.use_gpu_thread = enabled;
+    ResetCommandFIFO();
+    return;
+  }
+
+  const bool fullscreen = Host::IsFullscreen();
+  const bool requested_fullscreen_ui = s_state.requested_fullscreen_ui;
+  const std::optional<GPURenderer> requested_renderer = s_state.requested_renderer;
+  std::string serial = s_state.game_serial;
+
+  // Force VRAM download, we're recreating.
+  if (requested_renderer.has_value())
+  {
+    GPUBackendReadVRAMCommand* cmd = GPUBackend::NewReadVRAMCommand();
+    cmd->x = 0;
+    cmd->y = 0;
+    cmd->width = VRAM_WIDTH;
+    cmd->height = VRAM_HEIGHT;
+    PushCommand(cmd);
+  }
+
+  // Shutdown reconfigure.
+  Reconfigure(std::string(), std::nullopt, false, false, false, false, nullptr);
+
+  // Thread should be idle at this point. Reset the FIFO.
+  ResetCommandFIFO();
+
+  // Update state and reconfigure again.
+  s_state.use_gpu_thread = enabled;
+
+  Error error;
+  if (!Reconfigure(std::move(serial), requested_renderer, requested_renderer.has_value(), fullscreen,
+                   requested_fullscreen_ui, true, &error))
+  {
+    ERROR_LOG("Reconfigure failed: {}", error.GetDescription());
+    ReportFatalErrorAndShutdown(fmt::format("Reconfigure failed: {}", error.GetDescription()));
+  }
+}
+
 void GPUThread::UpdateSettingsOnThread(GPUSettings&& new_settings)
 {
   VERBOSE_LOG("Updating GPU settings on thread...");
@@ -1082,9 +1083,15 @@ void GPUThread::EndASyncBufferCall(GPUThreadCommand* cmd)
   PushCommand(cmd);
 }
 
-void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_changed)
+void GPUThread::UpdateSettings(bool gpu_settings_changed, bool device_settings_changed, bool thread_changed)
 {
-  if (device_settings_changed)
+  // thread should be a device setting
+  if (thread_changed)
+  {
+    DebugAssert(device_settings_changed);
+    SetThreadEnabled(g_settings.gpu_use_thread);
+  }
+  else if (device_settings_changed)
   {
     INFO_LOG("Reconfiguring after device settings changed.");
 

@@ -61,7 +61,7 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
   if (System::IsValid())
   {
-    GPUThread::UpdateSettings(true, false);
+    GPUThread::UpdateSettings(true, false, false);
     System::ClearMemorySaveStates(true, false);
   }
 }
@@ -136,7 +136,7 @@ static void HotkeyToggleOSD()
   g_settings.display_show_inputs ^= Host::GetBoolSettingValue("Display", "ShowInputs", false);
   g_settings.display_show_enhancements ^= Host::GetBoolSettingValue("Display", "ShowEnhancements", false);
 
-  GPUThread::UpdateSettings(true, false);
+  GPUThread::UpdateSettings(true, false, false);
 }
 
 #ifndef __ANDROID__
@@ -375,7 +375,7 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                   System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
-                  GPUThread::UpdateSettings(true, false);
+                  GPUThread::UpdateSettings(true, false, false);
 
                   Host::AddKeyedOSDMessage("TogglePGXP",
                                            g_settings.gpu_pgxp_enable ?
@@ -442,7 +442,7 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
-                  GPUThread::UpdateSettings(true, false);
+                  GPUThread::UpdateSettings(true, false, false);
 
                   Host::AddKeyedOSDMessage("TogglePGXPDepth",
                                            g_settings.gpu_pgxp_depth_buffer ?

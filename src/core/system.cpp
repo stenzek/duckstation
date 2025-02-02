@@ -170,7 +170,6 @@ static void ClearRunningGame();
 static void DestroySystem();
 
 static void RecreateGPU(GPURenderer new_renderer);
-static void SetGPUThreadEnabled(bool enabled);
 static std::string GetScreenshotPath(const char* extension);
 static bool StartMediaCapture(std::string path, bool capture_video, bool capture_audio, u32 video_width,
                               u32 video_height);
@@ -1196,27 +1195,6 @@ void System::RecreateGPU(GPURenderer renderer)
     ERROR_LOG("Failed to switch to {} renderer: {}", Settings::GetRendererName(renderer), error.GetDescription());
     Panic("Failed to switch renderer.");
   }
-
-  ClearMemorySaveStates(true, false);
-
-  g_gpu.UpdateDisplay(false);
-  if (IsPaused())
-    GPUThread::PresentCurrentFrame();
-}
-
-void System::SetGPUThreadEnabled(bool enabled)
-{
-  // can be called without valid system
-  if (!IsValid())
-  {
-    GPUThread::Internal::SetThreadEnabled(g_settings.gpu_use_thread);
-    return;
-  }
-
-  FreeMemoryStateStorage(false, true, false);
-  StopMediaCapture();
-
-  GPUThread::Internal::SetThreadEnabled(g_settings.gpu_use_thread);
 
   ClearMemorySaveStates(true, false);
 
@@ -4497,7 +4475,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.runahead_frames != old_settings.runahead_frames ||
              g_settings.texture_replacements != old_settings.texture_replacements)
     {
-      GPUThread::UpdateSettings(true, false);
+      GPUThread::UpdateSettings(true, false, false);
 
       // NOTE: Must come after the GPU thread settings update, otherwise it allocs the wrong size textures.
       const bool use_existing_textures = (g_settings.gpu_resolution_scale == old_settings.gpu_resolution_scale);
@@ -4524,13 +4502,29 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_screenshot_format != old_settings.display_screenshot_format ||
              g_settings.display_screenshot_quality != old_settings.display_screenshot_quality)
     {
-      // don't need to represent when paused
-      GPUThread::UpdateSettings(true, device_settings_changed);
+      if (device_settings_changed)
+      {
+        // device changes are super icky, we need to purge and recreate any rewind states
+        FreeMemoryStateStorage(false, true, false);
+        StopMediaCapture();
+        GPUThread::UpdateSettings(true, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
+        ClearMemorySaveStates(true, false);
+
+        // and display the current frame on the new device
+        g_gpu.UpdateDisplay(false);
+        if (IsPaused())
+          GPUThread::PresentCurrentFrame();
+      }
+      else
+      {
+        // don't need to represent here, because the OSD isn't visible while paused anyway
+        GPUThread::UpdateSettings(true, false, false);
+      }
     }
     else
     {
       // still need to update debug windows
-      GPUThread::UpdateSettings(false, false);
+      GPUThread::UpdateSettings(false, false, false);
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
@@ -4640,7 +4634,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       // handle device setting updates as well
       if (g_settings.gpu_renderer != old_settings.gpu_renderer || g_settings.AreGPUDeviceSettingsChanged(old_settings))
-        GPUThread::UpdateSettings(false, true);
+        GPUThread::UpdateSettings(false, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
 
       if (g_settings.display_vsync != old_settings.display_vsync ||
           g_settings.display_disable_mailbox_presentation != old_settings.display_disable_mailbox_presentation)
@@ -4675,15 +4669,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
   }
 
-  if (g_settings.gpu_use_thread != old_settings.gpu_use_thread) [[unlikely]]
-  {
-    SetGPUThreadEnabled(g_settings.gpu_use_thread);
-  }
-  else if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames)
-    [[unlikely]]
-  {
+  if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames) [[unlikely]]
     GPUThread::SyncGPUThread(false);
-  }
 }
 
 void System::SetTaintsFromSettings()
