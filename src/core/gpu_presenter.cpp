@@ -1165,8 +1165,10 @@ GSVector2i GPUPresenter::CalculateScreenshotSize(DisplayScreenshotMode mode) con
   {
     if (mode == DisplayScreenshotMode::InternalResolution)
     {
-      float f_width = static_cast<float>(m_display_texture_view_width);
-      float f_height = static_cast<float>(m_display_texture_view_height);
+      float f_width =
+        m_display_width * (static_cast<float>(m_display_texture_view_width) / static_cast<float>(m_display_vram_width));
+      float f_height = m_display_height *
+                       (static_cast<float>(m_display_texture_view_height) / static_cast<float>(m_display_vram_height));
       if (!g_gpu_settings.gpu_show_vram)
         GPU::ApplyPixelAspectRatioToSize(m_display_pixel_aspect_ratio, &f_width, &f_height);
 
