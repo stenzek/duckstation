@@ -53,8 +53,13 @@ struct Stats : Counters
 
 struct ALIGN_TO_CACHE_LINE CPUThreadState
 {
+  static constexpr u32 WAIT_NONE = 0;
+  static constexpr u32 WAIT_CPU_THREAD_WAITING = 1;
+  static constexpr u32 WAIT_GPU_THREAD_SIGNALING = 2;
+  static constexpr u32 WAIT_GPU_THREAD_POSTED = 3;
+
   std::atomic<u32> queued_frames;
-  std::atomic_bool waiting_for_gpu_thread;
+  std::atomic<u32> wait_state;
   Threading::KernelSemaphore gpu_thread_wait;
 };
 
@@ -289,7 +294,7 @@ bool GPUBackend::BeginQueueFrame()
   if (g_settings.gpu_max_queued_frames > 0)
     DEV_LOG("<-- {} queued frames, {} max, blocking CPU thread", queued_frames, g_settings.gpu_max_queued_frames);
 
-  s_cpu_thread_state.waiting_for_gpu_thread.store(true, std::memory_order_release);
+  s_cpu_thread_state.wait_state.store(CPUThreadState::WAIT_CPU_THREAD_WAITING, std::memory_order_release);
   return true;
 }
 
@@ -300,15 +305,20 @@ void GPUBackend::WaitForOneQueuedFrame()
   {
     // It's possible that the GPU thread has already signaled the semaphore.
     // If so, then we still need to drain it, otherwise waits in the future will return prematurely.
-    bool expected = true;
-    if (s_cpu_thread_state.waiting_for_gpu_thread.compare_exchange_strong(expected, false, std::memory_order_acq_rel,
-                                                                          std::memory_order_relaxed))
+    u32 expected = CPUThreadState::WAIT_GPU_THREAD_SIGNALING;
+    if (s_cpu_thread_state.wait_state.compare_exchange_strong(expected, CPUThreadState::WAIT_NONE,
+                                                              std::memory_order_acq_rel, std::memory_order_acquire))
     {
       return;
     }
   }
 
   s_cpu_thread_state.gpu_thread_wait.Wait();
+
+  // Depending on where the GPU thread is, now we can either be in WAIT_GPU_THREAD_SIGNALING or WAIT_GPU_THREAD_POSTED
+  // state. We want to clear the flag here regardless, so a store-release is fine. Because the GPU thread has a
+  // compare-exchange on WAIT_GPU_THREAD_SIGNALING, it can't "overwrite" the value we store here.
+  s_cpu_thread_state.wait_state.store(CPUThreadState::WAIT_NONE, std::memory_order_release);
 
   // Sanity check: queued frames should be in range now. If they're not, we fucked up the semaphore.
   Assert(s_cpu_thread_state.queued_frames.load(std::memory_order_acquire) <= g_settings.gpu_max_queued_frames);
@@ -323,14 +333,22 @@ void GPUBackend::ReleaseQueuedFrame()
 {
   s_cpu_thread_state.queued_frames.fetch_sub(1, std::memory_order_acq_rel);
 
-  bool expected = true;
-  if (s_cpu_thread_state.waiting_for_gpu_thread.compare_exchange_strong(expected, false, std::memory_order_acq_rel,
-                                                                        std::memory_order_relaxed))
+  // We need two states here in case we get preempted in between the compare_exchange_strong() and Post().
+  // This means that we will only release the semaphore once the CPU is guaranteed to be in a waiting state,
+  // and ensure that we don't post twice if the CPU thread lags and we process 2 frames before it wakes up.
+  u32 expected = CPUThreadState::WAIT_CPU_THREAD_WAITING;
+  if (s_cpu_thread_state.wait_state.compare_exchange_strong(expected, CPUThreadState::WAIT_GPU_THREAD_SIGNALING,
+                                                            std::memory_order_acq_rel, std::memory_order_acquire))
   {
     if (g_settings.gpu_max_queued_frames > 0)
       DEV_LOG("--> Unblocking CPU thread");
 
     s_cpu_thread_state.gpu_thread_wait.Post();
+
+    // This needs to be a compare_exchange, because the CPU thread can clear the flag before we execute this line.
+    expected = CPUThreadState::WAIT_GPU_THREAD_SIGNALING;
+    s_cpu_thread_state.wait_state.compare_exchange_strong(expected, CPUThreadState::WAIT_GPU_THREAD_POSTED,
+                                                          std::memory_order_acq_rel, std::memory_order_acquire);
   }
 }
 
