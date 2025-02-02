@@ -37,23 +37,23 @@ if [ "${INSTALLDIR:0:1}" != "/" ]; then
 fi
 
 FREETYPE=2.13.3
-HARFBUZZ=10.1.0
-SDL3=3.2.0
+HARFBUZZ=10.2.0
+SDL3=3.2.2
 ZSTD=1.5.6
-LIBPNG=1.6.44
-LIBJPEGTURBO=3.0.4
-LIBWEBP=1.4.0
-LIBZIP=1.11.2
+LIBPNG=1.6.45
+LIBJPEGTURBO=3.1.0
+LIBWEBP=1.5.0
+LIBZIP=1.11.3
 FFMPEG=7.1
 MOLTENVK=1.2.9
-QT=6.8.1
+QT=6.8.2
 
 CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
 DISCORD_RPC=144f3a3f1209994d8d9e8a87964a989cb9911c1e
 LUNASVG=9af1ac7b90658a279b372add52d6f77a4ebb482c
-SHADERC=1c0d3d18819aa75ec74f1fbd9ff0461e1b69a4d6
+SHADERC=fc65b19d2098cf81e55b4edc10adad2ad8268361
 SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
-SPIRV_CROSS=vulkan-sdk-1.3.290.0
+SPIRV_CROSS=vulkan-sdk-1.4.304.0
 
 mkdir -p deps-build
 cd deps-build
@@ -81,24 +81,24 @@ CMAKE_COMMON_QT=(
 
 cat > SHASUMS <<EOF
 0550350666d427c74daeb85d5ac7bb353acba5f76956395995311a9c6f063289  freetype-$FREETYPE.tar.xz
-c758fdce8587641b00403ee0df2cd5d30cbea7803d43c65fddd76224f7b49b88  harfbuzz-$HARFBUZZ.tar.gz
-60c4da1d5b7f0aa8d158da48e8f8afa9773c1c8baa5d21974df61f1886b8ce8e  libpng-$LIBPNG.tar.xz
-99130559e7d62e8d695f2c0eaeef912c5828d5b84a0537dcb24c9678c9d5b76b  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
-61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5  libwebp-$LIBWEBP.tar.gz
-5d471308cef4c4752bbcf973d9cd37ba4cb53739116c30349d4764ba1410dfc1  libzip-$LIBZIP.tar.xz
-bf308f92c5688b1479faf5cfe24af72f3cd4ce08d0c0670d6ce55bc2ec1e9a5e  SDL3-$SDL3.tar.gz
+11749926914fd488e08e744538f19329332487a6243eec39ef3c63efa154a578  harfbuzz-$HARFBUZZ.tar.gz
+926485350139ffb51ef69760db35f78846c805fef3d59bfdcb2fba704663f370  libpng-$LIBPNG.tar.xz
+9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93  libjpeg-turbo-$LIBJPEGTURBO.tar.gz
+7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c  libwebp-$LIBWEBP.tar.gz
+9509d878ba788271c8b5abca9cfde1720f075335686237b7e9a9e7210fe67c1b  libzip-$LIBZIP.tar.xz
+d3dcf1b2f64746be0f248ef27b35aec4f038dafadfb83491f98a7fecdaf6efec  SDL3-$SDL3.tar.gz
 8c29e06cf42aacc1eafc4077ae2ec6c6fcb96a626157e0593d5e82a34fd403c1  zstd-$ZSTD.tar.gz
 40973d44970dbc83ef302b0609f2e74982be2d85916dd2ee7472d30678a7abe6  ffmpeg-$FFMPEG.tar.xz
 f415a09385030c6510a936155ce211f617c31506db5fbc563e804345f1ecf56e  v$MOLTENVK.tar.gz
-40b14562ef3bd779bc0e0418ea2ae08fa28235f8ea6e8c0cb3bce1d6ad58dcaf  qtbase-everywhere-src-$QT.tar.xz
-138cc2909aa98f5ff7283e36eb3936eb5e625d3ca3b4febae2ca21d8903dd237  qtimageformats-everywhere-src-$QT.tar.xz
-3d0de73596e36b2daa7c48d77c4426bb091752856912fba720215f756c560dd0  qtsvg-everywhere-src-$QT.tar.xz
-9d43d409be08b8681a0155a9c65114b69c9a3fc11aef6487bb7fdc5b283c432d  qttools-everywhere-src-$QT.tar.xz
-635a6093e99152243b807de51077485ceadd4786d4acb135b9340b2303035a4a  qttranslations-everywhere-src-$QT.tar.xz
+012043ce6d411e6e8a91fdc4e05e6bedcfa10fcb1347d3c33908f7fdd10dfe05  qtbase-everywhere-src-$QT.tar.xz
+d2a1bbb84707b8a0aec29227b170be00f04383fbf2361943596d09e7e443c8e1  qtimageformats-everywhere-src-$QT.tar.xz
+aa2579f21ca66d19cbcf31d87e9067e07932635d36869c8239d4decd0a9dc1fa  qtsvg-everywhere-src-$QT.tar.xz
+326381b7d43f07913612f291abc298ae79bd95382e2233abce982cff2b53d2c0  qttools-everywhere-src-$QT.tar.xz
+d2106e8a580bfd77702c4c1840299288d344902b0e2c758ca813ea04c6d6a3d1  qttranslations-everywhere-src-$QT.tar.xz
 e1351218d270db49c3dddcba04fb2153b09731ea3fa6830e423f5952f44585be  cpuinfo-$CPUINFO.tar.gz
 3eea5ccce6670c126282f1ba4d32c19d486db49a1a5cbfb8d6f48774784d310c  discord-rpc-$DISCORD_RPC.tar.gz
 3998b024b0d442614a9ee270e76e018bb37a17b8c6941212171731123cbbcac7  lunasvg-$LUNASVG.tar.gz
-3826d86f8a13564be1c047ac105041a3c5d0dc0bf826fe47cc582fe17a2ce7b1  shaderc-$SHADERC.tar.gz
+d1ef912c27e06307f2b2a5b6386070d0b8fae2bb5851f50841df7b73dcf5abdf  shaderc-$SHADERC.tar.gz
 fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SOUNDTOUCH.tar.gz
 EOF
 
