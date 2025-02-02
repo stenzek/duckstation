@@ -143,7 +143,6 @@ struct GPUSettings
   bool display_show_status_indicators : 1 = true;
   bool display_show_inputs : 1 = false;
   bool display_show_enhancements : 1 = false;
-  bool display_stretch_vertically : 1 = false;
   bool display_auto_resize_window : 1 = false;
   float display_pre_frame_sleep_buffer = DEFAULT_DISPLAY_PRE_FRAME_SLEEP_BUFFER;
   float display_osd_scale = DEFAULT_OSD_SCALE;

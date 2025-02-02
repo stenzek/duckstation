@@ -234,8 +234,8 @@ public:
   static void CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_display_width, u32 crtc_display_height,
                                 s32 display_origin_left, s32 display_origin_top, u32 display_vram_width,
                                 u32 display_vram_height, DisplayRotation rotation, DisplayAlignment alignment,
-                                float pixel_aspect_ratio, bool stretch_vertically, bool integer_scale,
-                                GSVector4i* display_rect, GSVector4i* draw_rect);
+                                float pixel_aspect_ratio, bool integer_scale, GSVector4i* display_rect,
+                                GSVector4i* draw_rect);
 
 private:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;

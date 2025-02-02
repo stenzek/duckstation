@@ -333,7 +333,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_show_status_indicators = si.GetBoolValue("Display", "ShowStatusIndicators", true);
   display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
-  display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
   display_auto_resize_window = si.GetBoolValue("Display", "AutoResizeWindow", false);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
   display_osd_margin = si.GetFloatValue("Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN);
@@ -644,7 +643,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetFloatValue("Display", "OSDMargin", display_osd_margin);
   }
 
-  si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);
   si.SetBoolValue("Display", "AutoResizeWindow", display_auto_resize_window);
 
   si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);

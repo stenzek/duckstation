@@ -1006,8 +1006,7 @@ void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool a
     apply_alignment ? g_gpu_settings.display_alignment : DisplayAlignment::Center;
   GPU::CalculateDrawRect(window_width, window_height, display_width, display_height, display_origin_left,
                          display_origin_top, display_vram_width, display_vram_height, display_rotation,
-                         display_alignment, display_pixel_aspect_ratio, g_gpu_settings.display_stretch_vertically,
-                         integer_scale, display_rect, draw_rect);
+                         display_alignment, display_pixel_aspect_ratio, integer_scale, display_rect, draw_rect);
 }
 
 bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bool allow_skip_present, u64 present_time)

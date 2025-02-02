@@ -5177,11 +5177,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                               "particularly with the software renderer, and is safe to use."),
                     "GPU", "UseThread", true);
 
-  DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_ARROWS_ALT_V, "Stretch Display Vertically"),
-    FSUI_CSTR("Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally."),
-    "Display", "StretchVertically", false);
-
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND_ARROWS_ALT, "Automatically Resize Window"),
                     FSUI_CSTR("Automatically resizes the window to match the internal resolution."), "Display",
                     "AutoResizeWindow", false);
@@ -9131,7 +9126,7 @@ TRANSLATE_NOOP("FullscreenUI", "PGXP (Precision Geometry Transform Pipeline)");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Depth Buffer");
 TRANSLATE_NOOP("FullscreenUI", "PGXP Geometry Correction");
 TRANSLATE_NOOP("FullscreenUI", "Parent Directory");
-TRANSLATE_NOOP("FullscreenUI", "Password: ");
+TRANSLATE_NOOP("FullscreenUI", "Password");
 TRANSLATE_NOOP("FullscreenUI", "Patches");
 TRANSLATE_NOOP("FullscreenUI", "Patches the BIOS to skip the boot animation. Safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Path");
@@ -9329,9 +9324,7 @@ TRANSLATE_NOOP("FullscreenUI", "Start Game");
 TRANSLATE_NOOP("FullscreenUI", "Start a game from a disc in your PC's DVD drive.");
 TRANSLATE_NOOP("FullscreenUI", "Start the console without any disc inserted.");
 TRANSLATE_NOOP("FullscreenUI", "Stores the current settings to a controller preset.");
-TRANSLATE_NOOP("FullscreenUI", "Stretch Display Vertically");
 TRANSLATE_NOOP("FullscreenUI", "Stretch Mode");
-TRANSLATE_NOOP("FullscreenUI", "Stretches the display to match the aspect ratio by multiplying vertically instead of horizontally.");
 TRANSLATE_NOOP("FullscreenUI", "Summary");
 TRANSLATE_NOOP("FullscreenUI", "Switches back to 4:3 display aspect ratio when displaying 24-bit content, usually FMVs.");
 TRANSLATE_NOOP("FullscreenUI", "Switches between full screen and windowed when the window is double-clicked.");
@@ -9378,7 +9371,7 @@ TRANSLATE_NOOP("FullscreenUI", "Use Old MDEC Routines");
 TRANSLATE_NOOP("FullscreenUI", "Use Separate Disc Settings");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
 TRANSLATE_NOOP("FullscreenUI", "Use Software Renderer For Readbacks");
-TRANSLATE_NOOP("FullscreenUI", "User Name: ");
+TRANSLATE_NOOP("FullscreenUI", "User Name");
 TRANSLATE_NOOP("FullscreenUI", "Username: {}");
 TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");

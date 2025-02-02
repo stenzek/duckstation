@@ -4481,7 +4481,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_scaling != old_settings.display_scaling ||
              g_settings.display_alignment != old_settings.display_alignment ||
              g_settings.display_rotation != old_settings.display_rotation ||
-             g_settings.display_stretch_vertically != old_settings.display_stretch_vertically ||
              g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
              g_settings.display_osd_scale != old_settings.display_osd_scale ||
              g_settings.display_osd_margin != old_settings.display_osd_margin ||

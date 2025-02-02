@@ -131,8 +131,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                Settings::DEFAULT_DISPLAY_ROTATION);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, "Display",
                                                "DisableMailboxPresentation", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.stretchDisplayVertically, "Display", "StretchVertically",
-                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticallyResizeWindow, "Display", "AutoResizeWindow",
                                                false);
 #ifdef _WIN32
@@ -435,9 +433,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.disableMailboxPresentation, tr("Disable Mailbox Presentation"), tr("Unchecked"),
     tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
        "Usually results in worse frame pacing."));
-  dialog->registerWidgetHelp(
-    m_ui.stretchDisplayVertically, tr("Stretch Vertically"), tr("Unchecked"),
-    tr("Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio."));
   dialog->registerWidgetHelp(m_ui.automaticallyResizeWindow, tr("Automatically Resize Window"), tr("Unchecked"),
                              tr("Automatically resizes the window to match the internal resolution. <strong>For high "
                                 "internal resolutions, this will create very large windows.</strong>"));
