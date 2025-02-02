@@ -670,7 +670,11 @@ void Threading::KernelSemaphore::Wait()
 #elif defined(__APPLE__)
   semaphore_wait(m_sema);
 #else
-  sem_wait(&m_sema);
+  do
+  {
+    if (sem_wait(&m_sema) == 0) [[likely]]
+      return;
+  } while (errno == EINTR);
 #endif
 }
 
