@@ -1,3 +1,6 @@
+set(_saved_CMAKE_MESSAGE_LOG_LEVEL ${CMAKE_MESSAGE_LOG_LEVEL})
+set(CMAKE_MESSAGE_LOG_LEVEL NOTICE)
+
 set(FMT_INSTALL OFF CACHE BOOL "")
 add_subdirectory(fmt EXCLUDE_FROM_ALL)
 disable_compiler_warnings_for_target(fmt)
@@ -55,3 +58,4 @@ if(WIN32)
   add_subdirectory(winpixeventruntime EXCLUDE_FROM_ALL)
 endif()
 
+set(CMAKE_MESSAGE_LOG_LEVEL ${_saved_CMAKE_MESSAGE_LOG_LEVEL})
