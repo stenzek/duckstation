@@ -839,12 +839,16 @@ void GPU::UpdateCRTCDisplayParameters()
 
       case DisplayCropMode::Overscan:
       case DisplayCropMode::OverscanUncorrected:
-        cs.horizontal_visible_start = static_cast<u16>(std::max<int>(0, 628 + g_settings.display_active_start_offset));
-        cs.horizontal_visible_end =
-          static_cast<u16>(std::max<int>(cs.horizontal_visible_start, 3188 + g_settings.display_active_end_offset));
-        cs.vertical_visible_start = static_cast<u16>(std::max<int>(0, 30 + g_settings.display_line_start_offset));
-        cs.vertical_visible_end =
-          static_cast<u16>(std::max<int>(cs.vertical_visible_start, 298 + g_settings.display_line_end_offset));
+        cs.horizontal_visible_start = static_cast<u16>(std::max<s32>(
+          0, static_cast<s32>(PAL_OVERSCAN_HORIZONTAL_ACTIVE_START) + g_settings.display_active_start_offset));
+        cs.horizontal_visible_end = static_cast<u16>(
+          std::max<s32>(cs.horizontal_visible_start,
+                        static_cast<s32>(PAL_OVERSCAN_HORIZONTAL_ACTIVE_END) + g_settings.display_active_end_offset));
+        cs.vertical_visible_start = static_cast<u16>(std::max<s32>(
+          0, static_cast<s32>(PAL_OVERSCAN_VERTICAL_ACTIVE_START) + g_settings.display_line_start_offset));
+        cs.vertical_visible_end = static_cast<u16>(
+          std::max<s32>(cs.vertical_visible_start,
+                        static_cast<s32>(NTSC_OVERSCAN_VERTICAL_ACTIVE_END) + g_settings.display_line_end_offset));
         break;
 
       case DisplayCropMode::Borders:
@@ -878,12 +882,16 @@ void GPU::UpdateCRTCDisplayParameters()
 
       case DisplayCropMode::Overscan:
       case DisplayCropMode::OverscanUncorrected:
-        cs.horizontal_visible_start = static_cast<u16>(std::max<int>(0, 608 + g_settings.display_active_start_offset));
-        cs.horizontal_visible_end =
-          static_cast<u16>(std::max<int>(cs.horizontal_visible_start, 3168 + g_settings.display_active_end_offset));
-        cs.vertical_visible_start = static_cast<u16>(std::max<int>(0, 24 + g_settings.display_line_start_offset));
-        cs.vertical_visible_end =
-          static_cast<u16>(std::max<int>(cs.vertical_visible_start, 248 + g_settings.display_line_end_offset));
+        cs.horizontal_visible_start = static_cast<u16>(std::max<s32>(
+          0, static_cast<s32>(NTSC_OVERSCAN_HORIZONTAL_ACTIVE_START) + g_settings.display_active_start_offset));
+        cs.horizontal_visible_end = static_cast<u16>(
+          std::max<s32>(cs.horizontal_visible_start,
+                        static_cast<s32>(NTSC_OVERSCAN_HORIZONTAL_ACTIVE_END) + g_settings.display_active_end_offset));
+        cs.vertical_visible_start = static_cast<u16>(std::max<s32>(
+          0, static_cast<s32>(NTSC_OVERSCAN_VERTICAL_ACTIVE_START) + g_settings.display_line_start_offset));
+        cs.vertical_visible_end = static_cast<u16>(
+          std::max<s32>(cs.vertical_visible_start,
+                        static_cast<s32>(NTSC_OVERSCAN_VERTICAL_ACTIVE_END) + g_settings.display_line_end_offset));
         break;
 
       case DisplayCropMode::Borders:
