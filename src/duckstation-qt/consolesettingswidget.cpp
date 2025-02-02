@@ -24,7 +24,10 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
   m_ui.setupUi(this);
 
   for (u32 i = 0; i < static_cast<u32>(ConsoleRegion::Count); i++)
-    m_ui.region->addItem(QString::fromUtf8(Settings::GetConsoleRegionDisplayName(static_cast<ConsoleRegion>(i))));
+  {
+    m_ui.region->addItem(QtUtils::GetIconForRegion(static_cast<ConsoleRegion>(i)),
+                         QString::fromUtf8(Settings::GetConsoleRegionDisplayName(static_cast<ConsoleRegion>(i))));
+  }
 
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {

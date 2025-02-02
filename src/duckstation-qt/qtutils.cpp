@@ -264,6 +264,9 @@ QIcon QtUtils::GetIconForRegion(ConsoleRegion region)
     case ConsoleRegion::PAL:
       return QIcon(QString::fromStdString(QtHost::GetResourcePath("images/flags/PAL.svg", true)));
 
+    case ConsoleRegion::Auto:
+      return QIcon(QStringLiteral(":/icons/system-search.png"));
+
     default:
       return QIcon::fromTheme(QStringLiteral("file-unknow-line"));
   }
