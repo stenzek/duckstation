@@ -873,9 +873,9 @@ void GPU::UpdateCRTCDisplayParameters()
                         static_cast<s32>(PAL_OVERSCAN_HORIZONTAL_ACTIVE_END) + g_settings.display_active_end_offset));
         cs.vertical_visible_start = static_cast<u16>(std::max<s32>(
           0, static_cast<s32>(PAL_OVERSCAN_VERTICAL_ACTIVE_START) + g_settings.display_line_start_offset));
-        cs.vertical_visible_end = static_cast<u16>(
-          std::max<s32>(cs.vertical_visible_start,
-                        static_cast<s32>(NTSC_OVERSCAN_VERTICAL_ACTIVE_END) + g_settings.display_line_end_offset));
+        cs.vertical_visible_end =
+          static_cast<u16>(std::max<s32>(cs.vertical_visible_start, static_cast<s32>(PAL_OVERSCAN_VERTICAL_ACTIVE_END) +
+                                                                      g_settings.display_line_end_offset));
         break;
 
       case DisplayCropMode::Borders:
