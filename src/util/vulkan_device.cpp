@@ -445,44 +445,49 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
   if (enable_surface && !SupportsExtension(VK_KHR_SWAPCHAIN_EXTENSION_NAME, true))
     return false;
 
-  m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
-  m_optional_extensions.vk_ext_rasterization_order_attachment_access =
-    SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false) ||
-    SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
-  m_optional_extensions.vk_khr_get_memory_requirements2 =
-    SupportsExtension(VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME, false);
-  m_optional_extensions.vk_khr_bind_memory2 = SupportsExtension(VK_KHR_BIND_MEMORY_2_EXTENSION_NAME, false);
-  m_optional_extensions.vk_khr_dedicated_allocation =
-    SupportsExtension(VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME, false);
-  m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
-  m_optional_extensions.vk_khr_dynamic_rendering =
-    SupportsExtension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, false) &&
-    SupportsExtension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false) &&
-    SupportsExtension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, false);
-  m_optional_extensions.vk_khr_dynamic_rendering_local_read =
-    m_optional_extensions.vk_khr_dynamic_rendering &&
-    SupportsExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME, false);
-  m_optional_extensions.vk_khr_push_descriptor = SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, false);
-
-  // glslang generates debug info instructions before phi nodes at the beginning of blocks when non-semantic debug info
-  // is enabled, triggering errors by spirv-val. Gate it by an environment variable if you want source debugging until
-  // this is fixed.
-  if (const char* val = std::getenv("USE_NON_SEMANTIC_DEBUG_INFO");
-      val && StringUtil::FromChars<bool>(val).value_or(false))
+  // Gate most of the extension checks behind a Vulkan 1.1 device, so we don't have to deal with situations where
+  // some extensions are supported but not others, and the prerequisite extensions for those extensions.
+  if (m_device_properties.apiVersion >= VK_API_VERSION_1_1)
   {
-    m_optional_extensions.vk_khr_shader_non_semantic_info =
-      SupportsExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
+    m_optional_extensions.vk_ext_memory_budget = SupportsExtension(VK_EXT_MEMORY_BUDGET_EXTENSION_NAME, false);
+    m_optional_extensions.vk_ext_rasterization_order_attachment_access =
+      SupportsExtension(VK_EXT_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false) ||
+      SupportsExtension(VK_ARM_RASTERIZATION_ORDER_ATTACHMENT_ACCESS_EXTENSION_NAME, false);
+    m_optional_extensions.vk_khr_driver_properties = SupportsExtension(VK_KHR_DRIVER_PROPERTIES_EXTENSION_NAME, false);
+    m_optional_extensions.vk_khr_dynamic_rendering =
+      SupportsExtension(VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME, false) &&
+      SupportsExtension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false) &&
+      SupportsExtension(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME, false);
+    m_optional_extensions.vk_khr_dynamic_rendering_local_read =
+      m_optional_extensions.vk_khr_dynamic_rendering &&
+      SupportsExtension(VK_KHR_DYNAMIC_RENDERING_LOCAL_READ_EXTENSION_NAME, false);
+    m_optional_extensions.vk_khr_push_descriptor = SupportsExtension(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME, false);
+
+    // glslang generates debug info instructions before phi nodes at the beginning of blocks when non-semantic debug
+    // info is enabled, triggering errors by spirv-val. Gate it by an environment variable if you want source debugging
+    // until this is fixed.
+    if (const char* val = std::getenv("USE_NON_SEMANTIC_DEBUG_INFO");
+        val && StringUtil::FromChars<bool>(val).value_or(false))
+    {
+      m_optional_extensions.vk_khr_shader_non_semantic_info =
+        SupportsExtension(VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME, false);
+    }
+
+    m_optional_extensions.vk_ext_external_memory_host =
+      SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, false);
+
+    // Dynamic rendering isn't strictly needed for FSI, but we want it with framebufferless rendering.
+    m_optional_extensions.vk_ext_fragment_shader_interlock =
+      m_optional_extensions.vk_khr_dynamic_rendering &&
+      SupportsExtension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, false);
+
+    m_optional_extensions.vk_ext_swapchain_maintenance1 =
+      enable_surface && SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
+    m_optional_extensions.vk_khr_maintenance4 = m_optional_extensions.vk_ext_swapchain_maintenance1 &&
+                                                SupportsExtension(VK_KHR_MAINTENANCE_4_EXTENSION_NAME, false);
+    m_optional_extensions.vk_khr_maintenance5 =
+      m_optional_extensions.vk_khr_maintenance4 && SupportsExtension(VK_KHR_MAINTENANCE_5_EXTENSION_NAME, false);
   }
-
-  m_optional_extensions.vk_ext_external_memory_host =
-    SupportsExtension(VK_EXT_EXTERNAL_MEMORY_HOST_EXTENSION_NAME, false);
-  m_optional_extensions.vk_ext_swapchain_maintenance1 =
-    enable_surface && SupportsExtension(VK_EXT_SWAPCHAIN_MAINTENANCE_1_EXTENSION_NAME, false);
-
-  // Dynamic rendering isn't strictly needed for FSI, but we want it with framebufferless rendering.
-  m_optional_extensions.vk_ext_fragment_shader_interlock =
-    m_optional_extensions.vk_khr_dynamic_rendering &&
-    SupportsExtension(VK_EXT_FRAGMENT_SHADER_INTERLOCK_EXTENSION_NAME, false);
 
 #ifdef _WIN32
   m_optional_extensions.vk_ext_full_screen_exclusive =
@@ -518,14 +523,6 @@ bool VulkanDevice::SelectDeviceExtensions(ExtensionList* extension_list, bool en
     WARNING_LOG(
       "Disabling VK_EXT_fragment_shader_interlock and VK_KHR_dynamic_rendering_local_read on broken AMD driver.");
 #endif
-  }
-
-  // Don't bother checking for maintenance 4/5 if we don't have 1-3, i.e. Vulkan 1.1.
-  if (m_device_properties.apiVersion >= VK_API_VERSION_1_1)
-  {
-    m_optional_extensions.vk_khr_maintenance4 = SupportsExtension(VK_KHR_MAINTENANCE_4_EXTENSION_NAME, false);
-    m_optional_extensions.vk_khr_maintenance5 =
-      m_optional_extensions.vk_khr_maintenance4 && SupportsExtension(VK_KHR_MAINTENANCE_4_EXTENSION_NAME, false);
   }
 
   return true;
@@ -814,10 +811,7 @@ void VulkanDevice::ProcessDeviceExtensions()
   LOG_EXT("VK_EXT_rasterization_order_attachment_access", vk_ext_rasterization_order_attachment_access);
   LOG_EXT("VK_EXT_surface_maintenance1", vk_ext_surface_maintenance1);
   LOG_EXT("VK_EXT_swapchain_maintenance1", vk_ext_swapchain_maintenance1);
-  LOG_EXT("VK_KHR_get_memory_requirements2", vk_khr_get_memory_requirements2);
-  LOG_EXT("VK_KHR_bind_memory2", vk_khr_bind_memory2);
   LOG_EXT("VK_KHR_get_physical_device_properties2", vk_khr_get_physical_device_properties2);
-  LOG_EXT("VK_KHR_dedicated_allocation", vk_khr_dedicated_allocation);
   LOG_EXT("VK_KHR_driver_properties", vk_khr_driver_properties);
   LOG_EXT("VK_KHR_dynamic_rendering", vk_khr_dynamic_rendering);
   LOG_EXT("VK_KHR_dynamic_rendering_local_read", vk_khr_dynamic_rendering_local_read);
@@ -843,20 +837,6 @@ bool VulkanDevice::CreateAllocator()
   ci.physicalDevice = m_physical_device;
   ci.device = m_device;
   ci.instance = m_instance;
-
-  if (apiVersion < VK_API_VERSION_1_1)
-  {
-    if (m_optional_extensions.vk_khr_get_memory_requirements2 && m_optional_extensions.vk_khr_dedicated_allocation)
-    {
-      DEV_LOG("Enabling VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT on < Vulkan 1.1.");
-      ci.flags |= VMA_ALLOCATOR_CREATE_KHR_DEDICATED_ALLOCATION_BIT;
-    }
-    if (m_optional_extensions.vk_khr_bind_memory2)
-    {
-      DEV_LOG("Enabling VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT on < Vulkan 1.1.");
-      ci.flags |= VMA_ALLOCATOR_CREATE_KHR_BIND_MEMORY2_BIT;
-    }
-  }
 
   if (m_optional_extensions.vk_ext_memory_budget)
   {
@@ -1981,6 +1961,7 @@ bool VulkanDevice::CreateDeviceAndMainSwapChain(std::string_view adapter, Featur
 
   // Read device physical memory properties, we need it for allocating buffers
   vkGetPhysicalDeviceProperties(m_physical_device, &m_device_properties);
+  m_device_properties.apiVersion = VK_API_VERSION_1_0;
   m_device_properties.limits.minUniformBufferOffsetAlignment =
     std::max(m_device_properties.limits.minUniformBufferOffsetAlignment, static_cast<VkDeviceSize>(16));
   m_device_properties.limits.minTexelBufferOffsetAlignment =
