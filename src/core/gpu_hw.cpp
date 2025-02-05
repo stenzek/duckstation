@@ -2666,7 +2666,7 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   // Treat non-textured sprite draws as fills, so we don't break the TC on framebuffer clears.
   if (m_use_texture_cache && !cmd->transparency_enable && !cmd->shading_enable && !cmd->texture_enable && cmd->x >= 0 &&
       cmd->y >= 0 && cmd->width >= TEXTURE_PAGE_WIDTH && cmd->height >= TEXTURE_PAGE_HEIGHT &&
-      (cmd->x + cmd->width) <= VRAM_WIDTH && (cmd->y + cmd->height) <= VRAM_HEIGHT)
+      (static_cast<u32>(cmd->x) + cmd->width) <= VRAM_WIDTH && (static_cast<u32>(cmd->y) + cmd->height) <= VRAM_HEIGHT)
   {
     FillVRAM(cmd->x, cmd->y, cmd->width, cmd->height, cmd->color, cmd->interlaced_rendering, cmd->active_line_lsb);
     return;
