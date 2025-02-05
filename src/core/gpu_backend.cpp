@@ -305,7 +305,7 @@ void GPUBackend::WaitForOneQueuedFrame()
   {
     // It's possible that the GPU thread has already signaled the semaphore.
     // If so, then we still need to drain it, otherwise waits in the future will return prematurely.
-    u32 expected = CPUThreadState::WAIT_GPU_THREAD_SIGNALING;
+    u32 expected = CPUThreadState::WAIT_CPU_THREAD_WAITING;
     if (s_cpu_thread_state.wait_state.compare_exchange_strong(expected, CPUThreadState::WAIT_NONE,
                                                               std::memory_order_acq_rel, std::memory_order_acquire))
     {
@@ -321,7 +321,12 @@ void GPUBackend::WaitForOneQueuedFrame()
   s_cpu_thread_state.wait_state.store(CPUThreadState::WAIT_NONE, std::memory_order_release);
 
   // Sanity check: queued frames should be in range now. If they're not, we fucked up the semaphore.
-  Assert(s_cpu_thread_state.queued_frames.load(std::memory_order_acquire) <= g_settings.gpu_max_queued_frames);
+  if (const u32 queued_frames = s_cpu_thread_state.queued_frames.load(std::memory_order_acquire);
+      queued_frames > g_settings.gpu_max_queued_frames) [[unlikely]]
+  {
+    ERROR_LOG("queued_frames {} above max queued frames {} after CPU wait", queued_frames,
+              g_settings.gpu_max_queued_frames);
+  }
 }
 
 u32 GPUBackend::GetQueuedFrameCount()
