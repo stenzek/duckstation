@@ -1364,6 +1364,9 @@ void System::ReloadGameSettings(bool display_osd_messages)
   if (!IsValid() || !UpdateGameSettingsLayer())
     return;
 
+  if (!IsReplayingGPUDump())
+    Cheats::ReloadCheats(false, true, false, true);
+
   ApplySettings(display_osd_messages);
 }
 
@@ -1508,10 +1511,6 @@ bool System::UpdateGameSettingsLayer()
   s_state.game_settings_interface = std::move(new_interface);
 
   UpdateInputSettingsLayer(std::move(input_profile_name), lock);
-
-  if (!IsReplayingGPUDump())
-    Cheats::ReloadCheats(false, true, false, true);
-
   return true;
 }
 
@@ -1927,6 +1926,9 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   UpdateGTEAspectRatio();
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
+
+  if (!IsReplayingGPUDump())
+    Cheats::ReloadCheats(true, true, false, true);
 
   PerformanceCounters::Clear();
 
@@ -4172,15 +4174,16 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
     }
   }
 
+  UpdateGameSettingsLayer();
+
   if (!IsReplayingGPUDump())
   {
     Achievements::GameChanged(s_state.running_game_path, image, booting);
 
-    // game layer reloads cheats, but only the active list, we need new files
-    Cheats::ReloadCheats(true, false, false, true);
+    // Cheats are loaded later in Initialize().
+    if (!booting)
+      Cheats::ReloadCheats(true, true, false, true);
   }
-
-  UpdateGameSettingsLayer();
 
   ApplySettings(true);
 
