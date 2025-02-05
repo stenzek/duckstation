@@ -68,7 +68,7 @@ std::string GPU_HW_ShaderGen::GenerateScreenVertexShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool upscaled, bool msaa, bool per_sample_shading,
@@ -193,7 +193,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool upscaled, bool msaa
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 void GPU_HW_ShaderGen::WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter) const
@@ -1221,7 +1221,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMExtractFragmentShader(u32 resolution_scale, u32 multisamples,
@@ -1314,7 +1314,7 @@ float3 SampleVRAM24(uint2 icoords)
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMReplacementBlitFragmentShader() const
@@ -1330,7 +1330,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMReplacementBlitFragmentShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateWireframeGeometryShader() const
@@ -1403,7 +1403,7 @@ void main(triangle GSInput input[3], inout LineStream<GSOutput> output)
 )";
   }
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateWireframeFragmentShader() const
@@ -1418,7 +1418,7 @@ std::string GPU_HW_ShaderGen::GenerateWireframeFragmentShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const
@@ -1483,7 +1483,7 @@ uint SampleVRAM(uint2 coords)
             / float4(255.0, 255.0, 255.0, 255.0);
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo, bool write_mask_as_depth,
@@ -1564,7 +1564,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
 #endif
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth, bool write_depth_as_rt) const
@@ -1622,7 +1622,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
 #endif
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced, bool write_mask_as_depth,
@@ -1670,7 +1670,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
 #endif
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader(bool msaa) const
@@ -1691,7 +1691,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader(bool msaa) c
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 void GPU_HW_ShaderGen::WriteAdaptiveDownsampleUniformBuffer(std::stringstream& ss) const
@@ -1715,7 +1715,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleVertexShader() const
   #endif
 }
 )";
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader() const
@@ -1749,7 +1749,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader() cons
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader() const
@@ -1786,7 +1786,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader() con
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader() const
@@ -1804,7 +1804,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader(
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 factor) const
@@ -1831,7 +1831,7 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool replacement, bool semitransparent,
@@ -1918,5 +1918,5 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool replac
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }

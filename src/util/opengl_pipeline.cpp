@@ -453,7 +453,7 @@ GLuint OpenGLDevice::CompileProgram(const GPUPipeline::GraphicsConfig& plconfig,
         ss << "\n########## FRAGMENT SHADER ##########\n";
         ss << fragment_shader->GetSource();
         ss << "\n#####################################\n";
-        DumpBadShader(ss.str(), info_log);
+        DumpBadShader(std::move(ss).str(), info_log);
       }
 
       ERROR_LOG("Program failed to link:\n{}", info_log);

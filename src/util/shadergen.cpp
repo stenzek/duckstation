@@ -806,7 +806,7 @@ std::string ShaderGen::GenerateScreenQuadVertexShader(float z /* = 0.0f */) cons
   ss << "  #endif\n";
   ss << "}\n";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string ShaderGen::GenerateUVQuadVertexShader() const
@@ -826,7 +826,7 @@ std::string ShaderGen::GenerateUVQuadVertexShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string ShaderGen::GenerateFillFragmentShader() const
@@ -842,7 +842,7 @@ std::string ShaderGen::GenerateFillFragmentShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string ShaderGen::GenerateFillFragmentShader(const GSVector4 fixed_color) const
@@ -856,7 +856,7 @@ std::string ShaderGen::GenerateFillFragmentShader(const GSVector4 fixed_color) c
      << fixed_color.w << ");\n";
   ss << "}\n";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string ShaderGen::GenerateCopyFragmentShader(bool offset) const
@@ -887,7 +887,7 @@ std::string ShaderGen::GenerateCopyFragmentShader(bool offset) const
 )";
   }
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string ShaderGen::GenerateImGuiVertexShader() const
@@ -907,7 +907,7 @@ std::string ShaderGen::GenerateImGuiVertexShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string ShaderGen::GenerateImGuiFragmentShader() const
@@ -923,5 +923,5 @@ std::string ShaderGen::GenerateImGuiFragmentShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }

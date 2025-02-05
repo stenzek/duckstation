@@ -366,7 +366,7 @@ std::string PostProcessingGLSLShaderGen::GeneratePostProcessingVertexShader(cons
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string PostProcessingGLSLShaderGen::GeneratePostProcessingFragmentShader(const PostProcessing::GLSLShader& shader)
@@ -415,7 +415,7 @@ float2 GetWindowResolution() { return u_window_size; }
 )";
 
   ss << shader.GetCode();
-  return ss.str();
+  return std::move(ss).str();
 }
 
 void PostProcessingGLSLShaderGen::WriteUniformBuffer(std::stringstream& ss, const PostProcessing::GLSLShader& shader,

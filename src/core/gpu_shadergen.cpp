@@ -38,7 +38,7 @@ std::string GPUShaderGen::GenerateDisplayVertexShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const
@@ -63,7 +63,7 @@ std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool near
 
   ss << "}\n";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
@@ -92,7 +92,7 @@ std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
   o_col0 = float4(SAMPLE_TEXTURE(samp0, ClampUV(mod_texel * u_src_size.zw)).rgb, 1.0f);
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateDisplayLanczosFragmentShader() const
@@ -169,7 +169,7 @@ std::string GPUShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
   o_col0 = LOAD_TEXTURE(samp0, int2(tcoord), 0);
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateDeinterlaceBlendFragmentShader() const
@@ -189,7 +189,7 @@ std::string GPUShaderGen::GenerateDeinterlaceBlendFragmentShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateFastMADReconstructFragmentShader() const
@@ -248,7 +248,7 @@ CONSTANT float3 SENSITIVITY = float3(0.08f, 0.08f, 0.08f);
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateChromaSmoothingFragmentShader() const
@@ -308,5 +308,5 @@ float3 SampleVRAMAverage2x2(uint2 icoords)
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }

@@ -381,7 +381,7 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
     ss << keystr;
   }
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 bool InputManager::PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper /*= nullptr*/)

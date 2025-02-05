@@ -202,7 +202,7 @@ inline std::string ToChars(T value)
   std::ostringstream ss;
   ss.imbue(std::locale::classic());
   ss << value;
-  return ss.str();
+  return std::move(ss).str();
 #endif
 }
 
