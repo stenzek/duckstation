@@ -184,6 +184,7 @@ enum class DisplayScalingMode : u8
   BilinearSmooth,
   BilinearSharp,
   BilinearInteger,
+  Lanczos,
   Count
 };
 

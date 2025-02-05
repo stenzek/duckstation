@@ -132,6 +132,10 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
         fs = shadergen.GenerateDisplayFragmentShader(true, false);
         break;
 
+      case DisplayScalingMode::Lanczos:
+        fs = shadergen.GenerateDisplayLanczosFragmentShader();
+        break;
+
       case DisplayScalingMode::Nearest:
       case DisplayScalingMode::NearestInteger:
       default:
@@ -654,6 +658,8 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
   } uniforms;
   std::memset(uniforms.params, 0, sizeof(uniforms.params));
 
+  const GSVector2 display_texture_size = GSVector2(m_display_texture->GetSizeVec());
+
   switch (g_gpu_settings.display_scaling)
   {
     case DisplayScalingMode::Nearest:
@@ -664,6 +670,14 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
     case DisplayScalingMode::BilinearInteger:
       texture_filter_linear = true;
       break;
+
+    case DisplayScalingMode::Lanczos:
+    {
+      const GSVector2 fdisplay_rect_size = GSVector2(display_rect.rsize());
+      GSVector2::store<true>(&uniforms.params[0], fdisplay_rect_size);
+      GSVector2::store<true>(&uniforms.params[2], GSVector2::cxpr(1.0f) / (fdisplay_rect_size / display_texture_size));
+    }
+    break;
 
     case DisplayScalingMode::BilinearSharp:
     {
@@ -689,7 +703,6 @@ void GPUPresenter::DrawDisplay(const GSVector2i target_size, const GSVector2i fi
 
   // For bilinear, clamp to 0.5/SIZE-0.5 to avoid bleeding from the adjacent texels in VRAM. This is because
   // 1.0 in UV space is not the bottom-right texel, but a mix of the bottom-right and wrapped/next texel.
-  const GSVector2 display_texture_size = GSVector2(m_display_texture->GetSizeVec());
   const GSVector4 display_texture_size4 = GSVector4::xyxy(display_texture_size);
   const GSVector4 uv_rect = GSVector4(GSVector4i(m_display_texture_view_x, m_display_texture_view_y,
                                                  m_display_texture_view_x + m_display_texture_view_width,
