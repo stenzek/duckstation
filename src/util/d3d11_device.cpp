@@ -685,11 +685,11 @@ GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32
     return PresentResult::ExclusiveFullscreenLost;
   }
 
-  // When using vsync, the time here seems to include the time for the buffer to become available.
+  // The time here seems to include the time for the buffer to become available.
   // This blows our our GPU usage number considerably, so read the timestamp before the final blit
   // in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
   // the time, when it's more like a couple of percent.
-  if (SC == m_main_swap_chain.get() && SC->GetVSyncMode() == GPUVSyncMode::FIFO && m_gpu_timing_enabled)
+  if (SC == m_main_swap_chain.get() && m_gpu_timing_enabled)
   {
     PopTimestampQuery();
     EndTimestampQuery();
@@ -710,12 +710,6 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   D3D11SwapChain* const SC = static_cast<D3D11SwapChain*>(swap_chain);
   DebugAssert(!explicit_present && present_time == 0);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
-
-  if (SC == m_main_swap_chain.get() && SC->GetVSyncMode() != GPUVSyncMode::FIFO && m_gpu_timing_enabled)
-  {
-    PopTimestampQuery();
-    EndTimestampQuery();
-  }
 
   const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
   const UINT flags =
