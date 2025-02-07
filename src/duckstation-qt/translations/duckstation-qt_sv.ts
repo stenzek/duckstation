@@ -1084,22 +1084,22 @@ Olästa meddelanden: {}</translation>
     <message>
         <location filename="../../core/analog_controller.cpp" line="769"/>
         <source>D-Pad Up</source>
-        <translation>D-Pad upp</translation>
+        <translation>Riktningsknapp upp</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="770"/>
         <source>D-Pad Right</source>
-        <translation>D-Pad höger</translation>
+        <translation>Riktningsknapp höger</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="771"/>
         <source>D-Pad Down</source>
-        <translation>D-Pad ner</translation>
+        <translation>Riktningsknapp ner</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="772"/>
         <source>D-Pad Left</source>
-        <translation>D-Pad vänster</translation>
+        <translation>Riktningsknapp vänster</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="773"/>
@@ -1251,12 +1251,12 @@ Olästa meddelanden: {}</translation>
     <message>
         <location filename="../../core/analog_controller.cpp" line="815"/>
         <source>Use Analog Sticks for D-Pad in Digital Mode</source>
-        <translation>Använd analoga spakar för D-Pad i digitalt läge</translation>
+        <translation>Använd analoga spakar för riktningsknappar i digitalt läge</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="816"/>
         <source>Allows you to use the analog sticks to control the d-pad in digital mode, as well as the buttons.</source>
-        <translation>Tillåter dig att använda de analoga spakarna för att styra D-Pad i digitalt läge, såväl som knapparna.</translation>
+        <translation>Tillåter dig att använda de analoga spakarna för att styra riktningsknappar i digitalt läge, såväl som knapparna.</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="819"/>
@@ -1334,22 +1334,22 @@ Olästa meddelanden: {}</translation>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="354"/>
         <source>D-Pad Up</source>
-        <translation>D-Pad upp</translation>
+        <translation>Riktningsknapp upp</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="355"/>
         <source>D-Pad Right</source>
-        <translation>D-Pad höger</translation>
+        <translation>Riktningsknapp höger</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="356"/>
         <source>D-Pad Down</source>
-        <translation>D-Pad ner</translation>
+        <translation>Riktningsknapp ner</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="357"/>
         <source>D-Pad Left</source>
-        <translation>D-Pad vänster</translation>
+        <translation>Riktningsknapp vänster</translation>
     </message>
     <message>
         <location filename="../../core/analog_joystick.cpp" line="358"/>
@@ -3198,7 +3198,7 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="513"/>
         <source>Left</source>
-        <translation>Left</translation>
+        <translation>Vänster</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_digital_controller.ui" line="553"/>
@@ -4187,7 +4187,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../coverdownloaddialog.ui" line="50"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ange URLer i rutan nedan att hämta omslagsbilder från, med en mall-URL per rad. Fökande variabler finns tillgängliga:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Spelets titel.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Namnkomponenten för spelets filnamn.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serienumret för spelet.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exempel:&lt;/span&gt; https://www.exampel-inte-en-riktig-domän.se/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ange URLer i rutan nedan att hämta omslagsbilder från, med en mall-URL per rad. Fökande variabler finns tillgängliga:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Spelets titel.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Namnkomponenten för spelets filnamn.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serienumret för spelet.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exempel:&lt;/span&gt; https://www.exempel-inte-en-riktig-domän.se/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="80"/>
@@ -4744,22 +4744,22 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
     <message>
         <location filename="../../core/digital_controller.cpp" line="170"/>
         <source>D-Pad Up</source>
-        <translation>D-Pad upp</translation>
+        <translation>Riktningsknapp upp</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="171"/>
         <source>D-Pad Right</source>
-        <translation>D-Pad höger</translation>
+        <translation>Riktningsknapp höger</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="172"/>
         <source>D-Pad Down</source>
-        <translation>D-Pad ner</translation>
+        <translation>Riktningsknapp ner</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="173"/>
         <source>D-Pad Left</source>
-        <translation>D-Pad vänster</translation>
+        <translation>Riktningsknapp vänster</translation>
     </message>
     <message>
         <location filename="../../core/digital_controller.cpp" line="174"/>
@@ -13442,22 +13442,22 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <location filename="../../core/jogcon.cpp" line="629"/>
         <source>D-Pad Up</source>
-        <translation>D-Pad upp</translation>
+        <translation>Riktningsknapp upp</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="630"/>
         <source>D-Pad Right</source>
-        <translation>D-Pad höger</translation>
+        <translation>Riktningsknapp höger</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="631"/>
         <source>D-Pad Down</source>
-        <translation>D-Pad ner</translation>
+        <translation>Riktningsknapp ner</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="632"/>
         <source>D-Pad Left</source>
-        <translation>D-Pad vänster</translation>
+        <translation>Riktningsknapp vänster</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="633"/>
@@ -15787,22 +15787,22 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <message>
         <location filename="../../core/negcon.cpp" line="275"/>
         <source>D-Pad Up</source>
-        <translation>D-Pad upp</translation>
+        <translation>Riktningsknapp upp</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="276"/>
         <source>D-Pad Right</source>
-        <translation>D-Pad höger</translation>
+        <translation>Riktningsknapp höger</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="277"/>
         <source>D-Pad Down</source>
-        <translation>D-Pad ner</translation>
+        <translation>Riktningsknapp ner</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="278"/>
         <source>D-Pad Left</source>
-        <translation>D-Pad vänster</translation>
+        <translation>Riktningsknapp vänster</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="279"/>
@@ -16015,22 +16015,22 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <message>
         <location filename="../../core/negcon_rumble.cpp" line="730"/>
         <source>D-Pad Up</source>
-        <translation>D-Pad upp</translation>
+        <translation>Riktningsknapp upp</translation>
     </message>
     <message>
         <location filename="../../core/negcon_rumble.cpp" line="731"/>
         <source>D-Pad Right</source>
-        <translation>D-Pad höger</translation>
+        <translation>Riktningsknapp höger</translation>
     </message>
     <message>
         <location filename="../../core/negcon_rumble.cpp" line="732"/>
         <source>D-Pad Down</source>
-        <translation>D-Pad ner</translation>
+        <translation>Riktningsknapp ner</translation>
     </message>
     <message>
         <location filename="../../core/negcon_rumble.cpp" line="733"/>
         <source>D-Pad Left</source>
-        <translation>D-Pad vänster</translation>
+        <translation>Riktningsknapp vänster</translation>
     </message>
     <message>
         <location filename="../../core/negcon_rumble.cpp" line="734"/>
