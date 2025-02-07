@@ -1,3 +1,5 @@
+message(STATUS "Build Type: ${CMAKE_BUILD_TYPE}")
+
 if(ENABLE_OPENGL)
   message(STATUS "Building with OpenGL support.")
 endif()

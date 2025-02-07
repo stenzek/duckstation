@@ -52,7 +52,7 @@ u32 PostProcessing::ParseVector(std::string_view line, ShaderOption::ValueVector
   size_t start = 0;
   while (index < PostProcessing::ShaderOption::MAX_VECTOR_COMPONENTS)
   {
-    while (start < line.size() && std::isspace(line[start]))
+    while (start < line.size() && StringUtil::IsWhitespace(line[start]))
       start++;
 
     if (start >= line.size())

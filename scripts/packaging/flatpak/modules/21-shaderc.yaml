@@ -14,7 +14,7 @@ build-options:
 sources:
   - type: git
     url: "https://github.com/stenzek/shaderc.git"
-    commit: "1c0d3d18819aa75ec74f1fbd9ff0461e1b69a4d6"
+    commit: "fc65b19d2098cf81e55b4edc10adad2ad8268361"
 cleanup:
   - /bin
   - /include

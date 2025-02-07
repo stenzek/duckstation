@@ -64,9 +64,9 @@ static constexpr float DEFAULT_SCREEN_MARGIN = 16.0f;
 /// Sets the path to the font to use. Empty string means to use the default.
 void SetFontPathAndRange(std::string path, std::vector<WCharType> range);
 
-/// Sets the emoji font range to use. Empty means no glyphs will be rasterized.
+/// Sets the normal/emoji font range to use. Empty means no glyphs will be rasterized.
 /// Should NOT be terminated with zeros, unlike the font range above.
-void SetEmojiFontRange(std::vector<WCharType> range);
+void SetDynamicFontRange(std::vector<WCharType> font_range, std::vector<WCharType> emoji_range);
 
 /// Returns a compacted font range, with adjacent glyphs merged into one pair.
 std::vector<WCharType> CompactFontRange(std::span<const WCharType> range);

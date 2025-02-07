@@ -63,6 +63,16 @@ static ImGuiID GetBackgroundProgressID(const char* str_id);
 
 namespace {
 
+enum class CloseButtonState
+{
+  None,
+  KeyboardPressed,
+  MousePressed,
+  GamepadPressed,
+  AnyReleased,
+  Cancelled,
+};
+
 struct FileSelectorItem
 {
   FileSelectorItem() = default;
@@ -109,7 +119,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::recursive_mutex shared_state_mutex;
 
   u32 menu_button_index = 0;
-  u32 close_button_state = 0;
+  CloseButtonState close_button_state = CloseButtonState::None;
   ImGuiDir has_pending_nav_move = ImGuiDir_None;
   FocusResetType focus_reset_queued = FocusResetType::None;
   bool initialized = false;
@@ -199,7 +209,7 @@ bool ImGuiFullscreen::Initialize(const char* placeholder_image_path)
   std::unique_lock lock(s_state.shared_state_mutex);
 
   s_state.focus_reset_queued = FocusResetType::ViewChanged;
-  s_state.close_button_state = 0;
+  s_state.close_button_state = CloseButtonState::None;
 
   s_state.placeholder_texture = LoadTexture(placeholder_image_path);
   if (!s_state.placeholder_texture)
@@ -418,6 +428,39 @@ GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name)
   return tex_ptr->get();
 }
 
+GPUTexture* ImGuiFullscreen::GetCachedTextureAsync(std::string_view name, u32 svg_width, u32 svg_height)
+{
+  // ignore size hints if it's not needed, don't duplicate
+  if (!TextureNeedsSVGDimensions(name))
+    return GetCachedTextureAsync(name);
+
+  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
+  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
+
+  const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
+  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
+  if (!tex_ptr)
+  {
+    // insert the placeholder
+    tex_ptr = s_state.texture_cache.Insert(std::string(wh_name), s_state.placeholder_texture);
+
+    // queue the actual load
+    System::QueueAsyncTask([path = std::string(name), wh_name = std::string(wh_name), svg_width, svg_height]() mutable {
+      std::optional<Image> image(LoadTextureImage(path.c_str(), svg_width, svg_height));
+
+      // don't bother queuing back if it doesn't exist
+      if (!image.has_value())
+        return;
+
+      std::unique_lock lock(s_state.shared_state_mutex);
+      if (s_state.initialized)
+        s_state.texture_upload_queue.emplace_back(std::move(wh_name), std::move(image.value()));
+    });
+  }
+
+  return tex_ptr->get();
+}
+
 bool ImGuiFullscreen::InvalidateCachedTexture(std::string_view path)
 {
   // need to do a partial match on this because SVG
@@ -449,6 +492,8 @@ void ImGuiFullscreen::UploadAsyncTextures()
 
 bool ImGuiFullscreen::UpdateLayoutScale()
 {
+#ifndef __ANDROID__
+
   static constexpr float LAYOUT_RATIO = LAYOUT_SCREEN_WIDTH / LAYOUT_SCREEN_HEIGHT;
   const ImGuiIO& io = ImGui::GetIO();
 
@@ -474,7 +519,19 @@ bool ImGuiFullscreen::UpdateLayoutScale()
 
   UIStyle.RcpLayoutScale = 1.0f / UIStyle.LayoutScale;
 
-  return UIStyle.LayoutScale != old_scale;
+  return (UIStyle.LayoutScale != old_scale);
+
+#else
+
+  // On Android, treat a rotated display as always being in landscape mode for FSUI scaling.
+  // Makes achievement popups readable regardless of the device's orientation, and avoids layout changes.
+  const ImGuiIO& io = ImGui::GetIO();
+  const float old_scale = UIStyle.LayoutScale;
+  UIStyle.LayoutScale = std::max(io.DisplaySize.x, io.DisplaySize.y) / LAYOUT_SCREEN_WIDTH;
+  UIStyle.RcpLayoutScale = 1.0f / UIStyle.LayoutScale;
+  return (UIStyle.LayoutScale != old_scale);
+
+#endif
 }
 
 ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_size)
@@ -614,7 +671,8 @@ void ImGuiFullscreen::PopResetLayout()
 void ImGuiFullscreen::QueueResetFocus(FocusResetType type)
 {
   s_state.focus_reset_queued = type;
-  s_state.close_button_state = 0;
+  s_state.close_button_state =
+    (s_state.close_button_state != CloseButtonState::Cancelled) ? CloseButtonState::None : CloseButtonState::Cancelled;
 }
 
 bool ImGuiFullscreen::ResetFocusHere()
@@ -681,29 +739,37 @@ bool ImGuiFullscreen::WantsToCloseMenu()
 {
   ImGuiContext& g = *GImGui;
 
-  // Wait for the Close button to be released, THEN pressed
-  if (s_state.close_button_state == 0)
+  // Wait for the Close button to be pressed, THEN released
+  if (s_state.close_button_state == CloseButtonState::None)
   {
     if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
-      s_state.close_button_state = 1;
+      s_state.close_button_state = CloseButtonState::KeyboardPressed;
+    else if (ImGui::IsKeyPressed(ImGuiKey_MouseRight, false))
+      s_state.close_button_state = CloseButtonState::MousePressed;
     else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadCancel, false))
-      s_state.close_button_state = 2;
+      s_state.close_button_state = CloseButtonState::GamepadPressed;
   }
-  else if ((s_state.close_button_state == 1 && ImGui::IsKeyReleased(ImGuiKey_Escape)) ||
-           (s_state.close_button_state == 2 && ImGui::IsKeyReleased(ImGuiKey_NavGamepadCancel)))
+  else if ((s_state.close_button_state == CloseButtonState::KeyboardPressed && ImGui::IsKeyReleased(ImGuiKey_Escape)) ||
+           (s_state.close_button_state == CloseButtonState::MousePressed &&
+            ImGui::IsKeyReleased(ImGuiKey_MouseRight)) ||
+           (s_state.close_button_state == CloseButtonState::GamepadPressed &&
+            ImGui::IsKeyReleased(ImGuiKey_NavGamepadCancel)))
   {
-    s_state.close_button_state = 3;
+    s_state.close_button_state = CloseButtonState::AnyReleased;
   }
-  return s_state.close_button_state > 1;
+  return (s_state.close_button_state == CloseButtonState::AnyReleased);
 }
 
 void ImGuiFullscreen::ResetCloseMenuIfNeeded()
 {
   // If s_close_button_state reached the "Released" state, reset it after the tick
-  if (s_state.close_button_state > 1)
-  {
-    s_state.close_button_state = 0;
-  }
+  s_state.close_button_state =
+    (s_state.close_button_state >= CloseButtonState::AnyReleased) ? CloseButtonState::None : s_state.close_button_state;
+}
+
+void ImGuiFullscreen::CancelPendingMenuClose()
+{
+  s_state.close_button_state = CloseButtonState::Cancelled;
 }
 
 void ImGuiFullscreen::PushPrimaryColor()
@@ -3107,7 +3173,7 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
         ImGui::TextUnformatted(buf.c_str(), buf.end_ptr());
       }
 
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f);
+      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5.0f * scale);
 
       ImGui::ProgressBar(has_progress ?
                            (static_cast<float>(progress_value) / static_cast<float>(progress_max - progress_min)) :

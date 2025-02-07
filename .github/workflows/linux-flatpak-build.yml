@@ -15,12 +15,17 @@ on:
 
 jobs:
   linux-flatpak-build:
-    name: "x64"
-    runs-on: ubuntu-22.04
+    name: "Build"
+    strategy:
+      fail-fast: true
+      matrix:
+        setup: [{arch: "x86_64", runner: "ubuntu-22.04"}, {arch: "aarch64", runner: "ubuntu-24.04-arm"}]
+
+    runs-on: ${{ matrix.setup.runner }}
     container:
       image: ghcr.io/flathub-infra/flatpak-github-actions:kde-6.8
       options: --privileged
-    timeout-minutes: 120
+    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
       with:
@@ -72,17 +77,17 @@ jobs:
     - name: Build Flatpak
       uses: flathub-infra/flatpak-github-actions/flatpak-builder@23796715b3dfa4c86ddf50cf29c3cc8b3c82dca8
       with:
-        bundle: duckstation-x64.flatpak
+        bundle: duckstation-${{ matrix.setup.arch }}.flatpak
         upload-artifact: false
         manifest-path: scripts/packaging/flatpak/org.duckstation.DuckStation.yaml
-        arch: x86_64
+        arch: ${{ matrix.setup.arch }}
         build-bundle: true
         verbose: true
         mirror-screenshots-url: https://dl.flathub.org/media
         branch: stable
         cache: true
         restore-cache: true
-        cache-key: flatpak-x64-${{ hashFiles('scripts/packaging/flatpak/**/*.yaml') }}
+        cache-key: flatpak-${{ hashFiles('scripts/packaging/flatpak/**/*.yaml') }}
 
     - name: Validate Build
       run: |
@@ -109,5 +114,5 @@ jobs:
     - name: Upload Flatpak
       uses: actions/upload-artifact@v4
       with:
-        name: "linux-flatpak"
-        path: "duckstation-x64.flatpak"
+        name: "linux-flatpak-${{ matrix.setup.arch }}"
+        path: "duckstation-${{ matrix.setup.arch }}.flatpak"

@@ -379,12 +379,13 @@ void MetalDevice::SetFeatures(FeatureMask disabled_features)
   m_features.per_sample_shading = true;
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self = !(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF);
-  m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
+  m_features.texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = true;
   m_features.feedback_loops = (m_features.framebuffer_fetch || supports_barriers);
   m_features.geometry_shaders = false;
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = true;
+  m_features.exclusive_fullscreen = false;
   m_features.explicit_present = false;
   m_features.timed_present = true;
   m_features.shader_cache = true;
@@ -2594,7 +2595,7 @@ GPUDevice::PresentResult MetalDevice::BeginPresent(GPUSwapChain* swap_chain, u32
     SetViewportAndScissor(m_current_framebuffer_size);
 
     // Set up rendering to layer.
-    const GSVector4 clear_color_v = GSVector4::rgba32(clear_color);
+    const GSVector4 clear_color_v = GSVector4::unorm8(clear_color);
     id<MTLTexture> layer_texture = [m_layer_drawable texture];
     MTLRenderPassDescriptor* desc = [MTLRenderPassDescriptor renderPassDescriptor];
     desc.colorAttachments[0].texture = layer_texture;

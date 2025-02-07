@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_shadergen.h"
@@ -38,7 +38,7 @@ std::string GPUShaderGen::GenerateDisplayVertexShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const
@@ -63,7 +63,7 @@ std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool near
 
   ss << "}\n";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
@@ -92,7 +92,63 @@ std::string GPUShaderGen::GenerateDisplaySharpBilinearFragmentShader() const
   o_col0 = float4(SAMPLE_TEXTURE(samp0, ClampUV(mod_texel * u_src_size.zw)).rgb, 1.0f);
 })";
 
-  return ss.str();
+  return std::move(ss).str();
+}
+
+std::string GPUShaderGen::GenerateDisplayLanczosFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  WriteDisplayUniformBuffer(ss);
+  DeclareTexture(ss, "samp0", 0, false);
+
+  ss << R"(
+CONSTANT int KERNEL_SIZE = 3;
+CONSTANT float PI = 3.14159265359;
+
+float lanczos(float x)
+ {
+    x = abs(x);
+    if (x < 0.0001)
+      return 1.0;
+
+    if (x > float(KERNEL_SIZE))
+      return 0.0;
+
+    float px = PI * x;
+    return (float(KERNEL_SIZE) * sin(px) * sin(px / float(KERNEL_SIZE))) / (px * px);
+}
+
+)";
+
+  DeclareFragmentEntryPoint(ss, 0, 1);
+  ss << R"(
+{
+  float2 pixel = v_tex0 * u_params.xy;
+  float2 src_pixel = pixel * u_params.zw;
+  float2 src = floor(src_pixel - 0.5) + 0.5;
+    
+  float3 color = float3(0.0, 0.0, 0.0);
+  float total_weight = 0.0;
+    
+  for (int i = -KERNEL_SIZE; i <= KERNEL_SIZE; i++)
+  {
+      for (int j = -KERNEL_SIZE; j <= KERNEL_SIZE; j++)
+      {
+          float2 offset = float2(int2(i, j));
+          float2 sample_pos = (src + offset) * u_src_size.zw;
+          float2 dxdy = src_pixel - (src + offset);
+          float weight = lanczos(dxdy.x) * lanczos(dxdy.y);
+            
+          color += SAMPLE_TEXTURE_LEVEL(samp0, ClampUV(sample_pos), 0.0).rgb * weight;
+          total_weight += weight;
+      }
+  }
+    
+  o_col0 = float4(color / total_weight, 1.0);
+})";
+
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
@@ -113,7 +169,7 @@ std::string GPUShaderGen::GenerateDeinterlaceWeaveFragmentShader() const
   o_col0 = LOAD_TEXTURE(samp0, int2(tcoord), 0);
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateDeinterlaceBlendFragmentShader() const
@@ -133,7 +189,7 @@ std::string GPUShaderGen::GenerateDeinterlaceBlendFragmentShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateFastMADReconstructFragmentShader() const
@@ -192,7 +248,7 @@ CONSTANT float3 SENSITIVITY = float3(0.08f, 0.08f, 0.08f);
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPUShaderGen::GenerateChromaSmoothingFragmentShader() const
@@ -252,5 +308,5 @@ float3 SampleVRAMAverage2x2(uint2 icoords)
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }

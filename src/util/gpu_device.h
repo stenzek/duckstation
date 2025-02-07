@@ -528,6 +528,9 @@ public:
   virtual bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) = 0;
   virtual bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) = 0;
 
+  /// Returns true if exclusive fullscreen is currently active on this swap chain.
+  virtual bool IsExclusiveFullscreen() const;
+
   bool ShouldSkipPresentingFrame();
   void ThrottlePresentation();
 
@@ -589,13 +592,14 @@ public:
     bool per_sample_shading : 1;
     bool noperspective_interpolation : 1;
     bool texture_copy_to_self : 1;
-    bool supports_texture_buffers : 1;
+    bool texture_buffers : 1;
     bool texture_buffers_emulated_with_ssbo : 1;
     bool feedback_loops : 1;
     bool geometry_shaders : 1;
     bool compute_shaders : 1;
     bool partial_msaa_resolve : 1;
     bool memory_import : 1;
+    bool exclusive_fullscreen : 1;
     bool explicit_present : 1;
     bool timed_present : 1;
     bool gpu_timing : 1;
@@ -739,8 +743,6 @@ public:
                              const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                              std::optional<bool> exclusive_fullscreen_control, Error* error);
   void DestroyMainSwapChain();
-
-  virtual bool SupportsExclusiveFullscreen() const;
 
   virtual std::string GetDriverInfo() const = 0;
 

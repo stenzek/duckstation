@@ -202,7 +202,7 @@ inline std::string ToChars(T value)
   std::ostringstream ss;
   ss.imbue(std::locale::classic());
   ss << value;
-  return ss.str();
+  return std::move(ss).str();
 #endif
 }
 
@@ -233,8 +233,16 @@ inline std::string ToChars(bool value, int base)
   return std::string(value ? "true" : "false");
 }
 
+/// Returns true if the given character is whitespace.
+static inline bool IsWhitespace(char ch)
+{
+  return ((ch >= 0x09 && ch <= 0x0D) || // horizontal tab, line feed, vertical tab, form feed, carriage return
+          ch == 0x20);                  // space
+}
+
 /// Encode/decode hexadecimal byte buffers
 u8 DecodeHexDigit(char ch);
+size_t DecodeHex(std::span<u8> dest, const std::string_view str);
 std::optional<std::vector<u8>> DecodeHex(const std::string_view str);
 std::string EncodeHex(const void* data, size_t length);
 template<typename T>

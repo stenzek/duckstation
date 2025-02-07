@@ -270,10 +270,10 @@ s64 CDImageMds::GetSizeOnDisk() const
   return FileSystem::FSize64(m_mdf_file);
 }
 
-std::unique_ptr<CDImage> CDImage::OpenMdsImage(const char* filename, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenMdsImage(const char* path, Error* error)
 {
   std::unique_ptr<CDImageMds> image = std::make_unique<CDImageMds>();
-  if (!image->OpenAndParse(filename, error))
+  if (!image->OpenAndParse(path, error))
     return {};
 
   return image;

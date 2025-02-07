@@ -716,7 +716,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
       "GameDBCompatibility", ICON_EMOJI_INFORMATION,
       fmt::format("{}{}", TRANSLATE_SV("GameDatabase", "Compatibility settings for this game have been applied."),
                   messages.view()),
-      Host::OSD_WARNING_DURATION);
+      Host::OSD_INFO_DURATION);
   }
 
 #undef APPEND_MESSAGE_FMT

@@ -634,10 +634,10 @@ bool CDImageDeviceWin32::DetermineReadMode(bool try_sptd)
   return false;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* filename, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* path, Error* error)
 {
   std::unique_ptr<CDImageDeviceWin32> image = std::make_unique<CDImageDeviceWin32>();
-  if (!image->Open(filename, error))
+  if (!image->Open(path, error))
     return {};
 
   return image;
@@ -679,9 +679,9 @@ std::vector<std::pair<std::string, std::string>> CDImage::GetDeviceList()
   return ret;
 }
 
-bool CDImage::IsDeviceName(const char* filename)
+bool CDImage::IsDeviceName(const char* path)
 {
-  return std::string_view(filename).starts_with("\\\\.\\");
+  return std::string_view(path).starts_with("\\\\.\\");
 }
 
 #elif defined(__linux__) && !defined(__ANDROID__)
@@ -1083,10 +1083,10 @@ bool CDImageDeviceLinux::DetermineReadMode(Error* error)
   return false;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* filename, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* path, Error* error)
 {
   std::unique_ptr<CDImageDeviceLinux> image = std::make_unique<CDImageDeviceLinux>();
-  if (!image->Open(filename, error))
+  if (!image->Open(path, error))
     return {};
 
   return image;
@@ -1550,10 +1550,10 @@ bool CDImageDeviceMacOS::DetermineReadMode(Error* error)
   return false;
 }
 
-std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* filename, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* path, Error* error)
 {
   std::unique_ptr<CDImageDeviceMacOS> image = std::make_unique<CDImageDeviceMacOS>();
-  if (!image->Open(filename, error))
+  if (!image->Open(path, error))
     return {};
 
   return image;
@@ -1605,12 +1605,12 @@ std::vector<std::pair<std::string, std::string>> CDImage::GetDeviceList()
   return ret;
 }
 
-bool CDImage::IsDeviceName(const char* filename)
+bool CDImage::IsDeviceName(const char* path)
 {
-  if (!std::string_view(filename).starts_with("/dev"))
+  if (!std::string_view(path).starts_with("/dev"))
     return false;
 
-  io_service_t service = GetDeviceMediaService(filename);
+  io_service_t service = GetDeviceMediaService(path);
   const bool valid = (service != 0);
   if (valid)
     IOObjectRelease(service);
@@ -1620,7 +1620,7 @@ bool CDImage::IsDeviceName(const char* filename)
 
 #else
 
-std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* filename, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenDeviceImage(const char* path, Error* error)
 {
   return {};
 }
@@ -1630,7 +1630,7 @@ std::vector<std::pair<std::string, std::string>> CDImage::GetDeviceList()
   return {};
 }
 
-bool CDImage::IsDeviceName(const char* filename)
+bool CDImage::IsDeviceName(const char* path)
 {
   return false;
 }

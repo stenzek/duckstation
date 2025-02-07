@@ -20,19 +20,21 @@ bool Initialize();
 bool IsInitialized();
 bool HasActiveWindow();
 void CheckForConfigChanges(const GPUSettings& old_settings);
-void OnSystemStarted();
+void OnSystemStarting();
 void OnSystemResumed();
 void OnSystemDestroyed();
-void OnRunningGameChanged();
+void OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title);
 
 #ifndef __ANDROID__
 void OpenPauseMenu();
 void OpenCheatsMenu();
+void OpenDiscChangeMenu();
 void OpenAchievementsWindow();
 void OpenLeaderboardsWindow();
 void ReturnToMainWindow();
 void ReturnToPreviousWindow();
 void SetStandardSelectionFooterText(bool back_instead_of_cancel);
+void UpdateRunIdleState();
 #endif
 
 void Shutdown(bool clear_state);

@@ -44,14 +44,14 @@ set "PATH=%PATH%;%INSTALLDIR%\bin"
 cd "%BUILDDIR%"
 
 set FREETYPE=2.13.3
-set HARFBUZZ=10.1.0
-set LIBJPEGTURBO=3.0.4
-set LIBPNG=1644
-set QT=6.8.1
+set HARFBUZZ=10.2.0
+set LIBJPEGTURBO=3.1.0
+set LIBPNG=1645
+set QT=6.8.2
 set QTMINOR=6.8
-set SDL2=2.30.11
-set WEBP=1.4.0
-set LIBZIP=1.11.2
+set SDL3=3.2.2
+set WEBP=1.5.0
+set LIBZIP=1.11.3
 set ZLIB=1.3.1
 set ZLIBSHORT=131
 set ZSTD=1.5.6
@@ -59,24 +59,24 @@ set ZSTD=1.5.6
 set CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
 set DISCORD_RPC=144f3a3f1209994d8d9e8a87964a989cb9911c1e
 set LUNASVG=9af1ac7b90658a279b372add52d6f77a4ebb482c
-set SHADERC=1c0d3d18819aa75ec74f1fbd9ff0461e1b69a4d6
+set SHADERC=fc65b19d2098cf81e55b4edc10adad2ad8268361
 set SOUNDTOUCH=463ade388f3a51da078dc9ed062bf28e4ba29da7
-set SPIRV_CROSS=vulkan-sdk-1.3.290.0
+set SPIRV_CROSS=vulkan-sdk-1.4.304.0
 set DXCOMPILER=1.8.2407.12
 set DXAGILITY=1.614.1
 
 call :downloadfile "freetype-%FREETYPE%.tar.gz" "https://download.savannah.gnu.org/releases/freetype/freetype-%FREETYPE%.tar.gz" 5c3a8e78f7b24c20b25b54ee575d6daa40007a5f4eea2845861c3409b3021747 || goto error
-call :downloadfile "harfbuzz-%HARFBUZZ%.zip" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip" f93ff7ec6f2fcb9242256976a7e6d1da2588b5e57a559fb71a025b74bd1f5539 || goto error
-call :downloadfile "lpng%LIBPNG%.zip" "https://download.sourceforge.net/libpng/lpng%LIBPNG%.zip" 7d7571a1faa1898b69888716dfdea0e4d466f1a5cf518e6aa626df2242bbadbe || goto error
-call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 99130559e7d62e8d695f2c0eaeef912c5828d5b84a0537dcb24c9678c9d5b76b || goto error
-call :downloadfile "SDL2-%SDL2%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL2%/SDL2-%SDL2%.zip" a0b3e7ac5f708042683ff0f22e069bdf75563540c615f9854ecc9bc8913e2488 || goto error
-call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" e22d997bd15b795a176c8da62c8c1da0a674eb534e02f7c01ca507bf11bce0c3 || goto error
-call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 247a0a58039275a5a4fb499a600a90f66dc6e00321bb6f86a9b8d8020344d853 || goto error
-call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 57bd332e5550ff70a852560c591b786b6ba587c5e41cb5ef91038d82db137ab9 || goto error
-call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" c65a89140f5d68137ffec67d631ec97002fb37077d9b4eb4ee45cbec39b1c38a || goto error
-call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 30a8e7773e1f274557e049a97f158b808f344247da03ae5240e4956c81d51cd5 || goto error
-call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 61f873ec69e3be1b99535634340d5bde750b2e4447caa1db9f61be3fd49ab1e5 || goto error
-call :downloadfile "libzip-%LIBZIP%.tar.gz" "https://github.com/nih-at/libzip/releases/download/v%LIBZIP%/libzip-%LIBZIP%.tar.gz" 6b2a43837005e1c23fdfee532b78f806863e412d2089b9c42b49ab08cbcd7665 || goto error
+call :downloadfile "harfbuzz-%HARFBUZZ%.zip" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/%HARFBUZZ%.zip" 180cec309e817ec50953cd4d4208025c1931203231cf455418b0dd4021091951 || goto error
+call :downloadfile "lpng%LIBPNG%.zip" "https://download.sourceforge.net/libpng/lpng%LIBPNG%.zip" a66c4b1350b67776e90263e2550933067cd9ccbd318db489f84dcc0d2b033249 || goto error
+call :downloadfile "libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/%LIBJPEGTURBO%/libjpeg-turbo-%LIBJPEGTURBO%.tar.gz" 9564c72b1dfd1d6fe6274c5f95a8d989b59854575d4bbee44ade7bc17aa9bc93 || goto error
+call :downloadfile "SDL3-%SDL3%.zip" "https://github.com/libsdl-org/SDL/releases/download/release-%SDL3%/SDL3-%SDL3%.zip" 58d8adc7068d38923f918e0bdaa9c4948f93d9ba204fe4de8cc6eaaf77ad6f82 || goto error
+call :downloadfile "qtbase-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtbase-everywhere-src-%QT%.zip" 44087aec0caa4aa81437e787917d29d97536484a682a5d51ec035878e57c0b5c || goto error
+call :downloadfile "qtimageformats-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtimageformats-everywhere-src-%QT%.zip" 83c72b5dfad04854acf61d592e3f9cdc2ed894779aab8d0470d966715266caaf || goto error
+call :downloadfile "qtsvg-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qtsvg-everywhere-src-%QT%.zip" 144d55e4d199793a76c53f19872633a79aec0314039f6f99b6a10b5be7a78fbf || goto error
+call :downloadfile "qttools-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttools-everywhere-src-%QT%.zip" 102539447c1c76d206f24bcca2c911270cf53991548d9c3d7d0d01855f651e3b || goto error
+call :downloadfile "qttranslations-everywhere-src-%QT%.zip" "https://download.qt.io/official_releases/qt/%QTMINOR%/%QT%/submodules/qttranslations-everywhere-src-%QT%.zip" 33ccac9f99a357ffd83cb2d7179a0c0ffcba85a14d23d86619d5dc9721ded42f || goto error
+call :downloadfile "libwebp-%WEBP%.tar.gz" "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-%WEBP%.tar.gz" 7d6fab70cf844bf6769077bd5d7a74893f8ffd4dfb42861745750c63c2a5c92c || goto error
+call :downloadfile "libzip-%LIBZIP%.tar.gz" "https://github.com/nih-at/libzip/releases/download/v%LIBZIP%/libzip-%LIBZIP%.tar.gz" 76653f135dde3036036c500e11861648ffbf9e1fc5b233ff473c60897d9db0ea || goto error
 call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 72af66d44fcc14c22013b46b814d5d2514673dda3d115e64b690c1ad636e7b17 || goto error
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 3b1c3b46e416d36931efd34663122d7f51b550c87f74de2d38249516fe7d8be5 || goto error
 call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https://github.com/facebook/zstd/commit/fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch 8df152f4969b308546306c074628de761f0b80265de7de534e3822fab22d7535 || goto error
@@ -84,7 +84,7 @@ call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https:/
 call :downloadfile "cpuinfo-%CPUINFO%.zip" "https://github.com/pytorch/cpuinfo/archive/%CPUINFO%.zip" 13146ae7983d767a678dd01b0d6af591e77cec82babd41264b9164ab808d7d41 || goto error
 call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.zip" 61e185e75d37b360c314125bcdf4697192d15e2d5209db3306ed6cd736d508b3 || goto error
 call :downloadfile "lunasvg-%LUNASVG%.zip" "https://github.com/stenzek/lunasvg/archive/%LUNASVG%.zip" 1425ec2bda0228b73ffdc70b0dc666fc7d2b69c33eec75a35c4421157c0e220c || goto error
-call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" c62c4a358a01cd8390246d4e0d35a5abe0a145a64b4f63861afbfc0fc4216d03 || goto error
+call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" e7766c54f289e89fc36ca4273693e6549024b5e540d7b46745cee2c61def5e4c || goto error
 call :downloadfile "soundtouch-%SOUNDTOUCH%.zip" "https://github.com/stenzek/soundtouch/archive/%SOUNDTOUCH%.zip" 107a1941181a69abe28018b9ad26fc0218625758ac193bc979abc9e26b7c0c3a || goto error
 call :downloadfile "dxcompiler-%DXCOMPILER%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.DXC/%DXCOMPILER%" eb4f6a3bb6b08aaa62f435b3dbf26b180702ca52398d3650d0dd538f56742cdc || goto error
 call :downloadfile "dxagility-%DXAGILITY%.zip" "https://www.nuget.org/api/v2/package/Microsoft.Direct3D.D3D12/%DXAGILITY%" 9880aa91602dd51dd6cf7911a2bca7a2323513b15338573cde014b3356eeaff2 || goto error
@@ -184,13 +184,13 @@ ninja -C build install || goto error
 cd .. || goto error
 
 echo Building SDL...
-rmdir /S /Q "SDL2-%SDL2%"
-%SEVENZIP% x "SDL2-%SDL2%.zip" || goto error
-cd "SDL2-%SDL2%" || goto error
-cmake -B build -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -G Ninja || goto error
+rmdir /S /Q "SDL3-%SDL3%"
+%SEVENZIP% x "SDL3-%SDL3%.zip" || goto error
+cd "SDL3-%SDL3%" || goto error
+cmake -B build -DCMAKE_BUILD_TYPE=Release %FORCEPDB% -DCMAKE_INSTALL_PREFIX="%INSTALLDIR%" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -G Ninja || goto error
 cmake --build build --parallel || goto error
 ninja -C build install || goto error
-copy build\SDL2.pdb "%INSTALLDIR%\bin" || goto error
+copy build\SDL3.pdb "%INSTALLDIR%\bin" || goto error
 cd .. || goto error
 
 if %DEBUG%==1 (

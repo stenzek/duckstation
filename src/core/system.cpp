@@ -223,7 +223,6 @@ static void DoRewind();
 
 static bool DoRunahead();
 
-static bool OpenGPUDump(std::string path, Error* error);
 static bool ChangeGPUDump(std::string new_path);
 
 static void UpdateSessionTime(const std::string& prev_serial);
@@ -514,12 +513,13 @@ bool System::CPUThreadInitialize(Error* error, u32 async_worker_thread_count)
   }
 #endif
 
+  s_state.cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
+  s_state.async_task_queue.SetWorkerCount(async_worker_thread_count);
+
   // This will call back to Host::LoadSettings() -> ReloadSources().
   LoadSettings(false);
 
   LogStartupInformation();
-
-  s_state.async_task_queue.SetWorkerCount(async_worker_thread_count);
 
   GPUThread::Internal::ProcessStartup();
 
@@ -545,6 +545,7 @@ void System::CPUThreadShutdown()
   InputManager::CloseSources();
 
   s_state.async_task_queue.SetWorkerCount(0);
+  s_state.cpu_thread_handle = {};
 
 #ifdef _WIN32
   CoUninitialize();
@@ -554,6 +555,11 @@ void System::CPUThreadShutdown()
 const Threading::ThreadHandle& System::GetCPUThreadHandle()
 {
   return s_state.cpu_thread_handle;
+}
+
+void System::SetCPUThreadHandle(Threading::ThreadHandle handle)
+{
+  s_state.cpu_thread_handle = std::move(handle);
 }
 
 void System::IdlePollUpdate()
@@ -858,27 +864,23 @@ std::string System::GetGameHashId(GameHash hash)
   return fmt::format("HASH-{:X}", hash);
 }
 
-bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash)
+bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash* out_hash,
+                                     std::string* out_executable_name, std::vector<u8>* out_executable_data)
 {
   IsoReader iso;
-  if (!iso.Open(cdi, 1))
-  {
-    if (out_id)
-      out_id->clear();
-    if (out_hash)
-      *out_hash = 0;
-    return false;
-  }
-
   std::string id;
   std::string exe_name;
   std::vector<u8> exe_buffer;
-  if (!ReadExecutableFromImage(iso, &exe_name, &exe_buffer))
+  if (!iso.Open(cdi, 1) || !ReadExecutableFromImage(iso, &exe_name, &exe_buffer))
   {
     if (out_id)
       out_id->clear();
     if (out_hash)
       *out_hash = 0;
+    if (out_executable_name)
+      out_executable_name->clear();
+    if (out_executable_data)
+      out_executable_data->clear();
     return false;
   }
 
@@ -923,6 +925,11 @@ bool System::GetGameDetailsFromImage(CDImage* cdi, std::string* out_id, GameHash
 
   if (out_hash)
     *out_hash = hash;
+
+  if (out_executable_name)
+    *out_executable_name = std::move(exe_name);
+  if (out_executable_data)
+    *out_executable_data = std::move(exe_buffer);
 
   return true;
 }
@@ -1202,6 +1209,7 @@ void System::LoadSettings(bool display_osd_messages)
   const SettingsInterface& si = *Host::GetSettingsInterface();
   const SettingsInterface& controller_si = GetControllerSettingsLayer(lock);
   const SettingsInterface& hotkey_si = GetHotkeySettingsLayer(lock);
+  const bool previous_safe_mode = g_settings.disable_all_enhancements;
   g_settings.Load(si, controller_si);
 
   // Global safe mode overrides game settings.
@@ -1213,7 +1221,9 @@ void System::LoadSettings(bool display_osd_messages)
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
   InputManager::ReloadBindings(controller_si, hotkey_si);
-  if (IsValidOrInitializing())
+
+  // show safe mode warning if it's toggled on, or on startup
+  if (IsValidOrInitializing() && (display_osd_messages || (!previous_safe_mode && g_settings.disable_all_enhancements)))
     WarnAboutUnsafeSettings();
 
   // apply compatibility settings
@@ -1331,30 +1341,31 @@ void System::ApplySettings(bool display_osd_messages)
 {
   DEV_LOG("Applying settings...");
 
-  const Settings old_config(std::move(g_settings));
+  // copy safe mode setting, so the osd check in LoadSettings() works
+  const Settings old_settings = std::move(g_settings);
   g_settings = Settings();
+  g_settings.disable_all_enhancements = old_settings.disable_all_enhancements;
   LoadSettings(display_osd_messages);
 
   // If we've disabled/enabled game settings, we need to reload without it.
   // Also reload cheats when safe mode is toggled, because patches might change.
-  if (g_settings.apply_game_settings != old_config.apply_game_settings ||
-      g_settings.disable_all_enhancements != old_config.disable_all_enhancements)
+  if (g_settings.apply_game_settings != old_settings.apply_game_settings)
   {
-    if (g_settings.apply_game_settings != old_config.apply_game_settings)
-      UpdateGameSettingsLayer();
-    else
-      Cheats::ReloadCheats(false, true, false, true);
+    UpdateGameSettingsLayer();
     LoadSettings(display_osd_messages);
   }
 
-  CheckForSettingsChanges(old_config);
-  Host::CheckForSettingsChanges(old_config);
+  CheckForSettingsChanges(old_settings);
+  Host::CheckForSettingsChanges(old_settings);
 }
 
 void System::ReloadGameSettings(bool display_osd_messages)
 {
   if (!IsValid() || !UpdateGameSettingsLayer())
     return;
+
+  if (!IsReplayingGPUDump())
+    Cheats::ReloadCheats(false, true, false, true);
 
   ApplySettings(display_osd_messages);
 }
@@ -1500,10 +1511,6 @@ bool System::UpdateGameSettingsLayer()
   s_state.game_settings_interface = std::move(new_interface);
 
   UpdateInputSettingsLayer(std::move(input_profile_name), lock);
-
-  if (!IsReplayingGPUDump())
-    Cheats::ReloadCheats(false, true, false, true);
-
   return true;
 }
 
@@ -1648,18 +1655,13 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
   else
     INFO_LOG("Boot Filename: {}", parameters.filename);
 
-  Assert(s_state.state == State::Shutdown);
-  s_state.state = State::Starting;
-  s_state.startup_cancelled.store(false, std::memory_order_relaxed);
-  s_state.region = g_settings.region;
-  std::atomic_thread_fence(std::memory_order_release);
-  Host::OnSystemStarting();
-
   // Load CD image up and detect region.
   std::unique_ptr<CDImage> disc;
+  ConsoleRegion auto_console_region = ConsoleRegion::NTSC_U;
   DiscRegion disc_region = DiscRegion::NonPS1;
   BootMode boot_mode = BootMode::FullBoot;
   std::string exe_override;
+  std::unique_ptr<GPUDump::Player> gpu_dump;
   if (!parameters.filename.empty())
   {
     if (IsExePath(parameters.filename))
@@ -1674,25 +1676,19 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     }
     else if (IsGPUDumpPath(parameters.filename))
     {
-      if (!OpenGPUDump(parameters.filename, error))
-      {
-        DestroySystem();
+      gpu_dump = GPUDump::Player::Open(parameters.filename, error);
+      if (!gpu_dump)
         return false;
-      }
 
       boot_mode = BootMode::ReplayGPUDump;
     }
 
     if (boot_mode == BootMode::BootEXE || boot_mode == BootMode::BootPSF)
     {
-      if (s_state.region == ConsoleRegion::Auto)
-      {
-        const DiscRegion file_region =
-          ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.filename.c_str()) :
-                                              GetRegionForPsf(parameters.filename.c_str()));
-        INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
-        s_state.region = GetConsoleRegionForDiscRegion(file_region);
-      }
+      const DiscRegion file_region = ((boot_mode == BootMode::BootEXE) ? GetRegionForExe(parameters.filename.c_str()) :
+                                                                         GetRegionForPsf(parameters.filename.c_str()));
+      INFO_LOG("EXE/PSF Region: {}", Settings::GetDiscRegionDisplayName(file_region));
+      auto_console_region = GetConsoleRegionForDiscRegion(file_region);
     }
     else if (boot_mode != BootMode::ReplayGPUDump)
     {
@@ -1701,49 +1697,41 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
       if (!disc)
       {
         Error::AddPrefixFmt(error, "Failed to open CD image '{}':\n", Path::GetFileName(parameters.filename));
-        DestroySystem();
         return false;
       }
 
       disc_region = GameList::GetCustomRegionForPath(parameters.filename).value_or(GetRegionForImage(disc.get()));
-      if (s_state.region == ConsoleRegion::Auto)
-      {
-        if (disc_region != DiscRegion::Other)
-        {
-          s_state.region = GetConsoleRegionForDiscRegion(disc_region);
-          INFO_LOG("Auto-detected console {} region for '{}' (region {})",
-                   Settings::GetConsoleRegionName(s_state.region), parameters.filename,
-                   Settings::GetDiscRegionName(disc_region));
-        }
-        else
-        {
-          s_state.region = ConsoleRegion::NTSC_U;
-          WARNING_LOG("Could not determine console region for disc region {}. Defaulting to {}.",
-                      Settings::GetDiscRegionName(disc_region), Settings::GetConsoleRegionName(s_state.region));
-        }
-      }
+      auto_console_region = GetConsoleRegionForDiscRegion(disc_region);
+      INFO_LOG("Auto-detected console {} region for '{}' (region {})",
+               Settings::GetConsoleRegionName(auto_console_region), parameters.filename,
+               Settings::GetDiscRegionName(disc_region));
     }
   }
-  else
-  {
-    // Default to NTSC for BIOS boot.
-    if (s_state.region == ConsoleRegion::Auto)
-      s_state.region = ConsoleRegion::NTSC_U;
-  }
-
-  INFO_LOG("Console Region: {}", Settings::GetConsoleRegionDisplayName(s_state.region));
 
   // Switch subimage.
   if (disc && parameters.media_playlist_index != 0 && !disc->SwitchSubImage(parameters.media_playlist_index, error))
   {
     Error::AddPrefixFmt(error, "Failed to switch to subimage {} in '{}':\n", parameters.media_playlist_index,
                         Path::GetFileName(parameters.filename));
-    DestroySystem();
     return false;
   }
 
+  // Can't early cancel without destroying past this point.
+  Assert(s_state.state == State::Shutdown);
+  s_state.state = State::Starting;
+  s_state.region = auto_console_region;
+  s_state.startup_cancelled.store(false, std::memory_order_relaxed);
+  s_state.gpu_dump_player = std::move(gpu_dump);
+  std::atomic_thread_fence(std::memory_order_release);
+  Host::OnSystemStarting();
+  FullscreenUI::OnSystemStarting();
+
   // Update running game, this will apply settings as well.
   UpdateRunningGame(disc ? disc->GetPath() : parameters.filename, disc.get(), true);
+
+  // Determine console region. Has to be done here, because gamesettings can override it.
+  s_state.region = (g_settings.region == ConsoleRegion::Auto) ? auto_console_region : g_settings.region;
+  INFO_LOG("Console Region: {}", Settings::GetConsoleRegionDisplayName(s_state.region));
 
   // Get boot EXE override.
   if (!parameters.override_exe.empty())
@@ -1761,39 +1749,46 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     exe_override = std::move(parameters.override_exe);
   }
 
-  // Check for resuming with hardcore mode.
-  if (parameters.disable_achievements_hardcore_mode)
-    Achievements::DisableHardcoreMode();
-  if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
+  // Achievement hardcore checks before committing to anything.
+  if (disc)
   {
-    const bool is_exe_override_boot = parameters.save_state.empty();
-    bool cancelled;
-    if (FullscreenUI::IsInitialized())
-    {
-      Achievements::ConfirmHardcoreModeDisableAsync(is_exe_override_boot ?
-                                                      TRANSLATE("Achievements", "Overriding executable") :
-                                                      TRANSLATE("Achievements", "Resuming state"),
-                                                    [parameters = std::move(parameters)](bool approved) mutable {
-                                                      if (approved)
-                                                      {
-                                                        parameters.disable_achievements_hardcore_mode = true;
-                                                        BootSystem(std::move(parameters), nullptr);
-                                                      }
-                                                    });
-      cancelled = true;
-    }
+    // Check for resuming with hardcore mode.
+    if (parameters.disable_achievements_hardcore_mode)
+      Achievements::DisableHardcoreMode();
     else
-    {
-      cancelled = !Achievements::ConfirmHardcoreModeDisable(is_exe_override_boot ?
-                                                              TRANSLATE("Achievements", "Overriding executable") :
-                                                              TRANSLATE("Achievements", "Resuming state"));
-    }
+      Achievements::ResetHardcoreMode(true);
 
-    if (cancelled)
+    if ((!parameters.save_state.empty() || !exe_override.empty()) && Achievements::IsHardcoreModeActive())
     {
-      // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
-      DestroySystem();
-      return true;
+      const bool is_exe_override_boot = parameters.save_state.empty();
+      bool cancelled;
+      if (FullscreenUI::IsInitialized())
+      {
+        Achievements::ConfirmHardcoreModeDisableAsync(is_exe_override_boot ?
+                                                        TRANSLATE("Achievements", "Overriding executable") :
+                                                        TRANSLATE("Achievements", "Resuming state"),
+                                                      [parameters = std::move(parameters)](bool approved) mutable {
+                                                        if (approved)
+                                                        {
+                                                          parameters.disable_achievements_hardcore_mode = true;
+                                                          BootSystem(std::move(parameters), nullptr);
+                                                        }
+                                                      });
+        cancelled = true;
+      }
+      else
+      {
+        cancelled = !Achievements::ConfirmHardcoreModeDisable(is_exe_override_boot ?
+                                                                TRANSLATE("Achievements", "Overriding executable") :
+                                                                TRANSLATE("Achievements", "Resuming state"));
+      }
+
+      if (cancelled)
+      {
+        // Technically a failure, but user-initiated. Returning false here would try to display a non-existent error.
+        DestroySystem();
+        return true;
+      }
     }
   }
 
@@ -1837,8 +1832,6 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
     DestroySystem();
     return false;
   }
-
-  FullscreenUI::OnSystemStarted();
 
   InputManager::UpdateHostMouseMode();
 
@@ -1930,11 +1923,12 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   SIO::Initialize();
   PCDrv::Initialize();
 
-  s_state.cpu_thread_handle = Threading::ThreadHandle::GetForCallingThread();
-
   UpdateGTEAspectRatio();
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
+
+  if (!IsReplayingGPUDump())
+    Cheats::ReloadCheats(true, true, false, true);
 
   PerformanceCounters::Clear();
 
@@ -4180,28 +4174,29 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
     }
   }
 
-  if (!booting)
-    GPUThread::SetGameSerial(s_state.running_game_serial);
+  UpdateGameSettingsLayer();
 
   if (!IsReplayingGPUDump())
   {
-    if (booting)
-      Achievements::ResetHardcoreMode(true);
-
     Achievements::GameChanged(s_state.running_game_path, image, booting);
 
-    // game layer reloads cheats, but only the active list, we need new files
-    Cheats::ReloadCheats(true, false, false, true);
+    // Cheats are loaded later in Initialize().
+    if (!booting)
+      Cheats::ReloadCheats(true, true, false, true);
   }
-
-  UpdateGameSettingsLayer();
 
   ApplySettings(true);
 
   if (s_state.running_game_serial != prev_serial)
+  {
+    GPUThread::SetGameSerial(s_state.running_game_serial);
     UpdateSessionTime(prev_serial);
+  }
 
   UpdateRichPresence(booting);
+
+  FullscreenUI::OnRunningGameChanged(s_state.running_game_path, s_state.running_game_serial,
+                                     s_state.running_game_title);
 
   Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title);
 }
@@ -4230,17 +4225,13 @@ bool System::CheckForRequiredSubQ(Error* error)
       return true;
     }
   }
-#ifndef __ANDROID__
+
   Error::SetStringFmt(
     error,
     TRANSLATE_FS("System", "You are attempting to run a libcrypt protected game without an SBI file:\n\n{0}: "
                            "{1}\n\nYour dump is incomplete, you must add the SBI file to run this game. \n\nThe "
                            "name of the SBI file must match the name of the disc image."),
     s_state.running_game_serial, s_state.running_game_title);
-#else
-  // Shorter because no confirm messages.
-  Error::SetStringView(error, "The selected game requires a SBI file to run properly.");
-#endif
 
   return false;
 }
@@ -4349,6 +4340,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   if (IsValid())
   {
     ClearMemorySaveStates(false, false);
+
+    if (g_settings.disable_all_enhancements != old_settings.disable_all_enhancements)
+      Cheats::ReloadCheats(false, true, false, true);
 
     if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
         (g_settings.cpu_overclock_active &&
@@ -4468,7 +4462,6 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_scaling != old_settings.display_scaling ||
              g_settings.display_alignment != old_settings.display_alignment ||
              g_settings.display_rotation != old_settings.display_rotation ||
-             g_settings.display_stretch_vertically != old_settings.display_stretch_vertically ||
              g_settings.display_deinterlacing_mode != old_settings.display_deinterlacing_mode ||
              g_settings.display_osd_scale != old_settings.display_osd_scale ||
              g_settings.display_osd_margin != old_settings.display_osd_margin ||
@@ -4485,7 +4478,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.runahead_frames != old_settings.runahead_frames ||
              g_settings.texture_replacements != old_settings.texture_replacements)
     {
-      GPUThread::UpdateSettings(true, false);
+      GPUThread::UpdateSettings(true, false, false);
 
       // NOTE: Must come after the GPU thread settings update, otherwise it allocs the wrong size textures.
       const bool use_existing_textures = (g_settings.gpu_resolution_scale == old_settings.gpu_resolution_scale);
@@ -4512,13 +4505,29 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_screenshot_format != old_settings.display_screenshot_format ||
              g_settings.display_screenshot_quality != old_settings.display_screenshot_quality)
     {
-      // don't need to represent when paused
-      GPUThread::UpdateSettings(true, device_settings_changed);
+      if (device_settings_changed)
+      {
+        // device changes are super icky, we need to purge and recreate any rewind states
+        FreeMemoryStateStorage(false, true, false);
+        StopMediaCapture();
+        GPUThread::UpdateSettings(true, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
+        ClearMemorySaveStates(true, false);
+
+        // and display the current frame on the new device
+        g_gpu.UpdateDisplay(false);
+        if (IsPaused())
+          GPUThread::PresentCurrentFrame();
+      }
+      else
+      {
+        // don't need to represent here, because the OSD isn't visible while paused anyway
+        GPUThread::UpdateSettings(true, false, false);
+      }
     }
     else
     {
       // still need to update debug windows
-      GPUThread::UpdateSettings(false, false);
+      GPUThread::UpdateSettings(false, false, false);
     }
 
     if (g_settings.gpu_widescreen_hack != old_settings.gpu_widescreen_hack ||
@@ -4628,7 +4637,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     {
       // handle device setting updates as well
       if (g_settings.gpu_renderer != old_settings.gpu_renderer || g_settings.AreGPUDeviceSettingsChanged(old_settings))
-        GPUThread::UpdateSettings(false, true);
+        GPUThread::UpdateSettings(false, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
 
       if (g_settings.display_vsync != old_settings.display_vsync ||
           g_settings.display_disable_mailbox_presentation != old_settings.display_disable_mailbox_presentation)
@@ -4663,15 +4672,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     }
   }
 
-  if (g_settings.gpu_use_thread != old_settings.gpu_use_thread) [[unlikely]]
-  {
-    GPUThread::Internal::SetThreadEnabled(g_settings.gpu_use_thread);
-  }
-  else if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames)
-    [[unlikely]]
-  {
+  if (g_settings.gpu_use_thread && g_settings.gpu_max_queued_frames != old_settings.gpu_max_queued_frames) [[unlikely]]
     GPUThread::SyncGPUThread(false);
-  }
 }
 
 void System::SetTaintsFromSettings()
@@ -4736,59 +4738,39 @@ void System::WarnAboutUnsafeSettings()
 
   if (!g_settings.disable_all_enhancements)
   {
-    if (ImGuiManager::IsShowingOSDMessages())
+    if (g_settings.cpu_overclock_active)
     {
-      if (g_settings.cpu_overclock_active)
-      {
-        append_format(ICON_EMOJI_WARNING,
-                      TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
-                      g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator,
-                      g_settings.cpu_overclock_denominator);
-      }
-      if (g_settings.cdrom_read_speedup != 1)
-      {
-        TinyString speed;
-        if (g_settings.cdrom_read_speedup == 0)
-          speed = TRANSLATE_SV("System", "Maximum");
-        else
-          speed.format("{}x", g_settings.cdrom_read_speedup);
-        append_format(ICON_EMOJI_WARNING,
-                      TRANSLATE_FS("System", "CD-ROM read speedup set to {}. This may crash games."), speed);
-      }
-      if (g_settings.cdrom_seek_speedup != 1)
-      {
-        TinyString speed;
-        if (g_settings.cdrom_seek_speedup == 0)
-          speed = TRANSLATE_SV("System", "Maximum");
-        else
-          speed.format("{}x", g_settings.cdrom_seek_speedup);
-        append_format(ICON_EMOJI_WARNING,
-                      TRANSLATE_FS("System", "CD-ROM seek speedup set to {}. This may crash games."), speed);
-      }
-      if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      {
-        append(ICON_FA_TV,
-               TRANSLATE_SV("System", "Force frame timings is enabled. Games may run at incorrect speeds."));
-      }
-      if (!g_settings.IsUsingSoftwareRenderer())
-      {
-        if (g_settings.gpu_multisamples != 1)
-        {
-          append(ICON_EMOJI_WARNING,
-                 TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
-        }
-        if (g_settings.gpu_resolution_scale > 1 && g_settings.gpu_force_round_texcoords)
-        {
-          append(
-            ICON_EMOJI_WARNING,
-            TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
-        }
-      }
-      if (g_settings.enable_8mb_ram)
+      append_format(
+        ICON_EMOJI_WARNING, TRANSLATE_FS("System", "CPU clock speed is set to {}% ({} / {}). This may crash games."),
+        g_settings.GetCPUOverclockPercent(), g_settings.cpu_overclock_numerator, g_settings.cpu_overclock_denominator);
+    }
+    if (g_settings.cdrom_read_speedup != 1 || g_settings.cdrom_seek_speedup != 1)
+      append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
+    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+      append(ICON_FA_TV, TRANSLATE_SV("System", "Force frame timings is enabled. Games may run at incorrect speeds."));
+    if (!g_settings.IsUsingSoftwareRenderer())
+    {
+      if (g_settings.gpu_multisamples != 1)
       {
         append(ICON_EMOJI_WARNING,
-               TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+               TRANSLATE_SV("System", "Multisample anti-aliasing is enabled, some games may not render correctly."));
       }
+      if (g_settings.gpu_resolution_scale > 1 && g_settings.gpu_force_round_texcoords)
+      {
+        append(
+          ICON_EMOJI_WARNING,
+          TRANSLATE_SV("System", "Round upscaled texture coordinates is enabled. This may cause rendering errors."));
+      }
+    }
+    if (g_settings.enable_8mb_ram)
+    {
+      append(ICON_EMOJI_WARNING,
+             TRANSLATE_SV("System", "8MB RAM is enabled, this may be incompatible with some games."));
+    }
+    if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
+    {
+      append(ICON_EMOJI_WARNING,
+             TRANSLATE_SV("System", "Cached interpreter is being used, this may be incompatible with some games."));
     }
 
     // Always display TC warning.
@@ -4813,8 +4795,6 @@ void System::WarnAboutUnsafeSettings()
   {
     append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "Safe mode is enabled."));
 
-    if (ImGuiManager::IsShowingOSDMessages())
-    {
 #define APPEND_SUBMESSAGE(msg)                                                                                         \
   do                                                                                                                   \
   {                                                                                                                    \
@@ -4823,59 +4803,58 @@ void System::WarnAboutUnsafeSettings()
     messages.append('\n');                                                                                             \
   } while (0)
 
-      if (g_settings.cpu_overclock_active)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
-      if (g_settings.enable_8mb_ram)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
-      if (s_state.game_settings_interface &&
-          s_state.game_settings_interface->GetBoolValue("Cheats", "EnableCheats", false))
-      {
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
-      }
-      if (s_state.game_settings_interface && s_state.game_settings_interface->ContainsValue("Patches", "Enable"))
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Patches disabled."));
-      if (g_settings.gpu_resolution_scale != 1)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
-      if (g_settings.gpu_multisamples != 1)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
-      if (g_settings.gpu_true_color)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "True color disabled."));
-      if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
-          g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
-      {
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
-      }
-      if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
-      if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
-      if (g_settings.gpu_widescreen_hack)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
-      if (g_settings.gpu_pgxp_enable)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PGXP disabled."));
-      if (g_settings.gpu_texture_cache)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "GPU texture cache disabled."));
-      if (g_settings.display_24bit_chroma_smoothing)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
-      if (g_settings.cdrom_read_speedup != 1)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
-      if (g_settings.cdrom_seek_speedup != 1)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
-      if (g_settings.cdrom_mute_cd_audio)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
-      if (g_settings.texture_replacements.enable_vram_write_replacements)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
-      if (g_settings.use_old_mdec_routines)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
-      if (g_settings.pio_device_type != PIODeviceType::None)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));
-      if (g_settings.pcdrv_enable)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
-      if (g_settings.bios_patch_fast_boot)
-        APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
+    if (g_settings.cpu_overclock_active)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
+    if (g_settings.enable_8mb_ram)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
+    if (s_state.game_settings_interface &&
+        s_state.game_settings_interface->GetBoolValue("Cheats", "EnableCheats", false))
+    {
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
+    }
+    if (s_state.game_settings_interface && s_state.game_settings_interface->ContainsValue("Patches", "Enable"))
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Patches disabled."));
+    if (g_settings.gpu_resolution_scale != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
+    if (g_settings.gpu_multisamples != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Multisample anti-aliasing disabled."));
+    if (g_settings.gpu_true_color)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "True color disabled."));
+    if (g_settings.gpu_texture_filter != GPUTextureFilter::Nearest ||
+        g_settings.gpu_sprite_texture_filter != GPUTextureFilter::Nearest)
+    {
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Texture filtering disabled."));
+    }
+    if (g_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Interlaced rendering enabled."));
+    if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Video timings set to default."));
+    if (g_settings.gpu_widescreen_hack)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Widescreen rendering disabled."));
+    if (g_settings.gpu_pgxp_enable)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PGXP disabled."));
+    if (g_settings.gpu_texture_cache)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "GPU texture cache disabled."));
+    if (g_settings.display_24bit_chroma_smoothing)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "FMV chroma smoothing disabled."));
+    if (g_settings.cdrom_read_speedup != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM read speedup disabled."));
+    if (g_settings.cdrom_seek_speedup != 1)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "CD-ROM seek speedup disabled."));
+    if (g_settings.cdrom_mute_cd_audio)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Mute CD-ROM audio disabled."));
+    if (g_settings.texture_replacements.enable_vram_write_replacements)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "VRAM write texture replacements disabled."));
+    if (g_settings.use_old_mdec_routines)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Use old MDEC routines disabled."));
+    if (g_settings.pio_device_type != PIODeviceType::None)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PIO device removed."));
+    if (g_settings.pcdrv_enable)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "PCDrv disabled."));
+    if (g_settings.bios_patch_fast_boot)
+      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Fast boot disabled."));
 
 #undef APPEND_SUBMESSAGE
-    }
   }
 
   if (!g_settings.apply_compatibility_settings)
@@ -4893,7 +4872,10 @@ void System::WarnAboutUnsafeSettings()
       messages.pop_back();
 
     LogUnsafeSettingsToConsole(messages);
-    Host::AddKeyedOSDWarning("performance_settings_warning", std::string(messages.view()), Host::OSD_WARNING_DURATION);
+
+    // Force the message, but use a reduced duration if they have OSD messages disabled.
+    Host::AddKeyedOSDWarning("performance_settings_warning", std::string(messages.view()),
+                             ImGuiManager::IsShowingOSDMessages() ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION);
   }
   else
   {
@@ -5859,27 +5841,18 @@ void System::UpdateGTEAspectRatio()
   GTE::SetAspectRatio(gte_ar, custom_num, custom_denom);
 }
 
-bool System::OpenGPUDump(std::string path, Error* error)
-{
-  std::unique_ptr<GPUDump::Player> new_dump = GPUDump::Player::Open(std::move(path), error);
-  if (!new_dump)
-    return false;
-
-  // set properties
-  s_state.gpu_dump_player = std::move(new_dump);
-  s_state.region = s_state.gpu_dump_player->GetRegion();
-  return true;
-}
-
 bool System::ChangeGPUDump(std::string new_path)
 {
   Error error;
-  if (!OpenGPUDump(std::move(new_path), &error))
+  std::unique_ptr<GPUDump::Player> new_dump = GPUDump::Player::Open(std::move(new_path), &error);
+  if (!new_dump)
   {
     Host::ReportErrorAsync("Error", fmt::format(TRANSLATE_FS("Failed to change GPU dump: {}", error.GetDescription())));
     return false;
   }
 
+  s_state.gpu_dump_player = std::move(new_dump);
+  s_state.region = s_state.gpu_dump_player->GetRegion();
   UpdateRunningGame(s_state.gpu_dump_player->GetPath(), nullptr, false);
 
   // current player object has been changed out, toss call stack

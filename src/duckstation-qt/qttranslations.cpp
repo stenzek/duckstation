@@ -1,9 +1,10 @@
-﻿// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com> and contributors.
+﻿// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "mainwindow.h"
 #include "qthost.h"
 
+#include "core/gpu_thread.h"
 #include "core/host.h"
 
 #include "util/imgui_manager.h"
@@ -256,9 +257,10 @@ void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, std::string_
   const char* imgui_font_url = nullptr;
   std::vector<ImWchar> glyph_ranges;
   glyph_ranges.clear();
+  glyph_ranges.reserve(std::size(s_base_latin_range) + 2);
 
   // Base Latin range is always included.
-  glyph_ranges.insert(glyph_ranges.begin(), std::begin(s_base_latin_range), std::end(s_base_latin_range));
+  glyph_ranges.insert(glyph_ranges.end(), std::begin(s_base_latin_range), std::end(s_base_latin_range));
 
   if (gi)
   {
@@ -281,7 +283,7 @@ void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, std::string_
   // If we don't have any specific glyph range, assume Central European, except if English, then keep the size down.
   if ((!gi || !gi->used_glyphs) && language != "en")
   {
-    glyph_ranges.insert(glyph_ranges.begin(), std::begin(s_central_european_ranges),
+    glyph_ranges.insert(glyph_ranges.end(), std::begin(s_central_european_ranges),
                         std::end(s_central_european_ranges));
   }
 
@@ -311,7 +313,9 @@ void QtHost::UpdateGlyphRangesAndClearCache(QWidget* dialog_parent, std::string_
   if (g_emu_thread)
   {
     Host::RunOnCPUThread([font_path = std::move(font_path), glyph_ranges = std::move(glyph_ranges)]() mutable {
-      ImGuiManager::SetFontPathAndRange(std::move(font_path), std::move(glyph_ranges));
+      GPUThread::RunOnThread([font_path = std::move(font_path), glyph_ranges = std::move(glyph_ranges)]() mutable {
+        ImGuiManager::SetFontPathAndRange(std::move(font_path), std::move(glyph_ranges));
+      });
       Host::ClearTranslationCache();
     });
   }

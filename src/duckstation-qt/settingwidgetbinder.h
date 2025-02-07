@@ -812,7 +812,7 @@ static void BindWidgetToIntSetting(SettingsInterface* sif, WidgetType* widget, s
 
   if (sif)
   {
-    Accessor::makeNullableInt(widget, value);
+    Accessor::makeNullableInt(widget, value_to_index(value, values));
 
     int sif_value;
     if (sif->GetIntValue(section.c_str(), key.c_str(), &sif_value))

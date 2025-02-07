@@ -449,7 +449,7 @@ CDImage::PrecacheResult CDImageCHD::Precache(ProgressCallback* progress)
   if (m_precached)
     return CDImage::PrecacheResult::Success;
 
-  progress->SetStatusText(fmt::format("Precaching {}...", FileSystem::GetDisplayNameFromPath(m_filename)).c_str());
+  progress->SetStatusText("Precaching CHD...");
   progress->SetProgressRange(100);
 
   auto callback = [](size_t pos, size_t total, void* param) {
@@ -533,10 +533,10 @@ s64 CDImageCHD::GetSizeOnDisk() const
   return static_cast<s64>(chd_get_compressed_size(m_chd));
 }
 
-std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* filename, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenCHDImage(const char* path, Error* error)
 {
   std::unique_ptr<CDImageCHD> image = std::make_unique<CDImageCHD>();
-  if (!image->Open(filename, error))
+  if (!image->Open(path, error))
     return {};
 
   return image;

@@ -141,6 +141,7 @@ Q_SIGNALS:
   void systemPaused();
   void systemResumed();
   void gameListRefreshed();
+  void gameListRowsChanged(const QList<int>& rows_changed);
   std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen, bool render_to_main,
                                                            bool surfaceless, bool use_main_window_pos, Error* error);
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
@@ -151,6 +152,7 @@ Q_SIGNALS:
   void mouseModeRequested(bool relative, bool hide_cursor);
   void fullscreenUIStartedOrStopped(bool running);
   void achievementsLoginRequested(Achievements::LoginRequestReason reason);
+  void achievementsLoginSuccess(const QString& username, quint32 points, quint32 sc_points, quint32 unread_messages);
   void achievementsRefreshed(quint32 id, const QString& game_info_string);
   void achievementsChallengeModeChanged(bool enabled);
   void cheatEnabled(quint32 index, bool enabled);

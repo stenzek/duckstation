@@ -29,7 +29,7 @@ struct GPUBackendUpdateDisplayCommand;
 namespace GPUThread {
 using AsyncCallType = std::function<void()>;
 using AsyncBackendCallType = std::function<void(GPUBackend*)>;
-using AsyncBufferCallType = void(*)(void*);
+using AsyncBufferCallType = void (*)(void*);
 
 enum class RunIdleReason : u8
 {
@@ -66,7 +66,7 @@ void ResizeDisplayWindow(s32 width, s32 height, float scale);
 /// Access to main window size from CPU thread.
 const WindowInfo& GetRenderWindowInfo();
 
-void UpdateSettings(bool gpu_settings_changed, bool device_settings_changed);
+void UpdateSettings(bool gpu_settings_changed, bool device_settings_changed, bool thread_changed);
 
 /// Triggers an abnormal system shutdown and waits for it to destroy the backend.
 void ReportFatalErrorAndShutdown(std::string_view reason);
@@ -95,7 +95,6 @@ void SyncGPUThread(bool spin);
 namespace Internal {
 const Threading::ThreadHandle& GetThreadHandle();
 void ProcessStartup();
-void SetThreadEnabled(bool enabled);
 void DoRunIdle();
 void RequestShutdown();
 void GPUThreadEntryPoint();

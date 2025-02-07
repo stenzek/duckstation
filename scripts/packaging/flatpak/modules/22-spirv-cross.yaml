@@ -22,8 +22,8 @@ build-options:
 sources:
   - type: git
     url: "https://github.com/KhronosGroup/SPIRV-Cross.git"
-    tag: "vulkan-sdk-1.3.290.0"
-    commit: "5d127b917f080c6f052553c47170ec0ba702e54f"
+    tag: "vulkan-sdk-1.4.304.0"
+    commit: "ebe2aa0cd80f5eb5cd8a605da604cacf72205f3b"
 cleanup:
   - /bin
   - /include

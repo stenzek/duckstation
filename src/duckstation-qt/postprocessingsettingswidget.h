@@ -98,9 +98,10 @@ public:
   ~PostProcessingOverlayConfigWidget();
 
 private Q_SLOTS:
+  void triggerSettingsReload();
   void onOverlayNameCurrentIndexChanged(int index);
   void onImagePathBrowseClicked();
-  void triggerSettingsReload();
+  void onExportCustomConfigClicked();
 
 private:
   Ui::PostProcessingOverlayConfigWidget m_ui;

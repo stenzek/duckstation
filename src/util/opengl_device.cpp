@@ -418,16 +418,16 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
 
 #ifdef __APPLE__
   // Partial texture buffer uploads appear to be broken in macOS's OpenGL driver.
-  m_features.supports_texture_buffers = false;
+  m_features.texture_buffers = false;
 #else
-  m_features.supports_texture_buffers =
+  m_features.texture_buffers =
     !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS) && (GLAD_GL_VERSION_3_1 || GLAD_GL_ES_VERSION_3_2);
 
   // And Samsung's ANGLE/GLES driver?
   if (std::strstr(reinterpret_cast<const char*>(glGetString(GL_RENDERER)), "ANGLE"))
-    m_features.supports_texture_buffers = false;
+    m_features.texture_buffers = false;
 
-  if (m_features.supports_texture_buffers)
+  if (m_features.texture_buffers)
   {
     GLint max_texel_buffer_size = 0;
     glGetIntegerv(GL_MAX_TEXTURE_BUFFER_SIZE, reinterpret_cast<GLint*>(&max_texel_buffer_size));
@@ -436,12 +436,12 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
     {
       WARNING_LOG("GL_MAX_TEXTURE_BUFFER_SIZE ({}) is below required minimum ({}), not using texture buffers.",
                   max_texel_buffer_size, MIN_TEXEL_BUFFER_ELEMENTS);
-      m_features.supports_texture_buffers = false;
+      m_features.texture_buffers = false;
     }
   }
 #endif
 
-  if (!m_features.supports_texture_buffers && !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS))
+  if (!m_features.texture_buffers && !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS))
   {
     // Try SSBOs.
     GLint max_fragment_storage_blocks = 0;
@@ -459,7 +459,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
     if (m_features.texture_buffers_emulated_with_ssbo)
     {
       INFO_LOG("Using shader storage buffers for VRAM writes.");
-      m_features.supports_texture_buffers = true;
+      m_features.texture_buffers = true;
     }
     else
     {
@@ -489,6 +489,7 @@ bool OpenGLDevice::CheckFeatures(FeatureMask disabled_features)
                             (!GLAD_GL_EXT_disjoint_timer_query || !glGetQueryObjectivEXT || !glGetQueryObjectui64vEXT));
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = true;
+  m_features.exclusive_fullscreen = false;
   m_features.explicit_present = false;
   m_features.timed_present = false;
 
@@ -796,7 +797,7 @@ GPUDevice::PresentResult OpenGLDevice::BeginPresent(GPUSwapChain* swap_chain, u3
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDisable(GL_SCISSOR_TEST);
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  glClearBufferfv(GL_COLOR, 0, GSVector4::rgba32(clear_color).F32);
+  glClearBufferfv(GL_COLOR, 0, GSVector4::unorm8(clear_color).F32);
   glColorMask(m_last_blend_state.write_r, m_last_blend_state.write_g, m_last_blend_state.write_b,
               m_last_blend_state.write_a);
   glEnable(GL_SCISSOR_TEST);

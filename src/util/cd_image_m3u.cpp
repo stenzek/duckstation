@@ -8,6 +8,7 @@
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/path.h"
+#include "common/string_util.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -81,7 +82,7 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
   while (std::getline(ifs, line))
   {
     u32 start_offset = 0;
-    while (start_offset < line.size() && std::isspace(line[start_offset]))
+    while (start_offset < line.size() && StringUtil::IsWhitespace(line[start_offset]))
       start_offset++;
 
     // skip comments
@@ -90,7 +91,7 @@ bool CDImageM3u::Open(const char* path, bool apply_patches, Error* error)
 
     // strip ending whitespace
     u32 end_offset = static_cast<u32>(line.size()) - 1;
-    while (std::isspace(line[end_offset]) && end_offset > start_offset)
+    while (StringUtil::IsWhitespace(line[end_offset]) && end_offset > start_offset)
       end_offset--;
 
     // anything?
@@ -181,10 +182,10 @@ bool CDImageM3u::ReadSubChannelQ(SubChannelQ* subq, const Index& index, LBA lba_
   return m_current_image->ReadSubChannelQ(subq, index, lba_in_index);
 }
 
-std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* filename, bool apply_patches, Error* error)
+std::unique_ptr<CDImage> CDImage::OpenM3uImage(const char* path, bool apply_patches, Error* error)
 {
   std::unique_ptr<CDImageM3u> image = std::make_unique<CDImageM3u>();
-  if (!image->Open(filename, apply_patches, error))
+  if (!image->Open(path, apply_patches, error))
     return {};
 
   return image;

@@ -1,0 +1,3 @@
+lbsubmit.wav: https://pixabay.com/sound-effects/notification-sound-7062/
+unlock.wav: https://pixabay.com/sound-effects/notification-pluck-on-269288/
+message.wav: https://pixabay.com/sound-effects/system-notification-199277/

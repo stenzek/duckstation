@@ -61,7 +61,7 @@ static void HotkeyModifyResolutionScale(s32 increment)
 
   if (System::IsValid())
   {
-    GPUThread::UpdateSettings(true, false);
+    GPUThread::UpdateSettings(true, false, false);
     System::ClearMemorySaveStates(true, false);
   }
 }
@@ -136,7 +136,7 @@ static void HotkeyToggleOSD()
   g_settings.display_show_inputs ^= Host::GetBoolSettingValue("Display", "ShowInputs", false);
   g_settings.display_show_enhancements ^= Host::GetBoolSettingValue("Display", "ShowEnhancements", false);
 
-  GPUThread::UpdateSettings(true, false);
+  GPUThread::UpdateSettings(true, false, false);
 }
 
 #ifndef __ANDROID__
@@ -215,6 +215,12 @@ DEFINE_HOTKEY("OpenCheatsMenu", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_
                   FullscreenUI::OpenCheatsMenu();
               })
 
+DEFINE_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
+              [](s32 pressed) {
+                if (!pressed)
+                  FullscreenUI::OpenDiscChangeMenu();
+              })
+
 DEFINE_HOTKEY("Screenshot", TRANSLATE_NOOP("Hotkeys", "General"), TRANSLATE_NOOP("Hotkeys", "Save Screenshot"),
               [](s32 pressed) {
                 if (!pressed)
@@ -263,17 +269,6 @@ DEFINE_HOTKEY("Reset", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotk
   if (!pressed)
     Host::RunOnCPUThread(System::ResetSystem);
 })
-
-DEFINE_HOTKEY("ChangeDisc", TRANSLATE_NOOP("Hotkeys", "System"), TRANSLATE_NOOP("Hotkeys", "Change Disc"),
-              [](s32 pressed) {
-                if (!pressed && System::IsValid() && System::HasMediaSubImages())
-                {
-                  const u32 current = System::GetMediaSubImageIndex();
-                  const u32 next = (current + 1) % System::GetMediaSubImageCount();
-                  if (current != next)
-                    Host::RunOnCPUThread([next]() { System::SwitchMediaSubImage(next); });
-                }
-              })
 
 DEFINE_HOTKEY("SwapMemoryCards", TRANSLATE_NOOP("Hotkeys", "System"),
               TRANSLATE_NOOP("Hotkeys", "Swap Memory Card Slots"), [](s32 pressed) {
@@ -380,7 +375,7 @@ DEFINE_HOTKEY("TogglePGXP", TRANSLATE_NOOP("Hotkeys", "Graphics"), TRANSLATE_NOO
                   System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_enable = !g_settings.gpu_pgxp_enable;
-                  GPUThread::UpdateSettings(true, false);
+                  GPUThread::UpdateSettings(true, false, false);
 
                   Host::AddKeyedOSDMessage("TogglePGXP",
                                            g_settings.gpu_pgxp_enable ?
@@ -447,7 +442,7 @@ DEFINE_HOTKEY("TogglePGXPDepth", TRANSLATE_NOOP("Hotkeys", "Graphics"),
                   System::ClearMemorySaveStates(true, true);
 
                   g_settings.gpu_pgxp_depth_buffer = !g_settings.gpu_pgxp_depth_buffer;
-                  GPUThread::UpdateSettings(true, false);
+                  GPUThread::UpdateSettings(true, false, false);
 
                   Host::AddKeyedOSDMessage("TogglePGXPDepth",
                                            g_settings.gpu_pgxp_depth_buffer ?

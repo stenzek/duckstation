@@ -1397,6 +1397,15 @@ void Host::CancelGameListRefresh()
   QMetaObject::invokeMethod(g_main_window, "cancelGameListRefresh", Qt::BlockingQueuedConnection);
 }
 
+void Host::OnGameListEntriesChanged(std::span<const u32> changed_indices)
+{
+  QList<int> changed_rows;
+  changed_rows.reserve(changed_indices.size());
+  for (const u32 row : changed_indices)
+    changed_rows.push_back(static_cast<int>(row));
+  emit g_emu_thread->gameListRowsChanged(changed_rows);
+}
+
 void EmuThread::loadState(const QString& filename)
 {
   if (!isCurrentThread())
@@ -1577,13 +1586,7 @@ void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)
 
 void Host::OnAchievementsLoginSuccess(const char* username, u32 points, u32 sc_points, u32 unread_messages)
 {
-  const QString message = qApp->translate("QtHost", "RA: Logged in as %1 (%2, %3 softcore). %4 unread messages.")
-                            .arg(QString::fromUtf8(username))
-                            .arg(points)
-                            .arg(sc_points)
-                            .arg(unread_messages);
-
-  emit g_emu_thread->statusMessage(message);
+  emit g_emu_thread->achievementsLoginSuccess(QString::fromUtf8(username), points, sc_points, unread_messages);
 }
 
 void Host::OnAchievementsRefreshed()
@@ -1973,16 +1976,99 @@ bool Host::ConfirmMessage(std::string_view title, std::string_view message)
                                              QString::fromUtf8(message.data(), message.size()));
 }
 
-void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback)
+void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
+                               std::string_view yes_text, std::string_view no_text)
 {
-  QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
-                         callback = std::move(callback)]() mutable {
-    auto lock = g_main_window->pauseAndLockSystem();
+  INFO_LOG("ConfirmMessageAsync({}, {})", title, message);
 
-    const bool result = (QMessageBox::question(lock.getDialogParent(), title, message) != QMessageBox::No);
+  // This is a racey read, but whether FSUI is started should be visible on all threads.
+  std::atomic_thread_fence(std::memory_order_acquire);
 
-    callback(result);
-  });
+  // Default button titles.
+  if (yes_text.empty())
+    yes_text = TRANSLATE_SV("QtHost", "Yes");
+  if (no_text.empty())
+    no_text = TRANSLATE_SV("QtHost", "No");
+
+  // Ensure it always comes from the CPU thread.
+  if (!g_emu_thread->isCurrentThread())
+  {
+    Host::RunOnCPUThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
+                          yes_text = std::string(yes_text), no_text = std::string(no_text)]() mutable {
+      ConfirmMessageAsync(title, message, std::move(callback));
+    });
+    return;
+  }
+
+  // Pause system while dialog is up.
+  const bool needs_pause = System::IsValid() && !System::IsPaused();
+  if (needs_pause)
+    System::PauseSystem(true);
+
+  // Use FSUI to display the confirmation if it is active.
+  if (FullscreenUI::IsInitialized())
+  {
+    GPUThread::RunOnThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
+                            yes_text = std::string(yes_text), no_text = std::string(no_text), needs_pause]() mutable {
+      if (!FullscreenUI::Initialize())
+      {
+        callback(false);
+
+        if (needs_pause)
+        {
+          Host::RunOnCPUThread([]() {
+            if (System::IsValid())
+              System::PauseSystem(false);
+          });
+        }
+
+        return;
+      }
+
+      // Need to reset run idle state _again_ after displaying.
+      auto final_callback = [callback = std::move(callback)](bool result) {
+        FullscreenUI::UpdateRunIdleState();
+        callback(result);
+      };
+
+      ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
+                                                fmt::format(ICON_FA_CHECK " {}", yes_text),
+                                                fmt::format(ICON_FA_TIMES " {}", no_text));
+      FullscreenUI::UpdateRunIdleState();
+    });
+  }
+  else
+  {
+    // Otherwise, use the desktop UI.
+    QtHost::RunOnUIThread([title = QtUtils::StringViewToQString(title), message = QtUtils::StringViewToQString(message),
+                           callback = std::move(callback), yes_text = QtUtils::StringViewToQString(yes_text),
+                           no_text = QtUtils::StringViewToQString(no_text), needs_pause]() mutable {
+      auto lock = g_main_window->pauseAndLockSystem();
+
+      bool result;
+      {
+        QMessageBox msgbox(lock.getDialogParent());
+        msgbox.setIcon(QMessageBox::Question);
+        msgbox.setWindowTitle(title);
+        msgbox.setText(message);
+
+        QPushButton* const yes_button = msgbox.addButton(yes_text, QMessageBox::AcceptRole);
+        msgbox.addButton(no_text, QMessageBox::RejectRole);
+        msgbox.exec();
+        result = (msgbox.clickedButton() == yes_button);
+      }
+
+      callback(result);
+
+      if (needs_pause)
+      {
+        Host::RunOnCPUThread([]() {
+          if (System::IsValid())
+            System::PauseSystem(false);
+        });
+      }
+    });
+  }
 }
 
 void Host::OpenURL(std::string_view url)

@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 name: libzip
@@ -26,7 +26,7 @@ build-options:
 sources:
   - type: git
     url: "https://github.com/nih-at/libzip.git"
-    commit: "64b62d6b1a686a1b0bac1b6b9dcb635be0499afb"
+    commit: "f30f5290de485348442d168cd7b2eb714d1f20f9"
 cleanup:
   - /bin
   - /include

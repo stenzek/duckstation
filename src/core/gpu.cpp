@@ -695,22 +695,49 @@ float GPU::ComputeAspectRatioCorrection() const
   const CRTCState& cs = m_crtc_state;
   float relative_width = static_cast<float>(cs.horizontal_visible_end - cs.horizontal_visible_start);
   float relative_height = static_cast<float>(cs.vertical_visible_end - cs.vertical_visible_start);
-  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1 ||
-      g_settings.display_crop_mode == DisplayCropMode::OverscanUncorrected ||
-      g_settings.display_crop_mode == DisplayCropMode::BordersUncorrected)
-  {
+  if (relative_width <= 0 || relative_height <= 0 || g_settings.display_aspect_ratio == DisplayAspectRatio::PAR1_1)
     return 1.0f;
-  }
 
-  if (m_GPUSTAT.pal_mode)
+  // Apply aspect ratio correction for all borders, or overscan with altered display range.
+  // That way if cropping is performed, the original aspect ratio is maintained.
+  switch (g_settings.display_crop_mode)
   {
-    relative_width /= static_cast<float>(PAL_HORIZONTAL_ACTIVE_END - PAL_HORIZONTAL_ACTIVE_START);
-    relative_height /= static_cast<float>(PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START);
-  }
-  else
-  {
-    relative_width /= static_cast<float>(NTSC_HORIZONTAL_ACTIVE_END - NTSC_HORIZONTAL_ACTIVE_START);
-    relative_height /= static_cast<float>(NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START);
+    case DisplayCropMode::Borders:
+    case DisplayCropMode::None:
+    {
+      if (m_GPUSTAT.pal_mode)
+      {
+        relative_width /= static_cast<float>(PAL_HORIZONTAL_ACTIVE_END - PAL_HORIZONTAL_ACTIVE_START);
+        relative_height /= static_cast<float>(PAL_VERTICAL_ACTIVE_END - PAL_VERTICAL_ACTIVE_START);
+      }
+      else
+      {
+        relative_width /= static_cast<float>(NTSC_HORIZONTAL_ACTIVE_END - NTSC_HORIZONTAL_ACTIVE_START);
+        relative_height /= static_cast<float>(NTSC_VERTICAL_ACTIVE_END - NTSC_VERTICAL_ACTIVE_START);
+      }
+    }
+    break;
+
+    case DisplayCropMode::Overscan:
+    {
+      if (m_GPUSTAT.pal_mode)
+      {
+        relative_width /= static_cast<float>(PAL_OVERSCAN_HORIZONTAL_ACTIVE_END - PAL_OVERSCAN_HORIZONTAL_ACTIVE_START);
+        relative_height /= static_cast<float>(PAL_OVERSCAN_VERTICAL_ACTIVE_END - PAL_OVERSCAN_VERTICAL_ACTIVE_START);
+      }
+      else
+      {
+        relative_width /=
+          static_cast<float>(NTSC_OVERSCAN_HORIZONTAL_ACTIVE_END - NTSC_OVERSCAN_HORIZONTAL_ACTIVE_START);
+        relative_height /= static_cast<float>(NTSC_OVERSCAN_VERTICAL_ACTIVE_END - NTSC_OVERSCAN_VERTICAL_ACTIVE_START);
+      }
+    }
+    break;
+
+    case DisplayCropMode::OverscanUncorrected:
+    case DisplayCropMode::BordersUncorrected:
+    default:
+      return 1.0f;
   }
 
   return (relative_width / relative_height);
@@ -839,12 +866,16 @@ void GPU::UpdateCRTCDisplayParameters()
 
       case DisplayCropMode::Overscan:
       case DisplayCropMode::OverscanUncorrected:
-        cs.horizontal_visible_start = static_cast<u16>(std::max<int>(0, 628 + g_settings.display_active_start_offset));
-        cs.horizontal_visible_end =
-          static_cast<u16>(std::max<int>(cs.horizontal_visible_start, 3188 + g_settings.display_active_end_offset));
-        cs.vertical_visible_start = static_cast<u16>(std::max<int>(0, 30 + g_settings.display_line_start_offset));
+        cs.horizontal_visible_start = static_cast<u16>(std::max<s32>(
+          0, static_cast<s32>(PAL_OVERSCAN_HORIZONTAL_ACTIVE_START) + g_settings.display_active_start_offset));
+        cs.horizontal_visible_end = static_cast<u16>(
+          std::max<s32>(cs.horizontal_visible_start,
+                        static_cast<s32>(PAL_OVERSCAN_HORIZONTAL_ACTIVE_END) + g_settings.display_active_end_offset));
+        cs.vertical_visible_start = static_cast<u16>(std::max<s32>(
+          0, static_cast<s32>(PAL_OVERSCAN_VERTICAL_ACTIVE_START) + g_settings.display_line_start_offset));
         cs.vertical_visible_end =
-          static_cast<u16>(std::max<int>(cs.vertical_visible_start, 298 + g_settings.display_line_end_offset));
+          static_cast<u16>(std::max<s32>(cs.vertical_visible_start, static_cast<s32>(PAL_OVERSCAN_VERTICAL_ACTIVE_END) +
+                                                                      g_settings.display_line_end_offset));
         break;
 
       case DisplayCropMode::Borders:
@@ -878,12 +909,16 @@ void GPU::UpdateCRTCDisplayParameters()
 
       case DisplayCropMode::Overscan:
       case DisplayCropMode::OverscanUncorrected:
-        cs.horizontal_visible_start = static_cast<u16>(std::max<int>(0, 608 + g_settings.display_active_start_offset));
-        cs.horizontal_visible_end =
-          static_cast<u16>(std::max<int>(cs.horizontal_visible_start, 3168 + g_settings.display_active_end_offset));
-        cs.vertical_visible_start = static_cast<u16>(std::max<int>(0, 24 + g_settings.display_line_start_offset));
-        cs.vertical_visible_end =
-          static_cast<u16>(std::max<int>(cs.vertical_visible_start, 248 + g_settings.display_line_end_offset));
+        cs.horizontal_visible_start = static_cast<u16>(std::max<s32>(
+          0, static_cast<s32>(NTSC_OVERSCAN_HORIZONTAL_ACTIVE_START) + g_settings.display_active_start_offset));
+        cs.horizontal_visible_end = static_cast<u16>(
+          std::max<s32>(cs.horizontal_visible_start,
+                        static_cast<s32>(NTSC_OVERSCAN_HORIZONTAL_ACTIVE_END) + g_settings.display_active_end_offset));
+        cs.vertical_visible_start = static_cast<u16>(std::max<s32>(
+          0, static_cast<s32>(NTSC_OVERSCAN_VERTICAL_ACTIVE_START) + g_settings.display_line_start_offset));
+        cs.vertical_visible_end = static_cast<u16>(
+          std::max<s32>(cs.vertical_visible_start,
+                        static_cast<s32>(NTSC_OVERSCAN_VERTICAL_ACTIVE_END) + g_settings.display_line_end_offset));
         break;
 
       case DisplayCropMode::Borders:
@@ -1296,7 +1331,7 @@ void GPU::ConvertScreenCoordinatesToDisplayCoordinates(float window_x, float win
   CalculateDrawRect(wi.surface_width, wi.surface_height, m_crtc_state.display_width, m_crtc_state.display_height,
                     m_crtc_state.display_origin_left, m_crtc_state.display_origin_top, m_crtc_state.display_vram_width,
                     m_crtc_state.display_vram_height, g_settings.display_rotation, g_settings.display_alignment,
-                    ComputePixelAspectRatio(), g_settings.display_stretch_vertically,
+                    ComputePixelAspectRatio(),
                     (g_settings.display_scaling == DisplayScalingMode::NearestInteger ||
                      g_settings.display_scaling == DisplayScalingMode::BilinearInteger),
                     &display_rc, &draw_rc);
@@ -1726,31 +1761,54 @@ void GPU::SetTextureWindow(u32 value)
   m_draw_mode.texture_window_value = value;
 }
 
+static bool IntegerScalePreferWidth(float display_width, float display_height, float pixel_aspect_ratio,
+                                    float fwindow_width, float fwindow_height)
+{
+  static constexpr auto get_integer_scale = [](float dwidth, float dheight, float wwidth, float wheight) {
+    if ((dwidth / dheight) >= (wwidth / wheight))
+      return std::floor(wwidth / dwidth);
+    else
+      return std::floor(wheight / dheight);
+  };
+
+  const float scale_width =
+    get_integer_scale(display_width * pixel_aspect_ratio, display_height, fwindow_width, fwindow_height);
+  const float scale_height =
+    get_integer_scale(display_width, display_height / pixel_aspect_ratio, fwindow_width, fwindow_height);
+
+  return (scale_width >= scale_height);
+}
+
 void GPU::CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_display_width, u32 crtc_display_height,
                             s32 display_origin_left, s32 display_origin_top, u32 display_vram_width,
                             u32 display_vram_height, DisplayRotation rotation, DisplayAlignment alignment,
-                            float pixel_aspect_ratio, bool stretch_vertically, bool integer_scale,
-                            GSVector4i* display_rect, GSVector4i* draw_rect)
+                            float pixel_aspect_ratio, bool integer_scale, GSVector4i* display_rect,
+                            GSVector4i* draw_rect)
 {
-  const float window_ratio = static_cast<float>(window_width) / static_cast<float>(window_height);
-  const float x_scale = pixel_aspect_ratio;
+  const float fwindow_width = static_cast<float>(window_width);
+  const float fwindow_height = static_cast<float>(window_height);
   float display_width = static_cast<float>(crtc_display_width);
   float display_height = static_cast<float>(crtc_display_height);
   float active_left = static_cast<float>(display_origin_left);
   float active_top = static_cast<float>(display_origin_top);
   float active_width = static_cast<float>(display_vram_width);
   float active_height = static_cast<float>(display_vram_height);
-  if (!stretch_vertically)
+
+  // for integer scale, use whichever gets us a greater effective display size
+  // this is needed for games like crash where the framebuffer is wide to not lose detail
+  if (integer_scale ?
+        IntegerScalePreferWidth(display_width, display_height, pixel_aspect_ratio, fwindow_width, fwindow_height) :
+        (pixel_aspect_ratio >= 1.0f))
   {
-    display_width *= x_scale;
-    active_left *= x_scale;
-    active_width *= x_scale;
+    display_width *= pixel_aspect_ratio;
+    active_left *= pixel_aspect_ratio;
+    active_width *= pixel_aspect_ratio;
   }
   else
   {
-    display_height /= x_scale;
-    active_top /= x_scale;
-    active_height /= x_scale;
+    display_height /= pixel_aspect_ratio;
+    active_top /= pixel_aspect_ratio;
+    active_height /= pixel_aspect_ratio;
   }
 
   // swap width/height when rotated, the flipping of padding is taken care of in the shader with the rotation matrix
@@ -1764,14 +1822,15 @@ void GPU::CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_displa
   // now fit it within the window
   float scale;
   float left_padding, top_padding;
-  if ((display_width / display_height) >= window_ratio)
+  if ((display_width / display_height) >= (fwindow_width / fwindow_height))
   {
     // align in middle vertically
-    scale = static_cast<float>(window_width) / display_width;
+    scale = fwindow_width / display_width;
     if (integer_scale)
     {
-      scale = std::max(std::floor(scale), 1.0f);
-      left_padding = std::max<float>((static_cast<float>(window_width) - display_width * scale) / 2.0f, 0.0f);
+      // skip integer scaling if we cannot fit in the window at all
+      scale = (scale >= 1.0f) ? std::floor(scale) : scale;
+      left_padding = std::max<float>((fwindow_width - display_width * scale) / 2.0f, 0.0f);
     }
     else
     {
@@ -1781,11 +1840,11 @@ void GPU::CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_displa
     switch (alignment)
     {
       case DisplayAlignment::RightOrBottom:
-        top_padding = std::max<float>(static_cast<float>(window_height) - (display_height * scale), 0.0f);
+        top_padding = std::max<float>(fwindow_height - (display_height * scale), 0.0f);
         break;
 
       case DisplayAlignment::Center:
-        top_padding = std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
+        top_padding = std::max<float>((fwindow_height - (display_height * scale)) / 2.0f, 0.0f);
         break;
 
       case DisplayAlignment::LeftOrTop:
@@ -1800,8 +1859,9 @@ void GPU::CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_displa
     scale = static_cast<float>(window_height) / display_height;
     if (integer_scale)
     {
-      scale = std::max(std::floor(scale), 1.0f);
-      top_padding = std::max<float>((static_cast<float>(window_height) - (display_height * scale)) / 2.0f, 0.0f);
+      // skip integer scaling if we cannot fit in the window at all
+      scale = (scale >= 1.0f) ? std::floor(scale) : scale;
+      top_padding = std::max<float>((fwindow_height - (display_height * scale)) / 2.0f, 0.0f);
     }
     else
     {
@@ -1811,11 +1871,11 @@ void GPU::CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_displa
     switch (alignment)
     {
       case DisplayAlignment::RightOrBottom:
-        left_padding = std::max<float>(static_cast<float>(window_width) - (display_width * scale), 0.0f);
+        left_padding = std::max<float>(fwindow_width - (display_width * scale), 0.0f);
         break;
 
       case DisplayAlignment::Center:
-        left_padding = std::max<float>((static_cast<float>(window_width) - (display_width * scale)) / 2.0f, 0.0f);
+        left_padding = std::max<float>((fwindow_width - (display_width * scale)) / 2.0f, 0.0f);
         break;
 
       case DisplayAlignment::LeftOrTop:

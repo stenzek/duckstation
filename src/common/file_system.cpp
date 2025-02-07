@@ -1067,7 +1067,7 @@ std::string Path::URLEncode(std::string_view str)
   {
     const char c = str[i];
     if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '-' || c == '_' ||
-        c == '.' || c == '!' || c == '~' || c == '*' || c == '\'' || c == '(' || c == ')')
+        c == '.' || c == '~')
     {
       ret.push_back(c);
     }
@@ -1077,8 +1077,8 @@ std::string Path::URLEncode(std::string_view str)
 
       const unsigned char n1 = static_cast<unsigned char>(c) >> 4;
       const unsigned char n2 = static_cast<unsigned char>(c) & 0x0F;
-      ret.push_back((n1 >= 10) ? ('a' + (n1 - 10)) : ('0' + n1));
-      ret.push_back((n2 >= 10) ? ('a' + (n2 - 10)) : ('0' + n2));
+      ret.push_back((n1 >= 10) ? ('A' + (n1 - 10)) : ('0' + n1));
+      ret.push_back((n2 >= 10) ? ('A' + (n2 - 10)) : ('0' + n2));
     }
   }
 
@@ -1090,34 +1090,29 @@ std::string Path::URLDecode(std::string_view str)
   std::string ret;
   ret.reserve(str.length());
 
-  for (size_t i = 0, l = str.size(); i < l; i++)
+  for (size_t i = 0, l = str.size(); i < l;)
   {
-    const char c = str[i];
-    if (c == '+')
+    const char c = str[i++];
+    if (c == '%')
     {
-      ret.push_back(c);
-    }
-    else if (c == '%')
-    {
-      if ((i + 2) >= str.length())
+      if ((i + 2) > str.length())
         break;
 
-      const char clower = str[i + 1];
-      const char cupper = str[i + 2];
-      const unsigned char lower =
-        (clower >= '0' && clower <= '9') ?
-          static_cast<unsigned char>(clower - '0') :
-          ((clower >= 'a' && clower <= 'f') ?
-             static_cast<unsigned char>(clower - 'a') :
-             ((clower >= 'A' && clower <= 'F') ? static_cast<unsigned char>(clower - 'A') : 0));
-      const unsigned char upper =
-        (cupper >= '0' && cupper <= '9') ?
-          static_cast<unsigned char>(cupper - '0') :
-          ((cupper >= 'a' && cupper <= 'f') ?
-             static_cast<unsigned char>(cupper - 'a') :
-             ((cupper >= 'A' && cupper <= 'F') ? static_cast<unsigned char>(cupper - 'A') : 0));
-      const char dch = static_cast<char>(lower | (upper << 4));
-      ret.push_back(dch);
+      // return -1 which will be negative when or'ed with anything else, so it becomes invalid.
+      static constexpr auto to_nibble = [](char ch) -> int {
+        return (ch >= '0' && ch <= '9') ?
+                 static_cast<int>(ch - '0') :
+                 ((ch >= 'a' && ch <= 'f') ? (static_cast<int>(ch - 'a') + 0xa) :
+                                             ((ch >= 'A' && ch <= 'F') ? (static_cast<int>(ch - 'A') + 0xa) : -1));
+      };
+
+      const int upper = to_nibble(str[i++]);
+      const int lower = to_nibble(str[i++]);
+      const int dch = lower | (upper << 4);
+      if (dch < 0)
+        break;
+
+      ret.push_back(static_cast<char>(dch));
     }
     else
     {
@@ -1125,7 +1120,7 @@ std::string Path::URLDecode(std::string_view str)
     }
   }
 
-  return std::string(str);
+  return ret;
 }
 
 std::string Path::CreateFileURL(std::string_view path)

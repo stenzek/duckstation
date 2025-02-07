@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gamelistwidget.h"
@@ -108,33 +108,106 @@ private:
 };
 
 namespace {
-class GameListIconStyleDelegate final : public QStyledItemDelegate
+class GameListCenterIconStyleDelegate final : public QStyledItemDelegate
 {
 public:
-  GameListIconStyleDelegate(QWidget* parent) : QStyledItemDelegate(parent) {}
-  ~GameListIconStyleDelegate() = default;
+  GameListCenterIconStyleDelegate(QWidget* parent) : QStyledItemDelegate(parent) {}
+  ~GameListCenterIconStyleDelegate() = default;
 
   void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
   {
     // https://stackoverflow.com/questions/32216568/how-to-set-icon-center-in-qtableview
     Q_ASSERT(index.isValid());
 
-    // draw default item
-    QStyleOptionViewItem opt = option;
-    initStyleOption(&opt, index);
-    opt.icon = QIcon();
-    QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, 0);
-
-    const QRect r = option.rect;
+    const QRect& r = option.rect;
     const QPixmap pix = qvariant_cast<QPixmap>(index.data(Qt::DecorationRole));
     const int pix_width = static_cast<int>(pix.width() / pix.devicePixelRatio());
-    const int pix_height = static_cast<int>(pix.width() / pix.devicePixelRatio());
+    const int pix_height = static_cast<int>(pix.height() / pix.devicePixelRatio());
 
     // draw pixmap at center of item
     const QPoint p = QPoint((r.width() - pix_width) / 2, (r.height() - pix_height) / 2);
     painter->drawPixmap(r.topLeft() + p, pix);
   }
 };
+
+class GameListAchievementsStyleDelegate : public QStyledItemDelegate
+{
+public:
+  GameListAchievementsStyleDelegate(QWidget* parent, GameListModel* model, GameListSortModel* sort_model)
+    : QStyledItemDelegate(parent), m_model(model), m_sort_model(sort_model)
+  {
+  }
+
+  void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
+  {
+    Q_ASSERT(index.isValid());
+
+    u32 num_achievements = 0;
+    u32 num_unlocked = 0;
+    u32 num_unlocked_hardcore = 0;
+    bool mastered = false;
+
+    {
+      const QModelIndex source_index = m_sort_model->mapToSource(index);
+      const auto lock = GameList::GetLock();
+      const GameList::Entry* entry = GameList::GetEntryByIndex(static_cast<u32>(source_index.row()));
+      if (!entry)
+        return;
+
+      num_achievements = entry->num_achievements;
+      num_unlocked = entry->unlocked_achievements;
+      num_unlocked_hardcore = entry->unlocked_achievements_hc;
+      mastered = entry->AreAchievementsMastered();
+    }
+
+    QRect r = option.rect;
+
+    const QPixmap& icon = (num_achievements > 0) ? (mastered ? m_model->getMasteredAchievementsPixmap() :
+                                                               m_model->getHasAchievementsPixmap()) :
+                                                   m_model->getNoAchievementsPixmap();
+    const int icon_height = static_cast<int>(icon.width() / icon.devicePixelRatio());
+    painter->drawPixmap(r.topLeft() + QPoint(4, (r.height() - icon_height) / 2), icon);
+    r.setLeft(r.left() + 4 + icon.width());
+
+    if (num_achievements > 0)
+    {
+      const QFontMetrics fm(painter->fontMetrics());
+
+      // display hardcore in parenthesis only if there are actually hc unlocks
+      const bool display_hardcore = (num_unlocked > 0 && num_unlocked_hardcore > 0);
+      const bool display_hardcore_only = (num_unlocked == 0 && num_unlocked_hardcore > 0);
+      const QString first = QStringLiteral("%1").arg(display_hardcore_only ? num_unlocked_hardcore : num_unlocked);
+      const QString total = QStringLiteral("/%3").arg(num_achievements);
+
+      const QPalette& palette = static_cast<QWidget*>(parent())->palette();
+      const QColor hc_color = QColor(44, 151, 250);
+
+      painter->setPen(display_hardcore_only ? hc_color : palette.color(QPalette::WindowText));
+      painter->drawText(r, Qt::AlignVCenter, first);
+      r.setLeft(r.left() + fm.size(Qt::TextSingleLine, first).width());
+
+      if (display_hardcore)
+      {
+        const QString hc = QStringLiteral("(%2)").arg(num_unlocked_hardcore);
+        painter->setPen(hc_color);
+        painter->drawText(r, Qt::AlignVCenter, hc);
+        r.setLeft(r.left() + fm.size(Qt::TextSingleLine, hc).width());
+      }
+
+      painter->setPen(palette.color(QPalette::WindowText));
+      painter->drawText(r, Qt::AlignVCenter, total);
+    }
+    else
+    {
+      painter->drawText(r, Qt::AlignVCenter, QStringLiteral("N/A"));
+    }
+  }
+
+private:
+  GameListModel* m_model;
+  GameListSortModel* m_sort_model;
+};
+
 } // namespace
 
 GameListWidget::GameListWidget(QWidget* parent /* = nullptr */) : QWidget(parent)
@@ -185,6 +258,7 @@ void GameListWidget::initialize()
           [this](const QString& text) { m_sort_model->setFilterName(text); });
   connect(m_ui.searchText, &QLineEdit::returnPressed, this, &GameListWidget::onSearchReturnPressed);
 
+  GameListCenterIconStyleDelegate* center_icon_delegate = new GameListCenterIconStyleDelegate(this);
   m_table_view = new QTableView(m_ui.stack);
   m_table_view->setModel(m_sort_model);
   m_table_view->setSortingEnabled(true);
@@ -199,7 +273,10 @@ void GameListWidget::initialize()
   m_table_view->verticalHeader()->hide();
   m_table_view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
   m_table_view->setVerticalScrollMode(QAbstractItemView::ScrollMode::ScrollPerPixel);
-  m_table_view->setItemDelegateForColumn(0, new GameListIconStyleDelegate(this));
+  m_table_view->setItemDelegateForColumn(GameListModel::Column_Icon, center_icon_delegate);
+  m_table_view->setItemDelegateForColumn(GameListModel::Column_Region, center_icon_delegate);
+  m_table_view->setItemDelegateForColumn(GameListModel::Column_Achievements,
+                                         new GameListAchievementsStyleDelegate(this, m_model, m_sort_model));
 
   loadTableViewColumnVisibilitySettings();
   loadTableViewColumnSortSettings();
@@ -625,6 +702,7 @@ void GameListWidget::resizeTableViewColumnsToFit()
                                                      80,  // file size
                                                      80,  // size
                                                      50,  // region
+                                                     90,  // achievements
                                                      100  // compatibility
                                                    });
 }
@@ -651,7 +729,8 @@ void GameListWidget::loadTableViewColumnVisibilitySettings()
     true,  // file size
     false, // size
     true,  // region
-    true   // compatibility
+    false, // achievements
+    false  // compatibility
   }};
 
   for (int column = 0; column < GameListModel::Column_Count; column++)
@@ -708,6 +787,17 @@ void GameListWidget::saveTableViewColumnSortSettings()
 
   Host::SetBaseBoolSettingValue("GameListTableView", "SortDescending", sort_descending);
   Host::CommitBaseSettingChanges();
+}
+
+void GameListWidget::setTableViewColumnHidden(int column, bool hidden)
+{
+  DebugAssert(column < GameListModel::Column_Count);
+  if (m_table_view->isColumnHidden(column) == hidden)
+    return;
+
+  m_table_view->setColumnHidden(column, hidden);
+  saveTableViewColumnVisibilitySettings(column);
+  resizeTableViewColumnsToFit();
 }
 
 const GameList::Entry* GameListWidget::getSelectedEntry() const

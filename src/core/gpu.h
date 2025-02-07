@@ -84,10 +84,18 @@ public:
     NTSC_HORIZONTAL_ACTIVE_END = 3288,
     NTSC_VERTICAL_ACTIVE_START = 16,
     NTSC_VERTICAL_ACTIVE_END = 256,
+    NTSC_OVERSCAN_HORIZONTAL_ACTIVE_START = 608,
+    NTSC_OVERSCAN_HORIZONTAL_ACTIVE_END = 3168,
+    NTSC_OVERSCAN_VERTICAL_ACTIVE_START = 24,
+    NTSC_OVERSCAN_VERTICAL_ACTIVE_END = 248,
     PAL_HORIZONTAL_ACTIVE_START = 488,
     PAL_HORIZONTAL_ACTIVE_END = 3300,
     PAL_VERTICAL_ACTIVE_START = 20,
     PAL_VERTICAL_ACTIVE_END = 308,
+    PAL_OVERSCAN_HORIZONTAL_ACTIVE_START = 628,
+    PAL_OVERSCAN_HORIZONTAL_ACTIVE_END = 3188,
+    PAL_OVERSCAN_VERTICAL_ACTIVE_START = 30,
+    PAL_OVERSCAN_VERTICAL_ACTIVE_END = 298,
   };
 
   // Base class constructor.
@@ -226,8 +234,8 @@ public:
   static void CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_display_width, u32 crtc_display_height,
                                 s32 display_origin_left, s32 display_origin_top, u32 display_vram_width,
                                 u32 display_vram_height, DisplayRotation rotation, DisplayAlignment alignment,
-                                float pixel_aspect_ratio, bool stretch_vertically, bool integer_scale,
-                                GSVector4i* display_rect, GSVector4i* draw_rect);
+                                float pixel_aspect_ratio, bool integer_scale, GSVector4i* display_rect,
+                                GSVector4i* draw_rect);
 
 private:
   TickCount CRTCTicksToSystemTicks(TickCount crtc_ticks, TickCount fractional_ticks) const;

@@ -465,6 +465,17 @@ int rc_operand_type_is_memref(uint8_t type) {
   }
 }
 
+int rc_operand_type_is_transform(uint8_t type) {
+  switch (type) {
+    case RC_OPERAND_BCD:
+    case RC_OPERAND_INVERTED:
+      return 1;
+
+    default:
+      return 0;
+  }
+}
+
 int rc_operand_is_memref(const rc_operand_t* self) {
   return rc_operand_type_is_memref(self->type);
 }
@@ -603,9 +614,15 @@ void rc_operand_addsource(rc_operand_t* self, rc_parse_state_t* parse, uint8_t n
 
   self->value.memref = (rc_memref_t*)modified_memref;
 
-  /* if adding a constant, change the type to be address (current value) */
-  if (!rc_operand_is_memref(self))
+  if (!rc_operand_is_memref(self)) {
+    /* if adding a constant, change the type to be address (current value) */
     self->type = self->memref_access_type = RC_OPERAND_ADDRESS;
+  }
+  else if (rc_operand_type_is_transform(self->type)) {
+    /* transform is applied in the modified_memref. change the type to be
+     * address (current value) to avoid applying the transform again */
+    self->type = self->memref_access_type = RC_OPERAND_ADDRESS;
+  }
 
   /* result of an AddSource operation is always a 32-bit integer (even if parent or modifier is a float) */
   self->size = RC_MEMSIZE_32_BITS;

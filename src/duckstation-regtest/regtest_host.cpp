@@ -132,9 +132,6 @@ bool RegTestHost::InitializeConfig()
   EmuFolders::LoadConfig(*s_base_settings_interface.get());
   EmuFolders::EnsureFoldersExist();
 
-  // imgui setup, make sure it doesn't bug out
-  ImGuiManager::SetFontPathAndRange(std::string(), {0x0020, 0x00FF, 0x2022, 0x2022, 0, 0});
-
   return true;
 }
 
@@ -162,7 +159,8 @@ bool Host::ConfirmMessage(std::string_view title, std::string_view message)
   return true;
 }
 
-void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback)
+void Host::ConfirmMessageAsync(std::string_view title, std::string_view message, ConfirmMessageAsyncCallback callback,
+                               std::string_view yes_text, std::string_view no_text)
 {
   if (!title.empty() && !message.empty())
     ERROR_LOG("ConfirmMessage: {}: {}", title, message);
@@ -593,6 +591,11 @@ void Host::RefreshGameListAsync(bool invalidate_cache)
 }
 
 void Host::CancelGameListRefresh()
+{
+  // noop
+}
+
+void Host::OnGameListEntriesChanged(std::span<const u32> changed_indices)
 {
   // noop
 }

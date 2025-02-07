@@ -941,6 +941,9 @@ public:
   }
 
   ALWAYS_INLINE GSVector4i(const GSVector4i& v) { std::memcpy(S32, v.S32, sizeof(S32)); }
+
+  ALWAYS_INLINE explicit GSVector4i(const GSVector2& v) : S32{static_cast<s32>(v.x), static_cast<s32>(v.y), 0, 0} {}
+
   ALWAYS_INLINE explicit GSVector4i(const GSVector2i& v) : S32{v.S32[0], v.S32[1], 0, 0} {}
 
   ALWAYS_INLINE explicit GSVector4i(s32 i) { *this = i; }
@@ -1556,6 +1559,8 @@ public:
     return ret;
   }
 
+  ALWAYS_INLINE static GSVector4i loadl(const GSVector2i& v) { return loadl<true>(&v); }
+
   template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const void* p)
   {
@@ -1565,10 +1570,7 @@ public:
     return ret;
   }
 
-  ALWAYS_INLINE static GSVector4i loadh(const GSVector2i& v)
-  {
-    return loadh<true>(&v);
-  }
+  ALWAYS_INLINE static GSVector4i loadh(const GSVector2i& v) { return loadh<true>(&v); }
 
   template<bool aligned>
   ALWAYS_INLINE static GSVector4i load(const void* p)

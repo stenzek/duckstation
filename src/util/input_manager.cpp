@@ -381,7 +381,7 @@ std::string InputManager::ConvertInputBindingKeysToString(InputBindingInfo::Type
     ss << keystr;
   }
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 bool InputManager::PrettifyInputBinding(SmallStringBase& binding, BindingIconMappingFunction mapper /*= nullptr*/)
@@ -1530,7 +1530,7 @@ void InputManager::CopyConfiguration(SettingsInterface* dest_si, const SettingsI
 
 static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& section,
                                 const GenericInputBindingMapping& mapping, GenericInputBinding generic_name,
-                                const char* bind_name)
+                                const char* bind_name, bool clear_existing_mappings)
 {
   // find the mapping it corresponds to
   const std::string* found_mapping = nullptr;
@@ -1546,18 +1546,25 @@ static u32 TryMapGenericMapping(SettingsInterface& si, const std::string& sectio
   if (found_mapping)
   {
     INFO_LOG("Map {}/{} to '{}'", section, bind_name, *found_mapping);
-    si.SetStringValue(section.c_str(), bind_name, found_mapping->c_str());
+    if (clear_existing_mappings)
+      si.SetStringValue(section.c_str(), bind_name, found_mapping->c_str());
+    else
+      si.AddToStringList(section.c_str(), bind_name, found_mapping->c_str());
+
     return 1;
   }
   else
   {
-    si.DeleteValue(section.c_str(), bind_name);
+    if (clear_existing_mappings)
+      si.DeleteValue(section.c_str(), bind_name);
+
     return 0;
   }
 }
 
 bool InputManager::MapController(SettingsInterface& si, u32 controller,
-                                 const std::vector<std::pair<GenericInputBinding, std::string>>& mapping)
+                                 const std::vector<std::pair<GenericInputBinding, std::string>>& mapping,
+                                 bool clear_existing_mappings)
 {
   const std::string section = Controller::GetSettingsSection(controller);
   const TinyString type = si.GetTinyStringValue(
@@ -1572,16 +1579,59 @@ bool InputManager::MapController(SettingsInterface& si, u32 controller,
     if (bi.generic_mapping == GenericInputBinding::Unknown)
       continue;
 
-    u32 mappings_added = TryMapGenericMapping(si, section, mapping, bi.generic_mapping, bi.name);
+    u32 mappings_added =
+      TryMapGenericMapping(si, section, mapping, bi.generic_mapping, bi.name, clear_existing_mappings);
 
     // try to map to small motor if we tried big motor
     if (mappings_added == 0 && bi.generic_mapping == GenericInputBinding::LargeMotor)
-      mappings_added += TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, bi.name);
+    {
+      mappings_added +=
+        TryMapGenericMapping(si, section, mapping, GenericInputBinding::SmallMotor, bi.name, clear_existing_mappings);
+    }
 
     num_mappings += mappings_added;
   }
 
   return (num_mappings > 0);
+}
+
+std::string InputManager::GetPhysicalDeviceForController(SettingsInterface& si, u32 controller)
+{
+  std::string ret;
+
+  const std::string section = Controller::GetSettingsSection(controller);
+  const TinyString type = si.GetTinyStringValue(
+    section.c_str(), "Type", Controller::GetControllerInfo(Settings::GetDefaultControllerType(controller)).name);
+  const Controller::ControllerInfo* info = Controller::GetControllerInfo(type);
+  if (info)
+  {
+    for (const Controller::ControllerBindingInfo& bi : info->bindings)
+    {
+      for (const std::string& binding : si.GetStringList(section.c_str(), bi.name))
+      {
+        std::string_view source, sub_binding;
+        if (!SplitBinding(binding, &source, &sub_binding))
+          continue;
+
+        if (ret.empty())
+        {
+          ret = source;
+          continue;
+        }
+
+        if (ret != source)
+        {
+          ret = TRANSLATE_STR("InputManager", "Multiple Devices");
+          return ret;
+        }
+      }
+    }
+  }
+
+  if (ret.empty())
+    ret = TRANSLATE_STR("InputManager", "None");
+
+  return ret;
 }
 
 std::vector<std::string> InputManager::GetInputProfileNames()

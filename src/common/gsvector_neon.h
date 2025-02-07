@@ -1161,12 +1161,13 @@ public:
   {
   }
 
+  ALWAYS_INLINE explicit GSVector4i(const GSVector2i& v) : v4s(vcombine_s32(v.v2s, vcreate_s32(0))) {}
+
   ALWAYS_INLINE explicit GSVector4i(s32 i) { *this = i; }
 
-  ALWAYS_INLINE explicit GSVector4i(int32x2_t m) : v4s(vcombine_s32(m, vcreate_s32(0))) {}
   ALWAYS_INLINE constexpr explicit GSVector4i(int32x4_t m) : v4s(m) {}
 
-  ALWAYS_INLINE explicit GSVector4i(const GSVector2& v);
+  ALWAYS_INLINE explicit GSVector4i(const GSVector2& v) : v4s(vcombine_s32(vcvt_s32_f32(v.v2s), vcreate_s32(0))) {}
   ALWAYS_INLINE explicit GSVector4i(const GSVector4& v);
 
   ALWAYS_INLINE static GSVector4i cast(const GSVector4& v);
@@ -2204,6 +2205,8 @@ public:
 
     return GSVector4i(vcombine_s32(vld1_s32((const int32_t*)p), vcreate_s32(0)));
   }
+
+  ALWAYS_INLINE static GSVector4i loadl(const GSVector2i& v) { return GSVector4i(vcombine_s32(v.v2s, vcreate_s32(0))); }
 
   template<bool aligned>
   ALWAYS_INLINE static GSVector4i loadh(const void* p)

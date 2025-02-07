@@ -110,6 +110,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableUpscaling));
   SettingWidgetBinder::SetAvailability(m_ui.textureFiltering,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+  SettingWidgetBinder::SetAvailability(m_ui.spriteTextureFiltering,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   SettingWidgetBinder::SetAvailability(m_ui.trueColor, !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTrueColor));
   SettingWidgetBinder::SetAvailability(m_ui.pgxpEnable, !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
   SettingWidgetBinder::SetAvailability(m_ui.widescreenHack,
@@ -129,8 +131,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                Settings::DEFAULT_DISPLAY_ROTATION);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableMailboxPresentation, "Display",
                                                "DisableMailboxPresentation", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.stretchDisplayVertically, "Display", "StretchVertically",
-                                               false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.automaticallyResizeWindow, "Display", "AutoResizeWindow",
                                                false);
 #ifdef _WIN32
@@ -433,9 +433,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.disableMailboxPresentation, tr("Disable Mailbox Presentation"), tr("Unchecked"),
     tr("Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. "
        "Usually results in worse frame pacing."));
-  dialog->registerWidgetHelp(
-    m_ui.stretchDisplayVertically, tr("Stretch Vertically"), tr("Unchecked"),
-    tr("Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio."));
   dialog->registerWidgetHelp(m_ui.automaticallyResizeWindow, tr("Automatically Resize Window"), tr("Unchecked"),
                              tr("Automatically resizes the window to match the internal resolution. <strong>For high "
                                 "internal resolutions, this will create very large windows.</strong>"));
@@ -816,6 +813,10 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
                                     !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   m_ui.textureFilteringLabel->setEnabled(is_hardware &&
                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+  m_ui.spriteTextureFiltering->setEnabled(is_hardware &&
+                                          !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
+  m_ui.spriteTextureFilteringLabel->setEnabled(is_hardware &&
+                                               !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   m_ui.gpuDownsampleLabel->setEnabled(is_hardware);
   m_ui.gpuDownsampleMode->setEnabled(is_hardware);
   m_ui.gpuDownsampleScale->setEnabled(is_hardware);
@@ -871,9 +872,20 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
         current_adapter = &adapter;
     }
 
-    // default adapter
-    if (!m_adapters.empty() && current_adapter_name.empty())
-      current_adapter = &m_adapters.front();
+    if (!m_adapters.empty())
+    {
+      if (current_adapter_name.empty())
+      {
+        // default adapter
+        current_adapter = &m_adapters.front();
+      }
+      else if (!current_adapter)
+      {
+        // if the adapter is not available, ensure it's in the list anyway, otherwise select the default
+        const QString qadaptername = QString::fromStdString(current_adapter_name);
+        m_ui.adapter->addItem(qadaptername, QVariant(qadaptername));
+      }
+    }
 
     // disable it if we don't have a choice
     m_ui.adapter->setEnabled(!m_adapters.empty());
@@ -887,17 +899,30 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     m_ui.fullscreenMode->clear();
 
     m_ui.fullscreenMode->addItem(tr("Borderless Fullscreen"), QVariant(QString()));
+
+    const std::string current_fullscreen_mode = m_dialog->getEffectiveStringValue("GPU", "FullscreenMode", "");
+    bool current_fullscreen_mode_found = false;
     if (current_adapter)
     {
       for (const GPUDevice::ExclusiveFullscreenMode& mode : current_adapter->fullscreen_modes)
       {
-        const QString qmodename = QtUtils::StringViewToQString(mode.ToString());
+        const TinyString mode_str = mode.ToString();
+        current_fullscreen_mode_found = current_fullscreen_mode_found || (current_fullscreen_mode == mode_str.view());
+
+        const QString qmodename = QtUtils::StringViewToQString(mode_str);
         m_ui.fullscreenMode->addItem(qmodename, QVariant(qmodename));
       }
     }
 
+    // if the current mode is not valid (e.g. adapter change), ensure it's in the list so the user isn't confused
+    if (!current_fullscreen_mode_found)
+    {
+      const QString qmodename = QtUtils::StringViewToQString(current_fullscreen_mode);
+      m_ui.fullscreenMode->addItem(qmodename, QVariant(qmodename));
+    }
+
     // disable it if we don't have a choice
-    m_ui.fullscreenMode->setEnabled(current_adapter && !current_adapter->fullscreen_modes.empty());
+    m_ui.fullscreenMode->setEnabled(m_ui.fullscreenMode->count() > 1);
     SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenMode, "GPU", "FullscreenMode");
   }
 
@@ -1023,6 +1048,7 @@ void GraphicsSettingsWidget::onAspectRatioChanged()
 
 void GraphicsSettingsWidget::updateResolutionDependentOptions()
 {
+  const bool is_hardware = (getEffectiveRenderer() != GPURenderer::Software);
   const int scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
   const GPUTextureFilter texture_filtering =
     Settings::ParseTextureFilterName(
@@ -1031,18 +1057,19 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
                                   Settings::GetTextureFilterName(Settings::DEFAULT_GPU_TEXTURE_FILTER))
         .c_str())
       .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
-  m_ui.forceRoundedTexcoords->setEnabled(scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
+  m_ui.forceRoundedTexcoords->setEnabled(is_hardware && scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
   onTrueColorChanged();
 }
 
 void GraphicsSettingsWidget::onTrueColorChanged()
 {
+  const bool is_hardware = (getEffectiveRenderer() != GPURenderer::Software);
   const int resolution_scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
   const bool true_color = m_dialog->getEffectiveBoolValue("GPU", "TrueColor", false);
   const bool allow_scaled_dithering =
     (resolution_scale != 1 && !true_color && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
-  m_ui.scaledDithering->setEnabled(allow_scaled_dithering);
-  m_ui.accurateBlending->setEnabled(!true_color);
+  m_ui.scaledDithering->setEnabled(is_hardware && allow_scaled_dithering);
+  m_ui.accurateBlending->setEnabled(is_hardware && !true_color);
 }
 
 void GraphicsSettingsWidget::onDownsampleModeChanged()

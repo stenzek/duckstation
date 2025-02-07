@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -14,6 +14,7 @@ public:
   std::string GenerateDisplayVertexShader() const;
   std::string GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const;
   std::string GenerateDisplaySharpBilinearFragmentShader() const;
+  std::string GenerateDisplayLanczosFragmentShader() const;
 
   std::string GenerateDeinterlaceWeaveFragmentShader() const;
   std::string GenerateDeinterlaceBlendFragmentShader() const;

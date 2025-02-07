@@ -605,7 +605,7 @@ std::string Cheats::FormatCodeForFile(const CodeInfo& code)
 
   // remove trailing whitespace
   std::string_view code_body = code.body;
-  while (!code_body.empty() && std::isspace(code_body.back()))
+  while (!code_body.empty() && StringUtil::IsWhitespace(code_body.back()))
     code_body = code_body.substr(0, code_body.length() - 1);
   if (!code_body.empty())
     buf.append(code_body);
@@ -657,7 +657,7 @@ bool Cheats::UpdateCodeInFile(const char* path, const std::string_view name, con
   {
     const std::string code_body = FormatCodeForFile(*code);
     file_contents.reserve(file_contents.length() + 1 + code_body.length());
-    while (!file_contents.empty() && std::isspace(file_contents.back()))
+    while (!file_contents.empty() && StringUtil::IsWhitespace(file_contents.back()))
       file_contents.pop_back();
     if (!file_contents.empty())
       file_contents.append("\n\n");
@@ -715,7 +715,7 @@ bool Cheats::SaveCodesToFile(const char* path, const CodeInfoList& codes, Error*
     {
       const std::string code_body = FormatCodeForFile(code);
       file_contents.reserve(file_contents.length() + 1 + code_body.length());
-      while (!file_contents.empty() && std::isspace(file_contents.back()))
+      while (!file_contents.empty() && StringUtil::IsWhitespace(file_contents.back()))
         file_contents.pop_back();
       if (!file_contents.empty())
         file_contents.append("\n\n");

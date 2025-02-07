@@ -49,10 +49,7 @@ public:
     bool vk_ext_rasterization_order_attachment_access : 1;
     bool vk_ext_surface_maintenance1 : 1;
     bool vk_ext_swapchain_maintenance1 : 1;
-    bool vk_khr_get_memory_requirements2 : 1;
-    bool vk_khr_bind_memory2 : 1;
     bool vk_khr_get_physical_device_properties2 : 1;
-    bool vk_khr_dedicated_allocation : 1;
     bool vk_khr_driver_properties : 1;
     bool vk_khr_dynamic_rendering : 1;
     bool vk_khr_dynamic_rendering_local_read : 1;

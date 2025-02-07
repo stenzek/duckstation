@@ -68,7 +68,7 @@ std::string GPU_HW_ShaderGen::GenerateScreenVertexShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool upscaled, bool msaa, bool per_sample_shading,
@@ -193,7 +193,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchVertexShader(bool upscaled, bool msaa
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 void GPU_HW_ShaderGen::WriteBatchTextureFilter(std::stringstream& ss, GPUTextureFilter texture_filter) const
@@ -732,8 +732,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency, GPU_HW::BatchTextureMode texture_mode,
   GPUTextureFilter texture_filtering, bool upscaled, bool msaa, bool per_sample_shading, bool uv_limits,
   bool force_round_texcoords, bool true_color, bool dithering, bool scaled_dithering, bool disable_color_perspective,
-  bool interlacing, bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth,
-  bool rov_depth_test, bool rov_depth_write) const
+  bool interlacing, bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth, bool rov_depth_test,
+  bool rov_depth_write) const
 {
   DebugAssert(!true_color || !dithering); // Should not be doing dithering+true color.
 
@@ -883,7 +883,13 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
     #endif
 
     // load colour/palette
-    float4 texel = SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
+    // use texelFetch()/load for native resolution to work around point sampling precision
+    // in some drivers, such as older AMD and Mali Midgard
+    #if !UPSCALED
+      float4 texel = LOAD_TEXTURE(samp0, int2(vicoord), 0);
+    #else
+      float4 texel = SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
+    #endif
     uint vram_value = RGBA8ToRGBA5551(texel);
 
     // apply palette
@@ -898,13 +904,17 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
       uint2 palette_icoord = uint2(((texpage.z + palette_index) & 0x3FFu), texpage.w);
     #endif
 
-    return SAMPLE_TEXTURE_LEVEL(samp0, float2(palette_icoord) * RCP_VRAM_SIZE, 0.0);
+    #if !UPSCALED
+      return LOAD_TEXTURE(samp0, int2(palette_icoord), 0);
+    #else
+      return SAMPLE_TEXTURE_LEVEL(samp0, float2(palette_icoord) * RCP_VRAM_SIZE, 0.0);
+    #endif
   #else
     // Direct texturing - usually render-to-texture effects.
     #if !UPSCALED
       uint2 icoord = ApplyTextureWindow(FloatToIntegerCoords(coords));
       uint2 vicoord = (texpage.xy + icoord) & uint2(1023, 511);
-      return SAMPLE_TEXTURE_LEVEL(samp0, float2(vicoord) * RCP_VRAM_SIZE, 0.0);
+      return LOAD_TEXTURE(samp0, int2(vicoord), 0);
     #else
       // Coordinates are already upscaled, we need to downscale them to apply the texture
       // window, then re-upscale/offset. We can't round here, because it could result in
@@ -1211,7 +1221,7 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMExtractFragmentShader(u32 resolution_scale, u32 multisamples,
@@ -1304,7 +1314,7 @@ float3 SampleVRAM24(uint2 icoords)
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMReplacementBlitFragmentShader() const
@@ -1320,7 +1330,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMReplacementBlitFragmentShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateWireframeGeometryShader() const
@@ -1393,7 +1403,7 @@ void main(triangle GSInput input[3], inout LineStream<GSOutput> output)
 )";
   }
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateWireframeFragmentShader() const
@@ -1408,7 +1418,7 @@ std::string GPU_HW_ShaderGen::GenerateWireframeFragmentShader() const
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const
@@ -1473,7 +1483,7 @@ uint SampleVRAM(uint2 coords)
             / float4(255.0, 255.0, 255.0, 255.0);
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, bool use_ssbo, bool write_mask_as_depth,
@@ -1554,7 +1564,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMWriteFragmentShader(bool use_buffer, b
 #endif
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_depth, bool write_depth_as_rt) const
@@ -1612,7 +1622,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMCopyFragmentShader(bool write_mask_as_
 #endif
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced, bool write_mask_as_depth,
@@ -1660,7 +1670,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMFillFragmentShader(bool wrapped, bool 
 #endif
 })";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader(bool msaa) const
@@ -1681,7 +1691,7 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader(bool msaa) c
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 void GPU_HW_ShaderGen::WriteAdaptiveDownsampleUniformBuffer(std::stringstream& ss) const
@@ -1705,7 +1715,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleVertexShader() const
   #endif
 }
 )";
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader() const
@@ -1739,7 +1749,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleMipFragmentShader() cons
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader() const
@@ -1776,7 +1786,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleBlurFragmentShader() con
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader() const
@@ -1794,7 +1804,7 @@ std::string GPU_HW_ShaderGen::GenerateAdaptiveDownsampleCompositeFragmentShader(
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
 std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 factor) const
@@ -1804,7 +1814,7 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
   DeclareUniformBuffer(ss, {"uint2 u_base_coords"}, true);
   DeclareTexture(ss, "samp0", 0, false);
 
-  ss << "#define FACTOR " << factor << "\n";
+  ss << "CONSTANT uint FACTOR = " << factor << "u;\n";
 
   DeclareFragmentEntryPoint(ss, 0, 1, {}, true);
   ss << R"(
@@ -1821,25 +1831,29 @@ std::string GPU_HW_ShaderGen::GenerateBoxSampleDownsampleFragmentShader(u32 fact
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }
 
-std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitransparent, bool bilinear_filter) const
+std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool replacement, bool semitransparent,
+                                                                     bool bilinear_filter) const
 {
   std::stringstream ss;
   WriteHeader(ss);
+  DefineMacro(ss, "REPLACEMENT", replacement);
   DefineMacro(ss, "SEMITRANSPARENT", semitransparent);
   DefineMacro(ss, "BILINEAR_FILTER", bilinear_filter);
-  DeclareUniformBuffer(ss, {"float4 u_texture_size"}, true);
+  DeclareUniformBuffer(ss, {"float4 u_src_rect", "float4 u_texture_size"}, true);
   DeclareTexture(ss, "samp0", 0);
   DeclareFragmentEntryPoint(ss, 0, 1);
 
   ss << R"(
 {
+  float2 start_coords = u_src_rect.xy + v_tex0 * u_src_rect.zw;
+
 #if BILINEAR_FILTER
   // Compute the coordinates of the four texels we will be interpolating between.
   // Clamp this to the triangle texture coordinates.
-  float2 coords = v_tex0 * u_texture_size.xy;
+  float2 coords = start_coords * u_texture_size.xy;
   float2 texel_top_left = frac(coords) - float2(0.5, 0.5);
   float2 texel_offset = sign(texel_top_left);
   float4 fcoords = max(coords.xyxy + float4(0.0, 0.0, texel_offset.x, texel_offset.y),
@@ -1854,6 +1868,7 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitr
   // Bilinearly interpolate.
   float2 weights = abs(texel_top_left);
   float4 color = lerp(lerp(s00, s10, weights.x), lerp(s01, s11, weights.x), weights.y);
+  float orig_alpha = float(color.a > 0.0);
 
   #if !SEMITRANSPARENT
     // Compute alpha from how many texels aren't pixel color 0000h.
@@ -1870,27 +1885,38 @@ std::string GPU_HW_ShaderGen::GenerateReplacementMergeFragmentShader(bool semitr
     color.a = (color.a >= 0.5) ? 1.0 : 0.0;
   #endif
 #else
-  float4 color = SAMPLE_TEXTURE_LEVEL(samp0, v_tex0, 0.0);
+  float4 color = SAMPLE_TEXTURE_LEVEL(samp0, start_coords, 0.0);
+  float orig_alpha = color.a;
 #endif
   o_col0.rgb = color.rgb;
 
   // Alpha processing.
-  #if SEMITRANSPARENT
-    // Map anything not 255 to 1 for semitransparent, otherwise zero for opaque.
-    o_col0.a = (color.a <= 0.95f) ? 1.0f : 0.0f;
-    o_col0.a = VECTOR_EQ(color, float4(0.0, 0.0, 0.0, 0.0)) ? 0.0f : o_col0.a;
-  #else
-    // Map anything with an alpha below 0.5 to transparent.
-    // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
-    o_col0.rgb = lerp(o_col0.rgb, float3(0.0, 0.0, 0.0), float(color.a < 0.5));
+  #if REPLACEMENT
+    #if SEMITRANSPARENT
+      // Map anything not 255 to 1 for semitransparent, otherwise zero for opaque.
+      o_col0.a = (color.a <= 0.95f) ? 1.0f : 0.0f;
+      o_col0.a = VECTOR_EQ(color, float4(0.0, 0.0, 0.0, 0.0)) ? 0.0f : o_col0.a;
+    #else
+      // Map anything with an alpha below 0.5 to transparent.
+      // Leave (0,0,0,0) as 0000 for opaque replacements for cutout alpha.
+      float alpha = float(color.a >= 0.5);
+      o_col0.rgb = lerp(float3(0.0, 0.0, 0.0), o_col0.rgb, alpha);
 
-    // Clear alpha channel. This is the value for bit15 in the framebuffer.
-    // Silent Hill needs it to be zero, I'm not aware of anything that needs
-    // specific values yet. If it did, we'd need a different dumping technique.
-    o_col0.a = 0.0;
+      // We can't simply clear the alpha channel unconditionally here, because that
+      // would result in any black pixels with zero alpha being transparency-culled.
+      // Instead, we set it to a minimum value (2/255 in case of rounding error, I
+      // don't trust drivers here) so that transparent polygons in the source still
+      // set bit 15 to zero in the framebuffer, but are not transparency-culled.
+      // Silent Hill needs it to be zero, I'm not aware of anything that needs
+      // specific values yet. If it did, we'd need a different dumping technique.
+      o_col0.a = lerp(0.0, 2.0 / 255.0, alpha);
+    #endif
+  #else
+    // Preserve original bit 15 for non-replacements.
+    o_col0.a = orig_alpha;
   #endif
 }
 )";
 
-  return ss.str();
+  return std::move(ss).str();
 }

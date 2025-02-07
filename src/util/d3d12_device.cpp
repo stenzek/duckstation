@@ -116,6 +116,7 @@ static constexpr const u32 s_mipmap_blit_ps[] = {
 D3D12Device::D3D12Device()
 {
   m_render_api = RenderAPI::D3D12;
+  m_features.exclusive_fullscreen = true; // set so the caller can pass a mode to CreateDeviceAndSwapChain()
 
 #ifdef ENABLE_GPU_OBJECT_NAMES
   s_debug_scope_depth = 0;
@@ -879,9 +880,8 @@ bool D3D12SwapChain::InitializeExclusiveFullscreenMode(const GPUDevice::Exclusiv
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
 
-  m_fullscreen_mode =
-    D3DCommon::GetRequestedExclusiveFullscreenModeDesc(D3D12Device::GetInstance().GetDXGIFactory(), client_rc, mode,
-                                                       fm.resource_format, m_fullscreen_output.GetAddressOf());
+  m_fullscreen_mode = D3DCommon::GetRequestedExclusiveFullscreenModeDesc(
+    D3D12Device::GetInstance().GetAdapter(), client_rc, mode, fm.resource_format, m_fullscreen_output.GetAddressOf());
   return m_fullscreen_mode.has_value();
 }
 
@@ -1081,6 +1081,11 @@ bool D3D12SwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle
   return CreateSwapChain(dev, error) && CreateRTV(dev, error);
 }
 
+bool D3D12SwapChain::IsExclusiveFullscreen() const
+{
+  return m_fullscreen_mode.has_value();
+}
+
 bool D3D12SwapChain::ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error)
 {
   m_window_info.surface_scale = new_scale;
@@ -1218,7 +1223,7 @@ GPUDevice::PresentResult D3D12Device::BeginPresent(GPUSwapChain* swap_chain, u32
   D3D12_RENDER_PASS_RENDER_TARGET_DESC rt_desc = {swap_chain_buf.second,
                                                   {D3D12_RENDER_PASS_BEGINNING_ACCESS_TYPE_CLEAR, {}},
                                                   {D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE, {}}};
-  GSVector4::store<false>(rt_desc.BeginningAccess.Clear.ClearValue.Color, GSVector4::rgba32(clear_color));
+  GSVector4::store<false>(rt_desc.BeginningAccess.Clear.ClearValue.Color, GSVector4::unorm8(clear_color));
   cmdlist->BeginRenderPass(1, &rt_desc, nullptr, D3D12_RENDER_PASS_FLAG_NONE);
 
   std::memset(m_current_render_targets.data(), 0, sizeof(m_current_render_targets));
@@ -1339,13 +1344,14 @@ void D3D12Device::SetFeatures(D3D_FEATURE_LEVEL feature_level, FeatureMask disab
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self =
     /*!(disabled_features & FEATURE_MASK_TEXTURE_COPY_TO_SELF)*/ false; // TODO: Support with Enhanced Barriers
-  m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
+  m_features.texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.feedback_loops = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
   m_features.compute_shaders = !(disabled_features & FEATURE_MASK_COMPUTE_SHADERS);
   m_features.partial_msaa_resolve = true;
   m_features.memory_import = false;
+  m_features.exclusive_fullscreen = true;
   m_features.explicit_present = true;
   m_features.timed_present = false;
   m_features.gpu_timing = true;

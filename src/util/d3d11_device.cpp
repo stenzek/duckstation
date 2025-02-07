@@ -48,6 +48,7 @@ void SetD3DDebugObjectName(ID3D11DeviceChild* obj, std::string_view name)
 D3D11Device::D3D11Device()
 {
   m_render_api = RenderAPI::D3D11;
+  m_features.exclusive_fullscreen = true; // set so the caller can pass a mode to CreateDeviceAndSwapChain()
 }
 
 D3D11Device::~D3D11Device()
@@ -178,7 +179,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
   m_features.per_sample_shading = (feature_level >= D3D_FEATURE_LEVEL_10_1);
   m_features.noperspective_interpolation = true;
   m_features.texture_copy_to_self = false;
-  m_features.supports_texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
+  m_features.texture_buffers = !(disabled_features & FEATURE_MASK_TEXTURE_BUFFERS);
   m_features.texture_buffers_emulated_with_ssbo = false;
   m_features.feedback_loops = false;
   m_features.geometry_shaders = !(disabled_features & FEATURE_MASK_GEOMETRY_SHADERS);
@@ -186,6 +187,7 @@ void D3D11Device::SetFeatures(FeatureMask disabled_features)
     (!(disabled_features & FEATURE_MASK_COMPUTE_SHADERS) && feature_level >= D3D_FEATURE_LEVEL_11_0);
   m_features.partial_msaa_resolve = false;
   m_features.memory_import = false;
+  m_features.exclusive_fullscreen = true;
   m_features.explicit_present = false;
   m_features.timed_present = false;
   m_features.gpu_timing = true;
@@ -231,8 +233,23 @@ bool D3D11SwapChain::InitializeExclusiveFullscreenMode(const GPUDevice::Exclusiv
   RECT client_rc{};
   GetClientRect(window_hwnd, &client_rc);
 
+  // Little bit messy...
+  HRESULT hr;
+  ComPtr<IDXGIDevice> dxgi_dev;
+  if (FAILED((hr = D3D11Device::GetD3DDevice()->QueryInterface(IID_PPV_ARGS(dxgi_dev.GetAddressOf())))))
+  {
+    ERROR_LOG("Failed to get DXGIDevice from D3D device: {:08X}", static_cast<unsigned>(hr));
+    return false;
+  }
+  ComPtr<IDXGIAdapter> dxgi_adapter;
+  if (FAILED((hr = dxgi_dev->GetAdapter(dxgi_adapter.GetAddressOf()))))
+  {
+    ERROR_LOG("Failed to get DXGIAdapter from DXGIDevice: {:08X}", static_cast<unsigned>(hr));
+    return false;
+  }
+
   m_fullscreen_mode = D3DCommon::GetRequestedExclusiveFullscreenModeDesc(
-    D3D11Device::GetDXGIFactory(), client_rc, mode, fm.resource_format, m_fullscreen_output.GetAddressOf());
+    dxgi_adapter.Get(), client_rc, mode, fm.resource_format, m_fullscreen_output.GetAddressOf());
   return m_fullscreen_mode.has_value();
 }
 
@@ -442,6 +459,11 @@ bool D3D11SwapChain::SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle
   return CreateSwapChain(error) && CreateRTV(error);
 }
 
+bool D3D11SwapChain::IsExclusiveFullscreen() const
+{
+  return m_fullscreen_mode.has_value();
+}
+
 std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi, GPUVSyncMode vsync_mode,
                                                            bool allow_present_throttle,
                                                            const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
@@ -468,11 +490,6 @@ std::unique_ptr<GPUSwapChain> D3D11Device::CreateSwapChain(const WindowInfo& wi,
   }
 
   return ret;
-}
-
-bool D3D11Device::SupportsExclusiveFullscreen() const
-{
-  return true;
 }
 
 std::string D3D11Device::GetDriverInfo() const
@@ -668,17 +685,17 @@ GPUDevice::PresentResult D3D11Device::BeginPresent(GPUSwapChain* swap_chain, u32
     return PresentResult::ExclusiveFullscreenLost;
   }
 
-  // When using vsync, the time here seems to include the time for the buffer to become available.
+  // The time here seems to include the time for the buffer to become available.
   // This blows our our GPU usage number considerably, so read the timestamp before the final blit
   // in this configuration. It does reduce accuracy a little, but better than seeing 100% all of
   // the time, when it's more like a couple of percent.
-  if (SC == m_main_swap_chain.get() && SC->GetVSyncMode() == GPUVSyncMode::FIFO && m_gpu_timing_enabled)
+  if (SC == m_main_swap_chain.get() && m_gpu_timing_enabled)
   {
     PopTimestampQuery();
     EndTimestampQuery();
   }
 
-  m_context->ClearRenderTargetView(SC->GetRTV(), GSVector4::rgba32(clear_color).F32);
+  m_context->ClearRenderTargetView(SC->GetRTV(), GSVector4::unorm8(clear_color).F32);
   m_context->OMSetRenderTargets(1, SC->GetRTVArray(), nullptr);
   s_stats.num_render_passes++;
   m_num_current_render_targets = 0;
@@ -693,12 +710,6 @@ void D3D11Device::EndPresent(GPUSwapChain* swap_chain, bool explicit_present, u6
   D3D11SwapChain* const SC = static_cast<D3D11SwapChain*>(swap_chain);
   DebugAssert(!explicit_present && present_time == 0);
   DebugAssert(m_num_current_render_targets == 0 && !m_current_depth_target);
-
-  if (SC == m_main_swap_chain.get() && SC->GetVSyncMode() != GPUVSyncMode::FIFO && m_gpu_timing_enabled)
-  {
-    PopTimestampQuery();
-    EndTimestampQuery();
-  }
 
   const UINT sync_interval = static_cast<UINT>(SC->GetVSyncMode() == GPUVSyncMode::FIFO);
   const UINT flags =

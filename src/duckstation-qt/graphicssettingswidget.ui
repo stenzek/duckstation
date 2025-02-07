@@ -254,7 +254,7 @@
            <widget class="QComboBox" name="textureFiltering"/>
           </item>
           <item row="3" column="0">
-           <widget class="QLabel" name="label_9">
+           <widget class="QLabel" name="spriteTextureFilteringLabel">
             <property name="text">
              <string>Sprite Texture Filtering:</string>
             </property>
@@ -340,20 +340,6 @@
           </item>
           <item row="2" column="0" colspan="2">
            <layout class="QGridLayout" name="advancedDisplayOptionsLayout">
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="disableMailboxPresentation">
-              <property name="text">
-               <string>Disable Mailbox Presentation</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="blitSwapChain">
-              <property name="text">
-               <string>Use Blit Swap Chain</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="automaticallyResizeWindow">
               <property name="text">
@@ -362,9 +348,16 @@
              </widget>
             </item>
             <item row="0" column="1">
-             <widget class="QCheckBox" name="stretchDisplayVertically">
+             <widget class="QCheckBox" name="disableMailboxPresentation">
               <property name="text">
-               <string>Stretch Vertically</string>
+               <string>Disable Mailbox Presentation</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="blitSwapChain">
+              <property name="text">
+               <string>Use Blit Swap Chain</string>
               </property>
              </widget>
             </item>

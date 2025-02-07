@@ -225,50 +225,40 @@ GPUDevice::AdapterInfoList D3DCommon::GetAdapterInfoList()
 }
 
 std::optional<DXGI_MODE_DESC>
-D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIFactory5* factory, const RECT& window_rect,
+D3DCommon::GetRequestedExclusiveFullscreenModeDesc(IDXGIAdapter* adapter, const RECT& window_rect,
                                                    const GPUDevice::ExclusiveFullscreenMode* requested_fullscreen_mode,
                                                    DXGI_FORMAT format, IDXGIOutput** output)
 {
   std::optional<DXGI_MODE_DESC> ret;
 
   // We need to find which monitor the window is located on.
+  // The adapter must match, you cannot restrict the output to a monitor that is not connected to the device.
   const GSVector4i client_rc_vec(window_rect.left, window_rect.top, window_rect.right, window_rect.bottom);
 
   // The window might be on a different adapter to which we are rendering.. so we have to enumerate them all.
   HRESULT hr;
   Microsoft::WRL::ComPtr<IDXGIOutput> first_output, intersecting_output;
-
-  for (u32 adapter_index = 0; !intersecting_output; adapter_index++)
+  for (u32 output_index = 0;; output_index++)
   {
-    Microsoft::WRL::ComPtr<IDXGIAdapter1> adapter;
-    hr = factory->EnumAdapters1(adapter_index, adapter.GetAddressOf());
+    Microsoft::WRL::ComPtr<IDXGIOutput> this_output;
+    DXGI_OUTPUT_DESC output_desc;
+    hr = adapter->EnumOutputs(output_index, this_output.GetAddressOf());
     if (hr == DXGI_ERROR_NOT_FOUND)
       break;
-    else if (FAILED(hr))
+    else if (FAILED(hr) || FAILED(this_output->GetDesc(&output_desc)))
       continue;
 
-    for (u32 output_index = 0;; output_index++)
+    const GSVector4i output_rc(output_desc.DesktopCoordinates.left, output_desc.DesktopCoordinates.top,
+                               output_desc.DesktopCoordinates.right, output_desc.DesktopCoordinates.bottom);
+    if (!client_rc_vec.rintersects(output_rc))
     {
-      Microsoft::WRL::ComPtr<IDXGIOutput> this_output;
-      DXGI_OUTPUT_DESC output_desc;
-      hr = adapter->EnumOutputs(output_index, this_output.GetAddressOf());
-      if (hr == DXGI_ERROR_NOT_FOUND)
-        break;
-      else if (FAILED(hr) || FAILED(this_output->GetDesc(&output_desc)))
-        continue;
-
-      const GSVector4i output_rc(output_desc.DesktopCoordinates.left, output_desc.DesktopCoordinates.top,
-                                 output_desc.DesktopCoordinates.right, output_desc.DesktopCoordinates.bottom);
-      if (!client_rc_vec.rintersects(output_rc))
-      {
-        intersecting_output = std::move(this_output);
-        break;
-      }
-
-      // Fallback to the first monitor.
-      if (!first_output)
-        first_output = std::move(this_output);
+      intersecting_output = std::move(this_output);
+      break;
     }
+
+    // Fallback to the first monitor.
+    if (!first_output)
+      first_output = std::move(this_output);
   }
 
   if (!intersecting_output)
@@ -561,11 +551,7 @@ std::optional<DynamicHeapArray<u8>> D3DCommon::CompileShaderWithDXC(u32 shader_m
     DXC_ARG_OPTIMIZATION_LEVEL3,
   };
   static constexpr const wchar_t* debug_arguments[] = {
-    L"-Qstrip_reflect",
-    DXC_ARG_DEBUG,
-    L"-Qembed_debug",
-    DXC_ARG_PACK_MATRIX_ROW_MAJOR,
-    DXC_ARG_SKIP_OPTIMIZATIONS,
+    L"-Qstrip_reflect", DXC_ARG_DEBUG, L"-Qembed_debug", DXC_ARG_PACK_MATRIX_ROW_MAJOR, DXC_ARG_SKIP_OPTIMIZATIONS,
   };
   const wchar_t* const* arguments = debug_device ? debug_arguments : nondebug_arguments;
   const size_t arguments_size = debug_device ? std::size(debug_arguments) : std::size(nondebug_arguments);

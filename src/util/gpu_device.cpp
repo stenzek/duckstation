@@ -275,6 +275,11 @@ GSVector4i GPUSwapChain::PreRotateClipRect(WindowInfo::PreRotation prerotation, 
   return new_clip;
 }
 
+bool GPUSwapChain::IsExclusiveFullscreen() const
+{
+  return false;
+}
+
 bool GPUSwapChain::ShouldSkipPresentingFrame()
 {
   // Only needed with FIFO. But since we're so fast, we allow it always.
@@ -506,11 +511,6 @@ void GPUDevice::DestroyMainSwapChain()
   m_main_swap_chain.reset();
 }
 
-bool GPUDevice::SupportsExclusiveFullscreen() const
-{
-  return false;
-}
-
 void GPUDevice::OpenShaderCache(std::string_view base_path, u32 version)
 {
   if (m_features.shader_cache && !base_path.empty())
@@ -653,7 +653,7 @@ bool GPUDevice::CreateResources(Error* error)
   // Backend may initialize null texture itself if it needs it.
   if (!m_empty_texture &&
       !(m_empty_texture = CreateTexture(1, 1, 1, 1, 1, GPUTexture::Type::Texture, GPUTexture::Format::RGBA8,
-                                       GPUTexture::Flags::None, nullptr, 0, error)))
+                                        GPUTexture::Flags::None, nullptr, 0, error)))
   {
     Error::AddPrefix(error, "Failed to create null texture: ");
     return false;
@@ -918,7 +918,7 @@ std::optional<GPUDevice::ExclusiveFullscreenMode> GPUDevice::ExclusiveFullscreen
     std::optional<u32> owidth = StringUtil::FromChars<u32>(str.substr(0, sep1));
     sep1++;
 
-    while (sep1 < str.length() && std::isspace(str[sep1]))
+    while (sep1 < str.length() && StringUtil::IsWhitespace(str[sep1]))
       sep1++;
 
     if (owidth.has_value() && sep1 < str.length())
@@ -929,7 +929,7 @@ std::optional<GPUDevice::ExclusiveFullscreenMode> GPUDevice::ExclusiveFullscreen
         std::optional<u32> oheight = StringUtil::FromChars<u32>(str.substr(sep1, sep2 - sep1));
         sep2++;
 
-        while (sep2 < str.length() && std::isspace(str[sep2]))
+        while (sep2 < str.length() && StringUtil::IsWhitespace(str[sep2]))
           sep2++;
 
         if (oheight.has_value() && sep2 < str.length())

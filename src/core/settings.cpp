@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "settings.h"
@@ -15,6 +15,7 @@
 
 #include "common/assert.h"
 #include "common/bitutils.h"
+#include "common/error.h"
 #include "common/file_system.h"
 #include "common/log.h"
 #include "common/memmap.h"
@@ -223,8 +224,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
       .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_sprite_texture_filter =
     ParseTextureFilterName(
-      si.GetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_texture_filter)).c_str())
-      .value_or(gpu_texture_filter);
+      si.GetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
+      .value_or(DEFAULT_GPU_TEXTURE_FILTER);
   gpu_line_detect_mode =
     ParseLineDetectModeName(
       si.GetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(DEFAULT_GPU_LINE_DETECT_MODE)).c_str())
@@ -332,7 +333,6 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   display_show_status_indicators = si.GetBoolValue("Display", "ShowStatusIndicators", true);
   display_show_inputs = si.GetBoolValue("Display", "ShowInputs", false);
   display_show_enhancements = si.GetBoolValue("Display", "ShowEnhancements", false);
-  display_stretch_vertically = si.GetBoolValue("Display", "StretchVertically", false);
   display_auto_resize_window = si.GetBoolValue("Display", "AutoResizeWindow", false);
   display_osd_scale = si.GetFloatValue("Display", "OSDScale", DEFAULT_OSD_SCALE);
   display_osd_margin = si.GetFloatValue("Display", "OSDMargin", ImGuiManager::DEFAULT_SCREEN_MARGIN);
@@ -643,7 +643,6 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.SetFloatValue("Display", "OSDMargin", display_osd_margin);
   }
 
-  si.SetBoolValue("Display", "StretchVertically", display_stretch_vertically);
   si.SetBoolValue("Display", "AutoResizeWindow", display_auto_resize_window);
 
   si.SetIntValue("CDROM", "ReadaheadSectors", cdrom_readahead_sectors);
@@ -1103,7 +1102,8 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
 
 bool Settings::AreGPUDeviceSettingsChanged(const Settings& old_settings) const
 {
-  return (gpu_adapter != old_settings.gpu_adapter || gpu_use_debug_device != old_settings.gpu_use_debug_device ||
+  return (gpu_adapter != old_settings.gpu_adapter || gpu_use_thread != old_settings.gpu_use_thread ||
+          gpu_use_debug_device != old_settings.gpu_use_debug_device ||
           gpu_disable_shader_cache != old_settings.gpu_disable_shader_cache ||
           gpu_disable_dual_source_blend != old_settings.gpu_disable_dual_source_blend ||
           gpu_disable_framebuffer_fetch != old_settings.gpu_disable_framebuffer_fetch ||
@@ -1187,7 +1187,7 @@ void Settings::SetDefaultControllerConfig(SettingsInterface& si)
 
 #ifndef __ANDROID__
   // Use the automapper to set this up.
-  InputManager::MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"));
+  InputManager::MapController(si, 0, InputManager::GetGenericBindingMapping("Keyboard"), true);
 #endif
 }
 
@@ -1900,7 +1900,7 @@ const char* Settings::GetForceVideoTimingDisplayName(ForceVideoTimingMode mode)
 }
 
 static constexpr const std::array s_display_scaling_names = {
-  "Nearest", "NearestInteger", "BilinearSmooth", "BilinearSharp", "BilinearInteger",
+  "Nearest", "NearestInteger", "BilinearSmooth", "BilinearSharp", "BilinearInteger", "Lanczos",
 };
 static constexpr const std::array s_display_scaling_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Nearest-Neighbor", "DisplayScalingMode"),
@@ -1908,6 +1908,7 @@ static constexpr const std::array s_display_scaling_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Bilinear (Smooth)", "DisplayScalingMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Bilinear (Sharp)", "DisplayScalingMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Bilinear (Integer)", "DisplayScalingMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Lanczos (Sharp)", "DisplayScalingMode"),
 };
 
 std::optional<DisplayScalingMode> Settings::ParseDisplayScaling(const char* str)
@@ -2261,25 +2262,31 @@ const char* Settings::GetPIODeviceTypeModeDisplayName(PIODeviceType type)
                                   "PIODeviceType");
 }
 
-std::string EmuFolders::AppRoot;
-std::string EmuFolders::DataRoot;
-std::string EmuFolders::Bios;
-std::string EmuFolders::Cache;
-std::string EmuFolders::Cheats;
-std::string EmuFolders::Covers;
-std::string EmuFolders::GameIcons;
-std::string EmuFolders::GameSettings;
-std::string EmuFolders::InputProfiles;
-std::string EmuFolders::MemoryCards;
-std::string EmuFolders::Patches;
-std::string EmuFolders::Resources;
-std::string EmuFolders::SaveStates;
-std::string EmuFolders::Screenshots;
-std::string EmuFolders::Shaders;
-std::string EmuFolders::Subchannels;
-std::string EmuFolders::Textures;
-std::string EmuFolders::UserResources;
-std::string EmuFolders::Videos;
+namespace EmuFolders {
+
+std::string AppRoot;
+std::string DataRoot;
+std::string Bios;
+std::string Cache;
+std::string Cheats;
+std::string Covers;
+std::string GameIcons;
+std::string GameSettings;
+std::string InputProfiles;
+std::string MemoryCards;
+std::string Patches;
+std::string Resources;
+std::string SaveStates;
+std::string Screenshots;
+std::string Shaders;
+std::string Subchannels;
+std::string Textures;
+std::string UserResources;
+std::string Videos;
+
+static void EnsureFolderExists(const std::string& path);
+
+} // namespace EmuFolders
 
 void EmuFolders::SetDefaults()
 {
@@ -2392,33 +2399,35 @@ void EmuFolders::Update()
     System::UpdateMemoryCardTypes();
 }
 
-bool EmuFolders::EnsureFoldersExist()
+void EmuFolders::EnsureFolderExists(const std::string& path)
 {
-  bool result = FileSystem::EnsureDirectoryExists(Bios.c_str(), false);
-  result = FileSystem::EnsureDirectoryExists(Cache.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Cache, "achievement_images").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Cheats.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Covers.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(GameIcons.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(GameSettings.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(InputProfiles.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(MemoryCards.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Patches.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(SaveStates.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Screenshots.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Shaders.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Path::Combine(Shaders, "reshade").c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(
-             Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders").c_str(), false) &&
-           result;
-  result = FileSystem::EnsureDirectoryExists(
-             Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures").c_str(), false) &&
-           result;
-  result = FileSystem::EnsureDirectoryExists(Subchannels.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Textures.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(UserResources.c_str(), false) && result;
-  result = FileSystem::EnsureDirectoryExists(Videos.c_str(), false) && result;
-  return result;
+  Error error;
+  if (!FileSystem::EnsureDirectoryExists(path.c_str(), false, &error))
+    ERROR_LOG("Failed to create directory {}: {}", path, error.GetDescription());
+}
+
+void EmuFolders::EnsureFoldersExist()
+{
+  EnsureFolderExists(Bios);
+  EnsureFolderExists(Cache);
+  EnsureFolderExists(Path::Combine(Cache, "achievement_images"));
+  EnsureFolderExists(Cheats);
+  EnsureFolderExists(Covers);
+  EnsureFolderExists(GameIcons);
+  EnsureFolderExists(GameSettings);
+  EnsureFolderExists(InputProfiles);
+  EnsureFolderExists(MemoryCards);
+  EnsureFolderExists(Patches);
+  EnsureFolderExists(SaveStates);
+  EnsureFolderExists(Screenshots);
+  EnsureFolderExists(Shaders);
+  EnsureFolderExists(Path::Combine(Shaders, "reshade"));
+  EnsureFolderExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Shaders"));
+  EnsureFolderExists(Path::Combine(Shaders, "reshade" FS_OSPATH_SEPARATOR_STR "Textures"));
+  EnsureFolderExists(Subchannels);
+  EnsureFolderExists(Textures);
+  EnsureFolderExists(UserResources);
+  EnsureFolderExists(Videos);
 }
 
 std::string EmuFolders::GetOverridableResourcePath(std::string_view name)

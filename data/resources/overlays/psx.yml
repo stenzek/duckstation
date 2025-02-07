@@ -4,3 +4,4 @@ displayStartY: 260
 displayEndX: 2850
 displayEndY: 1655
 alphaBlend: false
+destinationAlphaBlend: false

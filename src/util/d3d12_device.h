@@ -381,7 +381,6 @@ public:
   ALWAYS_INLINE IDXGISwapChain1* GetSwapChain() const { return m_swap_chain.Get(); }
   ALWAYS_INLINE const BufferPair& GetCurrentBuffer() const { return m_swap_chain_buffers[m_current_swap_chain_buffer]; }
   ALWAYS_INLINE bool IsUsingAllowTearing() const { return m_using_allow_tearing; }
-  ALWAYS_INLINE bool IsExclusiveFullscreen() const { return m_fullscreen_mode.has_value(); }
 
   void AdvanceBuffer()
   {
@@ -389,6 +388,7 @@ public:
   }
   bool ResizeBuffers(u32 new_width, u32 new_height, float new_scale, Error* error) override;
   bool SetVSyncMode(GPUVSyncMode mode, bool allow_present_throttle, Error* error) override;
+  bool IsExclusiveFullscreen() const override;
 
 private:
   static u32 GetNewBufferCount(GPUVSyncMode vsync_mode);

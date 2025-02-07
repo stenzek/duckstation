@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -43,6 +43,7 @@ public:
 
   void initialize();
   void resizeTableViewColumnsToFit();
+  void setTableViewColumnHidden(int column, bool hidden);
 
   void refresh(bool invalidate_cache);
   void refreshModel();

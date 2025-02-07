@@ -37,6 +37,8 @@ public:
   ALWAYS_INLINE u32 getPortNumber() const { return m_port_number; }
   ALWAYS_INLINE const QIcon& getIcon() { return m_icon; }
 
+  static bool doMultipleDeviceAutomaticBinding(QWidget* parent, ControllerSettingsWindow* parent_dialog, u32 port);
+
 private Q_SLOTS:
   void onTypeChanged();
   void onAutomaticBindingClicked();
@@ -44,6 +46,7 @@ private Q_SLOTS:
   void onBindingsClicked();
   void onSettingsClicked();
   void onMacrosClicked();
+  void onMultipleDeviceAutomaticBindingTriggered();
 
 private:
   void populateControllerTypes();

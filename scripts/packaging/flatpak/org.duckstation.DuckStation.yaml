@@ -32,7 +32,7 @@ modules:
   # Dependencies.
   - "modules/10-libbacktrace.yaml"
   - "modules/11-libzip.yaml"
-  - "modules/20-sdl2.yaml"
+  - "modules/20-sdl3.yaml"
   - "modules/21-shaderc.yaml"
   - "modules/22-spirv-cross.yaml"
   - "modules/23-cpuinfo.yaml"

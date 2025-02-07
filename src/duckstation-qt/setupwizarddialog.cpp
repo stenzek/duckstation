@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "setupwizarddialog.h"
+#include "controllerbindingwidgets.h"
 #include "controllersettingwidgetbinder.h"
 #include "interfacesettingswidget.h"
 #include "mainwindow.h"
@@ -411,7 +412,7 @@ void SetupWizardDialog::setupControllerPage(bool initial)
       nullptr, w.type_combo, section, "Type",
       Controller::GetControllerInfo(Settings::GetDefaultControllerType(port)).name);
 
-    w.mapping_result->setText((port == 0) ? tr("Default (Keyboard)") : tr("Default (None)"));
+    w.mapping_result->setText(findCurrentDeviceForPort(port));
 
     if (initial)
     {
@@ -431,6 +432,13 @@ void SetupWizardDialog::updateStylesheets()
 {
 }
 
+QString SetupWizardDialog::findCurrentDeviceForPort(u32 port) const
+{
+  auto lock = Host::GetSettingsLock();
+  return QString::fromStdString(
+    InputManager::GetPhysicalDeviceForController(*Host::Internal::GetBaseSettingsLayer(), port));
+}
+
 void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
 {
   QMenu menu(this);
@@ -448,7 +456,13 @@ void SetupWizardDialog::openAutomaticMappingMenu(u32 port, QLabel* update_label)
     added = true;
   }
 
-  if (!added)
+  if (added)
+  {
+    QAction* action = menu.addAction(tr("Multiple Devices..."));
+    connect(action, &QAction::triggered, this,
+            [this, port, update_label]() { doMultipleDeviceAutomaticBinding(port, update_label); });
+  }
+  else
   {
     QAction* action = menu.addAction(tr("No devices available"));
     action->setEnabled(false);
@@ -474,7 +488,7 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
   bool result;
   {
     auto lock = Host::GetSettingsLock();
-    result = InputManager::MapController(*Host::Internal::GetBaseSettingsLayer(), port, mapping);
+    result = InputManager::MapController(*Host::Internal::GetBaseSettingsLayer(), port, mapping, true);
   }
   if (!result)
     return;
@@ -482,4 +496,12 @@ void SetupWizardDialog::doDeviceAutomaticBinding(u32 port, QLabel* update_label,
   Host::CommitBaseSettingChanges();
 
   update_label->setText(device);
+}
+
+void SetupWizardDialog::doMultipleDeviceAutomaticBinding(u32 port, QLabel* update_label)
+{
+  if (!ControllerBindingWidget::doMultipleDeviceAutomaticBinding(this, nullptr, port))
+    return;
+
+  update_label->setText(findCurrentDeviceForPort(port));
 }

@@ -265,8 +265,8 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
   m_clamp_uvs = ShouldClampUVs(m_texture_filtering) || ShouldClampUVs(m_sprite_texture_filtering);
   m_compute_uv_range = m_clamp_uvs;
   m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
-  m_use_texture_cache = g_settings.gpu_texture_cache;
-  m_texture_dumping = m_use_texture_cache && g_settings.texture_replacements.dump_textures;
+  m_use_texture_cache = g_gpu_settings.gpu_texture_cache;
+  m_texture_dumping = m_use_texture_cache && g_gpu_settings.texture_replacements.dump_textures;
 
   CheckSettings();
 
@@ -487,9 +487,9 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
                             Host::OSD_INFO_DURATION);
   }
 
-  if (m_multisamples != multisamples || g_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading)
+  if (m_multisamples != multisamples || g_gpu_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading)
   {
-    if (g_settings.gpu_per_sample_shading && features.per_sample_shading)
+    if (g_gpu_settings.gpu_per_sample_shading && features.per_sample_shading)
     {
       Host::AddIconOSDMessage(
         "MultisamplingChanged", ICON_FA_PAINT_BRUSH,
@@ -658,7 +658,7 @@ void GPU_HW::CheckSettings()
     m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
   }
 
-  if (g_settings.IsUsingAccurateBlending() && !m_supports_framebuffer_fetch && !features.feedback_loops &&
+  if (g_gpu_settings.IsUsingAccurateBlending() && !m_supports_framebuffer_fetch && !features.feedback_loops &&
       !features.raster_order_views)
   {
     // m_allow_shader_blend/m_prefer_shader_blend will be cleared in pipeline compile.
@@ -669,7 +669,7 @@ void GPU_HW::CheckSettings()
       Host::OSD_WARNING_DURATION);
   }
   else if (IsUsingMultisampling() && !features.framebuffer_fetch &&
-           ((g_settings.IsUsingAccurateBlending() && features.raster_order_views) ||
+           ((g_gpu_settings.IsUsingAccurateBlending() && features.raster_order_views) ||
             (m_pgxp_depth_buffer && features.raster_order_views && !features.feedback_loops)))
   {
     Host::AddIconOSDMessage(
@@ -746,7 +746,8 @@ u32 GPU_HW::CalculateResolutionScale() const
     {
       GSVector4i display_rect, draw_rect;
       m_presenter.CalculateDrawRect(g_gpu_device->GetMainSwapChain()->GetWidth(),
-                                    g_gpu_device->GetMainSwapChain()->GetHeight(), true, &display_rect, &draw_rect);
+                                    g_gpu_device->GetMainSwapChain()->GetHeight(), true, true, &display_rect,
+                                    &draw_rect);
 
       // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
       // anamorphic aspect ratio.
@@ -786,7 +787,7 @@ bool GPU_HW::UpdateResolutionScale(Error* error)
   if (CalculateResolutionScale() == m_resolution_scale)
     return true;
 
-  return UpdateSettings(g_settings, error);
+  return UpdateSettings(g_gpu_settings, error);
 }
 
 GPUDownsampleMode GPU_HW::GetDownsampleMode(u32 resolution_scale) const
@@ -960,7 +961,7 @@ bool GPU_HW::CreateBuffers(Error* error)
     }
   }
 
-  if (g_gpu_device->GetFeatures().supports_texture_buffers)
+  if (g_gpu_device->GetFeatures().texture_buffers)
   {
     if (!(m_vram_upload_buffer = g_gpu_device->CreateTextureBuffer(GPUTextureBuffer::Format::R16UI,
                                                                    GPUDevice::MIN_TEXEL_BUFFER_ELEMENTS, error)))
@@ -1615,7 +1616,7 @@ bool GPU_HW::CompilePipelines(Error* error)
 
   // VRAM write
   {
-    const bool use_buffer = features.supports_texture_buffers;
+    const bool use_buffer = features.texture_buffers;
     const bool use_ssbo = features.texture_buffers_emulated_with_ssbo;
     std::unique_ptr<GPUShader> fs = g_gpu_device->CreateShader(
       GPUShaderStage::Fragment, shadergen.GetLanguage(),
@@ -2662,6 +2663,15 @@ void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
 
 void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
 {
+  // Treat non-textured sprite draws as fills, so we don't break the TC on framebuffer clears.
+  if (m_use_texture_cache && !cmd->transparency_enable && !cmd->shading_enable && !cmd->texture_enable && cmd->x >= 0 &&
+      cmd->y >= 0 && cmd->width >= TEXTURE_PAGE_WIDTH && cmd->height >= TEXTURE_PAGE_HEIGHT &&
+      (static_cast<u32>(cmd->x) + cmd->width) <= VRAM_WIDTH && (static_cast<u32>(cmd->y) + cmd->height) <= VRAM_HEIGHT)
+  {
+    FillVRAM(cmd->x, cmd->y, cmd->width, cmd->height, cmd->color, cmd->interlaced_rendering, cmd->active_line_lsb);
+    return;
+  }
+
   const GSVector2i pos = GSVector2i::load<true>(&cmd->x);
   const GSVector2i size = GSVector2i::load<true>(&cmd->width).u16to32();
   const GSVector4i rect = GSVector4i::xyxy(pos, pos.add32(size));
@@ -3380,7 +3390,7 @@ void GPU_HW::UpdateVRAMOnGPU(u32 x, u32 y, u32 width, u32 height, const void* da
   GPUDevice::AutoRecycleTexture upload_texture;
   u32 map_index;
 
-  if (!g_gpu_device->GetFeatures().supports_texture_buffers)
+  if (!g_gpu_device->GetFeatures().texture_buffers)
   {
     map_index = 0;
     upload_texture =
@@ -3982,7 +3992,7 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
       m_presenter.SetDisplayTexture(postfx_output, 0, 0, postfx_output->GetWidth(), postfx_output->GetHeight());
     }
 
-    if (g_settings.display_24bit_chroma_smoothing)
+    if (g_gpu_settings.display_24bit_chroma_smoothing)
     {
       if (m_presenter.ApplyChromaSmoothing())
       {

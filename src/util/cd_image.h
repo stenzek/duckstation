@@ -33,7 +33,7 @@ public:
     MODE1_HEADER_SIZE = 4,
     MODE2_HEADER_SIZE = 12,
     MODE2_DATA_SECTOR_SIZE = 2336, // header + edc
-    FRAMES_PER_SECOND = 75, // "sectors", or "timecode frames" (not "channel frames")
+    FRAMES_PER_SECOND = 75,        // "sectors", or "timecode frames" (not "channel frames")
     SECONDS_PER_MINUTE = 60,
     FRAMES_PER_MINUTE = FRAMES_PER_SECOND * SECONDS_PER_MINUTE,
     SUBCHANNEL_BYTES_PER_FRAME = 12,
@@ -240,17 +240,17 @@ public:
   static bool IsDeviceName(const char* filename);
 
   // Opening disc image.
-  static std::unique_ptr<CDImage> Open(const char* filename, bool allow_patches, Error* error);
+  static std::unique_ptr<CDImage> Open(const char* path, bool allow_patches, Error* error);
   static std::unique_ptr<CDImage> OpenBinImage(const char* path, Error* error);
   static std::unique_ptr<CDImage> OpenCueSheetImage(const char* path, Error* error);
-  static std::unique_ptr<CDImage> OpenCHDImage(const char* filename, Error* error);
-  static std::unique_ptr<CDImage> OpenMdsImage(const char* filename, Error* error);
-  static std::unique_ptr<CDImage> OpenPBPImage(const char* filename, Error* error);
-  static std::unique_ptr<CDImage> OpenM3uImage(const char* filename, bool apply_patches, Error* error);
-  static std::unique_ptr<CDImage> OpenDeviceImage(const char* filename, Error* error);
+  static std::unique_ptr<CDImage> OpenCHDImage(const char* path, Error* error);
+  static std::unique_ptr<CDImage> OpenMdsImage(const char* path, Error* error);
+  static std::unique_ptr<CDImage> OpenPBPImage(const char* path, Error* error);
+  static std::unique_ptr<CDImage> OpenM3uImage(const char* path, bool apply_patches, Error* error);
+  static std::unique_ptr<CDImage> OpenDeviceImage(const char* path, Error* error);
   static std::unique_ptr<CDImage>
   CreateMemoryImage(CDImage* image, ProgressCallback* progress = ProgressCallback::NullProgressCallback);
-  static std::unique_ptr<CDImage> OverlayPPFPatch(const char* filename, std::unique_ptr<CDImage> parent_image,
+  static std::unique_ptr<CDImage> OverlayPPFPatch(const char* path, std::unique_ptr<CDImage> parent_image,
                                                   ProgressCallback* progress = ProgressCallback::NullProgressCallback);
 
   // Accessors.

@@ -71,6 +71,9 @@ void CPUThreadShutdown();
 /// Returns a handle to the CPU thread.
 const Threading::ThreadHandle& GetCPUThreadHandle();
 
+/// Changes the CPU thread handle, use with care.
+void SetCPUThreadHandle(Threading::ThreadHandle handle);
+
 /// Polls input, updates subsystems which are present while paused/inactive.
 void IdlePollUpdate();
 

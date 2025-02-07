@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>540</width>
-    <height>355</height>
+    <height>381</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -115,10 +115,10 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="0" colspan="2">
-       <widget class="QCheckBox" name="alphaBlend">
+      <item row="2" column="0">
+       <widget class="QLabel" name="label_9">
         <property name="text">
-         <string>Destination Alpha Blending</string>
+         <string>Display End:</string>
         </property>
        </widget>
       </item>
@@ -160,12 +160,47 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_9">
-        <property name="text">
-         <string>Display End:</string>
-        </property>
-       </widget>
+      <item row="3" column="0" colspan="2">
+       <layout class="QGridLayout" name="customConfigOptionsLayout" columnstretch="1,1">
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="destinationAlphaBlend">
+          <property name="text">
+           <string>Destination Alpha Blending</string>
+          </property>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QCheckBox" name="alphaBlend">
+          <property name="text">
+           <string>Alpha Blending</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <layout class="QHBoxLayout" name="exportCustomConfigLayout">
+          <item>
+           <spacer name="exportSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>1</width>
+              <height>1</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="exportCustomConfig">
+            <property name="text">
+             <string>Export</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
       </item>
      </layout>
     </widget>
