@@ -2430,7 +2430,8 @@ void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
   g_emu_thread->updatePerformanceCounters(gpu_backend);
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name)
+void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
+                         GameHash hash)
 {
   emit g_emu_thread->runningGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
                                         QString::fromStdString(game_name));

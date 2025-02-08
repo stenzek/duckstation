@@ -2027,7 +2027,8 @@ void System::ClearRunningGame()
   s_state.running_game_entry = nullptr;
   s_state.running_game_hash = 0;
 
-  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title);
+  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+                      s_state.running_game_hash);
 
   Achievements::GameChanged(s_state.running_game_path, nullptr, false);
 
@@ -4198,7 +4199,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   FullscreenUI::OnRunningGameChanged(s_state.running_game_path, s_state.running_game_serial,
                                      s_state.running_game_title);
 
-  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title);
+  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+                      s_state.running_game_hash);
 }
 
 bool System::CheckForRequiredSubQ(Error* error)
