@@ -159,10 +159,10 @@ private:
   static void PrintSFOTable(const SFOTable& sfo_table);
 #endif
 
-  bool LoadPBPHeader();
-  bool LoadSFOHeader();
-  bool LoadSFOIndexTable();
-  bool LoadSFOTable();
+  bool LoadPBPHeader(Error* error);
+  bool LoadSFOHeader(Error* error);
+  bool LoadSFOIndexTable(Error* error);
+  bool LoadSFOTable(Error* error);
 
   bool IsValidEboot(Error* error);
 
@@ -173,7 +173,7 @@ private:
 
   static const std::string* LookupStringSFOTableEntry(const char* key, const SFOTable& table);
 
-  FILE* m_file = nullptr;
+  std::FILE* m_file = nullptr;
 
   PBPHeader m_pbp_header;
   SFOHeader m_sfo_header;
@@ -200,34 +200,22 @@ private:
 CDImagePBP::~CDImagePBP()
 {
   if (m_file)
-    fclose(m_file);
+    std::fclose(m_file);
 
   inflateEnd(&m_inflate_stream);
 }
 
-bool CDImagePBP::LoadPBPHeader()
+bool CDImagePBP::LoadPBPHeader(Error* error)
 {
-  if (!m_file)
-    return false;
-
-  if (FileSystem::FSeek64(m_file, 0, SEEK_END) != 0)
-    return false;
-
-  if (FileSystem::FTell64(m_file) < 0)
-    return false;
-
-  if (FileSystem::FSeek64(m_file, 0, SEEK_SET) != 0)
-    return false;
-
   if (std::fread(&m_pbp_header, sizeof(PBPHeader), 1, m_file) != 1)
   {
-    ERROR_LOG("Unable to read PBP header");
+    Error::SetErrno(error, "fread() for PBP header failed: ", errno);
     return false;
   }
 
-  if (std::strncmp((char*)m_pbp_header.magic, "\0PBP", 4) != 0)
+  if (std::memcmp(m_pbp_header.magic, "\0PBP", 4) != 0)
   {
-    ERROR_LOG("PBP magic number mismatch");
+    Error::SetStringView(error, "PBP magic number mismatch");
     return false;
   }
 
@@ -238,17 +226,20 @@ bool CDImagePBP::LoadPBPHeader()
   return true;
 }
 
-bool CDImagePBP::LoadSFOHeader()
+bool CDImagePBP::LoadSFOHeader(Error* error)
 {
-  if (FileSystem::FSeek64(m_file, m_pbp_header.param_sfo_offset, SEEK_SET) != 0)
+  if (!FileSystem::FSeek64(m_file, m_pbp_header.param_sfo_offset, SEEK_SET, error))
     return false;
 
   if (std::fread(&m_sfo_header, sizeof(SFOHeader), 1, m_file) != 1)
-    return false;
-
-  if (std::strncmp((char*)m_sfo_header.magic, "\0PSF", 4) != 0)
   {
-    ERROR_LOG("SFO magic number mismatch");
+    Error::SetErrno(error, "fread() for SFO header failed: ", errno);
+    return false;
+  }
+
+  if (std::memcmp(m_sfo_header.magic, "\0PSF", 4) != 0)
+  {
+    Error::SetStringView(error, "SFO magic number mismatch");
     return false;
   }
 
@@ -259,17 +250,18 @@ bool CDImagePBP::LoadSFOHeader()
   return true;
 }
 
-bool CDImagePBP::LoadSFOIndexTable()
+bool CDImagePBP::LoadSFOIndexTable(Error* error)
 {
   m_sfo_index_table.clear();
   m_sfo_index_table.resize(m_sfo_header.num_table_entries);
 
-  if (FileSystem::FSeek64(m_file, m_pbp_header.param_sfo_offset + sizeof(m_sfo_header), SEEK_SET) != 0)
+  if (!FileSystem::FSeek64(m_file, m_pbp_header.param_sfo_offset + sizeof(m_sfo_header), SEEK_SET, error))
     return false;
 
   if (std::fread(m_sfo_index_table.data(), sizeof(SFOIndexTableEntry), m_sfo_header.num_table_entries, m_file) !=
       m_sfo_header.num_table_entries)
   {
+    Error::SetErrno(error, "fread() for SFO index table failed: ", errno);
     return false;
   }
 
@@ -281,7 +273,7 @@ bool CDImagePBP::LoadSFOIndexTable()
   return true;
 }
 
-bool CDImagePBP::LoadSFOTable()
+bool CDImagePBP::LoadSFOTable(Error* error)
 {
   m_sfo_table.clear();
 
@@ -292,37 +284,39 @@ bool CDImagePBP::LoadSFOTable()
     u32 abs_data_offset =
       m_pbp_header.param_sfo_offset + m_sfo_header.data_table_offset + m_sfo_index_table[i].data_offset;
 
-    if (FileSystem::FSeek64(m_file, abs_key_offset, SEEK_SET) != 0)
+    if (!FileSystem::FSeek64(m_file, abs_key_offset, SEEK_SET, error))
     {
-      ERROR_LOG("Failed seek to key for SFO table entry {}", i);
+      Error::AddPrefixFmt(error, "Failed seek to key for SFO table entry {}: ", i);
       return false;
     }
 
     // Longest known key string is 20 characters total, including the null character
     char key_cstr[20] = {};
-    if (std::fgets(key_cstr, sizeof(key_cstr), m_file) == nullptr)
+    if (!std::fgets(key_cstr, sizeof(key_cstr), m_file))
     {
-      ERROR_LOG("Failed to read key string for SFO table entry {}", i);
+      Error::SetErrno(error, "fgets() failed: ", errno);
+      Error::AddPrefixFmt(error, "Failed to read key string for SFO table entry {}: ", i);
       return false;
     }
 
-    if (FileSystem::FSeek64(m_file, abs_data_offset, SEEK_SET) != 0)
+    if (!FileSystem::FSeek64(m_file, abs_data_offset, SEEK_SET, error))
     {
-      ERROR_LOG("Failed seek to data for SFO table entry {}", i);
+      Error::AddPrefixFmt(error, "Failed seek to data for SFO table entry {}: ", i);
       return false;
     }
 
     if (m_sfo_index_table[i].data_type == 0x0004) // "special mode" UTF-8 (not null terminated)
     {
-      ERROR_LOG("Unhandled special mode UTF-8 type found in SFO table for entry {}", i);
+      Error::SetStringFmt(error, "Unhandled special mode UTF-8 type found in SFO table for entry {}", i);
       return false;
     }
     else if (m_sfo_index_table[i].data_type == 0x0204) // null-terminated UTF-8 character string
     {
       std::vector<char> data_cstr(m_sfo_index_table[i].data_size);
-      if (fgets(data_cstr.data(), static_cast<int>(data_cstr.size() * sizeof(char)), m_file) == nullptr)
+      if (!std::fgets(data_cstr.data(), static_cast<int>(data_cstr.size() * sizeof(char)), m_file))
       {
-        ERROR_LOG("Failed to read data string for SFO table entry {}", i);
+        Error::SetErrno(error, "fgets() failed: ", errno);
+        Error::AddPrefixFmt(error, "Failed to read data string for SFO table entry {}: ", i);
         return false;
       }
 
@@ -333,7 +327,8 @@ bool CDImagePBP::LoadSFOTable()
       u32 val;
       if (std::fread(&val, sizeof(u32), 1, m_file) != 1)
       {
-        ERROR_LOG("Failed to read unsigned data value for SFO table entry {}", i);
+        Error::SetErrno(error, "fread() failed: ", errno);
+        Error::AddPrefixFmt(error, "Failed to read unsigned data value for SFO table entry {}: ", i);
         return false;
       }
 
@@ -341,7 +336,7 @@ bool CDImagePBP::LoadSFOTable()
     }
     else
     {
-      ERROR_LOG("Unhandled SFO data type 0x{:04X} found in SFO table for entry {}", m_sfo_index_table[i].data_type, i);
+      Error::SetStringFmt(error, "Unhandled SFO data type 0x{:04X} found in SFO table for entry {}", m_sfo_index_table[i].data_type, i);
       return false;
     }
   }
@@ -408,36 +403,20 @@ bool CDImagePBP::Open(const char* filename, Error* error)
   m_filename = filename;
 
   // Read in PBP header
-  if (!LoadPBPHeader())
-  {
-    ERROR_LOG("Failed to load PBP header");
-    Error::SetString(error, "Failed to load PBP header");
+  if (!LoadPBPHeader(error))
     return false;
-  }
 
   // Read in SFO header
-  if (!LoadSFOHeader())
-  {
-    ERROR_LOG("Failed to load SFO header");
-    Error::SetString(error, "Failed to load SFO header");
+  if (!LoadSFOHeader(error))
     return false;
-  }
 
   // Read in SFO index table
-  if (!LoadSFOIndexTable())
-  {
-    ERROR_LOG("Failed to load SFO index table");
-    Error::SetString(error, "Failed to load SFO index table");
+  if (!LoadSFOIndexTable(error))
     return false;
-  }
 
   // Read in SFO table
-  if (!LoadSFOTable())
-  {
-    ERROR_LOG("Failed to load SFO table");
-    Error::SetString(error, "Failed to load SFO table");
+  if (!LoadSFOTable(error))
     return false;
-  }
 
   // Since PBP files can store things that aren't PS1 CD images, make sure we're loading the right kind
   if (!IsValidEboot(error))
@@ -447,26 +426,38 @@ bool CDImagePBP::Open(const char* filename, Error* error)
   }
 
   // Start parsing ISO stuff
-  if (FileSystem::FSeek64(m_file, m_pbp_header.data_psar_offset, SEEK_SET) != 0)
+  if (!FileSystem::FSeek64(m_file, m_pbp_header.data_psar_offset, SEEK_SET, error))
+  {
+    Error::AddPrefix(error, "Failed to seek to psar offset: ");
     return false;
+  }
 
   // Check "PSTITLEIMG000000" for multi-disc
   char data_psar_magic[16] = {};
   if (std::fread(data_psar_magic, sizeof(data_psar_magic), 1, m_file) != 1)
+  {
+    Error::SetErrno(error, "Failed to read data_psar_magic: ", errno);
     return false;
+  }
 
-  if (std::strncmp(data_psar_magic, "PSTITLEIMG000000", 16) == 0) // Multi-disc header found
+  if (std::memcmp(data_psar_magic, "PSTITLEIMG000000", 16) == 0) // Multi-disc header found
   {
     // For multi-disc, the five disc offsets are located at data_psar_offset + 0x200. Non-present discs have an offset
     // of 0. There are also some disc hashes, a serial (from one of the discs, but used as an identifier for the entire
     // "title image" header), and some other offsets, but we don't really need to check those
 
-    if (FileSystem::FSeek64(m_file, m_pbp_header.data_psar_offset + 0x200, SEEK_SET) != 0)
+    if (!FileSystem::FSeek64(m_file, m_pbp_header.data_psar_offset + 0x200, SEEK_SET, error))
+    {
+      Error::AddPrefix(error, "Failed to seek to multi-disc header: ");
       return false;
+    }
 
     u32 disc_table[DISC_TABLE_NUM_ENTRIES] = {};
     if (std::fread(disc_table, sizeof(u32), DISC_TABLE_NUM_ENTRIES, m_file) != DISC_TABLE_NUM_ENTRIES)
+    {
+      Error::SetErrno(error, "Failed to read disc_table", errno);
       return false;
+    }
 
     // Ignore encrypted files
     if (disc_table[0] == 0x44475000) // "\0PGD"
@@ -487,7 +478,7 @@ bool CDImagePBP::Open(const char* filename, Error* error)
 
     if (m_disc_offsets.size() < 1)
     {
-      ERROR_LOG("Invalid number of discs ({}) in multi-disc PBP file", m_disc_offsets.size());
+      Error::SetStringFmt(error, "Invalid number of discs ({}) in multi-disc PBP file", m_disc_offsets.size());
       return false;
     }
   }
