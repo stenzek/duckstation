@@ -129,6 +129,9 @@ extern void ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbo
 /// Releases all cheat-related state.
 extern void UnloadAll();
 
+/// Returns true if any patches have setting overrides specified.
+extern bool HasAnySettingOverrides();
+
 /// Applies setting changes based on patches.
 extern void ApplySettingOverrides();
 

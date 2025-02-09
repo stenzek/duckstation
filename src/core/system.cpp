@@ -1928,7 +1928,11 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   UpdateMemorySaveStateSettings();
 
   if (!IsReplayingGPUDump())
+  {
     Cheats::ReloadCheats(true, true, false, true);
+    if (Cheats::HasAnySettingOverrides())
+      ApplySettings(true);
+  }
 
   PerformanceCounters::Clear();
 

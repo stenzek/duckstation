@@ -186,6 +186,7 @@ public:
   ALWAYS_INLINE bool IsManuallyActivated() const { return (m_metadata.activation == CodeActivation::Manual); }
   ALWAYS_INLINE bool HasOptions() const { return m_metadata.has_options; }
 
+  bool HasAnySettingOverrides() const;
   void ApplySettingOverrides();
 
   virtual void SetOptionValue(u32 value) = 0;
@@ -264,6 +265,14 @@ Cheats::CheatCode::CheatCode(Metadata metadata) : m_metadata(std::move(metadata)
 {
 }
 
+Cheats::CheatCode::~CheatCode() = default;
+
+bool Cheats::CheatCode::HasAnySettingOverrides() const
+{
+  return (m_metadata.disable_widescreen_rendering || m_metadata.override_aspect_ratio.has_value() ||
+          m_metadata.override_cpu_overclock.has_value());
+}
+
 void Cheats::CheatCode::ApplySettingOverrides()
 {
   if (m_metadata.disable_widescreen_rendering && g_settings.gpu_widescreen_hack)
@@ -285,8 +294,6 @@ void Cheats::CheatCode::ApplySettingOverrides()
     g_settings.UpdateOverclockActive();
   }
 }
-
-Cheats::CheatCode::~CheatCode() = default;
 
 static std::array<const char*, 1> s_cheat_code_type_names = {{"Gameshark"}};
 static std::array<const char*, 1> s_cheat_code_type_display_names{{TRANSLATE_NOOP("Cheats", "Gameshark")}};
@@ -925,6 +932,25 @@ void Cheats::UnloadAll()
   s_patches_enabled = false;
   s_cheats_enabled = false;
   s_database_cheat_codes_enabled = false;
+}
+
+bool Cheats::HasAnySettingOverrides()
+{
+  for (const std::string& name : s_enabled_patches)
+  {
+    for (std::unique_ptr<CheatCode>& code : s_patch_codes)
+    {
+      if (name == code->GetName())
+      {
+        if (code->HasAnySettingOverrides())
+          return true;
+
+        break;
+      }
+    }
+  }
+
+  return false;
 }
 
 void Cheats::ApplySettingOverrides()
