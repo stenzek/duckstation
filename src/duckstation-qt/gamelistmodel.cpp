@@ -637,6 +637,11 @@ QVariant GameListModel::headerData(int section, Qt::Orientation orientation, int
   return m_column_display_names[section];
 }
 
+const GameList::Entry* GameListModel::getTakenGameListEntry(u32 index) const
+{
+  return (m_taken_entries.has_value() && index < m_taken_entries->size()) ? &m_taken_entries.value()[index] : nullptr;
+}
+
 bool GameListModel::hasTakenGameList() const
 {
   return m_taken_entries.has_value();
