@@ -11,7 +11,7 @@ config-opts:
   - "-DSDL_STATIC=OFF"
   - "-DSDL_TESTS=OFF"
 build-options:
-  strip: true
+  strip: false
 sources:
   - type: archive
     url: "https://github.com/libsdl-org/SDL/releases/download/release-3.2.4/SDL3-3.2.4.tar.gz"
