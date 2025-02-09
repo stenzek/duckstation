@@ -376,7 +376,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
        "which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era."));
   dialog->registerWidgetHelp(
     m_ui.displayDeinterlacing, tr("Deinterlacing"),
-    QString::fromUtf8(Settings::GetDisplayDeinterlacingModeName(Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE)),
+    QString::fromUtf8(Settings::GetDisplayDeinterlacingModeDisplayName(Settings::DEFAULT_DISPLAY_DEINTERLACING_MODE)),
     tr("Determines which algorithm is used to convert interlaced frames to progressive for display on your system. "
        "Using progressive rendering provides the best quality output, but some games require interlaced rendering."));
   dialog->registerWidgetHelp(
@@ -443,10 +443,11 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                 "streaming applications, or to uncap framerates on some systems."));
 #endif
 
-  dialog->registerWidgetHelp(m_ui.gpuLineDetectMode, tr("Line Detection"),
-                             QString::fromUtf8(Settings::GetLineDetectModeName(Settings::DEFAULT_GPU_LINE_DETECT_MODE)),
-                             tr("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
-                                "behavior, filling in gaps introduced by upscaling."));
+  dialog->registerWidgetHelp(
+    m_ui.gpuLineDetectMode, tr("Line Detection"),
+    QString::fromUtf8(Settings::GetLineDetectModeDisplayName(Settings::DEFAULT_GPU_LINE_DETECT_MODE)),
+    tr("Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization "
+       "behavior, filling in gaps introduced by upscaling."));
   dialog->registerWidgetHelp(
     m_ui.msaaMode, tr("Multi-Sampling"), tr("Disabled"),
     tr("Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance "
@@ -568,6 +569,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     tr("Selects the framework that is used to encode video/audio."));
   dialog->registerWidgetHelp(m_ui.captureContainer, tr("Container"), tr("MP4"),
                              tr("Determines the file format used to contain the captured audio/video"));
+  dialog->registerWidgetHelp(m_ui.enableVideoCapture, tr("Capture Video"), tr("Checked"),
+                             tr("Captures video to the chosen file when media capture is started. If unchecked, the "
+                                "file will only contain audio."));
   dialog->registerWidgetHelp(
     m_ui.videoCaptureCodec, tr("Video Codec"), tr("Default"),
     tr("Selects which Video Codec to be used for Video Capture. <b>If unsure, leave it on default.<b>"));
@@ -585,6 +589,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.videoCaptureArguments, tr("Extra Video Arguments"), tr("Empty"),
     tr("Parameters passed to the selected video codec.<br><b>You must use '=' to separate key from value and ':' to "
        "separate two pairs from each other.</b><br>For example: \"crf = 21 : preset = veryfast\""));
+  dialog->registerWidgetHelp(m_ui.enableAudioCapture, tr("Capture Audio"), tr("Checked"),
+                             tr("Captures audio to the chosen file when media capture is started. If unchecked, the "
+                                "file will only contain video."));
   dialog->registerWidgetHelp(
     m_ui.audioCaptureCodec, tr("Audio Codec"), tr("Default"),
     tr("Selects which Audio Codec to be used for Video Capture. <b>If unsure, leave it on default.<b>"));

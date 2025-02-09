@@ -850,8 +850,8 @@ bool CDImageCueSheet::OpenAndParseSingleFile(const char* path, Error* error)
   m_indices.push_back(data_index);
 
   // Assume a single track.
-  m_tracks.push_back(Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0), m_lba_count, mode,
-                           SubchannelMode::None, control});
+  m_tracks.push_back(Track{static_cast<u32>(1), data_index.start_lba_on_disc, static_cast<u32>(0),
+                           m_lba_count + pregap_frames, mode, SubchannelMode::None, control});
 
   AddLeadOutIndex();
 

@@ -53,6 +53,15 @@ InputBindingDialog::InputBindingDialog(SettingsInterface* sif, InputBindingInfo:
   else
   {
     m_ui.verticalLayout->removeWidget(m_ui.sensitivityWidget);
+    delete m_ui.sensitivityWidget;
+    m_ui.sensitivity = nullptr;
+    m_ui.sensitivityLabel = nullptr;
+    m_ui.sensitivityValue = nullptr;
+    m_ui.resetSensitivity = nullptr;
+    m_ui.deadzone = nullptr;
+    m_ui.deadzoneLabel = nullptr;
+    m_ui.deadzoneValue = nullptr;
+    m_ui.resetDeadzone = nullptr;
   }
 }
 

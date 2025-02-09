@@ -736,7 +736,7 @@ bool ImGuiManager::AddImGuiFonts(bool debug_font, bool fullscreen_fonts)
 
     Assert(base_size > 2);
     full_emoji_range.reserve(base_size + s_state.dynamic_emoji_range.size());
-    full_emoji_range.insert(full_emoji_range.end(), &EMOJI_ICON_RANGE[0], &EMOJI_ICON_RANGE[base_size - 2]);
+    full_emoji_range.insert(full_emoji_range.end(), &EMOJI_ICON_RANGE[0], &EMOJI_ICON_RANGE[base_size]);
     full_emoji_range.insert(full_emoji_range.end(), s_state.dynamic_emoji_range.begin(),
                             s_state.dynamic_emoji_range.end());
     full_emoji_range.insert(full_emoji_range.end(), 2, 0);

@@ -3,6 +3,11 @@
 
 # NOTE: These package files are intended for your own personal/private use.
 # You do not have permission to upload them independently to other package repositories.
+#
+# To build yourself:
+#   git clone https://github.com/stenzek/duckstation.git
+#   cd duckstation/scripts/packaging/arch
+#   makepkg -i
 
 pkgname=duckstation
 pkgver=0
@@ -28,9 +33,9 @@ depends=('libjpeg.so' # libjpeg or libjpeg-turbo
 	'libx11'
 	'libxrandr'
 	'libzip'
-	'qt6-base>=6.8.0'
-	'qt6-imageformats>=6.8.0'
-	'qt6-svg>=6.8.0'
+	'qt6-base>=6.8.2'
+	'qt6-imageformats>=6.8.2'
+	'qt6-svg>=6.8.2'
 	'wayland'
 	'zlib'
 	'zstd'
@@ -46,13 +51,21 @@ makedepends=('base-devel'
 	'lld'
 	'llvm'
 	'ninja'
-	'qt6-tools>=6.8.0')
+	'qt6-tools>=6.8.2')
 
 source=(
 	"${pkgname}::git+file://${startdir}/../../.."
+	"https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+	"https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
 )
 sha256sums=(
 	"SKIP"
+	"SKIP"
+	"SKIP"
+)
+noextract=(
+	"cheats.zip"
+	"patches.zip"
 )
 
 # Name of the .desktop file that will be installed.
@@ -69,6 +82,9 @@ pkgver() {
 
 prepare() {
 	cd "${pkgname}"
+
+	# Copy resources
+	cp "../cheats.zip" "../patches.zip" "data/resources"
 
 	# Are we creating a CI/official build?
 	_tagpath="${startdir}/../../../src/scmversion/tag.h"

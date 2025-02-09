@@ -186,6 +186,7 @@ public:
   ALWAYS_INLINE bool IsManuallyActivated() const { return (m_metadata.activation == CodeActivation::Manual); }
   ALWAYS_INLINE bool HasOptions() const { return m_metadata.has_options; }
 
+  bool HasAnySettingOverrides() const;
   void ApplySettingOverrides();
 
   virtual void SetOptionValue(u32 value) = 0;
@@ -215,7 +216,8 @@ static bool AreAnyPatchesEnabled();
 static void ReloadEnabledLists();
 static u32 EnableCheats(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
                         bool hc_mode_active);
-static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed);
+static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed,
+                              bool show_disabled_codes);
 
 template<typename F>
 bool SearchCheatArchive(CheatArchive& archive, std::string_view serial, std::optional<GameHash> hash, const F& f);
@@ -264,6 +266,14 @@ Cheats::CheatCode::CheatCode(Metadata metadata) : m_metadata(std::move(metadata)
 {
 }
 
+Cheats::CheatCode::~CheatCode() = default;
+
+bool Cheats::CheatCode::HasAnySettingOverrides() const
+{
+  return (m_metadata.disable_widescreen_rendering || m_metadata.override_aspect_ratio.has_value() ||
+          m_metadata.override_cpu_overclock.has_value());
+}
+
 void Cheats::CheatCode::ApplySettingOverrides()
 {
   if (m_metadata.disable_widescreen_rendering && g_settings.gpu_widescreen_hack)
@@ -285,8 +295,6 @@ void Cheats::CheatCode::ApplySettingOverrides()
     g_settings.UpdateOverclockActive();
   }
 }
-
-Cheats::CheatCode::~CheatCode() = default;
 
 static std::array<const char*, 1> s_cheat_code_type_names = {{"Gameshark"}};
 static std::array<const char*, 1> s_cheat_code_type_display_names{{TRANSLATE_NOOP("Cheats", "Gameshark")}};
@@ -863,7 +871,8 @@ u32 Cheats::EnableCheats(const CheatCodeList& patches, const EnableCodeList& ena
   return count;
 }
 
-void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed,
+                          bool show_disabled_codes)
 {
   for (const CheatCode* code : s_frame_end_codes)
     code->ApplyOnDisable();
@@ -910,7 +919,7 @@ void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verb
     }
   }
 
-  UpdateActiveCodes(reload_enabled_list, verbose, verbose_if_changed);
+  UpdateActiveCodes(reload_enabled_list, verbose, verbose_if_changed, show_disabled_codes);
 }
 
 void Cheats::UnloadAll()
@@ -925,6 +934,25 @@ void Cheats::UnloadAll()
   s_patches_enabled = false;
   s_cheats_enabled = false;
   s_database_cheat_codes_enabled = false;
+}
+
+bool Cheats::HasAnySettingOverrides()
+{
+  for (const std::string& name : s_enabled_patches)
+  {
+    for (std::unique_ptr<CheatCode>& code : s_patch_codes)
+    {
+      if (name == code->GetName())
+      {
+        if (code->HasAnySettingOverrides())
+          return true;
+
+        break;
+      }
+    }
+  }
+
+  return false;
 }
 
 void Cheats::ApplySettingOverrides()
@@ -943,7 +971,8 @@ void Cheats::ApplySettingOverrides()
   }
 }
 
-void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed,
+                               bool show_disabled_codes)
 {
   if (reload_enabled_list)
     ReloadEnabledLists();
@@ -954,9 +983,10 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
   s_active_patch_count = 0;
   s_active_cheat_count = 0;
 
+  const bool hc_mode_active = Achievements::IsHardcoreModeActive();
+
   if (!g_settings.disable_all_enhancements)
   {
-    const bool hc_mode_active = Achievements::IsHardcoreModeActive();
     s_active_patch_count = EnableCheats(s_patch_codes, s_enabled_patches, "Patches", hc_mode_active);
     s_active_cheat_count =
       AreCheatsEnabled() ? EnableCheats(s_cheat_codes, s_enabled_cheats, "Cheats", hc_mode_active) : 0;
@@ -989,6 +1019,33 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
       Host::AddIconOSDMessage("LoadCheats", ICON_FA_BAND_AID,
                               TRANSLATE_STR("Cheats", "No cheats/patches are found or enabled."),
                               Host::OSD_INFO_DURATION);
+    }
+  }
+
+  if (show_disabled_codes && (hc_mode_active || g_settings.disable_all_enhancements))
+  {
+    const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+    const u32 requested_cheat_count = (sif && sif->GetBoolValue("Cheats", "EnableCheats", false)) ?
+                                        static_cast<u32>(sif->GetStringList("Cheats", "Enable").size()) :
+                                        0;
+    const u32 requested_patches_count = sif ? static_cast<u32>(sif->GetStringList("Patches", "Enable").size()) : 0;
+    const u32 blocked_cheats =
+      (s_active_cheat_count < requested_cheat_count) ? requested_cheat_count - s_active_cheat_count : 0;
+    const u32 blocked_patches =
+      (s_active_patch_count < requested_patches_count) ? requested_patches_count - s_active_patch_count : 0;
+    if (blocked_cheats > 0 || blocked_patches > 0)
+    {
+      const SmallString blocked_cheats_msg =
+        TRANSLATE_PLURAL_SSTR("Cheats", "%n cheats", "Cheats blocked by hardcore mode", blocked_cheats);
+      const SmallString blocked_patches_msg =
+        TRANSLATE_PLURAL_SSTR("Cheats", "%n patches", "Patches blocked by hardcore mode", blocked_patches);
+      std::string message =
+        (blocked_cheats > 0 && blocked_patches > 0) ?
+          fmt::format(TRANSLATE_FS("Cheats", "{0} and {1} disabled by achievements hardcore mode/safe mode."),
+                      blocked_cheats_msg.view(), blocked_patches_msg.view()) :
+          fmt::format(TRANSLATE_FS("Cheats", "{} disabled by achievements hardcore mode/safe mode."),
+                      (blocked_cheats > 0) ? blocked_cheats_msg.view() : blocked_patches_msg.view());
+      Host::AddIconOSDMessage("CheatsBlocked", ICON_EMOJI_WARNING, std::move(message), Host::OSD_INFO_DURATION);
     }
   }
 }
@@ -1051,10 +1108,11 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
   std::optional<std::string> legacy_group;
   std::optional<CodeType> legacy_type;
   std::optional<CodeActivation> legacy_activation;
+  bool ignore_this_code = false;
 
   CheatFileReader reader(file_data);
 
-  const auto finish_code = [&dst, &file_data, &stop_on_error, &error, &current_code, &reader]() {
+  const auto finish_code = [&dst, &file_data, &stop_on_error, &error, &current_code, &ignore_this_code, &reader]() {
     if (current_code.file_offset_end > current_code.file_offset_body_start)
     {
       current_code.body = file_data.substr(current_code.file_offset_body_start,
@@ -1066,7 +1124,9 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
         return false;
     }
 
-    AppendCheatToList(dst, std::move(current_code));
+    if (!ignore_this_code)
+      AppendCheatToList(dst, std::move(current_code));
+
     return true;
   };
 
@@ -1141,6 +1201,7 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
         // overwrite existing codes with the same name.
         finish_code();
         current_code = CodeInfo();
+        ignore_this_code = false;
       }
 
       current_code.name =
@@ -1197,7 +1258,9 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
         {
           if (!reader.LogError(error, stop_on_error, "Unknown code type at line {}: {}", reader.GetCurrentLineNumber(),
                                line))
+          {
             return false;
+          }
         }
       }
       else if (key == "Activation")
@@ -1241,6 +1304,10 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
             return false;
           }
         }
+      }
+      else if (key == "Ignore")
+      {
+        ignore_this_code = StringUtil::FromChars<bool>(value).value_or(false);
       }
 
       // ignore other keys when we're only grabbing info
@@ -1288,10 +1355,11 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
 
   std::string_view next_code_group;
   CheatCode::Metadata next_code_metadata;
+  bool next_code_ignored = false;
   std::optional<size_t> code_body_start;
 
   const auto finish_code = [&dst_list, &file_contents, &reader, &next_code_group, &next_code_metadata,
-                            &code_body_start]() {
+                            &next_code_ignored, &code_body_start]() {
     if (!code_body_start.has_value())
     {
       WARNING_LOG("Empty cheat body at line {}", reader.GetCurrentLineNumber());
@@ -1323,6 +1391,8 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
     next_code_group = {};
     next_code_metadata = CheatCode::Metadata();
     code_body_start.reset();
+    if (std::exchange(next_code_ignored, false))
+      return;
 
     // overwrite existing codes with the same name.
     const auto iter = std::find_if(dst_list->begin(), dst_list->end(), [&code](const std::unique_ptr<CheatCode>& rhs) {
@@ -1465,6 +1535,10 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
       else if (key == "Author" || key == "Description")
       {
         // ignored when loading
+      }
+      else if (key == "Ignore")
+      {
+        next_code_ignored = StringUtil::FromChars<bool>(value).value_or(false);
       }
       else
       {

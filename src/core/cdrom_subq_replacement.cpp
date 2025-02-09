@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cdrom_subq_replacement.h"
@@ -39,16 +39,13 @@ CDROMSubQReplacement::CDROMSubQReplacement() = default;
 
 CDROMSubQReplacement::~CDROMSubQReplacement() = default;
 
-std::unique_ptr<CDROMSubQReplacement> CDROMSubQReplacement::LoadSBI(const std::string& path, Error* error)
+std::unique_ptr<CDROMSubQReplacement> CDROMSubQReplacement::LoadSBI(const std::string& path, std::FILE* fp,
+                                                                    Error* error)
 {
-  auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb", error);
-  if (!fp)
-    return {};
-
   static constexpr char expected_header[] = {'S', 'B', 'I', '\0'};
 
   char header[4];
-  if (std::fread(header, sizeof(header), 1, fp.get()) != 1 || std::memcmp(header, expected_header, sizeof(header)) != 0)
+  if (std::fread(header, sizeof(header), 1, fp) != 1 || std::memcmp(header, expected_header, sizeof(header)) != 0)
   {
     Error::SetStringFmt(error, "Invalid header in '{}'", Path::GetFileName(path));
     return {};
@@ -57,7 +54,7 @@ std::unique_ptr<CDROMSubQReplacement> CDROMSubQReplacement::LoadSBI(const std::s
   std::unique_ptr<CDROMSubQReplacement> ret = std::make_unique<CDROMSubQReplacement>();
 
   SBIFileEntry entry;
-  while (std::fread(&entry, sizeof(entry), 1, fp.get()) == 1)
+  while (std::fread(&entry, sizeof(entry), 1, fp) == 1)
   {
     if (!IsValidPackedBCD(entry.minute_bcd) || !IsValidPackedBCD(entry.second_bcd) ||
         !IsValidPackedBCD(entry.frame_bcd))
@@ -90,16 +87,13 @@ std::unique_ptr<CDROMSubQReplacement> CDROMSubQReplacement::LoadSBI(const std::s
   return ret;
 }
 
-std::unique_ptr<CDROMSubQReplacement> CDROMSubQReplacement::LoadLSD(const std::string& path, Error* error)
+std::unique_ptr<CDROMSubQReplacement> CDROMSubQReplacement::LoadLSD(const std::string& path, std::FILE* fp,
+                                                                    Error* error)
 {
-  auto fp = FileSystem::OpenManagedCFile(path.c_str(), "rb", error);
-  if (!fp)
-    return {};
-
   std::unique_ptr<CDROMSubQReplacement> ret = std::make_unique<CDROMSubQReplacement>();
 
   LSDFileEntry entry;
-  while (std::fread(&entry, sizeof(entry), 1, fp.get()) == 1)
+  while (std::fread(&entry, sizeof(entry), 1, fp) == 1)
   {
     if (!IsValidPackedBCD(entry.minute_bcd) || !IsValidPackedBCD(entry.second_bcd) ||
         !IsValidPackedBCD(entry.frame_bcd))
@@ -129,7 +123,7 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
   struct FileLoader
   {
     const char* extension;
-    std::unique_ptr<CDROMSubQReplacement> (*func)(const std::string&, Error*);
+    std::unique_ptr<CDROMSubQReplacement> (*func)(const std::string&, std::FILE* fp, Error*);
   };
   static constexpr const FileLoader loaders[] = {
     {"sbi", &CDROMSubQReplacement::LoadSBI},
@@ -142,35 +136,38 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
   // Try sbi/lsd in the directory first.
   if (!CDImage::IsDeviceName(image_path.c_str()))
   {
+    std::string display_name = FileSystem::GetDisplayNameFromPath(image_path);
+
     for (const FileLoader& loader : loaders)
     {
-      path = Path::ReplaceExtension(image_path, loader.extension);
-      if (FileSystem::FileExists(path.c_str()))
+      path = Path::BuildRelativePath(
+        image_path, SmallString::from_format("{}.{}", Path::GetFileTitle(display_name), loader.extension));
+      if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
       {
-        *ret = loader.func(path, error);
+        *ret = loader.func(path, fp.get(), error);
         if (!static_cast<bool>(*ret))
           Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
 
         return static_cast<bool>(*ret);
       }
     }
-  }
 
-  // For subimages, we need to check the suffix too.
-  if (image->HasSubImages())
-  {
-    for (const FileLoader& loader : loaders)
+    // For subimages, we need to check the suffix too.
+    if (image->HasSubImages())
     {
-      path = Path::BuildRelativePath(image_path,
-                                     SmallString::from_format("{}_{}.{}", Path::GetFileTitle(image_path),
-                                                              image->GetCurrentSubImage() + 1, loader.extension));
-      if (FileSystem::FileExists(path.c_str()))
+      for (const FileLoader& loader : loaders)
       {
-        *ret = loader.func(path, error);
-        if (!static_cast<bool>(*ret))
-          Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
+        path = Path::BuildRelativePath(image_path,
+                                       SmallString::from_format("{}_{}.{}", Path::GetFileTitle(display_name),
+                                                                image->GetCurrentSubImage() + 1, loader.extension));
+        if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
+        {
+          *ret = loader.func(path, fp.get(), error);
+          if (!static_cast<bool>(*ret))
+            Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
 
-        return static_cast<bool>(*ret);
+          return static_cast<bool>(*ret);
+        }
       }
     }
   }
@@ -181,9 +178,9 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
     for (const FileLoader& loader : loaders)
     {
       path = Path::Combine(EmuFolders::Subchannels, TinyString::from_format("{}.{}", serial, loader.extension));
-      if (FileSystem::FileExists(path.c_str()))
+      if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
       {
-        *ret = loader.func(path, error);
+        *ret = loader.func(path, fp.get(), error);
         if (!static_cast<bool>(*ret))
           Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
 
@@ -197,9 +194,9 @@ bool CDROMSubQReplacement::LoadForImage(std::unique_ptr<CDROMSubQReplacement>* r
     for (const FileLoader& loader : loaders)
     {
       path = Path::Combine(EmuFolders::Subchannels, TinyString::from_format("{}.{}", title, loader.extension));
-      if (FileSystem::FileExists(path.c_str()))
+      if (const FileSystem::ManagedCFilePtr fp = FileSystem::OpenManagedCFile(path.c_str(), "rb"))
       {
-        *ret = loader.func(path, error);
+        *ret = loader.func(path, fp.get(), error);
         if (!static_cast<bool>(*ret))
           Error::AddPrefixFmt(error, "Failed to load subchannel data from {}: ", Path::GetFileName(path));
 

@@ -124,10 +124,14 @@ extern void RemoveAllCodes(const std::string_view serial, const std::string_view
 extern std::string GetChtFilename(const std::string_view serial, std::optional<GameHash> hash, bool cheats);
 
 /// Reloads cheats and game patches. The parameters control the degree to which data is reloaded.
-extern void ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed);
+extern void ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed,
+                         bool show_disabled_codes);
 
 /// Releases all cheat-related state.
 extern void UnloadAll();
+
+/// Returns true if any patches have setting overrides specified.
+extern bool HasAnySettingOverrides();
 
 /// Applies setting changes based on patches.
 extern void ApplySettingOverrides();

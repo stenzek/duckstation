@@ -1251,7 +1251,7 @@ void EmuThread::reloadCheats(bool reload_files, bool reload_enabled_list, bool v
     // If the reloaded list is being enabled, we also need to reload the gameini file.
     if (reload_enabled_list)
       System::ReloadGameSettings(verbose);
-    Cheats::ReloadCheats(reload_files, reload_enabled_list, verbose, verbose_if_changed);
+    Cheats::ReloadCheats(reload_files, reload_enabled_list, verbose, verbose_if_changed, verbose);
   }
 }
 
@@ -2430,7 +2430,8 @@ void Host::OnPerformanceCountersUpdated(const GPUBackend* gpu_backend)
   g_emu_thread->updatePerformanceCounters(gpu_backend);
 }
 
-void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name)
+void Host::OnGameChanged(const std::string& disc_path, const std::string& game_serial, const std::string& game_name,
+                         GameHash hash)
 {
   emit g_emu_thread->runningGameChanged(QString::fromStdString(disc_path), QString::fromStdString(game_serial),
                                         QString::fromStdString(game_name));

@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "util/cd_image.h"
 
+#include <cstdio>
 #include <unordered_map>
 
 class CDROMSubQReplacement
@@ -25,8 +26,8 @@ public:
 private:
   using ReplacementMap = std::unordered_map<u32, CDImage::SubChannelQ>;
 
-  static std::unique_ptr<CDROMSubQReplacement> LoadSBI(const std::string& path, Error* error);
-  static std::unique_ptr<CDROMSubQReplacement> LoadLSD(const std::string& path, Error* error);
+  static std::unique_ptr<CDROMSubQReplacement> LoadSBI(const std::string& path, std::FILE* fp, Error* error);
+  static std::unique_ptr<CDROMSubQReplacement> LoadLSD(const std::string& path, std::FILE* fp, Error* error);
 
   ReplacementMap m_replacement_subq;
 };

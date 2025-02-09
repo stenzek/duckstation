@@ -1365,7 +1365,7 @@ void System::ReloadGameSettings(bool display_osd_messages)
     return;
 
   if (!IsReplayingGPUDump())
-    Cheats::ReloadCheats(false, true, false, true);
+    Cheats::ReloadCheats(false, true, false, true, true);
 
   ApplySettings(display_osd_messages);
 }
@@ -1554,7 +1554,7 @@ void System::ResetSystem()
   if (Achievements::ResetHardcoreMode(false))
   {
     // Make sure a pre-existing cheat file hasn't been loaded when resetting after enabling HC mode.
-    Cheats::ReloadCheats(true, true, false, true);
+    Cheats::ReloadCheats(true, true, false, true, true);
     ApplySettings(false);
   }
 
@@ -1928,7 +1928,11 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   UpdateMemorySaveStateSettings();
 
   if (!IsReplayingGPUDump())
-    Cheats::ReloadCheats(true, true, false, true);
+  {
+    Cheats::ReloadCheats(true, true, false, true, true);
+    if (Cheats::HasAnySettingOverrides())
+      ApplySettings(true);
+  }
 
   PerformanceCounters::Clear();
 
@@ -2027,7 +2031,8 @@ void System::ClearRunningGame()
   s_state.running_game_entry = nullptr;
   s_state.running_game_hash = 0;
 
-  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title);
+  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+                      s_state.running_game_hash);
 
   Achievements::GameChanged(s_state.running_game_path, nullptr, false);
 
@@ -4182,7 +4187,7 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
     // Cheats are loaded later in Initialize().
     if (!booting)
-      Cheats::ReloadCheats(true, true, false, true);
+      Cheats::ReloadCheats(true, true, false, true, true);
   }
 
   ApplySettings(true);
@@ -4198,7 +4203,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
   FullscreenUI::OnRunningGameChanged(s_state.running_game_path, s_state.running_game_serial,
                                      s_state.running_game_title);
 
-  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title);
+  Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+                      s_state.running_game_hash);
 }
 
 bool System::CheckForRequiredSubQ(Error* error)
@@ -4342,7 +4348,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
     ClearMemorySaveStates(false, false);
 
     if (g_settings.disable_all_enhancements != old_settings.disable_all_enhancements)
-      Cheats::ReloadCheats(false, true, false, true);
+      Cheats::ReloadCheats(false, true, false, true, true);
 
     if (g_settings.cpu_overclock_active != old_settings.cpu_overclock_active ||
         (g_settings.cpu_overclock_active &&
@@ -4807,13 +4813,6 @@ void System::WarnAboutUnsafeSettings()
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Overclock disabled."));
     if (g_settings.enable_8mb_ram)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "8MB RAM disabled."));
-    if (s_state.game_settings_interface &&
-        s_state.game_settings_interface->GetBoolValue("Cheats", "EnableCheats", false))
-    {
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Cheats disabled."));
-    }
-    if (s_state.game_settings_interface && s_state.game_settings_interface->ContainsValue("Patches", "Enable"))
-      APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Patches disabled."));
     if (g_settings.gpu_resolution_scale != 1)
       APPEND_SUBMESSAGE(TRANSLATE_SV("System", "Resolution scale set to 1x."));
     if (g_settings.gpu_multisamples != 1)

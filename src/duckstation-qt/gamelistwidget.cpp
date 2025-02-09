@@ -69,7 +69,11 @@ public:
   bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override
   {
     const auto lock = GameList::GetLock();
-    const GameList::Entry* entry = GameList::GetEntryByIndex(source_row);
+    const GameList::Entry* entry = m_model->hasTakenGameList() ?
+                                     m_model->getTakenGameListEntry(static_cast<u32>(source_row)) :
+                                     GameList::GetEntryByIndex(static_cast<u32>(source_row));
+    if (!entry)
+      return false;
 
     if (m_merge_disc_sets)
     {
@@ -147,10 +151,8 @@ public:
     u32 num_unlocked_hardcore = 0;
     bool mastered = false;
 
-    {
-      const QModelIndex source_index = m_sort_model->mapToSource(index);
-      const auto lock = GameList::GetLock();
-      const GameList::Entry* entry = GameList::GetEntryByIndex(static_cast<u32>(source_index.row()));
+    const auto get_data_from_entry = [&num_achievements, &num_unlocked, &num_unlocked_hardcore,
+                                      &mastered](const GameList::Entry* entry) {
       if (!entry)
         return;
 
@@ -158,6 +160,17 @@ public:
       num_unlocked = entry->unlocked_achievements;
       num_unlocked_hardcore = entry->unlocked_achievements_hc;
       mastered = entry->AreAchievementsMastered();
+    };
+
+    const QModelIndex source_index = m_sort_model->mapToSource(index);
+    if (m_model->hasTakenGameList()) [[unlikely]]
+    {
+      get_data_from_entry(m_model->getTakenGameListEntry(static_cast<u32>(source_index.row())));
+    }
+    else
+    {
+      const auto lock = GameList::GetLock();
+      get_data_from_entry(GameList::GetEntryByIndex(static_cast<u32>(source_index.row())));
     }
 
     QRect r = option.rect;

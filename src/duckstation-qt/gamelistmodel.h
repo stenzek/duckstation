@@ -62,6 +62,7 @@ public:
   ALWAYS_INLINE const QPixmap& getHasAchievementsPixmap() const { return m_has_achievements_pixmap; }
   ALWAYS_INLINE const QPixmap& getMasteredAchievementsPixmap() const { return m_mastered_achievements_pixmap; }
 
+  const GameList::Entry* getTakenGameListEntry(u32 index) const;
   bool hasTakenGameList() const;
   void takeGameList();
 
