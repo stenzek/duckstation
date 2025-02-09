@@ -14,8 +14,8 @@ build-options:
   strip: true
 sources:
   - type: archive
-    url: "https://github.com/libsdl-org/SDL/releases/download/release-3.2.2/SDL3-3.2.2.tar.gz"
-    sha256: "d3dcf1b2f64746be0f248ef27b35aec4f038dafadfb83491f98a7fecdaf6efec"
+    url: "https://github.com/libsdl-org/SDL/releases/download/release-3.2.4/SDL3-3.2.4.tar.gz"
+    sha256: "2938328317301dfbe30176d79c251733aa5e7ec5c436c800b99ed4da7adcb0f0"
 cleanup:
   - /bin
   - /include
