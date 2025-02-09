@@ -1114,7 +1114,7 @@ u8 CDROM::ReadRegister(u32 offset)
       {
         ERROR_LOG("Unknown CDROM register read: offset=0x{:02X}, index={}", offset,
                   ZeroExtend32(s_state.status.index.GetValue()));
-        Panic("Unknown CDROM register");
+        return 0;
       }
   }
 }
