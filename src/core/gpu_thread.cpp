@@ -1139,6 +1139,7 @@ void GPUThread::ReportFatalErrorAndShutdown(std::string_view reason)
 
   // replace the renderer with a dummy/null backend, so that all commands get dropped
   ERROR_LOG("Switching to null renderer: {}", reason);
+  s_state.gpu_presenter->ClearDisplayTexture();
   s_state.gpu_backend.reset();
   s_state.gpu_backend = GPUBackend::CreateNullBackend(*s_state.gpu_presenter);
   if (!s_state.gpu_backend->Initialize(false, nullptr)) [[unlikely]]
