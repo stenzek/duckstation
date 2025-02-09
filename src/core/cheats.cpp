@@ -1077,10 +1077,11 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
   std::optional<std::string> legacy_group;
   std::optional<CodeType> legacy_type;
   std::optional<CodeActivation> legacy_activation;
+  bool ignore_this_code = false;
 
   CheatFileReader reader(file_data);
 
-  const auto finish_code = [&dst, &file_data, &stop_on_error, &error, &current_code, &reader]() {
+  const auto finish_code = [&dst, &file_data, &stop_on_error, &error, &current_code, &ignore_this_code, &reader]() {
     if (current_code.file_offset_end > current_code.file_offset_body_start)
     {
       current_code.body = file_data.substr(current_code.file_offset_body_start,
@@ -1092,7 +1093,9 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
         return false;
     }
 
-    AppendCheatToList(dst, std::move(current_code));
+    if (!ignore_this_code)
+      AppendCheatToList(dst, std::move(current_code));
+
     return true;
   };
 
@@ -1167,6 +1170,7 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
         // overwrite existing codes with the same name.
         finish_code();
         current_code = CodeInfo();
+        ignore_this_code = false;
       }
 
       current_code.name =
@@ -1223,7 +1227,9 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
         {
           if (!reader.LogError(error, stop_on_error, "Unknown code type at line {}: {}", reader.GetCurrentLineNumber(),
                                line))
+          {
             return false;
+          }
         }
       }
       else if (key == "Activation")
@@ -1267,6 +1273,10 @@ bool Cheats::ExtractCodeInfo(CodeInfoList* dst, std::string_view file_data, bool
             return false;
           }
         }
+      }
+      else if (key == "Ignore")
+      {
+        ignore_this_code = StringUtil::FromChars<bool>(value).value_or(false);
       }
 
       // ignore other keys when we're only grabbing info
@@ -1314,10 +1324,11 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
 
   std::string_view next_code_group;
   CheatCode::Metadata next_code_metadata;
+  bool next_code_ignored = false;
   std::optional<size_t> code_body_start;
 
   const auto finish_code = [&dst_list, &file_contents, &reader, &next_code_group, &next_code_metadata,
-                            &code_body_start]() {
+                            &next_code_ignored, &code_body_start]() {
     if (!code_body_start.has_value())
     {
       WARNING_LOG("Empty cheat body at line {}", reader.GetCurrentLineNumber());
@@ -1349,6 +1360,8 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
     next_code_group = {};
     next_code_metadata = CheatCode::Metadata();
     code_body_start.reset();
+    if (std::exchange(next_code_ignored, false))
+      return;
 
     // overwrite existing codes with the same name.
     const auto iter = std::find_if(dst_list->begin(), dst_list->end(), [&code](const std::unique_ptr<CheatCode>& rhs) {
@@ -1491,6 +1504,10 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
       else if (key == "Author" || key == "Description")
       {
         // ignored when loading
+      }
+      else if (key == "Ignore")
+      {
+        next_code_ignored = StringUtil::FromChars<bool>(value).value_or(false);
       }
       else
       {
