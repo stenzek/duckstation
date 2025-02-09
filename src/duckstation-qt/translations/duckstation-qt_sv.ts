@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
 <TS version="2.1" language="sv_SE" sourcelanguage="en_US">
-    <extra-po-header-language>sv_SE</extra-po-header-language>
-    <extra-po-header-language_team></extra-po-header-language_team>
-    <extra-po-header-last_translator>Daniel Nylander &lt;github@danielnylander.se&gt;</extra-po-header-last_translator>
-    <extra-po-header-po_revision_date></extra-po-header-po_revision_date>
-    <extra-po-header-pot_creation_date></extra-po-header-pot_creation_date>
-    <extra-po-header-project_id_version></extra-po-header-project_id_version>
-    <extra-po-header-x_generator>Poedit 3.5</extra-po-header-x_generator>
-    <extra-po-headers>Project-Id-Version,POT-Creation-Date,PO-Revision-Date,Last-Translator,Language-Team,Language,MIME-Version,Content-Type,Content-Transfer-Encoding,Plural-Forms,X-Language,X-Source-Language,X-Qt-Contexts,X-Generator</extra-po-headers>
 <context>
     <name>AboutDialog</name>
     <message>
@@ -372,23 +364,22 @@ Inloggningstoken genererades %2.</translation>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/achievements.cpp" line="1150"/>
-        <location filename="../../core/achievements.cpp" line="1179"/>
+        <location filename="../../core/achievements.cpp" line="1151"/>
+        <location filename="../../core/achievements.cpp" line="1180"/>
         <source>Failed to read executable from disc. Achievements disabled.</source>
         <translation>Misslyckades med att läsa körbar fil från skiva. Prestationer inaktiverade.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1339"/>
         <source>{} (Hardcore Mode)</source>
-        <translation>{} (Hardcore-läge)</translation>
+        <translation type="vanished">{} (Hardcore-läge)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1347"/>
+        <location filename="../../core/achievements.cpp" line="1342"/>
         <source>{0}, {1}.</source>
         <translation>{0}, {1}.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1348"/>
+        <location filename="../../core/achievements.cpp" line="1343"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -397,7 +388,7 @@ Inloggningstoken genererades %2.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1351"/>
+        <location filename="../../core/achievements.cpp" line="1346"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -406,27 +397,32 @@ Inloggningstoken genererades %2.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1384"/>
+        <location filename="../../core/achievements.cpp" line="1354"/>
+        <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
+        <translation>Hardcore-läget är aktiverat. Fusk och sparade tillstånd är inte tillgängliga.</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1387"/>
         <source>Hardcore mode will be enabled on system reset.</source>
         <translation>Hardcore-läget kommer att aktiveras vid systemomstart.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1412"/>
+        <location filename="../../core/achievements.cpp" line="1415"/>
         <source>{} (Unofficial)</source>
         <translation>{} (Inte officiell)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1440"/>
+        <location filename="../../core/achievements.cpp" line="1443"/>
         <source>Mastered {}</source>
         <translation>Bemästrat {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1442"/>
+        <location filename="../../core/achievements.cpp" line="1445"/>
         <source>{0}, {1}</source>
         <translation>{0}, {1}</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1443"/>
+        <location filename="../../core/achievements.cpp" line="1446"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -435,8 +431,8 @@ Inloggningstoken genererades %2.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1445"/>
-        <location filename="../../core/achievements.cpp" line="2843"/>
+        <location filename="../../core/achievements.cpp" line="1448"/>
+        <location filename="../../core/achievements.cpp" line="2846"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -445,103 +441,103 @@ Inloggningstoken genererades %2.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1465"/>
+        <location filename="../../core/achievements.cpp" line="1468"/>
         <source>Leaderboard attempt started.</source>
         <translation>Topplisteförsök startat.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1485"/>
+        <location filename="../../core/achievements.cpp" line="1488"/>
         <source>Leaderboard attempt failed.</source>
         <translation>Topplisteförsök misslyckades.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1506"/>
+        <location filename="../../core/achievements.cpp" line="1509"/>
         <source>Your Score: {}{}</source>
         <translation>Dina poäng: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1516"/>
+        <location filename="../../core/achievements.cpp" line="1519"/>
         <source> (Submitting)</source>
         <translation> (Skickar in)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1540"/>
+        <location filename="../../core/achievements.cpp" line="1543"/>
         <source>Your Time: {} (Best: {})</source>
         <translation>Din tid: {} (Bästa: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1541"/>
+        <location filename="../../core/achievements.cpp" line="1544"/>
         <source>Your Score: {} (Best: {})</source>
         <translation>Dina poäng: {} (Bästa: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1542"/>
+        <location filename="../../core/achievements.cpp" line="1545"/>
         <source>Your Value: {} (Best: {})</source>
         <translation>Ditt värde: {} (Bästa: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1547"/>
+        <location filename="../../core/achievements.cpp" line="1550"/>
         <source>{}
 Leaderboard Position: {} of {}</source>
         <translation>{}
 Position på topplistan: {} av {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1677"/>
+        <location filename="../../core/achievements.cpp" line="1680"/>
         <source>Server error in {}:
 {}</source>
         <translation>Serverfel i {}:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1693"/>
+        <location filename="../../core/achievements.cpp" line="1696"/>
         <source>Achievements Disconnected</source>
         <translation>Prestationer frånkopplade</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1694"/>
+        <location filename="../../core/achievements.cpp" line="1697"/>
         <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
         <translation>En upplåst begäran kunde inte färdigställas. Vi fortsätter att försöka att skicka in denna begäran.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1708"/>
+        <location filename="../../core/achievements.cpp" line="1711"/>
         <source>Achievements Reconnected</source>
         <translation>Prestationer återansluten</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1709"/>
+        <location filename="../../core/achievements.cpp" line="1712"/>
         <source>All pending unlock requests have completed.</source>
         <translation>Alla väntande upplösningsbegäran har färdigställts.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1796"/>
+        <location filename="../../core/achievements.cpp" line="1799"/>
         <source>Hardcore mode is now enabled.</source>
         <translation>Hardcore-läget är nu aktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1797"/>
+        <location filename="../../core/achievements.cpp" line="1800"/>
         <source>Hardcore mode is now disabled.</source>
         <translation>Hardcore-läget är nu inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1846"/>
+        <location filename="../../core/achievements.cpp" line="1849"/>
         <source>Downloading achievements data...</source>
         <translation>Hämtar data om prestationer...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2101"/>
+        <location filename="../../core/achievements.cpp" line="2104"/>
         <source>Achievement unlocks will not be submitted for this session.
 Error: {}</source>
         <translation>Upplåsningar för prestationer kommer inte att skickas in för denna session.
 Fel: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2108"/>
+        <location filename="../../core/achievements.cpp" line="2111"/>
         <source>RetroAchievements Login Failed</source>
         <translation>Inloggning till RetroAchievements misslyckades</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2152"/>
+        <location filename="../../core/achievements.cpp" line="2155"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
         <extracomment>Summary for login notification.</extracomment>
@@ -549,29 +545,29 @@ Unread messages: {}</source>
 Olästa meddelanden: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2251"/>
-        <location filename="../../core/achievements.cpp" line="2283"/>
+        <location filename="../../core/achievements.cpp" line="2254"/>
+        <location filename="../../core/achievements.cpp" line="2286"/>
         <source>Confirm Hardcore Mode Disable</source>
         <translation>Bekräfta inaktivering av Hardcore-läget</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2252"/>
-        <location filename="../../core/achievements.cpp" line="2284"/>
+        <location filename="../../core/achievements.cpp" line="2255"/>
+        <location filename="../../core/achievements.cpp" line="2287"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>{0} kan inte genomföras under tiden hardcore-läget är aktivt. Vill du inaktivera hardcore-läget? {0} kommer att avbrytas om du väljer Nej.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2518"/>
+        <location filename="../../core/achievements.cpp" line="2521"/>
         <source>Active Challenge Achievements</source>
         <translation>Aktiva utmaningsprestationer</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2647"/>
+        <location filename="../../core/achievements.cpp" line="2650"/>
         <source> (Hardcore Mode)</source>
         <translation> (Hardcore-läge)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2661"/>
+        <location filename="../../core/achievements.cpp" line="2664"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -580,36 +576,36 @@ Olästa meddelanden: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2666"/>
+        <location filename="../../core/achievements.cpp" line="2669"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>Du har låst upp {0} av {1}  prestationer och tjänat {2} of {3} möjliga poäng.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2723"/>
+        <location filename="../../core/achievements.cpp" line="2726"/>
         <source>Recently Unlocked</source>
         <translation>Senast upplåsta</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2763"/>
-        <location filename="../../core/achievements.cpp" line="3224"/>
-        <location filename="../../core/achievements.cpp" line="3312"/>
+        <location filename="../../core/achievements.cpp" line="2766"/>
+        <location filename="../../core/achievements.cpp" line="3227"/>
+        <location filename="../../core/achievements.cpp" line="3315"/>
         <source>Change Selection</source>
         <translation>Byt val</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2765"/>
+        <location filename="../../core/achievements.cpp" line="2768"/>
         <source>View Details</source>
         <translation>Visa detaljer</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2767"/>
-        <location filename="../../core/achievements.cpp" line="3228"/>
-        <location filename="../../core/achievements.cpp" line="3316"/>
+        <location filename="../../core/achievements.cpp" line="2770"/>
+        <location filename="../../core/achievements.cpp" line="3231"/>
+        <location filename="../../core/achievements.cpp" line="3319"/>
         <source>Back</source>
         <translation>Bakåt</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="3086"/>
+        <location filename="../../core/achievements.cpp" line="3089"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -618,140 +614,140 @@ Olästa meddelanden: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3103"/>
+        <location filename="../../core/achievements.cpp" line="3106"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>Skicka in poäng är inaktiverat därför att hardcore-läget är av. Topplistor är endast läsbara.</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3127"/>
+        <location filename="../../core/achievements.cpp" line="3130"/>
         <source>Show Nearby</source>
         <translation>Visa närliggande</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3155"/>
+        <location filename="../../core/achievements.cpp" line="3158"/>
         <source>Rank</source>
         <translation>Rank</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3166"/>
+        <location filename="../../core/achievements.cpp" line="3169"/>
         <source>Score</source>
         <translation>Poäng</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3180"/>
+        <location filename="../../core/achievements.cpp" line="3183"/>
         <source>Date Submitted</source>
         <translation>Datum inskickad</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3226"/>
+        <location filename="../../core/achievements.cpp" line="3229"/>
         <source>Open Leaderboard</source>
         <translation>Öppna topplistan</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3265"/>
+        <location filename="../../core/achievements.cpp" line="3268"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>Hämtar data från topplistan. Vänta...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3309"/>
+        <location filename="../../core/achievements.cpp" line="3312"/>
         <source>Change Page</source>
         <translation>Byt sida</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3314"/>
+        <location filename="../../core/achievements.cpp" line="3317"/>
         <source>View Profile</source>
         <translation>Visa profil</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3501"/>
-        <location filename="../../core/achievements.cpp" line="3521"/>
+        <location filename="../../core/achievements.cpp" line="3504"/>
+        <location filename="../../core/achievements.cpp" line="3524"/>
         <source>Leaderboard download failed</source>
         <translation>Hämtning av topplistan misslyckades</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1505"/>
+        <location filename="../../core/achievements.cpp" line="1508"/>
         <source>Your Time: {}{}</source>
         <translation>Din tid: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1507"/>
+        <location filename="../../core/achievements.cpp" line="1510"/>
         <source>Your Value: {}{}</source>
         <translation>Ditt värde: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2721"/>
+        <location filename="../../core/achievements.cpp" line="2724"/>
         <source>Unknown</source>
         <translation>Okänt</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2721"/>
+        <location filename="../../core/achievements.cpp" line="2724"/>
         <source>Locked</source>
         <translation>Låst</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2722"/>
+        <location filename="../../core/achievements.cpp" line="2725"/>
         <source>Unlocked</source>
         <translation>Upplåst</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2722"/>
+        <location filename="../../core/achievements.cpp" line="2725"/>
         <source>Unsupported</source>
         <translation>Stöds inte</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2723"/>
+        <location filename="../../core/achievements.cpp" line="2726"/>
         <source>Unofficial</source>
         <translation>Inofficiell</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2724"/>
+        <location filename="../../core/achievements.cpp" line="2727"/>
         <source>Active Challenges</source>
         <translation>Aktiva utmaningar</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2724"/>
+        <location filename="../../core/achievements.cpp" line="2727"/>
         <source>Almost There</source>
         <translation>Nästan där</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2791"/>
+        <location filename="../../core/achievements.cpp" line="2794"/>
         <source>XXX points</source>
         <translation>XXX poäng</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2901"/>
+        <location filename="../../core/achievements.cpp" line="2904"/>
         <source>Unlocked: {}</source>
         <translation>Upplåst:  {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3127"/>
+        <location filename="../../core/achievements.cpp" line="3130"/>
         <source>Show Best</source>
         <translation>Visa bästa</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3160"/>
+        <location filename="../../core/achievements.cpp" line="3163"/>
         <source>Name</source>
         <translation>Namn</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3165"/>
+        <location filename="../../core/achievements.cpp" line="3168"/>
         <source>Time</source>
         <translation>Tid</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3167"/>
+        <location filename="../../core/achievements.cpp" line="3170"/>
         <source>Value</source>
         <translation>Värde</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3284"/>
-        <location filename="../../core/achievements.cpp" line="3293"/>
+        <location filename="../../core/achievements.cpp" line="3287"/>
+        <location filename="../../core/achievements.cpp" line="3296"/>
         <source>Loading...</source>
         <translation>Läser in...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1357"/>
-        <location filename="../../core/achievements.cpp" line="2674"/>
+        <location filename="../../core/achievements.cpp" line="1359"/>
+        <location filename="../../core/achievements.cpp" line="2677"/>
         <source>This game has no achievements.</source>
         <translation>Detta spel har inga prestationer.</translation>
     </message>
@@ -768,7 +764,7 @@ Olästa meddelanden: {}</translation>
         <translation>Återupptar tillstånd</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2838"/>
+        <location filename="../../core/system.cpp" line="2843"/>
         <source>Loading state</source>
         <translation>Läser in tillstånd</translation>
     </message>
@@ -787,6 +783,13 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>No</source>
         <translation type="vanished">Nej</translation>
+    </message>
+</context>
+<context>
+    <name>AddLinkDialog</name>
+    <message>
+        <source>Title:</source>
+        <translation type="obsolete">Titel:</translation>
     </message>
 </context>
 <context>
@@ -947,32 +950,32 @@ Olästa meddelanden: {}</translation>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="246"/>
         <source>Display Active Start Offset</source>
-        <translation type="unfinished">Visa aktiv startoffset</translation>
+        <translation>Visa aktiv startoffset</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="248"/>
         <source>Display Active End Offset</source>
-        <translation type="unfinished">Visa aktiv slutoffset</translation>
+        <translation>Visa aktiv slutoffset</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="250"/>
         <source>Display Line Start Offset</source>
-        <translation type="unfinished">Display Linje Start Offset</translation>
+        <translation>Offset för visning av linjestart</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="252"/>
         <source>Display Line End Offset</source>
-        <translation type="unfinished">Offset för visning av radens slut</translation>
+        <translation>Offset för visning av linjens slut</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="256"/>
         <source>DMA Max Slice Ticks</source>
-        <translation type="unfinished">DMA Max Slice Ticks</translation>
+        <translation>DMA Max Slice Ticks</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="258"/>
         <source>DMA Halt Ticks</source>
-        <translation type="unfinished">DMA Halt Ticks</translation>
+        <translation>DMA Halt Ticks</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="260"/>
@@ -982,7 +985,7 @@ Olästa meddelanden: {}</translation>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="262"/>
         <source>GPU Max Run-Ahead</source>
-        <translation type="unfinished">GPU Max Run-Ahead</translation>
+        <translation>GPU Max Run-Ahead</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="265"/>
@@ -1007,17 +1010,17 @@ Olästa meddelanden: {}</translation>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="278"/>
         <source>CD-ROM Max Speedup Read/Seek Cycles</source>
-        <translation type="unfinished">CD-ROM Max hastighet Läs/Sök Cykler</translation>
+        <translation>Max uppsnabbning av läs/sökningscykler för CD-ROM</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="280"/>
         <source>CD-ROM Region Check</source>
-        <translation type="unfinished">CD-ROM Regionkontroll</translation>
+        <translation>Regionskontroll för CD-ROM</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="281"/>
         <source>CD-ROM SubQ Skew</source>
-        <translation type="unfinished">CD-ROM SubQ Skew</translation>
+        <translation>CD-ROM SubQ Skew</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.cpp" line="282"/>
@@ -2294,22 +2297,22 @@ Olästa meddelanden: {}</translation>
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="292"/>
+        <location filename="../../core/cheats.cpp" line="300"/>
         <source>Gameshark</source>
         <translation>Gameshark</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="317"/>
+        <location filename="../../core/cheats.cpp" line="325"/>
         <source>Manual</source>
         <translation>Manuell</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="317"/>
+        <location filename="../../core/cheats.cpp" line="325"/>
         <source>Automatic (Frame End)</source>
         <translation>Automatisk (Frame End)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="975"/>
+        <location filename="../../core/cheats.cpp" line="1005"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -2318,7 +2321,7 @@ Olästa meddelanden: {}</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="982"/>
+        <location filename="../../core/cheats.cpp" line="1012"/>
         <source>%n cheats are enabled. This may crash games.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -2327,12 +2330,40 @@ Olästa meddelanden: {}</translation>
         </translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="990"/>
+        <location filename="../../core/cheats.cpp" line="1020"/>
         <source>No cheats/patches are found or enabled.</source>
         <translation>Inga fusk/patchar hittades eller aktiverade.</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../../core/cheats.cpp" line="1039"/>
+        <source>%n cheats</source>
+        <comment>Cheats blocked by hardcore mode</comment>
+        <translation>
+            <numerusform>%n fusk</numerusform>
+            <numerusform>%n fusk</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../core/cheats.cpp" line="1041"/>
+        <source>%n patches</source>
+        <comment>Patches blocked by hardcore mode</comment>
+        <translation>
+            <numerusform>%n patch</numerusform>
+            <numerusform>%n patchar</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1022"/>
+        <location filename="../../core/cheats.cpp" line="1044"/>
+        <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
+        <translation>{0} och {1} inaktiverade av prestationer på grund av hardcore-läget/säkert läge.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cheats.cpp" line="1046"/>
+        <source>{} disabled by achievements hardcore mode/safe mode.</source>
+        <translation>{} inaktiverade av prestationer på grund av hardcore-läget/säkert läge.</translation>
+    </message>
+    <message>
+        <location filename="../../core/cheats.cpp" line="1079"/>
         <source>Cheat &apos;{}&apos; applied.</source>
         <translation>Fusket  &apos;{}&apos; tillämpades.</translation>
     </message>
@@ -2343,6 +2374,13 @@ Olästa meddelanden: {}</translation>
         <location filename="../colorpickerbutton.cpp" line="41"/>
         <source>Select LED Color</source>
         <translation>Välj LED-färg</translation>
+    </message>
+</context>
+<context>
+    <name>ConnectDialog</name>
+    <message>
+        <source>Edit...</source>
+        <translation type="obsolete">Redigera...</translation>
     </message>
 </context>
 <context>
@@ -4187,7 +4225,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../coverdownloaddialog.ui" line="50"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;In the box below, specify the URLs to download covers from, with one template URL per line. The following variables are available:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Title of the game.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Name component of the game&apos;s filename.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serial of the game.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Example:&lt;/span&gt; https://www.example-not-a-real-domain.com/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished">&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ange URLer i rutan nedan att hämta omslagsbilder från, med en mall-URL per rad. Fökande variabler finns tillgängliga:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Spelets titel.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Namnkomponenten för spelets filnamn.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serienumret för spelet.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exempel:&lt;/span&gt; https://www.exempel-inte-en-riktig-domän.se/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ange URLer i rutan nedan att hämta omslagsbilder från, med en mall-URL per rad. Följande variabler finns tillgängliga:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${title}:&lt;/span&gt; Spelets titel.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${filetitle}:&lt;/span&gt; Namnkomponenten för spelets filnamn.&lt;br/&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;${serial}:&lt;/span&gt; Serienumret för spelet.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Exempel:&lt;/span&gt; https://www.exempel-inte-en-riktig-domän.se/covers/${serial}.jpg&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../coverdownloaddialog.ui" line="80"/>
@@ -4424,7 +4462,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../debuggerwindow.ui" line="92"/>
         <source>Disassembly</source>
-        <translation type="unfinished">Demontering</translation>
+        <translation>Disassembler</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="114"/>
@@ -4444,7 +4482,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../debuggerwindow.ui" line="177"/>
         <source>Scratchpad</source>
-        <translation type="unfinished">Skraplåda</translation>
+        <translation>Skissblock</translation>
     </message>
     <message>
         <location filename="../debuggerwindow.ui" line="184"/>
@@ -4737,6 +4775,13 @@ Denna fil kan bli flera gigabytes så tänk på diskutrymmet.</translation>
         <location filename="../debuggerwindow.cpp" line="769"/>
         <source>Failed to remove breakpoint. This breakpoint may not exist.</source>
         <translation>Misslyckades med att ta bort brytpunkt. Denna brytpunkt kanske inte finns.</translation>
+    </message>
+</context>
+<context>
+    <name>DeviceProfileDialog</name>
+    <message>
+        <source>Name</source>
+        <translation type="obsolete">Namn</translation>
     </message>
 </context>
 <context>
@@ -6778,7 +6823,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8855"/>
         <source>Culling Correction</source>
-        <translation type="unfinished">Avlivning Korrigering</translation>
+        <translation>Rensningskorrigering</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8858"/>
@@ -6828,12 +6873,12 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8868"/>
         <source>Depth Clear Threshold</source>
-        <translation type="unfinished">Djup Rensa tröskel</translation>
+        <translation>Tröskelvärde för djuptömning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8869"/>
         <source>Depth Test Transparent Polygons</source>
-        <translation type="unfinished">Djuptest Transparenta polygoner</translation>
+        <translation>Transparenta polygoner för djuptest</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8873"/>
@@ -6993,7 +7038,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8909"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games.</source>
-        <translation type="unfinished">Samplar ner den renderade bilden innan den visas. Kan förbättra den övergripande bildkvaliteten i blandade 2D/3D-spel.</translation>
+        <translation>Samplar ner den renderade bilden innan den visas. Kan förbättra den övergripande bildkvaliteten i blandade 2D/3D-spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8910"/>
@@ -7003,7 +7048,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8911"/>
         <source>Downsampling Display Scale</source>
-        <translation type="unfinished">Nedskalning Skala för visning</translation>
+        <translation>Skala för skärmnedsampling</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8912"/>
@@ -7133,17 +7178,17 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8940"/>
         <source>Enable debugging when supported by the host&apos;s renderer API. Only for developer use.</source>
-        <translation type="unfinished">Aktivera felsökning när detta stöds av värdens API för rendering. Endast för användning av utvecklare.</translation>
+        <translation>Aktivera felsökning när detta stöds av värdens API för rendering. Endast för användning av utvecklare.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8941"/>
         <source>Enable/Disable the Player LED on DualSense controllers.</source>
-        <translation type="unfinished">Aktivera/inaktivera Player LED på DualSense-styrenheter.</translation>
+        <translation>Aktivera/inaktivera Player LED på DualSense-kontroller.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8942"/>
         <source>Enables alignment and bus exceptions. Not needed for any known games.</source>
-        <translation type="unfinished">Aktiverar justering och bussundantag. Behövs inte för några kända spel.</translation>
+        <translation>Aktiverar justering och bussundantag. Behövs inte för några kända spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8943"/>
@@ -7163,12 +7208,12 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8946"/>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
-        <translation type="unfinished">Aktiverar djuptestning för halvgenomskinliga polygoner. Vanligtvis innehåller dessa skuggor och tenderar att klippa genom marken när djuptestning är aktiverat.</translation>
+        <translation>Aktiverar djuptestning för halvgenomskinliga polygoner. Vanligtvis innehåller dessa skuggor och tenderar att klippa genom marken när djuptestning är aktiverat.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8947"/>
         <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
-        <translation type="unfinished">Möjliggör dumpning av texturer till bildfiler, som kan ersättas. Inte kompatibel med alla spel.</translation>
+        <translation>Aktiverar dumpning av texturer till bildfiler, som kan ersättas. Inte kompatibel med alla spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8948"/>
@@ -7193,7 +7238,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8952"/>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation type="unfinished">Möjliggör de äldre, mindre exakta MDEC-avkodningsrutinerna. Kan krävas för att gamla ersättningsbakgrunder ska matcha/laddas.</translation>
+        <translation>Möjliggör de äldre, mindre exakta MDEC-avkodningsrutinerna. Kan krävas för att gamla ersättningsbakgrunder ska matcha/läsas in.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8953"/>
@@ -7238,7 +7283,7 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8965"/>
         <source>FMV Chroma Smoothing</source>
-        <translation type="unfinished">FMV Chroma-utjämning</translation>
+        <translation>FMV Chroma-utjämning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8967"/>
@@ -7310,7 +7355,7 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8983"/>
         <source>Force Video Timing</source>
-        <translation type="unfinished">Forcera videotidtagning</translation>
+        <translation>Forcera videotiming</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8984"/>
@@ -7320,17 +7365,17 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8985"/>
         <source>Forces blending to be done in the shader at 16-bit precision, when not using true color. Non-trivial performance impact, and unnecessary for most games.</source>
-        <translation type="unfinished">Tvingar blandningen att göras i shadern med 16-bitars precision, när man inte använder äkta färg. Icke-trivial prestandapåverkan och onödig för de flesta spel.</translation>
+        <translation>Tvingar blandningen att göras i shadern med 16-bitars precision, när man inte använder true color. Icke-trivial prestandapåverkan och onödig för de flesta spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8986"/>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
-        <translation type="unfinished">Kräver att spårning av texturuppladdning aktiveras oavsett om det behövs eller inte.</translation>
+        <translation>Tvingar att spårning av texturuppladdning aktiveras oavsett om det behövs eller inte.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8987"/>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation type="unfinished">Tvingar fram användning av FIFO i stället för Mailbox-presentation, dvs. dubbel buffring i stället för trippel buffring. Detta resulterar vanligen i sämre frame pacing.</translation>
+        <translation>Tvingar fram användning av FIFO i stället för brevlådepresentation, dvs. dubbelbuffring i stället för trippelbuffring. Detta resulterar vanligen i sämre bildrytm.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8988"/>
@@ -7340,7 +7385,7 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8989"/>
         <source>Frame Time Buffer</source>
-        <translation type="unfinished">Ram Tid Buffert</translation>
+        <translation>Bildtidsbuffert</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8991"/>
@@ -7380,7 +7425,7 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9000"/>
         <source>Game Quick Save</source>
-        <translation type="unfinished">Snabbspara spel</translation>
+        <translation>Snabbsparning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9001"/>
@@ -7490,12 +7535,12 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9023"/>
         <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation type="unfinished">Hur många sparade filer som ska sparas för omspolning. Högre värden kräver större minneskapacitet.</translation>
+        <translation>Hur många sparade filer som ska sparas för tillbakaspolning. Högre värden kräver större minneskapacitet.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9024"/>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <translation type="unfinished">Hur ofta ett återspolningstillstånd ska skapas. Högre frekvenser ställer högre krav på systemet.</translation>
+        <translation>Hur ofta ett tillbakaspolningstillstånd ska skapas. Högre frekvenser ställer högre krav på systemet.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9025"/>
@@ -7505,22 +7550,22 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9027"/>
         <source>If enabled, the transparency of the overlay image will be applied.</source>
-        <translation type="unfinished">Om den är aktiverad kommer transparensen i överlagringsbilden att tillämpas.</translation>
+        <translation>Om den är aktiverad kommer transparensen i överlagringsbilden att tillämpas.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9028"/>
         <source>If not enabled, the current post processing chain will be ignored.</source>
-        <translation type="unfinished">Om den inte är aktiverad ignoreras den aktuella efterbehandlingskedjan.</translation>
+        <translation>Om den inte är aktiverad ignoreras den aktuella efterbehandlingskedjan.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9030"/>
         <source>Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games.</source>
-        <translation type="unfinished">Ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel.</translation>
+        <translation>Ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9031"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry.</source>
-        <translation type="unfinished">Ökar precisionen i polygonutrensningen, vilket minskar antalet hål i geometrin.</translation>
+        <translation>Ökar precisionen i polygonutrensningen, vilket minskar antalet hål i geometrin.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9032"/>
@@ -7600,12 +7645,12 @@ Felet var:</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9056"/>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
-        <translation type="unfinished">Läser in alla ersättningstexturer till RAM-minnet, vilket gör att det går snabbare att köra.</translation>
+        <translation>Läser in alla ersättningstexturer till RAM-minnet, vilket gör att det går snabbare att köra.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9057"/>
         <source>Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.</source>
-        <translation type="unfinished">Laddar spelbilden till RAM-minnet. Användbart för nätverksvägar som kan bli opålitliga under spelets gång.</translation>
+        <translation>Läser in spelavbildningen till RAM-minnet. Användbart för nätverksvägar som kan bli opålitliga under spelets gång.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9058"/>
@@ -7694,7 +7739,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9077"/>
         <source>Makes games run closer to their console framerate, at a small cost to performance.</source>
-        <translation type="unfinished">Gör att spelen körs närmare konsolens framerate, till en liten kostnad för prestandan.</translation>
+        <translation>Gör att spelen körs närmare konsolens bildfrekvens, till en liten bekostnad av prestandan.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9078"/>
@@ -7759,12 +7804,12 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9090"/>
         <source>Moves this shader higher in the chain, applying it earlier.</source>
-        <translation type="unfinished">Flyttar den här shadern högre upp i kedjan och applicerar den tidigare.</translation>
+        <translation>Flyttar den här shadern högre upp i kedjan och applicerar den tidigare.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9091"/>
         <source>Moves this shader lower in the chain, applying it later.</source>
-        <translation type="unfinished">Flyttar den här shadern längre ner i kedjan och applicerar den senare.</translation>
+        <translation>Flyttar den här shadern längre ner i kedjan och applicerar den senare.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9092"/>
@@ -7919,7 +7964,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9124"/>
         <source>Overlays or replaces normal triangle drawing with a wireframe/line view.</source>
-        <translation type="unfinished">Överlagrar eller ersätter normal triangelritning med en wireframe/linjevy.</translation>
+        <translation>Överlagrar eller ersätter normal triangelritning med en wireframe/linjevy.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9125"/>
@@ -7934,7 +7979,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9127"/>
         <source>PGXP Geometry Correction</source>
-        <translation type="unfinished">PGXP Geometri-korrigering</translation>
+        <translation>PGXP-geometrikorrigering</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9128"/>
@@ -7999,12 +8044,12 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9142"/>
         <source>Perspective Correct Colors</source>
-        <translation type="unfinished">Perspektiv Korrigera färger</translation>
+        <translation>Korrekta färger för perspektiv</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9143"/>
         <source>Perspective Correct Textures</source>
-        <translation type="unfinished">Perspektiv Korrekta texturer</translation>
+        <translation>Korrekta texturer för perspektiv</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9144"/>
@@ -8049,7 +8094,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9152"/>
         <source>Preserve Projection Precision</source>
-        <translation type="unfinished">Bevara projektionens precision</translation>
+        <translation>Bevara projektionens precision</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9153"/>
@@ -8094,17 +8139,17 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9161"/>
         <source>Read Speedup</source>
-        <translation type="unfinished">Ökad läshastighet</translation>
+        <translation>Högre läshastighet</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9162"/>
         <source>Readahead Sectors</source>
-        <translation type="unfinished">Sektorer med framförhållning</translation>
+        <translation>Readahead-sektorer</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9163"/>
         <source>Recompiler Fast Memory Access</source>
-        <translation type="unfinished">Rekompilator Snabb minnesåtkomst</translation>
+        <translation>Snabb minnesåtkomst för omkompilator</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9164"/>
@@ -8239,12 +8284,12 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9200"/>
         <source>Rewind Save Frequency</source>
-        <translation type="unfinished">Spola tillbaka Spara frekvens</translation>
+        <translation>Sparningsfrekvens för tillbakaspolning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9201"/>
         <source>Rewind Save Slots</source>
-        <translation type="unfinished">Spola tillbaka spara spelautomater</translation>
+        <translation>Sparplatser för tillbakaspolning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9202"/>
@@ -8269,7 +8314,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9206"/>
         <source>Round Upscaled Texture Coordinates</source>
-        <translation type="unfinished">Runda uppskalade texturkoordinater</translation>
+        <translation>Avrunda uppskalade texturkoordinater</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9207"/>
@@ -8289,7 +8334,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9211"/>
         <source>SDL DualSense Player LED</source>
-        <translation type="unfinished">SDL DualSense-spelare LED</translation>
+        <translation>SDL DualSense Player LED</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9212"/>
@@ -8329,7 +8374,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9221"/>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
-        <translation type="unfinished">Sparar status regelbundet så att du kan spola tillbaka eventuella misstag medan du spelar.</translation>
+        <translation>Sparar tillståndet regelbundet så att du kan spola tillbaka eventuella misstag medan du spelar.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9222"/>
@@ -8339,12 +8384,12 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9223"/>
         <source>Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.</source>
-        <translation type="unfinished">Skalar den interna VRAM-upplösningen med den angivna multiplikatorn. Vissa spel kräver 1x VRAM-upplösning.</translation>
+        <translation>Skalar den interna VRAM-upplösningen med den angivna multiplikatorn. Vissa spel kräver 1x VRAM-upplösning.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9224"/>
         <source>Scales the dithering pattern with the internal rendering resolution, making it less noticeable. Usually safe to enable.</source>
-        <translation type="unfinished">Skalar dithering-mönstret med den interna renderingsupplösningen, vilket gör det mindre märkbart. Vanligtvis säkert att aktivera.</translation>
+        <translation>Skalar dithering-mönstret med den interna renderingsupplösningen, vilket gör det mindre märkbart. Vanligtvis säkert att aktivera.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9225"/>
@@ -8379,7 +8424,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9235"/>
         <source>Seek Speedup</source>
-        <translation type="unfinished">Sök snabbare</translation>
+        <translation>Snabba upp sökning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9238"/>
@@ -8439,27 +8484,27 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9257"/>
         <source>Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.</source>
-        <translation type="unfinished">Ställer in ett tröskelvärde för att kassera exakta värden när det överskrids. Kan hjälpa till med glitches i vissa spel.</translation>
+        <translation>Ställer in ett tröskelvärde för att kassera exakta värden när de överskrids. Kan hjälpa till med småfel i vissa spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9258"/>
         <source>Sets a threshold for discarding the emulated depth buffer. May help in some games.</source>
-        <translation type="unfinished">Ställer in ett tröskelvärde för att kassera den emulerade djupbufferten. Kan vara till hjälp i vissa spel.</translation>
+        <translation>Ställer in ett tröskelvärde för att kassera den emulerade djupbufferten. Kan vara till hjälp i vissa spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9259"/>
         <source>Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.</source>
-        <translation type="unfinished">Ställer in hastigheten för snabbspolning framåt. Det är inte säkert att denna hastighet kan uppnås på alla system.</translation>
+        <translation>Ställer in hastigheten för snabbspolning framåt. Det är inte säkert att denna hastighet kan uppnås på alla system.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9260"/>
         <source>Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.</source>
-        <translation type="unfinished">Ställer in målhastigheten för emuleringen. Det är inte säkert att denna hastighet uppnås på alla system.</translation>
+        <translation>Ställer in målhastigheten för emuleringen. Det är inte säkert att denna hastighet uppnås på alla system.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9261"/>
         <source>Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.</source>
-        <translation type="unfinished">Ställer in turbohastigheten. Det är inte säkert att denna hastighet uppnås på alla system.</translation>
+        <translation>Ställer in turbohastigheten. Det är inte säkert att denna hastighet uppnås på alla system.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9262"/>
@@ -8529,7 +8574,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9282"/>
         <source>Shows a background image or shader when a game isn&apos;t running. Backgrounds are located in resources/fullscreenui/backgrounds in the data directory.</source>
-        <translation type="unfinished">Visar en bakgrundsbild eller shader när ett spel inte är igång. Bakgrunderna finns i resources/fullscreenui/backgrounds i datakatalogen.</translation>
+        <translation>Visar en bakgrundsbild eller shader när ett spel inte är igång. Bakgrunderna finns i resources/fullscreenui/backgrounds i datakatalogen.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9283"/>
@@ -8604,27 +8649,27 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9297"/>
         <source>Shows trophy icons in game grid when games have achievements or have been mastered.</source>
-        <translation type="unfinished">Visar troféikoner i spelrutan när spelen har prestationer eller har klarats av.</translation>
+        <translation>Visar troféikoner i spelrutnätet när spelen har prestationer eller har klarats av.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9298"/>
         <source>Simulates the region check present in original, unmodified consoles.</source>
-        <translation type="unfinished">Simulerar den regionkontroll som finns i ursprungliga, omodifierade konsoler.</translation>
+        <translation>Simulerar den regionskontroll som finns i ursprungliga, omodifierade konsoler.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9299"/>
         <source>Simulates the system ahead of time and rolls back/replays to reduce input lag. Very high system requirements.</source>
-        <translation type="unfinished">Simulerar systemet i förväg och rullar tillbaka/spelar upp för att minska fördröjningen. Mycket höga systemkrav.</translation>
+        <translation>Simulerar systemet i förväg och rullar tillbaka/spelar upp för att minska inmatningsfördröjning. Mycket höga systemkrav.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9300"/>
         <source>Skip Duplicate Frame Display</source>
-        <translation type="unfinished">Hoppa över duplicerad ramvisning</translation>
+        <translation>Hoppa över duplicerad bildvisning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9301"/>
         <source>Skips the presentation/display of frames that are not unique. Can result in worse frame pacing.</source>
-        <translation type="unfinished">Hoppar över presentation/visning av bildrutor som inte är unika. Kan resultera i sämre frame pacing.</translation>
+        <translation>Hoppar över presentation/visning av bildrutor som inte är unika. Kan resultera i sämre bildrytm.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9302"/>
@@ -8639,17 +8684,17 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9304"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
-        <translation type="unfinished">Utjämnar blockighet mellan färgövergångar i 24-bitars innehåll, vanligtvis FMV.</translation>
+        <translation>Utjämnar blockighet mellan färgövergångar i 24-bitars innehåll, vanligtvis FMV.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9305"/>
         <source>Smooths out the blockiness of magnified textures on 2D objects.</source>
-        <translation type="unfinished">Utjämnar blockigheten i förstorade texturer på 2D-objekt.</translation>
+        <translation>Utjämnar blockigheten i förstorade texturer på 2D-objekt.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9306"/>
         <source>Smooths out the blockiness of magnified textures on 3D objects.</source>
-        <translation type="unfinished">Utjämnar blockigheten i förstorade texturer på 3D-objekt.</translation>
+        <translation>Utjämnar blockigheten i förstorade texturer på 3D-objekt.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9309"/>
@@ -8659,7 +8704,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9312"/>
         <source>Specifies the amount of buffer time added, which reduces the additional sleep time introduced.</source>
-        <translation type="unfinished">Anger hur mycket bufferttid som läggs till, vilket minskar den extra sömntid som införs.</translation>
+        <translation>Anger hur mycket bufferttid som läggs till, vilket minskar den extra sömntid som införs.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9313"/>
@@ -8669,17 +8714,17 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9315"/>
         <source>Speeds up CD-ROM reads by the specified factor. May improve loading speeds in some games, and break others.</source>
-        <translation type="unfinished">Ökar CD-ROM-läsningen med den angivna faktorn. Kan förbättra laddningshastigheterna i vissa spel och förstöra andra.</translation>
+        <translation>Snabbar upp CD-ROM-läsningen med den angivna faktorn. Kan förbättra inläsningshastigheter i vissa spel och förstöra andra.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9316"/>
         <source>Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others.</source>
-        <translation type="unfinished">Ökar hastigheten på CD-ROM-sökningar med den angivna faktorn. Kan förbättra laddningshastigheterna i vissa spel och förstöra andra.</translation>
+        <translation>Snabbar upp hastigheten på CD-ROM-sökningar med den angivna faktorn. Kan förbättra inläsningshastigheter i vissa spel och förstöra andra.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9317"/>
         <source>Sprite Texture Filtering</source>
-        <translation type="unfinished">Sprite texturfiltrering</translation>
+        <translation>Filtrering av sprite-textur</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9318"/>
@@ -8709,7 +8754,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9332"/>
         <source>Synchronizes presentation of the console&apos;s frames to the host. GSync/FreeSync users should enable Optimal Frame Pacing instead.</source>
-        <translation type="unfinished">Synkroniserar presentationen av konsolens bildrutor till värden. GSync/FreeSync-användare bör aktivera Optimal Frame Pacing istället.</translation>
+        <translation>Synkroniserar presentationen av konsolens bildrutor till värden. GSync/FreeSync-användare bör aktivera Optimal bildrytm istället.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9333"/>
@@ -8749,7 +8794,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9340"/>
         <source>The audio backend determines how frames produced by the emulator are submitted to the host.</source>
-        <translation type="unfinished">Ljudbackend avgör hur ramar som produceras av emulatorn skickas till värden.</translation>
+        <translation>Ljudbakänden avgör hur ramar som produceras av emulatorn skickas till värden.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9341"/>
@@ -8799,7 +8844,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9353"/>
         <source>Toggles the macro when the button is pressed, instead of held.</source>
-        <translation type="unfinished">Makrot växlar när knappen trycks in, istället för att hållas intryckt.</translation>
+        <translation>Växlar makrot när knappen trycks in, istället för att hållas intryckt.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9354"/>
@@ -8849,7 +8894,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9365"/>
         <source>Use Blit Swap Chain</source>
-        <translation type="unfinished">Använd Blit Swap Chain</translation>
+        <translation>Använd blit-växlingskedja</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9366"/>
@@ -8884,7 +8929,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9373"/>
         <source>Use Software Renderer For Readbacks</source>
-        <translation type="unfinished">Använd Software Renderer för återläsning</translation>
+        <translation>Använd programvarurenderare för återläsning</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9376"/>
@@ -8894,12 +8939,12 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9377"/>
         <source>Uses a blit presentation model instead of flipping. This may be needed on some systems.</source>
-        <translation type="unfinished">Använder en blit-presentationsmodell istället för flipping. Detta kan behövas på vissa system.</translation>
+        <translation>Använder en blit-presentationsmodell istället för flipping. Detta kan behövas på vissa system.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9378"/>
         <source>Uses a light coloured theme instead of the default dark theme.</source>
-        <translation type="unfinished">Använder ett ljust tema i stället för det mörka standardtemat.</translation>
+        <translation>Använder ett ljust tema i stället för det mörka standardtemat.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9380"/>
@@ -8909,22 +8954,22 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9381"/>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.</source>
-        <translation type="unfinished">Använder koordinater med inbyggd upplösning för 2D-polygoner, istället för exakta koordinater. Kan åtgärda felriktat användargränssnitt i vissa spel, men bör annars lämnas inaktiverad.</translation>
+        <translation>Använder koordinater med inbyggd upplösning för 2D-polygoner, istället för exakta koordinater. Kan åtgärda felriktat användargränssnitt i vissa spel, men bör annars lämnas inaktiverad.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9382"/>
         <source>Uses perspective-correct interpolation for colors, which can improve visuals in some games.</source>
-        <translation type="unfinished">Använder perspektivkorrigerad interpolering för färger, vilket kan förbättra grafiken i vissa spel.</translation>
+        <translation>Använder perspektivkorrigerad interpolering för färger, vilket kan förbättra grafiken i vissa spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9383"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.</source>
-        <translation type="unfinished">Använder perspektivkorrigerad interpolering för texturkoordinater, vilket rätar ut skeva texturer.</translation>
+        <translation>Använder perspektivkorrigerad interpolering för texturkoordinater, vilket rätar ut skeva texturer.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9384"/>
         <source>Uses screen positions to resolve PGXP data. May improve visuals in some games.</source>
-        <translation type="unfinished">Använder skärmpositioner för att lösa PGXP-data. Kan förbättra grafiken i vissa spel.</translation>
+        <translation>Använder skärmpositioner för att lösa PGXP-data. Kan förbättra grafiken i vissa spel.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9385"/>
@@ -8934,7 +8979,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9386"/>
         <source>Utilizes the chosen video timing regardless of the game&apos;s setting.</source>
-        <translation type="unfinished">Använder den valda videotimingen oavsett spelets inställning.</translation>
+        <translation>Använder den valda videotimingen oavsett spelets inställning.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9387"/>
@@ -8944,7 +8989,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9389"/>
         <source>Vertex Cache</source>
-        <translation type="unfinished">Cache för toppar</translation>
+        <translation>Vertex-cache</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9390"/>
@@ -8998,12 +9043,12 @@ Vill du {0} ändå?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9399"/>
         <source>When enabled, the minimum supported output latency will be used for the host API.</source>
-        <translation type="unfinished">När den är aktiverad används den minsta stödda utmatningslatensen för värd-API:et.</translation>
+        <translation>När den är aktiverad används den minsta stödda utmatningslatensen för värd-API:et.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9400"/>
         <source>When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.</source>
-        <translation type="unfinished">När du spelar ett spel med flera skivor och använder minneskort för varje spel (titel) ska du använda ett enda minneskort för alla skivor.</translation>
+        <translation>När du spelar ett spel med flera skivor och använder minneskort för varje spel (titel), använd ett enda minneskort för alla skivor.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9401"/>
@@ -9083,12 +9128,12 @@ Vill du {0} ändå?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8871"/>
         <source>Destination Alpha Blending</source>
-        <translation type="unfinished">Destination Alpha Blending</translation>
+        <translation>Alfablandning för destination</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8884"/>
         <source>Determines the area of the overlay image that the display will be drawn within.</source>
-        <translation type="unfinished">Bestämmer det område av överläggsbilden som displayen ska ritas inom.</translation>
+        <translation>Bestämmer det område av överläggsbilden som skärmen ska ritas inom.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8902"/>
@@ -9108,7 +9153,7 @@ Vill du {0} ändå?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9026"/>
         <source>If enabled, the display will be blended with the transparency of the overlay image.</source>
-        <translation type="unfinished">Om den är aktiverad kommer displayen att blandas med transparensen i overlay-bilden.</translation>
+        <translation>Om den är aktiverad kommer skärmen att blandas med transparensen i överläggsbilden.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9029"/>
@@ -9123,7 +9168,7 @@ Vill du {0} ändå?</translation>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9244"/>
         <source>Select from the list of preset borders, or manually specify a custom configuration.</source>
-        <translation type="unfinished">Välj från listan med förinställda gränser eller ange en anpassad konfiguration manuellt.</translation>
+        <translation>Välj från listan med förvalskanter eller ange en anpassad konfiguration manuellt.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9245"/>
@@ -9814,7 +9859,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
         <location filename="../../core/game_database.cpp" line="130"/>
         <source>Disable PGXP Preserve Projection Floating Point</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished">Avaktivera PGXP Bevara projektion flyttal</translation>
+        <translation>Inaktivera PGXP Preserve Projection Floating Point</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="131"/>
@@ -9838,7 +9883,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
         <location filename="../../core/game_database.cpp" line="134"/>
         <source>Force Recompiler Memory Exceptions</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished">Force Recompiler Memory Exceptions</translation>
+        <translation>Tvinga minnesundantag för omkompilerare</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="135"/>
@@ -9850,13 +9895,13 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
         <location filename="../../core/game_database.cpp" line="136"/>
         <source>Force Recompiler LUT Fastmem</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished">Force Recompiler LUT Fastmem</translation>
+        <translation>Tvinga omkompilatorns LUT Fastmem</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="137"/>
         <source>Force CD-ROM SubQ Skew</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished">Force CD-ROM SubQ Skew</translation>
+        <translation>Tvinga CD-ROM SubQ Skew</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="138"/>
@@ -9887,7 +9932,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <location filename="../../core/game_database.cpp" line="566"/>
         <source>Sprite texture filtering disabled.</source>
-        <translation type="unfinished">Sprite texturfiltrering inaktiverad.</translation>
+        <translation>Sprite-texturfiltrering inaktiverad.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="575"/>
@@ -9907,22 +9952,22 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <location filename="../../core/game_database.cpp" line="599"/>
         <source>PGXP culling correction disabled.</source>
-        <translation type="unfinished">PGXP korrigering av avlivning inaktiverad.</translation>
+        <translation>PGXP-rensningskorrigering inaktiverad.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="607"/>
         <source>PGXP perspective correct textures disabled.</source>
-        <translation type="unfinished">PGXP perspektiv korrekta texturer inaktiverade.</translation>
+        <translation>PGXP perspektiv korrekta texturer inaktiverade.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="617"/>
         <source>PGXP perspective correct colors disabled.</source>
-        <translation type="unfinished">PGXP perspektiv korrekta färger inaktiverade.</translation>
+        <translation>PGXP perspektiv korrekta färger inaktiverade.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="626"/>
         <source>PGXP preserve projection precision disabled.</source>
-        <translation type="unfinished">PGXP bevarar projektionsprecisionen inaktiverad.</translation>
+        <translation>PGXP bevara projektionsprecisionen inaktiverad.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="634"/>
@@ -10020,27 +10065,27 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     <message>
         <location filename="../../core/game_database.cpp" line="869"/>
         <source>Traits</source>
-        <translation type="unfinished">Egenskaper</translation>
+        <translation>Egenskaper</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="879"/>
         <source>Display Active Start Offset</source>
-        <translation type="unfinished">Visa aktiv startoffset</translation>
+        <translation>Visa aktiv startoffset</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="881"/>
         <source>Display Active End Offset</source>
-        <translation type="unfinished">Visa aktiv slutoffset</translation>
+        <translation>Visa aktiv slutoffset</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="883"/>
         <source>Display Line Start Offset</source>
-        <translation type="unfinished">Display Linje Start Offset</translation>
+        <translation>Offset för visningens linjestart</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="885"/>
         <source>Display Line End Offset</source>
-        <translation type="unfinished">Offset för visning av radens slut</translation>
+        <translation>Offset för visning av linjens slut</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="887"/>
@@ -10050,17 +10095,17 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
     <message>
         <location filename="../../core/game_database.cpp" line="889"/>
         <source>Display Deinterlacing Mode</source>
-        <translation type="unfinished">Visa Deinterlacing-läge</translation>
+        <translation>Visa Deinterlacing-läge</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="891"/>
         <source>DMA Max Slice Ticks</source>
-        <translation type="unfinished">DMA Max Slice Ticks</translation>
+        <translation>DMA Max Slice Ticks</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="892"/>
         <source>DMA Halt Ticks</source>
-        <translation type="unfinished">DMA Halt Ticks</translation>
+        <translation>DMA Halt Ticks</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="893"/>
@@ -10117,7 +10162,7 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
         <location filename="../../core/game_list.cpp" line="163"/>
         <source>Playlist</source>
         <comment>EntryType</comment>
-        <translation>Spellist</translation>
+        <translation>Spellista</translation>
     </message>
     <message>
         <location filename="../../core/game_list.cpp" line="164"/>
@@ -10202,37 +10247,37 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistmodel.cpp" line="897"/>
+        <location filename="../gamelistmodel.cpp" line="902"/>
         <source>Title</source>
         <translation>Titel</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="898"/>
+        <location filename="../gamelistmodel.cpp" line="903"/>
         <source>File Title</source>
         <translation>Filtitel</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="905"/>
+        <location filename="../gamelistmodel.cpp" line="910"/>
         <source>Time Played</source>
         <translation>Tid spelat</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="906"/>
+        <location filename="../gamelistmodel.cpp" line="911"/>
         <source>Last Played</source>
         <translation>Senast spelat</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="907"/>
+        <location filename="../gamelistmodel.cpp" line="912"/>
         <source>Size</source>
         <translation>Storlek</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="909"/>
+        <location filename="../gamelistmodel.cpp" line="914"/>
         <source>Region</source>
         <translation>Region</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="910"/>
+        <location filename="../gamelistmodel.cpp" line="915"/>
         <source>Compatibility</source>
         <translation>Kompatibilitet</translation>
     </message>
@@ -10242,47 +10287,47 @@ Konfigurera en handkontroller som stöds från listan ovan.</translation>
         <translation>Okänt</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="895"/>
+        <location filename="../gamelistmodel.cpp" line="900"/>
         <source>Icon</source>
         <translation>Ikon</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="896"/>
+        <location filename="../gamelistmodel.cpp" line="901"/>
         <source>Serial</source>
         <translation>Serienummer</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="899"/>
+        <location filename="../gamelistmodel.cpp" line="904"/>
         <source>Developer</source>
         <translation>Utvecklare</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="900"/>
+        <location filename="../gamelistmodel.cpp" line="905"/>
         <source>Publisher</source>
         <translation>Utgivare</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="901"/>
+        <location filename="../gamelistmodel.cpp" line="906"/>
         <source>Genre</source>
         <translation>Genre</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="902"/>
+        <location filename="../gamelistmodel.cpp" line="907"/>
         <source>Year</source>
         <translation>År</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="903"/>
+        <location filename="../gamelistmodel.cpp" line="908"/>
         <source>Players</source>
         <translation>Spelare</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="904"/>
+        <location filename="../gamelistmodel.cpp" line="909"/>
         <source>Achievements</source>
         <translation>Prestationer</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="908"/>
+        <location filename="../gamelistmodel.cpp" line="913"/>
         <source>Raw Size</source>
         <translation>Råstorlek</translation>
     </message>
@@ -10791,17 +10836,17 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.ui" line="247"/>
         <source>PGXP Depth Buffer (Low Compatibility)</source>
-        <translation type="unfinished">PGXP Djupbuffert (låg kompatibilitet)</translation>
+        <translation>PGXP djupbuffert (låg kompatibilitet)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="259"/>
         <source>Sprite Texture Filtering:</source>
-        <translation type="unfinished">Sprite texturfiltrering:</translation>
+        <translation>Filtrering av sprite-textur:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="269"/>
         <source>Force Video Timing:</source>
-        <translation type="unfinished">Force Video Timing:</translation>
+        <translation>Tvinga videotiming:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="314"/>
@@ -10841,32 +10886,32 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="434"/>
-        <location filename="../graphicssettingswidget.cpp" line="461"/>
+        <location filename="../graphicssettingswidget.cpp" line="462"/>
         <source>Scaled Dithering</source>
-        <translation type="unfinished">Skalad dithering</translation>
+        <translation>Skalad dithering</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="420"/>
-        <location filename="../graphicssettingswidget.cpp" line="469"/>
+        <location filename="../graphicssettingswidget.cpp" line="470"/>
         <source>Round Upscaled Texture Coordinates</source>
-        <translation type="unfinished">Runda uppskalade texturkoordinater</translation>
+        <translation>Avrunda uppskalade texturkoordinater</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="441"/>
-        <location filename="../graphicssettingswidget.cpp" line="473"/>
+        <location filename="../graphicssettingswidget.cpp" line="474"/>
         <source>Accurate Blending</source>
         <translation>Exakt blending</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="427"/>
-        <location filename="../graphicssettingswidget.cpp" line="465"/>
+        <location filename="../graphicssettingswidget.cpp" line="466"/>
         <source>Software Renderer Readbacks</source>
-        <translation type="unfinished">Återläsning av programvaruåtergivare</translation>
+        <translation>Återläsning för programvarurenderare</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="457"/>
         <source>Max Queued Frames:</source>
-        <translation type="unfinished">Max köade ramar:</translation>
+        <translation>Max köade bildrutor:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="492"/>
@@ -10881,89 +10926,89 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.ui" line="548"/>
         <source>Depth Clear Threshold:</source>
-        <translation type="unfinished">Djup Clear Threshold:</translation>
+        <translation>Tröskelvärde för djuptömning:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="564"/>
-        <location filename="../graphicssettingswidget.cpp" line="491"/>
+        <location filename="../graphicssettingswidget.cpp" line="492"/>
         <source>Perspective Correct Colors</source>
-        <translation type="unfinished">Perspektiv Korrigera färger</translation>
+        <translation>Korrekta färger för perspektiv</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="571"/>
-        <location filename="../graphicssettingswidget.cpp" line="504"/>
+        <location filename="../graphicssettingswidget.cpp" line="505"/>
         <source>Vertex Cache</source>
-        <translation type="unfinished">Cache för toppar</translation>
+        <translation>Vertex-cache</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="578"/>
-        <location filename="../graphicssettingswidget.cpp" line="487"/>
+        <location filename="../graphicssettingswidget.cpp" line="488"/>
         <source>Perspective Correct Textures</source>
-        <translation type="unfinished">Perspektiv Korrekta texturer</translation>
+        <translation>Korrekta texturer för perspektiv</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="585"/>
-        <location filename="../graphicssettingswidget.cpp" line="500"/>
+        <location filename="../graphicssettingswidget.cpp" line="501"/>
         <source>CPU Mode</source>
         <translation>CPU-läge</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="592"/>
-        <location filename="../graphicssettingswidget.cpp" line="498"/>
+        <location filename="../graphicssettingswidget.cpp" line="499"/>
         <source>Preserve Projection Precision</source>
         <translation>Bevara projektionens precision</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="599"/>
-        <location filename="../graphicssettingswidget.cpp" line="494"/>
+        <location filename="../graphicssettingswidget.cpp" line="495"/>
         <source>Culling Correction</source>
-        <translation type="unfinished">Avlivning Korrigering</translation>
+        <translation>Rensningskorrigering</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="606"/>
-        <location filename="../graphicssettingswidget.cpp" line="507"/>
+        <location filename="../graphicssettingswidget.cpp" line="508"/>
         <source>Disable on 2D Polygons</source>
         <translation>Inaktivera för 2D-polygoner</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="613"/>
-        <location filename="../graphicssettingswidget.cpp" line="511"/>
+        <location filename="../graphicssettingswidget.cpp" line="512"/>
         <source>Depth Test Transparent Polygons</source>
-        <translation type="unfinished">Djuptest Transparenta polygoner</translation>
+        <translation>Transparenta polygoner för djuptest</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="695"/>
-        <location filename="../graphicssettingswidget.cpp" line="521"/>
+        <location filename="../graphicssettingswidget.cpp" line="522"/>
         <source>Show OSD Messages</source>
         <translation>Visa OSD-meddelanden</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="709"/>
-        <location filename="../graphicssettingswidget.cpp" line="536"/>
+        <location filename="../graphicssettingswidget.cpp" line="537"/>
         <source>Show GPU Statistics</source>
         <translation>Visa GPU-statistik</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="716"/>
-        <location filename="../graphicssettingswidget.cpp" line="527"/>
+        <location filename="../graphicssettingswidget.cpp" line="528"/>
         <source>Show Emulation Speed</source>
         <translation>Visa emuleringshastighet</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="737"/>
-        <location filename="../graphicssettingswidget.cpp" line="549"/>
+        <location filename="../graphicssettingswidget.cpp" line="550"/>
         <source>Show Status Indicators</source>
         <translation>Visa statusindikatorer</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="744"/>
-        <location filename="../graphicssettingswidget.cpp" line="545"/>
+        <location filename="../graphicssettingswidget.cpp" line="546"/>
         <source>Show Controller Input</source>
         <translation>Visa kontrollerinmatning</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="765"/>
-        <location filename="../graphicssettingswidget.cpp" line="539"/>
+        <location filename="../graphicssettingswidget.cpp" line="540"/>
         <source>Show Latency Statistics</source>
         <translation>Visa latensstatistik</translation>
     </message>
@@ -10999,71 +11044,71 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1148"/>
-        <location filename="../graphicssettingswidget.cpp" line="602"/>
+        <location filename="../graphicssettingswidget.cpp" line="609"/>
         <source>Enable Texture Cache</source>
         <translation>Aktivera texturcache</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1235"/>
-        <location filename="../graphicssettingswidget.cpp" line="625"/>
+        <location filename="../graphicssettingswidget.cpp" line="632"/>
         <source>Use Old MDEC Routines</source>
         <translation>Använd gamla MDEC-rutiner</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1416"/>
-        <location filename="../graphicssettingswidget.cpp" line="656"/>
+        <location filename="../graphicssettingswidget.cpp" line="663"/>
         <source>Disable Compute Shaders</source>
         <translation>Inaktivera beräkningsshaders</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1423"/>
-        <location filename="../graphicssettingswidget.cpp" line="659"/>
+        <location filename="../graphicssettingswidget.cpp" line="666"/>
         <source>Disable Compressed Textures</source>
         <translation>Inaktivera komprimerade texturer</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="608"/>
+        <location filename="../graphicssettingswidget.cpp" line="615"/>
         <source>Enable Texture Replacements</source>
         <translation>Aktivera texturersättningar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1155"/>
-        <location filename="../graphicssettingswidget.cpp" line="605"/>
+        <location filename="../graphicssettingswidget.cpp" line="612"/>
         <source>Preload Texture Replacements</source>
         <translation>Förinläs texturersättningar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1178"/>
-        <location filename="../graphicssettingswidget.cpp" line="616"/>
+        <location filename="../graphicssettingswidget.cpp" line="623"/>
         <source>Enable Texture Dumping</source>
         <translation>Aktivera texturdumpning</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1201"/>
-        <location filename="../graphicssettingswidget.cpp" line="618"/>
+        <location filename="../graphicssettingswidget.cpp" line="625"/>
         <source>Dump Replaced Textures</source>
         <translation>Dumpa ersatta texturer</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1208"/>
-        <location filename="../graphicssettingswidget.cpp" line="611"/>
+        <location filename="../graphicssettingswidget.cpp" line="618"/>
         <source>Always Track Uploads</source>
-        <translation type="unfinished">Spåra alltid uppladdningar</translation>
+        <translation>Spåra alltid uppladdningar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1220"/>
         <source>VRAM Write (Background) Replacement</source>
-        <translation type="unfinished">Byte av VRAM-skrivare (bakgrund)</translation>
+        <translation>Ersättning för VRAM-skrivning (bakgrund)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1228"/>
-        <location filename="../graphicssettingswidget.cpp" line="621"/>
+        <location filename="../graphicssettingswidget.cpp" line="628"/>
         <source>Enable VRAM Write Replacement</source>
         <translation>Aktivera VRAM-skrivningsersättning</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1242"/>
-        <location filename="../graphicssettingswidget.cpp" line="623"/>
+        <location filename="../graphicssettingswidget.cpp" line="630"/>
         <source>Enable VRAM Write Dumping</source>
         <translation>Aktivera VRAM-skrivdumpning</translation>
     </message>
@@ -11089,7 +11134,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="448"/>
-        <location filename="../graphicssettingswidget.cpp" line="457"/>
+        <location filename="../graphicssettingswidget.cpp" line="458"/>
         <source>Threaded Rendering</source>
         <translation>Trådad rendering</translation>
     </message>
@@ -11120,27 +11165,27 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1374"/>
-        <location filename="../graphicssettingswidget.cpp" line="637"/>
+        <location filename="../graphicssettingswidget.cpp" line="644"/>
         <source>Disable Dual-Source Blending</source>
         <translation>Inaktivera blandning med dubbla källor</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1367"/>
-        <location filename="../graphicssettingswidget.cpp" line="644"/>
+        <location filename="../graphicssettingswidget.cpp" line="651"/>
         <source>Disable Texture Buffers</source>
         <translation>Inaktivera texturbuffertar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1402"/>
-        <location filename="../graphicssettingswidget.cpp" line="650"/>
+        <location filename="../graphicssettingswidget.cpp" line="657"/>
         <source>Disable Memory Import</source>
         <translation>Inaktivera minnesimport</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1409"/>
-        <location filename="../graphicssettingswidget.cpp" line="653"/>
+        <location filename="../graphicssettingswidget.cpp" line="660"/>
         <source>Disable Rasterizer Order Views</source>
-        <translation type="unfinished">Inaktivera Rasterizer Order Views</translation>
+        <translation>Inaktivera vyer för rastrerarordning</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="139"/>
@@ -11175,7 +11220,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <translation>Storlek för skärmbild:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="555"/>
+        <location filename="../graphicssettingswidget.cpp" line="556"/>
         <source>Screen Resolution</source>
         <translation>Skärmupplösning</translation>
     </message>
@@ -11185,7 +11230,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <translation>Intern upplösning</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="559"/>
+        <location filename="../graphicssettingswidget.cpp" line="560"/>
         <source>PNG</source>
         <translation>PNG</translation>
     </message>
@@ -11212,7 +11257,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.ui" line="180"/>
         <source>Deinterlacing:</source>
-        <translation type="unfinished">Deinterlacing:</translation>
+        <translation>Deinterlacing:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1124"/>
@@ -11252,25 +11297,25 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="758"/>
-        <location filename="../graphicssettingswidget.cpp" line="524"/>
+        <location filename="../graphicssettingswidget.cpp" line="525"/>
         <source>Show Resolution</source>
         <translation>Visa upplösning</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="723"/>
-        <location filename="../graphicssettingswidget.cpp" line="534"/>
+        <location filename="../graphicssettingswidget.cpp" line="535"/>
         <source>Show GPU Usage</source>
         <translation>Visa GPU-användning</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="730"/>
-        <location filename="../graphicssettingswidget.cpp" line="547"/>
+        <location filename="../graphicssettingswidget.cpp" line="548"/>
         <source>Show Settings</source>
         <translation>Visa inställningar</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="688"/>
-        <location filename="../graphicssettingswidget.cpp" line="529"/>
+        <location filename="../graphicssettingswidget.cpp" line="530"/>
         <source>Show FPS</source>
         <translation>Visa bilder/s</translation>
     </message>
@@ -11282,19 +11327,19 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1381"/>
-        <location filename="../graphicssettingswidget.cpp" line="635"/>
+        <location filename="../graphicssettingswidget.cpp" line="642"/>
         <source>Disable Shader Cache</source>
         <translation>Inaktivera shadercache</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="702"/>
-        <location filename="../graphicssettingswidget.cpp" line="532"/>
+        <location filename="../graphicssettingswidget.cpp" line="533"/>
         <source>Show CPU Usage</source>
         <translation>Visa CPU-användning</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="751"/>
-        <location filename="../graphicssettingswidget.cpp" line="542"/>
+        <location filename="../graphicssettingswidget.cpp" line="543"/>
         <source>Show Frame Times</source>
         <translation>Visa bildrutetider</translation>
     </message>
@@ -11317,6 +11362,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="970"/>
+        <location filename="../graphicssettingswidget.cpp" line="592"/>
         <source>Capture Audio</source>
         <translation>Fånga ljud</translation>
     </message>
@@ -11338,6 +11384,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1098"/>
+        <location filename="../graphicssettingswidget.cpp" line="572"/>
         <source>Capture Video</source>
         <translation>Fånga video</translation>
     </message>
@@ -11350,7 +11397,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <location filename="../graphicssettingswidget.ui" line="360"/>
         <location filename="../graphicssettingswidget.cpp" line="440"/>
         <source>Use Blit Swap Chain</source>
-        <translation type="unfinished">Använd Blit Swap Chain</translation>
+        <translation>Använd blit-växlingskedja</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="931"/>
@@ -11367,15 +11414,15 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1360"/>
-        <location filename="../graphicssettingswidget.cpp" line="632"/>
+        <location filename="../graphicssettingswidget.cpp" line="639"/>
         <source>Use Debug Device</source>
         <translation>Använd felsökningsenhet</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1388"/>
-        <location filename="../graphicssettingswidget.cpp" line="640"/>
+        <location filename="../graphicssettingswidget.cpp" line="647"/>
         <source>Disable Framebuffer Fetch</source>
-        <translation type="unfinished">Inaktivera hämtning av framebuffer</translation>
+        <translation>Inaktivera framebuffer-hämtning</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="405"/>
@@ -11386,157 +11433,159 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <location filename="../graphicssettingswidget.cpp" line="433"/>
         <location filename="../graphicssettingswidget.cpp" line="436"/>
         <location filename="../graphicssettingswidget.cpp" line="440"/>
-        <location filename="../graphicssettingswidget.cpp" line="465"/>
-        <location filename="../graphicssettingswidget.cpp" line="469"/>
-        <location filename="../graphicssettingswidget.cpp" line="473"/>
-        <location filename="../graphicssettingswidget.cpp" line="491"/>
-        <location filename="../graphicssettingswidget.cpp" line="498"/>
-        <location filename="../graphicssettingswidget.cpp" line="500"/>
-        <location filename="../graphicssettingswidget.cpp" line="504"/>
-        <location filename="../graphicssettingswidget.cpp" line="507"/>
-        <location filename="../graphicssettingswidget.cpp" line="511"/>
-        <location filename="../graphicssettingswidget.cpp" line="524"/>
-        <location filename="../graphicssettingswidget.cpp" line="527"/>
-        <location filename="../graphicssettingswidget.cpp" line="529"/>
-        <location filename="../graphicssettingswidget.cpp" line="532"/>
-        <location filename="../graphicssettingswidget.cpp" line="534"/>
-        <location filename="../graphicssettingswidget.cpp" line="536"/>
-        <location filename="../graphicssettingswidget.cpp" line="539"/>
-        <location filename="../graphicssettingswidget.cpp" line="542"/>
-        <location filename="../graphicssettingswidget.cpp" line="545"/>
-        <location filename="../graphicssettingswidget.cpp" line="547"/>
-        <location filename="../graphicssettingswidget.cpp" line="578"/>
+        <location filename="../graphicssettingswidget.cpp" line="466"/>
+        <location filename="../graphicssettingswidget.cpp" line="470"/>
+        <location filename="../graphicssettingswidget.cpp" line="474"/>
+        <location filename="../graphicssettingswidget.cpp" line="492"/>
+        <location filename="../graphicssettingswidget.cpp" line="499"/>
+        <location filename="../graphicssettingswidget.cpp" line="501"/>
+        <location filename="../graphicssettingswidget.cpp" line="505"/>
+        <location filename="../graphicssettingswidget.cpp" line="508"/>
+        <location filename="../graphicssettingswidget.cpp" line="512"/>
+        <location filename="../graphicssettingswidget.cpp" line="525"/>
+        <location filename="../graphicssettingswidget.cpp" line="528"/>
+        <location filename="../graphicssettingswidget.cpp" line="530"/>
+        <location filename="../graphicssettingswidget.cpp" line="533"/>
+        <location filename="../graphicssettingswidget.cpp" line="535"/>
+        <location filename="../graphicssettingswidget.cpp" line="537"/>
+        <location filename="../graphicssettingswidget.cpp" line="540"/>
+        <location filename="../graphicssettingswidget.cpp" line="543"/>
+        <location filename="../graphicssettingswidget.cpp" line="546"/>
+        <location filename="../graphicssettingswidget.cpp" line="548"/>
         <location filename="../graphicssettingswidget.cpp" line="582"/>
-        <location filename="../graphicssettingswidget.cpp" line="593"/>
-        <location filename="../graphicssettingswidget.cpp" line="602"/>
-        <location filename="../graphicssettingswidget.cpp" line="605"/>
-        <location filename="../graphicssettingswidget.cpp" line="608"/>
-        <location filename="../graphicssettingswidget.cpp" line="611"/>
-        <location filename="../graphicssettingswidget.cpp" line="616"/>
+        <location filename="../graphicssettingswidget.cpp" line="586"/>
+        <location filename="../graphicssettingswidget.cpp" line="600"/>
+        <location filename="../graphicssettingswidget.cpp" line="609"/>
+        <location filename="../graphicssettingswidget.cpp" line="612"/>
+        <location filename="../graphicssettingswidget.cpp" line="615"/>
         <location filename="../graphicssettingswidget.cpp" line="618"/>
-        <location filename="../graphicssettingswidget.cpp" line="621"/>
         <location filename="../graphicssettingswidget.cpp" line="623"/>
         <location filename="../graphicssettingswidget.cpp" line="625"/>
+        <location filename="../graphicssettingswidget.cpp" line="628"/>
+        <location filename="../graphicssettingswidget.cpp" line="630"/>
         <location filename="../graphicssettingswidget.cpp" line="632"/>
-        <location filename="../graphicssettingswidget.cpp" line="635"/>
-        <location filename="../graphicssettingswidget.cpp" line="637"/>
-        <location filename="../graphicssettingswidget.cpp" line="640"/>
+        <location filename="../graphicssettingswidget.cpp" line="639"/>
+        <location filename="../graphicssettingswidget.cpp" line="642"/>
         <location filename="../graphicssettingswidget.cpp" line="644"/>
         <location filename="../graphicssettingswidget.cpp" line="647"/>
-        <location filename="../graphicssettingswidget.cpp" line="650"/>
-        <location filename="../graphicssettingswidget.cpp" line="653"/>
-        <location filename="../graphicssettingswidget.cpp" line="656"/>
-        <location filename="../graphicssettingswidget.cpp" line="659"/>
+        <location filename="../graphicssettingswidget.cpp" line="651"/>
+        <location filename="../graphicssettingswidget.cpp" line="654"/>
+        <location filename="../graphicssettingswidget.cpp" line="657"/>
+        <location filename="../graphicssettingswidget.cpp" line="660"/>
+        <location filename="../graphicssettingswidget.cpp" line="663"/>
+        <location filename="../graphicssettingswidget.cpp" line="666"/>
         <source>Unchecked</source>
         <translation>Inte markerat</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="356"/>
         <location filename="../graphicssettingswidget.cpp" line="392"/>
-        <location filename="../graphicssettingswidget.cpp" line="451"/>
-        <location filename="../graphicssettingswidget.cpp" line="454"/>
-        <location filename="../graphicssettingswidget.cpp" line="967"/>
+        <location filename="../graphicssettingswidget.cpp" line="452"/>
+        <location filename="../graphicssettingswidget.cpp" line="455"/>
+        <location filename="../graphicssettingswidget.cpp" line="974"/>
         <source>Disabled</source>
         <translation>Inaktiverad</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="572"/>
+        <location filename="../graphicssettingswidget.cpp" line="576"/>
         <source>Video Codec</source>
         <translation>Videokodek</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="573"/>
+        <location filename="../graphicssettingswidget.cpp" line="577"/>
         <source>Selects which Video Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
         <translation>Väljer vilken videokodek som ska användas för videoinspelning. &lt;b&gt;Om du är osäker, låt den vara kvar som standard.&lt;b&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="574"/>
+        <location filename="../graphicssettingswidget.cpp" line="578"/>
         <source>Video Bitrate</source>
         <translation>Bitfrekvens för video</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="574"/>
+        <location filename="../graphicssettingswidget.cpp" line="578"/>
         <source>6000 kbps</source>
         <translation>6000 kbps</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="575"/>
+        <location filename="../graphicssettingswidget.cpp" line="579"/>
         <source>Sets the video bitrate to be used. Larger bitrate generally yields better video quality at the cost of larger resulting file size.</source>
         <translation>Ställer in den videobitfrekvens som ska användas. Högre bitfrekvens ger i allmänhet bättre videokvalitet till priset av större filstorlek.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="578"/>
+        <location filename="../graphicssettingswidget.cpp" line="582"/>
         <source>Automatic Resolution</source>
         <translation>Automatisk upplösning</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="582"/>
+        <location filename="../graphicssettingswidget.cpp" line="586"/>
         <source>Enable Extra Video Arguments</source>
         <translation>Aktivera extra videoargument</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="583"/>
+        <location filename="../graphicssettingswidget.cpp" line="587"/>
         <source>Allows you to pass arguments to the selected video codec.</source>
         <translation>Gör det möjligt att skicka argument till den valda videokodeken.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="585"/>
+        <location filename="../graphicssettingswidget.cpp" line="589"/>
         <source>Extra Video Arguments</source>
         <translation>Extra videoargument</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="589"/>
+        <location filename="../graphicssettingswidget.cpp" line="596"/>
         <source>Audio Codec</source>
         <translation>Ljudkodek</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="590"/>
+        <location filename="../graphicssettingswidget.cpp" line="597"/>
         <source>Selects which Audio Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
         <translation>Väljer vilken ljudkodek som ska användas för videoinspelning. &lt;b&gt;Om du är osäker, låt den vara kvar som standard.&lt;b&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="591"/>
+        <location filename="../graphicssettingswidget.cpp" line="598"/>
         <source>Audio Bitrate</source>
         <translation>Bitfrekvens för ljud</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="593"/>
+        <location filename="../graphicssettingswidget.cpp" line="600"/>
         <source>Enable Extra Audio Arguments</source>
         <translation>Aktivera extra ljudargument</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="594"/>
+        <location filename="../graphicssettingswidget.cpp" line="601"/>
         <source>Allows you to pass arguments to the selected audio codec.</source>
         <translation>Gör det möjligt att skicka argument till den valda ljudkodeken.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="596"/>
+        <location filename="../graphicssettingswidget.cpp" line="603"/>
         <source>Extra Audio Arguments</source>
         <translation>Extra ljudargument</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="603"/>
+        <location filename="../graphicssettingswidget.cpp" line="610"/>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
-        <translation type="unfinished">Aktiverar cachelagring av gästtexturer, vilket krävs för texturbyte. &lt;strong&gt;Texturcachen är för närvarande experimentell och kan orsaka renderingsfel i vissa spel.&lt;/strong&gt;</translation>
+        <translation>Aktiverar cachelagring av gästtexturer, vilket krävs för texturersättningar. &lt;strong&gt;Texturcachen är för närvarande experimentell och kan orsaka renderingsfel i vissa spel.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="612"/>
+        <location filename="../graphicssettingswidget.cpp" line="619"/>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed. Reduces performance, but allows toggling replacements on and off. &lt;strong&gt;Not required for replacements to load, &lt;/strong&gt;normally tracking is automatically enabled when needed.</source>
-        <translation type="unfinished">Tvingar spårning av texturuppladdning att aktiveras oavsett om det behövs eller inte. Minskar prestandan, men gör det möjligt att växla mellan på- och avstängning av ersättningar. &lt;strong&gt;Krävs inte för att ersättningar ska laddas &lt;/strong&gt;, normalt aktiveras spårning automatiskt när det behövs.</translation>
+        <translation>Tvingar spårning av texturuppladdning att aktiveras oavsett om det behövs eller inte. Minskar prestandan, men gör det möjligt att växla mellan på- och avstängning av ersättningar. &lt;strong&gt;Krävs inte för att ersättningar ska läsas in &lt;/strong&gt;, normalt aktiveras spårning automatiskt när det behövs.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="951"/>
+        <location filename="../graphicssettingswidget.cpp" line="958"/>
         <source>%1x Native</source>
         <translation>%1x inbyggd</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="398"/>
-        <location filename="../graphicssettingswidget.cpp" line="457"/>
-        <location filename="../graphicssettingswidget.cpp" line="461"/>
-        <location filename="../graphicssettingswidget.cpp" line="487"/>
-        <location filename="../graphicssettingswidget.cpp" line="494"/>
-        <location filename="../graphicssettingswidget.cpp" line="521"/>
-        <location filename="../graphicssettingswidget.cpp" line="549"/>
+        <location filename="../graphicssettingswidget.cpp" line="458"/>
+        <location filename="../graphicssettingswidget.cpp" line="462"/>
+        <location filename="../graphicssettingswidget.cpp" line="488"/>
+        <location filename="../graphicssettingswidget.cpp" line="495"/>
+        <location filename="../graphicssettingswidget.cpp" line="522"/>
+        <location filename="../graphicssettingswidget.cpp" line="550"/>
+        <location filename="../graphicssettingswidget.cpp" line="572"/>
+        <location filename="../graphicssettingswidget.cpp" line="592"/>
         <source>Checked</source>
         <translation>Markerat</translation>
     </message>
@@ -11548,40 +11597,40 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="378"/>
         <source>Deinterlacing</source>
-        <translation type="unfinished">Deinterlacing</translation>
+        <translation>Deinterlacing</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="555"/>
+        <location filename="../graphicssettingswidget.cpp" line="556"/>
         <source>Screenshot Size</source>
         <translation>Skärmbildsstorlek</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="556"/>
+        <location filename="../graphicssettingswidget.cpp" line="557"/>
         <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
         <translation>Bestämmer vilken upplösning som skärmbilderna ska sparas med. Interna upplösningar bevarar fler detaljer på bekostnad av filstorleken.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="559"/>
+        <location filename="../graphicssettingswidget.cpp" line="560"/>
         <source>Screenshot Format</source>
         <translation>Skärmbildsformat</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="560"/>
+        <location filename="../graphicssettingswidget.cpp" line="561"/>
         <source>Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail.</source>
         <translation>Väljer det format som ska användas för att spara skärmbilder. JPEG ger mindre filer, men förlorar detaljer.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="561"/>
+        <location filename="../graphicssettingswidget.cpp" line="562"/>
         <source>Screenshot Quality</source>
         <translation>Skärmbildskvalitet</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="563"/>
+        <location filename="../graphicssettingswidget.cpp" line="564"/>
         <source>Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file size for PNG.</source>
         <translation>Väljer den kvalitet med vilken skärmbilder komprimeras. Högre värden bevarar fler detaljer för JPEG och minskar filstorleken för PNG.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="519"/>
+        <location filename="../graphicssettingswidget.cpp" line="520"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
@@ -11592,7 +11641,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="424"/>
-        <location filename="../graphicssettingswidget.cpp" line="901"/>
+        <location filename="../graphicssettingswidget.cpp" line="908"/>
         <source>Borderless Fullscreen</source>
         <translation>Ramfri helskärm</translation>
     </message>
@@ -11607,65 +11656,65 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <translation>Texturfiltrering</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="519"/>
+        <location filename="../graphicssettingswidget.cpp" line="520"/>
         <source>OSD Scale</source>
         <translation>OSD-skala</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="522"/>
+        <location filename="../graphicssettingswidget.cpp" line="523"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
         <translation>Visar meddelanden på skärmen när händelser inträffar, t.ex. när sparlägen skapas/läses in, skärmbilder tas osv.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="530"/>
+        <location filename="../graphicssettingswidget.cpp" line="531"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>Visar den interna bildfrekvensen för spelet i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="528"/>
+        <location filename="../graphicssettingswidget.cpp" line="529"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>Visar aktuell emuleringshastighet för systemet i övre högra hörnet av skärmen som ett procenttal.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="525"/>
+        <location filename="../graphicssettingswidget.cpp" line="526"/>
         <source>Shows the resolution of the game in the top-right corner of the display.</source>
         <translation>Visar spelets upplösning längst upp i högra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="546"/>
+        <location filename="../graphicssettingswidget.cpp" line="547"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
         <translation>Visar aktuellt tillstånd för handkontroller för systemet i nedre vänstra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="586"/>
+        <location filename="../graphicssettingswidget.cpp" line="590"/>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
-        <translation type="unfinished">Parametrar som skickas till den valda videokodeken.&lt;br&gt;&lt;b&gt;Du måste använda &apos;=&apos; för att skilja nyckel från värde och &apos;:&apos; för att skilja två par från varandra.&lt;/b&gt;&lt;br&gt;Till exempel: &quot;crf = 21 : förinställning = mycket snabb&quot;</translation>
+        <translation>Parametrar som skickas till den valda videokodeken.&lt;br&gt;&lt;b&gt;Du måste använda &apos;=&apos; för att skilja nyckel från värde och &apos;:&apos; för att skilja två par från varandra.&lt;/b&gt;&lt;br&gt;Till exempel: &quot;crf = 21 : preset = veryfast&quot;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="592"/>
+        <location filename="../graphicssettingswidget.cpp" line="599"/>
         <source>Sets the audio bitrate to be used.</source>
         <translation>Ställer in ljudbitfrekvensen att använda.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="591"/>
+        <location filename="../graphicssettingswidget.cpp" line="598"/>
         <source>160 kbps</source>
         <translation>160 kbps</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="597"/>
+        <location filename="../graphicssettingswidget.cpp" line="604"/>
         <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
-        <translation type="unfinished">Parametrar som skickas till den valda ljudkodeken.&lt;br&gt;&lt;b&gt;Du måste använda &apos;=&apos; för att skilja nyckel från värde och &apos;:&apos; för att skilja två par från varandra.&lt;/b&gt;&lt;br&gt;Till exempel: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
+        <translation>Parametrar som skickas till den valda ljudkodeken.&lt;br&gt;&lt;b&gt;Du måste använda &apos;=&apos; för att skilja nyckel från värde och &apos;:&apos; för att skilja två par från varandra.&lt;/b&gt;&lt;br&gt;Till exempel: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="441"/>
         <source>Uses a blit presentation model instead of flipping when using the Direct3D 11 renderer. This usually results in slower performance, but may be required for some streaming applications, or to uncap framerates on some systems.</source>
-        <translation type="unfinished">Använder en blit-presentationsmodell istället för flipping när Direct3D 11-renderaren används. Detta resulterar vanligtvis i långsammare prestanda, men kan vara nödvändigt för vissa streamingapplikationer eller för att frigöra framerates på vissa system.</translation>
+        <translation>Använder en blit-presentationsmodell istället för flipping när Direct3D 11-renderaren används. Detta resulterar vanligtvis i långsammare prestanda, men kan vara nödvändigt för vissa strömningsprogram eller för att frigöra bildfrekvenser på vissa system.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="572"/>
-        <location filename="../graphicssettingswidget.cpp" line="589"/>
-        <location filename="../graphicssettingswidget.cpp" line="1143"/>
-        <location filename="../graphicssettingswidget.cpp" line="1157"/>
+        <location filename="../graphicssettingswidget.cpp" line="576"/>
+        <location filename="../graphicssettingswidget.cpp" line="596"/>
+        <location filename="../graphicssettingswidget.cpp" line="1150"/>
+        <location filename="../graphicssettingswidget.cpp" line="1164"/>
         <source>Default</source>
         <translation>Standard</translation>
     </message>
@@ -11692,7 +11741,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="342"/>
         <source>Chooses the backend to use for rendering the console/game visuals. &lt;br&gt;Depending on your system and hardware, Direct3D 11 and OpenGL hardware backends may be available. &lt;br&gt;The software renderer offers the best compatibility, but is the slowest and does not offer any enhancements.</source>
-        <translation type="unfinished">Väljer den backend som ska användas för att rendera konsol- och spelgrafiken. &lt;br&gt;Beroende på system och maskinvara kan Direct3D 11- och OpenGL-hårdvarubackends vara tillgängliga. &lt;br&gt;Programvarurenderingen ger bäst kompatibilitet, men är långsammast och erbjuder inga förbättringar.</translation>
+        <translation>Väljer den bakände som ska användas för att rendera konsol- och spelgrafiken. &lt;br&gt;Beroende på system och maskinvara kan Direct3D 11- och OpenGL-hårdvarubakändarna vara tillgängliga. &lt;br&gt;Programvarurenderingen ger bäst kompatibilitet, men är långsammast och erbjuder inga förbättringar.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="346"/>
@@ -11701,19 +11750,19 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="346"/>
-        <location filename="../graphicssettingswidget.cpp" line="864"/>
+        <location filename="../graphicssettingswidget.cpp" line="871"/>
         <source>(Default)</source>
         <translation>(standard)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="347"/>
         <source>If your system contains multiple GPUs or adapters, you can select which GPU you wish to use for the hardware renderers. &lt;br&gt;This option is only supported in Direct3D and Vulkan. OpenGL will always use the default device.</source>
-        <translation type="unfinished">Om ditt system innehåller flera GPU:er eller adaptrar kan du välja vilken GPU du vill använda för hårdvarurenderingarna. &lt;br&gt;Det här alternativet stöds endast i Direct3D och Vulkan. OpenGL kommer alltid att använda standardenheten.</translation>
+        <translation>Om ditt system innehåller flera GPU:er eller adaptrar kan du välja vilken GPU du vill använda för hårdvarurenderingarna. &lt;br&gt;Det här alternativet stöds endast i Direct3D och Vulkan. OpenGL kommer alltid att använda standardenheten.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="352"/>
         <source>Setting this beyond 1x will enhance the resolution of rendered 3D polygons and lines. Only applies to the hardware backends. &lt;br&gt;This option is usually safe, with most games looking fine at higher resolutions. Higher resolutions require a more powerful GPU.</source>
-        <translation type="unfinished">Om du ställer in detta värde till mer än 1x förbättras upplösningen för renderade 3D-polygoner och linjer. Gäller endast för hårdvarubackends. &lt;br&gt;Det här alternativet är vanligtvis säkert, och de flesta spel ser bra ut i högre upplösningar. Högre upplösningar kräver en kraftfullare GPU.</translation>
+        <translation>Om du ställer in detta värde till mer än 1x förbättras upplösningen för renderade 3D-polygoner och linjer. Gäller endast för hårdvarubakändar. &lt;br&gt;Det här alternativet är vanligtvis säkert, och de flesta spel ser bra ut i högre upplösningar. Högre upplösningar kräver en kraftfullare GPU.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="356"/>
@@ -11723,12 +11772,12 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="357"/>
         <source>Downsamples the rendered image prior to displaying it. Can improve overall image quality in mixed 2D/3D games, but should be disabled for pure 3D games.</source>
-        <translation type="unfinished">Samplar ner den renderade bilden innan den visas. Kan förbättra den övergripande bildkvaliteten i blandade 2D/3D-spel, men bör avaktiveras för rena 3D-spel.</translation>
+        <translation>Samplar ner den renderade bilden innan den visas. Kan förbättra den övergripande bildkvaliteten i blandade 2D/3D-spel, men bör inaktiveras för rena 3D-spel.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="359"/>
         <source>Down-Sampling Display Scale</source>
-        <translation type="unfinished">Skala för nedsampling av display</translation>
+        <translation>Skala för skärmnedsampling</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="359"/>
@@ -11743,27 +11792,27 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="365"/>
         <source>Smooths out the blockiness of magnified textures on 3D objects by using filtering. &lt;br&gt;Will have a greater effect on higher resolution scales.</source>
-        <translation type="unfinished">Utjämnar blockigheten i förstorade texturer på 3D-objekt med hjälp av filtrering. &lt;br&gt;Effekten blir större på skalor med högre upplösning.</translation>
+        <translation>Utjämnar blockigheten i förstorade texturer på 3D-objekt med hjälp av filtrering. &lt;br&gt;Effekten blir större på skalor med högre upplösning.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="368"/>
         <source>Sprite Texture Filtering</source>
-        <translation type="unfinished">Sprite texturfiltrering</translation>
+        <translation>Filtrering av sprite-textur</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="370"/>
         <source>Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to sprites and other 2D elements, such as the HUD.</source>
-        <translation type="unfinished">Utjämnar blockigheten i förstorade texturer på 2D-objekt med hjälp av filtrering. Detta filter gäller endast sprites och andra 2D-element, t.ex. HUD.</translation>
+        <translation>Utjämnar blockigheten i förstorade texturer på 2D-objekt med hjälp av filtrering. Detta filter gäller endast sprites och andra 2D-element, t.ex. HUD.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="375"/>
         <source>Changes the aspect ratio used to display the console&apos;s output to the screen. The default is Auto (Game Native) which automatically adjusts the aspect ratio to match how a game would be shown on a typical TV of the era.</source>
-        <translation type="unfinished">Ändrar det bildförhållande som används för att visa konsolens utdata på skärmen. Standardinställningen är Auto (Game Native) som automatiskt justerar bildförhållandet så att det motsvarar hur ett spel skulle visas på en typisk TV för den tiden.</translation>
+        <translation>Ändrar det bildförhållande som används för att visa konsolens utdata på skärmen. Standardinställningen är Auto (spelets inbyggda) som automatiskt justerar bildförhållandet så att det motsvarar hur ett spel skulle visas på en typisk TV för den tiden.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="380"/>
         <source>Determines which algorithm is used to convert interlaced frames to progressive for display on your system. Using progressive rendering provides the best quality output, but some games require interlaced rendering.</source>
-        <translation type="unfinished">Bestämmer vilken algoritm som används för att konvertera sammanflätade bildrutor till progressiva för visning på ditt system. Progressiv rendering ger den bästa kvaliteten, men vissa spel kräver interlaced rendering.</translation>
+        <translation>Bestämmer vilken algoritm som används för att konvertera sammanflätade (interlaced) bildrutor till progressiva för visning på ditt system. Progressiv rendering ger den bästa kvaliteten, men vissa spel kräver interlaced rendering.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="383"/>
@@ -11773,7 +11822,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="385"/>
         <source>Determines how much of the area typically not visible on a consumer TV set to crop/hide. Some games display content in the overscan area, or use it for screen effects. May not display correctly with the &quot;All Borders&quot; setting. &quot;Only Overscan&quot; offers a good compromise between stability and hiding black borders.</source>
-        <translation type="unfinished">Bestämmer hur stor del av det område som normalt inte syns på en konsument-TV-apparat som ska beskäras/döljas. Vissa spel visar innehåll i overscan-området eller använder det för skärmeffekter. Visas kanske inte korrekt med inställningen &quot;All Borders&quot;. &quot;Only Overscan&quot; är en bra kompromiss mellan stabilitet och att dölja svarta kanter.</translation>
+        <translation>Bestämmer hur stor del av det område som normalt inte syns på en konsument-TV-apparat som ska beskäras/döljas. Vissa spel visar innehåll i overscan-området eller använder det för skärmeffekter. Visas kanske inte korrekt med inställningen &quot;Alla kanter&quot;. &quot;Endast overscan&quot; är en bra kompromiss mellan stabilitet och att dölja svarta kanter.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="389"/>
@@ -11783,32 +11832,32 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="390"/>
         <source>Determines how the emulated console&apos;s output is upscaled or downscaled to your monitor&apos;s resolution.</source>
-        <translation type="unfinished">Bestämmer hur den emulerade konsolens utdata ska upp- eller nedskalas till din bildskärms upplösning.</translation>
+        <translation>Bestämmer hur den emulerade konsolens utdata ska upp- eller nedskalas till din bildskärms upplösning.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="392"/>
         <source>Force Video Timing</source>
-        <translation type="unfinished">Forcera videotidtagning</translation>
+        <translation>Tvinga videotiming</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="393"/>
         <source>Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not affect the speed.</source>
-        <translation type="unfinished">Använder den valda ramtimingen oavsett vilken region som är aktiv. Denna funktion kan användas för att tvinga PAL-spel att köras med 60 Hz och NTSC-spel att köras med 50 Hz. För de flesta spel som har en hastighet som är knuten till bildfrekvensen kommer detta att resultera i att spelet körs ungefär 17% faster eller långsammare. För spel med variabel bildfrekvens kanske det inte påverkar hastigheten.</translation>
+        <translation>Använder den valda bildtimingen oavsett vilken region som är aktiv. Denna funktion kan användas för att tvinga PAL-spel att köras med 60 Hz och NTSC-spel att köras med 50 Hz. För de flesta spel som har en hastighet som är knuten till bildfrekvensen kommer detta att resultera i att spelet körs ungefär 17% snabbare eller långsammare. För spel med variabel bildfrekvens kanske det inte påverkar hastigheten.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="399"/>
         <source>Forces the precision of colours output to the console&apos;s framebuffer to use the full 8 bits of precision per channel. This produces nicer looking gradients at the cost of making some colours look slightly different. Disabling the option also enables dithering, which makes the transition between colours less sharp by applying a pattern around those pixels. Most games are compatible with this option, but there is a number which aren&apos;t and will have broken effects with it enabled.</source>
-        <translation type="unfinished">Tvingar precisionen i de färger som matas ut till konsolens framebuffer att använda hela 8 bitars precision per kanal. Detta ger snyggare gradienter till priset av att vissa färger ser lite annorlunda ut. Om du avaktiverar alternativet aktiveras också dithering, som gör övergången mellan färger mindre skarp genom att lägga ett mönster runt dessa pixlar. De flesta spel är kompatibla med det här alternativet, men det finns ett antal som inte är det och som kommer att ha trasiga effekter med det aktiverat.</translation>
+        <translation>Tvingar precisionen i de färger som matas ut till konsolens framebuffer att använda hela 8 bitars precision per kanal. Detta ger snyggare gradienter till priset av att vissa färger ser lite annorlunda ut. Om du inaktiverar alternativet aktiveras också dithering, som gör övergången mellan färger mindre skarp genom att lägga ett mönster runt dessa bildpunkter. De flesta spel är kompatibla med det här alternativet, men det finns ett antal som inte är det och som kommer att ha trasiga effekter med det aktiverat.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="406"/>
         <source>Scales vertex positions in screen-space to a widescreen aspect ratio, essentially increasing the field of view from 4:3 to the chosen display aspect ratio in 3D games. &lt;b&gt;&lt;u&gt;May not be compatible with all games.&lt;/u&gt;&lt;/b&gt;</source>
-        <translation type="unfinished">Skalar vertexpositioner i skärmrymden till ett widescreen-bildförhållande, vilket i princip ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel. &lt;b&gt;&lt;u&gt;Kanske inte kompatibel med alla spel.&lt;/u&gt;&lt;/b&gt;</translation>
+        <translation>Skalar vertexpositioner i skärmrymden till ett bredbildsförhållande, vilket i princip ökar synfältet från 4:3 till det valda bildförhållandet i 3D-spel. &lt;b&gt;&lt;u&gt;Kanske inte kompatibel med alla spel.&lt;/u&gt;&lt;/b&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="410"/>
         <source>Reduces &quot;wobbly&quot; polygons and &quot;warping&quot; textures that are common in PS1 games. &lt;strong&gt;May not be compatible with all games.&lt;/strong&gt;</source>
-        <translation type="unfinished">Reducerar &quot;vingliga&quot; polygoner och &quot;skeva&quot; texturer som är vanliga i PS1-spel. &lt;strong&gt;Kanske inte kompatibel med alla spel.&lt;/strong&gt;</translation>
+        <translation>Reducerar &quot;vingliga&quot; polygoner och &quot;skeva&quot; texturer som är vanliga i PS1-spel. &lt;strong&gt;Kanske inte kompatibel med alla spel.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="413"/>
@@ -11818,7 +11867,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="414"/>
         <source>Attempts to reduce polygon Z-fighting by testing pixels against the depth values from PGXP. Low compatibility, but can work well in some games. Other games may need a threshold adjustment.</source>
-        <translation type="unfinished">Försöker minska polygonernas Z-fighting genom att testa pixlar mot djupvärdena från PGXP. Låg kompatibilitet, men kan fungera bra i vissa spel. Andra spel kan behöva en tröskeljustering.</translation>
+        <translation>Försöker minska polygonernas Z-fighting genom att testa bildpunkter mot djupvärdena från PGXP. Låg kompatibilitet, men kan fungera bra i vissa spel. Andra spel kan behöva en tröskeljustering.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="418"/>
@@ -11828,7 +11877,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="420"/>
         <source>Smooths out blockyness between colour transitions in 24-bit content, usually FMVs.</source>
-        <translation type="unfinished">Utjämnar blockighet mellan färgövergångar i 24-bitars innehåll, vanligtvis FMV.</translation>
+        <translation>Utjämnar blockighet mellan färgövergångar i 24-bitars innehåll, vanligtvis FMV.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="426"/>
@@ -11843,7 +11892,7 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="427"/>
         <source>Controls whether exclusive fullscreen can be utilized by Vulkan drivers.</source>
-        <translation type="unfinished">Kontrollerar om exklusiv helskärm kan användas av Vulkan-drivrutiner.</translation>
+        <translation>Kontrollerar om exklusiv helskärm kan användas av Vulkan-drivrutiner.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="429"/>
@@ -11858,373 +11907,383 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <location filename="../graphicssettingswidget.cpp" line="437"/>
         <source>Automatically resizes the window to match the internal resolution. &lt;strong&gt;For high internal resolutions, this will create very large windows.&lt;/strong&gt;</source>
-        <translation type="unfinished">Ändrar automatiskt storlek på fönstret så att det matchar den interna upplösningen. &lt;strong&gt;För höga interna upplösningar kommer detta att skapa mycket stora fönster.&lt;/strong&gt;</translation>
+        <translation>Ändrar automatiskt storlek på fönstret så att det matchar den interna upplösningen. &lt;strong&gt;För höga interna upplösningar kommer detta att skapa mycket stora fönster.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="446"/>
+        <location filename="../graphicssettingswidget.cpp" line="447"/>
         <source>Line Detection</source>
         <translation>Linjedetektion</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="448"/>
+        <location filename="../graphicssettingswidget.cpp" line="449"/>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
-        <translation type="unfinished">Försök att upptäcka en pixel höga/breda linjer som förlitar sig på icke uppskalad rastrering och fyller i luckor som uppstått genom uppskalning.</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="451"/>
-        <source>Multi-Sampling</source>
-        <translation type="unfinished">Multi-sampling</translation>
+        <translation>Försök att upptäcka en bildpunkt höga/breda linjer som förlitar sig på icke uppskalad rastrering och fyller i luckor som uppstått genom uppskalning.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="452"/>
+        <source>Multi-Sampling</source>
+        <translation>Multi-sampling</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="453"/>
         <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
         <translation>Använder multi-samplad anti-aliasing vid rendering av 3D-polygoner. Kan förbättra grafiken med ett lägre prestandakrav jämfört med uppskalning, &lt;strong&gt;men ger ofta upphov till renderingsfel.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="458"/>
+        <location filename="../graphicssettingswidget.cpp" line="459"/>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
-        <translation type="unfinished">Använder en andra tråd för att rita grafik. Ger en betydande hastighetsförbättring, särskilt med mjukvarugeneratorn, och är säker att använda.</translation>
+        <translation>Använder en andra tråd för att rita grafik. Ger en betydande hastighetsförbättring, särskilt med programvarurenderaren och är säker att använda.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="462"/>
+        <location filename="../graphicssettingswidget.cpp" line="463"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable.</source>
-        <translation type="unfinished">Skalar dither-mönstret till upplösningsskalan för den emulerade GPU:n. Detta gör dither-mönstret mycket mindre uppenbart vid högre upplösningar. Vanligtvis säkert att aktivera.</translation>
+        <translation>Skalar dither-mönstret till upplösningsskalan för den emulerade GPU:n. Detta gör dither-mönstret mycket mindre uppenbart vid högre upplösningar. Vanligtvis säkert att aktivera.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="466"/>
+        <location filename="../graphicssettingswidget.cpp" line="467"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
-        <translation type="unfinished">Kör programvarurenderingen parallellt för VRAM-återläsningar. På vissa system kan detta resultera i bättre prestanda när du använder grafiska förbättringar med maskinvarurenderingen.</translation>
+        <translation>Kör programvarurenderingen parallellt för VRAM-återläsningar. På vissa system kan detta resultera i bättre prestanda när du använder grafiska förbättringar med maskinvarurenderingen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="470"/>
+        <location filename="../graphicssettingswidget.cpp" line="471"/>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
-        <translation type="unfinished">Avrundar texturkoordinater istället för golv vid uppskalning. Kan fixa feljusterade texturer i vissa spel, men förstöra andra, och är inkompatibel med texturfiltrering.</translation>
+        <translation>Avrundar texturkoordinater istället för flooring vid uppskalning. Kan fixa feljusterade texturer i vissa spel, men förstöra andra, och är inkompatibel med texturfiltrering.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="474"/>
+        <location filename="../graphicssettingswidget.cpp" line="475"/>
         <source>Forces blending to be done in the shader at 16-bit precision, when not using true color. Very few games actually require this, and there is a &lt;strong&gt;non-trivial&lt;/strong&gt; performance cost.</source>
-        <translation type="unfinished">Tvingar blandningen att göras i shadern med 16-bitars precision när man inte använder äkta färg. Det är väldigt få spel som kräver detta och det innebär en &lt;strong&gt;icke-trivial&lt;/strong&gt; prestandakostnad.</translation>
+        <translation>Tvingar blandningen att göras i shadern med 16-bitars precision när man inte använder true color. Det är väldigt få spel som kräver detta och det innebär en &lt;strong&gt;icke-trivial&lt;/strong&gt; prestandakostnad.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="480"/>
+        <location filename="../graphicssettingswidget.cpp" line="481"/>
         <source>Geometry Tolerance</source>
         <translation>Geometritolerans</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="480"/>
+        <location filename="../graphicssettingswidget.cpp" line="481"/>
         <source>-1.00px (Disabled)</source>
         <translation>-1.00px (Inaktiverad)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="481"/>
+        <location filename="../graphicssettingswidget.cpp" line="482"/>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
-        <translation type="unfinished">Kasserar exakt geometri när det upptäcks att den är förskjuten över det angivna tröskelvärdet. Detta kan hjälpa till med spel där hörnpunkter flyttas avsevärt av PGXP, men det är fortfarande ett hack/workaround.</translation>
+        <translation>Kasserar exakt geometri när det upptäcks att den är förskjuten över det angivna tröskelvärdet. Detta kan hjälpa till med spel där hörnpunkter flyttas avsevärt av PGXP, men det är fortfarande ett hack/temporärlösning.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="483"/>
+        <location filename="../graphicssettingswidget.cpp" line="484"/>
         <source>Depth Clear Threshold</source>
-        <translation type="unfinished">Djup Rensa tröskel</translation>
+        <translation>Tröskelvärde för djuptömning</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="485"/>
+        <location filename="../graphicssettingswidget.cpp" line="486"/>
         <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
-        <translation type="unfinished">Bestämmer den ökning av djupet som leder till att djupbufferten rensas. Kan hjälpa till med djupproblem i vissa spel, men är fortfarande ett hack/workaround.</translation>
+        <translation>Bestämmer den ökning av djupet som leder till att djupbufferten rensas. Kan hjälpa till med djupproblem i vissa spel, men är fortfarande ett hack/temporärlösning.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="488"/>
+        <location filename="../graphicssettingswidget.cpp" line="489"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
-        <translation type="unfinished">Använder perspektivkorrigerad interpolering för texturkoordinater, vilket rätar ut skeva texturer. Kräver att geometrikorrigering är aktiverad.</translation>
+        <translation>Använder perspektivkorrigerad interpolering för texturkoordinater, vilket rätar ut skeva texturer. Kräver att geometrikorrigering är aktiverad.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="492"/>
+        <location filename="../graphicssettingswidget.cpp" line="493"/>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
-        <translation type="unfinished">Använder perspektivkorrigerad interpolering för vertexfärger, vilket kan förbättra grafiken i vissa spel, men orsaka renderingsfel i andra. Kräver att geometrikorrigering är aktiverad.</translation>
+        <translation>Använder perspektivkorrigerad interpolering för vertexfärger, vilket kan förbättra grafiken i vissa spel, men orsaka renderingsfel i andra. Kräver att geometrikorrigering är aktiverad.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="495"/>
+        <location filename="../graphicssettingswidget.cpp" line="496"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
-        <translation type="unfinished">Ökar precisionen i polygonutrensningen, vilket minskar antalet hål i geometrin. Kräver att geometrikorrigering är aktiverad.</translation>
+        <translation>Ökar precisionen i polygonutrensningen, vilket minskar antalet hål i geometrin. Kräver att geometrikorrigering är aktiverad.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="499"/>
+        <location filename="../graphicssettingswidget.cpp" line="500"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
-        <translation type="unfinished">Lägger till ytterligare precision till PGXP-data efter projicering. Kan förbättra grafiken i vissa spel.</translation>
+        <translation>Lägger till ytterligare precision till PGXP-data efterprojicering. Kan förbättra grafiken i vissa spel.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="501"/>
+        <location filename="../graphicssettingswidget.cpp" line="502"/>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
-        <translation type="unfinished">Använder PGXP för alla instruktioner, inte bara minnesoperationer. Krävs för att PGXP ska korrigera wobble i vissa spel, men har en hög prestandakostnad.</translation>
+        <translation>Använder PGXP för alla instruktioner, inte bara minnesoperationer. Krävs för att PGXP ska korrigera wobble i vissa spel, men har en hög prestandakostnad.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="505"/>
+        <location filename="../graphicssettingswidget.cpp" line="506"/>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
-        <translation type="unfinished">Använder vertexpositioner i skärmrymden för att få exakta positioner, istället för att spåra minnesåtkomst. Kan ge PGXP-kompatibilitet för vissa spel, men &lt;strong&gt;ger i allmänhet inga fördelar.&lt;/strong&gt;</translation>
+        <translation>Använder vertexpositioner i skärmrymden för att få exakta positioner, istället för att spåra minnesåtkomst. Kan ge PGXP-kompatibilitet för vissa spel, men &lt;strong&gt;ger i allmänhet inga fördelar.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="508"/>
+        <location filename="../graphicssettingswidget.cpp" line="509"/>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
-        <translation type="unfinished">Använder koordinater med inbyggd upplösning för 2D-polygoner, istället för exakta koordinater. Kan åtgärda felriktat användargränssnitt i vissa spel, men bör annars lämnas inaktiverat. Speldatabasen kommer att aktivera detta automatiskt när det behövs.</translation>
+        <translation>Använder koordinater med inbyggd upplösning för 2D-polygoner, istället för exakta koordinater. Kan åtgärda felriktat användargränssnitt i vissa spel, men bör annars lämnas inaktiverat. Speldatabasen kommer att aktivera detta automatiskt när det behövs.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="512"/>
+        <location filename="../graphicssettingswidget.cpp" line="513"/>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting..</source>
         <translation>Aktiverar djuptestning för halvgenomskinliga polygoner. Vanligtvis innehåller dessa skuggor och tenderar att klippa genom marken när djuptestning är aktiverat. Djuptest för halvgenomskinliga polygoner är inaktiverade oavsett denna inställning..</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="520"/>
+        <location filename="../graphicssettingswidget.cpp" line="521"/>
         <source>Changes the size at which on-screen elements, including status and messages are displayed.</source>
         <translation>Ändrar storleken för vilken OSD-element, inklusive status och meddelanden, visas med.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="533"/>
+        <location filename="../graphicssettingswidget.cpp" line="534"/>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>Visar värdens CPU-användning för varje systemtråd i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="535"/>
+        <location filename="../graphicssettingswidget.cpp" line="536"/>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
         <translation>Visar värdens GPU-användning i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="537"/>
+        <location filename="../graphicssettingswidget.cpp" line="538"/>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
         <translation>Visar information om emulerad GPU i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="540"/>
+        <location filename="../graphicssettingswidget.cpp" line="541"/>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
         <translation>Visar information om inmatnings- och ljudlatens i övre högra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="543"/>
+        <location filename="../graphicssettingswidget.cpp" line="544"/>
         <source>Shows the history of frame rendering times as a graph in the top-right corner of the display.</source>
         <translation>Visar historiken för bildrenderingstider som en graf i det övre högra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="548"/>
+        <location filename="../graphicssettingswidget.cpp" line="549"/>
         <source>Shows a summary of current settings in the bottom-right corner of the display.</source>
         <translation>Visar ett sammandrag av aktuella inställningar i nedre högra hörnet av skärmen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="550"/>
+        <location filename="../graphicssettingswidget.cpp" line="551"/>
         <source>Shows indicators on screen when the system is not running in its &quot;normal&quot; state. For example, fast forwarding, or being paused.</source>
-        <translation type="unfinished">Visar indikatorer på skärmen när systemet inte körs i sitt &quot;normala&quot; tillstånd. Till exempel snabbspolning framåt eller paus.</translation>
+        <translation>Visar indikatorer på skärmen när systemet inte körs i sitt &quot;normala&quot; tillstånd. Till exempel snabbspolning framåt eller vid paus.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="566"/>
+        <location filename="../graphicssettingswidget.cpp" line="567"/>
         <source>Backend</source>
         <translation>Bakände</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="568"/>
+        <location filename="../graphicssettingswidget.cpp" line="569"/>
         <source>Selects the framework that is used to encode video/audio.</source>
         <translation>Väljer det ramverk som används för att koda video/ljud.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="569"/>
+        <location filename="../graphicssettingswidget.cpp" line="570"/>
         <source>Container</source>
         <translation>Container</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="569"/>
+        <location filename="../graphicssettingswidget.cpp" line="570"/>
         <source>MP4</source>
         <translation>MP4</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="570"/>
+        <location filename="../graphicssettingswidget.cpp" line="571"/>
         <source>Determines the file format used to contain the captured audio/video</source>
         <translation>Bestämmer det filformat som används för att innehålla det inspelade ljudet/videon</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="579"/>
-        <source>When checked, the video capture resolution will follows the internal resolution of the running game. &lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can cause system slowdown.&lt;/b&gt;</source>
-        <translation type="unfinished">När detta är markerat kommer videoinspelningens upplösning att följa den interna upplösningen i det spel som körs. &lt;b&gt;Var försiktig när du använder den här inställningen, särskilt när du uppskalar, eftersom högre interna upplösningar (över 4x) kan göra att systemet saktar ner.&lt;/b&gt;</translation>
+        <location filename="../graphicssettingswidget.cpp" line="573"/>
+        <source>Captures video to the chosen file when media capture is started. If unchecked, the file will only contain audio.</source>
+        <translation>Fångar video till vald fil när mediafångst startas. Om inte markerad kommer filen endast innehålla ljud.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="585"/>
-        <location filename="../graphicssettingswidget.cpp" line="596"/>
+        <location filename="../graphicssettingswidget.cpp" line="583"/>
+        <source>When checked, the video capture resolution will follows the internal resolution of the running game. &lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can cause system slowdown.&lt;/b&gt;</source>
+        <translation>När detta är markerat kommer videoinspelningens upplösning att följa den interna upplösningen i det spel som körs. &lt;b&gt;Var försiktig när du använder den här inställningen, särskilt när du uppskalar, eftersom högre interna upplösningar (över 4x) kan göra att systemet saktar ner.&lt;/b&gt;</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="589"/>
+        <location filename="../graphicssettingswidget.cpp" line="603"/>
         <source>Empty</source>
         <translation>Tom</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="626"/>
-        <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
-        <translation type="unfinished">Möjliggör de äldre, mindre exakta MDEC-avkodningsrutinerna. Kan krävas för att gamla ersättningsbakgrunder ska matcha/laddas.</translation>
+        <location filename="../graphicssettingswidget.cpp" line="593"/>
+        <source>Captures audio to the chosen file when media capture is started. If unchecked, the file will only contain video.</source>
+        <translation>Fångar ljudet till vald fil när mediafångst startas. Om inte markerad kommer filen endast innehålla video.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="609"/>
+        <location filename="../graphicssettingswidget.cpp" line="633"/>
+        <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
+        <translation>Aktiverar de äldre, mindre exakta MDEC-avkodningsrutinerna. Kan krävas för att gamla ersättningsbakgrunder ska matcha/läsas in.</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="616"/>
         <source>Enables loading of replacement textures. Not compatible with all games.</source>
         <translation>Aktiverar inläsning av ersättningstexturer. Inte kompatibelt med alla spel.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="606"/>
+        <location filename="../graphicssettingswidget.cpp" line="613"/>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
         <translation>Läser in alla ersättningstexturer till RAM-minnet, vilket gör att det går snabbare att köra.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="617"/>
+        <location filename="../graphicssettingswidget.cpp" line="624"/>
         <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
-        <translation type="unfinished">Möjliggör dumpning av texturer till bildfiler, som kan ersättas. Inte kompatibel med alla spel.</translation>
+        <translation>Aktiverar dumpning av texturer till bildfiler, som kan ersättas. Inte kompatibel med alla spel.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="619"/>
+        <location filename="../graphicssettingswidget.cpp" line="626"/>
         <source>Dumps textures that have replacements already loaded.</source>
         <translation>Dumpar texturer som har ersättningar redan inlästa.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="622"/>
+        <location filename="../graphicssettingswidget.cpp" line="629"/>
         <source>Enables the replacement of background textures in supported games.</source>
         <translation>Aktiverar ersättning av bakgrundstexturer i spel som stöds.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="624"/>
+        <location filename="../graphicssettingswidget.cpp" line="631"/>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
         <translation>Skriver bakgrunder som kan ersättas till dumpkatalogen.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="454"/>
+        <location filename="../graphicssettingswidget.cpp" line="455"/>
         <source>Wireframe Mode</source>
         <translation>Ramverksläge</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="455"/>
+        <location filename="../graphicssettingswidget.cpp" line="456"/>
         <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
         <translation>Ritar en wireframe-kontur av de trianglar som renderas av konsolens GPU, antingen som en ersättning eller ett överlägg.</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="633"/>
+        <location filename="../graphicssettingswidget.cpp" line="640"/>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Aktivera felsökning när detta stöds av värdens API för rendering. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="636"/>
+        <location filename="../graphicssettingswidget.cpp" line="643"/>
         <source>Forces shaders to be compiled for every run of the program. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished">Tvingar shaders att kompileras för varje körning av programmet. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="638"/>
-        <source>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished">Förhindrar att blandning med dubbla källor används. Användbar för att testa trasiga grafikdrivrutiner. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
-    </message>
-    <message>
-        <location filename="../graphicssettingswidget.cpp" line="641"/>
-        <source>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished">Förhindrar att tilläggen för hämtning av rambufferten används. Användbart för att testa trasiga grafikdrivrutiner. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
+        <translation>Tvingar shaders att kompileras för varje körning av programmet. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="645"/>
+        <source>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
+        <translation>Förhindrar att blandning med dubbla källor används. Användbar för att testa trasiga grafikdrivrutiner. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="648"/>
+        <source>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
+        <translation>Förhindrar att tilläggen för hämtning av framebufferten används. Användbart för att testa trasiga grafikdrivrutiner. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="652"/>
         <source>Forces VRAM updates through texture updates, instead of texture buffers and draws. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Tvingar VRAM-uppdateringar genom texturuppdateringar, istället för texturbuffertar och draws. Användbart för att testa trasiga grafikdrivrutiner. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="647"/>
+        <location filename="../graphicssettingswidget.cpp" line="654"/>
         <source>Disable Texture Copies To Self</source>
         <translation>Inaktivera texturkopior till själv</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="648"/>
+        <location filename="../graphicssettingswidget.cpp" line="655"/>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Inaktiverar användning av självkopieuppdateringar för VRAM-texturen. Användbar för tester av trasiga grafikdrivrutiner. &lt;strong&gt;Endast för utvecklare.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="651"/>
+        <location filename="../graphicssettingswidget.cpp" line="658"/>
         <source>Disables the use of host memory importing. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Inaktiverar användning av värdminnesimport. Användbar för tester av trasiga grafikdrivrutiner. &lt;strong&gt;Endast för utvecklare.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="654"/>
+        <location filename="../graphicssettingswidget.cpp" line="661"/>
         <source>Disables the use of rasterizer order views. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Inaktiverar användning av rasterizer order views. Användbar för tester av trasiga grafikdrivrutiner. &lt;strong&gt;Endast för utvecklare.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="657"/>
+        <location filename="../graphicssettingswidget.cpp" line="664"/>
         <source>Disables the use of compute shaders. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Inaktiverar användningen av compute shaders. Användbart för att testa trasiga grafikdrivrutiner. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="660"/>
+        <location filename="../graphicssettingswidget.cpp" line="667"/>
         <source>Disables the use of compressed textures. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>Inaktiverar användningen av komprimerade texturer. Användbar för att testa trasiga grafikdrivrutiner. &lt;strong&gt;Endast för användning av utvecklare.&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="935"/>
+        <location filename="../graphicssettingswidget.cpp" line="942"/>
         <source>Automatic (Based on Window Size)</source>
         <translation>Automatisk (baserat på fönsterstorlek)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="936"/>
+        <location filename="../graphicssettingswidget.cpp" line="943"/>
         <source>1x Native (Default)</source>
         <translation>1x inbyggd (Standard)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="937"/>
+        <location filename="../graphicssettingswidget.cpp" line="944"/>
         <source>3x Native (for 720p)</source>
         <translation>3x inbyggd (för 720p)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="938"/>
+        <location filename="../graphicssettingswidget.cpp" line="945"/>
         <source>5x Native (for 1080p)</source>
         <translation>5x inbyggd (för 1080p)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="939"/>
+        <location filename="../graphicssettingswidget.cpp" line="946"/>
         <source>6x Native (for 1440p)</source>
         <translation>6x inbyggd (för 1440p)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="940"/>
+        <location filename="../graphicssettingswidget.cpp" line="947"/>
         <source>9x Native (for 4K)</source>
         <translation>9x inbyggd (för 4K)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="964"/>
+        <location filename="../graphicssettingswidget.cpp" line="971"/>
         <source>Use Global Setting</source>
         <translation>Använd global inställning</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="969"/>
+        <location filename="../graphicssettingswidget.cpp" line="976"/>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="971"/>
+        <location filename="../graphicssettingswidget.cpp" line="978"/>
         <source>%1x SSAA</source>
         <translation>%1x SSAA</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1116"/>
-        <location filename="../graphicssettingswidget.cpp" line="1148"/>
-        <location filename="../graphicssettingswidget.cpp" line="1162"/>
+        <location filename="../graphicssettingswidget.cpp" line="1123"/>
+        <location filename="../graphicssettingswidget.cpp" line="1155"/>
+        <location filename="../graphicssettingswidget.cpp" line="1169"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1321"/>
+        <location filename="../graphicssettingswidget.cpp" line="1328"/>
         <source>Texture Replacement Configuration</source>
         <translation>Konfiguration för texturersättning</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1324"/>
+        <location filename="../graphicssettingswidget.cpp" line="1331"/>
         <source>Texture Replacement Configuration (config.yaml)</source>
         <translation>Konfiguration för texturersättning (config.yaml)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1326"/>
+        <location filename="../graphicssettingswidget.cpp" line="1333"/>
         <source>Save</source>
         <translation>Spara</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1329"/>
+        <location filename="../graphicssettingswidget.cpp" line="1336"/>
         <source>Save Configuration</source>
         <translation>Spara konfiguration</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1330"/>
+        <location filename="../graphicssettingswidget.cpp" line="1337"/>
         <source>Configuration Files (config.yaml)</source>
         <translation>Konfigurationsfiler (config.yaml)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1338"/>
+        <location filename="../graphicssettingswidget.cpp" line="1345"/>
         <source>Write Failed</source>
         <translation>Skrivning misslyckades</translation>
     </message>
@@ -13080,13 +13139,17 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="120"/>
-        <source>Reset Volume</source>
-        <translation>Nollställ volym</translation>
+        <location filename="../inputbindingdialog.ui" line="130"/>
+        <source>Reset</source>
+        <translation>Nollställ</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.ui" line="130"/>
+        <source>Reset Volume</source>
+        <translation type="vanished">Nollställ volym</translation>
+    </message>
+    <message>
         <source>Reset Fast Forward Volume</source>
-        <translation>Nollställ snabbspolningsvolym</translation>
+        <translation type="vanished">Nollställ snabbspolningsvolym</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="152"/>
@@ -13114,14 +13177,14 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <translation>Stäng</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="158"/>
-        <location filename="../inputbindingdialog.cpp" line="174"/>
+        <location filename="../inputbindingdialog.cpp" line="167"/>
+        <location filename="../inputbindingdialog.cpp" line="183"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>Tryckknapp/Axlar... [%1]</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="336"/>
-        <location filename="../inputbindingdialog.cpp" line="361"/>
+        <location filename="../inputbindingdialog.cpp" line="345"/>
+        <location filename="../inputbindingdialog.cpp" line="370"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -13670,7 +13733,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <location filename="../../core/justifier.cpp" line="372"/>
         <source>Offset applied to lightgun vertical position that the Justifier will first trigger on.</source>
-        <translation>Offset som tillämpas på ljuspistolens vertikala position som Justifieraren först kommer att avfyra på.</translation>
+        <translation>Offset som tillämpas på ljuspistolens vertikala position som din Justifier först kommer att avfyra på.</translation>
     </message>
     <message>
         <location filename="../../core/justifier.cpp" line="375"/>
@@ -13680,27 +13743,27 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     <message>
         <location filename="../../core/justifier.cpp" line="376"/>
         <source>Offset applied to lightgun vertical position that the Justifier will last trigger on.</source>
-        <translation>Offset som tillämpas på ljuspistolens vertikala position som Justifieraren senast avfyrar på.</translation>
+        <translation>Offset som tillämpas på ljuspistolens vertikala position som din Justifier senast avfyrar på.</translation>
     </message>
     <message>
         <location filename="../../core/justifier.cpp" line="378"/>
         <source>Tick Offset</source>
-        <translation type="unfinished">Tick Offset</translation>
+        <translation>Tick-offset</translation>
     </message>
     <message>
         <location filename="../../core/justifier.cpp" line="379"/>
         <source>Offset applied to lightgun horizontal position that the Justifier will trigger on.</source>
-        <translation>Offset som tillämpas på ljuspistolens horisontella position som Justifieraren kommer att avfyras på.</translation>
+        <translation>Offset som tillämpas på ljuspistolens horisontella position som din Justifier kommer att avfyras på.</translation>
     </message>
     <message>
         <location filename="../../core/justifier.cpp" line="381"/>
         <source>Off-Screen Out-Of-Bounds Frames</source>
-        <translation type="unfinished">Utanför skärmen Utanför gränserna</translation>
+        <translation>Bildruto utanför skärmen utanför gränserna</translation>
     </message>
     <message>
         <location filename="../../core/justifier.cpp" line="382"/>
         <source>Number of frames that the Justifier is pointed out-of-bounds for an off-screen shot.</source>
-        <translation>Antal bildrutor som Justifieraren siktas på utanför spelplanen för ett skott utanför skärmen.</translation>
+        <translation>Antal bildrutor som din Justifier siktas på utanför spelplanen för ett skott utanför skärmen.</translation>
     </message>
     <message>
         <location filename="../../core/justifier.cpp" line="384"/>
@@ -16231,91 +16294,91 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
         <translation>Systemomstart.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2861"/>
+        <location filename="../../core/system.cpp" line="2866"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>Läser in tillstånd från &apos;{}&apos;...</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2912"/>
+        <location filename="../../core/system.cpp" line="2917"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>Misslyckades med att öppna cd-avbild från sparat tillstånd &apos;{}&apos;: {}.
 Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3659"/>
+        <location filename="../../core/system.cpp" line="3664"/>
         <source>Rewinding is not enabled.</source>
         <translation>Tillbakaspolning är inte aktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3940"/>
+        <location filename="../../core/system.cpp" line="3945"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>Växlade minneskortsportar. Båda portarna har ett minneskort.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3946"/>
+        <location filename="../../core/system.cpp" line="3951"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>Växlade minneskortsportar. Port 2 har ett minneskort. Port 1 är tomt.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3951"/>
+        <location filename="../../core/system.cpp" line="3956"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>Växlade minneskortsportar. Port 1 har ett minneskort. Port 2 är tomt.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3955"/>
+        <location filename="../../core/system.cpp" line="3960"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>Växlade minneskortsportar. Ingen av portarna har ett minneskort.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4052"/>
+        <location filename="../../core/system.cpp" line="4057"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
         <translation>Misslyckades med att öpnna skivavbilden &apos;{}&apos;: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4063"/>
+        <location filename="../../core/system.cpp" line="4068"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
         <translation>Matade in skivan &apos;{}&apos; ({}).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4436"/>
+        <location filename="../../core/system.cpp" line="4442"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>Växlar till {}{} GPU-renderare.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4362"/>
+        <location filename="../../core/system.cpp" line="4368"/>
         <source>Switching to {} audio backend.</source>
         <translation>Växlar till ljudbakänden {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4383"/>
+        <location filename="../../core/system.cpp" line="4389"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>Växlar till CPU-körningsläget {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4398"/>
+        <location filename="../../core/system.cpp" line="4404"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>Alternativ för omkompilerare ändrades. Spolar alla block.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5202"/>
+        <location filename="../../core/system.cpp" line="5201"/>
         <source>Failed to save undo load state:
 {}</source>
         <translation>Misslyckades med att spara ångrat inläst tillstånd:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5733"/>
+        <location filename="../../core/system.cpp" line="5732"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>Hack för bredbild är nu aktiverad. Bildförhållande är inställt till {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5741"/>
+        <location filename="../../core/system.cpp" line="5740"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>Hack för bredbild är nu inaktiverad. Bildförhållande är inställt till {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5757"/>
+        <location filename="../../core/system.cpp" line="5756"/>
         <source>Switching to {} renderer...</source>
         <translation>Växlar till {}-renderare...</translation>
     </message>
@@ -16414,7 +16477,7 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_thread.cpp" line="1254"/>
+        <location filename="../../core/gpu_thread.cpp" line="1255"/>
         <source>Failed to switch to exclusive fullscreen, using borderless instead.</source>
         <translation>Misslyckades med att växla till exklusiv helskärm, använder kantlöst fönster istället.</translation>
     </message>
@@ -16454,6 +16517,13 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
         <location filename="../../core/playstation_mouse.cpp" line="202"/>
         <source>Pointer</source>
         <translation>Pekare</translation>
+    </message>
+</context>
+<context>
+    <name>PluginDialog</name>
+    <message>
+        <source>1</source>
+        <translation type="obsolete">1</translation>
     </message>
 </context>
 <context>
@@ -16804,6 +16874,17 @@ Använder befintlig avbild &apos;{}&apos;, detta kan resultera i instabilitet.</
     </message>
 </context>
 <context>
+    <name>PreviewConfigurationWidget</name>
+    <message>
+        <source>Form</source>
+        <translation type="obsolete">Form</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="obsolete">...</translation>
+    </message>
+</context>
+<context>
     <name>QObject</name>
     <message>
         <location filename="../qtutils.cpp" line="156"/>
@@ -16839,6 +16920,76 @@ URLen var: %1</translation>
     </message>
 </context>
 <context>
+    <name>QtGradientEditor</name>
+    <message>
+        <source>Form</source>
+        <translation type="obsolete">Form</translation>
+    </message>
+    <message>
+        <source>1</source>
+        <translation type="obsolete">1</translation>
+    </message>
+    <message>
+        <source>2</source>
+        <translation type="obsolete">2</translation>
+    </message>
+    <message>
+        <source>3</source>
+        <translation type="obsolete">3</translation>
+    </message>
+    <message>
+        <source>4</source>
+        <translation type="obsolete">4</translation>
+    </message>
+    <message>
+        <source>5</source>
+        <translation type="obsolete">5</translation>
+    </message>
+    <message>
+        <source>Position</source>
+        <translation type="obsolete">Position</translation>
+    </message>
+    <message>
+        <source>Value</source>
+        <translation type="obsolete">Värde</translation>
+    </message>
+    <message>
+        <source>Alpha</source>
+        <translation type="obsolete">Alfa</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation type="obsolete">A</translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="obsolete">Typ</translation>
+    </message>
+    <message>
+        <source>%</source>
+        <translation type="obsolete">%</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="obsolete">...</translation>
+    </message>
+</context>
+<context>
+    <name>QtGradientView</name>
+    <message>
+        <source>New...</source>
+        <translation type="obsolete">Ny...</translation>
+    </message>
+    <message>
+        <source>Edit...</source>
+        <translation type="obsolete">Redigera...</translation>
+    </message>
+    <message>
+        <source>Remove</source>
+        <translation type="obsolete">Ta bort</translation>
+    </message>
+</context>
+<context>
     <name>QtHost</name>
     <message>
         <location filename="../qthost.cpp" line="246"/>
@@ -16853,9 +17004,9 @@ URLen var: %1</translation>
         <location filename="../qthost.cpp" line="420"/>
         <location filename="../qthost.cpp" line="433"/>
         <location filename="../qthost.cpp" line="1052"/>
-        <location filename="../qthost.cpp" line="2840"/>
-        <location filename="../qthost.cpp" line="2866"/>
-        <location filename="../qthost.cpp" line="2882"/>
+        <location filename="../qthost.cpp" line="2841"/>
+        <location filename="../qthost.cpp" line="2867"/>
+        <location filename="../qthost.cpp" line="2883"/>
         <source>Error</source>
         <translation>Fel</translation>
     </message>
@@ -16948,22 +17099,22 @@ URLen var: %1</translation>
         <translation>Handkontroller {} frånkopplad.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2841"/>
+        <location filename="../qthost.cpp" line="2842"/>
         <source>File &apos;%1&apos; does not exist.</source>
         <translation>Filen &apos;%1&apos; finns inte.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2867"/>
+        <location filename="../qthost.cpp" line="2868"/>
         <source>The specified save state does not exist.</source>
         <translation>Det angivna sparade tillståndet finns inte.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2883"/>
+        <location filename="../qthost.cpp" line="2884"/>
         <source>Cannot use no-gui mode, because no boot filename was specified.</source>
         <translation>Kan inte använda no-gui-läget därför att inget uppstartsfilnamn angavs.</translation>
     </message>
     <message>
-        <location filename="../qthost.cpp" line="2884"/>
+        <location filename="../qthost.cpp" line="2885"/>
         <source>Cannot use batch mode, because no boot filename was specified.</source>
         <translation>Kan inte använda batch-läget därför att inget uppstartsfilnamn angavs.</translation>
     </message>
@@ -17029,6 +17180,21 @@ URLen var: %1</translation>
         <location filename="../qtprogresscallback.cpp" line="17"/>
         <source>DuckStation</source>
         <translation>DuckStation</translation>
+    </message>
+</context>
+<context>
+    <name>QtResourceEditorDialog</name>
+    <message>
+        <source>R</source>
+        <translation type="obsolete">R</translation>
+    </message>
+    <message>
+        <source>I</source>
+        <translation type="obsolete">I</translation>
+    </message>
+    <message>
+        <source>A</source>
+        <translation type="obsolete">A</translation>
     </message>
 </context>
 <context>
@@ -18488,10 +18654,21 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     </message>
 </context>
 <context>
+    <name>SignalSlotDialogClass</name>
+    <message>
+        <source>Add</source>
+        <translation type="obsolete">Lägg till</translation>
+    </message>
+    <message>
+        <source>...</source>
+        <translation type="obsolete">...</translation>
+    </message>
+</context>
+<context>
     <name>System</name>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="1131"/>
-        <location filename="../../core/system.cpp" line="5139"/>
+        <location filename="../../core/system.cpp" line="5138"/>
         <source>Error</source>
         <translation>Fel</translation>
     </message>
@@ -18522,87 +18699,87 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <translation>Uppstarten avbröts.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2401"/>
+        <location filename="../../core/system.cpp" line="2406"/>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>
         <translation>Detta sparade tillstånd skapades med ett annat BIOS. Detta kan orsaka stabilitetsproblem.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2470"/>
+        <location filename="../../core/system.cpp" line="2475"/>
         <source>WARNING: CPU overclock ({}%) was different in save state ({}%).</source>
         <translation>VARNING: CPU-överklockning ({}%) var annorlunda i sparat tillstånd ({}%).</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2831"/>
-        <location filename="../../core/system.cpp" line="3150"/>
+        <location filename="../../core/system.cpp" line="2836"/>
+        <location filename="../../core/system.cpp" line="3155"/>
         <source>System is not in correct state.</source>
         <translation>Systemet är inte i ett korrekt tillstånd.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2920"/>
+        <location filename="../../core/system.cpp" line="2925"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
         <translation>Misslyckades med att öppna cd-avbilden &apos;{}&apos; som används av sparat tillstånd:
 </translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2994"/>
+        <location filename="../../core/system.cpp" line="2999"/>
         <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
         <translation>Sparat tillstånd är inte kompatibelt: minimum version är {0} men tillståndet är version {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3002"/>
+        <location filename="../../core/system.cpp" line="3007"/>
         <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
         <translation>Sparat tillstånd är inte kompatibelt: maximal version är {0} men tillståndet är version {1}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3155"/>
+        <location filename="../../core/system.cpp" line="3160"/>
         <source>Cannot save state while memory card is being saved.</source>
         <translation>Kan inte spara tillstånd under tiden minneskortet sparas.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3169"/>
+        <location filename="../../core/system.cpp" line="3174"/>
         <source>Saving state to &apos;{}&apos;.</source>
         <translation>Sparar tillstånd till &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3217"/>
+        <location filename="../../core/system.cpp" line="3222"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>Tillstånd sparat till &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3223"/>
+        <location filename="../../core/system.cpp" line="3228"/>
         <source>Failed to save state to &apos;{0}&apos;:
 {1}</source>
         <translation>Misslyckades med att spara tillstånd till &apos;{0}&apos;:
 {1}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3760"/>
+        <location filename="../../core/system.cpp" line="3765"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>Minneskort per-spel kan inte användas för plats {} eftersom det körande spelet inte har någon kod. Använder delat kort istället.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3779"/>
+        <location filename="../../core/system.cpp" line="3784"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
         <translation>Minneskort per-spel kan inte användas för plats {} eftersom det körande spelet inte har någon titel. Använder delat kort istället.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3817"/>
+        <location filename="../../core/system.cpp" line="3822"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>Använder skivspecifikt minneskort &apos;{}&apos; istället för kort per-spel.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3839"/>
+        <location filename="../../core/system.cpp" line="3844"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
         <translation>Minneskort per-spel kan inte användas för plats {} eftersom det körande spelet inte har någon sökväg. Använder delat kort istället.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4070"/>
+        <location filename="../../core/system.cpp" line="4075"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>Spelet ändrades, läser om minneskort.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4220"/>
+        <location filename="../../core/system.cpp" line="4226"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -18623,7 +18800,7 @@ Ta en titt på README för instruktioner om hur man lägger till en SBI-fil.
 Vill du fortsätta?</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4231"/>
+        <location filename="../../core/system.cpp" line="4237"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -18640,24 +18817,24 @@ Din dump är inte komplett och du måste lägga till SBI-filen för att köra sp
 Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4308"/>
+        <location filename="../../core/system.cpp" line="4314"/>
         <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
         <translation>Misslyckades med att växla till underbild {} i &apos;{}&apos;: {}.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4323"/>
+        <location filename="../../core/system.cpp" line="4329"/>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>Växlade till underbild {} ({}) i &apos;{}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4715"/>
+        <location filename="../../core/system.cpp" line="4721"/>
         <source>This save state was created with the following tainted options, and may
        be unstable. You will need to reset the system to clear any effects.</source>
         <translation>Detta sparade tillstånd skapades med följande fördärvade alternativ, och kan
        vara instabilt. Du måste starta om systemet för att eliminera eventuella effekter.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4744"/>
+        <location filename="../../core/system.cpp" line="4750"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>CPU-klockfrekvensen är inställd till {}% ({} / {}). Detta kan krascha spel.</translation>
     </message>
@@ -18671,19 +18848,19 @@ Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
         <location filename="../../core/system.cpp" line="679"/>
         <source>CD-ROM Read Speedup</source>
         <comment>Taint</comment>
-        <translation type="unfinished">Ökad läshastighet för CD-ROM</translation>
+        <translation>Uppsnabbad CD-ROM-läsning</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="680"/>
         <source>CD-ROM Seek Speedup</source>
         <comment>Taint</comment>
-        <translation type="unfinished">Snabbare CD-ROM-sökning</translation>
+        <translation>Uppsnabbad CD-ROM-sökning</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="681"/>
         <source>Force Frame Timings</source>
         <comment>Taint</comment>
-        <translation type="unfinished">Tidpunkter för Force Frame</translation>
+        <translation>Tvinga bildrutetider</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="682"/>
@@ -18704,207 +18881,205 @@ Namnet på SBI-filen måste matcha namnet på skivavbilden.</translation>
         <translation>Spelpatchar</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4748"/>
+        <location filename="../../core/system.cpp" line="4754"/>
         <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
-        <translation type="unfinished">CD-ROM read/seek speedup är aktiverad. Detta kan krascha spel.</translation>
+        <translation>Uppsnabbning av CD-ROM läsning/sökning är aktiverad. Detta kan krascha spel.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4750"/>
+        <location filename="../../core/system.cpp" line="4756"/>
         <source>Force frame timings is enabled. Games may run at incorrect speeds.</source>
         <translation>Force frame timings är aktiverat. Spel kan köras med felaktiga hastigheter.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4756"/>
+        <location filename="../../core/system.cpp" line="4762"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>Antialiasing för multisamplingar är aktiverat. Vissa spel kanske inte renderas korrekt.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4762"/>
+        <location filename="../../core/system.cpp" line="4768"/>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>Runda uppskalade texturkoordinater är aktiverat. Detta kan orsaka fel i renderingen.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4768"/>
+        <location filename="../../core/system.cpp" line="4774"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>8MB RAM är aktiverat och detta kan vara inkompatibelt med vissa spel.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4773"/>
+        <location filename="../../core/system.cpp" line="4779"/>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
         <translation>Cachad tolk används, detta kan vara inkompatibelt med vissa spel.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4781"/>
+        <location filename="../../core/system.cpp" line="4787"/>
         <source>Texture cache is enabled. This feature is experimental, some games may not render correctly.</source>
         <translation>Texturcachen är aktiverad. Denna funktion är experimentell och vissa spel kanske inte renderas korrekt.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4789"/>
+        <location filename="../../core/system.cpp" line="4795"/>
         <source>Fastmem mode is set to {}, this will reduce performance.</source>
         <translation>Fastmem-läget är inställt på {}, detta kommer att minska prestandan.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4796"/>
+        <location filename="../../core/system.cpp" line="4802"/>
         <source>Safe mode is enabled.</source>
         <translation>Säkert läge är aktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4807"/>
+        <location filename="../../core/system.cpp" line="4813"/>
         <source>Overclock disabled.</source>
         <translation>Överklockning inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4809"/>
+        <location filename="../../core/system.cpp" line="4815"/>
         <source>8MB RAM disabled.</source>
         <translation>8MB RAM inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4813"/>
         <source>Cheats disabled.</source>
-        <translation>Fusk inaktiverade.</translation>
+        <translation type="vanished">Fusk inaktiverade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4816"/>
         <source>Patches disabled.</source>
-        <translation>Patchar inaktiverade.</translation>
+        <translation type="vanished">Patchar inaktiverade.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4818"/>
+        <location filename="../../core/system.cpp" line="4817"/>
         <source>Resolution scale set to 1x.</source>
         <translation>Upplösningsskala inställd till 1x.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4820"/>
+        <location filename="../../core/system.cpp" line="4819"/>
         <source>Multisample anti-aliasing disabled.</source>
         <translation>Antialiasing för multisamplingar inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4822"/>
+        <location filename="../../core/system.cpp" line="4821"/>
         <source>True color disabled.</source>
         <translation>True color inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4826"/>
+        <location filename="../../core/system.cpp" line="4825"/>
         <source>Texture filtering disabled.</source>
         <translation>Texturfiltrering inaktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4829"/>
+        <location filename="../../core/system.cpp" line="4828"/>
         <source>Interlaced rendering enabled.</source>
         <translation>Interlaced-rendering aktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4831"/>
+        <location filename="../../core/system.cpp" line="4830"/>
         <source>Video timings set to default.</source>
-        <translation type="unfinished">Videotidpunkterna är inställda som standard.</translation>
+        <translation>Videotider inställda till standard.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4833"/>
+        <location filename="../../core/system.cpp" line="4832"/>
         <source>Widescreen rendering disabled.</source>
         <translation>Bredbildsrendering inaktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4835"/>
+        <location filename="../../core/system.cpp" line="4834"/>
         <source>PGXP disabled.</source>
         <translation>PGXP inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4837"/>
+        <location filename="../../core/system.cpp" line="4836"/>
         <source>GPU texture cache disabled.</source>
-        <translation type="unfinished">GPU-texturcache inaktiverad.</translation>
+        <translation>GPU-texturcache inaktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4839"/>
+        <location filename="../../core/system.cpp" line="4838"/>
         <source>FMV chroma smoothing disabled.</source>
-        <translation type="unfinished">FMV chroma utjämning avaktiverad.</translation>
+        <translation>Utjämning av FMV chroma inaktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4841"/>
+        <location filename="../../core/system.cpp" line="4840"/>
         <source>CD-ROM read speedup disabled.</source>
-        <translation type="unfinished">Ökad läshastighet för CD-ROM inaktiverad.</translation>
+        <translation>Ökad läshastighet för CD-ROM inaktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4843"/>
+        <location filename="../../core/system.cpp" line="4842"/>
         <source>CD-ROM seek speedup disabled.</source>
-        <translation type="unfinished">CD-ROM sökhastighet inaktiverad.</translation>
+        <translation>Ökad sökhastighet för CD-ROM inaktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4845"/>
+        <location filename="../../core/system.cpp" line="4844"/>
         <source>Mute CD-ROM audio disabled.</source>
-        <translation type="unfinished">Ljudet på CD-ROM är avstängt.</translation>
+        <translation>Tysta CD-ROM-ljud inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4847"/>
+        <location filename="../../core/system.cpp" line="4846"/>
         <source>VRAM write texture replacements disabled.</source>
         <translation>Texturersättning för VRAM-skrivning inaktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4849"/>
+        <location filename="../../core/system.cpp" line="4848"/>
         <source>Use old MDEC routines disabled.</source>
         <translation>Användning av gamla MDEC-rutiner inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4851"/>
+        <location filename="../../core/system.cpp" line="4850"/>
         <source>PIO device removed.</source>
         <translation>PIO-enhet togs bort.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4853"/>
+        <location filename="../../core/system.cpp" line="4852"/>
         <source>PCDrv disabled.</source>
         <translation>PCDrv inaktiverad.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4855"/>
+        <location filename="../../core/system.cpp" line="4854"/>
         <source>Fast boot disabled.</source>
         <translation>Snabb uppstart inaktiverat.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4863"/>
+        <location filename="../../core/system.cpp" line="4862"/>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
         <translation>Kompatibilitetsinställningar är inte aktiverade. Vissa spel kanske inte fungerar korrekt.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4867"/>
+        <location filename="../../core/system.cpp" line="4866"/>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>CD-ROM SubQ Skew är aktiverat. Detta kommer att ge spelproblem.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5140"/>
+        <location filename="../../core/system.cpp" line="5139"/>
         <source>Failed to save resume state: {}</source>
         <translation>Misslyckades med att spara återupptagningstillstånd: {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5296"/>
+        <location filename="../../core/system.cpp" line="5295"/>
         <source>capturing audio and video</source>
         <translation>fångar ljud och video</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5297"/>
+        <location filename="../../core/system.cpp" line="5296"/>
         <source>capturing video</source>
         <translation>fångar video</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5298"/>
+        <location filename="../../core/system.cpp" line="5297"/>
         <source>capturing audio</source>
         <translation>fångar ljud</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5411"/>
+        <location filename="../../core/system.cpp" line="5410"/>
         <source>Failed to create media capture: {0}</source>
         <translation>Misslyckades med att skapa mediafångst: {0}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5419"/>
+        <location filename="../../core/system.cpp" line="5418"/>
         <source>Starting {0} to &apos;{1}&apos;.</source>
         <translation>Startar {0} till &apos;{1}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5460"/>
+        <location filename="../../core/system.cpp" line="5459"/>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
         <translation>Stoppade {0} till &apos;{1}&apos;.</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5468"/>
+        <location filename="../../core/system.cpp" line="5467"/>
         <source>Stopped {0}: {1}.</source>
         <translation>Stoppade {0}: {1}.</translation>
     </message>
@@ -19073,141 +19248,6 @@ Detta kan bero på att din GPU inte har stöd för vald renderare ({1}) eller p�
         <location filename="../texturereplacementsettingsdialog.ui" line="381"/>
         <source>Close</source>
         <translation>Stäng</translation>
-    </message>
-</context>
-<context>
-    <name>AddLinkDialog</name>
-    <message>
-        <source>Title:</source>
-        <translation type="obsolete">Titel:</translation>
-    </message>
-</context>
-<context>
-    <name>ConnectDialog</name>
-    <message>
-        <source>Edit...</source>
-        <translation type="obsolete">Redigera...</translation>
-    </message>
-</context>
-<context>
-    <name>DeviceProfileDialog</name>
-    <message>
-        <source>Name</source>
-        <translation type="obsolete">Namn</translation>
-    </message>
-</context>
-<context>
-    <name>PluginDialog</name>
-    <message>
-        <source>1</source>
-        <translation type="obsolete">1</translation>
-    </message>
-</context>
-<context>
-    <name>PreviewConfigurationWidget</name>
-    <message>
-        <source>Form</source>
-        <translation type="obsolete">Form</translation>
-    </message>
-    <message>
-        <source>...</source>
-        <translation type="obsolete">...</translation>
-    </message>
-</context>
-<context>
-    <name>QtGradientEditor</name>
-    <message>
-        <source>Form</source>
-        <translation type="obsolete">Form</translation>
-    </message>
-    <message>
-        <source>1</source>
-        <translation type="obsolete">1</translation>
-    </message>
-    <message>
-        <source>2</source>
-        <translation type="obsolete">2</translation>
-    </message>
-    <message>
-        <source>3</source>
-        <translation type="obsolete">3</translation>
-    </message>
-    <message>
-        <source>4</source>
-        <translation type="obsolete">4</translation>
-    </message>
-    <message>
-        <source>5</source>
-        <translation type="obsolete">5</translation>
-    </message>
-    <message>
-        <source>Position</source>
-        <translation type="obsolete">Position</translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation type="obsolete">Värde</translation>
-    </message>
-    <message>
-        <source>Alpha</source>
-        <translation type="obsolete">Alfa</translation>
-    </message>
-    <message>
-        <source>A</source>
-        <translation type="obsolete">A</translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <translation type="obsolete">Typ</translation>
-    </message>
-    <message>
-        <source>%</source>
-        <translation type="obsolete">%</translation>
-    </message>
-    <message>
-        <source>...</source>
-        <translation type="obsolete">...</translation>
-    </message>
-</context>
-<context>
-    <name>QtGradientView</name>
-    <message>
-        <source>New...</source>
-        <translation type="obsolete">Ny...</translation>
-    </message>
-    <message>
-        <source>Edit...</source>
-        <translation type="obsolete">Redigera...</translation>
-    </message>
-    <message>
-        <source>Remove</source>
-        <translation type="obsolete">Ta bort</translation>
-    </message>
-</context>
-<context>
-    <name>QtResourceEditorDialog</name>
-    <message>
-        <source>R</source>
-        <translation type="obsolete">R</translation>
-    </message>
-    <message>
-        <source>I</source>
-        <translation type="obsolete">I</translation>
-    </message>
-    <message>
-        <source>A</source>
-        <translation type="obsolete">A</translation>
-    </message>
-</context>
-<context>
-    <name>SignalSlotDialogClass</name>
-    <message>
-        <source>Add</source>
-        <translation type="obsolete">Lägg till</translation>
-    </message>
-    <message>
-        <source>...</source>
-        <translation type="obsolete">...</translation>
     </message>
 </context>
 <context>
