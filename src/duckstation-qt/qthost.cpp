@@ -1251,7 +1251,7 @@ void EmuThread::reloadCheats(bool reload_files, bool reload_enabled_list, bool v
     // If the reloaded list is being enabled, we also need to reload the gameini file.
     if (reload_enabled_list)
       System::ReloadGameSettings(verbose);
-    Cheats::ReloadCheats(reload_files, reload_enabled_list, verbose, verbose_if_changed);
+    Cheats::ReloadCheats(reload_files, reload_enabled_list, verbose, verbose_if_changed, verbose);
   }
 }
 

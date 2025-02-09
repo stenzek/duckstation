@@ -216,7 +216,8 @@ static bool AreAnyPatchesEnabled();
 static void ReloadEnabledLists();
 static u32 EnableCheats(const CheatCodeList& patches, const EnableCodeList& enable_list, const char* section,
                         bool hc_mode_active);
-static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed);
+static void UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed,
+                              bool show_disabled_codes);
 
 template<typename F>
 bool SearchCheatArchive(CheatArchive& archive, std::string_view serial, std::optional<GameHash> hash, const F& f);
@@ -870,7 +871,8 @@ u32 Cheats::EnableCheats(const CheatCodeList& patches, const EnableCodeList& ena
   return count;
 }
 
-void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verbose, bool verbose_if_changed,
+                          bool show_disabled_codes)
 {
   for (const CheatCode* code : s_frame_end_codes)
     code->ApplyOnDisable();
@@ -917,7 +919,7 @@ void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verb
     }
   }
 
-  UpdateActiveCodes(reload_enabled_list, verbose, verbose_if_changed);
+  UpdateActiveCodes(reload_enabled_list, verbose, verbose_if_changed, show_disabled_codes);
 }
 
 void Cheats::UnloadAll()
@@ -969,7 +971,8 @@ void Cheats::ApplySettingOverrides()
   }
 }
 
-void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed)
+void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verbose_if_changed,
+                               bool show_disabled_codes)
 {
   if (reload_enabled_list)
     ReloadEnabledLists();
@@ -980,9 +983,10 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
   s_active_patch_count = 0;
   s_active_cheat_count = 0;
 
+  const bool hc_mode_active = Achievements::IsHardcoreModeActive();
+
   if (!g_settings.disable_all_enhancements)
   {
-    const bool hc_mode_active = Achievements::IsHardcoreModeActive();
     s_active_patch_count = EnableCheats(s_patch_codes, s_enabled_patches, "Patches", hc_mode_active);
     s_active_cheat_count =
       AreCheatsEnabled() ? EnableCheats(s_cheat_codes, s_enabled_cheats, "Cheats", hc_mode_active) : 0;
@@ -1015,6 +1019,33 @@ void Cheats::UpdateActiveCodes(bool reload_enabled_list, bool verbose, bool verb
       Host::AddIconOSDMessage("LoadCheats", ICON_FA_BAND_AID,
                               TRANSLATE_STR("Cheats", "No cheats/patches are found or enabled."),
                               Host::OSD_INFO_DURATION);
+    }
+  }
+
+  if (show_disabled_codes && (hc_mode_active || g_settings.disable_all_enhancements))
+  {
+    const SettingsInterface* sif = Host::Internal::GetGameSettingsLayer();
+    const u32 requested_cheat_count = (sif && sif->GetBoolValue("Cheats", "EnableCheats", false)) ?
+                                        static_cast<u32>(sif->GetStringList("Cheats", "Enable").size()) :
+                                        0;
+    const u32 requested_patches_count = sif ? static_cast<u32>(sif->GetStringList("Patches", "Enable").size()) : 0;
+    const u32 blocked_cheats =
+      (s_active_cheat_count < requested_cheat_count) ? requested_cheat_count - s_active_cheat_count : 0;
+    const u32 blocked_patches =
+      (s_active_patch_count < requested_patches_count) ? requested_patches_count - s_active_patch_count : 0;
+    if (blocked_cheats > 0 || blocked_patches > 0)
+    {
+      const SmallString blocked_cheats_msg =
+        TRANSLATE_PLURAL_SSTR("Cheats", "%n cheats", "Cheats blocked by hardcore mode", blocked_cheats);
+      const SmallString blocked_patches_msg =
+        TRANSLATE_PLURAL_SSTR("Cheats", "%n patches", "Patches blocked by hardcore mode", blocked_patches);
+      std::string message =
+        (blocked_cheats > 0 && blocked_patches > 0) ?
+          fmt::format(TRANSLATE_FS("Cheats", "{0} and {1} disabled by achievements hardcore mode/safe mode."),
+                      blocked_cheats_msg.view(), blocked_patches_msg.view()) :
+          fmt::format(TRANSLATE_FS("Cheats", "{} disabled by achievements hardcore mode/safe mode."),
+                      (blocked_cheats > 0) ? blocked_cheats_msg.view() : blocked_patches_msg.view());
+      Host::AddIconOSDMessage("CheatsBlocked", ICON_EMOJI_WARNING, std::move(message), Host::OSD_INFO_DURATION);
     }
   }
 }

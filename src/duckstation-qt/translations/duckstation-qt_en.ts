@@ -16,7 +16,7 @@
 <context>
     <name>Achievements</name>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1256"/>
+        <location filename="../../core/achievements.cpp" line="1348"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -25,7 +25,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1259"/>
+        <location filename="../../core/achievements.cpp" line="1351"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1351"/>
+        <location filename="../../core/achievements.cpp" line="1443"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -43,8 +43,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1353"/>
-        <location filename="../../core/achievements.cpp" line="2738"/>
+        <location filename="../../core/achievements.cpp" line="1445"/>
+        <location filename="../../core/achievements.cpp" line="2843"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -53,7 +53,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2557"/>
+        <location filename="../../core/achievements.cpp" line="2661"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -62,7 +62,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2981"/>
+        <location filename="../../core/achievements.cpp" line="3086"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -74,7 +74,7 @@
 <context>
     <name>Cheats</name>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="948"/>
+        <location filename="../../core/cheats.cpp" line="1005"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -83,12 +83,30 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="955"/>
+        <location filename="../../core/cheats.cpp" line="1012"/>
         <source>%n cheats are enabled. This may crash games.</source>
         <comment>OSD Message</comment>
         <translation>
             <numerusform>%n cheat is enabled. This may crash games.</numerusform>
             <numerusform>%n cheats are enabled. This may crash games.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../core/cheats.cpp" line="1039"/>
+        <source>%n cheats</source>
+        <comment>Cheats blocked by hardcore mode</comment>
+        <translation>
+            <numerusform>%n cheat</numerusform>
+            <numerusform>%n cheats</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../core/cheats.cpp" line="1041"/>
+        <source>%n patches</source>
+        <comment>Patches blocked by hardcore mode</comment>
+        <translation>
+            <numerusform>%n patch</numerusform>
+            <numerusform>%n patches</numerusform>
         </translation>
     </message>
 </context>
@@ -106,7 +124,7 @@
 <context>
     <name>GPU_HW</name>
     <message numerus="yes">
-        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3524"/>
+        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3615"/>
         <source>%n replacement textures found.</source>
         <comment>Replacement texture count</comment>
         <translation>
@@ -118,8 +136,8 @@
 <context>
     <name>GameList</name>
     <message numerus="yes">
-        <location filename="../gamelistmodel.cpp" line="258"/>
-        <location filename="../../core/game_list.cpp" line="1365"/>
+        <location filename="../gamelistmodel.cpp" line="343"/>
+        <location filename="../../core/game_list.cpp" line="1521"/>
         <source>%n hours</source>
         <translation>
             <numerusform>%n hour</numerusform>
@@ -127,8 +145,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistmodel.cpp" line="260"/>
-        <location filename="../../core/game_list.cpp" line="1367"/>
+        <location filename="../gamelistmodel.cpp" line="345"/>
+        <location filename="../../core/game_list.cpp" line="1523"/>
         <source>%n minutes</source>
         <translation>
             <numerusform>%n minute</numerusform>
