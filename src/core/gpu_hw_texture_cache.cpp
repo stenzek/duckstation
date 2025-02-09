@@ -2990,8 +2990,8 @@ void GPUTextureCache::GetTexturePageTextureReplacements(std::vector<TextureRepla
       continue;
 
     const GSVector2 scale = GSVector2(texture->GetSizeVec()) / GSVector2(name.GetSizeVec());
-    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::loadh(texture->GetSizeVec()),
-                                                      texture, scale.x, scale.y, name.IsSemitransparent()});
+    replacements.push_back(TextureReplacementSubImage{rect_in_page_space, GSVector4i::loadh(name.GetSizeVec()), texture,
+                                                      scale.x, scale.y, name.IsSemitransparent()});
   }
 }
 
