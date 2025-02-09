@@ -84,6 +84,7 @@ static constexpr u32 LEADERBOARD_ALL_FETCH_SIZE = 20;
 
 static constexpr float LOGIN_NOTIFICATION_TIME = 5.0f;
 static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME = 5.0f;
+static constexpr float ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC = 10.0f;
 static constexpr float GAME_COMPLETE_NOTIFICATION_TIME = 20.0f;
 static constexpr float LEADERBOARD_STARTED_NOTIFICATION_TIME = 3.0f;
 static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
@@ -1334,16 +1335,10 @@ void Achievements::DisplayAchievementSummary()
 {
   if (g_settings.achievements_notifications)
   {
-    std::string title;
-    if (IsHardcoreModeActive())
-      title = fmt::format(TRANSLATE_FS("Achievements", "{} (Hardcore Mode)"), s_state.game_title);
-    else
-      title = s_state.game_title;
-
-    std::string summary;
+    SmallString summary;
     if (s_state.game_summary.num_core_achievements > 0)
     {
-      summary = fmt::format(
+      summary.format(
         TRANSLATE_FS("Achievements", "{0}, {1}."),
         SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "You have unlocked {} of %n achievements",
                                                      "Achievement popup", s_state.game_summary.num_core_achievements),
@@ -1351,20 +1346,28 @@ void Achievements::DisplayAchievementSummary()
         SmallString::from_format(TRANSLATE_PLURAL_FS("Achievements", "and earned {} of %n points", "Achievement popup",
                                                      s_state.game_summary.points_core),
                                  s_state.game_summary.points_unlocked));
+
+      if (IsHardcoreModeActive())
+      {
+        summary.append('\n');
+        summary.append(
+          TRANSLATE_SV("Achievements", "Hardcore mode is enabled. Cheats and save states are unavailable."));
+      }
     }
     else
     {
-      summary = TRANSLATE_STR("Achievements", "This game has no achievements.");
+      summary.assign(TRANSLATE_SV("Achievements", "This game has no achievements."));
     }
 
-    GPUThread::RunOnThread(
-      [title = std::move(title), summary = std::move(summary), icon = s_state.game_icon]() mutable {
-        if (!FullscreenUI::Initialize())
-          return;
+    GPUThread::RunOnThread([title = s_state.game_title, summary = std::string(summary.view()), icon = s_state.game_icon,
+                            time = IsHardcoreModeActive() ? ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME_HC :
+                                                            ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME]() mutable {
+      if (!FullscreenUI::Initialize())
+        return;
 
-        ImGuiFullscreen::AddNotification("achievement_summary", ACHIEVEMENT_SUMMARY_NOTIFICATION_TIME, std::move(title),
-                                         std::move(summary), std::move(icon));
-      });
+      ImGuiFullscreen::AddNotification("achievement_summary", time, std::move(title), std::move(summary),
+                                       std::move(icon));
+    });
   }
 
   // Technically not going through the resource API, but since we're passing this to something else, we can't.
