@@ -375,18 +375,18 @@ Login token generated at:</source>
 <context>
     <name>Achievements</name>
     <message>
-        <location filename="../../core/achievements.cpp" line="3165"/>
+        <location filename="../../core/achievements.cpp" line="3168"/>
         <source>Time</source>
         <translation>时间</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3166"/>
+        <location filename="../../core/achievements.cpp" line="3169"/>
         <source>Score</source>
         <translation>得分</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2252"/>
-        <location filename="../../core/achievements.cpp" line="2284"/>
+        <location filename="../../core/achievements.cpp" line="2255"/>
+        <location filename="../../core/achievements.cpp" line="2287"/>
         <source>{0} cannot be performed while hardcore mode is active. Do you want to disable hardcore mode? {0} will be cancelled if you select No.</source>
         <translation>当硬核模式处于活动状态时，无法执行{0}。您想要禁用硬核模式吗？如果您选择“否”，{0}将会被取消。</translation>
     </message>
@@ -399,22 +399,22 @@ Login token generated at:</source>
         <translation type="vanished">确认硬核模式</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1797"/>
+        <location filename="../../core/achievements.cpp" line="1800"/>
         <source>Hardcore mode is now disabled.</source>
         <translation>硬核模式现已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1384"/>
+        <location filename="../../core/achievements.cpp" line="1387"/>
         <source>Hardcore mode will be enabled on system reset.</source>
         <translation>硬核模式将在系统重启时启用。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1412"/>
+        <location filename="../../core/achievements.cpp" line="1415"/>
         <source>{} (Unofficial)</source>
         <translation>{} (非官方)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1440"/>
+        <location filename="../../core/achievements.cpp" line="1443"/>
         <source>Mastered {}</source>
         <translation>掌握{}</translation>
     </message>
@@ -423,103 +423,103 @@ Login token generated at:</source>
         <translation type="vanished">{}成就，{}点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1465"/>
+        <location filename="../../core/achievements.cpp" line="1468"/>
         <source>Leaderboard attempt started.</source>
         <translation>排行榜尝试开始。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1485"/>
+        <location filename="../../core/achievements.cpp" line="1488"/>
         <source>Leaderboard attempt failed.</source>
         <translation>排行榜尝试失败。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1505"/>
+        <location filename="../../core/achievements.cpp" line="1508"/>
         <source>Your Time: {}{}</source>
         <translation>您的时间: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1506"/>
+        <location filename="../../core/achievements.cpp" line="1509"/>
         <source>Your Score: {}{}</source>
         <translation>您的得分: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1507"/>
+        <location filename="../../core/achievements.cpp" line="1510"/>
         <source>Your Value: {}{}</source>
         <translation>您的值: {}{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1516"/>
+        <location filename="../../core/achievements.cpp" line="1519"/>
         <source> (Submitting)</source>
         <translation> (提交中)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1540"/>
+        <location filename="../../core/achievements.cpp" line="1543"/>
         <source>Your Time: {} (Best: {})</source>
         <translation>您的时间: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1541"/>
+        <location filename="../../core/achievements.cpp" line="1544"/>
         <source>Your Score: {} (Best: {})</source>
         <translation>您的得分: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1542"/>
+        <location filename="../../core/achievements.cpp" line="1545"/>
         <source>Your Value: {} (Best: {})</source>
         <translation>您的值: {} (最佳: {})</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1547"/>
+        <location filename="../../core/achievements.cpp" line="1550"/>
         <source>{}
 Leaderboard Position: {} of {}</source>
         <translation>{}
 排行榜位置: {}的{}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1677"/>
+        <location filename="../../core/achievements.cpp" line="1680"/>
         <source>Server error in {}:
 {}</source>
         <translation>服务器错误在{}:
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1693"/>
+        <location filename="../../core/achievements.cpp" line="1696"/>
         <source>Achievements Disconnected</source>
         <translation>成就断开连接</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1694"/>
+        <location filename="../../core/achievements.cpp" line="1697"/>
         <source>An unlock request could not be completed. We will keep retrying to submit this request.</source>
         <translation>解锁请求无法完成。我们将继续重试提交此请求。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1708"/>
+        <location filename="../../core/achievements.cpp" line="1711"/>
         <source>Achievements Reconnected</source>
         <translation>成就重新连接</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1709"/>
+        <location filename="../../core/achievements.cpp" line="1712"/>
         <source>All pending unlock requests have completed.</source>
         <translation>全部挂起的解锁请求已完成。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1846"/>
+        <location filename="../../core/achievements.cpp" line="1849"/>
         <source>Downloading achievements data...</source>
         <translation>正在下载成就数据...</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2101"/>
+        <location filename="../../core/achievements.cpp" line="2104"/>
         <source>Achievement unlocks will not be submitted for this session.
 Error: {}</source>
         <translation>本次阶段将不会提交成就解锁.
 错误: {}</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2108"/>
+        <location filename="../../core/achievements.cpp" line="2111"/>
         <source>RetroAchievements Login Failed</source>
         <translation>RetroAchievements登入失败</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2152"/>
+        <location filename="../../core/achievements.cpp" line="2155"/>
         <source>Score: {} ({} softcore)
 Unread messages: {}</source>
         <extracomment>Summary for login notification.</extracomment>
@@ -539,12 +539,12 @@ Unread messages: {}</source>
         <translation type="vanished">否</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2518"/>
+        <location filename="../../core/achievements.cpp" line="2521"/>
         <source>Active Challenge Achievements</source>
         <translation>活动的挑战成就</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2647"/>
+        <location filename="../../core/achievements.cpp" line="2650"/>
         <source> (Hardcore Mode)</source>
         <translation> (硬核模式)</translation>
     </message>
@@ -553,42 +553,42 @@ Unread messages: {}</source>
         <translation type="vanished">您已经解锁了全部成就并获得了%n点数！</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2721"/>
+        <location filename="../../core/achievements.cpp" line="2724"/>
         <source>Unknown</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2721"/>
+        <location filename="../../core/achievements.cpp" line="2724"/>
         <source>Locked</source>
         <translation>锁定</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2722"/>
+        <location filename="../../core/achievements.cpp" line="2725"/>
         <source>Unlocked</source>
         <translation>解锁</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2722"/>
+        <location filename="../../core/achievements.cpp" line="2725"/>
         <source>Unsupported</source>
         <translation>不支持</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2723"/>
+        <location filename="../../core/achievements.cpp" line="2726"/>
         <source>Unofficial</source>
         <translation>非官方</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2723"/>
+        <location filename="../../core/achievements.cpp" line="2726"/>
         <source>Recently Unlocked</source>
         <translation>最近解锁</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2724"/>
+        <location filename="../../core/achievements.cpp" line="2727"/>
         <source>Active Challenges</source>
         <translation>活动的挑战</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2724"/>
+        <location filename="../../core/achievements.cpp" line="2727"/>
         <source>Almost There</source>
         <translation>近在咫尺</translation>
     </message>
@@ -601,23 +601,23 @@ Unread messages: {}</source>
         <translation type="vanished">{}点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2791"/>
+        <location filename="../../core/achievements.cpp" line="2794"/>
         <source>XXX points</source>
         <translation>XXX点数</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1150"/>
-        <location filename="../../core/achievements.cpp" line="1179"/>
+        <location filename="../../core/achievements.cpp" line="1151"/>
+        <location filename="../../core/achievements.cpp" line="1180"/>
         <source>Failed to read executable from disc. Achievements disabled.</source>
         <translation>无法从光盘读取可执行文件。成就已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1347"/>
+        <location filename="../../core/achievements.cpp" line="1342"/>
         <source>{0}, {1}.</source>
         <translation>{0}, {1}。</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1348"/>
+        <location filename="../../core/achievements.cpp" line="1343"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -625,7 +625,7 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1351"/>
+        <location filename="../../core/achievements.cpp" line="1346"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -633,12 +633,17 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1442"/>
+        <location filename="../../core/achievements.cpp" line="1354"/>
+        <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
+        <translation>硬核模式已启用。金手指和即时存档不可用。</translation>
+    </message>
+    <message>
+        <location filename="../../core/achievements.cpp" line="1445"/>
         <source>{0}, {1}</source>
         <translation>{0}, {1}</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1443"/>
+        <location filename="../../core/achievements.cpp" line="1446"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -646,8 +651,8 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1445"/>
-        <location filename="../../core/achievements.cpp" line="2843"/>
+        <location filename="../../core/achievements.cpp" line="1448"/>
+        <location filename="../../core/achievements.cpp" line="2846"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -655,13 +660,13 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2251"/>
-        <location filename="../../core/achievements.cpp" line="2283"/>
+        <location filename="../../core/achievements.cpp" line="2254"/>
+        <location filename="../../core/achievements.cpp" line="2286"/>
         <source>Confirm Hardcore Mode Disable</source>
         <translation>确认硬核模式禁用</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2661"/>
+        <location filename="../../core/achievements.cpp" line="2664"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -669,31 +674,31 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2763"/>
-        <location filename="../../core/achievements.cpp" line="3224"/>
-        <location filename="../../core/achievements.cpp" line="3312"/>
+        <location filename="../../core/achievements.cpp" line="2766"/>
+        <location filename="../../core/achievements.cpp" line="3227"/>
+        <location filename="../../core/achievements.cpp" line="3315"/>
         <source>Change Selection</source>
         <translation>更改选择</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2765"/>
+        <location filename="../../core/achievements.cpp" line="2768"/>
         <source>View Details</source>
         <translation>查看详情</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2767"/>
-        <location filename="../../core/achievements.cpp" line="3228"/>
-        <location filename="../../core/achievements.cpp" line="3316"/>
+        <location filename="../../core/achievements.cpp" line="2770"/>
+        <location filename="../../core/achievements.cpp" line="3231"/>
+        <location filename="../../core/achievements.cpp" line="3319"/>
         <source>Back</source>
         <translation>返回</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2901"/>
+        <location filename="../../core/achievements.cpp" line="2904"/>
         <source>Unlocked: {}</source>
         <translation>解锁: {}</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="3086"/>
+        <location filename="../../core/achievements.cpp" line="3089"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -701,64 +706,64 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3127"/>
+        <location filename="../../core/achievements.cpp" line="3130"/>
         <source>Show Best</source>
         <translation>显示最佳</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3127"/>
+        <location filename="../../core/achievements.cpp" line="3130"/>
         <source>Show Nearby</source>
         <translation>显示附近</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3155"/>
+        <location filename="../../core/achievements.cpp" line="3158"/>
         <source>Rank</source>
         <translation>排名</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3160"/>
+        <location filename="../../core/achievements.cpp" line="3163"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3167"/>
+        <location filename="../../core/achievements.cpp" line="3170"/>
         <source>Value</source>
         <translation>值</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3180"/>
+        <location filename="../../core/achievements.cpp" line="3183"/>
         <source>Date Submitted</source>
         <translation>日期提交</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3226"/>
+        <location filename="../../core/achievements.cpp" line="3229"/>
         <source>Open Leaderboard</source>
         <translation>打开排行榜</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3265"/>
+        <location filename="../../core/achievements.cpp" line="3268"/>
         <source>Downloading leaderboard data, please wait...</source>
         <translation>下载排行榜数据中，请稍候…</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3284"/>
-        <location filename="../../core/achievements.cpp" line="3293"/>
+        <location filename="../../core/achievements.cpp" line="3287"/>
+        <location filename="../../core/achievements.cpp" line="3296"/>
         <source>Loading...</source>
         <translation>载入中…</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3309"/>
+        <location filename="../../core/achievements.cpp" line="3312"/>
         <source>Change Page</source>
         <translation>更改页面</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3314"/>
+        <location filename="../../core/achievements.cpp" line="3317"/>
         <source>View Profile</source>
         <translation>查看档案</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3501"/>
-        <location filename="../../core/achievements.cpp" line="3521"/>
+        <location filename="../../core/achievements.cpp" line="3504"/>
+        <location filename="../../core/achievements.cpp" line="3524"/>
         <source>Leaderboard download failed</source>
         <translation>排行榜下载失败</translation>
     </message>
@@ -775,22 +780,21 @@ Unread messages: {}</source>
         <translation>继续档</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1339"/>
         <source>{} (Hardcore Mode)</source>
-        <translation>{} (硬核模式)</translation>
+        <translation type="vanished">{} (硬核模式)</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="2666"/>
+        <location filename="../../core/achievements.cpp" line="2669"/>
         <source>You have unlocked {0} of {1} achievements, earning {2} of {3} possible points.</source>
         <translation>您已经解锁了{0}的{1}成就，获得了{2}的{3}可能的点数。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="3103"/>
+        <location filename="../../core/achievements.cpp" line="3106"/>
         <source>Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only.</source>
         <translation>无法提交分数，因为硬核模式已关闭。因此排行榜仅限读取。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2839"/>
+        <location filename="../../core/system.cpp" line="2843"/>
         <source>Loading state</source>
         <translation>读档</translation>
     </message>
@@ -799,13 +803,13 @@ Unread messages: {}</source>
         <translation type="vanished">此游戏有{}排行榜。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1357"/>
-        <location filename="../../core/achievements.cpp" line="2674"/>
+        <location filename="../../core/achievements.cpp" line="1359"/>
+        <location filename="../../core/achievements.cpp" line="2677"/>
         <source>This game has no achievements.</source>
         <translation>此游戏没有成就。</translation>
     </message>
     <message>
-        <location filename="../../core/achievements.cpp" line="1796"/>
+        <location filename="../../core/achievements.cpp" line="1799"/>
         <source>Hardcore mode is now enabled.</source>
         <translation>硬核模式现已启用。</translation>
     </message>
@@ -2699,22 +2703,22 @@ Unread messages: {}</source>
 <context>
     <name>Cheats</name>
     <message>
-        <location filename="../../core/cheats.cpp" line="292"/>
+        <location filename="../../core/cheats.cpp" line="300"/>
         <source>Gameshark</source>
         <translation>金手指</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="317"/>
+        <location filename="../../core/cheats.cpp" line="325"/>
         <source>Manual</source>
         <translation>手动操作</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="317"/>
+        <location filename="../../core/cheats.cpp" line="325"/>
         <source>Automatic (Frame End)</source>
         <translation>自动操作 (帧结束)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="975"/>
+        <location filename="../../core/cheats.cpp" line="1005"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -2722,7 +2726,7 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="982"/>
+        <location filename="../../core/cheats.cpp" line="1012"/>
         <source>%n cheats are enabled. This may crash games.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -2730,12 +2734,38 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="990"/>
+        <location filename="../../core/cheats.cpp" line="1020"/>
         <source>No cheats/patches are found or enabled.</source>
         <translation>未发现或启用任何金手指/补丁。</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../../core/cheats.cpp" line="1039"/>
+        <source>%n cheats</source>
+        <comment>Cheats blocked by hardcore mode</comment>
+        <translation>
+            <numerusform>%n金手指</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../core/cheats.cpp" line="1041"/>
+        <source>%n patches</source>
+        <comment>Patches blocked by hardcore mode</comment>
+        <translation>
+            <numerusform>%n补丁</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1022"/>
+        <location filename="../../core/cheats.cpp" line="1044"/>
+        <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
+        <translation>通过成就硬核模式/安全模式禁用{0}和{1}。</translation>
+    </message>
+    <message>
+        <location filename="../../core/cheats.cpp" line="1046"/>
+        <source>{} disabled by achievements hardcore mode/safe mode.</source>
+        <translation>通过成就硬核模式/安全模式禁用{}。</translation>
+    </message>
+    <message>
+        <location filename="../../core/cheats.cpp" line="1079"/>
         <source>Cheat &apos;{}&apos; applied.</source>
         <translation>金手指&apos;{}&apos;已应用。</translation>
     </message>
@@ -8860,7 +8890,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9160"/>
         <source>RAIntegration is being used instead of the built-in achievements implementation.</source>
-        <translation>正在用RAIntegration而不是内置的成就实现。</translation>
+        <translation>正在使用RAIntegration代替内置的成就实现。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8798"/>
@@ -11580,7 +11610,7 @@ Please configure a supported controller from the list above.</source>
 <context>
     <name>GameListModel</name>
     <message>
-        <location filename="../gamelistmodel.cpp" line="907"/>
+        <location filename="../gamelistmodel.cpp" line="912"/>
         <source>Size</source>
         <translation>大小</translation>
     </message>
@@ -11589,12 +11619,12 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">格式</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="902"/>
+        <location filename="../gamelistmodel.cpp" line="907"/>
         <source>Year</source>
         <translation>年份</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="901"/>
+        <location filename="../gamelistmodel.cpp" line="906"/>
         <source>Genre</source>
         <translation>游戏类型</translation>
     </message>
@@ -11604,67 +11634,67 @@ Please configure a supported controller from the list above.</source>
         <translation>未知</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="895"/>
+        <location filename="../gamelistmodel.cpp" line="900"/>
         <source>Icon</source>
         <translation>图标</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="897"/>
+        <location filename="../gamelistmodel.cpp" line="902"/>
         <source>Title</source>
         <translation>标题</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="904"/>
+        <location filename="../gamelistmodel.cpp" line="909"/>
         <source>Achievements</source>
         <translation>成就</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="906"/>
+        <location filename="../gamelistmodel.cpp" line="911"/>
         <source>Last Played</source>
         <translation>最近游玩</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="905"/>
+        <location filename="../gamelistmodel.cpp" line="910"/>
         <source>Time Played</source>
         <translation>游玩时长</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="908"/>
+        <location filename="../gamelistmodel.cpp" line="913"/>
         <source>Raw Size</source>
         <translation>原生大小</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="909"/>
+        <location filename="../gamelistmodel.cpp" line="914"/>
         <source>Region</source>
         <translation>区域</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="896"/>
+        <location filename="../gamelistmodel.cpp" line="901"/>
         <source>Serial</source>
         <translation>序号</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="910"/>
+        <location filename="../gamelistmodel.cpp" line="915"/>
         <source>Compatibility</source>
         <translation>兼容性</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="903"/>
+        <location filename="../gamelistmodel.cpp" line="908"/>
         <source>Players</source>
         <translation>玩家</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="898"/>
+        <location filename="../gamelistmodel.cpp" line="903"/>
         <source>File Title</source>
         <translation>文件标题</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="900"/>
+        <location filename="../gamelistmodel.cpp" line="905"/>
         <source>Publisher</source>
         <translation>出版商</translation>
     </message>
     <message>
-        <location filename="../gamelistmodel.cpp" line="899"/>
+        <location filename="../gamelistmodel.cpp" line="904"/>
         <source>Developer</source>
         <translation>开发商</translation>
     </message>
@@ -18025,7 +18055,7 @@ You must delete the memory card manually if you want to save.</source>
         <translation>倒带已禁用，因为启用了预运行。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4400"/>
+        <location filename="../../core/system.cpp" line="4404"/>
         <source>Recompiler options changed, flushing all blocks.</source>
         <translation>重新编译器选项已更改，刷新全部区块。</translation>
     </message>
@@ -18042,12 +18072,12 @@ You must delete the memory card manually if you want to save.</source>
         <translation type="vanished">删除金手指列表&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5735"/>
+        <location filename="../../core/system.cpp" line="5732"/>
         <source>Widescreen hack is now enabled, and aspect ratio is set to {}.</source>
         <translation>宽屏调整现已启用，宽高比设置为{}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5743"/>
+        <location filename="../../core/system.cpp" line="5740"/>
         <source>Widescreen hack is now disabled, and aspect ratio is set to {}.</source>
         <translation>宽屏调整现已禁用，宽高比设置为{}。</translation>
     </message>
@@ -18088,7 +18118,7 @@ You must delete the memory card manually if you want to save.</source>
         <translation type="vanished">无法保存撤消的读档。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3660"/>
+        <location filename="../../core/system.cpp" line="3664"/>
         <source>Rewinding is not enabled.</source>
         <translation>倒带未启用。</translation>
     </message>
@@ -18193,22 +18223,22 @@ You must delete the memory card manually if you want to save.</source>
         <translation type="vanished">无法从&apos;%s&apos;加载金手指。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3941"/>
+        <location filename="../../core/system.cpp" line="3945"/>
         <source>Swapped memory card ports. Both ports have a memory card.</source>
         <translation>交换记忆卡接口。两个接口都有记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3947"/>
+        <location filename="../../core/system.cpp" line="3951"/>
         <source>Swapped memory card ports. Port 2 has a memory card, Port 1 is empty.</source>
         <translation>交换记忆卡接口。接口2有一个记忆卡，接口1是空的。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3952"/>
+        <location filename="../../core/system.cpp" line="3956"/>
         <source>Swapped memory card ports. Port 1 has a memory card, Port 2 is empty.</source>
         <translation>交换记忆卡接口。接口1有一个记忆卡，接口2是空的。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3956"/>
+        <location filename="../../core/system.cpp" line="3960"/>
         <source>Swapped memory card ports. Neither port has a memory card.</source>
         <translation>交换记忆卡接口。两个接口都没有记忆卡。</translation>
     </message>
@@ -18225,7 +18255,7 @@ You must delete the memory card manually if you want to save.</source>
         <translation type="vanished">无法保存金手指列表到&apos;%s&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2913"/>
+        <location filename="../../core/system.cpp" line="2917"/>
         <source>Failed to open CD image from save state &apos;{}&apos;: {}.
 Using existing image &apos;{}&apos;, this may result in instability.</source>
         <translation>无法从即时存档&apos;{}&apos;: {}打开光盘镜像。
@@ -18431,7 +18461,7 @@ Please configure a supported controller from the list above.</source>
         <translation>预缓存光盘镜像失败，这可能导致不稳定。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2862"/>
+        <location filename="../../core/system.cpp" line="2866"/>
         <source>Loading state from &apos;{}&apos;...</source>
         <translation>从&apos;{}&apos;载入即时档案...</translation>
     </message>
@@ -18464,32 +18494,32 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">{}金手指现已处于未活动状态。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4053"/>
+        <location filename="../../core/system.cpp" line="4057"/>
         <source>Failed to open disc image &apos;{}&apos;: {}.</source>
         <translation>无法打开光盘镜像&apos;{}&apos;: {}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4064"/>
+        <location filename="../../core/system.cpp" line="4068"/>
         <source>Inserted disc &apos;{}&apos; ({}).</source>
         <translation>插入光盘&apos;{}&apos; ({})。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4438"/>
+        <location filename="../../core/system.cpp" line="4442"/>
         <source>Switching to {}{} GPU renderer.</source>
         <translation>切换为{}{}GPU渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4364"/>
+        <location filename="../../core/system.cpp" line="4368"/>
         <source>Switching to {} audio backend.</source>
         <translation>切换为{}音频后端。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4385"/>
+        <location filename="../../core/system.cpp" line="4389"/>
         <source>Switching to {} CPU execution mode.</source>
         <translation>切换为{}CPU执行模式。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5204"/>
+        <location filename="../../core/system.cpp" line="5201"/>
         <source>Failed to save undo load state:
 {}</source>
         <translation>无法保存撤消载入的即时档案:
@@ -18508,7 +18538,7 @@ Please configure a supported controller from the list above.</source>
         <translation type="vanished">无法从&apos;{}&apos;加载金手指。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5759"/>
+        <location filename="../../core/system.cpp" line="5756"/>
         <source>Switching to {} renderer...</source>
         <translation>切换为{}渲染器…</translation>
     </message>
@@ -18561,7 +18591,7 @@ Please configure a supported controller from the list above.</source>
 {}</translation>
     </message>
     <message>
-        <location filename="../../core/gpu_thread.cpp" line="1254"/>
+        <location filename="../../core/gpu_thread.cpp" line="1255"/>
         <source>Failed to switch to exclusive fullscreen, using borderless instead.</source>
         <translation>无法切换到独占全屏，改为使用无边框模式。</translation>
     </message>
@@ -20814,7 +20844,7 @@ Are you sure you want to continue?</source>
     <name>System</name>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="1131"/>
-        <location filename="../../core/system.cpp" line="5141"/>
+        <location filename="../../core/system.cpp" line="5138"/>
         <source>Error</source>
         <translation>错误</translation>
     </message>
@@ -20851,7 +20881,7 @@ Are you sure you want to continue?</source>
         <translation type="vanished">存档不兼容: 最低可兼容版本为%u但存档版本为%u。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4865"/>
+        <location filename="../../core/system.cpp" line="4862"/>
         <source>Compatibility settings are not enabled. Some games may not function correctly.</source>
         <translation>兼容性设置未启用。一些游戏可能无法正常运行。</translation>
     </message>
@@ -20872,7 +20902,7 @@ Are you sure you want to continue?</source>
         <translation type="vanished">无法加载{}BIOS。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3156"/>
+        <location filename="../../core/system.cpp" line="3160"/>
         <source>Cannot save state while memory card is being saved.</source>
         <translation>记忆卡正在存盘时无法保存即时档案。</translation>
     </message>
@@ -20881,27 +20911,27 @@ Are you sure you want to continue?</source>
         <translation type="vanished">无法初始化{}渲染器，退回到软件渲染器。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2402"/>
+        <location filename="../../core/system.cpp" line="2406"/>
         <source>This save state was created with a different BIOS. This may cause stability issues.</source>
         <translation>此即时存档是由不同的BIOS创建的。这可能会导致稳定性问题。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2471"/>
+        <location filename="../../core/system.cpp" line="2475"/>
         <source>WARNING: CPU overclock ({}%) was different in save state ({}%).</source>
         <translation>警告: CPU超频 ({}%) 不同于即时存档 ({}%)。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2995"/>
+        <location filename="../../core/system.cpp" line="2999"/>
         <source>Save state is incompatible: minimum version is {0} but state is version {1}.</source>
         <translation>即时存档不兼容: 最低版本为{0}但即时档案版本为{1}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3003"/>
+        <location filename="../../core/system.cpp" line="3007"/>
         <source>Save state is incompatible: maximum version is {0} but state is version {1}.</source>
         <translation>即时存档不兼容: 最高版本为{0}但即时档案版本为{1}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2921"/>
+        <location filename="../../core/system.cpp" line="2925"/>
         <source>Failed to open CD image &apos;{}&apos; used by save state:
 </source>
         <translation>无法打开光盘镜像&apos;{}&apos;，正被即时存档占用中:
@@ -20956,50 +20986,50 @@ Are you sure you want to continue?</source>
         <translation>游戏补丁</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="2832"/>
-        <location filename="../../core/system.cpp" line="3151"/>
+        <location filename="../../core/system.cpp" line="2836"/>
+        <location filename="../../core/system.cpp" line="3155"/>
         <source>System is not in correct state.</source>
         <translation>系统处于不正确状态。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3170"/>
+        <location filename="../../core/system.cpp" line="3174"/>
         <source>Saving state to &apos;{}&apos;.</source>
         <translation>保存即时档案到&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3218"/>
+        <location filename="../../core/system.cpp" line="3222"/>
         <source>State saved to &apos;{}&apos;.</source>
         <translation>即时档案保存到&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3224"/>
+        <location filename="../../core/system.cpp" line="3228"/>
         <source>Failed to save state to &apos;{0}&apos;:
 {1}</source>
         <translation>无法保存即时档案到&apos;{0}&apos;:
 {1}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3761"/>
+        <location filename="../../core/system.cpp" line="3765"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no code. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有序号。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3780"/>
+        <location filename="../../core/system.cpp" line="3784"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no title. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有标题。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3818"/>
+        <location filename="../../core/system.cpp" line="3822"/>
         <source>Using disc-specific memory card &apos;{}&apos; instead of per-game card.</source>
         <translation>使用特定于光盘的记忆卡&apos;{}&apos;而不是独立记忆卡。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="3840"/>
+        <location filename="../../core/system.cpp" line="3844"/>
         <source>Per-game memory card cannot be used for slot {} as the running game has no path. Using shared card instead.</source>
         <translation>独立记忆卡不能用于档位{}，因为正在运行的游戏没有路径。使用共用记忆卡代替。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4222"/>
+        <location filename="../../core/system.cpp" line="4226"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -21020,7 +21050,7 @@ Do you wish to continue?</source>
 您想要继续吗？</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4233"/>
+        <location filename="../../core/system.cpp" line="4237"/>
         <source>You are attempting to run a libcrypt protected game without an SBI file:
 
 {0}: {1}
@@ -21037,169 +21067,167 @@ The name of the SBI file must match the name of the disc image.</source>
 SBI文件的名称必须匹配光盘镜像的名称。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4310"/>
+        <location filename="../../core/system.cpp" line="4314"/>
         <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
         <translation>无法切换为子镜像{}在&apos;{}&apos;: {}。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4325"/>
+        <location filename="../../core/system.cpp" line="4329"/>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
         <translation>切换为子镜像{} ({}) 在&apos;{}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4717"/>
+        <location filename="../../core/system.cpp" line="4721"/>
         <source>This save state was created with the following tainted options, and may
        be unstable. You will need to reset the system to clear any effects.</source>
         <translation>此即时存档是通过以下有污点的选项创建的，可能
       不稳定。您需要重置系统以清除任何效果。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4746"/>
+        <location filename="../../core/system.cpp" line="4750"/>
         <source>CPU clock speed is set to {}% ({} / {}). This may crash games.</source>
         <translation>CPU主频设置为{}% ({} / {})。这可能会崩溃游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4750"/>
+        <location filename="../../core/system.cpp" line="4754"/>
         <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
         <translation>CD-ROM读取/搜寻加速已启用。这可能会崩溃游戏。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4752"/>
+        <location filename="../../core/system.cpp" line="4756"/>
         <source>Force frame timings is enabled. Games may run at incorrect speeds.</source>
         <translation>强制帧计时已启用。游戏可能以不正确的速度运行。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4775"/>
+        <location filename="../../core/system.cpp" line="4779"/>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
         <translation>正在使用缓存解释器，这可能与某些游戏不兼容。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4783"/>
+        <location filename="../../core/system.cpp" line="4787"/>
         <source>Texture cache is enabled. This feature is experimental, some games may not render correctly.</source>
         <translation>纹理缓存已启用。此功能还处于试验阶段，某些游戏可能无法正确渲染。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4791"/>
+        <location filename="../../core/system.cpp" line="4795"/>
         <source>Fastmem mode is set to {}, this will reduce performance.</source>
         <translation>快速内存模式设置为{}，这会降低性能。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4798"/>
+        <location filename="../../core/system.cpp" line="4802"/>
         <source>Safe mode is enabled.</source>
         <translation>安全模式已启用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4809"/>
+        <location filename="../../core/system.cpp" line="4813"/>
         <source>Overclock disabled.</source>
         <translation>超频已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4811"/>
+        <location filename="../../core/system.cpp" line="4815"/>
         <source>8MB RAM disabled.</source>
         <translation>8MB内存已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4815"/>
         <source>Cheats disabled.</source>
-        <translation>金手指已禁用。</translation>
+        <translation type="vanished">金手指已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4818"/>
         <source>Patches disabled.</source>
-        <translation>补丁已禁用。</translation>
+        <translation type="vanished">补丁已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4820"/>
+        <location filename="../../core/system.cpp" line="4817"/>
         <source>Resolution scale set to 1x.</source>
         <translation>分辨率比率设置为1x。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4822"/>
+        <location filename="../../core/system.cpp" line="4819"/>
         <source>Multisample anti-aliasing disabled.</source>
         <translation>多重采样抗锯齿已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4824"/>
+        <location filename="../../core/system.cpp" line="4821"/>
         <source>True color disabled.</source>
         <translation>真彩色已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4828"/>
+        <location filename="../../core/system.cpp" line="4825"/>
         <source>Texture filtering disabled.</source>
         <translation>纹理过滤已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4831"/>
+        <location filename="../../core/system.cpp" line="4828"/>
         <source>Interlaced rendering enabled.</source>
         <translation>隔行渲染已启用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4833"/>
+        <location filename="../../core/system.cpp" line="4830"/>
         <source>Video timings set to default.</source>
         <translation>视频计时设置为默认。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4835"/>
+        <location filename="../../core/system.cpp" line="4832"/>
         <source>Widescreen rendering disabled.</source>
         <translation>宽屏渲染已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4837"/>
+        <location filename="../../core/system.cpp" line="4834"/>
         <source>PGXP disabled.</source>
         <translation>PGXP已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4839"/>
+        <location filename="../../core/system.cpp" line="4836"/>
         <source>GPU texture cache disabled.</source>
         <translation>GPU纹理缓存已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4841"/>
+        <location filename="../../core/system.cpp" line="4838"/>
         <source>FMV chroma smoothing disabled.</source>
         <translation>FMV色度平滑已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4843"/>
+        <location filename="../../core/system.cpp" line="4840"/>
         <source>CD-ROM read speedup disabled.</source>
         <translation>CD-ROM读取加速已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4845"/>
+        <location filename="../../core/system.cpp" line="4842"/>
         <source>CD-ROM seek speedup disabled.</source>
         <translation>CD-ROM搜寻加速已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4847"/>
+        <location filename="../../core/system.cpp" line="4844"/>
         <source>Mute CD-ROM audio disabled.</source>
         <translation>静音CD-ROM音轨已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4849"/>
+        <location filename="../../core/system.cpp" line="4846"/>
         <source>VRAM write texture replacements disabled.</source>
         <translation>显存写入纹理替换已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4851"/>
+        <location filename="../../core/system.cpp" line="4848"/>
         <source>Use old MDEC routines disabled.</source>
         <translation>使用旧的MDEC惯例已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4853"/>
+        <location filename="../../core/system.cpp" line="4850"/>
         <source>PIO device removed.</source>
         <translation>PIO设备已删除。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4855"/>
+        <location filename="../../core/system.cpp" line="4852"/>
         <source>PCDrv disabled.</source>
         <translation>PCDrv已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4857"/>
+        <location filename="../../core/system.cpp" line="4854"/>
         <source>Fast boot disabled.</source>
         <translation>快速启动已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4869"/>
+        <location filename="../../core/system.cpp" line="4866"/>
         <source>CD-ROM SubQ Skew is enabled. This will break games.</source>
         <translation>CD-ROM子通道Q偏斜已启用。这会破坏游戏。</translation>
     </message>
@@ -21220,17 +21248,17 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
         <translation type="vanished">强制NTSC计时已启用。游戏可能以不正确的速度运行。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4758"/>
+        <location filename="../../core/system.cpp" line="4762"/>
         <source>Multisample anti-aliasing is enabled, some games may not render correctly.</source>
         <translation>多重采样抗锯齿已启用，一些游戏可能无法正确渲染。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4764"/>
+        <location filename="../../core/system.cpp" line="4768"/>
         <source>Round upscaled texture coordinates is enabled. This may cause rendering errors.</source>
         <translation>纹理坐标放大取整已启用。这可能会导致渲染错误。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4770"/>
+        <location filename="../../core/system.cpp" line="4774"/>
         <source>8MB RAM is enabled, this may be incompatible with some games.</source>
         <translation>8MB内存已启用，这可能与某些游戏不兼容。</translation>
     </message>
@@ -21239,42 +21267,42 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
         <translation type="vanished">所有增强功能当前都已禁用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5142"/>
+        <location filename="../../core/system.cpp" line="5139"/>
         <source>Failed to save resume state: {}</source>
         <translation>无法保存可继续存档: {}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5298"/>
+        <location filename="../../core/system.cpp" line="5295"/>
         <source>capturing audio and video</source>
-        <translation>正在捕捉音频和视频</translation>
+        <translation>捕捉音频和视频</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5299"/>
+        <location filename="../../core/system.cpp" line="5296"/>
         <source>capturing video</source>
-        <translation>正在捕捉视频</translation>
+        <translation>捕捉视频</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5300"/>
+        <location filename="../../core/system.cpp" line="5297"/>
         <source>capturing audio</source>
-        <translation>正在捕捉音频</translation>
+        <translation>捕捉音频</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5413"/>
+        <location filename="../../core/system.cpp" line="5410"/>
         <source>Failed to create media capture: {0}</source>
         <translation>无法创建媒体捕捉: {0}</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5421"/>
+        <location filename="../../core/system.cpp" line="5418"/>
         <source>Starting {0} to &apos;{1}&apos;.</source>
         <translation>正在开始{0}到&apos;{1}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5462"/>
+        <location filename="../../core/system.cpp" line="5459"/>
         <source>Stopped {0} to &apos;{1}&apos;.</source>
         <translation>停止{0}到&apos;{1}&apos;。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="5470"/>
+        <location filename="../../core/system.cpp" line="5467"/>
         <source>Stopped {0}: {1}.</source>
         <translation>停止{0}: {1}。</translation>
     </message>
@@ -21311,7 +21339,7 @@ SBI文件的名称必须匹配光盘镜像的名称。</translation>
         <translation type="vanished">金手指&apos;{}&apos;已经启用。</translation>
     </message>
     <message>
-        <location filename="../../core/system.cpp" line="4071"/>
+        <location filename="../../core/system.cpp" line="4075"/>
         <source>Game changed, reloading memory cards.</source>
         <translation>游戏已变更，重新读取记忆卡。</translation>
     </message>
