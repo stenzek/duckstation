@@ -54,7 +54,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
                              tr("Simulates the position of the switch on the cartridge. Most cartridges require the "
                                 "switch to be on for it to activate on startup."));
   dialog->registerWidgetHelp(
-    m_ui.pioImageWrites, tr("Allow Image Writes"), tr("None"),
+    m_ui.pioImageWrites, tr("Allow Image Writes"), tr("Unchecked"),
     tr("Stores any images made to the cartridge's flash storage back to the host's file system. <strong>This will "
        "overwrite your cartridge dump,</strong> you should ensure you have a backup first."));
 
