@@ -1,7 +1,8 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_hw_texture_cache.h"
+#include "game_database.h"
 #include "gpu_hw.h"
 #include "gpu_hw_shadergen.h"
 #include "gpu_sw_rasterizer.h"
@@ -3457,16 +3458,34 @@ bool GPUTextureCache::EnsureGameDirectoryExists()
 
 std::string GPUTextureCache::GetTextureReplacementDirectory()
 {
+  const std::string& serial = GPUThread::GetGameSerial();
   std::string dir =
-    Path::Combine(EmuFolders::Textures,
-                  SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "replacements", GPUThread::GetGameSerial()));
+    Path::Combine(EmuFolders::Textures, SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "replacements", serial));
   if (!FileSystem::DirectoryExists(dir.c_str()))
   {
     // Check for the old directory structure without a replacements subdirectory.
-    std::string altdir = Path::Combine(EmuFolders::Textures, GPUThread::GetGameSerial());
+    std::string altdir = Path::Combine(EmuFolders::Textures, serial);
     if (FileSystem::DirectoryExists(altdir.c_str()))
+    {
       WARNING_LOG("Using deprecated texture replacement directory {}", altdir);
-    dir = std::move(altdir);
+      dir = std::move(altdir);
+    }
+    else
+    {
+      // If this is a multi-disc game, try the first disc.
+      const GameDatabase::Entry* dbentry = GameDatabase::GetEntryForSerial(serial);
+      if (dbentry && !dbentry->disc_set_serials.empty() && serial != dbentry->disc_set_serials.front())
+      {
+        altdir =
+          Path::Combine(EmuFolders::Textures, SmallString::from_format("{}" FS_OSPATH_SEPARATOR_STR "replacements",
+                                                                       dbentry->disc_set_serials.front()));
+        if (FileSystem::DirectoryExists(altdir.c_str()))
+        {
+          WARNING_LOG("Using texture replacements from first disc {}", dbentry->disc_set_serials.front());
+          dir = std::move(altdir);
+        }
+      }
+    }
   }
 
   return dir;
