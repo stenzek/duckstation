@@ -920,6 +920,9 @@ void Cheats::ReloadCheats(bool reload_files, bool reload_enabled_list, bool verb
   }
 
   UpdateActiveCodes(reload_enabled_list, verbose, verbose_if_changed, show_disabled_codes);
+
+  // Reapply frame end codes immediately. Otherwise you end up with a single frame where the old code is used.
+  ApplyFrameEndCodes();
 }
 
 void Cheats::UnloadAll()
