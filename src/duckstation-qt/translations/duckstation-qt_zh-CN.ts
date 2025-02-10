@@ -7346,7 +7346,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9175"/>
         <source>Remove From Chain</source>
-        <translation>从链上删除</translation>
+        <translation>从链中删除</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8995"/>
@@ -7371,7 +7371,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8873"/>
         <source>Details unavailable for game not scanned in game list.</source>
-        <translation>游戏列表中未扫描出来的游戏，详情不可用。</translation>
+        <translation>游戏列表中未扫描到的游戏无法提供详细信息。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8923"/>
@@ -7404,7 +7404,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9199"/>
         <source>Reverses the game list sort order from the default (usually ascending to descending).</source>
-        <translation>颠倒默认的游戏列表排序顺序(通常是升序到降序)。</translation>
+        <translation>将游戏列表的排序顺序从默认顺序反转 (通常是从升序改为降序)。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9202"/>
@@ -7478,7 +7478,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8867"/>
         <source>Delete State</source>
-        <translation>删除档</translation>
+        <translation>删除即时档案</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9377"/>
@@ -9551,7 +9551,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9243"/>
         <source>Select State</source>
-        <translation>选择存档</translation>
+        <translation>选择即时档案</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9244"/>
@@ -12190,12 +12190,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>内置分辨率:</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="935"/>
+        <location filename="../graphicssettingswidget.cpp" line="942"/>
         <source>Automatic (Based on Window Size)</source>
         <translation>自动 (基于窗口大小)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="936"/>
+        <location filename="../graphicssettingswidget.cpp" line="943"/>
         <source>1x Native (Default)</source>
         <translation>1x 原设 (默认)</translation>
     </message>
@@ -12204,7 +12204,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="vanished">2x 原设</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="937"/>
+        <location filename="../graphicssettingswidget.cpp" line="944"/>
         <source>3x Native (for 720p)</source>
         <translation>3x 原设 (适合 720p)</translation>
     </message>
@@ -12213,12 +12213,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="vanished">4x 原设</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="938"/>
+        <location filename="../graphicssettingswidget.cpp" line="945"/>
         <source>5x Native (for 1080p)</source>
         <translation>5x 原设 (适合 1080p)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="939"/>
+        <location filename="../graphicssettingswidget.cpp" line="946"/>
         <source>6x Native (for 1440p)</source>
         <translation>6x 原设 (适合 1440p)</translation>
     </message>
@@ -12231,7 +12231,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="vanished">8x 原设</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="940"/>
+        <location filename="../graphicssettingswidget.cpp" line="947"/>
         <source>9x Native (for 4K)</source>
         <translation>9x 原设 (适合 4K)</translation>
     </message>
@@ -12377,7 +12377,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="448"/>
-        <location filename="../graphicssettingswidget.cpp" line="457"/>
+        <location filename="../graphicssettingswidget.cpp" line="458"/>
         <source>Threaded Rendering</source>
         <translation>线程渲染</translation>
     </message>
@@ -12407,7 +12407,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="434"/>
-        <location filename="../graphicssettingswidget.cpp" line="461"/>
+        <location filename="../graphicssettingswidget.cpp" line="462"/>
         <source>Scaled Dithering</source>
         <translation>缩放色彩抖动</translation>
     </message>
@@ -12417,7 +12417,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="427"/>
-        <location filename="../graphicssettingswidget.cpp" line="465"/>
+        <location filename="../graphicssettingswidget.cpp" line="466"/>
         <source>Software Renderer Readbacks</source>
         <translation>软件渲染器回读</translation>
     </message>
@@ -12449,37 +12449,37 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="578"/>
-        <location filename="../graphicssettingswidget.cpp" line="487"/>
+        <location filename="../graphicssettingswidget.cpp" line="488"/>
         <source>Perspective Correct Textures</source>
         <translation>透视校正纹理</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="564"/>
-        <location filename="../graphicssettingswidget.cpp" line="491"/>
+        <location filename="../graphicssettingswidget.cpp" line="492"/>
         <source>Perspective Correct Colors</source>
         <translation>透视校正颜色</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="599"/>
-        <location filename="../graphicssettingswidget.cpp" line="494"/>
+        <location filename="../graphicssettingswidget.cpp" line="495"/>
         <source>Culling Correction</source>
         <translation>剔除校正</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="592"/>
-        <location filename="../graphicssettingswidget.cpp" line="498"/>
+        <location filename="../graphicssettingswidget.cpp" line="499"/>
         <source>Preserve Projection Precision</source>
         <translation>保留投影精度</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="585"/>
-        <location filename="../graphicssettingswidget.cpp" line="500"/>
+        <location filename="../graphicssettingswidget.cpp" line="501"/>
         <source>CPU Mode</source>
         <translation>CPU模式</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="571"/>
-        <location filename="../graphicssettingswidget.cpp" line="504"/>
+        <location filename="../graphicssettingswidget.cpp" line="505"/>
         <source>Vertex Cache</source>
         <translation>顶点缓存</translation>
     </message>
@@ -12501,67 +12501,67 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="744"/>
-        <location filename="../graphicssettingswidget.cpp" line="545"/>
+        <location filename="../graphicssettingswidget.cpp" line="546"/>
         <source>Show Controller Input</source>
         <translation>显示控制器输入</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="737"/>
-        <location filename="../graphicssettingswidget.cpp" line="549"/>
+        <location filename="../graphicssettingswidget.cpp" line="550"/>
         <source>Show Status Indicators</source>
         <translation>显示状态指示器</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="688"/>
-        <location filename="../graphicssettingswidget.cpp" line="529"/>
+        <location filename="../graphicssettingswidget.cpp" line="530"/>
         <source>Show FPS</source>
         <translation>显示帧率</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="695"/>
-        <location filename="../graphicssettingswidget.cpp" line="521"/>
+        <location filename="../graphicssettingswidget.cpp" line="522"/>
         <source>Show OSD Messages</source>
         <translation>显示OSD消息</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="758"/>
-        <location filename="../graphicssettingswidget.cpp" line="524"/>
+        <location filename="../graphicssettingswidget.cpp" line="525"/>
         <source>Show Resolution</source>
         <translation>显示分辨率</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="730"/>
-        <location filename="../graphicssettingswidget.cpp" line="547"/>
+        <location filename="../graphicssettingswidget.cpp" line="548"/>
         <source>Show Settings</source>
         <translation>显示设置</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="702"/>
-        <location filename="../graphicssettingswidget.cpp" line="532"/>
+        <location filename="../graphicssettingswidget.cpp" line="533"/>
         <source>Show CPU Usage</source>
         <translation>显示CPU使用</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="709"/>
-        <location filename="../graphicssettingswidget.cpp" line="536"/>
+        <location filename="../graphicssettingswidget.cpp" line="537"/>
         <source>Show GPU Statistics</source>
         <translation>显示GPU统计信息</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="716"/>
-        <location filename="../graphicssettingswidget.cpp" line="527"/>
+        <location filename="../graphicssettingswidget.cpp" line="528"/>
         <source>Show Emulation Speed</source>
         <translation>显示模拟速度</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="751"/>
-        <location filename="../graphicssettingswidget.cpp" line="542"/>
+        <location filename="../graphicssettingswidget.cpp" line="543"/>
         <source>Show Frame Times</source>
         <translation>显示帧时间</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="723"/>
-        <location filename="../graphicssettingswidget.cpp" line="534"/>
+        <location filename="../graphicssettingswidget.cpp" line="535"/>
         <source>Show GPU Usage</source>
         <translation>显示GPU使用</translation>
     </message>
@@ -12589,13 +12589,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="420"/>
-        <location filename="../graphicssettingswidget.cpp" line="469"/>
+        <location filename="../graphicssettingswidget.cpp" line="470"/>
         <source>Round Upscaled Texture Coordinates</source>
         <translation>纹理坐标放大取整</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="441"/>
-        <location filename="../graphicssettingswidget.cpp" line="473"/>
+        <location filename="../graphicssettingswidget.cpp" line="474"/>
         <source>Accurate Blending</source>
         <translation>精确混合</translation>
     </message>
@@ -12606,19 +12606,19 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="606"/>
-        <location filename="../graphicssettingswidget.cpp" line="507"/>
+        <location filename="../graphicssettingswidget.cpp" line="508"/>
         <source>Disable on 2D Polygons</source>
         <translation>禁用在2D多边形</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="613"/>
-        <location filename="../graphicssettingswidget.cpp" line="511"/>
+        <location filename="../graphicssettingswidget.cpp" line="512"/>
         <source>Depth Test Transparent Polygons</source>
         <translation>深度测试透明多边形</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="765"/>
-        <location filename="../graphicssettingswidget.cpp" line="539"/>
+        <location filename="../graphicssettingswidget.cpp" line="540"/>
         <source>Show Latency Statistics</source>
         <translation>显示延迟统计信息</translation>
     </message>
@@ -12689,6 +12689,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="970"/>
+        <location filename="../graphicssettingswidget.cpp" line="592"/>
         <source>Capture Audio</source>
         <translation>捕捉音频</translation>
     </message>
@@ -12704,18 +12705,19 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1098"/>
+        <location filename="../graphicssettingswidget.cpp" line="572"/>
         <source>Capture Video</source>
         <translation>捕捉视频</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1416"/>
-        <location filename="../graphicssettingswidget.cpp" line="656"/>
+        <location filename="../graphicssettingswidget.cpp" line="663"/>
         <source>Disable Compute Shaders</source>
         <translation>禁用计算着色器</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1423"/>
-        <location filename="../graphicssettingswidget.cpp" line="659"/>
+        <location filename="../graphicssettingswidget.cpp" line="666"/>
         <source>Disable Compressed Textures</source>
         <translation>禁用压缩纹理</translation>
     </message>
@@ -12730,19 +12732,19 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1228"/>
-        <location filename="../graphicssettingswidget.cpp" line="621"/>
+        <location filename="../graphicssettingswidget.cpp" line="628"/>
         <source>Enable VRAM Write Replacement</source>
         <translation>启用显存写入替换</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1155"/>
-        <location filename="../graphicssettingswidget.cpp" line="605"/>
+        <location filename="../graphicssettingswidget.cpp" line="612"/>
         <source>Preload Texture Replacements</source>
         <translation>预加载纹理替换</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1235"/>
-        <location filename="../graphicssettingswidget.cpp" line="625"/>
+        <location filename="../graphicssettingswidget.cpp" line="632"/>
         <source>Use Old MDEC Routines</source>
         <translation>使用旧的MDEC惯例</translation>
     </message>
@@ -12752,7 +12754,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1242"/>
-        <location filename="../graphicssettingswidget.cpp" line="623"/>
+        <location filename="../graphicssettingswidget.cpp" line="630"/>
         <source>Enable VRAM Write Dumping</source>
         <translation>启用显存写入转储</translation>
     </message>
@@ -12782,13 +12784,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1148"/>
-        <location filename="../graphicssettingswidget.cpp" line="602"/>
+        <location filename="../graphicssettingswidget.cpp" line="609"/>
         <source>Enable Texture Cache</source>
         <translation>启用纹理缓存</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1178"/>
-        <location filename="../graphicssettingswidget.cpp" line="616"/>
+        <location filename="../graphicssettingswidget.cpp" line="623"/>
         <source>Enable Texture Dumping</source>
         <translation>启用纹理转储</translation>
     </message>
@@ -12799,13 +12801,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1201"/>
-        <location filename="../graphicssettingswidget.cpp" line="618"/>
+        <location filename="../graphicssettingswidget.cpp" line="625"/>
         <source>Dump Replaced Textures</source>
         <translation>转储替换的纹理</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1208"/>
-        <location filename="../graphicssettingswidget.cpp" line="611"/>
+        <location filename="../graphicssettingswidget.cpp" line="618"/>
         <source>Always Track Uploads</source>
         <translation>始终跟踪上传</translation>
     </message>
@@ -12861,19 +12863,19 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1388"/>
-        <location filename="../graphicssettingswidget.cpp" line="640"/>
+        <location filename="../graphicssettingswidget.cpp" line="647"/>
         <source>Disable Framebuffer Fetch</source>
         <translation>禁用帧缓冲获取</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1402"/>
-        <location filename="../graphicssettingswidget.cpp" line="650"/>
+        <location filename="../graphicssettingswidget.cpp" line="657"/>
         <source>Disable Memory Import</source>
         <translation>禁用记忆卡导入</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1409"/>
-        <location filename="../graphicssettingswidget.cpp" line="653"/>
+        <location filename="../graphicssettingswidget.cpp" line="660"/>
         <source>Disable Rasterizer Order Views</source>
         <translation>禁用光栅化器顺序视图</translation>
     </message>
@@ -12884,25 +12886,25 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1374"/>
-        <location filename="../graphicssettingswidget.cpp" line="637"/>
+        <location filename="../graphicssettingswidget.cpp" line="644"/>
         <source>Disable Dual-Source Blending</source>
         <translation>禁用双源混合</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1360"/>
-        <location filename="../graphicssettingswidget.cpp" line="632"/>
+        <location filename="../graphicssettingswidget.cpp" line="639"/>
         <source>Use Debug Device</source>
         <translation>使用调试设备</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1381"/>
-        <location filename="../graphicssettingswidget.cpp" line="635"/>
+        <location filename="../graphicssettingswidget.cpp" line="642"/>
         <source>Disable Shader Cache</source>
         <translation>禁用着色器缓存</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1367"/>
-        <location filename="../graphicssettingswidget.cpp" line="644"/>
+        <location filename="../graphicssettingswidget.cpp" line="651"/>
         <source>Disable Texture Buffers</source>
         <translation>禁用纹理缓冲</translation>
     </message>
@@ -12923,7 +12925,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="346"/>
-        <location filename="../graphicssettingswidget.cpp" line="864"/>
+        <location filename="../graphicssettingswidget.cpp" line="871"/>
         <source>(Default)</source>
         <translation>(默认)</translation>
     </message>
@@ -12950,9 +12952,9 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="356"/>
         <location filename="../graphicssettingswidget.cpp" line="392"/>
-        <location filename="../graphicssettingswidget.cpp" line="451"/>
-        <location filename="../graphicssettingswidget.cpp" line="454"/>
-        <location filename="../graphicssettingswidget.cpp" line="967"/>
+        <location filename="../graphicssettingswidget.cpp" line="452"/>
+        <location filename="../graphicssettingswidget.cpp" line="455"/>
+        <location filename="../graphicssettingswidget.cpp" line="974"/>
         <source>Disabled</source>
         <translation>禁用</translation>
     </message>
@@ -13042,47 +13044,47 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.cpp" line="433"/>
         <location filename="../graphicssettingswidget.cpp" line="436"/>
         <location filename="../graphicssettingswidget.cpp" line="440"/>
-        <location filename="../graphicssettingswidget.cpp" line="465"/>
-        <location filename="../graphicssettingswidget.cpp" line="469"/>
-        <location filename="../graphicssettingswidget.cpp" line="473"/>
-        <location filename="../graphicssettingswidget.cpp" line="491"/>
-        <location filename="../graphicssettingswidget.cpp" line="498"/>
-        <location filename="../graphicssettingswidget.cpp" line="500"/>
-        <location filename="../graphicssettingswidget.cpp" line="504"/>
-        <location filename="../graphicssettingswidget.cpp" line="507"/>
-        <location filename="../graphicssettingswidget.cpp" line="511"/>
-        <location filename="../graphicssettingswidget.cpp" line="524"/>
-        <location filename="../graphicssettingswidget.cpp" line="527"/>
-        <location filename="../graphicssettingswidget.cpp" line="529"/>
-        <location filename="../graphicssettingswidget.cpp" line="532"/>
-        <location filename="../graphicssettingswidget.cpp" line="534"/>
-        <location filename="../graphicssettingswidget.cpp" line="536"/>
-        <location filename="../graphicssettingswidget.cpp" line="539"/>
-        <location filename="../graphicssettingswidget.cpp" line="542"/>
-        <location filename="../graphicssettingswidget.cpp" line="545"/>
-        <location filename="../graphicssettingswidget.cpp" line="547"/>
-        <location filename="../graphicssettingswidget.cpp" line="578"/>
+        <location filename="../graphicssettingswidget.cpp" line="466"/>
+        <location filename="../graphicssettingswidget.cpp" line="470"/>
+        <location filename="../graphicssettingswidget.cpp" line="474"/>
+        <location filename="../graphicssettingswidget.cpp" line="492"/>
+        <location filename="../graphicssettingswidget.cpp" line="499"/>
+        <location filename="../graphicssettingswidget.cpp" line="501"/>
+        <location filename="../graphicssettingswidget.cpp" line="505"/>
+        <location filename="../graphicssettingswidget.cpp" line="508"/>
+        <location filename="../graphicssettingswidget.cpp" line="512"/>
+        <location filename="../graphicssettingswidget.cpp" line="525"/>
+        <location filename="../graphicssettingswidget.cpp" line="528"/>
+        <location filename="../graphicssettingswidget.cpp" line="530"/>
+        <location filename="../graphicssettingswidget.cpp" line="533"/>
+        <location filename="../graphicssettingswidget.cpp" line="535"/>
+        <location filename="../graphicssettingswidget.cpp" line="537"/>
+        <location filename="../graphicssettingswidget.cpp" line="540"/>
+        <location filename="../graphicssettingswidget.cpp" line="543"/>
+        <location filename="../graphicssettingswidget.cpp" line="546"/>
+        <location filename="../graphicssettingswidget.cpp" line="548"/>
         <location filename="../graphicssettingswidget.cpp" line="582"/>
-        <location filename="../graphicssettingswidget.cpp" line="593"/>
-        <location filename="../graphicssettingswidget.cpp" line="602"/>
-        <location filename="../graphicssettingswidget.cpp" line="605"/>
-        <location filename="../graphicssettingswidget.cpp" line="608"/>
-        <location filename="../graphicssettingswidget.cpp" line="611"/>
-        <location filename="../graphicssettingswidget.cpp" line="616"/>
+        <location filename="../graphicssettingswidget.cpp" line="586"/>
+        <location filename="../graphicssettingswidget.cpp" line="600"/>
+        <location filename="../graphicssettingswidget.cpp" line="609"/>
+        <location filename="../graphicssettingswidget.cpp" line="612"/>
+        <location filename="../graphicssettingswidget.cpp" line="615"/>
         <location filename="../graphicssettingswidget.cpp" line="618"/>
-        <location filename="../graphicssettingswidget.cpp" line="621"/>
         <location filename="../graphicssettingswidget.cpp" line="623"/>
         <location filename="../graphicssettingswidget.cpp" line="625"/>
+        <location filename="../graphicssettingswidget.cpp" line="628"/>
+        <location filename="../graphicssettingswidget.cpp" line="630"/>
         <location filename="../graphicssettingswidget.cpp" line="632"/>
-        <location filename="../graphicssettingswidget.cpp" line="635"/>
-        <location filename="../graphicssettingswidget.cpp" line="637"/>
-        <location filename="../graphicssettingswidget.cpp" line="640"/>
+        <location filename="../graphicssettingswidget.cpp" line="639"/>
+        <location filename="../graphicssettingswidget.cpp" line="642"/>
         <location filename="../graphicssettingswidget.cpp" line="644"/>
         <location filename="../graphicssettingswidget.cpp" line="647"/>
-        <location filename="../graphicssettingswidget.cpp" line="650"/>
-        <location filename="../graphicssettingswidget.cpp" line="653"/>
-        <location filename="../graphicssettingswidget.cpp" line="656"/>
-        <location filename="../graphicssettingswidget.cpp" line="659"/>
+        <location filename="../graphicssettingswidget.cpp" line="651"/>
+        <location filename="../graphicssettingswidget.cpp" line="654"/>
+        <location filename="../graphicssettingswidget.cpp" line="657"/>
+        <location filename="../graphicssettingswidget.cpp" line="660"/>
+        <location filename="../graphicssettingswidget.cpp" line="663"/>
+        <location filename="../graphicssettingswidget.cpp" line="666"/>
         <source>Unchecked</source>
         <translation>不勾选</translation>
     </message>
@@ -13092,12 +13094,14 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="398"/>
-        <location filename="../graphicssettingswidget.cpp" line="457"/>
-        <location filename="../graphicssettingswidget.cpp" line="461"/>
-        <location filename="../graphicssettingswidget.cpp" line="487"/>
-        <location filename="../graphicssettingswidget.cpp" line="494"/>
-        <location filename="../graphicssettingswidget.cpp" line="521"/>
-        <location filename="../graphicssettingswidget.cpp" line="549"/>
+        <location filename="../graphicssettingswidget.cpp" line="458"/>
+        <location filename="../graphicssettingswidget.cpp" line="462"/>
+        <location filename="../graphicssettingswidget.cpp" line="488"/>
+        <location filename="../graphicssettingswidget.cpp" line="495"/>
+        <location filename="../graphicssettingswidget.cpp" line="522"/>
+        <location filename="../graphicssettingswidget.cpp" line="550"/>
+        <location filename="../graphicssettingswidget.cpp" line="572"/>
+        <location filename="../graphicssettingswidget.cpp" line="592"/>
         <source>Checked</source>
         <translation>勾选</translation>
     </message>
@@ -13151,7 +13155,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="424"/>
-        <location filename="../graphicssettingswidget.cpp" line="901"/>
+        <location filename="../graphicssettingswidget.cpp" line="908"/>
         <source>Borderless Fullscreen</source>
         <translation>无边框全屏</translation>
     </message>
@@ -13234,22 +13238,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>当使用Direct3D 11渲染器时，使用位块传输呈现模型而不是翻转。这通常会导致性能降低，但对于某些流应用程序或在某些系统上打开帧率可能需要这样。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="446"/>
+        <location filename="../graphicssettingswidget.cpp" line="447"/>
         <source>Line Detection</source>
         <translation>线检测</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="448"/>
+        <location filename="../graphicssettingswidget.cpp" line="449"/>
         <source>Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.</source>
         <translation>尝试检测依赖于非放大光栅化行为的一个像素高/宽的线条，填补由放大带来的空白。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="451"/>
+        <location filename="../graphicssettingswidget.cpp" line="452"/>
         <source>Multi-Sampling</source>
         <translation>多重采样</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="452"/>
+        <location filename="../graphicssettingswidget.cpp" line="453"/>
         <source>Uses multi-sampled anti-aliasing when rendering 3D polygons. Can improve visuals with a lower performance requirement compared to upscaling, &lt;strong&gt;but often introduces rendering errors.&lt;/strong&gt;</source>
         <translation>在渲染3D多边形时使用多重采样抗锯齿。与放大相比，能以更低的性能要求改善视觉效果，&lt;strong&gt;但往往会带来渲染错误。&lt;/strong&gt;</translation>
     </message>
@@ -13258,117 +13262,117 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="vanished">当启用真彩色时，应用现代抖动技术进一步平滑渐变。这种去条带是在渲染期间执行的 (与后处理步骤相反)，这使得它在保留细节的同时速度很快。由于屏幕截图中存在微妙的抖动模式，去条带会增加屏幕截图的文件大小。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="462"/>
+        <location filename="../graphicssettingswidget.cpp" line="463"/>
         <source>Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less obvious at higher resolutions. Usually safe to enable.</source>
         <translation>缩放色彩抖动图案到模拟GPU的分辨率比率。这使得色彩抖动图案在高分辨率下更加不明显。通常可以安全启用。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="466"/>
+        <location filename="../graphicssettingswidget.cpp" line="467"/>
         <source>Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater performance when using graphical enhancements with the hardware renderer.</source>
         <translation>并行运行软件渲染器，进行显存回读。在某些系统上，当使用硬件渲染器的图像增强时，这可能会带来更好的性能。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="470"/>
+        <location filename="../graphicssettingswidget.cpp" line="471"/>
         <source>Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but break others, and is incompatible with texture filtering.</source>
         <translation>当放大时，对纹理坐标采取四舍五入，而不是向下舍入。可以修复某些游戏中未对齐的纹理，但会破坏其他游戏，并且与纹理过滤不兼容。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="474"/>
+        <location filename="../graphicssettingswidget.cpp" line="475"/>
         <source>Forces blending to be done in the shader at 16-bit precision, when not using true color. Very few games actually require this, and there is a &lt;strong&gt;non-trivial&lt;/strong&gt; performance cost.</source>
         <translation>当不使用真彩色时，强制以16位精度在着色器中进行混合。实际上很少有游戏需要这样做，而且性能成本也&lt;strong&gt;相当高&lt;/strong&gt;。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="480"/>
+        <location filename="../graphicssettingswidget.cpp" line="481"/>
         <source>Geometry Tolerance</source>
         <translation>几何公差</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="480"/>
+        <location filename="../graphicssettingswidget.cpp" line="481"/>
         <source>-1.00px (Disabled)</source>
         <translation>-1.00px (禁用)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="481"/>
+        <location filename="../graphicssettingswidget.cpp" line="482"/>
         <source>Discards precise geometry when it is found to be offset past the specified threshold. This can help with games that have vertices significantly moved by PGXP, but is still a hack/workaround.</source>
         <translation>当发现精确几何体的偏移超过指定阈值时，将其丢弃。这对顶点被PGXP大幅移动的游戏有帮助，但仍是一种调整/变通方法。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="483"/>
+        <location filename="../graphicssettingswidget.cpp" line="484"/>
         <source>Depth Clear Threshold</source>
         <translation>深度清除阈值</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="485"/>
+        <location filename="../graphicssettingswidget.cpp" line="486"/>
         <source>Determines the increase in depth that will result in the depth buffer being cleared. Can help with depth issues in some games, but is still a hack/workaround.</source>
         <translation>确定深度的增加会导致深度缓冲被清除。可帮助解决某些游戏中的深度问题，但仍是一种调整/变通方法。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="488"/>
+        <location filename="../graphicssettingswidget.cpp" line="489"/>
         <source>Uses perspective-correct interpolation for texture coordinates, straightening out warped textures. Requires geometry correction enabled.</source>
         <translation>对纹理坐标使用透视校正插值，矫直扭曲的纹理。需要启用几何校正。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="492"/>
+        <location filename="../graphicssettingswidget.cpp" line="493"/>
         <source>Uses perspective-correct interpolation for vertex colors, which can improve visuals in some games, but cause rendering errors in others. Requires geometry correction enabled.</source>
         <translation>为顶点颜色使用透视校正插值，这可以改善某些游戏的视觉效果，但在其他游戏中会导致渲染错误。需要启用几何校正。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="495"/>
+        <location filename="../graphicssettingswidget.cpp" line="496"/>
         <source>Increases the precision of polygon culling, reducing the number of holes in geometry. Requires geometry correction enabled.</source>
         <translation>提高多边形剔除的精度，减少几何体中孔的数量。需要启用几何校正。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="499"/>
+        <location filename="../graphicssettingswidget.cpp" line="500"/>
         <source>Adds additional precision to PGXP data post-projection. May improve visuals in some games.</source>
         <translation>为PGXP数据后投影增加额外的精度。可以改善某些游戏的视觉效果。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="501"/>
+        <location filename="../graphicssettingswidget.cpp" line="502"/>
         <source>Uses PGXP for all instructions, not just memory operations. Required for PGXP to correct wobble in some games, but has a high performance cost.</source>
         <translation>对全部指令使用PGXP，而不仅仅是内存操作。需要PGXP来校正某些游戏中的抖动，但有高的性能成本。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="505"/>
+        <location filename="../graphicssettingswidget.cpp" line="506"/>
         <source>Uses screen-space vertex positions to obtain precise positions, instead of tracking memory accesses. Can provide PGXP compatibility for some games, but &lt;strong&gt;generally provides no benefit.&lt;/strong&gt;</source>
         <translation>使用屏幕空间顶点位置来获取精确的位置，而不是跟踪内存访问。可以为某些游戏提供PGXP兼容性，但是&lt;strong&gt;通常不会带来任何好处。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="508"/>
+        <location filename="../graphicssettingswidget.cpp" line="509"/>
         <source>Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled. The game database will enable this automatically when needed.</source>
         <translation>使用2D多边形的原设分辨率坐标，而不是精确坐标。可以修复某些游戏中未对齐的UI，但除此之外应保持禁用状态。游戏数据库会在需要时自动启用。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="519"/>
+        <location filename="../graphicssettingswidget.cpp" line="520"/>
         <source>OSD Scale</source>
         <translation>OSD比率</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="519"/>
+        <location filename="../graphicssettingswidget.cpp" line="520"/>
         <source>100%</source>
         <translation>100%</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="520"/>
+        <location filename="../graphicssettingswidget.cpp" line="521"/>
         <source>Changes the size at which on-screen elements, including status and messages are displayed.</source>
         <translation>更改屏幕上元素的大小，包括状态和消息。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="522"/>
+        <location filename="../graphicssettingswidget.cpp" line="523"/>
         <source>Shows on-screen-display messages when events occur such as save states being created/loaded, screenshots being taken, etc.</source>
         <translation>在事件发生时显示同屏显示消息，例如正在创建/载入即时存档，正在捕捉屏幕截图，……等。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="525"/>
+        <location filename="../graphicssettingswidget.cpp" line="526"/>
         <source>Shows the resolution of the game in the top-right corner of the display.</source>
         <translation>在显示右上角显示游戏的分辨率。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="528"/>
+        <location filename="../graphicssettingswidget.cpp" line="529"/>
         <source>Shows the current emulation speed of the system in the top-right corner of the display as a percentage.</source>
         <translation>在显示右上角以百分比显示系统的当前模拟速度。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="530"/>
+        <location filename="../graphicssettingswidget.cpp" line="531"/>
         <source>Shows the internal frame rate of the game in the top-right corner of the display.</source>
         <translation>在显示右上角显示游戏的内部帧率。</translation>
     </message>
@@ -13407,261 +13411,271 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>自动调整窗口大小以匹配内部分辨率。&lt;strong&gt;对于高内部分辨率，这将创建非常大的窗口。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="458"/>
+        <location filename="../graphicssettingswidget.cpp" line="459"/>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
         <translation>使用第二个线程来绘制图形。尤其在使用软件渲染器时，速度有明显提高，而且使用起来很安全。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="512"/>
+        <location filename="../graphicssettingswidget.cpp" line="513"/>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting..</source>
         <translation>启用半透明多边形的深度测试。通常这些多边形包含阴影，并且在启用深度测试时往往会穿过地面。无论此设置如何，半透明多边形的深度写入都会被禁用。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="533"/>
+        <location filename="../graphicssettingswidget.cpp" line="534"/>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
         <translation>在显示右上角显示本机各系统线程的CPU占用率。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="535"/>
+        <location filename="../graphicssettingswidget.cpp" line="536"/>
         <source>Shows the host&apos;s GPU usage in the top-right corner of the display.</source>
         <translation>在显示右上角显示本机的GPU使用情况。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="537"/>
+        <location filename="../graphicssettingswidget.cpp" line="538"/>
         <source>Shows information about the emulated GPU in the top-right corner of the display.</source>
         <translation>在显示右上角显示关于模拟的GPU的信息。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="540"/>
+        <location filename="../graphicssettingswidget.cpp" line="541"/>
         <source>Shows information about input and audio latency in the top-right corner of the display.</source>
         <translation>在显示右上角显示关于输入和音频延迟的信息。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="543"/>
+        <location filename="../graphicssettingswidget.cpp" line="544"/>
         <source>Shows the history of frame rendering times as a graph in the top-right corner of the display.</source>
         <translation>在显示右上角以图表形式显示帧渲染时间的历史记录。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="546"/>
+        <location filename="../graphicssettingswidget.cpp" line="547"/>
         <source>Shows the current controller state of the system in the bottom-left corner of the display.</source>
         <translation>在显示左下角显示系统的当前控制器状态。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="548"/>
+        <location filename="../graphicssettingswidget.cpp" line="549"/>
         <source>Shows a summary of current settings in the bottom-right corner of the display.</source>
         <translation>在显示右下角显示当前设置的摘要。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="550"/>
+        <location filename="../graphicssettingswidget.cpp" line="551"/>
         <source>Shows indicators on screen when the system is not running in its &quot;normal&quot; state. For example, fast forwarding, or being paused.</source>
         <translation>当系统未以其“正常”状态运行时，在屏幕上显示指示器。例如，快进或暂停。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="555"/>
+        <location filename="../graphicssettingswidget.cpp" line="556"/>
         <source>Screenshot Size</source>
         <translation>屏幕截图大小</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="555"/>
+        <location filename="../graphicssettingswidget.cpp" line="556"/>
         <source>Screen Resolution</source>
         <translation>屏幕分辨率</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="556"/>
+        <location filename="../graphicssettingswidget.cpp" line="557"/>
         <source>Determines the resolution at which screenshots will be saved. Internal resolutions preserve more detail at the cost of file size.</source>
         <translation>确定将保存屏幕截图的分辨率。内置分辨率能保留更多细节，但会影响文件大小。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="559"/>
+        <location filename="../graphicssettingswidget.cpp" line="560"/>
         <source>Screenshot Format</source>
         <translation>屏幕截图格式</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="559"/>
+        <location filename="../graphicssettingswidget.cpp" line="560"/>
         <source>PNG</source>
         <translation>PNG</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="560"/>
+        <location filename="../graphicssettingswidget.cpp" line="561"/>
         <source>Selects the format which will be used to save screenshots. JPEG produces smaller files, but loses detail.</source>
         <translation>选择将用于保存屏幕截图的格式。JPEG产生较小的文件，但丢失细节。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="561"/>
+        <location filename="../graphicssettingswidget.cpp" line="562"/>
         <source>Screenshot Quality</source>
         <translation>屏幕截图质量</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="563"/>
+        <location filename="../graphicssettingswidget.cpp" line="564"/>
         <source>Selects the quality at which screenshots will be compressed. Higher values preserve more detail for JPEG, and reduce file size for PNG.</source>
         <translation>选择压缩屏幕截图的质量。对于JPEG来说，较高的数值能保留更多细节，而对于PNG来说，则能减小文件大小。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="566"/>
+        <location filename="../graphicssettingswidget.cpp" line="567"/>
         <source>Backend</source>
         <translation>后端</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="568"/>
+        <location filename="../graphicssettingswidget.cpp" line="569"/>
         <source>Selects the framework that is used to encode video/audio.</source>
         <translation>选择用于编码视频/音频的框架。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="569"/>
+        <location filename="../graphicssettingswidget.cpp" line="570"/>
         <source>Container</source>
         <translation>文件格式</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="569"/>
+        <location filename="../graphicssettingswidget.cpp" line="570"/>
         <source>MP4</source>
         <translation>MP4</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="570"/>
+        <location filename="../graphicssettingswidget.cpp" line="571"/>
         <source>Determines the file format used to contain the captured audio/video</source>
         <translation>确定用于包含捕捉的音频/视频的文件格式</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="572"/>
+        <location filename="../graphicssettingswidget.cpp" line="573"/>
+        <source>Captures video to the chosen file when media capture is started. If unchecked, the file will only contain audio.</source>
+        <translation>开始媒体捕捉时，将视频捕捉到选定的文件中。如果不勾选此项，该文件将仅包含音频。</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="576"/>
         <source>Video Codec</source>
         <translation>视频编解码器</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="572"/>
-        <location filename="../graphicssettingswidget.cpp" line="589"/>
-        <location filename="../graphicssettingswidget.cpp" line="1143"/>
-        <location filename="../graphicssettingswidget.cpp" line="1157"/>
+        <location filename="../graphicssettingswidget.cpp" line="576"/>
+        <location filename="../graphicssettingswidget.cpp" line="596"/>
+        <location filename="../graphicssettingswidget.cpp" line="1150"/>
+        <location filename="../graphicssettingswidget.cpp" line="1164"/>
         <source>Default</source>
         <translation>默认</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="573"/>
+        <location filename="../graphicssettingswidget.cpp" line="577"/>
         <source>Selects which Video Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
         <translation>选择用于视频捕捉的视频编解码器。&lt;b&gt;如果不确定，请保持默认值。&lt;b&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="574"/>
+        <location filename="../graphicssettingswidget.cpp" line="578"/>
         <source>Video Bitrate</source>
         <translation>视频比特率</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="574"/>
+        <location filename="../graphicssettingswidget.cpp" line="578"/>
         <source>6000 kbps</source>
         <translation>6000kbps</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="575"/>
+        <location filename="../graphicssettingswidget.cpp" line="579"/>
         <source>Sets the video bitrate to be used. Larger bitrate generally yields better video quality at the cost of larger resulting file size.</source>
         <translation>设置要使用的视频比特率。比特率越大，视频质量越好，但文件大小也越大。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="578"/>
+        <location filename="../graphicssettingswidget.cpp" line="582"/>
         <source>Automatic Resolution</source>
         <translation>自动分辨率</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="579"/>
+        <location filename="../graphicssettingswidget.cpp" line="583"/>
         <source>When checked, the video capture resolution will follows the internal resolution of the running game. &lt;b&gt;Be careful when using this setting especially when you are upscaling, as higher internal resolutions (above 4x) can cause system slowdown.&lt;/b&gt;</source>
         <translation>选中后，视频捕捉分辨率将与运行中游戏的内部分辨率一致。&lt;b&gt;使用此设置时要小心，尤其是在进行放大时，因为较高的内部分辨率 (4倍以上) 可能会导致系统运行速度变慢。&lt;/b&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="582"/>
+        <location filename="../graphicssettingswidget.cpp" line="586"/>
         <source>Enable Extra Video Arguments</source>
         <translation>启用额外视频参数</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="583"/>
+        <location filename="../graphicssettingswidget.cpp" line="587"/>
         <source>Allows you to pass arguments to the selected video codec.</source>
         <translation>允许您将参数传递给所选的视频编解码器。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="585"/>
+        <location filename="../graphicssettingswidget.cpp" line="589"/>
         <source>Extra Video Arguments</source>
         <translation>额外视频参数</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="585"/>
-        <location filename="../graphicssettingswidget.cpp" line="596"/>
+        <location filename="../graphicssettingswidget.cpp" line="589"/>
+        <location filename="../graphicssettingswidget.cpp" line="603"/>
         <source>Empty</source>
         <translation>空</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="586"/>
+        <location filename="../graphicssettingswidget.cpp" line="590"/>
         <source>Parameters passed to the selected video codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;crf = 21 : preset = veryfast&quot;</source>
         <translation>传递给所选视频编解码器的参数。&lt;br&gt;&lt;b&gt;您必须使用&apos;=&apos;将键与值分隔开，并使用&apos;:&apos;将两对彼此分隔开。&lt;/b&gt;&lt;br&gt;例如: &quot;crf = 21 : preset = veryfast&quot;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="589"/>
+        <location filename="../graphicssettingswidget.cpp" line="593"/>
+        <source>Captures audio to the chosen file when media capture is started. If unchecked, the file will only contain video.</source>
+        <translation>开始媒体捕捉时，将音频捕捉到选定的文件中。如果不勾选此项，该文件将仅包含视频。</translation>
+    </message>
+    <message>
+        <location filename="../graphicssettingswidget.cpp" line="596"/>
         <source>Audio Codec</source>
         <translation>音频编解码器</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="590"/>
+        <location filename="../graphicssettingswidget.cpp" line="597"/>
         <source>Selects which Audio Codec to be used for Video Capture. &lt;b&gt;If unsure, leave it on default.&lt;b&gt;</source>
         <translation>选择用于音频捕捉的视频编解码器。&lt;b&gt;如果不确定，请保持默认值。&lt;b&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="591"/>
+        <location filename="../graphicssettingswidget.cpp" line="598"/>
         <source>Audio Bitrate</source>
         <translation>音频比特率</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="591"/>
+        <location filename="../graphicssettingswidget.cpp" line="598"/>
         <source>160 kbps</source>
         <translation>160kbps</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="592"/>
+        <location filename="../graphicssettingswidget.cpp" line="599"/>
         <source>Sets the audio bitrate to be used.</source>
         <translation>设置要使用的音频比特率。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="593"/>
+        <location filename="../graphicssettingswidget.cpp" line="600"/>
         <source>Enable Extra Audio Arguments</source>
         <translation>启用额外音频参数</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="594"/>
+        <location filename="../graphicssettingswidget.cpp" line="601"/>
         <source>Allows you to pass arguments to the selected audio codec.</source>
         <translation>允许您将参数传递给所选的音频编解码器。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="596"/>
+        <location filename="../graphicssettingswidget.cpp" line="603"/>
         <source>Extra Audio Arguments</source>
         <translation>额外音频参数</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="597"/>
+        <location filename="../graphicssettingswidget.cpp" line="604"/>
         <source>Parameters passed to the selected audio codec.&lt;br&gt;&lt;b&gt;You must use &apos;=&apos; to separate key from value and &apos;:&apos; to separate two pairs from each other.&lt;/b&gt;&lt;br&gt;For example: &quot;compression_level = 4 : joint_stereo = 1&quot;</source>
         <translation>传递给所选音频编解码器的参数。&lt;br&gt;&lt;b&gt;您必须使用&apos;=&apos;将键与值分隔开，并使用&apos;:&apos;将两对彼此分隔开。&lt;/b&gt;&lt;br&gt;例如: &quot;compression_level = 4 : joint_stereo = 1&quot;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1321"/>
+        <location filename="../graphicssettingswidget.cpp" line="1328"/>
         <source>Texture Replacement Configuration</source>
         <translation>纹理替换配置</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1324"/>
+        <location filename="../graphicssettingswidget.cpp" line="1331"/>
         <source>Texture Replacement Configuration (config.yaml)</source>
         <translation>纹理替换配置 (config.yaml)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1326"/>
+        <location filename="../graphicssettingswidget.cpp" line="1333"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1329"/>
+        <location filename="../graphicssettingswidget.cpp" line="1336"/>
         <source>Save Configuration</source>
         <translation>保存配置</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1330"/>
+        <location filename="../graphicssettingswidget.cpp" line="1337"/>
         <source>Configuration Files (config.yaml)</source>
         <translation>配置文件 (config.yaml)</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1338"/>
+        <location filename="../graphicssettingswidget.cpp" line="1345"/>
         <source>Write Failed</source>
         <translation>写入失败</translation>
     </message>
@@ -13670,12 +13684,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="vanished">允许在支持的游戏中替换背景纹理。&lt;strong&gt;这不是一般的纹理替换。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="606"/>
+        <location filename="../graphicssettingswidget.cpp" line="613"/>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
         <translation>将全部替换纹理加载到内存，减少运行时的卡顿。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="626"/>
+        <location filename="../graphicssettingswidget.cpp" line="633"/>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
         <translation>启用较旧的、精度较低的MDEC解码例程。可能需要旧的替换背景方能匹配/加载。</translation>
     </message>
@@ -13684,7 +13698,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="vanished">清除显存写入转储中的掩码/透明位。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="624"/>
+        <location filename="../graphicssettingswidget.cpp" line="631"/>
         <source>Writes backgrounds that can be replaced to the dump directory.</source>
         <translation>将可替换的背景写入转储目录。</translation>
     </message>
@@ -13701,129 +13715,129 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation type="vanished">确定触发转储显存写入的阈值。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="454"/>
+        <location filename="../graphicssettingswidget.cpp" line="455"/>
         <source>Wireframe Mode</source>
         <translation>线框模式</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="455"/>
+        <location filename="../graphicssettingswidget.cpp" line="456"/>
         <source>Draws a wireframe outline of the triangles rendered by the console&apos;s GPU, either as a replacement or an overlay.</source>
         <translation>为游戏机的GPU渲染的三角形绘制线框轮廓，作为替代或覆盖。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="603"/>
+        <location filename="../graphicssettingswidget.cpp" line="610"/>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
         <translation>启用缓存客户纹理，这是纹理替换所必需的。&lt;strong&gt;纹理缓存目前还处于试验阶段，并可能在某些游戏中导致渲染错误。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="608"/>
+        <location filename="../graphicssettingswidget.cpp" line="615"/>
         <source>Enable Texture Replacements</source>
         <translation>启用纹理替换</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="609"/>
+        <location filename="../graphicssettingswidget.cpp" line="616"/>
         <source>Enables loading of replacement textures. Not compatible with all games.</source>
         <translation>启用替换纹理的加载。并非与所有游戏兼容。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="612"/>
+        <location filename="../graphicssettingswidget.cpp" line="619"/>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed. Reduces performance, but allows toggling replacements on and off. &lt;strong&gt;Not required for replacements to load, &lt;/strong&gt;normally tracking is automatically enabled when needed.</source>
         <translation>强制启用纹理上传跟踪，无论是否需要。降低性能，但允许切换替换的开启和关闭。&lt;strong&gt;替换加载时不需要，&lt;/strong&gt;通常跟踪会在需要时自动启用。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="617"/>
+        <location filename="../graphicssettingswidget.cpp" line="624"/>
         <source>Enables dumping of textures to image files, which can be replaced. Not compatible with all games.</source>
         <translation>允许将纹理转储到图像文件，并可对其进行替换。并非与所有游戏兼容。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="619"/>
+        <location filename="../graphicssettingswidget.cpp" line="626"/>
         <source>Dumps textures that have replacements already loaded.</source>
         <translation>转储已经加载替换的纹理。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="622"/>
+        <location filename="../graphicssettingswidget.cpp" line="629"/>
         <source>Enables the replacement of background textures in supported games.</source>
         <translation>允许在支持的游戏中替换背景纹理。</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="633"/>
+        <location filename="../graphicssettingswidget.cpp" line="640"/>
         <source>Enable debugging when supported by the host&apos;s renderer API. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>当本机的渲染器API支持时，启用调试。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="636"/>
+        <location filename="../graphicssettingswidget.cpp" line="643"/>
         <source>Forces shaders to be compiled for every run of the program. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>每次运行程序时都强制编译着色器。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="638"/>
+        <location filename="../graphicssettingswidget.cpp" line="645"/>
         <source>Prevents dual-source blending from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>防止使用双源混合。用于测试损坏的图像驱动程序。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="641"/>
+        <location filename="../graphicssettingswidget.cpp" line="648"/>
         <source>Prevents the framebuffer fetch extensions from being used. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>防止使用帧缓冲获取扩展。用于测试损坏的图像驱动程序。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="645"/>
+        <location filename="../graphicssettingswidget.cpp" line="652"/>
         <source>Forces VRAM updates through texture updates, instead of texture buffers and draws. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>通过纹理更新强制更新显存，而不是纹理缓冲和绘制。用于测试损坏的图像驱动程序。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="647"/>
+        <location filename="../graphicssettingswidget.cpp" line="654"/>
         <source>Disable Texture Copies To Self</source>
         <translation>禁用纹理副本到自身</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="648"/>
+        <location filename="../graphicssettingswidget.cpp" line="655"/>
         <source>Disables the use of self-copy updates for the VRAM texture. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>禁用显存纹理的自我复制更新的使用。用于测试损坏的图像驱动程序。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="651"/>
+        <location filename="../graphicssettingswidget.cpp" line="658"/>
         <source>Disables the use of host memory importing. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>禁用本机内存导入。用于测试损坏的图像驱动程序。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="654"/>
+        <location filename="../graphicssettingswidget.cpp" line="661"/>
         <source>Disables the use of rasterizer order views. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>禁用光栅化器顺序视图。用于测试损坏的图像驱动程序。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="657"/>
+        <location filename="../graphicssettingswidget.cpp" line="664"/>
         <source>Disables the use of compute shaders. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>禁用计算着色器。用于测试损坏的图像驱动程序。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="660"/>
+        <location filename="../graphicssettingswidget.cpp" line="667"/>
         <source>Disables the use of compressed textures. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
         <translation>禁止压缩纹理的使用。用于测试损坏的图像驱动程序。&lt;strong&gt;仅供开发人员使用。&lt;/strong&gt;</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="951"/>
+        <location filename="../graphicssettingswidget.cpp" line="958"/>
         <source>%1x Native</source>
         <translation>%1x 原设</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="964"/>
+        <location filename="../graphicssettingswidget.cpp" line="971"/>
         <source>Use Global Setting</source>
         <translation>使用全局设置</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="969"/>
+        <location filename="../graphicssettingswidget.cpp" line="976"/>
         <source>%1x MSAA</source>
         <translation>%1x MSAA</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="971"/>
+        <location filename="../graphicssettingswidget.cpp" line="978"/>
         <source>%1x SSAA</source>
         <translation>%1x SSAA</translation>
     </message>
     <message>
-        <location filename="../graphicssettingswidget.cpp" line="1116"/>
-        <location filename="../graphicssettingswidget.cpp" line="1148"/>
-        <location filename="../graphicssettingswidget.cpp" line="1162"/>
+        <location filename="../graphicssettingswidget.cpp" line="1123"/>
+        <location filename="../graphicssettingswidget.cpp" line="1155"/>
+        <location filename="../graphicssettingswidget.cpp" line="1169"/>
         <source>%1 (%2)</source>
         <translation>%1 (%2)</translation>
     </message>
@@ -14671,8 +14685,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
 <context>
     <name>InputBindingDialog</name>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="158"/>
-        <location filename="../inputbindingdialog.cpp" line="174"/>
+        <location filename="../inputbindingdialog.cpp" line="167"/>
+        <location filename="../inputbindingdialog.cpp" line="183"/>
         <source>Push Button/Axis... [%1]</source>
         <translation>按下按键/轴… [%1]</translation>
     </message>
@@ -14687,8 +14701,8 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>为%1绑定%2</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.cpp" line="336"/>
-        <location filename="../inputbindingdialog.cpp" line="361"/>
+        <location filename="../inputbindingdialog.cpp" line="345"/>
+        <location filename="../inputbindingdialog.cpp" line="370"/>
         <source>%1%</source>
         <translation>%1%</translation>
     </message>
@@ -14719,14 +14733,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <translation>死区:</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.ui" line="120"/>
         <source>Reset Volume</source>
-        <translation>重置音量</translation>
+        <translation type="vanished">重置音量</translation>
     </message>
     <message>
-        <location filename="../inputbindingdialog.ui" line="130"/>
         <source>Reset Fast Forward Volume</source>
-        <translation>重置快进音量</translation>
+        <translation type="vanished">重置快进音量</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="152"/>
@@ -14737,6 +14749,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../inputbindingdialog.ui" line="26"/>
         <source>Bindings for Controller0/ButtonCircle</source>
         <translation>绑定控制器0/按键圈圈</translation>
+    </message>
+    <message>
+        <location filename="../inputbindingdialog.ui" line="120"/>
+        <location filename="../inputbindingdialog.ui" line="130"/>
+        <source>Reset</source>
+        <translation>重置</translation>
     </message>
     <message>
         <location filename="../inputbindingdialog.ui" line="166"/>
@@ -20298,7 +20316,7 @@ Do you want to create this directory?</source>
         <location filename="../settingswindow.cpp" line="351"/>
         <location filename="../settingswindow.cpp" line="364"/>
         <source>DuckStation Settings</source>
-        <translation>DuckStation 设置</translation>
+        <translation>DuckStation设置</translation>
     </message>
     <message>
         <location filename="../settingswindow.ui" line="73"/>
