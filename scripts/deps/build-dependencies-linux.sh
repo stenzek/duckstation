@@ -301,6 +301,7 @@ echo "Building SDL..."
 rm -fr "SDL3-$SDL3"
 tar xf "SDL3-$SDL3.tar.gz"
 cd "SDL3-$SDL3"
+patch -p1 < "$SCRIPTDIR/sdl3-joystick-crash.patch"
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -G Ninja
 cmake --build build --parallel
 ninja -C build install

@@ -355,6 +355,7 @@ tar xf "SDL3-$SDL3.tar.gz"
 cd "SDL3-$SDL3"
 # needed because -Isystem with chroot/usr/include breaks
 patch -p1 < "$SCRIPTDIR/sdl2-disable-isystem.patch"
+patch -p1 < "$SCRIPTDIR/sdl3-joystick-crash.patch"
 cmake -B build "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -G Ninja
 cmake --build build --parallel
 ninja -C build install

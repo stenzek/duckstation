@@ -32,13 +32,13 @@ modules:
   # Dependencies.
   - "modules/10-libbacktrace.yaml"
   - "modules/11-libzip.yaml"
-  - "modules/20-sdl3.yaml"
-  - "modules/21-shaderc.yaml"
-  - "modules/22-spirv-cross.yaml"
-  - "modules/23-cpuinfo.yaml"
-  - "modules/24-discord-rpc.yaml"
-  - "modules/25-soundtouch.yaml"
-  - "modules/26-lunasvg.yaml"
+  - "modules/20-shaderc.yaml"
+  - "modules/21-spirv-cross.yaml"
+  - "modules/22-cpuinfo.yaml"
+  - "modules/23-discord-rpc.yaml"
+  - "modules/24-soundtouch.yaml"
+  - "modules/25-lunasvg.yaml"
+  - "modules/30-sdl3.yaml"
 
   # Main module.
   - name: duckstation

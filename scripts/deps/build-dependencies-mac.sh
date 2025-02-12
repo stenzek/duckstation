@@ -226,6 +226,7 @@ echo "Installing SDL..."
 rm -fr "SDL3-$SDL3"
 tar xf "SDL3-$SDL3.tar.gz"
 cd "SDL3-$SDL3"
+patch -p1 < "$SCRIPTDIR/sdl3-joystick-crash.patch"
 cmake -B build "${CMAKE_COMMON[@]}" "$CMAKE_ARCH_UNIVERSAL" -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -DSDL_X11=OFF -DBUILD_SHARED_LIBS=ON
 make -C build "-j$NPROCS"
 make -C build install

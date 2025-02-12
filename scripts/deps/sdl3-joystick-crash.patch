@@ -1,0 +1,28 @@
+From d90c0e7fefbbf9aa7061884dba02d8c809a30a10 Mon Sep 17 00:00:00 2001
+From: Stenzek <stenzek@gmail.com>
+Date: Mon, 10 Feb 2025 22:52:50 +1000
+Subject: [PATCH] joystick: Fix PS5 player LED hint change callback name
+
+The LED hint was getting registered for SDL_HINT_JOYSTICK_ENHANCED_REPORTS
+instead of SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED, which results in a
+use-after-free followed by a crash.
+---
+ src/joystick/hidapi/SDL_hidapi_ps5.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/joystick/hidapi/SDL_hidapi_ps5.c b/src/joystick/hidapi/SDL_hidapi_ps5.c
+index 94b720d42..abf59a87f 100644
+--- a/src/joystick/hidapi/SDL_hidapi_ps5.c
++++ b/src/joystick/hidapi/SDL_hidapi_ps5.c
+@@ -952,7 +952,7 @@ static bool HIDAPI_DriverPS5_OpenJoystick(SDL_HIDAPI_Device *device, SDL_Joystic
+ 
+     SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
+                         SDL_PS5EnhancedReportsChanged, ctx);
+-    SDL_AddHintCallback(SDL_HINT_JOYSTICK_ENHANCED_REPORTS,
++    SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI_PS5_PLAYER_LED,
+                         SDL_PS5PlayerLEDHintChanged, ctx);
+ 
+     return true;
+-- 
+2.48.1
+
