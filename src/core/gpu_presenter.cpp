@@ -726,8 +726,8 @@ void GPUPresenter::DrawScreenQuad(const GSVector4i rect, const GSVector4 uv_rect
                                   WindowInfo::PreRotation prerotation)
 {
   const GSVector4i real_rect = GPUSwapChain::PreRotateClipRect(prerotation, target_size, rect);
-  g_gpu_device->SetScissor(g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(real_rect, target_size.y) :
-                                                                 real_rect);
+  g_gpu_device->SetScissor(
+    g_gpu_device->UsesLowerLeftOrigin() ? GPUDevice::FlipToLowerLeft(real_rect, final_target_size.y) : real_rect);
 
   GPUBackend::ScreenVertex* vertices;
   u32 space;
