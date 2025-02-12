@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "controller.h"
 #include "analog_controller.h"
 #include "analog_joystick.h"
+#include "ddgo_controller.h"
 #include "digital_controller.h"
 #include "game_database.h"
 #include "guncon.h"
@@ -35,7 +36,7 @@ static constexpr std::array<const Controller::ControllerInfo*, static_cast<size_
     &NeGconRumble::INFO,
     &Justifier::INFO,
     &DigitalController::INFO_POPN,
-    &DigitalController::INFO_DDGO,
+    &DDGoController::INFO,
     &JogCon::INFO,
   }};
 
@@ -120,7 +121,6 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
   {
     case ControllerType::DigitalController:
     case ControllerType::PopnController:
-    case ControllerType::DDGoController:
       return DigitalController::Create(index, type);
 
     case ControllerType::AnalogController:
@@ -143,6 +143,9 @@ std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)
 
     case ControllerType::NeGconRumble:
       return NeGconRumble::Create(index);
+
+    case ControllerType::DDGoController:
+      return DDGoController::Create(index);
 
     case ControllerType::JogCon:
       return JogCon::Create(index);

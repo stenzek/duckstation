@@ -28,6 +28,7 @@
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="cpu_types.cpp" />
+    <ClCompile Include="ddgo_controller.cpp" />
     <ClCompile Include="digital_controller.cpp" />
     <ClCompile Include="fullscreen_ui.cpp" />
     <ClCompile Include="game_database.cpp" />
@@ -108,6 +109,7 @@
     <ClInclude Include="cpu_recompiler_x64.h">
       <ExcludedFromBuild Condition="'$(Platform)'!='x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="ddgo_controller.h" />
     <ClInclude Include="digital_controller.h" />
     <ClInclude Include="fullscreen_ui.h" />
     <ClInclude Include="game_database.h" />

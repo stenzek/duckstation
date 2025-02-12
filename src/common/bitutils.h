@@ -109,6 +109,10 @@ ALWAYS_INLINE static constexpr u64 BoolToUInt64(bool value)
 {
   return static_cast<u64>(value);
 }
+ALWAYS_INLINE static constexpr float BoolToFloat(bool value)
+{
+  return static_cast<float>(value);
+}
 
 // Integer to boolean
 template<typename TValue>

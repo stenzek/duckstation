@@ -32,6 +32,8 @@ add_library(core
   cpu_pgxp.h
   cpu_types.cpp
   cpu_types.h
+  ddgo_controller.cpp
+  ddgo_controller.h
   digital_controller.cpp
   digital_controller.h
   dma.cpp

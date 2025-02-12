@@ -67,6 +67,7 @@
     <ClCompile Include="pio.cpp" />
     <ClCompile Include="gpu_thread.cpp" />
     <ClCompile Include="gpu_presenter.cpp" />
+    <ClCompile Include="ddgo_controller.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="types.h" />
@@ -144,6 +145,7 @@
     <ClInclude Include="gpu_thread.h" />
     <ClInclude Include="gpu_thread_commands.h" />
     <ClInclude Include="gpu_presenter.h" />
+    <ClInclude Include="ddgo_controller.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="gpu_sw_rasterizer.inl" />
