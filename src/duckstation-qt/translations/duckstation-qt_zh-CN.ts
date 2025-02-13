@@ -1358,6 +1358,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="824"/>
+        <location filename="../../core/ddgo_controller.cpp" line="344"/>
         <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
         <translation>设置模拟摇杆轴的缩放系数。当使用最新的控制器时，例如DualShock 4、Xbox One控制器，建议使用130%到140%之间的值。</translation>
     </message>
@@ -1378,6 +1379,7 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="820"/>
+        <location filename="../../core/ddgo_controller.cpp" line="340"/>
         <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
         <translation>设置模拟摇杆的死区，也就是摇杆移动中会被忽略的小部分。</translation>
     </message>
@@ -2236,7 +2238,6 @@ Unread messages: {}</source>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="48"/>
-        <location filename="../biossettingswidget.cpp" line="57"/>
         <source>None</source>
         <translation>无</translation>
     </message>
@@ -2394,6 +2395,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../biossettingswidget.cpp" line="43"/>
         <location filename="../biossettingswidget.cpp" line="46"/>
+        <location filename="../biossettingswidget.cpp" line="57"/>
         <location filename="../biossettingswidget.cpp" line="118"/>
         <location filename="../biossettingswidget.cpp" line="120"/>
         <location filename="../biossettingswidget.cpp" line="123"/>
@@ -2718,7 +2720,7 @@ Unread messages: {}</source>
         <translation>自动操作 (帧结束)</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1005"/>
+        <location filename="../../core/cheats.cpp" line="1008"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -2726,7 +2728,7 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1012"/>
+        <location filename="../../core/cheats.cpp" line="1015"/>
         <source>%n cheats are enabled. This may crash games.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -2734,12 +2736,12 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1020"/>
+        <location filename="../../core/cheats.cpp" line="1023"/>
         <source>No cheats/patches are found or enabled.</source>
         <translation>未发现或启用任何金手指/补丁。</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1039"/>
+        <location filename="../../core/cheats.cpp" line="1042"/>
         <source>%n cheats</source>
         <comment>Cheats blocked by hardcore mode</comment>
         <translation>
@@ -2747,7 +2749,7 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1041"/>
+        <location filename="../../core/cheats.cpp" line="1044"/>
         <source>%n patches</source>
         <comment>Patches blocked by hardcore mode</comment>
         <translation>
@@ -2755,17 +2757,17 @@ Unread messages: {}</source>
         </translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1044"/>
+        <location filename="../../core/cheats.cpp" line="1047"/>
         <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
         <translation>通过成就硬核模式/安全模式禁用{0}和{1}。</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1046"/>
+        <location filename="../../core/cheats.cpp" line="1049"/>
         <source>{} disabled by achievements hardcore mode/safe mode.</source>
         <translation>通过成就硬核模式/安全模式禁用{}。</translation>
     </message>
     <message>
-        <location filename="../../core/cheats.cpp" line="1079"/>
+        <location filename="../../core/cheats.cpp" line="1082"/>
         <source>Cheat &apos;{}&apos; applied.</source>
         <translation>金手指&apos;{}&apos;已应用。</translation>
     </message>
@@ -4723,7 +4725,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <translation type="vanished">NeGcon隆响声</translation>
     </message>
     <message>
-        <location filename="../../core/controller.cpp" line="24"/>
+        <location filename="../../core/controller.cpp" line="25"/>
         <source>Not Connected</source>
         <translation>没有连接</translation>
     </message>
@@ -4738,17 +4740,17 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
         <translation>NeGcon</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="191"/>
+        <location filename="../../core/digital_controller.cpp" line="185"/>
         <source>Digital Controller</source>
         <translation>数字控制器</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="216"/>
+        <location filename="../../core/digital_controller.cpp" line="210"/>
         <source>Pop&apos;n Controller</source>
         <translation>Pop&apos;n控制器</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="244"/>
+        <location filename="../../core/ddgo_controller.cpp" line="360"/>
         <source>Densha de Go! Controller</source>
         <translation>次世代电车GO!控制器</translation>
     </message>
@@ -4852,64 +4854,149 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
 <context>
     <name>DDGoController</name>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="224"/>
+        <location filename="../../core/ddgo_controller.cpp" line="308"/>
         <source>Select</source>
         <translation>选择</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="225"/>
+        <location filename="../../core/ddgo_controller.cpp" line="309"/>
         <source>Start</source>
         <translation>开始</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="226"/>
+        <location filename="../../core/ddgo_controller.cpp" line="310"/>
         <source>A</source>
         <translation>A</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="227"/>
+        <location filename="../../core/ddgo_controller.cpp" line="311"/>
         <source>B</source>
         <translation>B</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="228"/>
+        <location filename="../../core/ddgo_controller.cpp" line="312"/>
         <source>C</source>
         <translation>C</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="229"/>
+        <location filename="../../core/ddgo_controller.cpp" line="313"/>
+        <source>Power Off</source>
+        <translation>关机</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="314"/>
         <source>Power 1</source>
-        <translation>推进1</translation>
+        <translation>功率1</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="230"/>
+        <location filename="../../core/ddgo_controller.cpp" line="315"/>
         <source>Power 2</source>
-        <translation>推进2</translation>
+        <translation>功率2</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="231"/>
+        <location filename="../../core/ddgo_controller.cpp" line="316"/>
         <source>Power 3</source>
-        <translation>推进3</translation>
+        <translation>功率3</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="232"/>
+        <location filename="../../core/ddgo_controller.cpp" line="317"/>
+        <source>Power 4</source>
+        <translation>功率4</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="318"/>
+        <source>Power 5</source>
+        <translation>功率5</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="319"/>
+        <source>Brake Released</source>
+        <translation>制动松开</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="320"/>
         <source>Brake 1</source>
-        <translation>刹车1</translation>
+        <translation>制动1</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="233"/>
+        <location filename="../../core/ddgo_controller.cpp" line="322"/>
         <source>Brake 3</source>
-        <translation>刹车3</translation>
+        <translation>制动3</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="234"/>
+        <location filename="../../core/ddgo_controller.cpp" line="324"/>
+        <source>Brake 5</source>
+        <translation>制动5</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="325"/>
+        <source>Brake 6</source>
+        <translation>制动6</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="326"/>
+        <source>Brake 7</source>
+        <translation>制动7</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="327"/>
+        <source>Brake 8</source>
+        <translation>制动8</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="328"/>
+        <source>Brake Emergency</source>
+        <translation>紧急制动</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="330"/>
+        <source>Power</source>
+        <translation>功率</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="331"/>
+        <source>Brake</source>
+        <translation>制动</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="339"/>
+        <source>Analog Deadzone</source>
+        <translation>模拟死区</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="343"/>
+        <source>Analog Sensitivity</source>
+        <translation>模拟灵敏度</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="349"/>
+        <source>Power Transition Frames</source>
+        <translation>功率转换框架</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="350"/>
+        <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing power level.</source>
+        <translation>设置控制器在改变功率级别时报告过渡/中间状态的帧数。</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="353"/>
+        <source>Brake Transition Frames</source>
+        <translation>制动转换框架</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="354"/>
+        <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing brake level.</source>
+        <translation>设置控制器在改变制动级别时报告过渡/中间状态的帧数。</translation>
+    </message>
+    <message>
+        <location filename="../../core/ddgo_controller.cpp" line="321"/>
         <source>Brake 2</source>
-        <translation>刹车2</translation>
+        <translation>制动2</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="235"/>
+        <location filename="../../core/ddgo_controller.cpp" line="323"/>
         <source>Brake 4</source>
-        <translation>刹车4</translation>
+        <translation>制动4</translation>
     </message>
 </context>
 <context>
@@ -5419,32 +5506,32 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
 <context>
     <name>DigitalController</name>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="180"/>
+        <location filename="../../core/digital_controller.cpp" line="174"/>
         <source>L1</source>
         <translation>L1</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="182"/>
+        <location filename="../../core/digital_controller.cpp" line="176"/>
         <source>L2</source>
         <translation>L2</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="181"/>
+        <location filename="../../core/digital_controller.cpp" line="175"/>
         <source>R1</source>
         <translation>R1</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="183"/>
+        <location filename="../../core/digital_controller.cpp" line="177"/>
         <source>R2</source>
         <translation>R2</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="176"/>
+        <location filename="../../core/digital_controller.cpp" line="170"/>
         <source>Cross</source>
         <translation>叉叉</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="179"/>
+        <location filename="../../core/digital_controller.cpp" line="173"/>
         <source>Start</source>
         <translation>开始</translation>
     </message>
@@ -5457,42 +5544,42 @@ This file can be several gigabytes, so be aware of SSD wear.</source>
         <translation type="vanished">强制Pop&apos;n控制器模式</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="170"/>
+        <location filename="../../core/digital_controller.cpp" line="164"/>
         <source>D-Pad Up</source>
         <translation>十字方向键 上</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="171"/>
+        <location filename="../../core/digital_controller.cpp" line="165"/>
         <source>D-Pad Right</source>
         <translation>十字方向键 右</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="172"/>
+        <location filename="../../core/digital_controller.cpp" line="166"/>
         <source>D-Pad Down</source>
         <translation>十字方向键 下</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="173"/>
+        <location filename="../../core/digital_controller.cpp" line="167"/>
         <source>D-Pad Left</source>
         <translation>十字方向键 左</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="175"/>
+        <location filename="../../core/digital_controller.cpp" line="169"/>
         <source>Circle</source>
         <translation>圆圈</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="178"/>
+        <location filename="../../core/digital_controller.cpp" line="172"/>
         <source>Select</source>
         <translation>选择</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="177"/>
+        <location filename="../../core/digital_controller.cpp" line="171"/>
         <source>Square</source>
         <translation>方块</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="174"/>
+        <location filename="../../core/digital_controller.cpp" line="168"/>
         <source>Triangle</source>
         <translation>三角</translation>
     </message>
@@ -5811,7 +5898,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="130"/>
         <source>Skips the presentation/display of frames that are not unique. Can be combined with driver-level frame generation to increase perceptible frame rate. Can result in worse frame pacing, and is not compatible with syncing to host refresh.</source>
-        <translation>跳过非唯一的帧呈现/显示。可以与驱动器级帧生成相结合，以提高可感知的帧速率。可能导致帧间距变差，并且与本机刷新的同步不兼容。</translation>
+        <translation>跳过非唯一的帧呈现/显示。可以与驱动程序级帧生成相结合，以提高可感知的帧速率。可能导致帧间距变差，并且与本机刷新同步不兼容。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="162"/>
@@ -5934,7 +6021,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <location filename="../emulationsettingswidget.cpp" line="135"/>
         <source>&lt;b&gt;Enable Rewinding:&lt;/b&gt; Saves state periodically so you can rewind any mistakes while playing.&lt;br&gt; &lt;b&gt;Rewind Save Frequency:&lt;/b&gt; How often a rewind state will be created. Higher frequencies have greater system requirements.&lt;br&gt; &lt;b&gt;Rewind Buffer Size:&lt;/b&gt; How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>&lt;b&gt;启用倒带：&lt;/b&gt;周期地自动存档以使您可以在游戏时倒回任何错误。&lt;br&gt; &lt;b&gt;倒带保存频率：&lt;/b&gt;倒带档的创建频率。频率越高对系统的需求就越大。&lt;br&gt; &lt;b&gt;倒带缓冲大小：&lt;/b&gt;倒带档的保留数量。数值越高对内存的需求就越大。</translation>
+        <translation>&lt;b&gt;启用倒带：&lt;/b&gt;周期地自动保存即时档案以使您可以在游戏时倒回任何错误。&lt;br&gt; &lt;b&gt;倒带保存频率：&lt;/b&gt;倒带用即时档案的创建频率。频率越高对系统的需求就越大。&lt;br&gt; &lt;b&gt;倒带缓冲大小：&lt;/b&gt;倒带用即时档案的保留数量。数值越高对内存的需求就越大。</translation>
     </message>
     <message>
         <location filename="../emulationsettingswidget.ui" line="95"/>
@@ -8141,7 +8228,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9221"/>
         <source>Saves state periodically so you can rewind any mistakes while playing.</source>
-        <translation>周期地自动存档以使您可以在游戏时倒回任何错误。</translation>
+        <translation>周期地自动保存即时档案以使您可以在游戏时倒回任何错误。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9022"/>
@@ -10500,7 +10587,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
         <translation>分辨率比率{0}x不支持自适应缩减采样，使用{1}x。</translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3615"/>
+        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3634"/>
         <source>%n replacement textures found.</source>
         <comment>Replacement texture count</comment>
         <translation>
@@ -10508,7 +10595,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
         </translation>
     </message>
     <message>
-        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3617"/>
+        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3636"/>
         <source>No replacement textures found.</source>
         <translation>没有找到替换纹理。</translation>
     </message>
@@ -18654,47 +18741,47 @@ Please configure a supported controller from the list above.</source>
 <context>
     <name>PopnController</name>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="201"/>
+        <location filename="../../core/digital_controller.cpp" line="195"/>
         <source>Left White</source>
         <translation>左 白</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="202"/>
+        <location filename="../../core/digital_controller.cpp" line="196"/>
         <source>Left Yellow</source>
         <translation>左 黄</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="203"/>
+        <location filename="../../core/digital_controller.cpp" line="197"/>
         <source>Left Green</source>
         <translation>左 绿</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="204"/>
+        <location filename="../../core/digital_controller.cpp" line="198"/>
         <source>Left Blue/Sel</source>
         <translation>左 蓝/选择</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="205"/>
+        <location filename="../../core/digital_controller.cpp" line="199"/>
         <source>Middle Red/Okay</source>
         <translation>中 红/确定</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="206"/>
+        <location filename="../../core/digital_controller.cpp" line="200"/>
         <source>Right Blue/Sel</source>
         <translation>右 蓝/选择</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="207"/>
+        <location filename="../../core/digital_controller.cpp" line="201"/>
         <source>Right Green</source>
         <translation>右 绿</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="208"/>
+        <location filename="../../core/digital_controller.cpp" line="202"/>
         <source>Right Yellow</source>
         <translation>右 黄</translation>
     </message>
     <message>
-        <location filename="../../core/digital_controller.cpp" line="209"/>
+        <location filename="../../core/digital_controller.cpp" line="203"/>
         <source>Right White</source>
         <translation>右 白</translation>
     </message>
