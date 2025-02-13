@@ -6931,7 +6931,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9023"/>
         <source>How many saves will be kept for rewinding. Higher values have greater memory requirements.</source>
-        <translation>倒带档的保留数量。数值越高对内存的需求就越大。</translation>
+        <translation>倒带用即时档案的保留数量。数值越高对内存的需求就越大。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9406"/>
@@ -7157,7 +7157,7 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9024"/>
         <source>How often a rewind state will be created. Higher frequencies have greater system requirements.</source>
-        <translation>倒带档的创建频率。频率越高对系统的需求就越大。</translation>
+        <translation>倒带用即时档案的创建频率。频率越高对系统的需求就越大。</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8984"/>
