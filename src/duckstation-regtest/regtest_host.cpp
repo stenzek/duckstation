@@ -879,6 +879,8 @@ std::string RegTestHost::GetFrameDumpPath(u32 frame)
 
 int main(int argc, char* argv[])
 {
+  CrashHandler::Install(&Bus::CleanupMemoryMap);
+
   Error startup_error;
   if (!System::PerformEarlyHardwareChecks(&startup_error) || !System::ProcessStartup(&startup_error))
   {

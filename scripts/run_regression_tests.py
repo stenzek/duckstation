@@ -35,6 +35,7 @@ def run_regression_tests(runner, gamedirs, destdir, dump_interval, frames, paral
     for gamedir in gamedirs:
         paths += glob.glob(os.path.realpath(gamedir) + "/*.*", recursive=True)
     gamepaths = list(filter(is_game_path, paths))
+    gamepaths.sort(key=lambda x: os.path.basename(x))
 
     try:
         if not os.path.isdir(destdir):

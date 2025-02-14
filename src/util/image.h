@@ -63,11 +63,8 @@ public:
   ALWAYS_INLINE ImageFormat GetFormat() const { return m_format; }
   ALWAYS_INLINE const u8* GetPixels() const { return std::assume_aligned<VECTOR_ALIGNMENT>(m_pixels.get()); }
   ALWAYS_INLINE u8* GetPixels() { return std::assume_aligned<VECTOR_ALIGNMENT>(m_pixels.get()); }
-  ALWAYS_INLINE const u8* GetRowPixels(u32 y) const
-  {
-    return std::assume_aligned<VECTOR_ALIGNMENT>(&m_pixels[y * m_pitch]);
-  }
-  ALWAYS_INLINE u8* GetRowPixels(u32 y) { return std::assume_aligned<VECTOR_ALIGNMENT>(&m_pixels[y * m_pitch]); }
+  ALWAYS_INLINE const u8* GetRowPixels(u32 y) const { return &m_pixels[y * m_pitch]; }
+  ALWAYS_INLINE u8* GetRowPixels(u32 y) { return &m_pixels[y * m_pitch]; }
 
   u32 GetBlocksWide() const;
   u32 GetBlocksHigh() const;

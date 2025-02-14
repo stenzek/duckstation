@@ -336,7 +336,8 @@ def check_regression_test(baselinedir, testdir, name):
 
 def check_regression_tests(baselinedir, testdir):
     gamedirs = glob.glob(baselinedir + "/*", recursive=False)
-    
+    gamedirs.sort(key=lambda x: os.path.basename(x))
+
     success = 0
     failure = 0
 
