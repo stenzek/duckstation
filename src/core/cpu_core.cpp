@@ -1851,8 +1851,6 @@ restart_instruction:
         return;
       }
 
-      StallUntilGTEComplete();
-
       if (inst.cop.IsCommonInstruction())
       {
         // TODO: Combine with cop0.
@@ -1860,6 +1858,8 @@ restart_instruction:
         {
           case CopCommonInstruction::cfcn:
           {
+            StallUntilGTEComplete();
+
             const u32 value = GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()) + 32);
             WriteRegDelayed(inst.r.rt, value);
 
@@ -1880,6 +1880,8 @@ restart_instruction:
 
           case CopCommonInstruction::mfcn:
           {
+            StallUntilGTEComplete();
+
             const u32 value = GTE::ReadRegister(static_cast<u32>(inst.r.rd.GetValue()));
             WriteRegDelayed(inst.r.rt, value);
 
@@ -1906,6 +1908,7 @@ restart_instruction:
       }
       else
       {
+        StallUntilGTEComplete();
         GTE::ExecuteInstruction(inst.bits);
       }
     }
@@ -1925,7 +1928,6 @@ restart_instruction:
       if (!ReadMemoryWord(addr, &value))
         return;
 
-      StallUntilGTEComplete();
       GTE::WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
 
       if constexpr (pgxp_mode >= PGXPMode::Memory)
