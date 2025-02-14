@@ -4491,7 +4491,11 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       ClearMemorySaveStates(true, use_existing_textures);
 
       if (IsPaused())
+      {
+        // resolution change needs display updated
+        g_gpu.UpdateDisplay(false);
         GPUThread::PresentCurrentFrame();
+      }
     }
     else if (const bool device_settings_changed = g_settings.AreGPUDeviceSettingsChanged(old_settings);
              device_settings_changed || g_settings.display_show_fps != old_settings.display_show_fps ||
@@ -4519,10 +4523,12 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
         GPUThread::UpdateSettings(true, true, g_settings.gpu_use_thread != old_settings.gpu_use_thread);
         ClearMemorySaveStates(true, false);
 
-        // and display the current frame on the new device
-        g_gpu.UpdateDisplay(false);
         if (IsPaused())
+        {
+          // and display the current frame on the new device
+          g_gpu.UpdateDisplay(false);
           GPUThread::PresentCurrentFrame();
+        }
       }
       else
       {
