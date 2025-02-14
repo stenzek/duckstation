@@ -8514,6 +8514,11 @@ LoadingScreenProgressCallback::LoadingScreenProgressCallback()
 
 LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
 {
+  Close();
+}
+
+void LoadingScreenProgressCallback::Close()
+{
   // Did we activate?
   if (m_last_progress_percent < 0)
     return;
@@ -8531,6 +8536,8 @@ LoadingScreenProgressCallback::~LoadingScreenProgressCallback()
     // since this was pushing frames, we need to restore the context. do that by pushing a frame ourselves
     GPUThread::Internal::PresentFrameAndRestoreContext();
   }
+
+  m_last_progress_percent = -1;
 }
 
 void LoadingScreenProgressCallback::PushState()

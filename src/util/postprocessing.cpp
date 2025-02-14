@@ -432,11 +432,11 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
       return;
     }
 
+    progress.IncrementProgressValue();
+
     settings_lock.lock();
     shader->LoadOptions(si, GetStageConfigSection(m_section, i));
     m_stages.push_back(std::move(shader));
-
-    progress.IncrementProgressValue();
   }
 
   if (stage_count > 0)
@@ -455,6 +455,11 @@ void PostProcessing::Chain::LoadStages(std::unique_lock<std::mutex>& settings_lo
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   if (m_wants_depth_buffer)
     DEV_LOG("Depth buffer is needed.");
+
+  // can't close/redraw with settings lock held because big picture
+  settings_lock.unlock();
+  progress.Close();
+  settings_lock.lock();
 }
 
 void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& settings_lock, const SettingsInterface& si)
@@ -531,6 +536,11 @@ void PostProcessing::Chain::UpdateSettings(std::unique_lock<std::mutex>& setting
   m_needs_depth_buffer = m_enabled && m_wants_depth_buffer;
   if (m_wants_depth_buffer)
     DEV_LOG("Depth buffer is needed.");
+
+  // can't close/redraw with settings lock held because big picture
+  settings_lock.unlock();
+  progress.Close();
+  settings_lock.lock();
 }
 
 void PostProcessing::Chain::Toggle()

@@ -60,6 +60,8 @@ public:
 
   ALWAYS_INLINE void SetOpenDelay(float delay) { m_open_delay = delay; }
 
+  void Close();
+
   void PushState() override;
   void PopState() override;
 
