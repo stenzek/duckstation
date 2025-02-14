@@ -57,7 +57,9 @@ static bool WriteMinidump(HMODULE hDbgHelp, HANDLE hFile, HANDLE hProcess, DWORD
                   PMINIDUMP_CALLBACK_INFORMATION CallbackParam);
 
   PFNMINIDUMPWRITEDUMP minidump_write_dump =
-    hDbgHelp ? reinterpret_cast<PFNMINIDUMPWRITEDUMP>(GetProcAddress(hDbgHelp, "MiniDumpWriteDump")) : nullptr;
+    hDbgHelp ?
+      reinterpret_cast<PFNMINIDUMPWRITEDUMP>(reinterpret_cast<void*>(GetProcAddress(hDbgHelp, "MiniDumpWriteDump"))) :
+      nullptr;
   if (!minidump_write_dump)
     return false;
 

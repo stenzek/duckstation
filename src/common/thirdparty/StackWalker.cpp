@@ -364,21 +364,21 @@ public:
     m_hDbhHelp = StackWalker::LoadDbgHelpLibrary();
     if (m_hDbhHelp == NULL)
       return FALSE;
-    pSI = (tSI)GetProcAddress(m_hDbhHelp, "SymInitialize");
-    pSC = (tSC)GetProcAddress(m_hDbhHelp, "SymCleanup");
+    pSI = (tSI)(void*)GetProcAddress(m_hDbhHelp, "SymInitialize");
+    pSC = (tSC)(void*)GetProcAddress(m_hDbhHelp, "SymCleanup");
 
-    pSW = (tSW)GetProcAddress(m_hDbhHelp, "StackWalk64");
-    pSGO = (tSGO)GetProcAddress(m_hDbhHelp, "SymGetOptions");
-    pSSO = (tSSO)GetProcAddress(m_hDbhHelp, "SymSetOptions");
+    pSW = (tSW)(void*)GetProcAddress(m_hDbhHelp, "StackWalk64");
+    pSGO = (tSGO)(void*)GetProcAddress(m_hDbhHelp, "SymGetOptions");
+    pSSO = (tSSO)(void*)GetProcAddress(m_hDbhHelp, "SymSetOptions");
 
-    pSFTA = (tSFTA)GetProcAddress(m_hDbhHelp, "SymFunctionTableAccess64");
-    pSGLFA = (tSGLFA)GetProcAddress(m_hDbhHelp, "SymGetLineFromAddr64");
-    pSGMB = (tSGMB)GetProcAddress(m_hDbhHelp, "SymGetModuleBase64");
-    pSGMI = (tSGMI)GetProcAddress(m_hDbhHelp, "SymGetModuleInfo64");
-    pSGSFA = (tSGSFA)GetProcAddress(m_hDbhHelp, "SymGetSymFromAddr64");
-    pUDSN = (tUDSN)GetProcAddress(m_hDbhHelp, "UnDecorateSymbolName");
-    pSLM = (tSLM)GetProcAddress(m_hDbhHelp, "SymLoadModule64");
-    pSGSP = (tSGSP)GetProcAddress(m_hDbhHelp, "SymGetSearchPath");
+    pSFTA = (tSFTA)(void*)GetProcAddress(m_hDbhHelp, "SymFunctionTableAccess64");
+    pSGLFA = (tSGLFA)(void*)GetProcAddress(m_hDbhHelp, "SymGetLineFromAddr64");
+    pSGMB = (tSGMB)(void*)GetProcAddress(m_hDbhHelp, "SymGetModuleBase64");
+    pSGMI = (tSGMI)(void*)GetProcAddress(m_hDbhHelp, "SymGetModuleInfo64");
+    pSGSFA = (tSGSFA)(void*)GetProcAddress(m_hDbhHelp, "SymGetSymFromAddr64");
+    pUDSN = (tUDSN)(void*)GetProcAddress(m_hDbhHelp, "UnDecorateSymbolName");
+    pSLM = (tSLM)(void*)GetProcAddress(m_hDbhHelp, "SymLoadModule64");
+    pSGSP = (tSGSP)(void*)GetProcAddress(m_hDbhHelp, "SymGetSearchPath");
 
     if (pSC == NULL || pSFTA == NULL || pSGMB == NULL || pSGMI == NULL || pSGO == NULL ||
         pSGSFA == NULL || pSI == NULL || pSSO == NULL || pSW == NULL || pUDSN == NULL ||
@@ -592,9 +592,9 @@ private:
       hToolhelp = LoadLibrary(dllname[i]);
       if (hToolhelp == NULL)
         continue;
-      pCT32S = (tCT32S)GetProcAddress(hToolhelp, "CreateToolhelp32Snapshot");
-      pM32F = (tM32F)GetProcAddress(hToolhelp, "Module32First");
-      pM32N = (tM32N)GetProcAddress(hToolhelp, "Module32Next");
+      pCT32S = (tCT32S)(void*)GetProcAddress(hToolhelp, "CreateToolhelp32Snapshot");
+      pM32F = (tM32F)(void*)GetProcAddress(hToolhelp, "Module32First");
+      pM32N = (tM32N)(void*)GetProcAddress(hToolhelp, "Module32Next");
       if ((pCT32S != NULL) && (pM32F != NULL) && (pM32N != NULL))
         break; // found the functions!
       FreeLibrary(hToolhelp);
@@ -669,10 +669,10 @@ private:
     if (hPsapi == NULL)
       return FALSE;
 
-    pEPM = (tEPM)GetProcAddress(hPsapi, "EnumProcessModules");
-    pGMFNE = (tGMFNE)GetProcAddress(hPsapi, "GetModuleFileNameExA");
-    pGMBN = (tGMFNE)GetProcAddress(hPsapi, "GetModuleBaseNameA");
-    pGMI = (tGMI)GetProcAddress(hPsapi, "GetModuleInformation");
+    pEPM = (tEPM)(void*)GetProcAddress(hPsapi, "EnumProcessModules");
+    pGMFNE = (tGMFNE)(void*)GetProcAddress(hPsapi, "GetModuleFileNameExA");
+    pGMBN = (tGMFNE)(void*)GetProcAddress(hPsapi, "GetModuleBaseNameA");
+    pGMI = (tGMI)(void*)GetProcAddress(hPsapi, "GetModuleInformation");
     if ((pEPM == NULL) || (pGMFNE == NULL) || (pGMBN == NULL) || (pGMI == NULL))
     {
       // we couldn't find all functions
