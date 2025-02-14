@@ -1301,8 +1301,8 @@ void CPU::Recompiler::Recompiler::CompileInstruction()
           {
             case CopCommonInstruction::mfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Recompiler::Compile_mfc2, nullptr, TF_GTE_STALL); } break;
             case CopCommonInstruction::cfcn: if (inst->r.rt != Reg::zero) { CompileTemplate(nullptr, &Recompiler::Compile_mfc2, nullptr, TF_GTE_STALL); } break;
-            case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Recompiler::Compile_mtc2, PGXPFN(CPU_MTC2), TF_GTE_STALL | TF_READS_T | TF_PGXP_WITHOUT_CPU); break;
-            case CopCommonInstruction::ctcn: CompileTemplate(nullptr, &Recompiler::Compile_mtc2, PGXPFN(CPU_MTC2), TF_GTE_STALL | TF_READS_T | TF_PGXP_WITHOUT_CPU); break;
+            case CopCommonInstruction::mtcn: CompileTemplate(nullptr, &Recompiler::Compile_mtc2, PGXPFN(CPU_MTC2), TF_READS_T | TF_PGXP_WITHOUT_CPU); break;
+            case CopCommonInstruction::ctcn: CompileTemplate(nullptr, &Recompiler::Compile_mtc2, PGXPFN(CPU_MTC2), TF_READS_T | TF_PGXP_WITHOUT_CPU); break;
             default: Compile_Fallback(); break;
           }
         }
@@ -1314,7 +1314,7 @@ void CPU::Recompiler::Recompiler::CompileInstruction()
       }
       break;
 
-    case InstructionOp::lwc2: CompileLoadStoreTemplate(&Recompiler::Compile_lwc2, MemoryAccessSize::Word, false, false, TF_GTE_STALL | TF_READS_S | TF_LOAD_DELAY); break;
+    case InstructionOp::lwc2: CompileLoadStoreTemplate(&Recompiler::Compile_lwc2, MemoryAccessSize::Word, false, false, TF_READS_S | TF_LOAD_DELAY); break;
     case InstructionOp::swc2: CompileLoadStoreTemplate(&Recompiler::Compile_swc2, MemoryAccessSize::Word, true, false, TF_GTE_STALL | TF_READS_S); SpecExec_swc2(); break;
 
       // swc0/lwc0/cop1/cop3 are essentially no-ops
