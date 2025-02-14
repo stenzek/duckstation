@@ -126,17 +126,17 @@ bool XInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std:
   }
 
   // Try the hidden version of XInputGetState(), which lets us query the guide button.
-  m_xinput_get_state =
-    reinterpret_cast<decltype(m_xinput_get_state)>(GetProcAddress(m_xinput_module, reinterpret_cast<LPCSTR>(100)));
+  m_xinput_get_state = reinterpret_cast<decltype(m_xinput_get_state)>(
+    reinterpret_cast<void*>(GetProcAddress(m_xinput_module, reinterpret_cast<LPCSTR>(100))));
   if (!m_xinput_get_state)
   {
-    m_xinput_get_state =
-      reinterpret_cast<decltype(m_xinput_get_state)>(GetProcAddress(m_xinput_module, "XInputGetState"));
+    m_xinput_get_state = reinterpret_cast<decltype(m_xinput_get_state)>(
+      reinterpret_cast<void*>(GetProcAddress(m_xinput_module, "XInputGetState")));
   }
-  m_xinput_set_state =
-    reinterpret_cast<decltype(m_xinput_set_state)>(GetProcAddress(m_xinput_module, "XInputSetState"));
-  m_xinput_get_capabilities =
-    reinterpret_cast<decltype(m_xinput_get_capabilities)>(GetProcAddress(m_xinput_module, "XInputGetCapabilities"));
+  m_xinput_set_state = reinterpret_cast<decltype(m_xinput_set_state)>(
+    reinterpret_cast<void*>(GetProcAddress(m_xinput_module, "XInputSetState")));
+  m_xinput_get_capabilities = reinterpret_cast<decltype(m_xinput_get_capabilities)>(
+    reinterpret_cast<void*>(GetProcAddress(m_xinput_module, "XInputGetCapabilities")));
 
   if (!m_xinput_get_state || !m_xinput_set_state || !m_xinput_get_capabilities)
   {

@@ -69,10 +69,10 @@ bool DInputSource::Initialize(const SettingsInterface& si, std::unique_lock<std:
     return false;
   }
 
-  PFNDIRECTINPUT8CREATE create =
-    reinterpret_cast<PFNDIRECTINPUT8CREATE>(GetProcAddress(m_dinput_module, "DirectInput8Create"));
+  PFNDIRECTINPUT8CREATE create = reinterpret_cast<PFNDIRECTINPUT8CREATE>(
+    reinterpret_cast<void*>(GetProcAddress(m_dinput_module, "DirectInput8Create")));
   PFNGETDFDIJOYSTICK get_joystick_data_format =
-    reinterpret_cast<PFNGETDFDIJOYSTICK>(GetProcAddress(m_dinput_module, "GetdfDIJoystick"));
+    reinterpret_cast<PFNGETDFDIJOYSTICK>(reinterpret_cast<void*>(GetProcAddress(m_dinput_module, "GetdfDIJoystick")));
   if (!create || !get_joystick_data_format)
   {
     ERROR_LOG("Failed to get DInput function pointers.");
