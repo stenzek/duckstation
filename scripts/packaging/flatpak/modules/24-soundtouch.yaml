@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 name: soundtouch
@@ -9,8 +9,8 @@ config-opts:
 
   # Use clang with LTO for speed.
   - "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
-  - "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm18/bin/clang"
-  - "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm18/bin/clang++"
+  - "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm19/bin/clang"
+  - "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm19/bin/clang++"
   - "-DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld"
   - "-DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld"
   - "-DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld"

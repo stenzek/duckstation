@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 app-id: "org.duckstation.DuckStation"
@@ -6,7 +6,7 @@ runtime: "org.kde.Platform"
 runtime-version: "6.8"
 sdk: "org.kde.Sdk"
 sdk-extensions:
-  - "org.freedesktop.Sdk.Extension.llvm18"
+  - "org.freedesktop.Sdk.Extension.llvm19"
 add-extensions:
   "org.freedesktop.Platform.ffmpeg-full":
     directory: "lib/ffmpeg"
@@ -73,8 +73,8 @@ modules:
 
         # Make sure we're using ThinLTO.
         - "-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON"
-        - "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm18/bin/clang"
-        - "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm18/bin/clang++"
+        - "-DCMAKE_C_COMPILER=/usr/lib/sdk/llvm19/bin/clang"
+        - "-DCMAKE_CXX_COMPILER=/usr/lib/sdk/llvm19/bin/clang++"
         - "-DCMAKE_EXE_LINKER_FLAGS_INIT=-fuse-ld=lld"
         - "-DCMAKE_MODULE_LINKER_FLAGS_INIT=-fuse-ld=lld"
         - "-DCMAKE_SHARED_LINKER_FLAGS_INIT=-fuse-ld=lld"
