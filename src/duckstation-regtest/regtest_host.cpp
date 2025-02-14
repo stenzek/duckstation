@@ -457,12 +457,8 @@ void Host::FrameDoneOnGPUThread(GPUBackend* gpu_backend, u32 frame_number)
     return;
   }
 
-  System::QueueAsyncTask([path = std::move(path), fp = fp.release(), flip_y = g_gpu_device->UsesLowerLeftOrigin(),
-                          image = std::move(image)]() mutable {
+  System::QueueAsyncTask([path = std::move(path), fp = fp.release(), image = std::move(image)]() mutable {
     Error error;
-
-    if (flip_y)
-      image.FlipY();
 
     if (image.GetFormat() != ImageFormat::RGBA8)
     {
