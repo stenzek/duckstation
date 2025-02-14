@@ -1863,6 +1863,14 @@ bool System::BootSystem(SystemBootParameters parameters, Error* error)
 bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, bool force_software_renderer,
                         bool fullscreen, Error* error)
 {
+  // Cheats have to be loaded first, otherwise we don't apply settings that are used below.
+  if (!IsReplayingGPUDump())
+  {
+    Cheats::ReloadCheats(true, true, false, true, true);
+    if (Cheats::HasAnySettingOverrides())
+      ApplySettings(true);
+  }
+
   s_state.ticks_per_second = ScaleTicksToOverclock(MASTER_CLOCK);
   s_state.max_slice_ticks = ScaleTicksToOverclock(MASTER_CLOCK / 10);
   s_state.frame_number = 1;
@@ -1926,13 +1934,6 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   UpdateGTEAspectRatio();
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
-
-  if (!IsReplayingGPUDump())
-  {
-    Cheats::ReloadCheats(true, true, false, true, true);
-    if (Cheats::HasAnySettingOverrides())
-      ApplySettings(true);
-  }
 
   PerformanceCounters::Clear();
 
