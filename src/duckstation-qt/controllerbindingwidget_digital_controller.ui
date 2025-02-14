@@ -727,8 +727,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="resources/resources.qrc"/>
-  <include location="resources/resources.qrc"/>
+  <include location="resources/duckstation-qt.qrc"/>
  </resources>
  <connections/>
 </ui>
