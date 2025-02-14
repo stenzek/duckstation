@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "common/align.h"
 #include "common/heap_array.h"
+#include "common/intrin.h"
 #include "common/types.h"
 
 #include <cstdio>
@@ -60,12 +61,13 @@ public:
   ALWAYS_INLINE u32 GetHeight() const { return m_height; }
   ALWAYS_INLINE u32 GetPitch() const { return m_pitch; }
   ALWAYS_INLINE ImageFormat GetFormat() const { return m_format; }
-  ALWAYS_INLINE const u8* GetPixels() const { return m_pixels.get(); }
-  ALWAYS_INLINE u8* GetPixels() { return m_pixels.get(); }
-  ALWAYS_INLINE const u8* GetRowPixels(u32 y) const { return &m_pixels[y * m_pitch]; }
-  ALWAYS_INLINE u8* GetRowPixels(u32 y) { return &m_pixels[y * m_pitch]; }
-  // ALWAYS_INLINE void SetPixel(u32 x, u32 y, PixelType pixel) { m_pixels[y * m_width + x] = pixel; }
-  // ALWAYS_INLINE PixelType GetPixel(u32 x, u32 y) const { return m_pixels[y * m_width + x]; }
+  ALWAYS_INLINE const u8* GetPixels() const { return std::assume_aligned<VECTOR_ALIGNMENT>(m_pixels.get()); }
+  ALWAYS_INLINE u8* GetPixels() { return std::assume_aligned<VECTOR_ALIGNMENT>(m_pixels.get()); }
+  ALWAYS_INLINE const u8* GetRowPixels(u32 y) const
+  {
+    return std::assume_aligned<VECTOR_ALIGNMENT>(&m_pixels[y * m_pitch]);
+  }
+  ALWAYS_INLINE u8* GetRowPixels(u32 y) { return std::assume_aligned<VECTOR_ALIGNMENT>(&m_pixels[y * m_pitch]); }
 
   u32 GetBlocksWide() const;
   u32 GetBlocksHigh() const;

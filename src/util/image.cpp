@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "image.h"
@@ -583,12 +583,46 @@ std::optional<Image> Image::ConvertToRGBA8(Error* error) const
     case ImageFormat::RGB565:
     {
       ret = Image(m_width, m_height, ImageFormat::RGBA8);
+
+      constexpr u32 pixels_per_vec = 8;
+      [[maybe_unused]] const u32 aligned_width = Common::AlignDownPow2(m_width, pixels_per_vec);
+
       for (u32 y = 0; y < m_height; y++)
       {
         const u8* pixels_in = GetRowPixels(y);
         u8* pixels_out = ret->GetRowPixels(y);
+        u32 x = 0;
 
-        for (u32 x = 0; x < m_width; x++)
+#ifdef CPU_ARCH_SIMD
+        for (; x < aligned_width; x += pixels_per_vec)
+        {
+          GSVector4i rgb565 = GSVector4i::load<false>(pixels_in);
+          pixels_in += sizeof(u16) * pixels_per_vec;
+
+          GSVector4i r = rgb565.srl16<11>();
+          r = r.sll16<3>() | r.sll16<13>().srl16<13>();
+
+          GSVector4i g = rgb565.sll16<5>().srl16<10>();
+          g = g.sll16<2>() | g.sll16<14>().srl16<14>();
+
+          GSVector4i b = rgb565.sll16<11>().srl16<11>();
+          b = b.sll16<3>() | b.sll16<13>().srl16<13>();
+
+          const GSVector4i low =
+            r.u16to32() | g.u16to32().sll32<8>() | b.u16to32().sll32<16>() | GSVector4i::cxpr(0xFF000000);
+          const GSVector4i high = r.uph64().u16to32() | g.uph64().u16to32().sll32<8>() |
+                                  b.uph64().u16to32().sll32<16>() | GSVector4i::cxpr(0xFF000000);
+
+          GSVector4i::store<false>(pixels_out, low);
+          pixels_out += sizeof(GSVector4i);
+
+          GSVector4i::store<false>(pixels_out, high);
+          pixels_out += sizeof(GSVector4i);
+        }
+#endif
+
+        DONT_VECTORIZE_THIS_LOOP
+        for (; x < m_width; x++)
         {
           // RGB565 -> RGBA8
           u16 pixel_in;
@@ -609,12 +643,48 @@ std::optional<Image> Image::ConvertToRGBA8(Error* error) const
     case ImageFormat::RGB5A1:
     {
       ret = Image(m_width, m_height, ImageFormat::RGBA8);
+
+      constexpr u32 pixels_per_vec = 8;
+      [[maybe_unused]] const u32 aligned_width = Common::AlignDownPow2(m_width, pixels_per_vec);
+
       for (u32 y = 0; y < m_height; y++)
       {
         const u8* pixels_in = GetRowPixels(y);
         u8* pixels_out = ret->GetRowPixels(y);
+        u32 x = 0;
 
-        for (u32 x = 0; x < m_width; x++)
+#ifdef CPU_ARCH_SIMD
+        for (; x < aligned_width; x += pixels_per_vec)
+        {
+          GSVector4i rgb5a1 = GSVector4i::load<false>(pixels_in);
+          pixels_in += sizeof(u16) * pixels_per_vec;
+
+          GSVector4i r = rgb5a1.sll16<1>().srl16<11>();
+          r = r.sll16<3>() | r.sll16<13>().srl16<13>();
+
+          GSVector4i g = rgb5a1.sll16<6>().srl16<11>();
+          g = g.sll16<3>() | g.sll16<13>().srl16<13>();
+
+          GSVector4i b = rgb5a1.sll16<11>().srl16<11>();
+          b = b.sll16<3>() | b.sll16<13>().srl16<13>();
+
+          GSVector4i a = rgb5a1.sra16<7>().srl16<8>();
+
+          const GSVector4i low =
+            r.u16to32() | g.u16to32().sll32<8>() | b.u16to32().sll32<16>() | a.u16to32().sll32<24>();
+          const GSVector4i high = r.uph64().u16to32() | g.uph64().u16to32().sll32<8>() |
+                                  b.uph64().u16to32().sll32<16>() | a.uph64().u16to32().sll32<24>();
+
+          GSVector4i::store<false>(pixels_out, low);
+          pixels_out += sizeof(GSVector4i);
+
+          GSVector4i::store<false>(pixels_out, high);
+          pixels_out += sizeof(GSVector4i);
+        }
+#endif
+
+        DONT_VECTORIZE_THIS_LOOP
+        for (; x < m_width; x++)
         {
           // RGB5A1 -> RGBA8
           u16 pixel_in;
@@ -624,6 +694,69 @@ std::optional<Image> Image::ConvertToRGBA8(Error* error) const
           const u8 r5 = Truncate8((pixel_in >> 10) & 0x1F);
           const u8 g6 = Truncate8((pixel_in >> 5) & 0x1F);
           const u8 b5 = Truncate8(pixel_in & 0x1F);
+          const u32 rgba8 = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 3) | (g6 & 7)) << 8) |
+                            (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (a1 ? 0xFF000000u : 0u);
+          std::memcpy(pixels_out, &rgba8, sizeof(u32));
+          pixels_out += sizeof(u32);
+        }
+      }
+    }
+    break;
+
+    case ImageFormat::A1BGR5:
+    {
+      ret = Image(m_width, m_height, ImageFormat::RGBA8);
+
+      constexpr u32 pixels_per_vec = 8;
+      [[maybe_unused]] const u32 aligned_width = Common::AlignDownPow2(m_width, pixels_per_vec);
+
+      for (u32 y = 0; y < m_height; y++)
+      {
+        const u8* pixels_in = GetRowPixels(y);
+        u8* pixels_out = ret->GetRowPixels(y);
+        u32 x = 0;
+
+#ifdef CPU_ARCH_SIMD
+        for (; x < aligned_width; x += pixels_per_vec)
+        {
+          GSVector4i a1bgr5 = GSVector4i::load<false>(pixels_in);
+          pixels_in += sizeof(u16) * pixels_per_vec;
+
+          GSVector4i r = a1bgr5.srl16<11>();
+          r = r.sll16<3>() | r.sll16<13>().srl16<13>();
+
+          GSVector4i g = a1bgr5.sll16<5>().srl16<11>();
+          g = g.sll16<3>() | g.sll16<13>().srl16<13>();
+
+          GSVector4i b = a1bgr5.sll16<10>().srl16<11>();
+          b = b.sll16<3>() | b.sll16<13>().srl16<13>();
+
+          GSVector4i a = a1bgr5.sll16<15>().sra16<7>().srl16<8>();
+
+          const GSVector4i low =
+            r.u16to32() | g.u16to32().sll32<8>() | b.u16to32().sll32<16>() | a.u16to32().sll32<24>();
+          const GSVector4i high = r.uph64().u16to32() | g.uph64().u16to32().sll32<8>() |
+                                  b.uph64().u16to32().sll32<16>() | a.uph64().u16to32().sll32<24>();
+
+          GSVector4i::store<false>(pixels_out, low);
+          pixels_out += sizeof(GSVector4i);
+
+          GSVector4i::store<false>(pixels_out, high);
+          pixels_out += sizeof(GSVector4i);
+        }
+#endif
+
+        DONT_VECTORIZE_THIS_LOOP
+        for (; x < m_width; x++)
+        {
+          // RGB5A1 -> RGBA8
+          u16 pixel_in;
+          std::memcpy(&pixel_in, pixels_in, sizeof(u16));
+          pixels_in += sizeof(u16);
+          const u8 a1 = Truncate8(pixel_in & 0x01);
+          const u8 r5 = Truncate8((pixel_in >> 11) & 0x1F);
+          const u8 g6 = Truncate8((pixel_in >> 6) & 0x1F);
+          const u8 b5 = Truncate8((pixel_in >> 1) & 0x1F);
           const u32 rgba8 = ZeroExtend32((r5 << 3) | (r5 & 7)) | (ZeroExtend32((g6 << 3) | (g6 & 7)) << 8) |
                             (ZeroExtend32((b5 << 3) | (b5 & 7)) << 16) | (a1 ? 0xFF000000u : 0u);
           std::memcpy(pixels_out, &rgba8, sizeof(u32));

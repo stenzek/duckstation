@@ -44,6 +44,17 @@
 #include <malloc.h> // alloca
 #endif
 
+/// Helper to disable loop vectorization.
+#if defined(__clang__)
+#define DONT_VECTORIZE_THIS_LOOP _Pragma("clang loop vectorize(disable)")
+#elif defined(_MSC_VER)
+#define DONT_VECTORIZE_THIS_LOOP __pragma(loop(no_vector))
+#elif defined(__GNUC__)
+#define DONT_VECTORIZE_THIS_LOOP _Pragma("GCC novector")
+#else
+#define DONT_VECTORIZE_THIS_LOOP
+#endif
+
 /// Only currently using 128-bit vectors at max.
 static constexpr u32 VECTOR_ALIGNMENT = 16;
 
