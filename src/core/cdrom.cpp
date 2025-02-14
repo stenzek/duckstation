@@ -1680,7 +1680,7 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 TickCount CDROM::GetTicksForPause()
 {
   if (!IsReadingOrPlaying())
-    return 7000;
+    return 27000;
 
   if (g_settings.cdrom_read_speedup == 0 && CanUseReadSpeedup())
     return System::ScaleTicksToOverclock(g_settings.cdrom_max_speedup_cycles);
