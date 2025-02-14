@@ -560,7 +560,6 @@ void Bus::MapFastmemViews()
   {
 #ifdef ENABLE_MMAP_FASTMEM
     auto MapRAM = [](u32 base_address) {
-      // No need to check mapped RAM range here, we only ever fastmem map the first 2MB.
       u8* map_address = s_fastmem_arena.BasePointer() + base_address;
       if (!s_fastmem_arena.Map(s_shmem_handle, 0, map_address, g_ram_size, PageProtect::ReadWrite)) [[unlikely]]
       {
@@ -570,7 +569,8 @@ void Bus::MapFastmemViews()
       }
 
       // mark all pages with code as non-writable
-      for (u32 i = 0; i < static_cast<u32>(g_ram_code_bits.size()); i++)
+      const u32 page_count = g_ram_size >> HOST_PAGE_SHIFT;
+      for (u32 i = 0; i < page_count; i++)
       {
         if (g_ram_code_bits[i])
         {
@@ -595,6 +595,16 @@ void Bus::MapFastmemViews()
 
     // KSEG1 - uncached
     MapRAM(0xA0000000);
+
+    // Mirrors of 2MB
+    if (g_ram_size == RAM_2MB_SIZE)
+    {
+      // Instead of mapping all the RAM mirrors, we only map the KSEG0 uppermost mirror.
+      // This is where some games place their stack, so we avoid the backpatching overhead/slowdown,
+      // but don't pay the cost of 4x the mprotect() calls when a page's protection changes, which
+      // can have a non-trivial impact on slow ARM devices.
+      MapRAM(0x80600000);
+    }
 #else
     Panic("MMap fastmem should not be selected on this platform.");
 #endif
@@ -675,7 +685,8 @@ bool Bus::CanUseFastmemForAddress(VirtualMemoryAddress address)
     {
       // Currently since we don't map the mirrors, don't use fastmem for them.
       // This is because the swapping of page code bits for SMC is too expensive.
-      return (paddr < g_ram_size);
+      // Except for the uppermost mirror in KSEG0, see above.
+      return (paddr < g_ram_size) || (address >= 0x80600000 && address < 0x80800000);
     }
 #endif
 
