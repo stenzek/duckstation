@@ -50,6 +50,9 @@ void DisplayWindowResized();
 /// Updates the internal GTE aspect ratio. Use with "match display" aspect ratio setting.
 void UpdateGTEAspectRatio();
 
+/// Called on card read/write, handles fast forwarding.
+void OnMemoryCardAccessed();
+
 /// Immediately terminates the virtual machine, no state is saved.
 void AbnormalShutdown(const std::string_view reason);
 

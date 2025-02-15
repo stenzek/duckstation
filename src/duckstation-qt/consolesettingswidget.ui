@@ -48,14 +48,21 @@
           </property>
          </widget>
         </item>
-        <item row="0" column="1">
+        <item row="1" column="0">
          <widget class="QCheckBox" name="fastForwardBoot">
           <property name="text">
            <string>Fast Forward Boot</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="0">
+        <item row="0" column="1">
+         <widget class="QCheckBox" name="fastForwardMemoryCardAccess">
+          <property name="text">
+           <string>Fast Forward Memory Card Access</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
          <widget class="QCheckBox" name="enable8MBRAM">
           <property name="text">
            <string>Enable 8MB RAM (Dev Console)</string>

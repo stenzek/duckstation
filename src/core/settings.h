@@ -322,6 +322,7 @@ struct Settings : public GPUSettings
   bool bios_fast_forward_boot : 1 = false;
   bool enable_8mb_ram : 1 = false;
   bool memory_card_use_playlist_title : 1 = true;
+  bool memory_card_fast_forward_access : 1 = false;
   bool pio_switch_active : 1 = true;
   bool pio_flash_write_enable : 1 = false;
   bool pcdrv_enable_writes : 1 = false;

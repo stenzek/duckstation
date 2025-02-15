@@ -4016,6 +4016,10 @@ void FullscreenUI::DrawConsoleSettingsPage()
                               "may vary between games."),
                     "BIOS", "FastForwardBoot", false,
                     GetEffectiveBoolSetting(bsi, "BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE));
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SD_CARD, "Fast Forward Memory Card Access"),
+                    FSUI_CSTR("Fast forwards through memory card access, both loading and saving. Can reduce waiting "
+                              "times in games that frequently access memory cards."),
+                    "MemoryCards", "FastForwardAccess", false);
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_MEMORY, "Enable 8MB RAM"),
     FSUI_CSTR("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles."),
@@ -8980,8 +8984,10 @@ TRANSLATE_NOOP("FullscreenUI", "Failed to load shader {}. It may be invalid.\nEr
 TRANSLATE_NOOP("FullscreenUI", "Failed to save controller preset '{}'.");
 TRANSLATE_NOOP("FullscreenUI", "Fast Boot");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Boot");
+TRANSLATE_NOOP("FullscreenUI", "Fast Forward Memory Card Access");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Speed");
 TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
+TRANSLATE_NOOP("FullscreenUI", "Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.");
 TRANSLATE_NOOP("FullscreenUI", "Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.");
 TRANSLATE_NOOP("FullscreenUI", "File Size");
 TRANSLATE_NOOP("FullscreenUI", "File Size: %u MB (%u MB on disk)");

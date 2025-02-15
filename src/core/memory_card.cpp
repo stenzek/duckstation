@@ -1,9 +1,9 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "memory_card.h"
 #include "host.h"
-#include "system.h"
+#include "system_private.h"
 
 #include "util/imgui_manager.h"
 #include "util/state_wrapper.h"
@@ -143,6 +143,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
       {
         DEV_LOG("Reading memory card sector {}", m_address);
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ bits;
+        System::OnMemoryCardAccessed();
       }
       else
       {
@@ -178,6 +179,7 @@ bool MemoryCard::Transfer(const u8 data_in, u8* data_out)
         INFO_LOG("Writing memory card sector {}", m_address);
         m_checksum = Truncate8(m_address >> 8) ^ Truncate8(m_address) ^ data_in;
         m_FLAG.no_write_yet = false;
+        System::OnMemoryCardAccessed();
       }
       else
       {

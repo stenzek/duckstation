@@ -420,6 +420,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   memory_card_paths[0] = si.GetStringValue("MemoryCards", "Card1Path", "");
   memory_card_paths[1] = si.GetStringValue("MemoryCards", "Card2Path", "");
   memory_card_use_playlist_title = si.GetBoolValue("MemoryCards", "UsePlaylistTitle", true);
+  memory_card_fast_forward_access = si.GetBoolValue("MemoryCards", "FastForwardAccess", false);
 
   achievements_enabled = si.GetBoolValue("Cheevos", "Enabled", false);
   achievements_hardcore_mode = si.GetBoolValue("Cheevos", "ChallengeMode", false);
@@ -698,6 +699,7 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
     si.DeleteValue("MemoryCards", "Card2Path");
 
   si.SetBoolValue("MemoryCards", "UsePlaylistTitle", memory_card_use_playlist_title);
+  si.SetBoolValue("MemoryCards", "FastForwardAccess", memory_card_fast_forward_access);
 
   si.SetStringValue("ControllerPorts", "MultitapMode", GetMultitapModeName(multitap_mode));
 

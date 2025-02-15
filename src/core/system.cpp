@@ -121,6 +121,7 @@ static constexpr float PRE_FRAME_SLEEP_UPDATE_INTERVAL = 1.0f;
 static constexpr const char FALLBACK_EXE_NAME[] = "PSX.EXE";
 static constexpr u32 MAX_SKIPPED_DUPLICATE_FRAME_COUNT = 2; // 20fps minimum
 static constexpr u32 MAX_SKIPPED_TIMEOUT_FRAME_COUNT = 1;   // 30fps minimum
+static constexpr u8 MEMORY_CARD_FAST_FORWARD_FRAMES = 30;
 
 namespace {
 
@@ -263,6 +264,7 @@ struct ALIGN_TO_CACHE_LINE StateVars
   bool turbo_enabled = false;
 
   bool runahead_replay_pending = false;
+  u8 memory_card_fast_forward_frames = 0;
 
   u32 skipped_frame_count = 0;
   u32 last_presented_internal_frame_number = 0;
@@ -2140,6 +2142,14 @@ void System::FrameDone()
   Timer::Value current_time = Timer::GetCurrentValue();
   GTE::UpdateFreecam(current_time);
 
+  // memory card fast forward
+  if (s_state.memory_card_fast_forward_frames > 0)
+  {
+    s_state.memory_card_fast_forward_frames--;
+    if (s_state.memory_card_fast_forward_frames == 0)
+      UpdateSpeedLimiterState();
+  }
+
   // Frame step after runahead, otherwise the pause takes precedence and the replay never happens.
   if (s_state.frame_step_request)
   {
@@ -3523,7 +3533,7 @@ void System::UpdateSpeedLimiterState()
 {
   DebugAssert(IsValid());
 
-  s_state.target_speed = IsFastForwardingBoot() ?
+  s_state.target_speed = (IsFastForwardingBoot() || s_state.memory_card_fast_forward_frames > 0) ?
                            0.0f :
                            (s_state.turbo_enabled ? g_settings.turbo_speed :
                                                     (s_state.fast_forward_enabled ? g_settings.fast_forward_speed :
@@ -3929,6 +3939,15 @@ bool System::IsSavingMemoryCards()
   }
 
   return false;
+}
+
+void System::OnMemoryCardAccessed()
+{
+  if (!g_settings.memory_card_fast_forward_access)
+    return;
+
+  if (std::exchange(s_state.memory_card_fast_forward_frames, MEMORY_CARD_FAST_FORWARD_FRAMES) == 0)
+    UpdateSpeedLimiterState();
 }
 
 void System::SwapMemoryCards()
