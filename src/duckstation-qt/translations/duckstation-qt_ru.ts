@@ -15813,7 +15813,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="636"/>
         <source>Enable Safe Mode</source>
-        <translation>Включить безопасный режим</translation>
+        <translation>Включить: Безопасный режим</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="818"/>
