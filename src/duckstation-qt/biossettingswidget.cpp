@@ -21,10 +21,6 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
   m_ui.setupUi(this);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enableTTYLogging, "BIOS", "TTYLogging", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "BIOS", "PatchFastBoot", false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, "BIOS", "FastForwardBoot", false);
-
-  connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &BIOSSettingsWidget::onFastBootChanged);
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.pioDeviceType, "PIO", "DeviceType",
                                                &Settings::ParsePIODeviceTypeName, &Settings::GetPIODeviceTypeModeName,
@@ -36,27 +32,7 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
   connect(m_ui.pioDeviceType, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &BIOSSettingsWidget::onPIODeviceTypeChanged);
   connect(m_ui.pioImagePathBrowse, &QPushButton::clicked, this, &BIOSSettingsWidget::onPIOImagePathBrowseClicked);
-
-  onFastBootChanged();
   onPIODeviceTypeChanged();
-
-  dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
-                             tr("Patches the BIOS to skip the console's boot animation. Does not work with all games, "
-                                "but usually safe to enable."));
-  dialog->registerWidgetHelp(m_ui.enableTTYLogging, tr("Enable TTY Logging"), tr("Unchecked"),
-                             tr("Logs BIOS calls to printf(). Not all games contain debugging messages."));
-  dialog->registerWidgetHelp(m_ui.pioDeviceType, tr("Device Type"), tr("None"),
-                             tr("Simulates a device plugged into the console's parallel port. Usually these are flash "
-                                "cartridges, and require some sort of image dump to function."));
-  dialog->registerWidgetHelp(m_ui.pioImagePath, tr("Image Path"), tr("Empty"),
-                             tr("Sets the path to the image used for flash cartridges."));
-  dialog->registerWidgetHelp(m_ui.pioSwitchActive, tr("Cartridge Switch On"), tr("Checked"),
-                             tr("Simulates the position of the switch on the cartridge. Most cartridges require the "
-                                "switch to be on for it to activate on startup."));
-  dialog->registerWidgetHelp(
-    m_ui.pioImageWrites, tr("Allow Image Writes"), tr("Unchecked"),
-    tr("Stores any images made to the cartridge's flash storage back to the host's file system. <strong>This will "
-       "overwrite your cartridge dump,</strong> you should ensure you have a backup first."));
 
   connect(m_ui.imageNTSCJ, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int index) {
     if (m_dialog->isPerGameSettings() && index == 0)
@@ -115,13 +91,20 @@ BIOSSettingsWidget::BIOSSettingsWidget(SettingsWindow* dialog, QWidget* parent) 
 
   refreshList();
 
-  m_dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
-                               tr("Patches the BIOS to skip the boot animation. Safe to enable."));
-  m_dialog->registerWidgetHelp(m_ui.fastForwardBoot, tr("Fast Forward Boot"), tr("Unchecked"),
-                               tr("Fast forwards through the early loading process when fast booting, saving time. "
-                                  "Results may vary between games."));
-  m_dialog->registerWidgetHelp(m_ui.enableTTYLogging, tr("Enable TTY Logging"), tr("Unchecked"),
-                               tr("Logs BIOS calls to printf(). Not all games contain debugging messages."));
+  dialog->registerWidgetHelp(m_ui.pioDeviceType, tr("Device Type"), tr("None"),
+                             tr("Simulates a device plugged into the console's parallel port. Usually these are flash "
+                                "cartridges, and require some sort of image dump to function."));
+  dialog->registerWidgetHelp(m_ui.pioImagePath, tr("Image Path"), tr("Empty"),
+                             tr("Sets the path to the image used for flash cartridges."));
+  dialog->registerWidgetHelp(m_ui.pioSwitchActive, tr("Cartridge Switch On"), tr("Checked"),
+                             tr("Simulates the position of the switch on the cartridge. Most cartridges require the "
+                                "switch to be on for it to activate on startup."));
+  dialog->registerWidgetHelp(
+    m_ui.pioImageWrites, tr("Allow Image Writes"), tr("Unchecked"),
+    tr("Stores any images made to the cartridge's flash storage back to the host's file system. <strong>This will "
+       "overwrite your cartridge dump,</strong> you should ensure you have a backup first."));
+  dialog->registerWidgetHelp(m_ui.enableTTYLogging, tr("Enable TTY Logging"), tr("Unchecked"),
+                             tr("Logs BIOS calls to printf(). Not all games contain debugging messages."));
 }
 
 BIOSSettingsWidget::~BIOSSettingsWidget() = default;
@@ -139,13 +122,6 @@ void BIOSSettingsWidget::refreshList()
                    m_dialog->isPerGameSettings());
   setDropDownValue(m_ui.imagePAL, m_dialog->getStringValue("BIOS", "PathPAL", std::nullopt),
                    m_dialog->isPerGameSettings());
-}
-
-void BIOSSettingsWidget::onFastBootChanged()
-{
-  const bool fast_boot_enabled =
-    m_dialog->getEffectiveBoolValue("BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
-  m_ui.fastForwardBoot->setEnabled(fast_boot_enabled);
 }
 
 void BIOSSettingsWidget::populateDropDownForRegion(ConsoleRegion region, QComboBox* cb,

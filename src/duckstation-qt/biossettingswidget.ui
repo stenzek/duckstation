@@ -29,20 +29,6 @@
       <string>BIOS Selection</string>
      </property>
      <layout class="QGridLayout" name="gridLayout">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>NTSC-J (Japan):</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>NTSC-U/C (US/Canada):</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="1">
        <widget class="QComboBox" name="imageNTSCU">
         <property name="sizePolicy">
@@ -53,13 +39,10 @@
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="imagePAL">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>NTSC-U/C (US/Canada):</string>
         </property>
        </widget>
       </item>
@@ -72,6 +55,23 @@
       </item>
       <item row="0" column="1">
        <widget class="QComboBox" name="imageNTSCJ">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>NTSC-J (Japan):</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1">
+       <widget class="QComboBox" name="imagePAL">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
           <horstretch>0</horstretch>
@@ -141,36 +141,6 @@
     </widget>
    </item>
    <item>
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Options and Patches</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout_2">
-      <item row="0" column="0">
-       <widget class="QCheckBox" name="fastBoot">
-        <property name="text">
-         <string>Fast Boot</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QCheckBox" name="enableTTYLogging">
-        <property name="text">
-         <string>Enable TTY Logging</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="fastForwardBoot">
-        <property name="text">
-         <string>Fast Forward Boot</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item>
     <widget class="QGroupBox" name="pioGroupBox">
      <property name="title">
       <string>Parallel Port</string>
@@ -224,6 +194,22 @@
          </widget>
         </item>
        </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QGroupBox" name="groupBox_2">
+     <property name="title">
+      <string>Options</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_2">
+      <item row="0" column="0">
+       <widget class="QCheckBox" name="enableTTYLogging">
+        <property name="text">
+         <string>Enable TTY Logging</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

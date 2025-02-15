@@ -29,7 +29,6 @@ public:
 
 private Q_SLOTS:
   void refreshList();
-  void onFastBootChanged();
   void onPIODeviceTypeChanged();
   void onPIOImagePathBrowseClicked();
 

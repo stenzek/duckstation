@@ -99,10 +99,10 @@ void SettingsWindow::addPages()
          "recursive/non-recursive."));
   }
 
-  addWidget(
-    m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"), QStringLiteral("chip-line"),
-    tr("<strong>BIOS Settings</strong><hr>These options control which BIOS is used and how it will be "
-       "patched.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
+  addWidget(m_bios_settings = new BIOSSettingsWidget(this, m_ui.settingsContainer), tr("BIOS"),
+            QStringLiteral("chip-line"),
+            tr("<strong>BIOS Settings</strong><hr>These options control which BIOS and expansion port is "
+               "used.<br><br>Mouse over an option for additional information, and Shift+Wheel to scroll this panel."));
   addWidget(
     m_console_settings = new ConsoleSettingsWidget(this, m_ui.settingsContainer), tr("Console"),
     QStringLiteral("chip-2-line"),

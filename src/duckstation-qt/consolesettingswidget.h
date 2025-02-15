@@ -18,6 +18,7 @@ public:
   ~ConsoleSettingsWidget();
 
 private Q_SLOTS:
+  void onFastBootChanged();
   void updateRecompilerICacheEnabled();
   void onEnableCPUClockSpeedControlChecked(int state);
   void onCPUClockSpeedValueChanged(int value);

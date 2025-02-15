@@ -3960,18 +3960,10 @@ void FullscreenUI::DrawBIOSSettingsPage()
     }
   }
 
+  MenuHeading(FSUI_CSTR("Options"));
+
   DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER, "BIOS Directory"), "BIOS", "SearchDirectory", EmuFolders::Bios);
 
-  MenuHeading(FSUI_CSTR("Patches"));
-
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BOLT, "Enable Fast Boot"),
-                    FSUI_CSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
-                    Settings::DEFAULT_FAST_BOOT_VALUE);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Fast Forward Boot"),
-                    FSUI_CSTR("Fast forwards through the early loading process when fast booting, saving time. Results "
-                              "may vary between games."),
-                    "BIOS", "FastForwardBoot", false,
-                    GetEffectiveBoolSetting(bsi, "BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE));
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SCROLL, "Enable TTY Logging"),
                     FSUI_CSTR("Logs BIOS calls to printf(). Not all games contain debugging messages."), "BIOS",
                     "TTYLogging", false);
@@ -4016,6 +4008,14 @@ void FullscreenUI::DrawConsoleSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Safe Mode"),
                     FSUI_CSTR("Temporarily disables all enhancements, useful when testing."), "Main",
                     "DisableAllEnhancements", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_BOLT, "Enable Fast Boot"),
+                    FSUI_CSTR("Patches the BIOS to skip the boot animation. Safe to enable."), "BIOS", "PatchFastBoot",
+                    Settings::DEFAULT_FAST_BOOT_VALUE);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Fast Forward Boot"),
+                    FSUI_CSTR("Fast forwards through the early loading process when fast booting, saving time. Results "
+                              "may vary between games."),
+                    "BIOS", "FastForwardBoot", false,
+                    GetEffectiveBoolSetting(bsi, "BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE));
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_MEMORY, "Enable 8MB RAM"),
     FSUI_CSTR("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles."),

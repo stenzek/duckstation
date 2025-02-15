@@ -48,7 +48,12 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.region, "Console", "Region", &Settings::ParseConsoleRegionName,
                                                &Settings::GetConsoleRegionName, Settings::DEFAULT_CONSOLE_REGION);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "BIOS", "PatchFastBoot", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, "BIOS", "FastForwardBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
+  connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
+  onFastBootChanged();
+
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.cpuExecutionMode, "CPU", "ExecutionMode",
                                                &Settings::ParseCPUExecutionMode, &Settings::GetCPUExecutionModeName,
                                                Settings::DEFAULT_CPU_EXECUTION_MODE);
@@ -76,6 +81,18 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   dialog->registerWidgetHelp(m_ui.region, tr("Region"), tr("Auto-Detect"),
                              tr("Determines the emulated hardware type."));
+  m_dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
+                               tr("Skips the boot animation. Safe to enable."));
+  m_dialog->registerWidgetHelp(m_ui.fastForwardBoot, tr("Fast Forward Boot"), tr("Unchecked"),
+                               tr("Fast forwards through the early loading process when fast booting, saving time. "
+                                  "Results may vary between games."));
+  dialog->registerWidgetHelp(
+    m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
+    tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have "
+       "to use a larger heap size for "
+       "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
+       "with compatible mods."));
+
   dialog->registerWidgetHelp(m_ui.cpuExecutionMode, tr("Execution Mode"), tr("Recompiler (Fastest)"),
                              tr("Determines how the emulated CPU executes instructions."));
   dialog->registerWidgetHelp(m_ui.enableCPUClockSpeedControl,
@@ -87,16 +104,7 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                              tr("Simulates stalls in the recompilers when the emulated CPU would have to fetch "
                                 "instructions into its cache. Makes games run closer to their console framerate, at a "
                                 "small cost to performance. Interpreter mode always simulates the instruction cache."));
-  dialog->registerWidgetHelp(
-    m_ui.enable8MBRAM, tr("Enable 8MB RAM (Dev Console)"), tr("Unchecked"),
-    tr("Enables an additional 6MB of RAM to obtain a total of 2+6 = 8MB, usually present on dev consoles. Games have "
-       "to use a larger heap size for "
-       "this additional RAM to be usable. Titles which rely on memory mirrors may break, so it should only be used "
-       "with compatible mods."));
-  dialog->registerWidgetHelp(
-    m_ui.cdromLoadImageToRAM, tr("Preload Image to RAM"), tr("Unchecked"),
-    tr("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay. In some "
-       "cases also eliminates stutter when games initiate audio track playback."));
+
   dialog->registerWidgetHelp(
     m_ui.cdromReadSpeedup, tr("CD-ROM Read Speedup"), tr("None (Double Speed)"),
     tr("Speeds up CD-ROM reads by the specified factor. Only applies to double-speed reads, and is ignored when audio "
@@ -136,6 +144,13 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 }
 
 ConsoleSettingsWidget::~ConsoleSettingsWidget() = default;
+
+void ConsoleSettingsWidget::onFastBootChanged()
+{
+  const bool fast_boot_enabled =
+    m_dialog->getEffectiveBoolValue("BIOS", "PatchFastBoot", Settings::DEFAULT_FAST_BOOT_VALUE);
+  m_ui.fastForwardBoot->setEnabled(fast_boot_enabled);
+}
 
 void ConsoleSettingsWidget::updateRecompilerICacheEnabled()
 {
