@@ -108,15 +108,13 @@ CONSTANT float PI = 3.14159265359;
 
 float lanczos(float x)
  {
-    x = abs(x);
-    if (x < 0.0001)
-      return 1.0;
+  x = abs(x);
 
-    if (x > float(KERNEL_SIZE))
-      return 0.0;
-
-    float px = PI * x;
-    return (float(KERNEL_SIZE) * sin(px) * sin(px / float(KERNEL_SIZE))) / (px * px);
+  float px = PI * x;
+  float v = (float(KERNEL_SIZE) * sin(px) * sin(px / float(KERNEL_SIZE))) / (px * px);
+  v = (x < 0.0001) ? 1.0 : v;
+  v = (x > float(KERNEL_SIZE)) ? 0.0 : v;
+  return v;
 }
 
 )";
@@ -133,16 +131,16 @@ float lanczos(float x)
     
   for (int i = -KERNEL_SIZE; i <= KERNEL_SIZE; i++)
   {
-      for (int j = -KERNEL_SIZE; j <= KERNEL_SIZE; j++)
-      {
-          float2 offset = float2(int2(i, j));
-          float2 sample_pos = (src + offset) * u_src_size.zw;
-          float2 dxdy = src_pixel - (src + offset);
-          float weight = lanczos(dxdy.x) * lanczos(dxdy.y);
+    for (int j = -KERNEL_SIZE; j <= KERNEL_SIZE; j++)
+    {
+      float2 offset = float2(int2(i, j));
+      float2 sample_pos = (src + offset) * u_src_size.zw;
+      float2 dxdy = src_pixel - (src + offset);
+      float weight = lanczos(dxdy.x) * lanczos(dxdy.y);
             
-          color += SAMPLE_TEXTURE_LEVEL(samp0, ClampUV(sample_pos), 0.0).rgb * weight;
-          total_weight += weight;
-      }
+      color += SAMPLE_TEXTURE_LEVEL(samp0, ClampUV(sample_pos), 0.0).rgb * weight;
+      total_weight += weight;
+    }
   }
     
   o_col0 = float4(color / total_weight, 1.0);
