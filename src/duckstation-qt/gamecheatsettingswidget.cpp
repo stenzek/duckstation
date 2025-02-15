@@ -501,8 +501,8 @@ void GameCheatSettingsWidget::setStateRecursively(QStandardItem* parent, bool en
 
 void GameCheatSettingsWidget::reloadList()
 {
-  // Show all hashes, since the ini is shared.
-  m_codes = Cheats::GetCodeInfoList(m_dialog->getGameSerial(), std::nullopt, true, shouldLoadFromDatabase(), false);
+  m_codes =
+    Cheats::GetCodeInfoList(m_dialog->getGameSerial(), m_dialog->getGameHash(), true, shouldLoadFromDatabase(), false);
   m_enabled_codes =
     m_dialog->getSettingsInterface()->GetStringList(Cheats::CHEATS_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
 

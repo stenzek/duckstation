@@ -281,7 +281,7 @@ static void SwitchToSettings();
 static bool SwitchToGameSettings();
 static void SwitchToGameSettings(const GameList::Entry* entry);
 static bool SwitchToGameSettingsForPath(const std::string& path);
-static void SwitchToGameSettingsForSerial(std::string_view serial);
+static void SwitchToGameSettingsForSerial(std::string_view serial, GameHash hash);
 static void DrawSettingsWindow();
 static void DrawSummarySettingsPage();
 static void DrawInterfaceSettingsPage();
@@ -386,7 +386,7 @@ static void DrawFolderSetting(SettingsInterface* bsi, const char* title, const c
 
 static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
-static void PopulatePatchesAndCheatsList(const std::string_view serial);
+static void PopulatePatchesAndCheatsList();
 static void PopulatePostProcessingChain(SettingsInterface* si, const char* section);
 static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
                               std::string_view key, std::string_view display_name);
@@ -491,6 +491,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::string current_game_serial;
   std::string current_game_path;
   std::string achievements_user_badge_path;
+  GameHash current_game_hash = 0;
 
   // Resources
   std::shared_ptr<GPUTexture> app_icon_texture;
@@ -509,6 +510,7 @@ struct ALIGN_TO_CACHE_LINE UIState
   SettingsPage settings_page = SettingsPage::Interface;
   std::unique_ptr<INISettingsInterface> game_settings_interface;
   std::string game_settings_serial;
+  GameHash game_settings_hash = 0;
   const GameDatabase::Entry* game_settings_db_entry;
   std::unique_ptr<GameList::Entry> game_settings_entry;
   std::vector<std::pair<std::string, bool>> game_list_directories_cache;
@@ -681,7 +683,10 @@ bool FullscreenUI::Initialize()
   {
     Host::RunOnCPUThread([]() {
       if (System::IsValid())
-        FullscreenUI::OnRunningGameChanged(System::GetDiscPath(), System::GetGameSerial(), System::GetGameTitle());
+      {
+        FullscreenUI::OnRunningGameChanged(System::GetDiscPath(), System::GetGameSerial(), System::GetGameTitle(),
+                                           System::GetGameHash());
+      }
     });
   }
 
@@ -772,19 +777,21 @@ void FullscreenUI::OnSystemDestroyed()
   });
 }
 
-void FullscreenUI::OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title)
+void FullscreenUI::OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title,
+                                        GameHash hash)
 {
   // NOTE: Called on CPU thread.
   if (!IsInitialized())
     return;
 
-  GPUThread::RunOnThread([path = path, title = title, serial = serial]() mutable {
+  GPUThread::RunOnThread([path = path, title = title, serial = serial, hash = hash]() mutable {
     if (!IsInitialized())
       return;
 
     s_state.current_game_title = std::move(title);
     s_state.current_game_serial = std::move(serial);
     s_state.current_game_path = std::move(path);
+    s_state.current_game_hash = hash;
   });
 }
 
@@ -896,6 +903,7 @@ void FullscreenUI::Shutdown(bool clear_state)
     s_state.game_list_directories_cache = {};
     s_state.game_settings_db_entry = nullptr;
     s_state.game_settings_entry.reset();
+    s_state.game_settings_hash = 0;
     s_state.game_settings_serial = {};
     s_state.game_settings_interface.reset();
     s_state.game_settings_changed = false;
@@ -908,6 +916,7 @@ void FullscreenUI::Shutdown(bool clear_state)
     s_state.fullscreen_mode_list_cache = {};
     s_state.graphics_adapter_list_cache = {};
     s_state.hotkey_list_cache = {};
+    s_state.current_game_hash = 0;
     s_state.current_game_path = {};
     s_state.current_game_serial = {};
     s_state.current_game_title = {};
@@ -1007,12 +1016,15 @@ void FullscreenUI::Render()
 
       if (s_state.game_settings_interface->IsEmpty())
       {
-        if (FileSystem::FileExists(s_state.game_settings_interface->GetPath().c_str()) &&
-            !FileSystem::DeleteFile(s_state.game_settings_interface->GetPath().c_str(), &error))
+        if (FileSystem::FileExists(s_state.game_settings_interface->GetPath().c_str()))
         {
-          OpenInfoMessageDialog(FSUI_STR("Error"),
-                                fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
-                                            error.GetDescription()));
+          INFO_LOG("Removing empty game settings {}", s_state.game_settings_interface->GetPath());
+          if (!FileSystem::DeleteFile(s_state.game_settings_interface->GetPath().c_str(), &error))
+          {
+            OpenInfoMessageDialog(FSUI_STR("Error"),
+                                  fmt::format(FSUI_FSTR("An error occurred while deleting empty game settings:\n{}"),
+                                              error.GetDescription()));
+          }
         }
       }
       else
@@ -3313,6 +3325,7 @@ void FullscreenUI::SwitchToSettings()
   s_state.game_settings_entry.reset();
   s_state.game_settings_interface.reset();
   s_state.game_settings_serial = {};
+  s_state.game_settings_hash = 0;
   s_state.game_settings_db_entry = nullptr;
   s_state.game_patch_list = {};
   s_state.enabled_game_patch_cache = {};
@@ -3328,14 +3341,15 @@ void FullscreenUI::SwitchToSettings()
   s_state.settings_last_bg_alpha = GetBackgroundAlpha();
 }
 
-void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial)
+void FullscreenUI::SwitchToGameSettingsForSerial(std::string_view serial, GameHash hash)
 {
   s_state.game_settings_serial = serial;
+  s_state.game_settings_hash = hash;
   s_state.game_settings_entry.reset();
   s_state.game_settings_db_entry = GameDatabase::GetEntryForSerial(serial);
   s_state.game_settings_interface =
     System::GetGameSettingsInterface(s_state.game_settings_db_entry, serial, true, false);
-  PopulatePatchesAndCheatsList(serial);
+  PopulatePatchesAndCheatsList();
   s_state.current_main_window = MainWindowType::Settings;
   s_state.settings_page = SettingsPage::Summary;
   QueueResetFocus(FocusResetType::ViewChanged);
@@ -3350,7 +3364,7 @@ bool FullscreenUI::SwitchToGameSettings()
   const GameList::Entry* entry = GameList::GetEntryForPath(s_state.current_game_path);
   if (!entry)
   {
-    SwitchToGameSettingsForSerial(s_state.current_game_serial);
+    SwitchToGameSettingsForSerial(s_state.current_game_serial, entry->hash);
     return true;
   }
   else
@@ -3373,7 +3387,7 @@ bool FullscreenUI::SwitchToGameSettingsForPath(const std::string& path)
 
 void FullscreenUI::SwitchToGameSettings(const GameList::Entry* entry)
 {
-  SwitchToGameSettingsForSerial(entry->serial);
+  SwitchToGameSettingsForSerial(entry->serial, entry->hash);
   s_state.game_settings_entry = std::make_unique<GameList::Entry>(*entry);
 }
 
@@ -3398,12 +3412,14 @@ void FullscreenUI::PopulateGameListDirectoryCache(SettingsInterface* si)
     s_state.game_list_directories_cache.emplace_back(std::move(dir), true);
 }
 
-void FullscreenUI::PopulatePatchesAndCheatsList(const std::string_view serial)
+void FullscreenUI::PopulatePatchesAndCheatsList()
 {
-  s_state.game_patch_list = Cheats::GetCodeInfoList(serial, std::nullopt, false, true, true);
-  s_state.game_cheats_list = Cheats::GetCodeInfoList(
-    serial, std::nullopt, true, s_state.game_settings_interface->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true),
-    s_state.game_settings_interface->GetBoolValue("Cheats", "SortList", false));
+  s_state.game_patch_list =
+    Cheats::GetCodeInfoList(s_state.game_settings_serial, s_state.game_settings_hash, false, true, true);
+  s_state.game_cheats_list =
+    Cheats::GetCodeInfoList(s_state.game_settings_serial, s_state.game_settings_hash, true,
+                            s_state.game_settings_interface->GetBoolValue("Cheats", "LoadCheatsFromDatabase", true),
+                            s_state.game_settings_interface->GetBoolValue("Cheats", "SortList", false));
   s_state.game_cheat_groups = Cheats::GetCodeListUniquePrefixes(s_state.game_cheats_list, true);
   s_state.enabled_game_patch_cache =
     s_state.game_settings_interface->GetStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
@@ -6421,7 +6437,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
       else
         bsi->SetBoolValue("Cheats", "LoadCheatsFromDatabase", false);
       SetSettingsChanged(bsi);
-      PopulatePatchesAndCheatsList(s_state.game_settings_serial);
+      PopulatePatchesAndCheatsList();
     }
 
     bool sort_list = bsi->GetBoolValue("Cheats", "SortList", false);
@@ -6433,8 +6449,8 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
       else
         bsi->SetBoolValue("Cheats", "SortList", true);
       SetSettingsChanged(bsi);
-      s_state.game_cheats_list =
-        Cheats::GetCodeInfoList(s_state.game_settings_serial, std::nullopt, true, load_database_cheats, sort_list);
+      s_state.game_cheats_list = Cheats::GetCodeInfoList(s_state.game_settings_serial, s_state.game_settings_hash, true,
+                                                         load_database_cheats, sort_list);
     }
 
     if (code_list.empty())

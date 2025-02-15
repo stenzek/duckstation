@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
 #include "common/progress_callback.h"
-#include "common/types.h"
+
+#include "types.h"
 
 #include <functional>
 #include <memory>
@@ -23,7 +24,7 @@ void CheckForConfigChanges(const GPUSettings& old_settings);
 void OnSystemStarting();
 void OnSystemResumed();
 void OnSystemDestroyed();
-void OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title);
+void OnRunningGameChanged(const std::string& path, const std::string& serial, const std::string& title, GameHash hash);
 
 #ifndef __ANDROID__
 void OpenPauseMenu();

@@ -441,12 +441,12 @@ void Cheats::EnumerateChtFiles(const std::string_view serial, std::optional<Game
     std::vector<std::string> disk_patch_files;
     if (for_ui || !Achievements::IsHardcoreModeActive())
     {
-      disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? std::nullopt : hash, cheats);
+      disk_patch_files = FindChtFilesOnDisk(serial, hash, cheats);
       if (cheats && disk_patch_files.empty())
       {
         // Check if there's an old-format titled file.
         if (ImportOldChtFile(serial))
-          disk_patch_files = FindChtFilesOnDisk(serial, for_ui ? std::nullopt : hash, cheats);
+          disk_patch_files = FindChtFilesOnDisk(serial, hash, cheats);
       }
     }
 
