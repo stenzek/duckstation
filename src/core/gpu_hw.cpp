@@ -3463,11 +3463,12 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   const GSVector4i dst_bounds = GetVRAMTransferBounds(dst_x, dst_y, width, height);
   const bool intersect_with_draw = m_vram_dirty_draw_rect.rintersects(src_bounds);
   const bool intersect_with_write = m_vram_dirty_write_rect.rintersects(src_bounds);
+  const bool overlaps_with_self = src_bounds.rintersects(dst_bounds);
   const bool use_shader =
     (set_mask || check_mask || ((src_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
      ((src_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT || ((dst_x % VRAM_WIDTH) + width) > VRAM_WIDTH ||
      ((dst_y % VRAM_HEIGHT) + height) > VRAM_HEIGHT) ||
-    (!intersect_with_draw && !intersect_with_write);
+    (!intersect_with_draw && !intersect_with_write && !overlaps_with_self);
 
   // If we're copying a region that hasn't been drawn to, and we're using the TC, we can do it in local memory.
   if (m_use_texture_cache && !GPUTextureCache::IsRectDrawn(src_bounds))
@@ -3535,7 +3536,6 @@ void GPU_HW::CopyVRAM(u32 src_x, u32 src_y, u32 dst_x, u32 dst_y, u32 width, u32
   }
 
   GPUTexture* src_tex = m_vram_texture.get();
-  const bool overlaps_with_self = src_bounds.rintersects(dst_bounds);
   if (!g_gpu_device->GetFeatures().texture_copy_to_self || overlaps_with_self)
   {
     src_tex = m_vram_read_texture.get();
