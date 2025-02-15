@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 19,
+  GAME_DATABASE_CACHE_VERSION = 20,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -99,9 +99,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "DisablePGXPOn2DPolygons",
   "ForcePGXPVertexCache",
   "ForcePGXPCPUMode",
-  "ForceRecompilerMemoryExceptions",
   "ForceRecompilerICache",
-  "ForceRecompilerLUTFastmem",
   "ForceCDROMSubQSkew",
   "IsLibCryptProtected",
 }};
@@ -131,9 +129,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP on 2D Polygons", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force PGXP Vertex Cache", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force PGXP CPU Mode", "GameDatabase::Trait"),
-  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler Memory Exceptions", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler ICache", "GameDatabase::Trait"),
-  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler LUT Fastmem", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force CD-ROM SubQ Skew", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
 }};
@@ -686,22 +682,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     g_settings.gpu_pgxp_disable_2d = true;
   }
 
-  if (HasTrait(Trait::ForceRecompilerMemoryExceptions))
-  {
-    WARNING_LOG("Memory exceptions for recompiler forced by compatibility settings.");
-    settings.cpu_recompiler_memory_exceptions = true;
-  }
-
   if (HasTrait(Trait::ForceRecompilerICache))
   {
     WARNING_LOG("ICache for recompiler forced by compatibility settings.");
     settings.cpu_recompiler_icache = true;
-  }
-
-  if (settings.cpu_fastmem_mode == CPUFastmemMode::MMap && HasTrait(Trait::ForceRecompilerLUTFastmem))
-  {
-    WARNING_LOG("LUT fastmem for recompiler forced by compatibility settings.");
-    settings.cpu_fastmem_mode = CPUFastmemMode::LUT;
   }
 
   if (HasTrait(Trait::ForceCDROMSubQSkew))

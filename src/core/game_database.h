@@ -57,9 +57,7 @@ enum class Trait : u32
   DisablePGXPOn2DPolygons,
   ForcePGXPVertexCache,
   ForcePGXPCPUMode,
-  ForceRecompilerMemoryExceptions,
   ForceRecompilerICache,
-  ForceRecompilerLUTFastmem,
   ForceCDROMSubQSkew,
   IsLibCryptProtected,
 
