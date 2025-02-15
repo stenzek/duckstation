@@ -27,7 +27,7 @@ HotkeySettingsWidget::~HotkeySettingsWidget() = default;
 HotkeySettingsWidget::Container::Container(QWidget* parent) : QWidget(parent)
 {
   m_search = new QLineEdit(this);
-  m_search->setPlaceholderText(tr("Search..."));
+  m_search->setPlaceholderText(qApp->translate("HotkeySettingsWidget", "Search..."));
   m_search->setClearButtonEnabled(true);
 }
 
