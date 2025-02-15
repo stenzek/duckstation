@@ -751,7 +751,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../../core/achievements.cpp" line="1354"/>
         <source>Hardcore mode is enabled. Cheats and save states are unavailable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Хардкорный режим включен. Читы и сохранения состояний недоступны.</translation>
     </message>
     <message>
         <location filename="../../core/achievements.cpp" line="1359"/>
@@ -861,7 +861,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../advancedsettingswidget.ui" line="37"/>
         <source>Log Level:</source>
-        <translation>Уровень журнала:</translation>
+        <translation>Уровень журналирования:</translation>
     </message>
     <message>
         <source>Log Filters:</source>
@@ -870,7 +870,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../advancedsettingswidget.ui" line="49"/>
         <source>Log Channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Каналы журналирования</translation>
     </message>
     <message>
         <location filename="../advancedsettingswidget.ui" line="65"/>
@@ -1315,13 +1315,13 @@ Unread messages: {}</source>
         <location filename="../../core/analog_controller.cpp" line="796"/>
         <location filename="../../core/negcon_rumble.cpp" line="745"/>
         <source>Large Motor</source>
-        <translation type="unfinished">Большой мотор</translation>
+        <translation>Большой мотор</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="797"/>
         <location filename="../../core/negcon_rumble.cpp" line="746"/>
         <source>Small Motor</source>
-        <translation type="unfinished">Малый мотор</translation>
+        <translation>Малый мотор</translation>
     </message>
     <message>
         <location filename="../../core/analog_controller.cpp" line="805"/>
@@ -2191,7 +2191,8 @@ Unread messages: {}</source>
         <location filename="../autoupdaterdialog.cpp" line="772"/>
         <source>Failed to remove updater exe after update:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось удалить исполняемый файл обновления после обновления:
+%1</translation>
     </message>
     <message>
         <source>Failed to remove updater exe after update.</source>
@@ -2241,7 +2242,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../biossettingswidget.ui" line="105"/>
         <source>Refresh BIOS List</source>
-        <translation type="unfinished"></translation>
+        <translation>Обновить список BIOS</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="120"/>
@@ -2252,44 +2253,44 @@ Unread messages: {}</source>
     <message>
         <location filename="../biossettingswidget.ui" line="127"/>
         <source>Open...</source>
-        <translation type="unfinished">Открыть...</translation>
+        <translation>Открыть...</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="134"/>
         <source>Reset</source>
-        <translation type="unfinished">Сброс</translation>
+        <translation>Сброс</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="146"/>
         <source>Parallel Port</source>
-        <translation type="unfinished"></translation>
+        <translation>Параллельный порт</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="152"/>
         <source>Device Type:</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип устройства:</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="164"/>
         <source>Image Path:</source>
-        <translation type="unfinished">Путь образа:</translation>
+        <translation>Путь к образу:</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="185"/>
         <location filename="../biossettingswidget.cpp" line="99"/>
         <source>Cartridge Switch On</source>
-        <translation type="unfinished"></translation>
+        <translation>Включение картриджа</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="192"/>
         <location filename="../biossettingswidget.cpp" line="103"/>
         <source>Allow Image Writes</source>
-        <translation type="unfinished"></translation>
+        <translation>Разрешить запись в образ</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.ui" line="204"/>
         <source>Options</source>
-        <translation type="unfinished">Параметры</translation>
+        <translation>Параметры</translation>
     </message>
     <message>
         <source>Options and Patches</source>
@@ -2330,47 +2331,47 @@ Unread messages: {}</source>
     <message>
         <location filename="../biossettingswidget.cpp" line="94"/>
         <source>Device Type</source>
-        <translation type="unfinished"></translation>
+        <translation>Тип устройства</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="94"/>
         <source>None</source>
-        <translation type="unfinished">Нет</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="95"/>
         <source>Simulates a device plugged into the console&apos;s parallel port. Usually these are flash cartridges, and require some sort of image dump to function.</source>
-        <translation type="unfinished"></translation>
+        <translation>Симулирует устройство, подключенное к параллельному порту консоли. Обычно это флеш-картриджи, которые требуют наличия образа для корректной работы.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
         <source>Image Path</source>
-        <translation type="unfinished"></translation>
+        <translation>Путь к образу</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="97"/>
         <source>Empty</source>
-        <translation type="unfinished">Пусто</translation>
+        <translation>Пусто</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="98"/>
         <source>Sets the path to the image used for flash cartridges.</source>
-        <translation type="unfinished"></translation>
+        <translation>Устанавливает путь к образу, используемому для флэш-картриджей.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="99"/>
         <source>Checked</source>
-        <translation type="unfinished">Выбран</translation>
+        <translation>Выбран</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="100"/>
         <source>Simulates the position of the switch on the cartridge. Most cartridges require the switch to be on for it to activate on startup.</source>
-        <translation type="unfinished"></translation>
+        <translation>Имитирует положение переключателя на картридже. Большинство картриджей требуют, чтобы переключатель был включен, чтобы он активировался при запуске.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="104"/>
         <source>Stores any images made to the cartridge&apos;s flash storage back to the host&apos;s file system. &lt;strong&gt;This will overwrite your cartridge dump,&lt;/strong&gt; you should ensure you have a backup first.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохраняет образы, созданные на флеш-памяти картриджа, обратно в файловую систему хоста. &lt;strong&gt;Это перезапишет ваш дамп картриджа,&lt;/strong&gt; поэтому вам следует убедиться, что у вас есть резервная копия.</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="137"/>
@@ -2387,7 +2388,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../biossettingswidget.cpp" line="206"/>
         <source>Select PIO Image</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор образа PIO</translation>
     </message>
     <message>
         <location filename="../biossettingswidget.cpp" line="103"/>
@@ -2517,6 +2518,7 @@ Unread messages: {}</source>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="937"/>
         <source>New...</source>
+        <translatorcomment>*Новая (группа) *Новый чит код</translatorcomment>
         <translation type="unfinished">Новая...</translation>
     </message>
     <message>
@@ -2715,31 +2717,31 @@ Unread messages: {}</source>
         <location filename="../../core/cheats.cpp" line="1042"/>
         <source>%n cheats</source>
         <comment>Cheats blocked by hardcore mode</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n чит</numerusform>
+            <numerusform>%n чита</numerusform>
+            <numerusform>%n читов</numerusform>
         </translation>
     </message>
     <message numerus="yes">
         <location filename="../../core/cheats.cpp" line="1044"/>
         <source>%n patches</source>
         <comment>Patches blocked by hardcore mode</comment>
-        <translation type="unfinished">
-            <numerusform></numerusform>
-            <numerusform></numerusform>
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>%n патч</numerusform>
+            <numerusform>%n патча</numerusform>
+            <numerusform>%n патчей</numerusform>
         </translation>
     </message>
     <message>
         <location filename="../../core/cheats.cpp" line="1047"/>
         <source>{0} and {1} disabled by achievements hardcore mode/safe mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>{0} и {1} отключаются достижениями хардкорного режима/безопасного режима.</translation>
     </message>
     <message>
         <location filename="../../core/cheats.cpp" line="1049"/>
         <source>{} disabled by achievements hardcore mode/safe mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>{} отключается достижениями хардкорного режима/безопасного режима.</translation>
     </message>
     <message>
         <location filename="../../core/cheats.cpp" line="1082"/>
@@ -2882,7 +2884,7 @@ Unread messages: {}</source>
         <location filename="../consolesettingswidget.ui" line="233"/>
         <location filename="../consolesettingswidget.ui" line="302"/>
         <source>Maximum</source>
-        <translation type="unfinished"></translation>
+        <translation>Максимум</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="319"/>
@@ -2970,19 +2972,19 @@ Unread messages: {}</source>
         <location filename="../consolesettingswidget.ui" line="47"/>
         <location filename="../consolesettingswidget.cpp" line="86"/>
         <source>Fast Boot</source>
-        <translation type="unfinished"></translation>
+        <translation>Быстрая загрузка</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="54"/>
         <location filename="../consolesettingswidget.cpp" line="88"/>
         <source>Fast Forward Boot</source>
-        <translation type="unfinished">Быстрая загрузка с перемоткой</translation>
+        <translation>Быстрая загрузка с перемоткой</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="61"/>
         <location filename="../consolesettingswidget.cpp" line="97"/>
         <source>Fast Forward Memory Card Access</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Быстрый доступ с перемоткой к карте памяти</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.ui" line="86"/>
@@ -3051,17 +3053,17 @@ Unread messages: {}</source>
     <message>
         <location filename="../consolesettingswidget.cpp" line="87"/>
         <source>Skips the boot animation. Safe to enable.</source>
-        <translation type="unfinished"></translation>
+        <translation>Пропускает анимацию загрузки. Безопасно для включения.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="89"/>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
-        <translation type="unfinished">Быстрая перемотка через процесс ранней загрузки при быстрой загрузке, экономя время. Результаты могут различаться в зависимости от игры.</translation>
+        <translation>Быстрая перемотка через процесс ранней загрузки при быстрой загрузке, экономя время. Результаты могут различаться в зависимости от игры.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="98"/>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
-        <translation type="unfinished"></translation>
+        <translation>Быстрый доступ с перемоткой к карте памяти, как при загрузке, так и при сохранении. Позволяет сократить время ожидания в играх, которые часто обращаются к картам памяти.</translation>
     </message>
     <message>
         <location filename="../consolesettingswidget.cpp" line="101"/>
@@ -3212,12 +3214,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../../core/jogcon.cpp" line="192"/>
         <source>Controller {} switched to JogCon mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Контроллер {} переключен в режим JogCon.</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="193"/>
         <source>Controller {} switched to Digital mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Контроллер {} переключен в Цифровой режим.</translation>
     </message>
 </context>
 <context>
@@ -3259,7 +3261,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="278"/>
         <source>Multiple devices...</source>
-        <translation type="unfinished"></translation>
+        <translation>Несколько устройств...</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="283"/>
@@ -3280,12 +3282,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="381"/>
         <source>Select the devices from the list below that you want to bind to this controller.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите устройства из списка ниже, которые вы хотите привязать к этому контроллеру.</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="445"/>
         <source>No devices were selected.</source>
-        <translation type="unfinished"></translation>
+        <translation>Устройства не были выбраны.</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidgets.cpp" line="502"/>
@@ -4109,12 +4111,12 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerbindingwidget_negconrumble.ui" line="726"/>
         <source>Large Motor</source>
-        <translation type="unfinished">Большой мотор</translation>
+        <translation>Большой мотор</translation>
     </message>
     <message>
         <location filename="../controllerbindingwidget_negconrumble.ui" line="766"/>
         <source>Small Motor</source>
-        <translation type="unfinished">Малый мотор</translation>
+        <translation>Малый мотор</translation>
     </message>
 </context>
 <context>
@@ -4266,17 +4268,17 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="136"/>
         <source>The SDL input source supports most controllers, and provides Vibration/LED functionality for DualShock 4 / DualSense pads in Bluetooth mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>Источник ввода SDL поддерживает большинство контроллеров и обеспечивает функции вибрации и светодиодов для геймпадов DualShock 4 и DualSense в режиме Bluetooth.</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="146"/>
         <source>Enable Touchpad</source>
-        <translation type="unfinished"></translation>
+        <translation>Включить сенсорную панель</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="168"/>
         <source>Enable DualSense Player LED</source>
-        <translation type="unfinished">Включить светодиодную подсветку на контроллерах DualSense</translation>
+        <translation>Включить светодиодную подсветку DualSense</translation>
     </message>
     <message>
         <location filename="../controllerglobalsettingswidget.ui" line="196"/>
@@ -4356,7 +4358,7 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="57"/>
         <source>For buttons which are pressure sensitive, this slider controls how much force will be simulated when the macro is active.</source>
-        <translation type="unfinished">Для кнопок, чувствительных к давлению, этот ползунок определяет, какое усилие будет моделироваться, когда макрос активен.</translation>
+        <translation>Для кнопок с чувствительностью к нажатию этот ползунок регулирует, с какой силой будет имитироваться нажатие, когда макрос активен.</translation>
     </message>
     <message>
         <location filename="../controllermacroeditwidget.ui" line="91"/>
@@ -4461,22 +4463,22 @@ This warning will only be shown once.</source>
     <message>
         <location filename="../controllersettingswindow.ui" line="75"/>
         <source>Editing Preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Редактирование предустановки:</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="92"/>
         <source>New Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Новая предустановка</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="102"/>
         <source>Apply Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Применить предустановку</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.ui" line="112"/>
         <source>Delete Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить предустановку</translation>
     </message>
     <message>
         <source>New Profile</source>
@@ -4604,44 +4606,44 @@ You cannot undo this action.</source>
     <message>
         <location filename="../controllersettingswindow.cpp" line="74"/>
         <source>DuckStation Controller Presets</source>
-        <translation type="unfinished"></translation>
+        <translation>Предустановки контроллера DuckStation</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="171"/>
         <location filename="../controllersettingswindow.cpp" line="184"/>
         <location filename="../controllersettingswindow.cpp" line="198"/>
         <source>Create Controller Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Создать предустановку контроллера</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="171"/>
         <source>Enter the name for the new controller preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Введите имя для новой предустановки контроллера:</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="180"/>
         <source>A preset with the name &apos;%1&apos; already exists.</source>
-        <translation type="unfinished"></translation>
+        <translation>Предустановка с именем &apos;%1&apos; уже существует.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="185"/>
         <source>Do you want to copy all bindings from the currently-selected preset to the new preset? Selecting No will create a completely empty preset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы хотите скопировать все привязки из текущей выбранной предустановки в новую предустановку? Выбор &quot;Нет&quot; создаст совершенно пустую предустановку.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="199"/>
         <source>Do you want to copy the current hotkey bindings from global settings to the new controller preset?</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы хотите скопировать текущие привязки горячих клавиш из глобальных настроек в новую предустановку контроллера?</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="234"/>
         <source>Failed to save the new preset to &apos;%1&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить новую предустановку в &apos;%1&apos;.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="244"/>
         <source>Load Controller Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузить предустановку контроллера</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="245"/>
@@ -4650,31 +4652,39 @@ You cannot undo this action.</source>
 All current global bindings will be removed, and the preset bindings loaded.
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите применить предустановку контроллера с именем &apos;%1&apos;?
+
+Все текущие глобальные привязки будут удалены, и будут загружены привязки предустановки.
+
+Вы не можете отменить это действие.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="269"/>
         <source>Delete Controller Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Удалить предустановку контроллера</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="270"/>
         <source>Are you sure you want to delete the controller preset named &apos;%1&apos;?
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите удалить предустановку контроллера с именем &apos;%1&apos;?
+
+Вы не можете отменить это действие.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="292"/>
         <source>Are you sure you want to restore the default controller configuration?
 
 All bindings and configuration will be lost. You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите восстановить конфигурацию контроллера по умолчанию?
+
+Все привязки и настройки будут потеряны. Вы не можете отменить это действие.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="322"/>
         <source>Controller preset reset to global settings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Предустановка контроллера сброшена к глобальным настройкам.</translation>
     </message>
     <message>
         <location filename="../controllersettingswindow.cpp" line="465"/>
@@ -4692,7 +4702,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../controllersettingswindow.cpp" line="582"/>
         <source>The controller preset named &apos;%1&apos; cannot be found.</source>
-        <translation type="unfinished"></translation>
+        <translation>Предустановка контроллера с именем &apos;%1&apos; не найдена.</translation>
     </message>
     <message>
         <source>Shared</source>
@@ -4771,7 +4781,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/jogcon.cpp" line="682"/>
         <source>JogCon</source>
-        <translation type="unfinished"></translation>
+        <translation>JogCon</translation>
     </message>
 </context>
 <context>
@@ -4833,12 +4843,12 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/ddgo_controller.cpp" line="308"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Select</translation>
     </message>
     <message>
         <location filename="../../core/ddgo_controller.cpp" line="309"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Start</translation>
     </message>
     <message>
         <location filename="../../core/ddgo_controller.cpp" line="310"/>
@@ -5722,19 +5732,21 @@ Do you want to %1 anyway?</source>
     <message>
         <location filename="../qthost.cpp" line="1354"/>
         <source>Confirm Download</source>
-        <translation type="unfinished"></translation>
+        <translation>Подтвердить загрузку</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1355"/>
         <source>Your DuckStation installation does not have the padtest application available.
 
 This file is approximately 206KB, do you want to download it now?</source>
-        <translation type="unfinished"></translation>
+        <translation>Ваша установка DuckStation не содержит доступного приложения padtest.
+
+Этот файл примерно 206 КБ, хотите скачать его сейчас?</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1361"/>
         <source>File Download</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка файла</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1450"/>
@@ -5767,7 +5779,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <location filename="../qthost.cpp" line="2380"/>
         <source>No Image</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Нет образа</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2391"/>
@@ -6516,7 +6528,7 @@ This file is approximately 206KB, do you want to download it now?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8748"/>
         <source>A cover already exists for this game. Are you sure that you want to overwrite it?</source>
-        <translation type="unfinished"></translation>
+        <translation>Для этой игры уже существует обложка. Вы уверены, что хотите ее перезаписать?</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8749"/>
@@ -6569,12 +6581,12 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8759"/>
         <source>Achievements: %u (%u) / %u</source>
-        <translation type="unfinished"></translation>
+        <translation>Достижения: %u (%u) / %u</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8760"/>
         <source>Achievements: %u / %u</source>
-        <translation type="unfinished"></translation>
+        <translation>Достижения: %u / %u</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8761"/>
@@ -6612,7 +6624,7 @@ Do you want to load this save and continue?</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8679"/>
         <source>%.1f ms</source>
-        <translation type="unfinished"></translation>
+        <translation>%.1f мс</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8684"/>
@@ -6667,7 +6679,9 @@ Do you want to load this save and continue?</source>
         <source>Are you sure you want to clear all mappings for this controller?
 
 You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите очистить все привязки для этого контроллера?
+
+Это действие нельзя отменить.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8778"/>
@@ -6679,7 +6693,9 @@ You cannot undo this action.</source>
         <source>Are you sure you want to restore the default controller configuration?
 
 All bindings and configuration will be lost. You cannot undo this action.</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы уверены, что хотите восстановить конфигурацию контроллера по умолчанию?
+
+Все привязки и конфигурация будут потеряны. Отменить это действие невозможно.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8780"/>
@@ -6840,7 +6856,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8807"/>
         <source>Border Overlay</source>
-        <translation type="unfinished"></translation>
+        <translation>Наложение границ</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8808"/>
@@ -6857,7 +6873,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8810"/>
         <source>Buttons</source>
-        <translation type="unfinished">Кнопки</translation>
+        <translation>Кнопки</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8811"/>
@@ -7028,17 +7044,17 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8847"/>
         <source>Controller mapping cleared.</source>
-        <translation type="unfinished"></translation>
+        <translation>Привязки контроллера очищены.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8848"/>
         <source>Controller preset &apos;{}&apos; loaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Загружена предварительная установка контроллера &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8849"/>
         <source>Controller preset &apos;{}&apos; saved.</source>
-        <translation type="unfinished"></translation>
+        <translation>Предварительная настройка контроллера &apos;{}&apos; сохранена.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8850"/>
@@ -7088,7 +7104,8 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8860"/>
         <source>Cover set.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Установить обложку</translatorcomment>
+        <translation type="unfinished">Установка обложки.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8861"/>
@@ -7174,7 +7191,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8880"/>
         <source>Depth Test Transparent Polygons</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Тест глубины: Прозрачные многоугольники</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8881"/>
@@ -7514,7 +7531,7 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8957"/>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Включает проверку глубины для полупрозрачных полигонов. Обычно они включают тени и при включенной проверке глубины имеют тенденцию проступать сквозь землю.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8958"/>
@@ -7584,24 +7601,24 @@ All bindings and configuration will be lost. You cannot undo this action.</sourc
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8977"/>
         <source>Failed to copy cover: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось скопировать обложку: {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8979"/>
         <source>Failed to delete existing cover: {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось удалить существующую обложку: {}</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8983"/>
         <source>Failed to load shader {}. It may be invalid.
 Error was:</source>
-        <translation type="unfinished">Не удалось загрузить шейдер {}. Это может быть недействительно.
+        <translation>Не удалось загрузить шейдер {}. Возможно, он недействителен.
 Ошибка была:</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8984"/>
         <source>Failed to save controller preset &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить предустановку контроллера &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8986"/>
@@ -7611,17 +7628,17 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8987"/>
         <source>Fast Forward Memory Card Access</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Быстрый доступ с перемоткой к карте памяти</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8990"/>
         <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
-        <translation type="unfinished"></translation>
+        <translation>Быстрый доступ к карте памяти, как для загрузки, так и для сохранения. Позволяет сократить время ожидания в играх, которые часто обращаются к картам памяти.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8991"/>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
-        <translation type="unfinished">Быстрая перемотка через процесс ранней загрузки при быстрой загрузке, экономя время. Результаты могут различаться в зависимости от игры.</translation>
+        <translation>Быстрая перемотка ускоряет процесс ранней загрузки, экономя время. Результаты могут отличаться в разных играх.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8992"/>
@@ -7635,7 +7652,7 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8995"/>
         <source>Force 4:3 For FMVs</source>
-        <translation type="unfinished">Принудительно 4:3 для FMV</translation>
+        <translation>Принудительно 4:3 для FMV</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8996"/>
@@ -7645,12 +7662,12 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8999"/>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Принудительно включить отслеживание выгрузки текстур, независимо от того, нужно ли это.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9003"/>
         <source>Frequency</source>
-        <translation type="unfinished">Частота</translation>
+        <translation>Частота</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9011"/>
@@ -7675,12 +7692,13 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9040"/>
         <source>If enabled, the transparency of the overlay image will be applied.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Если эта опция включена, будет применена прозрачность наложенного изображения.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9042"/>
         <source>Image Path</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Путь к изображению</translatorcomment>
+        <translation type="unfinished">Путь изображения</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9049"/>
@@ -7721,24 +7739,26 @@ Error was:</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9066"/>
         <source>Load Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка предустановки</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9077"/>
         <source>Logging in to RetroAchievements...</source>
-        <translation type="unfinished"></translation>
+        <translation>Авторизация в RetroAchievements...</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9079"/>
         <source>Login Error</source>
-        <translation type="unfinished">Ошибка авторизации</translation>
+        <translation>Ошибка авторизации</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9080"/>
         <source>Login Failed.
 Error: {}
 Please check your username and password, and try again.</source>
-        <translation type="unfinished"></translation>
+        <translation>Авторизация в систему не удался.
+Ошибка: {}
+Пожалуйста, проверьте имя пользователя и пароль и повторите попытку.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9089"/>
@@ -7748,12 +7768,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9091"/>
         <source>Maximum</source>
-        <translation type="unfinished"></translation>
+        <translation>Максимум</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9097"/>
         <source>Menu Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Фон меню</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9105"/>
@@ -7769,7 +7789,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9112"/>
         <source>No Vibration</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Отсутствие вибрации</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9113"/>
@@ -7805,7 +7825,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9142"/>
         <source>Password</source>
-        <translation type="unfinished"></translation>
+        <translation>Пароль</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9158"/>
@@ -7825,17 +7845,17 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9191"/>
         <source>Removes all bindings for this controller port.</source>
-        <translation type="unfinished"></translation>
+        <translation>Удаляет все привязки для этого порта контроллера.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9195"/>
         <source>Replaces these settings with a previously saved controller preset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Заменяет эти настройки на ранее сохраненную предустановку контроллера.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9197"/>
         <source>Reset Controller Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Сброс настроек контроллера</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9207"/>
@@ -7845,7 +7865,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9208"/>
         <source>RetroAchievements Login</source>
-        <translation type="unfinished">Авторизация RetroAchievements</translation>
+        <translation>Авторизация RetroAchievements</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9209"/>
@@ -7901,12 +7921,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9227"/>
         <source>Save Controller Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить предустановку контроллера</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9228"/>
         <source>Save Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранить предустановку</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9241"/>
@@ -7968,12 +7988,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9257"/>
         <source>Select from the list of preset borders, or manually specify a custom configuration.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выберите из списка предустановленных границ или задайте пользовательскую конфигурацию вручную.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9258"/>
         <source>Selected Preset</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбранная предустановка</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9261"/>
@@ -7983,7 +8003,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9264"/>
         <source>Selects the type of emulated controller for this port.</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбор типа эмулируемого контроллера для данного порта.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9265"/>
@@ -7993,17 +8013,17 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9268"/>
         <source>Set Cover Image</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Установить изображение обложки</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9282"/>
         <source>Show Achievement Trophy Icons</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать значки трофеев достижений</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9295"/>
         <source>Shows a background image or shader when a game isn&apos;t running. Backgrounds are located in resources/fullscreenui/backgrounds in the data directory.</source>
-        <translation type="unfinished"></translation>
+        <translation>Показывает фоновое изображение или шейдер, когда игра не запущена. Фоновые изображения находятся в папке resources/fullscreenui/backgrounds в каталоге данных.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9306"/>
@@ -8014,6 +8034,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9307"/>
         <source>Shows the host&apos;s CPU usage of each system thread in the top-right corner of the display.</source>
+        <translatorcomment>*В правом верхнем углу экрана отображается информация об использовании процессора хоста для каждого системного потока.</translatorcomment>
         <translation type="unfinished">Показывает загрузку ЦП хоста каждым системным потоком в правом верхнем углу экрана.</translation>
     </message>
     <message>
@@ -8039,12 +8060,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9320"/>
         <source>Sort Alphabetically</source>
-        <translation type="unfinished"></translation>
+        <translation>Сортировать по алфавиту</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9323"/>
         <source>Sorts the cheat list alphabetically by the name of the code.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сортирует список чит-кодов в алфавитном порядке по названию кода.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9330"/>
@@ -8072,7 +8093,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9339"/>
         <source>Stores the current settings to a controller preset.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохраняет текущие настройки в предустановке контроллера.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9345"/>
@@ -8155,7 +8176,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9392"/>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>Использует второй поток для отрисовки графики. Обеспечивает значительное повышение скорости, особенно при работе с программным рендерером, и безопасен в использовании.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9399"/>
@@ -8211,12 +8232,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8772"/>
         <source>Alpha Blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Альфа-смешивание</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8773"/>
         <source>Always Track Uploads</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Всегда отслеживать выгрузку</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8774"/>
@@ -8287,7 +8308,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8842"/>
         <source>Controller Port {} Bindings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Порт контроллера {} Привязкок</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8858"/>
@@ -8345,27 +8366,27 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8913"/>
         <source>Display Area</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Область отображения</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8914"/>
         <source>Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons.</source>
-        <translation type="unfinished"></translation>
+        <translation>Отображение значков кнопок DualShock/DualSense в нижнем колонтитуле и привязку ввода вместо кнопок Xbox.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8924"/>
         <source>DuckStation is a free simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability.</source>
-        <translation type="unfinished">DuckStation — это бесплатный симулятор/эмулятор консоли Sony PlayStation™, ориентированный на удобство игры, скорость и долговечность обслуживания.</translation>
+        <translation>DuckStation - это бесплатный симулятор/эмулятор консоли Sony PlayStation™, ориентированный на удобство игры, скорость и долговечность обслуживания.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8925"/>
         <source>Dump Replaced Textures</source>
-        <translation type="unfinished">Дамп замененных текстур</translation>
+        <translation>Дамп замененных текстур</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8926"/>
         <source>Dumps textures that have replacements already loaded.</source>
-        <translation type="unfinished">Сбрасывает текстуры, у которых уже загружены замены.</translation>
+        <translation>Дамп текстур, у которых уже загружены замены.</translation>
     </message>
     <message>
         <source>Enable VRAM Write Texture Replacement</source>
@@ -8375,7 +8396,7 @@ Please check your username and password, and try again.</source>
         <location filename="../../core/fullscreen_ui.cpp" line="8950"/>
         <source>Enable XInput Input Source</source>
         <translatorcomment>Настройки контроллеров</translatorcomment>
-        <translation type="unfinished">Включить источник ввода XInput</translation>
+        <translation>Включить источник ввода XInput</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8951"/>
@@ -8414,7 +8435,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8969"/>
         <source>Error</source>
-        <translation type="unfinished">Ошибка</translation>
+        <translation>Ошибка</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8970"/>
@@ -8485,7 +8506,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8993"/>
         <source>File Size: %u MB (%u MB on disk)</source>
-        <translation type="unfinished"></translation>
+        <translation>Размер файла: %u МБ (%u МБ на диске)</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="8994"/>
@@ -8513,12 +8534,12 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9000"/>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation type="unfinished"></translation>
+        <translation>Принудительное использование FIFO вместо представления Mailbox, т.е. двойная буферизация вместо тройной. Обычно это приводит к ухудшению частоты кадров.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9001"/>
         <source>Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.</source>
-        <translation type="unfinished">Принудительно заставляет отключить звук CD-DA и XA с компакт-диска. Может использоваться для отключения фоновой музыки в некоторых играх.</translation>
+        <translation>Принудительное отключение звука CD-DA и XA с CD-ROM. Может использоваться для отключения фоновой музыки в некоторых играх.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9002"/>
@@ -8529,7 +8550,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9004"/>
         <source>From File...</source>
-        <translation type="unfinished">Из файла...</translation>
+        <translation>Из файла...</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9005"/>
@@ -10127,7 +10148,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9380"/>
         <source>Use DualShock/DualSense Button Icons</source>
-        <translation type="unfinished"></translation>
+        <translation>Использовать иконки кнопок DualShock/DualSense</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9381"/>
@@ -10143,7 +10164,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9384"/>
         <source>Use Separate Disc Settings</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Использовать отдельные настройки диска</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9386"/>
@@ -10155,7 +10176,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9387"/>
         <source>User Name</source>
-        <translation type="unfinished"></translation>
+        <translation>Имя пользователя</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9388"/>
@@ -10211,7 +10232,7 @@ Please check your username and password, and try again.</source>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9398"/>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Используются отдельные настройки игры, в многодисковых играх для каждого диска. Можно установить только на первый/основной диск.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="9400"/>
@@ -10372,7 +10393,8 @@ Do you want to {0} anyway?</source>
         <location filename="../../core/gpu_backend.cpp" line="765"/>
         <source>Failed to save screenshot:
 {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить снимок экрана:
+{}</translation>
     </message>
     <message>
         <location filename="../../core/gpu_backend.cpp" line="775"/>
@@ -10392,38 +10414,38 @@ Do you want to {0} anyway?</source>
     <message>
         <location filename="../../core/gpu.cpp" line="2110"/>
         <source>Failed to start GPU trace:</source>
-        <translation type="unfinished">Не удалось запустить ГП, трассировка:</translation>
+        <translation>Не удалось запустить трассировку ГП:</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2118"/>
         <source>Saving {0} frame GPU trace to &apos;{1}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение трассировки ГП кадра {0} в &apos;{1}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2119"/>
         <source>Saving multi-frame frame GPU trace to &apos;{1}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение многокадровой трассировки ГП в &apos;{1}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2139"/>
         <source>Failed to close GPU trace:</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось закрыть трассировку ГП:</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2153"/>
         <location filename="../../core/gpu.cpp" line="2172"/>
         <source>Saved GPU trace to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранена трассировка ГП в &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2165"/>
         <source>Compressing GPU trace &apos;{}&apos;...</source>
-        <translation type="unfinished"></translation>
+        <translation>Сжатие трассировки ГП &apos;{}&apos;...</translation>
     </message>
     <message>
         <location filename="../../core/gpu.cpp" line="2180"/>
         <source>Failed to save GPU trace to &apos;{}&apos;:</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить трассировку ГП в &apos;{}&apos;:</translation>
     </message>
 </context>
 <context>
@@ -10755,12 +10777,12 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../gamecheatsettingswidget.ui" line="44"/>
         <source>Search...</source>
-        <translation type="unfinished">Поиск...</translation>
+        <translation>Поиск...</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.ui" line="54"/>
         <source>Sort Alphabetically</source>
-        <translation type="unfinished"></translation>
+        <translation>Сортировать по алфавиту</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.ui" line="73"/>
@@ -10801,7 +10823,7 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../gamecheatsettingswidget.ui" line="180"/>
         <source>Clear List</source>
-        <translation type="unfinished"></translation>
+        <translation>Очистить список</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.ui" line="190"/>
@@ -10826,17 +10848,17 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="394"/>
         <source>Confirm Cheat Enable</source>
-        <translation type="unfinished"></translation>
+        <translation>Подтвердить включение читов</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="397"/>
         <source>&lt;h3&gt;Cheats are not currently enabled for this game.&lt;/h3&gt;&lt;p&gt;Enabling this cheat will not have any effect until cheats are enabled for this game. Do you want to do this now?</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;h3&gt;В настоящее время читы не включены для этой игры.&lt;/h3&gt;&lt;p&gt;Включение этого чит-кода не будет иметь никакого эффекта, пока читы не будут включены для этой игры. Вы хотите сделать это сейчас?</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="404"/>
         <source>Do not show again</source>
-        <translation type="unfinished">Не показывать снова</translation>
+        <translation>Больше не показывать</translation>
     </message>
     <message>
         <location filename="../gamecheatsettingswidget.cpp" line="540"/>
@@ -10936,7 +10958,11 @@ It requires framebuffer fetch, feedback loops, or rasterizer order views.</sourc
 Any database cheats will still be loaded and present unless you uncheck the &quot;Load Database Cheats&quot; option.
 
 Are you sure you want to continue?</source>
-        <translation type="unfinished"></translation>
+        <translation>Вы удаляете все читы, добавленные вручную для этой игры. Это действие не может быть отменено.
+
+Все читы из базы данных будут по-прежнему загружены и присутствовать, если вы не снимите флажок «Загружать читы из базы данных».
+
+Вы уверены, что хотите продолжить?</translation>
     </message>
 </context>
 <context>
@@ -11083,7 +11109,7 @@ Are you sure you want to continue?</source>
     <message>
         <location filename="../../core/game_database.cpp" line="455"/>
         <source>Multitap disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Мультитап отключен.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="474"/>
@@ -11288,7 +11314,7 @@ Are you sure you want to continue?</source>
         <location filename="../../core/game_database.cpp" line="116"/>
         <source>Disable Multitap</source>
         <comment>GameDatabase::Trait</comment>
-        <translation type="unfinished"></translation>
+        <translation>Отключить: Мультитап</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="117"/>
@@ -11447,13 +11473,16 @@ Please configure a supported controller from the list above.</source>
         <source>Controller in Port {0} ({1}) is not supported for this game.
 Supported controllers: {2}
 Please configure a supported controller from the list above.</source>
-        <translation type="unfinished"></translation>
+        <translation>Контроллер в порту {0} ({1}) не поддерживается для этой игры.
+Поддерживаемые контроллеры: {2}
+Пожалуйста, настройте поддерживаемый контроллер из списка выше.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="758"/>
         <source>This game does not support multitap, but multitap is enabled.
        This may result in dropped controller inputs.</source>
-        <translation type="unfinished"></translation>
+        <translation>Эта игра не поддерживает мультитап, но мультитап включен.
+       Это может привести к перебоям в работе контроллера.</translation>
     </message>
     <message>
         <location filename="../../core/game_database.cpp" line="778"/>
@@ -11762,7 +11791,7 @@ Please configure a supported controller from the list above.</source>
     <message>
         <location filename="../gamelistmodel.cpp" line="909"/>
         <source>Achievements</source>
-        <translation type="unfinished">Достижения</translation>
+        <translation>Достижения</translation>
     </message>
     <message>
         <location filename="../gamelistmodel.cpp" line="910"/>
@@ -12007,7 +12036,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamesummarywidget.ui" line="57"/>
         <source>Controller Preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Предустановка контроллера:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="116"/>
@@ -12047,17 +12076,17 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamesummarywidget.ui" line="322"/>
         <source>Languages:</source>
-        <translation type="unfinished"></translation>
+        <translation>Языки:</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="352"/>
         <source>Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.</source>
-        <translation type="unfinished"></translation>
+        <translation>В многодисковых играх для каждого диска используются отдельные настройки игры. Можно установить только на первый/основной диск.</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="355"/>
         <source>Use Separate Disc Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Использование отдельных настроек диска</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.ui" line="242"/>
@@ -12185,7 +12214,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../gamesummarywidget.cpp" line="58"/>
         <source>Show Default Flag</source>
-        <translation type="unfinished"></translation>
+        <translation>Показать флаг по умолчанию</translation>
     </message>
     <message>
         <location filename="../gamesummarywidget.cpp" line="365"/>
@@ -12441,7 +12470,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.ui" line="1194"/>
         <source>Enable Texture Replacement</source>
-        <translation type="unfinished"></translation>
+        <translation>Включить замену текстур</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1201"/>
@@ -12453,12 +12482,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="1208"/>
         <location filename="../graphicssettingswidget.cpp" line="618"/>
         <source>Always Track Uploads</source>
-        <translation type="unfinished"></translation>
+        <translation>Всегда отслеживать выгрузку</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1220"/>
         <source>VRAM Write (Background) Replacement</source>
-        <translation type="unfinished">Замена записи VRAM (в фоновом режиме)</translation>
+        <translation>Замена записи в VRAM (фоновая запись)</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1254"/>
@@ -12468,12 +12497,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.ui" line="1260"/>
         <source>Open...</source>
-        <translation type="unfinished">Открыть...</translation>
+        <translation>Открыть...</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1267"/>
         <source>Directory to load replacement textures from, and save dumps to.</source>
-        <translation type="unfinished">Каталог для загрузки заменяющих текстур и сохранения дампов.</translation>
+        <translation>Каталог для загрузки заменяющих текстур и сохранения дампов.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1274"/>
@@ -12717,7 +12746,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.ui" line="457"/>
         <source>Max Queued Frames:</source>
-        <translation type="unfinished"></translation>
+        <translation>Максимальное количество кадров в очереди:</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="606"/>
@@ -12729,7 +12758,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="613"/>
         <location filename="../graphicssettingswidget.cpp" line="512"/>
         <source>Depth Test Transparent Polygons</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Тест глубины: Прозрачные многоугольники</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="765"/>
@@ -12828,13 +12857,13 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../graphicssettingswidget.ui" line="1416"/>
         <location filename="../graphicssettingswidget.cpp" line="663"/>
         <source>Disable Compute Shaders</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключить вычислительные шейдеры</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.ui" line="1423"/>
         <location filename="../graphicssettingswidget.cpp" line="666"/>
         <source>Disable Compressed Textures</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключить сжатые текстуры</translation>
     </message>
     <message>
         <source>Texture Replacements</source>
@@ -13338,7 +13367,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="434"/>
         <source>Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Принудительное использование FIFO вместо представления Mailbox, т.е. двойная буферизация вместо тройной. Обычно это приводит к ухудшению частоты кадров.</translation>
     </message>
     <message>
         <source>Prefers stretching the display vertically instead of horizontally, when applying the display aspect ratio.</source>
@@ -13352,7 +13381,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="459"/>
         <source>Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.</source>
-        <translation type="unfinished"></translation>
+        <translation>Использует второй поток для отрисовки графики. Обеспечивает значительное повышение скорости, особенно при работе с программным рендерером, и безопасен в использовании.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="463"/>
@@ -13441,7 +13470,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="513"/>
         <source>Enables depth testing for semi-transparent polygons. Usually these include shadows, and tend to clip through the ground when depth testing is enabled. Depth writes for semi-transparent polygons are disabled regardless of this setting..</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Включает проверку глубины для полупрозрачных полигонов. Обычно это включает тени и при включенной проверке глубины имеют тенденцию проступать сквозь землю. Запись глубины для полупрозрачных полигонов отключена независимо от этой настройки.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="520"/>
@@ -13598,7 +13627,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="573"/>
         <source>Captures video to the chosen file when media capture is started. If unchecked, the file will only contain audio.</source>
-        <translation type="unfinished"></translation>
+        <translation>Захват видео в выбранный файл при запуске захвата медиафайла. Если флажок снят, файл будет содержать только аудио.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="576"/>
@@ -13672,7 +13701,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="593"/>
         <source>Captures audio to the chosen file when media capture is started. If unchecked, the file will only contain video.</source>
-        <translation type="unfinished"></translation>
+        <translation>Захват звука в выбранный файл при запуске захвата медиафайла. Если флажок снят, файл будет содержать только видео.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="596"/>
@@ -13722,22 +13751,22 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="610"/>
         <source>Enables caching of guest textures, required for texture replacement. &lt;strong&gt;The texture cache is currently experimental, and may cause rendering errors in some games.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Включает кэширование гостевых текстур, необходимое для замены текстур. &lt;strong&gt;В настоящее время кэш текстур является экспериментальным и может вызывать ошибки рендеринга в некоторых играх.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="619"/>
         <source>Forces texture upload tracking to be enabled regardless of whether it is needed. Reduces performance, but allows toggling replacements on and off. &lt;strong&gt;Not required for replacements to load, &lt;/strong&gt;normally tracking is automatically enabled when needed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Принуждает включать отслеживание выгрузки текстур независимо от того, нужно ли оно. Снижает производительность, но позволяет включать и выключать замену. &lt;strong&gt;Не требуется для загрузки замен, &lt;/strong&gt; обычно отслеживание включается автоматически, когда это необходимо.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="664"/>
         <source>Disables the use of compute shaders. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключает использование вычислительных шейдеров. Полезно для тестирования неработающих графических драйверов. &lt;strong&gt;Исключительно для разработчиков.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="667"/>
         <source>Disables the use of compressed textures. Useful for testing broken graphics drivers. &lt;strong&gt;Only for developer use.&lt;/strong&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>Отключает использование сжатых текстур. Полезно для тестирования сломанных графических драйверов. &lt;strong&gt;Исключительно для разработчиков.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="1328"/>
@@ -13776,11 +13805,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="613"/>
         <source>Loads all replacement texture to RAM, reducing stuttering at runtime.</source>
-        <translation type="unfinished">Загружает все заменяющие текстуры в ОЗУ, уменьшая зависания во время выполнения.</translation>
+        <translation>Загружает все заменяемые текстуры в оперативную память, уменьшая заикание во время выполнения.</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="633"/>
         <source>Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.</source>
+        <translatorcomment>*Совмещения</translatorcomment>
         <translation type="unfinished">Включает старые, менее точные процедуры декодирования MDEC. Может потребоваться для сопоставления/загрузки старых замен фонов.</translation>
     </message>
     <message>
@@ -13807,7 +13837,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../graphicssettingswidget.cpp" line="455"/>
         <source>Wireframe Mode</source>
-        <translation type="unfinished">Каркасный режим</translation>
+        <translation>Каркасный режим</translation>
     </message>
     <message>
         <location filename="../graphicssettingswidget.cpp" line="456"/>
@@ -13981,7 +14011,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../hotkeysettingswidget.cpp" line="30"/>
         <source>Search...</source>
-        <translation type="unfinished">Поиск...</translation>
+        <translation>Поиск...</translation>
     </message>
 </context>
 <context>
@@ -14250,12 +14280,12 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/hotkeys.cpp" line="514"/>
         <source>Freecam Toggle</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Переключить</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="519"/>
         <source>Freecam Reset</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Свободная камера: Сбросить</translation>
     </message>
     <message>
         <location filename="../../core/hotkeys.cpp" line="524"/>
@@ -14596,123 +14626,125 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../isobrowserwindow.ui" line="14"/>
         <source>ISO Browser</source>
-        <translation type="unfinished"></translation>
+        <translation>Браузер образов ISO</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="26"/>
         <source>File:</source>
-        <translation type="unfinished"></translation>
+        <translation>Файл:</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="40"/>
         <source>...</source>
-        <translation type="unfinished"></translation>
+        <translation>...</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="63"/>
         <location filename="../isobrowserwindow.ui" line="79"/>
         <source>Name</source>
-        <translation type="unfinished">Имя</translation>
+        <translation>Имя</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="84"/>
         <source>Date</source>
-        <translation type="unfinished"></translation>
+        <translation>Дата</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="89"/>
         <source>Size</source>
-        <translation type="unfinished">Размер</translation>
+        <translation>Размер</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="113"/>
         <source>Extract</source>
-        <translation type="unfinished"></translation>
+        <translation>Извлечь</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="120"/>
         <source>Extract (XA)</source>
-        <translation type="unfinished"></translation>
+        <translation>Извлечь (XA)</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="127"/>
         <source>Extract (Raw)</source>
-        <translation type="unfinished"></translation>
+        <translation>Извлечь (Raw)</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.ui" line="134"/>
         <source>Close</source>
-        <translation type="unfinished">Закрыть</translation>
+        <translation>Закрыть</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="52"/>
         <location filename="../isobrowserwindow.cpp" line="105"/>
         <location filename="../isobrowserwindow.cpp" line="227"/>
         <source>Error</source>
-        <translation type="unfinished">Ошибка</translation>
+        <translation>Ошибка</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="53"/>
         <location filename="../isobrowserwindow.cpp" line="106"/>
         <source>Failed to open %1:
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось открыть %1:
+%2</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="75"/>
         <source>ISO Browser - %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Браузер образов ISO - %1</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="97"/>
         <source>Select File</source>
-        <translation type="unfinished">Выбрать файл</translation>
+        <translation>Выбрать файл</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="171"/>
         <source>&amp;Open</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Открыть</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="176"/>
         <source>&amp;Extract</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Извлечь</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="178"/>
         <source>Extract (&amp;XA)</source>
-        <translation type="unfinished"></translation>
+        <translation>Извлечь (&amp;XA)</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="180"/>
         <source>Extract (&amp;Raw)</source>
-        <translation type="unfinished"></translation>
+        <translation>Извлечь (&amp;Raw)</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="197"/>
         <source>Extract File</source>
-        <translation type="unfinished"></translation>
+        <translation>Извлечь файл</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="211"/>
         <source>Extracting %1...</source>
-        <translation type="unfinished"></translation>
+        <translation>Извлечение %1...</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="228"/>
         <source>Failed to save %1:
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить %1:
+%2</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="336"/>
         <source>%1 KB</source>
-        <translation type="unfinished"></translation>
+        <translation>%1 КБ</translation>
     </message>
     <message>
         <location filename="../isobrowserwindow.cpp" line="344"/>
         <source>&lt;Parent Directory&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">&lt;Родительский каталог&gt;</translation>
     </message>
 </context>
 <context>
@@ -14747,7 +14779,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../inputbindingdialog.ui" line="120"/>
         <location filename="../inputbindingdialog.ui" line="130"/>
         <source>Reset</source>
-        <translation type="unfinished">Сброс</translation>
+        <translation>Сброс</translation>
     </message>
     <message>
         <source>Reset Volume</source>
@@ -14802,17 +14834,19 @@ Scanning recursively takes more time, but will identify files in subdirectories.
         <location filename="../inputbindingwidgets.cpp" line="66"/>
         <source>Left-click to change binding.
 Shift-click to set multiple bindings.</source>
-        <translation type="unfinished"></translation>
+        <translation>Щелкните левой кнопкой мыши, чтобы изменить привязку.
+Щелкните Shift, чтобы установить несколько привязок.</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="67"/>
         <source>Right-click to remove binding.</source>
-        <translation type="unfinished"></translation>
+        <translation>Щелкните правой кнопкой мыши, чтобы удалить привязку.</translation>
     </message>
     <message>
         <location filename="../inputbindingwidgets.cpp" line="72"/>
         <source>No binding set.</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*Задана</translatorcomment>
+        <translation type="unfinished">Привязка не установлена.</translation>
     </message>
     <message numerus="yes">
         <location filename="../inputbindingwidgets.cpp" line="76"/>
@@ -14835,22 +14869,22 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../../util/input_manager.cpp" line="1624"/>
         <source>Multiple Devices</source>
-        <translation type="unfinished"></translation>
+        <translation>Несколько устройств</translation>
     </message>
     <message>
         <location filename="../../util/input_manager.cpp" line="1632"/>
         <source>None</source>
-        <translation type="unfinished">Нет</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../../util/input_manager.cpp" line="2061"/>
         <source>Keyboard</source>
-        <translation type="unfinished"></translation>
+        <translation>Клавиатура</translation>
     </message>
     <message>
         <location filename="../../util/input_manager.cpp" line="2062"/>
         <source>Mouse</source>
-        <translation type="unfinished">Мышь</translation>
+        <translation>Мышь</translation>
     </message>
 </context>
 <context>
@@ -15112,7 +15146,8 @@ Shift-click to set multiple bindings.</source>
         <location filename="../../core/jogcon.cpp" line="603"/>
         <source>Failed to create force feedback device for Port {}:
 {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось создать устройство обратной связи для порта {}:
+{}</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="629"/>
@@ -15127,7 +15162,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../../core/jogcon.cpp" line="631"/>
         <source>D-Pad Down</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Крестовина вниз</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="632"/>
@@ -15137,52 +15172,52 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../../core/jogcon.cpp" line="633"/>
         <source>Triangle</source>
-        <translation type="unfinished">Треугольник</translation>
+        <translation>Треугольник</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="634"/>
         <source>Circle</source>
-        <translation type="unfinished">Круг</translation>
+        <translation>Круг</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="635"/>
         <source>Cross</source>
-        <translation type="unfinished">Крест</translation>
+        <translation>Крест</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="636"/>
         <source>Square</source>
-        <translation type="unfinished">Квадрат</translation>
+        <translation>Квадрат</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="637"/>
         <source>Select</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Select</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="638"/>
         <source>Start</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Start</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="639"/>
         <source>L1</source>
-        <translation type="unfinished">L1</translation>
+        <translation>L1</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="640"/>
         <source>R1</source>
-        <translation type="unfinished">R1</translation>
+        <translation>R1</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="641"/>
         <source>L2</source>
-        <translation type="unfinished">L2</translation>
+        <translation>L2</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="642"/>
         <source>R2</source>
-        <translation type="unfinished">R2</translation>
+        <translation>R2</translation>
     </message>
     <message>
         <location filename="../../core/jogcon.cpp" line="643"/>
@@ -15494,13 +15529,14 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../logwindow.cpp" line="169"/>
         <source>&amp;Channels</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Каналы</translation>
     </message>
     <message>
         <location filename="../logwindow.cpp" line="326"/>
         <source>Dropped %1 log messages, please use file or system console logging.
 </source>
-        <translation type="unfinished"></translation>
+        <translation>Переданы сообщения журнала %1, используйте журнал файла или системной консоли.
+</translation>
     </message>
     <message>
         <source>&amp;Filters</source>
@@ -15651,12 +15687,12 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="159"/>
         <source>Log Level</source>
-        <translation type="unfinished">Уровень журналирования</translation>
+        <translation>Уровень журналирования</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="164"/>
         <source>Log Channels</source>
-        <translation type="unfinished"></translation>
+        <translation>Каналы журналирования</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="198"/>
@@ -15740,7 +15776,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="462"/>
         <source>View Third-Party Notices...</source>
-        <translation type="unfinished">Просмотр уведомлений третьих лиц...</translation>
+        <translation>Просмотреть уведомления третьих лиц...</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="504"/>
@@ -15777,7 +15813,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="636"/>
         <source>Enable Safe Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>Включить безопасный режим</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="818"/>
@@ -15835,7 +15871,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="930"/>
         <source>Log Timestamps</source>
-        <translation type="unfinished"></translation>
+        <translation>Временные метки журнала</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="938"/>
@@ -15855,22 +15891,24 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.ui" line="959"/>
         <source>ISO Browser</source>
-        <translation type="unfinished"></translation>
+        <translation>Браузер образов ISO</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="967"/>
         <source>Free Camera</source>
-        <translation type="unfinished"></translation>
+        <translation>Свободная камера</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="972"/>
         <source>Controller Test</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*контроллеров</translatorcomment>
+        <translation type="unfinished">Тест контроллера</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="980"/>
         <source>Controller Presets</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>*контроллеров</translatorcomment>
+        <translation type="unfinished">Предустановки контроллера</translation>
     </message>
     <message>
         <location filename="../mainwindow.ui" line="426"/>
@@ -16197,7 +16235,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.cpp" line="94"/>
         <source>All File Types (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Single-Track Raw Images (*.bin *.img *.iso);;Cue Sheets (*.cue);;MAME CHD Images (*.chd);;Error Code Modeler Images (*.ecm);;Media Descriptor Sidecar Images (*.mds);;PlayStation EBOOTs (*.pbp *.PBP);;PlayStation Executables (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf *.minipsf);;Playlists (*.m3u);;PSX GPU Dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</source>
-        <translation type="unfinished"></translation>
+        <translation>Все типы файлов (*.bin *.img *.iso *.cue *.chd *.cpe *.ecm *.mds *.pbp *.elf *.exe *.psexe *.ps-exe *.psx *.psf *.minipsf *.m3u *.psxgpu);;Образы Single-Track Raw (*.bin *.img *.iso);;Cue Sheets (*.cue);;Образы MAME CHD (*.chd);;Образы Error Code Modeler (*.ecm);;Образы Media Descriptor Sidecar (*.mds);;PlayStation EBOOTы (*.pbp);;Исполняемые файлы PlayStation (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Файлы Портативного формата звука (*.psf *.minipsf);;Плейлисты (*.m3u);;Дампы ГП PSX (*.psxgpu *.psxgpu.zst *.psxgpu.xz)</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="322"/>
@@ -16209,7 +16247,7 @@ Shift-click to set multiple bindings.</source>
     <message>
         <location filename="../mainwindow.cpp" line="322"/>
         <source>Failed to get window info from widget</source>
-        <translation type="unfinished">Не удалось получить информацию об окне из виджета</translation>
+        <translation>Не удалось получить информацию об окне из виджета</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="576"/>
@@ -16425,6 +16463,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1444"/>
         <source>You must select a disc to change discs.</source>
+        <translatorcomment>*Для смены дисков необходимо выбрать диск.</translatorcomment>
         <translation type="unfinished">Вы должны выбрать диск для замены дисков.</translation>
     </message>
     <message>
@@ -16441,7 +16480,7 @@ Do you want to load this state, or start from a fresh boot?</source>
     <message>
         <location filename="../mainwindow.cpp" line="1493"/>
         <source>Browse ISO...</source>
-        <translation type="unfinished"></translation>
+        <translation>Просмотреть образ ISO...</translation>
     </message>
     <message>
         <location filename="../mainwindow.cpp" line="1503"/>
@@ -16828,17 +16867,17 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../../core/memory_card_image.cpp" line="715"/>
         <source>Failed to read directory frame: </source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не удалось прочитать кадр каталога: </translation>
     </message>
     <message>
         <location filename="../../core/memory_card_image.cpp" line="722"/>
         <source>Invalid size ({} bytes) reported by directory frame.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Неверный размер ({} байт), сообщенный кадром каталога.</translation>
     </message>
     <message>
         <location filename="../../core/memory_card_image.cpp" line="730"/>
         <source>Failed to read block bytes: </source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось прочитать байты блока: </translation>
     </message>
     <message>
         <location filename="../../core/memory_card_image.cpp" line="737"/>
@@ -17252,7 +17291,7 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="54"/>
         <source>Game-Specific Card Settings</source>
-        <translation type="unfinished"></translation>
+        <translation>Настройки карт для конкретной игры</translation>
     </message>
     <message>
         <location filename="../memorycardsettingswidget.cpp" line="89"/>
@@ -17712,7 +17751,7 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../../core/negcon.cpp" line="296"/>
         <source>Sets deadzone for steering axis.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Устанавливает мертвую зону для оси рулевого управления.</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="298"/>
@@ -17722,22 +17761,22 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../../core/negcon.cpp" line="299"/>
         <source>Sets saturation for steering axis.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Устанавливает насыщенность для оси рулевого управления.</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="301"/>
         <source>Steering Axis Linearity</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Линейность оси рулевого управления</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="302"/>
         <source>Sets linearity for steering axis.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Устанавливает линейность для оси рулевого управления.</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="304"/>
         <source>Steering Scaling</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Масштабирование рулевого управления</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="305"/>
@@ -17752,22 +17791,22 @@ You must delete the memory card manually if you want to save.</source>
     <message>
         <location filename="../../core/negcon.cpp" line="308"/>
         <source>Sets deadzone for button I.</source>
-        <translation type="unfinished"></translation>
+        <translation>Устанавливает мертвую зону для кнопки I.</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="310"/>
         <source>I Button Saturation</source>
-        <translation type="unfinished"></translation>
+        <translation>Насыщение кнопки I</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="311"/>
         <source>Sets saturation for button I.</source>
-        <translation type="unfinished"></translation>
+        <translation>Устанавливает насыщенность для кнопки I.</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="313"/>
         <source>I Button Linearity</source>
-        <translation type="unfinished"></translation>
+        <translation>Линейность кнопки I</translation>
     </message>
     <message>
         <location filename="../../core/negcon.cpp" line="314"/>
@@ -18331,12 +18370,13 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
         <location filename="../../core/gpu_thread.cpp" line="830"/>
         <source>Failed to create {} GPU device, reverting to {}.
 {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось создать {} ГП-устройство, возвращаемся к {}.
+{}</translation>
     </message>
     <message>
         <location filename="../../core/gpu_thread.cpp" line="1255"/>
         <source>Failed to switch to exclusive fullscreen, using borderless instead.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не удалось переключиться на эксклюзивный полноэкранный режим, вместо этого используется безрамочный.</translation>
     </message>
 </context>
 <context>
@@ -18515,48 +18555,48 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished">Форма</translation>
+        <translation>Форма</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="20"/>
         <source>Basic Configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Базовая конфигурация</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="26"/>
         <source>Selected Preset:</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбранная предустановка:</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="36"/>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A border overlay is an image that is drawn around the system display. Border overlays are applied after post-processing. You can choose from the border list below, or manually configure a custom border.&lt;/p&gt;&lt;p&gt;Additional preset borders can be added to the &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; folder within in the data directory.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Наложение границ - это изображение, которое рисуется вокруг системного дисплея. Наложения границ применяются после постобработки. Вы можете выбрать одну из представленных ниже границ или вручную настроить пользовательскую границу.&lt;/p&gt;&lt;p&gt;Дополнительные предустановленные границы можно добавить в папку &lt;span style=&quot; font-weight:700;&quot;&gt;resources\overlays&lt;/span&gt; в каталоге данных.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="49"/>
         <source>Custom Configuration</source>
-        <translation type="unfinished"></translation>
+        <translation>Пользовательская конфигурация</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="55"/>
         <source>Image Path:</source>
-        <translation type="unfinished">Путь образа:</translation>
+        <translation>Путь к образу:</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="67"/>
         <source>Browse...</source>
-        <translation type="unfinished">Обзор...</translation>
+        <translation>Обзор...</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="76"/>
         <source>Display Start:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Начало экрана:</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="85"/>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="130"/>
         <source>X:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">X:</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="92"/>
@@ -18564,18 +18604,18 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="137"/>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="154"/>
         <source> pixels</source>
-        <translation type="unfinished"></translation>
+        <translation> пикселей</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="102"/>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="147"/>
         <source>Y:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Y:</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="121"/>
         <source>Display End:</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Конец экрана:</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="168"/>
@@ -18587,38 +18627,38 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="175"/>
         <location filename="../postprocessingsettingswidget.cpp" line="557"/>
         <source>Alpha Blending</source>
-        <translation type="unfinished"></translation>
+        <translation>Альфа-смешивание</translation>
     </message>
     <message>
         <location filename="../postprocessingoverlayconfigwidget.ui" line="197"/>
         <source>Export</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="499"/>
         <source>None</source>
-        <translation type="unfinished">Нет</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="500"/>
         <source>Custom...</source>
-        <translation type="unfinished"></translation>
+        <translation>Пользовательский...</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="547"/>
         <source>Image Path</source>
-        <translation type="unfinished"></translation>
+        <translation>Путь изображения</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="547"/>
         <location filename="../postprocessingsettingswidget.cpp" line="550"/>
         <source>Unspecified</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Неопределенный</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="548"/>
         <source>Defines the path of the custom overlay image that will be loaded.</source>
-        <translation type="unfinished"></translation>
+        <translation>Определяет путь к пользовательскому изображению наложения, которое будет загружено.</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="549"/>
@@ -18628,7 +18668,7 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="551"/>
         <source>Defines the area in the overlay image that the game image will be drawn into.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Определяет область в оверлейном изображении, в которую будет втянуто игровое изображение.</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="557"/>
@@ -18639,42 +18679,42 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="558"/>
         <source>If checked, the overlay image will be alpha blended with the framebuffer, i.e. transparency will be applied.</source>
-        <translation type="unfinished"></translation>
+        <translation>Если флажок установлен, то наложенное изображение будет альфа-смешиваться с фреймбуфером, т.е. будет применена прозрачность.</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="561"/>
         <source>If checked, the game image will be blended with the inverse amount of alpha in the overlay image. For example, an image with alpha of 0.75 will draw the game image at 25% brightness.</source>
-        <translation type="unfinished"></translation>
+        <translation>Если флажок установлен, игровое изображение будет смешиваться с обратным количеством альфа в наложенном изображении. Например, изображение с альфа-фактором 0,75 будет рисовать игровое изображение с яркостью 25 %.</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="581"/>
         <source>Select Image</source>
-        <translation type="unfinished"></translation>
+        <translation>Выбрать изображение</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="583"/>
         <source>All Cover Image Types (*.jpg *.jpeg *.png *.webp)</source>
-        <translation type="unfinished">Все типы изображений обложек (*.jpg *.jpeg *.png *.webp)</translation>
+        <translation>Все типы изображений обложек (*.jpg *.jpeg *.png *.webp)</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="593"/>
         <source>Export to YAML</source>
-        <translation type="unfinished"></translation>
+        <translation>Экспорт в YAML</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="594"/>
         <source>YAML Files (*.yml)</source>
-        <translation type="unfinished"></translation>
+        <translation>Файлы YAML (*.yml)</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="617"/>
         <source>Export Error</source>
-        <translation type="unfinished"></translation>
+        <translation>Ошибка экспорта</translation>
     </message>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="618"/>
         <source>Failed to save file: %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить файл: %1</translation>
     </message>
 </context>
 <context>
@@ -18692,7 +18732,7 @@ Using existing image &apos;{}&apos;, this may result in instability.</source>
     <message>
         <location filename="../postprocessingsettingswidget.cpp" line="30"/>
         <source>Border Overlay</source>
-        <translation type="unfinished"></translation>
+        <translation>Наложение границ</translation>
     </message>
 </context>
 <context>
@@ -18844,36 +18884,41 @@ URL: %1</translation>
         <location filename="../qthost.cpp" line="287"/>
         <source>Failed to create HTTPDownloader:
 %1</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось создать HTTPDownloader:
+%1</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="312"/>
         <source>Download failed with HTTP status code %1:
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Загрузка не удалась с кодом состояния HTTP %1:
+%2</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="361"/>
         <source>Failed to write &apos;%1&apos;:
 %2</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось записать &apos;%1&apos;:
+%2</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1054"/>
         <source>Unfortunately, the virtual machine has abnormally shut down and cannot be recovered. Please use the available support options for further assistance, and provide information about what you were doing when the error occurred, as well as the details below:
 
 {}</source>
-        <translation type="unfinished"></translation>
+        <translation>К сожалению, виртуальная машина завершила работу в аварийном режиме и не может быть восстановлена. Для получения дальнейшей помощи воспользуйтесь доступными вариантами поддержки и предоставьте информацию о том, что вы делали в момент возникновения ошибки, а также сведения, приведенные ниже:
+
+{}</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1989"/>
         <source>Yes</source>
-        <translation type="unfinished">Да</translation>
+        <translation>Да</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="1991"/>
         <source>No</source>
-        <translation type="unfinished">Нет</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../qthost.cpp" line="2262"/>
@@ -18918,7 +18963,7 @@ URL: %1</translation>
     <message>
         <location filename="../qttranslations.cpp" line="345"/>
         <source>The font file &apos;%1&apos; is required for the On-Screen Display and Big Picture Mode to show messages in your language.&lt;br&gt;&lt;br&gt;Do you want to download this file now? These files are usually less than 10 megabytes in size.&lt;br&gt;&lt;br&gt;&lt;strong&gt;If you do not download this file, on-screen messages will not be readable.&lt;/strong&gt;</source>
-        <translation type="unfinished">Файл шрифта &apos;%1&apos; необходим для отображения сообщений на вашем языке в режиме экранного меню и Big Picture.&lt;br&gt;&lt;br&gt;Хотите загрузить этот файл сейчас? Размер этих файлов обычно не превышает 10 мегабайт.&lt;br&gt;&lt;br&gt;&lt;strong&gt;Если вы не загрузите этот файл, сообщения на экране будут недоступны для чтения.&lt;/strong&gt;</translation>
+        <translation>Файл шрифта &apos;%1&apos; необходим для отображения сообщений на вашем языке в режиме экранного меню и Big Picture.&lt;br&gt;&lt;br&gt;Хотите загрузить этот файл сейчас? Размер этих файлов обычно не превышает 10 мегабайт.&lt;br&gt;&lt;br&gt;&lt;strong&gt;Если вы не загрузите этот файл, сообщения на экране будут недоступны для чтения.&lt;/strong&gt;</translation>
     </message>
     <message>
         <location filename="../qttranslations.cpp" line="357"/>
@@ -18960,7 +19005,8 @@ URL: %1</translation>
         <location filename="../../core/spu.cpp" line="489"/>
         <source>Failed to create or configure audio stream, falling back to null output. The error was:
 {}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось создать или сконфигурировать аудиопоток, произошел откат к пустому выходу. Ошибка заключалась в следующем:
+{}</translation>
     </message>
 </context>
 <context>
@@ -19541,7 +19587,7 @@ Do you want to create this directory?</source>
         <location filename="../../core/settings.cpp" line="1688"/>
         <source>Blend (Blur)</source>
         <comment>DisplayDeinterlacingMode</comment>
-        <translation type="unfinished">Смешивание (размытие)</translation>
+        <translation>Смешивание (размытие)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1689"/>
@@ -19571,7 +19617,7 @@ Do you want to create this directory?</source>
         <location filename="../../core/settings.cpp" line="1724"/>
         <source>Only Overscan Area (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Только нерабочая область экрана (пропорции не скорректированы)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1725"/>
@@ -19583,7 +19629,7 @@ Do you want to create this directory?</source>
         <location filename="../../core/settings.cpp" line="1726"/>
         <source>All Borders (Aspect Uncorrected)</source>
         <comment>DisplayCropMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Все границы (пропорции не скорректированы)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1756"/>
@@ -19697,7 +19743,7 @@ Do you want to create this directory?</source>
         <location filename="../../core/settings.cpp" line="1913"/>
         <source>Lanczos (Sharp)</source>
         <comment>DisplayScalingMode</comment>
-        <translation type="unfinished"></translation>
+        <translation>Ланцош (резкий)</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="1947"/>
@@ -19859,13 +19905,13 @@ Do you want to create this directory?</source>
         <location filename="../../core/settings.cpp" line="2236"/>
         <source>None</source>
         <comment>PIODeviceType</comment>
-        <translation type="unfinished">Нет</translation>
+        <translation>Нет</translation>
     </message>
     <message>
         <location filename="../../core/settings.cpp" line="2237"/>
         <source>Xplorer/Xploder Cartridge</source>
         <comment>PIODeviceType</comment>
-        <translation type="unfinished"></translation>
+        <translation>Картридж Xplorer/Xploder</translation>
     </message>
     <message>
         <location filename="../../util/audio_stream.cpp" line="213"/>
@@ -20030,7 +20076,7 @@ Do you want to create this directory?</source>
     <message>
         <location filename="../settingswindow.cpp" line="104"/>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS and expansion port is used.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;strong&gt;Настройки BIOS&lt;/strong&gt;&lt;hr&gt;Эти параметры управляют выбором используемого BIOS и порта расширения.&lt;br&gt;&lt;br&gt;Для получения дополнительной информации наведите указатель мыши на нужный параметр, а для прокрутки панели используйте комбинацию клавиш Shift + Колесо прокрутки.</translation>
     </message>
     <message>
         <location filename="../settingswindow.cpp" line="107"/>
@@ -20225,7 +20271,7 @@ Do you want to continue?</source>
     <message>
         <location filename="../settingswindow.cpp" line="666"/>
         <source>%1 [%2]</source>
-        <translation type="unfinished">%1 [%2]</translation>
+        <translation>%1 [%2]</translation>
     </message>
 </context>
 <context>
@@ -20495,7 +20541,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../setupwizarddialog.cpp" line="461"/>
         <source>Multiple Devices...</source>
-        <translation type="unfinished"></translation>
+        <translation>Несколько устройств...</translation>
     </message>
     <message>
         <source>Default (None)</source>
@@ -20533,7 +20579,7 @@ Scanning recursively takes more time, but will identify files in subdirectories.
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7328"/>
         <source>Failed to undo load state.</source>
-        <translation type="unfinished">Не удалось отменить загрузку состояня.</translation>
+        <translation>Не удалось отменить загрузку состояня.</translation>
     </message>
     <message>
         <location filename="../../core/fullscreen_ui.cpp" line="7337"/>
@@ -20581,13 +20627,13 @@ Do you wish to continue?</source>
         <location filename="../../core/system.cpp" line="681"/>
         <source>CD-ROM Read Speedup</source>
         <comment>Taint</comment>
-        <translation type="unfinished">Ускорение чтения CD-ROM</translation>
+        <translation>Ускорение чтения CD-ROM</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="682"/>
         <source>CD-ROM Seek Speedup</source>
         <comment>Taint</comment>
-        <translation type="unfinished">Ускорение поиска на CD-ROM</translation>
+        <translation>Ускорение поиска на CD-ROM</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="683"/>
@@ -20612,7 +20658,7 @@ Do you wish to continue?</source>
         <source>Game Patches</source>
         <comment>Taint</comment>
         <translatorcomment>*Игровые патчи</translatorcomment>
-        <translation type="unfinished">Патчи игры</translation>
+        <translation>Патчи игры</translation>
     </message>
     <message>
         <location filename="../../core/gpu_hw.cpp" line="179"/>
@@ -20629,18 +20675,19 @@ Do you wish to continue?</source>
     <message>
         <location filename="../../core/system.cpp" line="3185"/>
         <source>Saving state to &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation>Сохранение состояния в &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3233"/>
         <source>State saved to &apos;{}&apos;.</source>
-        <translation type="unfinished">Состояние сохранено в &apos;{}&apos;.</translation>
+        <translation>Состояние сохранено в &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="3239"/>
         <source>Failed to save state to &apos;{0}&apos;:
 {1}</source>
-        <translation type="unfinished"></translation>
+        <translation>Не удалось сохранить состояние в &apos;{0}&apos;:
+{1}</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4257"/>
@@ -20662,19 +20709,19 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4334"/>
         <source>Failed to switch to subimage {} in &apos;{}&apos;: {}.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Не удалось переключиться на подобраз {} в &apos;{}&apos;: {}.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4349"/>
         <source>Switched to sub-image {} ({}) in &apos;{}&apos;.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Переключились на подобраз {} ({}) в &apos;{}&apos;.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4747"/>
         <source>This save state was created with the following tainted options, and may
        be unstable. You will need to reset the system to clear any effects.</source>
         <translation type="unfinished">Это сохраненное состояние было создано со следующими испорченными параметрами и может
-       быть нестабильным. Вам потребуется перезагрузить систему, чтобы убрать любые эффекты.</translation>
+       быть нестабильным. Вам потребуется перезагрузить систему, чтобы устранить все последствия.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4776"/>
@@ -20820,7 +20867,7 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4780"/>
         <source>CD-ROM read/seek speedup is enabled. This may crash games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Ускорение чтения/поиска CD-ROM включено. Это может привести к сбоям в играх.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4782"/>
@@ -20830,7 +20877,7 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4805"/>
         <source>Cached interpreter is being used, this may be incompatible with some games.</source>
-        <translation type="unfinished"></translation>
+        <translation>Используется кэшированный интерпретатор, который может быть несовместим с некоторыми играми.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4813"/>
@@ -20840,7 +20887,7 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4821"/>
         <source>Fastmem mode is set to {}, this will reduce performance.</source>
-        <translation type="unfinished"></translation>
+        <translation>Режим Fastmem установлен на {}, это снизит производительность.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4828"/>
@@ -20883,12 +20930,12 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4851"/>
         <source>Texture filtering disabled.</source>
-        <translation type="unfinished">Фильтрация текстур отключена.</translation>
+        <translation>Фильтрация текстур отключена.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4854"/>
         <source>Interlaced rendering enabled.</source>
-        <translation type="unfinished">Чересстрочная отрисовка включена.</translation>
+        <translation>Чересстрочная отрисовка включена.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4856"/>
@@ -20903,12 +20950,12 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4860"/>
         <source>PGXP disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>PGXP отключен.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4862"/>
         <source>GPU texture cache disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Текстурный кэш ГП отключен.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4864"/>
@@ -20928,12 +20975,12 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4870"/>
         <source>Mute CD-ROM audio disabled.</source>
-        <translation type="unfinished"></translation>
+        <translation>Звук CD-ROM отключен.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4872"/>
         <source>VRAM write texture replacements disabled.</source>
-        <translation type="unfinished">Замена текстур записи VRAM отключена.</translation>
+        <translation>Замена текстур записи в VRAM отключена.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4874"/>
@@ -20943,7 +20990,7 @@ The name of the SBI file must match the name of the disc image.</source>
     <message>
         <location filename="../../core/system.cpp" line="4876"/>
         <source>PIO device removed.</source>
-        <translation type="unfinished"></translation>
+        <translation>Устройство PIO удалено.</translation>
     </message>
     <message>
         <location filename="../../core/system.cpp" line="4878"/>
@@ -21094,7 +21141,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="92"/>
         <source>Dump Full Texture Pages</source>
-        <translation type="unfinished">Дамп страниц с полными текстурами</translation>
+        <translation>Дамп страниц с полными текстурами</translation>
     </message>
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="99"/>
@@ -21142,7 +21189,7 @@ This may be due to your GPU not supporting the chosen renderer ({1}), or because
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="194"/>
         <source>Bilinear Replacement Scaling</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Масштабирование с билинейной заменой</translation>
     </message>
     <message>
         <location filename="../texturereplacementsettingsdialog.ui" line="206"/>
