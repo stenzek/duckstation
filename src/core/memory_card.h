@@ -23,12 +23,12 @@ public:
   static constexpr u32 STATE_SIZE = 1 + 1 + 2 + 1 + 1 + 1 + MemoryCardImage::DATA_SIZE + 1;
 
   static std::unique_ptr<MemoryCard> Create();
-  static std::unique_ptr<MemoryCard> Open(std::string_view filename);
+  static std::unique_ptr<MemoryCard> Open(std::string_view path);
 
   const MemoryCardImage::DataArray& GetData() const { return m_data; }
   MemoryCardImage::DataArray& GetData() { return m_data; }
-  const std::string& GetFilename() const { return m_filename; }
-  void SetFilename(std::string filename) { m_filename = std::move(filename); }
+  const std::string& GetFilename() const { return m_path; }
+  void SetFilename(std::string filename) { m_path = std::move(filename); }
 
   void Reset();
   bool DoState(StateWrapper& sw);
@@ -107,7 +107,7 @@ private:
   bool m_changed = false;
 
   TimingEvent m_save_event;
-  std::string m_filename;
+  std::string m_path;
 
   MemoryCardImage::DataArray m_data{};
 };
