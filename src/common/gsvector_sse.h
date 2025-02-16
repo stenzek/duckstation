@@ -325,7 +325,7 @@ public:
 #else
     constexpr s32 bit1 = ((mask & 2) * 3) << 1;
     constexpr s32 bit0 = (mask & 1) * 3;
-    return blend16<bit1 | bit0>(v);
+    return blend16 < bit1 | bit0 > (v);
 #endif
   }
 
@@ -1334,7 +1334,7 @@ public:
     constexpr s32 bit2 = ((mask & 4) * 3) << 2;
     constexpr s32 bit1 = ((mask & 2) * 3) << 1;
     constexpr s32 bit0 = (mask & 1) * 3;
-    return blend16<bit3 | bit2 | bit1 | bit0>(v);
+    return blend16 < bit3 | bit2 | bit1 | bit0 > (v);
 #endif
   }
 
@@ -2037,17 +2037,17 @@ public:
 
   ALWAYS_INLINE GSVector4 hsub(const GSVector4& v) const { return GSVector4(_mm_hsub_ps(m, v.m)); }
 
-  NEVER_INLINE float dot(const GSVector4& v) const
-  {
 #ifdef CPU_ARCH_SSE41
-    return _mm_cvtss_f32(_mm_dp_ps(m, v.m, 0xf1));
+  ALWAYS_INLINE float dot(const GSVector4& v) const { return _mm_cvtss_f32(_mm_dp_ps(m, v.m, 0xf1)); }
 #else
+  float dot(const GSVector4& v) const
+  {
     __m128 tmp = _mm_mul_ps(m, v.m);
     tmp = _mm_add_ps(tmp, _mm_movehl_ps(tmp, tmp)); // (x+z, y+w, ..., ...)
     tmp = _mm_add_ss(tmp, _mm_shuffle_ps(tmp, tmp, _MM_SHUFFLE(3, 2, 1, 1)));
     return _mm_cvtss_f32(tmp);
-#endif
   }
+#endif
 
   ALWAYS_INLINE GSVector4 sat(const GSVector4& min, const GSVector4& max) const
   {
@@ -2135,10 +2135,28 @@ public:
   }
 
   template<int i>
-  ALWAYS_INLINE int extract32() const
+  ALWAYS_INLINE GSVector4 insert32(float v) const
   {
 #ifdef CPU_ARCH_SSE41
-    return _mm_extract_ps(m, i);
+    if constexpr (i == 0)
+      return GSVector4(_mm_move_ss(m, _mm_load_ss(&v)));
+    else
+      return GSVector4(_mm_insert_ps(m, _mm_load_ss(&v), _MM_MK_INSERTPS_NDX(0, i, 0)));
+#else
+    GSVector4 ret(*this);
+    ret.F32[i] = v;
+    return ret;
+#endif
+  }
+
+  template<int i>
+  ALWAYS_INLINE float extract32() const
+  {
+#ifdef CPU_ARCH_SSE41
+    if constexpr (i == 0)
+      return _mm_cvtss_f32(m);
+    else
+      return _mm_cvtss_f32(_mm_shuffle_ps(m, m, _MM_SHUFFLE(i, i, i, i)));
 #else
     return F32[i];
 #endif

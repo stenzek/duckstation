@@ -1951,9 +1951,17 @@ public:
   }
 
   template<int i>
-  ALWAYS_INLINE int extract32() const
+  ALWAYS_INLINE GSVector4 insert32(float v) const
   {
-    return I32[i];
+    GSVector4 ret(*this);
+    ret.F32[i] = v;
+    return ret;
+  }
+
+  template<int i>
+  ALWAYS_INLINE float extract32() const
+  {
+    return F32[i];
   }
 
   template<int dst>

@@ -2754,9 +2754,15 @@ public:
   }
 
   template<int i>
-  ALWAYS_INLINE int extract32() const
+  ALWAYS_INLINE GSVector4 insert32(float v) const
   {
-    return vgetq_lane_s32(vreinterpretq_s32_f32(v4s), i);
+    return GSVector4(vsetq_lane_f32(v, v4s, i));
+  }
+
+  template<int i>
+  ALWAYS_INLINE float extract32() const
+  {
+    return vgetq_lane_f32(v4s, i);
   }
 
   template<int dst>

@@ -119,7 +119,7 @@ ALWAYS_INLINE static void MultiPause()
   _mm_pause();
   _mm_pause();
   _mm_pause();
-#elif defined(CPU_ARCH_ARM64) && defined(_MSC_VER)
+#elif defined(CPU_ARCH_ARM64) && defined(_MSC_VER) && !defined(__clang__)
   __isb(_ARM64_BARRIER_SY);
   __isb(_ARM64_BARRIER_SY);
   __isb(_ARM64_BARRIER_SY);
