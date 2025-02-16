@@ -6,7 +6,7 @@
 set -e
 
 if [ "$#" -lt 4 ]; then
-    echo "Syntax: $0 [-system-freetype] [-system-harfbuzz] [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-libzip] [-system-zstd] [-system-qt] [-skip-download] [-skip-cleanup] [-only-download] <host directory> <cross architecture> <cross chroot> <output directory>"
+    echo "Syntax: $0 [-system-freetype] [-system-harfbuzz] [-system-libjpeg] [-system-libpng] [-system-libwebp] [-system-libzip] [-system-zlib] [-system-zstd] [-system-qt] [-skip-download] [-skip-cleanup] [-only-download] <host directory> <cross architecture> <cross chroot> <output directory>"
     exit 1
 fi
 
@@ -34,6 +34,10 @@ for arg in "$@"; do
 	elif [ "$arg" == "-system-libzip" ]; then
 		echo "Skipping building libzip."
 		SKIP_LIBZIP=true
+		shift
+	elif [ "$arg" == "-system-zlib" ]; then
+		echo "Skipping building zlib-ng."
+		SKIP_ZLIBNG=true
 		shift
 	elif [ "$arg" == "-system-zstd" ]; then
 		echo "Skipping building zstd."
@@ -92,6 +96,7 @@ LIBWEBP=1.5.0
 LIBZIP=1.11.3
 SDL3=3.2.4
 QT=6.8.2
+ZLIBNG=2.2.4
 ZSTD=1.5.6
 
 CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
@@ -105,9 +110,9 @@ mkdir -p "${INSTALLDIR}"
 mkdir -p deps-build
 cd deps-build
 
-if [ "$SKIP_DOWNLOAD" != true ]; then
+if [[ "$SKIP_DOWNLOAD" != true && ! -f "libbacktrace-$LIBBACKTRACE.tar.gz" ]]; then
 	curl -C - -L \
-		-O "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.tar.gz" \
+		-o "libbacktrace-$LIBBACKTRACE.tar.gz" "https://github.com/ianlancetaylor/libbacktrace/archive/$LIBBACKTRACE.tar.gz" \
 		-O "https://github.com/libsdl-org/SDL/releases/download/release-$SDL3/SDL3-$SDL3.tar.gz" \
 		-o "cpuinfo-$CPUINFO.tar.gz" "https://github.com/stenzek/cpuinfo/archive/$CPUINFO.tar.gz" \
 		-o "discord-rpc-$DISCORD_RPC.tar.gz" "https://github.com/stenzek/discord-rpc/archive/$DISCORD_RPC.tar.gz" \
@@ -117,7 +122,7 @@ if [ "$SKIP_DOWNLOAD" != true ]; then
 fi
 
 cat > SHASUMS <<EOF
-baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  $LIBBACKTRACE.tar.gz
+baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  libbacktrace-$LIBBACKTRACE.tar.gz
 2938328317301dfbe30176d79c251733aa5e7ec5c436c800b99ed4da7adcb0f0  SDL3-$SDL3.tar.gz
 b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
 3eea5ccce6670c126282f1ba4d32c19d486db49a1a5cbfb8d6f48774784d310c  discord-rpc-$DISCORD_RPC.tar.gz
@@ -127,7 +132,7 @@ fe45c2af99f6102d2704277d392c1c83b55180a70bfd17fb888cc84a54b70573  soundtouch-$SO
 EOF
 
 if [ "$SKIP_FREETYPE" != true ]; then
-	if [ "$SKIP_DOWNLOAD" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "freetype-$FREETYPE.tar.xz" ]]; then
 		curl -C - -L -o "freetype-$FREETYPE.tar.xz" "https://sourceforge.net/projects/freetype/files/freetype2/$FREETYPE/freetype-$FREETYPE.tar.xz/download"
 	fi
 	cat >> SHASUMS <<EOF
@@ -135,7 +140,7 @@ if [ "$SKIP_FREETYPE" != true ]; then
 EOF
 fi
 if [ "$SKIP_HARFBUZZ" != true ]; then
-	if [ "$SKIP_DOWNLOAD" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "harfbuzz-$HARFBUZZ.tar.gz" ]]; then
 		curl -C - -L -o "harfbuzz-$HARFBUZZ.tar.gz" "https://github.com/harfbuzz/harfbuzz/archive/refs/tags/$HARFBUZZ.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
@@ -143,7 +148,7 @@ if [ "$SKIP_HARFBUZZ" != true ]; then
 EOF
 fi
 if [ "$SKIP_LIBJPEG" != true ]; then
-	if [ "$SKIP_DOWNLOAD" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "libjpeg-turbo-$LIBJPEGTURBO.tar.gz" ]]; then
 		curl -C - -L -O "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/$LIBJPEGTURBO/libjpeg-turbo-$LIBJPEGTURBO.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
@@ -151,7 +156,7 @@ if [ "$SKIP_LIBJPEG" != true ]; then
 EOF
 fi
 if [ "$SKIP_LIBPNG" != true ]; then
-	if [ "$SKIP_DOWNLOAD" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "libpng-$LIBPNG.tar.xz" ]]; then
 		curl -C - -L -O "https://downloads.sourceforge.net/project/libpng/libpng16/$LIBPNG/libpng-$LIBPNG.tar.xz"
 	fi
 	cat >> SHASUMS <<EOF
@@ -159,7 +164,7 @@ if [ "$SKIP_LIBPNG" != true ]; then
 EOF
 fi
 if [ "$SKIP_LIBWEBP" != true ]; then
-	if [ "$SKIP_DOWNLOAD" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "libwebp-$LIBWEBP.tar.gz" ]]; then
 		curl -C - -L -O "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-$LIBWEBP.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
@@ -167,15 +172,23 @@ if [ "$SKIP_LIBWEBP" != true ]; then
 EOF
 fi
 if [ "$SKIP_LIBZIP" != true ]; then
-	if [ "$SKIP_DOWNLOAD" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "libzip-$LIBZIP.tar.xz" ]]; then
 		curl -C - -L -O "https://github.com/nih-at/libzip/releases/download/v$LIBZIP/libzip-$LIBZIP.tar.xz"
 	fi
 	cat >> SHASUMS <<EOF
 9509d878ba788271c8b5abca9cfde1720f075335686237b7e9a9e7210fe67c1b  libzip-$LIBZIP.tar.xz
 EOF
 fi
+if [ "$SKIP_ZLIBNG" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "zlib-ng-$ZLIBNG.tar.gz" ]]; then
+		curl -C - -L -o "zlib-ng-$ZLIBNG.tar.gz" "https://github.com/zlib-ng/zlib-ng/archive/refs/tags/$ZLIBNG.tar.gz"
+	fi
+	cat >> SHASUMS <<EOF
+a73343c3093e5cdc50d9377997c3815b878fd110bf6511c2c7759f2afb90f5a3  zlib-ng-$ZLIBNG.tar.gz
+EOF
+fi
 if [ "$SKIP_ZSTD" != true ]; then
-	if [ "$SKIP_DOWNLOAD" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "zstd-$ZSTD.tar.gz" ]]; then
 		curl -C - -L -O "https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz"
 	fi
 	cat >> SHASUMS <<EOF
@@ -183,7 +196,7 @@ if [ "$SKIP_ZSTD" != true ]; then
 EOF
 fi
 if [ "$SKIP_QT" != true ]; then
-	if [ "$SKIP_DOWNLOAD" != true ]; then
+	if [[ "$SKIP_DOWNLOAD" != true && ! -f "qtbase-everywhere-src-$QT.tar.xz" ]]; then
 		curl -C - -L \
 			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtbase-everywhere-src-$QT.tar.xz" \
 			-O "https://download.qt.io/official_releases/qt/${QT%.*}/$QT/submodules/qtimageformats-everywhere-src-$QT.tar.xz" \
@@ -205,10 +218,8 @@ fi
 shasum -a 256 --check SHASUMS
 
 # Have to clone with git, because it does version detection.
-if [ "$SKIP_DOWNLOAD" != true ]; then
-	if [ ! -d "SPIRV-Cross" ]; then
-		git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS --depth 1
-	fi
+if [[ "$SKIP_DOWNLOAD" != true && ! -d "SPIRV-Cross" ]]; then
+	git clone https://github.com/KhronosGroup/SPIRV-Cross/ -b $SPIRV_CROSS --depth 1
 fi
 
 # Only downloading sources?
@@ -247,6 +258,18 @@ set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 EOF
+
+# Build zlib first because of the things that depend on it.
+if [ "$SKIP_ZLIBNG" != true ]; then
+	echo "Building zlib-ng..."
+	rm -fr "zlib-ng-$ZLIBNG"
+	tar xf "zlib-ng-$ZLIBNG.tar.gz"
+	cd "zlib-ng-$ZLIBNG"
+	cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja
+	cmake --build build --parallel
+	ninja -C build install
+	cd ..
+fi
 
 # NOTE: Must be a shared library because otherwise aarch64 libgcc symbols are missing when building with clang.
 echo "Building libbacktrace..."
