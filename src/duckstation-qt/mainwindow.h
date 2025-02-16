@@ -132,8 +132,9 @@ private Q_SLOTS:
   bool confirmMessage(const QString& title, const QString& message);
   void onStatusMessage(const QString& message);
 
-  std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool render_to_main,
-                                                bool surfaceless, bool use_main_window_pos, Error* error);
+  std::optional<WindowInfo> acquireRenderWindow(RenderAPI render_api, bool fullscreen, bool exclusive_fullscreen,
+                                                bool render_to_main, bool surfaceless, bool use_main_window_pos,
+                                                Error* error);
   void displayResizeRequested(qint32 width, qint32 height);
   void releaseRenderWindow();
   void focusDisplayWidget();
@@ -242,7 +243,6 @@ private:
   void setProgressBar(int current, int total);
   void clearProgressBar();
 
-  QWidget* getContentParent();
   QWidget* getDisplayContainer() const;
   bool isShowingGameList() const;
   bool isRenderingFullscreen() const;
@@ -334,6 +334,7 @@ private:
   bool m_hide_mouse_cursor = false;
 
   bool m_display_created = false;
+  bool m_exclusive_fullscreen_requested = false;
   bool m_save_states_invalidated = false;
   bool m_was_paused_on_surface_loss = false;
   bool m_was_disc_change_request = false;

@@ -37,6 +37,7 @@ DisplayWidget::DisplayWidget(QWidget* parent) : QWidget(parent)
   // We want a native window for both D3D and OpenGL.
   setAutoFillBackground(false);
   setAttribute(Qt::WA_NativeWindow, true);
+  setAttribute(Qt::WA_DontCreateNativeAncestors, true);
   setAttribute(Qt::WA_NoSystemBackground, true);
   setAttribute(Qt::WA_PaintOnScreen, true);
   setAttribute(Qt::WA_KeyCompression, false);
@@ -404,21 +405,11 @@ bool DisplayContainer::isNeeded(bool fullscreen, bool render_to_main)
 #if defined(_WIN32) || defined(__APPLE__)
   return false;
 #else
-  if (!isRunningOnWayland())
+  if (!QtHost::IsRunningOnWayland())
     return false;
 
   // We only need this on Wayland because of client-side decorations...
   return (fullscreen || !render_to_main);
-#endif
-}
-
-bool DisplayContainer::isRunningOnWayland()
-{
-#if defined(_WIN32) || defined(__APPLE__)
-  return false;
-#else
-  const QString platform_name = QGuiApplication::platformName();
-  return (platform_name == QStringLiteral("wayland"));
 #endif
 }
 
@@ -473,6 +464,7 @@ AuxiliaryDisplayWidget::AuxiliaryDisplayWidget(QWidget* parent, u32 width, u32 h
   // We want a native window for both D3D and OpenGL.
   setAutoFillBackground(false);
   setAttribute(Qt::WA_NativeWindow, true);
+  setAttribute(Qt::WA_DontCreateNativeAncestors, true);
   setAttribute(Qt::WA_NoSystemBackground, true);
   setAttribute(Qt::WA_PaintOnScreen, true);
   setAttribute(Qt::WA_KeyCompression, false);

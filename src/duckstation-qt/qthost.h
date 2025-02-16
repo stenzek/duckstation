@@ -110,7 +110,6 @@ public:
   void stopBackgroundControllerPollTimer();
   void wakeThread();
 
-  bool shouldRenderToMain() const;
   void checkForSettingsChanges(const Settings& old_settings);
 
   void bootOrLoadState(std::string path);
@@ -142,7 +141,8 @@ Q_SIGNALS:
   void systemResumed();
   void gameListRefreshed();
   void gameListRowsChanged(const QList<int>& rows_changed);
-  std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen, bool render_to_main,
+  std::optional<WindowInfo> onAcquireRenderWindowRequested(RenderAPI render_api, bool fullscreen,
+                                                           bool exclusive_fullscreen, bool render_to_main,
                                                            bool surfaceless, bool use_main_window_pos, Error* error);
   void onResizeRenderWindowRequested(qint32 width, qint32 height);
   void onReleaseRenderWindowRequested();
@@ -328,6 +328,12 @@ bool InBatchMode();
 
 /// Sets NoGUI mode (implys batch mode, does not display main window, exits on shutdown).
 bool InNoGUIMode();
+
+/// Returns true if the application is running under Wayland.
+bool IsRunningOnWayland();
+
+/// Returns true if rendering to the main window should be allowed.
+bool CanRenderToMainWindow();
 
 /// Executes a function on the UI thread.
 void RunOnUIThread(const std::function<void()>& func, bool block = false);

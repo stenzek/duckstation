@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "qthost.h"
@@ -173,6 +173,15 @@ bool QtHost::PerformEarlyHardwareChecks()
 
 bool QtHost::EarlyProcessStartup()
 {
+#if !defined(_WIN32) && !defined(__APPLE__)
+  // On Wayland, turning any window into a native window causes DPI scaling to break, as well as window
+  // updates, creating a complete mess of a window. Setting this attribute isn't ideal, since you'd think
+  // that setting WA_DontCreateNativeAncestors on the widget would be sufficient, but apparently not.
+  // TODO: Re-evaluate this on Qt 6.9.
+  if (QtHost::IsRunningOnWayland())
+    QGuiApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings, true);
+#endif
+
   // Config-based RAIntegration switch must happen before the main window is displayed.
 #ifdef ENABLE_RAINTEGRATION
   if (!Achievements::IsUsingRAIntegration() && Host::GetBaseBoolSettingValue("Cheevos", "UseRAIntegration", false))
@@ -196,6 +205,16 @@ bool QtHost::InBatchMode()
 bool QtHost::InNoGUIMode()
 {
   return s_nogui_mode;
+}
+
+bool QtHost::IsRunningOnWayland()
+{
+#if defined(_WIN32) || defined(__APPLE__)
+  return false;
+#else
+  const QString platform_name = QGuiApplication::platformName();
+  return (platform_name == QStringLiteral("wayland"));
+#endif
 }
 
 QString QtHost::GetAppNameAndVersion()
@@ -591,7 +610,7 @@ void EmuThread::checkForSettingsChanges(const Settings& old_settings)
   // don't mess with fullscreen while locked
   if (!QtHost::IsSystemLocked())
   {
-    const bool render_to_main = shouldRenderToMain();
+    const bool render_to_main = QtHost::CanRenderToMainWindow();
     if (m_is_rendering_to_main != render_to_main && !m_is_fullscreen)
     {
       m_is_rendering_to_main = render_to_main;
@@ -656,9 +675,9 @@ void QtHost::MigrateSettings()
   }
 }
 
-bool EmuThread::shouldRenderToMain() const
+bool QtHost::CanRenderToMainWindow()
 {
-  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !QtHost::InNoGUIMode();
+  return !Host::GetBoolSettingValue("Main", "RenderToSeparateWindow", false) && !InNoGUIMode();
 }
 
 void Host::RequestResizeHostDisplay(s32 new_window_width, s32 new_window_height)
@@ -741,7 +760,7 @@ void EmuThread::startFullscreenUI()
   // we want settings loaded so we choose the correct renderer
   // this also sorts out input sources.
   System::LoadSettings(false);
-  m_is_rendering_to_main = shouldRenderToMain();
+  m_is_rendering_to_main = QtHost::CanRenderToMainWindow();
 
   // borrow the game start fullscreen flag
   const bool start_fullscreen =
@@ -796,7 +815,7 @@ void EmuThread::bootSystem(std::shared_ptr<SystemBootParameters> params)
   if (System::IsValidOrInitializing())
     return;
 
-  m_is_rendering_to_main = shouldRenderToMain();
+  m_is_rendering_to_main = QtHost::CanRenderToMainWindow();
 
   Error error;
   if (!System::BootSystem(std::move(*params), &error))
@@ -928,7 +947,7 @@ void EmuThread::setFullscreen(bool fullscreen, bool allow_render_to_main)
     return;
 
   m_is_fullscreen = fullscreen;
-  m_is_rendering_to_main = allow_render_to_main && shouldRenderToMain();
+  m_is_rendering_to_main = allow_render_to_main && QtHost::CanRenderToMainWindow();
   GPUThread::UpdateDisplayWindow(fullscreen);
 }
 
@@ -984,10 +1003,10 @@ std::optional<WindowInfo> EmuThread::acquireRenderWindow(RenderAPI render_api, b
 
   const bool window_fullscreen = m_is_fullscreen && !exclusive_fullscreen;
   const bool render_to_main = !fullscreen && m_is_rendering_to_main;
-  const bool use_main_window_pos = shouldRenderToMain();
+  const bool use_main_window_pos = QtHost::CanRenderToMainWindow();
 
-  return emit onAcquireRenderWindowRequested(render_api, window_fullscreen, render_to_main, m_is_surfaceless,
-                                             use_main_window_pos, error);
+  return emit onAcquireRenderWindowRequested(render_api, window_fullscreen, exclusive_fullscreen, render_to_main,
+                                             m_is_surfaceless, use_main_window_pos, error);
 }
 
 void EmuThread::releaseRenderWindow()
