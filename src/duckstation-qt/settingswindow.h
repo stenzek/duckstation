@@ -63,6 +63,8 @@ public:
   ALWAYS_INLINE const std::string& getGameTitle() const { return m_title; }
   ALWAYS_INLINE const std::string& getGameSerial() const { return m_serial; }
   ALWAYS_INLINE const std::optional<GameHash>& getGameHash() const { return m_hash; }
+  ALWAYS_INLINE const GameDatabase::Entry* getDatabaseEntry() const { return m_database_entry; }
+  ALWAYS_INLINE bool hasDatabaseEntry() const { return (m_database_entry != nullptr); }
 
   ALWAYS_INLINE InterfaceSettingsWidget* getInterfaceSettingsWidget() const { return m_interface_settings; }
   ALWAYS_INLINE BIOSSettingsWidget* getBIOSSettingsWidget() const { return m_bios_settings; }
