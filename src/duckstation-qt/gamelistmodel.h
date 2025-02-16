@@ -93,7 +93,7 @@ Q_SIGNALS:
   void coverScaleChanged();
 
 private Q_SLOTS:
-  void coverLoaded(const std::string& path, const QPixmap& pixmap);
+  void coverLoaded(const std::string& path, const QImage& image, float scale);
   void rowsChanged(const QList<int>& rows);
 
 private:
@@ -147,16 +147,15 @@ public:
   void loadOrGenerateCover();
 
 Q_SIGNALS:
-  void coverLoaded(const std::string& path, const QPixmap& pixmap);
+  void coverLoaded(const std::string& path, const QImage& image, float scale);
 
 private:
   void createPlaceholderImage();
-  void resizeAndPadImage();
 
   std::string m_path;
   std::string m_serial;
   std::string m_title;
-  const QImage& m_placeholder_image;
+  QImage m_placeholder_image;
   int m_width;
   int m_height;
   float m_scale;
