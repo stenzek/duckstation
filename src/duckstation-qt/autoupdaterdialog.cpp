@@ -114,7 +114,7 @@ bool AutoUpdaterDialog::isOfficialBuild()
 #endif
 }
 
-bool AutoUpdaterDialog::warnAboutUnofficialBuild()
+void AutoUpdaterDialog::warnAboutUnofficialBuild()
 {
   //
   // To those distributing their own builds or packages of DuckStation, and seeing this message:
@@ -144,7 +144,7 @@ bool AutoUpdaterDialog::warnAboutUnofficialBuild()
 #endif
     Host::GetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, false))
   {
-    return true;
+    return;
   }
 
   constexpr int DELAY_SECONDS = 5;
@@ -197,15 +197,12 @@ bool AutoUpdaterDialog::warnAboutUnofficialBuild()
   if (mbox.exec() == QMessageBox::Yes)
   {
     QtUtils::OpenURL(nullptr, "https://duckstation.org/");
-    return false;
+    QMetaObject::invokeMethod(qApp, &QApplication::quit, Qt::QueuedConnection);
+    return;
   }
 
   if (cb->isChecked())
     Host::SetBaseBoolSettingValue(CONFIG_SECTION, CONFIG_KEY, true);
-
-  return true;
-#else
-  return true;
 #endif
 }
 
