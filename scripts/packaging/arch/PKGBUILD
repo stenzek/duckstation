@@ -70,6 +70,7 @@ noextract=(
 
 # Name of the .desktop file that will be installed.
 _desktopname=org.duckstation.DuckStation
+_destdir=/opt/duckstation
 
 # https://wiki.archlinux.org/title/VCS_package_guidelines#Git
 # --dirty omitted, we need to ignore changes to this script because
@@ -124,7 +125,7 @@ build() {
 		-DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
 		-DALLOW_INSTALL=ON \
 		-DINSTALL_SELF_CONTAINED=ON \
-		-DCMAKE_INSTALL_PREFIX="${pkgdir}/opt/duckstation"
+		-DCMAKE_INSTALL_PREFIX="${pkgdir}${_destdir}"
 	ninja -C build-arch
 }
 
@@ -132,8 +133,9 @@ package() {
 	cd "${pkgname}"
 	ninja -C build-arch install
 
-	# install wrapper script
-	install -Dm755 scripts/packaging/duckstation-qt "${pkgdir}/usr/bin/duckstation-qt"
+	# install alias
+	mkdir -p "${pkgdir}/usr/bin"
+	ln -s "${_destdir}/duckstation-qt" "${pkgdir}/usr/bin/duckstation-qt"
 
 	# install desktop file and icon
 	install -Dm644 scripts/packaging/${_desktopname}.desktop "${pkgdir}/usr/share/applications/${_desktopname}.desktop"
@@ -143,4 +145,3 @@ package() {
 	install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
 	install -Dm644 data/resources/thirdparty.html "${pkgdir}/usr/share/licenses/${pkgname}/thirdparty.html"
 }
-

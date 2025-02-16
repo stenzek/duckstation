@@ -23,10 +23,8 @@ finish-args:
   - "--share=ipc"
   - "--socket=pulseaudio"
   - "--talk-name=org.freedesktop.ScreenSaver"
-
-  # Wayland is disabled due to various QtWayland issues, causing broken UI.
-  - "--socket=x11"
-  - "--env=QT_QPA_PLATFORM=xcb"
+  - "--socket=wayland"
+  - "--socket=fallback-x11"
 
 modules:
   # Dependencies.

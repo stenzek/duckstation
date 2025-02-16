@@ -307,15 +307,6 @@ cp "$SCRIPTDIR/apprun-cross.sh" "$OUTDIR/AppRun"
 chmod +x "$OUTDIR/AppRun"
 ln -s "usr/bin/$BINARY" "$OUTDIR/AppRun.wrapped"
 
-# Copy in AppRun hooks.
-echo "Copying AppRun hooks..."
-mkdir -p "$OUTDIR/apprun-hooks"
-for hookpath in "$SCRIPTDIR/apprun-hooks"/*; do
-	hookname=$(basename "$hookpath")
-	cp -v "$hookpath" "$OUTDIR/apprun-hooks/$hookname"
-	sed -i -e 's/exec /source "$this_dir"\/apprun-hooks\/"'"$hookname"'"\nexec /' "$OUTDIR/AppRun"
-done
-
 # Optionally inject libc
 if [ "$INJECT_LIBC" == true ]; then
 	echo "Injecting libc/libc++..."
