@@ -765,9 +765,40 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
 
     if (g_settings.gpu_pgxp_preserve_proj_fp)
     {
-      precise_sz3 = float(z) / 4096.0f;
-      precise_ir1 = float(x) / (static_cast<float>(1 << shift));
-      precise_ir2 = float(y) / (static_cast<float>(1 << shift));
+      float precise_x, precise_y, precise_z;
+      if (shift > 0)
+      {
+        // TODO: This isn't handling the sign extended cases.
+        constexpr GSVector4 unscale = GSVector4::cxpr(1.0f / 4096.0f);
+        const GSVector4 FV = GSVector4(GSVector4i::loadl<false>(V).s16to32()).insert32<3>(0.0f);
+        const GSVector4 RT0 = GSVector4(GSVector4i::loadl<false>(REGS.RT[0]).s16to32()) * unscale;
+        const GSVector4 RT1 = GSVector4(GSVector4i::loadl<false>(REGS.RT[1]).s16to32()) * unscale;
+        const GSVector4 RT2 = GSVector4(GSVector4i::loadl<false>(REGS.RT[2]).s16to32()) * unscale;
+
+        precise_x = RT0.dot(FV) + static_cast<float>(REGS.TR[0]);
+        precise_y = RT1.dot(FV) + static_cast<float>(REGS.TR[1]);
+        precise_z = RT2.dot(FV) + static_cast<float>(REGS.TR[2]);
+
+#ifdef ENABLE_FREECAM
+        if (s_config.freecam_active)
+        {
+          const GSVector4 offset_pos = s_config.freecam_matrix * GSVector4(precise_x, precise_y, precise_z, 1.0f);
+          precise_x = offset_pos.extract32<0>();
+          precise_y = offset_pos.extract32<1>();
+          precise_z = offset_pos.extract32<2>();
+        }
+#endif
+      }
+      else
+      {
+        precise_x = static_cast<float>(x) / 4096.0f;
+        precise_y = static_cast<float>(y) / (static_cast<float>(1 << shift));
+        precise_z = static_cast<float>(z) / (static_cast<float>(1 << shift));
+      }
+
+      precise_sz3 = precise_z;
+      precise_ir1 = precise_x;
+      precise_ir2 = precise_y;
       if (lm)
       {
         precise_ir1 = std::clamp(precise_ir1, float(IR123_MIN_VALUE), float(IR123_MAX_VALUE));
