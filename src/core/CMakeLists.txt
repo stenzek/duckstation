@@ -228,4 +228,15 @@ function(add_core_resources target)
     endif()
     install(DIRECTORY "$<TARGET_FILE_DIR:${target}>/resources" DESTINATION "${CMAKE_INSTALL_BINDIR}")
   endif()
+
+  # Linux platforms need a copy of the .desktop and icon file because Wayland stupidity.
+  # See QtHost::EarlyProcessStartup() for where this is used and why. We still need to set it when running
+  # as a Flatpak, but thankfully we don't need the extra copy.
+  if((LINUX OR BSD) AND (NOT DEFINED ENV{container}))
+    message(STATUS "Copying desktop file to resources directory.")
+    set(PACKAGING_SOURCE_DIR "${CMAKE_SOURCE_DIR}/scripts/packaging")
+    foreach(path "org.duckstation.DuckStation.desktop" "org.duckstation.DuckStation.png")
+      add_resources(${target} "${PACKAGING_SOURCE_DIR}/${path}" "${PACKAGING_SOURCE_DIR}")
+    endforeach()
+  endif()
 endfunction()
