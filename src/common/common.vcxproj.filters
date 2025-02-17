@@ -53,6 +53,7 @@
     <ClInclude Include="sha256_digest.h" />
     <ClInclude Include="thirdparty\aes.h" />
     <ClInclude Include="task_queue.h" />
+    <ClInclude Include="xorshift_prng.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="small_string.cpp" />

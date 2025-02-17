@@ -67,6 +67,7 @@ add_library(common
   timer.cpp
   timer.h
   types.h
+  xorshift_prng.h
 )
 
 target_include_directories(common PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/..")

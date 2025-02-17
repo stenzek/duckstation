@@ -50,6 +50,7 @@
     <ClInclude Include="types.h" />
     <ClInclude Include="minizip_helpers.h" />
     <ClInclude Include="windows_headers.h" />
+    <ClInclude Include="xorshift_prng.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="assert.cpp" />
