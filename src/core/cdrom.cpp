@@ -25,6 +25,7 @@
 #include "common/gsvector.h"
 #include "common/heap_array.h"
 #include "common/log.h"
+#include "common/xorshift_prng.h"
 
 #include "fmt/format.h"
 #include "imgui.h"
@@ -52,6 +53,7 @@ enum : u32
   XA_RESAMPLE_RING_BUFFER_SIZE = 32,
   XA_RESAMPLE_ZIGZAG_TABLE_SIZE = 29,
   XA_RESAMPLE_NUM_ZIGZAG_TABLES = 7,
+  PRNG_SEED = 0x4B435544u,
 
   PARAM_FIFO_SIZE = 16,
   RESPONSE_FIFO_SIZE = 16,
@@ -460,6 +462,8 @@ struct CDROMState
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> response_fifo;
   InlineFIFOQueue<u8, RESPONSE_FIFO_SIZE> async_response_fifo;
 
+  XorShift128PlusPlus prng;
+
   std::array<SectorBuffer, NUM_SECTOR_BUFFERS> sector_buffers;
   u32 current_read_sector_buffer = 0;
   u32 current_write_sector_buffer = 0;
@@ -608,6 +612,7 @@ void CDROM::Reset()
   s_state.param_fifo.Clear();
   s_state.response_fifo.Clear();
   s_state.async_response_fifo.Clear();
+  s_state.prng.Reset(PRNG_SEED);
 
   UpdateStatusRegister();
 
@@ -757,6 +762,11 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.Do(&s_state.param_fifo);
   sw.Do(&s_state.response_fifo);
   sw.Do(&s_state.async_response_fifo);
+
+  if (sw.GetVersion() >= 79)
+    sw.DoPOD(s_state.prng.GetMutableStatePtr());
+  else
+    s_state.prng.Reset(PRNG_SEED);
 
   if (sw.GetVersion() < 65)
   {
@@ -1636,6 +1646,12 @@ TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
     ticks += static_cast<u32>(seconds * static_cast<float>(System::MASTER_CLOCK));
     seek_type = (new_lba > current_lba) ? "sled forward" : "sled backward";
   }
+
+  // I hate this so much. There's some games that are extremely timing sensitive in their disc code, and if we return
+  // the same seek times repeatedly, end up locking up in an infinite loop. e.g. Resident Evil, Dino Crisis, etc.
+  // Add some randomness to timing if we detect them repeatedly seeking, otherwise don't. This somewhat simulates how
+  // the real hardware behaves, by adding an additional 0.5-1ms to every seek.
+  ticks += s_state.prng.NextRange<u32>(System::MASTER_CLOCK / 2000, System::MASTER_CLOCK / 1000);
 
   if (g_settings.cdrom_seek_speedup > 1)
     ticks = std::max<u32>(ticks / g_settings.cdrom_seek_speedup, MIN_SEEK_TICKS);
