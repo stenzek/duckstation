@@ -51,7 +51,7 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   if (image->height() < dpr_expected_height)
     yoffs = static_cast<int>(static_cast<qreal>((dpr_expected_height - image->height()) / 2) / dpr);
 
-  QImage padded_image(dpr_expected_width, dpr_expected_height, image->format());
+  QImage padded_image(dpr_expected_width, dpr_expected_height, QImage::Format_ARGB32);
   padded_image.setDevicePixelRatio(dpr);
   padded_image.fill(Qt::transparent);
   QPainter painter;
