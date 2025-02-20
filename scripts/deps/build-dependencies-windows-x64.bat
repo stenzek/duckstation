@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-rem SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+rem SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 rem SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 echo Setting environment...
@@ -56,7 +56,7 @@ set ZLIB=1.3.1
 set ZLIBSHORT=131
 set ZSTD=1.5.6
 
-set CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
+set CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
 set DISCORD_RPC=144f3a3f1209994d8d9e8a87964a989cb9911c1e
 set LUNASVG=9af1ac7b90658a279b372add52d6f77a4ebb482c
 set SHADERC=fc65b19d2098cf81e55b4edc10adad2ad8268361
@@ -81,7 +81,7 @@ call :downloadfile "zlib%ZLIBSHORT%.zip" "https://zlib.net/zlib%ZLIBSHORT%.zip" 
 call :downloadfile "zstd-%ZSTD%.zip" "https://github.com/facebook/zstd/archive/refs/tags/v%ZSTD%.zip" 3b1c3b46e416d36931efd34663122d7f51b550c87f74de2d38249516fe7d8be5 || goto error
 call :downloadfile "zstd-fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch" https://github.com/facebook/zstd/commit/fd5f8106a58601a963ee816e6a57aa7c61fafc53.patch 8df152f4969b308546306c074628de761f0b80265de7de534e3822fab22d7535 || goto error
 
-call :downloadfile "cpuinfo-%CPUINFO%.zip" "https://github.com/pytorch/cpuinfo/archive/%CPUINFO%.zip" 13146ae7983d767a678dd01b0d6af591e77cec82babd41264b9164ab808d7d41 || goto error
+call :downloadfile "cpuinfo-%CPUINFO%.zip" "https://github.com/stenzek/cpuinfo/archive/%CPUINFO%.zip" 3430f8bae57623347b2b30a8ff041b0288f90ad99b4c2487c3d520863ce4a4e3 || goto error
 call :downloadfile "discord-rpc-%DISCORD_RPC%.zip" "https://github.com/stenzek/discord-rpc/archive/%DISCORD_RPC%.zip" 61e185e75d37b360c314125bcdf4697192d15e2d5209db3306ed6cd736d508b3 || goto error
 call :downloadfile "lunasvg-%LUNASVG%.zip" "https://github.com/stenzek/lunasvg/archive/%LUNASVG%.zip" 1425ec2bda0228b73ffdc70b0dc666fc7d2b69c33eec75a35c4421157c0e220c || goto error
 call :downloadfile "shaderc-%SHADERC%.zip" "https://github.com/stenzek/shaderc/archive/%SHADERC%.zip" e7766c54f289e89fc36ca4273693e6549024b5e540d7b46745cee2c61def5e4c || goto error

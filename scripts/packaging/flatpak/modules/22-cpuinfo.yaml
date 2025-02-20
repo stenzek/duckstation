@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 name: cpuinfo
@@ -20,7 +20,7 @@ build-options:
 sources:
   - type: git
     url: "https://github.com/stenzek/cpuinfo.git"
-    commit: "7524ad504fdcfcf75a18a133da6abd75c5d48053"
+    commit: "3ebbfd45645650c4940bf0f3b4d25ab913466bb0"
 cleanup:
   - /bin
   - /include

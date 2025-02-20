@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+# SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 set -e
@@ -76,7 +76,7 @@ SDL3=3.2.4
 QT=6.8.2
 ZSTD=1.5.6
 
-CPUINFO=7524ad504fdcfcf75a18a133da6abd75c5d48053
+CPUINFO=3ebbfd45645650c4940bf0f3b4d25ab913466bb0
 DISCORD_RPC=144f3a3f1209994d8d9e8a87964a989cb9911c1e
 LUNASVG=9af1ac7b90658a279b372add52d6f77a4ebb482c
 SHADERC=fc65b19d2098cf81e55b4edc10adad2ad8268361
@@ -100,7 +100,7 @@ fi
 cat > SHASUMS <<EOF
 baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  $LIBBACKTRACE.tar.gz
 2938328317301dfbe30176d79c251733aa5e7ec5c436c800b99ed4da7adcb0f0  SDL3-$SDL3.tar.gz
-e1351218d270db49c3dddcba04fb2153b09731ea3fa6830e423f5952f44585be  cpuinfo-$CPUINFO.tar.gz
+b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
 3eea5ccce6670c126282f1ba4d32c19d486db49a1a5cbfb8d6f48774784d310c  discord-rpc-$DISCORD_RPC.tar.gz
 3998b024b0d442614a9ee270e76e018bb37a17b8c6941212171731123cbbcac7  lunasvg-$LUNASVG.tar.gz
 d1ef912c27e06307f2b2a5b6386070d0b8fae2bb5851f50841df7b73dcf5abdf  shaderc-$SHADERC.tar.gz
