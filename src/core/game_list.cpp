@@ -748,7 +748,7 @@ void GameList::UpdateAchievementData(const std::span<u8, 16> hash, u32 game_id, 
     entry.achievements_game_id = game_id;
     entry.num_achievements = Truncate16(num_achievements);
     if (hardcore)
-      entry.unlocked_achievements_hc = Truncate16(num_achievements);
+      entry.unlocked_achievements_hc = Truncate16(num_unlocked);
     else
       entry.unlocked_achievements = Truncate16(num_unlocked);
 

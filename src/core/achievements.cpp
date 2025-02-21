@@ -4208,7 +4208,7 @@ void Achievements::UpdateProgressDatabase(bool force)
     return;
 
   // update the game list, this should be fairly quick
-  if (!s_state.game_hash.has_value())
+  if (s_state.game_hash.has_value())
   {
     GameList::UpdateAchievementData(s_state.game_hash.value(), s_state.game_id,
                                     s_state.game_summary.num_core_achievements,
@@ -4302,19 +4302,19 @@ void Achievements::UpdateProgressDatabase(bool force)
       {
         // if the file is empty, need to write the header
         writer.WriteU32(1);
-        writer.WriteU32(game_id);
       }
       else
       {
         // update the count
         if (!FileSystem::FSeek64(fp.get(), 0, SEEK_SET, &error) || !writer.WriteU32(game_count + 1) ||
-            !FileSystem::FSeek64(fp.get(), SEEK_END, 0, &error))
+            !FileSystem::FSeek64(fp.get(), 0, SEEK_END, &error))
         {
           ERROR_LOG("Failed to write seek/update header in progress database: {}", error.GetDescription());
           return;
         }
       }
 
+      writer.WriteU32(game_id);
       writer.WriteU16(Truncate16(hardcore ? 0 : achievements_unlocked));
       writer.WriteU16(Truncate16(hardcore ? achievements_unlocked : 0));
     }
