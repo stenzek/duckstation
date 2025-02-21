@@ -1004,8 +1004,7 @@ bool GPUPresenter::ApplyChromaSmoothing()
 void GPUPresenter::CalculateDrawRect(s32 window_width, s32 window_height, bool apply_aspect_ratio, bool apply_alignment,
                                      GSVector4i* display_rect, GSVector4i* draw_rect) const
 {
-  const bool integer_scale = (g_gpu_settings.display_scaling == DisplayScalingMode::NearestInteger ||
-                              g_gpu_settings.display_scaling == DisplayScalingMode::BilinearInteger);
+  const bool integer_scale = g_gpu_settings.IsUsingIntegerDisplayScaling();
   const bool show_vram = g_gpu_settings.gpu_show_vram;
   const u32 display_width = show_vram ? VRAM_WIDTH : m_display_width;
   const u32 display_height = show_vram ? VRAM_HEIGHT : m_display_height;

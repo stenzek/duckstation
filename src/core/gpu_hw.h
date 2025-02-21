@@ -74,8 +74,6 @@ public:
   bool UpdateSettings(const GPUSettings& old_settings, Error* error) override;
   void UpdatePostProcessingSettings(bool force_reload) override;
 
-  bool UpdateResolutionScale(Error* error) override;
-
   void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering, u8 active_line_lsb) override;
   void ReadVRAM(u32 x, u32 y, u32 width, u32 height) override;
   void UpdateVRAM(u32 x, u32 y, u32 width, u32 height, const void* data, bool set_mask, bool check_mask) override;

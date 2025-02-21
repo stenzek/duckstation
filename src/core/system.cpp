@@ -1219,6 +1219,10 @@ void System::LoadSettings(bool display_osd_messages)
     (g_settings.disable_all_enhancements ||
      Host::Internal::GetBaseSettingsLayer()->GetBoolValue("Main", "DisableAllEnhancements", false));
 
+  // Fix up automatic resolution scale, yuck.
+  if (g_settings.gpu_automatic_resolution_scale && IsValid())
+    g_settings.gpu_resolution_scale = g_gpu.CalculateAutomaticResolutionScale();
+
   Settings::UpdateLogConfig(si);
   Host::LoadSettings(si, lock);
   InputManager::ReloadSources(controller_si, lock);
@@ -1934,6 +1938,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
   PCDrv::Initialize();
 
   UpdateGTEAspectRatio();
+  UpdateAutomaticResolutionScale();
   UpdateThrottlePeriod();
   UpdateMemorySaveStateSettings();
 
@@ -2592,7 +2597,7 @@ void System::ClearMemorySaveStates(bool reallocate_resources, bool recycle_textu
   }
 
   // immediately save a rewind state next frame
-  s_state.rewind_save_counter = (s_state.rewind_save_frequency > 0) ? 0 : -1;
+  s_state.rewind_save_counter = (s_state.rewind_save_frequency >= 0) ? 0 : -1;
 }
 
 void System::FreeMemoryStateStorage(bool release_memory, bool release_textures, bool recycle_textures)
@@ -4220,8 +4225,8 @@ void System::UpdateRunningGame(const std::string& path, CDImage* image, bool boo
 
   UpdateRichPresence(booting);
 
-  FullscreenUI::OnRunningGameChanged(s_state.running_game_path, s_state.running_game_serial,
-                                     s_state.running_game_title, s_state.running_game_hash);
+  FullscreenUI::OnRunningGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
+                                     s_state.running_game_hash);
 
   Host::OnGameChanged(s_state.running_game_path, s_state.running_game_serial, s_state.running_game_title,
                       s_state.running_game_hash);
@@ -4508,7 +4513,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
 
       // NOTE: Must come after the GPU thread settings update, otherwise it allocs the wrong size textures.
       const bool use_existing_textures = (g_settings.gpu_resolution_scale == old_settings.gpu_resolution_scale);
-      ClearMemorySaveStates(true, use_existing_textures);
+      FreeMemoryStateStorage(false, true, use_existing_textures);
+      ClearMemorySaveStates(true, true);
 
       if (IsPaused())
       {
@@ -5823,6 +5829,7 @@ void System::DisplayWindowResized()
     return;
 
   UpdateGTEAspectRatio();
+  UpdateAutomaticResolutionScale();
 }
 
 void System::UpdateGTEAspectRatio()
@@ -5864,6 +5871,28 @@ void System::UpdateGTEAspectRatio()
   }
 
   GTE::SetAspectRatio(gte_ar, custom_num, custom_denom);
+}
+
+void System::UpdateAutomaticResolutionScale()
+{
+  if (!IsValidOrInitializing() || !g_settings.gpu_automatic_resolution_scale)
+    return;
+
+  const u32 new_scale = g_gpu.CalculateAutomaticResolutionScale();
+  if (g_settings.gpu_resolution_scale == new_scale)
+    return;
+
+  g_settings.gpu_resolution_scale = Truncate8(new_scale);
+  GPUThread::UpdateSettings(true, false, false);
+  FreeMemoryStateStorage(false, true, false);
+  ClearMemorySaveStates(true, false);
+
+  if (IsPaused())
+  {
+    // resolution change needs display updated
+    g_gpu.UpdateDisplay(false);
+    GPUThread::PresentCurrentFrame();
+  }
 }
 
 bool System::ChangeGPUDump(std::string new_path)

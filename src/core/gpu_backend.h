@@ -69,8 +69,6 @@ public:
 
   static bool AllocateMemorySaveStates(std::span<System::MemorySaveState> states, Error* error);
 
-  static void QueueUpdateResolutionScale();
-
 public:
   GPUBackend(GPUPresenter& presenter);
   virtual ~GPUBackend();
@@ -85,9 +83,6 @@ public:
 
   /// Returns the current resolution scale.
   virtual u32 GetResolutionScale() const = 0;
-
-  /// Updates the resolution scale when it's set to automatic.
-  virtual bool UpdateResolutionScale(Error* error) = 0;
 
   // Graphics API state reset/restore - call when drawing the UI etc.
   // TODO: replace with "invalidate cached state"

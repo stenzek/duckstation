@@ -102,6 +102,7 @@ struct GPUSettings
   bool gpu_disable_raster_order_views : 1 = false;
   bool gpu_disable_compute_shaders : 1 = false;
   bool gpu_disable_compressed_textures : 1 = false;
+  bool gpu_automatic_resolution_scale : 1 = false;
   bool gpu_per_sample_shading : 1 = false;
   bool gpu_true_color : 1 = true;
   bool gpu_scaled_dithering : 1 = true;
@@ -210,6 +211,11 @@ struct GPUSettings
 
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
   ALWAYS_INLINE bool IsUsingAccurateBlending() const { return (gpu_accurate_blending && !gpu_true_color); }
+  ALWAYS_INLINE bool IsUsingIntegerDisplayScaling() const
+  {
+    return (display_scaling == DisplayScalingMode::NearestInteger ||
+            display_scaling == DisplayScalingMode::BilinearInteger);
+  }
 
   ALWAYS_INLINE bool UsingPGXPCPUMode() const { return gpu_pgxp_enable && gpu_pgxp_cpu; }
   ALWAYS_INLINE bool UsingPGXPDepthBuffer() const { return gpu_pgxp_enable && gpu_pgxp_depth_buffer; }

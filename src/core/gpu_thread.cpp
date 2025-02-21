@@ -1287,13 +1287,6 @@ void GPUThread::DisplayWindowResizedOnThread()
       Internal::PresentFrameAndRestoreContext();
       Internal::PresentFrameAndRestoreContext();
     }
-
-    if (g_gpu_settings.gpu_resolution_scale == 0)
-    {
-      Error error;
-      if (!s_state.gpu_backend->UpdateResolutionScale(&error)) [[unlikely]]
-        ReportFatalErrorAndShutdown(fmt::format("Failed to update resolution scale: {}", error.GetDescription()));
-    }
   }
 }
 

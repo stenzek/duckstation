@@ -1018,9 +1018,9 @@ void GPU::UpdateCRTCDisplayParameters()
   }
 
   if ((cs.display_vram_width != old_vram_width || cs.display_vram_height != old_vram_height) &&
-      g_settings.gpu_resolution_scale == 0)
+      g_settings.gpu_automatic_resolution_scale)
   {
-    GPUBackend::QueueUpdateResolutionScale();
+    System::UpdateAutomaticResolutionScale();
   }
 }
 
@@ -1978,6 +1978,38 @@ void GPU::QueuePresentCurrentFrame()
     if (drain_one)
       GPUBackend::WaitForOneQueuedFrame();
   }
+}
+
+u8 GPU::CalculateAutomaticResolutionScale() const
+{
+  // Auto scaling.
+  // When the system is starting and all borders crop is enabled, the registers are zero, and
+  // display_height therefore is also zero. Keep the existing resolution until it updates.
+  u32 scale = 1;
+  if (const WindowInfo& main_window_info = GPUThread::GetRenderWindowInfo();
+      !main_window_info.IsSurfaceless() && m_crtc_state.display_width > 0 && m_crtc_state.display_height > 0 &&
+      m_crtc_state.display_vram_width > 0 && m_crtc_state.display_vram_height > 0)
+  {
+    GSVector4i display_rect, draw_rect;
+    CalculateDrawRect(main_window_info.surface_width, main_window_info.surface_height, m_crtc_state.display_width,
+                      m_crtc_state.display_height, m_crtc_state.display_origin_left, m_crtc_state.display_origin_top,
+                      m_crtc_state.display_vram_width, m_crtc_state.display_vram_height, g_settings.display_rotation,
+                      g_settings.display_alignment, g_settings.gpu_show_vram ? 1.0f : ComputePixelAspectRatio(),
+                      g_settings.IsUsingIntegerDisplayScaling(), &display_rect, &draw_rect);
+
+    // We use the draw rect to determine scaling. This way we match the resolution as best we can, regardless of the
+    // anamorphic aspect ratio.
+    const s32 draw_width = draw_rect.width();
+    const s32 draw_height = draw_rect.height();
+    scale = static_cast<u32>(
+      std::ceil(std::max(static_cast<float>(draw_width) / static_cast<float>(m_crtc_state.display_vram_width),
+                         static_cast<float>(draw_height) / static_cast<float>(m_crtc_state.display_vram_height))));
+    scale = std::min<u32>(scale, std::numeric_limits<decltype(g_settings.gpu_resolution_scale)>::max());
+    VERBOSE_LOG("Draw Size = {}x{}, VRAM Size = {}x{}, Preferred Scale = {}", draw_width, draw_height,
+                m_crtc_state.display_vram_width, m_crtc_state.display_vram_height, scale);
+  }
+
+  return Truncate8(scale);
 }
 
 bool GPU::DumpVRAMToFile(const char* filename)

@@ -50,6 +50,9 @@ void DisplayWindowResized();
 /// Updates the internal GTE aspect ratio. Use with "match display" aspect ratio setting.
 void UpdateGTEAspectRatio();
 
+/// Updates the resolution scale when it is set to automatic.
+void UpdateAutomaticResolutionScale();
+
 /// Called on card read/write, handles fast forwarding.
 void OnMemoryCardAccessed();
 

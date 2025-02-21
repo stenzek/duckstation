@@ -46,8 +46,6 @@ public:
 
   void ClearVRAM() override;
 
-  bool UpdateResolutionScale(Error* error) override;
-
   void LoadState(const GPUBackendLoadStateCommand* cmd) override;
 
   bool AllocateMemorySaveState(System::MemorySaveState& mss, Error* error) override;

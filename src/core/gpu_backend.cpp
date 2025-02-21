@@ -398,20 +398,6 @@ bool GPUBackend::AllocateMemorySaveStates(std::span<System::MemorySaveState> sta
   return result;
 }
 
-void GPUBackend::QueueUpdateResolutionScale()
-{
-  DebugAssert(!GPUThread::IsOnThread());
-
-  GPUThread::RunOnBackend(
-    [](GPUBackend* backend) {
-      Error error;
-      if (!backend->UpdateResolutionScale(&error)) [[unlikely]]
-        GPUThread::ReportFatalErrorAndShutdown(
-          fmt::format("Failed to update resolution scale: {}", error.GetDescription()));
-    },
-    false, true);
-}
-
 void GPUBackend::HandleCommand(const GPUThreadCommand* cmd)
 {
   switch (cmd->type)
@@ -837,7 +823,6 @@ public:
   bool UpdateSettings(const GPUSettings& old_settings, Error* error) override;
 
   u32 GetResolutionScale() const override;
-  bool UpdateResolutionScale(Error* error) override;
 
   void RestoreDeviceContext() override;
   void FlushRender() override;
@@ -889,11 +874,6 @@ bool GPUNullBackend::UpdateSettings(const GPUSettings& old_settings, Error* erro
 u32 GPUNullBackend::GetResolutionScale() const
 {
   return 1;
-}
-
-bool GPUNullBackend::UpdateResolutionScale(Error* error)
-{
-  return true;
 }
 
 void GPUNullBackend::RestoreDeviceContext()

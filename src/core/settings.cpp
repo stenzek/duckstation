@@ -199,6 +199,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
                    .value_or(DEFAULT_GPU_RENDERER);
   gpu_adapter = si.GetStringValue("GPU", "Adapter", "");
   gpu_resolution_scale = static_cast<u8>(si.GetUIntValue("GPU", "ResolutionScale", 1u));
+  gpu_automatic_resolution_scale = (gpu_resolution_scale == 0);
   gpu_multisamples = static_cast<u8>(si.GetUIntValue("GPU", "Multisamples", 1u));
   gpu_use_debug_device = si.GetBoolValue("GPU", "UseDebugDevice", false);
   gpu_disable_shader_cache = si.GetBoolValue("GPU", "DisableShaderCache", false);
@@ -972,6 +973,7 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
     g_settings.enable_8mb_ram = false;
     g_settings.gpu_resolution_scale = 1;
     g_settings.gpu_multisamples = 1;
+    g_settings.gpu_automatic_resolution_scale = false;
     g_settings.gpu_per_sample_shading = false;
     g_settings.gpu_true_color = false;
     g_settings.gpu_scaled_dithering = false;

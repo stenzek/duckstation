@@ -230,6 +230,9 @@ public:
   // Queues the current frame for presentation. Should only be used with runahead.
   void QueuePresentCurrentFrame();
 
+  /// Computes the effective resolution scale when it is set to automatic.
+  u8 CalculateAutomaticResolutionScale() const;
+
   /// Helper function for computing the draw rectangle in a larger window.
   static void CalculateDrawRect(u32 window_width, u32 window_height, u32 crtc_display_width, u32 crtc_display_height,
                                 s32 display_origin_left, s32 display_origin_top, u32 display_vram_width,

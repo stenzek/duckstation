@@ -65,11 +65,6 @@ void GPU_SW::ClearVRAM()
   std::memset(g_gpu_clut, 0, sizeof(g_gpu_clut));
 }
 
-bool GPU_SW::UpdateResolutionScale(Error* error)
-{
-  return true;
-}
-
 void GPU_SW::LoadState(const GPUBackendLoadStateCommand* cmd)
 {
   std::memcpy(g_vram, cmd->vram_data, sizeof(g_vram));
