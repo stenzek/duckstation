@@ -187,8 +187,9 @@ public:
       const QFontMetrics fm(painter->fontMetrics());
 
       // display hardcore in parenthesis only if there are actually hc unlocks
-      const bool display_hardcore = (num_unlocked > 0 && num_unlocked_hardcore > 0);
-      const bool display_hardcore_only = (num_unlocked == 0 && num_unlocked_hardcore > 0);
+      const bool display_hardcore = (num_unlocked_hardcore > 0);
+      const bool display_hardcore_only =
+        (display_hardcore && (num_unlocked == 0 || num_unlocked == num_unlocked_hardcore));
       const QString first = QStringLiteral("%1").arg(display_hardcore_only ? num_unlocked_hardcore : num_unlocked);
       const QString total = QStringLiteral("/%3").arg(num_achievements);
 
@@ -199,7 +200,7 @@ public:
       painter->drawText(r, Qt::AlignVCenter, first);
       r.setLeft(r.left() + fm.size(Qt::TextSingleLine, first).width());
 
-      if (display_hardcore)
+      if (display_hardcore && !display_hardcore_only)
       {
         const QString hc = QStringLiteral("(%2)").arg(num_unlocked_hardcore);
         painter->setPen(hc_color);
