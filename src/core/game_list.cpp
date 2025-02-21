@@ -724,7 +724,7 @@ void GameList::PopulateEntryAchievements(Entry* entry, const Achievements::Progr
 }
 
 void GameList::UpdateAchievementData(const std::span<u8, 16> hash, u32 game_id, u32 num_achievements, u32 num_unlocked,
-                                     bool hardcore)
+                                     u32 num_unlocked_hardcore)
 {
   std::unique_lock<std::recursive_mutex> lock(s_mutex);
   llvm::SmallVector<u32, 32> changed_indices;
@@ -738,19 +738,16 @@ void GameList::UpdateAchievementData(const std::span<u8, 16> hash, u32 game_id, 
       continue;
     }
 
-    const u32 current_unlocked = hardcore ? entry.unlocked_achievements_hc : entry.unlocked_achievements;
     if (entry.achievements_game_id == game_id && entry.num_achievements == num_achievements &&
-        current_unlocked == num_unlocked)
+        entry.unlocked_achievements == num_unlocked && entry.unlocked_achievements_hc == num_unlocked_hardcore)
     {
       continue;
     }
 
     entry.achievements_game_id = game_id;
     entry.num_achievements = Truncate16(num_achievements);
-    if (hardcore)
-      entry.unlocked_achievements_hc = Truncate16(num_unlocked);
-    else
-      entry.unlocked_achievements = Truncate16(num_unlocked);
+    entry.unlocked_achievements = Truncate16(num_unlocked);
+    entry.unlocked_achievements_hc = Truncate16(num_unlocked_hardcore);
 
     changed_indices.push_back(static_cast<u32>(i));
   }

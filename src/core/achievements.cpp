@@ -4207,18 +4207,39 @@ void Achievements::UpdateProgressDatabase(bool force)
   if (rc_client_get_spectator_mode_enabled(s_state.client))
     return;
 
+  // query list to get both hardcore and softcore counts
+  rc_client_achievement_list_t* const achievements =
+    rc_client_create_achievement_list(s_state.client, RC_CLIENT_ACHIEVEMENT_CATEGORY_CORE, 0);
+  u32 num_achievements = 0;
+  u32 achievements_unlocked = 0;
+  u32 achievements_unlocked_hardcore = 0;
+  if (achievements)
+  {
+    for (const rc_client_achievement_bucket_t& bucket :
+         std::span<const rc_client_achievement_bucket_t>(achievements->buckets, achievements->num_buckets))
+    {
+      for (const rc_client_achievement_t* achievement :
+           std::span<rc_client_achievement_t*>(bucket.achievements, bucket.num_achievements))
+      {
+        achievements_unlocked += BoolToUInt32((achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_SOFTCORE) != 0);
+        achievements_unlocked_hardcore +=
+          BoolToUInt32((achievement->unlocked & RC_CLIENT_ACHIEVEMENT_UNLOCKED_HARDCORE) != 0);
+      }
+
+      num_achievements += bucket.num_achievements;
+    }
+    rc_client_destroy_achievement_list(achievements);
+  }
+
   // update the game list, this should be fairly quick
   if (s_state.game_hash.has_value())
   {
-    GameList::UpdateAchievementData(s_state.game_hash.value(), s_state.game_id,
-                                    s_state.game_summary.num_core_achievements,
-                                    s_state.game_summary.num_unlocked_achievements, IsHardcoreModeActive());
+    GameList::UpdateAchievementData(s_state.game_hash.value(), s_state.game_id, num_achievements, achievements_unlocked,
+                                    achievements_unlocked_hardcore);
   }
 
   // done asynchronously so we don't hitch on disk I/O
-  System::QueueAsyncTask([game_id = s_state.game_id,
-                          achievements_unlocked = s_state.game_summary.num_unlocked_achievements,
-                          hardcore = IsHardcoreModeActive(), force]() {
+  System::QueueAsyncTask([game_id = s_state.game_id, achievements_unlocked, achievements_unlocked_hardcore, force]() {
     // no point storing it in memory, just write directly to the file
     Error error;
     FileSystem::ManagedCFilePtr fp = OpenProgressDatabase(true, false, &error);
@@ -4246,16 +4267,18 @@ void Achievements::UpdateProgressDatabase(bool force)
         // do we even need to change it?
         const u16 current_achievements_unlocked = reader.ReadU16();
         const u16 current_achievements_unlocked_hardcore = reader.ReadU16();
-        const u16 current_unlocked = hardcore ? current_achievements_unlocked_hardcore : current_achievements_unlocked;
 
         // if we're not forced, then take the greater count
-        if (force ? (current_unlocked <= achievements_unlocked) : (current_unlocked == achievements_unlocked))
+        if (force ? (current_achievements_unlocked == achievements_unlocked &&
+                     current_achievements_unlocked_hardcore == achievements_unlocked_hardcore) :
+                    (current_achievements_unlocked <= achievements_unlocked &&
+                     current_achievements_unlocked_hardcore <= achievements_unlocked_hardcore))
         {
           VERBOSE_LOG("No update to progress database needed for game {}", game_id);
           return;
         }
 
-        found_offset = FileSystem::FTell64(fp.get());
+        found_offset = FileSystem::FTell64(fp.get()) - sizeof(u16) - sizeof(u16);
         break;
       }
 
@@ -4278,25 +4301,25 @@ void Achievements::UpdateProgressDatabase(bool force)
     // append/update the entry
     if (found_offset > 0)
     {
-      INFO_LOG("Updating game {} with {} unlocked{}", game_id, achievements_unlocked, hardcore ? " (hardcore)" : "");
+      INFO_LOG("Updating game {} with {}/{} unlocked", game_id, achievements_unlocked, achievements_unlocked_hardcore);
 
       // need to seek when switching read->write
-      const s32 hardcore_offset = hardcore ? sizeof(u16) : 0;
-      if (!FileSystem::FSeek64(fp.get(), found_offset + hardcore_offset, SEEK_SET, &error))
+      if (!FileSystem::FSeek64(fp.get(), found_offset, SEEK_SET, &error))
       {
         ERROR_LOG("Failed to write seek in progress database: {}", error.GetDescription());
         return;
       }
 
       writer.WriteU16(Truncate16(achievements_unlocked));
+      writer.WriteU16(Truncate16(achievements_unlocked_hardcore));
     }
     else
     {
       // don't write zeros to the file. we could still end up with zeros here after reset, but that's rare
-      if (achievements_unlocked == 0)
+      if (achievements_unlocked == 0 && achievements_unlocked_hardcore == 0)
         return;
 
-      INFO_LOG("Appending game {} with {} unlocked", game_id, achievements_unlocked, hardcore ? " (hardcore)" : "");
+      INFO_LOG("Appending game {} with {}/{} unlocked", game_id, achievements_unlocked, achievements_unlocked_hardcore);
 
       if (size == 0)
       {
@@ -4315,8 +4338,8 @@ void Achievements::UpdateProgressDatabase(bool force)
       }
 
       writer.WriteU32(game_id);
-      writer.WriteU16(Truncate16(hardcore ? 0 : achievements_unlocked));
-      writer.WriteU16(Truncate16(hardcore ? achievements_unlocked : 0));
+      writer.WriteU16(Truncate16(achievements_unlocked));
+      writer.WriteU16(Truncate16(achievements_unlocked_hardcore));
     }
 
     if (!writer.Flush(&error))
