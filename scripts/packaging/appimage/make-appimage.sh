@@ -34,6 +34,7 @@ APPDIRNAME=DuckStation.AppDir
 STRIP=strip
 
 declare -a MANUAL_LIBS=(
+	"libz.so.1"
 	"libavcodec.so.61"
 	"libavformat.so.61"
 	"libavutil.so.59"

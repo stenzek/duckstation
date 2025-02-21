@@ -59,7 +59,7 @@ fi
 %build
 
 if [ ! -d "${PWD}/deps" ]; then
-  scripts/deps/build-dependencies-linux.sh -system-freetype -system-harfbuzz -system-libjpeg -system-libpng -system-libwebp -system-libzip -system-zstd -system-qt "${PWD}/deps"
+  scripts/deps/build-dependencies-linux.sh -system-freetype -system-harfbuzz -system-libjpeg -system-libpng -system-libwebp -system-libzip -system-zlib -system-zstd -system-qt "${PWD}/deps"
 fi
 
 rm -fr build

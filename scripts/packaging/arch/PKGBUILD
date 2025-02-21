@@ -104,7 +104,7 @@ prepare() {
 		./scripts/deps/build-dependencies-linux.sh \
 			-system-freetype -system-harfbuzz -system-libjpeg \
 			-system-libpng -system-libwebp -system-libzip \
-			-system-zstd -system-qt \
+			-system-zlib -system-zstd -system-qt \
 			"${_depsdir}"
 	fi
 }
