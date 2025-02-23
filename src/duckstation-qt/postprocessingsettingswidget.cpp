@@ -595,7 +595,7 @@ void PostProcessingOverlayConfigWidget::onExportCustomConfigClicked()
   if (path.isEmpty())
     return;
 
-  const QString output = QStringLiteral("imagePath: \"%1\"\n"
+  const QString output = QStringLiteral("image: \"%1\"\n"
                                         "displayStartX: %2\n"
                                         "displayStartY: %3\n"
                                         "displayEndX: %4\n"
