@@ -3364,7 +3364,7 @@ bool FullscreenUI::SwitchToGameSettings()
   const GameList::Entry* entry = GameList::GetEntryForPath(s_state.current_game_path);
   if (!entry)
   {
-    SwitchToGameSettingsForSerial(s_state.current_game_serial, entry->hash);
+    SwitchToGameSettingsForSerial(s_state.current_game_serial, s_state.current_game_hash);
     return true;
   }
   else
