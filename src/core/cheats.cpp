@@ -173,6 +173,7 @@ public:
     std::optional<DisplayAspectRatio> override_aspect_ratio;
     bool has_options : 1;
     bool disable_widescreen_rendering : 1;
+    bool enable_8mb_ram : 1;
     bool disallow_for_achievements : 1;
   };
 
@@ -270,8 +271,8 @@ Cheats::CheatCode::~CheatCode() = default;
 
 bool Cheats::CheatCode::HasAnySettingOverrides() const
 {
-  return (m_metadata.disable_widescreen_rendering || m_metadata.override_aspect_ratio.has_value() ||
-          m_metadata.override_cpu_overclock.has_value());
+  return (m_metadata.disable_widescreen_rendering || m_metadata.enable_8mb_ram ||
+          m_metadata.override_aspect_ratio.has_value() || m_metadata.override_cpu_overclock.has_value());
 }
 
 void Cheats::CheatCode::ApplySettingOverrides()
@@ -280,6 +281,11 @@ void Cheats::CheatCode::ApplySettingOverrides()
   {
     DEV_LOG("Disabling widescreen rendering from {} patch.", GetName());
     g_settings.gpu_widescreen_hack = false;
+  }
+  if (m_metadata.enable_8mb_ram && !g_settings.enable_8mb_ram)
+  {
+    DEV_LOG("Enabling 8MB ram from {} patch.", GetName());
+    g_settings.enable_8mb_ram = true;
   }
   if (m_metadata.override_aspect_ratio.has_value() && g_settings.display_aspect_ratio == DisplayAspectRatio::Auto)
   {
@@ -1525,6 +1531,10 @@ void Cheats::ParseFile(CheatCodeList* dst_list, const std::string_view file_cont
       else if (key == "DisableWidescreenRendering")
       {
         next_code_metadata.disable_widescreen_rendering = StringUtil::FromChars<bool>(value).value_or(false);
+      }
+      else if (key == "Enable8MBRAM")
+      {
+        next_code_metadata.enable_8mb_ram = StringUtil::FromChars<bool>(value).value_or(false);
       }
       else if (key == "DisallowForAchievements")
       {
