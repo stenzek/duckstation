@@ -97,6 +97,7 @@ using ImGuiFullscreen::BeginFullscreenWindow;
 using ImGuiFullscreen::BeginHorizontalMenu;
 using ImGuiFullscreen::BeginMenuButtons;
 using ImGuiFullscreen::BeginNavBar;
+using ImGuiFullscreen::BeginFixedPopupModal;
 using ImGuiFullscreen::CancelPendingMenuClose;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::DefaultActiveButton;
@@ -107,6 +108,7 @@ using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndHorizontalMenu;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EndNavBar;
+using ImGuiFullscreen::EndFixedPopupModal;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
 using ImGuiFullscreen::ForceKeyNavEnabled;
@@ -2379,19 +2381,9 @@ void FullscreenUI::DrawInputBindingWindow()
 
   const char* title = FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding");
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 0.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(title);
 
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-
-  if (ImGui::BeginPopupModal(title, nullptr,
-                             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollWithMouse |
-                               ImGuiWindowFlags_NoCollapse))
+  if (BeginFixedPopupModal(title))
   {
     ImGui::TextWrapped("%s", SmallString::from_format(FSUI_FSTR("Setting {} binding {}."),
                                                       s_state.input_binding_section, s_state.input_binding_display_name)
@@ -2399,11 +2391,8 @@ void FullscreenUI::DrawInputBindingWindow()
     ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
     ImGui::NewLine();
     ImGui::TextUnformatted(SmallString::from_format(FSUI_FSTR("Timing out in {:.0f} seconds..."), time_remaining));
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 }
 
 bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2575,16 +2564,8 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-
   bool is_open = true;
-  if (ImGui::BeginPopupModal(title, &is_open,
-                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  if (BeginFixedPopupModal(title, &is_open))
   {
     BeginMenuButtons();
 
@@ -2609,11 +2590,8 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
     }
     EndMenuButtons();
 
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 }
 
 void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2631,18 +2609,9 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
     ImGui::OpenPopup(title);
 
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
-  if (ImGui::BeginPopupModal(title, &is_open,
-                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  if (BeginFixedPopupModal(title, &is_open))
   {
     BeginMenuButtons();
 
@@ -2670,11 +2639,8 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
     }
     EndMenuButtons();
 
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 }
 
 void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2697,18 +2663,9 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
   }
 
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
-  if (ImGui::BeginPopupModal(title, &is_open,
-                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  if (BeginFixedPopupModal(title, &is_open))
   {
     BeginMenuButtons();
 
@@ -2800,11 +2757,8 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
     }
     EndMenuButtons();
 
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 }
 
 bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2834,19 +2788,10 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
     ImGui::OpenPopup(title);
 
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 370.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  ImGui::PushFont(font);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
   bool changed = false;
-  if (ImGui::BeginPopupModal(title, &is_open,
-                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  if (BeginFixedPopupModal(title, &is_open))
   {
     s32 dlg_left_value = static_cast<s32>(left_value.value_or(default_left));
     s32 dlg_top_value = static_cast<s32>(top_value.value_or(default_top));
@@ -2921,11 +2866,8 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
     }
     EndMenuButtons();
 
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 
   return changed;
 }
@@ -2953,18 +2895,9 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
   }
 
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
   bool is_open = true;
-  if (ImGui::BeginPopupModal(title, &is_open,
-                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  if (BeginFixedPopupModal(title, &is_open))
   {
     BeginMenuButtons();
 
@@ -3050,11 +2983,8 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
     }
     EndMenuButtons();
 
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 }
 
 [[maybe_unused]] void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title,
@@ -4663,16 +4593,8 @@ void FullscreenUI::DrawControllerSettingsPage()
                               1.0f, 0.01f, 100.0f, "%.0f%%");
 
       ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
-      ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-      ImGui::PushFont(UIStyle.LargeFont);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-      ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                                  ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-
-      if (ImGui::BeginPopupModal(freq_label, nullptr,
-                                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+      if (BeginFixedPopupModal(freq_label, nullptr))
       {
         ImGui::SetNextItemWidth(LayoutScale(450.0f));
         if (ImGui::SliderInt("##value", &frequency, 0, 60, FSUI_CSTR("Toggle every %d frames"),
@@ -4689,11 +4611,8 @@ void FullscreenUI::DrawControllerSettingsPage()
           ImGui::CloseCurrentPopup();
         EndMenuButtons();
 
-        ImGui::EndPopup();
+        EndFixedPopupModal();
       }
-
-      ImGui::PopStyleVar(3);
-      ImGui::PopFont();
     }
 
     if (!ci->settings.empty())
@@ -5511,18 +5430,9 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             ImGui::OpenPopup(tstr);
 
           ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-          ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-          ImGui::PushFont(UIStyle.LargeFont);
-          ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-          ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-          ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
           bool is_open = true;
-          if (ImGui::BeginPopupModal(tstr, &is_open,
-                                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+          if (BeginFixedPopupModal(tstr, &is_open))
           {
             BeginMenuButtons();
 
@@ -5595,11 +5505,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             }
             EndMenuButtons();
 
-            ImGui::EndPopup();
+            EndFixedPopupModal();
           }
-
-          ImGui::PopStyleVar(4);
-          ImGui::PopFont();
         }
         break;
 
@@ -5612,18 +5519,9 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             ImGui::OpenPopup(tstr);
 
           ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-          ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-          ImGui::PushFont(UIStyle.LargeFont);
-          ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-          ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                                      ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-          ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-          ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
 
           bool is_open = true;
-          if (ImGui::BeginPopupModal(tstr, &is_open,
-                                     ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+          if (BeginFixedPopupModal(tstr, &is_open))
           {
             BeginMenuButtons();
 
@@ -5695,11 +5593,8 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
             }
             EndMenuButtons();
 
-            ImGui::EndPopup();
+            EndFixedPopupModal();
           }
-
-          ImGui::PopStyleVar(4);
-          ImGui::PopFont();
         }
         break;
 
@@ -6041,22 +5936,11 @@ void FullscreenUI::DrawAchievementsLoginWindow()
   };
 
   ImGui::SetNextWindowSize(LayoutScale(600.0f, 0.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                      LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
 
   const char* popup_title = FSUI_ICONSTR(ICON_FA_KEY, "RetroAchievements Login");
   bool popup_closed = false;
   ImGui::OpenPopup(popup_title);
-  if (ImGui::BeginPopupModal(popup_title, nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
+  if (BeginFixedPopupModal(popup_title, nullptr))
   {
     BeginMenuButtons();
 
@@ -6131,12 +6015,8 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
     EndMenuButtons();
 
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 
   if (popup_closed)
     actually_close_popup();
@@ -6298,18 +6178,9 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
         ImGui::OpenPopup(title);
 
       ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-      ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-      ImGui::PushFont(UIStyle.LargeFont);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-      ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                                  ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-      ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-      ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
 
       bool is_open = true;
-      if (ImGui::BeginPopupModal(title, &is_open,
-                                 ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+      if (BeginFixedPopupModal(title, &is_open))
       {
         BeginMenuButtons();
 
@@ -6380,11 +6251,8 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
         }
         EndMenuButtons();
 
-        ImGui::EndPopup();
+        EndFixedPopupModal();
       }
-
-      ImGui::PopStyleVar(4);
-      ImGui::PopFont();
     }
     else
     {
@@ -8406,7 +8274,7 @@ void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 
 void FullscreenUI::DrawAboutWindow()
 {
-  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 545.0f));
+  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 550.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(FSUI_CSTR("About DuckStation"));
 

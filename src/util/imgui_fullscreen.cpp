@@ -46,6 +46,8 @@ static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
 static std::shared_ptr<GPUTexture> UploadTexture(std::string_view path, const Image& image);
 
+static void PushPopupStyle(float window_padding = 20.0f);
+static void PopPopupStyle();
 static void DrawFileSelector();
 static void DrawChoiceDialog();
 static void DrawInputDialog();
@@ -617,6 +619,54 @@ void ImGuiFullscreen::EndLayout()
 
   s_state.rendered_menu_item_border = false;
   s_state.had_hovered_menu_item = std::exchange(s_state.has_hovered_menu_item, false);
+}
+
+void ImGuiFullscreen::PushPopupStyle(float window_padding)
+{
+  ImGui::PushFont(UIStyle.LargeFont);
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(20.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(window_padding, window_padding));
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
+                      LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
+  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
+  ImGui::PushStyleColor(ImGuiCol_PopupBg, UIStyle.PopupBackgroundColor);
+  ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.PopupFrameBackgroundColor);
+  ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
+  ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
+}
+
+bool ImGuiFullscreen::BeginFixedPopupModal(const char* name, bool* p_open)
+{
+  PushPopupStyle();
+
+  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
+                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
+
+  if (!ImGui::BeginPopupModal(name, p_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  {
+    PopPopupStyle();
+    return false;
+  }
+
+  // don't draw unreadable text
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
+  return true;
+}
+
+void ImGuiFullscreen::PopPopupStyle()
+{
+  ImGui::PopStyleColor(5);
+  ImGui::PopStyleVar(5);
+  ImGui::PopFont();
+}
+
+void ImGuiFullscreen::EndFixedPopupModal()
+{
+  ImGui::PopStyleColor();
+  ImGui::EndPopup();
+  PopPopupStyle();
 }
 
 void ImGuiFullscreen::RenderOverlays()
@@ -1755,18 +1805,8 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
   bool changed = false;
 
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
-  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
-                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-
-  if (ImGui::BeginPopupModal(title, nullptr,
-                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  if (BeginFixedPopupModal(title, nullptr))
   {
     BeginMenuButtons();
 
@@ -1781,11 +1821,8 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
       ImGui::CloseCurrentPopup();
     EndMenuButtons();
 
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 
   return changed;
 }
@@ -1834,18 +1871,8 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float*
   bool changed = false;
 
   ImGui::SetNextWindowSize(LayoutScale(500.0f, 192.0f));
-  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
-                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING,
-                                                              ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-
-  if (ImGui::BeginPopupModal(title, nullptr,
-                             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  if (BeginFixedPopupModal(title, nullptr))
   {
     BeginMenuButtons();
 
@@ -1859,11 +1886,8 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float*
       ImGui::CloseCurrentPopup();
     EndMenuButtons();
 
-    ImGui::EndPopup();
+    EndFixedPopupModal();
   }
-
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
 
   return changed;
 }
@@ -2383,20 +2407,11 @@ void ImGuiFullscreen::DrawFileSelector()
     return;
 
   ImGui::SetNextWindowSize(LayoutScale(1000.0f, 650.0f));
-  ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
-                          ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(s_state.file_selector_title.c_str());
 
   FileSelectorItem* selected = nullptr;
 
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                      LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
+  PushPopupStyle(10.0f);
 
   bool is_open = !WantsToCloseMenu();
   bool directory_selected = false;
@@ -2443,9 +2458,7 @@ void ImGuiFullscreen::DrawFileSelector()
     is_open = false;
   }
 
-  ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(3);
-  ImGui::PopFont();
+  PopPopupStyle();
 
   if (is_open)
     GetFileSelectorHelpText(s_state.fullscreen_footer_text);
@@ -2532,15 +2545,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
   if (!s_state.choice_dialog_open)
     return;
 
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                      LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
+  PushPopupStyle(10.0f);
 
   const float width = LayoutScale(600.0f);
   const float title_height =
@@ -2602,9 +2607,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
+  PopPopupStyle();
 
   is_open &= !WantsToCloseMenu();
 
@@ -2664,21 +2667,15 @@ void ImGuiFullscreen::DrawInputDialog()
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(s_state.input_dialog_title.c_str());
 
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                      LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
+  PushPopupStyle();
 
   bool is_open = true;
   if (ImGui::BeginPopupModal(s_state.input_dialog_title.c_str(), &is_open,
                              ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
                                ImGuiWindowFlags_NoMove))
   {
+    ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
+
     ResetFocusHere();
     ImGui::TextWrapped("%s", s_state.input_dialog_message.c_str());
 
@@ -2721,6 +2718,8 @@ void ImGuiFullscreen::DrawInputDialog()
 
     EndMenuButtons();
 
+    ImGui::PopStyleColor(1);
+
     ImGui::EndPopup();
   }
   if (!is_open)
@@ -2728,9 +2727,7 @@ void ImGuiFullscreen::DrawInputDialog()
   else
     GetInputDialogHelpText(s_state.fullscreen_footer_text);
 
-  ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
+  PopPopupStyle();
 }
 
 void ImGuiFullscreen::CloseInputDialog()
@@ -2827,15 +2824,7 @@ void ImGuiFullscreen::DrawMessageDialog()
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(win_id);
 
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                      LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-  ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
-  ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
+  PushPopupStyle();
 
   bool is_open = true;
   const u32 flags = ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
@@ -2844,6 +2833,8 @@ void ImGuiFullscreen::DrawMessageDialog()
 
   if (ImGui::BeginPopupModal(win_id, &is_open, flags))
   {
+    ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
+
     ResetFocusHere();
     BeginMenuButtons();
 
@@ -2862,12 +2853,11 @@ void ImGuiFullscreen::DrawMessageDialog()
 
     EndMenuButtons();
 
+    ImGui::PopStyleColor();
     ImGui::EndPopup();
   }
 
-  ImGui::PopStyleColor(3);
-  ImGui::PopStyleVar(4);
-  ImGui::PopFont();
+  PopPopupStyle();
 
   if (!is_open || result.has_value())
   {
@@ -3469,6 +3459,7 @@ void ImGuiFullscreen::SetTheme(bool light)
     UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x4b4b4b, 0xc0);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
+    UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x2e2e2e, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x484848, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
@@ -3489,6 +3480,7 @@ void ImGuiFullscreen::SetTheme(bool light)
     UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xe1e2e1, 0xff);
     UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xe1e2e1, 0xc0);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xd8d8d8, 0xf2);
+    UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0xc8c8c8, 0xf2);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
     UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x235cd9, 0xff);
     UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x1d2953, 0xff);
