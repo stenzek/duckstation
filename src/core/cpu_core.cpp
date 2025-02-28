@@ -1989,8 +1989,8 @@ restart_instruction:
 
 void CPU::DispatchInterrupt()
 {
-  // If the instruction we're about to execute is a GTE instruction, delay dispatching the interrupt until the next
-  // instruction. For some reason, if we don't do this, we end up with incorrectly sorted polygons and flickering..
+  // The GTE is a co-processor, therefore it executes the instruction even if we're servicing an exception.
+  // The exception handlers should recognize this and increment the PC if the EPC was a cop2 instruction.
   SafeReadInstruction(g_state.pc, &g_state.next_instruction.bits);
   if (g_state.next_instruction.op == InstructionOp::cop2 && !g_state.next_instruction.cop.IsCommonInstruction())
   {
