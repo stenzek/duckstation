@@ -1,0 +1,101 @@
+name: 🐧 Linux Cross-Compiled AppImage
+
+on:
+  workflow_call:
+    inputs:
+      arch:
+        required: false
+        type: string
+        default: "arm64"
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    container:
+      image: ghcr.io/duckstation/cross-build-${{ inputs.arch }}:latest
+
+    timeout-minutes: 120
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Cache Dependencies
+      id: cache-deps
+      uses: actions/cache@v4
+      with:
+        path: ~/deps
+        key: deps-cross ${{ inputs.arch }} ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-dependencies-linux-cross.sh') }}
+
+    - name: Build Dependencies
+      if: steps.cache-deps.outputs.cache-hit != 'true'
+      run: |
+        scripts/deps/build-dependencies-linux.sh -skip-cleanup "$HOME/deps/host"
+        scripts/deps/build-dependencies-linux-cross.sh -skip-download "$HOME/deps/host" "${{ inputs.arch }}" "/${{ inputs.arch }}-chroot" "$HOME/deps/cross"
+
+    # Work around container ownership issue
+    - name: Set Safe Directory
+      shell: bash
+      run: git config --global --add safe.directory "*"
+
+    - name: Create Binary Aliases
+      run: |
+        ln -s llvm-strip-19 /usr/bin/llvm-strip
+
+    - name: Set Up Toolchain File
+      run: |
+        cp "$HOME/deps/cross/toolchain.cmake" "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_C_COMPILER clang-19)' >> "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_C_COMPILER_AR llvm-ar-19)' >> "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_C_COMPILER_RANLIB llvm-ranlib-19)' >> "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_CXX_COMPILER clang++-19)' >> "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_CXX_COMPILER_AR llvm-ar-19)' >> "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_CXX_COMPILER_RANLIB llvm-ranlib-19)' >> "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_EXE_LINKER_FLAGS_INIT "-fuse-ld=lld")' >> "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_MODULE_LINKER_FLAGS_INIT "-fuse-ld=lld")' >> "$HOME/toolchain.cmake"
+        echo 'set(CMAKE_SHARED_LINKER_FLAGS_INIT "-fuse-ld=lld")' >> "$HOME/toolchain.cmake"
+
+    - name: Initialize Build Tag
+      run: |
+        echo '#pragma once' > src/scmversion/tag.h
+
+    - name: Set Build Tag Asset
+      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+      run: |
+        echo '#define SCM_RELEASE_ASSET "DuckStation-${{ inputs.arch }}.AppImage"' >> src/scmversion/tag.h
+        echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
+
+    - name: Tag as Preview Release
+      if: github.ref == 'refs/heads/master'
+      run: |
+        echo '#define SCM_RELEASE_TAG "preview"' >> src/scmversion/tag.h
+
+    - name: Tag as Rolling Release
+      if: github.ref == 'refs/heads/dev'
+      run: |
+        echo '#define SCM_RELEASE_TAG "latest"' >> src/scmversion/tag.h
+
+    - name: Download Patch Archives
+      shell: bash
+      run: |
+        cd data/resources
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/cheats.zip"
+        curl -LO "https://github.com/duckstation/chtdb/releases/download/latest/patches.zip"
+
+    - name: Generate CMake
+      shell: bash
+      run: |
+        cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON -DCMAKE_TOOLCHAIN_FILE="$HOME/toolchain.cmake" -DLCONVERT_EXE="$HOME/deps/host/bin/lconvert" -DHOST_MIN_PAGE_SIZE=4096 -DHOST_MAX_PAGE_SIZE=16384 -DHOST_CACHE_LINE_SIZE=64 -DBUILD_QT_FRONTEND=ON -DBUILD_MINI_FRONTEND=ON
+
+    - name: Compile Build
+      shell: bash
+      run: |
+        cmake --build build --parallel
+        scripts/packaging/appimage/make-cross-appimage.sh duckstation-qt ${{ inputs.arch }} "$(realpath build)" "$HOME/deps/cross" "/${{ inputs.arch }}-chroot"
+        scripts/packaging/appimage/make-cross-appimage.sh -inject-libc duckstation-mini ${{ inputs.arch }} "$(realpath build)" "$HOME/deps/cross" "/${{ inputs.arch }}-chroot"
+
+    - name: Upload AppImages
+      uses: actions/upload-artifact@v4
+      with:
+        name: "linux-${{ inputs.arch }}-appimage"
+        path: "DuckStation-*.AppImage"

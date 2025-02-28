@@ -25,6 +25,9 @@ jobs:
   linux-appimage:
     name: 🐧 Linux AppImage
     uses: "./.github/workflows/linux-appimage-build.yml"
+  linux-cross-appimage:
+    name: 🐧 Linux Cross-Compiled AppImage
+    uses: "./.github/workflows/linux-cross-appimage-build.yml"
   linux-flatpak:
     name: 📦 Linux Flatpak
     uses: "./.github/workflows/linux-flatpak-build.yml"
@@ -34,7 +37,7 @@ jobs:
 
   create-release:
     name: 📤 Create Release
-    needs: [windows, linux-appimage, linux-flatpak, macos]
+    needs: [windows, linux-appimage, linux-cross-appimage, linux-flatpak, macos]
     runs-on: ubuntu-22.04
     if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
     steps:
@@ -63,6 +66,8 @@ jobs:
             ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/linux-x64-appimage/DuckStation-x64.AppImage
             ./artifacts/linux-x64-sse2-appimage/DuckStation-x64-SSE2.AppImage
+            ./artifacts/linux-arm64-appimage/DuckStation-arm64.AppImage
+            ./artifacts/linux-arm64-appimage/DuckStation-Mini-arm64.AppImage
             ./artifacts/linux-flatpak-x86_64/duckstation-x86_64.flatpak
             ./artifacts/linux-flatpak-aarch64/duckstation-aarch64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
@@ -84,6 +89,8 @@ jobs:
             ./artifacts/windows-arm64/duckstation-windows-arm64-release-symbols.zip
             ./artifacts/linux-x64-appimage/DuckStation-x64.AppImage
             ./artifacts/linux-x64-sse2-appimage/DuckStation-x64-SSE2.AppImage
+            ./artifacts/linux-arm64-appimage/DuckStation-arm64.AppImage
+            ./artifacts/linux-arm64-appimage/DuckStation-Mini-arm64.AppImage
             ./artifacts/linux-flatpak-x86_64/duckstation-x86_64.flatpak
             ./artifacts/linux-flatpak-aarch64/duckstation-aarch64.flatpak
             ./artifacts/macos/duckstation-mac-release.zip
