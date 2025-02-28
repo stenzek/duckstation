@@ -346,7 +346,8 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
   }
 
   const float abs_value = std::abs(value);
-  const bool reverse_threshold = (key.source_subtype == InputSubclass::ControllerAxis && initial_value > 0.5f);
+  const bool reverse_threshold =
+    (key.source_subtype == InputSubclass::ControllerAxis && std::abs(initial_value) > 0.5f);
 
   for (InputBindingKey& other_key : m_new_bindings)
   {
@@ -374,7 +375,7 @@ void InputBindingWidget::inputManagerHookCallback(InputBindingKey key, float val
   if ((reverse_threshold ? (abs_value < 0.5f) : (abs_value >= 0.5f)))
   {
     InputBindingKey key_to_add = key;
-    key_to_add.modifier = (value < 0.0f && !reverse_threshold) ? InputModifier::Negate : InputModifier::None;
+    key_to_add.modifier = (value < 0.0f) ? InputModifier::Negate : InputModifier::None;
     key_to_add.invert = reverse_threshold;
     m_new_bindings.push_back(key_to_add);
   }
