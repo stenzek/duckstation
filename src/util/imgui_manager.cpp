@@ -12,6 +12,7 @@
 // TODO: Remove me when GPUDevice config is also cleaned up.
 #include "core/gpu_thread.h"
 #include "core/host.h"
+#include "core/settings.h"
 
 #include "common/assert.h"
 #include "common/bitutils.h"
@@ -110,7 +111,6 @@ struct ALIGN_TO_CACHE_LINE State
 
   std::deque<OSDMessage> osd_posted_messages;
   std::mutex osd_messages_lock;
-  bool show_osd_messages = true;
 
   // Owned by GPU thread
   ALIGN_TO_CACHE_LINE Timer::Value last_render_time = 0;
@@ -217,21 +217,6 @@ void ImGuiManager::SetGlobalScale(float global_scale)
 
   s_state.global_prescale = global_scale;
   s_state.scale_changed = true;
-}
-
-bool ImGuiManager::IsShowingOSDMessages()
-{
-  return s_state.show_osd_messages;
-}
-
-void ImGuiManager::SetShowOSDMessages(bool enable)
-{
-  if (s_state.show_osd_messages == enable)
-    return;
-
-  s_state.show_osd_messages = enable;
-  if (!enable)
-    Host::ClearOSDMessages(false);
 }
 
 bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* error)
@@ -864,9 +849,6 @@ void ImGuiManager::AddOSDMessage(std::string key, std::string message, float dur
   else
     INFO_LOG("OSD: {}", message);
 
-  if (!s_state.show_osd_messages && !is_warning)
-    return;
-
   const Timer::Value current_time = Timer::GetCurrentValue();
 
   OSDMessage msg;
@@ -885,9 +867,6 @@ void ImGuiManager::AddOSDMessage(std::string key, std::string message, float dur
 
 void ImGuiManager::RemoveKeyedOSDMessage(std::string key, bool is_warning)
 {
-  if (!s_state.show_osd_messages && !is_warning)
-    return;
-
   ImGuiManager::OSDMessage msg = {};
   msg.key = std::move(key);
   msg.duration = 0.0f;
@@ -983,6 +962,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const float padding = std::ceil(9.0f * scale);
   const float rounding = std::ceil(6.0f * scale);
   const float max_width = s_state.window_width - (margin + padding) * 2.0f;
+  const bool show_messages = g_gpu_settings.display_show_messages;
   float position_x = margin;
   float position_y = margin;
 
@@ -1044,7 +1024,7 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
       }
     }
 
-    if (actual_y >= ImGui::GetIO().DisplaySize.y)
+    if (actual_y >= ImGui::GetIO().DisplaySize.y || (!show_messages && !msg.is_warning))
       break;
 
     const ImVec2 pos(position_x, actual_y);

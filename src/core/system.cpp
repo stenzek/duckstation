@@ -1305,6 +1305,7 @@ void System::SetDefaultSettings(SettingsInterface& si)
   Settings temp;
 
   // we don't want to reset some things (e.g. OSD)
+  temp.display_show_messages = g_settings.display_show_messages;
   temp.display_show_fps = g_settings.display_show_fps;
   temp.display_show_speed = g_settings.display_show_speed;
   temp.display_show_gpu_stats = g_settings.display_show_gpu_stats;
@@ -4524,7 +4525,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
       }
     }
     else if (const bool device_settings_changed = g_settings.AreGPUDeviceSettingsChanged(old_settings);
-             device_settings_changed || g_settings.display_show_fps != old_settings.display_show_fps ||
+             device_settings_changed || g_settings.display_show_messages != old_settings.display_show_messages ||
+             g_settings.display_show_fps != old_settings.display_show_fps ||
              g_settings.display_show_speed != old_settings.display_show_speed ||
              g_settings.display_show_gpu_stats != old_settings.display_show_gpu_stats ||
              g_settings.display_show_resolution != old_settings.display_show_resolution ||
@@ -4906,7 +4908,7 @@ void System::WarnAboutUnsafeSettings()
 
     // Force the message, but use a reduced duration if they have OSD messages disabled.
     Host::AddKeyedOSDWarning("performance_settings_warning", std::string(messages.view()),
-                             ImGuiManager::IsShowingOSDMessages() ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION);
+                             g_settings.display_show_messages ? Host::OSD_INFO_DURATION : Host::OSD_QUICK_DURATION);
   }
   else
   {

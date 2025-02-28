@@ -133,6 +133,7 @@ struct GPUSettings
   bool display_disable_mailbox_presentation : 1 = true;
   bool display_force_4_3_for_24bit : 1 = false;
   bool display_24bit_chroma_smoothing : 1 = false;
+  bool display_show_messages : 1 = false;
   bool display_show_fps : 1 = false;
   bool display_show_speed : 1 = false;
   bool display_show_gpu_stats : 1 = false;

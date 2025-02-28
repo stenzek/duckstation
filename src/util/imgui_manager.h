@@ -74,10 +74,6 @@ std::vector<WCharType> CompactFontRange(std::span<const WCharType> range);
 /// Changes the global scale.
 void SetGlobalScale(float global_scale);
 
-/// Changes whether OSD messages are silently dropped.
-bool IsShowingOSDMessages();
-void SetShowOSDMessages(bool enable);
-
 /// Initializes ImGui, creates fonts, etc.
 bool Initialize(float global_scale, float screen_margin, Error* error);
 
