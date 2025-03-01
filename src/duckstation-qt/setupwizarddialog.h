@@ -57,6 +57,8 @@ private:
     Page_BIOS,
     Page_GameList,
     Page_Controller,
+    Page_Graphics,
+    Page_Achievements,
     Page_Complete,
     Page_Count,
   };
@@ -66,6 +68,8 @@ private:
   void setupBIOSPage();
   void setupGameListPage();
   void setupControllerPage(bool initial);
+  void setupGraphicsPage(bool initial);
+  void setupAchievementsPage(bool initial);
   void updateStylesheets();
 
   void pageChangedTo(int page);
@@ -78,6 +82,14 @@ private:
   void openAutomaticMappingMenu(u32 port, QLabel* update_label);
   void doDeviceAutomaticBinding(u32 port, QLabel* update_label, const QString& device);
 
+private Q_SLOTS:
+  void onGraphicsAspectRatioChanged();
+  void onAchievementsLoginLogoutClicked();
+  void onAchievementsViewProfileClicked();
+  void updateAchievementsEnableState();
+  void updateAchievementsLoginState();
+
+private:
   Ui::SetupWizardDialog m_ui;
 
   std::array<QLabel*, Page_Count> m_page_labels;

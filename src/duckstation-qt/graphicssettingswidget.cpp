@@ -939,25 +939,9 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
     m_ui.resolutionScale->disconnect();
     m_ui.resolutionScale->clear();
 
-    static constexpr const std::pair<int, const char*> templates[] = {
-      {0, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic (Based on Window Size)")},
-      {1, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1x Native (Default)")},
-      {3, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (for 720p)")},
-      {5, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "5x Native (for 1080p)")},
-      {6, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (for 1440p)")},
-      {9, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "9x Native (for 4K)")},
-    };
-
     const int max_scale =
       static_cast<int>(current_adapter ? std::max<u32>(current_adapter->max_texture_size / 1024, 1) : 16);
-    for (int scale = 0; scale <= max_scale; scale++)
-    {
-      const auto it = std::find_if(std::begin(templates), std::end(templates),
-                                   [&scale](const std::pair<int, const char*>& it) { return scale == it.first; });
-      m_ui.resolutionScale->addItem((it != std::end(templates)) ?
-                                      qApp->translate("GraphicsSettingsWidget", it->second) :
-                                      qApp->translate("GraphicsSettingsWidget", "%1x Native").arg(scale));
-    }
+    populateUpscalingModes(m_ui.resolutionScale, max_scale);
 
     SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
     connect(m_ui.resolutionScale, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
@@ -1008,6 +992,25 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
         m_dialog->setBoolSettingValue("GPU", "PerSampleShading", ssaa);
       }
     });
+  }
+}
+
+void GraphicsSettingsWidget::populateUpscalingModes(QComboBox* cb, int max_scale)
+{
+  static constexpr const std::pair<int, const char*> templates[] = {
+    {0, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "Automatic (Based on Window Size)")},
+    {1, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "1x Native (Default)")},
+    {3, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "3x Native (for 720p)")},
+    {5, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "5x Native (for 1080p)")},
+    {6, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "6x Native (for 1440p)")},
+    {9, QT_TRANSLATE_NOOP("GraphicsSettingsWidget", "9x Native (for 4K)")},
+  };
+  for (int scale = 0; scale <= max_scale; scale++)
+  {
+    const auto it = std::find_if(std::begin(templates), std::end(templates),
+                                 [&scale](const std::pair<int, const char*>& it) { return scale == it.first; });
+    cb->addItem((it != std::end(templates)) ? qApp->translate("GraphicsSettingsWidget", it->second) :
+                                              qApp->translate("GraphicsSettingsWidget", "%1x Native").arg(scale));
   }
 }
 

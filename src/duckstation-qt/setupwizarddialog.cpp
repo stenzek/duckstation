@@ -2,19 +2,23 @@
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "setupwizarddialog.h"
+#include "achievementlogindialog.h"
 #include "controllerbindingwidgets.h"
 #include "controllersettingwidgetbinder.h"
+#include "graphicssettingswidget.h"
 #include "interfacesettingswidget.h"
 #include "mainwindow.h"
 #include "qthost.h"
 #include "qtutils.h"
 #include "settingwidgetbinder.h"
 
+#include "core/achievements.h"
 #include "core/controller.h"
 
 #include "util/input_manager.h"
 
 #include "common/file_system.h"
+#include "common/string_util.h"
 
 #include "fmt/format.h"
 
@@ -169,6 +173,8 @@ void SetupWizardDialog::setupUi()
   m_page_labels[Page_BIOS] = m_ui.labelBIOS;
   m_page_labels[Page_GameList] = m_ui.labelGameList;
   m_page_labels[Page_Controller] = m_ui.labelController;
+  m_page_labels[Page_Graphics] = m_ui.labelGraphics;
+  m_page_labels[Page_Achievements] = m_ui.labelAchievements;
   m_page_labels[Page_Complete] = m_ui.labelComplete;
 
   connect(m_ui.back, &QPushButton::clicked, this, &SetupWizardDialog::previousPage);
@@ -179,6 +185,8 @@ void SetupWizardDialog::setupUi()
   setupBIOSPage();
   setupGameListPage();
   setupControllerPage(true);
+  setupGraphicsPage(true);
+  setupAchievementsPage(true);
 }
 
 void SetupWizardDialog::setupLanguagePage()
@@ -209,6 +217,8 @@ void SetupWizardDialog::languageChanged()
   QtHost::UpdateApplicationLanguage(this);
   m_ui.retranslateUi(this);
   setupControllerPage(false);
+  setupGraphicsPage(false);
+  setupAchievementsPage(false);
 }
 
 void SetupWizardDialog::setupBIOSPage()
@@ -504,4 +514,199 @@ void SetupWizardDialog::doMultipleDeviceAutomaticBinding(u32 port, QLabel* updat
     return;
 
   update_label->setText(findCurrentDeviceForPort(port));
+}
+
+void SetupWizardDialog::setupGraphicsPage(bool initial)
+{
+  m_ui.renderer->disconnect();
+  m_ui.renderer->clear();
+
+  for (u32 i = 0; i < static_cast<u32>(GPURenderer::Count); i++)
+  {
+    m_ui.renderer->addItem(QString::fromUtf8(Settings::GetRendererDisplayName(static_cast<GPURenderer>(i))));
+  }
+
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.renderer, "GPU", "Renderer", &Settings::ParseRendererName,
+                                               &Settings::GetRendererName, Settings::DEFAULT_GPU_RENDERER);
+
+  m_ui.resolutionScale->disconnect();
+  m_ui.resolutionScale->clear();
+  GraphicsSettingsWidget::populateUpscalingModes(m_ui.resolutionScale, 16);
+  SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.resolutionScale, "GPU", "ResolutionScale", 1);
+
+  m_ui.textureFiltering->disconnect();
+  m_ui.textureFiltering->clear();
+  m_ui.spriteTextureFiltering->disconnect();
+  m_ui.spriteTextureFiltering->clear();
+
+  for (u32 i = 0; i < static_cast<u32>(GPUTextureFilter::Count); i++)
+  {
+    m_ui.textureFiltering->addItem(
+      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+    m_ui.spriteTextureFiltering->addItem(
+      QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
+  }
+
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.textureFiltering, "GPU", "TextureFilter",
+                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.spriteTextureFiltering, "GPU", "SpriteTextureFilter",
+                                               &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
+                                               Settings::DEFAULT_GPU_TEXTURE_FILTER);
+
+  m_ui.displayAspectRatio->disconnect();
+  m_ui.displayAspectRatio->clear();
+
+  for (u32 i = 0; i < static_cast<u32>(DisplayAspectRatio::Count); i++)
+  {
+    m_ui.displayAspectRatio->addItem(
+      QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(static_cast<DisplayAspectRatio>(i))));
+  }
+
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayAspectRatio, "Display", "AspectRatio",
+                                               &Settings::ParseDisplayAspectRatio, &Settings::GetDisplayAspectRatioName,
+                                               Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+  SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.customAspectRatioNumerator, "Display",
+                                              "CustomAspectRatioNumerator", 1);
+  SettingWidgetBinder::BindWidgetToIntSetting(nullptr, m_ui.customAspectRatioDenominator, "Display",
+                                              "CustomAspectRatioDenominator", 1);
+  connect(m_ui.displayAspectRatio, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
+          &SetupWizardDialog::onGraphicsAspectRatioChanged);
+  onGraphicsAspectRatioChanged();
+
+  m_ui.displayCropMode->disconnect();
+  m_ui.displayCropMode->clear();
+
+  for (u32 i = 0; i < static_cast<u32>(DisplayCropMode::MaxCount); i++)
+  {
+    m_ui.displayCropMode->addItem(
+      QString::fromUtf8(Settings::GetDisplayCropModeDisplayName(static_cast<DisplayCropMode>(i))));
+  }
+
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayCropMode, "Display", "CropMode",
+                                               &Settings::ParseDisplayCropMode, &Settings::GetDisplayCropModeName,
+                                               Settings::DEFAULT_DISPLAY_CROP_MODE);
+
+  m_ui.displayScaling->disconnect();
+  m_ui.displayScaling->clear();
+
+  for (u32 i = 0; i < static_cast<u32>(DisplayScalingMode::Count); i++)
+  {
+    m_ui.displayScaling->addItem(
+      QString::fromUtf8(Settings::GetDisplayScalingDisplayName(static_cast<DisplayScalingMode>(i))));
+  }
+
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.displayScaling, "Display", "Scaling",
+                                               &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
+                                               Settings::DEFAULT_DISPLAY_SCALING);
+
+  if (initial)
+  {
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.widescreenHack, "GPU", "WidescreenHack", false);
+  }
+}
+
+void SetupWizardDialog::onGraphicsAspectRatioChanged()
+{
+  const DisplayAspectRatio ratio =
+    Settings::ParseDisplayAspectRatio(
+      Host::GetBaseStringSettingValue("Display", "AspectRatio",
+                                      Settings::GetDisplayAspectRatioName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO))
+        .c_str())
+      .value_or(Settings::DEFAULT_DISPLAY_ASPECT_RATIO);
+
+  const bool is_custom = (ratio == DisplayAspectRatio::Custom);
+
+  m_ui.customAspectRatioNumerator->setVisible(is_custom);
+  m_ui.customAspectRatioDenominator->setVisible(is_custom);
+  m_ui.customAspectRatioSeparator->setVisible(is_custom);
+}
+
+void SetupWizardDialog::setupAchievementsPage(bool initial)
+{
+  if (initial)
+  {
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.enable, "Cheevos", "Enabled", false);
+    SettingWidgetBinder::BindWidgetToBoolSetting(nullptr, m_ui.hardcoreMode, "Cheevos", "ChallengeMode", false);
+    connect(m_ui.enable, &QCheckBox::checkStateChanged, this, &SetupWizardDialog::updateAchievementsEnableState);
+    connect(m_ui.loginButton, &QPushButton::clicked, this, &SetupWizardDialog::onAchievementsLoginLogoutClicked);
+    connect(m_ui.viewProfile, &QPushButton::clicked, this, &SetupWizardDialog::onAchievementsViewProfileClicked);
+  }
+
+  updateAchievementsEnableState();
+  updateAchievementsLoginState();
+}
+
+void SetupWizardDialog::updateAchievementsEnableState()
+{
+  const bool enabled = Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false);
+  m_ui.hardcoreMode->setEnabled(enabled);
+}
+
+void SetupWizardDialog::updateAchievementsLoginState()
+{
+  const std::string username(Host::GetBaseStringSettingValue("Cheevos", "Username"));
+  const bool logged_in = !username.empty();
+
+  if (logged_in)
+  {
+    const u64 login_unix_timestamp =
+      StringUtil::FromChars<u64>(Host::GetBaseStringSettingValue("Cheevos", "LoginTimestamp", "0")).value_or(0);
+    const QDateTime login_timestamp(QDateTime::fromSecsSinceEpoch(static_cast<qint64>(login_unix_timestamp)));
+    m_ui.loginStatus->setText(tr("Username: %1\nLogin token generated on %2.")
+                                .arg(QString::fromStdString(username))
+                                .arg(login_timestamp.toString(Qt::TextDate)));
+    m_ui.loginButton->setText(tr("Logout"));
+  }
+  else
+  {
+    m_ui.loginStatus->setText(tr("Not Logged In."));
+    m_ui.loginButton->setText(tr("Login..."));
+  }
+
+  m_ui.viewProfile->setEnabled(logged_in);
+}
+
+void SetupWizardDialog::onAchievementsLoginLogoutClicked()
+{
+  if (!Host::GetBaseStringSettingValue("Cheevos", "Username").empty())
+  {
+    Host::RunOnCPUThread([]() { Achievements::Logout(); }, true);
+    updateAchievementsLoginState();
+    return;
+  }
+
+  AchievementLoginDialog login(this, Achievements::LoginRequestReason::UserInitiated);
+  int res = login.exec();
+  if (res != 0)
+    return;
+
+  updateAchievementsEnableState();
+  updateAchievementsLoginState();
+
+  // Login can enable achievements/hardcore.
+  if (!m_ui.enable->isChecked() && Host::GetBaseBoolSettingValue("Cheevos", "Enabled", false))
+  {
+    QSignalBlocker sb(m_ui.enable);
+    m_ui.enable->setChecked(true);
+    updateAchievementsLoginState();
+  }
+  if (!m_ui.hardcoreMode->isChecked() && Host::GetBaseBoolSettingValue("Cheevos", "ChallengeMode", false))
+  {
+    QSignalBlocker sb(m_ui.hardcoreMode);
+    m_ui.hardcoreMode->setChecked(true);
+  }
+}
+
+void SetupWizardDialog::onAchievementsViewProfileClicked()
+{
+  const std::string username(Host::GetBaseStringSettingValue("Cheevos", "Username"));
+  if (username.empty())
+    return;
+
+  const QByteArray encoded_username(QUrl::toPercentEncoding(QString::fromStdString(username)));
+  QtUtils::OpenURL(
+    QtUtils::GetRootWidget(this),
+    QUrl(QStringLiteral("https://retroachievements.org/user/%1").arg(QString::fromUtf8(encoded_username))));
 }

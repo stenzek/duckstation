@@ -21,6 +21,8 @@ public:
   GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* parent);
   ~GraphicsSettingsWidget();
 
+  static void populateUpscalingModes(QComboBox* cb, int max_scale);
+
 public Q_SLOTS:
   void onShowDebugSettingsChanged(bool enabled);
 
