@@ -368,7 +368,9 @@ static void DrawStringListSetting(SettingsInterface* bsi, const char* title, con
                                   const char* key, const char* default_value, std::span<const char* const> options,
                                   std::span<const char* const> option_values, bool enabled = true,
                                   float height = ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT,
-                                  ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
+                                  ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
+                                  void (*changed_callback)(std::string_view) = nullptr,
+                                  const char* tr_context = TR_CONTEXT);
 template<typename DataType, typename SizeType>
 static void DrawEnumSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
                             const char* key, DataType default_value,
@@ -655,7 +657,7 @@ bool FullscreenUI::Initialize()
   if (s_state.tried_to_initialize)
     return false;
 
-  ImGuiFullscreen::SetTheme(Host::GetBaseBoolSettingValue("Main", "UseLightFullscreenUITheme", false));
+  ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
   ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
   ImGuiFullscreen::UpdateLayoutScale();
 
@@ -2987,12 +2989,12 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
   }
 }
 
-[[maybe_unused]] void FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title,
-                                                          const char* summary, const char* section, const char* key,
-                                                          const char* default_value,
-                                                          std::span<const char* const> options,
-                                                          std::span<const char* const> option_values, bool enabled,
-                                                          float height, ImFont* font, ImFont* summary_font)
+[[maybe_unused]] void
+FullscreenUI::DrawStringListSetting(SettingsInterface* bsi, const char* title, const char* summary, const char* section,
+                                    const char* key, const char* default_value, std::span<const char* const> options,
+                                    std::span<const char* const> option_values, bool enabled, float height,
+                                    ImFont* font, ImFont* summary_font, void (*changed_callback)(std::string_view),
+                                    const char* tr_context)
 {
   const bool game_settings = IsEditingGameSettings(bsi);
   const std::optional<SmallString> value(bsi->GetOptionalSmallStringValue(
@@ -3014,8 +3016,9 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
   }
 
   if (MenuButtonWithValue(title, summary,
-                          value.has_value() ? ((index < options.size()) ? options[index] : FSUI_CSTR("Unknown")) :
-                                              FSUI_CSTR("Use Global Setting"),
+                          value.has_value() ?
+                            ((index < options.size()) ? TRANSLATE(tr_context, options[index]) : FSUI_CSTR("Unknown")) :
+                            FSUI_CSTR("Use Global Setting"),
                           enabled, height, font, summary_font))
   {
     ImGuiFullscreen::ChoiceDialogOptions cd_options;
@@ -3023,9 +3026,13 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
     if (game_settings)
       cd_options.emplace_back(FSUI_CSTR("Use Global Setting"), !value.has_value());
     for (size_t i = 0; i < options.size(); i++)
-      cd_options.emplace_back(options[i], (value.has_value() && i == static_cast<size_t>(index)));
+    {
+      cd_options.emplace_back(TRANSLATE_STR(tr_context, options[i]),
+                              (value.has_value() && i == static_cast<size_t>(index)));
+    }
     OpenChoiceDialog(title, false, std::move(cd_options),
-                     [game_settings, section, key, option_values](s32 index, const std::string& title, bool checked) {
+                     [game_settings, section, key, default_value, option_values,
+                      changed_callback](s32 index, const std::string& title, bool checked) {
                        if (index < 0)
                          return;
 
@@ -3037,10 +3044,16 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
                            bsi->DeleteValue(section, key);
                          else
                            bsi->SetStringValue(section, key, option_values[index - 1]);
+
+                         if (changed_callback)
+                           changed_callback(Host::GetStringSettingValue(section, key, default_value));
                        }
                        else
                        {
                          bsi->SetStringValue(section, key, option_values[index]);
+
+                         if (changed_callback)
+                           changed_callback(option_values[index]);
                        }
 
                        SetSettingsChanged(bsi);
@@ -3674,6 +3687,15 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 {
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
+  static constexpr const char* s_theme_name[] = {
+    FSUI_NSTR("Dark"),       FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
+    FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"), FSUI_NSTR("Pinky Pals"),
+  };
+
+  static constexpr const char* s_theme_value[] = {
+    "Dark", "Light", "AMOLED", "CobaltSky", "GreyMatter", "PinkyPals",
+  };
+
   BeginMenuButtons();
 
   MenuHeading(FSUI_CSTR("Behavior"));
@@ -3713,80 +3735,81 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."),
     "Main", "InhibitScreensaver", true);
 
-  if (const TinyString current_value =
-        bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
-      MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"),
-                          FSUI_CSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
-                                    "located in resources/fullscreenui/backgrounds in the data directory."),
-                          current_value.c_str()))
-  {
-    ChoiceDialogOptions options = GetBackgroundOptions(current_value);
-    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"), false, std::move(options),
-                     [](s32 index, const std::string& title, bool checked) {
-                       if (index < 0)
-                         return;
+    MenuHeading(FSUI_CSTR("Appearance"));
 
-                       SettingsInterface* bsi = GetEditingSettingsInterface();
-                       bsi->SetStringValue("Main", "FullscreenUIBackground", (index == 0) ? "None" : title.c_str());
-                       SetSettingsChanged(bsi);
-
-                       // Have to defer the reload, because we've already drawn the bg for this frame.
-                       Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
-                     });
-  }
-
-  if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Use Light Theme"),
-                        FSUI_CSTR("Uses a light coloured theme instead of the default dark theme."), "Main",
-                        "UseLightFullscreenUITheme", false))
-  {
-    ImGuiFullscreen::SetTheme(bsi->GetBoolValue("Main", "UseLightFullscreenUITheme", false));
-  }
-
-  if (DrawToggleSetting(
-        bsi, FSUI_ICONSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
-        FSUI_CSTR(
-          "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons."),
-        "Main", "FullscreenUIDisplayPSIcons", false))
-  {
-    if (bsi->GetBoolValue("Main", "FullscreenUIDisplayPSIcons", false))
-      ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
-    else
-      ImGuiFullscreen::SetFullscreenFooterTextIconMapping({});
-  }
-
-  if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Smooth Scrolling"),
-                        FSUI_CSTR("Enables smooth scrolling of menus in Big Picture UI."), "Main",
-                        "FullscreenUISmoothScrolling", true))
-  {
-    ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", false));
-  }
-
-  {
-    // Have to do this the annoying way, because it's host-derived.
-    const auto language_list = Host::GetAvailableLanguageList();
-    TinyString current_language = bsi->GetTinyStringValue("Main", "Language", "");
-    const char* current_language_name = "Unknown";
-    for (const auto& [language, code] : language_list)
+    DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Theme"),
+                          FSUI_CSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
+                          "Dark", s_theme_name, s_theme_value, true, LAYOUT_MENU_BUTTON_HEIGHT, UIStyle.LargeFont,
+                          UIStyle.MediumFont, &ImGuiFullscreen::SetTheme);
+  
+    if (const TinyString current_value =
+          bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
+        MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"),
+                            FSUI_CSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
+                                      "located in resources/fullscreenui/backgrounds in the data directory."),
+                            current_value.c_str()))
     {
-      if (current_language == code)
-        current_language_name = language;
-    }
-    if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"),
-                            FSUI_CSTR("Chooses the language used for UI elements."), current_language_name))
-    {
-      ImGuiFullscreen::ChoiceDialogOptions options;
-      for (const auto& [language, code] : language_list)
-        options.emplace_back(fmt::format("{} [{}]", language, code), (current_language == code));
-      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"), false, std::move(options),
-                       [language_list](s32 index, const std::string& title, bool checked) {
-                         if (static_cast<u32>(index) >= language_list.size())
+      ChoiceDialogOptions options = GetBackgroundOptions(current_value);
+      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"), false, std::move(options),
+                       [](s32 index, const std::string& title, bool checked) {
+                         if (index < 0)
                            return;
-
-                         Host::RunOnCPUThread(
-                           [language = language_list[index].second]() { Host::ChangeLanguage(language); });
+  
+                         SettingsInterface* bsi = GetEditingSettingsInterface();
+                         bsi->SetStringValue("Main", "FullscreenUIBackground", (index == 0) ? "None" : title.c_str());
+                         SetSettingsChanged(bsi);
+  
+                         // Have to defer the reload, because we've already drawn the bg for this frame.
+                         Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
                        });
     }
-  }
+  
+    {
+      // Have to do this the annoying way, because it's host-derived.
+      const auto language_list = Host::GetAvailableLanguageList();
+      TinyString current_language = bsi->GetTinyStringValue("Main", "Language", "");
+      const char* current_language_name = "Unknown";
+      for (const auto& [language, code] : language_list)
+      {
+        if (current_language == code)
+          current_language_name = language;
+      }
+      if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"),
+                              FSUI_CSTR("Chooses the language used for UI elements."), current_language_name))
+      {
+        ImGuiFullscreen::ChoiceDialogOptions options;
+        for (const auto& [language, code] : language_list)
+          options.emplace_back(fmt::format("{} [{}]", language, code), (current_language == code));
+        OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"), false, std::move(options),
+                         [language_list](s32 index, const std::string& title, bool checked) {
+                           if (static_cast<u32>(index) >= language_list.size())
+                             return;
+  
+                           Host::RunOnCPUThread(
+                             [language = language_list[index].second]() { Host::ChangeLanguage(language); });
+                         });
+      }
+    }
+  
+    if (DrawToggleSetting(
+          bsi, FSUI_ICONSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
+          FSUI_CSTR(
+            "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons."),
+          "Main", "FullscreenUIDisplayPSIcons", false))
+    {
+      if (bsi->GetBoolValue("Main", "FullscreenUIDisplayPSIcons", false))
+        ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
+      else
+        ImGuiFullscreen::SetFullscreenFooterTextIconMapping({});
+    }
+  
+    if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Smooth Scrolling"),
+                          FSUI_CSTR("Enables smooth scrolling of menus in Big Picture UI."), "Main",
+                          "FullscreenUISmoothScrolling", true))
+    {
+      ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", false));
+    }
+  
 
   MenuHeading(FSUI_CSTR("Integration"));
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),

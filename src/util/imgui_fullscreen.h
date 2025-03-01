@@ -62,6 +62,8 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   ImVec4 SecondaryWeakColor; // Not currently used.
   ImVec4 SecondaryStrongColor;
   ImVec4 SecondaryTextColor;
+  ImVec4 ToastBackgroundColor;
+  ImVec4 ToastTextColor;
 
   ImFont* MediumFont;
   ImFont* LargeFont;
@@ -128,7 +130,7 @@ ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
 /// Initializes, setting up any state.
 bool Initialize(const char* placeholder_image_path);
 
-void SetTheme(bool light);
+void SetTheme(std::string_view theme);
 void SetSmoothScrolling(bool enabled);
 void SetFonts(ImFont* medium_font, ImFont* large_font);
 bool UpdateLayoutScale();
