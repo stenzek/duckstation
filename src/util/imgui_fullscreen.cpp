@@ -643,7 +643,8 @@ bool ImGuiFullscreen::BeginFixedPopupModal(const char* name, bool* p_open)
   ImGui::SetNextWindowPos((ImGui::GetIO().DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT)) * 0.5f,
                           ImGuiCond_Always, ImVec2(0.5f, 0.5f));
 
-  if (!ImGui::BeginPopupModal(name, p_open, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  if (!ImGui::BeginPopupModal(name, p_open,
+                              ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
   {
     PopPopupStyle();
     return false;
@@ -1975,8 +1976,7 @@ bool ImGuiFullscreen::EnumChoiceButtonImpl(const char* title, const char* summar
 void ImGuiFullscreen::DrawShadowedText(ImDrawList* dl, ImFont* font, const ImVec2& pos, u32 col, const char* text,
                                        const char* text_end /*= nullptr*/, float wrap_width /*= 0.0f*/)
 {
-  dl->AddText(font, font->FontSize, pos + LayoutScale(1.0f, 1.0f),
-              IM_COL32(0, 0, 0, 100), text, text_end, wrap_width);
+  dl->AddText(font, font->FontSize, pos + LayoutScale(1.0f, 1.0f), IM_COL32(0, 0, 0, 100), text, text_end, wrap_width);
   dl->AddText(font, font->FontSize, pos, col, text, text_end, wrap_width);
 }
 
@@ -3257,10 +3257,6 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
   ImFont* const title_font = ImGuiFullscreen::UIStyle.LargeFont;
   ImFont* const text_font = ImGuiFullscreen::UIStyle.MediumFont;
 
-  const u32 toast_background_color = IM_COL32(0x28, 0x28, 0x28, 255);
-  const u32 toast_title_color = IM_COL32(0xff, 0xff, 0xff, 255);
-  const u32 toast_text_color = IM_COL32(0xff, 0xff, 0xff, 255);
-
   for (u32 index = 0; index < static_cast<u32>(s_state.notifications.size());)
   {
     Notification& notif = s_state.notifications[index];
@@ -3283,14 +3279,14 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     const float box_height =
       std::max((vertical_padding * 2.0f) + ImCeil(title_size.y) + vertical_spacing + ImCeil(text_size.y), min_height);
 
-    u8 opacity = 255;
+    float opacity = 1.0f;
     bool clip_box = false;
     if (time_passed < NOTIFICATION_APPEAR_ANIMATION_TIME)
     {
       const float pct = time_passed / NOTIFICATION_APPEAR_ANIMATION_TIME;
       const float eased_pct = Easing::OutExpo(pct);
       box_width = box_width * eased_pct;
-      opacity = static_cast<u8>(pct * 255.0f);
+      opacity = pct;
       clip_box = true;
     }
     else if (time_passed >= (notif.duration - NOTIFICATION_DISAPPEAR_ANIMATION_TIME))
@@ -3298,7 +3294,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
       const float pct = (notif.duration - time_passed) / NOTIFICATION_DISAPPEAR_ANIMATION_TIME;
       const float eased_pct = Easing::InExpo(pct);
       box_width = box_width * eased_pct;
-      opacity = static_cast<u8>(eased_pct * 255.0f);
+      opacity = eased_pct;
       clip_box = true;
     }
 
@@ -3329,7 +3325,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 
     const ImVec2 box_min(position.x, actual_y);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
-    const u32 background_color = (toast_background_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
+    const u32 background_color = ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity));
 
     ImDrawList* dl = ImGui::GetForegroundDrawList();
     dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundCornersAll);
@@ -3346,19 +3342,19 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
       if (tex)
       {
         dl->AddImage(tex, badge_min, badge_max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                     IM_COL32(255, 255, 255, opacity));
+                     ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
       }
     }
 
+    const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
+
     const ImVec2 title_min(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
     const ImVec2 title_max(title_min.x + title_size.x, title_min.y + title_size.y);
-    const u32 title_col = (toast_title_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
-    dl->AddText(title_font, title_font->FontSize, title_min, title_col, notif.title.c_str(),
+    dl->AddText(title_font, title_font->FontSize, title_min, text_col, notif.title.c_str(),
                 notif.title.c_str() + notif.title.size(), max_text_width);
 
     const ImVec2 text_min(badge_max.x + horizontal_spacing, title_max.y + vertical_spacing);
     const ImVec2 text_max(text_min.x + text_size.x, text_min.y + text_size.y);
-    const u32 text_col = (toast_text_color & ~IM_COL32_A_MASK) | (opacity << IM_COL32_A_SHIFT);
     dl->AddText(text_font, text_font->FontSize, text_min, text_col, notif.text.c_str(),
                 notif.text.c_str() + notif.text.size(), max_text_width);
 
@@ -3427,21 +3423,24 @@ void ImGuiFullscreen::DrawToast()
   const ImVec2 box_pos((display_size.x - box_size.x) * 0.5f, (display_size.y - margin - box_size.y));
 
   ImDrawList* dl = ImGui::GetForegroundDrawList();
-  dl->AddRectFilled(box_pos, box_pos + box_size, ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryColor, alpha)), padding);
+  dl->AddRectFilled(box_pos, box_pos + box_size, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, alpha)),
+                    padding);
+
+  const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, alpha));
+
   if (!s_state.toast_title.empty())
   {
     const float offset = (comb_size.x - title_size.x) * 0.5f;
-    dl->AddText(title_font, title_font->FontSize, box_pos + ImVec2(offset + padding, padding),
-                ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryTextColor, alpha)), s_state.toast_title.c_str(),
-                s_state.toast_title.c_str() + s_state.toast_title.length(), max_width);
+    dl->AddText(title_font, title_font->FontSize, box_pos + ImVec2(offset + padding, padding), text_col,
+                s_state.toast_title.c_str(), s_state.toast_title.c_str() + s_state.toast_title.length(), max_width);
   }
   if (!s_state.toast_message.empty())
   {
     const float offset = (comb_size.x - message_size.x) * 0.5f;
     dl->AddText(message_font, message_font->FontSize,
-                box_pos + ImVec2(offset + padding, padding + spacing + title_size.y),
-                ImGui::GetColorU32(ModAlpha(UIStyle.PrimaryTextColor, alpha)), s_state.toast_message.c_str(),
-                s_state.toast_message.c_str() + s_state.toast_message.length(), max_width);
+                box_pos + ImVec2(offset + padding, padding + spacing + title_size.y), text_col,
+                s_state.toast_message.c_str(), s_state.toast_message.c_str() + s_state.toast_message.length(),
+                max_width);
   }
 }
 
@@ -3466,6 +3465,8 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x191919, 0xff);
     UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x474747, 0xff);
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
+    UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
   }
   else if (theme == "CobaltSky")
   {
@@ -3486,6 +3487,8 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x245dda, 0xff);
     UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x3a3d7b, 0xff);
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
+    UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
   }
   else if (theme == "GreyMatter")
   {
@@ -3506,6 +3509,8 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x191919, 0xff);
     UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x2a2e36, 0xff);
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
+    UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
   }
   else if (theme == "PinkyPals")
   {
@@ -3526,6 +3531,8 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0xdc6c68, 0xff);
     UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0xab5451, 0xff);
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
+    UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
   }
   else if (theme == "Light")
   {
@@ -3547,6 +3554,8 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x464db1, 0xff);
     UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0xc0cfff, 0xff);
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xf1f1f1, 0xff);
+    UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
   }
   else
   {
@@ -3568,5 +3577,7 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x63a4ff, 0xff);
     UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x002171, 0xff);
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0x282828, 0xff);
+    UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
   }
 }
