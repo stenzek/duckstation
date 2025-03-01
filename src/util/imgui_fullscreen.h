@@ -42,6 +42,7 @@ static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_F
 static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
+static constexpr float LAYOUT_SHADOW_OFFSET = 1.0f;
 
 struct ALIGN_TO_CACHE_LINE UIStyles
 {
@@ -67,6 +68,8 @@ struct ALIGN_TO_CACHE_LINE UIStyles
 
   ImFont* MediumFont;
   ImFont* LargeFont;
+
+  u32 ShadowColor;
 
   float LayoutScale;
   float RcpLayoutScale;
@@ -108,10 +111,20 @@ ALWAYS_INLINE static ImVec4 ModAlpha(const ImVec4& v, float a)
 {
   return ImVec4(v.x, v.y, v.z, a);
 }
+ALWAYS_INLINE static u32 ModAlpha(u32 col32, float a)
+{
+  return (col32 & ~IM_COL32_A_MASK) | (static_cast<u32>(a * 255.0f) << IM_COL32_A_SHIFT);
+}
 
 ALWAYS_INLINE static ImVec4 MulAlpha(const ImVec4& v, float a)
 {
   return ImVec4(v.x, v.y, v.z, v.w * a);
+}
+
+ALWAYS_INLINE static u32 MulAlpha(u32 col32, float a)
+{
+  return (col32 & ~IM_COL32_A_MASK) |
+         (static_cast<u32>(static_cast<float>((col32 & IM_COL32_A_MASK) >> IM_COL32_A_SHIFT) * a) << IM_COL32_A_SHIFT);
 }
 
 ALWAYS_INLINE static std::string_view RemoveHash(std::string_view s)
@@ -217,6 +230,10 @@ bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visib
 void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true,
                          float rounding = 0.0f);
 void ResetMenuButtonFrame();
+void RenderShadowedTextClipped(ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max, u32 color, const char* text,
+                               const char* text_end, const ImVec2* text_size_if_known = nullptr,
+                               const ImVec2& align = ImVec2(0, 0), float wrap_width = 0.0f,
+                               const ImRect* clip_rect = nullptr);
 void MenuHeading(const char* title, bool draw_line = true);
 bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
 bool ActiveButton(const char* title, bool is_active, bool enabled = true,

@@ -143,6 +143,7 @@ using ImGuiFullscreen::PopPrimaryColor;
 using ImGuiFullscreen::PushPrimaryColor;
 using ImGuiFullscreen::QueueResetFocus;
 using ImGuiFullscreen::RangeButton;
+using ImGuiFullscreen::RenderShadowedTextClipped;
 using ImGuiFullscreen::ResetFocusHere;
 using ImGuiFullscreen::RightAlignNavButtons;
 using ImGuiFullscreen::SetFullscreenFooterText;
@@ -1765,17 +1766,19 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
     ImDrawList* const dl = ImGui::GetWindowDrawList();
     SmallString heading_str;
 
-    ImGui::PushFont(heading_font);
-    ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
+    const u32 text_color = ImGui::GetColorU32(UIStyle.PrimaryTextColor);
 
     // draw branding
     {
       const ImVec2 logo_pos = LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING);
       const ImVec2 logo_size = LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
       dl->AddImage(s_state.app_icon_texture.get(), logo_pos, logo_pos + logo_size);
-      dl->AddText(heading_font, heading_font->FontSize,
-                  ImVec2(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y),
-                  ImGui::GetColorU32(ImGuiCol_Text), "DuckStation");
+
+      const char* heading_text = "DuckStation";
+      const ImVec2 text_size = heading_font->CalcTextSizeA(heading_font->FontSize, FLT_MAX, 0.0f, heading_text);
+      const ImVec2 text_pos = ImVec2(logo_pos.x + logo_size.x + LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), logo_pos.y);
+      ImGuiFullscreen::RenderShadowedTextClipped(heading_font, text_pos, text_pos + text_size, text_color, heading_text,
+                                                 nullptr, &text_size);
     }
 
     // draw time
@@ -1786,7 +1789,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
       const ImVec2 time_size = heading_font->CalcTextSizeA(heading_font->FontSize, FLT_MAX, 0.0f, "00:00");
       time_pos = ImVec2(heading_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING) - time_size.x,
                         LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING));
-      ImGui::RenderTextClipped(time_pos, time_pos + time_size, heading_str.c_str(), heading_str.end_ptr(), &time_size);
+      ImGuiFullscreen::RenderShadowedTextClipped(heading_font, time_pos, time_pos + time_size, text_color,
+                                                 heading_str.c_str(), heading_str.end_ptr(), &time_size);
     }
 
     // draw achievements info
@@ -1799,7 +1803,8 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
         const ImVec2 name_size = heading_font->CalcTextSizeA(heading_font->FontSize, FLT_MAX, 0.0f, username);
         const ImVec2 name_pos =
           ImVec2(time_pos.x - name_size.x - LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING), time_pos.y);
-        ImGui::RenderTextClipped(name_pos, name_pos + name_size, username, nullptr, &name_size);
+        ImGuiFullscreen::RenderShadowedTextClipped(heading_font, name_pos, name_pos + name_size, text_color, username,
+                                                   nullptr, &name_size);
 
         if (s_state.achievements_user_badge_path.empty()) [[unlikely]]
           s_state.achievements_user_badge_path = Achievements::GetLoggedInUserBadgePath();
@@ -1815,9 +1820,6 @@ void FullscreenUI::DrawLandingTemplate(ImVec2* menu_pos, ImVec2* menu_size)
         }
       }
     }
-
-    ImGui::PopStyleColor();
-    ImGui::PopFont();
   }
   EndFullscreenWindow();
 }
@@ -7026,19 +7028,16 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
         const ImVec2 title_pos(bb.Min.x, bb.Min.y + image_height + title_spacing);
         const ImRect title_bb(title_pos, ImVec2(bb.Max.x, title_pos.y + UIStyle.LargeFont->FontSize));
-        ImGui::PushFont(UIStyle.LargeFont);
-        ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f),
-                                 &title_bb);
-        ImGui::PopFont();
+        RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text),
+                                  entry.title.c_str(), nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
         if (!entry.summary.empty())
         {
           const ImVec2 summary_pos(bb.Min.x, title_pos.y + UIStyle.LargeFont->FontSize + summary_spacing);
           const ImRect summary_bb(summary_pos, ImVec2(bb.Max.x, summary_pos.y + UIStyle.MediumFont->FontSize));
-          ImGui::PushFont(UIStyle.MediumFont);
-          ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, entry.summary.c_str(), nullptr, nullptr,
-                                   ImVec2(0.0f, 0.0f), &summary_bb);
-          ImGui::PopFont();
+          RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max,
+                                    ImGui::GetColorU32(ImGuiCol_Text), entry.summary.c_str(), nullptr, nullptr,
+                                    ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
         }
 
         if (pressed)
@@ -7489,6 +7488,8 @@ void FullscreenUI::DrawGameListWindow()
 
 void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 {
+  static constexpr auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
+
   if (!BeginFullscreenColumns(nullptr, heading_size.y, true, true))
   {
     EndFullscreenColumns();
@@ -7515,6 +7516,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     BeginMenuButtons();
 
     SmallString summary;
+    const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
 
     for (const GameList::Entry* entry : s_state.game_list_sorted_entries)
     {
@@ -7528,11 +7530,13 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       GPUTexture* cover_texture = GetGameListCover(entry, true);
 
       if (entry->serial.empty())
-        summary.format("{} - ", Settings::GetDiscRegionDisplayName(entry->region));
+      {
+        summary.format("{} | {} MB", Path::GetFileName(entry->path), to_mb(entry->file_size));
+      }
       else
-        summary.format("{} - {} - ", entry->serial, Settings::GetDiscRegionDisplayName(entry->region));
-
-      summary.append(Path::GetFileName(entry->path));
+      {
+        summary.format("{} | {} | {} MB", entry->serial, Path::GetFileName(entry->path), to_mb(entry->file_size));
+      }
 
       const ImRect image_rect(
         CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(cover_texture->GetWidth()),
@@ -7546,17 +7550,14 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
       const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
 
-      ImGui::PushFont(UIStyle.LargeFont);
-      ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, entry->title.c_str(),
-                               entry->title.c_str() + entry->title.size(), nullptr, ImVec2(0.0f, 0.0f), &title_bb);
-      ImGui::PopFont();
+      RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, entry->title.c_str(),
+                                entry->title.c_str() + entry->title.size(), nullptr, ImVec2(0.0f, 0.0f), 0.0f,
+                                &title_bb);
 
       if (!summary.empty())
       {
-        ImGui::PushFont(UIStyle.MediumFont);
-        ImGui::RenderTextClipped(summary_bb.Min, summary_bb.Max, summary.c_str(), summary.end_ptr(), nullptr,
-                                 ImVec2(0.0f, 0.0f), &summary_bb);
-        ImGui::PopFont();
+        RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, text_color, summary.c_str(),
+                                  summary.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
       }
 
       if (pressed)
@@ -7604,6 +7605,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     static constexpr float field_margin_y = 4.0f;
     static constexpr float start_x = 50.0f;
     float text_y = info_top_margin + cover_size + info_top_margin;
+
     float text_width;
 
     PushPrimaryColor();
@@ -7700,7 +7702,6 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       // size
       if (selected_entry->file_size >= 0)
       {
-        const auto to_mb = [](s64 size) { return static_cast<u32>((size + 1048575) / 1048576); };
         ImGui::Text(FSUI_CSTR("File Size: %u MB (%u MB on disk)"), to_mb(selected_entry->file_size),
                     to_mb(selected_entry->uncompressed_size));
       }
@@ -7766,6 +7767,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   const u32 grid_count_x = static_cast<u32>(std::floor(ImGui::GetWindowWidth() / item_width_with_spacing));
   const float start_x =
     (static_cast<float>(ImGui::GetWindowWidth()) - (item_width_with_spacing * static_cast<float>(grid_count_x))) * 0.5f;
+  const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
 
   SmallString draw_title;
 
@@ -7822,10 +7824,8 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       const std::string_view title(
         std::string_view(entry->title).substr(0, (entry->title.length() > 31) ? 31 : std::string_view::npos));
       draw_title.format("{}{}", title, (title.length() == entry->title.length()) ? "" : "...");
-      ImGui::PushFont(UIStyle.MediumFont);
-      ImGui::RenderTextClipped(title_bb.Min, title_bb.Max, draw_title.c_str(), draw_title.end_ptr(), nullptr,
-                               ImVec2(0.5f, 0.0f), &title_bb);
-      ImGui::PopFont();
+      RenderShadowedTextClipped(UIStyle.MediumFont, title_bb.Min, title_bb.Max, text_color, draw_title.c_str(),
+                                draw_title.end_ptr(), nullptr, ImVec2(0.5f, 0.0f), 0.0f, &title_bb);
 
       if (pressed)
       {
