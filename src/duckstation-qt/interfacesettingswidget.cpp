@@ -94,7 +94,7 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
     m_ui.confirmPowerOff, tr("Confirm Power Off"), tr("Checked"),
     tr("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
        "when the hotkey is pressed."));
-  dialog->registerWidgetHelp(m_ui.saveStateOnExit, tr("Save State On Exit"), tr("Checked"),
+  dialog->registerWidgetHelp(m_ui.saveStateOnExit, tr("Save State On Shutdown"), tr("Checked"),
                              tr("Automatically saves the emulator state when powering down or exiting. You can then "
                                 "resume directly from where you left off next time."));
   dialog->registerWidgetHelp(m_ui.startFullscreen, tr("Start Fullscreen"), tr("Unchecked"),

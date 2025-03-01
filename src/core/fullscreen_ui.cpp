@@ -91,24 +91,24 @@ using ImGuiFullscreen::UIStyle;
 
 using ImGuiFullscreen::ActiveButton;
 using ImGuiFullscreen::AddNotification;
+using ImGuiFullscreen::BeginFixedPopupModal;
 using ImGuiFullscreen::BeginFullscreenColumns;
 using ImGuiFullscreen::BeginFullscreenColumnWindow;
 using ImGuiFullscreen::BeginFullscreenWindow;
 using ImGuiFullscreen::BeginHorizontalMenu;
 using ImGuiFullscreen::BeginMenuButtons;
 using ImGuiFullscreen::BeginNavBar;
-using ImGuiFullscreen::BeginFixedPopupModal;
 using ImGuiFullscreen::CancelPendingMenuClose;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::DefaultActiveButton;
 using ImGuiFullscreen::DrawShadowedText;
+using ImGuiFullscreen::EndFixedPopupModal;
 using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
 using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndHorizontalMenu;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EndNavBar;
-using ImGuiFullscreen::EndFixedPopupModal;
 using ImGuiFullscreen::EnumChoiceButton;
 using ImGuiFullscreen::FloatingButton;
 using ImGuiFullscreen::ForceKeyNavEnabled;
@@ -3700,6 +3700,19 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   MenuHeading(FSUI_CSTR("Behavior"));
 
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_POWER_OFF, "Confirm Power Off"),
+    FSUI_CSTR("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
+              "when the hotkey is pressed."),
+    "Main", "ConfirmPowerOff", true);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SAVE, "Save State On Shutdown"),
+                    FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then "
+                              "resume directly from where you left off next time."),
+                    "Main", "SaveStateOnExit", true);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Inhibit Screensaver"),
+    FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."),
+    "Main", "InhibitScreensaver", true);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAUSE, "Pause On Start"),
                     FSUI_CSTR("Pauses the emulator when a game is started."), "Main", "StartPaused", false);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Pause On Focus Loss"),
@@ -3709,18 +3722,15 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Pause On Controller Disconnection"),
                     FSUI_CSTR("Pauses the emulator when a controller with bindings is disconnected."), "Main",
                     "PauseOnControllerDisconnection", false);
-  DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_POWER_OFF, "Confirm Power Off"),
-    FSUI_CSTR("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
-              "when the hotkey is pressed."),
-    "Main", "ConfirmPowerOff", true);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SAVE, "Save State On Exit"),
-                    FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then "
-                              "resume directly from where you left off next time."),
-                    "Main", "SaveStateOnExit", true);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_EXPORT, "Create Save State Backups"),
                     FSUI_CSTR("Renames existing save states when saving to a backup file."), "Main",
                     "CreateSaveStateBackups", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
+                    FSUI_CSTR("Shows the game you are currently playing as part of your profile in Discord."), "Main",
+                    "EnableDiscordPresence", false);
+
+  MenuHeading(FSUI_CSTR("Game Display"));
+
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Start Fullscreen"),
                     FSUI_CSTR("Automatically switches to fullscreen mode when the program is started."), "Main",
                     "StartFullscreen", false);
@@ -3730,91 +3740,81 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE_POINTER, "Hide Cursor In Fullscreen"),
                     FSUI_CSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "Main",
                     "HideCursorInFullscreen", true);
-  DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Inhibit Screensaver"),
-    FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."),
-    "Main", "InhibitScreensaver", true);
 
-    MenuHeading(FSUI_CSTR("Appearance"));
+  MenuHeading(FSUI_CSTR("Appearance"));
 
-    DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Theme"),
-                          FSUI_CSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
-                          "Dark", s_theme_name, s_theme_value, true, LAYOUT_MENU_BUTTON_HEIGHT, UIStyle.LargeFont,
-                          UIStyle.MediumFont, &ImGuiFullscreen::SetTheme);
-  
-    if (const TinyString current_value =
-          bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
-        MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"),
-                            FSUI_CSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
-                                      "located in resources/fullscreenui/backgrounds in the data directory."),
-                            current_value.c_str()))
+  {
+    // Have to do this the annoying way, because it's host-derived.
+    const auto language_list = Host::GetAvailableLanguageList();
+    TinyString current_language = bsi->GetTinyStringValue("Main", "Language", "");
+    const char* current_language_name = "Unknown";
+    for (const auto& [language, code] : language_list)
     {
-      ChoiceDialogOptions options = GetBackgroundOptions(current_value);
-      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"), false, std::move(options),
-                       [](s32 index, const std::string& title, bool checked) {
-                         if (index < 0)
+      if (current_language == code)
+        current_language_name = language;
+    }
+    if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_LANGUAGE, "Language"),
+                            FSUI_CSTR("Chooses the language used for UI elements."), current_language_name))
+    {
+      ImGuiFullscreen::ChoiceDialogOptions options;
+      for (const auto& [language, code] : language_list)
+        options.emplace_back(fmt::format("{} [{}]", language, code), (current_language == code));
+      OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"), false, std::move(options),
+                       [language_list](s32 index, const std::string& title, bool checked) {
+                         if (static_cast<u32>(index) >= language_list.size())
                            return;
-  
-                         SettingsInterface* bsi = GetEditingSettingsInterface();
-                         bsi->SetStringValue("Main", "FullscreenUIBackground", (index == 0) ? "None" : title.c_str());
-                         SetSettingsChanged(bsi);
-  
-                         // Have to defer the reload, because we've already drawn the bg for this frame.
-                         Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
+
+                         Host::RunOnCPUThread(
+                           [language = language_list[index].second]() { Host::ChangeLanguage(language); });
                        });
     }
-  
-    {
-      // Have to do this the annoying way, because it's host-derived.
-      const auto language_list = Host::GetAvailableLanguageList();
-      TinyString current_language = bsi->GetTinyStringValue("Main", "Language", "");
-      const char* current_language_name = "Unknown";
-      for (const auto& [language, code] : language_list)
-      {
-        if (current_language == code)
-          current_language_name = language;
-      }
-      if (MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"),
-                              FSUI_CSTR("Chooses the language used for UI elements."), current_language_name))
-      {
-        ImGuiFullscreen::ChoiceDialogOptions options;
-        for (const auto& [language, code] : language_list)
-          options.emplace_back(fmt::format("{} [{}]", language, code), (current_language == code));
-        OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_LANGUAGE, "UI Language"), false, std::move(options),
-                         [language_list](s32 index, const std::string& title, bool checked) {
-                           if (static_cast<u32>(index) >= language_list.size())
-                             return;
-  
-                           Host::RunOnCPUThread(
-                             [language = language_list[index].second]() { Host::ChangeLanguage(language); });
-                         });
-      }
-    }
-  
-    if (DrawToggleSetting(
-          bsi, FSUI_ICONSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
-          FSUI_CSTR(
-            "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons."),
-          "Main", "FullscreenUIDisplayPSIcons", false))
-    {
-      if (bsi->GetBoolValue("Main", "FullscreenUIDisplayPSIcons", false))
-        ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
-      else
-        ImGuiFullscreen::SetFullscreenFooterTextIconMapping({});
-    }
-  
-    if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Smooth Scrolling"),
-                          FSUI_CSTR("Enables smooth scrolling of menus in Big Picture UI."), "Main",
-                          "FullscreenUISmoothScrolling", true))
-    {
-      ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", false));
-    }
-  
+  }
 
-  MenuHeading(FSUI_CSTR("Integration"));
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
-                    FSUI_CSTR("Shows the game you are currently playing as part of your profile in Discord."), "Main",
-                    "EnableDiscordPresence", false);
+  DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Theme"),
+                        FSUI_CSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
+                        "Dark", s_theme_name, s_theme_value, true, LAYOUT_MENU_BUTTON_HEIGHT, UIStyle.LargeFont,
+                        UIStyle.MediumFont, &ImGuiFullscreen::SetTheme);
+
+  if (const TinyString current_value =
+        bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
+      MenuButtonWithValue(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"),
+                          FSUI_CSTR("Shows a background image or shader when a game isn't running. Backgrounds are "
+                                    "located in resources/fullscreenui/backgrounds in the data directory."),
+                          current_value.c_str()))
+  {
+    ChoiceDialogOptions options = GetBackgroundOptions(current_value);
+    OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_IMAGE, "Menu Background"), false, std::move(options),
+                     [](s32 index, const std::string& title, bool checked) {
+                       if (index < 0)
+                         return;
+
+                       SettingsInterface* bsi = GetEditingSettingsInterface();
+                       bsi->SetStringValue("Main", "FullscreenUIBackground", (index == 0) ? "None" : title.c_str());
+                       SetSettingsChanged(bsi);
+
+                       // Have to defer the reload, because we've already drawn the bg for this frame.
+                       Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
+                     });
+  }
+
+  if (DrawToggleSetting(
+        bsi, FSUI_ICONSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
+        FSUI_CSTR(
+          "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons."),
+        "Main", "FullscreenUIDisplayPSIcons", false))
+  {
+    if (bsi->GetBoolValue("Main", "FullscreenUIDisplayPSIcons", false))
+      ImGuiFullscreen::SetFullscreenFooterTextIconMapping(s_ps_button_mapping);
+    else
+      ImGuiFullscreen::SetFullscreenFooterTextIconMapping({});
+  }
+
+  if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Smooth Scrolling"),
+                        FSUI_CSTR("Enables smooth scrolling of menus in Big Picture UI."), "Main",
+                        "FullscreenUISmoothScrolling", true))
+  {
+    ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", false));
+  }
 
   MenuHeading(FSUI_CSTR("On-Screen Display"));
   DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "OSD Scale"),
@@ -8724,6 +8724,7 @@ TRANSLATE_NOOP("FullscreenUI", "9x (18x Speed)");
 TRANSLATE_NOOP("FullscreenUI", "9x (for 4K)");
 TRANSLATE_NOOP("FullscreenUI", "A cover already exists for this game. Are you sure that you want to overwrite it?");
 TRANSLATE_NOOP("FullscreenUI", "A resume save state created at %s was found.\n\nDo you want to load this save and continue?");
+TRANSLATE_NOOP("FullscreenUI", "AMOLED");
 TRANSLATE_NOOP("FullscreenUI", "About");
 TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Account");
@@ -8750,6 +8751,7 @@ TRANSLATE_NOOP("FullscreenUI", "Alpha Blending");
 TRANSLATE_NOOP("FullscreenUI", "Always Track Uploads");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
+TRANSLATE_NOOP("FullscreenUI", "Appearance");
 TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear all mappings for this controller?\n\nYou cannot undo this action.");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-processing chain? All configuration will be lost.");
@@ -8808,6 +8810,7 @@ TRANSLATE_NOOP("FullscreenUI", "Clears all settings set for this game.");
 TRANSLATE_NOOP("FullscreenUI", "Close");
 TRANSLATE_NOOP("FullscreenUI", "Close Game");
 TRANSLATE_NOOP("FullscreenUI", "Close Menu");
+TRANSLATE_NOOP("FullscreenUI", "Cobalt Sky");
 TRANSLATE_NOOP("FullscreenUI", "Compatibility Rating");
 TRANSLATE_NOOP("FullscreenUI", "Compatibility: ");
 TRANSLATE_NOOP("FullscreenUI", "Completely exits the application, returning you to your desktop.");
@@ -8843,6 +8846,7 @@ TRANSLATE_NOOP("FullscreenUI", "Crop Mode");
 TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
 TRANSLATE_NOOP("FullscreenUI", "Current Game");
 TRANSLATE_NOOP("FullscreenUI", "Custom");
+TRANSLATE_NOOP("FullscreenUI", "Dark");
 TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Debugging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Default");
@@ -8982,6 +8986,7 @@ TRANSLATE_NOOP("FullscreenUI", "From File...");
 TRANSLATE_NOOP("FullscreenUI", "Fullscreen Resolution");
 TRANSLATE_NOOP("FullscreenUI", "GPU Adapter");
 TRANSLATE_NOOP("FullscreenUI", "GPU Renderer");
+TRANSLATE_NOOP("FullscreenUI", "Game Display");
 TRANSLATE_NOOP("FullscreenUI", "Game Grid");
 TRANSLATE_NOOP("FullscreenUI", "Game List");
 TRANSLATE_NOOP("FullscreenUI", "Game List Settings");
@@ -9005,6 +9010,7 @@ TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0} - {1}##global_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0}##global_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Graphics Settings");
+TRANSLATE_NOOP("FullscreenUI", "Grey Matter");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will be enabled on next game restart.");
 TRANSLATE_NOOP("FullscreenUI", "Hide Cursor In Fullscreen");
@@ -9021,9 +9027,9 @@ TRANSLATE_NOOP("FullscreenUI", "Increases the field of view from 4:3 to the chos
 TRANSLATE_NOOP("FullscreenUI", "Increases the precision of polygon culling, reducing the number of holes in geometry.");
 TRANSLATE_NOOP("FullscreenUI", "Inhibit Screensaver");
 TRANSLATE_NOOP("FullscreenUI", "Input Sources");
-TRANSLATE_NOOP("FullscreenUI", "Integration");
 TRANSLATE_NOOP("FullscreenUI", "Interface Settings");
 TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
+TRANSLATE_NOOP("FullscreenUI", "Language");
 TRANSLATE_NOOP("FullscreenUI", "Language: ");
 TRANSLATE_NOOP("FullscreenUI", "Last Played");
 TRANSLATE_NOOP("FullscreenUI", "Last Played: %s");
@@ -9035,6 +9041,7 @@ TRANSLATE_NOOP("FullscreenUI", "Launch a game from images scanned from your game
 TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards are not enabled.");
+TRANSLATE_NOOP("FullscreenUI", "Light");
 TRANSLATE_NOOP("FullscreenUI", "Line Detection");
 TRANSLATE_NOOP("FullscreenUI", "List Settings");
 TRANSLATE_NOOP("FullscreenUI", "Load Database Cheats");
@@ -9131,6 +9138,7 @@ TRANSLATE_NOOP("FullscreenUI", "Per-game controller configuration initialized wi
 TRANSLATE_NOOP("FullscreenUI", "Performance enhancement - jumps directly between blocks instead of returning to the dispatcher.");
 TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Colors");
 TRANSLATE_NOOP("FullscreenUI", "Perspective Correct Textures");
+TRANSLATE_NOOP("FullscreenUI", "Pinky Pals");
 TRANSLATE_NOOP("FullscreenUI", "Plays sound effects for events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Please enter your user name and password for retroachievements.org below. Your password will not be saved in DuckStation, an access token will be generated and used instead.");
 TRANSLATE_NOOP("FullscreenUI", "Port {} Controller Type");
@@ -9206,7 +9214,7 @@ TRANSLATE_NOOP("FullscreenUI", "Save Preset");
 TRANSLATE_NOOP("FullscreenUI", "Save Screenshot");
 TRANSLATE_NOOP("FullscreenUI", "Save State");
 TRANSLATE_NOOP("FullscreenUI", "Save State Compression");
-TRANSLATE_NOOP("FullscreenUI", "Save State On Exit");
+TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
 TRANSLATE_NOOP("FullscreenUI", "Saved {:%c}");
 TRANSLATE_NOOP("FullscreenUI", "Saves state periodically so you can rewind any mistakes while playing.");
 TRANSLATE_NOOP("FullscreenUI", "Scaled Dithering");
@@ -9234,6 +9242,7 @@ TRANSLATE_NOOP("FullscreenUI", "Select State");
 TRANSLATE_NOOP("FullscreenUI", "Select from the list of preset borders, or manually specify a custom configuration.");
 TRANSLATE_NOOP("FullscreenUI", "Selected Preset");
 TRANSLATE_NOOP("FullscreenUI", "Selects the GPU to use for rendering.");
+TRANSLATE_NOOP("FullscreenUI", "Selects the color style to be used for Big Picture UI.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the percentage of the normal clock speed the emulated hardware will run at.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the quality at which screenshots will be compressed.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the resolution scale that will be applied to the final image. 1x will downsample to the original console resolution.");
@@ -9329,6 +9338,7 @@ TRANSLATE_NOOP("FullscreenUI", "The SDL input source supports most controllers."
 TRANSLATE_NOOP("FullscreenUI", "The XInput source provides support for XBox 360/XBox One/XBox Series controllers.");
 TRANSLATE_NOOP("FullscreenUI", "The audio backend determines how frames produced by the emulator are submitted to the host.");
 TRANSLATE_NOOP("FullscreenUI", "The selected memory card image will be used in shared mode for this slot.");
+TRANSLATE_NOOP("FullscreenUI", "Theme");
 TRANSLATE_NOOP("FullscreenUI", "This game has no achievements.");
 TRANSLATE_NOOP("FullscreenUI", "This game has no leaderboards.");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
@@ -9356,7 +9366,6 @@ TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");
 TRANSLATE_NOOP("FullscreenUI", "Use DualShock/DualSense Button Icons");
 TRANSLATE_NOOP("FullscreenUI", "Use Global Setting");
-TRANSLATE_NOOP("FullscreenUI", "Use Light Theme");
 TRANSLATE_NOOP("FullscreenUI", "Use Old MDEC Routines");
 TRANSLATE_NOOP("FullscreenUI", "Use Separate Disc Settings");
 TRANSLATE_NOOP("FullscreenUI", "Use Single Card For Multi-Disc Games");
@@ -9365,7 +9374,6 @@ TRANSLATE_NOOP("FullscreenUI", "User Name");
 TRANSLATE_NOOP("FullscreenUI", "Username: {}");
 TRANSLATE_NOOP("FullscreenUI", "Uses PGXP for all instructions, not just memory operations.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a blit presentation model instead of flipping. This may be needed on some systems.");
-TRANSLATE_NOOP("FullscreenUI", "Uses a light coloured theme instead of the default dark theme.");
 TRANSLATE_NOOP("FullscreenUI", "Uses a second thread for drawing graphics. Provides a significant speed improvement particularly with the software renderer, and is safe to use.");
 TRANSLATE_NOOP("FullscreenUI", "Uses game-specific settings for controllers for this game.");
 TRANSLATE_NOOP("FullscreenUI", "Uses native resolution coordinates for 2D polygons, instead of precise coordinates. Can fix misaligned UI in some games, but otherwise should be left disabled.");
