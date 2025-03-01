@@ -3447,49 +3447,7 @@ void ImGuiFullscreen::DrawToast()
 
 void ImGuiFullscreen::SetTheme(std::string_view theme)
 {
-  if (theme == "Dark")
-  {
-    // dark
-    UIStyle.BackgroundColor = HEX_TO_IMVEC4(0x212121, 0xff);
-    UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-    UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
-    UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x4b4b4b, 0xc0);
-    UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
-    UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);
-    UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x2e2e2e, 0xff);
-    UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x484848, 0xff);
-    UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
-    UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-    UIStyle.DisabledColor = HEX_TO_IMVEC4(0xaaaaaa, 0xff);
-    UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0x90caf9, 0xff);
-    UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-    UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x0d47a1, 0xff);
-    UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x63a4ff, 0xff);
-    UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x002171, 0xff);
-    UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-  }
-  else if (theme == "Light")
-  {
-    // light
-    UIStyle.BackgroundColor = HEX_TO_IMVEC4(0xc8c8c8, 0xff);
-    UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
-    UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xe1e2e1, 0xff);
-    UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xe1e2e1, 0xc0);
-    UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xd8d8d8, 0xf2);
-    UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0xc8c8c8, 0xf2);
-    UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
-    UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x235cd9, 0xff);
-    UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x1d2953, 0xff);
-    UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-    UIStyle.DisabledColor = HEX_TO_IMVEC4(0x999999, 0xff);
-    UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0x8e8e8e, 0xff);
-    UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0x000000, 0xff);
-    UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
-    UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x464db1, 0xff);
-    UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0xc0cfff, 0xff);
-    UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
-  }
-  else if (theme == "AMOLED")
+  if (theme == "AMOLED")
   {
     UIStyle.BackgroundColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
@@ -3568,5 +3526,47 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0xdc6c68, 0xff);
     UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0xab5451, 0xff);
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+  }
+  else if (theme == "Light")
+  {
+    // light
+    UIStyle.BackgroundColor = HEX_TO_IMVEC4(0xc8c8c8, 0xff);
+    UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xe1e2e1, 0xff);
+    UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xe1e2e1, 0xc0);
+    UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xd8d8d8, 0xf2);
+    UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0xc8c8c8, 0xf2);
+    UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
+    UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x235cd9, 0xff);
+    UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x1d2953, 0xff);
+    UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.DisabledColor = HEX_TO_IMVEC4(0x999999, 0xff);
+    UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0x8e8e8e, 0xff);
+    UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x2a3e78, 0xff);
+    UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x464db1, 0xff);
+    UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0xc0cfff, 0xff);
+    UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+  }
+  else
+  {
+    // dark
+    UIStyle.BackgroundColor = HEX_TO_IMVEC4(0x212121, 0xff);
+    UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+    UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x4b4b4b, 0xc0);
+    UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0x212121, 0xf2);
+    UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0x313131, 0xf2);
+    UIStyle.PrimaryColor = HEX_TO_IMVEC4(0x2e2e2e, 0xff);
+    UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x484848, 0xff);
+    UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.DisabledColor = HEX_TO_IMVEC4(0xaaaaaa, 0xff);
+    UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0x90caf9, 0xff);
+    UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x0d47a1, 0xff);
+    UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x63a4ff, 0xff);
+    UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x002171, 0xff);
+    UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
   }
 }
