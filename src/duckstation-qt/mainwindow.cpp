@@ -8,7 +8,6 @@
 #include "coverdownloaddialog.h"
 #include "debuggerwindow.h"
 #include "displaywidget.h"
-#include "gamelistmodel.h"
 #include "gamelistsettingswidget.h"
 #include "gamelistwidget.h"
 #include "interfacesettingswidget.h"

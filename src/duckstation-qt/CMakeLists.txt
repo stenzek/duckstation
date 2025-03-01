@@ -80,8 +80,6 @@ set(SRCS
   gamepatchsettingswidget.cpp
   gamepatchsettingswidget.h
   gamepatchsettingswidget.ui
-  gamelistmodel.cpp
-  gamelistmodel.h
   gamelistrefreshthread.cpp
   gamelistrefreshthread.h
   gamelistsettingswidget.cpp

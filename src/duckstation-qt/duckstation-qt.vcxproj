@@ -20,7 +20,6 @@
     <ClCompile Include="debuggerwindow.cpp" />
     <ClCompile Include="foldersettingswidget.cpp" />
     <ClCompile Include="gamecheatsettingswidget.cpp" />
-    <ClCompile Include="gamelistmodel.cpp" />
     <ClCompile Include="gamepatchsettingswidget.cpp" />
     <ClCompile Include="interfacesettingswidget.cpp" />
     <ClCompile Include="graphicssettingswidget.cpp" />
@@ -69,7 +68,6 @@
     <QtMoc Include="advancedsettingswidget.h" />
     <QtMoc Include="qtprogresscallback.h" />
     <QtMoc Include="inputbindingdialog.h" />
-    <QtMoc Include="gamelistmodel.h" />
     <QtMoc Include="autoupdaterdialog.h" />
     <QtMoc Include="debuggermodels.h" />
     <QtMoc Include="debuggerwindow.h" />
@@ -231,7 +229,6 @@
     <ClCompile Include="$(IntDir)moc_emulationsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_foldersettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamecheatsettingswidget.cpp" />
-    <ClCompile Include="$(IntDir)moc_gamelistmodel.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistrefreshthread.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistsettingswidget.cpp" />
     <ClCompile Include="$(IntDir)moc_gamelistwidget.cpp" />
