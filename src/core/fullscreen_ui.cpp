@@ -7131,13 +7131,13 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
 
 void FullscreenUI::DrawResumeStateSelector()
 {
-  ImGui::SetNextWindowSize(LayoutScale(800.0f, 605.0f));
+  ImGui::SetNextWindowSize(LayoutScale(820.0f, 625.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(FSUI_CSTR("Load Resume State"));
 
   ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(20.0f, 20.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(40.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(30.0f, 30.0f));
 
   bool is_open = true;
   if (ImGui::BeginPopupModal(FSUI_CSTR("Load Resume State"), &is_open,
@@ -8297,21 +8297,28 @@ void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 
 void FullscreenUI::DrawAboutWindow()
 {
-  ImGui::SetNextWindowSize(LayoutScale(1000.0f, 550.0f));
+  ImGui::SetNextWindowSize(LayoutScale(1020.0f, 590.0f));
   ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
   ImGui::OpenPopup(FSUI_CSTR("About DuckStation"));
 
   ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(40.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(30.0f, 30.0f));
 
   if (ImGui::BeginPopupModal(FSUI_CSTR("About DuckStation"), &s_state.about_window_open,
                              ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
   {
+    const ImVec2 image_size = LayoutScale(64.0f, 64.0f);
+    const float indent = image_size.x + LayoutScale(8.0f);
+    ImGui::GetWindowDrawList()->AddImage(s_state.app_icon_texture.get(), ImGui::GetCursorScreenPos(), ImGui::GetCursorScreenPos() + image_size);
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
+    ImGui::TextUnformatted("DuckStation");
+    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
+    ImGui::TextUnformatted(g_scm_tag_str);
+
+    ImGui::NewLine();
     ImGui::TextWrapped("%s", FSUI_CSTR("DuckStation is a free simulator/emulator of the Sony PlayStation(TM) "
                                        "console, focusing on playability, speed, and long-term maintainability."));
-    ImGui::NewLine();
-    ImGui::TextWrapped(FSUI_CSTR("Version: %s"), g_scm_tag_str);
     ImGui::NewLine();
     ImGui::TextWrapped(
       "%s", FSUI_CSTR("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)"));
