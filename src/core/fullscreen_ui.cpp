@@ -3692,10 +3692,11 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   static constexpr const char* s_theme_name[] = {
     FSUI_NSTR("Dark"),       FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
     FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"), FSUI_NSTR("Pinky Pals"),
+    FSUI_NSTR("Purple Rain")
   };
 
   static constexpr const char* s_theme_value[] = {
-    "Dark", "Light", "AMOLED", "CobaltSky", "GreyMatter", "PinkyPals",
+    "Dark", "Light", "AMOLED", "CobaltSky", "GreyMatter", "PinkyPals", "PurpleRain"
   };
 
   BeginMenuButtons();

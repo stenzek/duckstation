@@ -199,6 +199,39 @@ void QtHost::SetStyleFromSettings()
     qApp->setPalette(darkPalette);
     qApp->setStyleSheet(QString());
   }
+	else if (theme == "pinkypals")
+	{
+		qApp->setStyle(QStyleFactory::create("Fusion"));
+
+		const QColor black(25, 25, 25);
+		const QColor pink(255, 174, 201);
+		const QColor darkerPink(214, 145, 168);
+		const QColor brightPink(224, 88, 133);
+		const QColor congoPink(255, 127, 121);
+
+		QPalette PinkyPalsPalette;
+		PinkyPalsPalette.setColor(QPalette::Window, pink);
+		PinkyPalsPalette.setColor(QPalette::WindowText, black);
+		PinkyPalsPalette.setColor(QPalette::Base, darkerPink);
+		PinkyPalsPalette.setColor(QPalette::AlternateBase, brightPink);
+		PinkyPalsPalette.setColor(QPalette::ToolTipBase, pink);
+		PinkyPalsPalette.setColor(QPalette::ToolTipText, darkerPink);
+		PinkyPalsPalette.setColor(QPalette::Text, black);
+		PinkyPalsPalette.setColor(QPalette::Button, pink);
+		PinkyPalsPalette.setColor(QPalette::ButtonText, black);
+		PinkyPalsPalette.setColor(QPalette::Link, black);
+		PinkyPalsPalette.setColor(QPalette::Highlight, congoPink);
+		PinkyPalsPalette.setColor(QPalette::HighlightedText, black);
+
+		PinkyPalsPalette.setColor(QPalette::Active, QPalette::Button, pink);
+		PinkyPalsPalette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(Qt::white).darker());
+		PinkyPalsPalette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(Qt::white).darker());
+		PinkyPalsPalette.setColor(QPalette::Disabled, QPalette::Text, QColor(Qt::white).darker());
+		PinkyPalsPalette.setColor(QPalette::Disabled, QPalette::Light, QColor(Qt::white).darker());
+
+		qApp->setPalette(PinkyPalsPalette);
+		qApp->setStyleSheet(QString());
+	}
 	else if (theme == "AMOLED")
 	{
 		// Custom palette by KamFretoZ, A pure concentrated darkness
