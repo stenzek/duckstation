@@ -13,6 +13,11 @@
 #include <array>
 #include <unordered_map>
 
+#ifdef __clang__
+#define HAS_MUSTTAIL 1
+#define RETURN_MUSTTAIL(val) __attribute__((musttail)) return val
+#endif
+
 namespace CPU::CodeCache {
 
 enum : u32
@@ -205,8 +210,16 @@ struct PageProtectionInfo
 };
 static_assert(sizeof(PageProtectionInfo) == (sizeof(Block*) * 2 + 8));
 
-using CachedInterpreterHandler = void(*)(u32 arg);
+struct CachedInterpreterInstruction;
+
+using CachedInterpreterHandler = void (*)(const CachedInterpreterInstruction*);
 CachedInterpreterHandler GetCachedInterpreterHandler(const Instruction inst);
+
+#ifdef HAS_MUSTTAIL
+#define END_CACHED_INTERPRETER_INSTRUCTION(arg) RETURN_MUSTTAIL((arg + 1)->handler(arg + 1));
+#else
+#define END_CACHED_INTERPRETER_INSTRUCTION(arg)
+#endif
 
 struct CachedInterpreterInstruction
 {

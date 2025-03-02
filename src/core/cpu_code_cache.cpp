@@ -75,7 +75,6 @@ static void RemoveBlockFromPageList(Block* block);
 
 static void SetCachedInterpreterHandlers();
 static void CompileCachedInterpreterBlock(const u32);
-static void ExecuteCachedInterpreterBlock(const CachedInterpreterInstruction* cinst);
 [[noreturn]] static void ExecuteCachedInterpreter();
 
 // Fast map provides lookup from PC to function
@@ -714,10 +713,78 @@ PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exceptio
 // MARK: - Cached Interpreter
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+namespace CPU::CodeCache::CachedInterpreterFunctions {
+static void CompileOrRevalidateBlock(const CachedInterpreterInstruction* cinst);
+static void LookupAndExecuteBlock(const CachedInterpreterInstruction* cinst);
+static void LogCurrentState(const CachedInterpreterInstruction* cinst);
+static void CheckAndUpdateICacheTags(const CachedInterpreterInstruction* cinst);
+static void AddDynamicFetchTicks(const CachedInterpreterInstruction* cinst);
+static void AddUncachedFetchTicks(const CachedInterpreterInstruction* cinst);
+static void EndBlock(const CachedInterpreterInstruction* cinst);
+} // namespace CPU::CodeCache::CachedInterpreterFunctions
+
+void CPU::CodeCache::CachedInterpreterFunctions::CompileOrRevalidateBlock(const CachedInterpreterInstruction* cinst)
+{
+  CompileCachedInterpreterBlock(g_state.pc);
+  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
+}
+
+void CPU::CodeCache::CachedInterpreterFunctions::LookupAndExecuteBlock(const CachedInterpreterInstruction*)
+{
+  const u32 pc = g_state.pc;
+  const u32 table = pc >> LUT_TABLE_SHIFT;
+  const u32 idx = (pc & 0xFFFF) >> 2;
+  const CachedInterpreterInstruction* cinst =
+    reinterpret_cast<const CachedInterpreterInstruction*>(g_code_lut[table][idx]);
+
+#ifdef HAS_MUSTTAIL
+  RETURN_MUSTTAIL(cinst->handler(cinst));
+#else
+  do
+  {
+    cinst->handler(cinst);
+    cinst++;
+  } while (cinst->handler);
+#endif
+}
+
+void CPU::CodeCache::CachedInterpreterFunctions::LogCurrentState(const CachedInterpreterInstruction* cinst)
+{
+  CPU::CodeCache::LogCurrentState();
+  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
+}
+
+void CPU::CodeCache::CachedInterpreterFunctions::CheckAndUpdateICacheTags(const CachedInterpreterInstruction* cinst)
+{
+  CPU::CheckAndUpdateICacheTags(cinst->arg);
+  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
+}
+
+void CPU::CodeCache::CachedInterpreterFunctions::AddDynamicFetchTicks(const CachedInterpreterInstruction* cinst)
+{
+  AddPendingTicks(static_cast<TickCount>(
+    cinst->arg *
+    static_cast<u32>(*Bus::GetMemoryAccessTimePtr(g_state.pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word))));
+  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
+}
+
+void CPU::CodeCache::CachedInterpreterFunctions::AddUncachedFetchTicks(const CachedInterpreterInstruction* cinst)
+{
+  CPU::AddPendingTicks(static_cast<TickCount>(cinst->arg));
+  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
+}
+
+void CPU::CodeCache::CachedInterpreterFunctions::EndBlock(const CachedInterpreterInstruction* cinst)
+{
+  // TODO: jump to top of block if looping, block linking, etc.
+  return;
+}
+
 void CPU::CodeCache::SetCachedInterpreterHandlers()
 {
   static constexpr const CachedInterpreterInstruction compile_or_revalidate_block[] = {
-    {&CompileCachedInterpreterBlock, 0u},
+    {&CachedInterpreterFunctions::CompileOrRevalidateBlock, 0u},
+    {&CachedInterpreterFunctions::LookupAndExecuteBlock, 0u},
     {nullptr, 0u},
   };
 
@@ -775,32 +842,26 @@ void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
 
   if (false)
   {
-    cinst->handler = [](u32)  { LogCurrentState(); };
+    cinst->handler = &CachedInterpreterFunctions::LogCurrentState;
     cinst->arg = 0;
     cinst++;
   }
 
   if (block->HasFlag(BlockFlags::IsUsingICache))
   {
-    cinst->handler = &CheckAndUpdateICacheTags;
+    cinst->handler = &CachedInterpreterFunctions::CheckAndUpdateICacheTags;
     cinst->arg = block->icache_line_count;
     cinst++;
   }
   else if (block->HasFlag(BlockFlags::NeedsDynamicFetchTicks))
   {
-    static const auto dynamic_fetch_handler = [](u32 size) {
-      AddPendingTicks(
-        static_cast<TickCount>(size * static_cast<u32>(*Bus::GetMemoryAccessTimePtr(
-                                        g_state.pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word))));
-    };
-
-    cinst->handler = dynamic_fetch_handler;
+    cinst->handler = &CachedInterpreterFunctions::AddDynamicFetchTicks;
     cinst->arg = block->size;
     cinst++;
   }
   else if (block->uncached_fetch_ticks > 0)
   {
-    cinst->handler = reinterpret_cast<CachedInterpreterHandler>(&CPU::AddPendingTicks);
+    cinst->handler = &CachedInterpreterFunctions::AddUncachedFetchTicks;
     cinst->arg = static_cast<u32>(block->uncached_fetch_ticks);
     cinst++;
   }
@@ -817,7 +878,11 @@ void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
   }
 
   // end
+#ifdef HAS_MUSTTAIL
+  cinst->handler = &CachedInterpreterFunctions::EndBlock;
+#else
   cinst->handler = nullptr;
+#endif
   cinst->arg = 0;
   cinst++;
 
@@ -828,19 +893,7 @@ void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
   CommitCode(required_space);
   MemMap::EndCodeWrite();
 
-  // execute it
-  ExecuteCachedInterpreterBlock(cstart);
-
   // TODO: Block linking!
-}
-
-ALWAYS_INLINE_RELEASE void CPU::CodeCache::ExecuteCachedInterpreterBlock(const CachedInterpreterInstruction* cinst)
-{
-  do
-  {
-    cinst->handler(cinst->arg);
-    cinst++;
-  } while (cinst->handler);
 }
 
 [[noreturn]] void CPU::CodeCache::ExecuteCachedInterpreter()
@@ -874,7 +927,17 @@ ALWAYS_INLINE_RELEASE void CPU::CodeCache::ExecuteCachedInterpreterBlock(const C
     reexecute_block:
       // Execute block.
       DebugAssert(!(HasPendingInterrupt()));
-      ExecuteCachedInterpreterBlock(cinst);
+
+#ifdef HAS_MUSTTAIL
+      cinst->handler(cinst);
+#else
+      do
+      {
+        cinst->handler(cinst);
+        cinst++;
+      } while (cinst->handler);
+#endif
+
       CHECK_DOWNCOUNT();
 
       // Handle self-looping blocks

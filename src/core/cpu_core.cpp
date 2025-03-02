@@ -2775,29 +2775,31 @@ void CPU::SetSingleStepFlag()
 namespace CPU {
 #define MAKE_CACHED_INSTRUCTION_HANDLER(insn)                                                                          \
   template<PGXPMode pgxp_mode>                                                                                         \
-  static void CachedInstructionHandler_##insn(u32 arg)                                                                 \
+  static void CachedInstructionHandler_##insn(const CPU::CodeCache::CachedInterpreterInstruction* cinst)               \
   {                                                                                                                    \
+    const Instruction inst{cinst->arg};                                                                                \
     g_state.pending_ticks++;                                                                                           \
-    g_state.current_instruction.bits = arg;                                                                            \
+    g_state.current_instruction.bits = inst.bits;                                                                      \
     g_state.current_instruction_pc = g_state.pc;                                                                       \
     g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;                                           \
     g_state.branch_was_taken = false;                                                                                  \
     g_state.exception_raised = false;                                                                                  \
     g_state.pc = g_state.npc;                                                                                          \
     g_state.npc += 4;                                                                                                  \
-    Execute_##insn<pgxp_mode, false>(Instruction{arg});                                                                \
+    Execute_##insn<pgxp_mode, false>(inst);                                                                            \
     UpdateLoadDelay(); /* TODO: For non-load instructions, we don't need to update next_load_delay_reg */              \
     g_state.next_instruction_is_branch_delay_slot = false; /* FIXME */                                                 \
+    END_CACHED_INTERPRETER_INSTRUCTION(cinst);                                                                         \
   }
 
 CPU_FOR_EACH_INSTRUCTION(MAKE_CACHED_INSTRUCTION_HANDLER);
 
 // TODO: inline gte ops
 
-static void CachedInstructionHandler_gte(u32 arg)
+static void CachedInstructionHandler_gte(const CPU::CodeCache::CachedInterpreterInstruction* cinst)
 {
   g_state.pending_ticks++;
-  g_state.current_instruction.bits = arg;
+  g_state.current_instruction.bits = cinst->arg;
   g_state.current_instruction_pc = g_state.pc;
   g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
   g_state.branch_was_taken = false;
@@ -2805,9 +2807,10 @@ static void CachedInstructionHandler_gte(u32 arg)
   g_state.pc = g_state.npc;
   g_state.npc += 4;
   StallUntilGTEComplete();
-  GTE::ExecuteInstruction(arg);
+  GTE::ExecuteInstruction(cinst->arg);
   UpdateLoadDelay();
   g_state.next_instruction_is_branch_delay_slot = false; /* FIXME */
+  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
 }
 
 } // namespace CPU
