@@ -168,4 +168,77 @@ void UncheckedWriteMemoryWord(u32 address, u32 value);
 
 #endif
 
+#define CPU_FOR_EACH_INSTRUCTION(X)                                                                                    \
+  X(b)                                                                                                                 \
+  X(j)                                                                                                                 \
+  X(jal)                                                                                                               \
+  X(beq)                                                                                                               \
+  X(bne)                                                                                                               \
+  X(blez)                                                                                                              \
+  X(bgtz)                                                                                                              \
+  X(addi)                                                                                                              \
+  X(addiu)                                                                                                             \
+  X(slti)                                                                                                              \
+  X(sltiu)                                                                                                             \
+  X(andi)                                                                                                              \
+  X(ori)                                                                                                               \
+  X(xori)                                                                                                              \
+  X(lui)                                                                                                               \
+  X(lb)                                                                                                                \
+  X(lh)                                                                                                                \
+  X(lwl)                                                                                                               \
+  X(lw)                                                                                                                \
+  X(lbu)                                                                                                               \
+  X(lhu)                                                                                                               \
+  X(lwr)                                                                                                               \
+  X(sb)                                                                                                                \
+  X(sh)                                                                                                                \
+  X(swl)                                                                                                               \
+  X(sw)                                                                                                                \
+  X(swr)                                                                                                               \
+  X(mfc0)                                                                                                              \
+  X(mtc0)                                                                                                              \
+  X(rfe)                                                                                                               \
+  X(mfc2)                                                                                                              \
+  X(mtc2)                                                                                                              \
+  X(cfc2)                                                                                                              \
+  X(ctc2)                                                                                                              \
+  X(cop2)                                                                                                              \
+  X(lwc0)                                                                                                              \
+  X(lwc1)                                                                                                              \
+  X(lwc2)                                                                                                              \
+  X(lwc3)                                                                                                              \
+  X(swc0)                                                                                                              \
+  X(swc1)                                                                                                              \
+  X(swc2)                                                                                                              \
+  X(swc3)                                                                                                              \
+  X(sll)                                                                                                               \
+  X(srl)                                                                                                               \
+  X(sra)                                                                                                               \
+  X(sllv)                                                                                                              \
+  X(srlv)                                                                                                              \
+  X(srav)                                                                                                              \
+  X(jr)                                                                                                                \
+  X(jalr)                                                                                                              \
+  X(syscall)                                                                                                           \
+  X(break)                                                                                                             \
+  X(mfhi)                                                                                                              \
+  X(mthi)                                                                                                              \
+  X(mflo)                                                                                                              \
+  X(mtlo)                                                                                                              \
+  X(mult)                                                                                                              \
+  X(multu)                                                                                                             \
+  X(div)                                                                                                               \
+  X(divu)                                                                                                              \
+  X(add)                                                                                                               \
+  X(addu)                                                                                                              \
+  X(sub)                                                                                                               \
+  X(subu)                                                                                                              \
+  X(and)                                                                                                               \
+  X(or)                                                                                                                \
+  X(xor)                                                                                                               \
+  X(nor)                                                                                                               \
+  X(slt)                                                                                                               \
+  X(sltu)
+
 } // namespace CPU

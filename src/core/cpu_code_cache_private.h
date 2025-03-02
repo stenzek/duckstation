@@ -205,8 +205,14 @@ struct PageProtectionInfo
 };
 static_assert(sizeof(PageProtectionInfo) == (sizeof(Block*) * 2 + 8));
 
-template<PGXPMode pgxp_mode>
-void InterpretCachedBlock(const Block* block);
+using CachedInterpreterHandler = void(*)(u32 arg);
+CachedInterpreterHandler GetCachedInterpreterHandler(const Instruction inst);
+
+struct CachedInterpreterInstruction
+{
+  CachedInterpreterHandler handler;
+  u32 arg;
+};
 
 template<PGXPMode pgxp_mode>
 void InterpretUncachedBlock();

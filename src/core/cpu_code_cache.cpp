@@ -73,10 +73,10 @@ static void SetRegAccess(InstructionInfo* inst, Reg reg, bool write);
 static void AddBlockToPageList(Block* block);
 static void RemoveBlockFromPageList(Block* block);
 
-static Block* CreateCachedInterpreterBlock(u32 pc);
+static void SetCachedInterpreterHandlers();
+static void CompileCachedInterpreterBlock(const u32);
+static void ExecuteCachedInterpreterBlock(const CachedInterpreterInstruction* cinst);
 [[noreturn]] static void ExecuteCachedInterpreter();
-template<PGXPMode pgxp_mode>
-[[noreturn]] static void ExecuteCachedInterpreterImpl();
 
 // Fast map provides lookup from PC to function
 // Function pointers are offset so that you don't need to subtract
@@ -214,6 +214,12 @@ void CPU::CodeCache::Reset()
   {
     ResetCodeBuffer();
     CompileASMFunctions();
+    ResetCodeLUT();
+  }
+  else
+  {
+    SetCachedInterpreterHandlers();
+    ResetCodeBuffer();
     ResetCodeLUT();
   }
 }
@@ -708,15 +714,136 @@ PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exceptio
 // MARK: - Cached Interpreter
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CPU::CodeCache::Block* CPU::CodeCache::CreateCachedInterpreterBlock(u32 pc)
+void CPU::CodeCache::SetCachedInterpreterHandlers()
 {
-  BlockMetadata metadata = {};
-  ReadBlockInstructions(pc, &s_block_instructions, &metadata);
-  return CreateBlock(pc, s_block_instructions, metadata);
+  static constexpr const CachedInterpreterInstruction compile_or_revalidate_block[] = {
+    {&CompileCachedInterpreterBlock, 0u},
+    {nullptr, 0u},
+  };
+
+  g_compile_or_revalidate_block = compile_or_revalidate_block;
 }
 
-template<PGXPMode pgxp_mode>
-[[noreturn]] void CPU::CodeCache::ExecuteCachedInterpreterImpl()
+void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
+{
+  const u32 start_pc = g_state.pc;
+  MemMap::BeginCodeWrite();
+
+  // Revalidation
+  Block* block = LookupBlock(start_pc);
+  if (block)
+  {
+    // we should only be here if the block got invalidated
+    DebugAssert(block->state != BlockState::Valid);
+    if (RevalidateBlock(block))
+    {
+      DebugAssert(block->host_code);
+      SetCodeLUT(start_pc, block->host_code);
+      // BacklinkBlocks(start_pc, block->host_code);
+      MemMap::EndCodeWrite();
+      return;
+    }
+
+    // remove outward links from this block, since we're recompiling it
+    // UnlinkBlockExits(block);
+  }
+
+  BlockMetadata metadata = {};
+  if (!ReadBlockInstructions(start_pc, &s_block_instructions, &metadata))
+  {
+    ERROR_LOG("Failed to read block at 0x{:08X}, falling back to uncached interpreter", start_pc);
+    Panic("Fixme");
+  }
+
+  const u32 required_space = sizeof(CachedInterpreterInstruction) * (static_cast<u32>(s_block_instructions.size()) + 3);
+  if (GetFreeCodeSpace() < required_space)
+  {
+    ERROR_LOG("Out of code space while compiling {:08X}. Resetting code cache.", start_pc);
+    CodeCache::Reset();
+  }
+
+  block = CreateBlock(start_pc, s_block_instructions, metadata);
+  if (!block)
+  {
+    Panic("Fixme");
+    return;
+  }
+
+  const CPU::Instruction* mips_insns = block->Instructions();
+  CachedInterpreterInstruction* cstart = reinterpret_cast<CachedInterpreterInstruction*>(GetFreeCodePointer());
+  CachedInterpreterInstruction* cinst = cstart;
+
+  if (false)
+  {
+    cinst->handler = [](u32)  { LogCurrentState(); };
+    cinst->arg = 0;
+    cinst++;
+  }
+
+  if (block->HasFlag(BlockFlags::IsUsingICache))
+  {
+    cinst->handler = &CheckAndUpdateICacheTags;
+    cinst->arg = block->icache_line_count;
+    cinst++;
+  }
+  else if (block->HasFlag(BlockFlags::NeedsDynamicFetchTicks))
+  {
+    static const auto dynamic_fetch_handler = [](u32 size) {
+      AddPendingTicks(
+        static_cast<TickCount>(size * static_cast<u32>(*Bus::GetMemoryAccessTimePtr(
+                                        g_state.pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word))));
+    };
+
+    cinst->handler = dynamic_fetch_handler;
+    cinst->arg = block->size;
+    cinst++;
+  }
+  else if (block->uncached_fetch_ticks > 0)
+  {
+    cinst->handler = reinterpret_cast<CachedInterpreterHandler>(&CPU::AddPendingTicks);
+    cinst->arg = static_cast<u32>(block->uncached_fetch_ticks);
+    cinst++;
+  }
+
+  for (u32 i = 0; i < block->size; i++)
+  {
+    const Instruction insn = *(mips_insns++);
+    cinst->handler = GetCachedInterpreterHandler(insn);
+    cinst->arg = insn.bits;
+    if (!cinst->handler)
+      Panic("Fixme");
+
+    cinst++;
+  }
+
+  // end
+  cinst->handler = nullptr;
+  cinst->arg = 0;
+  cinst++;
+
+  block->host_code = cstart;
+  block->host_code_size = static_cast<u32>(cinst - cstart) * sizeof(CachedInterpreterInstruction);
+
+  SetCodeLUT(start_pc, cstart);
+  CommitCode(required_space);
+  MemMap::EndCodeWrite();
+
+  // execute it
+  ExecuteCachedInterpreterBlock(cstart);
+
+  // TODO: Block linking!
+}
+
+ALWAYS_INLINE_RELEASE void CPU::CodeCache::ExecuteCachedInterpreterBlock(const CachedInterpreterInstruction* cinst)
+{
+  do
+  {
+    cinst->handler(cinst->arg);
+    cinst++;
+  } while (cinst->handler);
+}
+
+[[noreturn]] void CPU::CodeCache::ExecuteCachedInterpreter()
 {
 #define CHECK_DOWNCOUNT()                                                                                              \
   if (g_state.pending_ticks >= g_state.downcount)                                                                      \
@@ -733,91 +860,29 @@ template<PGXPMode pgxp_mode>
       LogCurrentState();
 #endif
 #if 0
-      if ((g_state.pending_ticks + TimingEvents::GetGlobalTickCounter()) == 3301006214)
+      if ((g_state.pending_ticks + TimingEvents::GetGlobalTickCounter()) == 108345628)
         __debugbreak();
 #endif
+
       // Manually done because we don't want to compile blocks without a LUT.
       const u32 pc = g_state.pc;
       const u32 table = pc >> LUT_TABLE_SHIFT;
-      Block* block;
-      if (s_block_lut[table])
-      {
-        const u32 idx = (pc & 0xFFFF) >> 2;
-        block = s_block_lut[table][idx];
-      }
-      else
-      {
-        // Likely invalid code...
-        goto interpret_block;
-      }
+      const u32 idx = (pc & 0xFFFF) >> 2;
+      const CachedInterpreterInstruction* cinst =
+        reinterpret_cast<const CachedInterpreterInstruction*>(g_code_lut[table][idx]);
 
     reexecute_block:
-      if (!block)
-      {
-        if ((block = CreateCachedInterpreterBlock(pc))->size == 0) [[unlikely]]
-          goto interpret_block;
-      }
-      else
-      {
-        if (block->state == BlockState::FallbackToInterpreter) [[unlikely]]
-          goto interpret_block;
-
-        if ((block->state != BlockState::Valid && !RevalidateBlock(block)) ||
-            (block->protection == PageProtectionMode::ManualCheck && !IsBlockCodeCurrent(block)))
-        {
-          if ((block = CreateCachedInterpreterBlock(pc))->size == 0) [[unlikely]]
-            goto interpret_block;
-        }
-      }
-
+      // Execute block.
       DebugAssert(!(HasPendingInterrupt()));
-      if (block->HasFlag(BlockFlags::IsUsingICache))
-      {
-        CheckAndUpdateICacheTags(block->icache_line_count);
-      }
-      else if (block->HasFlag(BlockFlags::NeedsDynamicFetchTicks))
-      {
-        AddPendingTicks(
-          static_cast<TickCount>(block->size * static_cast<u32>(*Bus::GetMemoryAccessTimePtr(
-                                                 block->pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word))));
-      }
-      else
-      {
-        AddPendingTicks(block->uncached_fetch_ticks);
-      }
-
-      InterpretCachedBlock<pgxp_mode>(block);
-
+      ExecuteCachedInterpreterBlock(cinst);
       CHECK_DOWNCOUNT();
 
       // Handle self-looping blocks
-      if (g_state.pc == block->pc)
-        goto reexecute_block;
-      else
-        continue;
-
-    interpret_block:
-      InterpretUncachedBlock<pgxp_mode>();
-      CHECK_DOWNCOUNT();
-      continue;
+      // if (g_state.pc == pc)
+      // goto reexecute_block;
     }
 
     TimingEvents::RunEvents();
-  }
-}
-
-[[noreturn]] void CPU::CodeCache::ExecuteCachedInterpreter()
-{
-  if (g_settings.gpu_pgxp_enable)
-  {
-    if (g_settings.gpu_pgxp_cpu)
-      ExecuteCachedInterpreterImpl<PGXPMode::CPU>();
-    else
-      ExecuteCachedInterpreterImpl<PGXPMode::Memory>();
-  }
-  else
-  {
-    ExecuteCachedInterpreterImpl<PGXPMode::Disabled>();
   }
 }
 
