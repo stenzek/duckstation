@@ -714,22 +714,11 @@ PageFaultHandler::HandlerResult PageFaultHandler::HandlePageFault(void* exceptio
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 namespace CPU::CodeCache::CachedInterpreterFunctions {
-static void CompileOrRevalidateBlock(const CachedInterpreterInstruction* cinst);
-static void LookupAndExecuteBlock(const CachedInterpreterInstruction* cinst);
-static void LogCurrentState(const CachedInterpreterInstruction* cinst);
-static void CheckAndUpdateICacheTags(const CachedInterpreterInstruction* cinst);
-static void AddDynamicFetchTicks(const CachedInterpreterInstruction* cinst);
-static void AddUncachedFetchTicks(const CachedInterpreterInstruction* cinst);
-static void EndBlock(const CachedInterpreterInstruction* cinst);
+static DEFINE_CACHED_INTERPRETER_HANDLER(CompileOrRevalidateBlock);
+static DEFINE_CACHED_INTERPRETER_HANDLER(LookupAndExecuteBlock);
 } // namespace CPU::CodeCache::CachedInterpreterFunctions
 
-void CPU::CodeCache::CachedInterpreterFunctions::CompileOrRevalidateBlock(const CachedInterpreterInstruction* cinst)
-{
-  CompileCachedInterpreterBlock(g_state.pc);
-  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
-}
-
-void CPU::CodeCache::CachedInterpreterFunctions::LookupAndExecuteBlock(const CachedInterpreterInstruction*)
+DEFINE_CACHED_INTERPRETER_HANDLER(CPU::CodeCache::CachedInterpreterFunctions::LookupAndExecuteBlock)
 {
   const u32 pc = g_state.pc;
   const u32 table = pc >> LUT_TABLE_SHIFT;
@@ -742,56 +731,13 @@ void CPU::CodeCache::CachedInterpreterFunctions::LookupAndExecuteBlock(const Cac
 #else
   do
   {
-    cinst->handler(cinst);
-    cinst++;
-  } while (cinst->handler);
+    cinst = cinst->handler(cinst);
+  } while (cinst);
+  return nullptr;
 #endif
 }
 
-void CPU::CodeCache::CachedInterpreterFunctions::LogCurrentState(const CachedInterpreterInstruction* cinst)
-{
-  CPU::CodeCache::LogCurrentState();
-  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
-}
-
-void CPU::CodeCache::CachedInterpreterFunctions::CheckAndUpdateICacheTags(const CachedInterpreterInstruction* cinst)
-{
-  CPU::CheckAndUpdateICacheTags(cinst->arg);
-  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
-}
-
-void CPU::CodeCache::CachedInterpreterFunctions::AddDynamicFetchTicks(const CachedInterpreterInstruction* cinst)
-{
-  AddPendingTicks(static_cast<TickCount>(
-    cinst->arg *
-    static_cast<u32>(*Bus::GetMemoryAccessTimePtr(g_state.pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word))));
-  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
-}
-
-void CPU::CodeCache::CachedInterpreterFunctions::AddUncachedFetchTicks(const CachedInterpreterInstruction* cinst)
-{
-  CPU::AddPendingTicks(static_cast<TickCount>(cinst->arg));
-  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
-}
-
-void CPU::CodeCache::CachedInterpreterFunctions::EndBlock(const CachedInterpreterInstruction* cinst)
-{
-  // TODO: jump to top of block if looping, block linking, etc.
-  return;
-}
-
-void CPU::CodeCache::SetCachedInterpreterHandlers()
-{
-  static constexpr const CachedInterpreterInstruction compile_or_revalidate_block[] = {
-    {&CachedInterpreterFunctions::CompileOrRevalidateBlock, 0u},
-    {&CachedInterpreterFunctions::LookupAndExecuteBlock, 0u},
-    {nullptr, 0u},
-  };
-
-  g_compile_or_revalidate_block = compile_or_revalidate_block;
-}
-
-void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
+DEFINE_CACHED_INTERPRETER_HANDLER(CPU::CodeCache::CachedInterpreterFunctions::CompileOrRevalidateBlock)
 {
   const u32 start_pc = g_state.pc;
   MemMap::BeginCodeWrite();
@@ -806,13 +752,13 @@ void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
     {
       DebugAssert(block->host_code);
       SetCodeLUT(start_pc, block->host_code);
-      // BacklinkBlocks(start_pc, block->host_code);
+      BacklinkBlocks(start_pc, block->host_code);
       MemMap::EndCodeWrite();
-      return;
+      CACHED_INTERPRETER_HANDLER_RETURN(static_cast<const CachedInterpreterInstruction*>(block->host_code));
     }
 
     // remove outward links from this block, since we're recompiling it
-    // UnlinkBlockExits(block);
+    UnlinkBlockExits(block);
   }
 
   BlockMetadata metadata = {};
@@ -822,6 +768,7 @@ void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
     Panic("Fixme");
   }
 
+  // TODO: size calc is wrong, should use max insn size
   const u32 required_space = sizeof(CachedInterpreterInstruction) * (static_cast<u32>(s_block_instructions.size()) + 3);
   if (GetFreeCodeSpace() < required_space)
   {
@@ -833,67 +780,34 @@ void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
   if (!block)
   {
     Panic("Fixme");
-    return;
   }
 
-  const CPU::Instruction* mips_insns = block->Instructions();
-  CachedInterpreterInstruction* cstart = reinterpret_cast<CachedInterpreterInstruction*>(GetFreeCodePointer());
-  CachedInterpreterInstruction* cinst = cstart;
+  CachedInterpreterCompiler compiler(block, reinterpret_cast<CachedInterpreterInstruction*>(GetFreeCodePointer()));
+  if (!compiler.CompileBlock())
+    Panic("Fixme");
 
-  if (false)
-  {
-    cinst->handler = &CachedInterpreterFunctions::LogCurrentState;
-    cinst->arg = 0;
-    cinst++;
-  }
+  block->host_code = compiler.GetCodeStart();
+  block->host_code_size = compiler.GetCodeSize();
+  CommitCode(block->host_code_size);
 
-  if (block->HasFlag(BlockFlags::IsUsingICache))
-  {
-    cinst->handler = &CachedInterpreterFunctions::CheckAndUpdateICacheTags;
-    cinst->arg = block->icache_line_count;
-    cinst++;
-  }
-  else if (block->HasFlag(BlockFlags::NeedsDynamicFetchTicks))
-  {
-    cinst->handler = &CachedInterpreterFunctions::AddDynamicFetchTicks;
-    cinst->arg = block->size;
-    cinst++;
-  }
-  else if (block->uncached_fetch_ticks > 0)
-  {
-    cinst->handler = &CachedInterpreterFunctions::AddUncachedFetchTicks;
-    cinst->arg = static_cast<u32>(block->uncached_fetch_ticks);
-    cinst++;
-  }
-
-  for (u32 i = 0; i < block->size; i++)
-  {
-    const Instruction insn = *(mips_insns++);
-    cinst->handler = GetCachedInterpreterHandler(insn);
-    cinst->arg = insn.bits;
-    if (!cinst->handler)
-      Panic("Fixme");
-
-    cinst++;
-  }
-
-  // end
-#ifdef HAS_MUSTTAIL
-  cinst->handler = &CachedInterpreterFunctions::EndBlock;
-#else
-  cinst->handler = nullptr;
-#endif
-  cinst->arg = 0;
-  cinst++;
-
-  block->host_code = cstart;
-  block->host_code_size = static_cast<u32>(cinst - cstart) * sizeof(CachedInterpreterInstruction);
-
-  SetCodeLUT(start_pc, cstart);
-  CommitCode(required_space);
+  SetCodeLUT(start_pc, block->host_code);
+  BacklinkBlocks(start_pc, block->host_code);
   MemMap::EndCodeWrite();
 
   // TODO: Block linking!
+
+  CACHED_INTERPRETER_HANDLER_RETURN(static_cast<const CachedInterpreterInstruction*>(block->host_code));
+}
+
+void CPU::CodeCache::SetCachedInterpreterHandlers()
+{
+  static constexpr const CachedInterpreterInstruction compile_or_revalidate_block_seq = {
+    &CachedInterpreterFunctions::CompileOrRevalidateBlock};
+  static constexpr const CachedInterpreterInstruction lookup_and_execute_block_seq = {
+    &CachedInterpreterFunctions::LookupAndExecuteBlock};
+
+  g_compile_or_revalidate_block = &compile_or_revalidate_block_seq;
+  g_dispatcher = &lookup_and_execute_block_seq;
 }
 
 [[noreturn]] void CPU::CodeCache::ExecuteCachedInterpreter()
@@ -933,9 +847,8 @@ void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
 #else
       do
       {
-        cinst->handler(cinst);
-        cinst++;
-      } while (cinst->handler);
+        cinst = cinst->handler(cinst);
+      } while (cinst);
 #endif
 
       CHECK_DOWNCOUNT();
@@ -952,7 +865,7 @@ void CPU::CodeCache::CompileCachedInterpreterBlock(const u32)
 void CPU::CodeCache::LogCurrentState()
 {
 #if 0
-  if (System::GetGlobalTickCounter() == 2546728915)
+  if (System::GetGlobalTickCounter() == 9953322268)
     __debugbreak();
 #endif
 #if 0
@@ -1542,11 +1455,25 @@ void CPU::CodeCache::BacklinkBlocks(u32 pc, const void* dst)
     return;
 
   const auto link_range = s_block_links.equal_range(pc);
-  for (auto it = link_range.first; it != link_range.second; ++it)
+  if (IsUsingRecompiler())
   {
-    DEBUG_LOG("Backlinking {} with dst pc {:08X} to {}{}", it->second, pc, dst,
-              (dst == g_compile_or_revalidate_block) ? "[compiler]" : "");
-    EmitJump(it->second, dst, true);
+    for (auto it = link_range.first; it != link_range.second; ++it)
+    {
+      DEBUG_LOG("Backlinking {} with dst pc {:08X} to {}{}", it->second, pc, dst,
+                (dst == g_compile_or_revalidate_block) ? "[compiler]" : "");
+      EmitJump(it->second, dst, true);
+    }
+  }
+  else
+  {
+    // TODO: maybe move this up to the compiler function
+    for (auto it = link_range.first; it != link_range.second; ++it)
+    {
+      DEBUG_LOG("Backlinking {} with dst pc {:08X} to {}{}", it->second, pc, dst,
+                (dst == g_compile_or_revalidate_block) ? "[compiler]" : "");
+
+      std::memcpy(it->second, &dst, sizeof(void*));
+    }
   }
 }
 

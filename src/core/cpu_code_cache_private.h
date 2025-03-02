@@ -212,19 +212,106 @@ static_assert(sizeof(PageProtectionInfo) == (sizeof(Block*) * 2 + 8));
 
 struct CachedInterpreterInstruction;
 
-using CachedInterpreterHandler = void (*)(const CachedInterpreterInstruction*);
-CachedInterpreterHandler GetCachedInterpreterHandler(const Instruction inst);
-
 #ifdef HAS_MUSTTAIL
-#define END_CACHED_INTERPRETER_INSTRUCTION(arg) RETURN_MUSTTAIL((arg + 1)->handler(arg + 1));
+using CachedInterpreterHandler = void (*)(const CachedInterpreterInstruction*);
+
+#define DEFINE_CACHED_INTERPRETER_HANDLER(name) void name(const CPU::CodeCache::CachedInterpreterInstruction* cbaseinst)
+#define CACHED_INTERPRETER_INSTRUCTION_TYPE(type) const type* cinst = static_cast<const type*>(cbaseinst)
+#define CACHED_INTERPRETER_HANDLER_RETURN(value) RETURN_MUSTTAIL(value->handler(value))
+#define END_CACHED_INTERPRETER_INSTRUCTION() CACHED_INTERPRETER_HANDLER_RETURN((cinst + 1))
 #else
-#define END_CACHED_INTERPRETER_INSTRUCTION(arg)
+using CachedInterpreterHandler = const CachedInterpreterInstruction* (*)(const CachedInterpreterInstruction*);
+
+#define DEFINE_CACHED_INTERPRETER_HANDLER(name)                                                                        \
+  const CPU::CodeCache::CachedInterpreterInstruction* name(                                                            \
+    const CPU::CodeCache::CachedInterpreterInstruction* cbaseinst)
+#define CACHED_INTERPRETER_INSTRUCTION_TYPE(type) const type* cinst = static_cast<const type*>(cbaseinst)
+#define CACHED_INTERPRETER_HANDLER_RETURN(value) return value
+#define END_CACHED_INTERPRETER_INSTRUCTION() CACHED_INTERPRETER_HANDLER_RETURN((cinst + 1))
 #endif
 
 struct CachedInterpreterInstruction
 {
   CachedInterpreterHandler handler;
+};
+static_assert(sizeof(CachedInterpreterInstruction) == sizeof(CachedInterpreterHandler));
+
+struct CachedInterpreterIntArgInstruction : CachedInterpreterInstruction
+{
   u32 arg;
+};
+
+struct CachedInterpreterMIPSInstruction : CachedInterpreterInstruction
+{
+  Instruction inst;
+  u32 pc;
+};
+
+struct CachedInterpreterBlockLinkInstruction : CachedInterpreterInstruction
+{
+  const CachedInterpreterInstruction* target;
+  u32 target_pc;
+};
+
+struct CachedInterpreterConditionalBranchInstruction : CachedInterpreterMIPSInstruction
+{
+  const CachedInterpreterInstruction* not_taken_target;
+};
+
+class CachedInterpreterCompiler
+{
+public:
+  CachedInterpreterCompiler(Block* block, CachedInterpreterInstruction* cinst);
+
+  CachedInterpreterInstruction* GetCodeStart() const { return m_code_start; }
+  u32 GetCodeSize() const
+  {
+    return static_cast<u32>(reinterpret_cast<u8*>(m_code_ptr) - reinterpret_cast<u8*>(m_code_start));
+  }
+
+  bool CompileBlock();
+
+private:
+  bool CompileInstruction();
+  bool CompileBranchDelaySlot();
+  bool CompileUnconditionalBranch();
+  bool CompileConditionalBranch();
+  bool CompileIndirectBranch();
+
+  void BackupState();
+  void RestoreState();
+
+  void AddBlockLinkInstruction(u32 target_pc);
+
+  template<typename T>
+  T* AddInstruction()
+  {
+    T* ret = static_cast<T*>(m_code_ptr);
+    m_code_ptr = (ret + 1);
+    return ret;
+  }
+
+  Block* m_block = nullptr;
+  CachedInterpreterInstruction* m_code_start = nullptr;
+  CachedInterpreterInstruction* m_code_ptr = nullptr;
+
+  const Instruction* inst = nullptr;
+  const InstructionInfo* iinfo = nullptr;
+  u32 m_compiler_pc = 0;
+  u32 m_current_instruction_pc = 0;
+  bool m_block_ended = false;
+  bool m_has_load_delay = false;
+
+  struct StateBackup
+  {
+    const Instruction* inst;
+    const InstructionInfo* iinfo;
+    u32 compiler_pc;
+    u32 current_instruction_pc;
+    bool block_ended;
+    bool has_load_delay;
+  };
+  StateBackup m_state_backup = {};
 };
 
 template<PGXPMode pgxp_mode>

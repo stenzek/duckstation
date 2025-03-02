@@ -101,7 +101,11 @@ static bool WriteMemoryWord(VirtualMemoryAddress addr, u32 value);
 #define DECLARE_INSTRUCTION(insn)                                                                                      \
   template<PGXPMode pgxp_mode, bool debug>                                                                             \
   static void Execute_##insn(const Instruction inst);
-CPU_FOR_EACH_INSTRUCTION(DECLARE_INSTRUCTION)
+#define DECLARE_EXCEPTIONABLE_INSTRUCTION(insn)                                                                        \
+  template<PGXPMode pgxp_mode, bool debug>                                                                             \
+  static bool Execute_##insn(const Instruction inst);
+CPU_FOR_EACH_INSTRUCTION(DECLARE_INSTRUCTION, DECLARE_EXCEPTIONABLE_INSTRUCTION)
+#undef DECLARE_EXCEPTIONABLE_INSTRUCTION
 #undef DECLARE_INSTRUCTION
 
 constinit State g_state;
@@ -855,6 +859,10 @@ void CPU::DisassembleAndPrint(u32 addr, u32 instructions_before /* = 0 */, u32 i
   template<PGXPMode pgxp_mode, bool debug>                                                                             \
   ALWAYS_INLINE_RELEASE void CPU::Execute_##insn(const Instruction inst)
 
+#define DEFINE_EXCEPTIONABLE_INSTRUCTION(insn)                                                                         \
+  template<PGXPMode pgxp_mode, bool debug>                                                                             \
+  ALWAYS_INLINE_RELEASE bool CPU::Execute_##insn(const Instruction inst)
+
 DEFINE_INSTRUCTION(sll)
 {
   const u32 rtVal = ReadReg(inst.r.rt);
@@ -966,15 +974,15 @@ DEFINE_INSTRUCTION(nor)
     PGXP::CPU_NOR(inst, rsVal, rtVal);
 }
 
-DEFINE_INSTRUCTION(add)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(add)
 {
   const u32 rsVal = ReadReg(inst.r.rs);
   const u32 rtVal = ReadReg(inst.r.rt);
   const u32 rdVal = rsVal + rtVal;
-  if (AddOverflow(rsVal, rtVal, rdVal))
+  if (AddOverflow(rsVal, rtVal, rdVal)) [[unlikely]]
   {
     RaiseException(Exception::Ov);
-    return;
+    return false;
   }
 
   WriteReg(inst.r.rd, rdVal);
@@ -983,6 +991,8 @@ DEFINE_INSTRUCTION(add)
     PGXP::CPU_ADD(inst, rsVal, rtVal);
   else if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
+
+  return true;
 }
 
 DEFINE_INSTRUCTION(addu)
@@ -998,21 +1008,23 @@ DEFINE_INSTRUCTION(addu)
     PGXP::TryMove(inst.r.rd, inst.r.rs, inst.r.rt);
 }
 
-DEFINE_INSTRUCTION(sub)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(sub)
 {
   const u32 rsVal = ReadReg(inst.r.rs);
   const u32 rtVal = ReadReg(inst.r.rt);
   const u32 rdVal = rsVal - rtVal;
-  if (SubOverflow(rsVal, rtVal, rdVal))
+  if (SubOverflow(rsVal, rtVal, rdVal)) [[unlikely]]
   {
     RaiseException(Exception::Ov);
-    return;
+    return false;
   }
 
   WriteReg(inst.r.rd, rdVal);
 
   if constexpr (pgxp_mode >= PGXPMode::CPU)
     PGXP::CPU_SUB(inst, rsVal, rtVal);
+
+  return true;
 }
 
 DEFINE_INSTRUCTION(subu)
@@ -1231,15 +1243,15 @@ DEFINE_INSTRUCTION(xori)
     PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
 }
 
-DEFINE_INSTRUCTION(addi)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(addi)
 {
   const u32 rsVal = ReadReg(inst.i.rs);
   const u32 imm = inst.i.imm_sext32();
   const u32 rtVal = rsVal + imm;
-  if (AddOverflow(rsVal, imm, rtVal))
+  if (AddOverflow(rsVal, imm, rtVal)) [[unlikely]]
   {
     RaiseException(Exception::Ov);
-    return;
+    return false;
   }
 
   WriteReg(inst.i.rt, rtVal);
@@ -1248,6 +1260,8 @@ DEFINE_INSTRUCTION(addi)
     PGXP::CPU_ADDI(inst, rsVal);
   else if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::TryMoveImm(inst.r.rd, inst.r.rs, imm);
+
+  return true;
 }
 
 DEFINE_INSTRUCTION(addiu)
@@ -1282,7 +1296,7 @@ DEFINE_INSTRUCTION(sltiu)
     PGXP::CPU_SLTIU(inst, ReadReg(inst.i.rs));
 }
 
-DEFINE_INSTRUCTION(lb)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(lb)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   if constexpr (debug)
@@ -1292,8 +1306,8 @@ DEFINE_INSTRUCTION(lb)
   }
 
   u8 value;
-  if (!ReadMemoryByte(addr, &value))
-    return;
+  if (!ReadMemoryByte(addr, &value)) [[unlikely]]
+    return false;
 
   const u32 sxvalue = SignExtend32(value);
 
@@ -1301,9 +1315,11 @@ DEFINE_INSTRUCTION(lb)
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_LBx(inst, addr, sxvalue);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(lbu)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(lbu)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   if constexpr (debug)
@@ -1313,17 +1329,19 @@ DEFINE_INSTRUCTION(lbu)
   }
 
   u8 value;
-  if (!ReadMemoryByte(addr, &value))
-    return;
+  if (!ReadMemoryByte(addr, &value)) [[unlikely]]
+    return false;
 
   const u32 zxvalue = ZeroExtend32(value);
   WriteRegDelayed(inst.i.rt, zxvalue);
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_LBx(inst, addr, zxvalue);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(lh)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(lh)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   if constexpr (debug)
@@ -1333,17 +1351,19 @@ DEFINE_INSTRUCTION(lh)
   }
 
   u16 value;
-  if (!ReadMemoryHalfWord(addr, &value))
-    return;
+  if (!ReadMemoryHalfWord(addr, &value)) [[unlikely]]
+    return false;
 
   const u32 sxvalue = SignExtend32(value);
   WriteRegDelayed(inst.i.rt, sxvalue);
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_LH(inst, addr, sxvalue);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(lhu)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(lhu)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   if constexpr (debug)
@@ -1353,17 +1373,19 @@ DEFINE_INSTRUCTION(lhu)
   }
 
   u16 value;
-  if (!ReadMemoryHalfWord(addr, &value))
-    return;
+  if (!ReadMemoryHalfWord(addr, &value)) [[unlikely]]
+    return false;
 
   const u32 zxvalue = ZeroExtend32(value);
   WriteRegDelayed(inst.i.rt, zxvalue);
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_LHU(inst, addr, zxvalue);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(lw)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(lw)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   if constexpr (debug)
@@ -1373,16 +1395,18 @@ DEFINE_INSTRUCTION(lw)
   }
 
   u32 value;
-  if (!ReadMemoryWord(addr, &value))
-    return;
+  if (!ReadMemoryWord(addr, &value)) [[unlikely]]
+    return false;
 
   WriteRegDelayed(inst.i.rt, value);
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_LW(inst, addr, value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(lwl)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(lwl)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
@@ -1393,8 +1417,8 @@ DEFINE_INSTRUCTION(lwl)
   }
 
   u32 aligned_value;
-  if (!ReadMemoryWord(aligned_addr, &aligned_value))
-    return;
+  if (!ReadMemoryWord(aligned_addr, &aligned_value)) [[unlikely]]
+    return false;
 
   // Bypasses load delay. No need to check the old value since this is the delay slot or it's not relevant.
   const u32 existing_value = (inst.i.rt == g_state.load_delay_reg) ? g_state.load_delay_value : ReadReg(inst.i.rt);
@@ -1406,9 +1430,11 @@ DEFINE_INSTRUCTION(lwl)
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_LW(inst, addr, new_value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(lwr)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(lwr)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
@@ -1419,8 +1445,8 @@ DEFINE_INSTRUCTION(lwr)
   }
 
   u32 aligned_value;
-  if (!ReadMemoryWord(aligned_addr, &aligned_value))
-    return;
+  if (!ReadMemoryWord(aligned_addr, &aligned_value)) [[unlikely]]
+    return false;
 
   // Bypasses load delay. No need to check the old value since this is the delay slot or it's not relevant.
   const u32 existing_value = (inst.i.rt == g_state.load_delay_reg) ? g_state.load_delay_value : ReadReg(inst.i.rt);
@@ -1432,9 +1458,11 @@ DEFINE_INSTRUCTION(lwr)
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_LW(inst, addr, new_value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(sb)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(sb)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   if constexpr (debug)
@@ -1444,13 +1472,16 @@ DEFINE_INSTRUCTION(sb)
   }
 
   const u32 value = ReadReg(inst.i.rt);
-  WriteMemoryByte(addr, value);
+  if (!WriteMemoryByte(addr, value)) [[unlikely]]
+    return false;
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_SB(inst, addr, value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(sh)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(sh)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   if constexpr (debug)
@@ -1460,13 +1491,16 @@ DEFINE_INSTRUCTION(sh)
   }
 
   const u32 value = ReadReg(inst.i.rt);
-  WriteMemoryHalfWord(addr, value);
+  if (!WriteMemoryHalfWord(addr, value)) [[unlikely]]
+    return false;
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_SH(inst, addr, value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(sw)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(sw)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   if constexpr (debug)
@@ -1476,13 +1510,16 @@ DEFINE_INSTRUCTION(sw)
   }
 
   const u32 value = ReadReg(inst.i.rt);
-  WriteMemoryWord(addr, value);
+  if (!WriteMemoryWord(addr, value)) [[unlikely]]
+    return false;
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_SW(inst, addr, value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(swl)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(swl)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
@@ -1495,19 +1532,22 @@ DEFINE_INSTRUCTION(swl)
   const u32 reg_value = ReadReg(inst.i.rt);
   const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
   u32 mem_value;
-  if (!ReadMemoryWord(aligned_addr, &mem_value))
-    return;
+  if (!ReadMemoryWord(aligned_addr, &mem_value)) [[unlikely]]
+    return false;
 
   const u32 mem_mask = UINT32_C(0xFFFFFF00) << shift;
   const u32 new_value = (mem_value & mem_mask) | (reg_value >> (24 - shift));
 
-  WriteMemoryWord(aligned_addr, new_value);
+  if (!WriteMemoryWord(aligned_addr, new_value)) [[unlikely]]
+    return false;
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_SW(inst, aligned_addr, new_value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(swr)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(swr)
 {
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   const VirtualMemoryAddress aligned_addr = addr & ~UINT32_C(3);
@@ -1520,16 +1560,19 @@ DEFINE_INSTRUCTION(swr)
   const u32 reg_value = ReadReg(inst.i.rt);
   const u8 shift = (Truncate8(addr) & u8(3)) * u8(8);
   u32 mem_value;
-  if (!ReadMemoryWord(aligned_addr, &mem_value))
-    return;
+  if (!ReadMemoryWord(aligned_addr, &mem_value)) [[unlikely]]
+    return false;
 
   const u32 mem_mask = UINT32_C(0x00FFFFFF) >> (24 - shift);
   const u32 new_value = (mem_value & mem_mask) | (reg_value << shift);
 
-  WriteMemoryWord(aligned_addr, new_value);
+  if (!WriteMemoryWord(aligned_addr, new_value)) [[unlikely]]
+    return false;
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_SW(inst, aligned_addr, new_value);
+
+  return true;
 }
 
 DEFINE_INSTRUCTION(j)
@@ -1596,7 +1639,7 @@ DEFINE_INSTRUCTION(b)
     Branch(g_state.pc + (inst.i.imm_sext32() << 2));
 }
 
-DEFINE_INSTRUCTION(mfc0)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(mfc0)
 {
   u32 value;
 
@@ -1648,16 +1691,18 @@ DEFINE_INSTRUCTION(mfc0)
 
     default:
       RaiseException(Exception::RI);
-      return;
+      return false;
   }
 
   WriteRegDelayed(inst.r.rt, value);
 
   if constexpr (pgxp_mode == PGXPMode::CPU)
     PGXP::CPU_MFC0(inst, value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(mtc0)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(mtc0)
 {
   u32 value = ReadReg(inst.r.rt);
   [[maybe_unused]] const u32 orig_value = value;
@@ -1734,11 +1779,13 @@ DEFINE_INSTRUCTION(mtc0)
 
     [[unlikely]] default:
       RaiseException(Exception::RI);
-      return;
+      return false;
   }
 
   if constexpr (pgxp_mode == PGXPMode::CPU)
     PGXP::CPU_MTC0(inst, value, orig_value);
+
+  return true;
 }
 
 DEFINE_INSTRUCTION(rfe)
@@ -1795,43 +1842,48 @@ DEFINE_INSTRUCTION(cop2)
   GTE::ExecuteInstruction(inst.bits);
 }
 
-DEFINE_INSTRUCTION(lwc2)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(lwc2)
 {
-  if (!g_state.cop0_regs.sr.CE2)
+  if (!g_state.cop0_regs.sr.CE2) [[unlikely]]
   {
     WARNING_LOG("Coprocessor 2 not enabled");
     RaiseException(Exception::CpU);
-    return;
+    return false;
   }
 
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   u32 value;
-  if (!ReadMemoryWord(addr, &value))
-    return;
+  if (!ReadMemoryWord(addr, &value)) [[unlikely]]
+    return false;
 
   GTE::WriteRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())), value);
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_LWC2(inst, addr, value);
+
+  return true;
 }
 
-DEFINE_INSTRUCTION(swc2)
+DEFINE_EXCEPTIONABLE_INSTRUCTION(swc2)
 {
-  if (!g_state.cop0_regs.sr.CE2)
+  if (!g_state.cop0_regs.sr.CE2) [[unlikely]]
   {
     WARNING_LOG("Coprocessor 2 not enabled");
     RaiseException(Exception::CpU);
-    return;
+    return false;
   }
 
   StallUntilGTEComplete();
 
   const VirtualMemoryAddress addr = ReadReg(inst.i.rs) + inst.i.imm_sext32();
   const u32 value = GTE::ReadRegister(ZeroExtend32(static_cast<u8>(inst.i.rt.GetValue())));
-  WriteMemoryWord(addr, value);
+  if (!WriteMemoryWord(addr, value)) [[unlikely]]
+    return false;
 
   if constexpr (pgxp_mode >= PGXPMode::Memory)
     PGXP::CPU_SWC2(inst, addr, value);
+
+  return true;
 }
 
 template<PGXPMode pgxp_mode, bool debug>
@@ -2772,67 +2824,472 @@ void CPU::SetSingleStepFlag()
     System::InterruptExecution();
 }
 
-namespace CPU {
-#define MAKE_CACHED_INSTRUCTION_HANDLER(insn)                                                                          \
-  template<PGXPMode pgxp_mode>                                                                                         \
-  static void CachedInstructionHandler_##insn(const CPU::CodeCache::CachedInterpreterInstruction* cinst)               \
-  {                                                                                                                    \
-    const Instruction inst{cinst->arg};                                                                                \
-    g_state.pending_ticks++;                                                                                           \
-    g_state.current_instruction.bits = inst.bits;                                                                      \
-    g_state.current_instruction_pc = g_state.pc;                                                                       \
-    g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;                                           \
-    g_state.branch_was_taken = false;                                                                                  \
-    g_state.exception_raised = false;                                                                                  \
-    g_state.pc = g_state.npc;                                                                                          \
-    g_state.npc += 4;                                                                                                  \
-    Execute_##insn<pgxp_mode, false>(inst);                                                                            \
-    UpdateLoadDelay(); /* TODO: For non-load instructions, we don't need to update next_load_delay_reg */              \
-    g_state.next_instruction_is_branch_delay_slot = false; /* FIXME */                                                 \
-    END_CACHED_INTERPRETER_INSTRUCTION(cinst);                                                                         \
-  }
-
-CPU_FOR_EACH_INSTRUCTION(MAKE_CACHED_INSTRUCTION_HANDLER);
-
+namespace CPU::CodeCache::CachedInterpreter {
 // TODO: inline gte ops
 
-static void CachedInstructionHandler_gte(const CPU::CodeCache::CachedInterpreterInstruction* cinst)
+#define SIMPLE_CACHED_INSTRUCTION_HANDLER(insn)                                                                        \
+  template<PGXPMode pgxp_mode>                                                                                         \
+  static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_##insn)                                                             \
+  {                                                                                                                    \
+    CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);                                             \
+    g_state.pending_ticks++;                                                                                           \
+    Execute_##insn<pgxp_mode, false>(cinst->inst);                                                                     \
+    UpdateLoadDelay(); /* TODO: For non-load instructions, we don't need to update next_load_delay_reg */              \
+    END_CACHED_INTERPRETER_INSTRUCTION();                                                                              \
+  }
+
+SIMPLE_CACHED_INSTRUCTION_HANDLER(lui);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(addiu);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(slti);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(sltiu);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(andi);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(ori);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(xori);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(sll);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(srl);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(sra);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(sllv);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(srlv);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(srav);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(mfhi);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(mthi);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(mflo);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(mtlo);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(mult);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(multu);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(div);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(divu);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(addu);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(subu);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(and);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(or);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(xor);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(nor);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(slt);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(sltu);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(mfc2);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(mtc2);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(cfc2);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(ctc2);
+SIMPLE_CACHED_INSTRUCTION_HANDLER(rfe);
+
+#undef SIMPLE_CACHED_INSTRUCTION_HANDLER
+
+#define EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(insn)                                                                 \
+  template<PGXPMode pgxp_mode>                                                                                         \
+  static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_##insn)                                                             \
+  {                                                                                                                    \
+    CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);                                             \
+    g_state.pending_ticks++;                                                                                           \
+    g_state.current_instruction_pc = cinst->pc;                                                                        \
+    if (!Execute_##insn<pgxp_mode, false>(cinst->inst))                                                                \
+      CACHED_INTERPRETER_HANDLER_RETURN(static_cast<const CachedInterpreterInstruction*>(g_dispatcher));               \
+    UpdateLoadDelay(); /* TODO: For non-load instructions, we don't need to update next_load_delay_reg */              \
+    END_CACHED_INTERPRETER_INSTRUCTION();                                                                              \
+  }
+
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(addi);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(add);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(sub);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(lb);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(lbu);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(lh);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(lhu);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(lw);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(lwl);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(lwr);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(sb);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(sh);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(sw);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(swl);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(swr);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(mfc0);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(mtc0);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(lwc2);
+EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER(swc2);
+
+#undef EXCEPTIONABLE_CACHED_INSTRUCTION_HANDLER
+
+// TODO: Variants with no delay slot that jump direct
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_j)
 {
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);
+
   g_state.pending_ticks++;
-  g_state.current_instruction.bits = cinst->arg;
-  g_state.current_instruction_pc = g_state.pc;
-  g_state.current_instruction_was_branch_taken = g_state.branch_was_taken;
-  g_state.branch_was_taken = false;
-  g_state.exception_raised = false;
-  g_state.pc = g_state.npc;
-  g_state.npc += 4;
-  StallUntilGTEComplete();
-  GTE::ExecuteInstruction(cinst->arg);
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  // TODO: Alignment check
+  // g_state.pc = (cinst->pc & UINT32_C(0xF0000000)) | (cinst->inst.j.target << 2);
   UpdateLoadDelay();
-  g_state.next_instruction_is_branch_delay_slot = false; /* FIXME */
-  END_CACHED_INTERPRETER_INSTRUCTION(cinst);
+
+  END_CACHED_INTERPRETER_INSTRUCTION();
 }
 
-} // namespace CPU
-
-CPU::CodeCache::CachedInterpreterHandler CPU::CodeCache::GetCachedInterpreterHandler(const Instruction inst)
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_jal)
 {
-  static constexpr PGXPMode pgxp_mode = PGXPMode::Disabled;
-#define FPTR(insn) &CachedInstructionHandler_##insn<pgxp_mode>
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);
 
-  switch (inst.op)
+  g_state.pending_ticks++;
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  const u32 ra = cinst->pc + (sizeof(Instruction) * 2);
+  WriteReg(Reg::ra, ra);
+  // g_state.pc = ((cinst->pc & UINT32_C(0xF0000000)) | (cinst->inst.j.target << 2));
+  UpdateLoadDelay();
+
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_jr)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  const u32 target = ReadReg(cinst->inst.r.rs);
+  g_state.pc = target;
+  UpdateLoadDelay();
+
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_jalr)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  const u32 ra = cinst->pc + (sizeof(Instruction) * 2);
+  const u32 target = ReadReg(cinst->inst.r.rs);
+  WriteReg(cinst->inst.r.rd, ra);
+  g_state.pc = target;
+  UpdateLoadDelay();
+
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_beq)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterConditionalBranchInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  const bool branch = (ReadReg(cinst->inst.i.rs) == ReadReg(cinst->inst.i.rt));
+  const CachedInterpreterInstruction* next = branch ? (cinst + 1) : cinst->not_taken_target;
+  UpdateLoadDelay();
+
+  CACHED_INTERPRETER_HANDLER_RETURN(next);
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_bne)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterConditionalBranchInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  const bool branch = (ReadReg(cinst->inst.i.rs) != ReadReg(cinst->inst.i.rt));
+  const CachedInterpreterInstruction* next = branch ? (cinst + 1) : cinst->not_taken_target;
+  UpdateLoadDelay();
+
+  CACHED_INTERPRETER_HANDLER_RETURN(next);
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_bgtz)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterConditionalBranchInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  const bool branch = (static_cast<s32>(ReadReg(cinst->inst.i.rs)) > 0);
+  const CachedInterpreterInstruction* next = branch ? (cinst + 1) : cinst->not_taken_target;
+  UpdateLoadDelay();
+
+  CACHED_INTERPRETER_HANDLER_RETURN(next);
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_blez)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterConditionalBranchInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  const bool branch = (static_cast<s32>(ReadReg(cinst->inst.i.rs)) <= 0);
+  const CachedInterpreterInstruction* next = branch ? (cinst + 1) : cinst->not_taken_target;
+  UpdateLoadDelay();
+
+  CACHED_INTERPRETER_HANDLER_RETURN(next);
+}
+
+// TODO: Variatns for the gez etc
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_b)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterConditionalBranchInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction_in_branch_delay_slot = true;
+
+  const u8 rt = static_cast<u8>(cinst->inst.i.rt.GetValue());
+
+  // bgez is the inverse of bltz, so simply do ltz and xor the result
+  const bool bgez = ConvertToBoolUnchecked(rt & u8(1));
+  const bool branch = (static_cast<s32>(ReadReg(cinst->inst.i.rs)) < 0) ^ bgez;
+  const CachedInterpreterInstruction* next = branch ? (cinst + 1) : cinst->not_taken_target;
+
+  // register is still linked even if the branch isn't taken
+  const bool link = (rt & u8(0x1E)) == u8(0x10);
+  if (link)
+    WriteReg(Reg::ra, cinst->pc + (sizeof(Instruction) * 2));
+
+  // g_state.pc = cinst->pc + branch ? (cinst->inst.i.imm_sext32() << 2) : (sizeof(Instruction) * 2);
+  UpdateLoadDelay();
+
+  CACHED_INTERPRETER_HANDLER_RETURN(next);
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_syscall)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction.bits = cinst->inst.bits;
+  g_state.current_instruction_pc = cinst->pc;
+
+  Execute_syscall<PGXPMode::Disabled, false>(cinst->inst);
+
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_break)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);
+
+  g_state.pending_ticks++;
+  g_state.current_instruction.bits = cinst->inst.bits;
+  g_state.current_instruction_pc = cinst->pc;
+
+  Execute_break<PGXPMode::Disabled, false>(cinst->inst);
+
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Execute_gte)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterMIPSInstruction);
+  g_state.pending_ticks++;
+  StallUntilGTEComplete();
+  GTE::ExecuteInstruction(cinst->inst.bits);
+  UpdateLoadDelay();
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(LogCurrentState)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterInstruction);
+  CPU::CodeCache::LogCurrentState();
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(CheckAndUpdateICacheTags)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterIntArgInstruction);
+  CPU::CheckAndUpdateICacheTags(cinst->arg);
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(AddDynamicFetchTicks)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterIntArgInstruction);
+  AddPendingTicks(static_cast<TickCount>(
+    cinst->arg *
+    static_cast<u32>(*Bus::GetMemoryAccessTimePtr(g_state.pc & PHYSICAL_MEMORY_ADDRESS_MASK, MemoryAccessSize::Word))));
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(AddUncachedFetchTicks)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterIntArgInstruction);
+  CPU::AddPendingTicks(static_cast<TickCount>(cinst->arg));
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(EndBlock)
+{
+  // TODO: jump to top of block if looping, block linking, etc.
+#ifdef HAS_MUSTTAIL
+  return;
+#else
+  return nullptr;
+#endif
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(CheckDowncountAndEndBlock)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterBlockLinkInstruction);
+
+  g_state.pc = cinst->target_pc;
+  g_state.current_instruction_in_branch_delay_slot = false;
+
+  if (g_state.pending_ticks >= g_state.downcount)
+  {
+#ifdef HAS_MUSTTAIL
+    return;
+#else
+    return nullptr;
+#endif
+  }
+
+  // TODO: jump to top of block if looping, block linking, etc.
+  CACHED_INTERPRETER_HANDLER_RETURN(cinst->target);
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(NopAndUpdateLoadDelay)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterInstruction);
+  g_state.pending_ticks++;
+  CPU::UpdateLoadDelay();
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+static DEFINE_CACHED_INTERPRETER_HANDLER(Nop)
+{
+  CACHED_INTERPRETER_INSTRUCTION_TYPE(CachedInterpreterInstruction);
+  g_state.pending_ticks++;
+  END_CACHED_INTERPRETER_INSTRUCTION();
+}
+
+} // namespace CPU::CodeCache::CachedInterpreter
+
+CPU::CodeCache::CachedInterpreterCompiler::CachedInterpreterCompiler(
+  CPU::CodeCache::Block* block, CPU::CodeCache::CachedInterpreterInstruction* cinst)
+  : m_block(block), m_code_start(cinst), m_code_ptr(cinst), inst(block->Instructions()),
+    iinfo(block->InstructionsInfo()), m_compiler_pc(block->pc)
+{
+}
+
+bool CPU::CodeCache::CachedInterpreterCompiler::CompileBlock()
+{
+  // TODO: Maybe move the interpreter implementations to an inl file, and split all this out...
+
+  if (false)
+  {
+    AddInstruction<CachedInterpreterInstruction>()->handler = &CachedInterpreter::LogCurrentState;
+  }
+
+  if (m_block->HasFlag(BlockFlags::IsUsingICache))
+  {
+    CachedInterpreterIntArgInstruction* ciinst = AddInstruction<CachedInterpreterIntArgInstruction>();
+    ciinst->handler = &CachedInterpreter::CheckAndUpdateICacheTags;
+    ciinst->arg = m_block->icache_line_count;
+  }
+  else if (m_block->HasFlag(BlockFlags::NeedsDynamicFetchTicks))
+  {
+    CachedInterpreterIntArgInstruction* ciinst = AddInstruction<CachedInterpreterIntArgInstruction>();
+    ciinst->handler = &CachedInterpreter::AddDynamicFetchTicks;
+    ciinst->arg = m_block->size;
+  }
+  else if (m_block->uncached_fetch_ticks > 0)
+  {
+    CachedInterpreterIntArgInstruction* ciinst = AddInstruction<CachedInterpreterIntArgInstruction>();
+    ciinst->handler = &CachedInterpreter::AddUncachedFetchTicks;
+    ciinst->arg = static_cast<u32>(m_block->uncached_fetch_ticks);
+  }
+
+  m_current_instruction_pc = m_block->pc;
+  m_compiler_pc = m_block->pc + sizeof(Instruction);
+  m_has_load_delay = true;
+
+  for (;;)
+  {
+    CompileInstruction();
+
+    if (m_block_ended || iinfo->is_last_instruction)
+    {
+      if (!m_block_ended)
+        AddBlockLinkInstruction(m_compiler_pc);
+
+      break;
+    }
+
+    inst++;
+    iinfo++;
+    m_current_instruction_pc += sizeof(Instruction);
+    m_compiler_pc += sizeof(Instruction);
+  }
+
+  return true;
+}
+
+bool CPU::CodeCache::CachedInterpreterCompiler::CompileBranchDelaySlot()
+{
+  inst++;
+  iinfo++;
+  m_current_instruction_pc += sizeof(Instruction);
+  m_compiler_pc += sizeof(Instruction);
+
+  return CompileInstruction();
+}
+
+void CPU::CodeCache::CachedInterpreterCompiler::BackupState()
+{
+  m_state_backup.inst = inst;
+  m_state_backup.iinfo = iinfo;
+  m_state_backup.compiler_pc = m_compiler_pc;
+  m_state_backup.current_instruction_pc = m_current_instruction_pc;
+  m_state_backup.block_ended = m_block_ended;
+  m_state_backup.has_load_delay = m_has_load_delay;
+}
+
+void CPU::CodeCache::CachedInterpreterCompiler::RestoreState()
+{
+  inst = m_state_backup.inst;
+  iinfo = m_state_backup.iinfo;
+  m_compiler_pc = m_state_backup.compiler_pc;
+  m_current_instruction_pc = m_state_backup.current_instruction_pc;
+  m_block_ended = m_state_backup.block_ended;
+  m_has_load_delay = m_state_backup.has_load_delay;
+}
+
+bool CPU::CodeCache::CachedInterpreterCompiler::CompileInstruction()
+{
+  // skip nops
+  if (inst->bits == 0)
+  {
+    AddInstruction<CachedInterpreterInstruction>()->handler =
+      std::exchange(m_has_load_delay, false) ? &CachedInterpreter::NopAndUpdateLoadDelay : &CachedInterpreter::Nop;
+    return true;
+  }
+
+  m_has_load_delay = false;
+
+  CachedInterpreterMIPSInstruction* cminst = static_cast<CachedInterpreterMIPSInstruction*>(m_code_ptr);
+  cminst->pc = m_compiler_pc;
+  cminst->inst.bits = inst->bits;
+
+  static constexpr PGXPMode pgxp_mode = PGXPMode::Disabled;
+#define FPTR(insn) &CPU::CodeCache::CachedInterpreter::Execute_##insn<pgxp_mode>
+
+#define RETURN_STANDARD_HANDLER(fptr)                                                                                  \
+  cminst->handler = fptr;                                                                                              \
+  m_code_ptr = (cminst + 1);                                                                                           \
+  return true;
+
+  switch (inst->op)
   {
 #define STANDARD_OP(op, insn)                                                                                          \
   case InstructionOp::op:                                                                                              \
-    return FPTR(insn);
+    RETURN_STANDARD_HANDLER(FPTR(insn));
 
-    STANDARD_OP(b, b);
-    STANDARD_OP(j, j);
-    STANDARD_OP(jal, jal);
-    STANDARD_OP(beq, beq);
-    STANDARD_OP(bne, bne);
-    STANDARD_OP(blez, blez);
-    STANDARD_OP(bgtz, bgtz);
+#define STANDARD_OP_LD(op, insn)                                                                                       \
+  case InstructionOp::op:                                                                                              \
+    m_has_load_delay = true;                                                                                           \
+    RETURN_STANDARD_HANDLER(FPTR(insn));
+
     STANDARD_OP(addi, addi);
     STANDARD_OP(addiu, addiu);
     STANDARD_OP(slti, slti);
@@ -2841,13 +3298,13 @@ CPU::CodeCache::CachedInterpreterHandler CPU::CodeCache::GetCachedInterpreterHan
     STANDARD_OP(ori, ori);
     STANDARD_OP(xori, xori);
     STANDARD_OP(lui, lui);
-    STANDARD_OP(lb, lb);
-    STANDARD_OP(lbu, lbu);
-    STANDARD_OP(lh, lh);
-    STANDARD_OP(lhu, lhu);
-    STANDARD_OP(lw, lw);
-    STANDARD_OP(lwl, lwl);
-    STANDARD_OP(lwr, lwr);
+    STANDARD_OP_LD(lb, lb);
+    STANDARD_OP_LD(lbu, lbu);
+    STANDARD_OP_LD(lh, lh);
+    STANDARD_OP_LD(lhu, lhu);
+    STANDARD_OP_LD(lw, lw);
+    STANDARD_OP_LD(lwl, lwl);
+    STANDARD_OP_LD(lwr, lwr);
     STANDARD_OP(sb, sb);
     STANDARD_OP(sh, sh);
     STANDARD_OP(sw, sw);
@@ -2861,11 +3318,11 @@ CPU::CodeCache::CachedInterpreterHandler CPU::CodeCache::GetCachedInterpreterHan
 
     case InstructionOp::funct:
     {
-      switch (inst.r.funct)
+      switch (inst->r.funct)
       {
 #define FUNCT_OP(op, insn)                                                                                             \
   case InstructionFunct::op:                                                                                           \
-    return FPTR(insn);
+    RETURN_STANDARD_HANDLER(FPTR(insn));
 
         FUNCT_OP(sll, sll);
         FUNCT_OP(srl, srl);
@@ -2873,10 +3330,6 @@ CPU::CodeCache::CachedInterpreterHandler CPU::CodeCache::GetCachedInterpreterHan
         FUNCT_OP(sllv, sllv);
         FUNCT_OP(srlv, srlv);
         FUNCT_OP(srav, srav);
-        FUNCT_OP(jr, jr);
-        FUNCT_OP(jalr, jalr);
-        FUNCT_OP(syscall, syscall);
-        FUNCT_OP(break_, break);
         FUNCT_OP(mfhi, mfhi);
         FUNCT_OP(mthi, mthi);
         FUNCT_OP(mflo, mflo);
@@ -2896,6 +3349,21 @@ CPU::CodeCache::CachedInterpreterHandler CPU::CodeCache::GetCachedInterpreterHan
         FUNCT_OP(slt, slt);
         FUNCT_OP(sltu, sltu);
 
+        case InstructionFunct::jr:
+        case InstructionFunct::jalr:
+          return CompileIndirectBranch();
+
+        case InstructionFunct::syscall:
+        case InstructionFunct::break_:
+        {
+          cminst->handler = (inst->r.funct == InstructionFunct::syscall) ? &CachedInterpreter::Execute_syscall :
+                                                                           &CachedInterpreter::Execute_break;
+          m_code_ptr = (cminst + 1);
+          AddInstruction<CachedInterpreterInstruction>()->handler = &CachedInterpreter::EndBlock;
+          m_block_ended = true;
+          return true;
+        }
+
         default:
           Panic("Unhandled funct");
           break;
@@ -2906,72 +3374,168 @@ CPU::CodeCache::CachedInterpreterHandler CPU::CodeCache::GetCachedInterpreterHan
 
     case InstructionOp::cop0:
     {
-      if (inst.cop.IsCommonInstruction())
+      if (inst->cop.IsCommonInstruction())
       {
-        switch (inst.cop.CommonOp())
+        switch (inst->cop.CommonOp())
         {
           case CopCommonInstruction::mfcn:
-            return FPTR(mfc0);
+            m_has_load_delay = true;
+            RETURN_STANDARD_HANDLER(FPTR(mfc0));
 
           case CopCommonInstruction::mtcn:
-            return FPTR(mtc0);
+            RETURN_STANDARD_HANDLER(FPTR(mtc0));
 
           default:
             Panic("Unhandled cop0");
-            return nullptr;
+            return false;
         }
       }
-      else if (inst.cop.Cop0Op() == Cop0Instruction::rfe)
+      else if (inst->cop.Cop0Op() == Cop0Instruction::rfe)
       {
-        return FPTR(rfe);
+        RETURN_STANDARD_HANDLER(FPTR(rfe));
       }
       else
       {
         Panic("Unhandled cop0");
-        return nullptr;
+        return false;
       }
     }
     break;
 
     case InstructionOp::cop2:
     {
-      if (inst.cop.IsCommonInstruction())
+      if (inst->cop.IsCommonInstruction())
       {
-        switch (inst.cop.CommonOp())
+        switch (inst->cop.CommonOp())
         {
           case CopCommonInstruction::cfcn:
-            return FPTR(cfc2);
+            m_has_load_delay = true;
+            RETURN_STANDARD_HANDLER(FPTR(cfc2));
 
           case CopCommonInstruction::ctcn:
-            return FPTR(ctc2);
+            RETURN_STANDARD_HANDLER(FPTR(ctc2));
 
           case CopCommonInstruction::mfcn:
-            return FPTR(mfc2);
+            m_has_load_delay = true;
+            RETURN_STANDARD_HANDLER(FPTR(mfc2));
 
           case CopCommonInstruction::mtcn:
-            return FPTR(mtc2);
+            RETURN_STANDARD_HANDLER(FPTR(mtc2));
 
           default:
             Panic("Unhandled cop2");
-            return nullptr;
+            return false;
         }
       }
       else
       {
-        return &CachedInstructionHandler_gte;
+        RETURN_STANDARD_HANDLER(&CachedInterpreter::Execute_gte);
       }
     }
     break;
 
+    case InstructionOp::j:
+    case InstructionOp::jal:
+      return CompileUnconditionalBranch();
+
+    case InstructionOp::bne:
+    case InstructionOp::beq:
+    case InstructionOp::blez:
+    case InstructionOp::bgtz:
+    case InstructionOp::b:
+      return CompileConditionalBranch();
+
     default:
       Panic("Unhandled op");
-      break;
+      return false;
   }
+
+#undef RETURN_STANDARD_HANDLER
+#undef FPTR
 }
 
-template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::Disabled>();
-template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::Memory>();
-template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::CPU>();
+void CPU::CodeCache::CachedInterpreterCompiler::AddBlockLinkInstruction(u32 target_pc)
+{
+  CachedInterpreterBlockLinkInstruction* link_inst = AddInstruction<CachedInterpreterBlockLinkInstruction>();
+  link_inst->handler = &CachedInterpreter::CheckDowncountAndEndBlock;
+  link_inst->target = static_cast<const CachedInterpreterBlockLinkInstruction*>(
+    (target_pc == m_block->pc) ? CreateSelfBlockLink(m_block, &link_inst->target, m_code_start) :
+                                 CreateBlockLink(m_block, &link_inst->target, target_pc));
+  link_inst->target_pc = target_pc;
+  m_block_ended = true;
+}
+
+bool CPU::CodeCache::CachedInterpreterCompiler::CompileIndirectBranch()
+{
+  CachedInterpreterMIPSInstruction* cinst = AddInstruction<CachedInterpreterMIPSInstruction>();
+  cinst->pc = m_current_instruction_pc;
+  cinst->inst.bits = inst->bits;
+  cinst->handler =
+    (inst->r.funct == InstructionFunct::jr) ? &CachedInterpreter::Execute_jr : &CachedInterpreter::Execute_jalr;
+
+  if (!CompileBranchDelaySlot())
+    return false;
+
+  AddInstruction<CachedInterpreterInstruction>()->handler = &CachedInterpreter::EndBlock;
+  m_block_ended = true;
+  return true;
+}
+
+bool CPU::CodeCache::CachedInterpreterCompiler::CompileUnconditionalBranch()
+{
+  CachedInterpreterMIPSInstruction* cinst = AddInstruction<CachedInterpreterMIPSInstruction>();
+  cinst->pc = m_current_instruction_pc;
+  cinst->inst.bits = inst->bits;
+  cinst->handler = (inst->op == InstructionOp::j) ? &CachedInterpreter::Execute_j : &CachedInterpreter::Execute_jal;
+
+  const u32 new_pc = (cinst->pc & UINT32_C(0xF0000000)) | (cinst->inst.j.target << 2);
+  if (!CompileBranchDelaySlot())
+    return false;
+
+  AddBlockLinkInstruction(new_pc);
+  return true;
+}
+
+bool CPU::CodeCache::CachedInterpreterCompiler::CompileConditionalBranch()
+{
+  // TODO: Optimize beq reg, reg
+
+  CachedInterpreterConditionalBranchInstruction* cb_inst =
+    AddInstruction<CachedInterpreterConditionalBranchInstruction>();
+  cb_inst->pc = m_current_instruction_pc;
+  cb_inst->inst.bits = inst->bits;
+
+  switch (inst->op)
+  {
+      // clang-format off
+    case InstructionOp::bne: cb_inst->handler = &CachedInterpreter::Execute_bne; break;
+    case InstructionOp::beq: cb_inst->handler = &CachedInterpreter::Execute_beq; break;
+    case InstructionOp::blez: cb_inst->handler = &CachedInterpreter::Execute_blez; break;
+    case InstructionOp::bgtz: cb_inst->handler = &CachedInterpreter::Execute_bgtz; break;
+    case InstructionOp::b: cb_inst->handler = &CachedInterpreter::Execute_b; break;
+    DefaultCaseIsUnreachable();
+      // clang-format on
+  }
+
+  const u32 taken_pc = m_compiler_pc + (inst->i.imm_sext32() << 2);
+  const u32 not_taken_pc = m_compiler_pc + sizeof(Instruction);
+
+  // Taken path
+  BackupState();
+  if (!CompileBranchDelaySlot())
+    return false;
+
+  AddBlockLinkInstruction(taken_pc);
+
+  // Not taken path
+  RestoreState();
+  cb_inst->not_taken_target = m_code_ptr;
+  if (!CompileBranchDelaySlot())
+    return false;
+
+  AddBlockLinkInstruction(not_taken_pc);
+  return true;
+}
 
 template<PGXPMode pgxp_mode>
 void CPU::CodeCache::InterpretUncachedBlock()
@@ -2980,8 +3544,8 @@ void CPU::CodeCache::InterpretUncachedBlock()
   if (!FetchInstructionForInterpreterFallback())
     return;
 
-  // At this point, pc contains the last address executed (in the previous block). The instruction has not been fetched
-  // yet. pc shouldn't be updated until the fetch occurs, that way the exception occurs in the delay slot.
+  // At this point, pc contains the last address executed (in the previous block). The instruction has not been
+  // fetched yet. pc shouldn't be updated until the fetch occurs, that way the exception occurs in the delay slot.
   bool in_branch_delay_slot = false;
   for (;;)
   {
@@ -3029,6 +3593,10 @@ void CPU::CodeCache::InterpretUncachedBlock()
     in_branch_delay_slot = branch;
   }
 }
+
+template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::Disabled>();
+template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::Memory>();
+template void CPU::CodeCache::InterpretUncachedBlock<PGXPMode::CPU>();
 
 bool CPU::RecompilerThunks::InterpretInstruction()
 {
