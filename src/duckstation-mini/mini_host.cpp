@@ -1277,11 +1277,14 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
 
 void Host::ReportFatalError(std::string_view title, std::string_view message)
 {
+  // Depending on the platform, this may not be available.
+  std::fputs(SmallString::from_format("Fatal error: {}: {}\n", title, message).c_str(), stderr);
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TinyString(title).c_str(), SmallString(message).c_str(), nullptr);
 }
 
 void Host::ReportErrorAsync(std::string_view title, std::string_view message)
 {
+  std::fputs(SmallString::from_format("Error: {}: {}\n", title, message).c_str(), stderr);
   SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, TinyString(title).c_str(), SmallString(message).c_str(), nullptr);
 }
 
