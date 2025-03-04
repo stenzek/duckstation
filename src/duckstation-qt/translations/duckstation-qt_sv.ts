@@ -1620,15 +1620,15 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Options and Patches</source>
-        <translation>Alternativ och patchar</translation>
+        <translation type="vanished">Alternativ och patchar</translation>
     </message>
     <message>
         <source>Fast Boot</source>
-        <translation>Snabb uppstart</translation>
+        <translation type="vanished">Snabb uppstart</translation>
     </message>
     <message>
         <source>Fast Forward Boot</source>
-        <translation>Snabbspolad uppstart</translation>
+        <translation type="vanished">Snabbspolad uppstart</translation>
     </message>
     <message>
         <source>Unchecked</source>
@@ -1636,7 +1636,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Patches the BIOS to skip the console&apos;s boot animation. Does not work with all games, but usually safe to enable.</source>
-        <translation>Patchar BIOS till att hoppa över konsolens uppstartsanimering. Fungerar inte med alla spel men är oftast säkert att aktivera.</translation>
+        <translation type="vanished">Patchar BIOS till att hoppa över konsolens uppstartsanimering. Fungerar inte med alla spel men är oftast säkert att aktivera.</translation>
     </message>
     <message>
         <source>Logs BIOS calls to printf(). Not all games contain debugging messages.</source>
@@ -1684,11 +1684,11 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Patches the BIOS to skip the boot animation. Safe to enable.</source>
-        <translation>Patchar BIOS till att hoppa över uppstartsanimeringen. Säkert att aktivera.</translation>
+        <translation type="vanished">Patchar BIOS till att hoppa över uppstartsanimeringen. Säkert att aktivera.</translation>
     </message>
     <message>
         <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
-        <translation>Snabbspolar igenom den tidiga inläsningsprocessen vid snabb uppstart, vilket sparar tid. Resultaten kan variera mellan spel.</translation>
+        <translation type="vanished">Snabbspolar igenom den tidiga inläsningsprocessen vid snabb uppstart, vilket sparar tid. Resultaten kan variera mellan spel.</translation>
     </message>
     <message>
         <source>Use Global Setting</source>
@@ -1705,6 +1705,10 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Select PIO Image</source>
         <translation>VÄLJ PIO-avbild</translation>
+    </message>
+    <message>
+        <source>Options</source>
+        <translation>Alternativ</translation>
     </message>
 </context>
 <context>
@@ -2102,6 +2106,30 @@ Den här varningen visas bara en gång.</translation>
     <message>
         <source>%1% (%2MHz)</source>
         <translation>%1% (%2MHz)</translation>
+    </message>
+    <message>
+        <source>Fast Boot</source>
+        <translation>Snabb uppstart</translation>
+    </message>
+    <message>
+        <source>Fast Forward Boot</source>
+        <translation>Snabbspolad uppstart</translation>
+    </message>
+    <message>
+        <source>Fast Forward Memory Card Access</source>
+        <translation>Snabbspolning av minneskort</translation>
+    </message>
+    <message>
+        <source>Skips the boot animation. Safe to enable.</source>
+        <translation>Hoppar över uppstartsanimationen. Säkert att aktivera.</translation>
+    </message>
+    <message>
+        <source>Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.</source>
+        <translation>Snabbspolar igenom den tidiga inläsningsprocessen vid snabb uppstart, vilket sparar tid. Resultaten kan variera mellan spel.</translation>
+    </message>
+    <message>
+        <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
+        <translation>Snabbspolar genom minneskortsåtkomst, både inläsning och lagring. Kan minska väntetiderna i spel som ofta använder minneskort.</translation>
     </message>
 </context>
 <context>
@@ -2723,6 +2751,14 @@ Den här varningen visas bara en gång.</translation>
         <source>Analog</source>
         <translation>Analog</translation>
     </message>
+    <message>
+        <source>Large Motor</source>
+        <translation>Stor motor</translation>
+    </message>
+    <message>
+        <source>Small Motor</source>
+        <translation>Liten motor</translation>
+    </message>
 </context>
 <context>
     <name>ControllerCustomSettingsWidget</name>
@@ -3241,6 +3277,82 @@ Alla bindningar och konfigurationen kommer att förloras . Du kan inte ångra de
     <message>
         <source>Brake 4</source>
         <translation>Broms 4</translation>
+    </message>
+    <message>
+        <source>Power Off</source>
+        <translation>Gasreglage av</translation>
+    </message>
+    <message>
+        <source>Power 4</source>
+        <translation>Gas 4</translation>
+    </message>
+    <message>
+        <source>Power 5</source>
+        <translation>Gas 5</translation>
+    </message>
+    <message>
+        <source>Brake Released</source>
+        <translation>Broms släppt</translation>
+    </message>
+    <message>
+        <source>Brake 5</source>
+        <translation>Broms 5</translation>
+    </message>
+    <message>
+        <source>Brake 6</source>
+        <translation>Broms 6</translation>
+    </message>
+    <message>
+        <source>Brake 7</source>
+        <translation>Broms 7</translation>
+    </message>
+    <message>
+        <source>Brake 8</source>
+        <translation>Broms 8</translation>
+    </message>
+    <message>
+        <source>Brake Emergency</source>
+        <translation>Nödbroms</translation>
+    </message>
+    <message>
+        <source>Power</source>
+        <translation>Gas</translation>
+    </message>
+    <message>
+        <source>Brake</source>
+        <translation>Broms</translation>
+    </message>
+    <message>
+        <source>Analog Deadzone</source>
+        <translation>Analogt dödläge</translation>
+    </message>
+    <message>
+        <source>Sets the analog stick deadzone, i.e. the fraction of the stick movement which will be ignored.</source>
+        <translation>Ställer in dödläget för analoga spaken, alltså den del av spakrörelser som kommer att ignoreras.</translation>
+    </message>
+    <message>
+        <source>Analog Sensitivity</source>
+        <translation>Analog känslighet</translation>
+    </message>
+    <message>
+        <source>Sets the analog stick axis scaling factor. A value between 130% and 140% is recommended when using recent controllers, e.g. DualShock 4, Xbox One Controller.</source>
+        <translation>Ställer in skalningsfaktorn för den analoga spakens axlar. Ett värde mellan 130% och 140% rekommenderas när senare handkontroller används, t.ex. DualShock 4, Xbox One-handkontroller.</translation>
+    </message>
+    <message>
+        <source>Power Transition Frames</source>
+        <translation>Bildrutor för gasövergång</translation>
+    </message>
+    <message>
+        <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing power level.</source>
+        <translation>Ställer in antalet bildrutor som styrenheten ska rapportera övergångs-/mellanläget vid ändring av gasnivå.</translation>
+    </message>
+    <message>
+        <source>Brake Transition Frames</source>
+        <translation>Bildrutor för bromsövergång</translation>
+    </message>
+    <message>
+        <source>Sets the number of frames that the controller will report the transitioning/inbetween state when changing brake level.</source>
+        <translation>Ställer in antalet bildrutor som styrenheten ska rapportera övergångs-/mellanläget vid ändring av bromsnivå.</translation>
     </message>
 </context>
 <context>
@@ -4192,7 +4304,7 @@ Denna fil är ungefär 206 KB. Vill du hämta den nu?</translation>
     </message>
     <message>
         <source>Version: %s</source>
-        <translation>Version: %s</translation>
+        <translation type="vanished">Version: %s</translation>
     </message>
     <message>
         <source>{:%H:%M}</source>
@@ -5826,7 +5938,7 @@ Felet var:</translation>
     </message>
     <message>
         <source>Integration</source>
-        <translation>Integration</translation>
+        <translation type="vanished">Integration</translation>
     </message>
     <message>
         <source>Language: </source>
@@ -6458,7 +6570,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Save State On Exit</source>
-        <translation>Spara tillstånd vid avslut</translation>
+        <translation type="vanished">Spara tillstånd vid avslut</translation>
     </message>
     <message>
         <source>Saved {:%c}</source>
@@ -6894,7 +7006,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Use Light Theme</source>
-        <translation>Använd ljust tema</translation>
+        <translation type="vanished">Använd ljust tema</translation>
     </message>
     <message>
         <source>Use Old MDEC Routines</source>
@@ -6922,7 +7034,7 @@ Kontrollera ditt användarnamn och lösenord. Försök igen.</translation>
     </message>
     <message>
         <source>Uses a light coloured theme instead of the default dark theme.</source>
-        <translation>Använder ett ljust tema i stället för det mörka standardtemat.</translation>
+        <translation type="vanished">Använder ett ljust tema i stället för det mörka standardtemat.</translation>
     </message>
     <message>
         <source>Uses game-specific settings for controllers for this game.</source>
@@ -7119,6 +7231,66 @@ Vill du {0} ändå?</translation>
     <message>
         <source>Sorts the cheat list alphabetically by the name of the code.</source>
         <translation>Sorterar fusklistan i alfabetisk ordning efter kodens namn.</translation>
+    </message>
+    <message>
+        <source>AMOLED</source>
+        <translation>AMOLED</translation>
+    </message>
+    <message>
+        <source>Appearance</source>
+        <translation>Utseende</translation>
+    </message>
+    <message>
+        <source>Cobalt Sky</source>
+        <translation>Cobalt Sky</translation>
+    </message>
+    <message>
+        <source>Dark</source>
+        <translation>Mörk</translation>
+    </message>
+    <message>
+        <source>Fast Forward Memory Card Access</source>
+        <translation>Snabbspolning av minneskort</translation>
+    </message>
+    <message>
+        <source>Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.</source>
+        <translation>Snabbspolar genom minneskortsåtkomst, både inläsning och lagring. Kan minska väntetiderna i spel som ofta använder minneskort.</translation>
+    </message>
+    <message>
+        <source>Game Display</source>
+        <translation>Spelskärm</translation>
+    </message>
+    <message>
+        <source>Grey Matter</source>
+        <translation>Grå materia</translation>
+    </message>
+    <message>
+        <source>Language</source>
+        <translation>Språk</translation>
+    </message>
+    <message>
+        <source>Light</source>
+        <translation>Ljus</translation>
+    </message>
+    <message>
+        <source>Pinky Pals</source>
+        <translation>Pinky Pals</translation>
+    </message>
+    <message>
+        <source>Purple Rain</source>
+        <translation>Purple Rain</translation>
+    </message>
+    <message>
+        <source>Save State On Shutdown</source>
+        <translation>Spara tillstånd vid avstängning</translation>
+    </message>
+    <message>
+        <source>Selects the color style to be used for Big Picture UI.</source>
+        <translation>Väljer den färgstil som ska användas för storbildslägets gränssnitt.</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Tema</translation>
     </message>
 </context>
 <context>
@@ -7644,7 +7816,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <source>Disable PGXP Preserve Projection Floating Point</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Inaktivera PGXP Preserve Projection Floating Point</translation>
+        <translation type="vanished">Inaktivera PGXP Preserve Projection Floating Point</translation>
     </message>
     <message>
         <source>Disable PGXP on 2D Polygons</source>
@@ -7664,7 +7836,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <source>Force Recompiler Memory Exceptions</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Tvinga minnesundantag för omkompilerare</translation>
+        <translation type="vanished">Tvinga minnesundantag för omkompilerare</translation>
     </message>
     <message>
         <source>Force Recompiler ICache</source>
@@ -7674,7 +7846,7 @@ Alla databasfusk kommer fortfarande att läsas in och synas såvida inte du avma
     <message>
         <source>Force Recompiler LUT Fastmem</source>
         <comment>GameDatabase::Trait</comment>
-        <translation>Tvinga omkompilatorns LUT Fastmem</translation>
+        <translation type="vanished">Tvinga omkompilatorns LUT Fastmem</translation>
     </message>
     <message>
         <source>Force CD-ROM SubQ Skew</source>
@@ -10310,7 +10482,7 @@ Skift-klicka för att ställa in flera bindningar.</translation>
     </message>
     <message>
         <source>Save State On Exit</source>
-        <translation>Spara tillstånd vid avslut</translation>
+        <translation type="vanished">Spara tillstånd vid avslut</translation>
     </message>
     <message>
         <source>Automatically saves the emulator state when powering down or exiting. You can then resume directly from where you left off next time.</source>
@@ -11524,6 +11696,14 @@ Detta går inte att ångra.</translation>
     <message>
         <source>QDarkStyle</source>
         <translation>QDarkStyle</translation>
+    </message>
+    <message>
+        <source>Pinky Pals</source>
+        <translation>Pinky Pals</translation>
+    </message>
+    <message>
+        <source>AMOLED</source>
+        <translation>AMOLED</translation>
     </message>
 </context>
 <context>
@@ -13978,7 +14158,7 @@ Vill du skapa denna katalog?</translation>
     </message>
     <message>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS is used and how it will be patched.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
-        <translation>&lt;strong&gt;BIOS-inställningar&lt;/strong&gt;&lt;hr&gt;Dessa alternativ styr hur BIOS används och hur det ska patchas.&lt;br&gt;&lt;br&gt;Hovra över ett alternativ för ytterligare information samt Skift+Hjul för att rulla i panelen.</translation>
+        <translation type="vanished">&lt;strong&gt;BIOS-inställningar&lt;/strong&gt;&lt;hr&gt;Dessa alternativ styr hur BIOS används och hur det ska patchas.&lt;br&gt;&lt;br&gt;Hovra över ett alternativ för ytterligare information samt Skift+Hjul för att rulla i panelen.</translation>
     </message>
     <message>
         <source>Console</source>
@@ -14143,6 +14323,10 @@ Vill du fortsätta?</translation>
     <message>
         <source>Safe Mode</source>
         <translation>Säkert läge</translation>
+    </message>
+    <message>
+        <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS and expansion port is used.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
+        <translation>&lt;strong&gt;BIOS-inställningar&lt;/strong&gt;&lt;hr&gt;Dessa alternativ styr vilken BIOS och expansionsport som används.&lt;br&gt;&lt;br&gt;Hovra över ett alternativ för ytterligare information och Shift+mushjul för att bläddra i panelen.</translation>
     </message>
 </context>
 <context>
@@ -14366,6 +14550,106 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
     <message>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Welcome to DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;This wizard will help guide you through the configuration steps required to use the application. It is recommended if this is your first time installing DuckStation that you view the setup guide at &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;By default, DuckStation will connect to the server at &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; to check for updates, and if available and confirmed, download update packages from &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. If you do not wish for DuckStation to make any network connections on startup, you should uncheck the Automatic Updates option now. The Automatic Update setting can be changed later at any time in Interface Settings.&lt;/p&gt;&lt;p&gt;Please choose a language and theme to begin.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;h1 style=&quot; margin-top:18px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:xx-large; font-weight:700;&quot;&gt;Välkommen till DuckStation!&lt;/span&gt;&lt;/h1&gt;&lt;p&gt;Denna guide hjälper dig genom konfigurationen som krävs för att kunna använda programmet. Om det är första gången du installerar DuckStation så rekommenderas det att du tittar på guiden &lt;a href=&quot;https://github.com/stenzek/duckstation#downloading-and-running&quot;&gt;https://github.com/stenzek/duckstation#downloading-and-running&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;DuckStation kommer som standard att ansluta till servern på &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt; för att leta efter uppdateringar och, om tillgängligt och bekräftat, hämta uppdateringspaket från &lt;a href=&quot;https://github.com/&quot;&gt;github.com&lt;/a&gt;. Om du inte vill att DuckStation ska göra några nätverksanslutningar vid uppstart så kan du inaktivera automatiska uppdateringar nu. Inställningen för automatiska uppdateringar kan ändras senare i användargränssnittet.&lt;/p&gt;&lt;p&gt;Välj ett språk och tema för att börja.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Graphics Setup</source>
+        <translation>Grafikkonfiguration</translation>
+    </message>
+    <message>
+        <source>RetroAchievements</source>
+        <translation>RetroAchievements</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This page includes some of the commonly set graphics options in DuckStation.&lt;/p&gt;&lt;p&gt;These options are generally safe to enable, and compatible with most games. Changing the internal resolution and enabling PGXP geometry correction will significantly improve the graphical fidelity of most games.&lt;/p&gt;&lt;p&gt;It is recommended to use the &lt;span style=&quot; font-weight:700;&quot;&gt;Automatic &lt;/span&gt;renderer. You can change these options and others in &lt;span style=&quot; font-weight:700;&quot;&gt;Graphics Settings &lt;/span&gt;after completing setup.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Den här sidan innehåller några av de vanligaste grafikalternativen i DuckStation.&lt;/p&gt;&lt;p&gt;De här alternativen är i allmänhet säkra att aktivera och kompatibla med de flesta spel. Att ändra den interna upplösningen och aktivera PGXP geometrikorrigering kommer att förbättra den grafiska korrektheten i de flesta spel.&lt;/p&gt;&lt;p&gt;Det rekommenderas att använda &lt;span style=” font-weight:700;”&gt;Automatiskt &lt;/span&gt; som val av renderare. Du kan ändra dessa alternativ och andra i &lt;span style=” font-weight:700;”&gt;Grafikinställningar &lt;/span&gt; efter att du har slutfört konfigurationen.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Renderer:</source>
+        <translation>Renderare:</translation>
+    </message>
+    <message>
+        <source>Internal Resolution:</source>
+        <translation>Intern upplösning:</translation>
+    </message>
+    <message>
+        <source>Texture Filtering:</source>
+        <translation>Texturfiltrering:</translation>
+    </message>
+    <message>
+        <source>Sprite Texture Filtering:</source>
+        <translation>Filtrering av sprite-textur:</translation>
+    </message>
+    <message>
+        <source>Aspect Ratio:</source>
+        <translation>Bildförhållande:</translation>
+    </message>
+    <message>
+        <source>:</source>
+        <translation>:</translation>
+    </message>
+    <message>
+        <source>Crop:</source>
+        <translation>Beskär:</translation>
+    </message>
+    <message>
+        <source>Scaling:</source>
+        <translation>Skalning:</translation>
+    </message>
+    <message>
+        <source>Widescreen Rendering</source>
+        <translation>Bredbildsrendering</translation>
+    </message>
+    <message>
+        <source>PGXP Geometry Correction</source>
+        <translation>PGXP geometrikorrigering</translation>
+    </message>
+    <message>
+        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation supports earning achievements and leaderboard tracking with RetroAchievements.&lt;/p&gt;&lt;p&gt;If you have a RetroAchievements account, you can use the form below to log in. If not, you can register at &lt;a href=&quot;https://retroachievements.org/createaccount.php&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#99ebff;&quot;&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;A RetroAchievements account is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; required to use DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;DuckStation har stöd för att tjäna prestationer och spårning av topplistan med RetroAchievements.&lt;/p&gt;&lt;p&gt;Om du har ett RetroAchievements-konto kan du använda formuläret nedan för att logga in. Om inte, kan du registrera dig på &lt;a href=”https://retroachievements.org/createaccount.php”&gt;&lt;span style=” text-decoration: underline; color:#99ebff;”&gt;https://retroachievements.org/createaccount.php&lt;/span&gt;&lt;/a&gt;.&lt;/p&gt;&lt;p&gt;Ett RetroAchievements-konto är &lt;span style=” font-weight:700;”&gt;inte&lt;/span&gt; nödvändigt för att använda DuckStation.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <translation>Inställningar</translation>
+    </message>
+    <message>
+        <source>Enable Achievements</source>
+        <translation>Aktivera prestationer</translation>
+    </message>
+    <message>
+        <source>Enable Hardcore Mode</source>
+        <translation>Aktivera hardcore-läge</translation>
+    </message>
+    <message>
+        <source>Account</source>
+        <translation>Konto</translation>
+    </message>
+    <message>
+        <source>Username:
+Login token generated at:</source>
+        <translation>Användarnamn:
+Inloggningstoken genererades:</translation>
+    </message>
+    <message>
+        <source>View Profile...</source>
+        <translation>Visa profil...</translation>
+    </message>
+    <message>
+        <source>Login...</source>
+        <translation>Logga in...</translation>
+    </message>
+    <message>
+        <source>Username: %1
+Login token generated on %2.</source>
+        <translation>Användarnamn: %1
+Inloggningstoken genererades %2.</translation>
+    </message>
+    <message>
+        <source>Logout</source>
+        <translation>Logga ut</translation>
+    </message>
+    <message>
+        <source>Not Logged In.</source>
+        <translation>Inte inloggad.</translation>
     </message>
 </context>
 <context>
