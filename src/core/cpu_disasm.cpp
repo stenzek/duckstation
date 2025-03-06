@@ -555,7 +555,7 @@ void CPU::FormatGTEInstruction(SmallStringBase* dest, u32 pc, const Instruction 
 {
   const GTE::Instruction gi{inst.bits};
   const GTEInstructionTable& t = s_gte_instructions[gi.command];
-  dest->append(t.name);
+  dest->assign(t.name);
 
   if (t.sf && gi.sf)
     dest->append(" sf");
