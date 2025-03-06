@@ -4,6 +4,7 @@
 #include "settings.h"
 #include "achievements.h"
 #include "controller.h"
+#include "gte.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "system.h"
@@ -90,7 +91,20 @@ float SettingInfo::FloatStepValue() const
   return step_value ? StringUtil::FromChars<float>(step_value).value_or(fallback_value) : fallback_value;
 }
 
-GPUSettings::GPUSettings() = default;
+GPUSettings::GPUSettings()
+{
+  SetPGXPDepthClearThreshold(DEFAULT_GPU_PGXP_DEPTH_THRESHOLD);
+}
+
+float GPUSettings::GetPGXPDepthClearThreshold() const
+{
+  return gpu_pgxp_depth_clear_threshold * static_cast<float>(GTE::MAX_Z);
+}
+
+void GPUSettings::SetPGXPDepthClearThreshold(float value)
+{
+  gpu_pgxp_depth_clear_threshold = value / static_cast<float>(GTE::MAX_Z);
+}
 
 #ifdef DYNAMIC_HOST_PAGE_SIZE
 // See note in settings.h - 16K ends up faster with LUT because of nearby code/data.

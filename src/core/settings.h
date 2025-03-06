@@ -150,7 +150,7 @@ struct GPUSettings
   float display_osd_scale = DEFAULT_OSD_SCALE;
   float display_osd_margin = 0.0f;
   float gpu_pgxp_tolerance = -1.0f;
-  float gpu_pgxp_depth_clear_threshold = DEFAULT_GPU_PGXP_DEPTH_THRESHOLD / GPU_PGXP_DEPTH_THRESHOLD_SCALE;
+  float gpu_pgxp_depth_clear_threshold = 0.0f;
 
   // texture replacements
   struct TextureReplacementSettings
@@ -209,6 +209,8 @@ struct GPUSettings
   std::string overlay_image_path;
 
   float GetDisplayAspectRatioValue() const;
+  float GetPGXPDepthClearThreshold() const;
+  void SetPGXPDepthClearThreshold(float value);
 
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
   ALWAYS_INLINE bool IsUsingAccurateBlending() const { return (gpu_accurate_blending && !gpu_true_color); }
@@ -220,14 +222,6 @@ struct GPUSettings
 
   ALWAYS_INLINE bool UsingPGXPCPUMode() const { return gpu_pgxp_enable && gpu_pgxp_cpu; }
   ALWAYS_INLINE bool UsingPGXPDepthBuffer() const { return gpu_pgxp_enable && gpu_pgxp_depth_buffer; }
-  ALWAYS_INLINE float GetPGXPDepthClearThreshold() const
-  {
-    return gpu_pgxp_depth_clear_threshold * GPU_PGXP_DEPTH_THRESHOLD_SCALE;
-  }
-  ALWAYS_INLINE void SetPGXPDepthClearThreshold(float value)
-  {
-    gpu_pgxp_depth_clear_threshold = value / GPU_PGXP_DEPTH_THRESHOLD_SCALE;
-  }
 
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::Automatic;
   static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
@@ -236,7 +230,7 @@ struct GPUSettings
   static constexpr GPUWireframeMode DEFAULT_GPU_WIREFRAME_MODE = GPUWireframeMode::Disabled;
   static constexpr GPUDumpCompressionMode DEFAULT_GPU_DUMP_COMPRESSION_MODE = GPUDumpCompressionMode::ZstDefault;
   static constexpr float DEFAULT_GPU_PGXP_DEPTH_THRESHOLD = 300.0f;
-  static constexpr float GPU_PGXP_DEPTH_THRESHOLD_SCALE = 4096.0f;
+  static constexpr float GPU_PGXP_DEPTH_THRESHOLD_SCALE = 65536.0f;
 
   static constexpr DisplayDeinterlacingMode DEFAULT_DISPLAY_DEINTERLACING_MODE = DisplayDeinterlacingMode::Progressive;
   static constexpr DisplayCropMode DEFAULT_DISPLAY_CROP_MODE = DisplayCropMode::Overscan;

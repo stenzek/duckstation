@@ -791,9 +791,9 @@ void GTE::RTPS(const s16 V[3], u8 shift, bool lm, bool last)
       }
       else
       {
-        precise_x = static_cast<float>(x) / 4096.0f;
+        precise_x = static_cast<float>(x) / (static_cast<float>(1 << shift));
         precise_y = static_cast<float>(y) / (static_cast<float>(1 << shift));
-        precise_z = static_cast<float>(z) / (static_cast<float>(1 << shift));
+        precise_z = static_cast<float>(z) / 4096.0f;
       }
 
       precise_sz3 = precise_z;
