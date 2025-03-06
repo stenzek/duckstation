@@ -2167,30 +2167,32 @@ void InputManager::UpdateInputSourceState(const SettingsInterface& si, std::uniq
                                           InputSourceType type, std::unique_ptr<InputSource> (*factory_function)())
 {
   const bool enabled = IsInputSourceEnabled(si, type);
+  std::unique_ptr<InputSource>& source = s_input_sources[static_cast<u32>(type)];
   if (enabled)
   {
-    if (s_input_sources[static_cast<u32>(type)])
+    if (source)
     {
-      s_input_sources[static_cast<u32>(type)]->UpdateSettings(si, settings_lock);
+      source->UpdateSettings(si, settings_lock);
     }
     else
     {
-      std::unique_ptr<InputSource> source(factory_function());
-      if (!source->Initialize(si, settings_lock))
+      source = factory_function();
+      if (!source || !source->Initialize(si, settings_lock))
       {
         ERROR_LOG("Source '{}' failed to initialize.", InputSourceToString(type));
+        if (source)
+          source->Shutdown();
+        source.reset();
         return;
       }
-
-      s_input_sources[static_cast<u32>(type)] = std::move(source);
     }
   }
   else
   {
-    if (s_input_sources[static_cast<u32>(type)])
+    if (source)
     {
-      s_input_sources[static_cast<u32>(type)]->Shutdown();
-      s_input_sources[static_cast<u32>(type)].reset();
+      source->Shutdown();
+      source.reset();
     }
   }
 }

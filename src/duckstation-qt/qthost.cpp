@@ -2218,7 +2218,7 @@ void InputDeviceListModel::enumerateDevices()
   }
 
   QMetaObject::invokeMethod(this, "resetLists", Qt::QueuedConnection, Q_ARG(const DeviceList&, new_devices),
-                            Q_ARG(const QStringList&, m_vibration_motors));
+                            Q_ARG(const QStringList&, new_motors));
 }
 
 void InputDeviceListModel::resetLists(const DeviceList& devices, const QStringList& motors)
