@@ -1703,6 +1703,12 @@ void CPU::Recompiler::Recompiler::CompileLoadStoreTemplate(
     }
   }
 
+  // when not using fastmem, flush GTE completion cycle
+  // otherwise we end up consuming more cycles, because we're only counting a single cycle for loads
+  // and ram loads would have normally used up all the cycles the GTE was busy for
+  if (!use_fastmem && !store)
+    Flush(FLUSH_GTE_DONE_CYCLE);
+
   (this->*func)(cf, size, sign, use_fastmem, addr);
 
   if (store && !m_block_ended && !m_current_instruction_branch_delay_slot && spec_addr.has_value() &&
