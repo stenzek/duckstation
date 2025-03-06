@@ -4541,7 +4541,8 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
              g_settings.display_auto_resize_window != old_settings.display_auto_resize_window ||
              g_settings.display_screenshot_mode != old_settings.display_screenshot_mode ||
              g_settings.display_screenshot_format != old_settings.display_screenshot_format ||
-             g_settings.display_screenshot_quality != old_settings.display_screenshot_quality)
+             g_settings.display_screenshot_quality != old_settings.display_screenshot_quality ||
+             g_settings.gpu_pgxp_depth_clear_threshold != old_settings.gpu_pgxp_depth_clear_threshold)
     {
       if (device_settings_changed)
       {
