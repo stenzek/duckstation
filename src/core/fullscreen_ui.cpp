@@ -5209,7 +5209,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     DrawFloatRangeSetting(
       bsi, FSUI_ICONSTR(ICON_FA_MINUS_CIRCLE, "Depth Clear Threshold"),
       FSUI_CSTR("Sets a threshold for discarding the emulated depth buffer. May help in some games."), "GPU",
-      "PGXPDepthBuffer", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, static_cast<float>(GTE::MAX_Z), "%.1f",
+      "PGXPDepthThreshold", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, static_cast<float>(GTE::MAX_Z), "%.1f",
       pgxp_enabled);
   }
 
