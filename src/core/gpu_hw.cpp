@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "gpu_hw.h"
@@ -8,6 +8,7 @@
 #include "gpu_hw_shadergen.h"
 #include "gpu_presenter.h"
 #include "gpu_sw_rasterizer.h"
+#include "gte_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
@@ -580,7 +581,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   else if (m_vram_depth_texture && depth_buffer_changed)
   {
     if (m_pgxp_depth_buffer)
-      ClearDepthBuffer();
+      ClearDepthBuffer(false);
     else if (m_write_mask_as_depth)
       UpdateDepthBufferFromMaskBit();
   }
@@ -1121,6 +1122,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     p.reset();
   m_vram_update_depth_pipeline.reset();
   m_vram_write_replacement_pipeline.reset();
+  m_clear_depth_pipeline.reset();
   m_copy_depth_pipeline.reset();
 
   ShaderCompileProgressTracker progress("Compiling Pipelines", total_items);
@@ -1667,6 +1669,30 @@ bool GPU_HW::CompilePipelines(Error* error)
     plconfig.SetTargetFormats(VRAM_DS_COLOR_FORMAT);
     if (!(m_copy_depth_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
       return false;
+
+    fs = g_gpu_device->CreateShader(GPUShaderStage::Fragment, shadergen.GetLanguage(),
+                                    shadergen.GenerateVRAMClearDepthFragmentShader(m_use_rov_for_shader_blend), error);
+    if (!fs)
+      return false;
+
+    SetScreenQuadInputLayout(plconfig);
+    plconfig.vertex_shader = m_screen_quad_vertex_shader.get();
+    plconfig.fragment_shader = fs.get();
+    if (!m_use_rov_for_shader_blend)
+    {
+      plconfig.SetTargetFormats(VRAM_RT_FORMAT, depth_buffer_format);
+      plconfig.render_pass_flags =
+        needs_feedback_loop ? GPUPipeline::ColorFeedbackLoop : GPUPipeline::NoRenderPassFlags;
+      plconfig.blend.write_mask = 0;
+      plconfig.depth = GPUPipeline::DepthState::GetAlwaysWriteState();
+    }
+    else
+    {
+      plconfig.SetTargetFormats(depth_buffer_format);
+    }
+
+    if (!(m_clear_depth_pipeline = g_gpu_device->CreatePipeline(plconfig, error)))
+      return false;
   }
 
   if (!CompileResolutionDependentPipelines(error) || !CompileDownsamplePipelines(error))
@@ -1949,7 +1975,7 @@ void GPU_HW::UpdateDepthBufferFromMaskBit()
   SetScissor();
 }
 
-void GPU_HW::CopyAndClearDepthBuffer()
+void GPU_HW::CopyAndClearDepthBuffer(bool only_drawing_area)
 {
   if (!m_depth_was_copied)
   {
@@ -1976,17 +2002,39 @@ void GPU_HW::CopyAndClearDepthBuffer()
     m_depth_was_copied = true;
   }
 
-  ClearDepthBuffer();
+  ClearDepthBuffer(only_drawing_area);
 }
 
-void GPU_HW::ClearDepthBuffer()
+void GPU_HW::ClearDepthBuffer(bool only_drawing_area)
 {
-  GL_SCOPE("GPU_HW::ClearDepthBuffer()");
+  GL_SCOPE_FMT("GPU_HW::ClearDepthBuffer({})", only_drawing_area ? "Only Drawing Area" : "Full Buffer");
   DebugAssert(m_pgxp_depth_buffer);
-  if (m_use_rov_for_shader_blend)
-    g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0xFF);
+  if (only_drawing_area)
+  {
+    g_gpu_device->SetPipeline(m_clear_depth_pipeline.get());
+
+    const GSVector4i clear_bounds = m_clamped_drawing_area.mul32l(GSVector4i(m_resolution_scale));
+
+    // need to re-bind for rov, because we can't turn colour writes off for only the first target
+    if (!m_use_rov_for_shader_blend)
+    {
+      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec());
+    }
+    else
+    {
+      g_gpu_device->SetRenderTarget(m_vram_depth_texture.get());
+      DrawScreenQuad(clear_bounds, m_vram_depth_texture->GetSizeVec());
+      SetVRAMRenderTarget();
+    }
+  }
   else
-    g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 1.0f);
+  {
+    if (m_use_rov_for_shader_blend)
+      g_gpu_device->ClearRenderTarget(m_vram_depth_texture.get(), 0xFF);
+    else
+      g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 1.0f);
+  }
+
   m_last_depth_z = 1.0f;
   s_counters.num_depth_buffer_clears++;
 }
@@ -2405,8 +2453,12 @@ void GPU_HW::CheckForDepthClear(const GPUBackendDrawCommand* cmd, const BatchVer
 
   if ((average_z - m_last_depth_z) >= g_gpu_settings.gpu_pgxp_depth_clear_threshold)
   {
+    GL_INS_FMT("Clear depth buffer avg={} last={} threshold={}", average_z * static_cast<float>(GTE::MAX_Z),
+               m_last_depth_z * static_cast<float>(GTE::MAX_Z),
+               g_gpu_settings.gpu_pgxp_depth_clear_threshold * static_cast<float>(GTE::MAX_Z));
+
     FlushRender();
-    CopyAndClearDepthBuffer();
+    CopyAndClearDepthBuffer(true);
     EnsureVertexBufferSpaceForCommand(cmd);
   }
 
@@ -3723,7 +3775,7 @@ void GPU_HW::PrepareDraw(const GPUBackendDrawCommand* cmd)
       if (m_pgxp_depth_buffer && m_last_depth_z < 1.0f)
       {
         FlushRender();
-        CopyAndClearDepthBuffer();
+        CopyAndClearDepthBuffer(false);
         EnsureVertexBufferSpaceForCommand(cmd);
       }
     }

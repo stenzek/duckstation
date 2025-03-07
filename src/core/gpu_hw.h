@@ -186,8 +186,8 @@ private:
 
   void UpdateVRAMReadTexture(bool drawn, bool written);
   void UpdateDepthBufferFromMaskBit();
-  void CopyAndClearDepthBuffer();
-  void ClearDepthBuffer();
+  void CopyAndClearDepthBuffer(bool only_drawing_area);
+  void ClearDepthBuffer(bool only_drawing_area);
   void SetScissor();
   void SetVRAMRenderTarget();
   void DeactivateROV();
@@ -365,6 +365,7 @@ private:
   std::unique_ptr<GPUTexture> m_vram_extract_texture;
   std::unique_ptr<GPUTexture> m_vram_extract_depth_texture;
   std::unique_ptr<GPUPipeline> m_copy_depth_pipeline;
+  std::unique_ptr<GPUPipeline> m_clear_depth_pipeline;
   std::unique_ptr<PostProcessing::Chain> m_internal_postfx;
 
   std::unique_ptr<GPUTexture> m_downsample_texture;

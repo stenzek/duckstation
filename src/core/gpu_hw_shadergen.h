@@ -34,6 +34,7 @@ public:
   std::string GenerateVRAMFillFragmentShader(bool wrapped, bool interlaced, bool write_mask_as_depth,
                                              bool write_depth_as_rt) const;
   std::string GenerateVRAMUpdateDepthFragmentShader(bool msaa) const;
+  std::string GenerateVRAMClearDepthFragmentShader(bool write_depth_as_rt) const;
   std::string GenerateVRAMExtractFragmentShader(u32 resolution_scale, u32 multisamples, bool color_24bit,
                                                 bool depth_buffer) const;
   std::string GenerateVRAMReplacementBlitFragmentShader() const;

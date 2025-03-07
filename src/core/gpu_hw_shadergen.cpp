@@ -1694,6 +1694,24 @@ std::string GPU_HW_ShaderGen::GenerateVRAMUpdateDepthFragmentShader(bool msaa) c
   return std::move(ss).str();
 }
 
+std::string GPU_HW_ShaderGen::GenerateVRAMClearDepthFragmentShader(bool write_depth_as_rt) const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DefineMacro(ss, "WRITE_DEPTH_AS_RT", write_depth_as_rt);
+  DeclareFragmentEntryPoint(ss, 0, 1, {}, false, BoolToUInt32(write_depth_as_rt), false, false, false, false, false);
+
+  ss << R"(
+{
+#if WRITE_DEPTH_AS_RT
+  o_col0 = float4(1.0f, 0.0f, 0.0f, 0.0f);
+#endif
+}
+)";
+
+  return std::move(ss).str();
+}
+
 void GPU_HW_ShaderGen::WriteAdaptiveDownsampleUniformBuffer(std::stringstream& ss) const
 {
   DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max", "float2 u_pixel_size", "float u_lod"}, true);
