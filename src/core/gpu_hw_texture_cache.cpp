@@ -2809,7 +2809,7 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
   SmallString filename = name.ToString();
   filename.append(".png");
 
-  const std::string path = Path::Combine(dump_directory, filename);
+  std::string path = Path::Combine(dump_directory, filename);
   if (FileSystem::FileExists(path.c_str()))
     return;
 
@@ -2819,39 +2819,41 @@ void GPUTextureCache::DumpTexture(TextureReplacementType type, u32 offset_x, u32
   GPUTextureCache::DecodeTexture(mode, &g_vram[rect.top * VRAM_WIDTH + rect.left], palette_data, image.GetPixels(),
                                  image.GetPitch(), width, height, GPUTexture::Format::RGBA8);
 
-  // TODO: Vectorize this.
-  u32* image_pixels = reinterpret_cast<u32*>(image.GetPixels());
-  const u32* image_pixels_end = image_pixels + (width * height);
-  if (s_state.config.dump_texture_force_alpha_channel)
-  {
-    for (u32* pixel = image_pixels; pixel != image_pixels_end; pixel++)
-      *pixel |= 0xFF000000u;
-  }
-  else
-  {
-    if (semitransparent)
+  System::QueueAsyncTask([path = std::move(path), image = std::move(image), width, height, semitransparent]() mutable {
+    // TODO: Vectorize this.
+    u32* image_pixels = reinterpret_cast<u32*>(image.GetPixels());
+    const u32* image_pixels_end = image_pixels + (width * height);
+    if (s_state.config.dump_texture_force_alpha_channel)
     {
-      // Alpha channel should be inverted, because 0 means opaque, 1 is semitransparent.
-      // Pixel value of 0000 is still completely transparent.
       for (u32* pixel = image_pixels; pixel != image_pixels_end; pixel++)
-      {
-        const u32 val = *pixel;
-        *pixel = (val == 0u) ? 0u : ((val & 0xFFFFFFFu) | ((val & 0x80000000u) ? 0x80000000u : 0xFF000000u));
-      }
+        *pixel |= 0xFF000000u;
     }
     else
     {
-      // Only cut out 0000 pixels.
-      for (u32* pixel = image_pixels; pixel != image_pixels_end; pixel++)
+      if (semitransparent)
       {
-        const u32 val = *pixel;
-        *pixel = (val == 0u) ? 0u : (val | 0xFF000000u);
+        // Alpha channel should be inverted, because 0 means opaque, 1 is semitransparent.
+        // Pixel value of 0000 is still completely transparent.
+        for (u32* pixel = image_pixels; pixel != image_pixels_end; pixel++)
+        {
+          const u32 val = *pixel;
+          *pixel = (val == 0u) ? 0u : ((val & 0xFFFFFFFu) | ((val & 0x80000000u) ? 0x80000000u : 0xFF000000u));
+        }
+      }
+      else
+      {
+        // Only cut out 0000 pixels.
+        for (u32* pixel = image_pixels; pixel != image_pixels_end; pixel++)
+        {
+          const u32 val = *pixel;
+          *pixel = (val == 0u) ? 0u : (val | 0xFF000000u);
+        }
       }
     }
-  }
 
-  if (!image.SaveToFile(path.c_str()))
-    ERROR_LOG("Failed to write texture dump to {}.", Path::GetFileName(path));
+    if (!image.SaveToFile(path.c_str()))
+      ERROR_LOG("Failed to write texture dump to {}.", Path::GetFileName(path));
+  });
 }
 
 bool GPUTextureCache::IsMatchingReplacementPalette(HashType full_palette_hash, GPUTextureMode mode,
