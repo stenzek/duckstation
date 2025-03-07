@@ -1988,6 +1988,7 @@ void GPU_HW::ClearDepthBuffer()
   else
     g_gpu_device->ClearDepth(m_vram_depth_texture.get(), 1.0f);
   m_last_depth_z = 1.0f;
+  s_counters.num_depth_buffer_clears++;
 }
 
 void GPU_HW::SetScissor()

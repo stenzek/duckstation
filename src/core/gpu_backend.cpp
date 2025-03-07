@@ -31,26 +31,6 @@ LOG_CHANNEL(GPU);
 
 namespace {
 
-struct Counters
-{
-  u32 num_reads;
-  u32 num_writes;
-  u32 num_copies;
-  u32 num_vertices;
-  u32 num_primitives;
-};
-
-struct Stats : Counters
-{
-  size_t host_buffer_streamed;
-  u32 host_num_draws;
-  u32 host_num_barriers;
-  u32 host_num_render_passes;
-  u32 host_num_copies;
-  u32 host_num_downloads;
-  u32 host_num_uploads;
-};
-
 struct ALIGN_TO_CACHE_LINE CPUThreadState
 {
   static constexpr u32 WAIT_NONE = 0;
@@ -65,8 +45,8 @@ struct ALIGN_TO_CACHE_LINE CPUThreadState
 
 } // namespace
 
-static Counters s_counters = {};
-static Stats s_stats = {};
+GPUBackend::Counters GPUBackend::s_counters = {};
+GPUBackend::Stats GPUBackend::s_stats = {};
 
 static CPUThreadState s_cpu_thread_state = {};
 
@@ -603,10 +583,21 @@ void GPUBackend::GetStatsString(SmallStringBase& str) const
 {
   if (IsUsingHardwareBackend())
   {
-    str.format("{}{} HW | {} P | {} DC | {} B | {} RP | {} RB | {} C | {} W",
-               GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
-               s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
-               s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes);
+    if (g_gpu_settings.gpu_pgxp_depth_buffer)
+    {
+      str.format("{}{} HW | {} P | {} DC | {} B | {} RP | {} RB | {} C | {} W | {} DBC",
+                 GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
+                 s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
+                 s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes,
+                 s_stats.num_depth_buffer_clears);
+    }
+    else
+    {
+      str.format("{}{} HW | {} P | {} DC | {} B | {} RP | {} RB | {} C | {} W",
+                 GPUDevice::RenderAPIToString(g_gpu_device->GetRenderAPI()), g_gpu_settings.gpu_use_thread ? "-MT" : "",
+                 s_stats.num_primitives, s_stats.host_num_draws, s_stats.host_num_barriers,
+                 s_stats.host_num_render_passes, s_stats.host_num_downloads, s_stats.num_copies, s_stats.num_writes);
+    }
   }
   else
   {
@@ -644,6 +635,7 @@ void GPUBackend::UpdateStatistics(u32 frame_count)
   UPDATE_COUNTER(num_copies);
   UPDATE_COUNTER(num_vertices);
   UPDATE_COUNTER(num_primitives);
+  UPDATE_COUNTER(num_depth_buffer_clears);
 
   // UPDATE_COUNTER(num_read_texture_updates);
   // UPDATE_COUNTER(num_ubo_updates);

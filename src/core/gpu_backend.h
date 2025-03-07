@@ -126,6 +126,27 @@ protected:
     DEINTERLACE_BUFFER_COUNT = 4,
   };
 
+  struct Counters
+  {
+    u32 num_reads;
+    u32 num_writes;
+    u32 num_copies;
+    u32 num_vertices;
+    u32 num_primitives;
+    u32 num_depth_buffer_clears;
+  };
+
+  struct Stats : Counters
+  {
+    size_t host_buffer_streamed;
+    u32 host_num_draws;
+    u32 host_num_barriers;
+    u32 host_num_render_passes;
+    u32 host_num_copies;
+    u32 host_num_downloads;
+    u32 host_num_uploads;
+  };
+
   virtual void ReadVRAM(u32 x, u32 y, u32 width, u32 height) = 0;
   virtual void FillVRAM(u32 x, u32 y, u32 width, u32 height, u32 color, bool interlaced_rendering,
                         u8 interlaced_display_field) = 0;
@@ -156,6 +177,9 @@ protected:
 
   GPUPresenter& m_presenter;
   GSVector4i m_clamped_drawing_area = {};
+
+  static Counters s_counters;
+  static Stats s_stats;
 
 private:
   static void ReleaseQueuedFrame();
