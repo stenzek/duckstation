@@ -18,10 +18,11 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 
-static constexpr char MEMORY_CARD_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
-  "MemoryCardEditorWindow", "All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)");
-static constexpr char MEMORY_CARD_IMPORT_FILTER[] =
-  QT_TRANSLATE_NOOP("MemoryCardEditorWindow", "All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)");
+static constexpr char MEMORY_CARD_IMAGE_FILTER[] =
+  QT_TRANSLATE_NOOP("MemoryCardEditorWindow", "DuckStation Memory Card (*.mcd)");
+static constexpr char MEMORY_CARD_IMPORT_FILTER[] = QT_TRANSLATE_NOOP(
+  "MemoryCardEditorWindow",
+  "All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)");
 static constexpr char SINGLE_SAVEFILE_FILTER[] =
   TRANSLATE_NOOP("MemoryCardEditorWindow", "Single Save Files (*.mcs);;All Files (*.*)");
 static constexpr std::array<std::pair<ConsoleRegion, const char*>, 3> MEMORY_CARD_FILE_REGION_PREFIXES = {{
