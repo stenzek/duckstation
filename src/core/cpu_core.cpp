@@ -811,14 +811,26 @@ const std::array<CPU::DebuggerRegisterListEntry, CPU::NUM_DEBUGGER_REGISTER_LIST
                                     {"ZSF4", &CPU::g_state.gte_regs.r32[62]},
                                     {"FLAG", &CPU::g_state.gte_regs.r32[63]}}};
 
-ALWAYS_INLINE static constexpr bool AddOverflow(u32 old_value, u32 add_value, u32 new_value)
+ALWAYS_INLINE static constexpr bool AddOverflow(u32 old_value, u32 add_value, u32* new_value)
 {
-  return (((new_value ^ old_value) & (new_value ^ add_value)) & UINT32_C(0x80000000)) != 0;
+#if defined(__clang__) || defined(__GNUC__)
+  return __builtin_add_overflow(static_cast<s32>(old_value), static_cast<s32>(add_value),
+                                reinterpret_cast<s32*>(new_value));
+#else
+  *new_value = old_value + add_value;
+  return (((*new_value ^ old_value) & (*new_value ^ add_value)) & UINT32_C(0x80000000)) != 0;
+#endif
 }
 
-ALWAYS_INLINE static constexpr bool SubOverflow(u32 old_value, u32 sub_value, u32 new_value)
+ALWAYS_INLINE static constexpr bool SubOverflow(u32 old_value, u32 sub_value, u32* new_value)
 {
-  return (((new_value ^ old_value) & (old_value ^ sub_value)) & UINT32_C(0x80000000)) != 0;
+#if defined(__clang__) || defined(__GNUC__)
+  return __builtin_sub_overflow(static_cast<s32>(old_value), static_cast<s32>(sub_value),
+                                reinterpret_cast<s32*>(new_value));
+#else
+  *new_value = old_value - sub_value;
+  return (((*new_value ^ old_value) & (old_value ^ sub_value)) & UINT32_C(0x80000000)) != 0;
+#endif
 }
 
 void CPU::DisassembleAndPrint(u32 addr, bool regs, const char* prefix)
@@ -999,8 +1011,8 @@ restart_instruction:
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
-          const u32 rdVal = rsVal + rtVal;
-          if (AddOverflow(rsVal, rtVal, rdVal))
+          u32 rdVal;
+          if (AddOverflow(rsVal, rtVal, &rdVal)) [[unlikely]]
           {
             RaiseException(Exception::Ov);
             return;
@@ -1033,8 +1045,8 @@ restart_instruction:
         {
           const u32 rsVal = ReadReg(inst.r.rs);
           const u32 rtVal = ReadReg(inst.r.rt);
-          const u32 rdVal = rsVal - rtVal;
-          if (SubOverflow(rsVal, rtVal, rdVal))
+          u32 rdVal;
+          if (SubOverflow(rsVal, rtVal, &rdVal)) [[unlikely]]
           {
             RaiseException(Exception::Ov);
             return;
@@ -1296,8 +1308,8 @@ restart_instruction:
     {
       const u32 rsVal = ReadReg(inst.i.rs);
       const u32 imm = inst.i.imm_sext32();
-      const u32 rtVal = rsVal + imm;
-      if (AddOverflow(rsVal, imm, rtVal))
+      u32 rtVal;
+      if (AddOverflow(rsVal, imm, &rtVal)) [[unlikely]]
       {
         RaiseException(Exception::Ov);
         return;
@@ -1844,7 +1856,7 @@ restart_instruction:
 
     case InstructionOp::cop2:
     {
-      if (!g_state.cop0_regs.sr.CE2)
+      if (!g_state.cop0_regs.sr.CE2) [[unlikely]]
       {
         WARNING_LOG("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
@@ -1916,7 +1928,7 @@ restart_instruction:
 
     case InstructionOp::lwc2:
     {
-      if (!g_state.cop0_regs.sr.CE2)
+      if (!g_state.cop0_regs.sr.CE2) [[unlikely]]
       {
         WARNING_LOG("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
@@ -1937,7 +1949,7 @@ restart_instruction:
 
     case InstructionOp::swc2:
     {
-      if (!g_state.cop0_regs.sr.CE2)
+      if (!g_state.cop0_regs.sr.CE2) [[unlikely]]
       {
         WARNING_LOG("Coprocessor 2 not enabled");
         RaiseException(Exception::CpU);
@@ -1969,6 +1981,7 @@ restart_instruction:
     break;
 
       // everything else is reserved/invalid
+    [[unlikely]]
     default:
     {
       u32 ram_value;
