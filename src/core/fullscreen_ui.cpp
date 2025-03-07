@@ -10,6 +10,7 @@
 #include "gpu.h"
 #include "gpu_presenter.h"
 #include "gpu_thread.h"
+#include "gte_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "settings.h"
@@ -3690,14 +3691,11 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
   static constexpr const char* s_theme_name[] = {
-    FSUI_NSTR("Dark"),       FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
-    FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"), FSUI_NSTR("Pinky Pals"),
-    FSUI_NSTR("Purple Rain")
-  };
+    FSUI_NSTR("Dark"),        FSUI_NSTR("Light"),      FSUI_NSTR("AMOLED"),     FSUI_NSTR("Cobalt Sky"),
+    FSUI_NSTR("Grey Matter"), FSUI_NSTR("Pinky Pals"), FSUI_NSTR("Purple Rain")};
 
-  static constexpr const char* s_theme_value[] = {
-    "Dark", "Light", "AMOLED", "CobaltSky", "GreyMatter", "PinkyPals", "PurpleRain"
-  };
+  static constexpr const char* s_theme_value[] = {"Dark",       "Light",     "AMOLED",    "CobaltSky",
+                                                  "GreyMatter", "PinkyPals", "PurpleRain"};
 
   BeginMenuButtons();
 
@@ -5211,7 +5209,8 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     DrawFloatRangeSetting(
       bsi, FSUI_ICONSTR(ICON_FA_MINUS_CIRCLE, "Depth Clear Threshold"),
       FSUI_CSTR("Sets a threshold for discarding the emulated depth buffer. May help in some games."), "GPU",
-      "PGXPDepthBuffer", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, 4096.0f, "%.1f", pgxp_enabled);
+      "PGXPDepthBuffer", Settings::DEFAULT_GPU_PGXP_DEPTH_THRESHOLD, 0.0f, static_cast<float>(GTE::MAX_Z), "%.1f",
+      pgxp_enabled);
   }
 
   MenuHeading(FSUI_CSTR("Capture"));
@@ -8311,7 +8310,8 @@ void FullscreenUI::DrawAboutWindow()
   {
     const ImVec2 image_size = LayoutScale(64.0f, 64.0f);
     const float indent = image_size.x + LayoutScale(8.0f);
-    ImGui::GetWindowDrawList()->AddImage(s_state.app_icon_texture.get(), ImGui::GetCursorScreenPos(), ImGui::GetCursorScreenPos() + image_size);
+    ImGui::GetWindowDrawList()->AddImage(s_state.app_icon_texture.get(), ImGui::GetCursorScreenPos(),
+                                         ImGui::GetCursorScreenPos() + image_size);
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
     ImGui::TextUnformatted("DuckStation");
     ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);

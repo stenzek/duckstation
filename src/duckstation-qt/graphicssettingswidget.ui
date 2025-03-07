@@ -552,7 +552,7 @@
           <item row="1" column="1">
            <widget class="QDoubleSpinBox" name="pgxpDepthClearThreshold">
             <property name="maximum">
-             <double>4096.000000000000000</double>
+             <double>65536.000000000000000</double>
             </property>
            </widget>
           </item>

@@ -4,7 +4,7 @@
 #include "settings.h"
 #include "achievements.h"
 #include "controller.h"
-#include "gte.h"
+#include "gte_types.h"
 #include "host.h"
 #include "imgui_overlays.h"
 #include "system.h"
