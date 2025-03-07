@@ -531,6 +531,19 @@ void GPU::WriteRegister(u32 offset, u32 value)
       if (m_gpu_dump) [[unlikely]]
         m_gpu_dump->WriteGP0Packet(value);
 
+      // FIFO can be overflowed through direct GP0 writes if the command tick event hasn't run, because
+      // there's no backpressure applied to the CPU. Instead force the GPU to run and catch up.
+      if (m_fifo.GetSize() >= m_fifo_size) [[unlikely]]
+      {
+        s_command_tick_event.InvokeEarly();
+
+        if (m_fifo.GetSize() >= m_fifo.GetCapacity()) [[unlikely]]
+        {
+          WARNING_LOG("GPU FIFO overflow via GP0 write, size={}", m_fifo.GetSize());
+          return;
+        }
+      }
+
       m_fifo.Push(value);
       ExecuteCommands();
       return;
