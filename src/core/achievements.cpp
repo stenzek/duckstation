@@ -2694,7 +2694,8 @@ void Achievements::DrawAchievementsWindow()
                           ImGui::GetColorU32(UIStyle.SecondaryColor));
 
         text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
-        text_size = ImGui::CalcTextSize(text.c_str(), text.end_ptr());
+        text_size =
+          UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, text.c_str(), text.end_ptr());
         const ImVec2 text_pos(
           progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
           progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
@@ -2918,7 +2919,8 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
                       ImGui::GetColorU32(ImGuiFullscreen::UIStyle.SecondaryColor));
 
     const ImVec2 text_size =
-      ImGui::CalcTextSize(measured_progress.data(), measured_progress.data() + measured_progress.size());
+      UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, measured_progress.data(),
+                                        measured_progress.data() + measured_progress.size());
     const ImVec2 text_pos(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
                           progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
     dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos,
