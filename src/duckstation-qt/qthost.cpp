@@ -1166,7 +1166,7 @@ void EmuThread::confirmActionIfMemoryCardBusy(const QString& action, bool cancel
                                 "seconds for it to finish saving.\n\nDo you want to %1 anyway?")
                                .arg(action)) != QMessageBox::No);
 
-    if (cancel_resume_on_accept)
+    if (cancel_resume_on_accept && !QtHost::IsFullscreenUIStarted())
       lock.cancelResume();
 
     Host::RunOnCPUThread([result, callback = std::move(callback)]() { callback(result); });

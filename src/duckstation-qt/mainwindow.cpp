@@ -121,6 +121,11 @@ bool QtHost::IsSystemValid()
   return s_system_valid;
 }
 
+bool QtHost::IsFullscreenUIStarted()
+{
+  return s_fullscreen_ui_started;
+}
+
 const QString& QtHost::GetCurrentGameTitle()
 {
   return s_current_game_title;
@@ -1987,8 +1992,8 @@ bool MainWindow::shouldHideMouseCursor() const
 
 bool MainWindow::shouldHideMainWindow() const
 {
-  return Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false) ||
-         (QtHost::CanRenderToMainWindow() && isRenderingFullscreen()) || QtHost::InNoGUIMode();
+  return Host::GetBoolSettingValue("Main", "HideMainWindowWhenRunning", false) || QtHost::CanRenderToMainWindow() ||
+         QtHost::InNoGUIMode();
 }
 
 void MainWindow::switchToGameListView()
@@ -2616,7 +2621,8 @@ bool MainWindow::requestShutdown(bool allow_confirm /* = true */, bool allow_sav
     save_state = save_cb->isChecked();
 
     // Don't switch back to fullscreen when we're shutting down anyway.
-    lock.cancelResume();
+    if (!QtHost::IsFullscreenUIStarted())
+      lock.cancelResume();
   }
 
   // This is a little bit annoying. Qt will close everything down if we don't have at least one window visible,

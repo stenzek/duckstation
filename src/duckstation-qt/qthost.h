@@ -382,6 +382,9 @@ bool ShouldShowDebugOptions();
 bool IsSystemValid();
 bool IsSystemPaused();
 
+/// Returns true if fullscreen UI is requested.
+bool IsFullscreenUIStarted();
+
 /// Returns true if any lock is in place.
 bool IsSystemLocked();
 
