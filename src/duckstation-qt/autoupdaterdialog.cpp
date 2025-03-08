@@ -271,10 +271,33 @@ void AutoUpdaterDialog::httpPollTimerPoll()
   }
 }
 
-void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
+void AutoUpdaterDialog::lockAndExec()
 {
-  m_display_messages = display_message;
+  // pause+unfullscreen system. annoyingly, need to reparent if we were fullscreen
+  MainWindow::SystemLock lock = g_main_window->pauseAndLockSystem();
+  QWidget* prev_parent = qobject_cast<QWidget*>(parent());
+  const bool needs_parent_change = (prev_parent && lock.getDialogParent() != prev_parent);
+  if (needs_parent_change)
+  {
+    setParent(lock.getDialogParent());
+    qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
+    // ensure we're at the front
+    QTimer::singleShot(20, Qt::TimerType::CoarseTimer, this, SLOT(raise()));
+  }
+
+  const int result = exec();
+
+  if (needs_parent_change)
+    setParent(prev_parent);
+
+  // cancel resume if we're exiting anyway
+  if (result)
+    lock.cancelResume();
+}
+
+void AutoUpdaterDialog::queueUpdateCheck(bool display_errors)
+{
 #ifdef UPDATE_CHECKER_SUPPORTED
   if (!ensureHttpReady())
   {
@@ -282,8 +305,11 @@ void AutoUpdaterDialog::queueUpdateCheck(bool display_message)
     return;
   }
 
-  m_http->CreateRequest(LATEST_TAG_URL, std::bind(&AutoUpdaterDialog::getLatestTagComplete, this, std::placeholders::_1,
-                                                  std::placeholders::_2, std::placeholders::_4));
+  m_http->CreateRequest(LATEST_TAG_URL,
+                        [this, display_errors](s32 status_code, const Error& error, const std::string& content_type,
+                                               std::vector<u8> response) {
+                          getLatestTagComplete(status_code, error, std::move(response), display_errors);
+                        });
 #else
   emit updateCheckCompleted();
 #endif
@@ -304,7 +330,8 @@ void AutoUpdaterDialog::queueGetLatestRelease()
 #endif
 }
 
-void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response)
+void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response,
+                                             bool display_errors)
 {
 #ifdef UPDATE_CHECKER_SUPPORTED
   const std::string selected_tag(getCurrentUpdateTag());
@@ -337,26 +364,29 @@ void AutoUpdaterDialog::getLatestTagComplete(s32 status_code, const Error& error
         }
         else
         {
-          if (m_display_messages)
+          if (display_errors)
+          {
             QMessageBox::information(this, tr("Automatic Updater"),
                                      tr("No updates are currently available. Please try again later."));
+          }
+
           emit updateCheckCompleted();
           return;
         }
       }
 
-      if (m_display_messages)
+      if (display_errors)
         reportError(fmt::format("{} release not found in JSON", selected_tag));
     }
     else
     {
-      if (m_display_messages)
+      if (display_errors)
         reportError("JSON is not an array");
     }
   }
   else
   {
-    if (m_display_messages)
+    if (display_errors)
       reportError(fmt::format("Failed to download latest tag info: {}", error.GetDescription()));
   }
 
@@ -412,7 +442,7 @@ void AutoUpdaterDialog::getLatestReleaseComplete(s32 status_code, const Error& e
       queueGetChanges();
 
       // We have to defer this, because it comes back through the timer/HTTP callback...
-      QMetaObject::invokeMethod(this, "exec", Qt::QueuedConnection);
+      QMetaObject::invokeMethod(this, "lockAndExec", Qt::QueuedConnection);
     }
     else
     {
@@ -522,8 +552,6 @@ void AutoUpdaterDialog::downloadUpdateClicked()
     return;
   m_ui.downloadAndInstall->setEnabled(false);
 
-  m_display_messages = true;
-
   std::optional<bool> download_result;
   QtModalProgressCallback progress(this);
   progress.SetTitle(tr("Automatic Updater").toUtf8().constData());
@@ -573,7 +601,7 @@ void AutoUpdaterDialog::downloadUpdateClicked()
   {
     // updater started. since we're a modal on the main window, we have to queue this.
     QMetaObject::invokeMethod(g_main_window, "requestExit", Qt::QueuedConnection, Q_ARG(bool, true));
-    done(0);
+    done(1);
   }
   else
   {

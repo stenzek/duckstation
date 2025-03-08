@@ -40,11 +40,12 @@ Q_SIGNALS:
   void updateCheckCompleted();
 
 public Q_SLOTS:
-  void queueUpdateCheck(bool display_message);
+  void queueUpdateCheck(bool display_errors);
   void queueGetLatestRelease();
 
 private Q_SLOTS:
   void httpPollTimerPoll();
+  void lockAndExec();
 
   void downloadUpdateClicked();
   void skipThisUpdateClicked();
@@ -58,7 +59,7 @@ private:
   bool updateNeeded() const;
   std::string getCurrentUpdateTag() const;
 
-  void getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response);
+  void getLatestTagComplete(s32 status_code, const Error& error, std::vector<u8> response, bool display_errors);
   void getLatestReleaseComplete(s32 status_code, const Error& error, std::vector<u8> response);
 
   void queueGetChanges();
@@ -80,6 +81,5 @@ private:
   QString m_download_url;
   int m_download_size = 0;
 
-  bool m_display_messages = false;
   bool m_update_will_break_save_states = false;
 };
