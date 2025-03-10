@@ -76,7 +76,7 @@ LIBJPEGTURBO=3.1.0
 LIBPNG=1.6.45
 LIBWEBP=1.5.0
 LIBZIP=1.11.3
-SDL3=3.2.4
+SDL3=3.2.8
 QT=6.8.2
 ZLIBNG=2.2.4
 ZSTD=1.5.6
@@ -104,7 +104,7 @@ fi
 
 cat > SHASUMS <<EOF
 baf8aebd22002b762d803ba0e1e389b6b4415159334e9d34bba1a938f6de8ce6  libbacktrace-$LIBBACKTRACE.tar.gz
-2938328317301dfbe30176d79c251733aa5e7ec5c436c800b99ed4da7adcb0f0  SDL3-$SDL3.tar.gz
+13388fabb361de768ecdf2b65e52bb27d1054cae6ccb6942ba926e378e00db03  SDL3-$SDL3.tar.gz
 b60832071919220d2fe692151fb420fa9ea489aa4c7a2eb0e01c830cbe469858  cpuinfo-$CPUINFO.tar.gz
 3eea5ccce6670c126282f1ba4d32c19d486db49a1a5cbfb8d6f48774784d310c  discord-rpc-$DISCORD_RPC.tar.gz
 3998b024b0d442614a9ee270e76e018bb37a17b8c6941212171731123cbbcac7  lunasvg-$LUNASVG.tar.gz
@@ -324,7 +324,6 @@ echo "Building SDL..."
 rm -fr "SDL3-$SDL3"
 tar xf "SDL3-$SDL3.tar.gz"
 cd "SDL3-$SDL3"
-patch -p1 < "$SCRIPTDIR/sdl3-joystick-crash.patch"
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$INSTALLDIR" -DCMAKE_INSTALL_PREFIX="$INSTALLDIR" -DBUILD_SHARED_LIBS=ON -DSDL_SHARED=ON -DSDL_STATIC=OFF -DSDL_TESTS=OFF -G Ninja
 cmake --build build --parallel
 ninja -C build install
