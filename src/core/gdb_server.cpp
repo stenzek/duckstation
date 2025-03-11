@@ -52,6 +52,7 @@ static bool Cmd$g(ClientSocket* client, std::string_view data);
 static bool Cmd$G(ClientSocket* client, std::string_view data);
 static bool Cmd$m(ClientSocket* client, std::string_view data);
 static bool Cmd$M(ClientSocket* client, std::string_view data);
+static bool Cmd$s(ClientSocket* client, std::string_view data);
 static bool Cmd$z1(ClientSocket* client, std::string_view data);
 static bool Cmd$Z1(ClientSocket* client, std::string_view data);
 static bool Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data);
@@ -120,6 +121,7 @@ static constexpr std::pair<std::string_view, bool (*)(ClientSocket*, std::string
   {"G", Cmd$G},
   {"m", Cmd$m},
   {"M", Cmd$M},
+  {"s", Cmd$s},
   {"z0,", Cmd$z1},
   {"Z0,", Cmd$Z1},
   {"z1,", Cmd$z1},
@@ -272,6 +274,14 @@ bool GDBServer::Cmd$M(ClientSocket* client, std::string_view data)
     return true;
   }
 
+  client->SendReplyWithAck("OK");
+  return true;
+}
+
+/// Single step.
+bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
+{
+  System::SingleStepCPU();
   client->SendReplyWithAck("OK");
   return true;
 }
