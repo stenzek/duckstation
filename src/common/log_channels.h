@@ -23,7 +23,7 @@
   X(FileLoader)                                                                                                        \
   X(FileSystem)                                                                                                        \
   X(FullscreenUI)                                                                                                      \
-  X(GDBProtocol)                                                                                                       \
+  X(GDBServer)                                                                                                         \
   X(GPU)                                                                                                               \
   X(GPUDevice)                                                                                                         \
   X(GPUDump)                                                                                                           \

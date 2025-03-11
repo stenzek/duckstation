@@ -21,70 +21,34 @@
 #include <sstream>
 #include <string>
 
-LOG_CHANNEL(GDBProtocol);
+LOG_CHANNEL(GDBServer);
 
-namespace GDBProtocol {
+namespace GDBServer {
+
+static u8* GetMemoryPointer(PhysicalMemoryAddress address, u32 length);
+static u8 ComputeChecksum(std::string_view str);
+static std::optional<std::string_view> DeserializePacket(std::string_view in);
+static std::string SerializePacket(std::string_view in);
+
+static std::optional<std::string> Cmd$_questionMark(std::string_view data);
+static std::optional<std::string> Cmd$g(std::string_view data);
+static std::optional<std::string> Cmd$G(std::string_view data);
+static std::optional<std::string> Cmd$m(std::string_view data);
+static std::optional<std::string> Cmd$M(std::string_view data);
+static std::optional<std::string> Cmd$z1(std::string_view data);
+static std::optional<std::string> Cmd$Z1(std::string_view data);
+static std::optional<std::string> Cmd$vMustReplyEmpty(std::string_view data);
+static std::optional<std::string> Cmd$qSupported(std::string_view data);
+
+static bool IsPacketAck(std::string_view data);
 static bool IsPacketInterrupt(std::string_view data);
 static bool IsPacketContinue(std::string_view data);
 
 static bool IsPacketComplete(std::string_view data);
 static std::string ProcessPacket(std::string_view data);
-} // namespace GDBProtocol
 
-namespace GDBProtocol {
-
-static u8* GetMemoryPointer(PhysicalMemoryAddress address, u32 length)
-{
-  auto region = Bus::GetMemoryRegionForAddress(address);
-  if (region)
-  {
-    u8* data = GetMemoryRegionPointer(*region);
-    if (data && (address + length <= GetMemoryRegionEnd(*region)))
-    {
-      return data + (address - GetMemoryRegionStart(*region));
-    }
-  }
-
-  return nullptr;
-}
-
-static u8 ComputeChecksum(std::string_view str)
-{
-  u8 checksum = 0;
-  for (char c : str)
-  {
-    checksum = (checksum + c) % 256;
-  }
-  return checksum;
-}
-
-static std::optional<std::string_view> DeserializePacket(std::string_view in)
-{
-  if ((in.size() < 4) || (in[0] != '$') || (in[in.size() - 3] != '#'))
-  {
-    return std::nullopt;
-  }
-  std::string_view data = in.substr(1, in.size() - 4);
-
-  u8 packetChecksum = StringUtil::FromChars<u8>(in.substr(in.size() - 2, 2), 16).value_or(0);
-  u8 computedChecksum = ComputeChecksum(data);
-
-  if (packetChecksum == computedChecksum)
-  {
-    return {data};
-  }
-  else
-  {
-    return std::nullopt;
-  }
-}
-
-static std::string SerializePacket(std::string_view in)
-{
-  std::stringstream ss;
-  ss << '$' << in << '#' << TinyString::from_format("{:02x}", ComputeChecksum(in));
-  return ss.str();
-}
+/// Number of registers in GDB remote protocol for MIPS III.
+constexpr int NUM_GDB_REGISTERS = 73;
 
 /// List of GDB remote protocol registers for MIPS III (excluding FP).
 static const std::array<u32*, 38> REGISTERS{
@@ -129,17 +93,109 @@ static const std::array<u32*, 38> REGISTERS{
   &CPU::g_state.pc,
 };
 
-/// Number of registers in GDB remote protocol for MIPS III.
-constexpr int NUM_GDB_REGISTERS = 73;
+/// List of all GDB remote protocol packets supported by us.
+static const std::map<const char*, std::function<std::optional<std::string>(std::string_view)>> COMMANDS{
+  {"?", Cmd$_questionMark},
+  {"g", Cmd$g},
+  {"G", Cmd$G},
+  {"m", Cmd$m},
+  {"M", Cmd$M},
+  {"z0,", Cmd$z1},
+  {"Z0,", Cmd$Z1},
+  {"z1,", Cmd$z1},
+  {"Z1,", Cmd$Z1},
+  {"vMustReplyEmpty", Cmd$vMustReplyEmpty},
+  {"qSupported", Cmd$qSupported},
+};
+
+namespace {
+class ClientSocket final : public BufferedStreamSocket
+{
+public:
+  ClientSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor);
+  ~ClientSocket() override;
+
+  void OnSystemPaused();
+  void OnSystemResumed();
+
+protected:
+  void OnConnected() override;
+  void OnDisconnected(const Error& error) override;
+  void OnRead() override;
+
+private:
+  void SendPacket(std::string_view sv);
+
+  bool m_seen_resume = false;
+};
+} // namespace
+
+static std::shared_ptr<ListenSocket> s_gdb_listen_socket;
+static std::vector<std::shared_ptr<ClientSocket>> s_gdb_clients;
+
+} // namespace GDBServer
+
+u8* GDBServer::GetMemoryPointer(PhysicalMemoryAddress address, u32 length)
+{
+  auto region = Bus::GetMemoryRegionForAddress(address);
+  if (region)
+  {
+    u8* data = GetMemoryRegionPointer(*region);
+    if (data && (address + length <= GetMemoryRegionEnd(*region)))
+    {
+      return data + (address - GetMemoryRegionStart(*region));
+    }
+  }
+
+  return nullptr;
+}
+
+u8 GDBServer::ComputeChecksum(std::string_view str)
+{
+  u8 checksum = 0;
+  for (char c : str)
+  {
+    checksum = (checksum + c) % 256;
+  }
+  return checksum;
+}
+
+std::optional<std::string_view> GDBServer::DeserializePacket(std::string_view in)
+{
+  if ((in.size() < 4) || (in[0] != '$') || (in[in.size() - 3] != '#'))
+  {
+    return std::nullopt;
+  }
+  std::string_view data = in.substr(1, in.size() - 4);
+
+  u8 packetChecksum = StringUtil::FromChars<u8>(in.substr(in.size() - 2, 2), 16).value_or(0);
+  u8 computedChecksum = ComputeChecksum(data);
+
+  if (packetChecksum == computedChecksum)
+  {
+    return {data};
+  }
+  else
+  {
+    return std::nullopt;
+  }
+}
+
+std::string GDBServer::SerializePacket(std::string_view in)
+{
+  std::stringstream ss;
+  ss << '$' << in << '#' << TinyString::from_format("{:02x}", ComputeChecksum(in));
+  return ss.str();
+}
 
 /// Get stop reason.
-static std::optional<std::string> Cmd$_questionMark(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$_questionMark(std::string_view data)
 {
   return {"S02"};
 }
 
 /// Get general registers.
-static std::optional<std::string> Cmd$g(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$g(std::string_view data)
 {
   std::stringstream ss;
 
@@ -159,7 +215,7 @@ static std::optional<std::string> Cmd$g(std::string_view data)
 }
 
 /// Set general registers.
-static std::optional<std::string> Cmd$G(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$G(std::string_view data)
 {
   if (data.size() == NUM_GDB_REGISTERS * 8)
   {
@@ -185,7 +241,7 @@ static std::optional<std::string> Cmd$G(std::string_view data)
 }
 
 /// Get memory.
-static std::optional<std::string> Cmd$m(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$m(std::string_view data)
 {
   std::stringstream ss{std::string{data}};
   std::string dataAddress, dataLength;
@@ -211,7 +267,7 @@ static std::optional<std::string> Cmd$m(std::string_view data)
 }
 
 /// Set memory.
-static std::optional<std::string> Cmd$M(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$M(std::string_view data)
 {
   std::stringstream ss{std::string{data}};
   std::string dataAddress, dataLength, dataPayload;
@@ -241,7 +297,7 @@ static std::optional<std::string> Cmd$M(std::string_view data)
 }
 
 /// Remove hardware breakpoint.
-static std::optional<std::string> Cmd$z1(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$z1(std::string_view data)
 {
   auto address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16);
   if (address)
@@ -256,7 +312,7 @@ static std::optional<std::string> Cmd$z1(std::string_view data)
 }
 
 /// Insert hardware breakpoint.
-static std::optional<std::string> Cmd$Z1(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$Z1(std::string_view data)
 {
   auto address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16);
   if (address)
@@ -270,65 +326,45 @@ static std::optional<std::string> Cmd$Z1(std::string_view data)
   }
 }
 
-static std::optional<std::string> Cmd$vMustReplyEmpty(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$vMustReplyEmpty(std::string_view data)
 {
   return {""};
 }
 
-static std::optional<std::string> Cmd$qSupported(std::string_view data)
+std::optional<std::string> GDBServer::Cmd$qSupported(std::string_view data)
 {
   return {""};
 }
 
-/// List of all GDB remote protocol packets supported by us.
-static const std::map<const char*, std::function<std::optional<std::string>(std::string_view)>> COMMANDS{
-  {"?", Cmd$_questionMark},
-  {"g", Cmd$g},
-  {"G", Cmd$G},
-  {"m", Cmd$m},
-  {"M", Cmd$M},
-  {"z0,", Cmd$z1},
-  {"Z0,", Cmd$Z1},
-  {"z1,", Cmd$z1},
-  {"Z1,", Cmd$Z1},
-  {"vMustReplyEmpty", Cmd$vMustReplyEmpty},
-  {"qSupported", Cmd$qSupported},
-};
-
-bool IsPacketInterrupt(std::string_view data)
+bool GDBServer::IsPacketAck(std::string_view data)
 {
-  return (data.size() >= 1) && (data[data.size() - 1] == '\003');
+  DebugAssert(data.size() >= 1);
+  return (data[0] == '+' || data[0] == '-');
 }
 
-bool IsPacketContinue(std::string_view data)
+bool GDBServer::IsPacketInterrupt(std::string_view data)
+{
+  DebugAssert(data.size() >= 1);
+  return (data[data.size() - 1] == '\003');
+}
+
+bool GDBServer::IsPacketContinue(std::string_view data)
 {
   return (data.size() >= 5) && (data.substr(data.size() - 5) == "$c#63");
 }
 
-bool IsPacketComplete(std::string_view data)
+bool GDBServer::IsPacketComplete(std::string_view data)
 {
   return ((data.size() == 1) && (data[0] == '\003')) || ((data.size() > 3) && (*(data.end() - 3) == '#'));
 }
 
-std::string ProcessPacket(std::string_view data)
+std::string GDBServer::ProcessPacket(std::string_view data)
 {
-  std::string_view trimmedData = data;
-
-  // Eat ACKs.
-  while (!trimmedData.empty() && (trimmedData[0] == '+' || trimmedData[0] == '-'))
-  {
-    if (trimmedData[0] == '-')
-    {
-      ERROR_LOG("Received negative ack");
-    }
-    trimmedData = trimmedData.substr(1);
-  }
-
   // Validate packet.
-  auto packet = DeserializePacket(trimmedData);
+  auto packet = DeserializePacket(data);
   if (!packet)
   {
-    ERROR_LOG("Malformed packet '{}'", trimmedData);
+    ERROR_LOG("Malformed packet '{}'", data);
     return "-";
   }
 
@@ -340,7 +376,7 @@ std::string ProcessPacket(std::string_view data)
   {
     if (packet->starts_with(command.first))
     {
-      DEBUG_LOG("Processing command '{}'", command.first);
+      DEV_LOG("Processing command '{}'", command.first);
 
       // Invoke command, remove command name from payload.
       reply = command.second(packet->substr(strlen(command.first)));
@@ -350,40 +386,10 @@ std::string ProcessPacket(std::string_view data)
   }
 
   if (!processed)
-    WARNING_LOG("Failed to process packet '{}'", trimmedData);
+    WARNING_LOG("Failed to process packet '{}'", data);
 
   return reply ? "+" + SerializePacket(*reply) : "+";
 }
-
-} // namespace GDBProtocol
-
-namespace GDBServer {
-
-namespace {
-class ClientSocket final : public BufferedStreamSocket
-{
-public:
-  ClientSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor);
-  ~ClientSocket() override;
-
-  void OnSystemPaused();
-  void OnSystemResumed();
-
-protected:
-  void OnConnected() override;
-  void OnDisconnected(const Error& error) override;
-  void OnRead() override;
-
-private:
-  void SendPacket(std::string_view sv);
-
-  bool m_seen_resume = false;
-};
-} // namespace
-
-static std::shared_ptr<ListenSocket> s_gdb_listen_socket;
-static std::vector<std::shared_ptr<ClientSocket>> s_gdb_clients;
-} // namespace GDBServer
 
 GDBServer::ClientSocket::ClientSocket(SocketMultiplexer& multiplexer, SocketDescriptor descriptor)
   : BufferedStreamSocket(multiplexer, descriptor, 65536, 65536)
@@ -433,25 +439,34 @@ void GDBServer::ClientSocket::OnRead()
       const std::string_view current_packet(reinterpret_cast<const char*>(buffer.data() + buffer_offset),
                                             current_packet_size);
 
-      if (GDBProtocol::IsPacketInterrupt(current_packet))
+      if (GDBServer::IsPacketAck(current_packet))
+      {
+        // Eat ACKs.
+        if (current_packet[0] == '-')
+          ERROR_LOG("Received negative ack");
+
+        packet_complete = true;
+        break;
+      }
+      else if (GDBServer::IsPacketInterrupt(current_packet))
       {
         DEV_LOG("{} > Interrupt request", GetRemoteAddress().ToString());
         System::PauseSystem(true);
         packet_complete = true;
         break;
       }
-      else if (GDBProtocol::IsPacketContinue(current_packet))
+      else if (GDBServer::IsPacketContinue(current_packet))
       {
         DEV_LOG("{} > Continue request", GetRemoteAddress().ToString());
         System::PauseSystem(false);
         packet_complete = true;
         break;
       }
-      else if (GDBProtocol::IsPacketComplete(current_packet))
+      else if (GDBServer::IsPacketComplete(current_packet))
       {
         // TODO: Make this not copy.
         DEV_LOG("{} > {}", GetRemoteAddress().ToString(), current_packet);
-        SendPacket(GDBProtocol::ProcessPacket(current_packet));
+        SendPacket(GDBServer::ProcessPacket(current_packet));
         packet_complete = true;
         break;
       }
@@ -459,7 +474,9 @@ void GDBServer::ClientSocket::OnRead()
 
     if (!packet_complete)
     {
-      WARNING_LOG("Incomplete packet, got {} bytes.", buffer.size() - buffer_offset);
+      WARNING_LOG(
+        "Incomplete packet, got {} bytes: {}", buffer.size() - buffer_offset,
+        std::string_view(reinterpret_cast<const char*>(buffer.data() + buffer_offset), buffer.size() - buffer_offset));
       break;
     }
     else
@@ -489,7 +506,7 @@ void GDBServer::ClientSocket::OnSystemPaused()
   m_seen_resume = false;
 
   // Generate a stop reply packet, insert '?' command to generate it.
-  SendPacket(GDBProtocol::ProcessPacket("$?#3f"));
+  SendPacket(GDBServer::ProcessPacket("$?#3f"));
 }
 
 void GDBServer::ClientSocket::OnSystemResumed()
