@@ -116,6 +116,15 @@ ALWAYS_INLINE static u32 ModAlpha(u32 col32, float a)
   return (col32 & ~IM_COL32_A_MASK) | (static_cast<u32>(a * 255.0f) << IM_COL32_A_SHIFT);
 }
 
+// lighter in light themes
+ALWAYS_INLINE static ImVec4 DarkerColor(const ImVec4& v, float f = 0.75f)
+{
+  // light theme
+  f = (UIStyle.PrimaryTextColor.x < UIStyle.PrimaryColor.x) ? (1.0f / f) : f;
+  return ImVec4(std::max(v.x, 1.0f / 255.0f) * f, std::max(v.y, 1.0f / 255.0f) * f, std::max(v.z, 1.0f / 255.0f) * f,
+                v.w);
+}
+
 ALWAYS_INLINE static ImVec4 MulAlpha(const ImVec4& v, float a)
 {
   return ImVec4(v.x, v.y, v.z, v.w * a);
