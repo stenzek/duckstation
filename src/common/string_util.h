@@ -415,6 +415,19 @@ void ReplaceAll(std::string* subject, const char search, const char replacement)
 /// Parses an assignment string (Key = Value) into its two components.
 bool ParseAssignmentString(const std::string_view str, std::string_view* key, std::string_view* value);
 
+/// Helper for tokenizing strings.
+ALWAYS_INLINE std::optional<std::string_view> GetNextToken(std::string_view& caret, char separator)
+{
+  std::optional<std::string_view> ret;
+  const std::string_view::size_type pos = caret.find(separator);
+  if (pos != std::string_view::npos)
+  {
+    ret = caret.substr(0, pos);
+    caret = caret.substr(pos + 1);
+  }
+  return ret;
+}
+
 /// Unicode replacement character.
 static constexpr char32_t UNICODE_REPLACEMENT_CHARACTER = 0xFFFD;
 
