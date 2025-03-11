@@ -22,6 +22,7 @@ LOG_CHANNEL(GDBServer);
 namespace GDBServer {
 
 namespace {
+
 class ClientSocket final : public BufferedStreamSocket
 {
 public:
@@ -43,6 +44,7 @@ private:
 
   bool m_seen_resume = false;
 };
+
 } // namespace
 
 static u8 ComputeChecksum(std::string_view str);
@@ -50,6 +52,7 @@ static u8 ComputeChecksum(std::string_view str);
 static bool Cmd$_questionMark(ClientSocket* client, std::string_view data);
 static bool Cmd$g(ClientSocket* client, std::string_view data);
 static bool Cmd$G(ClientSocket* client, std::string_view data);
+static bool Cmd$H(ClientSocket* client, std::string_view data);
 static bool Cmd$m(ClientSocket* client, std::string_view data);
 static bool Cmd$M(ClientSocket* client, std::string_view data);
 static bool Cmd$s(ClientSocket* client, std::string_view data);
@@ -69,10 +72,10 @@ static bool ProcessPacket(ClientSocket* socket, std::string_view data);
 using LargeReplyPacket = SmallStackString<768>;
 
 /// Number of registers in GDB remote protocol for MIPS III.
-constexpr int NUM_GDB_REGISTERS = 73;
+static constexpr int NUM_GDB_REGISTERS = 73;
 
 /// List of GDB remote protocol registers for MIPS III (excluding FP).
-static const std::array<u32*, 38> REGISTERS{
+static constexpr std::array<u32*, 38> REGISTERS{
   &CPU::g_state.regs.r[0],
   &CPU::g_state.regs.r[1],
   &CPU::g_state.regs.r[2],
@@ -119,6 +122,7 @@ static constexpr std::pair<std::string_view, bool (*)(ClientSocket*, std::string
   {"?", Cmd$_questionMark},
   {"g", Cmd$g},
   {"G", Cmd$G},
+  {"H", Cmd$H},
   {"m", Cmd$m},
   {"M", Cmd$M},
   {"s", Cmd$s},
@@ -200,6 +204,14 @@ bool GDBServer::Cmd$G(ClientSocket* client, std::string_view data)
   }
 
   client->SendReplyWithAck();
+  return true;
+}
+
+/// Thread operations, ignored.
+bool GDBServer::Cmd$H(ClientSocket* client, std::string_view data)
+{
+  WARNING_LOG("Ignoring thread command '{}'", data);
+  client->SendReplyWithAck("OK");
   return true;
 }
 
@@ -499,8 +511,7 @@ void GDBServer::ClientSocket::OnRead()
       }
       else if (GDBServer::IsPacketComplete(current_packet))
       {
-        // TODO: Make this not copy.
-        DEV_LOG("{} > {}", GetRemoteAddress().ToString(), current_packet);
+        DEBUG_LOG("{} > {}", GetRemoteAddress().ToString(), current_packet);
         if (!ProcessPacket(this, current_packet))
           SendPacket("-");
 
@@ -530,7 +541,7 @@ void GDBServer::ClientSocket::SendPacket(std::string_view sv)
   if (sv.empty())
     return;
 
-  WARNING_LOG("Write: {}", sv);
+  DEBUG_LOG("Send reply: {}", sv);
   if (size_t written = Write(sv.data(), sv.length()); written != sv.length())
     ERROR_LOG("Only wrote {} of {} bytes.", written, sv.length());
 }
@@ -543,7 +554,7 @@ void GDBServer::ClientSocket::OnSystemPaused()
   m_seen_resume = false;
 
   // Generate a stop reply packet, insert '?' command to generate it.
-  GDBServer::ProcessPacket(this, "$?#3f");
+  SendReplyWithAck("S00");
 }
 
 void GDBServer::ClientSocket::OnSystemResumed()

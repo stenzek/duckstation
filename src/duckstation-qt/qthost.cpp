@@ -2140,6 +2140,7 @@ bool Host::CopyTextToClipboard(std::string_view text)
 
 void Host::ReportDebuggerMessage(std::string_view message)
 {
+  INFO_LOG("Debugger message: {}", message);
   emit g_emu_thread->debuggerMessageReported(QString::fromUtf8(message));
 }
 

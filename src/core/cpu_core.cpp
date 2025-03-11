@@ -2363,17 +2363,20 @@ ALWAYS_INLINE_RELEASE bool CPU::CheckBreakpointList(BreakpointType type, Virtual
     {
       System::PauseSystem(true);
 
+      TinyString msg;
       if (bp.auto_clear)
       {
-        Host::ReportDebuggerMessage(fmt::format("Stopped execution at 0x{:08X}.", pc));
+        msg.format("Stopped execution at 0x{:08X}.", pc);
+        Host::ReportDebuggerMessage(msg);
         bplist.erase(bplist.begin() + i);
         count--;
         UpdateDebugDispatcherFlag();
       }
       else
       {
-        Host::ReportDebuggerMessage(fmt::format("Hit {} breakpoint {} at 0x{:08X}, Hit Count {}.",
-                                                GetBreakpointTypeName(type), bp.number, address, bp.hit_count));
+        msg.format("Hit {} breakpoint {} at 0x{:08X}, Hit Count {}.", GetBreakpointTypeName(type), bp.number, address,
+                   bp.hit_count);
+        Host::ReportDebuggerMessage(msg);
         i++;
       }
 
