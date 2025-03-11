@@ -53,8 +53,8 @@ static bool Cmd$G(ClientSocket* client, std::string_view data);
 static bool Cmd$m(ClientSocket* client, std::string_view data);
 static bool Cmd$M(ClientSocket* client, std::string_view data);
 static bool Cmd$s(ClientSocket* client, std::string_view data);
-static bool Cmd$z1(ClientSocket* client, std::string_view data);
-static bool Cmd$Z1(ClientSocket* client, std::string_view data);
+template<bool add_breakpoint>
+static bool Cmd$z(ClientSocket* client, std::string_view data);
 static bool Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data);
 static bool Cmd$qSupported(ClientSocket* client, std::string_view data);
 
@@ -122,10 +122,8 @@ static constexpr std::pair<std::string_view, bool (*)(ClientSocket*, std::string
   {"m", Cmd$m},
   {"M", Cmd$M},
   {"s", Cmd$s},
-  {"z0,", Cmd$z1},
-  {"Z0,", Cmd$Z1},
-  {"z1,", Cmd$z1},
-  {"Z1,", Cmd$Z1},
+  {"z", Cmd$z<false>},
+  {"Z", Cmd$z<true>},
   {"vMustReplyEmpty", Cmd$vMustReplyEmpty},
   {"qSupported", Cmd$qSupported},
 };
@@ -286,40 +284,76 @@ bool GDBServer::Cmd$s(ClientSocket* client, std::string_view data)
   return true;
 }
 
-/// Remove hardware breakpoint.
-bool GDBServer::Cmd$z1(ClientSocket* client, std::string_view data)
+/// Remove hardware breakpoint (z).
+/// Insert hardware breakpoint (Z).
+template<bool add_breakpoint>
+bool GDBServer::Cmd$z(ClientSocket* client, std::string_view data)
 {
-  const std::optional<VirtualMemoryAddress> address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16);
-  if (address.has_value())
+  std::string_view caret = data;
+  std::optional<u32> bptype;
+  std::optional<VirtualMemoryAddress> bpaddr;
+
+  // type,addr
+  if (!(bptype = StringUtil::FromChars<u32>(caret, 10, &caret)) || caret.empty() || caret[0] != ',' ||
+      !(bpaddr = StringUtil::FromChars<VirtualMemoryAddress>(caret.substr(1), 16)).has_value())
   {
-    CPU::RemoveBreakpoint(CPU::BreakpointType::Execute, *address);
+    ERROR_LOG("Invalid {} hw breakpoint packet: {}", add_breakpoint ? "add" : "remove", data);
+    return false;
+  }
+
+  if (bptype.value() == 0 || bptype.value() == 1) // software/hardware breakpoint
+  {
+    if constexpr (add_breakpoint)
+      CPU::AddBreakpoint(CPU::BreakpointType::Execute, bpaddr.value());
+    else
+      CPU::RemoveBreakpoint(CPU::BreakpointType::Execute, bpaddr.value());
+    client->SendReplyWithAck("OK");
+    return true;
+  }
+  else if (bptype.value() == 2) // write breakpoint
+  {
+    if constexpr (add_breakpoint)
+      CPU::AddBreakpoint(CPU::BreakpointType::Write, bpaddr.value());
+    else
+      CPU::RemoveBreakpoint(CPU::BreakpointType::Write, bpaddr.value());
+
+    client->SendReplyWithAck("OK");
+    return true;
+  }
+  else if (bptype.value() == 3) // read breakpoint
+  {
+    if constexpr (add_breakpoint)
+      CPU::AddBreakpoint(CPU::BreakpointType::Read, bpaddr.value());
+    else
+      CPU::RemoveBreakpoint(CPU::BreakpointType::Read, bpaddr.value());
+    client->SendReplyWithAck("OK");
+    return true;
+  }
+  else if (bptype.value() == 4) // read+write breakpoint
+  {
+    if constexpr (add_breakpoint)
+    {
+      CPU::AddBreakpoint(CPU::BreakpointType::Read, bpaddr.value());
+      CPU::AddBreakpoint(CPU::BreakpointType::Write, bpaddr.value());
+    }
+    else
+    {
+      CPU::RemoveBreakpoint(CPU::BreakpointType::Read, bpaddr.value());
+      CPU::RemoveBreakpoint(CPU::BreakpointType::Write, bpaddr.value());
+    }
+
     client->SendReplyWithAck("OK");
     return true;
   }
   else
   {
-    ERROR_LOG("Invalid address to remove hw breakpoint: ", data);
-    client->SendReplyWithAck();
+    ERROR_LOG("Unknown breakpoint type {}", bptype.value());
     return false;
   }
 }
 
-/// Insert hardware breakpoint.
-bool GDBServer::Cmd$Z1(ClientSocket* client, std::string_view data)
-{
-  const std::optional<VirtualMemoryAddress> address = StringUtil::FromChars<VirtualMemoryAddress>(data, 16);
-  if (address)
-  {
-    CPU::AddBreakpoint(CPU::BreakpointType::Execute, *address, false);
-    client->SendReplyWithAck("OK");
-    return true;
-  }
-  else
-  {
-    ERROR_LOG("Invalid address to insert hw breakpoint: ", data);
-    return false;
-  }
-}
+template bool GDBServer::Cmd$z<false>(ClientSocket* client, std::string_view data);
+template bool GDBServer::Cmd$z<true>(ClientSocket* client, std::string_view data);
 
 bool GDBServer::Cmd$vMustReplyEmpty(ClientSocket* client, std::string_view data)
 {
