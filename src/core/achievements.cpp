@@ -2719,19 +2719,23 @@ void Achievements::DrawAchievementsWindow()
         "achievements", background, 0.0f, ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f), 0))
   {
     static bool buckets_collapsed[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {};
-    static const char* bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
-      TRANSLATE_NOOP("Achievements", "Unknown"),           TRANSLATE_NOOP("Achievements", "Locked"),
-      TRANSLATE_NOOP("Achievements", "Unlocked"),          TRANSLATE_NOOP("Achievements", "Unsupported"),
-      TRANSLATE_NOOP("Achievements", "Unofficial"),        TRANSLATE_NOOP("Achievements", "Recently Unlocked"),
-      TRANSLATE_NOOP("Achievements", "Active Challenges"), TRANSLATE_NOOP("Achievements", "Almost There"),
+    static constexpr std::pair<const char*, const char*> bucket_names[NUM_RC_CLIENT_ACHIEVEMENT_BUCKETS] = {
+      {ICON_FA_EXCLAMATION_TRIANGLE, TRANSLATE_NOOP("Achievements", "Unknown")},
+      {ICON_FA_LOCK, TRANSLATE_NOOP("Achievements", "Locked")},
+      {ICON_FA_UNLOCK, TRANSLATE_NOOP("Achievements", "Unlocked")},
+      {ICON_FA_EXCLAMATION_TRIANGLE, TRANSLATE_NOOP("Achievements", "Unsupported")},
+      {ICON_FA_QUESTION_CIRCLE, TRANSLATE_NOOP("Achievements", "Unofficial")},
+      {ICON_EMOJI_UNLOCKED, TRANSLATE_NOOP("Achievements", "Recently Unlocked")},
+      {ICON_FA_STOPWATCH, TRANSLATE_NOOP("Achievements", "Active Challenges")},
+      {ICON_FA_RULER_HORIZONTAL, TRANSLATE_NOOP("Achievements", "Almost There")},
     };
 
     ImGuiFullscreen::ResetFocusHere();
     ImGuiFullscreen::BeginMenuButtons();
 
     for (u32 bucket_type : {RC_CLIENT_ACHIEVEMENT_BUCKET_ACTIVE_CHALLENGE,
-                            RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED,
-                            RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE, RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
+                            RC_CLIENT_ACHIEVEMENT_BUCKET_RECENTLY_UNLOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_ALMOST_THERE,
+                            RC_CLIENT_ACHIEVEMENT_BUCKET_UNLOCKED, RC_CLIENT_ACHIEVEMENT_BUCKET_LOCKED,
                             RC_CLIENT_ACHIEVEMENT_BUCKET_UNOFFICIAL, RC_CLIENT_ACHIEVEMENT_BUCKET_UNSUPPORTED})
     {
       for (u32 bucket_idx = 0; bucket_idx < s_state.achievement_list->num_buckets; bucket_idx++)
@@ -2744,9 +2748,10 @@ void Achievements::DrawAchievementsWindow()
 
         // TODO: Once subsets are supported, this will need to change.
         bool& bucket_collapsed = buckets_collapsed[bucket.bucket_type];
-        bucket_collapsed ^=
-          ImGuiFullscreen::MenuHeadingButton(Host::TranslateToCString("Achievements", bucket_names[bucket.bucket_type]),
-                                             bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
+        bucket_collapsed ^= ImGuiFullscreen::MenuHeadingButton(
+          TinyString::from_format("{} {}", bucket_names[bucket.bucket_type].first,
+                                  Host::TranslateToStringView("Achievements", bucket_names[bucket.bucket_type].second)),
+          bucket_collapsed ? ICON_FA_CHEVRON_DOWN : ICON_FA_CHEVRON_UP);
         if (!bucket_collapsed)
         {
           for (u32 i = 0; i < bucket.num_achievements; i++)
