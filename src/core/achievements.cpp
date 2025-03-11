@@ -603,6 +603,11 @@ const std::string& Achievements::GetGameTitle()
   return s_state.game_title;
 }
 
+const std::string& Achievements::GetGamePath()
+{
+  return s_state.game_path;
+}
+
 const std::string& Achievements::GetGameIconPath()
 {
   return s_state.game_icon;

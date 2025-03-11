@@ -155,9 +155,15 @@ const std::string& GetRichPresenceString();
 /// Returns the URL for the current icon of the game
 const std::string& GetGameIconURL();
 
+/// Returns the path for the current icon of the game
+const std::string& GetGameIconPath();
+
 /// Returns the RetroAchievements title for the current game.
 /// Should be called with the lock held.
 const std::string& GetGameTitle();
+
+/// Returns the path for the game that is current hashed/running.
+const std::string& GetGamePath();
 
 /// Returns the logged-in user name.
 const char* GetLoggedInUserName();

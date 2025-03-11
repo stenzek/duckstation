@@ -448,7 +448,8 @@ static void DrawGameListSettingsWindow();
 static void SwitchToGameList();
 static void PopulateGameListEntryList();
 static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
-static GPUTexture* GetGameListCover(const GameList::Entry* entry, bool fallback_to_icon);
+static GPUTexture* GetGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
+                                    bool fallback_to_icon);
 static GPUTexture* GetGameListCoverTrophy(const GameList::Entry* entry, const ImVec2& image_size);
 static GPUTexture* GetCoverForCurrentGame();
 
@@ -7527,7 +7528,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       if (!visible)
         continue;
 
-      GPUTexture* cover_texture = GetGameListCover(entry, true);
+      GPUTexture* cover_texture = GetGameListCover(entry, false, true);
 
       if (entry->serial.empty())
       {
@@ -7589,7 +7590,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   {
     static constexpr float info_top_margin = 20.0f;
     static constexpr float cover_size = 320.0f;
-    GPUTexture* cover_texture = selected_entry ? GetGameListCover(selected_entry, false) :
+    GPUTexture* cover_texture = selected_entry ? GetGameListCover(selected_entry, false, false) :
                                                  GetTextureForGameListEntryType(GameList::EntryType::Count);
     if (cover_texture)
     {
@@ -7803,7 +7804,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       bb.Min += style.FramePadding;
       bb.Max -= style.FramePadding;
 
-      GPUTexture* const cover_texture = GetGameListCover(entry, false);
+      GPUTexture* const cover_texture = GetGameListCover(entry, false, false);
       const ImRect image_rect(
         CenterImage(ImRect(bb.Min, bb.Min + image_size), ImVec2(static_cast<float>(cover_texture->GetWidth()),
                                                                 static_cast<float>(cover_texture->GetHeight()))));
@@ -8202,7 +8203,8 @@ void FullscreenUI::SwitchToGameList()
   QueueResetFocus(FocusResetType::ViewChanged);
 }
 
-GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fallback_to_icon)
+GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fallback_to_achievements_icon,
+                                           bool fallback_to_icon)
 {
   // lookup and grab cover image
   auto cover_it = s_state.cover_image_map.find(entry->path);
@@ -8210,12 +8212,18 @@ GPUTexture* FullscreenUI::GetGameListCover(const GameList::Entry* entry, bool fa
   {
     std::string cover_path = GameList::GetCoverImagePathForEntry(entry);
     cover_it = s_state.cover_image_map.emplace(entry->path, std::move(cover_path)).first;
-  }
 
-  if (fallback_to_icon && cover_it->second.empty())
-  {
-    std::string icon_path = GameList::GetGameIconPath(entry->serial, entry->path);
-    cover_it = s_state.icon_image_map.emplace(entry->path, std::move(icon_path)).first;
+    // try achievements image before memcard icon
+    if (fallback_to_achievements_icon && cover_it->second.empty() && Achievements::IsActive())
+    {
+      const auto lock = Achievements::GetLock();
+      if (Achievements::GetGamePath() == entry->path)
+        cover_it->second = Achievements::GetGameIconPath();
+    }
+
+    // because memcard icons are crap res
+    if (fallback_to_icon && cover_it->second.empty())
+      cover_it->second = GameList::GetGameIconPath(entry->serial, entry->path);
   }
 
   GPUTexture* tex = (!cover_it->second.empty()) ? GetCachedTextureAsync(cover_it->second.c_str()) : nullptr;
@@ -8265,7 +8273,7 @@ GPUTexture* FullscreenUI::GetCoverForCurrentGame()
   if (!entry)
     return s_state.fallback_disc_texture.get();
 
-  return GetGameListCover(entry, true);
+  return GetGameListCover(entry, true, true);
 }
 
 //////////////////////////////////////////////////////////////////////////

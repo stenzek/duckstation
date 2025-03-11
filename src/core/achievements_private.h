@@ -13,7 +13,6 @@ namespace Achievements {
 rc_client_t* GetClient();
 
 const rc_client_user_game_summary_t& GetGameSummary();
-const std::string& GetGameIconPath();
 
 std::string GetAchievementBadgePath(const rc_client_achievement_t* achievement, int state,
                                     bool download_if_missing = true);
