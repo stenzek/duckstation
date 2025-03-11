@@ -117,7 +117,7 @@ ALWAYS_INLINE static u32 ModAlpha(u32 col32, float a)
 }
 
 // lighter in light themes
-ALWAYS_INLINE static ImVec4 DarkerColor(const ImVec4& v, float f = 0.75f)
+ALWAYS_INLINE static ImVec4 DarkerColor(const ImVec4& v, float f = 0.8f)
 {
   // light theme
   f = (UIStyle.PrimaryTextColor.x < UIStyle.PrimaryColor.x) ? (1.0f / f) : f;

@@ -1481,14 +1481,14 @@ bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool en
   const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
   const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, color, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                            &title_bb);
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
+  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
+                            ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
   if (summary)
   {
-    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, color, summary, nullptr, nullptr,
-                              ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
+                              summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
   }
 
   s_state.menu_button_index++;
@@ -1507,9 +1507,9 @@ bool ImGuiFullscreen::MenuButtonWithoutSummary(const char* title, bool enabled, 
   const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
   const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, color, title, nullptr, nullptr, text_align, 0.0f,
-                            &title_bb);
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
+  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
+                            text_align, 0.0f, &title_bb);
 
   s_state.menu_button_index++;
   return pressed;
@@ -1533,14 +1533,14 @@ bool ImGuiFullscreen::MenuImageButton(const char* title, const char* summary, Im
   const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
   const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(title_font, title_bb.Min, title_bb.Max, color, title, nullptr, nullptr, ImVec2(0.0f, 0.0f),
-                            0.0f, &title_bb);
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
+  RenderShadowedTextClipped(title_font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
+                            ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
   if (summary)
   {
-    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, color, summary, nullptr, nullptr,
-                              ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
+                              summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
   }
 
   s_state.menu_button_index++;
@@ -1641,15 +1641,15 @@ bool ImGuiFullscreen::ToggleButton(const char* title, const char* summary, bool*
   const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
 
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, color, title, nullptr, nullptr, ImVec2(0.0, 0.0f), 0.0f,
-                            &title_bb);
+  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
+                            ImVec2(0.0, 0.0f), 0.0f, &title_bb);
 
   if (summary)
   {
-    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, color, summary, nullptr, nullptr,
-                              ImVec2(0.0, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
+                              summary, nullptr, nullptr, ImVec2(0.0, 0.0f), 0.0f, &summary_bb);
   }
 
   const float toggle_width = LayoutScale(50.0f);
@@ -1708,15 +1708,15 @@ bool ImGuiFullscreen::ThreeWayToggleButton(const char* title, const char* summar
   const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
 
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
 
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, color, title, nullptr, nullptr, ImVec2(0.0, 0.0f), 0.0f,
-                            &title_bb);
+  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
+                            ImVec2(0.0, 0.0f), 0.0f, &title_bb);
 
   if (summary)
   {
-    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, color, summary, nullptr, nullptr,
-                              ImVec2(0.0, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
+                              summary, nullptr, nullptr, ImVec2(0.0, 0.0f), 0.0f, &summary_bb);
   }
 
   const float toggle_width = LayoutScale(50.0f);
@@ -1787,16 +1787,16 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
   const float text_end = bb.Max.x - value_size.x;
   const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), ImVec2(text_end, bb.Max.y));
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, color, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                            &title_bb);
-  RenderShadowedTextClipped(font, bb.Min, bb.Max, color, value_text.c_str(), value_text.end_ptr(), &value_size,
-                            ImVec2(1.0f, 0.5f), 0.0f, &bb);
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
+  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
+                            ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+  RenderShadowedTextClipped(font, bb.Min, bb.Max, ImGui::GetColorU32(color), value_text.c_str(), value_text.end_ptr(),
+                            &value_size, ImVec2(1.0f, 0.5f), 0.0f, &bb);
 
   if (summary)
   {
-    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, color, summary, nullptr, nullptr,
-                              ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
+                              summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
   }
 
   if (pressed)
@@ -1846,16 +1846,16 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, float*
   const float text_end = bb.Max.x - value_size.x;
   const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), ImVec2(text_end, bb.Max.y));
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, color, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                            &title_bb);
-  RenderShadowedTextClipped(font, bb.Min, bb.Max, color, value_text.c_str(), value_text.end_ptr(), &value_size,
-                            ImVec2(1.0f, 0.5f), 0.0f, &bb);
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
+  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
+                            ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+  RenderShadowedTextClipped(font, bb.Min, bb.Max, ImGui::GetColorU32(color), value_text.c_str(), value_text.end_ptr(),
+                            &value_size, ImVec2(1.0f, 0.5f), 0.0f, &bb);
 
   if (summary)
   {
-    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, color, summary, nullptr, nullptr,
-                              ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
+                              summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
   }
 
   if (pressed)
@@ -1900,15 +1900,16 @@ bool ImGuiFullscreen::MenuButtonWithValue(const char* title, const char* summary
   const float text_end = bb.Max.x - value_size.x;
   const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
   const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), ImVec2(text_end, bb.Max.y));
-  const u32 color = enabled ? ImGui::GetColorU32(ImGuiCol_Text) : ImGui::GetColorU32(ImGuiCol_TextDisabled);
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, color, title, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
-                            &title_bb);
-  RenderShadowedTextClipped(font, bb.Min, bb.Max, color, value, nullptr, nullptr, ImVec2(1.0f, 0.5f), 0.0f, &bb);
+  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
+  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
+                            ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+  RenderShadowedTextClipped(font, bb.Min, bb.Max, ImGui::GetColorU32(color), value, nullptr, nullptr,
+                            ImVec2(1.0f, 0.5f), 0.0f, &bb);
 
   if (summary)
   {
-    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, color, summary, nullptr, nullptr,
-                              ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
+                              summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
   }
 
   return pressed;
@@ -2235,8 +2236,9 @@ bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, co
     ImVec2(bb.Min.x + (avail_width - title_size.x) * 0.5f, icon_pos.y + icon_size + LayoutScale(10.0f));
   const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
 
-  RenderShadowedTextClipped(title_font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text), title, nullptr,
-                            &title_size, ImVec2(0.0f, 0.0f), avail_width, &title_bb);
+  RenderShadowedTextClipped(title_font, title_bb.Min, title_bb.Max,
+                            ImGui::GetColorU32(ImGui::GetStyle().Colors[ImGuiCol_Text]), title, nullptr, &title_size,
+                            ImVec2(0.0f, 0.0f), avail_width, &title_bb);
 
   ImFont* desc_font = UIStyle.MediumFont;
   const ImVec2 desc_size =
@@ -2244,7 +2246,8 @@ bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, co
   const ImVec2 desc_pos = ImVec2(bb.Min.x + (avail_width - desc_size.x) * 0.5f, title_bb.Max.y + LayoutScale(10.0f));
   const ImRect desc_bb = ImRect(desc_pos, desc_pos + desc_size);
 
-  RenderShadowedTextClipped(desc_font, desc_bb.Min, desc_bb.Max, ImGui::GetColorU32(ImGuiCol_Text), description,
+  RenderShadowedTextClipped(desc_font, desc_bb.Min, desc_bb.Max,
+                            ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), description,
                             nullptr, nullptr, ImVec2(0.0f, 0.0f), avail_width, &desc_bb);
 
   ImGui::SameLine();

@@ -7512,7 +7512,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     BeginMenuButtons();
 
     SmallString summary;
-    const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+    const u32 text_color = ImGui::GetColorU32(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+    const u32 subtitle_text_color = ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
 
     for (const GameList::Entry* entry : s_state.game_list_sorted_entries)
     {
@@ -7552,8 +7553,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
       if (!summary.empty())
       {
-        RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, text_color, summary.c_str(),
-                                  summary.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+        RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, subtitle_text_color,
+                                  summary.c_str(), summary.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
       }
 
       if (pressed)
