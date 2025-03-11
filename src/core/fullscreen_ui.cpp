@@ -103,7 +103,6 @@ using ImGuiFullscreen::CancelPendingMenuClose;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::DarkerColor;
 using ImGuiFullscreen::DefaultActiveButton;
-using ImGuiFullscreen::DrawShadowedText;
 using ImGuiFullscreen::EndFixedPopupModal;
 using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
@@ -6433,8 +6432,9 @@ void FullscreenUI::DrawPauseMenu()
       buffer.assign(Path::GetFileName(s_state.current_game_path));
 
     ImVec2 text_pos = ImVec2(scaled_top_bar_padding + image_size + scaled_top_bar_padding, scaled_top_bar_padding);
-    DrawShadowedText(dl, UIStyle.LargeFont, text_pos, title_text_color, s_state.current_game_title.c_str(),
-                     s_state.current_game_title.c_str() + s_state.current_game_title.size());
+    RenderShadowedTextClipped(dl, UIStyle.LargeFont, text_pos, display_size, title_text_color,
+                              s_state.current_game_title.c_str(),
+                              s_state.current_game_title.c_str() + s_state.current_game_title.size());
     text_pos.y += UIStyle.LargeFont->FontSize + scaled_text_spacing;
 
     if (Achievements::IsActive())
@@ -6442,12 +6442,14 @@ void FullscreenUI::DrawPauseMenu()
       const auto lock = Achievements::GetLock();
       if (const std::string& rp = Achievements::GetRichPresenceString(); !rp.empty())
       {
-        DrawShadowedText(dl, UIStyle.MediumFont, text_pos, title_text_color, rp.data(), rp.data() + rp.length());
+        RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, display_size, title_text_color, rp.data(),
+                                  rp.data() + rp.length());
         text_pos.y += UIStyle.MediumFont->FontSize + scaled_text_spacing;
       }
     }
 
-    DrawShadowedText(dl, UIStyle.MediumFont, text_pos, text_color, buffer.c_str(), buffer.end_ptr());
+    RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, display_size, text_color, buffer.c_str(),
+                              buffer.end_ptr());
 
     // current time / play time
     buffer.format("{:%X}", fmt::localtime(std::time(nullptr)));
@@ -6455,7 +6457,8 @@ void FullscreenUI::DrawPauseMenu()
     ImVec2 text_size = UIStyle.LargeFont->CalcTextSizeA(UIStyle.LargeFont->FontSize, std::numeric_limits<float>::max(),
                                                         -1.0f, buffer.c_str(), buffer.end_ptr());
     text_pos = ImVec2(display_size.x - scaled_top_bar_padding - text_size.x, scaled_top_bar_padding);
-    DrawShadowedText(dl, UIStyle.LargeFont, text_pos, title_text_color, buffer.c_str(), buffer.end_ptr());
+    RenderShadowedTextClipped(dl, UIStyle.LargeFont, text_pos, display_size, title_text_color, buffer.c_str(),
+                              buffer.end_ptr());
     text_pos.y += UIStyle.LargeFont->FontSize + scaled_text_spacing;
 
     if (!s_state.current_game_serial.empty())
@@ -6467,14 +6470,16 @@ void FullscreenUI::DrawPauseMenu()
       text_size = ImVec2(UIStyle.MediumFont->CalcTextSizeA(
         UIStyle.MediumFont->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer.c_str(), buffer.end_ptr()));
       text_pos.x = display_size.x - scaled_top_bar_padding - text_size.x;
-      DrawShadowedText(dl, UIStyle.MediumFont, text_pos, text_color, buffer.c_str(), buffer.end_ptr());
+      RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, display_size, text_color, buffer.c_str(),
+                                buffer.end_ptr());
       text_pos.y += UIStyle.MediumFont->FontSize + scaled_text_spacing;
 
       buffer.format(FSUI_FSTR("All Time: {}"), GameList::FormatTimespan(cached_played_time + session_time, true));
       text_size = ImVec2(UIStyle.MediumFont->CalcTextSizeA(
         UIStyle.MediumFont->FontSize, std::numeric_limits<float>::max(), -1.0f, buffer.c_str(), buffer.end_ptr()));
       text_pos.x = display_size.x - scaled_top_bar_padding - text_size.x;
-      DrawShadowedText(dl, UIStyle.MediumFont, text_pos, text_color, buffer.c_str(), buffer.end_ptr());
+      RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, display_size, text_color, buffer.c_str(),
+                                buffer.end_ptr());
       text_pos.y += UIStyle.MediumFont->FontSize + scaled_text_spacing;
     }
   }

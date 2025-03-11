@@ -1297,9 +1297,9 @@ void ImGuiFullscreen::ResetMenuButtonFrame()
   s_state.has_hovered_menu_item = false;
 }
 
-void ImGuiFullscreen::RenderShadowedTextClipped(ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max, u32 color,
-                                                const char* text, const char* text_end,
-                                                const ImVec2* text_size_if_known /* = nullptr */,
+void ImGuiFullscreen::RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, const ImVec2& pos_min,
+                                                const ImVec2& pos_max, u32 color, const char* text,
+                                                const char* text_end, const ImVec2* text_size_if_known /* = nullptr */,
                                                 const ImVec2& align /* = ImVec2(0, 0)*/, float wrap_width /* = 0.0f*/,
                                                 const ImRect* clip_rect /* = nullptr */)
 {
@@ -1327,22 +1327,30 @@ void ImGuiFullscreen::RenderShadowedTextClipped(ImFont* font, const ImVec2& pos_
   if (align.y > 0.0f)
     pos.y = ImMax(pos.y, pos.y + (pos_max.y - pos.y - text_size.y) * align.y);
 
-  ImDrawList* const dl = ImGui::GetWindowDrawList();
-
   // Render
   if (need_clipping)
   {
     ImVec4 fine_clip_rect(clip_min->x, clip_min->y, clip_max->x, clip_max->y);
-    dl->AddText(font, font->FontSize, pos + LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET),
-                UIStyle.ShadowColor, text, text_display_end, wrap_width, &fine_clip_rect);
-    dl->AddText(font, font->FontSize, pos, color, text, text_display_end, wrap_width, &fine_clip_rect);
+    draw_list->AddText(font, font->FontSize, pos + LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET),
+                       UIStyle.ShadowColor, text, text_display_end, wrap_width, &fine_clip_rect);
+    draw_list->AddText(font, font->FontSize, pos, color, text, text_display_end, wrap_width, &fine_clip_rect);
   }
   else
   {
-    dl->AddText(font, font->FontSize, pos + LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET),
-                UIStyle.ShadowColor, text, text_display_end, wrap_width, nullptr);
-    dl->AddText(font, font->FontSize, pos, color, text, text_display_end, wrap_width, nullptr);
+    draw_list->AddText(font, font->FontSize, pos + LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET),
+                       UIStyle.ShadowColor, text, text_display_end, wrap_width, nullptr);
+    draw_list->AddText(font, font->FontSize, pos, color, text, text_display_end, wrap_width, nullptr);
   }
+}
+
+void ImGuiFullscreen::RenderShadowedTextClipped(ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max, u32 color,
+                                                const char* text, const char* text_end,
+                                                const ImVec2* text_size_if_known /* = nullptr */,
+                                                const ImVec2& align /* = ImVec2(0, 0)*/, float wrap_width /* = 0.0f*/,
+                                                const ImRect* clip_rect /* = nullptr */)
+{
+  RenderShadowedTextClipped(ImGui::GetWindowDrawList(), font, pos_min, pos_max, color, text, text_end,
+                            text_size_if_known, align, wrap_width, clip_rect);
 }
 
 void ImGuiFullscreen::MenuHeading(const char* title, bool draw_line /*= true*/)
@@ -1947,13 +1955,6 @@ bool ImGuiFullscreen::EnumChoiceButtonImpl(const char* title, const char* summar
   }
 
   return changed;
-}
-
-void ImGuiFullscreen::DrawShadowedText(ImDrawList* dl, ImFont* font, const ImVec2& pos, u32 col, const char* text,
-                                       const char* text_end /*= nullptr*/, float wrap_width /*= 0.0f*/)
-{
-  dl->AddText(font, font->FontSize, pos + LayoutScale(1.0f, 1.0f), IM_COL32(0, 0, 0, 100), text, text_end, wrap_width);
-  dl->AddText(font, font->FontSize, pos, col, text, text_end, wrap_width);
 }
 
 void ImGuiFullscreen::BeginNavBar(float x_padding /*= LAYOUT_MENU_BUTTON_X_PADDING*/,
