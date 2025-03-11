@@ -14,9 +14,7 @@
 
 #include "util/sockets.h"
 
-#include <functional>
 #include <iomanip>
-#include <map>
 #include <optional>
 #include <sstream>
 #include <string>
@@ -94,7 +92,7 @@ static const std::array<u32*, 38> REGISTERS{
 };
 
 /// List of all GDB remote protocol packets supported by us.
-static const std::map<const char*, std::function<std::optional<std::string>(std::string_view)>> COMMANDS{
+static constexpr std::pair<std::string_view, std::optional<std::string> (*)(std::string_view)> COMMANDS[] = {
   {"?", Cmd$_questionMark},
   {"g", Cmd$g},
   {"G", Cmd$G},
@@ -379,7 +377,7 @@ std::string GDBServer::ProcessPacket(std::string_view data)
       DEV_LOG("Processing command '{}'", command.first);
 
       // Invoke command, remove command name from payload.
-      reply = command.second(packet->substr(strlen(command.first)));
+      reply = command.second(packet->substr(command.first.size()));
       processed = true;
       break;
     }
