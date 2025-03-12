@@ -666,7 +666,7 @@ float GPU::ComputeDisplayAspectRatio() const
     if (g_settings.display_aspect_ratio == DisplayAspectRatio::MatchWindow)
     {
       const WindowInfo& wi = GPUThread::GetRenderWindowInfo();
-      if (!wi.IsSurfaceless())
+      if (!wi.IsSurfaceless() && wi.surface_width > 0 && wi.surface_height > 0)
         ar = static_cast<float>(wi.surface_width) / static_cast<float>(wi.surface_height);
     }
     else if (g_settings.display_aspect_ratio == DisplayAspectRatio::Custom)

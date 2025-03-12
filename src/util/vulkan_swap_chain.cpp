@@ -540,8 +540,7 @@ bool VulkanSwapChain::CreateSwapChain(VulkanDevice& dev, Error* error)
   if (old_swap_chain != VK_NULL_HANDLE)
     vkDestroySwapchainKHR(vkdev, old_swap_chain, nullptr);
 
-  if (window_size.width == 0 || window_size.width > std::numeric_limits<u16>::max() || window_size.height == 0 ||
-      window_size.height > std::numeric_limits<u16>::max())
+  if (window_size.width > std::numeric_limits<u16>::max() || window_size.height > std::numeric_limits<u16>::max())
   {
     Error::SetStringFmt(error, "Invalid swap chain dimensions: {}x{}", window_size.width, window_size.height);
     return false;
