@@ -3489,7 +3489,7 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.BackgroundColor = HEX_TO_IMVEC4(0xd692a9, 0xff);
     UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xe05885, 0xff);
-    UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xe05885, 0xff);
+    UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0xdc6c68, 0xff);
     UIStyle.PopupFrameBackgroundColor = HEX_TO_IMVEC4(0xe05885, 0xf2);
     UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xeba0b9, 0xf2);
     UIStyle.PrimaryColor = HEX_TO_IMVEC4(0xffaec9, 0xff);
@@ -3500,7 +3500,7 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0xeba0b9, 0xff);
     UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.SecondaryColor = HEX_TO_IMVEC4(0xe05885, 0xff);
-    UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0xdc6c68, 0xff);
+    UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0xe05885, 0xff);
     UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0xab5451, 0xff);
     UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xd86a66, 0xff);
