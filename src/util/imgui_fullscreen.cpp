@@ -3121,6 +3121,10 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
   ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, frame_rounding);
+  ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
+  ImGui::PushStyleColor(ImGuiCol_FrameBg, UIStyle.BackgroundColor);
+  ImGui::PushStyleColor(ImGuiCol_PlotHistogram, UIStyle.SecondaryColor);
   ImGui::PushFont(ImGuiManager::GetOSDFont());
   ImGui::SetNextWindowSize(ImVec2(width, ((has_progress || is_persistent) ? 85.0f : 55.0f) * scale), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, (io.DisplaySize.y * 0.5f) + (100.0f * scale)),
@@ -3165,6 +3169,7 @@ void ImGuiFullscreen::DrawLoadingScreen(std::string_view image, std::string_view
   }
   ImGui::End();
   ImGui::PopFont();
+  ImGui::PopStyleColor(4);
   ImGui::PopStyleVar(3);
 }
 
