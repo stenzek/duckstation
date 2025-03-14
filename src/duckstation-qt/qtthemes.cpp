@@ -375,6 +375,8 @@ const char* Host::GetDefaultFullscreenUITheme()
     return "PinkyPals";
   else if (theme == "purplerain")
     return "PurpleRain";
+  else if (theme == "darkruby")
+    return "DarkRuby";
   else if (theme == "AMOLED")
     return "AMOLED";
   else if (theme == "windowsvista")
