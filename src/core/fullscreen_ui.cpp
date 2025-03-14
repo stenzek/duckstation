@@ -164,7 +164,6 @@ enum class MainWindowType : u8
   StartGame,
   Exit,
   GameList,
-  GameListSettings,
   Settings,
   PauseMenu,
   Achievements,
@@ -182,6 +181,7 @@ enum class SettingsPage : u8
 {
   Summary,
   Interface,
+  GameList,
   Console,
   Emulation,
   BIOS,
@@ -444,7 +444,7 @@ static void DrawGameGrid(const ImVec2& heading_size);
 static void HandleGameListActivate(const GameList::Entry* entry);
 static void HandleGameListOptions(const GameList::Entry* entry);
 static void HandleSelectDiscForDiscSet(std::string_view disc_set_name);
-static void DrawGameListSettingsWindow();
+static void DrawGameListSettingsPage();
 static void SwitchToGameList();
 static void PopulateGameListEntryList();
 static GPUTexture* GetTextureForGameListEntryType(GameList::EntryType type);
@@ -970,9 +970,6 @@ void FullscreenUI::Render()
       break;
     case MainWindowType::GameList:
       DrawGameListWindow();
-      break;
-    case MainWindowType::GameListSettings:
-      DrawGameListSettingsWindow();
       break;
     case MainWindowType::Settings:
       DrawSettingsWindow();
@@ -3423,9 +3420,10 @@ void FullscreenUI::DrawSettingsWindow()
     static constexpr float ITEM_WIDTH = 25.0f;
 
     static constexpr const SettingsPage global_pages[] = {
-      SettingsPage::Interface, SettingsPage::Console,        SettingsPage::Emulation,    SettingsPage::BIOS,
-      SettingsPage::Graphics,  SettingsPage::PostProcessing, SettingsPage::Audio,        SettingsPage::Controller,
-      SettingsPage::Hotkey,    SettingsPage::MemoryCards,    SettingsPage::Achievements, SettingsPage::Advanced};
+      SettingsPage::Interface,  SettingsPage::GameList, SettingsPage::Console,        SettingsPage::Emulation,
+      SettingsPage::BIOS,       SettingsPage::Graphics, SettingsPage::PostProcessing, SettingsPage::Audio,
+      SettingsPage::Controller, SettingsPage::Hotkey,   SettingsPage::MemoryCards,    SettingsPage::Achievements,
+      SettingsPage::Advanced};
     static constexpr const SettingsPage per_game_pages[] = {
       SettingsPage::Summary,     SettingsPage::Console,      SettingsPage::Emulation, SettingsPage::Patches,
       SettingsPage::Cheats,      SettingsPage::Graphics,     SettingsPage::Audio,     SettingsPage::Controller,
@@ -3433,6 +3431,7 @@ void FullscreenUI::DrawSettingsWindow()
     static constexpr std::array<std::pair<const char*, const char*>, static_cast<u32>(SettingsPage::Count)> titles = {
       {{FSUI_NSTR("Summary"), ICON_FA_FILE_ALT},
        {FSUI_NSTR("Interface Settings"), ICON_FA_TV},
+       {FSUI_NSTR("Game List Settings"), ICON_FA_LIST_ALT},
        {FSUI_NSTR("Console Settings"), ICON_FA_DICE_D20},
        {FSUI_NSTR("Emulation Settings"), ICON_FA_COGS},
        {FSUI_NSTR("BIOS Settings"), ICON_PF_MICROCHIP},
@@ -3536,6 +3535,10 @@ void FullscreenUI::DrawSettingsWindow()
 
       case SettingsPage::Interface:
         DrawInterfaceSettingsPage();
+        break;
+
+      case SettingsPage::GameList:
+        DrawGameListSettingsPage();
         break;
 
       case SettingsPage::BIOS:
@@ -7435,14 +7438,14 @@ void FullscreenUI::DrawGameListWindow()
 
   EndFullscreenWindow();
 
-  if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
+  if (!AreAnyDialogsOpen())
   {
-    s_state.game_list_view = (s_state.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
-  }
-  else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F2))
-  {
-    s_state.current_main_window = MainWindowType::GameListSettings;
-    QueueResetFocus(FocusResetType::ViewChanged);
+    if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
+      s_state.game_list_view = (s_state.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
+      SwitchToSettings();
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
+      DoResume();
   }
 
   switch (s_state.game_list_view)
@@ -7460,8 +7463,9 @@ void FullscreenUI::DrawGameListWindow()
   if (IsGamepadInputSource())
   {
     SetFullscreenFooterText(std::array{std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select Game")),
+                                       std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Resume Last Session")),
+                                       std::make_pair(ICON_PF_SHARE_CAPTURE, FSUI_VSTR("Settings")),
                                        std::make_pair(ICON_PF_BUTTON_X, FSUI_VSTR("Change View")),
-                                       std::make_pair(ICON_PF_BURGER_MENU, FSUI_VSTR("Settings")),
                                        std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Launch Options")),
                                        std::make_pair(ICON_PF_BUTTON_A, FSUI_VSTR("Start Game")),
                                        std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Back"))},
@@ -7473,9 +7477,13 @@ void FullscreenUI::DrawGameListWindow()
       std::array{
         std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
                        FSUI_VSTR("Select Game")),
-        std::make_pair(ICON_PF_F1, FSUI_VSTR("Change View")), std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
-        std::make_pair(ICON_PF_F3, FSUI_VSTR("Launch Options")), std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Start Game")),
-        std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back"))},
+        std::make_pair(ICON_PF_F3, FSUI_VSTR("Resume Last Session")),
+        std::make_pair(ICON_PF_F2, FSUI_VSTR("Settings")),
+        std::make_pair(ICON_PF_F4, FSUI_VSTR("Change View")),
+        std::make_pair(ICON_PF_F1, FSUI_VSTR("Launch Options")),
+        std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Start Game")),
+        std::make_pair(ICON_PF_ESC, FSUI_VSTR("Back")),
+      },
       GetBackgroundAlpha());
   }
 }
@@ -7566,7 +7574,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
         if (selected_entry &&
             (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) ||
-             ImGui::IsKeyPressed(ImGuiKey_F3, false)))
+             ImGui::IsKeyPressed(ImGuiKey_F1, false)))
         {
           CancelPendingMenuClose();
           HandleGameListOptions(selected_entry);
@@ -7828,7 +7836,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
       }
       else if (hovered &&
                (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) ||
-                ImGui::IsKeyPressed(ImGuiKey_F3, false)))
+                ImGui::IsKeyPressed(ImGuiKey_F1, false)))
       {
         CancelPendingMenuClose();
         HandleGameListOptions(entry);
@@ -7984,50 +7992,48 @@ void FullscreenUI::HandleSelectDiscForDiscSet(std::string_view disc_set_name)
                    });
 }
 
-void FullscreenUI::DrawGameListSettingsWindow()
+void FullscreenUI::DrawGameListSettingsPage()
 {
-  ImGuiIO& io = ImGui::GetIO();
-  const ImVec2 heading_size =
-    ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
-                               (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
-
-  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "gamelist_view",
-                            MulAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
-  {
-    BeginNavBar();
-
-    if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
-    {
-      s_state.current_main_window = MainWindowType::GameList;
-      QueueResetFocus(FocusResetType::Other);
-    }
-
-    NavTitle(FSUI_CSTR("Game List Settings"));
-    EndNavBar();
-  }
-
-  EndFullscreenWindow();
-
-  if (!BeginFullscreenWindow(
-        ImVec2(0.0f, heading_size.y),
-        ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
-        "settings_parent", MulAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha()), 0.0f,
-        ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
-  {
-    EndFullscreenWindow();
-    return;
-  }
-
-  if (ImGui::IsWindowFocused() && WantsToCloseMenu())
-  {
-    s_state.current_main_window = MainWindowType::GameList;
-    QueueResetFocus(FocusResetType::ViewChanged);
-  }
-
-  auto lock = Host::GetSettingsLock();
   SettingsInterface* bsi = GetEditingSettingsInterface(false);
 
   BeginMenuButtons();
+
+  MenuHeading(FSUI_CSTR("List Settings"));
+  {
+    static constexpr const char* view_types[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List")};
+    static constexpr const char* sort_types[] = {
+      FSUI_NSTR("Type"),
+      FSUI_NSTR("Serial"),
+      FSUI_NSTR("Title"),
+      FSUI_NSTR("File Title"),
+      FSUI_NSTR("Time Played"),
+      FSUI_NSTR("Last Played"),
+      FSUI_NSTR("File Size"),
+      FSUI_NSTR("Uncompressed Size"),
+      FSUI_NSTR("Achievement Unlock/Count"),
+    };
+
+    DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Default View"),
+                       FSUI_CSTR("Selects the view that the game list will open to."), "Main",
+                       "DefaultFullscreenUIGameView", 0, view_types);
+    DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SORT, "Sort By"),
+                       FSUI_CSTR("Determines that field that the game list will be sorted by."), "Main",
+                       "FullscreenUIGameSort", 0, sort_types);
+    DrawToggleSetting(
+      bsi, FSUI_ICONSTR(ICON_FA_SORT_ALPHA_DOWN, "Sort Reversed"),
+      FSUI_CSTR("Reverses the game list sort order from the default (usually ascending to descending)."), "Main",
+      "FullscreenUIGameSortReverse", false);
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Merge Multi-Disc Games"),
+                      FSUI_CSTR("Merges multi-disc games into one item in the game list."), "Main",
+                      "FullscreenUIMergeDiscSets", true);
+    if (DrawToggleSetting(
+          bsi, FSUI_ICONSTR(ICON_FA_TROPHY, "Show Achievement Trophy Icons"),
+          FSUI_CSTR("Shows trophy icons in game grid when games have achievements or have been mastered."), "Main",
+          "FullscreenUIShowTrophyIcons", true))
+    {
+      s_state.game_list_show_trophy_icons = bsi->GetBoolValue("Main", "FullscreenUIShowTrophyIcons", true);
+    }
+  }
 
   MenuHeading(FSUI_CSTR("Search Directories"));
   if (MenuButton(FSUI_ICONSTR(ICON_FA_FOLDER_PLUS, "Add Search Directory"),
@@ -8107,43 +8113,6 @@ void FullscreenUI::DrawGameListSettingsWindow()
     }
   }
 
-  MenuHeading(FSUI_CSTR("List Settings"));
-  {
-    static constexpr const char* view_types[] = {FSUI_NSTR("Game Grid"), FSUI_NSTR("Game List")};
-    static constexpr const char* sort_types[] = {
-      FSUI_NSTR("Type"),
-      FSUI_NSTR("Serial"),
-      FSUI_NSTR("Title"),
-      FSUI_NSTR("File Title"),
-      FSUI_NSTR("Time Played"),
-      FSUI_NSTR("Last Played"),
-      FSUI_NSTR("File Size"),
-      FSUI_NSTR("Uncompressed Size"),
-      FSUI_NSTR("Achievement Unlock/Count"),
-    };
-
-    DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_BORDER_ALL, "Default View"),
-                       FSUI_CSTR("Selects the view that the game list will open to."), "Main",
-                       "DefaultFullscreenUIGameView", 0, view_types);
-    DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_SORT, "Sort By"),
-                       FSUI_CSTR("Determines that field that the game list will be sorted by."), "Main",
-                       "FullscreenUIGameSort", 0, sort_types);
-    DrawToggleSetting(
-      bsi, FSUI_ICONSTR(ICON_FA_SORT_ALPHA_DOWN, "Sort Reversed"),
-      FSUI_CSTR("Reverses the game list sort order from the default (usually ascending to descending)."), "Main",
-      "FullscreenUIGameSortReverse", false);
-    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Merge Multi-Disc Games"),
-                      FSUI_CSTR("Merges multi-disc games into one item in the game list."), "Main",
-                      "FullscreenUIMergeDiscSets", true);
-    if (DrawToggleSetting(
-          bsi, FSUI_ICONSTR(ICON_FA_TROPHY, "Show Achievement Trophy Icons"),
-          FSUI_CSTR("Shows trophy icons in game grid when games have achievements or have been mastered."), "Main",
-          "FullscreenUIShowTrophyIcons", true))
-    {
-      s_state.game_list_show_trophy_icons = bsi->GetBoolValue("Main", "FullscreenUIShowTrophyIcons", true);
-    }
-  }
-
   MenuHeading(FSUI_CSTR("Cover Settings"));
   {
     DrawFolderSetting(bsi, FSUI_ICONSTR(ICON_FA_FOLDER, "Covers Directory"), "Folders", "Covers", EmuFolders::Covers);
@@ -8169,10 +8138,6 @@ void FullscreenUI::DrawGameListSettingsWindow()
   }
 
   EndMenuButtons();
-
-  EndFullscreenWindow();
-
-  SetStandardSelectionFooterText(true);
 }
 
 void FullscreenUI::SwitchToGameList()
