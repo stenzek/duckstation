@@ -1095,6 +1095,9 @@ void SaveStateSelectorUI::InitializePlaceholderListEntry(ListEntry* li, const st
 
 void SaveStateSelectorUI::Draw()
 {
+  using ImGuiFullscreen::DarkerColor;
+  using ImGuiFullscreen::UIStyle;
+
   static constexpr float SCROLL_ANIMATION_TIME = 0.25f;
   static constexpr float BG_ANIMATION_TIME = 0.15f;
 
@@ -1106,7 +1109,11 @@ void SaveStateSelectorUI::Draw()
   const float padding_and_rounding = 18.0f * scale;
   ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, padding_and_rounding);
   ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(padding_and_rounding, padding_and_rounding));
-  ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.11f, 0.15f, 0.17f, 0.8f));
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 0.0f);
+  ImGui::PushStyleColor(ImGuiCol_ScrollbarGrab, UIStyle.PrimaryColor);
+  ImGui::PushStyleColor(ImGuiCol_ScrollbarBg, UIStyle.BackgroundColor);
+  ImGui::PushStyleColor(ImGuiCol_WindowBg, DarkerColor(UIStyle.PopupBackgroundColor));
+  ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
   ImGui::PushFont(ImGuiManager::GetOSDFont());
   ImGui::SetNextWindowSize(ImVec2(width, height), ImGuiCond_Always);
   ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always,
@@ -1139,6 +1146,7 @@ void SaveStateSelectorUI::Draw()
         if (entry.slot == current_slot && entry.global == current_slot_global)
         {
           ImGui::SetCursorPosY(y_start);
+          ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
 
           const ImVec2 p_start(ImGui::GetCursorScreenPos());
           const ImVec2 p_end(p_start.x + item_width, p_start.y + item_height);
@@ -1171,7 +1179,7 @@ void SaveStateSelectorUI::Draw()
 
           ImGui::GetWindowDrawList()->AddRectFilled(highlight_pos,
                                                     ImVec2(highlight_pos.x + item_width, highlight_pos.y + item_height),
-                                                    ImColor(0.22f, 0.30f, 0.34f, 0.9f), padding_and_rounding);
+                                                    ImGui::GetColorU32(UIStyle.PrimaryColor), padding_and_rounding);
         }
 
         if (GPUTexture* preview_texture =
@@ -1201,6 +1209,9 @@ void SaveStateSelectorUI::Draw()
         ImGui::Unindent(text_indent);
         ImGui::SetCursorPosY(y_start);
         ImGui::ItemSize(ImVec2(item_width, item_height));
+
+        if (entry.slot == current_slot && entry.global == current_slot_global)
+          ImGui::PopStyleColor();
       }
     }
     ImGui::EndChild();
@@ -1229,8 +1240,8 @@ void SaveStateSelectorUI::Draw()
   ImGui::End();
 
   ImGui::PopFont();
-  ImGui::PopStyleVar(2);
-  ImGui::PopStyleColor();
+  ImGui::PopStyleVar(3);
+  ImGui::PopStyleColor(4);
 
   // auto-close
   s_state.open_time += io.DeltaTime;
