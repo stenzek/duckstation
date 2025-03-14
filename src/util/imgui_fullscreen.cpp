@@ -1299,9 +1299,9 @@ void ImGuiFullscreen::ResetMenuButtonFrame()
 
 void ImGuiFullscreen::RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, const ImVec2& pos_min,
                                                 const ImVec2& pos_max, u32 color, const char* text,
-                                                const char* text_end, const ImVec2* text_size_if_known /* = nullptr */,
-                                                const ImVec2& align /* = ImVec2(0, 0)*/, float wrap_width /* = 0.0f*/,
-                                                const ImRect* clip_rect /* = nullptr */)
+                                                const char* text_end, const ImVec2* text_size_if_known,
+                                                const ImVec2& align, float wrap_width, const ImRect* clip_rect,
+                                                float shadow_offset)
 {
   const char* text_display_end = ImGui::FindRenderedTextEnd(text, text_end);
   const int text_len = (int)(text_display_end - text);
@@ -1328,20 +1328,34 @@ void ImGuiFullscreen::RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* f
     pos.y = ImMax(pos.y, pos.y + (pos_max.y - pos.y - text_size.y) * align.y);
 
   // Render
-  const u32 shadow_color = (UIStyle.ShadowColor & ~IM_COL32_A_MASK) | (color & IM_COL32_A_MASK);
+  const u32 alpha = (color /*& IM_COL32_A_MASK*/) >> IM_COL32_A_SHIFT;
+  if (alpha == 0)
+    return;
+
+  const u32 shadow_color = MulAlpha(UIStyle.ShadowColor, alpha);
   if (need_clipping)
   {
     ImVec4 fine_clip_rect(clip_min->x, clip_min->y, clip_max->x, clip_max->y);
-    draw_list->AddText(font, font->FontSize, pos + LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET),
-                       shadow_color, text, text_display_end, wrap_width, &fine_clip_rect);
+    draw_list->AddText(font, font->FontSize, ImVec2(pos.x + shadow_offset, pos.y + shadow_offset), shadow_color, text,
+                       text_display_end, wrap_width, &fine_clip_rect);
     draw_list->AddText(font, font->FontSize, pos, color, text, text_display_end, wrap_width, &fine_clip_rect);
   }
   else
   {
-    draw_list->AddText(font, font->FontSize, pos + LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET),
-                       shadow_color, text, text_display_end, wrap_width, nullptr);
+    draw_list->AddText(font, font->FontSize, ImVec2(pos.x + shadow_offset, pos.y + shadow_offset), shadow_color, text,
+                       text_display_end, wrap_width, nullptr);
     draw_list->AddText(font, font->FontSize, pos, color, text, text_display_end, wrap_width, nullptr);
   }
+}
+
+void ImGuiFullscreen::RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, const ImVec2& pos_min,
+                                                const ImVec2& pos_max, u32 color, const char* text,
+                                                const char* text_end, const ImVec2* text_size_if_known /* = nullptr */,
+                                                const ImVec2& align /* = ImVec2(0, 0)*/, float wrap_width /* = 0.0f*/,
+                                                const ImRect* clip_rect /* = nullptr */)
+{
+  RenderShadowedTextClipped(draw_list, font, pos_min, pos_max, color, text, text_end, text_size_if_known, align,
+                            wrap_width, clip_rect, LayoutScale(LAYOUT_SHADOW_OFFSET));
 }
 
 void ImGuiFullscreen::RenderShadowedTextClipped(ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max, u32 color,

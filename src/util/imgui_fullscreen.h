@@ -133,7 +133,14 @@ ALWAYS_INLINE static ImVec4 MulAlpha(const ImVec4& v, float a)
 ALWAYS_INLINE static u32 MulAlpha(u32 col32, float a)
 {
   return (col32 & ~IM_COL32_A_MASK) |
-         (static_cast<u32>(static_cast<float>((col32 & IM_COL32_A_MASK) >> IM_COL32_A_SHIFT) * a) << IM_COL32_A_SHIFT);
+         (static_cast<u32>(static_cast<float>((col32 /*& IM_COL32_A_MASK*/) >> IM_COL32_A_SHIFT) * a)
+          << IM_COL32_A_SHIFT);
+}
+
+ALWAYS_INLINE static u32 MulAlpha(u32 col32, u32 a)
+{
+  return (col32 & ~IM_COL32_A_MASK) |
+         (((((col32 /*& IM_COL32_A_MASK*/) >> IM_COL32_A_SHIFT) * a) / 255u) << IM_COL32_A_SHIFT);
 }
 
 ALWAYS_INLINE static std::string_view RemoveHash(std::string_view s)
@@ -247,6 +254,9 @@ void RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, const ImVec2
                                u32 color, const char* text, const char* text_end,
                                const ImVec2* text_size_if_known = nullptr, const ImVec2& align = ImVec2(0, 0),
                                float wrap_width = 0.0f, const ImRect* clip_rect = nullptr);
+void RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max,
+                               u32 color, const char* text, const char* text_end, const ImVec2* text_size_if_known,
+                               const ImVec2& align, float wrap_width, const ImRect* clip_rect, float shadow_offset);
 void MenuHeading(const char* title, bool draw_line = true);
 bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
 bool ActiveButton(const char* title, bool is_active, bool enabled = true,

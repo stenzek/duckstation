@@ -2411,7 +2411,7 @@ void Achievements::DrawGameOverlays()
 
   const auto lock = GetLock();
 
-  constexpr float overlay_opacity = 0.8f;
+  constexpr float bg_opacity = 0.8f;
 
   const float margin =
     std::max(ImCeil(ImGuiManager::GetScreenMargin() * ImGuiManager::GetGlobalScale()), LayoutScale(10.0f));
@@ -2459,7 +2459,7 @@ void Achievements::DrawGameOverlays()
   if (s_state.active_progress_indicator.has_value())
   {
     AchievementProgressIndicator& indicator = s_state.active_progress_indicator.value();
-    const float opacity = IndicatorOpacity(io.DeltaTime, indicator) * overlay_opacity;
+    const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
 
     const char* text_start = s_state.active_progress_indicator->achievement->measured_progress;
     const char* text_end = text_start + std::strlen(text_start);
@@ -2470,7 +2470,8 @@ void Achievements::DrawGameOverlays()
                                   position.y - image_size.y - padding * 2.0f);
     const ImVec2 box_max = position;
 
-    dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity)), rounding);
+    dl->AddRectFilled(box_min, box_max,
+                      ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * bg_opacity)), rounding);
 
     GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(indicator.badge_path);
     if (badge)
@@ -2501,7 +2502,7 @@ void Achievements::DrawGameOverlays()
     for (auto it = s_state.active_leaderboard_trackers.begin(); it != s_state.active_leaderboard_trackers.end();)
     {
       LeaderboardTrackerIndicator& indicator = *it;
-      const float opacity = IndicatorOpacity(io.DeltaTime, indicator) * overlay_opacity;
+      const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
 
       TinyString width_string;
       width_string.append(ICON_FA_STOPWATCH);
@@ -2511,8 +2512,8 @@ void Achievements::DrawGameOverlays()
         ImGuiFullscreen::UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
 
       const ImRect box(ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f), position);
-      dl->AddRectFilled(box.Min, box.Max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity)),
-                        rounding);
+      dl->AddRectFilled(box.Min, box.Max,
+                        ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * bg_opacity)), rounding);
 
       const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
       const ImVec2 text_size = ImGuiFullscreen::UIStyle.MediumFont->CalcTextSizeA(
