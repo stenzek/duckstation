@@ -680,7 +680,7 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="0" colspan="2">
+          <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_3">
             <item row="1" column="1">
              <widget class="QCheckBox" name="showFPS">
@@ -784,6 +784,16 @@
              <number>200</number>
             </property>
            </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Theme:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="fullscreenUITheme"/>
           </item>
          </layout>
         </widget>

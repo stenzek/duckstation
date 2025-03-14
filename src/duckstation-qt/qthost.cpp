@@ -1857,6 +1857,19 @@ void EmuThread::setGPUThreadRunIdle(bool active)
   g_emu_thread->startBackgroundControllerPollTimer();
 }
 
+void EmuThread::updateFullscreenUITheme()
+{
+  if (!isCurrentThread())
+  {
+    QMetaObject::invokeMethod(this, &EmuThread::updateFullscreenUITheme, Qt::QueuedConnection);
+    return;
+  }
+
+  // don't bother if nothing is running
+  if (GPUThread::IsFullscreenUIRequested() || GPUThread::IsGPUBackendRequested())
+    GPUThread::RunOnThread(&FullscreenUI::SetTheme);
+}
+
 void EmuThread::start()
 {
   AssertMsg(!g_emu_thread, "Emu thread does not exist");

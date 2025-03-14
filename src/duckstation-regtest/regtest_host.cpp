@@ -535,6 +535,11 @@ void Host::OnCoverDownloaderOpenRequested()
   // noop
 }
 
+const char* Host::GetDefaultFullscreenUITheme()
+{
+  return "";
+}
+
 bool Host::ShouldPreferHostFileSelector()
 {
   return false;

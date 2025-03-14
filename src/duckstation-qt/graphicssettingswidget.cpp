@@ -7,6 +7,7 @@
 #include "settingwidgetbinder.h"
 #include "ui_texturereplacementsettingsdialog.h"
 
+#include "core/fullscreen_ui.h"
 #include "core/game_database.h"
 #include "core/gpu.h"
 #include "core/settings.h"
@@ -192,6 +193,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.osdScale, "Display", "OSDScale", 100);
   SettingWidgetBinder::BindWidgetToFloatSetting(sif, m_ui.osdMargin, "Display", "OSDMargin",
                                                 ImGuiManager::DEFAULT_SCREEN_MARGIN);
+  SettingWidgetBinder::BindWidgetToStringSetting(sif, m_ui.fullscreenUITheme, "UI", "FullscreenUITheme");
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showOSDMessages, "Display", "ShowOSDMessages", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFPS, "Display", "ShowFPS", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSpeed, "Display", "ShowSpeed", false);
@@ -205,6 +207,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showStatusIndicators, "Display", "ShowStatusIndicators", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showFrameTimes, "Display", "ShowFrameTimes", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.showSettings, "Display", "ShowEnhancements", false);
+
+  connect(m_ui.fullscreenUITheme, QOverload<int>::of(&QComboBox::currentIndexChanged), g_emu_thread,
+          &EmuThread::updateFullscreenUITheme);
 
   // Capture Tab
 
@@ -520,6 +525,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.osdScale, tr("OSD Scale"), tr("100%"),
     tr("Changes the size at which on-screen elements, including status and messages are displayed."));
+  dialog->registerWidgetHelp(m_ui.fullscreenUITheme, tr("Theme"), tr("Automatic"),
+                             tr("Determines the theme to use for on-screen display elements and the Big Picture UI."));
   dialog->registerWidgetHelp(m_ui.showOSDMessages, tr("Show OSD Messages"), tr("Checked"),
                              tr("Shows on-screen-display messages when events occur such as save states being "
                                 "created/loaded, screenshots being taken, etc."));
@@ -722,6 +729,16 @@ void GraphicsSettingsWidget::setupAdditionalUi()
   {
     m_ui.forceVideoTiming->addItem(
       QString::fromUtf8(Settings::GetForceVideoTimingDisplayName(static_cast<ForceVideoTimingMode>(i))));
+  }
+
+  // OSD Tab
+
+  const std::vector<std::string_view> fsui_theme_names = FullscreenUI::GetThemeNames();
+  const std::span<const char* const> fsui_theme_values = FullscreenUI::GetThemeConfigNames();
+  for (size_t i = 0; i < fsui_theme_names.size(); i++)
+  {
+    m_ui.fullscreenUITheme->addItem(QtUtils::StringViewToQString(fsui_theme_names[i]),
+                                    QString::fromUtf8(fsui_theme_values[i]));
   }
 
   // Advanced Tab

@@ -406,6 +406,10 @@ void GetInputDialogHelpText(SmallStringBase& dest);
 
 // Host UI triggers from Big Picture mode.
 namespace Host {
+
+/// Returns the name of the default Big Picture theme to use based on the host theme.
+const char* GetDefaultFullscreenUITheme();
+
 /// Returns true if native file dialogs should be preferred over Big Picture.
 bool ShouldPreferHostFileSelector();
 
@@ -415,4 +419,5 @@ using FileSelectorFilters = std::vector<std::string>;
 void OpenHostFileSelectorAsync(std::string_view title, bool select_directory, FileSelectorCallback callback,
                                FileSelectorFilters filters = FileSelectorFilters(),
                                std::string_view initial_directory = std::string_view());
+
 } // namespace Host

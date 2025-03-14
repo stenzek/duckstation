@@ -2238,6 +2238,7 @@ void MainWindow::connectSignals()
 void MainWindow::updateTheme()
 {
   QtHost::UpdateApplicationTheme();
+  g_emu_thread->updateFullscreenUITheme();
   reloadThemeSpecificImages();
 }
 

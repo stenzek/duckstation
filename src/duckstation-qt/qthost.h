@@ -214,6 +214,7 @@ public Q_SLOTS:
   void captureGPUFrameDump();
   void startControllerTest();
   void setGPUThreadRunIdle(bool active);
+  void updateFullscreenUITheme();
 
 private Q_SLOTS:
   void stopInThread();

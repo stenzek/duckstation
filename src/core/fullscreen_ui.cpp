@@ -478,6 +478,13 @@ static constexpr const std::array s_ps_button_mapping{
   std::make_pair(ICON_PF_RIGHT_TRIGGER_RT, ICON_PF_RIGHT_TRIGGER_R2),
 };
 
+static constexpr std::array s_theme_names = {FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),       FSUI_NSTR("Light"),
+                                             FSUI_NSTR("AMOLED"),     FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"),
+                                             FSUI_NSTR("Pinky Pals"), FSUI_NSTR("Purple Rain")};
+
+static constexpr std::array s_theme_values = {"",          "Dark",       "Light",     "AMOLED",
+                                              "CobaltSky", "GreyMatter", "PinkyPals", "PurpleRain"};
+
 //////////////////////////////////////////////////////////////////////////
 // State
 //////////////////////////////////////////////////////////////////////////
@@ -647,6 +654,30 @@ void ImGuiFullscreen::GetInputDialogHelpText(SmallStringBase& dest)
                                             std::make_pair(ICON_PF_ENTER, FSUI_VSTR("Select")),
                                             std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))});
   }
+}
+
+std::vector<std::string_view> FullscreenUI::GetThemeNames()
+{
+  std::vector<std::string_view> ret;
+  ret.reserve(std::size(s_theme_names));
+  for (const char* name : s_theme_names)
+    ret.push_back(TRANSLATE_SV("FullscreenUI", name));
+  return ret;
+}
+
+std::span<const char* const> FullscreenUI::GetThemeConfigNames()
+{
+  return s_theme_values;
+}
+
+void FullscreenUI::SetTheme()
+{
+  TinyString theme =
+    Host::GetBaseTinyStringSettingValue("UI", "FullscreenUITheme", Host::GetDefaultFullscreenUITheme());
+  if (theme.empty())
+    theme = Host::GetDefaultFullscreenUITheme();
+
+  ImGuiFullscreen::SetTheme(theme);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3701,13 +3732,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 {
   SettingsInterface* bsi = GetEditingSettingsInterface();
 
-  static constexpr const char* s_theme_name[] = {
-    FSUI_NSTR("Dark"),        FSUI_NSTR("Light"),      FSUI_NSTR("AMOLED"),     FSUI_NSTR("Cobalt Sky"),
-    FSUI_NSTR("Grey Matter"), FSUI_NSTR("Pinky Pals"), FSUI_NSTR("Purple Rain")};
-
-  static constexpr const char* s_theme_value[] = {"Dark",       "Light",     "AMOLED",    "CobaltSky",
-                                                  "GreyMatter", "PinkyPals", "PurpleRain"};
-
   BeginMenuButtons();
 
   MenuHeading(FSUI_CSTR("Behavior"));
@@ -3782,10 +3806,11 @@ void FullscreenUI::DrawInterfaceSettingsPage()
     }
   }
 
-  DrawStringListSetting(bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Theme"),
-                        FSUI_CSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme",
-                        "Dark", s_theme_name, s_theme_value, true, LAYOUT_MENU_BUTTON_HEIGHT, UIStyle.LargeFont,
-                        UIStyle.MediumFont, &ImGuiFullscreen::SetTheme);
+  DrawStringListSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_PAINT_BRUSH, "Theme"),
+    FSUI_CSTR("Selects the color style to be used for Big Picture UI."), "UI", "FullscreenUITheme", "Dark",
+    s_theme_names, s_theme_values, true, LAYOUT_MENU_BUTTON_HEIGHT, UIStyle.LargeFont, UIStyle.MediumFont,
+    [](std::string_view) { Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::SetTheme); }); });
 
   if (const TinyString current_value =
         bsi->GetTinyStringValue("Main", "FullscreenUIBackground", DEFAULT_BACKGROUND_NAME);
@@ -8750,6 +8775,7 @@ TRANSLATE_NOOP("FullscreenUI", "Audio Backend");
 TRANSLATE_NOOP("FullscreenUI", "Audio Control");
 TRANSLATE_NOOP("FullscreenUI", "Audio Settings");
 TRANSLATE_NOOP("FullscreenUI", "Auto-Detect");
+TRANSLATE_NOOP("FullscreenUI", "Automatic");
 TRANSLATE_NOOP("FullscreenUI", "Automatic Mapping");
 TRANSLATE_NOOP("FullscreenUI", "Automatic based on window size");
 TRANSLATE_NOOP("FullscreenUI", "Automatic mapping completed for {}.");

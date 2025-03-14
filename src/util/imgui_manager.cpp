@@ -10,6 +10,7 @@
 #include "input_manager.h"
 
 // TODO: Remove me when GPUDevice config is also cleaned up.
+#include "core/fullscreen_ui.h"
 #include "core/gpu_thread.h"
 #include "core/host.h"
 #include "core/settings.h"
@@ -257,7 +258,7 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
 
   SetKeyMap();
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
-  ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
+  FullscreenUI::SetTheme();
 
   if (!AddImGuiFonts(false, false) || !g_gpu_device->UpdateImGuiFontTexture())
   {

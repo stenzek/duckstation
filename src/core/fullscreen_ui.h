@@ -9,8 +9,10 @@
 
 #include <functional>
 #include <memory>
+#include <span>
 #include <string>
 #include <string_view>
+#include <vector>
 
 class SmallStringBase;
 
@@ -39,7 +41,12 @@ void UpdateLoadingScreen(std::string_view image, std::string_view message, s32 p
                          s32 progress_value = -1);
 void CloseLoadingScreen();
 
+void SetTheme();
+
 #ifndef __ANDROID__
+
+std::vector<std::string_view> GetThemeNames();
+std::span<const char* const> GetThemeConfigNames();
 
 void OpenPauseMenu();
 void OpenCheatsMenu();

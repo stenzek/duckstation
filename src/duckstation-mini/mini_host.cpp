@@ -1424,6 +1424,11 @@ void Host::OpenHostFileSelectorAsync(std::string_view title, bool select_directo
   callback(std::string());
 }
 
+const char* Host::GetDefaultFullscreenUITheme()
+{
+  return "";
+}
+
 bool Host::ShouldPreferHostFileSelector()
 {
   return false;
