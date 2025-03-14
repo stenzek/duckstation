@@ -257,6 +257,7 @@ bool ImGuiManager::Initialize(float global_scale, float screen_margin, Error* er
 
   SetKeyMap();
   SetStyle(s_state.imgui_context->Style, s_state.global_scale);
+  ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
 
   if (!AddImGuiFonts(false, false) || !g_gpu_device->UpdateImGuiFontTexture())
   {
@@ -953,6 +954,10 @@ void ImGuiManager::AcquirePendingOSDMessages(Timer::Value current_time)
 
 void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 {
+  using ImGuiFullscreen::ModAlpha;
+  using ImGuiFullscreen::RenderShadowedTextClipped;
+  using ImGuiFullscreen::UIStyle;
+
   static constexpr float MOVE_DURATION = 0.5f;
 
   ImFont* const font = s_state.osd_font;
@@ -979,13 +984,13 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
 
     ++iter;
 
-    u8 opacity;
+    float opacity;
     if (time_passed < OSD_FADE_IN_TIME)
-      opacity = static_cast<u8>((time_passed / OSD_FADE_IN_TIME) * 255.0f);
+      opacity = time_passed / OSD_FADE_IN_TIME;
     else if (time_passed > (msg.duration - OSD_FADE_OUT_TIME))
-      opacity = static_cast<u8>(std::min((msg.duration - time_passed) / OSD_FADE_OUT_TIME, 1.0f) * 255.0f);
+      opacity = std::min((msg.duration - time_passed) / OSD_FADE_OUT_TIME, 1.0f);
     else
-      opacity = 255;
+      opacity = 1.0f;
 
     const float expected_y = position_y;
     float actual_y = msg.last_y;
@@ -1031,13 +1036,15 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
     const ImVec2 text_size(font->CalcTextSizeA(font->FontSize, max_width, max_width, msg.text.c_str(),
                                                msg.text.c_str() + msg.text.length()));
     const ImVec2 size(text_size.x + padding * 2.0f, text_size.y + padding * 2.0f);
-    const ImVec4 text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
+    const ImRect text_rect(pos.x + padding, pos.y + padding, pos.x + size.x - padding, pos.y + size.y - padding);
 
     ImDrawList* dl = ImGui::GetForegroundDrawList();
-    dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x21, 0x21, 0x21, opacity), rounding);
-    dl->AddRect(pos, ImVec2(pos.x + size.x, pos.y + size.y), IM_COL32(0x48, 0x48, 0x48, opacity), rounding);
-    dl->AddText(font, font->FontSize, ImVec2(text_rect.x, text_rect.y), IM_COL32(0xff, 0xff, 0xff, opacity),
-                msg.text.c_str(), msg.text.c_str() + msg.text.length(), max_width, &text_rect);
+    dl->AddRectFilled(pos, ImVec2(pos.x + size.x, pos.y + size.y),
+                      ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f)), rounding);
+    RenderShadowedTextClipped(dl, font, text_rect.Min, text_rect.Max,
+                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), msg.text.c_str(),
+                              msg.text.c_str() + msg.text.length(), &text_size, ImVec2(0.0f, 0.0f), max_width,
+                              &text_rect, scale);
     position_y += size.y + spacing;
   }
 }

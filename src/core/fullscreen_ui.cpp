@@ -660,7 +660,6 @@ bool FullscreenUI::Initialize()
   if (s_state.tried_to_initialize)
     return false;
 
-  ImGuiFullscreen::SetTheme(Host::GetBaseStringSettingValue("UI", "FullscreenUITheme", "Dark"));
   ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
   ImGuiFullscreen::UpdateLayoutScale();
 
