@@ -253,6 +253,7 @@ static void DestroyResources();
 //////////////////////////////////////////////////////////////////////////
 // Landing
 //////////////////////////////////////////////////////////////////////////
+static bool ShouldOpenToGameList();
 static void SwitchToLanding();
 static ImGuiFullscreen::FileSelectorFilters GetDiscImageFilters();
 static ImGuiFullscreen::FileSelectorFilters GetImageFilters();
@@ -678,11 +679,8 @@ bool FullscreenUI::Initialize()
   s_state.initialized = true;
   s_state.hotkey_list_cache = InputManager::GetHotkeyList();
 
-  if (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
-      !GPUThread::IsGPUBackendRequested())
-  {
-    SwitchToLanding();
-  }
+  const bool open_main_window = (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
+                                 !GPUThread::IsGPUBackendRequested());
 
   // in case we open the pause menu while the game is running
   if (GPUThread::HasGPUBackend())
@@ -697,7 +695,10 @@ bool FullscreenUI::Initialize()
   }
 
   LoadBackground();
-  UpdateRunIdleState();
+
+  if (open_main_window)
+    ReturnToMainWindow();
+
   ForceKeyNavEnabled();
   return true;
 }
@@ -778,8 +779,7 @@ void FullscreenUI::OnSystemDestroyed()
     s_state.pause_menu_was_open = false;
     s_state.was_paused_on_quick_menu_open = false;
     s_state.current_pause_submenu = PauseSubMenu::None;
-    SwitchToLanding();
-    UpdateRunIdleState();
+    ReturnToMainWindow();
   });
 }
 
@@ -1079,7 +1079,9 @@ void FullscreenUI::ReturnToPreviousWindow()
 void FullscreenUI::ReturnToMainWindow()
 {
   ClosePauseMenu();
-  s_state.current_main_window = GPUThread::HasGPUBackend() ? MainWindowType::None : MainWindowType::Landing;
+  s_state.current_main_window = GPUThread::HasGPUBackend() ?
+                                  MainWindowType::None :
+                                  (ShouldOpenToGameList() ? MainWindowType::GameList : MainWindowType::Landing);
   UpdateRunIdleState();
   FixStateIfPaused();
 }
@@ -1741,6 +1743,11 @@ void FullscreenUI::DrawBackground()
                                              static_cast<float>(s_state.app_background_texture->GetHeight())));
     dl->AddImage(s_state.app_background_texture.get(), ImVec2(0.0f, 0.0f), size, uv_rect.Min, uv_rect.Max);
   }
+}
+
+bool FullscreenUI::ShouldOpenToGameList()
+{
+  return Host::GetBaseBoolSettingValue("Main", "FullscreenUIOpenToGameList", false);
 }
 
 void FullscreenUI::SwitchToLanding()
@@ -3801,6 +3808,11 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                        Host::RunOnCPUThread([]() { GPUThread::RunOnThread(&FullscreenUI::LoadBackground); });
                      });
   }
+
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_LIST, "Open To Game List"),
+    FSUI_CSTR("When Big Picture mode is started, the game list will be displayed instead of the main menu."), "Main",
+    "FullscreenUIOpenToGameList", false);
 
   if (DrawToggleSetting(
         bsi, FSUI_ICONSTR(ICON_PF_GAMEPAD, "Use DualShock/DualSense Button Icons"),
@@ -7419,7 +7431,7 @@ void FullscreenUI::DrawGameListWindow()
     BeginNavBar();
 
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
-      ReturnToPreviousWindow();
+      SwitchToLanding();
 
     NavTitle(Host::TranslateToCString(TR_CONTEXT, titles[static_cast<u32>(s_state.game_list_view)]));
     RightAlignNavButtons(count, ITEM_WIDTH, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
@@ -7499,7 +7511,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
   }
 
   if (!AreAnyDialogsOpen() && WantsToCloseMenu())
-    ReturnToPreviousWindow();
+    SwitchToLanding();
 
   auto game_list_lock = GameList::GetLock();
   const GameList::Entry* selected_entry = nullptr;
@@ -7751,7 +7763,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
   }
 
   if (ImGui::IsWindowFocused() && WantsToCloseMenu())
-    ReturnToPreviousWindow();
+    SwitchToLanding();
 
   ResetFocusHere();
   BeginMenuButtons();
@@ -9086,6 +9098,7 @@ TRANSLATE_NOOP("FullscreenUI", "OK");
 TRANSLATE_NOOP("FullscreenUI", "OSD Scale");
 TRANSLATE_NOOP("FullscreenUI", "On-Screen Display");
 TRANSLATE_NOOP("FullscreenUI", "Open Containing Directory");
+TRANSLATE_NOOP("FullscreenUI", "Open To Game List");
 TRANSLATE_NOOP("FullscreenUI", "Open in File Browser");
 TRANSLATE_NOOP("FullscreenUI", "Operations");
 TRANSLATE_NOOP("FullscreenUI", "Optimal Frame Pacing");
@@ -9364,6 +9377,7 @@ TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");
 TRANSLATE_NOOP("FullscreenUI", "WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games.");
 TRANSLATE_NOOP("FullscreenUI", "WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken saved games.");
 TRANSLATE_NOOP("FullscreenUI", "WARNING: Your game is still saving to the memory card. Continuing to {0} may IRREVERSIBLY DESTROY YOUR MEMORY CARD. We recommend resuming your game and waiting 5 seconds for it to finish saving.\n\nDo you want to {0} anyway?");
+TRANSLATE_NOOP("FullscreenUI", "When Big Picture mode is started, the game list will be displayed instead of the main menu.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled and logged in, DuckStation will scan for achievements on startup.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will assume all achievements are locked and not send any unlock notifications to the server.");
 TRANSLATE_NOOP("FullscreenUI", "When enabled, DuckStation will list achievements from unofficial sets. These achievements are not tracked by RetroAchievements.");
