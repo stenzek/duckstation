@@ -90,7 +90,7 @@ static constexpr float LEADERBOARD_STARTED_NOTIFICATION_TIME = 3.0f;
 static constexpr float LEADERBOARD_FAILED_NOTIFICATION_TIME = 3.0f;
 
 static constexpr float INDICATOR_FADE_IN_TIME = 0.1f;
-static constexpr float INDICATOR_FADE_OUT_TIME = 0.5f;
+static constexpr float INDICATOR_FADE_OUT_TIME = 0.3f;
 
 // Some API calls are really slow. Set a longer timeout.
 static constexpr float SERVER_CALL_TIMEOUT = 60.0f;
@@ -1039,7 +1039,7 @@ void Achievements::UpdateGameSummary(bool update_progress_database, bool force_u
 void Achievements::UpdateRecentUnlockAndAlmostThere()
 {
   const auto lock = GetLock();
-  if (!IsActive())
+  if (!HasActiveGame())
     return;
 
   s_state.most_recent_unlock = nullptr;
@@ -2402,6 +2402,8 @@ static float IndicatorOpacity(float delta_time, T& i)
 void Achievements::DrawGameOverlays()
 {
   using ImGuiFullscreen::LayoutScale;
+  using ImGuiFullscreen::ModAlpha;
+  using ImGuiFullscreen::RenderShadowedTextClipped;
   using ImGuiFullscreen::UIStyle;
 
   if (!HasActiveGame() || !g_settings.achievements_overlays)
@@ -2409,10 +2411,13 @@ void Achievements::DrawGameOverlays()
 
   const auto lock = GetLock();
 
+  constexpr float overlay_opacity = 0.8f;
+
   const float margin =
     std::max(ImCeil(ImGuiManager::GetScreenMargin() * ImGuiManager::GetGlobalScale()), LayoutScale(10.0f));
   const float spacing = LayoutScale(10.0f);
   const float padding = LayoutScale(10.0f);
+  const float rounding = LayoutScale(10.0f);
   const ImVec2 image_size =
     LayoutScale(ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT);
   const ImGuiIO& io = ImGui::GetIO();
@@ -2428,13 +2433,12 @@ void Achievements::DrawGameOverlays()
     {
       AchievementChallengeIndicator& indicator = *it;
       const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
-      const u32 col = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity));
 
       GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(indicator.badge_path);
       if (badge)
       {
         dl->AddImage(badge, current_position, current_position + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
-                     col);
+                     ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
         current_position.x -= x_advance;
       }
 
@@ -2455,8 +2459,7 @@ void Achievements::DrawGameOverlays()
   if (s_state.active_progress_indicator.has_value())
   {
     AchievementProgressIndicator& indicator = s_state.active_progress_indicator.value();
-    const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
-    const u32 col = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity));
+    const float opacity = IndicatorOpacity(io.DeltaTime, indicator) * overlay_opacity;
 
     const char* text_start = s_state.active_progress_indicator->achievement->measured_progress;
     const char* text_end = text_start + std::strlen(text_start);
@@ -2466,23 +2469,23 @@ void Achievements::DrawGameOverlays()
     const ImVec2 box_min = ImVec2(position.x - image_size.x - text_size.x - spacing - padding * 2.0f,
                                   position.y - image_size.y - padding * 2.0f);
     const ImVec2 box_max = position;
-    const float box_rounding = LayoutScale(1.0f);
 
-    dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ImVec4(0.13f, 0.13f, 0.13f, opacity * 0.5f)), box_rounding);
-    dl->AddRect(box_min, box_max, ImGui::GetColorU32(ImVec4(0.8f, 0.8f, 0.8f, opacity)), box_rounding);
+    dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity)), rounding);
 
     GPUTexture* badge = ImGuiFullscreen::GetCachedTextureAsync(indicator.badge_path);
     if (badge)
     {
       const ImVec2 badge_pos = box_min + ImVec2(padding, padding);
-      dl->AddImage(badge, badge_pos, badge_pos + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f), col);
+      dl->AddImage(badge, badge_pos, badge_pos + image_size, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+                   ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity)));
     }
 
     const ImVec2 text_pos =
       box_min + ImVec2(padding + image_size.x + spacing, (box_max.y - box_min.y - text_size.y) * 0.5f);
-    const ImVec4 text_clip_rect(text_pos.x, text_pos.y, box_max.x, box_max.y);
-    dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, col, text_start, text_end, 0.0f,
-                &text_clip_rect);
+    const ImRect text_clip_rect(text_pos, box_max);
+    RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, box_max,
+                              ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity)), text_start, text_end,
+                              &text_size, ImVec2(0.0f, 0.0f), 0.0f, &text_clip_rect);
 
     if (!indicator.active && opacity <= 0.01f)
     {
@@ -2498,7 +2501,7 @@ void Achievements::DrawGameOverlays()
     for (auto it = s_state.active_leaderboard_trackers.begin(); it != s_state.active_leaderboard_trackers.end();)
     {
       LeaderboardTrackerIndicator& indicator = *it;
-      const float opacity = IndicatorOpacity(io.DeltaTime, indicator);
+      const float opacity = IndicatorOpacity(io.DeltaTime, indicator) * overlay_opacity;
 
       TinyString width_string;
       width_string.append(ICON_FA_STOPWATCH);
@@ -2507,25 +2510,22 @@ void Achievements::DrawGameOverlays()
       const ImVec2 size = ImGuiFullscreen::UIStyle.MediumFont->CalcTextSizeA(
         ImGuiFullscreen::UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, width_string.c_str(), width_string.end_ptr());
 
-      const ImVec2 box_min = ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f);
-      const ImVec2 box_max = position;
-      const float box_rounding = LayoutScale(1.0f);
-      dl->AddRectFilled(box_min, box_max, ImGui::GetColorU32(ImVec4(0.13f, 0.13f, 0.13f, opacity * 0.5f)),
-                        box_rounding);
-      dl->AddRect(box_min, box_max, ImGui::GetColorU32(ImVec4(0.8f, 0.8f, 0.8f, opacity)), box_rounding);
+      const ImRect box(ImVec2(position.x - size.x - padding * 2.0f, position.y - size.y - padding * 2.0f), position);
+      dl->AddRectFilled(box.Min, box.Max, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity)),
+                        rounding);
 
-      const u32 text_col = ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, opacity));
+      const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
       const ImVec2 text_size = ImGuiFullscreen::UIStyle.MediumFont->CalcTextSizeA(
         ImGuiFullscreen::UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, indicator.text.c_str(),
         indicator.text.c_str() + indicator.text.length());
-      const ImVec2 text_pos = ImVec2(box_max.x - padding - text_size.x, box_min.y + padding);
-      const ImVec4 text_clip_rect(box_min.x, box_min.y, box_max.x, box_max.y);
-      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, text_col, indicator.text.c_str(),
-                  indicator.text.c_str() + indicator.text.length(), 0.0f, &text_clip_rect);
+      const ImVec2 text_pos = ImVec2(box.Max.x - padding - text_size.x, box.Min.y + padding);
+      RenderShadowedTextClipped(dl, UIStyle.MediumFont, text_pos, box.Max, text_col, indicator.text.c_str(),
+                                indicator.text.c_str() + indicator.text.length(), &text_size, ImVec2(0.0f, 0.0f), 0.0f,
+                                &box);
 
-      const ImVec2 icon_pos = ImVec2(box_min.x + padding, box_min.y + padding);
-      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, icon_pos, text_col, ICON_FA_STOPWATCH, nullptr,
-                  0.0f, &text_clip_rect);
+      const ImVec2 icon_pos = ImVec2(box.Min.x + padding, box.Min.y + padding);
+      RenderShadowedTextClipped(dl, UIStyle.MediumFont, icon_pos, box.Max, text_col, ICON_FA_STOPWATCH, nullptr,
+                                nullptr, ImVec2(0.0f, 0.0f), 0.0f, &box);
 
       if (!indicator.active && opacity <= 0.01f)
       {
@@ -2537,7 +2537,7 @@ void Achievements::DrawGameOverlays()
         ++it;
       }
 
-      position.x = box_min.x - padding;
+      position.x = box.Min.x - padding;
     }
 
     // Uncomment if there are any other overlays above this one.
@@ -2577,16 +2577,11 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
 
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
-  const auto get_achievement_height = [&badge_size, &badge_text_width, &text_spacing, &progress_height](
-                                        const rc_client_achievement_t* achievement, bool show_measured) {
+  const auto get_achievement_height = [&badge_size, &badge_text_width,
+                                       &text_spacing](const rc_client_achievement_t* achievement, bool show_measured) {
     const ImVec2 description_size = UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX,
                                                                       badge_text_width, achievement->description);
-    float text_height = UIStyle.MediumFont->FontSize + text_spacing + description_size.y;
-#if 0
-    if (show_measured && achievement->measured_percent > 0.0f)
-      text_height += text_spacing + progress_height;
-#endif
-
+    const float text_height = UIStyle.MediumFont->FontSize + text_spacing + description_size.y;
     return std::max(text_height, badge_size);
   };
 
@@ -2612,9 +2607,8 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
   dl->AddRectFilled(box_min, box_max, box_background_color, box_rounding);
 
   const auto draw_achievement_with_summary = [&box_max, &badge_text_width, &dl, &title_text_color, &text_color,
-                                              &text_spacing, &paragraph_spacing, &text_pos, &progress_height,
-                                              &badge_size](const rc_client_achievement_t* achievement,
-                                                           bool show_measured) {
+                                              &text_spacing, &text_pos, &badge_size](
+                                               const rc_client_achievement_t* achievement, bool show_measured) {
     const ImVec2 image_max = ImVec2(text_pos.x + badge_size, text_pos.y + badge_size);
     ImVec2 badge_text_pos = ImVec2(image_max.x + text_spacing + text_spacing, text_pos.y);
     const ImVec4 clip_rect = ImVec4(badge_text_pos.x, badge_text_pos.y, badge_text_pos.x + badge_text_width, box_max.y);
@@ -2632,28 +2626,6 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
     dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, badge_text_pos, text_color, achievement->description,
                 nullptr, badge_text_width, &clip_rect);
     badge_text_pos.y += description_size.y;
-
-    if (show_measured && achievement->measured_percent > 0.0f)
-    {
-#if 0
-      // not a fan of the way this looks
-      badge_text_pos.y += text_spacing;
-
-      const float progress_fraction = static_cast<float>(achievement->measured_percent) / 100.0f;
-      const ImRect progress_bb(badge_text_pos, badge_text_pos + ImVec2(badge_text_width, progress_height));
-      const u32 progress_color = ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor));
-      dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor));
-      dl->AddRectFilled(progress_bb.Min,
-                        ImVec2(progress_bb.Min.x + progress_fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-                        progress_color);
-      const ImVec2 text_size =
-        UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, achievement->measured_progress);
-      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize,
-                  ImVec2(progress_bb.Min.x + ((progress_bb.Max.x - progress_bb.Min.x) / 2.0f) - (text_size.x / 2.0f),
-                         progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f)),
-                  text_color, achievement->measured_progress);
-#endif
-    }
 
     text_pos.y = badge_text_pos.y;
   };
