@@ -1328,17 +1328,18 @@ void ImGuiFullscreen::RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* f
     pos.y = ImMax(pos.y, pos.y + (pos_max.y - pos.y - text_size.y) * align.y);
 
   // Render
+  const u32 shadow_color = (UIStyle.ShadowColor & ~IM_COL32_A_MASK) | (color & IM_COL32_A_MASK);
   if (need_clipping)
   {
     ImVec4 fine_clip_rect(clip_min->x, clip_min->y, clip_max->x, clip_max->y);
     draw_list->AddText(font, font->FontSize, pos + LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET),
-                       UIStyle.ShadowColor, text, text_display_end, wrap_width, &fine_clip_rect);
+                       shadow_color, text, text_display_end, wrap_width, &fine_clip_rect);
     draw_list->AddText(font, font->FontSize, pos, color, text, text_display_end, wrap_width, &fine_clip_rect);
   }
   else
   {
     draw_list->AddText(font, font->FontSize, pos + LayoutScale(LAYOUT_SHADOW_OFFSET, LAYOUT_SHADOW_OFFSET),
-                       UIStyle.ShadowColor, text, text_display_end, wrap_width, nullptr);
+                       shadow_color, text, text_display_end, wrap_width, nullptr);
     draw_list->AddText(font, font->FontSize, pos, color, text, text_display_end, wrap_width, nullptr);
   }
 }
