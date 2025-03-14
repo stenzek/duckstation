@@ -4659,7 +4659,8 @@ void FullscreenUI::DrawControllerSettingsPage()
 
       ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
 
-      if (BeginFixedPopupModal(freq_label, nullptr))
+      bool is_open = true;
+      if (BeginFixedPopupModal(freq_label, &is_open))
       {
         ImGui::SetNextItemWidth(LayoutScale(450.0f));
         if (ImGui::SliderInt("##value", &frequency, 0, 60, FSUI_CSTR("Toggle every %d frames"),

@@ -650,6 +650,12 @@ bool ImGuiFullscreen::BeginFixedPopupModal(const char* name, bool* p_open)
     return false;
   }
 
+  if (p_open && *p_open && WantsToCloseMenu())
+  {
+    *p_open = false;
+    ImGui::CloseCurrentPopup();
+  }
+
   // don't draw unreadable text
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
   return true;
@@ -2816,6 +2822,9 @@ void ImGuiFullscreen::DrawMessageDialog()
 
   if (ImGui::BeginPopupModal(win_id, &is_open, flags))
   {
+    if (WantsToCloseMenu())
+      is_open = false;
+
     ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
     ResetFocusHere();
