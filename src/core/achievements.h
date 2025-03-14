@@ -182,7 +182,11 @@ void ClearUIState();
 void DrawGameOverlays();
 
 /// Draws ImGui overlays when paused.
-void DrawPauseMenuOverlays();
+void DrawPauseMenuOverlays(float start_pos_y);
+
+/// Updates the stored most-recent and closest-to-completion achievements.
+/// Call before calling DrawPauseMenuOverlays() for the first time.
+void UpdateRecentUnlockAndAlmostThere();
 
 #ifndef __ANDROID__
 

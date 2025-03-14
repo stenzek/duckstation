@@ -821,6 +821,7 @@ void FullscreenUI::OpenPauseMenu()
       return;
 
     PauseForMenuOpen(true);
+    Achievements::UpdateRecentUnlockAndAlmostThere();
     s_state.current_main_window = MainWindowType::PauseMenu;
     s_state.current_pause_submenu = PauseSubMenu::None;
     QueueResetFocus(FocusResetType::ViewChanged);
@@ -6493,7 +6494,7 @@ void FullscreenUI::DrawPauseMenu()
                     ImVec2(display_size.x, display_size.x - scaled_top_bar_height - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
                     ImGui::GetColorU32(ModAlpha(UIStyle.BackgroundColor, 0.85f)));
 
-  Achievements::DrawPauseMenuOverlays();
+  Achievements::DrawPauseMenuOverlays(scaled_top_bar_height);
 
   if (BeginFullscreenWindow(window_pos, window_size, "pause_menu", ImVec4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f,
                             ImVec2(10.0f, 10.0f), ImGuiWindowFlags_NoBackground))
@@ -6612,8 +6613,6 @@ void FullscreenUI::DrawPauseMenu()
 
     EndFullscreenWindow();
   }
-
-  Achievements::DrawPauseMenuOverlays();
 
   if (IsGamepadInputSource())
   {
