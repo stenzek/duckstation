@@ -2928,6 +2928,13 @@ void Achievements::DrawAchievementsWindow()
   }
   ImGuiFullscreen::EndFullscreenWindow();
 
+  ImGuiFullscreen::SetFullscreenStatusText(std::array{
+    std::make_pair(ICON_PF_ACHIEVEMENTS_MISSABLE, TRANSLATE_SV("Achievements", "Missable")),
+    std::make_pair(ICON_PF_ACHIEVEMENTS_PROGRESSION, TRANSLATE_SV("Achievements", "Progression")),
+    std::make_pair(ICON_PF_ACHIEVEMENTS_WIN, TRANSLATE_SV("Achievements", "Win Condition")),
+    std::make_pair(ICON_FA_LOCK, TRANSLATE_SV("Achievements", "Locked")),
+    std::make_pair(ICON_EMOJI_UNLOCKED, TRANSLATE_SV("Achievements", "Unlocked")),
+  });
   ImGuiFullscreen::SetFullscreenFooterText(
     std::array{std::make_pair(ImGuiFullscreen::IsGamepadInputSource() ? ICON_PF_XBOX_DPAD_UP_DOWN :
                                                                         ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN,
