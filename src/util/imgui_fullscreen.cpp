@@ -3400,7 +3400,7 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
 
     const ImVec2 box_min(position.x, actual_y);
     const ImVec2 box_max(box_min.x + box_width, box_min.y + box_height);
-    const u32 background_color = ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity));
+    const u32 background_color = ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, opacity * 0.95f));
 
     ImDrawList* dl = ImGui::GetForegroundDrawList();
     dl->AddRectFilled(box_min, box_max, background_color, rounding, ImDrawFlags_RoundCornersAll);
@@ -3421,17 +3421,20 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
       }
     }
 
-    const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
+    const u32 title_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, opacity));
+    const u32 text_col = ImGui::GetColorU32(ModAlpha(DarkerColor(UIStyle.ToastTextColor), opacity));
 
-    const ImVec2 title_min(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
-    const ImVec2 title_max(title_min.x + title_size.x, title_min.y + title_size.y);
-    dl->AddText(title_font, title_font->FontSize, title_min, text_col, notif.title.c_str(),
-                notif.title.c_str() + notif.title.size(), max_text_width);
+    const ImVec2 title_pos = ImVec2(badge_max.x + horizontal_spacing, box_min.y + vertical_padding);
+    const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
+    RenderShadowedTextClipped(dl, title_font, title_bb.Min, title_bb.Max, title_col, notif.title.c_str(),
+                              notif.title.c_str() + notif.title.size(), &title_size, ImVec2(0.0f, 0.0f), max_text_width,
+                              &title_bb);
 
-    const ImVec2 text_min(badge_max.x + horizontal_spacing, title_max.y + vertical_spacing);
-    const ImVec2 text_max(text_min.x + text_size.x, text_min.y + text_size.y);
-    dl->AddText(text_font, text_font->FontSize, text_min, text_col, notif.text.c_str(),
-                notif.text.c_str() + notif.text.size(), max_text_width);
+    const ImVec2 text_pos = ImVec2(badge_max.x + horizontal_spacing, title_bb.Max.y + vertical_spacing);
+    const ImRect text_bb = ImRect(text_pos, text_pos + text_size);
+    RenderShadowedTextClipped(dl, text_font, text_bb.Min, text_bb.Max, text_col, notif.text.c_str(),
+                              notif.text.c_str() + notif.text.size(), &text_size, ImVec2(0.0f, 0.0f), max_text_width,
+                              &text_bb);
 
     if (clip_box)
       dl->PopClipRect();
@@ -3498,24 +3501,28 @@ void ImGuiFullscreen::DrawToast()
   const ImVec2 box_pos((display_size.x - box_size.x) * 0.5f, (display_size.y - margin - box_size.y));
 
   ImDrawList* dl = ImGui::GetForegroundDrawList();
-  dl->AddRectFilled(box_pos, box_pos + box_size, ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, alpha)),
-                    padding);
+  dl->AddRectFilled(box_pos, box_pos + box_size,
+                    ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, alpha * 0.95f)), padding);
 
   const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, alpha));
 
   if (!s_state.toast_title.empty())
   {
     const float offset = (comb_size.x - title_size.x) * 0.5f;
-    dl->AddText(title_font, title_font->FontSize, box_pos + ImVec2(offset + padding, padding), text_col,
-                s_state.toast_title.c_str(), s_state.toast_title.c_str() + s_state.toast_title.length(), max_width);
+    const ImVec2 title_pos = box_pos + ImVec2(offset + padding, padding);
+    const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
+    RenderShadowedTextClipped(dl, title_font, title_bb.Min, title_bb.Max, text_col, s_state.toast_title.c_str(),
+                              s_state.toast_title.c_str() + s_state.toast_title.length(), &title_size,
+                              ImVec2(0.0f, 0.0f), max_width, &title_bb);
   }
   if (!s_state.toast_message.empty())
   {
     const float offset = (comb_size.x - message_size.x) * 0.5f;
-    dl->AddText(message_font, message_font->FontSize,
-                box_pos + ImVec2(offset + padding, padding + spacing + title_size.y), text_col,
-                s_state.toast_message.c_str(), s_state.toast_message.c_str() + s_state.toast_message.length(),
-                max_width);
+    const ImVec2 message_pos = box_pos + ImVec2(offset + padding, padding + spacing + title_size.y);
+    const ImRect message_bb = ImRect(message_pos, message_pos + message_size);
+    RenderShadowedTextClipped(dl, message_font, message_bb.Min, message_bb.Max, text_col, s_state.toast_message.c_str(),
+                              s_state.toast_message.c_str() + s_state.toast_message.length(), &message_size,
+                              ImVec2(0.0f, 0.0f), max_width, &message_bb);
   }
 }
 
