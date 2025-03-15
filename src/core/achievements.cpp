@@ -2940,6 +2940,8 @@ void Achievements::DrawAchievementsWindow()
 
 void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
 {
+  using ImGuiFullscreen::DarkerColor;
+  using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
   using ImGuiFullscreen::LayoutScale;
   using ImGuiFullscreen::LayoutUnscale;
   using ImGuiFullscreen::RenderShadowedTextClipped;
@@ -2948,17 +2950,19 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   static constexpr float alpha = 0.8f;
   static constexpr float progress_height_unscaled = 20.0f;
   static constexpr float progress_spacing_unscaled = 5.0f;
+  static constexpr float spacing_unscaled = 4.0f;
 
-  const float spacing = ImGuiFullscreen::LayoutScale(4.0f);
-  const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+  const float spacing = ImGuiFullscreen::LayoutScale(spacing_unscaled);
+  const u32 text_color = ImGui::GetColorU32(UIStyle.SecondaryTextColor);
+  const u32 summary_color = ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryTextColor));
+  const u32 rarity_color = ImGui::GetColorU32(DarkerColor(DarkerColor(UIStyle.SecondaryTextColor)));
 
   const bool is_unlocked = (cheevo->state == RC_CLIENT_ACHIEVEMENT_STATE_UNLOCKED);
   const std::string_view measured_progress(cheevo->measured_progress);
   const bool is_measured = !is_unlocked && !measured_progress.empty();
-  const float unlock_size = is_unlocked ? (spacing + ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE) : 0.0f;
-  const ImVec2 points_template_size(UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f,
-                                                                      TRANSLATE("Achievements", "XXX points")));
-
+  const float unlock_rarity_height = spacing_unscaled + ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
+  const ImVec2 points_template_size = UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f,
+                                                                        TRANSLATE("Achievements", "XXX points"));
   const size_t summary_length = std::strlen(cheevo->description);
   const float summary_wrap_width =
     (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - (ImGui::GetStyle().FramePadding.x * 2.0f) -
@@ -2968,15 +2972,15 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
                                                                    cheevo->description + summary_length));
 
   // Messy, but need to undo LayoutScale in MenuButtonFrame()...
-  const float extra_summary_height = LayoutUnscale(std::max(summary_text_size.y - UIStyle.MediumFont->FontSize, 0.0f));
+  const float extra_summary_height = std::max(LayoutUnscale(summary_text_size.y) - LAYOUT_MENU_BUTTON_HEIGHT, 0.0f);
 
   ImRect bb;
   bool visible, hovered;
   const bool clicked = ImGuiFullscreen::MenuButtonFrame(
     TinyString::from_format("chv_{}", cheevo->id), true,
-    !is_measured ? ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + unlock_size :
-                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + progress_height_unscaled +
-                     progress_spacing_unscaled,
+    !is_measured ? (LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + unlock_rarity_height) :
+                   (LAYOUT_MENU_BUTTON_HEIGHT + extra_summary_height + unlock_rarity_height + progress_height_unscaled +
+                    progress_spacing_unscaled),
     &visible, &hovered, &bb.Min, &bb.Max, 0, alpha);
   if (!visible)
     return;
@@ -3032,6 +3036,9 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   const float text_start_x = bb.Min.x + image_size.x + LayoutScale(15.0f);
   const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(points_start, midpoint));
   const ImRect summary_bb(ImVec2(text_start_x, midpoint), ImVec2(points_start, midpoint + summary_text_size.y));
+  const ImRect unlock_rarity_bb(summary_bb.Min.x, summary_bb.Max.y + spacing, summary_bb.Max.x,
+                                summary_bb.Max.y +
+                                  LayoutScale(spacing_unscaled + ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE));
   const ImRect points_bb(ImVec2(points_start, midpoint), bb.Max);
   const ImRect lock_bb(ImVec2(points_template_start + ((points_template_size.x - right_icon_size.x) * 0.5f), bb.Min.y),
                        ImVec2(bb.Max.x, midpoint));
@@ -3040,33 +3047,44 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
                             ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
   RenderShadowedTextClipped(UIStyle.LargeFont, lock_bb.Min, lock_bb.Max, text_color, right_icon_text, nullptr,
                             &right_icon_size, ImVec2(0.0f, 0.0f), 0.0f, &lock_bb);
+  RenderShadowedTextClipped(UIStyle.MediumFont, points_bb.Min, points_bb.Max, summary_color, text.c_str(),
+                            text.end_ptr(), &points_size, ImVec2(0.0f, 0.0f), 0.0f, &points_bb);
 
   if (cheevo->description && summary_length > 0)
   {
-    RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, text_color, cheevo->description,
+    RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, summary_color, cheevo->description,
                               cheevo->description + summary_length, &summary_text_size, ImVec2(0.0f, 0.0f),
                               summary_wrap_width, &summary_bb);
   }
-  RenderShadowedTextClipped(UIStyle.MediumFont, points_bb.Min, points_bb.Max, text_color, text.c_str(), text.end_ptr(),
-                            &points_size, ImVec2(0.0f, 0.0f), 0.0f, &points_bb);
+
+  // display hc if hc is active
+  const float rarity_to_display = IsHardcoreModeActive() ? cheevo->rarity_hardcore : cheevo->rarity;
 
   if (is_unlocked)
   {
     TinyString date;
     FullscreenUI::TimeToPrintableString(&date, cheevo->unlock_time);
-    text.format(TRANSLATE_FS("Achievements", "Unlocked: {}"), date);
+    text.format(TRANSLATE_FS("Achievements", "Unlocked: {} | {:.1f}% of players have this achievement"), date,
+                rarity_to_display);
 
-    const ImRect unlock_bb(summary_bb.Min.x, summary_bb.Max.y + spacing, summary_bb.Max.x, bb.Max.y);
-    RenderShadowedTextClipped(UIStyle.MediumFont, unlock_bb.Min, unlock_bb.Max, text_color, text.c_str(),
-                              text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &unlock_bb);
+    RenderShadowedTextClipped(UIStyle.MediumFont, unlock_rarity_bb.Min, unlock_rarity_bb.Max, rarity_color,
+                              text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &unlock_rarity_bb);
   }
-  else if (is_measured)
+  else
+  {
+    text.format(TRANSLATE_FS("Achievements", "{:.1f}% of players have this achievement"), rarity_to_display);
+    RenderShadowedTextClipped(UIStyle.MediumFont, unlock_rarity_bb.Min, unlock_rarity_bb.Max, rarity_color,
+                              text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &unlock_rarity_bb);
+  }
+
+  if (!is_unlocked && is_measured)
   {
     ImDrawList* dl = ImGui::GetWindowDrawList();
     const float progress_height = LayoutScale(progress_height_unscaled);
     const float progress_spacing = LayoutScale(progress_spacing_unscaled);
-    const float top = midpoint + UIStyle.MediumFont->FontSize + progress_spacing;
-    const ImRect progress_bb(ImVec2(text_start_x, top), ImVec2(bb.Max.x, top + progress_height));
+    const ImRect progress_bb(summary_bb.Min.x, unlock_rarity_bb.Max.y + progress_spacing,
+                             summary_bb.Max.x - progress_spacing,
+                             unlock_rarity_bb.Max.y + progress_spacing + progress_height);
     const float fraction = cheevo->measured_percent * 0.01f;
     dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIStyle.PrimaryDarkColor));
     dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
