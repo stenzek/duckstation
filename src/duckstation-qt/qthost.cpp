@@ -2064,10 +2064,9 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
   {
     GPUThread::RunOnThread([title = std::string(title), message = std::string(message), callback = std::move(callback),
                             yes_text = std::string(yes_text), no_text = std::string(no_text), needs_pause]() mutable {
-      if (!FullscreenUI::Initialize())
-      {
-        callback(false);
-
+      // Need to reset run idle state _again_ after displaying.
+      auto final_callback = [callback = std::move(callback), needs_pause](bool result) {
+        FullscreenUI::UpdateRunIdleState();
         if (needs_pause)
         {
           Host::RunOnCPUThread([]() {
@@ -2075,15 +2074,14 @@ void Host::ConfirmMessageAsync(std::string_view title, std::string_view message,
               System::PauseSystem(false);
           });
         }
-
-        return;
-      }
-
-      // Need to reset run idle state _again_ after displaying.
-      auto final_callback = [callback = std::move(callback)](bool result) {
-        FullscreenUI::UpdateRunIdleState();
         callback(result);
       };
+
+      if (!FullscreenUI::Initialize())
+      {
+        final_callback(false);
+        return;
+      }
 
       ImGuiFullscreen::OpenConfirmMessageDialog(std::move(title), std::move(message), std::move(final_callback),
                                                 fmt::format(ICON_FA_CHECK " {}", yes_text),
