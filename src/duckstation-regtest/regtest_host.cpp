@@ -345,6 +345,11 @@ void Host::RequestResizeHostDisplay(s32 width, s32 height)
   //
 }
 
+void Host::RequestResetSettings(bool system, bool controller)
+{
+  //
+}
+
 void Host::RequestExitApplication(bool save_state_if_running)
 {
   //

@@ -322,6 +322,7 @@ static float GetEffectiveFloatSetting(SettingsInterface* bsi, const char* sectio
                                       float default_value);
 static TinyString GetEffectiveTinyStringSetting(SettingsInterface* bsi, const char* section, const char* key,
                                                 const char* default_value);
+static void BeginResetSettings();
 static void DoCopyGameSettings();
 static void DoClearGameSettings();
 static void CopyGlobalControllerSettingsToGame();
@@ -3465,6 +3466,20 @@ void FullscreenUI::PopulatePatchesAndCheatsList()
     s_state.game_settings_interface->GetStringList(Cheats::CHEATS_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
 }
 
+void FullscreenUI::BeginResetSettings()
+{
+  OpenConfirmMessageDialog(FSUI_STR("Restore Defaults"),
+                           FSUI_STR("Are you sure you want to restore the default settings? Any preferences will be "
+                                    "lost.\n\nYou cannot undo this action."),
+                           [](bool result) {
+                             if (!result)
+                               return;
+
+                             Host::RequestResetSettings(true, false);
+                             ShowToast(std::string(), FSUI_STR("Settings reset to default."));
+                           });
+}
+
 void FullscreenUI::DoCopyGameSettings()
 {
   if (!s_state.game_settings_interface)
@@ -3966,6 +3981,15 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     FSUI_CSTR("Shows enhancement settings in the bottom-right corner of the screen."), "Display",
                     "ShowEnhancements", false);
 
+  MenuHeading(FSUI_CSTR("Operations"));
+  {
+    if (MenuButton(FSUI_ICONSTR(ICON_FA_DUMPSTER_FIRE, "Restore Defaults"),
+                   FSUI_CSTR("Resets all settings to the defaults.")))
+    {
+      BeginResetSettings();
+    }
+  }
+
   EndMenuButtons();
 }
 
@@ -4413,9 +4437,7 @@ void FullscreenUI::BeginResetControllerSettings()
                              if (!result)
                                return;
 
-                             SettingsInterface* dsi = GetEditingSettingsInterface();
-
-                             Settings::SetDefaultControllerConfig(*dsi);
+                             Host::RequestResetSettings(false, true);
                              ShowToast(std::string(), FSUI_STR("Controller settings reset to default."));
                            });
 }
@@ -8824,6 +8846,7 @@ TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear all mappings for this controller?\n\nYou cannot undo this action.");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear the current post-processing chain? All configuration will be lost.");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to restore the default controller configuration?\n\nAll bindings and configuration will be lost. You cannot undo this action.");
+TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to restore the default settings? Any preferences will be lost.\n\nYou cannot undo this action.");
 TRANSLATE_NOOP("FullscreenUI", "Aspect Ratio");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to detect one pixel high/wide lines that rely on non-upscaled rasterization behavior, filling in gaps introduced by upscaling.");
 TRANSLATE_NOOP("FullscreenUI", "Attempts to map the selected port to a chosen controller.");
@@ -8916,6 +8939,7 @@ TRANSLATE_NOOP("FullscreenUI", "Culling Correction");
 TRANSLATE_NOOP("FullscreenUI", "Current Game");
 TRANSLATE_NOOP("FullscreenUI", "Custom");
 TRANSLATE_NOOP("FullscreenUI", "Dark");
+TRANSLATE_NOOP("FullscreenUI", "Dark Ruby");
 TRANSLATE_NOOP("FullscreenUI", "Deadzone");
 TRANSLATE_NOOP("FullscreenUI", "Debugging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Default");
@@ -9256,8 +9280,10 @@ TRANSLATE_NOOP("FullscreenUI", "Reset Play Time");
 TRANSLATE_NOOP("FullscreenUI", "Reset Settings");
 TRANSLATE_NOOP("FullscreenUI", "Reset System");
 TRANSLATE_NOOP("FullscreenUI", "Resets all configuration to defaults (including bindings).");
+TRANSLATE_NOOP("FullscreenUI", "Resets all settings to the defaults.");
 TRANSLATE_NOOP("FullscreenUI", "Resets memory card directory to default (user directory).");
 TRANSLATE_NOOP("FullscreenUI", "Resolution change will be applied after restarting.");
+TRANSLATE_NOOP("FullscreenUI", "Restore Defaults");
 TRANSLATE_NOOP("FullscreenUI", "Restores the state of the system prior to the last state loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Resume Game");
 TRANSLATE_NOOP("FullscreenUI", "Resume Last Session");
@@ -9334,6 +9360,7 @@ TRANSLATE_NOOP("FullscreenUI", "Sets which sort of memory card image will be use
 TRANSLATE_NOOP("FullscreenUI", "Setting {} binding {}.");
 TRANSLATE_NOOP("FullscreenUI", "Settings");
 TRANSLATE_NOOP("FullscreenUI", "Settings and Operations");
+TRANSLATE_NOOP("FullscreenUI", "Settings reset to default.");
 TRANSLATE_NOOP("FullscreenUI", "Shader {} added as stage {}.");
 TRANSLATE_NOOP("FullscreenUI", "Shared Card Name");
 TRANSLATE_NOOP("FullscreenUI", "Show Achievement Trophy Icons");

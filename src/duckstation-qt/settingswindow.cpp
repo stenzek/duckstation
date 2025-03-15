@@ -307,7 +307,8 @@ void SettingsWindow::onCategoryCurrentRowChanged(int row)
 void SettingsWindow::onRestoreDefaultsClicked()
 {
   if (QMessageBox::question(this, tr("Confirm Restore Defaults"),
-                            tr("Are you sure you want to restore the default settings? Any preferences will be lost."),
+                            tr("Are you sure you want to restore the default settings? Any preferences will be "
+                               "lost.\n\nYou cannot undo this action."),
                             QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
   {
     return;
