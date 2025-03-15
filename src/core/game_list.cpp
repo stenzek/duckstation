@@ -92,6 +92,7 @@ static bool ShouldLoadAchievementsProgress();
 static bool GetExeListEntry(const std::string& path, Entry* entry);
 static bool GetPsfListEntry(const std::string& path, Entry* entry);
 static bool GetDiscListEntry(const std::string& path, Entry* entry);
+static void MakeInvalidEntry(Entry* entry);
 
 static void ApplyCustomAttributes(const std::string& path, Entry* entry,
                                   const INISettingsInterface& custom_attributes_ini);
@@ -109,7 +110,7 @@ static void ScanDirectory(const char* path, bool recursive, bool only_cache,
 static bool AddFileFromCache(const std::string& path, std::time_t timestamp, const PlayedTimeMap& played_time_map,
                              const INISettingsInterface& custom_attributes_ini,
                              const Achievements::ProgressDatabase& achievements_progress);
-static bool ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
+static void ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
                      const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                      const Achievements::ProgressDatabase& achievements_progress, BinaryFileWriter& cache_writer);
 
@@ -369,6 +370,32 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
   return true;
 }
 
+void GameList::MakeInvalidEntry(Entry* entry)
+{
+  entry->type = EntryType::Count;
+  entry->region = DiscRegion::Other;
+  entry->disc_set_index = -1;
+  entry->disc_set_member = false;
+  entry->has_custom_title = false;
+  entry->has_custom_region = false;
+  entry->custom_language = GameDatabase::Language::MaxCount;
+  entry->path = {};
+  entry->serial = {};
+  entry->title = {};
+  entry->disc_set_name = {};
+  entry->dbentry = nullptr;
+  entry->hash = 0;
+  entry->file_size = 0;
+  entry->uncompressed_size = 0;
+  entry->last_modified_time = 0;
+  entry->last_played_time = 0;
+  entry->achievements_hash = {};
+  entry->achievements_game_id = 0;
+  entry->num_achievements = 0;
+  entry->unlocked_achievements = 0;
+  entry->unlocked_achievements_hc = 0;
+}
+
 bool GameList::PopulateEntryFromPath(const std::string& path, Entry* entry)
 {
   if (System::IsExePath(path))
@@ -420,7 +447,7 @@ bool GameList::LoadEntriesFromCache(BinaryFileReader& reader)
         !reader.ReadS64(&ge.file_size) || !reader.ReadU64(&ge.uncompressed_size) ||
         !reader.ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !reader.ReadS8(&ge.disc_set_index) ||
         !reader.Read(ge.achievements_hash.data(), ge.achievements_hash.size()) ||
-        region >= static_cast<u8>(DiscRegion::Count) || type >= static_cast<u8>(EntryType::Count))
+        region >= static_cast<u8>(DiscRegion::Count) || type > static_cast<u8>(EntryType::Count))
     {
       WARNING_LOG("Game list cache entry is corrupted");
       return false;
@@ -522,11 +549,8 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
   {
     files_scanned++;
 
-    if (progress->IsCancelled() || !GameList::IsScannableFilename(ffd.FileName) ||
-        IsPathExcluded(excluded_paths, ffd.FileName))
-    {
+    if (progress->IsCancelled() || !IsScannableFilename(ffd.FileName) || IsPathExcluded(excluded_paths, ffd.FileName))
       continue;
-    }
 
     std::unique_lock lock(s_mutex);
     if (GetEntryForPath(ffd.FileName) ||
@@ -559,6 +583,10 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
     return false;
   }
 
+  // don't add invalid entries to the list, but don't scan them either
+  if (!entry.IsValid())
+    return true;
+
   auto iter = played_time_map.find(entry.serial);
   if (iter != played_time_map.end())
   {
@@ -570,7 +598,7 @@ bool GameList::AddFileFromCache(const std::string& path, std::time_t timestamp, 
   return true;
 }
 
-bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
+void GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_lock<std::recursive_mutex>& lock,
                         const PlayedTimeMap& played_time_map, const INISettingsInterface& custom_attributes_ini,
                         const Achievements::ProgressDatabase& achievements_progress, BinaryFileWriter& cache_writer)
 {
@@ -580,10 +608,23 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
   VERBOSE_LOG("Scanning '{}'...", path);
 
   Entry entry;
-  if (!PopulateEntryFromPath(path, &entry))
+  if (PopulateEntryFromPath(path, &entry))
   {
-    lock.lock();
-    return false;
+    const auto iter = played_time_map.find(entry.serial);
+    if (iter != played_time_map.end())
+    {
+      entry.last_played_time = iter->second.last_played_time;
+      entry.total_played_time = iter->second.total_played_time;
+    }
+
+    ApplyCustomAttributes(entry.path, &entry, custom_attributes_ini);
+
+    if (entry.IsDisc())
+      PopulateEntryAchievements(&entry, achievements_progress);
+  }
+  else
+  {
+    MakeInvalidEntry(&entry);
   }
 
   entry.path = std::move(path);
@@ -592,19 +633,11 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
   if (cache_writer.IsOpen() && !WriteEntryToCache(&entry, cache_writer)) [[unlikely]]
     WARNING_LOG("Failed to write entry '{}' to cache", entry.path);
 
-  const auto iter = played_time_map.find(entry.serial);
-  if (iter != played_time_map.end())
-  {
-    entry.last_played_time = iter->second.last_played_time;
-    entry.total_played_time = iter->second.total_played_time;
-  }
-
-  ApplyCustomAttributes(entry.path, &entry, custom_attributes_ini);
-
-  if (entry.IsDisc())
-    PopulateEntryAchievements(&entry, achievements_progress);
-
   lock.lock();
+
+  // don't add invalid entries to the list
+  if (!entry.IsValid())
+    return;
 
   // replace if present
   auto it = std::find_if(s_entries.begin(), s_entries.end(),
@@ -613,8 +646,6 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
     *it = std::move(entry);
   else
     s_entries.push_back(std::move(entry));
-
-  return true;
 }
 
 bool GameList::RescanCustomAttributesForPath(const std::string& path, const INISettingsInterface& custom_attributes_ini)
