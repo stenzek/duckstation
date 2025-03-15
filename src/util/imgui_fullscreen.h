@@ -239,6 +239,8 @@ void CreateFooterTextString(SmallStringBase& dest, std::span<const std::pair<con
 void SetFullscreenFooterText(std::string_view text, float background_alpha);
 void SetFullscreenFooterText(std::span<const std::pair<const char*, std::string_view>> items, float background_alpha);
 void SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping);
+void SetFullscreenStatusText(std::string_view text);
+void SetFullscreenStatusText(std::span<const std::pair<const char*, std::string_view>> items);
 void DrawFullscreenFooter();
 
 void PrerenderMenuButtonBorder();

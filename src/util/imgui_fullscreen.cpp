@@ -133,6 +133,8 @@ struct ALIGN_TO_CACHE_LINE UIState
 
   SmallString fullscreen_footer_text;
   SmallString last_fullscreen_footer_text;
+  SmallString left_fullscreen_footer_text;
+  SmallString last_left_fullscreen_footer_text;
   std::vector<std::pair<std::string_view, std::string_view>> fullscreen_footer_icon_mapping;
   float fullscreen_text_change_time;
   float fullscreen_text_alpha;
@@ -242,6 +244,8 @@ void ImGuiFullscreen::Shutdown(bool clear_state)
     s_state.background_progress_dialogs.clear();
     s_state.fullscreen_footer_text.clear();
     s_state.last_fullscreen_footer_text.clear();
+    s_state.left_fullscreen_footer_text.clear();
+    s_state.last_left_fullscreen_footer_text.clear();
     s_state.fullscreen_text_change_time = 0.0f;
     CloseInputDialog();
     CloseMessageDialog();
@@ -646,6 +650,7 @@ void ImGuiFullscreen::EndLayout()
 
   PopResetLayout();
 
+  s_state.left_fullscreen_footer_text.clear();
   s_state.fullscreen_footer_text.clear();
 
   s_state.rendered_menu_item_border = false;
@@ -1018,6 +1023,16 @@ void ImGuiFullscreen::SetFullscreenFooterText(std::span<const std::pair<const ch
   s_state.fullscreen_text_alpha = background_alpha;
 }
 
+void ImGuiFullscreen::SetFullscreenStatusText(std::string_view text)
+{
+  s_state.left_fullscreen_footer_text = text;
+}
+
+void ImGuiFullscreen::SetFullscreenStatusText(std::span<const std::pair<const char*, std::string_view>> items)
+{
+  CreateFooterTextString(s_state.left_fullscreen_footer_text, items);
+}
+
 void ImGuiFullscreen::SetFullscreenFooterTextIconMapping(std::span<const std::pair<const char*, const char*>> mapping)
 {
   if (mapping.empty())
@@ -1036,9 +1051,10 @@ void ImGuiFullscreen::SetFullscreenFooterTextIconMapping(std::span<const std::pa
 void ImGuiFullscreen::DrawFullscreenFooter()
 {
   const ImGuiIO& io = ImGui::GetIO();
-  if (s_state.fullscreen_footer_text.empty())
+  if (s_state.fullscreen_footer_text.empty() && s_state.left_fullscreen_footer_text.empty())
   {
     s_state.last_fullscreen_footer_text.clear();
+    s_state.last_left_fullscreen_footer_text.clear();
     return;
   }
 
@@ -1071,15 +1087,29 @@ void ImGuiFullscreen::DrawFullscreenFooter()
     prev_opacity = s_state.fullscreen_text_change_time * (1.0f / TRANSITION_TIME);
     if (prev_opacity > 0.0f)
     {
-      const ImVec2 text_size =
-        font->CalcTextSizeA(font->FontSize, max_width, 0.0f, s_state.last_fullscreen_footer_text.c_str(),
-                            s_state.last_fullscreen_footer_text.end_ptr());
-      const ImVec2 text_pos =
-        ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font->FontSize - padding);
-      dl->AddText(font, font->FontSize, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, prev_opacity),
-                  s_state.last_fullscreen_footer_text.c_str(), s_state.last_fullscreen_footer_text.end_ptr());
-      dl->AddText(font, font->FontSize, text_pos, ModAlpha(text_color, prev_opacity),
-                  s_state.last_fullscreen_footer_text.c_str(), s_state.last_fullscreen_footer_text.end_ptr());
+      if (!s_state.last_fullscreen_footer_text.empty())
+      {
+        const ImVec2 text_size =
+          font->CalcTextSizeA(font->FontSize, max_width, 0.0f, s_state.last_fullscreen_footer_text.c_str(),
+                              s_state.last_fullscreen_footer_text.end_ptr());
+        const ImVec2 text_pos =
+          ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font->FontSize - padding);
+        dl->AddText(font, font->FontSize, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, prev_opacity),
+                    s_state.last_fullscreen_footer_text.c_str(), s_state.last_fullscreen_footer_text.end_ptr());
+        dl->AddText(font, font->FontSize, text_pos, ModAlpha(text_color, prev_opacity),
+                    s_state.last_fullscreen_footer_text.c_str(), s_state.last_fullscreen_footer_text.end_ptr());
+      }
+
+      if (!s_state.last_left_fullscreen_footer_text.empty())
+      {
+        const ImVec2 text_pos = ImVec2(padding, io.DisplaySize.y - font->FontSize - padding);
+        dl->AddText(font, font->FontSize, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, prev_opacity),
+                    s_state.last_left_fullscreen_footer_text.c_str(),
+                    s_state.last_left_fullscreen_footer_text.end_ptr());
+        dl->AddText(font, font->FontSize, text_pos, ModAlpha(text_color, prev_opacity),
+                    s_state.last_left_fullscreen_footer_text.c_str(),
+                    s_state.last_left_fullscreen_footer_text.end_ptr());
+      }
     }
   }
   else if (s_state.last_fullscreen_footer_text.empty())
@@ -1089,16 +1119,29 @@ void ImGuiFullscreen::DrawFullscreenFooter()
 
   if (prev_opacity < 1.0f)
   {
-    const ImVec2 text_size =
-      font->CalcTextSizeA(font->FontSize, max_width, 0.0f, s_state.fullscreen_footer_text.c_str(),
-                          s_state.fullscreen_footer_text.end_ptr());
-    const ImVec2 text_pos =
-      ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font->FontSize - padding);
-    const float opacity = 1.0f - prev_opacity;
-    dl->AddText(font, font->FontSize, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
-                s_state.fullscreen_footer_text.c_str(), s_state.fullscreen_footer_text.end_ptr());
-    dl->AddText(font, font->FontSize, text_pos, ModAlpha(text_color, opacity), s_state.fullscreen_footer_text.c_str(),
-                s_state.fullscreen_footer_text.end_ptr());
+    if (!s_state.fullscreen_footer_text.empty())
+    {
+      const ImVec2 text_size =
+        font->CalcTextSizeA(font->FontSize, max_width, 0.0f, s_state.fullscreen_footer_text.c_str(),
+                            s_state.fullscreen_footer_text.end_ptr());
+      const ImVec2 text_pos =
+        ImVec2(io.DisplaySize.x - padding * 2.0f - text_size.x, io.DisplaySize.y - font->FontSize - padding);
+      const float opacity = 1.0f - prev_opacity;
+      dl->AddText(font, font->FontSize, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
+                  s_state.fullscreen_footer_text.c_str(), s_state.fullscreen_footer_text.end_ptr());
+      dl->AddText(font, font->FontSize, text_pos, ModAlpha(text_color, opacity), s_state.fullscreen_footer_text.c_str(),
+                  s_state.fullscreen_footer_text.end_ptr());
+    }
+
+    if (!s_state.left_fullscreen_footer_text.empty())
+    {
+      const ImVec2 text_pos = ImVec2(padding, io.DisplaySize.y - font->FontSize - padding);
+      const float opacity = 1.0f - prev_opacity;
+      dl->AddText(font, font->FontSize, text_pos + shadow_offset, MulAlpha(UIStyle.ShadowColor, opacity),
+                  s_state.left_fullscreen_footer_text.c_str(), s_state.left_fullscreen_footer_text.end_ptr());
+      dl->AddText(font, font->FontSize, text_pos, ModAlpha(text_color, opacity),
+                  s_state.left_fullscreen_footer_text.c_str(), s_state.left_fullscreen_footer_text.end_ptr());
+    }
   }
 
   // for next frame
