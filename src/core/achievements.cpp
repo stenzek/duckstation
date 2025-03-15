@@ -2573,6 +2573,7 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
   const float text_spacing = LayoutScale(2.0f);
 
   const float progress_height = LayoutScale(20.0f);
+  const float progress_rounding = LayoutScale(5.0f);
   const float badge_size = LayoutScale(40.0f);
   const float badge_text_width = box_content_width - badge_size - text_spacing - text_spacing;
 
@@ -2649,10 +2650,11 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
 
     const ImRect progress_bb(text_pos, text_pos + ImVec2(box_content_width, progress_height));
     const u32 progress_color = ImGui::GetColorU32(DarkerColor(UIStyle.SecondaryColor));
-    dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor));
+    dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
+                      progress_rounding);
     dl->AddRectFilled(progress_bb.Min,
                       ImVec2(progress_bb.Min.x + unlocked_fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-                      progress_color);
+                      progress_color, progress_rounding);
 
     buffer.format("{}/{}", s_state.game_summary.num_unlocked_achievements, s_state.game_summary.num_core_achievements);
     text_size =
@@ -2845,13 +2847,15 @@ void Achievements::DrawAchievementsWindow()
       if (s_state.game_summary.num_core_achievements > 0)
       {
         const float progress_height = LayoutScale(20.0f);
+        const float progress_rounding = LayoutScale(5.0f);
         const ImRect progress_bb(ImVec2(left, top), ImVec2(right, top + progress_height));
         const float fraction = static_cast<float>(s_state.game_summary.num_unlocked_achievements) /
                                static_cast<float>(s_state.game_summary.num_core_achievements);
-        dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor));
+        dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(UIStyle.PrimaryDarkColor),
+                          progress_rounding);
         dl->AddRectFilled(progress_bb.Min,
                           ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-                          ImGui::GetColorU32(UIStyle.SecondaryColor));
+                          ImGui::GetColorU32(UIStyle.SecondaryColor), progress_rounding);
 
         text.format("{}%", static_cast<int>(std::round(fraction * 100.0f)));
         text_size =
@@ -2950,6 +2954,7 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
   static constexpr float alpha = 0.8f;
   static constexpr float progress_height_unscaled = 20.0f;
   static constexpr float progress_spacing_unscaled = 5.0f;
+  static constexpr float progress_rounding_unscaled = 5.0f;
   static constexpr float spacing_unscaled = 4.0f;
 
   const float spacing = ImGuiFullscreen::LayoutScale(spacing_unscaled);
@@ -3082,13 +3087,15 @@ void Achievements::DrawAchievement(const rc_client_achievement_t* cheevo)
     ImDrawList* dl = ImGui::GetWindowDrawList();
     const float progress_height = LayoutScale(progress_height_unscaled);
     const float progress_spacing = LayoutScale(progress_spacing_unscaled);
+    const float progress_rounding = LayoutScale(progress_rounding_unscaled);
     const ImRect progress_bb(summary_bb.Min.x, unlock_rarity_bb.Max.y + progress_spacing,
                              summary_bb.Max.x - progress_spacing,
                              unlock_rarity_bb.Max.y + progress_spacing + progress_height);
     const float fraction = cheevo->measured_percent * 0.01f;
-    dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIStyle.PrimaryDarkColor));
+    dl->AddRectFilled(progress_bb.Min, progress_bb.Max, ImGui::GetColorU32(ImGuiFullscreen::UIStyle.PrimaryDarkColor),
+                      progress_rounding);
     dl->AddRectFilled(progress_bb.Min, ImVec2(progress_bb.Min.x + fraction * progress_bb.GetWidth(), progress_bb.Max.y),
-                      ImGui::GetColorU32(ImGuiFullscreen::UIStyle.SecondaryColor));
+                      ImGui::GetColorU32(ImGuiFullscreen::UIStyle.SecondaryColor), progress_rounding);
 
     const ImVec2 text_size =
       UIStyle.MediumFont->CalcTextSizeA(UIStyle.MediumFont->FontSize, FLT_MAX, 0.0f, measured_progress.data(),
