@@ -875,7 +875,7 @@ bool GameListModel::lessThan(const GameList::Entry* left, const GameList::Entry*
 
 void GameListModel::loadThemeSpecificImages()
 {
-  for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::Count); i++)
+  for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::MaxCount); i++)
     m_type_pixmaps[i] = QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)).pixmap(QSize(24, 24));
 }
 
@@ -968,7 +968,7 @@ public:
         return false;
     }
 
-    if (m_filter_type != GameList::EntryType::Count && entry->type != m_filter_type)
+    if (m_filter_type != GameList::EntryType::MaxCount && entry->type != m_filter_type)
       return false;
 
     if (m_filter_region != DiscRegion::Count && entry->region != m_filter_region)
@@ -987,7 +987,7 @@ public:
 
 private:
   GameListModel* m_model;
-  GameList::EntryType m_filter_type = GameList::EntryType::Count;
+  GameList::EntryType m_filter_type = GameList::EntryType::MaxCount;
   DiscRegion m_filter_region = DiscRegion::Count;
   QString m_filter_name;
   bool m_merge_disc_sets = true;
@@ -1126,7 +1126,7 @@ void GameListWidget::initialize()
   m_sort_model->setMergeDiscSets(merge_disc_sets);
 
   m_ui.setupUi(this);
-  for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::Count); type++)
+  for (u32 type = 0; type < static_cast<u32>(GameList::EntryType::MaxCount); type++)
   {
     m_ui.filterType->addItem(
       QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(type)),
@@ -1144,7 +1144,7 @@ void GameListWidget::initialize()
   connect(m_ui.viewGridTitles, &QPushButton::toggled, this, &GameListWidget::setShowCoverTitles);
   connect(m_ui.viewMergeDiscSets, &QPushButton::toggled, this, &GameListWidget::setMergeDiscSets);
   connect(m_ui.filterType, &QComboBox::currentIndexChanged, this, [this](int index) {
-    m_sort_model->setFilterType((index == 0) ? GameList::EntryType::Count :
+    m_sort_model->setFilterType((index == 0) ? GameList::EntryType::MaxCount :
                                                static_cast<GameList::EntryType>(index - 1));
   });
   connect(m_ui.filterRegion, &QComboBox::currentIndexChanged, this, [this](int index) {

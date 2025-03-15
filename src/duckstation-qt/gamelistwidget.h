@@ -129,7 +129,7 @@ private:
   bool m_show_game_icons = false;
 
   std::array<QString, Column_Count> m_column_display_names;
-  std::array<QPixmap, static_cast<int>(GameList::EntryType::Count)> m_type_pixmaps;
+  std::array<QPixmap, static_cast<int>(GameList::EntryType::MaxCount)> m_type_pixmaps;
   std::array<QPixmap, static_cast<int>(GameDatabase::CompatibilityRating::Count)> m_compatibility_pixmaps;
 
   QImage m_placeholder_image;

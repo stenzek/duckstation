@@ -32,7 +32,7 @@ GameSummaryWidget::GameSummaryWidget(const std::string& path, const std::string&
   m_ui.setupUi(this);
   m_ui.revision->setVisible(false);
 
-  for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::Count); i++)
+  for (u32 i = 0; i < static_cast<u32>(GameList::EntryType::MaxCount); i++)
   {
     m_ui.entryType->addItem(
       QtUtils::GetIconForEntryType(static_cast<GameList::EntryType>(i)),

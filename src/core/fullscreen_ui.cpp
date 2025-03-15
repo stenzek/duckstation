@@ -7710,7 +7710,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
     static constexpr float info_top_margin = 20.0f;
     static constexpr float cover_size = 320.0f;
     GPUTexture* cover_texture = selected_entry ? GetGameListCover(selected_entry, false, false) :
-                                                 GetTextureForGameListEntryType(GameList::EntryType::Count);
+                                                 GetTextureForGameListEntryType(GameList::EntryType::MaxCount);
     if (cover_texture)
     {
       const ImRect image_rect(CenterImage(

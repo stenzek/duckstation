@@ -145,7 +145,7 @@ static bool s_game_list_loaded = false;
 
 const char* GameList::GetEntryTypeName(EntryType type)
 {
-  static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{
+  static std::array<const char*, static_cast<int>(EntryType::MaxCount)> names = {{
     "Disc",
     "DiscSet",
     "PSExe",
@@ -157,7 +157,7 @@ const char* GameList::GetEntryTypeName(EntryType type)
 
 const char* GameList::GetEntryTypeDisplayName(EntryType type)
 {
-  static std::array<const char*, static_cast<int>(EntryType::Count)> names = {{
+  static std::array<const char*, static_cast<int>(EntryType::MaxCount)> names = {{
     TRANSLATE_DISAMBIG_NOOP("GameList", "Disc", "EntryType"),
     TRANSLATE_DISAMBIG_NOOP("GameList", "Disc Set", "EntryType"),
     TRANSLATE_DISAMBIG_NOOP("GameList", "PS-EXE", "EntryType"),
@@ -372,7 +372,7 @@ bool GameList::GetDiscListEntry(const std::string& path, Entry* entry)
 
 void GameList::MakeInvalidEntry(Entry* entry)
 {
-  entry->type = EntryType::Count;
+  entry->type = EntryType::MaxCount;
   entry->region = DiscRegion::Other;
   entry->disc_set_index = -1;
   entry->disc_set_member = false;
@@ -447,7 +447,7 @@ bool GameList::LoadEntriesFromCache(BinaryFileReader& reader)
         !reader.ReadS64(&ge.file_size) || !reader.ReadU64(&ge.uncompressed_size) ||
         !reader.ReadU64(reinterpret_cast<u64*>(&ge.last_modified_time)) || !reader.ReadS8(&ge.disc_set_index) ||
         !reader.Read(ge.achievements_hash.data(), ge.achievements_hash.size()) ||
-        region >= static_cast<u8>(DiscRegion::Count) || type > static_cast<u8>(EntryType::Count))
+        region >= static_cast<u8>(DiscRegion::Count) || type > static_cast<u8>(EntryType::MaxCount))
     {
       WARNING_LOG("Game list cache entry is corrupted");
       return false;
