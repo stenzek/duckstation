@@ -737,6 +737,8 @@ bool FullscreenUI::Initialize()
 
   if (open_main_window)
     ReturnToMainWindow();
+  else
+    UpdateRunIdleState();
 
   ForceKeyNavEnabled();
   return true;
