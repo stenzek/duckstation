@@ -118,6 +118,9 @@ enum class Taint : u8
   MaxCount,
 };
 
+/// Returns true if the path is a disc image that we can load.
+bool IsDiscPath(std::string_view path);
+
 /// Returns true if the path is a PlayStation executable we can inject.
 bool IsExePath(std::string_view path);
 

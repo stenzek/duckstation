@@ -177,7 +177,7 @@ bool GameList::IsScannableFilename(std::string_view path)
   if (StringUtil::EndsWithNoCase(path, ".bin"))
     return false;
 
-  return System::IsLoadablePath(path);
+  return (System::IsDiscPath(path) || System::IsExePath(path) || System::IsPsfPath(path));
 }
 
 bool GameList::ShouldLoadAchievementsProgress()
@@ -501,7 +501,7 @@ void GameList::ScanDirectory(const char* path, bool recursive, bool only_cache,
                              const Achievements::ProgressDatabase& achievements_progress,
                              BinaryFileWriter& cache_writer, ProgressCallback* progress)
 {
-  INFO_LOG("Scanning {}{}", path, recursive ? " (recursively)" : "");
+  VERBOSE_LOG("Scanning {}{}", path, recursive ? " (recursively)" : "");
 
   progress->SetStatusText(SmallString::from_format(TRANSLATE_FS("GameList", "Scanning directory '{}'..."), path));
 
@@ -577,7 +577,7 @@ bool GameList::ScanFile(std::string path, std::time_t timestamp, std::unique_loc
   // don't block UI while scanning
   lock.unlock();
 
-  DEV_LOG("Scanning '{}'...", path);
+  VERBOSE_LOG("Scanning '{}'...", path);
 
   Entry entry;
   if (!PopulateEntryFromPath(path, &entry))

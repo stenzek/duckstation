@@ -800,6 +800,15 @@ bool System::IsUsingPS2BIOS()
   return (s_state.bios_image_info && s_state.bios_image_info->fastboot_patch == BIOS::ImageInfo::FastBootPatch::Type2);
 }
 
+bool System::IsDiscPath(std::string_view path)
+{
+  return (StringUtil::EndsWithNoCase(path, ".bin") || StringUtil::EndsWithNoCase(path, ".cue") ||
+          StringUtil::EndsWithNoCase(path, ".img") || StringUtil::EndsWithNoCase(path, ".iso") ||
+          StringUtil::EndsWithNoCase(path, ".chd") || StringUtil::EndsWithNoCase(path, ".ecm") ||
+          StringUtil::EndsWithNoCase(path, ".mds") || StringUtil::EndsWithNoCase(path, ".pbp") ||
+          StringUtil::EndsWithNoCase(path, ".m3u"));
+}
+
 bool System::IsExePath(std::string_view path)
 {
   return (StringUtil::EndsWithNoCase(path, ".exe") || StringUtil::EndsWithNoCase(path, ".psexe") ||
@@ -820,22 +829,7 @@ bool System::IsGPUDumpPath(std::string_view path)
 
 bool System::IsLoadablePath(std::string_view path)
 {
-  static constexpr const std::array extensions = {
-    ".bin",    ".cue",        ".img",       ".iso", ".chd", ".ecm", ".mds", // discs
-    ".exe",    ".psexe",      ".ps-exe",    ".psx", ".cpe", ".elf",         // exes
-    ".psf",    ".minipsf",                                                  // psf
-    ".psxgpu", ".psxgpu.zst", ".psxgpu.xz",                                 // gpu dump
-    ".m3u",                                                                 // playlists
-    ".pbp",
-  };
-
-  for (const char* test_extension : extensions)
-  {
-    if (StringUtil::EndsWithNoCase(path, test_extension))
-      return true;
-  }
-
-  return false;
+  return (IsDiscPath(path) || IsExePath(path) || IsPsfPath(path) || IsGPUDumpPath(path));
 }
 
 bool System::IsSaveStatePath(std::string_view path)
