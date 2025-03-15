@@ -10,6 +10,44 @@
   <description>
     <p>DuckStation is an simulator/emulator of the Sony PlayStation(TM) console, focusing on playability, speed, and long-term maintainability. The goal is to be as accurate as possible while maintaining performance suitable for low-end devices.</p>
     <p>"Hack" options are discouraged, the default configuration should support all playable games with only some of the enhancements having compatibility issues.</p>
+    <p>DuckStation features a fully-featured frontend built using Qt, as well as a fullscreen/TV UI based on Dear ImGui. Other features include:</p>
+    <ul>
+      <li>Hardware renderer supporting OpenGL and Vulkan APIs.</li>
+      <li>Upscaling, texture filtering, and true colour (24-bit) in hardware renderers.</li>
+      <li>PGXP for geometry precision, texture correction, and depth buffer emulation.</li>
+      <li>Accurate blending via Rasterizer Order Views/Fragment Shader Interlock.</li>
+      <li>Texture replacement system in hardware renderers.</li>
+      <li>Vectorized and multi-threaded software renderer.</li>
+      <li>Motion adaptive deinterlacing.</li>
+      <li>Adaptive downsampling filter.</li>
+      <li>Screen rotation for vertical or "TATE" shmup games.</li>
+      <li>Post processing shader chains (GLSL and Reshade FX).</li>
+      <li>Border overlays/bezels displayed around game content.</li>
+      <li>"Fast boot" for skipping BIOS splash/intro.</li>
+      <li>Save state support, with runahead and rewind.</li>
+      <li>Supports reading directly from CD, bin/cue images, raw bin/img files, MAME CHD, single-track ECM, MDS/MDF, and unencrypted PBP formats.</li>
+      <li>Preloading of disc images to RAM to avoid disk sleeping hitches.</li>
+      <li>Merging of multi-disc games in game list/grid with memory cards shared between discs.</li>
+      <li>Automatic loading/applying of PPF patches.</li>
+      <li>Direct booting of homebrew executables.</li>
+      <li>Direct loading of Portable Sound Format (psf) files.</li>
+      <li>Time stretched audio when running outside of 100% speed.</li>
+      <li>Digital and analog controllers for input (rumble is forwarded to host).</li>
+      <li>GunCon and Justifier lightgun support (simulated with mouse).</li>
+      <li>NeGcon support.</li>
+      <li>Controller presets and per-game configuration.</li>
+      <li>Automatic content scanning - game titles/hashes are provided by redump.org.</li>
+      <li>Optional automatic switching of memory cards for each game.</li>
+      <li>Supports loading cheats from existing lists.</li>
+      <li>Memory card editor and save importer.</li>
+      <li>Emulated CPU overclocking.</li>
+      <li>Integrated and remote debugging.</li>
+      <li>Multitap controllers (up to 8 devices).</li>
+      <li>RetroAchievements.</li>
+      <li>Video capture with FFmpeg backends.</li>
+      <li>Free camera function.</li>
+      <li>Parallel port cartridge emulation.</li>
+    </ul>
     <p>"PlayStation" and "PSX" are registered trademarks of Sony Interactive Entertainment Europe Limited. This project is not affiliated in any way with Sony Interactive Entertainment.</p>
   </description>
   <content_rating type="oars-1.1"/>
@@ -19,12 +57,20 @@
   <url type="vcs-browser">https://github.com/stenzek/duckstation</url>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/stenzek/duckstation/md-images/main-qt.png</image>
+      <image>https://raw.githubusercontent.com/stenzek/duckstation/md-images/linux-main-qt.png</image>
       <caption>Desktop Interface</caption>
     </screenshot>
     <screenshot>
-      <image>https://raw.githubusercontent.com/stenzek/duckstation/md-images/bigduck.png</image>
+      <image>https://raw.githubusercontent.com/stenzek/duckstation/md-images/linux-bigpicture.png</image>
       <caption>Big Picture Mode Interface</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/stenzek/duckstation/md-images/linux-hover.png</image>
+      <caption>Hover Racing Game</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/stenzek/duckstation/md-images/linux-fromage.png</image>
+      <caption>Fromage Game</caption>
     </screenshot>
   </screenshots>
   <releases>
