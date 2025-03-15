@@ -80,6 +80,7 @@ using ImGuiFullscreen::ChoiceDialogOptions;
 using ImGuiFullscreen::FocusResetType;
 
 using ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT;
+using ImGuiFullscreen::LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
@@ -249,6 +250,11 @@ static ChoiceDialogOptions GetBackgroundOptions(const TinyString& current_value)
 //////////////////////////////////////////////////////////////////////////
 static bool LoadResources();
 static void DestroyResources();
+static GPUTexture* GetUserThemeableTexture(
+  const std::string_view png_name, const std::string_view svg_name, bool* is_colorable = nullptr,
+  const ImVec2& svg_size = LayoutScale(LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE, LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE));
+static bool UserThemeableHorizontalButton(const std::string_view png_name, const std::string_view svg_name,
+                                          const char* title, const char* description);
 
 //////////////////////////////////////////////////////////////////////////
 // Landing
@@ -478,12 +484,13 @@ static constexpr const std::array s_ps_button_mapping{
   std::make_pair(ICON_PF_RIGHT_TRIGGER_RT, ICON_PF_RIGHT_TRIGGER_R2),
 };
 
-static constexpr std::array s_theme_names = {FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),       FSUI_NSTR("Light"),
-                                             FSUI_NSTR("AMOLED"),     FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"),
-                                             FSUI_NSTR("Pinky Pals"), FSUI_NSTR("Dark Ruby"), FSUI_NSTR("Purple Rain")};
+static constexpr std::array s_theme_names = {
+  FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),       FSUI_NSTR("Light"),
+  FSUI_NSTR("AMOLED"),     FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"),
+  FSUI_NSTR("Pinky Pals"), FSUI_NSTR("Dark Ruby"),  FSUI_NSTR("Purple Rain")};
 
-static constexpr std::array s_theme_values = {"",          "Dark",       "Light",     "AMOLED",
-                                              "CobaltSky", "GreyMatter", "PinkyPals", "DarkRuby", "PurpleRain"};
+static constexpr std::array s_theme_values = {"",           "Dark",      "Light",    "AMOLED",    "CobaltSky",
+                                              "GreyMatter", "PinkyPals", "DarkRuby", "PurpleRain"};
 
 //////////////////////////////////////////////////////////////////////////
 // State
@@ -1121,9 +1128,9 @@ bool FullscreenUI::LoadResources()
 {
   s_state.app_icon_texture = LoadTexture("images/duck.png");
   s_state.fallback_disc_texture = LoadTexture("fullscreenui/cdrom.png");
-  s_state.fallback_exe_texture = LoadTexture("fullscreenui/settings.png");
+  s_state.fallback_exe_texture = LoadTexture("fullscreenui/exe-file.png");
   s_state.fallback_psf_texture = LoadTexture("fullscreenui/psf-file.png");
-  s_state.fallback_playlist_texture = LoadTexture("fullscreenui/game-list.png");
+  s_state.fallback_playlist_texture = LoadTexture("fullscreenui/playlist-file.png");
   return true;
 }
 
@@ -1136,6 +1143,53 @@ void FullscreenUI::DestroyResources()
   s_state.app_background_texture.reset();
   s_state.app_background_shader.reset();
   s_state.app_icon_texture.reset();
+}
+
+GPUTexture* FullscreenUI::GetUserThemeableTexture(const std::string_view png_name, const std::string_view svg_name,
+                                                  bool* is_colorable, const ImVec2& svg_size)
+{
+  GPUTexture* tex = ImGuiFullscreen::FindCachedTexture(png_name);
+  if (tex)
+  {
+    if (is_colorable)
+      *is_colorable = false;
+
+    return tex;
+  }
+
+  const u32 svg_width = static_cast<u32>(svg_size.x);
+  const u32 svg_height = static_cast<u32>(svg_size.y);
+  tex = ImGuiFullscreen::FindCachedTexture(svg_name, svg_width, svg_height);
+  if (tex)
+    return tex;
+
+  // slow path, check filesystem for override
+  if (EmuFolders::Resources != EmuFolders::UserResources &&
+      FileSystem::FileExists(Path::Combine(EmuFolders::UserResources, png_name).c_str()))
+  {
+    // use the user's png
+    if (is_colorable)
+      *is_colorable = false;
+
+    return ImGuiFullscreen::GetCachedTexture(png_name);
+  }
+
+  // otherwise use the system/user svg
+  if (is_colorable)
+    *is_colorable = true;
+
+  return ImGuiFullscreen::GetCachedTexture(svg_name, svg_width, svg_height);
+}
+
+bool FullscreenUI::UserThemeableHorizontalButton(const std::string_view png_name, const std::string_view svg_name,
+                                                 const char* title, const char* description)
+{
+  bool is_colorable;
+  GPUTexture* icon = GetUserThemeableTexture(
+    png_name, svg_name, &is_colorable,
+    LayoutScale(LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE, LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE));
+  return HorizontalMenuItem(icon, title, description,
+                            is_colorable ? ImGui::GetColorU32(ImGuiCol_Text) : IM_COL32(255, 255, 255, 255));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1873,28 +1927,29 @@ void FullscreenUI::DrawLandingWindow()
   {
     ResetFocusHere();
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/game-list.png"), FSUI_CSTR("Game List"),
-                           FSUI_CSTR("Launch a game from images scanned from your game directories.")))
+    if (UserThemeableHorizontalButton("fullscreenui/game-list.png", "fullscreenui/game-list.svg",
+                                      FSUI_CSTR("Game List"),
+                                      FSUI_CSTR("Launch a game from images scanned from your game directories.")))
     {
       SwitchToGameList();
     }
 
-    if (HorizontalMenuItem(
-          GetCachedTexture("fullscreenui/cdrom.png"), FSUI_CSTR("Start Game"),
+    if (UserThemeableHorizontalButton(
+          "fullscreenui/cdrom.png", "fullscreenui/start-disc.svg", FSUI_CSTR("Start Game"),
           FSUI_CSTR("Launch a game from a file, disc, or starts the console without any disc inserted.")))
     {
       s_state.current_main_window = MainWindowType::StartGame;
       QueueResetFocus(FocusResetType::ViewChanged);
     }
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/settings.png"), FSUI_CSTR("Settings"),
-                           FSUI_CSTR("Changes settings for the application.")))
+    if (UserThemeableHorizontalButton("fullscreenui/settings.png", "fullscreenui/settings.svg", FSUI_CSTR("Settings"),
+                                      FSUI_CSTR("Changes settings for the application.")))
     {
       SwitchToSettings();
     }
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/exit.png"), FSUI_CSTR("Exit"),
-                           FSUI_CSTR("Return to desktop mode, or exit the application.")) ||
+    if (UserThemeableHorizontalButton("fullscreenui/exit.png", "fullscreenui/exit.svg", FSUI_CSTR("Exit"),
+                                      FSUI_CSTR("Return to desktop mode, or exit the application.")) ||
         (!AreAnyDialogsOpen() && WantsToCloseMenu()))
     {
       s_state.current_main_window = MainWindowType::Exit;
@@ -1949,27 +2004,26 @@ void FullscreenUI::DrawStartGameWindow()
   {
     ResetFocusHere();
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/start-file.png"), FSUI_CSTR("Start File"),
-                           FSUI_CSTR("Launch a game by selecting a file/disc image.")))
+    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/start-file.png", "fullscreenui/start-file.svg"),
+                           FSUI_CSTR("Start File"), FSUI_CSTR("Launch a game by selecting a file/disc image.")))
     {
       DoStartFile();
     }
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/start-disc.png"), FSUI_CSTR("Start Disc"),
-                           FSUI_CSTR("Start a game from a disc in your PC's DVD drive.")))
+    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/start-disc.png", "fullscreenui/start-disc.svg"),
+                           FSUI_CSTR("Start Disc"), FSUI_CSTR("Start a game from a disc in your PC's DVD drive.")))
     {
       DoStartDisc();
     }
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/start-bios.png"), FSUI_CSTR("Start BIOS"),
-                           FSUI_CSTR("Start the console without any disc inserted.")))
+    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/start-bios.png", "fullscreenui/start-bios.svg"),
+                           FSUI_CSTR("Start BIOS"), FSUI_CSTR("Start the console without any disc inserted.")))
     {
       DoStartBIOS();
     }
 
-    // https://www.iconpacks.net/free-icon/arrow-back-3783.html
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/back-icon.png"), FSUI_CSTR("Back"),
-                           FSUI_CSTR("Return to the previous menu.")) ||
+    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/back-icon.png", "fullscreenui/back-icon.svg"),
+                           FSUI_CSTR("Back"), FSUI_CSTR("Return to the previous menu.")) ||
         (!AreAnyDialogsOpen() && WantsToCloseMenu()))
     {
       s_state.current_main_window = MainWindowType::Landing;
@@ -2016,22 +2070,23 @@ void FullscreenUI::DrawExitWindow()
   {
     ResetFocusHere();
 
-    // https://www.iconpacks.net/free-icon/arrow-back-3783.html
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/back-icon.png"), FSUI_CSTR("Back"),
-                           FSUI_CSTR("Return to the previous menu.")) ||
+    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/back-icon.png", "fullscreenui/back-icon.svg"),
+                           FSUI_CSTR("Back"), FSUI_CSTR("Return to the previous menu.")) ||
         WantsToCloseMenu())
     {
       s_state.current_main_window = MainWindowType::Landing;
       QueueResetFocus(FocusResetType::ViewChanged);
     }
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/exit.png"), FSUI_CSTR("Exit DuckStation"),
+    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/exit.png", "fullscreenui/exit.svg"),
+                           FSUI_CSTR("Exit DuckStation"),
                            FSUI_CSTR("Completely exits the application, returning you to your desktop.")))
     {
       DoRequestExit();
     }
 
-    if (HorizontalMenuItem(GetCachedTexture("fullscreenui/desktop-mode.png"), FSUI_CSTR("Desktop Mode"),
+    if (HorizontalMenuItem(GetUserThemeableTexture("fullscreenui/desktop-mode.png", "fullscreenui/desktop-mode.svg"),
+                           FSUI_CSTR("Desktop Mode"),
                            FSUI_CSTR("Exits Big Picture mode, returning to the desktop interface.")))
     {
       DoDesktopMode();

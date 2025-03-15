@@ -42,6 +42,7 @@ static constexpr float LAYOUT_FOOTER_HEIGHT = LAYOUT_MEDIUM_FONT_SIZE + LAYOUT_F
 static constexpr float LAYOUT_HORIZONTAL_MENU_HEIGHT = 320.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
+static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE = 150.0f;
 static constexpr float LAYOUT_SHADOW_OFFSET = 1.0f;
 
 struct ALIGN_TO_CACHE_LINE UIStyles
@@ -151,7 +152,9 @@ ALWAYS_INLINE static std::string_view RemoveHash(std::string_view s)
 
 /// Centers an image within the specified bounds, scaling up or down as needed.
 ImRect CenterImage(const ImVec2& fit_size, const ImVec2& image_size);
+ImRect CenterImage(const ImVec2& fit_rect, const GPUTexture* texture);
 ImRect CenterImage(const ImRect& fit_rect, const ImVec2& image_size);
+ImRect CenterImage(const ImRect& fit_rect, const GPUTexture* texture);
 
 /// Fits an image to the specified bounds, cropping if needed. Returns UV coordinates.
 ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
@@ -170,6 +173,8 @@ void Shutdown(bool clear_state);
 /// Texture cache.
 const std::shared_ptr<GPUTexture>& GetPlaceholderTexture();
 std::shared_ptr<GPUTexture> LoadTexture(std::string_view path, u32 svg_width = 0, u32 svg_height = 0);
+GPUTexture* FindCachedTexture(std::string_view name);
+GPUTexture* FindCachedTexture(std::string_view name, u32 svg_width, u32 svg_height);
 GPUTexture* GetCachedTexture(std::string_view name);
 GPUTexture* GetCachedTexture(std::string_view name, u32 svg_width, u32 svg_height);
 GPUTexture* GetCachedTextureAsync(std::string_view name);
@@ -335,7 +340,8 @@ bool NavTab(const char* title, bool is_active, bool enabled, float width, float 
 bool BeginHorizontalMenu(const char* name, const ImVec2& position, const ImVec2& size, const ImVec4& bg_color,
                          u32 num_items);
 void EndHorizontalMenu();
-bool HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description);
+bool HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description,
+                        u32 color = IM_COL32(255, 255, 255, 255));
 
 using FileSelectorCallback = std::function<void(std::string path)>;
 using FileSelectorFilters = std::vector<std::string>;

@@ -372,6 +372,26 @@ std::shared_ptr<GPUTexture> ImGuiFullscreen::LoadTexture(std::string_view path, 
   return s_state.placeholder_texture;
 }
 
+GPUTexture* ImGuiFullscreen::FindCachedTexture(std::string_view name)
+{
+  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
+  return tex_ptr ? tex_ptr->get() : nullptr;
+}
+
+GPUTexture* ImGuiFullscreen::FindCachedTexture(std::string_view name, u32 svg_width, u32 svg_height)
+{
+  // ignore size hints if it's not needed, don't duplicate
+  if (!TextureNeedsSVGDimensions(name))
+    return FindCachedTexture(name);
+
+  svg_width = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_width))));
+  svg_height = static_cast<u32>(std::ceil(LayoutScale(static_cast<float>(svg_height))));
+
+  const SmallString wh_name = SmallString::from_format("{}#{}x{}", name, svg_width, svg_height);
+  std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(wh_name.view());
+  return tex_ptr ? tex_ptr->get() : nullptr;
+}
+
 GPUTexture* ImGuiFullscreen::GetCachedTexture(std::string_view name)
 {
   std::shared_ptr<GPUTexture>* tex_ptr = s_state.texture_cache.Lookup(name);
@@ -561,11 +581,23 @@ ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_size, const ImVec2& image_
   return ret;
 }
 
+ImRect ImGuiFullscreen::CenterImage(const ImVec2& fit_rect, const GPUTexture* texture)
+{
+  const GSVector2 texture_size = GSVector2(texture->GetSizeVec());
+  return CenterImage(fit_rect, ImVec2(texture_size.x, texture_size.y));
+}
+
 ImRect ImGuiFullscreen::CenterImage(const ImRect& fit_rect, const ImVec2& image_size)
 {
   ImRect ret(CenterImage(fit_rect.Max - fit_rect.Min, image_size));
   ret.Translate(fit_rect.Min);
   return ret;
+}
+
+ImRect ImGuiFullscreen::CenterImage(const ImRect& fit_rect, const GPUTexture* texture)
+{
+  const GSVector2 texture_size = GSVector2(texture->GetSizeVec());
+  return CenterImage(fit_rect, ImVec2(texture_size.x, texture_size.y));
 }
 
 ImRect ImGuiFullscreen::FitImage(const ImVec2& fit_size, const ImVec2& image_size)
@@ -2209,7 +2241,7 @@ void ImGuiFullscreen::EndHorizontalMenu()
   EndFullscreenWindow();
 }
 
-bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description)
+bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description, u32 color)
 {
   ImGuiWindow* window = ImGui::GetCurrentWindow();
   if (window->SkipItems)
@@ -2244,11 +2276,13 @@ bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, co
   bb.Max -= style.FramePadding;
 
   const float avail_width = bb.Max.x - bb.Min.x;
-  const float icon_size = LayoutScale(150.0f);
+  const float icon_size = LayoutScale(LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE);
   const ImVec2 icon_pos = bb.Min + ImVec2((avail_width - icon_size) * 0.5f, 0.0f);
+  const ImRect icon_box = CenterImage(ImRect(icon_pos, icon_pos + ImVec2(icon_size, icon_size)), icon);
 
   ImDrawList* dl = ImGui::GetWindowDrawList();
-  dl->AddImage(reinterpret_cast<ImTextureID>(icon), icon_pos, icon_pos + ImVec2(icon_size, icon_size));
+  dl->AddImage(reinterpret_cast<ImTextureID>(icon), icon_box.Min, icon_box.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+               color);
 
   ImFont* title_font = UIStyle.LargeFont;
   const ImVec2 title_size =

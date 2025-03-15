@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 576 576"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="start-file.svg"
+   width="576"
+   height="576"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="2.640625"
+     inkscape:cx="287.81065"
+     inkscape:cy="225.70414"
+     inkscape:window-width="2852"
+     inkscape:window-height="1651"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->
+  <path
+     fill="#ffffff"
+     d="m 375.58614,492.32782 h 43.78453 c 10.39883,0 19.97669,-5.47306 25.17611,-14.50363 L 546.71069,302.68606 c 5.29063,-9.03055 5.29063,-20.15913 0.0912,-29.2809 -5.19941,-9.12179 -14.77728,-14.59484 -25.26731,-14.59484 H 156.66347 c -10.39883,0 -19.9767,5.47306 -25.17611,14.50363 L 69.0944,380.22117 V 142.05155 c 0,-8.02715 6.567679,-14.59484 14.594844,-14.59484 H 190.87013 c 3.83116,0 7.57108,1.55071 10.30762,4.28724 l 24.17271,24.17271 c 19.15573,19.15573 45.15279,29.91943 72.24447,29.91943 h 107.1809 c 8.02716,0 14.59484,6.56767 14.59484,14.59484 v 29.1897 h 43.78454 v -29.1897 c 0,-32.19988 -26.17951,-58.37938 -58.37938,-58.37938 h -107.1809 c -15.50702,0 -30.37551,-6.11158 -41.32164,-17.05772 L 232.10058,100.72991 C 221.15444,89.783772 206.28594,83.672181 190.77892,83.672181 H 83.689244 c -32.199876,0 -58.379378,26.179509 -58.379378,58.379369 v 291.89689 c 0,32.19988 26.179502,58.37938 58.379378,58.37938 h 21.618616 z"
+     id="path1"
+     style="stroke-width:0.912178" />
+</svg>
