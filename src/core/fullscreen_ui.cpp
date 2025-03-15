@@ -3789,49 +3789,6 @@ void FullscreenUI::DrawInterfaceSettingsPage()
 
   BeginMenuButtons();
 
-  MenuHeading(FSUI_CSTR("Behavior"));
-
-  DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_POWER_OFF, "Confirm Power Off"),
-    FSUI_CSTR("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
-              "when the hotkey is pressed."),
-    "Main", "ConfirmPowerOff", true);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SAVE, "Save State On Shutdown"),
-                    FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then "
-                              "resume directly from where you left off next time."),
-                    "Main", "SaveStateOnExit", true);
-  DrawToggleSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Inhibit Screensaver"),
-    FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."),
-    "Main", "InhibitScreensaver", true);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAUSE, "Pause On Start"),
-                    FSUI_CSTR("Pauses the emulator when a game is started."), "Main", "StartPaused", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Pause On Focus Loss"),
-                    FSUI_CSTR("Pauses the emulator when you minimize the window or switch to another "
-                              "application, and unpauses when you switch back."),
-                    "Main", "PauseOnFocusLoss", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Pause On Controller Disconnection"),
-                    FSUI_CSTR("Pauses the emulator when a controller with bindings is disconnected."), "Main",
-                    "PauseOnControllerDisconnection", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_EXPORT, "Create Save State Backups"),
-                    FSUI_CSTR("Renames existing save states when saving to a backup file."), "Main",
-                    "CreateSaveStateBackups", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
-                    FSUI_CSTR("Shows the game you are currently playing as part of your profile in Discord."), "Main",
-                    "EnableDiscordPresence", false);
-
-  MenuHeading(FSUI_CSTR("Game Display"));
-
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Start Fullscreen"),
-                    FSUI_CSTR("Automatically switches to fullscreen mode when the program is started."), "Main",
-                    "StartFullscreen", false);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE, "Double-Click Toggles Fullscreen"),
-                    FSUI_CSTR("Switches between full screen and windowed when the window is double-clicked."), "Main",
-                    "DoubleClickTogglesFullscreen", true);
-  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE_POINTER, "Hide Cursor In Fullscreen"),
-                    FSUI_CSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "Main",
-                    "HideCursorInFullscreen", true);
-
   MenuHeading(FSUI_CSTR("Appearance"));
 
   {
@@ -3912,6 +3869,49 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   {
     ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", false));
   }
+
+  MenuHeading(FSUI_CSTR("Behavior"));
+
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_POWER_OFF, "Confirm Power Off"),
+    FSUI_CSTR("Determines whether a prompt will be displayed to confirm shutting down the emulator/game "
+              "when the hotkey is pressed."),
+    "Main", "ConfirmPowerOff", true);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_SAVE, "Save State On Shutdown"),
+                    FSUI_CSTR("Automatically saves the emulator state when powering down or exiting. You can then "
+                              "resume directly from where you left off next time."),
+                    "Main", "SaveStateOnExit", true);
+  DrawToggleSetting(
+    bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Inhibit Screensaver"),
+    FSUI_CSTR("Prevents the screen saver from activating and the host from sleeping while emulation is running."),
+    "Main", "InhibitScreensaver", true);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PAUSE, "Pause On Start"),
+                    FSUI_CSTR("Pauses the emulator when a game is started."), "Main", "StartPaused", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_VIDEO, "Pause On Focus Loss"),
+                    FSUI_CSTR("Pauses the emulator when you minimize the window or switch to another "
+                              "application, and unpauses when you switch back."),
+                    "Main", "PauseOnFocusLoss", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_GAMEPAD, "Pause On Controller Disconnection"),
+                    FSUI_CSTR("Pauses the emulator when a controller with bindings is disconnected."), "Main",
+                    "PauseOnControllerDisconnection", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILE_EXPORT, "Create Save State Backups"),
+                    FSUI_CSTR("Renames existing save states when saving to a backup file."), "Main",
+                    "CreateSaveStateBackups", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_CHARGING_STATION, "Enable Discord Presence"),
+                    FSUI_CSTR("Shows the game you are currently playing as part of your profile in Discord."), "Main",
+                    "EnableDiscordPresence", false);
+
+  MenuHeading(FSUI_CSTR("Game Display"));
+
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_MAXIMIZE, "Start Fullscreen"),
+                    FSUI_CSTR("Automatically switches to fullscreen mode when the program is started."), "Main",
+                    "StartFullscreen", false);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE, "Double-Click Toggles Fullscreen"),
+                    FSUI_CSTR("Switches between full screen and windowed when the window is double-clicked."), "Main",
+                    "DoubleClickTogglesFullscreen", true);
+  DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MOUSE_POINTER, "Hide Cursor In Fullscreen"),
+                    FSUI_CSTR("Hides the mouse pointer/cursor when the emulator is in fullscreen mode."), "Main",
+                    "HideCursorInFullscreen", true);
 
   MenuHeading(FSUI_CSTR("On-Screen Display"));
   DrawIntSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_SEARCH, "OSD Scale"),
