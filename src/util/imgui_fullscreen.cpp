@@ -3620,6 +3620,28 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
   }
+	else if (theme == "GreenGiant")
+	{
+		UIStyle.BackgroundColor = HEX_TO_IMVEC4(0xB0C400, 0xff);
+		UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+		UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x876433, 0xff);
+		UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xB0C400, 0xf2);
+		UIStyle.PrimaryColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
+		UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x795A2D, 0xff);
+		UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x523213, 0xff);
+		UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+		UIStyle.DisabledColor = HEX_TO_IMVEC4(0x878269, 0xff);
+		UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+		UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x523213, 0xff);
+		UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x523213, 0xff);
+		UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x523213, 0xff);
+		UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
+    UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
+	}
   else if (theme == "DarkRuby")
   {
     UIStyle.BackgroundColor = HEX_TO_IMVEC4(0x1b1b1b, 0xff);

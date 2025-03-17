@@ -488,10 +488,11 @@ static constexpr const std::array s_ps_button_mapping{
 static constexpr std::array s_theme_names = {
   FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),       FSUI_NSTR("Light"),
   FSUI_NSTR("AMOLED"),     FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"),
-  FSUI_NSTR("Pinky Pals"), FSUI_NSTR("Dark Ruby"),  FSUI_NSTR("Purple Rain")};
+  FSUI_NSTR("Green Giant"), FSUI_NSTR("Pinky Pals"), FSUI_NSTR("Dark Ruby"),
+  FSUI_NSTR("Purple Rain")};
 
-static constexpr std::array s_theme_values = {"",           "Dark",      "Light",    "AMOLED",    "CobaltSky",
-                                              "GreyMatter", "PinkyPals", "DarkRuby", "PurpleRain"};
+static constexpr std::array s_theme_values = {"",           "Dark",       "Light",     "AMOLED",   "CobaltSky",
+                                              "GreyMatter", "GreenGiant", "PinkyPals", "DarkRuby", "PurpleRain"};
 
 //////////////////////////////////////////////////////////////////////////
 // State
