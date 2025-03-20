@@ -475,7 +475,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   const bool downsampling_shaders_changed =
     ((m_resolution_scale > 1) != (resolution_scale > 1) ||
      (resolution_scale > 1 && (g_gpu_settings.gpu_downsample_mode != old_settings.gpu_downsample_mode ||
-                               (m_downsample_mode == GPUDownsampleMode::Box &&
+                               (g_gpu_settings.gpu_downsample_mode == GPUDownsampleMode::Box &&
                                 (resolution_scale != m_resolution_scale ||
                                  g_gpu_settings.gpu_downsample_scale != old_settings.gpu_downsample_scale)))));
 
@@ -706,7 +706,19 @@ void GPU_HW::CheckSettings()
   {
     const u32 resolution_scale = CalculateResolutionScale();
     const u32 box_downscale = GetBoxDownsampleScale(resolution_scale);
-    if (box_downscale != g_gpu_settings.gpu_downsample_scale || box_downscale == resolution_scale)
+    if (box_downscale == resolution_scale)
+    {
+      m_downsample_mode = GPUDownsampleMode::Disabled;
+
+      Host::AddIconOSDMessage(
+        "BoxDownsampleUnsupported", ICON_FA_PAINT_BRUSH,
+        fmt::format(
+          TRANSLATE_FS("GPU_HW",
+                       "Resolution scale {0}x is not divisible by downsample scale {1}x, downsampling disabled."),
+          resolution_scale, g_gpu_settings.gpu_downsample_scale),
+        Host::OSD_WARNING_DURATION);
+    }
+    else if (box_downscale != g_gpu_settings.gpu_downsample_scale)
     {
       Host::AddIconOSDMessage(
         "BoxDownsampleUnsupported", ICON_FA_PAINT_BRUSH,
@@ -719,9 +731,6 @@ void GPU_HW::CheckSettings()
     {
       Host::RemoveKeyedOSDMessage("BoxDownsampleUnsupported");
     }
-
-    if (box_downscale == g_gpu_settings.gpu_resolution_scale)
-      m_downsample_mode = GPUDownsampleMode::Disabled;
   }
 }
 
@@ -1790,6 +1799,9 @@ bool GPU_HW::CompileDownsamplePipelines(Error* error)
   m_downsample_composite_pipeline.reset();
   m_downsample_lod_sampler.reset();
   m_downsample_composite_sampler.reset();
+
+  if (m_downsample_mode == GPUDownsampleMode::Disabled)
+    return true;
 
   const GPU_HW_ShaderGen shadergen(g_gpu_device->GetRenderAPI(), m_supports_dual_source_blend,
                                    m_supports_framebuffer_fetch);
