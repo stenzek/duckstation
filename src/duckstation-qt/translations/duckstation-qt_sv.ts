@@ -438,7 +438,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Active Challenge Achievements</source>
-        <translation>Aktiva utmaningsprestationer</translation>
+        <translation type="vanished">Aktiva utmaningsprestationer</translation>
     </message>
     <message>
         <source> (Hardcore Mode)</source>
@@ -562,7 +562,7 @@ Olästa meddelanden: {}</translation>
     </message>
     <message>
         <source>Unlocked: {}</source>
-        <translation>Upplåst:  {}</translation>
+        <translation type="vanished">Upplåst:  {}</translation>
     </message>
     <message>
         <source>Show Best</source>
@@ -599,6 +599,46 @@ Olästa meddelanden: {}</translation>
     <message>
         <source>Loading state</source>
         <translation>Läser in tillstånd</translation>
+    </message>
+    <message>
+        <source>Achievements Unlocked</source>
+        <comment>Pause Menu</comment>
+        <translation>Prestationer upplåsta</translation>
+    </message>
+    <message>
+        <source>Most Recent</source>
+        <comment>Pause Menu</comment>
+        <translation>Senaste</translation>
+    </message>
+    <message>
+        <source>Nearest Completion</source>
+        <comment>Pause Menu</comment>
+        <translation>Nära färdigställande</translation>
+    </message>
+    <message>
+        <source>Active Challenge Achievements</source>
+        <comment>Pause Menu</comment>
+        <translation>Aktiva utmaningsprestationer</translation>
+    </message>
+    <message>
+        <source>Missable</source>
+        <translation>Saknade</translation>
+    </message>
+    <message>
+        <source>Progression</source>
+        <translation>Utveckling</translation>
+    </message>
+    <message>
+        <source>Win Condition</source>
+        <translation>Villkor för att vinna</translation>
+    </message>
+    <message>
+        <source>Unlocked: {} | {:.1f}% of players have this achievement</source>
+        <translation>Upplåst: {} | {:.1f}% av spelarna har den här prestationen</translation>
+    </message>
+    <message>
+        <source>{:.1f}% of players have this achievement</source>
+        <translation>{:.1f}% av spelarna har den här prestationen</translation>
     </message>
 </context>
 <context>
@@ -7292,6 +7332,42 @@ Vill du {0} ändå?</translation>
         <source>Theme</source>
         <translation>Tema</translation>
     </message>
+    <message>
+        <source>Are you sure you want to restore the default settings? Any preferences will be lost.
+
+You cannot undo this action.</source>
+        <translation>Är du säker på att du vill återställa standardinställningarna? Alla inställningar kommer att gå förlorade.
+
+Du kan inte ångra den här åtgärden.</translation>
+    </message>
+    <message>
+        <source>Automatic</source>
+        <translation>Automatiskt</translation>
+    </message>
+    <message>
+        <source>Dark Ruby</source>
+        <translation>Mörk rubin</translation>
+    </message>
+    <message>
+        <source>Open To Game List</source>
+        <translation>Öppna till spellistan</translation>
+    </message>
+    <message>
+        <source>Resets all settings to the defaults.</source>
+        <translation>Återställer alla inställningar till standardvärdena.</translation>
+    </message>
+    <message>
+        <source>Restore Defaults</source>
+        <translation>Återställ standardvärden</translation>
+    </message>
+    <message>
+        <source>Settings reset to default.</source>
+        <translation>Inställningarna återställda till standard.</translation>
+    </message>
+    <message>
+        <source>When Big Picture mode is started, the game list will be displayed instead of the main menu.</source>
+        <translation>När storbildsläget startas visas spellistan i stället för huvudmenyn.</translation>
+    </message>
 </context>
 <context>
     <name>GPU</name>
@@ -9652,6 +9728,18 @@ Söka igenom den rekursivt tar längre tid men identifierar filer i underkatalog
         <source>Write Failed</source>
         <translation>Skrivning misslyckades</translation>
     </message>
+    <message>
+        <source>Theme:</source>
+        <translation>Tema:</translation>
+    </message>
+    <message>
+        <source>Theme</source>
+        <translation>Tema</translation>
+    </message>
+    <message>
+        <source>Determines the theme to use for on-screen display elements and the Big Picture UI.</source>
+        <translation>Bestämmer vilket tema som ska användas för visningselement på skärmen och storbildsgränssnittet.</translation>
+    </message>
 </context>
 <context>
     <name>GunCon</name>
@@ -11857,11 +11945,11 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <name>MemoryCardEditorWindow</name>
     <message>
         <source>All Memory Card Types (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
-        <translation>Alla minneskortstyper (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
+        <translation type="vanished">Alla minneskortstyper (*.mcd *.mcr *.mc *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
     <message>
         <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme)</source>
-        <translation>Alla importerbara minneskortstyper (*.mcd *.mcr *.mc *.gme)</translation>
+        <translation type="vanished">Alla importerbara minneskortstyper (*.mcd *.mcr *.mc *.gme)</translation>
     </message>
     <message>
         <source>Single Save Files (*.mcs);;All Files (*.*)</source>
@@ -12025,6 +12113,14 @@ Du måste ta bort minneskortet manuellt om du vill spara.</translation>
     <message>
         <source>Copy File</source>
         <translation>Kopiera fil</translation>
+    </message>
+    <message>
+        <source>DuckStation Memory Card (*.mcd)</source>
+        <translation>DuckStation-minneskort (*.mcd)</translation>
+    </message>
+    <message>
+        <source>All Importable Memory Card Types (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</source>
+        <translation>Alla importerbara minneskortstyper (*.mcd *.mcr *.mc *.gme *.srm *.psm *.ps *.ddf *.mem *.vgs *.psx)</translation>
     </message>
 </context>
 <context>
@@ -14222,7 +14318,7 @@ Vill du skapa denna katalog?</translation>
     </message>
     <message>
         <source>Are you sure you want to restore the default settings? Any preferences will be lost.</source>
-        <translation>Är du säker på att du vill återställa standardinställningarna? Alla inställningar kommer att försvinna.</translation>
+        <translation type="vanished">Är du säker på att du vill återställa standardinställningarna? Alla inställningar kommer att försvinna.</translation>
     </message>
     <message>
         <source>%1 [%2]</source>
@@ -14327,6 +14423,14 @@ Vill du fortsätta?</translation>
     <message>
         <source>&lt;strong&gt;BIOS Settings&lt;/strong&gt;&lt;hr&gt;These options control which BIOS and expansion port is used.&lt;br&gt;&lt;br&gt;Mouse over an option for additional information, and Shift+Wheel to scroll this panel.</source>
         <translation>&lt;strong&gt;BIOS-inställningar&lt;/strong&gt;&lt;hr&gt;Dessa alternativ styr vilken BIOS och expansionsport som används.&lt;br&gt;&lt;br&gt;Hovra över ett alternativ för ytterligare information och Shift+mushjul för att bläddra i panelen.</translation>
+    </message>
+    <message>
+        <source>Are you sure you want to restore the default settings? Any preferences will be lost.
+
+You cannot undo this action.</source>
+        <translation>Är du säker på att du vill återställa standardinställningarna? Alla inställningar kommer att gå förlorade.
+
+Du kan inte ångra den här åtgärden.</translation>
     </message>
 </context>
 <context>
