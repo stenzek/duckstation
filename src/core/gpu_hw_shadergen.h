@@ -23,8 +23,9 @@ public:
                                           bool upscaled, bool msaa, bool per_sample_shading, bool uv_limits,
                                           bool force_round_texcoords, bool true_color, bool dithering,
                                           bool scaled_dithering, bool disable_color_perspective, bool interlacing,
-                                          bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth,
-                                          bool rov_depth_test, bool rov_depth_write) const;
+                                          bool scaled_interlacing, bool check_mask, bool write_mask_as_depth,
+                                          bool use_rov, bool use_rov_depth, bool rov_depth_test,
+                                          bool rov_depth_write) const;
   std::string GenerateWireframeGeometryShader() const;
   std::string GenerateWireframeFragmentShader() const;
   std::string GenerateVRAMReadFragmentShader(u32 resolution_scale, u32 multisamples) const;

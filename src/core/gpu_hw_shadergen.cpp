@@ -732,8 +732,8 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   GPU_HW::BatchRenderMode render_mode, GPUTransparencyMode transparency, GPU_HW::BatchTextureMode texture_mode,
   GPUTextureFilter texture_filtering, bool upscaled, bool msaa, bool per_sample_shading, bool uv_limits,
   bool force_round_texcoords, bool true_color, bool dithering, bool scaled_dithering, bool disable_color_perspective,
-  bool interlacing, bool check_mask, bool write_mask_as_depth, bool use_rov, bool use_rov_depth, bool rov_depth_test,
-  bool rov_depth_write) const
+  bool interlacing, bool scaled_interlacing, bool check_mask, bool write_mask_as_depth, bool use_rov,
+  bool use_rov_depth, bool rov_depth_test, bool rov_depth_write) const
 {
   DebugAssert(!true_color || !dithering); // Should not be doing dithering+true color.
 
@@ -766,6 +766,7 @@ std::string GPU_HW_ShaderGen::GenerateBatchFragmentShader(
   DefineMacro(ss, "DITHERING", dithering);
   DefineMacro(ss, "DITHERING_SCALED", dithering && scaled_dithering);
   DefineMacro(ss, "INTERLACING", interlacing);
+  DefineMacro(ss, "INTERLACING_SCALED", interlacing && scaled_interlacing);
   DefineMacro(ss, "TRUE_COLOR", true_color);
   DefineMacro(ss, "TEXTURE_FILTERING", texture_filtering != GPUTextureFilter::Nearest);
   DefineMacro(ss, "UV_LIMITS", uv_limits);
@@ -992,8 +993,13 @@ float4 SampleFromVRAM(TEXPAGE_VALUE texpage, float2 coords)
   float oalpha;
 
   #if INTERLACING
-    if ((fragpos.y & 1u) == u_interlaced_displayed_field)
-      discard;
+    #if INTERLACING_SCALED || !UPSCALED
+      if ((fragpos.y & 1u) == u_interlaced_displayed_field)
+        discard;
+    #else
+      if ((uint(v_pos.y * u_rcp_resolution_scale) & 1u) == u_interlaced_displayed_field)
+        discard;
+    #endif
   #endif
 
   #if TEXTURED

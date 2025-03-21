@@ -147,7 +147,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, "GPU", "MaxQueuedFrames",
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
   connect(m_ui.gpuThread, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onGPUThreadChanged);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", true);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, "GPU", "ScaledInterlacing", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
@@ -156,6 +157,8 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   SettingWidgetBinder::SetAvailability(m_ui.scaledDithering,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
+  SettingWidgetBinder::SetAvailability(m_ui.scaledInterlacing,
+                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledInterlacing));
 
   // PGXP Tab
 
@@ -468,6 +471,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.scaledDithering, tr("Scaled Dithering"), tr("Checked"),
     tr("Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less "
        "obvious at higher resolutions. Usually safe to enable."));
+  dialog->registerWidgetHelp(m_ui.scaledInterlacing, tr("Scaled Interlacing"), tr("Checked"),
+                             tr("Scales line skipping in interlaced rendering to the internal resolution. This makes "
+                                "the combing less obvious at higher resolutions. Usually safe to enable."));
   dialog->registerWidgetHelp(
     m_ui.useSoftwareRendererForReadbacks, tr("Software Renderer Readbacks"), tr("Unchecked"),
     tr("Runs the software renderer in parallel for VRAM readbacks. On some systems, this may result in greater "
@@ -853,6 +859,7 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
   m_ui.gpuWireframeMode->setEnabled(is_hardware);
   m_ui.gpuWireframeModeLabel->setEnabled(is_hardware);
   m_ui.scaledDithering->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
+  m_ui.scaledInterlacing->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledInterlacing));
   m_ui.useSoftwareRendererForReadbacks->setEnabled(is_hardware);
   m_ui.forceRoundedTexcoords->setEnabled(is_hardware);
   m_ui.accurateBlending->setEnabled(is_hardware);

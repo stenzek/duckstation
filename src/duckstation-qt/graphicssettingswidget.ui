@@ -354,10 +354,17 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
+            <item row="1" column="1">
              <widget class="QCheckBox" name="blitSwapChain">
               <property name="text">
                <string>Use Blit Swap Chain</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
+              <property name="text">
+               <string>Software Renderer Readbacks</string>
               </property>
              </widget>
             </item>
@@ -421,13 +428,6 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="useSoftwareRendererForReadbacks">
-              <property name="text">
-               <string>Software Renderer Readbacks</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
              <widget class="QCheckBox" name="scaledDithering">
               <property name="text">
@@ -466,6 +466,13 @@
                </widget>
               </item>
              </layout>
+            </item>
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="scaledInterlacing">
+              <property name="text">
+               <string>Scaled Interlacing</string>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>

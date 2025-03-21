@@ -47,6 +47,7 @@ enum class Trait : u32
   DisableTextureFiltering,
   DisableSpriteTextureFiltering,
   DisableScaledDithering,
+  DisableScaledInterlacing,
   DisableWidescreen,
   DisablePGXP,
   DisablePGXPCulling,

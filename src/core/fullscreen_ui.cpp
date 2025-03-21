@@ -486,10 +486,9 @@ static constexpr const std::array s_ps_button_mapping{
 };
 
 static constexpr std::array s_theme_names = {
-  FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),       FSUI_NSTR("Light"),
-  FSUI_NSTR("AMOLED"),     FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"),
-  FSUI_NSTR("Green Giant"), FSUI_NSTR("Pinky Pals"), FSUI_NSTR("Dark Ruby"),
-  FSUI_NSTR("Purple Rain")};
+  FSUI_NSTR("Automatic"),  FSUI_NSTR("Dark"),        FSUI_NSTR("Light"),       FSUI_NSTR("AMOLED"),
+  FSUI_NSTR("Cobalt Sky"), FSUI_NSTR("Grey Matter"), FSUI_NSTR("Green Giant"), FSUI_NSTR("Pinky Pals"),
+  FSUI_NSTR("Dark Ruby"),  FSUI_NSTR("Purple Rain")};
 
 static constexpr std::array s_theme_values = {"",           "Dark",       "Light",     "AMOLED",   "CobaltSky",
                                               "GreyMatter", "GreenGiant", "PinkyPals", "DarkRuby", "PurpleRain"};
@@ -5231,7 +5230,12 @@ void FullscreenUI::DrawGraphicsSettingsPage()
       bsi, FSUI_ICONSTR(ICON_FA_TINT_SLASH, "Scaled Dithering"),
       FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
                 "Usually safe to enable."),
-      "GPU", "ScaledDithering", true, !true_color_enabled);
+      "GPU", "ScaledDithering", true, !true_color_enabled && resolution_scale > 1);
+
+    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TINT_SLASH, "Scaled Interlacing"),
+                      FSUI_CSTR("Scales line skipping in interlaced rendering to the internal resolution, making it "
+                                "less noticeable. Usually safe to enable."),
+                      "GPU", "ScaledInterlacing", true, resolution_scale > 1);
 
     DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILL, "Accurate Blending"),
                       FSUI_CSTR("Forces blending to be done in the shader at 16-bit precision, when not using true "
@@ -9106,6 +9110,7 @@ TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0} - {1}##global_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0}##global_slot_{0}");
 TRANSLATE_NOOP("FullscreenUI", "Graphics Settings");
+TRANSLATE_NOOP("FullscreenUI", "Green Giant");
 TRANSLATE_NOOP("FullscreenUI", "Grey Matter");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore Mode");
 TRANSLATE_NOOP("FullscreenUI", "Hardcore mode will be enabled on next game restart.");
@@ -9318,7 +9323,9 @@ TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
 TRANSLATE_NOOP("FullscreenUI", "Saved {:%c}");
 TRANSLATE_NOOP("FullscreenUI", "Saves state periodically so you can rewind any mistakes while playing.");
 TRANSLATE_NOOP("FullscreenUI", "Scaled Dithering");
+TRANSLATE_NOOP("FullscreenUI", "Scaled Interlacing");
 TRANSLATE_NOOP("FullscreenUI", "Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.");
+TRANSLATE_NOOP("FullscreenUI", "Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Scales the dithering pattern with the internal rendering resolution, making it less noticeable. Usually safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");

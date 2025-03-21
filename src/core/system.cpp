@@ -4473,6 +4473,7 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
                old_settings.gpu_use_software_renderer_for_readbacks ||
              g_settings.gpu_true_color != old_settings.gpu_true_color ||
              g_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
+             g_settings.gpu_scaled_interlacing != old_settings.gpu_scaled_interlacing ||
              g_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords ||
              g_settings.gpu_accurate_blending != old_settings.gpu_accurate_blending ||
              g_settings.gpu_texture_filter != old_settings.gpu_texture_filter ||

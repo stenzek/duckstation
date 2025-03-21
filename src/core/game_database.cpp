@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 22,
+  GAME_DATABASE_CACHE_VERSION = 23,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -89,6 +89,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "DisableTextureFiltering",
   "DisableSpriteTextureFiltering",
   "DisableScaledDithering",
+  "DisableScaledInterlacing",
   "DisableWidescreen",
   "DisablePGXP",
   "DisablePGXPCulling",
@@ -118,6 +119,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Texture Filtering", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Sprite Texture Filtering", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Scaled Dithering", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Scaled Interlacing", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Widescreen", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable PGXP Culling", "GameDatabase::Trait"),
@@ -566,9 +568,20 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   if (HasTrait(Trait::DisableScaledDithering))
   {
     if (display_osd_messages && settings.gpu_scaled_dithering)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Scaled dithering."));
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Scaled dithering disabled."));
 
     settings.gpu_scaled_dithering = false;
+  }
+
+  if (HasTrait(Trait::DisableScaledInterlacing))
+  {
+    if (display_osd_messages && settings.gpu_scaled_interlacing &&
+        settings.display_deinterlacing_mode != DisplayDeinterlacingMode::Progressive)
+    {
+      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Scaled interlacing disabled."));
+    }
+
+    settings.gpu_scaled_interlacing = false;
   }
 
   if (HasTrait(Trait::DisableWidescreen))

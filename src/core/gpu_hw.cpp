@@ -457,7 +457,8 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
      (old_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive) !=
        (g_gpu_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive) ||
      (multisamples > 1 && g_gpu_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
-     (resolution_scale > 1 && g_gpu_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering) ||
+     (resolution_scale > 1 && (g_gpu_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
+                               g_gpu_settings.gpu_scaled_interlacing != old_settings.gpu_scaled_interlacing)) ||
      (resolution_scale > 1 && g_gpu_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
       g_gpu_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords) ||
      g_gpu_settings.IsUsingAccurateBlending() != old_settings.IsUsingAccurateBlending() ||
@@ -847,6 +848,9 @@ void GPU_HW::PrintSettingsToLog()
              "");
   INFO_LOG("Dithering: {}", m_true_color ? "Disabled" : "Enabled",
            (!m_true_color && g_gpu_settings.gpu_scaled_dithering));
+  INFO_LOG("Deinterlacing: {}{}",
+           Settings::GetDisplayDeinterlacingModeDisplayName(g_gpu_settings.display_deinterlacing_mode),
+           (m_resolution_scale > 1 && g_gpu_settings.gpu_scaled_interlacing) ? " (scaled)" : "");
   INFO_LOG("Force round texture coordinates: {}",
            (m_resolution_scale > 1 && g_gpu_settings.gpu_force_round_texcoords) ? "Enabled" : "Disabled");
   INFO_LOG("Texture Filtering: {}/{}", Settings::GetTextureFilterDisplayName(m_texture_filtering),
@@ -1052,6 +1056,7 @@ bool GPU_HW::CompilePipelines(Error* error)
     (upscaled && m_texture_filtering == GPUTextureFilter::Nearest && g_gpu_settings.gpu_force_round_texcoords);
   const bool true_color = g_gpu_settings.gpu_true_color;
   const bool scaled_dithering = (!m_true_color && upscaled && g_gpu_settings.gpu_scaled_dithering);
+  const bool scaled_interlacing = (upscaled && g_gpu_settings.gpu_scaled_interlacing);
   const bool disable_color_perspective = (features.noperspective_interpolation && ShouldDisableColorPerspective());
   const bool needs_page_texture = m_use_texture_cache;
   const bool force_progressive_scan =
@@ -1258,8 +1263,8 @@ bool GPU_HW::CompilePipelines(Error* error)
                   shader_texmode, sprite ? m_sprite_texture_filtering : m_texture_filtering, upscaled, msaa,
                   per_sample_shading, uv_limits, !sprite && force_round_texcoords, true_color,
                   ConvertToBoolUnchecked(dithering), scaled_dithering, disable_color_perspective,
-                  ConvertToBoolUnchecked(interlacing), ConvertToBoolUnchecked(check_mask), m_write_mask_as_depth,
-                  use_rov, needs_rov_depth, rov_depth_test, rov_depth_write);
+                  ConvertToBoolUnchecked(interlacing), scaled_interlacing, ConvertToBoolUnchecked(check_mask),
+                  m_write_mask_as_depth, use_rov, needs_rov_depth, rov_depth_test, rov_depth_write);
 
                 if (!(batch_fragment_shaders[depth_test][render_mode][transparency_mode][texture_mode][check_mask]
                                             [dithering][interlacing] = g_gpu_device->CreateShader(
