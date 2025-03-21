@@ -1297,7 +1297,9 @@ bool GPUDevice::ResizeTexture(std::unique_ptr<GPUTexture>* tex, u32 new_width, u
       const u32 copy_height = std::min(new_height, old_tex->GetHeight());
       if (type == GPUTexture::Type::RenderTarget)
         ClearRenderTarget(new_tex.get(), 0);
-      CopyTextureRegion(new_tex.get(), 0, 0, 0, 0, old_tex, 0, 0, 0, 0, copy_width, copy_height);
+
+      if (old_tex->GetFormat() == new_tex->GetFormat())
+        CopyTextureRegion(new_tex.get(), 0, 0, 0, 0, old_tex, 0, 0, 0, 0, copy_width, copy_height);
     }
   }
   else if (preserve)
