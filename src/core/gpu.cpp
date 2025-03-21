@@ -1955,7 +1955,7 @@ void GPU::UpdateDisplay(bool submit_frame)
   cmd->display_origin_left = m_crtc_state.display_origin_left;
   cmd->display_origin_top = m_crtc_state.display_origin_top;
   cmd->display_vram_left = m_crtc_state.display_vram_left;
-  cmd->display_vram_top = m_crtc_state.display_vram_top + (interlaced_field & BoolToUInt8(line_skip));
+  cmd->display_vram_top = m_crtc_state.display_vram_top;
   cmd->display_vram_width = m_crtc_state.display_vram_width;
   cmd->display_vram_height = m_crtc_state.display_vram_height >> BoolToUInt8(interlaced);
   cmd->X = m_crtc_state.regs.X;

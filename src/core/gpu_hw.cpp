@@ -3899,7 +3899,9 @@ void GPU_HW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
   const u32 line_skip = BoolToUInt32(cmd->interlaced_display_interleaved);
   const u32 resolution_scale = cmd->display_24bit ? 1 : m_resolution_scale;
   const u32 scaled_vram_offset_x = cmd->display_vram_left * resolution_scale;
-  const u32 scaled_vram_offset_y = cmd->display_vram_top * resolution_scale;
+  const u32 scaled_vram_offset_y =
+    cmd->display_vram_top * resolution_scale +
+    (BoolToUInt8(cmd->interlaced_display_field) & BoolToUInt8(cmd->interlaced_display_interleaved));
   const u32 scaled_display_width = cmd->display_vram_width * resolution_scale;
   const u32 scaled_display_height = cmd->display_vram_height * resolution_scale;
   bool drew_anything = false;

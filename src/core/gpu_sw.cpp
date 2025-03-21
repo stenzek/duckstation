@@ -396,7 +396,8 @@ void GPU_SW::UpdateDisplay(const GPUBackendUpdateDisplayCommand* cmd)
     const u32 line_skip = BoolToUInt32(cmd->interlaced_display_interleaved);
     const u32 src_x = is_24bit ? cmd->X : cmd->display_vram_left;
     const u32 skip_x = is_24bit ? (cmd->display_vram_left - cmd->X) : 0;
-    const u32 src_y = cmd->display_vram_top;
+    const u32 src_y = cmd->display_vram_top +
+                      (BoolToUInt8(cmd->interlaced_display_field) & BoolToUInt8(cmd->interlaced_display_interleaved));
     const u32 width = cmd->display_vram_width;
     const u32 height = cmd->display_vram_height;
 
