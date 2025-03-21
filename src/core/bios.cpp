@@ -28,7 +28,7 @@ static constexpr ImageInfo::Hash MakeHashFromString(const char str[])
 // Launch console BIOS is de-prioritized due to bugs.
 // Late PAL is de-prioritized due to additional regional checks that break import booting without fast boot.
 // PS2 is de-prioritized due to requiring a dynamic fast boot patch.
-// PS2 PAL is further de-prioritized due to additonal region checks.
+// PS2 PAL is further de-prioritized due to additional region checks.
 static constexpr const ImageInfo s_image_info_by_hash[] = {
   {"SCPH-1000, DTL-H1000 (v1.0)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 50, MakeHashFromString("239665b1a3dade1b5a52c06338011044")},
   {"SCPH-1001, 5003, DTL-H1201, H3001 (v2.2 12-04-95 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("924e392ed05558ffdb115408c263dccf")},
@@ -47,7 +47,7 @@ static constexpr const ImageInfo s_image_info_by_hash[] = {
   {"SCPH-7000, 7500, 9000 (v4.0 08-18-97 J)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("8e4c14f567745eff2f0408c8129f72a6")},
   {"SCPH-7000W (v4.1 11-14-97 A)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("b84be139db3ee6cbd075630aa20a6553")},
   {"SCPH-7001, 7501, 7503, 9001, 9003, 9903 (v4.1 12-16-97 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("1e68c231d0896b7eadcad1d7d8e76129")},
-  {"SCPH-7002, 7502, 9002 (v4.1 12-16-97 E)", ConsoleRegion::PAL, false, ImageInfo::FastBootPatch::Type1, 20, MakeHashFromString("b9d9a0286c33dc6b7237bb13cd46fdee")},
+  {"SCPH-7002, 7502, 9002 (v4.1 12-16-97 E)", ConsoleRegion::PAL, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("b9d9a0286c33dc6b7237bb13cd46fdee")},
   {"SCPH-100 (v4.3 03-11-00 J)", ConsoleRegion::NTSC_J, true, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("8abc1b549a4a80954addc48ef02c4521")},
   {"SCPH-101 (v4.4 03-24-00 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("9a09ab7e49b422c007e6d54d7c49b965")},
   {"SCPH-101 (v4.5 05-25-00 A)", ConsoleRegion::NTSC_U, false, ImageInfo::FastBootPatch::Type1, 10, MakeHashFromString("6e3735ff4c7dc899ee98981385f6f3d0")},
