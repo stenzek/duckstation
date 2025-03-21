@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2022 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -130,6 +130,36 @@ ALWAYS_INLINE static void StallUntilGTEComplete()
 {
   g_state.pending_ticks =
     (g_state.gte_completion_tick > g_state.pending_ticks) ? g_state.gte_completion_tick : g_state.pending_ticks;
+}
+
+ALWAYS_INLINE static void AddMulDivTicks(TickCount ticks)
+{
+  g_state.muldiv_completion_tick = g_state.pending_ticks + ticks;
+}
+
+ALWAYS_INLINE static void StallUntilMulDivComplete()
+{
+  g_state.pending_ticks =
+    (g_state.muldiv_completion_tick > g_state.pending_ticks) ? g_state.muldiv_completion_tick : g_state.pending_ticks;
+}
+
+ALWAYS_INLINE static constexpr TickCount GetMultTicks(s32 rs)
+{
+  // Subtract one because of the instruction cycle.
+  if (rs < 0)
+    return (rs >= -2048) ? (6 - 1) : ((rs >= -1048576) ? (9 - 1) : (13 - 1));
+  else
+    return (rs < 0x800) ? (6 - 1) : ((rs < 0x100000) ? (9 - 1) : (13 - 1));
+}
+
+ALWAYS_INLINE static constexpr TickCount GetMultTicks(u32 rs)
+{
+  return (rs < 0x800) ? (6 - 1) : ((rs < 0x100000) ? (9 - 1) : (13 - 1));
+}
+
+ALWAYS_INLINE static constexpr TickCount GetDivTicks()
+{
+  return (36 - 1);
 }
 
 // kernel call interception

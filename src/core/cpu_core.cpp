@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "cpu_core.h"
@@ -224,6 +224,7 @@ void CPU::Reset()
   g_state.downcount = 0;
   g_state.pending_ticks = 0;
   g_state.gte_completion_tick = 0;
+  g_state.muldiv_completion_tick = 0;
 }
 
 bool CPU::DoState(StateWrapper& sw)
@@ -231,6 +232,7 @@ bool CPU::DoState(StateWrapper& sw)
   sw.Do(&g_state.pending_ticks);
   sw.Do(&g_state.downcount);
   sw.DoEx(&g_state.gte_completion_tick, 78, static_cast<u32>(0));
+  sw.DoEx(&g_state.muldiv_completion_tick, 80, static_cast<u32>(0));
   sw.DoArray(g_state.regs.r, static_cast<u32>(Reg::count));
   sw.Do(&g_state.pc);
   sw.Do(&g_state.npc);
@@ -301,6 +303,7 @@ bool CPU::DoState(StateWrapper& sw)
         ((g_settings.cpu_execution_mode == CPUExecutionMode::Interpreter) ? CPUExecutionMode::CachedInterpreter :
                                                                             g_settings.cpu_execution_mode);
     g_state.gte_completion_tick = 0;
+    g_state.muldiv_completion_tick = 0;
     UpdateMemoryPointers();
     UpdateDebugDispatcherFlag();
   }
@@ -1100,6 +1103,8 @@ restart_instruction:
           const u32 value = g_state.regs.hi;
           WriteReg(inst.r.rd, value);
 
+          StallUntilMulDivComplete();
+
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::hi), value);
         }
@@ -1109,6 +1114,8 @@ restart_instruction:
         {
           const u32 value = ReadReg(inst.r.rs);
           g_state.regs.hi = value;
+
+          StallUntilMulDivComplete();
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MOVE(static_cast<u32>(Reg::hi), static_cast<u32>(inst.r.rs.GetValue()), value);
@@ -1120,6 +1127,8 @@ restart_instruction:
           const u32 value = g_state.regs.lo;
           WriteReg(inst.r.rd, value);
 
+          StallUntilMulDivComplete();
+
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MOVE(static_cast<u32>(inst.r.rd.GetValue()), static_cast<u32>(Reg::lo), value);
         }
@@ -1129,6 +1138,8 @@ restart_instruction:
         {
           const u32 value = ReadReg(inst.r.rs);
           g_state.regs.lo = value;
+
+          StallUntilMulDivComplete();
 
           if constexpr (pgxp_mode == PGXPMode::CPU)
             PGXP::CPU_MOVE(static_cast<u32>(Reg::lo), static_cast<u32>(inst.r.rs.GetValue()), value);
@@ -1145,6 +1156,9 @@ restart_instruction:
           g_state.regs.hi = Truncate32(result >> 32);
           g_state.regs.lo = Truncate32(result);
 
+          StallUntilMulDivComplete();
+          AddMulDivTicks(GetMultTicks(static_cast<s32>(lhs)));
+
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MULT(inst, lhs, rhs);
         }
@@ -1158,6 +1172,9 @@ restart_instruction:
 
           g_state.regs.hi = Truncate32(result >> 32);
           g_state.regs.lo = Truncate32(result);
+
+          StallUntilMulDivComplete();
+          AddMulDivTicks(GetMultTicks(lhs));
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_MULTU(inst, lhs, rhs);
@@ -1187,6 +1204,9 @@ restart_instruction:
             g_state.regs.hi = static_cast<u32>(num % denom);
           }
 
+          StallUntilMulDivComplete();
+          AddMulDivTicks(GetDivTicks());
+
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_DIV(inst, num, denom);
         }
@@ -1208,6 +1228,9 @@ restart_instruction:
             g_state.regs.lo = num / denom;
             g_state.regs.hi = num % denom;
           }
+
+          StallUntilMulDivComplete();
+          AddMulDivTicks(GetDivTicks());
 
           if constexpr (pgxp_mode >= PGXPMode::CPU)
             PGXP::CPU_DIVU(inst, num, denom);
