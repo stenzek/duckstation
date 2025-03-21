@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 21,
+  GAME_DATABASE_CACHE_VERSION = 22,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -1172,6 +1172,38 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
 {
   GetStringFromObject(value, "name", &entry->title);
 
+  entry->supported_controllers = static_cast<u16>(~0u);
+
+  if (const ryml::ConstNodeRef controllers = value.find_child(to_csubstr("controllers"));
+      controllers.valid() && controllers.has_children())
+  {
+    bool first = true;
+    for (const ryml::ConstNodeRef& controller : controllers.cchildren())
+    {
+      const std::string_view controller_str = to_stringview(controller.val());
+      if (controller_str.empty())
+      {
+        WARNING_LOG("controller is not a string in {}", entry->serial);
+        return false;
+      }
+
+      const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_str);
+      if (!cinfo)
+      {
+        WARNING_LOG("Invalid controller type {} in {}", controller_str, entry->serial);
+        continue;
+      }
+
+      if (first)
+      {
+        entry->supported_controllers = 0;
+        first = false;
+      }
+
+      entry->supported_controllers |= (1u << static_cast<u16>(cinfo->type));
+    }
+  }
+
   if (const ryml::ConstNodeRef metadata = value.find_child(to_csubstr("metadata")); metadata.valid())
   {
     GetStringFromObject(metadata, "genre", &entry->genre);
@@ -1214,37 +1246,19 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
         }
       }
     }
-  }
 
-  entry->supported_controllers = static_cast<u16>(~0u);
-
-  if (const ryml::ConstNodeRef controllers = value.find_child(to_csubstr("controllers"));
-      controllers.valid() && controllers.has_children())
-  {
-    bool first = true;
-    for (const ryml::ConstNodeRef& controller : controllers.cchildren())
+    if (const ryml::ConstNodeRef& multitap = metadata.find_child(to_csubstr("multitap")); multitap.valid())
     {
-      const std::string_view controller_str = to_stringview(controller.val());
-      if (controller_str.empty())
+      if (const std::optional multitap_val = StringUtil::FromChars<bool>(to_stringview(multitap.val()));
+          multitap_val.has_value())
       {
-        WARNING_LOG("controller is not a string in {}", entry->serial);
-        return false;
+        if (multitap_val.value())
+          entry->supported_controllers |= Entry::SUPPORTS_MULTITAP_BIT;
       }
-
-      const Controller::ControllerInfo* cinfo = Controller::GetControllerInfo(controller_str);
-      if (!cinfo)
+      else
       {
-        WARNING_LOG("Invalid controller type {} in {}", controller_str, entry->serial);
-        continue;
+        WARNING_LOG("Invalid multitap value in {}", entry->serial);
       }
-
-      if (first)
-      {
-        entry->supported_controllers = 0;
-        first = false;
-      }
-
-      entry->supported_controllers |= (1u << static_cast<u16>(cinfo->type));
     }
   }
 
@@ -1307,20 +1321,6 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
     else
     {
       WARNING_LOG("Invalid libcrypt value in {}", entry->serial);
-    }
-  }
-
-  if (const ryml::ConstNodeRef& multitap = value.find_child(to_csubstr("multitap")); multitap.valid())
-  {
-    if (const std::optional multitap_val = StringUtil::FromChars<bool>(to_stringview(multitap.val()));
-        multitap_val.has_value())
-    {
-      if (multitap_val.value())
-        entry->supported_controllers |= Entry::SUPPORTS_MULTITAP_BIT;
-    }
-    else
-    {
-      WARNING_LOG("Invalid multitap value in {}", entry->serial);
     }
   }
 
