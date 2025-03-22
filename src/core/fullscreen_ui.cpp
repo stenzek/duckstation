@@ -4973,7 +4973,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   MenuHeading(FSUI_CSTR("Device Settings"));
 
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_PF_PICTURE, "GPU Renderer"),
-                  FSUI_CSTR("Chooses the backend to use for rendering the console/game visuals."), "GPU", "Renderer",
+                  FSUI_CSTR("Selects the backend to use for rendering the console/game visuals."), "GPU", "Renderer",
                   Settings::DEFAULT_GPU_RENDERER, &Settings::ParseRendererName, &Settings::GetRendererName,
                   &Settings::GetRendererDisplayName, GPURenderer::Count);
 
@@ -5035,7 +5035,7 @@ void FullscreenUI::DrawGraphicsSettingsPage()
   {
     DrawIntListSetting(
       bsi, FSUI_ICONSTR(ICON_FA_EXPAND_ALT, "Internal Resolution"),
-      FSUI_CSTR("Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution."),
+      FSUI_CSTR("Upscales the game's rendering by the specified multiplier."),
       "GPU", "ResolutionScale", 1, resolution_scales);
 
     DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPRESS_ALT, "Downsampling"),
@@ -8896,7 +8896,6 @@ TRANSLATE_NOOP("FullscreenUI", "Change View");
 TRANSLATE_NOOP("FullscreenUI", "Changes settings for the application.");
 TRANSLATE_NOOP("FullscreenUI", "Changes the aspect ratio used to display the console's output to the screen.");
 TRANSLATE_NOOP("FullscreenUI", "Cheats");
-TRANSLATE_NOOP("FullscreenUI", "Chooses the backend to use for rendering the console/game visuals.");
 TRANSLATE_NOOP("FullscreenUI", "Chooses the language used for UI elements.");
 TRANSLATE_NOOP("FullscreenUI", "Clean Boot");
 TRANSLATE_NOOP("FullscreenUI", "Clear Mappings");
@@ -9322,7 +9321,6 @@ TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
 TRANSLATE_NOOP("FullscreenUI", "Saved {:%c}");
 TRANSLATE_NOOP("FullscreenUI", "Saves state periodically so you can rewind any mistakes while playing.");
 TRANSLATE_NOOP("FullscreenUI", "Scaled Interlacing");
-TRANSLATE_NOOP("FullscreenUI", "Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");
@@ -9346,6 +9344,7 @@ TRANSLATE_NOOP("FullscreenUI", "Select State");
 TRANSLATE_NOOP("FullscreenUI", "Select from the list of preset borders, or manually specify a custom configuration.");
 TRANSLATE_NOOP("FullscreenUI", "Selected Preset");
 TRANSLATE_NOOP("FullscreenUI", "Selects the GPU to use for rendering.");
+TRANSLATE_NOOP("FullscreenUI", "Selects the backend to use for rendering the console/game visuals.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the color style to be used for Big Picture UI.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the percentage of the normal clock speed the emulated hardware will run at.");
 TRANSLATE_NOOP("FullscreenUI", "Selects the quality at which screenshots will be compressed.");
@@ -9467,6 +9466,7 @@ TRANSLATE_NOOP("FullscreenUI", "Ungrouped");
 TRANSLATE_NOOP("FullscreenUI", "Unknown");
 TRANSLATE_NOOP("FullscreenUI", "Unknown File Size");
 TRANSLATE_NOOP("FullscreenUI", "Unlimited");
+TRANSLATE_NOOP("FullscreenUI", "Upscales the game's rendering by the specified multiplier.");
 TRANSLATE_NOOP("FullscreenUI", "Use Blit Swap Chain");
 TRANSLATE_NOOP("FullscreenUI", "Use Debug GPU Device");
 TRANSLATE_NOOP("FullscreenUI", "Use DualShock/DualSense Button Icons");

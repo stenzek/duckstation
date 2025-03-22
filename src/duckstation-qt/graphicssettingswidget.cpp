@@ -341,7 +341,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
 
   dialog->registerWidgetHelp(
     m_ui.renderer, tr("Renderer"), QString::fromUtf8(Settings::GetRendererDisplayName(Settings::DEFAULT_GPU_RENDERER)),
-    tr("Chooses the backend to use for rendering the console/game visuals. <br>Depending on your system and hardware, "
+    tr("Selects the backend to use for rendering the console/game visuals. <br>Depending on your system and hardware, "
        "Direct3D 11 and OpenGL hardware backends may be available. <br>The software renderer offers the best "
        "compatibility, but is the slowest and does not offer any enhancements."));
   dialog->registerWidgetHelp(
