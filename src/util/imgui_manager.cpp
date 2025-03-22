@@ -965,8 +965,8 @@ void ImGuiManager::DrawOSDMessages(Timer::Value current_time)
   const float scale = s_state.global_scale;
   const float spacing = std::ceil(6.0f * scale);
   const float margin = std::ceil(s_state.screen_margin * scale);
-  const float padding = std::ceil(9.0f * scale);
-  const float rounding = std::ceil(6.0f * scale);
+  const float padding = std::ceil(10.0f * scale);
+  const float rounding = std::ceil(10.0f * scale);
   const float max_width = s_state.window_width - (margin + padding) * 2.0f;
   const bool show_messages = g_gpu_settings.display_show_messages;
   float position_x = margin;
