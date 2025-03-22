@@ -4164,11 +4164,6 @@ void FullscreenUI::DrawConsoleSettingsPage()
       "Speeds up CD-ROM seeks by the specified factor. May improve loading speeds in some games, and break others."),
     "CDROM", "SeekSpeedup", 1, cdrom_seek_speeds, true, cdrom_read_seek_speed_values);
 
-  DrawIntRangeSetting(
-    bsi, FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Readahead Sectors"),
-    FSUI_CSTR("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread."),
-    "CDROM", "ReadaheadSectors", Settings::DEFAULT_CDROM_READAHEAD_SECTORS, 0, 32, FSUI_CSTR("%d sectors"));
-
   DrawToggleSetting(
     bsi, FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Preload Images to RAM"),
     FSUI_CSTR("Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay."),
@@ -6227,9 +6222,24 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
   MenuHeading(FSUI_CSTR("CD-ROM Emulation"));
 
+  DrawIntRangeSetting(
+    bsi, FSUI_CSTR("Readahead Sectors"),
+    FSUI_CSTR("Reduces hitches in emulation by reading/decompressing CD data asynchronously on a worker thread."),
+    "CDROM", "ReadaheadSectors", Settings::DEFAULT_CDROM_READAHEAD_SECTORS, 0, 32, FSUI_CSTR("%d sectors"));
+
+  DrawIntRangeSetting(bsi, FSUI_CSTR("Maximum Speedup Read/Seek Cycles"),
+                      FSUI_CSTR("Sets the minimum delay for the 'Maximum' read/seek speedup level."), "CDROM",
+                      "MaxSpeedupCycles", Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES, 0, 1000000,
+                      FSUI_CSTR("%d cycles"));
+
   DrawToggleSetting(bsi, FSUI_CSTR("Enable Region Check"),
                     FSUI_CSTR("Simulates the region check present in original, unmodified consoles."), "CDROM",
                     "RegionCheck", false);
+
+  DrawToggleSetting(
+    bsi, FSUI_CSTR("Allow Booting Without SBI File"),
+    FSUI_CSTR("Allows booting to continue even without a required SBI file. These games will not run correctly."),
+    "CDROM", "AllowBootingWithoutSBIFile", false);
 
   EndMenuButtons();
 }
@@ -8753,6 +8763,7 @@ void FullscreenUI::CloseLoadingScreen()
 TRANSLATE_NOOP("FullscreenUI", "%.1f ms");
 TRANSLATE_NOOP("FullscreenUI", "%.2f Seconds");
 TRANSLATE_NOOP("FullscreenUI", "%d Frames");
+TRANSLATE_NOOP("FullscreenUI", "%d cycles");
 TRANSLATE_NOOP("FullscreenUI", "%d ms");
 TRANSLATE_NOOP("FullscreenUI", "%d sectors");
 TRANSLATE_NOOP("FullscreenUI", "-");
@@ -8843,6 +8854,7 @@ TRANSLATE_NOOP("FullscreenUI", "Advanced");
 TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
+TRANSLATE_NOOP("FullscreenUI", "Allows booting to continue even without a required SBI file. These games will not run correctly.");
 TRANSLATE_NOOP("FullscreenUI", "Allows loading protected games without subchannel information.");
 TRANSLATE_NOOP("FullscreenUI", "Alpha Blending");
 TRANSLATE_NOOP("FullscreenUI", "Always Track Uploads");
@@ -9174,6 +9186,7 @@ TRANSLATE_NOOP("FullscreenUI", "Logs out of RetroAchievements.");
 TRANSLATE_NOOP("FullscreenUI", "Macro Button {}");
 TRANSLATE_NOOP("FullscreenUI", "Makes games run closer to their console framerate, at a small cost to performance.");
 TRANSLATE_NOOP("FullscreenUI", "Maximum");
+TRANSLATE_NOOP("FullscreenUI", "Maximum Speedup Read/Seek Cycles");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Busy");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Directory");
 TRANSLATE_NOOP("FullscreenUI", "Memory Card Port {}");
@@ -9363,6 +9376,7 @@ TRANSLATE_NOOP("FullscreenUI", "Set Input Binding");
 TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding precise values when exceeded. May help with glitches in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Sets a threshold for discarding the emulated depth buffer. May help in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Sets the fast forward speed. It is not guaranteed that this speed will be reached on all systems.");
+TRANSLATE_NOOP("FullscreenUI", "Sets the minimum delay for the 'Maximum' read/seek speedup level.");
 TRANSLATE_NOOP("FullscreenUI", "Sets the target emulation speed. It is not guaranteed that this speed will be reached on all systems.");
 TRANSLATE_NOOP("FullscreenUI", "Sets the turbo speed. It is not guaranteed that this speed will be reached on all systems.");
 TRANSLATE_NOOP("FullscreenUI", "Sets the verbosity of messages logged. Higher levels will log more messages.");

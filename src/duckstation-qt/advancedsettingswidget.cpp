@@ -45,7 +45,8 @@ static QCheckBox* setBooleanTweakOption(QTableWidget* table, int row, bool value
 }
 
 static QSpinBox* addIntRangeTweakOption(SettingsWindow* dialog, QTableWidget* table, QString name, std::string section,
-                                        std::string key, int min_value, int max_value, int default_value)
+                                        std::string key, int min_value, int max_value, int default_value,
+                                        const QString& suffix = QString())
 {
   const int row = table->rowCount();
 
@@ -58,6 +59,9 @@ static QSpinBox* addIntRangeTweakOption(SettingsWindow* dialog, QTableWidget* ta
   QSpinBox* cb = new QSpinBox(table);
   cb->setMinimum(min_value);
   cb->setMaximum(max_value);
+  if (!suffix.isEmpty())
+    cb->setSuffix(suffix);
+
   if (!section.empty() || !key.empty())
   {
     SettingWidgetBinder::BindWidgetToIntSetting(dialog->getSettingsInterface(), cb, std::move(section), std::move(key),
@@ -254,13 +258,13 @@ void AdvancedSettingsWidget::addTweakOptions()
   }
 
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Max Slice Ticks"), "Hacks", "DMAMaxSliceTicks", 1,
-                         10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS);
+                         10000, Settings::DEFAULT_DMA_MAX_SLICE_TICKS, tr(" cycles"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("DMA Halt Ticks"), "Hacks", "DMAHaltTicks", 1, 10000,
-                         Settings::DEFAULT_DMA_HALT_TICKS);
+                         Settings::DEFAULT_DMA_HALT_TICKS, tr(" cycles"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU FIFO Size"), "Hacks", "GPUFIFOSize", 16, 4096,
-                         Settings::DEFAULT_GPU_FIFO_SIZE);
+                         Settings::DEFAULT_GPU_FIFO_SIZE, tr(" words"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("GPU Max Run-Ahead"), "Hacks", "GPUMaxRunAhead", 0, 1000,
-                         Settings::DEFAULT_GPU_MAX_RUN_AHEAD);
+                         Settings::DEFAULT_GPU_MAX_RUN_AHEAD, tr(" cycles"));
 
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Enable Recompiler Memory Exceptions"), "CPU",
                         "RecompilerMemoryExceptions", false);
@@ -275,8 +279,10 @@ void AdvancedSettingsWidget::addTweakOptions()
                        Settings::ParseCDROMMechVersionName, Settings::GetCDROMMechVersionName,
                        Settings::GetCDROMMechVersionDisplayName, static_cast<u8>(CDROMMechaconVersion::Count),
                        Settings::DEFAULT_CDROM_MECHACON_VERSION);
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Readahead Sectors"), "CDROM", "ReadaheadSectors",
+                         0, 32, Settings::DEFAULT_CDROM_READAHEAD_SECTORS, tr(" sectors"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Speedup Read/Seek Cycles"), "CDROM",
-                         "MaxSpeedupCycles", 0, 1000000, Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES);
+                         "MaxSpeedupCycles", 0, 1000000, Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES, tr(" cycles"));
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), "CDROM", "RegionCheck", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM SubQ Skew"), "CDROM", "SubQSkew", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
@@ -320,6 +326,8 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setChoiceTweakOption(m_ui.tweakOptionTable, i++,
                          Settings::DEFAULT_CDROM_MECHACON_VERSION); // CDROM Mechacon Version
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           Settings::DEFAULT_CDROM_READAHEAD_SECTORS); // CD-ROM Readahead Sectors
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES); // CD-ROM Max Speedup Read/Seek Cycles
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // CDROM Region Check
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // CDROM SubQ Skew
@@ -353,6 +361,7 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
   sif->DeleteValue("CPU", "RecompilerBlockLinking");
   sif->DeleteValue("CPU", "FastmemMode");
   sif->DeleteValue("CDROM", "MechaconVersion");
+  sif->DeleteValue("CDROM", "ReadaheadSectors");
   sif->DeleteValue("CDROM", "MaxSpeedupCycles");
   sif->DeleteValue("CDROM", "RegionCheck");
   sif->DeleteValue("CDROM", "SubQSkew");
