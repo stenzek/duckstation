@@ -69,6 +69,7 @@ struct GPUSettings
   ForceVideoTimingMode gpu_force_video_timing = DEFAULT_FORCE_VIDEO_TIMING_MODE;
   GPUTextureFilter gpu_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
   GPUTextureFilter gpu_sprite_texture_filter = DEFAULT_GPU_TEXTURE_FILTER;
+  GPUDitheringMode gpu_dithering_mode = DEFAULT_GPU_DITHERING_MODE;
   GPULineDetectMode gpu_line_detect_mode = DEFAULT_GPU_LINE_DETECT_MODE;
   GPUDownsampleMode gpu_downsample_mode = DEFAULT_GPU_DOWNSAMPLE_MODE;
   u8 gpu_downsample_scale = 1;
@@ -104,11 +105,8 @@ struct GPUSettings
   bool gpu_disable_compressed_textures : 1 = false;
   bool gpu_automatic_resolution_scale : 1 = false;
   bool gpu_per_sample_shading : 1 = false;
-  bool gpu_true_color : 1 = true;
-  bool gpu_scaled_dithering : 1 = true;
   bool gpu_scaled_interlacing : 1 = true;
   bool gpu_force_round_texcoords : 1 = false;
-  bool gpu_accurate_blending : 1 = false;
   bool gpu_widescreen_hack : 1 = false;
   bool gpu_texture_cache : 1 = false;
   bool gpu_show_vram : 1 = false;
@@ -214,7 +212,18 @@ struct GPUSettings
   void SetPGXPDepthClearThreshold(float value);
 
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
-  ALWAYS_INLINE bool IsUsingAccurateBlending() const { return (gpu_accurate_blending && !gpu_true_color); }
+  ALWAYS_INLINE bool IsUsingTrueColor() const { return (gpu_dithering_mode == GPUDitheringMode::TrueColor); }
+  ALWAYS_INLINE bool IsUsingDithering() const { return (gpu_dithering_mode < GPUDitheringMode::TrueColor); }
+  ALWAYS_INLINE bool IsUsingShaderBlending() const
+  {
+    return (gpu_dithering_mode == GPUDitheringMode::UnscaledShaderBlend ||
+            gpu_dithering_mode == GPUDitheringMode::ScaledShaderBlend);
+  }
+  ALWAYS_INLINE bool IsUsingScaledDithering() const
+  {
+    return (gpu_dithering_mode == GPUDitheringMode::Scaled ||
+            gpu_dithering_mode == GPUDitheringMode::ScaledShaderBlend);
+  }
   ALWAYS_INLINE bool IsUsingIntegerDisplayScaling() const
   {
     return (display_scaling == DisplayScalingMode::NearestInteger ||
@@ -226,6 +235,7 @@ struct GPUSettings
 
   static constexpr GPURenderer DEFAULT_GPU_RENDERER = GPURenderer::Automatic;
   static constexpr GPUTextureFilter DEFAULT_GPU_TEXTURE_FILTER = GPUTextureFilter::Nearest;
+  static constexpr GPUDitheringMode DEFAULT_GPU_DITHERING_MODE = GPUDitheringMode::TrueColor;
   static constexpr GPULineDetectMode DEFAULT_GPU_LINE_DETECT_MODE = GPULineDetectMode::Disabled;
   static constexpr GPUDownsampleMode DEFAULT_GPU_DOWNSAMPLE_MODE = GPUDownsampleMode::Disabled;
   static constexpr GPUWireframeMode DEFAULT_GPU_WIREFRAME_MODE = GPUWireframeMode::Disabled;
@@ -473,6 +483,10 @@ struct Settings : public GPUSettings
   static std::optional<GPUTextureFilter> ParseTextureFilterName(const char* str);
   static const char* GetTextureFilterName(GPUTextureFilter filter);
   static const char* GetTextureFilterDisplayName(GPUTextureFilter filter);
+
+  static std::optional<GPUDitheringMode> ParseGPUDitheringModeName(const char* str);
+  static const char* GetGPUDitheringModeName(GPUDitheringMode mode);
+  static const char* GetGPUDitheringModeDisplayName(GPUDitheringMode mode);
 
   static std::optional<GPULineDetectMode> ParseLineDetectModeName(const char* str);
   static const char* GetLineDetectModeName(GPULineDetectMode filter);

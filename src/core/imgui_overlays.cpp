@@ -508,8 +508,8 @@ void ImGuiManager::DrawEnhancementsOverlay(const GPUBackend* gpu)
     text.append_format(" {}x{}", g_gpu_settings.gpu_multisamples,
                        g_gpu_settings.gpu_per_sample_shading ? "SSAA" : "MSAA");
   }
-  if (g_gpu_settings.gpu_true_color)
-    text.append(" TrueCol");
+  if (g_gpu_settings.gpu_dithering_mode != GPUDitheringMode::Unscaled)
+    text.append_format(" DT={}", Settings::GetGPUDitheringModeName(g_gpu_settings.gpu_dithering_mode));
   text.append_format(" DI={}", Settings::GetDisplayDeinterlacingModeName(g_gpu_settings.display_deinterlacing_mode));
   if (g_settings.gpu_force_video_timing == ForceVideoTimingMode::NTSC && System::GetRegion() == ConsoleRegion::PAL)
     text.append(" PAL60");

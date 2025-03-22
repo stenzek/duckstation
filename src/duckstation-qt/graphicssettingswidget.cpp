@@ -64,6 +64,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.spriteTextureFiltering, "GPU", "SpriteTextureFilter",
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDitheringMode, "GPU", "DitheringMode",
+                                               &Settings::ParseGPUDitheringModeName, &Settings::GetGPUDitheringModeName,
+                                               Settings::DEFAULT_GPU_DITHERING_MODE);
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.gpuDownsampleMode, "GPU", "DownsampleMode",
                                                &Settings::ParseDownsampleModeName, &Settings::GetDownsampleModeName,
                                                Settings::DEFAULT_GPU_DOWNSAMPLE_MODE);
@@ -85,7 +88,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                                &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
                                                Settings::DEFAULT_DISPLAY_SCALING);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpDepthBuffer, "GPU", "PGXPDepthBuffer", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.force43For24Bit, "Display", "Force4_3For24Bit", false);
@@ -99,7 +101,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
           &GraphicsSettingsWidget::onAspectRatioChanged);
   connect(m_ui.gpuDownsampleMode, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
           &GraphicsSettingsWidget::onDownsampleModeChanged);
-  connect(m_ui.trueColor, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onTrueColorChanged);
   connect(m_ui.pgxpEnable, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::updatePGXPSettingsEnabled);
 
   SettingWidgetBinder::SetAvailability(m_ui.renderer,
@@ -110,7 +111,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
   SettingWidgetBinder::SetAvailability(m_ui.spriteTextureFiltering,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTextureFiltering));
-  SettingWidgetBinder::SetAvailability(m_ui.trueColor, !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTrueColor));
   SettingWidgetBinder::SetAvailability(m_ui.pgxpEnable, !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
   SettingWidgetBinder::SetAvailability(m_ui.widescreenHack,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableWidescreen));
@@ -144,16 +144,12 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.maxQueuedFrames, "GPU", "MaxQueuedFrames",
                                               Settings::DEFAULT_GPU_MAX_QUEUED_FRAMES);
   connect(m_ui.gpuThread, &QCheckBox::checkStateChanged, this, &GraphicsSettingsWidget::onGPUThreadChanged);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledDithering, "GPU", "ScaledDithering", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.scaledInterlacing, "GPU", "ScaledInterlacing", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useSoftwareRendererForReadbacks, "GPU",
                                                "UseSoftwareRendererForReadbacks", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.forceRoundedTexcoords, "GPU", "ForceRoundTextureCoordinates",
                                                false);
-  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.accurateBlending, "GPU", "AccurateBlending", false);
 
-  SettingWidgetBinder::SetAvailability(m_ui.scaledDithering,
-                                       !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
   SettingWidgetBinder::SetAvailability(m_ui.scaledInterlacing,
                                        !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledInterlacing));
 
@@ -376,6 +372,13 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     tr("Smooths out the blockiness of magnified textures on 2D objects by using filtering. This filter only applies to "
        "sprites and other 2D elements, such as the HUD."));
   dialog->registerWidgetHelp(
+    m_ui.gpuDitheringMode, tr("Dithering"),
+    QString::fromUtf8(Settings::GetGPUDitheringModeDisplayName(Settings::DEFAULT_GPU_DITHERING_MODE)),
+    tr("Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest "
+       "looking gradients. Scaled options make the dither pattern less noticeable at higher resolutions. Shader "
+       "Blending options perform blending in software, and are more accurate but have a <strong>significant</strong> "
+       "performance penalty."));
+  dialog->registerWidgetHelp(
     m_ui.displayAspectRatio, tr("Aspect Ratio"),
     QString::fromUtf8(Settings::GetDisplayAspectRatioDisplayName(Settings::DEFAULT_DISPLAY_ASPECT_RATIO)),
     tr("Changes the aspect ratio used to display the console's output to the screen. The default is Auto (Game Native) "
@@ -394,13 +397,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.displayScaling, tr("Scaling"), tr("Bilinear (Smooth)"),
     tr("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."));
-  dialog->registerWidgetHelp(
-    m_ui.trueColor, tr("True Color Rendering"), tr("Checked"),
-    tr("Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per "
-       "channel. This produces nicer looking gradients at the cost of making some colours look slightly different. "
-       "Disabling the option also enables dithering, which makes the transition between colours less sharp by applying "
-       "a pattern around those pixels. Most games are compatible with this option, but there is a number which aren't "
-       "and will have broken effects with it enabled."));
   dialog->registerWidgetHelp(
     m_ui.widescreenHack, tr("Widescreen Rendering"), tr("Unchecked"),
     tr("Scales vertex positions in screen-space to a widescreen aspect ratio, essentially "
@@ -458,10 +454,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(m_ui.gpuThread, tr("Threaded Rendering"), tr("Checked"),
                              tr("Uses a second thread for drawing graphics. Provides a significant speed improvement "
                                 "particularly with the software renderer, and is safe to use."));
-  dialog->registerWidgetHelp(
-    m_ui.scaledDithering, tr("Scaled Dithering"), tr("Checked"),
-    tr("Scales the dither pattern to the resolution scale of the emulated GPU. This makes the dither pattern much less "
-       "obvious at higher resolutions. Usually safe to enable."));
   dialog->registerWidgetHelp(m_ui.scaledInterlacing, tr("Scaled Interlacing"), tr("Checked"),
                              tr("Scales line skipping in interlaced rendering to the internal resolution. This makes "
                                 "the combing less obvious at higher resolutions. Usually safe to enable."));
@@ -473,10 +465,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
     m_ui.forceRoundedTexcoords, tr("Round Upscaled Texture Coordinates"), tr("Unchecked"),
     tr("Rounds texture coordinates instead of flooring when upscaling. Can fix misaligned textures in some games, but "
        "break others, and is incompatible with texture filtering."));
-  dialog->registerWidgetHelp(
-    m_ui.accurateBlending, tr("Accurate Blending"), tr("Unchecked"),
-    tr("Forces blending to be done in the shader at 16-bit precision, when not using true color. Very few games "
-       "actually require this, and there is a <strong>non-trivial</strong> performance cost."));
 
   // PGXP Tab
 
@@ -692,6 +680,12 @@ void GraphicsSettingsWidget::setupAdditionalUi()
       QString::fromUtf8(Settings::GetTextureFilterDisplayName(static_cast<GPUTextureFilter>(i))));
   }
 
+  for (u32 i = 0; i < static_cast<u32>(GPUDitheringMode::MaxCount); i++)
+  {
+    m_ui.gpuDitheringMode->addItem(
+      QString::fromUtf8(Settings::GetGPUDitheringModeDisplayName(static_cast<GPUDitheringMode>(i))));
+  }
+
   for (u32 i = 0; i < static_cast<u32>(GPUDownsampleMode::Count); i++)
   {
     m_ui.gpuDownsampleMode->addItem(
@@ -836,18 +830,18 @@ void GraphicsSettingsWidget::updateRendererDependentOptions()
   m_ui.gpuDownsampleLabel->setEnabled(is_hardware);
   m_ui.gpuDownsampleMode->setEnabled(is_hardware);
   m_ui.gpuDownsampleScale->setEnabled(is_hardware);
-  m_ui.trueColor->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableTrueColor));
+  m_ui.gpuDitheringModeLabel->setEnabled(is_hardware);
+  m_ui.gpuDitheringMode->setEnabled(is_hardware);
   m_ui.pgxpEnable->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisablePGXP));
 
   m_ui.gpuLineDetectMode->setEnabled(is_hardware);
   m_ui.gpuLineDetectModeLabel->setEnabled(is_hardware);
   m_ui.gpuWireframeMode->setEnabled(is_hardware);
   m_ui.gpuWireframeModeLabel->setEnabled(is_hardware);
-  m_ui.scaledDithering->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
-  m_ui.scaledInterlacing->setEnabled(is_hardware && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledInterlacing));
+  m_ui.scaledInterlacing->setEnabled(is_hardware &&
+                                     !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledInterlacing));
   m_ui.useSoftwareRendererForReadbacks->setEnabled(is_hardware);
   m_ui.forceRoundedTexcoords->setEnabled(is_hardware);
-  m_ui.accurateBlending->setEnabled(is_hardware);
 
   m_ui.tabs->setTabEnabled(TAB_INDEX_TEXTURE_REPLACEMENTS, is_hardware);
 
@@ -878,7 +872,7 @@ void GraphicsSettingsWidget::populateGPUAdaptersAndResolutions(RenderAPI render_
   {
     m_ui.adapter->disconnect();
     m_ui.adapter->clear();
-    m_ui.adapter->addItem(tr("(Default)"), QVariant(QString()));
+    m_ui.adapter->addItem(tr("Default"), QVariant(QString()));
 
     const std::string current_adapter_name = m_dialog->getEffectiveStringValue("GPU", "Adapter", "");
     for (const GPUDevice::AdapterInfo& adapter : m_adapters)
@@ -1079,18 +1073,6 @@ void GraphicsSettingsWidget::updateResolutionDependentOptions()
         .c_str())
       .value_or(Settings::DEFAULT_GPU_TEXTURE_FILTER);
   m_ui.forceRoundedTexcoords->setEnabled(is_hardware && scale > 1 && texture_filtering == GPUTextureFilter::Nearest);
-  onTrueColorChanged();
-}
-
-void GraphicsSettingsWidget::onTrueColorChanged()
-{
-  const bool is_hardware = (getEffectiveRenderer() != GPURenderer::Software);
-  const int resolution_scale = m_dialog->getEffectiveIntValue("GPU", "ResolutionScale", 1);
-  const bool true_color = m_dialog->getEffectiveBoolValue("GPU", "TrueColor", false);
-  const bool allow_scaled_dithering =
-    (resolution_scale != 1 && !true_color && !m_dialog->hasGameTrait(GameDatabase::Trait::DisableScaledDithering));
-  m_ui.scaledDithering->setEnabled(is_hardware && allow_scaled_dithering);
-  m_ui.accurateBlending->setEnabled(is_hardware && !true_color);
 }
 
 void GraphicsSettingsWidget::onDownsampleModeChanged()

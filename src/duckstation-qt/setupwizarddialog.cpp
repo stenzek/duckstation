@@ -554,6 +554,19 @@ void SetupWizardDialog::setupGraphicsPage(bool initial)
                                                &Settings::ParseTextureFilterName, &Settings::GetTextureFilterName,
                                                Settings::DEFAULT_GPU_TEXTURE_FILTER);
 
+  m_ui.gpuDitheringMode->disconnect();
+  m_ui.gpuDitheringMode->clear();
+
+  for (u32 i = 0; i < static_cast<u32>(GPUDitheringMode::MaxCount); i++)
+  {
+    m_ui.gpuDitheringMode->addItem(
+      QString::fromUtf8(Settings::GetGPUDitheringModeDisplayName(static_cast<GPUDitheringMode>(i))));
+  }
+
+  SettingWidgetBinder::BindWidgetToEnumSetting(nullptr, m_ui.gpuDitheringMode, "GPU", "DitheringMode",
+                                               &Settings::ParseGPUDitheringModeName, &Settings::GetGPUDitheringModeName,
+                                               Settings::DEFAULT_GPU_DITHERING_MODE);
+
   m_ui.displayAspectRatio->disconnect();
   m_ui.displayAspectRatio->clear();
 

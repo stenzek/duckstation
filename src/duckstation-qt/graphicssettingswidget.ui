@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>655</width>
-    <height>526</height>
+    <height>538</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -146,14 +146,14 @@
           <item row="3" column="1">
            <widget class="QComboBox" name="spriteTextureFiltering"/>
           </item>
-          <item row="4" column="0">
+          <item row="6" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
              <string>Aspect Ratio:</string>
             </property>
            </widget>
           </item>
-          <item row="4" column="1">
+          <item row="6" column="1">
            <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0,0,0">
             <item>
              <widget class="QComboBox" name="displayAspectRatio"/>
@@ -187,6 +187,16 @@
             </item>
            </layout>
           </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="gpuDitheringModeLabel">
+            <property name="text">
+             <string>Dithering:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QComboBox" name="gpuDitheringMode"/>
+          </item>
           <item row="5" column="0">
            <widget class="QLabel" name="label_3">
             <property name="text">
@@ -197,39 +207,39 @@
           <item row="5" column="1">
            <widget class="QComboBox" name="displayDeinterlacing"/>
           </item>
-          <item row="6" column="0">
+          <item row="7" column="1">
+           <widget class="QComboBox" name="displayCropMode"/>
+          </item>
+          <item row="7" column="0">
            <widget class="QLabel" name="label_7">
             <property name="text">
              <string>Crop:</string>
             </property>
            </widget>
           </item>
-          <item row="6" column="1">
-           <widget class="QComboBox" name="displayCropMode"/>
-          </item>
-          <item row="7" column="0">
+          <item row="8" column="0">
            <widget class="QLabel" name="label_8">
             <property name="text">
              <string>Scaling:</string>
             </property>
            </widget>
           </item>
-          <item row="7" column="1">
+          <item row="8" column="1">
            <widget class="QComboBox" name="displayScaling"/>
           </item>
-          <item row="8" column="0" colspan="2">
+          <item row="9" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="widescreenHack">
-              <property name="text">
-               <string>Widescreen Rendering</string>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="0">
              <widget class="QCheckBox" name="force43For24Bit">
               <property name="text">
                <string>Force 4:3 For FMVs</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QCheckBox" name="pgxpDepthBuffer">
+              <property name="text">
+               <string>PGXP Depth Buffer (Low Compatibility)</string>
               </property>
              </widget>
             </item>
@@ -240,13 +250,6 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QCheckBox" name="trueColor">
-              <property name="text">
-               <string>True Color Rendering</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="0">
              <widget class="QCheckBox" name="pgxpEnable">
               <property name="text">
@@ -254,10 +257,10 @@
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="pgxpDepthBuffer">
+            <item row="3" column="0">
+             <widget class="QCheckBox" name="widescreenHack">
               <property name="text">
-               <string>PGXP Depth Buffer (Low Compatibility)</string>
+               <string>Widescreen Rendering</string>
               </property>
              </widget>
             </item>
@@ -411,24 +414,17 @@
           </item>
           <item row="3" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="forceRoundedTexcoords">
-              <property name="text">
-               <string>Round Upscaled Texture Coordinates</string>
-              </property>
-             </widget>
-            </item>
             <item row="1" column="1">
-             <widget class="QCheckBox" name="scaledDithering">
+             <widget class="QCheckBox" name="scaledInterlacing">
               <property name="text">
-               <string>Scaled Dithering</string>
+               <string>Scaled Interlacing</string>
               </property>
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QCheckBox" name="accurateBlending">
+             <widget class="QCheckBox" name="forceRoundedTexcoords">
               <property name="text">
-               <string>Accurate Blending</string>
+               <string>Round Upscaled Texture Coordinates</string>
               </property>
              </widget>
             </item>
@@ -456,13 +452,6 @@
                </widget>
               </item>
              </layout>
-            </item>
-            <item row="2" column="1">
-             <widget class="QCheckBox" name="scaledInterlacing">
-              <property name="text">
-               <string>Scaled Interlacing</string>
-              </property>
-             </widget>
             </item>
            </layout>
           </item>

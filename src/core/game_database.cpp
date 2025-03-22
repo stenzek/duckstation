@@ -79,7 +79,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "ForceSoftwareRenderer",
   "ForceSoftwareRendererForReadbacks",
   "ForceRoundTextureCoordinates",
-  "ForceAccurateBlending",
+  "ForceShaderBlending",
   "ForceDeinterlacing",
   "ForceFullBoot",
   "DisableAutoAnalogMode",
@@ -109,7 +109,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer For Readbacks", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Round Texture Coordinates", "GameDatabase::Trait"),
-  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Accurate Blending", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Shader Blending", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Deinterlacing", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Full Boot", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
@@ -489,14 +489,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.gpu_force_round_texcoords = true;
   }
 
-  if (HasTrait(Trait::ForceAccurateBlending))
-  {
-    if (display_osd_messages && !settings.IsUsingSoftwareRenderer() && !settings.gpu_accurate_blending)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Accurate blending enabled."));
-
-    settings.gpu_accurate_blending = true;
-  }
-
   if (HasTrait(Trait::ForceDeinterlacing))
   {
     const DisplayDeinterlacingMode new_mode = display_deinterlacing_mode.value_or(
@@ -527,12 +519,32 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
   }
 
-  if (HasTrait(Trait::DisableTrueColor))
+  if (HasTrait(Trait::DisableTrueColor) || HasTrait(Trait::DisableScaledDithering) ||
+      HasTrait(Trait::ForceShaderBlending))
   {
-    if (display_osd_messages && settings.gpu_true_color)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "True color disabled."));
+    // Note: The order these are applied matters.
+    const GPUDitheringMode old_mode = settings.gpu_dithering_mode;
+    if (HasTrait(Trait::DisableTrueColor) && settings.IsUsingTrueColor())
+    {
+      settings.gpu_dithering_mode = GPUDitheringMode::Scaled;
+    }
+    if (HasTrait(Trait::DisableScaledDithering) && settings.IsUsingDithering())
+    {
+      settings.gpu_dithering_mode =
+        (settings.IsUsingShaderBlending() ? GPUDitheringMode::UnscaledShaderBlend : GPUDitheringMode::Unscaled);
+    }
+    if (HasTrait(Trait::ForceShaderBlending) && settings.IsUsingDithering() && !settings.IsUsingShaderBlending())
+    {
+      settings.gpu_dithering_mode = (settings.gpu_dithering_mode == GPUDitheringMode::Scaled) ?
+                                      GPUDitheringMode::ScaledShaderBlend :
+                                      GPUDitheringMode::UnscaledShaderBlend;
+    }
 
-    settings.gpu_true_color = false;
+    if (display_osd_messages && settings.gpu_dithering_mode != old_mode)
+    {
+      APPEND_MESSAGE_FMT(TRANSLATE_FS("GameDatabase", "Dithering set to {}."),
+                         Settings::GetGPUDitheringModeDisplayName(settings.gpu_dithering_mode));
+    }
   }
 
   if (HasTrait(Trait::DisableUpscaling))
@@ -563,14 +575,6 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
 
     settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
-  }
-
-  if (HasTrait(Trait::DisableScaledDithering))
-  {
-    if (display_osd_messages && settings.gpu_scaled_dithering)
-      APPEND_MESSAGE(TRANSLATE_SV("GameDatabase", "Scaled dithering disabled."));
-
-    settings.gpu_scaled_dithering = false;
   }
 
   if (HasTrait(Trait::DisableScaledInterlacing))

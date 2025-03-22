@@ -229,11 +229,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   gpu_use_thread = si.GetBoolValue("GPU", "UseThread", true);
   gpu_max_queued_frames = static_cast<u8>(si.GetUIntValue("GPU", "MaxQueuedFrames", DEFAULT_GPU_MAX_QUEUED_FRAMES));
   gpu_use_software_renderer_for_readbacks = si.GetBoolValue("GPU", "UseSoftwareRendererForReadbacks", false);
-  gpu_true_color = si.GetBoolValue("GPU", "TrueColor", true);
-  gpu_scaled_dithering = si.GetBoolValue("GPU", "ScaledDithering", true);
   gpu_scaled_interlacing = si.GetBoolValue("GPU", "ScaledInterlacing", true);
   gpu_force_round_texcoords = si.GetBoolValue("GPU", "ForceRoundTextureCoordinates", false);
-  gpu_accurate_blending = si.GetBoolValue("GPU", "AccurateBlending", false);
   gpu_texture_filter =
     ParseTextureFilterName(
       si.GetStringValue("GPU", "TextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
@@ -242,6 +239,10 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     ParseTextureFilterName(
       si.GetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(DEFAULT_GPU_TEXTURE_FILTER)).c_str())
       .value_or(DEFAULT_GPU_TEXTURE_FILTER);
+  gpu_dithering_mode =
+    ParseGPUDitheringModeName(
+      si.GetStringValue("GPU", "DitheringMode", GetGPUDitheringModeName(DEFAULT_GPU_DITHERING_MODE)).c_str())
+      .value_or(DEFAULT_GPU_DITHERING_MODE);
   gpu_line_detect_mode =
     ParseLineDetectModeName(
       si.GetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(DEFAULT_GPU_LINE_DETECT_MODE)).c_str())
@@ -587,13 +588,11 @@ void Settings::Save(SettingsInterface& si, bool ignore_base) const
   si.SetUIntValue("GPU", "MaxQueuedFrames", gpu_max_queued_frames);
   si.SetBoolValue("GPU", "UseThread", gpu_use_thread);
   si.SetBoolValue("GPU", "UseSoftwareRendererForReadbacks", gpu_use_software_renderer_for_readbacks);
-  si.SetBoolValue("GPU", "TrueColor", gpu_true_color);
-  si.SetBoolValue("GPU", "ScaledDithering", gpu_scaled_dithering);
   si.SetBoolValue("GPU", "ScaledInterlacing", gpu_scaled_interlacing);
   si.SetBoolValue("GPU", "ForceRoundTextureCoordinates", gpu_force_round_texcoords);
-  si.SetBoolValue("GPU", "AccurateBlending", gpu_accurate_blending);
   si.SetStringValue("GPU", "TextureFilter", GetTextureFilterName(gpu_texture_filter));
   si.SetStringValue("GPU", "SpriteTextureFilter", GetTextureFilterName(gpu_sprite_texture_filter));
+  si.SetStringValue("GPU", "DitheringMode", GetGPUDitheringModeName(gpu_dithering_mode));
   si.SetStringValue("GPU", "LineDetectMode", GetLineDetectModeName(gpu_line_detect_mode));
   si.SetStringValue("GPU", "DownsampleMode", GetDownsampleModeName(gpu_downsample_mode));
   si.SetUIntValue("GPU", "DownsampleScale", gpu_downsample_scale);
@@ -991,12 +990,11 @@ void Settings::FixIncompatibleSettings(const SettingsInterface& si, bool display
     g_settings.gpu_multisamples = 1;
     g_settings.gpu_automatic_resolution_scale = false;
     g_settings.gpu_per_sample_shading = false;
-    g_settings.gpu_true_color = false;
-    g_settings.gpu_scaled_dithering = false;
     g_settings.gpu_scaled_interlacing = false;
     g_settings.gpu_force_round_texcoords = false;
     g_settings.gpu_texture_filter = GPUTextureFilter::Nearest;
     g_settings.gpu_sprite_texture_filter = GPUTextureFilter::Nearest;
+    g_settings.gpu_dithering_mode = GPUDitheringMode::Unscaled;
     g_settings.gpu_line_detect_mode = GPULineDetectMode::Disabled;
     g_settings.gpu_force_video_timing = ForceVideoTimingMode::Disabled;
     g_settings.gpu_widescreen_hack = false;
@@ -1556,6 +1554,44 @@ const char* Settings::GetTextureFilterDisplayName(GPUTextureFilter filter)
 {
   return Host::TranslateToCString("Settings", s_texture_filter_display_names[static_cast<size_t>(filter)],
                                   "GPUTextureFilter");
+}
+
+static constexpr const std::array s_gpu_dithering_mode_names = {
+  "Unscaled", "UnscaledShaderBlend", "Scaled", "ScaledShaderBlend", "TrueColor",
+};
+static constexpr const std::array s_gpu_dithering_mode_display_names = {
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Unscaled", "GPUDitheringMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Unscaled (Shader Blending)", "GPUDitheringMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Scaled", "GPUDitheringMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Scaled (Shader Blending)", "GPUDitheringMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "True Color", "GPUDitheringMode"),
+};
+static_assert(s_gpu_dithering_mode_names.size() == static_cast<size_t>(GPUDitheringMode::MaxCount));
+static_assert(s_gpu_dithering_mode_display_names.size() == static_cast<size_t>(GPUDitheringMode::MaxCount));
+
+std::optional<GPUDitheringMode> Settings::ParseGPUDitheringModeName(const char* str)
+{
+  int index = 0;
+  for (const char* name : s_gpu_dithering_mode_names)
+  {
+    if (StringUtil::Strcasecmp(name, str) == 0)
+      return static_cast<GPUDitheringMode>(index);
+
+    index++;
+  }
+
+  return std::nullopt;
+}
+
+const char* Settings::GetGPUDitheringModeName(GPUDitheringMode mode)
+{
+  return s_gpu_dithering_mode_names[static_cast<size_t>(mode)];
+}
+
+const char* Settings::GetGPUDitheringModeDisplayName(GPUDitheringMode mode)
+{
+  return Host::TranslateToCString("Settings", s_gpu_dithering_mode_display_names[static_cast<size_t>(mode)],
+                                  "GPUDitheringMode");
 }
 
 static constexpr const std::array s_line_detect_mode_names = {

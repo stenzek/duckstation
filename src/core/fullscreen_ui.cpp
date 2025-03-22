@@ -5025,7 +5025,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     OpenChoiceDialog(FSUI_ICONSTR(ICON_FA_MICROCHIP, "GPU Adapter"), false, std::move(options), std::move(callback));
   }
 
-  const bool true_color_enabled = (is_hardware && GetEffectiveBoolSetting(bsi, "GPU", "TrueColor", false));
   const bool pgxp_enabled = (is_hardware && GetEffectiveBoolSetting(bsi, "GPU", "PGXPEnable", false));
   const bool texture_correction_enabled =
     (pgxp_enabled && GetEffectiveBoolSetting(bsi, "GPU", "PGXPTextureCorrection", true));
@@ -5066,6 +5065,13 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                     FSUI_CSTR("Smooths out the blockiness of magnified textures on 2D objects."), "GPU",
                     "SpriteTextureFilter", Settings::DEFAULT_GPU_TEXTURE_FILTER, &Settings::ParseTextureFilterName,
                     &Settings::GetTextureFilterName, &Settings::GetTextureFilterDisplayName, GPUTextureFilter::Count);
+
+    DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_TINT_SLASH, "Dithering"),
+                    FSUI_CSTR("Controls how dithering is applied in the emulated GPU. True Color disables dithering "
+                              "and produces the nicest looking gradients."),
+                    "GPU", "DitheringMode", Settings::DEFAULT_GPU_DITHERING_MODE, &Settings::ParseGPUDitheringModeName,
+                    &Settings::GetGPUDitheringModeName, &Settings::GetGPUDitheringModeDisplayName,
+                    GPUDitheringMode::MaxCount);
   }
 
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_SHAPES, "Aspect Ratio"),
@@ -5093,13 +5099,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     FSUI_CSTR("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."),
     "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
     &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
-
-  if (is_hardware)
-  {
-    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_PALETTE, "True Color Rendering"),
-                      FSUI_CSTR("Disables dithering and uses the full 8 bits per channel of color information."), "GPU",
-                      "TrueColor", true);
-  }
 
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_EXCHANGE_ALT, "Widescreen Rendering"),
                     FSUI_CSTR("Increases the field of view from 4:3 to the chosen display aspect ratio in 3D games."),
@@ -5220,21 +5219,10 @@ void FullscreenUI::DrawGraphicsSettingsPage()
                     &Settings::GetGPUWireframeModeName, &Settings::GetGPUWireframeModeDisplayName,
                     GPUWireframeMode::Count);
 
-    DrawToggleSetting(
-      bsi, FSUI_ICONSTR(ICON_FA_TINT_SLASH, "Scaled Dithering"),
-      FSUI_CSTR("Scales the dithering pattern with the internal rendering resolution, making it less noticeable. "
-                "Usually safe to enable."),
-      "GPU", "ScaledDithering", true, !true_color_enabled && resolution_scale > 1);
-
     DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_TINT_SLASH, "Scaled Interlacing"),
                       FSUI_CSTR("Scales line skipping in interlaced rendering to the internal resolution, making it "
                                 "less noticeable. Usually safe to enable."),
                       "GPU", "ScaledInterlacing", true, resolution_scale > 1);
-
-    DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_FILL, "Accurate Blending"),
-                      FSUI_CSTR("Forces blending to be done in the shader at 16-bit precision, when not using true "
-                                "color. Non-trivial performance impact, and unnecessary for most games."),
-                      "GPU", "AccurateBlending", false, !true_color_enabled);
 
     const GPUTextureFilter texture_filtering =
       Settings::ParseTextureFilterName(
@@ -8835,7 +8823,6 @@ TRANSLATE_NOOP("FullscreenUI", "AMOLED");
 TRANSLATE_NOOP("FullscreenUI", "About");
 TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Account");
-TRANSLATE_NOOP("FullscreenUI", "Accurate Blending");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Unlock/Count");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
@@ -8939,6 +8926,7 @@ TRANSLATE_NOOP("FullscreenUI", "Controller preset '{}' loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Controller preset '{}' saved.");
 TRANSLATE_NOOP("FullscreenUI", "Controller settings reset to default.");
 TRANSLATE_NOOP("FullscreenUI", "Controls");
+TRANSLATE_NOOP("FullscreenUI", "Controls how dithering is applied in the emulated GPU. True Color disables dithering and produces the nicest looking gradients.");
 TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host when fast forwarding.");
 TRANSLATE_NOOP("FullscreenUI", "Controls the volume of the audio played on the host.");
 TRANSLATE_NOOP("FullscreenUI", "Copies the current global settings to this game.");
@@ -8999,13 +8987,13 @@ TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Disable on 2D Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Disabled");
-TRANSLATE_NOOP("FullscreenUI", "Disables dithering and uses the full 8 bits per channel of color information.");
 TRANSLATE_NOOP("FullscreenUI", "Disc {} | {}");
 TRANSLATE_NOOP("FullscreenUI", "Discord Server");
 TRANSLATE_NOOP("FullscreenUI", "Display Area");
 TRANSLATE_NOOP("FullscreenUI", "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages on events such as achievement unlocks and leaderboard submissions.");
 TRANSLATE_NOOP("FullscreenUI", "Displays popup messages when starting, submitting, or failing a leaderboard challenge.");
+TRANSLATE_NOOP("FullscreenUI", "Dithering");
 TRANSLATE_NOOP("FullscreenUI", "Double-Click Toggles Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Download Covers");
 TRANSLATE_NOOP("FullscreenUI", "Downloads covers from a user-specified URL template.");
@@ -9086,7 +9074,6 @@ TRANSLATE_NOOP("FullscreenUI", "File Size: %u MB (%u MB on disk)");
 TRANSLATE_NOOP("FullscreenUI", "File Title");
 TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For FMVs");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
-TRANSLATE_NOOP("FullscreenUI", "Forces blending to be done in the shader at 16-bit precision, when not using true color. Non-trivial performance impact, and unnecessary for most games.");
 TRANSLATE_NOOP("FullscreenUI", "Forces texture upload tracking to be enabled regardless of whether it is needed.");
 TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.");
@@ -9334,11 +9321,9 @@ TRANSLATE_NOOP("FullscreenUI", "Save State Compression");
 TRANSLATE_NOOP("FullscreenUI", "Save State On Shutdown");
 TRANSLATE_NOOP("FullscreenUI", "Saved {:%c}");
 TRANSLATE_NOOP("FullscreenUI", "Saves state periodically so you can rewind any mistakes while playing.");
-TRANSLATE_NOOP("FullscreenUI", "Scaled Dithering");
 TRANSLATE_NOOP("FullscreenUI", "Scaled Interlacing");
 TRANSLATE_NOOP("FullscreenUI", "Scales internal VRAM resolution by the specified multiplier. Some games require 1x VRAM resolution.");
 TRANSLATE_NOOP("FullscreenUI", "Scales line skipping in interlaced rendering to the internal resolution, making it less noticeable. Usually safe to enable.");
-TRANSLATE_NOOP("FullscreenUI", "Scales the dithering pattern with the internal rendering resolution, making it less noticeable. Usually safe to enable.");
 TRANSLATE_NOOP("FullscreenUI", "Scaling");
 TRANSLATE_NOOP("FullscreenUI", "Scan For New Games");
 TRANSLATE_NOOP("FullscreenUI", "Scanning Subdirectories");
@@ -9473,7 +9458,6 @@ TRANSLATE_NOOP("FullscreenUI", "Toggle Fullscreen");
 TRANSLATE_NOOP("FullscreenUI", "Toggle every %d frames");
 TRANSLATE_NOOP("FullscreenUI", "Toggles the macro when the button is pressed, instead of held.");
 TRANSLATE_NOOP("FullscreenUI", "Trigger");
-TRANSLATE_NOOP("FullscreenUI", "True Color Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Turbo Speed");
 TRANSLATE_NOOP("FullscreenUI", "Type");
 TRANSLATE_NOOP("FullscreenUI", "UI Language");

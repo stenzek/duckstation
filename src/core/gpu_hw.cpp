@@ -261,7 +261,7 @@ bool GPU_HW::Initialize(bool upload_vram, Error* error)
   m_wireframe_mode = g_gpu_settings.gpu_wireframe_mode;
   m_supports_dual_source_blend = features.dual_source_blend;
   m_supports_framebuffer_fetch = features.framebuffer_fetch;
-  m_true_color = g_gpu_settings.gpu_true_color;
+  m_true_color = g_gpu_settings.IsUsingTrueColor();
   m_pgxp_depth_buffer = g_gpu_settings.UsingPGXPDepthBuffer();
   m_clamp_uvs = ShouldClampUVs(m_texture_filtering) || ShouldClampUVs(m_sprite_texture_filtering);
   m_compute_uv_range = m_clamp_uvs;
@@ -446,22 +446,21 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   const u8 resolution_scale = Truncate8(CalculateResolutionScale());
   const u8 multisamples = Truncate8(std::min<u32>(g_gpu_settings.gpu_multisamples, g_gpu_device->GetMaxMultisamples()));
   const bool clamp_uvs = ShouldClampUVs(m_texture_filtering) || ShouldClampUVs(m_sprite_texture_filtering);
-  const bool framebuffer_changed =
-    (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
-     g_gpu_settings.IsUsingAccurateBlending() != old_settings.IsUsingAccurateBlending() ||
-     m_pgxp_depth_buffer != g_gpu_settings.UsingPGXPDepthBuffer() ||
-     (!old_settings.gpu_texture_cache && g_gpu_settings.gpu_texture_cache));
+  const bool framebuffer_changed = (m_resolution_scale != resolution_scale || m_multisamples != multisamples ||
+                                    g_gpu_settings.IsUsingShaderBlending() != old_settings.IsUsingShaderBlending() ||
+                                    m_pgxp_depth_buffer != g_gpu_settings.UsingPGXPDepthBuffer() ||
+                                    (!old_settings.gpu_texture_cache && g_gpu_settings.gpu_texture_cache));
   const bool shaders_changed =
     ((m_resolution_scale > 1) != (resolution_scale > 1) || m_multisamples != multisamples ||
-     m_true_color != g_gpu_settings.gpu_true_color ||
+     m_true_color != g_gpu_settings.IsUsingTrueColor() ||
      (old_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive) !=
        (g_gpu_settings.display_deinterlacing_mode == DisplayDeinterlacingMode::Progressive) ||
      (multisamples > 1 && g_gpu_settings.gpu_per_sample_shading != old_settings.gpu_per_sample_shading) ||
-     (resolution_scale > 1 && (g_gpu_settings.gpu_scaled_dithering != old_settings.gpu_scaled_dithering ||
+     (resolution_scale > 1 && (g_gpu_settings.IsUsingScaledDithering() != old_settings.IsUsingScaledDithering() ||
                                g_gpu_settings.gpu_scaled_interlacing != old_settings.gpu_scaled_interlacing)) ||
      (resolution_scale > 1 && g_gpu_settings.gpu_texture_filter == GPUTextureFilter::Nearest &&
       g_gpu_settings.gpu_force_round_texcoords != old_settings.gpu_force_round_texcoords) ||
-     g_gpu_settings.IsUsingAccurateBlending() != old_settings.IsUsingAccurateBlending() ||
+     g_gpu_settings.IsUsingShaderBlending() != old_settings.IsUsingShaderBlending() ||
      m_texture_filtering != g_gpu_settings.gpu_texture_filter ||
      m_sprite_texture_filtering != g_gpu_settings.gpu_sprite_texture_filter || m_clamp_uvs != clamp_uvs ||
      (features.geometry_shaders && g_gpu_settings.gpu_wireframe_mode != old_settings.gpu_wireframe_mode) ||
@@ -522,7 +521,7 @@ bool GPU_HW::UpdateSettings(const GPUSettings& old_settings, Error* error)
   m_line_detect_mode = (m_resolution_scale > 1) ? g_gpu_settings.gpu_line_detect_mode : GPULineDetectMode::Disabled;
   m_downsample_mode = GetDownsampleMode(resolution_scale);
   m_wireframe_mode = g_gpu_settings.gpu_wireframe_mode;
-  m_true_color = g_gpu_settings.gpu_true_color;
+  m_true_color = g_gpu_settings.IsUsingTrueColor();
   m_clamp_uvs = clamp_uvs;
   m_compute_uv_range = m_clamp_uvs;
   m_allow_sprite_mode = ShouldAllowSpriteMode(resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
@@ -660,23 +659,23 @@ void GPU_HW::CheckSettings()
     m_allow_sprite_mode = ShouldAllowSpriteMode(m_resolution_scale, m_texture_filtering, m_sprite_texture_filtering);
   }
 
-  if (g_gpu_settings.IsUsingAccurateBlending() && !m_supports_framebuffer_fetch && !features.feedback_loops &&
+  if (g_gpu_settings.IsUsingShaderBlending() && !m_supports_framebuffer_fetch && !features.feedback_loops &&
       !features.raster_order_views)
   {
     // m_allow_shader_blend/m_prefer_shader_blend will be cleared in pipeline compile.
     Host::AddIconOSDMessage(
       "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GPU_HW", "Accurate blending is not supported by your current GPU.\nIt requires framebuffer fetch, "
+      TRANSLATE_STR("GPU_HW", "Shader blending is not supported by your current GPU.\nIt requires framebuffer fetch, "
                               "feedback loops, or rasterizer order views."),
       Host::OSD_WARNING_DURATION);
   }
   else if (IsUsingMultisampling() && !features.framebuffer_fetch &&
-           ((g_gpu_settings.IsUsingAccurateBlending() && features.raster_order_views) ||
+           ((g_gpu_settings.IsUsingShaderBlending() && features.raster_order_views) ||
             (m_pgxp_depth_buffer && features.raster_order_views && !features.feedback_loops)))
   {
     Host::AddIconOSDMessage(
       "AccurateBlendingUnsupported", ICON_EMOJI_WARNING,
-      TRANSLATE_STR("GPU_HW", "Multisample anti-aliasing is not supported when using ROV blending."),
+      TRANSLATE_STR("GPU_HW", "Multisample anti-aliasing is not supported when using shader blending."),
       Host::OSD_WARNING_DURATION);
     m_multisamples = 1;
   }
@@ -846,8 +845,7 @@ void GPU_HW::PrintSettingsToLog()
            (g_gpu_settings.gpu_per_sample_shading && g_gpu_device->GetFeatures().per_sample_shading) ?
              " (per sample shading)" :
              "");
-  INFO_LOG("Dithering: {}", m_true_color ? "Disabled" : "Enabled",
-           (!m_true_color && g_gpu_settings.gpu_scaled_dithering));
+  INFO_LOG("Dithering: {}", Settings::GetGPUDitheringModeDisplayName(g_gpu_settings.gpu_dithering_mode));
   INFO_LOG("Deinterlacing: {}{}",
            Settings::GetDisplayDeinterlacingModeDisplayName(g_gpu_settings.display_deinterlacing_mode),
            (m_resolution_scale > 1 && g_gpu_settings.gpu_scaled_interlacing) ? " (scaled)" : "");
@@ -1054,8 +1052,8 @@ bool GPU_HW::CompilePipelines(Error* error)
   const bool per_sample_shading = (msaa && g_gpu_settings.gpu_per_sample_shading && features.per_sample_shading);
   const bool force_round_texcoords =
     (upscaled && m_texture_filtering == GPUTextureFilter::Nearest && g_gpu_settings.gpu_force_round_texcoords);
-  const bool true_color = g_gpu_settings.gpu_true_color;
-  const bool scaled_dithering = (!m_true_color && upscaled && g_gpu_settings.gpu_scaled_dithering);
+  const bool true_color = g_gpu_settings.IsUsingTrueColor();
+  const bool scaled_dithering = (!m_true_color && upscaled && g_gpu_settings.IsUsingScaledDithering());
   const bool scaled_interlacing = (upscaled && g_gpu_settings.gpu_scaled_interlacing);
   const bool disable_color_perspective = (features.noperspective_interpolation && ShouldDisableColorPerspective());
   const bool needs_page_texture = m_use_texture_cache;
@@ -1069,10 +1067,10 @@ bool GPU_HW::CompilePipelines(Error* error)
   // Abuse the depth buffer for the mask bit when it's free (FBFetch), or PGXP depth buffering is enabled.
   m_allow_shader_blend = features.framebuffer_fetch ||
                          ((features.feedback_loops || features.raster_order_views) &&
-                          (m_pgxp_depth_buffer || g_gpu_settings.IsUsingAccurateBlending() ||
+                          (m_pgxp_depth_buffer || g_gpu_settings.IsUsingShaderBlending() ||
                            (!m_supports_dual_source_blend && (IsBlendedTextureFiltering(m_texture_filtering) ||
                                                               IsBlendedTextureFiltering(m_sprite_texture_filtering)))));
-  m_prefer_shader_blend = (m_allow_shader_blend && g_gpu_settings.IsUsingAccurateBlending());
+  m_prefer_shader_blend = (m_allow_shader_blend && g_gpu_settings.IsUsingShaderBlending());
   m_use_rov_for_shader_blend = (m_allow_shader_blend && !features.framebuffer_fetch && features.raster_order_views &&
                                 (m_prefer_shader_blend || !features.feedback_loops));
   m_write_mask_as_depth = (!m_pgxp_depth_buffer && !features.framebuffer_fetch && !m_prefer_shader_blend);

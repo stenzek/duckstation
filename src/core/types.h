@@ -100,6 +100,17 @@ enum class GPUTextureFilter : u8
   Count
 };
 
+enum class GPUDitheringMode : u8
+{
+  Unscaled,
+  UnscaledShaderBlend,
+  Scaled,
+  ScaledShaderBlend,
+  TrueColor,
+
+  MaxCount,
+};
+
 enum class GPUDownsampleMode : u8
 {
   Disabled,
