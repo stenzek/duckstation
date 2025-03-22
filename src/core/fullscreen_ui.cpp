@@ -4098,6 +4098,11 @@ void FullscreenUI::DrawConsoleSettingsPage()
   DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_GLOBE, "Region"), FSUI_CSTR("Determines the emulated hardware type."),
                   "Console", "Region", Settings::DEFAULT_CONSOLE_REGION, &Settings::ParseConsoleRegionName,
                   &Settings::GetConsoleRegionName, &Settings::GetConsoleRegionDisplayName, ConsoleRegion::Count);
+  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Frame Rate"),
+                  FSUI_CSTR("Utilizes the chosen frame rate regardless of the game's setting."), "GPU",
+                  "ForceVideoTiming", Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE, &Settings::ParseForceVideoTimingName,
+                  &Settings::GetForceVideoTimingName, &Settings::GetForceVideoTimingDisplayName,
+                  ForceVideoTimingMode::Count);
   DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_MAGIC, "Safe Mode"),
                     FSUI_CSTR("Temporarily disables all enhancements, useful when testing."), "Main",
                     "DisableAllEnhancements", false);
@@ -5088,12 +5093,6 @@ void FullscreenUI::DrawGraphicsSettingsPage()
     FSUI_CSTR("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."),
     "Display", "Scaling", Settings::DEFAULT_DISPLAY_SCALING, &Settings::ParseDisplayScaling,
     &Settings::GetDisplayScalingName, &Settings::GetDisplayScalingDisplayName, DisplayScalingMode::Count);
-
-  DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_STOPWATCH, "Force Video Timing"),
-                  FSUI_CSTR("Utilizes the chosen video timing regardless of the game's setting."), "GPU",
-                  "ForceVideoTiming", Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE, &Settings::ParseForceVideoTimingName,
-                  &Settings::GetForceVideoTimingName, &Settings::GetForceVideoTimingDisplayName,
-                  ForceVideoTimingMode::Count);
 
   if (is_hardware)
   {
@@ -9086,12 +9085,12 @@ TRANSLATE_NOOP("FullscreenUI", "File Size");
 TRANSLATE_NOOP("FullscreenUI", "File Size: %u MB (%u MB on disk)");
 TRANSLATE_NOOP("FullscreenUI", "File Title");
 TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For FMVs");
-TRANSLATE_NOOP("FullscreenUI", "Force Video Timing");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
 TRANSLATE_NOOP("FullscreenUI", "Forces blending to be done in the shader at 16-bit precision, when not using true color. Non-trivial performance impact, and unnecessary for most games.");
 TRANSLATE_NOOP("FullscreenUI", "Forces texture upload tracking to be enabled regardless of whether it is needed.");
 TRANSLATE_NOOP("FullscreenUI", "Forces the use of FIFO over Mailbox presentation, i.e. double buffering instead of triple buffering. Usually results in worse frame pacing.");
 TRANSLATE_NOOP("FullscreenUI", "Forcibly mutes both CD-DA and XA audio from the CD-ROM. Can be used to disable background music in some games.");
+TRANSLATE_NOOP("FullscreenUI", "Frame Rate");
 TRANSLATE_NOOP("FullscreenUI", "Frame Time Buffer");
 TRANSLATE_NOOP("FullscreenUI", "Frequency");
 TRANSLATE_NOOP("FullscreenUI", "From File...");
@@ -9503,7 +9502,7 @@ TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for color
 TRANSLATE_NOOP("FullscreenUI", "Uses perspective-correct interpolation for texture coordinates, straightening out warped textures.");
 TRANSLATE_NOOP("FullscreenUI", "Uses screen positions to resolve PGXP data. May improve visuals in some games.");
 TRANSLATE_NOOP("FullscreenUI", "Uses separate game settings for each disc of multi-disc games. Can only be set on the first/main disc.");
-TRANSLATE_NOOP("FullscreenUI", "Utilizes the chosen video timing regardless of the game's setting.");
+TRANSLATE_NOOP("FullscreenUI", "Utilizes the chosen frame rate regardless of the game's setting.");
 TRANSLATE_NOOP("FullscreenUI", "Value: {} | Default: {} | Minimum: {} | Maximum: {}");
 TRANSLATE_NOOP("FullscreenUI", "Vertex Cache");
 TRANSLATE_NOOP("FullscreenUI", "Vertical Sync (VSync)");

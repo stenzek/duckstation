@@ -133,6 +133,19 @@
             </property>
            </widget>
           </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="textureFiltering"/>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="spriteTextureFilteringLabel">
+            <property name="text">
+             <string>Sprite Texture Filtering:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QComboBox" name="spriteTextureFiltering"/>
+          </item>
           <item row="4" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
@@ -204,7 +217,7 @@
           <item row="7" column="1">
            <widget class="QComboBox" name="displayScaling"/>
           </item>
-          <item row="9" column="0" colspan="2">
+          <item row="8" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_2">
             <item row="0" column="1">
              <widget class="QCheckBox" name="widescreenHack">
@@ -249,29 +262,6 @@
              </widget>
             </item>
            </layout>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="textureFiltering"/>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="spriteTextureFilteringLabel">
-            <property name="text">
-             <string>Sprite Texture Filtering:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QComboBox" name="spriteTextureFiltering"/>
-          </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="forceVideoTimingLabel">
-            <property name="text">
-             <string>Force Video Timing:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="1">
-           <widget class="QComboBox" name="forceVideoTiming"/>
           </item>
          </layout>
         </widget>

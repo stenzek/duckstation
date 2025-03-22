@@ -29,6 +29,16 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
                          QString::fromUtf8(Settings::GetConsoleRegionDisplayName(static_cast<ConsoleRegion>(i))));
   }
 
+  for (u32 i = 0; i < static_cast<u32>(ForceVideoTimingMode::Count); i++)
+  {
+    const ForceVideoTimingMode mode = static_cast<ForceVideoTimingMode>(i);
+    const QIcon region_icon =
+      QtUtils::GetIconForRegion((mode == ForceVideoTimingMode::Disabled) ?
+                                  ConsoleRegion::Auto :
+                                  ((mode == ForceVideoTimingMode::NTSC) ? ConsoleRegion::NTSC_U : ConsoleRegion::PAL));
+    m_ui.forceVideoTiming->addItem(region_icon, QString::fromUtf8(Settings::GetForceVideoTimingDisplayName(mode)));
+  }
+
   for (u32 i = 0; i < static_cast<u32>(CPUExecutionMode::Count); i++)
   {
     m_ui.cpuExecutionMode->addItem(
@@ -37,11 +47,14 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.region, "Console", "Region", &Settings::ParseConsoleRegionName,
                                                &Settings::GetConsoleRegionName, Settings::DEFAULT_CONSOLE_REGION);
+  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.forceVideoTiming, "GPU", "ForceVideoTiming",
+                                               &Settings::ParseForceVideoTimingName, &Settings::GetForceVideoTimingName,
+                                               Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastBoot, "BIOS", "PatchFastBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardBoot, "BIOS", "FastForwardBoot", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.enable8MBRAM, "Console", "Enable8MBRAM", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.fastForwardMemoryCardAccess, "MemoryCards",
-                                               +"FastForwardAccess", false);
+                                               "FastForwardAccess", false);
   connect(m_ui.fastBoot, &QCheckBox::checkStateChanged, this, &ConsoleSettingsWidget::onFastBootChanged);
   onFastBootChanged();
 
@@ -70,6 +83,12 @@ ConsoleSettingsWidget::ConsoleSettingsWidget(SettingsWindow* dialog, QWidget* pa
 
   dialog->registerWidgetHelp(m_ui.region, tr("Region"), tr("Auto-Detect"),
                              tr("Determines the emulated hardware type."));
+  dialog->registerWidgetHelp(
+    m_ui.forceVideoTiming, tr("Force Video Timing"), tr("Disabled"),
+    tr("Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games "
+       "to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this "
+       "will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not "
+       "affect the speed."));
   m_dialog->registerWidgetHelp(m_ui.fastBoot, tr("Fast Boot"), tr("Unchecked"),
                                tr("Skips the boot animation. Safe to enable."));
   m_dialog->registerWidgetHelp(m_ui.fastForwardBoot, tr("Fast Forward Boot"), tr("Unchecked"),

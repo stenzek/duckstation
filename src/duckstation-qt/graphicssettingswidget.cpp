@@ -84,9 +84,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.displayScaling, "Display", "Scaling",
                                                &Settings::ParseDisplayScaling, &Settings::GetDisplayScalingName,
                                                Settings::DEFAULT_DISPLAY_SCALING);
-  SettingWidgetBinder::BindWidgetToEnumSetting(sif, m_ui.forceVideoTiming, "GPU", "ForceVideoTiming",
-                                               &Settings::ParseForceVideoTimingName, &Settings::GetForceVideoTimingName,
-                                               Settings::DEFAULT_FORCE_VIDEO_TIMING_MODE);
   SettingWidgetBinder::BindWidgetToIntSetting(sif, m_ui.gpuDownsampleScale, "GPU", "DownsampleScale", 1);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.trueColor, "GPU", "TrueColor", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pgxpEnable, "GPU", "PGXPEnable", false);
@@ -397,12 +394,6 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.displayScaling, tr("Scaling"), tr("Bilinear (Smooth)"),
     tr("Determines how the emulated console's output is upscaled or downscaled to your monitor's resolution."));
-  dialog->registerWidgetHelp(
-    m_ui.forceVideoTiming, tr("Force Video Timing"), tr("Disabled"),
-    tr("Utilizes the chosen frame timing regardless of the active region. This feature can be used to force PAL games "
-       "to run at 60Hz and NTSC games to run at 50Hz. For most games which have a speed tied to the framerate, this "
-       "will result in the game running approximately 17% faster or slower. For variable frame rate games, it may not "
-       "affect the speed."));
   dialog->registerWidgetHelp(
     m_ui.trueColor, tr("True Color Rendering"), tr("Checked"),
     tr("Forces the precision of colours output to the console's framebuffer to use the full 8 bits of precision per "
@@ -729,12 +720,6 @@ void GraphicsSettingsWidget::setupAdditionalUi()
   {
     m_ui.displayScaling->addItem(
       QString::fromUtf8(Settings::GetDisplayScalingDisplayName(static_cast<DisplayScalingMode>(i))));
-  }
-
-  for (u32 i = 0; i < static_cast<u32>(ForceVideoTimingMode::Count); i++)
-  {
-    m_ui.forceVideoTiming->addItem(
-      QString::fromUtf8(Settings::GetForceVideoTimingDisplayName(static_cast<ForceVideoTimingMode>(i))));
   }
 
   // OSD Tab

@@ -4783,7 +4783,7 @@ void System::WarnAboutUnsafeSettings()
     if (g_settings.cdrom_read_speedup != 1 || g_settings.cdrom_seek_speedup != 1)
       append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      append(ICON_FA_TV, TRANSLATE_SV("System", "Force frame timings is enabled. Games may run at incorrect speeds."));
+      append(ICON_FA_TV, TRANSLATE_SV("System", "Frame rate is not set to automatic. Games may run at incorrect speeds."));
     if (!g_settings.IsUsingSoftwareRenderer())
     {
       if (g_settings.gpu_multisamples != 1)

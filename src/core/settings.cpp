@@ -1890,7 +1890,7 @@ static constexpr const std::array s_display_force_video_timing_names = {
 };
 
 static constexpr const std::array s_display_force_video_timing_display_names = {
-  TRANSLATE_DISAMBIG_NOOP("Settings", "Disabled", "ForceVideoTiming"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "Auto-Detect", "ForceVideoTiming"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "NTSC (60hz)", "ForceVideoTiming"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "PAL (50hz)", "ForceVideoTiming"),
 };
