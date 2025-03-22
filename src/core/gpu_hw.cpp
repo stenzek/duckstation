@@ -154,6 +154,21 @@ ALWAYS_INLINE_RELEASE static GSVector4i GetVRAMTransferBounds(u32 x, u32 y, u32 
   return ret;
 }
 
+/// Returns true if the below function should be applied.
+ALWAYS_INLINE static bool ShouldTruncate32To16(const GPUBackendDrawCommand* cmd)
+{
+  return (!cmd->texture_enable && !cmd->shading_enable && !cmd->dither_enable &&
+          g_gpu_settings.gpu_dithering_mode == GPUDitheringMode::TrueColor);
+}
+
+/// Truncates a 32-bit colour to 16-bit.
+ALWAYS_INLINE static u32 Truncate32To16(u32 color)
+{
+  return GSVector4i((GSVector4(GSVector4i::zext32(color).u8to32().srl32<3>()) / GSVector4::cxpr(31.0f)) *
+                    GSVector4::cxpr(255.0f))
+    .rgba32();
+}
+
 namespace {
 class ShaderCompileProgressTracker
 {
@@ -2525,7 +2540,7 @@ void GPU_HW::DrawLine(const GPUBackendDrawLineCommand* cmd)
     }
 
     AddDrawnRectangle(clamped_rect);
-    DrawLine(GSVector4(bounds), start_color, end_color, depth);
+    DrawLine(cmd, GSVector4(bounds), start_color, end_color, depth);
   }
 
   if (ShouldDrawWithSoftwareRenderer())
@@ -2568,7 +2583,7 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
     }
 
     AddDrawnRectangle(clamped_rect);
-    DrawLine(bounds, start_color, end_color, depth);
+    DrawLine(cmd, bounds, start_color, end_color, depth);
   }
 
   if (ShouldDrawWithSoftwareRenderer())
@@ -2590,9 +2605,15 @@ void GPU_HW::DrawPreciseLine(const GPUBackendDrawPreciseLineCommand* cmd)
   }
 }
 
-void GPU_HW::DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth)
+void GPU_HW::DrawLine(const GPUBackendDrawCommand* cmd, const GSVector4 bounds, u32 col0, u32 col1, float depth)
 {
   DebugAssert(m_batch_vertex_space >= 4 && m_batch_index_space >= 6);
+
+  if (ShouldTruncate32To16(cmd))
+  {
+    col0 = Truncate32To16(col0);
+    col1 = Truncate32To16(col1);
+  }
 
   const float x0 = bounds.x;
   const float y0 = bounds.y;
@@ -2717,7 +2738,9 @@ void GPU_HW::DrawSprite(const GPUBackendDrawRectangleCommand* cmd)
   const s32 pos_x = cmd->x;
   const s32 pos_y = cmd->y;
   const u32 texpage = m_draw_mode.bits;
-  const u32 color = (cmd->texture_enable && cmd->raw_texture_enable) ? UINT32_C(0x00808080) : cmd->color;
+  const u32 color = (cmd->texture_enable && cmd->raw_texture_enable) ?
+                      UINT32_C(0x00808080) :
+                      (ShouldTruncate32To16(cmd) ? Truncate32To16(cmd->color) : cmd->color);
   const float depth = GetCurrentNormalizedVertexDepth();
   const u32 orig_tex_left = ZeroExtend32(Truncate8(cmd->texcoord));
   const u32 orig_tex_top = ZeroExtend32(cmd->texcoord) >> 8;
@@ -2978,6 +3001,12 @@ ALWAYS_INLINE_RELEASE bool GPU_HW::BeginPolygonDraw(const GPUBackendDrawCommand*
         num_vertices = 3;
       }
     }
+  }
+
+  if (ShouldTruncate32To16(cmd))
+  {
+    for (u32 i = 0; i < 4; i++)
+      vertices[i].color = Truncate32To16(vertices[i].color);
   }
 
   PrepareDraw(cmd);

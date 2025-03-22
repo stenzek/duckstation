@@ -1557,7 +1557,7 @@ const char* Settings::GetTextureFilterDisplayName(GPUTextureFilter filter)
 }
 
 static constexpr const std::array s_gpu_dithering_mode_names = {
-  "Unscaled", "UnscaledShaderBlend", "Scaled", "ScaledShaderBlend", "TrueColor",
+  "Unscaled", "UnscaledShaderBlend", "Scaled", "ScaledShaderBlend", "TrueColor", "TrueColorFull",
 };
 static constexpr const std::array s_gpu_dithering_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Unscaled", "GPUDitheringMode"),
@@ -1565,6 +1565,7 @@ static constexpr const std::array s_gpu_dithering_mode_display_names = {
   TRANSLATE_DISAMBIG_NOOP("Settings", "Scaled", "GPUDitheringMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "Scaled (Shader Blending)", "GPUDitheringMode"),
   TRANSLATE_DISAMBIG_NOOP("Settings", "True Color", "GPUDitheringMode"),
+  TRANSLATE_DISAMBIG_NOOP("Settings", "True Color (Full)", "GPUDitheringMode"),
 };
 static_assert(s_gpu_dithering_mode_names.size() == static_cast<size_t>(GPUDitheringMode::MaxCount));
 static_assert(s_gpu_dithering_mode_display_names.size() == static_cast<size_t>(GPUDitheringMode::MaxCount));

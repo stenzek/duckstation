@@ -107,6 +107,7 @@ enum class GPUDitheringMode : u8
   Scaled,
   ScaledShaderBlend,
   TrueColor,
+  TrueColorFull,
 
   MaxCount,
 };

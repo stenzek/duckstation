@@ -80,6 +80,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "ForceSoftwareRendererForReadbacks",
   "ForceRoundTextureCoordinates",
   "ForceShaderBlending",
+  "ForceFullTrueColor",
   "ForceDeinterlacing",
   "ForceFullBoot",
   "DisableAutoAnalogMode",
@@ -110,6 +111,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer For Readbacks", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Round Texture Coordinates", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Shader Blending", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Full True Color", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Deinterlacing", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Full Boot", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
@@ -520,7 +522,7 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
   }
 
   if (HasTrait(Trait::DisableTrueColor) || HasTrait(Trait::DisableScaledDithering) ||
-      HasTrait(Trait::ForceShaderBlending))
+      HasTrait(Trait::ForceShaderBlending) || HasTrait(Trait::ForceFullTrueColor))
   {
     // Note: The order these are applied matters.
     const GPUDitheringMode old_mode = settings.gpu_dithering_mode;
@@ -538,6 +540,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
       settings.gpu_dithering_mode = (settings.gpu_dithering_mode == GPUDitheringMode::Scaled) ?
                                       GPUDitheringMode::ScaledShaderBlend :
                                       GPUDitheringMode::UnscaledShaderBlend;
+    }
+    if (HasTrait(Trait::ForceFullTrueColor) && settings.gpu_dithering_mode == GPUDitheringMode::TrueColor)
+    {
+      settings.gpu_dithering_mode = GPUDitheringMode::TrueColorFull;
     }
 
     if (display_osd_messages && settings.gpu_dithering_mode != old_mode)

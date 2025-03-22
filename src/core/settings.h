@@ -212,7 +212,7 @@ struct GPUSettings
   void SetPGXPDepthClearThreshold(float value);
 
   ALWAYS_INLINE bool IsUsingSoftwareRenderer() const { return (gpu_renderer == GPURenderer::Software); }
-  ALWAYS_INLINE bool IsUsingTrueColor() const { return (gpu_dithering_mode == GPUDitheringMode::TrueColor); }
+  ALWAYS_INLINE bool IsUsingTrueColor() const { return (gpu_dithering_mode >= GPUDitheringMode::TrueColor); }
   ALWAYS_INLINE bool IsUsingDithering() const { return (gpu_dithering_mode < GPUDitheringMode::TrueColor); }
   ALWAYS_INLINE bool IsUsingShaderBlending() const
   {

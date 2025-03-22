@@ -242,7 +242,7 @@ private:
   bool BlitVRAMReplacementTexture(GPUTexture* tex, u32 dst_x, u32 dst_y, u32 width, u32 height);
 
   /// Expands a line into two triangles.
-  void DrawLine(const GSVector4 bounds, u32 col0, u32 col1, float depth);
+  void DrawLine(const GPUBackendDrawCommand* cmd, const GSVector4 bounds, u32 col0, u32 col1, float depth);
 
   /// Computes partial derivatives and area for the given triangle. Needed for sprite/line detection.
   static void ComputeUVPartialDerivatives(const BatchVertex* vertices, float* dudx, float* dudy, float* dvdx,
