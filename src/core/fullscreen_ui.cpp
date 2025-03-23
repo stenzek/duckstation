@@ -1120,9 +1120,12 @@ void FullscreenUI::ReturnToPreviousWindow()
 void FullscreenUI::ReturnToMainWindow()
 {
   ClosePauseMenu();
-  s_state.current_main_window = GPUThread::HasGPUBackend() ?
-                                  MainWindowType::None :
-                                  (ShouldOpenToGameList() ? MainWindowType::GameList : MainWindowType::Landing);
+  if (GPUThread::HasGPUBackend())
+    s_state.current_main_window = MainWindowType::None;
+  else if (ShouldOpenToGameList())
+    SwitchToGameList();
+  else
+    s_state.current_main_window = MainWindowType::Landing;
   UpdateRunIdleState();
   FixStateIfPaused();
 }
@@ -3376,6 +3379,12 @@ void FullscreenUI::SwitchToSettings()
 
   PopulateGraphicsAdapterList();
   PopulatePostProcessingChain(GetEditingSettingsInterface(), PostProcessing::Config::DISPLAY_CHAIN_SECTION);
+
+  if (!IsEditingGameSettings(GetEditingSettingsInterface()))
+  {
+    auto lock = Host::GetSettingsLock();
+    PopulateGameListDirectoryCache(Host::Internal::GetBaseSettingsLayer());
+  }
 
   s_state.current_main_window = MainWindowType::Settings;
   s_state.settings_page = SettingsPage::Interface;
@@ -8317,10 +8326,6 @@ void FullscreenUI::SwitchToGameList()
   }
   s_state.icon_image_map.clear();
 
-  {
-    auto lock = Host::GetSettingsLock();
-    PopulateGameListDirectoryCache(Host::Internal::GetBaseSettingsLayer());
-  }
   QueueResetFocus(FocusResetType::ViewChanged);
 }
 
