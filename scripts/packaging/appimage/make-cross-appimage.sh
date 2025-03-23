@@ -107,7 +107,6 @@ declare -a DEPLIBS=(
 	"libwebpdemux.so.2"
 	"libwebpmux.so.3"
 	"libwebp.so.7"
-	"libz.so.1"
 	"libzip.so.5"
 	"libzstd.so.1"
 

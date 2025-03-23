@@ -274,16 +274,17 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 EOF
 
 # Build zlib first because of the things that depend on it.
-if [ "$SKIP_ZLIBNG" != true ]; then
-	echo "Building zlib-ng..."
-	rm -fr "zlib-ng-$ZLIBNG"
-	tar xf "zlib-ng-$ZLIBNG.tar.gz"
-	cd "zlib-ng-$ZLIBNG"
-	cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja
-	cmake --build build --parallel
-	ninja -C build install
-	cd ..
-fi
+# Disabled because it currently causes crashes on armhf.
+#if [ "$SKIP_ZLIBNG" != true ]; then
+#	echo "Building zlib-ng..."
+#	rm -fr "zlib-ng-$ZLIBNG"
+#	tar xf "zlib-ng-$ZLIBNG.tar.gz"
+#	cd "zlib-ng-$ZLIBNG"
+#	cmake "${CMAKE_COMMON[@]}" -DBUILD_SHARED_LIBS=ON -DZLIB_COMPAT=ON -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_ENABLE_TESTS=OFF -DWITH_GTEST=OFF -B build -G Ninja
+#	cmake --build build --parallel
+#	ninja -C build install
+#	cd ..
+#fi
 
 # NOTE: Must be a shared library because otherwise aarch64 libgcc symbols are missing when building with clang.
 echo "Building libbacktrace..."
