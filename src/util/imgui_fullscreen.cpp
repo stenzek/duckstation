@@ -41,6 +41,7 @@ namespace ImGuiFullscreen {
 using MessageDialogCallbackVariant = std::variant<InfoMessageDialogCallback, ConfirmMessageDialogCallback>;
 
 static constexpr float MENU_BACKGROUND_ANIMATION_TIME = 0.5f;
+static constexpr float MENU_ITEM_BORDER_ROUNDING = 10.0f;
 static constexpr float SMOOTH_SCROLLING_SPEED = 3.5f;
 
 static std::optional<Image> LoadTextureImage(std::string_view path, u32 svg_width, u32 svg_height);
@@ -1161,7 +1162,7 @@ void ImGuiFullscreen::PrerenderMenuButtonBorder()
   const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
   ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-  ImGui::RenderFrame(min, max, col, true, 0.0f);
+  ImGui::RenderFrame(min, max, col, true, LayoutScale(MENU_ITEM_BORDER_ROUNDING));
 
   ImGui::PopStyleColor();
 
@@ -1301,7 +1302,7 @@ bool ImGuiFullscreen::MenuButtonFrame(const char* str_id, bool enabled, float he
       const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
       ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-      DrawMenuButtonFrame(bb->Min, bb->Max, col, true, 0.0f);
+      DrawMenuButtonFrame(bb->Min, bb->Max, col, true);
 
       ImGui::PopStyleColor();
     }
@@ -1320,7 +1321,7 @@ bool ImGuiFullscreen::MenuButtonFrame(const char* str_id, bool enabled, float he
 }
 
 void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col,
-                                          bool border /* = true */, float rounding /* = 0.0f */)
+                                          bool border /* = true */)
 {
   ImVec2 frame_min = p_min;
   ImVec2 frame_max = p_max;
@@ -1357,7 +1358,7 @@ void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_m
   if (!s_state.rendered_menu_item_border)
   {
     s_state.rendered_menu_item_border = true;
-    ImGui::RenderFrame(frame_min, frame_max, fill_col, border, rounding);
+    ImGui::RenderFrame(frame_min, frame_max, fill_col, border, LayoutScale(MENU_ITEM_BORDER_ROUNDING));
   }
 }
 
@@ -1538,8 +1539,8 @@ bool ImGuiFullscreen::ActiveButtonWithRightText(const char* title, const char* r
     const ImVec2 border_size_v = ImVec2(border_size, border_size);
     ImVec2 pos, size;
     GetMenuButtonFrameBounds(height, &pos, &size);
-    ImGui::RenderFrame(pos + border_size_v, pos + size - border_size_v, ImGui::GetColorU32(UIStyle.PrimaryColor),
-                       false);
+    ImGui::RenderFrame(pos + border_size_v, pos + size - border_size_v, ImGui::GetColorU32(UIStyle.PrimaryColor), false,
+                       LayoutScale(MENU_ITEM_BORDER_ROUNDING));
   }
 
   ImRect bb;
@@ -1705,7 +1706,7 @@ bool ImGuiFullscreen::FloatingButton(const char* text, float x, float y, float w
       const float t = std::min(static_cast<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1)), 1.0f);
       const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
       ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
-      DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+      DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
       ImGui::PopStyleColor();
     }
   }
@@ -2158,7 +2159,7 @@ bool ImGuiFullscreen::NavButton(const char* title, bool is_active, bool enabled 
     if (hovered)
     {
       const ImU32 col = ImGui::GetColorU32(held ? ImGuiCol_ButtonActive : ImGuiCol_ButtonHovered, 1.0f);
-      DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+      DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
     }
   }
   else
@@ -2231,7 +2232,7 @@ bool ImGuiFullscreen::NavTab(const char* title, bool is_active, bool enabled /* 
               ImGui::GetColorU32(is_active ? background : ImVec4(background.x, background.y, background.z, 0.5f));
 
   if (hovered)
-    DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+    DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
 
   if (is_active)
   {
@@ -2309,7 +2310,7 @@ bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, co
     const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
     ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-    DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+    DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
 
     ImGui::PopStyleColor();
   }
@@ -3620,28 +3621,28 @@ void ImGuiFullscreen::SetTheme(std::string_view theme)
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0xffffff, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
   }
-	else if (theme == "GreenGiant")
-	{
-		UIStyle.BackgroundColor = HEX_TO_IMVEC4(0xB0C400, 0xff);
-		UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
-		UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
-		UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x876433, 0xff);
-		UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xB0C400, 0xf2);
-		UIStyle.PrimaryColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
-		UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x795A2D, 0xff);
-		UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x523213, 0xff);
-		UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
-		UIStyle.DisabledColor = HEX_TO_IMVEC4(0x878269, 0xff);
-		UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-		UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
-		UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x523213, 0xff);
-		UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x523213, 0xff);
-		UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x523213, 0xff);
-		UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+  else if (theme == "GreenGiant")
+  {
+    UIStyle.BackgroundColor = HEX_TO_IMVEC4(0xB0C400, 0xff);
+    UIStyle.BackgroundTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.BackgroundLineColor = HEX_TO_IMVEC4(0xf0f0f0, 0xff);
+    UIStyle.BackgroundHighlight = HEX_TO_IMVEC4(0x876433, 0xff);
+    UIStyle.PopupBackgroundColor = HEX_TO_IMVEC4(0xB0C400, 0xf2);
+    UIStyle.PrimaryColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
+    UIStyle.PrimaryLightColor = HEX_TO_IMVEC4(0x795A2D, 0xff);
+    UIStyle.PrimaryDarkColor = HEX_TO_IMVEC4(0x523213, 0xff);
+    UIStyle.PrimaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
+    UIStyle.DisabledColor = HEX_TO_IMVEC4(0x878269, 0xff);
+    UIStyle.TextHighlightColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.PrimaryLineColor = HEX_TO_IMVEC4(0xffffff, 0xff);
+    UIStyle.SecondaryColor = HEX_TO_IMVEC4(0x523213, 0xff);
+    UIStyle.SecondaryStrongColor = HEX_TO_IMVEC4(0x523213, 0xff);
+    UIStyle.SecondaryWeakColor = HEX_TO_IMVEC4(0x523213, 0xff);
+    UIStyle.SecondaryTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ToastBackgroundColor = HEX_TO_IMVEC4(0xD5DE2E, 0xff);
     UIStyle.ToastTextColor = HEX_TO_IMVEC4(0x000000, 0xff);
     UIStyle.ShadowColor = IM_COL32(100, 100, 100, 50);
-	}
+  }
   else if (theme == "DarkRuby")
   {
     UIStyle.BackgroundColor = HEX_TO_IMVEC4(0x1b1b1b, 0xff);

@@ -250,8 +250,7 @@ void EndMenuButtons();
 void GetMenuButtonFrameBounds(float height, ImVec2* pos, ImVec2* size);
 bool MenuButtonFrame(const char* str_id, bool enabled, float height, bool* visible, bool* hovered, ImVec2* min,
                      ImVec2* max, ImGuiButtonFlags flags = 0, float hover_alpha = 1.0f);
-void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true,
-                         float rounding = 0.0f);
+void DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_max, ImU32 fill_col, bool border = true);
 void ResetMenuButtonFrame();
 void RenderShadowedTextClipped(ImFont* font, const ImVec2& pos_min, const ImVec2& pos_max, u32 color, const char* text,
                                const char* text_end, const ImVec2* text_size_if_known = nullptr,

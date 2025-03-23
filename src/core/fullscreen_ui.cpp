@@ -7125,7 +7125,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
           const float t = std::min(static_cast<float>(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1)), 1.0f);
           ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-          ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+          ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
 
           ImGui::PopStyleColor();
         }
@@ -7917,7 +7917,7 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         const float t = static_cast<float>(std::min(std::abs(std::sin(ImGui::GetTime() * 0.75) * 1.1), 1.0));
         ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetColorU32(ImGuiCol_Border, t));
 
-        ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true, 0.0f);
+        ImGuiFullscreen::DrawMenuButtonFrame(bb.Min, bb.Max, col, true);
 
         ImGui::PopStyleColor();
       }
