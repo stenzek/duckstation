@@ -5033,10 +5033,9 @@ void FullscreenUI::DrawGraphicsSettingsPage()
 
   if (is_hardware)
   {
-    DrawIntListSetting(
-      bsi, FSUI_ICONSTR(ICON_FA_EXPAND_ALT, "Internal Resolution"),
-      FSUI_CSTR("Upscales the game's rendering by the specified multiplier."),
-      "GPU", "ResolutionScale", 1, resolution_scales);
+    DrawIntListSetting(bsi, FSUI_ICONSTR(ICON_FA_EXPAND_ALT, "Internal Resolution"),
+                       FSUI_CSTR("Upscales the game's rendering by the specified multiplier."), "GPU",
+                       "ResolutionScale", 1, resolution_scales);
 
     DrawEnumSetting(bsi, FSUI_ICONSTR(ICON_FA_COMPRESS_ALT, "Downsampling"),
                     FSUI_CSTR("Downsamples the rendered image prior to displaying it. Can improve "
@@ -7339,34 +7338,37 @@ void FullscreenUI::DoLoadState(std::string path)
   std::string boot_path = std::move(s_state.save_state_selector_game_path);
   CloseSaveStateSelector();
 
-  Host::RunOnCPUThread([boot_path = std::move(boot_path), path = std::move(path)]() mutable {
-    if (System::IsValid())
-    {
-      if (path.empty())
+  if (GPUThread::HasGPUBackend())
+  {
+    Host::RunOnCPUThread([boot_path = std::move(boot_path), path = std::move(path)]() mutable {
+      if (System::IsValid())
       {
-        // Loading undo state.
-        if (!System::UndoLoadState())
+        if (path.empty())
         {
-          GPUThread::RunOnThread(
-            []() { ShowToast(std::string(), TRANSLATE_STR("System", "Failed to undo load state.")); });
+          // Loading undo state.
+          if (!System::UndoLoadState())
+          {
+            GPUThread::RunOnThread(
+              []() { ShowToast(std::string(), TRANSLATE_STR("System", "Failed to undo load state.")); });
+          }
+        }
+        else
+        {
+          Error error;
+          if (!System::LoadState(path.c_str(), &error, true, false))
+          {
+            GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+              ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error_desc));
+            });
+          }
         }
       }
-      else
-      {
-        Error error;
-        if (!System::LoadState(path.c_str(), &error, true, false))
-        {
-          GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
-            ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error_desc));
-          });
-        }
-      }
-    }
-    else
-    {
-      DoStartPath(std::move(boot_path), std::move(path));
-    }
-  });
+    });
+  }
+  else
+  {
+    DoStartPath(std::move(boot_path), std::move(path));
+  }
 }
 
 void FullscreenUI::DoSaveState(s32 slot, bool global)
