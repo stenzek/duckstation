@@ -2,17 +2,19 @@ name: 🐧 Linux Cross-Compiled AppImage
 
 on:
   workflow_call:
-    inputs:
-      arch:
-        required: false
-        type: string
-        default: "arm64"
+  workflow_dispatch:
 
 jobs:
   build:
+    name: "Build"
+    strategy:
+      fail-fast: true
+      matrix:
+        arch: ["arm64", "armhf"]
+
     runs-on: ubuntu-22.04
     container:
-      image: ghcr.io/duckstation/cross-build-${{ inputs.arch }}:latest
+      image: ghcr.io/duckstation/cross-build-${{ matrix.arch }}:latest
 
     timeout-minutes: 120
     steps:
@@ -25,13 +27,13 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/deps
-        key: deps-cross ${{ inputs.arch }} ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-dependencies-linux-cross.sh') }}
+        key: deps-cross ${{ matrix.arch }} ${{ hashFiles('scripts/deps/build-dependencies-linux.sh', 'scripts/deps/build-dependencies-linux-cross.sh') }}
 
     - name: Build Dependencies
       if: steps.cache-deps.outputs.cache-hit != 'true'
       run: |
         scripts/deps/build-dependencies-linux.sh -skip-cleanup "$HOME/deps/host"
-        scripts/deps/build-dependencies-linux-cross.sh -skip-download "$HOME/deps/host" "${{ inputs.arch }}" "/${{ inputs.arch }}-chroot" "$HOME/deps/cross"
+        scripts/deps/build-dependencies-linux-cross.sh -skip-download "$HOME/deps/host" "${{ matrix.arch }}" "/${{ matrix.arch }}-chroot" "$HOME/deps/cross"
 
     # Work around container ownership issue
     - name: Set Safe Directory
@@ -62,7 +64,7 @@ jobs:
     - name: Set Build Tag Asset
       if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
       run: |
-        echo '#define SCM_RELEASE_ASSET "DuckStation-${{ inputs.arch }}.AppImage"' >> src/scmversion/tag.h
+        echo '#define SCM_RELEASE_ASSET "DuckStation-${{ matrix.arch }}.AppImage"' >> src/scmversion/tag.h
         echo '#define SCM_RELEASE_TAGS {"latest", "preview"}' >> src/scmversion/tag.h
 
     - name: Tag as Preview Release
@@ -91,11 +93,11 @@ jobs:
       shell: bash
       run: |
         cmake --build build --parallel
-        scripts/packaging/appimage/make-cross-appimage.sh duckstation-qt ${{ inputs.arch }} "$(realpath build)" "$HOME/deps/cross" "/${{ inputs.arch }}-chroot"
-        scripts/packaging/appimage/make-cross-appimage.sh -inject-libc duckstation-mini ${{ inputs.arch }} "$(realpath build)" "$HOME/deps/cross" "/${{ inputs.arch }}-chroot"
+        scripts/packaging/appimage/make-cross-appimage.sh duckstation-qt ${{ matrix.arch }} "$(realpath build)" "$HOME/deps/cross" "/${{ matrix.arch }}-chroot"
+        scripts/packaging/appimage/make-cross-appimage.sh -inject-libc duckstation-mini ${{ matrix.arch }} "$(realpath build)" "$HOME/deps/cross" "/${{ matrix.arch }}-chroot"
 
     - name: Upload AppImages
       uses: actions/upload-artifact@v4
       with:
-        name: "linux-${{ inputs.arch }}-appimage"
+        name: "linux-${{ matrix.arch }}-appimage"
         path: "DuckStation-*.AppImage"
