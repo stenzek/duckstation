@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 23,
+  GAME_DATABASE_CACHE_VERSION = 24,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -74,7 +74,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Compatibility
     TRANSLATE_DISAMBIG_NOOP("GameDatabase", "No Issues", "CompatibilityRating"),
   }};
 
-static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCount)> s_trait_names = {{
+static constexpr const std::array s_trait_names = {
   "ForceInterpreter",
   "ForceSoftwareRenderer",
   "ForceSoftwareRendererForReadbacks",
@@ -86,6 +86,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "DisableAutoAnalogMode",
   "DisableMultitap",
   "DisableTrueColor",
+  "DisableFullTrueColor",
   "DisableUpscaling",
   "DisableTextureFiltering",
   "DisableSpriteTextureFiltering",
@@ -103,9 +104,10 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   "ForceRecompilerICache",
   "ForceCDROMSubQSkew",
   "IsLibCryptProtected",
-}};
+};
+static_assert(s_trait_names.size() == static_cast<size_t>(Trait::MaxCount));
 
-static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCount)> s_trait_display_names = {{
+static constexpr const std::array s_trait_display_names = {
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Interpreter", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Software Renderer For Readbacks", "GameDatabase::Trait"),
@@ -117,6 +119,7 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Automatic Analog Mode", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Multitap", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable True Color", "GameDatabase::Trait"),
+  TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Full True Color", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Upscaling", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Texture Filtering", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Disable Sprite Texture Filtering", "GameDatabase::Trait"),
@@ -134,13 +137,15 @@ static constexpr const std::array<const char*, static_cast<size_t>(Trait::MaxCou
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force Recompiler ICache", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Force CD-ROM SubQ Skew", "GameDatabase::Trait"),
   TRANSLATE_DISAMBIG_NOOP("GameDatabase", "Is LibCrypt Protected", "GameDatabase::Trait"),
-}};
+};
+static_assert(s_trait_display_names.size() == static_cast<size_t>(Trait::MaxCount));
 
-static constexpr std::array<const char*, static_cast<size_t>(Language::MaxCount)> s_language_names = {{
+static constexpr std::array s_language_names = {
   "Catalan", "Chinese",    "Czech",   "Danish",  "Dutch",   "English",  "Finnish", "French",
   "German",  "Greek",      "Hebrew",  "Iranian", "Italian", "Japanese", "Korean",  "Norwegian",
   "Polish",  "Portuguese", "Russian", "Spanish", "Swedish", "Turkish",
-}};
+};
+static_assert(s_language_names.size() == static_cast<size_t>(Language::MaxCount));
 
 static constexpr const char* GAMEDB_YAML_FILENAME = "gamedb.yaml";
 static constexpr const char* DISCDB_YAML_FILENAME = "discdb.yaml";
@@ -521,8 +526,9 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     }
   }
 
-  if (HasTrait(Trait::DisableTrueColor) || HasTrait(Trait::DisableScaledDithering) ||
-      HasTrait(Trait::ForceShaderBlending) || HasTrait(Trait::ForceFullTrueColor))
+  if (HasTrait(Trait::DisableTrueColor) || HasTrait(Trait::DisableFullTrueColor) ||
+      HasTrait(Trait::DisableScaledDithering) || HasTrait(Trait::ForceShaderBlending) ||
+      HasTrait(Trait::ForceFullTrueColor))
   {
     // Note: The order these are applied matters.
     const GPUDitheringMode old_mode = settings.gpu_dithering_mode;
@@ -544,6 +550,10 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     if (HasTrait(Trait::ForceFullTrueColor) && settings.gpu_dithering_mode == GPUDitheringMode::TrueColor)
     {
       settings.gpu_dithering_mode = GPUDitheringMode::TrueColorFull;
+    }
+    if (HasTrait(Trait::DisableFullTrueColor) && settings.gpu_dithering_mode == GPUDitheringMode::TrueColorFull)
+    {
+      settings.gpu_dithering_mode = GPUDitheringMode::TrueColor;
     }
 
     if (display_osd_messages && settings.gpu_dithering_mode != old_mode)

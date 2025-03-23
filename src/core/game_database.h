@@ -44,6 +44,7 @@ enum class Trait : u32
   DisableAutoAnalogMode,
   DisableMultitap,
   DisableTrueColor,
+  DisableFullTrueColor,
   DisableUpscaling,
   DisableTextureFiltering,
   DisableSpriteTextureFiltering,
