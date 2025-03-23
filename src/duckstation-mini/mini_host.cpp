@@ -1223,6 +1223,7 @@ void Host::RefreshGameListAsync(bool invalidate_cache)
 
     std::unique_lock lock(s_state.state_mutex);
     delete s_state.game_list_refresh_progress;
+    s_state.game_list_refresh_progress = nullptr;
   });
 }
 
