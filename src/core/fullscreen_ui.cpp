@@ -7739,6 +7739,8 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
     if (selected_entry)
     {
+      const ImVec4 subtitle_text_color = DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]);
+
       // title
       ImGui::PushFont(UIStyle.LargeFont);
       text_width = ImGui::CalcTextSize(selected_entry->title.c_str(), nullptr, false, work_width).x;
@@ -7757,14 +7759,18 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
                               false, work_width)
             .x;
         ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
+        ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
         ImGui::TextWrapped("%.*s", static_cast<int>(selected_entry->dbentry->developer.size()),
                            selected_entry->dbentry->developer.data());
+        ImGui::PopStyleColor();
       }
 
       // code
       text_width = ImGui::CalcTextSize(selected_entry->serial.c_str(), nullptr, false, work_width).x;
       ImGui::SetCursorPosX((work_width - text_width) / 2.0f);
+      ImGui::PushStyleColor(ImGuiCol_Text, DarkerColor(subtitle_text_color));
       ImGui::TextWrapped("%s", selected_entry->serial.c_str());
+      ImGui::PopStyleColor();
       ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(15.0f));
 
       // region
@@ -7774,6 +7780,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         ImGui::SameLine();
         ImGui::Image(GetCachedTexture(selected_entry->GetLanguageIconName(), 23, 16), LayoutScale(23.0f, 16.0f));
         ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
         if (display_as_language)
         {
           ImGui::TextWrapped(" (%s, %s)", selected_entry->dbentry->GetLanguagesString().c_str(),
@@ -7783,31 +7790,48 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
         {
           ImGui::TextWrapped(" (%s)", Settings::GetDiscRegionName(selected_entry->region));
         }
+        ImGui::PopStyleColor();
       }
 
       // genre
-      if (selected_entry->dbentry && !selected_entry->dbentry->genre.empty())
+      if (selected_entry->dbentry)
       {
-        ImGui::Text(FSUI_CSTR("Genre: %.*s"), static_cast<int>(selected_entry->dbentry->genre.size()),
-                    selected_entry->dbentry->genre.data());
-      }
+        if (!selected_entry->dbentry->genre.empty())
+        {
+          ImGui::TextUnformatted(FSUI_CSTR("Genre: "));
+          ImGui::SameLine();
+          ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
+          ImGui::TextUnformatted(selected_entry->dbentry->genre.data(),
+                                 selected_entry->dbentry->genre.data() + selected_entry->dbentry->genre.length());
+          ImGui::PopStyleColor();
+        }
 
-      // release date
-      ImGui::Text(FSUI_CSTR("Release Date: %s"), selected_entry->GetReleaseDateString().c_str());
+        if (selected_entry->dbentry->release_date != 0)
+        {
+          ImGui::TextUnformatted(FSUI_CSTR("Release Date: "));
+          ImGui::SameLine();
+          ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
+          ImGui::TextUnformatted(selected_entry->GetReleaseDateString().c_str());
+          ImGui::PopStyleColor();
+        }
+      }
 
       // achievements
       if (selected_entry->num_achievements > 0)
       {
+        ImGui::TextUnformatted(FSUI_CSTR("Achievements: "));
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
         if (selected_entry->unlocked_achievements_hc > 0)
         {
-          ImGui::Text(FSUI_CSTR("Achievements: %u (%u) / %u"), selected_entry->unlocked_achievements,
-                      selected_entry->unlocked_achievements_hc, selected_entry->num_achievements);
+          ImGui::Text("%u (%u) / %u", selected_entry->unlocked_achievements, selected_entry->unlocked_achievements_hc,
+                      selected_entry->num_achievements);
         }
         else
         {
-          ImGui::Text(FSUI_CSTR("Achievements: %u / %u"), selected_entry->unlocked_achievements,
-                      selected_entry->num_achievements);
+          ImGui::Text("%u / %u", selected_entry->unlocked_achievements, selected_entry->num_achievements);
         }
+        ImGui::PopStyleColor();
       }
 
       // compatibility
@@ -7815,19 +7839,36 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
       ImGui::SameLine();
       ImGui::Image(GetCachedTexture(selected_entry->GetCompatibilityIconFileName(), 88, 16), LayoutScale(88.0f, 16.0f));
       ImGui::SameLine();
+      ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
       ImGui::Text(" (%s)", GameDatabase::GetCompatibilityRatingDisplayName(
                              (selected_entry && selected_entry->dbentry) ? selected_entry->dbentry->compatibility :
                                                                            GameDatabase::CompatibilityRating::Unknown));
+      ImGui::PopStyleColor();
 
       // play time
-      ImGui::Text(FSUI_CSTR("Time Played: %s"), GameList::FormatTimespan(selected_entry->total_played_time).c_str());
-      ImGui::Text(FSUI_CSTR("Last Played: %s"), GameList::FormatTimestamp(selected_entry->last_played_time).c_str());
+      ImGui::TextUnformatted(FSUI_CSTR("Time Played: "));
+      ImGui::SameLine();
+      ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
+      ImGui::TextUnformatted(GameList::FormatTimespan(selected_entry->total_played_time).c_str());
+      ImGui::PopStyleColor();
+      ImGui::TextUnformatted(FSUI_CSTR("Last Played: "));
+      ImGui::SameLine();
+      ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
+      ImGui::TextUnformatted(GameList::FormatTimestamp(selected_entry->last_played_time).c_str());
+      ImGui::PopStyleColor();
 
       // size
       if (selected_entry->file_size >= 0)
       {
-        ImGui::Text(FSUI_CSTR("File Size: %u MB (%u MB on disk)"), to_mb(selected_entry->file_size),
-                    to_mb(selected_entry->uncompressed_size));
+        ImGui::TextUnformatted(FSUI_CSTR("File Size: "));
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, subtitle_text_color);
+        ImGui::Text(FSUI_CSTR("%u MB"), to_mb(selected_entry->file_size));
+        ImGui::PopStyleColor();
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Text, DarkerColor(subtitle_text_color));
+        ImGui::Text(FSUI_CSTR(" (%u MB on disk)"), to_mb(selected_entry->uncompressed_size));
+        ImGui::PopStyleColor();
       }
       else
       {
@@ -8749,12 +8790,14 @@ void FullscreenUI::CloseLoadingScreen()
 
 #if 0
 // TRANSLATION-STRING-AREA-BEGIN
+TRANSLATE_NOOP("FullscreenUI", " (%u MB on disk)");
 TRANSLATE_NOOP("FullscreenUI", "%.1f ms");
 TRANSLATE_NOOP("FullscreenUI", "%.2f Seconds");
 TRANSLATE_NOOP("FullscreenUI", "%d Frames");
 TRANSLATE_NOOP("FullscreenUI", "%d cycles");
 TRANSLATE_NOOP("FullscreenUI", "%d ms");
 TRANSLATE_NOOP("FullscreenUI", "%d sectors");
+TRANSLATE_NOOP("FullscreenUI", "%u MB");
 TRANSLATE_NOOP("FullscreenUI", "-");
 TRANSLATE_NOOP("FullscreenUI", "1 Frame");
 TRANSLATE_NOOP("FullscreenUI", "10 Frames");
@@ -8830,8 +8873,7 @@ TRANSLATE_NOOP("FullscreenUI", "Achievement Unlock/Count");
 TRANSLATE_NOOP("FullscreenUI", "Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Achievements Settings");
 TRANSLATE_NOOP("FullscreenUI", "Achievements are not enabled.");
-TRANSLATE_NOOP("FullscreenUI", "Achievements: %u (%u) / %u");
-TRANSLATE_NOOP("FullscreenUI", "Achievements: %u / %u");
+TRANSLATE_NOOP("FullscreenUI", "Achievements: ");
 TRANSLATE_NOOP("FullscreenUI", "Add Search Directory");
 TRANSLATE_NOOP("FullscreenUI", "Add Shader");
 TRANSLATE_NOOP("FullscreenUI", "Adds a new directory to the game search list.");
@@ -9071,7 +9113,7 @@ TRANSLATE_NOOP("FullscreenUI", "Fast Forward Volume");
 TRANSLATE_NOOP("FullscreenUI", "Fast forwards through memory card access, both loading and saving. Can reduce waiting times in games that frequently access memory cards.");
 TRANSLATE_NOOP("FullscreenUI", "Fast forwards through the early loading process when fast booting, saving time. Results may vary between games.");
 TRANSLATE_NOOP("FullscreenUI", "File Size");
-TRANSLATE_NOOP("FullscreenUI", "File Size: %u MB (%u MB on disk)");
+TRANSLATE_NOOP("FullscreenUI", "File Size: ");
 TRANSLATE_NOOP("FullscreenUI", "File Title");
 TRANSLATE_NOOP("FullscreenUI", "Force 4:3 For FMVs");
 TRANSLATE_NOOP("FullscreenUI", "Forces a full rescan of all games previously identified.");
@@ -9103,7 +9145,7 @@ TRANSLATE_NOOP("FullscreenUI", "Game settings initialized with global settings f
 TRANSLATE_NOOP("FullscreenUI", "Game title copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game type copied to clipboard.");
 TRANSLATE_NOOP("FullscreenUI", "Game: {} ({})");
-TRANSLATE_NOOP("FullscreenUI", "Genre: %.*s");
+TRANSLATE_NOOP("FullscreenUI", "Genre: ");
 TRANSLATE_NOOP("FullscreenUI", "Geometry Tolerance");
 TRANSLATE_NOOP("FullscreenUI", "GitHub Repository");
 TRANSLATE_NOOP("FullscreenUI", "Global Slot {0} - {1}##global_slot_{0}");
@@ -9132,7 +9174,7 @@ TRANSLATE_NOOP("FullscreenUI", "Internal Resolution");
 TRANSLATE_NOOP("FullscreenUI", "Language");
 TRANSLATE_NOOP("FullscreenUI", "Language: ");
 TRANSLATE_NOOP("FullscreenUI", "Last Played");
-TRANSLATE_NOOP("FullscreenUI", "Last Played: %s");
+TRANSLATE_NOOP("FullscreenUI", "Last Played: ");
 TRANSLATE_NOOP("FullscreenUI", "Latency Control");
 TRANSLATE_NOOP("FullscreenUI", "Launch Options");
 TRANSLATE_NOOP("FullscreenUI", "Launch a game by selecting a file/disc image.");
@@ -9270,7 +9312,7 @@ TRANSLATE_NOOP("FullscreenUI", "Reduces polygon Z-fighting through depth testing
 TRANSLATE_NOOP("FullscreenUI", "Reduces the size of save states by compressing the data before saving.");
 TRANSLATE_NOOP("FullscreenUI", "Region");
 TRANSLATE_NOOP("FullscreenUI", "Region: ");
-TRANSLATE_NOOP("FullscreenUI", "Release Date: %s");
+TRANSLATE_NOOP("FullscreenUI", "Release Date: ");
 TRANSLATE_NOOP("FullscreenUI", "Reload Shaders");
 TRANSLATE_NOOP("FullscreenUI", "Reloads the shaders from disk, applying any changes.");
 TRANSLATE_NOOP("FullscreenUI", "Remove From Chain");
@@ -9450,7 +9492,7 @@ TRANSLATE_NOOP("FullscreenUI", "This game has no achievements.");
 TRANSLATE_NOOP("FullscreenUI", "This game has no leaderboards.");
 TRANSLATE_NOOP("FullscreenUI", "Threaded Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Time Played");
-TRANSLATE_NOOP("FullscreenUI", "Time Played: %s");
+TRANSLATE_NOOP("FullscreenUI", "Time Played: ");
 TRANSLATE_NOOP("FullscreenUI", "Timing out in {:.0f} seconds...");
 TRANSLATE_NOOP("FullscreenUI", "Title");
 TRANSLATE_NOOP("FullscreenUI", "Toggle Analog");
