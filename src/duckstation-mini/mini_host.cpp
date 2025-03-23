@@ -861,7 +861,9 @@ void MiniHost::ProcessSDLEvent(const SDL_Event* ev)
     {
       if (ev->button.button > 0)
       {
-        Host::RunOnCPUThread([button = ev->button.button - 1, pressed = (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN)]() {
+        // swap middle/right because sdl orders them differently
+        const u8 button = (ev->button.button == 3) ? 1 : ((ev->button.button == 2) ? 2 : (ev->button.button - 1));
+        Host::RunOnCPUThread([button, pressed = (ev->type == SDL_EVENT_MOUSE_BUTTON_DOWN)]() {
           InputManager::InvokeEvents(InputManager::MakePointerButtonKey(0, button), pressed ? 1.0f : 0.0f,
                                      GenericInputBinding::Unknown);
         });
