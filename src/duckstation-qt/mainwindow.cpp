@@ -98,6 +98,8 @@ static constexpr char DISC_IMAGE_FILTER[] = QT_TRANSLATE_NOOP(
   "*.PBP);;PlayStation Executables (*.cpe *.elf *.exe *.psexe *.ps-exe, *.psx);;Portable Sound Format Files (*.psf "
   "*.minipsf);;Playlists (*.m3u);;PSX GPU Dumps (*.psxgpu *.psxgpu.zst *.psxgpu.xz)");
 
+static constexpr char IMAGE_FILTER[] = QT_TRANSLATE_NOOP("MainWindow", "Images (*.jpg *.jpeg *.png *.webp)");
+
 MainWindow* g_main_window = nullptr;
 
 // UI thread VM validity.
@@ -1556,8 +1558,8 @@ void MainWindow::onGameListEntryContextMenuRequested(const QPoint& point)
 
 void MainWindow::setGameListEntryCoverImage(const GameList::Entry* entry)
 {
-  const QString filename = QDir::toNativeSeparators(QFileDialog::getOpenFileName(
-    this, tr("Select Cover Image"), QString(), tr("All Cover Image Types (*.jpg *.jpeg *.png *.webp)")));
+  const QString filename =
+    QDir::toNativeSeparators(QFileDialog::getOpenFileName(this, tr("Select Cover Image"), QString(), tr(IMAGE_FILTER)));
   if (filename.isEmpty())
     return;
 
@@ -2130,6 +2132,10 @@ void MainWindow::connectSignals()
   connect(m_ui.actionGridViewZoomOut, &QAction::triggered, this, &MainWindow::onViewGameGridZoomOutActionTriggered);
   connect(m_ui.actionGridViewRefreshCovers, &QAction::triggered, m_game_list_widget,
           &GameListWidget::refreshGridCovers);
+  connect(m_ui.actionChangeGameListBackground, &QAction::triggered, this,
+          &MainWindow::onViewChangeGameListBackgroundTriggered);
+  connect(m_ui.actionClearGameListBackground, &QAction::triggered, this,
+          &MainWindow::onViewClearGameListBackgroundTriggered);
 
   connect(g_emu_thread, &EmuThread::settingsResetToDefault, this, &MainWindow::onSettingsResetToDefault,
           Qt::QueuedConnection);
@@ -2412,6 +2418,26 @@ void MainWindow::doControllerSettings(
   QtUtils::ShowOrRaiseWindow(dlg);
   if (category != ControllerSettingsWindow::Category::Count)
     dlg->setCategory(category);
+}
+
+void MainWindow::onViewChangeGameListBackgroundTriggered()
+{
+  const QString path = QDir::toNativeSeparators(
+    QFileDialog::getOpenFileName(this, tr("Select Background Image"), QString(), tr(IMAGE_FILTER)));
+  if (path.isEmpty())
+    return;
+
+  std::string relative_path = Path::MakeRelative(QDir::toNativeSeparators(path).toStdString(), EmuFolders::DataRoot);
+  Host::SetBaseStringSettingValue("UI", "GameListBackgroundPath", relative_path.c_str());
+  Host::CommitBaseSettingChanges();
+  m_game_list_widget->updateBackground(true);
+}
+
+void MainWindow::onViewClearGameListBackgroundTriggered()
+{
+  Host::DeleteBaseSettingValue("UI", "GameListBackgroundPath");
+  Host::CommitBaseSettingChanges();
+  m_game_list_widget->updateBackground(true);
 }
 
 void MainWindow::onSettingsTriggeredFromToolbar()

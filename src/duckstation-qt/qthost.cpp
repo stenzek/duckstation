@@ -1428,6 +1428,27 @@ void QtHost::RunOnUIThread(const std::function<void()>& func, bool block /*= fal
                             Q_ARG(const std::function<void()>&, func));
 }
 
+QtAsyncTask::QtAsyncTask(WorkCallback callback)
+{
+  m_callback = std::move(callback);
+}
+
+QtAsyncTask::~QtAsyncTask() = default;
+
+void QtAsyncTask::create(QObject* owner, WorkCallback callback)
+{
+  // NOTE: Must get connected before queuing, because otherwise you risk a race.
+  QtAsyncTask* task = new QtAsyncTask(std::move(callback));
+  connect(task, &QtAsyncTask::completed, owner, [task]() { std::get<CompletionCallback>(task->m_callback)(); });
+  System::QueueAsyncTask([task]() {
+    task->m_callback = std::get<WorkCallback>(task->m_callback)();
+    QtHost::RunOnUIThread([task]() {
+      emit task->completed(task);
+      delete task;
+    });
+  });
+}
+
 void Host::RefreshGameListAsync(bool invalidate_cache)
 {
   QMetaObject::invokeMethod(g_main_window, "refreshGameList", Qt::QueuedConnection, Q_ARG(bool, invalidate_cache));

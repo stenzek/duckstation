@@ -264,6 +264,8 @@ private:
   void doSettings(const char* category = nullptr);
   void openGamePropertiesForCurrentGame(const char* category = nullptr);
   void doControllerSettings(ControllerSettingsWindow::Category category = ControllerSettingsWindow::Category::Count);
+  void onViewChangeGameListBackgroundTriggered();
+  void onViewClearGameListBackgroundTriggered();
 
   std::string getDeviceDiscPath(const QString& title);
   void setGameListEntryCoverImage(const GameList::Entry* entry);

@@ -33,6 +33,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <variant>
 
 class QActionGroup;
 class QEventLoop;
@@ -304,6 +305,27 @@ private Q_SLOTS:
 private:
   DeviceList m_devices;
   QStringList m_vibration_motors;
+};
+
+class QtAsyncTask : public QObject
+{
+  Q_OBJECT
+
+public:
+  using CompletionCallback = std::function<void()>;
+  using WorkCallback = std::function<CompletionCallback()>;
+
+  ~QtAsyncTask();
+
+  static void create(QObject* owner, WorkCallback callback);
+
+Q_SIGNALS:
+  void completed(QtAsyncTask* self);
+
+private:
+  QtAsyncTask(WorkCallback callback);
+
+  std::variant<WorkCallback, CompletionCallback> m_callback;
 };
 
 extern EmuThread* g_emu_thread;

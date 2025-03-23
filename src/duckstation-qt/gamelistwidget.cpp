@@ -51,7 +51,7 @@ static constexpr int COVER_ART_HEIGHT = 512;
 static constexpr int COVER_ART_SPACING = 32;
 static constexpr int MIN_COVER_CACHE_SIZE = 256;
 
-static void resizeAndPadImage(QImage* image, int expected_width, int expected_height)
+static void resizeAndPadImage(QImage* image, int expected_width, int expected_height, bool fill_with_top_left)
 {
   const qreal dpr = image->devicePixelRatio();
   const int dpr_expected_width = static_cast<int>(static_cast<qreal>(expected_width) * dpr);
@@ -59,10 +59,15 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   if (image->width() == dpr_expected_width && image->height() == dpr_expected_height)
     return;
 
-  if (image->width() > image->height())
+  if ((static_cast<float>(image->width()) / static_cast<float>(image->height())) >=
+      (static_cast<float>(dpr_expected_width) / static_cast<float>(dpr_expected_height)))
+  {
     *image = image->scaledToWidth(dpr_expected_width, Qt::SmoothTransformation);
+  }
   else
+  {
     *image = image->scaledToHeight(dpr_expected_height, Qt::SmoothTransformation);
+  }
 
   if (image->width() == dpr_expected_width && image->height() == dpr_expected_height)
     return;
@@ -70,14 +75,20 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   // QPainter works in unscaled coordinates.
   int xoffs = 0;
   int yoffs = 0;
-  if (image->width() < dpr_expected_width)
-    xoffs = static_cast<int>(static_cast<qreal>((dpr_expected_width - image->width()) / 2) / dpr);
-  if (image->height() < dpr_expected_height)
-    yoffs = static_cast<int>(static_cast<qreal>((dpr_expected_height - image->height()) / 2) / dpr);
+  const int image_width = image->width();
+  const int image_height = image->height();
+  if (image_width < dpr_expected_width)
+    xoffs = static_cast<int>(static_cast<qreal>((dpr_expected_width - image_width) / 2) / dpr);
+  if (image_height < dpr_expected_height)
+    yoffs = static_cast<int>(static_cast<qreal>((dpr_expected_height - image_height) / 2) / dpr);
 
   QImage padded_image(dpr_expected_width, dpr_expected_height, QImage::Format_ARGB32);
   padded_image.setDevicePixelRatio(dpr);
-  padded_image.fill(Qt::transparent);
+  if (fill_with_top_left)
+    padded_image.fill(image->pixel(0, 0));
+  else
+    padded_image.fill(Qt::transparent);
+
   QPainter painter;
   if (painter.begin(&padded_image))
   {
@@ -87,67 +98,6 @@ static void resizeAndPadImage(QImage* image, int expected_width, int expected_he
   }
 
   *image = std::move(padded_image);
-}
-
-GameListCoverLoader::GameListCoverLoader(const GameList::Entry* ge, const QImage& placeholder_image, int width,
-                                         int height, float scale)
-  : QObject(nullptr), m_path(ge->path), m_serial(ge->serial), m_title(ge->title),
-    m_placeholder_image(placeholder_image), m_width(width), m_height(height), m_scale(scale),
-    m_dpr(qApp->devicePixelRatio())
-{
-}
-
-GameListCoverLoader::~GameListCoverLoader() = default;
-
-void GameListCoverLoader::loadOrGenerateCover()
-{
-  QPixmap image;
-  const std::string cover_path(GameList::GetCoverImagePath(m_path, m_serial, m_title));
-  if (!cover_path.empty())
-  {
-    m_image.load(QString::fromStdString(cover_path));
-    if (!m_image.isNull())
-    {
-      m_image.setDevicePixelRatio(m_dpr);
-      resizeAndPadImage(&m_image, m_width, m_height);
-    }
-  }
-
-  if (m_image.isNull())
-    createPlaceholderImage();
-
-  // Have to pass through the UI thread, because the thread pool isn't a QThread...
-  // Can't create pixmaps on the worker thread, have to create it on the UI thread.
-  QtHost::RunOnUIThread([this]() {
-    if (!m_image.isNull())
-      emit coverLoaded(m_path, m_image, m_scale);
-    else
-      emit coverLoaded(m_path, m_image, m_scale);
-    delete this;
-  });
-}
-
-void GameListCoverLoader::createPlaceholderImage()
-{
-  m_image = m_placeholder_image.copy();
-  if (m_image.isNull())
-    return;
-
-  resizeAndPadImage(&m_image, m_width, m_height);
-
-  QPainter painter;
-  if (painter.begin(&m_image))
-  {
-    QFont font;
-    font.setPointSize(std::max(static_cast<int>(32.0f * m_scale), 1));
-    painter.setFont(font);
-    painter.setPen(Qt::white);
-
-    const QRect text_rc(0, 0, static_cast<int>(static_cast<float>(m_width)),
-                        static_cast<int>(static_cast<float>(m_height)));
-    painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(m_title));
-    painter.end();
-  }
 }
 
 std::optional<GameListModel::Column> GameListModel::getColumnIdForName(std::string_view name)
@@ -208,7 +158,7 @@ void GameListModel::setCoverScale(float scale)
   if (loading_image.load(QStringLiteral("%1/images/placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
     loading_image.setDevicePixelRatio(dpr);
-    resizeAndPadImage(&loading_image, getCoverArtWidth(), getCoverArtHeight());
+    resizeAndPadImage(&loading_image, getCoverArtWidth(), getCoverArtHeight(), false);
   }
   else
   {
@@ -222,7 +172,7 @@ void GameListModel::setCoverScale(float scale)
   if (m_placeholder_image.load(QStringLiteral("%1/images/cover-placeholder.png").arg(QtHost::GetResourcesBasePath())))
   {
     m_placeholder_image.setDevicePixelRatio(dpr);
-    resizeAndPadImage(&m_placeholder_image, getCoverArtWidth(), getCoverArtHeight());
+    resizeAndPadImage(&m_placeholder_image, getCoverArtWidth(), getCoverArtHeight(), false);
   }
   else
   {
@@ -258,11 +208,57 @@ void GameListModel::reloadThemeSpecificImages()
 
 void GameListModel::loadOrGenerateCover(const GameList::Entry* ge)
 {
-  // NOTE: Must get connected before queuing, because otherwise you risk a race.
-  GameListCoverLoader* loader =
-    new GameListCoverLoader(ge, m_placeholder_image, getCoverArtWidth(), getCoverArtHeight(), m_cover_scale);
-  connect(loader, &GameListCoverLoader::coverLoaded, this, &GameListModel::coverLoaded);
-  System::QueueAsyncTask([loader]() { loader->loadOrGenerateCover(); });
+  QtAsyncTask::create(this, [path = ge->path, serial = ge->serial, title = ge->title,
+                             placeholder_image = m_placeholder_image, list = this, width = getCoverArtWidth(),
+                             height = getCoverArtHeight(), scale = m_cover_scale,
+                             dpr = qApp->devicePixelRatio()]() mutable {
+    QImage image;
+    loadOrGenerateCover(image, placeholder_image, width, height, scale, dpr, path, serial, title);
+    return [path = std::move(path), image = std::move(image), list, scale]() { list->coverLoaded(path, image, scale); };
+  });
+}
+
+void GameListModel::createPlaceholderImage(QImage& image, const QImage& placeholder_image, int width, int height,
+                                           float scale, const std::string& title)
+{
+  image = placeholder_image.copy();
+  if (image.isNull())
+    return;
+
+  resizeAndPadImage(&image, width, height, false);
+
+  QPainter painter;
+  if (painter.begin(&image))
+  {
+    QFont font;
+    font.setPointSize(std::max(static_cast<int>(32.0f * scale), 1));
+    painter.setFont(font);
+    painter.setPen(Qt::white);
+
+    const QRect text_rc(0, 0, static_cast<int>(static_cast<float>(width)),
+                        static_cast<int>(static_cast<float>(height)));
+    painter.drawText(text_rc, Qt::AlignCenter | Qt::TextWordWrap, QString::fromStdString(title));
+    painter.end();
+  }
+}
+
+void GameListModel::loadOrGenerateCover(QImage& image, const QImage& placeholder_image, int width, int height,
+                                        float scale, float dpr, const std::string& path, const std::string& serial,
+                                        const std::string& title)
+{
+  const std::string cover_path(GameList::GetCoverImagePath(path, serial, title));
+  if (!cover_path.empty())
+  {
+    image.load(QString::fromStdString(cover_path));
+    if (!image.isNull())
+    {
+      image.setDevicePixelRatio(dpr);
+      resizeAndPadImage(&image, width, height, false);
+    }
+  }
+
+  if (image.isNull())
+    createPlaceholderImage(image, placeholder_image, width, height, scale, title);
 }
 
 void GameListModel::coverLoaded(const std::string& path, const QImage& image, float scale)
@@ -1229,6 +1225,7 @@ void GameListWidget::initialize()
 
   updateToolbar();
   resizeTableViewColumnsToFit();
+  updateBackground(true);
 }
 
 bool GameListWidget::isShowingGameList() const
@@ -1290,6 +1287,42 @@ void GameListWidget::cancelRefresh()
 void GameListWidget::reloadThemeSpecificImages()
 {
   m_model->reloadThemeSpecificImages();
+}
+
+void GameListWidget::updateBackground(bool reload_image)
+{
+  std::string path = Host::GetBaseStringSettingValue("UI", "GameListBackgroundPath");
+  if (!Path::IsAbsolute(path))
+    path = Path::Combine(EmuFolders::DataRoot, path);
+
+  if (reload_image)
+  {
+    m_background_image = QImage();
+    if (!path.empty() && m_background_image.load(path.c_str()))
+      m_background_image.setDevicePixelRatio(devicePixelRatio());
+  }
+
+  if (m_background_image.isNull())
+  {
+    m_ui.stack->setPalette(palette());
+    m_table_view->setAlternatingRowColors(true);
+    return;
+  }
+
+  QtAsyncTask::create(this, [image = m_background_image, this, widget_width = m_ui.stack->width(),
+                             widget_height = m_ui.stack->height()]() mutable {
+    resizeAndPadImage(&image, widget_width, widget_height, true);
+    return [image = std::move(image), this, widget_width, widget_height]() {
+      // check for dimensions change
+      if (widget_width != m_ui.stack->width() || widget_height != m_ui.stack->height())
+        return;
+
+      QPalette new_palette(m_ui.stack->palette());
+      new_palette.setBrush(QPalette::Base, QPixmap::fromImage(image));
+      m_ui.stack->setPalette(new_palette);
+      m_table_view->setAlternatingRowColors(false);
+    };
+  });
 }
 
 void GameListWidget::onRefreshProgress(const QString& status, int current, int total, float time)
@@ -1579,6 +1612,7 @@ void GameListWidget::resizeEvent(QResizeEvent* event)
 {
   QWidget::resizeEvent(event);
   resizeTableViewColumnsToFit();
+  updateBackground(false);
 }
 
 void GameListWidget::resizeTableViewColumnsToFit()

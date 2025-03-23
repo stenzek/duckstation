@@ -104,7 +104,6 @@ Q_SIGNALS:
   void coverScaleChanged();
 
 private Q_SLOTS:
-  void coverLoaded(const std::string& path, const QImage& image, float scale);
   void rowsChanged(const QList<int>& rows);
 
 private:
@@ -115,6 +114,13 @@ private:
   void setColumnDisplayNames();
   void loadOrGenerateCover(const GameList::Entry* ge);
   void invalidateCoverForPath(const std::string& path);
+  void coverLoaded(const std::string& path, const QImage& image, float scale);
+
+  static void loadOrGenerateCover(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
+                                  float dpr, const std::string& path, const std::string& serial,
+                                  const std::string& title);
+  static void createPlaceholderImage(QImage& image, const QImage& placeholder_image, int width, int height, float scale,
+                                     const std::string& title);
 
   const QPixmap& getIconPixmapForEntry(const GameList::Entry* ge) const;
   const QPixmap& getFlagPixmapForEntry(const GameList::Entry* ge) const;
@@ -144,35 +150,6 @@ private:
   mutable LRUCache<std::string, QPixmap> m_cover_pixmap_cache;
 
   mutable LRUCache<std::string, QPixmap> m_memcard_pixmap_cache;
-};
-
-class GameListCoverLoader : public QObject
-{
-  Q_OBJECT
-
-public:
-  GameListCoverLoader(const GameList::Entry* ge, const QImage& placeholder_image, int width, int height, float scale);
-  ~GameListCoverLoader();
-
-public:
-  void loadOrGenerateCover();
-
-Q_SIGNALS:
-  void coverLoaded(const std::string& path, const QImage& image, float scale);
-
-private:
-  void createPlaceholderImage();
-
-  std::string m_path;
-  std::string m_serial;
-  std::string m_title;
-  QImage m_placeholder_image;
-  int m_width;
-  int m_height;
-  float m_scale;
-  float m_dpr;
-
-  QImage m_image;
 };
 
 class GameListGridListView : public QListView
@@ -208,6 +185,7 @@ public:
   void refreshModel();
   void cancelRefresh();
   void reloadThemeSpecificImages();
+  void updateBackground(bool reload_image);
 
   bool isShowingGameList() const;
   bool isShowingGameGrid() const;
@@ -277,4 +255,6 @@ private:
   Ui::EmptyGameListWidget m_empty_ui;
 
   GameListRefreshThread* m_refresh_thread = nullptr;
+
+  QImage m_background_image;
 };
