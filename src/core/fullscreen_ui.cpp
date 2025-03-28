@@ -7706,6 +7706,9 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
           HandleGameListOptions(selected_entry);
         }
       }
+
+      if (entry == s_state.game_list_sorted_entries.front())
+        ImGui::SetItemDefaultFocus();
     }
 
     EndMenuButtons();
@@ -8010,6 +8013,9 @@ void FullscreenUI::DrawGameGrid(const ImVec2& heading_size)
         HandleGameListOptions(entry);
       }
     }
+
+    if (entry == s_state.game_list_sorted_entries.front())
+      ImGui::SetItemDefaultFocus();
 
     grid_x++;
     if (grid_x == grid_count_x)
