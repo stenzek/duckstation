@@ -231,7 +231,8 @@ bool BeginFullscreenWindow(float left, float top, float width, float height, con
 bool BeginFullscreenWindow(const ImVec2& position, const ImVec2& size, const char* name,
                            const ImVec4& background = HEX_TO_IMVEC4(0x212121, 0xFF), float rounding = 0.0f,
                            const ImVec2& padding = ImVec2(), ImGuiWindowFlags flags = 0);
-void EndFullscreenWindow();
+void EndFullscreenWindow(bool allow_wrap_x = false, bool allow_wrap_y = true);
+void SetWindowNavWrapping(bool allow_wrap_x = false, bool allow_wrap_y = true);
 
 bool IsGamepadInputSource();
 std::string_view GetControllerIconMapping(std::string_view icon);

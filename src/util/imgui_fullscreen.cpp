@@ -977,11 +977,24 @@ bool ImGuiFullscreen::BeginFullscreenWindow(const ImVec2& position, const ImVec2
                         ImGuiWindowFlags_NoBringToFrontOnFocus | flags);
 }
 
-void ImGuiFullscreen::EndFullscreenWindow()
+void ImGuiFullscreen::EndFullscreenWindow(bool allow_wrap_x, bool allow_wrap_y)
 {
+  if (allow_wrap_x || allow_wrap_y)
+    SetWindowNavWrapping(allow_wrap_x, allow_wrap_y);
+
   ImGui::End();
   ImGui::PopStyleVar(3);
   ImGui::PopStyleColor();
+}
+
+void ImGuiFullscreen::SetWindowNavWrapping(bool allow_wrap_x /*= false*/, bool allow_wrap_y /*= true*/)
+{
+  DebugAssert(allow_wrap_x || allow_wrap_y);
+  if (ImGuiWindow* const win = ImGui::GetCurrentWindowRead(); GImGui->NavWindow == win)
+  {
+    ImGui::NavMoveRequestTryWrapping(win, (allow_wrap_x ? ImGuiNavMoveFlags_LoopX : 0) |
+                                            (allow_wrap_y ? ImGuiNavMoveFlags_LoopY : 0));
+  }
 }
 
 bool ImGuiFullscreen::IsGamepadInputSource()
@@ -2226,7 +2239,7 @@ bool ImGuiFullscreen::BeginHorizontalMenu(const char* name, const ImVec2& positi
 void ImGuiFullscreen::EndHorizontalMenu()
 {
   ImGui::PopStyleVar(4);
-  EndFullscreenWindow();
+  EndFullscreenWindow(true, true);
 }
 
 bool ImGuiFullscreen::HorizontalMenuItem(GPUTexture* icon, const char* title, const char* description, u32 color)

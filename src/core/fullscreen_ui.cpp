@@ -107,6 +107,7 @@ using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
 using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndHorizontalMenu;
+using ImGuiFullscreen::SetWindowNavWrapping;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EndNavBar;
 using ImGuiFullscreen::EnumChoiceButton;
@@ -7195,6 +7196,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
     }
 
     EndMenuButtons();
+    SetWindowNavWrapping(true, true);
     ImGui::EndChild();
   }
 
@@ -7712,6 +7714,7 @@ void FullscreenUI::DrawGameList(const ImVec2& heading_size)
 
     EndMenuButtons();
   }
+  SetWindowNavWrapping(false, true);
   EndFullscreenColumnWindow();
 
   static constexpr float info_window_width = 530.0f;
