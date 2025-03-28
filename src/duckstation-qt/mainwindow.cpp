@@ -471,6 +471,10 @@ void MainWindow::destroyDisplayWidget(bool show_game_list)
 
 void MainWindow::updateDisplayWidgetCursor()
 {
+  // may be temporarily surfaceless
+  if (!m_display_widget)
+    return;
+
   m_display_widget->updateRelativeMode(s_system_valid && !s_system_paused && m_relative_mouse_mode);
   m_display_widget->updateCursor(s_system_valid && !s_system_paused && shouldHideMouseCursor());
 }
@@ -514,6 +518,7 @@ void MainWindow::onSystemStarting()
   s_system_valid = false;
   s_system_paused = false;
 
+  switchToEmulationView();
   updateEmulationActions(true, false, Achievements::IsHardcoreModeActive());
 }
 
