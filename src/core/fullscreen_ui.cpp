@@ -107,7 +107,6 @@ using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
 using ImGuiFullscreen::EndFullscreenWindow;
 using ImGuiFullscreen::EndHorizontalMenu;
-using ImGuiFullscreen::SetWindowNavWrapping;
 using ImGuiFullscreen::EndMenuButtons;
 using ImGuiFullscreen::EndNavBar;
 using ImGuiFullscreen::EnumChoiceButton;
@@ -148,6 +147,7 @@ using ImGuiFullscreen::RenderShadowedTextClipped;
 using ImGuiFullscreen::ResetFocusHere;
 using ImGuiFullscreen::RightAlignNavButtons;
 using ImGuiFullscreen::SetFullscreenFooterText;
+using ImGuiFullscreen::SetWindowNavWrapping;
 using ImGuiFullscreen::ShowToast;
 using ImGuiFullscreen::ThreeWayToggleButton;
 using ImGuiFullscreen::ToggleButton;
@@ -6183,10 +6183,6 @@ void FullscreenUI::DrawAdvancedSettingsPage()
   DrawToggleSetting(bsi, FSUI_CSTR("Use Debug GPU Device"),
                     FSUI_CSTR("Enable debugging when supported by the host's renderer API. Only for developer use."),
                     "GPU", "UseDebugDevice", false);
-
-  DrawToggleSetting(bsi, FSUI_CSTR("Allow Booting Without SBI File"),
-                    FSUI_CSTR("Allows loading protected games without subchannel information."), "CDROM",
-                    "AllowBootingWithoutSBIFile", false);
 
   DrawToggleSetting(
     bsi, FSUI_CSTR("Load Devices From Save States"),
