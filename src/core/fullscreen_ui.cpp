@@ -4046,19 +4046,24 @@ void FullscreenUI::DrawBIOSSettingsPage()
         options.emplace_back(std::move(path), selected);
       }
 
-      OpenChoiceDialog(title, false, std::move(options),
-                       [game_settings, i](s32 index, const std::string& path, bool checked) {
-                         if (index < 0)
-                           return;
+      OpenChoiceDialog(
+        title, false, std::move(options), [game_settings, i](s32 index, const std::string& path, bool checked) {
+          if (index < 0)
+            return;
 
-                         auto lock = Host::GetSettingsLock();
-                         SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
-                         if (game_settings && index == 0)
-                           bsi->DeleteValue("BIOS", config_keys[i]);
-                         else
-                           bsi->SetStringValue("BIOS", config_keys[i], path.c_str());
-                         SetSettingsChanged(bsi);
-                       });
+          auto lock = Host::GetSettingsLock();
+          SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
+          if (game_settings && index == 0)
+          {
+            bsi->DeleteValue("BIOS", config_keys[i]);
+          }
+          else
+          {
+            bsi->SetStringValue("BIOS", config_keys[i],
+                                (index == static_cast<s32>(BoolToUInt32(game_settings))) ? "" : path.c_str());
+          }
+          SetSettingsChanged(bsi);
+        });
     }
   }
 
