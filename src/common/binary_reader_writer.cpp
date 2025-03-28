@@ -289,7 +289,7 @@ BinaryFileReader& BinaryFileReader::operator=(BinaryFileReader&& move)
 
 bool BinaryFileReader::IsAtEnd()
 {
-  return (FileSystem::FTell64(m_fp) == m_size);
+  return (!m_fp || FileSystem::FTell64(m_fp) == m_size);
 }
 
 bool BinaryFileReader::ReadCString(std::string* dst)

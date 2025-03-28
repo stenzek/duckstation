@@ -495,6 +495,8 @@ bool GameList::LoadOrInitializeCache(std::FILE* fp, bool invalidate_cache)
 
   WARNING_LOG("Initializing game list cache.");
   s_cache_map.clear();
+  if (!fp)
+    return false;
 
   // Truncate file, and re-write header.
   Error error;
