@@ -1264,6 +1264,7 @@ void FullscreenUI::DoResume()
   s_state.save_state_selector_loading = true;
   s_state.save_state_selector_open = true;
   s_state.save_state_selector_resuming = true;
+  QueueResetFocus(FocusResetType::PopupOpened);
 }
 
 void FullscreenUI::DoStartFile()
@@ -7336,6 +7337,7 @@ void FullscreenUI::DrawResumeStateSelector()
   if (!is_open)
   {
     ClearSaveStateEntryList();
+    QueueResetFocus(FocusResetType::PopupClosed);
     s_state.save_state_selector_open = false;
     s_state.save_state_selector_loading = false;
     s_state.save_state_selector_resuming = false;
@@ -7573,16 +7575,6 @@ void FullscreenUI::DrawGameListWindow()
 
   EndFullscreenWindow();
 
-  if (!AreAnyDialogsOpen())
-  {
-    if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
-      s_state.game_list_view = (s_state.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
-    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
-      SwitchToSettings();
-    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
-      DoResume();
-  }
-
   switch (s_state.game_list_view)
   {
     case GameListView::Grid:
@@ -7593,6 +7585,17 @@ void FullscreenUI::DrawGameListWindow()
       break;
     default:
       break;
+  }
+
+  // note: has to come afterwards
+  if (!AreAnyDialogsOpen())
+  {
+    if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F4, false))
+      s_state.game_list_view = (s_state.game_list_view == GameListView::Grid) ? GameListView::List : GameListView::Grid;
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F2, false))
+      SwitchToSettings();
+    else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
+      DoResume();
   }
 
   if (IsGamepadInputSource())

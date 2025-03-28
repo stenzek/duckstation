@@ -793,8 +793,11 @@ bool ImGuiFullscreen::ResetFocusHere()
   // If this is a popup closing, we don't want to reset the current nav item, since we were presumably opened by one.
   if (s_state.focus_reset_queued != FocusResetType::PopupClosed)
     ImGui::NavInitWindow(window, true);
+  else
+    ImGui::SetNavWindow(window);
 
   s_state.focus_reset_queued = FocusResetType::None;
+  ResetMenuButtonFrame();
 
   // only do the active selection magic when we're using keyboard/gamepad
   return (GImGui->NavInputSource == ImGuiInputSource_Keyboard || GImGui->NavInputSource == ImGuiInputSource_Gamepad);
@@ -1151,7 +1154,7 @@ void ImGuiFullscreen::DrawFullscreenFooter()
 
 void ImGuiFullscreen::PrerenderMenuButtonBorder()
 {
-  if (!s_state.had_hovered_menu_item)
+  if (!s_state.had_hovered_menu_item || GImGui->CurrentWindow != GImGui->NavWindow)
     return;
 
   // updating might finish the animation
@@ -1169,8 +1172,10 @@ void ImGuiFullscreen::PrerenderMenuButtonBorder()
   s_state.rendered_menu_item_border = true;
 }
 
-void ImGuiFullscreen::BeginMenuButtons(u32 num_items, float y_align, float x_padding, float y_padding,
-                                       float item_height)
+void ImGuiFullscreen::BeginMenuButtons(u32 num_items /* = 0 */, float y_align /* = 0.0f */,
+                                       float x_padding /* = LAYOUT_MENU_BUTTON_X_PADDING */,
+                                       float y_padding /* = LAYOUT_MENU_BUTTON_Y_PADDING */,
+                                       float item_height /* = LAYOUT_MENU_BUTTON_HEIGHT */)
 {
   s_state.menu_button_index = 0;
 
@@ -1327,7 +1332,7 @@ void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_m
   ImVec2 frame_max = p_max;
 
   const ImGuiIO& io = ImGui::GetIO();
-  if (s_state.smooth_scrolling && io.NavVisible)
+  if (s_state.smooth_scrolling && io.NavVisible && GImGui->CurrentWindow == GImGui->NavWindow)
   {
     if (!s_state.had_hovered_menu_item || io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f)
     {
@@ -2635,10 +2640,11 @@ void ImGuiFullscreen::DrawChoiceDialog()
     ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
 
     ResetFocusHere();
-    BeginMenuButtons();
 
     if (s_state.choice_dialog_checkable)
     {
+      BeginMenuButtons();
+
       for (s32 i = 0; i < static_cast<s32>(s_state.choice_dialog_options.size()); i++)
       {
         auto& option = s_state.choice_dialog_options[i];
@@ -2651,23 +2657,41 @@ void ImGuiFullscreen::DrawChoiceDialog()
           option.second = !option.second;
         }
       }
+
+      EndMenuButtons();
     }
     else
     {
+      // draw background first, because otherwise it'll obscure the frame border
       for (s32 i = 0; i < static_cast<s32>(s_state.choice_dialog_options.size()); i++)
       {
         auto& option = s_state.choice_dialog_options[i];
-        if (ActiveButtonWithRightText(option.first.c_str(), option.second ? ICON_FA_CHECK : nullptr, option.second,
-                                      true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+        if (!option.second)
+          continue;
+
+        ImVec2 pos, size;
+        GetMenuButtonFrameBounds(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &pos, &size);
+        pos.y += size.y * static_cast<float>(i);
+        ImGui::RenderFrame(pos, pos + size, ImGui::GetColorU32(UIStyle.PrimaryColor), false,
+                           LayoutScale(MENU_ITEM_BORDER_ROUNDING));
+      }
+
+      BeginMenuButtons();
+
+      for (s32 i = 0; i < static_cast<s32>(s_state.choice_dialog_options.size()); i++)
+      {
+        auto& option = s_state.choice_dialog_options[i];
+        if (ActiveButtonWithRightText(option.first.c_str(), option.second ? ICON_FA_CHECK : nullptr, false, true,
+                                      LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
         {
           choice = i;
           for (s32 j = 0; j < static_cast<s32>(s_state.choice_dialog_options.size()); j++)
             s_state.choice_dialog_options[j].second = (j == i);
         }
       }
-    }
 
-    EndMenuButtons();
+      EndMenuButtons();
+    }
 
     ImGui::PopStyleColor(1);
 
