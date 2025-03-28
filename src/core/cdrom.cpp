@@ -3318,7 +3318,10 @@ void CDROM::DoSectorRead()
     }
     else if (subq.track_number_bcd != s_state.play_track_number_bcd)
     {
-      // we don't want to update the position if the track changes, so we check it before reading the actual sector.
+      // Fudge the hold position by 2 sectors to reduce the number of GetlocP's that will return a MSF in the old track.
+      // Works around the music hang in Fighting Force.
+      SetHoldPosition(std::min(s_state.current_lba + 2, s_reader.GetMedia()->GetLBACount() - 1),
+                      s_state.current_subq_lba);
       DEV_LOG("Auto pause at the start of track {:02x} (LBA {})", subq.track_number_bcd, s_state.current_lba);
       StopReadingWithDataEnd();
       return;
