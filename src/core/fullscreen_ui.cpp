@@ -91,7 +91,6 @@ using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
 using ImGuiFullscreen::UIStyle;
 
-using ImGuiFullscreen::ActiveButton;
 using ImGuiFullscreen::AddNotification;
 using ImGuiFullscreen::BeginFixedPopupModal;
 using ImGuiFullscreen::BeginFullscreenColumns;
@@ -103,7 +102,6 @@ using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CancelPendingMenuClose;
 using ImGuiFullscreen::CenterImage;
 using ImGuiFullscreen::DarkerColor;
-using ImGuiFullscreen::DefaultActiveButton;
 using ImGuiFullscreen::EndFixedPopupModal;
 using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
@@ -4347,7 +4345,7 @@ void FullscreenUI::DrawEmulationSettingsPage()
                                "system requirements.");
   }
 
-  ActiveButton(rewind_summary, false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont);
+  MenuButtonWithoutSummary(rewind_summary, false);
 
   EndMenuButtons();
 }
@@ -5937,10 +5935,10 @@ void FullscreenUI::DrawAchievementsSettingsPage()
   if (Achievements::IsUsingRAIntegration())
   {
     BeginMenuButtons();
-    ActiveButton(
+    MenuButtonWithoutSummary(
       FSUI_ICONSTR(ICON_FA_BAN,
                    FSUI_CSTR("RAIntegration is being used instead of the built-in achievements implementation.")),
-      false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      false);
     EndMenuButtons();
     return;
   }
@@ -6000,18 +5998,18 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     if (bsi->ContainsValue("Cheevos", "Token"))
     {
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-      ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")),
-                                            bsi->GetTinyStringValue("Cheevos", "Username")),
-                   false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      MenuButtonWithoutSummary(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_USER, "Username: {}")),
+                                                        bsi->GetTinyStringValue("Cheevos", "Username")),
+                               false);
 
       TinyString ts_string;
       ts_string.format(
         FSUI_FSTR("{:%Y-%m-%d %H:%M:%S}"),
         fmt::localtime(
           StringUtil::FromChars<u64>(bsi->GetTinyStringValue("Cheevos", "LoginTimestamp", "0")).value_or(0)));
-      ActiveButton(
+      MenuButtonWithoutSummary(
         SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_CLOCK, "Login token generated on {}")), ts_string),
-        false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+        false);
       ImGui::PopStyleColor();
 
       if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Logout"), FSUI_CSTR("Logs out of RetroAchievements.")))
@@ -6021,8 +6019,7 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     }
     else
     {
-      ActiveButton(FSUI_ICONSTR(ICON_FA_USER, "Not Logged In"), false, false,
-                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_USER, "Not Logged In"), false);
 
       if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), FSUI_CSTR("Logs in to RetroAchievements.")))
       {
@@ -6040,28 +6037,21 @@ void FullscreenUI::DrawAchievementsSettingsPage()
       const auto lock = Achievements::GetLock();
 
       ImGui::PushStyleColor(ImGuiCol_TextDisabled, ImGui::GetStyle().Colors[ImGuiCol_Text]);
-      ActiveButton(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game: {} ({})")),
-                                            Achievements::GetGameID(), Achievements::GetGameTitle()),
-                   false, false, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      MenuButtonWithoutSummary(SmallString::from_format(fmt::runtime(FSUI_ICONSTR(ICON_FA_BOOKMARK, "Game: {} ({})")),
+                                                        Achievements::GetGameID(), Achievements::GetGameTitle()),
+                               false);
 
       const std::string& rich_presence_string = Achievements::GetRichPresenceString();
       if (!rich_presence_string.empty())
-      {
-        ActiveButton(SmallString::from_format(ICON_FA_MAP "{}", rich_presence_string), false, false,
-                     LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-      }
+        MenuButtonWithoutSummary(SmallString::from_format(ICON_FA_MAP "{}", rich_presence_string), false);
       else
-      {
-        ActiveButton(FSUI_ICONSTR(ICON_FA_MAP, "Rich presence inactive or unsupported."), false, false,
-                     LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
-      }
+        MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_MAP, "Rich presence inactive or unsupported."), false);
 
       ImGui::PopStyleColor();
     }
     else
     {
-      ActiveButton(FSUI_ICONSTR(ICON_FA_BAN, "Game not loaded or no RetroAchievements available."), false, false,
-                   LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_BAN, "Game not loaded or no RetroAchievements available."), false);
     }
   }
 
@@ -6120,7 +6110,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
     const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
 
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), false, login_enabled))
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_KEY, "Login"), login_enabled))
     {
       ImGuiFullscreen::OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."),
                                                     0, 0, 0);
@@ -6153,7 +6143,7 @@ void FullscreenUI::DrawAchievementsLoginWindow()
       });
     }
 
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), false, !is_logging_in))
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), !is_logging_in))
       popup_closed = true;
 
     popup_closed = popup_closed || (!is_logging_in && WantsToCloseMenu());
@@ -6439,11 +6429,11 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
   if (cheats)
   {
-    ActiveButton(
+    MenuButtonWithoutSummary(
       FSUI_ICONSTR(
         ICON_EMOJI_WARNING,
         "WARNING: Activating cheats can cause unpredictable behavior, crashing, soft-locks, or broken saved games."),
-      false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      false);
 
     MenuHeading(FSUI_CSTR("Settings"));
 
@@ -6486,8 +6476,7 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
 
     if (code_list.empty())
     {
-      ActiveButton(FSUI_ICONSTR(ICON_FA_STORE_ALT_SLASH, "No cheats are available for this game."), false, false,
-                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_STORE_ALT_SLASH, "No cheats are available for this game."), false);
     }
     else
     {
@@ -6510,16 +6499,15 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
   }
   else
   {
-    ActiveButton(
+    MenuButtonWithoutSummary(
       FSUI_ICONSTR(ICON_EMOJI_WARNING,
                    "WARNING: Activating game patches can cause unpredictable behavior, crashing, soft-locks, or broken "
                    "saved games."),
-      false, false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      false);
 
     if (code_list.empty())
     {
-      ActiveButton(FSUI_ICONSTR(ICON_FA_STORE_ALT_SLASH, "No patches are available for this game."), false, false,
-                   ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY);
+      MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_STORE_ALT_SLASH, "No patches are available for this game."), false);
     }
     else
     {
@@ -6652,34 +6640,36 @@ void FullscreenUI::DrawPauseMenu()
         // NOTE: Menu close must come first, because otherwise VM destruction options will race.
         const bool has_game = GPUThread::HasGPUBackend();
 
-        if (DefaultActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game"), false) || WantsToCloseMenu())
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game")) || WantsToCloseMenu())
           ClosePauseMenu();
+        else
+          ImGui::SetItemDefaultFocus();
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Toggle Fast Forward"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Toggle Fast Forward"), false))
         {
           ClosePauseMenu();
           DoToggleFastForward();
         }
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), false, has_game))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_UNDO, "Load State"), has_game))
           OpenSaveStateSelector(s_state.current_game_serial, s_state.current_game_path, true);
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Save State"), false, has_game))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_DOWNLOAD, "Save State"), has_game))
           OpenSaveStateSelector(s_state.current_game_serial, s_state.current_game_path, false);
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Toggle Analog"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Toggle Analog")))
         {
           ClosePauseMenu();
           DoToggleAnalogMode();
         }
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), false, has_game))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WRENCH, "Game Properties"), has_game))
         {
           SwitchToGameSettings();
         }
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false,
-                         Achievements::HasAchievementsOrLeaderboards()))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"),
+                                     Achievements::HasAchievementsOrLeaderboards()))
         {
           // skip second menu and go straight to cheevos if there's no lbs
           if (!Achievements::HasLeaderboards())
@@ -6688,22 +6678,22 @@ void FullscreenUI::DrawPauseMenu()
             OpenPauseSubMenu(PauseSubMenu::Achievements);
         }
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_CAMERA, "Save Screenshot"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_CAMERA, "Save Screenshot")))
         {
           Host::RunOnCPUThread([]() { System::SaveScreenshot(); });
           ClosePauseMenu();
         }
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Change Disc"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Change Disc")))
         {
           s_state.current_main_window = MainWindowType::None;
           Host::RunOnCPUThread([]() { BeginChangeDiscOnCPUThread(false); });
         }
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Settings"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_SLIDERS_H, "Settings")))
           SwitchToSettings();
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Close Game")))
         {
           // skip submenu when we can't save anyway
           if (!has_game)
@@ -6716,29 +6706,33 @@ void FullscreenUI::DrawPauseMenu()
 
       case PauseSubMenu::Exit:
       {
-        if (ActiveButton(FSUI_ICONSTR(ICON_PF_NAVIGATION_BACK, "Back To Pause Menu"), false) || WantsToCloseMenu())
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_PF_NAVIGATION_BACK, "Back To Pause Menu")) || WantsToCloseMenu())
           OpenPauseSubMenu(PauseSubMenu::None);
+        else
+          ImGui::SetItemDefaultFocus();
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_SYNC, "Reset System"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_SYNC, "Reset System")))
           RequestReset();
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_SAVE, "Exit And Save State"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_SAVE, "Exit And Save State")))
           RequestShutdown(true);
 
-        if (DefaultActiveButton(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_POWER_OFF, "Exit Without Saving")))
           RequestShutdown(false);
       }
       break;
 
       case PauseSubMenu::Achievements:
       {
-        if (ActiveButton(FSUI_ICONSTR(ICON_PF_NAVIGATION_BACK, "Back To Pause Menu"), false) || WantsToCloseMenu())
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_PF_NAVIGATION_BACK, "Back To Pause Menu")) || WantsToCloseMenu())
           OpenPauseSubMenu(PauseSubMenu::None);
+        else
+          ImGui::SetItemDefaultFocus();
 
-        if (DefaultActiveButton(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_TROPHY, "Achievements")))
           OpenAchievementsWindow();
 
-        if (ActiveButton(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards"), false))
+        if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_STOPWATCH, "Leaderboards")))
           OpenLeaderboardsWindow();
       }
       break;
@@ -7042,9 +7036,8 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
           BeginMenuButtons();
 
-          if (ActiveButton(is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State") :
-                                        FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State"),
-                           false, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+          if (MenuButtonWithoutSummary(is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State") :
+                                                    FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State")))
           {
             if (is_loading)
               DoLoadState(std::move(entry.path));
@@ -7055,8 +7048,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
             was_close_not_back = true;
           }
 
-          if (!entry.path.empty() && ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false, true,
-                                                  LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+          if (!entry.path.empty() && MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save")))
           {
             if (!FileSystem::FileExists(entry.path.c_str()))
             {
@@ -7090,9 +7082,7 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
             }
           }
 
-          if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false, true,
-                           LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) ||
-              WantsToCloseMenu())
+          if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu")) || WantsToCloseMenu())
           {
             is_open = false;
             ignore_close_request = true;
@@ -7296,19 +7286,19 @@ void FullscreenUI::DrawResumeStateSelector()
     ResetFocusHere();
     BeginMenuButtons();
 
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_PLAY, "Load State"), false))
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PLAY, "Load State")))
     {
       DoStartPath(s_state.save_state_selector_game_path, std::move(entry.path));
       is_open = false;
     }
 
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Clean Boot"), false))
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Clean Boot")))
     {
       DoStartPath(s_state.save_state_selector_game_path);
       is_open = false;
     }
 
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete State"), false))
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete State")))
     {
       if (FileSystem::DeleteFile(entry.path.c_str()))
       {
@@ -7321,7 +7311,7 @@ void FullscreenUI::DrawResumeStateSelector()
       }
     }
 
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Cancel"), false) || WantsToCloseMenu())
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Cancel")) || WantsToCloseMenu())
     {
       ImGui::CloseCurrentPopup();
       is_open = false;
@@ -8473,14 +8463,14 @@ void FullscreenUI::DrawAboutWindow()
     ImGui::NewLine();
 
     BeginMenuButtons();
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_GLOBE, "GitHub Repository"), false))
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_GLOBE, "GitHub Repository")))
       ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/");
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_COMMENT, "Discord Server"), false))
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_COMMENT, "Discord Server")))
       ExitFullscreenAndOpenURL("https://www.duckstation.org/discord.html");
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_PEOPLE_CARRY, "Contributor List"), false))
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PEOPLE_CARRY, "Contributor List")))
       ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md");
 
-    if (ActiveButton(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close"), false) || WantsToCloseMenu())
+    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close")) || WantsToCloseMenu())
     {
       ImGui::CloseCurrentPopup();
       s_state.about_window_open = false;

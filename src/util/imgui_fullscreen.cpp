@@ -1520,59 +1520,8 @@ bool ImGuiFullscreen::MenuHeadingButton(const char* title, const char* value /*=
   return pressed;
 }
 
-bool ImGuiFullscreen::ActiveButton(const char* title, bool is_active, bool enabled, float height, ImFont* font)
-{
-  return ActiveButtonWithRightText(title, nullptr, is_active, enabled, height, font);
-}
-
-bool ImGuiFullscreen::DefaultActiveButton(const char* title, bool is_active, bool enabled /* = true */,
-                                          float height /* = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY */,
-                                          ImFont* font /* = g_large_font */)
-{
-  const bool result = ActiveButtonWithRightText(title, nullptr, is_active, enabled, height, font);
-  ImGui::SetItemDefaultFocus();
-  return result;
-}
-
-bool ImGuiFullscreen::ActiveButtonWithRightText(const char* title, const char* right_title, bool is_active,
-                                                bool enabled, float height, ImFont* font)
-{
-  if (is_active)
-  {
-    // don't draw over a prerendered border
-    const float border_size = ImGui::GetStyle().FrameBorderSize;
-    const ImVec2 border_size_v = ImVec2(border_size, border_size);
-    ImVec2 pos, size;
-    GetMenuButtonFrameBounds(height, &pos, &size);
-    ImGui::RenderFrame(pos + border_size_v, pos + size - border_size_v, ImGui::GetColorU32(UIStyle.PrimaryColor), false,
-                       LayoutScale(MENU_ITEM_BORDER_ROUNDING));
-  }
-
-  ImRect bb;
-  bool visible, hovered;
-  bool pressed = MenuButtonFrame(title, enabled, height, &visible, &hovered, &bb);
-  if (!visible)
-    return false;
-
-  const ImRect title_bb(bb.GetTL(), bb.GetBR());
-  const u32 text_color = ImGui::GetColorU32(enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled);
-
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, text_color, title, nullptr, nullptr, ImVec2(0.0f, 0.0f),
-                            0.0f, &title_bb);
-
-  if (right_title && *right_title)
-  {
-    const ImVec2 right_text_size = font->CalcTextSizeA(font->FontSize, title_bb.GetWidth(), 0.0f, right_title);
-    const ImVec2 right_text_start = ImVec2(title_bb.Max.x - right_text_size.x, title_bb.Min.y);
-    RenderShadowedTextClipped(font, right_text_start, title_bb.Max, text_color, right_title, nullptr, &right_text_size,
-                              ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
-  }
-  s_state.menu_button_index++;
-  return pressed;
-}
-
 bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool enabled, float height, ImFont* font,
-                                 ImFont* summary_font)
+                                 ImFont* summary_font, const ImVec2& text_align /*= ImVec2(0.0f, 0.0f)*/)
 {
   ImRect bb;
   bool visible, hovered;
@@ -1582,39 +1531,27 @@ bool ImGuiFullscreen::MenuButton(const char* title, const char* summary, bool en
 
   const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
   const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
-  const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
-  const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
-  RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
-                            ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
-
-  if (summary)
-  {
-    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
-                              summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
-  }
-
-  s_state.menu_button_index++;
-  return pressed;
-}
-
-bool ImGuiFullscreen::MenuButtonWithoutSummary(const char* title, bool enabled, float height, ImFont* font,
-                                               const ImVec2& text_align)
-{
-  ImRect bb;
-  bool visible, hovered;
-  bool pressed = MenuButtonFrame(title, enabled, height, &visible, &hovered, &bb);
-  if (!visible)
-    return false;
-
-  const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
-  const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
-  const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
   const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
   RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
                             text_align, 0.0f, &title_bb);
 
+  if (summary)
+  {
+    const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), bb.Max);
+    RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
+                              summary, nullptr, nullptr, text_align, 0.0f, &summary_bb);
+  }
+
   s_state.menu_button_index++;
   return pressed;
+}
+
+bool ImGuiFullscreen::MenuButtonWithoutSummary(const char* title, bool enabled /*= true*/,
+                                               float height /*= LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY*/,
+                                               ImFont* font /*= UIStyle.LargeFont*/,
+                                               const ImVec2& text_align /*= ImVec2(0.0f, 0.0f)*/)
+{
+  return MenuButton(title, nullptr, enabled, height, font, nullptr, text_align);
 }
 
 bool ImGuiFullscreen::MenuImageButton(const char* title, const char* summary, ImTextureID user_texture_id,
@@ -1920,7 +1857,9 @@ bool ImGuiFullscreen::RangeButton(const char* title, const char* summary, s32* v
     ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
     if (MenuButtonWithoutSummary(ok_text, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                  ImVec2(0.5f, 0.0f)))
+    {
       ImGui::CloseCurrentPopup();
+    }
     EndMenuButtons();
 
     EndFixedPopupModal();
@@ -2001,7 +1940,6 @@ bool ImGuiFullscreen::MenuButtonWithValue(const char* title, const char* summary
   const float midpoint = bb.Min.y + font->FontSize + LayoutScale(4.0f);
   const float text_end = bb.Max.x - value_size.x;
   const ImRect title_bb(bb.Min, ImVec2(text_end, midpoint));
-  const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), ImVec2(text_end, bb.Max.y));
   const ImVec4& color = ImGui::GetStyle().Colors[enabled ? ImGuiCol_Text : ImGuiCol_TextDisabled];
   RenderShadowedTextClipped(font, title_bb.Min, title_bb.Max, ImGui::GetColorU32(color), title, nullptr, nullptr,
                             ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
@@ -2010,6 +1948,7 @@ bool ImGuiFullscreen::MenuButtonWithValue(const char* title, const char* summary
 
   if (summary)
   {
+    const ImRect summary_bb(ImVec2(bb.Min.x, midpoint), ImVec2(text_end, bb.Max.y));
     RenderShadowedTextClipped(summary_font, summary_bb.Min, summary_bb.Max, ImGui::GetColorU32(DarkerColor(color)),
                               summary, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
   }
@@ -2665,7 +2604,7 @@ void ImGuiFullscreen::DrawChoiceDialog()
       // draw background first, because otherwise it'll obscure the frame border
       for (s32 i = 0; i < static_cast<s32>(s_state.choice_dialog_options.size()); i++)
       {
-        auto& option = s_state.choice_dialog_options[i];
+        const auto& option = s_state.choice_dialog_options[i];
         if (!option.second)
           continue;
 
@@ -2681,8 +2620,9 @@ void ImGuiFullscreen::DrawChoiceDialog()
       for (s32 i = 0; i < static_cast<s32>(s_state.choice_dialog_options.size()); i++)
       {
         auto& option = s_state.choice_dialog_options[i];
-        if (ActiveButtonWithRightText(option.first.c_str(), option.second ? ICON_FA_CHECK : nullptr, false, true,
-                                      LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
+        if (option.second ? MenuButtonWithValue(option.first.c_str(), nullptr, ICON_FA_CHECK, true,
+                                                LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) :
+                            MenuButtonWithoutSummary(option.first.c_str()))
         {
           choice = i;
           for (s32 j = 0; j < static_cast<s32>(s_state.choice_dialog_options.size()); j++)
@@ -2790,7 +2730,7 @@ void ImGuiFullscreen::DrawInputDialog()
 
     const bool ok_enabled = !s_state.input_dialog_text.empty();
 
-    if (ActiveButton(s_state.input_dialog_ok_text.c_str(), false, ok_enabled) && ok_enabled)
+    if (MenuButtonWithoutSummary(s_state.input_dialog_ok_text.c_str(), ok_enabled) && ok_enabled)
     {
       // have to move out in case they open another dialog in the callback
       InputStringDialogCallback cb(std::move(s_state.input_dialog_callback));
@@ -2800,7 +2740,7 @@ void ImGuiFullscreen::DrawInputDialog()
       cb(std::move(text));
     }
 
-    if (ActiveButton(ICON_FA_TIMES " Cancel", false))
+    if (MenuButtonWithoutSummary(ICON_FA_TIMES " Cancel"))
     {
       CloseInputDialog();
 
@@ -2938,7 +2878,7 @@ void ImGuiFullscreen::DrawMessageDialog()
     for (s32 button_index = 0; button_index < static_cast<s32>(s_state.message_dialog_buttons.size()); button_index++)
     {
       if (!s_state.message_dialog_buttons[button_index].empty() &&
-          ActiveButton(s_state.message_dialog_buttons[button_index].c_str(), false))
+          MenuButtonWithoutSummary(s_state.message_dialog_buttons[button_index].c_str()))
       {
         result = button_index;
         ImGui::CloseCurrentPopup();

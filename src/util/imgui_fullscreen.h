@@ -265,14 +265,9 @@ void RenderShadowedTextClipped(ImDrawList* draw_list, ImFont* font, const ImVec2
                                const ImVec2& align, float wrap_width, const ImRect* clip_rect, float shadow_offset);
 void MenuHeading(const char* title, bool draw_line = true);
 bool MenuHeadingButton(const char* title, const char* value = nullptr, bool enabled = true, bool draw_line = true);
-bool ActiveButton(const char* title, bool is_active, bool enabled = true,
-                  float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
-bool DefaultActiveButton(const char* title, bool is_active, bool enabled = true,
-                         float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
-bool ActiveButtonWithRightText(const char* title, const char* right_title, bool is_active, bool enabled = true,
-                               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont);
 bool MenuButton(const char* title, const char* summary, bool enabled = true, float height = LAYOUT_MENU_BUTTON_HEIGHT,
-                ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont);
+                ImFont* font = UIStyle.LargeFont, ImFont* summary_font = UIStyle.MediumFont,
+                const ImVec2& text_align = ImVec2(0.0f, 0.0f));
 bool MenuButtonWithoutSummary(const char* title, bool enabled = true,
                               float height = LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, ImFont* font = UIStyle.LargeFont,
                               const ImVec2& text_align = ImVec2(0.0f, 0.0f));
