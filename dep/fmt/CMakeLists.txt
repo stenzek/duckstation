@@ -27,7 +27,13 @@ endfunction()
 # DEPRECATED! Should be merged into add_module_library.
 function(enable_module target)
   if (MSVC)
-    set(BMI ${CMAKE_CURRENT_BINARY_DIR}/${target}.ifc)
+    if(CMAKE_GENERATOR STREQUAL "Ninja")
+      # Ninja dyndep expects the .ifc output to be located in a specific relative path
+      file(RELATIVE_PATH BMI_DIR "${CMAKE_BINARY_DIR}" "${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${target}.dir")
+    else()
+      set(BMI_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+    endif()
+    file(TO_NATIVE_PATH "${BMI_DIR}/${target}.ifc" BMI)
     target_compile_options(${target}
       PRIVATE /interface /ifcOutput ${BMI}
       INTERFACE /reference fmt=${BMI})
@@ -68,8 +74,6 @@ function(add_module_library name)
   if (CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options(${name} PUBLIC -fmodules-ts)
   endif ()
-
-  target_compile_definitions(${name} PRIVATE FMT_MODULE)
 
   if (FMT_USE_CMAKE_MODULES)
     target_sources(${name} PUBLIC FILE_SET fmt TYPE CXX_MODULES
@@ -240,7 +244,13 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
   endif ()
   if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS 6.0)
       set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wshift-overflow=2
-          -Wnull-dereference -Wduplicated-cond)
+          -Wduplicated-cond)
+      # Workaround for GCC regression
+      # [12/13/14/15 regression] New (since gcc 12) false positive null-dereference in vector.resize
+      # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=108860
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 12.0)
+        set(PEDANTIC_COMPILE_FLAGS ${PEDANTIC_COMPILE_FLAGS} -Wnull-dereference)
+      endif ()
   endif ()
   set(WERROR_FLAG -Werror)
 endif ()
@@ -289,6 +299,7 @@ function(add_headers VAR)
 endfunction()
 
 # Define the fmt library, its includes and the needed defines.
+set(FMT_HEADERS)
 add_headers(FMT_HEADERS args.h base.h chrono.h color.h compile.h core.h format.h
                         format-inl.h os.h ostream.h printf.h ranges.h std.h
                         xchar.h)
@@ -319,7 +330,7 @@ else ()
   message(WARNING "Feature cxx_std_11 is unknown for the CXX compiler")
 endif ()
 
-target_include_directories(fmt ${FMT_SYSTEM_HEADERS_ATTRIBUTE} PUBLIC
+target_include_directories(fmt ${FMT_SYSTEM_HEADERS_ATTRIBUTE} BEFORE PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${FMT_INC_DIR}>)
 
@@ -359,8 +370,8 @@ if (NOT MSVC)
   # Unicode is always supported on compilers other than MSVC.
 elseif (FMT_UNICODE)
   # Unicode support requires compiling with /utf-8.
-  target_compile_options(fmt PUBLIC $<$<COMPILE_LANGUAGE:CXX>:/utf-8>)
-  target_compile_options(fmt-header-only INTERFACE $<$<COMPILE_LANGUAGE:CXX>:/utf-8>)
+  target_compile_options(fmt PUBLIC $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
+  target_compile_options(fmt-header-only INTERFACE $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<CXX_COMPILER_ID:MSVC>>:/utf-8>)
 else ()
   target_compile_definitions(fmt PUBLIC FMT_UNICODE=0)
 endif ()
@@ -369,7 +380,7 @@ target_compile_definitions(fmt-header-only INTERFACE FMT_HEADER_ONLY=1)
 target_compile_features(fmt-header-only INTERFACE cxx_std_11)
 
 target_include_directories(fmt-header-only
-  ${FMT_SYSTEM_HEADERS_ATTRIBUTE} INTERFACE
+  ${FMT_SYSTEM_HEADERS_ATTRIBUTE} BEFORE INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:${FMT_INC_DIR}>)
 
@@ -420,7 +431,9 @@ if (FMT_INSTALL)
   endif()
 
   # Install the library and headers.
-  install(TARGETS ${INSTALL_TARGETS} EXPORT ${targets_export_name}
+  install(TARGETS ${INSTALL_TARGETS}
+          COMPONENT fmt-core
+          EXPORT ${targets_export_name}
           LIBRARY DESTINATION ${FMT_LIB_DIR}
           ARCHIVE DESTINATION ${FMT_LIB_DIR}
           PUBLIC_HEADER DESTINATION "${FMT_INC_DIR}/fmt"
@@ -433,13 +446,15 @@ if (FMT_INSTALL)
          FILE ${PROJECT_BINARY_DIR}/${targets_export_name}.cmake)
 
   # Install version, config and target files.
-  install(
-    FILES ${project_config} ${version_config}
-    DESTINATION ${FMT_CMAKE_DIR})
+  install(FILES ${project_config} ${version_config}
+          DESTINATION ${FMT_CMAKE_DIR}
+          COMPONENT fmt-core)
   install(EXPORT ${targets_export_name} DESTINATION ${FMT_CMAKE_DIR}
-          NAMESPACE fmt::)
+          NAMESPACE fmt::
+          COMPONENT fmt-core)
 
-  install(FILES "${pkgconfig}" DESTINATION "${FMT_PKGCONFIG_DIR}")
+  install(FILES "${pkgconfig}" DESTINATION "${FMT_PKGCONFIG_DIR}"
+          COMPONENT fmt-core)
 endif ()
 
 function(add_doc_target)
@@ -475,7 +490,8 @@ function(add_doc_target)
 
   include(GNUInstallDirs)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc-html/
-          DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/fmt OPTIONAL)
+          DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/doc/fmt
+          COMPONENT fmt-doc OPTIONAL)
 endfunction()
 
 if (FMT_DOC)

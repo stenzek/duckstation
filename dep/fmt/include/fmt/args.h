@@ -17,7 +17,6 @@
 #include "format.h"  // std_string_view
 
 FMT_BEGIN_NAMESPACE
-
 namespace detail {
 
 template <typename T> struct is_reference_wrapper : std::false_type {};
@@ -72,19 +71,13 @@ class dynamic_arg_list {
  * It can be implicitly converted into `fmt::basic_format_args` for passing
  * into type-erased formatting functions such as `fmt::vformat`.
  */
-template <typename Context>
-class dynamic_format_arg_store
-#if FMT_GCC_VERSION && FMT_GCC_VERSION < 409
-    // Workaround a GCC template argument substitution bug.
-    : public basic_format_args<Context>
-#endif
-{
+template <typename Context> class dynamic_format_arg_store {
  private:
   using char_type = typename Context::char_type;
 
   template <typename T> struct need_copy {
     static constexpr detail::type mapped_type =
-        detail::mapped_type_constant<T, Context>::value;
+        detail::mapped_type_constant<T, char_type>::value;
 
     enum {
       value = !(detail::is_reference_wrapper<T>::value ||
@@ -97,7 +90,7 @@ class dynamic_format_arg_store
   };
 
   template <typename T>
-  using stored_type = conditional_t<
+  using stored_t = conditional_t<
       std::is_convertible<T, std::basic_string<char_type>>::value &&
           !detail::is_reference_wrapper<T>::value,
       std::basic_string<char_type>, T>;
@@ -112,40 +105,36 @@ class dynamic_format_arg_store
 
   friend class basic_format_args<Context>;
 
-  auto get_types() const -> unsigned long long {
-    return detail::is_unpacked_bit | data_.size() |
-           (named_info_.empty()
-                ? 0ULL
-                : static_cast<unsigned long long>(detail::has_named_args_bit));
-  }
-
   auto data() const -> const basic_format_arg<Context>* {
     return named_info_.empty() ? data_.data() : data_.data() + 1;
   }
 
   template <typename T> void emplace_arg(const T& arg) {
-    data_.emplace_back(detail::make_arg<Context>(arg));
+    data_.emplace_back(arg);
   }
 
   template <typename T>
   void emplace_arg(const detail::named_arg<char_type, T>& arg) {
-    if (named_info_.empty()) {
-      constexpr const detail::named_arg_info<char_type>* zero_ptr{nullptr};
-      data_.insert(data_.begin(), {zero_ptr, 0});
-    }
-    data_.emplace_back(detail::make_arg<Context>(detail::unwrap(arg.value)));
+    if (named_info_.empty())
+      data_.insert(data_.begin(), basic_format_arg<Context>(nullptr, 0));
+    data_.emplace_back(detail::unwrap(arg.value));
     auto pop_one = [](std::vector<basic_format_arg<Context>>* data) {
       data->pop_back();
     };
     std::unique_ptr<std::vector<basic_format_arg<Context>>, decltype(pop_one)>
         guard{&data_, pop_one};
     named_info_.push_back({arg.name, static_cast<int>(data_.size() - 2u)});
-    data_[0].value_.named_args = {named_info_.data(), named_info_.size()};
+    data_[0] = {named_info_.data(), named_info_.size()};
     guard.release();
   }
 
  public:
   constexpr dynamic_format_arg_store() = default;
+
+  operator basic_format_args<Context>() const {
+    return basic_format_args<Context>(data(), static_cast<int>(data_.size()),
+                                      !named_info_.empty());
+  }
 
   /**
    * Adds an argument into the dynamic store for later passing to a formatting
@@ -164,7 +153,7 @@ class dynamic_format_arg_store
    */
   template <typename T> void push_back(const T& arg) {
     if (detail::const_check(need_copy<T>::value))
-      emplace_arg(dynamic_args_.push<stored_type<T>>(arg));
+      emplace_arg(dynamic_args_.push<stored_t<T>>(arg));
     else
       emplace_arg(detail::unwrap(arg));
   }
@@ -200,7 +189,7 @@ class dynamic_format_arg_store
         dynamic_args_.push<std::basic_string<char_type>>(arg.name).c_str();
     if (detail::const_check(need_copy<T>::value)) {
       emplace_arg(
-          fmt::arg(arg_name, dynamic_args_.push<stored_type<T>>(arg.value)));
+          fmt::arg(arg_name, dynamic_args_.push<stored_t<T>>(arg.value)));
     } else {
       emplace_arg(fmt::arg(arg_name, arg.value));
     }
@@ -210,17 +199,20 @@ class dynamic_format_arg_store
   void clear() {
     data_.clear();
     named_info_.clear();
-    dynamic_args_ = detail::dynamic_arg_list();
+    dynamic_args_ = {};
   }
 
   /// Reserves space to store at least `new_cap` arguments including
   /// `new_cap_named` named arguments.
   void reserve(size_t new_cap, size_t new_cap_named) {
     FMT_ASSERT(new_cap >= new_cap_named,
-               "Set of arguments includes set of named arguments");
+               "set of arguments includes set of named arguments");
     data_.reserve(new_cap);
     named_info_.reserve(new_cap_named);
   }
+
+  /// Returns the number of elements in the store.
+  size_t size() const noexcept { return data_.size(); }
 };
 
 FMT_END_NAMESPACE

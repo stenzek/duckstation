@@ -118,7 +118,7 @@ FMT_API void format_windows_error(buffer<char>& out, int error_code,
                                   const char* message) noexcept;
 }
 
-FMT_API std::system_error vwindows_error(int error_code, string_view format_str,
+FMT_API std::system_error vwindows_error(int error_code, string_view fmt,
                                          format_args args);
 
 /**
@@ -146,10 +146,10 @@ FMT_API std::system_error vwindows_error(int error_code, string_view format_str,
  *                                "cannot open file '{}'", filename);
  *     }
  */
-template <typename... Args>
-std::system_error windows_error(int error_code, string_view message,
-                                const Args&... args) {
-  return vwindows_error(error_code, message, fmt::make_format_args(args...));
+template <typename... T>
+auto windows_error(int error_code, string_view message, const T&... args)
+    -> std::system_error {
+  return vwindows_error(error_code, message, vargs<T...>{{args...}});
 }
 
 // Reports a Windows error without throwing an exception.
@@ -164,8 +164,8 @@ inline auto system_category() noexcept -> const std::error_category& {
 // std::system is not available on some platforms such as iOS (#2248).
 #ifdef __OSX__
 template <typename S, typename... Args, typename Char = char_t<S>>
-void say(const S& format_str, Args&&... args) {
-  std::system(format("say \"{}\"", format(format_str, args...)).c_str());
+void say(const S& fmt, Args&&... args) {
+  std::system(format("say \"{}\"", format(fmt, args...)).c_str());
 }
 #endif
 
@@ -176,24 +176,24 @@ class buffered_file {
 
   friend class file;
 
-  explicit buffered_file(FILE* f) : file_(f) {}
+  inline explicit buffered_file(FILE* f) : file_(f) {}
 
  public:
   buffered_file(const buffered_file&) = delete;
   void operator=(const buffered_file&) = delete;
 
   // Constructs a buffered_file object which doesn't represent any file.
-  buffered_file() noexcept : file_(nullptr) {}
+  inline buffered_file() noexcept : file_(nullptr) {}
 
   // Destroys the object closing the file it represents if any.
   FMT_API ~buffered_file() noexcept;
 
  public:
-  buffered_file(buffered_file&& other) noexcept : file_(other.file_) {
+  inline buffered_file(buffered_file&& other) noexcept : file_(other.file_) {
     other.file_ = nullptr;
   }
 
-  auto operator=(buffered_file&& other) -> buffered_file& {
+  inline auto operator=(buffered_file&& other) -> buffered_file& {
     close();
     file_ = other.file_;
     other.file_ = nullptr;
@@ -207,13 +207,13 @@ class buffered_file {
   FMT_API void close();
 
   // Returns the pointer to a FILE object representing this file.
-  auto get() const noexcept -> FILE* { return file_; }
+  inline auto get() const noexcept -> FILE* { return file_; }
 
   FMT_API auto descriptor() const -> int;
 
   template <typename... T>
   inline void print(string_view fmt, const T&... args) {
-    const auto& vargs = fmt::make_format_args(args...);
+    fmt::vargs<T...> vargs = {{args...}};
     detail::is_locking<T...>() ? fmt::vprint_buffered(file_, fmt, vargs)
                                : fmt::vprint(file_, fmt, vargs);
   }
@@ -248,7 +248,7 @@ class FMT_API file {
   };
 
   // Constructs a file object which doesn't represent any file.
-  file() noexcept : fd_(-1) {}
+  inline file() noexcept : fd_(-1) {}
 
   // Opens a file and constructs a file object representing this file.
   file(cstring_view path, int oflag);
@@ -257,10 +257,10 @@ class FMT_API file {
   file(const file&) = delete;
   void operator=(const file&) = delete;
 
-  file(file&& other) noexcept : fd_(other.fd_) { other.fd_ = -1; }
+  inline file(file&& other) noexcept : fd_(other.fd_) { other.fd_ = -1; }
 
   // Move assignment is not noexcept because close may throw.
-  auto operator=(file&& other) -> file& {
+  inline auto operator=(file&& other) -> file& {
     close();
     fd_ = other.fd_;
     other.fd_ = -1;
@@ -271,7 +271,7 @@ class FMT_API file {
   ~file() noexcept;
 
   // Returns the file descriptor.
-  auto descriptor() const noexcept -> int { return fd_; }
+  inline auto descriptor() const noexcept -> int { return fd_; }
 
   // Closes the file.
   void close();
@@ -324,9 +324,9 @@ auto getpagesize() -> long;
 namespace detail {
 
 struct buffer_size {
-  buffer_size() = default;
+  constexpr buffer_size() = default;
   size_t value = 0;
-  auto operator=(size_t val) const -> buffer_size {
+  FMT_CONSTEXPR auto operator=(size_t val) const -> buffer_size {
     auto bs = buffer_size();
     bs.value = val;
     return bs;
@@ -337,7 +337,7 @@ struct ostream_params {
   int oflag = file::WRONLY | file::CREATE | file::TRUNC;
   size_t buffer_size = BUFSIZ > 32768 ? BUFSIZ : 32768;
 
-  ostream_params() {}
+  constexpr ostream_params() {}
 
   template <typename... T>
   ostream_params(T... params, int new_oflag) : ostream_params(params...) {
@@ -358,59 +358,47 @@ struct ostream_params {
 #  endif
 };
 
-class file_buffer final : public buffer<char> {
+}  // namespace detail
+
+FMT_INLINE_VARIABLE constexpr auto buffer_size = detail::buffer_size();
+
+/// A fast buffered output stream for writing from a single thread. Writing from
+/// multiple threads without external synchronization may result in a data race.
+class FMT_API ostream : private detail::buffer<char> {
  private:
   file file_;
 
-  FMT_API static void grow(buffer<char>& buf, size_t);
+  ostream(cstring_view path, const detail::ostream_params& params);
+
+  static void grow(buffer<char>& buf, size_t);
 
  public:
-  FMT_API file_buffer(cstring_view path, const ostream_params& params);
-  FMT_API file_buffer(file_buffer&& other) noexcept;
-  FMT_API ~file_buffer();
+  ostream(ostream&& other) noexcept;
+  ~ostream();
 
-  void flush() {
+  operator writer() {
+    detail::buffer<char>& buf = *this;
+    return buf;
+  }
+
+  inline void flush() {
     if (size() == 0) return;
     file_.write(data(), size() * sizeof(data()[0]));
     clear();
   }
 
-  void close() {
-    flush();
-    file_.close();
-  }
-};
-
-}  // namespace detail
-
-constexpr auto buffer_size = detail::buffer_size();
-
-/// A fast output stream for writing from a single thread. Writing from
-/// multiple threads without external synchronization may result in a data race.
-class FMT_API ostream {
- private:
-  FMT_MSC_WARNING(suppress : 4251)
-  detail::file_buffer buffer_;
-
-  ostream(cstring_view path, const detail::ostream_params& params)
-      : buffer_(path, params) {}
-
- public:
-  ostream(ostream&& other) : buffer_(std::move(other.buffer_)) {}
-
-  ~ostream();
-
-  void flush() { buffer_.flush(); }
-
   template <typename... T>
   friend auto output_file(cstring_view path, T... params) -> ostream;
 
-  void close() { buffer_.close(); }
+  inline void close() {
+    flush();
+    file_.close();
+  }
 
   /// Formats `args` according to specifications in `fmt` and writes the
   /// output to the file.
   template <typename... T> void print(format_string<T...> fmt, T&&... args) {
-    vformat_to(appender(buffer_), fmt, fmt::make_format_args(args...));
+    vformat_to(appender(*this), fmt.str, vargs<T...>{{args...}});
   }
 };
 
