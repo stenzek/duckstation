@@ -282,7 +282,7 @@ void AdvancedSettingsWidget::addTweakOptions()
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Readahead Sectors"), "CDROM", "ReadaheadSectors",
                          0, 32, Settings::DEFAULT_CDROM_READAHEAD_SECTORS, tr(" sectors"));
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Speedup Read/Seek Cycles"), "CDROM",
-                         "MaxSpeedupCycles", 0, 1000000, Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES, tr(" cycles"));
+                         "MaxSpeedupCycles", 1, 1000000, Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES, tr(" cycles"));
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), "CDROM", "RegionCheck", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM SubQ Skew"), "CDROM", "SubQSkew", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",

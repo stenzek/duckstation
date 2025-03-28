@@ -375,7 +375,8 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
     Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "ReadSpeedup", 1u), std::numeric_limits<u8>::max()));
   cdrom_seek_speedup =
     Truncate8(std::min<u32>(si.GetUIntValue("CDROM", "SeekSpeedup", 1u), std::numeric_limits<u8>::max()));
-  cdrom_max_speedup_cycles = si.GetUIntValue("CDROM", "MaxSpeedupCycles", DEFAULT_CDROM_MAX_SPEEDUP_CYCLES);
+  cdrom_max_speedup_cycles =
+    std::max(si.GetUIntValue("CDROM", "MaxSpeedupCycles", DEFAULT_CDROM_MAX_SPEEDUP_CYCLES), 1u);
 
   audio_backend =
     AudioStream::ParseBackendName(

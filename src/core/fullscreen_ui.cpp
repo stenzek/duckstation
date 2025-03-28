@@ -6217,7 +6217,7 @@ void FullscreenUI::DrawAdvancedSettingsPage()
 
   DrawIntRangeSetting(bsi, FSUI_CSTR("Maximum Speedup Read/Seek Cycles"),
                       FSUI_CSTR("Sets the minimum delay for the 'Maximum' read/seek speedup level."), "CDROM",
-                      "MaxSpeedupCycles", Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES, 0, 1000000,
+                      "MaxSpeedupCycles", Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES, 1, 1000000,
                       FSUI_CSTR("%d cycles"));
 
   DrawToggleSetting(bsi, FSUI_CSTR("Enable Region Check"),
