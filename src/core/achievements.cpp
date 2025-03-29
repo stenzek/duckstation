@@ -515,7 +515,7 @@ void Achievements::UpdateGlyphRanges()
     }
   }
 
-  if (rc_client_has_leaderboards(s_state.client))
+  if (rc_client_has_leaderboards(s_state.client, false))
   {
     rc_client_leaderboard_list_t* const leaderboards =
       rc_client_create_leaderboard_list(s_state.client, RC_CLIENT_LEADERBOARD_LIST_GROUPING_NONE);
@@ -1304,7 +1304,7 @@ void Achievements::ClientLoadGameCallback(int result, const char* error_message,
   }
 
   const bool has_achievements = rc_client_has_achievements(client);
-  const bool has_leaderboards = rc_client_has_leaderboards(client);
+  const bool has_leaderboards = rc_client_has_leaderboards(client, false);
 
   // Only display summary if the game title has changed across discs.
   const bool display_summary = (s_state.game_id != info->id || s_state.game_title != info->title);
@@ -2057,7 +2057,8 @@ bool Achievements::IsLoggedInOrLoggingIn()
 
 bool Achievements::CanEnableHardcoreMode()
 {
-  return (s_state.load_game_request || s_state.has_achievements || s_state.has_leaderboards);
+  // have to re-query leaderboards because hidden should still trip HC
+  return (s_state.load_game_request || s_state.has_achievements || rc_client_has_leaderboards(s_state.client, true));
 }
 
 bool Achievements::Login(const char* username, const char* password, Error* error)

@@ -596,7 +596,7 @@ RC_EXPORT void RC_CCONV rc_client_destroy_leaderboard_list(rc_client_leaderboard
 /**
  * Returns non-zero if the current game has any leaderboards.
  */
-RC_EXPORT int RC_CCONV rc_client_has_leaderboards(rc_client_t* client);
+RC_EXPORT int RC_CCONV rc_client_has_leaderboards(rc_client_t* client, int include_hidden);
 
 typedef struct rc_client_leaderboard_entry_t {
   const char* user;

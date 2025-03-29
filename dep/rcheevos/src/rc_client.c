@@ -4465,10 +4465,10 @@ void rc_client_destroy_leaderboard_list(rc_client_leaderboard_list_t* list)
     free(list);
 }
 
-int rc_client_has_leaderboards(rc_client_t* client)
+int rc_client_has_leaderboards(rc_client_t* client, int include_hidden)
 {
   rc_client_subset_info_t* subset;
-  int result;
+  int i, result;
 
   if (!client)
     return 0;
@@ -4491,8 +4491,20 @@ int rc_client_has_leaderboards(rc_client_t* client)
       continue;
 
     if (subset->public_.num_leaderboards > 0) {
-      result = 1;
-      break;
+      if (!include_hidden) {
+        for (i = 0; i < subset->public_.num_leaderboards; i++) {
+          if (subset->leaderboards[i].hidden)
+            continue;
+
+          result = 1;
+          break;
+        }
+        if (result)
+          break;
+      } else {
+        result = 1;
+        break;
+      }
     }
   }
 
