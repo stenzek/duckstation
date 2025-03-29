@@ -2576,8 +2576,15 @@ void Host::RequestSystemShutdown(bool allow_confirm, bool save_state)
   if (!System::IsValid())
     return;
 
-  QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
-                            Q_ARG(bool, true), Q_ARG(bool, save_state));
+  if (!allow_confirm)
+  {
+    g_emu_thread->shutdownSystem(save_state, false);
+  }
+  else
+  {
+    QMetaObject::invokeMethod(g_main_window, "requestShutdown", Qt::QueuedConnection, Q_ARG(bool, allow_confirm),
+                              Q_ARG(bool, true), Q_ARG(bool, save_state));
+  }
 }
 
 void Host::RequestResetSettings(bool system, bool controller)
