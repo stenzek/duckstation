@@ -8087,16 +8087,17 @@ void FullscreenUI::HandleSelectDiscForDiscSet(std::string_view disc_set_name)
   std::vector<std::string> paths;
   paths.reserve(entries.size());
 
-  for (const GameList::Entry* entry : entries)
+  for (u32 i = 0; i < static_cast<u32>(entries.size()); i++)
   {
-    std::string title = fmt::format(fmt::runtime(FSUI_ICONSTR(ICON_FA_COMPACT_DISC, "Disc {} | {}")),
-                                    entry->disc_set_index + 1, Path::GetFileName(entry->path));
+    const GameList::Entry* const entry = entries[i];
+    std::string title = fmt::format(ICON_FA_COMPACT_DISC " {} {} | {}##{}", FSUI_VSTR("Disc"),
+                                    entry->disc_set_index + 1, Path::GetFileName(entry->path), i);
     options.emplace_back(std::move(title), false);
     paths.push_back(entry->path);
   }
   options.emplace_back(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false);
 
-  OpenChoiceDialog(SmallString::from_format("Select Disc for {}", disc_set_name), false, std::move(options),
+  OpenChoiceDialog(fmt::format(FSUI_FSTR("Select Disc for {}"), disc_set_name), false, std::move(options),
                    [paths = std::move(paths)](s32 index, const std::string& title, bool checked) {
                      if (static_cast<u32>(index) >= paths.size())
                        return;
@@ -8799,7 +8800,6 @@ TRANSLATE_NOOP("FullscreenUI", "A cover already exists for this game. Are you su
 TRANSLATE_NOOP("FullscreenUI", "A resume save state created at %s was found.\n\nDo you want to load this save and continue?");
 TRANSLATE_NOOP("FullscreenUI", "AMOLED");
 TRANSLATE_NOOP("FullscreenUI", "About");
-TRANSLATE_NOOP("FullscreenUI", "About DuckStation");
 TRANSLATE_NOOP("FullscreenUI", "Account");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Achievement Unlock/Count");
@@ -8818,7 +8818,6 @@ TRANSLATE_NOOP("FullscreenUI", "Advanced Settings");
 TRANSLATE_NOOP("FullscreenUI", "All Time: {}");
 TRANSLATE_NOOP("FullscreenUI", "Allow Booting Without SBI File");
 TRANSLATE_NOOP("FullscreenUI", "Allows booting to continue even without a required SBI file. These games will not run correctly.");
-TRANSLATE_NOOP("FullscreenUI", "Allows loading protected games without subchannel information.");
 TRANSLATE_NOOP("FullscreenUI", "Alpha Blending");
 TRANSLATE_NOOP("FullscreenUI", "Always Track Uploads");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
@@ -8963,7 +8962,7 @@ TRANSLATE_NOOP("FullscreenUI", "Disable Mailbox Presentation");
 TRANSLATE_NOOP("FullscreenUI", "Disable Subdirectory Scanning");
 TRANSLATE_NOOP("FullscreenUI", "Disable on 2D Polygons");
 TRANSLATE_NOOP("FullscreenUI", "Disabled");
-TRANSLATE_NOOP("FullscreenUI", "Disc {} | {}");
+TRANSLATE_NOOP("FullscreenUI", "Disc");
 TRANSLATE_NOOP("FullscreenUI", "Discord Server");
 TRANSLATE_NOOP("FullscreenUI", "Display Area");
 TRANSLATE_NOOP("FullscreenUI", "Displays DualShock/DualSense button icons in the footer and input binding, instead of Xbox buttons.");
@@ -9123,7 +9122,6 @@ TRANSLATE_NOOP("FullscreenUI", "Load Database Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Load Devices From Save States");
 TRANSLATE_NOOP("FullscreenUI", "Load Global State");
 TRANSLATE_NOOP("FullscreenUI", "Load Preset");
-TRANSLATE_NOOP("FullscreenUI", "Load Resume State");
 TRANSLATE_NOOP("FullscreenUI", "Load State");
 TRANSLATE_NOOP("FullscreenUI", "Loads all replacement texture to RAM, reducing stuttering at runtime.");
 TRANSLATE_NOOP("FullscreenUI", "Loads the game image into RAM. Useful for network paths that may become unreliable during gameplay.");
@@ -9135,7 +9133,6 @@ TRANSLATE_NOOP("FullscreenUI", "Logging");
 TRANSLATE_NOOP("FullscreenUI", "Logging Settings");
 TRANSLATE_NOOP("FullscreenUI", "Logging in to RetroAchievements...");
 TRANSLATE_NOOP("FullscreenUI", "Login");
-TRANSLATE_NOOP("FullscreenUI", "Login Error");
 TRANSLATE_NOOP("FullscreenUI", "Login Failed.\nError: {}\nPlease check your username and password, and try again.");
 TRANSLATE_NOOP("FullscreenUI", "Login token generated on {}");
 TRANSLATE_NOOP("FullscreenUI", "Logout");
@@ -9270,7 +9267,6 @@ TRANSLATE_NOOP("FullscreenUI", "Restore Defaults");
 TRANSLATE_NOOP("FullscreenUI", "Restores the state of the system prior to the last state loaded.");
 TRANSLATE_NOOP("FullscreenUI", "Resume Game");
 TRANSLATE_NOOP("FullscreenUI", "Resume Last Session");
-TRANSLATE_NOOP("FullscreenUI", "RetroAchievements Login");
 TRANSLATE_NOOP("FullscreenUI", "Return To Game");
 TRANSLATE_NOOP("FullscreenUI", "Return to desktop mode, or exit the application.");
 TRANSLATE_NOOP("FullscreenUI", "Return to the previous menu.");
@@ -9315,6 +9311,7 @@ TRANSLATE_NOOP("FullscreenUI", "Select Device");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Drive");
 TRANSLATE_NOOP("FullscreenUI", "Select Disc Image");
+TRANSLATE_NOOP("FullscreenUI", "Select Disc for {}");
 TRANSLATE_NOOP("FullscreenUI", "Select Game");
 TRANSLATE_NOOP("FullscreenUI", "Select Macro {} Binds");
 TRANSLATE_NOOP("FullscreenUI", "Select State");
