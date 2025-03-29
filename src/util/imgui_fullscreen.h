@@ -44,6 +44,9 @@ static constexpr float LAYOUT_HORIZONTAL_MENU_PADDING = 30.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_WIDTH = 250.0f;
 static constexpr float LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE = 150.0f;
 static constexpr float LAYOUT_SHADOW_OFFSET = 1.0f;
+static constexpr float LAYOUT_SMALL_POPUP_PADDING = 20.0f;
+static constexpr float LAYOUT_LARGE_POPUP_PADDING = 30.0f;
+static constexpr float LAYOUT_LARGE_POPUP_ROUNDING = 40.0f;
 
 struct ALIGN_TO_CACHE_LINE UIStyles
 {
@@ -185,8 +188,16 @@ void UploadAsyncTextures();
 
 void BeginLayout();
 void EndLayout();
-bool BeginFixedPopupModal(const char* name, bool* p_open = nullptr);
-void EndFixedPopupModal();
+
+bool IsAnyFixedPopupDialogOpen();
+bool IsFixedPopupDialogOpen(std::string_view name);
+void OpenFixedPopupDialog(std::string_view name);
+void CloseFixedPopupDialog();
+void CloseFixedPopupDialogImmediately();
+bool BeginFixedPopupDialog(float scaled_window_padding = LayoutScale(20.0f),
+                           float scaled_window_rounding = LayoutScale(20.0f),
+                           const ImVec2& scaled_window_size = ImVec2(0.0f, 0.0f));
+void EndFixedPopupDialog();
 
 void RenderOverlays();
 
@@ -357,7 +368,7 @@ void CloseChoiceDialog();
 
 using InputStringDialogCallback = std::function<void(std::string text)>;
 bool IsInputDialogOpen();
-void OpenInputStringDialog(std::string title, std::string message, std::string caption, std::string ok_button_text,
+void OpenInputStringDialog(std::string_view title, std::string message, std::string caption, std::string ok_button_text,
                            InputStringDialogCallback callback);
 void CloseInputDialog();
 
@@ -365,12 +376,12 @@ using ConfirmMessageDialogCallback = std::function<void(bool)>;
 using InfoMessageDialogCallback = std::function<void()>;
 using MessageDialogCallback = std::function<void(s32)>;
 bool IsMessageBoxDialogOpen();
-void OpenConfirmMessageDialog(std::string title, std::string message, ConfirmMessageDialogCallback callback,
+void OpenConfirmMessageDialog(std::string_view title, std::string message, ConfirmMessageDialogCallback callback,
                               std::string yes_button_text = ICON_FA_CHECK " Yes",
                               std::string no_button_text = ICON_FA_TIMES " No");
-void OpenInfoMessageDialog(std::string title, std::string message, InfoMessageDialogCallback callback = {},
+void OpenInfoMessageDialog(std::string_view title, std::string message, InfoMessageDialogCallback callback = {},
                            std::string button_text = ICON_FA_WINDOW_CLOSE " Close");
-void OpenMessageDialog(std::string title, std::string message, MessageDialogCallback callback,
+void OpenMessageDialog(std::string_view title, std::string message, MessageDialogCallback callback,
                        std::string first_button_text, std::string second_button_text, std::string third_button_text);
 void CloseMessageDialog();
 
@@ -405,6 +416,46 @@ void ClearToast();
 void GetChoiceDialogHelpText(SmallStringBase& dest);
 void GetFileSelectorHelpText(SmallStringBase& dest);
 void GetInputDialogHelpText(SmallStringBase& dest);
+
+// Wrapper for an animated popup dialog.
+class PopupDialog
+{
+public:
+  PopupDialog();
+  ~PopupDialog();
+
+  ALWAYS_INLINE const std::string& GetTitle() const { return m_title; }
+  ALWAYS_INLINE bool IsOpen() const { return (m_state != State::Inactive); }
+
+  void StartClose();
+  void CloseImmediately();
+  void ClearState();
+
+protected:
+  enum class State
+  {
+    Inactive,
+    ClosingTrigger,
+    Open,
+    OpeningTrigger,
+    Opening,
+    Closing,
+  };
+
+  static constexpr float OPEN_TIME = 0.2f;
+  static constexpr float CLOSE_TIME = 0.1f;
+
+  void SetTitleAndOpen(std::string title);
+
+  bool BeginRender(float scaled_window_padding = LayoutScale(20.0f), float scaled_window_rounding = LayoutScale(20.0f),
+                   const ImVec2& scaled_window_size = ImVec2(0.0f, 0.0f));
+  void EndRender();
+
+  std::string m_title;
+  float m_animation_time_remaining = 0.0f;
+  State m_state = State::Inactive;
+};
+
 } // namespace ImGuiFullscreen
 
 // Host UI triggers from Big Picture mode.

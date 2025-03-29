@@ -82,6 +82,8 @@ using ImGuiFullscreen::FocusResetType;
 using ImGuiFullscreen::LAYOUT_FOOTER_HEIGHT;
 using ImGuiFullscreen::LAYOUT_HORIZONTAL_MENU_ITEM_IMAGE_SIZE;
 using ImGuiFullscreen::LAYOUT_LARGE_FONT_SIZE;
+using ImGuiFullscreen::LAYOUT_LARGE_POPUP_PADDING;
+using ImGuiFullscreen::LAYOUT_LARGE_POPUP_ROUNDING;
 using ImGuiFullscreen::LAYOUT_MEDIUM_FONT_SIZE;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY;
@@ -89,10 +91,11 @@ using ImGuiFullscreen::LAYOUT_MENU_BUTTON_X_PADDING;
 using ImGuiFullscreen::LAYOUT_MENU_BUTTON_Y_PADDING;
 using ImGuiFullscreen::LAYOUT_SCREEN_HEIGHT;
 using ImGuiFullscreen::LAYOUT_SCREEN_WIDTH;
+using ImGuiFullscreen::LAYOUT_SMALL_POPUP_PADDING;
 using ImGuiFullscreen::UIStyle;
 
 using ImGuiFullscreen::AddNotification;
-using ImGuiFullscreen::BeginFixedPopupModal;
+using ImGuiFullscreen::BeginFixedPopupDialog;
 using ImGuiFullscreen::BeginFullscreenColumns;
 using ImGuiFullscreen::BeginFullscreenColumnWindow;
 using ImGuiFullscreen::BeginFullscreenWindow;
@@ -101,8 +104,10 @@ using ImGuiFullscreen::BeginMenuButtons;
 using ImGuiFullscreen::BeginNavBar;
 using ImGuiFullscreen::CancelPendingMenuClose;
 using ImGuiFullscreen::CenterImage;
+using ImGuiFullscreen::CloseFixedPopupDialog;
+using ImGuiFullscreen::CloseFixedPopupDialogImmediately;
 using ImGuiFullscreen::DarkerColor;
-using ImGuiFullscreen::EndFixedPopupModal;
+using ImGuiFullscreen::EndFixedPopupDialog;
 using ImGuiFullscreen::EndFullscreenColumns;
 using ImGuiFullscreen::EndFullscreenColumnWindow;
 using ImGuiFullscreen::EndFullscreenWindow;
@@ -116,6 +121,8 @@ using ImGuiFullscreen::GetCachedTexture;
 using ImGuiFullscreen::GetCachedTextureAsync;
 using ImGuiFullscreen::GetPlaceholderTexture;
 using ImGuiFullscreen::HorizontalMenuItem;
+using ImGuiFullscreen::IsAnyFixedPopupDialogOpen;
+using ImGuiFullscreen::IsFixedPopupDialogOpen;
 using ImGuiFullscreen::IsFocusResetFromWindowChange;
 using ImGuiFullscreen::IsFocusResetQueued;
 using ImGuiFullscreen::IsGamepadInputSource;
@@ -137,6 +144,7 @@ using ImGuiFullscreen::NavTitle;
 using ImGuiFullscreen::OpenChoiceDialog;
 using ImGuiFullscreen::OpenConfirmMessageDialog;
 using ImGuiFullscreen::OpenFileSelector;
+using ImGuiFullscreen::OpenFixedPopupDialog;
 using ImGuiFullscreen::OpenInfoMessageDialog;
 using ImGuiFullscreen::OpenInputStringDialog;
 using ImGuiFullscreen::PopPrimaryColor;
@@ -226,7 +234,6 @@ static void DrawPauseMenu();
 static void ExitFullscreenAndOpenURL(std::string_view url);
 static void CopyTextToClipboard(std::string title, std::string_view text);
 static void DrawAboutWindow();
-static void OpenAboutWindow();
 static void FixStateIfPaused();
 static void GetStandardSelectionFooterText(SmallStringBase& dest, bool back_instead_of_cancel);
 
@@ -430,7 +437,8 @@ struct SaveStateListEntry
 static void InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot, bool global);
 static bool InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li, const std::string& serial, s32 slot,
                                                    bool global);
-static bool InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global);
+static bool InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global,
+                                                 std::string* media_path);
 static void ClearSaveStateEntryList();
 static u32 PopulateSaveStateListEntries(const std::string& serial,
                                         std::optional<ExtendedSaveStateInfo> undo_save_state);
@@ -492,6 +500,9 @@ static constexpr std::array s_theme_names = {
 static constexpr std::array s_theme_values = {"",           "Dark",       "Light",     "AMOLED",   "CobaltSky",
                                               "GreyMatter", "GreenGiant", "PinkyPals", "DarkRuby", "PurpleRain"};
 
+static constexpr std::string_view RESUME_STATE_SELECTOR_DIALOG_NAME = "##resume_state_selector";
+static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
+
 //////////////////////////////////////////////////////////////////////////
 // State
 //////////////////////////////////////////////////////////////////////////
@@ -507,8 +518,6 @@ struct ALIGN_TO_CACHE_LINE UIState
   bool tried_to_initialize = false;
   bool pause_menu_was_open = false;
   bool was_paused_on_quick_menu_open = false;
-  bool about_window_open = false;
-  bool achievements_login_window_open = false;
   std::string current_game_title;
   std::string current_game_serial;
   std::string current_game_path;
@@ -562,7 +571,6 @@ struct ALIGN_TO_CACHE_LINE UIState
   s32 save_state_selector_submenu_index = -1;
   bool save_state_selector_open = false;
   bool save_state_selector_loading = true;
-  bool save_state_selector_resuming = false;
 
   // Lazily populated cover images.
   std::unordered_map<std::string, std::string> cover_image_map;
@@ -755,8 +763,8 @@ bool FullscreenUI::HasActiveWindow()
 
 bool FullscreenUI::AreAnyDialogsOpen()
 {
-  return (s_state.save_state_selector_open || s_state.about_window_open ||
-          s_state.input_binding_type != InputBindingInfo::Type::Unknown || ImGuiFullscreen::IsChoiceDialogOpen() ||
+  return (s_state.save_state_selector_open || s_state.input_binding_type != InputBindingInfo::Type::Unknown ||
+          ImGuiFullscreen::IsAnyFixedPopupDialogOpen() || ImGuiFullscreen::IsChoiceDialogOpen() ||
           ImGuiFullscreen::IsInputDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen() ||
           ImGuiFullscreen::IsMessageBoxDialogOpen());
 }
@@ -938,7 +946,6 @@ void FullscreenUI::Shutdown(bool clear_state)
     s_state.current_pause_submenu = PauseSubMenu::None;
     s_state.pause_menu_was_open = false;
     s_state.was_paused_on_quick_menu_open = false;
-    s_state.about_window_open = false;
 
     Achievements::ClearUIState();
     ClearInputBindingVariables();
@@ -1027,18 +1034,13 @@ void FullscreenUI::Render()
       break;
   }
 
-  if (s_state.save_state_selector_open)
-  {
-    if (s_state.save_state_selector_resuming)
-      DrawResumeStateSelector();
-    else
-      DrawSaveStateSelector(s_state.save_state_selector_loading);
-  }
-
-  if (s_state.about_window_open)
+  if (IsFixedPopupDialogOpen(ABOUT_DIALOG_NAME))
     DrawAboutWindow();
-
-  if (s_state.input_binding_type != InputBindingInfo::Type::Unknown)
+  else if (IsFixedPopupDialogOpen(RESUME_STATE_SELECTOR_DIALOG_NAME))
+    DrawResumeStateSelector();
+  else if (s_state.save_state_selector_open)
+    DrawSaveStateSelector(s_state.save_state_selector_loading);
+  else if (s_state.input_binding_type != InputBindingInfo::Type::Unknown)
     DrawInputBindingWindow();
 
   ImGuiFullscreen::EndLayout();
@@ -1253,17 +1255,17 @@ void FullscreenUI::DoResume()
     return;
   }
 
-  SaveStateListEntry slentry;
-  if (!InitializeSaveStateListEntryFromPath(&slentry, std::move(path), -1, false))
-    return;
-
   CloseSaveStateSelector();
+
+  SaveStateListEntry slentry;
+  if (!InitializeSaveStateListEntryFromPath(&slentry, std::move(path), -1, false,
+                                            &s_state.save_state_selector_game_path))
+  {
+    return;
+  }
+
   s_state.save_state_selector_slots.push_back(std::move(slentry));
-  s_state.save_state_selector_game_path = {};
-  s_state.save_state_selector_loading = true;
-  s_state.save_state_selector_open = true;
-  s_state.save_state_selector_resuming = true;
-  QueueResetFocus(FocusResetType::PopupOpened);
+  OpenFixedPopupDialog(RESUME_STATE_SELECTOR_DIALOG_NAME);
 }
 
 void FullscreenUI::DoStartFile()
@@ -1969,7 +1971,7 @@ void FullscreenUI::DrawLandingWindow()
   if (!AreAnyDialogsOpen())
   {
     if (ImGui::IsKeyPressed(ImGuiKey_GamepadBack, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false))
-      OpenAboutWindow();
+      OpenFixedPopupDialog(ABOUT_DIALOG_NAME);
     else if (ImGui::IsKeyPressed(ImGuiKey_GamepadStart, false) || ImGui::IsKeyPressed(ImGuiKey_F3, false))
       DoResume();
     else if (ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false) || ImGui::IsKeyPressed(ImGuiKey_F11, false))
@@ -2323,6 +2325,9 @@ void FullscreenUI::ClearInputBindingVariables()
   s_state.input_binding_display_name = {};
   s_state.input_binding_new_bindings = {};
   s_state.input_binding_value_ranges = {};
+
+  if (IsFixedPopupDialogOpen(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding")))
+    CloseFixedPopupDialogImmediately();
 }
 
 void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
@@ -2341,6 +2346,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
   s_state.input_binding_new_bindings = {};
   s_state.input_binding_value_ranges = {};
   s_state.input_binding_start_time = Timer::GetCurrentValue();
+  OpenFixedPopupDialog(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding"));
 
   const bool game_settings = IsEditingGameSettings(bsi);
 
@@ -2396,8 +2402,9 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
           bsi->SetStringValue(s_state.input_binding_section.c_str(), s_state.input_binding_key.c_str(),
                               new_binding.c_str());
           SetSettingsChanged(bsi);
-          ClearInputBindingVariables();
-          QueueResetFocus(FocusResetType::PopupClosed);
+
+          GPUThread::RunOnThread(&CloseFixedPopupDialog);
+
           return InputInterceptHook::CallbackResult::RemoveHookAndStopProcessingEvent;
         }
 
@@ -2476,25 +2483,25 @@ void FullscreenUI::DrawInputBindingWindow()
   if (time_remaining <= 0.0)
   {
     InputManager::RemoveHook();
+    CloseFixedPopupDialog();
+  }
+
+  if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                             LayoutScale(500.0f, 0.0f)))
+  {
+    InputManager::RemoveHook();
     ClearInputBindingVariables();
-    QueueResetFocus(FocusResetType::PopupClosed);
     return;
   }
 
-  const char* title = FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding");
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 0.0f));
-  ImGui::OpenPopup(title);
+  ImGui::TextWrapped("%s", SmallString::from_format(FSUI_FSTR("Setting {} binding {}."), s_state.input_binding_section,
+                                                    s_state.input_binding_display_name)
+                             .c_str());
+  ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
+  ImGui::NewLine();
+  ImGui::TextUnformatted(SmallString::from_format(FSUI_FSTR("Timing out in {:.0f} seconds..."), time_remaining));
 
-  if (BeginFixedPopupModal(title))
-  {
-    ImGui::TextWrapped("%s", SmallString::from_format(FSUI_FSTR("Setting {} binding {}."),
-                                                      s_state.input_binding_section, s_state.input_binding_display_name)
-                               .c_str());
-    ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
-    ImGui::NewLine();
-    ImGui::TextUnformatted(SmallString::from_format(FSUI_FSTR("Timing out in {:.0f} seconds..."), time_remaining));
-    EndFixedPopupModal();
-  }
+  EndFixedPopupDialog();
 }
 
 bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2661,39 +2668,38 @@ void FullscreenUI::DrawIntRangeSetting(SettingsInterface* bsi, const char* title
     value.has_value() ? SmallString::from_sprintf(format, value.value()) : SmallString(FSUI_VSTR("Use Global Setting"));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
-    ImGui::OpenPopup(title);
+    OpenFixedPopupDialog(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-
-  bool is_open = true;
-  if (BeginFixedPopupModal(title, &is_open))
+  if (!IsFixedPopupDialogOpen(title) ||
+      !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                             LayoutScale(500.0f, 194.0f)))
   {
-    BeginMenuButtons();
-
-    const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-    ImGui::SetNextItemWidth(end);
-    s32 dlg_value = static_cast<s32>(value.value_or(default_value));
-    if (ImGui::SliderInt("##value", &dlg_value, min_value, max_value, format, ImGuiSliderFlags_NoInput))
-    {
-      if (IsEditingGameSettings(bsi) && dlg_value == default_value)
-        bsi->DeleteValue(section, key);
-      else
-        bsi->SetIntValue(section, key, dlg_value);
-
-      SetSettingsChanged(bsi);
-    }
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
-                                 ImVec2(0.5f, 0.0f)))
-    {
-      ImGui::CloseCurrentPopup();
-    }
-    EndMenuButtons();
-
-    EndFixedPopupModal();
+    return;
   }
+
+  BeginMenuButtons();
+
+  ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
+  s32 dlg_value = static_cast<s32>(value.value_or(default_value));
+  if (ImGui::SliderInt("##value", &dlg_value, min_value, max_value, format, ImGuiSliderFlags_NoInput))
+  {
+    if (IsEditingGameSettings(bsi) && dlg_value == default_value)
+      bsi->DeleteValue(section, key);
+    else
+      bsi->SetIntValue(section, key, dlg_value);
+
+    SetSettingsChanged(bsi);
+  }
+
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
+                               ImVec2(0.5f, 0.0f)))
+  {
+    CloseFixedPopupDialog();
+  }
+  EndMenuButtons();
+
+  EndFixedPopupDialog();
 }
 
 void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2708,41 +2714,42 @@ void FullscreenUI::DrawFloatRangeSetting(SettingsInterface* bsi, const char* tit
                                                      SmallString(FSUI_VSTR("Use Global Setting"));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
-    ImGui::OpenPopup(title);
+    OpenFixedPopupDialog(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-
-  bool is_open = true;
-  if (BeginFixedPopupModal(title, &is_open))
+  if (!IsFixedPopupDialogOpen(title) ||
+      !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                             LayoutScale(500.0f, 194.0f)))
   {
-    BeginMenuButtons();
-
-    const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-    ImGui::SetNextItemWidth(end);
-    float dlg_value = value.value_or(default_value) * multiplier;
-    if (ImGui::SliderFloat("##value", &dlg_value, min_value * multiplier, max_value * multiplier, format,
-                           ImGuiSliderFlags_NoInput))
-    {
-      dlg_value /= multiplier;
-
-      if (IsEditingGameSettings(bsi) && dlg_value == default_value)
-        bsi->DeleteValue(section, key);
-      else
-        bsi->SetFloatValue(section, key, dlg_value);
-
-      SetSettingsChanged(bsi);
-    }
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
-                                 ImVec2(0.5f, 0.0f)))
-    {
-      ImGui::CloseCurrentPopup();
-    }
-    EndMenuButtons();
-
-    EndFixedPopupModal();
+    return;
   }
+
+  BeginMenuButtons();
+
+  const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+  ImGui::SetNextItemWidth(end);
+  float dlg_value = value.value_or(default_value) * multiplier;
+  if (ImGui::SliderFloat("##value", &dlg_value, min_value * multiplier, max_value * multiplier, format,
+                         ImGuiSliderFlags_NoInput))
+  {
+    dlg_value /= multiplier;
+
+    if (IsEditingGameSettings(bsi) && dlg_value == default_value)
+      bsi->DeleteValue(section, key);
+    else
+      bsi->SetFloatValue(section, key, dlg_value);
+
+    SetSettingsChanged(bsi);
+  }
+
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
+                               ImVec2(0.5f, 0.0f)))
+  {
+    CloseFixedPopupDialog();
+  }
+  EndMenuButtons();
+
+  EndFixedPopupDialog();
 }
 
 void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2760,107 +2767,107 @@ void FullscreenUI::DrawFloatSpinBoxSetting(SettingsInterface* bsi, const char* t
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
   {
-    ImGui::OpenPopup(title);
+    OpenFixedPopupDialog(title);
     manual_input = false;
   }
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-
-  bool is_open = true;
-  if (BeginFixedPopupModal(title, &is_open))
+  if (!IsFixedPopupDialogOpen(title) ||
+      !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                             LayoutScale(500.0f, 194.0f)))
   {
-    BeginMenuButtons();
-
-    float dlg_value = value.value_or(default_value) * multiplier;
-    bool dlg_value_changed = false;
-
-    char str_value[32];
-    std::snprintf(str_value, std::size(str_value), format, dlg_value);
-
-    if (manual_input)
-    {
-      const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-      ImGui::SetNextItemWidth(end);
-
-      // round trip to drop any suffixes (e.g. percent)
-      if (auto tmp_value = StringUtil::FromChars<float>(str_value); tmp_value.has_value())
-      {
-        std::snprintf(str_value, std::size(str_value),
-                      ((tmp_value.value() - std::floor(tmp_value.value())) < 0.01f) ? "%.0f" : "%f", tmp_value.value());
-      }
-
-      if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
-      {
-        dlg_value = StringUtil::FromChars<float>(str_value).value_or(dlg_value);
-        dlg_value_changed = true;
-      }
-
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    }
-    else
-    {
-      const ImVec2& padding(ImGui::GetStyle().FramePadding);
-      ImVec2 button_pos(ImGui::GetCursorPos());
-
-      // Align value text in middle.
-      ImGui::SetCursorPosY(
-        button_pos.y +
-        ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFont->FontSize) * 0.5f);
-      ImGui::TextUnformatted(str_value);
-
-      float step = 0;
-      if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, UIStyle.LargeFont,
-                         &button_pos, true))
-      {
-        step = step_value;
-      }
-      if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         UIStyle.LargeFont, &button_pos, true))
-      {
-        step = -step_value;
-      }
-      if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         UIStyle.LargeFont, &button_pos))
-      {
-        manual_input = true;
-      }
-      if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         UIStyle.LargeFont, &button_pos))
-      {
-        dlg_value = default_value * multiplier;
-        dlg_value_changed = true;
-      }
-
-      if (step != 0)
-      {
-        dlg_value += step * multiplier;
-        dlg_value_changed = true;
-      }
-
-      ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) +
-                           LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
-    }
-
-    if (dlg_value_changed)
-    {
-      dlg_value = std::clamp(dlg_value / multiplier, min_value, max_value);
-      if (IsEditingGameSettings(bsi) && dlg_value == default_value)
-        bsi->DeleteValue(section, key);
-      else
-        bsi->SetFloatValue(section, key, dlg_value);
-
-      SetSettingsChanged(bsi);
-    }
-
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
-                                 ImVec2(0.5f, 0.0f)))
-    {
-      ImGui::CloseCurrentPopup();
-    }
-    EndMenuButtons();
-
-    EndFixedPopupModal();
+    return;
   }
+
+  BeginMenuButtons();
+
+  float dlg_value = value.value_or(default_value) * multiplier;
+  bool dlg_value_changed = false;
+
+  char str_value[32];
+  std::snprintf(str_value, std::size(str_value), format, dlg_value);
+
+  if (manual_input)
+  {
+    const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+    ImGui::SetNextItemWidth(end);
+
+    // round trip to drop any suffixes (e.g. percent)
+    if (auto tmp_value = StringUtil::FromChars<float>(str_value); tmp_value.has_value())
+    {
+      std::snprintf(str_value, std::size(str_value),
+                    ((tmp_value.value() - std::floor(tmp_value.value())) < 0.01f) ? "%.0f" : "%f", tmp_value.value());
+    }
+
+    if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
+    {
+      dlg_value = StringUtil::FromChars<float>(str_value).value_or(dlg_value);
+      dlg_value_changed = true;
+    }
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  }
+  else
+  {
+    const ImVec2& padding(ImGui::GetStyle().FramePadding);
+    ImVec2 button_pos(ImGui::GetCursorPos());
+
+    // Align value text in middle.
+    ImGui::SetCursorPosY(
+      button_pos.y +
+      ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFont->FontSize) * 0.5f);
+    ImGui::TextUnformatted(str_value);
+
+    float step = 0;
+    if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, UIStyle.LargeFont,
+                       &button_pos, true))
+    {
+      step = step_value;
+    }
+    if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                       UIStyle.LargeFont, &button_pos, true))
+    {
+      step = -step_value;
+    }
+    if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                       UIStyle.LargeFont, &button_pos))
+    {
+      manual_input = true;
+    }
+    if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                       UIStyle.LargeFont, &button_pos))
+    {
+      dlg_value = default_value * multiplier;
+      dlg_value_changed = true;
+    }
+
+    if (step != 0)
+    {
+      dlg_value += step * multiplier;
+      dlg_value_changed = true;
+    }
+
+    ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+  }
+
+  if (dlg_value_changed)
+  {
+    dlg_value = std::clamp(dlg_value / multiplier, min_value, max_value);
+    if (IsEditingGameSettings(bsi) && dlg_value == default_value)
+      bsi->DeleteValue(section, key);
+    else
+      bsi->SetFloatValue(section, key, dlg_value);
+
+    SetSettingsChanged(bsi);
+  }
+
+  if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
+                               ImVec2(0.5f, 0.0f)))
+  {
+    CloseFixedPopupDialog();
+  }
+  EndMenuButtons();
+
+  EndFixedPopupDialog();
 }
 
 bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title, const char* summary,
@@ -2887,89 +2894,90 @@ bool FullscreenUI::DrawIntRectSetting(SettingsInterface* bsi, const char* title,
                                TinyString(FSUI_VSTR("Default")));
 
   if (MenuButtonWithValue(title, summary, value_text.c_str(), enabled, height, font, summary_font))
-    ImGui::OpenPopup(title);
+    OpenFixedPopupDialog(title);
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 370.0f));
-
-  bool is_open = true;
-  bool changed = false;
-  if (BeginFixedPopupModal(title, &is_open))
+  if (!IsFixedPopupDialogOpen(title) ||
+      !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                             LayoutScale(500.0f, 370.0f)))
   {
-    s32 dlg_left_value = static_cast<s32>(left_value.value_or(default_left));
-    s32 dlg_top_value = static_cast<s32>(top_value.value_or(default_top));
-    s32 dlg_right_value = static_cast<s32>(right_value.value_or(default_right));
-    s32 dlg_bottom_value = static_cast<s32>(bottom_value.value_or(default_bottom));
-
-    BeginMenuButtons();
-
-    const float midpoint = LayoutScale(150.0f);
-    const float end = (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - midpoint) + ImGui::GetStyle().WindowPadding.x;
-    ImGui::TextUnformatted("Left: ");
-    ImGui::SameLine(midpoint);
-    ImGui::SetNextItemWidth(end);
-    const bool left_modified =
-      ImGui::SliderInt("##left", &dlg_left_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    ImGui::TextUnformatted("Top: ");
-    ImGui::SameLine(midpoint);
-    ImGui::SetNextItemWidth(end);
-    const bool top_modified =
-      ImGui::SliderInt("##top", &dlg_top_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    ImGui::TextUnformatted("Right: ");
-    ImGui::SameLine(midpoint);
-    ImGui::SetNextItemWidth(end);
-    const bool right_modified =
-      ImGui::SliderInt("##right", &dlg_right_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    ImGui::TextUnformatted("Bottom: ");
-    ImGui::SameLine(midpoint);
-    ImGui::SetNextItemWidth(end);
-    const bool bottom_modified =
-      ImGui::SliderInt("##bottom", &dlg_bottom_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    if (left_modified)
-    {
-      if (IsEditingGameSettings(bsi) && dlg_left_value == default_left)
-        bsi->DeleteValue(section, left_key);
-      else
-        bsi->SetIntValue(section, left_key, dlg_left_value);
-    }
-    if (top_modified)
-    {
-      if (IsEditingGameSettings(bsi) && dlg_top_value == default_top)
-        bsi->DeleteValue(section, top_key);
-      else
-        bsi->SetIntValue(section, top_key, dlg_top_value);
-    }
-    if (right_modified)
-    {
-      if (IsEditingGameSettings(bsi) && dlg_right_value == default_right)
-        bsi->DeleteValue(section, right_key);
-      else
-        bsi->SetIntValue(section, right_key, dlg_right_value);
-    }
-    if (bottom_modified)
-    {
-      if (IsEditingGameSettings(bsi) && dlg_bottom_value == default_bottom)
-        bsi->DeleteValue(section, bottom_key);
-      else
-        bsi->SetIntValue(section, bottom_key, dlg_bottom_value);
-    }
-
-    changed = (left_modified || top_modified || right_modified || bottom_modified);
-    if (changed)
-      SetSettingsChanged(bsi);
-
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
-                                 ImVec2(0.5f, 0.0f)))
-    {
-      ImGui::CloseCurrentPopup();
-    }
-    EndMenuButtons();
-
-    EndFixedPopupModal();
+    return false;
   }
+
+  s32 dlg_left_value = static_cast<s32>(left_value.value_or(default_left));
+  s32 dlg_top_value = static_cast<s32>(top_value.value_or(default_top));
+  s32 dlg_right_value = static_cast<s32>(right_value.value_or(default_right));
+  s32 dlg_bottom_value = static_cast<s32>(bottom_value.value_or(default_bottom));
+  bool changed = false;
+
+  BeginMenuButtons();
+
+  const float midpoint = LayoutScale(150.0f);
+  const float end = (ImGui::GetCurrentWindow()->WorkRect.GetWidth() - midpoint) + ImGui::GetStyle().WindowPadding.x;
+  ImGui::TextUnformatted("Left: ");
+  ImGui::SameLine(midpoint);
+  ImGui::SetNextItemWidth(end);
+  const bool left_modified =
+    ImGui::SliderInt("##left", &dlg_left_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  ImGui::TextUnformatted("Top: ");
+  ImGui::SameLine(midpoint);
+  ImGui::SetNextItemWidth(end);
+  const bool top_modified =
+    ImGui::SliderInt("##top", &dlg_top_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  ImGui::TextUnformatted("Right: ");
+  ImGui::SameLine(midpoint);
+  ImGui::SetNextItemWidth(end);
+  const bool right_modified =
+    ImGui::SliderInt("##right", &dlg_right_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  ImGui::TextUnformatted("Bottom: ");
+  ImGui::SameLine(midpoint);
+  ImGui::SetNextItemWidth(end);
+  const bool bottom_modified =
+    ImGui::SliderInt("##bottom", &dlg_bottom_value, min_value, max_value, format, ImGuiSliderFlags_NoInput);
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  if (left_modified)
+  {
+    if (IsEditingGameSettings(bsi) && dlg_left_value == default_left)
+      bsi->DeleteValue(section, left_key);
+    else
+      bsi->SetIntValue(section, left_key, dlg_left_value);
+  }
+  if (top_modified)
+  {
+    if (IsEditingGameSettings(bsi) && dlg_top_value == default_top)
+      bsi->DeleteValue(section, top_key);
+    else
+      bsi->SetIntValue(section, top_key, dlg_top_value);
+  }
+  if (right_modified)
+  {
+    if (IsEditingGameSettings(bsi) && dlg_right_value == default_right)
+      bsi->DeleteValue(section, right_key);
+    else
+      bsi->SetIntValue(section, right_key, dlg_right_value);
+  }
+  if (bottom_modified)
+  {
+    if (IsEditingGameSettings(bsi) && dlg_bottom_value == default_bottom)
+      bsi->DeleteValue(section, bottom_key);
+    else
+      bsi->SetIntValue(section, bottom_key, dlg_bottom_value);
+  }
+
+  changed = (left_modified || top_modified || right_modified || bottom_modified);
+  if (changed)
+    SetSettingsChanged(bsi);
+
+  if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
+                               ImVec2(0.5f, 0.0f)))
+  {
+    CloseFixedPopupDialog();
+  }
+  EndMenuButtons();
+
+  EndFixedPopupDialog();
 
   return changed;
 }
@@ -2992,101 +3000,101 @@ void FullscreenUI::DrawIntSpinBoxSetting(SettingsInterface* bsi, const char* tit
 
   if (MenuButtonWithValue(title, summary, value_text, enabled, height, font, summary_font))
   {
-    ImGui::OpenPopup(title);
+    OpenFixedPopupDialog(title);
     manual_input = false;
   }
 
-  ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-
-  bool is_open = true;
-  if (BeginFixedPopupModal(title, &is_open))
+  if (!IsFixedPopupDialogOpen(title) ||
+      !BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                             LayoutScale(500.0f, 194.0f)))
   {
-    BeginMenuButtons();
-
-    s32 dlg_value = static_cast<s32>(value.value_or(default_value));
-    bool dlg_value_changed = false;
-
-    char str_value[32];
-    std::snprintf(str_value, std::size(str_value), format, dlg_value);
-
-    if (manual_input)
-    {
-      const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-      ImGui::SetNextItemWidth(end);
-
-      std::snprintf(str_value, std::size(str_value), "%d", dlg_value);
-      if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
-      {
-        dlg_value = StringUtil::FromChars<s32>(str_value).value_or(dlg_value);
-        dlg_value_changed = true;
-      }
-
-      ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
-    }
-    else
-    {
-      const ImVec2& padding(ImGui::GetStyle().FramePadding);
-      ImVec2 button_pos(ImGui::GetCursorPos());
-
-      // Align value text in middle.
-      ImGui::SetCursorPosY(
-        button_pos.y +
-        ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFont->FontSize) * 0.5f);
-      ImGui::TextUnformatted(str_value);
-
-      s32 step = 0;
-      if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, UIStyle.LargeFont,
-                         &button_pos, true))
-      {
-        step = step_value;
-      }
-      if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         UIStyle.LargeFont, &button_pos, true))
-      {
-        step = -step_value;
-      }
-      if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         UIStyle.LargeFont, &button_pos))
-      {
-        manual_input = true;
-      }
-      if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
-                         UIStyle.LargeFont, &button_pos))
-      {
-        dlg_value = default_value;
-        dlg_value_changed = true;
-      }
-
-      if (step != 0)
-      {
-        dlg_value += step;
-        dlg_value_changed = true;
-      }
-
-      ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) +
-                           LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
-    }
-
-    if (dlg_value_changed)
-    {
-      dlg_value = std::clamp(dlg_value, min_value, max_value);
-      if (IsEditingGameSettings(bsi) && dlg_value == default_value)
-        bsi->DeleteValue(section, key);
-      else
-        bsi->SetIntValue(section, key, dlg_value);
-
-      SetSettingsChanged(bsi);
-    }
-
-    if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
-                                 ImVec2(0.5f, 0.0f)))
-    {
-      ImGui::CloseCurrentPopup();
-    }
-    EndMenuButtons();
-
-    EndFixedPopupModal();
+    return;
   }
+
+  BeginMenuButtons();
+
+  s32 dlg_value = static_cast<s32>(value.value_or(default_value));
+  bool dlg_value_changed = false;
+
+  char str_value[32];
+  std::snprintf(str_value, std::size(str_value), format, dlg_value);
+
+  if (manual_input)
+  {
+    const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
+    ImGui::SetNextItemWidth(end);
+
+    std::snprintf(str_value, std::size(str_value), "%d", dlg_value);
+    if (ImGui::InputText("##value", str_value, std::size(str_value), ImGuiInputTextFlags_CharsDecimal))
+    {
+      dlg_value = StringUtil::FromChars<s32>(str_value).value_or(dlg_value);
+      dlg_value_changed = true;
+    }
+
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+  }
+  else
+  {
+    const ImVec2& padding(ImGui::GetStyle().FramePadding);
+    ImVec2 button_pos(ImGui::GetCursorPos());
+
+    // Align value text in middle.
+    ImGui::SetCursorPosY(
+      button_pos.y +
+      ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + padding.y * 2.0f) - UIStyle.LargeFont->FontSize) * 0.5f);
+    ImGui::TextUnformatted(str_value);
+
+    s32 step = 0;
+    if (FloatingButton(ICON_FA_CHEVRON_UP, padding.x, button_pos.y, -1.0f, -1.0f, 1.0f, 0.0f, true, UIStyle.LargeFont,
+                       &button_pos, true))
+    {
+      step = step_value;
+    }
+    if (FloatingButton(ICON_FA_CHEVRON_DOWN, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                       UIStyle.LargeFont, &button_pos, true))
+    {
+      step = -step_value;
+    }
+    if (FloatingButton(ICON_FA_KEYBOARD, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                       UIStyle.LargeFont, &button_pos))
+    {
+      manual_input = true;
+    }
+    if (FloatingButton(ICON_FA_TRASH, button_pos.x - padding.x, button_pos.y, -1.0f, -1.0f, -1.0f, 0.0f, true,
+                       UIStyle.LargeFont, &button_pos))
+    {
+      dlg_value = default_value;
+      dlg_value_changed = true;
+    }
+
+    if (step != 0)
+    {
+      dlg_value += step;
+      dlg_value_changed = true;
+    }
+
+    ImGui::SetCursorPosY(button_pos.y + (padding.y * 2.0f) + LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY + 10.0f));
+  }
+
+  if (dlg_value_changed)
+  {
+    dlg_value = std::clamp(dlg_value, min_value, max_value);
+    if (IsEditingGameSettings(bsi) && dlg_value == default_value)
+      bsi->DeleteValue(section, key);
+    else
+      bsi->SetIntValue(section, key, dlg_value);
+
+    SetSettingsChanged(bsi);
+  }
+
+  if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
+                               ImVec2(0.5f, 0.0f)))
+  {
+    CloseFixedPopupDialog();
+  }
+  EndMenuButtons();
+
+  EndFixedPopupDialog();
 }
 
 [[maybe_unused]] void
@@ -4737,7 +4745,7 @@ void FullscreenUI::DrawControllerSettingsPage()
               "Determines the frequency at which the macro will toggle the buttons on and off (aka auto fire)."),
             freq_summary, true))
       {
-        ImGui::OpenPopup(freq_label.c_str());
+        OpenFixedPopupDialog(freq_label);
       }
 
       DrawFloatSpinBoxSetting(bsi, FSUI_ICONSTR(ICON_FA_ARROW_DOWN, "Pressure"),
@@ -4750,13 +4758,15 @@ void FullscreenUI::DrawControllerSettingsPage()
                               section, TinyString::from_format("Macro{}Deadzone", macro_index + 1).c_str(), 0.0f, 0.00f,
                               1.0f, 0.01f, 100.0f, "%.0f%%");
 
-      ImGui::SetNextWindowSize(LayoutScale(500.0f, 180.0f));
-
-      bool is_open = true;
-      if (BeginFixedPopupModal(freq_label, &is_open))
+      if (IsFixedPopupDialogOpen(freq_label) &&
+          BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                                LayoutScale(500.0f, 194.0f)))
       {
-        ImGui::SetNextItemWidth(LayoutScale(450.0f));
-        if (ImGui::SliderInt("##value", &frequency, 0, 60, FSUI_CSTR("Toggle every %d frames"),
+        BeginMenuButtons();
+
+        ImGui::SetNextItemWidth(ImGui::GetCurrentWindow()->WorkRect.GetWidth());
+        if (ImGui::SliderInt("##value", &frequency, 0, 60,
+                             (frequency == 0) ? FSUI_CSTR("Disabled") : FSUI_CSTR("Toggle every %d frames"),
                              ImGuiSliderFlags_NoInput))
         {
           if (frequency == 0)
@@ -4765,12 +4775,16 @@ void FullscreenUI::DrawControllerSettingsPage()
             bsi->SetIntValue(section.c_str(), freq_key.c_str(), frequency);
         }
 
-        BeginMenuButtons();
-        if (MenuButton(FSUI_CSTR("OK"), nullptr, true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY))
-          ImGui::CloseCurrentPopup();
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
+        if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
+                                     ImVec2(0.5f, 0.0f)))
+        {
+          CloseFixedPopupDialog();
+        }
+
         EndMenuButtons();
 
-        EndFixedPopupModal();
+        EndFixedPopupDialog();
       }
     }
 
@@ -5553,7 +5567,7 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
         case PostProcessing::ShaderOption::Type::Bool:
         {
           bool value = (opt.value[0].int_value != 0);
-          tstr.format(ICON_FA_COGS "{}", opt.ui_name);
+          tstr.format(ICON_FA_COGS " {}", opt.ui_name);
           if (ToggleButton(tstr,
                            (opt.default_value[0].int_value != 0) ? FSUI_CSTR("Default: Enabled") :
                                                                    FSUI_CSTR("Default: Disabled"),
@@ -5569,38 +5583,20 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
 
         case PostProcessing::ShaderOption::Type::Float:
         {
-          tstr.format(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
+          tstr.format(ICON_FA_RULER_VERTICAL " {}##{}", opt.ui_name, opt.name);
           str.format(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].float_value,
                      opt.default_value[0].float_value, opt.min_value[0].float_value, opt.max_value[0].float_value);
           if (MenuButton(tstr, str))
-            ImGui::OpenPopup(tstr);
+            OpenFixedPopupDialog(tstr);
 
-          ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-
-          bool is_open = true;
-          if (BeginFixedPopupModal(tstr, &is_open))
+          if (IsFixedPopupDialogOpen(tstr) &&
+              BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                                    LayoutScale(500.0f, 194.0f)))
           {
             BeginMenuButtons();
 
             const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
 
-#if 0
-            for (u32 i = 0; i < opt.vector_size; i++)
-            {
-              static constexpr const char* components[] = { "X", "Y", "Z", "W" };
-              if (opt.vector_size == 1)
-                tstr.Assign("##value");
-              else
-                tstr.Fmt("{}##value{}", components[i], i);
-
-              ImGui::SetNextItemWidth(end);
-              if (ImGui::SliderFloat(tstr, &opt.value[i].float_value, opt.min_value[i].float_value,
-                opt.max_value[i].float_value, "%f", ImGuiSliderFlags_NoInput))
-              {
-                SavePostProcessingChain();
-              }
-            }
-#else
             ImGui::SetNextItemWidth(end);
 
             bool changed = false;
@@ -5641,55 +5637,36 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
               SetSettingsChanged(bsi);
               reload_pending = true;
             }
-#endif
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
             if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                          ImVec2(0.5f, 0.0f)))
             {
-              ImGui::CloseCurrentPopup();
+              CloseFixedPopupDialog();
             }
+
             EndMenuButtons();
 
-            EndFixedPopupModal();
+            EndFixedPopupDialog();
           }
         }
         break;
 
         case PostProcessing::ShaderOption::Type::Int:
         {
-          tstr.format(ICON_FA_RULER_VERTICAL "{}##{}", opt.ui_name, opt.name);
+          tstr.format(ICON_FA_RULER_VERTICAL " {}##{}", opt.ui_name, opt.name);
           str.format(FSUI_FSTR("Value: {} | Default: {} | Minimum: {} | Maximum: {}"), opt.value[0].int_value,
                      opt.default_value[0].int_value, opt.min_value[0].int_value, opt.max_value[0].int_value);
           if (MenuButton(tstr, str))
-            ImGui::OpenPopup(tstr);
+            OpenFixedPopupDialog(tstr);
 
-          ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-
-          bool is_open = true;
-          if (BeginFixedPopupModal(tstr, &is_open))
+          if (IsFixedPopupDialogOpen(tstr) &&
+              BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                                    LayoutScale(500.0f, 194.0f)))
           {
             BeginMenuButtons();
 
             const float end = ImGui::GetCurrentWindow()->WorkRect.GetWidth();
-
-#if 0
-            for (u32 i = 0; i < opt.vector_size; i++)
-            {
-              static constexpr const char* components[] = { "X", "Y", "Z", "W" };
-              if (opt.vector_size == 1)
-                tstr.Assign("##value");
-              else
-                tstr.Fmt("{}##value{}", components[i], i);
-
-              ImGui::SetNextItemWidth(end);
-              if (ImGui::SliderInt(tstr, &opt.value[i].int_value, opt.min_value[i].int_value,
-                opt.max_value[i].int_value, "%d", ImGuiSliderFlags_NoInput))
-              {
-                SavePostProcessingChain();
-              }
-            }
-#else
             bool changed = false;
             ImGui::SetNextItemWidth(end);
             switch (opt.vector_size)
@@ -5729,17 +5706,16 @@ void FullscreenUI::DrawPostProcessingSettingsPage()
               SetSettingsChanged(bsi);
               reload_pending = true;
             }
-#endif
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + LayoutScale(10.0f));
             if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                          ImVec2(0.5f, 0.0f)))
             {
-              ImGui::CloseCurrentPopup();
+              CloseFixedPopupDialog();
             }
             EndMenuButtons();
 
-            EndFixedPopupModal();
+            EndFixedPopupDialog();
           }
         }
         break;
@@ -6022,13 +5998,12 @@ void FullscreenUI::DrawAchievementsSettingsPage()
     {
       MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_USER, "Not Logged In"), false);
 
-      if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), FSUI_CSTR("Logs in to RetroAchievements.")))
-      {
-        s_state.achievements_login_window_open = true;
-        QueueResetFocus(FocusResetType::PopupOpened);
-      }
+      static constexpr std::string_view popup_title = "##achievements_login";
 
-      if (s_state.achievements_login_window_open)
+      if (MenuButton(FSUI_ICONSTR(ICON_FA_KEY, "Login"), FSUI_CSTR("Logs in to RetroAchievements.")))
+        OpenFixedPopupDialog(popup_title);
+
+      if (IsFixedPopupDialogOpen(popup_title))
         DrawAchievementsLoginWindow();
     }
 
@@ -6065,99 +6040,85 @@ void FullscreenUI::DrawAchievementsLoginWindow()
 
   static char username[256] = {};
   static char password[256] = {};
+  static std::unique_ptr<std::string> login_error;
 
-  static constexpr auto actually_close_popup = []() {
+  if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
+                             LayoutScale(600.0f, 0.0f)))
+  {
     std::memset(username, 0, sizeof(username));
     std::memset(password, 0, sizeof(password));
-    s_state.achievements_login_window_open = false;
-    QueueResetFocus(FocusResetType::PopupClosed);
-  };
+    login_error.reset();
+    return;
+  }
 
-  ImGui::SetNextWindowSize(LayoutScale(600.0f, 0.0f));
+  BeginMenuButtons();
 
-  const char* popup_title = FSUI_ICONSTR(ICON_FA_KEY, "RetroAchievements Login");
-  bool popup_closed = false;
-  ImGui::OpenPopup(popup_title);
-  if (BeginFixedPopupModal(popup_title, nullptr))
+  if (!login_error)
   {
-    BeginMenuButtons();
-
     ImGui::TextWrapped(
       FSUI_CSTR("Please enter your user name and password for retroachievements.org below. Your password will "
                 "not be saved in DuckStation, an access token will be generated and used instead."));
-
-    ImGui::NewLine();
-
-    const bool is_logging_in = ImGuiFullscreen::IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
-    ResetFocusHere();
-
-    const float item_margin = LayoutScale(10.0f);
-    const float item_width = LayoutScale(550.0f);
-
-    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
-    ImGui::SetNextItemWidth(item_width);
-    ImGui::InputTextWithHint("##username", FSUI_CSTR("User Name"), username, sizeof(username),
-                             is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
-    ImGui::NextColumn();
-
-    ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
-    ImGui::SetNextItemWidth(item_width);
-    ImGui::InputTextWithHint("##password", FSUI_CSTR("Password"), password, sizeof(password),
-                             is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
-                                             ImGuiInputTextFlags_Password);
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
-
-    const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
-
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_KEY, "Login"), login_enabled))
-    {
-      ImGuiFullscreen::OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."),
-                                                    0, 0, 0);
-
-      Host::RunOnCPUThread([username = std::string(username), password = std::string(password)]() {
-        Error error;
-        const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
-        GPUThread::RunOnThread([result, error = std::move(error)]() {
-          ImGuiFullscreen::CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
-
-          if (result)
-          {
-            actually_close_popup();
-            return;
-          }
-
-          // keep popup open on failure
-          // because of the whole popup stack thing, we need to hide the dialog while this popup is visible
-          s_state.achievements_login_window_open = false;
-          ImGuiFullscreen::OpenInfoMessageDialog(
-            FSUI_STR("Login Error"),
-            fmt::format(FSUI_FSTR("Login Failed.\nError: {}\nPlease check your username and password, and try again."),
-                        error.GetDescription()),
-            []() {
-              s_state.achievements_login_window_open = true;
-              QueueResetFocus(FocusResetType::PopupOpened);
-            },
-            FSUI_ICONSTR(ICON_FA_TIMES, "Close"));
-        });
-      });
-    }
-
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), !is_logging_in))
-      popup_closed = true;
-
-    popup_closed = popup_closed || (!is_logging_in && WantsToCloseMenu());
-    if (popup_closed)
-      ImGui::CloseCurrentPopup();
-
-    EndMenuButtons();
-
-    EndFixedPopupModal();
+  }
+  else
+  {
+    ImGui::TextWrapped("%s", login_error->c_str());
   }
 
-  if (popup_closed)
-    actually_close_popup();
+  ImGui::NewLine();
+
+  const bool is_logging_in = ImGuiFullscreen::IsBackgroundProgressDialogOpen(LOGIN_PROGRESS_NAME);
+  ResetFocusHere();
+
+  const float item_margin = LayoutScale(10.0f);
+  const float item_width = LayoutScale(550.0f);
+
+  ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
+  ImGui::SetNextItemWidth(item_width);
+  ImGui::InputTextWithHint("##username", FSUI_CSTR("User Name"), username, sizeof(username),
+                           is_logging_in ? ImGuiInputTextFlags_ReadOnly : 0);
+  ImGui::NextColumn();
+
+  ImGui::SetCursorPosX((ImGui::GetWindowWidth() - item_width) * 0.5f);
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
+  ImGui::SetNextItemWidth(item_width);
+  ImGui::InputTextWithHint("##password", FSUI_CSTR("Password"), password, sizeof(password),
+                           is_logging_in ? (ImGuiInputTextFlags_ReadOnly | ImGuiInputTextFlags_Password) :
+                                           ImGuiInputTextFlags_Password);
+
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + item_margin);
+
+  const bool login_enabled = (std::strlen(username) > 0 && std::strlen(password) > 0 && !is_logging_in);
+
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_KEY, "Login"), login_enabled))
+  {
+    ImGuiFullscreen::OpenBackgroundProgressDialog(LOGIN_PROGRESS_NAME, FSUI_STR("Logging in to RetroAchievements..."),
+                                                  0, 0, 0);
+
+    Host::RunOnCPUThread([username = std::string(username), password = std::string(password)]() {
+      Error error;
+      const bool result = Achievements::Login(username.c_str(), password.c_str(), &error);
+      GPUThread::RunOnThread([result, error = std::move(error)]() {
+        ImGuiFullscreen::CloseBackgroundProgressDialog(LOGIN_PROGRESS_NAME);
+
+        if (result)
+        {
+          CloseFixedPopupDialog();
+          return;
+        }
+
+        login_error = std::make_unique<std::string>(
+          fmt::format(FSUI_FSTR("Login Failed.\nError: {}\nPlease check your username and password, and try again."),
+                      error.GetDescription()));
+      });
+    });
+  }
+
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_TIMES, "Cancel"), !is_logging_in))
+    CloseFixedPopupDialog();
+
+  EndMenuButtons();
+
+  EndFixedPopupDialog();
 }
 
 void FullscreenUI::DrawAdvancedSettingsPage()
@@ -6324,12 +6285,11 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
       constexpr s32 step_value = 1;
 
       if (MenuButtonWithValue(title.c_str(), ci.description.c_str(), visible_value.c_str()))
-        ImGui::OpenPopup(title);
+        OpenFixedPopupDialog(title);
 
-      ImGui::SetNextWindowSize(LayoutScale(500.0f, 194.0f));
-
-      bool is_open = true;
-      if (BeginFixedPopupModal(title, &is_open))
+      if (IsFixedPopupDialogOpen(title) &&
+          BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                                LayoutScale(500.0f, 194.0f)))
       {
         BeginMenuButtons();
 
@@ -6396,11 +6356,11 @@ void FullscreenUI::DrawPatchesOrCheatsSettingsPage(bool cheats)
         if (MenuButtonWithoutSummary(FSUI_CSTR("OK"), true, LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, UIStyle.LargeFont,
                                      ImVec2(0.5f, 0.0f)))
         {
-          ImGui::CloseCurrentPopup();
+          CloseFixedPopupDialog();
         }
         EndMenuButtons();
 
-        EndFixedPopupModal();
+        EndFixedPopupDialog();
       }
     }
     else
@@ -6776,7 +6736,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li
 {
   const std::string path =
     (global ? System::GetGlobalSaveStateFileName(slot) : System::GetGameSaveStateFileName(serial, slot));
-  if (!InitializeSaveStateListEntryFromPath(li, path.c_str(), slot, global))
+  if (!InitializeSaveStateListEntryFromPath(li, path.c_str(), slot, global, nullptr))
   {
     InitializePlaceholderSaveStateListEntry(li, slot, global);
     return false;
@@ -6785,7 +6745,8 @@ bool FullscreenUI::InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li
   return true;
 }
 
-bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global)
+bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global,
+                                                        std::string* media_path)
 {
   std::optional<ExtendedSaveStateInfo> ssi(System::GetExtendedSaveStateInfo(path.c_str()));
   if (!ssi.has_value())
@@ -6807,6 +6768,8 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
   li->global = global;
   if (ssi->screenshot.IsValid())
     li->preview_texture = g_gpu_device->FetchAndUploadTextureImage(ssi->screenshot);
+  if (media_path)
+    *media_path = std::move(ssi->media_path);
 
   return true;
 }
@@ -6865,7 +6828,6 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
       std::optional<ExtendedSaveStateInfo> undo_state = System::GetUndoSaveStateInfo();
       GPUThread::RunOnThread([serial = std::move(serial), undo_state = std::move(undo_state), is_loading]() mutable {
         s_state.save_state_selector_loading = is_loading;
-        s_state.save_state_selector_resuming = false;
         s_state.save_state_selector_game_path = {};
         if (PopulateSaveStateListEntries(serial, std::move(undo_state)) > 0)
         {
@@ -6883,7 +6845,6 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
   else
   {
     s_state.save_state_selector_loading = is_loading;
-    s_state.save_state_selector_resuming = false;
     if (PopulateSaveStateListEntries(serial, std::nullopt) > 0)
     {
       s_state.save_state_selector_game_path = path;
@@ -6905,8 +6866,10 @@ void FullscreenUI::CloseSaveStateSelector()
   ClearSaveStateEntryList();
   s_state.save_state_selector_open = false;
   s_state.save_state_selector_loading = false;
-  s_state.save_state_selector_resuming = false;
   s_state.save_state_selector_game_path = {};
+
+  if (IsFixedPopupDialogOpen(RESUME_STATE_SELECTOR_DIALOG_NAME))
+    CloseFixedPopupDialogImmediately();
 }
 
 void FullscreenUI::DrawSaveStateSelector(bool is_loading)
@@ -7240,101 +7203,79 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
   CloseSaveStateSelector();
   s_state.save_state_selector_slots.push_back(std::move(slentry));
   s_state.save_state_selector_game_path = entry->path;
-  s_state.save_state_selector_loading = true;
-  s_state.save_state_selector_open = true;
-  s_state.save_state_selector_resuming = true;
-  QueueResetFocus(FocusResetType::PopupOpened);
+  OpenFixedPopupDialog(RESUME_STATE_SELECTOR_DIALOG_NAME);
   return true;
 }
 
 void FullscreenUI::DrawResumeStateSelector()
 {
-  ImGui::SetNextWindowSize(LayoutScale(820.0f, 625.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-  ImGui::OpenPopup(FSUI_CSTR("Load Resume State"));
-
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(40.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(30.0f, 30.0f));
-
-  bool is_open = true;
-  if (ImGui::BeginPopupModal(FSUI_CSTR("Load Resume State"), &is_open,
-                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), LayoutScale(820.0f, 625.0f)))
   {
-    SaveStateListEntry& entry = s_state.save_state_selector_slots.front();
-    SmallString time;
-    TimeToPrintableString(&time, entry.timestamp);
-    ImGui::TextWrapped(
-      FSUI_CSTR("A resume save state created at %s was found.\n\nDo you want to load this save and continue?"),
-      time.c_str());
-
-    const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
-    const float image_height = LayoutScale(250.0f);
-    const float image_width =
-      image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
-    const ImVec2 pos(ImGui::GetCursorScreenPos() +
-                     ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
-    const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
-    ImGui::GetWindowDrawList()->AddImage(
-      static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get()),
-      image_bb.Min, image_bb.Max);
-
-    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
-
-    ResetFocusHere();
-    BeginMenuButtons();
-
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PLAY, "Load State")))
-    {
-      DoStartPath(s_state.save_state_selector_game_path, std::move(entry.path));
-      is_open = false;
-    }
-
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Clean Boot")))
-    {
-      DoStartPath(s_state.save_state_selector_game_path);
-      is_open = false;
-    }
-
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete State")))
-    {
-      if (FileSystem::DeleteFile(entry.path.c_str()))
-      {
-        DoStartPath(s_state.save_state_selector_game_path);
-        is_open = false;
-      }
-      else
-      {
-        ShowToast(std::string(), FSUI_STR("Failed to delete save state."));
-      }
-    }
-
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Cancel")) || WantsToCloseMenu())
-    {
-      ImGui::CloseCurrentPopup();
-      is_open = false;
-    }
-    EndMenuButtons();
-
-    ImGui::EndPopup();
+    CloseSaveStateSelector();
+    return;
   }
 
-  ImGui::PopStyleVar(2);
-  ImGui::PopFont();
+  SaveStateListEntry& entry = s_state.save_state_selector_slots.front();
+  SmallString time;
+  TimeToPrintableString(&time, entry.timestamp);
+  ImGui::TextWrapped(
+    FSUI_CSTR("A resume save state created at %s was found.\n\nDo you want to load this save and continue?"),
+    time.c_str());
 
-  if (!is_open)
+  const GPUTexture* image = entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get();
+  const float image_height = LayoutScale(250.0f);
+  const float image_width =
+    image_height * (static_cast<float>(image->GetWidth()) / static_cast<float>(image->GetHeight()));
+  const ImVec2 pos(ImGui::GetCursorScreenPos() +
+                   ImVec2((ImGui::GetCurrentWindow()->WorkRect.GetWidth() - image_width) * 0.5f, LayoutScale(20.0f)));
+  const ImRect image_bb(pos, pos + ImVec2(image_width, image_height));
+  ImGui::GetWindowDrawList()->AddImage(
+    static_cast<ImTextureID>(entry.preview_texture ? entry.preview_texture.get() : GetPlaceholderTexture().get()),
+    image_bb.Min, image_bb.Max, ImVec2(0.0f, 0.0f), ImVec2(1.0f, 1.0f),
+    ImGui::GetColorU32(IM_COL32(255, 255, 255, 255)));
+
+  ImGui::SetCursorPosY(ImGui::GetCursorPosY() + image_height + LayoutScale(40.0f));
+
+  ResetFocusHere();
+  BeginMenuButtons();
+
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PLAY, "Load State")))
   {
-    ClearSaveStateEntryList();
-    QueueResetFocus(FocusResetType::PopupClosed);
-    s_state.save_state_selector_open = false;
-    s_state.save_state_selector_loading = false;
-    s_state.save_state_selector_resuming = false;
-    s_state.save_state_selector_game_path = {};
+    std::string game_path = std::move(s_state.save_state_selector_game_path);
+    std::string state_path = std::move(entry.path);
+    CloseSaveStateSelector();
+    DoStartPath(std::move(game_path), std::move(state_path));
   }
-  else
+
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Clean Boot")))
   {
-    SetStandardSelectionFooterText(false);
+    std::string game_path = std::move(s_state.save_state_selector_game_path);
+    CloseSaveStateSelector();
+    DoStartPath(std::move(game_path));
   }
+
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete State")))
+  {
+    if (FileSystem::DeleteFile(entry.path.c_str()))
+    {
+      std::string game_path = std::move(s_state.save_state_selector_game_path);
+      CloseSaveStateSelector();
+      DoStartPath(std::move(game_path));
+    }
+    else
+    {
+      ShowToast(std::string(), FSUI_STR("Failed to delete save state."));
+    }
+  }
+
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Cancel")))
+    CloseFixedPopupDialog();
+
+  EndMenuButtons();
+
+  SetStandardSelectionFooterText(false);
+
+  EndFixedPopupDialog();
 }
 
 void FullscreenUI::DoLoadState(std::string path)
@@ -8409,11 +8350,6 @@ GPUTexture* FullscreenUI::GetCoverForCurrentGame()
 // Overlays
 //////////////////////////////////////////////////////////////////////////
 
-void FullscreenUI::OpenAboutWindow()
-{
-  s_state.about_window_open = true;
-}
-
 void FullscreenUI::ExitFullscreenAndOpenURL(std::string_view url)
 {
   Host::RunOnCPUThread([url = std::string(url)]() {
@@ -8434,64 +8370,52 @@ void FullscreenUI::CopyTextToClipboard(std::string title, std::string_view text)
 
 void FullscreenUI::DrawAboutWindow()
 {
-  ImGui::SetNextWindowSize(LayoutScale(1020.0f, 590.0f));
-  ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-  ImGui::OpenPopup(FSUI_CSTR("About DuckStation"));
-
-  ImGui::PushFont(UIStyle.LargeFont);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(40.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, LayoutScale(30.0f, 30.0f));
-
-  if (ImGui::BeginPopupModal(FSUI_CSTR("About DuckStation"), &s_state.about_window_open,
-                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize))
+  if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_LARGE_POPUP_PADDING), LayoutScale(LAYOUT_LARGE_POPUP_ROUNDING),
+                             LayoutScale(1020.0f, 590.0f)))
   {
-    const ImVec2 image_size = LayoutScale(64.0f, 64.0f);
-    const float indent = image_size.x + LayoutScale(8.0f);
-    ImGui::GetWindowDrawList()->AddImage(s_state.app_icon_texture.get(), ImGui::GetCursorScreenPos(),
-                                         ImGui::GetCursorScreenPos() + image_size);
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
-    ImGui::TextUnformatted("DuckStation");
-    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
-    ImGui::TextUnformatted(g_scm_tag_str);
-
-    ImGui::NewLine();
-    ImGui::TextWrapped("%s", FSUI_CSTR("DuckStation is a free simulator/emulator of the Sony PlayStation(TM) "
-                                       "console, focusing on playability, speed, and long-term maintainability."));
-    ImGui::NewLine();
-    ImGui::TextWrapped(
-      "%s", FSUI_CSTR("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)"));
-    ImGui::NewLine();
-    ImGui::TextWrapped(
-      "%s", FSUI_CSTR("\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe "
-                      "Limited. This software is not affiliated in any way with Sony Interactive Entertainment."));
-
-    ImGui::NewLine();
-
-    BeginMenuButtons();
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_GLOBE, "GitHub Repository")))
-      ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/");
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_COMMENT, "Discord Server")))
-      ExitFullscreenAndOpenURL("https://www.duckstation.org/discord.html");
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PEOPLE_CARRY, "Contributor List")))
-      ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md");
-
-    if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close")) || WantsToCloseMenu())
-    {
-      ImGui::CloseCurrentPopup();
-      s_state.about_window_open = false;
-    }
-    else
-    {
-      SetStandardSelectionFooterText(true);
-    }
-
-    EndMenuButtons();
-
-    ImGui::EndPopup();
+    return;
   }
 
-  ImGui::PopStyleVar(2);
-  ImGui::PopFont();
+  const ImVec2 image_size = LayoutScale(64.0f, 64.0f);
+  const float indent = image_size.x + LayoutScale(8.0f);
+  ImGui::GetWindowDrawList()->AddImage(s_state.app_icon_texture.get(), ImGui::GetCursorScreenPos(),
+                                       ImGui::GetCursorScreenPos() + image_size);
+  ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
+  ImGui::TextUnformatted("DuckStation");
+  ImGui::PushStyleColor(ImGuiCol_Text, DarkerColor(UIStyle.BackgroundTextColor));
+  ImGui::SetCursorPosX(ImGui::GetCursorPosX() + indent);
+  ImGui::TextUnformatted(g_scm_tag_str);
+  ImGui::PopStyleColor();
+
+  ImGui::NewLine();
+  ImGui::TextWrapped("%s", FSUI_CSTR("DuckStation is a free simulator/emulator of the Sony PlayStation(TM) "
+                                     "console, focusing on playability, speed, and long-term maintainability."));
+  ImGui::NewLine();
+  ImGui::TextWrapped("%s",
+                     FSUI_CSTR("Duck icon by icons8 (https://icons8.com/icon/74847/platforms.undefined.short-title)"));
+  ImGui::NewLine();
+  ImGui::TextWrapped(
+    "%s", FSUI_CSTR("\"PlayStation\" and \"PSX\" are registered trademarks of Sony Interactive Entertainment Europe "
+                    "Limited. This software is not affiliated in any way with Sony Interactive Entertainment."));
+
+  ImGui::NewLine();
+
+  BeginMenuButtons();
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_GLOBE, "GitHub Repository")))
+    ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/");
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_COMMENT, "Discord Server")))
+    ExitFullscreenAndOpenURL("https://www.duckstation.org/discord.html");
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PEOPLE_CARRY, "Contributor List")))
+    ExitFullscreenAndOpenURL("https://github.com/stenzek/duckstation/blob/master/CONTRIBUTORS.md");
+
+  if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close")) || WantsToCloseMenu())
+    CloseFixedPopupDialog();
+  else
+    SetStandardSelectionFooterText(true);
+
+  EndMenuButtons();
+
+  EndFixedPopupDialog();
 }
 
 void FullscreenUI::OpenAchievementsWindow()
