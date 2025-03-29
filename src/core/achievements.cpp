@@ -2576,6 +2576,8 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
   const float progress_rounding = LayoutScale(5.0f);
   const float badge_size = LayoutScale(40.0f);
   const float badge_text_width = box_content_width - badge_size - text_spacing - text_spacing;
+  const bool disconnected = rc_client_is_disconnected(s_state.client);
+  const int pending_count = disconnected ? rc_client_get_award_achievement_pending_count(s_state.client) : 0;
 
   ImDrawList* dl = ImGui::GetBackgroundDrawList();
 
@@ -2589,6 +2591,10 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
 
   float box_height =
     box_padding + box_padding + UIStyle.MediumFont->FontSize + paragraph_spacing + progress_height + paragraph_spacing;
+  if (pending_count > 0)
+  {
+    box_height += UIStyle.MediumFont->FontSize + paragraph_spacing;
+  }
   if (s_state.most_recent_unlock)
   {
     box_height += UIStyle.MediumFont->FontSize + paragraph_spacing +
@@ -2664,6 +2670,16 @@ void Achievements::DrawPauseMenuOverlays(float start_pos_y)
                        progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f)),
                 text_color, buffer.c_str(), buffer.end_ptr());
     text_pos.y += progress_height + paragraph_spacing;
+
+    if (pending_count > 0)
+    {
+      buffer.format(ICON_EMOJI_WARNING " {}",
+                    TRANSLATE_PLURAL_SSTR("Achievements", "%n unlocks have not been confirmed by the server.",
+                                          "Pause Menu", pending_count));
+      dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos, title_text_color, buffer.c_str(),
+                  buffer.end_ptr());
+      text_pos.y += UIStyle.MediumFont->FontSize + paragraph_spacing;
+    }
   }
 
   if (s_state.most_recent_unlock)

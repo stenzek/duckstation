@@ -3941,6 +3941,20 @@ static int rc_client_is_award_achievement_pending(const rc_client_t* client, uin
   return 0;
 }
 
+int rc_client_get_award_achievement_pending_count(rc_client_t* client)
+{
+  /* assume lock already held */
+  int count = 0;
+  rc_client_scheduled_callback_data_t* scheduled_callback = client->state.scheduled_callbacks;
+  for (; scheduled_callback; scheduled_callback = scheduled_callback->next)
+  {
+    if (scheduled_callback->callback == rc_client_award_achievement_retry)
+      count++;
+  }
+
+  return count;
+}
+
 static void rc_client_award_achievement_server_call(rc_client_award_achievement_callback_data_t* ach_data);
 
 static void rc_client_award_achievement_retry(rc_client_scheduled_callback_data_t* callback_data, rc_client_t* client, rc_clock_t now)
@@ -6410,4 +6424,9 @@ size_t rc_client_get_user_agent_clause(rc_client_t* client, char buffer[], size_
    * make sure the buffer is null terminated */
   buffer[buffer_size - 1] = '\0';
   return result;
+}
+
+int rc_client_is_disconnected(rc_client_t* client)
+{
+  return (client && (client->state.disconnect & (RC_CLIENT_DISCONNECT_VISIBLE | RC_CLIENT_DISCONNECT_SHOW_PENDING) != 0));
 }

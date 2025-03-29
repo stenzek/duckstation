@@ -16,7 +16,7 @@
 <context>
     <name>Achievements</name>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1348"/>
+        <location filename="../../core/achievements.cpp" line="1401"/>
         <source>You have unlocked {} of %n achievements</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -25,7 +25,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1351"/>
+        <location filename="../../core/achievements.cpp" line="1404"/>
         <source>and earned {} of %n points</source>
         <comment>Achievement popup</comment>
         <translation>
@@ -34,7 +34,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1443"/>
+        <location filename="../../core/achievements.cpp" line="1504"/>
         <source>%n achievements</source>
         <comment>Mastery popup</comment>
         <translation>
@@ -43,8 +43,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="1445"/>
-        <location filename="../../core/achievements.cpp" line="2843"/>
+        <location filename="../../core/achievements.cpp" line="1506"/>
+        <location filename="../../core/achievements.cpp" line="3067"/>
         <source>%n points</source>
         <comment>Achievement points</comment>
         <translation>
@@ -53,7 +53,16 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="2661"/>
+        <location filename="../../core/achievements.cpp" line="2711"/>
+        <source>%n unlocks have not been confirmed by the server.</source>
+        <comment>Pause Menu</comment>
+        <translation>
+            <numerusform>%n unlock has not been confirmed by the server.</numerusform>
+            <numerusform>%n unlocks have not been confirmed by the server.</numerusform>
+        </translation>
+    </message>
+    <message numerus="yes">
+        <location filename="../../core/achievements.cpp" line="2876"/>
         <source>You have unlocked all achievements and earned %n points!</source>
         <comment>Point count</comment>
         <translation>
@@ -62,7 +71,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/achievements.cpp" line="3086"/>
+        <location filename="../../core/achievements.cpp" line="3321"/>
         <source>This game has %n leaderboards.</source>
         <comment>Leaderboard count</comment>
         <translation>
@@ -74,7 +83,7 @@
 <context>
     <name>Cheats</name>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1005"/>
+        <location filename="../../core/cheats.cpp" line="1014"/>
         <source>%n game patches are active.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -83,7 +92,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1012"/>
+        <location filename="../../core/cheats.cpp" line="1021"/>
         <source>%n cheats are enabled. This may crash games.</source>
         <comment>OSD Message</comment>
         <translation>
@@ -92,7 +101,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1039"/>
+        <location filename="../../core/cheats.cpp" line="1048"/>
         <source>%n cheats</source>
         <comment>Cheats blocked by hardcore mode</comment>
         <translation>
@@ -101,7 +110,7 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../../core/cheats.cpp" line="1041"/>
+        <location filename="../../core/cheats.cpp" line="1050"/>
         <source>%n patches</source>
         <comment>Patches blocked by hardcore mode</comment>
         <translation>
@@ -124,7 +133,7 @@
 <context>
     <name>GPU_HW</name>
     <message numerus="yes">
-        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3615"/>
+        <location filename="../../core/gpu_hw_texture_cache.cpp" line="3636"/>
         <source>%n replacement textures found.</source>
         <comment>Replacement texture count</comment>
         <translation>
@@ -136,8 +145,8 @@
 <context>
     <name>GameList</name>
     <message numerus="yes">
-        <location filename="../gamelistmodel.cpp" line="343"/>
-        <location filename="../../core/game_list.cpp" line="1521"/>
+        <location filename="../gamelistwidget.cpp" line="345"/>
+        <location filename="../../core/game_list.cpp" line="1551"/>
         <source>%n hours</source>
         <translation>
             <numerusform>%n hour</numerusform>
@@ -145,8 +154,8 @@
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../gamelistmodel.cpp" line="345"/>
-        <location filename="../../core/game_list.cpp" line="1523"/>
+        <location filename="../gamelistwidget.cpp" line="347"/>
+        <location filename="../../core/game_list.cpp" line="1553"/>
         <source>%n minutes</source>
         <translation>
             <numerusform>%n minute</numerusform>
@@ -168,7 +177,7 @@
 <context>
     <name>MemoryCardEditorWindow</name>
     <message numerus="yes">
-        <location filename="../memorycardeditorwindow.cpp" line="316"/>
+        <location filename="../memorycardeditorwindow.cpp" line="317"/>
         <source>%n block(s) free%1</source>
         <translation>
             <numerusform>%n block free%1</numerusform>

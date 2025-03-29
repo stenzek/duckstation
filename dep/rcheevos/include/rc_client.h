@@ -141,6 +141,11 @@ RC_EXPORT void RC_CCONV rc_client_abort_async(rc_client_t* client, rc_client_asy
  */
 RC_EXPORT size_t RC_CCONV rc_client_get_user_agent_clause(rc_client_t* client, char buffer[], size_t buffer_size);
 
+/**
+ * Returns true if any achievement submissions have failed and are currently pending.
+ */
+RC_EXPORT int RC_CCONV rc_client_is_disconnected(rc_client_t* client);
+
 /*****************************************************************************\
 | Logging                                                                     |
 \*****************************************************************************/
@@ -502,6 +507,11 @@ RC_EXPORT void RC_CCONV rc_client_destroy_achievement_list(rc_client_achievement
  * Returns non-zero if there are any achievements that can be queried through rc_client_create_achievement_list().
  */
 RC_EXPORT int RC_CCONV rc_client_has_achievements(rc_client_t* client);
+
+/**
+ * Returns the number of outstanding achievement unlocks.
+ */
+RC_EXPORT int RC_CCONV rc_client_get_award_achievement_pending_count(rc_client_t* client);
 
 /*****************************************************************************\
 | Leaderboards                                                                |
