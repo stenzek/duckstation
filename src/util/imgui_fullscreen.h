@@ -407,9 +407,11 @@ void CloseLoadingScreen();
 void RenderLoadingScreen();
 
 void AddNotification(std::string key, float duration, std::string title, std::string text, std::string image_path);
+bool HasAnyNotifications();
 void ClearNotifications();
 
 void ShowToast(std::string title, std::string message, float duration = 10.0f);
+bool HasToast();
 void ClearToast();
 
 // Message callbacks.

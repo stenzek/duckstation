@@ -766,7 +766,8 @@ bool FullscreenUI::AreAnyDialogsOpen()
   return (s_state.save_state_selector_open || s_state.input_binding_type != InputBindingInfo::Type::Unknown ||
           ImGuiFullscreen::IsAnyFixedPopupDialogOpen() || ImGuiFullscreen::IsChoiceDialogOpen() ||
           ImGuiFullscreen::IsInputDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen() ||
-          ImGuiFullscreen::IsMessageBoxDialogOpen());
+          ImGuiFullscreen::IsMessageBoxDialogOpen() || ImGuiFullscreen::HasToast() ||
+          ImGuiFullscreen::HasAnyNotifications());
 }
 
 void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)

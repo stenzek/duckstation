@@ -20,6 +20,7 @@
 
 #include "core/host.h"
 #include "core/system.h" // For async workers, should be in general host.
+#include "core/fullscreen_ui.h" // For updating run idle state.
 
 #include "fmt/core.h"
 
@@ -3445,6 +3446,12 @@ void ImGuiFullscreen::AddNotification(std::string key, float duration, std::stri
   notif.target_y = -1.0f;
   notif.last_y = -1.0f;
   s_state.notifications.push_back(std::move(notif));
+  FullscreenUI::UpdateRunIdleState();
+}
+
+bool ImGuiFullscreen::HasAnyNotifications()
+{
+  return !s_state.notifications.empty();
 }
 
 void ImGuiFullscreen::ClearNotifications()
@@ -3585,6 +3592,10 @@ void ImGuiFullscreen::DrawNotifications(ImVec2& position, float spacing)
     position.y += s_notification_vertical_direction * (box_height + shadow_size + spacing);
     index++;
   }
+
+  // all gone?
+  if (s_state.notifications.empty())
+    FullscreenUI::UpdateRunIdleState();
 }
 
 void ImGuiFullscreen::ShowToast(std::string title, std::string message, float duration)
@@ -3593,6 +3604,12 @@ void ImGuiFullscreen::ShowToast(std::string title, std::string message, float du
   s_state.toast_message = std::move(message);
   s_state.toast_start_time = Timer::GetCurrentValue();
   s_state.toast_duration = duration;
+  FullscreenUI::UpdateRunIdleState();
+}
+
+bool ImGuiFullscreen::HasToast()
+{
+  return (!s_state.toast_title.empty() || !s_state.toast_message.empty());
 }
 
 void ImGuiFullscreen::ClearToast()
@@ -3601,6 +3618,7 @@ void ImGuiFullscreen::ClearToast()
   s_state.toast_title = {};
   s_state.toast_start_time = 0;
   s_state.toast_duration = 0.0f;
+  FullscreenUI::UpdateRunIdleState();
 }
 
 void ImGuiFullscreen::DrawToast()
