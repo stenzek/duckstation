@@ -710,13 +710,6 @@ ImGuiFullscreen::FixedPopupDialog::~FixedPopupDialog() = default;
 void ImGuiFullscreen::FixedPopupDialog::Open(std::string title)
 {
   SetTitleAndOpen(std::move(title));
-
-  // fixed dialogs are locked to the parent scope
-  if (m_state == State::OpeningTrigger)
-  {
-    ImGui::OpenPopup(m_title.c_str());
-    m_state = State::Opening;
-  }
 }
 
 bool ImGuiFullscreen::FixedPopupDialog::Begin(float scaled_window_padding /* = LayoutScale(20.0f) */,
@@ -2517,19 +2510,21 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
                                         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
                                         (m_title.starts_with("##") ? ImGuiWindowFlags_NoTitleBar : 0);
   bool is_open = true;
-  if (!ImGui::Begin(m_title.c_str(), &is_open, window_flags))
+  if (popup_open && !ImGui::Begin(m_title.c_str(), &is_open, window_flags))
     is_open = false;
 
-  if (!is_open && m_state != State::ClosingTrigger)
+  if (popup_open && !is_open && m_state != State::ClosingTrigger)
   {
     StartClose();
   }
-  else if (m_state == State::ClosingTrigger)
+  else if (!popup_open || m_state == State::ClosingTrigger)
   {
     if (popup_open)
+    {
       ImGui::CloseCurrentPopup();
+      ImGui::EndPopup();
+    }
 
-    ImGui::EndPopup();
     ImGui::PopStyleColor(5);
     ImGui::PopStyleVar(6);
     ImGui::PopFont();
