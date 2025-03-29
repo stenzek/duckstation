@@ -3647,10 +3647,9 @@ void ImGuiFullscreen::DrawToast()
   dl->AddRectFilled(box_pos, box_pos + box_size,
                     ImGui::GetColorU32(ModAlpha(UIStyle.ToastBackgroundColor, alpha * 0.95f)), padding);
 
-  const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, alpha));
-
   if (!s_state.toast_title.empty())
   {
+    const u32 text_col = ImGui::GetColorU32(ModAlpha(UIStyle.ToastTextColor, alpha));
     const float offset = (comb_size.x - title_size.x) * 0.5f;
     const ImVec2 title_pos = box_pos + ImVec2(offset + padding, padding);
     const ImRect title_bb = ImRect(title_pos, title_pos + title_size);
@@ -3660,6 +3659,8 @@ void ImGuiFullscreen::DrawToast()
   }
   if (!s_state.toast_message.empty())
   {
+    const u32 text_col = ImGui::GetColorU32(
+      ModAlpha(s_state.toast_title.empty() ? UIStyle.ToastTextColor : DarkerColor(UIStyle.ToastTextColor), alpha));
     const float offset = (comb_size.x - message_size.x) * 0.5f;
     const ImVec2 message_pos = box_pos + ImVec2(offset + padding, padding + spacing + title_size.y);
     const ImRect message_bb = ImRect(message_pos, message_pos + message_size);
