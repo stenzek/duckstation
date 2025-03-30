@@ -212,7 +212,6 @@ struct ALIGN_TO_CACHE_LINE UIState
   ImGuiDir has_pending_nav_move = ImGuiDir_None;
   FocusResetType focus_reset_queued = FocusResetType::None;
   bool initialized = false;
-  bool smooth_scrolling = false;
 
   LRUCache<std::string, std::shared_ptr<GPUTexture>> texture_cache{128, true};
   std::shared_ptr<GPUTexture> placeholder_texture;
@@ -319,9 +318,14 @@ void ImGuiFullscreen::Shutdown(bool clear_state)
   }
 }
 
+void ImGuiFullscreen::SetAnimations(bool enabled)
+{
+  UIStyle.Animations = enabled;
+}
+
 void ImGuiFullscreen::SetSmoothScrolling(bool enabled)
 {
-  s_state.smooth_scrolling = enabled;
+  UIStyle.SmoothScrolling = enabled;
 }
 
 const std::shared_ptr<GPUTexture>& ImGuiFullscreen::GetPlaceholderTexture()
@@ -798,7 +802,7 @@ void ImGuiFullscreen::PushResetLayout()
   ImGui::PushStyleVar(ImGuiStyleVar_ScrollbarRounding, 0.0f);
   ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, LayoutScale(10.0f));
   ImGui::PushStyleVar(ImGuiStyleVar_TabRounding, LayoutScale(4.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, s_state.smooth_scrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
+  ImGui::PushStyleVar(ImGuiStyleVar_ScrollSmooth, UIStyle.SmoothScrolling ? SMOOTH_SCROLLING_SPEED : 1.0f);
   ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.SecondaryTextColor);
   ImGui::PushStyleColor(ImGuiCol_TextDisabled, UIStyle.DisabledColor);
   ImGui::PushStyleColor(ImGuiCol_Button, UIStyle.SecondaryColor);
@@ -1403,7 +1407,7 @@ void ImGuiFullscreen::DrawMenuButtonFrame(const ImVec2& p_min, const ImVec2& p_m
   ImVec2 frame_max = p_max;
 
   const ImGuiIO& io = ImGui::GetIO();
-  if (s_state.smooth_scrolling && io.NavVisible && GImGui->CurrentWindow == GImGui->NavWindow)
+  if (UIStyle.Animations && io.NavVisible && GImGui->CurrentWindow == GImGui->NavWindow)
   {
     if (!s_state.had_hovered_menu_item || io.MouseDelta.x != 0.0f || io.MouseDelta.y != 0.0f)
     {
@@ -1775,7 +1779,7 @@ bool ImGuiFullscreen::ToggleButton(const char* title, const char* summary, bool*
   float t = *v ? 1.0f : 0.0f;
   ImDrawList* dl = ImGui::GetWindowDrawList();
   ImGuiContext& g = *GImGui;
-  if (g.LastActiveId == g.CurrentWindow->GetID(title)) // && g.LastActiveIdTimer < ANIM_SPEED)
+  if (UIStyle.Animations && g.LastActiveId == g.CurrentWindow->GetID(title)) // && g.LastActiveIdTimer < ANIM_SPEED)
   {
     static constexpr const float ANIM_SPEED = 0.08f;
     float t_anim = ImSaturate(g.LastActiveIdTimer / ANIM_SPEED);
@@ -2384,7 +2388,7 @@ void ImGuiFullscreen::PopupDialog::StartClose()
     return;
 
   m_state = State::Closing;
-  m_animation_time_remaining = CLOSE_TIME;
+  m_animation_time_remaining = UIStyle.Animations ? CLOSE_TIME : 0.0f;
 }
 
 void ImGuiFullscreen::PopupDialog::ClearState()
@@ -2397,7 +2401,7 @@ void ImGuiFullscreen::PopupDialog::SetTitleAndOpen(std::string title)
 {
   DebugAssert(!title.empty());
   m_title = std::move(title);
-  m_animation_time_remaining = OPEN_TIME;
+  m_animation_time_remaining = UIStyle.Animations ? OPEN_TIME : 0.0f;
 
   if (m_state == State::Inactive)
   {
@@ -2449,6 +2453,17 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
     m_state = State::OpeningTrigger;
   }
 
+  if (m_state == State::OpeningTrigger)
+  {
+    // need to have the openpopup at the correct level
+    m_state = State::Opening;
+    ImGui::OpenPopup(m_title.c_str());
+    QueueResetFocus(FocusResetType::PopupOpened);
+
+    // hackity hack to disable imgui's background fade animation
+    GImGui->DimBgRatio = UIStyle.Animations ? GImGui->DimBgRatio : 1.0f;
+  }
+
   // check for animation completion
   ImVec2 pos_offset = ImVec2(0.0f, 0.0f);
   float alpha = 1.0f;
@@ -2470,14 +2485,6 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
     }
     else
     {
-      if (m_state == State::OpeningTrigger)
-      {
-        // need to have the openpopup at the correct level
-        m_state = State::Opening;
-        ImGui::OpenPopup(m_title.c_str());
-        QueueResetFocus(FocusResetType::PopupOpened);
-      }
-
       // inhibit menu animation while opening, otherwise it jitters
       ResetMenuButtonFrame();
 
@@ -2532,6 +2539,8 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
   {
     if (popup_open)
     {
+      // hackity hack to disable imgui's background fade animation
+      GImGui->DimBgRatio = UIStyle.Animations ? GImGui->DimBgRatio : 0.0f;
       ImGui::CloseCurrentPopup();
       ImGui::EndPopup();
     }

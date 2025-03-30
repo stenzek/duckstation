@@ -79,6 +79,9 @@ struct ALIGN_TO_CACHE_LINE UIStyles
   float RcpLayoutScale;
   float LayoutPaddingLeft;
   float LayoutPaddingTop;
+
+  bool Animations;
+  bool SmoothScrolling;
 };
 
 extern UIStyles UIStyle;
@@ -166,6 +169,7 @@ ImRect FitImage(const ImVec2& fit_size, const ImVec2& image_size);
 bool Initialize(const char* placeholder_image_path);
 
 void SetTheme(std::string_view theme);
+void SetAnimations(bool enabled);
 void SetSmoothScrolling(bool enabled);
 void SetFonts(ImFont* medium_font, ImFont* large_font);
 bool UpdateLayoutScale();

@@ -729,6 +729,7 @@ bool FullscreenUI::Initialize()
   if (s_state.tried_to_initialize)
     return false;
 
+  ImGuiFullscreen::SetAnimations(Host::GetBaseBoolSettingValue("Main", "FullscreenUIAnimations", true));
   ImGuiFullscreen::SetSmoothScrolling(Host::GetBaseBoolSettingValue("Main", "FullscreenUISmoothScrolling", true));
   ImGuiFullscreen::UpdateLayoutScale();
 
@@ -809,9 +810,10 @@ void FullscreenUI::BeginTransition(TransitionStartCallback func, float time)
       std::move(s_state.transition_start_callback)();
   }
 
+  const float real_time = UIStyle.Animations ? time : 0.0f;
   s_state.transition_state = TransitionState::Starting;
-  s_state.transition_total_time = time;
-  s_state.transition_remaining_time = time;
+  s_state.transition_total_time = real_time;
+  s_state.transition_remaining_time = real_time;
   s_state.transition_start_callback = func;
   UpdateRunIdleState();
 }
@@ -4177,11 +4179,18 @@ void FullscreenUI::DrawInterfaceSettingsPage()
       ImGuiFullscreen::SetFullscreenFooterTextIconMapping({});
   }
 
+  if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_WINDOW_RESTORE, "Window Animations"),
+                        FSUI_CSTR("Animates windows opening/closing and changes between views in the Big Picture UI."),
+                        "Main", "FullscreenUIAnimations", true))
+  {
+    ImGuiFullscreen::SetAnimations(bsi->GetBoolValue("Main", "FullscreenUIAnimations", true));
+  }
+
   if (DrawToggleSetting(bsi, FSUI_ICONSTR(ICON_FA_LIST, "Smooth Scrolling"),
-                        FSUI_CSTR("Enables smooth scrolling of menus in Big Picture UI."), "Main",
+                        FSUI_CSTR("Enables smooth scrolling of menus in the Big Picture UI."), "Main",
                         "FullscreenUISmoothScrolling", true))
   {
-    ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", false));
+    ImGuiFullscreen::SetSmoothScrolling(bsi->GetBoolValue("Main", "FullscreenUISmoothScrolling", true));
   }
 
   MenuHeading(FSUI_CSTR("Behavior"));
@@ -9023,6 +9032,7 @@ TRANSLATE_NOOP("FullscreenUI", "Alpha Blending");
 TRANSLATE_NOOP("FullscreenUI", "Always Track Uploads");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while deleting empty game settings:\n{}");
 TRANSLATE_NOOP("FullscreenUI", "An error occurred while saving game settings:\n{}");
+TRANSLATE_NOOP("FullscreenUI", "Animates windows opening/closing and changes between views in the Big Picture UI.");
 TRANSLATE_NOOP("FullscreenUI", "Appearance");
 TRANSLATE_NOOP("FullscreenUI", "Apply Image Patches");
 TRANSLATE_NOOP("FullscreenUI", "Are you sure you want to clear all mappings for this controller?\n\nYou cannot undo this action.");
@@ -9214,7 +9224,7 @@ TRANSLATE_NOOP("FullscreenUI", "Enables depth testing for semi-transparent polyg
 TRANSLATE_NOOP("FullscreenUI", "Enables dumping of textures to image files, which can be replaced. Not compatible with all games.");
 TRANSLATE_NOOP("FullscreenUI", "Enables loading of cheats for this game from DuckStation's database.");
 TRANSLATE_NOOP("FullscreenUI", "Enables loading of replacement textures. Not compatible with all games.");
-TRANSLATE_NOOP("FullscreenUI", "Enables smooth scrolling of menus in Big Picture UI.");
+TRANSLATE_NOOP("FullscreenUI", "Enables smooth scrolling of menus in the Big Picture UI.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the cheats that are selected below.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the older, less accurate MDEC decoding routines. May be required for old replacement backgrounds to match/load.");
 TRANSLATE_NOOP("FullscreenUI", "Enables the replacement of background textures in supported games.");
@@ -9315,7 +9325,6 @@ TRANSLATE_NOOP("FullscreenUI", "Launch a game from a file, disc, or starts the c
 TRANSLATE_NOOP("FullscreenUI", "Launch a game from images scanned from your game directories.");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboard Notifications");
 TRANSLATE_NOOP("FullscreenUI", "Leaderboards");
-TRANSLATE_NOOP("FullscreenUI", "Leaderboards are not enabled.");
 TRANSLATE_NOOP("FullscreenUI", "Light");
 TRANSLATE_NOOP("FullscreenUI", "Line Detection");
 TRANSLATE_NOOP("FullscreenUI", "List Settings");
@@ -9678,6 +9687,7 @@ TRANSLATE_NOOP("FullscreenUI", "When enabled, the minimum supported output laten
 TRANSLATE_NOOP("FullscreenUI", "When playing a multi-disc game and using per-game (title) memory cards, use a single memory card for all discs.");
 TRANSLATE_NOOP("FullscreenUI", "When this option is chosen, the clock speed set below will be used.");
 TRANSLATE_NOOP("FullscreenUI", "Widescreen Rendering");
+TRANSLATE_NOOP("FullscreenUI", "Window Animations");
 TRANSLATE_NOOP("FullscreenUI", "Wireframe Rendering");
 TRANSLATE_NOOP("FullscreenUI", "Writes backgrounds that can be replaced to the dump directory.");
 TRANSLATE_NOOP("FullscreenUI", "Yes, {} now and risk memory card corruption.");
