@@ -861,6 +861,7 @@ public:
 
   /// Renders ImGui screen elements. Call before EndPresent().
   void RenderImGui(GPUSwapChain* swap_chain);
+  void RenderImGui(GPUTexture* texture);
 
   ALWAYS_INLINE bool IsDebugDevice() const { return m_debug_device; }
   ALWAYS_INLINE size_t GetVRAMUsage() const { return s_total_vram_usage; }

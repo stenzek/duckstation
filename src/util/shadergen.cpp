@@ -793,6 +793,26 @@ void ShaderGen::DeclareFragmentEntryPoint(
   }
 }
 
+std::string ShaderGen::GeneratePassthroughVertexShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareVertexEntryPoint(ss, {"float2 a_pos", "float2 a_tex0"}, 0, 1, {}, false, "", false, false, false);
+  ss << R"(
+{
+  v_pos = float4(a_pos, 0.0f, 1.0f);
+  v_tex0 = a_tex0;
+
+  // NDC space Y flip in Vulkan.
+  #if API_VULKAN
+    v_pos.y = -v_pos.y;
+  #endif
+}
+)";
+
+  return std::move(ss).str();
+}
+
 std::string ShaderGen::GenerateScreenQuadVertexShader(float z /* = 0.0f */) const
 {
   std::stringstream ss;
@@ -805,26 +825,6 @@ std::string ShaderGen::GenerateScreenQuadVertexShader(float z /* = 0.0f */) cons
   ss << "    v_pos.y = -v_pos.y;\n";
   ss << "  #endif\n";
   ss << "}\n";
-
-  return std::move(ss).str();
-}
-
-std::string ShaderGen::GenerateUVQuadVertexShader() const
-{
-  std::stringstream ss;
-  WriteHeader(ss);
-  DeclareUniformBuffer(ss, {"float2 u_uv_min", "float2 u_uv_max"}, true);
-  DeclareVertexEntryPoint(ss, {}, 0, 1, {}, true);
-  ss << R"(
-{
-  v_tex0 = float2(float((v_id << 1) & 2u), float(v_id & 2u));
-  v_pos = float4(v_tex0 * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f), 0.0f, 1.0f);
-  v_tex0 = u_uv_min + (u_uv_max - u_uv_min) * v_tex0;
-  #if API_OPENGL || API_OPENGL_ES || API_VULKAN
-    v_pos.y = -v_pos.y;
-  #endif
-}
-)";
 
   return std::move(ss).str();
 }
@@ -920,6 +920,26 @@ std::string ShaderGen::GenerateImGuiFragmentShader() const
   ss << R"(
 {
   o_col0 = v_col0 * SAMPLE_TEXTURE(samp0, v_tex0);
+}
+)";
+
+  return std::move(ss).str();
+}
+
+std::string ShaderGen::GenerateFadeFragmentShader() const
+{
+  std::stringstream ss;
+  WriteHeader(ss);
+  DeclareUniformBuffer(ss, {"float u_tex0_weight", "float u_tex1_weight"}, true);
+  DeclareTexture(ss, "samp0", 0);
+  DeclareTexture(ss, "samp1", 1);
+  DeclareFragmentEntryPoint(ss, 0, 1);
+
+  ss << R"(
+{
+  o_col0 = SAMPLE_TEXTURE(samp0, v_tex0) * u_tex0_weight;
+  o_col0 += SAMPLE_TEXTURE(samp1, v_tex0) * u_tex1_weight;
+  o_col0.a = 1.0f;
 }
 )";
 

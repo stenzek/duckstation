@@ -115,7 +115,7 @@ bool GPUPresenter::CompileDisplayPipelines(bool display, bool deinterlace, bool 
     plconfig.SetTargetFormats(m_present_format);
 
     std::unique_ptr<GPUShader> vso = g_gpu_device->CreateShader(GPUShaderStage::Vertex, shadergen.GetLanguage(),
-                                                                shadergen.GenerateDisplayVertexShader(), error);
+                                                                shadergen.GeneratePassthroughVertexShader(), error);
     if (!vso)
       return false;
     GL_OBJECT_NAME(vso, "Display Vertex Shader");
@@ -1047,19 +1047,39 @@ bool GPUPresenter::PresentFrame(GPUPresenter* presenter, GPUBackend* backend, bo
       ImGuiManager::RenderSoftwareCursors();
 
     ImGuiManager::RenderDebugWindows();
+
+    // render offscreen for transitions
+    if (FullscreenUI::IsTransitionActive())
+    {
+      GPUTexture* const rtex = FullscreenUI::GetTransitionRenderTexture(g_gpu_device->GetMainSwapChain());
+      if (rtex)
+      {
+        if (presenter)
+          presenter->RenderDisplay(rtex, rtex->GetSizeVec(), true, true);
+        else
+          g_gpu_device->ClearRenderTarget(rtex, GPUDevice::DEFAULT_CLEAR_COLOR);
+
+        g_gpu_device->SetRenderTarget(rtex);
+        g_gpu_device->RenderImGui(rtex);
+      }
+    }
   }
 
   GPUSwapChain* const swap_chain = g_gpu_device->GetMainSwapChain();
-  const GPUDevice::PresentResult pres =
-    skip_present ? GPUDevice::PresentResult::SkipPresent :
-                   (presenter ? presenter->RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
-                                g_gpu_device->BeginPresent(swap_chain));
+  const GPUDevice::PresentResult pres = skip_present ?
+                                          GPUDevice::PresentResult::SkipPresent :
+                                          ((presenter && !FullscreenUI::IsTransitionActive()) ?
+                                             presenter->RenderDisplay(nullptr, swap_chain->GetSizeVec(), true, true) :
+                                             g_gpu_device->BeginPresent(swap_chain));
   if (pres == GPUDevice::PresentResult::OK)
   {
     if (presenter)
       presenter->m_skipped_present_count = 0;
 
-    g_gpu_device->RenderImGui(swap_chain);
+    if (FullscreenUI::IsTransitionActive())
+      FullscreenUI::RenderTransitionBlend(swap_chain);
+    else
+      g_gpu_device->RenderImGui(swap_chain);
 
     const GPUDevice::Features features = g_gpu_device->GetFeatures();
     const bool scheduled_present = (present_time != 0);

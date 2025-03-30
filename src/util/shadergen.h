@@ -27,14 +27,15 @@ public:
   ALWAYS_INLINE bool IsVulkan() const { return (m_render_api == RenderAPI::Vulkan); }
   ALWAYS_INLINE bool IsMetal() const { return (m_render_api == RenderAPI::Metal); }
 
+  std::string GeneratePassthroughVertexShader() const;
   std::string GenerateScreenQuadVertexShader(float z = 0.0f) const;
-  std::string GenerateUVQuadVertexShader() const;
   std::string GenerateFillFragmentShader() const;
   std::string GenerateFillFragmentShader(const GSVector4 fixed_color) const;
   std::string GenerateCopyFragmentShader(bool offset = true) const;
 
   std::string GenerateImGuiVertexShader() const;
   std::string GenerateImGuiFragmentShader() const;
+  std::string GenerateFadeFragmentShader() const;
 
   const char* GetInterpolationQualifier(bool interface_block, bool centroid_interpolation, bool sample_interpolation,
                                         bool is_out) const;

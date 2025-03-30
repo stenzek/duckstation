@@ -20,27 +20,6 @@ float2 ClampUV(float2 uv) {
 })";
 }
 
-std::string GPUShaderGen::GenerateDisplayVertexShader() const
-{
-  std::stringstream ss;
-  WriteHeader(ss);
-  WriteDisplayUniformBuffer(ss);
-  DeclareVertexEntryPoint(ss, {"float2 a_pos", "float2 a_tex0"}, 0, 1, {}, false, "", false, false, false);
-  ss << R"(
-{
-  v_pos = float4(a_pos, 0.0f, 1.0f);
-  v_tex0 = a_tex0;
-
-  // NDC space Y flip in Vulkan.
-  #if API_VULKAN
-    v_pos.y = -v_pos.y;
-  #endif
-}
-)";
-
-  return std::move(ss).str();
-}
-
 std::string GPUShaderGen::GenerateDisplayFragmentShader(bool clamp_uv, bool nearest) const
 {
   std::stringstream ss;

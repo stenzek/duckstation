@@ -16,6 +16,9 @@
 
 class SmallStringBase;
 
+class GPUSwapChain;
+class GPUTexture;
+
 struct GPUSettings;
 
 namespace FullscreenUI {
@@ -45,6 +48,25 @@ void CloseLoadingScreen();
 void SetTheme();
 
 #ifndef __ANDROID__
+
+static constexpr float SHORT_TRANSITION_TIME = 0.08f;
+static constexpr float DEFAULT_TRANSITION_TIME = 0.15f;
+
+enum class TransitionState : u8
+{
+  Inactive,
+  Starting,
+  Active,
+};
+
+using TransitionStartCallback = std::function<void()>;
+void BeginTransition(TransitionStartCallback func, float time = DEFAULT_TRANSITION_TIME);
+void BeginTransition(float time, TransitionStartCallback func);
+void CancelTransition();
+bool IsTransitionActive();
+TransitionState GetTransitionState();
+GPUTexture* GetTransitionRenderTexture(GPUSwapChain* swap_chain);
+void RenderTransitionBlend(GPUSwapChain* swap_chain);
 
 std::vector<std::string_view> GetThemeNames();
 std::span<const char* const> GetThemeConfigNames();

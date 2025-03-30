@@ -804,6 +804,65 @@ void GPUDevice::RenderImGui(GPUSwapChain* swap_chain)
   }
 }
 
+void GPUDevice::RenderImGui(GPUTexture* texture)
+{
+  GL_SCOPE("RenderImGui");
+
+  ImGui::Render();
+
+  const ImDrawData* draw_data = ImGui::GetDrawData();
+  if (draw_data->CmdListsCount == 0)
+    return;
+
+  SetPipeline(m_imgui_pipeline.get());
+  SetViewport(0, 0, texture->GetWidth(), texture->GetHeight());
+
+  const GSMatrix4x4 mproj = GSMatrix4x4::OffCenterOrthographicProjection(
+    0.0f, 0.0f, static_cast<float>(texture->GetWidth()), static_cast<float>(texture->GetHeight()), 0.0f, 1.0f);
+  PushUniformBuffer(&mproj, sizeof(mproj));
+
+  // Render command lists
+  const bool flip = UsesLowerLeftOrigin();
+  for (int n = 0; n < draw_data->CmdListsCount; n++)
+  {
+    const ImDrawList* cmd_list = draw_data->CmdLists[n];
+    static_assert(sizeof(ImDrawIdx) == sizeof(DrawIndex));
+
+    u32 base_vertex, base_index;
+    UploadVertexBuffer(cmd_list->VtxBuffer.Data, sizeof(ImDrawVert), cmd_list->VtxBuffer.Size, &base_vertex);
+    UploadIndexBuffer(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size, &base_index);
+
+    for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+    {
+      const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+
+      if ((pcmd->ElemCount == 0 && !pcmd->UserCallback) || pcmd->ClipRect.z <= pcmd->ClipRect.x ||
+          pcmd->ClipRect.w <= pcmd->ClipRect.y)
+      {
+        continue;
+      }
+
+      GSVector4i clip = GSVector4i(GSVector4::load<false>(&pcmd->ClipRect.x));
+      if (flip)
+        clip = FlipToLowerLeft(clip, texture->GetHeight());
+
+      SetScissor(clip);
+      SetTextureSampler(0, reinterpret_cast<GPUTexture*>(pcmd->TextureId), m_linear_sampler);
+
+      if (pcmd->UserCallback) [[unlikely]]
+      {
+        pcmd->UserCallback(cmd_list, pcmd);
+        PushUniformBuffer(&mproj, sizeof(mproj));
+        SetPipeline(m_imgui_pipeline.get());
+      }
+      else
+      {
+        DrawIndexed(pcmd->ElemCount, base_index + pcmd->IdxOffset, base_vertex + pcmd->VtxOffset);
+      }
+    }
+  }
+}
+
 void GPUDevice::UploadVertexBuffer(const void* vertices, u32 vertex_size, u32 vertex_count, u32* base_vertex)
 {
   void* map;
