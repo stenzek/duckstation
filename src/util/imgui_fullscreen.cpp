@@ -2426,6 +2426,7 @@ void ImGuiFullscreen::PopupDialog::CloseImmediately()
   {
     ImGui::CloseCurrentPopup();
     ClearState();
+    QueueResetFocus(FocusResetType::PopupClosed);
   }
   else
   {

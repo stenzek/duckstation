@@ -174,6 +174,7 @@ enum class MainWindowType : u8
   GameList,
   Settings,
   PauseMenu,
+  SaveStateSelector,
   Achievements,
   Leaderboards,
 };
@@ -427,7 +428,8 @@ struct SaveStateListEntry
 {
   std::string title;
   std::string summary;
-  std::string path;
+  std::string game_path;
+  std::string state_path;
   std::unique_ptr<GPUTexture> preview_texture;
   time_t timestamp;
   s32 slot;
@@ -437,18 +439,14 @@ struct SaveStateListEntry
 static void InitializePlaceholderSaveStateListEntry(SaveStateListEntry* li, s32 slot, bool global);
 static bool InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li, const std::string& serial, s32 slot,
                                                    bool global);
-static bool InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global,
-                                                 std::string* media_path);
+static bool InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global);
 static void ClearSaveStateEntryList();
-static u32 PopulateSaveStateListEntries(const std::string& serial,
-                                        std::optional<ExtendedSaveStateInfo> undo_save_state);
+static u32 PopulateSaveStateListEntries(const std::string& serial, std::optional<ExtendedSaveStateInfo> undo_save_state,
+                                        bool is_loading);
 static void OpenSaveStateSelector(const std::string& serial, const std::string& path, bool is_loading);
-static void CloseSaveStateSelector();
-static void DrawSaveStateSelector(bool is_loading);
+static void DrawSaveStateSelector();
 static bool OpenLoadStateSelectorForGameResume(const GameList::Entry* entry);
 static void DrawResumeStateSelector();
-static void DoLoadState(std::string path);
-static void DoSaveState(s32 slot, bool global);
 
 //////////////////////////////////////////////////////////////////////////
 // Game List
@@ -567,9 +565,6 @@ struct ALIGN_TO_CACHE_LINE UIState
 
   // Save State List
   std::vector<SaveStateListEntry> save_state_selector_slots;
-  std::string save_state_selector_game_path;
-  s32 save_state_selector_submenu_index = -1;
-  bool save_state_selector_open = false;
   bool save_state_selector_loading = true;
 
   // Lazily populated cover images.
@@ -762,7 +757,7 @@ bool FullscreenUI::HasActiveWindow()
 
 bool FullscreenUI::AreAnyDialogsOpen()
 {
-  return (s_state.save_state_selector_open || s_state.input_binding_type != InputBindingInfo::Type::Unknown ||
+  return (s_state.input_binding_type != InputBindingInfo::Type::Unknown ||
           ImGuiFullscreen::IsAnyFixedPopupDialogOpen() || ImGuiFullscreen::IsChoiceDialogOpen() ||
           ImGuiFullscreen::IsInputDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen() ||
           ImGuiFullscreen::IsMessageBoxDialogOpen() || ImGuiFullscreen::HasToast() ||
@@ -968,7 +963,7 @@ void FullscreenUI::Shutdown(bool clear_state)
 
     Achievements::ClearUIState();
     ClearInputBindingVariables();
-    CloseSaveStateSelector();
+    ClearSaveStateEntryList();
     s_state.icon_image_map.clear();
     s_state.cover_image_map.clear();
     std::memset(s_state.controller_macro_expanded, 0, sizeof(s_state.controller_macro_expanded));
@@ -1043,6 +1038,9 @@ void FullscreenUI::Render()
     case MainWindowType::PauseMenu:
       DrawPauseMenu();
       break;
+    case MainWindowType::SaveStateSelector:
+      DrawSaveStateSelector();
+      break;
     case MainWindowType::Achievements:
       Achievements::DrawAchievementsWindow();
       break;
@@ -1057,8 +1055,6 @@ void FullscreenUI::Render()
     DrawAboutWindow();
   else if (IsFixedPopupDialogOpen(RESUME_STATE_SELECTOR_DIALOG_NAME))
     DrawResumeStateSelector();
-  else if (s_state.save_state_selector_open)
-    DrawSaveStateSelector(s_state.save_state_selector_loading);
   else if (s_state.input_binding_type != InputBindingInfo::Type::Unknown)
     DrawInputBindingWindow();
 
@@ -1285,15 +1281,11 @@ void FullscreenUI::DoResume()
     return;
   }
 
-  CloseSaveStateSelector();
-
   SaveStateListEntry slentry;
-  if (!InitializeSaveStateListEntryFromPath(&slentry, std::move(path), -1, false,
-                                            &s_state.save_state_selector_game_path))
-  {
+  if (!InitializeSaveStateListEntryFromPath(&slentry, std::move(path), -1, false))
     return;
-  }
 
+  ClearSaveStateEntryList();
   s_state.save_state_selector_slots.push_back(std::move(slentry));
   OpenFixedPopupDialog(RESUME_STATE_SELECTOR_DIALOG_NAME);
 }
@@ -6755,7 +6747,7 @@ void FullscreenUI::InitializePlaceholderSaveStateListEntry(SaveStateListEntry* l
                                                  slot) :
                                      FSUI_STR("Quick Save");
   li->summary = FSUI_STR("No save present in this slot.");
-  li->path = {};
+  li->state_path = {};
   li->timestamp = 0;
   li->slot = slot;
   li->preview_texture = {};
@@ -6767,7 +6759,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li
 {
   const std::string path =
     (global ? System::GetGlobalSaveStateFileName(slot) : System::GetGameSaveStateFileName(serial, slot));
-  if (!InitializeSaveStateListEntryFromPath(li, path.c_str(), slot, global, nullptr))
+  if (!InitializeSaveStateListEntryFromPath(li, path.c_str(), slot, global))
   {
     InitializePlaceholderSaveStateListEntry(li, slot, global);
     return false;
@@ -6776,8 +6768,7 @@ bool FullscreenUI::InitializeSaveStateListEntryFromSerial(SaveStateListEntry* li
   return true;
 }
 
-bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global,
-                                                        std::string* media_path)
+bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, std::string path, s32 slot, bool global)
 {
   std::optional<ExtendedSaveStateInfo> ssi(System::GetExtendedSaveStateInfo(path.c_str()));
   if (!ssi.has_value())
@@ -6795,12 +6786,11 @@ bool FullscreenUI::InitializeSaveStateListEntryFromPath(SaveStateListEntry* li, 
   li->summary = fmt::format(FSUI_FSTR("Saved {:%c}"), fmt::localtime(ssi->timestamp));
   li->timestamp = ssi->timestamp;
   li->slot = slot;
-  li->path = std::move(path);
+  li->state_path = std::move(path);
+  li->game_path = std::move(ssi->media_path);
   li->global = global;
   if (ssi->screenshot.IsValid())
     li->preview_texture = g_gpu_device->FetchAndUploadTextureImage(ssi->screenshot);
-  if (media_path)
-    *media_path = std::move(ssi->media_path);
 
   return true;
 }
@@ -6816,7 +6806,7 @@ void FullscreenUI::ClearSaveStateEntryList()
 }
 
 u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
-                                               std::optional<ExtendedSaveStateInfo> undo_save_state)
+                                               std::optional<ExtendedSaveStateInfo> undo_save_state, bool is_loading)
 {
   ClearSaveStateEntryList();
 
@@ -6835,7 +6825,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
     for (s32 i = 1; i <= System::PER_GAME_SAVE_STATE_SLOTS; i++)
     {
       SaveStateListEntry li;
-      if (InitializeSaveStateListEntryFromSerial(&li, serial, i, false) || !s_state.save_state_selector_loading)
+      if (InitializeSaveStateListEntryFromSerial(&li, serial, i, false) || !is_loading)
         s_state.save_state_selector_slots.push_back(std::move(li));
     }
   }
@@ -6843,7 +6833,7 @@ u32 FullscreenUI::PopulateSaveStateListEntries(const std::string& serial,
   for (s32 i = 1; i <= System::GLOBAL_SAVE_STATE_SLOTS; i++)
   {
     SaveStateListEntry li;
-    if (InitializeSaveStateListEntryFromSerial(&li, serial, i, true) || !s_state.save_state_selector_loading)
+    if (InitializeSaveStateListEntryFromSerial(&li, serial, i, true) || !is_loading)
       s_state.save_state_selector_slots.push_back(std::move(li));
   }
 
@@ -6856,15 +6846,15 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
   {
     // need to get the undo state, if any
     Host::RunOnCPUThread([serial = serial, is_loading]() {
-      std::optional<ExtendedSaveStateInfo> undo_state = System::GetUndoSaveStateInfo();
+      std::optional<ExtendedSaveStateInfo> undo_state;
+      if (is_loading)
+        undo_state = System::GetUndoSaveStateInfo();
       GPUThread::RunOnThread([serial = std::move(serial), undo_state = std::move(undo_state), is_loading]() mutable {
-        s_state.save_state_selector_loading = is_loading;
-        s_state.save_state_selector_game_path = {};
-        if (PopulateSaveStateListEntries(serial, std::move(undo_state)) > 0)
+        if (PopulateSaveStateListEntries(serial, std::move(undo_state), is_loading) > 0)
         {
-          s_state.current_main_window = MainWindowType::None;
-          s_state.save_state_selector_open = true;
-          QueueResetFocus(FocusResetType::PopupOpened);
+          s_state.save_state_selector_loading = is_loading;
+          s_state.current_main_window = MainWindowType::SaveStateSelector;
+          QueueResetFocus(FocusResetType::ViewChanged);
         }
         else
         {
@@ -6875,99 +6865,111 @@ void FullscreenUI::OpenSaveStateSelector(const std::string& serial, const std::s
   }
   else
   {
-    s_state.save_state_selector_loading = is_loading;
-    if (PopulateSaveStateListEntries(serial, std::nullopt) > 0)
+    if (PopulateSaveStateListEntries(serial, std::nullopt, is_loading) > 0)
     {
-      s_state.save_state_selector_game_path = path;
-      s_state.save_state_selector_open = true;
+      s_state.save_state_selector_loading = is_loading;
+      s_state.current_main_window = MainWindowType::SaveStateSelector;
+      QueueResetFocus(FocusResetType::ViewChanged);
     }
     else
     {
-      s_state.save_state_selector_game_path = {};
       ShowToast({}, FSUI_STR("No save states found."), Host::OSD_INFO_DURATION);
     }
   }
 }
 
-void FullscreenUI::CloseSaveStateSelector()
+void FullscreenUI::DrawSaveStateSelector()
 {
-  if (s_state.save_state_selector_open)
-    QueueResetFocus(FocusResetType::PopupClosed);
+  static constexpr auto do_load_state = [](std::string game_path, std::string state_path) {
+    ClearSaveStateEntryList();
 
-  ClearSaveStateEntryList();
-  s_state.save_state_selector_open = false;
-  s_state.save_state_selector_loading = false;
-  s_state.save_state_selector_game_path = {};
-
-  if (IsFixedPopupDialogOpen(RESUME_STATE_SELECTOR_DIALOG_NAME))
-    CloseFixedPopupDialogImmediately();
-}
-
-void FullscreenUI::DrawSaveStateSelector(bool is_loading)
-{
-  ImGuiIO& io = ImGui::GetIO();
-
-  ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-  ImGui::SetNextWindowSize(io.DisplaySize - LayoutScale(0.0f, LAYOUT_FOOTER_HEIGHT));
-
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_ChildRounding, 0.0f);
-  ImGui::PushStyleVar(ImGuiStyleVar_ChildBorderSize, 0.0f);
-
-  const char* window_title = is_loading ? FSUI_CSTR("Load State") : FSUI_CSTR("Save State");
-  ImGui::OpenPopup(window_title);
-
-  bool is_open = true;
-  const bool valid =
-    ImGui::BeginPopupModal(window_title, &is_open,
-                           ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                             ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
-  if (!valid || !is_open)
-  {
-    if (valid)
-      ImGui::EndPopup();
-
-    ImGui::PopStyleVar(5);
-    if (!is_open)
+    if (GPUThread::HasGPUBackend())
     {
-      CloseSaveStateSelector();
-      ReturnToPreviousWindow();
-    }
-    return;
-  }
+      ReturnToMainWindow();
 
+      Host::RunOnCPUThread([game_path = std::move(game_path), state_path = std::move(state_path)]() mutable {
+        if (System::IsValid())
+        {
+          if (state_path.empty())
+          {
+            // Loading undo state.
+            if (!System::UndoLoadState())
+            {
+              GPUThread::RunOnThread(
+                []() { ShowToast(std::string(), TRANSLATE_STR("System", "Failed to undo load state.")); });
+            }
+          }
+          else
+          {
+            Error error;
+            if (!System::LoadState(state_path.c_str(), &error, true, false))
+            {
+              GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+                ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error_desc));
+              });
+            }
+          }
+        }
+      });
+    }
+    else
+    {
+      DoStartPath(std::move(game_path), std::move(state_path));
+    }
+  };
+
+  static constexpr auto do_save_state = [](s32 slot, bool global) {
+    ClearSaveStateEntryList();
+    ReturnToMainWindow();
+
+    Host::RunOnCPUThread([slot, global]() {
+      if (!System::IsValid())
+        return;
+
+      std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
+                                System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
+      Error error;
+      if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
+      {
+        GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
+          ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error_desc));
+        });
+      }
+    });
+  };
+
+  ImGuiIO& io = ImGui::GetIO();
   const ImVec2 heading_size =
     ImVec2(io.DisplaySize.x, LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) +
                                (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f) + LayoutScale(2.0f));
 
-  ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIStyle.PrimaryColor, 0.9f));
-
   bool closed = false;
-  bool was_close_not_back = false;
-  bool ignore_close_request = false;
-  if (ImGui::BeginChild("state_titlebar", heading_size, false, ImGuiWindowFlags_NavFlattened))
+
+  // last state deleted?
+  if (s_state.save_state_selector_slots.empty())
+    closed = true;
+
+  if (BeginFullscreenWindow(ImVec2(0.0f, 0.0f), heading_size, "##save_state_selector_title",
+                            ModAlpha(UIStyle.PrimaryColor, GetBackgroundAlpha())))
   {
     BeginNavBar();
     if (NavButton(ICON_PF_NAVIGATION_BACK, true, true))
       closed = true;
 
-    NavTitle(is_loading ? FSUI_CSTR("Load State") : FSUI_CSTR("Save State"));
+    NavTitle(s_state.save_state_selector_loading ? FSUI_CSTR("Load State") : FSUI_CSTR("Save State"));
     EndNavBar();
-    ImGui::EndChild();
   }
 
-  ImGui::PopStyleColor();
-  ImGui::PushStyleColor(ImGuiCol_ChildBg, ModAlpha(UIStyle.BackgroundColor, 0.9f));
-  ImGui::SetCursorPos(ImVec2(0.0f, heading_size.y));
+  EndFullscreenWindow();
 
   if (IsFocusResetFromWindowChange())
     ImGui::SetNextWindowScroll(ImVec2(0.0f, 0.0f));
 
-  if (ImGui::BeginChild("state_list",
-                        ImVec2(io.DisplaySize.x, io.DisplaySize.y - LayoutScale(LAYOUT_FOOTER_HEIGHT) - heading_size.y),
-                        false, ImGuiWindowFlags_NavFlattened))
+  if (BeginFullscreenWindow(
+        ImVec2(0.0f, heading_size.y),
+        ImVec2(io.DisplaySize.x, io.DisplaySize.y - heading_size.y - LayoutScale(LAYOUT_FOOTER_HEIGHT)),
+        "##save_state_selector_list", ModAlpha(UIStyle.BackgroundColor, GetBackgroundAlpha()), 0.0f,
+        ImVec2(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING, 0.0f)))
   {
     ResetFocusHere();
     BeginMenuButtons();
@@ -6995,107 +6997,6 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
     for (u32 i = 0; i < s_state.save_state_selector_slots.size();)
     {
       SaveStateListEntry& entry = s_state.save_state_selector_slots[i];
-      if (static_cast<s32>(i) == s_state.save_state_selector_submenu_index)
-      {
-        // can't use a choice dialog here, because we're already in a modal...
-        ImGuiFullscreen::PushResetLayout();
-        ImGui::PushFont(UIStyle.LargeFont);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, LayoutScale(10.0f));
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
-                            LayoutScale(LAYOUT_MENU_BUTTON_X_PADDING, LAYOUT_MENU_BUTTON_Y_PADDING));
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 0.0f);
-        ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.PrimaryTextColor);
-        ImGui::PushStyleColor(ImGuiCol_TitleBg, UIStyle.PrimaryDarkColor);
-        ImGui::PushStyleColor(ImGuiCol_TitleBgActive, UIStyle.PrimaryColor);
-
-        const float width = LayoutScale(600.0f);
-        const float title_height = UIStyle.LargeFont->FontSize + ImGui::GetStyle().FramePadding.y * 2.0f +
-                                   ImGui::GetStyle().WindowPadding.y * 2.0f;
-        const float height =
-          title_height +
-          ((LayoutScale(LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY) + (LayoutScale(LAYOUT_MENU_BUTTON_Y_PADDING) * 2.0f)) *
-           3.0f);
-        ImGui::SetNextWindowSize(ImVec2(width, height));
-        ImGui::SetNextWindowPos(ImGui::GetIO().DisplaySize * 0.5f, ImGuiCond_Always, ImVec2(0.5f, 0.5f));
-        ImGui::OpenPopup(entry.title.c_str());
-
-        bool removed = false;
-        if (ImGui::BeginPopupModal(entry.title.c_str(), &is_open,
-                                   ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
-        {
-          ImGui::PushStyleColor(ImGuiCol_Text, UIStyle.BackgroundTextColor);
-
-          BeginMenuButtons();
-
-          if (MenuButtonWithoutSummary(is_loading ? FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State") :
-                                                    FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State")))
-          {
-            if (is_loading)
-              DoLoadState(std::move(entry.path));
-            else
-              DoSaveState(entry.slot, entry.global);
-
-            closed = true;
-            was_close_not_back = true;
-          }
-
-          if (!entry.path.empty() && MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save")))
-          {
-            if (!FileSystem::FileExists(entry.path.c_str()))
-            {
-              ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), ImGuiFullscreen::RemoveHash(entry.title)));
-              is_open = true;
-            }
-            else if (FileSystem::DeleteFile(entry.path.c_str()))
-            {
-              ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
-              if (is_loading)
-                s_state.save_state_selector_slots.erase(s_state.save_state_selector_slots.begin() + i);
-              else
-                InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
-
-              removed = true;
-
-              if (s_state.save_state_selector_slots.empty())
-              {
-                closed = true;
-                was_close_not_back = true;
-              }
-              else
-              {
-                is_open = false;
-              }
-            }
-            else
-            {
-              ShowToast({}, fmt::format(FSUI_FSTR("Failed to delete {}."), ImGuiFullscreen::RemoveHash(entry.title)));
-              is_open = false;
-            }
-          }
-
-          if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu")) || WantsToCloseMenu())
-          {
-            is_open = false;
-            ignore_close_request = true;
-          }
-
-          EndMenuButtons();
-
-          ImGui::PopStyleColor();
-          ImGui::EndPopup();
-        }
-
-        if (!is_open)
-          s_state.save_state_selector_submenu_index = -1;
-
-        ImGui::PopStyleColor(3);
-        ImGui::PopStyleVar(3);
-        ImGui::PopFont();
-        ImGuiFullscreen::PopResetLayout();
-
-        if (removed)
-          continue;
-      }
 
       ImGuiWindow* window = ImGui::GetCurrentWindow();
       if (window->SkipItems)
@@ -7153,20 +7054,74 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
         if (pressed)
         {
-          if (is_loading)
-            DoLoadState(entry.path);
+          if (s_state.save_state_selector_loading)
+            do_load_state(std::move(entry.game_path), std::move(entry.state_path));
           else
-            DoSaveState(entry.slot, entry.global);
+            do_save_state(entry.slot, entry.global);
 
           closed = true;
-          was_close_not_back = true;
         }
         else if (hovered &&
                  (ImGui::IsItemClicked(ImGuiMouseButton_Right) ||
                   ImGui::IsKeyPressed(ImGuiKey_NavGamepadInput, false) || ImGui::IsKeyPressed(ImGuiKey_F1, false)))
         {
           CancelPendingMenuClose();
-          s_state.save_state_selector_submenu_index = static_cast<s32>(i);
+
+          std::string title;
+          if (s_state.save_state_selector_loading)
+            title = FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Load State");
+          else
+            title = FSUI_ICONSTR(ICON_FA_FOLDER_OPEN, "Save State");
+
+          ChoiceDialogOptions options;
+          options.reserve(3);
+          options.emplace_back(title, false);
+          if (!entry.state_path.empty())
+            options.emplace_back(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete Save"), false);
+          options.emplace_back(FSUI_ICONSTR(ICON_FA_WINDOW_CLOSE, "Close Menu"), false);
+
+          OpenChoiceDialog(
+            std::move(title), false, std::move(options),
+            [i](s32 index, const std::string& title, bool checked) mutable {
+              if (index < 0 || i >= s_state.save_state_selector_slots.size())
+                return;
+
+              SaveStateListEntry& entry = s_state.save_state_selector_slots[i];
+              if (index == 0)
+              {
+                // load state
+                if (s_state.save_state_selector_loading)
+                  do_load_state(std::move(entry.game_path), std::move(entry.state_path));
+                else
+                  do_save_state(entry.slot, entry.global);
+              }
+              else if (!entry.state_path.empty() && index == 1)
+              {
+                // delete state
+                if (!FileSystem::FileExists(entry.state_path.c_str()))
+                {
+                  ShowToast({}, fmt::format(FSUI_FSTR("{} does not exist."), ImGuiFullscreen::RemoveHash(entry.title)));
+                }
+                else if (FileSystem::DeleteFile(entry.state_path.c_str()))
+                {
+                  ShowToast({}, fmt::format(FSUI_FSTR("{} deleted."), ImGuiFullscreen::RemoveHash(entry.title)));
+
+                  // need to preserve the texture, since it's going to be drawn this frame
+                  // TODO: do this with a transition for safety
+                  g_gpu_device->RecycleTexture(std::move(entry.preview_texture));
+
+                  if (s_state.save_state_selector_loading)
+                    s_state.save_state_selector_slots.erase(s_state.save_state_selector_slots.begin() + i);
+                  else
+                    InitializePlaceholderSaveStateListEntry(&entry, entry.slot, entry.global);
+                }
+                else
+                {
+                  ShowToast({},
+                            fmt::format(FSUI_FSTR("Failed to delete {}."), ImGuiFullscreen::RemoveHash(entry.title)));
+                }
+              }
+            });
         }
       }
 
@@ -7187,20 +7142,17 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
 
     EndMenuButtons();
     SetWindowNavWrapping(true, true);
-    ImGui::EndChild();
   }
 
-  ImGui::PopStyleColor();
-
-  ImGui::EndPopup();
-  ImGui::PopStyleVar(5);
+  EndFullscreenWindow();
 
   if (IsGamepadInputSource())
   {
     SetFullscreenFooterText(
       std::array{std::make_pair(ICON_PF_XBOX_DPAD, FSUI_VSTR("Select State")),
                  std::make_pair(ICON_PF_BUTTON_Y, FSUI_VSTR("Delete State")),
-                 std::make_pair(ICON_PF_BUTTON_A, is_loading ? FSUI_VSTR("Load State") : FSUI_VSTR("Save State")),
+                 std::make_pair(ICON_PF_BUTTON_A, s_state.save_state_selector_loading ? FSUI_VSTR("Load State") :
+                                                                                        FSUI_VSTR("Save State")),
                  std::make_pair(ICON_PF_BUTTON_B, FSUI_VSTR("Cancel"))},
       GetBackgroundAlpha());
   }
@@ -7210,18 +7162,16 @@ void FullscreenUI::DrawSaveStateSelector(bool is_loading)
       std::array{std::make_pair(ICON_PF_ARROW_UP ICON_PF_ARROW_DOWN ICON_PF_ARROW_LEFT ICON_PF_ARROW_RIGHT,
                                 FSUI_VSTR("Select State")),
                  std::make_pair(ICON_PF_F1, FSUI_VSTR("Delete State")),
-                 std::make_pair(ICON_PF_ENTER, is_loading ? FSUI_VSTR("Load State") : FSUI_VSTR("Save State")),
+                 std::make_pair(ICON_PF_ENTER, s_state.save_state_selector_loading ? FSUI_VSTR("Load State") :
+                                                                                     FSUI_VSTR("Save State")),
                  std::make_pair(ICON_PF_ESC, FSUI_VSTR("Cancel"))},
       GetBackgroundAlpha());
   }
 
-  if ((!ignore_close_request && WantsToCloseMenu()) || closed)
+  if ((!AreAnyDialogsOpen() && WantsToCloseMenu()) || closed)
   {
-    CloseSaveStateSelector();
-    if (was_close_not_back)
-      ReturnToMainWindow();
-    else if (s_state.current_main_window != MainWindowType::GameList)
-      ReturnToPreviousWindow();
+    ClearSaveStateEntryList();
+    ReturnToPreviousWindow();
   }
 }
 
@@ -7231,9 +7181,7 @@ bool FullscreenUI::OpenLoadStateSelectorForGameResume(const GameList::Entry* ent
   if (!InitializeSaveStateListEntryFromSerial(&slentry, entry->serial, -1, false))
     return false;
 
-  CloseSaveStateSelector();
   s_state.save_state_selector_slots.push_back(std::move(slentry));
-  s_state.save_state_selector_game_path = entry->path;
   OpenFixedPopupDialog(RESUME_STATE_SELECTOR_DIALOG_NAME);
   return true;
 }
@@ -7242,7 +7190,7 @@ void FullscreenUI::DrawResumeStateSelector()
 {
   if (!BeginFixedPopupDialog(LayoutScale(30.0f), LayoutScale(40.0f), LayoutScale(820.0f, 625.0f)))
   {
-    CloseSaveStateSelector();
+    ClearSaveStateEntryList();
     return;
   }
 
@@ -7272,25 +7220,28 @@ void FullscreenUI::DrawResumeStateSelector()
 
   if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PLAY, "Load State")))
   {
-    std::string game_path = std::move(s_state.save_state_selector_game_path);
-    std::string state_path = std::move(entry.path);
-    CloseSaveStateSelector();
+    std::string game_path = std::move(entry.game_path);
+    std::string state_path = std::move(entry.state_path);
+    ClearSaveStateEntryList();
+    CloseFixedPopupDialogImmediately();
     DoStartPath(std::move(game_path), std::move(state_path));
   }
 
   if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_LIGHTBULB, "Clean Boot")))
   {
-    std::string game_path = std::move(s_state.save_state_selector_game_path);
-    CloseSaveStateSelector();
+    std::string game_path = std::move(entry.game_path);
+    ClearSaveStateEntryList();
+    CloseFixedPopupDialogImmediately();
     DoStartPath(std::move(game_path));
   }
 
   if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_FOLDER_MINUS, "Delete State")))
   {
-    if (FileSystem::DeleteFile(entry.path.c_str()))
+    if (FileSystem::DeleteFile(entry.state_path.c_str()))
     {
-      std::string game_path = std::move(s_state.save_state_selector_game_path);
-      CloseSaveStateSelector();
+      std::string game_path = std::move(entry.game_path);
+      ClearSaveStateEntryList();
+      CloseFixedPopupDialogImmediately();
       DoStartPath(std::move(game_path));
     }
     else
@@ -7307,64 +7258,6 @@ void FullscreenUI::DrawResumeStateSelector()
   SetStandardSelectionFooterText(false);
 
   EndFixedPopupDialog();
-}
-
-void FullscreenUI::DoLoadState(std::string path)
-{
-  std::string boot_path = std::move(s_state.save_state_selector_game_path);
-  CloseSaveStateSelector();
-
-  if (GPUThread::HasGPUBackend())
-  {
-    Host::RunOnCPUThread([boot_path = std::move(boot_path), path = std::move(path)]() mutable {
-      if (System::IsValid())
-      {
-        if (path.empty())
-        {
-          // Loading undo state.
-          if (!System::UndoLoadState())
-          {
-            GPUThread::RunOnThread(
-              []() { ShowToast(std::string(), TRANSLATE_STR("System", "Failed to undo load state.")); });
-          }
-        }
-        else
-        {
-          Error error;
-          if (!System::LoadState(path.c_str(), &error, true, false))
-          {
-            GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
-              ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to load state: {}"), error_desc));
-            });
-          }
-        }
-      }
-    });
-  }
-  else
-  {
-    DoStartPath(std::move(boot_path), std::move(path));
-  }
-}
-
-void FullscreenUI::DoSaveState(s32 slot, bool global)
-{
-  CloseSaveStateSelector();
-
-  Host::RunOnCPUThread([slot, global]() {
-    if (!System::IsValid())
-      return;
-
-    std::string path(global ? System::GetGlobalSaveStateFileName(slot) :
-                              System::GetGameSaveStateFileName(System::GetGameSerial(), slot));
-    Error error;
-    if (!System::SaveState(std::move(path), &error, g_settings.create_save_state_backups, false))
-    {
-      GPUThread::RunOnThread([error_desc = error.TakeDescription()]() {
-        ShowToast(std::string(), fmt::format(TRANSLATE_FS("System", "Failed to save state: {}"), error_desc));
-      });
-    }
-  });
 }
 
 void FullscreenUI::PopulateGameListEntryList()
