@@ -296,6 +296,7 @@ static void DoSetCoverImage(std::string source_path, std::string existing_path, 
 // Settings
 //////////////////////////////////////////////////////////////////////////
 
+static void InitializeHotkeyList();
 static void SwitchToSettings();
 static bool SwitchToGameSettings();
 static void SwitchToGameSettings(const GameList::Entry* entry);
@@ -744,12 +745,10 @@ bool FullscreenUI::Initialize()
   }
 
   s_state.initialized = true;
-  s_state.hotkey_list_cache = InputManager::GetHotkeyList();
-
-  const bool open_main_window = (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
-                                 !GPUThread::IsGPUBackendRequested());
 
   // in case we open the pause menu while the game is running
+  const bool open_main_window = (s_state.current_main_window == MainWindowType::None && !GPUThread::HasGPUBackend() &&
+                                 !GPUThread::IsGPUBackendRequested());
   if (GPUThread::HasGPUBackend())
   {
     Host::RunOnCPUThread([]() {
@@ -1380,6 +1379,8 @@ bool FullscreenUI::LoadResources()
 
   if (!CompileTransitionPipelines())
     return false;
+
+  InitializeHotkeyList();
 
   return true;
 }
@@ -3613,6 +3614,39 @@ void FullscreenUI::StartClearBindingsForPort(u32 port)
       InputManager::ClearPortBindings(*bsi, port);
       ShowToast({}, FSUI_CSTR("Controller mapping cleared."));
     });
+}
+
+void FullscreenUI::InitializeHotkeyList()
+{
+  // sort hotkeys by category so we don't duplicate the groups
+  const auto hotkeys = InputManager::GetHotkeyList();
+  s_state.hotkey_list_cache.reserve(hotkeys.size());
+
+  // this mess is needed to preserve the category order
+  for (size_t i = 0; i < hotkeys.size(); i++)
+  {
+    const HotkeyInfo* hk = hotkeys[i];
+    size_t j;
+    for (j = 0; j < s_state.hotkey_list_cache.size(); j++)
+    {
+      if (std::strcmp(hk->category, s_state.hotkey_list_cache[j]->category) == 0)
+        break;
+    }
+    if (j != s_state.hotkey_list_cache.size())
+    {
+      // already done
+      continue;
+    }
+
+    // add all hotkeys with this category
+    for (const HotkeyInfo* other_hk : hotkeys)
+    {
+      if (std::strcmp(hk->category, other_hk->category) != 0)
+        continue;
+
+      s_state.hotkey_list_cache.push_back(other_hk);
+    }
+  }
 }
 
 void FullscreenUI::SwitchToSettings()
