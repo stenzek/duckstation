@@ -1578,7 +1578,7 @@ u32 CDROM::GetSectorsPerTrack(CDImage::LBA lba)
 TickCount CDROM::GetTicksForSeek(CDImage::LBA new_lba, bool ignore_speed_change)
 {
   if (g_settings.cdrom_seek_speedup == 0)
-    return System::ScaleTicksToOverclock(g_settings.cdrom_max_speedup_cycles);
+    return System::ScaleTicksToOverclock(g_settings.cdrom_max_seek_speedup_cycles);
 
   u32 ticks = 0;
 
@@ -1683,7 +1683,10 @@ TickCount CDROM::GetTicksForPause()
     return 27000;
 
   if (g_settings.cdrom_read_speedup == 0 && CanUseReadSpeedup())
-    return System::ScaleTicksToOverclock(g_settings.cdrom_max_speedup_cycles);
+  {
+    return System::ScaleTicksToOverclock(
+      std::max(g_settings.cdrom_max_read_speedup_cycles, g_settings.cdrom_max_seek_speedup_cycles));
+  }
 
   const u32 sectors_per_track = GetSectorsPerTrack(s_state.current_lba);
   const TickCount ticks_per_read = GetTicksForRead();
@@ -3920,7 +3923,7 @@ void CDROM::CheckForSectorBufferReadComplete()
       CanUseReadSpeedup() && g_settings.cdrom_read_speedup == 0)
   {
     const TickCount remaining_time = s_state.drive_event.GetTicksUntilNextExecution();
-    const TickCount instant_ticks = System::ScaleTicksToOverclock(g_settings.cdrom_max_speedup_cycles);
+    const TickCount instant_ticks = System::ScaleTicksToOverclock(g_settings.cdrom_max_read_speedup_cycles);
     if (remaining_time > instant_ticks)
       s_state.drive_event.Schedule(instant_ticks);
   }

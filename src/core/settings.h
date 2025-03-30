@@ -315,7 +315,8 @@ struct Settings : public GPUSettings
 
   u8 cdrom_read_speedup = 1;
   u8 cdrom_seek_speedup = 1;
-  u32 cdrom_max_speedup_cycles = DEFAULT_CDROM_MAX_SPEEDUP_CYCLES;
+  u32 cdrom_max_seek_speedup_cycles = DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES;
+  u32 cdrom_max_read_speedup_cycles = DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES;
 
   u8 cdrom_readahead_sectors = DEFAULT_CDROM_READAHEAD_SECTORS;
   CDROMMechaconVersion cdrom_mechacon_version = DEFAULT_CDROM_MECHACON_VERSION;
@@ -584,7 +585,8 @@ struct Settings : public GPUSettings
 #endif
 
   static constexpr u8 DEFAULT_CDROM_READAHEAD_SECTORS = 8;
-  static constexpr u32 DEFAULT_CDROM_MAX_SPEEDUP_CYCLES = 30000;
+  static constexpr u32 DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES = 30000;
+  static constexpr u32 DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES = 30000;
   static constexpr CDROMMechaconVersion DEFAULT_CDROM_MECHACON_VERSION = CDROMMechaconVersion::VC1A;
 
   static constexpr ControllerType DEFAULT_CONTROLLER_1_TYPE = ControllerType::AnalogController;

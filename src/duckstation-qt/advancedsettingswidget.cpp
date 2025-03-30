@@ -281,8 +281,12 @@ void AdvancedSettingsWidget::addTweakOptions()
                        Settings::DEFAULT_CDROM_MECHACON_VERSION);
   addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Readahead Sectors"), "CDROM", "ReadaheadSectors",
                          0, 32, Settings::DEFAULT_CDROM_READAHEAD_SECTORS, tr(" sectors"));
-  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Speedup Read/Seek Cycles"), "CDROM",
-                         "MaxSpeedupCycles", 1, 1000000, Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES, tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Seek Speedup Cycles"), "CDROM",
+                         "MaxSeekSpeedupCycles", 1, 1000000, Settings::DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES,
+                         tr(" cycles"));
+  addIntRangeTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Max Read Speedup Cycles"), "CDROM",
+                         "MaxReadSpeedupCycles", 1, 1000000, Settings::DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES,
+                         tr(" cycles"));
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM Region Check"), "CDROM", "RegionCheck", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("CD-ROM SubQ Skew"), "CDROM", "SubQSkew", false);
   addBooleanTweakOption(m_dialog, m_ui.tweakOptionTable, tr("Allow Booting Without SBI File"), "CDROM",
@@ -328,11 +332,13 @@ void AdvancedSettingsWidget::onResetToDefaultClicked()
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
                            Settings::DEFAULT_CDROM_READAHEAD_SECTORS); // CD-ROM Readahead Sectors
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
-                           Settings::DEFAULT_CDROM_MAX_SPEEDUP_CYCLES); // CD-ROM Max Speedup Read/Seek Cycles
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // CDROM Region Check
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // CDROM SubQ Skew
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // Allow booting without SBI file
-    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);           // Enable GDB Server
+                           Settings::DEFAULT_CDROM_MAX_SEEK_SPEEDUP_CYCLES); // CD-ROM Max Speedup Seek Cycles
+    setIntRangeTweakOption(m_ui.tweakOptionTable, i++,
+                           Settings::DEFAULT_CDROM_MAX_READ_SPEEDUP_CYCLES); // CD-ROM Max Speedup Read Cycles
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // CDROM Region Check
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // CDROM SubQ Skew
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // Allow booting without SBI file
+    setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                // Enable GDB Server
     setIntRangeTweakOption(m_ui.tweakOptionTable, i++, Settings::DEFAULT_GDB_SERVER_PORT); // GDB Server Port
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Export Shared Memory
     setBooleanTweakOption(m_ui.tweakOptionTable, i++, false);                              // Enable PCDRV
