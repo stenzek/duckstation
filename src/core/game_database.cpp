@@ -40,7 +40,7 @@ namespace GameDatabase {
 enum : u32
 {
   GAME_DATABASE_CACHE_SIGNATURE = 0x45434C48,
-  GAME_DATABASE_CACHE_VERSION = 24,
+  GAME_DATABASE_CACHE_VERSION = 25,
 };
 
 static const Entry* GetEntryForId(std::string_view code);
@@ -391,6 +391,18 @@ void GameDatabase::Entry::ApplySettings(Settings& settings, bool display_osd_mes
     settings.dma_halt_ticks = dma_halt_ticks.value();
     if (display_osd_messages)
       INFO_LOG("GameDB: DMA halt ticks set to {}.", settings.dma_halt_ticks);
+  }
+  if (cdrom_max_seek_speedup_cycles.has_value() && g_settings.cdrom_seek_speedup == 0)
+  {
+    settings.cdrom_max_seek_speedup_cycles = cdrom_max_seek_speedup_cycles.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: CDROM maximum seek speedup cycles set to {}.", settings.cdrom_max_seek_speedup_cycles);
+  }
+  if (cdrom_max_read_speedup_cycles.has_value() && g_settings.cdrom_read_speedup == 0)
+  {
+    settings.cdrom_max_read_speedup_cycles = cdrom_max_read_speedup_cycles.value();
+    if (display_osd_messages)
+      INFO_LOG("GameDB: CDROM maximum read speedup cycles set to {}.", settings.cdrom_max_read_speedup_cycles);
   }
   if (gpu_fifo_size.has_value())
   {
@@ -990,7 +1002,8 @@ bool GameDatabase::LoadFromCache()
         !reader.ReadOptionalT(&entry.display_line_start_offset) ||
         !reader.ReadOptionalT(&entry.display_line_end_offset) || !reader.ReadOptionalT(&entry.display_crop_mode) ||
         !reader.ReadOptionalT(&entry.display_deinterlacing_mode) || !reader.ReadOptionalT(&entry.dma_max_slice_ticks) ||
-        !reader.ReadOptionalT(&entry.dma_halt_ticks) || !reader.ReadOptionalT(&entry.gpu_fifo_size) ||
+        !reader.ReadOptionalT(&entry.dma_halt_ticks) || !reader.ReadOptionalT(&entry.cdrom_max_seek_speedup_cycles) ||
+        !reader.ReadOptionalT(&entry.cdrom_max_read_speedup_cycles) || !reader.ReadOptionalT(&entry.gpu_fifo_size) ||
         !reader.ReadOptionalT(&entry.gpu_max_run_ahead) || !reader.ReadOptionalT(&entry.gpu_pgxp_tolerance) ||
         !reader.ReadOptionalT(&entry.gpu_pgxp_depth_threshold) ||
         !reader.ReadOptionalT(&entry.gpu_pgxp_preserve_proj_fp) || !reader.ReadOptionalT(&entry.gpu_line_detect_mode) ||
@@ -1108,6 +1121,8 @@ bool GameDatabase::SaveToCache()
     writer.WriteOptionalT(entry.display_deinterlacing_mode);
     writer.WriteOptionalT(entry.dma_max_slice_ticks);
     writer.WriteOptionalT(entry.dma_halt_ticks);
+    writer.WriteOptionalT(entry.cdrom_max_seek_speedup_cycles);
+    writer.WriteOptionalT(entry.cdrom_max_read_speedup_cycles);
     writer.WriteOptionalT(entry.gpu_fifo_size);
     writer.WriteOptionalT(entry.gpu_max_run_ahead);
     writer.WriteOptionalT(entry.gpu_pgxp_tolerance);
@@ -1370,6 +1385,8 @@ bool GameDatabase::ParseYamlEntry(Entry* entry, const ryml::ConstNodeRef& value)
       settings, "displayDeinterlacingMode", &Settings::ParseDisplayDeinterlacingMode);
     entry->dma_max_slice_ticks = GetOptionalTFromObject<u32>(settings, "dmaMaxSliceTicks");
     entry->dma_halt_ticks = GetOptionalTFromObject<u32>(settings, "dmaHaltTicks");
+    entry->cdrom_max_seek_speedup_cycles = GetOptionalTFromObject<u32>(settings, "cdromMaxSeekSpeedupCycles");
+    entry->cdrom_max_read_speedup_cycles = GetOptionalTFromObject<u32>(settings, "cdromMaxReadSpeedupCycles");
     entry->gpu_fifo_size = GetOptionalTFromObject<u32>(settings, "gpuFIFOSize");
     entry->gpu_max_run_ahead = GetOptionalTFromObject<u32>(settings, "gpuMaxRunAhead");
     entry->gpu_pgxp_tolerance = GetOptionalTFromObject<float>(settings, "gpuPGXPTolerance");

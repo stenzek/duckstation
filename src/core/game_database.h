@@ -123,6 +123,8 @@ struct Entry
   std::optional<GPULineDetectMode> gpu_line_detect_mode;
   std::optional<u32> dma_max_slice_ticks;
   std::optional<u32> dma_halt_ticks;
+  std::optional<u32> cdrom_max_seek_speedup_cycles;
+  std::optional<u32> cdrom_max_read_speedup_cycles;
   std::optional<u32> gpu_fifo_size;
   std::optional<u32> gpu_max_run_ahead;
   std::optional<float> gpu_pgxp_tolerance;
