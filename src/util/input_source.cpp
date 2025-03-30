@@ -141,7 +141,7 @@ std::string InputSource::ConvertGenericControllerKeyToString(InputBindingKey key
 {
   if (key.source_subtype == InputSubclass::ControllerAxis)
   {
-    const char* modifier = "";
+    const char* modifier;
     switch (key.modifier)
     {
       case InputModifier::None:
@@ -152,6 +152,9 @@ std::string InputSource::ConvertGenericControllerKeyToString(InputBindingKey key
         break;
       case InputModifier::FullAxis:
         modifier = "Full";
+        break;
+      default:
+        modifier = "";
         break;
     }
     return fmt::format("{}-{}/{}Axis{}", InputManager::InputSourceToString(key.source_type),

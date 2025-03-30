@@ -51,8 +51,7 @@ SettingsWindow::SettingsWindow() : QWidget()
 SettingsWindow::SettingsWindow(const std::string& path, std::string title, std::string serial, GameHash hash,
                                DiscRegion region, const GameDatabase::Entry* entry,
                                std::unique_ptr<INISettingsInterface> sif)
-  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry), m_title(std::move(title)), m_serial(std::move(serial)),
-    m_hash(hash)
+  : QWidget(), m_sif(std::move(sif)), m_database_entry(entry), m_serial(std::move(serial)), m_hash(hash)
 {
   m_ui.setupUi(this);
   setGameTitle(std::move(title));

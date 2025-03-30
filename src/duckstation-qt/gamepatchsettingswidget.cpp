@@ -78,9 +78,9 @@ void GamePatchSettingsWidget::disableAllPatches()
 
 void GamePatchSettingsWidget::reloadList()
 {
-  const std::vector<Cheats::CodeInfo> patches =
+  std::vector<Cheats::CodeInfo> patches =
     Cheats::GetCodeInfoList(m_dialog->getGameSerial(), std::nullopt, false, true, true);
-  const std::vector<std::string> enabled_list =
+  std::vector<std::string> enabled_list =
     m_dialog->getSettingsInterface()->GetStringList(Cheats::PATCHES_CONFIG_SECTION, Cheats::PATCH_ENABLE_CONFIG_KEY);
 
   delete m_ui.scrollArea->takeWidget();
@@ -93,7 +93,7 @@ void GamePatchSettingsWidget::reloadList()
   {
     bool first = true;
 
-    for (const Cheats::CodeInfo& pi : patches)
+    for (Cheats::CodeInfo& pi : patches)
     {
       if (!first)
       {

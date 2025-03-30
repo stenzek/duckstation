@@ -3536,10 +3536,9 @@ void VulkanDevice::UnbindPipeline(VulkanPipeline* pl)
 
 void VulkanDevice::InvalidateCachedState()
 {
+  DebugAssert(!m_current_render_pass);
   m_dirty_flags = ALL_DIRTY_STATE |
                   ((m_current_render_pass_flags & GPUPipeline::ColorFeedbackLoop) ? DIRTY_FLAG_INPUT_ATTACHMENT : 0);
-  m_current_render_pass = VK_NULL_HANDLE;
-  m_current_pipeline = nullptr;
 }
 
 s32 VulkanDevice::IsRenderTargetBoundIndex(const GPUTexture* tex) const

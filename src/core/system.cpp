@@ -1901,8 +1901,7 @@ bool System::Initialize(std::unique_ptr<CDImage> disc, DiscRegion disc_region, b
     return false;
 
   // CDROM before GPU, that way we don't modeswitch.
-  if (disc &&
-      !CDROM::InsertMedia(std::move(disc), disc_region, s_state.running_game_serial, s_state.running_game_title, error))
+  if (disc && !CDROM::InsertMedia(disc, disc_region, s_state.running_game_serial, s_state.running_game_title, error))
     return false;
 
   // TODO: Drop class
@@ -2921,8 +2920,8 @@ bool System::LoadStateFromBuffer(const SaveStateBuffer& buffer, Error* error, bo
           (media_subimage_index != 0 && new_disc->HasSubImages() &&
            !new_disc->SwitchSubImage(media_subimage_index, error ? error : &local_error)) ||
           (UpdateRunningGame(buffer.media_path, new_disc.get(), false),
-           !CDROM::InsertMedia(std::move(new_disc), new_disc_region, s_state.running_game_serial,
-                               s_state.running_game_title, error ? error : &local_error)))
+           !CDROM::InsertMedia(new_disc, new_disc_region, s_state.running_game_serial, s_state.running_game_title,
+                               error ? error : &local_error)))
       {
         if (CDROM::HasMedia())
         {
@@ -4070,9 +4069,8 @@ bool System::InsertMedia(const char* path)
   std::unique_ptr<CDImage> image = CDImage::Open(path, g_settings.cdrom_load_image_patches, &error);
   const DiscRegion region =
     image ? GameList::GetCustomRegionForPath(path).value_or(GetRegionForImage(image.get())) : DiscRegion::NonPS1;
-  if (!image ||
-      (UpdateRunningGame(path, image.get(), false),
-       !CDROM::InsertMedia(std::move(image), region, s_state.running_game_serial, s_state.running_game_title, &error)))
+  if (!image || (UpdateRunningGame(path, image.get(), false),
+                 !CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title, &error)))
   {
     Host::AddIconOSDWarning(
       "DiscInserted", ICON_FA_COMPACT_DISC,
@@ -4327,8 +4325,7 @@ bool System::SwitchMediaSubImage(u32 index)
     subimage_title = image->GetSubImageMetadata(index, "title");
     title = image->GetMetadata("title");
     UpdateRunningGame(image->GetPath(), image.get(), false);
-    okay =
-      CDROM::InsertMedia(std::move(image), region, s_state.running_game_serial, s_state.running_game_title, &error);
+    okay = CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title, &error);
   }
   if (!okay)
   {
@@ -4342,7 +4339,7 @@ bool System::SwitchMediaSubImage(u32 index)
     const DiscRegion region =
       GameList::GetCustomRegionForPath(image->GetPath()).value_or(GetRegionForImage(image.get()));
     UpdateRunningGame(image->GetPath(), image.get(), false);
-    CDROM::InsertMedia(std::move(image), region, s_state.running_game_serial, s_state.running_game_title, nullptr);
+    CDROM::InsertMedia(image, region, s_state.running_game_serial, s_state.running_game_title, nullptr);
     return false;
   }
 
@@ -4783,7 +4780,8 @@ void System::WarnAboutUnsafeSettings()
     if (g_settings.cdrom_read_speedup != 1 || g_settings.cdrom_seek_speedup != 1)
       append(ICON_EMOJI_WARNING, TRANSLATE_SV("System", "CD-ROM read/seek speedup is enabled. This may crash games."));
     if (g_settings.gpu_force_video_timing != ForceVideoTimingMode::Disabled)
-      append(ICON_FA_TV, TRANSLATE_SV("System", "Frame rate is not set to automatic. Games may run at incorrect speeds."));
+      append(ICON_FA_TV,
+             TRANSLATE_SV("System", "Frame rate is not set to automatic. Games may run at incorrect speeds."));
     if (!g_settings.IsUsingSoftwareRenderer())
     {
       if (g_settings.gpu_multisamples != 1)

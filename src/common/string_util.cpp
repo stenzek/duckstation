@@ -737,13 +737,14 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
     return std::nullopt;
 
   const bool allocate_on_heap = (pattern_length >= 512);
-  u8* match_bytes = allocate_on_heap ? static_cast<u8*>(alloca(pattern_length * 2)) : new u8[pattern_length * 2];
+  u8* match_bytes = allocate_on_heap ? new u8[pattern_length * 2] : static_cast<u8*>(alloca(pattern_length * 2));
   u8* match_masks = match_bytes + pattern_length;
 
   hinibble = true;
   u8 match_byte = 0;
   u8 match_mask = 0;
-  for (size_t i = 0, match_len = 0; i < pattern.size(); i++)
+  size_t match_len = 0;
+  for (size_t i = 0; i < pattern.size(); i++)
   {
     u8 nibble = 0, nibble_mask = 0xF;
     if (pattern[i] >= '0' && pattern[i] <= '9')
@@ -772,8 +773,8 @@ std::optional<size_t> StringUtil::BytePatternSearch(const std::span<const u8> by
       match_mask = nibble_mask;
     }
   }
-  if (pattern_length == 0)
-    return std::nullopt;
+
+  DebugAssert(match_len == pattern_length);
 
   std::optional<size_t> ret;
   const size_t max_search_offset = bytes.size() - pattern_length;

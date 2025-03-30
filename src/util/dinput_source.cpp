@@ -227,7 +227,7 @@ bool DInputSource::AddDevice(ControllerData& cd, const std::string& name)
     range.diph.dwObj = static_cast<DWORD>(offset);
     range.lMin = std::numeric_limits<s16>::min();
     range.lMax = std::numeric_limits<s16>::max();
-    hr = cd.device->SetProperty(DIPROP_RANGE, &range.diph);
+    cd.device->SetProperty(DIPROP_RANGE, &range.diph);
 
     // did it apply?
     if (SUCCEEDED(cd.device->GetProperty(DIPROP_RANGE, &range.diph)))

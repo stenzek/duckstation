@@ -276,11 +276,7 @@ void MDEC::DMARead(u32* words, u32 word_count)
 
   const u32 words_to_read = std::min(word_count, s_state.data_out_fifo.GetSize());
   if (words_to_read > 0)
-  {
     s_state.data_out_fifo.PopRange(words, words_to_read);
-    words += words_to_read;
-    word_count -= words_to_read;
-  }
 
   DEBUG_LOG("DMA read complete, {} bytes left", s_state.data_out_fifo.GetSize() * sizeof(u32));
   if (s_state.data_out_fifo.IsEmpty())

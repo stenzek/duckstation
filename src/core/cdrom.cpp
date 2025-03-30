@@ -465,7 +465,7 @@ struct CDROMState
 
   XorShift128PlusPlus prng;
 
-  std::array<SectorBuffer, NUM_SECTOR_BUFFERS> sector_buffers;
+  std::array<SectorBuffer, NUM_SECTOR_BUFFERS> sector_buffers = {};
   u32 current_read_sector_buffer = 0;
   u32 current_write_sector_buffer = 0;
 
@@ -927,7 +927,7 @@ bool CDROM::CanReadMedia()
   return (s_state.drive_state != DriveState::ShellOpening && s_reader.HasMedia());
 }
 
-bool CDROM::InsertMedia(std::unique_ptr<CDImage> media, DiscRegion region, std::string_view serial,
+bool CDROM::InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std::string_view serial,
                         std::string_view title, Error* error)
 {
   // Load SBI/LSD first.

@@ -54,8 +54,8 @@ bool CDImageMemory::CopyImage(CDImage* image, ProgressCallback* progress)
       m_memory_sectors += image->GetIndex(i).length;
   }
 
-  if ((static_cast<u64>(RAW_SECTOR_SIZE) * static_cast<u64>(m_memory_sectors)) >=
-      static_cast<u64>(std::numeric_limits<size_t>::max()))
+  if (m_memory_sectors == 0 || (static_cast<u64>(RAW_SECTOR_SIZE) * static_cast<u64>(m_memory_sectors)) >=
+                                 static_cast<u64>(std::numeric_limits<size_t>::max()))
   {
     progress->ModalError("Insufficient address space");
     return false;

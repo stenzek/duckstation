@@ -2884,7 +2884,7 @@ void Achievements::DrawAchievementsWindow()
           progress_bb.Min.y + ((progress_bb.Max.y - progress_bb.Min.y) / 2.0f) - (text_size.y / 2.0f));
         dl->AddText(UIStyle.MediumFont, UIStyle.MediumFont->FontSize, text_pos,
                     ImGui::GetColorU32(UIStyle.PrimaryTextColor), text.c_str(), text.end_ptr());
-        top += progress_height + spacing;
+        // top += progress_height + spacing;
       }
     }
   }

@@ -73,7 +73,9 @@ D3D12Pipeline::D3D12Pipeline(Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelin
 
 D3D12Pipeline::~D3D12Pipeline()
 {
-  D3D12Device::GetInstance().DeferObjectDestruction(std::move(m_pipeline));
+  D3D12Device& dev = D3D12Device::GetInstance();
+  dev.UnbindPipeline(this);
+  dev.DeferObjectDestruction(std::move(m_pipeline));
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

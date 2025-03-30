@@ -108,7 +108,9 @@ VulkanPipeline::VulkanPipeline(VkPipeline pipeline, Layout layout, u8 vertices_p
 
 VulkanPipeline::~VulkanPipeline()
 {
-  VulkanDevice::GetInstance().DeferPipelineDestruction(m_pipeline);
+  VulkanDevice& dev = VulkanDevice::GetInstance();
+  dev.UnbindPipeline(this);
+  dev.DeferPipelineDestruction(m_pipeline);
 }
 
 #ifdef ENABLE_GPU_OBJECT_NAMES

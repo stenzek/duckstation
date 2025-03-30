@@ -172,7 +172,7 @@ void PostProcessingChainConfigWidget::onAddButtonClicked()
 {
   QMenu menu;
 
-  const std::vector<std::pair<std::string, std::string>> shaders = PostProcessing::GetAvailableShaderNames();
+  std::vector<std::pair<std::string, std::string>> shaders = PostProcessing::GetAvailableShaderNames();
   if (shaders.empty())
   {
     menu.addAction(tr("No Shaders Available"))->setEnabled(false);
@@ -257,7 +257,7 @@ void PostProcessingChainConfigWidget::onMoveUpButtonClicked()
 void PostProcessingChainConfigWidget::onMoveDownButtonClicked()
 {
   std::optional<u32> index = getSelectedIndex();
-  if (index.has_value() || index.value() < (static_cast<u32>(m_ui.stages->count() - 1)))
+  if (index.has_value() && index.value() < (static_cast<u32>(m_ui.stages->count() - 1)))
   {
     auto lock = Host::GetSettingsLock();
     SettingsInterface& si = getSettingsInterfaceToUpdate();

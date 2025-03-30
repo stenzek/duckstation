@@ -280,7 +280,6 @@ void MemoryViewWidget::paintEvent(QPaintEvent* event)
   int x;
   int lx = addressWidth();
   painter.drawLine(lx - offsetX, 0, lx - offsetX, height());
-  y = m_char_height;
 
   // hex data
   const int HEX_CHAR_WIDTH = 4 * m_char_width;

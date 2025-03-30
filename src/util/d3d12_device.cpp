@@ -1906,7 +1906,6 @@ void D3D12Device::BeginRenderPass()
       D3D12Texture* const ds = m_current_depth_target;
       ds->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_DEPTH_WRITE);
       ds->SetUseFenceValue(GetCurrentFenceValue());
-      ds_desc_p = &ds_desc;
       ds_desc.cpuDescriptor = ds->GetWriteDescriptor();
       ds_desc.DepthEndingAccess.Type = D3D12_RENDER_PASS_ENDING_ACCESS_TYPE_PRESERVE;
       ds_desc.StencilBeginningAccess = {};
@@ -2059,13 +2058,9 @@ bool D3D12Device::IsRenderTargetBound(const GPUTexture* tex) const
 
 void D3D12Device::InvalidateCachedState()
 {
+  DebugAssert(!m_in_render_pass);;
   m_dirty_flags = ALL_DIRTY_STATE &
                   ((m_current_render_pass_flags & GPUPipeline::BindRenderTargetsAsImages) ? ~0u : ~DIRTY_FLAG_RT_UAVS);
-  m_in_render_pass = false;
-  m_current_pipeline = nullptr;
-  m_current_vertex_stride = 0;
-  m_current_blend_constant = 0;
-  m_current_topology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 }
 
 void D3D12Device::SetInitialPipelineState()

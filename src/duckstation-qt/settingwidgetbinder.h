@@ -500,7 +500,7 @@ struct SettingAccessor<QSpinBox>
     else
     {
       widget->setContextMenuPolicy(Qt::CustomContextMenu);
-      widget->connect(widget, &QSpinBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) {
+      widget->connect(widget, &QSpinBox::customContextMenuRequested, widget, [widget, func](const QPoint& pt) mutable {
         QMenu menu(widget);
         widget->connect(menu.addAction(qApp->translate("SettingWidgetBinder", "Reset")), &QAction::triggered, widget,
                         [widget, func = std::move(func)]() {

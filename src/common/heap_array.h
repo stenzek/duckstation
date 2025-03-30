@@ -223,7 +223,7 @@ public:
     }
   }
 
-  DynamicHeapArray(this_type&& move)
+  DynamicHeapArray(this_type&& move) noexcept
   {
     m_data = move.m_data;
     m_size = move.m_size;
@@ -358,7 +358,7 @@ public:
     return *this;
   }
 
-  this_type& operator=(this_type&& move)
+  this_type& operator=(this_type&& move) noexcept
   {
     assign(std::move(move));
     return *this;

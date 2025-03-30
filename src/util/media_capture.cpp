@@ -1652,6 +1652,7 @@ bool MediaCaptureMF::GetAudioTypes(std::string_view codec, ComPtr<IMFMediaType>*
   if (output_subtype == AUDIO_INPUT_MEDIA_FORMAT)
   {
     *output_type = std::move(*input_type);
+    *input_type = ComPtr<IMFMediaType>();
     return true;
   }
 

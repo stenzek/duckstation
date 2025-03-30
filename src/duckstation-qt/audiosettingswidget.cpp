@@ -138,7 +138,7 @@ AudioBackend AudioSettingsWidget::getEffectiveBackend() const
 void AudioSettingsWidget::updateDriverNames()
 {
   const AudioBackend backend = getEffectiveBackend();
-  const std::vector<std::pair<std::string, std::string>> names = AudioStream::GetDriverNames(backend);
+  std::vector<std::pair<std::string, std::string>> names = AudioStream::GetDriverNames(backend);
 
   m_ui.driver->disconnect();
   m_ui.driver->clear();
@@ -166,7 +166,7 @@ void AudioSettingsWidget::updateDeviceNames()
   const AudioBackend backend = getEffectiveBackend();
   const std::string driver_name = m_dialog->getEffectiveStringValue("Audio", "Driver", "");
   const std::string current_device = m_dialog->getEffectiveStringValue("Audio", "Device", "");
-  const std::vector<AudioStream::DeviceInfo> devices =
+  std::vector<AudioStream::DeviceInfo> devices =
     AudioStream::GetOutputDevices(backend, driver_name.c_str(), SPU::SAMPLE_RATE);
 
   m_ui.outputDevice->disconnect();

@@ -272,7 +272,7 @@ public:
   ALWAYS_INLINE BinaryFileReader& operator>>(s64& val) { val = ReadT<s64>(); return *this; }
   ALWAYS_INLINE BinaryFileReader& operator>>(u64& val) { val = ReadT<u64>(); return *this; }
   ALWAYS_INLINE BinaryFileReader& operator>>(float& val) { val = ReadT<float>(); return *this; }
-  ALWAYS_INLINE BinaryFileReader& operator>>(std::string_view& val) { val = ReadCString(); return *this; }
+  ALWAYS_INLINE BinaryFileReader& operator>>(std::string& val) { val = ReadCString(); return *this; }
   // clang-format on
 
   template<typename T>

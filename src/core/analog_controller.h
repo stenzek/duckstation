@@ -109,8 +109,8 @@ private:
 
   // Transmit and receive buffers, not including the first Hi-Z/ack response byte
   static constexpr u32 MAX_RESPONSE_LENGTH = 8;
-  std::array<u8, MAX_RESPONSE_LENGTH> m_rx_buffer;
-  std::array<u8, MAX_RESPONSE_LENGTH> m_tx_buffer;
+  std::array<u8, MAX_RESPONSE_LENGTH> m_rx_buffer{};
+  std::array<u8, MAX_RESPONSE_LENGTH> m_tx_buffer{};
 
   // Get number of response halfwords (excluding the initial controller info halfword)
   u8 GetResponseNumHalfwords() const;

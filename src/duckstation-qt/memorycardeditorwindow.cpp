@@ -106,10 +106,10 @@ bool MemoryCardEditorWindow::setCardB(const QString& path)
 
 bool MemoryCardEditorWindow::createMemoryCard(const QString& path, Error* error)
 {
-  MemoryCardImage::DataArray data;
-  MemoryCardImage::Format(&data);
+  std::unique_ptr<MemoryCardImage::DataArray> data = std::make_unique<MemoryCardImage::DataArray>();
+  MemoryCardImage::Format(data.get());
 
-  return MemoryCardImage::SaveToFile(data, path.toUtf8().constData(), error);
+  return MemoryCardImage::SaveToFile(*data.get(), path.toUtf8().constData(), error);
 }
 
 void MemoryCardEditorWindow::resizeEvent(QResizeEvent* ev)

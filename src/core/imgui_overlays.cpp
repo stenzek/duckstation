@@ -409,12 +409,10 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
         if (CPU::g_state.using_interpreter)
         {
           text.append_format("{}{}", first ? "" : "/", "I");
-          first = false;
         }
         else if (g_settings.cpu_execution_mode == CPUExecutionMode::CachedInterpreter)
         {
           text.append_format("{}{}", first ? "" : "/", "CI");
-          first = false;
         }
         else
         {
@@ -424,10 +422,7 @@ void ImGuiManager::DrawPerformanceOverlay(const GPUBackend* gpu, float& position
             first = false;
           }
           if (g_settings.cpu_recompiler_memory_exceptions)
-          {
             text.append_format("{}{}", first ? "" : "/", "ME");
-            first = false;
-          }
         }
 
         text.append("]: ");

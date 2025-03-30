@@ -1188,7 +1188,7 @@ std::unique_ptr<GPUTexture> GPUDevice::FetchTexture(u32 width, u32 height, u32 l
       error ? error : &create_error, "Failed to create {}x{} {} {}: {}", width, height,
       GPUTexture::GetFormatName(format),
       ((type == GPUTexture::Type::RenderTarget) ? "RT" : (type == GPUTexture::Type::DepthStencil ? "DS" : "Texture")),
-      create_error.TakeDescription());
+      create_error.GetDescription());
     if (!error)
       ERROR_LOG(create_error.GetDescription());
   }
