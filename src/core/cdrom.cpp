@@ -444,6 +444,7 @@ struct CDROMState
   bool last_sector_header_valid = false; // TODO: Rename to "logical pause" or something.
   bool last_subq_needs_update = false;
 
+  bool cdda_auto_pause_pending = false;
   u8 cdda_report_start_delay = 0;
   u8 last_cdda_report_frame_nibble = 0xFF;
   u8 play_track_number_bcd = 0xFF;
@@ -638,6 +639,7 @@ TickCount CDROM::SoftReset(TickCount ticks_late)
   s_state.play_after_seek = false;
   s_state.muted = false;
   s_state.adpcm_muted = false;
+  s_state.cdda_auto_pause_pending = false;
   s_state.cdda_report_start_delay = 0;
   s_state.last_cdda_report_frame_nibble = 0xFF;
 
@@ -746,6 +748,7 @@ bool CDROM::DoState(StateWrapper& sw)
   sw.DoBytes(&s_state.last_sector_subheader, sizeof(s_state.last_sector_subheader));
   sw.Do(&s_state.last_sector_header_valid);
   sw.DoBytes(&s_state.last_subq, sizeof(s_state.last_subq));
+  sw.DoEx(&s_state.cdda_auto_pause_pending, 81, false);
   sw.DoEx(&s_state.cdda_report_start_delay, 72, static_cast<u8>(0));
   sw.Do(&s_state.last_cdda_report_frame_nibble);
   sw.Do(&s_state.play_track_number_bcd);
@@ -3310,6 +3313,15 @@ void CDROM::DoSectorRead()
   }
   else if (s_state.mode.auto_pause)
   {
+    if (s_state.cdda_auto_pause_pending)
+    {
+      DEV_COLOR_LOG(StrongRed, "Auto pause at the start of track {:02x} ({} LBA {})", subq.track_number_bcd,
+                    LBAToMSFString(s_state.current_lba), s_state.current_lba);
+      s_state.cdda_auto_pause_pending = false;
+      StopReadingWithDataEnd();
+      return;
+    }
+
     // Only update the tracked track-to-pause-after once auto pause is enabled. Pitball's menu music starts mid-second,
     // and there's no pregap, so the first couple of reports are for the previous track. It doesn't enable autopause
     // until receiving a couple, and it's actually playing the track it wants.
@@ -3317,17 +3329,13 @@ void CDROM::DoSectorRead()
     {
       // track number was not specified, but we've found the track now
       s_state.play_track_number_bcd = subq.track_number_bcd;
-      DEBUG_LOG("Setting playing track number to {}", s_state.play_track_number_bcd);
+      DEV_LOG("Setting playing track number to {}", s_state.play_track_number_bcd);
     }
-    else if (subq.track_number_bcd != s_state.play_track_number_bcd)
+    else if (s_state.play_track_number_bcd != subq.track_number_bcd)
     {
-      // Fudge the hold position by 2 sectors to reduce the number of GetlocP's that will return a MSF in the old track.
-      // Works around the music hang in Fighting Force.
-      SetHoldPosition(std::min(s_state.current_lba + 2, s_reader.GetMedia()->GetLBACount() - 1),
-                      s_state.current_subq_lba);
-      DEV_LOG("Auto pause at the start of track {:02x} (LBA {})", subq.track_number_bcd, s_state.current_lba);
-      StopReadingWithDataEnd();
-      return;
+      DEV_LOG("Pending auto pause at the start of track {:02x} ({} LBA {})", subq.track_number_bcd,
+              LBAToMSFString(s_state.current_lba), s_state.current_lba);
+      s_state.cdda_auto_pause_pending = true;
     }
   }
 
@@ -3673,6 +3681,8 @@ void CDROM::ResetCurrentXAFile()
 
 void CDROM::ResetAudioDecoder()
 {
+  s_state.cdda_auto_pause_pending = false;
+
   ResetCurrentXAFile();
 
   s_state.xa_last_samples.fill(0);
@@ -3865,7 +3875,7 @@ ALWAYS_INLINE_RELEASE void CDROM::ProcessCDDASector(const u8* raw_sector, const 
   }
 
   // Apply volume when pushing sectors to SPU.
-  if (s_state.muted || g_settings.cdrom_mute_cd_audio)
+  if (s_state.muted || s_state.cdda_auto_pause_pending || g_settings.cdrom_mute_cd_audio)
     return;
 
   SPU::GeneratePendingSamples();
