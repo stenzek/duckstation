@@ -1895,9 +1895,9 @@ void D3D12Device::BeginRenderPass()
       for (u32 i = 0; i < m_num_current_render_targets; i++)
       {
         D3D12Texture* const rt = m_current_render_targets[i];
-        rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         rt->SetUseFenceValue(GetCurrentFenceValue());
         rt->CommitClear(cmdlist);
+        rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         rt->SetState(GPUTexture::State::Dirty);
       }
     }
@@ -2419,8 +2419,8 @@ void D3D12Device::PreDispatchCheck()
     for (u32 i = 0; i < m_num_current_render_targets; i++)
     {
       D3D12Texture* const rt = m_current_render_targets[i];
-      rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
       rt->SetUseFenceValue(GetCurrentFenceValue());
+      rt->TransitionToState(cmdlist, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
       rt->CommitClear(cmdlist);
       rt->SetState(GPUTexture::State::Dirty);
     }
@@ -2574,7 +2574,7 @@ bool D3D12Device::UpdateParametersForLayout(u32 dirty)
     for (u32 i = 0; i < MAX_IMAGE_RENDER_TARGETS; i++)
     {
       src_handles[i] =
-        m_current_render_targets[i] ? m_current_render_targets[i]->GetSRVDescriptor() : m_null_srv_descriptor;
+        m_current_render_targets[i] ? m_current_render_targets[i]->GetUAVDescriptor() : m_null_uav_descriptor;
       src_sizes[i] = 1;
     }
     m_device->CopyDescriptors(1, &gpu_handle.cpu_handle, &dst_size, MAX_IMAGE_RENDER_TARGETS, src_handles, src_sizes,
