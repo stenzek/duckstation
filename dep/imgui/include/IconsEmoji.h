@@ -30,3 +30,4 @@
 #define ICON_EMOJI_REFRESH "\xf0\x9f\x94\x84"
 #define ICON_EMOJI_PROHIBITED "\xf0\x9f\x9a\xab"
 #define ICON_EMOJI_CALENDAR "\xF0\x9F\x93\x85"
+#define ICON_EMOJI_HOURGLASS "\xe2\x8f\xb3"

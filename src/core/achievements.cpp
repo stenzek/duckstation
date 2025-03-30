@@ -205,8 +205,9 @@ static void LeaderboardFetchAllCallback(int result, const char* error_message, r
 #ifndef __ANDROID__
 static void DrawAchievement(const rc_client_achievement_t* cheevo);
 static void DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboard);
-static void DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, bool is_self, float rank_column_width,
-                                 float name_column_width, float time_column_width, float column_spacing);
+static void DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, u32 index, bool is_self,
+                                 float rank_column_width, float name_column_width, float time_column_width,
+                                 float column_spacing);
 #endif
 
 static std::string GetHashDatabasePath();
@@ -2782,7 +2783,6 @@ void Achievements::DrawAchievementsWindow()
   const ImVec4 background = ImGuiFullscreen::ModAlpha(UIStyle.BackgroundColor, alpha);
   const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(UIStyle.BackgroundColor, heading_alpha);
   const ImVec2 display_size = ImGui::GetIO().DisplaySize;
-  const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
   const float heading_height = LayoutScale(heading_height_unscaled);
   bool close_window = false;
 
@@ -2832,8 +2832,8 @@ void Achievements::DrawAchievementsWindow()
 
       top += UIStyle.LargeFont->FontSize + spacing;
 
-      RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, text.c_str(), text.end_ptr(),
-                                nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+      RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text),
+                                text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFont->FontSize));
       if (s_state.game_summary.num_core_achievements > 0)
@@ -2858,8 +2858,10 @@ void Achievements::DrawAchievementsWindow()
 
       top += UIStyle.MediumFont->FontSize + spacing;
 
-      RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, text_color, text.c_str(),
-                                text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+      RenderShadowedTextClipped(
+        UIStyle.MediumFont, summary_bb.Min, summary_bb.Max,
+        ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])), text.c_str(),
+        text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
       if (s_state.game_summary.num_core_achievements > 0)
       {
@@ -3160,6 +3162,7 @@ bool Achievements::PrepareLeaderboardsWindow()
 
 void Achievements::DrawLeaderboardsWindow()
 {
+  using ImGuiFullscreen::DarkerColor;
   using ImGuiFullscreen::LayoutScale;
   using ImGuiFullscreen::RenderShadowedTextClipped;
   using ImGuiFullscreen::UIStyle;
@@ -3180,6 +3183,7 @@ void Achievements::DrawLeaderboardsWindow()
   bool close_leaderboard_on_exit = false;
 
   ImRect bb;
+  SmallString text;
 
   const ImVec4 background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIStyle.BackgroundColor, alpha);
   const ImVec4 heading_background = ImGuiFullscreen::ModAlpha(ImGuiFullscreen::UIStyle.BackgroundColor, heading_alpha);
@@ -3239,7 +3243,6 @@ void Achievements::DrawLeaderboardsWindow()
       float left = bb.Min.x + padding + image_height + spacing;
       float right = bb.Max.x - padding;
       float top = bb.Min.y + padding;
-      SmallString text;
 
       if (!is_leaderboard_open)
       {
@@ -3268,6 +3271,7 @@ void Achievements::DrawLeaderboardsWindow()
       RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, text.c_str(), text.end_ptr(),
                                 nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
+      u32 summary_color;
       if (is_leaderboard_open)
       {
         const ImRect subtitle_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.LargeFont->FontSize));
@@ -3275,10 +3279,12 @@ void Achievements::DrawLeaderboardsWindow()
 
         top += UIStyle.LargeFont->FontSize + spacing_small;
 
-        RenderShadowedTextClipped(UIStyle.LargeFont, subtitle_bb.Min, subtitle_bb.Max, text_color, text.c_str(),
-                                  text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &subtitle_bb);
+        RenderShadowedTextClipped(UIStyle.LargeFont, subtitle_bb.Min, subtitle_bb.Max,
+                                  ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
+                                  text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &subtitle_bb);
 
         text.assign(s_state.open_leaderboard->description);
+        summary_color = ImGui::GetColorU32(DarkerColor(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])));
       }
       else
       {
@@ -3286,12 +3292,13 @@ void Achievements::DrawLeaderboardsWindow()
         for (u32 i = 0; i < s_state.leaderboard_list->num_buckets; i++)
           count += s_state.leaderboard_list->buckets[i].num_leaderboards;
         text = TRANSLATE_PLURAL_SSTR("Achievements", "This game has %n leaderboards.", "Leaderboard count", count);
+        summary_color = ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
       }
 
       const ImRect summary_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFont->FontSize));
       top += UIStyle.MediumFont->FontSize + spacing_small;
 
-      RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, text_color, text.c_str(),
+      RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, summary_color, text.c_str(),
                                 text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
 
       if (!is_leaderboard_open && !Achievements::IsHardcoreModeActive())
@@ -3299,11 +3306,15 @@ void Achievements::DrawLeaderboardsWindow()
         const ImRect hardcore_warning_bb(ImVec2(left, top), ImVec2(right, top + UIStyle.MediumFont->FontSize));
         top += UIStyle.MediumFont->FontSize + spacing_small;
 
-        RenderShadowedTextClipped(
-          UIStyle.MediumFont, hardcore_warning_bb.Min, hardcore_warning_bb.Max, text_color,
-          TRANSLATE("Achievements",
-                    "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."),
-          nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &hardcore_warning_bb);
+        text.format(
+          ICON_EMOJI_WARNING " {}",
+          TRANSLATE_SV("Achievements",
+                       "Submitting scores is disabled because hardcore mode is off. Leaderboards are read-only."));
+
+        RenderShadowedTextClipped(UIStyle.MediumFont, hardcore_warning_bb.Min, hardcore_warning_bb.Max,
+                                  ImGui::GetColorU32(DarkerColor(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]))),
+                                  text.c_str(), text.end_ptr(), nullptr, ImVec2(0.0f, 0.0f), 0.0f,
+                                  &hardcore_warning_bb);
       }
 
       if (is_leaderboard_open)
@@ -3349,17 +3360,19 @@ void Achievements::DrawLeaderboardsWindow()
         bb.Min.x += LayoutScale(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING);
         bb.Max.x -= LayoutScale(ImGuiFullscreen::LAYOUT_MENU_WINDOW_X_PADDING);
 
+        const u32 heading_color = ImGui::GetColorU32(DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]));
+
         const float midpoint = bb.Min.y + UIStyle.LargeFont->FontSize + LayoutScale(4.0f);
         float text_start_x = bb.Min.x + LayoutScale(15.0f) + padding;
 
         const ImRect rank_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-        RenderShadowedTextClipped(UIStyle.LargeFont, rank_bb.Min, rank_bb.Max, text_color,
+        RenderShadowedTextClipped(UIStyle.LargeFont, rank_bb.Min, rank_bb.Max, heading_color,
                                   TRANSLATE("Achievements", "Rank"), nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
                                   &rank_bb);
         text_start_x += rank_column_width + column_spacing;
 
         const ImRect user_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-        RenderShadowedTextClipped(UIStyle.LargeFont, user_bb.Min, user_bb.Max, text_color,
+        RenderShadowedTextClipped(UIStyle.LargeFont, user_bb.Min, user_bb.Max, heading_color,
                                   TRANSLATE("Achievements", "Name"), nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f,
                                   &user_bb);
         text_start_x += name_column_width + column_spacing;
@@ -3372,7 +3385,7 @@ void Achievements::DrawLeaderboardsWindow()
 
         const ImRect score_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
         RenderShadowedTextClipped(
-          UIStyle.LargeFont, score_bb.Min, score_bb.Max, text_color,
+          UIStyle.LargeFont, score_bb.Min, score_bb.Max, heading_color,
           Host::TranslateToCString(
             "Achievements",
             value_headings[std::min<u8>(s_state.open_leaderboard->format, NUM_RC_CLIENT_LEADERBOARD_FORMATS - 1)]),
@@ -3380,7 +3393,7 @@ void Achievements::DrawLeaderboardsWindow()
         text_start_x += time_column_width + column_spacing;
 
         const ImRect date_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
-        RenderShadowedTextClipped(UIStyle.LargeFont, date_bb.Min, date_bb.Max, text_color,
+        RenderShadowedTextClipped(UIStyle.LargeFont, date_bb.Min, date_bb.Max, heading_color,
                                   TRANSLATE("Achievements", "Date Submitted"), nullptr, nullptr, ImVec2(0.0f, 0.0f),
                                   0.0f, &date_bb);
 
@@ -3452,7 +3465,7 @@ void Achievements::DrawLeaderboardsWindow()
         {
           for (u32 i = 0; i < s_state.leaderboard_nearby_entries->num_entries; i++)
           {
-            DrawLeaderboardEntry(s_state.leaderboard_nearby_entries->entries[i],
+            DrawLeaderboardEntry(s_state.leaderboard_nearby_entries->entries[i], i,
                                  static_cast<s32>(i) == s_state.leaderboard_nearby_entries->user_index,
                                  rank_column_width, name_column_width, time_column_width, column_spacing);
           }
@@ -3472,24 +3485,23 @@ void Achievements::DrawLeaderboardsWindow()
         {
           for (u32 i = 0; i < list->num_entries; i++)
           {
-            DrawLeaderboardEntry(list->entries[i], static_cast<s32>(i) == list->user_index, rank_column_width,
+            DrawLeaderboardEntry(list->entries[i], i, static_cast<s32>(i) == list->user_index, rank_column_width,
                                  name_column_width, time_column_width, column_spacing);
           }
         }
 
         // Fetch next chunk if the loading indicator becomes visible (i.e. we scrolled enough).
         bool visible, hovered;
-        ImGuiFullscreen::MenuButtonFrame(TRANSLATE("Achievements", "Loading..."), false,
-                                         ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY, &visible, &hovered,
-                                         &bb.Min, &bb.Max);
+        text.format(ICON_FA_HOURGLASS_HALF " {}", TRANSLATE_SV("Achievements", "Loading..."));
+        ImGuiFullscreen::MenuButtonFrame(text.c_str(), false, ImGuiFullscreen::LAYOUT_MENU_BUTTON_HEIGHT_NO_SUMMARY,
+                                         &visible, &hovered, &bb.Min, &bb.Max);
         if (visible)
         {
           const float midpoint = bb.Min.y + UIStyle.LargeFont->FontSize + LayoutScale(4.0f);
           const ImRect title_bb(bb.Min, ImVec2(bb.Max.x, midpoint));
 
-          RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color,
-                                    TRANSLATE("Achievements", "Loading..."), nullptr, nullptr, ImVec2(0, 0), 0.0f,
-                                    &title_bb);
+          RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, text.c_str(),
+                                    text.end_ptr(), nullptr, ImVec2(0, 0), 0.0f, &title_bb);
 
           if (!s_state.leaderboard_fetch_handle)
             FetchNextLeaderboardEntries();
@@ -3518,7 +3530,7 @@ void Achievements::DrawLeaderboardsWindow()
     FullscreenUI::BeginTransition(&CloseLeaderboard);
 }
 
-void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, bool is_self,
+void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, u32 index, bool is_self,
                                         float rank_column_width, float name_column_width, float time_column_width,
                                         float column_spacing)
 {
@@ -3542,7 +3554,11 @@ void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& ent
 
   text.format("{}", entry.rank);
 
-  const u32 text_color = is_self ? IM_COL32(255, 242, 0, 255) : ImGui::GetColorU32(ImGuiCol_Text);
+  const u32 text_color =
+    is_self ?
+      IM_COL32(255, 242, 0, 255) :
+      ImGui::GetColorU32(((index % 2) == 0) ? ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text]) :
+                                              ImGui::GetStyle().Colors[ImGuiCol_Text]);
 
   const ImRect rank_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
   RenderShadowedTextClipped(UIStyle.LargeFont, rank_bb.Min, rank_bb.Max, text_color, text.c_str(), text.end_ptr(),
@@ -3617,17 +3633,17 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
 
   const float midpoint = bb.Min.y + UIStyle.LargeFont->FontSize + LayoutScale(4.0f);
   const float text_start_x = bb.Min.x + LayoutScale(15.0f);
-  const u32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
   const ImRect title_bb(ImVec2(text_start_x, bb.Min.y), ImVec2(bb.Max.x, midpoint));
   const ImRect summary_bb(ImVec2(text_start_x, midpoint), bb.Max);
 
-  RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, text_color, lboard->title, nullptr, nullptr,
-                            ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
+  RenderShadowedTextClipped(UIStyle.LargeFont, title_bb.Min, title_bb.Max, ImGui::GetColorU32(ImGuiCol_Text),
+                            lboard->title, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &title_bb);
 
   if (lboard->description && lboard->description[0] != '\0')
   {
-    RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max, text_color, lboard->description,
-                              nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
+    RenderShadowedTextClipped(UIStyle.MediumFont, summary_bb.Min, summary_bb.Max,
+                              ImGui::GetColorU32(ImGuiFullscreen::DarkerColor(ImGui::GetStyle().Colors[ImGuiCol_Text])),
+                              lboard->description, nullptr, nullptr, ImVec2(0.0f, 0.0f), 0.0f, &summary_bb);
   }
 
   if (pressed)
