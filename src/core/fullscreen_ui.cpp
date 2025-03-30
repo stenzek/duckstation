@@ -293,8 +293,6 @@ static void DoSetCoverImage(std::string source_path, std::string existing_path, 
 // Settings
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr double INPUT_BINDING_TIMEOUT_SECONDS = 5.0;
-
 static void SwitchToSettings();
 static bool SwitchToGameSettings();
 static void SwitchToGameSettings(const GameList::Entry* entry);
@@ -409,15 +407,11 @@ static void PopulateGraphicsAdapterList();
 static void PopulateGameListDirectoryCache(SettingsInterface* si);
 static void PopulatePatchesAndCheatsList();
 static void PopulatePostProcessingChain(SettingsInterface* si, const char* section);
-static void BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
-                              std::string_view key, std::string_view display_name);
 static void BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                        const char* key, std::string_view display_name);
-static void DrawInputBindingWindow();
 static void DrawInputBindingButton(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
                                    const char* name, const char* display_name, const char* icon_name,
                                    bool show_type = true);
-static void ClearInputBindingVariables();
 static void StartAutomaticBindingForPort(u32 port);
 static void StartClearBindingsForPort(u32 port);
 
@@ -507,6 +501,30 @@ static constexpr std::string_view ABOUT_DIALOG_NAME = "##about_duckstation";
 
 namespace {
 
+class InputBindingDialog : public ImGuiFullscreen::PopupDialog
+{
+public:
+  InputBindingDialog();
+  ~InputBindingDialog();
+
+  void Draw();
+  void ClearState();
+
+  void Start(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section, std::string_view key,
+             std::string_view display_name);
+
+private:
+  static constexpr float INPUT_BINDING_TIMEOUT_SECONDS = 5.0f;
+
+  std::string m_binding_section;
+  std::string m_binding_key;
+  std::string m_display_name;
+  std::vector<InputBindingKey> m_new_bindings;
+  std::vector<std::pair<InputBindingKey, std::pair<float, float>>> m_value_ranges;
+  float m_time_remaining = 0.0f;
+  InputBindingInfo::Type m_binding_type = InputBindingInfo::Type::Unknown;
+};
+
 struct ALIGN_TO_CACHE_LINE UIState
 {
   // Main
@@ -554,14 +572,8 @@ struct ALIGN_TO_CACHE_LINE UIState
   std::vector<const HotkeyInfo*> hotkey_list_cache;
   std::atomic_bool settings_changed{false};
   std::atomic_bool game_settings_changed{false};
-  InputBindingInfo::Type input_binding_type = InputBindingInfo::Type::Unknown;
-  std::string input_binding_section;
-  std::string input_binding_key;
-  std::string input_binding_display_name;
-  std::vector<InputBindingKey> input_binding_new_bindings;
-  std::vector<std::pair<InputBindingKey, std::pair<float, float>>> input_binding_value_ranges;
-  Timer::Value input_binding_start_time = 0;
   bool controller_macro_expanded[NUM_CONTROLLER_AND_CARD_PORTS][InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER] = {};
+  InputBindingDialog input_binding_dialog;
 
   // Save State List
   std::vector<SaveStateListEntry> save_state_selector_slots;
@@ -757,11 +769,10 @@ bool FullscreenUI::HasActiveWindow()
 
 bool FullscreenUI::AreAnyDialogsOpen()
 {
-  return (s_state.input_binding_type != InputBindingInfo::Type::Unknown ||
-          ImGuiFullscreen::IsAnyFixedPopupDialogOpen() || ImGuiFullscreen::IsChoiceDialogOpen() ||
-          ImGuiFullscreen::IsInputDialogOpen() || ImGuiFullscreen::IsFileSelectorOpen() ||
-          ImGuiFullscreen::IsMessageBoxDialogOpen() || ImGuiFullscreen::HasToast() ||
-          ImGuiFullscreen::HasAnyNotifications());
+  return (s_state.input_binding_dialog.IsOpen() || ImGuiFullscreen::IsAnyFixedPopupDialogOpen() ||
+          ImGuiFullscreen::IsChoiceDialogOpen() || ImGuiFullscreen::IsInputDialogOpen() ||
+          ImGuiFullscreen::IsFileSelectorOpen() || ImGuiFullscreen::IsMessageBoxDialogOpen() ||
+          ImGuiFullscreen::HasToast() || ImGuiFullscreen::HasAnyNotifications());
 }
 
 void FullscreenUI::CheckForConfigChanges(const GPUSettings& old_settings)
@@ -962,7 +973,7 @@ void FullscreenUI::Shutdown(bool clear_state)
     s_state.was_paused_on_quick_menu_open = false;
 
     Achievements::ClearUIState();
-    ClearInputBindingVariables();
+    s_state.input_binding_dialog.ClearState();
     ClearSaveStateEntryList();
     s_state.icon_image_map.clear();
     s_state.cover_image_map.clear();
@@ -1055,8 +1066,8 @@ void FullscreenUI::Render()
     DrawAboutWindow();
   else if (IsFixedPopupDialogOpen(RESUME_STATE_SELECTOR_DIALOG_NAME))
     DrawResumeStateSelector();
-  else if (s_state.input_binding_type != InputBindingInfo::Type::Unknown)
-    DrawInputBindingWindow();
+
+  s_state.input_binding_dialog.Draw();
 
   ImGuiFullscreen::EndLayout();
 
@@ -2331,7 +2342,7 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
     if (type == InputBindingInfo::Type::Motor)
       BeginVibrationMotorBinding(bsi, type, section, name, display_name);
     else
-      BeginInputBinding(bsi, type, section, name, display_name);
+      s_state.input_binding_dialog.Start(bsi, type, section, name, display_name);
   }
   else if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsKeyPressed(ImGuiKey_NavGamepadMenu, false))
   {
@@ -2341,61 +2352,50 @@ void FullscreenUI::DrawInputBindingButton(SettingsInterface* bsi, InputBindingIn
   }
 }
 
-void FullscreenUI::ClearInputBindingVariables()
-{
-  s_state.input_binding_type = InputBindingInfo::Type::Unknown;
-  s_state.input_binding_section = {};
-  s_state.input_binding_key = {};
-  s_state.input_binding_display_name = {};
-  s_state.input_binding_new_bindings = {};
-  s_state.input_binding_value_ranges = {};
+FullscreenUI::InputBindingDialog::InputBindingDialog() = default;
 
-  if (IsFixedPopupDialogOpen(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding")))
-    CloseFixedPopupDialogImmediately();
-}
+FullscreenUI::InputBindingDialog::~InputBindingDialog() = default;
 
-void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::Type type, std::string_view section,
-                                     std::string_view key, std::string_view display_name)
+void FullscreenUI::InputBindingDialog::Start(SettingsInterface* bsi, InputBindingInfo::Type type,
+                                             std::string_view section, std::string_view key,
+                                             std::string_view display_name)
 {
-  if (s_state.input_binding_type != InputBindingInfo::Type::Unknown)
-  {
+  if (m_binding_type != InputBindingInfo::Type::Unknown)
     InputManager::RemoveHook();
-    ClearInputBindingVariables();
-  }
 
-  s_state.input_binding_type = type;
-  s_state.input_binding_section = section;
-  s_state.input_binding_key = key;
-  s_state.input_binding_display_name = display_name;
-  s_state.input_binding_new_bindings = {};
-  s_state.input_binding_value_ranges = {};
-  s_state.input_binding_start_time = Timer::GetCurrentValue();
-  OpenFixedPopupDialog(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding"));
+  m_binding_type = type;
+  m_binding_section = section;
+  m_binding_key = key;
+  m_display_name = display_name;
+  m_new_bindings = {};
+  m_value_ranges = {};
+  m_time_remaining = INPUT_BINDING_TIMEOUT_SECONDS;
+  SetTitleAndOpen(FSUI_ICONSTR(ICON_FA_GAMEPAD, "Set Input Binding"));
 
   const bool game_settings = IsEditingGameSettings(bsi);
 
-  InputManager::SetHook([game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
-    // shouldn't happen, just in case
-    if (s_state.input_binding_type == InputBindingInfo::Type::Unknown)
-      return InputInterceptHook::CallbackResult::RemoveHookAndContinueProcessingEvent;
-
+  InputManager::SetHook([this, game_settings](InputBindingKey key, float value) -> InputInterceptHook::CallbackResult {
     // holding the settings lock here will protect the input binding list
     auto lock = Host::GetSettingsLock();
+
+    // shouldn't happen, just in case
+    if (m_binding_type == InputBindingInfo::Type::Unknown)
+      return InputInterceptHook::CallbackResult::RemoveHookAndContinueProcessingEvent;
 
     float initial_value = value;
     float min_value = value;
     InputInterceptHook::CallbackResult default_action = InputInterceptHook::CallbackResult::StopProcessingEvent;
-    const auto it = std::find_if(s_state.input_binding_value_ranges.begin(), s_state.input_binding_value_ranges.end(),
+    const auto it = std::find_if(m_value_ranges.begin(), m_value_ranges.end(),
                                  [key](const auto& it) { return it.first.bits == key.bits; });
 
-    if (it != s_state.input_binding_value_ranges.end())
+    if (it != m_value_ranges.end())
     {
       initial_value = it->second.first;
       min_value = it->second.second = std::min(it->second.second, value);
     }
     else
     {
-      s_state.input_binding_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
+      m_value_ranges.emplace_back(key, std::make_pair(initial_value, min_value));
 
       // forward the event to imgui if it's a new key and a release, because this is what triggered the binding to
       // start if we don't do this, imgui thinks the activate button is held down
@@ -2407,7 +2407,7 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
     const bool reverse_threshold =
       (key.source_subtype == InputSubclass::ControllerAxis && std::abs(initial_value) > 0.5f);
 
-    for (InputBindingKey& other_key : s_state.input_binding_new_bindings)
+    for (InputBindingKey& other_key : m_new_bindings)
     {
       // if this key is in our new binding list, it's a "release", and we're done
       if (other_key.MaskDirection() == key.MaskDirection())
@@ -2421,13 +2421,13 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
 
           SettingsInterface* bsi = GetEditingSettingsInterface(game_settings);
           const std::string new_binding(InputManager::ConvertInputBindingKeysToString(
-            s_state.input_binding_type, s_state.input_binding_new_bindings.data(),
-            s_state.input_binding_new_bindings.size()));
-          bsi->SetStringValue(s_state.input_binding_section.c_str(), s_state.input_binding_key.c_str(),
-                              new_binding.c_str());
+            m_binding_type, m_new_bindings.data(), m_new_bindings.size()));
+          bsi->SetStringValue(m_binding_section.c_str(), m_binding_key.c_str(), new_binding.c_str());
           SetSettingsChanged(bsi);
 
-          GPUThread::RunOnThread(&CloseFixedPopupDialog);
+          // don't try to process any more
+          m_binding_type = InputBindingInfo::Type::Unknown;
+          GPUThread::RunOnThread([this]() { StartClose(); });
 
           return InputInterceptHook::CallbackResult::RemoveHookAndStopProcessingEvent;
         }
@@ -2443,11 +2443,60 @@ void FullscreenUI::BeginInputBinding(SettingsInterface* bsi, InputBindingInfo::T
       InputBindingKey key_to_add = key;
       key_to_add.modifier = (value < 0.0f) ? InputModifier::Negate : InputModifier::None;
       key_to_add.invert = reverse_threshold;
-      s_state.input_binding_new_bindings.push_back(key_to_add);
+      m_new_bindings.push_back(key_to_add);
     }
 
     return default_action;
   });
+}
+
+void FullscreenUI::InputBindingDialog::ClearState()
+{
+  PopupDialog::ClearState();
+
+  if (m_binding_type != InputBindingInfo::Type::Unknown)
+    InputManager::RemoveHook();
+
+  m_binding_type = InputBindingInfo::Type::Unknown;
+  m_binding_section = {};
+  m_binding_key = {};
+  m_display_name = {};
+  m_new_bindings = {};
+  m_value_ranges = {};
+}
+
+void FullscreenUI::InputBindingDialog::Draw()
+{
+  if (!IsOpen())
+    return;
+
+  if (m_time_remaining > 0.0f)
+  {
+    m_time_remaining -= ImGui::GetIO().DeltaTime;
+    if (m_time_remaining <= 0.0f)
+    {
+      // allow the dialog to fade out, but stop receiving any more events
+      m_time_remaining = 0.0f;
+      m_binding_type = InputBindingInfo::Type::Unknown;
+      InputManager::RemoveHook();
+      StartClose();
+    }
+  }
+
+  if (!BeginRender(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
+                   LayoutScale(500.0f, 0.0f)))
+  {
+    ClearState();
+    return;
+  }
+
+  ImGui::TextWrapped(
+    "%s", SmallString::from_format(FSUI_FSTR("Setting {} binding {}."), m_binding_section, m_display_name).c_str());
+  ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
+  ImGui::NewLine();
+  ImGui::TextUnformatted(SmallString::from_format(FSUI_FSTR("Timing out in {:.0f} seconds..."), m_time_remaining));
+
+  EndRender();
 }
 
 void FullscreenUI::BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindingInfo::Type type, const char* section,
@@ -2495,37 +2544,6 @@ void FullscreenUI::BeginVibrationMotorBinding(SettingsInterface* bsi, InputBindi
                        bsi->SetStringValue(section.c_str(), key.c_str(), title.c_str());
                      SetSettingsChanged(bsi);
                    });
-}
-
-void FullscreenUI::DrawInputBindingWindow()
-{
-  DebugAssert(s_state.input_binding_type != InputBindingInfo::Type::Unknown);
-
-  const double time_remaining =
-    INPUT_BINDING_TIMEOUT_SECONDS -
-    Timer::ConvertValueToSeconds(Timer::GetCurrentValue() - s_state.input_binding_start_time);
-  if (time_remaining <= 0.0)
-  {
-    InputManager::RemoveHook();
-    CloseFixedPopupDialog();
-  }
-
-  if (!BeginFixedPopupDialog(LayoutScale(LAYOUT_SMALL_POPUP_PADDING), LayoutScale(LAYOUT_SMALL_POPUP_PADDING),
-                             LayoutScale(500.0f, 0.0f)))
-  {
-    InputManager::RemoveHook();
-    ClearInputBindingVariables();
-    return;
-  }
-
-  ImGui::TextWrapped("%s", SmallString::from_format(FSUI_FSTR("Setting {} binding {}."), s_state.input_binding_section,
-                                                    s_state.input_binding_display_name)
-                             .c_str());
-  ImGui::TextUnformatted(FSUI_CSTR("Push a controller button or axis now."));
-  ImGui::NewLine();
-  ImGui::TextUnformatted(SmallString::from_format(FSUI_FSTR("Timing out in {:.0f} seconds..."), time_remaining));
-
-  EndFixedPopupDialog();
 }
 
 bool FullscreenUI::DrawToggleSetting(SettingsInterface* bsi, const char* title, const char* summary,
