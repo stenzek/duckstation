@@ -747,7 +747,6 @@ bool FullscreenUI::Initialize()
   else
     UpdateRunIdleState();
 
-  ForceKeyNavEnabled();
   return true;
 }
 
@@ -793,6 +792,20 @@ void FullscreenUI::OnSystemStarting()
 
     s_state.current_main_window = MainWindowType::None;
     QueueResetFocus(FocusResetType::ViewChanged);
+    UpdateRunIdleState();
+  });
+}
+
+void FullscreenUI::OnSystemPaused()
+{
+  // NOTE: Called on CPU thread.
+  if (!IsInitialized())
+    return;
+
+  GPUThread::RunOnThread([]() {
+    if (!IsInitialized())
+      return;
+
     UpdateRunIdleState();
   });
 }
@@ -927,9 +940,14 @@ void FullscreenUI::ClosePauseMenu()
   s_state.current_main_window = MainWindowType::None;
   s_state.current_pause_submenu = PauseSubMenu::None;
   s_state.pause_menu_was_open = false;
+  ImGui::SetWindowFocus(nullptr);
   QueueResetFocus(FocusResetType::ViewChanged);
   UpdateRunIdleState();
   FixStateIfPaused();
+
+  // Present frame with menu closed. We have to defer this for a frame so imgui loses keyboard focus.
+  if (GPUThread::IsSystemPaused())
+    GPUThread::PresentCurrentFrame();
 }
 
 void FullscreenUI::OpenPauseSubMenu(PauseSubMenu submenu)
@@ -1122,12 +1140,23 @@ void FullscreenUI::ReturnToPreviousWindow()
 void FullscreenUI::ReturnToMainWindow()
 {
   ClosePauseMenu();
+
   if (GPUThread::HasGPUBackend())
+  {
     s_state.current_main_window = MainWindowType::None;
+    ImGui::SetWindowFocus(nullptr);
+  }
   else if (ShouldOpenToGameList())
+  {
     SwitchToGameList();
+    ForceKeyNavEnabled();
+  }
   else
+  {
     s_state.current_main_window = MainWindowType::Landing;
+    ForceKeyNavEnabled();
+  }
+
   UpdateRunIdleState();
   FixStateIfPaused();
 }
@@ -1942,6 +1971,8 @@ void FullscreenUI::DrawLandingWindow()
     {
       SwitchToGameList();
     }
+
+    ImGui::SetItemDefaultFocus();
 
     if (UserThemeableHorizontalButton(
           "fullscreenui/cdrom.png", "fullscreenui/start-disc.svg", FSUI_CSTR("Start Game"),
@@ -6600,8 +6631,7 @@ void FullscreenUI::DrawPauseMenu()
 
         if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_PLAY, "Resume Game")) || WantsToCloseMenu())
           ClosePauseMenu();
-        else
-          ImGui::SetItemDefaultFocus();
+        ImGui::SetItemDefaultFocus();
 
         if (MenuButtonWithoutSummary(FSUI_ICONSTR(ICON_FA_FAST_FORWARD, "Toggle Fast Forward"), false))
         {

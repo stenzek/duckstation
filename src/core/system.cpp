@@ -1591,6 +1591,8 @@ void System::PauseSystem(bool paused)
 
   if (paused)
   {
+    FullscreenUI::OnSystemPaused();
+
     InputManager::PauseVibration();
     InputManager::UpdateHostMouseMode();
 
