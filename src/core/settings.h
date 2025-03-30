@@ -94,6 +94,7 @@ struct GPUSettings
   bool gpu_use_thread : 1 = true;
   bool gpu_use_software_renderer_for_readbacks : 1 = false;
   bool gpu_use_debug_device : 1 = false;
+  bool gpu_use_debug_device_gpu_validation : 1 = false;
   bool gpu_disable_shader_cache : 1 = false;
   bool gpu_disable_dual_source_blend : 1 = false;
   bool gpu_disable_framebuffer_fetch : 1 = false;

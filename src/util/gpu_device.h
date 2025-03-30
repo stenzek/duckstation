@@ -727,8 +727,9 @@ public:
   ALWAYS_INLINE bool IsGPUTimingEnabled() const { return m_gpu_timing_enabled; }
 
   bool Create(std::string_view adapter, FeatureMask disabled_features, std::string_view shader_dump_path,
-              std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device, const WindowInfo& wi,
-              GPUVSyncMode vsync, bool allow_present_throttle, const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
+              std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device, bool gpu_validation,
+              const WindowInfo& wi, GPUVSyncMode vsync, bool allow_present_throttle,
+              const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
               std::optional<bool> exclusive_fullscreen_control, Error* error);
   void Destroy();
 
@@ -995,6 +996,7 @@ protected:
 
   bool m_gpu_timing_enabled = false;
   bool m_debug_device = false;
+  bool m_debug_device_gpu_validation = false;
 };
 
 extern std::unique_ptr<GPUDevice> g_gpu_device;

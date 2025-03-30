@@ -310,6 +310,7 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.gpuDumpFastReplayMode, "GPU", "DumpFastReplayMode", false);
 
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useDebugDevice, "GPU", "UseDebugDevice", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.useGPUBasedValidation, "GPU", "UseGPUBasedValidation", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableShaderCache, "GPU", "DisableShaderCache", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableDualSource, "GPU", "DisableDualSourceBlend", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.disableFramebufferFetch, "GPU", "DisableFramebufferFetch",
@@ -631,6 +632,9 @@ GraphicsSettingsWidget::GraphicsSettingsWidget(SettingsWindow* dialog, QWidget* 
   dialog->registerWidgetHelp(
     m_ui.useDebugDevice, tr("Use Debug Device"), tr("Unchecked"),
     tr("Enable debugging when supported by the host's renderer API. <strong>Only for developer use.</strong>"));
+  dialog->registerWidgetHelp(
+    m_ui.useGPUBasedValidation, tr("Use GPU-Based Validation"), tr("Unchecked"),
+    tr("Enable GPU-based validation when supported by the renderer API. <strong>Only for developer use.</strong>"));
   dialog->registerWidgetHelp(
     m_ui.disableShaderCache, tr("Disable Shader Cache"), tr("Unchecked"),
     tr("Forces shaders to be compiled for every run of the program. <strong>Only for developer use.</strong>"));

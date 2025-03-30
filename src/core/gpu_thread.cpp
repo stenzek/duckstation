@@ -621,7 +621,7 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
   if (g_gpu_settings.gpu_disable_compressed_textures)
     disabled_features |= GPUDevice::FEATURE_MASK_COMPRESSED_TEXTURES;
 
-    // Don't dump shaders on debug builds for Android, users will complain about storage...
+  // Don't dump shaders on debug builds for Android, users will complain about storage...
 #if !defined(__ANDROID__) || defined(_DEBUG)
   const std::string_view shader_dump_directory(EmuFolders::DataRoot);
 #else
@@ -636,9 +636,9 @@ bool GPUThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool clear_
         Host::GetStringSettingValue("GPU", "Adapter"), static_cast<GPUDevice::FeatureMask>(disabled_features),
         shader_dump_directory,
         g_gpu_settings.gpu_disable_shader_cache ? std::string_view() : std::string_view(EmuFolders::Cache),
-        SHADER_CACHE_VERSION, g_gpu_settings.gpu_use_debug_device, wi.value(), s_state.requested_vsync,
-        s_state.requested_allow_present_throttle, fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr,
-        exclusive_fullscreen_control, &create_error))
+        SHADER_CACHE_VERSION, g_gpu_settings.gpu_use_debug_device, g_gpu_settings.gpu_use_debug_device_gpu_validation,
+        wi.value(), s_state.requested_vsync, s_state.requested_allow_present_throttle,
+        fullscreen_mode.has_value() ? &fullscreen_mode.value() : nullptr, exclusive_fullscreen_control, &create_error))
   {
     ERROR_LOG("Failed to create GPU device: {}", create_error.GetDescription());
     if (g_gpu_device)

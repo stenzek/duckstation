@@ -1350,6 +1350,20 @@
          <layout class="QFormLayout" name="formLayout_10">
           <item row="0" column="0" colspan="2">
            <layout class="QGridLayout" name="gridLayout_8">
+            <item row="5" column="0">
+             <widget class="QCheckBox" name="disableComputeShaders">
+              <property name="text">
+               <string>Disable Compute Shaders</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QCheckBox" name="disableDualSource">
+              <property name="text">
+               <string>Disable Dual-Source Blending</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="0">
              <widget class="QCheckBox" name="useDebugDevice">
               <property name="text">
@@ -1357,35 +1371,21 @@
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QCheckBox" name="disableTextureBuffers">
+            <item row="4" column="0">
+             <widget class="QCheckBox" name="disableMemoryImport">
               <property name="text">
-               <string>Disable Texture Buffers</string>
+               <string>Disable Memory Import</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QCheckBox" name="disableDualSource">
+            <item row="4" column="1">
+             <widget class="QCheckBox" name="disableRasterOrderViews">
               <property name="text">
-               <string>Disable Dual-Source Blending</string>
+               <string>Disable Rasterizer Order Views</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
-             <widget class="QCheckBox" name="disableShaderCache">
-              <property name="text">
-               <string>Disable Shader Cache</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QCheckBox" name="disableFramebufferFetch">
-              <property name="text">
-               <string>Disable Framebuffer Fetch</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
+            <item row="3" column="1">
              <widget class="QCheckBox" name="disableTextureCopyToSelf">
               <property name="text">
                <string>Disable Texture Copy To Self</string>
@@ -1393,30 +1393,37 @@
              </widget>
             </item>
             <item row="3" column="0">
-             <widget class="QCheckBox" name="disableMemoryImport">
+             <widget class="QCheckBox" name="disableTextureBuffers">
               <property name="text">
-               <string>Disable Memory Import</string>
+               <string>Disable Texture Buffers</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="disableRasterOrderViews">
+            <item row="2" column="1">
+             <widget class="QCheckBox" name="disableFramebufferFetch">
               <property name="text">
-               <string>Disable Rasterizer Order Views</string>
+               <string>Disable Framebuffer Fetch</string>
               </property>
              </widget>
             </item>
-            <item row="4" column="0">
-             <widget class="QCheckBox" name="disableComputeShaders">
-              <property name="text">
-               <string>Disable Compute Shaders</string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
+            <item row="1" column="1">
              <widget class="QCheckBox" name="disableCompressedTextures">
               <property name="text">
                <string>Disable Compressed Textures</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QCheckBox" name="disableShaderCache">
+              <property name="text">
+               <string>Disable Shader Cache</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="useGPUBasedValidation">
+              <property name="text">
+               <string>Use GPU-Based Validation</string>
               </property>
              </widget>
             </item>

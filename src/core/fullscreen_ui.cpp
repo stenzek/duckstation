@@ -6435,6 +6435,11 @@ void FullscreenUI::DrawAdvancedSettingsPage()
                     "GPU", "UseDebugDevice", false);
 
   DrawToggleSetting(
+    bsi, FSUI_CSTR("Enable GPU-Based Validation"),
+    FSUI_CSTR("Enable GPU-based validation when supported by the host's renderer API. Only for developer use."), "GPU",
+    "UseGPUBasedValidation", false);
+
+  DrawToggleSetting(
     bsi, FSUI_CSTR("Load Devices From Save States"),
     FSUI_CSTR("When enabled, memory cards and controllers will be overwritten when save states are loaded."), "Main",
     "LoadDevicesFromSaveStates", false);
@@ -9202,6 +9207,8 @@ TRANSLATE_NOOP("FullscreenUI", "Enable Achievements");
 TRANSLATE_NOOP("FullscreenUI", "Enable Cheats");
 TRANSLATE_NOOP("FullscreenUI", "Enable Discord Presence");
 TRANSLATE_NOOP("FullscreenUI", "Enable Fast Boot");
+TRANSLATE_NOOP("FullscreenUI", "Enable GPU-Based Validation");
+TRANSLATE_NOOP("FullscreenUI", "Enable GPU-based validation when supported by the host's renderer API. Only for developer use.");
 TRANSLATE_NOOP("FullscreenUI", "Enable In-Game Overlays");
 TRANSLATE_NOOP("FullscreenUI", "Enable Overclocking");
 TRANSLATE_NOOP("FullscreenUI", "Enable Post Processing");

@@ -186,10 +186,22 @@ bool D3D12Device::CreateDeviceAndMainSwapChain(std::string_view adapter, Feature
   if (m_debug_device)
   {
     ComPtr<ID3D12Debug> debug12;
-    hr = D3D12GetDebugInterface(IID_PPV_ARGS(debug12.GetAddressOf()));
-    if (SUCCEEDED(hr))
+    if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(debug12.GetAddressOf()))))
     {
+      INFO_LOG("Enabling debug layer.");
       debug12->EnableDebugLayer();
+
+      ComPtr<ID3D12Debug1> debug12_1;
+      if (SUCCEEDED(debug12.As(&debug12_1)))
+      {
+        INFO_LOG("Enabling GPU-based validation.");
+        debug12_1->SetEnableGPUBasedValidation(true);
+      }
+      else
+      {
+        ERROR_LOG("GPU-based validation requested but not available.");
+        m_debug_device_gpu_validation = false;
+      }
     }
     else
     {

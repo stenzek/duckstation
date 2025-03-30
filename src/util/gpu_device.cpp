@@ -449,11 +449,12 @@ GPUDevice::AdapterInfoList GPUDevice::GetAdapterListForAPI(RenderAPI api)
 
 bool GPUDevice::Create(std::string_view adapter, FeatureMask disabled_features, std::string_view shader_dump_path,
                        std::string_view shader_cache_path, u32 shader_cache_version, bool debug_device,
-                       const WindowInfo& wi, GPUVSyncMode vsync, bool allow_present_throttle,
+                       bool gpu_validation, const WindowInfo& wi, GPUVSyncMode vsync, bool allow_present_throttle,
                        const ExclusiveFullscreenMode* exclusive_fullscreen_mode,
                        std::optional<bool> exclusive_fullscreen_control, Error* error)
 {
   m_debug_device = debug_device;
+  m_debug_device_gpu_validation = debug_device && gpu_validation;
   s_shader_dump_path = shader_dump_path;
 
   INFO_LOG("Main render window is {}x{}.", wi.surface_width, wi.surface_height);
