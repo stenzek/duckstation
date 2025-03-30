@@ -442,6 +442,7 @@ protected:
     OpeningTrigger,
     Opening,
     Closing,
+    Reopening,
   };
 
   static constexpr float OPEN_TIME = 0.2f;

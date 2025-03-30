@@ -18,9 +18,9 @@
 #include "common/threading.h"
 #include "common/timer.h"
 
+#include "core/fullscreen_ui.h" // For updating run idle state.
 #include "core/host.h"
 #include "core/system.h" // For async workers, should be in general host.
-#include "core/fullscreen_ui.h" // For updating run idle state.
 
 #include "fmt/core.h"
 
@@ -2397,23 +2397,17 @@ void ImGuiFullscreen::PopupDialog::SetTitleAndOpen(std::string title)
 {
   DebugAssert(!title.empty());
   m_title = std::move(title);
+  m_animation_time_remaining = OPEN_TIME;
 
   if (m_state == State::Inactive)
   {
     // inactive -> active
     m_state = State::OpeningTrigger;
-    m_animation_time_remaining = OPEN_TIME;
-    QueueResetFocus(FocusResetType::PopupOpened);
   }
-  else if (m_state == State::Closing)
+  else
   {
-    // cancel close
-    m_state = State::Opening;
-  }
-  else if (m_state == State::ClosingTrigger)
-  {
-    // prevent from closing
-    m_state = State::Open;
+    // we need to close under the old name, and reopen under the new
+    m_state = State::Reopening;
   }
 }
 
@@ -2441,6 +2435,20 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
 {
   DebugAssert(IsOpen());
 
+  // reopening is messy...
+  if (m_state == State::Reopening) [[unlikely]]
+  {
+    // close it under the old name
+    if (ImGui::IsPopupOpen(ImGui::GetCurrentWindowRead()->GetID(m_title.c_str(), m_title.c_str() + m_title.length()),
+                           ImGuiPopupFlags_None))
+    {
+      ImGui::ClosePopupToLevel(GImGui->OpenPopupStack.Size, true);
+    }
+
+    // and open under the new name
+    m_state = State::OpeningTrigger;
+  }
+
   // check for animation completion
   ImVec2 pos_offset = ImVec2(0.0f, 0.0f);
   float alpha = 1.0f;
@@ -2467,6 +2475,7 @@ bool ImGuiFullscreen::PopupDialog::BeginRender(float scaled_window_padding /* = 
         // need to have the openpopup at the correct level
         m_state = State::Opening;
         ImGui::OpenPopup(m_title.c_str());
+        QueueResetFocus(FocusResetType::PopupOpened);
       }
 
       // inhibit menu animation while opening, otherwise it jitters
