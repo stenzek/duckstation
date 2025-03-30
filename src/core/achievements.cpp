@@ -3515,7 +3515,7 @@ void Achievements::DrawLeaderboardsWindow()
   }
 
   if (close_leaderboard_on_exit)
-    CloseLeaderboard();
+    FullscreenUI::BeginTransition(&CloseLeaderboard);
 }
 
 void Achievements::DrawLeaderboardEntry(const rc_client_leaderboard_entry_t& entry, bool is_self,
@@ -3631,7 +3631,7 @@ void Achievements::DrawLeaderboardListEntry(const rc_client_leaderboard_t* lboar
   }
 
   if (pressed)
-    OpenLeaderboard(lboard);
+    FullscreenUI::BeginTransition([id = lboard->id]() { OpenLeaderboardById(id); });
 }
 
 #endif // __ANDROID__
