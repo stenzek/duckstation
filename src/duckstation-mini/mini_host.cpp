@@ -68,7 +68,7 @@ static bool ParseCommandLineParametersAndInitializeConfig(int argc, char* argv[]
                                                           std::optional<SystemBootParameters>& autoboot);
 static void PrintCommandLineVersion();
 static void PrintCommandLineHelp(const char* progname);
-static bool InitializeConfig(std::string settings_filename);
+static bool InitializeConfig();
 static void InitializeEarlyConsole();
 static void HookSignals();
 static void SetAppRoot();
@@ -237,9 +237,7 @@ void MiniHost::SetResourcesDirectory()
 
 bool MiniHost::SetDataDirectory()
 {
-  // Already set, e.g. by -portable.
-  if (EmuFolders::DataRoot.empty())
-    EmuFolders::DataRoot = Host::Internal::ComputeDataDirectory();
+  EmuFolders::DataRoot = Host::Internal::ComputeDataDirectory();
 
   // make sure it exists
   if (!EmuFolders::DataRoot.empty() && !FileSystem::DirectoryExists(EmuFolders::DataRoot.c_str()))
@@ -261,17 +259,15 @@ bool MiniHost::SetDataDirectory()
   return true;
 }
 
-bool MiniHost::InitializeConfig(std::string settings_filename)
+bool MiniHost::InitializeConfig()
 {
   if (!SetCriticalFolders())
     return false;
 
-  if (settings_filename.empty())
-    settings_filename = Path::Combine(EmuFolders::DataRoot, "settings.ini");
-
-  const bool settings_exists = FileSystem::FileExists(settings_filename.c_str());
-  INFO_LOG("Loading config from {}.", settings_filename);
-  s_state.base_settings_interface = std::make_unique<INISettingsInterface>(std::move(settings_filename));
+  std::string settings_path = Path::Combine(EmuFolders::DataRoot, "settings.ini");
+  const bool settings_exists = FileSystem::FileExists(settings_path.c_str());
+  INFO_LOG("Loading config from {}.", settings_path);
+  s_state.base_settings_interface = std::make_unique<INISettingsInterface>(std::move(settings_path));
   Host::Internal::SetBaseSettingsLayer(s_state.base_settings_interface.get());
 
   u32 settings_version;
@@ -1543,9 +1539,6 @@ void MiniHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -exe <filename>: Boot the specified exe instead of loading from disc.\n");
   std::fprintf(stderr, "  -fullscreen: Enters fullscreen mode immediately after starting.\n");
   std::fprintf(stderr, "  -nofullscreen: Prevents fullscreen mode from triggering if enabled.\n");
-  std::fprintf(stderr, "  -portable: Forces \"portable mode\", data in same directory.\n");
-  std::fprintf(stderr, "  -settings <filename>: Loads a custom settings configuration from the\n"
-                       "    specified filename. Default settings applied if file not found.\n");
   std::fprintf(stderr, "  -earlyconsole: Creates console as early as possible, for logging.\n");
   std::fprintf(stderr, "  -prerotation <degrees>: Prerotates output by 90/180/270 degrees.\n");
   std::fprintf(stderr, "  --: Signals that no more arguments will follow and the remaining\n"
@@ -1566,9 +1559,7 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
                                                              std::optional<SystemBootParameters>& autoboot)
 {
   std::optional<s32> state_index;
-  std::string settings_filename;
   bool starting_bios = false;
-
   bool no_more_args = false;
 
   for (int i = 1; i < argc; i++)
@@ -1656,18 +1647,6 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
         AutoBoot(autoboot)->override_fullscreen = false;
         continue;
       }
-      else if (CHECK_ARG("-portable"))
-      {
-        INFO_LOG("Command Line: Using portable mode.");
-        EmuFolders::DataRoot = EmuFolders::AppRoot;
-        continue;
-      }
-      else if (CHECK_ARG_PARAM("-settings"))
-      {
-        settings_filename = argv[++i];
-        INFO_LOG("Command Line: Overriding settings filename: {}", settings_filename);
-        continue;
-      }
       else if (CHECK_ARG("-earlyconsole"))
       {
         InitializeEarlyConsole();
@@ -1725,7 +1704,7 @@ bool MiniHost::ParseCommandLineParametersAndInitializeConfig(int argc, char* arg
   }
 
   // To do anything useful, we need the config initialized.
-  if (!InitializeConfig(std::move(settings_filename)))
+  if (!InitializeConfig())
   {
     // NOTE: No point translating this, because no config means the language won't be loaded anyway.
     Host::ReportFatalError("Error", "Failed to initialize config.");
